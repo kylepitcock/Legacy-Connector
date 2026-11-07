@@ -75,12 +75,17 @@ def stage(inventory, archive_name, root, label):
 
 def assess(game, manifest, exit_code):
     text = (game / 'test.log').read_text(encoding='utf-8', errors='replace')
-    problems = [line for line in text.splitlines() if re.search(r'failed during construction:|failed during (?:postInit|init)|Exception caught during firing event|Encountered an unexpected exception|BUILD FAILED|[1-9]\d* failed;|^[\w.$]+(?:Exception|Error)(?::|$)', line)]
+    problems = [line for line in text.splitlines() if re.search(r'failed during construction:|failed during (?:postInit|init)|Exception caught during firing event|Encountered an unexpected exception|BUILD FAILED|\b[1-9]\d* (?:legacy callbacks )?failed\b|\bof legacyconnector_b173\..* failed\b|^[\w.$]+(?:Exception|Error)(?::|$)', line)]
     evidence = [line for line in text.splitlines() if 'B1.7.3 ' in line and 'TEST:' in line]
     completed = any('B1.7.3 GUI TEST:' in line and '0 failed;' in line for line in evidence)
     constructed = [line for line in text.splitlines() if 'b1.7.3 mod ' in line and ' constructed' in line]
+    constructed_ids = set(re.findall(r'b1\.7\.3 mod (\S+) .*?constructed', text))
+    expected_ids = {name.removeprefix('mod_') for name in manifest.get('entrypoints', [])}
+    missing = sorted(expected_ids - constructed_ids)
+    if missing: problems.append('Expected entrypoints did not construct: ' + ', '.join(missing))
     manifest.update({'status': 'headless-smoke-passed' if exit_code == 0 and not problems and completed and constructed else 'failed-or-needs-review',
-                     'exit_code': exit_code, 'problems': problems, 'constructed': constructed, 'test_evidence': evidence})
+                     'exit_code': exit_code, 'problems': problems, 'constructed': constructed,
+                     'missing_entrypoints': missing, 'test_evidence': evidence})
     (game / 'audit-manifest.json').write_text(json.dumps(manifest, indent=2), encoding='utf-8')
     print(json.dumps({'status': manifest['status'], 'game_directory': str(game), 'problems': problems}, indent=2))
     return 0 if manifest['status'] == 'headless-smoke-passed' else 1

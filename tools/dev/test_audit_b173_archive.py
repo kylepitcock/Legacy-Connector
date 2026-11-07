@@ -70,5 +70,32 @@ class ArchiveAuditTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'changed since audit'):
                 isolated.stage(inventory, 'mod.zip', '', 'test')
 
+    def test_all_staged_entrypoints_must_construct(self):
+        with tempfile.TemporaryDirectory() as temp:
+            game = Path(temp)
+            log = 'b1.7.3 mod Core 1.0 constructed\nB1.7.3 GUI TEST: 0 failed;\nBUILD SUCCESSFUL\n'
+            (game / 'test.log').write_text(log)
+            manifest = {'entrypoints': ['mod_Core', 'mod_Energy']}
+            with contextlib.redirect_stdout(io.StringIO()): status = isolated.assess(game, manifest, 0)
+            self.assertEqual(status, 1)
+            self.assertEqual(manifest['missing_entrypoints'], ['Energy'])
+            (game / 'test.log').write_text(log + 'b1.7.3 mod Energy 1.0 constructed\n')
+            with contextlib.redirect_stdout(io.StringIO()): status = isolated.assess(game, manifest, 0)
+            self.assertEqual(status, 0)
+
+    def test_callback_failure_without_exception_stack_is_not_success(self):
+        with tempfile.TemporaryDirectory() as temp:
+            game = Path(temp)
+            for failure in ['onPlaced of legacyconnector_b173.example.Block[100] failed: details',
+                            'B1.7.3 BEHAVIOUR TEST: 12 legacy callbacks failed, 0 escaped',
+                            'B1.7.3 ACTUAL BUCKET/BOW TEST: 0 passed, 10 failed']:
+                with self.subTest(failure=failure):
+                    (game / 'test.log').write_text('b1.7.3 mod Example 1.0 constructed\n' + failure +
+                                                 '\nB1.7.3 GUI TEST: 0 failed;\nBUILD SUCCESSFUL\n')
+                    manifest = {'entrypoints': ['mod_Example']}
+                    with contextlib.redirect_stdout(io.StringIO()): status = isolated.assess(game, manifest, 0)
+                    self.assertEqual(status, 1)
+                    self.assertIn(failure, manifest['problems'])
+
 
 if __name__ == '__main__': unittest.main()
