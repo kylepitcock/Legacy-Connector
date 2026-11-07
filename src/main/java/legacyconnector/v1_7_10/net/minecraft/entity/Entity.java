@@ -929,6 +929,19 @@ public abstract class Entity implements ICommandSender {
         return mcc$entity == null ? mcc$localId : mcc$entity.getId();
     }
 
+    /** Phantom field: accesses are redirected to {@code mcc$get$entityId} (mods put it in packets; the plain field stayed 0). */
+    @Deprecated
+    public int entityId;
+
+    public static int mcc$get$entityId(Entity e) {
+        return e.getEntityId();
+    }
+
+    public static void mcc$set$entityId(Entity e, int id) {
+        if (e.mcc$entity == null) e.mcc$localId = id;
+        else e.mcc$entity.setId(id);
+    }
+
     private int mcc$localId = -1;
 
     /**
