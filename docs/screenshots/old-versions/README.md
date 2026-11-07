@@ -95,6 +95,20 @@ Third round (survival, shaders; all new old-only mods):
 | `1.6.4/dimensional-warps-mobs-shaders.png` | Emerald's Dimensional Warps | Star cow, bull, seagull and other mobs with their own models | Works |
 | `1.6.4/dimensional-warps-sky-dimension-shaders.png` | Emerald's Dimensional Warps | The sky dimension, which now generates (its chunk provider constructor failed on a mismatched `TerrainGen.getModdedNoiseGenerators` signature) | Works |
 
+Fourth round (shaders; 2026-11-07, the Tinkers' Construct, Goblins, Counter Craft and old-only checks):
+
+| File | Mod | What it shows | Rating |
+|---|---|---|---|
+| `1.6.4/tinkers-construct-tool-station-pickaxe-survival-shaders.png` | Tinkers' Construct EX.30 | Survival: the Tool Station screen (the mod's own, with its own slot drawing and clicks) after a wooden pickaxe head, rod and binding were placed by clicks: the output slot shows the pickaxe and its stats | Mostly playable |
+| `1.6.4/goblins-mod-mobs-and-tinkers-slime-shaders.png` | Goblins! Mod, Tinkers' Construct, Advanced Survival | Goblin soldier, shaman, chief, ranger and dire wolf with their skins (the textures sit in an inner archive of the download), a blue slime, boss bars; the guardian mob of Advanced Survival at the right still shows a missing texture in this shot | Works |
+| `1.6.4/counter-craft-ak47-first-person-shaders.png` | Counter Craft | The AK-47 in hand after firing (recoil has pushed the view up), grenades in the hotbar | Partly working |
+| `1.6.4/herobrine-mod-mobs-and-boss-shaders.png` | Herobrine Mod | Herobrine with smoke, the zombie and pig variants, Notch and the boss bar | Works |
+| `1.6.4/infusioncraft-blocks-and-tools-shaders.png` | Infusion Craft | Infused blocks with the mod's rainbow textures, the infused sword in hand, bow, pickaxe and armor in the hotbar | Works |
+| `1.6.4/quazarcraft-blocks-sword-and-armor-shaders.png` | QuazarCraft | Quazar blocks, glass, ore, brick, the crafter blocks, a loot zombie and the shiny sword in hand | Works |
+| `1.6.4/walking-dead-nuclear-power-mithril-blocks-shaders.png` | The Walking Dead, Nuclear Power, Mithril | A row of blocks (gun rack with a missing texture on the left, sandbag, barbed wire, mithril and ore, gas furnace, fusion reactor parts) and the M4A1 in hand | Works (gun rack texture missing) |
+| `1.6.4/ancient-warfare-crafting-table-gui-survival-shaders.png` | Ancient Warfare | The research table screen with its Craft, Research and Queue tabs | Works |
+| `1.6.4/booze-blocks-shaders.png`, `1.6.4/rhodium-tools-blocks-shaders.png`, `1.6.4/solar-apocalypse-blocks-shaders.png`, `1.6.4/mrcrayfish-construction-blocks-shaders.png`, `1.6.4/dark-adaptations-blocks-shaders.png`, `1.6.4/ocarina-mod-blocks-shaders.png` | Booze, Rhodium Tools, Solar Apocalypse, MrCrayfish's Construction Mod, Dark Adaptations, The Ocarina Mod | The mods' blocks placed on a superflat world (automatic block shots) | Works |
+
 1.5.2 (same round):
 
 | File | Mod | What it shows | Rating |

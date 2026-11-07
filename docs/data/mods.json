@@ -26,7 +26,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "partial",
-      "notes": "In server self test, old-only 1.6.4 set 8 items, 8 blocks, 1 entity types register, but loading failed during postInit: java.lang.RuntimeException: Attempted to load class net/minecraft/client/player/LocalPlayer for invalid dist DEDICATED_SERVER"
+      "notes": "Starts on the client (blocks draw, some with missing textures); on a dedicated server it fails in postInit because it loads a client screen class there."
     },
     {
       "name": "absentbydesign Mod",
@@ -231,8 +231,8 @@
       "mc": "1.6.4",
       "source": "client",
       "date": "2026-11-07",
-      "status": "fails",
-      "notes": "Fails during construction: java.lang.NoClassDefFoundError: yd (the Legacy Connector layer does not implement this legacy API yet - see logs/legacyconnector-report.txt)"
+      "status": "works",
+      "notes": "Loads now: the jar names Minecraft classes by their obfuscated names and declares no version, so it was taken for a 1.7.10 mod and failed on a missing class. Its mobs, armor and items register; the guardian mob draws; its textures sit under a wrapper folder in the zip, which the layer now unpacks."
     },
     {
       "name": "Advanced Technology",
@@ -544,8 +544,8 @@
       "mc": "1.6.4",
       "source": "client",
       "date": "2026-11-07",
-      "status": "fails",
-      "notes": "Fails during preInit: java.lang.NullPointerException: Cannot invoke \"alchemymod.common.ServerProxy.registerRenderThings()\" because \"alchemymod.common.alchemymod.p"
+      "status": "partial",
+      "notes": "Starts on the client; on a dedicated server it fails in preInit because its @SidedProxy names a server proxy class (alchemymod.ServerProxy) that does not exist in the jar: the mod's own mistake."
     },
     {
       "name": "Alfheim",
@@ -698,7 +698,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "works",
-      "notes": "Self-tested in server self test, old-only 1.6.4 set: 212 items, 11 blocks, 4 entity types; every block placed and used, every item used, every entity spawned; 3 threw errors (1%)."
+      "notes": "Real client, survival, shaders: the research table screen opens with its Craft, Research and Queue tabs. Earlier checks: 212 items, 11 blocks, 4 entity types. Gate and civic blocks were not played."
     },
     {
       "name": "Ancient Warfare Automation",
@@ -796,8 +796,8 @@
       "mc": "1.6.4",
       "source": "client",
       "date": "2026-11-07",
-      "status": "partial",
-      "notes": "In server self test, old-only 1.6.4 set 6 items, 1 blocks, 0 entity types register, but loading failed during init: java.lang.NullPointerException: Cannot invoke \"legacyconnector.v1_7_10.net.minecraft.block.Block.getLocalizedName()\" because \"block\" is null"
+      "status": "works",
+      "notes": "Loads now: its block list asked for the comparator blocks, which had no 1.6.4 field forward (the field type BlockComparator was not mapped to the 1.7.10 class), and failed during init. Structure templates were not generated in a survival world."
     },
     {
       "name": "Ancient Warfare Vehicles",
@@ -2860,7 +2860,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "works",
-      "notes": "Self-tested in server self test, old-only 1.6.4 set: 15 items, 15 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+      "notes": "Real client, shaders: its blocks (barrels, stills, glass) render. Earlier server self test: 15 items and 15 blocks used without errors. Brewing was not tried."
     },
     {
       "name": "BOP Integrations",
@@ -4284,7 +4284,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "partial",
-      "notes": "Real client, shaders: blocks render and the bench opens the mod's own menu (Play, Inventory, Community, 'Cloud offline': the mod is an online lobby). The earlier 'full-screen logo' was the mod's intro splash, shown because its client setup had been aborted: it calls System.exit when more than five mods are loaded (an anti-modpack check), which the layer turned into an exception half way through. System.exit from a legacy mod is now ignored and the mod carries on. Guns were not tested."
+      "notes": "Real client, shaders: the AK-47 shows its own first-person model, firing works (recoil kicks the view up, the shot sound event is looked up but the sound file is missing), grenades and knives are in the inventory. The mod is an online lobby (Play, Inventory, Community need its server), so loadouts and the ammo HUD were not checked. Bullet damage was not measured."
     },
     {
       "name": "CPM OSC Compat",
@@ -4355,8 +4355,8 @@
       "mc": "1.6.4",
       "source": "client",
       "date": "2026-11-07",
-      "status": "partial",
-      "notes": "In server self test, old-only 1.6.4 set 51 items, 51 blocks, 16 entity types register, but loading failed during postInit: java.lang.NullPointerException: Cannot invoke \"legacyconnector.v1_7_10.net.minecraft.server.MinecraftServer.getMOTD()\" because \"<local2>\" is"
+      "status": "fails",
+      "notes": "Fails in postInit: its own network code names the Netty kqueue classes, which it ships in the jar but the layer drops in favor of the game's Netty (which has no kqueue). The earlier startup failure (no server object at postInit) is fixed. It is an online PvP mod."
     },
     {
       "name": "Crafting Tweaks",
@@ -4850,7 +4850,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "works",
-      "notes": "Self-tested in server self test, old-only 1.6.4 set: 5 items, 7 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+      "notes": "Real client, shaders: its blocks render. Earlier server self test passed."
     },
     {
       "name": "Dark Utilities",
@@ -5084,7 +5084,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "works",
-      "notes": "Self-tested in server self test, old-only 1.6.4 set: 22 items, 32 blocks, 9 entity types; every block placed and used, every item used, every entity spawned without errors. 16 blocks did not stay placed. Real client, shaders: its blocks, seagull, bull, star cow and fish mobs draw with their own models, and the sky dimension (a grassy overworld-like world) now generates: its three dimensions (sky, skyer, cryt) failed in the chunk provider constructor because `TerrainGen.getModdedNoiseGenerators` took the wrong array type (fixed); the sea dimension was fine. The cryt dimension's terrain comes out as a flat bedrock plane that was not investigated."
+      "notes": "Real client: the cryt dimension is not a flat plane. Its terrain is a Nether-style generator: block columns show a bedrock roof at y=127, cave pockets and its own ore. The flat plane seen before was the roof, viewed from above the ceiling. It is pitch dark under the shader pack (not checked without shaders). The sky dimension and the other mobs were checked earlier."
     },
     {
       "name": "Dirt Tools and Armor",
@@ -6287,7 +6287,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "fails",
-      "notes": "Fails during preInit: java.lang.RuntimeException: java.lang.NoClassDefFoundError: exnihilo/items/hammers/ItemHammerBase"
+      "notes": "Needs Ex Nihilo, which is not in the download."
     },
     {
       "name": "Expanded Armory: Legacy",
@@ -7871,8 +7871,8 @@
       "mc": "1.6.4",
       "source": "client",
       "date": "2026-11-07",
-      "status": "crashes",
-      "notes": "Loads, but using its goblin village spawner block freezes the server: the village builder loops forever while reading blocks. Found in a server self test of the old-only 1.6.4 set; the cause is not found yet."
+      "status": "works",
+      "notes": "Real client, survival, shaders: the goblin mobs (soldier, mage, chief, ranger, dire wolf) render with their skins and boss bars, and a goblin soldier killed the player. The village spawner block builds its village on a superflat world without a freeze; the earlier server freeze did not repeat and its cause is still unknown. The download is a wrapper zip with the real mod in an inner archive ('Put contents into the Mods Folder'); the textures were missing until the layer started unpacking it."
     },
     {
       "name": "Golden Glitter",
@@ -8617,7 +8617,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "works",
-      "notes": "Self-tested in server self test, old-only 1.6.4 set: 1 items, 1 blocks, 14 entity types; every block placed and used, every item used, every entity spawned without errors."
+      "notes": "Real client, shaders: Herobrine (with smoke), Notch, Chuck Norris, the zombie, cow and pig variants and the boss (with boss bar) render and spawn. Their behavior and the world generation were not played through."
     },
     {
       "name": "HeroesExpansion",
@@ -9461,7 +9461,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "works",
-      "notes": "Self-tested in server self test, old-only 1.6.4 set: 22 items, 22 blocks, 4 entity types; every block placed and used, every item used, every entity spawned without errors. 4 blocks did not stay placed."
+      "notes": "Real client, shaders: the infused blocks (forge, grass, log, planks, glass, ore, furnace, TNT) draw with the mod's rainbow textures, and the infused sword, bow, emerald pickaxe and armor show in the inventory and in hand. Infusing was not tried."
     },
     {
       "name": "InGame Info XML",
@@ -11250,7 +11250,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "partial",
-      "notes": "In server self test, old-only 1.6.4 set 6 items, 10 blocks, 0 entity types register, but loading failed during init: java.lang.IllegalArgumentException: Failed to register dimension for id 3, One is already registered"
+      "notes": "Loads alone; in a set with Emerald's Dimensional Warps the second mod fails with 'Failed to register dimension for id 3, One is already registered': both mods claim dimension 3, which Forge 1.6.4 refused as well."
     },
     {
       "name": "Mekanism",
@@ -11697,8 +11697,8 @@
       "mc": "1.6.4",
       "source": "client",
       "date": "2026-11-07",
-      "status": "partial",
-      "notes": "In server self test, old-only 1.6.4 set 3 items, 3 blocks, 0 entity types register, but loading failed during preInit: java.lang.RuntimeException: java.lang.NoClassDefFoundError: com.mod.guffcore.TaggingUtility"
+      "status": "fails",
+      "notes": "Needs a library mod (com.mod.guffcore.TaggingUtility) that is not in the download."
     },
     {
       "name": "MiscPeripherals",
@@ -12265,7 +12265,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "works",
-      "notes": "Self-tested in server self test, old-only 1.6.4 set: 3 items, 2 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+      "notes": "Real client, shaders: its blocks render. Earlier server self test passed."
     },
     {
       "name": "MrTJPCore",
@@ -14844,7 +14844,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "works",
-      "notes": "Self-tested in server self test, old-only 1.6.4 set: 18 items, 21 blocks, 2 entity types; every block placed and used, every item used, every entity spawned; 1 threw errors (2%). 2 blocks did not stay placed."
+      "notes": "Real client, shaders: Quazar blocks, ore, glass, brick, the crafter controller and wall render; the diamond-shiny sword, pickaxe and chestplate are in the inventory and draw; the loot zombie spawns. The crafter multiblock was not built."
     },
     {
       "name": "QueQiao",
@@ -15578,7 +15578,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "works",
-      "notes": "Self-tested in server self test, old-only 1.6.4 set: 8 items, 10 blocks, 1 entity types; every block placed and used, every item used, every entity spawned without errors."
+      "notes": "Real client, shaders: its ore and storage blocks render. Earlier server self test: every item used without errors."
     },
     {
       "name": "Right Proper GUI Scale",
@@ -16683,7 +16683,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "works",
-      "notes": "Self-tested in server self test, old-only 1.6.4 set: 8 items, 8 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors. 2 blocks did not stay placed."
+      "notes": "Real client, shaders: its blocks render. Earlier server self test: every block and item used without errors. The apocalypse event itself was not watched."
     },
     {
       "name": "Solar Expansion",
@@ -18113,7 +18113,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "works",
-      "notes": "Real client, shaders: joins and plays. Cause of the old disconnect: its IConnectionHandler.connectionReceived returns an empty string for accepted, which the layer took as a refusal (a kick with an empty reason); null or an empty string now accepts, as in FML. Mobs (lions, giraffe, rhino) and blocks draw."
+      "notes": "Real client: mobs and blocks draw. A few technical blocks and items (double slabs, hanging banana, the outlands altar) show their raw name key; the mod's own code gives them no name."
     },
     {
       "name": "The Lost Cities",
@@ -18140,7 +18140,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "works",
-      "notes": "Self-tested in server self test, old-only 1.6.4 set: 3 items, 3 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+      "notes": "Real client, shaders: its blocks render (some of the 3 show missing textures). Playing songs was not tried."
     },
     {
       "name": "The Offhand Mod",
@@ -18520,10 +18520,10 @@
       "name": "Tinkers' Construct",
       "version": "1.5.13EX",
       "mc": "1.6.4",
-      "source": "probe",
-      "date": "2026-11-06",
-      "status": "loads",
-      "notes": "Automated check: translates offline and everything it uses exists (543 classes). But 123 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+      "source": "client",
+      "date": "2026-11-07",
+      "status": "playable",
+      "notes": "Real client, survival, shaders: the Tool Station screen opens (the mod's own screen, not a standard container screen) and crafts a pickaxe from a head, rod and binding with its stats (durability 96/96, mining speed 3.5, iron level); the tool mines, a heart canister raises max health, the blue slime mob renders. The tool station screen used to open blank (it keeps its own container and draws its own slots); it is hosted now. Smeltery, casting and the other stations were not tried."
     },
     {
       "name": "Tinkers' Gregworks",
@@ -18559,7 +18559,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "fails",
-      "notes": "Fails during construction: java.lang.NoClassDefFoundError: tconstruct.TConstruct (the Legacy Connector layer does not implement this legacy API yet - see logs/legacyco"
+      "notes": "Built for another Tinkers' Construct than EX.30: it fails at postInit with a missing member (FluidType.Water)."
     },
     {
       "name": "Tiny Inv",
@@ -18964,7 +18964,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "fails",
-      "notes": "Fails during construction: java.lang.NoClassDefFoundError: mcdelta/core/ModDelta (the Legacy Connector layer does not implement this legacy API yet - see logs/legacyco"
+      "notes": "Needs the MC Delta core library (mcdelta.core.ModDelta), which is not in the download."
     },
     {
       "name": "Tweakeroo",
@@ -19196,8 +19196,8 @@
       "mc": "1.6.4",
       "source": "client",
       "date": "2026-11-07",
-      "status": "partial",
-      "notes": "In server self test, old-only 1.6.4 set 6 items, 6 blocks, 0 entity types register, but loading failed during postInit: java.lang.RuntimeException: java.lang.NoClassDefFoundError: w577.mods.base.CustomFile"
+      "status": "fails",
+      "notes": "Needs a base library (w577.mods.base.CustomFile) that is not in the download."
     },
     {
       "name": "V-Tweaks",
