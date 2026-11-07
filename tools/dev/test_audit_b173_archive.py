@@ -8,6 +8,7 @@ import zipfile
 
 import audit_b173_archive as audit
 import test_b173_one as isolated
+import check_mod_specific as identity_guard
 
 
 def archive_bytes(entries):
@@ -18,6 +19,14 @@ def archive_bytes(entries):
 
 
 class ArchiveAuditTests(unittest.TestCase):
+    def test_named_beta_fixtures_do_not_exempt_production_bridges(self):
+        base = 'src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/'
+        self.assertTrue(identity_guard.allowed(base + 'MobSelfTestB173.java'))
+        self.assertTrue(identity_guard.allowed(base + 'AudioSelfTestB173.java'))
+        self.assertFalse(identity_guard.allowed(base + 'MobsB173.java'))
+        self.assertFalse(identity_guard.allowed(base + 'client/MobSelfTestB173.java'))
+        self.assertFalse(identity_guard.allowed(base + 'MobSelfTestB173Helper.java'))
+
     @classmethod
     def setUpClass(cls):
         with zipfile.ZipFile(audit.REPO / 'build/devtools/b1.7.3/client.jar') as z:
