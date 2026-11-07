@@ -90,6 +90,9 @@ public final class LegacyConnector {
     public static final DeferredHolder<net.minecraft.world.inventory.MenuType<?>, net.minecraft.world.inventory.MenuType<org.kylepitcock.legacyconnector.v1_12_2.gui.LegacyMenu1122>> LEGACY_MENU_1_12_2 =
             MENUS.register("legacy_1_12_2", () -> net.neoforged.neoforge.common.extensions.IMenuTypeExtension.create(
                     org.kylepitcock.legacyconnector.v1_12_2.bridge.GuiBridge1122::clientMenu));
+    public static final DeferredHolder<net.minecraft.world.inventory.MenuType<?>, net.minecraft.world.inventory.MenuType<org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Menu>> LEGACY_MENU_B1_7_3 =
+            MENUS.register("legacy_b1_7_3", () -> net.neoforged.neoforge.common.extensions.IMenuTypeExtension.create(
+                    org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Menu::client));
 
     public LegacyConnector(IEventBus modBus, ModContainer container) {
         org.slf4j.LoggerFactory.getLogger("LegacyConnector").info("Legacy Connector {} (runtime) loaded",
@@ -121,6 +124,7 @@ public final class LegacyConnector {
             if (e.getRegistryKey().equals(Registries.MENU)) {
                 org.kylepitcock.legacyconnector.v1_7_10.bridge.GuiBridge.setMenuType(LEGACY_MENU_1_7_10.get());
                 org.kylepitcock.legacyconnector.v1_12_2.bridge.GuiBridge1122.setMenuType(LEGACY_MENU_1_12_2.get());
+                org.kylepitcock.legacyconnector.vb1_7_3.MenusB173.setMenuType(LEGACY_MENU_B1_7_3.get());
             }
         });
         modBus.addListener(LegacyConnector::registerCapabilities);
@@ -128,6 +132,7 @@ public final class LegacyConnector {
         if (net.neoforged.fml.ModList.get().isLoaded("create")) org.kylepitcock.legacyconnector.compat.create.CreateCompat.init();
         if (FMLEnvironment.dist.isClient()) org.kylepitcock.legacyconnector.v1_7_10.client.Client1710.register(modBus);
         if (FMLEnvironment.dist.isClient()) org.kylepitcock.legacyconnector.v1_12_2.client.Client1122.register(modBus);
+        if (FMLEnvironment.dist.isClient()) org.kylepitcock.legacyconnector.vb1_7_3.client.ClientB173.register(modBus);
         if (FMLEnvironment.dist.isClient()) org.kylepitcock.legacyconnector.core.pack.ModernizedTextures.register();
         // LOWEST: legacy loading runs after every modern mod registered its own entries for that registry.
         modBus.addListener(EventPriority.LOWEST, LegacyLifecycle::onRegister);

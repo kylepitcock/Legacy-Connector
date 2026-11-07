@@ -2,10 +2,11 @@
 
 Status and design of Minecraft Beta 1.7.3 support. Back to [Home](Home.md). Started 2026-11-06.
 
-**Status: started (blocks, items, recipes, textures, block behaviour).** Beta 1.7.3 ModLoader / ModLoaderMP / Forge 1.0.x jars are
+**Status: started (blocks, items, recipes, textures, block behaviour, GUIs).** Beta 1.7.3 ModLoader / ModLoaderMP / Forge 1.0.x jars are
 detected, deobfuscated and linked; the mods are constructed as ModLoader did, their blocks, items and recipes become modern content with
 their own textures, one creative tab per mod, and the blocks' own code runs (placing, breaking, neighbour updates, ticks, right and left
-click, redstone) with their tile entities (saved, loaded, ticked). Not yet: entities, world generation, GUIs, the mods' tick hooks.
+click, redstone) with their tile entities (saved, loaded, ticked) and their GUIs (machines, furnaces, crafting tables as modern menus). Not
+yet: entities, world generation, the mods' tick hooks.
 
 ## Putting the mods in
 
@@ -143,16 +144,60 @@ furnace and chest, Portal Gun's portals); 6 blocks use the right click. RedPower
   output (with the id `ModLoader.RegisterTileEntity` gave the class, also the overload with a renderer) is stored under `legacy`.
 - **Ticking.** The server ticks it when its class has its own `updateEntity`; one that throws stops ticking (logged once).
 - `World.getBlockTileEntity` / `setBlockTileEntity` / `removeBlockTileEntity` reach it; `markDirty` marks the modern block entity changed.
-  Clients get the same NBT in the block entity data packet (for GUIs and renderers later).
+  Clients get the same NBT in the block entity data packet (for renderers later).
 
-`B1.7.3 TILE ENTITY TEST` (server test): with the 11 mods, 21 blocks have a tile entity; all 21 make one, save it and load it back. The
-behaviour test then fails 1 callback (RedPower marks a chunk dirty through `World.getChunkFromPos`, not bridged yet); 9 blocks use a right
-click (NetherCraft's furnaces and chest, Portal Gun, IndustrialCraft 2's machines among them).
+`B1.7.3 TILE ENTITY TEST` (server test): with the 11 mods, 21 blocks have a tile entity; all 21 make one, save it and load it back. No
+callback of the behaviour test fails (`World.getChunkFromPos` / `getChunk` give a `Chunk` view: RedPower marks chunks dirty through it);
+9 blocks use a right click (NetherCraft's furnaces and chest, Portal Gun, IndustrialCraft 2's machines among them).
 
 Java compatibility found on the way: `Arrays.asList(...).toArray()` returned the backing typed array up to Java 8 and code cast it
 (`(Integer[]) list.toArray()`, RedPower's power search); since Java 9 it is an `Object[]`. `JavaCompatRedirects` turns a `java.util`
 collection's `toArray()` followed by a cast to a typed array into `toArray(new T[0])` (for every legacy version). `Vec3d` and
 `EntityLiving.getLook` are hand-written (RedPower traces its click along the player's look).
+
+## GUIs
+
+A b1.7.3 mod opens its GUI from the block's `blockActivated` with `ModLoader.OpenGUI(player, new GuiX(player.inventory, tile))`. That
+callback runs on the server's and on the client's level here (as every block callback), so `MenusB173` decides by side:
+
+- **Server, a `GuiContainer`** (`HandledScreen`): a `LegacyB173Menu` (menu type `legacyconnector:legacy_b1_7_3`) hosts its `Container`.
+  Slots of the player's inventory become slots of the modern inventory; the others are `LegacySlotB173`s over the legacy slots, so the
+  container's inventory, `isItemValid`, stack limit and `onPickupFromSlot` apply (a crafting result uses up the grid). Clicking, dragging
+  and syncing are modern; shift-click is the container's `transferStackInSlot` (the menu answers "done" once the slot stops changing,
+  since the legacy default returned the unchanged stack and vanilla would repeat forever); `canInteractWith` and `onCraftGuiClosed` are
+  called. The progress values the container sends its crafters (`updateCraftingInventoryInfo`) become menu data (32 values; shorts on
+  the wire, as in b1.7.3 multiplayer). b1.7.3 stacks are converted, not shared: the modern stack shown for a slot stays the same object
+  while the legacy one is unchanged, and modern code changing it in place is written back (`SyncedStackB173`, as `LegacySlot1122`).
+- **Drawing.** The client's `LegacyB173Screen` (a modern container screen) calls the GUI's `drawScreen`: `drawGuiContainerBackgroundLayer`,
+  the foreground translated to the GUI's corner, buttons; the modern screen draws slots, items, carried stack and tooltips over it and
+  handles slot clicks; mouse clicks, keys (LWJGL 2 codes, `KeysB173`) and ticks also go to the GUI. In single player the GUI object the
+  server built is handed over (same JVM, by id in the menu's extra data), so it reads the ticking tile entity itself, as b1.7.3's single
+  player did. On a dedicated server the client uses the GUI its own block callback built (same class), which gets the menu data through
+  `updateProgressBar`; without one (or after an exception) a plain panel with the slots is drawn.
+- **Other screens** (no container: a timer's settings, a naming screen) open on the client in single player through
+  `LegacyB173PlainScreen`; `Minecraft.displayGuiScreen` opens and closes them. A dedicated server cannot show a screen it built.
+- **GUI drawing** goes through `GuiDrawB173`, a sink with plain types only, so the shim's `Gui` (`DrawContext`), `GuiScreen`,
+  `GuiContainer`, `GuiButton`, `FontRenderer`, `RenderEngine` and `GL11` load on a dedicated server too; the client's `ClientGuiB173`
+  draws into the screen's `GuiGraphics`. `GL11` of b1.7.3 mods is the shim's (colour, texture binding and the matrix stack; state switches
+  are left to the modern renderer; the real GL11 is never called, the modern game runs a core profile). `RenderEngine.getTexture(path)`
+  numbers textures as before: an image from the mods' jars (`/ic2/sprites/GUIMacerator.png`), else a vanilla sheet in its b1.7.3 layout
+  built from the modern textures (`/gui/furnace.png` with flame and arrow from the modern sprites, `/gui/gui.png` buttons from the widget
+  sprites, chest, crafting table, dispenser, inventory). Images are uploaded on first use on the render thread.
+- **`displayGUIChest`** (`openChestScreen`) opens a vanilla chest menu over the legacy inventory (`LegacyInventoryB173`, whole rows only).
+  `dropPlayerItem` drops from the modern player (crafting grids empty themselves into the world on close).
+- **Recipes for mods' own tables and furnaces.** `CraftingManager` (`CraftingRecipeManager`) and `FurnaceRecipes` (`SmeltingRecipeManager`)
+  are hand-written: recipes added through them become data pack recipes like `ModLoader.AddRecipe`'s; `findMatchingRecipe` and
+  `getSmeltingResult` (IndustrialCraft 2's electric and induction furnaces, NetherCraft's furnace) ask the modern recipe manager (the
+  vanilla and the converted recipes; smelting results cached per item id). `InventoryCrafting`, `InventoryCraftResult` and `SlotCrafting`
+  are the shim's.
+
+`B1.7.3 GUI TEST` (server test; a fake player opens no menus, so the test builds each `LegacyB173Menu` from the container `OpenGUI` got):
+every block is right-clicked, blocks with a tile entity with each metadata (397 tries). 57 open a container GUI, 19 container classes
+(IndustrialCraft 2's iron and electric furnaces, macerator-type machines, canner, miner, pump, electrolyzer, induction furnace, mass
+fabricator, generators, nuclear reactor, energy storage, trade-o-mat; NetherCraft's furnace and crafting table; Minefactory's filter and
+crafter); the client layout rebuilt from the extra data matches every time; coal shift-clicked into the container and back: 21 of 21;
+a log in a crafting grid gives planks that can be taken (grid used up): 2 of 2; no container call fails. `FurnaceRecipes` gives an iron
+ingot for iron ore, `CraftingManager` a crafting table for four planks.
 
 ## Reflection, Forge tables, fire
 
@@ -201,8 +246,9 @@ build now gets past OpenAL and stops at `ModLoader.getPrivateValue` with an obfu
 
 ## Plan
 
-0. **GUIs**: `ModLoader.OpenGUI` and mods' containers (furnaces, chests, machines) as modern menus and screens over the tile entities;
-   tile entity special renderers (`RegisterTileEntity(class, id, renderer)`, kept); `World.getChunkFromPos`.
+0. **GUIs, rest**: ModLoaderMP's client side (`BaseModMp.HandleGUI` builds the client GUI for a server's `OpenGUI(player, id, inventory,
+   container)`; today the client draws a plain panel for those), item and entity GUIs (right click on an item or a mob), tile entity
+   special renderers (`RegisterTileEntity(class, id, renderer)`, kept).
 1. **Rendering, rest**: custom block renderers (`RenderWorldBlock`, render types 7-17: doors, stairs, fences, rails, ...), animated
    sprites (`ModTextureAnimation`), colour multipliers, item subtypes as their own items (today one modern item per legacy item).
 2. **Behaviour**: block callbacks (`onUse`, `onPlaced`, `neighborUpdate`, `onTick`, redstone) through a `World` view, tile entities
@@ -212,6 +258,6 @@ build now gets past OpenAL and stops at `ModLoader.getPrivateValue` with an obfu
    against server-side views, rendering and GUIs stay on the client, `ModLoader.OpenGUI` becomes a synced menu; ModLoaderMP's
    `Packet230ModLoader` becomes a layer payload. Single player first, dedicated servers partial.
 4. **Other APIs**: ShockAhPI, PlayerAPI, GuiAPI, ModOptionsAPI, AudioMod, ItemSpriteAPI (as bridges, the way Apron provides them).
-5. LWJGL 2 / GL11 for b1.7.3 mods currently links to synthesized stubs; the 1.7.10 GL emulation should serve them too.
+5. LWJGL 2 / GL11 for b1.7.3 mods: the GUI subset is the shim's; world rendering calls (tile entity renderers) still go nowhere.
 6. Reflection outside ModLoader (`Class.getDeclaredField("a")` with an obfuscated name) and by method name.
 7. The legacy client instance (`ModLoader.getMinecraftInstance()`: `renderEngine`, `gameSettings`, `theWorld`, `thePlayer`) as views.

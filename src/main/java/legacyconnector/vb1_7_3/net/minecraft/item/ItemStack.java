@@ -65,6 +65,12 @@ public class ItemStack {
         return itemId >= 0 && itemId < Item.ITEMS.length ? Item.ITEMS[itemId] : null;
     }
 
+    /** MCP {@code onCrafting}. */
+    public void onCraft(legacyconnector.vb1_7_3.net.minecraft.world.World world, legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity player) {
+        Item item = getItem();
+        if (item != null) item.onCraft(this, world, player);
+    }
+
     public int getTextureId() {
         Item item = getItem();
         return item == null ? 0 : item.getTextureId(this);

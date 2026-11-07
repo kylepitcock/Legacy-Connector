@@ -256,6 +256,16 @@ public class World implements BlockView {
         return mcc$level != null && mcc$level.canSeeSky(pos(x, y, z));
     }
 
+    /** MCP {@code getChunkFromBlockCoords}. */
+    public legacyconnector.vb1_7_3.net.minecraft.world.chunk.Chunk getChunkFromPos(int x, int z) {
+        return getChunk(x >> 4, z >> 4);
+    }
+
+    /** MCP {@code getChunkFromChunkCoords}: a view of that chunk. */
+    public legacyconnector.vb1_7_3.net.minecraft.world.chunk.Chunk getChunk(int chunkX, int chunkZ) {
+        return new legacyconnector.vb1_7_3.net.minecraft.world.chunk.Chunk(this, chunkX, chunkZ);
+    }
+
     public int getTopY(int x, int z) {
         return mcc$level == null ? 64 : mcc$level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);
     }

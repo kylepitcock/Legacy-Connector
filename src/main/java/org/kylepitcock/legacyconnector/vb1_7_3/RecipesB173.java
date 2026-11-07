@@ -55,6 +55,66 @@ public final class RecipesB173 {
         return RECIPES.size();
     }
 
+    // ------------------------------------------------------------------ lookups for mods' own crafting tables and furnaces
+
+    private static final java.util.concurrent.ConcurrentHashMap<Integer, Object> SMELTED = new java.util.concurrent.ConcurrentHashMap<>();
+    private static volatile Object smeltedFor;
+    private static final Object NONE = new Object();
+
+    private static net.minecraft.server.MinecraftServer server() {
+        return net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
+    }
+
+    /**
+     * {@code FurnaceRecipes.getSmeltingResult(id)} for an id no mod added a recipe for: the modern smelting recipe of the legacy item, as a
+     * legacy stack (cached per id while the recipe manager stays the same). Null without a server (a remote client) or recipe.
+     */
+    public static ItemStack smeltResult(int id) {
+        net.minecraft.server.MinecraftServer server = server();
+        if (server == null) return null;
+        var manager = server.getRecipeManager();
+        if (smeltedFor != manager) {
+            SMELTED.clear();
+            smeltedFor = manager;
+        }
+        Object hit = SMELTED.computeIfAbsent(id, i -> {
+            net.minecraft.world.item.ItemStack in = StacksB173.toModern(i, 1, 0);
+            if (in.isEmpty()) return NONE;
+            var input = new net.minecraft.world.item.crafting.SingleRecipeInput(in);
+            ItemStack out = manager.getRecipeFor(net.minecraft.world.item.crafting.RecipeType.SMELTING, input, server.overworld())
+                    .map(r -> StacksB173.toLegacy(r.value().assemble(input, server.registryAccess())))
+                    .orElse(null);
+            return out == null ? NONE : out;
+        });
+        return hit instanceof ItemStack s ? s.copy() : null;
+    }
+
+    /** {@code CraftingManager.findMatchingRecipe}: the modern recipe manager's result for the grid, as a legacy stack. */
+    public static ItemStack craft(legacyconnector.vb1_7_3.net.minecraft.inventory.CraftingInventory grid) {
+        net.minecraft.server.MinecraftServer server = server();
+        if (server == null || grid == null || grid.width <= 0) return null;
+        int size = grid.size();
+        int height = size / grid.width;
+        List<net.minecraft.world.item.ItemStack> items = new ArrayList<>(grid.width * height);
+        boolean any = false;
+        for (int i = 0; i < grid.width * height; i++) {
+            ItemStack s = grid.getStack(i);
+            net.minecraft.world.item.ItemStack m = StacksB173.toModern(s);
+            if (s != null && m.isEmpty()) return null;
+            any |= !m.isEmpty();
+            items.add(m);
+        }
+        if (!any) return null;
+        var input = net.minecraft.world.item.crafting.CraftingInput.of(grid.width, height, items);
+        try {
+            return server.getRecipeManager().getRecipeFor(net.minecraft.world.item.crafting.RecipeType.CRAFTING, input, server.overworld())
+                    .map(r -> StacksB173.toLegacy(r.value().assemble(input, server.registryAccess())))
+                    .orElse(null);
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
     /** Recipe JSON files under {@code data/<mod>/recipe/b173_*}. */
     public static synchronized void generate(Map<String, Supplier<byte[]>> out) {
         generated = failed = 0;

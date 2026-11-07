@@ -406,6 +406,11 @@ public final class AssetsB173 implements GeneratedPack.Contributor {
         return ns + ":block/" + path;
     }
 
+    /** An image from any b1.7.3 mod's jar (a GUI's {@code /ic2/sprites/GUIMacerator.png}), or null. */
+    public static BufferedImage modImage(String path) {
+        return image(null, path);
+    }
+
     /** An image from the mod's jar (a ModLoader path such as {@code /nether/dirt.png}), else from any b1.7.3 mod's jar. */
     private static BufferedImage image(LegacyModRecord mod, String path) {
         byte[] data = resource(mod, path);

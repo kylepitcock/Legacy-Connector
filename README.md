@@ -43,7 +43,7 @@ Screenshots of legacy mods running on 1.21.1 are at the [end of this page](#scre
 | 1.16.5 | Planned (after 1.18.2). |
 | 1.2.5 | Planned (after 1.16.5; needs `ModLoader`/`BaseMod` emulation). |
 | 1.3.2 | Only on demand. |
-| b1.7.3 | **Started.** Beta 1.7.3 ModLoader / Forge 1.0 mods in `mods/b1.7.3/` (jars or zips) are translated and their blocks, items and recipes load with their own textures the blocks' own behaviour (placing, ticks, clicks, redstone) and their tile entities, one creative tab per mod (IndustrialCraft 2, NetherCraft, Portal Gun, RedPower, Minefactory Renewed); no tile entities, entities, world generation or GUIs yet ([details](docs/wiki/Legacy-b1.7.3.md)). |
+| b1.7.3 | **Started.** Beta 1.7.3 ModLoader / Forge 1.0 mods in `mods/b1.7.3/` (jars or zips) are translated and their blocks, items and recipes load with their own textures, the blocks' own behaviour (placing, ticks, clicks, redstone), their tile entities and their GUIs (machines, furnaces, crafting tables as modern menus), one creative tab per mod (IndustrialCraft 2, NetherCraft, Portal Gun, RedPower, Minefactory Renewed); no entities or world generation yet ([details](docs/wiki/Legacy-b1.7.3.md)). |
 
 Order and reasons: [Version roadmap](docs/wiki/Version-Roadmap.md). Not planned: 1.8 to 1.11.2 and the Alpha/early-Beta jar-mod era; Beta 1.7.3 ModLoader mods were started on request (row above).
 

@@ -139,7 +139,19 @@ public final class ModLoader {
     }
 
     public static void AddSmelting(int input, ItemStack output) {
-        RecipesB173.smelting(input, output);
+        legacyconnector.vb1_7_3.net.minecraft.recipe.SmeltingRecipeManager.getInstance().addRecipe(input, output);
+    }
+
+    /** A mod's GUI: a {@code GuiContainer} opens on a modern menu hosting its container, any other screen on the client. */
+    public static void OpenGUI(legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity player,
+            legacyconnector.vb1_7_3.net.minecraft.client.gui.screen.Screen gui) {
+        org.kylepitcock.legacyconnector.vb1_7_3.MenusB173.open(player, gui);
+    }
+
+    /** ModLoaderMp's server form: the container on a modern menu, drawn by the GUI the client opened for it (or a plain one). */
+    public static void OpenGUI(legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity player, int guiId,
+            legacyconnector.vb1_7_3.net.minecraft.inventory.Inventory inventory, legacyconnector.vb1_7_3.net.minecraft.screen.ScreenHandler container) {
+        org.kylepitcock.legacyconnector.vb1_7_3.MenusB173.openContainer(player, container);
     }
 
     public static int AddAllFuel(int id) {

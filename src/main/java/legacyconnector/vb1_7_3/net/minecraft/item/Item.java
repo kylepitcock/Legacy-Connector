@@ -149,6 +149,10 @@ public class Item {
         return craftingReturnItem != null;
     }
 
+    /** MCP {@code onCreated}: the item was crafted or smelted. */
+    public void onCraft(ItemStack stack, legacyconnector.vb1_7_3.net.minecraft.world.World world,
+            legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity player) {}
+
     public String getTranslatedName() {
         return ContentB173.translate(getTranslationKey() + ".name");
     }
