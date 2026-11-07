@@ -84,6 +84,31 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
         }
     }
 
+    /**
+     * Distribution archives of the 1.6 era carried the mod itself as an archive in a folder named "Put contents into the Mods Folder" next to a
+     * server-jar patch (Goblins! Mod: the patch has the classes only, the textures and sounds are in the inner zip). Users unzipped them; this extracts
+     * the inner archive and loads that instead of the wrapper. Null when the archive is not such a wrapper.
+     */
+    private static Path packagedMod(Path archive, Path nestedDir) {
+        try (java.util.zip.ZipFile zip = new java.util.zip.ZipFile(archive.toFile())) {
+            var entries = zip.entries();
+            while (entries.hasMoreElements()) {
+                ZipEntry e = entries.nextElement();
+                String n = e.getName();
+                if (e.isDirectory() || !n.matches("(?i)[^/]*mods?[ _-]?folder[^/]*/[^/]+[.](zip|jar)")) continue;
+                Files.createDirectories(nestedDir);
+                Path target = nestedDir.resolve(archive.getFileName().toString().replaceAll("[.](zip|jar)$", "") + "-" + n.substring(n.lastIndexOf('/') + 1));
+                try (var in = zip.getInputStream(e)) {
+                    Files.copy(in, target, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                }
+                return target;
+            }
+        } catch (IOException | RuntimeException e) {
+            LOG.debug("Legacy Connector: could not look for a packaged mod in {}", archive, e);
+        }
+        return null;
+    }
+
     private static boolean forge1201NoticeLogged;
 
     /** Forge 1.20.1 support is unfinished: {@code experimental.forge1201=true} (config) or {@code -Dlegacyconnector.forge1201=true} turns it on. */
@@ -127,7 +152,8 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                             .sorted(Comparator.comparing(f -> f.getFileName().toString().toLowerCase())).toList()) {
                         if (context.isLocated(p) || !seenNames.add(p.getFileName().toString().toLowerCase())) continue;
                         try {
-                            LegacyJar jar = LegacyJarInspector.inspect(p);
+                            Path packaged = packagedMod(p, gameDir.resolve(".legacyconnector").resolve("nested"));
+                            LegacyJar jar = LegacyJarInspector.inspect(packaged != null ? packaged : p);
                             if (jar == null && LegacyJarInspector.takeDerivative(p)) {
                                 // a translated jar taken out of a cache: only Legacy Connector itself loads those, from its own cache
                                 context.addLocated(p);
