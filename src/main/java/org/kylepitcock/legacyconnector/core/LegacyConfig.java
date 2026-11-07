@@ -299,6 +299,25 @@ public final class LegacyConfig {
         return bool("structures.locatable", true);
     }
 
+    /**
+     * {@code villagers.jobSites}: job site blocks for the professions of 1.7.10 mods, {@code <profession id>=<block id>,...} (for example
+     * {@code 243=minecraft:lectern}). 1.7.10 professions declare no block, so without an entry a modded villager has no job site (it keeps
+     * its profession through its experience but does not work at one).
+     */
+    public static java.util.Map<Integer, String> villagerJobSites() {
+        java.util.Map<Integer, String> out = new java.util.LinkedHashMap<>();
+        for (String entry : string("villagers.jobSites", "").split(",")) {
+            int eq = entry.indexOf('=');
+            if (eq <= 0) continue;
+            try {
+                out.put(Integer.parseInt(entry.substring(0, eq).trim()), entry.substring(eq + 1).trim());
+            } catch (NumberFormatException e) {
+                // ignored entry
+            }
+        }
+        return out;
+    }
+
     /** {@code villages.legacyBuildings}: legacy mods' village buildings join the vanilla village house pools. */
     public static boolean villageLegacyBuildings() {
         return bool("villages.legacyBuildings", true);
