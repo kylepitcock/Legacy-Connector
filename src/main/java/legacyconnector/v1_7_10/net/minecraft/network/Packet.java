@@ -53,6 +53,10 @@ public abstract class Packet {
     /** The legacy packet id for a class: the digits after {@code Packet} in the name of itself or of a superclass, else 250. */
     public static int mcc$idOf(Class<?> type) {
         for (Class<?> c = type; c != null && c != Object.class; c = c.getSuperclass()) {
+            Integer registered = mcc$idByClass.get(c);
+            if (registered != null) return registered;
+        }
+        for (Class<?> c = type; c != null && c != Object.class; c = c.getSuperclass()) {
             String n = c.getSimpleName();
             if (n.startsWith("Packet")) {
                 int end = 6;
@@ -61,6 +65,15 @@ public abstract class Packet {
             }
         }
         return 250;
+    }
+
+    /** Packet ids mods registered with {@code Packet.addIdClassMapping} (see {@code Packets164}), both directions. */
+    public static final java.util.Map<Integer, Class<?>> mcc$classById = new java.util.concurrent.ConcurrentHashMap<>();
+    public static final java.util.Map<Class<?>, Integer> mcc$idByClass = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** 1.6.4 {@code Packet.getPacketId()}: the id {@link #writePacket} puts in front of the data. */
+    public int getPacketId() {
+        return mcc$idOf(getClass());
     }
 
     public void processPacket(INetHandler handler) {

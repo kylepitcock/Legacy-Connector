@@ -19,7 +19,20 @@ public final class NetHandlerPlayServer {
         return Manager164.of(self);
     }
 
-    /** NetServerHandler.packetSize(): bytes queued for the connection (nothing here is queued by the layer). */
+    /** NetServerHandler.handleWindowClick(Packet102WindowClick): performs the click on the player's open container. */
+    public static void handleWindowClick(legacyconnector.v1_7_10.net.minecraft.network.NetHandlerPlayServer self,
+            legacyconnector.v1_6_4.net.minecraft.network.packet.Packet102WindowClick packet) {
+        var player = self.playerEntity == null ? null : self.playerEntity.mcc$serverPlayer();
+        if (player != null && packet != null) legacyconnector.v1_6_4.net.minecraft.network.packet.Packet102WindowClick.apply(packet, player);
+    }
+
+    /** NetServerHandler.connectionClosed: set once the player's connection is gone. */
+    public static boolean mcc$get$connectionClosed(legacyconnector.v1_7_10.net.minecraft.network.NetHandlerPlayServer self) {
+        var listener = listener(self);
+        return listener == null || !listener.isAcceptingMessages();
+    }
+
+    /** NetServerHandler.packetSize():bytes queued for the connection (nothing here is queued by the layer). */
     public static int packetSize(legacyconnector.v1_7_10.net.minecraft.network.NetHandlerPlayServer self) {
         return 0;
     }

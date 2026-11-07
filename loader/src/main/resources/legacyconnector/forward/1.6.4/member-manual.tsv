@@ -123,3 +123,12 @@ C	net/minecraft/world/biome/WorldChunkManagerHell	(Lnet/minecraft/world/biome/Bi
 R	net/minecraft/enchantment/EnchantmentThorns	func_92096_a	(Lnet/minecraft/entity/Entity;Lnet/minecraft/entity/EntityLivingBase;Ljava/util/Random;)V	static	legacyconnector/v1_6_4/forward/Thorns164	attack	(Lnet/minecraft/entity/Entity;Lnet/minecraft/entity/EntityLivingBase;Ljava/util/Random;)V
 R	net/minecraft/enchantment/EnchantmentThorns	func_92094_a	(ILjava/util/Random;)Z	static	legacyconnector/v1_6_4/forward/Thorns164	shouldHit	(ILjava/util/Random;)Z
 R	net/minecraft/enchantment/EnchantmentThorns	func_92095_b	(ILjava/util/Random;)I	static	legacyconnector/v1_6_4/forward/Thorns164	damage	(ILjava/util/Random;)I
+# Packet statics (strings, NBT, byte arrays in the legacy wire format; the packet id registry): Packets164
+R	net/minecraft/network/Packet	readString	(Ljava/io/DataInput;I)Ljava/lang/String;	static	legacyconnector/v1_6_4/forward/Packets164	readString	(Ljava/io/DataInput;I)Ljava/lang/String;
+R	net/minecraft/network/Packet	writeString	(Ljava/lang/String;Ljava/io/DataOutput;)V	static	legacyconnector/v1_6_4/forward/Packets164	writeString	(Ljava/lang/String;Ljava/io/DataOutput;)V
+R	net/minecraft/network/Packet	readNBTTagCompound	(Ljava/io/DataInput;)Lnet/minecraft/nbt/NBTTagCompound;	static	legacyconnector/v1_6_4/forward/Packets164	readNBTTagCompound	(Ljava/io/DataInput;)Lnet/minecraft/nbt/NBTTagCompound;
+R	net/minecraft/network/Packet	writeNBTTagCompound	(Lnet/minecraft/nbt/NBTTagCompound;Ljava/io/DataOutput;)V	static	legacyconnector/v1_6_4/forward/Packets164	writeNBTTagCompound	(Lnet/minecraft/nbt/NBTTagCompound;Ljava/io/DataOutput;)V
+R	net/minecraft/network/Packet	readBytesFromStream	(Ljava/io/DataInput;)[B	static	legacyconnector/v1_6_4/forward/Packets164	readBytesFromStream	(Ljava/io/DataInput;)[B
+R	net/minecraft/network/Packet	writeByteArray	(Ljava/io/DataOutput;[B)V	static	legacyconnector/v1_6_4/forward/Packets164	writeByteArray	(Ljava/io/DataOutput;[B)V
+R	net/minecraft/network/Packet	addIdClassMapping	(IZZLjava/lang/Class;)V	static	legacyconnector/v1_6_4/forward/Packets164	addIdClassMapping	(IZZLjava/lang/Class;)V
+R	net/minecraft/network/Packet	getNewPacket	(I)Lnet/minecraft/network/Packet;	static	legacyconnector/v1_6_4/forward/Packets164	getNewPacket	(I)Lnet/minecraft/network/Packet;

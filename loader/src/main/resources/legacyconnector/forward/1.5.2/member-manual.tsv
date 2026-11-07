@@ -19,3 +19,10 @@ R	net/minecraft/network/Packet	writeItemStack	(Lnet/minecraft/item/ItemStack;Lja
 # Stub pass: ops check by name (1.5.2 areCommandsAllowed), players built without a profile (custom EntityPlayer subclasses)
 R	net/minecraft/server/management/ServerConfigurationManager	areCommandsAllowed	(Ljava/lang/String;)Z	static	legacyconnector/v1_6_4/forward/Forward164	isPlayerOpped	(Lnet/minecraft/server/management/ServerConfigurationManager;Ljava/lang/String;)Z
 C	net/minecraft/entity/player/EntityPlayer	(Lnet/minecraft/world/World;)V	(Lnet/minecraft/world/World;Lcom/mojang/authlib/GameProfile;)V	args	0	-1:legacyconnector/v1_6_4/forward/Forward164#anonymousProfile#()Lcom/mojang/authlib/GameProfile;
+# Packet statics with the DataInputStream / DataOutputStream signatures (1.5.2 and 1.4.7)
+R	net/minecraft/network/Packet	readString	(Ljava/io/DataInputStream;I)Ljava/lang/String;	static	legacyconnector/v1_6_4/forward/Packets164	readString	(Ljava/io/DataInput;I)Ljava/lang/String;
+R	net/minecraft/network/Packet	writeString	(Ljava/lang/String;Ljava/io/DataOutputStream;)V	static	legacyconnector/v1_6_4/forward/Packets164	writeString	(Ljava/lang/String;Ljava/io/DataOutput;)V
+R	net/minecraft/network/Packet	readNBTTagCompound	(Ljava/io/DataInputStream;)Lnet/minecraft/nbt/NBTTagCompound;	static	legacyconnector/v1_6_4/forward/Packets164	readNBTTagCompound	(Ljava/io/DataInput;)Lnet/minecraft/nbt/NBTTagCompound;
+R	net/minecraft/network/Packet	writeNBTTagCompound	(Lnet/minecraft/nbt/NBTTagCompound;Ljava/io/DataOutputStream;)V	static	legacyconnector/v1_6_4/forward/Packets164	writeNBTTagCompound	(Lnet/minecraft/nbt/NBTTagCompound;Ljava/io/DataOutput;)V
+R	net/minecraft/network/Packet	readBytesFromStream	(Ljava/io/DataInputStream;)[B	static	legacyconnector/v1_6_4/forward/Packets164	readBytesFromStream	(Ljava/io/DataInput;)[B
+R	net/minecraft/network/Packet	writeByteArray	(Ljava/io/DataOutputStream;[B)V	static	legacyconnector/v1_6_4/forward/Packets164	writeByteArray	(Ljava/io/DataOutput;[B)V

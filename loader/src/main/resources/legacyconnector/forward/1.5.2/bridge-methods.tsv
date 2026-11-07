@@ -7,3 +7,5 @@ net/minecraft/entity/EntityLivingBase	getHealth	()I	getHealth	()F
 net/minecraft/entity/EntityLivingBase	setEntityHealth	(I)V	setHealth	(F)V
 # a mob's maximum health was an int method the engine asked for; the shim reads it once at construction through mcc$legacyMaxHealth (and calls of the int method go there too)
 net/minecraft/entity/EntityLivingBase	getMaxHealth	()I	mcc$legacyMaxHealth	()F
+net/minecraft/network/Packet	readPacketData	(Ljava/io/DataInputStream;)V	readPacketData	(Ljava/io/DataInput;)V
+net/minecraft/network/Packet	writePacketData	(Ljava/io/DataOutputStream;)V	writePacketData	(Ljava/io/DataOutput;)V
