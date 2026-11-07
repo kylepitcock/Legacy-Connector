@@ -287,7 +287,9 @@ public class ModLoader {
         return legacyconnector.v1_7_10.cpw.mods.fml.client.registry.RenderingRegistry.addNewArmourRendererPrefix(armor);
     }
 
-    public static void addAnimation(Object textureFx) {}
+    public static void addAnimation(Object textureFx) {
+        org.kylepitcock.legacyconnector.v1_6_4.bridge.Animations147.register(textureFx);
+    }
 
     public static void onItemPickup(EntityPlayer player, ItemStack item) {
         for (BaseMod m : MODS) m.onItemPickup(player, item);

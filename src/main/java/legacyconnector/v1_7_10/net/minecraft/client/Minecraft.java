@@ -38,6 +38,8 @@ public class Minecraft {
     /** 1.7.10's frames-per-second counter. */
     public static int debugFPS;
     public TextureManager renderEngine = TextureManager.INSTANCE;
+    /** 1.4.7: mods read their sprite images through the selected texture pack. */
+    public legacyconnector.v1_6_4.net.minecraft.client.texturepacks.TexturePackList texturePackList = new legacyconnector.v1_6_4.net.minecraft.client.texturepacks.TexturePackList();
     /** The frame timer (obfuscated name field_71428_T): its partial tick is set by the layer each frame. */
     public legacyconnector.v1_7_10.net.minecraft.util.Timer timer = legacyconnector.v1_7_10.net.minecraft.util.Timer.INSTANCE;
     public legacyconnector.v1_7_10.net.minecraft.util.Timer field_71428_T = legacyconnector.v1_7_10.net.minecraft.util.Timer.INSTANCE;

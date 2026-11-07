@@ -33,6 +33,7 @@ public class TextureManager implements ITickable {
 
     /** Forge 1.5.2 (RenderEngine): textures are string paths, resolved by Textures152. */
     public void bindTexture(String path) {
+        mcc$lastPath = path;
         // Forge 1.4.7 drew the vertices collected so far with the old texture before the new one was bound (a block renderer binds a
         // sheet per part while the chunk's Tessellator is drawing): the captured quads must keep the sheet they were added under
         if (RenderContext.capturing()) {
@@ -47,12 +48,24 @@ public class TextureManager implements ITickable {
         if (path != null && path.indexOf(':') < 0 && path.endsWith(".png")) RenderContext.setSheet(path);
     }
 
+    /** The last path given to {@code bindTexture(String)} or {@code getTexture(String)} (Animations147 learns an animated tile's sheet from it). */
+    public static volatile String mcc$lastPath;
+
+    /** 1.4.7: the texture pack list (RenderEngine.texturePack). */
+    public legacyconnector.v1_6_4.net.minecraft.client.texturepacks.TexturePackList texturePack = new legacyconnector.v1_6_4.net.minecraft.client.texturepacks.TexturePackList();
+
+    /** 1.4.7 (RenderEngine.registerTextureFX): an animated tile. */
+    public void registerTextureFX(legacyconnector.v1_6_4.net.minecraft.client.renderer.texturefx.TextureFX fx) {
+        org.kylepitcock.legacyconnector.v1_6_4.bridge.Animations147.register(fx);
+    }
+
     /** 1.5.2's cached binding is not tracked here (every bind goes through the render context). */
     public void resetBoundTexture() {
     }
 
     /** 1.5.2 RenderEngine.getTexture(path): the OpenGL id of a texture, 0 until it is loaded. */
     public int getTexture(String path) {
+        mcc$lastPath = path;
         var modern = TextureLocations.modern(org.kylepitcock.legacyconnector.v1_6_4.bridge.Textures152.location(path));
         var mc = net.minecraft.client.Minecraft.getInstance();
         if (mc == null || mc.getTextureManager() == null) return 0;

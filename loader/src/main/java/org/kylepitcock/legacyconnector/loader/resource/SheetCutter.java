@@ -34,10 +34,13 @@ public final class SheetCutter {
 
     private final Set<String> sheets = new TreeSet<>();
     private final Set<String> singles = new TreeSet<>();
+    /** Whether the jar has animated tiles (a TextureFX subclass): they draw into tiles that are blank in the sheet, which are then cut too. */
+    private boolean animated;
 
     /** Looks for sheet and override paths in the (already remapped) classes. */
     public void scan(Iterable<ClassNode> nodes) {
         for (ClassNode node : nodes) {
+            if (node.superName != null && node.superName.endsWith("TextureFX")) animated = true;
             for (MethodNode method : node.methods) {
                 if (method.instructions == null) continue;
                 boolean getter = method.name.equals("getTextureFile");
@@ -91,7 +94,7 @@ public final class SheetCutter {
                 if (single) {
                     out.put("assets/legacy147/textures/blocks/override/" + slug(key) + ".png", e.getValue());
                 }
-                if (sheet) cutSheet(image, slug(key), out);
+                if (sheet) cutSheet(image, slug(key), out, animated);
             } catch (IOException | RuntimeException ex) {
                 // an unreadable image stays a whole texture
             }
@@ -118,14 +121,14 @@ public final class SheetCutter {
                 || name.equals("gui/items.png");
     }
 
-    private static void cutSheet(BufferedImage image, String slug, Map<String, byte[]> out) throws IOException {
+    private static void cutSheet(BufferedImage image, String slug, Map<String, byte[]> out, boolean keepEmpty) throws IOException {
         int tile = image.getWidth() / 16;
         if (tile < 1 || image.getWidth() % 16 != 0) return;
         int rows = image.getHeight() / tile;
         for (int row = 0; row < rows && row < 16; row++) {
             for (int col = 0; col < 16; col++) {
                 BufferedImage sub = image.getSubimage(col * tile, row * tile, tile, tile);
-                if (empty(sub)) continue;
+                if (!keepEmpty && empty(sub)) continue;
                 BufferedImage copy = new BufferedImage(tile, tile, BufferedImage.TYPE_INT_ARGB);
                 copy.getGraphics().drawImage(sub, 0, 0, null);
                 ByteArrayOutputStream bytes = new ByteArrayOutputStream();
