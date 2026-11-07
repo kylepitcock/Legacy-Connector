@@ -5568,7 +5568,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "partial",
-      "notes": "Fails in postInit with a ClassCastException on ItemStack: the mod reads FurnaceRecipes.getSmeltingList() as a map keyed by item id (1.6.4), the layer returns the 1.7.10 map keyed by ItemStack. Some blocks register and render."
+      "notes": "Loads now in a server test (0 failed mods): the ClassCastException in postInit is gone (1.6.4's FurnaceRecipes.getSmeltingList() is keyed by item id; the layer now gives it that shape). Not played in a client yet."
     },
     {
       "name": "Ender IO Applied Energistics Conduits",
