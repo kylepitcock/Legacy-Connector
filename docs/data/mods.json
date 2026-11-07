@@ -3019,7 +3019,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "works",
-      "notes": "Mod has newer versions. Loads with Forestry; in a real client with shaders the engines, tank, pump, auto workbench, mining well, laser, refinery and hopper draw from the mod's sheets. Pipes, power and fluid transport not tried."
+      "notes": "Mod has newer versions. Loads with Forestry; in a real client with shaders the engines, tank, pump, auto workbench, mining well, laser, refinery and hopper draw from the mod's sheets. Pipes, power and fluid transport not tried. Survival session (2026-11-07): the autocrafting table opens with its real (localized) title since StringTranslate.getCurrentLanguage exists; its recipe preview did not fill, pipes, engine power and liquids are not tried; animated oil/fuel tiles (TextureFX) are uploaded."
     },
     {
       "name": "BuildCraft Builders",
@@ -14851,7 +14851,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "works",
-      "notes": "Old-only. In a real client with Sodium, Iris and Complementary shaders: item textures (tools, gems, paint, bags, screwdriver) and block textures (ores, marble, basalt, ruby and emerald blocks, rubber logs) are drawn from the mod's sprite sheets, the multipart renderer draws logic gates, deployers, lamps and covers, block items show their 3D icons, and the alloy furnace and deployer GUIs open with working slots. Not done: texture animations, survival use of wires and gates, world generation and the Mining module (no file in the test set)."
+      "notes": "Old-only. In a real client with Sodium, Iris and Complementary shaders: item textures (tools, gems, paint, bags, screwdriver) and block textures (ores, marble, basalt, ruby and emerald blocks, rubber logs) are drawn from the mod's sprite sheets, the multipart renderer draws logic gates, deployers, lamps and covers, block items show their 3D icons, and the alloy furnace and deployer GUIs open with working slots. Not done: texture animations, survival use of wires and gates, world generation and the Mining module (no file in the test set). Survival session (2026-11-07): the alloy furnace smelts red alloy from copper and redstone with coal as fuel (GUI, fuel burn and output work), a lever powers a lamp through a block, and the project animations (TextureAnimFX tiles) are uploaded into the atlas every tick. Wire/gate chains, deployers moving items and ore generation in a normal world are not tried yet."
     },
     {
       "name": "Redstone Arsenal",

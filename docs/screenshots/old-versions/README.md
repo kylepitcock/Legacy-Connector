@@ -20,6 +20,11 @@ Complementary Reimagined r5.9.3 + Euphoria Patches (Iris reported "Using shaderp
 | `1.4.7/applied-energistics-quartz-tools-and-parts-shaders.png` | Applied Energistics | rv9 | Quartz wrench, axe, pick, sword, shovel, hoe, knife, materials and machine items in the inventory | Works |
 | `1.4.7/computercraft-detectors-and-peripherals-shaders.png` | ComputerCraft, Entity Detector, CCTV, MiscPeripherals | 1.5, 1.1, 1.0, 3.1c | Computer, disk drive, turtle, the entity detector blocks, the CCTV camera and two MiscPeripherals blocks | Works (blocks), untried (use) |
 | `1.4.7/buildcraft-engines-tank-pump-workbench-shaders.png` | BuildCraft | 3.4.6 | The three engines, tank, pump, auto workbench, mining well, laser, refinery and hopper placed in creative mode, drawn from the mod's block sheet | Works |
+| `1.4.7/redpower-alloy-furnace-red-alloy-survival-shaders.png` | RedPower 2 (Base) | 2.0pr6 | Survival: copper and redstone moved into the alloy furnace, coal as fuel (flames lit), red alloy ingots in the output slot | Works |
+| `1.4.7/redpower-lever-lamp-survival-off-shaders.png`, `1.4.7/redpower-lever-lamp-survival-on-shaders.png` | RedPower 2 (Lighting) | 2.0pr6 | Survival: a lever on a cobblestone block powers the adjacent RedPower lamp (off and on); alloy furnace and machine block beside it | Works |
+| `1.4.7/buildcraft-autocrafting-table-gui-survival-shaders.png` | BuildCraft | 3.4.6 | Survival: the autocrafting table screen with its translated title (the mod picks its language file by `StringTranslate.getCurrentLanguage`); the recipe preview does not fill | Partly working |
+| `1.4.7/buildcraft-tank-pump-and-redpower-lamps-survival-shaders.png` | BuildCraft, RedPower 2 | 3.4.6, 2.0pr6 | Tank, pump and a lit lamp beside a redstone block in daylight | Works |
+| `1.4.7/applied-energistics-ore-and-machine-survival-shaders.png` | Applied Energistics | rv9 | Quartz ore and a machine block placed in survival mode | Partly working |
 
 
 ## 1.5.2 and 1.6.4: survival tests (2026-11-07)
