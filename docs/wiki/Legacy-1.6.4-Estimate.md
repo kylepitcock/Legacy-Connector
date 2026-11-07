@@ -45,7 +45,7 @@ Package names are the same (`cpw.mods.fml`, `net.minecraftforge`, `net.minecraft
 | M0 | Corpus (42 jars), tables, `LegacyVersion.V1_6_4`, class renames, notch names | done |
 | M1 | Id facade, statics, `Icon`, member forwards; bridge methods for overridden id-signature methods; biome/potion/enchantment ids | done: bridge methods (`BridgeMethods`, table `forward/1.6.4/bridge-methods.tsv`: a mod override with a 1.6.4 id signature gets the 1.7.10-shaped method that calls it, `super.` and shim calls are rewritten); biome, potion and enchantment ids are the shim's own numeric ids and needed no facade |
 | M2 | `@NetworkMod`, packets, tick handlers, trackers seen working; entities, worldgen, recipes | adapters merged, unverified; with M1 |
-| M3 | Client rendering, textures, GUIs, notch-named jars | not started; first mods rendering 4 to 8 hours after M2; 'supported' in about 1 to 1.5 days |
+| M3 | Client rendering, textures, GUIs, notch-named jars | started 2026-11-06 (client session `run-c164`): Twilight Forest, ExtrabiomesXL, Carpenter's Blocks, BiblioCraft (OBJ tile entity renderers, container GUIs), Minechem, Modular Turrets, Ender IO and Mystcraft blocks/items render with the existing 1.7.10 resource conversion (no 1.6.4-specific converter was needed: 1.6.4 jars use `assets/<id>/textures/blocks|items`); tile entity blocks need the override bridge for `createNewTileEntity(World)`; notch-named jars not started |
 
 Then 1.5.2 (about 1 day, overlapping) and 1.4.7 (0.5 to 1 day after it); the 0.4.0 release is about 3 to 4 days out (range 2 to 5).
 
