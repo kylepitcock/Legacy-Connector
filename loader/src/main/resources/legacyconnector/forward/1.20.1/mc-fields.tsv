@@ -245,3 +245,7 @@ net/minecraft/world/level/storage/loot/BuiltInLootTables	TRAIL_RUINS_ARCHAEOLOGY
 net/minecraft/world/level/storage/loot/BuiltInLootTables	VILLAGE_FLETCHER	Lnet/minecraft/resources/ResourceLocation;	-	Lnet/minecraft/resources/ResourceKey;	location
 net/minecraft/world/level/storage/loot/BuiltInLootTables	VILLAGE_TOOLSMITH	Lnet/minecraft/resources/ResourceLocation;	-	Lnet/minecraft/resources/ResourceKey;	location
 net/minecraft/core/registries/BuiltInRegistries	ENCHANTMENT	Lnet/minecraft/core/Registry;	-	none	HolderCompat.enchantmentRegistry
+net/minecraft/world/entity/SpawnPlacementType	ON_GROUND	Lnet/minecraft/world/entity/SpawnPlacementType;	-	none	MiscCompat.spawnOnGround
+net/minecraft/world/entity/SpawnPlacementType	IN_WATER	Lnet/minecraft/world/entity/SpawnPlacementType;	-	none	MiscCompat.spawnInWater
+net/minecraft/world/entity/SpawnPlacementType	IN_LAVA	Lnet/minecraft/world/entity/SpawnPlacementType;	-	none	MiscCompat.spawnInLava
+net/minecraft/world/entity/SpawnPlacementType	NO_RESTRICTIONS	Lnet/minecraft/world/entity/SpawnPlacementType;	-	none	MiscCompat.spawnNoRestrictions

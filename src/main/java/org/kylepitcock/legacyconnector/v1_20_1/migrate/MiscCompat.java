@@ -259,4 +259,71 @@ public final class MiscCompat {
         for (int i = 0; i < n; i++) stacks.add(readItem(buf));
         return Ingredient.of(stacks.stream().filter(s -> !s.isEmpty()).map(ItemStack::getItem).toArray(net.minecraft.world.level.ItemLike[]::new));
     }
+
+    // ------------------------------------------------------------------ small signature changes (milestone 2)
+
+    /** {@code Tier.getLevel()} had no successor: the tag of blocks the tier cannot mine drops from (vanilla levels 0 to 4). */
+    public static net.minecraft.tags.TagKey<Block> incorrectBlocksForLevel(int level) {
+        return switch (level) {
+            case 0 -> net.minecraft.tags.BlockTags.INCORRECT_FOR_WOODEN_TOOL;
+            case 1 -> net.minecraft.tags.BlockTags.INCORRECT_FOR_STONE_TOOL;
+            case 2 -> net.minecraft.tags.BlockTags.INCORRECT_FOR_IRON_TOOL;
+            case 3 -> net.minecraft.tags.BlockTags.INCORRECT_FOR_DIAMOND_TOOL;
+            default -> net.minecraft.tags.BlockTags.INCORRECT_FOR_NETHERITE_TOOL;
+        };
+    }
+
+    /** {@code ResourceLocation.isValidResourceLocation(String)}. */
+    public static boolean isValidResourceLocation(String s) {
+        return net.minecraft.resources.ResourceLocation.tryParse(s) != null;
+    }
+
+    /** {@code SharedConstants.isAllowedChatCharacter(char)} moved to {@code StringUtil}. */
+    public static boolean isAllowedChatCharacter(char c) {
+        return net.minecraft.util.StringUtil.isAllowedChatCharacter(c);
+    }
+
+    /** {@code ItemStack.getUseDuration()}: 1.21.1 asks the user of the item; without one the item's own answer is used (0 when it needs the entity). */
+    public static int getUseDuration(ItemStack stack) {
+        try {
+            return stack.getUseDuration(null);
+        } catch (RuntimeException e) {
+            return 0;
+        }
+    }
+
+    /** {@code ItemStack.getTooltipLines(Player, TooltipFlag)}: the context is the player's level (empty without one). */
+    public static List<Component> getTooltipLines(ItemStack stack, Player player, net.minecraft.world.item.TooltipFlag flag) {
+        Item.TooltipContext context = player != null ? Item.TooltipContext.of(player.level()) : Item.TooltipContext.EMPTY;
+        return stack.getTooltipLines(context, player, flag);
+    }
+
+    /** {@code FoodProperties.getEffects()}: effect and probability pairs. */
+    public static List<com.mojang.datafixers.util.Pair<net.minecraft.world.effect.MobEffectInstance, Float>> getEffects(net.minecraft.world.food.FoodProperties food) {
+        List<com.mojang.datafixers.util.Pair<net.minecraft.world.effect.MobEffectInstance, Float>> out = new ArrayList<>();
+        for (net.minecraft.world.food.FoodProperties.PossibleEffect e : food.effects()) out.add(com.mojang.datafixers.util.Pair.of(e.effect(), e.probability()));
+        return out;
+    }
+
+    /** {@code VertexConsumer.defaultColor(r, g, b, a)} is gone: vertices carry their own color; the call has no effect. */
+    public static void defaultColor(com.mojang.blaze3d.vertex.VertexConsumer consumer, int r, int g, int b, int a) {}
+
+    public static void unsetDefaultColor(com.mojang.blaze3d.vertex.VertexConsumer consumer) {}
+
+    // SpawnPlacements.Type became SpawnPlacementType with its constants in SpawnPlacementTypes
+    public static net.minecraft.world.entity.SpawnPlacementType spawnOnGround() {
+        return net.minecraft.world.entity.SpawnPlacementTypes.ON_GROUND;
+    }
+
+    public static net.minecraft.world.entity.SpawnPlacementType spawnInWater() {
+        return net.minecraft.world.entity.SpawnPlacementTypes.IN_WATER;
+    }
+
+    public static net.minecraft.world.entity.SpawnPlacementType spawnInLava() {
+        return net.minecraft.world.entity.SpawnPlacementTypes.IN_LAVA;
+    }
+
+    public static net.minecraft.world.entity.SpawnPlacementType spawnNoRestrictions() {
+        return net.minecraft.world.entity.SpawnPlacementTypes.NO_RESTRICTIONS;
+    }
 }

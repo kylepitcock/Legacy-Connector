@@ -185,6 +185,7 @@ public final class Forge1201Transformer {
             nodes.add(node);
         }
         Mc1201Migration.Counts mc = new Mc1201Migration.Counts();
+        Mixin1201.Stats mixinStats = new Mixin1201.Stats();
         for (ClassNode node : nodes) {
             stringsMapped += mapSrgStrings(node);
             int viaCalls = CallRewrites1201.apply(node);
@@ -193,6 +194,7 @@ public final class Forge1201Transformer {
             rewrites += viaCalls;
             Mc1201Migration.Counts changed = Mc1201Migration.apply(node, hierarchy);
             mc.add(changed);
+            Mixin1201.apply(node, srg, hierarchy, Mc1201Tables.get(), mixinStats);
             byte[] bytes;
             if (viaCalls + changed.total() > 0) {
                 // the stack at branch targets changed: frames are computed again
@@ -215,6 +217,8 @@ public final class Forge1201Transformer {
             result.classes++;
         }
         if (mc.total() > 0) result.notes.add("Minecraft 1.20.1 to 1.21.1 migration: " + mc);
+        if (mixinStats.mixinClasses > 0) result.notes.add("Mixins: " + mixinStats.summary());
+        for (String d : mixinStats.dropped) result.notes.add("Mixin dropped, its target no longer exists in Minecraft 1.21.1: " + d);
         if (rewrites > 0) result.notes.add(rewrites + " call site(s) rewritten for changed 1.21.1 signatures (ResourceLocation factories, event bus post)");
         if (stringsMapped > 0) result.notes.add(stringsMapped + " reflection string(s) with SRG names now use Mojang names");
 
@@ -239,7 +243,7 @@ public final class Forge1201Transformer {
                 continue;
             }
             if (name.equals("META-INF/accesstransformer.cfg")) data = accessTransformer(new String(data, StandardCharsets.UTF_8)).getBytes(StandardCharsets.UTF_8);
-            else if (name.endsWith(".json") && looksLikeMixinConfig(data)) data = stripRefmap(new String(data, StandardCharsets.UTF_8)).getBytes(StandardCharsets.UTF_8);
+            else if (name.endsWith(".json") && looksLikeMixinConfig(data)) data = Mixin1201.config(new String(data, StandardCharsets.UTF_8), mixinStats.droppedClasses, null).getBytes(StandardCharsets.UTF_8);
             outResources.put(name, data);
         }
         // the data and resource packs: 1.21 folder names, recipe/loot/advancement/tag/model formats, forge: ids, pack.mcmeta (DataConverter1201)
@@ -430,7 +434,7 @@ public final class Forge1201Transformer {
     private static boolean looksLikeMixinConfig(byte[] data) {
         if (data.length > 200_000) return false;
         String s = new String(data, StandardCharsets.UTF_8);
-        return s.contains("\"package\"") && s.contains("\"refmap\"");
+        return s.contains("\"package\"") && (s.contains("\"refmap\"") || s.contains("\"mixins\"") || s.contains("\"client\"") || s.contains("\"server\""));
     }
 
     /** Mixin refmaps translate Mojang names to SRG for production; 1.21.1 runs with Mojang names, which the annotations already use. */

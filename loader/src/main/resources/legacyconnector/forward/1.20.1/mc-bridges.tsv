@@ -24,3 +24,4 @@ net/minecraft/world/item/crafting/Recipe	getRemainingItems	(Lnet/minecraft/world
 net/minecraft/world/level/saveddata/SavedData	save	(Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/nbt/CompoundTag;	save	(Lnet/minecraft/nbt/CompoundTag;Lnet/minecraft/core/HolderLookup$Provider;)Lnet/minecraft/nbt/CompoundTag;	-	-	1
 net/minecraft/client/model/Model	renderToBuffer	(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;IIFFFF)V	renderToBuffer	(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;III)V	0,1,2,3,ClientCompat.colorR@4,ClientCompat.colorG@4,ClientCompat.colorB@4,ClientCompat.colorA@4	-	-
 net/minecraft/client/gui/components/events/GuiEventListener	mouseScrolled	(DDD)Z	mouseScrolled	(DDDD)Z	0,1,3	-	-
+net/minecraft/world/item/Tier	getLevel	()I	getIncorrectBlocksForDrops	()Lnet/minecraft/tags/TagKey;	-	MiscCompat.incorrectBlocksForLevel	-

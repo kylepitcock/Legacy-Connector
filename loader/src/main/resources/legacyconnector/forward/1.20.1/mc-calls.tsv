@@ -130,3 +130,13 @@ net/minecraft/world/level/block/StandingSignBlock	<init>	(Lnet/minecraft/world/l
 net/minecraft/world/level/block/WallSignBlock	<init>	(Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;Lnet/minecraft/world/level/block/state/properties/WoodType;)V	=swap	<init>	(Lnet/minecraft/world/level/block/state/properties/WoodType;Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V
 net/minecraft/world/level/block/CeilingHangingSignBlock	<init>	(Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;Lnet/minecraft/world/level/block/state/properties/WoodType;)V	=swap	<init>	(Lnet/minecraft/world/level/block/state/properties/WoodType;Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V
 net/minecraft/world/level/block/WallHangingSignBlock	<init>	(Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;Lnet/minecraft/world/level/block/state/properties/WoodType;)V	=swap	<init>	(Lnet/minecraft/world/level/block/state/properties/WoodType;Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V
+com/mojang/blaze3d/systems/RenderSystem	getModelViewStack	()Lcom/mojang/blaze3d/vertex/PoseStack;	ClientCompat	getModelViewStack	-
+net/minecraft/resources/ResourceLocation	isValidResourceLocation	(Ljava/lang/String;)Z	MiscCompat	isValidResourceLocation	-
+net/minecraft/SharedConstants	isAllowedChatCharacter	(C)Z	MiscCompat	isAllowedChatCharacter	-
+net/minecraft/world/item/ItemStack	getUseDuration	()I	MiscCompat	getUseDuration	-
+net/minecraft/world/item/ItemStack	getTooltipLines	(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/item/TooltipFlag;)Ljava/util/List;	MiscCompat	getTooltipLines	-
+net/minecraft/world/food/FoodProperties	getEffects	()Ljava/util/List;	MiscCompat	getEffects	-
+com/mojang/blaze3d/vertex/VertexConsumer	defaultColor	(IIII)V	MiscCompat	defaultColor	-
+com/mojang/blaze3d/vertex/VertexConsumer	unsetDefaultColor	()V	MiscCompat	unsetDefaultColor	-
+net/minecraft/client/resources/DefaultPlayerSkin	getDefaultSkin	(Ljava/util/UUID;)Lnet/minecraft/resources/ResourceLocation;	ClientCompat	getDefaultSkin	-
+net/minecraft/world/item/crafting/CustomRecipe	<init>	(Lnet/minecraft/resources/ResourceLocation;Lnet/minecraft/world/item/crafting/CraftingBookCategory;)V	=swappop	<init>	(Lnet/minecraft/world/item/crafting/CraftingBookCategory;)V

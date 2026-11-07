@@ -67,4 +67,87 @@ public final class ClientCompat {
     public static net.minecraft.client.renderer.MultiBufferSource.BufferSource immediate(CompatBufferBuilder ignored) {
         return net.minecraft.client.renderer.MultiBufferSource.immediate(new com.mojang.blaze3d.vertex.ByteBufferBuilder(256));
     }
+
+    /** {@code DefaultPlayerSkin.getDefaultSkin(UUID)}: the skin texture of the default skin for that id. */
+    public static net.minecraft.resources.ResourceLocation getDefaultSkin(java.util.UUID id) {
+        return net.minecraft.client.resources.DefaultPlayerSkin.get(id).texture();
+    }
+
+    private static volatile ModelViewStack modelView;
+
+    /**
+     * {@code RenderSystem.getModelViewStack()} returned a {@code PoseStack}; 1.21.1 has a JOML {@code Matrix4fStack}. The returned PoseStack mirrors push, pop and
+     * transforms onto it (the stack itself stays the single source of the shader's model-view matrix).
+     */
+    public static PoseStack getModelViewStack() {
+        ModelViewStack s = modelView;
+        if (s == null) modelView = s = new ModelViewStack(com.mojang.blaze3d.systems.RenderSystem.getModelViewStack());
+        return s;
+    }
+
+    private static final class ModelViewStack extends PoseStack {
+        private final org.joml.Matrix4fStack target;
+        private int depth;
+
+        ModelViewStack(org.joml.Matrix4fStack target) {
+            this.target = target;
+        }
+
+        @Override
+        public void pushPose() {
+            super.pushPose();
+            target.pushMatrix();
+            depth++;
+        }
+
+        @Override
+        public void popPose() {
+            if (depth <= 0) return;
+            depth--;
+            super.popPose();
+            target.popMatrix();
+        }
+
+        @Override
+        public void translate(double x, double y, double z) {
+            super.translate(x, y, z);
+            target.translate((float) x, (float) y, (float) z);
+        }
+
+        @Override
+        public void translate(float x, float y, float z) {
+            super.translate(x, y, z);
+            target.translate(x, y, z);
+        }
+
+        @Override
+        public void scale(float x, float y, float z) {
+            super.scale(x, y, z);
+            target.scale(x, y, z);
+        }
+
+        @Override
+        public void mulPose(org.joml.Quaternionf q) {
+            super.mulPose(q);
+            target.rotate(q);
+        }
+
+        @Override
+        public void mulPose(Matrix4f m) {
+            super.mulPose(m);
+            target.mul(m);
+        }
+
+        @Override
+        public void rotateAround(org.joml.Quaternionf q, float x, float y, float z) {
+            super.rotateAround(q, x, y, z);
+            target.rotateAround(q, x, y, z);
+        }
+
+        @Override
+        public void setIdentity() {
+            super.setIdentity();
+            target.identity();
+        }
+    }
 }

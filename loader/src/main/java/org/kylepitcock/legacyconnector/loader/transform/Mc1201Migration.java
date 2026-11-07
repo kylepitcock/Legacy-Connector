@@ -152,6 +152,11 @@ final class Mc1201Migration {
     private static void inPlace(MethodNode m, MethodInsnNode call, Call rule) {
         if (rule.helper().equals("=swap")) m.instructions.insertBefore(call, new InsnNode(Opcodes.SWAP));
         else if (rule.helper().equals("=pop")) m.instructions.insertBefore(call, new InsnNode(Opcodes.POP));
+        else if (rule.helper().equals("=swappop")) {
+            // drops the second to last argument (a constructor that lost its id parameter: CustomRecipe)
+            m.instructions.insertBefore(call, new InsnNode(Opcodes.SWAP));
+            m.instructions.insertBefore(call, new InsnNode(Opcodes.POP));
+        }
         else if (rule.helper().equals("=ret")) m.instructions.insert(call, new InsnNode(Type.getReturnType(rule.helperDesc()).getSize() == 2 ? Opcodes.POP2 : Opcodes.POP));
         if (!rule.helperName().equals("-")) call.name = rule.helperName();
         if (rule.helperDesc() != null) call.desc = rule.helperDesc();

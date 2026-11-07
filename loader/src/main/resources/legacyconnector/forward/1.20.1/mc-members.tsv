@@ -23,3 +23,8 @@ net/minecraft/network/FriendlyByteBuf$Reader	apply	*	decode
 net/minecraft/world/food/FoodProperties	getNutrition	*	nutrition
 net/minecraft/world/food/FoodProperties	getSaturationModifier	*	saturation
 net/minecraft/world/item/Item$Properties	defaultDurability	*	durability
+net/minecraft/world/level/chunk/ChunkAccess	getStatus	*	getPersistedStatus
+net/minecraft/world/level/chunk/LevelChunk	getStatus	*	getPersistedStatus
+net/minecraft/world/level/chunk/ProtoChunk	getStatus	*	getPersistedStatus
+net/minecraft/world/level/chunk/ImposterProtoChunk	getStatus	*	getPersistedStatus
+net/minecraft/network/FriendlyByteBuf	readAnySizeNbt	*	readNbt
