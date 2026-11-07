@@ -40,6 +40,9 @@ public final class CheckJar {
     private CheckJar() {}
 
     public static void main(String[] args) throws Exception {
+        // the bridges that need no modern mod (CoFH RF) are always active in the game: the shim replaces the shaded copies of their API
+        LegacyVersion.setBridgedRoots(org.kylepitcock.legacyconnector.loader.LibraryBridges.KNOWN.stream().filter(b -> b.modernModId() == null)
+                .map(org.kylepitcock.legacyconnector.loader.LibraryBridges.Bridge::apiRoot).toList());
         ShimIndex index;
         try (InputStream in = Files.newInputStream(Path.of(args[0]))) {
             index = ShimIndex.read(in);
