@@ -4283,8 +4283,8 @@
    "mc": "1.6.4",
    "source": "client",
    "date": "2026-11-07",
-   "status": "fails",
-   "notes": "The Netty kqueue class names no longer stop it (the layer keeps a mod's bundled copies of Netty's native transports the game's Netty lacks) and a server test loads it, but in the client its preInit throws a NullPointerException (a resource URL it looks up is null). Online PvP mod."
+   "status": "partial",
+   "notes": "Real client in survival: it starts now (the mod's download host is gone; the layer gives it offline settings and an empty resource pack, so its own gun sounds and a few overlay pictures are missing). Works: the radar and stats panel, thirst bar, AK-47 in hand with ammo counter (21/30), reload by key, recoil, loot spawns on the ground, its zombies draw with their own model and kill the player (death message uses their name), bleeding and infection statuses, bandage stops bleeding, sandbags and barbed wire place. Not seen working: bullets did no damage to a zombie in the test (the mod's server-side hit code; unresolved), the minigun and restraint poses, skins and capes by URL. Online lobby and servers do not exist."
   },
   {
    "name": "Crafting Tweaks",
@@ -17924,7 +17924,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "works",
-   "notes": "Real client: mobs and blocks draw. A few technical blocks and items (double slabs, hanging banana, the outlands altar) show their raw name key; the mod's own code gives them no name."
+   "notes": "Real client in survival: mobs and blocks draw, and the Pride Lands dimension (also Outlands and Upendi, registered as dimension ids -2, -3 and -4) generates terrain with its biomes, trees and a crowd of Zazu birds; entering it with /execute in works. Lions, simba, hyenas, zebras, rhinos, giraffes and crocodiles spawn and walk with their own models and health bars; its achievement page now loads. Known: under the shader pack the Pride Lands are covered in white fog (clear without shaders), the mod ships no mob sounds (the game logs them as unknown), its background music is not played, and the portal rituals, quests and crafting were not tried. A few technical blocks and items (double slabs, hanging banana, the outlands altar) show their raw name key; the mod's own code gives them no name."
   },
   {
    "name": "The Lost Cities",
