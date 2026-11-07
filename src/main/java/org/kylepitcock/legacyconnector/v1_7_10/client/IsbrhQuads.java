@@ -102,7 +102,7 @@ final class IsbrhQuads {
     }
 
     /** The block atlas sprite of tile {@code index} of a 1.4.7 sprite sheet; null when the pack has no such tile. */
-    private static TextureAtlasSprite sheetTile(String sheet, int index) {
+    static TextureAtlasSprite sheetTile(String sheet, int index) {
         var icon = org.kylepitcock.legacyconnector.v1_6_4.bridge.SpriteSheets147.icon(sheet, index, true);
         String name = icon == null ? null : icon.mcc$modernName();
         net.minecraft.resources.ResourceLocation rl = name == null ? null : net.minecraft.resources.ResourceLocation.tryParse(name);
