@@ -971,6 +971,12 @@ public class World implements IBlockAccess {
     }
 
     @Override
+    public int mcc$weakSignal(int x, int y, int z, int side) {
+        BlockPos p = pos(x, y, z);
+        return lvl().getBlockState(p).getSignal(lvl(), p, Direction.from3DDataValue(side));
+    }
+
+    @Override
     public int isBlockProvidingPowerTo(int x, int y, int z, int side) {
         BlockPos p = pos(x, y, z);
         return lvl().getBlockState(p).getDirectSignal(lvl(), p, Direction.from3DDataValue(side));

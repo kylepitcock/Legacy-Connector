@@ -58,7 +58,11 @@ public final class SheetCutter {
                         if (call.name.equals("addOverride") && count >= 2 && call.desc.startsWith("(Ljava/lang/String;Ljava/lang/String;")) {
                             singles.add(normalize(recent[(seen - 1) % recent.length]));
                         } else if (call.name.equals("bindTexture") || call.name.equals("loadTexture")) {
-                            // bound whole images are not sheets unless named by one of the sheet calls: nothing to do
+                            // bound whole images are not sheets unless named by one of the sheet calls, except in a block/tile renderer: those draw
+                            // tile-position UVs of what they bind (RedPower's wires bind /eloraam/wiring/redpower1.png and draw tessellator quads)
+                            if (node.name.contains("Render") && !node.name.contains("Gui") && !node.name.contains("GUI")) {
+                                sheets.add(normalize(recent[(seen - 1) % recent.length]));
+                            }
                         } else {
                             sheets.add(normalize(recent[(seen - 1) % recent.length]));
                         }

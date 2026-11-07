@@ -19,6 +19,15 @@ public class BlockLiquid extends legacyconnector.v1_7_10.net.minecraft.block.Blo
         return (meta + 1) / 9.0F;
     }
 
+    /** 1.4.7 fluids (BuildCraft's oil) have a sheet tile: the top and bottom draw it, the sides the next one (BlockFluid.getBlockTextureFromSideAndMetadata). */
+    @Override
+    public legacyconnector.v1_7_10.net.minecraft.util.IIcon getIcon(int side, int meta) {
+        if (blockIndexInTexture >= 0 && mcc$vanilla == null) {
+            return org.kylepitcock.legacyconnector.v1_6_4.bridge.SpriteSheets147.mcc$icon(this, blockIndexInTexture + (side > 1 ? 1 : 0));
+        }
+        return super.getIcon(side, meta);
+    }
+
     /** Still and flowing icons. */
     public legacyconnector.v1_7_10.net.minecraft.util.IIcon[] field_149806_a;
 

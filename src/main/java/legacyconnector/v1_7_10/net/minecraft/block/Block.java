@@ -1022,11 +1022,11 @@ public class Block {
     }
 
     public int isProvidingWeakPower(IBlockAccess world, int x, int y, int z, int side) {
-        return 0;
+        return mcc$vanilla != null && world != null ? world.mcc$weakSignal(x, y, z, side) : 0;
     }
 
     public int isProvidingStrongPower(IBlockAccess world, int x, int y, int z, int side) {
-        return 0;
+        return mcc$vanilla != null && world != null ? world.isBlockProvidingPowerTo(x, y, z, side) : 0;
     }
 
     public boolean canConnectRedstone(IBlockAccess world, int x, int y, int z, int side) {

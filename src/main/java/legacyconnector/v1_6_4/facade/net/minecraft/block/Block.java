@@ -16,6 +16,26 @@ public final class Block {
         self.blockIndexInTexture = index;
     }
 
+    /** 1.4.7's {@code BlockFluid(int id, Material)}: tile 205 of the block's sheet for water-like fluids, 237 for lava-like ones (the sides draw the next tile). */
+    public static void mcc$claimFluidTexture(legacyconnector.v1_7_10.net.minecraft.block.Block self, legacyconnector.v1_7_10.net.minecraft.block.material.Material material) {
+        self.blockIndexInTexture = (material == legacyconnector.v1_7_10.net.minecraft.block.material.Material.lava ? 14 : 12) * 16 + 13;
+    }
+
+    /**
+     * 1.4.7 {@code block.isProvidingStrongPower(world, x, y, z, side)} returned a boolean (1.5 made it the power level). The facade serves callers
+     * through a class that does not declare the boolean form; a mod's own boolean override is reached through the bridge of the {@code int} form.
+     */
+    public static boolean isProvidingStrongPower(legacyconnector.v1_7_10.net.minecraft.block.Block self, legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess world,
+            int x, int y, int z, int side) {
+        return self.isProvidingStrongPower(world, x, y, z, side) > 0;
+    }
+
+    /** 1.4.7 {@code block.isProvidingWeakPower(world, x, y, z, side)} (a boolean, see {@link #isProvidingStrongPower}). */
+    public static boolean isProvidingWeakPower(legacyconnector.v1_7_10.net.minecraft.block.Block self, legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess world,
+            int x, int y, int z, int side) {
+        return self.isProvidingWeakPower(world, x, y, z, side) > 0;
+    }
+
     /** Block.blockID */
     public static int mcc$get$blockID(legacyconnector.v1_7_10.net.minecraft.block.Block self) {
         return Ids.blockId(self);
