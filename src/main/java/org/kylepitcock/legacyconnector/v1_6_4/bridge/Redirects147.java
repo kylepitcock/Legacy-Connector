@@ -20,6 +20,21 @@ public final class Redirects147 {
         return b != null ? b : legacyconnector.v1_7_10.net.minecraft.init.Blocks.air;
     }
 
+    /** 1.4.7 {@code FurnaceRecipes.smelting().getSmeltingResult(itemId)}: recipes by item id (1.5 passes the stack); the id lookup matches any damage. */
+    public static legacyconnector.v1_7_10.net.minecraft.item.ItemStack getSmeltingResult(
+            legacyconnector.v1_7_10.net.minecraft.item.crafting.FurnaceRecipes r, int id) {
+        legacyconnector.v1_7_10.net.minecraft.item.Item item = Ids.item(id);
+        if (item == null) return null;
+        legacyconnector.v1_7_10.net.minecraft.item.ItemStack out = r.getSmeltingResult(new legacyconnector.v1_7_10.net.minecraft.item.ItemStack(item, 1, 0));
+        return out == null ? null : out.copy();
+    }
+
+    /** 1.4.7 {@code FurnaceRecipes.getExperience(itemId)}. */
+    public static float getExperience(legacyconnector.v1_7_10.net.minecraft.item.crafting.FurnaceRecipes r, int id) {
+        legacyconnector.v1_7_10.net.minecraft.item.Item item = Ids.item(id);
+        return item == null ? 0.0F : r.getSmeltingExperience(new legacyconnector.v1_7_10.net.minecraft.item.ItemStack(item, 1, 0));
+    }
+
     /** {@code world.setBlockAndMetadataWithNotify(x, y, z, id, meta)}. */
     public static boolean setBlockAndMetadataWithNotify(World w, int x, int y, int z, int id, int meta) {
         return w.setBlock(x, y, z, block(id), meta, 3);

@@ -140,6 +140,17 @@ final class IdConstructors {
             String facade = h.facadeOf(blockCls);
             if (facade != null && h.find(facade).hasMethod("mcc$claimTexture", "(L" + blockCls + ";I)V")) textureOwner = facade;
         }
+        // 1.4.7: BlockFluid(int id, Material) gave water-like fluids tile 205 and lava-like ones 237 of the block's own sheet (BuildCraft's oil draws its animation there)
+        boolean fluidTexture = false;
+        String matCls = link + "net/minecraft/block/material/Material";
+        if (textureOwner == null && claimOwner != null && isBlock && h.version().flatNames() && args.length == 2 && args[1].getSort() == Type.OBJECT
+                && h.isSubclassOf(m.owner, link + "net/minecraft/block/BlockLiquid")) {
+            String facade = h.facadeOf(blockCls);
+            if (facade != null && h.find(facade).hasMethod("mcc$claimFluidTexture", "(L" + blockCls + ";L" + matCls + ";)V")) {
+                textureOwner = facade;
+                fluidTexture = true;
+            }
+        }
         InsnList pre = new InsnList();
         int[] slots = new int[args.length];
         int slot = method.maxLocals;
@@ -167,7 +178,10 @@ final class IdConstructors {
         method.instructions.insertBefore(m, pre);
         if (claimOwner != null) {
             InsnList post = new InsnList();
-            if (textureOwner != null) {
+            if (textureOwner != null && fluidTexture) {
+                post.add(new VarInsnNode(Opcodes.ALOAD, slots[1]));
+                post.add(new MethodInsnNode(Opcodes.INVOKESTATIC, textureOwner, "mcc$claimFluidTexture", "(L" + blockCls + ";L" + matCls + ";)V", false));
+            } else if (textureOwner != null) {
                 post.add(new VarInsnNode(Opcodes.ILOAD, slots[1]));
                 post.add(new MethodInsnNode(Opcodes.INVOKESTATIC, textureOwner, "mcc$claimTexture", "(L" + blockCls + ";I)V", false));
             }
