@@ -68,6 +68,7 @@ public final class BridgeB173 {
         if (Boolean.getBoolean("legacyconnector.entitySelfTest")) ItemUseSelfTestB173.register();
         TileEntitiesB173.registerType();
         MobsB173.registerAll();
+        AnimalsB173.registerAll();
         flammability();
         StringBuilder sb = new StringBuilder();
         PER_MOD.forEach((mod, n) -> sb.append(' ').append(mod).append('=').append(n[0]).append(" blocks/").append(n[1]).append(" items"));

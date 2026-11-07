@@ -135,7 +135,7 @@
       "archive": "MoreCreepsv2.12_b173.zip!PUT CONTENTS INTO MINECRAFT FOLDER/mods/MoreCreepsAndWeirdos.zip",
       "root": "",
       "api_references": "ModLoader; AudioMod; ShockAhPI ACPage",
-      "next_check": "Original Hippo model and 48 crafting transfer scenarios pass. Custom AI, renderer integration, achievements and natural spawning remain incomplete.",
+      "next_check": "Original Hippo isolated server lifecycle and crafting scenarios pass; broaden mob API coverage, then client renderer integration and natural spawning.",
       "priority": 10
     },
     {
@@ -293,7 +293,7 @@
       "pngs": 134,
       "external_oggs": 168,
       "base_replacements": false,
-      "status": "Construction and original Bunny model callbacks pass; custom simulation and renderer integration next"
+      "status": "Original Bunny model and isolated server lifecycle pass; client renderer integration and normal admission remain unfinished"
     },
     {
       "mod": "More Creeps & Weirdos 2.12",
@@ -306,7 +306,7 @@
         "AudioMod",
         "ShockAhPI ACPage"
       ],
-      "status": "Construction, original Hippo model callbacks and 48 crafting transfer scenarios pass; custom simulation and renderer integration next",
+      "status": "Original Hippo model, isolated server lifecycle and 48 crafting scenarios pass; broader roster, client rendering and natural spawning incomplete",
       "limits": "53 living registrations unhosted; achievements and natural spawning incomplete; no GuiAPI/TWL references in selected payload"
     }
   ],
@@ -365,5 +365,43 @@
     "global_identity_guard": "passed (21 existing baseline mentions, no new)",
     "bundle": "build/dist/legacyconnector-0.4.5.jar",
     "visual_gameplay_validation": false
+  },
+  "animal_lifecycle_followup": {
+    "date": "2026-11-07",
+    "implementation": "Shared AnimalEntity/PathAwareEntity/LivingEntity superclass lifecycle against neutral native physics/navigation; original tick, movement and AI callbacks nested exactly once",
+    "fixtures": [
+      {
+        "mod": "MoCreatures 2.12.2",
+        "entity": "EntityBunny",
+        "manifest": "run-b173-single/mocreatures-lifecycle-final-20261107-173923-153d92/audit-manifest.json",
+        "status": "headless-smoke-passed",
+        "proof": [
+          "Growth and original 0.45 hop before travel",
+          "One tick/movement/AI phase; skip-super AI preserves physics",
+          "Original and native mounting/dismounting, throwing and identity",
+          "Registry NBT and native/legacy damage",
+          "Pending cross-host mutations and original offspring spawning"
+        ]
+      },
+      {
+        "mod": "More Creeps & Weirdos 2.12",
+        "entity": "CREEPSEntityHippo",
+        "manifest": "run-b173-single/morecreeps-animal-20261107-172530-359fb3/audit-manifest.json",
+        "status": "headless-smoke-passed",
+        "proof": [
+          "Visible/occluded original target selection",
+          "Retaliation, native/legacy damage without super-call recursion",
+          "Original lunge attack",
+          "Hungry NBT and water eye-offset callback",
+          "Original deterministic death drops as native item entities"
+        ]
+      }
+    ],
+    "admission": "Isolated server validation under existing legacyconnector.entitySelfTest; normal gameplay admission remains disabled until client renderer integration is verified",
+    "limits": [
+      "Client renderer integration and natural spawning unfinished",
+      "Other unsupported mob families/callbacks remain rejected",
+      "Modern navigation retains original path preference; exact Beta wandering timing unproven"
+    ]
   }
 }

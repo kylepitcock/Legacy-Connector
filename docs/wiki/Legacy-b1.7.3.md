@@ -382,11 +382,27 @@ original texture lookup, registry-based save/reload, and loaded loot-table sampl
 Its boar and bighorn families are not yet hosted. Mo' Creatures and More Creeps are separate user-selected tests for the
 custom AI/model work; success with the deer does not establish support for either mod's custom creatures.
 
-The next custom-simulation step is the shared `AnimalEntity`/living-entity superclass lifecycle, beginning with original
-Bunny growth, hopping, mounting and NBT. Its original tick chain must run each phase exactly once, with live entity queries
-preserving original object identity. Hippo additionally needs targeting, visibility, pathfinding and combat; its superclass
-damage call needs an explicit native-base route to avoid recursively redispatching the original damage callback. Model
-construction alone must not bypass the current unsupported-host checks.
+The shared `AnimalEntity`/living-entity superclass lifecycle has a neutral native `PathfinderMob` host for isolated server
+validation. Original `tick` enters the native base tick, which dispatches original `tickMovement`; its base movement phase
+dispatches original `tickLiving` before native travel. A narrow host-only AI hook preserves the effect of skipping the
+superclass AI call. Navigation and controls run only through that base call; no species goals are installed.
+
+Shared APIs include mounting/dismounting, live world entity/player queries with original identities, visibility, collision,
+fluid/spawn-volume checks, original sounds, damage/knockback/death callbacks, item drops and NBT. Explicit native-base
+damage operations prevent a mod's `super.damage` from redispatching its override recursively. Queried host views commit
+pending changes before a callback refresh and avoid replaying unchanged native state. Admission reads method metadata
+without resolving unrelated API signatures and rejects unsupported synthesized callbacks.
+
+Animal admission is currently enabled only by the existing `legacyconnector.entitySelfTest` harness. Client renderer
+integration and natural spawning remain unfinished; these server lifecycle types are not yet enabled in normal gameplay.
+General wandering uses modern navigation with the original path-preference callback; exact Beta path timing is unproven.
+
+Fresh, separate actual-mod runs pass the original Mo' Creatures Bunny and More Creeps Hippo lifecycle fixtures. Bunny
+checks growth, a 0.45 hop before travel, one tick/movement/AI phase, skipped-super AI with retained physics, native and
+original mounting/dismounting, thrown velocity, registry NBT, damage, cross-host pending writes and original offspring.
+Hippo checks visible/occluded target selection, retaliation, superclass damage without reentry, original lunging attack,
+Hungry NBT, water eye-offset behavior and original deterministic porkchop/sugar-cane drops through native item entities.
+These checks establish the exercised server behavior; they do not enable the mod's entire mob roster or prove visuals.
 
 The shared `ModelPart`/`EntityModel` foundation now executes original model constructors and animation/render callbacks.
 Beta cuboid UVs, mirror winding, the 0.1-pixel texture inset, single-cuboid replacement and rotation orders are preserved;

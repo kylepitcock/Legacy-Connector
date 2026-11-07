@@ -44,6 +44,8 @@ public class World implements BlockView {
     private World(Level level) {
         this.mcc$level = level;
         this.isRemote = level.isClientSide;
+        this.entities = liveEntities(false);
+        this.players = liveEntities(true);
         dimension.evaporatesWater = level.dimensionType().ultraWarm();
         dimension.hasNoSky = !level.dimensionType().hasSkyLight();
         dimension.id = level.dimension() == Level.NETHER ? -1 : level.dimension() == Level.END ? 1 : 0;
@@ -322,8 +324,22 @@ public class World implements BlockView {
     }
     public boolean spawnEntity(legacyconnector.vb1_7_3.net.minecraft.entity.Entity entity) {
         if(mcc$level==null||entity==null)return false;
-        if(entity instanceof legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity living)
+        if(entity instanceof legacyconnector.vb1_7_3.net.minecraft.entity.ItemEntity item) {
+            if(mcc$level.isClientSide||item.mcc$modern!=null||item.stack==null)return false;
+            var stack=StacksB173.toModern(item.stack);
+            if(stack.isEmpty())return false;
+            var host=new net.minecraft.world.entity.item.ItemEntity(mcc$level,item.x,item.y,item.z,stack);
+            host.setPickUpDelay(item.pickupDelay);host.setDeltaMovement(item.velocityX,item.velocityY,item.velocityZ);
+            host.setYRot(item.yaw);host.setXRot(item.pitch);item.mcc$modern=host;
+            boolean added=false;
+            try {added=mcc$level.addFreshEntity(host);return added;}
+            finally {if(!added){item.mcc$modern=null;host.discard();}}
+        }
+        if(entity instanceof legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity living) {
+            if(org.kylepitcock.legacyconnector.vb1_7_3.AnimalsB173.supports(living.getClass()))
+                return org.kylepitcock.legacyconnector.vb1_7_3.AnimalsB173.spawn(mcc$level,living);
             return org.kylepitcock.legacyconnector.vb1_7_3.MobsB173.spawn(mcc$level,living);
+        }
         return org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Arrow.spawn(mcc$level, entity);
     }
     public List<legacyconnector.vb1_7_3.net.minecraft.entity.Entity> getEntities(legacyconnector.vb1_7_3.net.minecraft.entity.Entity except,
@@ -331,6 +347,71 @@ public class World implements BlockView {
         if (mcc$level == null) return List.of();
         return mcc$level.getEntities(except == null ? null : except.mcc$modern,box.mcc$box()).stream()
                 .map(org.kylepitcock.legacyconnector.vb1_7_3.EntityViewsB173::wrap).toList();
+    }
+
+    /** Each traversal reflects the level's current loaded entities and preserves hosted originals. */
+    private List<Object> liveEntities(boolean onlyPlayers) {
+        return new java.util.AbstractList<>() {
+            private List<net.minecraft.world.entity.Entity> snapshot() {
+                var result=new ArrayList<net.minecraft.world.entity.Entity>();
+                if(onlyPlayers)result.addAll(mcc$level.players());
+                else if(mcc$level instanceof net.minecraft.server.level.ServerLevel server)
+                    server.getAllEntities().forEach(result::add);
+                else if(mcc$level instanceof net.minecraft.client.multiplayer.ClientLevel client)
+                    client.entitiesForRendering().forEach(result::add);
+                return result;
+            }
+            @Override public int size(){return snapshot().size();}
+            @Override public Object get(int index){return org.kylepitcock.legacyconnector.vb1_7_3.EntityViewsB173.wrap(snapshot().get(index));}
+            @Override public java.util.Iterator<Object> iterator(){
+                return snapshot().stream().map(e -> (Object)org.kylepitcock.legacyconnector.vb1_7_3.EntityViewsB173.wrap(e)).iterator();
+            }
+        };
+    }
+
+    public legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity getClosestPlayer(
+            legacyconnector.vb1_7_3.net.minecraft.entity.Entity entity,double range) {
+        return getClosestPlayer(entity.x,entity.y,entity.z,range);
+    }
+    public legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity getClosestPlayer(double x,double y,double z,double range) {
+        legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity closest=null;
+        double best=range<0?Double.POSITIVE_INFINITY:range*range;
+        for(Object object:players) {
+            var player=(legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity)object;
+            double distance=player.getSquaredDistance(x,y,z);
+            if(distance<best){best=distance;closest=player;}
+        }
+        return closest;
+    }
+    /** Beta includes solid block shapes and hard entity collision boxes. */
+    public List<legacyconnector.vb1_7_3.net.minecraft.util.math.Box> getEntityCollisions(
+            legacyconnector.vb1_7_3.net.minecraft.entity.Entity entity,legacyconnector.vb1_7_3.net.minecraft.util.math.Box box) {
+        var result=new ArrayList<legacyconnector.vb1_7_3.net.minecraft.util.math.Box>();
+        if(mcc$level==null)return result;
+        var bounds=box.mcc$box();
+        for(var shape:mcc$level.getBlockCollisions(entity==null?null:entity.mcc$modern,bounds))
+            for(var b:shape.toAabbs())result.add(legacyconnector.vb1_7_3.net.minecraft.util.math.Box.create(b.minX,b.minY,b.minZ,b.maxX,b.maxY,b.maxZ));
+        for(var other:mcc$level.getEntities(entity==null?null:entity.mcc$modern,bounds.inflate(.25))) {
+            var b=other.getBoundingBox();
+            if(!b.intersects(bounds))continue;
+            if(other.canBeCollidedWith())result.add(legacyconnector.vb1_7_3.net.minecraft.util.math.Box.create(b.minX,b.minY,b.minZ,b.maxX,b.maxY,b.maxZ));
+            if(entity!=null && entity.mcc$modern!=null && entity.mcc$modern.canCollideWith(other))
+                result.add(legacyconnector.vb1_7_3.net.minecraft.util.math.Box.create(b.minX,b.minY,b.minZ,b.maxX,b.maxY,b.maxZ));
+        }
+        return result;
+    }
+    public boolean canSpawnEntity(legacyconnector.vb1_7_3.net.minecraft.util.math.Box box) {
+        for(var entity:getEntities(null,box))if(!entity.dead&&entity.blocksSameBlockSpawning)return false;
+        return true;
+    }
+    /** Beta's material query checks any liquid cell, including partially filled flowing cells. */
+    public boolean isBoxSubmergedInFluid(legacyconnector.vb1_7_3.net.minecraft.util.math.Box box) {
+        int minX=(int)Math.floor(box.minX),minY=(int)Math.floor(box.minY),minZ=(int)Math.floor(box.minZ);
+        if(box.minX<0)--minX;if(box.minY<0)--minY;if(box.minZ<0)--minZ;
+        int maxX=(int)Math.floor(box.maxX+1),maxY=(int)Math.floor(box.maxY+1),maxZ=(int)Math.floor(box.maxZ+1);
+        for(int x=minX;x<maxX;x++)for(int y=minY;y<maxY;y++)for(int z=minZ;z<maxZ;z++)
+            if(getMaterial(x,y,z).isFluid())return true;
+        return false;
     }
 
     public void addParticle(String name, double x, double y, double z, double vx, double vy, double vz) {
