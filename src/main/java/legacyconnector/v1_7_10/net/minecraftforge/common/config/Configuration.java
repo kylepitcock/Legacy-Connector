@@ -613,7 +613,7 @@ public class Configuration {
             if (p.comment != null && !p.comment.isEmpty()) {
                 for (String l : p.comment.split("\r?\n")) w.write(pad1 + "# " + l + NEW_LINE);
             }
-            String head = p.getType().getID() + ":" + quote(p.getName());
+            String head = (p.getType() == null ? 'S' : p.getType().getID()) + ":" + quote(p.getName());
             if (p.isList()) {
                 w.write(pad1 + head + " <" + NEW_LINE);
                 for (String v : p.getStringList()) w.write(pad1 + "    " + v + NEW_LINE);

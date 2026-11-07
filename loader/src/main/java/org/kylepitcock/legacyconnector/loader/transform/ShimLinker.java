@@ -186,6 +186,18 @@ public final class ShimLinker {
     private static AbstractInsnNode missingMethod(MethodNode method, MethodInsnNode m, Hierarchy h, SynthDemand demand, LinkReport report, String from) {
         if (!isLegacyApi(m.owner, h) && !isModClass(m.owner, h)) return null;
         Hierarchy.Lookup l = h.resolveMethod(m.owner, m.name, m.desc);
+        if (l == Hierarchy.Lookup.FOUND && !m.name.equals("<init>") && m.getOpcode() != Opcodes.INVOKESPECIAL && h.version() != null && h.version().forward() != null
+                && h.isShim(m.owner)) {
+            // The shim has the method, but the forward version's returns something else (1.6.4's FurnaceRecipes.getSmeltingList() is a map keyed
+            // by item id, the 1.7.10 one by ItemStack): its facade declares the version's own under "mcc$legacy$<name>".
+            String[] own = h.findFacadeMethod(m.owner, "mcc$legacy$" + m.name, m.desc, m.getOpcode() == Opcodes.INVOKESTATIC);
+            if (own != null) {
+                MethodInsnNode call = new MethodInsnNode(Opcodes.INVOKESTATIC, own[0], "mcc$legacy$" + m.name, own[1], false);
+                method.instructions.set(m, call);
+                report.adapted(m.owner, m.name + m.desc + " -> " + own[0], from);
+                return call;
+            }
+        }
         if (l == Hierarchy.Lookup.FOUND && staticMismatch(m, h)) {
             // the shim declares it static where the call is virtual, or the other way round: the JVM would throw
             // IncompatibleClassChangeError at the call, so it links like a missing method (a stub, reported)
@@ -223,6 +235,12 @@ public final class ShimLinker {
                 m.desc = objectDesc;
                 return m;
             }
+        }
+
+        // A shim method that takes wider numbers (1.5.2's PathNavigate.tryMoveToXYZ(DDDF) is (DDDD) in 1.7.10): convert the arguments and call it.
+        if (h.isShim(m.owner)) {
+            AbstractInsnNode widened = widenedMethod(method, m, h, report, from);
+            if (widened != null) return widened;
         }
 
         // A shim method that exists with another reference return type (Forge's OreDictionary.getOres(String, boolean) returned
@@ -274,6 +292,75 @@ public final class ShimLinker {
     }
 
     /**
+     * The shim lacks {@code owner.name(desc)} but declares the same method with the same return type and the same arguments except that some
+     * primitive ones are wider (float to double, int to long...), or a number return of another type: spill the arguments, widen the differing ones, call that and convert the result. Only done when
+     * exactly one such method exists on the owner's superclass chain.
+     */
+    private static AbstractInsnNode widenedMethod(MethodNode method, MethodInsnNode m, Hierarchy h, LinkReport report, String from) {
+        if (m.getOpcode() == Opcodes.INVOKESPECIAL || m.owner.startsWith("[")) return null;
+        Type[] args = Type.getArgumentTypes(m.desc);
+        Type wantedRet = Type.getReturnType(m.desc);
+        String found = null;
+        Set<String> seen = new HashSet<>();
+        for (String c = m.owner; c != null && seen.add(c); ) {
+            var info = h.find(c);
+            if (info == null) break;
+            for (var e : info.methods.entrySet()) {
+                String key = e.getKey();
+                if (!key.startsWith(m.name + "(") || (e.getValue() & Opcodes.ACC_PRIVATE) != 0) continue;
+                String d = key.substring(m.name.length());
+                Type[] target = Type.getArgumentTypes(d);
+                if (target.length != args.length || d.equals(m.desc)) continue;
+                Type ret = Type.getReturnType(d);
+                if (!ret.equals(wantedRet) && returnConversion(ret, wantedRet) < 0) continue;
+                boolean ok = true;
+                for (int i = 0; i < args.length && ok; i++) ok = args[i].equals(target[i]) || CtorChooser.widens(args[i], target[i]);
+                if (!ok) continue;
+                if (found != null && !found.equals(d)) return null;   // ambiguous
+                found = d;
+            }
+            if (found != null) break;
+            c = info.superName;
+        }
+        if (found == null) return null;
+        Type[] target = Type.getArgumentTypes(found);
+        InsnList pre = new InsnList();
+        int[] slots = new int[args.length];
+        int slot = method.maxLocals;
+        for (int i = 0; i < args.length; i++) {
+            slots[i] = slot;
+            slot += args[i].getSize();
+        }
+        for (int i = args.length - 1; i >= 0; i--) pre.add(new VarInsnNode(args[i].getOpcode(Opcodes.ISTORE), slots[i]));
+        int pushed = 0;
+        for (int j = 0; j < args.length; j++) {
+            pre.add(new VarInsnNode(args[j].getOpcode(Opcodes.ILOAD), slots[j]));
+            if (CtorChooser.widens(args[j], target[j])) pre.add(new InsnNode(CtorChooser.widenOpcode(args[j], target[j])));
+            pushed += target[j].getSize();
+        }
+        method.maxLocals = slot;
+        method.maxStack += pushed;
+        method.instructions.insertBefore(m, pre);
+        report.adapted(m.owner, m.name + m.desc + " -> " + found, from);
+        m.desc = found;
+        int conv = returnConversion(Type.getReturnType(found), wantedRet);
+        if (conv >= 0) method.instructions.insert(m, new InsnNode(conv));
+        return m;
+    }
+
+    /** The instruction turning a returned number of type {@code from} into {@code to} (1.5.2's int damage became a float in 1.7.10), or -1. */
+    private static int returnConversion(Type from, Type to) {
+        int f = from.getSort(), t = to.getSort();
+        if (f == Type.FLOAT && t == Type.INT) return Opcodes.F2I;
+        if (f == Type.DOUBLE && t == Type.INT) return Opcodes.D2I;
+        if (f == Type.INT && t == Type.FLOAT) return Opcodes.I2F;
+        if (f == Type.INT && t == Type.DOUBLE) return Opcodes.I2D;
+        if (f == Type.FLOAT && t == Type.DOUBLE) return Opcodes.F2D;
+        if (f == Type.DOUBLE && t == Type.FLOAT) return Opcodes.D2F;
+        return -1;
+    }
+
+    /**
      * {@code new Shim(a, b)} / {@code super(a, b)} where the hand-written shim lacks that constructor: spill the
      * arguments to fresh locals and call the real constructor that can use the most of them (same types, in
      * order), filling the rest with defaults. Stays inside one basic block, so stack map frames remain valid.
@@ -284,7 +371,7 @@ public final class ShimLinker {
             AbstractInsnNode viaId = IdConstructors.adapt(method, m, args, h, report, from);
             if (viaId != null) return viaId;
         }
-        CtorChooser.Choice choice = CtorChooser.choose(h.find(m.owner), args);
+        CtorChooser.Choice choice = CtorChooser.choose(h.find(m.owner), args, (arg, param) -> isSubtype(h, param.getInternalName(), arg.getInternalName(), 0));
         if (choice == null) {
             report.missingMember(m.owner, m.name + m.desc, from, true);
             return null;
@@ -301,7 +388,9 @@ public final class ShimLinker {
         int pushed = 0;
         for (int j = 0; j < target.length; j++) {
             int i = choice.map()[j];
-            pre.add(i >= 0 ? new VarInsnNode(target[j].getOpcode(Opcodes.ILOAD), slots[i]) : new InsnNode(CtorChooser.defaultConst(target[j])));
+            pre.add(i >= 0 ? new VarInsnNode(args[i].getOpcode(Opcodes.ILOAD), slots[i]) : new InsnNode(CtorChooser.defaultConst(target[j])));
+            if (i >= 0 && CtorChooser.widens(args[i], target[j])) pre.add(new InsnNode(CtorChooser.widenOpcode(args[i], target[j])));
+            if (i >= 0 && target[j].getSort() == Type.OBJECT && !target[j].equals(args[i])) pre.add(new TypeInsnNode(Opcodes.CHECKCAST, target[j].getInternalName()));
             pushed += target[j].getSize();
         }
         method.maxLocals = slot;
@@ -326,7 +415,7 @@ public final class ShimLinker {
         // modern state it views cannot be assigned this way).
         if (!isGet && !hierarchy.find(declaring).hasMethod(ShimIndex.SETTER_PREFIX + f.name, "(" + self + f.desc + ")V")) return null;
         if (isGet) {
-            return new MethodInsnNode(Opcodes.INVOKESTATIC, declaring, ShimIndex.GETTER_PREFIX + f.name, "(" + self + ")" + f.desc, false);
+            return new MethodInsnNode(Opcodes.INVOKESTATIC, declaring, ShimIndex.GETTER_PREFIX + f.name, "(" + self + ")" + (vf.getterDesc() != null ? vf.getterDesc() : f.desc), false);
         }
         return new MethodInsnNode(Opcodes.INVOKESTATIC, declaring, ShimIndex.SETTER_PREFIX + f.name, "(" + self + f.desc + ")V", false);
     }

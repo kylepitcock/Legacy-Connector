@@ -12,7 +12,7 @@ import legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound;
  * the running server's.
  */
 public class SaveFormatOld implements ISaveFormat {
-    protected final File savesDirectory;
+    public final File savesDirectory;
     protected final legacyconnector.v1_12_2.net.minecraft.util.datafix.DataFixer dataFixer;
 
     public SaveFormatOld(File savesDirectoryIn, legacyconnector.v1_12_2.net.minecraft.util.datafix.DataFixer dataFixerIn) {
@@ -26,7 +26,7 @@ public class SaveFormatOld implements ISaveFormat {
         var server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
         if (server == null) return null;
         File world = server.getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT).toAbsolutePath().normalize().toFile();
-        return new SaveFormatOld(world.getParentFile(), null);
+        return new legacyconnector.v1_12_2.net.minecraft.world.chunk.storage.AnvilSaveConverter(world.getParentFile(), null);
     }
 
     @Override

@@ -30,9 +30,17 @@ public class RelaunchClassLoader extends URLClassLoader {
 
     /** The bytes of a class as the loader sees it (name dotted), or null. */
     public byte[] getClassBytes(String name) throws IOException {
+        // FML's loader finds resources only in its own URLs, so the JDK's classes have no bytes there (ForgeMultipart's mixin compiler walks up to
+        // java.lang.Object and stops on the missing bytes; with bytes for Object it asks for the super class of Object and fails on null)
+        if (name.startsWith("java.") || name.startsWith("javax.") || name.startsWith("sun.") || name.startsWith("jdk.")) return null;
         try (InputStream in = real.getResourceAsStream(name.replace('.', '/') + ".class")) {
             return in == null ? null : in.readAllBytes();
         }
+    }
+
+    @Override
+    protected Class<?> findClass(String name) throws ClassNotFoundException {
+        return real.loadClass(name);
     }
 
     public void registerTransformer(String transformerClassName) {

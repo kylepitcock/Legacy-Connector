@@ -36,6 +36,9 @@ public class Item {
     private String potionEffect;
     private String unlocalizedName;
     protected IIcon itemIcon;
+    /** Minecraft 1.4.7: the item's tile in its sprite sheet ({@code Item.iconIndex}); -1 for items that register icons (see SpriteSheets147). */
+    public int iconIndex = -1;
+    private String mcc$textureFile;
     protected String iconString;
     private CreativeTabs tabToDisplayOn;
     protected boolean canRepair = true;
@@ -449,8 +452,34 @@ public class Item {
     // ------------------------------------------------------------------ rendering (client)
 
     public IIcon getIconFromDamage(int damage) {
-        if (itemIcon == null && mcc$vanilla != null) return mcc$vanillaItemIcon(damage, 0);
+        // an index-based (1.4.7) item has no icon of its own: registerIcons would only have filled in a placeholder for it
+        if (iconIndex >= 0 && mcc$vanilla == null) return org.kylepitcock.legacyconnector.v1_6_4.bridge.SpriteSheets147.mcc$icon(this, iconIndex);
+        if (itemIcon == null) {
+            if (mcc$vanilla != null) return mcc$vanillaItemIcon(damage, 0);
+        }
         return itemIcon;
+    }
+
+    /** Minecraft 1.4.7: the item's tile in its sprite sheet. */
+    public Item setIconIndex(int index) {
+        this.iconIndex = index;
+        return this;
+    }
+
+    /** Minecraft 1.4.7: the item's tile as (column, row) of its 16x16 sprite sheet (RedPower's tools). */
+    public Item setIconCoord(int column, int row) {
+        this.iconIndex = row * 16 + column;
+        return this;
+    }
+
+    /** Forge 1.4.7's per-item sprite sheet ({@code ITextureProvider}); {@code /gui/items.png} unless set. */
+    public Item setTextureFile(String file) {
+        this.mcc$textureFile = file;
+        return this;
+    }
+
+    public String getTextureFile() {
+        return mcc$textureFile != null ? mcc$textureFile : "/gui/items.png";
     }
 
     public IIcon getIconFromDamageForRenderPass(int damage, int pass) {

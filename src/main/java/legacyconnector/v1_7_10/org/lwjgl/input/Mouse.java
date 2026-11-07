@@ -169,6 +169,12 @@ public class Mouse {
         return button >= 0 && button < getButtonCount() ? "BUTTON" + button : null;
     }
 
+    /** LWJGL 2's {@code getButtonIndex(name)}: the index of "BUTTON0", "BUTTON1", ... or -1. */
+    public static int getButtonIndex(String name) {
+        for (int i = 0; i < getButtonCount(); i++) if (("BUTTON" + i).equalsIgnoreCase(name)) return i;
+        return -1;
+    }
+
     /** When the current event happened (System.nanoTime() clock; events are delivered as they occur). */
     public static long getEventNanoseconds() {
         return System.nanoTime();

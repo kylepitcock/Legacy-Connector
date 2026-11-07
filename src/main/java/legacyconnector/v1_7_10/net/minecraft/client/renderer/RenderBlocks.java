@@ -54,6 +54,11 @@ import legacyconnector.v1_7_10.net.minecraft.world.World;
 public class RenderBlocks {
     public IBlockAccess blockAccess;
     public IIcon overrideBlockTexture;
+
+    /** Minecraft 1.4.7's int {@code overrideBlockTexture} (-1: none; a tile index while breaking progress is drawn), read by mods' block renderers. */
+    public int mcc$overrideIndex() {
+        return overrideBlockTexture == null ? -1 : 0;
+    }
     public boolean flipTexture;
     /** Mirrors the U of north and east faces (1.7.10 sets it while drawing ambient-occluded faces of some blocks). */
     public boolean field_152631_f;
@@ -176,19 +181,41 @@ public class RenderBlocks {
         if (overrideBlockTexture != null) return overrideBlockTexture;
         IIcon icon = block.getIcon(access, x, y, z, side);
         if (icon == null && access != null) icon = block.getIcon(side, access.getBlockMetadata(x, y, z));
-        return getIconSafe(icon);
+        return mcc$inSheet(getIconSafe(icon));
     }
 
     public IIcon getBlockIconFromSideAndMetadata(Block block, int side, int meta) {
-        return getIconSafe(block.getIcon(side, meta));
+        return mcc$inSheet(getIconSafe(block.getIcon(side, meta)));
     }
 
     public IIcon getBlockIconFromSide(Block block, int side) {
-        return getIconSafe(block.getBlockTextureFromSide(side));
+        return mcc$inSheet(getIconSafe(block.getBlockTextureFromSide(side)));
     }
 
     public IIcon getBlockIcon(Block block) {
-        return getIconSafe(block.getBlockTextureFromSide(1));
+        return mcc$inSheet(getIconSafe(block.getBlockTextureFromSide(1)));
+    }
+
+    /**
+     * Minecraft 1.4.7: a renderer that binds a mod's sprite sheet and then draws a block's faces with the icons of the block (BuildCraft's pipes:
+     * {@code renderStandardBlock} with the tile index the pipe names) expects the quads to carry positions in that sheet. The icon of a tile is the
+     * cut sprite of the atlas, whose UVs are atlas coordinates; while a block's geometry is captured with such a sheet bound the icon of the same
+     * tile in sheet space is used instead, and IsbrhQuads maps the quads back onto the cut tile (as it does for {@code renderFaceYPos(..., tile)}).
+     */
+    private static IIcon mcc$inSheet(IIcon icon) {
+        if (icon == null || !org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.capturing()) return icon;
+        String sheet = org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.sheet();
+        if (sheet == null) return icon;
+        String name = icon.mcc$modernName();
+        if (name == null) return icon;
+        String slug = "/" + org.kylepitcock.legacyconnector.v1_6_4.bridge.SpriteSheets147.slug(org.kylepitcock.legacyconnector.v1_6_4.bridge.SpriteSheets147.normalize(sheet)) + "/";
+        int at = name.lastIndexOf(slug);
+        if (at < 0) return icon;
+        try {
+            return mcc$tile(null, Integer.parseInt(name.substring(at + slug.length())));
+        } catch (NumberFormatException e) {
+            return icon;
+        }
     }
 
     /** The icon, or the block atlas's missing-texture sprite for null (1.7.10 drew "missingno" rather than failing). */
@@ -442,6 +469,48 @@ public class RenderBlocks {
         }
         t.addVertexWithUV(x, y, z, u, v);
     }
+
+    /**
+     * Minecraft 1.4.7's face renderers take a tile index of the bound 256x256 sprite sheet instead of an icon (Applied Energistics draws
+     * its cable arms and connectors with them). The icon built here covers that tile in sheet space, so the quads carry the UVs the
+     * 1.4.7 code computed and the sheet mapping of IsbrhQuads sends them to the tile the pack cut.
+     */
+    private static IIcon mcc$tile(Block block, int tile) {
+        // not capturing a block's geometry (an item in a slot or the hand): quads are drawn against the atlas, so the tile's cut sprite. The sheet
+        // is the one the renderer bound, else the block's own (1.4.7's item renderers got the item's sheet bound; BuildCraft's pipe items draw
+        // the pipe block's faces by tile index with nothing bound by name)
+        if (!org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.capturing()) {
+            String sheet = org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.sheet();
+            if (sheet == null && block != null) {
+                try {
+                    String own = block.getTextureFile();
+                    if (own != null && org.kylepitcock.legacyconnector.v1_6_4.bridge.SpriteSheets147.isCutSheet(own)) sheet = own;
+                } catch (RuntimeException | LinkageError e) {
+                    sheet = null;
+                }
+            }
+            if (sheet != null) return org.kylepitcock.legacyconnector.v1_6_4.bridge.SpriteSheets147.icon(sheet, tile, true);
+        }
+        final float u0 = ((tile & 15) << 4) / 256.0F, v0 = (tile & 240) / 256.0F, size = 16.0F / 256.0F;
+        return new IIcon() {
+            public int getIconWidth() { return 16; }
+            public int getIconHeight() { return 16; }
+            public float getMinU() { return u0; }
+            public float getMaxU() { return u0 + size; }
+            public float getInterpolatedU(double u) { return u0 + (float) (u / 16.0D) * size; }
+            public float getMinV() { return v0; }
+            public float getMaxV() { return v0 + size; }
+            public float getInterpolatedV(double v) { return v0 + (float) (v / 16.0D) * size; }
+            public String getIconName() { return "legacy147:tile" + tile; }
+        };
+    }
+
+    public void renderBottomFace(Block block, double x, double y, double z, int tile) { renderFaceYNeg(block, x, y, z, mcc$tile(block, tile)); }
+    public void renderTopFace(Block block, double x, double y, double z, int tile) { renderFaceYPos(block, x, y, z, mcc$tile(block, tile)); }
+    public void renderEastFace(Block block, double x, double y, double z, int tile) { renderFaceZNeg(block, x, y, z, mcc$tile(block, tile)); }
+    public void renderWestFace(Block block, double x, double y, double z, int tile) { renderFaceZPos(block, x, y, z, mcc$tile(block, tile)); }
+    public void renderNorthFace(Block block, double x, double y, double z, int tile) { renderFaceXNeg(block, x, y, z, mcc$tile(block, tile)); }
+    public void renderSouthFace(Block block, double x, double y, double z, int tile) { renderFaceXPos(block, x, y, z, mcc$tile(block, tile)); }
 
     public void renderFaceYNeg(Block block, double x, double y, double z, IIcon icon) {
         Tessellator t = Tessellator.mcc$get$instance();

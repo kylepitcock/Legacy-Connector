@@ -38,6 +38,8 @@ public class Minecraft {
     /** 1.7.10's frames-per-second counter. */
     public static int debugFPS;
     public TextureManager renderEngine = TextureManager.INSTANCE;
+    /** 1.4.7: mods read their sprite images through the selected texture pack. */
+    public legacyconnector.v1_6_4.net.minecraft.client.texturepacks.TexturePackList texturePackList = new legacyconnector.v1_6_4.net.minecraft.client.texturepacks.TexturePackList();
     /** The frame timer (obfuscated name field_71428_T): its partial tick is set by the layer each frame. */
     public legacyconnector.v1_7_10.net.minecraft.util.Timer timer = legacyconnector.v1_7_10.net.minecraft.util.Timer.INSTANCE;
     public legacyconnector.v1_7_10.net.minecraft.util.Timer field_71428_T = legacyconnector.v1_7_10.net.minecraft.util.Timer.INSTANCE;
@@ -75,7 +77,8 @@ public class Minecraft {
     public legacyconnector.v1_7_10.net.minecraft.client.renderer.EntityRenderer entityRenderer =
             new legacyconnector.v1_7_10.net.minecraft.client.renderer.EntityRenderer();
 
-    private legacyconnector.v1_7_10.net.minecraft.util.Session session;
+    /** A public field in 1.5.2 and 1.6.4 (Liquid XP reads {@code mc.session.username} while loading), so it exists from the start. */
+    public legacyconnector.v1_7_10.net.minecraft.util.Session session = legacyconnector.v1_7_10.net.minecraft.util.Session.mcc$current();
 
     public legacyconnector.v1_7_10.net.minecraft.util.Session getSession() {
         if (session == null) session = legacyconnector.v1_7_10.net.minecraft.util.Session.mcc$current();
@@ -420,6 +423,7 @@ public class Minecraft {
     public void loadWorld(WorldClient world) {
         if (world != null) return;
         var mc = mc();
+        org.apache.logging.log4j.LogManager.getLogger("LegacyConnector/Client").warn("A legacy mod left the world (loadWorld(null)), called from", new Throwable());
         if (mc.level != null) mc.level.disconnect();
         mc.disconnect(new net.minecraft.client.gui.screens.TitleScreen());
     }

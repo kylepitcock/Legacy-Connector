@@ -6,6 +6,12 @@ package legacyconnector.v1_7_10.net.minecraft.block;
  * Regenerate with tools/gen_vanilla_shims.py; replace with a hand-written class to add behaviour.
  */
 public class BlockRedstoneWire extends legacyconnector.v1_7_10.net.minecraft.block.Block {
+    /**
+     * Vanilla's first declared field ({@code field_150181_a}, 1.5.2 {@code wiresProvidePower}); RedLogic reads it as {@code getDeclaredFields()[0]} and asserts its
+     * type. Keep it first.
+     */
+    private boolean wiresProvidePower = true;
+
     public BlockRedstoneWire(org.kylepitcock.legacyconnector.v1_7_10.bridge.VanillaInfo info) {
         super(info);
     }

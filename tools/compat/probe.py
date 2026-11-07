@@ -2,7 +2,7 @@
 """Link probe: translates a directory of legacy mod jars offline (no game) and adds the result to docs/data/mods.json,
 like the Sinytra Connector compatibility checker does for Fabric.
 
-usage: probe.py <jar-dir> [--mc 1.7.10] [--date YYYY-MM-DD] [--version <layer version>] [--json out.json] [--dry-run] [--no-history] [--fail-on-regression]
+usage: probe.py <jar-dir> [--mc 1.7.10|1.12.2|1.20.1] [--date YYYY-MM-DD] [--version <layer version>] [--json out.json] [--dry-run] [--no-history] [--fail-on-regression]
        probe.py --from-json probe.json [...]     (convert an earlier run without translating again)
 
 The jars are only read (test-mods/ stays gitignored, never commit or redistribute them); only results are written.
@@ -13,11 +13,15 @@ All jars are translated as ONE mod set so mods that extend each other link. Per 
   gap_mod     missing another mod's API (NEI, Thaumcraft, AE2, ...)  -> status "fails"
   gap_lib     missing removed Java/library code                      -> status "fails"
   obsolete    engine patch with nothing to do on 1.21.1 -> not listed
+--mc 1.20.1 (Forge 1.20.1 jars, remapped in place onto NeoForge 1.21.1) has no shim to link against: it runs ./gradlew gap1201 (loader tools Gap1201: SRG to
+Mojang and Forge to NeoForge renames, then every reference is resolved against Minecraft 1.21.1 + NeoForge + the other jars) and turns the unresolved symbols into the
+same records, so a jar is "loads" when nothing is left unresolved (a link check of the renamed jar, like the others). It needs build/moddev/artifacts/neoforge-*-merged.jar
+(any ./gradlew build) and the gradle cache libraries; GAP1201_TARGETS (comma separated jars) replaces that target list.
 A probe proves "translates and links", never "works in game": entries get source "probe", which the site ranks below
 maintainer, client and corpus entries (a real run of the same mod always wins) and which never overwrites them.
 Every run is also appended to docs/data/probe.json (counts + per-mod list), which the pie chart page docs/probe.html shows.
 """
-import argparse, datetime, json, pathlib, re, subprocess, sys, tempfile
+import argparse, datetime, glob, json, os, pathlib, re, subprocess, sys, tempfile, zipfile
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 DATA = ROOT / "docs" / "data" / "mods.json"
@@ -55,6 +59,122 @@ def run_probe(jar_dir, out):
     for line in r.stdout.splitlines():   # the resource check says here whether it ran (it is skipped without the vanilla client jar)
         if line.startswith("Asset check"):
             print(line, flush=True)
+
+
+def gap1201_targets():
+    """Minecraft 1.21.1 + NeoForge jars and the libraries of the game class path, the target of the 1.20.1 gap report."""
+    env = os.environ.get("GAP1201_TARGETS")
+    if env:
+        return env
+    arts = []
+    for base in (ROOT / "build" / "moddev" / "artifacts", ROOT.parents[2] / "build" / "moddev" / "artifacts"):   # a worktree reuses the main checkout's build
+        arts = sorted(base.glob("neoforge-*-merged.jar")) + [j for j in sorted(base.glob("neoforge-*.jar"))
+                                                              if "-merged" not in j.name and "-sources" not in j.name and "client-extra" not in j.name]
+        if arts:
+            break
+    if not arts:
+        sys.exit("no build/moddev/artifacts/neoforge-*-merged.jar: run ./gradlew build once, or set GAP1201_TARGETS")
+    cache = pathlib.Path.home() / ".gradle" / "caches" / "modules-2" / "files-2.1"
+    groups = ["io.netty", "it.unimi.dsi", "org.lwjgl", "com.ibm.icu", "org.apache.commons", "commons-io", "commons-codec", "commons-logging", "com.google.guava",
+              "com.google.code.gson", "com.google.code.findbugs", "org.jetbrains", "com.github.oshi", "net.java.dev.jna", "com.mojang", "org.slf4j",
+              "org.apache.logging.log4j", "com.electronwill.night-config", "net.neoforged", "net.neoforged.fancymodloader", "cpw.mods", "io.github.llamalad7",
+              "org.joml", "net.sf.jopt-simple", "org.apache.httpcomponents", "org.ow2.asm", "net.fabricmc", "org.jspecify", "org.lz4", "org.checkerframework",
+              "com.google.errorprone"]
+    skip = ("sources", "javadoc", "installertools", "jst", "moddev", "srgutils", "neoform", "AutoRenaming", "DevLaunch", "JarJar", "minecraft-dependencies",
+            "binarypatcher", "cli-utils", "gradle", "fatjar", "at-parser", "natives", "javadoctor", "mergetool-2.0.0")
+
+    def vkey(v):
+        return [int(x) if x.isdigit() else 0 for x in re.split(r"[.\-+]", v)]
+    best = {}
+    for g in groups:
+        for j in glob.glob(str(cache / g / "**" / "*.jar"), recursive=True):
+            rel = pathlib.Path(j).relative_to(cache).as_posix()
+            if any(x in rel for x in skip) and "mergetool-2.0.3-api" not in rel:
+                continue
+            parts = rel.split("/")
+            art = (parts[0], parts[1])
+            if art not in best or vkey(parts[2]) > vkey(best[art][0]):
+                best[art] = (parts[2], j)
+    return ",".join([a.as_posix() for a in arts] + [pathlib.Path(j).as_posix() for _, j in best.values()])
+
+
+def mod_info(jar):
+    """[{id, name, version}] from META-INF/mods.toml of a 1.20.1 Forge jar (or neoforge.mods.toml)."""
+    import tomllib
+    try:
+        with zipfile.ZipFile(jar) as z:
+            for n in ("META-INF/mods.toml", "META-INF/neoforge.mods.toml"):
+                if n in z.namelist():
+                    t = tomllib.loads(z.read(n).decode("utf-8", "replace"))
+                    out = []
+                    for m in t.get("mods", []):
+                        v = str(m.get("version", ""))
+                        if v.startswith("${") or not v:
+                            try:
+                                mm = re.search(r"Implementation-Version:\s*(\S+)", z.read("META-INF/MANIFEST.MF").decode("utf-8", "replace"))
+                                v = mm.group(1) if mm else ""
+                            except KeyError:
+                                v = ""
+                        out.append({"id": m.get("modId", ""), "name": m.get("displayName") or m.get("modId", ""), "version": v})
+                    return out
+    except Exception:
+        pass
+    return []
+
+
+def native_libraries():
+    """Mod ids of forward/1.20.1/libraries.tsv: 1.20.1 libraries replaced by their native NeoForge 1.21.1 build when the pack has it."""
+    f = ROOT / "loader" / "src" / "main" / "resources" / "legacyconnector" / "forward" / "1.20.1" / "libraries.tsv"
+    return {l.split("	")[0] for l in f.read_text(encoding="utf-8").splitlines() if l.strip() and not l.startswith("#")}
+
+
+def dotted(kind, sym):
+    """A gap report symbol (internal names, descriptors) as the dotted name probe.py classifies by prefix."""
+    if kind != "class":
+        sym = re.split(r"[(:]", sym, 1)[0]
+    return sym.replace("/", ".")
+
+
+def run_gap1201(jar_dir, out):
+    """The 1.20.1 equivalent of run_probe: ./gradlew gap1201 over the directory, converted to the records checkLegacyMod writes."""
+    jars = sorted(pathlib.Path(jar_dir).rglob("*.jar"))
+    if not jars:
+        sys.exit(f"no jars in {jar_dir}")
+    tmp = pathlib.Path(tempfile.mkdtemp(prefix="gap1201-"))
+    report = tmp / "gap1201.txt"
+    listing = tmp / "targets.txt"   # "@file": the target list is longer than the Windows command line
+    listing.write_text(gap1201_targets(), encoding="utf-8")
+    cmd = [str(ROOT / ("gradlew.bat" if sys.platform == "win32" else "gradlew")), "-q", "gap1201", f"-PtargetJars=@{listing.as_posix()}",
+           f"-PgapJars={pathlib.Path(jar_dir).resolve()}", f"-PgapReport={report}", "-Pgap.translate=true"]   # the report is of the jars AFTER the layer (facades, library bridges, renames)
+    print(f"gap report for {len(jars)} Forge 1.20.1 jar(s) ...", flush=True)
+    r = subprocess.run(cmd, cwd=ROOT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+    detail = pathlib.Path(str(report) + ".detail.tsv")
+    if r.returncode != 0 or not detail.exists():
+        sys.exit(r.stdout[-3000:] + "\nprobe failed")
+    missing, refs = {}, {}
+    for line in detail.read_text(encoding="utf-8").splitlines():
+        jar, k, sym = line.split("\t", 2)
+        if k == "refs":
+            refs[jar] = int(sym)
+        else:
+            missing.setdefault(jar, []).append(dotted(k, sym))
+    records = []
+    for j in jars:
+        with zipfile.ZipFile(j) as z:
+            classes = sum(1 for n in z.namelist() if n.endswith(".class"))
+        miss = sorted(set(missing.get(j.name, [])))
+        # the telling ones first: Forge and Minecraft symbols before the other mods' (cause() looks at all of them)
+        miss.sort(key=lambda m: (not m.startswith(("net.minecraftforge.", "net.neoforged.", "net.minecraft.", "com.mojang.")), m))
+        info = mod_info(j)
+        rec = {"jar": j.name, "mc": "1.20.1", "mods": info, "classes": classes, "synthesizedMembers": 0, "references": refs.get(j.name, 0)}
+        if info and all(m["id"].lower() in native_libraries() for m in info):
+            rec["result"] = "obsolete"   # a library with a native 1.21.1 build of the same mod id: the layer skips this jar (NativeLibraries1201), the native build is what runs
+        elif miss:
+            rec.update({"result": "unresolved", "unresolved": len(miss), "missing": miss[:20]})
+        else:
+            rec["result"] = "links"
+        records.append(rec)
+    pathlib.Path(out).write_text(json.dumps(records), encoding="utf-8")
 
 
 # what a missing symbol belongs to: our shim (old Minecraft/Forge not built yet), old Java/library code, or another mod's API
@@ -311,7 +431,7 @@ def main():
         path = a.from_json
     elif a.jar_dir:
         path = a.json or tempfile.mktemp(suffix=".json")
-        run_probe(a.jar_dir, path)
+        (run_gap1201 if a.mc == "1.20.1" else run_probe)(a.jar_dir, path)
     else:
         ap.error("jar directory or --from-json required")
     records = json.loads(pathlib.Path(path).read_text(encoding="utf-8"))

@@ -68,6 +68,14 @@ public final class LegacyResourceConverter {
             output.putIfAbsent("legacyconnector_legacy/" + modern, data);
             return true;
         }
+        if (modern.matches("assets/[^/]+/patchouli_books/.+")) {
+            // 1.12 Patchouli books live in assets; the modern Patchouli reads data/<ns>/patchouli_books. The runtime converts the staged
+            // copy (item and block ids need the registries) when the modern Patchouli is installed; the original stays for a legacy Patchouli.
+            output.putIfAbsent("legacyconnector_legacy/" + modern, data);
+            // the modern Patchouli finds a mod's books by scanning its jar for data/<mod>/patchouli_books/<book>/book.json
+            String bookJson = PatchouliBookJson.dataPath(modern);
+            if (bookJson != null) output.putIfAbsent(bookJson, PatchouliBookJson.convert(data));
+        }
         if (modern.matches("assets/[^/]+/sounds\\.json")) {
             data = convertSounds(data, modern.substring("assets/".length(), modern.indexOf('/', "assets/".length())));
         } else if (modern.endsWith(".mcmeta")) {
@@ -79,6 +87,11 @@ public final class LegacyResourceConverter {
         ctm.offer(modern, data);
         output.putIfAbsent(modern, data);
         return true;
+    }
+
+    /** The jar adds textures of its own to the atlas (the sprite sheet tiles of {@link SheetCutter}). */
+    public void addsTextures() {
+        sawTextures = true;
     }
 
     /** A model that names one of the 1.12 vanilla vine models as parent gets it generated into the minecraft namespace (1.13 has no such file). */
@@ -316,7 +329,10 @@ public final class LegacyResourceConverter {
     }
 
     private static boolean isRefKey(String key, String parentKey) {
-        return key.equals("parent") || key.equals("model") || "textures".equals(parentKey);
+        // a model's "parent" is a top-level key; deeper ones belong to mod formats stored under models/ (Bedrock geometry JSON, HuajiAge's stand
+        // models: "parent" names a bone, which must keep its case to match the bone's "name")
+        if (key.equals("parent")) return parentKey == null;
+        return key.equals("model") || "textures".equals(parentKey);
     }
 
     /**

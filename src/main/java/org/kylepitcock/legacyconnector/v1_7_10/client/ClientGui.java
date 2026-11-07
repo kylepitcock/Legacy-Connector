@@ -21,7 +21,11 @@ public final class ClientGui {
     private ClientGui() {}
 
     public static void onRegisterScreens(RegisterMenuScreensEvent event) {
-        event.register(GuiBridge.menuType(), LegacyContainerScreen::new);
+        event.register(GuiBridge.menuType(), ClientGui::screenFor);
+    }
+
+    private static net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<LegacyMenu> screenFor(LegacyMenu menu, Inventory inv, net.minecraft.network.chat.Component title) {
+        return menu.clientGui() instanceof GuiScreen && !(menu.clientGui() instanceof GuiContainer) ? new LegacyHostedScreen(menu, inv, title) : new LegacyContainerScreen(menu, inv, title);
     }
 
     public static LegacyMenu createMenu(MenuType<LegacyMenu> type, IGuiHandler handler, int windowId, Inventory inv, int id, int x, int y, int z) {
@@ -35,6 +39,11 @@ public final class ClientGui {
             }
         }
         if (gui instanceof GuiContainer gc && gc.inventorySlots != null) return new LegacyMenu(type, windowId, inv, gc.inventorySlots, gc);
+        if (gui instanceof GuiScreen gs && !(gui instanceof GuiContainer)) {
+            // a GuiScreen that keeps its own container and draws and clicks its slots itself (Tinkers' Construct's NewContainerGui)
+            var own = LegacyHostedScreen.containerOf(gs);
+            if (own != null) return new LegacyMenu(type, windowId, inv, own, gs);
+        }
         LoggerFactory.getLogger("LegacyConnector/Gui").warn("Legacy server opened GUI {} but the client element is {}", id, gui);
         return new LegacyMenu(type, windowId, inv, new Empty(), null);
     }

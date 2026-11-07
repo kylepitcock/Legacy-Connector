@@ -185,7 +185,9 @@ public class LegacyMenu extends AbstractContainerMenu {
     public void broadcastChanges() {
         if (player instanceof ServerPlayer sp && !crafterAdded) {
             crafterAdded = true;
-            legacy.addCraftingToCrafters(org.kylepitcock.legacyconnector.v1_7_10.bridge.EntityBridge.wrap(sp) instanceof ICrafting c ? c : new Crafter(sp));
+            ICrafting listener = org.kylepitcock.legacyconnector.v1_7_10.bridge.EntityBridge.wrap(sp) instanceof ICrafting c ? c : new Crafter(sp);
+            // a container that registered the player itself (fake-player GUIs call addCraftingToCrafters) must not be added twice: "Listener already listening"
+            if (!legacy.mcc$hasCrafter(listener)) legacy.addCraftingToCrafters(listener);
         }
         super.broadcastChanges();
         legacy.detectAndSendChanges();

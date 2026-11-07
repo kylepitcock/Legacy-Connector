@@ -157,6 +157,7 @@ dependencies {
     compileOnly "top.theillusivec4.curios:curios-neoforge:${curios_version}:api"
     compileOnly "maven.modrinth:jade:${jade_version}"
     compileOnly "mezz.jei:jei-1.21.1-neoforge-api:${jei_version}"
+    compileOnly "vazkii.patchouli:Patchouli:${patchouli_version}:api" // Patchouli bridge (1.12.2 books and API); blamejared maven
     compileOnly("com.simibubi.create:create-1.21.1:${create_version}") { transitive = false }
 
     // TerraBlender (LGPL-3.0): the only biome placement path for legacy mod biomes (a region of its overworld layout, which Terralith, Tectonic,
@@ -206,8 +207,14 @@ dependencies {
     // Unit tests of the pure logic of the addon API (api.internal.AddonOrder).
     testImplementation platform('org.junit:junit-bom:5.10.2')
     testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'com.google.code.gson:gson:2.10.1' // book json conversion tests (Gson is not on the test class path otherwise)
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
+// Game classes (netty, vanilla packets) for the tests of shim classes that mention them in their signatures; nothing is bootstrapped.
+sourceSets.test.compileClasspath += sourceSets.main.compileClasspath
+sourceSets.test.runtimeClasspath += sourceSets.main.compileClasspath
+// ... and the tests of the energy bridges name NeoForge's IEnergyStorage / Direction directly
+sourceSets.test.compileClasspath += sourceSets.main.compileClasspath
 tasks.withType(Test).configureEach { useJUnitPlatform() }
 
 // The addon API alone (classes + sources), the compile-time dependency of addons: build/dist/legacyconnector-api-<version>.jar.
@@ -269,16 +276,51 @@ tasks.named('processResources') {
 
 // 1.20.1 gap report (milestone 0): ./gradlew gap1201 -PsrgTable=srg.tsv -PtargetJars=a.jar,b.jar -PgapJars=dir [-PgapReport=file]
 // SRG table: built by :loader:genSrgMojang1201 (default); targets: Minecraft 1.21.1 (Mojang names) + NeoForge, e.g. build/moddev/artifacts/neoforge-*-merged.jar
+// -PtargetJars=@list: a list file (longer than the Windows command line); the shim classes are appended in a copy
+def gapTargets(String targetJars, String classDirs) {
+    if (!targetJars.startsWith('@')) return targetJars + ',' + classDirs
+    def merged = new File(buildDir, 'gap1201-targets.txt')
+    merged.parentFile.mkdirs()
+    merged.text = new File(targetJars.substring(1)).readLines().join(',') + ',' + classDirs
+    return '@' + merged.absolutePath
+}
 tasks.register('gap1201', JavaExec) {
-    dependsOn ':loader:genSrgMojang1201'
-    classpath = project(':loader').sourceSets.main.runtimeClasspath
+    dependsOn ':loader:genSrgMojang1201', 'classes', generateShimIndex // the Forge facades (legacyconnector/v1_20_1) count as present
+    // gson (the provenance watermark of the transformer) and the fancy mod loader's annotations are compileOnly in the loader
+    classpath = project(':loader').sourceSets.main.runtimeClasspath + project(':loader').sourceSets.main.compileClasspath.filter { it.name.startsWith('gson') || it.name.startsWith('slf4j') }
     mainClass = 'org.kylepitcock.legacyconnector.loader.tools.Gap1201'
+    // -Pgap.translate=true runs the jars through Forge1201Transformer first (the report then shows what the layer leaves); -Pgap.limit=N rows per list
+    if (project.findProperty('gap.translate')) systemProperty 'gap.translate', project.findProperty('gap.translate').toString()
+    systemProperty 'gap.shimIndex', shimIndexFile.get().asFile.absolutePath // -Pgap.translate: the translator sees the facades like the game
+    if (project.findProperty('gap.limit')) systemProperty 'gap.limit', project.findProperty('gap.limit').toString()
+    if (project.findProperty('gap.translated.dir')) systemProperty 'gap.translated.dir', project.findProperty('gap.translated.dir').toString()
+    maxHeapSize = '3g'
     argumentProviders.add({
-        def renames = fileTree(dir: 'loader/src/main/resources/legacyconnector/forward/1.20.1', include: '*.tsv').files.join(',')
+        def renames = fileTree(dir: 'loader/src/main/resources/legacyconnector/forward/1.20.1', include: ['forge-*.tsv', 'mc-classes.tsv']).files.join(',')
         def jars = fileTree(dir: project.findProperty('gapJars') ?: 'test-mods4', include: '*.jar').files.collect { it.absolutePath }.sort()
-        [(project.findProperty('srgTable') ?: project(':loader').layout.buildDirectory.file('generated/srg-mojang/legacyconnector/mappings/1.20.1/srg-mojang.tsv').get().asFile.absolutePath).toString(), renames, project.findProperty('targetJars').toString(),
+        [(project.findProperty('srgTable') ?: project(':loader').layout.buildDirectory.file('generated/srg-mojang/legacyconnector/mappings/1.20.1/srg-mojang.tsv').get().asFile.absolutePath).toString(), renames, gapTargets(project.findProperty('targetJars').toString(), sourceSets.main.output.classesDirs.files.collect { it.absolutePath }.join(',')),
          (project.findProperty('gapReport') ?: layout.buildDirectory.file('reports/gap1201.txt').get().asFile.absolutePath).toString()] + jars
     } as CommandLineArgumentProvider)
+}
+
+// 1.20.1: link translated jars with the JVM verifier on the game class path (invalid bytecode of the migration shows up as VerifyError):
+// ./gradlew gap1201 -Pgap.translate=true -Pgap.translated.dir=build/translated1201 ..., then ./gradlew verify1201 -PverifyDir=build/translated1201
+// API difference of a library between its 1.20.1 and 1.21.1 build: ./gradlew libApiDiff -Pold=a.jar -Pnew=b.jar -Ppkgs=dev/architectury/,... [-Preport=file]
+tasks.register('libApiDiff', JavaExec) {
+    dependsOn ':loader:classes'
+    classpath = project(':loader').sourceSets.main.runtimeClasspath
+    mainClass = 'org.kylepitcock.legacyconnector.loader.tools.LibApiDiff'
+    argumentProviders.add({ [project.findProperty('old').toString(), project.findProperty('new').toString(), project.findProperty('pkgs').toString()] +
+            (project.findProperty('report') || project.findProperty('renames') ? [(project.findProperty('report') ?: '').toString()] : []) +
+            (project.findProperty('renames') ? [project.findProperty('renames').toString()] : []) } as CommandLineArgumentProvider)
+}
+
+tasks.register('verify1201', JavaExec) {
+    dependsOn tasks.named('classes')
+    classpath = sourceSets.main.runtimeClasspath + project(':loader').sourceSets.main.runtimeClasspath
+    mainClass = 'org.kylepitcock.legacyconnector.loader.tools.Verify1201'
+    maxHeapSize = '3g'
+    argumentProviders.add({ [project.findProperty('verifyDir').toString(), (project.findProperty('verifyMax') ?: '40').toString()] } as CommandLineArgumentProvider)
 }
 
 // Offline compatibility check: ./gradlew checkLegacyMod -PlegacyJar=/path/to/mod.jar
@@ -288,6 +330,8 @@ tasks.register('checkLegacyMod', JavaExec) {
     mainClass = 'org.kylepitcock.legacyconnector.loader.tools.CheckJar'
     // -PcheckJson=<file> also writes a JSON record per jar (tools/compat/probe.py)
     if (project.findProperty('checkJson')) systemProperty 'legacyconnector.check.json', project.findProperty('checkJson').toString()
+    // -Pbridges=false: check Waila/NEI/Baubles... jars as ordinary mods instead of relocating their API into the shim
+    if (project.findProperty('bridges')) systemProperty 'legacyconnector.check.bridges', project.findProperty('bridges').toString()
     argumentProviders.add({ [shimIndexFile.get().asFile.absolutePath] + (project.findProperty('legacyJar') ?: '').toString().split(',').findAll { it } } as CommandLineArgumentProvider)
 }
 

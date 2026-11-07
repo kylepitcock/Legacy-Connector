@@ -14,6 +14,8 @@ public class Packet132TileEntityData extends S35PacketUpdateTileEntity {
     public int zPosition;
     public int actionType;
     public NBTTagCompound data;
+    /** 1.5.2's name of {@link #data} (kept equal by the constructor; the getter reads either). */
+    public NBTTagCompound customParam1;
 
     public Packet132TileEntityData() {}
 
@@ -23,6 +25,7 @@ public class Packet132TileEntityData extends S35PacketUpdateTileEntity {
         this.zPosition = z;
         this.actionType = actionType;
         this.data = tag;
+        this.customParam1 = tag;
     }
 
     @Override
@@ -47,6 +50,6 @@ public class Packet132TileEntityData extends S35PacketUpdateTileEntity {
 
     @Override
     public NBTTagCompound getNbtCompound() {
-        return data;
+        return data != null ? data : customParam1;
     }
 }

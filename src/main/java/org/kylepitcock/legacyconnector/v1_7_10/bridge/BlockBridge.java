@@ -270,10 +270,15 @@ public final class BlockBridge {
             // 1.5.2 and 1.6.4 let a mod register a block under its unlocalized name or no name at all (FML derived one)
             String unlocalized = block.getUnlocalizedName();
             name = unlocalized != null && !unlocalized.isEmpty() ? unlocalized.replaceFirst("^tile\\.", "") : block.getClass().getSimpleName().toLowerCase(java.util.Locale.ROOT);
+            // a block that was never named (Applied Energistics 1 registers its multi-blocks with a null name): the id its mod gave it
+            if (name.equals("null")) name = "block" + legacyconnector.v1_6_4.net.minecraft.util.Ids.blockId(block);
         }
         LegacyModContainer1710 owner = LegacyModContainer1710.active();
-        String legacyDomain = modId != null ? modId : owner != null ? owner.getModId() : "minecraft";
-        String namespace = owner != null && modId == null ? owner.record().modernId : Ids.modernModId(legacyDomain);
+        // Immibis Core registers the blocks of every Immibis mod from its own code, so no mod is "active" then: the mod whose package holds the
+        // block's class owns it (otherwise RedLogic's gates would be minecraft:redlogic.gates).
+        org.kylepitcock.legacyconnector.core.LegacyModRecord byPackage = owner == null && modId == null ? ownerByPackage(block.getClass()) : null;
+        String legacyDomain = modId != null ? modId : owner != null ? owner.getModId() : byPackage != null ? byPackage.legacyId : "minecraft";
+        String namespace = owner != null && modId == null ? owner.record().modernId : byPackage != null ? byPackage.modernId : Ids.modernModId(legacyDomain);
         ResourceLocation id = ResourceLocation.fromNamespaceAndPath(namespace, Ids.normalizePath(name).replace('/', '_'));
         String legacyName = legacyDomain + ":" + name;
 
@@ -296,6 +301,89 @@ public final class BlockBridge {
             ItemBlock item = instantiateItemBlock(itemClass, block, itemArgs);
             if (item != null) ItemBridge.registerBlockItem(item, block, id, legacyName);
         }
+    }
+
+    /**
+     * Forge 1.5.2/1.6.4 blocks that a mod constructed (which put them in {@code Block.blocksList}) and never passed to
+     * {@code GameRegistry.registerBlock}: the game still had them, with whatever item the mod wrote to {@code Item.itemsList}
+     * (Forestry's ore block). They are registered under their unlocalized name, for the mod whose package owns the class.
+     */
+    public static synchronized int registerImplicit() {
+        int[] total = {0};
+        legacyconnector.v1_6_4.net.minecraft.util.Ids.inEachSpace(() -> total[0] += registerImplicitInSpace());
+        return total[0];
+    }
+
+    private static int registerImplicitInSpace() {
+        boolean numeric = false;
+        for (var m : org.kylepitcock.legacyconnector.core.LegacyMods.all()) numeric |= m.version.equals("1.6.4") || m.version.equals("1.5.2") || m.version.equals("1.4.7");
+        if (!numeric) return 0;
+        int count = 0;
+        Block[] list = legacyconnector.v1_6_4.net.minecraft.util.Ids.blocksList();
+        for (int id = 1; id < list.length; id++) {
+            Block block = list[id];
+            if (block == null || block.mcc$modern != null || block.mcc$vanilla != null || NAMES.containsKey(block)) continue;
+            if (block.getClass().getName().startsWith("legacyconnector.")) continue;
+            org.kylepitcock.legacyconnector.core.LegacyModRecord owner = ownerOf(block.getClass());
+            if (owner == null) continue;
+            String name = block.getUnlocalizedName();
+            name = name != null && !name.isEmpty() && !name.equals("tile.null") ? name.replaceFirst("^tile\\.", "") : "block" + id;
+            try {
+                if (BY_NAME.containsKey(owner.legacyId + ":" + name)) name = name + "_" + id;
+                register(block, null, name, owner.legacyId, new Object[0]);
+                legacyconnector.v1_7_10.net.minecraft.item.Item item = legacyconnector.v1_6_4.net.minecraft.util.Ids.item(id);
+                if (item instanceof ItemBlock ib && ib.mcc$block() == block && block.mcc$modern != null) {
+                    ItemBridge.registerBlockItem(ib, block, BuiltInRegistries.BLOCK.getKey((net.minecraft.world.level.block.Block) block.mcc$modern), NAMES.get(block));
+                } else {
+                    ItemBridge.fromBlock(block);
+                }
+                count++;
+            } catch (RuntimeException | LinkageError e) {
+                LOG.warn("Could not register the unregistered legacy block {} (id {}): {}", block, id, e.toString());
+            }
+        }
+        if (count > 0) LOG.info("Registered {} legacy block(s) that their mods never registered (the numeric id table had them)", count);
+        return count;
+    }
+
+    /** The legacy mod whose main class lives in the package of (or above) {@code cls}; null when no mod's own package contains it. */
+    static org.kylepitcock.legacyconnector.core.LegacyModRecord ownerByPackage(Class<?> cls) {
+        String name = cls.getName();
+        org.kylepitcock.legacyconnector.core.LegacyModRecord best = null;
+        int bestLen = 0;
+        for (var m : org.kylepitcock.legacyconnector.core.LegacyMods.all()) {
+            String main = m.mainClassName;
+            int dot = main == null ? -1 : main.lastIndexOf('.');
+            if (dot <= 0) continue;
+            String pkg = main.substring(0, dot + 1);
+            if (pkg.indexOf('.') != pkg.lastIndexOf('.') && name.startsWith(pkg) && pkg.length() > bestLen) {
+                best = m;
+                bestLen = pkg.length();
+            }
+        }
+        return best;
+    }
+
+    /** The legacy mod whose main class shares the longest package prefix with {@code cls}. */
+    static org.kylepitcock.legacyconnector.core.LegacyModRecord ownerOf(Class<?> cls) {
+        org.kylepitcock.legacyconnector.core.LegacyModRecord best = null;
+        int bestLen = -1;
+        String name = cls.getName();
+        for (var m : org.kylepitcock.legacyconnector.core.LegacyMods.all()) {
+            String main = m.mainClassName == null ? "" : m.mainClassName;
+            int i = 0;
+            int n = Math.min(main.length(), name.length());
+            int lastDot = 0;
+            while (i < n && main.charAt(i) == name.charAt(i)) {
+                if (main.charAt(i) == '.') lastDot = i;
+                i++;
+            }
+            if (lastDot > bestLen) {
+                bestLen = lastDot;
+                best = m;
+            }
+        }
+        return best;
     }
 
     /**
@@ -585,13 +673,15 @@ public final class BlockBridge {
         return key >= 0 && key >> 4 == wrapper.mcc$vanilla.legacyId() ? key & 15 : 0;
     }
 
+    private static final java.util.Set<Block> UNREGISTERED_WARNED = java.util.Collections.newSetFromMap(new java.util.concurrent.ConcurrentHashMap<>());
+
     public static BlockState toModern(Block block, int meta) {
         if (block == null) return Blocks.AIR.defaultBlockState();
         var equivalent = VanillaEquivalents.block(block, meta);
         if (equivalent != null) return equivalent.defaultBlockState();
         if (block.mcc$modern instanceof LegacyBlockAdapter a) return a.stateForMeta(meta);
         if (block.mcc$vanilla != null) return stateOfVanilla(block.mcc$vanilla, meta);
-        LOG.warn("Legacy block {} used in the world before it was registered; placing air", block);
+        if (UNREGISTERED_WARNED.add(block)) LOG.warn("Legacy block {} used in the world before it was registered; placing air (logged once per block)", block);
         return Blocks.AIR.defaultBlockState();
     }
 

@@ -63,7 +63,8 @@ public final class VillagerBridge {
         if (id >= 0 && id <= 4) return;
         CUSTOM.computeIfAbsent(id, i -> {
             ResourceLocation key = ResourceLocation.withDefaultNamespace("villager_" + i);
-            VillagerProfession profession = new VillagerProfession("villager_" + i, holder -> false, holder -> false,
+            var poi = jobSite(i);
+            VillagerProfession profession = new VillagerProfession("villager_" + i, holder -> poi != null && holder.is(poi), holder -> poi != null && holder.is(poi),
                     ImmutableSet.of(), ImmutableSet.of(), null);
             // 1.7.10 professions had no names: the trade screen showed "entity.minecraft.villager.legacyconnector.villager_243"
             org.kylepitcock.legacyconnector.core.pack.GeneratedTranslations.put("en_us", translationKey(i), SKINS.containsKey(i) ? nameFromSkin(SKINS.get(i)) : "Villager");
@@ -77,6 +78,30 @@ public final class VillagerBridge {
             }
         });
         register();
+    }
+
+    /**
+     * The point of interest of a profession's job site when {@code villagers.jobSites} maps it to a block (1.7.10 professions declare none):
+     * a POI type {@code minecraft:villager_<id>_job} of that block's states (NeoForge maps the states when the type is registered; a block that is another profession's job site is refused), which the profession accepts as its job site.
+     */
+    private static net.minecraft.resources.ResourceKey<net.minecraft.world.entity.ai.village.poi.PoiType> jobSite(int id) {
+        String block = org.kylepitcock.legacyconnector.core.LegacyConfig.villagerJobSites().get(id);
+        if (block == null) return null;
+        var blockId = ResourceLocation.tryParse(block);
+        var found = blockId == null ? Optional.<net.minecraft.world.level.block.Block>empty() : BuiltInRegistries.BLOCK.getOptional(blockId);
+        if (found.isEmpty()) {
+            LOG.warn("villagers.jobSites: block {} of profession {} does not exist", block, id);
+            return null;
+        }
+        try {
+            var key = ResourceLocation.withDefaultNamespace("villager_" + id + "_job");
+            var states = com.google.common.collect.ImmutableSet.copyOf(found.get().getStateDefinition().getPossibleStates());
+            var type = LegacyRegistrar.register(BuiltInRegistries.POINT_OF_INTEREST_TYPE, key, new net.minecraft.world.entity.ai.village.poi.PoiType(states, 1, 1));
+            return type == null ? null : net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.POINT_OF_INTEREST_TYPE, key);
+        } catch (RuntimeException e) {
+            LOG.warn("Could not register the job site of villager profession {}: {}", id, e.toString());
+            return null;
+        }
     }
 
     /** Villagers saved while the professions were {@code legacyconnector:villager_<id>} keep their job. */

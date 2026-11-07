@@ -22,6 +22,19 @@ public abstract class GoalTask extends EntityAIBase {
         setMutexBits(mutexBits);
     }
 
+    /**
+     * The speed argument of a 1.5.2 / 1.4.7 AI task was the absolute speed (the mob's {@code moveSpeed} field, 0.23 for a zombie); since 1.6 it is a
+     * multiplier of the movement speed attribute. The goal gets the legacy speed divided by the mob's own speed.
+     */
+    public static double mcc$multiplier(PathfinderMob mob, double legacySpeed) {
+        return scale(legacySpeed, mob.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED));
+    }
+
+    /** {@code legacySpeed / mobSpeed}, or the legacy speed itself for a mob without a usable speed. */
+    public static double scale(double legacySpeed, double mobSpeed) {
+        return mobSpeed > 1.0E-4 ? legacySpeed / mobSpeed : legacySpeed;
+    }
+
     protected Goal goal() {
         if (!resolved && owner != null && owner.mcc$entity instanceof Mob) {
             resolved = true;

@@ -41,6 +41,11 @@ public abstract class Container {
         detectAndSendChanges();
     }
 
+    /** Whether {@code crafter} already listens (the layer's own menu host adds the player unless the container did it, as fake-player GUIs do). */
+    public boolean mcc$hasCrafter(ICrafting crafter) {
+        return crafters.contains(crafter);
+    }
+
     public void removeCraftingFromCrafters(ICrafting crafter) {
         crafters.remove(crafter);
     }

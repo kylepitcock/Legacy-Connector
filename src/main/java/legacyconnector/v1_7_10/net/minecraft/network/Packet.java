@@ -10,10 +10,70 @@ import java.io.IOException;
  * {@link #mcc$sendToServer} for packets the client sends.
  */
 public abstract class Packet {
+    /** 1.5.2 / 1.6.4 flag of packets that carry chunk data (the legacy network threads sorted by it); no effect here. */
+    public boolean isChunkDataPacket;
+
+    /**
+     * The 1.5.2 / 1.6.4 wire format ({@code DataInput}/{@code DataOutput}) of a mod's own {@code Packet} subclass. The 1.7.10 buffer methods
+     * below delegate to it, so a legacy subclass overriding these is read and written whichever way the layer carries it (see {@code Network164}).
+     */
+    public void readPacketData(java.io.DataInput in) throws IOException {
+    }
+
+    public void writePacketData(java.io.DataOutput out) throws IOException {
+    }
+
+    /** 1.5.2 / 1.6.4 size estimate of the packet in bytes. */
+    public int getPacketSize() {
+        return 0;
+    }
+
     public void readPacketData(PacketBuffer data) throws IOException {
+        readPacketData((java.io.DataInput) new java.io.DataInputStream(new io.netty.buffer.ByteBufInputStream(data)));
     }
 
     public void writePacketData(PacketBuffer data) throws IOException {
+        writePacketData((java.io.DataOutput) new java.io.DataOutputStream(new io.netty.buffer.ByteBufOutputStream(data)));
+    }
+
+    /** 1.6.4's running total of the bytes written through {@link #writePacket} (the network threads' statistics). */
+    public static long sentSize;
+
+    /**
+     * 1.6.4's {@code Packet.writePacket(packet, out)}: the packet id byte, then the packet data. The id is the number in the class name of the
+     * numbered vanilla packets ({@code Packet250CustomPayload} is 250); other packets are written as custom payloads (250).
+     */
+    public static void writePacket(Packet packet, java.io.DataOutput out) throws IOException {
+        if (packet == null) return;
+        out.writeByte(mcc$idOf(packet.getClass()));
+        packet.writePacketData(out);
+        sentSize += 1 + packet.getPacketSize();
+    }
+
+    /** The legacy packet id for a class: the digits after {@code Packet} in the name of itself or of a superclass, else 250. */
+    public static int mcc$idOf(Class<?> type) {
+        for (Class<?> c = type; c != null && c != Object.class; c = c.getSuperclass()) {
+            Integer registered = mcc$idByClass.get(c);
+            if (registered != null) return registered;
+        }
+        for (Class<?> c = type; c != null && c != Object.class; c = c.getSuperclass()) {
+            String n = c.getSimpleName();
+            if (n.startsWith("Packet")) {
+                int end = 6;
+                while (end < n.length() && Character.isDigit(n.charAt(end))) end++;
+                if (end > 6) return Integer.parseInt(n.substring(6, end));
+            }
+        }
+        return 250;
+    }
+
+    /** Packet ids mods registered with {@code Packet.addIdClassMapping} (see {@code Packets164}), both directions. */
+    public static final java.util.Map<Integer, Class<?>> mcc$classById = new java.util.concurrent.ConcurrentHashMap<>();
+    public static final java.util.Map<Class<?>, Integer> mcc$idByClass = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** 1.6.4 {@code Packet.getPacketId()}: the id {@link #writePacket} puts in front of the data. */
+    public int getPacketId() {
+        return mcc$idOf(getClass());
     }
 
     public void processPacket(INetHandler handler) {

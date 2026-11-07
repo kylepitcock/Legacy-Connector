@@ -63,6 +63,8 @@ public final class CapabilityRules implements LegacyCapabilities {
         registrar.forAnyTile(Capabilities.ItemHandler.BLOCK, LegacyCapabilities.FORGE_ITEMS_1122);
         registrar.forAnyTile(Capabilities.FluidHandler.BLOCK, LegacyCapabilities.FORGE_FLUIDS_1122);
         registrar.forAnyTile(Capabilities.EnergyStorage.BLOCK, LegacyCapabilities.FORGE_ENERGY_1122);
+        // tiles that only implement Redstone Flux (cofh.redstoneflux.api), asked after Forge Energy
+        registrar.forAnyTile(Capabilities.EnergyStorage.BLOCK, LegacyCapabilities.RF_ENERGY_1122);
         // addons first: their rules are asked before the built-ins of the same capability
         CapabilityRules addons = new CapabilityRules();
         AddonHost.registerCapabilities(addons);

@@ -39,7 +39,10 @@ public final class LegacyLifecycle {
     }
 
     public static Map<LegacyModRecord, Throwable> failures() {
-        return FAILED;
+        if (CLIENT_ONLY.isEmpty()) return FAILED;
+        Map<LegacyModRecord, Throwable> real = new LinkedHashMap<>(FAILED);
+        real.keySet().removeAll(CLIENT_ONLY);
+        return real;
     }
 
     /** True if the legacy mod with this modern id (or registry namespace) failed to load and is disabled. */
@@ -91,7 +94,7 @@ public final class LegacyLifecycle {
         for (LegacyPlatform p : LegacyMods.platforms()) p.afterPostInit();
         org.kylepitcock.legacyconnector.api.internal.AddonHost.enter(org.kylepitcock.legacyconnector.api.LegacyPhase.REGISTERED);
         org.kylepitcock.legacyconnector.core.flatten.VanillaFlattening.saveFixedItems();
-        LOG.info("Legacy mods loaded in {} ms ({} failed)", System.currentTimeMillis() - start, FAILED.size());
+        LOG.info("Legacy mods loaded in {} ms ({} failed)", System.currentTimeMillis() - start, FAILED.size() - CLIENT_ONLY.size());
     }
 
     public static void onCommonSetup(FMLCommonSetupEvent event) {
@@ -102,10 +105,26 @@ public final class LegacyLifecycle {
     }
 
     public static void onLoadComplete(FMLLoadCompleteEvent event) {
-        if (!FAILED.isEmpty()) {
-            LOG.error("=== {} legacy mod(s) failed to load and are disabled ===", FAILED.size());
-            FAILED.forEach((m, t) -> LOG.error("  {}: {}", m.legacyId, t.getMessage()));
+        int real = FAILED.size() - CLIENT_ONLY.size();
+        if (real > 0) {
+            LOG.error("=== {} legacy mod(s) failed to load and are disabled ===", real);
+            FAILED.forEach((m, t) -> { if (!CLIENT_ONLY.contains(m)) LOG.error("  {}: {}", m.legacyId, t.getMessage()); });
         }
+    }
+
+    private static final java.util.Set<LegacyModRecord> CLIENT_ONLY = new java.util.HashSet<>();
+
+    /** True if the failure is the dist cleaner refusing a client class on a dedicated server. */
+    static boolean touchedClientOnServer(Throwable t) {
+        for (int i = 0; t != null && i < 12; i++, t = t.getCause()) {
+            String m = t.getMessage();
+            if (m != null && m.contains("for invalid dist DEDICATED_SERVER")) return true;
+        }
+        return false;
+    }
+
+    public static boolean isClientOnlySkip(LegacyModRecord mod) {
+        return CLIENT_ONLY.contains(mod);
     }
 
     interface Phase {
@@ -120,15 +139,25 @@ public final class LegacyLifecycle {
             long modStart = System.nanoTime();
             Thread thread = Thread.currentThread();
             ClassLoader previous = thread.getContextClassLoader();
+            boolean numericIds = mod.version.equals("1.6.4") || mod.version.equals("1.5.2") || mod.version.equals("1.4.7");
+            String previousIds = numericIds ? legacyconnector.v1_6_4.net.minecraft.util.Ids.enter(mod.version, mod.mainClass == null ? null : mod.mainClass.getClassLoader()) : null;
             try {
                 if (mod.mainClass != null) thread.setContextClassLoader(mod.mainClass.getClassLoader());
                 phase.run(mod);
             } catch (Throwable t) {
                 LegacyModException wrapped = new LegacyModException(mod, name, t);
                 if (Boolean.getBoolean("legacyconnector.failFast")) throw wrapped;
+                if (touchedClientOnServer(t)) {
+                    // A mod that needs the game client on a dedicated server (no side annotation to tell us beforehand): FML would have dropped it there.
+                    LOG.info("Skipping the client-only legacy mod {} on a dedicated server (it touched client classes during {})", mod.legacyId, name);
+                    CLIENT_ONLY.add(mod);
+                    FAILED.put(mod, wrapped);
+                    continue;
+                }
                 LOG.error("{}", wrapped.getMessage(), t);
                 FAILED.put(mod, wrapped);
             } finally {
+                if (numericIds) legacyconnector.v1_6_4.net.minecraft.util.Ids.leave(previousIds);
                 thread.setContextClassLoader(previous);
                 long ms = (System.nanoTime() - modStart) / 1_000_000;
                 if (ms >= 50) perMod.append(' ').append(mod.legacyId).append('=').append(ms);

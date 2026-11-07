@@ -20,7 +20,7 @@ report, log, label = pathlib.Path(sys.argv[1]), pathlib.Path(sys.argv[2]), sys.a
 mc = sys.argv[4] if len(sys.argv) > 4 else "1.7.10"
 date = sys.argv[5] if len(sys.argv) > 5 else "2026-10-28"
 DATA = pathlib.Path(__file__).resolve().parents[2] / "docs" / "data" / "mods.json"
-RANK = ["fails", "loads", "partial", "works"]
+RANK = ["crashes", "fails", "loads", "partial", "works", "playable", "perfect"]
 
 
 def norm(s):

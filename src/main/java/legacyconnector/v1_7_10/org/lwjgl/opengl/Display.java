@@ -27,6 +27,56 @@ public class Display {
     public static void destroy() {
     }
 
+    /**
+     * LWJGL 2's {@code Display.setIcon}: the window icon from RGBA images (square, 4 bytes a pixel). Returns the number of icons
+     * used. The game's own icon stays when there is no window or no usable image.
+     */
+    public static int setIcon(java.nio.ByteBuffer[] icons) {
+        Window w = window();
+        if (w == null || icons == null) return 0;
+        // the pixels are copied (the mod may reuse its buffers) and GLFW is called on the render thread
+        java.util.List<byte[]> pixelsOf = new java.util.ArrayList<>();
+        java.util.List<Integer> sizes = new java.util.ArrayList<>();
+        for (java.nio.ByteBuffer icon : icons) {
+            if (icon == null) continue;
+            int pixels = icon.remaining() / 4;
+            int size = (int) Math.round(Math.sqrt(pixels));
+            if (size <= 0 || size * size != pixels) continue;
+            byte[] copy = new byte[pixels * 4];
+            icon.duplicate().get(copy);
+            pixelsOf.add(copy);
+            sizes.add(size);
+        }
+        if (pixelsOf.isEmpty()) return 0;
+        onMainThread(() -> {
+            try (org.lwjgl.system.MemoryStack stack = org.lwjgl.system.MemoryStack.stackPush()) {
+                org.lwjgl.glfw.GLFWImage.Buffer images = org.lwjgl.glfw.GLFWImage.malloc(pixelsOf.size(), stack);
+                for (int i = 0; i < pixelsOf.size(); i++) {
+                    java.nio.ByteBuffer pixels = stack.malloc(pixelsOf.get(i).length);
+                    pixels.put(pixelsOf.get(i)).flip();
+                    images.position(i);
+                    images.width(sizes.get(i)).height(sizes.get(i)).pixels(pixels);
+                }
+                images.position(0);
+                GLFW.glfwSetWindowIcon(w.getWindow(), images);
+            } catch (RuntimeException | LinkageError e) {
+                // the game's own icon stays
+            }
+        });
+        return pixelsOf.size();
+    }
+
+    /**
+     * GLFW window calls must run on the thread that owns the window (macOS aborts the whole process with "NSWindow geometry should only be
+     * modified on the main thread" otherwise): legacy mods call {@code Display.setTitle} and friends from the mod loading threads, so they are
+     * queued onto the game's render thread unless the caller already is that thread.
+     */
+    private static void onMainThread(Runnable action) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc == null || mc.isSameThread()) action.run();
+        else mc.execute(action);
+    }
+
     public static void update() {
     }
 
@@ -113,7 +163,9 @@ public class Display {
 
     public static void setFullscreen(boolean fullscreen) {
         Window w = window();
-        if (w != null && w.isFullscreen() != fullscreen) w.toggleFullScreen();
+        if (w != null) onMainThread(() -> {
+            if (w.isFullscreen() != fullscreen) w.toggleFullScreen();
+        });
     }
 
     public static String getTitle() {
@@ -122,7 +174,7 @@ public class Display {
 
     public static void setTitle(String title) {
         Window w = window();
-        if (w != null && title != null) GLFW.glfwSetWindowTitle(w.getWindow(), title);
+        if (w != null && title != null) onMainThread(() -> GLFW.glfwSetWindowTitle(w.getWindow(), title));
     }
 
     public static void setVSyncEnabled(boolean enabled) {
@@ -143,7 +195,7 @@ public class Display {
 
     public static void setLocation(int x, int y) {
         Window w = window();
-        if (w != null) GLFW.glfwSetWindowPos(w.getWindow(), x, y);
+        if (w != null) onMainThread(() -> GLFW.glfwSetWindowPos(w.getWindow(), x, y));
     }
 
     public static DisplayMode getDisplayMode() {

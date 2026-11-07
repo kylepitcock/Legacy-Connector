@@ -17,6 +17,16 @@ public class ForgeHooksClient {
         WORLD_PASS.get()[0] = pass;
     }
 
+    /** Forge 1.4.7: binds a mod's texture file (a whole sprite sheet or image); the unit argument was the texture slot. */
+    public static void bindTexture(String texture, int unit) {
+        legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureManager.INSTANCE.bindTexture(texture);
+    }
+
+    /** Forge 1.4.7: back to the block sheet. */
+    public static void unbindTexture() {
+        legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureManager.INSTANCE.bindTexture("/terrain.png");
+    }
+
     /** The item/entity render pass legacy renderers query through {@code MinecraftForgeClient.getRenderPass()}. */
     public static int renderPass = -1;
 

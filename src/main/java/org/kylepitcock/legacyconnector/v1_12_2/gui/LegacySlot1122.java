@@ -31,6 +31,12 @@ public final class LegacySlot1122 extends Slot {
         return legacy;
     }
 
+    /** 1.12 containers move slots after construction (xPos/yPos); the modern slot's position is what hit testing and drawing read. */
+    public void syncPosition() {
+        if (x != legacy.xPos) x = legacy.xPos;
+        if (y != legacy.yPos) y = legacy.yPos;
+    }
+
     private static EntityPlayer player(Player p) {
         return EntityBridge1122.wrap(p) instanceof EntityPlayer ep ? ep : null;
     }

@@ -162,7 +162,7 @@ public class MinecraftServer implements ICommandSender, Runnable {
     }
 
     public String getMOTD() {
-        return mcc$server.getMotd();
+        return mcc$server == null ? "A Minecraft Server" : mcc$server.getMotd();
     }
 
     public boolean isServerRunning() {
@@ -263,6 +263,30 @@ public class MinecraftServer implements ICommandSender, Runnable {
     public boolean isBlockProtected(World world, int x, int y, int z, legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player) {
         if (mcc$server == null || world == null || !(world.mcc$fullLevel() instanceof ServerLevel level)) return false;
         return mcc$server.isUnderSpawnProtection(level, new net.minecraft.core.BlockPos(x, y, z), player == null ? null : player.mcc$player());
+    }
+
+    public void logInfo(String message) {
+        org.slf4j.LoggerFactory.getLogger("Minecraft").info(message);
+    }
+
+    public void setMOTD(String motd) {
+        if (mcc$server != null) mcc$server.setMotd(motd);
+    }
+
+    /** The difficulty of every dimension (the dedicated server's setting too). */
+    public void setDifficultyForAllWorlds(legacyconnector.v1_7_10.net.minecraft.world.EnumDifficulty difficulty) {
+        if (mcc$server == null || difficulty == null) return;
+        mcc$server.setDifficulty(net.minecraft.world.Difficulty.byId(difficulty.getDifficultyId()), true);
+    }
+
+    /** Whether players are put into the default game mode on every login. */
+    public boolean getForceGamemode() {
+        return mcc$server != null && mcc$server.getForcedGameType() != null;
+    }
+
+    /** The game mode new players start in. */
+    public void setGameType(legacyconnector.v1_7_10.net.minecraft.world.WorldSettings.GameType type) {
+        if (mcc$server != null && type != null && type.getID() >= 0) mcc$server.setDefaultGameType(net.minecraft.world.level.GameType.byId(type.getID()));
     }
 
     public void logSevere(String message) {

@@ -53,6 +53,13 @@ public final class Players164 {
             for (IPlayerTracker t : TRACKERS) guard("onPlayerLogin", () -> t.onPlayerLogin(e.player));
             if (e.player instanceof EntityPlayerMP mp) {
                 NetHandlerPlayServer handler = new NetHandlerPlayServer(mp);
+                // connectionReceived ran in the login phase of the old protocol and could refuse the player with a message; here it runs as the player joins
+                for (IConnectionHandler c : CONNECTIONS) {
+                    guard("connectionReceived", () -> {
+                        String refusal = c.connectionReceived(null, Manager164.of(handler));
+                        if (refusal != null && !refusal.isEmpty()) mp.mcc$serverPlayer().connection.disconnect(net.minecraft.network.chat.Component.literal(refusal));
+                    });
+                }
                 for (IConnectionHandler c : CONNECTIONS) {
                     guard("playerLoggedIn", () -> c.playerLoggedIn((Player) mp, handler, Manager164.of(handler)));
                 }
@@ -81,6 +88,16 @@ public final class Players164 {
         @SubscribeEvent
         public void onClientConnected(FMLNetworkEvent.ClientConnectedToServerEvent e) {
             for (IConnectionHandler c : CONNECTIONS) {
+                // connectionOpened: the old client announced the connection to a remote server (address, port) or to its own integrated server
+                guard("connectionOpened", () -> {
+                    var manager = Manager164.of(e.manager, NetHandlerPlayClient.INSTANCE);
+                    if (e.isLocal) c.connectionOpened(NetHandlerPlayClient.INSTANCE, legacyconnector.v1_7_10.net.minecraft.server.MinecraftServer.getServer(), manager);
+                    else {
+                        String address = ClientAddress.current();
+                        int colon = address.lastIndexOf(':');
+                        c.connectionOpened(NetHandlerPlayClient.INSTANCE, colon < 0 ? address : address.substring(0, colon), colon < 0 ? 25565 : parsePort(address.substring(colon + 1)), manager);
+                    }
+                });
                 guard("clientLoggedIn", () -> c.clientLoggedIn(NetHandlerPlayClient.INSTANCE, Manager164.of(e.manager, NetHandlerPlayClient.INSTANCE), new Packet1Login()));
             }
         }
@@ -90,6 +107,22 @@ public final class Players164 {
             for (IConnectionHandler c : CONNECTIONS) {
                 guard("connectionClosed", () -> c.connectionClosed(Manager164.of(e.manager, NetHandlerPlayClient.INSTANCE)));
             }
+        }
+    }
+
+    private static int parsePort(String port) {
+        try {
+            return Integer.parseInt(port);
+        } catch (NumberFormatException e) {
+            return 25565;
+        }
+    }
+
+    /** The client's current server address, kept apart so the server side never loads client classes. */
+    private static final class ClientAddress {
+        static String current() {
+            var data = net.minecraft.client.Minecraft.getInstance().getCurrentServer();
+            return data == null || data.ip == null ? "" : data.ip;
         }
     }
 

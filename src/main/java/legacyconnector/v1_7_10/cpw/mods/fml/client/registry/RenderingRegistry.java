@@ -19,7 +19,7 @@ public class RenderingRegistry {
     }
 
     public static void registerEntityRenderingHandler(Class<?> entityClass, Render renderer) {
-        if (entityClass == null || renderer == null) return;
+        if (entityClass == null || renderer == null || !net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) return; // a dedicated server has no renderers (mods register them unguarded)
         renderer.setRenderManager(RenderManager.instance);
         RenderManager.instance.entityRenderMap.put(entityClass, renderer);
     }

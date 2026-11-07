@@ -11,8 +11,9 @@ installed (the same idea as Connector Extras bridging Trinkets to Curios):
 |---|---|---|
 | Baubles 1.0 (`baubles.api`) | [Curios](https://www.curseforge.com/minecraft/mc-mods/curios) | Baubles is skipped; `IBauble` items become curios in the ring/necklace/belt slots; `BaublesApi.getBaubles` reads the Curios slots. |
 | NotEnoughItems (`codechicken.nei`) | [JEI](https://www.curseforge.com/minecraft/mc-mods/jei) | NEI is skipped; mods' `NEI*Config` plugins run; each legacy recipe handler becomes a JEI category drawn by the handler itself ([details](#nei--jei-recipe-categories)); NEI-hidden items are hidden in JEI. NEI always came with CodeChickenLib, so without a 1.7.10 CodeChickenLib jar its API (`codechicken.lib`: `GuiDraw`, `Rectangle4i`, ...) is bridged too (a modern CodeChickenLib in the pack does not count); NEI's GUI hooks (`INEIGuiHandler`, `INEIGuiAdapter`, `API.registerNEIGuiHandler`) are accepted and ignored, as JEI lays out its own panel. |
-| Waila (`mcp.mobius.waila.api`) | [Jade](https://www.curseforge.com/minecraft/mc-mods/jade) | Waila is skipped; legacy tooltip providers registered through Waila's IMC callback show their lines in Jade. |
-| CoFH RF API (`cofh.api.energy`, shaded by most tech mods) | NeoForge Energy capability (built in) | Always on: RF tiles and items expose `IEnergyStorage` (1 RF = 1 FE), so modern cables and machines connect. |
+| Waila / HWYLA (`mcp.mobius.waila`) | [Jade](https://www.curseforge.com/minecraft/mc-mods/jade) | Waila is skipped; legacy head/body/tail/stack providers show their lines in Jade and NBT providers sync server data to the client ([per version](#waila-and-nei-per-legacy-version)). |
+| Patchouli 1.12 (`vazkii.patchouli.api`, 1.12.2 only) | [Patchouli](https://modrinth.com/mod/patchouli) | The legacy Patchouli is skipped; legacy mods' books are shown by the modern one ([details](#patchouli-books)). |
+| CoFH RF API (`cofh.api.energy` 1.6.4/1.7.10, shaded by most tech mods; Redstone Flux `cofh.redstoneflux` 1.12.2, a separate mod) | NeoForge Energy capability (built in) | Always on: RF tiles and items expose `IEnergyStorage` (1 RF = 1 FE), so modern cables and machines connect. The API is re-implemented in the shim of each version, so the Redstone Flux library jar is not loaded either (`bridges.cofhEnergy.enabled=false` loads it). See [Energy per version](#energy-per-version). |
 
 | IC2 EU, BuildCraft MJ, Forge fluids, `IInventory` | NeoForge Energy / Fluid / Item capabilities (built in) | Always on: legacy tiles and items are capabilities by default (EU at `energy.fePerEu` = 4 FE, MJ at `energy.fePerMj` = 10 FE; `.in`/`.out` suffixes set each direction, 0 turns it off, see [Configuration](Configuration.md)). Details in [Addon-API](Addon-API.md#capabilities). |
 
@@ -23,6 +24,19 @@ ID extenders, LWJGL 3 ports) are not loaded; client mods (JourneyMap, Inventory 
 `legacyconnector-report.txt` says why.
 
 New bridges are declared in `loader/.../LibraryBridges.java` and implemented under the shim namespace.
+
+## Waila and NEI per legacy version
+
+The bridged package roots are the same on every version (`mcp/mobius/waila/`, `codechicken/nei/`, `codechicken/lib/`, `baubles/`); a bridge
+is on for a pack when Jade/JEI/Curios is installed and `bridges.<waila|nei|baubles>.enabled` is not `false` in `config/legacyconnector.properties`.
+
+| Legacy version | Waila -> Jade | NEI -> JEI | Baubles -> Curios |
+|---|---|---|---|
+| 1.7.10 | `IMC "Waila" "register"` callbacks; head, body, tail and stack providers; NBT providers (server data synced through Jade); `TipList` as the tooltip list | recipe handlers, hidden items, catalysts (see below) | `baubles.api` |
+| 1.6.4, 1.5.2, 1.4.7 | the 1.7.10 shim, plus `registerXProvider(provider, blockId)` by numeric id (`facade/.../IWailaRegistrar`) | the 1.7.10 shim plus the 1.6.4 `API.hideItem(int)` facade | resolved to the 1.7.10 shim when a mod uses it (no Baubles API existed on CurseForge before 1.7.10; no 1.4.7 / 1.5.2 / 1.6.4 mod of the test sets uses it) |
+| 1.12.2 | `@WailaPlugin` / `IWailaPlugin.register(IWailaRegistrar)` (HWYLA 1.8 API incl. `ModuleRegistrar`, `ConfigHandler`, `ITaggedList`), block and entity providers, NBT providers | `IConfigureNEI` + `API.hideItem` (items hidden in JEI); recipe handlers do not exist on 1.12 NEI | capability API |
+
+Multipart (FMP) providers, block decorators and custom tooltip renderers are accepted and ignored.
 
 ## Bridges at a glance
 
@@ -36,6 +50,7 @@ above); *engine bridges* map a legacy system onto the 1.21 one it corresponds to
 | Baubles → Curios | `baubles.api` | Curios slots |
 | NEI → JEI | `codechicken.nei` | JEI categories and hidden items |
 | Waila → Jade | `mcp.mobius.waila.api` | Jade tooltips |
+| Patchouli 1.12 → Patchouli | `vazkii.patchouli.api` | books, multiblocks, custom components ([details](#patchouli-books)) |
 | CoFH RF → NeoForge Energy | `cofh.api.energy` | `IEnergyStorage` (1 RF = 1 FE) |
 | Blocks and tile entities | `Block`, `TileEntity`, metadata | registered blocks and block entities, one per legacy block plus one per block subtype that has an item ([flattening](#block-subtypes-flattening)) |
 | Items and ItemStacks | `Item`, `ItemStack` damage/NBT | one item per metadata subtype, `CUSTOM_DATA` NBT |
@@ -72,6 +87,92 @@ above); *engine bridges* map a legacy system onto the 1.21 one it corresponds to
 | Mods built for a different version of another mod | only return-type drift is relinked (Binnie's mods against Forestry 4.2.16 still fail) |
 | 1.12.2 | alpha: most of the API mods use is implemented on both sides; see the status table and issue #64 |
 | 1.20.1, 1.16.5, 1.2.5 bridges | planned, in that order |
+
+## Patchouli books
+
+With the modern Patchouli (NeoForge 1.21.1) installed, 1.12.2 mods' Patchouli books work through it and the 1.12 Patchouli jar is skipped
+(`bridges.patchouli.enabled = false` loads the 1.12 jar instead; without the modern mod it loads as usual).
+
+* **API** (`legacyconnector/v1_12_2/vazkii/patchouli/api`, implementation in `compat/patchouli`): `PatchouliAPI.instance` with `getBookStack`,
+  `openBookGUI`, `setConfigFlag`/`getConfigFlag`, `registerMultiblock`/`getMultiblock`/`makeMultiblock`, the state matcher factories (1.12
+  `IBlockState` and `Block` arguments become modern states), `registerTemplateAsBuiltin`, `serializeItemStack`/`deserializeItemStack` and
+  the ingredient variants. Multiblocks and matchers are built when first used and registered with Patchouli once every mod's blocks exist
+  (1.12 mods build them in preInit). `ICustomComponent` and `IComponentProcessor` implementations are also modern ones, so the class names in
+  a book's json work; `@VariableHolder` string fields are filled from the page variables. The `BookEvent` classes exist but are not posted yet.
+  Classes mods use that are not API (`vazkii.patchouli.client...`, `common...`) are not provided.
+* **Books as resources.** 1.12 mods keep books in `assets/<mod>/patchouli_books/<book>/` (`book.json`, `<lang>/{categories,entries,templates}`).
+  The modern Patchouli (1.20+) finds books by scanning each mod jar for `data/<mod>/patchouli_books/<book>/book.json` and requires
+  `use_resource_pack: true`, with the contents in the resource packs (`assets/`), as in 1.12. So the loader writes the converted `book.json`
+  into the translated jar's data folder (`PatchouliBookJson`, no registries needed) and stages the original folder under
+  `legacyconnector_legacy/` (the originals stay in assets for the 1.12 Patchouli); the runtime writes the converted contents to the generated
+  client resource pack when it is built (`PatchouliBooks`, unit tested; `PatchouliBooks1122` supplies the ids from the registries):
+  items `mod:item:meta` become the flattened item (`mod:item_3`), also in icons, `spotlight` pages and template components; multiblock
+  `mapping` blocks go through the state bridge (`mod:block[meta=3]`); `crafting` recipe names become the id of the data-pack recipe the
+  layer generated (`mod:name_code`); `smelting` pages (1.12 names the input item) become recipe pages of the generated furnace
+  recipe, or a `spotlight` of the input when there is none; page types get `patchouli:`; template pages and includes get the book's
+  namespace; template component types get `patchouli:` (the modern reader drops unknown types, which left every template page blank);
+  `advancement` locks are kept for vanilla advancements and for the mod advancements the layer converted (see [1.12.2 advancements](#1122-advancements));
+  a lock on any other advancement would hide the entry for good and is dropped; values 1.12 processors return are read as modern ids (stacks are
+  serialized with the modern item id, renamed vanilla entities such as `zombie_pigman` get their modern name); resource ids are lower-cased;
+  `creative_tab` maps the 1.12 tab names to modern tabs (an unknown tab is dropped).
+* **The book item.** `getBookStack("mod:book")` returns the modern guide book stack with its `patchouli:book` component, wrapped for legacy
+  code (the `patchouli:guide_book` item is visible in the legacy item registry, so 1.12 recipes and loot that name it work, and a stack with
+  the 1.12 NBT tag `patchouli:book` becomes the modern book stack and back).
+* **Other legacy versions.** The loader bridge (`LibraryBridges`: `Bridge("patchouli", "vazkii/patchouli/api/", "patchouli", "patchouli")`,
+  `bridges.patchouli.enabled`, skipping the legacy Patchouli jar) does not depend on the Minecraft version: it applies to every legacy version
+  that is or will be added. Patchouli exists for 1.12.2 and for 1.14 to 1.20; the 1.20.1, 1.19.2, 1.18.2 and 1.16.5 layers are in-place remaps
+  onto NeoForge 1.21.1, so their `PatchouliAPI.get()` calls resolve against the real modern API directly and only the books need converting.
+  Each version adds one `BookConverter` (interface and registry `BookConverter.BY_VERSION`, with a unit test): 1.12.2 is the table above; for
+  1.14 to 1.20 the files are already in `data/` with the modern structure, and the converter has to turn `mod:item{nbt}` stacks into
+  `mod:item[components]`, move the contents to the resource pack (`use_resource_pack`), and map renamed fields (`extend`, multiblock `pattern`
+  keys, `advancement`/`flag`). No converter is registered for them yet because those layers do not exist.
+
+## 1.12.2 advancements
+
+1.12 mods ship advancements as `assets/<mod>/advancements/**.json` (read from the mod's jar); the modern game reads `data/<mod>/advancement/**.json` in
+another format. `Advancements1122` converts every file when the data pack is built (item subtypes, entity types, recipes and biomes need the
+registries) and serves the result from the bottom data pack, so world data packs replace or remove them like any mod's advancement; the
+conversion rules are `AdvancementConverter1122` (pure JSON, unit tested). The server logs `1.12.2 advancements of mod jars: N converted ...` and,
+once started, `1.12.2 advancements loaded by the server: X of N`.
+
+- **Display:** icon `{item, data}` becomes `{id}` of the flattened item (an unknown item shows a barrier), title/description text components,
+  `frame`, `background`, `hidden`, `show_toast`, `announce_to_chat` and `parent` carry over (mod advancements whose parent does not exist become roots).
+- **Rewards:** `experience`, `recipes` (ids of the generated data pack recipes, `mod:name_code`) and `loot`; `function` is dropped (logged).
+- **Vanilla triggers** become the modern conditions (`items` with `data` become the list of the item's flattened subtypes): `inventory_changed`,
+  `consume_item`, `enchanted_item`, `item_durability_changed`, `used_totem`, `filled_bucket`, `placed_block`, `enter_block`, `recipe_unlocked`, `tick`,
+  `location` (biome, dimension, position, vanilla structures), `changed_dimension`, `effects_changed`, `player_killed_entity`, `entity_killed_player`,
+  `player_hurt_entity`, `entity_hurt_player`, `tame_animal`, `bred_animals`, `summoned_entity`, `villager_trade`, `cured_zombie_villager`,
+  `construct_beacon`, `brewed_potion`, `levitation`, `nether_travel`, `impossible`. Entity predicates become `entity_properties` conditions.
+  What cannot be expressed (an entity, item or block the layer did not register, a structure of a mod's own world generator, a trigger 1.21 does
+  not have) makes that criterion `minecraft:impossible` and is listed in the log once per kind; NBT and damage-type conditions are dropped.
+- **Triggers of mods** (`CriteriaTriggers.register(new MyTrigger())`): the criterion becomes `legacyconnector:legacy` carrying the original conditions;
+  when a player's advancements start listening, the mod's own `ICriterionTrigger.deserializeInstance` parses them and its `addListener` gets a
+  legacy listener whose `grantCriterion` awards the criterion. Mods keep firing their triggers from code as in 1.12.
+- **Code:** `AdvancementManager.getAdvancement`, `EntityPlayerMP.getAdvancements().grantCriterion/revokeCriterion/getProgress` are views over the
+  modern server's.
+- **Not done:** 1.12 `.mcfunction` rewards, `killing_blow` and damage-type conditions, item/entity NBT conditions.
+
+## 1.7.10 achievements
+
+1.7.10 mods' achievements (`new Achievement(...).registerStat()`) and `AchievementPage`s are written to the generated data pack as advancements
+(`Achievements1710`): each page is a tab (a generated root named after the page; achievements of no page, or hung off vanilla ones, are in a
+"Legacy achievements" tab), parents are kept, the icon is the achievement's item, title and description are the achievement's translation keys.
+The criterion is `impossible` and is awarded from `EntityPlayer.addStat` when legacy code earns the achievement (and at login for those already
+recorded), so the advancements screen shows what the legacy record says. The legacy toast stays; the advancements do not toast or announce.
+
+## Possible book bridges
+
+Other book systems that could be shown as modern Patchouli books by a generic converter (not implemented; the effort is for a generic
+conversion of the content into `book.json` + entries, not a per-mod fix):
+
+| Legacy book system | Modern equivalent | Effort |
+|---|---|---|
+| Guide-API (1.7.10 and 1.12 `amerifrance.guideapi`) | Patchouli (or the Guide-API port) | Medium: books are registered in code (`IGuideBook`, categories, entries, pages of text/recipes/images); a generic walk of the registered structure could write Patchouli categories and entries |
+| Thaumonomicon (Thaumcraft 4/6 research) | none (progression system, not a book) | High: research has prerequisites, aspects and a puzzle UI; only a read-only entry list is realistic |
+| Lexica Botania (Botania 1.7.10 lexicon) | Botania's own Patchouli book | Low for the book itself (modern Botania ships it), but the legacy lexicon is mod-internal; only entry text could be exported |
+| Tinkers' Construct manual (1.7.10 and 1.12) | Tinkers' Construct's modern Patchouli-style manual | Medium: pages are an in-jar XML and a custom page renderer; text/image/recipe pages map, interactive ones do not |
+| Forestry and Mystcraft books | none | Forestry's handbook is not a book system; Mystcraft's notebooks are items holding data, not documentation |
+| NEI handbook / Waila-style help | JEI | Already covered by the NEI bridge |
 
 ## NEI → JEI recipe categories
 
@@ -190,3 +291,18 @@ Mod models and blockstates name vanilla textures the 1.12 way (`blocks/planks_oa
 parents that were renamed live in `LegacyResourceConverter.MODEL_RENAMES`. Ore dictionary names map to common tags in `OreDictBridge` (`SPECIAL`
 for exact names, prefixes such as `ingot` for the rest).
 
+## Energy per version
+
+Every legacy energy system is exposed as NeoForge's `Capabilities.EnergyStorage` (blocks and items) by default, in both directions: a legacy producer can feed a modern
+consumer (the capability's `extractEnergy` calls the tile) and a modern producer can feed a legacy machine (its `receiveEnergy`). Modern block entities that offer
+the capability are also visible to legacy code (1.7.10: `ModernCapabilityTile` is an `IEnergyHandler`; 1.12.2: a tile entity answering `CapabilityEnergy.ENERGY` and implementing
+`IEnergyReceiver`/`IEnergyProvider`), so legacy generators and cables push into them. Rates are in [Configuration](Configuration.md).
+
+| API | Versions | Adapter | Rate |
+|---|---|---|---|
+| CoFH RF `IEnergyReceiver` / `IEnergyProvider` / `IEnergyHandler` tiles, `IEnergyContainerItem` items, `EnergyStorage`, `TileEnergyHandler`, `ItemEnergyContainer` | 1.7.10 | `EnergyBridge` | 1 RF = 1 FE |
+| CoFH RF monolithic `IEnergyHandler` (`canInterface`) | 1.6.4, 1.5.2, 1.4.7 (late builds) | forwarded to the 1.7.10 shim; a bridge method adds `canConnectEnergy` | 1 RF = 1 FE |
+| Redstone Flux `cofh.redstoneflux.api` (`IEnergyReceiver`, `IEnergyProvider`, `IEnergyHandler`, `IEnergyConnection`, `IEnergyStorage`, `IEnergyContainerItem`) and `.impl` / `.util` helpers | 1.12.2 | `EnergyBridge1122` (tiles and items) | 1 RF = 1 FE |
+| Forge Energy `CapabilityEnergy.ENERGY` on tiles and items | 1.12.2 | `BuiltinAdapters.energy1122`, `ItemCapabilities1122` (entities are not bridged) | 1:1 |
+| IC2 EU `IEnergySink` / `IEnergySource` tiles, `IElectricItem` items | 1.7.10 only | `ForeignEnergy1710` (reflection) | `energy.fePerEu` = 4 |
+| BuildCraft MJ `IPowerReceptor` (`PowerHandler` 4.x, `IPowerProvider` 3.x) | 1.7.10 only | `ForeignEnergy1710` (receive only) | `energy.fePerMj` = 10 |

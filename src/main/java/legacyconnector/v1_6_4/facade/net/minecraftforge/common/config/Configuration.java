@@ -24,9 +24,40 @@ public final class Configuration {
         return b;
     }
 
+    /** {@code getBlock(key, defaultId, comment)}. */
+    public static Property getBlock(legacyconnector.v1_7_10.net.minecraftforge.common.config.Configuration self, String key, int defaultId, String comment) {
+        return getBlock(self, "block", key, defaultId, comment);
+    }
+
+    /** {@code getItem(key, defaultId, comment)}. */
+    public static Property getItem(legacyconnector.v1_7_10.net.minecraftforge.common.config.Configuration self, String key, int defaultId, String comment) {
+        return getItem(self, "item", key, defaultId, comment);
+    }
+
+    /** Forge 1.4's names of the block and item id readers. */
+    public static Property getOrCreateBlockIdProperty(legacyconnector.v1_7_10.net.minecraftforge.common.config.Configuration self, String key, int defaultId) {
+        return getBlock(self, "block", key, defaultId, null);
+    }
+
+    public static Property getOrCreateIntProperty(legacyconnector.v1_7_10.net.minecraftforge.common.config.Configuration self, String key, String category, int defaultValue) {
+        return self.get(category, key, defaultValue);
+    }
+
+    public static Property getOrCreateBooleanProperty(legacyconnector.v1_7_10.net.minecraftforge.common.config.Configuration self, String key, String category,
+            boolean defaultValue) {
+        return self.get(category, key, defaultValue);
+    }
+
+    public static Property getOrCreateProperty(legacyconnector.v1_7_10.net.minecraftforge.common.config.Configuration self, String key, String category,
+            String defaultValue) {
+        return self.get(category, key, defaultValue);
+    }
+
     public static Property getBlock(legacyconnector.v1_7_10.net.minecraftforge.common.config.Configuration self, String key, int defaultId) {
         return getBlock(self, "block", key, defaultId, null);
     }
+
+
 
     public static Property getBlock(legacyconnector.v1_7_10.net.minecraftforge.common.config.Configuration self, String category, String key, int defaultId) {
         return getBlock(self, category, key, defaultId, null);

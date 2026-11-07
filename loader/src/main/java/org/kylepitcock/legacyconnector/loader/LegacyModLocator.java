@@ -25,6 +25,7 @@ import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
+import java.util.Locale;
 import java.util.zip.ZipFile;
 import net.neoforged.fml.ModLoadingIssue;
 import net.neoforged.fml.loading.FMLPaths;
@@ -84,12 +85,80 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
         }
     }
 
+    /**
+     * Distribution archives of the 1.6 era carried the mod itself as an archive in a folder named "Put contents into the Mods Folder" next to a
+     * server-jar patch (Goblins! Mod: the patch has the classes only, the textures and sounds are in the inner zip). Users unzipped them; this extracts
+     * the inner archive and loads that instead of the wrapper. Null when the archive is not such a wrapper.
+     */
+    private static Path packagedMod(Path archive, Path nestedDir) {
+        try (java.util.zip.ZipFile zip = new java.util.zip.ZipFile(archive.toFile())) {
+            var entries = zip.entries();
+            while (entries.hasMoreElements()) {
+                ZipEntry e = entries.nextElement();
+                String n = e.getName();
+                if (e.isDirectory() || !n.matches("(?i)[^/]*mods?[ _-]?folder[^/]*/[^/]+[.](zip|jar)")) continue;
+                Files.createDirectories(nestedDir);
+                Path target = nestedDir.resolve(archive.getFileName().toString().replaceAll("[.](zip|jar)$", "") + "-" + n.substring(n.lastIndexOf('/') + 1));
+                try (var in = zip.getInputStream(e)) {
+                    Files.copy(in, target, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                }
+                return target;
+            }
+        } catch (IOException | RuntimeException e) {
+            LOG.debug("Legacy Connector: could not look for a packaged mod in {}", archive, e);
+        }
+        return null;
+    }
+
+    /**
+     * A zip whose whole content sits in one top-level folder ("Advanced Survival/mymod/Main.class", "Advanced Survival/assets/...", often next to a
+     * __MACOSX folder): Forge's zip reader took classes by their package, but assets and mcmod.info under the folder were never found. Repacked here with
+     * the folder removed; null when the archive is not shaped like that.
+     */
+    private static Path unwrapRootFolder(Path archive, Path nestedDir) {
+        if (!archive.getFileName().toString().toLowerCase().endsWith(".zip")) return null;
+        try (java.util.zip.ZipFile zip = new java.util.zip.ZipFile(archive.toFile())) {
+            String root = null;
+            var entries = zip.entries();
+            while (entries.hasMoreElements()) {
+                String n = entries.nextElement().getName();
+                if (n.startsWith("__MACOSX/") || n.endsWith(".DS_Store")) continue;
+                int slash = n.indexOf('/');
+                if (slash <= 0) return null;
+                String top = n.substring(0, slash + 1);
+                if (root == null) root = top;
+                else if (!root.equals(top)) return null;
+            }
+            if (root == null || root.equalsIgnoreCase("META-INF/") || root.equals("assets/") || root.equals("mods/") || root.equals("net/") || root.equals("cpw/")) return null;
+            // a mod's own package folder is not a wrapper: the folder has to hold the archive's root files (assets, mcmod.info)
+            if (zip.getEntry(root + "assets/") == null && zip.getEntry(root + "mcmod.info") == null && zip.getEntry(root + "pack.mcmeta") == null) return null;
+            Files.createDirectories(nestedDir);
+            Path target = nestedDir.resolve(archive.getFileName().toString().replaceAll("[.]zip$", "") + "-unwrapped.jar");
+            try (java.util.zip.ZipOutputStream out = new java.util.zip.ZipOutputStream(Files.newOutputStream(target))) {
+                entries = zip.entries();
+                while (entries.hasMoreElements()) {
+                    ZipEntry e = entries.nextElement();
+                    String n = e.getName();
+                    if (n.startsWith("__MACOSX/") || n.endsWith(".DS_Store") || n.equals(root) || e.isDirectory()) continue;
+                    out.putNextEntry(new ZipEntry(n.substring(root.length())));
+                    try (var in = zip.getInputStream(e)) {
+                        in.transferTo(out);
+                    }
+                    out.closeEntry();
+                }
+            }
+            return target;
+        } catch (IOException | RuntimeException e) {
+            LOG.debug("Legacy Connector: could not unwrap the root folder of {}", archive, e);
+            return null;
+        }
+    }
+
     private static boolean forge1201NoticeLogged;
 
-    /** Forge 1.20.1 support is unfinished: {@code experimental.forge1201=true} (config) or {@code -Dlegacyconnector.forge1201=true} turns it on. */
+    /** Forge 1.20.1 support is experimental but on by default; {@code experimental.forge1201=false} (config) or {@code -Dlegacyconnector.forge1201=false} turns it off. */
     private static boolean forge1201Enabled(Path modsDir) {
-        if (Boolean.getBoolean("legacyconnector.forge1201")) return true;
-        return "true".equalsIgnoreCase(LibraryBridges.readConfig(modsDir).getProperty("experimental.forge1201", "false").trim());
+        return LibraryBridges.forge1201On(modsDir);
     }
 
     @Override
@@ -121,14 +190,16 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             // launcher services (a shaded Mixin, as many 1.12.2 mods have) must go: NeoForge's early scan of mods/ itself
             // loads such jars as launcher services before anything can translate them, and the game stops.
             // mods/b1.7.3/: Beta 1.7.3 ModLoader/Forge mods (BetaJars)
-            for (Path dir : List.of(modsDir, modsDir.resolve("1.4.7"), modsDir.resolve("1.5.2"), modsDir.resolve("1.6.4"), modsDir.resolve("1.7.10"), modsDir.resolve("1.12.2"), modsDir.resolve(BetaJars.FOLDER))) {
+            for (Path dir : List.of(modsDir, modsDir.resolve("1.4.7"), modsDir.resolve("1.5.2"), modsDir.resolve("1.6.4"), modsDir.resolve("1.7.10"), modsDir.resolve("1.12.2"), modsDir.resolve("1.20.1"), modsDir.resolve(BetaJars.FOLDER))) {
                 if (!Files.isDirectory(dir)) continue;
                 try (Stream<Path> files = Files.list(dir)) {
                     for (Path p : files.filter(f -> isModArchive(f))
                             .sorted(Comparator.comparing(f -> f.getFileName().toString().toLowerCase())).toList()) {
                         if (context.isLocated(p) || !seenNames.add(p.getFileName().toString().toLowerCase())) continue;
                         try {
-                            LegacyJar jar = LegacyJarInspector.inspect(p);
+                            Path packaged = packagedMod(p, gameDir.resolve(".legacyconnector").resolve("nested"));
+                            if (packaged == null) packaged = unwrapRootFolder(p, gameDir.resolve(".legacyconnector").resolve("nested"));
+                            LegacyJar jar = LegacyJarInspector.inspect(packaged != null ? packaged : p);
                             if (jar == null && LegacyJarInspector.takeDerivative(p)) {
                                 // a translated jar taken out of a cache: only Legacy Connector itself loads those, from its own cache
                                 context.addLocated(p);
@@ -139,8 +210,8 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                             if (jar != null && jar.version == LegacyVersion.V1_20_1 && !forge1201Enabled(modsDir)) {
                                 if (!forge1201NoticeLogged) {
                                     forge1201NoticeLogged = true;
-                                    LOG.info("Legacy Connector: Forge 1.20.1 mods (such as {}) are left alone: that support is experimental and off. "
-                                            + "Set experimental.forge1201=true in config/legacyconnector.properties to try it.", p.getFileName());
+                                    LOG.info("Legacy Connector: Forge 1.20.1 mods (such as {}) are left alone: experimental.forge1201=false in config/legacyconnector.properties turns that support off. "
+                                            + "Remove the line (or set it to true) to load them.", p.getFileName());
                                 }
                                 continue;
                             }
@@ -165,8 +236,10 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                 }
             }
             if (legacy.isEmpty()) return;
+            dropDuplicateMods(legacy);
 
             List<LibraryBridges.Bridge> bridges = LibraryBridges.active(modsDir);
+            if (forge1201Enabled(modsDir)) for (String missing : NativeLibraries1201.missing(legacy, LibraryBridges.installedModernIds())) LOG.warn("Legacy Connector: {}", missing);
             // Scala, trove, ... are handed to FML only when a legacy mod uses them and nothing else in the pack provides them.
             Set<Path> libraryKeep = new HashSet<>();
             LIBRARY_SKIPS.clear();
@@ -204,6 +277,9 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             // Legacy coremods' class transformers, loaded on the first cache miss (only then is anything translated).
             List<LegacyJar> loading = legacy.stream()
                     .filter(j -> skipReason(j) == null && LibraryBridges.replacing(j, bridges) == null && LibraryBridges.obsoleteReason(j) == null).toList();
+            // The runtime wires the Forge 1.20.1 facades (events, capabilities, networking) only for these mods.
+            System.setProperty("legacyconnector.forge1201.mods", loading.stream().filter(j -> j.version == LegacyVersion.V1_20_1)
+                    .flatMap(j -> j.mods.stream()).map(LegacyModDecl::fmlId).collect(java.util.stream.Collectors.joining(",")));
             // One coremod class loader per API flavour (1.7.10; 1.6.4 and 1.5.2), loaded on the first class of a jar that uses it.
             var coremods = new java.util.EnumMap<LegacyVersion, org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers>(LegacyVersion.class);
             transformer.patcher((jar, name, bytes) -> {
@@ -226,6 +302,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                     .flatMap(j -> j.mods.stream()).map(LegacyModDecl::fmlId).toList());
             Map<LegacyJar, String> outcomes = new LinkedHashMap<>();
             List<Path> translated = new ArrayList<>();
+            java.util.Set<Path> ownerKeeping = new java.util.HashSet<>(); // 1.4.7 jars: Forestry (and Binnie's mods) look their own jar up by file
             Set<Path> keep = new HashSet<>(libraryKeep);
             if (runtimeJar != null) keep.add(runtimeJar);
             for (LegacyVersion api : List.of(LegacyVersion.V1_7_10, LegacyVersion.V1_6_4)) {
@@ -247,7 +324,9 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                             pkgs.size(), v.id(), pkgs.size() > 12 ? new ArrayList<>(pkgs).subList(0, 12) + " ..." : pkgs);
                 }
             }
-            Map<LegacyVersion, byte[]> modSet = modSetDigests(legacy, bridges, crossVersion);
+            Map<LegacyVersion, Set<String>> bundledElsewhere = classesOfOtherVersions(legacy);
+            transformer.bundledByOtherVersions(bundledElsewhere);
+            Map<LegacyVersion, byte[]> modSet = modSetDigests(legacy, bridges, crossVersion, bundledElsewhere);
             Map<LegacyVersion, Map<String, ClassInfo>> peers = new EnumMap<>(LegacyVersion.class);
             Map<LegacyVersion, SynthDemand> demand = new EnumMap<>(LegacyVersion.class);
             List<RiskyMods.Entry> risky = new ArrayList<>();
@@ -276,7 +355,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                 context.addLocated(jar.path);
                 LibraryBridges.Bridge replacedBy = LibraryBridges.replacing(jar, bridges);
                 String obsolete = LibraryBridges.obsoleteReason(jar);
-                String skip = replacedBy != null ? "replaced by " + replacedBy.modernModId() + " (legacy " + replacedBy.legacyModId()
+                String skip = replacedBy != null ? "replaced by " + (replacedBy.modernModId() == null ? "NeoForge" : replacedBy.modernModId()) + " (legacy " + replacedBy.legacyModId()
                         + " API bridged)" : obsolete != null ? "not loaded: " + obsolete : skipReason(jar);
                 if (skip != null) {
                     outcomes.put(jar, skip);
@@ -326,6 +405,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                     if (risk != null) risky.add(RiskyMods.entry(jar, risk));
                     outcomes.put(jar, Files.exists(linkReport) ? Files.readString(linkReport) : "  (cached, no link report)\n");
                     translated.add(out);
+                    if (jar.version != null && jar.version.flatNames()) ownerKeeping.add(out);
                 } catch (Exception e) {
                     LOG.error("Legacy Connector: failed to translate {}", jar.fileName(), e);
                     outcomes.put(jar, "translation failed: " + e);
@@ -346,7 +426,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                 pipeline.addPath(synthJar, ModFileDiscoveryAttributes.DEFAULT, IncompatibleFileReporting.ERROR);
             }
 
-            SplitPackageResolver.Outcome split = SplitPackageResolver.resolve(translated, cacheDir);
+            SplitPackageResolver.Outcome split = SplitPackageResolver.resolve(translated, cacheDir, ownerKeeping);
             if (split.sharedLibrary() != null) {
                 LOG.info("Legacy Connector: {} packages shipped by several legacy jars were merged into {}",
                         split.sharedPackages().size(), split.sharedLibrary().getFileName());
@@ -434,13 +514,13 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
      * Connector (jars depending on it) mean the legacy mods and are not counted.
      */
     /**
-     * A jar, or a zip in the {@code 1.4.7}, {@code 1.5.2}, {@code 1.6.4} or {@code b1.7.3} folder (mods of those releases, ModLoader ones above
-     * all, were mostly distributed as zips).
+     * A jar, or a zip: Forge 1.6.4 and older loaded mods from zips, and 1.4.x mods (RedPower 2, ModLoader ones above all) were mostly distributed that way,
+     * so they are dropped into {@code mods/} as often as into {@code mods/1.4.7/}. Zips that are not mods (resource packs, shader packs) are rejected
+     * by the inspector without a message.
      */
     private static boolean isModArchive(Path f) {
         String name = f.getFileName().toString().toLowerCase();
-        return name.endsWith(".jar") || (name.endsWith(".zip") && f.getParent() != null && f.getParent().getFileName() != null
-                && java.util.Set.of("1.4.7", "1.5.2", "1.6.4", BetaJars.FOLDER).contains(f.getParent().getFileName().toString()));
+        return name.endsWith(".jar") || name.endsWith(".zip");
     }
 
     private static Map<String, String> fmlIdRenames(List<LegacyJar> loading, List<LegacyJar> allLegacy, List<Path> dirs) {
@@ -520,8 +600,39 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
         return out.done();
     }
 
+    /**
+     * For each legacy version, the class names (internal form) that the jars of the OTHER versions in this game hold; empty when only one version is
+     * present. Read from the zip directories only.
+     */
+    private static Map<LegacyVersion, Set<String>> classesOfOtherVersions(List<LegacyJar> legacy) {
+        Map<LegacyVersion, Set<String>> own = new EnumMap<>(LegacyVersion.class);
+        for (LegacyJar jar : legacy) {
+            if (jar.version == null || skipReason(jar) != null) continue;
+            Set<String> names = own.computeIfAbsent(jar.version, v -> new HashSet<>());
+            try (java.util.zip.ZipFile zip = new java.util.zip.ZipFile(jar.existing().toFile())) {
+                var en = zip.entries();
+                while (en.hasMoreElements()) {
+                    String n = en.nextElement().getName();
+                    if (n.endsWith(".class") && n.indexOf('/') > 0) names.add(n.substring(0, n.length() - ".class".length()));
+                }
+            } catch (IOException | RuntimeException e) {
+                LOG.debug("Legacy Connector: could not list {}", jar.fileName(), e);
+            }
+        }
+        Map<LegacyVersion, Set<String>> out = new EnumMap<>(LegacyVersion.class);
+        if (own.size() < 2) return out;
+        for (LegacyVersion v : own.keySet()) {
+            Set<String> others = new HashSet<>();
+            own.forEach((ov, names) -> {
+                if (ov != v) others.addAll(names);
+            });
+            out.put(v, others);
+        }
+        return out;
+    }
+
     private static Map<LegacyVersion, byte[]> modSetDigests(List<LegacyJar> legacy, List<LibraryBridges.Bridge> bridges,
-            org.kylepitcock.legacyconnector.loader.transform.CrossVersionPackages crossVersion) throws IOException {
+            org.kylepitcock.legacyconnector.loader.transform.CrossVersionPackages crossVersion, Map<LegacyVersion, Set<String>> bundledElsewhere) throws IOException {
         Map<LegacyVersion, MessageDigest> digests = new EnumMap<>(LegacyVersion.class);
         for (LegacyJar jar : legacy) {
             MessageDigest md = digests.computeIfAbsent(jar.version, v -> SplitPackageResolver.sha256());
@@ -532,6 +643,8 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
         // the relocations depend on the other versions' jars, the FML ids on the modern mods
         byte[] shared = (crossVersion.fingerprint() + "|fmlIds=" + new java.util.TreeMap<>(LegacyModDecl.fmlIds())).getBytes(StandardCharsets.UTF_8);
         digests.forEach((v, md) -> md.update(shared));
+        // the classes of the other versions' jars decide which optional references are stubbed as absent
+        digests.forEach((v, md) -> md.update(Integer.toString(bundledElsewhere.getOrDefault(v, Set.of()).hashCode()).getBytes(StandardCharsets.UTF_8)));
         Map<LegacyVersion, byte[]> out = new EnumMap<>(LegacyVersion.class);
         digests.forEach((v, md) -> out.put(v, md.digest()));
         return out;
@@ -653,15 +766,102 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             } catch (IOException e) {
                 LOG.debug("Legacy Connector: could not list {}", dir, e);
             }
+            try (Stream<Path> files = Files.list(dir)) {
+                files.filter(f -> isModArchive(f.getFileName().toString().toLowerCase())).sorted().forEach(f -> {
+                    if (isPatchedGameJar(f)) {
+                        LOG.warn("Legacy Connector: {} is a patched-game jar mod (it replaces Minecraft's own classes), not a Forge mod; it is ignored", f.getFileName());
+                        notes.add(f.getFileName() + ": not supported: patched-game jar mod. It is installed by copying files over minecraft.jar and replaces Minecraft's own classes"
+                                + " (Better Than Wolves and its add-ons are of this kind); this layer runs mods that add to the game, so the file is ignored");
+                    }
+                });
+            } catch (IOException e) {
+                LOG.debug("Legacy Connector: could not list {}", dir, e);
+            }
         }
         return notes;
     }
 
+    /**
+     * A jar mod: a zip meant to be copied over minecraft.jar (folders such as {@code MINECRAFT-JAR/}, or obfuscated vanilla classes at the root) with no Forge mod
+     * metadata. Such a patch replaces vanilla classes, which a translating layer cannot honour.
+     */
+    static boolean isPatchedGameJar(Path file) {
+        try (ZipFile zip = new ZipFile(file.toFile())) {
+            if (zip.getEntry("mcmod.info") != null || zip.getEntry("litemod.json") != null) return false;
+            int rootShort = 0, minecraftDirs = 0;
+            boolean modClass = false;
+            for (var en = zip.entries(); en.hasMoreElements(); ) {
+                String n = en.nextElement().getName();
+                String up = n.toUpperCase(Locale.ROOT);
+                if (up.startsWith("MINECRAFT-JAR/") || up.startsWith("MINECRAFT_SERVER-JAR/") || up.startsWith("MINECRAFT.JAR/")) minecraftDirs++;
+                else if (n.endsWith(".class") && n.indexOf('/') < 0) {
+                    if (n.length() <= 9) rootShort++;
+                    else if (n.startsWith("mod_")) modClass = true;
+                }
+            }
+            return minecraftDirs >= 10 || (rootShort >= 30 && !modClass);
+        } catch (IOException | RuntimeException e) {
+            return false;
+        }
+    }
+
     private static volatile String currentSide = "CLIENT";
+
+    /** Jars left out because another jar holds the same mod id in a newer version (a player keeps two downloads of one mod in mods/). */
+    private static final Map<LegacyJar, String> DUPLICATE_SKIPS = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /**
+     * FML refuses two files with one mod id; here the second copy used to make neither load (the mod never registered, with no message). Keeps the
+     * jar with the highest declared version (ties: the newer file) and says which one was dropped.
+     */
+    private static void dropDuplicateMods(List<LegacyJar> legacy) {
+        DUPLICATE_SKIPS.clear();
+        Map<String, List<LegacyJar>> byId = new java.util.LinkedHashMap<>();
+        for (LegacyJar j : legacy) for (LegacyModDecl m : j.mods) byId.computeIfAbsent(m.modernId(), k -> new ArrayList<>()).add(j);
+        for (Map.Entry<String, List<LegacyJar>> e : byId.entrySet()) {
+            List<LegacyJar> jars = e.getValue().stream().distinct().toList();
+            if (jars.size() < 2) continue;
+            LegacyJar best = jars.get(0);
+            for (LegacyJar j : jars) if (compareDeclared(j, e.getKey(), best, e.getKey()) > 0) best = j;
+            for (LegacyJar j : jars) {
+                if (j == best || DUPLICATE_SKIPS.containsKey(j)) continue;
+                DUPLICATE_SKIPS.put(j, "another file holds the same mod (" + e.getKey() + ") in a newer version: " + best.fileName());
+                LOG.warn("Legacy Connector: {} and {} are two copies of the mod '{}'; only {} is loaded (remove the other from mods/).",
+                        j.fileName(), best.fileName(), e.getKey(), best.fileName());
+            }
+        }
+    }
+
+    private static int compareDeclared(LegacyJar a, String idA, LegacyJar b, String idB) {
+        long[] na = numbers(declaredVersion(a, idA)), nb = numbers(declaredVersion(b, idB));
+        for (int i = 0; i < Math.max(na.length, nb.length); i++) {
+            long x = i < na.length ? na[i] : 0, y = i < nb.length ? nb[i] : 0;
+            if (x != y) return Long.compare(x, y);
+        }
+        try {
+            return Long.compare(Files.getLastModifiedTime(a.existing()).toMillis(), Files.getLastModifiedTime(b.existing()).toMillis());
+        } catch (IOException | RuntimeException ex) {
+            return 0;
+        }
+    }
+
+    private static String declaredVersion(LegacyJar jar, String modernId) {
+        return jar.mods.stream().filter(m -> m.modernId().equals(modernId)).map(m -> m.version).filter(java.util.Objects::nonNull).findFirst().orElse("");
+    }
+
+    /** The digit groups of a version string ("1.3.5 B3" gives 1, 3, 5, 3). */
+    private static long[] numbers(String version) {
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("\\d{1,9}").matcher(version);
+        List<Long> out = new ArrayList<>();
+        while (m.find()) out.add(Long.parseLong(m.group()));
+        return out.stream().mapToLong(Long::longValue).toArray();
+    }
 
     private static String skipReason(LegacyJar jar) {
         String lib = LIBRARY_SKIPS.get(jar);
         if (lib != null) return lib;
+        String dup = DUPLICATE_SKIPS.get(jar);
+        if (dup != null) return dup;
         // A client-only mod (@Mod class under @SideOnly(CLIENT), or clientSideOnly = true) has nothing to do on a dedicated server: FML dropped it there.
         if (jar.hasMods() && "SERVER".equals(currentSide) && jar.mods.stream().allMatch(m -> m.clientSideOnly)) {
             return "client-only mod (@SideOnly(CLIENT) mod class); not loaded on a dedicated server";

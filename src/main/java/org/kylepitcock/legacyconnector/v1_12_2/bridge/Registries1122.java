@@ -22,7 +22,15 @@ import org.slf4j.LoggerFactory;
 public final class Registries1122 {
     private static final Logger LOG = LoggerFactory.getLogger("LegacyConnector/Registry");
 
-    public static final Reg<Block> BLOCKS = new Reg<>(Block.class, BlockBridge1122::register);
+    /** Namespaces of modern mods that stand in for a legacy library (see LibraryBridges): their items can be looked up in the legacy item registry. */
+    private static final java.util.Set<String> BRIDGED_NAMESPACES = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    /** Makes the items of a modern mod visible to legacy code by name (wrapped on first lookup). */
+    public static void bridgeModernItems(String namespace) {
+        BRIDGED_NAMESPACES.add(namespace);
+    }
+
+    public static final Reg<Block> BLOCKS =new Reg<>(Block.class, BlockBridge1122::register);
     public static final Reg<Item> ITEMS = new Reg<>(Item.class, ItemBridge1122::register);
     public static final Reg<legacyconnector.v1_12_2.net.minecraft.item.crafting.IRecipe> RECIPES =
             new Reg<>(legacyconnector.v1_12_2.net.minecraft.item.crafting.IRecipe.class, RecipeBridge1122::add);
@@ -301,6 +309,12 @@ public final class Registries1122 {
                 // a vanilla name nobody asked for through Blocks/Items yet
                 Object made = type == Block.class ? Vanilla1122.blockByName(key.getPath()) : Vanilla1122.itemByName(key.getPath());
                 v = (V) made;
+            }
+            if (v == null && key != null && type == Item.class && !BRIDGED_NAMESPACES.isEmpty() && BRIDGED_NAMESPACES.contains(key.getNamespace())) {
+                // an item of a modern mod a bridge stands in for a legacy library with (Patchouli's guide book): wrapped like a vanilla one
+                var id = net.minecraft.resources.ResourceLocation.tryBuild(key.getNamespace(), key.getPath());
+                var modern = id == null ? java.util.Optional.<net.minecraft.world.item.Item>empty() : net.minecraft.core.registries.BuiltInRegistries.ITEM.getOptional(id);
+                if (modern.isPresent()) v = (V) Vanilla1122.itemForModern(modern.get());
             }
             if (v == null && key != null && "minecraft".equals(key.getNamespace()) && type == legacyconnector.v1_12_2.net.minecraft.util.SoundEvent.class) {
                 // a vanilla sound nobody asked for through SoundEvents yet (a packet names it): wrap the modern event

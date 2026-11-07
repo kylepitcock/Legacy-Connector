@@ -37,6 +37,33 @@ public class ForgeHooks {
         }
     }
 
+    /** Plants fertilized grass can grow (mods add their own through {@code MinecraftForge.addGrassPlant}); Forge's own default is tall grass. */
+    static final List<GrassEntry> grassList = new ArrayList<>();
+
+    public static class GrassEntry extends WeightedRandom.Item {
+        public final legacyconnector.v1_7_10.net.minecraft.block.Block block;
+        public final int metadata;
+
+        public GrassEntry(legacyconnector.v1_7_10.net.minecraft.block.Block block, int metadata, int weight) {
+            super(weight);
+            this.block = block;
+            this.metadata = metadata;
+        }
+    }
+
+    /**
+     * Grows a random registered plant at the position (the air block above grass): Forge's tall grass (weight 10) or one a mod added, chosen by weight,
+     * only where the block can stay.
+     */
+    public static void plantGrass(legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z) {
+        List<GrassEntry> entries = new ArrayList<>(grassList.size() + 1);
+        entries.add(new GrassEntry(legacyconnector.v1_7_10.net.minecraft.init.Blocks.tallgrass, 1, 10));
+        entries.addAll(grassList);
+        GrassEntry grass = (GrassEntry) WeightedRandom.getRandomItem(world.rand, entries);
+        if (grass == null || grass.block == null || !grass.block.canBlockStay(world, x, y, z)) return;
+        world.setBlock(x, y, z, grass.block, grass.metadata, 3);
+    }
+
     /** A seed tall grass drops: wheat seeds (weight 10, Forge's default entry) or one a mod added, picked by weight. */
     public static ItemStack getGrassSeed(legacyconnector.v1_7_10.net.minecraft.world.World world) {
         List<SeedEntry> entries = new ArrayList<>(seedList.size() + 1);

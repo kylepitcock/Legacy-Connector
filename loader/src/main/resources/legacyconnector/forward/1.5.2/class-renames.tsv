@@ -8,3 +8,4 @@ net/minecraft/client/renderer/RenderEngine	net/minecraft/client/renderer/texture
 net/minecraft/client/renderer/texture/TextureStitched	net/minecraft/client/renderer/texture/TextureAtlasSprite
 net/minecraft/block/BlockCloth	net/minecraft/block/BlockColored
 net/minecraftforge/common/Configuration$UnicodeInputStreamReader	net/minecraftforge/common/config/UnicodeInputStreamReader
+ModLoader	net/minecraft/src/ModLoader

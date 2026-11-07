@@ -10,20 +10,23 @@
 
 {{buttons}}
 
-**Play unmodified 1.7.10 and 1.12.2 Forge mods on NeoForge 1.21.1.**
+**Play unmodified 1.7.10, 1.12.2, 1.6.4, 1.5.2 and 1.4.7 Forge mods on NeoForge 1.21.1.**
 
 | Legacy version | Support |
 | --- | --- |
 | **1.7.10** | ✅ Supported (beta) |
-| **1.12.2** | ✅ Supported (alpha) |
+| **1.12.2** | ✅ Supported (beta) |
+| **1.6.4** | 🧪 Alpha (new in 0.4) |
+| **1.5.2** | 🧪 Alpha (new in 0.4) |
+| **1.4.7** | 🧪 Alpha (new in 0.4) |
 
-Drop 1.7.10 or 1.12.2 mod jars into your `mods` folder next to Legacy Connector. They get translated when the game loads and run as normal NeoForge mods. It's the same idea as Sinytra Connector, but for old Forge mods instead of Fabric. Your original jars are never modified.
+Drop 1.7.10, 1.12.2, 1.6.4, 1.5.2 or 1.4.7 mod jars into your `mods` folder next to Legacy Connector. They get translated when the game loads and run as normal NeoForge mods. It's the same idea as Sinytra Connector, but for old Forge mods instead of Fabric. Your original jars are never modified.
 
 **Built for mods that only exist on these old versions** and never got a 1.21.1 port. **Beta:** on 1.7.10, Thaumcraft 4, Witchery, HBM's Nuclear Tech, OreSpawn, Fisk's Superheroes, Morph, the Reika mods (RotaryCraft, ReactorCraft, ElectriCraft, ChromatiCraft) and Galacticraft with its addons (each planet's own gravity) run with their blocks, items, mobs, recipes, GUIs, world generation and dimensions, and big packs like GT New Horizons load most of their mods. 1.12.2 support is in alpha: Atum 2, The Midnight, Scape and Run: Parasites and Abyssalcraft load and play with their own models, mobs, GUIs, dimensions and world generation. Back up your worlds before trying a new mod set.
 
 Old mods' content joins the game the way a modern mod's does: their biomes through the pack's biome placement (a TerraBlender region; TerraBlender is bundled, a separately installed one wins), their ores and world generators as normal features, their village buildings as houses in normal villages, and structure loot through loot tables. So it plays along with your other mods, and data packs can tweak it like anything else.
 
-**[Compatibility list & reports](https://kylepitcock.github.io/Legacy-Connector/)**: check whether a mod works, or report how it went for you.
+**[Compatibility list & reports](https://kylepitcock.github.io/Legacy-Connector/)**: check whether a mod works, or report how it went for you (1.7.10, 1.12.2 and the older versions in development, plus an experimental Forge 1.20.1 tab).
 
 ---
 
@@ -114,12 +117,12 @@ Mods work because the legacy API they were written against is rebuilt on top of 
 - **Coremods that patch other mods** (CoFH, AE2, OpenMods and more)
 - **Scala mods,** plus the libraries 1.7.10 shipped (Scala 2.11, Trove, vecmath)
 
-## What's bridged (1.12.2, alpha)
+## What's bridged (1.12.2, beta)
 
 - **Registries:** blocks, items, potions, enchantments, sounds, biomes, entities, recipes, villager professions, and mods' own custom registries
 - **Blocks and items:** block states, items with subtypes, tile entities with client sync, tools, armour and food
 - **Recipes:** shaped, shapeless, ore and furnace recipes become data-pack recipes. The Ore Dictionary becomes tags
-- **Capabilities:** legacy tiles and items are NeoForge item, fluid and energy capabilities by default (RF, IC2 EU, BuildCraft MJ, Forge fluids, inventories), so hoppers, Create and modern cables work with them; legacy tools count as tools
+- **Capabilities:** legacy tiles and items are NeoForge item, fluid and energy capabilities by default (RF and Forge Energy, IC2 EU, BuildCraft MJ, Forge fluids, inventories), so hoppers, Create and modern cables work with them; legacy tools count as tools
 - **Networking, IMC, coremod plugins** and the usual annotations (`@ObjectHolder`, `@SidedProxy`, `@EventBusSubscriber`)
 - **Models:** mod blockstates and item models are translated to 1.21 formats (only lightly tested)
 - **`@Config` classes** are filled from their config files
@@ -133,7 +136,8 @@ Mods work because the legacy API they were written against is rebuilt on top of 
 | Baubles | **Curios** | Bauble items go into Curios slots |
 | NotEnoughItems | **JEI** | Legacy recipe handlers become JEI categories and answer recipe/usage lookups |
 | Waila | **Jade** | Legacy tooltip providers show in Jade |
-| CoFH RF API | **NeoForge Energy** | Always on. 1 RF = 1 FE, so modern cables connect |
+| Patchouli (1.12.2) | **Patchouli** | Legacy mods' guide books (including the ones they ship as resources) open in the modern Patchouli |
+| CoFH RF API (1.7.10 and Redstone Flux 1.12.2) | **NeoForge Energy** | Always on. 1 RF = 1 FE, so modern cables connect |
 
 If the modern mod isn't installed, the legacy library loads as usual. Each replacement can also be turned off in the config to load the legacy library instead.
 
@@ -173,7 +177,7 @@ Settings are in `config/legacyconnector.properties`, which is created with comme
 
 **1.7.10 (beta):** Thaumcraft, Witchery, HBM, OreSpawn, Morph, the Reika mods and others with no modern version work in game. Galacticraft and its addons run with per-planet gravity. In-game tests of the **GT New Horizons** pack and a 130-jar 1.7.10 mod list, which place every block, use every item and spawn every mob, rate **166 mods** as working and **57** as partly working.
 
-**1.12.2 (alpha):** content mods load and play in a real client: blocks and items with their models, mobs with their own renderers and AI (Scape and Run: Parasites' parasites hunt you), GUIs, world generation, loot, natural spawning and Forge events. In a server test of 32 big mods (Applied Energistics 2, Blood Magic, Botania, Biomes O' Plenty, Chisel, EnderIO, Forestry, Immersive Engineering, Mekanism, Thaumcraft, Thermal Expansion, Tinkers' Construct, Twilight Forest and more), every mod but BuildCraft Silicon loaded fully: about 2,060 blocks, 3,480 items and 3,680 recipes. In a larger test of 116 mods, about 5,050 blocks and 10,170 items register, and an automatic self test places and right-clicks every block and uses every item without errors. Performance and bug-fix mods like FoamFix, BetterFPS and VanillaFix are skipped.
+**1.12.2 (beta):** content mods load and play in a real client: blocks and items with their models, mobs with their own renderers and AI (Scape and Run: Parasites' parasites hunt you), GUIs, world generation, loot, natural spawning and Forge events. In a server test of 32 big mods (Applied Energistics 2, Blood Magic, Botania, Biomes O' Plenty, Chisel, EnderIO, Forestry, Immersive Engineering, Mekanism, Thaumcraft, Thermal Expansion, Tinkers' Construct, Twilight Forest and more), every mod but BuildCraft Silicon loaded fully: about 2,060 blocks, 3,480 items and 3,680 recipes. In a larger test of 116 mods, about 5,050 blocks and 10,170 items register, and an automatic self test places and right-clicks every block and uses every item without errors. Performance and bug-fix mods like FoamFix, BetterFPS and VanillaFix are skipped.
 
 See the **[compatibility site](https://kylepitcock.github.io/Legacy-Connector/)** for per-mod results.
 
@@ -213,7 +217,7 @@ modern/legacy stack and tile conversion, and NeoForge capabilities for legacy ti
 
 ## Roadmap
 
-✅ 1.7.10 → 🧪 **1.12.2** (in progress) → **1.6.4** (started) → **1.5.2** (started) → **1.4.7** (started) → **1.20.1** → **1.19.2** → **1.18.2** → **1.16.5** → **1.2.5** → 1.3.2 (on demand)
+✅ 1.7.10 → ✅ **1.12.2** (beta) → **1.6.4** (alpha) → **1.5.2** (alpha) → **1.4.7** (alpha) → **1.20.1** (experimental, started) → **1.19.2** → **1.18.2** → **1.16.5** → **1.2.5**
 
 Also started: **Beta 1.7.3** ModLoader / Forge 1.0 mods (`mods/b1.7.3/`): their blocks, items and recipes load with their own textures, block behaviour, tile entities and GUIs. Fluid buckets, tool/sword durability and arrows with constant custom textures are bridged; general entities and world generation remain unfinished.
 

@@ -421,6 +421,7 @@ public abstract class EntityPlayer extends EntityLivingBase implements legacycon
         data.put(ACHIEVEMENTS_TAG, list);
         String name = achievement.getStatName().getFormattedText();
         if (mcc$player() instanceof net.minecraft.server.level.ServerPlayer sp) {
+            org.kylepitcock.legacyconnector.v1_7_10.bridge.Achievements1710.award(sp, achievement);
             if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient() && sp.getServer() != null && sp.getServer().isSingleplayer()
                     || net.neoforged.fml.loading.FMLEnvironment.dist.isClient() && org.kylepitcock.legacyconnector.v1_7_10.client.LegacyToasts.isLocal(sp.getUUID())) {
                 org.kylepitcock.legacyconnector.v1_7_10.client.LegacyToasts.achievement(name);

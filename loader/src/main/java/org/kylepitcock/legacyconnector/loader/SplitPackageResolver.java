@@ -47,6 +47,45 @@ final class SplitPackageResolver {
 
     /** Also the packages of the JDK's own java.xml module ({@code javax/xml/namespace} bundled by MoCreatures splits it against enderio's copy). */
     private static boolean dropped(String pkg) {
+        return droppedWith(pkg, hostPackages());
+    }
+
+    /**
+     * The game's own copy of Nashorn ({@code org.openjdk.nashorn}, NeoForge's coremod engine): HuajiAge bundles another one, and the
+     * Scala/Akka library reads both modules ("Modules org.openjdk.nashorn and huajiage export package ... to module akka.actor").
+     */
+    private static final java.util.regex.Pattern HOST_PREFIXES = java.util.regex.Pattern.compile("org/openjdk/nashorn(/.*)?|jdk/internal/dynalink(/.*)?");
+
+    /** Packages of every named module in the layers above this one (boot layer, the game's library layers): a legacy jar's copy would be a second exporter. */
+    private static volatile Set<String> hostPackages;
+
+    private static Set<String> hostPackages() {
+        Set<String> r = hostPackages;
+        if (r != null) return r;
+        Set<String> out = new HashSet<>();
+        try {
+            Set<ModuleLayer> seen = new HashSet<>();
+            java.util.ArrayDeque<ModuleLayer> todo = new java.util.ArrayDeque<>();
+            ModuleLayer own = SplitPackageResolver.class.getModule().getLayer();
+            if (own != null) todo.addAll(own.parents());
+            todo.add(ModuleLayer.boot());
+            while (!todo.isEmpty()) {
+                ModuleLayer l = todo.poll();
+                if (!seen.add(l)) continue;
+                for (Module m : l.modules()) {
+                    for (String p : m.getPackages()) out.add(p.replace('.', '/'));
+                }
+                todo.addAll(l.parents());
+            }
+        } catch (RuntimeException e) {
+            // best effort: the static list still applies
+        }
+        return hostPackages = out;
+    }
+
+    /** Visible for tests: the decision for a package given the host's packages. */
+    static boolean droppedWith(String pkg, Set<String> host) {
+        if (host.contains(pkg) || HOST_PREFIXES.matcher(pkg).matches()) return true;
         return DROP.contains(pkg) || JDK_XML.matcher(pkg).matches() || pkg.equals("org/w3c/dom") || pkg.startsWith("org/w3c/dom/")
                 || pkg.equals("org/xml/sax") || pkg.startsWith("org/xml/sax/");
     }
@@ -54,10 +93,21 @@ final class SplitPackageResolver {
     record Outcome(List<Path> jars, Path sharedLibrary, Set<String> sharedPackages) {}
 
     static Outcome resolve(List<Path> jars, Path cacheDir) throws IOException {
+        return resolve(jars, cacheDir, Set.of());
+    }
+
+    /**
+     * @param ownerKeeping jars of a version whose mods look their own jar up by file (Forestry lists its jar for {@code forestry/plugins/Plugin*.class}): a
+     *     package all of whose copies are in such jars stays in the jar of the mod that owns its root, which also receives the classes only the other copies had
+     */
+    static Outcome resolve(List<Path> jars, Path cacheDir, Set<Path> ownerKeeping) throws IOException {
         Map<String, List<Path>> owners = new TreeMap<>();
         Map<Path, Map<String, Integer>> packageSizes = new HashMap<>();
+        Map<Path, Map<String, Set<String>>> classNames = new HashMap<>();
         for (Path jar : jars) {
             Map<String, Integer> sizes = new HashMap<>();
+            Map<String, Set<String>> names = new HashMap<>();
+            classNames.put(jar, names);
             try (ZipFile zip = new ZipFile(jar.toFile())) {
                 Enumeration<? extends ZipEntry> en = zip.entries();
                 while (en.hasMoreElements()) {
@@ -66,6 +116,7 @@ final class SplitPackageResolver {
                     int slash = n.lastIndexOf('/');
                     if (slash < 0) continue; // default package classes can never be exported anyway
                     sizes.merge(n.substring(0, slash), 1, Integer::sum);
+                    names.computeIfAbsent(n.substring(0, slash), k -> new HashSet<>()).add(n.substring(slash + 1));
                 }
             }
             packageSizes.put(jar, sizes);
@@ -78,10 +129,32 @@ final class SplitPackageResolver {
         });
         if (shared.isEmpty()) return new Outcome(jars, null, shared);
 
+        // A package all of whose copies are in owner-keeping jars stays in the jar of the mod that owns its root (the mod whose own code lives under the same
+        // top-level folder); the other jars lose their copy and the owner's jar is given the classes only the other copies had. Moving it to the shared library
+        // would take it out of the owner's jar, and mods that list their own jar's entries (Forestry finds its plugins by scanning the jar for
+        // forestry/plugins/Plugin*.class) would see none.
+        Map<String, Path> keptBy = new TreeMap<>();
+        Map<Path, Map<Path, List<String>>> extras = new HashMap<>(); // owner jar -> donor jar -> class entries to add
+        for (String pkg : shared) {
+            List<Path> candidates = owners.get(pkg);
+            if (candidates == null || candidates.size() < 2 || dropped(pkg) || !ownerKeeping.containsAll(candidates)) continue;
+            Path owner = ownerOf(candidates, packageSizes, pkg);
+            if (owner == null) continue;
+            keptBy.put(pkg, owner);
+            Set<String> own = classNames.get(owner).get(pkg);
+            for (Path other : candidates) {
+                if (other.equals(owner)) continue;
+                for (String name : classNames.get(other).get(pkg)) {
+                    if (!own.contains(name)) extras.computeIfAbsent(owner, k -> new HashMap<>()).computeIfAbsent(other, k -> new ArrayList<>()).add(pkg + "/" + name);
+                }
+            }
+        }
+
         // Content-address everything so repeated launches reuse the same files.
         MessageDigest digest = sha256();
         for (Path jar : jars) digest.update(jar.getFileName().toString().getBytes());
         for (String pkg : shared) digest.update(pkg.getBytes());
+        for (var e : keptBy.entrySet()) digest.update((e.getKey() + "@" + e.getValue().getFileName()).getBytes());
         String key = HexFormat.of().formatHex(digest.digest()).substring(0, 16);
 
         Path sharedJar = cacheDir.resolve("shared-apis-" + key + ".jar");
@@ -89,9 +162,8 @@ final class SplitPackageResolver {
         List<Path> toStrip = new ArrayList<>();
         Map<Path, Path> strippedOf = new HashMap<>();
         for (Path jar : jars) {
-            Set<String> mine = new HashSet<>(packageSizes.get(jar).keySet());
-            mine.retainAll(shared);
-            if (mine.isEmpty()) {
+            Set<String> mine = strippedPackages(jar, packageSizes, shared, keptBy);
+            if (mine.isEmpty() && !extras.containsKey(jar)) {
                 out.add(jar);
                 continue;
             }
@@ -102,8 +174,11 @@ final class SplitPackageResolver {
         }
 
         // Warm launch: the merged library and every stripped jar exist, so no class has to be read at all (the key names every input).
-        boolean needShared = !Files.exists(sharedJar);
-        if (!needShared && toStrip.isEmpty()) return new Outcome(out, sharedJar, shared);
+        Set<String> sharedOnly = new TreeSet<>(shared);
+        sharedOnly.removeAll(keptBy.keySet());
+        Path sharedLibrary = sharedOnly.isEmpty() ? null : sharedJar;
+        boolean needShared = sharedLibrary != null && !Files.exists(sharedJar);
+        if (!needShared && toStrip.isEmpty()) return new Outcome(out, sharedLibrary, sharedOnly);
 
         // Cold: every jar is independent. The stripped copies and the shared classes are collected in parallel and merged in jar order.
         Set<Path> toRead = new HashSet<>(toStrip);
@@ -112,8 +187,9 @@ final class SplitPackageResolver {
         Map<Path, IOException> failure = new java.util.concurrent.ConcurrentHashMap<>();
         jars.parallelStream().filter(toRead::contains).forEach(jar -> {
             try {
-                Set<String> mine = new HashSet<>(packageSizes.get(jar).keySet());
-                mine.retainAll(shared);
+                Set<String> mine = strippedPackages(jar, packageSizes, shared, keptBy);
+                Set<String> sharedMine = new HashSet<>(mine);
+                sharedMine.removeAll(keptBy.keySet());
                 try (ZipFile zip = new ZipFile(jar.toFile())) {
                     if (needShared) {
                         Map<String, byte[]> mineClasses = new TreeMap<>();
@@ -122,14 +198,17 @@ final class SplitPackageResolver {
                             ZipEntry e = en.nextElement();
                             String n = e.getName();
                             int slash = n.lastIndexOf('/');
-                            if (!n.endsWith(".class") || slash < 0 || !mine.contains(n.substring(0, slash)) || dropped(n.substring(0, slash))) continue;
+                            if (!n.endsWith(".class") || slash < 0 || !sharedMine.contains(n.substring(0, slash)) || dropped(n.substring(0, slash))) continue;
                             try (InputStream in = zip.getInputStream(e)) {
                                 mineClasses.put(n, in.readAllBytes());
                             }
                         }
                         collected.put(jar, mineClasses);
                     }
-                    if (!Files.exists(strippedOf.get(jar))) copyWithout(jar, zip, strippedOf.get(jar), mine);
+                    if (!Files.exists(strippedOf.get(jar))) {
+                        copyWithout(jar, zip, strippedOf.get(jar), mine);
+                        if (extras.containsKey(jar)) addExtras(strippedOf.get(jar), extras.get(jar));
+                    }
                 }
             } catch (IOException e) {
                 failure.put(jar, e);
@@ -142,8 +221,8 @@ final class SplitPackageResolver {
             for (Path jar : jars) {
                 Map<String, byte[]> classes = collected.get(jar);
                 if (classes == null) continue;
-                Set<String> mine = new HashSet<>(packageSizes.get(jar).keySet());
-                mine.retainAll(shared);
+                Set<String> mine = strippedPackages(jar, packageSizes, shared, keptBy);
+                mine.removeAll(keptBy.keySet());
                 Map<String, Boolean> best = new HashMap<>();
                 for (String pkg : mine) best.put(pkg, bestCopy(pkg, owners.get(pkg), packageSizes).equals(jar));
                 for (var e : classes.entrySet()) {
@@ -158,7 +237,56 @@ final class SplitPackageResolver {
             m.getMainAttributes().putValue("Automatic-Module-Name", "legacyconnector.shared.apis");
             writeJar(sharedJar, m, sharedClasses);
         }
-        return new Outcome(out, sharedJar, shared);
+        return new Outcome(out, sharedLibrary, sharedOnly);
+    }
+
+    /** Adds the class entries of the donor jars to the jar (a copy made by {@link #copyWithout}). */
+    private static void addExtras(Path target, Map<Path, List<String>> donors) throws IOException {
+        Map<String, byte[]> add = new TreeMap<>();
+        for (var d : donors.entrySet()) {
+            try (ZipFile zip = new ZipFile(d.getKey().toFile())) {
+                for (String n : d.getValue()) {
+                    ZipEntry e = zip.getEntry(n);
+                    if (e == null) continue;
+                    try (InputStream in = zip.getInputStream(e)) {
+                        add.putIfAbsent(n, in.readAllBytes());
+                    }
+                }
+            }
+        }
+        try (java.nio.file.FileSystem fs = java.nio.file.FileSystems.newFileSystem(target)) {
+            for (var e : add.entrySet()) {
+                Path entry = fs.getPath("/" + e.getKey());
+                if (entry.getParent() != null) Files.createDirectories(entry.getParent());
+                Files.write(entry, e.getValue());
+            }
+        }
+    }
+
+    /** The packages of {@code jar} that are shared and not kept by it: the ones its translated copy loses. */
+    private static Set<String> strippedPackages(Path jar, Map<Path, Map<String, Integer>> packageSizes, Set<String> shared, Map<String, Path> keptBy) {
+        Set<String> mine = new HashSet<>(packageSizes.get(jar).keySet());
+        mine.retainAll(shared);
+        mine.removeIf(pkg -> jar.equals(keptBy.get(pkg)));
+        return mine;
+    }
+
+    /** The jar that owns the root of the package (most classes outside {@code api} packages under the same top-level folder), or null when none does. */
+    private static Path ownerOf(List<Path> candidates, Map<Path, Map<String, Integer>> packageSizes, String pkg) {
+        String root = pkg.indexOf('/') > 0 ? pkg.substring(0, pkg.indexOf('/') + 1) : pkg + "/";
+        Path owner = null;
+        int ownerClasses = 0;
+        for (Path jar : candidates) {
+            int own = 0;
+            for (var e : packageSizes.get(jar).entrySet()) {
+                if (e.getKey().startsWith(root) && !e.getKey().contains("/api")) own += e.getValue();
+            }
+            if (own > ownerClasses) {
+                owner = jar;
+                ownerClasses = own;
+            }
+        }
+        return owner;
     }
 
     /**
@@ -227,7 +355,14 @@ final class SplitPackageResolver {
             while (en.hasMoreElements()) {
                 ZipEntry e = en.nextElement();
                 String n = e.getName();
-                if (e.isDirectory() || n.equals(JarFile.MANIFEST_NAME) || !seen.add(n)) continue;
+                if (n.equals(JarFile.MANIFEST_NAME) || !seen.add(n)) continue;
+                if (e.isDirectory()) { // kept: a mod mounting a folder of its own jar looks the folder entry up
+                    ZipEntry d = new ZipEntry(n);
+                    d.setTime(0);
+                    jos.putNextEntry(d);
+                    jos.closeEntry();
+                    continue;
+                }
                 int slash = n.lastIndexOf('/');
                 if (n.endsWith(".class") && slash > 0 && packages.contains(n.substring(0, slash))) continue;
                 ZipEntry z = new ZipEntry(n);

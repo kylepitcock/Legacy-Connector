@@ -23,6 +23,19 @@ public final class LegacyModException extends RuntimeException {
         if (t instanceof NoSuchMethodError || t instanceof NoSuchFieldError || t instanceof NoClassDefFoundError || t instanceof AbstractMethodError) {
             hint = " (the Legacy Connector layer does not implement this legacy API yet - see logs/legacyconnector-report.txt)";
         }
-        return t + hint;
+        String plain = plainReason(t);
+        return plain != null ? plain + " [" + t + "]" : t + hint;
+    }
+
+    /** A plain-words reason for the failures that are not layer defects (null otherwise). */
+    static String plainReason(Throwable t) {
+        String m = String.valueOf(t.getMessage());
+        if (m.contains("net/java/games/input") || m.contains("net.java.games.input")) {
+            return "needs LWJGL joystick libs (JInput, net.java.games.input), which this game does not ship";
+        }
+        if (t instanceof ClassNotFoundException && m.startsWith("mod_")) {
+            return "does not start: patched-game jar mod (it replaces vanilla classes of minecraft.jar, which the layer cannot express)";
+        }
+        return null;
     }
 }

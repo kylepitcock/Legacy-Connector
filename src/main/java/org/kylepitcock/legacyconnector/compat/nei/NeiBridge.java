@@ -45,6 +45,13 @@ public final class NeiBridge {
         if (handler != null) USAGE.add(handler);
     }
 
+    private static final List<net.minecraft.world.item.ItemStack> HIDDEN_MODERN = new ArrayList<>();
+
+    /** A stack hidden by a 1.12.2 NEI plugin. */
+    public static synchronized void hideModern(net.minecraft.world.item.ItemStack stack) {
+        if (stack != null && !stack.isEmpty()) HIDDEN_MODERN.add(stack.copy());
+    }
+
     public static synchronized void hide(ItemStack stack) {
         if (stack != null) HIDDEN.add(stack);
     }
@@ -88,6 +95,13 @@ public final class NeiBridge {
                 if (!simple.startsWith("NEI") || !simple.endsWith("Config")) continue;
                 try {
                     Class<?> cls = Class.forName(name, true, loader);
+                    if (legacyconnector.v1_12_2.codechicken.nei.api.IConfigureNEI.class.isAssignableFrom(cls)) {
+                        var c12 = cls.getDeclaredConstructor();
+                        c12.setAccessible(true);
+                        ((legacyconnector.v1_12_2.codechicken.nei.api.IConfigureNEI) c12.newInstance()).loadConfig();
+                        n++;
+                        continue;
+                    }
                     if (!IConfigureNEI.class.isAssignableFrom(cls)) continue;
                     var ctor = cls.getDeclaredConstructor();
                     ctor.setAccessible(true);
@@ -130,6 +144,7 @@ public final class NeiBridge {
 
     public static synchronized List<net.minecraft.world.item.ItemStack> hiddenItems() {
         List<net.minecraft.world.item.ItemStack> out = new ArrayList<>();
+        for (var s : HIDDEN_MODERN) out.add(s.copy());
         for (ItemStack s : HIDDEN) {
             try {
                 net.minecraft.world.item.ItemStack m = s.mcc$modern();

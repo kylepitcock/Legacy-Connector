@@ -15,7 +15,16 @@ public class PlayerAdvancements {
         this.player = player;
     }
 
+    /** The modern advancements this view is of, when given (a modern one still being built is not in the player list yet). */
+    private net.minecraft.server.PlayerAdvancements explicit;
+
+    public PlayerAdvancements(EntityPlayerMP player, net.minecraft.server.PlayerAdvancements modern) {
+        this.player = player;
+        this.explicit = modern;
+    }
+
     public net.minecraft.server.PlayerAdvancements mcc$modern() {
+        if (explicit != null) return explicit;
         var sp = player == null ? null : player.mcc$serverPlayer();
         return sp == null ? null : sp.getAdvancements();
     }

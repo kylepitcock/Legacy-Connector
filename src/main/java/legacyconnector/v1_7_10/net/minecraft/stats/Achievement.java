@@ -69,6 +69,11 @@ public class Achievement extends StatBase {
         return this;
     }
 
+    /** The translation key of the description (the name's key is the stat name's). */
+    public String mcc$descriptionKey() {
+        return achievementDescription;
+    }
+
     public boolean getSpecial() {
         return isSpecial;
     }

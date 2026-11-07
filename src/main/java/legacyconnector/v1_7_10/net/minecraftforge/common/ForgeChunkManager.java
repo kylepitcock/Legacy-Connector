@@ -27,6 +27,10 @@ public class ForgeChunkManager {
     private static final Map<String, LoadingCallback> CALLBACKS = new ConcurrentHashMap<>();
     private static final Map<ServerLevel, SetMultimap<ChunkCoordIntPair, Ticket>> FORCED = new ConcurrentHashMap<>();
     private static Configuration config;
+    /** Forge's private limit overrides; mods (Dimensional Anchors' bypass of the chunk limits) edit them reflectively. */
+    private static boolean overridesEnabled;
+    private static final Map<String, Integer> ticketConstraints = new ConcurrentHashMap<>();
+    private static final Map<String, Integer> chunkConstraints = new ConcurrentHashMap<>();
 
     static {
         // perf.releaseUnloadedLevels: as Forge's unloadWorld, the tickets of an unloaded level go with it (they hold its world)
@@ -162,11 +166,13 @@ public class ForgeChunkManager {
     }
 
     public static int getMaxTicketLengthFor(String modId) {
+        if (overridesEnabled && ticketConstraints.containsKey(modId)) return ticketConstraints.get(modId);
         return getConfig().hasCategory(modId) ? getConfig().get(modId, "maximumTicketCount", 200).getInt()
                 : getConfig().get("defaults", "maximumTicketCount", 200).getInt();
     }
 
     public static int getMaxChunkDepthFor(String modId) {
+        if (overridesEnabled && chunkConstraints.containsKey(modId)) return chunkConstraints.get(modId);
         return getConfig().hasCategory(modId) ? getConfig().get(modId, "maximumChunksPerTicket", 25).getInt()
                 : getConfig().get("defaults", "maximumChunksPerTicket", 25).getInt();
     }

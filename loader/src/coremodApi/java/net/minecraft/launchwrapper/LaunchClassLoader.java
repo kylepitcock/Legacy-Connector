@@ -26,6 +26,11 @@ public class LaunchClassLoader extends URLClassLoader {
     private final Set<String> classLoaderExceptions = new HashSet<>();
     private final Set<String> transformerExceptions = new HashSet<>();
     private final Map<String, Class<?>> cachedClasses = new HashMap<>();
+
+    /** The class cache; FML 1.5.2's RelaunchClassLoader declared its own {@code cachedClasses} (CodeChickenCore reaches it by reflection). */
+    protected Map<String, Class<?>> mcc$cache() {
+        return cachedClasses;
+    }
     private IClassNameTransformer renameTransformer;
 
     public LaunchClassLoader(URL[] sources) {
@@ -90,7 +95,7 @@ public class LaunchClassLoader extends URLClassLoader {
 
     @Override
     public Class<?> findClass(String name) throws ClassNotFoundException {
-        Class<?> cached = cachedClasses.get(name);
+        Class<?> cached = mcc$cache().get(name);
         if (cached != null) return cached;
         byte[] bytes;
         try {
@@ -112,7 +117,7 @@ public class LaunchClassLoader extends URLClassLoader {
             }
         }
         Class<?> c = defineClass(name, bytes, 0, bytes.length);
-        cachedClasses.put(name, c);
+        mcc$cache().put(name, c);
         return c;
     }
 }

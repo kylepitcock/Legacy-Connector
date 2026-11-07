@@ -12,6 +12,11 @@ public class EntityAIFollowOwner extends EntityAIBase {
     private final float maxDist;
     private int timeToRecalcPath;
 
+    /** 1.5.2 form: the owner is an EntityLiving, speeds are floats. */
+    public EntityAIFollowOwner(legacyconnector.v1_7_10.net.minecraft.entity.passive.EntityTameable pet, float speed, float min, float max) {
+        this(pet, (double) speed, min, max);
+    }
+
     public EntityAIFollowOwner(EntityTameable pet, double speed, float minDist, float maxDist) {
         this.thePet = pet;
         this.speed = speed;

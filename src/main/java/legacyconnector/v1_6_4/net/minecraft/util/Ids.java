@@ -17,33 +17,107 @@ import org.kylepitcock.legacyconnector.v1_7_10.bridge.ItemBridge;
  * Objects that nobody claimed (blocks of 1.7.10 mods, modern blocks) get an id the first time one is asked for.
  */
 public final class Ids {
+    /**
+     * One id space per legacy Minecraft version: 1.4.7, 1.5.2 and 1.6.4 mods each saw their own game, so a 1.4.7 mod's
+     * {@code Item.itemsList} checks and configured ids must not meet another version's items (RedPower 1.4.7 next to Crafting Dead
+     * 1.6.4 found its ids taken). The space used is the one of the mod whose lifecycle phase is running; outside a phase the caller
+     * is found by class loader (only walked when more than one space exists). Modern ids stay unique: they come from the registries.
+     */
+    private static final class Space {
+        IdRegistry registry;
+        Block[] blocks;
+        Item[] items;
+        /** Block ids whose ItemBlock was not there yet when the block was claimed. */
+        final List<Integer> pendingItemBlocks = new ArrayList<>();
+    }
+
+    private static final java.util.Map<String, Space> SPACES = new java.util.LinkedHashMap<>();
+    private static final java.util.Map<ClassLoader, String> LOADER_VERSION = new java.util.concurrent.ConcurrentHashMap<>();
+    private static volatile String phaseVersion;
+    private static Space current;
+    private static String currentVersion;
+
     private static IdRegistry registry;
     private static Block[] blocks;
     private static Item[] items;
-    /** Block ids whose ItemBlock was not there yet when the block was claimed. */
-    private static final List<Integer> pendingItemBlocks = new ArrayList<>();
+    private static List<Integer> pendingItemBlocks = new ArrayList<>();
+
+    /** A mod's lifecycle phase starts: its version's id space is the one in use. Returns the token for {@link #leave}. */
+    public static String enter(String version, ClassLoader modLoader) {
+        if (modLoader != null) LOADER_VERSION.putIfAbsent(modLoader, version);
+        String previous = phaseVersion;
+        phaseVersion = version;
+        return previous;
+    }
+
+    public static void leave(String previous) {
+        phaseVersion = previous;
+    }
+
+    private static String versionOfCaller() {
+        String v = phaseVersion;
+        if (v != null) return v;
+        if (SPACES.size() <= 1) return SPACES.isEmpty() ? "1.6.4" : SPACES.keySet().iterator().next();
+        String found = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE).walk(frames -> frames
+                .map(f -> LOADER_VERSION.get(f.getDeclaringClass().getClassLoader())).filter(java.util.Objects::nonNull).findFirst().orElse(null));
+        return found != null ? found : SPACES.keySet().iterator().next();
+    }
+
+    /** Runs {@code action} once in every id space (global passes such as registering what mods constructed but never registered). */
+    public static synchronized void inEachSpace(Runnable action) {
+        for (String v : new ArrayList<>(SPACES.keySet())) {
+            String previous = enter(v, null);
+            try {
+                action.run();
+            } finally {
+                leave(previous);
+            }
+        }
+    }
 
     private Ids() {}
 
     private static synchronized IdRegistry reg() {
-        if (registry == null) {
+        String version = versionOfCaller();
+        if (current != null && version.equals(currentVersion)) return registry;
+        Space space = SPACES.computeIfAbsent(version, v -> new Space());
+        if (space.registry == null) {
             IdRegistry r = IdRegistry.vanilla(new ShimResolver());
             Block[] b = new Block[IdRegistry.Kind.BLOCK.size];
             Item[] it = new Item[IdRegistry.Kind.ITEM.size];
             for (int id = 1; id < b.length; id++) b[id] = (Block) r.block(id);
             for (int id = 0; id < it.length; id++) it[id] = (Item) r.item(id);
-            blocks = b;
-            items = it;
-            registry = r;
+            space.blocks = b;
+            space.items = it;
+            space.registry = r;
+            // chunk generators that work on block ids (MapGenBase.recursiveGenerate with a byte[]) read the same tables
+            legacyconnector.v1_7_10.net.minecraft.world.gen.MapGenBase.mcc$blockById = Ids::block;
+            legacyconnector.v1_7_10.net.minecraft.world.gen.MapGenBase.mcc$idOfBlock = Ids::claimedBlockId;
         }
+        current = space;
+        currentVersion = version;
+        registry = space.registry;
+        blocks = space.blocks;
+        items = space.items;
+        pendingItemBlocks = space.pendingItemBlocks;
         return registry;
     }
 
     /** Test hook: replaces the tables (a registry without the game). */
     static synchronized void useForTest(IdRegistry r, Block[] b, Item[] i) {
+        Space sp = new Space();
+        sp.registry = r;
+        sp.blocks = b;
+        sp.items = i;
+        SPACES.clear();
+        SPACES.put("1.6.4", sp);
+        phaseVersion = null;
+        current = sp;
+        currentVersion = "1.6.4";
         registry = r;
         blocks = b;
         items = i;
+        pendingItemBlocks = sp.pendingItemBlocks;
     }
 
     // ------------------------------------------------------------------ blocks
@@ -67,6 +141,12 @@ public final class Ids {
         int id = r.blockId(block);
         if (id >= 0) return id;
         return claimBlockInternal(block, -1);
+    }
+
+    /** Id of a block that has one already, else -1 (never claims: for lookups on hot paths over every block). */
+    public static synchronized int claimedBlockId(Block block) {
+        if (block == null) return 0;
+        return reg().blockId(block);
     }
 
     /** The claim a Block constructor makes: {@code super(id, material)}. */

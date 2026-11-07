@@ -11,6 +11,31 @@ import legacyconnector.v1_7_10.net.minecraft.init.Blocks;
 public final class Block {
     private Block() {}
 
+    /** 1.4.7's {@code Block(int id, int blockIndexInTexture, Material)}: the sprite sheet index the constructor was given. */
+    public static void mcc$claimTexture(legacyconnector.v1_7_10.net.minecraft.block.Block self, int index) {
+        self.blockIndexInTexture = index;
+    }
+
+    /** 1.4.7's {@code BlockFluid(int id, Material)}: tile 205 of the block's sheet for water-like fluids, 237 for lava-like ones (the sides draw the next tile). */
+    public static void mcc$claimFluidTexture(legacyconnector.v1_7_10.net.minecraft.block.Block self, legacyconnector.v1_7_10.net.minecraft.block.material.Material material) {
+        self.blockIndexInTexture = (material == legacyconnector.v1_7_10.net.minecraft.block.material.Material.lava ? 14 : 12) * 16 + 13;
+    }
+
+    /**
+     * 1.4.7 {@code block.isProvidingStrongPower(world, x, y, z, side)} returned a boolean (1.5 made it the power level). The facade serves callers
+     * through a class that does not declare the boolean form; a mod's own boolean override is reached through the bridge of the {@code int} form.
+     */
+    public static boolean isProvidingStrongPower(legacyconnector.v1_7_10.net.minecraft.block.Block self, legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess world,
+            int x, int y, int z, int side) {
+        return self.isProvidingStrongPower(world, x, y, z, side) > 0;
+    }
+
+    /** 1.4.7 {@code block.isProvidingWeakPower(world, x, y, z, side)} (a boolean, see {@link #isProvidingStrongPower}). */
+    public static boolean isProvidingWeakPower(legacyconnector.v1_7_10.net.minecraft.block.Block self, legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess world,
+            int x, int y, int z, int side) {
+        return self.isProvidingWeakPower(world, x, y, z, side) > 0;
+    }
+
     /** Block.blockID */
     public static int mcc$get$blockID(legacyconnector.v1_7_10.net.minecraft.block.Block self) {
         return Ids.blockId(self);
@@ -19,6 +44,49 @@ public final class Block {
     /** Block.blocksList (live mirror of the id table) */
     public static legacyconnector.v1_7_10.net.minecraft.block.Block[] mcc$get$blocksList() {
         return Ids.blocksList();
+    }
+
+    /** 1.4.7 and 1.5.2 {@code getBlockBrightness(world, x, y, z)}: the light brightness (0.05 to 1.0) at the block. */
+    public static float getBlockBrightness(legacyconnector.v1_7_10.net.minecraft.block.Block self, legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess world,
+            int x, int y, int z) {
+        return org.kylepitcock.legacyconnector.v1_6_4.bridge.Redirects147.lightBrightness(
+                org.kylepitcock.legacyconnector.v1_6_4.bridge.Redirects147.lightLevel(self.getMixedBrightnessForBlock(world, x, y, z)));
+    }
+
+    /** 1.4.7 {@code setRequiresSelfNotify()}: blocks asked for neighbor notifications of their own; every block gets them now, so it only chains. */
+    public static legacyconnector.v1_7_10.net.minecraft.block.Block setRequiresSelfNotify(legacyconnector.v1_7_10.net.minecraft.block.Block self) {
+        return self;
+    }
+
+    private static int[] flammability;
+    private static int[] fireSpreadSpeed;
+
+    /**
+     * Block.blockFlammability: how likely the block is to burn, by block id (Forge 1.6.4 / 1.5.2). Mods write entries at load time; the 1.7.10 shim's
+     * {@code getFlammability} default reads them (legacy table first, then vanilla's fire table).
+     */
+    public static synchronized int[] mcc$get$blockFlammability() {
+        if (flammability == null) {
+            int[] table = new int[Ids.blockTableSize()];
+            flammability = table;
+            legacyconnector.v1_7_10.net.minecraft.block.Block.mcc$legacyFlammability = b -> tableEntry(table, b);
+        }
+        return flammability;
+    }
+
+    /** Block.blockFireSpreadSpeed: how fast fire spreads onto the block, by block id (see {@link #mcc$get$blockFlammability}). */
+    public static synchronized int[] mcc$get$blockFireSpreadSpeed() {
+        if (fireSpreadSpeed == null) {
+            int[] table = new int[Ids.blockTableSize()];
+            fireSpreadSpeed = table;
+            legacyconnector.v1_7_10.net.minecraft.block.Block.mcc$legacyFireSpread = b -> tableEntry(table, b);
+        }
+        return fireSpreadSpeed;
+    }
+
+    private static int tableEntry(int[] table, legacyconnector.v1_7_10.net.minecraft.block.Block block) {
+        int id = Ids.claimedBlockId(block);
+        return id > 0 && id < table.length ? table[id] : 0;
     }
 
     // The step sounds of 1.6.4 ({@code Block.soundGrassFootstep}); 1.7.10 calls them soundTypeGrass and so on.
@@ -81,6 +149,17 @@ public final class Block {
             legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z,
             legacyconnector.v1_7_10.net.minecraftforge.common.util.ForgeDirection side) {
         return self.isSideSolid(world, x, y, z, side);
+    }
+
+    /** 1.6.4's static {@code Block.isNormalCube(blockId)}: whether the block of the id is a full opaque cube (false for air and unused ids). */
+    public static boolean isNormalCube(int id) {
+        legacyconnector.v1_7_10.net.minecraft.block.Block b = id <= 0 ? null : Ids.block(id);
+        return b != null && b.isNormalCube();
+    }
+
+    /** 1.6.4's {@code Block.lockedChest}, the April Fools' locked chest: a chest here. */
+    public static legacyconnector.v1_7_10.net.minecraft.block.Block mcc$get$lockedChest() {
+        return legacyconnector.v1_7_10.net.minecraft.init.Blocks.chest;
     }
 
     /** Block.setUnlocalizedName (1.7.10: setBlockName). */
@@ -676,6 +755,16 @@ public final class Block {
     /** Block.railPowered = Blocks.golden_rail */
     public static legacyconnector.v1_7_10.net.minecraft.block.Block mcc$get$railPowered() {
         return Ids.as(legacyconnector.v1_7_10.net.minecraft.block.Block.class, legacyconnector.v1_7_10.net.minecraft.init.Blocks.golden_rail);
+    }
+
+    /** Block.redstoneComparatorActive = Blocks.powered_comparator */
+    public static legacyconnector.v1_7_10.net.minecraft.block.BlockRedstoneComparator mcc$get$redstoneComparatorActive() {
+        return Ids.as(legacyconnector.v1_7_10.net.minecraft.block.BlockRedstoneComparator.class, legacyconnector.v1_7_10.net.minecraft.init.Blocks.powered_comparator);
+    }
+
+    /** Block.redstoneComparatorIdle = Blocks.unpowered_comparator */
+    public static legacyconnector.v1_7_10.net.minecraft.block.BlockRedstoneComparator mcc$get$redstoneComparatorIdle() {
+        return Ids.as(legacyconnector.v1_7_10.net.minecraft.block.BlockRedstoneComparator.class, legacyconnector.v1_7_10.net.minecraft.init.Blocks.unpowered_comparator);
     }
 
     /** Block.redstoneLampActive = Blocks.lit_redstone_lamp */

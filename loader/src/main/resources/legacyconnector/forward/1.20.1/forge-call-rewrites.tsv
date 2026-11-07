@@ -1,0 +1,61 @@
+# Forge 1.20.1 methods NeoForge 1.21.1 lacks -> static helper in legacyconnector/v1_20_1/ForgeApi1201 (receiver first for instance calls)
+# key: owner.name+descriptor as it is after the class renames (facade classes are legacyconnector/v1_20_1/net/minecraftforge/...); value: helper name
+# registries
+net/neoforged/neoforge/registries/DeferredRegister.create(Llegacyconnector/v1_20_1/net/minecraftforge/registries/IForgeRegistry;Ljava/lang/String;)Lnet/neoforged/neoforge/registries/DeferredRegister;	createDeferred
+net/neoforged/neoforge/registries/DeferredHolder.create(Lnet/minecraft/resources/ResourceLocation;Llegacyconnector/v1_20_1/net/minecraftforge/registries/IForgeRegistry;)Lnet/neoforged/neoforge/registries/DeferredHolder;	holderCreate
+net/neoforged/neoforge/registries/DeferredHolder.isPresent()Z	holderIsPresent
+net/neoforged/neoforge/registries/DeferredHolder.ifPresent(Ljava/util/function/Consumer;)V	holderIfPresent
+net/neoforged/neoforge/registries/DeferredHolder.getHolder()Ljava/util/Optional;	holderGetHolder
+net/neoforged/neoforge/registries/DeferredHolder.map(Ljava/util/function/Function;)Ljava/util/Optional;	holderMap
+net/neoforged/neoforge/registries/DeferredHolder.flatMap(Ljava/util/function/Function;)Ljava/util/Optional;	holderFlatMap
+net/neoforged/neoforge/registries/DeferredHolder.filter(Ljava/util/function/Predicate;)Ljava/util/Optional;	holderFilter
+net/neoforged/neoforge/registries/DeferredHolder.orElse(Ljava/lang/Object;)Ljava/lang/Object;	holderOrElse
+net/neoforged/neoforge/registries/DeferredHolder.orElseGet(Ljava/util/function/Supplier;)Ljava/lang/Object;	holderOrElseGet
+net/neoforged/neoforge/registries/DeferredHolder.orElseThrow(Ljava/util/function/Supplier;)Ljava/lang/Object;	holderOrElseThrow
+net/neoforged/neoforge/registries/DeferredHolder.stream()Ljava/util/stream/Stream;	holderStream
+net/neoforged/neoforge/registries/RegisterEvent.getForgeRegistry()Llegacyconnector/v1_20_1/net/minecraftforge/registries/IForgeRegistry;	registerEventForgeRegistry
+# capabilities: any receiver (block entity, entity, stack, level, a mod's own provider); super.getCapability of a Minecraft parent becomes superGetCapability
+*.getCapability(Llegacyconnector/v1_20_1/net/minecraftforge/common/capabilities/Capability;Lnet/minecraft/core/Direction;)Llegacyconnector/v1_20_1/net/minecraftforge/common/util/LazyOptional;	getCapability
+*.getCapability(Llegacyconnector/v1_20_1/net/minecraftforge/common/capabilities/Capability;)Llegacyconnector/v1_20_1/net/minecraftforge/common/util/LazyOptional;	getCapability
+# event bus
+net/neoforged/bus/api/IEventBus.register(Ljava/lang/Object;)V	busRegister
+# mod loading
+net/neoforged/fml/ModLoadingContext.registerConfig(Lnet/neoforged/fml/config/ModConfig$Type;Lnet/neoforged/fml/config/IConfigSpec;)V	registerConfig
+net/neoforged/fml/ModLoadingContext.registerConfig(Lnet/neoforged/fml/config/ModConfig$Type;Lnet/neoforged/fml/config/IConfigSpec;Ljava/lang/String;)V	registerConfig
+# entities
+net/minecraft/world/entity/EntityType$Builder.setCustomClientFactory(Ljava/util/function/BiFunction;)Lnet/minecraft/world/entity/EntityType$Builder;	builderCustomClientFactory
+# items: Item.initCapabilities(stack, nbt) (a super call has nothing to call: the helper answers "no capabilities")
+*.initCapabilities(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/nbt/CompoundTag;)Llegacyconnector/v1_20_1/net/minecraftforge/common/capabilities/ICapabilityProvider;	initCapabilities
+# generic event listeners (AttachCapabilitiesEvent<T>): filtered by the object type
+net/neoforged/bus/api/IEventBus.addGenericListener(Ljava/lang/Class;Ljava/util/function/Consumer;)V	busAddGenericListener
+net/neoforged/bus/api/IEventBus.addGenericListener(Ljava/lang/Class;Lnet/neoforged/bus/api/EventPriority;Ljava/util/function/Consumer;)V	busAddGenericListener
+net/neoforged/bus/api/IEventBus.addGenericListener(Ljava/lang/Class;Lnet/neoforged/bus/api/EventPriority;ZLjava/util/function/Consumer;)V	busAddGenericListener
+net/neoforged/bus/api/IEventBus.addGenericListener(Ljava/lang/Class;Lnet/neoforged/bus/api/EventPriority;ZLjava/lang/Class;Ljava/util/function/Consumer;)V	busAddGenericListener
+# cancellation: Forge's Event had setCanceled/isCanceled/isCancelable itself (key "@event.": any NeoForge event class as the owner)
+@event.setCanceled(Z)V	eventSetCanceled
+@event.isCanceled()Z	eventIsCanceled
+@event.isCancelable()Z	eventIsCancelable
+@event.setResult(Llegacyconnector/v1_20_1/net/minecraftforge/eventbus/api/Event$Result;)V	eventSetResult
+@event.getResult()Llegacyconnector/v1_20_1/net/minecraftforge/eventbus/api/Event$Result;	eventGetResult
+@event.hasResult()Z	eventHasResult
+# milestone 2: NBT/packet/capability signatures that moved to registry-aware or component-based forms
+net/neoforged/neoforge/items/ItemStackHandler.serializeNBT()Lnet/minecraft/nbt/CompoundTag;	itemHandlerSerialize
+net/neoforged/neoforge/items/ItemStackHandler.deserializeNBT(Lnet/minecraft/nbt/CompoundTag;)V	itemHandlerDeserialize
+net/neoforged/neoforge/fluids/capability/templates/FluidTank.readFromNBT(Lnet/minecraft/nbt/CompoundTag;)Lnet/neoforged/neoforge/fluids/capability/templates/FluidTank;	tankRead
+net/neoforged/neoforge/fluids/capability/templates/FluidTank.writeToNBT(Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/nbt/CompoundTag;	tankWrite
+net/neoforged/neoforge/fluids/FluidStack.writeToNBT(Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/nbt/CompoundTag;	fluidWriteToNBT
+net/neoforged/neoforge/fluids/FluidStack.loadFluidStackFromNBT(Lnet/minecraft/nbt/CompoundTag;)Lnet/neoforged/neoforge/fluids/FluidStack;	fluidLoad
+net/neoforged/neoforge/fluids/FluidStack.writeToPacket(Lnet/minecraft/network/FriendlyByteBuf;)V	fluidWriteToPacket
+net/neoforged/neoforge/fluids/FluidStack.readFromPacket(Lnet/minecraft/network/FriendlyByteBuf;)Lnet/neoforged/neoforge/fluids/FluidStack;	fluidReadFromPacket
+net/neoforged/neoforge/fluids/FluidStack.getTag()Lnet/minecraft/nbt/CompoundTag;	fluidGetTag
+net/neoforged/neoforge/fluids/FluidStack.hasTag()Z	fluidHasTag
+net/neoforged/neoforge/fluids/FluidStack.getOrCreateTag()Lnet/minecraft/nbt/CompoundTag;	fluidGetOrCreateTag
+net/neoforged/neoforge/fluids/FluidStack.setTag(Lnet/minecraft/nbt/CompoundTag;)V	fluidSetTag
+net/neoforged/neoforge/fluids/FluidStack.removeChildTag(Ljava/lang/String;)V	fluidRemoveChildTag
+net/neoforged/neoforge/fluids/FluidUtil.getFluidHandler(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;)Llegacyconnector/v1_20_1/net/minecraftforge/common/util/LazyOptional;	fluidUtilBlock
+net/neoforged/neoforge/fluids/FluidUtil.getFluidHandler(Lnet/minecraft/world/item/ItemStack;)Llegacyconnector/v1_20_1/net/minecraftforge/common/util/LazyOptional;	fluidUtilItem
+net/neoforged/neoforge/items/ItemHandlerHelper.canItemStacksStack(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;)Z	canItemStacksStack
+net/neoforged/neoforge/items/ItemHandlerHelper.copyStackWithSize(Lnet/minecraft/world/item/ItemStack;I)Lnet/minecraft/world/item/ItemStack;	copyStackWithSize
+net/neoforged/neoforge/items/wrapper/SidedInvWrapper.create(Lnet/minecraft/world/WorldlyContainer;[Lnet/minecraft/core/Direction;)[Llegacyconnector/v1_20_1/net/minecraftforge/common/util/LazyOptional;	sidedInvWrappers
+net/minecraft/world/item/crafting/ShapedRecipe.itemStackFromJson(Lcom/google/gson/JsonObject;)Lnet/minecraft/world/item/ItemStack;	itemStackFromJson
+net/minecraft/world/inventory/RecipeBookType.create(Ljava/lang/String;)Lnet/minecraft/world/inventory/RecipeBookType;	recipeBookTypeCreate

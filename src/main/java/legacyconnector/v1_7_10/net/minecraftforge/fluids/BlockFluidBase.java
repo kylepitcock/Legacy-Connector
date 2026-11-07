@@ -196,9 +196,17 @@ public abstract class BlockFluidBase extends Block implements IFluidBlock {
     @Override
     public IIcon getIcon(int side, int meta) {
         Fluid fluid = FluidRegistry.getFluid(fluidName);
-        if (fluid == null) return null;
-        return side != 0 && side != 1 ? fluid.getFlowingIcon() : fluid.getStillIcon();
+        if (fluid == null || mcc$inIcon.get()) return null;
+        // A fluid whose getStillIcon() asks its own block for the icon (1.6.4 mods did, the block held the icon there) would recurse for ever
+        mcc$inIcon.set(Boolean.TRUE);
+        try {
+            return side != 0 && side != 1 ? fluid.getFlowingIcon() : fluid.getStillIcon();
+        } finally {
+            mcc$inIcon.set(Boolean.FALSE);
+        }
     }
+
+    private static final ThreadLocal<Boolean> mcc$inIcon = ThreadLocal.withInitial(() -> Boolean.FALSE);
 
     @Override
     public void onBlockAdded(World world, int x, int y, int z) {

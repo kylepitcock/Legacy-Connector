@@ -23,6 +23,8 @@ public abstract class NBTBase {
     public static final String[] NBTTypes = {"END", "BYTE", "SHORT", "INT", "LONG", "FLOAT", "DOUBLE", "BYTE[]", "STRING", "LIST", "COMPOUND", "INT[]"};
 
     NBTBase mcc$parent;
+    /** The key this tag was last read under (1.6.4 tags carried their name; see the 1.6.4 forward helper {@code getName}). */
+    public String mcc$name = "";
     Runnable mcc$onChange;
 
     public abstract byte getId();

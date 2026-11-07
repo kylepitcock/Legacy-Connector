@@ -1,4 +1,4 @@
-# Estimate: legacy 1.20.1 Forge mods (and Sinytra Connector Fabric mods) on NeoForge 1.21.1
+﻿# Estimate: legacy 1.20.1 Forge mods (and Sinytra Connector Fabric mods) on NeoForge 1.21.1
 
 Research note. **Roadmap (2026-11-04): 1.20.1 comes before 1.16.5**, right after 1.12.2; groundwork so far is the Forge to NeoForge rename tables under `loader/src/main/resources/legacyconnector/forward/1.20.1/`. Back to [Home](Home.md). Written 2026-11-01 from the repository state and general knowledge of the
 Forge 47 / NeoForge 21.1 APIs. Figures about third-party APIs were not re-verified against the 1.20.1 sources; check them when the work starts.
@@ -198,3 +198,186 @@ other jars of the set. First run on 44 Forge 1.20.1 jars from Modrinth (`test-mo
 - The heavy mods (Create 490 classes, Quark 368, Sophisticated Backpacks 410, Supplementaries 353) are dominated by the other mods they link against and by rendering.
 - Design consequence: relocate only the Forge API that no longer exists into a small facade package (`FMLJavaModLoadingContext`, `SimpleChannel`, `LazyOptional`,
   `RegistryObject`, `NonNull*`, `DistExecutor`, ...), pass everything else through to the real classes.
+
+### 9.1 Second run, 2026-11-07: 140 jars, 72 of them abandoned
+
+Full tables, method and the per-jar classification are in **[Legacy-1.20.1-Corpus](Legacy-1.20.1-Corpus.md)**. Summary of what changed against the 44-jar run above:
+
+- The value check of section 3 (option D) is answered: scanning down Modrinth's Forge 1.20.1 list by downloads until 72 abandoned content mods were found (so the 72 is a cap, not a rate), 72 projects have **no** NeoForge 1.21.1 file on Modrinth or
+  CurseForge (Alex's Mobs and Caves, Ice and Fire, Botania, Tinkers' Construct, Blue Skies, Species, Enigmatic Legacy, Spartan Weaponry, Goety Revelation, Steam 'n' Rails, Decorative Blocks...).
+  Some have unofficial community ports; none counts as an official one. The abandoned set is large, not marginal.
+- Tool fixes: the `Dist` annotation lives in its own API jar (it was reported as a missing class in 94 jars), and the mods' own members are now renamed like the references to them
+  (library gaps fell from 12,656 to 1,238 fields). Forge API gaps are unchanged by this.
+- Abandoned content mods: 8 data-only, 20 cheap (at most 40 Forge/Minecraft symbols, at most 1 mixin class), 21 medium, 23 heavy. Mixin classes: 30 of the 72 have none, 22 have 1 to 5, 20 have 6 or more.
+- Top gaps by number of the 72 abandoned jars: `FMLJavaModLoadingContext` 49, `ForgeRegistries`/`IForgeRegistry` 40, `new ResourceLocation(String)` 39, `DeferredRegister.create(IForgeRegistry, String)` 30,
+  `ItemStack.hurtAndBreak(int, LivingEntity, Consumer)` 29, `SimpleChannel` 28, `NetworkEvent$Context` 26, `ItemStack.getTag` 25, attribute fields and `AttributeModifier` 22 to 24,
+  `SynchedEntityData.define` 24, `Player.broadcastBreakEvent` 24, `MobEffectInstance` 23, `BlockBehaviour$Properties.copy` 22.
+- Recommended order (details in the corpus page): mod loading and registries first (about 50 and 40 jars; that alone loads the data-only and several cheap mods), then `ResourceLocation` and the
+  attribute/effect holders, networking, `ItemStack` NBT, vertex builder rewrite, capabilities, bridge methods, mixin triage last; heavy mods (Botania, Tinkers', Alex's, Ice and Fire, Blue Skies) are not a target for milestone 2.
+
+## 10. Status 2026-11-08: Minecraft migration
+
+The Minecraft 1.20.1 to 1.21.1 part of the layer (`loader/.../transform/Mc1201Migration`, tables `forward/1.20.1/mc-*.tsv`, helpers
+`org/kylepitcock/legacyconnector/v1_20_1/migrate/**`). Runs after the SRG/Forge renames in `Forge1201Transformer`; classes it changes get their frames
+recomputed (`Mc1201Hierarchy.frameWriter`, mod classes plus the 1.21.1 class tree `mc-hierarchy.tsv.gz` from `tools/dev/gen_mc_hierarchy.py`).
+
+| Mechanism | Table | What it does |
+|---|---|---|
+| Call redirect | `mc-calls.tsv` | call (or `NEW/DUP/INVOKESPECIAL` constructor) to a static helper; `=`, `=swap`, `=pop`, `=ret` change a call in place. Not applied when a mod class declares the method on the way up |
+| Field | `mc-fields.tsv` | `MobEffects.X`, `Attributes.X`, `GameEvent.X`... are `Holder`s (unwrapped), enchantments are `ResourceKey`s (looked up), loot tables are keys, removed fields come from helpers |
+| Rename | `mc-classes.tsv`, `mc-members.tsv` | class and member renames; also lambdas (`FriendlyByteBuf.Writer.accept` to `StreamEncoder.encode`) |
+| Bridge method | `mc-bridges.tsv` | overridden method with a changed signature gets the 1.21.1-shaped method calling the mod's: `BlockEntity.load/saveAdditional/getUpdateTag`, `Block.use` to `useItemOn`, `defineSynchedData`, `Recipe.matches/assemble`, `appendHoverText`, `playerWillDestroy`, `Model.renderToBuffer`, `finalizeSpawn`... `super.` calls get the provider/builder from `MigrateContext` |
+
+Helpers: `ItemStackNbt` (NBT over `CUSTOM_DATA` plus Damage, display, Enchantments, BlockEntityTag... components), `HolderCompat`, `VertexCompat` and
+`CompatBufferBuilder` (`BufferBuilder` is renamed to it; `Tesselator.getBuilder/end`), `MiscCompat`, `RecipeCompat`, `BridgeHelpers`, `ClientCompat`.
+Measured with `./gradlew gap1201 -Pgap.translate=true` (jars go through the real transformer; 248 Forge 1.20.1 jars of `test-mods4`), Minecraft symbols still
+unresolved, distinct/jar occurrences: before (groundwork, `ResourceLocation` factories only) classes 612/1668, methods 1792/9210, fields 526/2417; after
+classes 610/1610, methods 1393/4700, fields 291/558. `./gradlew verify1201 -PverifyDir=<-Pgap.translated.dir>` links the translated classes with the JVM verifier:
+54 of 73,000 linkable classes are invalid, none involve the migration helpers (API visibility changes, `ModelResourceLocation` no longer a `ResourceLocation`).
+
+Open: `ArmorMaterial`/`Tier` implementations, custom `Enchantment` subclasses (data-driven now), `MobType`, `RenderSystem.getModelViewStack`, `LootDataManager`,
+recipe serializers (codecs), datagen, super-constructor calls of changed constructors (only `=swap` ones), mixin triage (see section 13).
+## 11. Status 2026-11-08: milestone 1 (Forge API facades)
+
+**Milestone 1 reached:** a Forge 1.20.1 content mod loads and registers its content on a NeoForge 1.21.1 server through the layer. Another Furniture 3.0.4 registers
+174 blocks, 159 items, 1 entity type and 4 block entity types (`run-subtest/mods/1.20.1/`, `experimental.forge1201`; the server self test logs
+`1.20.1 content registered: ...`), and Calcmod and ClearDespawn construct and finish loading beside it (server reaches "Done"). Facades live in `src/main/java/legacyconnector/v1_20_1`
+(Forge classes that no longer exist; the translator prefers them to the rename tables), the runtime half in `org.kylepitcock.legacyconnector.v1_20_1.Forge1201Runtime`.
+
+| Area | What exists |
+|---|---|
+| Mod loading | `FMLJavaModLoadingContext`, `ModLoadingContext.registerConfig` (call rewrite), `DistExecutor`, `NonNull*`, `IExtensionPoint$DisplayTest`/`NetworkConstants` (accepted, ignored), `IEventBus.register` on classes without subscribers (Forge allowed it), `ForgeSpawnEggItem` to `DeferredSpawnEggItem`, `mods.toml` to `neoforge.mods.toml` with the manifest's `MixinConfigs` as `[[mixins]]`, nested jars in `META-INF/jarjar` (MixinExtras dropped, Forge mods inside translated) |
+| Registries | `ForgeRegistries` (+`Keys`), `IForgeRegistry`, tag views over the vanilla registries; `RegistryObject` stays `DeferredHolder` with the missing methods (`isPresent`, `ifPresent`, `map`...) as call rewrites; `DeferredRegister.create(IForgeRegistry, ..)` and `RegisterEvent.getForgeRegistry` rewritten |
+| Capabilities | `LazyOptional`, `Capability`, `CapabilityManager`/`CapabilityToken`, `ForgeCapabilities` (item, fluid, energy tied to the NeoForge keys), `ICapabilityProvider`/`Serializable`, `AttachCapabilitiesEvent`; every `getCapability` call goes to `Caps1201`, classes declaring it get the facade interface, and `Forge1201Runtime` registers NeoForge providers for all block entity and entity types of the legacy mods |
+| Networking | `SimpleChannel` (one payload type per channel, the mod's own encode/decode), `NetworkRegistry`/`ChannelBuilder`, `NetworkEvent.Context`, `NetworkDirection`, `PacketDistributor`, `NetworkHooks.openScreen`, `PlayMessages$SpawnEntity` |
+| Events | `TickEvent` (server, level, player, client, render) posted from NeoForge's `*TickEvent.Pre/Post`; `RegisterCapabilitiesEvent` fired on the legacy mods' buses |
+| Tools | `forward/1.20.1/forge-call-rewrites.tsv` (data), `ForgeApiRewrites1201`, `Forge1201ApiTest`; `gap1201` counts facades and call rewrites as present and prints `unresolved Forge-API symbols` per jar |
+
+Measurement on the 60-jar set of the first run (`gap1201`, same jars): unresolved Forge-API symbols **1172** (groundwork facades only) to **599**; part of the drop is the tool now
+indexing the FML and bus jars. Not done in the Forge API: generic filtering of `AttachCapabilitiesEvent<T>` (all handlers see all objects), item capabilities (`Item.initCapabilities`), renamed
+or removed events that need semantic adapters (`PlayerSleepInBedEvent`, `LivingHurtEvent`...), `ConfigScreenFactory`/gui overlays, `ModList`/`IModInfo` extras, `RecipeBookType.create`
+(enum extension), `INBTSerializable` with the old signatures. What blocks milestone 2 outside the Forge API (Minecraft side): mixins that fail hard when a target changed (Clumps,
+Spartan Weaponry, Bygone Nether abort the whole launch), data-driven `Enchantment` subclasses, `StairBlock`/`GlassBlock` changes, `ItemPredicate.serializeToJson`, mods registering custom stats in common setup (frozen registries), library mods (GeckoLib, PuzzlesLib, Resourceful Lib, Architectury).
+
+## 12. Status 2026-11-08: data and resources
+
+The `data/**` and `assets/**` side of a Forge 1.20.1 jar is converted at translation time by `loader/.../resource/DataConverter1201.java` (called from `Forge1201Transformer`; a pure function of path
+and bytes, unit tests in `DataConverter1201Test`, offline runner `loader/.../tools/Data1201Tool.java`, measurement `tools/compat/data1201.py`). The per-category numbers over the 60 corpus jars
+are in [Legacy-1.20.1-Corpus](Legacy-1.20.1-Corpus.md) section 8: before, 19.7k pack files sat in folders 1.21.1 does not read (every data folder was plural in 1.20.1) and about 12k more files had a changed format; after, the checker finds no breaking file.
+
+What is converted:
+
+- **Folders**: `recipes`, `loot_tables`, `advancements`, `structures`, `functions`, `item_modifiers`, `predicates` and `tags/{blocks,items,fluids,entity_types,game_events,functions}` become singular
+  (1.21); `data/<ns>/forge/{biome_modifier,structure_modifier}` becomes `data/<ns>/neoforge/...`; `data/forge/loot_modifiers/global_loot_modifiers.json` becomes `data/neoforge/loot_modifiers/...`.
+- **Tags**: `forge:` tags become the convention tags `c:` (`#forge:ingots/iron` is `#c:ingots/iron`; plural/segment renames such as `glass` to `glass_blocks`, `cobblestone` to `cobblestones`, `shears` to
+  `tools/shear`, derived from NeoForge 21.1's own `data/c/tags`), also the files of `data/forge/tags` (moved to `data/c/tags`, collisions merged).
+- **Recipes** (vanilla recipe types; a mod's own type keeps its own format, its serializer reads it): `result` string or `{item,count,nbt}` becomes `{id,count,components}` (stonecutting's sibling `count`
+  moved in), item NBT becomes data components where there is a form (potions, enchantments, stored enchantments), other NBT is dropped and counted (`nbt_dropped`); `forge:nbt` ingredients become
+  `neoforge:components` (or the plain item); top-level `conditions` becomes `neoforge:conditions`; `forge:conditional` becomes one recipe per branch (`name.json`, `name_alt1.json`...).
+- **Loot tables / modifiers**: `looting_enchant` to `enchanted_count_increase`, `random_chance_with_looting` to `random_chance_with_enchanted_bonus`, `set_nbt`/`copy_nbt` to `set_custom_data`/`copy_custom_data`
+  (`{Potion:..}` to `set_potion`), `set_attributes` (uuid dropped, id added, operation names), `enchant_with_levels.treasure` to `options`, `enchant_randomly.enchantments` to `options`, `set_contents.type`
+  to `component`, `loot_table` entry `name` to `value`, `match_tool` item predicates, `forge:can_tool_perform_action` to `neoforge:can_item_perform_ability`.
+- **Advancements**: `display.icon {item,nbt}` to `{id}`, item predicates in trigger conditions (`tag`/`nbt`/`enchantments`/`potion`/`durability` to `items` and `predicates`), `conditions` to `neoforge:conditions`.
+- **`forge:` ids** in `type`/`loader`/`condition` (conditions, biome modifiers, ingredient types, global loot modifier types) become `neoforge:`; ids renamed since 1.20.1 (`minecraft:grass` to `short_grass`,
+  `scute` to `turtle_scute`, `sweeping` to `sweeping_edge`); dimension types get the 1.21 `monster_spawn_*` fields; models: `forge:` loaders (`forge:bucket` is `neoforge:fluid_container`), `forge_data`
+  (NeoForge throws on it), `forge:item/default` parents.
+- **Metadata**: `pack.mcmeta` gets format 34/48 and the open `supported_formats`; `mods.toml` already became `neoforge.mods.toml` (`mandatory` to `type`, loader/minecraft/forge ranges); now also the version
+  ranges of other mods' dependencies are opened to `[0,)` (a 1.20.1 range like `[1.20.1-x,1.21)` rejects the 1.21.1 build) and `displayTest` is dropped.
+- **Worldgen leniency**: 1.21 aborts the whole world load when one worldgen element does not parse, where 1.20.1 logged and went on. Known cases are repaired (Dungeons and Taverns has a structure set
+  `exclusion_zone.chunk_count` of 17 where the codec allows 16, and an `other_set` list where an id is expected).
+
+Server test (NeoForge 1.21.1, `experimental.forge1201=true`): Dungeons and Taverns (data only, 1820 pack files) loads its structure sets, template pools, processors and loot tables; the only remaining
+messages are two loot tables naming `minecraft:scute` (fixed since). Six more jars were stripped to their data (no classes, so no registered content) and loaded together: the server reaches `Done`, and
+every remaining recipe/loot/advancement/tag/biome-modifier error is `Unknown registry key` for something the stripped mod would have registered in code (items, blocks, feature types, custom conditions);
+no parse error of a converted format is left.
+
+What remains (data side): a mod's own recipe types still read the 1.20.1 format (`result.item`, `Ingredient.fromJson`), so the facades for `ShapedRecipe.itemStackFromJson`/`CraftingHelper` must accept the
+legacy form; NBT in recipes/loot beyond potions and enchantments is dropped; function files (`.mcfunction`) are renamed but their commands are not converted; plain data packs with overlays
+(`1-20-2-overlay`, Terralith) are not mods and are not touched; mods that register enchantments in code are not in the `#minecraft:non_treasure` tag that converted `enchant_with_levels` uses; texture,
+sound and lang assets need nothing.
+
+## 13. Status 2026-11-08: library mods (milestone 2, part 1)
+
+Decision per library: a 1.20.1 library that also exists as a native NeoForge 1.21.1 mod under the same mod id is **not translated** when the pack has the 1.21.1 build; the
+translated mods link against the installed build, and the API changes that matter are handled by call/field/class/bridge rewrites. Without the 1.21.1 build the pack's own 1.20.1 jar is
+translated as before (fallback); with neither, the log says which build to install. This is the Waila-to-Jade pattern without a shim copy of the API: the 1.21.1 libraries keep their package
+names, so only the differences need code.
+
+| Piece | Where |
+|---|---|
+| Table of native libraries (mod id, name, download page) | `forward/1.20.1/libraries.tsv`, `loader/.../NativeLibraries1201` |
+| Skip of the 1.20.1 jar when the modern build is installed (a `Bridge` with `configKey native1201`, so the report line reads "replaced by <id>") | `LibraryBridges.replacing` calls `NativeLibraries1201.replacing` |
+| Message when a mod's mandatory dependency (mods.toml) is a table library the pack lacks: "X needs Architectury ..., install the NeoForge 1.21.1 build (url)" | `NativeLibraries1201.missing`, logged by `LegacyModLocator` |
+| Rewrites, same formats as the Minecraft ones (`Mc1201Tables` reads `lib-X.tsv` after `mc-X.tsv`) | `lib-classes.tsv`, `lib-calls.tsv`, `lib-fields.tsv`, `lib-bridges.tsv` |
+| Helpers | `org/kylepitcock/legacyconnector/v1_20_1/migrate/{CuriosCompat,PatchouliCompat,ArchitecturyCompat,ArchitecturyEventBuses}` |
+| Tools | `./gradlew libApiDiff -Pold=<1.20.1 jar> -Pnew=<1.21.1 jar> -Ppkgs=<internal package prefixes> [-Preport=f] [-Prenames=lib-classes.tsv]` lists the public API of the old build that the new one lacks (`LibApiDiff`); `gap1201` takes `-PtargetJars=@list-file` and now translates with the real shim index, so descriptors match the game's |
+
+What each bridged library needed (measured with `libApiDiff` and `gap1201 -Pgap.translate=true` over 10 abandoned content mods that need these libraries, with the 1.21.1 jars on the target list):
+
+- **Architectury 9 to 13** (6 of the 72 abandoned mods need it, the top library): the API kept its packages and `ResourceLocation` networking. Only `platform.forge.EventBuses` is gone (13 asks the mod
+  container for the bus: class rename to a no-op/ModList facade) and `LootEvent.LootTableModificationContext.addPool(LootPool)` now takes a builder (call rewrite through reflection). 22 missing classes in 5 jars (no library) became 4 classes and 1 method
+  with the 1.21.1 jar on the class path, and 0 after the rewrites. Not handled: lambdas for `LootEvent.ModifyLootTable` (its first parameter type changed, the call site is an `invokedynamic`), `NetworkManager` receivers/senders with `FriendlyByteBuf`
+  (13 uses `RegistryFriendlyByteBuf`: subclass, so most calls link), fluid/registrar internals (`FluidStack` NBT, `RegistrarBuilder.saveToDisc`, `SpawnPlacementsRegistry`, `SimpleTrade`).
+- **Curios 5 to 9** (3 mods: Botania, Enigmatic Legacy, Meet Your Fight): `getCuriosInventory`/`getCurio` return `Optional` now (call rewrites to the `LazyOptional` facade), `CuriosCapability.INVENTORY/ITEM` are NeoForge capabilities (field rewrite to facade `Capability`
+  objects that carry the entity/item key), the attribute modifier API moved from `UUID` to `ResourceLocation` ids and `Holder` keys (call rewrites for `CuriosApi`/`ICuriosHelper`, and bridge methods so a mod's
+  `ICurioItem.getAttributeModifiers(SlotContext, UUID, ItemStack)` / `ICurio.getAttributeModifiers` override is the one Curios calls, converting the keys), `getLootingLevel` (bridge), `playRightClickEquipSound` (generic sound). Result: 27 missing classes became 7 methods and 1 field with
+  the 1.21.1 jar, and 0. Not handled: `Item.initCapabilities` + `CuriosApi.createCurioProvider` (needs the item-capability facade of the Forge agents), `CurioEquipEvent`/`CurioUnequipEvent` (events renamed in 9), data generators.
+- **Patchouli 85 to 93** (2 mods): the variable API takes a `HolderLookup.Provider`; seven calls rewrite to `PatchouliCompat` (registries of the running server/client). 26 missing classes became 8 methods, and 0.
+- **GeckoLib 4.8 to 4.9** (a library of many content mods outside the 72; only Soul's Weapons in the corpus): the `core` packages were folded into the API packages. 49 class renames are in `lib-classes.tsv` (generated by matching simple names). **Not enough**: the renderer
+  methods content mods override (`actuallyRender`, `renderRecursively`, `preRender`, `createVerticesOfQuad`... colour as four floats became a packed int), `AnimationProcessor`/`CoreGeoModel` internals, the molang `IValue` keyframes, the packet classes and `GeckoLibNetwork` have no rewrites yet.
+  This is the next library task (about a day: bridge methods for the renderer overrides, a call rewrite for the colour parameters).
+- **Cloth Config 11 to 15, Resourceful Lib/Config, Puzzles Lib, Jade, The One Probe, Citadel, Moonlight, Blueprint** are in the skip table (same mod ids) but have no rewrites: their API diffs were not measured (`libApiDiff` is the tool). Bookshelf has no Modrinth NeoForge file.
+
+Measurement (10 content jars of the corpus that need Architectury/Curios/Patchouli, `gap1201 -Pgap.translate=true`): unresolved symbols **845** with no library jars on the target list (every library class missing) to **702**
+(the rest is Minecraft/NeoForge/other libraries: JEI 44 classes, EMI 23, Vinery 18, Bookshelf 8, Ears 8 ...), with **0** left in the Architectury, Curios and Patchouli packages (from 22 + 27 + 26 classes in 5, 3 and 2 jars). `verify1201` over the translated jars: 2105 classes, 1772
+verified, 332 not linkable here (libraries not on the verifier's class path), 1 invalid (Botania `ModelResourceLocation`, a known Minecraft item, not from the library tables).
+Not done: a server run (other game processes were running, the rule is one java at a time; the translated mods were only link-checked), the config switch to force translating a 1.20.1 library even when the modern build exists, library mods other than the above.
+
+
+## 14. Status 2026-11-08: milestone 2, Minecraft side (mixins and signature changes)
+
+**Mixin triage** (`loader/.../transform/Mixin1201`, called from `Forge1201Transformer`; offline measurement `loader/.../tools/Mixin1201Triage`: `java -cp <asm,asm-tree,gson,tools> org.kylepitcock.legacyconnector.loader.tools.Mixin1201Triage <neoforge-merged.jar> <report> <jar-dir>`,
+`-Dtriage.tables=<forward/1.20.1>` applies the rename tables first). Corpus of 60 Forge 1.20.1 jars (`test-mods-1201-a`): 50 carry mixin configs (82 configs, 843 mixin classes, 792 target Minecraft/NeoForge classes).
+Before: 17 mixin targets and 24 members/`@At` targets named in annotations do not exist in 1.21.1 (140 annotation strings use SRG names, which the refmap used to translate), 24 configs have a plugin. What the layer does now:
+
+- **Names**: SRG names in `method`/`@At(target)`/`@Accessor` strings become Mojang names, the class and member renames of `mc-classes.tsv`/`mc-members.tsv` are applied inside those strings (descriptors too, but never to the `CompatBufferBuilder`-style stand-ins).
+- **No aborts**: Mixin aborts the launch on a required config and, whatever the config says, on an injector whose `require` is not met (`InjectionError`). Every injector gets `require = 0`, the config becomes `required: false`, `injectors.defaultRequire: 0`, no refmap;
+  an invalid mixin (missing shadow member or accessor target) is then logged and skipped by Mixin itself.
+- **Dropped**: a mixin whose targets are all Minecraft/NeoForge classes that do not exist in 1.21.1 (`PotionUtils`, `LootDataManager`, `ForgeGui`...) is removed from its config with a report note (12 in the corpus).
+- After translation: 1 unresolved target class and 1 unresolved member (down from 17 and 24; the name-only check does not see changed signatures, so a mixin can still fail to apply at runtime and is then skipped, not fatal).
+- Not done: mixin config plugins still run unchanged (they read Forge's `LoadingModList`, which the facades answer); mixins that target another mod's class are untouched.
+
+**Signature changes** (tables in `forward/1.20.1`, helpers in `org/kylepitcock/legacyconnector/v1_20_1/migrate`):
+
+- New generic in-place rule `=args` in `mc-calls.tsv` (spills the old arguments to fresh locals and builds the new ones, with optional static helpers `Class.method@a+b`): `ArmorItem(ArmorMaterial, Type, Properties)` (holder + durability from the material), `ShapedRecipe`/`ShapelessRecipe`
+  without the id (pattern object), `FlowerBlock(MobEffect, int, ...)`, `LootItemConditionalFunction(LootItemCondition[])`, `TemptGoal`, `FollowOwnerGoal`; `=swappop` drops the second to last argument (`CustomRecipe(id, category)`).
+- Stand-ins (classes renamed to facades): `ArmorMaterial` (interface, built into a 1.21.1 `ArmorMaterial` holder and cached by `ArmorCompat`), `ArmorMaterials` (wraps the vanilla ones), `MobType` (answered from entity type tags), `LootDataManager` (`MinecraftServer.getLootData()` over the reloadable registries).
+- `Tier` implementations get `getIncorrectBlocksForDrops()` from their `getLevel()` (bridge). `BlockSource` (a record now) calls go to helpers. 33 class renames (`ChunkStatus`, options screens, `BlockPathTypes` to `PathType`, `GlassBlock` to `TransparentBlock`, `FrameType`, `BootstapContext`...),
+  `SpawnPlacements.Type` constants, `RenderSystem.getModelViewStack()` (a `PoseStack` mirroring onto the JOML stack), `Registry.register` after the registries froze (custom stats and similar entries in common setup, the registry is opened for that one entry), `CriteriaTriggers.register`,
+  `ItemStack.getUseDuration/getTooltipLines/getAttributeModifiers`, `FoodProperties.getEffects`, `Recipe.getId` (looked up in the server's recipe manager), `EnchantedBookItem.getEnchantments`, `Commands.performPrefixedCommand`, `VertexConsumer.defaultColor`, small utilities.
+
+Measured on the 60 jars (`gap1201 -Pgap.translate=true`), Minecraft symbols still unresolved, distinct/occurrences: before classes 83/217, fields 76/115, methods 717/1288; after classes 49/129, fields 75/113, methods 643/1072.
+`verify1201` over the translated classes: 26,635 linked and verified (26,594 before), the same 2 invalid (`invokevirtual` of a method that became protected in another package, `AnalogLeverBlock.getShape`, `CeilingBannerBlock.getDrops`; not caused by the migration).
+Unit tests: `Mixin1201Test`, and `Mc1201MigrationTest` for `=args`, `=swappop` and the `Tier` bridge.
+
+Open: custom `Enchantment` subclasses (data-driven in 1.21: needs a conversion of the subclass to an enchantment definition, `Enchantment.Rarity`/`EnchantmentCategory` are gone), `AbstractTreeGrower` (`TreeGrower` is final), recipe serializers and `LootItemFunctionType`/`LootItemConditionType` (serializers became codecs),
+`DyeableArmorItem`/`DyeableLeatherItem`, `PortalInfo`, `Score`/scoreboard, `ServerAdvancementManager.getAdvancement`, datagen providers (`RecipeProvider`, `LootTableProvider`), `ImageButton`/`ObjectSelectionList` constructors, `Options.renderDebug`.
+Not yet run in a server: the mixin and migration changes were verified offline (unit tests, `gap1201`, `verify1201`, the mixin triage tool); the server test of mixin-carrying mods (`run-subtest/mods/1.20.1`: Clumps, AttributeFix, NoChatReports, EasyAnvils, VisualWorkbench, PickUpNotifier...) is still to do.
+
+## 15. Status 2026-11-08: GeckoLib, Farmer's Delight, Citadel, Create, first server runs (milestone 2, part 2)
+
+- **GeckoLib 4.8 to 4.9**: the renderer API moved the colour from four floats to one packed ARGB int in 37 methods. `./gradlew libApiDiff` now reports these as `colour` lines (also when the type variable erases differently per class), and
+  `tools/dev/gen_geckolib_1201.py` turns them into `lib-calls.tsv` rows (new call mode `=colour`: `GeckoCompat.pack(FFFF)I` is inserted before the call, which keeps its target and gets the new descriptor) and `lib-bridges.tsv` rows (a mod class that overrides the
+  old method gets the new one, which unpacks the colour with `GeckoCompat.red/green/blue/alpha`). Hand written: `GeckoLib.initialize/shadowInit` (no-op), `AnimationController.setTransitionLength`, the eight armor bone getters (they take the model now), `GeoModel.handleAnimations`.
+  Measured with `gap1201 -Pgap.translate=true` over Soulslike Weaponry and Mowzie's Mobs: GeckoLib symbols missing 18 (Soulslike: 3) to 0 for Soulslike, Mowzie 33 to 19. Left: calls of the removed no-argument bone getters from mod code (need a
+  reflection helper or a compile dependency on GeckoLib), `applyMolangQueries`, `GeoArmorRenderer.renderToBuffer` (SRG `m_7695_` override, handled by the Minecraft `Model.renderToBuffer` bridge only for Minecraft owners), `RenderUtils`, `GeckoLibNetwork`/packets, molang `IValue` keyframes.
+- **Farmer's Delight 1.20.1 to 1.21.1**: its `ModItems.X` / `ModBlocks.X` registry fields were `RegistryObject`s and are `Supplier`s (`Holder` for effects) now. `LibApiDiff` reports `retype` lines and `tools/dev/gen_lib_fields_1201.py` writes 368 `lib-fields.tsv`
+  rows that convert the value back to a `DeferredHolder` (`RegistryCompat`); the same generator serves every library that does this. Nether's Delight and Delightful: field gaps 87 to 29. Left: the `CommonTags$Items` tag constants (now `c:` tags), `Configuration` specs,
+  `KnifeItem`/`WildCropBlock` constructors (tool and effect changes of 1.21), `ToolActionIngredient`, `ModEnchantments`, recipe builder datagen.
+- **Citadel 2.6 to 2.7**: the colour rows of `AdvancedModelBox.render` etc. are generated (2 rows). Alex's Mobs and Ice and Fire still miss `Citadel.sendMSGToAll/sendMSGToServer` (Citadel messages became payloads), `PacketBufferUtils.read/writeItemStack`, `CustomToolMaterial`/`CustomArmorMaterial` (the
+  tier/armor material rework), `Event.Result` events; both mods are dominated by Minecraft gaps (153 and 88 methods) anyway. Not worth more until those are in.
+- **Create 6.0.8 to 6.0.10**: not bridged. The 1.21.1 build replaced Ponder by its own library and Registrate changed; 77 methods in 8 classes were unresolved for Steam 'n' Rails (`CreateSceneBuilder.*`, `CreateRegistrate.*`, `IconButton.withCallback`), 3,744 symbols differ in total. Create add-ons are a milestone of their own.
+- **Server runs** (`runServerSubTest`, NeoForge 1.21.1, `experimental.forge1201=true`, 1.21.1 libraries in `mods/`, mods in `mods/1.20.1/`): (1) Curios 9.5.1 plus the 1.20.1 Curios jar and Pillager Deterrent: the report says "replaced by curios (legacy curios API bridged)", the 1.20.1 Curios was not translated,
+  `1.20.1 content registered: 2 blocks, 3 items`, the server reached its self test and stopped cleanly. (2) Architectury 13 plus the 1.20.1 Architectury jar and Cave Dust / Meet Your Fight: the library jar was skipped; Cave Dust (a client mod) fails on the dedicated server ("class Screen for invalid dist DEDICATED_SERVER", expected), Meet Your Fight fails at
+  `RecordItem` (removed in 1.21, music discs are components: Minecraft migration). (3) Enigmatic Legacy with Curios, Patchouli and Caelus: translated fine, but its mixins abort the launch (mixin targets that no longer exist), which the Minecraft/mixin agent owns. So no run exercised Curios code paths yet (`CuriosCompat` is link-checked only);
+  a Curios-using mod without mixins or removed Minecraft classes is needed.

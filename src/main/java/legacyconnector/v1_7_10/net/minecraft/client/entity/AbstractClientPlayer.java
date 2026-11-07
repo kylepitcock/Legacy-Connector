@@ -31,7 +31,31 @@ public abstract class AbstractClientPlayer extends EntityPlayer implements SkinM
     private static final class Remote {
         static Player create(com.mojang.authlib.GameProfile profile) {
             var level = net.minecraft.client.Minecraft.getInstance().level;
+            if (level == null) return menuStandIn(profile);
             return new net.minecraft.client.player.RemotePlayer(level, profile);
+        }
+
+        /**
+         * No world is loaded (a legacy main menu drawing the player's head and name): a modern player cannot be built without a
+         * level, so a hollow remote player that only knows its profile stands in (skin and name lookups work, nothing ticks it).
+         */
+        private static Player menuStandIn(com.mojang.authlib.GameProfile profile) {
+            try {
+                var f = sun.misc.Unsafe.class.getDeclaredField("theUnsafe");
+                f.setAccessible(true);
+                var unsafe = (sun.misc.Unsafe) f.get(null);
+                var player = (net.minecraft.client.player.RemotePlayer) unsafe.allocateInstance(net.minecraft.client.player.RemotePlayer.class);
+                for (Class<?> c = player.getClass(); c != null; c = c.getSuperclass()) {
+                    for (var field : c.getDeclaredFields()) {
+                        if (field.getType() == com.mojang.authlib.GameProfile.class && !java.lang.reflect.Modifier.isStatic(field.getModifiers())) {
+                            unsafe.putObject(player, unsafe.objectFieldOffset(field), profile);
+                        }
+                    }
+                }
+                return player;
+            } catch (ReflectiveOperationException | RuntimeException e) {
+                throw new IllegalStateException("cannot make a menu stand-in player", e);
+            }
         }
     }
 

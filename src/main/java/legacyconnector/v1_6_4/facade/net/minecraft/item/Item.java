@@ -20,6 +20,11 @@ public final class Item {
         return Ids.itemsList();
     }
 
+    /** 1.4.7: {@code Item.iconIndex} started at 0, so an item that never set one draws tile 0 of its sheet (the shim keeps -1 for items that register icons). */
+    public static void mcc$claimItemTexture(legacyconnector.v1_7_10.net.minecraft.item.Item self) {
+        if (self.iconIndex < 0) self.iconIndex = 0;
+    }
+
     /** The id an Item constructor was given: {@code new Item(id)} puts the item at 256 + id. */
     public static void mcc$claimId(legacyconnector.v1_7_10.net.minecraft.item.Item self, int constructorId) {
         Ids.claimItem(self, constructorId);

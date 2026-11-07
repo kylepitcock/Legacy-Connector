@@ -134,6 +134,29 @@ final class IdConstructors {
             }
         }
 
+        // 1.4.7: Block(int id, int textureIndex, Material, ...) -> the shim's Block(Material) and the index handed to the facade afterwards
+        String textureOwner = null;
+        if (claimOwner != null && isBlock && h.version().flatNames() && args.length >= 3 && args[1].getSort() == Type.INT && args[2].getSort() == Type.OBJECT) {
+            String facade = h.facadeOf(blockCls);
+            if (facade != null && h.find(facade).hasMethod("mcc$claimTexture", "(L" + blockCls + ";I)V")) textureOwner = facade;
+        }
+        // 1.4.7: BlockFluid(int id, Material) gave water-like fluids tile 205 and lava-like ones 237 of the block's own sheet (BuildCraft's oil draws its animation there)
+        boolean fluidTexture = false;
+        String matCls = link + "net/minecraft/block/material/Material";
+        if (textureOwner == null && claimOwner != null && isBlock && h.version().flatNames() && args.length == 2 && args[1].getSort() == Type.OBJECT
+                && h.isSubclassOf(m.owner, link + "net/minecraft/block/BlockLiquid")) {
+            String facade = h.facadeOf(blockCls);
+            if (facade != null && h.find(facade).hasMethod("mcc$claimFluidTexture", "(L" + blockCls + ";L" + matCls + ";)V")) {
+                textureOwner = facade;
+                fluidTexture = true;
+            }
+        }
+        // 1.4.7: an item that never calls setIconIndex shows tile 0 of its sheet (Item.iconIndex defaulted to 0); the shim keeps -1 for items that register icons
+        String itemTextureOwner = null;
+        if (claimOwner != null && isItem && h.version().flatNames()) {
+            String facade = h.facadeOf(itemCls);
+            if (facade != null && h.find(facade).hasMethod("mcc$claimItemTexture", "(L" + itemCls + ";)V")) itemTextureOwner = facade;
+        }
         InsnList pre = new InsnList();
         int[] slots = new int[args.length];
         int slot = method.maxLocals;
@@ -143,6 +166,8 @@ final class IdConstructors {
         }
         for (int i = args.length - 1; i >= 0; i--) pre.add(new VarInsnNode(args[i].getOpcode(Opcodes.ISTORE), slots[i]));
         if (claimOwner != null) pre.add(new InsnNode(Opcodes.DUP)); // the receiver stays on the stack for the claim after the call
+        if (textureOwner != null) pre.add(new InsnNode(Opcodes.DUP));
+        if (itemTextureOwner != null) pre.add(new InsnNode(Opcodes.DUP));
         Type[] target = Type.getArgumentTypes(targetDesc);
         int pushed = 0;
         for (int j = 0; j < target.length; j++) {
@@ -160,6 +185,16 @@ final class IdConstructors {
         method.instructions.insertBefore(m, pre);
         if (claimOwner != null) {
             InsnList post = new InsnList();
+            if (textureOwner != null && fluidTexture) {
+                post.add(new VarInsnNode(Opcodes.ALOAD, slots[1]));
+                post.add(new MethodInsnNode(Opcodes.INVOKESTATIC, textureOwner, "mcc$claimFluidTexture", "(L" + blockCls + ";L" + matCls + ";)V", false));
+            } else if (textureOwner != null) {
+                post.add(new VarInsnNode(Opcodes.ILOAD, slots[1]));
+                post.add(new MethodInsnNode(Opcodes.INVOKESTATIC, textureOwner, "mcc$claimTexture", "(L" + blockCls + ";I)V", false));
+            }
+            if (itemTextureOwner != null) {
+                post.add(new MethodInsnNode(Opcodes.INVOKESTATIC, itemTextureOwner, "mcc$claimItemTexture", "(L" + itemCls + ";)V", false));
+            }
             post.add(new VarInsnNode(Opcodes.ILOAD, slots[0]));
             post.add(new MethodInsnNode(Opcodes.INVOKESTATIC, claimOwner, "mcc$claimId", claimDesc, false));
             method.instructions.insert(m, post);

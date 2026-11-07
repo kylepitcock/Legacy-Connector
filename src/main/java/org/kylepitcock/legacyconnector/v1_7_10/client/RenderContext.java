@@ -88,6 +88,8 @@ public final class RenderContext {
     static final class State {
         final Deque<Frame> frames = new ArrayDeque<>();
         Capture capture;
+        /** The 1.4.7 sprite sheet path last bound by string (null when a texture was bound by location). */
+        String sheet;
         /** glBegin/glEnd geometry (GL11's immediate mode). */
         final LegacyVertices immediate = new LegacyVertices();
         /** {@code glPolygonMode(..., GL_LINE)}: filled primitives are drawn as their edges (CustomOreGen's wireframes). */
@@ -165,6 +167,19 @@ public final class RenderContext {
         private double[] corners = new double[STRIDE * CORNERS * 16];
         private float[] normals = new float[3 * 16];
         private int quads;
+        /** The texture bound when each quad was drawn (null: the block atlas). */
+        private ResourceLocation[] textures = new ResourceLocation[16];
+        /** The 1.4.7 sprite sheet path bound when each quad was drawn (null: none; the quad's UVs are atlas UVs). */
+        private String[] sheets = new String[16];
+
+        public String sheet(int q) {
+            return sheets[q];
+        }
+
+        /** The texture the renderer had bound when quad {@code q} was drawn. */
+        public ResourceLocation texture(int q) {
+            return textures[q];
+        }
 
         public int size() {
             return quads;
@@ -191,6 +206,10 @@ public final class RenderContext {
         private int add() {
             if ((quads + 1) * STRIDE * CORNERS > corners.length) corners = java.util.Arrays.copyOf(corners, corners.length * 2);
             if ((quads + 1) * 3 > normals.length) normals = java.util.Arrays.copyOf(normals, normals.length * 2);
+            if (quads + 1 > textures.length) {
+                textures = java.util.Arrays.copyOf(textures, textures.length * 2);
+                sheets = java.util.Arrays.copyOf(sheets, sheets.length * 2);
+            }
             return quads++;
         }
     }
@@ -282,6 +301,7 @@ public final class RenderContext {
         resetColor(s);
         Capture c = new Capture();
         s.capture = c;
+        s.sheet = null;
         return c;
     }
 
@@ -394,8 +414,25 @@ public final class RenderContext {
         // the resources being reloaded are not visible yet while the pack is built (mods bind textures in TextureStitchEvent.Pre)
         if (org.kylepitcock.legacyconnector.core.pack.GeneratedPack.building()) return;
         checkExists(rl);
-        STATE.get().texture = rl;
+        State st = STATE.get();
+        st.texture = rl;
+        st.sheet = null;
         RenderSystem.setShaderTexture(0, rl);
+    }
+
+    /** Minecraft 1.4.7: the sprite sheet path ({@code /eloraam/base/base1.png}) just bound, whose tiles the pack cut into the atlas (see IsbrhQuads). */
+    /** Whether this thread is capturing a block's geometry into a model. */
+    public static boolean capturing() {
+        return STATE.get().capture != null;
+    }
+
+    /** The 1.4.7 sprite sheet path last bound by string, or null. */
+    public static String sheet() {
+        return STATE.get().sheet;
+    }
+
+    public static void setSheet(String path) {
+        STATE.get().sheet = path;
     }
 
     public static ResourceLocation texture() {
@@ -746,6 +783,8 @@ public final class RenderContext {
         if (capture != null) {
             org.joml.Matrix4f m = p.last().pose();
             int q = capture.add();
+            capture.textures[q] = s.texture;
+            capture.sheets[q] = s.sheet;
             // In double: captured positions are absolute block coordinates, made block-relative only when baked. Through a
             // float they were snapped to a float's step, 2 blocks at a Sable / Create Aeronautics plot (~20 million blocks
             // out): ChromatiCraft's crystals came out as skewed triangles and Thaumcraft's jar glass vanished on ships.
@@ -761,6 +800,17 @@ public final class RenderContext {
             capture.normals[q * 3 + 2] = tmp.z;
             return;
         }
+        if (s.sheet != null && net.minecraft.client.renderer.texture.TextureAtlas.LOCATION_BLOCKS.equals(s.texture) && has147Mods()) {
+            // 1.4.7 index sheet bound as the block atlas (a renderer that draws part of its model from /terrain.png: RedPower's gates in a slot): the
+            // UVs are positions in the 256x256 sheet, which the atlas does not have; they go to the tile the pack cut from it, as IsbrhQuads does for chunks
+            double[][] mapped = mapSheetUv(s.sheet, v0, v1, v2, v3);
+            if (mapped != null) {
+                v0 = mapped[0];
+                v1 = mapped[1];
+                v2 = mapped[2];
+                v3 = mapped[3];
+            }
+        }
         // one buffer lookup per draw: the emulated state cannot change while a draw's quads are emitted
         VertexConsumer buffer = s.drawBuffer;
         if (buffer == null) {
@@ -774,6 +824,33 @@ public final class RenderContext {
         emitCorner(s, buffer, last, entity, overlay, v1, nx, ny, nz);
         emitCorner(s, buffer, last, entity, overlay, v2, nx, ny, nz);
         emitCorner(s, buffer, last, entity, overlay, v3, nx, ny, nz);
+    }
+
+    private static volatile Boolean any147;
+
+    /** Whether a 1.4.7 mod is loaded (only their renderers address the vanilla atlas by sheet positions). */
+    private static boolean has147Mods() {
+        Boolean known = any147;
+        if (known == null) {
+            known = org.kylepitcock.legacyconnector.core.LegacyMods.ordered().stream().anyMatch(m -> "1.4.7".equals(m.version));
+            any147 = known;
+        }
+        return known;
+    }
+
+    /** The corners with their UVs moved from a 1.4.7 sheet's positions into the atlas sprite of the tile the quad lies on; null when the pack has no such tile. */
+    private static double[][] mapSheetUv(String sheet, double[] v0, double[] v1, double[] v2, double[] v3) {
+        double cu = (v0[3] + v1[3] + v2[3] + v3[3]) / 4, cv = (v0[4] + v1[4] + v2[4] + v3[4]) / 4;
+        int col = net.minecraft.util.Mth.clamp((int) Math.floor(cu * 16), 0, 15), row = net.minecraft.util.Mth.clamp((int) Math.floor(cv * 16), 0, 15);
+        var tile = IsbrhQuads.sheetTile(sheet, row * 16 + col);
+        if (tile == null) return null;
+        double[][] out = {v0.clone(), v1.clone(), v2.clone(), v3.clone()};
+        for (double[] c : out) {
+            double lu = net.minecraft.util.Mth.clamp(c[3] * 16.0 - col, 0.0, 1.0), lv = net.minecraft.util.Mth.clamp(c[4] * 16.0 - row, 0.0, 1.0);
+            c[3] = tile.getU0() + lu * (tile.getU1() - tile.getU0());
+            c[4] = tile.getV0() + lv * (tile.getV1() - tile.getV0());
+        }
+        return out;
     }
 
     private static void bound(double[] bounds, double[] p) {

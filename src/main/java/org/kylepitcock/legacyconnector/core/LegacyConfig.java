@@ -60,6 +60,7 @@ public final class LegacyConfig {
             bridges.waila.enabled = true
             bridges.nei.enabled = true
             bridges.cofhEnergy.enabled = true
+            bridges.patchouli.enabled = true
 
             # Performance. perf.* switches of Legacy Connector's own work are on by default (they change nothing but its speed);
             # see docs/wiki/Performance.md.
@@ -174,6 +175,11 @@ public final class LegacyConfig {
         if (v.equalsIgnoreCase("false")) return false;
         LOG.warn("{}: '{}' is not true or false; using {}", key, v, fallback);
         return fallback;
+    }
+
+    /** {@code bridges.<name>.enabled}: whether a library bridge (see {@code LibraryBridges} in the loader) is switched on; default true. */
+    public static boolean bridgeEnabled(String name) {
+        return bool("bridges." + name + ".enabled", true);
     }
 
     private static int positiveInt(String key, int fallback) {
@@ -291,6 +297,25 @@ public final class LegacyConfig {
      */
     public static boolean structuresLocatable() {
         return bool("structures.locatable", true);
+    }
+
+    /**
+     * {@code villagers.jobSites}: job site blocks for the professions of 1.7.10 mods, {@code <profession id>=<block id>,...} (for example
+     * {@code 243=minecraft:lectern}). 1.7.10 professions declare no block, so without an entry a modded villager has no job site (it keeps
+     * its profession through its experience but does not work at one).
+     */
+    public static java.util.Map<Integer, String> villagerJobSites() {
+        java.util.Map<Integer, String> out = new java.util.LinkedHashMap<>();
+        for (String entry : string("villagers.jobSites", "").split(",")) {
+            int eq = entry.indexOf('=');
+            if (eq <= 0) continue;
+            try {
+                out.put(Integer.parseInt(entry.substring(0, eq).trim()), entry.substring(eq + 1).trim());
+            } catch (NumberFormatException e) {
+                // ignored entry
+            }
+        }
+        return out;
     }
 
     /** {@code villages.legacyBuildings}: legacy mods' village buildings join the vanilla village house pools. */

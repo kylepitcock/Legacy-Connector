@@ -929,6 +929,19 @@ public abstract class Entity implements ICommandSender {
         return mcc$entity == null ? mcc$localId : mcc$entity.getId();
     }
 
+    /** Phantom field: accesses are redirected to {@code mcc$get$entityId} (mods put it in packets; the plain field stayed 0). */
+    @Deprecated
+    public int entityId;
+
+    public static int mcc$get$entityId(Entity e) {
+        return e.getEntityId();
+    }
+
+    public static void mcc$set$entityId(Entity e, int id) {
+        if (e.mcc$entity == null) e.mcc$localId = id;
+        else e.mcc$entity.setId(id);
+    }
+
     private int mcc$localId = -1;
 
     /**
@@ -1484,6 +1497,13 @@ public abstract class Entity implements ICommandSender {
         legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagList list = new legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagList();
         for (double v : values) list.appendTag(new legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagDouble(v));
         return list;
+    }
+
+    /** The direction (0-3) the entity entered a portal from; portal blocks that set it through a teleporter read it back here. */
+    protected int teleportDirection;
+
+    public int getTeleportDirection() {
+        return teleportDirection;
     }
 
     /** Fall bookkeeping of the entity; the modern game tracks fall distance itself. */

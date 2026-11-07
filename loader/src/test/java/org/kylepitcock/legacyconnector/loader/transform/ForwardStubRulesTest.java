@@ -1,0 +1,140 @@
+package org.kylepitcock.legacyconnector.loader.transform;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import org.junit.jupiter.api.Test;
+import org.kylepitcock.legacyconnector.loader.LegacyVersion;
+import org.kylepitcock.legacyconnector.loader.mapping.ForwardRenames;
+import org.kylepitcock.legacyconnector.loader.shim.ShimIndex;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.tree.AbstractInsnNode;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.FieldInsnNode;
+import org.objectweb.asm.tree.MethodInsnNode;
+import org.objectweb.asm.tree.MethodNode;
+import org.objectweb.asm.tree.TypeInsnNode;
+
+/**
+ * Forward rules that replaced synthesized (empty) stubs of the 1.6.4 layer: after the rewrite the call, field or constructor names a 1.7.10 shim
+ * member, or a static helper that has behaviour, instead of an empty generated member.
+ */
+class ForwardStubRulesTest {
+    private static final String P = "legacyconnector/v1_7_10/";
+
+    private static Hierarchy hierarchy() {
+        return new Hierarchy(ShimIndex.empty(), null, Map.of(), LegacyVersion.V1_6_4);
+    }
+
+    private static ClassNode with(AbstractInsnNode... insns) {
+        ClassNode node = new ClassNode();
+        node.name = "my/Mod";
+        node.superName = "java/lang/Object";
+        MethodNode m = new MethodNode(Opcodes.ACC_PUBLIC, "run", "()V", null, null);
+        for (AbstractInsnNode i : insns) m.instructions.add(i);
+        m.maxStack = 8;
+        node.methods.add(m);
+        return node;
+    }
+
+    private static List<String> body(ClassNode node) {
+        List<String> out = new ArrayList<>();
+        for (AbstractInsnNode i = node.methods.get(0).instructions.getFirst(); i != null; i = i.getNext()) {
+            if (i instanceof MethodInsnNode m) out.add(m.getOpcode() + " " + m.owner + "." + m.name + m.desc);
+            else if (i instanceof FieldInsnNode f) out.add(f.getOpcode() + " " + f.owner + "." + f.name + ":" + f.desc);
+            else if (i instanceof TypeInsnNode t) out.add(t.getOpcode() + " " + t.desc);
+            else out.add("op" + i.getOpcode());
+        }
+        return out;
+    }
+
+    @Test
+    void thornsStaticsCallTheBehaviourHelper() {
+        ClassNode node = with(new MethodInsnNode(Opcodes.INVOKESTATIC, P + "net/minecraft/enchantment/EnchantmentThorns", "func_92096_a",
+                "(L" + P + "net/minecraft/entity/Entity;L" + P + "net/minecraft/entity/EntityLivingBase;Ljava/util/Random;)V"));
+        assertEquals(1, ForwardCalls.apply(node, hierarchy(), LegacyVersion.V1_6_4));
+        assertEquals(List.of("184 legacyconnector/v1_6_4/forward/Thorns164.attack(L" + P + "net/minecraft/entity/Entity;L" + P
+                + "net/minecraft/entity/EntityLivingBase;Ljava/util/Random;)V"), body(node));
+        ClassNode hit = with(new MethodInsnNode(Opcodes.INVOKESTATIC, P + "net/minecraft/enchantment/EnchantmentThorns", "func_92094_a", "(ILjava/util/Random;)Z"));
+        assertEquals(1, ForwardCalls.apply(hit, hierarchy(), LegacyVersion.V1_6_4));
+        assertEquals(List.of("184 legacyconnector/v1_6_4/forward/Thorns164.shouldHit(ILjava/util/Random;)Z"), body(hit));
+    }
+
+    @Test
+    void chatLinesAreWrappedIntoComponents() {
+        ClassNode node = with(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, P + "net/minecraft/client/gui/GuiNewChat", "printChatMessage", "(Ljava/lang/String;)V"));
+        assertEquals(1, ForwardCalls.apply(node, hierarchy(), LegacyVersion.V1_6_4));
+        List<String> b = body(node);
+        assertEquals("187 " + P + "net/minecraft/util/ChatComponentText", b.get(0));
+        assertEquals("182 " + P + "net/minecraft/client/gui/GuiNewChat.printChatMessage(L" + P + "net/minecraft/util/IChatComponent;)V", b.get(b.size() - 1));
+    }
+
+    @Test
+    void chunkManagerHellKeepsBiomeAndRainfall() {
+        // new WorldChunkManagerHell(biome, temperature, rainfall): 1.7.10 has no temperature
+        String hell = P + "net/minecraft/world/biome/WorldChunkManagerHell";
+        String biome = "L" + P + "net/minecraft/world/biome/BiomeGenBase;";
+        ClassNode node = with(new MethodInsnNode(Opcodes.INVOKESPECIAL, hell, "<init>", "(" + biome + "FF)V"));
+        assertEquals(1, ForwardCalls.apply(node, hierarchy(), LegacyVersion.V1_6_4));
+        List<String> b = body(node);
+        assertEquals("183 " + hell + ".<init>(" + biome + "F)V", b.get(b.size() - 1));
+        // the temperature (argument 1) is spilled away, never passed on: exactly one float is pushed back
+        int floatLoads = 0;
+        for (AbstractInsnNode i = node.methods.get(0).instructions.getFirst(); i != null; i = i.getNext()) if (i.getOpcode() == Opcodes.FLOAD) floatLoads++;
+        assertEquals(1, floatLoads);
+    }
+
+    @Test
+    void playerWithoutAProfileGetsAnAnonymousOne() {
+        // 1.5.2: new EntityPlayer(world) in a subclass constructor
+        String player = P + "net/minecraft/entity/player/EntityPlayer";
+        ClassNode node = with(new MethodInsnNode(Opcodes.INVOKESPECIAL, player, "<init>", "(L" + P + "net/minecraft/world/World;)V"));
+        assertEquals(1, ForwardCalls.apply(node, hierarchy(), LegacyVersion.V1_5_2));
+        List<String> b = body(node);
+        assertTrue(b.contains("184 legacyconnector/v1_6_4/forward/Forward164.anonymousProfile()Lcom/mojang/authlib/GameProfile;"), b.toString());
+        assertEquals("183 " + player + ".<init>(L" + P + "net/minecraft/world/World;Lcom/mojang/authlib/GameProfile;)V", b.get(b.size() - 1));
+    }
+
+    @Test
+    void numbersWidenInsteadOfBeingDefaulted() {
+        org.objectweb.asm.Type f = org.objectweb.asm.Type.FLOAT_TYPE;
+        org.objectweb.asm.Type d = org.objectweb.asm.Type.DOUBLE_TYPE;
+        org.objectweb.asm.Type i = org.objectweb.asm.Type.INT_TYPE;
+        org.objectweb.asm.Type j = org.objectweb.asm.Type.LONG_TYPE;
+        assertTrue(org.kylepitcock.legacyconnector.loader.synth.CtorChooser.widens(f, d));
+        assertTrue(org.kylepitcock.legacyconnector.loader.synth.CtorChooser.widens(i, j));
+        assertTrue(!org.kylepitcock.legacyconnector.loader.synth.CtorChooser.widens(d, f));
+        assertEquals(Opcodes.F2D, org.kylepitcock.legacyconnector.loader.synth.CtorChooser.widenOpcode(f, d));
+        assertEquals(Opcodes.I2L, org.kylepitcock.legacyconnector.loader.synth.CtorChooser.widenOpcode(i, j));
+
+        // an AI task whose speed was a float: (owner, F) is served by the (owner, D) constructor with the float converted
+        var ai = new org.kylepitcock.legacyconnector.loader.shim.ClassInfo("legacyconnector/v1_7_10/Ai", "java/lang/Object", List.of(), Opcodes.ACC_PUBLIC);
+        ai.methods.put("<init>(Llegacyconnector/v1_7_10/Owner;D)V", Opcodes.ACC_PUBLIC);
+        var choice = org.kylepitcock.legacyconnector.loader.synth.CtorChooser.choose(ai,
+                new org.objectweb.asm.Type[] {org.objectweb.asm.Type.getObjectType("legacyconnector/v1_7_10/Owner"), f}, (a, p) -> false);
+        assertEquals("(Llegacyconnector/v1_7_10/Owner;D)V", choice.desc());
+        assertEquals(List.of(0, 1), List.of(choice.map()[0], choice.map()[1]));
+        // callers that cannot convert (no narrowing predicate) keep the exact-match rule: the double stays defaulted
+        var strict = org.kylepitcock.legacyconnector.loader.synth.CtorChooser.choose(ai,
+                new org.objectweb.asm.Type[] {org.objectweb.asm.Type.getObjectType("legacyconnector/v1_7_10/Owner"), f});
+        assertEquals(-1, strict.map()[1]);
+    }
+
+    @Test
+    void renamedMembersPointAtTheShimNames() {
+        var t = org.kylepitcock.legacyconnector.loader.mapping.ForwardMembers.forVersion(LegacyVersion.V1_6_4);
+        assertEquals("hovered", t.field("net/minecraft/client/gui/GuiButton", "field_82253_i", null));
+        assertEquals("getBackgroundIcon", t.method("net/minecraft/item/ItemArmor", "func_94602_b", "(I)L" + "net/minecraft/util/Icon;", null));
+        assertEquals("getOwner", t.method("net/minecraft/entity/passive/EntityWolf", "func_130012_q", "()Lnet/minecraft/entity/EntityLivingBase;", null));
+        assertEquals("renderToolTip", t.method("net/minecraft/client/gui/inventory/GuiContainer", "drawItemStackTooltip", "(Lnet/minecraft/item/ItemStack;II)V", null));
+    }
+
+    @Test
+    void scatteredFeatureMovedToTheStructurePackage() {
+        assertEquals("net/minecraft/world/gen/structure/MapGenScatteredFeature",
+                ForwardRenames.map(LegacyVersion.V1_6_4, "net/minecraft/world/gen/feature/MapGenScatteredFeature"));
+    }
+}

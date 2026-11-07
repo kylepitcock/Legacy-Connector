@@ -30,9 +30,18 @@ public class LanguageRegistry {
         GeneratedTranslations.put(lang, key, value);
     }
 
+    /** Forge 1.5.2: a whole table of keys for one language. */
+    public void addStringLocalization(java.util.Properties properties, String lang) {
+        if (properties == null) return;
+        for (String k : properties.stringPropertyNames()) addStringLocalization(k, lang, properties.getProperty(k));
+    }
+
     public void addNameForObject(Object obj, String lang, String name) {
         String key;
-        if (obj instanceof ItemStack s) key = s.getItem().getUnlocalizedName(s);
+        if (obj instanceof ItemStack s) {
+            if (s.getItem() == null) return; // a stack of an item that was never registered (an id left unclaimed): nothing to name
+            key = s.getItem().getUnlocalizedName(s);
+        }
         else if (obj instanceof Item i) key = i.getUnlocalizedName();
         else if (obj instanceof Block b) key = b.getUnlocalizedName();
         else return;
@@ -49,7 +58,8 @@ public class LanguageRegistry {
     }
 
     public void loadLocalization(String localizationFile, String lang, boolean isXML) {
-        java.io.InputStream in = LanguageRegistry.class.getResourceAsStream(localizationFile);
+        // mods name their own files by class path (1.5.2: "/mods/appeng/lang/en_US.properties"); they live in other jars than the shim
+        java.io.InputStream in = org.kylepitcock.legacyconnector.compat.jdk.ResourceCompat.getResourceAsStream(LanguageRegistry.class, localizationFile);
         if (in == null) return;
         mcc$load(in, lang, isXML);
     }

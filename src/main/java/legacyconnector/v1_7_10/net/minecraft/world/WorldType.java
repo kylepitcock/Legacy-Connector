@@ -15,9 +15,9 @@ import legacyconnector.v1_7_10.net.minecraftforge.common.BiomeManager;
 public class WorldType {
     public static final WorldType[] worldTypes = new WorldType[16];
     public static final WorldType DEFAULT = new WorldType(0, "default", 1).setVersioned();
-    public static final WorldType FLAT = new WorldType(1, "flat");
-    public static final WorldType LARGE_BIOMES = new WorldType(2, "largeBiomes");
-    public static final WorldType AMPLIFIED = new WorldType(3, "amplified").setNotificationData();
+    public static final WorldType FLAT = new WorldType(1, "flat", 0);
+    public static final WorldType LARGE_BIOMES = new WorldType(2, "largeBiomes", 0);
+    public static final WorldType AMPLIFIED = new WorldType(3, "amplified", 0).setNotificationData();
     public static final WorldType DEFAULT_1_1 = new WorldType(8, "default_1_1", 0).setCanBeCreated(false);
 
     /** The terrain generator of worlds of this type (Forge: vanilla's overworld generator unless a mod type overrides it). */
@@ -34,8 +34,9 @@ public class WorldType {
     private boolean isWorldTypeVersioned;
     private boolean hasNotificationData;
 
-    private WorldType(int id, String name) {
-        this(id, name, 0);
+    /** 1.6.4 and earlier: a mod world type takes its own id (the id is only a slot of the table here, so a taken or out-of-range one moves to the next free). */
+    protected WorldType(int id, String name) {
+        this(id >= 0 && id < worldTypes.length && worldTypes[id] == null ? id : getNextID(), name, 0, mcc$activeMod());
     }
 
     /** Vanilla types (no owner, even when this class is first loaded while a legacy mod is initialising). */

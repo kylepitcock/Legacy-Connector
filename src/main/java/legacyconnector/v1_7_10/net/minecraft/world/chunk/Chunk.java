@@ -142,8 +142,38 @@ public class Chunk {
     }
 
     /** A chunk of column arrays without metadata (the nether generator's 128-high chunks). */
+    /** 1.6.4 and earlier: the generator's byte array of block ids (x << 12 | z << 8 | y, like the Block array), metadata separate. */
+    public Chunk(World world, byte[] ids, int x, int z) {
+        this(world, ids, null, x, z);
+    }
+
+    public Chunk(World world, byte[] ids, byte[] meta, int x, int z) {
+        this(world, mcc$blocksOf(ids), meta, x, z);
+    }
+
+    private static Block[] mcc$blocksOf(byte[] ids) {
+        Block[] out = new Block[ids.length];
+        for (int i = 0; i < ids.length; i++) {
+            int id = ids[i] & 0xFF;
+            out[i] = id == 0 ? legacyconnector.v1_7_10.net.minecraft.init.Blocks.air : legacyconnector.v1_6_4.net.minecraft.util.Ids.block(id);
+            if (out[i] == null) out[i] = legacyconnector.v1_7_10.net.minecraft.init.Blocks.air;
+        }
+        return out;
+    }
+
     public Chunk(World world, Block[] blocks, int x, int z) {
         this(world, blocks, null, x, z);
+    }
+
+
+
+    private static Block[] mcc$blocksOfIds(byte[] ids) {
+        Block[] blocks = new Block[ids.length];
+        for (int i = 0; i < ids.length; i++) {
+            int id = ids[i] & 0xFF;
+            if (id != 0) blocks[i] = Block.getBlockById(id);
+        }
+        return blocks;
     }
 
     /** A chunk of 256-high column arrays, as legacy terrain generators build them. */
@@ -213,7 +243,22 @@ public class Chunk {
         return x == xPosition && z == zPosition;
     }
 
+    /**
+     * The state of a block of a loaded client chunk read straight from the chunk (no level lookups, no per-call world logic), or
+     * null when the generic path must answer (detached or server chunks, the bedrock row, heights outside the legacy range).
+     * Radar and map mods scan whole chunks block by block every tick; 1.6.4 answered from arrays, the level lookups of
+     * {@code World.getBlock} made Crafting Dead's minimap cost most of the frame.
+     */
+    public net.minecraft.world.level.block.state.BlockState mcc$clientState(int x, int y, int z) {
+        if (mcc$blocks != null || y < 1 || y > 255) return null;
+        var live = mcc$liveChunk();
+        if (live == null || !(live.getLevel() instanceof net.minecraft.client.multiplayer.ClientLevel) || live.getMinBuildHeight() > y || live.getMaxBuildHeight() <= y) return null;
+        return live.getBlockState(new net.minecraft.core.BlockPos(wx(x), y, wz(z)));
+    }
+
     public Block getBlock(int x, int y, int z) {
+        var fast = mcc$clientState(x, y, z);
+        if (fast != null) return org.kylepitcock.legacyconnector.v1_7_10.bridge.BlockBridge.legacyBlock(fast);
         if (mcc$blocks != null) {
             if (y < 0 || y >= mcc$height) return legacyconnector.v1_7_10.net.minecraft.init.Blocks.air;
             Block b = mcc$blocks[index(x, y, z)];
@@ -223,6 +268,8 @@ public class Chunk {
     }
 
     public int getBlockMetadata(int x, int y, int z) {
+        var fast = mcc$clientState(x, y, z);
+        if (fast != null) return org.kylepitcock.legacyconnector.v1_7_10.bridge.BlockBridge.legacyMeta(fast);
         if (mcc$blocks != null) return y < 0 || y >= mcc$height ? 0 : mcc$meta[index(x, y, z)] & 15;
         return worldObj.getBlockMetadata(wx(x), y, wz(z));
     }

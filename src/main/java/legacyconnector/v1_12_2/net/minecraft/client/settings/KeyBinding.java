@@ -195,6 +195,14 @@ public class KeyBinding implements Comparable<KeyBinding> {
         return c != 0 ? c : net.minecraft.locale.Language.getInstance().getOrDefault(keyDescription).compareTo(net.minecraft.locale.Language.getInstance().getOrDefault(other.keyDescription));
     }
 
+    /** 1.12: the key name of a registered binding as a lazy text (mods put it in tooltips; unknown description: the description itself). */
+    public static java.util.function.Supplier<String> getDisplayString(String key) {
+        return () -> {
+            KeyBinding k = KEYBIND_ARRAY.get(key);
+            return k == null ? key : k.getDisplayName();
+        };
+    }
+
     /** The key's name as the controls screen shows it. */
     public String getDisplayName() {
         if (modern != null) return mapping().getTranslatedKeyMessage().getString();

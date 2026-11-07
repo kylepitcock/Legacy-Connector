@@ -59,8 +59,28 @@ public class StringTranslate {
         return StatCollector.translateToLocalFormatted(key, args);
     }
 
+    /** 1.4.7/1.5.2: the languages the game knows, keyed by code; mods (Immibis Core) iterate the keys to load their own language files. */
+    public java.util.TreeMap<String, Object> getLanguageList() {
+        java.util.TreeMap<String, Object> languages = new java.util.TreeMap<>();
+        languages.put("en_US", "English (US)");
+        return languages;
+    }
+
     public synchronized boolean containsTranslateKey(String key) {
         return StatCollector.canTranslate(key);
+    }
+
+    /** 1.4.7: the selected language as a code ({@code en_US}); mods pick their own language files by it (BuildCraft's {@code lang/buildcraft/<code>.properties}). */
+    public String getCurrentLanguage() {
+        String code = "en_us";
+        try {
+            var mc = net.minecraft.client.Minecraft.getInstance();
+            if (mc != null && mc.getLanguageManager() != null) code = mc.getLanguageManager().getSelected();
+        } catch (RuntimeException | LinkageError e) {
+            // a server: English
+        }
+        int us = code.indexOf('_');
+        return us < 0 ? code : code.substring(0, us) + "_" + code.substring(us + 1).toUpperCase(java.util.Locale.ROOT);
     }
 
     public long getLastUpdateTimeInMilliseconds() {

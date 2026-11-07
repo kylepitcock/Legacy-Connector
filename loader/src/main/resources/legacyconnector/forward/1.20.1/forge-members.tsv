@@ -1,0 +1,19 @@
+# Forge 1.20.1 members NeoForge 1.21.1 renamed: original-owner<TAB>name<TAB>new name (any descriptor; fields and methods)
+net/minecraftforge/common/Tags$Items	STRING	STRINGS
+net/minecraftforge/common/Tags$Items	LEATHER	LEATHERS
+net/minecraftforge/common/Tags$Items	STONE	STONES
+net/minecraftforge/common/Tags$Items	OBSIDIAN	OBSIDIANS
+net/minecraftforge/common/Tags$Items	NETHERRACK	NETHERRACKS
+net/minecraftforge/common/Tags$Items	GUNPOWDER	GUNPOWDERS
+net/minecraftforge/common/Tags$Items	SHEARS	TOOLS_SHEAR
+net/minecraftforge/common/Tags$Items	GLASS	GLASS_BLOCKS
+net/minecraftforge/common/Tags$Items	GLASS_COLORLESS	GLASS_BLOCKS_COLORLESS
+net/minecraftforge/common/Tags$Blocks	STONE	STONES
+net/minecraftforge/common/Tags$Blocks	OBSIDIAN	OBSIDIANS
+net/minecraftforge/common/Tags$Blocks	NETHERRACK	NETHERRACKS
+net/minecraftforge/common/Tags$Blocks	GLASS	GLASS_BLOCKS
+net/minecraftforge/common/Tags$Blocks	GLASS_COLORLESS	GLASS_BLOCKS_COLORLESS
+net/minecraftforge/event/level/BlockEvent$BlockToolModificationEvent	getToolAction	getItemAbility
+net/minecraftforge/event/entity/living/LivingChangeTargetEvent	getNewTarget	getNewAboutToBeSetTarget
+net/minecraftforge/event/entity/living/LivingChangeTargetEvent	getOriginalTarget	getOriginalAboutToBeSetTarget
+net/minecraftforge/client/event/InputEvent$MouseScrollingEvent	getScrollDelta	getScrollDeltaY

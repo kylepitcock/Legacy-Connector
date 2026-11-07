@@ -79,6 +79,11 @@ public class EntityList {
             java.util.Map.entry("illusion_illager", "illusioner"), java.util.Map.entry("evocation_fangs", "evoker_fangs"),
             java.util.Map.entry("fireworks_rocket", "firework_rocket"), java.util.Map.entry("eye_of_ender_signal", "eye_of_ender"));
 
+    /** The modern path of a 1.12 vanilla entity name ({@code zombie_pigman} is {@code zombified_piglin}); the name itself when it was not renamed. */
+    public static String modernVanillaPath(String path) {
+        return RENAMES.getOrDefault(path, path);
+    }
+
     /**
      * A new entity of a registered name, not yet spawned: a mod entity through its modern type (its host constructs the legacy object),
      * a vanilla one as a view of a new modern entity. Null for unknown names or without a real world.

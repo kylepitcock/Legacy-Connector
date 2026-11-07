@@ -107,6 +107,12 @@ public final class BlockAccessView implements IBlockAccess {
     }
 
     @Override
+    public int mcc$weakSignal(int x, int y, int z, int side) {
+        BlockPos p = at(x, y, z);
+        return getter.getBlockState(p).getSignal(getter, p, net.minecraft.core.Direction.from3DDataValue(side));
+    }
+
+    @Override
     public int isBlockProvidingPowerTo(int x, int y, int z, int side) {
         BlockPos p = at(x, y, z);
         return getter.getBlockState(p).getDirectSignal(getter, p, net.minecraft.core.Direction.from3DDataValue(side));

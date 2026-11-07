@@ -4,6 +4,7 @@ import java.util.Random;
 import legacyconnector.v1_7_10.cpw.mods.fml.common.eventhandler.Event;
 import legacyconnector.v1_7_10.net.minecraft.world.World;
 import legacyconnector.v1_7_10.net.minecraft.world.WorldType;
+import legacyconnector.v1_7_10.net.minecraft.world.gen.NoiseGenerator;
 import legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenerator;
 import legacyconnector.v1_7_10.net.minecraft.world.gen.layer.GenLayer;
 import legacyconnector.v1_7_10.net.minecraftforge.common.MinecraftForge;
@@ -20,6 +21,22 @@ public abstract class TerrainGen {
         InitNoiseGensEvent event = new InitNoiseGensEvent(world, rand, original);
         MinecraftForge.TERRAIN_GEN_BUS.post(event);
         return event.newNoiseGens;
+    }
+
+    /**
+     * The form Forge 1.6.4 and 1.7.10 mods call: their chunk providers keep {@code NoiseGeneratorOctaves[]}. Without this overload the call linked to a
+     * synthesized stub that returned an empty array (every Emerald's Dimensional Warps dimension failed in its chunk provider constructor).
+     */
+    public static legacyconnector.v1_7_10.net.minecraft.world.gen.NoiseGeneratorOctaves[] getModdedNoiseGenerators(World world, Random rand,
+            legacyconnector.v1_7_10.net.minecraft.world.gen.NoiseGeneratorOctaves[] original) {
+        NoiseGenerator[] result = getModdedNoiseGenerators(world, rand, (NoiseGenerator[]) original);
+        legacyconnector.v1_7_10.net.minecraft.world.gen.NoiseGeneratorOctaves[] out = original == null ? null : original.clone();
+        if (result != null && out != null) {
+            for (int i = 0; i < out.length && i < result.length; i++) {
+                if (result[i] instanceof legacyconnector.v1_7_10.net.minecraft.world.gen.NoiseGeneratorOctaves o) out[i] = o;
+            }
+        }
+        return out;
     }
 
     public static boolean decorate(World world, Random rand, int chunkX, int chunkZ, DecorateBiomeEvent.Decorate.EventType type) {

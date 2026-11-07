@@ -24,9 +24,22 @@ public final class GameRegistry {
         legacyconnector.v1_7_10.cpw.mods.fml.common.registry.GameRegistry.registerBlock(block, itemClass, name, modId);
     }
 
+    /** {@code addBiome(biome)}: Forge 1.6.4 added the biome to the default world type's biome list, which the pack's biome placement then draws from. */
+    public static void addBiome(legacyconnector.v1_7_10.net.minecraft.world.biome.BiomeGenBase biome) {
+        if (biome != null) legacyconnector.v1_7_10.net.minecraft.world.WorldType.DEFAULT.addNewBiome(biome);
+    }
+
     /** {@code registerWorldGenerator(generator)}: no weight argument in 1.6.4. */
     public static void registerWorldGenerator(legacyconnector.v1_7_10.cpw.mods.fml.common.IWorldGenerator generator) {
         legacyconnector.v1_7_10.cpw.mods.fml.common.registry.GameRegistry.registerWorldGenerator(generator, 0);
+    }
+
+    /** {@code registerBlock(block, itemClass)} (1.5.2): the name is the unlocalized name without {@code tile.}, or the block id for blocks that have none (Applied Energistics 1 names its subtypes per item stack). */
+    public static void registerBlock(Block block, Class<? extends ItemBlock> itemClass) {
+        String n = block.getUnlocalizedName();
+        if (n != null && n.startsWith("tile.")) n = n.substring(5);
+        if (n == null || n.isEmpty() || n.equals("null")) n = "block" + legacyconnector.v1_6_4.net.minecraft.util.Ids.blockId(block);
+        registerBlock(block, itemClass, n);
     }
 
     /** {@code registerBlock(block)}: the name is the unlocalized name without the {@code tile.} prefix. */
@@ -48,5 +61,27 @@ public final class GameRegistry {
 
     public static void registerItem(Item item, String name, String modId) {
         legacyconnector.v1_7_10.cpw.mods.fml.common.registry.GameRegistry.registerItem(item, name, modId);
+    }
+
+    public static void registerCraftingHandler(legacyconnector.v1_6_4.cpw.mods.fml.common.ICraftingHandler handler) {
+        org.kylepitcock.legacyconnector.v1_6_4.bridge.Crafting164.registerCraftingHandler(handler);
+    }
+
+    public static void registerPickupHandler(legacyconnector.v1_6_4.cpw.mods.fml.common.IPickupNotifier handler) {
+        org.kylepitcock.legacyconnector.v1_6_4.bridge.Crafting164.registerPickupHandler(handler);
+    }
+
+    /** Mods call these when they craft, smelt or pick up outside the vanilla paths: the crafting handlers hear it through the event. */
+    public static void onItemCrafted(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player, legacyconnector.v1_7_10.net.minecraft.item.ItemStack item,
+            legacyconnector.v1_7_10.net.minecraft.inventory.IInventory craftMatrix) {
+        legacyconnector.v1_7_10.cpw.mods.fml.common.FMLCommonHandler.instance().firePlayerCraftingEvent(player, item, craftMatrix);
+    }
+
+    public static void onItemSmelted(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player, legacyconnector.v1_7_10.net.minecraft.item.ItemStack item) {
+        legacyconnector.v1_7_10.cpw.mods.fml.common.FMLCommonHandler.instance().firePlayerSmeltedEvent(player, item);
+    }
+
+    public static void onPickupNotification(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player, legacyconnector.v1_7_10.net.minecraft.entity.item.EntityItem item) {
+        legacyconnector.v1_7_10.cpw.mods.fml.common.FMLCommonHandler.instance().firePlayerItemPickupEvent(player, item);
     }
 }

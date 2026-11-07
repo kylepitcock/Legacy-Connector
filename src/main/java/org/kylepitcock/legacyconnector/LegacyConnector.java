@@ -92,6 +92,13 @@ public final class LegacyConnector {
         });
     }
 
+    private static final DeferredRegister<net.minecraft.advancements.CriterionTrigger<?>> TRIGGERS = DeferredRegister.create(Registries.TRIGGER_TYPE, MOD_ID);
+
+    static {
+        // The criteria of 1.12.2 advancements that use a trigger a mod registered itself (v1_12_2.advancement.LegacyTrigger1122).
+        TRIGGERS.register("legacy", () -> org.kylepitcock.legacyconnector.v1_12_2.advancement.LegacyTrigger1122.INSTANCE);
+    }
+
     private static final DeferredRegister<net.minecraft.world.inventory.MenuType<?>> MENUS = DeferredRegister.create(Registries.MENU, MOD_ID);
     public static final DeferredHolder<net.minecraft.world.inventory.MenuType<?>, net.minecraft.world.inventory.MenuType<org.kylepitcock.legacyconnector.v1_7_10.gui.LegacyMenu>> LEGACY_MENU_1_7_10 =
             MENUS.register("legacy_1_7_10", () -> net.neoforged.neoforge.common.extensions.IMenuTypeExtension.create(
@@ -105,6 +112,7 @@ public final class LegacyConnector {
 
     public LegacyConnector(IEventBus modBus, ModContainer container) {
         BETA_ENTITIES.register(modBus);
+        if (!System.getProperty("legacyconnector.forge1201.mods", "").isEmpty()) org.kylepitcock.legacyconnector.v1_20_1.Forge1201Runtime.init(modBus);
         org.slf4j.LoggerFactory.getLogger("LegacyConnector").info("Legacy Connector {} (runtime) loaded",
                 container.getModInfo().getVersion());
         org.kylepitcock.legacyconnector.core.DirectMemoryGuard.start();
@@ -124,6 +132,7 @@ public final class LegacyConnector {
         BIOME_SOURCES.register(modBus);
         STRUCTURE_TYPES.register(modBus);
         STRUCTURE_PIECES.register(modBus);
+        TRIGGERS.register(modBus);
         modBus.addListener(org.kylepitcock.legacyconnector.core.worldgen.BiomePlacement::onCommonSetup);
         modBus.addListener(org.kylepitcock.legacyconnector.v1_7_10.entity.LegacyHosts::onAttributeCreation);
         modBus.addListener(org.kylepitcock.legacyconnector.v1_12_2.entity.Hosts1122::onAttributeCreation);
@@ -165,6 +174,9 @@ public final class LegacyConnector {
         GeneratedPack.addRecipeContributor((type, out) -> {
             if (type == net.minecraft.server.packs.PackType.SERVER_DATA) org.kylepitcock.legacyconnector.v1_7_10.bridge.RecipeBridge.generate(out);
         });
+        GeneratedPack.addRecipeContributor(org.kylepitcock.legacyconnector.v1_7_10.bridge.Achievements1710::contribute);
+        org.kylepitcock.legacyconnector.v1_7_10.bridge.Achievements1710.register();
+        org.kylepitcock.legacyconnector.core.worldgen.LegacyStructureIndex.register();
         GeneratedPack.addRecipeContributor((type, out) -> {
             if (type == net.minecraft.server.packs.PackType.SERVER_DATA) org.kylepitcock.legacyconnector.v1_12_2.bridge.RecipeBridge1122.generate(out);
         });
@@ -250,6 +262,7 @@ public final class LegacyConnector {
         org.kylepitcock.legacyconnector.v1_7_10.bridge.ForeignEnergy1710.registerItems(event);
         org.kylepitcock.legacyconnector.v1_7_10.bridge.FluidBridge.registerCapabilities(event);
         org.kylepitcock.legacyconnector.v1_12_2.bridge.ItemCapabilities1122.register(event);
+        org.kylepitcock.legacyconnector.v1_12_2.bridge.EnergyBridge1122.registerItems(event);
         var type = org.kylepitcock.legacyconnector.v1_7_10.bridge.TileEntityBridge.type();
         if (type == null) return;
         event.registerBlockEntity(net.neoforged.neoforge.capabilities.Capabilities.ItemHandler.BLOCK, type, (be, side) ->

@@ -26,7 +26,9 @@ class Forward152Test {
     void renameTargetsExistIn1710() {
         var h17 = LegacyHierarchyData.forVersion(LegacyVersion.V1_7_10);
         // (the 1.6.4 rows underneath name classes 1.6.4 has and 1.5.2 may not: only the targets are checked)
-        ForwardRenames.forVersion(LegacyVersion.V1_5_2).forEach((from, to) -> assertNotNull(h17.get(to), "1.7.10 has no " + to));
+        ForwardRenames.forVersion(LegacyVersion.V1_5_2).forEach((from, to) -> {
+            if (!to.startsWith("net/minecraft/src/")) assertNotNull(h17.get(to), "1.7.10 has no " + to);   // net/minecraft/src/ModLoader and BaseMod are shim classes
+        });
         assertTrue(ForwardRenames.forVersion(LegacyVersion.V1_5_2).size() > 50);
     }
 }

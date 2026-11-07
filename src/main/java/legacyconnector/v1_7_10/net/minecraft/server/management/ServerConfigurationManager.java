@@ -236,6 +236,40 @@ public class ServerConfigurationManager {
         mcc$server.mcc$modern().getPlayerList().deop(profile);
     }
 
+    /** Reads the whitelist file again. */
+    public void loadWhiteList() {
+        mcc$server.mcc$modern().getPlayerList().reloadWhiteList();
+    }
+
+    public void setWhiteListEnabled(boolean enabled) {
+        mcc$server.mcc$modern().getPlayerList().setUsingWhiteList(enabled);
+    }
+
+    /** Writes every online player's data file. */
+    public void saveAllPlayerData() {
+        mcc$server.mcc$modern().getPlayerList().saveAll();
+    }
+
+    /** The online players connected from that IP address. */
+    public List getPlayerList(String ip) {
+        List<EntityPlayerMP> out = new ArrayList<>();
+        for (var p : mcc$server.mcc$modern().getPlayerList().getPlayersWithAddress(ip)) out.add((EntityPlayerMP) EntityBridge.wrap(p));
+        return out;
+    }
+
+    /** The names (uuid file names) of the players with saved data. */
+    public String[] getAvailablePlayerDat() {
+        java.io.File[] files = mcc$server.mcc$modern().getWorldPath(net.minecraft.world.level.storage.LevelResource.PLAYER_DATA_DIR).toFile().listFiles();
+        List<String> names = new ArrayList<>();
+        if (files != null) {
+            for (java.io.File f : files) {
+                String n = f.getName();
+                if (n.endsWith(".dat")) names.add(n.substring(0, n.length() - 4));
+            }
+        }
+        return names.toArray(new String[0]);
+    }
+
     public boolean canJoin(com.mojang.authlib.GameProfile profile) {
         return mcc$server.mcc$modern().getPlayerList().isWhiteListed(profile);
     }

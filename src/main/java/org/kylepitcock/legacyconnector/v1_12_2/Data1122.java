@@ -9,6 +9,8 @@ import org.kylepitcock.legacyconnector.core.pack.GeneratedPack;
 public final class Data1122 implements GeneratedPack.Contributor {
     @Override
     public void contribute(PackType type, Map<String, Supplier<byte[]>> out) {
+        // the modern Patchouli reads book contents from the resource packs (clientside); only book.json stays in the mod jar's data folder
+        if (type == PackType.CLIENT_RESOURCES) org.kylepitcock.legacyconnector.compat.patchouli.PatchouliBooks1122.contribute(out);
         if (type != PackType.SERVER_DATA) return;
         org.kylepitcock.legacyconnector.v1_12_2.bridge.RuntimeApis1122.generate(out);
         org.kylepitcock.legacyconnector.v1_12_2.bridge.LegacyBiomes1122.contribute(out);

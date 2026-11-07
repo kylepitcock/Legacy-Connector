@@ -109,6 +109,12 @@ public final class BridgeMethods {
         Type newRet = Type.getReturnType(rule.newDesc());
         if (newRet.getSort() == Type.VOID) {
             if (oldRet.getSize() > 0) il.add(new InsnNode(oldRet.getSize() == 2 ? Opcodes.POP2 : Opcodes.POP));
+        } else if (oldRet.getSort() == Type.INT && newRet.getSort() == Type.OBJECT && newRet.getInternalName().equals(h.relocate("net/minecraft/util/IIcon"))) {
+            // 1.4.7's sprite sheet index -> the sprite of that index in the owner's sheet (the owner, this, is the block or item)
+            il.add(new VarInsnNode(Opcodes.ALOAD, 0));
+            il.add(new InsnNode(Opcodes.SWAP));
+            il.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "org/kylepitcock/legacyconnector/v1_6_4/bridge/SpriteSheets147", "mcc$icon",
+                    "(Ljava/lang/Object;I)L" + newRet.getInternalName() + ";", false));
         } else if (!convert(il, oldRet, newRet, h)) {
             return null;
         }
@@ -126,6 +132,27 @@ public final class BridgeMethods {
      */
     private static boolean convert(InsnList il, Type from, Type to, Hierarchy h) {
         if (from.equals(to)) return true;
+        if (from.getSort() == Type.INT && to.getSort() == Type.FLOAT) {   // 1.5.2 health and damage were ints
+            il.add(new InsnNode(Opcodes.I2F));
+            return true;
+        }
+        if (from.getSort() == Type.FLOAT && to.getSort() == Type.INT) {
+            il.add(new InsnNode(Opcodes.F2I));
+            return true;
+        }
+        if (from.getSort() == Type.BOOLEAN && to.getSort() == Type.INT) {   // 1.4.7's isProviding...Power returned a boolean: full strength
+            il.add(new org.objectweb.asm.tree.IntInsnNode(Opcodes.BIPUSH, 15));
+            il.add(new InsnNode(Opcodes.IMUL));
+            return true;
+        }
+        if (from.getSort() == Type.INT && to.getSort() == Type.BOOLEAN) {   // (x | -x) >>> 31: whether x is not 0
+            il.add(new InsnNode(Opcodes.DUP));
+            il.add(new InsnNode(Opcodes.INEG));
+            il.add(new InsnNode(Opcodes.IOR));
+            il.add(new org.objectweb.asm.tree.IntInsnNode(Opcodes.BIPUSH, 31));
+            il.add(new InsnNode(Opcodes.IUSHR));
+            return true;
+        }
         if (from.getSort() == Type.OBJECT && to.getSort() == Type.INT) {
             MethodInsnNode id = idOf(h, from.getInternalName());
             if (id == null) return false;
@@ -194,7 +221,9 @@ public final class BridgeMethods {
         Type newRet = Type.getReturnType(rule.newDesc());
 
         boolean needsConversion = newArgs.length != oldArgs.length;
-        for (int i = 0; i < oldArgs.length; i++) needsConversion |= oldArgs[i].getSort() == Type.INT && newArgs[i].getSort() == Type.OBJECT;
+        for (int i = 0; i < oldArgs.length; i++) {
+            needsConversion |= oldArgs[i].getSort() == Type.INT && (newArgs[i].getSort() == Type.OBJECT || newArgs[i].getSort() == Type.FLOAT);
+        }
         InsnList pre = new InsnList();
         if (needsConversion) {
             // spill the arguments to fresh locals, then push them again converted (the receiver stays below)
@@ -213,6 +242,8 @@ public final class BridgeMethods {
                         MethodInsnNode conv = fromId(h, newArgs[i].getInternalName());
                         if (conv == null) return null;
                         pre.add(conv);
+                    } else if (oldArgs[i].getSort() == Type.INT && newArgs[i].getSort() == Type.FLOAT) {
+                        pre.add(new InsnNode(Opcodes.I2F));
                     }
                 } else {
                     pre.add(new InsnNode(CtorChooser.defaultConst(newArgs[i])));

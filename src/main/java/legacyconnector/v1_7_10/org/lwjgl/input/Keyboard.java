@@ -7,7 +7,15 @@ public class Keyboard {
     public static final int KEY_NONE = 0, KEY_ESCAPE = 1, KEY_LCONTROL = 29, KEY_LSHIFT = 42, KEY_RSHIFT = 54, KEY_LMENU = 56,
             KEY_RCONTROL = 157, KEY_RMENU = 184, KEY_SPACE = 57, KEY_RETURN = 28, KEY_TAB = 15, KEY_BACK = 14;
 
+    /** LWJGL key codes the remote-control test harness holds down ("forcekey 41 on"); empty in normal play. */
+    private static final java.util.Set<Integer> FORCED = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    public static void mcc$forceKey(int key, boolean down) {
+        if (down) FORCED.add(key); else FORCED.remove(key);
+    }
+
     public static boolean isKeyDown(int key) {
+        if (!FORCED.isEmpty() && FORCED.contains(key)) return true;
         int glfw = KeyCodes.toGlfw(key);
         if (glfw <= 0) return false;
         try {

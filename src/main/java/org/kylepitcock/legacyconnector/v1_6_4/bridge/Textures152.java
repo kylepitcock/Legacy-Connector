@@ -59,7 +59,33 @@ public final class Textures152 {
             Map.entry("mob/blaze.png", "textures/entity/blaze.png"),
             Map.entry("mob/bat.png", "textures/entity/bat.png"));
 
+    private static final java.util.Map<String, Boolean> MISSING = new java.util.concurrent.ConcurrentHashMap<>();
+
     private Textures152() {}
+
+    /** Whether no resource pack has the asset; only a definite answer (the resource manager is up and has the pack) counts. */
+    private static boolean assetMissing(ResourceLocation asset) {
+        var key = asset.toString();
+        Boolean known = MISSING.get(key);
+        if (known != null) return known;
+        // modern resource names are lower case: such a file cannot be an asset (and asking the pack logs an invalid path)
+        if (!asset.getResourcePath().equals(asset.getResourcePath().toLowerCase(java.util.Locale.ROOT))
+                || !asset.getResourceDomain().equals(asset.getResourceDomain().toLowerCase(java.util.Locale.ROOT))) {
+            MISSING.put(key, true);
+            return true;
+        }
+        try {
+            if (org.kylepitcock.legacyconnector.core.pack.GeneratedPack.building()) return false;
+            var mc = net.minecraft.client.Minecraft.getInstance();
+            if (mc == null || mc.getResourceManager() == null) return false;
+            var modern = net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(asset.getResourceDomain(), asset.getResourcePath());
+            boolean missing = mc.getResourceManager().getResource(modern).isEmpty();
+            MISSING.put(key, missing);
+            return missing;
+        } catch (RuntimeException | LinkageError e) {
+            return false;
+        }
+    }
 
     /** The location a 1.5.2 texture path names. */
     public static ResourceLocation location(String path) {
@@ -71,7 +97,12 @@ public final class Textures152 {
         String bare = slash ? p.substring(1) : p;
         if (bare.startsWith("mods/")) {
             int next = bare.indexOf('/', "mods/".length());
-            if (next > 0) return new ResourceLocation(bare.substring("mods/".length(), next), bare.substring(next + 1));
+            if (next > 0) {
+                var asset = new ResourceLocation(bare.substring("mods/".length(), next), bare.substring(next + 1));
+                // The first segment is the mod id by convention, but a mod may use its package ("/mods/immibis/chunkloader/..." of a mod
+                // whose id is "dimensionalanchors"): no such asset, so it is a class path file like any other path.
+                return assetMissing(asset) ? new ResourceLocation("minecraft", "/" + bare) : asset;
+            }
         }
         String vanilla = VANILLA.get(bare);
         if (vanilla != null) return new ResourceLocation("minecraft", vanilla);

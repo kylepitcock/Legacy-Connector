@@ -20,7 +20,7 @@ final class LegacySpawnData {
         if (legacy instanceof IEntityAdditionalSpawnData data) {
             var payload = org.kylepitcock.legacyconnector.core.network.LegacyBuffers.buffer();
             try {
-                data.writeSpawnData(payload);
+                if (!writeGuava(legacy, payload)) data.writeSpawnData(payload);
             } catch (RuntimeException | LinkageError e) {
                 LoggerFactory.getLogger("LegacyConnector/Entities").warn("{} failed to write its spawn data: {}", legacy.getClass().getName(), e.toString());
                 payload.clear();
@@ -46,12 +46,56 @@ final class LegacySpawnData {
         int length = buf.readVarInt();
         var payload = buf.readBytes(length);
         try {
-            if (legacy instanceof IEntityAdditionalSpawnData data && length > 0) data.readSpawnData(payload);
+            if (legacy instanceof IEntityAdditionalSpawnData data && length > 0 && !readGuava(legacy, payload)) data.readSpawnData(payload);
         } catch (RuntimeException | LinkageError e) {
             LoggerFactory.getLogger("LegacyConnector/Entities").warn("{} failed to read its spawn data: {}", legacy.getClass().getName(), e.toString());
         } finally {
             payload.release();
         }
         return legacy;
+    }
+
+    // 1.6.4 and older (Forge 6 to 9) took Guava's ByteArrayDataOutput/Input in the two methods; the shim interface takes a ByteBuf, so such a mod's
+    // class does not implement it (calling it is an AbstractMethodError). The old form is found on the class and called with Guava streams.
+
+    private static java.lang.reflect.Method guavaMethod(Class<?> type, String name, Class<?> arg) {
+        for (Class<?> k = type; k != null && k != Object.class; k = k.getSuperclass()) {
+            try {
+                var m = k.getDeclaredMethod(name, arg);
+                m.setAccessible(true);
+                return m;
+            } catch (NoSuchMethodException ignored) {
+                // keep looking up the hierarchy
+            } catch (LinkageError e) {
+                return null;
+            }
+        }
+        return null;
+    }
+
+    private static boolean writeGuava(Entity legacy, io.netty.buffer.ByteBuf payload) {
+        var m = guavaMethod(legacy.getClass(), "writeSpawnData", com.google.common.io.ByteArrayDataOutput.class);
+        if (m == null) return false;
+        com.google.common.io.ByteArrayDataOutput out = com.google.common.io.ByteStreams.newDataOutput();
+        try {
+            m.invoke(legacy, out);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException(e.getCause() != null ? e.getCause() : e);
+        }
+        payload.writeBytes(out.toByteArray());
+        return true;
+    }
+
+    private static boolean readGuava(Entity legacy, io.netty.buffer.ByteBuf payload) {
+        var m = guavaMethod(legacy.getClass(), "readSpawnData", com.google.common.io.ByteArrayDataInput.class);
+        if (m == null) return false;
+        byte[] bytes = new byte[payload.readableBytes()];
+        payload.readBytes(bytes);
+        try {
+            m.invoke(legacy, com.google.common.io.ByteStreams.newDataInput(bytes));
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException(e.getCause() != null ? e.getCause() : e);
+        }
+        return true;
     }
 }

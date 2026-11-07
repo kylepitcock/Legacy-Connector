@@ -1,0 +1,172 @@
+# Calls redirected to a static helper in org/kylepitcock/legacyconnector/v1_20_1/migrate (see Mc1201Migration).
+# owner TAB name TAB descriptor TAB helper class TAB helper method [TAB helper descriptor]
+# - A call on the owner or a subclass of it is rewritten unless a class of the mod declares the method on the way up (the mod's own method keeps its signature).
+# - Without a helper descriptor: static helper taking the receiver first (instance calls) or returning the object (constructors: NEW/DUP/INVOKESPECIAL
+#   becomes INVOKESTATIC). Descriptors and owners are in the 1.21.1 / Mojang names.
+# - A descriptor ending in @special applies to INVOKESPECIAL only (super calls).
+# - helper = "=" keeps the call but renames/re-describes it (helper method "-" keeps the name); "=swap" also swaps the last two arguments, "=pop" drops the
+#   last argument.
+net/minecraft/world/item/ItemStack	getTag	()Lnet/minecraft/nbt/CompoundTag;	ItemStackNbt	getTag	-
+net/minecraft/world/item/ItemStack	hasTag	()Z	ItemStackNbt	hasTag	-
+net/minecraft/world/item/ItemStack	getOrCreateTag	()Lnet/minecraft/nbt/CompoundTag;	ItemStackNbt	getOrCreateTag	-
+net/minecraft/world/item/ItemStack	setTag	(Lnet/minecraft/nbt/CompoundTag;)V	ItemStackNbt	setTag	-
+net/minecraft/world/item/ItemStack	getTagElement	(Ljava/lang/String;)Lnet/minecraft/nbt/CompoundTag;	ItemStackNbt	getTagElement	-
+net/minecraft/world/item/ItemStack	getOrCreateTagElement	(Ljava/lang/String;)Lnet/minecraft/nbt/CompoundTag;	ItemStackNbt	getOrCreateTagElement	-
+net/minecraft/world/item/ItemStack	addTagElement	(Ljava/lang/String;Lnet/minecraft/nbt/Tag;)V	ItemStackNbt	addTagElement	-
+net/minecraft/world/item/ItemStack	removeTagKey	(Ljava/lang/String;)V	ItemStackNbt	removeTagKey	-
+net/minecraft/world/item/ItemStack	of	(Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/world/item/ItemStack;	ItemStackNbt	of	-
+net/minecraft/world/item/ItemStack	save	(Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/nbt/CompoundTag;	ItemStackNbt	save	-
+net/minecraft/world/item/ItemStack	isSameItemSameTags	(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;)Z	ItemStackNbt	isSameItemSameTags	-
+net/minecraft/world/item/ItemStack	hasCustomHoverName	()Z	ItemStackNbt	hasCustomHoverName	-
+net/minecraft/world/item/ItemStack	setHoverName	(Lnet/minecraft/network/chat/Component;)Lnet/minecraft/world/item/ItemStack;	ItemStackNbt	setHoverName	-
+net/minecraft/world/item/ItemStack	resetHoverName	()V	ItemStackNbt	resetHoverName	-
+net/minecraft/world/item/ItemStack	hurtAndBreak	(ILnet/minecraft/world/entity/LivingEntity;Ljava/util/function/Consumer;)V	MiscCompat	hurtAndBreak	-
+net/minecraft/world/item/ItemStack	getEnchantmentLevel	(Lnet/minecraft/world/item/enchantment/Enchantment;)I	HolderCompat	stackEnchantmentLevel	-
+net/minecraft/world/item/Item	getMaxDamage	()I	MiscCompat	getMaxDamage	-
+net/minecraft/world/item/Item	isEdible	()Z	MiscCompat	isEdible	-
+net/minecraft/world/item/Item	getFoodProperties	()Lnet/minecraft/world/food/FoodProperties;	MiscCompat	getFoodProperties	-
+net/minecraft/world/effect/MobEffectInstance	<init>	(Lnet/minecraft/world/effect/MobEffect;I)V	HolderCompat	newEffect	-
+net/minecraft/world/effect/MobEffectInstance	<init>	(Lnet/minecraft/world/effect/MobEffect;II)V	HolderCompat	newEffect	-
+net/minecraft/world/effect/MobEffectInstance	<init>	(Lnet/minecraft/world/effect/MobEffect;IIZZ)V	HolderCompat	newEffect	-
+net/minecraft/world/effect/MobEffectInstance	<init>	(Lnet/minecraft/world/effect/MobEffect;IIZZZ)V	HolderCompat	newEffect	-
+net/minecraft/world/effect/MobEffectInstance	getEffect	()Lnet/minecraft/world/effect/MobEffect;	HolderCompat	effectOf	-
+net/minecraft/world/entity/LivingEntity	hasEffect	(Lnet/minecraft/world/effect/MobEffect;)Z	HolderCompat	hasEffect	-
+net/minecraft/world/entity/LivingEntity	getEffect	(Lnet/minecraft/world/effect/MobEffect;)Lnet/minecraft/world/effect/MobEffectInstance;	HolderCompat	getEffect	-
+net/minecraft/world/entity/LivingEntity	removeEffect	(Lnet/minecraft/world/effect/MobEffect;)Z	HolderCompat	removeEffect	-
+net/minecraft/world/entity/LivingEntity	getAttribute	(Lnet/minecraft/world/entity/ai/attributes/Attribute;)Lnet/minecraft/world/entity/ai/attributes/AttributeInstance;	HolderCompat	getAttribute	-
+net/minecraft/world/entity/LivingEntity	getAttributeValue	(Lnet/minecraft/world/entity/ai/attributes/Attribute;)D	HolderCompat	getAttributeValue	-
+net/minecraft/world/entity/LivingEntity	getAttributeBaseValue	(Lnet/minecraft/world/entity/ai/attributes/Attribute;)D	HolderCompat	getAttributeBaseValue	-
+net/minecraft/world/entity/ai/attributes/AttributeInstance	getAttribute	()Lnet/minecraft/world/entity/ai/attributes/Attribute;	HolderCompat	attributeOf	-
+net/minecraft/world/entity/ai/attributes/AttributeInstance	getModifier	(Ljava/util/UUID;)Lnet/minecraft/world/entity/ai/attributes/AttributeModifier;	HolderCompat	getModifier	-
+net/minecraft/world/entity/ai/attributes/AttributeInstance	hasModifier	(Lnet/minecraft/world/entity/ai/attributes/AttributeModifier;)Z	HolderCompat	hasModifier	-
+net/minecraft/world/entity/ai/attributes/AttributeInstance	removeModifier	(Ljava/util/UUID;)V	HolderCompat	removeModifier	-
+net/minecraft/world/entity/ai/attributes/AttributeModifier	<init>	(Ljava/util/UUID;Ljava/lang/String;DLnet/minecraft/world/entity/ai/attributes/AttributeModifier$Operation;)V	HolderCompat	newModifier	-
+net/minecraft/world/entity/ai/attributes/AttributeModifier	getName	()Ljava/lang/String;	HolderCompat	modifierName	-
+net/minecraft/world/entity/ai/attributes/AttributeSupplier$Builder	add	(Lnet/minecraft/world/entity/ai/attributes/Attribute;)Lnet/minecraft/world/entity/ai/attributes/AttributeSupplier$Builder;	HolderCompat	add	-
+net/minecraft/world/entity/ai/attributes/AttributeSupplier$Builder	add	(Lnet/minecraft/world/entity/ai/attributes/Attribute;D)Lnet/minecraft/world/entity/ai/attributes/AttributeSupplier$Builder;	HolderCompat	add	-
+net/minecraft/world/item/enchantment/EnchantmentHelper	getItemEnchantmentLevel	(Lnet/minecraft/world/item/enchantment/Enchantment;Lnet/minecraft/world/item/ItemStack;)I	HolderCompat	getItemEnchantmentLevel	-
+net/minecraft/world/item/enchantment/EnchantmentHelper	getEnchantmentLevel	(Lnet/minecraft/world/item/enchantment/Enchantment;Lnet/minecraft/world/entity/LivingEntity;)I	HolderCompat	getEnchantmentLevel	-
+net/minecraft/world/level/LevelAccessor	gameEvent	(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/level/gameevent/GameEvent;Lnet/minecraft/core/BlockPos;)V	HolderCompat	gameEvent	-
+net/minecraft/world/level/LevelAccessor	gameEvent	(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/level/gameevent/GameEvent;Lnet/minecraft/world/phys/Vec3;)V	HolderCompat	gameEvent	-
+net/minecraft/world/level/LevelAccessor	gameEvent	(Lnet/minecraft/world/level/gameevent/GameEvent;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/gameevent/GameEvent$Context;)V	HolderCompat	gameEvent	-
+net/minecraft/world/level/LevelAccessor	gameEvent	(Lnet/minecraft/world/level/gameevent/GameEvent;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/level/gameevent/GameEvent$Context;)V	HolderCompat	gameEvent	-
+net/minecraft/world/entity/Entity	gameEvent	(Lnet/minecraft/world/level/gameevent/GameEvent;)V	HolderCompat	gameEvent	-
+net/minecraft/world/entity/Entity	gameEvent	(Lnet/minecraft/world/level/gameevent/GameEvent;Lnet/minecraft/world/entity/Entity;)V	HolderCompat	gameEvent	-
+net/minecraft/world/entity/LivingEntity	broadcastBreakEvent	(Lnet/minecraft/world/InteractionHand;)V	MiscCompat	broadcastBreakEvent	-
+net/minecraft/world/entity/LivingEntity	broadcastBreakEvent	(Lnet/minecraft/world/entity/EquipmentSlot;)V	MiscCompat	broadcastBreakEvent	-
+net/minecraft/world/entity/Entity	setSecondsOnFire	(I)V	MiscCompat	setSecondsOnFire	-
+net/minecraft/network/syncher/SynchedEntityData	define	(Lnet/minecraft/network/syncher/EntityDataAccessor;Ljava/lang/Object;)V	MiscCompat	define	-
+net/minecraft/world/entity/Mob	finalizeSpawn	(Lnet/minecraft/world/level/ServerLevelAccessor;Lnet/minecraft/world/DifficultyInstance;Lnet/minecraft/world/entity/MobSpawnType;Lnet/minecraft/world/entity/SpawnGroupData;Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/world/entity/SpawnGroupData;	=pop	finalizeSpawn	(Lnet/minecraft/world/level/ServerLevelAccessor;Lnet/minecraft/world/DifficultyInstance;Lnet/minecraft/world/entity/MobSpawnType;Lnet/minecraft/world/entity/SpawnGroupData;)Lnet/minecraft/world/entity/SpawnGroupData;
+net/minecraft/world/level/block/DoorBlock	<init>	(Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;Lnet/minecraft/world/level/block/state/properties/BlockSetType;)V	=swap	<init>	(Lnet/minecraft/world/level/block/state/properties/BlockSetType;Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V
+net/minecraft/world/level/block/TrapDoorBlock	<init>	(Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;Lnet/minecraft/world/level/block/state/properties/BlockSetType;)V	=swap	<init>	(Lnet/minecraft/world/level/block/state/properties/BlockSetType;Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V
+net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase	use	(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/phys/BlockHitResult;)Lnet/minecraft/world/InteractionResult;	BridgeHelpers	use	-
+net/minecraft/world/level/block/state/BlockBehaviour	use	(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/phys/BlockHitResult;)Lnet/minecraft/world/InteractionResult;	BridgeHelpers	superUse	(Ljava/lang/Object;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/phys/BlockHitResult;)Lnet/minecraft/world/InteractionResult;
+net/minecraft/world/item/Item	appendHoverText	(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/level/Level;Ljava/util/List;Lnet/minecraft/world/item/TooltipFlag;)V@special	BridgeHelpers	superAppendHoverText	(Ljava/lang/Object;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/level/Level;Ljava/util/List;Lnet/minecraft/world/item/TooltipFlag;)V
+net/minecraft/nbt/NbtUtils	readBlockPos	(Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/core/BlockPos;	MiscCompat	readBlockPos	-
+net/minecraft/nbt/NbtUtils	writeBlockPos	(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/nbt/CompoundTag;	MiscCompat	writeBlockPos	-
+net/minecraft/world/ContainerHelper	loadAllItems	(Lnet/minecraft/nbt/CompoundTag;Lnet/minecraft/core/NonNullList;)V	MiscCompat	loadAllItems	-
+net/minecraft/world/ContainerHelper	saveAllItems	(Lnet/minecraft/nbt/CompoundTag;Lnet/minecraft/core/NonNullList;)Lnet/minecraft/nbt/CompoundTag;	MiscCompat	saveAllItems	-
+net/minecraft/world/ContainerHelper	saveAllItems	(Lnet/minecraft/nbt/CompoundTag;Lnet/minecraft/core/NonNullList;Z)Lnet/minecraft/nbt/CompoundTag;	MiscCompat	saveAllItems	-
+net/minecraft/world/level/storage/DimensionDataStorage	computeIfAbsent	(Ljava/util/function/Function;Ljava/util/function/Supplier;Ljava/lang/String;)Lnet/minecraft/world/level/saveddata/SavedData;	MiscCompat	computeIfAbsent	-
+net/minecraft/network/chat/Component$Serializer	toJson	(Lnet/minecraft/network/chat/Component;)Ljava/lang/String;	MiscCompat	toJson	-
+net/minecraft/network/chat/Component$Serializer	fromJson	(Ljava/lang/String;)Lnet/minecraft/network/chat/MutableComponent;	MiscCompat	fromJson	-
+net/minecraft/network/chat/Component$Serializer	fromJson	(Lcom/google/gson/JsonElement;)Lnet/minecraft/network/chat/MutableComponent;	MiscCompat	fromJson	-
+net/minecraft/network/FriendlyByteBuf	readItem	()Lnet/minecraft/world/item/ItemStack;	MiscCompat	readItem	-
+net/minecraft/network/FriendlyByteBuf	writeItem	(Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/network/FriendlyByteBuf;	MiscCompat	writeItem	-
+net/minecraft/network/FriendlyByteBuf	writeNbt	(Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/network/FriendlyByteBuf;	=	writeNbt	(Lnet/minecraft/nbt/Tag;)Lnet/minecraft/network/FriendlyByteBuf;
+net/minecraft/world/item/crafting/Ingredient	fromJson	(Lcom/google/gson/JsonElement;)Lnet/minecraft/world/item/crafting/Ingredient;	MiscCompat	ingredientFromJson	-
+net/minecraft/world/item/crafting/Ingredient	toJson	()Lcom/google/gson/JsonElement;	MiscCompat	ingredientToJson	-
+net/minecraft/world/item/crafting/Ingredient	fromNetwork	(Lnet/minecraft/network/FriendlyByteBuf;)Lnet/minecraft/world/item/crafting/Ingredient;	MiscCompat	ingredientFromNetwork	-
+net/minecraft/world/item/crafting/Ingredient	toNetwork	(Lnet/minecraft/network/FriendlyByteBuf;)V	MiscCompat	ingredientToNetwork	-
+net/minecraft/world/item/crafting/Recipe	matches	(Lnet/minecraft/world/Container;Lnet/minecraft/world/level/Level;)Z	RecipeCompat	matches	-
+net/minecraft/world/item/crafting/Recipe	assemble	(Lnet/minecraft/world/Container;Lnet/minecraft/core/RegistryAccess;)Lnet/minecraft/world/item/ItemStack;	RecipeCompat	assemble	-
+net/minecraft/world/item/crafting/Recipe	getResultItem	(Lnet/minecraft/core/RegistryAccess;)Lnet/minecraft/world/item/ItemStack;	RecipeCompat	getResultItem	-
+net/minecraft/world/item/crafting/RecipeManager	getRecipeFor	(Lnet/minecraft/world/item/crafting/RecipeType;Lnet/minecraft/world/Container;Lnet/minecraft/world/level/Level;)Ljava/util/Optional;	RecipeCompat	getRecipeFor	-
+net/minecraft/world/item/crafting/RecipeManager	getRecipesFor	(Lnet/minecraft/world/item/crafting/RecipeType;Lnet/minecraft/world/Container;Lnet/minecraft/world/level/Level;)Ljava/util/List;	RecipeCompat	getRecipesFor	-
+com/mojang/blaze3d/vertex/VertexConsumer	vertex	(DDD)Lcom/mojang/blaze3d/vertex/VertexConsumer;	VertexCompat	vertex	-
+com/mojang/blaze3d/vertex/VertexConsumer	vertex	(Lorg/joml/Matrix4f;FFF)Lcom/mojang/blaze3d/vertex/VertexConsumer;	VertexCompat	vertex	-
+com/mojang/blaze3d/vertex/VertexConsumer	color	(IIII)Lcom/mojang/blaze3d/vertex/VertexConsumer;	VertexCompat	color	-
+com/mojang/blaze3d/vertex/VertexConsumer	color	(FFFF)Lcom/mojang/blaze3d/vertex/VertexConsumer;	VertexCompat	color	-
+com/mojang/blaze3d/vertex/VertexConsumer	color	(I)Lcom/mojang/blaze3d/vertex/VertexConsumer;	VertexCompat	color	-
+com/mojang/blaze3d/vertex/VertexConsumer	uv	(FF)Lcom/mojang/blaze3d/vertex/VertexConsumer;	VertexCompat	uv	-
+com/mojang/blaze3d/vertex/VertexConsumer	uv2	(II)Lcom/mojang/blaze3d/vertex/VertexConsumer;	VertexCompat	uv2	-
+com/mojang/blaze3d/vertex/VertexConsumer	uv2	(I)Lcom/mojang/blaze3d/vertex/VertexConsumer;	VertexCompat	uv2	-
+com/mojang/blaze3d/vertex/VertexConsumer	overlayCoords	(II)Lcom/mojang/blaze3d/vertex/VertexConsumer;	VertexCompat	overlayCoords	-
+com/mojang/blaze3d/vertex/VertexConsumer	overlayCoords	(I)Lcom/mojang/blaze3d/vertex/VertexConsumer;	VertexCompat	overlayCoords	-
+com/mojang/blaze3d/vertex/VertexConsumer	normal	(FFF)Lcom/mojang/blaze3d/vertex/VertexConsumer;	VertexCompat	normal	-
+com/mojang/blaze3d/vertex/VertexConsumer	normal	(Lorg/joml/Matrix3f;FFF)Lcom/mojang/blaze3d/vertex/VertexConsumer;	VertexCompat	normal	-
+com/mojang/blaze3d/vertex/VertexConsumer	endVertex	()V	VertexCompat	endVertex	-
+com/mojang/blaze3d/vertex/Tesselator	getBuilder	()Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/CompatBufferBuilder;	CompatBufferBuilder	of	(Lcom/mojang/blaze3d/vertex/Tesselator;)Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/CompatBufferBuilder;
+com/mojang/blaze3d/vertex/Tesselator	end	()V	CompatBufferBuilder	end	-
+net/minecraft/client/Minecraft	getFrameTime	()F	ClientCompat	getFrameTime	-
+net/minecraft/world/item/ItemStack	isEdible	()Z	MiscCompat	stackIsEdible
+net/minecraft/client/renderer/MultiBufferSource	immediate	(Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/CompatBufferBuilder;)Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;	ClientCompat	immediate
+net/minecraft/client/model/geom/ModelPart	render	(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;IIFFFF)V	ClientCompat	renderPart
+net/minecraft/client/model/Model	renderToBuffer	(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;IIFFFF)V	ClientCompat	renderToBuffer
+net/minecraft/client/gui/components/EditBox	tick	()V	ClientCompat	editBoxTick
+net/minecraft/client/renderer/texture/TextureAtlasSprite	getU	(D)F	ClientCompat	getU
+net/minecraft/client/renderer/texture/TextureAtlasSprite	getV	(D)F	ClientCompat	getV
+net/minecraft/client/Minecraft	getDeltaFrameTime	()F	ClientCompat	getDeltaFrameTime
+net/minecraft/client/Minecraft	getPartialTick	()F	ClientCompat	getPartialTick
+net/minecraft/world/level/block/Block	playerWillDestroy	(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/entity/player/Player;)V	=ret	-	(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/entity/player/Player;)Lnet/minecraft/world/level/block/state/BlockState;
+net/minecraft/world/phys/AABB	<init>	(Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/BlockPos;)V	MiscCompat	newAabb
+net/minecraft/world/entity/ai/attributes/AttributeModifier	<init>	(Ljava/lang/String;DLnet/minecraft/world/entity/ai/attributes/AttributeModifier$Operation;)V	HolderCompat	newModifier
+net/minecraft/world/item/DyeColor	getTextureDiffuseColors	()[F	MiscCompat	dyeColors
+net/minecraft/world/item/enchantment/EnchantmentHelper	getEnchantments	(Lnet/minecraft/world/item/ItemStack;)Ljava/util/Map;	HolderCompat	getEnchantments
+net/minecraft/world/item/enchantment/EnchantmentHelper	setEnchantments	(Ljava/util/Map;Lnet/minecraft/world/item/ItemStack;)V	HolderCompat	setEnchantments
+net/minecraft/world/item/ItemStack	enchant	(Lnet/minecraft/world/item/enchantment/Enchantment;I)V	HolderCompat	enchant
+net/minecraft/world/item/enchantment/EnchantmentInstance	<init>	(Lnet/minecraft/world/item/enchantment/Enchantment;I)V	HolderCompat	newEnchantmentInstance
+net/minecraft/network/FriendlyByteBuf	readComponent	()Lnet/minecraft/network/chat/Component;	MiscCompat	readComponent
+net/minecraft/network/FriendlyByteBuf	writeComponent	(Lnet/minecraft/network/chat/Component;)Lnet/minecraft/network/FriendlyByteBuf;	MiscCompat	writeComponent
+net/minecraft/world/item/trading/MerchantOffer	<init>	(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;IIF)V	MiscCompat	newOffer
+net/minecraft/world/item/trading/MerchantOffer	<init>	(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;IIF)V	MiscCompat	newOffer
+net/minecraft/world/item/SwordItem	<init>	(Lnet/minecraft/world/item/Tier;IFLnet/minecraft/world/item/Item$Properties;)V	MiscCompat	newSword
+net/minecraft/world/item/AxeItem	<init>	(Lnet/minecraft/world/item/Tier;FFLnet/minecraft/world/item/Item$Properties;)V	MiscCompat	newAxe
+net/minecraft/world/item/ShovelItem	<init>	(Lnet/minecraft/world/item/Tier;FFLnet/minecraft/world/item/Item$Properties;)V	MiscCompat	newShovel
+net/minecraft/world/item/PickaxeItem	<init>	(Lnet/minecraft/world/item/Tier;IFLnet/minecraft/world/item/Item$Properties;)V	MiscCompat	newPickaxe
+net/minecraft/world/item/HoeItem	<init>	(Lnet/minecraft/world/item/Tier;IFLnet/minecraft/world/item/Item$Properties;)V	MiscCompat	newHoe
+net/minecraft/world/level/block/FenceGateBlock	<init>	(Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;Lnet/minecraft/world/level/block/state/properties/WoodType;)V	=swap	<init>	(Lnet/minecraft/world/level/block/state/properties/WoodType;Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V
+net/minecraft/world/level/block/StandingSignBlock	<init>	(Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;Lnet/minecraft/world/level/block/state/properties/WoodType;)V	=swap	<init>	(Lnet/minecraft/world/level/block/state/properties/WoodType;Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V
+net/minecraft/world/level/block/WallSignBlock	<init>	(Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;Lnet/minecraft/world/level/block/state/properties/WoodType;)V	=swap	<init>	(Lnet/minecraft/world/level/block/state/properties/WoodType;Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V
+net/minecraft/world/level/block/CeilingHangingSignBlock	<init>	(Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;Lnet/minecraft/world/level/block/state/properties/WoodType;)V	=swap	<init>	(Lnet/minecraft/world/level/block/state/properties/WoodType;Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V
+net/minecraft/world/level/block/WallHangingSignBlock	<init>	(Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;Lnet/minecraft/world/level/block/state/properties/WoodType;)V	=swap	<init>	(Lnet/minecraft/world/level/block/state/properties/WoodType;Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V
+com/mojang/blaze3d/systems/RenderSystem	getModelViewStack	()Lcom/mojang/blaze3d/vertex/PoseStack;	ClientCompat	getModelViewStack	-
+net/minecraft/resources/ResourceLocation	isValidResourceLocation	(Ljava/lang/String;)Z	MiscCompat	isValidResourceLocation	-
+net/minecraft/SharedConstants	isAllowedChatCharacter	(C)Z	MiscCompat	isAllowedChatCharacter	-
+net/minecraft/world/item/ItemStack	getUseDuration	()I	MiscCompat	getUseDuration	-
+net/minecraft/world/item/ItemStack	getTooltipLines	(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/item/TooltipFlag;)Ljava/util/List;	MiscCompat	getTooltipLines	-
+net/minecraft/world/food/FoodProperties	getEffects	()Ljava/util/List;	MiscCompat	getEffects	-
+com/mojang/blaze3d/vertex/VertexConsumer	defaultColor	(IIII)V	MiscCompat	defaultColor	-
+com/mojang/blaze3d/vertex/VertexConsumer	unsetDefaultColor	()V	MiscCompat	unsetDefaultColor	-
+net/minecraft/client/resources/DefaultPlayerSkin	getDefaultSkin	(Ljava/util/UUID;)Lnet/minecraft/resources/ResourceLocation;	ClientCompat	getDefaultSkin	-
+net/minecraft/world/item/crafting/CustomRecipe	<init>	(Lnet/minecraft/resources/ResourceLocation;Lnet/minecraft/world/item/crafting/CraftingBookCategory;)V	=swappop	<init>	(Lnet/minecraft/world/item/crafting/CraftingBookCategory;)V
+net/minecraft/world/entity/LivingEntity	getMobType	()Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyMobType;	MiscCompat	getMobType	-
+net/minecraft/server/MinecraftServer	getLootData	()Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyLootData;	MiscCompat	getLootData	-
+net/minecraft/core/Registry	register	(Lnet/minecraft/core/Registry;Lnet/minecraft/resources/ResourceLocation;Ljava/lang/Object;)Ljava/lang/Object;	MiscCompat	registerLate	-
+net/minecraft/core/Registry	register	(Lnet/minecraft/core/Registry;Ljava/lang/String;Ljava/lang/Object;)Ljava/lang/Object;	MiscCompat	registerLate	-
+net/minecraft/world/item/ArmorItem	<init>	(Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyArmorMaterial;Lnet/minecraft/world/item/ArmorItem$Type;Lnet/minecraft/world/item/Item$Properties;)V	=args	ArmorCompat.holder@0,1,ArmorCompat.properties@0+1+2	(Lnet/minecraft/core/Holder;Lnet/minecraft/world/item/ArmorItem$Type;Lnet/minecraft/world/item/Item$Properties;)V
+net/minecraft/world/item/ArmorItem	getMaterial	()Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyArmorMaterial;	ArmorCompat	getMaterial	-
+net/minecraft/world/item/ArmorItem	getEquipSound	()Lnet/minecraft/sounds/SoundEvent;	ArmorCompat	getEquipSound	-
+net/minecraft/world/item/crafting/ShapelessRecipe	<init>	(Lnet/minecraft/resources/ResourceLocation;Ljava/lang/String;Lnet/minecraft/world/item/crafting/CraftingBookCategory;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/core/NonNullList;)V	=args	1,2,3,4	(Ljava/lang/String;Lnet/minecraft/world/item/crafting/CraftingBookCategory;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/core/NonNullList;)V
+net/minecraft/world/item/crafting/ShapedRecipe	<init>	(Lnet/minecraft/resources/ResourceLocation;Ljava/lang/String;Lnet/minecraft/world/item/crafting/CraftingBookCategory;IILnet/minecraft/core/NonNullList;Lnet/minecraft/world/item/ItemStack;)V	=args	1,2,MiscCompat.pattern@3+4+5,6	(Ljava/lang/String;Lnet/minecraft/world/item/crafting/CraftingBookCategory;Lnet/minecraft/world/item/crafting/ShapedRecipePattern;Lnet/minecraft/world/item/ItemStack;)V
+net/minecraft/world/item/crafting/ShapedRecipe	<init>	(Lnet/minecraft/resources/ResourceLocation;Ljava/lang/String;Lnet/minecraft/world/item/crafting/CraftingBookCategory;IILnet/minecraft/core/NonNullList;Lnet/minecraft/world/item/ItemStack;Z)V	=args	1,2,MiscCompat.pattern@3+4+5,6,7	(Ljava/lang/String;Lnet/minecraft/world/item/crafting/CraftingBookCategory;Lnet/minecraft/world/item/crafting/ShapedRecipePattern;Lnet/minecraft/world/item/ItemStack;Z)V
+net/minecraft/world/level/block/FlowerBlock	<init>	(Lnet/minecraft/world/effect/MobEffect;ILnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V	=args	HolderCompat.holder@0,MiscCompat.intToFloat@1,2	(Lnet/minecraft/core/Holder;FLnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V
+net/minecraft/world/level/storage/loot/functions/LootItemConditionalFunction	<init>	([Lnet/minecraft/world/level/storage/loot/predicates/LootItemCondition;)V	=args	MiscCompat.conditions@0	(Ljava/util/List;)V
+net/minecraft/core/dispenser/BlockSource	getPos	()Lnet/minecraft/core/BlockPos;	MiscCompat	sourcePos	-
+net/minecraft/core/dispenser/BlockSource	getLevel	()Lnet/minecraft/server/level/ServerLevel;	MiscCompat	sourceLevel	-
+net/minecraft/core/dispenser/BlockSource	getBlockState	()Lnet/minecraft/world/level/block/state/BlockState;	MiscCompat	sourceState	-
+net/minecraft/core/dispenser/BlockSource	getEntity	()Lnet/minecraft/world/level/block/entity/BlockEntity;	MiscCompat	sourceEntity	-
+net/minecraft/core/dispenser/BlockSource	x	()D	MiscCompat	sourceX	-
+net/minecraft/core/dispenser/BlockSource	y	()D	MiscCompat	sourceY	-
+net/minecraft/core/dispenser/BlockSource	z	()D	MiscCompat	sourceZ	-
+net/minecraft/world/item/crafting/Recipe	getId	()Lnet/minecraft/resources/ResourceLocation;	RecipeCompat	getId	-
+net/minecraft/commands/Commands	performPrefixedCommand	(Lnet/minecraft/commands/CommandSourceStack;Ljava/lang/String;)I	MiscCompat	performPrefixedCommand	-
+net/minecraft/world/item/ItemStack	getAttributeModifiers	(Lnet/minecraft/world/entity/EquipmentSlot;)Lcom/google/common/collect/Multimap;	MiscCompat	getAttributeModifiers	-
+net/minecraft/world/item/EnchantedBookItem	getEnchantments	(Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/nbt/ListTag;	MiscCompat	getBookEnchantments	-
+net/minecraft/world/entity/Entity	getTeam	()Lnet/minecraft/world/scores/Team;	MiscCompat	getTeam	-
+net/minecraft/network/FriendlyByteBuf	writeId	(Lnet/minecraft/core/IdMap;Ljava/lang/Object;)V	MiscCompat	writeId	-
+net/minecraft/network/FriendlyByteBuf	readById	(Lnet/minecraft/core/IdMap;)Ljava/lang/Object;	MiscCompat	readById	-
+net/minecraft/world/entity/ai/goal/TemptGoal	<init>	(Lnet/minecraft/world/entity/PathfinderMob;DLnet/minecraft/world/item/crafting/Ingredient;Z)V	=args	0,1,MiscCompat.asPredicate@2,3	(Lnet/minecraft/world/entity/PathfinderMob;DLjava/util/function/Predicate;Z)V
+net/minecraft/world/entity/ai/goal/FollowOwnerGoal	<init>	(Lnet/minecraft/world/entity/TamableAnimal;DFFZ)V	=args	0,1,2,3	(Lnet/minecraft/world/entity/TamableAnimal;DFF)V
+net/minecraft/world/level/levelgen/structure/templatesystem/StructurePlaceSettings	setKeepLiquids	(Z)Lnet/minecraft/world/level/levelgen/structure/templatesystem/StructurePlaceSettings;	MiscCompat	setKeepLiquids	-
+net/minecraft/advancements/CriteriaTriggers	register	(Lnet/minecraft/advancements/CriterionTrigger;)Lnet/minecraft/advancements/CriterionTrigger;	MiscCompat	registerTrigger	-

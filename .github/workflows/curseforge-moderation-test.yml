@@ -1,0 +1,80 @@
+# One-off diagnostic: why are CurseForge releases since 0.3.11 held for manual review?
+# Takes an existing release jar and uploads a stripped variant to CurseForge ONLY (alpha), to see which one is approved automatically
+# (0.3.10 appeared within a minute; a held file never shows in the public file list). Variants are NOT for playing.
+#   a = without the bundled mods (Pehkui, TerraBlender) in the runtime jar's jar-in-jar folder
+#   b = without the plain library jars under META-INF/legacyconnector/libs
+# Remove this workflow once the cause is known.
+name: CurseForge moderation test
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag whose jar is used
+        required: true
+        default: v0.3.23
+      variant:
+        description: a or b
+        required: true
+        default: a
+
+permissions:
+  contents: read
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download the release jar
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download "${{ inputs.tag }}" -R "${{ github.repository }}" -p 'legacyconnector-*.jar' -D in
+          ls -la in
+
+      - name: Make the variant
+        run: |
+          mkdir out work
+          python3 - <<'EOF'
+          import glob, os, shutil, zipfile
+          variant = "${{ inputs.variant }}"
+          src = glob.glob("in/legacyconnector-*.jar")[0]
+          version = os.path.basename(src)[len("legacyconnector-"):-len(".jar")]
+          dst = f"out/legacyconnector-{version}-modtest{variant}.jar"
+
+          def rewrite(zin_path, zout_path, drop):
+              with zipfile.ZipFile(zin_path) as zin, zipfile.ZipFile(zout_path, "w", zipfile.ZIP_DEFLATED) as zout:
+                  for item in zin.infolist():
+                      if drop(item.filename):
+                          continue
+                      zout.writestr(item, zin.read(item.filename))
+
+          if variant == "a":
+              # the runtime jar sits inside the distributable jar: strip Pehkui and TerraBlender from its jarjar folder
+              rt = "META-INF/legacyconnector/legacyconnector-runtime.jar"
+              with zipfile.ZipFile(src) as z:
+                  open("work/rt.jar", "wb").write(z.read(rt))
+              rewrite("work/rt.jar", "work/rt2.jar",
+                      lambda n: n.startswith("META-INF/jarjar/") and (n.endswith(".jar") and ("pehkui" in n.lower() or "terrablender" in n.lower())))
+              with zipfile.ZipFile(src) as zin, zipfile.ZipFile(dst, "w", zipfile.ZIP_DEFLATED) as zout:
+                  for item in zin.infolist():
+                      data = open("work/rt2.jar", "rb").read() if item.filename == rt else zin.read(item.filename)
+                      zout.writestr(item, data)
+          else:
+              rewrite(src, dst, lambda n: n.startswith("META-INF/legacyconnector/libs/") and n.endswith(".jar"))
+          print(dst, os.path.getsize(dst))
+          EOF
+          ls -la out
+
+      - name: Upload to CurseForge only
+        uses: Kir-Antipov/mc-publish@v3.3
+        with:
+          curseforge-id: 1763521
+          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
+          files: out/legacyconnector-*.jar
+          name: Moderation test ${{ inputs.variant }} (do not use)
+          version: moderation-test-${{ inputs.variant }}
+          version-type: alpha
+          loaders: neoforge
+          game-versions: 1.21.1
+          java: 21

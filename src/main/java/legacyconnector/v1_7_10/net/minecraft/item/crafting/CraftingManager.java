@@ -91,7 +91,7 @@ public class CraftingManager {
      * matches is looked up there, so crafting tables built on {@code ContainerWorkbench} craft everything a vanilla table does.
      */
     private static ItemStack mcc$findModern(InventoryCrafting inv, World world) {
-        net.minecraft.world.level.Level level = world == null ? null : world.mcc$liveLevel();
+        net.minecraft.world.level.Level level = world == null ? mcc$anyLevel() : world.mcc$liveLevel();
         if (level == null || inv == null) return null;
         var input = inv.mcc$craftingInput();
         if (input == null || MODERN_LOOKUP.get()) return null;
@@ -105,6 +105,26 @@ public class CraftingManager {
             return null;
         } finally {
             MODERN_LOOKUP.set(Boolean.FALSE);
+        }
+    }
+
+    /**
+     * The level to look recipes up in for a caller that passed no world (RedPower's project table builds its crafting grid from a tile entity
+     * the client's container holds without a world; vanilla 1.7.10 recipes never read the world).
+     */
+    private static net.minecraft.world.level.Level mcc$anyLevel() {
+        if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) {
+            var level = ClientAccess.level();
+            if (level != null) return level;
+        }
+        var server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
+        return server == null ? null : server.overworld();
+    }
+
+    /** Isolated so the dedicated server never loads (or verifies against) client classes. */
+    private static final class ClientAccess {
+        static net.minecraft.world.level.Level level() {
+            return net.minecraft.client.Minecraft.getInstance().level;
         }
     }
 

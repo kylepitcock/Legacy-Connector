@@ -537,7 +537,7 @@ public class Minecraft implements legacyconnector.v1_12_2.net.minecraft.util.ITh
     /** The client's saves folder: its worlds, their level.dat and save handlers. */
     public synchronized legacyconnector.v1_12_2.net.minecraft.world.storage.ISaveFormat getSaveLoader() {
         if (saveLoader == null) {
-            saveLoader = new legacyconnector.v1_12_2.net.minecraft.world.storage.SaveFormatOld(new java.io.File(gameDir, "saves"), getDataFixer());
+            saveLoader = new legacyconnector.v1_12_2.net.minecraft.world.chunk.storage.AnvilSaveConverter(new java.io.File(gameDir, "saves"), getDataFixer());
         }
         return saveLoader;
     }

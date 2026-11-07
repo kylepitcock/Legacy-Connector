@@ -20,7 +20,10 @@ public abstract class Render {
     protected abstract ResourceLocation getEntityTexture(Entity entity);
 
     protected void bindEntityTexture(Entity entity) {
-        bindTexture(getEntityTexture(entity));
+        // Minecraft 1.5.2 and older: a mod entity names its texture by path ("texture" field / getTexture()); it wins over the renderer's default
+        String legacy = entity instanceof legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase living ? living.getTexture() : null;
+        if (legacy != null && legacy != legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase.DEFAULT_TEXTURE) loadTexture(legacy);
+        else bindTexture(getEntityTexture(entity));
     }
 
     protected void bindTexture(ResourceLocation location) {

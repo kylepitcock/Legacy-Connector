@@ -51,3 +51,110 @@ R	net/minecraft/entity/player/EntityPlayer	dropPlayerItem	(Lnet/minecraft/item/I
 R	cpw/mods/fml/common/event/FMLPreInitializationEvent	getModLog	()Ljava/util/logging/Logger;	static	legacyconnector/v1_6_4/forward/Forward164	getModLog	(Lcpw/mods/fml/common/event/FMLPreInitializationEvent;)Ljava/util/logging/Logger;
 # GUI
 F	net/minecraft/client/gui/GuiButton	drawButton	visible
+# Missing-shim pass (links that were synthesized empty before): renamed enum constant and fields, sound manager, NBT names, server lists
+F	net/minecraft/util/EnumMovingObjectType	TILE	BLOCK
+F	net/minecraft/world/ChunkPosition	x	chunkPosX
+F	net/minecraft/world/ChunkPosition	y	chunkPosY
+F	net/minecraft/world/ChunkPosition	z	chunkPosZ
+F	net/minecraftforge/event/entity/player/BonemealEvent	X	x
+F	net/minecraftforge/event/entity/player/BonemealEvent	Y	y
+F	net/minecraftforge/event/entity/player/BonemealEvent	Z	z
+F	net/minecraft/client/gui/GuiScreen	fontRenderer	fontRendererObj
+F	net/minecraft/client/gui/GuiScreen	itemRenderer	itemRender
+F	net/minecraft/client/renderer/entity/Render	renderBlocks	field_147909_c
+F	net/minecraft/block/BlockLeavesBase	graphicsLevel	field_150121_P
+F	net/minecraft/block/BlockLeaves	graphicsLevel	field_150121_P
+F	net/minecraft/client/renderer/tileentity/TileEntityRenderer	playerX	field_147560_j
+F	net/minecraft/client/renderer/tileentity/TileEntityRenderer	playerY	field_147561_k
+F	net/minecraft/client/renderer/tileentity/TileEntityRenderer	playerZ	field_147558_l
+F	net/minecraft/client/renderer/tileentity/TileEntityRenderer	entityLivingPlayer	field_147551_g
+F	net/minecraft/client/renderer/tileentity/TileEntitySpecialRenderer	tileEntityRenderer	field_147501_a
+M	net/minecraft/server/management/ServerConfigurationManager	getPlayerForUsername	(Ljava/lang/String;)Lnet/minecraft/entity/player/EntityPlayerMP;	getPlayerByUsername
+G	net/minecraft/client/Minecraft	sndManager	Lnet/minecraft/client/audio/SoundManager;	static	legacyconnector/v1_6_4/forward/Forward164	sndManager	(Lnet/minecraft/client/Minecraft;)Lnet/minecraft/client/audio/SoundManager;
+G	net/minecraft/client/settings/GameSettings	soundVolume	F	static	legacyconnector/v1_6_4/forward/Forward164	soundVolume	(Lnet/minecraft/client/settings/GameSettings;)F
+G	net/minecraft/client/settings/GameSettings	renderDistance	I	static	legacyconnector/v1_6_4/forward/Forward164	renderDistance	(Lnet/minecraft/client/settings/GameSettings;)I
+R	net/minecraft/client/audio/SoundManager	playSoundFX	(Ljava/lang/String;FF)V	static	legacyconnector/v1_6_4/forward/Forward164	playSoundFX	(Lnet/minecraft/client/audio/SoundManager;Ljava/lang/String;FF)V
+R	net/minecraft/client/audio/SoundManager	playSound	(Ljava/lang/String;FFFFF)V	static	legacyconnector/v1_6_4/forward/Forward164	playSound	(Lnet/minecraft/client/audio/SoundManager;Ljava/lang/String;FFFFF)V
+R	net/minecraft/client/audio/SoundManager	playEntitySound	(Ljava/lang/String;Lnet/minecraft/entity/Entity;FFZ)V	static	legacyconnector/v1_6_4/forward/Forward164	playEntitySound	(Lnet/minecraft/client/audio/SoundManager;Ljava/lang/String;Lnet/minecraft/entity/Entity;FFZ)V
+R	net/minecraft/client/audio/SoundManager	playStreaming	(Ljava/lang/String;FFF)V	static	legacyconnector/v1_6_4/forward/Forward164	playStreaming	(Lnet/minecraft/client/audio/SoundManager;Ljava/lang/String;FFF)V
+R	net/minecraft/client/audio/SoundManager	addSound	(Ljava/lang/String;)V	static	legacyconnector/v1_6_4/forward/Forward164	addSound	(Lnet/minecraft/client/audio/SoundManager;Ljava/lang/String;)V
+R	net/minecraft/client/audio/SoundManager	addStreaming	(Ljava/lang/String;)V	static	legacyconnector/v1_6_4/forward/Forward164	addSound	(Lnet/minecraft/client/audio/SoundManager;Ljava/lang/String;)V
+R	net/minecraft/client/audio/SoundManager	setEntitySoundPitch	(Lnet/minecraft/entity/Entity;F)V	static	legacyconnector/v1_6_4/forward/Forward164	setEntitySoundPitch	(Lnet/minecraft/client/audio/SoundManager;Lnet/minecraft/entity/Entity;F)V
+R	net/minecraft/client/audio/SoundManager	setEntitySoundVolume	(Lnet/minecraft/entity/Entity;F)V	static	legacyconnector/v1_6_4/forward/Forward164	setEntitySoundVolume	(Lnet/minecraft/client/audio/SoundManager;Lnet/minecraft/entity/Entity;F)V
+R	net/minecraft/nbt/NBTTagCompound	getTags	()Ljava/util/Collection;	static	legacyconnector/v1_6_4/forward/Forward164	getTags	(Lnet/minecraft/nbt/NBTTagCompound;)Ljava/util/Collection;
+R	net/minecraft/nbt/NBTBase	getName	()Ljava/lang/String;	static	legacyconnector/v1_6_4/forward/Forward164	getName	(Lnet/minecraft/nbt/NBTBase;)Ljava/lang/String;
+R	net/minecraft/nbt/NBTBase	setName	(Ljava/lang/String;)Lnet/minecraft/nbt/NBTBase;	static	legacyconnector/v1_6_4/forward/Forward164	setName	(Lnet/minecraft/nbt/NBTBase;Ljava/lang/String;)Lnet/minecraft/nbt/NBTBase;
+R	net/minecraft/server/management/ServerConfigurationManager	isPlayerOpped	(Ljava/lang/String;)Z	static	legacyconnector/v1_6_4/forward/Forward164	isPlayerOpped	(Lnet/minecraft/server/management/ServerConfigurationManager;Ljava/lang/String;)Z
+R	net/minecraft/server/management/ServerConfigurationManager	getOps	()Ljava/util/Set;	static	legacyconnector/v1_6_4/forward/Forward164	getOps	(Lnet/minecraft/server/management/ServerConfigurationManager;)Ljava/util/Set;
+R	net/minecraft/server/management/ServerConfigurationManager	addOp	(Ljava/lang/String;)V	static	legacyconnector/v1_6_4/forward/Forward164	addOp	(Lnet/minecraft/server/management/ServerConfigurationManager;Ljava/lang/String;)V
+R	net/minecraft/network/Packet	readItemStack	(Ljava/io/DataInput;)Lnet/minecraft/item/ItemStack;	static	legacyconnector/v1_6_4/forward/Forward164	readItemStack	(Ljava/io/DataInput;)Lnet/minecraft/item/ItemStack;
+R	net/minecraft/network/Packet	writeItemStack	(Lnet/minecraft/item/ItemStack;Ljava/io/DataOutput;)V	static	legacyconnector/v1_6_4/forward/Forward164	writeItemStack	(Lnet/minecraft/item/ItemStack;Ljava/io/DataOutput;)V
+R	net/minecraft/nbt/NBTBase	readNamedTag	(Ljava/io/DataInput;)Lnet/minecraft/nbt/NBTBase;	static	legacyconnector/v1_6_4/forward/Forward164	readNamedTag	(Ljava/io/DataInput;)Lnet/minecraft/nbt/NBTBase;
+R	net/minecraft/nbt/NBTBase	writeNamedTag	(Lnet/minecraft/nbt/NBTBase;Ljava/io/DataOutput;)V	static	legacyconnector/v1_6_4/forward/Forward164	writeNamedTag	(Lnet/minecraft/nbt/NBTBase;Ljava/io/DataOutput;)V
+# second pass: ids and conversions
+F	net/minecraft/block/material/Material	pumpkin	gourd
+M	net/minecraft/block/BlockColored	getBlockFromDye	(I)I	func_150032_b
+M	net/minecraft/block/BlockColored	getDyeFromBlock	(I)I	func_150031_c
+M	net/minecraft/util/StatCollector	func_94522_b	(Ljava/lang/String;)Z	canTranslate
+R	net/minecraft/item/crafting/FurnaceRecipes	getExperience	(Lnet/minecraft/item/ItemStack;)F	call	=	getSmeltingExperience	(Lnet/minecraft/item/ItemStack;)F
+M	net/minecraft/stats/Achievement	registerAchievement	()Lnet/minecraft/stats/Achievement;	registerStat
+M	net/minecraft/stats/Achievement	setIndependent	()Lnet/minecraft/stats/Achievement;	initIndependentStat
+R	net/minecraft/world/World	rayTraceBlocks_do_do	(Lnet/minecraft/util/Vec3;Lnet/minecraft/util/Vec3;ZZ)Lnet/minecraft/util/MovingObjectPosition;	append-int	rayTraceBlocks	(Lnet/minecraft/util/Vec3;Lnet/minecraft/util/Vec3;ZZZ)Lnet/minecraft/util/MovingObjectPosition;	0
+R	net/minecraft/item/crafting/FurnaceRecipes	getMetaSmeltingList	()Ljava/util/Map;	static	legacyconnector/v1_6_4/forward/Forward164	getMetaSmeltingList	(Lnet/minecraft/item/crafting/FurnaceRecipes;)Ljava/util/Map;
+R	net/minecraft/entity/IEntityOwnable	getOwnerName	()Ljava/lang/String;	static	legacyconnector/v1_6_4/forward/Forward164	getOwnerName	(Lnet/minecraft/entity/IEntityOwnable;)Ljava/lang/String;
+R	net/minecraftforge/common/MinecraftForge	setToolClass	(Lnet/minecraft/item/Item;Ljava/lang/String;I)V	static	legacyconnector/v1_6_4/forward/Forward164	setToolClass	(Lnet/minecraft/item/Item;Ljava/lang/String;I)V
+R	net/minecraftforge/common/util/FakePlayerFactory	get	(Lnet/minecraft/world/World;Ljava/lang/String;)Lnet/minecraftforge/common/util/FakePlayer;	static	legacyconnector/v1_6_4/forward/Forward164	fakePlayer	(Lnet/minecraft/world/World;Ljava/lang/String;)Lnet/minecraftforge/common/util/FakePlayer;
+C	net/minecraft/client/gui/ScaledResolution	(Lnet/minecraft/client/settings/GameSettings;II)V	(Lnet/minecraft/client/Minecraft;II)V	args	0:legacyconnector/v1_6_4/forward/Forward164#minecraft#(Lnet/minecraft/client/settings/GameSettings;)Lnet/minecraft/client/Minecraft;	1	2
+C	net/minecraft/entity/player/EntityPlayer	(Lnet/minecraft/world/World;Ljava/lang/String;)V	(Lnet/minecraft/world/World;Lcom/mojang/authlib/GameProfile;)V	args	0	1:legacyconnector/v1_6_4/forward/Forward164#profile#(Ljava/lang/String;)Lcom/mojang/authlib/GameProfile;
+C	net/minecraft/client/entity/AbstractClientPlayer	(Lnet/minecraft/world/World;Ljava/lang/String;)V	(Lnet/minecraft/world/World;Lcom/mojang/authlib/GameProfile;)V	args	0	1:legacyconnector/v1_6_4/forward/Forward164#profile#(Ljava/lang/String;)Lcom/mojang/authlib/GameProfile;
+C	net/minecraftforge/common/util/FakePlayer	(Lnet/minecraft/world/World;Ljava/lang/String;)V	(Lnet/minecraft/world/WorldServer;Lcom/mojang/authlib/GameProfile;)V	args	0:legacyconnector/v1_6_4/forward/Forward164#worldServer#(Lnet/minecraft/world/World;)Lnet/minecraft/world/WorldServer;	1:legacyconnector/v1_6_4/forward/Forward164#profile#(Ljava/lang/String;)Lcom/mojang/authlib/GameProfile;
+C	net/minecraft/stats/Achievement	(ILjava/lang/String;IILnet/minecraft/item/Item;Lnet/minecraft/stats/Achievement;)V	(Ljava/lang/String;Ljava/lang/String;IILnet/minecraft/item/Item;Lnet/minecraft/stats/Achievement;)V	args	1:legacyconnector/v1_6_4/forward/Forward164#achievementId#(Ljava/lang/String;)Ljava/lang/String;	1	2	3	4	5
+C	net/minecraft/stats/Achievement	(ILjava/lang/String;IILnet/minecraft/block/Block;Lnet/minecraft/stats/Achievement;)V	(Ljava/lang/String;Ljava/lang/String;IILnet/minecraft/block/Block;Lnet/minecraft/stats/Achievement;)V	args	1:legacyconnector/v1_6_4/forward/Forward164#achievementId#(Ljava/lang/String;)Ljava/lang/String;	1	2	3	4	5
+C	net/minecraft/stats/Achievement	(ILjava/lang/String;IILnet/minecraft/item/ItemStack;Lnet/minecraft/stats/Achievement;)V	(Ljava/lang/String;Ljava/lang/String;IILnet/minecraft/item/ItemStack;Lnet/minecraft/stats/Achievement;)V	args	1:legacyconnector/v1_6_4/forward/Forward164#achievementId#(Ljava/lang/String;)Ljava/lang/String;	1	2	3	4	5
+M	net/minecraft/world/gen/structure/MapGenStructureIO	func_143031_a	(Ljava/lang/Class;Ljava/lang/String;)V	registerStructureComponent
+# Stub pass (members the shim lacked and the linker synthesized as empty): renamed members, retyped calls and the EnchantmentThorns statics
+F	net/minecraft/client/gui/GuiButton	field_82253_i	hovered
+M	net/minecraft/item/ItemArmor	func_94602_b	(I)Lnet/minecraft/util/Icon;	getBackgroundIcon
+M	net/minecraft/entity/passive/EntityTameable	func_130012_q	()Lnet/minecraft/entity/EntityLivingBase;	getOwner
+R	net/minecraft/client/gui/GuiNewChat	printChatMessage	(Ljava/lang/String;)V	wrap-text	printChatMessage	(Lnet/minecraft/util/IChatComponent;)V
+M	net/minecraft/client/gui/inventory/GuiContainer	drawItemStackTooltip	(Lnet/minecraft/item/ItemStack;II)V	renderToolTip
+M	net/minecraft/client/gui/inventory/GuiContainerCreative	drawItemStackTooltip	(Lnet/minecraft/item/ItemStack;II)V	renderToolTip
+C	net/minecraft/world/biome/WorldChunkManagerHell	(Lnet/minecraft/world/biome/BiomeGenBase;FF)V	(Lnet/minecraft/world/biome/BiomeGenBase;F)V	args	0	2
+R	net/minecraft/enchantment/EnchantmentThorns	func_92096_a	(Lnet/minecraft/entity/Entity;Lnet/minecraft/entity/EntityLivingBase;Ljava/util/Random;)V	static	legacyconnector/v1_6_4/forward/Thorns164	attack	(Lnet/minecraft/entity/Entity;Lnet/minecraft/entity/EntityLivingBase;Ljava/util/Random;)V
+R	net/minecraft/enchantment/EnchantmentThorns	func_92094_a	(ILjava/util/Random;)Z	static	legacyconnector/v1_6_4/forward/Thorns164	shouldHit	(ILjava/util/Random;)Z
+R	net/minecraft/enchantment/EnchantmentThorns	func_92095_b	(ILjava/util/Random;)I	static	legacyconnector/v1_6_4/forward/Thorns164	damage	(ILjava/util/Random;)I
+# Packet statics (strings, NBT, byte arrays in the legacy wire format; the packet id registry): Packets164
+R	net/minecraft/network/Packet	readString	(Ljava/io/DataInput;I)Ljava/lang/String;	static	legacyconnector/v1_6_4/forward/Packets164	readString	(Ljava/io/DataInput;I)Ljava/lang/String;
+R	net/minecraft/network/Packet	writeString	(Ljava/lang/String;Ljava/io/DataOutput;)V	static	legacyconnector/v1_6_4/forward/Packets164	writeString	(Ljava/lang/String;Ljava/io/DataOutput;)V
+R	net/minecraft/network/Packet	readNBTTagCompound	(Ljava/io/DataInput;)Lnet/minecraft/nbt/NBTTagCompound;	static	legacyconnector/v1_6_4/forward/Packets164	readNBTTagCompound	(Ljava/io/DataInput;)Lnet/minecraft/nbt/NBTTagCompound;
+R	net/minecraft/network/Packet	writeNBTTagCompound	(Lnet/minecraft/nbt/NBTTagCompound;Ljava/io/DataOutput;)V	static	legacyconnector/v1_6_4/forward/Packets164	writeNBTTagCompound	(Lnet/minecraft/nbt/NBTTagCompound;Ljava/io/DataOutput;)V
+R	net/minecraft/network/Packet	readBytesFromStream	(Ljava/io/DataInput;)[B	static	legacyconnector/v1_6_4/forward/Packets164	readBytesFromStream	(Ljava/io/DataInput;)[B
+R	net/minecraft/network/Packet	writeByteArray	(Ljava/io/DataOutput;[B)V	static	legacyconnector/v1_6_4/forward/Packets164	writeByteArray	(Ljava/io/DataOutput;[B)V
+R	net/minecraft/network/Packet	addIdClassMapping	(IZZLjava/lang/Class;)V	static	legacyconnector/v1_6_4/forward/Packets164	addIdClassMapping	(IZZLjava/lang/Class;)V
+R	net/minecraft/network/Packet	getNewPacket	(I)Lnet/minecraft/network/Packet;	static	legacyconnector/v1_6_4/forward/Packets164	getNewPacket	(I)Lnet/minecraft/network/Packet;
+R	net/minecraft/server/MinecraftServer	getServerConfigurationManager	(Lnet/minecraft/server/MinecraftServer;)Lnet/minecraft/server/management/ServerConfigurationManager;	static	legacyconnector/v1_6_4/forward/Forward164	serverConfigurationManager	(Lnet/minecraft/server/MinecraftServer;)Lnet/minecraft/server/management/ServerConfigurationManager;
+R	net/minecraft/network/Packet	getNewPacket	(Lnet/minecraft/logging/ILogAgent;I)Lnet/minecraft/network/Packet;	static	legacyconnector/v1_6_4/forward/Packets164	getNewPacket	(Ljava/lang/Object;I)Lnet/minecraft/network/Packet;
+R	net/minecraft/network/Packet	readPacket	(Lnet/minecraft/logging/ILogAgent;Ljava/io/DataInput;ZLjava/net/Socket;)Lnet/minecraft/network/Packet;	static	legacyconnector/v1_6_4/forward/Packets164	readPacket	(Ljava/lang/Object;Ljava/io/DataInput;ZLjava/net/Socket;)Lnet/minecraft/network/Packet;
+# Chat formatting names of 1.6.4 (SRG names the 1.7.10 shim calls by their MCP names)
+M	net/minecraft/util/EnumChatFormatting	func_96298_a	()C	getFormattingCode
+M	net/minecraft/util/EnumChatFormatting	func_96301_b	()Z	isFancyStyling
+M	net/minecraft/util/EnumChatFormatting	func_96297_d	()Ljava/lang/String;	getFriendlyName
+M	net/minecraft/util/EnumChatFormatting	func_110646_a	(Ljava/lang/String;)Ljava/lang/String;	getTextWithoutFormattingCodes
+M	net/minecraft/util/EnumChatFormatting	func_96300_b	(Ljava/lang/String;)Lnet/minecraft/util/EnumChatFormatting;	getValueByName
+M	net/minecraft/util/EnumChatFormatting	func_96296_a	(ZZ)Ljava/util/Collection;	getValidValues
+M	net/minecraft/entity/EntityCreature	func_110176_b	(III)Z	isWithinHomeDistance
+R	net/minecraft/entity/player/EntityPlayerMP	incrementWindowID	()V	static	legacyconnector/v1_6_4/forward/Forward164	incrementWindowID	(Lnet/minecraft/entity/player/EntityPlayerMP;)V
+M	net/minecraft/potion/Potion	func_111184_a	(Lnet/minecraft/entity/ai/attributes/Attribute;Ljava/lang/String;DI)Lnet/minecraft/potion/Potion;	registerPotionAttributeModifier
+M	net/minecraft/scoreboard/Scoreboard	func_96529_a	(Ljava/lang/String;Lnet/minecraft/scoreboard/ScoreObjective;)Lnet/minecraft/scoreboard/Score;	getValueFromObjective
+M	net/minecraft/scoreboard/Scoreboard	func_96539_a	(I)Lnet/minecraft/scoreboard/ScoreObjective;	getObjectiveInDisplaySlot
+F	net/minecraft/block/BlockHalfSlab	isDoubleSlab	isFullBlock
+M	net/minecraft/entity/EntityLivingBase	func_142015_aE	()I	getLastAttackerTime
+R	net/minecraft/util/FoodStats	addStats	(Lnet/minecraft/item/ItemFood;)V	static	legacyconnector/v1_6_4/forward/Forward164	addFoodStats	(Lnet/minecraft/util/FoodStats;Lnet/minecraft/item/ItemFood;)V
+G	net/minecraft/client/Minecraft	statFileWriter	Lnet/minecraft/stats/StatFileWriter;	static	legacyconnector/v1_6_4/forward/Forward164	statFileWriter	(Lnet/minecraft/client/Minecraft;)Lnet/minecraft/stats/StatFileWriter;
+R	net/minecraft/stats/StatBase	getName	()Ljava/lang/String;	static	legacyconnector/v1_6_4/forward/Forward164	statName	(Lnet/minecraft/stats/StatBase;)Ljava/lang/String;
+# Obfuscated getters/helpers the 1.7.10 shim has under another name (stub pass 2026-11-07)
+M	net/minecraft/block/BlockCocoa	func_72219_c	(I)I	func_149987_c
+M	net/minecraft/block/BlockColored	getBlockFromDye	(I)I	func_150032_b
+M	net/minecraft/village/MerchantRecipe	func_82784_g	()Z	isRecipeDisabled
+M	net/minecraft/item/ItemSword	func_82803_g	()F	func_150931_i
+M	net/minecraft/entity/EntityCreature	func_110174_bM	()F	getMaximumHomeDistance

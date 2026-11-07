@@ -171,6 +171,11 @@ public class BiomeGenBase {
         spawnableCaveCreatureList.add(new SpawnListEntry(legacyconnector.v1_7_10.net.minecraft.entity.passive.EntityBat.class, 10, 8, 8));
     }
 
+    /** Forge: the decorator after the BiomeEvent.CreateDecorator hook (no listener changes it here). */
+    public BiomeDecorator getModdedBiomeDecorator(BiomeDecorator original) {
+        return original;
+    }
+
     public BiomeDecorator createBiomeDecorator() {
         return new BiomeDecorator();
     }
@@ -314,6 +319,11 @@ public class BiomeGenBase {
 
     public final float getFloatRainfall() {
         return rainfall;
+    }
+
+    /** The temperature as a 16.16 fixed point number (1.7.10: used by the temperature-to-colour maps and by mods comparing biomes). */
+    public final int getIntTemperature() {
+        return (int) (temperature * 65536.0F);
     }
 
     public final float getFloatTemperature(int x, int y, int z) {

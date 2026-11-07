@@ -29,7 +29,8 @@ import org.kylepitcock.legacyconnector.api.internal.BuiltinAdapters;
  *   <li>1.7.10 Forge {@code IFluidHandler} as {@code Capabilities.FluidHandler.BLOCK};</li>
  *   <li>1.7.10 CoFH {@code IEnergyReceiver}/{@code IEnergyProvider} as {@code Capabilities.EnergyStorage.BLOCK} (1 RF = 1 FE);</li>
  *   <li>1.12.2 tiles answering {@code CapabilityItemHandler.ITEM_HANDLER_CAPABILITY} / {@code CapabilityEnergy.ENERGY} as
- *       the item handler / fluid handler / energy capabilities.</li>
+ *       the item handler / fluid handler / energy capabilities;</li>
+ *   <li>1.12.2 Redstone Flux {@code IEnergyReceiver}/{@code IEnergyProvider} tiles and {@code IEnergyContainerItem} items as energy storage (1 RF = 1 FE).</li>
  * </ul>
  * The same adapters are available as constants below, to reuse inside an adapter of your own (e.g. to expose only the
  * output slots of an inventory by wrapping the result).
@@ -69,4 +70,6 @@ public interface LegacyCapabilities {
     TileAdapter<IFluidHandler> FORGE_FLUIDS_1122 = BuiltinAdapters::fluids1122;
     /** 1.12.2 tiles that answer the Forge energy capability. */
     TileAdapter<IEnergyStorage> FORGE_ENERGY_1122 = BuiltinAdapters::energy1122;
+    /** 1.12.2 Redstone Flux ({@code cofh.redstoneflux.api}) tiles as energy storage (1 RF = 1 FE). */
+    TileAdapter<IEnergyStorage> RF_ENERGY_1122 = BuiltinAdapters::rf1122;
 }

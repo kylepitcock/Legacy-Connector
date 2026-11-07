@@ -431,6 +431,18 @@
    "link": "",
    "date": "2026-11-06",
    "open": true
+  },
+  {
+   "issue": 182,
+   "mod": "Scape and Run Parasites",
+   "mc": "1.12.2",
+   "status": "works",
+   "details": "When runs SRP and Tensura:Reicarnated, all the mobs instead of moving kind of teleporing, all the blocks breaks in few seconds later than should. Too high MSPT and too low TPS. No problem if run each of the mods mods separate. Problem with blocks solves with some mods, but not the problem with mobs. https://spark.lucko.me/D7LIzik5fb",
+   "lc": "0.3.23",
+   "neoforge": "21.1.256",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/scape-and-run-parasites",
+   "date": "2026-11-07",
+   "open": false
   }
  ]
 }

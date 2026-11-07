@@ -21,7 +21,9 @@ public class DamageSource {
     public static DamageSource cactus = new DamageSource("cactus");
     public static DamageSource fall = new DamageSource("fall").setDamageBypassesArmor();
     public static DamageSource outOfWorld = new DamageSource("outOfWorld").setDamageBypassesArmor().setDamageAllowedInCreativeMode();
-    public static DamageSource generic = new DamageSource("generic").setDamageBypassesArmor();
+    /** Static field of 1.4.7 to 1.6.4 (1.7.10 only has the factory method below). */
+    public static DamageSource explosion = new DamageSource("explosion").setExplosion();
+    public static DamageSource generic =new DamageSource("generic").setDamageBypassesArmor();
     public static DamageSource magic = new DamageSource("magic").setDamageBypassesArmor().setMagicDamage();
     public static DamageSource wither = new DamageSource("wither").setDamageBypassesArmor();
     public static DamageSource anvil = new DamageSource("anvil");
@@ -36,7 +38,7 @@ public class DamageSource {
     private boolean projectile;
     private boolean difficultyScaled;
     private boolean magicDamage;
-    private boolean explosion;
+    private boolean mcc$explosion;
     protected Entity mcc$source;
     protected Entity mcc$direct;
     /** The modern source this legacy one was made from (kept so it round-trips unchanged). */
@@ -86,11 +88,11 @@ public class DamageSource {
     }
 
     public boolean isExplosion() {
-        return explosion;
+        return mcc$explosion;
     }
 
     public DamageSource setExplosion() {
-        explosion = true;
+        mcc$explosion = true;
         return this;
     }
 
@@ -193,7 +195,7 @@ public class DamageSource {
             case "wither" -> s.wither();
             case "anvil" -> s.anvil(null);
             case "fallingBlock" -> s.fallingBlock(null);
-            default -> fireDamage ? s.inFire() : explosion ? s.explosion(direct, attacker) : s.generic();
+            default -> fireDamage ? s.inFire() : mcc$explosion ? s.explosion(direct, attacker) : s.generic();
         };
     }
 

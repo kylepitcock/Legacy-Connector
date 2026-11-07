@@ -30,7 +30,23 @@ public final class Stacks1122 {
             displayToModern(data, out);
             if (!data.isEmpty()) out.set(DataComponents.CUSTOM_DATA, CustomData.of(data));
         }
+        for (Hook hook : HOOKS) out = hook.toModern(stack, out);
         return out;
+    }
+
+    /** Stack conversion for items of modern mods that stand in for a legacy library (Patchouli's guide book keeps its book as a data component). */
+    public interface Hook {
+        /** The modern stack for a legacy one; {@code converted} is the default conversion (the hook may return another stack). */
+        net.minecraft.world.item.ItemStack toModern(ItemStack legacy, net.minecraft.world.item.ItemStack converted);
+
+        /** Called with the legacy stack made for a modern one. */
+        void fromModern(net.minecraft.world.item.ItemStack modern, ItemStack legacy);
+    }
+
+    private static final java.util.List<Hook> HOOKS = new java.util.concurrent.CopyOnWriteArrayList<>();
+
+    public static void addHook(Hook hook) {
+        HOOKS.add(hook);
     }
 
     /**
@@ -240,6 +256,7 @@ public final class Stacks1122 {
         if (data != null) out.setTagCompound(new NBTTagCompound(data.copyTag()));
         var potion = stack.get(DataComponents.POTION_CONTENTS);
         if (potion != null && isPotionItem(stack.getItem())) potionFromModern(potion, out);
+        for (Hook hook : HOOKS) hook.fromModern(stack, out);
         return out;
     }
 }

@@ -13,3 +13,22 @@ R	net/minecraft/command/ICommandSender	sendChatToPlayer	(Ljava/lang/String;)V	wr
 # MinecraftForge.setBlockHarvestLevel(block, toolClass, level) / (block, metadata, toolClass, level) became Block.setHarvestLevel
 R	net/minecraftforge/common/MinecraftForge	setBlockHarvestLevel	(Lnet/minecraft/block/Block;Ljava/lang/String;I)V	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects164	setBlockHarvestLevel	(Lnet/minecraft/block/Block;Ljava/lang/String;I)V
 R	net/minecraftforge/common/MinecraftForge	setBlockHarvestLevel	(Lnet/minecraft/block/Block;ILjava/lang/String;I)V	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects164	setBlockHarvestLevel	(Lnet/minecraft/block/Block;ILjava/lang/String;I)V
+# streams: 1.5.2 passed DataInputStream/DataOutputStream
+R	net/minecraft/network/Packet	readItemStack	(Ljava/io/DataInputStream;)Lnet/minecraft/item/ItemStack;	static	legacyconnector/v1_6_4/forward/Forward164	readItemStack	(Ljava/io/DataInput;)Lnet/minecraft/item/ItemStack;
+R	net/minecraft/network/Packet	writeItemStack	(Lnet/minecraft/item/ItemStack;Ljava/io/DataOutputStream;)V	static	legacyconnector/v1_6_4/forward/Forward164	writeItemStack	(Lnet/minecraft/item/ItemStack;Ljava/io/DataOutput;)V
+# Stub pass: ops check by name (1.5.2 areCommandsAllowed), players built without a profile (custom EntityPlayer subclasses)
+R	net/minecraft/server/management/ServerConfigurationManager	areCommandsAllowed	(Ljava/lang/String;)Z	static	legacyconnector/v1_6_4/forward/Forward164	isPlayerOpped	(Lnet/minecraft/server/management/ServerConfigurationManager;Ljava/lang/String;)Z
+C	net/minecraft/entity/player/EntityPlayer	(Lnet/minecraft/world/World;)V	(Lnet/minecraft/world/World;Lcom/mojang/authlib/GameProfile;)V	args	0	-1:legacyconnector/v1_6_4/forward/Forward164#anonymousProfile#()Lcom/mojang/authlib/GameProfile;
+# Packet statics with the DataInputStream / DataOutputStream signatures (1.5.2 and 1.4.7)
+R	net/minecraft/network/Packet	readString	(Ljava/io/DataInputStream;I)Ljava/lang/String;	static	legacyconnector/v1_6_4/forward/Packets164	readString	(Ljava/io/DataInput;I)Ljava/lang/String;
+R	net/minecraft/network/Packet	writeString	(Ljava/lang/String;Ljava/io/DataOutputStream;)V	static	legacyconnector/v1_6_4/forward/Packets164	writeString	(Ljava/lang/String;Ljava/io/DataOutput;)V
+R	net/minecraft/network/Packet	readNBTTagCompound	(Ljava/io/DataInputStream;)Lnet/minecraft/nbt/NBTTagCompound;	static	legacyconnector/v1_6_4/forward/Packets164	readNBTTagCompound	(Ljava/io/DataInput;)Lnet/minecraft/nbt/NBTTagCompound;
+R	net/minecraft/network/Packet	writeNBTTagCompound	(Lnet/minecraft/nbt/NBTTagCompound;Ljava/io/DataOutputStream;)V	static	legacyconnector/v1_6_4/forward/Packets164	writeNBTTagCompound	(Lnet/minecraft/nbt/NBTTagCompound;Ljava/io/DataOutput;)V
+R	net/minecraft/network/Packet	readBytesFromStream	(Ljava/io/DataInputStream;)[B	static	legacyconnector/v1_6_4/forward/Packets164	readBytesFromStream	(Ljava/io/DataInput;)[B
+R	net/minecraft/network/Packet	writeByteArray	(Ljava/io/DataOutputStream;[B)V	static	legacyconnector/v1_6_4/forward/Packets164	writeByteArray	(Ljava/io/DataOutput;[B)V
+R	net/minecraft/network/Packet	getNewPacket	(Lnet/minecraft/logging/ILogAgent;I)Lnet/minecraft/network/Packet;	static	legacyconnector/v1_6_4/forward/Packets164	getNewPacket	(Ljava/lang/Object;I)Lnet/minecraft/network/Packet;
+R	net/minecraft/network/Packet	readPacket	(Lnet/minecraft/logging/ILogAgent;Ljava/io/DataInputStream;ZLjava/net/Socket;)Lnet/minecraft/network/Packet;	static	legacyconnector/v1_6_4/forward/Packets164	readPacket	(Ljava/lang/Object;Ljava/io/DataInput;ZLjava/net/Socket;)Lnet/minecraft/network/Packet;
+R	net/minecraft/network/Packet	readPacket	(Ljava/io/DataInputStream;ZLjava/net/Socket;)Lnet/minecraft/network/Packet;	static	legacyconnector/v1_6_4/forward/Packets164	readPacket	(Ljava/io/DataInput;ZLjava/net/Socket;)Lnet/minecraft/network/Packet;
+M	net/minecraft/entity/ai/attributes/BaseAttributeMap	func_111150_b	(Lnet/minecraft/entity/ai/attributes/IAttribute;)Lnet/minecraft/entity/ai/attributes/IAttributeInstance;	registerAttribute
+M	net/minecraft/tileentity/TileEntityMobSpawner	func_98049_a	()Lnet/minecraft/tileentity/MobSpawnerBaseLogic;	func_145881_a
+M	net/minecraft/item/ItemEnchantedBook	func_92111_a	(Lnet/minecraft/enchantment/EnchantmentData;)Lnet/minecraft/item/ItemStack;	getEnchantedItemStack

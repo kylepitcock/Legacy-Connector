@@ -41,6 +41,9 @@ public final class CheckJar {
     private CheckJar() {}
 
     public static void main(String[] args) throws Exception {
+        // the bridges that need no modern mod (CoFH RF) are always active in the game: the shim replaces the shaded copies of their API
+        LegacyVersion.setBridgedRoots(org.kylepitcock.legacyconnector.loader.LibraryBridges.KNOWN.stream().filter(b -> b.modernModId() == null)
+                .map(org.kylepitcock.legacyconnector.loader.LibraryBridges.Bridge::apiRoot).toList());
         ShimIndex index;
         try (InputStream in = Files.newInputStream(Path.of(args[0]))) {
             index = ShimIndex.read(in);
@@ -74,6 +77,20 @@ public final class CheckJar {
             records.add(record(e.getKey(), "skipped", e.getValue(), null, 0));
         }
         jars.removeAll(otherBuilds.keySet());
+        // As in a pack with Jade, JEI, Curios and Patchouli installed: bridged libraries are not translated, their API is relocated into the shim
+        // (-Pbridges=false checks the legacy jars as plain mods instead).
+        if (!"false".equalsIgnoreCase(System.getProperty("legacyconnector.check.bridges"))) {
+            boolean realCcl = jars.stream().anyMatch(j -> j.fileName().toLowerCase(java.util.Locale.ROOT).startsWith("codechickenlib"));
+            List<LibraryBridges.Bridge> bridges = LibraryBridges.KNOWN.stream().filter(b -> !(realCcl && "codechicken/lib/".equals(b.apiRoot()))).toList();
+            LegacyVersion.setBridgedRoots(bridges.stream().map(LibraryBridges.Bridge::apiRoot).toList());
+            for (LegacyJar jar : List.copyOf(jars)) {
+                LibraryBridges.Bridge replaced = LibraryBridges.replacing(jar, bridges);
+                if (replaced != null) {
+                    System.out.println(jar.fileName() + ": replaced by the " + replaced.configKey() + " bridge");
+                    jars.remove(jar);
+                }
+            }
+        }
         transformer.presentMods(jars.stream().flatMap(j -> j.mods.stream()).map(m -> m.legacyId).toList());
         Map<LegacyVersion, Map<String, ClassInfo>> peers = new EnumMap<>(LegacyVersion.class);
         for (LegacyJar jar : jars) {

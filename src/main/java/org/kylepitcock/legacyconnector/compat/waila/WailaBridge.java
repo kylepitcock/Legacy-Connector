@@ -22,12 +22,19 @@ public final class WailaBridge implements IWailaRegistrar, IWailaConfigHandler {
     private static final Logger LOG = LoggerFactory.getLogger("LegacyConnector/Waila");
     public static final WailaBridge INSTANCE = new WailaBridge();
 
-    public record Registration<P>(P provider, Class<?> target) {}
+    /** {@code only}: a registration for one block instance (numeric ids), else every block or tile of the class. */
+    public record Registration<P>(P provider, Class<?> target, Object only) {
+        public Registration(P provider, Class<?> target) {
+            this(provider, target, null);
+        }
+    }
 
     public final List<Registration<IWailaDataProvider>> stack = new ArrayList<>();
     public final List<Registration<IWailaDataProvider>> head = new ArrayList<>();
     public final List<Registration<IWailaDataProvider>> body = new ArrayList<>();
     public final List<Registration<IWailaDataProvider>> tail = new ArrayList<>();
+    public final List<Registration<IWailaDataProvider>> nbt = new ArrayList<>();
+    public final List<Registration<IWailaEntityProvider>> entityNbt = new ArrayList<>();
     public final List<Registration<IWailaEntityProvider>> entityHead = new ArrayList<>();
     public final List<Registration<IWailaEntityProvider>> entityBody = new ArrayList<>();
     public final List<Registration<IWailaEntityProvider>> entityTail = new ArrayList<>();
@@ -126,7 +133,20 @@ public final class WailaBridge implements IWailaRegistrar, IWailaConfigHandler {
 
     @Override
     public void registerNBTProvider(IWailaDataProvider provider, Class<?> block) {
-        // Server NBT sync is not bridged; providers read the client-side tile entity.
+        nbt.add(new Registration<>(provider, block));
+    }
+
+    /** 1.6.4 and older registered by numeric block id: the provider applies to that one block. */
+    public void registerForBlock(int kind, IWailaDataProvider provider, legacyconnector.v1_7_10.net.minecraft.block.Block block) {
+        if (block == null) return;
+        Registration<IWailaDataProvider> r = new Registration<>(provider, block.getClass(), block);
+        switch (kind) {
+            case 0 -> stack.add(r);
+            case 1 -> head.add(r);
+            case 2 -> body.add(r);
+            case 3 -> tail.add(r);
+            default -> nbt.add(r);
+        }
     }
 
     @Override
@@ -150,6 +170,7 @@ public final class WailaBridge implements IWailaRegistrar, IWailaConfigHandler {
 
     @Override
     public void registerNBTProvider(IWailaEntityProvider provider, Class<?> entity) {
+        entityNbt.add(new Registration<>(provider, entity));
     }
 
     @Override

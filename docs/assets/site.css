@@ -226,3 +226,6 @@ footer .wrap { display: flex; gap: 8px 18px; flex-wrap: wrap; justify-content: s
 
 .bignum { font-family: var(--display); font-size: 3rem; font-weight: 800; line-height: 1; }
 .rbody td code, #rvanilla td code, #rlist td code { font-size: .85em; overflow-wrap: anywhere; }
+.vnote { margin: 12px 0; padding: 10px 14px; border-left: 4px solid var(--stubs); font-size: .9rem; }
+.vnote p { margin: 4px 0 6px; }
+.vnote[hidden] { display: none; }

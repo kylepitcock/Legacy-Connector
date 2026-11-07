@@ -81,6 +81,7 @@ F	net/minecraft/entity/ai/EntityAIMoveTowardsTarget	field_75426_g	maxTargetDista
 F	net/minecraft/entity/ai/EntityAINearestAttackableTarget	field_82643_g	targetEntitySelector
 F	net/minecraft/entity/ai/EntityAITarget	field_75301_b	targetSearchStatus
 F	net/minecraft/entity/ai/EntityAITarget	field_75302_c	targetSearchDelay
+F	net/minecraft/entity/ai/EntityAITarget	field_75300_e	targetDistance
 F	net/minecraft/entity/ai/EntityAITarget	field_75303_a	nearbyOnly
 F	net/minecraft/entity/ai/EntityAITasks	field_75778_d	tickCount
 F	net/minecraft/entity/ai/EntityAITasks	field_75779_e	tickRate

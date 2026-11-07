@@ -84,6 +84,19 @@ public final class ClasspathTextures {
         manager.register(rl, new DynamicTexture(image));
     }
 
+    /** The class path file {@code path} names (a texture pack's {@code getResourceAsStream}), or null. */
+    public static InputStream open(String path) {
+        String name = path;
+        while (name.startsWith("/")) name = name.substring(1);
+        ClassLoader[] loaders = {Thread.currentThread().getContextClassLoader(), ClasspathTextures.class.getClassLoader()};
+        for (ClassLoader loader : loaders) {
+            if (loader == null) continue;
+            InputStream in = ResourceCompat.getResourceAsStream(loader, name);
+            if (in != null) return in;
+        }
+        return null;
+    }
+
     private static NativeImage read(String path) {
         String name = path;
         while (name.startsWith("/")) name = name.substring(1);

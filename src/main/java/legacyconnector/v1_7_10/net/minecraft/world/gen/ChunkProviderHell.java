@@ -343,7 +343,7 @@ public class ChunkProviderHell implements IChunkProvider {
 
     @Override
     public void recreateStructures(int cx, int cz) {
-        genNetherBridge.generate(this, worldObj, cx, cz, null);
+        genNetherBridge.generate(this, worldObj, cx, cz, (Block[]) null);
     }
 
     @Override

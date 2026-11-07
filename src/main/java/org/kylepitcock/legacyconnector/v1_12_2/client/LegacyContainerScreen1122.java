@@ -61,8 +61,13 @@ public class LegacyContainerScreen1122 extends AbstractContainerScreen<LegacyMen
         }
     }
 
+    private void syncSlots() {
+        for (var slot : menu.slots) if (slot instanceof LegacySlot1122 ls) ls.syncPosition();
+    }
+
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        syncSlots();
         if (legacy == null || failed) {
             super.render(graphics, mouseX, mouseY, partialTick);
             return;
@@ -131,6 +136,7 @@ public class LegacyContainerScreen1122 extends AbstractContainerScreen<LegacyMen
 
     @Override
     public boolean mouseClicked(double x, double y, int button) {
+        syncSlots();
         if (legacy != null && !failed) {
             keys.flush(legacy);
             boolean[] onButton = {false};
@@ -145,12 +151,14 @@ public class LegacyContainerScreen1122 extends AbstractContainerScreen<LegacyMen
 
     @Override
     public boolean mouseReleased(double x, double y, int button) {
+        syncSlots();
         if (legacy != null) guard(() -> legacy.mcc$mouseReleased((int) x, (int) y, button));
         return super.mouseReleased(x, y, button);
     }
 
     @Override
     public boolean mouseDragged(double x, double y, int button, double dx, double dy) {
+        syncSlots();
         if (legacy != null) guard(() -> legacy.mcc$mouseDragged((int) x, (int) y));
         return super.mouseDragged(x, y, button, dx, dy);
     }

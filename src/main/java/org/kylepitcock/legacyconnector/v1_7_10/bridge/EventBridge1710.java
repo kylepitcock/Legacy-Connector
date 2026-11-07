@@ -173,7 +173,10 @@ public final class EventBridge1710 {
         });
         gameBus.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.ItemCraftedEvent e) -> {
             if (wants(fml(), PlayerEvent.ItemCraftedEvent.class)) {
-                fml().post(new PlayerEvent.ItemCraftedEvent(player(e.getEntity()), ItemStack.mcc$wrap(e.getCrafting()), null));
+                // Legacy handlers (Grimoire of Gaia's ICraftingHandler) read the grid: hand them the real crafting container.
+                legacyconnector.v1_7_10.net.minecraft.inventory.IInventory matrix = e.getInventory() instanceof net.minecraft.world.inventory.CraftingContainer cc
+                        ? new legacyconnector.v1_7_10.net.minecraft.inventory.InventoryCrafting(cc) : null;
+                fml().post(new PlayerEvent.ItemCraftedEvent(player(e.getEntity()), ItemStack.mcc$wrap(e.getCrafting()), matrix));
             }
         });
         gameBus.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.ItemSmeltedEvent e) -> {

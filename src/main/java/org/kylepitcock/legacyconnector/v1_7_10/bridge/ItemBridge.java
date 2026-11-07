@@ -385,8 +385,10 @@ public final class ItemBridge {
             return;
         }
         LegacyModContainer1710 owner = LegacyModContainer1710.active();
-        String domain = modId != null ? modId : owner != null ? owner.getModId() : "minecraft";
-        String namespace = owner != null && modId == null ? owner.record().modernId : Ids.modernModId(domain);
+        // see BlockBridge.register: items an Immibis mod hands to Immibis Core are registered while no mod is active
+        org.kylepitcock.legacyconnector.core.LegacyModRecord byPackage = owner == null && modId == null ? BlockBridge.ownerByPackage(item.getClass()) : null;
+        String domain = modId != null ? modId : owner != null ? owner.getModId() : byPackage != null ? byPackage.legacyId : "minecraft";
+        String namespace = owner != null && modId == null ? owner.record().modernId : byPackage != null ? byPackage.modernId : Ids.modernModId(domain);
         ResourceLocation base = ResourceLocation.fromNamespaceAndPath(namespace, Ids.normalizePath(name).replace('/', '_'));
         String legacyName = domain + ":" + name;
         // An ItemBlock registered under its block's name is that block's item (FML linked them by name): AE2 builds
@@ -413,6 +415,48 @@ public final class ItemBridge {
                 }
             });
         }
+    }
+
+    /**
+     * Items a numeric-id mod (1.4.7 to 1.6.4) constructed with {@code new Item(id)} and never passed to a registry: before 1.7 nothing
+     * required it (the constructor put the item in {@code Item.itemsList}; More Swords never registers its swords). They are registered under
+     * their unlocalized name for the mod whose package owns the class.
+     */
+    public static synchronized int registerImplicit() {
+        int[] total = {0};
+        legacyconnector.v1_6_4.net.minecraft.util.Ids.inEachSpace(() -> total[0] += registerImplicitInSpace());
+        return total[0];
+    }
+
+    private static int registerImplicitInSpace() {
+        boolean numeric = false;
+        for (var m : org.kylepitcock.legacyconnector.core.LegacyMods.all()) numeric |= m.version.equals("1.6.4") || m.version.equals("1.5.2") || m.version.equals("1.4.7");
+        if (!numeric) return 0;
+        int count = 0;
+        Item[] list = legacyconnector.v1_6_4.net.minecraft.util.Ids.itemsList().clone();
+        for (int id = 256; id < list.length; id++) {
+            Item item = list[id];
+            if (item == null || item instanceof ItemBlock || NAMES.containsKey(item) || !item.mcc$variants.isEmpty()) continue;
+            if (item.getClass().getName().startsWith("legacyconnector.")) continue;
+            var owner = BlockBridge.ownerOf(item.getClass());
+            if (owner == null) continue;
+            String name = null;
+            try {
+                name = item.getUnlocalizedName();
+            } catch (RuntimeException | LinkageError ignored) {
+                // an item whose name needs state the constructor never set
+            }
+            name = name != null && !name.isEmpty() && !name.equals("item.null") ? name.replaceFirst("^item\\.", "") : "item" + id;
+            if (BY_NAME.containsKey(owner.legacyId + ":" + name)) name = name + "_" + id;
+            try {
+                register(item, name, owner.legacyId);
+                count++;
+            } catch (RuntimeException | LinkageError e) {
+                LOG.warn("Could not register the unregistered legacy item {} (id {}): {}", item, id, e.toString());
+            }
+        }
+        if (count > 0) LOG.info("Registered {} legacy item(s) that their mods never registered (the numeric id table had them)", count);
+        return count;
     }
 
     /** Items whose getSubItems failed while mods were still registering (it may need content created later). */

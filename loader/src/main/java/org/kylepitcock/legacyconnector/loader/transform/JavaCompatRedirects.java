@@ -32,6 +32,7 @@ public final class JavaCompatRedirects {
         virtualToStatic("java/lang/Class", "getDeclaredMethod", "(Ljava/lang/String;[Ljava/lang/Class;)Ljava/lang/reflect/Method;", COMPAT + "ReflectionCompat");
         // SRG names built at run time (production mods reflect with them) resolve to the shim's MCP names (SrgNames).
         virtualToStatic("java/lang/Class", "getField", "(Ljava/lang/String;)Ljava/lang/reflect/Field;", COMPAT + "ReflectionCompat");
+        virtualToStatic("java/lang/Class", "getFields", "()[Ljava/lang/reflect/Field;", COMPAT + "ReflectionCompat");
         virtualToStatic("java/lang/Class", "getMethod", "(Ljava/lang/String;[Ljava/lang/Class;)Ljava/lang/reflect/Method;", COMPAT + "ReflectionCompat");
         virtualToStatic("java/lang/reflect/Field", "setInt", "(Ljava/lang/Object;I)V", COMPAT + "ReflectionCompat");
         virtualToStatic("java/lang/reflect/Field", "set", "(Ljava/lang/Object;Ljava/lang/Object;)V", COMPAT + "ReflectionCompat");
@@ -64,6 +65,8 @@ public final class JavaCompatRedirects {
         virtualToStatic("java/net/URL", "openStream", "()Ljava/io/InputStream;", COMPAT + "NetCompat");
         // Java 20+: Thread.stop/suspend/resume throw UnsupportedOperationException.
         virtualToStatic("java/lang/Thread", "stop", "()V", COMPAT + "JdkCompat");
+        // Java 9+: Arrays.asList(array).toArray() is an Object[] (it was the array's own type on Java 8).
+        staticToStatic("java/util/Arrays", "asList", "([Ljava/lang/Object;)Ljava/util/List;", COMPAT + "JdkCompat", "asList");
         // Java 11: Thread.stop(Throwable) was removed.
         virtualToStatic("java/lang/Thread", "stop", "(Ljava/lang/Throwable;)V", COMPAT + "JdkCompat");
         virtualToStatic("java/lang/Thread", "suspend", "()V", COMPAT + "JdkCompat");
@@ -88,6 +91,9 @@ public final class JavaCompatRedirects {
                 COMPAT + "DialogCompat", "showOptionDialog");
         // A mod giving up must not end the game: System.exit fails that mod instead.
         staticToStatic("java/lang/System", "exit", "(I)V", COMPAT + "JdkCompat", "exit");
+        // Tamper checks (Forestry compares its jar's signature and halts the JVM) would end the game on a translated, unsigned jar.
+        virtualToStatic("java/lang/Runtime", "halt", "(I)V", COMPAT + "JdkCompat");
+        virtualToStatic("java/lang/Runtime", "exit", "(I)V", COMPAT + "JdkCompat");
         // log4j 2.0-beta9 factories, replaced by builders (JourneyMap's own log file)
         staticToStatic("org/apache/logging/log4j/core/layout/PatternLayout", "createLayout",
                 "(Ljava/lang/String;Lorg/apache/logging/log4j/core/config/Configuration;Lorg/apache/logging/log4j/core/pattern/RegexReplacement;"

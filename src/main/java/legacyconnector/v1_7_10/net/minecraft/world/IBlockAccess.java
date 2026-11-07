@@ -25,6 +25,11 @@ public interface IBlockAccess {
 
     boolean isSideSolid(int x, int y, int z, ForgeDirection side, boolean defaultValue);
 
+    /** The weak redstone signal the modern block at a position gives toward a side ({@code BlockState.getSignal}); vanilla blocks as power sources for legacy mods. */
+    default int mcc$weakSignal(int x, int y, int z, int side) {
+        return 0;
+    }
+
     /** The biome-blended tint of the modern world at a position: kind 0 grass, 1 foliage; white where unknown. */
     default int mcc$blockTint(int x, int y, int z, int kind) {
         return 0xFFFFFF;

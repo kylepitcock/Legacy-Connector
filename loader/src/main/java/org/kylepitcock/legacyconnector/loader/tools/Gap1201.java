@@ -49,12 +49,21 @@ public final class Gap1201 {
     private final Map<String, Cls> target = new HashMap<>();
     private final Map<String, String> srg = new HashMap<>();
     private final Map<String, String> classRenames = new HashMap<>();
+    private final Set<String> callRewrites = new HashSet<>();
 
     public static void main(String[] args) throws Exception {
         Gap1201 gap = new Gap1201();
         gap.loadSrg(Path.of(args[0]));
         for (String f : args[1].split(",")) gap.loadRenames(Path.of(f));
-        for (String j : args[2].split(",")) gap.index(Path.of(j), gap.target);
+        // "@file": a list file (comma or line separated), for target lists longer than the Windows command line
+        // (build.gradle appends the shim class directories after a comma: "@file,dir,dir")
+        String targets = args[2];
+        if (targets.startsWith("@")) {
+            int comma = targets.indexOf(',');
+            String rest = comma < 0 ? "" : "," + targets.substring(comma + 1);
+            targets = Files.readString(Path.of(targets.substring(1, comma < 0 ? targets.length() : comma))).replace("\r", "").replace('\n', ',') + rest;
+        }
+        for (String j : targets.split(",")) if (!j.isBlank()) gap.index(Path.of(j.trim()), gap.target);
         List<Path> mods = new ArrayList<>();
         for (int i = 4; i < args.length; i++) mods.add(Path.of(args[i]));
         gap.run(mods, Path.of(args[3]));
@@ -72,13 +81,35 @@ public final class Gap1201 {
     private void loadRenames(Path p) throws IOException {
         try (Stream<String> lines = Files.lines(p)) {
             lines.filter(l -> !l.startsWith("#")).forEach(l -> {
-                String[] a = l.split("\t");
-                if (a.length == 2) classRenames.put(a[0], a[1]);
+                String[] a = l.strip().split("\t");
+                if (a.length != 2) return;
+                // call rewrites (owner.name(desc): helper) are redirected by the translator: not a gap
+                if (a[0].indexOf('(') > 0) callRewrites.add(a[0]);
+                else classRenames.put(a[0], a[1]);
             });
         }
     }
 
     private static void index(Path jar, Map<String, Cls> into) throws IOException {
+        if (Files.isDirectory(jar)) {
+            // compiled facade classes (legacyconnector/v1_20_1/...): the Forge API the layer provides itself
+            try (Stream<Path> files = Files.walk(jar)) {
+                for (Path f : files.filter(x -> x.toString().endsWith(".class")).toList()) {
+                    String rel = jar.relativize(f).toString().replace((char) 92, '/');
+                    if (!rel.startsWith("legacyconnector/v1_20_1/")) continue;
+                    ClassNode n = new ClassNode();
+                    new ClassReader(Files.readAllBytes(f)).accept(n, ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
+                    Cls c = new Cls();
+                    c.name = n.name;
+                    c.superName = n.superName;
+                    c.interfaces = n.interfaces.toArray(new String[0]);
+                    n.methods.forEach(m -> c.methods.add(m.name + m.desc));
+                    n.fields.forEach(fl -> c.fields.add(fl.name + ":" + fl.desc));
+                    into.putIfAbsent(n.name, c);
+                }
+            }
+            return;
+        }
         try (ZipFile zip = new ZipFile(jar.toFile())) {
             for (var en = zip.entries(); en.hasMoreElements(); ) {
                 ZipEntry e = en.nextElement();
@@ -122,6 +153,10 @@ public final class Gap1201 {
     private String cls(String name) {
         if (name == null) return null;
         if (name.startsWith("[")) return desc(name);
+        if (name.startsWith("net/minecraftforge/") || name.startsWith("cpw/")) {
+            String facade = "legacyconnector/v1_20_1/" + name;
+            if (target.containsKey(facade)) return facade;
+        }
         String r = classRenames.get(name);
         if (r != null) return r;
         int dollar = name.indexOf('$');
@@ -130,9 +165,13 @@ public final class Gap1201 {
             if (outer != null) return outer + name.substring(dollar);
         }
         // the Forge to NeoForge package move for what the tables do not list
-        if (name.startsWith("net/minecraftforge/") && !name.startsWith("net/minecraftforge/fml/")) {
-            String moved = "net/neoforged/neoforge/" + name.substring("net/minecraftforge/".length());
+        for (String[] move : new String[][] {{"net/minecraftforge/fml/", "net/neoforged/fml/"}, {"net/minecraftforge/eventbus/", "net/neoforged/bus/"},
+                {"net/minecraftforge/api/", "net/neoforged/api/"}, {"net/minecraftforge/forgespi/", "net/neoforged/neoforgespi/"},
+                {"net/minecraftforge/", "net/neoforged/neoforge/"}}) {
+            if (!name.startsWith(move[0])) continue;
+            String moved = move[1] + name.substring(move[0].length());
             if (target.containsKey(moved)) return moved;
+            break;
         }
         return name;
     }
@@ -173,14 +212,47 @@ public final class Gap1201 {
         return method && owner.equals(c.name) && c.superName == null && hasMember("java/lang/Object", key, true, own, seen);
     }
 
+    private long totalForge;
+
+    /** A symbol of the Forge/NeoForge API (not of Minecraft or a third-party mod). */
+    private static boolean forgeSymbol(String s) {
+        return s.startsWith("net/minecraftforge/") || s.startsWith("net/neoforged/") || s.startsWith("cpw/") || s.startsWith("legacyconnector/v1_20_1/")
+                || s.contains("Lnet/minecraftforge/") || s.contains("Lcpw/");
+    }
+
     private final Map<String, Set<String>> missingClasses = new TreeMap<>();
     private final Map<String, Set<String>> missingMethods = new TreeMap<>();
     private final Map<String, Set<String>> missingFields = new TreeMap<>();
 
     private void run(List<Path> mods, Path report) throws IOException {
+        if (Boolean.getBoolean("gap.translate")) mods = translated(mods);
         Map<String, Cls> own = new HashMap<>();
         for (Path m : mods) index(m, own);
+        // the mods' own members must be renamed like the references to them (descriptors with moved classes, SRG names of overrides)
+        for (Cls c : own.values()) {
+            Set<String> ms = new HashSet<>(), fs = new HashSet<>();
+            for (String k : c.methods) {
+                int at = k.indexOf('(');
+                try {
+                    ms.add(member(k.substring(0, at)) + desc(k.substring(at)));
+                } catch (RuntimeException ex) {
+                    ms.add(k);
+                }
+            }
+            for (String k : c.fields) {
+                int at = k.indexOf(':');
+                fs.add(member(k.substring(0, at)) + ":" + desc(k.substring(at + 1)));
+            }
+            c.methods.clear();
+            c.methods.addAll(ms);
+            c.fields.clear();
+            c.fields.addAll(fs);
+            if (c.superName != null) c.superName = cls(c.superName);
+            if (c.interfaces != null) for (int i = 0; i < c.interfaces.length; i++) c.interfaces[i] = cls(c.interfaces[i]);
+        }
         PrintStream out = new PrintStream(Files.newOutputStream(report));
+        // per jar detail (jar TAB kind TAB symbol), input of tools/compat/gap1201_rank.py
+        PrintStream detail = new PrintStream(Files.newOutputStream(report.resolveSibling(report.getFileName() + ".detail.tsv")));
         out.println("Gap report: Forge 1.20.1 jars against Minecraft 1.21.1 + NeoForge (SRG renamed, Forge packages renamed)\n");
         for (Path mod : mods) {
             Set<String> mc = new TreeSet<>(), mm = new TreeSet<>(), mf = new TreeSet<>();
@@ -206,23 +278,79 @@ public final class Gap1201 {
                     if (src != null) jar = src; // a translated jar is named after the original
                 }
             }
-            out.printf("%s: %d references, %d missing classes, %d missing methods, %d missing fields%n", jar, refs, mc.size(), mm.size(), mf.size());
+            long forgeApi = java.util.stream.Stream.of(mc, mm, mf).flatMap(Set::stream).filter(Gap1201::forgeSymbol).count();
+            out.printf("%s: %d references, %d missing classes, %d missing methods, %d missing fields, %d unresolved Forge-API symbols%n", jar, refs, mc.size(), mm.size(), mf.size(), forgeApi);
+            totalForge += forgeApi;
             final String jarName = jar;
+            mc.forEach(x -> detail.println(jarName + "	class	" + x));
+            mm.forEach(x -> detail.println(jarName + "	method	" + x));
+            mf.forEach(x -> detail.println(jarName + "	field	" + x));
+            detail.println(jarName + "	refs	" + refs);
             mc.forEach(s -> missingClasses.computeIfAbsent(s, k -> new TreeSet<>()).add(jarName));
             mm.forEach(s -> missingMethods.computeIfAbsent(s, k -> new TreeSet<>()).add(jarName));
             mf.forEach(s -> missingFields.computeIfAbsent(s, k -> new TreeSet<>()).add(jarName));
         }
+        out.printf("%nTOTAL unresolved Forge-API symbols: %d%n", totalForge);
         ranked(out, "Missing classes (by number of jars)", missingClasses);
         ranked(out, "Missing methods", missingMethods);
         ranked(out, "Missing fields", missingFields);
         out.close();
+        detail.close();
+        System.out.println(mcSummary());
         System.out.println("report: " + report + " (" + missingClasses.size() + " classes, " + missingMethods.size() + " methods, " + missingFields.size() + " fields)");
+    }
+
+    /** -Dgap.shimIndex=<file>: the real shim index, so the facade classes get the names they have in the game (descriptors of the library tables match). */
+    private static org.kylepitcock.legacyconnector.loader.shim.ShimIndex shimIndex() throws IOException {
+        String file = System.getProperty("gap.shimIndex");
+        if (file == null || !Files.isRegularFile(Path.of(file))) return org.kylepitcock.legacyconnector.loader.shim.ShimIndex.empty();
+        try (java.io.InputStream in = Files.newInputStream(Path.of(file))) {
+            return org.kylepitcock.legacyconnector.loader.shim.ShimIndex.read(in);
+        }
+    }
+
+    /**
+     * -Dgap.translate=true: the jars go through the real Forge1201Transformer first (names, Minecraft migration), so the report shows what is left
+     * after the layer. The facade classes of the Forge API (legacyconnector/v1_20_1) are not indexed here and count as present.
+     */
+    private static List<Path> translated(List<Path> mods) throws IOException {
+        String keep = System.getProperty("gap.translated.dir");
+        Path dir = keep != null ? Files.createDirectories(Path.of(keep)) : Files.createTempDirectory("gap1201-");
+        var transformer = new org.kylepitcock.legacyconnector.loader.transform.Forge1201Transformer(shimIndex());
+        List<Path> out = new ArrayList<>();
+        for (Path m : mods) {
+            Path t = dir.resolve(m.getFileName());
+            try {
+                var lj = new org.kylepitcock.legacyconnector.loader.LegacyJar(m);
+                lj.version = org.kylepitcock.legacyconnector.loader.LegacyVersion.V1_20_1;
+                transformer.transform(lj, t);
+                out.add(t);
+            } catch (RuntimeException | IOException e) {
+                System.out.println("translation failed for " + m.getFileName() + ": " + e);
+            }
+        }
+        return out;
+    }
+
+    /** Distinct symbols and jar x symbol occurrences that are Minecraft's own (the area of the migration tables; Forge API gaps are not counted). */
+    private String mcSummary() {
+        StringBuilder sb = new StringBuilder("MC-gap (distinct/occurrences):");
+        for (var e : new TreeMap<>(Map.of("classes", missingClasses, "methods", missingMethods, "fields", missingFields)).entrySet()) {
+            int d = 0, o = 0;
+            for (var en : e.getValue().entrySet()) {
+                if (!(en.getKey().startsWith("net/minecraft/") || en.getKey().startsWith("com/mojang/"))) continue;
+                d++;
+                o += en.getValue().size();
+            }
+            sb.append(' ').append(e.getKey()).append(' ').append(d).append('/').append(o);
+        }
+        return sb.toString();
     }
 
     private static void ranked(PrintStream out, String title, Map<String, Set<String>> map) {
         out.println("\n== " + title + ": " + map.size() + " distinct ==");
         map.entrySet().stream().sorted(Comparator.comparingInt((Map.Entry<String, Set<String>> e) -> -e.getValue().size()).thenComparing(Map.Entry::getKey))
-                .limit(400).forEach(e -> out.println(String.format("%3d  %s", e.getValue().size(), e.getKey())));
+                .limit(Integer.getInteger("gap.limit", 400)).forEach(e -> out.println(String.format("%3d  %s", e.getValue().size(), e.getKey())));
     }
 
     private int check(ClassNode n, Map<String, Cls> own, Set<String> mc, Set<String> mm, Set<String> mf) {
@@ -251,7 +379,8 @@ public final class Gap1201 {
                     type.accept(mi.owner);
                     Cls c = find(owner, own);
                     if (c == null) continue; // reported as a missing class
-                    if (!hasMember(owner, name + d, true, own, new HashSet<>())) mm.add(owner + "." + name + d);
+                    if (!hasMember(owner, name + d, true, own, new HashSet<>()) && !callRewrites.contains(owner + "." + name + d) && !callRewrites.contains("*." + name + d)
+                            && !(owner.startsWith("net/neoforged/") && callRewrites.contains("@event." + name + d))) mm.add(owner + "." + name + d);
                 } else if (in instanceof FieldInsnNode fi) {
                     refs[0]++;
                     String owner = cls(fi.owner), name = member(fi.name), d = desc(fi.desc);
@@ -289,6 +418,6 @@ public final class Gap1201 {
                 || name.startsWith("org/lwjgl/") || name.startsWith("org/joml/") || name.startsWith("it/unimi/") || name.startsWith("com/mojang/")
                 || name.startsWith("org/jetbrains/") || name.startsWith("org/objectweb/") || name.startsWith("org/spongepowered/") || name.startsWith("javax/")
                 || name.startsWith("com/electronwill/") || name.startsWith("org/openjdk/") || name.startsWith("net/neoforged/fml/") || name.startsWith("net/neoforged/bus/")
-                || name.startsWith("net/neoforged/neoforgespi/");
+                || name.startsWith("net/neoforged/neoforgespi/") || name.startsWith("legacyconnector/");
     }
 }

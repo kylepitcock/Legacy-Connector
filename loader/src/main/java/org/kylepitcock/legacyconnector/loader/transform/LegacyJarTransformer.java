@@ -38,7 +38,7 @@ import org.objectweb.asm.tree.ClassNode;
  */
 public final class LegacyJarTransformer {
     /** Bump whenever the output of this class changes, to invalidate caches. */
-    public static final int TRANSFORMER_VERSION = 8;
+    public static final int TRANSFORMER_VERSION = 9;
     /** Names the legacy coremod plugin class of a translated jar. */
     public static final String COREMOD_RESOURCE = "META-INF/legacyconnector-coremod.txt";
 
@@ -66,6 +66,18 @@ public final class LegacyJarTransformer {
     /** Packages that jars of several legacy versions define; each version links to its own copy. */
     public LegacyJarTransformer crossVersion(CrossVersionPackages crossVersion) {
         this.crossVersion = crossVersion;
+        return this;
+    }
+
+    private java.util.Map<LegacyVersion, java.util.Set<String>> bundledByOtherVersions = java.util.Map.of();
+
+    /**
+     * Per version, the names of the classes that jars of the OTHER legacy versions hold. A 1.7.10 mod probing for an optional API (Thermal Expansion's
+     * {@code Class.forName("buildcraft.api.tools.IToolWrench")}) must not have its use of it stubbed as absent when a 1.4.7 mod of the same game bundles it:
+     * the probe succeeds at run time, so the code behind it has to be real.
+     */
+    public LegacyJarTransformer bundledByOtherVersions(java.util.Map<LegacyVersion, java.util.Set<String>> names) {
+        this.bundledByOtherVersions = names;
         return this;
     }
 
@@ -185,6 +197,25 @@ public final class LegacyJarTransformer {
             "org/slf4j/", "org/apache/logging/", "io/netty/", "org/joml/", "org/apache/commons/lang3/", "org/apache/commons/io/", "org/apache/commons/codec/",
             "com/google/errorprone/", "com/google/j2objc/", "org/checkerframework/", "org/jetbrains/annotations/");
 
+    /**
+     * A class of Netty's optional native transports (kqueue, epoll...) the game's own Netty does not ship (it has no kqueue): a mod that
+     * bundles Netty and names them in its network code keeps its copy, which is a package of its own and so splits nothing. The
+     * rest of a bundled Netty is dropped for the game's. The game's Netty is recognised by its core classes being visible here.
+     */
+    private static boolean isOptionalNativeClass(String name) {
+        if (!name.startsWith("io/netty/channel/kqueue/") && !name.startsWith("io/netty/channel/epoll/") && !name.startsWith("io/netty/channel/unix/")
+                && !name.startsWith("io/netty/channel/uring/")) {
+            return false;
+        }
+        try {
+            ClassLoader cl = LegacyJarTransformer.class.getClassLoader();
+            if (cl == null || cl.getResource("io/netty/channel/Channel.class") == null) return false;
+            return cl.getResource(name + ".class") == null;
+        } catch (RuntimeException e) {
+            return false;
+        }
+    }
+
     private int relocateBundled(LegacyJar jar, Map<String, byte[]> classes, LegacyRemapper remapper) {
         String privateRoot = "legacyconnector_extra/" + (jar.hasMods() ? jar.mods.get(0).modernId() : LegacyModDecl.toModernId(stripJar(jar.fileName()))) + "/";
         int dropped = 0;
@@ -204,9 +235,15 @@ public final class LegacyJarTransformer {
                 continue;
             }
             // Libraries the game already ships: a second copy would split the package between two modules.
-            if (PROVIDED_LIBRARIES.stream().anyMatch(name::startsWith)) {
+            if (PROVIDED_LIBRARIES.stream().anyMatch(name::startsWith) && !isOptionalNativeClass(name)) {
                 classes.remove(name);
                 dropped++;
+                continue;
+            }
+            if (name.indexOf('/') < 0) {
+                // The default package (ModLoader's mod_* classes, reobfuscated helpers): a named module cannot hold classes outside a package.
+                remapper.override(name, privateRoot + "root/" + name);
+                for (LegacyModDecl mod : jar.mods) if (name.equals(mod.mainClass)) mod.mainClass = privateRoot + "root/" + name;
                 continue;
             }
             if (!LegacyVersion.isRelocatedRoot(name)) continue;
@@ -218,6 +255,14 @@ public final class LegacyJarTransformer {
             } else {
                 remapper.override(name, privateRoot + name);
             }
+        }
+        // Classes in the default package (ModLoader-style mod_X, MCreator's mcreator_X, a mod compiled without a package): a named module cannot hold
+        // them (the class loader never finds them), so they move into a private package of the jar.
+        for (String name : List.copyOf(classes.keySet())) {
+            if (name.indexOf('/') < 0 && !name.startsWith(privateRoot)) remapper.override(name, privateRoot + "root/" + name);
+        }
+        for (LegacyModDecl mod : jar.mods) {
+            if (mod.mainClass != null && mod.mainClass.indexOf('/') < 0 && classes.containsKey(mod.mainClass)) mod.mainClass = privateRoot + "root/" + mod.mainClass;
         }
         // A mod whose own classes live under a relocated root (Engender: net.minecraft.AgeOfMinecraft.*) moved with them.
         for (LegacyModDecl mod : jar.mods) {
@@ -242,8 +287,15 @@ public final class LegacyJarTransformer {
         for (byte[] data : c.classes.values()) {
             try {
                 ClassNode node = new ClassNode();
-                new ClassReader(data).accept(classRemapper(node, remapper), ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
-                out.add(ClassInfo.of(node));
+                ClassReader reader = new ClassReader(data);
+                reader.accept(classRemapper(node, remapper), ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
+                ClassInfo info = ClassInfo.of(node);
+                String[] ifaces = reader.getInterfaces();
+                info.originalName = reader.getClassName();
+                info.originalSupers = new String[1 + ifaces.length];
+                info.originalSupers[0] = reader.getSuperName();
+                System.arraycopy(ifaces, 0, info.originalSupers, 1, ifaces.length);
+                out.add(info);
             } catch (RuntimeException ignored) {
                 // reported when the jar itself is translated
             }
@@ -253,13 +305,52 @@ public final class LegacyJarTransformer {
 
     /** The class visitor that relocates and renames a legacy class (1.5.2 jars keep the real EntityLiving where they mean the class itself). */
     private static ClassRemapper classRemapper(org.objectweb.asm.ClassVisitor next, LegacyRemapper remapper) {
-        return remapper.version() == LegacyVersion.V1_5_2 ? new Living152ClassRemapper(next, remapper) : new ClassRemapper(next, remapper);
+        return (remapper.version() == LegacyVersion.V1_5_2 || remapper.version() == LegacyVersion.V1_4_7) ? new Living152ClassRemapper(next, remapper) : new ClassRemapper(next, remapper);
     }
 
     /** 1.6.4 jars that name Minecraft by its obfuscated names need the jar's own class hierarchy to find inherited members (see NotchNames). */
     private static void notchLocals(Map<String, byte[]> classes, LegacyRemapper remapper) {
+        notchLocals(classes, remapper, Map.of());
+    }
+
+    /**
+     * Copies of obfuscated vanilla classes a mod jar carries in its default package (Crafting Dead ships the reobfuscated ModelBiped,
+     * RenderPlayer and ThreadDownloadImageData$1 of its build): Forge's class loader read the game's own jar first, so the copy was never
+     * used. Dropping it lets the mod's references resolve to the vanilla class they name, as they did. Recognised by a notch name of the
+     * version whose SourceFile is the vanilla class's simple name.
+     */
+    static int dropBundledVanilla(Map<String, byte[]> classes, LegacyVersion version) {
+        org.kylepitcock.legacyconnector.loader.mapping.NotchNames notch = org.kylepitcock.legacyconnector.loader.mapping.NotchNames.get(version.id());
+        if (notch == null || notch.isEmpty()) return 0;
+        int dropped = 0;
+        for (String name : List.copyOf(classes.keySet())) {
+            if (name.indexOf('/') >= 0) continue;
+            String mcp = notch.mcpClass(name);
+            if (mcp == null) continue;
+            try {
+                ClassNode node = new ClassNode();
+                new ClassReader(classes.get(name)).accept(node, ClassReader.SKIP_CODE | ClassReader.SKIP_FRAMES);
+                String outer = mcp.substring(mcp.lastIndexOf('/') + 1);
+                int dollar = outer.indexOf('$');
+                if (dollar >= 0) outer = outer.substring(0, dollar);
+                String source = node.sourceFile == null ? "" : node.sourceFile.replaceAll("INNER\\d+(?=\\.java$)", "");
+                if (source.equals(outer + ".java")) {
+                    classes.remove(name);
+                    dropped++;
+                }
+            } catch (RuntimeException ignored) {
+                // unreadable: kept, reported later
+            }
+        }
+        return dropped;
+    }
+
+    private static void notchLocals(Map<String, byte[]> classes, LegacyRemapper remapper, Map<String, ClassInfo> peers) {
         if (!remapper.version().numericIds()) return;
+        dropBundledVanilla(classes, remapper.version());
         Map<String, String[]> locals = new java.util.HashMap<>();
+        // packaged classes only: a peer jar that carries vanilla classes under their notch names (a jar mod) must not hide them from this jar
+        for (ClassInfo peer : peers.values()) if (peer.originalSupers != null && peer.name.indexOf('/') > 0) locals.put(peer.name, peer.originalSupers);
         for (byte[] data : classes.values()) {
             try {
                 ClassReader r = new ClassReader(data);
@@ -294,8 +385,12 @@ public final class LegacyJarTransformer {
         result.notes.addAll(contents.notes);
         int platformCopies = dropPlatformLibraries(classes, other);
         if (platformCopies > 0) result.notes.add("Dropped " + platformCopies + " bundled Mixin class(es) and launcher service file(s) (NeoForge provides Mixin)");
-        notchLocals(classes, remapper);
+        notchLocals(classes, remapper, peers);
         result.droppedShimDuplicates = relocateBundled(jar, classes, remapper);
+        // another jar's default-package classes (ModLoader mods share a base mod: mod_bspkrsCore) moved into a package of theirs: this jar names them by the old name
+        for (ClassInfo peer : peers.values()) {
+            if (peer.originalName != null && peer.originalName.indexOf('/') < 0 && !classes.containsKey(peer.originalName)) remapper.peerDefaultPackage(peer.originalName, peer.name);
+        }
         preventCollisions(classes, remapper);
         if (result.droppedShimDuplicates > 0) {
             result.notes.add("Dropped " + result.droppedShimDuplicates + " bundled copies of Minecraft/Forge classes (the shim provides them)");
@@ -303,6 +398,7 @@ public final class LegacyJarTransformer {
 
         // Pass 1: relocate + rename, build the jar-local half of the class hierarchy.
         Hierarchy hierarchy = new Hierarchy(shim, libraries, peers, version);
+        hierarchy.bundledElsewhere(bundledByOtherVersions.getOrDefault(version, java.util.Set.of()));
         Map<String, ClassNode> nodes = new LinkedHashMap<>();
         for (var e : classes.entrySet()) {
             ClassNode node = new ClassNode();
@@ -341,6 +437,7 @@ public final class LegacyJarTransformer {
         for (ClassNode node : nodes.values()) CustomMainMenuVersionFix.apply(node);
         for (ClassNode node : nodes.values()) org.kylepitcock.legacyconnector.loader.transform.compat.UpdateCheckFix.apply(node);
         for (ClassNode node : nodes.values()) CofhWorldProxyFix.apply(node);
+        for (ClassNode node : nodes.values()) org.kylepitcock.legacyconnector.loader.transform.compat.FatalErrorScreenFix.apply(node);
         for (ClassNode node : nodes.values()) Am2SpellIconFix.apply(node);
         for (ClassNode node : nodes.values()) Am2SpellEffectsFix.apply(node);
         for (ClassNode node : nodes.values()) Am2CompendiumFix.apply(node);
@@ -389,8 +486,33 @@ public final class LegacyJarTransformer {
         for (var e : other.entrySet()) {
             String name = e.getKey();
             if (isSignatureFile(name)) continue;
+            // Forge 1.5.2 kept a mod's files under /mods/<id>/ (textures, lang, sounds); they are the mod's assets/<id>/ for the modern resource system.
+            // The original stays too: mods also read them as class path files.
+            if (version.numericIds() && name.startsWith("mods/") && name.indexOf('/', 5) > 5 && !name.endsWith("/")) {
+                String rest = name.substring(5);
+                // A domain with a slash (Immibis' "immibis/redlogic": /mods/immibis/redlogic/textures/...) is the resource domain "immibis/redlogic",
+                // which the runtime turns into the namespace immibis_redlogic (Ids.namespace): the folder before textures/ or lang/ is the whole domain.
+                int dirAt = Math.min(idxOrMax(rest, "/textures/"), idxOrMax(rest, "/lang/"));
+                if (dirAt != Integer.MAX_VALUE && rest.substring(0, dirAt).indexOf('/') >= 0) {
+                    rest = rest.substring(0, dirAt).replace('/', '_').replace('.', '_') + rest.substring(dirAt);
+                }
+                resources.accept("assets/" + rest, e.getValue());
+            }
             if (resources.accept(name, e.getValue())) continue;
             outResources.put(name, e.getValue());
+        }
+        if (version.flatNames()) {
+            // 1.4.7: sprite sheets named by the code are cut into one texture per tile, which the atlas stitches (see SheetCutter)
+            org.kylepitcock.legacyconnector.loader.resource.SheetCutter cutter = new org.kylepitcock.legacyconnector.loader.resource.SheetCutter();
+            cutter.scan(nodes.values());
+            if (cutter.found()) {
+                Map<String, byte[]> tiles = cutter.cut(other);
+                if (!tiles.isEmpty()) {
+                    outResources.putAll(tiles);
+                    resources.addsTextures();
+                    result.notes.add("Cut " + cutter.sheets().size() + " sprite sheet(s) into " + tiles.size() + " texture(s)");
+                }
+            }
         }
         outResources.putAll(resources.finish());
         if (version == LegacyVersion.V1_12_2 && jar.hasMods()) {
@@ -566,10 +688,26 @@ public final class LegacyJarTransformer {
         Files.createDirectories(output.getParent());
         Path tmp = output.resolveSibling(output.getFileName() + ".tmp");
         try (OutputStream os = Files.newOutputStream(tmp); JarOutputStream jos = new JarOutputStream(os, manifest)) {
+            // directory entries too: a mod that mounts a folder of its own jar (ComputerCraft's ROM) looks it up with ZipFile.getEntry("lua/rom")
+            var dirs = new java.util.TreeSet<String>();
+            for (String n : resources.keySet()) addParents(dirs, n);
+            for (String n : classes.keySet()) addParents(dirs, n);
+            for (String d : dirs) {
+                if (resources.containsKey(d) || classes.containsKey(d)) continue;
+                ZipEntry entry = new ZipEntry(d);
+                entry.setTime(0);
+                jos.putNextEntry(entry);
+                jos.closeEntry();
+            }
             for (var e : resources.entrySet()) put(jos, e.getKey(), e.getValue());
             for (var e : classes.entrySet()) put(jos, e.getKey(), e.getValue());
         }
         moveIntoPlace(tmp, output);
+    }
+
+    private static void addParents(java.util.Set<String> dirs, String name) {
+        if (name.startsWith("META-INF/")) return; // the manifest's folder is written by JarOutputStream
+        for (int i = name.indexOf('/'); i >= 0; i = name.indexOf('/', i + 1)) dirs.add(name.substring(0, i + 1));
     }
 
     /**
@@ -606,6 +744,11 @@ public final class LegacyJarTransformer {
         jos.putNextEntry(entry);
         jos.write(data);
         jos.closeEntry();
+    }
+
+    private static int idxOrMax(String s, String part) {
+        int i = s.indexOf(part);
+        return i < 0 ? Integer.MAX_VALUE : i;
     }
 
     static boolean isSignatureFile(String name) {

@@ -33,10 +33,12 @@ public final class LivingCasts152 {
 
     /** @return the number of call or field sites that got a cast */
     public static int apply(ClassNode node, Hierarchy h, LegacyVersion version) {
-        if (version != LegacyVersion.V1_5_2) return 0;
+        if (version != LegacyVersion.V1_5_2 && version != LegacyVersion.V1_4_7) return 0; // 1.4.7 has the same single EntityLiving
         String base = version.linkPrefix() + "net/minecraft/entity/EntityLivingBase";
         String living = version.linkPrefix() + "net/minecraft/entity/EntityLiving";
         if (h.find(base) == null || h.find(living) == null) return 0;
+        // EntityCreature last: 1.6.4 narrowed some parameters (the AI tasks' owner) from EntityLiving to it
+        String creature = version.linkPrefix() + "net/minecraft/entity/EntityCreature";
         int count = 0;
         for (MethodNode method : node.methods) {
             if (method.instructions == null) continue;
@@ -45,8 +47,8 @@ public final class LivingCasts152 {
                 if (insn instanceof MethodInsnNode || insn instanceof FieldInsnNode) work.add(insn);
             }
             for (AbstractInsnNode insn : work) {
-                if (insn instanceof MethodInsnNode m && fixCall(method, m, h, base, living)) count++;
-                else if (insn instanceof FieldInsnNode f && fixField(method, f, h, base, living)) count++;
+                if (insn instanceof MethodInsnNode m && (fixCall(method, m, h, base, living) || h.find(creature) != null && fixCall(method, m, h, base, creature))) count++;
+                else if (insn instanceof FieldInsnNode f && (fixFieldType(method, f, h, base) || fixField(method, f, h, base, living))) count++;
             }
         }
         return count;
@@ -92,6 +94,30 @@ public final class LivingCasts152 {
         Type[] out = args.clone();
         for (int i : cast) out[i] = Type.getObjectType(living);
         return Type.getMethodDescriptor(ret, out);
+    }
+
+    /**
+     * A field the mod types {@code EntityLiving} (now {@code EntityLivingBase}) that 1.7.10 declares with a narrower type
+     * ({@code EntityAITarget.taskOwner} is an {@code EntityCreature}): the access takes the declared type, with a cast on a write.
+     */
+    private static boolean fixFieldType(MethodNode method, FieldInsnNode f, Hierarchy h, String base) {
+        if (!f.desc.equals("L" + base + ";") || f.owner.startsWith("[")) return false;
+        if (h.resolveField(f.owner, f.name, f.desc) != Hierarchy.Lookup.MISSING_MEMBER) return false;
+        java.util.Set<String> seen = new java.util.HashSet<>();
+        for (var c = h.find(f.owner); c != null && seen.add(c.name); c = c.superName == null ? null : h.find(c.superName)) {
+            String prefix = f.name + ":L";
+            for (String key : c.fields.keySet()) {
+                if (!key.startsWith(prefix)) continue;
+                String type = key.substring(prefix.length(), key.length() - 1);
+                if (!h.isSubclassOf(type, base)) continue;
+                if (f.getOpcode() == Opcodes.PUTFIELD || f.getOpcode() == Opcodes.PUTSTATIC) {
+                    method.instructions.insertBefore(f, new TypeInsnNode(Opcodes.CHECKCAST, type));
+                }
+                f.desc = "L" + type + ";";
+                return true;
+            }
+        }
+        return false;
     }
 
     private static boolean fixField(MethodNode method, FieldInsnNode f, Hierarchy h, String base, String living) {

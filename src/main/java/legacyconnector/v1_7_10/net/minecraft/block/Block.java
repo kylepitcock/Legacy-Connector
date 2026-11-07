@@ -100,6 +100,9 @@ public class Block {
     /** Forge: whether this block provides a tile entity (mods reflect on it). */
     protected boolean isTileProvider = this instanceof ITileEntityProvider;
     protected IIcon blockIcon;
+    /** Minecraft 1.4.7: the block's tile in its sprite sheet ({@code Block.blockIndexInTexture}); -1 for blocks that register icons (see SpriteSheets147). */
+    public int blockIndexInTexture = -1;
+    private String mcc$textureFile;
     private CreativeTabs displayOnCreativeTab;
 
     // Forge 1.7.10 harvest levels, indexed by metadata.
@@ -561,6 +564,14 @@ public class Block {
     }
 
     public boolean isFireSource(legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z, ForgeDirection side) {
+        return isFireSource(world, x, y, z, world.getBlockMetadata(x, y, z), side);
+    }
+
+    /**
+     * Forge 1.6.4 / 1.5.2 shape of {@link #isFireSource(World, int, int, int, ForgeDirection)}, with the metadata: 1.6.4 mods override this one and the
+     * engine reaches it from the 1.7.10 shaped method above; the default is the vanilla rule.
+     */
+    public boolean isFireSource(legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z, int metadata, ForgeDirection side) {
         return this == legacyconnector.v1_7_10.net.minecraft.init.Blocks.netherrack && side == ForgeDirection.UP;
     }
 
@@ -625,16 +636,43 @@ public class Block {
         return getMaterial() == Material.leaves;
     }
 
+    /**
+     * Legacy {@code Block.blockFlammability[id]} / {@code Block.blockFireSpreadSpeed[id]} tables of 1.6.4 mods (they write the arrays instead of calling
+     * {@code Blocks.fire.setFireInfo}): set by the forward layer when a mod first reads them, consulted by the default of the methods below.
+     */
+    public static volatile java.util.function.ToIntFunction<Block> mcc$legacyFlammability;
+    public static volatile java.util.function.ToIntFunction<Block> mcc$legacyFireSpread;
+
     public boolean isFlammable(IBlockAccess world, int x, int y, int z, ForgeDirection face) {
+        return isFlammable(world, x, y, z, world.getBlockMetadata(x, y, z), face);
+    }
+
+    /** Forge 1.6.4 shape with the metadata (1.6.4 mods override this one); the default asks {@link #getFlammability(IBlockAccess, int, int, int, ForgeDirection)}. */
+    public boolean isFlammable(IBlockAccess world, int x, int y, int z, int metadata, ForgeDirection face) {
         return getFlammability(world, x, y, z, face) > 0;
     }
 
     public int getFlammability(IBlockAccess world, int x, int y, int z, ForgeDirection face) {
-        return legacyconnector.v1_7_10.net.minecraft.init.Blocks.fire.getFlammability(this);
+        return getFlammability(world, x, y, z, world.getBlockMetadata(x, y, z), face);
+    }
+
+    /** Forge 1.6.4 shape with the metadata; the default is the legacy table entry of the block, else the vanilla fire table. */
+    public int getFlammability(IBlockAccess world, int x, int y, int z, int metadata, ForgeDirection face) {
+        java.util.function.ToIntFunction<Block> legacy = mcc$legacyFlammability;
+        int v = legacy == null ? 0 : legacy.applyAsInt(this);
+        return v > 0 ? v : legacyconnector.v1_7_10.net.minecraft.init.Blocks.fire.getFlammability(this);
     }
 
     public int getFireSpreadSpeed(IBlockAccess world, int x, int y, int z, ForgeDirection face) {
-        return legacyconnector.v1_7_10.net.minecraft.init.Blocks.fire.getEncouragement(this);
+        if (world instanceof legacyconnector.v1_7_10.net.minecraft.world.World w) return getFireSpreadSpeed(w, x, y, z, w.getBlockMetadata(x, y, z), face);
+        return getFireSpreadSpeed(null, x, y, z, 0, face);
+    }
+
+    /** Forge 1.6.4 shape (a {@code World} and the metadata; 1.6.4 mods override this one); the default is the legacy table entry of the block, else the vanilla fire table. */
+    public int getFireSpreadSpeed(legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z, int metadata, ForgeDirection face) {
+        java.util.function.ToIntFunction<Block> legacy = mcc$legacyFireSpread;
+        int v = legacy == null ? 0 : legacy.applyAsInt(this);
+        return v > 0 ? v : legacyconnector.v1_7_10.net.minecraft.init.Blocks.fire.getEncouragement(this);
     }
 
     public final double getBlockBoundsMinX() {
@@ -664,8 +702,45 @@ public class Block {
     // ------------------------------------------------------------------ rendering (client)
 
     public IIcon getIcon(int side, int meta) {
-        if (this.blockIcon == null && mcc$vanilla != null) return mcc$vanillaBlockIcon(side, meta);
+        if (blockIndexInTexture >= 0 && mcc$vanilla == null) return org.kylepitcock.legacyconnector.v1_6_4.bridge.SpriteSheets147.mcc$icon(this, blockIndexInTexture);
+        if (this.blockIcon == null) {
+            if (mcc$vanilla != null) return mcc$vanillaBlockIcon(side, meta);
+        }
         return this.blockIcon;
+    }
+
+    /** Minecraft 1.4.7: the sprite sheet index of a side for a metadata value. */
+    public int getBlockTextureFromSideAndMetadata(int side, int meta) {
+        if (blockIndexInTexture < 0 && mcc$vanilla != null) {
+            // a vanilla block: its tile of /terrain.png (RedPower's covers draw the material's texture from that sheet)
+            try {
+                IIcon icon = getIcon(side, meta);
+                int index = org.kylepitcock.legacyconnector.v1_6_4.bridge.SpriteSheets147.terrainIndexOf(icon == null ? null : icon.getIconName());
+                if (index >= 0) return index;
+            } catch (RuntimeException | LinkageError e) {
+                // no tile
+            }
+        }
+        return blockIndexInTexture;
+    }
+
+    /** Forge 1.4.7: whether the block draws the default sprite sheet's texture (RedPower's covers read it). */
+    public boolean isDefaultTexture = true;
+
+    /** Minecraft 1.4.7: the light level (0 to 1) the block shows at the position. */
+    public float getBlockBrightness(IBlockAccess world, int x, int y, int z) {
+        int packed = getMixedBrightnessForBlock(world, x, y, z);
+        return Math.max((packed >> 4) & 15, (packed >> 20) & 15) / 15.0F;
+    }
+
+    /** Forge 1.4.7's per-block sprite sheet ({@code ITextureProvider}); {@code /terrain.png} unless set. */
+    public Block setTextureFile(String file) {
+        this.mcc$textureFile = file;
+        return this;
+    }
+
+    public String getTextureFile() {
+        return mcc$textureFile != null ? mcc$textureFile : "/terrain.png";
     }
 
     /**
@@ -943,15 +1018,26 @@ public class Block {
     }
 
     public boolean canProvidePower() {
+        // a vanilla block wrapped as a plain Block (redstone block, observer...) is a power source as its modern block says;
+        // wires of legacy mods (RedLogic) only connect to blocks that answer true
+        if (mcc$plainVanilla()) {
+            try {
+                var state = mcc$modern != null ? mcc$modern.defaultBlockState()
+                        : org.kylepitcock.legacyconnector.core.flatten.VanillaFlattening.state(mcc$vanilla.legacyId(), 0);
+                return state != null && state.isSignalSource();
+            } catch (RuntimeException ignored) {
+                // not bridged yet: no power source
+            }
+        }
         return false;
     }
 
     public int isProvidingWeakPower(IBlockAccess world, int x, int y, int z, int side) {
-        return 0;
+        return mcc$vanilla != null && world != null ? world.mcc$weakSignal(x, y, z, side) : 0;
     }
 
     public int isProvidingStrongPower(IBlockAccess world, int x, int y, int z, int side) {
-        return 0;
+        return mcc$vanilla != null && world != null ? world.isBlockProvidingPowerTo(x, y, z, side) : 0;
     }
 
     public boolean canConnectRedstone(IBlockAccess world, int x, int y, int z, int side) {
