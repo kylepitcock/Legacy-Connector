@@ -258,3 +258,40 @@ indexing the FML and bus jars. Not done in the Forge API: generic filtering of `
 or removed events that need semantic adapters (`PlayerSleepInBedEvent`, `LivingHurtEvent`...), `ConfigScreenFactory`/gui overlays, `ModList`/`IModInfo` extras, `RecipeBookType.create`
 (enum extension), `INBTSerializable` with the old signatures. What blocks milestone 2 outside the Forge API (Minecraft side): mixins that fail hard when a target changed (Clumps,
 Spartan Weaponry, Bygone Nether abort the whole launch), data-driven `Enchantment` subclasses, `StairBlock`/`GlassBlock` changes, `ItemPredicate.serializeToJson`, mods registering custom stats in common setup (frozen registries), library mods (GeckoLib, PuzzlesLib, Resourceful Lib, Architectury).
+
+## 12. Status 2026-11-08: data and resources
+
+The `data/**` and `assets/**` side of a Forge 1.20.1 jar is converted at translation time by `loader/.../resource/DataConverter1201.java` (called from `Forge1201Transformer`; a pure function of path
+and bytes, unit tests in `DataConverter1201Test`, offline runner `loader/.../tools/Data1201Tool.java`, measurement `tools/compat/data1201.py`). The per-category numbers over the 60 corpus jars
+are in [Legacy-1.20.1-Corpus](Legacy-1.20.1-Corpus.md) section 8: before, 19.7k pack files sat in folders 1.21.1 does not read (every data folder was plural in 1.20.1) and about 12k more files had a changed format; after, the checker finds no breaking file.
+
+What is converted:
+
+- **Folders**: `recipes`, `loot_tables`, `advancements`, `structures`, `functions`, `item_modifiers`, `predicates` and `tags/{blocks,items,fluids,entity_types,game_events,functions}` become singular
+  (1.21); `data/<ns>/forge/{biome_modifier,structure_modifier}` becomes `data/<ns>/neoforge/...`; `data/forge/loot_modifiers/global_loot_modifiers.json` becomes `data/neoforge/loot_modifiers/...`.
+- **Tags**: `forge:` tags become the convention tags `c:` (`#forge:ingots/iron` is `#c:ingots/iron`; plural/segment renames such as `glass` to `glass_blocks`, `cobblestone` to `cobblestones`, `shears` to
+  `tools/shear`, derived from NeoForge 21.1's own `data/c/tags`), also the files of `data/forge/tags` (moved to `data/c/tags`, collisions merged).
+- **Recipes** (vanilla recipe types; a mod's own type keeps its own format, its serializer reads it): `result` string or `{item,count,nbt}` becomes `{id,count,components}` (stonecutting's sibling `count`
+  moved in), item NBT becomes data components where there is a form (potions, enchantments, stored enchantments), other NBT is dropped and counted (`nbt_dropped`); `forge:nbt` ingredients become
+  `neoforge:components` (or the plain item); top-level `conditions` becomes `neoforge:conditions`; `forge:conditional` becomes one recipe per branch (`name.json`, `name_alt1.json`...).
+- **Loot tables / modifiers**: `looting_enchant` to `enchanted_count_increase`, `random_chance_with_looting` to `random_chance_with_enchanted_bonus`, `set_nbt`/`copy_nbt` to `set_custom_data`/`copy_custom_data`
+  (`{Potion:..}` to `set_potion`), `set_attributes` (uuid dropped, id added, operation names), `enchant_with_levels.treasure` to `options`, `enchant_randomly.enchantments` to `options`, `set_contents.type`
+  to `component`, `loot_table` entry `name` to `value`, `match_tool` item predicates, `forge:can_tool_perform_action` to `neoforge:can_item_perform_ability`.
+- **Advancements**: `display.icon {item,nbt}` to `{id}`, item predicates in trigger conditions (`tag`/`nbt`/`enchantments`/`potion`/`durability` to `items` and `predicates`), `conditions` to `neoforge:conditions`.
+- **`forge:` ids** in `type`/`loader`/`condition` (conditions, biome modifiers, ingredient types, global loot modifier types) become `neoforge:`; ids renamed since 1.20.1 (`minecraft:grass` to `short_grass`,
+  `scute` to `turtle_scute`, `sweeping` to `sweeping_edge`); dimension types get the 1.21 `monster_spawn_*` fields; models: `forge:` loaders (`forge:bucket` is `neoforge:fluid_container`), `forge_data`
+  (NeoForge throws on it), `forge:item/default` parents.
+- **Metadata**: `pack.mcmeta` gets format 34/48 and the open `supported_formats`; `mods.toml` already became `neoforge.mods.toml` (`mandatory` to `type`, loader/minecraft/forge ranges); now also the version
+  ranges of other mods' dependencies are opened to `[0,)` (a 1.20.1 range like `[1.20.1-x,1.21)` rejects the 1.21.1 build) and `displayTest` is dropped.
+- **Worldgen leniency**: 1.21 aborts the whole world load when one worldgen element does not parse, where 1.20.1 logged and went on. Known cases are repaired (Dungeons and Taverns has a structure set
+  `exclusion_zone.chunk_count` of 17 where the codec allows 16, and an `other_set` list where an id is expected).
+
+Server test (NeoForge 1.21.1, `experimental.forge1201=true`): Dungeons and Taverns (data only, 1820 pack files) loads its structure sets, template pools, processors and loot tables; the only remaining
+messages are two loot tables naming `minecraft:scute` (fixed since). Six more jars were stripped to their data (no classes, so no registered content) and loaded together: the server reaches `Done`, and
+every remaining recipe/loot/advancement/tag/biome-modifier error is `Unknown registry key` for something the stripped mod would have registered in code (items, blocks, feature types, custom conditions);
+no parse error of a converted format is left.
+
+What remains (data side): a mod's own recipe types still read the 1.20.1 format (`result.item`, `Ingredient.fromJson`), so the facades for `ShapedRecipe.itemStackFromJson`/`CraftingHelper` must accept the
+legacy form; NBT in recipes/loot beyond potions and enchantments is dropped; function files (`.mcfunction`) are renamed but their commands are not converted; plain data packs with overlays
+(`1-20-2-overlay`, Terralith) are not mods and are not touched; mods that register enchantments in code are not in the `#minecraft:non_treasure` tag that converted `enchant_with_levels` uses; texture,
+sound and lang assets need nothing.

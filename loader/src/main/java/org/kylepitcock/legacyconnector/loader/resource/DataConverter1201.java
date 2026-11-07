@@ -68,7 +68,7 @@ public final class DataConverter1201 {
             "functions", "function");
     /** Ids that were renamed between 1.20.1 and 1.21.1 and appear in data (JSON data is not run through the data fixers). */
     private static final Map<String, String> RENAMED_IDS = Map.of(
-            "minecraft:grass", "minecraft:short_grass", "minecraft:sweeping", "minecraft:sweeping_edge");
+            "minecraft:grass", "minecraft:short_grass", "minecraft:sweeping", "minecraft:sweeping_edge", "minecraft:scute", "minecraft:turtle_scute");
     /** First segment of a Forge tag path to its convention-tag spelling in NeoForge 1.21.1 ({@code c:}); the rest of the path is kept. */
     private static final Map<String, String> TAG_SEGMENTS = Map.ofEntries(
             Map.entry("stone", "stones"), Map.entry("cobblestone", "cobblestones"), Map.entry("sand", "sands"),
@@ -196,6 +196,7 @@ public final class DataConverter1201 {
         } else {
             if (dir.equals("loot_table") || dir.equals("loot_modifiers")) loot(root, c);
             if (dir.equals("dimension_type") && root.isJsonObject()) dimensionType(root.getAsJsonObject(), c);
+            if (np.contains("/worldgen/structure_set/") && root.isJsonObject()) structureSet(root.getAsJsonObject(), c);
             generic(root, c, false);
             outs.add(new Out(np, bytes(root)));
         }
@@ -757,6 +758,30 @@ public final class DataConverter1201 {
             }
             default -> {
             }
+        }
+    }
+
+    // ---- worldgen ------------------------------------------------------------------------------------------------------------------
+
+    /**
+     * 1.21 fails the whole world load when one worldgen element does not parse, where 1.20.1 only logged it: a structure set's exclusion zone
+     * allows 1 to 16 chunks and some packs say more (Dungeons and Taverns says 17).
+     */
+    private static void structureSet(JsonObject o, Ctx c) {
+        if (!o.has("placement") || !o.get("placement").isJsonObject()) return;
+        JsonObject placement = o.getAsJsonObject("placement");
+        if (!placement.has("exclusion_zone") || !placement.get("exclusion_zone").isJsonObject()) return;
+        JsonObject zone = placement.getAsJsonObject("exclusion_zone");
+        // other_set is one structure set id: a list (which 1.20.1 skipped with a log line) is read as its first entry
+        if (zone.has("other_set") && zone.get("other_set").isJsonArray()) {
+            JsonArray sets = zone.getAsJsonArray("other_set");
+            if (sets.size() > 0) zone.add("other_set", sets.get(0));
+            else zone.remove("other_set");
+            c.hit("worldgen_range");
+        }
+        if (zone.has("chunk_count") && zone.get("chunk_count").isJsonPrimitive() && zone.get("chunk_count").getAsInt() > 16) {
+            zone.addProperty("chunk_count", 16);
+            c.hit("worldgen_range");
         }
     }
 
