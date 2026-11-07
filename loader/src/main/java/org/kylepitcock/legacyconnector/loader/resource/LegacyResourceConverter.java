@@ -72,6 +72,9 @@ public final class LegacyResourceConverter {
             // 1.12 Patchouli books live in assets; the modern Patchouli reads data/<ns>/patchouli_books. The runtime converts the staged
             // copy (item and block ids need the registries) when the modern Patchouli is installed; the original stays for a legacy Patchouli.
             output.putIfAbsent("legacyconnector_legacy/" + modern, data);
+            // the modern Patchouli finds a mod's books by scanning its jar for data/<mod>/patchouli_books/<book>/book.json
+            String bookJson = PatchouliBookJson.dataPath(modern);
+            if (bookJson != null) output.putIfAbsent(bookJson, PatchouliBookJson.convert(data));
         }
         if (modern.matches("assets/[^/]+/sounds\\.json")) {
             data = convertSounds(data, modern.substring("assets/".length(), modern.indexOf('/', "assets/".length())));

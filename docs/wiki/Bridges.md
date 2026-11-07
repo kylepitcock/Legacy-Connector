@@ -87,10 +87,12 @@ With the modern Patchouli (NeoForge 1.21.1) installed, 1.12.2 mods' Patchouli bo
   (1.12 mods build them in preInit). `ICustomComponent` and `IComponentProcessor` implementations are also modern ones, so the class names in
   a book's json work; `@VariableHolder` string fields are filled from the page variables. The `BookEvent` classes exist but are not posted yet.
   Classes mods use that are not API (`vazkii.patchouli.client...`, `common...`) are not provided.
-* **Books as resources.** 1.12 mods keep books in `assets/<mod>/patchouli_books/<book>/` (`book.json`, `<lang>/{categories,entries,templates}`);
-  the modern Patchouli reads `data/<mod>/patchouli_books/`. The loader stages the folder under `legacyconnector_legacy/` (the original stays
-  for the 1.12 Patchouli) and the runtime writes the converted files to the generated data pack when it is built (`PatchouliBooks`, unit
-  tested; `PatchouliBooks1122` supplies the ids from the registries):
+* **Books as resources.** 1.12 mods keep books in `assets/<mod>/patchouli_books/<book>/` (`book.json`, `<lang>/{categories,entries,templates}`).
+  The modern Patchouli (1.20+) finds books by scanning each mod jar for `data/<mod>/patchouli_books/<book>/book.json` and requires
+  `use_resource_pack: true`, with the contents in the resource packs (`assets/`), as in 1.12. So the loader writes the converted `book.json`
+  into the translated jar's data folder (`PatchouliBookJson`, no registries needed) and stages the original folder under
+  `legacyconnector_legacy/` (the originals stay in assets for the 1.12 Patchouli); the runtime writes the converted contents to the generated
+  client resource pack when it is built (`PatchouliBooks`, unit tested; `PatchouliBooks1122` supplies the ids from the registries):
   items `mod:item:meta` become the flattened item (`mod:item_3`), also in icons, `spotlight` pages and template components; multiblock
   `mapping` blocks go through the state bridge (`mod:block[meta=3]`); `crafting` recipe names become the id of the data-pack recipe the
   layer generated (`mod:name_code`); `smelting` pages (1.12 names the input item) become recipe pages of the generated furnace
@@ -99,6 +101,28 @@ With the modern Patchouli (NeoForge 1.21.1) installed, 1.12.2 mods' Patchouli bo
 * **The book item.** `getBookStack("mod:book")` returns the modern guide book stack with its `patchouli:book` component, wrapped for legacy
   code (the `patchouli:guide_book` item is visible in the legacy item registry, so 1.12 recipes and loot that name it work, and a stack with
   the 1.12 NBT tag `patchouli:book` becomes the modern book stack and back).
+* **Other legacy versions.** The loader bridge (`LibraryBridges`: `Bridge("patchouli", "vazkii/patchouli/api/", "patchouli", "patchouli")`,
+  `bridges.patchouli.enabled`, skipping the legacy Patchouli jar) does not depend on the Minecraft version: it applies to every legacy version
+  that is or will be added. Patchouli exists for 1.12.2 and for 1.14 to 1.20; the 1.20.1, 1.19.2, 1.18.2 and 1.16.5 layers are in-place remaps
+  onto NeoForge 1.21.1, so their `PatchouliAPI.get()` calls resolve against the real modern API directly and only the books need converting.
+  Each version adds one `BookConverter` (interface and registry `BookConverter.BY_VERSION`, with a unit test): 1.12.2 is the table above; for
+  1.14 to 1.20 the files are already in `data/` with the modern structure, and the converter has to turn `mod:item{nbt}` stacks into
+  `mod:item[components]`, move the contents to the resource pack (`use_resource_pack`), and map renamed fields (`extend`, multiblock `pattern`
+  keys, `advancement`/`flag`). No converter is registered for them yet because those layers do not exist.
+
+## Possible book bridges
+
+Other book systems that could be shown as modern Patchouli books by a generic converter (not implemented; the effort is for a generic
+conversion of the content into `book.json` + entries, not a per-mod fix):
+
+| Legacy book system | Modern equivalent | Effort |
+|---|---|---|
+| Guide-API (1.7.10 and 1.12 `amerifrance.guideapi`) | Patchouli (or the Guide-API port) | Medium: books are registered in code (`IGuideBook`, categories, entries, pages of text/recipes/images); a generic walk of the registered structure could write Patchouli categories and entries |
+| Thaumonomicon (Thaumcraft 4/6 research) | none (progression system, not a book) | High: research has prerequisites, aspects and a puzzle UI; only a read-only entry list is realistic |
+| Lexica Botania (Botania 1.7.10 lexicon) | Botania's own Patchouli book | Low for the book itself (modern Botania ships it), but the legacy lexicon is mod-internal; only entry text could be exported |
+| Tinkers' Construct manual (1.7.10 and 1.12) | Tinkers' Construct's modern Patchouli-style manual | Medium: pages are an in-jar XML and a custom page renderer; text/image/recipe pages map, interactive ones do not |
+| Forestry and Mystcraft books | none | Forestry's handbook is not a book system; Mystcraft's notebooks are items holding data, not documentation |
+| NEI handbook / Waila-style help | JEI | Already covered by the NEI bridge |
 
 ## NEI → JEI recipe categories
 

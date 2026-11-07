@@ -42,6 +42,12 @@ class PatchouliBooksTest {
     }
 
     @Test
+    void registryHasTheConverterOfEveryPresentVersion() {
+        for (var e : BookConverter.BY_VERSION.entrySet()) assertEquals(e.getKey(), e.getValue().legacyVersion());
+        assertEquals(true, BookConverter.BY_VERSION.get("1.12.2").booksInAssets());
+    }
+
+    @Test
     void bookJsonMapsTabAndItem() {
         JsonObject book = convert("book.json", """
                 {"name": "mymod.guide", "landing_text": "hi", "creative_tab": "misc", "custom_book_item": "mymod:guide:2",
@@ -50,6 +56,7 @@ class PatchouliBooksTest {
         assertEquals("mymod:guide_2", book.get("custom_book_item").getAsString());
         assertEquals("patchouli:textures/gui/book_brown.png", book.get("book_texture").getAsString());
         assertEquals("mymod.guide", book.get("name").getAsString());
+        assertEquals(true, book.get("use_resource_pack").getAsBoolean());
     }
 
     @Test

@@ -126,17 +126,18 @@ public final class PatchouliBooks1122 {
                 try (Stream<Path> all = Files.walk(bookDir)) {
                     for (Path f : (Iterable<Path>) all.filter(Files::isRegularFile)::iterator) {
                         String rel = bookDir.relativize(f).toString().replace('\\', '/');
-                        if (!PatchouliBooks.isJson(rel)) continue;
+                        // book.json is read from the translated jar (Patchouli scans mod jars for it; the loader converts it), the rest from here
+                        if (!PatchouliBooks.isJson(rel) || rel.equals("book.json")) continue;
                         byte[] data = Files.readAllBytes(f);
                         byte[] converted;
                         try {
-                            converted = PatchouliBooks.convert(rel, data, ns, RESOLVER);
+                            converted = BookConverter.BY_VERSION.get("1.12.2").convert(rel, data, ns, RESOLVER);
                         } catch (RuntimeException | LinkageError e) {
                             LOG.warn("Cannot convert {}:{}/{}: {}", ns, book, rel, e.toString());
                             converted = data;
                         }
                         byte[] bytes = converted;
-                        out.put("data/" + ns + "/patchouli_books/" + book + "/" + rel, () -> bytes);
+                        out.put("assets/" + ns + "/patchouli_books/" + book + "/" + rel, () -> bytes);
                         files++;
                     }
                 }

@@ -115,6 +115,7 @@ public final class PatchouliBooks {
     // book.json -----------------------------------------------------------------------------------------------------------------------
 
     static void book(JsonObject o, Resolver r) {
+        o.addProperty("use_resource_pack", true);
         resourceField(o, "book_texture");
         resourceField(o, "filler_texture");
         resourceField(o, "crafting_texture");
