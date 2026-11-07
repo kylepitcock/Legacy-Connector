@@ -507,11 +507,14 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
      * mod gets instead ({@code witchery -> witchery_legacy}; see {@link LegacyModDecl#fmlId()}). Addons of Legacy
      * Connector (jars depending on it) mean the legacy mods and are not counted.
      */
-    /** A jar, or a zip in the {@code 1.4.7} folder (1.4.x mods, ModLoader ones above all, were mostly distributed as zips). */
+    /**
+     * A jar, or a zip: Forge 1.6.4 and older loaded mods from zips, and 1.4.x mods (RedPower 2, ModLoader ones above all) were mostly distributed that way,
+     * so they are dropped into {@code mods/} as often as into {@code mods/1.4.7/}. Zips that are not mods (resource packs, shader packs) are rejected
+     * by the inspector without a message.
+     */
     private static boolean isModArchive(Path f) {
         String name = f.getFileName().toString().toLowerCase();
-        return name.endsWith(".jar") || (name.endsWith(".zip") && f.getParent() != null && f.getParent().getFileName() != null
-                && java.util.Set.of("1.4.7", "1.5.2", "1.6.4").contains(f.getParent().getFileName().toString()));
+        return name.endsWith(".jar") || name.endsWith(".zip");
     }
 
     private static Map<String, String> fmlIdRenames(List<LegacyJar> loading, List<LegacyJar> allLegacy, List<Path> dirs) {
