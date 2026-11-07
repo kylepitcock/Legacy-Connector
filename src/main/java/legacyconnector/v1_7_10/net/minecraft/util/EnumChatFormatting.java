@@ -55,6 +55,15 @@ public enum EnumChatFormatting {
         }
     }
 
+    /** The names of the formattings: colors when {@code colors}, styles (bold, italic...) when {@code styles}; reset is neither and always listed. */
+    public static java.util.Collection<String> getValidValues(boolean colors, boolean styles) {
+        java.util.List<String> out = new java.util.ArrayList<>();
+        for (EnumChatFormatting f : values()) {
+            if ((!f.isColor() || colors) && (!f.isFancyStyling() || styles)) out.add(f.getFriendlyName());
+        }
+        return out;
+    }
+
     public ChatFormatting mcc$modern() {
         return ChatFormatting.getByCode(formattingCode);
     }

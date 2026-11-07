@@ -15,6 +15,11 @@ public class MinecraftForge {
         org.kylepitcock.legacyconnector.v1_7_10.bridge.GrassSeeds1710.add(seed, weight);
     }
 
+    /** A plant that grows on grass when it is fertilized, picked by weight among the entries ({@code ForgeHooks.plantGrass}). */
+    public static void addGrassPlant(legacyconnector.v1_7_10.net.minecraft.block.Block block, int metadata, int weight) {
+        ForgeHooks.grassList.add(new ForgeHooks.GrassEntry(block, metadata, weight));
+    }
+
     public static void initialize() {
     }
 

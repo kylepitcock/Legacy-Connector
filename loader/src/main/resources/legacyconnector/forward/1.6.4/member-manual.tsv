@@ -135,3 +135,10 @@ R	net/minecraft/network/Packet	getNewPacket	(I)Lnet/minecraft/network/Packet;	st
 R	net/minecraft/server/MinecraftServer	getServerConfigurationManager	(Lnet/minecraft/server/MinecraftServer;)Lnet/minecraft/server/management/ServerConfigurationManager;	static	legacyconnector/v1_6_4/forward/Forward164	serverConfigurationManager	(Lnet/minecraft/server/MinecraftServer;)Lnet/minecraft/server/management/ServerConfigurationManager;
 R	net/minecraft/network/Packet	getNewPacket	(Lnet/minecraft/logging/ILogAgent;I)Lnet/minecraft/network/Packet;	static	legacyconnector/v1_6_4/forward/Packets164	getNewPacket	(Ljava/lang/Object;I)Lnet/minecraft/network/Packet;
 R	net/minecraft/network/Packet	readPacket	(Lnet/minecraft/logging/ILogAgent;Ljava/io/DataInput;ZLjava/net/Socket;)Lnet/minecraft/network/Packet;	static	legacyconnector/v1_6_4/forward/Packets164	readPacket	(Ljava/lang/Object;Ljava/io/DataInput;ZLjava/net/Socket;)Lnet/minecraft/network/Packet;
+# Chat formatting names of 1.6.4 (SRG names the 1.7.10 shim calls by their MCP names)
+M	net/minecraft/util/EnumChatFormatting	func_96298_a	()C	getFormattingCode
+M	net/minecraft/util/EnumChatFormatting	func_96301_b	()Z	isFancyStyling
+M	net/minecraft/util/EnumChatFormatting	func_96297_d	()Ljava/lang/String;	getFriendlyName
+M	net/minecraft/util/EnumChatFormatting	func_110646_a	(Ljava/lang/String;)Ljava/lang/String;	getTextWithoutFormattingCodes
+M	net/minecraft/util/EnumChatFormatting	func_96300_b	(Ljava/lang/String;)Lnet/minecraft/util/EnumChatFormatting;	getValueByName
+M	net/minecraft/util/EnumChatFormatting	func_96296_a	(ZZ)Ljava/util/Collection;	getValidValues
