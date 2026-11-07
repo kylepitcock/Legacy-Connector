@@ -139,6 +139,14 @@ once started, `1.12.2 advancements loaded by the server: X of N`.
   modern server's.
 - **Not done:** 1.12 `.mcfunction` rewards, `killing_blow` and damage-type conditions, item/entity NBT conditions.
 
+## 1.7.10 achievements
+
+1.7.10 mods' achievements (`new Achievement(...).registerStat()`) and `AchievementPage`s are written to the generated data pack as advancements
+(`Achievements1710`): each page is a tab (a generated root named after the page; achievements of no page, or hung off vanilla ones, are in a
+"Legacy achievements" tab), parents are kept, the icon is the achievement's item, title and description are the achievement's translation keys.
+The criterion is `impossible` and is awarded from `EntityPlayer.addStat` when legacy code earns the achievement (and at login for those already
+recorded), so the advancements screen shows what the legacy record says. The legacy toast stays; the advancements do not toast or announce.
+
 ## Possible book bridges
 
 Other book systems that could be shown as modern Patchouli books by a generic converter (not implemented; the effort is for a generic
