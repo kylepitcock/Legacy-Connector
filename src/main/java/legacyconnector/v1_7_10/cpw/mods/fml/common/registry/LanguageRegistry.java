@@ -32,7 +32,10 @@ public class LanguageRegistry {
 
     public void addNameForObject(Object obj, String lang, String name) {
         String key;
-        if (obj instanceof ItemStack s) key = s.getItem().getUnlocalizedName(s);
+        if (obj instanceof ItemStack s) {
+            if (s.getItem() == null) return; // a stack of an item that was never registered (an id left unclaimed): nothing to name
+            key = s.getItem().getUnlocalizedName(s);
+        }
         else if (obj instanceof Item i) key = i.getUnlocalizedName();
         else if (obj instanceof Block b) key = b.getUnlocalizedName();
         else return;

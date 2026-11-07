@@ -39,11 +39,17 @@ public final class McpMappings {
 
     public static synchronized McpMappings forVersion(LegacyVersion version) {
         return CACHE.computeIfAbsent(version, v -> {
-            String base = "/legacyconnector/mappings/" + v.id() + "/";
-            Map<String, String> methods = readCsv(base + "fallback-methods.csv");
-            Map<String, String> fields = readCsv(base + "fallback-fields.csv");
-            methods.putAll(readCsv(base + "methods.csv")); // primary table wins
-            fields.putAll(readCsv(base + "fields.csv"));
+            // 1.4.7's export names fewer members than the versions after it; an id it lacks takes the name of the next version that has one (SRG ids are stable from 1.4 on)
+            String[] chain = v == LegacyVersion.V1_4_7 ? new String[] {"1.7.10", "1.6.4", "1.5.2", v.id()} : new String[] {v.id()};
+            Map<String, String> methods = new HashMap<>();
+            Map<String, String> fields = new HashMap<>();
+            for (String id : chain) {
+                String base = "/legacyconnector/mappings/" + id + "/";
+                methods.putAll(readCsv(base + "fallback-methods.csv"));
+                fields.putAll(readCsv(base + "fallback-fields.csv"));
+                methods.putAll(readCsv(base + "methods.csv")); // primary table wins
+                fields.putAll(readCsv(base + "fields.csv"));
+            }
             return new McpMappings(methods, fields);
         });
     }

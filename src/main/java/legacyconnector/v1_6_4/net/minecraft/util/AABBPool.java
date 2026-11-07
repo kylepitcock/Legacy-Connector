@@ -12,6 +12,11 @@ public class AABBPool {
         return AxisAlignedBB.getBoundingBox(x1, y1, z1, x2, y2, z2);
     }
 
+    /** The 1.4.7 name of {@link #getAABB}. */
+    public AxisAlignedBB addOrModifyAABBInPool(double x1, double y1, double z1, double x2, double y2, double z2) {
+        return getAABB(x1, y1, z1, x2, y2, z2);
+    }
+
     public void clear() {}
 
     public void cleanPool() {}

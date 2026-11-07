@@ -52,6 +52,7 @@ public class ModLoader {
 
     public static void mcc$load(BaseMod mod) {
         if (!MODS.contains(mod)) MODS.add(mod);
+        org.slf4j.LoggerFactory.getLogger("LegacyConnector/ModLoader").info("Loading ModLoader mod {} {}", mod.getName(), mod.getVersion());
         mod.load();
         registerWorldGen(mod);
         registerFuel(mod);

@@ -8,7 +8,7 @@ import java.util.Map;
 public final class LiquidDictionary {
     private static final Map<String, LiquidStack> LIQUIDS = new HashMap<>();
 
-    private LiquidDictionary() {}
+    public LiquidDictionary() {}
 
     /** The liquid called {@code name}, registered with {@code liquid} when it is new; the canonical stack otherwise. */
     public static synchronized LiquidStack getOrCreateLiquid(String name, LiquidStack liquid) {

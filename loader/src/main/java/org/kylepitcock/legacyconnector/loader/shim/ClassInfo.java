@@ -22,6 +22,8 @@ public final class ClassInfo {
      * classes {@code LegacyJarTransformer.scan} returns: another jar's subclass of such a class finds the vanilla members it inherits through them.
      */
     public String[] originalSupers;
+    /** The name the class has in its own jar before translation (a default-package class is renamed into a package), set like {@link #originalSupers}. */
+    public String originalName;
 
     public ClassInfo(String name, String superName, List<String> interfaces, int access) {
         this.name = name;

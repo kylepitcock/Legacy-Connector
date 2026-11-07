@@ -164,6 +164,12 @@ public final class LegacyRemapper extends Remapper {
         overrides.put(from, to);
     }
 
+    /** A default-package class of another jar, which that jar moved to {@code to}; vanilla (notch) and ModLoader names are not taken for it. */
+    public void peerDefaultPackage(String from, String to) {
+        if (MODLOADER_CLASSES.contains(from) || (notch != null && notch.mcpClass(from) != null)) return;
+        overrides.putIfAbsent(from, to);
+    }
+
     /** Packages that jars of several legacy versions define (see {@link CrossVersionPackages}). */
     private CrossVersionPackages crossVersion = CrossVersionPackages.NONE;
 
@@ -178,42 +184,42 @@ public final class LegacyRemapper extends Remapper {
     public void preventCollisions(org.objectweb.asm.tree.ClassNode original) {
         preventInheritedCallCollisions(original);
         java.util.Map<String, java.util.List<String>> fields = new HashMap<>();
-        for (var f : original.fields) fields.computeIfAbsent(mcp.field(f.name) + ":" + f.desc, k -> new java.util.ArrayList<>()).add(f.name);
+        for (var f : original.fields) fields.computeIfAbsent(readableField(original.name, f.name) + ":" + f.desc, k -> new java.util.ArrayList<>()).add(f.name);
         fields.values().forEach(names -> {
-            if (names.size() > 1) for (String n : names) if (!mcp.field(n).equals(n)) keep.add(original.name + "." + n);
+            if (names.size() > 1) for (String n : names) if (!readableField(original.name, n).equals(n)) keep.add(original.name + "." + n);
         });
         if (members != null) {
             // A forward rename (1.5.2 Entity.getEntityName to 1.7.10 getCommandSenderName) must not collide with a method the class declares under
             // the new name already (1.5.2 mods implement both; the two merged in 1.7.10): the class keeps its old name, calls through it too.
             java.util.Set<String> declaredReadable = new java.util.HashSet<>();
-            for (var m : original.methods) declaredReadable.add(mcp.method(m.name) + m.desc);
+            for (var m : original.methods) declaredReadable.add(readable(original.name, m.name, m.desc) + m.desc);
             for (var m : original.methods) {
-                String readable = mcp.method(m.name);
+                String readable = readable(original.name, m.name, m.desc);
                 if (readable.startsWith("func_") || readable.startsWith("<")) continue;
                 String forwarded = members.method(legacyClass(original.name), readable, legacyDesc(m.desc), this::localSupers);
                 if (!forwarded.equals(readable) && declaredReadable.contains(forwarded + m.desc)) keep.add(original.name + "." + m.name + m.desc);
             }
         }
         java.util.Map<String, java.util.List<String>> methods = new HashMap<>();
-        for (var m : original.methods) methods.computeIfAbsent(mcp.method(m.name) + m.desc, k -> new java.util.ArrayList<>()).add(m.name);
+        for (var m : original.methods) methods.computeIfAbsent(readable(original.name, m.name, m.desc) + m.desc, k -> new java.util.ArrayList<>()).add(m.name);
         methods.forEach((key, names) -> {
-            if (names.size() > 1) for (String n : names) if (!mcp.method(n).equals(n)) keep.add(original.name + "." + n + key.substring(key.indexOf('(')));
+            if (names.size() > 1) for (String n : names) if (!readable(original.name, n, key.substring(key.indexOf('('))).equals(n)) keep.add(original.name + "." + n + key.substring(key.indexOf('(')));
         });
         if (members != null) {
             // a forward rename (getEntityName -> getCommandSenderName) onto a method the class declares itself, or two renames onto one name, would duplicate it
             java.util.Map<String, java.util.List<org.objectweb.asm.tree.MethodNode>> byTarget = new HashMap<>();
             for (var m : original.methods) {
-                String readable = mcp.method(m.name);
+                String readable = readable(original.name, m.name, m.desc);
                 String mapped = members.method(legacyClass(original.name), readable, legacyDesc(m.desc), this::localSupers);
                 byTarget.computeIfAbsent(mapped + m.desc, k -> new java.util.ArrayList<>()).add(m);
             }
             byTarget.forEach((key, list) -> {
                 if (list.size() < 2) return;
                 String target = key.substring(0, key.indexOf('('));
-                boolean declaresTarget = list.stream().anyMatch(m -> mcp.method(m.name).equals(target));
+                boolean declaresTarget = list.stream().anyMatch(m -> readable(original.name, m.name, m.desc).equals(target));
                 boolean first = true;
                 for (var m : list) {
-                    if (mcp.method(m.name).equals(target)) continue; // the declaration that already has the target name stays
+                    if (readable(original.name, m.name, m.desc).equals(target)) continue; // the declaration that already has the target name stays
                     if (!declaresTarget && first) { first = false; continue; } // one of the renamed ones may take the name
                     keep.add(original.name + "." + m.name + m.desc);
                 }
@@ -244,6 +250,23 @@ public final class LegacyRemapper extends Remapper {
         }
     }
 
+    /** The readable (MCP) name of a method a class declares, as {@link #mapMethodName} will produce it (a notch-named jar's declarations go through the notch table first). */
+    private String readable(String owner, String name, String desc) {
+        if (notch != null && !name.startsWith("func_")) {
+            String srg = notch.method(owner, name, desc, notchLocals);
+            if (srg != null) name = srg;
+        }
+        return mcp.method(name);
+    }
+
+    private String readableField(String owner, String name) {
+        if (notch != null && !name.startsWith("field_")) {
+            String srg = notch.field(owner, name, notchLocals);
+            if (srg != null) name = srg;
+        }
+        return mcp.field(name);
+    }
+
     public LegacyVersion version() {
         return version;
     }
@@ -256,7 +279,7 @@ public final class LegacyRemapper extends Remapper {
 
     /** True for the class a 1.5.2 jar calls {@code EntityLiving} (also under its obfuscated name). */
     boolean isLiving152(String internalName) {
-        return version == LegacyVersion.V1_5_2 && internalName != null && "net/minecraft/entity/EntityLiving".equals(legacyClass(internalName));
+        return (version == LegacyVersion.V1_5_2 || version == LegacyVersion.V1_4_7) && internalName != null && "net/minecraft/entity/EntityLiving".equals(ForwardRenames.flat(version, legacyClass(internalName)));
     }
 
     @Override

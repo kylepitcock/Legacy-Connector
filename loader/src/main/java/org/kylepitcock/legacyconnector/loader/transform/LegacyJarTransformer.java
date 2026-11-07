@@ -207,6 +207,12 @@ public final class LegacyJarTransformer {
                 dropped++;
                 continue;
             }
+            if (name.indexOf('/') < 0) {
+                // The default package (ModLoader's mod_* classes, reobfuscated helpers): a named module cannot hold classes outside a package.
+                remapper.override(name, privateRoot + name);
+                for (LegacyModDecl mod : jar.mods) if (name.equals(mod.mainClass)) mod.mainClass = privateRoot + name;
+                continue;
+            }
             if (!LegacyVersion.isRelocatedRoot(name)) continue;
             String forwarded = org.kylepitcock.legacyconnector.loader.mapping.ForwardRenames.map(jar.version, name);
             if (shim.contains(jar.version.linkPrefix() + forwarded)
@@ -244,6 +250,7 @@ public final class LegacyJarTransformer {
                 reader.accept(classRemapper(node, remapper), ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
                 ClassInfo info = ClassInfo.of(node);
                 String[] ifaces = reader.getInterfaces();
+                info.originalName = reader.getClassName();
                 info.originalSupers = new String[1 + ifaces.length];
                 info.originalSupers[0] = reader.getSuperName();
                 System.arraycopy(ifaces, 0, info.originalSupers, 1, ifaces.length);
@@ -257,7 +264,7 @@ public final class LegacyJarTransformer {
 
     /** The class visitor that relocates and renames a legacy class (1.5.2 jars keep the real EntityLiving where they mean the class itself). */
     private static ClassRemapper classRemapper(org.objectweb.asm.ClassVisitor next, LegacyRemapper remapper) {
-        return remapper.version() == LegacyVersion.V1_5_2 ? new Living152ClassRemapper(next, remapper) : new ClassRemapper(next, remapper);
+        return (remapper.version() == LegacyVersion.V1_5_2 || remapper.version() == LegacyVersion.V1_4_7) ? new Living152ClassRemapper(next, remapper) : new ClassRemapper(next, remapper);
     }
 
     /** 1.6.4 jars that name Minecraft by its obfuscated names need the jar's own class hierarchy to find inherited members (see NotchNames). */
@@ -305,6 +312,10 @@ public final class LegacyJarTransformer {
         if (platformCopies > 0) result.notes.add("Dropped " + platformCopies + " bundled Mixin class(es) and launcher service file(s) (NeoForge provides Mixin)");
         notchLocals(classes, remapper, peers);
         result.droppedShimDuplicates = relocateBundled(jar, classes, remapper);
+        // another jar's default-package classes (ModLoader mods share a base mod: mod_bspkrsCore) moved into a package of theirs: this jar names them by the old name
+        for (ClassInfo peer : peers.values()) {
+            if (peer.originalName != null && peer.originalName.indexOf('/') < 0 && !classes.containsKey(peer.originalName)) remapper.peerDefaultPackage(peer.originalName, peer.name);
+        }
         preventCollisions(classes, remapper);
         if (result.droppedShimDuplicates > 0) {
             result.notes.add("Dropped " + result.droppedShimDuplicates + " bundled copies of Minecraft/Forge classes (the shim provides them)");

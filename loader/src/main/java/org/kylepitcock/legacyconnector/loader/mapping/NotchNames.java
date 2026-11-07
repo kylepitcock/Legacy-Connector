@@ -25,6 +25,9 @@ public final class NotchNames {
 
     private final Map<String, String> classes = new HashMap<>();
     private final Map<String, String[]> supers = new HashMap<>();
+    /** MCP class name to notch name, for walking up from a Forge class (not obfuscated) into the vanilla interfaces it extends. */
+    private final Map<String, String> byMcp = new HashMap<>();
+    private org.kylepitcock.legacyconnector.loader.synth.LegacyHierarchyData hierarchy;
     private final Map<String, String> fields = new HashMap<>();
     private final Map<String, String> methods = new HashMap<>();
 
@@ -55,6 +58,7 @@ public final class NotchNames {
                 switch (p[0]) {
                     case "C" -> {
                         n.classes.put(p[1], p[2]);
+                        n.byMcp.put(p[2], p[1]);
                         String[] ifaces = p.length > 4 && !p[4].equals("-") ? p[4].split(",") : new String[0];
                         String[] all = new String[1 + ifaces.length];
                         all[0] = p.length > 3 && !p[3].equals("-") ? p[3] : null;
@@ -73,7 +77,23 @@ public final class NotchNames {
         } catch (IOException e) {
             throw new IllegalStateException("Corrupt " + resource, e);
         }
+        for (org.kylepitcock.legacyconnector.loader.LegacyVersion v : org.kylepitcock.legacyconnector.loader.LegacyVersion.values()) {
+            if (v.id().equals(versionId)) n.hierarchy = org.kylepitcock.legacyconnector.loader.synth.LegacyHierarchyData.forVersion(v);
+        }
         return n;
+    }
+
+    /** The supertypes of a class this table does not list (a Forge class such as ISidedInventory), in notch names where they have one: from the version's API data. */
+    private String[] upFromHierarchy(String owner) {
+        if (hierarchy == null || owner.indexOf('/') < 0 && classes.containsKey(owner)) return null;
+        var entry = hierarchy.get(owner);
+        if (entry == null) return null;
+        java.util.List<String> all = new java.util.ArrayList<>();
+        if (entry.superName() != null) all.add(entry.superName());
+        all.addAll(entry.interfaces());
+        String[] out = new String[all.size()];
+        for (int i = 0; i < out.length; i++) out[i] = byMcp.getOrDefault(all.get(i), all.get(i));
+        return out;
     }
 
     public boolean isEmpty() {
@@ -100,6 +120,7 @@ public final class NotchNames {
         if (hit != null) return hit;
         String[] up = supers.get(owner);
         if (up == null && locals != null) up = locals.get(owner);
+        if (up == null) up = upFromHierarchy(owner);
         if (up == null) return null;
         for (String s : up) {
             String r = find(s, name, desc, table, locals, depth + 1);

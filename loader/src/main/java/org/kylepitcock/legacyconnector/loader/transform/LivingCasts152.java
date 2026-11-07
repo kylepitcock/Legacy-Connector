@@ -33,7 +33,7 @@ public final class LivingCasts152 {
 
     /** @return the number of call or field sites that got a cast */
     public static int apply(ClassNode node, Hierarchy h, LegacyVersion version) {
-        if (version != LegacyVersion.V1_5_2) return 0;
+        if (version != LegacyVersion.V1_5_2 && version != LegacyVersion.V1_4_7) return 0; // 1.4.7 has the same single EntityLiving
         String base = version.linkPrefix() + "net/minecraft/entity/EntityLivingBase";
         String living = version.linkPrefix() + "net/minecraft/entity/EntityLiving";
         if (h.find(base) == null || h.find(living) == null) return 0;
