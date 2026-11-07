@@ -51,7 +51,7 @@ public final class Forge1201Runtime {
         NeoForge.EVENT_BUS.addListener(Forge1201Runtime::onPlayerTickPost);
         NeoForge.EVENT_BUS.addListener(Forge1201Runtime::onEntityJoin);
         Forge1201Events.init();
-        if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) Forge1201Client.init();
+        if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) Forge1201Client.init(modBus);
     }
 
     /** The "1.20.1 content registered" line of the server self test (mirrors the 1.12.2 one). */

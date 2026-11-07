@@ -81,3 +81,13 @@ net/minecraftforge/event/entity/SpawnPlacementRegisterEvent	net/neoforged/neofor
 net/minecraftforge/event/entity/SpawnPlacementRegisterEvent$Operation	net/neoforged/neoforge/event/entity/RegisterSpawnPlacementsEvent$Operation
 net/minecraftforge/client/event/TextureStitchEvent$Post	net/neoforged/neoforge/client/event/TextureAtlasStitchedEvent
 net/minecraftforge/client/event/ModelEvent$RegisterGeometryLoaders	net/neoforged/neoforge/client/event/ModelEvent$RegisterGeometryLoaders
+net/minecraftforge/items/wrapper/EmptyHandler	net/neoforged/neoforge/items/wrapper/EmptyItemHandler
+net/minecraftforge/common/extensions/IForgeBlock	net/neoforged/neoforge/common/extensions/IBlockExtension
+net/minecraftforge/common/world/ForgeBiomeModifiers$AddFeaturesBiomeModifier	net/neoforged/neoforge/common/world/BiomeModifiers$AddFeaturesBiomeModifier
+net/minecraftforge/common/world/ForgeBiomeModifiers$AddSpawnsBiomeModifier	net/neoforged/neoforge/common/world/BiomeModifiers$AddSpawnsBiomeModifier
+net/minecraftforge/common/world/ForgeBiomeModifiers$AddCarversBiomeModifier	net/neoforged/neoforge/common/world/BiomeModifiers$AddCarversBiomeModifier
+net/minecraftforge/common/world/ForgeBiomeModifiers$RemoveFeaturesBiomeModifier	net/neoforged/neoforge/common/world/BiomeModifiers$RemoveFeaturesBiomeModifier
+net/minecraftforge/common/world/ForgeBiomeModifiers$RemoveSpawnsBiomeModifier	net/neoforged/neoforge/common/world/BiomeModifiers$RemoveSpawnsBiomeModifier
+net/minecraftforge/common/world/ForgeBiomeModifiers$AddSpawnCostsBiomeModifier	net/neoforged/neoforge/common/world/BiomeModifiers$AddSpawnCostsBiomeModifier
+net/minecraftforge/common/world/ForgeBiomeModifiers$RemoveSpawnCostsBiomeModifier	net/neoforged/neoforge/common/world/BiomeModifiers$RemoveSpawnCostsBiomeModifier
+net/minecraftforge/common/world/ForgeBiomeModifiers$RemoveCarversBiomeModifier	net/neoforged/neoforge/common/world/BiomeModifiers$RemoveCarversBiomeModifier
