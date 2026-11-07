@@ -27,6 +27,8 @@ public final class ClientB173 implements MenusB173.Client {
                                 return arrow.texture();
                             }
                         }));
+        modBus.addListener((net.neoforged.neoforge.client.event.EntityRenderersEvent.RegisterRenderers e) ->
+                e.registerEntityRenderer(org.kylepitcock.legacyconnector.LegacyConnector.BETA_THROWN.get(),ThrownRendererB173::new));
         modBus.addListener((RegisterMenuScreensEvent e) -> {
             var type = org.kylepitcock.legacyconnector.LegacyConnector.LEGACY_MENU_B1_7_3.get();
             e.register(type, LegacyB173Screen::new);

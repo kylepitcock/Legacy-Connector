@@ -41,6 +41,10 @@ public final class LegacyConnector {
             BETA_ENTITIES.register("arrow_b1_7_3", () -> net.minecraft.world.entity.EntityType.Builder
                     .<org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Arrow>of(org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Arrow::new, net.minecraft.world.entity.MobCategory.MISC)
                     .sized(0.5F,0.5F).clientTrackingRange(8).updateInterval(1).build("legacyconnector:arrow_b1_7_3"));
+    public static final DeferredHolder<net.minecraft.world.entity.EntityType<?>, net.minecraft.world.entity.EntityType<org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Arrow>> BETA_THROWN =
+            BETA_ENTITIES.register("thrown_b1_7_3", () -> net.minecraft.world.entity.EntityType.Builder
+                    .<org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Arrow>of(org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Arrow::new, net.minecraft.world.entity.MobCategory.MISC)
+                    .sized(0.25F,0.25F).clientTrackingRange(8).updateInterval(1).build("legacyconnector:thrown_b1_7_3"));
     public static final DeferredHolder<Feature<?>, LegacyWorldGenFeature> LEGACY_WORLDGEN =
             FEATURES.register("legacy_worldgen", () -> new LegacyWorldGenFeature(NoneFeatureConfiguration.CODEC));
     static {

@@ -183,8 +183,20 @@ Client arrows use the standard arrow geometry with the mod's own PNG when its re
 constant texture. `ProjectileTexturesB173` reads `AddRenderer` registrations and delegated registration methods
 without loading client renderer classes on the server. The generated resource pack includes the original PNG;
 the host synchronizes the texture identifier and restores it after loading. Conditional/animated texture
-selection, custom geometry and other projectile types still need their renderer/entity bridges. Skyroot
+selection and custom geometry still need their renderer bridges. Skyroot
 milk/poison/remedy effects and mod creatures are separate work.
+
+Snowball/egg-style projectiles with `setSnowballHeading` or `setEggHeading` use the same server host through
+`legacyconnector:thrown_b1_7_3`, with a separate camera-facing renderer. A standalone PNG supplies the full
+billboard texture; registrations using `ProjectileEntityRenderer(item.getTextureId(0))` retain that item's
+modern sprite/model. Texture or item-stack data is tracked to clients and reconstructed after loading.
+Shooter fields are recovered by their legacy owner/thrower name or a unique living-entity field, including
+private obfuscated fields. This fixes the previously rejected Hammer of Notch wave and NetherCraft slime eggs.
+Slime-egg flight, damage and ignition run the mod's code; hatching custom slime mobs still requires the mob bridge.
+
+`compat/b173/ThrownSelfTest` checks those two actual mod items through right-click, including use cost,
+spawn, shooter, renderer data, save/reload, flight, mob impacts and wall impacts. Client appearance needs
+an in-game check; the headless tests verify original wave PNG bytes and the slime egg's item sprite.
 
 `compat/b173/BucketBowSelfTest` uses the actual installed NetherCraft and Aether classes through their modern
 item entry points. Bucket checks cover source pickup, placement, flowing-fluid rejection, misses and denied
