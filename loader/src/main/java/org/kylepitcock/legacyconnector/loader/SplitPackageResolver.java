@@ -47,6 +47,45 @@ final class SplitPackageResolver {
 
     /** Also the packages of the JDK's own java.xml module ({@code javax/xml/namespace} bundled by MoCreatures splits it against enderio's copy). */
     private static boolean dropped(String pkg) {
+        return droppedWith(pkg, hostPackages());
+    }
+
+    /**
+     * The game's own copy of Nashorn ({@code org.openjdk.nashorn}, NeoForge's coremod engine): HuajiAge bundles another one, and the
+     * Scala/Akka library reads both modules ("Modules org.openjdk.nashorn and huajiage export package ... to module akka.actor").
+     */
+    private static final java.util.regex.Pattern HOST_PREFIXES = java.util.regex.Pattern.compile("org/openjdk/nashorn(/.*)?|jdk/internal/dynalink(/.*)?");
+
+    /** Packages of every named module in the layers above this one (boot layer, the game's library layers): a legacy jar's copy would be a second exporter. */
+    private static volatile Set<String> hostPackages;
+
+    private static Set<String> hostPackages() {
+        Set<String> r = hostPackages;
+        if (r != null) return r;
+        Set<String> out = new HashSet<>();
+        try {
+            Set<ModuleLayer> seen = new HashSet<>();
+            java.util.ArrayDeque<ModuleLayer> todo = new java.util.ArrayDeque<>();
+            ModuleLayer own = SplitPackageResolver.class.getModule().getLayer();
+            if (own != null) todo.addAll(own.parents());
+            todo.add(ModuleLayer.boot());
+            while (!todo.isEmpty()) {
+                ModuleLayer l = todo.poll();
+                if (!seen.add(l)) continue;
+                for (Module m : l.modules()) {
+                    for (String p : m.getPackages()) out.add(p.replace('.', '/'));
+                }
+                todo.addAll(l.parents());
+            }
+        } catch (RuntimeException e) {
+            // best effort: the static list still applies
+        }
+        return hostPackages = out;
+    }
+
+    /** Visible for tests: the decision for a package given the host's packages. */
+    static boolean droppedWith(String pkg, Set<String> host) {
+        if (host.contains(pkg) || HOST_PREFIXES.matcher(pkg).matches()) return true;
         return DROP.contains(pkg) || JDK_XML.matcher(pkg).matches() || pkg.equals("org/w3c/dom") || pkg.startsWith("org/w3c/dom/")
                 || pkg.equals("org/xml/sax") || pkg.startsWith("org/xml/sax/");
     }
