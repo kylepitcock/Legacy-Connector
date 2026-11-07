@@ -237,7 +237,7 @@ classes 610/1610, methods 1393/4700, fields 291/558. `./gradlew verify1201 -Pver
 
 Open: `ArmorMaterial`/`Tier` implementations, custom `Enchantment` subclasses (data-driven now), `MobType`, `RenderSystem.getModelViewStack`, `LootDataManager`,
 recipe serializers (codecs), datagen, super-constructor calls of changed constructors (only `=swap` ones), mixin triage (not started).
-## 10. Status 2026-11-08: milestone 1 (Forge API facades)
+## 11. Status 2026-11-08: milestone 1 (Forge API facades)
 
 **Milestone 1 reached:** a Forge 1.20.1 content mod loads and registers its content on a NeoForge 1.21.1 server through the layer. Another Furniture 3.0.4 registers
 174 blocks, 159 items, 1 entity type and 4 block entity types (`run-subtest/mods/1.20.1/`, `experimental.forge1201=true`; the server self test logs
