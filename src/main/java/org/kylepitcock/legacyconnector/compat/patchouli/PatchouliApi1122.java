@@ -127,39 +127,59 @@ public final class PatchouliApi1122 implements PatchouliAPI.IPatchouliAPI {
 
     @Override
     public IMultiblock getMultiblock(ResourceLocation res) {
-        return Multiblock1122.view(api().getMultiblock(res.mcc$modern()));
+        var found = api().getMultiblock(res.mcc$modern());
+        return found == null ? null : Multiblock1122.view(() -> found);
     }
 
+    /** Multiblocks the mods registered before their blocks existed as modern blocks: registered with the modern Patchouli by {@link #flush}. */
+    private static final java.util.Map<net.minecraft.resources.ResourceLocation, IMultiblock> PENDING = new java.util.LinkedHashMap<>();
+    private static boolean flushed;
+
     @Override
-    public IMultiblock registerMultiblock(ResourceLocation res, IMultiblock mb) {
+    public synchronized IMultiblock registerMultiblock(ResourceLocation res, IMultiblock mb) {
         if (mb instanceof Multiblock1122 view) {
-            api().registerMultiblock(res.mcc$modern(), view.modern);
-            return mb;
+            if (flushed) api().registerMultiblock(res.mcc$modern(), view.modern());
+            else PENDING.put(res.mcc$modern(), mb);
         }
         return mb;
     }
 
+    /** Registers the multiblocks the mods made in preInit (called once every mod's blocks are registered). */
+    public static synchronized void flush() {
+        flushed = true;
+        for (var e : PENDING.entrySet()) {
+            try {
+                api().registerMultiblock(e.getKey(), ((Multiblock1122) e.getValue()).modern());
+            } catch (RuntimeException | LinkageError ex) {
+                LOG.warn("Cannot register the multiblock {}: {}", e.getKey(), ex.toString());
+            }
+        }
+        PENDING.clear();
+    }
+
     @Override
     public IMultiblock makeMultiblock(String[][] pattern, Object... targets) {
-        Object[] converted = new Object[targets.length];
-        for (int i = 0; i < targets.length; i++) {
-            Object t = targets[i];
-            if (t instanceof IStateMatcher m) converted[i] = Matchers1122.modern(m);
-            else if (t instanceof IBlockState s) converted[i] = api().stateMatcher(StatesBridge1122.toModern(s));
-            else if (t instanceof Block b) converted[i] = api().looseBlockMatcher(Ids1122.modern(b));
-            else converted[i] = t;
-        }
-        return Multiblock1122.view(api().makeMultiblock(pattern, converted));
+        return Multiblock1122.view(() -> {
+            Object[] converted = new Object[targets.length];
+            for (int i = 0; i < targets.length; i++) {
+                Object t = targets[i];
+                if (t instanceof IStateMatcher m) converted[i] = Matchers1122.modern(m);
+                else if (t instanceof IBlockState s) converted[i] = api().stateMatcher(StatesBridge1122.toModern(s));
+                else if (t instanceof Block b) converted[i] = api().looseBlockMatcher(Ids1122.modern(b));
+                else converted[i] = t;
+            }
+            return api().makeMultiblock(pattern, converted);
+        });
     }
 
     @Override
     public IStateMatcher predicateMatcher(IBlockState display, Predicate<IBlockState> predicate) {
-        return Matchers1122.view(api().predicateMatcher(StatesBridge1122.toModern(display), modernPredicate(predicate)));
+        return Matchers1122.view(() -> api().predicateMatcher(StatesBridge1122.toModern(display), modernPredicate(predicate)));
     }
 
     @Override
     public IStateMatcher predicateMatcher(Block display, Predicate<IBlockState> predicate) {
-        return Matchers1122.view(api().predicateMatcher(Ids1122.modern(display), modernPredicate(predicate)));
+        return Matchers1122.view(() -> api().predicateMatcher(Ids1122.modern(display), modernPredicate(predicate)));
     }
 
     private static Predicate<BlockState> modernPredicate(Predicate<IBlockState> legacy) {
@@ -171,36 +191,36 @@ public final class PatchouliApi1122 implements PatchouliAPI.IPatchouliAPI {
 
     @Override
     public IStateMatcher stateMatcher(IBlockState state) {
-        return Matchers1122.view(api().stateMatcher(StatesBridge1122.toModern(state)));
+        return Matchers1122.view(() -> api().stateMatcher(StatesBridge1122.toModern(state)));
     }
 
     @Override
     public IStateMatcher looseBlockMatcher(Block block) {
-        return Matchers1122.view(api().looseBlockMatcher(Ids1122.modern(block)));
+        return Matchers1122.view(() -> api().looseBlockMatcher(Ids1122.modern(block)));
     }
 
     @Override
     public IStateMatcher strictBlockMatcher(Block block) {
-        return Matchers1122.view(api().strictBlockMatcher(Ids1122.modern(block)));
+        return Matchers1122.view(() -> api().strictBlockMatcher(Ids1122.modern(block)));
     }
 
     @Override
     public IStateMatcher displayOnlyMatcher(IBlockState state) {
-        return Matchers1122.view(api().displayOnlyMatcher(StatesBridge1122.toModern(state)));
+        return Matchers1122.view(() -> api().displayOnlyMatcher(StatesBridge1122.toModern(state)));
     }
 
     @Override
     public IStateMatcher displayOnlyMatcher(Block block) {
-        return Matchers1122.view(api().displayOnlyMatcher(Ids1122.modern(block)));
+        return Matchers1122.view(() -> api().displayOnlyMatcher(Ids1122.modern(block)));
     }
 
     @Override
     public IStateMatcher airMatcher() {
-        return Matchers1122.view(api().airMatcher());
+        return Matchers1122.view(() -> api().airMatcher());
     }
 
     @Override
     public IStateMatcher anyMatcher() {
-        return Matchers1122.view(api().anyMatcher());
+        return Matchers1122.view(() -> api().anyMatcher());
     }
 }

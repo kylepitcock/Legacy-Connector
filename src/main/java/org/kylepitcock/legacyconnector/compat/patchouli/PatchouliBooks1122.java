@@ -33,6 +33,12 @@ public final class PatchouliBooks1122 {
         return net.neoforged.fml.ModList.get().isLoaded("patchouli") && LegacyConfig.bridgeEnabled("patchouli");
     }
 
+    /** Makes the modern guide book usable by legacy code (called before any mod's preInit when the bridge is on). */
+    public static void registerBridge() {
+        org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.bridgeModernItems("patchouli");
+        BookStacks1122.register();
+    }
+
     /** Resolver over the legacy registries. */
     static final PatchouliBooks.Resolver RESOLVER = new PatchouliBooks.Resolver() {
         @Override

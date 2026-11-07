@@ -311,6 +311,8 @@ public final class Platform1122 implements LegacyPlatform {
         legacyconnector.v1_12_2.net.minecraftforge.energy.CapabilityEnergy.register();
         // Baubles' capabilities exist before any mod's @CapabilityInject for them is resolved (only with Curios: the Baubles bridge)
         if (net.neoforged.fml.ModList.get().isLoaded("curios")) legacyconnector.v1_12_2.baubles.api.cap.BaublesCapabilities.mcc$init();
+        // Patchouli's guide book is a modern item 1.12 recipes and loot name
+        if (org.kylepitcock.legacyconnector.compat.patchouli.PatchouliBooks1122.active()) org.kylepitcock.legacyconnector.compat.patchouli.PatchouliBooks1122.registerBridge();
         // mods create their own registries here, before any preInit (EnderIO needs its mod object registry then)
         post(new legacyconnector.v1_12_2.net.minecraftforge.event.RegistryEvent.NewRegistry());
     }
@@ -490,6 +492,8 @@ public final class Platform1122 implements LegacyPlatform {
     public void afterPostInit() {
         Loader.mcc$setState(LoaderState.AVAILABLE);
         org.kylepitcock.legacyconnector.v1_12_2.bridge.ItemBridge1122.completeSubtypes(); // mods' own registries are filled by now
+        // multiblocks the mods made in preInit (before their blocks were modern blocks) go to the modern Patchouli now
+        if (org.kylepitcock.legacyconnector.compat.patchouli.PatchouliBooks1122.active()) org.kylepitcock.legacyconnector.compat.patchouli.PatchouliApi1122.flush();
         PlacementSelfTest1122.register();
         org.kylepitcock.legacyconnector.v1_12_2.bridge.FluidBridge1122.register();
         org.kylepitcock.legacyconnector.v1_12_2.bridge.TileEntityBridge1122.registerType();

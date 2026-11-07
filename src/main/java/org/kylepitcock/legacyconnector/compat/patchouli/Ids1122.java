@@ -153,7 +153,12 @@ public final class Ids1122 {
 
     /** A modern block of a legacy one (its default state's). */
     public static net.minecraft.world.level.block.Block modern(Block block) {
-        return block == null ? null : BlockBridge1122.modern(block);
+        if (block == null) return null;
+        var modern = BlockBridge1122.modern(block);
+        if (modern != null) return modern;
+        // a vanilla wrapper or a block the bridge knows only through its states
+        BlockState state = StatesBridge1122.toModern(block.getDefaultState());
+        return state == null ? null : state.getBlock();
     }
 
     /** {@code mod:name} of an entity with the id a 1.12 mod registered under; the modern id the layer gave it when known. */
