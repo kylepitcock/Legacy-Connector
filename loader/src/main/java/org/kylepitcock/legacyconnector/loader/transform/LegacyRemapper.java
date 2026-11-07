@@ -25,6 +25,7 @@ public final class LegacyRemapper extends Remapper {
     /** Classes removed from the JDK (or moved) since Java 8, mapped to replacements. Applies to every version. */
     static final Map<String, String> JDK_RELOCATIONS = Map.ofEntries(
             Map.entry("javax/xml/bind/DatatypeConverter", "org/kylepitcock/legacyconnector/compat/jdk/DatatypeConverter"),
+            Map.entry("javax/xml/bind/annotation/adapters/HexBinaryAdapter", "org/kylepitcock/legacyconnector/compat/jdk/HexBinaryAdapter"),
             Map.entry("sun/misc/BASE64Encoder", "org/kylepitcock/legacyconnector/compat/jdk/BASE64Encoder"),
             Map.entry("sun/misc/BASE64Decoder", "org/kylepitcock/legacyconnector/compat/jdk/BASE64Decoder"),
             Map.entry("sun/reflect/Reflection", "org/kylepitcock/legacyconnector/compat/jdk/Reflection"),
