@@ -52,3 +52,18 @@ full run; "loads" does not mean every feature was played through.
 After launching, read **`logs/legacyconnector-report.txt`**. For every legacy jar it lists the detected version and mod
 ids, references that could not be linked, and which legacy APIs were synthesized (they link but do nothing yet).
 At runtime, `LegacyConnector/Stubs` log lines show which synthesized APIs are actually called.
+
+## What the compatibility ratings mean
+
+The [compatibility site](https://kylepitcock.github.io/Legacy-Connector/) rates every mod with one of these (renamed on 2026-11-06 to plain words; the data keys did not change, so old links and reports still work):
+
+| Rating (was) | Meaning |
+|---|---|
+| **Fully playable** (Near-perfect) | You can play it in survival; the maintainer played it and only small problems are known. |
+| **Mostly playable** (Playable) | Played in survival and most of it works; some mechanics or abilities are broken or were not tried. |
+| **Basics work** (Works) | Its blocks, items and mobs showed up and behaved in a test; deeper mechanics were not checked. |
+| **Partly working** (Partial) | It loads and part of it is usable, but some features are known to be broken. |
+| **Starts, untested** (Loads) | It starts without errors and passes the startup check; nobody has played it yet. |
+| **Does not start** (Fails to load) | The game starts but the mod is disabled because it failed while loading. |
+| **Crashes the game** (Crashes) | Using it takes the whole game down. |
+| **Not tested** (Untested) | No result yet. |

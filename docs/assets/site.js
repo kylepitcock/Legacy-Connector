@@ -3,7 +3,7 @@
 (function () {
   "use strict";
   var REPO = "kylepitcock/Legacy-Connector";
-  var LABEL = { perfect: "Near-perfect", playable: "Playable", works: "Works", partial: "Partial", loads: "Loads", fails: "Fails to load", crashes: "Crashes", untested: "Untested" };
+  var LABEL = { perfect: "Fully playable", playable: "Mostly playable", works: "Basics work", partial: "Partly working", loads: "Starts, untested", fails: "Does not start", crashes: "Crashes the game", untested: "Not tested" };
   var TIER = ["community", "maintainer", "client", "corpus", "probe"];
   var ORDER = ["perfect", "playable", "works", "partial", "loads", "fails", "crashes"];
   // legacy Minecraft versions with a tab: supported ones first, planned ones greyed out until they have data
@@ -299,11 +299,13 @@
     if (open) d.open = true;
     d.appendChild(el("summary", null, "What the ratings mean"));
     var tiers = el("div", "tiers");
-    [["perfect", "The maintainer played it and considers it survival-ready (only small known issues)."],
-     ["playable", "Played in survival and most gameplay works; some mechanics or abilities are known to be broken or not tried."],
-     ["works", "Works on the surface (tested in game, by hand or by the in-game test that found problems in under 10% of its blocks, items and mobs); deeper gameplay mechanics may not work."],
-     ["partial", "Its content loads in game, but some features are broken or not tested yet."],
-     ["loads", "Registers at startup without errors, not played yet."]].forEach(function (t) {
+    [["perfect", "You can play it in survival. The maintainer played it and only small problems are known."],
+     ["playable", "Played in survival and most of it works. Some mechanics or abilities are known to be broken or were not tried."],
+     ["works", "The basics work: its blocks, items and mobs showed up and behaved in a test (by hand, or by the in-game test that found problems in under 10% of them). Deeper mechanics were not checked."],
+     ["partial", "It loads and you can use part of it, but some features are known to be broken."],
+     ["loads", "It starts without errors and passes the startup check, but nobody has played it yet."],
+     ["fails", "The game starts but the mod is disabled because it failed while loading."],
+     ["crashes", "Using it takes the whole game down."]].forEach(function (t) {
       var row = el("div", "tier");
       row.appendChild(el("span", "badge " + t[0], LABEL[t[0]]));
       row.appendChild(el("span", null, t[1]));
@@ -360,9 +362,9 @@
     var mods = tabMods();
     var counts = { perfect: 0, playable: 0, works: 0, partial: 0, loads: 0, fails: 0, crashes: 0 };
     mods.forEach(function (m) { if (counts[m.status] != null) counts[m.status]++; });
-    [["Mods listed", mods.length, "all", ""], ["Near-perfect", counts.perfect, "perfect", "survival-ready"], ["Playable", counts.playable, "playable", "most gameplay works"], ["Work", counts.works, "works", "surface works; mostly not tested deeply"], ["Partly work", counts.partial, "partial", ""],
-     ["Load (startup test)", counts.loads, "loads", ""], ["Fail to load", counts.fails, "fails", "disabled at startup"],
-     ["Crash", counts.crashes, "crashes", "take the game down"]].forEach(function (s) {
+    [["Mods listed", mods.length, "all", ""], ["Fully playable", counts.perfect, "perfect", "survival-ready"], ["Mostly playable", counts.playable, "playable", "most gameplay works"], ["Basics work", counts.works, "works", "not tested deeply"], ["Partly working", counts.partial, "partial", "some features broken"],
+     ["Starts, untested", counts.loads, "loads", "passes the startup check"], ["Does not start", counts.fails, "fails", "disabled at startup"],
+     ["Crashes the game", counts.crashes, "crashes", "takes the game down"]].forEach(function (s) {
       var d = el("button", "stat");
       d.type = "button";
       d.setAttribute("aria-pressed", String(state.status === s[2]));
@@ -380,7 +382,7 @@
     var box = $("chips");
     box.textContent = "";
     var mods = tabMods();
-    [["all", "All"], ["perfect", "Near-perfect"], ["playable", "Playable"], ["works", "Works"], ["partial", "Partial"], ["loads", "Loads"], ["fails", "Fails"], ["crashes", "Crashes"]].forEach(function (c) {
+    [["all", "All"], ["perfect", "Fully playable"], ["playable", "Mostly playable"], ["works", "Basics work"], ["partial", "Partly working"], ["loads", "Starts, untested"], ["fails", "Does not start"], ["crashes", "Crashes"]].forEach(function (c) {
       var n = c[0] === "all" ? mods.length : mods.filter(function (m) { return m.status === c[0]; }).length;
       var b = el("button", "chip", c[1] + " " + n);
       b.type = "button";
