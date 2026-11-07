@@ -348,7 +348,14 @@ public class LegacyBlockEntity extends BlockEntity implements org.kylepitcock.le
     private CompoundTag descriptionTag() {
         TileEntity te = legacy();
         if (te == null) return null;
-        legacyconnector.v1_7_10.net.minecraft.network.Packet p = te.getDescriptionPacket();
+        legacyconnector.v1_7_10.net.minecraft.network.Packet p;
+        try {
+            p = te.getDescriptionPacket();
+        } catch (RuntimeException | LinkageError e) {
+            // a tile that was never given its state (placed by setBlock, not by its item) can throw here; that must not crash the chunk broadcast
+            logNbtFailure("describing", e);
+            return null;
+        }
         if (p instanceof S35PacketUpdateTileEntity s35 && s35.getNbtCompound() != null) {
             CompoundTag tag = s35.getNbtCompound().mcc$modern().copy();
             tag.putInt("mcc$type", s35.getTileEntityType());
@@ -369,6 +376,19 @@ public class LegacyBlockEntity extends BlockEntity implements org.kylepitcock.le
             tag.putString("mcc$channel", fml.channel());
             tag.putByteArray("mcc$fml", fml.mcc$bytes());
             return tag;
+        }
+        if (p != null) {
+            // A mod's own Packet subclass (1.4.7 RedPower's Packet211TileDesc, registered with Packet.addIdClassMapping): its legacy wire format
+            // (id byte, data) goes along and the client rebuilds it and runs its processPacket, which finds this tile by coordinates.
+            try {
+                java.io.ByteArrayOutputStream bytes = new java.io.ByteArrayOutputStream();
+                legacyconnector.v1_7_10.net.minecraft.network.Packet.writePacket(p, new java.io.DataOutputStream(bytes));
+                CompoundTag tag = new CompoundTag();
+                tag.putByteArray("mcc$wire", bytes.toByteArray());
+                return tag;
+            } catch (java.io.IOException | RuntimeException | LinkageError e) {
+                logNbtFailure("describing", e);
+            }
         }
         return null;
     }
@@ -404,6 +424,20 @@ public class LegacyBlockEntity extends BlockEntity implements org.kylepitcock.le
             if (org.kylepitcock.legacyconnector.core.VirtualLevels.isVirtual(level)) return;
             org.kylepitcock.legacyconnector.v1_7_10.bridge.FmlChannelBridge.deliver(tag.getString("mcc$channel"), tag.getByteArray("mcc$fml"),
                     legacyconnector.v1_7_10.cpw.mods.fml.relauncher.Side.CLIENT, legacyconnector.v1_7_10.net.minecraft.client.network.NetHandlerPlayClient.INSTANCE);
+            return;
+        }
+        if (tag.contains("mcc$wire")) {
+            if (org.kylepitcock.legacyconnector.core.VirtualLevels.isVirtual(level)) return;
+            legacy(); // the mod's packet finds the tile by coordinates: it must exist in the client's world
+            try {
+                var packet = legacyconnector.v1_6_4.forward.Packets164.readPacket(null, new java.io.DataInputStream(new java.io.ByteArrayInputStream(tag.getByteArray("mcc$wire"))),
+                        false, null);
+                if (packet != null) packet.processPacket(legacyconnector.v1_7_10.net.minecraft.client.network.NetHandlerPlayClient.INSTANCE);
+            } catch (java.io.IOException | RuntimeException | LinkageError e) {
+                if (DELIVERY_FAILURES.incrementAndGet() <= 10) {
+                    org.slf4j.LoggerFactory.getLogger("LegacyConnector/TileEntities").warn("{} failed to handle its description packet", getClass().getName(), e);
+                }
+            }
             return;
         }
         TileEntity te = legacy();

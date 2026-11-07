@@ -800,6 +800,17 @@ public final class RenderContext {
             capture.normals[q * 3 + 2] = tmp.z;
             return;
         }
+        if (s.sheet != null && net.minecraft.client.renderer.texture.TextureAtlas.LOCATION_BLOCKS.equals(s.texture) && has147Mods()) {
+            // 1.4.7 index sheet bound as the block atlas (a renderer that draws part of its model from /terrain.png: RedPower's gates in a slot): the
+            // UVs are positions in the 256x256 sheet, which the atlas does not have; they go to the tile the pack cut from it, as IsbrhQuads does for chunks
+            double[][] mapped = mapSheetUv(s.sheet, v0, v1, v2, v3);
+            if (mapped != null) {
+                v0 = mapped[0];
+                v1 = mapped[1];
+                v2 = mapped[2];
+                v3 = mapped[3];
+            }
+        }
         // one buffer lookup per draw: the emulated state cannot change while a draw's quads are emitted
         VertexConsumer buffer = s.drawBuffer;
         if (buffer == null) {
@@ -813,6 +824,33 @@ public final class RenderContext {
         emitCorner(s, buffer, last, entity, overlay, v1, nx, ny, nz);
         emitCorner(s, buffer, last, entity, overlay, v2, nx, ny, nz);
         emitCorner(s, buffer, last, entity, overlay, v3, nx, ny, nz);
+    }
+
+    private static volatile Boolean any147;
+
+    /** Whether a 1.4.7 mod is loaded (only their renderers address the vanilla atlas by sheet positions). */
+    private static boolean has147Mods() {
+        Boolean known = any147;
+        if (known == null) {
+            known = org.kylepitcock.legacyconnector.core.LegacyMods.ordered().stream().anyMatch(m -> "1.4.7".equals(m.version));
+            any147 = known;
+        }
+        return known;
+    }
+
+    /** The corners with their UVs moved from a 1.4.7 sheet's positions into the atlas sprite of the tile the quad lies on; null when the pack has no such tile. */
+    private static double[][] mapSheetUv(String sheet, double[] v0, double[] v1, double[] v2, double[] v3) {
+        double cu = (v0[3] + v1[3] + v2[3] + v3[3]) / 4, cv = (v0[4] + v1[4] + v2[4] + v3[4]) / 4;
+        int col = net.minecraft.util.Mth.clamp((int) Math.floor(cu * 16), 0, 15), row = net.minecraft.util.Mth.clamp((int) Math.floor(cv * 16), 0, 15);
+        var tile = IsbrhQuads.sheetTile(sheet, row * 16 + col);
+        if (tile == null) return null;
+        double[][] out = {v0.clone(), v1.clone(), v2.clone(), v3.clone()};
+        for (double[] c : out) {
+            double lu = net.minecraft.util.Mth.clamp(c[3] * 16.0 - col, 0.0, 1.0), lv = net.minecraft.util.Mth.clamp(c[4] * 16.0 - row, 0.0, 1.0);
+            c[3] = tile.getU0() + lu * (tile.getU1() - tile.getU0());
+            c[4] = tile.getV0() + lv * (tile.getV1() - tile.getV0());
+        }
+        return out;
     }
 
     private static void bound(double[] bounds, double[] p) {
