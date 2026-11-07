@@ -57,9 +57,16 @@ public final class Hierarchy {
      * runtime library. Used to detect integrations with mods that are not installed.
      */
     public boolean isAbsent(String name) {
-        if (name.startsWith("legacyconnector") || isLocal(name) || isPeer(name) || isShim(name) || isSynth(name)) return false;
+        if (name.startsWith("legacyconnector") || isLocal(name) || isPeer(name) || isShim(name) || isSynth(name) || bundledElsewhere.contains(name)) return false;
         for (String p : RUNTIME_LIBRARIES) if (name.startsWith(p)) return false;
         return find(name) == null;
+    }
+
+    private java.util.Set<String> bundledElsewhere = java.util.Set.of();
+
+    /** Classes jars of other legacy versions hold: not absent at run time (see {@link LegacyJarTransformer#bundledByOtherVersions}). */
+    public void bundledElsewhere(java.util.Set<String> names) {
+        this.bundledElsewhere = names;
     }
 
     public boolean isPeer(String name) {

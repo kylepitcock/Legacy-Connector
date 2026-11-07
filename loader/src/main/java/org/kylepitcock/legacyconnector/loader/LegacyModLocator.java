@@ -322,7 +322,9 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                             pkgs.size(), v.id(), pkgs.size() > 12 ? new ArrayList<>(pkgs).subList(0, 12) + " ..." : pkgs);
                 }
             }
-            Map<LegacyVersion, byte[]> modSet = modSetDigests(legacy, bridges, crossVersion);
+            Map<LegacyVersion, Set<String>> bundledElsewhere = classesOfOtherVersions(legacy);
+            transformer.bundledByOtherVersions(bundledElsewhere);
+            Map<LegacyVersion, byte[]> modSet = modSetDigests(legacy, bridges, crossVersion, bundledElsewhere);
             Map<LegacyVersion, Map<String, ClassInfo>> peers = new EnumMap<>(LegacyVersion.class);
             Map<LegacyVersion, SynthDemand> demand = new EnumMap<>(LegacyVersion.class);
             List<RiskyMods.Entry> risky = new ArrayList<>();
@@ -596,8 +598,39 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
         return out.done();
     }
 
+    /**
+     * For each legacy version, the class names (internal form) that the jars of the OTHER versions in this game hold; empty when only one version is
+     * present. Read from the zip directories only.
+     */
+    private static Map<LegacyVersion, Set<String>> classesOfOtherVersions(List<LegacyJar> legacy) {
+        Map<LegacyVersion, Set<String>> own = new EnumMap<>(LegacyVersion.class);
+        for (LegacyJar jar : legacy) {
+            if (jar.version == null || skipReason(jar) != null) continue;
+            Set<String> names = own.computeIfAbsent(jar.version, v -> new HashSet<>());
+            try (java.util.zip.ZipFile zip = new java.util.zip.ZipFile(jar.existing().toFile())) {
+                var en = zip.entries();
+                while (en.hasMoreElements()) {
+                    String n = en.nextElement().getName();
+                    if (n.endsWith(".class") && n.indexOf('/') > 0) names.add(n.substring(0, n.length() - ".class".length()));
+                }
+            } catch (IOException | RuntimeException e) {
+                LOG.debug("Legacy Connector: could not list {}", jar.fileName(), e);
+            }
+        }
+        Map<LegacyVersion, Set<String>> out = new EnumMap<>(LegacyVersion.class);
+        if (own.size() < 2) return out;
+        for (LegacyVersion v : own.keySet()) {
+            Set<String> others = new HashSet<>();
+            own.forEach((ov, names) -> {
+                if (ov != v) others.addAll(names);
+            });
+            out.put(v, others);
+        }
+        return out;
+    }
+
     private static Map<LegacyVersion, byte[]> modSetDigests(List<LegacyJar> legacy, List<LibraryBridges.Bridge> bridges,
-            org.kylepitcock.legacyconnector.loader.transform.CrossVersionPackages crossVersion) throws IOException {
+            org.kylepitcock.legacyconnector.loader.transform.CrossVersionPackages crossVersion, Map<LegacyVersion, Set<String>> bundledElsewhere) throws IOException {
         Map<LegacyVersion, MessageDigest> digests = new EnumMap<>(LegacyVersion.class);
         for (LegacyJar jar : legacy) {
             MessageDigest md = digests.computeIfAbsent(jar.version, v -> SplitPackageResolver.sha256());
@@ -608,6 +641,8 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
         // the relocations depend on the other versions' jars, the FML ids on the modern mods
         byte[] shared = (crossVersion.fingerprint() + "|fmlIds=" + new java.util.TreeMap<>(LegacyModDecl.fmlIds())).getBytes(StandardCharsets.UTF_8);
         digests.forEach((v, md) -> md.update(shared));
+        // the classes of the other versions' jars decide which optional references are stubbed as absent
+        digests.forEach((v, md) -> md.update(Integer.toString(bundledElsewhere.getOrDefault(v, Set.of()).hashCode()).getBytes(StandardCharsets.UTF_8)));
         Map<LegacyVersion, byte[]> out = new EnumMap<>(LegacyVersion.class);
         digests.forEach((v, md) -> out.put(v, md.digest()));
         return out;
