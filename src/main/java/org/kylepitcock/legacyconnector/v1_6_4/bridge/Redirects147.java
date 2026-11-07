@@ -35,6 +35,30 @@ public final class Redirects147 {
         return w.setBlock(x, y, z, block(id), 0, 3);
     }
 
+    /** {@code world.setBlockAndMetadataWithUpdate(x, y, z, id, meta, updateLights)}: neighbor updates and client sync (the light always updates in 1.21). */
+    public static boolean setBlockAndMetadataWithUpdate(World w, int x, int y, int z, int id, int meta, boolean updateLights) {
+        return w.setBlock(x, y, z, block(id), meta, 3);
+    }
+
+    /**
+     * {@code IBlockAccess.getLightBrightness}-style value of a light level 0 to 15 (the curve of the 1.4 and 1.5 world: 0.05 in the dark, 1.0 in full
+     * light): what {@code Block.getBlockBrightness} returned.
+     */
+    public static float lightBrightness(int level) {
+        float f = 1.0F - Math.max(0, Math.min(15, level)) / 15.0F;
+        return (1.0F - f) / (f * 3.0F + 1.0F) * 0.95F + 0.05F;
+    }
+
+    /** The light level 0 to 15 behind a 1.7.10 packed brightness ({@code sky << 20 | block << 4}): the brighter of the two lights. */
+    public static int lightLevel(int packedBrightness) {
+        return Math.max(packedBrightness >> 20 & 15, packedBrightness >> 4 & 15);
+    }
+
+    /** 1.4.7 {@code block.isBlockNormalCube(world, x, y, z)}: an opaque material and a full cube. */
+    public static boolean isBlockNormalCube(legacyconnector.v1_7_10.net.minecraft.block.Block block, World w, int x, int y, int z) {
+        return block.getMaterial().isOpaque() && block.renderAsNormalBlock();
+    }
+
     /** {@code world.setBlockMetadataWithNotify(x, y, z, meta)}. */
     public static void setBlockMetadataWithNotify(World w, int x, int y, int z, int meta) {
         w.setBlockMetadataWithNotify(x, y, z, meta, 3);

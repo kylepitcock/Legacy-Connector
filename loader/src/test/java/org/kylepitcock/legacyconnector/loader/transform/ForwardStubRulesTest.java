@@ -1,6 +1,7 @@
 package org.kylepitcock.legacyconnector.loader.transform;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -84,6 +85,42 @@ class ForwardStubRulesTest {
         int floatLoads = 0;
         for (AbstractInsnNode i = node.methods.get(0).instructions.getFirst(); i != null; i = i.getNext()) if (i.getOpcode() == Opcodes.FLOAD) floatLoads++;
         assertEquals(1, floatLoads);
+    }
+
+    @Test
+    void playerWithoutAProfileGetsAnAnonymousOne() {
+        // 1.5.2: new EntityPlayer(world) in a subclass constructor
+        String player = P + "net/minecraft/entity/player/EntityPlayer";
+        ClassNode node = with(new MethodInsnNode(Opcodes.INVOKESPECIAL, player, "<init>", "(L" + P + "net/minecraft/world/World;)V"));
+        assertEquals(1, ForwardCalls.apply(node, hierarchy(), LegacyVersion.V1_5_2));
+        List<String> b = body(node);
+        assertTrue(b.contains("184 legacyconnector/v1_6_4/forward/Forward164.anonymousProfile()Lcom/mojang/authlib/GameProfile;"), b.toString());
+        assertEquals("183 " + player + ".<init>(L" + P + "net/minecraft/world/World;Lcom/mojang/authlib/GameProfile;)V", b.get(b.size() - 1));
+    }
+
+    @Test
+    void numbersWidenInsteadOfBeingDefaulted() {
+        org.objectweb.asm.Type f = org.objectweb.asm.Type.FLOAT_TYPE;
+        org.objectweb.asm.Type d = org.objectweb.asm.Type.DOUBLE_TYPE;
+        org.objectweb.asm.Type i = org.objectweb.asm.Type.INT_TYPE;
+        org.objectweb.asm.Type j = org.objectweb.asm.Type.LONG_TYPE;
+        assertTrue(org.kylepitcock.legacyconnector.loader.synth.CtorChooser.widens(f, d));
+        assertTrue(org.kylepitcock.legacyconnector.loader.synth.CtorChooser.widens(i, j));
+        assertTrue(!org.kylepitcock.legacyconnector.loader.synth.CtorChooser.widens(d, f));
+        assertEquals(Opcodes.F2D, org.kylepitcock.legacyconnector.loader.synth.CtorChooser.widenOpcode(f, d));
+        assertEquals(Opcodes.I2L, org.kylepitcock.legacyconnector.loader.synth.CtorChooser.widenOpcode(i, j));
+
+        // an AI task whose speed was a float: (owner, F) is served by the (owner, D) constructor with the float converted
+        var ai = new org.kylepitcock.legacyconnector.loader.shim.ClassInfo("legacyconnector/v1_7_10/Ai", "java/lang/Object", List.of(), Opcodes.ACC_PUBLIC);
+        ai.methods.put("<init>(Llegacyconnector/v1_7_10/Owner;D)V", Opcodes.ACC_PUBLIC);
+        var choice = org.kylepitcock.legacyconnector.loader.synth.CtorChooser.choose(ai,
+                new org.objectweb.asm.Type[] {org.objectweb.asm.Type.getObjectType("legacyconnector/v1_7_10/Owner"), f}, (a, p) -> false);
+        assertEquals("(Llegacyconnector/v1_7_10/Owner;D)V", choice.desc());
+        assertEquals(List.of(0, 1), List.of(choice.map()[0], choice.map()[1]));
+        // callers that cannot convert (no narrowing predicate) keep the exact-match rule: the double stays defaulted
+        var strict = org.kylepitcock.legacyconnector.loader.synth.CtorChooser.choose(ai,
+                new org.objectweb.asm.Type[] {org.objectweb.asm.Type.getObjectType("legacyconnector/v1_7_10/Owner"), f});
+        assertEquals(-1, strict.map()[1]);
     }
 
     @Test

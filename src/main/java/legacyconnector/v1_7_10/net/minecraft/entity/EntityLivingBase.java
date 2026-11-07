@@ -105,6 +105,7 @@ public abstract class EntityLivingBase extends Entity {
     public EntityLivingBase(World world) {
         super(world);
         applyEntityAttributes();
+        mcc$applyLegacyMaxHealth();
         // Not the overridable setHealth: mods mirror health into watcher ids they only add later in their constructor.
         if (mcc$entity instanceof LivingEntity l) l.setHealth(l.getMaxHealth());
     }
@@ -191,6 +192,26 @@ public abstract class EntityLivingBase extends Entity {
 
     public void setHealth(float health) {
         if (mcc$entity != null) mcc$living().setHealth(health);
+    }
+
+    /**
+     * 1.5.2 and 1.4.7 mobs declared their maximum health by overriding {@code int getMaxHealth()}; the forward layer bridges such an override to this
+     * method. The default is the current maximum (the attribute), so a class without an override changes nothing.
+     */
+    public float mcc$legacyMaxHealth() {
+        return mcc$entity == null ? 20 : mcc$living().getMaxHealth();
+    }
+
+    private void mcc$applyLegacyMaxHealth() {
+        if (!(mcc$entity instanceof LivingEntity l)) return;
+        float legacy;
+        try {
+            legacy = mcc$legacyMaxHealth();
+        } catch (RuntimeException e) {
+            return;   // the override reads a field of the mod's constructor that is not set yet
+        }
+        net.minecraft.world.entity.ai.attributes.AttributeInstance max = l.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH);
+        if (max != null && legacy > 0 && legacy != l.getMaxHealth()) max.setBaseValue(legacy);
     }
 
     public final float getMaxHealth() {

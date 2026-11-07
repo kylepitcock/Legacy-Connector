@@ -26,6 +26,18 @@ public final class Block {
         return Ids.blocksList();
     }
 
+    /** 1.4.7 and 1.5.2 {@code getBlockBrightness(world, x, y, z)}: the light brightness (0.05 to 1.0) at the block. */
+    public static float getBlockBrightness(legacyconnector.v1_7_10.net.minecraft.block.Block self, legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess world,
+            int x, int y, int z) {
+        return org.kylepitcock.legacyconnector.v1_6_4.bridge.Redirects147.lightBrightness(
+                org.kylepitcock.legacyconnector.v1_6_4.bridge.Redirects147.lightLevel(self.getMixedBrightnessForBlock(world, x, y, z)));
+    }
+
+    /** 1.4.7 {@code setRequiresSelfNotify()}: blocks asked for neighbor notifications of their own; every block gets them now, so it only chains. */
+    public static legacyconnector.v1_7_10.net.minecraft.block.Block setRequiresSelfNotify(legacyconnector.v1_7_10.net.minecraft.block.Block self) {
+        return self;
+    }
+
     private static int[] flammability;
     private static int[] fireSpreadSpeed;
 

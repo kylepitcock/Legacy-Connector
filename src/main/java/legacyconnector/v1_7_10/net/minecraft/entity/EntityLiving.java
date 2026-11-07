@@ -285,7 +285,12 @@ public abstract class EntityLiving extends EntityLivingBase {
     }
 
     public IEntityLivingData onSpawnWithEgg(IEntityLivingData data) {
+        initCreature();
         return data;
+    }
+
+    /** 1.5.2 and 1.4.7: called once when the mob is spawned into the world (equipment, variants); 1.6.4 moved this into {@code onSpawnWithEgg}. */
+    public void initCreature() {
     }
 
     public boolean canBeSteered() {

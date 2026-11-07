@@ -301,7 +301,8 @@ public final class ShimLinker {
         int pushed = 0;
         for (int j = 0; j < target.length; j++) {
             int i = choice.map()[j];
-            pre.add(i >= 0 ? new VarInsnNode(target[j].getOpcode(Opcodes.ILOAD), slots[i]) : new InsnNode(CtorChooser.defaultConst(target[j])));
+            pre.add(i >= 0 ? new VarInsnNode(args[i].getOpcode(Opcodes.ILOAD), slots[i]) : new InsnNode(CtorChooser.defaultConst(target[j])));
+            if (i >= 0 && CtorChooser.widens(args[i], target[j])) pre.add(new InsnNode(CtorChooser.widenOpcode(args[i], target[j])));
             if (i >= 0 && target[j].getSort() == Type.OBJECT && !target[j].equals(args[i])) pre.add(new TypeInsnNode(Opcodes.CHECKCAST, target[j].getInternalName()));
             pushed += target[j].getSize();
         }

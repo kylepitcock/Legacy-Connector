@@ -16,3 +16,6 @@ R	net/minecraftforge/common/MinecraftForge	setBlockHarvestLevel	(Lnet/minecraft/
 # streams: 1.5.2 passed DataInputStream/DataOutputStream
 R	net/minecraft/network/Packet	readItemStack	(Ljava/io/DataInputStream;)Lnet/minecraft/item/ItemStack;	static	legacyconnector/v1_6_4/forward/Forward164	readItemStack	(Ljava/io/DataInput;)Lnet/minecraft/item/ItemStack;
 R	net/minecraft/network/Packet	writeItemStack	(Lnet/minecraft/item/ItemStack;Ljava/io/DataOutputStream;)V	static	legacyconnector/v1_6_4/forward/Forward164	writeItemStack	(Lnet/minecraft/item/ItemStack;Ljava/io/DataOutput;)V
+# Stub pass: ops check by name (1.5.2 areCommandsAllowed), players built without a profile (custom EntityPlayer subclasses)
+R	net/minecraft/server/management/ServerConfigurationManager	areCommandsAllowed	(Ljava/lang/String;)Z	static	legacyconnector/v1_6_4/forward/Forward164	isPlayerOpped	(Lnet/minecraft/server/management/ServerConfigurationManager;Ljava/lang/String;)Z
+C	net/minecraft/entity/player/EntityPlayer	(Lnet/minecraft/world/World;)V	(Lnet/minecraft/world/World;Lcom/mojang/authlib/GameProfile;)V	args	0	-1:legacyconnector/v1_6_4/forward/Forward164#anonymousProfile#()Lcom/mojang/authlib/GameProfile;

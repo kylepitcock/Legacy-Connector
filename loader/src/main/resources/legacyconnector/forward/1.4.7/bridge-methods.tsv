@@ -9,3 +9,5 @@ net/minecraft/item/Item	getIconFromDamage	(I)I	getIconFromDamage	(I)Lnet/minecra
 net/minecraft/entity/EntityHanging	dropItemStack	()V	onBroken	(Lnet/minecraft/entity/Entity;)V
 net/minecraft/block/Block	isProvidingWeakPower	(Lnet/minecraft/world/IBlockAccess;IIII)Z	isProvidingWeakPower	(Lnet/minecraft/world/IBlockAccess;IIII)I
 net/minecraft/block/Block	isProvidingStrongPower	(Lnet/minecraft/world/IBlockAccess;IIII)Z	isProvidingStrongPower	(Lnet/minecraft/world/IBlockAccess;IIII)I
+# 1.4.7 onBlockPlacedBy had no ItemStack (1.5 added it): the override is called with the 1.7.10 shaped arguments, the stack dropped
+net/minecraft/block/Block	onBlockPlacedBy	(Lnet/minecraft/world/World;IIILnet/minecraft/entity/EntityLivingBase;)V	onBlockPlacedBy	(Lnet/minecraft/world/World;IIILnet/minecraft/entity/EntityLivingBase;Lnet/minecraft/item/ItemStack;)V

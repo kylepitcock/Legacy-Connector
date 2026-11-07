@@ -297,6 +297,11 @@ public final class Forward164 {
         return false;
     }
 
+    /** A profile for a player object built without one ({@code new EntityPlayer(world)} of 1.5.2 and 1.4.7 subclasses): a fresh UUID under a placeholder name. */
+    public static com.mojang.authlib.GameProfile anonymousProfile() {
+        return new com.mojang.authlib.GameProfile(java.util.UUID.randomUUID(), "[Player]");
+    }
+
     /** 1.6.4 {@code getOps()}: the set of operator names. */
     public static java.util.Set getOps(legacyconnector.v1_7_10.net.minecraft.server.management.ServerConfigurationManager m) {
         return new java.util.HashSet<>(java.util.Arrays.asList(opNames(m)));

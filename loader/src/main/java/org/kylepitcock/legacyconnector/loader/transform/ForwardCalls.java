@@ -213,8 +213,9 @@ public final class ForwardCalls {
             String spec = rule[5 + j];
             int colon = spec.indexOf(':');
             int src = Integer.parseInt(colon < 0 ? spec : spec.substring(0, colon));
-            if (src < 0 || src >= old.length) return null;
-            il.add(new VarInsnNode(old[src].getOpcode(Opcodes.ILOAD), slots[src]));
+            if (src >= old.length || src < -1 || src == -1 && colon < 0) return null;
+            // "-1:Owner#helper#()Ret": an argument the old constructor did not have, made by a static helper without parameters
+            if (src >= 0) il.add(new VarInsnNode(old[src].getOpcode(Opcodes.ILOAD), slots[src]));
             if (colon >= 0) {
                 String[] h = spec.substring(colon + 1).split("#");
                 il.add(new MethodInsnNode(Opcodes.INVOKESTATIC, h[0], h[1], norm.linkDesc(h[2]), false));
