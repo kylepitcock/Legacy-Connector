@@ -448,6 +448,38 @@ public class RenderBlocks {
         t.addVertexWithUV(x, y, z, u, v);
     }
 
+    /**
+     * Minecraft 1.4.7's face renderers take a tile index of the bound 256x256 sprite sheet instead of an icon (Applied Energistics draws
+     * its cable arms and connectors with them). The icon built here covers that tile in sheet space, so the quads carry the UVs the
+     * 1.4.7 code computed and the sheet mapping of IsbrhQuads sends them to the tile the pack cut.
+     */
+    private static IIcon mcc$tile(int tile) {
+        // not capturing a block's geometry (an item in a slot or the hand): quads are drawn against the atlas, so the tile's cut sprite
+        if (!org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.capturing()) {
+            String sheet = org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.sheet();
+            if (sheet != null) return org.kylepitcock.legacyconnector.v1_6_4.bridge.SpriteSheets147.icon(sheet, tile, true);
+        }
+        final float u0 = ((tile & 15) << 4) / 256.0F, v0 = (tile & 240) / 256.0F, size = 16.0F / 256.0F;
+        return new IIcon() {
+            public int getIconWidth() { return 16; }
+            public int getIconHeight() { return 16; }
+            public float getMinU() { return u0; }
+            public float getMaxU() { return u0 + size; }
+            public float getInterpolatedU(double u) { return u0 + (float) (u / 16.0D) * size; }
+            public float getMinV() { return v0; }
+            public float getMaxV() { return v0 + size; }
+            public float getInterpolatedV(double v) { return v0 + (float) (v / 16.0D) * size; }
+            public String getIconName() { return "legacy147:tile" + tile; }
+        };
+    }
+
+    public void renderBottomFace(Block block, double x, double y, double z, int tile) { renderFaceYNeg(block, x, y, z, mcc$tile(tile)); }
+    public void renderTopFace(Block block, double x, double y, double z, int tile) { renderFaceYPos(block, x, y, z, mcc$tile(tile)); }
+    public void renderEastFace(Block block, double x, double y, double z, int tile) { renderFaceZNeg(block, x, y, z, mcc$tile(tile)); }
+    public void renderWestFace(Block block, double x, double y, double z, int tile) { renderFaceZPos(block, x, y, z, mcc$tile(tile)); }
+    public void renderNorthFace(Block block, double x, double y, double z, int tile) { renderFaceXNeg(block, x, y, z, mcc$tile(tile)); }
+    public void renderSouthFace(Block block, double x, double y, double z, int tile) { renderFaceXPos(block, x, y, z, mcc$tile(tile)); }
+
     public void renderFaceYNeg(Block block, double x, double y, double z, IIcon icon) {
         Tessellator t = Tessellator.mcc$get$instance();
         if (hasOverrideBlockTexture()) icon = overrideBlockTexture;

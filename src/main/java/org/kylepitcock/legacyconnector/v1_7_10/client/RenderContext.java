@@ -426,6 +426,11 @@ public final class RenderContext {
         return STATE.get().capture != null;
     }
 
+    /** The 1.4.7 sprite sheet path last bound by string, or null. */
+    public static String sheet() {
+        return STATE.get().sheet;
+    }
+
     public static void setSheet(String path) {
         STATE.get().sheet = path;
     }

@@ -868,7 +868,12 @@ public class World implements IBlockAccess {
         if (level == null) return;
         // Client: the same block state is no change to the renderer, so a tile entity whose client copy changed (a conduit's
         // connections arriving over the mod's own channel) must dirty the sections itself.
-        if (level.isClientSide()) legacyconnector.v1_7_10.net.minecraft.client.renderer.RenderGlobal.mcc$dirty(x - 1, y - 1, z - 1, x + 1, y + 1, z + 1);
+        if (level.isClientSide()) {
+            legacyconnector.v1_7_10.net.minecraft.client.renderer.RenderGlobal.mcc$dirty(x - 1, y - 1, z - 1, x + 1, y + 1, z + 1);
+            // a renderer that works out its connections while a chunk is meshed (Applied Energistics' cables) marks from the meshing thread:
+            // the render thread rebuilds the sections (queued above), and the level's own update notice is for that thread only
+            if (!net.minecraft.client.Minecraft.getInstance().isSameThread()) return;
+        }
         // Generation workers (lighting passes of mod chunk providers) must not read the live level: that waits for the
         // main thread, which may be waiting for the chunk being generated. Nothing is sent to clients for them yet anyway.
         if (level instanceof net.minecraft.server.level.ServerLevel sl && !sl.getServer().isSameThread()) return;
