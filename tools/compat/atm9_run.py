@@ -127,9 +127,12 @@ def main():
     out = pathlib.Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
     rec_path, det_path = out / "records.json", out / "detail.tsv"
-    if not a.no_probe:
-        cmd = [sys.executable, str(ROOT / "tools" / "compat" / "probe.py"), a.mods_dir, "--mc", "1.20.1", "--json", str(rec_path), "--detail", str(det_path),
-               "--version", a.version or "atm9-run", "--source", "atm9"]
+    if not a.version:
+        m = re.search(r"^mod_version=(\S+)", (ROOT / "gradle.properties").read_text(encoding="utf-8"), re.M)
+        a.version = m.group(1) if m else ""
+    if not a.no_probe or a.write:
+        cmd = [sys.executable, str(ROOT / "tools" / "compat" / "probe.py"), "--mc", "1.20.1", "--version", a.version, "--source", "atm9"]
+        cmd += ["--from-json", str(rec_path)] if a.no_probe else [a.mods_dir, "--json", str(rec_path), "--detail", str(det_path)]
         if not a.write:
             cmd.append("--dry-run")
         r = subprocess.run(cmd, cwd=ROOT)

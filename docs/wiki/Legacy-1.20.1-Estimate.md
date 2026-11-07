@@ -1,6 +1,6 @@
 ﻿# Estimate: legacy 1.20.1 Forge mods (and Sinytra Connector Fabric mods) on NeoForge 1.21.1
 
-Research note. **Roadmap (2026-11-04): 1.20.1 comes before 1.16.5**, right after 1.12.2; groundwork so far is the Forge to NeoForge rename tables under `loader/src/main/resources/legacyconnector/forward/1.20.1/`. Back to [Home](Home.md). Written 2026-11-01 from the repository state and general knowledge of the
+Research note. **Roadmap (2026-11-04): 1.20.1 comes before 1.16.5**, right after 1.12.2; groundwork so far is the Forge to NeoForge rename tables under `loader/src/main/resources/legacyconnector/forward/1.20.1/`. Back to [Home](Home.md). Latest pack measurement (506 jars of ATM 9, with native-versus-abandoned split and the baseline to compare re-runs with): **[Legacy-1.20.1-ATM9-Run](Legacy-1.20.1-ATM9-Run.md)**. Written 2026-11-01 from the repository state and general knowledge of the
 Forge 47 / NeoForge 21.1 APIs. Figures about third-party APIs were not re-verified against the 1.20.1 sources; check them when the work starts.
 **There are no 1.20.1 jars in `test-mods*`** (they hold 1.7.10 and 1.12.2 jars, plus a Curios 1.21.1 jar in `test-mods/modern-deps`), so "which APIs
 real mods use most" below is an expectation, not a measurement. Milestone 0 is to collect a corpus and measure it with the tool described in the plan.
