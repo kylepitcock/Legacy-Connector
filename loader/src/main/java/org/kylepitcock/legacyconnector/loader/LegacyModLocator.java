@@ -25,6 +25,7 @@ import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
+import java.util.Locale;
 import java.util.zip.ZipFile;
 import net.neoforged.fml.ModLoadingIssue;
 import net.neoforged.fml.loading.FMLPaths;
@@ -720,8 +721,43 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             } catch (IOException e) {
                 LOG.debug("Legacy Connector: could not list {}", dir, e);
             }
+            try (Stream<Path> files = Files.list(dir)) {
+                files.filter(f -> isModArchive(f.getFileName().toString().toLowerCase())).sorted().forEach(f -> {
+                    if (isPatchedGameJar(f)) {
+                        LOG.warn("Legacy Connector: {} is a patched-game jar mod (it replaces Minecraft's own classes), not a Forge mod; it is ignored", f.getFileName());
+                        notes.add(f.getFileName() + ": not supported: patched-game jar mod. It is installed by copying files over minecraft.jar and replaces Minecraft's own classes"
+                                + " (Better Than Wolves and its add-ons are of this kind); this layer runs mods that add to the game, so the file is ignored");
+                    }
+                });
+            } catch (IOException e) {
+                LOG.debug("Legacy Connector: could not list {}", dir, e);
+            }
         }
         return notes;
+    }
+
+    /**
+     * A jar mod: a zip meant to be copied over minecraft.jar (folders such as {@code MINECRAFT-JAR/}, or obfuscated vanilla classes at the root) with no Forge mod
+     * metadata. Such a patch replaces vanilla classes, which a translating layer cannot honour.
+     */
+    static boolean isPatchedGameJar(Path file) {
+        try (ZipFile zip = new ZipFile(file.toFile())) {
+            if (zip.getEntry("mcmod.info") != null || zip.getEntry("litemod.json") != null) return false;
+            int rootShort = 0, minecraftDirs = 0;
+            boolean modClass = false;
+            for (var en = zip.entries(); en.hasMoreElements(); ) {
+                String n = en.nextElement().getName();
+                String up = n.toUpperCase(Locale.ROOT);
+                if (up.startsWith("MINECRAFT-JAR/") || up.startsWith("MINECRAFT_SERVER-JAR/") || up.startsWith("MINECRAFT.JAR/")) minecraftDirs++;
+                else if (n.endsWith(".class") && n.indexOf('/') < 0) {
+                    if (n.length() <= 9) rootShort++;
+                    else if (n.startsWith("mod_")) modClass = true;
+                }
+            }
+            return minecraftDirs >= 10 || (rootShort >= 30 && !modClass);
+        } catch (IOException | RuntimeException e) {
+            return false;
+        }
     }
 
     private static volatile String currentSide = "CLIENT";

@@ -25,7 +25,7 @@ for line in open(os.path.join(ROOT, "loader", "src", "main", "resources", "legac
     if name.startswith("net/minecraft/src/"):
         classes.add(name[len("net/minecraft/src/"):].split("$")[0])
 rows = []
-for c in sorted(classes | set(p147)):
+for c in sorted(classes | set(p147) | set(p152)):  # p152: classes 1.5 added (BlockComparator, BlockHopper...), named flat by 1.5.x ModLoader jars
     pkg = p152.get(c) or p147.get(c)
     if pkg:
         rows.append("net/minecraft/src/%s\t%s/%s" % (c, pkg, c))

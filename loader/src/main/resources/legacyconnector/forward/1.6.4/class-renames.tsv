@@ -96,3 +96,4 @@ net/minecraft/world/gen/structure/ComponentVillageChurch	net/minecraft/world/gen
 net/minecraft/world/gen/structure/StructureVillagePieceWeight	net/minecraft/world/gen/structure/StructureVillagePieces$PieceWeight
 net/minecraft/world/gen/feature/MapGenScatteredFeature	net/minecraft/world/gen/structure/MapGenScatteredFeature
 net/minecraft/block/BlockComparator	net/minecraft/block/BlockRedstoneComparator
+net/minecraft/block/BlockRedstoneLogic	net/minecraft/block/BlockRedstoneDiode
