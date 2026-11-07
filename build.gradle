@@ -77,7 +77,8 @@ neoForge {
         // Server test over a hand-picked subset of mods (see build/devtools/run-subset.sh): run-subtest/mods holds links.
         serverSubTest {
             server()
-            gameDirectory = project.file('run-subtest')
+            // Separate game/config/world/cache directories allow one-mod regression runs.
+            gameDirectory = project.file(project.findProperty('subTestDir') ?: 'run-subtest')
             programArgument '--nogui'
             systemProperty 'legacytest.autostop', 'true'
             systemProperty 'legacyconnector.autostopTicks', project.findProperty('autostopTicks') ?: '700'

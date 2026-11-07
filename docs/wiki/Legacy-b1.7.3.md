@@ -404,6 +404,53 @@ Client (dev client, 11 jars): NetherCraft, Portal Gun, Minefactory Renewed, RedP
 their creative tabs; 51 blocks, 159 items, 219 textures generated, 1 sprite reference without a texture. IndustrialCraft 2's client
 build now gets past OpenAL and stops at `ModLoader.getPrivateValue` with an obfuscated field name (plan item 6).
 
+## Archive-first compatibility audit (2026-11-07)
+
+Keep the existing Beta foundation and implement shared APIs/original callbacks only. First establish compatibility with one mod
+and its reviewed required dependencies in a fresh game directory; combined packs come later. A class that links through a synthesized
+default is not a working API. Named mod checks belong in regression fixtures, not production behavior.
+
+The local archive scan covers 1,040 ZIP/JAR downloads plus two loose class files. Four downloads are empty; four files named `.zip`
+are actually RAR and were read with 7-Zip. Nested archives and install roots produce 1,222 units: 548 mod payload variants with no
+detected base replacements, 572 with unknown vanilla-class replacements, 20 with byte-identical known API patches, 24 API distributions,
+54 library/documentation units, two loose-class cases and two path-review cases. These are not counts of unique mods.
+
+The scanner compares internal class identities and SHA-256 hashes against the original client/server jars. Known API installers
+are fingerprinted separately. Direct class/descriptor references, reflection-style class strings, and README dependency mentions are
+separate evidence; optional integrations and external resources still need manual review. Absence of replacement classes does not prove
+absence of dynamic engine patching. Byte differences identify replacements, not necessarily semantic changes.
+
+Run `python tools/dev/audit_b173_archive.py "<archive folder>"`. Full `inventory.json`, `inventory.csv`, and `priority-review.csv`
+go to `build/b173-archive-audit/`; the curated queue and API-demand CSVs from this audit are beside them. The compact tracked
+[audit snapshot](../data/b173-archive-audit-summary.json) records the queue, limitations, generic-code review and isolated results.
+The queue is a curated major-mod shortlist, not a measured popularity ranking. It includes PlasticCraft, BuildCraft, Equivalent
+Exchange, IC2, MineFactory, RedPower, Portal Gun, Millenaire, Mo Creatures, Aether 1.01 and Twilight Forest, with versions and payload
+paths pinned. Aether 1.02, both archived NetherCraft 1.9b variants and Better Than Wolves remain in the base-edit review group.
+
+For a fresh single-target run, use:
+
+```text
+python tools/dev/test_b173_one.py buildcraft-client-A-core-2.1.1_b173.zip --label buildcraft-core-211 --run
+python tools/dev/test_b173_one.py "PlasticCraft_(v2.1.3)_b173.zip" --root minecraft/ --label plasticcraft-213 --run
+```
+
+Set `JAVA_HOME` to JDK 21 first. The runner stages only the selected payload into a new `run-b173-single/` directory, checks source
+hashes, binds the headless server to loopback on an ephemeral port, and writes `audit-manifest.json` and `test.log`. It does not change
+Prism or `run-subtest`. Do not launch tests concurrently or rebuild classes while a server is running. Required dependency modules
+and external resource folders must be reviewed separately; the runner intentionally does not guess or install original API patches.
+
+Initial isolated results on the merged upstream code:
+
+- BuildCraft Core 2.1.1 constructs and registers six items, but logs a missing `buildcraft.energy.PneumaticPowerFramework` class.
+  This requires module/dependency review, not a working-mod rating; zero-block GUI checks do not validate machines or pipes.
+- PlasticCraft 2.1.3 fails alone in `ItemBlockPlastic.getTranslationKey` with an empty-array access. This proves its construction
+  failure is independent of other mods' block IDs. No mod-specific workaround was added.
+
+`python tools/dev/check_b173_generic.py` passes over 131 Beta production/loader files; the broader identity guard also passes.
+Review of item/block callbacks, fence geometry, inventories, animations, entity views and projectile texture discovery found no
+content-mod identity selectors in those production paths. The texture-discovery bytecode heuristic remains limited to supported
+patterns/constant paths; being generic does not make it a complete renderer. The guard supplements review, not semantic proof.
+
 ## Plan
 
 0. **GUIs, rest**: ModLoaderMP's client side (`BaseModMp.HandleGUI` builds the client GUI for a server's `OpenGUI(player, id, inventory,
