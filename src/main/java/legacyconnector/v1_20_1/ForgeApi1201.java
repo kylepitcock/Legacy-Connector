@@ -44,13 +44,11 @@ public final class ForgeApi1201 {
 
     // ---- event bus ----------------------------------------------------------------------------------------------------------
 
-    /** Forge accepted {@code bus.register(obj)} for an object without subscriber methods (a mod registering its main class "just in case"); NeoForge throws. */
-    public static void busRegister(net.neoforged.bus.api.IEventBus bus, Object target) {
-        try {
-            bus.register(target);
-        } catch (IllegalArgumentException e) {
-            if (e.getMessage() == null || !e.getMessage().contains("no @SubscribeEvent methods")) throw e;
-        }
+    /** {@code RegisterHelper.register(String, value)}: the name is in the namespace of the mod being loaded. */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static void registerHelper(RegisterEvent.RegisterHelper helper, String name, Object value) {
+        ResourceLocation id = name.contains(":") ? ResourceLocation.parse(name) : ResourceLocation.fromNamespaceAndPath(net.neoforged.fml.ModLoadingContext.get().getActiveNamespace(), name);
+        helper.register(id, value);
     }
 
     /**

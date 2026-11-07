@@ -64,6 +64,10 @@ public final class BridgeHelpers {
     public static void superAppendHoverText(Object item, ItemStack stack, Level level, java.util.List<net.minecraft.network.chat.Component> lines,
                                             net.minecraft.world.item.TooltipFlag flag) {}
 
+    public static net.minecraft.world.level.BlockGetter tooltipGetter(Item.TooltipContext ctx) {
+        return ctx == null ? null : ctx.level();
+    }
+
     public static Level tooltipLevel(Item.TooltipContext ctx) {
         return ctx == null ? null : ctx.level();
     }
@@ -125,6 +129,39 @@ public final class BridgeHelpers {
         @Override
         public int getHeight() {
             return height;
+        }
+    }
+
+    // ------------------------------------------------------------------ blocks and block entities
+
+    /** {@code BlockEntity.saveWithFullMetadata()}: the provider is the one of the running game. */
+    public static net.minecraft.nbt.CompoundTag saveWithFullMetadata(net.minecraft.world.level.block.entity.BlockEntity be) {
+        return be.saveWithFullMetadata(MigrateContext.provider());
+    }
+
+    /** {@code super.appendHoverText(..)} of a block whose parent is Minecraft's: nothing to add. */
+    public static void superAppendHoverText(Object block, ItemStack stack, net.minecraft.world.level.BlockGetter level, java.util.List<net.minecraft.network.chat.Component> lines,
+                                            net.minecraft.world.item.TooltipFlag flag) {}
+
+    /** {@code LootContext.getResolver().getLootTable(id)}. */
+    public static net.minecraft.world.level.storage.loot.LootTable lootTable(net.minecraft.core.HolderGetter.Provider provider, net.minecraft.resources.ResourceLocation id) {
+        return provider.get(net.minecraft.core.registries.Registries.LOOT_TABLE, net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.LOOT_TABLE, id))
+                .map(net.minecraft.core.Holder::value).orElse(net.minecraft.world.level.storage.loot.LootTable.EMPTY);
+    }
+
+    private static java.lang.reflect.Field evaluatorMob;
+
+    /** {@code NodeEvaluator.getBlockPathType(level, x, y, z)}: the path type at a position, asked with the evaluator's own mob. */
+    public static net.minecraft.world.level.pathfinder.PathType pathTypeAt(net.minecraft.world.level.pathfinder.NodeEvaluator evaluator, net.minecraft.world.level.BlockGetter level, int x, int y, int z) {
+        try {
+            if (evaluatorMob == null) {
+                evaluatorMob = net.minecraft.world.level.pathfinder.NodeEvaluator.class.getDeclaredField("mob");
+                evaluatorMob.setAccessible(true);
+            }
+            net.minecraft.world.entity.Mob mob = (net.minecraft.world.entity.Mob) evaluatorMob.get(evaluator);
+            return evaluator.getPathType(new net.minecraft.world.level.pathfinder.PathfindingContext(mob.level(), mob), x, y, z);
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return net.minecraft.world.level.pathfinder.PathType.OPEN;
         }
     }
 }

@@ -41,8 +41,8 @@ public final class HolderCompat {
         return BuiltInRegistries.GAME_EVENT.wrapAsHolder(g);
     }
 
-    public static Holder<Enchantment> holder(Enchantment e) {
-        return MigrateContext.registries().registryOrThrow(Registries.ENCHANTMENT).wrapAsHolder(e);
+    public static Holder<Enchantment> holder(LegacyEnchantment e) {
+        return e.holder();
     }
 
     // ------------------------------------------------------------------ mob effects
@@ -90,29 +90,29 @@ public final class HolderCompat {
         return new AttributeModifier(modifierId(id), amount, op);
     }
 
-    public static int stackEnchantmentLevel(ItemStack stack, Enchantment e) {
+    public static int stackEnchantmentLevel(ItemStack stack, LegacyEnchantment e) {
         return stack.getEnchantmentLevel(holder(e));
     }
 
     /** Enchantments of a stack as the 1.20.1 map from enchantment to level. */
-    public static java.util.Map<Enchantment, Integer> getEnchantments(ItemStack stack) {
-        java.util.Map<Enchantment, Integer> out = new java.util.LinkedHashMap<>();
-        for (var e : EnchantmentHelper.getEnchantmentsForCrafting(stack).entrySet()) out.put(e.getKey().value(), e.getIntValue());
+    public static java.util.Map<LegacyEnchantment, Integer> getEnchantments(ItemStack stack) {
+        java.util.Map<LegacyEnchantment, Integer> out = new java.util.LinkedHashMap<>();
+        for (var e : EnchantmentHelper.getEnchantmentsForCrafting(stack).entrySet()) out.put(LegacyEnchantments.legacy(e.getKey()), e.getIntValue());
         return out;
     }
 
-    public static void setEnchantments(java.util.Map<Enchantment, Integer> map, ItemStack stack) {
+    public static void setEnchantments(java.util.Map<LegacyEnchantment, Integer> map, ItemStack stack) {
         net.minecraft.world.item.enchantment.ItemEnchantments.Mutable m = new net.minecraft.world.item.enchantment.ItemEnchantments.Mutable(
                 net.minecraft.world.item.enchantment.ItemEnchantments.EMPTY);
         map.forEach((e, lvl) -> m.set(holder(e), lvl));
         EnchantmentHelper.setEnchantments(stack, m.toImmutable());
     }
 
-    public static void enchant(ItemStack stack, Enchantment e, int level) {
+    public static void enchant(ItemStack stack, LegacyEnchantment e, int level) {
         stack.enchant(holder(e), level);
     }
 
-    public static net.minecraft.world.item.enchantment.EnchantmentInstance newEnchantmentInstance(Enchantment e, int level) {
+    public static net.minecraft.world.item.enchantment.EnchantmentInstance newEnchantmentInstance(LegacyEnchantment e, int level) {
         return new net.minecraft.world.item.enchantment.EnchantmentInstance(holder(e), level);
     }
 
@@ -178,17 +178,22 @@ public final class HolderCompat {
 
     // ------------------------------------------------------------------ enchantments
 
-    public static int getItemEnchantmentLevel(Enchantment e, ItemStack stack) {
+    public static int getItemEnchantmentLevel(LegacyEnchantment e, ItemStack stack) {
         return EnchantmentHelper.getItemEnchantmentLevel(holder(e), stack);
     }
 
-    public static int getEnchantmentLevel(Enchantment e, LivingEntity entity) {
+    public static int getEnchantmentLevel(LegacyEnchantment e, LivingEntity entity) {
         return EnchantmentHelper.getEnchantmentLevel(holder(e), entity);
     }
 
     /** The unwrapped {@code Enchantments.X} (a resource key in 1.21.1, the object in 1.20.1). */
-    public static Enchantment enchantment(ResourceKey<Enchantment> key) {
-        return MigrateContext.registries().registryOrThrow(Registries.ENCHANTMENT).getOrThrow(key);
+    public static LegacyEnchantment enchantment(ResourceKey<Enchantment> key) {
+        return LegacyEnchantments.legacy(MigrateContext.registries().registryOrThrow(Registries.ENCHANTMENT).getHolderOrThrow(key));
+    }
+
+    /** {@code EnchantmentInstance.enchantment} (a holder in 1.21.1). */
+    public static LegacyEnchantment legacy(Holder<Enchantment> holder) {
+        return LegacyEnchantments.legacy(holder);
     }
 
     /** {@code BuiltInRegistries.ENCHANTMENT} is a dynamic registry in 1.21.1. */

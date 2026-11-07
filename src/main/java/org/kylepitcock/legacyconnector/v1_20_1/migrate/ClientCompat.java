@@ -150,4 +150,25 @@ public final class ClientCompat {
             target.identity();
         }
     }
+
+    /** {@code Screen.renderBackground(GuiGraphics)}: 1.21.1's screens draw their background themselves before {@code render}. */
+    public static void renderBackground(net.minecraft.client.gui.screens.Screen screen, net.minecraft.client.gui.GuiGraphics graphics) {
+    }
+
+    public static net.minecraft.resources.ResourceLocation skinTexture(net.minecraft.client.player.AbstractClientPlayer player) {
+        return player.getSkin().texture();
+    }
+
+    public static net.minecraft.client.renderer.item.ItemPropertyFunction itemProperty(net.minecraft.world.item.Item item, net.minecraft.resources.ResourceLocation name) {
+        return net.minecraft.client.renderer.item.ItemProperties.getProperty(item.getDefaultInstance(), name);
+    }
+
+    /** {@code HumanoidModel.ArmPose.create(name, twoHanded, transformer)}: the enum cannot be extended at run time, the closest pose stands in. */
+    public static net.minecraft.client.model.HumanoidModel.ArmPose createArmPose(String name, boolean twoHanded, net.neoforged.neoforge.client.IArmPoseTransformer transformer) {
+        return twoHanded ? net.minecraft.client.model.HumanoidModel.ArmPose.CROSSBOW_HOLD : net.minecraft.client.model.HumanoidModel.ArmPose.ITEM;
+    }
+
+    public static com.mojang.blaze3d.platform.Window guiEventWindow(net.neoforged.neoforge.client.event.RenderGuiEvent.Pre event) {
+        return Minecraft.getInstance().getWindow();
+    }
 }

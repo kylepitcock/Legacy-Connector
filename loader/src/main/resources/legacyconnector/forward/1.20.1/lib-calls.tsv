@@ -152,3 +152,4 @@ software/bernie/geckolib/renderer/DynamicGeoItemRenderer	renderRecursively	(Lcom
 com/github/alexthe666/citadel/client/model/AdvancedModelBox	render	(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;IIFFFF)V	=colour	-	(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;III)V
 com/github/alexthe666/citadel/client/model/basic/BasicModelPart	render	(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;IIFFFF)V	=colour	-	(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;III)V
 # END generated (Citadel colour)
+com/illusivesoulworks/caelus/api/CaelusApi	getFlightAttribute	()Lnet/minecraft/world/entity/ai/attributes/Attribute;	CaelusCompat	flightAttribute	(Ljava/lang/Object;)Lnet/minecraft/world/entity/ai/attributes/Attribute;
