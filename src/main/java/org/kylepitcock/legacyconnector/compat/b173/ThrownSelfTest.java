@@ -45,7 +45,22 @@ public final class ThrownSelfTest {
                 require(copy.isThrown() && copy.texture().equals(host.texture()) && net.minecraft.world.item.ItemStack.matches(copy.sprite(),host.sprite()),name+" renderer restored");
                 copy.discard();
                 var start=host.position();float health=target.getHealth();
-                for(int tick=0;tick<20 && !host.isRemoved() && target.getHealth()==health;tick++)host.tick();
+                var previousConnection=player.connection;
+                var capture=new ParticleConnection(level,player);
+                boolean observerAdded=!level.players().contains(player);
+                player.connection=capture;
+                // The test player isn't logged in. Expose it only to the particle broadcaster for this synchronous tick loop.
+                if(observerAdded)level.players().add(player);
+                try {
+                    for(int tick=0;tick<20 && !host.isRemoved() && (target.getHealth()==health || hammer && capture.types.size()<4);tick++)host.tick();
+                    if(hammer) {
+                        require(capture.types.containsAll(java.util.Set.of(net.minecraft.core.particles.ParticleTypes.POOF,
+                                net.minecraft.core.particles.ParticleTypes.SMOKE,net.minecraft.core.particles.ParticleTypes.LARGE_SMOKE,
+                                net.minecraft.core.particles.ParticleTypes.FLAME)),"hammer impact emits original particle types to client packets");
+                        require(target.getDeltaMovement().y>=0.6,"hammer impact applies original knockback");
+                        org.slf4j.LoggerFactory.getLogger("LegacyConnector/b1.7.3").info("B1.7.3 ACTUAL HAMMER PARTICLE TEST: {} packets, all four original impact particle types passed",capture.packets);
+                    }
+                } finally { if(observerAdded)level.players().remove(player);player.connection=previousConnection; }
                 require(host.position().distanceTo(start)>0.1,name+" flight");
                 require(target.getHealth()<health,name+" impact damages mob");
                 if(!hammer)require(target.getRemainingFireTicks()>0,"egg impact ignites mob");
@@ -76,4 +91,16 @@ public final class ThrownSelfTest {
         player.setPos(pos.getX()+0.5,pos.getY(),pos.getZ()+0.5);player.setYRot(0);player.setXRot(0);
     }
     private static void require(boolean ok,String message) { if(!ok)throw new IllegalStateException(message); }
+    private static final class ParticleConnection extends net.minecraft.server.network.ServerGamePacketListenerImpl {
+        final java.util.Set<net.minecraft.core.particles.ParticleType<?>> types=new java.util.HashSet<>();
+        int packets;
+        ParticleConnection(ServerLevel level,ServerPlayer player) {
+            super(level.getServer(),new net.minecraft.network.Connection(net.minecraft.network.protocol.PacketFlow.CLIENTBOUND),player,
+                    net.minecraft.server.network.CommonListenerCookie.createInitial(player.getGameProfile(),false));
+        }
+        @Override public void send(net.minecraft.network.protocol.Packet<?> packet) {
+            if(packet instanceof net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket particles){types.add(particles.getParticle().getType());packets++;}
+        }
+        @Override public void send(net.minecraft.network.protocol.Packet<?> packet,net.minecraft.network.PacketSendListener listener){send(packet);}
+    }
 }

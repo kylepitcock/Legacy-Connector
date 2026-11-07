@@ -88,14 +88,14 @@ mod block placed, read back and asked for drops).
   `ModLoader.addOverride` image (read from the mod's jar) at the index ModLoader handed out, a sheet sprite is that tile of the sheet; both
   are written as `assets/<mod>/textures/block/b173/*.png`. An index without either is the vanilla sprite at that place, mapped to the modern
   texture (tables of the terrain.png and gui/items.png layouts in `AssetsB173`, with the wool and dye formulas of BlockCloth and ItemDye);
-  doors' negative indices (a mirrored face) count as their absolute value.
+  doors' negative indices select the absolute sprite index and mirror the face UVs.
 - **Models.** One block model per metadata, deduplicated: faces down, up, north, south, west, east are b1.7.3's sides 0-5, the block's
-  bounds are the element (slabs, plates), render types 1 (crossed plants), 2 (torches) and 6 (crops) use the vanilla shapes, other render
-  types (custom renderers) are a cube for now; non-opaque blocks are cutout, render layer 1 translucent, and so is any block whose sprites
+  metadata-dependent bounds are the element (doors, slabs, plates). Render types 1 (crossed plants), 2 (floor/wall torches), 6 (crops)
+  and 10 (oriented Beta stairs) use the vanilla model templates; other custom renderers fall back to their bounds. Non-opaque blocks are cutout, render layer 1 translucent, and so is any block whose sprites
   have transparent pixels (b1.7.3 drew all terrain with an alpha test). The blockstate maps `meta=0..15`.
 - **Vanilla base classes with their behaviour.** Mods extend vanilla block classes; synthesized ones have none (NetherCraft's glass,
   a `BlockBreakable`, said it was an opaque cube and drew black). The shim has `TranslucentBlock` (glass base: not opaque, no faces
-  between two blocks of the same id), `GlassBlock`, `IceBlock`, `TransparentBlock` (leaves base), `PlantBlock` and `TorchBlock`.
+  between two blocks of the same id), `GlassBlock`, `IceBlock`, `TransparentBlock` (leaves base), `PlantBlock`, `TorchBlock`, `StairsBlock` and `DoorBlock`.
   Block items use the block model (flat sprite for plants and torches), items a flat or handheld sprite.
 - **Block item subtypes.** One legacy block item is one modern item (`LegacyB173BlockItem`); the stack's damage is the metadata in its
   `block_state` component. An item with subtypes (Minefactory's machines, IndustrialCraft 2's machines, generators and storage blocks,
@@ -126,7 +126,8 @@ The modern block (`LegacyB173Block`) calls the legacy block's own code with a le
 | `animateTick` (client) | `randomDisplayTick` (particles: b1.7.3 names such as `smoke`, `reddust`, `portal`) |
 | `useWithoutItem` / `attack` | `blockActivated` / `onBlockClicked` |
 | `getStateForPlacement` / `setPlacedBy` | `canPlaceBlockOnSide`, then `onBlockPlaced(side)` and `onBlockPlacedBy(player)` |
-| `stepOn` / `entityInside` (players) | `onEntityWalking` / `onEntityCollidedWithBlock` |
+| `stepOn` / `entityInside` (players, mobs, dropped items and other entities) | `onEntityWalking` / `onEntityCollidedWithBlock` |
+| Shape/collision queries | `updateBoundingBox`, `getCollisionShape`, `addIntersectingBoundingBox` |
 | `isSignalSource` / `getSignal` / `getDirectSignal` | `canProvidePower` / `isPoweringTo` / `isIndirectlyPoweringTo` (b1.7.3 sides are modern 3D direction values) |
 | `playerDestroy` | `onBlockDestroyedByPlayer`, and a mod's own `harvestBlock` instead of the modern drops |
 
@@ -139,6 +140,26 @@ The modern block (`LegacyB173Block`) calls the legacy block's own code with a le
 - **`ModLoader.getMinecraftInstance()`** is one legacy client instance whose `world` (`theWorld`) is the level of the callback being run:
   IndustrialCraft 2 decides by `mc.theWorld.isRemote` whether it runs the game logic.
 - Every callback is guarded: a failure is logged the first three times per block and counted.
+
+Block shapes now use a read-only world view (`BlockQueryB173`) and restore the legacy singleton's bounds after
+each query. Collision boxes can form a union, so stairs have two steps instead of a full cube. Stair placement
+uses Beta's four horizontal orientations. Torches attach to floors/walls, have no collision, and drop when their
+support is removed. Doors use two metadata-bearing halves, thin rotating collision/model bounds, wooden-door
+click behavior, redstone opening/closing, and paired removal when their support or other half disappears.
+
+Entity views distinguish dropped items from living entities and apply changed velocity/ground fields after a
+block callback. MineFactory's original conveyor callback therefore moves dropped items, mobs and players,
+including slope metadata, sneaking bypass and redstone stopping. `isEmittingRedstonePower` checks weak sources
+and power through adjacent solids; `canTransferPower` checks strong power entering a block. The earlier world
+bridge had these two queries swapped. Custom conveyor renderer
+geometry/animation still uses the generated bounds fallback.
+
+`compat/b173/BlockFamiliesSelfTest` uses installed NetherCraft stairs/doors, NetherCraft/Aether torches,
+IndustrialCraft doors and MineFactory conveyors. It checks modern placement, metadata, collision volumes,
+generated models, support removal, door clicks/redstone, and all 12 conveyor states for items/mobs/players,
+plus actual dropped-item ticks. No graphical client is launched by these tests.
+The supplied set passes 2 stair blocks, 3 torch blocks, 2 door items and the conveyor (all 12 metadata states
+for all three entity categories, with direct-source and through-solid redstone checks).
 
 The server test runs `B1.7.3 BEHAVIOUR TEST`: every mod block placed, given a neighbour change, a scheduled and a random tick, a right click by
 a fake player, asked for redstone power and removed. With the 11 mods: 10 callbacks fail, all of blocks whose tile entity is missing (NetherCraft's
@@ -193,6 +214,12 @@ modern sprite/model. Texture or item-stack data is tracked to clients and recons
 Shooter fields are recovered by their legacy owner/thrower name or a unique living-entity field, including
 private obfuscated fields. This fixes the previously rejected Hammer of Notch wave and NetherCraft slime eggs.
 Slime-egg flight, damage and ignition run the mod's code; hatching custom slime mobs still requires the mob bridge.
+
+In the supplied Aether 1.02 jar, the Hammer of Notch wave does damage and emits impact particles; its item and
+projectile code do not spawn lightning. Legacy particle calls from server-hosted projectiles now send modern
+particle packets to nearby clients, restoring the requested impact effects without inventing a lightning strike.
+The actual-wave regression captures 40 client particle packets (poof, smoke, large smoke and flame) and
+checks the mod's impact knockback. Its early area damage is distinct from its later collision effects.
 
 `compat/b173/ThrownSelfTest` checks those two actual mod items through right-click, including use cost,
 spawn, shooter, renderer data, save/reload, flight, mob impacts and wall impacts. Client appearance needs

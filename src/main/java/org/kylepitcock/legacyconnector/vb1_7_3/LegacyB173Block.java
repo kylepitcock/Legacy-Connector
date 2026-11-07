@@ -31,7 +31,7 @@ public class LegacyB173Block extends net.minecraft.world.level.block.Block {
     private int failures;
 
     public LegacyB173Block(Block legacy, Properties properties) {
-        super(properties);
+        super(properties.dynamicShape());
         this.legacy = legacy;
         this.shape = shapeOf(legacy);
         this.ownHarvest = overrides(legacy, "afterBreak", World.class, legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity.class,
@@ -57,7 +57,36 @@ public class LegacyB173Block extends net.minecraft.world.level.block.Block {
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return shape;
+        return queryShape(state,level,pos,false);
+    }
+    @Override protected VoxelShape getCollisionShape(BlockState state,BlockGetter level,BlockPos pos,CollisionContext context) {
+        return queryShape(state,level,pos,true);
+    }
+    private VoxelShape queryShape(BlockState state,BlockGetter level,BlockPos pos,boolean collision) {
+        synchronized(legacy) {
+            double[] bounds={legacy.minX,legacy.minY,legacy.minZ,legacy.maxX,legacy.maxY,legacy.maxZ};
+            try {
+                var world=new BlockQueryB173(level,pos,state);
+                legacy.updateBoundingBox(world,pos.getX(),pos.getY(),pos.getZ());
+                if(!collision && legacy.getRenderType()==2) {
+                    return switch(state.getValue(META)) {
+                        case 1 -> Shapes.box(0,0.2,0.35,0.3,0.8,0.65);
+                        case 2 -> Shapes.box(0.7,0.2,0.35,1,0.8,0.65);
+                        case 3 -> Shapes.box(0.35,0.2,0,0.65,0.8,0.3);
+                        case 4 -> Shapes.box(0.35,0.2,0.7,0.65,0.8,1);
+                        default -> Shapes.box(0.4,0,0.4,0.6,0.6,0.6);
+                    };
+                }
+                if(!collision && !(legacy instanceof legacyconnector.vb1_7_3.net.minecraft.block.StairsBlock))return shapeOf(legacy);
+                var boxes=new ArrayList<legacyconnector.vb1_7_3.net.minecraft.util.math.Box>();
+                legacy.addIntersectingBoundingBox(world,pos.getX(),pos.getY(),pos.getZ(),
+                        legacyconnector.vb1_7_3.net.minecraft.util.math.Box.create(pos.getX()-2,pos.getY()-2,pos.getZ()-2,pos.getX()+3,pos.getY()+3,pos.getZ()+3),boxes);
+                VoxelShape result=Shapes.empty();
+                for(var b:boxes)result=Shapes.or(result,Shapes.create(b.mcc$box().move(-pos.getX(),-pos.getY(),-pos.getZ())));
+                return result;
+            } catch(RuntimeException | LinkageError e) { call("shape",()->{throw e;});return shape; }
+            finally { legacy.minX=bounds[0];legacy.minY=bounds[1];legacy.minZ=bounds[2];legacy.maxX=bounds[3];legacy.maxY=bounds[4];legacy.maxZ=bounds[5]; }
+        }
     }
 
     /** b1.7.3 glass ({@code BlockBreakable} built with {@code transparent} false) draws no faces against the same block. */
@@ -130,6 +159,11 @@ public class LegacyB173Block extends net.minecraft.world.level.block.Block {
         if (level.isClientSide) return;
         int neighborId = BlocksB173.legacyId(neighbor.defaultBlockState());
         call("onNeighborBlockChange", () -> legacy.neighborUpdate(view(level), pos.getX(), pos.getY(), pos.getZ(), neighborId));
+        if(legacy instanceof legacyconnector.vb1_7_3.net.minecraft.block.DoorBlock door && level.getBlockState(pos).is(this)
+                && neighbor.defaultBlockState().isSignalSource()) {
+            int y=pos.getY()-((level.getBlockState(pos).getValue(META)&8)!=0?1:0);
+            call("door power",()->door.setOpen(view(level),pos.getX(),y,pos.getZ(),level.hasNeighborSignal(new BlockPos(pos.getX(),y,pos.getZ())) || level.hasNeighborSignal(new BlockPos(pos.getX(),y+1,pos.getZ()))));
+        }
     }
 
     @Override
@@ -214,17 +248,19 @@ public class LegacyB173Block extends net.minecraft.world.level.block.Block {
     @Override
     public void stepOn(net.minecraft.world.level.Level level, BlockPos pos, BlockState state, net.minecraft.world.entity.Entity entity) {
         super.stepOn(level, pos, state, entity);
-        if (level.isClientSide || !(entity instanceof net.minecraft.world.entity.player.Player player)) return;
-        PlayerViewB173 view = PlayerViewB173.of(player);
-        call("onEntityWalking", () -> legacy.onSteppedOn(view(level), pos.getX(), pos.getY(), pos.getZ(), view));
+        if (level.isClientSide) return;
+        var view=EntityViewsB173.wrap(entity);
+        try { call("onEntityWalking", () -> legacy.onSteppedOn(view(level), pos.getX(), pos.getY(), pos.getZ(), view)); }
+        finally { EntityViewsB173.flush(); }
     }
 
     @Override
     protected void entityInside(BlockState state, net.minecraft.world.level.Level level, BlockPos pos, net.minecraft.world.entity.Entity entity) {
         super.entityInside(state, level, pos, entity);
-        if (level.isClientSide || !(entity instanceof net.minecraft.world.entity.player.Player player)) return;
-        PlayerViewB173 view = PlayerViewB173.of(player);
-        call("onEntityCollidedWithBlock", () -> legacy.onEntityCollision(view(level), pos.getX(), pos.getY(), pos.getZ(), view));
+        if (level.isClientSide) return;
+        var view=EntityViewsB173.wrap(entity);
+        try { call("onEntityCollidedWithBlock", () -> legacy.onEntityCollision(view(level), pos.getX(), pos.getY(), pos.getZ(), view)); }
+        finally { EntityViewsB173.flush(); }
     }
 
     @Override

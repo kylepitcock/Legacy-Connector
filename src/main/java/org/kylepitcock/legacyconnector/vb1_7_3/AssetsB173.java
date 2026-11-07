@@ -210,7 +210,7 @@ public final class AssetsB173 implements GeneratedPack.Contributor {
             }
             boolean seeThrough = false;
             for (String t : tex) seeThrough |= hasAlpha(t);
-            JsonObject model = blockModel(block, renderType, tex, opaque && !seeThrough, layer);
+            JsonObject model = blockModel(block, renderType, tex, opaque && !seeThrough, layer,meta);
             String json = GSON.toJson(model);
             String name = modelByJson.get(json);
             if (name == null) {
@@ -222,6 +222,8 @@ public final class AssetsB173 implements GeneratedPack.Contributor {
             metaModels[meta] = name;
             JsonObject variant = new JsonObject();
             variant.addProperty("model", name);
+            if(renderType==10)variant.addProperty("y",new int[]{0,180,90,270}[meta&3]);
+            if(renderType==2 && meta>=1 && meta<=4)variant.addProperty("y",new int[]{0,0,180,90,270}[meta]);
             variants.add("meta=" + meta, variant);
         }
         JsonObject state = new JsonObject();
@@ -297,7 +299,17 @@ public final class AssetsB173 implements GeneratedPack.Contributor {
         put("assets/" + itemId.getNamespace() + "/models/item/" + itemId.getPath() + ".json", itemModel);
     }
 
-    private static JsonObject blockModel(Block block, int renderType, String[] tex, boolean opaque, int layer) {
+    private static JsonObject blockModel(Block block,int renderType,String[] tex,boolean opaque,int layer,int meta) {
+        synchronized(block) {
+            double[] bounds={block.minX,block.minY,block.minZ,block.maxX,block.maxY,block.maxZ};
+            try {
+                block.updateBoundingBox(new BlockQueryB173(net.minecraft.world.level.EmptyBlockGetter.INSTANCE,net.minecraft.core.BlockPos.ZERO,
+                        block.mcc$modern.defaultBlockState().setValue(LegacyB173Block.META,meta)),0,0,0);
+                return boundedBlockModel(block,renderType,tex,opaque,layer,meta);
+            } finally { block.minX=bounds[0];block.minY=bounds[1];block.minZ=bounds[2];block.maxX=bounds[3];block.maxY=bounds[4];block.maxZ=bounds[5]; }
+        }
+    }
+    private static JsonObject boundedBlockModel(Block block, int renderType, String[] tex, boolean opaque, int layer,int meta) {
         JsonObject model = new JsonObject();
         JsonObject textures = new JsonObject();
         switch (renderType) {
@@ -314,10 +326,14 @@ public final class AssetsB173 implements GeneratedPack.Contributor {
                 model.addProperty("render_type", "minecraft:cutout");
             }
             case 2 -> { // torches
-                model.addProperty("parent", "minecraft:block/template_torch");
+                model.addProperty("parent", meta>=1 && meta<=4?"minecraft:block/template_torch_wall":"minecraft:block/template_torch");
                 textures.addProperty("torch", tex[0]);
                 textures.addProperty("particle", tex[0]);
                 model.addProperty("render_type", "minecraft:cutout");
+            }
+            case 10 -> {
+                model.addProperty("parent","minecraft:block/stairs");
+                textures.addProperty("bottom",tex[0]);textures.addProperty("top",tex[1]);textures.addProperty("side",tex[2]);textures.addProperty("particle",tex[2]);
             }
             default -> {
                 String[] faces = {"down", "up", "north", "south", "west", "east"};
@@ -337,6 +353,10 @@ public final class AssetsB173 implements GeneratedPack.Contributor {
                     for (int i = 0; i < 6; i++) {
                         JsonObject f = new JsonObject();
                         f.addProperty("texture", "#" + faces[i]);
+                        final int face=i;
+                        if(safe(()->block.getTexture(face,meta),block.textureId)<0) {
+                            JsonArray uv=new JsonArray();for(int v:new int[]{16,0,0,16})uv.add(v);f.add("uv",uv);
+                        }
                         if (onEdge[i]) f.addProperty("cullface", faces[i]);
                         fs.add(faces[i], f);
                     }

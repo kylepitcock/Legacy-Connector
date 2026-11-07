@@ -248,14 +248,14 @@ public class World implements BlockView {
 
     // -------------------------------------------------------------------------------------------------------- redstone
 
-    /** MCP {@code isBlockGettingPowered}: direct power into the block. */
+    /** MCP {@code isBlockIndirectlyGettingPowered}: weak sources and strong power through adjacent solid blocks. */
     public boolean isEmittingRedstonePower(int x, int y, int z) {
-        return mcc$level != null && mcc$level.getDirectSignalTo(pos(x, y, z)) > 0;
+        return mcc$level != null && mcc$level.hasNeighborSignal(pos(x,y,z));
     }
 
-    /** MCP {@code isBlockIndirectlyGettingPowered}. */
+    /** MCP {@code isBlockGettingPowered}: strong power into this block. */
     public boolean canTransferPower(int x, int y, int z) {
-        return mcc$level != null && mcc$level.hasNeighborSignal(pos(x, y, z));
+        return mcc$level != null && mcc$level.getDirectSignalTo(pos(x,y,z))>0;
     }
 
     /** MCP {@code isBlockIndirectlyProvidingPowerTo}: the block at x,y,z powers the side {@code side} (b1.7.3 sides are modern 3D values). */
@@ -333,9 +333,12 @@ public class World implements BlockView {
     }
 
     public void addParticle(String name, double x, double y, double z, double vx, double vy, double vz) {
-        if (mcc$level == null || !mcc$level.isClientSide) return;
+        if (mcc$level == null) return;
         var particle = org.kylepitcock.legacyconnector.vb1_7_3.ParticlesB173.of(name);
-        if (particle != null) mcc$level.addParticle(particle, x, y, z, vx, vy, vz);
+        if (particle != null) {
+            if(mcc$level instanceof net.minecraft.server.level.ServerLevel server)server.sendParticles(particle,x,y,z,0,vx,vy,vz,1);
+            else mcc$level.addParticle(particle, x, y, z, vx, vy, vz);
+        }
     }
 
     public void worldEvent(int event, int x, int y, int z, int data) {}

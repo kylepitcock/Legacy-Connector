@@ -51,12 +51,20 @@ public class Block {
     public boolean shouldTrackStatistics = true;
     public double minX;
     public legacyconnector.vb1_7_3.net.minecraft.util.math.Box getCollisionShape(legacyconnector.vb1_7_3.net.minecraft.world.World world,int x,int y,int z) {
+        if(mcc$owner!=null) return getBoundingBox(world,x,y,z);
         if (world.mcc$level()==null) return null;
         var pos=new net.minecraft.core.BlockPos(x,y,z);
         var shape=world.mcc$level().getBlockState(pos).getCollisionShape(world.mcc$level(),pos);
         if(shape.isEmpty())return null;
         var b=shape.bounds().move(x,y,z);
         return legacyconnector.vb1_7_3.net.minecraft.util.math.Box.create(b.minX,b.minY,b.minZ,b.maxX,b.maxY,b.maxZ);
+    }
+    public legacyconnector.vb1_7_3.net.minecraft.util.math.Box getBoundingBox(legacyconnector.vb1_7_3.net.minecraft.world.World world,int x,int y,int z) {
+        return legacyconnector.vb1_7_3.net.minecraft.util.math.Box.create(x+minX,y+minY,z+minZ,x+maxX,y+maxY,z+maxZ);
+    }
+    public void addIntersectingBoundingBox(legacyconnector.vb1_7_3.net.minecraft.world.World world,int x,int y,int z,
+            legacyconnector.vb1_7_3.net.minecraft.util.math.Box mask,java.util.ArrayList<legacyconnector.vb1_7_3.net.minecraft.util.math.Box> boxes) {
+        var box=getCollisionShape(world,x,y,z);if(box!=null && box.intersects(mask))boxes.add(box);
     }
     public double minY;
     public double minZ;
