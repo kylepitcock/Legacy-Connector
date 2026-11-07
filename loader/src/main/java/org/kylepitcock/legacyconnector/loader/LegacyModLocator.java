@@ -156,10 +156,9 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
 
     private static boolean forge1201NoticeLogged;
 
-    /** Forge 1.20.1 support is unfinished: {@code experimental.forge1201=true} (config) or {@code -Dlegacyconnector.forge1201=true} turns it on. */
+    /** Forge 1.20.1 support is experimental but on by default; {@code experimental.forge1201=false} (config) or {@code -Dlegacyconnector.forge1201=false} turns it off. */
     private static boolean forge1201Enabled(Path modsDir) {
-        if (Boolean.getBoolean("legacyconnector.forge1201")) return true;
-        return "true".equalsIgnoreCase(LibraryBridges.readConfig(modsDir).getProperty("experimental.forge1201", "false").trim());
+        return LibraryBridges.forge1201On(modsDir);
     }
 
     @Override
@@ -210,8 +209,8 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                             if (jar != null && jar.version == LegacyVersion.V1_20_1 && !forge1201Enabled(modsDir)) {
                                 if (!forge1201NoticeLogged) {
                                     forge1201NoticeLogged = true;
-                                    LOG.info("Legacy Connector: Forge 1.20.1 mods (such as {}) are left alone: that support is experimental and off. "
-                                            + "Set experimental.forge1201=true in config/legacyconnector.properties to try it.", p.getFileName());
+                                    LOG.info("Legacy Connector: Forge 1.20.1 mods (such as {}) are left alone: experimental.forge1201=false in config/legacyconnector.properties turns that support off. "
+                                            + "Remove the line (or set it to true) to load them.", p.getFileName());
                                 }
                                 continue;
                             }

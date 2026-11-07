@@ -51,7 +51,7 @@ Memory switches (`perf.*`, see [Performance](Performance.md#memory)); each can b
 | `perf.sweepRemovedPlayers` | `true` | Views of players removed for good (the old player object after a death and respawn, a player that logged out) are swept, after two sweeps in a row |
 | `perf.sweepDeadViews` | `true` | Views of closed connections (1.7.10 `NetworkManager`), of legacy inventories whose block entity was removed or unloaded, and 1.12.2 views of the game's block entities are swept |
 | `perf.weakStackViews1122` | `false` | 1.12.2 item stack views without capabilities are held weakly, so a stack nobody holds is collected with its view |
-| `experimental.forge1201` | `false` | Forge 1.20.1 mods (jars with `mods.toml`) are remapped in place and loaded as NeoForge mods. Unfinished: only the groundwork exists (see [the estimate](Legacy-1.20.1-Estimate.md)); off by default, so such jars are left alone |
+| `experimental.forge1201` | `true` | Forge 1.20.1 mods (jars with `mods.toml`) are remapped in place and loaded as NeoForge mods. Unfinished: only the groundwork exists (see [the estimate](Legacy-1.20.1-Estimate.md)); on by default (nothing happens unless a Forge 1.20.1 jar is installed); set to `false` and such jars are left alone |
 | `perf.releaseLoaderData` | `true` | The loader drops its translation tables (legacy hierarchy, methods, fields, MCP names, library class infos) after mod discovery (read by the loader at startup) |
 | `perf.cullLegacyParticles` | `true` | Legacy particles drawn by the built-in particle classes are skipped outside the view (pixel-identical) |
 | `perf.cullModParticles` | `false` | The same for particles mods draw themselves (a beam reaching into the view from outside could vanish) |

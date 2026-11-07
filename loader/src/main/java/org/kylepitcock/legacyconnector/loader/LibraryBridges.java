@@ -109,8 +109,14 @@ public final class LibraryBridges {
     /** Modern mod ids of the mods folder, kept for the 1.20.1 library jars that a native 1.21.1 build replaces ({@link NativeLibraries1201}); empty when 1.20.1 support is off. */
     private static volatile Set<String> installedModern = Set.of();
 
-    private static boolean forge1201On(Path modsDir) {
-        return Boolean.getBoolean("legacyconnector.forge1201") || "true".equalsIgnoreCase(readConfig(modsDir).getProperty("experimental.forge1201", "false").trim());
+    /**
+     * Forge 1.20.1 support is experimental but on by default (it does nothing unless a Forge 1.20.1 jar is installed):
+     * {@code experimental.forge1201=false} (config) or {@code -Dlegacyconnector.forge1201=false} turns it off.
+     */
+    static boolean forge1201On(Path modsDir) {
+        String prop = System.getProperty("legacyconnector.forge1201");
+        if (prop != null && !prop.isBlank()) return Boolean.parseBoolean(prop.trim());
+        return !"false".equalsIgnoreCase(readConfig(modsDir).getProperty("experimental.forge1201", "true").trim());
     }
 
     /** Modern mod ids of the mods folder seen by the last {@link #active} call. */

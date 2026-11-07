@@ -240,7 +240,7 @@ recipe serializers (codecs), datagen, super-constructor calls of changed constru
 ## 11. Status 2026-11-08: milestone 1 (Forge API facades)
 
 **Milestone 1 reached:** a Forge 1.20.1 content mod loads and registers its content on a NeoForge 1.21.1 server through the layer. Another Furniture 3.0.4 registers
-174 blocks, 159 items, 1 entity type and 4 block entity types (`run-subtest/mods/1.20.1/`, `experimental.forge1201=true`; the server self test logs
+174 blocks, 159 items, 1 entity type and 4 block entity types (`run-subtest/mods/1.20.1/`, `experimental.forge1201`; the server self test logs
 `1.20.1 content registered: ...`), and Calcmod and ClearDespawn construct and finish loading beside it (server reaches "Done"). Facades live in `src/main/java/legacyconnector/v1_20_1`
 (Forge classes that no longer exist; the translator prefers them to the rename tables), the runtime half in `org.kylepitcock.legacyconnector.v1_20_1.Forge1201Runtime`.
 
