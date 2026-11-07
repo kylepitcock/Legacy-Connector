@@ -341,6 +341,7 @@ public final class AssetsB173 implements GeneratedPack.Contributor {
         JsonObject model = new JsonObject();
         JsonObject textures = new JsonObject();
         switch (renderType) {
+            case 11 -> {model.addProperty("parent","minecraft:block/fence_inventory");textures.addProperty("texture",tex[0]);textures.addProperty("particle",tex[0]);}
             case 1 -> { // crossed squares: flowers, saplings, reeds
                 model.addProperty("parent", "minecraft:block/cross");
                 textures.addProperty("cross", tex[0]);

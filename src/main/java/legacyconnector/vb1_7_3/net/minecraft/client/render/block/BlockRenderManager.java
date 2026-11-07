@@ -12,6 +12,19 @@ public class BlockRenderManager {
     public BlockRenderManager(){}
     public BlockRenderManager(BlockView view){blockView=view;}
     public boolean render(Block b,int x,int y,int z){return renderBlock(b,x,y,z);}
+    public boolean renderFence(Block b,int x,int y,int z){
+        double[] saved={b.minX,b.minY,b.minZ,b.maxX,b.maxY,b.maxZ};
+        try{
+            b.setBoundingBox(.375F,0,.375F,.625F,1,.625F);renderBlock(b,x,y,z);
+            boolean west=blockView.getBlockId(x-1,y,z)==b.id,east=blockView.getBlockId(x+1,y,z)==b.id;
+            boolean north=blockView.getBlockId(x,y,z-1)==b.id,south=blockView.getBlockId(x,y,z+1)==b.id;
+            boolean alongX=west||east,alongZ=north||south;if(!alongX&&!alongZ)alongX=true;
+            for(float low:new float[]{.75F,.375F}){
+                if(alongX){b.setBoundingBox(west?0:.4375F,low,.4375F,east?1:.5625F,low+.1875F,.5625F);renderBlock(b,x,y,z);}
+                if(alongZ){b.setBoundingBox(.4375F,low,north?0:.4375F,.5625F,low+.1875F,south?1:.5625F);renderBlock(b,x,y,z);}
+            }return true;
+        }finally{b.minX=saved[0];b.minY=saved[1];b.minZ=saved[2];b.maxX=saved[3];b.maxY=saved[4];b.maxZ=saved[5];}
+    }
     public boolean renderBlock(Block b,int x,int y,int z){
         for(int side=0;side<6;side++)face(b,x,y,z,side,textureOverride>=0?textureOverride:b.getTextureId(blockView,x,y,z,side));return true;
     }

@@ -180,6 +180,11 @@ IndustrialCraft doors and MineFactory conveyors. It checks modern placement, met
 generated models, support removal, door clicks/redstone, and all 12 conveyor states for items/mobs/players,
 plus actual dropped-item ticks, pressure plate activation/release, furnace placement faces, chest neighbour
 and paired textures, and the original conveyor renderer's vertices/UVs in all 12 states.
+Standard fence render type 11 uses the shared Beta renderer; custom fences continue to call the original
+ModLoader renderer. Fence tests cover isolated posts and all four neighbour directions using NetherCraft
+and IndustrialCraft 2. The shared `DoubleInventory` now delegates to both live inventories, so NetherCraft
+double chests expose all 54 slots. Tests open both halves on both axes, transfer items in both directions,
+and check obstruction above either half.
 No graphical client is launched by these tests.
 The supplied set passes 2 stair blocks, 3 torch blocks, 2 door items, 1 pressure plate, 2 furnace blocks,
 1 chest block and the conveyor (all 12 metadata states for all three entity categories and original
@@ -404,7 +409,7 @@ build now gets past OpenAL and stops at `ModLoader.getPrivateValue` with an obfu
 0. **GUIs, rest**: ModLoaderMP's client side (`BaseModMp.HandleGUI` builds the client GUI for a server's `OpenGUI(player, id, inventory,
    container)`; today the client draws a plain panel for those), entity GUIs (item right-click callbacks are bridged), tile entity
    special renderers (`RegisterTileEntity(class, id, renderer)`, kept).
-1. **Rendering, rest**: remaining standard block render types (fences, rails, ...), broader custom renderer helpers/GL calls,
+1. **Rendering, rest**: remaining standard block render types required by installed mods, broader custom renderer helpers/GL calls,
    colour multipliers; item subtypes of plain items (block items have them: models and names per metadata).
 2. **Behaviour**: block callbacks (`onUse`, `onPlaced`, `neighborUpdate`, `onTick`, redstone) through a `World` view, tile entities
    (`RegisterTileEntity`) on one modern block entity type, entities (`RegisterEntityID`), world generation (`GenerateSurface` /

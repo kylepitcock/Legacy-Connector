@@ -17,13 +17,34 @@ public final class BlockFamiliesSelfTest {
         BlockPos pos=base.offset(512,-20,8);
         var saved=new java.util.LinkedHashMap<BlockPos,net.minecraft.world.level.block.state.BlockState>();
         for(int x=-2;x<=2;x++)for(int y=-1;y<=3;y++)for(int z=-2;z<=2;z++){var p=pos.offset(x,y,z);saved.put(p,level.getBlockState(p));}
-        int stairs=0,torches=0,doors=0,conveyors=0,plates=0,furnaces=0,chests=0;
+        int stairs=0,torches=0,doors=0,conveyors=0,plates=0,furnaces=0,chests=0,fences=0;
         int failures=LegacyB173Block.CALLBACK_FAILURES.get();
         var assets=new java.util.HashMap<String,java.util.function.Supplier<byte[]>>();
         new AssetsB173().contribute(net.minecraft.server.packs.PackType.CLIENT_RESOURCES,assets);
         try {
             for(var block:ContentB173.blocks()) {
                 if(!(block.mcc$modern instanceof LegacyB173Block))continue;
+                if(block.getRenderType()==11 || block.getClass().getSimpleName().equals("BlockPoleFence")){
+                    clear(level,pos);place(level,player,block.id,pos.below(),Direction.UP);
+                    require(level.getBlockState(pos).is(block.mcc$modern),"actual fence placement");
+                    int renderFailures=BlockRenderB173.FAILURES.get();
+                    var isolated=BlockRenderB173.capture(block,new BlockQueryB173(level,pos,level.getBlockState(pos)),pos.getX(),pos.getY(),pos.getZ());
+                    require(!isolated.isEmpty()&&isolated.stream().allMatch(v->v.x()>=pos.getX()+.375 && v.x()<=pos.getX()+.625 && v.z()>=pos.getZ()+.375 && v.z()<=pos.getZ()+.625),"isolated fence renders a post "+block.getClass());
+                    for(var direction:java.util.List.of(Direction.NORTH,Direction.SOUTH,Direction.WEST,Direction.EAST)){
+                        var neighbor=pos.relative(direction);level.setBlock(neighbor,BlocksB173.modernState(block.id,0),2);
+                        var connected=BlockRenderB173.capture(block,new BlockQueryB173(level,pos,level.getBlockState(pos)),pos.getX(),pos.getY(),pos.getZ());
+                        require(connected.size()>=isolated.size(),"fence retains post and connection rails "+direction);
+                        // IC2 draws complete beams toward south/east, reaching inside the next post.
+                        var pair=new java.util.ArrayList<>(connected);
+                        pair.addAll(BlockRenderB173.capture(block,new BlockQueryB173(level,neighbor,level.getBlockState(neighbor)),neighbor.getX(),neighbor.getY(),neighbor.getZ()));
+                        require(block.getRenderType()==11
+                                ? connected.stream().anyMatch(v->switch(direction){case NORTH->v.z()==pos.getZ();case SOUTH->v.z()==pos.getZ()+1;case WEST->v.x()==pos.getX();default->v.x()==pos.getX()+1;})
+                                : pair.size()>2*isolated.size(),"pair renders connecting beams "+block.getClass()+" "+direction);
+                        level.setBlock(neighbor,Blocks.AIR.defaultBlockState(),2);
+                    }
+                    if(block.getRenderType()==11)require(level.getBlockState(pos).getCollisionShape(level,pos).bounds().maxY==1.5,"Beta fence prevents jumping over it");
+                    require(BlockRenderB173.FAILURES.get()==renderFailures,"actual fence renderer completes");fences++;
+                }
                 if(block instanceof PressurePlateBlock){
                     clear(level,pos);place(level,player,block.id,pos.below(),Direction.UP);
                     // Earlier support-removal cases intentionally drop items at this shared test position.
@@ -81,6 +102,10 @@ public final class BlockFamiliesSelfTest {
                     int[] paired=AssetsB173.faceTextures(block,level,pos,level.getBlockState(pos));
                     require(!java.util.Arrays.equals(single,paired),"double chest chooses paired textures");
                     for(int face:paired)require(AssetsB173.worldTextures(block).containsKey(Math.abs(face)),"paired chest face in atlas");
+                    doubleChest(level,player,pos,pos.east(),block);
+                    clear(level,pos);level.setBlock(pos.south().below(),Blocks.STONE.defaultBlockState(),2);
+                    place(level,player,block.id,pos.below(),Direction.UP);place(level,player,block.id,pos.south().below(),Direction.UP);
+                    doubleChest(level,player,pos,pos.south(),block);
                     chests++;
                 }
                 if(block instanceof StairsBlock) {
@@ -146,7 +171,7 @@ public final class BlockFamiliesSelfTest {
             }
             require(LegacyB173Block.CALLBACK_FAILURES.get()==failures,"no failed block callbacks");
         } finally { saved.forEach((p,state)->level.setBlock(p,state,2));player.setShiftKeyDown(false);player.getInventory().clearContent(); }
-        LOG.info("B1.7.3 ACTUAL BLOCK FAMILIES TEST: {} stairs, {} torches, {} doors, {} conveyors, {} pressure plates, {} furnaces, {} chests passed",stairs,torches,doors,conveyors,plates,furnaces,chests);
+        LOG.info("B1.7.3 ACTUAL BLOCK FAMILIES TEST: {} stairs, {} torches, {} doors, {} conveyors, {} pressure plates, {} furnaces, {} chests (both double-chest axes), {} fences passed",stairs,torches,doors,conveyors,plates,furnaces,chests,fences);
     }
     private static void conveyor(ServerLevel level,ServerPlayer player,BlockPos pos,Block block) {
         clear(level,pos);
@@ -186,6 +211,31 @@ public final class BlockFamiliesSelfTest {
     private static void clear(ServerLevel level,BlockPos pos){
         for(int x=-1;x<=1;x++)for(int z=-1;z<=1;z++)for(int y=0;y<=2;y++)level.setBlock(pos.offset(x,y,z),Blocks.AIR.defaultBlockState(),2);
         level.setBlock(pos.below(),Blocks.STONE.defaultBlockState(),3);
+    }
+    private static void doubleChest(ServerLevel level,ServerPlayer player,BlockPos firstPos,BlockPos secondPos,Block block){
+        var first=(legacyconnector.vb1_7_3.net.minecraft.inventory.Inventory)((LegacyB173BlockEntity)level.getBlockEntity(firstPos)).legacy();
+        var second=(legacyconnector.vb1_7_3.net.minecraft.inventory.Inventory)((LegacyB173BlockEntity)level.getBlockEntity(secondPos)).legacy();
+        player.setPos(firstPos.getX()+.5,firstPos.getY(),firstPos.getZ()+2.5);
+        try{
+            for(var clicked:java.util.List.of(firstPos,secondPos)){
+                player.getInventory().clearContent();for(int i=0;i<27;i++){first.setStack(i,null);second.setStack(i,null);}
+                first.setStack(0,new legacyconnector.vb1_7_3.net.minecraft.item.ItemStack(263,4,0));
+                second.setStack(0,new legacyconnector.vb1_7_3.net.minecraft.item.ItemStack(265,6,0));
+                level.getBlockState(clicked).useWithoutItem(level,player,new net.minecraft.world.phys.BlockHitResult(Vec3.atCenterOf(clicked),Direction.UP,clicked,false));
+                var menu=player.containerMenu;require(menu instanceof net.minecraft.world.inventory.ChestMenu && menu.slots.size()==90,"actual NetherCraft double chest opens 54 slots from either half");
+                require(menu.stillValid(player),"combined chest remains usable");
+                require(menu.getSlot(0).getItem().is(net.minecraft.world.item.Items.COAL)&&menu.getSlot(27).getItem().is(net.minecraft.world.item.Items.IRON_INGOT),"combined inventory preserves half order");
+                menu.quickMoveStack(player,27);require(second.getStack(0)==null && player.getInventory().countItem(net.minecraft.world.item.Items.IRON_INGOT)==6,"shift extraction writes back to second half");
+                player.getInventory().setItem(9,new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.DIAMOND,3));
+                menu.quickMoveStack(player,54);require(first.getStack(1)!=null&&first.getStack(1).itemId==264&&first.getStack(1).count==3,"shift insertion writes back to first half");
+                player.closeContainer();
+            }
+            for(var covered:java.util.List.of(firstPos,secondPos)){
+                level.setBlock(covered.above(),Blocks.STONE.defaultBlockState(),3);
+                level.getBlockState(firstPos).useWithoutItem(level,player,new net.minecraft.world.phys.BlockHitResult(Vec3.atCenterOf(firstPos),Direction.UP,firstPos,false));
+                require(player.containerMenu==player.inventoryMenu,"solid block above either chest prevents opening");level.removeBlock(covered.above(),false);
+            }
+        }finally{player.closeContainer();for(int i=0;i<27;i++){first.setStack(i,null);second.setStack(i,null);}}
     }
     private static void place(ServerLevel level,ServerPlayer player,int id,BlockPos support,Direction face){
         player.getInventory().selected=0;player.setItemInHand(InteractionHand.MAIN_HAND,StacksB173.toModern(id,1,0));

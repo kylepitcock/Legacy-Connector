@@ -13,16 +13,18 @@ public final class BlockRenderB173 {
     private static final Set<Class<?>> REPORTED=java.util.concurrent.ConcurrentHashMap.newKeySet();
     public static final java.util.concurrent.atomic.AtomicInteger FAILURES=new java.util.concurrent.atomic.AtomicInteger();
     public static void register(int id,BaseMod mod){RENDERERS.put(id,mod);}
-    public static boolean hasRenderer(int id){return RENDERERS.containsKey(id);}
+    public static boolean hasRenderer(int id){return id==11 || RENDERERS.containsKey(id);}
     public static List<Tessellator.Vertex> capture(Block block,BlockView world,int x,int y,int z){
-        BaseMod mod=RENDERERS.get(block.getRenderType());if(mod==null)return List.of();
+        BaseMod mod=RENDERERS.get(block.getRenderType());if(!hasRenderer(block.getRenderType()))return List.of();
         // Legacy renderers mutate block bounds, and may keep mutable renderer state on the mod instance.
-        synchronized(mod){synchronized(block){
+        synchronized(mod==null?BlockRenderB173.class:mod){synchronized(block){
             double[] bounds={block.minX,block.minY,block.minZ,block.maxX,block.maxY,block.maxZ};
             Tessellator.beginCapture();
             try{
                 block.updateBoundingBox(world,x,y,z);
-                boolean rendered=mod.RenderWorldBlock(new BlockRenderManager(world),world,x,y,z,block,block.getRenderType());
+                var renderer=new BlockRenderManager(world);
+                boolean rendered=mod!=null?mod.RenderWorldBlock(renderer,world,x,y,z,block,block.getRenderType())
+                        :renderer.renderFence(block,x,y,z);
                 var vertices=Tessellator.endCapture();return rendered?vertices:List.of();
             }catch(RuntimeException|LinkageError e){
                 FAILURES.incrementAndGet();if(REPORTED.add(block.getClass()))org.slf4j.LoggerFactory.getLogger("LegacyConnector/b1.7.3").warn("Beta block renderer failed for {}",block.getClass().getName(),e);
