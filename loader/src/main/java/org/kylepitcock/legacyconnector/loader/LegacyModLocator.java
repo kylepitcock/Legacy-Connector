@@ -223,6 +223,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                     .flatMap(j -> j.mods.stream()).map(LegacyModDecl::fmlId).toList());
             Map<LegacyJar, String> outcomes = new LinkedHashMap<>();
             List<Path> translated = new ArrayList<>();
+            java.util.Set<Path> ownerKeeping = new java.util.HashSet<>(); // 1.4.7 jars: Forestry (and Binnie's mods) look their own jar up by file
             Set<Path> keep = new HashSet<>(libraryKeep);
             if (runtimeJar != null) keep.add(runtimeJar);
             for (LegacyVersion api : List.of(LegacyVersion.V1_7_10, LegacyVersion.V1_6_4)) {
@@ -323,6 +324,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                     if (risk != null) risky.add(RiskyMods.entry(jar, risk));
                     outcomes.put(jar, Files.exists(linkReport) ? Files.readString(linkReport) : "  (cached, no link report)\n");
                     translated.add(out);
+                    if (jar.version != null && jar.version.flatNames()) ownerKeeping.add(out);
                 } catch (Exception e) {
                     LOG.error("Legacy Connector: failed to translate {}", jar.fileName(), e);
                     outcomes.put(jar, "translation failed: " + e);
@@ -343,7 +345,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                 pipeline.addPath(synthJar, ModFileDiscoveryAttributes.DEFAULT, IncompatibleFileReporting.ERROR);
             }
 
-            SplitPackageResolver.Outcome split = SplitPackageResolver.resolve(translated, cacheDir);
+            SplitPackageResolver.Outcome split = SplitPackageResolver.resolve(translated, cacheDir, ownerKeeping);
             if (split.sharedLibrary() != null) {
                 LOG.info("Legacy Connector: {} packages shipped by several legacy jars were merged into {}",
                         split.sharedPackages().size(), split.sharedLibrary().getFileName());
