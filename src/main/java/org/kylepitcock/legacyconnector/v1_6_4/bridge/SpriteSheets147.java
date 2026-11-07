@@ -56,10 +56,48 @@ public final class SpriteSheets147 {
         String key = normalize(sheet) + "#" + index + (block ? "b" : "i");
         IIcon icon = ICONS.get(key);
         if (icon == null) {
-            icon = TextureAtlasSprite.makeAtlasSprite(spriteId(sheet, index, block));
+            String id = spriteId(sheet, index, block);
+            icon = TextureAtlasSprite.makeAtlasSprite(id);
+            REVERSE.putIfAbsent(id, index);
             ICONS.put(key, icon);
         }
         return icon;
+    }
+
+    /** Sprite id to sheet index of every tile handed out by {@link #icon}: mods that kept 1.4.7's index API ask for the index behind an icon. */
+    private static final Map<String, Integer> REVERSE = new ConcurrentHashMap<>();
+
+    /**
+     * The sheet index behind an icon (1.4.7 {@code getIconFromDamage}/{@code getBlockTextureFromSide} returned it): the tile a cut-sheet icon came from, the vanilla
+     * tile of a vanilla icon, 0 when it has none.
+     */
+    public static int indexOf(IIcon icon, boolean block) {
+        if (icon == null) return 0;
+        String name = icon.getIconName();
+        Integer i = name == null ? null : REVERSE.get(name);
+        if (i != null) return i;
+        int vanilla = block ? terrainIndexOf(name) : itemsIndexOf(name);
+        return Math.max(vanilla, 0);
+    }
+
+    private static volatile Map<String, Integer> itemsIndex;
+
+    /** The {@code /gui/items.png} tile of a vanilla item texture by its name ("iron_ingot"), -1 when the sheet has no such tile. */
+    public static int itemsIndexOf(String legacyName) {
+        if (legacyName == null) return -1;
+        Map<String, Integer> map = itemsIndex;
+        if (map == null) {
+            map = new HashMap<>();
+            for (int i = 0; i < 256; i++) {
+                String n = vanillaName(false, i);
+                if (n != null) map.putIfAbsent(n, i);
+            }
+            itemsIndex = map;
+        }
+        String n = legacyName.startsWith("minecraft:") ? legacyName.substring(10) : legacyName;
+        if (n.startsWith("items/")) n = n.substring(6);
+        Integer i = map.get(n);
+        return i == null ? -1 : i;
     }
 
     /** The modern sprite id of a tile (not registered; the pack generator and the atlas know it from the resource pack). */

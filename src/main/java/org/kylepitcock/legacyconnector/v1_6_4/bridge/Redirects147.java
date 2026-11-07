@@ -35,6 +35,21 @@ public final class Redirects147 {
         return item == null ? 0.0F : r.getSmeltingExperience(new legacyconnector.v1_7_10.net.minecraft.item.ItemStack(item, 1, 0));
     }
 
+    /** 1.4.7 {@code item.getIconFromDamage(damage)}: the sheet index (1.5 returns an Icon). */
+    public static int itemIconIndex(legacyconnector.v1_7_10.net.minecraft.item.Item item, int damage) {
+        return SpriteSheets147.indexOf(item.getIconFromDamage(damage), false);
+    }
+
+    /** 1.4.7 {@code stack.getIconIndex()}. */
+    public static int stackIconIndex(legacyconnector.v1_7_10.net.minecraft.item.ItemStack stack) {
+        return stack == null || stack.getItem() == null ? 0 : SpriteSheets147.indexOf(stack.getIconIndex(), false);
+    }
+
+    /** 1.4.7 {@code block.getBlockTextureFromSide(side)}. */
+    public static int blockTextureFromSide(legacyconnector.v1_7_10.net.minecraft.block.Block block, int side) {
+        return SpriteSheets147.indexOf(block.getBlockTextureFromSide(side), true);
+    }
+
     /** {@code world.setBlockAndMetadataWithNotify(x, y, z, id, meta)}. */
     public static boolean setBlockAndMetadataWithNotify(World w, int x, int y, int z, int id, int meta) {
         return w.setBlock(x, y, z, block(id), meta, 3);
