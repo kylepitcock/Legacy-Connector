@@ -43525,6 +43525,532 @@
    }
   },
   {
+   "mc": "1.20.1",
+   "date": "2026-11-07",
+   "version": "0.4.4",
+   "counts": {
+    "links": 6,
+    "stubs": 0,
+    "gap_shim": 62,
+    "gap_mod": 7,
+    "gap_lib": 0,
+    "obsolete": 9
+   },
+   "env": {
+    "layer": "0.4.4",
+    "jars": 84,
+    "minecraft": "1.21.1",
+    "neoforge": "21.1.258",
+    "shim": "f95718ed4bcc"
+   },
+   "mods": [
+    [
+     "[Let's Do] NetherVinery",
+     "1.2.19",
+     "gap_shim",
+     "net.minecraft.world.effect.MobEffect.removeAttributeModifiers"
+    ],
+    [
+     "Alex's Mobs",
+     "1.22.9",
+     "gap_shim",
+     "com.mojang.blaze3d.vertex.SheetedDecalTextureGenerator.<init>"
+    ],
+    [
+     "Amendments",
+     "1.20-2.2.6",
+     "gap_shim",
+     "com.mojang.serialization.DataResult.getOrThrow"
+    ],
+    [
+     "Another Furniture",
+     "1.20.1-3.0.4",
+     "gap_shim",
+     "net.minecraft.network.protocol.game.ClientboundAddEntityPacket.<init>"
+    ],
+    [
+     "AppleSkin",
+     "2.5.1+mc1.20.1",
+     "gap_shim",
+     "net.minecraft.client.Options.renderDebug"
+    ],
+    [
+     "Architectury",
+     "9.2.14",
+     "obsolete",
+     ""
+    ],
+    [
+     "AttributeFix",
+     "21.0.5",
+     "links",
+     ""
+    ],
+    [
+     "Better Recipe Book",
+     "1.10.0-rc5+1.20.0-1",
+     "gap_shim",
+     "net.minecraft.client.gui.GuiGraphics.blitNineSliced"
+    ],
+    [
+     "Biomes O' Plenty",
+     "19.0.0.96",
+     "gap_shim",
+     "net.minecraft.core.BlockSource"
+    ],
+    [
+     "Botania",
+     "1.20.1-456-FORGE",
+     "gap_shim",
+     "com.mojang.authlib.yggdrasil.response.MinecraftTexturesPayload.getTextures"
+    ],
+    [
+     "Carry On",
+     "2.1.2.7",
+     "gap_shim",
+     "com.mojang.serialization.DataResult.getOrThrow"
+    ],
+    [
+     "cataclysm",
+     "3.31",
+     "gap_shim",
+     "com.mojang.blaze3d.vertex.DefaultVertexFormat.ELEMENT_NORMAL"
+    ],
+    [
+     "Cave Dust",
+     "2.0.4",
+     "gap_mod",
+     "net.neoforged.neoforge.client.ConfigScreenHandler$ConfigScreenFactory"
+    ],
+    [
+     "Chipped",
+     "3.0.7",
+     "gap_shim",
+     "net.minecraft.Util.isBlank"
+    ],
+    [
+     "Citadel",
+     "2.6.3",
+     "obsolete",
+     ""
+    ],
+    [
+     "Cloth Config v10 API",
+     "11.1.136",
+     "obsolete",
+     ""
+    ],
+    [
+     "Clumps",
+     "12.0.0.4",
+     "links",
+     ""
+    ],
+    [
+     "Cobblemon",
+     "1.5.2+1.20.1",
+     "gap_shim",
+     "com.mojang.blaze3d.systems.RenderSystem.getModelViewStack"
+    ],
+    [
+     "Comforts",
+     "6.4.0+1.20.1",
+     "gap_shim",
+     "net.minecraft.resources.ResourceLocation.isValidResourceLocation"
+    ],
+    [
+     "Create",
+     "6.0.8",
+     "gap_shim",
+     "com.mojang.blaze3d.systems.RenderSystem.getModelViewStack"
+    ],
+    [
+     "Create: Steam 'n' Rails",
+     "1.7.3+forge-mc1.20.1",
+     "gap_shim",
+     "com.mojang.blaze3d.systems.RenderSystem.getModelViewStack"
+    ],
+    [
+     "Curios API",
+     "5.14.1+1.20.1",
+     "obsolete",
+     ""
+    ],
+    [
+     "Custom Villager Trades",
+     "20.25.0",
+     "gap_shim",
+     "net.minecraft.world.item.EnchantedBookItem.addEnchantment"
+    ],
+    [
+     "Deeper and Darker",
+     "1.3.3",
+     "gap_shim",
+     "net.minecraft.Util.isBlank"
+    ],
+    [
+     "Delightful",
+     "3.8.1",
+     "gap_shim",
+     "net.minecraft.advancements.critereon.InventoryChangeTrigger$TriggerInstance.hasItems"
+    ],
+    [
+     "Dungeons and Taverns",
+     "3.0.3.f",
+     "links",
+     ""
+    ],
+    [
+     "DynamicTrim",
+     "1.4.1",
+     "gap_shim",
+     "net.minecraft.world.item.armortrim.ArmorTrim.getTrim"
+    ],
+    [
+     "e4mc",
+     "6.2.3",
+     "gap_mod",
+     "folk.sisby.kaleido.api.ReflectiveConfig"
+    ],
+    [
+     "Easy Anvils",
+     "8.0.2",
+     "gap_shim",
+     "net.minecraft.core.BlockSource"
+    ],
+    [
+     "EnchantmentDescriptions",
+     "17.1.21",
+     "gap_shim",
+     "com.mojang.serialization.DataResult.getOrThrow"
+    ],
+    [
+     "EnhancedVisuals",
+     "1.8.34",
+     "gap_shim",
+     "com.mojang.blaze3d.systems.RenderSystem.getModelViewStack"
+    ],
+    [
+     "Enigmatic Legacy",
+     "2.30.1",
+     "gap_shim",
+     "net.minecraft.advancements.Advancement.getId"
+    ],
+    [
+     "FancyMenu",
+     "3.9.14",
+     "gap_shim",
+     "com.mojang.authlib.minecraft.MinecraftSessionService.fillProfileProperties"
+    ],
+    [
+     "Farmer's Delight",
+     "1.20.1-1.3.4",
+     "gap_shim",
+     "net.minecraft.advancements.Advancement$Builder.addCriterion"
+    ],
+    [
+     "FriendlyFire",
+     "18.0.8",
+     "gap_mod",
+     "net.neoforged.neoforge.event.entity.living.LivingAttackEvent"
+    ],
+    [
+     "GeckoLib 4",
+     "4.8.4",
+     "obsolete",
+     ""
+    ],
+    [
+     "Global Packs",
+     "19.3.7",
+     "gap_shim",
+     "net.minecraft.server.packs.FilePackResources.<init>"
+    ],
+    [
+     "Handcrafted",
+     "3.0.6",
+     "gap_shim",
+     "net.minecraft.core.registries.BuiltInRegistries.PAINTING_VARIANT"
+    ],
+    [
+     "Ice and Fire",
+     "2.1.13-1.20.1",
+     "gap_shim",
+     "com.mojang.blaze3d.vertex.VertexConsumer.defaultColor"
+    ],
+    [
+     "Lootr",
+     "0.7.35.94",
+     "gap_shim",
+     "net.minecraft.advancements.Advancement.getId"
+    ],
+    [
+     "Meet Your Fight",
+     "1.20.1-1.6.2",
+     "gap_shim",
+     "net.minecraft.client.renderer.entity.HumanoidMobRenderer.setupRotations"
+    ],
+    [
+     "Nature's Compass",
+     "1.20.1-1.12.0-forge",
+     "gap_shim",
+     "net.minecraft.client.Options.renderDebug"
+    ],
+    [
+     "Nether's Delight",
+     "1.20.1-4.0",
+     "gap_shim",
+     "net.minecraft.advancements.Advancement$Builder.addCriterion"
+    ],
+    [
+     "NetherPortalFix",
+     "13.0.1",
+     "gap_shim",
+     "net.minecraft.world.level.portal.PortalForcer.findPortalAround"
+    ],
+    [
+     "No Chat Reports",
+     "1.20.1-v2.2.3",
+     "gap_shim",
+     "net.minecraft.Util.getOrThrow"
+    ],
+    [
+     "Not Enough Crashes",
+     "4.4.9+1.20.1",
+     "gap_shim",
+     "net.minecraft.CrashReport.getFriendlyReport"
+    ],
+    [
+     "Particle Rain",
+     "4.0.3",
+     "gap_shim",
+     "net.minecraft.client.gui.components.ContainerObjectSelectionList.<init>"
+    ],
+    [
+     "Patchouli",
+     "1.20.1-85-FORGE",
+     "obsolete",
+     ""
+    ],
+    [
+     "Pick Up Notifier",
+     "8.0.0",
+     "gap_mod",
+     "net.neoforged.neoforge.event.entity.player.EntityItemPickupEvent"
+    ],
+    [
+     "Polymorph",
+     "0.49.11+1.20.1",
+     "gap_shim",
+     "net.minecraft.client.gui.components.ImageButton.<init>"
+    ],
+    [
+     "Puzzles Lib",
+     "8.1.36",
+     "obsolete",
+     ""
+    ],
+    [
+     "Quark",
+     "4.0-462",
+     "gap_shim",
+     "net.minecraft.advancements.Advancement$Builder.getCriteria"
+    ],
+    [
+     "Resourceful Lib",
+     "2.1.29",
+     "obsolete",
+     ""
+    ],
+    [
+     "Resourcefulconfig",
+     "2.1.3",
+     "obsolete",
+     ""
+    ],
+    [
+     "Roughly Enough Items (REI)",
+     "12.1.785",
+     "gap_shim",
+     "com.mojang.blaze3d.systems.RenderSystem.getModelViewStack"
+    ],
+    [
+     "ShulkerBoxTooltip",
+     "4.0.4+1.20.1",
+     "gap_shim",
+     "net.minecraft.client.gui.screens.inventory.tooltip.ClientBundleTooltip$Texture.BORDER_CORNER_BOTTOM"
+    ],
+    [
+     "Simple Voice Chat",
+     "1.20.1-2.6.27",
+     "gap_shim",
+     "net.minecraft.client.User.getGameProfile"
+    ],
+    [
+     "Sophisticated Backpacks",
+     "3.26.19.2239",
+     "gap_shim",
+     "net.minecraft.client.gui.screens.inventory.InventoryScreen.renderEntityInInventory"
+    ],
+    [
+     "Sound Physics Remastered",
+     "1.20.1-1.5.1",
+     "gap_shim",
+     "net.minecraft.resources.ResourceLocation.isValidResourceLocation"
+    ],
+    [
+     "spark",
+     "1.10.53",
+     "gap_shim",
+     "net.minecraft.server.level.ServerPlayer.latency"
+    ],
+    [
+     "Supplementaries",
+     "1.20-3.1.44",
+     "gap_shim",
+     "com.mojang.authlib.GameProfile.isComplete"
+    ],
+    [
+     "Tectonic",
+     "3.0.17",
+     "gap_shim",
+     "net.minecraft.client.gui.GuiGraphics.blitNineSliced"
+    ],
+    [
+     "Terralith",
+     "2.5.4",
+     "links",
+     ""
+    ],
+    [
+     "Timeless & Classics Guns: Zero",
+     "1.2.0",
+     "gap_shim",
+     "com.mojang.blaze3d.systems.RenderSystem.getModelViewStack"
+    ],
+    [
+     "Tom's Simple Storage Mod",
+     "1.7.1",
+     "gap_shim",
+     "net.minecraft.client.gui.components.ImageButton.<init>"
+    ],
+    [
+     "ToolStats",
+     "16.0.10",
+     "gap_shim",
+     "net.minecraft.world.entity.ai.attributes.AttributeModifier$Operation.toValue"
+    ],
+    [
+     "Towns and Towers",
+     "1.10.2",
+     "links",
+     ""
+    ],
+    [
+     "Traveler's Backpack",
+     "9.1.58",
+     "gap_shim",
+     "net.minecraft.advancements.Advancement$Builder.addCriterion"
+    ],
+    [
+     "Veinminer",
+     "1.1.0",
+     "links",
+     ""
+    ],
+    [
+     "Visual Workbench",
+     "8.0.1",
+     "gap_mod",
+     "fuzs.visualworkbench.world.inventory.ModCraftingMenu.slotChangedCraftingGrid"
+    ],
+    [
+     "Waystones",
+     "14.1.21",
+     "gap_shim",
+     "net.minecraft.client.gui.components.Checkbox.<init>"
+    ],
+    [
+     "Xaero's Minimap",
+     "26.6.0",
+     "gap_shim",
+     "com.mojang.blaze3d.systems.RenderSystem.getModelViewStack"
+    ],
+    [
+     "Xaero's World Map",
+     "1.47.0",
+     "gap_shim",
+     "com.mojang.blaze3d.systems.RenderSystem.getModelViewStack"
+    ],
+    [
+     "Yes Steve Model",
+     "2.6.5-forge+mc1.20.1",
+     "gap_shim",
+     "com.mojang.blaze3d.systems.RenderSystem.assertOnGameThread"
+    ],
+    [
+     "YUNG's Better Desert Temples",
+     "1.20-Forge-3.0.3",
+     "gap_shim",
+     "net.minecraft.nbt.NbtIo.read"
+    ],
+    [
+     "YUNG's Better Dungeons",
+     "1.20-Forge-4.0.4",
+     "gap_shim",
+     "net.minecraft.world.level.SpawnData.<init>"
+    ],
+    [
+     "YUNG's Better End Island",
+     "1.20-Forge-2.0.6",
+     "gap_shim",
+     "net.minecraft.Util.getOrThrow"
+    ],
+    [
+     "YUNG's Better Jungle Temples",
+     "1.20-Forge-2.0.5",
+     "gap_shim",
+     "net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings.setKeepLiquids"
+    ],
+    [
+     "YUNG's Better Mineshafts",
+     "1.20-Forge-4.0.4",
+     "gap_shim",
+     "net.minecraft.world.entity.vehicle.MinecartChest.setLootTable"
+    ],
+    [
+     "YUNG's Better Nether Fortresses",
+     "1.20-Forge-2.0.6",
+     "gap_shim",
+     "net.minecraft.world.level.LevelAccessor.getChunk"
+    ],
+    [
+     "YUNG's Better Ocean Monuments",
+     "1.20-Forge-3.0.4",
+     "gap_shim",
+     "net.minecraft.world.level.LevelAccessor.getChunk"
+    ],
+    [
+     "YUNG's Better Strongholds",
+     "1.20-Forge-4.0.3",
+     "gap_mod",
+     "com.yungnickyoung.minecraft.betterstrongholds.world.processor.AirProcessor.isBlockStateAirSafe"
+    ],
+    [
+     "YUNG's Better Witch Huts",
+     "1.20-Forge-3.0.3",
+     "gap_shim",
+     "net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings.setKeepLiquids"
+    ],
+    [
+     "YUNG's Bridges",
+     "1.20-Forge-4.0.3",
+     "gap_mod",
+     "com.yungnickyoung.minecraft.yungsapi.api.YungAutoRegister"
+    ]
+   ]
+  },
+  {
    "mc": "1.4.7",
    "date": "2026-11-07",
    "version": "",

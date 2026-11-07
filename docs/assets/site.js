@@ -17,7 +17,7 @@
     { key: "gap_mod", label: "Needs another mod", color: "var(--gap-mod)", hint: "depends on another mod's code that is not available or does not match" },
     { key: "gap_lib", label: "Needs removed code", color: "var(--gap-lib)", hint: "uses old Java/library code that no longer exists" },
     { key: "unresolved", label: "Has missing pieces", color: "var(--unresolved)", hint: "something it needs is missing (older runs, cause not split)" },
-    { key: "obsolete", label: "Not needed", color: "var(--obsolete)", hint: "engine patches with nothing to do on 1.21.1" }
+    { key: "obsolete", label: "Not needed", color: "var(--obsolete)", hint: "engine patches with nothing to do on 1.21.1, and 1.20.1 libraries replaced by their native 1.21.1 build" }
   ];
   var RESLABEL = { links: "Ready", stubs: "Placeholder", gap_shim: "Game features", gap_mod: "Other mod", gap_lib: "Old code", unresolved: "Missing", obsolete: "Not needed" };
   // everything except "not needed" is a mod the layer has to handle; only "links" counts as ready
@@ -273,7 +273,7 @@
       var big = el("div", "big", pct(c.links || 0, applicable(c)));
       big.appendChild(el("small", null, "ready to test"));
       a.appendChild(big);
-      var sub = el("div", "sub", (c.links || 0) + " of " + applicable(c) + " applicable mods tested " + r.date + (c.obsolete ? " (" + c.obsolete + " engine patches skipped)" : ""));
+      var sub = el("div", "sub", (c.links || 0) + " of " + applicable(c) + " applicable mods tested " + r.date + (c.obsolete ? " (" + c.obsolete + (mc === "1.20.1" ? " libraries replaced by their native build" : " engine patches") + " skipped)" : ""));
       a.appendChild(sub);
       box.appendChild(a);
     });
@@ -341,10 +341,29 @@
   // ---------- mods view ----------
   function renderTabs() {
     var seen = versionsWithData();
-    var live = SUPPORTED.concat(Object.keys(seen).filter(function (v) { return SUPPORTED.indexOf(v) < 0; }).sort());
+    var live = SUPPORTED.concat(Object.keys(seen).filter(function (v) { return SUPPORTED.indexOf(v) < 0; }).sort(byVersion));
     var items = live.map(function (v) { return { id: v, label: "MC " + v, count: state.all.filter(function (m) { return m.mc === v; }).length }; });
     PLANNED.filter(function (v) { return !seen[v]; }).forEach(function (v) { items.push({ id: v, label: "MC " + v, count: "planned", disabled: true, title: "Planned: no results yet" }); });
     makeTabs($("tabs"), items, state.tab, selectTab, "list");
+    versionNote($("vnote-mods"), state.tab);
+  }
+
+  // Notes that belong to one legacy version (shown under its tab): 1.20.1 is experimental and its results mean something different from the older versions'.
+  function versionNote(host, mc) {
+    if (!host) return;
+    host.textContent = "";
+    host.hidden = mc !== "1.20.1";
+    if (host.hidden) return;
+    function p(parts) {
+      var e = el("p");
+      parts.forEach(function (x) { e.appendChild(typeof x === "string" ? document.createTextNode(x) : x); });
+      return e;
+    }
+    function code(t) { return el("code", null, t); }
+    function b(t) { return el("b", null, t); }
+    host.appendChild(p([b("Experimental, off by default. "), "Forge 1.20.1 support is remapped in place onto NeoForge 1.21.1 (there is no old game to emulate) and is switched on with ", code("experimental.forge1201=true"), " in the Legacy Connector config. Most mods below do not link yet: the Minecraft 1.20.1 to 1.21.1 migration covers the common cases, not all of them."]));
+    host.appendChild(p([b("What the automated result means here. "), b("Ready to test"), " means every reference of the translated jar resolves against Minecraft 1.21.1, NeoForge and the other jars of the run, including the layer's Forge facades. It is a link check only. A server start that registers a mod's content is a higher rating (", b("Starts, untested"), " and up, from the in-game test). Mods that fail the link check can still start, since unresolved code may sit on paths that never run, so a red result is not a verdict (on this tab 201CDoes not start201D on an automated row means unresolved references, not a failed start)."]));
+    host.appendChild(p([b("Libraries. "), "Architectury, Curios, Patchouli, GeckoLib, Cloth Config, Resourceful Lib/Config, Puzzles Lib, Citadel, Jade and a few more use the ", b("native NeoForge 1.21.1 build"), " (same mod id): install it in the mods folder and the 1.20.1 jar is skipped (counted as \u201CNot needed\u201D). Without the 1.21.1 build the pack's 1.20.1 jar is translated as a fallback; with neither, the log names the build to install. Rewrites exist for Architectury, Curios and Patchouli; GeckoLib content mods are not fully supported yet."]));
   }
 
   function selectTab(v) {
@@ -701,6 +720,7 @@
     $("pdetail").hidden = !has;
     if (!has) { $("ptabs").textContent = ""; return; }
     makeTabs($("ptabs"), probeVersions().map(function (mc) { return { id: mc, label: "MC " + mc, count: runsOf(mc).length + (runsOf(mc).length === 1 ? " run" : " runs") }; }), state.pmc, selectProbe, "pdetail");
+    versionNote($("vnote-auto"), state.pmc);
     renderRunSelect(); renderChart(); renderTrend(); renderPList();
   }
 

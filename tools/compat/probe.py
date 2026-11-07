@@ -122,6 +122,12 @@ def mod_info(jar):
     return []
 
 
+def native_libraries():
+    """Mod ids of forward/1.20.1/libraries.tsv: 1.20.1 libraries replaced by their native NeoForge 1.21.1 build when the pack has it."""
+    f = ROOT / "loader" / "src" / "main" / "resources" / "legacyconnector" / "forward" / "1.20.1" / "libraries.tsv"
+    return {l.split("	")[0] for l in f.read_text(encoding="utf-8").splitlines() if l.strip() and not l.startswith("#")}
+
+
 def dotted(kind, sym):
     """A gap report symbol (internal names, descriptors) as the dotted name probe.py classifies by prefix."""
     if kind != "class":
@@ -139,7 +145,7 @@ def run_gap1201(jar_dir, out):
     listing = tmp / "targets.txt"   # "@file": the target list is longer than the Windows command line
     listing.write_text(gap1201_targets(), encoding="utf-8")
     cmd = [str(ROOT / ("gradlew.bat" if sys.platform == "win32" else "gradlew")), "-q", "gap1201", f"-PtargetJars=@{listing.as_posix()}",
-           f"-PgapJars={pathlib.Path(jar_dir).resolve()}", f"-PgapReport={report}"]
+           f"-PgapJars={pathlib.Path(jar_dir).resolve()}", f"-PgapReport={report}", "-Pgap.translate=true"]   # the report is of the jars AFTER the layer (facades, library bridges, renames)
     print(f"gap report for {len(jars)} Forge 1.20.1 jar(s) ...", flush=True)
     r = subprocess.run(cmd, cwd=ROOT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
     detail = pathlib.Path(str(report) + ".detail.tsv")
@@ -159,8 +165,11 @@ def run_gap1201(jar_dir, out):
         miss = sorted(set(missing.get(j.name, [])))
         # the telling ones first: Forge and Minecraft symbols before the other mods' (cause() looks at all of them)
         miss.sort(key=lambda m: (not m.startswith(("net.minecraftforge.", "net.neoforged.", "net.minecraft.", "com.mojang.")), m))
-        rec = {"jar": j.name, "mc": "1.20.1", "mods": mod_info(j), "classes": classes, "synthesizedMembers": 0, "references": refs.get(j.name, 0)}
-        if miss:
+        info = mod_info(j)
+        rec = {"jar": j.name, "mc": "1.20.1", "mods": info, "classes": classes, "synthesizedMembers": 0, "references": refs.get(j.name, 0)}
+        if info and all(m["id"].lower() in native_libraries() for m in info):
+            rec["result"] = "obsolete"   # a library with a native 1.21.1 build of the same mod id: the layer skips this jar (NativeLibraries1201), the native build is what runs
+        elif miss:
             rec.update({"result": "unresolved", "unresolved": len(miss), "missing": miss[:20]})
         else:
             rec["result"] = "links"

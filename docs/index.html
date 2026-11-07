@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Legacy Connector compatibility</title>
-<meta name="description" content="Which legacy Minecraft mods (1.7.10, 1.12.2; 1.6.4 and older versions in development) work under Legacy Connector on NeoForge 1.21.1, automated check results, and how to report yours.">
+<meta name="description" content="Which legacy Minecraft mods (1.7.10, 1.12.2; 1.6.4 and older versions in development; Forge 1.20.1 experimental) work under Legacy Connector on NeoForge 1.21.1, automated check results, and how to report yours.">
 <meta name="color-scheme" content="light dark">
 <script>
   // theme before first paint: ?theme=dark|light, then the saved choice, then the OS setting
@@ -45,7 +45,7 @@
 
 <section class="hero" aria-labelledby="hero-title">
   <div class="wrap">
-    <p class="kicker">Forge 1.7.10 + 1.12.2 &rarr; NeoForge 1.21.1</p>
+    <p class="kicker">Forge 1.7.10 + 1.12.2 (+ 1.20.1 experimental) &rarr; NeoForge 1.21.1</p>
     <h1 id="hero-title">Old Forge mods, <em>unmodified</em>, in a modern game.</h1>
     <p class="pitch">Legacy Connector translates legacy Forge mods at load time. See which ones work, check the automated results, or tell us how yours went.</p>
     <div class="cta">
@@ -62,6 +62,7 @@
   <!-- MODS -->
   <section class="view" id="view-mods" data-view="mods" aria-label="Mod compatibility list" hidden>
     <div class="tabs" id="tabs" role="tablist" aria-label="Legacy Minecraft version"></div>
+    <div class="vnote card" id="vnote-mods" hidden></div>
     <div class="stats" id="stats"></div>
     <div class="controls">
       <input type="search" id="q" placeholder="Search mods…" aria-label="Search mods" autocomplete="off">
@@ -89,6 +90,7 @@
     <div class="compare" id="compare"></div>
 
     <div class="tabs" id="ptabs" role="tablist" aria-label="Minecraft version of the probe run"></div>
+    <div class="vnote card" id="vnote-auto" hidden></div>
     <div class="card" id="pdetail" role="tabpanel" aria-label="Probe run detail">
       <div class="runbar">
         <label>Run <select id="run" aria-label="Test run"></select></label>
@@ -117,7 +119,8 @@
     <div class="card">
       <h3>How it works</h3>
       <p class="small" style="margin-top:0">Compatibility is determined by running Legacy Connector's translation on the mod jar and validating the result. This runs outside of the game with the <code>checkLegacyMod</code> tool (<code>tools/compat/probe.py</code>); all jars of a run are translated as one mod set, so a mod and the library or parent mod it builds on can find each other.</p>
-      <p class="small"><b>The categories.</b> <b>Ready to test</b>: the mod translates and everything it uses exists, so it is worth trying in game. <b>Partly placeholder</b>: it translates, but 10 or more features it uses are empty placeholders, so large parts probably do nothing. <b>Missing game features</b>: it needs old Minecraft or Forge functionality (or an API the layer provides itself, such as NEI) that we have not built yet; this is our work to do. <b>Needs another mod</b>: it depends on code from another mod, such as Thaumcraft, IC2 or AE2, that is not available or does not match the version it expects. <b>Needs removed code</b>: it uses old Java or library code that no longer exists. <b>Not needed</b>: 1.7.10 and 1.12.2 engine patches (performance, bug fixes, ID extenders) with nothing to do on 1.21.1.</p>
+      <p class="small"><b>The categories.</b> <b>Ready to test</b>: the mod translates and everything it uses exists, so it is worth trying in game. <b>Partly placeholder</b>: it translates, but 10 or more features it uses are empty placeholders, so large parts probably do nothing. <b>Missing game features</b>: it needs old Minecraft or Forge functionality (or an API the layer provides itself, such as NEI) that we have not built yet; this is our work to do. <b>Needs another mod</b>: it depends on code from another mod, such as Thaumcraft, IC2 or AE2, that is not available or does not match the version it expects. <b>Needs removed code</b>: it uses old Java or library code that no longer exists. <b>Not needed</b>: 1.7.10 and 1.12.2 engine patches (performance, bug fixes, ID extenders) with nothing to do on 1.21.1, and on 1.20.1 the libraries (Architectury, Curios, Patchouli, GeckoLib, Cloth Config...) that exist as native 1.21.1 mods and replace the old jar.</p>
+      <p class="small"><b>1.20.1.</b> There is no old game to link against: the jar is remapped in place (SRG to Mojang names, Forge to NeoForge, the Minecraft 1.20.1 to 1.21.1 migration, the layer's Forge facades) and every reference is then resolved against Minecraft 1.21.1, NeoForge and the other jars of the run (<code>./gradlew gap1201 -Pgap.translate=true</code>). <b>Ready to test</b> therefore means "links against 1.21.1 plus the facades". The support is experimental and off by default (<code>experimental.forge1201=true</code>).</p>
       <p class="small"><b>Resource check.</b> The same run also checks every translated mod's models, blockstates and textures for references that point at nothing (the usual start of a purple-and-black texture or an invisible block), without starting the game. It separates references the translation lost from ones the mod never shipped itself. It cannot judge what anything looks like.</p>
       <p class="small"><b>"Ready to test" does not mean "works".</b> The game is never started: this only shows the jar translates and nothing it uses is missing. Startup problems, bad assumptions about world generation, rendering, or runtime-only failures only show when the game runs, and some unresolved references sit in code paths a mod never reaches. For in-game results see the <a href="#/mods">mod list</a>, where player reports and in-game tests outrank this probe.</p>
       <p class="small">The jars come from Modrinth's most downloaded Forge mods and are discarded after the run. If a result is wrong, <a class="report-link" href="#" target="_blank" rel="noopener">open a compatibility report</a>.</p>
@@ -171,7 +174,7 @@
     <h2 class="sec">The pieces</h2>
     <div class="twocol">
       <div class="card"><h3>Mod list</h3><p class="small" style="margin:0">Per Minecraft version, one row per mod with every result behind it: <a href="#/mods">open the list</a>.</p></div>
-      <div class="card"><h3>Automated results</h3><p class="small" style="margin:0">Weekly offline check of popular mods, 1.7.10 and 1.12.2 side by side: <a href="#/automated">see the numbers</a>.</p></div>
+      <div class="card"><h3>Automated results</h3><p class="small" style="margin:0">Weekly offline check of popular mods, per legacy version side by side: <a href="#/automated">see the numbers</a>.</p></div>
       <div class="card"><h3>Documentation</h3><p class="small" style="margin:0">Architecture, bridges and the addon API are in the <a href="https://github.com/kylepitcock/Legacy-Connector/tree/master/docs/wiki" target="_blank" rel="noopener">wiki folder</a>.</p></div>
     </div>
   </section>
