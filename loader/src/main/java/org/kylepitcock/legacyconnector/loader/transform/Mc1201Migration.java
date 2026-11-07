@@ -112,13 +112,38 @@ final class Mc1201Migration {
                 } else if (addProvider(m, call, h, t)) {
                     c.providerCalls++;
                 }
+            } else if (in instanceof org.objectweb.asm.tree.InvokeDynamicInsnNode d) {
+                registryBufferLambda(d);
             } else if (in instanceof FieldInsnNode f && f.getOpcode() == Opcodes.GETSTATIC) {
                 Field rule = t.fields.get(f.owner + "." + f.name + ":" + f.desc);
+                if (rule == null) {
+                    // a static field inherited from a Minecraft class (a mod item reading Item.BASE_ATTACK_DAMAGE_UUID through its own class)
+                    for (String owner : h.minecraftAncestors(f.owner)) {
+                        rule = t.fields.get(owner + "." + f.name + ":" + f.desc);
+                        if (rule != null) break;
+                    }
+                }
                 if (rule != null) {
                     rewriteField(m, f, rule);
                     c.fields++;
                 }
             }
+        }
+    }
+
+    /** Functional interfaces whose buffer parameter became a {@code RegistryFriendlyByteBuf}: a lambda written for the 1.20.1 {@code FriendlyByteBuf} would not link. */
+    private static final java.util.Set<String> REGISTRY_BUFFER_INTERFACES = java.util.Set.of("net/neoforged/neoforge/network/IContainerFactory");
+
+    /**
+     * {@code (id, inv, buf) -> ...} for {@code IContainerFactory}: the lambda method keeps taking the {@code FriendlyByteBuf} (a supertype), but the
+     * metafactory's own method types must name the {@code RegistryFriendlyByteBuf} of the interface.
+     */
+    private static void registryBufferLambda(org.objectweb.asm.tree.InvokeDynamicInsnNode d) {
+        if (!d.bsm.getOwner().equals("java/lang/invoke/LambdaMetafactory") || d.bsmArgs.length < 3) return;
+        if (!REGISTRY_BUFFER_INTERFACES.contains(Type.getReturnType(d.desc).getInternalName())) return;
+        for (int i : new int[] {0, 2}) {
+            if (!(d.bsmArgs[i] instanceof Type t) || t.getSort() != Type.METHOD) continue;
+            d.bsmArgs[i] = Type.getMethodType(t.getDescriptor().replace("Lnet/minecraft/network/FriendlyByteBuf;", "Lnet/minecraft/network/RegistryFriendlyByteBuf;"));
         }
     }
 

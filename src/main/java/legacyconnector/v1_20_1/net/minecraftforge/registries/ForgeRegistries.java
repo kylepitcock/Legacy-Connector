@@ -35,7 +35,7 @@ public final class ForgeRegistries {
     public static final IForgeRegistry<MobEffect> MOB_EFFECTS = new ForgeRegistryWrapper(BuiltInRegistries.MOB_EFFECT);
     public static final IForgeRegistry<SoundEvent> SOUND_EVENTS = new ForgeRegistryWrapper<>(BuiltInRegistries.SOUND_EVENT);
     public static final IForgeRegistry<Potion> POTIONS = new ForgeRegistryWrapper<>(BuiltInRegistries.POTION);
-    public static final IForgeRegistry<Enchantment> ENCHANTMENTS = new ForgeRegistryWrapper<>(Registries.ENCHANTMENT);
+    public static final IForgeRegistry<org.kylepitcock.legacyconnector.v1_20_1.migrate.LegacyEnchantment> ENCHANTMENTS = new ForgeRegistryWrapper<>(org.kylepitcock.legacyconnector.v1_20_1.migrate.LegacyEnchantments.KEY);
     public static final IForgeRegistry<EntityType<?>> ENTITY_TYPES = new ForgeRegistryWrapper(BuiltInRegistries.ENTITY_TYPE);
     public static final IForgeRegistry<BlockEntityType<?>> BLOCK_ENTITY_TYPES = new ForgeRegistryWrapper(BuiltInRegistries.BLOCK_ENTITY_TYPE);
     public static final IForgeRegistry<net.minecraft.core.particles.ParticleType<?>> PARTICLE_TYPES = new ForgeRegistryWrapper(BuiltInRegistries.PARTICLE_TYPE);
@@ -76,7 +76,7 @@ public final class ForgeRegistries {
         public static final net.minecraft.resources.ResourceKey<net.minecraft.core.Registry<MobEffect>> MOB_EFFECTS = Registries.MOB_EFFECT;
         public static final net.minecraft.resources.ResourceKey<net.minecraft.core.Registry<SoundEvent>> SOUND_EVENTS = Registries.SOUND_EVENT;
         public static final net.minecraft.resources.ResourceKey<net.minecraft.core.Registry<Potion>> POTIONS = Registries.POTION;
-        public static final net.minecraft.resources.ResourceKey<net.minecraft.core.Registry<Enchantment>> ENCHANTMENTS = Registries.ENCHANTMENT;
+        public static final net.minecraft.resources.ResourceKey<net.minecraft.core.Registry<org.kylepitcock.legacyconnector.v1_20_1.migrate.LegacyEnchantment>> ENCHANTMENTS = org.kylepitcock.legacyconnector.v1_20_1.migrate.LegacyEnchantments.KEY;
         public static final net.minecraft.resources.ResourceKey<net.minecraft.core.Registry<EntityType<?>>> ENTITY_TYPES = Registries.ENTITY_TYPE;
         public static final net.minecraft.resources.ResourceKey<net.minecraft.core.Registry<BlockEntityType<?>>> BLOCK_ENTITY_TYPES = Registries.BLOCK_ENTITY_TYPE;
         public static final net.minecraft.resources.ResourceKey<net.minecraft.core.Registry<net.minecraft.core.particles.ParticleType<?>>> PARTICLE_TYPES = Registries.PARTICLE_TYPE;

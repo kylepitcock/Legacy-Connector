@@ -42,6 +42,8 @@ public final class Forge1201Runtime {
         LOG.info("Forge 1.20.1 facades active for {} mod(s): {}", modIds.size(), modIds);
         modBus.addListener(Forge1201Runtime::onRegisterCapabilities);
         modBus.addListener(Forge1201Runtime::onLoadComplete);
+        modBus.addListener(org.kylepitcock.legacyconnector.v1_20_1.migrate.LegacyEnchantments::onNewRegistry);
+        org.kylepitcock.legacyconnector.core.pack.GeneratedPack.addContributor(org.kylepitcock.legacyconnector.v1_20_1.migrate.LegacyEnchantments::contribute);
         modBus.addListener(legacyconnector.v1_20_1.net.minecraftforge.network.simple.SimpleChannel::registerAll);
         NeoForge.EVENT_BUS.addListener(Forge1201Runtime::onServerTickPre);
         NeoForge.EVENT_BUS.addListener(Forge1201Runtime::onServerTickPost);
@@ -50,6 +52,8 @@ public final class Forge1201Runtime {
         NeoForge.EVENT_BUS.addListener(Forge1201Runtime::onPlayerTickPre);
         NeoForge.EVENT_BUS.addListener(Forge1201Runtime::onPlayerTickPost);
         NeoForge.EVENT_BUS.addListener(Forge1201Runtime::onEntityJoin);
+        NeoForge.EVENT_BUS.addListener(Forge1201Runtime::onIncomingDamage);
+        NeoForge.EVENT_BUS.addListener(Forge1201Runtime::onEntityTickPre);
         if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) Forge1201Client.init();
     }
 
@@ -108,6 +112,27 @@ public final class Forge1201Runtime {
 
     private static void onPlayerTickPost(PlayerTickEvent.Post e) {
         NeoForge.EVENT_BUS.post(new TickEvent.PlayerTickEvent(TickEvent.Phase.END, e.getEntity()));
+    }
+
+    // ---- living events ------------------------------------------------------------------------------------------------------
+
+    /** Forge's LivingAttackEvent (cancel) and LivingHurtEvent (cancel, amount) both map onto NeoForge's LivingIncomingDamageEvent. */
+    private static void onIncomingDamage(net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent e) {
+        var attack = new legacyconnector.v1_20_1.net.minecraftforge.event.entity.living.LivingAttackEvent(e.getEntity(), e.getSource(), e.getAmount());
+        NeoForge.EVENT_BUS.post(attack);
+        if (attack.isCanceled()) {
+            e.setCanceled(true);
+            return;
+        }
+        var hurt = new legacyconnector.v1_20_1.net.minecraftforge.event.entity.living.LivingHurtEvent(e.getEntity(), e.getSource(), e.getAmount());
+        NeoForge.EVENT_BUS.post(hurt);
+        if (hurt.isCanceled()) e.setCanceled(true);
+        else if (hurt.getAmount() != e.getAmount()) e.setAmount(hurt.getAmount());
+    }
+
+    private static void onEntityTickPre(net.neoforged.neoforge.event.tick.EntityTickEvent.Pre e) {
+        if (e.getEntity() instanceof net.minecraft.world.entity.LivingEntity living)
+            NeoForge.EVENT_BUS.post(new legacyconnector.v1_20_1.net.minecraftforge.event.entity.living.LivingEvent$LivingTickEvent(living));
     }
 
     static LogicalSide side(boolean clientSide) {

@@ -100,6 +100,10 @@ public class LazyOptional<T> {
         return v != null ? v : other.get();
     }
 
+    public <X extends Throwable> T orElseThrow(NonNullSupplier<? extends X> exceptionSupplier) throws X {
+        return orElseThrow((Supplier<? extends X>) exceptionSupplier::get);
+    }
+
     public <X extends Throwable> T orElseThrow(Supplier<? extends X> exceptionSupplier) throws X {
         T v = getValue();
         if (v != null) return v;

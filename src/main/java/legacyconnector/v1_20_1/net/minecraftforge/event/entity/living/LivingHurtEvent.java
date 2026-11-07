@@ -1,0 +1,33 @@
+package legacyconnector.v1_20_1.net.minecraftforge.event.entity.living;
+
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
+import net.neoforged.bus.api.ICancellableEvent;
+import net.neoforged.neoforge.event.entity.living.LivingEvent;
+
+/**
+ * Forge 1.20.1's {@code LivingHurtEvent} (cancelable, amount settable, before armor and absorption). Posted by {@code Forge1201Runtime} from NeoForge 1.21.1's
+ * {@code LivingIncomingDamageEvent}; the amount and cancellation are copied back.
+ */
+public class LivingHurtEvent extends LivingEvent implements ICancellableEvent {
+    private final DamageSource source;
+    private float amount;
+
+    public LivingHurtEvent(LivingEntity entity, DamageSource source, float amount) {
+        super(entity);
+        this.source = source;
+        this.amount = amount;
+    }
+
+    public DamageSource getSource() {
+        return source;
+    }
+
+    public float getAmount() {
+        return amount;
+    }
+
+    public void setAmount(float amount) {
+        this.amount = amount;
+    }
+}

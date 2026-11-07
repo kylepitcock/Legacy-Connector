@@ -44,13 +44,30 @@ public final class ForgeApi1201 {
 
     // ---- event bus ----------------------------------------------------------------------------------------------------------
 
-    /** Forge accepted {@code bus.register(obj)} for an object without subscriber methods (a mod registering its main class "just in case"); NeoForge throws. */
-    public static void busRegister(net.neoforged.bus.api.IEventBus bus, Object target) {
-        try {
-            bus.register(target);
-        } catch (IllegalArgumentException e) {
-            if (e.getMessage() == null || !e.getMessage().contains("no @SubscribeEvent methods")) throw e;
-        }
+    /** Forge's {@code Event.isCancelable/setCanceled}: in NeoForge only events implementing {@code ICancellableEvent} cancel. */
+    public static boolean eventIsCancelable(net.neoforged.bus.api.Event event) {
+        return event instanceof net.neoforged.bus.api.ICancellableEvent;
+    }
+
+    public static void eventSetCanceled(net.neoforged.bus.api.Event event, boolean canceled) {
+        if (event instanceof net.neoforged.bus.api.ICancellableEvent c) c.setCanceled(canceled);
+        else if (canceled) throw new UnsupportedOperationException("Attempted to cancel a non-cancellable event: " + event.getClass().getName());
+    }
+
+    /** {@code Event.hasResult()}: results are gone from the NeoForge event bus, no event has one. */
+    public static boolean eventHasResult(net.neoforged.bus.api.Event event) {
+        return false;
+    }
+
+    public static void eventSetResult(net.neoforged.bus.api.Event event, legacyconnector.v1_20_1.net.minecraftforge.eventbus.api.Event$Result result) {
+        // no NeoForge 1.21.1 event reads it
+    }
+
+    /** {@code RegisterHelper.register(String, value)}: the name is in the namespace of the mod being loaded. */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static void registerHelper(RegisterEvent.RegisterHelper helper, String name, Object value) {
+        ResourceLocation id = name.contains(":") ? ResourceLocation.parse(name) : ResourceLocation.fromNamespaceAndPath(net.neoforged.fml.ModLoadingContext.get().getActiveNamespace(), name);
+        helper.register(id, value);
     }
 
     // ---- registries ---------------------------------------------------------------------------------------------------------

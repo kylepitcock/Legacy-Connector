@@ -49,3 +49,8 @@ net/minecraftforge/items/ItemHandlerHelper	net/neoforged/neoforge/items/ItemHand
 net/minecraftforge/energy/IEnergyStorage	net/neoforged/neoforge/energy/IEnergyStorage
 net/minecraftforge/energy/EnergyStorage	net/neoforged/neoforge/energy/EnergyStorage
 net/minecraftforge/common/ForgeSpawnEggItem	net/neoforged/neoforge/common/DeferredSpawnEggItem
+net/minecraftforge/fluids/ForgeFlowingFluid	net/neoforged/neoforge/fluids/BaseFlowingFluid
+net/minecraftforge/fluids/ForgeFlowingFluid$Properties	net/neoforged/neoforge/fluids/BaseFlowingFluid$Properties
+net/minecraftforge/fluids/ForgeFlowingFluid$Source	net/neoforged/neoforge/fluids/BaseFlowingFluid$Source
+net/minecraftforge/fluids/ForgeFlowingFluid$Flowing	net/neoforged/neoforge/fluids/BaseFlowingFluid$Flowing
+net/minecraftforge/common/extensions/IForgeMenuType	net/neoforged/neoforge/common/extensions/IMenuTypeExtension

@@ -21,4 +21,9 @@ public final class NetworkHooks {
     public static void openScreen(ServerPlayer player, MenuProvider containerSupplier, Consumer<FriendlyByteBuf> extraDataWriter) {
         player.openMenu(containerSupplier, extraDataWriter::accept);
     }
+
+    /** The packet that spawns an entity on the clients (NeoForge's own spawn data travels in the vanilla packet). */
+    public static net.minecraft.network.protocol.Packet<net.minecraft.network.protocol.game.ClientGamePacketListener> getEntitySpawningPacket(net.minecraft.world.entity.Entity entity) {
+        return new net.minecraft.network.protocol.game.ClientboundAddEntityPacket(entity, 0, entity.blockPosition());
+    }
 }

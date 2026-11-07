@@ -64,6 +64,10 @@ public final class BridgeHelpers {
     public static void superAppendHoverText(Object item, ItemStack stack, Level level, java.util.List<net.minecraft.network.chat.Component> lines,
                                             net.minecraft.world.item.TooltipFlag flag) {}
 
+    public static net.minecraft.world.level.BlockGetter tooltipGetter(Item.TooltipContext ctx) {
+        return ctx == null ? null : ctx.level();
+    }
+
     public static Level tooltipLevel(Item.TooltipContext ctx) {
         return ctx == null ? null : ctx.level();
     }
