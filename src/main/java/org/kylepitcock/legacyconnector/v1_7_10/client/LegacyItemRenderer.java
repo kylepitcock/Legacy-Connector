@@ -51,7 +51,9 @@ public class LegacyItemRenderer extends BlockEntityWithoutLevelRenderer {
         // handler draws the plain crimson banner, its item renderer the stack's colour and aspect)
         if (renderer == null && view.getItem() instanceof legacyconnector.v1_7_10.net.minecraft.item.ItemBlock ib
                 && renderIsbrhItem(ib, view, context, pose, buffers, light, overlay)) return;
-        if (renderer == null && type != ItemRenderType.ENTITY) {
+        // in a slot an item whose renderer has no INVENTORY form shows its icon (Crafting Dead's guns have a held-model renderer
+        // only: the 3D model of the ENTITY form overflowed the slot)
+        if (renderer == null && type != ItemRenderType.ENTITY && context != ItemDisplayContext.GUI) {
             type = ItemRenderType.ENTITY; // e.g. renderers that only draw dropped/held forms
             renderer = MinecraftForgeClient.getItemRenderer(view, type);
         }
