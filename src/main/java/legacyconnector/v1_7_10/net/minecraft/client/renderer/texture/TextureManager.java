@@ -21,6 +21,7 @@ public class TextureManager implements ITickable {
 
     /** 1.4.7 and 1.5.2 (RenderEngine.bindTexture(int)): a texture by the OpenGL id {@link #getTexture} returned. */
     public void bindTexture(int glId) {
+        glId = mcc$resolve(glId);
         if (org.kylepitcock.legacyconnector.core.pack.GeneratedPack.building()) return;
         var named = mcc$handles.get(glId);
         if (named != null) {
@@ -82,6 +83,64 @@ public class TextureManager implements ITickable {
             mcc$handles.put(id, l);
             return id;
         });
+    }
+
+    /**
+     * 1.4.7 and 1.5.2 (RenderEngine.allocateAndSetupTexture): a GL texture made from an image the mod built itself (ComputerCraft's terminal
+     * font sheet), nearest filtered and repeating, returned as its OpenGL id; the mod binds it later with {@code glBindTexture} or
+     * {@code bindTexture(int)}.
+     */
+    public int allocateAndSetupTexture(java.awt.image.BufferedImage image) {
+        if (image == null) return 0;
+        if (!com.mojang.blaze3d.systems.RenderSystem.isOnRenderThread()) {
+            // made while mods load (no GL context): a handle, uploaded when the mod first binds it
+            int handle = 0x50000000 + mcc$images.size();
+            mcc$images.put(handle, image);
+            return handle;
+        }
+        return mcc$upload(image);
+    }
+
+    private final java.util.Map<Integer, java.awt.image.BufferedImage> mcc$images = new java.util.concurrent.ConcurrentHashMap<>();
+    private final java.util.Map<Integer, Integer> mcc$uploaded = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** The real GL id for an {@link #allocateAndSetupTexture} handle (the image is uploaded on first use, on the render thread); other ids unchanged. */
+    public int mcc$resolve(int id) {
+        if (id < 0x50000000 || id >= 0x60000000) return id;
+        Integer real = mcc$uploaded.get(id);
+        if (real != null) return real;
+        var img = mcc$images.get(id);
+        if (img == null || !com.mojang.blaze3d.systems.RenderSystem.isOnRenderThread()) return 0;
+        real = mcc$upload(img);
+        mcc$uploaded.put(id, real);
+        return real;
+    }
+
+    private int mcc$upload(java.awt.image.BufferedImage image) {
+        int w = image.getWidth(), h = image.getHeight();
+        int[] argb = image.getRGB(0, 0, w, h, null, 0, w);
+        int id = com.mojang.blaze3d.platform.TextureUtil.generateTextureId();
+        com.mojang.blaze3d.platform.GlStateManager._bindTexture(id);
+        com.mojang.blaze3d.platform.TextureUtil.prepareImage(id, 0, w, h);
+        try (var nat = new com.mojang.blaze3d.platform.NativeImage(w, h, false)) {
+            for (int y = 0; y < h; y++) {
+                for (int x = 0; x < w; x++) {
+                    int c = argb[y * w + x];
+                    nat.setPixelRGBA(x, y, (c & 0xFF00FF00) | ((c >> 16) & 0xFF) | ((c & 0xFF) << 16));
+                }
+            }
+            nat.upload(0, 0, 0, false);
+        }
+        com.mojang.blaze3d.platform.GlStateManager._texParameter(3553, 10241, 9728);
+        com.mojang.blaze3d.platform.GlStateManager._texParameter(3553, 10240, 9728);
+        com.mojang.blaze3d.platform.GlStateManager._texParameter(3553, 10242, 10497);
+        com.mojang.blaze3d.platform.GlStateManager._texParameter(3553, 10243, 10497);
+        return id;
+    }
+
+    /** The location a {@link #getTexture(String)} handle (an id that is not a GL texture yet) stands for, or null for a real GL id. */
+    public ResourceLocation mcc$handleLocation(int glId) {
+        return glId >= 0x40000000 ? mcc$handles.get(glId) : null;
     }
 
     private final java.util.Map<Integer, ResourceLocation> mcc$handles = new java.util.concurrent.ConcurrentHashMap<>();

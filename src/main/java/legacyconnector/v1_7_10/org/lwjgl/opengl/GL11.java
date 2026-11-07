@@ -207,8 +207,15 @@ public class GL11 extends GL11Guard {
             // a bind on another unit (the lightmap's) is not the texture legacy geometry draws with; the modern renderer binds
             // its own lightmap
             if (!RenderContext.onDefaultTextureUnit()) return;
-            GlStateManager._bindTexture(texture);
-            if (texture != 0) RenderContext.bindTexture(org.kylepitcock.legacyconnector.v1_7_10.client.RawGlTextures.location(texture));
+            int tex = legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureManager.INSTANCE.mcc$resolve(texture);
+            // an id RenderEngine.getTexture(path) returned for a texture the game had not loaded yet: bind it by its location
+            var named = legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureManager.INSTANCE.mcc$handleLocation(tex);
+            if (named != null) {
+                legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureManager.INSTANCE.bindTexture(named);
+                return;
+            }
+            GlStateManager._bindTexture(tex);
+            if (tex != 0) RenderContext.bindTexture(org.kylepitcock.legacyconnector.v1_7_10.client.RawGlTextures.location(tex));
         } else {
             GL11Guard.glBindTexture(target, texture);
         }

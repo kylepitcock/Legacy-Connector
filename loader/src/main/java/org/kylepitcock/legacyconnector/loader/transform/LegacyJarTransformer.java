@@ -620,10 +620,26 @@ public final class LegacyJarTransformer {
         Files.createDirectories(output.getParent());
         Path tmp = output.resolveSibling(output.getFileName() + ".tmp");
         try (OutputStream os = Files.newOutputStream(tmp); JarOutputStream jos = new JarOutputStream(os, manifest)) {
+            // directory entries too: a mod that mounts a folder of its own jar (ComputerCraft's ROM) looks it up with ZipFile.getEntry("lua/rom")
+            var dirs = new java.util.TreeSet<String>();
+            for (String n : resources.keySet()) addParents(dirs, n);
+            for (String n : classes.keySet()) addParents(dirs, n);
+            for (String d : dirs) {
+                if (resources.containsKey(d) || classes.containsKey(d)) continue;
+                ZipEntry entry = new ZipEntry(d);
+                entry.setTime(0);
+                jos.putNextEntry(entry);
+                jos.closeEntry();
+            }
             for (var e : resources.entrySet()) put(jos, e.getKey(), e.getValue());
             for (var e : classes.entrySet()) put(jos, e.getKey(), e.getValue());
         }
         moveIntoPlace(tmp, output);
+    }
+
+    private static void addParents(java.util.Set<String> dirs, String name) {
+        if (name.startsWith("META-INF/")) return; // the manifest's folder is written by JarOutputStream
+        for (int i = name.indexOf('/'); i >= 0; i = name.indexOf('/', i + 1)) dirs.add(name.substring(0, i + 1));
     }
 
     /**

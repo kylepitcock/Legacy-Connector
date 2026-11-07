@@ -355,7 +355,14 @@ final class SplitPackageResolver {
             while (en.hasMoreElements()) {
                 ZipEntry e = en.nextElement();
                 String n = e.getName();
-                if (e.isDirectory() || n.equals(JarFile.MANIFEST_NAME) || !seen.add(n)) continue;
+                if (n.equals(JarFile.MANIFEST_NAME) || !seen.add(n)) continue;
+                if (e.isDirectory()) { // kept: a mod mounting a folder of its own jar looks the folder entry up
+                    ZipEntry d = new ZipEntry(n);
+                    d.setTime(0);
+                    jos.putNextEntry(d);
+                    jos.closeEntry();
+                    continue;
+                }
                 int slash = n.lastIndexOf('/');
                 if (n.endsWith(".class") && slash > 0 && packages.contains(n.substring(0, slash))) continue;
                 ZipEntry z = new ZipEntry(n);
