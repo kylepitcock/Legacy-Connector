@@ -85,9 +85,15 @@ Fixed in the last round:
 - Block Helper loads: 1.5-era ModLoader jars name `net.minecraft.src.BlockComparator` (flat names added for the classes 1.5 introduced, `forward/1.4.7/flat-names.tsv`), the 1.6.4 table maps `BlockComparator`/`BlockRedstoneLogic` to the 1.7.10 names, and `Block.redstoneComparatorIdle/Active` exist.
 - Forestry's tamper check (`Runtime.halt` when its jar has no signature) no longer ends the game: `Runtime.halt/exit` from a legacy mod is ignored like `System.exit`.
 - Mystcraft's linkbook entity (data watcher slot 7, which the 1.7.10 living entity also registers) no longer fails its construction.
+- Forestry's blocks drew missing-texture pink: its texture manager reads `RenderEngine.textureMapBlocks`/`textureMapItems` (now the shim's atlases, `TextureManager.mcc$get$textureMapBlocks`), and its signature check (`Runtime.halt`) ended the game on start.
 - Patched-game jar mods (Better Than Wolves and its add-ons: a zip of `MINECRAFT-JAR/` files meant to be copied over `minecraft.jar`) are listed in the report under "Files that are not Forge mods" as "not supported: patched-game jar mod" and logged at warn level; the site rates Better Than Wolves "fails" with the same plain words.
 
+Real-client survival pass of this round (details and screenshots in `docs/screenshots/old-versions/README.md`): BuildCraft auto workbench screen, ComputerCraft terminal, BiblioCraft desk screen, Mystcraft writing desk screen, Forestry blocks and alveary, Carpenter's Blocks, a Twilight Forest fight (the mobs attacked and killed the player) work. RedLogic wires do conduct (a lever beside the wire powers it and lights a lamp: RedLogic only connects to power sources, a redstone block next to a wire does nothing, as in 1.5.2); the flat grey pad around the wire stripe is not solved (the quads and the tile entity are right; the white region is not from the wire texture, which is transparent there). The "drew nothing for WireBlock" log line comes from the first meshing before the wire's side mask has arrived; later meshes draw 5 quads.
+
 Known not to work or not verified:
+
+- Screens that do not open or draw: the Forestry apiary (its GUI is a plain `GuiScreen` holding a container, not a `GuiContainer`), the Ender Chest and the BiblioCraft typesetting table (no screen in the test, no log line), the Mystcraft desk lays its panels out wrongly.
+- The Ender Chest item renderer binds `textures/misc/tunnel.png` and `particlefield.png`, which 1.21.1 lacks.
 
 - Better Than Wolves and other patched-`minecraft.jar` mods (see above). Advanced Machines / Advanced Repulsion Systems features that need IC2 (IC2 has no 1.5.2 build to test with).
 - Immibis' mods share one block id file (`immibis.cfg`); when another mod uses the same numeric id (Resource Engineering's `Loaded Sand` = 410, ComputerCraft's disk item 4001) Immibis Core's allocator aborts, as it does in the real game with an error screen, and every Immibis block after the conflict is lost. This is a configuration conflict of the mod set, not a layer defect; change the id in `immibis.cfg`.

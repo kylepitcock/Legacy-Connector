@@ -2411,8 +2411,8 @@
       "mc": "1.5.2",
       "source": "client",
       "date": "2026-11-07",
-      "status": "works",
-      "notes": "Self-tested in server self test, 1.5.2 set: 79 items, 13 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+      "status": "partial",
+      "notes": "Real client, survival, shaders: bookcase, desk, typesetting table, lamps and the other blocks draw and place through their items; the Wooden Desk screen opens and draws with its slots. The Typesetting Table did not open a screen in the test. Recipes (564) register."
     },
     {
       "name": "BiblioCraft",
@@ -3100,7 +3100,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "works",
-      "notes": "Self-tested in server self test, 1.5.2 set: 8 items, 1 blocks, 3 entity types; every block placed and used, every item used, every entity spawned without errors."
+      "notes": "Real client, survival, shaders: the auto workbench places and its crafting screen opens with the grid, output slot and inventory; engines, pipes, tanks and pumps register (self test: 85 items and blocks across the modules, 3 entity types)."
     },
     {
       "name": "BuildCraft",
@@ -3378,7 +3378,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "works",
-      "notes": "Self-tested in server self test, 1.5.2 set: 19 items, 17 blocks, 0 entity types; every block placed and used, every item used, every entity spawned; 2 threw errors (6%)."
+      "notes": "Real client, survival, shaders: the carpenter's block places and draws through the mod's own block handler (its covers use the vanilla textures); 19 recipes register. Self test: doors threw a null tile entity (placed by command without a cover)."
     },
     {
       "name": "Carry On",
@@ -4050,7 +4050,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "partial",
-      "notes": "Self-tested in server self test, 1.5.2 set: 9 items, 3 blocks, 0 entity types; every block placed and used, every item used, every entity spawned; 2 threw errors (17%)."
+      "notes": "Real client, survival, shaders: a computer places and its terminal screen opens and prints CraftOS 1.5 with the prompt. The turtle screens fail in the server self test only (fake player without a world); typing in the terminal and turtle programs are not tried in 1.5.2 (the 1.4.7 round did: they work)."
     },
     {
       "name": "ComputerCraft",
@@ -5998,8 +5998,8 @@
       "mc": "1.5.2",
       "source": "client",
       "date": "2026-11-07",
-      "status": "works",
-      "notes": "Self-tested in server self test, 1.5.2 set: 2 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+      "status": "partial",
+      "notes": "Real client, survival, shaders: the Ender Chest places and renders (its item renderer binds minecraft:textures/misc/tunnel.png and particlefield.png, which 1.21.1 does not have: logged missing textures). Right-clicking it did not open a screen in the test; the mod opens its GUI through CodeChickenCore's own packet (ServerUtils.openSMPContainer)."
     },
     {
       "name": "EnderStorage",
@@ -7084,8 +7084,8 @@
       "mc": "1.5.2",
       "source": "client",
       "date": "2026-11-07",
-      "status": "works",
-      "notes": "Self-tested in server self test, 1.5.2 set: 173 items, 35 blocks, 1 entity types; every block placed and used, every item used, every entity spawned without errors."
+      "status": "partial",
+      "notes": "Real client, survival, shaders: the apiary, alveary and the other blocks now draw with their own textures (they were all missing-texture pink: Forestry's texture manager reads RenderEngine.textureMapBlocks, which was empty, and its tamper check halted the game on startup; both fixed). 173 items and 35 blocks register; the alveary screen opens. The apiary screen opens but draws nothing: Forestry's GUI class is a plain GuiScreen holding a container, which the container bridge does not accept yet."
     },
     {
       "name": "Forestry for Minecraft",
@@ -11977,7 +11977,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "loads",
-      "notes": "Sprint on CTRL: a client-only ModLoader mod; on a dedicated server it is skipped quietly (not reported as failed). Not yet tried in a client."
+      "notes": "Sprint on CTRL: a client-only ModLoader mod; a dedicated server skips it quietly (not 'failed'). Loads in the real client; sprinting itself not tried."
     },
     {
       "name": "Modern Warfare Cubed",
@@ -12436,7 +12436,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "partial",
-      "notes": "Self-tested in server self test, 1.5.2 set: 9 items, 11 blocks, 3 entity types; every block placed and used, every item used, every entity spawned; 11 threw errors (48%). 2 blocks did not stay placed."
+      "notes": "Real client, survival, shaders: the writing desk opens its screen with the symbol list and the player inventory (the panels are laid out wrongly, the inventory sits at the right edge). The linkbook entity no longer fails its construction (it used data watcher slot 7, which a 1.7.10 living entity also uses). Age dimensions still log chunk errors without age data; not played further."
     },
     {
       "name": "Mystcraft",
@@ -15220,7 +15220,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "partial",
-      "notes": "Needs Immibis Microblocks (its TileCoverableBase API class): the earlier failure was a missing dependency in the test set, not a layer defect. With Immibis Core and Microblocks it loads (0 failed). Placing a wire by command crashed the server: RedLogic reads BlockRedstoneWire.getDeclaredFields()[0] and asserts it is a boolean (the shim's wire had icon fields first) and the AssertionError escaped the tile entity creation; both fixed. Real client, survival, shaders (third round): lamps, wires and gates are given and placed with their items; a vanilla redstone block beside a lamp lights it (the lit lamp glows white). Fixed: its blocks and items were registered as minecraft:redlogic.* (Immibis Core registers them while no mod is active; the owner is now the mod whose package holds the class, so redlogic:redlogic.*), and its textures under /mods/immibis/redlogic/ (a resource domain with a slash) were not found, so the lamps drew as missing textures. Still open: a wire between a power source and a lamp does not conduct, wires draw as a flat white pad, and names show raw keys (the mod's own lang file format with item:/tile: keys is not read)."
+      "notes": "Real client, survival, shaders: wires place with their item, a lever beside the wire powers the whole row (strength 14 down the line, the wire brightens) and a lamp cube at the end lights, so wires do conduct (the earlier note was a bad test: RedLogic only connects to blocks that can provide power, a redstone block or a cube with a lever on it does not power it, as in 1.5.2). Open: wires draw a flat light-grey pad around the wire stripe (the stripe itself is tinted correctly); the item names show raw keys (the mod's own lang file format). When the set has another mod on one of Immibis' block ids (Resource Engineering 409/410, ComputerCraft 4001) Immibis Core aborts its allocation, as it does in the real game, and every Immibis block after it is missing: change the id in immibis.cfg."
     },
     {
       "name": "RedPower",
@@ -16845,7 +16845,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "loads",
-      "notes": "Client-only mod: on a dedicated server it is skipped quietly (logged at info level, not reported as failed), as FML did. Not yet tried in a client."
+      "notes": "Client-only mod: a dedicated server skips it quietly (info log, not 'failed'), as FML did. Loads in the real client; sprinting itself not tried."
     },
     {
       "name": "Sprintable",
@@ -18248,7 +18248,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "partial",
-      "notes": "Real client, shaders: init succeeds now: Minecraft 1.5.2's RenderLiving was concrete (new RenderLiving(model, shadow)); the shim's is too, and binds the entity's string texture (EntityLiving.texture / getTexture, set by the mod's constructor) before the renderer's default, so the wild boar, bighorn sheep, bunny and penguin draw with their own models and skins."
+      "notes": "Real client, survival, shaders: init succeeds; the wild boar, bighorn sheep, bunny and penguin draw with their models. A skeleton druid and a hedge spider spawned in survival walked up, attacked and killed the player (poison effect, damage, knockback): mob AI and attacks work. Dimension, structures and bosses not explored."
     },
     {
       "name": "The Twilight Forest",
@@ -20143,6 +20143,15 @@
       "date": "2026-11-07",
       "status": "fails",
       "notes": "Not supported: a patched-game jar mod. It is installed by copying files over minecraft.jar and replaces Minecraft's own classes (blocks, mobs, world generation); this layer runs mods that add to the game, so it cannot load. The log and the report say so in plain words."
+    },
+    {
+      "name": "mod_BlockHelper",
+      "version": "0.0.0-legacy",
+      "mc": "1.4.7",
+      "source": "client",
+      "date": "2026-11-07",
+      "status": "loads",
+      "notes": "Loads now. A 1.5.x ModLoader mod that names net.minecraft.src.BlockComparator (a class 1.4.7 did not have) and Block.redstoneComparatorIdle; both resolve now. Its Waila-style overlay is not tried."
     }
   ],
   "hidden": [

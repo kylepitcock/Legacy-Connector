@@ -63,6 +63,14 @@ Real client (NeoForge 1.21.1, superflat), survival mode for the actions (craftin
 | `1.5.2/applied-energistics-1-blocks-shaders.png` | Applied Energistics rv14 (AE1) | Its blocks (grinder, terminals, ore, crafting grid) with their textures | Partly working |
 | `1.5.2/twilight-forest-mobs-shaders.png` | The Twilight Forest 1.5.2 | Penguin, bighorn sheep and wild boar with the mod's own models and skins (init no longer fails on `new RenderLiving(model, shadow)`; the entity's string texture is bound) | Works |
 | `1.5.2/applied-energistics-1-machines-shaders.png` | Applied Energistics rv14 (AE1) | Its terminal, chest, drive, crafting and interface blocks in a row; the mod's lang file now loads (the no-controller message reads "Unable to communicate with controller.") | Partly working |
+| `1.5.2/redlogic-wire-conducts-lever-to-lamp-shaders.png` | RedLogic | Survival: a row of red alloy wires with a lever at one end and a lamp cube at the other; the lever powers the wire (it brightens toward the lever) and the lamp is lit. The light-grey pad around the wire stripe is a known rendering defect | Partly working |
+| `1.5.2/buildcraft-auto-workbench-gui-survival-shaders.png` | BuildCraft 3.7.4 | The auto workbench screen opened by right-click: crafting grid, output slot and inventory | Works |
+| `1.5.2/computercraft-craftos-terminal-survival-shaders.png` | ComputerCraft 1.53 | The computer's terminal screen after right-click: CraftOS 1.5 and the prompt | Partly working (turtles untried here) |
+| `1.5.2/mystcraft-bibliocraft-forestry-carpenters-blocks-survival-shaders.png` | Mystcraft, BiblioCraft, Forestry, Carpenter's Blocks | Writing desk, typesetting table, an apiary (taken before the Forestry texture fix: missing-texture pink), a carpenter's block and a bookcase placed in survival | Partly working |
+| `1.5.2/forestry-apiary-alveary-blocks-textured-shaders.png` | Forestry 2.2.8.4 | After the fix: the apiary face and the alveary draw with their textures | Partly working (apiary screen empty) |
+| `1.5.2/mystcraft-writing-desk-gui-survival-shaders.png` | Mystcraft 0.10.5 | The writing desk screen: symbol list on the left, the player inventory at the right edge (panel layout is off) | Partly working |
+| `1.5.2/bibliocraft-wooden-desk-gui-survival-shaders.png` | BiblioCraft 1.3.3 | The Wooden Desk screen with its slots, opened by right-click on a desk placed from its item | Partly working |
+| `1.5.2/twilight-forest-skeleton-druid-survival-shaders.png` | The Twilight Forest | A skeleton druid spawned in survival and walking toward the player (it and a hedge spider attacked and killed the player: mob AI works) | Partly working |
 
 ### 1.6.4
 

@@ -282,4 +282,14 @@ public class TextureManager implements ITickable {
         loadTexture(location, texture);
         return location;
     }
+
+    /** 1.5.2's {@code RenderEngine.textureMapBlocks} (a public field there; Forestry's texture manager reads it): the blocks atlas legacy code registers into. */
+    public static TextureMap mcc$get$textureMapBlocks(TextureManager manager) {
+        return org.kylepitcock.legacyconnector.v1_7_10.Assets1710.blockAtlas();
+    }
+
+    /** 1.5.2's {@code RenderEngine.textureMapItems}. */
+    public static TextureMap mcc$get$textureMapItems(TextureManager manager) {
+        return org.kylepitcock.legacyconnector.v1_7_10.Assets1710.itemAtlas();
+    }
 }
