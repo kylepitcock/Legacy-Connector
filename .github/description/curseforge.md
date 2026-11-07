@@ -113,7 +113,7 @@ Mods work because the legacy API they were written against is rebuilt on top of 
 - **Registries:** blocks, items, potions, enchantments, sounds, biomes, entities, recipes, villager professions, and mods' own custom registries
 - **Blocks and items:** block states, items with subtypes, tile entities with client sync, tools, armour and food
 - **Recipes:** shaped, shapeless, ore and furnace recipes become data-pack recipes. The Ore Dictionary becomes tags
-- **Capabilities:** legacy tiles and items are NeoForge item, fluid and energy capabilities by default (RF, IC2 EU, BuildCraft MJ, Forge fluids, inventories), so hoppers, Create and modern cables work with them; legacy tools count as tools
+- **Capabilities:** legacy tiles and items are NeoForge item, fluid and energy capabilities by default (RF and Forge Energy, IC2 EU, BuildCraft MJ, Universal Electricity, Forge fluids, inventories), so hoppers, Create and modern cables work with them; legacy tools count as tools
 - **Networking, IMC, coremod plugins** and the usual annotations (`@ObjectHolder`, `@SidedProxy`, `@EventBusSubscriber`)
 - **Models:** mod blockstates and item models are translated to 1.21 formats (only lightly tested)
 - **`@Config` classes** are filled from their config files
@@ -128,7 +128,7 @@ Mods work because the legacy API they were written against is rebuilt on top of 
 | NotEnoughItems | **JEI** | Legacy recipe handlers become JEI categories and answer recipe/usage lookups |
 | Waila | **Jade** | Legacy tooltip providers show in Jade |
 | Patchouli (1.12.2) | **Patchouli** | Legacy mods' guide books (including the ones they ship as resources) open in the modern Patchouli |
-| CoFH RF API | **NeoForge Energy** | Always on. 1 RF = 1 FE, so modern cables connect |
+| CoFH RF API (1.7.10 and Redstone Flux 1.12.2) | **NeoForge Energy** | Always on. 1 RF = 1 FE, so modern cables connect |
 
 If the modern mod isn't installed, the legacy library loads as usual. Each replacement can also be turned off in the config to load the legacy library instead.
 
