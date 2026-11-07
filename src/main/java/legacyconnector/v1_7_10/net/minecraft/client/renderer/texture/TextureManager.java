@@ -22,6 +22,12 @@ public class TextureManager implements ITickable {
     /** 1.4.7 and 1.5.2 (RenderEngine.bindTexture(int)): a texture by the OpenGL id {@link #getTexture} returned. */
     public void bindTexture(int glId) {
         if (org.kylepitcock.legacyconnector.core.pack.GeneratedPack.building()) return;
+        var named = mcc$handles.get(glId);
+        if (named != null) {
+            // a texture of a mod that the game has not loaded yet: bound by location, which loads it
+            bindTexture(named);
+            return;
+        }
         com.mojang.blaze3d.systems.RenderSystem.setShaderTexture(0, glId);
     }
 
@@ -51,8 +57,22 @@ public class TextureManager implements ITickable {
         var mc = net.minecraft.client.Minecraft.getInstance();
         if (mc == null || mc.getTextureManager() == null) return 0;
         var tex = mc.getTextureManager().getTexture(modern, null);
-        return tex == null ? 0 : tex.getId();
+        if (tex != null) {
+            // draws of the legacy GUI code name their texture through the render context, so the id is mapped back to its location when it is bound
+            mcc$handles.putIfAbsent(tex.getId(), org.kylepitcock.legacyconnector.v1_6_4.bridge.Textures152.location(path));
+            return tex.getId();
+        }
+        // not loaded yet (a mod's GUI image is first bound through this id): a handle that bindTexture(int) maps back to the location
+        var location = org.kylepitcock.legacyconnector.v1_6_4.bridge.Textures152.location(path);
+        return mcc$handleIds.computeIfAbsent(location, l -> {
+            int id = 0x40000000 + mcc$handleIds.size();
+            mcc$handles.put(id, l);
+            return id;
+        });
     }
+
+    private final java.util.Map<Integer, ResourceLocation> mcc$handles = new java.util.concurrent.ConcurrentHashMap<>();
+    private final java.util.Map<ResourceLocation, Integer> mcc$handleIds = new java.util.concurrent.ConcurrentHashMap<>();
 
     private final java.util.Set<net.minecraft.resources.ResourceLocation> mcc$modAtlases = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
