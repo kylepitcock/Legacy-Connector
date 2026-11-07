@@ -53,6 +53,18 @@ public final class ForgeApi1201 {
         }
     }
 
+    /**
+     * {@code DeferredRegister.register(name, supplier)}: a value that is a {@code Codec} made by {@code RecordCodecBuilder.create} is registered as the
+     * {@code MapCodec} inside it (registries of codecs such as the global loot modifier serializers hold map codecs in 1.21.1).
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static DeferredHolder drRegister(DeferredRegister register, String name, Supplier supplier) {
+        return register.register(name, () -> {
+            Object value = supplier.get();
+            return value instanceof com.mojang.serialization.MapCodec.MapCodecCodec<?> m ? m.codec() : value;
+        });
+    }
+
     /** {@code RegisterHelper.register(String, value)}: the name is in the namespace of the mod being loaded. */
     @SuppressWarnings({"unchecked", "rawtypes"})
     public static void registerHelper(RegisterEvent.RegisterHelper helper, String name, Object value) {

@@ -62,3 +62,4 @@ net/minecraft/world/inventory/RecipeBookType.create(Ljava/lang/String;)Lnet/mine
 net/minecraft/client/RecipeBookCategories.create(Ljava/lang/String;[Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/client/RecipeBookCategories;	recipeBookCategoriesCreate
 net/neoforged/neoforge/common/ModConfigSpec.setConfig(Lcom/electronwill/nightconfig/core/CommentedConfig;)V	specSetConfig
 net/neoforged/neoforge/registries/RegisterEvent$RegisterHelper.register(Ljava/lang/String;Ljava/lang/Object;)V	registerHelper
+net/neoforged/neoforge/registries/DeferredRegister.register(Ljava/lang/String;Ljava/util/function/Supplier;)Lnet/neoforged/neoforge/registries/DeferredHolder;	drRegister

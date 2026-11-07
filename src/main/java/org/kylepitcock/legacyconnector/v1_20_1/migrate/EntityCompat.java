@@ -250,4 +250,10 @@ public final class EntityCompat {
             throw new IllegalStateException("SpawnPlacements.register failed", e);
         }
     }
+
+    /** The map codec behind a record codec (1.21.1's {@code IGlobalLootModifier.codec()} is a {@code MapCodec}). */
+    public static com.mojang.serialization.MapCodec<?> toMapCodec(com.mojang.serialization.Codec<?> codec) {
+        if (codec instanceof com.mojang.serialization.MapCodec.MapCodecCodec<?> m) return m.codec();
+        return codec.fieldOf("value");
+    }
 }
