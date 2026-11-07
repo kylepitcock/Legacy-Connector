@@ -1,8 +1,6 @@
 package org.kylepitcock.legacyconnector.vb1_7_3;
 
-import java.util.Collections;
 import java.util.Map;
-import java.util.WeakHashMap;
 
 import legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity;
 import legacyconnector.vb1_7_3.net.minecraft.item.ItemStack;
@@ -16,7 +14,11 @@ import net.minecraft.world.entity.player.Player;
  * those slots (a used-up item, a filled bucket). One view per player.
  */
 public final class PlayerViewB173 extends PlayerEntity {
-    private static final Map<Player, PlayerViewB173> VIEWS = Collections.synchronizedMap(new WeakHashMap<>());
+    /**
+     * Keyed by identity: {@code Entity.equals} compares entity ids, and in single player the client's and the server's player have the same
+     * id (a WeakHashMap gave the server the client player's view, so OpenGUI saw a client player and no menu opened).
+     */
+    private static final Map<Player, PlayerViewB173> VIEWS = new com.google.common.collect.MapMaker().weakKeys().makeMap();
 
     private final Player player;
     private final ItemStack[] before = new ItemStack[36];

@@ -1,8 +1,6 @@
 package org.kylepitcock.legacyconnector.vb1_7_3;
 
-import java.util.Collections;
 import java.util.Map;
-import java.util.WeakHashMap;
 
 import legacyconnector.vb1_7_3.net.minecraft.inventory.Inventory;
 import legacyconnector.vb1_7_3.net.minecraft.item.ItemStack;
@@ -14,7 +12,8 @@ import net.minecraft.world.entity.player.Player;
  * the modern slots of a legacy menu name. One adapter per legacy inventory.
  */
 public final class LegacyInventoryB173 implements Container {
-    private static final Map<Inventory, LegacyInventoryB173> ADAPTERS = Collections.synchronizedMap(new WeakHashMap<>());
+    /** Keyed by identity (a mod's inventory class may define equals). */
+    private static final Map<Inventory, LegacyInventoryB173> ADAPTERS = new com.google.common.collect.MapMaker().weakKeys().makeMap();
 
     private final Inventory legacy;
     private SyncedStackB173[] stacks = new SyncedStackB173[0];

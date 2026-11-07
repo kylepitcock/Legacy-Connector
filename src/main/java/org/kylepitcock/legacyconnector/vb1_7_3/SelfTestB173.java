@@ -124,6 +124,12 @@ public final class SelfTestB173 {
                 new com.mojang.authlib.GameProfile(java.util.UUID.nameUUIDFromBytes("b173-gui-test".getBytes()), "[B173GuiTest]"),
                 net.minecraft.server.level.ClientInformation.createDefault());
         new TestConnection(level.getServer(), player);
+        // single player: the client's and the server's player share an entity id (Entity.equals compares ids); each needs its own view
+        var twin = net.neoforged.neoforge.common.util.FakePlayerFactory.getMinecraft(level);
+        int twinId = twin.getId();
+        twin.setId(player.getId());
+        boolean ownViews = PlayerViewB173.of(twin) != PlayerViewB173.of(player) && PlayerViewB173.of(player).mcc$modern == player;
+        twin.setId(twinId);
         int tried = 0, opened = 0, slots = 0, legacySlots = 0, shiftIn = 0, shiftOut = 0, grids = 0, crafted = 0, failures = 0, layouts = 0, byItem = 0;
         java.util.Set<Class<?>> kinds = new java.util.LinkedHashSet<>();
         List<String> notes = new ArrayList<>();
@@ -227,8 +233,9 @@ public final class SelfTestB173 {
             player.discard();
         }
         LOG.info("B1.7.3 GUI TEST: {} blocks/metadata right-clicked ({} placed from their item), {} opened a menu ({} container classes, {} slots, {} "
-                + "of the containers; {} client layouts match); shift-click: {} took coal in, {} gave it back; crafting grids: {} of {} crafted; {} failed",
-                tried, byItem, opened, kinds.size(), slots, legacySlots, layouts, shiftIn, shiftOut, crafted, grids, failures);
+                + "of the containers; {} client layouts match); shift-click: {} took coal in, {} gave it back; crafting grids: {} of {} crafted; {} failed; "
+                + "players with the same entity id get their own view: {}",
+                tried, byItem, opened, kinds.size(), slots, legacySlots, layouts, shiftIn, shiftOut, crafted, grids, failures, ownViews);
         for (String s : notes.subList(0, Math.min(40, notes.size()))) LOG.info("  gui: {}", s);
         var smelted = legacyconnector.vb1_7_3.net.minecraft.recipe.SmeltingRecipeManager.getInstance().craft(15);
         var grid = new legacyconnector.vb1_7_3.net.minecraft.inventory.CraftingInventory(null, 2, 2);
