@@ -69,6 +69,18 @@ public final class LegacyJarTransformer {
         return this;
     }
 
+    private java.util.Map<LegacyVersion, java.util.Set<String>> bundledByOtherVersions = java.util.Map.of();
+
+    /**
+     * Per version, the names of the classes that jars of the OTHER legacy versions hold. A 1.7.10 mod probing for an optional API (Thermal Expansion's
+     * {@code Class.forName("buildcraft.api.tools.IToolWrench")}) must not have its use of it stubbed as absent when a 1.4.7 mod of the same game bundles it:
+     * the probe succeeds at run time, so the code behind it has to be real.
+     */
+    public LegacyJarTransformer bundledByOtherVersions(java.util.Map<LegacyVersion, java.util.Set<String>> names) {
+        this.bundledByOtherVersions = names;
+        return this;
+    }
+
     private LegacyRemapper remapperFor(LegacyVersion version, SynthDemand demand) {
         LegacyRemapper remapper = new LegacyRemapper(version, McpMappings.forVersion(version), shim, demand);
         remapper.crossVersion(crossVersion);
@@ -383,6 +395,7 @@ public final class LegacyJarTransformer {
 
         // Pass 1: relocate + rename, build the jar-local half of the class hierarchy.
         Hierarchy hierarchy = new Hierarchy(shim, libraries, peers, version);
+        hierarchy.bundledElsewhere(bundledByOtherVersions.getOrDefault(version, java.util.Set.of()));
         Map<String, ClassNode> nodes = new LinkedHashMap<>();
         for (var e : classes.entrySet()) {
             ClassNode node = new ClassNode();
