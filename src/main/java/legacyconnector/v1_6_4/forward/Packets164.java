@@ -75,9 +75,73 @@ public final class Packets164 {
         Packet.mcc$idByClass.put(type, id);
     }
 
-    /** {@code Packet.getNewPacket(logAgent, id)} / {@code getNewPacket(id)}: a new instance of the class registered for the id, null for none. */
+    private static final Class<?>[] BUILTIN = {
+        legacyconnector.v1_6_4.net.minecraft.network.packet.Packet1Login.class,
+        legacyconnector.v1_6_4.net.minecraft.network.packet.Packet3Chat.class,
+        legacyconnector.v1_6_4.net.minecraft.network.packet.Packet7UseEntity.class,
+        legacyconnector.v1_6_4.net.minecraft.network.packet.Packet9Respawn.class,
+        legacyconnector.v1_6_4.net.minecraft.network.packet.Packet10Flying.class,
+        legacyconnector.v1_6_4.net.minecraft.network.packet.Packet11PlayerPosition.class,
+        legacyconnector.v1_6_4.net.minecraft.network.packet.Packet12PlayerLook.class,
+        legacyconnector.v1_6_4.net.minecraft.network.packet.Packet13PlayerLookMove.class,
+        legacyconnector.v1_6_4.net.minecraft.network.packet.Packet14BlockDig.class,
+        legacyconnector.v1_6_4.net.minecraft.network.packet.Packet15Place.class,
+        legacyconnector.v1_6_4.net.minecraft.network.packet.Packet28EntityVelocity.class,
+        legacyconnector.v1_6_4.net.minecraft.network.packet.Packet30Entity.class,
+        legacyconnector.v1_6_4.net.minecraft.network.packet.Packet31RelEntityMove.class,
+        legacyconnector.v1_6_4.net.minecraft.network.packet.Packet32EntityLook.class,
+        legacyconnector.v1_6_4.net.minecraft.network.packet.Packet33RelEntityMoveLook.class,
+        legacyconnector.v1_6_4.net.minecraft.network.packet.Packet41EntityEffect.class,
+        legacyconnector.v1_6_4.net.minecraft.network.packet.Packet43Experience.class,
+        legacyconnector.v1_6_4.net.minecraft.network.packet.Packet51MapChunk.class,
+        legacyconnector.v1_6_4.net.minecraft.network.packet.Packet53BlockChange.class,
+        legacyconnector.v1_6_4.net.minecraft.network.packet.Packet62LevelSound.class,
+        legacyconnector.v1_6_4.net.minecraft.network.packet.Packet70GameEvent.class,
+        legacyconnector.v1_6_4.net.minecraft.network.packet.Packet100OpenWindow.class,
+        legacyconnector.v1_6_4.net.minecraft.network.packet.Packet102WindowClick.class,
+        legacyconnector.v1_6_4.net.minecraft.network.packet.Packet103SetSlot.class,
+        legacyconnector.v1_6_4.net.minecraft.network.packet.Packet131MapData.class,
+        legacyconnector.v1_6_4.net.minecraft.network.packet.Packet132TileEntityData.class,
+        legacyconnector.v1_6_4.net.minecraft.network.packet.Packet250CustomPayload.class,
+        legacyconnector.v1_6_4.net.minecraft.network.packet.Packet254ServerPing.class,
+        legacyconnector.v1_6_4.net.minecraft.network.packet.Packet255KickDisconnect.class,
+    };
+
+    /** The packet class with an id: the ones the layer implements, then the ones mods registered. */
+    public static Class<?> classOf(int id) {
+        Class<?> registered = Packet.mcc$classById.get(id);
+        if (registered != null) return registered;
+        for (Class<?> c : BUILTIN) if (Packet.mcc$idOf(c) == id) return c;
+        return null;
+    }
+
+    /** {@code Packet.getNewPacket(logAgent, id)}: the log agent is ignored. */
+    public static Packet getNewPacket(Object logAgent, int id) {
+        return getNewPacket(id);
+    }
+
+    /** {@code Packet.readPacket(logAgent, in, serverSide, socket)}: the id byte, then the packet's data; null at the end of the stream, an error for an unknown id. */
+    public static Packet readPacket(Object logAgent, DataInput in, boolean serverSide, java.net.Socket socket) throws IOException {
+        return readPacket(in, serverSide, socket);
+    }
+
+    /** 1.4.7 {@code Packet.readPacket(in, serverSide, socket)}. */
+    public static Packet readPacket(DataInput in, boolean serverSide, java.net.Socket socket) throws IOException {
+        int id;
+        try {
+            id = in.readUnsignedByte();
+        } catch (java.io.EOFException e) {
+            return null;
+        }
+        Packet packet = getNewPacket(id);
+        if (packet == null) throw new IOException("Bad packet id " + id);
+        packet.readPacketData(in);
+        return packet;
+    }
+
+    /** {@code Packet.getNewPacket(id)}: a new instance of the class registered for the id, null for none. */
     public static Packet getNewPacket(int id) {
-        Class<?> type = Packet.mcc$classById.get(id);
+        Class<?> type = classOf(id);
         if (type == null) return null;
         try {
             return (Packet) type.getDeclaredConstructor().newInstance();
