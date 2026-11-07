@@ -11,6 +11,11 @@ public final class BiomeGenBase {
         return self.getBiomeGrassColor(0, 64, 0);
     }
 
+    /** {@code getFloatTemperature()}: the biome's temperature at sea level (1.7.10 takes the position, for the cooling above y 64). */
+    public static float getFloatTemperature(legacyconnector.v1_7_10.net.minecraft.world.biome.BiomeGenBase self) {
+        return self.temperature;
+    }
+
     public static int getBiomeFoliageColor(legacyconnector.v1_7_10.net.minecraft.world.biome.BiomeGenBase self) {
         return self.getBiomeFoliageColor(0, 64, 0);
     }

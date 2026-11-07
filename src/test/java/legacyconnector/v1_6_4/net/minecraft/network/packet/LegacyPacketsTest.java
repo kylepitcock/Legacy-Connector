@@ -138,9 +138,10 @@ class LegacyPacketsTest {
         pool.addSound("mod/boom2.ogg");
         pool.addSound("mod/hum.ogg");
         assertEquals(3, pool.numberOfSoundPoolEntries);
-        Object boom = pool.getRandomSoundFromSoundPool("mod.boom");
+        String boom = pool.getRandomSoundFromSoundPool("mod.boom").getSoundName();
         assertTrue("mod/boom1.ogg".equals(boom) || "mod/boom2.ogg".equals(boom));
-        assertEquals("mod/hum.ogg", pool.getRandomSoundFromSoundPool("mod.hum"));
+        assertEquals("mod/hum.ogg", pool.getRandomSoundFromSoundPool("mod.hum").getSoundName());
+        assertEquals(java.util.List.of("mod/boom1.ogg", "mod/boom2.ogg", "mod/hum.ogg"), pool.names());
         assertNull(pool.getRandomSoundFromSoundPool("mod.missing"));
     }
 }
