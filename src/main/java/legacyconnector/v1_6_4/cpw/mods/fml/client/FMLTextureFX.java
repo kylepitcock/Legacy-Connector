@@ -12,7 +12,7 @@ public class FMLTextureFX extends TextureFX implements ITextureFX {
 
     public FMLTextureFX(int icon) {
         super(icon);
-        setup();
+        imageData = new byte[tileSizeSquare * 4]; // Forge called setup() when the engine registered the tile, not here: subclasses' fields do not exist yet
     }
 
     public void setup() {

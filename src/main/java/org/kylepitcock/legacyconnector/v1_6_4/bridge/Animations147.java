@@ -44,6 +44,14 @@ public final class Animations147 {
     public static void register(Object fx) {
         if (!(fx instanceof TextureFX t)) return;
         for (Entry e : ENTRIES) if (e.fx == t) return;
+        if (t instanceof legacyconnector.v1_6_4.cpw.mods.fml.client.FMLTextureFX f) {
+            try {
+                f.setup(); // FML's texture manager did this at registration
+            } catch (RuntimeException | LinkageError e) {
+                org.slf4j.LoggerFactory.getLogger("LegacyConnector/Textures").warn("Texture animation {} failed its setup: {}", t.getClass().getName(), e.toString());
+                return;
+            }
+        }
         ENTRIES.add(new Entry(t));
         if (LISTENING.compareAndSet(false, true)) FMLCommonHandler.instance().bus().register(new Listener());
     }
