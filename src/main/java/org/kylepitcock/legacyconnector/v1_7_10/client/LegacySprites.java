@@ -293,6 +293,28 @@ public final class LegacySprites {
         return ModResources.readModern("minecraft", path);
     }
 
+    private static final ClassValue<Boolean> DECLARES_CHECK = new ClassValue<>() {
+        @Override
+        protected Boolean computeValue(Class<?> type) {
+            for (Class<?> k = type; k != null && k != TextureAtlasSprite.class; k = k.getSuperclass()) {
+                try {
+                    k.getDeclaredMethod("hasCustomLoader", legacyconnector.v1_7_10.net.minecraft.client.resources.IResourceManager.class, ResourceLocation.class);
+                    return true;
+                } catch (NoSuchMethodException ignored) {
+                    // look further up
+                } catch (LinkageError e) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    };
+
+    /** Whether the sprite class (a mod's) declares hasCustomLoader itself: a 1.7.10 loader. */
+    private static boolean declaresCustomLoaderCheck(Class<?> type) {
+        return DECLARES_CHECK.get(type);
+    }
+
     public static void bake(TextureMap map, boolean block, Map<String, Supplier<byte[]>> out) {
         ModResources resources = new ModResources();
         String folder = block ? "blocks" : "items";
@@ -310,7 +332,14 @@ public final class LegacySprites {
                 if (!sprite.hasCustomLoader(resources, location)) continue;
                 built[1]++;
                 // Forge: load() returning false means "loaded, stitch it"; true means the loader skipped the sprite.
-                if (sprite.load(resources, location)) {
+                // 1.7.10's Forge reads true as "the loader handled it", 1.6.4's IC2 returns true for a sprite it loaded and false for one it
+                // mapped onto another: what counts is whether frames came out.
+                // 1.6.4's TextureMap handed loaders the complete path (IC2 cuts "name:2.png" at the colon and keeps the extension); sprites
+                // with a hasCustomLoader of their own are 1.7.10 ones, which get the plain name.
+                ResourceLocation handed = declaresCustomLoaderCheck(sprite.getClass()) ? location
+                        : new ResourceLocation(domain, "textures/" + folder + "/" + path + ".png");
+                boolean loaderResult = sprite.load(resources, handed);
+                if (sprite.getFrameCount() == 0 && (loaderResult || aliasOf(sprite) != null)) {
                     // The loader found the same texture already loaded and aliased it (IC2 does for repeated sides): the model
                     // names this sprite, so it gets the same picture.
                     if (SKIPPED.incrementAndGet() <= 8) {

@@ -68,8 +68,28 @@ public class TextureAtlasSprite implements IIcon {
 
     /** Forge: a sprite that loads its own pixels (return true) instead of reading {@code location}. */
     public boolean hasCustomLoader(IResourceManager manager, ResourceLocation location) {
-        return false;
+        // 1.6.4's Forge called load() of any sprite that overrides it (hasCustomLoader came with 1.7): IC2's BlockTextureStitched has no
+        // hasCustomLoader, so none of its machine and generator faces were built.
+        return OVERRIDES_LOAD.get(getClass());
     }
+
+    private static final ClassValue<Boolean> OVERRIDES_LOAD = new ClassValue<>() {
+        @Override
+        protected Boolean computeValue(Class<?> type) {
+            for (Class<?> k = type; k != null && k != TextureAtlasSprite.class; k = k.getSuperclass()) {
+                if (k.getName().startsWith("legacyconnector.")) return false;
+                try {
+                    k.getDeclaredMethod("load", IResourceManager.class, ResourceLocation.class);
+                    return true;
+                } catch (NoSuchMethodException ignored) {
+                    // look further up
+                } catch (LinkageError e) {
+                    return false;
+                }
+            }
+            return false;
+        }
+    };
 
     /** Forge: produces {@link #framesTextureData}; returns false when it loaded the sprite (true: skip it). */
     public boolean load(IResourceManager manager, ResourceLocation location) {
@@ -153,7 +173,9 @@ public class TextureAtlasSprite implements IIcon {
     }
 
     public int[][] getFrameTextureData(int frame) {
-        return (int[][]) framesTextureData.get(frame);
+        Object data = framesTextureData.get(frame);
+        // 1.6.4 kept one int[] per frame (no mipmap levels): IC2's sprites fill the list that way
+        return data instanceof int[] flat ? new int[][] {flat} : (int[][]) data;
     }
 
     public int getFrameCount() {
