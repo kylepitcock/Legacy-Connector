@@ -161,6 +161,8 @@ final class Mc1201Migration {
             m.instructions.insertBefore(call, new InsnNode(Opcodes.SWAP));
             m.instructions.insertBefore(call, new InsnNode(Opcodes.POP));
         }
+        // four colour floats on the stack become one packed ARGB int (GeckoLib 4.9; lib-calls.tsv)
+        else if (rule.helper().equals("=colour")) m.instructions.insertBefore(call, new MethodInsnNode(Opcodes.INVOKESTATIC, Mc1201Tables.HELPER_PACKAGE + "GeckoCompat", "pack", "(FFFF)I", false));
         else if (rule.helper().equals("=ret")) m.instructions.insert(call, new InsnNode(Type.getReturnType(rule.helperDesc()).getSize() == 2 ? Opcodes.POP2 : Opcodes.POP));
         if (!rule.helperName().equals("-")) call.name = rule.helperName();
         if (rule.helperDesc() != null) call.desc = rule.helperDesc();

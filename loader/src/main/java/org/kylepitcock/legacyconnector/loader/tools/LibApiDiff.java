@@ -104,14 +104,34 @@ public final class LibApiDiff {
             }
             for (MethodNode m : o.methods) {
                 if (!api(m.access) || m.name.equals("<clinit>") || m.name.startsWith("lambda$")) continue;
-                if (!hasMethod(n, m.name, renDesc(m.desc), new HashSet<>())) out.add("method\t" + o.name + "." + m.name + m.desc);
+                if (hasMethod(n, m.name, renDesc(m.desc), new HashSet<>())) continue;
+                // a colour that went from four floats to one packed int (GeckoLib 4.9): reported with the new descriptor
+                String d = renDesc(m.desc);
+                String alt = d.contains("FFFF)") ? d.replace("FFFF)", "I)") : null;
+                if (alt != null && hasMethod(n, m.name, alt, new HashSet<>())) out.add("colour\t" + o.name + "." + m.name + m.desc + "\t" + alt);
+                else out.add("method\t" + o.name + "." + m.name + m.desc);
             }
             for (FieldNode f : o.fields) {
                 if (!api(f.access)) continue;
-                if (!hasField(n, f.name, renDesc(f.desc), new HashSet<>())) out.add("field\t" + o.name + "." + f.name + ":" + f.desc);
+                if (hasField(n, f.name, renDesc(f.desc), new HashSet<>())) continue;
+                // same name, other type (a registry field that is a Supplier now): reported with the new descriptor
+                String now = fieldDesc(n, f.name, new HashSet<>());
+                if (now != null) out.add("retype\t" + o.name + "." + f.name + ":" + f.desc + "\t" + now);
+                else out.add("field\t" + o.name + "." + f.name + ":" + f.desc);
             }
         }
         return new ArrayList<>(out);
+    }
+
+    /** A method of {@code c} or its supers with the same name and the same shape of descriptor (reference types ignored): the erasure of a type variable differs per class. */
+    private String looseMethod(ClassNode c, String name, String desc, Set<String> seen) {
+        if (c == null || !seen.add(c.name)) return null;
+        String shape = desc.replaceAll("L[^;]+;", "L;");
+        for (MethodNode m : c.methods) if (m.name.equals(name) && api(m.access) && m.desc.replaceAll("L[^;]+;", "L;").equals(shape)) return m.desc;
+        String r = looseMethod(newC.get(c.superName), name, desc, seen);
+        if (r != null) return r;
+        for (String i : c.interfaces) if ((r = looseMethod(newC.get(i), name, desc, seen)) != null) return r;
+        return null;
     }
 
     private boolean hasMethod(ClassNode c, String name, String desc, Set<String> seen) {
@@ -120,6 +140,12 @@ public final class LibApiDiff {
         if (hasMethod(newC.get(c.superName), name, desc, seen)) return true;
         for (String i : c.interfaces) if (hasMethod(newC.get(i), name, desc, seen)) return true;
         return false;
+    }
+
+    private String fieldDesc(ClassNode c, String name, Set<String> seen) {
+        if (c == null || !seen.add(c.name)) return null;
+        for (FieldNode f : c.fields) if (f.name.equals(name) && api(f.access)) return f.desc;
+        return fieldDesc(newC.get(c.superName), name, seen);
     }
 
     private boolean hasField(ClassNode c, String name, String desc, Set<String> seen) {
