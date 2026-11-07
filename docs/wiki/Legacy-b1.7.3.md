@@ -5,8 +5,9 @@ Status and design of Minecraft Beta 1.7.3 support. Back to [Home](Home.md). Star
 **Status: started (blocks, items, recipes, textures, block behaviour, GUIs).** Beta 1.7.3 ModLoader / ModLoaderMP / Forge 1.0.x jars are
 detected, deobfuscated and linked; the mods are constructed as ModLoader did, their blocks, items and recipes become modern content with
 their own textures, one creative tab per mod, and the blocks' own code runs (placing, breaking, neighbour updates, ticks, right and left
-click, redstone) with their tile entities (saved, loaded, ticked) and their GUIs (machines, furnaces, crafting tables as modern menus). Not
-yet: entities, world generation, the mods' tick hooks.
+click, redstone) with their tile entities (saved, loaded, ticked) and their GUIs (machines, furnaces, crafting tables as modern menus).
+Projectiles, external OGG/WAV audio and an initial cow-derived mob host have partial bridges. General custom-mob AI/models,
+natural spawning, world generation and the mods' tick hooks remain incomplete.
 
 ## Putting the mods in
 
@@ -260,6 +261,12 @@ round-trips through the stack's custom-data component, with item models for meta
 bucket stores water as metadata 8 rather than as a different item. Waterlogged solid blocks are not exposed as
 standalone legacy fluid blocks.
 
+The vanilla `BucketItem` constructor and use API, plus Forge's `IBucketHandler` registration/first-result dispatch, are
+implemented. Modern empty buckets reach original handlers through native `BucketPickup`; no mod-specific fluid IDs are used.
+Both Forge spellings (`registerCustomBucketHandler` and the historical `registerCustomBucketHander`) are accepted.
+An isolated BuildCraft Core + Energy 2.1.1 run checks original oil pickup, flowing-metadata refusal, inherited filled-bucket
+placement, crafting remainder, stacked empty buckets, creative pickup/placement and denied placement. All pass.
+
 Arrow-like entities with `setArrowHeading` are hosted by `LegacyB173Arrow` (`legacyconnector:arrow_b1_7_3`).
 The server runs the mod's original tick and pickup code: its velocity, collision tests, damage, fire effects,
 embedded-arrow behavior and returned ammunition. Entity views connect queries and damage to modern targets;
@@ -318,6 +325,75 @@ NetherCraft's firestarter through the modern right-click entry point and protect
 The supplied NetherCraft 1.9b/Aether 1.02 set passes all 22 registered tools/swords and the firestarter checks.
 Vanilla item replacements retain the modern vanilla item's behavior.
 Armor wear and tool mining-speed/attack attributes are separate work.
+
+### Vanilla item metadata and armor constructor APIs
+
+`DyeItem` exposes Beta's original 16 subtype names/colors and icon/name selection. `WoolBlock` preserves the inverse
+dye/wool metadata mapping and original wool textures. `ArmorItem` retains original slot/tier/texture/protection fields,
+durability calculation and stack size. ModLoader reflection can access protection by original field index, obfuscated name,
+or named alias. These APIs fixed PlasticCraft 2.1.3 construction without selecting that mod in production code.
+
+Five focused tests cover dye/wool metadata and armor constructor/reflection behavior. The actual isolated mod constructs
+15 blocks and 48 items, translates 134 recipes, and passes its exercised block callbacks. Armor equipment/rendering and
+original GUI rendering are not established by these checks; the GUI test uses the current generic layouts. Its latex tap
+requires a neighboring log, so a stone-only placement sweep does not establish tap placement compatibility.
+
+### Crafting outputs larger than an inventory stack
+
+Beta recipes can return several non-stackable items. The shared shaped/shapeless recipe serializers retain a separate
+output count, preserving the item's original stack limit while avoiding the modern data codec's rejection. A crafting-result
+hook applies only to these recipes: shift-click fills available slots, and hotbar/offhand swaps split oversized results.
+Native result-slot logic still consumes ingredients and handles crafting remainders; excess items drop only when space runs out.
+
+More Creeps & Weirdos 2.12 supplies the actual regression recipe: four frisbees, each with a stack limit of one. Its fresh
+isolated run passes 48 transfer scenarios across the original recipe, a remainder fixture and an ordinary-recipe control.
+Coverage includes both table and 2×2 menus, repeated shift-click, pickup, hotbar/offhand swaps, occupied destinations,
+partial/full inventories, output conservation, ingredient consumption and bucket remainders. Two focused tests also cover
+recipe codecs, network round-trips, matching and output copies. No frisbee-specific behavior is selected in production.
+
+## GuiAPI settings and TWL models
+
+The shared Beta GuiAPI bridge implements typed Boolean/Integer/Float/Multi settings, context values, original step rounding,
+properties save/reload under the instance's `mods/<backend>/guiconfig.properties`, reflective `ModAction` callbacks and the
+TWL widget/button-model hierarchy used by the tested mod. The loader relocates Beta TWL names into this bridge.
+
+Mo' Creatures 2.12.2 from the archive (internally labelled 2.12.1) now constructs in isolation: 14 items, 48 recipes and
+28 entity registrations. Three focused tests and the runtime settings/context/callback test pass. This does not host those
+custom mobs. TWL drawing/input/layout and broader GuiAPI setting types remain incomplete; `GuiModScreen.show` explicitly
+reports unsupported rendering instead of displaying a nonfunctional settings screen.
+
+## First living-mob host
+
+`RegisterEntityID` registrations for supported `CowEntity` subclasses can now become native entity types. This is a
+family-based API bridge, not a Twilight Forest special case. Unsupported mob families, custom simulation overrides, and
+callbacks depending on unfinished superclass bodies are rejected explicitly. Ordinary modern cows are unchanged.
+
+The native host provides movement/navigation, collision, health/damage, tracking and save/load. It preserves the original
+legacy object, dimensions, texture path, supported interaction and sound callbacks, and custom NBT. A rejected/canceled
+world insertion clears the binding so the same original entity can be retried. Returning false from an original interaction
+does not fall through to native cow milking. A native loot table supplies Beta's leather-only 0–2 default cow drops.
+
+The client currently uses **native cow geometry and AI as approximations**, with the original mod's texture. The spawned
+mob still has its own registered type and original identity; no duplicate vanilla cow is spawned. Original custom models,
+arbitrary custom AI, direct legacy-field mutation outside supported callbacks, and natural spawn registration are incomplete.
+
+The actual Twilight Forest 1p4 deer test passes cancellation/retry, identity, interaction, native/legacy damage, dimensions,
+original texture lookup, registry-based save/reload, and loaded loot-table sampling. This is headless proof, not visual QA.
+Its boar and bighorn families are not yet hosted. Mo' Creatures and More Creeps are separate user-selected tests for the
+custom AI/model work; success with the deer does not establish support for either mod's custom creatures.
+
+The next custom-simulation step is the shared `AnimalEntity`/living-entity superclass lifecycle, beginning with original
+Bunny growth, hopping, mounting and NBT. Its original tick chain must run each phase exactly once, with live entity queries
+preserving original object identity. Hippo additionally needs targeting, visibility, pathfinding and combat; its superclass
+damage call needs an explicit native-base route to avoid recursively redispatching the original damage callback. Model
+construction alone must not bypass the current unsupported-host checks.
+
+The shared `ModelPart`/`EntityModel` foundation now executes original model constructors and animation/render callbacks.
+Beta cuboid UVs, mirror winding, the 0.1-pixel texture inset, single-cuboid replacement and rotation orders are preserved;
+the client adapter submits those faces through the existing renderer context. Tests compare all vertex positions and UVs
+against the unmodified Beta classes, including mirrored, expanded and zero-depth cuboids (3 tests, none skipped).
+Separate actual-mod runs pass original Bunny (11 parts) and Hippo (16 parts) construction, textured geometry and animated
+draw capture. Custom renderer integration, renderer GL transformations, mob AI and visual verification remain unfinished.
 
 ## Tile entities
 
@@ -425,7 +501,12 @@ and 0 failing methods in bytecode verification. NetherCraft, IndustrialCraft 2, 
 More Creeps and Weirdos, ComputerCraft, Portal Gun, Twilight Forest (b1.7.3 version), Moon Mod, Butterflies and Coral Reef link with
 0 unresolved references. Not detected outside `mods/b1.7.3/`: the two OverrideAPI library jars (no `mod_*` class).
 
-## Server results
+## Historical combined-pack results
+
+These earlier combined-pack results are retained as history, not current isolated compatibility ratings. In particular, the
+old attribution of More Creeps failures to GuiAPI is not supported by the newly audited v2.12 payload: it has no GuiAPI/TWL
+references. The isolated v2.12 test constructs and exposes an oversized crafting-output issue instead. Mo' Creatures does
+require GuiAPI; its current isolated construction result is documented above.
 
 Dedicated server with 15 b1.7.3 client builds (`run-subtest/mods/b1.7.3/`): 11 construct (IndustrialCraft 2, NetherCraft, Portal Gun,
 Minefactory Renewed, all five RedPower modules, Butterflies, Twilight Forest b1.7.3); 82 blocks and 390 items registered, 82 of 82 blocks
@@ -485,7 +566,19 @@ Initial isolated results on the merged upstream code:
 - PlasticCraft 2.1.3 fails alone in `ItemBlockPlastic.getTranslationKey` with an empty-array access. This proves its construction
   failure is independent of other mods' block IDs. No mod-specific workaround was added.
 
-`python tools/dev/check_b173_generic.py` passes over 131 Beta production/loader files; the broader identity guard also passes.
+Follow-up isolated tests and original bytecode review:
+
+- Core deliberately catches the missing optional Energy framework and falls back to its bundled redstone framework.
+  The logged exception by itself was not a connector defect. Core + Energy exposed the missing vanilla/Forge bucket APIs;
+  after those generic fixes, both modules pass the headless smoke test (3 blocks, 10 items, 9 recipes, engine tile save/reload).
+  GUI registration, liquid state, dirty-block notifications and model methods still include stubs; machines/pipes are not fully verified.
+- PlasticCraft now passes the isolated headless smoke test after shared dye/wool and armor API fixes. Spawn registration,
+  achievements, healing, native armor equipment and original GUI rendering remain incomplete or unverified.
+- The runner requires every staged entrypoint to construct and rejects logged callback failures even without exception stacks.
+  A successful Gradle exit alone never establishes compatibility.
+
+The initial generic review covered 131 Beta production/loader files; `python tools/dev/check_b173_generic.py` and the broader
+identity guard remain required checks for subsequent fixes.
 Review of item/block callbacks, fence geometry, inventories, animations, entity views and projectile texture discovery found no
 content-mod identity selectors in those production paths. The texture-discovery bytecode heuristic remains limited to supported
 patterns/constant paths; being generic does not make it a complete renderer. The guard supplements review, not semantic proof.

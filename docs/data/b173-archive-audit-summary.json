@@ -64,7 +64,7 @@
       "archive": "PlasticCraft_(v2.1.3)_b173.zip",
       "root": "minecraft/",
       "api_references": "ModLoader",
-      "next_check": "Isolated construction failure: item naming reads an empty synthesized array; generic vanilla API investigation next."
+      "next_check": "Isolated construction and exercised callbacks pass after generic dye/wool and armor fixes; native armor equipment, original GUI rendering and spawn APIs remain incomplete or unverified."
     },
     {
       "priority": 2,
@@ -72,7 +72,7 @@
       "archive": "buildcraft-client-A-core-2.1.1_b173.zip",
       "root": "",
       "api_references": "Forge; ModLoader; ModLoaderMP",
-      "next_check": "Isolated core constructs, but reports missing buildcraft.energy.PneumaticPowerFramework; review the Energy module before a gameplay verdict."
+      "next_check": "Core+Energy pass isolated bucket and tile persistence checks; optional missing Energy framework is caught by original Core. Machine simulation, GUI and model APIs remain partial."
     },
     {
       "priority": 3,
@@ -128,10 +128,18 @@
       "archive": "DrZharks_MoCreatures_Mod_v2.12.2_b1.7.3.zip!mods/MoCreatures.zip",
       "root": "",
       "api_references": "GuiAPI; ModLoader",
-      "next_check": "GuiAPI dependency; installer README additionally requires AudioMod. General mobs/rendering still incomplete."
+      "next_check": "Constructs after generic GuiAPI/TWL settings fix; original Bunny model passes. Custom AI, renderer integration and natural spawns remain unfinished."
     },
     {
-      "priority": 10,
+      "mod": "More Creeps & Weirdos 2.12",
+      "archive": "MoreCreepsv2.12_b173.zip!PUT CONTENTS INTO MINECRAFT FOLDER/mods/MoreCreepsAndWeirdos.zip",
+      "root": "",
+      "api_references": "ModLoader; AudioMod; ShockAhPI ACPage",
+      "next_check": "Original Hippo model and 48 crafting transfer scenarios pass. Custom AI, renderer integration, achievements and natural spawning remain incomplete.",
+      "priority": 10
+    },
+    {
+      "priority": 11,
       "mod": "Aether 1.01",
       "archive": "Aether_1.7.3_v1.01.zip",
       "root": "Jar/",
@@ -139,7 +147,7 @@
       "next_check": "No detected base replacements in this older payload; SAPI/dimension work required. Do not substitute 1.02."
     },
     {
-      "priority": 11,
+      "priority": 12,
       "mod": "Twilight Forest 1.4",
       "archive": "twilightforest.1p4_b173.zip",
       "root": "",
@@ -244,5 +252,118 @@
       "Direct Paulscode/OpenAL APIs and synthesized options/init internals",
       "Audible playback, music timing and complete gameplay verification"
     ]
+  },
+  "api_followups": [
+    {
+      "mod": "PlasticCraft 2.1.3",
+      "manifest": "run-b173-single/plasticcraft-armor-20261107-162827-99f367/audit-manifest.json",
+      "result": "headless-smoke-passed",
+      "proof": "15 blocks, 48 items, 134 recipes; shared dye/wool metadata and armor constructor/reflection APIs",
+      "limits": "Native armor equipment, original GUI rendering and spawn APIs remain incomplete or unverified"
+    },
+    {
+      "mod": "BuildCraft Core+Energy 2.1.1",
+      "manifest": "run-b173-single/bc-bucket-final-20261107-162029-5e406f/audit-manifest.json",
+      "result": "headless-smoke-passed",
+      "proof": "Original Forge custom bucket handler through native empty bucket, source/flowing distinction, filled placement, crafting remainder, creative/permission checks and engine tile save/reload",
+      "limits": "Machines/pipes, GUI registration and model APIs remain partial"
+    },
+    {
+      "mod": "Twilight Forest 1p4",
+      "manifest": "run-b173-single/twilight-mobs-final-20261107-163515-efbf5d/audit-manifest.json",
+      "result": "mob-specific checks passed; not a complete mod rating",
+      "proof": "Supported CowEntity-derived deer identity, spawn cancellation/retry, interaction, health/damage, original texture, dimensions, NBT reload and 0-2 leather loot",
+      "limits": "Native cow movement and geometry approximation; unsupported other families, custom AI, models and natural spawning"
+    },
+    {
+      "mod": "MoCreatures 2.12.2 (internal 2.12.1)",
+      "manifest": "run-b173-single/mocreatures-guiapi-20261107-164452-c30ef9/audit-manifest.json",
+      "result": "headless-smoke-passed",
+      "proof": "14 items, 48 recipes; typed GuiAPI settings, instance properties persistence and Runnable/TWL model callbacks",
+      "limits": "28 entity registrations remain unhosted; full TWL rendering/input unsupported"
+    }
+  ],
+  "custom_mob_test_candidates": [
+    {
+      "mod": "MoCreatures 2.12.2",
+      "classes": 93,
+      "models": 27,
+      "renderers": 24,
+      "entities": 30,
+      "pngs": 134,
+      "external_oggs": 168,
+      "base_replacements": false,
+      "status": "Construction and original Bunny model callbacks pass; custom simulation and renderer integration next"
+    },
+    {
+      "mod": "More Creeps & Weirdos 2.12",
+      "classes": 218,
+      "pngs": 233,
+      "external_oggs": 757,
+      "base_replacements": false,
+      "apis": [
+        "ModLoader",
+        "AudioMod",
+        "ShockAhPI ACPage"
+      ],
+      "status": "Construction, original Hippo model callbacks and 48 crafting transfer scenarios pass; custom simulation and renderer integration next",
+      "limits": "53 living registrations unhosted; achievements and natural spawning incomplete; no GuiAPI/TWL references in selected payload"
+    }
+  ],
+  "model_followup": {
+    "implementation": "Shared Beta EntityModel/ModelPart geometry and callbacks, client RenderContext quad adapter",
+    "focused_tests": 3,
+    "skipped": 0,
+    "original_beta_parity": "Vertex positions and UVs including mirror, expansion and zero-depth cuboids",
+    "fixtures": [
+      {
+        "mod": "MoCreatures",
+        "model": "ModelBunny",
+        "parts": 11,
+        "manifest": "run-b173-single/mocreatures-models-20261107-165340-f38d77/audit-manifest.json"
+      },
+      {
+        "mod": "More Creeps & Weirdos",
+        "model": "CREEPSModelHippo",
+        "parts": 16,
+        "manifest": "run-b173-single/morecreeps-models-20261107-165340-5dbf55/audit-manifest.json"
+      }
+    ],
+    "result": "Original constructors, textured geometry, animation and draw capture passed separately",
+    "limits": [
+      "Headless model foundation only",
+      "Custom renderer integration and renderer GL transformations unfinished",
+      "Custom mob AI and natural spawns unfinished"
+    ]
+  },
+  "recipe_count_followup": {
+    "mod": "More Creeps & Weirdos 2.12",
+    "manifest": "run-b173-single/morecreeps-212-transfers-20261107-170058-82ba9a/audit-manifest.json",
+    "implementation": "Generic oversized shaped/shapeless recipe counts; recipe-gated native crafting transfer handling",
+    "original_recipe": "Four frisbees with original max stack size one",
+    "transfer_scenarios_passed": 48,
+    "transfer_failures": 0,
+    "coverage": [
+      "Actual original recipe",
+      "Crafting table and player 2x2 menus",
+      "Pickup and repeated shift-click",
+      "Hotbar/offhand swaps and occupied destinations",
+      "Partial/full inventory output conservation and valid slot limits",
+      "Ingredient consumption and bucket remainders",
+      "Ordinary recipe regression control",
+      "Codec and network roundtrip"
+    ],
+    "limits": "Does not implement custom mob AI, renderer integration or natural spawning"
+  },
+  "validation_followup": {
+    "beta_tests": 22,
+    "loader_tests": 124,
+    "python_tests": 7,
+    "failures": 0,
+    "skipped": 0,
+    "beta_identity_guard": "passed (173 production/loader files)",
+    "global_identity_guard": "passed (21 existing baseline mentions, no new)",
+    "bundle": "build/dist/legacyconnector-0.4.5.jar",
+    "visual_gameplay_validation": false
   }
 }
