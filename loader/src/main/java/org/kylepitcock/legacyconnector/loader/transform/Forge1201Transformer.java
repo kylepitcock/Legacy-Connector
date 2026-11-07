@@ -13,9 +13,11 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -186,10 +188,13 @@ public final class Forge1201Transformer {
         }
         Mc1201Migration.Counts mc = new Mc1201Migration.Counts();
         Mixin1201.Stats mixinStats = new Mixin1201.Stats();
+        Set<String> jarClasses = new HashSet<>();
+        for (ClassNode node : nodes) jarClasses.add(node.name);
         for (ClassNode node : nodes) {
             stringsMapped += mapSrgStrings(node);
             int viaCalls = CallRewrites1201.apply(node);
             viaCalls += ForgeApiRewrites1201.apply(node);
+            viaCalls += AttachGuards1201.apply(node, jarClasses);
             if (ForgeApiRewrites1201.markProviders(node)) viaCalls++;
             rewrites += viaCalls;
             Mc1201Migration.Counts changed = Mc1201Migration.apply(node, hierarchy);

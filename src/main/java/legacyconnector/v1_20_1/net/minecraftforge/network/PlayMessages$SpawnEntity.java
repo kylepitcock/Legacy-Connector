@@ -52,4 +52,20 @@ public class PlayMessages$SpawnEntity {
     public float getHeadYaw() {
         return entity.getYHeadRot();
     }
+
+    public int getVelX() {
+        return (int) (net.minecraft.util.Mth.clamp(entity.getDeltaMovement().x, -3.9, 3.9) * 8000.0);
+    }
+
+    public int getVelY() {
+        return (int) (net.minecraft.util.Mth.clamp(entity.getDeltaMovement().y, -3.9, 3.9) * 8000.0);
+    }
+
+    public int getVelZ() {
+        return (int) (net.minecraft.util.Mth.clamp(entity.getDeltaMovement().z, -3.9, 3.9) * 8000.0);
+    }
+
+    public net.minecraft.network.FriendlyByteBuf getAdditionalData() {
+        return null;
+    }
 }

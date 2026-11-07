@@ -50,6 +50,7 @@ public final class Forge1201Runtime {
         NeoForge.EVENT_BUS.addListener(Forge1201Runtime::onPlayerTickPre);
         NeoForge.EVENT_BUS.addListener(Forge1201Runtime::onPlayerTickPost);
         NeoForge.EVENT_BUS.addListener(Forge1201Runtime::onEntityJoin);
+        Forge1201Events.init();
         if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) Forge1201Client.init();
     }
 
@@ -148,7 +149,16 @@ public final class Forge1201Runtime {
             bridgeEntity(event, type, Capabilities.FluidHandler.ENTITY, ForgeCapabilities.FLUID_HANDLER);
             bridgeEntity(event, type, Capabilities.EnergyStorage.ENTITY, ForgeCapabilities.ENERGY);
         }
-        LOG.info("Capabilities of {} legacy block entity type(s) are visible to NeoForge", types);
+        // legacy items that declare initCapabilities(stack, nbt): the provider of the stack answers NeoForge's item capabilities too
+        int items = 0;
+        for (var entry : BuiltInRegistries.ITEM.entrySet()) {
+            if (!modIds.contains(entry.getKey().location().getNamespace()) || !(entry.getValue() instanceof Caps1201.InitCapabilities1201)) continue;
+            bridgeItem(event, entry.getValue(), Capabilities.ItemHandler.ITEM, ForgeCapabilities.ITEM_HANDLER);
+            bridgeItem(event, entry.getValue(), Capabilities.FluidHandler.ITEM, ForgeCapabilities.FLUID_HANDLER_ITEM);
+            bridgeItem(event, entry.getValue(), Capabilities.EnergyStorage.ITEM, ForgeCapabilities.ENERGY);
+            items++;
+        }
+        LOG.info("Capabilities of {} legacy block entity type(s) and {} item(s) are visible to NeoForge", types, items);
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -158,6 +168,15 @@ public final class Forge1201Runtime {
             if (!(be instanceof ICapabilityProvider p)) return null;
             return p.getCapability(forge, (net.minecraft.core.Direction) side).resolve().orElse(null);
         });
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static void bridgeItem(net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent event, net.minecraft.world.item.Item item,
+            net.neoforged.neoforge.capabilities.ItemCapability neo, Capability forge) {
+        event.registerItem(neo, (stack, ctx) -> {
+            ICapabilityProvider p = Caps1201.itemProvider((net.minecraft.world.item.ItemStack) stack);
+            return p == null ? null : p.getCapability(forge, null).resolve().orElse(null);
+        }, item);
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})

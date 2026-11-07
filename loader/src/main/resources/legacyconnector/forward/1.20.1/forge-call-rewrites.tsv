@@ -24,3 +24,17 @@ net/neoforged/fml/ModLoadingContext.registerConfig(Lnet/neoforged/fml/config/Mod
 net/neoforged/fml/ModLoadingContext.registerConfig(Lnet/neoforged/fml/config/ModConfig$Type;Lnet/neoforged/fml/config/IConfigSpec;Ljava/lang/String;)V	registerConfig
 # entities
 net/minecraft/world/entity/EntityType$Builder.setCustomClientFactory(Ljava/util/function/BiFunction;)Lnet/minecraft/world/entity/EntityType$Builder;	builderCustomClientFactory
+# items: Item.initCapabilities(stack, nbt) (a super call has nothing to call: the helper answers "no capabilities")
+*.initCapabilities(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/nbt/CompoundTag;)Llegacyconnector/v1_20_1/net/minecraftforge/common/capabilities/ICapabilityProvider;	initCapabilities
+# generic event listeners (AttachCapabilitiesEvent<T>): filtered by the object type
+net/neoforged/bus/api/IEventBus.addGenericListener(Ljava/lang/Class;Ljava/util/function/Consumer;)V	busAddGenericListener
+net/neoforged/bus/api/IEventBus.addGenericListener(Ljava/lang/Class;Lnet/neoforged/bus/api/EventPriority;Ljava/util/function/Consumer;)V	busAddGenericListener
+net/neoforged/bus/api/IEventBus.addGenericListener(Ljava/lang/Class;Lnet/neoforged/bus/api/EventPriority;ZLjava/util/function/Consumer;)V	busAddGenericListener
+net/neoforged/bus/api/IEventBus.addGenericListener(Ljava/lang/Class;Lnet/neoforged/bus/api/EventPriority;ZLjava/lang/Class;Ljava/util/function/Consumer;)V	busAddGenericListener
+# cancellation: Forge's Event had setCanceled/isCanceled/isCancelable itself (key "@event.": any NeoForge event class as the owner)
+@event.setCanceled(Z)V	eventSetCanceled
+@event.isCanceled()Z	eventIsCanceled
+@event.isCancelable()Z	eventIsCancelable
+@event.setResult(Llegacyconnector/v1_20_1/net/minecraftforge/eventbus/api/Event$Result;)V	eventSetResult
+@event.getResult()Llegacyconnector/v1_20_1/net/minecraftforge/eventbus/api/Event$Result;	eventGetResult
+@event.hasResult()Z	eventHasResult

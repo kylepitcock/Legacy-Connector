@@ -48,6 +48,26 @@ public interface IForgeRegistry<V> extends Iterable<V> {
 
     Optional<Holder.Reference<V>> getHolder(V value);
 
+    default Holder.Reference<V> getDelegateOrThrow(V value) {
+        return getHolder(value).orElseThrow(() -> new IllegalArgumentException("No delegate exists for value " + value));
+    }
+
+    default Holder.Reference<V> getDelegateOrThrow(ResourceLocation key) {
+        return getHolder(key).orElseThrow(() -> new IllegalArgumentException("No delegate exists for key " + key));
+    }
+
+    default Holder.Reference<V> getDelegateOrThrow(ResourceKey<V> key) {
+        return getHolder(key).orElseThrow(() -> new IllegalArgumentException("No delegate exists for key " + key));
+    }
+
+    default Optional<Holder.Reference<V>> getDelegate(V value) {
+        return getHolder(value);
+    }
+
+    default Optional<Holder.Reference<V>> getDelegate(ResourceLocation key) {
+        return getHolder(key);
+    }
+
     ITagManager<V> tags();
 
     void register(ResourceLocation key, V value);

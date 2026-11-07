@@ -15,8 +15,13 @@ public class NetworkRegistry {
         return new SimpleChannel(name, networkProtocolVersion, clientAcceptedVersions, serverAcceptedVersions);
     }
 
-    public static boolean acceptMissingOr(String version) {
-        return true;
+    public static legacyconnector.v1_20_1.net.minecraftforge.network.event.EventNetworkChannel newEventChannel(ResourceLocation name, Supplier<String> version,
+            Predicate<String> clientAcceptedVersions, Predicate<String> serverAcceptedVersions) {
+        return new legacyconnector.v1_20_1.net.minecraftforge.network.event.EventNetworkChannel(name);
+    }
+
+    public static Predicate<String> acceptMissingOr(String version) {
+        return v -> true;
     }
 
     public static Predicate<String> acceptMissingOr(Predicate<String> versionCheck) {

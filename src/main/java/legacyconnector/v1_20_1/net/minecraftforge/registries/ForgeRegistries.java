@@ -59,7 +59,8 @@ public final class ForgeRegistries {
     public static final IForgeRegistry<net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacerType<?>> FOLIAGE_PLACER_TYPES = new ForgeRegistryWrapper(BuiltInRegistries.FOLIAGE_PLACER_TYPE);
     public static final IForgeRegistry<net.minecraft.world.level.levelgen.feature.treedecorators.TreeDecoratorType<?>> TREE_DECORATOR_TYPES = new ForgeRegistryWrapper(BuiltInRegistries.TREE_DECORATOR_TYPE);
     public static final IForgeRegistry<Biome> BIOMES = new ForgeRegistryWrapper<>(Registries.BIOME);
-    public static final IForgeRegistry<net.neoforged.neoforge.fluids.FluidType> FLUID_TYPES = new ForgeRegistryWrapper<>(NeoForgeRegistries.FLUID_TYPES);
+    /** A supplier in Forge 1.20.1 (the registry is created late). */
+    public static final java.util.function.Supplier<IForgeRegistry<net.neoforged.neoforge.fluids.FluidType>> FLUID_TYPES = () -> new ForgeRegistryWrapper<>(NeoForgeRegistries.FLUID_TYPES);
     public static final IForgeRegistry<net.minecraft.network.syncher.EntityDataSerializer<?>> ENTITY_DATA_SERIALIZERS = new ForgeRegistryWrapper(NeoForgeRegistries.ENTITY_DATA_SERIALIZERS);
     public static final IForgeRegistry<com.mojang.serialization.MapCodec<? extends net.neoforged.neoforge.common.loot.IGlobalLootModifier>> GLOBAL_LOOT_MODIFIER_SERIALIZERS = new ForgeRegistryWrapper(NeoForgeRegistries.GLOBAL_LOOT_MODIFIER_SERIALIZERS);
     public static final IForgeRegistry<net.neoforged.neoforge.common.world.BiomeModifier> BIOME_MODIFIERS = new ForgeRegistryWrapper(NeoForgeRegistries.Keys.BIOME_MODIFIERS);
@@ -91,6 +92,9 @@ public final class ForgeRegistries {
         public static final net.minecraft.resources.ResourceKey<net.minecraft.core.Registry<net.neoforged.neoforge.fluids.FluidType>> FLUID_TYPES = NeoForgeRegistries.Keys.FLUID_TYPES;
         public static final net.minecraft.resources.ResourceKey<net.minecraft.core.Registry<net.minecraft.network.syncher.EntityDataSerializer<?>>> ENTITY_DATA_SERIALIZERS = NeoForgeRegistries.Keys.ENTITY_DATA_SERIALIZERS;
         public static final net.minecraft.resources.ResourceKey<net.minecraft.core.Registry<com.mojang.serialization.MapCodec<? extends net.neoforged.neoforge.common.loot.IGlobalLootModifier>>> GLOBAL_LOOT_MODIFIER_SERIALIZERS = NeoForgeRegistries.Keys.GLOBAL_LOOT_MODIFIER_SERIALIZERS;
+        public static final net.minecraft.resources.ResourceKey<net.minecraft.core.Registry<net.neoforged.neoforge.common.world.BiomeModifier>> BIOME_MODIFIERS = NeoForgeRegistries.Keys.BIOME_MODIFIERS;
+        public static final net.minecraft.resources.ResourceKey<net.minecraft.core.Registry<com.mojang.serialization.MapCodec<? extends net.neoforged.neoforge.common.world.StructureModifier>>> STRUCTURE_MODIFIER_SERIALIZERS = NeoForgeRegistries.Keys.STRUCTURE_MODIFIER_SERIALIZERS;
+        public static final net.minecraft.resources.ResourceKey<net.minecraft.core.Registry<net.neoforged.neoforge.common.world.StructureModifier>> STRUCTURE_MODIFIERS = NeoForgeRegistries.Keys.STRUCTURE_MODIFIERS;
         public static final net.minecraft.resources.ResourceKey<net.minecraft.core.Registry<com.mojang.serialization.MapCodec<? extends net.neoforged.neoforge.common.world.BiomeModifier>>> BIOME_MODIFIER_SERIALIZERS = NeoForgeRegistries.Keys.BIOME_MODIFIER_SERIALIZERS;
     }
 }

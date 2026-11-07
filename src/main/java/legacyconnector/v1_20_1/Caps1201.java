@@ -1,10 +1,8 @@
 package legacyconnector.v1_20_1;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.WeakHashMap;
 import legacyconnector.v1_20_1.net.minecraftforge.common.capabilities.Capability;
 import legacyconnector.v1_20_1.net.minecraftforge.common.capabilities.ICapabilityProvider;
 import legacyconnector.v1_20_1.net.minecraftforge.common.util.LazyOptional;
@@ -34,7 +32,8 @@ public final class Caps1201 {
     private Caps1201() {
     }
 
-    private static final Map<Object, List<ICapabilityProvider>> ATTACHED = Collections.synchronizedMap(new WeakHashMap<>());
+    /** Providers per object, by identity (entities compare equal by id, across the client and server side). */
+    private static final Map<Object, List<ICapabilityProvider>> ATTACHED = new com.google.common.collect.MapMaker().weakKeys().makeMap();
 
     /** {@code obj.getCapability(cap, side)}. */
     public static <T> LazyOptional<T> getCapability(Object recv, Capability<T> cap, Direction side) {
@@ -57,7 +56,7 @@ public final class Caps1201 {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private static <T> LazyOptional<T> nativeGet(Object recv, Capability<T> cap, Direction side, boolean askNeoForge) {
-        List<ICapabilityProvider> attached = ATTACHED.get(recv);
+        List<ICapabilityProvider> attached = attached(recv);
         if (attached != null) {
             for (ICapabilityProvider p : attached) {
                 LazyOptional<T> lo = p.getCapability(cap, side);
@@ -85,11 +84,62 @@ public final class Caps1201 {
 
     // ---- attaching --------------------------------------------------------------------------------------------------------
 
-    /** Fires Forge's {@code AttachCapabilitiesEvent} for an object once and remembers the providers the listeners added. */
+    /** The providers of an object, attaching them on the first query (Forge did it when the object was created; stacks and block entities are too many to hook). */
+    private static List<ICapabilityProvider> attached(Object recv) {
+        if (recv == null || recv instanceof ItemStack stack && stack.isEmpty()) return null;
+        List<ICapabilityProvider> list = ATTACHED.get(recv);
+        if (list == null) {
+            attach(recv);
+            list = ATTACHED.get(recv);
+        }
+        return list;
+    }
+
+    /**
+     * Fires Forge's {@code AttachCapabilitiesEvent} for an object once and remembers the providers the listeners added. For a stack the item's own
+     * {@code initCapabilities} comes first. Handlers that declare their object type (the generic argument of the event) only see matching objects: the
+     * translator puts an {@code instanceof} guard at the head of such handlers, {@code ForgeApi1201.busAddGenericListener} filters the rest.
+     */
     public static <T> void attach(T object) {
         if (ATTACHED.containsKey(object)) return;
+        List<ICapabilityProvider> providers = new ArrayList<>();
+        ATTACHED.put(object, providers);   // before the event: a handler asking for a capability of the object must not attach again
+        if (object instanceof ItemStack stack && stack.getItem() instanceof InitCapabilities1201 init) {
+            ICapabilityProvider p = init.initCapabilities(stack, null);
+            if (p != null) providers.add(p);
+        }
         AttachCapabilitiesEvent<T> event = new AttachCapabilitiesEvent<>(object);
-        NeoForge.EVENT_BUS.post(event);
-        ATTACHED.put(object, new ArrayList<>(event.getCapabilities().values()));
+        try {
+            NeoForge.EVENT_BUS.post(event);
+        } catch (RuntimeException | LinkageError e) {
+            if (!warned) {
+                warned = true;
+                org.slf4j.LoggerFactory.getLogger("LegacyConnector/Forge1201").warn("An AttachCapabilitiesEvent handler failed for {}: {}", object.getClass().getName(), e.toString());
+            }
+        }
+        providers.addAll(event.getCapabilities().values());
+    }
+
+    private static boolean warned;
+
+    /** Implemented (by the translator) by every item class that declares Forge's {@code initCapabilities(stack, nbt)}. */
+    public interface InitCapabilities1201 {
+        ICapabilityProvider initCapabilities(ItemStack stack, net.minecraft.nbt.CompoundTag nbt);
+    }
+
+    /** The provider an item's {@code initCapabilities} made for a stack (for the NeoForge-side bridge), or null. */
+    public static ICapabilityProvider itemProvider(ItemStack stack) {
+        List<ICapabilityProvider> list = attached(stack);
+        if (list == null || list.isEmpty()) return null;
+        return new ICapabilityProvider() {
+            @Override
+            public <T> LazyOptional<T> getCapability(Capability<T> cap, Direction side) {
+                for (ICapabilityProvider p : list) {
+                    LazyOptional<T> lo = p.getCapability(cap, side);
+                    if (lo.isPresent()) return lo;
+                }
+                return LazyOptional.empty();
+            }
+        };
     }
 }

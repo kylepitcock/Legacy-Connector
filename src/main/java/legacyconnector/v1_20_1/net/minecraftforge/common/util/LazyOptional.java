@@ -67,6 +67,29 @@ public class LazyOptional<T> {
         return ret;
     }
 
+    /** Forge's signature: the mapper is a {@link NonNullFunction}. */
+    public <U> Optional<U> map(NonNullFunction<? super T, ? extends U> mapper) {
+        Objects.requireNonNull(mapper);
+        T v = getValue();
+        return v == null ? Optional.empty() : Optional.ofNullable(mapper.apply(v));
+    }
+
+    public Optional<T> filter(NonNullPredicate<? super T> predicate) {
+        T v = getValue();
+        return v != null && predicate.test(v) ? Optional.of(v) : Optional.empty();
+    }
+
+    public T orElseGet(NonNullSupplier<? extends T> other) {
+        T v = getValue();
+        return v != null ? v : other.get();
+    }
+
+    public <X extends Throwable> T orElseThrow(NonNullSupplier<? extends X> exceptionSupplier) throws X {
+        T v = getValue();
+        if (v != null) return v;
+        throw exceptionSupplier.get();
+    }
+
     public <U> Optional<U> map(Function<? super T, ? extends U> mapper) {
         Objects.requireNonNull(mapper);
         T v = getValue();

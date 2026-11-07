@@ -57,7 +57,17 @@ final class ForgeApiRewrites1201 {
                 next = in.getNext();
                 if (!(in instanceof MethodInsnNode call)) continue;
                 String helper = rules.get(call.owner + "." + call.name + call.desc);
-                if (helper == null) helper = rules.get("*." + call.name + call.desc);
+                boolean anyReceiver = false;
+                if (helper == null) {
+                    helper = rules.get("*." + call.name + call.desc);
+                    anyReceiver = helper != null;
+                }
+                if (helper == null && call.getOpcode() == Opcodes.INVOKEVIRTUAL && call.owner.startsWith("net/neoforged/")
+                        && !call.owner.equals("net/neoforged/bus/api/ICancellableEvent")) {
+                    // NeoForge's events are only cancellable when they say so (ICancellableEvent): Forge's Event had the methods itself
+                    helper = rules.get("@event." + call.name + call.desc);
+                    anyReceiver = helper != null;
+                }
                 if (helper == null) continue;
                 if (call.getOpcode() == Opcodes.INVOKESPECIAL) {
                     // super.getCapability(...) of a legacy class whose parent is a Minecraft class has no method to call any more: the base behaviour is the helper's
@@ -68,7 +78,7 @@ final class ForgeApiRewrites1201 {
                 if (call.getOpcode() != Opcodes.INVOKESTATIC) {
                     Type[] args = Type.getArgumentTypes(call.desc);
                     Type[] withReceiver = new Type[args.length + 1];
-                    withReceiver[0] = Type.getObjectType(call.owner);
+                    withReceiver[0] = anyReceiver ? Type.getObjectType("java/lang/Object") : Type.getObjectType(call.owner);   // a "*" rule's helper takes any receiver
                     System.arraycopy(args, 0, withReceiver, 1, args.length);
                     desc = Type.getMethodDescriptor(Type.getReturnType(call.desc), withReceiver);
                 }
@@ -94,13 +104,26 @@ final class ForgeApiRewrites1201 {
      * (the method no longer overrides anything in NeoForge's block entity / entity / item classes).
      */
     static boolean markProviders(ClassNode node) {
-        if ((node.access & Opcodes.ACC_INTERFACE) != 0 || node.interfaces.contains(PROVIDER)) return false;
+        if ((node.access & Opcodes.ACC_INTERFACE) != 0) return false;
+        boolean marked = false;
+        for (MethodNode m : node.methods) {
+            // Item.initCapabilities(stack, nbt) no longer overrides anything: the facade interface lets Caps1201 call it
+            if (m.name.equals("initCapabilities") && m.desc.equals(INIT_CAPABILITIES_DESC) && (m.access & Opcodes.ACC_STATIC) == 0
+                    && !node.interfaces.contains(INIT_CAPABILITIES)) {
+                node.interfaces.add(INIT_CAPABILITIES);
+                marked = true;
+            }
+        }
+        if (node.interfaces.contains(PROVIDER)) return marked;
         for (MethodNode m : node.methods) {
             if (m.name.equals("getCapability") && m.desc.equals(GET_CAPABILITY_DESC) && (m.access & Opcodes.ACC_STATIC) == 0) {
                 node.interfaces.add(PROVIDER);
                 return true;
             }
         }
-        return false;
+        return marked;
     }
+
+    static final String INIT_CAPABILITIES = "legacyconnector/v1_20_1/Caps1201$InitCapabilities1201";
+    static final String INIT_CAPABILITIES_DESC = "(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/nbt/CompoundTag;)L" + PROVIDER + ";";
 }

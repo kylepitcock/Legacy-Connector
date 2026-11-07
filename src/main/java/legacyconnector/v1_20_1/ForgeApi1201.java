@@ -53,6 +53,78 @@ public final class ForgeApi1201 {
         }
     }
 
+    /**
+     * {@code bus.addGenericListener(Entity.class, handler)}: Forge 1.20.1's generic events (the only one mods used is {@code AttachCapabilitiesEvent<T>}) are
+     * delivered when the event's object is an instance of the filter class.
+     */
+    public static <T extends net.neoforged.bus.api.Event> void busAddGenericListener(net.neoforged.bus.api.IEventBus bus, Class<?> filter, Consumer<T> handler) {
+        busAddGenericListener(bus, filter, net.neoforged.bus.api.EventPriority.NORMAL, false, null, handler);
+    }
+
+    public static <T extends net.neoforged.bus.api.Event> void busAddGenericListener(net.neoforged.bus.api.IEventBus bus, Class<?> filter,
+            net.neoforged.bus.api.EventPriority priority, Consumer<T> handler) {
+        busAddGenericListener(bus, filter, priority, false, null, handler);
+    }
+
+    public static <T extends net.neoforged.bus.api.Event> void busAddGenericListener(net.neoforged.bus.api.IEventBus bus, Class<?> filter,
+            net.neoforged.bus.api.EventPriority priority, boolean receiveCancelled, Consumer<T> handler) {
+        busAddGenericListener(bus, filter, priority, receiveCancelled, null, handler);
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static <T extends net.neoforged.bus.api.Event> void busAddGenericListener(net.neoforged.bus.api.IEventBus bus, Class<?> filter,
+            net.neoforged.bus.api.EventPriority priority, boolean receiveCancelled, Class<T> eventClass, Consumer<T> handler) {
+        Class type = eventClass != null ? eventClass : legacyconnector.v1_20_1.net.minecraftforge.event.AttachCapabilitiesEvent.class;
+        bus.addListener(priority, receiveCancelled, type, (Consumer) (Object event) -> {
+            if (event instanceof legacyconnector.v1_20_1.net.minecraftforge.event.AttachCapabilitiesEvent<?> attach && !filter.isInstance(attach.getObject())) return;
+            handler.accept((T) event);
+        });
+    }
+
+    // ---- items --------------------------------------------------------------------------------------------------------------
+
+    /** {@code item.initCapabilities(stack, nbt)} called from outside the item class. */
+    public static legacyconnector.v1_20_1.net.minecraftforge.common.capabilities.ICapabilityProvider initCapabilities(Object item,
+            net.minecraft.world.item.ItemStack stack, net.minecraft.nbt.CompoundTag nbt) {
+        return item instanceof Caps1201.InitCapabilities1201 init ? init.initCapabilities(stack, nbt) : null;
+    }
+
+    /** {@code super.initCapabilities(stack, nbt)} of an item whose parent is a Minecraft class: no capabilities. */
+    public static legacyconnector.v1_20_1.net.minecraftforge.common.capabilities.ICapabilityProvider superInitCapabilities(Object item,
+            net.minecraft.world.item.ItemStack stack, net.minecraft.nbt.CompoundTag nbt) {
+        return null;
+    }
+
+    // ---- events -------------------------------------------------------------------------------------------------------------
+
+    public static void eventSetCanceled(Object event, boolean canceled) {
+        if (event instanceof net.neoforged.bus.api.ICancellableEvent c) c.setCanceled(canceled);
+    }
+
+    public static boolean eventIsCanceled(Object event) {
+        return event instanceof net.neoforged.bus.api.ICancellableEvent c && c.isCanceled();
+    }
+
+    private static final java.util.Map<Object, Object> RESULTS = new com.google.common.collect.MapMaker().weakKeys().makeMap();
+
+    /** Forge's {@code Event.setResult}: kept per event object; the events the layer posts itself read it, NeoForge's own events have their own result types. */
+    public static void eventSetResult(Object event, legacyconnector.v1_20_1.net.minecraftforge.eventbus.api.Event$Result result) {
+        RESULTS.put(event, result);
+    }
+
+    public static legacyconnector.v1_20_1.net.minecraftforge.eventbus.api.Event$Result eventGetResult(Object event) {
+        Object r = RESULTS.get(event);
+        return r == null ? legacyconnector.v1_20_1.net.minecraftforge.eventbus.api.Event$Result.DEFAULT : (legacyconnector.v1_20_1.net.minecraftforge.eventbus.api.Event$Result) r;
+    }
+
+    public static boolean eventHasResult(Object event) {
+        return true;
+    }
+
+    public static boolean eventIsCancelable(Object event) {
+        return event instanceof net.neoforged.bus.api.ICancellableEvent;
+    }
+
     // ---- registries ---------------------------------------------------------------------------------------------------------
 
     /** {@code DeferredRegister.create(ForgeRegistries.BLOCKS, modid)}. */

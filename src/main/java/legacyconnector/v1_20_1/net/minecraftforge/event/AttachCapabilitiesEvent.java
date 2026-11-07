@@ -32,7 +32,7 @@ public class AttachCapabilitiesEvent<T> extends Event {
         return Collections.unmodifiableMap(caps);
     }
 
-    public void addListener(java.util.function.Consumer<ICapabilityProvider> listener) {
+    public void addListener(Runnable listener) {
         // invalidation listeners are not supported: providers live as long as their object
     }
 }
