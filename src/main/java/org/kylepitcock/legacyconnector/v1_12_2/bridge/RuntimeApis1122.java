@@ -52,6 +52,20 @@ public final class RuntimeApis1122 {
     static Class<?> synthClass(String legacyName) {
         Class<?> known = SYNTH_CLASSES.get(legacyName);
         if (known != null) return known;
+        // A miss costs a stack walk and up to five class loader lookups, and the module class loader records every failed lookup in
+        // modlauncher's transformer audit trail for good (SRParasites asks for a placement type on every spawn check: 1.1 million
+        // entries in two minutes), so a class that was not found is not looked for again for a while.
+        Long missedAt = MISSES.get(legacyName);
+        long nowMs = System.currentTimeMillis();
+        if (missedAt != null && nowMs - missedAt < MISS_RETRY_MS) return null;
+        // the hand-written shim has the class itself (nested classes such as EntityLiving.SpawnPlacementType): not a synthesized one
+        try {
+            Class<?> shim = Class.forName("legacyconnector.v1_12_2." + legacyName, false, RuntimeApis1122.class.getClassLoader());
+            SYNTH_CLASSES.put(legacyName, shim);
+            return shim;
+        } catch (ClassNotFoundException | LinkageError e) {
+            // not in the shim
+        }
         String name = SYNTH + legacyName;
         List<ClassLoader> loaders = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE).walk(s -> s
                 .map(StackWalker.StackFrame::getDeclaringClass)
@@ -69,8 +83,12 @@ public final class RuntimeApis1122 {
                 // next loader
             }
         }
+        MISSES.put(legacyName, nowMs);
         return null;
     }
+
+    private static final Map<String, Long> MISSES = new ConcurrentHashMap<>();
+    private static final long MISS_RETRY_MS = 30_000;
 
     /** An inert instance of a synthesized class (no constructor runs), or null. */
     static Object blank(Class<?> type) {

@@ -30,6 +30,10 @@ public class Chunk implements legacyconnector.v1_12_2.net.minecraftforge.common.
     /** True for the stand-in a provider answers for a chunk that is not loaded (not one a generator fills). */
     private boolean unloadedStandIn;
 
+    private static final int STAND_IN_GENERATIONS_PER_TICK = 1;
+    private static long standInTick = Long.MIN_VALUE;
+    private static int standInGenerations;
+
     public Chunk(World world, int x, int z) {
         this(world, new ChunkPrimer(), x, z);
         this.unloadedStandIn = true;
@@ -91,7 +95,18 @@ public class Chunk implements legacyconnector.v1_12_2.net.minecraftforge.common.
         if (access == null && unloadedStandIn && world != null && world.mcc$level() instanceof net.minecraft.server.level.ServerLevel sl
                 && sl.getServer().isSameThread() && legacyconnector.v1_12_2.net.minecraft.world.World.mcc$notGenerating()) {
             // 1.12 provided (loaded and generated) any chunk: answer with the real height (Midnight rifts place their far end with it)
-            return sl.getChunk(x, z).getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, bx & 15, bz & 15) + 1;
+            // A loaded chunk answers for free; generating one synchronously is budgeted per tick: SRParasites' spawner asks about random
+            // chunks around every player on every world tick, which generated hundreds of chunks (seconds per tick, thousands of
+            // extra loaded chunks) when each of those asks generated.
+            var have = sl.getChunkSource().getChunkNow(x, z);
+            if (have != null) return have.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, bx & 15, bz & 15) + 1;
+            long now = sl.getGameTime();
+            if (now != standInTick) {
+                standInTick = now;
+                standInGenerations = 0;
+            }
+            if (standInGenerations++ < STAND_IN_GENERATIONS_PER_TICK)
+                return sl.getChunk(x, z).getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, bx & 15, bz & 15) + 1;
         }
         if (access == null) return primer.findGroundBlockIdx(bx & 15, bz & 15) + 1;
         int h = access.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, bx & 15, bz & 15) + 1;
