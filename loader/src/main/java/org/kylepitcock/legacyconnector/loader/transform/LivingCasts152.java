@@ -37,6 +37,8 @@ public final class LivingCasts152 {
         String base = version.linkPrefix() + "net/minecraft/entity/EntityLivingBase";
         String living = version.linkPrefix() + "net/minecraft/entity/EntityLiving";
         if (h.find(base) == null || h.find(living) == null) return 0;
+        // EntityCreature last: 1.6.4 narrowed some parameters (the AI tasks' owner) from EntityLiving to it
+        String creature = version.linkPrefix() + "net/minecraft/entity/EntityCreature";
         int count = 0;
         for (MethodNode method : node.methods) {
             if (method.instructions == null) continue;
@@ -45,7 +47,7 @@ public final class LivingCasts152 {
                 if (insn instanceof MethodInsnNode || insn instanceof FieldInsnNode) work.add(insn);
             }
             for (AbstractInsnNode insn : work) {
-                if (insn instanceof MethodInsnNode m && fixCall(method, m, h, base, living)) count++;
+                if (insn instanceof MethodInsnNode m && (fixCall(method, m, h, base, living) || h.find(creature) != null && fixCall(method, m, h, base, creature))) count++;
                 else if (insn instanceof FieldInsnNode f && fixField(method, f, h, base, living)) count++;
             }
         }

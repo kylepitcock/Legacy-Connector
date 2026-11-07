@@ -17,6 +17,14 @@ public final class CtorChooser {
     public record Choice(String desc, int[] map) {}
 
     public static Choice choose(ClassInfo info, Type[] args) {
+        return choose(info, args, null);
+    }
+
+    /**
+     * As {@link #choose(ClassInfo, Type[])}; {@code narrowable}, when given, also lets an argument stand for a parameter of a subtype of its
+     * type (the caller casts it): 1.6.4 narrowed AI task owners from {@code EntityLiving} to {@code EntityCreature}.
+     */
+    public static Choice choose(ClassInfo info, Type[] args, java.util.function.BiPredicate<Type, Type> narrowable) {
         Choice best = null;
         int bestScore = Integer.MIN_VALUE;
         for (Map.Entry<String, Integer> e : info.methods.entrySet()) {
@@ -28,6 +36,7 @@ public final class CtorChooser {
             int[] map = new int[target.length];
             boolean[] used = new boolean[args.length];
             int matched = 0;
+            int narrowed = 0;
             for (int j = 0; j < target.length; j++) {
                 map[j] = -1;
                 for (int i = 0; i < args.length; i++) {
@@ -39,10 +48,24 @@ public final class CtorChooser {
                     }
                 }
             }
+            if (narrowable != null) {
+                for (int j = 0; j < target.length; j++) {
+                    if (map[j] >= 0 || target[j].getSort() != Type.OBJECT) continue;
+                    for (int i = 0; i < args.length; i++) {
+                        if (!used[i] && args[i].getSort() == Type.OBJECT && narrowable.test(args[i], target[j])) {
+                            used[i] = true;
+                            map[j] = i;
+                            matched++;
+                            narrowed++;
+                            break;
+                        }
+                    }
+                }
+            }
             int defaultedObjects = 0;
             for (int j = 0; j < target.length; j++) if (map[j] < 0 && target[j].getSort() >= Type.ARRAY) defaultedObjects++;
             // Every used argument counts most; a null default (likely dereferenced) costs more than a zero.
-            int score = matched * 4 - (target.length - matched) - defaultedObjects * 2;
+            int score = matched * 4 - narrowed - (target.length - matched) - defaultedObjects * 2;
             if ((e.getValue() & Opcodes.ACC_PUBLIC) == 0) score--;
             if (score > bestScore) {
                 best = new Choice(desc, map);

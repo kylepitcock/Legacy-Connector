@@ -78,7 +78,16 @@ public final class NotchNames {
             throw new IllegalStateException("Corrupt " + resource, e);
         }
         for (org.kylepitcock.legacyconnector.loader.LegacyVersion v : org.kylepitcock.legacyconnector.loader.LegacyVersion.values()) {
-            if (v.id().equals(versionId)) n.hierarchy = org.kylepitcock.legacyconnector.loader.synth.LegacyHierarchyData.forVersion(v);
+            if (v.id().equals(versionId)) {
+                n.hierarchy = org.kylepitcock.legacyconnector.loader.synth.LegacyHierarchyData.forVersion(v);
+                if (v.flatNames()) {
+                    // the hierarchy data uses packaged names; this table lists the flat net/minecraft/src names (1.4.7): index both
+                    for (Map.Entry<String, String> e : new java.util.ArrayList<>(n.byMcp.entrySet())) {
+                        String packaged = org.kylepitcock.legacyconnector.loader.mapping.ForwardRenames.flat(v, e.getKey());
+                        if (!packaged.equals(e.getKey())) n.byMcp.putIfAbsent(packaged, e.getValue());
+                    }
+                }
+            }
         }
         return n;
     }

@@ -284,7 +284,7 @@ public final class ShimLinker {
             AbstractInsnNode viaId = IdConstructors.adapt(method, m, args, h, report, from);
             if (viaId != null) return viaId;
         }
-        CtorChooser.Choice choice = CtorChooser.choose(h.find(m.owner), args);
+        CtorChooser.Choice choice = CtorChooser.choose(h.find(m.owner), args, (arg, param) -> isSubtype(h, param.getInternalName(), arg.getInternalName(), 0));
         if (choice == null) {
             report.missingMember(m.owner, m.name + m.desc, from, true);
             return null;
@@ -302,6 +302,7 @@ public final class ShimLinker {
         for (int j = 0; j < target.length; j++) {
             int i = choice.map()[j];
             pre.add(i >= 0 ? new VarInsnNode(target[j].getOpcode(Opcodes.ILOAD), slots[i]) : new InsnNode(CtorChooser.defaultConst(target[j])));
+            if (i >= 0 && target[j].getSort() == Type.OBJECT && !target[j].equals(args[i])) pre.add(new TypeInsnNode(Opcodes.CHECKCAST, target[j].getInternalName()));
             pushed += target[j].getSize();
         }
         method.maxLocals = slot;
