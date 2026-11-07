@@ -46,3 +46,5 @@ Thumbs.db
 /test-mods-1201-fabric/
 /test-mods-1122/
 /run-perfmods-off/
+__pycache__/
+*.pyc
