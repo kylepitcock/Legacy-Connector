@@ -91,3 +91,5 @@ net/minecraftforge/common/world/ForgeBiomeModifiers$RemoveSpawnsBiomeModifier	ne
 net/minecraftforge/common/world/ForgeBiomeModifiers$AddSpawnCostsBiomeModifier	net/neoforged/neoforge/common/world/BiomeModifiers$AddSpawnCostsBiomeModifier
 net/minecraftforge/common/world/ForgeBiomeModifiers$RemoveSpawnCostsBiomeModifier	net/neoforged/neoforge/common/world/BiomeModifiers$RemoveSpawnCostsBiomeModifier
 net/minecraftforge/common/world/ForgeBiomeModifiers$RemoveCarversBiomeModifier	net/neoforged/neoforge/common/world/BiomeModifiers$RemoveCarversBiomeModifier
+net/minecraftforge/fml/common/Mod$EventBusSubscriber	net/neoforged/fml/common/EventBusSubscriber
+net/minecraftforge/fml/common/Mod$EventBusSubscriber$Bus	net/neoforged/fml/common/EventBusSubscriber$Bus

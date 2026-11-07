@@ -232,4 +232,22 @@ public final class EntityCompat {
     public static DeferredHolder<Attribute, Attribute> swimSpeed() {
         return attribute(net.neoforged.neoforge.common.NeoForgeMod.SWIM_SPEED);
     }
+
+    private static java.lang.reflect.Method spawnRegister;
+
+    /** {@code SpawnPlacements.register(..)}: private in 1.21.1 (NeoForge's {@code RegisterSpawnPlacementsEvent} is the public way); called through reflection. */
+    public static <T extends net.minecraft.world.entity.Mob> void registerSpawnPlacement(EntityType<T> type, net.minecraft.world.entity.SpawnPlacementType placement,
+            net.minecraft.world.level.levelgen.Heightmap.Types heightmap, net.minecraft.world.entity.SpawnPlacements.SpawnPredicate<T> predicate) {
+        try {
+            if (spawnRegister == null) {
+                spawnRegister = net.minecraft.world.entity.SpawnPlacements.class.getDeclaredMethod("register", EntityType.class,
+                        net.minecraft.world.entity.SpawnPlacementType.class, net.minecraft.world.level.levelgen.Heightmap.Types.class,
+                        net.minecraft.world.entity.SpawnPlacements.SpawnPredicate.class);
+                spawnRegister.setAccessible(true);
+            }
+            spawnRegister.invoke(null, type, placement, heightmap, predicate);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException("SpawnPlacements.register failed", e);
+        }
+    }
 }

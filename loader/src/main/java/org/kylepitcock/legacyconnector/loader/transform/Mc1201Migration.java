@@ -74,12 +74,65 @@ final class Mc1201Migration {
 
     static Counts apply(ClassNode node, Mc1201Hierarchy h, Mc1201Tables t) {
         Counts c = new Counts();
+        renameOverrides(node, h, t, c);
+        dropEmptySubscriber(node);
         for (MethodNode m : node.methods) {
             if (m.instructions == null || m.instructions.size() == 0) continue;
             rewriteBody(m, h, t, c);
         }
         if ((node.access & Opcodes.ACC_INTERFACE) == 0) addBridges(node, h, t, c);
         return c;
+    }
+
+    /** Forge ignored {@code @Mod.EventBusSubscriber} on a class without {@code @SubscribeEvent} methods; NeoForge's automatic subscriber throws, so the annotation goes. */
+    private static void dropEmptySubscriber(ClassNode node) {
+        if (node.visibleAnnotations == null) return;
+        org.objectweb.asm.tree.AnnotationNode sub = null;
+        for (var a : node.visibleAnnotations) if (a.desc.equals("Lnet/neoforged/fml/common/EventBusSubscriber;")) sub = a;
+        if (sub == null) return;
+        int subscribers = 0;
+        int clientOnly = 0;
+        for (MethodNode m : node.methods) {
+            if (m.visibleAnnotations == null || m.visibleAnnotations.stream().noneMatch(a -> a.desc.equals("Lnet/neoforged/bus/api/SubscribeEvent;"))) continue;
+            subscribers++;
+            // FML removes @OnlyIn(CLIENT) methods on a dedicated server: a class with only those has no subscribers there
+            if (m.visibleAnnotations.stream().anyMatch(a -> a.desc.equals("Lnet/neoforged/api/distmarker/OnlyIn;") && a.values != null && a.values.size() >= 2
+                    && a.values.get(1) instanceof String[] e && e[1].equals("CLIENT"))) clientOnly++;
+        }
+        if (subscribers == 0) {
+            node.visibleAnnotations.remove(sub);
+        } else if (subscribers == clientOnly && (sub.values == null || !sub.values.contains("value"))) {
+            if (sub.values == null) sub.values = new java.util.ArrayList<>();
+            sub.values.add("value");
+            sub.values.add(new java.util.ArrayList<Object>(java.util.Collections.singletonList((Object) new String[] {"Lnet/neoforged/api/distmarker/Dist;", "CLIENT"})));
+        }
+    }
+
+    /**
+     * A mod method that overrides a method which is final in 1.21.1 ({@code LivingEntity.getDimensions(Pose)}, the point to override moved to
+     * {@code getDefaultDimensions}) is renamed to the new override point, with its {@code super} and own-class calls; with no replacement it is disabled.
+     */
+    private static void renameOverrides(ClassNode node, Mc1201Hierarchy h, Mc1201Tables t, Counts c) {
+        for (String[] row : t.overrides) {
+            MethodNode decl = declared(node, row[1], row[2]);
+            if (decl == null || (decl.access & Opcodes.ACC_STATIC) != 0 || !h.isSubclassOf(node.name, row[0])) continue;
+            boolean disable = row[3].equals("-");
+            String newName = disable ? "mcc$disabled$" + row[1] : row[3];
+            if (declared(node, newName, row[2]) != null) continue;
+            decl.name = newName;
+            c.bridges++;
+            if (disable) continue;
+            for (MethodNode m : node.methods) {
+                if (m.instructions == null) continue;
+                for (AbstractInsnNode in = m.instructions.getFirst(); in != null; in = in.getNext()) {
+                    if (in instanceof MethodInsnNode call && call.name.equals(row[1]) && call.desc.equals(row[2])
+                            && (call.getOpcode() == Opcodes.INVOKESPECIAL ? h.isSubclassOf(call.owner, row[0]) && !call.owner.equals(node.name)
+                                    : call.getOpcode() == Opcodes.INVOKEVIRTUAL && call.owner.equals(node.name))) {
+                        call.name = newName;
+                    }
+                }
+            }
+        }
     }
 
     // ------------------------------------------------------------------ calls and fields

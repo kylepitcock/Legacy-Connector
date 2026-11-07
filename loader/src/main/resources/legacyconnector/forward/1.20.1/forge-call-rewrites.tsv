@@ -61,3 +61,4 @@ net/minecraft/world/item/crafting/ShapedRecipe.itemStackFromJson(Lcom/google/gso
 net/minecraft/world/inventory/RecipeBookType.create(Ljava/lang/String;)Lnet/minecraft/world/inventory/RecipeBookType;	recipeBookTypeCreate
 net/minecraft/client/RecipeBookCategories.create(Ljava/lang/String;[Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/client/RecipeBookCategories;	recipeBookCategoriesCreate
 net/neoforged/neoforge/common/ModConfigSpec.setConfig(Lcom/electronwill/nightconfig/core/CommentedConfig;)V	specSetConfig
+net/neoforged/neoforge/registries/RegisterEvent$RegisterHelper.register(Ljava/lang/String;Ljava/lang/Object;)V	registerHelper

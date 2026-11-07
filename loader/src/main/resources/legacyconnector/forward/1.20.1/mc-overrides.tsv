@@ -1,0 +1,3 @@
+# Overrides of methods that are final in 1.21.1 (Mc1201Migration.renameOverrides): owner TAB name TAB descriptor TAB new override point (- = disable the override)
+net/minecraft/world/entity/LivingEntity	getDimensions	(Lnet/minecraft/world/entity/Pose;)Lnet/minecraft/world/entity/EntityDimensions;	getDefaultDimensions
+net/minecraft/world/entity/LivingEntity	canBreatheUnderwater	()Z	-
