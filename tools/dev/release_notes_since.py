@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Collects the GitHub release notes of every release from a first tag up to the newest, for a consolidated release note
-(the 0.4.0 notes must include everything since 0.3: `python tools/dev/release_notes_since.py v0.3.0 > notes.md`, then
-add the new section on top and group by theme).
+(0.4.0 was published with only its own section on 2026-11-07, at the maintainer's request: release notes list one version; this tool is for when a consolidated
+note is wanted: `python tools/dev/release_notes_since.py v0.3.0 > notes.md`).
 
 usage: release_notes_since.py <first-tag> [--last <tag>]   (needs the gh CLI, authenticated)
 """
