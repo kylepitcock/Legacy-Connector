@@ -221,7 +221,10 @@ public abstract class EntityHanging extends Entity {
         }
         World world = mcc$world();
         if (world == null) return false;
-        if (!world.getCollidingBoundingBoxes(this, mcc$get$boundingBox(this)).isEmpty()) return false;
+        // the box 1.7.10's updateBoundingBox gave it: as wide and high as the picture, a thirty-second of a block thick (the host's own box
+        // is as wide as the picture in both directions, so it would overlap the wall it hangs on)
+        var thin = mcc$thinBox();
+        if (!world.getCollidingBoundingBoxes(this, thin).isEmpty()) return false;
         int wide = Math.max(1, getWidthPixels() / 16);
         int high = Math.max(1, getHeightPixels() / 16);
         int dir = mcc$local_hangingDirection;
@@ -238,10 +241,20 @@ public abstract class EntityHanging extends Entity {
                 if (block == null || !block.getMaterial().isSolid()) return false;
             }
         }
-        for (Object o : world.getEntitiesWithinAABBExcludingEntity(this, mcc$get$boundingBox(this))) {
+        for (Object o : world.getEntitiesWithinAABBExcludingEntity(this, thin)) {
             if (o instanceof EntityHanging) return false;
         }
         return true;
+    }
+
+    /** The thin box of a mod's hanging entity (around the legacy position, which is the middle of the picture). */
+    private legacyconnector.v1_7_10.net.minecraft.util.AxisAlignedBB mcc$thinBox() {
+        int dir = mcc$local_hangingDirection;
+        double hx = dir == 0 || dir == 2 ? getWidthPixels() / 32.0D : 0.5D / 32.0D;
+        double hz = dir == 0 || dir == 2 ? 0.5D / 32.0D : getWidthPixels() / 32.0D;
+        double hy = getHeightPixels() / 32.0D;
+        double x = mcc$get$posX(this), y = mcc$get$posY(this), z = mcc$get$posZ(this);
+        return legacyconnector.v1_7_10.net.minecraft.util.AxisAlignedBB.getBoundingBox(x - hx, y - hy, z - hz, x + hx, y + hy, z + hz);
     }
 
     @Override

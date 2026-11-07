@@ -19,7 +19,7 @@ import net.minecraft.world.phys.HitResult;
  * restarting it. Enabled by the {@code control} screenshot scenario; see tools/dev/session.sh.
  *
  * <pre>
- * cmd &lt;slash command&gt;   shot &lt;name&gt;   wait &lt;ticks&gt;   look &lt;yaw&gt; &lt;pitch&gt;   use   useat &lt;x&gt; &lt;y&gt; &lt;z&gt;   mouse &lt;x&gt; &lt;y&gt;   click &lt;x&gt; &lt;y&gt; [button]
+ * cmd &lt;slash command&gt;   shot &lt;name&gt;   wait &lt;ticks&gt;   look &lt;yaw&gt; &lt;pitch&gt;   use   forcekey &lt;lwjgl code&gt; [on|off]   useat &lt;x&gt; &lt;y&gt; &lt;z&gt;   mouse &lt;x&gt; &lt;y&gt;   click &lt;x&gt; &lt;y&gt; [button]
  * key &lt;glfw code&gt;   type &lt;text&gt;   close   title   info   quit        (x, y are GUI-scaled coordinates)
  * js &lt;JavaScript&gt;   (the rest of the file, several lines allowed; see DevScript)
  * walk forward|back|left|right [ticks] [sprint]   jump [ticks]   sneak [ticks]   attack [ticks]   slot &lt;0-8&gt;   (play like a player)
@@ -200,6 +200,11 @@ public final class RemoteControl {
                     mc.screen.mouseReleased(x, y, button);
                 }
                 waitTicks = 5;
+            }
+            // holds an LWJGL 2 key code for legacy mods that poll Keyboard.isKeyDown: "forcekey 41 on"
+            case "forcekey" -> {
+                legacyconnector.v1_7_10.org.lwjgl.input.Keyboard.mcc$forceKey(Integer.parseInt(a[0]), !"off".equals(a.length > 1 ? a[1] : "on"));
+                waitTicks = 3;
             }
             case "key" -> {
                 if (mc.screen != null) {

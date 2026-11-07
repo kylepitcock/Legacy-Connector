@@ -18,3 +18,4 @@ F	net/minecraft/client/gui/GuiScreen	controlList	buttonList
 R	net/minecraft/item/crafting/FurnaceRecipes	getSmeltingResult	(I)Lnet/minecraft/item/ItemStack;	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	getSmeltingResult	(Lnet/minecraft/item/crafting/FurnaceRecipes;I)Lnet/minecraft/item/ItemStack;
 R	net/minecraft/item/crafting/FurnaceRecipes	getExperience	(I)F	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	getExperience	(Lnet/minecraft/item/crafting/FurnaceRecipes;I)F
 M	net/minecraft/client/renderer/RenderBlocks	renderBlockFluids	(Lnet/minecraft/block/Block;III)Z	renderBlockLiquid
+F	net/minecraft/util/Direction	vineGrowth	facingToDirection
