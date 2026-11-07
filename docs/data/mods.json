@@ -959,7 +959,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "partial",
-      "notes": "Old-only. Loads; 44 blocks placed and activated on the server; in a real client (with Sodium, Iris and Complementary shaders) the quartz tools, blocks of the main sheet and the ore draw with their textures, some blocks and the multiblock parts still show missing textures, GUIs not tried."
+      "notes": "Old-only. Loads; items (quartz tools, wrench, materials) and the ore draw with their textures in a real client with shaders; tile-less multiblock parts placed by command draw as odd frame cubes, GUIs not opened."
     },
     {
       "name": "Applied Energistics 2",
@@ -3019,7 +3019,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "works",
-      "notes": "Mod has newer versions. Server self-test (1.4.7 layer, 700 ticks). Loads with Forestry; 100 blocks placed, 90 activated, 55 entity types."
+      "notes": "Mod has newer versions. Loads with Forestry; in a real client with shaders the engines, tank, pump, auto workbench, mining well, laser, refinery and hopper draw from the mod's sheets. Pipes, power and fluid transport not tried."
     },
     {
       "name": "BuildCraft Builders",
@@ -3951,7 +3951,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "partial",
-      "notes": "Mod has newer versions. Server self-test (1.4.7 layer, 700 ticks). Computers, turtles register and place; activation by the test's fake player throws (no world)."
+      "notes": "Mod has newer versions. Loads in a real client (the turtle client class no longer fails to verify); computers, disk drives and turtles place and draw. Terminal and turtle use not tried."
     },
     {
       "name": "ComputerCraft Turtles",
@@ -11419,7 +11419,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "loads",
-      "notes": "Old-only. Server self-test (1.4.7 layer, 700 ticks). Loads next to ComputerCraft; its coremod transformer is not run."
+      "notes": "Old-only. Loads next to ComputerCraft; its blocks place and draw in a real client; a block whose tile entity needs IC2's API no longer crashes the server tick. Its coremod transformer is not run."
     },
     {
       "name": "MiscPeripherals",
@@ -14850,8 +14850,8 @@
       "mc": "1.4.7",
       "source": "client",
       "date": "2026-11-07",
-      "status": "partial",
-      "notes": "Old-only. All ten modules load and their blocks place and activate on the server; in a client the item and block sprite sheets are not all mapped yet (missing textures on most RedPower items and blocks), the multipart renderer is untested."
+      "status": "works",
+      "notes": "Old-only. In a real client with Sodium, Iris and Complementary shaders: item textures (tools, gems, paint, bags, screwdriver) and block textures (ores, marble, basalt, ruby and emerald blocks, rubber logs) are drawn from the mod's sprite sheets, the multipart renderer draws logic gates, deployers, lamps and covers, block items show their 3D icons, and the alloy furnace and deployer GUIs open with working slots. Not done: texture animations, survival use of wires and gates, world generation and the Mining module (no file in the test set)."
     },
     {
       "name": "Redstone Arsenal",
@@ -19594,6 +19594,24 @@
       "date": "2026-11-06",
       "status": "loads",
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (50 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+    },
+    {
+      "name": "Entity Detector",
+      "version": "1.1",
+      "mc": "1.4.7",
+      "source": "client",
+      "date": "2026-11-07",
+      "status": "works",
+      "notes": "Old-only ModLoader mod. Loads in a real client; its four detector blocks draw with their textures."
+    },
+    {
+      "name": "CCTV",
+      "version": "1.0",
+      "mc": "1.4.7",
+      "source": "client",
+      "date": "2026-11-07",
+      "status": "loads",
+      "notes": "Old-only ModLoader mod. Loads in a real client and its camera block places; the picture-in-picture feed was not checked."
     }
   ],
   "hidden": [
