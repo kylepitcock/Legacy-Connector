@@ -13,9 +13,11 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -89,6 +91,26 @@ public final class Forge1201Transformer {
         return renamesCache = map;
     }
 
+    private static volatile Map<String, String> membersCache;
+
+    /** forge-members.tsv: {@code owner<TAB>name<TAB>newName} (original Forge owner; fields and methods of that name, whatever the descriptor). */
+    private static synchronized Map<String, String> forgeMembers() {
+        if (membersCache != null) return membersCache;
+        Map<String, String> map = new HashMap<>();
+        try (InputStream in = Forge1201Transformer.class.getClassLoader().getResourceAsStream("legacyconnector/forward/1.20.1/forge-members.tsv")) {
+            if (in != null) {
+                for (String l : new String(in.readAllBytes(), StandardCharsets.UTF_8).split("\\R")) {
+                    if (l.startsWith("#") || l.isBlank()) continue;
+                    String[] a = l.strip().split("\t");
+                    if (a.length == 3) map.put(a[0] + "." + a[1], a[2]);
+                }
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+        return membersCache = map;
+    }
+
     // ---- names ----------------------------------------------------------------------------------------------------------------
 
     /** Maps one class name; names outside Forge are returned unchanged (Minecraft's own class names are the same in both runtimes). */
@@ -120,6 +142,10 @@ public final class Forge1201Transformer {
 
         @Override
         public String mapMethodName(String owner, String name, String descriptor) {
+            if (owner != null) {
+                String forge = forgeMembers().get(owner + "." + name);
+                if (forge != null) return forge;
+            }
             if (name.length() > 3 && name.charAt(1) == '_') {
                 String m = srg.get(name);
                 if (m != null) name = m;
@@ -129,6 +155,8 @@ public final class Forge1201Transformer {
 
         @Override
         public String mapFieldName(String owner, String name, String descriptor) {
+            String forge = forgeMembers().get(owner + "." + name);
+            if (forge != null) return forge;
             if (name.length() > 3 && name.charAt(1) == '_') {
                 String m = srg.get(name);
                 if (m != null) name = m;
@@ -186,10 +214,13 @@ public final class Forge1201Transformer {
         }
         Mc1201Migration.Counts mc = new Mc1201Migration.Counts();
         Mixin1201.Stats mixinStats = new Mixin1201.Stats();
+        Set<String> jarClasses = new HashSet<>();
+        for (ClassNode node : nodes) jarClasses.add(node.name);
         for (ClassNode node : nodes) {
             stringsMapped += mapSrgStrings(node);
             int viaCalls = CallRewrites1201.apply(node);
             viaCalls += ForgeApiRewrites1201.apply(node);
+            viaCalls += AttachGuards1201.apply(node, jarClasses);
             if (ForgeApiRewrites1201.markProviders(node)) viaCalls++;
             rewrites += viaCalls;
             Mc1201Migration.Counts changed = Mc1201Migration.apply(node, hierarchy);

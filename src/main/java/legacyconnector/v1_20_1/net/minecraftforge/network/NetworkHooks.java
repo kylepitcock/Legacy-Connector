@@ -22,8 +22,11 @@ public final class NetworkHooks {
         player.openMenu(containerSupplier, extraDataWriter::accept);
     }
 
-    /** The packet that spawns an entity on the clients (NeoForge's own spawn data travels in the vanilla packet). */
+    /** The packet that spawns an entity on the clients (NeoForge 1.21.1 builds it from the tracking entry; a stand-in one is made here). */
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public static net.minecraft.network.protocol.Packet<net.minecraft.network.protocol.game.ClientGamePacketListener> getEntitySpawningPacket(net.minecraft.world.entity.Entity entity) {
-        return new net.minecraft.network.protocol.game.ClientboundAddEntityPacket(entity, 0, entity.blockPosition());
+        if (!(entity.level() instanceof net.minecraft.server.level.ServerLevel level)) return null;
+        var tracker = new net.minecraft.server.level.ServerEntity(level, entity, entity.getType().updateInterval(), entity.getType().trackDeltas(), p -> {});
+        return (net.minecraft.network.protocol.Packet) entity.getAddEntityPacket(tracker);
     }
 }

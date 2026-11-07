@@ -5,10 +5,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.neoforged.bus.api.ICancellableEvent;
 import net.neoforged.neoforge.event.entity.living.LivingEvent;
 
-/**
- * Forge 1.20.1's {@code LivingAttackEvent} (cancelable, before any damage reduction). NeoForge 1.21.1 replaced it by {@code LivingIncomingDamageEvent};
- * {@code Forge1201Runtime} posts this facade first for each incoming damage and cancels the modern event when a handler cancels this one.
- */
+/** Forge 1.20.1's attack event (before damage is applied); posted from NeoForge's {@code LivingIncomingDamageEvent}. */
 public class LivingAttackEvent extends LivingEvent implements ICancellableEvent {
     private final DamageSource source;
     private final float amount;

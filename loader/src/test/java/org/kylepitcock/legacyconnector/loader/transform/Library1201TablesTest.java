@@ -54,6 +54,40 @@ class Library1201TablesTest implements Opcodes {
     }
 
     @Test
+    void geckoLibColourFloatsArePackedIntoOneInt() {
+        ClassNode n = new ClassNode();
+        n.version = V17;
+        n.access = ACC_PUBLIC;
+        n.name = "mod/Render";
+        n.superName = "java/lang/Object";
+        String oldDesc = "(Lcom/mojang/blaze3d/vertex/PoseStack;Lsoftware/bernie/geckolib/cache/object/GeoBone;Lcom/mojang/blaze3d/vertex/VertexConsumer;IIFFFF)V";
+        MethodNode m = new MethodNode(ACC_PUBLIC | ACC_STATIC, "go", "(Lsoftware/bernie/geckolib/renderer/GeoEntityRenderer;)V", null, null);
+        m.instructions.add(new VarInsnNode(ALOAD, 0));
+        m.instructions.add(new InsnNode(ACONST_NULL));
+        m.instructions.add(new InsnNode(ACONST_NULL));
+        m.instructions.add(new InsnNode(ACONST_NULL));
+        m.instructions.add(new InsnNode(ICONST_0));
+        m.instructions.add(new InsnNode(ICONST_0));
+        for (int i = 0; i < 4; i++) m.instructions.add(new InsnNode(FCONST_1));
+        m.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, "software/bernie/geckolib/renderer/GeoEntityRenderer", "renderCubesOfBone", oldDesc, false));
+        m.instructions.add(new InsnNode(RETURN));
+        m.maxStack = 10;
+        m.maxLocals = 1;
+        n.methods.add(m);
+        Mc1201Migration.apply(n, new Mc1201Hierarchy());
+        MethodInsnNode pack = null;
+        MethodInsnNode call = null;
+        for (var in : m.instructions) {
+            if (in instanceof MethodInsnNode c) {
+                if (c.name.equals("pack")) pack = c;
+                else call = c;
+            }
+        }
+        assertNotNull(pack, "the four floats are packed");
+        assertEquals("(Lcom/mojang/blaze3d/vertex/PoseStack;Lsoftware/bernie/geckolib/cache/object/GeoBone;Lcom/mojang/blaze3d/vertex/VertexConsumer;III)V", call.desc);
+    }
+
+    @Test
     void nativeLibraryJarIsSkippedOnlyWhenTheModernBuildIsInstalled() {
         LegacyJar jar = new LegacyJar(Path.of("architectury-9.2.14-forge.jar"));
         jar.version = LegacyVersion.V1_20_1;

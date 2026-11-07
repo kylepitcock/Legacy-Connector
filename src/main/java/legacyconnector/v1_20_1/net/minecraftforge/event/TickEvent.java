@@ -40,6 +40,10 @@ public abstract class TickEvent extends Event {
         public boolean haveTime() {
             return haveTime.getAsBoolean();
         }
+
+        public net.minecraft.server.MinecraftServer getServer() {
+            return net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
+        }
     }
 
     public static class ClientTickEvent extends TickEvent {

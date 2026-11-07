@@ -56,7 +56,13 @@ public final class Gap1201 {
         gap.loadSrg(Path.of(args[0]));
         for (String f : args[1].split(",")) gap.loadRenames(Path.of(f));
         // "@file": a list file (comma or line separated), for target lists longer than the Windows command line
-        String targets = args[2].startsWith("@") ? Files.readString(Path.of(args[2].substring(1))).replace("\r", "").replace('\n', ',') : args[2];
+        // (build.gradle appends the shim class directories after a comma: "@file,dir,dir")
+        String targets = args[2];
+        if (targets.startsWith("@")) {
+            int comma = targets.indexOf(',');
+            String rest = comma < 0 ? "" : "," + targets.substring(comma + 1);
+            targets = Files.readString(Path.of(targets.substring(1, comma < 0 ? targets.length() : comma))).replace("\r", "").replace('\n', ',') + rest;
+        }
         for (String j : targets.split(",")) if (!j.isBlank()) gap.index(Path.of(j.trim()), gap.target);
         List<Path> mods = new ArrayList<>();
         for (int i = 4; i < args.length; i++) mods.add(Path.of(args[i]));
@@ -373,7 +379,8 @@ public final class Gap1201 {
                     type.accept(mi.owner);
                     Cls c = find(owner, own);
                     if (c == null) continue; // reported as a missing class
-                    if (!hasMember(owner, name + d, true, own, new HashSet<>()) && !callRewrites.contains(owner + "." + name + d) && !callRewrites.contains("*." + name + d)) mm.add(owner + "." + name + d);
+                    if (!hasMember(owner, name + d, true, own, new HashSet<>()) && !callRewrites.contains(owner + "." + name + d) && !callRewrites.contains("*." + name + d)
+                            && !(owner.startsWith("net/neoforged/") && callRewrites.contains("@event." + name + d))) mm.add(owner + "." + name + d);
                 } else if (in instanceof FieldInsnNode fi) {
                     refs[0]++;
                     String owner = cls(fi.owner), name = member(fi.name), d = desc(fi.desc);

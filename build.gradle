@@ -285,13 +285,13 @@ def gapTargets(String targetJars, String classDirs) {
     return '@' + merged.absolutePath
 }
 tasks.register('gap1201', JavaExec) {
-    dependsOn ':loader:genSrgMojang1201', 'classes' // the Forge facades (legacyconnector/v1_20_1) count as present
+    dependsOn ':loader:genSrgMojang1201', 'classes', generateShimIndex // the Forge facades (legacyconnector/v1_20_1) count as present
     // gson (the provenance watermark of the transformer) and the fancy mod loader's annotations are compileOnly in the loader
     classpath = project(':loader').sourceSets.main.runtimeClasspath + project(':loader').sourceSets.main.compileClasspath.filter { it.name.startsWith('gson') || it.name.startsWith('slf4j') }
     mainClass = 'org.kylepitcock.legacyconnector.loader.tools.Gap1201'
     // -Pgap.translate=true runs the jars through Forge1201Transformer first (the report then shows what the layer leaves); -Pgap.limit=N rows per list
     if (project.findProperty('gap.translate')) systemProperty 'gap.translate', project.findProperty('gap.translate').toString()
-    systemProperty 'gap.shimIndex', shimIndexFile.get().asFile.absolutePath
+    systemProperty 'gap.shimIndex', shimIndexFile.get().asFile.absolutePath // -Pgap.translate: the translator sees the facades like the game
     if (project.findProperty('gap.limit')) systemProperty 'gap.limit', project.findProperty('gap.limit').toString()
     if (project.findProperty('gap.translated.dir')) systemProperty 'gap.translated.dir', project.findProperty('gap.translated.dir').toString()
     maxHeapSize = '3g'

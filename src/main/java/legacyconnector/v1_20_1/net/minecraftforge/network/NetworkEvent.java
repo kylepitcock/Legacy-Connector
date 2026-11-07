@@ -14,6 +14,10 @@ public class NetworkEvent extends Event {
         this.context = context;
     }
 
+    public net.minecraft.network.FriendlyByteBuf getPayload() {
+        return null;
+    }
+
     public Supplier<Context> getSource() {
         return () -> context;
     }

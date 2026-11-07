@@ -137,6 +137,14 @@ public class SimpleChannel {
         target.send(wrap(message));
     }
 
+    /** {@code channel.sendTo(msg, connection, direction)}: straight to one connection. */
+    public <MSG> void sendTo(MSG message, net.minecraft.network.Connection manager, NetworkDirection direction) {
+        Payload payload = wrap(message);
+        manager.send(direction == NetworkDirection.PLAY_TO_SERVER || direction == NetworkDirection.LOGIN_TO_SERVER
+                ? new net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket(payload)
+                : new net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket(payload));
+    }
+
     public <MSG> void reply(MSG message, NetworkEvent.Context context) {
         context.mcc$delegate().reply(wrap(message));
     }
@@ -181,6 +189,19 @@ public class SimpleChannel {
 
         public MessageBuilder<MSG> consumerMainThread(BiConsumer<MSG, Supplier<NetworkEvent.Context>> consumer) {
             this.consumer = consumer;
+            return this;
+        }
+
+        /** Login-phase messages are not part of NeoForge's play payloads: the message is registered like any other and never sent at login. */
+        public MessageBuilder<MSG> markAsLoginPacket() {
+            return this;
+        }
+
+        public MessageBuilder<MSG> loginIndex(Function<MSG, Integer> getter, BiConsumer<MSG, Integer> setter) {
+            return this;
+        }
+
+        public MessageBuilder<MSG> buildLoginPacketList(Function<Boolean, List<com.mojang.datafixers.util.Pair<String, MSG>>> generator) {
             return this;
         }
 

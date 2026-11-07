@@ -5,10 +5,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.neoforged.bus.api.ICancellableEvent;
 import net.neoforged.neoforge.event.entity.living.LivingEvent;
 
-/**
- * Forge 1.20.1's {@code LivingHurtEvent} (cancelable, amount settable, before armor and absorption). Posted by {@code Forge1201Runtime} from NeoForge 1.21.1's
- * {@code LivingIncomingDamageEvent}; the amount and cancellation are copied back.
- */
+/** Forge 1.20.1's hurt event (amount before armor); posted from NeoForge's {@code LivingIncomingDamageEvent}. */
 public class LivingHurtEvent extends LivingEvent implements ICancellableEvent {
     private final DamageSource source;
     private float amount;
