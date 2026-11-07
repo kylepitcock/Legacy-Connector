@@ -31,7 +31,9 @@ public class DataWatcher {
         int type = typeOf(value);
         if (type < 0) throw new IllegalArgumentException("Unknown data type: " + (value == null ? "null" : value.getClass()));
         if (id > 31) throw new IllegalArgumentException("Data value id is too big with " + id + "! (Max is 31)");
-        if (watched.containsKey(id)) throw new IllegalArgumentException("Duplicate id value for " + id + "!");
+        // 1.7.10 living entities register slot 7 (the potion colour, never read here); 1.5.2 and 1.6.4 mods that extend EntityLiving use it for their own data
+        // (Mystcraft's linkbook entity), so their registration replaces the shim's instead of failing the construction.
+        if (watched.containsKey(id) && id != 7) throw new IllegalArgumentException("Duplicate id value for " + id + "!");
         watched.put(id, new WatchableObject(type, id, value));
         isBlank = false;
     }

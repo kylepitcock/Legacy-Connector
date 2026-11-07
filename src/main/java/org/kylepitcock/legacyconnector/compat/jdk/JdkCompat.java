@@ -90,6 +90,15 @@ public final class JdkCompat {
         if (EXIT_CALLERS.add(caller)) LOG.warn("Legacy code called System.exit({}) from {}; ignored, the mod carries on", code, caller);
     }
 
+    /** {@code Runtime.halt/exit} from legacy code (Forestry's signature check): ignored like {@link #exit}. */
+    public static void halt(Runtime runtime, int code) {
+        exit(code);
+    }
+
+    public static void exit(Runtime runtime, int code) {
+        exit(code);
+    }
+
     /** {@code result}, or {@code fallback} when the result is null or empty (see the loader's UpdateCheckFix). */
     public static String[] nonEmpty(String[] result, String[] fallback) {
         return result == null || result.length == 0 ? fallback : result;

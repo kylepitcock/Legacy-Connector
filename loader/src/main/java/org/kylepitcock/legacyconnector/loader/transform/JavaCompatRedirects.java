@@ -90,6 +90,9 @@ public final class JavaCompatRedirects {
                 COMPAT + "DialogCompat", "showOptionDialog");
         // A mod giving up must not end the game: System.exit fails that mod instead.
         staticToStatic("java/lang/System", "exit", "(I)V", COMPAT + "JdkCompat", "exit");
+        // Tamper checks (Forestry compares its jar's signature and halts the JVM) would end the game on a translated, unsigned jar.
+        virtualToStatic("java/lang/Runtime", "halt", "(I)V", COMPAT + "JdkCompat");
+        virtualToStatic("java/lang/Runtime", "exit", "(I)V", COMPAT + "JdkCompat");
         // log4j 2.0-beta9 factories, replaced by builders (JourneyMap's own log file)
         staticToStatic("org/apache/logging/log4j/core/layout/PatternLayout", "createLayout",
                 "(Ljava/lang/String;Lorg/apache/logging/log4j/core/config/Configuration;Lorg/apache/logging/log4j/core/pattern/RegexReplacement;"
