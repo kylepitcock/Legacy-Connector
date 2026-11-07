@@ -102,7 +102,7 @@ public final class Caps1201 {
      */
     public static <T> void attach(T object) {
         if (ATTACHED.containsKey(object)) return;
-        List<ICapabilityProvider> providers = new ArrayList<>();
+        List<ICapabilityProvider> providers = new java.util.concurrent.CopyOnWriteArrayList<>();
         ATTACHED.put(object, providers);   // before the event: a handler asking for a capability of the object must not attach again
         if (object instanceof ItemStack stack && stack.getItem() instanceof InitCapabilities1201 init) {
             ICapabilityProvider p = init.initCapabilities(stack, null);

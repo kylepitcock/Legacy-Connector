@@ -215,10 +215,14 @@ public final class Forge1201Transformer {
         Mc1201Migration.Counts mc = new Mc1201Migration.Counts();
         Mixin1201.Stats mixinStats = new Mixin1201.Stats();
         Set<String> jarClasses = new HashSet<>();
-        for (ClassNode node : nodes) jarClasses.add(node.name);
+        Set<String> compoundSubclasses = new HashSet<>();
+        for (ClassNode node : nodes) {
+            jarClasses.add(node.name);
+            if (CallRewrites1201.COMPOUND.equals(node.superName)) compoundSubclasses.add(node.name);
+        }
         for (ClassNode node : nodes) {
             stringsMapped += mapSrgStrings(node);
-            int viaCalls = CallRewrites1201.apply(node);
+            int viaCalls = CallRewrites1201.apply(node, compoundSubclasses);
             viaCalls += ForgeApiRewrites1201.apply(node);
             viaCalls += AttachGuards1201.apply(node, jarClasses);
             if (ForgeApiRewrites1201.markProviders(node)) viaCalls++;

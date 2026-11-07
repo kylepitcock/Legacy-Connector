@@ -59,3 +59,5 @@ net/neoforged/neoforge/items/ItemHandlerHelper.copyStackWithSize(Lnet/minecraft/
 net/neoforged/neoforge/items/wrapper/SidedInvWrapper.create(Lnet/minecraft/world/WorldlyContainer;[Lnet/minecraft/core/Direction;)[Llegacyconnector/v1_20_1/net/minecraftforge/common/util/LazyOptional;	sidedInvWrappers
 net/minecraft/world/item/crafting/ShapedRecipe.itemStackFromJson(Lcom/google/gson/JsonObject;)Lnet/minecraft/world/item/ItemStack;	itemStackFromJson
 net/minecraft/world/inventory/RecipeBookType.create(Ljava/lang/String;)Lnet/minecraft/world/inventory/RecipeBookType;	recipeBookTypeCreate
+net/minecraft/client/RecipeBookCategories.create(Ljava/lang/String;[Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/client/RecipeBookCategories;	recipeBookCategoriesCreate
+net/neoforged/neoforge/common/ModConfigSpec.setConfig(Lcom/electronwill/nightconfig/core/CommentedConfig;)V	specSetConfig

@@ -328,4 +328,29 @@ public final class ForgeApi1201 {
     public static net.minecraft.world.inventory.RecipeBookType recipeBookTypeCreate(String name) {
         return org.kylepitcock.legacyconnector.core.LegacyEnums.add(net.minecraft.world.inventory.RecipeBookType.class, name, new Class<?>[0], new Object[0]);
     }
+
+    /** Forge's {@code RecipeBookCategories.create(name, icons...)} (client). */
+    public static net.minecraft.client.RecipeBookCategories recipeBookCategoriesCreate(String name, net.minecraft.world.item.ItemStack... icons) {
+        return ForgeApiClient1201.categoriesCreate(name, icons);
+    }
+
+    /**
+     * {@code spec.setConfig(config)}: a mod loading its own config file by hand; NeoForge hands the spec a loaded config instead. {@code LoadedConfig} is a
+     * package-private record of FML (the interface is sealed), built reflectively with a detached ModConfig and no path, so saving through it is not supported.
+     */
+    public static void specSetConfig(net.neoforged.neoforge.common.ModConfigSpec spec, com.electronwill.nightconfig.core.CommentedConfig config) {
+        try {
+            Class<?> type = Class.forName("net.neoforged.fml.config.LoadedConfig", true, net.neoforged.fml.config.IConfigSpec.class.getClassLoader());
+            java.lang.reflect.Constructor<?> ctor = type.getDeclaredConstructors()[0];
+            org.kylepitcock.legacyconnector.compat.jdk.ReflectionCompat.setAccessible(ctor, true);
+            // the spec locks through the config's ModConfig: a detached one (the active mod's container, no file) serves
+            java.lang.reflect.Constructor<?> modConfigCtor = net.neoforged.fml.config.ModConfig.class.getDeclaredConstructors()[0];
+            org.kylepitcock.legacyconnector.compat.jdk.ReflectionCompat.setAccessible(modConfigCtor, true);
+            Object modConfig = modConfigCtor.newInstance(net.neoforged.fml.config.ModConfig.Type.COMMON, spec, net.neoforged.fml.ModLoadingContext.get().getActiveContainer(),
+                    "legacy-" + System.identityHashCode(spec) + ".toml", new java.util.concurrent.locks.ReentrantLock());
+            spec.acceptConfig((net.neoforged.fml.config.IConfigSpec.ILoadedConfig) ctor.newInstance(config, null, modConfig));
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException("Could not hand a config to " + spec, e);
+        }
+    }
 }
