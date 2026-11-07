@@ -19,3 +19,6 @@ R	net/minecraft/item/crafting/FurnaceRecipes	getSmeltingResult	(I)Lnet/minecraft
 R	net/minecraft/item/crafting/FurnaceRecipes	getExperience	(I)F	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	getExperience	(Lnet/minecraft/item/crafting/FurnaceRecipes;I)F
 M	net/minecraft/client/renderer/RenderBlocks	renderBlockFluids	(Lnet/minecraft/block/Block;III)Z	renderBlockLiquid
 F	net/minecraft/util/Direction	vineGrowth	facingToDirection
+F	net/minecraft/entity/EntityHanging	xPosition	field_146063_b
+F	net/minecraft/entity/EntityHanging	yPosition	field_146064_c
+F	net/minecraft/entity/EntityHanging	zPosition	field_146062_d
