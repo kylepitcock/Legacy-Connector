@@ -1,0 +1,21 @@
+# Forge 1.20.1 methods NeoForge 1.21.1 lacks -> static helper in legacyconnector/v1_20_1/ForgeApi1201 (receiver first for instance calls)
+# key: owner.name+descriptor as it is after the class renames (facade classes are legacyconnector/v1_20_1/net/minecraftforge/...); value: helper name
+# registries
+net/neoforged/neoforge/registries/DeferredRegister.create(Llegacyconnector/v1_20_1/net/minecraftforge/registries/IForgeRegistry;Ljava/lang/String;)Lnet/neoforged/neoforge/registries/DeferredRegister;	createDeferred
+net/neoforged/neoforge/registries/DeferredHolder.create(Lnet/minecraft/resources/ResourceLocation;Llegacyconnector/v1_20_1/net/minecraftforge/registries/IForgeRegistry;)Lnet/neoforged/neoforge/registries/DeferredHolder;	holderCreate
+net/neoforged/neoforge/registries/DeferredHolder.isPresent()Z	holderIsPresent
+net/neoforged/neoforge/registries/DeferredHolder.ifPresent(Ljava/util/function/Consumer;)V	holderIfPresent
+net/neoforged/neoforge/registries/DeferredHolder.getHolder()Ljava/util/Optional;	holderGetHolder
+net/neoforged/neoforge/registries/DeferredHolder.map(Ljava/util/function/Function;)Ljava/util/Optional;	holderMap
+net/neoforged/neoforge/registries/DeferredHolder.flatMap(Ljava/util/function/Function;)Ljava/util/Optional;	holderFlatMap
+net/neoforged/neoforge/registries/DeferredHolder.filter(Ljava/util/function/Predicate;)Ljava/util/Optional;	holderFilter
+net/neoforged/neoforge/registries/DeferredHolder.orElse(Ljava/lang/Object;)Ljava/lang/Object;	holderOrElse
+net/neoforged/neoforge/registries/DeferredHolder.orElseGet(Ljava/util/function/Supplier;)Ljava/lang/Object;	holderOrElseGet
+net/neoforged/neoforge/registries/DeferredHolder.orElseThrow(Ljava/util/function/Supplier;)Ljava/lang/Object;	holderOrElseThrow
+net/neoforged/neoforge/registries/DeferredHolder.stream()Ljava/util/stream/Stream;	holderStream
+net/neoforged/neoforge/registries/RegisterEvent.getForgeRegistry()Llegacyconnector/v1_20_1/net/minecraftforge/registries/IForgeRegistry;	registerEventForgeRegistry
+# capabilities: any receiver (block entity, entity, stack, level, a mod's own provider); super.getCapability of a Minecraft parent becomes superGetCapability
+*.getCapability(Llegacyconnector/v1_20_1/net/minecraftforge/common/capabilities/Capability;Lnet/minecraft/core/Direction;)Llegacyconnector/v1_20_1/net/minecraftforge/common/util/LazyOptional;	getCapability
+*.getCapability(Llegacyconnector/v1_20_1/net/minecraftforge/common/capabilities/Capability;)Llegacyconnector/v1_20_1/net/minecraftforge/common/util/LazyOptional;	getCapability
+# event bus
+net/neoforged/bus/api/IEventBus.register(Ljava/lang/Object;)V	busRegister

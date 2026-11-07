@@ -273,6 +273,9 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             // Legacy coremods' class transformers, loaded on the first cache miss (only then is anything translated).
             List<LegacyJar> loading = legacy.stream()
                     .filter(j -> skipReason(j) == null && LibraryBridges.replacing(j, bridges) == null && LibraryBridges.obsoleteReason(j) == null).toList();
+            // The runtime wires the Forge 1.20.1 facades (events, capabilities, networking) only for these mods.
+            System.setProperty("legacyconnector.forge1201.mods", loading.stream().filter(j -> j.version == LegacyVersion.V1_20_1)
+                    .flatMap(j -> j.mods.stream()).map(LegacyModDecl::fmlId).collect(java.util.stream.Collectors.joining(",")));
             // One coremod class loader per API flavour (1.7.10; 1.6.4 and 1.5.2), loaded on the first class of a jar that uses it.
             var coremods = new java.util.EnumMap<LegacyVersion, org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers>(LegacyVersion.class);
             transformer.patcher((jar, name, bytes) -> {

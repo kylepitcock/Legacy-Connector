@@ -49,6 +49,7 @@ public final class Gap1201 {
     private final Map<String, Cls> target = new HashMap<>();
     private final Map<String, String> srg = new HashMap<>();
     private final Map<String, String> classRenames = new HashMap<>();
+    private final Set<String> callRewrites = new HashSet<>();
 
     public static void main(String[] args) throws Exception {
         Gap1201 gap = new Gap1201();
@@ -74,8 +75,11 @@ public final class Gap1201 {
     private void loadRenames(Path p) throws IOException {
         try (Stream<String> lines = Files.lines(p)) {
             lines.filter(l -> !l.startsWith("#")).forEach(l -> {
-                String[] a = l.split("\t");
-                if (a.length == 2) classRenames.put(a[0], a[1]);
+                String[] a = l.strip().split("\t");
+                if (a.length != 2) return;
+                // call rewrites (owner.name(desc): helper) are redirected by the translator: not a gap
+                if (a[0].indexOf('(') > 0) callRewrites.add(a[0]);
+                else classRenames.put(a[0], a[1]);
             });
         }
     }
@@ -155,9 +159,13 @@ public final class Gap1201 {
             if (outer != null) return outer + name.substring(dollar);
         }
         // the Forge to NeoForge package move for what the tables do not list
-        if (name.startsWith("net/minecraftforge/") && !name.startsWith("net/minecraftforge/fml/")) {
-            String moved = "net/neoforged/neoforge/" + name.substring("net/minecraftforge/".length());
+        for (String[] move : new String[][] {{"net/minecraftforge/fml/", "net/neoforged/fml/"}, {"net/minecraftforge/eventbus/", "net/neoforged/bus/"},
+                {"net/minecraftforge/api/", "net/neoforged/api/"}, {"net/minecraftforge/forgespi/", "net/neoforged/neoforgespi/"},
+                {"net/minecraftforge/", "net/neoforged/neoforge/"}}) {
+            if (!name.startsWith(move[0])) continue;
+            String moved = move[1] + name.substring(move[0].length());
             if (target.containsKey(moved)) return moved;
+            break;
         }
         return name;
     }
@@ -356,7 +364,7 @@ public final class Gap1201 {
                     type.accept(mi.owner);
                     Cls c = find(owner, own);
                     if (c == null) continue; // reported as a missing class
-                    if (!hasMember(owner, name + d, true, own, new HashSet<>())) mm.add(owner + "." + name + d);
+                    if (!hasMember(owner, name + d, true, own, new HashSet<>()) && !callRewrites.contains(owner + "." + name + d) && !callRewrites.contains("*." + name + d)) mm.add(owner + "." + name + d);
                 } else if (in instanceof FieldInsnNode fi) {
                     refs[0]++;
                     String owner = cls(fi.owner), name = member(fi.name), d = desc(fi.desc);

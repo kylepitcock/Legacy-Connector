@@ -99,6 +99,7 @@ public final class LegacyConnector {
                     org.kylepitcock.legacyconnector.v1_12_2.bridge.GuiBridge1122::clientMenu));
 
     public LegacyConnector(IEventBus modBus, ModContainer container) {
+        if (!System.getProperty("legacyconnector.forge1201.mods", "").isEmpty()) org.kylepitcock.legacyconnector.v1_20_1.Forge1201Runtime.init(modBus);
         org.slf4j.LoggerFactory.getLogger("LegacyConnector").info("Legacy Connector {} (runtime) loaded",
                 container.getModInfo().getVersion());
         org.kylepitcock.legacyconnector.core.DirectMemoryGuard.start();
