@@ -68,6 +68,12 @@ public final class Textures152 {
         var key = asset.toString();
         Boolean known = MISSING.get(key);
         if (known != null) return known;
+        // modern resource names are lower case: such a file cannot be an asset (and asking the pack logs an invalid path)
+        if (!asset.getResourcePath().equals(asset.getResourcePath().toLowerCase(java.util.Locale.ROOT))
+                || !asset.getResourceDomain().equals(asset.getResourceDomain().toLowerCase(java.util.Locale.ROOT))) {
+            MISSING.put(key, true);
+            return true;
+        }
         try {
             if (org.kylepitcock.legacyconnector.core.pack.GeneratedPack.building()) return false;
             var mc = net.minecraft.client.Minecraft.getInstance();

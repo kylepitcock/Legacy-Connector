@@ -129,6 +129,25 @@ Fourth round (shaders; 2026-11-07, the Tinkers' Construct, Goblins, Counter Craf
 
 | `1.5.2/miscperipherals-resupply-station-gui-shaders.png` | MiscPeripherals, Liquid XP | MiscPeripherals' Resupply Station screen over a row of placed Liquid XP and MiscPeripherals machines (Liquid XP now loads: it read `Minecraft.session` while loading). One block in the hotbar shows the missing texture: Advanced Machines, which needs IC2 | Works (MiscPeripherals), Works (Liquid XP) |
 
+Fifth round (1.5.2, survival, shaders; 2026-11-07, recipes crafted in the 3x3 grid, then the block placed and opened; the perf set and Complementary Reimagined + Euphoria Patches, Iris logged "Using shaderpack"):
+
+| File | Mod | What it shows | Rating |
+|---|---|---|---|
+| `1.5.2/backpacks-quantum-chest-crafting-survival-shaders.png` | Backpacks! 1.2.0 | The Quantum Chest recipe in the crafting grid (diamonds, ender chests, a diamond block) | Works |
+| `1.5.2/backpacks-backpack-gui-survival-shaders.png` | Backpacks! | A backpack opened by right-click with 32 cobblestone shift-clicked into it | Works |
+| `1.5.2/applied-energistics-1-me-cable-crafting-survival-shaders.png` | Applied Energistics rv14.dev2 | 8 ME cables crafted from the grid (certus and iron) | Partly working |
+| `1.5.2/applied-energistics-1-grind-stone-gui-iron-ore-survival-shaders.png` | Applied Energistics rv14.dev2 | The Grind Stone screen with iron ore shift-clicked into its input (this used to end the server with an AbstractMethodError) | Partly working |
+| `1.5.2/ender-storage-ender-chest-diamonds-gui-survival-shaders.png` | Ender Storage 1.4.2.16 | The Ender Chest screen holding 16 diamonds | Works |
+| `1.5.2/chicken-chunks-chunk-loader-gui-survival-shaders.png` | Chicken Chunks 1.3.2.14 | The chunk loader screen after the + button (radius 3, 25 chunks) with the lasers shown | Works |
+| `1.5.2/dimensional-anchors-gui-survival-shaders.png` | Dimensional Anchors 55.0.3 | The anchor screen (owner, chunk limit, area, shape) with its background texture; needs Immibis Core's trait injection | Works |
+| `1.5.2/infinitubes-transporter-gui-survival-shaders.png` | InfiniTubes 55.0.6 | The Teleposer screen (filter, colours, priority after two clicks) | Works |
+| `1.5.2/forestry-apiary-gui-queen-survival-shaders.png` | Forestry 2.2.8.4 | The apiary screen with a princess bee shift-clicked into the queen slot | Partly working |
+| `1.5.2/dragon-mounts-dragon-npc-dragon-shaders.png` | Dragon Mounts 0.99.2, CustomNPCs | A summoned dragon (Dragon Mounts) and CustomNPCs entities, with boss bars | Partly working |
+| `1.5.2/grimoire-of-gaia-ancient-sword-crafting-survival-shaders.png` | Grimoire of Gaia | The Ancient Sword shapeless recipe in the grid (its crafting handler used to throw on every craft) | Works |
+| `1.5.2/liquid-xp-collector-crafting-survival-shaders.png` | Liquid XP 55.1.6 | The LXP Collector recipe; the middle ingredient (another Immibis item) draws the missing texture | Works |
+| `1.5.2/translocator-crafting-survival-shaders.png` | Translocator 1.1.0.5 | The recipe crafts 2 translocators; the item cannot be placed (Forge Multipart part) | Partly working |
+| `1.5.2/binnies-extra-bees-genetic-machine-survival-shaders.png` | Binnie's Mods (Extra Bees) | The crafted Genetic Machine placed beside other mods' blocks; right-click opens no screen | Partly working |
+
 Findings of the first round and their causes (fixed in the second round, details in `docs/data/mods.json`): The Lion King Mod's disconnect was `connectionReceived` returning an empty string; Mad Science
 implements the 1.6.4 `IModelCustomLoader.loadInstance(String, URL)`; Applied Energistics rv14.finale3 needed absent IC2 types stubbed; RedLogic needs Immibis Microblocks next to Immibis Core
 (and read `BlockRedstoneWire.getDeclaredFields()[0]`); Counter Craft calls `System.exit` when more than five mods are loaded; Twilight Forest 1.5.2 instantiates the concrete `RenderLiving`;

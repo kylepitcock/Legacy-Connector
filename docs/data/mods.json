@@ -976,7 +976,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "partial",
-   "notes": "Real client, shaders: the blocks and multi-block items render with their textures; its own lang file (loadLocalization of /mods/appeng/lang/en_US.properties, a class path file in another jar than the shim) is now read, so the terminal's message reads 'Unable to communicate with controller.' (checked through StatCollector and the chat log); no GUI without a controller (the mod's design). Third round: a controller, ME terminal, drive and energy cell placed side by side in survival; the ME Terminal screen opens with its search box, sort buttons and slot grid. Item names are the mod's raw ones (block900_2 and similar registry names)."
+   "notes": "Real client, survival, shaders: 8 ME cables crafted from the grid recipe (an ore dictionary recipe), the Grind Stone placed and its screen opened, and iron ore shift-clicked into its input (this used to crash the server with an AbstractMethodError: the mod's inventory interface relies on the tile entity superclass having `onInventoryChanged`). Turning the wooden crank to grind was not reached (the crank did not attach through the test's block clicks). Terminal and drive screens worked before; the grind result and the ME network are untried."
   },
   {
    "name": "Applied Energistics rv14.finale3",
@@ -1478,7 +1478,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "works",
-   "notes": "Self-tested in server self test, 1.5.2 set: 1 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+   "notes": "Real client, survival, shaders: the Quantum Chest recipe crafted in the 3x3 grid, the chest placed and its own screen opened; a Backpack opened by right-click shows the mod's screen and takes a stack of cobblestone by shift-click. (The quantum chest slot only accepts backpacks, as designed.)"
   },
   {
    "name": "Bad Mobs",
@@ -2358,7 +2358,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "partial",
-   "notes": "Real client, survival, shaders: bookcase, desk, typesetting table, lamps and the other blocks draw and place through their items; the Wooden Desk screen opens and draws with its slots. The Typesetting Table did not open a screen in the test. Recipes (564) register."
+   "notes": "Real client, survival, shaders: the Spruce Desk recipe crafted in the grid and the desk placed and opened (its screen worked before); the Typesetting Table places and draws but a plain right-click does nothing by the mod's own design (it takes plates and chases first), so its screen was not seen. Lamps and bookcases draw."
   },
   {
    "name": "BiblioCraft",
@@ -2483,8 +2483,8 @@
    "mc": "1.5.2",
    "source": "client",
    "date": "2026-11-07",
-   "status": "works",
-   "notes": "Self-tested in server self test, 1.5.2 set: 104 items, 17 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+   "status": "partial",
+   "notes": "Real client, survival, shaders: Extra Bees' Genetic Machine recipe crafted in the grid and the block placed and drawn with its own model; right-clicking it opened no screen (no log line; the mod's gui path was not traced). Crafting through Binnie's ore dictionary recipes works; one shapeless recipe fails to translate (output null)."
   },
   {
    "name": "Binnie Core",
@@ -3522,7 +3522,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "works",
-   "notes": "Self-tested in server self test, 1.5.2 set: 2 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+   "notes": "Real client, survival, shaders: Chunk Loader recipe crafted in the grid, the block placed, its screen opened; the + button raised the radius from 2 to 3 (9 to 25 chunks) and Show Lasers drew the laser outline."
   },
   {
    "name": "ChickenChunks",
@@ -4687,8 +4687,8 @@
    "mc": "1.5.2",
    "source": "client",
    "date": "2026-11-07",
-   "status": "works",
-   "notes": "Self-tested in server self test, 1.5.2 set: 3 items, 3 blocks, 22 entity types; every block placed and used, every item used, every entity spawned without errors."
+   "status": "partial",
+   "notes": "Real client, survival, shaders: NPC entities (`customnpcs:npchumanfemale`, `npcdragon`) spawn and draw, but each shows a boss bar and a human NPC logs an ArrayIndexOutOfBounds when ticking on the client and a null NPC in its client packet handler; the NPC wand used on an NPC opened no editing screen."
   },
   {
    "name": "CustomNpcs",
@@ -4975,8 +4975,8 @@
    "mc": "1.5.2",
    "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Loads in server self test, 1.5.2 set without errors (no blocks, items or entities of its own)."
+   "status": "works",
+   "notes": "Real client, survival, shaders: recipe crafted in the grid, anchor placed, screen opens with owner, chunk limit, area and shape; the area buttons respond. It needed two generic fixes: Immibis Core's trait injection (a transformer the mod registers in a static initialiser, now applied, so the anchor's inventory exists; before, the screen and saving threw NullPointerExceptions) and the screen's background (a `/mods/immibis/chunkloader/...` path whose first segment is not the mod id now falls back to the class path file). The block's own icon is still the missing texture (its icon name is `immibis/chunkloader:chunkloader`)."
   },
   {
    "name": "Dimensional Anchors",
@@ -5172,8 +5172,8 @@
    "mc": "1.5.2",
    "source": "client",
    "date": "2026-11-07",
-   "status": "works",
-   "notes": "Self-tested in server self test, 1.5.2 set: 1 items, 1 blocks, 1 entity types; every block placed and used, every item used, every entity spawned without errors."
+   "status": "partial",
+   "notes": "Real client, shaders: the dragon entity (`/summon dragonmounts:dragonmount`) renders with its own model and boss bar; the Ender Dragon Spawn Egg used on a block spawned nothing. Taming, hatching eggs and riding were not tried."
   },
   {
    "name": "Dragon Mounts Forge (WIP)",
@@ -5890,8 +5890,8 @@
    "mc": "1.5.2",
    "source": "client",
    "date": "2026-11-07",
-   "status": "partial",
-   "notes": "Real client, survival, shaders: the Ender Chest places and renders (its item renderer binds minecraft:textures/misc/tunnel.png and particlefield.png, which 1.21.1 does not have: logged missing textures). Right-clicking it did not open a screen in the test; the mod opens its GUI through CodeChickenCore's own packet (ServerUtils.openSMPContainer)."
+   "status": "works",
+   "notes": "Real client, survival, shaders: the Ender Chest recipe crafted in the grid, the chest placed and right-clicked while aimed at (the mod ray-traces the player's look, so a test that clicks a block position without aiming gets no screen: that was the earlier 'opens no screen'); the screen opens with its dye buttons and keeps 16 diamonds put in by shift-click. The item renderer still logs the missing 1.21.1 textures tunnel.png and particlefield.png."
   },
   {
    "name": "EnderStorage",
@@ -6250,8 +6250,8 @@
    "mc": "1.5.2",
    "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Loads in server self test, 1.5.2 set without errors (no blocks, items or entities of its own)."
+   "status": "partial",
+   "notes": "Real client: the Genetic Machine block places and draws; its screen did not open (see Binnie Core)."
   },
   {
    "name": "Extra Bees",
@@ -6959,7 +6959,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "partial",
-   "notes": "Real client, survival, shaders: the apiary, alveary and the other blocks now draw with their own textures (they were all missing-texture pink: Forestry's texture manager reads RenderEngine.textureMapBlocks, which was empty, and its tamper check halted the game on startup; both fixed). 173 items and 35 blocks register; the alveary screen opens. The apiary screen opens but draws nothing: Forestry's GUI class is a plain GuiScreen holding a container, which the container bridge does not accept yet."
+   "notes": "Real client, survival, shaders: the apiary placed and its screen opens (the mod's own screen with the tool tabs, the slots and the hex bee slots); a princess bee shift-clicked from the hotbar lands in the queen slot and the bee item draws with its icon. Machine and apiary recipes of this build are Forestry's own recipe class (ShapedRecipeCustom): they list with no result item, crafting them in the grid was not verified. Bee breeding over time, the farm and engines are untried."
   },
   {
    "name": "Forestry for Minecraft",
@@ -7971,7 +7971,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "works",
-   "notes": "Self-tested in server self test, 1.5.2 set: 0 items, 0 blocks, 52 entity types; every block placed and used, every item used, every entity spawned without errors. Real client, survival, shaders: valkyrie, harpy, dryad, centaur, slime girl, anubis, creeper girl and witch mobs draw with their own models; fought with a diamond sword, they drop items (feathers, gunpowder, ender pearls) that the player picks up."
+   "notes": "Real client, survival, shaders: the Ancient Sword shapeless recipe crafted in the grid (the mod's crafting handler now receives the grid instead of null: it threw a NullPointerException on every craft) and the sword in hand next to summoned creeper girl and harpy. Mob models and fights worked before. Its textures with capital letters in the file name (`Sphinx.png`) are read from the class path."
   },
   {
    "name": "Grimoire of Gaia",
@@ -9002,8 +9002,8 @@
    "mc": "1.5.2",
    "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Loads in server self test, 1.5.2 set without errors (no blocks, items or entities of its own)."
+   "status": "works",
+   "notes": "Its trait system works now: the traits transformer it registers from a static initialiser is applied at translation time (Dimensional Anchors' inventory and screen need it). Id clashes with other mods' numeric ids still abort its allocator (see the wiki)."
   },
   {
    "name": "Immibis Core",
@@ -9235,8 +9235,8 @@
    "mc": "1.5.2",
    "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Loads in server self test, 1.5.2 set without errors (no blocks, items or entities of its own)."
+   "status": "works",
+   "notes": "Real client, survival, shaders: the machine recipe crafted in the grid (8 transport items), a Teleposer placed, its screen opens (filter slots, colours, priority); the priority buttons respond. Moving items through tubes was not tried."
   },
   {
    "name": "InfiniTubes",
@@ -10224,7 +10224,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "works",
-   "notes": "Real client, survival, shaders: it failed in preInit on a null `Minecraft.session` (a public field in 1.5.2, fixed); now its 8 LXP machines and the medallions register with their names and the Immibis blocks are placed (the remaining bad texture was Advanced Machines, which needs IC2)."
+   "notes": "Real client, survival, shaders: the LXP Collector recipe crafted in the grid and the block placed (it has no screen of its own: right-click does nothing). One recipe ingredient item draws the missing texture in the grid. Collecting XP was not tried."
   },
   {
    "name": "Liquid XP",
@@ -12247,7 +12247,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "partial",
-   "notes": "Real client, survival, shaders: the writing desk opens its screen with the symbol list and the player inventory (the panels are laid out wrongly, the inventory sits at the right edge). The linkbook entity no longer fails its construction (it used data watcher slot 7, which a 1.7.10 living entity also uses). Age dimensions still log chunk errors without age data; not played further."
+   "notes": "Real client, survival, shaders: the writing desk recipe crafted in the grid, the desk placed and its screen opens; the panels are still laid out wrongly (symbol list at the left, the inventory panel at the far right of a window wider than the screen). Age creation and linking were not tried."
   },
   {
    "name": "Mystcraft",
@@ -15022,7 +15022,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "partial",
-   "notes": "Real client, survival, shaders: wires place with their item, a lever beside the wire powers the whole row (strength 14 down the line, the wire brightens) and a lamp cube at the end lights, so wires do conduct (the earlier note was a bad test: RedLogic only connects to blocks that can provide power, a redstone block or a cube with a lever on it does not power it, as in 1.5.2). Open: wires draw a flat light-grey pad around the wire stripe (the stripe itself is tinted correctly); the item names show raw keys (the mod's own lang file format). When the set has another mod on one of Immibis' block ids (Resource Engineering 409/410, ComputerCraft 4001) Immibis Core aborts its allocation, as it does in the real game, and every Immibis block after it is missing: change the id in immibis.cfg."
+   "notes": "Real client, survival, shaders: the wire recipe crafted in the grid (16 wires) and placed beside a redstone block; the wire still draws a flat light-grey pad around its stripe. The earlier test showed that wires conduct a lever's signal to a lamp."
   },
   {
    "name": "RedPower",
@@ -18595,7 +18595,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "partial",
-   "notes": "Self-tested in server self test, 1.5.2 set: 3 items, 2 blocks, 0 entity types; every block placed and used, every item used, every entity spawned; 1 threw errors (20%)."
+   "notes": "Real client, survival, shaders: the recipe crafts in the grid (2 items) but the item cannot be placed: it is a Forge Multipart part and Forge Multipart's Scala compiler calls do not all link (6 unresolved references), so the item pops out as a drop."
   },
   {
    "name": "Translocators",

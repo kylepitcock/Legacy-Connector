@@ -193,20 +193,35 @@ public final class LegacyCoreModTransformers {
                     owners.put(tr.name(), l.jar());
                 }
             }
-            // Transformers a mod registers itself ({@code Launch.classLoader.registerTransformer} in a static initialiser, which FML 1.5 ran
-            // while loading the mod's classes: Immibis Core's trait injection): run those initialisers in the stand-in loader.
+            // Transformers a mod registers itself ({@code Launch.classLoader.registerTransformer(X.class.getName())} in a static initialiser, which FML 1.5
+            // ran while loading the mod's classes: Immibis Core's trait injection). The initialiser itself touches the game (it cannot run here), so
+            // its constant parts are replayed: the registered transformer classes, and the constant pairs it puts into static maps.
             try {
-                Method getTransformers = lclClass.getMethod("getTransformers");
                 for (LegacyJar jar : coremods) {
-                    for (String holder : staticTransformerRegistrars(jar.path)) {
-                        timed(holder, jar, lcl, () -> Class.forName(holder, true, lcl));
-                        for (Object t : (List<?>) getTransformers.invoke(lcl)) {
-                            String name = t.getClass().getName();
-                            if (transformerType.isInstance(t) && out.stream().noneMatch(o -> o.name().equals(name))) {
-                                out.add(new Transformer(name, t));
-                                owners.put(name, jar.fileName());
+                    for (StaticRegistration reg : staticTransformerRegistrations(jar.path)) {
+                        timed(reg.holder(), jar, lcl, () -> {
+                            for (String[] put : reg.puts()) {
+                                try {
+                                    @SuppressWarnings("unchecked")
+                                    Map<Object, Object> map = (Map<Object, Object>) Class.forName(put[0], true, lcl).getField(put[1]).get(null);
+                                    map.put(Class.forName(put[2], true, lcl), Class.forName(put[3], true, lcl));
+                                } catch (Throwable e) {
+                                    LOG.warn("Legacy Connector: {} of {}: a registration of the static initialiser could not be replayed: {}", reg.holder(), jar.fileName(), rootChain(e));
+                                }
                             }
-                        }
+                            for (String name : reg.transformers()) {
+                                try {
+                                    Object instance = Class.forName(name, true, lcl).getDeclaredConstructor().newInstance();
+                                    if (transformerType.isInstance(instance) && out.stream().noneMatch(o -> o.name().equals(name))) {
+                                        out.add(new Transformer(name, instance));
+                                        owners.put(name, jar.fileName());
+                                    }
+                                } catch (Throwable e) {
+                                    LOG.warn("Legacy Connector: class transformer {} registered by {} could not be created and is skipped: {}", name, reg.holder(), rootChain(e));
+                                }
+                            }
+                            return null;
+                        });
                     }
                 }
             } catch (Throwable e) {
@@ -220,9 +235,12 @@ public final class LegacyCoreModTransformers {
         }
     }
 
+    /** What a static initialiser registers: transformer classes and constant (map field, key class, value class) puts. */
+    private record StaticRegistration(String holder, List<String> transformers, List<String[]> puts) {}
+
     /** The classes of a jar whose static initialiser calls {@code registerTransformer} on a class loader (mods that install their own transformers). */
-    private static List<String> staticTransformerRegistrars(Path jar) {
-        List<String> found = new ArrayList<>();
+    private static List<StaticRegistration> staticTransformerRegistrations(Path jar) {
+        List<StaticRegistration> found = new ArrayList<>();
         try (var zip = new java.util.zip.ZipFile(jar.toFile())) {
             var entries = zip.entries();
             while (entries.hasMoreElements()) {
@@ -237,12 +255,28 @@ public final class LegacyCoreModTransformers {
                 new ClassReader(bytes).accept(node, ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
                 for (var m : node.methods) {
                     if (!m.name.equals("<clinit>")) continue;
-                    for (var insn : m.instructions) {
-                        if (insn instanceof org.objectweb.asm.tree.MethodInsnNode mi && mi.name.equals("registerTransformer") && mi.owner.endsWith("ClassLoader")) {
-                            found.add(node.name.replace('/', '.'));
-                            break;
+                    List<String> transformers = new ArrayList<>();
+                    List<String[]> puts = new ArrayList<>();
+                    var insns = m.instructions.toArray();
+                    for (int i = 0; i < insns.length; i++) {
+                        if (!(insns[i] instanceof org.objectweb.asm.tree.MethodInsnNode mi)) continue;
+                        if (mi.name.equals("registerTransformer") && mi.owner.endsWith("ClassLoader")) {
+                            // ... ldc X.class; invokevirtual Class.getName; invokevirtual registerTransformer  (or ldc "x.Y")
+                            for (int k = i - 1; k >= Math.max(0, i - 4); k--) {
+                                if (insns[k] instanceof org.objectweb.asm.tree.LdcInsnNode l) {
+                                    if (l.cst instanceof org.objectweb.asm.Type t) transformers.add(t.getClassName());
+                                    else if (l.cst instanceof String str) transformers.add(str);
+                                    break;
+                                }
+                            }
+                        } else if (mi.name.equals("put") && mi.owner.equals("java/util/Map") && i >= 3
+                                && insns[i - 3] instanceof org.objectweb.asm.tree.FieldInsnNode f && f.getOpcode() == org.objectweb.asm.Opcodes.GETSTATIC
+                                && insns[i - 2] instanceof org.objectweb.asm.tree.LdcInsnNode k1 && k1.cst instanceof org.objectweb.asm.Type kt
+                                && insns[i - 1] instanceof org.objectweb.asm.tree.LdcInsnNode v1 && v1.cst instanceof org.objectweb.asm.Type vt) {
+                            puts.add(new String[] {f.owner.replace('/', '.'), f.name, kt.getClassName(), vt.getClassName()});
                         }
                     }
+                    if (!transformers.isEmpty()) found.add(new StaticRegistration(node.name.replace('/', '.'), transformers, puts));
                 }
             }
         } catch (java.io.IOException | RuntimeException ex) {
@@ -404,7 +438,18 @@ public final class LegacyCoreModTransformers {
                 // A vanilla class the shim has no hand-written version of: coremods still name it (ClassWriter's
                 // frame computation asks for common superclasses), so serve an empty class with its real supertypes.
                 var entryData = org.kylepitcock.legacyconnector.loader.synth.LegacyHierarchyData.forVersion(LegacyVersion.V1_7_10).get(internal);
-                if (entryData == null) throw new ClassNotFoundException(name);
+                if (entryData == null) {
+                    // A Minecraft class of the mod's own version (1.5.2 names such as net.minecraft.network.packet.Packet are not in the 1.7.10
+                    // data): mod classes whose static initialisers install transformers (Immibis Core) only name it in signatures, and the verifier
+                    // accepts any value for an interface type, so an empty interface lets them link.
+                    if (!internal.startsWith("net/minecraft/")) throw new ClassNotFoundException(name);
+                    ClassWriter stub = new ClassWriter(0);
+                    stub.visit(org.objectweb.asm.Opcodes.V17, org.objectweb.asm.Opcodes.ACC_PUBLIC | org.objectweb.asm.Opcodes.ACC_INTERFACE
+                            | org.objectweb.asm.Opcodes.ACC_ABSTRACT, internal, null, "java/lang/Object", null);
+                    stub.visitEnd();
+                    byte[] bytesOut = stub.toByteArray();
+                    return defineClass(name, bytesOut, 0, bytesOut.length);
+                }
                 ClassWriter bare = new ClassWriter(0);
                 boolean iface = (entryData.access() & org.objectweb.asm.Opcodes.ACC_INTERFACE) != 0;
                 bare.visit(org.objectweb.asm.Opcodes.V17, entryData.access() | org.objectweb.asm.Opcodes.ACC_PUBLIC, internal, null,
