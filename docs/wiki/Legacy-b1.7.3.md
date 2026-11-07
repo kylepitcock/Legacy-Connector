@@ -34,6 +34,9 @@ with the same `mod_X` class; when both are present, the build for the running si
    - mod classes in the default package (not allowed in a Java module) or in `net/minecraft/` move to
      `legacyconnector_b173/<mod>/`. Addons refer to the classes of the mod they extend (`mod_BuildCraftCore`), so the moved names are
      indexed over every b1.7.3 jar of the set;
+   - a default-package class no jar of the set has is another mod's API that came as a jar mod or an installer (ShockAhPI's
+     `DimensionBase`, `SAPI`, `ToolBase`, `ACPage`; PlayerAPI's `PlayerBase`; GuiAPI's `ModSettings`): it is named `net/minecraft/src/...`
+     too, so it links to the shim or the synthesized API instead of failing with `NoClassDefFoundError` (Aether constructs with them);
    - copies of game classes in the jar are **base class edits** (jar mods patched Minecraft directly). They are dropped and reported
      ("Dropped N modified Minecraft class(es)"); the mod misses whatever they changed. Like Apron, the layer cannot apply them.
 3. **Relocation and linking**, as for 1.7.10: `net/minecraft/` moves to `legacyconnector/vb1_7_3/`; everything the shim does not have
@@ -57,7 +60,9 @@ String constants are not renamed: ModLoader finds mods by simple class name, and
    ids the same way it did, and also skips ids other mods reserve through `@MLProp` (MineFactory's conveyor and RedPower Array, which
    creates its blocks only in `ModsLoaded`, both default to 125).
 3. **Construction**: the `mod_*` class is constructed (a ModLoader mod registers everything from its constructor). A clash found only
-   now ("Slot N is already occupied") moves that `@MLProp` id and constructs the mod again. A mod that fails gives its block and item ids
+   now ("Slot N is already occupied") moves that `@MLProp` id, or the Forge config property holding it (a config file written before the
+   other mod was installed: Minefactory's conveyor at 253 next to Aether's purple flower), and constructs the mod again. Ids hard-coded in
+   the mod (Moon Mod's lamp, 110, like Portal Gun's spawner) cannot move. A mod that fails gives its block and item ids
    back. Every block and item belongs to the mod whose jar defines its class (RedPower Array's `ModsLoaded` initialises Logic and Wiring).
 4. **`ModsLoaded()`** for every mod, then **registration** (`BridgeB173`, registries are still open): each mod block becomes a
    `LegacyB173Block` (`mod:name` from its translation key, e.g. `nether:netherrack_ore`, else `mod:block_<id>`) with the legacy hardness,
@@ -189,6 +194,11 @@ callback runs on the server's and on the client's level here (as every block cal
   built from the modern textures (`/gui/furnace.png` with flame and arrow from the modern sprites, `/gui/gui.png` buttons from the widget
   sprites, chest, crafting table, dispenser, inventory). Images are uploaded on first use on the render thread.
 - **`displayGUIChest`** (`openChestScreen`) opens a vanilla chest menu over the legacy inventory (`LegacyInventoryB173`, whole rows only).
+  Vanilla `TileEntityChest` (`ChestBlockEntity`), `ContainerChest` (`GenericContainerScreenHandler`) and `GuiChest` (`DoubleChestScreen`)
+  are the shim's, for mods' own chests (Aether's treasure chests extend them).
+- **Placing a subtype.** b1.7.3's `ItemBlock` set block and metadata together (`getPlacedBlockMetadata` of the damage), so `onBlockAdded`
+  and the tile entity it makes see the subtype; `getStateForPlacement` does the same (before, a Minefactory translocator or crafter
+  placed from its item got the tile entity of metadata 0 and opened nothing).
   `dropPlayerItem` drops from the modern player (crafting grids empty themselves into the world on close).
 - **Recipes for mods' own tables and furnaces.** `CraftingManager` (`CraftingRecipeManager`) and `FurnaceRecipes` (`SmeltingRecipeManager`)
   are hand-written: recipes added through them become data pack recipes like `ModLoader.AddRecipe`'s; `findMatchingRecipe` and
@@ -197,11 +207,12 @@ callback runs on the server's and on the client's level here (as every block cal
   are the shim's.
 
 `B1.7.3 GUI TEST` (server test; a fake player opens no menus, so the test builds each `LegacyB173Menu` from the container `OpenGUI` got):
-every block is right-clicked, blocks with a tile entity with each metadata (397 tries). 57 open a container GUI, 19 container classes
-(IndustrialCraft 2's iron and electric furnaces, macerator-type machines, canner, miner, pump, electrolyzer, induction furnace, mass
-fabricator, generators, nuclear reactor, energy storage, trade-o-mat; NetherCraft's furnace and crafting table; Minefactory's filter and
-crafter); the client layout rebuilt from the extra data matches every time; coal shift-clicked into the container and back: 21 of 21;
-a log in a crafting grid gives planks that can be taken (grid used up): 2 of 2; no container call fails. `FurnaceRecipes` gives an iron
+every block is placed from its item where it has one (as a player would) and right-clicked, blocks with a tile entity with each metadata
+(492 tries with Aether in the set). 113 open a container GUI, 23 container classes (IndustrialCraft 2's iron and electric furnaces,
+macerator-type machines, canner, miner, pump, electrolyzer, induction furnace, mass fabricator, generators, nuclear reactor, energy
+storage, trade-o-mat; NetherCraft's furnace and crafting table; Minefactory's filter and crafter; Aether's freezer, enchanter, incubator
+and treasure chests); the client layout rebuilt from the extra data matches every time; coal shift-clicked into the container and back:
+29 of 29; a log in a crafting grid gives planks that can be taken (grid used up): 2 of 2; no container call fails. `FurnaceRecipes` gives an iron
 ingot for iron ore, `CraftingManager` a crafting table for four planks.
 
 ## Reflection, Forge tables, fire
@@ -244,6 +255,13 @@ Dedicated server with 15 b1.7.3 client builds (`run-subtest/mods/b1.7.3/`): 11 c
 Minefactory Renewed, all five RedPower modules, Butterflies, Twilight Forest b1.7.3); 82 blocks and 390 items registered, 82 of 82 blocks
 placed by the self test, 1786 recipes translated (5 name items nothing provides). Failing, as expected for now: ComputerCraft (needs the
 legacy client instance: `ModLoader.getMinecraftInstance().renderEngine`), Coral Reef and More Creeps (need GuiAPI), Moon Mod (needs ShockAhPI).
+
+With Aether 1.02 (Modrinth `aether` b1.7.3-1.02: the zip's `Jar/` folder as a mod zip; it is a ModLoader mod, only its title screen is a
+base class edit) the set has 17 mods: Aether and its `mod_Trivia` construct with ShockAhPI and PlayerAPI linked to synthesized classes
+(`SAPI.interceptAdd`, `reachAdd`, `ToolBase`, `PlayerAPI.RegisterPlayerBase` do nothing yet) and register 35 blocks and 128 items; its
+freezer, enchanter, incubator and treasure chests open their GUIs. Not yet: the Aether dimension (`DimensionBase`), its portal, mobs and
+the player changes. Moon Mod now gets past ShockAhPI and stops at a hard-coded block id Portal Gun holds; More Creeps stops at GuiAPI's
+settings classes (synthesized without their hierarchy: `VerifyError`).
 
 Client (dev client, 11 jars): NetherCraft, Portal Gun, Minefactory Renewed, RedPower, Butterflies load with textured blocks and items in
 their creative tabs; 51 blocks, 159 items, 219 textures generated, 1 sprite reference without a texture. IndustrialCraft 2's client

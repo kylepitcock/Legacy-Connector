@@ -28,8 +28,52 @@ public class Configuration {
     public TreeMap<String, Property> itemProperties = new TreeMap<>();
     public TreeMap<String, Property> generalProperties = new TreeMap<>();
 
+    /** The configurations made while a mod is being constructed (the layer moves a block id that turned out to be taken). */
+    private static final java.util.List<Configuration> CREATED = new java.util.ArrayList<>();
+
     public Configuration(File file) {
         this.file = file;
+        synchronized (CREATED) {
+            CREATED.add(this);
+        }
+    }
+
+    /** Starts a construction attempt of a mod: the configurations it makes from now on are the ones {@link #mcc$reassign} looks at. */
+    public static void mcc$beginAttempt() {
+        synchronized (CREATED) {
+            CREATED.clear();
+        }
+    }
+
+    /**
+     * A block id the mod's config file holds turned out to be taken by another mod's block (the file was written before that mod was
+     * installed). As a player would, the property gets the highest free id (not reserved by another mod's {@code @MLProp}, not used by the
+     * file's other block ids) and the file is saved, so the mod can be constructed again. False if no config of the attempt holds the id.
+     */
+    public static boolean mcc$reassign(int taken) {
+        synchronized (CREATED) {
+            for (Configuration c : CREATED) {
+                for (Property p : c.blockProperties.values()) {
+                    if (!Integer.toString(taken).equals(p.value == null ? null : p.value.trim())) continue;
+                    java.util.Set<Integer> used = new java.util.HashSet<>();
+                    for (Property q : c.blockProperties.values()) {
+                        try {
+                            used.add(Integer.parseInt(q.value.trim()));
+                        } catch (RuntimeException e) {
+                            // not an id
+                        }
+                    }
+                    for (int j = Block.BLOCKS.length - 1; j > 0; j--) {
+                        if (Block.BLOCKS[j] != null || used.contains(j) || org.kylepitcock.legacyconnector.vb1_7_3.ContentB173.reservedByOther(j)) continue;
+                        p.value = Integer.toString(j);
+                        c.save();
+                        return true;
+                    }
+                    return false;
+                }
+            }
+        }
+        return false;
     }
 
     public Property getOrCreateBlockIdProperty(String key, int defaultId) {

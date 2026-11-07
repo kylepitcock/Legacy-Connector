@@ -120,7 +120,7 @@ public final class SelfTestB173 {
      */
     private static void guis(ServerLevel level, List<LegacyB173Block> blocks, BlockPos base) {
         var player = net.neoforged.neoforge.common.util.FakePlayerFactory.getMinecraft(level);
-        int tried = 0, opened = 0, slots = 0, legacySlots = 0, shiftIn = 0, shiftOut = 0, grids = 0, crafted = 0, failures = 0, layouts = 0;
+        int tried = 0, opened = 0, slots = 0, legacySlots = 0, shiftIn = 0, shiftOut = 0, grids = 0, crafted = 0, failures = 0, layouts = 0, byItem = 0;
         java.util.Set<Class<?>> kinds = new java.util.LinkedHashSet<>();
         List<String> notes = new ArrayList<>();
         Object[] captured = new Object[2];
@@ -141,9 +141,21 @@ public final class SelfTestB173 {
                         BlockState state = b.defaultBlockState();
                         if (meta > 0) state = state.setValue(LegacyB173Block.META, meta);
                         level.setBlock(pos.below(), Blocks.STONE.defaultBlockState(), 3);
-                        level.setBlock(pos, state, 3);
                         player.getInventory().clearContent();
                         player.setPos(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5);
+                        // placed from its item as a player would (the stack's metadata must reach onBlockAdded and the tile entity)
+                        if (b.asItem() instanceof LegacyB173BlockItem) {
+                            var stack = new net.minecraft.world.item.ItemStack(b.asItem());
+                            if (meta > 0) stack.set(net.minecraft.core.component.DataComponents.BLOCK_STATE,
+                                    net.minecraft.world.item.component.BlockItemStateProperties.EMPTY.with(LegacyB173Block.META, meta));
+                            player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, stack);
+                            stack.useOn(new net.minecraft.world.item.context.UseOnContext(player, net.minecraft.world.InteractionHand.MAIN_HAND,
+                                    new net.minecraft.world.phys.BlockHitResult(net.minecraft.world.phys.Vec3.atCenterOf(pos.below()).add(0, 0.5, 0),
+                                            net.minecraft.core.Direction.UP, pos.below(), false)));
+                            player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, net.minecraft.world.item.ItemStack.EMPTY);
+                        }
+                        if (level.getBlockState(pos).getBlock() == b) byItem++;
+                        else level.setBlock(pos, state, 3);
                         var hit = new net.minecraft.world.phys.BlockHitResult(net.minecraft.world.phys.Vec3.atCenterOf(pos), net.minecraft.core.Direction.UP, pos, false);
                         captured[0] = captured[1] = null;
                         level.getBlockState(pos).useWithoutItem(level, player, hit);
@@ -215,9 +227,9 @@ public final class SelfTestB173 {
         } finally {
             MenusB173.testOpen = null;
         }
-        LOG.info("B1.7.3 GUI TEST: {} blocks/metadata right-clicked, {} opened a menu ({} container classes, {} slots, {} of the containers; {} client "
-                + "layouts match); shift-click: {} took coal in, {} gave it back; crafting grids: {} of {} crafted; {} failed",
-                tried, opened, kinds.size(), slots, legacySlots, layouts, shiftIn, shiftOut, crafted, grids, failures);
+        LOG.info("B1.7.3 GUI TEST: {} blocks/metadata right-clicked ({} placed from their item), {} opened a menu ({} container classes, {} slots, {} "
+                + "of the containers; {} client layouts match); shift-click: {} took coal in, {} gave it back; crafting grids: {} of {} crafted; {} failed",
+                tried, byItem, opened, kinds.size(), slots, legacySlots, layouts, shiftIn, shiftOut, crafted, grids, failures);
         for (String s : notes.subList(0, Math.min(40, notes.size()))) LOG.info("  gui: {}", s);
         var smelted = legacyconnector.vb1_7_3.net.minecraft.recipe.SmeltingRecipeManager.getInstance().craft(15);
         var grid = new legacyconnector.vb1_7_3.net.minecraft.inventory.CraftingInventory(null, 2, 2);

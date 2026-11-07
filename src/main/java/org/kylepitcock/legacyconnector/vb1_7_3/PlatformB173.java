@@ -77,15 +77,17 @@ public final class PlatformB173 implements LegacyPlatform {
             Object instance = null;
             for (int attempt = 0; instance == null; attempt++) {
                 int[] attemptMark = ContentB173.mark();
+                legacyconnector.vb1_7_3.net.minecraft.src.forge.Configuration.mcc$beginAttempt();
                 try {
                     instance = ctor.newInstance();
                 } catch (java.lang.reflect.InvocationTargetException e) {
-                    // Two mods with the same default block id: players edited the config file. The mod's @MLProp holding that id
-                    // moves to a free one (and is saved) and the mod is constructed again.
+                    // Two mods with the same block id: players edited the config file. The mod's @MLProp or Forge config property
+                    // holding that id moves to a free one (and is saved) and the mod is constructed again.
                     int taken = occupiedSlot(e.getCause());
                     if (taken < 0 || attempt >= 32) throw e;
                     ContentB173.release(attemptMark);
-                    if (!MLPropsB173.reassignBlockId(cls, taken, FMLPaths.CONFIGDIR.get())) throw e;
+                    if (!MLPropsB173.reassignBlockId(cls, taken, FMLPaths.CONFIGDIR.get())
+                            && !legacyconnector.vb1_7_3.net.minecraft.src.forge.Configuration.mcc$reassign(taken)) throw e;
                     LOG.info("b1.7.3 mod {}: block id {} is taken by {}; its config now uses another id, constructing it again", mod.legacyId,
                             taken, legacyconnector.vb1_7_3.net.minecraft.block.Block.BLOCKS[taken]);
                 }

@@ -177,7 +177,18 @@ public class LegacyB173Block extends net.minecraft.world.level.block.Block {
         call("canPlaceBlockOnSide", () -> ok[0] = legacy.canPlaceAt(view(context.getLevel()), pos.getX(), pos.getY(), pos.getZ(), side));
         if (!ok[0]) return null;
         PLACED_SIDE.set(new int[] {side});
-        return super.getStateForPlacement(context);
+        BlockState state = super.getStateForPlacement(context);
+        // b1.7.3's ItemBlock set block and metadata in one go (getPlacedBlockMetadata of the stack's damage), so onBlockAdded and the tile
+        // entity it makes see the subtype (Minefactory's translocator and crafter are metadata 7 and 8 of one block)
+        if (state != null && context.getItemInHand().getItem() instanceof LegacyB173BlockItem) {
+            int damage = LegacyB173BlockItem.meta(context.getItemInHand());
+            int[] meta = {damage};
+            var item = legacy.id >= 0 && legacy.id < legacyconnector.vb1_7_3.net.minecraft.item.Item.ITEMS.length
+                    ? legacyconnector.vb1_7_3.net.minecraft.item.Item.ITEMS[legacy.id] : null;
+            if (item != null) call("getPlacedBlockMetadata", () -> meta[0] = item.getPlacementMetadata(damage));
+            state = state.setValue(META, meta[0] & 15);
+        }
+        return state;
     }
 
     @Override

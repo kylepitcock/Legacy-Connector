@@ -152,7 +152,11 @@ public final class BetaDeobfuscator {
             String moved = localMoved.get(internalName);
             if (moved != null) return moved;
             moved = BetaJars.moved(internalName);
-            return moved != null ? moved : internalName;
+            if (moved != null) return moved;
+            // a default-package class no jar of the set has: another mod's API that came as a jar mod or an installer (ShockAhPI's
+            // DimensionBase and ToolBase, PlayerAPI's PlayerBase, GuiAPI's ModSettings); the layer provides it (shim or synthesized)
+            if (internalName.indexOf('/') < 0 && !internalName.isEmpty() && !internalName.startsWith("[")) return BetaJars.API_PACKAGE + internalName;
+            return internalName;
         }
 
         @Override
