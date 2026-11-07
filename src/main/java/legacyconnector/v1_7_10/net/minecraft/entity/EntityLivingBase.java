@@ -8,6 +8,14 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 
 public abstract class EntityLivingBase extends Entity {
+    /** Minecraft 1.5.2 and older: the entity's texture as a string path (read by {@code RenderLiving}, see Textures152). */
+    public String texture = "/mob/char.png";
+
+    /** Minecraft 1.5.2: overridable by mods that switch texture at run time. */
+    public String getTexture() {
+        return texture;
+    }
+
     /** Minecraft 1.4.7's numeric drop (a mod's reflection finds it by name; the bridge turns an override into {@code getDropItem}). */
     protected int getDropItemId() {
         return 0;

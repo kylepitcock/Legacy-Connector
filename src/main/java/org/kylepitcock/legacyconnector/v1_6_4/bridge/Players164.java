@@ -57,7 +57,7 @@ public final class Players164 {
                 for (IConnectionHandler c : CONNECTIONS) {
                     guard("connectionReceived", () -> {
                         String refusal = c.connectionReceived(null, Manager164.of(handler));
-                        if (refusal != null) mp.mcc$serverPlayer().connection.disconnect(net.minecraft.network.chat.Component.literal(refusal));
+                        if (refusal != null && !refusal.isEmpty()) mp.mcc$serverPlayer().connection.disconnect(net.minecraft.network.chat.Component.literal(refusal));
                     });
                 }
                 for (IConnectionHandler c : CONNECTIONS) {

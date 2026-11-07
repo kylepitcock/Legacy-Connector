@@ -5,9 +5,16 @@ import legacyconnector.v1_7_10.net.minecraft.entity.Entity;
 import legacyconnector.v1_7_10.net.minecraft.entity.EntityLiving;
 import legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase;
 
-public abstract class RenderLiving extends RendererLivingEntity {
+public class RenderLiving extends RendererLivingEntity {
     public RenderLiving(ModelBase model, float shadowSize) {
         super(model, shadowSize);
+    }
+
+    /** Minecraft 1.5.2's {@code RenderLiving} was concrete: it draws the entity's string texture ({@code EntityLiving.texture}). */
+    @Override
+    protected legacyconnector.v1_7_10.net.minecraft.util.ResourceLocation getEntityTexture(Entity entity) {
+        String path = entity instanceof EntityLivingBase living ? living.getTexture() : null;
+        return org.kylepitcock.legacyconnector.v1_6_4.bridge.Textures152.location(path);
     }
 
     public void doRender(EntityLiving entity, double x, double y, double z, float yaw, float partialTicks) {

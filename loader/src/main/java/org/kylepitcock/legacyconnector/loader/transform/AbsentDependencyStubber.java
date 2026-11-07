@@ -45,6 +45,7 @@ public final class AbsentDependencyStubber {
         AbstractInsnNode insn = m.instructions.getFirst();
         while (insn != null) {
             String missing = insn.getOpcode() >= 0 && !untypedFieldUse(m, insn, hierarchy) ? missingIn(insn, hierarchy) : null;
+            if (missing == null) missing = unverifiableReturn(m, insn, hierarchy);
             if (missing == null) {
                 insn = insn.getNext();
                 continue;
@@ -116,6 +117,22 @@ public final class AbsentDependencyStubber {
                 return false;
             }
         }
+    }
+
+    /**
+     * {@code areturn} in a method whose return type is absent: the verifier must check that the returned value is assignable to the
+     * absent type, which loads it (Applied Energistics' {@code ElectricTool.getManager} returns {@code this} as IC2's
+     * {@code IElectricItemManager}). Returning null, or a parameter of that very type, needs no check.
+     */
+    private static String unverifiableReturn(MethodNode m, AbstractInsnNode insn, Hierarchy h) {
+        if (insn.getOpcode() != Opcodes.ARETURN) return null;
+        Type ret = Type.getReturnType(m.desc);
+        String c = absent(h, ret);
+        if (c == null || ret.getSort() == Type.ARRAY) return null;
+        AbstractInsnNode prev = realNeighbour(insn, false);
+        if (prev == null || prev.getOpcode() == Opcodes.ACONST_NULL) return null;
+        if (prev instanceof org.objectweb.asm.tree.VarInsnNode v && v.getOpcode() == Opcodes.ALOAD && ret.getDescriptor().equals(parameterType(m, v.var))) return null;
+        return c.replace('/', '.');
     }
 
     private static AbstractInsnNode realNeighbour(AbstractInsnNode insn, boolean forward) {
