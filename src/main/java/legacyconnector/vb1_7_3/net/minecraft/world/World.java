@@ -55,7 +55,7 @@ public class World implements BlockView {
     public static World mcc$wrap(Level level) {
         if (level == null) return null;
         synchronized (VIEWS) {
-            return VIEWS.computeIfAbsent(level, World::new);
+            World view=VIEWS.computeIfAbsent(level, World::new);view.difficulty=level.getDifficulty().getId();return view;
         }
     }
 

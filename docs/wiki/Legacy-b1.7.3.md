@@ -6,8 +6,9 @@ Status and design of Minecraft Beta 1.7.3 support. Back to [Home](Home.md). Star
 detected, deobfuscated and linked; the mods are constructed as ModLoader did, their blocks, items and recipes become modern content with
 their own textures, one creative tab per mod, and the blocks' own code runs (placing, breaking, neighbour updates, ticks, right and left
 click, redstone) with their tile entities (saved, loaded, ticked) and their GUIs (machines, furnaces, crafting tables as modern menus).
-Projectiles, external OGG/WAV audio and an initial cow-derived mob host have partial bridges. General custom-mob AI/models,
-natural spawning, world generation and the mods' tick hooks remain incomplete.
+Projectiles, external OGG/WAV audio and supported living mobs have partial bridges. Supported animal subclasses use their
+original renderer/model callbacks and ModLoader spawn registrations in normal gameplay. Broader mob families, custom
+render APIs, world generation and the mods' tick hooks remain incomplete.
 
 ## Putting the mods in
 
@@ -382,8 +383,8 @@ original texture lookup, registry-based save/reload, and loaded loot-table sampl
 Its boar and bighorn families are not yet hosted. Mo' Creatures and More Creeps are separate user-selected tests for the
 custom AI/model work; success with the deer does not establish support for either mod's custom creatures.
 
-The shared `AnimalEntity`/living-entity superclass lifecycle has a neutral native `PathfinderMob` host for isolated server
-validation. Original `tick` enters the native base tick, which dispatches original `tickMovement`; its base movement phase
+The shared `AnimalEntity`/living-entity superclass lifecycle has a neutral native `PathfinderMob` host. Original `tick`
+enters the native base tick, which dispatches original `tickMovement`; its base movement phase
 dispatches original `tickLiving` before native travel. A narrow host-only AI hook preserves the effect of skipping the
 superclass AI call. Navigation and controls run only through that base call; no species goals are installed.
 
@@ -393,8 +394,8 @@ damage operations prevent a mod's `super.damage` from redispatching its override
 pending changes before a callback refresh and avoid replaying unchanged native state. Admission reads method metadata
 without resolving unrelated API signatures and rejects unsupported synthesized callbacks.
 
-Animal admission is currently enabled only by the existing `legacyconnector.entitySelfTest` harness. Client renderer
-integration and natural spawning remain unfinished; these server lifecycle types are not yet enabled in normal gameplay.
+Animal admission is enabled in normal gameplay when both simulation and original renderer/model dependencies are supported.
+Unsupported callbacks, synthesized rendering bodies and unresolved render-state fields cause an explicit rejection.
 General wandering uses modern navigation with the original path-preference callback; exact Beta path timing is unproven.
 
 Fresh, separate actual-mod runs pass the original Mo' Creatures Bunny and More Creeps Hippo lifecycle fixtures. Bunny
@@ -409,7 +410,32 @@ Beta cuboid UVs, mirror winding, the 0.1-pixel texture inset, single-cuboid repl
 the client adapter submits those faces through the existing renderer context. Tests compare all vertex positions and UVs
 against the unmodified Beta classes, including mirrored, expanded and zero-depth cuboids (3 tests, none skipped).
 Separate actual-mod runs pass original Bunny (11 parts) and Hippo (16 parts) construction, textured geometry and animated
-draw capture. Custom renderer integration, renderer GL transformations, mob AI and visual verification remain unfinished.
+draw capture. Broader renderer APIs and mob families remain incomplete.
+
+### Original animal renderers and native tracking
+
+`BaseMod.AddRenderer` now runs against the shared renderer registry. Native client renderers delegate to the registered
+original instance through the Beta living-renderer callback order, including custom render entry points, head-bob callbacks,
+scaling, rotation, model animation and supported decoration passes. The common matrix context keeps model transforms out
+of GUI drawing. Original PNGs become generated-pack resources, including conditional texture choices.
+
+Native spawn/metadata packets carry the entity type, pose, dimensions, texture, eye offset and original scalar/String fields.
+Received field deltas preserve local cosmetic choices made by original render callbacks when the server value has not changed.
+Such client-only choices remain client-local; arbitrary object/collection render state and downloaded skins are not implemented.
+Client ticks and death handling do not execute the original server simulation, and rendering never writes its view back into
+the host. Read-only view scopes prevent render-time queries from retaining simulation callback state.
+
+ModLoader `AddSpawn`/`RemoveSpawn` record class/name, category, weight and biome selections. Accepted hosts produce native
+`neoforge:add_spawns` biome modifiers; rejected mobs do not enter biome spawn lists. Default Beta overworld selections map
+to the native overworld biome tag; explicit vanilla selections use shared biome-family tags. Custom unbridged biomes are
+reported and omitted. Native natural-spawn checks invoke original `canSpawn`, and cluster limits use `getLimitPerChunk`.
+Removal currently updates recorded legacy entries; removing existing modern vanilla spawn entries is separate work.
+
+Fresh isolated Mo' Creatures and More Creeps runs verify the original Bunny renderer (66 faces) and Hippo renderer (96),
+including transforms, animation, exact PNG pack bytes, spawn/metadata packet replay, skin/eye-offset persistence and loaded
+native biome weights/spawn rules. Two independent CLIENT-side CPU probes compare every native emitted position and UV
+with the same original render invocation. All 31 Beta tests pass with none skipped. No live window/GPU visual check was run;
+these results cover the exercised Bunny/Hippo path, not either mod's entire mob roster.
 
 ## Tile entities
 

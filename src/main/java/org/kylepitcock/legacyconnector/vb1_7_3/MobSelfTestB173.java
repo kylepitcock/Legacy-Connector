@@ -10,6 +10,7 @@ import net.minecraft.world.item.Items;
 public final class MobSelfTestB173 {
     public static void register(IEventBus game){
         ModelSelfTestB173.register(game);
+        RendererSelfTestB173.register(game);
         AnimalLifecycleSelfTestB173.register(game);
         if(Boolean.getBoolean("legacyconnector.entitySelfTest"))game.addListener((ServerStartedEvent e)->run(e.getServer().overworld()));
     }

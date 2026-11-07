@@ -68,6 +68,7 @@ public final class BridgeB173 {
         if (Boolean.getBoolean("legacyconnector.entitySelfTest")) ItemUseSelfTestB173.register();
         TileEntitiesB173.registerType();
         MobsB173.registerAll();
+        RenderersB173.discover();
         AnimalsB173.registerAll();
         flammability();
         StringBuilder sb = new StringBuilder();

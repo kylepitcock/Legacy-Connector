@@ -16,7 +16,7 @@ import org.kylepitcock.legacyconnector.vb1_7_3.RecipesB173;
  * Risugami's {@code ModLoader} for Beta 1.7.3: the static API mods register their content through. Registrations are recorded here
  * and become modern content after the lifecycle ({@code BridgeB173}). Texture overrides hand out sprite indices exactly as the original
  * did (first free slot of terrain.png / gui/items.png, same occupied slots), so mods that compute texture coordinates themselves agree.
- * Methods that take client or world types (GUIs, renderers, key bindings, spawns) are synthesized for now.
+ * Methods that take client or world types (GUIs, renderers, key bindings) are synthesized for now.
  */
 public final class ModLoader {
     public static final String VERSION = "ModLoader Beta 1.7.3";
@@ -40,6 +40,23 @@ public final class ModLoader {
     }
 
     private ModLoader() {}
+
+    public static void AddSpawn(Class<?> type,int weight,legacyconnector.vb1_7_3.net.minecraft.entity.SpawnGroup group) {AddSpawn(type,weight,group,(legacyconnector.vb1_7_3.net.minecraft.world.biome.Biome[])null);}
+    public static void AddSpawn(Class<?> type,int weight,legacyconnector.vb1_7_3.net.minecraft.entity.SpawnGroup group,legacyconnector.vb1_7_3.net.minecraft.world.biome.Biome... biomes) {
+        org.kylepitcock.legacyconnector.vb1_7_3.SpawnRulesB173.add(type,weight,group,biomes);
+    }
+    public static void AddSpawn(String name,int weight,legacyconnector.vb1_7_3.net.minecraft.entity.SpawnGroup group) {AddSpawn(name,weight,group,(legacyconnector.vb1_7_3.net.minecraft.world.biome.Biome[])null);}
+    public static void AddSpawn(String name,int weight,legacyconnector.vb1_7_3.net.minecraft.entity.SpawnGroup group,legacyconnector.vb1_7_3.net.minecraft.world.biome.Biome... biomes) {
+        Class<?> type=org.kylepitcock.legacyconnector.vb1_7_3.SpawnRulesB173.namedEntity(name);if(type!=null)AddSpawn(type,weight,group,biomes);
+    }
+    public static void RemoveSpawn(Class<?> type,legacyconnector.vb1_7_3.net.minecraft.entity.SpawnGroup group) {RemoveSpawn(type,group,(legacyconnector.vb1_7_3.net.minecraft.world.biome.Biome[])null);}
+    public static void RemoveSpawn(Class<?> type,legacyconnector.vb1_7_3.net.minecraft.entity.SpawnGroup group,legacyconnector.vb1_7_3.net.minecraft.world.biome.Biome... biomes) {
+        org.kylepitcock.legacyconnector.vb1_7_3.SpawnRulesB173.remove(type,group,biomes);
+    }
+    public static void RemoveSpawn(String name,legacyconnector.vb1_7_3.net.minecraft.entity.SpawnGroup group) {RemoveSpawn(name,group,(legacyconnector.vb1_7_3.net.minecraft.world.biome.Biome[])null);}
+    public static void RemoveSpawn(String name,legacyconnector.vb1_7_3.net.minecraft.entity.SpawnGroup group,legacyconnector.vb1_7_3.net.minecraft.world.biome.Biome... biomes) {
+        Class<?> type=org.kylepitcock.legacyconnector.vb1_7_3.SpawnRulesB173.namedEntity(name);if(type!=null)RemoveSpawn(type,group,biomes);
+    }
 
     public static Logger getLogger() {
         return LOGGER;

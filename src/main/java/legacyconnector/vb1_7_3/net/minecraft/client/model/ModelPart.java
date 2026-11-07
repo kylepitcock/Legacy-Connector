@@ -22,12 +22,18 @@ public class ModelPart {
     private void draw(float scale,boolean force){
         if(hidden||!visible)return;
         var matrix=ModelGeometryB173.transform(pivotX,pivotY,pivotZ,pitch,yaw,roll,scale,force);
+        if(org.kylepitcock.legacyconnector.vb1_7_3.RendererContextB173.active()){
+            org.kylepitcock.legacyconnector.vb1_7_3.RendererContextB173.draw(new ModelGeometryB173.Draw(mcc$cuboids(),matrix,scale));return;
+        }
         var draw=new ModelGeometryB173.Draw(mcc$cuboids(),matrix,scale);
         if(ModelGeometryB173.emit(draw))return;
         if(net.neoforged.fml.loading.FMLEnvironment.dist.isClient())org.kylepitcock.legacyconnector.vb1_7_3.client.ModelPartsB173.draw(draw);
     }
     public void transform(float scale){
         if(hidden||!visible)return;
+        if(org.kylepitcock.legacyconnector.vb1_7_3.RendererContextB173.active()){
+            org.kylepitcock.legacyconnector.vb1_7_3.RendererContextB173.transform(ModelGeometryB173.transform(pivotX,pivotY,pivotZ,pitch,yaw,roll,scale,false));return;
+        }
         if(net.neoforged.fml.loading.FMLEnvironment.dist.isClient())org.kylepitcock.legacyconnector.vb1_7_3.client.ModelPartsB173.transform(ModelGeometryB173.transform(pivotX,pivotY,pivotZ,pitch,yaw,roll,scale,false));
     }
 }

@@ -20,6 +20,14 @@ public final class EntityViewsB173 {
             new com.google.common.collect.MapMaker().weakKeys().weakValues().makeMap();
     private static final ThreadLocal<java.util.Map<net.minecraft.world.entity.Entity,Touched>> TOUCHED =
             ThreadLocal.withInitial(java.util.IdentityHashMap::new);
+    public static final class ReadOnlyScope implements AutoCloseable {
+        private final java.util.Map<net.minecraft.world.entity.Entity,Touched> previous;
+        private ReadOnlyScope(){previous=TOUCHED.get();TOUCHED.set(new java.util.IdentityHashMap<>());}
+        @Override public void close(){TOUCHED.set(previous);}
+    }
+    /** Render-time relation queries cannot retain touched simulation views or write them back. */
+    public static ReadOnlyScope readOnly(){return new ReadOnlyScope();}
+    public static Entity wrapReadOnly(net.minecraft.world.entity.Entity modern){try(var scope=readOnly()){return wrap(modern);}}
 
     public static Entity wrap(net.minecraft.world.entity.Entity modern) {
         if (modern == null) return null;

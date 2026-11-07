@@ -104,6 +104,8 @@ public final class AnimalLifecycleSelfTestB173 {
         }finally {mob.stopRiding();player.setItemInHand(InteractionHand.MAIN_HAND,previous);player.setDeltaMovement(previousMotion);}
         call(original,"setType",new Class<?>[]{int.class},3);put(original,"adult",false);put(original,"edad",.73F);
         var copy=reload(mob,cleanup);var restored=((B173LivingHost)copy).legacy();
+        ((B173LivingHost)copy).flushView();
+        require(restored.mcc$texture().equals(original.mcc$texture())&&((LegacyB173Animal)copy).texturePath().equals(original.mcc$texture()),"original skin survives reload and subsequent view flush");
         require((Integer)get(restored,"typeint")==3&&(Boolean)get(restored,"tamed")&&!(Boolean)get(restored,"adult")&&Math.abs((Float)get(restored,"edad")-.73F)<.0001,"original NBT type/tame/adult/growth survives registry reload");
         float health=mob.getHealth();require(mob.hurt(level.damageSources().generic(),1)&&mob.getHealth()==health-1,"native damage synchronizes");
         mob.invulnerableTime=0;require(original.damage(null,1)&&mob.getHealth()==health-2,"legacy superclass damage reaches native base once");
@@ -153,6 +155,8 @@ public final class AnimalLifecycleSelfTestB173 {
             level.setBlock(waterPos,net.minecraft.world.level.block.Blocks.WATER.defaultBlockState(),3);
             host.syncView();call(original,"tickLiving",new Class<?>[]{});
             require(Math.abs(original.standingEyeHeight+.76F)<.0001,"original water eye-offset callback");
+            var waterCopy=reload(mob,cleanup);
+            require(Math.abs(((B173LivingHost)waterCopy).legacy().standingEyeHeight-original.standingEyeHeight)<.0001&&Math.abs(waterCopy.getY()-mob.getY())<.0001,"water eye offset and native feet survive registry reload");
             require((Boolean)call(world,"isBoxSubmergedInFluid",new Class<?>[]{legacyconnector.vb1_7_3.net.minecraft.util.math.Box.class},original.boundingBox),"water volume API");
         }finally {level.setBlock(waterPos,previous,3);}
         put(original,"random",new ZeroRandom());mob.invulnerableTime=0;

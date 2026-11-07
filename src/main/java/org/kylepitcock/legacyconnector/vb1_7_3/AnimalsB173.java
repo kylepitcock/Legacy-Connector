@@ -72,18 +72,18 @@ public final class AnimalsB173 {
     }
     public static void registerEvents(IEventBus bus){bus.addListener((net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent e)->{for(var i:BY_TYPE.values())e.put(i.type(),PathfinderMob.createMobAttributes().build());});}
     public static void registerAll(){
-        // Lifecycle fixtures are server-only until original-model rendering has an acceptance proof.
-        if(!Boolean.getBoolean("legacyconnector.entitySelfTest"))return;
         for(var r:ContentB173.entities()){
             Class<?> c=r.type();if(BY_CLASS.containsKey(c)||!AnimalEntity.class.isAssignableFrom(c)||MobsB173.cowFamily(c))continue;
             if(r.mod()==null||LegacyLifecycle.isFailed(r.mod().modernId))continue;
             String why=unsupportedBehaviour(c);if(why!=null){LOG.warn("Beta animal {} not hosted: {}",c.getName(),why);continue;}
+            why=AnimalRenderStateB173.unsupportedReason(c);
+            if(why!=null||!RenderersB173.supports(c)){LOG.warn("Beta animal {} not hosted: {}",c.getName(),why!=null?why:"no supported original renderer");continue;}
             try{c.getConstructor(legacyconnector.vb1_7_3.net.minecraft.world.World.class);}catch(NoSuchMethodException e){LOG.warn("Beta animal {} has no public World constructor",c.getName());continue;}
             String path=r.name().toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9/._-]+","_");if(path.isEmpty())path="entity_"+r.id();
             var id=ResourceLocation.fromNamespaceAndPath(r.mod().modernId,path);if(BuiltInRegistries.ENTITY_TYPE.containsKey(id))continue;
             EntityType<LegacyB173Animal> type=EntityType.Builder.<LegacyB173Animal>of((t,l)->new LegacyB173Animal(t,l,null),MobCategory.CREATURE).sized(.6F,1.8F).clientTrackingRange(10).build(id.toString());
             LegacyRegistrar.register(BuiltInRegistries.ENTITY_TYPE,id,type);Info info=new Info(r,type);BY_CLASS.put(c,info);BY_TYPE.put(type,info);
-            LOG.info("Hosted original Beta animal {} as {} for isolated server lifecycle validation",c.getName(),id);
+            LOG.info("Hosted original Beta animal {} as {} with its original renderer",c.getName(),id);
         }
     }
     public static Info info(EntityType<?> type){return BY_TYPE.get(type);}

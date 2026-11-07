@@ -85,7 +85,7 @@
     {
       "priority": 4,
       "mod": "IndustrialCraft 2 v1.00",
-      "archive": "IndustrialCraftÂ²_v1.00_b173.zip",
+      "archive": "IndustrialCraftÃ‚Â²_v1.00_b173.zip",
       "root": "",
       "api_references": "Forge; ModLoader; ModLoaderMP",
       "next_check": "Untested in isolation; this archive version differs from the existing v1.337b test jar."
@@ -135,7 +135,7 @@
       "archive": "MoreCreepsv2.12_b173.zip!PUT CONTENTS INTO MINECRAFT FOLDER/mods/MoreCreepsAndWeirdos.zip",
       "root": "",
       "api_references": "ModLoader; AudioMod; ShockAhPI ACPage",
-      "next_check": "Original Hippo isolated server lifecycle and crafting scenarios pass; broaden mob API coverage, then client renderer integration and natural spawning.",
+      "next_check": "Hippo renderer/tracking/spawn integration enabled; broaden mob API coverage and perform live visual QA.",
       "priority": 10
     },
     {
@@ -293,7 +293,7 @@
       "pngs": 134,
       "external_oggs": 168,
       "base_replacements": false,
-      "status": "Original Bunny model and isolated server lifecycle pass; client renderer integration and normal admission remain unfinished"
+      "status": "Bunny original renderer, native tracking and spawn integration enabled in normal gameplay; broader roster remains partial"
     },
     {
       "mod": "More Creeps & Weirdos 2.12",
@@ -306,7 +306,7 @@
         "AudioMod",
         "ShockAhPI ACPage"
       ],
-      "status": "Original Hippo model, isolated server lifecycle and 48 crafting scenarios pass; broader roster, client rendering and natural spawning incomplete",
+      "status": "Hippo original renderer, native tracking and spawn integration enabled in normal gameplay; broader roster remains partial",
       "limits": "53 living registrations unhosted; achievements and natural spawning incomplete; no GuiAPI/TWL references in selected payload"
     }
   ],
@@ -403,5 +403,57 @@
       "Other unsupported mob families/callbacks remain rejected",
       "Modern navigation retains original path preference; exact Beta wandering timing unproven"
     ]
+  },
+  "renderer_followup": {
+    "date": "2026-11-07",
+    "implementation": "Generic original AddRenderer registry, Beta living renderer hooks and model matrix context, native renderer adapter, tracking snapshots and native biome spawn modifiers",
+    "normal_gameplay_admission": "Enabled for simulation + renderer/model + render-state closures that pass admission; no entitySelfTest gate",
+    "fixtures": [
+      {
+        "mod": "MoCreatures 2.12.2",
+        "entity": "EntityBunny",
+        "renderer": "RenderBunny",
+        "faces": 66,
+        "manifest": "run-b173-single/mocreatures-client-ready-20261107-183007-5d64c7/audit-manifest.json",
+        "status": "headless-smoke-passed"
+      },
+      {
+        "mod": "More Creeps & Weirdos 2.12",
+        "entity": "CREEPSEntityHippo",
+        "renderer": "CREEPSRenderHippo",
+        "faces": 96,
+        "manifest": "run-b173-single/morecreeps-client-ready-20261107-183008-860be8/audit-manifest.json",
+        "status": "headless-smoke-passed"
+      }
+    ],
+    "client_probe": "31 Beta tests passed, zero skipped; two actual original renderer CLIENT probes compare all native emitted positions/UVs and texture bindings",
+    "coverage": [
+      "Original AddRenderer instance and virtual renderer hooks",
+      "Growth scaling, airborne rotation, animation and Hippo scale two",
+      "Exact original PNG bytes in generated client pack",
+      "Native spawn packet plus metadata packet roundtrip and renderer output",
+      "Original scalar state deltas preserve unchanged local cosmetic choices",
+      "Loaded native biome entries retain configured weights",
+      "Original grass/light/collision spawn checks and cluster limits",
+      "Previous lifecycle and crafting regressions",
+      "Skin and eye-offset save/reload remain consistent with subsequent view updates"
+    ],
+    "limits": [
+      "Headless CPU rendering; no live window or GPU visual test",
+      "Unsupported mob families and renderer APIs remain rejected; not a whole-mod compatibility rating",
+      "General wandering uses native navigation, not exact Beta path timing",
+      "Arbitrary object/collection render state and downloaded skins incomplete",
+      "Client-only cosmetic selections remain client-local",
+      "Vanilla modern spawn removal and unbridged custom biomes incomplete"
+    ],
+    "validation": {
+      "beta_tests": 31,
+      "loader_tests": 124,
+      "python_tests": 7,
+      "skipped": 0,
+      "failures": 0,
+      "beta_identity_guard": "190 production/loader files passed",
+      "global_identity_guard": "21 existing mentions, no new ones"
+    }
   }
 }
