@@ -86,6 +86,8 @@ public final class SheetCutter {
             try {
                 BufferedImage image = ImageIO.read(new ByteArrayInputStream(e.getValue()));
                 if (image == null) continue;
+                // a sheet whose path the code builds at run time (BuildCraft: DefaultProps + "blocks.png"): by its conventional name and 256x256 size
+                if (!sheet && !single && conventionalName(key) && image.getWidth() == 256 && image.getHeight() == 256) sheet = true;
                 if (single) {
                     out.put("assets/legacy147/textures/blocks/override/" + slug(key) + ".png", e.getValue());
                 }
@@ -106,6 +108,14 @@ public final class SheetCutter {
             if (s.indexOf('/', 1) < 0 && !VANILLA.contains(s.substring(1)) && key.endsWith(s) && key.length() > s.length()) return true;
         }
         return false;
+    }
+
+    /** A mod's own {@code blocks.png}, {@code items.png}...: the names mods give their tile sheets (the vanilla sheets are at the jar's top level and not cut). */
+    private static boolean conventionalName(String key) {
+        if (key.indexOf('/', 1) < 0) return false;
+        String name = key.substring(key.lastIndexOf('/') + 1);
+        return name.equals("blocks.png") || name.equals("items.png") || name.equals("block.png") || name.equals("item.png") || name.equals("terrain.png")
+                || name.equals("gui/items.png");
     }
 
     private static void cutSheet(BufferedImage image, String slug, Map<String, byte[]> out) throws IOException {

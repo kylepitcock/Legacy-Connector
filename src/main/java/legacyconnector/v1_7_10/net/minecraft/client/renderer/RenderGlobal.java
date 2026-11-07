@@ -26,7 +26,13 @@ public class RenderGlobal {
 
     /** Client side of World.markBlockForUpdate / markBlockRangeForRenderUpdate. */
     public static void mcc$dirty(int x1, int y1, int z1, int x2, int y2, int z2) {
-        var renderer = net.minecraft.client.Minecraft.getInstance().levelRenderer;
+        var mc = net.minecraft.client.Minecraft.getInstance();
+        // the integrated server's thread runs legacy code that marks blocks too: the renderer is for the render thread
+        if (!mc.isSameThread()) {
+            mc.execute(() -> mcc$dirty(x1, y1, z1, x2, y2, z2));
+            return;
+        }
+        var renderer = mc.levelRenderer;
         if (renderer != null) renderer.setBlocksDirty(x1, y1, z1, x2, y2, z2);
     }
 

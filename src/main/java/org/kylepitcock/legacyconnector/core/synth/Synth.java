@@ -60,7 +60,15 @@ public final class Synth {
         for (Class<?> c = type; c != null && c != Object.class; c = c.getSuperclass()) {
             String pkg = c.getPackageName();
             if (pkg.startsWith("legacyconnector.") || pkg.startsWith("org.kylepitcock.legacyconnector")) continue; // shim/runtime
-            for (Method m : c.getDeclaredMethods()) {
+            Method[] declared;
+            try {
+                declared = c.getDeclaredMethods();
+            } catch (LinkageError e) {
+                // a class that mentions an API of an absent optional mod (IC2's ic2.api.Direction in a tile entity): its methods cannot be listed, so none dispatches
+                LOG.debug("Cannot list the methods of {}", c.getName(), e);
+                return Optional.empty();
+            }
+            for (Method m : declared) {
                 if (!m.getName().equals(name) || Modifier.isStatic(m.getModifiers()) || !descriptor(m).equals(desc)) continue;
                 try {
                     m.setAccessible(true);
