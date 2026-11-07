@@ -23,6 +23,11 @@ public class BiomeCache {
         return biomes;
     }
 
+    /** The block of the 16x16 area containing block position (x, z) (1.4 to 1.6 API; coordinates are block positions). */
+    public BiomeCacheBlock getBiomeCacheBlock(int x, int z) {
+        return new BiomeCacheBlock(this, x >> 4, z >> 4, getCachedBiomes(x, z));
+    }
+
     public BiomeGenBase getBiomeGenAt(int x, int z) {
         return getCachedBiomes(x, z)[x & 15 | (z & 15) << 4];
     }

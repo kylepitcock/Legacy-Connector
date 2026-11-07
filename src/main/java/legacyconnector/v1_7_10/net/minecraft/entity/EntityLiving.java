@@ -427,4 +427,40 @@ public abstract class EntityLiving extends EntityLivingBase {
     public legacyconnector.v1_7_10.net.minecraft.item.ItemStack func_130225_q(int armorSlot) {
         return getEquipmentInSlot(armorSlot + 1);
     }
+    // The home area of 1.4 to 1.6, where EntityLiving declared it (1.7.10 moved it to EntityCreature); EntityCreature maps it onto the modern restriction.
+    private int mcc$homeX, mcc$homeY, mcc$homeZ;
+    private float mcc$homeRadius = -1.0F;
+
+    public void setHomeArea(int x, int y, int z, int distance) {
+        mcc$homeX = x;
+        mcc$homeY = y;
+        mcc$homeZ = z;
+        mcc$homeRadius = distance;
+    }
+
+    public legacyconnector.v1_7_10.net.minecraft.util.ChunkCoordinates getHomePosition() {
+        return new legacyconnector.v1_7_10.net.minecraft.util.ChunkCoordinates(mcc$homeX, mcc$homeY, mcc$homeZ);
+    }
+
+    public float getMaximumHomeDistance() {
+        return mcc$homeRadius;
+    }
+
+    public boolean hasHome() {
+        return mcc$homeRadius != -1.0F;
+    }
+
+    public void detachHome() {
+        mcc$homeRadius = -1.0F;
+    }
+
+    public boolean isWithinHomeDistance(int x, int y, int z) {
+        if (mcc$homeRadius == -1.0F) return true;
+        double dx = x - mcc$homeX, dy = y - mcc$homeY, dz = z - mcc$homeZ;
+        return dx * dx + dy * dy + dz * dz < mcc$homeRadius * mcc$homeRadius;
+    }
+
+    public boolean isWithinHomeDistanceCurrentPosition() {
+        return isWithinHomeDistance((int) Math.floor(mcc$get$posX(this)), (int) Math.floor(mcc$get$posY(this)), (int) Math.floor(mcc$get$posZ(this)));
+    }
 }
