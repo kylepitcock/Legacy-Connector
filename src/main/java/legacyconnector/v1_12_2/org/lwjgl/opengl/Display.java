@@ -64,6 +64,17 @@ public class Display {
     public static void destroy() {
     }
 
+    /**
+     * GLFW window calls must run on the thread that owns the window (macOS aborts the whole process with "NSWindow geometry should only be
+     * modified on the main thread" otherwise): legacy mods call {@code Display.setTitle} and friends from the mod loading threads, so they are
+     * queued onto the game's render thread unless the caller already is that thread.
+     */
+    private static void onMainThread(Runnable action) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc == null || mc.isSameThread()) action.run();
+        else mc.execute(action);
+    }
+
     public static void update() {
     }
 
@@ -150,7 +161,9 @@ public class Display {
 
     public static void setFullscreen(boolean fullscreen) {
         Window w = window();
-        if (w != null && w.isFullscreen() != fullscreen) w.toggleFullScreen();
+        if (w != null) onMainThread(() -> {
+            if (w.isFullscreen() != fullscreen) w.toggleFullScreen();
+        });
     }
 
     public static String getTitle() {
@@ -159,7 +172,7 @@ public class Display {
 
     public static void setTitle(String title) {
         Window w = window();
-        if (w != null && title != null) GLFW.glfwSetWindowTitle(w.getWindow(), title);
+        if (w != null && title != null) onMainThread(() -> GLFW.glfwSetWindowTitle(w.getWindow(), title));
     }
 
     public static void setVSyncEnabled(boolean enabled) {
@@ -180,7 +193,7 @@ public class Display {
 
     public static void setLocation(int x, int y) {
         Window w = window();
-        if (w != null) GLFW.glfwSetWindowPos(w.getWindow(), x, y);
+        if (w != null) onMainThread(() -> GLFW.glfwSetWindowPos(w.getWindow(), x, y));
     }
 
     public static DisplayMode getDisplayMode() {
