@@ -124,6 +124,7 @@ python3 tools/compat/probe.py test-mods2 --mc 1.7.10 --version 0.3.18      # --d
 python3 tools/compat/probe.py --from-json out.json --mc 1.7.10             # convert an earlier run
 ```
 
+- `--mc 1.20.1` (Forge 1.20.1 jars) runs `./gradlew gap1201` instead (no shim to link against: the jar is renamed like the layer does and every reference is resolved against Minecraft 1.21.1 + NeoForge + the other jars) and records the same kinds; corpus: `tools/compat/corpus1201.py test-mods-1201`, ranking: `tools/compat/gap1201_rank.py`, results in [Legacy-1.20.1-Corpus](Legacy-1.20.1-Corpus.md).
 - It runs `./gradlew checkLegacyMod -PlegacyJar=... -PcheckJson=<file>` on all jars as ONE mod set (mods that extend each other link), then
   merges the per-jar records into `docs/data/mods.json` with source `probe`.
 - `links` (every reference resolves; missing legacy API is synthesized) becomes status `loads`, `unresolved` becomes `fails` with the first

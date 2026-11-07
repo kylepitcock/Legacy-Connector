@@ -54,7 +54,9 @@ public final class Gap1201 {
         Gap1201 gap = new Gap1201();
         gap.loadSrg(Path.of(args[0]));
         for (String f : args[1].split(",")) gap.loadRenames(Path.of(f));
-        for (String j : args[2].split(",")) gap.index(Path.of(j), gap.target);
+        // "@file": a list file (comma or line separated), for target lists longer than the Windows command line
+        String targets = args[2].startsWith("@") ? Files.readString(Path.of(args[2].substring(1))).replace("\r", "").replace('\n', ',') : args[2];
+        for (String j : targets.split(",")) if (!j.isBlank()) gap.index(Path.of(j.trim()), gap.target);
         List<Path> mods = new ArrayList<>();
         for (int i = 4; i < args.length; i++) mods.add(Path.of(args[i]));
         gap.run(mods, Path.of(args[3]));

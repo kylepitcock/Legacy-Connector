@@ -20,6 +20,42 @@
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (36 classes). The game was not started: this only shows the jar translates, not that it works."
     },
     {
+      "name": "[Let's Do Addon] Structures",
+      "version": "1.7.2",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "loads",
+      "notes": "Automated check 0.4.0-1201-baseline: translates offline and everything it uses exists (0 classes). The game was not started: this only shows the jar translates, not that it works."
+    },
+    {
+      "name": "[Let's Do] Meadow",
+      "version": "1.3.25",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.client.model.ListModel.renderToBuffer, net.minecraft.client.model.geom.ModelPart.render, net.minecraft.client.renderer.entity.MobRenderer.render, net.minecraft.core.Holder.get, net.minecraft.core.cauldron.CauldronInteraction.EMPTY (+133 more)."
+    },
+    {
+      "name": "[Let's Do] NetherVinery",
+      "version": "1.2.19",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.world.ContainerHelper.loadAllItems, net.minecraft.world.ContainerHelper.saveAllItems, net.minecraft.world.effect.MobEffect.removeAttributeModifiers, net.minecraft.world.effect.MobEffectInstance.<init>, net.minecraft.world.effect.MobEffectInstance.getEffect (+16 more)."
+    },
+    {
+      "name": "[Let's Do] Vinery",
+      "version": "1.4.41",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.client.model.ListModel.renderToBuffer, net.minecraft.client.model.geom.ModelPart.render, net.minecraft.client.player.LocalPlayer.getEffect, net.minecraft.client.player.LocalPlayer.hasEffect, net.minecraft.core.Holder.get (+162 more)."
+    },
+    {
       "name": "a Country Life",
       "version": "0.0.1.1",
       "mc": "1.6.4",
@@ -379,6 +415,15 @@
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (11 classes). The game was not started: this only shows the jar translates, not that it works."
     },
     {
+      "name": "Aether: Lost Content",
+      "version": "1.2.3",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.vertex.VertexConsumer.color, com.mojang.blaze3d.vertex.VertexConsumer.endVertex, com.mojang.blaze3d.vertex.VertexConsumer.normal, com.mojang.blaze3d.vertex.VertexConsumer.overlayCoords, com.mojang.blaze3d.vertex.VertexConsumer.uv (+209 more)."
+    },
+    {
       "name": "AFSU Mod",
       "version": "1.3.1-GTNH",
       "mc": "1.7.10",
@@ -530,6 +575,24 @@
       "notes": "Starts on the client; on a dedicated server it fails in preInit because its @SidedProxy names a server proxy class (alchemymod.ServerProxy) that does not exist in the jar: the mod's own mistake."
     },
     {
+      "name": "Alex's Caves",
+      "version": "2.0.2",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.vertex.BufferBuilder.begin, com.mojang.blaze3d.vertex.BufferBuilder.end, com.mojang.blaze3d.vertex.BufferBuilder.vertex, com.mojang.blaze3d.vertex.BufferUploader.drawWithShader, com.mojang.blaze3d.vertex.DefaultVertexFormat.POSITION_COLOR_TEX (+552 more)."
+    },
+    {
+      "name": "Alex's Mobs",
+      "version": "1.22.9",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.vertex.BufferBuilder.<init>, com.mojang.blaze3d.vertex.BufferBuilder.begin, com.mojang.blaze3d.vertex.BufferBuilder.vertex, com.mojang.blaze3d.vertex.DefaultVertexFormat.POSITION_COLOR_TEX, com.mojang.blaze3d.vertex.SheetedDecalTextureGenerator.<init> (+609 more)."
+    },
+    {
       "name": "Alfheim",
       "version": "67",
       "mc": "1.7.10",
@@ -645,6 +708,15 @@
       "date": "2026-11-07",
       "status": "loads",
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (34 classes). But 14 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+    },
+    {
+      "name": "AmbientSounds",
+      "version": "6.3.11",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.client.Minecraft.getDeltaFrameTime, net.minecraft.resources.ResourceLocation.<init>, net.minecraft.world.entity.Entity.getTeam."
     },
     {
       "name": "Amun-Ra",
@@ -881,6 +953,15 @@
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (96 classes). 8 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
     },
     {
+      "name": "Anytag",
+      "version": "1.0.0",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "loads",
+      "notes": "Automated check 0.4.0-1201-baseline: translates offline and everything it uses exists (0 classes). The game was not started: this only shows the jar translates, not that it works."
+    },
+    {
       "name": "AppleCore",
       "version": "3.3.7",
       "mc": "1.7.10",
@@ -1022,6 +1103,15 @@
       "date": "2026-10-28",
       "status": "works",
       "notes": "Self-tested in the GT New Horizons server test: 9 items, 3 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+    },
+    {
+      "name": "Architectury",
+      "version": "9.2.14",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.client.Minecraft.getDeltaFrameTime, net.minecraft.client.Options.renderDebug, net.minecraft.core.BlockSource, net.minecraft.resources.ResourceLocation.<init>, net.minecraft.server.level.ServerLevel.gameEvent (+107 more)."
     },
     {
       "name": "Arda's Uncrafting Table",
@@ -1400,6 +1490,15 @@
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (634 classes). The game was not started: this only shows the jar translates, not that it works."
     },
     {
+      "name": "AzureLib",
+      "version": "3.2.7",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.vertex.BufferBuilder.begin, com.mojang.blaze3d.vertex.BufferBuilder.end, com.mojang.blaze3d.vertex.BufferBuilder.vertex, com.mojang.blaze3d.vertex.BufferUploader.drawWithShader, com.mojang.blaze3d.vertex.Tesselator.getBuilder (+81 more)."
+    },
+    {
       "name": "B.A.S.E",
       "version": "3.14.0",
       "mc": "1.12.2",
@@ -1533,6 +1632,15 @@
       "date": "2026-11-07",
       "status": "loads",
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (116 classes). The game was not started: this only shows the jar translates, not that it works."
+    },
+    {
+      "name": "Balm",
+      "version": "7.3.44",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.systems.RenderSystem.getModelViewStack, com.mojang.serialization.DataResult.getOrThrow, net.minecraft.client.resources.model.ModelBakery.MISSING_MODEL_LOCATION, net.minecraft.client.resources.model.UnbakedModel.bake, net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket.create (+126 more)."
     },
     {
       "name": "BareRuins Mod",
@@ -2084,6 +2192,15 @@
       "notes": "Automated check 0.3.23: needs code from another mod or API that is not available or does not match: kpan.b_line_break.asm.core.MyTextifier.buf:Ljava.lang.StringBuffer;."
     },
     {
+      "name": "Better Nether Map",
+      "version": "1.2-1.20.1",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.world.item.ItemStack.getOrCreateTag, net.minecraft.world.item.ItemStack.setTag, net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext, net.minecraftforge.registries.ForgeRegistries, net.minecraftforge.registries.IForgeRegistry (+3 more)."
+    },
+    {
       "name": "Better Ping",
       "version": "1.0",
       "mc": "1.7.10",
@@ -2100,6 +2217,15 @@
       "date": "2026-11-07",
       "status": "loads",
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (4 classes). 6 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+    },
+    {
+      "name": "Better Recipe Book",
+      "version": "1.10.0-rc5+1.20.0-1",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.vertex.PoseStack.mulPoseMatrix, net.minecraft.client.gui.GuiGraphics.blitNineSliced, net.minecraft.client.gui.components.ImageButton.<init>, net.minecraft.client.gui.components.StateSwitchingButton.initTextureValues, net.minecraft.client.gui.screens.recipebook.RecipeBookComponent.setupGhostRecipe (+27 more)."
     },
     {
       "name": "Better Search",
@@ -2567,6 +2693,15 @@
       "notes": "Survival-tested 2026-11-01: 261 blocks (60 non-dropping are plants, leaves and foliage), 135 recipes, mobs drop; biomes generate."
     },
     {
+      "name": "Biomes O' Plenty",
+      "version": "19.0.0.96",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.client.model.ListModel.renderToBuffer, net.minecraft.core.BlockSource, net.minecraft.core.dispenser.DefaultDispenseItemBehavior.dispense, net.minecraft.data.BlockFamily.shouldGenerateRecipe, net.minecraft.data.loot.BlockLootSubProvider.<init> (+80 more)."
+    },
+    {
       "name": "Blahaj",
       "version": "1.0",
       "mc": "1.7.10",
@@ -2737,6 +2872,24 @@
       "notes": "Automated check 0.3.18: translates offline and everything it uses exists (27 classes). The game was not started: this only shows the jar translates, not that it works."
     },
     {
+      "name": "Blue Skies",
+      "version": "1.3.31",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.vertex.BufferBuilder.begin, com.mojang.blaze3d.vertex.BufferBuilder.end, com.mojang.blaze3d.vertex.BufferBuilder.vertex, com.mojang.blaze3d.vertex.BufferUploader.drawWithShader, com.mojang.blaze3d.vertex.Tesselator.end (+569 more)."
+    },
+    {
+      "name": "Blueprint",
+      "version": "7.1.5",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.Util.identityStrategy, net.minecraft.advancements.Advancement$Builder.getCriteria, net.minecraft.advancements.AdvancementRewards$Builder.function, net.minecraft.advancements.AdvancementRewards$Builder.loot, net.minecraft.advancements.AdvancementRewards$Builder.recipes (+183 more)."
+    },
+    {
       "name": "Bob Fluid Translator",
       "version": "2.1.1",
       "mc": "1.7.10",
@@ -2791,6 +2944,15 @@
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (107 classes). The game was not started: this only shows the jar translates, not that it works."
     },
     {
+      "name": "Bookshelf",
+      "version": "20.2.15",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.vertex.VertexConsumer.color, com.mojang.blaze3d.vertex.VertexConsumer.endVertex, com.mojang.blaze3d.vertex.VertexConsumer.normal, com.mojang.blaze3d.vertex.VertexConsumer.overlayCoords, com.mojang.blaze3d.vertex.VertexConsumer.uv (+123 more)."
+    },
+    {
       "name": "Booze",
       "version": "1.6.4",
       "mc": "1.6.4",
@@ -2833,6 +2995,15 @@
       "date": "2026-11-07",
       "status": "fails",
       "notes": "Automated check 0.3.23: needs Minecraft or Forge features the layer does not have yet: baubles.api.BaubleType.BODY:Lbaubles.api.BaubleType;, baubles.api.BaubleType.CHARM:Lbaubles.api.BaubleType;, baubles.api.BaubleType.HEAD:Lbaubles.api.BaubleType;, baubles.api.BaubleType.TRINKET:Lbaubles.api.BaubleType;."
+    },
+    {
+      "name": "Botania",
+      "version": "1.20.1-456-FORGE",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.authlib.yggdrasil.response.MinecraftTexturesPayload.getTextures, com.mojang.blaze3d.systems.RenderSystem.getModelViewStack, com.mojang.blaze3d.vertex.BufferBuilder.<init>, com.mojang.blaze3d.vertex.BufferBuilder.begin, com.mojang.blaze3d.vertex.BufferBuilder.vertex (+562 more)."
     },
     {
       "name": "Botania r1.10-363",
@@ -3157,6 +3328,15 @@
       "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
     },
     {
+      "name": "Building But Better",
+      "version": "2.0pre4",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.client.model.geom.ModelPart.render, net.minecraft.resources.ResourceLocation.<init>, net.minecraft.world.entity.player.Player.broadcastBreakEvent, net.minecraft.world.item.BlockItem.appendHoverText, net.minecraft.world.item.ItemStack.hurtAndBreak (+28 more)."
+    },
+    {
       "name": "Building Gadgets",
       "version": "2.8.4",
       "mc": "1.12.2",
@@ -3164,6 +3344,33 @@
       "date": "2026-10-27",
       "status": "loads",
       "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
+    },
+    {
+      "name": "Bulk Villager Trading",
+      "version": "1.0.0",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.resources.ResourceLocation.<init>, net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext, net.minecraftforge.registries.ForgeRegistries, net.minecraftforge.registries.IForgeRegistry, net.neoforged.fml.ModLoadingContext.registerConfig."
+    },
+    {
+      "name": "Bygone Nether",
+      "version": "1.3.2",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.client.model.PiglinModel.renderToBuffer, net.minecraft.client.model.geom.ModelPart.render, net.minecraft.client.renderer.blockentity.BannerRenderer.renderPatterns, net.minecraft.client.renderer.entity.MobRenderer.render, net.minecraft.core.particles.ParticleTypes.ENTITY_EFFECT (+72 more)."
+    },
+    {
+      "name": "Caelus API",
+      "version": "3.2.0+1.20.1",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.client.player.LocalPlayer.hasEffect, net.minecraft.server.level.ServerPlayer.hasEffect, net.minecraft.world.effect.MobEffects.LEVITATION, net.minecraft.world.entity.LivingEntity.getAttribute, net.minecraft.world.entity.LivingEntity.hasEffect (+18 more)."
     },
     {
       "name": "Cake Chomps",
@@ -3182,6 +3389,15 @@
       "date": "2026-11-07",
       "status": "loads",
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (108 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+    },
+    {
+      "name": "CalcMod",
+      "version": "1.3.0",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.commands.arguments.ResourceLocationArgument.getRecipe, net.minecraft.world.item.crafting.Recipe.getResultItem."
     },
     {
       "name": "Call to Battle 2",
@@ -3381,6 +3597,15 @@
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (38 classes). The game was not started: this only shows the jar translates, not that it works."
     },
     {
+      "name": "Cave Dust",
+      "version": "2.0.4",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.resources.ResourceLocation.<init>, net.minecraftforge.client.ConfigScreenHandler$ConfigScreenFactory, net.minecraftforge.client.gui.widget.ForgeSlider, net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext, net.neoforged.fml.ModLoadingContext.registerConfig (+5 more)."
+    },
+    {
       "name": "CCTV",
       "version": "1.0",
       "mc": "1.4.7",
@@ -3460,6 +3685,24 @@
       "date": "2026-10-27",
       "status": "loads",
       "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
+    },
+    {
+      "name": "Chat Heads",
+      "version": "0.15.7",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.vertex.PoseStack.mulPoseMatrix, net.minecraft.client.multiplayer.PlayerInfo.getSkinLocation, net.minecraft.network.chat.ChatType$Bound.chatType, net.minecraftforge.client.ConfigScreenHandler$ConfigScreenFactory, net.minecraftforge.fml.DistExecutor (+6 more)."
+    },
+    {
+      "name": "Chefs Delight",
+      "version": "1.0.5-forge-1.20.1",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.core.Holder.get, net.minecraft.resources.ResourceLocation.<init>, net.minecraft.world.item.trading.MerchantOffer.<init>, net.minecraftforge.client.ConfigScreenHandler$ConfigScreenFactory, net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext (+5 more)."
     },
     {
       "name": "Cherished Worlds",
@@ -3623,6 +3866,15 @@
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (135 classes). 2 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
     },
     {
+      "name": "ChoiceTheorem's Overhauled Village",
+      "version": "3.3.3",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext."
+    },
+    {
       "name": "ChromatiCraft",
       "version": "V33a",
       "mc": "1.7.10",
@@ -3676,6 +3928,15 @@
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (21 classes). 2 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
     },
     {
+      "name": "Citadel",
+      "version": "2.6.3",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.systems.RenderSystem.getModelViewStack, com.mojang.blaze3d.vertex.BufferBuilder.<init>, com.mojang.blaze3d.vertex.BufferBuilder.begin, com.mojang.blaze3d.vertex.BufferBuilder.end, com.mojang.blaze3d.vertex.BufferBuilder.vertex (+118 more)."
+    },
+    {
       "name": "Classic Oceans",
       "version": "1.7.10-1.0.0",
       "mc": "1.7.10",
@@ -3703,6 +3964,15 @@
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (2 classes). The game was not started: this only shows the jar translates, not that it works."
     },
     {
+      "name": "ClearDespawn",
+      "version": "1.1.15",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs code from another mod or API that is not available or does not match: net.neoforged.fml.ModLoadingContext.registerConfig."
+    },
+    {
       "name": "Client Tweaks",
       "version": "3.1.11",
       "mc": "1.12.2",
@@ -3719,6 +3989,15 @@
       "date": "2026-11-06",
       "status": "loads",
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (125 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+    },
+    {
+      "name": "Cloth Config v10 API",
+      "version": "11.1.106",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.vertex.BufferBuilder.begin, com.mojang.blaze3d.vertex.BufferBuilder.vertex, com.mojang.blaze3d.vertex.Tesselator.end, com.mojang.blaze3d.vertex.Tesselator.getBuilder, com.mojang.blaze3d.vertex.VertexConsumer.color (+22 more)."
     },
     {
       "name": "Cloud Storage",
@@ -3818,6 +4097,15 @@
       "date": "2026-10-28",
       "status": "loads",
       "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
+    },
+    {
+      "name": "Collective",
+      "version": "8.83",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.authlib.minecraft.MinecraftSessionService.fillProfileProperties, com.mojang.authlib.properties.Property.getName, com.mojang.authlib.properties.Property.getValue, net.minecraft.class_1011, net.minecraft.class_1041 (+628 more)."
     },
     {
       "name": "CollisionDamage",
@@ -4096,6 +4384,15 @@
       "date": "2026-11-07",
       "status": "loads",
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (248 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works. Resource check: 21 model/texture reference(s) are missing after translation (rendering may show missing textures or models), e.g. model conarm:model_modifiers.json names missing texture models/modifiers/mod_telekinetic_armor; model conarm:model_modifiers.json names missing texture models/modifiers/mod_dexterous_armor."
+    },
+    {
+      "name": "Construction Wand",
+      "version": "1.20.1-2.11",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.data.recipes.RecipeProvider.<init>, net.minecraft.data.recipes.ShapedRecipeBuilder.save, net.minecraft.data.recipes.ShapedRecipeBuilder.unlockedBy, net.minecraft.data.recipes.SpecialRecipeBuilder.save, net.minecraft.data.recipes.SpecialRecipeBuilder.special (+39 more)."
     },
     {
       "name": "ContentTweaker",
@@ -4377,6 +4674,33 @@
       "notes": "Automated check 0.3.23: uses old Java or library code that no longer exists: com.sun.jna.platform.win32.Kernel32.Process32First(Lcom.sun.jna.platform.win32.WinNT$HANDLE;Lcom.sun.jna.platform.win32.Tlhelp32$PROCESSENTRY32$ByReference;)Z, com.sun.jna.platform.win32.Kernel32.Process32Next(Lcom.sun.jna.platform.win32.WinNT$HANDLE;Lcom.sun.jna.platform.win32.Tlhelp32$PROCESSENTRY32$ByReference;)Z."
     },
     {
+      "name": "Create",
+      "version": "6.0.8",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.systems.RenderSystem.getModelViewStack, com.mojang.blaze3d.vertex.BufferBuilder.begin, com.mojang.blaze3d.vertex.BufferBuilder.vertex, com.mojang.blaze3d.vertex.Tesselator.end, com.mojang.blaze3d.vertex.Tesselator.getBuilder (+1531 more)."
+    },
+    {
+      "name": "Create: Steam 'n' Rails",
+      "version": "1.7.3+forge-mc1.20.1",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.systems.RenderSystem.getModelViewStack, com.mojang.blaze3d.vertex.BufferBuilder.begin, com.mojang.blaze3d.vertex.Tesselator.end, com.mojang.blaze3d.vertex.VertexConsumer.color, com.mojang.blaze3d.vertex.VertexConsumer.endVertex (+420 more)."
+    },
+    {
+      "name": "Create: Structures",
+      "version": "0.1.1",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "loads",
+      "notes": "Automated check 0.4.0-1201-baseline: translates offline and everything it uses exists (0 classes). The game was not started: this only shows the jar translates, not that it works."
+    },
+    {
       "name": "CreateWorldUI",
       "version": "7.1.1",
       "mc": "1.7.10",
@@ -4411,6 +4735,15 @@
       "date": "2026-10-28",
       "status": "works",
       "notes": "Self-tested in the GT New Horizons server test: 0 items, 0 blocks, 1 entity types; every block placed and used, every item used, every entity spawned without errors."
+    },
+    {
+      "name": "CreativeCore",
+      "version": "2.12.40",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.systems.RenderSystem.getModelViewStack, com.mojang.blaze3d.vertex.BufferBuilder.begin, com.mojang.blaze3d.vertex.BufferBuilder.end, com.mojang.blaze3d.vertex.BufferBuilder.vertex, com.mojang.blaze3d.vertex.BufferUploader.drawWithShader (+85 more)."
     },
     {
       "name": "CreeperConfetti",
@@ -4485,6 +4818,33 @@
       "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
     },
     {
+      "name": "CTOV - Beautify Compat",
+      "version": "2.0",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "loads",
+      "notes": "Automated check 0.4.0-1201-baseline: translates offline and everything it uses exists (0 classes). The game was not started: this only shows the jar translates, not that it works."
+    },
+    {
+      "name": "CTOV - Chef's delight Compat",
+      "version": "2.0",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "loads",
+      "notes": "Automated check 0.4.0-1201-baseline: translates offline and everything it uses exists (0 classes). The game was not started: this only shows the jar translates, not that it works."
+    },
+    {
+      "name": "CTOV - Friends and Foes Compat",
+      "version": "2.0",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "loads",
+      "notes": "Automated check 0.4.0-1201-baseline: translates offline and everything it uses exists (0 classes). The game was not started: this only shows the jar translates, not that it works."
+    },
+    {
       "name": "Ctrl-Q Forge",
       "version": "1.8",
       "mc": "1.12.2",
@@ -4528,6 +4888,15 @@
       "date": "2026-10-30",
       "status": "works",
       "notes": "Self-tested in the 1.12.2 server self test (116 mods): 2 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+    },
+    {
+      "name": "Curios API",
+      "version": "5.14.1+1.20.1",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.advancements.CriteriaTriggers.register, net.minecraft.advancements.critereon.AbstractCriterionTriggerInstance, net.minecraft.advancements.critereon.ContextAwarePredicate.ANY, net.minecraft.advancements.critereon.DeserializationContext, net.minecraft.advancements.critereon.ItemPredicate.fromJson (+113 more)."
     },
     {
       "name": "Curvy Pipes",
@@ -4599,6 +4968,15 @@
       "date": "2026-10-28",
       "status": "loads",
       "notes": "Loads in 64-mod 1.7.10 test pack (0.3.10 overnight) without errors (no blocks, items or entities of its own)."
+    },
+    {
+      "name": "Custom Villager Trades",
+      "version": "20.25.0",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.world.effect.MobEffectInstance.<init>, net.minecraft.world.item.EnchantedBookItem.addEnchantment, net.minecraft.world.item.EnchantedBookItem.getEnchantments, net.minecraft.world.item.ItemStack.enchant, net.minecraft.world.item.ItemStack.getEnchantmentTags (+9 more)."
     },
     {
       "name": "Custom Window Title",
@@ -4862,6 +5240,15 @@
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (91 classes). The game was not started: this only shows the jar translates, not that it works."
     },
     {
+      "name": "Decorative Blocks",
+      "version": "4.1.3",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.advancements.critereon.InventoryChangeTrigger$TriggerInstance.hasItems, net.minecraft.data.loot.BlockLootSubProvider.<init>, net.minecraft.data.loot.LootTableProvider$SubProviderEntry.<init>, net.minecraft.data.loot.LootTableProvider.<init>, net.minecraft.data.recipes.RecipeBuilder.save (+66 more)."
+    },
+    {
       "name": "DeeperCaves",
       "version": "1.0.2",
       "mc": "1.7.10",
@@ -4916,6 +5303,15 @@
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (178 classes). 4 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
     },
     {
+      "name": "Delightful",
+      "version": "3.8.1",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.advancements.critereon.InventoryChangeTrigger$TriggerInstance.hasItems, net.minecraft.core.cauldron.CauldronInteraction.newInteractionMap, net.minecraft.data.loot.BlockLootSubProvider.<init>, net.minecraft.data.loot.LootTableProvider$SubProviderEntry.<init>, net.minecraft.data.loot.LootTableProvider.<init> (+180 more)."
+    },
+    {
       "name": "Demintion",
       "version": "1.0",
       "mc": "1.6.4",
@@ -4959,6 +5355,15 @@
       "date": "2026-11-07",
       "status": "loads",
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (376 classes). The game was not started: this only shows the jar translates, not that it works."
+    },
+    {
+      "name": "Diet",
+      "version": "2.1.1+1.20.1",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.vertex.BufferBuilder.begin, com.mojang.blaze3d.vertex.BufferBuilder.end, com.mojang.blaze3d.vertex.BufferBuilder.vertex, com.mojang.blaze3d.vertex.BufferUploader.drawWithShader, com.mojang.blaze3d.vertex.DefaultVertexFormat.POSITION_COLOR_TEX (+89 more)."
     },
     {
       "name": "Dimensional Anchors",
@@ -5293,6 +5698,15 @@
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (3 classes). The game was not started: this only shows the jar translates, not that it works."
     },
     {
+      "name": "DynamicTrim",
+      "version": "1.4.1",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.resources.ResourceLocation.<init>, net.minecraft.world.item.armortrim.ArmorTrim.getTrim, net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext, net.minecraftforge.fml.loading.LoadingModList, net.minecraftforge.fml.loading.moddiscovery.ModInfo (+5 more)."
+    },
+    {
       "name": "Dynmap",
       "version": "3.7-beta-4-851",
       "mc": "1.12.2",
@@ -5372,6 +5786,15 @@
       "date": "2026-11-06",
       "status": "loads",
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (6 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+    },
+    {
+      "name": "EEEAB's Mobs",
+      "version": "1.20.1-0.98.1",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.vertex.BufferBuilder.begin, com.mojang.blaze3d.vertex.BufferBuilder.end, com.mojang.blaze3d.vertex.BufferBuilder.vertex, com.mojang.blaze3d.vertex.Tesselator.end, com.mojang.blaze3d.vertex.Tesselator.getBuilder (+307 more)."
     },
     {
       "name": "Effortless Building Gadgets",
@@ -5463,6 +5886,33 @@
       "notes": "Automated check 0.3.23: needs Minecraft or Forge features the layer does not have yet: codechicken.nei.LayoutManager.bookmarksButton:Lcodechicken.nei.ButtonCycled;, codechicken.nei.LayoutManager.options:Lcodechicken.nei.ButtonCycled;, codechicken.nei.LayoutStyleMinecraft.buttonCount:I, codechicken.nei.LayoutStyleMinecraft.numButtons:I, codechicken.nei.ItemPanel.getGrid()Lcodechicken.nei.ItemsGrid; (+3 more). Resource check: 7 model/texture reference(s) are missing after translation (rendering may show missing textures or models), e.g. model c:tag/item/record.json names missing texture minecraft:record_stal; model c:tag/item/record.json names missing texture minecraft:record_13."
     },
     {
+      "name": "EMI",
+      "version": "1.1.24+1.20.1+forge",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: uses old Java or library code that no longer exists: com.mojang.blaze3d.systems.RenderSystem.getModelViewStack, com.mojang.blaze3d.vertex.BufferBuilder.<init>, com.mojang.blaze3d.vertex.BufferBuilder.begin, com.mojang.blaze3d.vertex.BufferBuilder.discard, com.mojang.blaze3d.vertex.BufferBuilder.end (+98 more)."
+    },
+    {
+      "name": "EMI Enchants",
+      "version": "1.0.0",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.core.registries.BuiltInRegistries.ENCHANTMENT, net.minecraft.world.item.ItemStack.setTag, net.minecraft.world.item.enchantment.Enchantment$Rarity, net.minecraft.world.item.enchantment.Enchantment.category, net.minecraft.world.item.enchantment.Enchantment.getDescriptionId (+7 more)."
+    },
+    {
+      "name": "EMI Trades",
+      "version": "1.2.1+mc1.20.1",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.vertex.PoseStack.mulPoseMatrix, net.minecraft.core.registries.BuiltInRegistries.ENCHANTMENT, net.minecraft.world.entity.npc.VillagerTrades$EmeraldForItems.cost, net.minecraft.world.entity.npc.VillagerTrades$EmeraldForItems.item, net.minecraft.world.entity.npc.VillagerTrades$ItemsAndEmeraldsToItems.fromCount (+9 more)."
+    },
+    {
       "name": "Emojiful",
       "version": "1.0.3",
       "mc": "1.12.2",
@@ -5470,6 +5920,15 @@
       "date": "2026-11-07",
       "status": "loads",
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (135 classes). The game was not started: this only shows the jar translates, not that it works."
+    },
+    {
+      "name": "Enchanted Arsenal",
+      "version": "1.0.1",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.resources.ResourceLocation.<init>, net.minecraft.world.effect.MobEffectInstance.<init>, net.minecraft.world.effect.MobEffects.BLINDNESS, net.minecraft.world.effect.MobEffects.DAMAGE_RESISTANCE, net.minecraft.world.effect.MobEffects.GLOWING (+22 more)."
     },
     {
       "name": "Enchanting Plus",
@@ -5515,6 +5974,15 @@
       "date": "2026-11-06",
       "status": "loads",
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (57 classes). The game was not started: this only shows the jar translates, not that it works."
+    },
+    {
+      "name": "EnchantmentDescriptions",
+      "version": "17.1.21",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.serialization.DataResult.getOrThrow, net.minecraft.network.chat.Style.FORMATTING_CODEC, net.minecraft.world.item.ItemStack.hasTag, net.minecraft.world.item.enchantment.Enchantment.getDescriptionId, net.minecraft.world.item.enchantment.Enchantment.getFullname (+2 more)."
     },
     {
       "name": "End-Parasitize and Convert All",
@@ -5957,6 +6425,15 @@
       "notes": "Fails during preInit: java.lang.RuntimeException: java.lang.NoClassDefFoundError: javax/xml/bind/JAXBContext"
     },
     {
+      "name": "Enigmatic Legacy",
+      "version": "2.30.1",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.vertex.BufferBuilder.begin, com.mojang.blaze3d.vertex.BufferBuilder.vertex, com.mojang.blaze3d.vertex.Tesselator.end, com.mojang.blaze3d.vertex.Tesselator.getBuilder, com.mojang.blaze3d.vertex.VertexConsumer.color (+394 more)."
+    },
+    {
       "name": "Entangled",
       "version": "1.3.21",
       "mc": "1.12.2",
@@ -5984,6 +6461,15 @@
       "notes": "Old-only ModLoader mod. Real client 2026-11-07: the four detector blocks draw with their face textures and a detector powers a redstone lamp beside it when a cow comes near."
     },
     {
+      "name": "Entity Model Features",
+      "version": "3.3.12",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.vertex.PoseStack.mulPoseMatrix, com.mojang.blaze3d.vertex.VertexConsumer.vertex, net.minecraft.client.Minecraft.getDeltaFrameTime, net.minecraft.client.Minecraft.getFrameTime, net.minecraft.client.gui.components.toasts.SystemToast$SystemToastIds (+11 more)."
+    },
+    {
       "name": "Entity Render Extender",
       "version": "1.0c",
       "mc": "1.7.10",
@@ -5991,6 +6477,15 @@
       "date": "2026-11-06",
       "status": "loads",
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (57 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+    },
+    {
+      "name": "Entity Texture Features",
+      "version": "7.2.7",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.vertex.BufferBuilder.begin, com.mojang.blaze3d.vertex.BufferBuilder.vertex, com.mojang.blaze3d.vertex.PoseStack.mulPoseMatrix, com.mojang.blaze3d.vertex.Tesselator.end, com.mojang.blaze3d.vertex.Tesselator.getBuilder (+35 more)."
     },
     {
       "name": "EntityCulling",
@@ -6568,6 +7063,15 @@
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (498 classes). The game was not started: this only shows the jar translates, not that it works."
     },
     {
+      "name": "FancyMenu",
+      "version": "3.9.14",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.authlib.minecraft.MinecraftSessionService.fillProfileProperties, com.mojang.authlib.minecraft.MinecraftSessionService.getTextures, com.mojang.blaze3d.systems.RenderSystem.getModelViewStack, com.mojang.blaze3d.vertex.BufferBuilder.begin, com.mojang.blaze3d.vertex.BufferBuilder.end (+122 more)."
+    },
+    {
       "name": "Fantasy Armor",
       "version": "1.3.2-1.12.2",
       "mc": "1.12.2",
@@ -6593,6 +7097,15 @@
       "date": "2026-11-06",
       "status": "loads",
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (6 classes). The game was not started: this only shows the jar translates, not that it works."
+    },
+    {
+      "name": "Farmer's Delight",
+      "version": "1.20.1-1.3.4",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.advancements.Advancement$Builder.addCriterion, net.minecraft.advancements.Advancement$Builder.display, net.minecraft.advancements.Advancement$Builder.getCriteria, net.minecraft.advancements.Advancement$Builder.parent, net.minecraft.advancements.Advancement$Builder.requirements (+313 more)."
     },
     {
       "name": "Faster Ladder Climbing",
@@ -7250,6 +7763,15 @@
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (2 classes). The game was not started: this only shows the jar translates, not that it works."
     },
     {
+      "name": "FriendlyFire",
+      "version": "18.0.8",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraftforge.event.entity.living.LivingAttackEvent, net.minecraftforge.event.entity.living.LivingHurtEvent."
+    },
+    {
       "name": "Frikinzi's Fauna",
       "version": "1.0",
       "mc": "1.12.2",
@@ -7257,6 +7779,15 @@
       "date": "2026-11-07",
       "status": "loads",
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (197 classes). 3 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+    },
+    {
+      "name": "From The Fog",
+      "version": "1.9.2",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "loads",
+      "notes": "Automated check 0.4.0-1201-baseline: translates offline and everything it uses exists (1 classes). The game was not started: this only shows the jar translates, not that it works."
     },
     {
       "name": "Frustrator",
@@ -7347,6 +7878,15 @@
       "date": "2026-11-07",
       "status": "loads",
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (11 classes). The game was not started: this only shows the jar translates, not that it works."
+    },
+    {
+      "name": "FullStack Watchdog",
+      "version": "1.0.1+1.19.2-forge",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "loads",
+      "notes": "Automated check 0.4.0-1201-baseline: translates offline and everything it uses exists (5 classes). The game was not started: this only shows the jar translates, not that it works."
     },
     {
       "name": "Funky Locomotion",
@@ -7578,6 +8118,24 @@
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (1131 classes). 3 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
     },
     {
+      "name": "GeckoLib 4",
+      "version": "4.8.4",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.vertex.VertexConsumer.color, com.mojang.blaze3d.vertex.VertexConsumer.endVertex, com.mojang.blaze3d.vertex.VertexConsumer.uv2, com.mojang.blaze3d.vertex.VertexConsumer.vertex, net.minecraft.client.Minecraft.getFrameTime (+63 more)."
+    },
+    {
+      "name": "GeckoLibIrisCompat",
+      "version": "1.0.0",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.client.Minecraft.getFrameTime."
+    },
+    {
       "name": "Gendustry",
       "version": "1.9.4-GTNH",
       "mc": "1.7.10",
@@ -7686,6 +8244,24 @@
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (12 classes). 4 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
     },
     {
+      "name": "GlitchCore",
+      "version": "0.0.1.1",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.resources.ResourceLocation.<init>, net.minecraftforge.client.ForgeHooksClient, net.minecraftforge.client.gui.overlay.ForgeGui, net.minecraftforge.client.gui.overlay.IGuiOverlay, net.minecraftforge.common.ToolAction (+18 more)."
+    },
+    {
+      "name": "Global Server Config",
+      "version": "1.0",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "loads",
+      "notes": "Automated check 0.4.0-1201-baseline: translates offline and everything it uses exists (2 classes). The game was not started: this only shows the jar translates, not that it works."
+    },
+    {
       "name": "Global XP",
       "version": "v1.4.10",
       "mc": "1.12.2",
@@ -7729,6 +8305,15 @@
       "date": "2026-11-07",
       "status": "works",
       "notes": "Real client, survival, shaders: the goblin mobs (soldier, mage, chief, ranger, dire wolf) render with their skins and boss bars, and a goblin soldier killed the player. The village spawner block builds its village on a superflat world without a freeze; the earlier server freeze did not repeat and its cause is still unknown. The download is a wrapper zip with the real mod in an inner archive ('Put contents into the Mods Folder'); the textures were missing until the layer started unpacking it."
+    },
+    {
+      "name": "Goety: Revelation",
+      "version": "2.3.6",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.vertex.BufferBuilder.begin, com.mojang.blaze3d.vertex.BufferBuilder.end, com.mojang.blaze3d.vertex.BufferBuilder.vertex, com.mojang.blaze3d.vertex.BufferUploader.drawWithShader, com.mojang.blaze3d.vertex.DefaultVertexFormat.ELEMENT_COLOR (+263 more)."
     },
     {
       "name": "Golden Glitter",
@@ -7792,6 +8377,15 @@
       "date": "2026-10-30",
       "status": "works",
       "notes": "Self-tested in the 1.12.2 server self test (116 mods): 23 items, 1 blocks, 1 entity types; every block placed and used, every item used, every entity spawned without errors."
+    },
+    {
+      "name": "Grass Overhaul",
+      "version": "23.10.10",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.world.level.block.StairBlock.<init>, net.minecraft.world.level.block.state.BlockBehaviour$Properties.copy, net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext, net.minecraftforge.registries.ForgeRegistries, net.minecraftforge.registries.IForgeRegistry (+1 more)."
     },
     {
       "name": "Graviation Suite",
@@ -8467,6 +9061,15 @@
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (14 classes). The game was not started: this only shows the jar translates, not that it works."
     },
     {
+      "name": "Hearth & Home",
+      "version": "1.20.1-2.0.3",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.world.entity.player.Player.broadcastBreakEvent, net.minecraft.world.item.ItemStack.hurtAndBreak, net.minecraft.world.level.block.Block.use, net.minecraft.world.level.block.GlassBlock, net.minecraft.world.level.block.state.BlockBehaviour$Properties.copy (+5 more)."
+    },
+    {
       "name": "HerobrineMod",
       "version": "3.5",
       "mc": "1.6.4",
@@ -8501,6 +9104,15 @@
       "date": "2026-11-07",
       "status": "loads",
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (11 classes). The game was not started: this only shows the jar translates, not that it works."
+    },
+    {
+      "name": "Hide Key Binding",
+      "version": "1.0.0.7",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.client.gui.components.ContainerObjectSelectionList.<init>, net.minecraft.client.gui.screens.controls.KeyBindsScreen, net.minecraftforge.client.ConfigScreenHandler$ConfigScreenFactory, net.minecraftforge.fml.config.IConfigEvent, net.minecraftforge.fml.javafmlmod.FMLModContainer (+5 more)."
     },
     {
       "name": "HideArmour",
@@ -8764,6 +9376,15 @@
       "notes": "In the 1.12.2 server self test (116 mods) 408 items, 85 blocks, 51 entity types register, but loading failed during preInit: java.lang.RuntimeException: java.lang.NoClassDefFoundError: net.ilexiconn.llibrary.server.entity.EntityPropertiesHandler"
     },
     {
+      "name": "Ice and Fire",
+      "version": "2.1.13-1.20.1",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.vertex.BufferBuilder.<init>, com.mojang.blaze3d.vertex.BufferBuilder.begin, com.mojang.blaze3d.vertex.BufferBuilder.end, com.mojang.blaze3d.vertex.BufferBuilder.vertex, com.mojang.blaze3d.vertex.Tesselator.end (+469 more)."
+    },
+    {
       "name": "iChunUtil",
       "version": "4.2.3",
       "mc": "1.7.10",
@@ -8834,6 +9455,15 @@
       "date": "2026-11-07",
       "status": "loads",
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (82 classes). The game was not started: this only shows the jar translates, not that it works."
+    },
+    {
+      "name": "Illage and Spillage: Respillaged",
+      "version": "1.2.8",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.vertex.BufferBuilder.begin, com.mojang.blaze3d.vertex.BufferBuilder.vertex, com.mojang.blaze3d.vertex.Tesselator.end, com.mojang.blaze3d.vertex.Tesselator.getBuilder, com.mojang.blaze3d.vertex.VertexConsumer.color (+167 more)."
     },
     {
       "name": "Immersive Cavegen",
@@ -8986,6 +9616,15 @@
       "date": "2026-10-30",
       "status": "loads",
       "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
+    },
+    {
+      "name": "Immersive Weathering",
+      "version": "1.20.1-2.0.5",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.resources.ResourceLocation.<init>, net.minecraft.server.level.ServerLevel.gameEvent, net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_LEATHER, net.minecraft.sounds.SoundEvents.TRIDENT_THUNDER, net.minecraft.util.random.WeightedEntry$Wrapper.getData (+65 more)."
     },
     {
       "name": "Immibis Core",
@@ -9446,6 +10085,15 @@
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (214 classes). 6 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
     },
     {
+      "name": "Inventory Profiles Next",
+      "version": "1.10.20",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.client.Minecraft.isConnectedToRealms, net.minecraft.network.ConnectionProtocol.createPacket, net.minecraft.network.chat.Component$Serializer.fromJson, net.minecraft.resources.ResourceLocation.<init>, net.minecraft.world.effect.MobEffectInstance.getEffect (+35 more)."
+    },
+    {
       "name": "Inventory Tweaks",
       "version": "1.59-dev-152-cf6e263",
       "mc": "1.7.10",
@@ -9544,6 +10192,15 @@
       "notes": "Self-tested in the GT New Horizons server test: 14 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
     },
     {
+      "name": "Iron Chests: Restocked",
+      "version": "5.0.2",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.util.UUIDTypeAdapter.fromString, com.mojang.util.UUIDTypeAdapter.fromUUID, net.minecraft.advancements.critereon.ItemPredicate.ANY, net.minecraft.advancements.critereon.ItemPredicate.matches, net.minecraft.client.gui.GuiGraphics.blitNineSliced (+45 more)."
+    },
+    {
       "name": "Iron Core",
       "version": "1.0.0",
       "mc": "1.12.2",
@@ -9605,6 +10262,15 @@
       "date": "2026-11-06",
       "status": "loads",
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (98 classes). The game was not started: this only shows the jar translates, not that it works."
+    },
+    {
+      "name": "It Takes A Pillage",
+      "version": "1.0.3",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.client.gui.components.OptionsList.<init>, net.minecraft.client.gui.components.OptionsList.addBig, net.minecraft.client.renderer.entity.MobRenderer.setupRotations, net.minecraft.core.Holder$Reference.get, net.minecraft.network.syncher.SynchedEntityData.define (+55 more)."
     },
     {
       "name": "Item Borders",
@@ -9885,6 +10551,15 @@
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (416 classes). 4 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
     },
     {
+      "name": "Just Enough Items",
+      "version": "15.74.0.234",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.vertex.BufferBuilder.begin, com.mojang.blaze3d.vertex.BufferBuilder.vertex, com.mojang.blaze3d.vertex.PoseStack.mulPoseMatrix, com.mojang.blaze3d.vertex.Tesselator.end, com.mojang.blaze3d.vertex.Tesselator.getBuilder (+126 more)."
+    },
+    {
       "name": "KekzTech",
       "version": "5.09.51.482",
       "mc": "1.7.10",
@@ -9982,6 +10657,15 @@
       "date": "2026-11-07",
       "status": "loads",
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (403 classes). The game was not started: this only shows the jar translates, not that it works."
+    },
+    {
+      "name": "Konkrete",
+      "version": "1.8.0",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.vertex.BufferBuilder.begin, com.mojang.blaze3d.vertex.BufferBuilder.end, com.mojang.blaze3d.vertex.BufferBuilder.vertex, com.mojang.blaze3d.vertex.BufferUploader.drawWithShader, com.mojang.blaze3d.vertex.Tesselator.getBuilder (+19 more)."
     },
     {
       "name": "kTFRUAddon",
@@ -10128,6 +10812,24 @@
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (49 classes). The game was not started: this only shows the jar translates, not that it works."
     },
     {
+      "name": "LesRaisins Tactical Equipments",
+      "version": "0.4.3",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.client.Minecraft.getFrameTime, net.minecraft.client.Minecraft.getPartialTick, net.minecraft.client.gui.components.MultiLineLabel.create, net.minecraft.client.gui.components.MultiLineLabel.renderCentered, net.minecraft.client.player.LocalPlayer.getCapability (+149 more)."
+    },
+    {
+      "name": "LesRaisinsAddon",
+      "version": "0.3.0",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext."
+    },
+    {
       "name": "Let Your Friend Eating!",
       "version": "1.1.4",
       "mc": "1.12.2",
@@ -10162,6 +10864,15 @@
       "date": "2026-11-07",
       "status": "loads",
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (23 classes). The game was not started: this only shows the jar translates, not that it works."
+    },
+    {
+      "name": "libIPN",
+      "version": "4.0.2",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.systems.RenderSystem.getModelViewStack, net.minecraft.Util$OS.openUrl, net.minecraft.client.Minecraft.getFrameTime, net.minecraft.client.gui.components.AbstractWidget.WIDGETS_LOCATION, net.minecraft.client.gui.components.AbstractWidget.mouseScrolled (+14 more)."
     },
     {
       "name": "libnine",
@@ -10270,6 +10981,15 @@
       "date": "2026-11-07",
       "status": "loads",
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (11 classes). The game was not started: this only shows the jar translates, not that it works."
+    },
+    {
+      "name": "Load My Resources",
+      "version": "1.0.4",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.server.packs.PathPackResources.<init>, net.minecraft.server.packs.repository.Pack$Info, net.minecraft.server.packs.repository.Pack.create, net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext."
     },
     {
       "name": "Loading Progress Bar",
@@ -10902,6 +11622,15 @@
       "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 4 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
     },
     {
+      "name": "Mantle",
+      "version": "1.11.128",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: uses old Java or library code that no longer exists: com.mojang.blaze3d.systems.RenderSystem.getModelViewStack, com.mojang.blaze3d.vertex.BufferBuilder.begin, com.mojang.blaze3d.vertex.BufferBuilder.end, com.mojang.blaze3d.vertex.BufferBuilder.vertex, com.mojang.blaze3d.vertex.BufferUploader.drawWithShader (+327 more)."
+    },
+    {
       "name": "MapTooltip",
       "version": "1.0",
       "mc": "1.12.2",
@@ -10909,6 +11638,15 @@
       "date": "2026-11-07",
       "status": "loads",
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (2 classes). The game was not started: this only shows the jar translates, not that it works."
+    },
+    {
+      "name": "Marium's Soulslike Weaponry",
+      "version": "1.4.10-1.20.1-forge}",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.vertex.VertexConsumer.color, com.mojang.blaze3d.vertex.VertexConsumer.endVertex, com.mojang.blaze3d.vertex.VertexConsumer.normal, com.mojang.blaze3d.vertex.VertexConsumer.overlayCoords, com.mojang.blaze3d.vertex.VertexConsumer.uv (+371 more)."
     },
     {
       "name": "MAtmos",
@@ -11064,6 +11802,15 @@
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (283 classes). The game was not started: this only shows the jar translates, not that it works."
     },
     {
+      "name": "Meet Your Fight",
+      "version": "1.20.1-1.6.2",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.vertex.VertexConsumer.color, com.mojang.blaze3d.vertex.VertexConsumer.endVertex, com.mojang.blaze3d.vertex.VertexConsumer.normal, com.mojang.blaze3d.vertex.VertexConsumer.overlayCoords, com.mojang.blaze3d.vertex.VertexConsumer.uv (+102 more)."
+    },
+    {
       "name": "mega rpg",
       "version": "1.1",
       "mc": "1.6.4",
@@ -11106,6 +11853,15 @@
       "date": "2026-11-06",
       "status": "fails",
       "notes": "Automated check 0.3.23: needs code from another mod or API that is not available or does not match: mekanism.common.integration.MekanismHooks.registerAE2P2P()V."
+    },
+    {
+      "name": "Mekanism",
+      "version": "10.4.16",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.vertex.BufferBuilder.begin, com.mojang.blaze3d.vertex.BufferBuilder.end, com.mojang.blaze3d.vertex.BufferBuilder.vertex, com.mojang.blaze3d.vertex.BufferUploader.drawWithShader, com.mojang.blaze3d.vertex.DefaultVertexFormat.POSITION_COLOR_TEX (+595 more)."
     },
     {
       "name": "Mekanism Community Edition",
@@ -11189,6 +11945,15 @@
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (9 classes). The game was not started: this only shows the jar translates, not that it works."
     },
     {
+      "name": "Melody",
+      "version": "1.0.2",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraftforge.forgespi.language.IModInfo, net.neoforged.fml.ModContainer.getModInfo."
+    },
+    {
       "name": "MenuFPSUnlocker",
       "version": "1.1.0",
       "mc": "1.12.2",
@@ -11205,6 +11970,15 @@
       "date": "2026-11-07",
       "status": "loads",
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (4 classes). The game was not started: this only shows the jar translates, not that it works."
+    },
+    {
+      "name": "MezzConfig",
+      "version": "0.6.11",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraftforge.event.TickEvent$ClientTickEvent, net.minecraftforge.event.TickEvent$Phase, net.minecraftforge.fml.DistExecutor, net.minecraftforge.fml.DistExecutor$SafeRunnable, net.minecraftforge.network.NetworkDirection (+7 more)."
     },
     {
       "name": "MFR Compat: Vanilla",
@@ -11512,6 +12286,15 @@
       "notes": "Needs a library mod (com.mod.guffcore.TaggingUtility) that is not in the download."
     },
     {
+      "name": "Mischief Illagers",
+      "version": "1.2",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.client.model.geom.ModelPart.render, net.minecraft.network.syncher.SynchedEntityData.define, net.minecraft.resources.ResourceLocation.<init>, net.minecraft.world.effect.MobEffectInstance.<init>, net.minecraft.world.effect.MobEffects.BLINDNESS (+101 more)."
+    },
+    {
       "name": "MiscPeripherals",
       "version": "3.3",
       "mc": "1.5.2",
@@ -11582,6 +12365,15 @@
       "date": "2026-11-07",
       "status": "loads",
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (1300 classes). 7 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+    },
+    {
+      "name": "Mo' Creatures",
+      "version": "6.1.0",
+      "mc": "1.6.4",
+      "source": "client",
+      "date": "2026-11-07",
+      "status": "works",
+      "notes": "Real client, survival, shaders: ostrich, elephant, bear, wild horse and kitty spawn and draw with their own models; the rat burger, elephant harness and other recipes give results from the crafting grid (117 recipes, none with an empty result). Combat, taming and riding were not tried."
     },
     {
       "name": "Mo' Creatures Legacy",
@@ -11917,6 +12709,15 @@
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (1832 classes). But 20 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
     },
     {
+      "name": "Moonlight Library",
+      "version": "1.20-2.16.39",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: uses old Java or library code that no longer exists: com.mojang.blaze3d.systems.RenderSystem.getModelViewStack, com.mojang.blaze3d.systems.RenderSystem.setupLevelDiffuseLighting, com.mojang.blaze3d.vertex.BufferBuilder.begin, com.mojang.blaze3d.vertex.BufferBuilder.end, com.mojang.blaze3d.vertex.BufferBuilder.vertex (+326 more)."
+    },
+    {
       "name": "More Bows Restrung",
       "version": "1.0.10",
       "mc": "1.12.2",
@@ -11942,6 +12743,15 @@
       "date": "2026-11-07",
       "status": "loads",
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (11 classes). The game was not started: this only shows the jar translates, not that it works."
+    },
+    {
+      "name": "More Mob Variants",
+      "version": "1.3.0.1",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.client.model.EntityModel.renderToBuffer, net.minecraft.client.model.Model.renderToBuffer, net.minecraft.resources.ResourceLocation.<init>, net.minecraft.world.entity.animal.Sheep.getColorArray, net.minecraftforge.fml.DistExecutor (+11 more)."
     },
     {
       "name": "More Planets",
@@ -12059,6 +12869,15 @@
       "date": "2026-11-07",
       "status": "loads",
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (13 classes). The game was not started: this only shows the jar translates, not that it works."
+    },
+    {
+      "name": "Mouse Tweaks",
+      "version": "2.25.1",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.world.item.ItemStack.isSameItemSameTags, net.minecraftforge.client.ConfigScreenHandler$ConfigScreenFactory, net.neoforged.neoforge.client.event.ScreenEvent$MouseScrolled$Post.getScrollDelta, yalter.mousetweaks.ConfigScreen.renderDirtBackground."
     },
     {
       "name": "Moving Elevators",
@@ -12215,6 +13034,15 @@
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (3 classes). The game was not started: this only shows the jar translates, not that it works."
     },
     {
+      "name": "MyServerIsCompatible",
+      "version": "1.0",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "loads",
+      "notes": "Automated check 0.4.0-1201-baseline: translates offline and everything it uses exists (2 classes). The game was not started: this only shows the jar translates, not that it works."
+    },
+    {
       "name": "Mystcraft",
       "version": "0.12.3.04",
       "mc": "1.7.10",
@@ -12337,6 +13165,15 @@
       "date": "2026-11-07",
       "status": "works",
       "notes": "Self-tested in server self test, old-only 1.6.4 set: 14 items, 14 blocks, 9 entity types; every block placed and used, every item used, every entity spawned; 2 threw errors (5%). 1 blocks did not stay placed. Real client, survival, shaders: four mythical planks crafted in the 2x2 grid into a crafting table (the mod's recipe), a thunder sword crafted from thunder gems and a stick in the 3x3 grid, held and swung at an Enchanted Iron Armor mob (it killed the player once and dropped iron when beaten); gem ores and altar draw. Four recipes for mythical-ingot armor give a barrier block: the mod's armor items do not exist in its jar."
+    },
+    {
+      "name": "MythicMounts",
+      "version": "20.1-7.4.2-forge",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.client.gui.screens.inventory.InventoryScreen.renderEntityInInventoryFollowsMouse, net.minecraft.network.syncher.SynchedEntityData.define, net.minecraft.resources.ResourceLocation.<init>, net.minecraft.world.effect.MobEffectInstance.<init>, net.minecraft.world.effect.MobEffectInstance.getEffect (+73 more)."
     },
     {
       "name": "Name Pain",
@@ -12507,6 +13344,15 @@
       "date": "2026-11-07",
       "status": "loads",
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (8 classes). The game was not started: this only shows the jar translates, not that it works."
+    },
+    {
+      "name": "Necronomicon",
+      "version": "1.6.0",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.network.chat.Component$Serializer.fromJson, net.minecraft.resources.ResourceLocation.<init>, net.minecraft.server.packs.repository.Pack$Info, net.minecraft.server.packs.repository.Pack.create, net.minecraft.world.item.ItemStack.getTagElement (+8 more)."
     },
     {
       "name": "NEI Addons",
@@ -12824,6 +13670,15 @@
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (19 classes). The game was not started: this only shows the jar translates, not that it works."
     },
     {
+      "name": "Nether's Delight",
+      "version": "1.20.1-4.0",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.advancements.Advancement$Builder.addCriterion, net.minecraft.advancements.Advancement$Builder.getCriteria, net.minecraft.advancements.Advancement$Builder.requirements, net.minecraft.advancements.Advancement$Builder.serializeToJson, net.minecraft.advancements.RequirementsStrategy (+80 more)."
+    },
+    {
       "name": "Netherite 1.7.10",
       "version": "1.2",
       "mc": "1.7.10",
@@ -12948,6 +13803,15 @@
       "date": "2026-11-07",
       "status": "loads",
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (2 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+    },
+    {
+      "name": "No Chat Reports",
+      "version": "1.20.1-v2.2.3",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.Util.getOrThrow, net.minecraft.client.gui.components.Button.setTooltipDelay, net.minecraft.client.gui.components.Checkbox.<init>, net.minecraft.client.gui.components.ImageButton.<init>, net.minecraft.client.gui.components.ImageButton.updateTooltip (+24 more)."
     },
     {
       "name": "No LAN Cheating",
@@ -13128,6 +13992,15 @@
       "date": "2026-11-07",
       "status": "loads",
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (18 classes). The game was not started: this only shows the jar translates, not that it works."
+    },
+    {
+      "name": "NotEnoughAnimations",
+      "version": "1.12.7",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.vertex.VertexConsumer.color, com.mojang.blaze3d.vertex.VertexConsumer.endVertex, com.mojang.blaze3d.vertex.VertexConsumer.uv, com.mojang.blaze3d.vertex.VertexConsumer.uv2, com.mojang.blaze3d.vertex.VertexConsumer.vertex (+40 more)."
     },
     {
       "name": "NotEnoughEnergistics",
@@ -13857,6 +14730,15 @@
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (145 classes). The game was not started: this only shows the jar translates, not that it works."
     },
     {
+      "name": "Patchouli",
+      "version": "1.20.1-85-FORGE",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.vertex.BufferBuilder.begin, com.mojang.blaze3d.vertex.BufferBuilder.vertex, com.mojang.blaze3d.vertex.Tesselator.end, com.mojang.blaze3d.vertex.Tesselator.getBuilder, com.mojang.blaze3d.vertex.VertexConsumer.color (+61 more)."
+    },
+    {
       "name": "PatPatPat",
       "version": "1.0.0",
       "mc": "1.7.10",
@@ -14577,6 +15459,15 @@
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (19 classes). The game was not started: this only shows the jar translates, not that it works."
     },
     {
+      "name": "Puzzles Lib",
+      "version": "8.1.36",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.vertex.BufferBuilder.begin, com.mojang.blaze3d.vertex.BufferBuilder.end, com.mojang.blaze3d.vertex.BufferUploader.drawWithShader, com.mojang.blaze3d.vertex.Tesselator.getBuilder, net.minecraft.client.Minecraft.getPartialTick (+224 more)."
+    },
+    {
       "name": "PvP Utilities",
       "version": "0.2.0",
       "mc": "1.7.10",
@@ -14602,6 +15493,15 @@
       "date": "2026-11-07",
       "status": "loads",
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (905 classes). 3 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works. Resource check: 20 model/texture reference(s) are missing after translation (rendering may show missing textures or models), e.g. model quark:block/overrides/observer_powered.json names missing texture block/observer_back_lit; model quark:block/custom_flower_pot.json has missing parent block/flower_pot_fern."
+    },
+    {
+      "name": "Quark",
+      "version": "4.0-462",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.vertex.BufferBuilder.<init>, com.mojang.blaze3d.vertex.BufferBuilder.begin, com.mojang.blaze3d.vertex.BufferBuilder.vertex, com.mojang.blaze3d.vertex.PoseStack.mulPoseMatrix, com.mojang.blaze3d.vertex.Tesselator.end (+450 more)."
     },
     {
       "name": "Quark Oddities",
@@ -14754,6 +15654,15 @@
       "date": "2026-10-28",
       "status": "works",
       "notes": "Self-tested in the GT New Horizons server test: 43 items, 19 blocks, 5 entity types; every block placed and used, every item used, every entity spawned; 1 threw errors (1%)."
+    },
+    {
+      "name": "RangedWeaponAPI",
+      "version": "2.3.4+1.20.1",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.client.player.AbstractClientPlayer.getAttributeValue, net.minecraft.client.renderer.item.ItemProperties.getProperty, net.minecraft.core.registries.BuiltInRegistries.POTION, net.minecraft.resources.ResourceLocation.<init>, net.minecraft.world.effect.MobEffect.addAttributeModifier (+19 more)."
     },
     {
       "name": "Rare Ice",
@@ -15580,6 +16489,15 @@
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (2002 classes). 2 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
     },
     {
+      "name": "Rubidium (Embeddium)",
+      "version": "0.7.1",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.vertex.BufferBuilder.begin, com.mojang.blaze3d.vertex.BufferBuilder.defaultColor, com.mojang.blaze3d.vertex.BufferBuilder.end, com.mojang.blaze3d.vertex.BufferBuilder.unsetDefaultColor, com.mojang.blaze3d.vertex.DefaultVertexFormat.ELEMENT_COLOR (+107 more)."
+    },
+    {
       "name": "Ruins Mod Fastcraft",
       "version": "15.4",
       "mc": "1.7.10",
@@ -15885,6 +16803,15 @@
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (4 classes). The game was not started: this only shows the jar translates, not that it works."
     },
     {
+      "name": "Searchables",
+      "version": "1.0.3",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs code from another mod or API that is not available or does not match: com.blamejared.searchables.api.autcomplete.AutoCompletingEditBox.moveCursorTo."
+    },
+    {
       "name": "SecurityCraft",
       "version": "v1.8.13",
       "mc": "1.7.10",
@@ -16110,6 +17037,15 @@
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (4 classes). The game was not started: this only shows the jar translates, not that it works."
     },
     {
+      "name": "ShulkerBoxTooltip",
+      "version": "4.0.4+1.20.1",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.client.gui.screens.inventory.tooltip.ClientBundleTooltip$Texture.BORDER_CORNER_BOTTOM, net.minecraft.client.gui.screens.inventory.tooltip.ClientBundleTooltip$Texture.BORDER_CORNER_TOP, net.minecraft.client.gui.screens.inventory.tooltip.ClientBundleTooltip$Texture.BORDER_HORIZONTAL_BOTTOM, net.minecraft.client.gui.screens.inventory.tooltip.ClientBundleTooltip$Texture.BORDER_HORIZONTAL_TOP, net.minecraft.client.gui.screens.inventory.tooltip.ClientBundleTooltip$Texture.BORDER_VERTICAL (+22 more)."
+    },
+    {
       "name": "Silent Gear",
       "version": "0.6.5",
       "mc": "1.12.2",
@@ -16227,6 +17163,15 @@
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (718 classes). The game was not started: this only shows the jar translates, not that it works."
     },
     {
+      "name": "Simple Voice Chat",
+      "version": "1.20.1-2.6.27",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.vertex.VertexConsumer.color, com.mojang.blaze3d.vertex.VertexConsumer.endVertex, com.mojang.blaze3d.vertex.VertexConsumer.normal, com.mojang.blaze3d.vertex.VertexConsumer.overlayCoords, com.mojang.blaze3d.vertex.VertexConsumer.uv (+48 more)."
+    },
+    {
       "name": "Simple Voice Chat API",
       "version": "2.6.27",
       "mc": "1.12.2",
@@ -16234,6 +17179,15 @@
       "date": "2026-11-07",
       "status": "loads",
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (718 classes). The game was not started: this only shows the jar translates, not that it works."
+    },
+    {
+      "name": "Simple Voice Chat API",
+      "version": "2.6.27",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.vertex.VertexConsumer.color, com.mojang.blaze3d.vertex.VertexConsumer.endVertex, com.mojang.blaze3d.vertex.VertexConsumer.normal, com.mojang.blaze3d.vertex.VertexConsumer.overlayCoords, com.mojang.blaze3d.vertex.VertexConsumer.uv (+48 more)."
     },
     {
       "name": "SimpleCore API",
@@ -16515,6 +17469,24 @@
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (111 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
     },
     {
+      "name": "Sophisticated Backpacks",
+      "version": "3.26.19.2239",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.vertex.VertexConsumer.color, com.mojang.blaze3d.vertex.VertexConsumer.endVertex, com.mojang.blaze3d.vertex.VertexConsumer.normal, com.mojang.blaze3d.vertex.VertexConsumer.uv, com.mojang.blaze3d.vertex.VertexConsumer.uv2 (+212 more)."
+    },
+    {
+      "name": "Sophisticated Core",
+      "version": "1.5.29.2459",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.systems.RenderSystem.getModelViewStack, com.mojang.blaze3d.vertex.BufferBuilder.begin, com.mojang.blaze3d.vertex.BufferBuilder.end, com.mojang.blaze3d.vertex.BufferBuilder.vertex, com.mojang.blaze3d.vertex.BufferUploader.drawWithShader (+276 more)."
+    },
+    {
       "name": "Sorcery Beta",
       "version": "1.1",
       "mc": "1.6.4",
@@ -16522,6 +17494,15 @@
       "date": "2026-11-07",
       "status": "works",
       "notes": "Real client, survival, shaders: blocks, the unicorn, phoenix, unicow and golden chicken render with their models; no defects seen."
+    },
+    {
+      "name": "Sound Physics Remastered",
+      "version": "1.20.1-1.5.1",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.vertex.VertexConsumer.color, com.mojang.blaze3d.vertex.VertexConsumer.endVertex, com.mojang.blaze3d.vertex.VertexConsumer.vertex, net.minecraft.resources.ResourceLocation.<init>, net.minecraft.resources.ResourceLocation.isValidResourceLocation (+3 more)."
     },
     {
       "name": "soundphysics",
@@ -16560,6 +17541,15 @@
       "notes": "Automated check 0.3.23: needs code from another mod or API that is not available or does not match: com.github.alexthe666.iceandfire.item.IafItemRegistry.dragonbone_arrow_fire:Llegacyconnector.v1_12_2.net.minecraft.item.Item;, com.github.alexthe666.iceandfire.item.IafItemRegistry.dragonbone_arrow_ice:Llegacyconnector.v1_12_2.net.minecraft.item.Item;, com.github.alexthe666.iceandfire.item.IafItemRegistry.dragonbone_arrow_lightning:Llegacyconnector.v1_12_2.net.minecraft.item.Item;, com.github.alexthe666.iceandfire.recipe.DragonForgeRecipe.<init>(Llegacyconnector.v1_12_2.net.minecraft.item.ItemStack;Llegacyconnector.v1_12_2.net.minecraft.item.ItemStack;Llegacyconnector.v1_12_2.net.minecraft.item.ItemStack;Z)V."
     },
     {
+      "name": "Spartan Shields",
+      "version": "3.1.1",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.advancements.Advancement$Builder.addCriterion, net.minecraft.advancements.Advancement$Builder.getCriteria, net.minecraft.advancements.Advancement$Builder.requirements, net.minecraft.advancements.Advancement$Builder.serializeToJson, net.minecraft.advancements.RequirementsStrategy (+88 more)."
+    },
+    {
       "name": "Spartan Weaponry",
       "version": "1.6.1",
       "mc": "1.12.2",
@@ -16567,6 +17557,15 @@
       "date": "2026-10-30",
       "status": "works",
       "notes": "Self-tested in the 1.12.2 server self test (116 mods): 382 items, 0 blocks, 13 entity types; every block placed and used, every item used, every entity spawned without errors."
+    },
+    {
+      "name": "Spartan Weaponry",
+      "version": "3.2.1",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.systems.RenderSystem.getModelViewStack, net.minecraft.advancements.Advancement$Builder.addCriterion, net.minecraft.advancements.Advancement$Builder.display, net.minecraft.advancements.Advancement$Builder.getCriteria, net.minecraft.advancements.Advancement$Builder.parent (+255 more)."
     },
     {
       "name": "Spartan Weaponry: Twilight Forest",
@@ -16603,6 +17602,15 @@
       "date": "2026-10-28",
       "status": "fails",
       "notes": "Fails during init: java.lang.RuntimeException: java.lang.ExceptionInInitializerError"
+    },
+    {
+      "name": "Species",
+      "version": "3.5",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.vertex.VertexConsumer.color, com.mojang.blaze3d.vertex.VertexConsumer.endVertex, com.mojang.blaze3d.vertex.VertexConsumer.normal, com.mojang.blaze3d.vertex.VertexConsumer.overlayCoords, com.mojang.blaze3d.vertex.VertexConsumer.uv (+315 more)."
     },
     {
       "name": "SpeedsterHeroes",
@@ -17037,6 +18045,15 @@
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (29 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
     },
     {
+      "name": "Structure Gel API",
+      "version": "2.16.2",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.vertex.BufferBuilder.begin, com.mojang.blaze3d.vertex.BufferBuilder.end, com.mojang.blaze3d.vertex.BufferBuilder.vertex, com.mojang.blaze3d.vertex.Tesselator.end, com.mojang.blaze3d.vertex.Tesselator.getBuilder (+146 more)."
+    },
+    {
       "name": "Structure Memory",
       "version": "1.0.0",
       "mc": "1.7.10",
@@ -17127,6 +18144,15 @@
       "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
     },
     {
+      "name": "SuperMartijn642's Core Lib",
+      "version": "1.1.26+a",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.authlib.minecraft.MinecraftSessionService.fillProfileProperties, com.mojang.blaze3d.systems.RenderSystem.getModelViewStack, com.mojang.blaze3d.vertex.BufferBuilder.begin, com.mojang.blaze3d.vertex.BufferBuilder.vertex, com.mojang.blaze3d.vertex.PoseStack.mulPoseMatrix (+100 more)."
+    },
+    {
       "name": "SuperTic",
       "version": "1.5.0",
       "mc": "1.7.10",
@@ -17145,6 +18171,15 @@
       "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
     },
     {
+      "name": "Supplementaries",
+      "version": "1.20-3.1.44",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.authlib.GameProfile.isComplete, com.mojang.blaze3d.vertex.BufferBuilder.begin, com.mojang.blaze3d.vertex.BufferBuilder.end, com.mojang.blaze3d.vertex.BufferBuilder.vertex, com.mojang.blaze3d.vertex.BufferUploader.drawWithShader (+553 more)."
+    },
+    {
       "name": "Surge",
       "version": "2.0.79",
       "mc": "1.12.2",
@@ -17152,6 +18187,15 @@
       "date": "2026-11-07",
       "status": "loads",
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (14 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+    },
+    {
+      "name": "Swampier Swamps",
+      "version": "1.20-4.0.0",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.vertex.VertexConsumer.color, com.mojang.blaze3d.vertex.VertexConsumer.endVertex, com.mojang.blaze3d.vertex.VertexConsumer.normal, com.mojang.blaze3d.vertex.VertexConsumer.overlayCoords, com.mojang.blaze3d.vertex.VertexConsumer.uv (+64 more)."
     },
     {
       "name": "SwanSong",
@@ -17197,6 +18241,15 @@
       "date": "2026-11-06",
       "status": "loads",
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (58 classes). But 19 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+    },
+    {
+      "name": "TaCZ: TES Compat",
+      "version": "0.1.1",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext, net.neoforged.fml.ModLoadingContext.registerConfig."
     },
     {
       "name": "Tails Legacy",
@@ -17388,6 +18441,15 @@
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (48 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works. Resource check: 1 model/texture reference(s) are missing after translation (rendering may show missing textures or models), e.g. model teloaddon:items/tools/chainsaw.json names missing texture block/chainsaw."
     },
     {
+      "name": "TerraBlender",
+      "version": "3.0.1.11",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.resources.ResourceLocation.<init>, net.minecraft.util.KeyDispatchDataCodec.codec, net.minecraft.util.random.WeightedEntry$Wrapper.getData, net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext."
+    },
+    {
       "name": "TerraCart Reloaded",
       "version": "1.12.2-1.2.3",
       "mc": "1.12.2",
@@ -17433,6 +18495,15 @@
       "notes": "Automated check 0.3.23: needs code from another mod or API that is not available or does not match: com.zeitheron.hammercore.utils.XYZMap.VALUES:Lit.unimi.dsi.fastutil.longs.Long2ObjectMap;, org.zeith.hammeranims.api.geometry.model.RenderData.combinedLightIn:I, com.zeitheron.hammercore.utils.XYZMap.setOnPos(Llegacyconnector.v1_12_2.net.minecraft.util.math.BlockPos;Ljava.lang.Object;)V, java.lang.Thread.destroy()V."
     },
     {
+      "name": "TES",
+      "version": "1.6.6",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.vertex.BufferBuilder.begin, com.mojang.blaze3d.vertex.BufferBuilder.end, com.mojang.blaze3d.vertex.BufferBuilder.vertex, com.mojang.blaze3d.vertex.BufferUploader.drawWithShader, com.mojang.blaze3d.vertex.PoseStack.mulPoseMatrix (+41 more)."
+    },
+    {
       "name": "Tesseract",
       "version": "1.0.40",
       "mc": "1.12.2",
@@ -17440,6 +18511,24 @@
       "date": "2026-11-07",
       "status": "loads",
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (48 classes). The game was not started: this only shows the jar translates, not that it works."
+    },
+    {
+      "name": "TexTrue's Embeddium Options",
+      "version": "0.1.5+mc1.20.1",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.SharedConstants.filterText, net.minecraft.SharedConstants.isAllowedChatCharacter, net.minecraft.client.gui.screens.Screen.renderBackground, net.minecraft.client.gui.screens.VideoSettingsScreen, java.lang.invoke.MethodHandle.invoke (+1 more)."
+    },
+    {
+      "name": "TexTrue's Rubidium Options (TexTrue's Embeddium Options)",
+      "version": "1.0.4",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.SharedConstants.filterText, net.minecraft.SharedConstants.isAllowedChatCharacter, net.minecraft.client.gui.screens.Screen.renderBackground, net.minecraft.client.gui.screens.VideoSettingsScreen, java.lang.invoke.MethodHandle.invoke (+1 more)."
     },
     {
       "name": "TextureFix",
@@ -17873,6 +18962,15 @@
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (417 classes). 4 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
     },
     {
+      "name": "The Aether",
+      "version": "1.20.1-1.5.2-neoforge",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.vertex.BufferBuilder.begin, com.mojang.blaze3d.vertex.BufferBuilder.end, com.mojang.blaze3d.vertex.BufferBuilder.vertex, com.mojang.blaze3d.vertex.BufferUploader.drawWithShader, com.mojang.blaze3d.vertex.Tesselator.getBuilder (+882 more)."
+    },
+    {
       "name": "The Aurorian",
       "version": "1.12.2-Release",
       "mc": "1.12.2",
@@ -17880,6 +18978,15 @@
       "date": "2026-11-07",
       "status": "loads",
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (394 classes). The game was not started: this only shows the jar translates, not that it works."
+    },
+    {
+      "name": "The Endergetic Expansion",
+      "version": "5.0.1",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.vertex.BufferBuilder.begin, com.mojang.blaze3d.vertex.BufferBuilder.vertex, com.mojang.blaze3d.vertex.Tesselator.end, com.mojang.blaze3d.vertex.Tesselator.getBuilder, com.mojang.blaze3d.vertex.VertexConsumer.color (+232 more)."
     },
     {
       "name": "The Hordes",
@@ -17934,6 +19041,15 @@
       "date": "2026-10-30",
       "status": "loads",
       "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
+    },
+    {
+      "name": "The Man From The Fog",
+      "version": "1.4",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.client.player.LocalPlayer.getCapability, net.minecraft.commands.Commands.performPrefixedCommand, net.minecraft.core.Holder.get, net.minecraft.network.FriendlyByteBuf.writeNbt, net.minecraft.network.syncher.SynchedEntityData.define (+100 more)."
     },
     {
       "name": "The Middle Torch",
@@ -18240,6 +19356,15 @@
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (12 classes). The game was not started: this only shows the jar translates, not that it works."
     },
     {
+      "name": "Timeless & Classics Guns: Zero",
+      "version": "1.2.0",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.systems.RenderSystem.getModelViewStack, com.mojang.blaze3d.vertex.BufferBuilder.<init>, com.mojang.blaze3d.vertex.BufferBuilder.begin, com.mojang.blaze3d.vertex.BufferBuilder.end, com.mojang.blaze3d.vertex.BufferBuilder.vertex (+374 more)."
+    },
+    {
       "name": "Tinkers Defense",
       "version": "1.3.2",
       "mc": "1.7.10",
@@ -18335,6 +19460,15 @@
       "date": "2026-11-07",
       "status": "playable",
       "notes": "Real client, survival, shaders: the Tool Station crafts a pickaxe (durability 96/96, mining speed 3.5) which mines, a heart canister raises max health, the blue slime mob renders. The smeltery now works: a seared brick structure with a lava tank in its wall and the controller placed by hand forms (3x3 floor, 9 slots), draws its fuel from the lava tank, melts iron, gold and copper ore into molten metal shown in its screen. (It stayed cold before: the tank's lava fluid had no block id for 1.6.4 code.) Casting basins and tables, the other stations and the Steelworks add-on were not tried."
+    },
+    {
+      "name": "Tinkers' Construct",
+      "version": "3.12.1.231",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.vertex.BufferBuilder.begin, com.mojang.blaze3d.vertex.BufferBuilder.end, com.mojang.blaze3d.vertex.BufferBuilder.vertex, com.mojang.blaze3d.vertex.BufferUploader.drawWithShader, com.mojang.blaze3d.vertex.SheetedDecalTextureGenerator.<init> (+765 more)."
     },
     {
       "name": "Tinkers' Gregworks",
@@ -18461,6 +19595,15 @@
       "date": "2026-11-07",
       "status": "loads",
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (1 classes). The game was not started: this only shows the jar translates, not that it works."
+    },
+    {
+      "name": "ToolStats",
+      "version": "16.0.10",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.world.entity.ai.attributes.AttributeModifier$Operation.ADDITION, net.minecraft.world.entity.ai.attributes.AttributeModifier$Operation.toValue, net.minecraft.world.entity.ai.attributes.Attributes.ARMOR, net.minecraft.world.item.HorseArmorItem, net.minecraft.world.item.ItemStack.ATTRIBUTE_MODIFIER_FORMAT (+8 more)."
     },
     {
       "name": "Tooltip Creator",
@@ -18704,6 +19847,15 @@
       "date": "2026-11-07",
       "status": "loads",
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (563 classes). 5 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+    },
+    {
+      "name": "True Ending: Ender Dragon Overhaul",
+      "version": "1-v1.1.0c",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "loads",
+      "notes": "Automated check 0.4.0-1201-baseline: translates offline and everything it uses exists (0 classes). The game was not started: this only shows the jar translates, not that it works."
     },
     {
       "name": "True Window",
@@ -19038,6 +20190,15 @@
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (325 classes). The game was not started: this only shows the jar translates, not that it works."
     },
     {
+      "name": "Valkyrien Skies 2",
+      "version": "2.4.11",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.systems.RenderSystem.setInverseViewRotationMatrix, com.mojang.blaze3d.vertex.SheetedDecalTextureGenerator.<init>, com.mojang.blaze3d.vertex.Tesselator.getBuilder, com.mojang.blaze3d.vertex.VertexConsumer.color, com.mojang.blaze3d.vertex.VertexConsumer.endVertex (+498 more)."
+    },
+    {
       "name": "Valkyrien Skies Core",
       "version": "1.12.2-1.1.6",
       "mc": "1.12.2",
@@ -19081,6 +20242,33 @@
       "date": "2026-10-30",
       "status": "loads",
       "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
+    },
+    {
+      "name": "Vanilla Refresh",
+      "version": "1.4.19h",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "loads",
+      "notes": "Automated check 0.4.0-1201-baseline: translates offline and everything it uses exists (0 classes). The game was not started: this only shows the jar translates, not that it works."
+    },
+    {
+      "name": "Vein Mining",
+      "version": "1.5.0+1.20.1",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.world.item.ItemStack.canPerformAction, net.minecraft.world.item.ItemStack.onBlockStartBreak, net.minecraft.world.item.enchantment.Enchantment$Rarity, net.minecraft.world.item.enchantment.Enchantment.<init>, net.minecraft.world.item.enchantment.Enchantment.checkCompatibility (+33 more)."
+    },
+    {
+      "name": "Veinminer",
+      "version": "1.1.0",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "loads",
+      "notes": "Automated check 0.4.0-1201-baseline: translates offline and everything it uses exists (1 classes). The game was not started: this only shows the jar translates, not that it works."
     },
     {
       "name": "VeryLegacyZoomer",
@@ -19189,6 +20377,15 @@
       "date": "2026-11-06",
       "status": "loads",
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (83 classes). But 16 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+    },
+    {
+      "name": "VS Eureka Mod",
+      "version": "1.6.4",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.world.item.ItemStack.of, net.minecraft.world.item.ItemStack.save, net.minecraft.world.level.block.BaseEntityBlock.playerWillDestroy, net.minecraft.world.level.block.entity.BaseContainerBlockEntity.load, net.minecraft.world.level.block.entity.BaseContainerBlockEntity.saveAdditional (+27 more)."
     },
     {
       "name": "Waddles",
@@ -19506,15 +20703,6 @@
       "notes": "Real client, survival, shaders: it loads now (the null potion statics are gone): the witches' oven and the distillery open their screens, the kobold helm recipe gives its result from the crafting grid, owl and goblin entities exist. Rituals, brewing and the altar were not played."
     },
     {
-      "name": "Mo' Creatures",
-      "version": "6.1.0",
-      "mc": "1.6.4",
-      "source": "client",
-      "date": "2026-11-07",
-      "status": "works",
-      "notes": "Real client, survival, shaders: ostrich, elephant, bear, wild horse and kitty spawn and draw with their own models; the rat burger, elephant harness and other recipes give results from the crafting grid (117 recipes, none with an empty result). Combat, taming and riding were not tried."
-    },
-    {
       "name": "WitcheryPatch",
       "version": "1.0.0",
       "mc": "1.7.10",
@@ -19704,6 +20892,15 @@
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (1280 classes). 2 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
     },
     {
+      "name": "Xaero's Minimap",
+      "version": "26.6.0",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: uses old Java or library code that no longer exists: com.mojang.blaze3d.systems.RenderSystem.getModelViewStack, com.mojang.blaze3d.vertex.BufferBuilder.<init>, com.mojang.blaze3d.vertex.BufferBuilder.begin, com.mojang.blaze3d.vertex.BufferBuilder.end, com.mojang.blaze3d.vertex.BufferBuilder.vertex (+370 more)."
+    },
+    {
       "name": "Xaero's World Map",
       "version": "1.14.1.33",
       "mc": "1.7.10",
@@ -19720,6 +20917,15 @@
       "date": "2026-11-07",
       "status": "fails",
       "notes": "Automated check 0.3.23: needs code from another mod or API that is not available or does not match: xaero.common.HudMod.getHudConfigs()Lxaero.lib.common.config.channel.ConfigChannel;, xaero.common.gui.GuiHelper.getMinimapSettingsFromScreen(Llegacyconnector.v1_12_2.net.minecraft.client.gui.GuiScreen;)Lxaero.lib.client.gui.ScreenBase;, xaero.common.gui.GuiWaypoints.<init>(Lxaero.common.HudMod;Lxaero.hud.minimap.module.MinimapSession;Llegacyconnector.v1_12_2.net.minecraft.client.gui.GuiScreen;Llegacyconnector.v1_12_2.net.minecraft.client.gui.GuiScreen;)V, xaero.common.minimap.waypoints.Waypoint.getInitials()Ljava.lang.String;, xaero.common.minimap.waypoints.Waypoint.getPurpose()Lxaero.hud.minimap.waypoint.WaypointPurpose; (+11 more)."
+    },
+    {
+      "name": "Xaero's World Map",
+      "version": "1.47.0",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.systems.RenderSystem.getModelViewStack, com.mojang.blaze3d.vertex.BufferBuilder.<init>, com.mojang.blaze3d.vertex.BufferBuilder.begin, com.mojang.blaze3d.vertex.BufferBuilder.end, com.mojang.blaze3d.vertex.BufferBuilder.vertex (+281 more)."
     },
     {
       "name": "XaeroLib",
@@ -19882,6 +21088,15 @@
       "date": "2026-10-30",
       "status": "works",
       "notes": "Self-tested in the 1.12.2 server self test (116 mods): 1 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+    },
+    {
+      "name": "Zeta",
+      "version": "1.0-31",
+      "mc": "1.20.1",
+      "source": "probe",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Automated check 0.4.0-1201-baseline: needs Minecraft or Forge features the layer does not have yet: net.minecraft.advancements.Advancement.getId, net.minecraft.advancements.Advancement.requirements, net.minecraft.advancements.CriteriaTriggers.register, net.minecraft.advancements.Criterion.<init>, net.minecraft.advancements.Criterion.getTrigger (+204 more)."
     },
     {
       "name": "ZMusic",
