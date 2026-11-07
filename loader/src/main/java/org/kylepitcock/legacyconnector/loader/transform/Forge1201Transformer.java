@@ -27,6 +27,7 @@ import org.kylepitcock.legacyconnector.loader.LegacyVersion;
 import org.kylepitcock.legacyconnector.loader.Provenance;
 import org.kylepitcock.legacyconnector.loader.mapping.SrgMojangTable;
 import org.kylepitcock.legacyconnector.loader.shim.ShimIndex;
+import org.kylepitcock.legacyconnector.loader.resource.DataConverter1201;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Type;
@@ -239,9 +240,12 @@ public final class Forge1201Transformer {
             }
             if (name.equals("META-INF/accesstransformer.cfg")) data = accessTransformer(new String(data, StandardCharsets.UTF_8)).getBytes(StandardCharsets.UTF_8);
             else if (name.endsWith(".json") && looksLikeMixinConfig(data)) data = stripRefmap(new String(data, StandardCharsets.UTF_8)).getBytes(StandardCharsets.UTF_8);
-            else if (name.equals("pack.mcmeta")) data = packMcmeta(new String(data, StandardCharsets.UTF_8)).getBytes(StandardCharsets.UTF_8);
             outResources.put(name, data);
         }
+        // the data and resource packs: 1.21 folder names, recipe/loot/advancement/tag/model formats, forge: ids, pack.mcmeta (DataConverter1201)
+        DataConverter1201.Stats dataStats = new DataConverter1201.Stats();
+        outResources = new LinkedHashMap<>(DataConverter1201.convertAll(outResources, dataStats));
+        if (dataStats.total() > 0) result.notes.add("Data and resources converted to the 1.21.1 formats: " + dataStats);
 
         Manifest outManifest = LegacyJarTransformer.cleanManifest(manifest, jar);
         String originalSha = Provenance.sha256Hex(jar.existing());
@@ -363,6 +367,7 @@ public final class Forge1201Transformer {
                 continue;
             }
             Matcher m = KEY_LINE.matcher(line);
+            if (m.matches() && m.group(2).equals("displayTest")) continue; // removed in NeoForge
             if (m.matches() && m.group(2).equals("loaderVersion")) {
                 out.append(m.group(1)).append("loaderVersion").append(m.group(3)).append("\"[1,)\"\n");
                 continue;
@@ -398,6 +403,8 @@ public final class Forge1201Transformer {
             if (key.equals("modId") && "forge".equals(modId)) out.append(m.group(1)).append("modId").append(m.group(3)).append("\"neoforge\"\n");
             else if (key.equals("versionRange") && "forge".equals(modId)) out.append(m.group(1)).append("versionRange").append(m.group(3)).append("\"[21.1,)\"\n");
             else if (key.equals("versionRange") && "minecraft".equals(modId)) out.append(m.group(1)).append("versionRange").append(m.group(3)).append("\"[1.21.1,1.22)\"\n");
+            // other mods' 1.20.1 ranges ([1.20.1-x,1.21)) would reject their 1.21.1 versions: the dependency is kept, the range opened
+            else if (key.equals("versionRange") && modId != null && !"minecraft".equals(modId) && !"forge".equals(modId)) out.append(m.group(1)).append("versionRange").append(m.group(3)).append("\"[0,)\"\n");
             else if (key.equals("mandatory")) {
                 out.append(m.group(1)).append("type").append(m.group(3)).append(m.group(4).strip().startsWith("true") ? "\"required\"" : "\"optional\"").append('\n');
                 wroteType = true;
@@ -435,10 +442,5 @@ public final class Forge1201Transformer {
         } catch (RuntimeException e) {
             return json.replaceAll("\"refmap\"\\s*:\\s*\"[^\"]*\"\\s*,?", "");
         }
-    }
-
-    /** Resource and data pack formats of 1.21.1 (34 and 48). */
-    static String packMcmeta(String json) {
-        return json.replaceAll("(\"pack_format\"\\s*:\\s*)\\d+", "$134");
     }
 }
