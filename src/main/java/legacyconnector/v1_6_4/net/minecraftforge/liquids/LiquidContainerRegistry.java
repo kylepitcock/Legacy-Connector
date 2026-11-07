@@ -16,6 +16,7 @@ public final class LiquidContainerRegistry {
 
     public static synchronized void registerLiquid(LiquidContainerData data) {
         DATA.add(data);
+        org.kylepitcock.legacyconnector.v1_6_4.bridge.Liquids164.containerRegistered(data);
     }
 
     /** The filled container made by filling {@code empty} from {@code liquid}, or null when the liquid does not fit (too little, no such container). */

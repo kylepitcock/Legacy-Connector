@@ -16,6 +16,7 @@ public final class LiquidDictionary {
         if (existing != null) return existing;
         if (liquid == null) return null;
         LIQUIDS.put(name, liquid);
+        org.kylepitcock.legacyconnector.v1_6_4.bridge.Liquids164.liquidNamed(name, liquid);
         return liquid;
     }
 
@@ -37,6 +38,11 @@ public final class LiquidDictionary {
         if (stack == null) return null;
         for (LiquidStack s : LIQUIDS.values()) if (s.isLiquidEqual(stack)) return s;
         return null;
+    }
+
+    /** The dictionary name of a liquid (same id and metadata), or null. */
+    public static synchronized String liquidName(LiquidStack stack) {
+        return findLiquidName(stack);
     }
 
     static synchronized String findLiquidName(LiquidStack stack) {

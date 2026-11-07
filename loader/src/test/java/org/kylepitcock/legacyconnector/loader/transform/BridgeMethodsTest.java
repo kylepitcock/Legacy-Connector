@@ -208,4 +208,59 @@ class BridgeMethodsTest implements Opcodes {
         assertEquals(List.of(INVOKEVIRTUAL + ":" + BLOCK + ".getItemDropped(ILjava/util/Random;I)L" + ITEM + ";",
                 INVOKESTATIC + ":" + P6 + "item/Item.mcc$get$itemID(L" + ITEM + ";)I"), ops(run));
     }
+
+    // ------------------------------------------------------------------ 1.5.2: int health and damage
+
+    private static final String ENTITY = P7 + "entity/Entity";
+    private static final String DAMAGE = P7 + "util/DamageSource";
+
+    private static Hierarchy hierarchy152() {
+        Map<String, ClassInfo> shim = new HashMap<>();
+        ClassInfo entity = cls(ENTITY, "java/lang/Object");
+        entity.methods.put("attackEntityFrom(L" + DAMAGE + ";F)Z", ACC_PUBLIC);
+        for (ClassInfo c : List.of(cls("java/lang/Object", null), entity, cls(DAMAGE, "java/lang/Object"))) shim.put(c.name, c);
+        return new Hierarchy(new ShimIndex(shim), null, Map.of(), LegacyVersion.V1_5_2);
+    }
+
+    @Test
+    void anIntDamageOverrideGetsAFloatBridgeThatNarrowsTheArgument() {
+        Hierarchy h = hierarchy152();
+        ClassNode mod = mod(h, "mod/MyMob", ENTITY, n -> {
+            MethodNode m = new MethodNode(ACC_PUBLIC, "attackEntityFrom", "(L" + DAMAGE + ";I)Z", null, null);
+            m.instructions.add(new InsnNode(ICONST_1));
+            m.instructions.add(new InsnNode(IRETURN));
+            n.methods.add(m);
+        });
+        assertTrue(BridgeMethods.apply(mod, h, LegacyVersion.V1_5_2) >= 1);
+        MethodNode bridge = find(mod, "attackEntityFrom", "(L" + DAMAGE + ";F)Z");
+        assertNotNull(bridge);
+        boolean narrows = false;
+        for (AbstractInsnNode i = bridge.instructions.getFirst(); i != null; i = i.getNext()) narrows |= i.getOpcode() == F2I;
+        assertTrue(narrows, "the float amount is converted to the mod's int");
+    }
+
+    @Test
+    void anIntDamageCallIsWidenedToTheShimsFloat() {
+        Hierarchy h = hierarchy152();
+        ClassNode caller = mod(h, "mod/Caller", "java/lang/Object", n -> {
+            MethodNode m = new MethodNode(ACC_PUBLIC, "hit", "(L" + ENTITY + ";L" + DAMAGE + ";)V", null, null);
+            m.instructions.add(new VarInsnNode(ALOAD, 1));
+            m.instructions.add(new VarInsnNode(ALOAD, 2));
+            m.instructions.add(new org.objectweb.asm.tree.IntInsnNode(BIPUSH, 5));
+            m.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, ENTITY, "attackEntityFrom", "(L" + DAMAGE + ";I)Z", false));
+            m.instructions.add(new InsnNode(POP));
+            m.instructions.add(new InsnNode(RETURN));
+            n.methods.add(m);
+        });
+        assertEquals(1, BridgeMethods.apply(caller, h, LegacyVersion.V1_5_2));
+        MethodNode hit = find(caller, "hit", "(L" + ENTITY + ";L" + DAMAGE + ";)V");
+        boolean widens = false;
+        String called = null;
+        for (AbstractInsnNode i = hit.instructions.getFirst(); i != null; i = i.getNext()) {
+            widens |= i.getOpcode() == I2F;
+            if (i instanceof MethodInsnNode c) called = c.name + c.desc;
+        }
+        assertTrue(widens);
+        assertEquals("attackEntityFrom(L" + DAMAGE + ";F)Z", called);
+    }
 }
