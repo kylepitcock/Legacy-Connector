@@ -63,6 +63,19 @@ Real client (NeoForge 1.21.1, superflat), survival mode for the actions (craftin
 | `1.6.4/power-of-the-elements-hammer-and-soldier.png` | Power of the Elements | Survival hotbar (lightning hammer, earth chestplate, blocks) and a soldier mob in the distance; no shaders | Works |
 | `1.6.4/power-of-the-elements-electric-and-lightning-blocks.png` | Power of the Elements | Electric and lightning blocks placed in survival; no shaders | Works |
 
+Third round (survival, shaders; all new old-only mods):
+
+| File | Mod | What it shows | Rating |
+|---|---|---|---|
+| `1.6.4/mythicalcraft-thundersword-crafting-shaders.png` | MythicalCraft V3 | The 3x3 crafting grid (a crafting table made from four mythical planks in the 2x2 grid) with the thunder sword recipe | Works |
+| `1.6.4/mythicalcraft-thundersword-fight-shaders.png` | MythicalCraft V3 | The crafted sword in hand against an Enchanted Iron Armor mob | Works |
+| `1.6.4/galaxy-warfare-titanium-smelting-shaders.png` | Galaxy Warfare | Survival furnace: titanium lumps smelted into ingots (coal fuel) | Works |
+| `1.6.4/galaxy-warfare-titanium-pickaxe-crafting-shaders.png` | Galaxy Warfare | Titanium pickaxe recipe in the 3x3 grid | Works |
+| `1.6.4/galaxy-warfare-soldiers-shaders.png` | Galaxy Warfare | Soldier and special-ops soldier mobs with the MK-405 gun and a soldier helmet in the inventory | Works (gun firing not verified) |
+| `1.6.4/raycraft-infuser-block-shaders.png` | Raycraft | The infuser (crafted from obsidian, iron bars and glowstone) placed | Works |
+| `1.6.4/dimensional-warps-mobs-shaders.png` | Emerald's Dimensional Warps | Star cow, bull, seagull and other mobs with their own models | Works |
+| `1.6.4/dimensional-warps-sky-dimension-shaders.png` | Emerald's Dimensional Warps | The sky dimension, which now generates (its chunk provider constructor failed on a mismatched `TerrainGen.getModdedNoiseGenerators` signature) | Works |
+
 Findings of the first round and their causes (fixed in the second round, details in `docs/data/mods.json`): The Lion King Mod's disconnect was `connectionReceived` returning an empty string; Mad Science
 implements the 1.6.4 `IModelCustomLoader.loadInstance(String, URL)`; Applied Energistics rv14.finale3 needed absent IC2 types stubbed; RedLogic needs Immibis Microblocks next to Immibis Core
 (and read `BlockRedstoneWire.getDeclaredFields()[0]`); Counter Craft calls `System.exit` when more than five mods are loaded; Twilight Forest 1.5.2 instantiates the concrete `RenderLiving`;

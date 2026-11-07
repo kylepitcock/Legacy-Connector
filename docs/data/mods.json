@@ -4940,7 +4940,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "works",
-      "notes": "Self-tested in server self test, old-only 1.6.4 set: 22 items, 32 blocks, 9 entity types; every block placed and used, every item used, every entity spawned without errors. 16 blocks did not stay placed."
+      "notes": "Self-tested in server self test, old-only 1.6.4 set: 22 items, 32 blocks, 9 entity types; every block placed and used, every item used, every entity spawned without errors. 16 blocks did not stay placed. Real client, shaders: its blocks, seagull, bull, star cow and fish mobs draw with their own models, and the sky dimension (a grassy overworld-like world) now generates: its three dimensions (sky, skyer, cryt) failed in the chunk provider constructor because `TerrainGen.getModdedNoiseGenerators` took the wrong array type (fixed); the sea dimension was fine. The cryt dimension's terrain comes out as a flat bedrock plane that was not investigated."
     },
     {
       "name": "Dirt Tools and Armor",
@@ -7432,7 +7432,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "works",
-      "notes": "Self-tested in server self test, old-only 1.6.4 set: 79 items, 8 blocks, 10 entity types; every block placed and used, every item used, every entity spawned without errors."
+      "notes": "Self-tested in server self test, old-only 1.6.4 set: 79 items, 8 blocks, 10 entity types; every block placed and used, every item used, every entity spawned without errors. Real client, survival, shaders: titanium lumps smelted in a furnace, a titanium pickaxe crafted in a 3x3 table and used to mine titanium ore (it drops lumps), soldier and special-ops soldier mobs draw with their armor and models, the MK-405 gun is held and used (no visible laser fired; the chip/energy chain was not worked out)."
     },
     {
       "name": "GalaxySpace",
@@ -12174,7 +12174,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "works",
-      "notes": "Self-tested in server self test, old-only 1.6.4 set: 14 items, 14 blocks, 9 entity types; every block placed and used, every item used, every entity spawned; 2 threw errors (5%). 1 blocks did not stay placed."
+      "notes": "Self-tested in server self test, old-only 1.6.4 set: 14 items, 14 blocks, 9 entity types; every block placed and used, every item used, every entity spawned; 2 threw errors (5%). 1 blocks did not stay placed. Real client, survival, shaders: four mythical planks crafted in the 2x2 grid into a crafting table (the mod's recipe), a thunder sword crafted from thunder gems and a stick in the 3x3 grid, held and swung at an Enchanted Iron Armor mob (it killed the player once and dropped iron when beaten); gem ores and altar draw. Four recipes for mythical-ingot armor give a barrier block: the mod's armor items do not exist in its jar."
     },
     {
       "name": "Name Pain",
@@ -14627,7 +14627,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "works",
-      "notes": "Self-tested in server self test, old-only 1.6.4 set: 12 items, 8 blocks, 6 entity types; every block placed and used, every item used, every entity spawned; 1 threw errors (4%)."
+      "notes": "Self-tested in server self test, old-only 1.6.4 set: 12 items, 8 blocks, 6 entity types; every block placed and used, every item used, every entity spawned; 1 threw errors (4%). Real client, survival, shaders: an infuser crafted from obsidian, iron bars and glowstone in the 3x3 grid, placed and drawn with its own texture. Its use (power items, grinder, beams) was not worked out."
     },
     {
       "name": "Re: Translator 3",
