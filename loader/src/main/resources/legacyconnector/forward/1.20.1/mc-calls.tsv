@@ -197,9 +197,6 @@ net/neoforged/neoforge/client/event/RenderGuiEvent$Pre	getWindow	()Lcom/mojang/b
 net/neoforged/neoforge/common/brewing/BrewingRecipeRegistry	addRecipe	(Lnet/neoforged/neoforge/common/brewing/IBrewingRecipe;)Z	EntityCompat	addBrewingRecipe	(Ljava/lang/Object;)Z
 net/neoforged/neoforge/event/ItemAttributeModifierEvent	addModifier	(Lnet/minecraft/world/entity/ai/attributes/Attribute;Lnet/minecraft/world/entity/ai/attributes/AttributeModifier;)Z	EntityCompat	attrEventAdd
 net/neoforged/neoforge/event/ItemAttributeModifierEvent	getSlotType	()Lnet/minecraft/world/entity/EquipmentSlot;	EntityCompat	attrEventSlot
-net/neoforged/neoforge/items/ItemStackHandler	serializeNBT	()Lnet/minecraft/nbt/CompoundTag;	EntityCompat	handlerSerialize
-net/neoforged/neoforge/items/ItemStackHandler	deserializeNBT	(Lnet/minecraft/nbt/CompoundTag;)V	EntityCompat	handlerDeserialize
-net/neoforged/neoforge/items/wrapper/SidedInvWrapper	create	(Lnet/minecraft/world/WorldlyContainer;[Lnet/minecraft/core/Direction;)[Llegacyconnector/v1_20_1/net/minecraftforge/common/util/LazyOptional;	EntityCompat	sidedWrappers
 com/mojang/util/UUIDTypeAdapter	fromString	(Ljava/lang/String;)Ljava/util/UUID;	EntityCompat	uuidFromString
 net/minecraft/core/Holder	get	()Ljava/lang/Object;	=	value
 net/minecraft/world/item/Item	getDefaultAttributeModifiers	(Lnet/minecraft/world/entity/EquipmentSlot;)Lcom/google/common/collect/Multimap;	EntityCompat	defaultAttributeModifiers
@@ -210,3 +207,7 @@ net/minecraft/world/level/block/PressurePlateBlock	<init>	(Lorg/kylepitcock/lega
 net/minecraft/world/level/block/LiquidBlock	<init>	(Ljava/util/function/Supplier;Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V	=args	EntityCompat.fluidOf@0,1	(Lnet/minecraft/world/level/material/FlowingFluid;Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V
 net/minecraft/world/item/BucketItem	<init>	(Ljava/util/function/Supplier;Lnet/minecraft/world/item/Item$Properties;)V	=args	EntityCompat.bucketFluid@0,1	(Lnet/minecraft/world/level/material/Fluid;Lnet/minecraft/world/item/Item$Properties;)V
 net/minecraft/world/level/block/FlowerBlock	<init>	(Ljava/util/function/Supplier;ILnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V	=args	EntityCompat.effectHolder@0,MiscCompat.intToFloat@1,2	(Lnet/minecraft/core/Holder;FLnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V
+net/minecraft/world/level/block/entity/BlockEntity	saveWithFullMetadata	()Lnet/minecraft/nbt/CompoundTag;	BridgeHelpers	saveWithFullMetadata
+net/minecraft/world/level/block/Block	appendHoverText	(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/level/BlockGetter;Ljava/util/List;Lnet/minecraft/world/item/TooltipFlag;)V@special	BridgeHelpers	superAppendHoverText	(Ljava/lang/Object;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/level/BlockGetter;Ljava/util/List;Lnet/minecraft/world/item/TooltipFlag;)V
+net/minecraft/core/HolderGetter$Provider	getLootTable	(Lnet/minecraft/resources/ResourceLocation;)Lnet/minecraft/world/level/storage/loot/LootTable;	BridgeHelpers	lootTable
+net/minecraft/world/level/pathfinder/NodeEvaluator	getBlockPathType	(Lnet/minecraft/world/level/BlockGetter;III)Lnet/minecraft/world/level/pathfinder/PathType;	BridgeHelpers	pathTypeAt

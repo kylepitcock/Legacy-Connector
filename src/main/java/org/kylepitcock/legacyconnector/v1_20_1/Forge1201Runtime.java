@@ -113,27 +113,6 @@ public final class Forge1201Runtime {
         NeoForge.EVENT_BUS.post(new TickEvent.PlayerTickEvent(TickEvent.Phase.END, e.getEntity()));
     }
 
-    // ---- living events ------------------------------------------------------------------------------------------------------
-
-    /** Forge's LivingAttackEvent (cancel) and LivingHurtEvent (cancel, amount) both map onto NeoForge's LivingIncomingDamageEvent. */
-    private static void onIncomingDamage(net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent e) {
-        var attack = new legacyconnector.v1_20_1.net.minecraftforge.event.entity.living.LivingAttackEvent(e.getEntity(), e.getSource(), e.getAmount());
-        NeoForge.EVENT_BUS.post(attack);
-        if (attack.isCanceled()) {
-            e.setCanceled(true);
-            return;
-        }
-        var hurt = new legacyconnector.v1_20_1.net.minecraftforge.event.entity.living.LivingHurtEvent(e.getEntity(), e.getSource(), e.getAmount());
-        NeoForge.EVENT_BUS.post(hurt);
-        if (hurt.isCanceled()) e.setCanceled(true);
-        else if (hurt.getAmount() != e.getAmount()) e.setAmount(hurt.getAmount());
-    }
-
-    private static void onEntityTickPre(net.neoforged.neoforge.event.tick.EntityTickEvent.Pre e) {
-        if (e.getEntity() instanceof net.minecraft.world.entity.LivingEntity living)
-            NeoForge.EVENT_BUS.post(new legacyconnector.v1_20_1.net.minecraftforge.event.entity.living.LivingEvent$LivingTickEvent(living));
-    }
-
     static LogicalSide side(boolean clientSide) {
         return clientSide ? LogicalSide.CLIENT : LogicalSide.SERVER;
     }

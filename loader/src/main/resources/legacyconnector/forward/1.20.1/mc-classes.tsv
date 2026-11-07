@@ -48,3 +48,4 @@ net/minecraft/world/level/block/PressurePlateBlock$Sensitivity	org/kylepitcock/l
 net/minecraft/advancements/Advancement	net/minecraft/advancements/AdvancementHolder
 net/minecraft/client/gui/components/ImageButton	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyImageButton
 net/minecraft/world/level/storage/loot/LootDataResolver	net/minecraft/core/HolderGetter$Provider
+net/minecraft/world/item/alchemy/PotionUtils	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyPotionUtils
