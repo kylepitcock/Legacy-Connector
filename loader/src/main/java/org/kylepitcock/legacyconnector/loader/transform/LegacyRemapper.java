@@ -353,7 +353,8 @@ public final class LegacyRemapper extends Remapper {
             if (shim.contains(own)) return own;
         }
         if (shim == null || shim.contains(shimName) || shim.size() == 0) return shimName;
-        String synth = version.synthPrefix() + legacyName;
+        // one name per class: a flat 1.4.7 name (reached through the notch table) and its packaged name (reached through a Forge class's supertypes) are the same class
+        String synth = version.synthPrefix() + ForwardRenames.flat(version, legacyName);
         if (recording && demand != null) demand.addClass(synth);
         return synth;
     }

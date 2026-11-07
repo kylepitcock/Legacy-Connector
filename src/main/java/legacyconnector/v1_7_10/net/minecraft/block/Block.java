@@ -667,9 +667,9 @@ public class Block {
     // ------------------------------------------------------------------ rendering (client)
 
     public IIcon getIcon(int side, int meta) {
+        if (blockIndexInTexture >= 0 && mcc$vanilla == null) return org.kylepitcock.legacyconnector.v1_6_4.bridge.SpriteSheets147.mcc$icon(this, blockIndexInTexture);
         if (this.blockIcon == null) {
             if (mcc$vanilla != null) return mcc$vanillaBlockIcon(side, meta);
-            if (blockIndexInTexture >= 0) return org.kylepitcock.legacyconnector.v1_6_4.bridge.SpriteSheets147.mcc$icon(this, blockIndexInTexture);
         }
         return this.blockIcon;
     }

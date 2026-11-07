@@ -452,9 +452,10 @@ public class Item {
     // ------------------------------------------------------------------ rendering (client)
 
     public IIcon getIconFromDamage(int damage) {
+        // an index-based (1.4.7) item has no icon of its own: registerIcons would only have filled in a placeholder for it
+        if (iconIndex >= 0 && mcc$vanilla == null) return org.kylepitcock.legacyconnector.v1_6_4.bridge.SpriteSheets147.mcc$icon(this, iconIndex);
         if (itemIcon == null) {
             if (mcc$vanilla != null) return mcc$vanillaItemIcon(damage, 0);
-            if (iconIndex >= 0) return org.kylepitcock.legacyconnector.v1_6_4.bridge.SpriteSheets147.mcc$icon(this, iconIndex);
         }
         return itemIcon;
     }

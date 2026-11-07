@@ -64,7 +64,7 @@ public final class SheetCutter {
                 }
             }
         }
-        sheets.removeAll(VANILLA);
+        for (String v : VANILLA) sheets.remove(normalize(v));
     }
 
     public boolean found() {
@@ -80,7 +80,7 @@ public final class SheetCutter {
         Map<String, byte[]> out = new LinkedHashMap<>();
         for (var e : other.entrySet()) {
             String key = normalize(e.getKey());
-            boolean sheet = sheets.contains(key);
+            boolean sheet = sheets.contains(key) || relativeSheet(key);
             boolean single = singles.contains(key);
             if (!sheet && !single) continue;
             try {
@@ -95,6 +95,17 @@ public final class SheetCutter {
             }
         }
         return out;
+    }
+
+    /**
+     * A sheet the code names without its folder ({@code getTextureFile() { return GfxPath("block.png"); }}, Applied Energistics): the one file of the
+     * jar that ends with that name, cut under its real path (which is what the runtime asks for).
+     */
+    private boolean relativeSheet(String key) {
+        for (String s : sheets) {
+            if (s.indexOf('/', 1) < 0 && !VANILLA.contains(s.substring(1)) && key.endsWith(s) && key.length() > s.length()) return true;
+        }
+        return false;
     }
 
     private static void cutSheet(BufferedImage image, String slug, Map<String, byte[]> out) throws IOException {

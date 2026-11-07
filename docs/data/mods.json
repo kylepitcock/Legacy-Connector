@@ -18559,6 +18559,213 @@
       "date": "2026-11-06",
       "status": "crashes",
       "notes": "Hangs the server while loading (ID allocator ends in a fatal error screen); blocks the Immibis add-ons."
+    },
+    {
+      "name": "Applied Energistics",
+      "version": "rv9",
+      "mc": "1.4.7",
+      "source": "client",
+      "date": "2026-11-07",
+      "status": "partial",
+      "notes": "Old-only. Loads; 44 blocks placed and activated on the server; in a real client (with Sodium, Iris and Complementary shaders) the quartz tools, blocks of the main sheet and the ore draw with their textures, some blocks and the multiblock parts still show missing textures, GUIs not tried."
+    },
+    {
+      "name": "RedPower 2 (Core, Base, Mechanical, Digital, Compat)",
+      "version": "2.0pr6",
+      "mc": "1.4.7",
+      "source": "client",
+      "date": "2026-11-07",
+      "status": "partial",
+      "notes": "Old-only. All ten modules load and their blocks place and activate on the server; in a client the item and block sprite sheets are not all mapped yet (missing textures on most RedPower items and blocks), the multipart renderer is untested."
+    },
+    {
+      "name": "The Twilight Forest",
+      "version": "1.15.4",
+      "mc": "1.4.7",
+      "source": "client",
+      "date": "2026-11-07",
+      "status": "works",
+      "notes": "Mod has newer versions. Server self-test (1.4.7 layer, 700 ticks). The dimension generates all its chunks, 41 of 52 entities alive; three tower mobs fail without a home position in the test spawn."
+    },
+    {
+      "name": "Grimoire of Gaia",
+      "version": "2 (1.4.7)",
+      "mc": "1.4.7",
+      "source": "client",
+      "date": "2026-11-07",
+      "status": "works",
+      "notes": "Mod has newer versions. Server self-test (1.4.7 layer, 700 ticks). All 48 mobs spawn and tick, items and spawn eggs register."
+    },
+    {
+      "name": "More Swords Mod",
+      "version": "2.3.5",
+      "mc": "1.4.7",
+      "source": "client",
+      "date": "2026-11-07",
+      "status": "works",
+      "notes": "Mod has newer versions. Server self-test (1.4.7 layer, 700 ticks). 34 swords register (the mod never registers them; the layer does it for numeric-id mods), 16 recipes translated. Client not tried."
+    },
+    {
+      "name": "Resource Engineering",
+      "version": "0.0.104",
+      "mc": "1.4.7",
+      "source": "client",
+      "date": "2026-11-07",
+      "status": "works",
+      "notes": "Mod has newer versions. Server self-test (1.4.7 layer, 700 ticks). 10 blocks placed and activated, gem tumbler inventory works."
+    },
+    {
+      "name": "Portal Gun",
+      "version": "1.4.7v5",
+      "mc": "1.4.7",
+      "source": "client",
+      "date": "2026-11-07",
+      "status": "works",
+      "notes": "Server self-test (1.4.7 layer, 700 ticks). Loads, portal blocks and 8 entity types register; client not tried."
+    },
+    {
+      "name": "Dragon Mounts",
+      "version": "0.93",
+      "mc": "1.4.7",
+      "source": "client",
+      "date": "2026-11-07",
+      "status": "works",
+      "notes": "Server self-test (1.4.7 layer, 700 ticks). Loads, dragon egg block and dragon entity register; client not tried."
+    },
+    {
+      "name": "Gravity Gun",
+      "version": "1.4.7v2",
+      "mc": "1.4.7",
+      "source": "client",
+      "date": "2026-11-07",
+      "status": "loads",
+      "notes": "Server self-test (1.4.7 layer, 700 ticks). Loads and registers its entity and recipes; the gun itself was not used."
+    },
+    {
+      "name": "Hats",
+      "version": "1.2.0",
+      "mc": "1.4.7",
+      "source": "client",
+      "date": "2026-11-07",
+      "status": "loads",
+      "notes": "Server self-test (1.4.7 layer, 700 ticks). Loads (one unresolved reference); nothing registers that the server can test."
+    },
+    {
+      "name": "Mob Amputation",
+      "version": "1.4.6v1",
+      "mc": "1.4.7",
+      "source": "client",
+      "date": "2026-11-07",
+      "status": "loads",
+      "notes": "Server self-test (1.4.7 layer, 700 ticks). ModLoader mod (mod_Gibbing) loads through the BaseMod emulation; effect not tried."
+    },
+    {
+      "name": "Sprint on CTRL",
+      "version": "1.1",
+      "mc": "1.4.7",
+      "source": "client",
+      "date": "2026-11-07",
+      "status": "loads",
+      "notes": "Server self-test (1.4.7 layer, 700 ticks). ModLoader mod (mod_SprintKey) loads."
+    },
+    {
+      "name": "BiblioCraft",
+      "version": "1.1.2",
+      "mc": "1.4.7",
+      "source": "client",
+      "date": "2026-11-07",
+      "status": "works",
+      "notes": "Mod has newer versions. Server self-test (1.4.7 layer, 700 ticks). Blocks place and activate."
+    },
+    {
+      "name": "Custom NPCs",
+      "version": "1.4.7",
+      "mc": "1.4.7",
+      "source": "client",
+      "date": "2026-11-07",
+      "status": "works",
+      "notes": "Mod has newer versions. Server self-test (1.4.7 layer, 700 ticks). Loads, blocks and entities register."
+    },
+    {
+      "name": "CameraCraft",
+      "version": "1.4.6",
+      "mc": "1.4.7",
+      "source": "client",
+      "date": "2026-11-07",
+      "status": "works",
+      "notes": "Server self-test (1.4.7 layer, 700 ticks). Loads, blocks place and activate."
+    },
+    {
+      "name": "Extra Buttons",
+      "version": "1.4.7.0",
+      "mc": "1.4.7",
+      "source": "client",
+      "date": "2026-11-07",
+      "status": "works",
+      "notes": "Server self-test (1.4.7 layer, 700 ticks). Loads, blocks place and activate."
+    },
+    {
+      "name": "Mystcraft",
+      "version": "0.10.1.00",
+      "mc": "1.4.7",
+      "source": "client",
+      "date": "2026-11-07",
+      "status": "partial",
+      "notes": "Mod has newer versions. Server self-test (1.4.7 layer, 700 ticks). Loads and registers; the GUI blocks threw 'Listener already listening' only for the test's fake player; age dimensions are created on demand and were not tried."
+    },
+    {
+      "name": "Factorization",
+      "version": "0.7.21",
+      "mc": "1.4.7",
+      "source": "client",
+      "date": "2026-11-07",
+      "status": "partial",
+      "notes": "Mod has newer versions. Server self-test (1.4.7 layer, 700 ticks). Loads and places its blocks; one recipe could not be translated."
+    },
+    {
+      "name": "MiscPeripherals",
+      "version": "3.1c",
+      "mc": "1.4.7",
+      "source": "client",
+      "date": "2026-11-07",
+      "status": "loads",
+      "notes": "Old-only. Server self-test (1.4.7 layer, 700 ticks). Loads next to ComputerCraft; its coremod transformer is not run."
+    },
+    {
+      "name": "ComputerCraft",
+      "version": "1.5",
+      "mc": "1.4.7",
+      "source": "client",
+      "date": "2026-11-07",
+      "status": "partial",
+      "notes": "Mod has newer versions. Server self-test (1.4.7 layer, 700 ticks). Computers, turtles register and place; activation by the test's fake player throws (no world)."
+    },
+    {
+      "name": "BuildCraft",
+      "version": "3.4.6",
+      "mc": "1.4.7",
+      "source": "client",
+      "date": "2026-11-07",
+      "status": "works",
+      "notes": "Mod has newer versions. Server self-test (1.4.7 layer, 700 ticks). Loads with Forestry; 100 blocks placed, 90 activated, 55 entity types."
+    },
+    {
+      "name": "Forestry",
+      "version": "2.0.0.11",
+      "mc": "1.4.7",
+      "source": "client",
+      "date": "2026-11-07",
+      "status": "partial",
+      "notes": "Mod has newer versions. Server self-test (1.4.7 layer, 700 ticks). Loads; Binnie's Extra Bees fails its world-load hook because the genetics API class exists twice (one copy per jar)."
+    },
+    {
+      "name": "Advanced Repulsion Systems",
+      "version": "52.0.6",
+      "mc": "1.4.7",
+      "source": "client",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Fails during init: needs IC2 (ic2.api.Items), which has no obtainable 1.4.7 file."
     }
   ],
   "hidden": [
