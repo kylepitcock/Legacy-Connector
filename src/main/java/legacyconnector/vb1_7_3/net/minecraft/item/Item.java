@@ -70,6 +70,16 @@ public class Item {
         return 1.0F;
     }
 
+    public boolean useOnBlock(ItemStack stack, legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity player,
+            legacyconnector.vb1_7_3.net.minecraft.world.World world, int x, int y, int z, int side) {
+        return false;
+    }
+
+    public ItemStack use(ItemStack stack, legacyconnector.vb1_7_3.net.minecraft.world.World world,
+            legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity player) {
+        return stack;
+    }
+
     /** Forge's metadata-aware mining speed. */
     public float getStrVsBlock(ItemStack stack, Block block, int meta) {
         return getMiningSpeedMultiplier(stack, block);

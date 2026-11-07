@@ -65,6 +65,7 @@ public final class BridgeB173 {
                 LOG.warn("Could not register b1.7.3 item {} of {}: {}", item, mod.legacyId, e.toString());
             }
         }
+        if (Boolean.getBoolean("legacyconnector.entitySelfTest")) ItemUseSelfTestB173.register();
         TileEntitiesB173.registerType();
         flammability();
         StringBuilder sb = new StringBuilder();
@@ -152,7 +153,7 @@ public final class BridgeB173 {
             var p = new net.minecraft.world.item.Item.Properties();
             if (item.isDamageable()) p.durability(item.getMaxDamage());
             else p.stacksTo(Math.max(1, Math.min(99, item.getMaxCount())));
-            modern = new net.minecraft.world.item.Item(p);
+            modern = new LegacyB173Item(item, p);
             translation("item." + id.getNamespace() + "." + id.getPath(), item, item.getTranslationKey());
         }
         LegacyRegistrar.register(BuiltInRegistries.ITEM, id, modern);

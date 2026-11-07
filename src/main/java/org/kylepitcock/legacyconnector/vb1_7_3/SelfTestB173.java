@@ -124,6 +124,7 @@ public final class SelfTestB173 {
                 new com.mojang.authlib.GameProfile(java.util.UUID.nameUUIDFromBytes("b173-gui-test".getBytes()), "[B173GuiTest]"),
                 net.minecraft.server.level.ClientInformation.createDefault());
         new TestConnection(level.getServer(), player);
+        ItemUseSelfTestB173.run(level, player, base);
         // single player: the client's and the server's player share an entity id (Entity.equals compares ids); each needs its own view
         var twin = net.neoforged.neoforge.common.util.FakePlayerFactory.getMinecraft(level);
         int twinId = twin.getId();

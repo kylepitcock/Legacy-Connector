@@ -144,6 +144,24 @@ The server test runs `B1.7.3 BEHAVIOUR TEST`: every mod block placed, given a ne
 a fake player, asked for redstone power and removed. With the 11 mods: 10 callbacks fail, all of blocks whose tile entity is missing (NetherCraft's
 furnace and chest, Portal Gun's portals); 6 blocks use the right click. RedPower's lamp switches itself off without power.
 
+## Item interactions
+
+Ordinary mod items are hosted by `LegacyB173Item`. Main-hand use on a block calls the legacy `Item.useOnBlock`
+with the clicked position and Beta side number; right-click in the air calls `Item.use`. Both use the existing
+world and player views and bind `Minecraft.world` to that callback's level. Inventory changes are written back
+on the server, including a returned replacement stack or null (the held stack was consumed). A mod can open
+a menu through `ModLoader.OpenGUI` from either callback, using the same bridge as block GUIs.
+
+An unhandled block use passes through. Items without an overridden air-use callback also pass through.
+Offhand use passes through without calling Beta code (Beta only had a selected inventory slot).
+Callback exceptions are contained and logged, at most three per item. This connects the callbacks; individual
+items can still need missing legacy APIs such as projectile entities. Block items retain their modern placement
+path; custom block-item callbacks, entity interactions, combat, eating animations and inventory ticks are separate work.
+
+The development server's `B1.7.3 ITEM USE TEST` checks position/side/world, consumption, returned replacements,
+direct inventory replacement, preservation of unrelated modern items, offhand pass-through and an item callback
+opening a real 63-slot server menu. The test fixture is registered only when the self-test flag is enabled.
+
 ## Tile entities
 
 - **NBT** is b1.7.3's own (`net.minecraft.nbt` in the shim: compound, list and the eight value tags, with the binary format of the time);
@@ -206,7 +224,8 @@ callback runs on the server's and on the client's level here (as every block cal
   vanilla and the converted recipes; smelting results cached per item id). `InventoryCrafting`, `InventoryCraftResult` and `SlotCrafting`
   are the shim's.
 
-`B1.7.3 GUI TEST` (server test; a fake player opens no menus, so the test builds each `LegacyB173Menu` from the container `OpenGUI` got):
+`B1.7.3 GUI TEST` uses a real `ServerPlayer` with a connection that sends nothing, exercising `ServerPlayer.openMenu`
+(a fake player refuses menus). It also checks that players sharing an entity id receive distinct player views:
 every block is placed from its item where it has one (as a player would) and right-clicked, blocks with a tile entity with each metadata
 (492 tries with Aether in the set). 113 open a container GUI, 23 container classes (IndustrialCraft 2's iron and electric furnaces,
 macerator-type machines, canner, miner, pump, electrolyzer, induction furnace, mass fabricator, generators, nuclear reactor, energy
@@ -270,7 +289,7 @@ build now gets past OpenAL and stops at `ModLoader.getPrivateValue` with an obfu
 ## Plan
 
 0. **GUIs, rest**: ModLoaderMP's client side (`BaseModMp.HandleGUI` builds the client GUI for a server's `OpenGUI(player, id, inventory,
-   container)`; today the client draws a plain panel for those), item and entity GUIs (right click on an item or a mob), tile entity
+   container)`; today the client draws a plain panel for those), entity GUIs (item right-click callbacks are bridged), tile entity
    special renderers (`RegisterTileEntity(class, id, renderer)`, kept).
 1. **Rendering, rest**: custom block renderers (`RenderWorldBlock`, render types 7-17: doors, stairs, fences, rails, ...), animated
    sprites (`ModTextureAnimation`), colour multipliers; item subtypes of plain items (block items have them: models and names per metadata).
