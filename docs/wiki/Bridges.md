@@ -98,8 +98,8 @@ With the modern Patchouli (NeoForge 1.21.1) installed, 1.12.2 mods' Patchouli bo
   layer generated (`mod:name_code`); `smelting` pages (1.12 names the input item) become recipe pages of the generated furnace
   recipe, or a `spotlight` of the input when there is none; page types get `patchouli:`; template pages and includes get the book's
   namespace; template component types get `patchouli:` (the modern reader drops unknown types, which left every template page blank);
-  `advancement` locks on a mod's own advancements are dropped (1.12 keeps them in `assets/<mod>/advancements`, which the layer does not
-  convert, so the lock would hide the entry for good; vanilla ones stay); values 1.12 processors return are read as modern ids (stacks are
+  `advancement` locks are kept for vanilla advancements and for the mod advancements the layer converted (see [1.12.2 advancements](#1122-advancements));
+  a lock on any other advancement would hide the entry for good and is dropped; values 1.12 processors return are read as modern ids (stacks are
   serialized with the modern item id, renamed vanilla entities such as `zombie_pigman` get their modern name); resource ids are lower-cased;
   `creative_tab` maps the 1.12 tab names to modern tabs (an unknown tab is dropped).
 * **The book item.** `getBookStack("mod:book")` returns the modern guide book stack with its `patchouli:book` component, wrapped for legacy
@@ -113,6 +113,31 @@ With the modern Patchouli (NeoForge 1.21.1) installed, 1.12.2 mods' Patchouli bo
   1.14 to 1.20 the files are already in `data/` with the modern structure, and the converter has to turn `mod:item{nbt}` stacks into
   `mod:item[components]`, move the contents to the resource pack (`use_resource_pack`), and map renamed fields (`extend`, multiblock `pattern`
   keys, `advancement`/`flag`). No converter is registered for them yet because those layers do not exist.
+
+## 1.12.2 advancements
+
+1.12 mods ship advancements as `assets/<mod>/advancements/**.json` (read from the mod's jar); the modern game reads `data/<mod>/advancement/**.json` in
+another format. `Advancements1122` converts every file when the data pack is built (item subtypes, entity types, recipes and biomes need the
+registries) and serves the result from the bottom data pack, so world data packs replace or remove them like any mod's advancement; the
+conversion rules are `AdvancementConverter1122` (pure JSON, unit tested). The server logs `1.12.2 advancements of mod jars: N converted ...` and,
+once started, `1.12.2 advancements loaded by the server: X of N`.
+
+- **Display:** icon `{item, data}` becomes `{id}` of the flattened item (an unknown item shows a barrier), title/description text components,
+  `frame`, `background`, `hidden`, `show_toast`, `announce_to_chat` and `parent` carry over (mod advancements whose parent does not exist become roots).
+- **Rewards:** `experience`, `recipes` (ids of the generated data pack recipes, `mod:name_code`) and `loot`; `function` is dropped (logged).
+- **Vanilla triggers** become the modern conditions (`items` with `data` become the list of the item's flattened subtypes): `inventory_changed`,
+  `consume_item`, `enchanted_item`, `item_durability_changed`, `used_totem`, `filled_bucket`, `placed_block`, `enter_block`, `recipe_unlocked`, `tick`,
+  `location` (biome, dimension, position, vanilla structures), `changed_dimension`, `effects_changed`, `player_killed_entity`, `entity_killed_player`,
+  `player_hurt_entity`, `entity_hurt_player`, `tame_animal`, `bred_animals`, `summoned_entity`, `villager_trade`, `cured_zombie_villager`,
+  `construct_beacon`, `brewed_potion`, `levitation`, `nether_travel`, `impossible`. Entity predicates become `entity_properties` conditions.
+  What cannot be expressed (an entity, item or block the layer did not register, a structure of a mod's own world generator, a trigger 1.21 does
+  not have) makes that criterion `minecraft:impossible` and is listed in the log once per kind; NBT and damage-type conditions are dropped.
+- **Triggers of mods** (`CriteriaTriggers.register(new MyTrigger())`): the criterion becomes `legacyconnector:legacy` carrying the original conditions;
+  when a player's advancements start listening, the mod's own `ICriterionTrigger.deserializeInstance` parses them and its `addListener` gets a
+  legacy listener whose `grantCriterion` awards the criterion. Mods keep firing their triggers from code as in 1.12.
+- **Code:** `AdvancementManager.getAdvancement`, `EntityPlayerMP.getAdvancements().grantCriterion/revokeCriterion/getProgress` are views over the
+  modern server's.
+- **Not done:** 1.12 `.mcfunction` rewards, `killing_blow` and damage-type conditions, item/entity NBT conditions.
 
 ## Possible book bridges
 
