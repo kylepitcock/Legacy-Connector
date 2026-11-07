@@ -40,6 +40,8 @@ public final class ForwardCalls {
             if (method.instructions == null) continue;
             for (AbstractInsnNode insn = method.instructions.getFirst(); insn != null; insn = insn.getNext()) {
                 if (insn instanceof MethodInsnNode m && !m.owner.startsWith("[")) {
+                    // a bridge method (BridgeMethods) calls the mod's own method of the same name under its old descriptor: that call stays
+                    if ((method.access & Opcodes.ACC_SYNTHETIC) != 0 && m.owner.equals(node.name) && m.name.equals(method.name)) continue;
                     AbstractInsnNode last = m.name.equals("<init>") ? constructor(method, m, table, norm) : call(method, m, table, norm);
                     if (last != null) {
                         insn = last;
@@ -125,6 +127,7 @@ public final class ForwardCalls {
                 return m;
             }
             case "static" -> {
+                if (m.getOpcode() == Opcodes.INVOKESPECIAL) return null; // super.x(): a helper that calls back into the override would loop
                 MethodInsnNode helper = new MethodInsnNode(Opcodes.INVOKESTATIC, rule[5], rule[6], norm.linkDesc(rule[7]), false);
                 list.set(m, helper);
                 return helper;

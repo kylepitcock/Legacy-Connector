@@ -24,3 +24,7 @@ F	net/minecraft/entity/EntityHanging	yPosition	field_146064_c
 F	net/minecraft/entity/EntityHanging	zPosition	field_146062_d
 # 1.4.7 getBlockName() is the unlocalized name ("tile." + name), 1.7.10's getUnlocalizedName()
 M	net/minecraft/block/Block	getBlockName	()Ljava/lang/String;	getUnlocalizedName
+# Texture indices: mods that call the index API of 1.4.7 get the sheet index behind the icon (round trip through SpriteSheets147)
+R	net/minecraft/item/Item	getIconFromDamage	(I)I	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	itemIconIndex	(Lnet/minecraft/item/Item;I)I
+R	net/minecraft/item/ItemStack	getIconIndex	()I	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	stackIconIndex	(Lnet/minecraft/item/ItemStack;)I
+R	net/minecraft/block/Block	getBlockTextureFromSide	(I)I	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	blockTextureFromSide	(Lnet/minecraft/block/Block;I)I
