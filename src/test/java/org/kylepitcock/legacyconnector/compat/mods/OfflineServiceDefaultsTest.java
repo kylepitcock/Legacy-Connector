@@ -29,4 +29,22 @@ class OfflineServiceDefaultsTest {
         assertEquals("x", merged.get("website").getAsString());
         assertTrue(merged.has("network-address") && merged.has("servers"));
     }
+
+    @Test
+    void refreshesPlaceholderPackHashesSeededByEarlierVersions(@TempDir Path dir) throws Exception {
+        OfflineServiceDefaults.beforePreInit("craftingdead", dir);
+        Path f = dir.resolve("craftingdead/craftingdead.json");
+        JsonObject good = JsonParser.parseString(Files.readString(f)).getAsJsonObject();
+        JsonObject old = good.deepCopy();
+        old.getAsJsonObject("resource-pack").addProperty("hash", "00000000000000000000000000000000");
+        old.getAsJsonObject("resource-pack").addProperty("url", "http://127.0.0.1:9/craftingdead.zip");
+        Files.writeString(f, old.toString());
+        OfflineServiceDefaults.beforePreInit("craftingdead", dir);
+        assertEquals(good.getAsJsonObject("resource-pack"), JsonParser.parseString(Files.readString(f)).getAsJsonObject().getAsJsonObject("resource-pack"));
+        // a pack entry pointing somewhere else is the user's own and stays
+        old.getAsJsonObject("resource-pack").addProperty("url", "https://example.org/pack.zip");
+        Files.writeString(f, old.toString());
+        OfflineServiceDefaults.beforePreInit("craftingdead", dir);
+        assertEquals("https://example.org/pack.zip", JsonParser.parseString(Files.readString(f)).getAsJsonObject().getAsJsonObject("resource-pack").get("url").getAsString());
+    }
 }
