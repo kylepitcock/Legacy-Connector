@@ -243,7 +243,22 @@ public class Chunk {
         return x == xPosition && z == zPosition;
     }
 
+    /**
+     * The state of a block of a loaded client chunk read straight from the chunk (no level lookups, no per-call world logic), or
+     * null when the generic path must answer (detached or server chunks, the bedrock row, heights outside the legacy range).
+     * Radar and map mods scan whole chunks block by block every tick; 1.6.4 answered from arrays, the level lookups of
+     * {@code World.getBlock} made Crafting Dead's minimap cost most of the frame.
+     */
+    public net.minecraft.world.level.block.state.BlockState mcc$clientState(int x, int y, int z) {
+        if (mcc$blocks != null || y < 1 || y > 255) return null;
+        var live = mcc$liveChunk();
+        if (live == null || !(live.getLevel() instanceof net.minecraft.client.multiplayer.ClientLevel) || live.getMinBuildHeight() > y || live.getMaxBuildHeight() <= y) return null;
+        return live.getBlockState(new net.minecraft.core.BlockPos(wx(x), y, wz(z)));
+    }
+
     public Block getBlock(int x, int y, int z) {
+        var fast = mcc$clientState(x, y, z);
+        if (fast != null) return org.kylepitcock.legacyconnector.v1_7_10.bridge.BlockBridge.legacyBlock(fast);
         if (mcc$blocks != null) {
             if (y < 0 || y >= mcc$height) return legacyconnector.v1_7_10.net.minecraft.init.Blocks.air;
             Block b = mcc$blocks[index(x, y, z)];
@@ -253,6 +268,8 @@ public class Chunk {
     }
 
     public int getBlockMetadata(int x, int y, int z) {
+        var fast = mcc$clientState(x, y, z);
+        if (fast != null) return org.kylepitcock.legacyconnector.v1_7_10.bridge.BlockBridge.legacyMeta(fast);
         if (mcc$blocks != null) return y < 0 || y >= mcc$height ? 0 : mcc$meta[index(x, y, z)] & 15;
         return worldObj.getBlockMetadata(wx(x), y, wz(z));
     }
