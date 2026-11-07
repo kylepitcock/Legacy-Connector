@@ -12,6 +12,7 @@ installed (the same idea as Connector Extras bridging Trinkets to Curios):
 | Baubles 1.0 (`baubles.api`) | [Curios](https://www.curseforge.com/minecraft/mc-mods/curios) | Baubles is skipped; `IBauble` items become curios in the ring/necklace/belt slots; `BaublesApi.getBaubles` reads the Curios slots. |
 | NotEnoughItems (`codechicken.nei`) | [JEI](https://www.curseforge.com/minecraft/mc-mods/jei) | NEI is skipped; mods' `NEI*Config` plugins run; each legacy recipe handler becomes a JEI category drawn by the handler itself ([details](#nei--jei-recipe-categories)); NEI-hidden items are hidden in JEI. NEI always came with CodeChickenLib, so without a 1.7.10 CodeChickenLib jar its API (`codechicken.lib`: `GuiDraw`, `Rectangle4i`, ...) is bridged too (a modern CodeChickenLib in the pack does not count); NEI's GUI hooks (`INEIGuiHandler`, `INEIGuiAdapter`, `API.registerNEIGuiHandler`) are accepted and ignored, as JEI lays out its own panel. |
 | Waila (`mcp.mobius.waila.api`) | [Jade](https://www.curseforge.com/minecraft/mc-mods/jade) | Waila is skipped; legacy tooltip providers registered through Waila's IMC callback show their lines in Jade. |
+| Patchouli 1.12 (`vazkii.patchouli.api`, 1.12.2 only) | [Patchouli](https://modrinth.com/mod/patchouli) | The legacy Patchouli is skipped; legacy mods' books are shown by the modern one ([details](#patchouli-books)). |
 | CoFH RF API (`cofh.api.energy`, shaded by most tech mods) | NeoForge Energy capability (built in) | Always on: RF tiles and items expose `IEnergyStorage` (1 RF = 1 FE), so modern cables and machines connect. |
 
 | IC2 EU, BuildCraft MJ, Forge fluids, `IInventory` | NeoForge Energy / Fluid / Item capabilities (built in) | Always on: legacy tiles and items are capabilities by default (EU at `energy.fePerEu` = 4 FE, MJ at `energy.fePerMj` = 10 FE; `.in`/`.out` suffixes set each direction, 0 turns it off, see [Configuration](Configuration.md)). Details in [Addon-API](Addon-API.md#capabilities). |
@@ -36,6 +37,7 @@ above); *engine bridges* map a legacy system onto the 1.21 one it corresponds to
 | Baubles → Curios | `baubles.api` | Curios slots |
 | NEI → JEI | `codechicken.nei` | JEI categories and hidden items |
 | Waila → Jade | `mcp.mobius.waila.api` | Jade tooltips |
+| Patchouli 1.12 → Patchouli | `vazkii.patchouli.api` | books, multiblocks, custom components ([details](#patchouli-books)) |
 | CoFH RF → NeoForge Energy | `cofh.api.energy` | `IEnergyStorage` (1 RF = 1 FE) |
 | Blocks and tile entities | `Block`, `TileEntity`, metadata | registered blocks and block entities, one per legacy block plus one per block subtype that has an item ([flattening](#block-subtypes-flattening)) |
 | Items and ItemStacks | `Item`, `ItemStack` damage/NBT | one item per metadata subtype, `CUSTOM_DATA` NBT |
@@ -72,6 +74,31 @@ above); *engine bridges* map a legacy system onto the 1.21 one it corresponds to
 | Mods built for a different version of another mod | only return-type drift is relinked (Binnie's mods against Forestry 4.2.16 still fail) |
 | 1.12.2 | alpha: most of the API mods use is implemented on both sides; see the status table and issue #64 |
 | 1.20.1, 1.16.5, 1.2.5 bridges | planned, in that order |
+
+## Patchouli books
+
+With the modern Patchouli (NeoForge 1.21.1) installed, 1.12.2 mods' Patchouli books work through it and the 1.12 Patchouli jar is skipped
+(`bridges.patchouli.enabled = false` loads the 1.12 jar instead; without the modern mod it loads as usual).
+
+* **API** (`legacyconnector/v1_12_2/vazkii/patchouli/api`, implementation in `compat/patchouli`): `PatchouliAPI.instance` with `getBookStack`,
+  `openBookGUI`, `setConfigFlag`/`getConfigFlag`, `registerMultiblock`/`getMultiblock`/`makeMultiblock`, the state matcher factories (1.12
+  `IBlockState` and `Block` arguments become modern states), `registerTemplateAsBuiltin`, `serializeItemStack`/`deserializeItemStack` and
+  the ingredient variants. Multiblocks and matchers are built when first used and registered with Patchouli once every mod's blocks exist
+  (1.12 mods build them in preInit). `ICustomComponent` and `IComponentProcessor` implementations are also modern ones, so the class names in
+  a book's json work; `@VariableHolder` string fields are filled from the page variables. The `BookEvent` classes exist but are not posted yet.
+  Classes mods use that are not API (`vazkii.patchouli.client...`, `common...`) are not provided.
+* **Books as resources.** 1.12 mods keep books in `assets/<mod>/patchouli_books/<book>/` (`book.json`, `<lang>/{categories,entries,templates}`);
+  the modern Patchouli reads `data/<mod>/patchouli_books/`. The loader stages the folder under `legacyconnector_legacy/` (the original stays
+  for the 1.12 Patchouli) and the runtime writes the converted files to the generated data pack when it is built (`PatchouliBooks`, unit
+  tested; `PatchouliBooks1122` supplies the ids from the registries):
+  items `mod:item:meta` become the flattened item (`mod:item_3`), also in icons, `spotlight` pages and template components; multiblock
+  `mapping` blocks go through the state bridge (`mod:block[meta=3]`); `crafting` recipe names become the id of the data-pack recipe the
+  layer generated (`mod:name_code`); `smelting` pages (1.12 names the input item) become recipe pages of the generated furnace
+  recipe, or a `spotlight` of the input when there is none; page types get `patchouli:`; template pages and includes get the book's
+  namespace; resource ids are lower-cased; `creative_tab` maps the 1.12 tab names to modern tabs (an unknown tab is dropped).
+* **The book item.** `getBookStack("mod:book")` returns the modern guide book stack with its `patchouli:book` component, wrapped for legacy
+  code (the `patchouli:guide_book` item is visible in the legacy item registry, so 1.12 recipes and loot that name it work, and a stack with
+  the 1.12 NBT tag `patchouli:book` becomes the modern book stack and back).
 
 ## NEI → JEI recipe categories
 

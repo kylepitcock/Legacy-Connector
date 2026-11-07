@@ -133,6 +133,7 @@ Mods work because the legacy API they were written against is rebuilt on top of 
 | Baubles | **Curios** | Bauble items go into Curios slots |
 | NotEnoughItems | **JEI** | Legacy recipe handlers become JEI categories and answer recipe/usage lookups |
 | Waila | **Jade** | Legacy tooltip providers show in Jade |
+| Patchouli (1.12.2) | **Patchouli** | Legacy mods' guide books (including the ones they ship as resources) open in the modern Patchouli |
 | CoFH RF API | **NeoForge Energy** | Always on. 1 RF = 1 FE, so modern cables connect |
 
 If the modern mod isn't installed, the legacy library loads as usual. Each replacement can also be turned off in the config to load the legacy library instead.
