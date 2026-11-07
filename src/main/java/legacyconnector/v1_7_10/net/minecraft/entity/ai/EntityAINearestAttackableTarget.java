@@ -18,6 +18,18 @@ public class EntityAINearestAttackableTarget extends EntityAITarget {
     protected Sorter theNearestAttackableTargetSorter;
     protected EntityLivingBase targetEntity;
 
+    /** 1.5.2 form: the owner is an EntityLiving, speeds are floats. */
+    /** 1.5.2 form: the owner is an EntityLiving, speeds are floats. */
+    public EntityAINearestAttackableTarget(legacyconnector.v1_7_10.net.minecraft.entity.EntityLiving e, Class<?> cls, float distance, int chance, boolean sight, boolean nearby) {
+        this(mcc$creature(e), cls, chance, sight, nearby, null);
+        this.targetDistance = distance;
+    }
+
+    public EntityAINearestAttackableTarget(legacyconnector.v1_7_10.net.minecraft.entity.EntityLiving e, Class<?> cls, float distance, int chance, boolean sight) {
+        this(mcc$creature(e), cls, chance, sight, false, null);
+        this.targetDistance = distance;
+    }
+
     public EntityAINearestAttackableTarget(EntityCreature owner, Class<?> targetClass, int chance, boolean checkSight) {
         this(owner, targetClass, chance, checkSight, false);
     }
@@ -38,6 +50,7 @@ public class EntityAINearestAttackableTarget extends EntityAITarget {
 
     @Override
     public boolean shouldExecute() {
+        if (taskOwner == null) return false;
         if (targetChance > 0 && taskOwner.getRNG().nextInt(targetChance) != 0) return false;
         if (!(taskOwner.mcc$entity instanceof LivingEntity self)) return false;
         double range = getTargetDistance();

@@ -10,6 +10,11 @@ public class EntityAIHurtByTarget extends EntityAITarget {
     private final boolean entityCallsForHelp;
     private int revengeTimer;
 
+    /** 1.5.2 form: the owner is an EntityLiving, speeds are floats. */
+    public EntityAIHurtByTarget(legacyconnector.v1_7_10.net.minecraft.entity.EntityLiving e, boolean help) {
+        this(mcc$creature(e), help);
+    }
+
     public EntityAIHurtByTarget(EntityCreature owner, boolean callsForHelp) {
         super(owner, false);
         this.entityCallsForHelp = callsForHelp;

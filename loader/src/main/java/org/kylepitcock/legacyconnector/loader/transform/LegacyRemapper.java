@@ -291,7 +291,7 @@ public final class LegacyRemapper extends Remapper {
             String mcp = notch.mcpClass(internalName);
             if (mcp != null) return map(mcp);
         }
-        if (version.flatNames() && internalName.indexOf('/') < 0 && MODLOADER_CLASSES.contains(internalName) && !notchLocals.containsKey(internalName)) {
+        if (internalName.indexOf('/') < 0 && MODLOADER_CLASSES.contains(internalName) && !notchLocals.containsKey(internalName)) {
             // ModLoader's classes are not obfuscated; a reobfuscated jar names them in the default package (mod_X extends BaseMod)
             return map("net/minecraft/src/" + internalName);
         }

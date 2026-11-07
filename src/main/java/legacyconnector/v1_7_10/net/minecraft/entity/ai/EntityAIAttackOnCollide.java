@@ -7,6 +7,16 @@ import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 public class EntityAIAttackOnCollide extends GoalTask {
     private final Class<?> classTarget;
 
+    /** 1.5.2 form: the owner is an EntityLiving, speeds are floats. */
+    /** 1.5.2 form: the owner is an EntityLiving, speeds are floats. */
+    public EntityAIAttackOnCollide(legacyconnector.v1_7_10.net.minecraft.entity.EntityLiving e, float speed, boolean m) {
+        this(mcc$creature(e), (double) speed, m);
+    }
+
+    public EntityAIAttackOnCollide(legacyconnector.v1_7_10.net.minecraft.entity.EntityLiving e, Class<?> cls, float speed, boolean m) {
+        this(mcc$creature(e), cls, (double) speed, m);
+    }
+
     public EntityAIAttackOnCollide(EntityCreature entity, Class<?> targetClass, double speed, boolean longMemory) {
         super(entity, 3, m -> new MeleeAttackGoal(m, speed, longMemory));
         this.classTarget = targetClass;

@@ -106,7 +106,8 @@ public final class LegacyCoreModTransformers {
             }
             Class<?> lclClass = apiLoader.loadClass("net.minecraft.launchwrapper.LaunchClassLoader");
             lclClass.getField("mcc$definer").set(null, (UnaryOperator<byte[]>) LegacyCoreModTransformers::modernizeApi);
-            URLClassLoader lcl = (URLClassLoader) lclClass.getConstructor(URL[].class, ClassLoader.class)
+            Class<?> lclImpl = api == LegacyVersion.V1_6_4 ? apiLoader.loadClass("cpw.mods.fml.relauncher.RelaunchClassLoader") : lclClass;
+            URLClassLoader lcl = (URLClassLoader) lclImpl.getConstructor(URL[].class, ClassLoader.class)
                     .newInstance(urls.toArray(URL[]::new), fml);
             Class<?> launch = apiLoader.loadClass("net.minecraft.launchwrapper.Launch");
             launch.getField("classLoader").set(null, lcl);

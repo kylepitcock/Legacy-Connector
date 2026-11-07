@@ -12,6 +12,20 @@ public abstract class EntityAITarget extends EntityAIBase {
     protected boolean shouldCheckSight;
     private final boolean nearbyOnly;
     private int unseenTicks;
+    /** The follow distance 1.5.2 tasks pass to their constructor (0 = use the follow range attribute). */
+    protected float targetDistance;
+
+    /** 1.5.2 form: the owner is an EntityLiving, speeds are floats. */
+    /** 1.5.2 form: the owner is an EntityLiving, speeds are floats. */
+    public EntityAITarget(legacyconnector.v1_7_10.net.minecraft.entity.EntityLiving e, float distance, boolean sight, boolean nearby) {
+        this(mcc$creature(e), sight, nearby);
+        this.targetDistance = distance;
+    }
+
+    public EntityAITarget(legacyconnector.v1_7_10.net.minecraft.entity.EntityLiving e, float distance, boolean sight) {
+        this(mcc$creature(e), sight, false);
+        this.targetDistance = distance;
+    }
 
     public EntityAITarget(EntityCreature owner, boolean checkSight) {
         this(owner, checkSight, false);
@@ -37,6 +51,7 @@ public abstract class EntityAITarget extends EntityAIBase {
     }
 
     protected double getTargetDistance() {
+        if (targetDistance > 0) return targetDistance;
         var a = taskOwner.getEntityAttribute(SharedMonsterAttributes.followRange);
         return a == null ? 16.0 : a.getAttributeValue();
     }
