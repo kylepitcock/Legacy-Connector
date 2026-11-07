@@ -88,6 +88,8 @@ public final class LegacyConfig {
             energy.fePerEu = 4
             # FE per BuildCraft MJ (BuildCraft's own rule: 1 MJ = 10 RF).
             energy.fePerMj = 10
+            # FE per Universal Electricity joule (1.6.4 mods built on UE: ICBM, Minechem, Mad Science, Resonant Engine).
+            energy.fePerJoule = 1
             # Per direction (each defaults to the single key above; 0 turns that direction off). "in" = FE received by a legacy tile
             # or item (modern cables/generators powering legacy machines), "out" = FE extracted from one (legacy generators feeding
             # modern cables). Stored/capacity readouts keep using the single key.
@@ -95,6 +97,8 @@ public final class LegacyConfig {
             # energy.fePerEu.out = 4
             # energy.fePerMj.in = 10
             # energy.fePerMj.out = 10
+            # energy.fePerJoule.in = 1
+            # energy.fePerJoule.out = 1
 
             # Memory optimizations (see the Performance page of the wiki). Each can be switched off on its own.
             # Release the legacy views of unloaded levels and stopped servers (old client levels after a dimension change).
@@ -237,6 +241,21 @@ public final class LegacyConfig {
     /** FE per MJ for FE extracted from a BuildCraft tile; 0 = off. Defaults to {@link #fePerMj()}. */
     public static int fePerMjOut() {
         return nonNegativeInt("energy.fePerMj.out", fePerMj());
+    }
+
+    /** FE per Universal Electricity joule (energy.fePerJoule, default 1). */
+    public static int fePerJoule() {
+        return positiveInt("energy.fePerJoule", 1);
+    }
+
+    /** FE per joule for FE received by a Universal Electricity tile; 0 = off. Defaults to {@link #fePerJoule()}. */
+    public static int fePerJouleIn() {
+        return nonNegativeInt("energy.fePerJoule.in", fePerJoule());
+    }
+
+    /** FE per joule for FE extracted from a Universal Electricity tile; 0 = off. Defaults to {@link #fePerJoule()}. */
+    public static int fePerJouleOut() {
+        return nonNegativeInt("energy.fePerJoule.out", fePerJoule());
     }
 
     private static int nonNegativeInt(String key, int fallback) {

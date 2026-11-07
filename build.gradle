@@ -211,6 +211,7 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 // Game classes (netty, vanilla packets) for the tests of shim classes that mention them in their signatures; nothing is bootstrapped.
+sourceSets.test.compileClasspath += sourceSets.main.compileClasspath
 sourceSets.test.runtimeClasspath += sourceSets.main.compileClasspath
 // ... and the tests of the energy bridges name NeoForge's IEnergyStorage / Direction directly
 sourceSets.test.compileClasspath += sourceSets.main.compileClasspath

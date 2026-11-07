@@ -45,4 +45,41 @@ class EnergyRatesTest {
         assertEquals(5, EnergyRates.legacySide(5));
         assertEquals(6, EnergyRates.legacySide(-1));
     }
+
+    @Test
+    void tierFollowsTheMaxSafeInputOfTheSink() {
+        assertEquals(0, EnergyRates.tierFromMaxSafeInput(8));
+        assertEquals(1, EnergyRates.tierFromMaxSafeInput(9));
+        assertEquals(1, EnergyRates.tierFromMaxSafeInput(32));
+        assertEquals(2, EnergyRates.tierFromMaxSafeInput(33));
+        assertEquals(2, EnergyRates.tierFromMaxSafeInput(128));
+        assertEquals(3, EnergyRates.tierFromMaxSafeInput(512));
+        assertEquals(4, EnergyRates.tierFromMaxSafeInput(2048));
+        assertEquals(12, EnergyRates.tierFromMaxSafeInput(Integer.MAX_VALUE));
+    }
+
+    @Test
+    void aSinkOwnSafeInputBeatsItsTierLimit() {
+        assertEquals(100.0, EnergyRates.sinkLimit(100, 2)); // 1.5.2 sinks report an exact limit, below the tier-2 packet of 128
+        assertEquals(128.0, EnergyRates.sinkLimit(0, 2));
+        assertEquals(30.0, EnergyRates.euToInjectLimited(1000, 4, 500, 30));
+        assertEquals(10.0, EnergyRates.euToInjectLimited(1000, 4, 10.9, 30)); // demand rounds down
+        assertEquals(0.0, EnergyRates.euToInjectLimited(3, 4, 500, 30)); // 3 FE do not buy one EU
+    }
+
+    @Test
+    void whatASinkTookIsTheOfferMinusTheLeftoverWithinBounds() {
+        assertEquals(24.0, EnergyRates.accepted(32, 8));
+        assertEquals(0.0, EnergyRates.accepted(32, 32));
+        assertEquals(0.0, EnergyRates.accepted(32, 50)); // a leftover above the offer is a bug of the mod, not negative energy
+        assertEquals(32.0, EnergyRates.accepted(32, -5)); // nor more than offered
+    }
+
+    @Test
+    void buildCraftOfferIsBoundedByRequestAndMinimum() {
+        assertEquals(5.0, EnergyRates.mjToOffer(1000, 10, 5, 1));
+        assertEquals(0.0, EnergyRates.mjToOffer(15, 10, 50, 2)); // 1 MJ is under the minimum
+        assertEquals(2.0, EnergyRates.mjToOffer(20, 10, 50, 2));
+        assertEquals(0.0, EnergyRates.mjToOffer(1000, 10, 0, 0));
+    }
 }

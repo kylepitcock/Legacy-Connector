@@ -38,3 +38,4 @@ net/minecraft/world/gen/structure/StructureComponent	getMetadataWithOffset	(II)I
 net/minecraft/world/gen/structure/StructureComponent	func_143012_a	(Lnet/minecraft/nbt/NBTTagCompound;)V	writeStructureToNBT	(Lnet/minecraft/nbt/NBTTagCompound;)V
 net/minecraft/world/gen/structure/StructureComponent	func_143011_b	(Lnet/minecraft/nbt/NBTTagCompound;)V	readStructureFromNBT	(Lnet/minecraft/nbt/NBTTagCompound;)V
 cpw/mods/fml/client/registry/ISimpleBlockRenderingHandler	shouldRender3DInInventory	()Z	shouldRender3DInInventory	(I)Z
+cofh/api/energy/IEnergyConnection	canInterface	(Lnet/minecraftforge/common/util/ForgeDirection;)Z	canConnectEnergy	(Lnet/minecraftforge/common/util/ForgeDirection;)Z

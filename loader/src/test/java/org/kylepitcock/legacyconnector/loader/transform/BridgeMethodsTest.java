@@ -34,6 +34,9 @@ class BridgeMethodsTest implements Opcodes {
     private static final String NEIGHBOR_OLD = "(L" + WORLD + ";IIII)V";
     private static final String NEIGHBOR_NEW = "(L" + WORLD + ";IIIL" + BLOCK + ";)V";
 
+    private static final String RF_CONN = "legacyconnector/v1_7_10/cofh/api/energy/IEnergyConnection";
+    private static final String FD = "legacyconnector/v1_7_10/net/minecraftforge/common/util/ForgeDirection";
+
     private static ClassInfo cls(String name, String sup, String... itf) {
         return new ClassInfo(name, sup, List.of(itf), ACC_PUBLIC);
     }
@@ -54,7 +57,9 @@ class BridgeMethodsTest implements Opcodes {
         ClassInfo fItem = cls(P6 + "item/Item", "java/lang/Object");
         fItem.methods.put("mcc$get$itemID(L" + ITEM + ";)I", ACC_PUBLIC | ACC_STATIC);
         fItem.methods.put("mcc$fromId(I)L" + ITEM + ";", ACC_PUBLIC | ACC_STATIC);
-        for (ClassInfo c : List.of(obj, block, item, world, access, plantable, fBlock, fItem)) shim.put(c.name, c);
+        ClassInfo rfConn = new ClassInfo(RF_CONN, "java/lang/Object", List.of(), ACC_PUBLIC | ACC_INTERFACE | ACC_ABSTRACT);
+        rfConn.methods.put("canConnectEnergy(L" + FD + ";)Z", ACC_PUBLIC | ACC_ABSTRACT);
+        for (ClassInfo c : List.of(obj, block, item, world, access, plantable, fBlock, fItem, rfConn, cls(FD, "java/lang/Object"))) shim.put(c.name, c);
         return new Hierarchy(new ShimIndex(shim), null, Map.of(), LegacyVersion.V1_6_4);
     }
 
@@ -262,5 +267,24 @@ class BridgeMethodsTest implements Opcodes {
         }
         assertTrue(widens);
         assertEquals("attackEntityFrom(L" + DAMAGE + ";F)Z", called);
+    }
+
+    @Test
+    void aCofhEnergyHandlerWithCanInterfaceGetsCanConnectEnergy() {
+        LegacyVersion.setBridgedRoots(List.of("cofh/api/energy/"));
+        try {
+            Hierarchy h = hierarchy();
+            ClassNode mod = mod(h, "mod/Tile", "java/lang/Object", n -> {
+                n.interfaces.add(RF_CONN);
+                method(n, "canInterface", "(L" + FD + ";)Z");
+            });
+            assertEquals(1, BridgeMethods.apply(mod, h, LegacyVersion.V1_6_4));
+            MethodNode bridge = find(mod, "canConnectEnergy", "(L" + FD + ";)Z");
+            assertNotNull(bridge);
+            assertEquals(List.of(INVOKEVIRTUAL + ":mod/Tile.canInterface(L" + FD + ";)Z"), ops(bridge));
+            assertEquals(IRETURN, bridge.instructions.getLast().getOpcode());
+        } finally {
+            LegacyVersion.setBridgedRoots(List.of());
+        }
     }
 }
