@@ -290,7 +290,8 @@ public final class Platform1710 implements LegacyPlatform {
             if (!LegacyMods.family(mod.version).equals("1.7.10") || mod.instance == null) continue;
             try {
                 dispatch(mod, factory.apply(mod));
-            } catch (Exception e) {
+            } catch (Exception | LinkageError e) {
+                // A mod that failed to link (a missing optional API such as ComputerCraft's turtle API) must not end the server.
                 LOG.error("{} failed handling a server lifecycle event", mod.legacyId, e);
             }
         }

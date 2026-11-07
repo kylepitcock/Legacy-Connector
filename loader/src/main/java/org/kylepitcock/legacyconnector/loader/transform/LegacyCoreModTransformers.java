@@ -193,12 +193,71 @@ public final class LegacyCoreModTransformers {
                     owners.put(tr.name(), l.jar());
                 }
             }
+            // Transformers a mod registers itself ({@code Launch.classLoader.registerTransformer} in a static initialiser, which FML 1.5 ran
+            // while loading the mod's classes: Immibis Core's trait injection): run those initialisers in the stand-in loader.
+            try {
+                Method getTransformers = lclClass.getMethod("getTransformers");
+                for (LegacyJar jar : coremods) {
+                    for (String holder : staticTransformerRegistrars(jar.path)) {
+                        timed(holder, jar, lcl, () -> Class.forName(holder, true, lcl));
+                        for (Object t : (List<?>) getTransformers.invoke(lcl)) {
+                            String name = t.getClass().getName();
+                            if (transformerType.isInstance(t) && out.stream().noneMatch(o -> o.name().equals(name))) {
+                                out.add(new Transformer(name, t));
+                                owners.put(name, jar.fileName());
+                            }
+                        }
+                    }
+                }
+            } catch (Throwable e) {
+                LOG.warn("Legacy Connector: transformers registered by mod classes could not be collected: {}", rootChain(e));
+            }
             if (!out.isEmpty()) LOG.info("Legacy Connector: applying {} legacy coremod class transformer(s): {}", out.size(), owners);
             return new LegacyCoreModTransformers(out, exclusions, transform);
         } catch (Throwable e) {
             LOG.warn("Legacy Connector: legacy coremod transformers are not applied", e);
             return empty();
         }
+    }
+
+    /** The classes of a jar whose static initialiser calls {@code registerTransformer} on a class loader (mods that install their own transformers). */
+    private static List<String> staticTransformerRegistrars(Path jar) {
+        List<String> found = new ArrayList<>();
+        try (var zip = new java.util.zip.ZipFile(jar.toFile())) {
+            var entries = zip.entries();
+            while (entries.hasMoreElements()) {
+                var e = entries.nextElement();
+                if (!e.getName().endsWith(".class") || e.getSize() > 400_000) continue;
+                byte[] bytes;
+                try (InputStream in = zip.getInputStream(e)) {
+                    bytes = in.readAllBytes();
+                }
+                if (indexOf(bytes, "registerTransformer".getBytes(java.nio.charset.StandardCharsets.ISO_8859_1)) < 0) continue;
+                var node = new org.objectweb.asm.tree.ClassNode();
+                new ClassReader(bytes).accept(node, ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
+                for (var m : node.methods) {
+                    if (!m.name.equals("<clinit>")) continue;
+                    for (var insn : m.instructions) {
+                        if (insn instanceof org.objectweb.asm.tree.MethodInsnNode mi && mi.name.equals("registerTransformer") && mi.owner.endsWith("ClassLoader")) {
+                            found.add(node.name.replace('/', '.'));
+                            break;
+                        }
+                    }
+                }
+            }
+        } catch (java.io.IOException | RuntimeException ex) {
+            LOG.debug("Legacy Connector: {} could not be scanned for transformer registrations: {}", jar.getFileName(), ex.toString());
+        }
+        return found;
+    }
+
+    private static int indexOf(byte[] data, byte[] needle) {
+        outer:
+        for (int i = 0; i + needle.length <= data.length; i++) {
+            for (int j = 0; j < needle.length; j++) if (data[i + j] != needle[j]) continue outer;
+            return i;
+        }
+        return -1;
     }
 
     /** Coremod code of the 1.5 era makes ClassLoader.defineClass accessible (CodeChickenCore's DelegatedTransformer); Java 8 let it. */

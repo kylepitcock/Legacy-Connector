@@ -102,6 +102,14 @@ public class TileEntity {
         }
     }
 
+    /**
+     * 1.5.2 name of {@link #markDirty()}. Mods declare their own interfaces with this method (Applied Energistics' IInventoryNotifyable) and
+     * rely on the tile entity superclass to implement it: the forward tables rename calls on shim types, not an interface call on a mod type.
+     */
+    public void onInventoryChanged() {
+        markDirty();
+    }
+
     public double getDistanceFrom(double x, double y, double z) {
         double dx = xCoord + 0.5D - x, dy = yCoord + 0.5D - y, dz = zCoord + 0.5D - z;
         return dx * dx + dy * dy + dz * dz;
