@@ -212,7 +212,7 @@ public class RenderBlocks {
         int at = name.lastIndexOf(slug);
         if (at < 0) return icon;
         try {
-            return mcc$tile(Integer.parseInt(name.substring(at + slug.length())));
+            return mcc$tile(null, Integer.parseInt(name.substring(at + slug.length())));
         } catch (NumberFormatException e) {
             return icon;
         }
@@ -475,10 +475,20 @@ public class RenderBlocks {
      * its cable arms and connectors with them). The icon built here covers that tile in sheet space, so the quads carry the UVs the
      * 1.4.7 code computed and the sheet mapping of IsbrhQuads sends them to the tile the pack cut.
      */
-    private static IIcon mcc$tile(int tile) {
-        // not capturing a block's geometry (an item in a slot or the hand): quads are drawn against the atlas, so the tile's cut sprite
+    private static IIcon mcc$tile(Block block, int tile) {
+        // not capturing a block's geometry (an item in a slot or the hand): quads are drawn against the atlas, so the tile's cut sprite. The sheet
+        // is the one the renderer bound, else the block's own (1.4.7's item renderers got the item's sheet bound; BuildCraft's pipe items draw
+        // the pipe block's faces by tile index with nothing bound by name)
         if (!org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.capturing()) {
             String sheet = org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.sheet();
+            if (sheet == null && block != null) {
+                try {
+                    String own = block.getTextureFile();
+                    if (own != null && org.kylepitcock.legacyconnector.v1_6_4.bridge.SpriteSheets147.isCutSheet(own)) sheet = own;
+                } catch (RuntimeException | LinkageError e) {
+                    sheet = null;
+                }
+            }
             if (sheet != null) return org.kylepitcock.legacyconnector.v1_6_4.bridge.SpriteSheets147.icon(sheet, tile, true);
         }
         final float u0 = ((tile & 15) << 4) / 256.0F, v0 = (tile & 240) / 256.0F, size = 16.0F / 256.0F;
@@ -495,12 +505,12 @@ public class RenderBlocks {
         };
     }
 
-    public void renderBottomFace(Block block, double x, double y, double z, int tile) { renderFaceYNeg(block, x, y, z, mcc$tile(tile)); }
-    public void renderTopFace(Block block, double x, double y, double z, int tile) { renderFaceYPos(block, x, y, z, mcc$tile(tile)); }
-    public void renderEastFace(Block block, double x, double y, double z, int tile) { renderFaceZNeg(block, x, y, z, mcc$tile(tile)); }
-    public void renderWestFace(Block block, double x, double y, double z, int tile) { renderFaceZPos(block, x, y, z, mcc$tile(tile)); }
-    public void renderNorthFace(Block block, double x, double y, double z, int tile) { renderFaceXNeg(block, x, y, z, mcc$tile(tile)); }
-    public void renderSouthFace(Block block, double x, double y, double z, int tile) { renderFaceXPos(block, x, y, z, mcc$tile(tile)); }
+    public void renderBottomFace(Block block, double x, double y, double z, int tile) { renderFaceYNeg(block, x, y, z, mcc$tile(block, tile)); }
+    public void renderTopFace(Block block, double x, double y, double z, int tile) { renderFaceYPos(block, x, y, z, mcc$tile(block, tile)); }
+    public void renderEastFace(Block block, double x, double y, double z, int tile) { renderFaceZNeg(block, x, y, z, mcc$tile(block, tile)); }
+    public void renderWestFace(Block block, double x, double y, double z, int tile) { renderFaceZPos(block, x, y, z, mcc$tile(block, tile)); }
+    public void renderNorthFace(Block block, double x, double y, double z, int tile) { renderFaceXNeg(block, x, y, z, mcc$tile(block, tile)); }
+    public void renderSouthFace(Block block, double x, double y, double z, int tile) { renderFaceXPos(block, x, y, z, mcc$tile(block, tile)); }
 
     public void renderFaceYNeg(Block block, double x, double y, double z, IIcon icon) {
         Tessellator t = Tessellator.mcc$get$instance();
