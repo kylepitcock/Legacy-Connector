@@ -787,16 +787,6 @@ public final class Block {
         return Ids.as(legacyconnector.v1_7_10.net.minecraft.block.BlockRedstoneRepeater.class, legacyconnector.v1_7_10.net.minecraft.init.Blocks.unpowered_repeater);
     }
 
-    /** Block.redstoneComparatorIdle = Blocks.unpowered_comparator (1.5 and 1.6) */
-    public static legacyconnector.v1_7_10.net.minecraft.block.BlockRedstoneComparator mcc$get$redstoneComparatorIdle() {
-        return Ids.as(legacyconnector.v1_7_10.net.minecraft.block.BlockRedstoneComparator.class, legacyconnector.v1_7_10.net.minecraft.init.Blocks.unpowered_comparator);
-    }
-
-    /** Block.redstoneComparatorActive = Blocks.powered_comparator */
-    public static legacyconnector.v1_7_10.net.minecraft.block.BlockRedstoneComparator mcc$get$redstoneComparatorActive() {
-        return Ids.as(legacyconnector.v1_7_10.net.minecraft.block.BlockRedstoneComparator.class, legacyconnector.v1_7_10.net.minecraft.init.Blocks.powered_comparator);
-    }
-
     /** Block.redstoneWire = Blocks.redstone_wire */
     public static legacyconnector.v1_7_10.net.minecraft.block.BlockRedstoneWire mcc$get$redstoneWire() {
         return Ids.as(legacyconnector.v1_7_10.net.minecraft.block.BlockRedstoneWire.class, legacyconnector.v1_7_10.net.minecraft.init.Blocks.redstone_wire);
