@@ -210,6 +210,8 @@ dependencies {
     testImplementation 'com.google.code.gson:gson:2.10.1' // book json conversion tests (Gson is not on the test class path otherwise)
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
+// Game classes (netty, vanilla packets) for the tests of shim classes that mention them in their signatures; nothing is bootstrapped.
+sourceSets.test.runtimeClasspath += sourceSets.main.compileClasspath
 tasks.withType(Test).configureEach { useJUnitPlatform() }
 
 // The addon API alone (classes + sources), the compile-time dependency of addons: build/dist/legacyconnector-api-<version>.jar.

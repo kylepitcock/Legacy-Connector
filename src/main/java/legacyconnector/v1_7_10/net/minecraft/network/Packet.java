@@ -36,6 +36,33 @@ public abstract class Packet {
         writePacketData((java.io.DataOutput) new java.io.DataOutputStream(new io.netty.buffer.ByteBufOutputStream(data)));
     }
 
+    /** 1.6.4's running total of the bytes written through {@link #writePacket} (the network threads' statistics). */
+    public static long sentSize;
+
+    /**
+     * 1.6.4's {@code Packet.writePacket(packet, out)}: the packet id byte, then the packet data. The id is the number in the class name of the
+     * numbered vanilla packets ({@code Packet250CustomPayload} is 250); other packets are written as custom payloads (250).
+     */
+    public static void writePacket(Packet packet, java.io.DataOutput out) throws IOException {
+        if (packet == null) return;
+        out.writeByte(mcc$idOf(packet.getClass()));
+        packet.writePacketData(out);
+        sentSize += 1 + packet.getPacketSize();
+    }
+
+    /** The legacy packet id for a class: the digits after {@code Packet} in the name of itself or of a superclass, else 250. */
+    public static int mcc$idOf(Class<?> type) {
+        for (Class<?> c = type; c != null && c != Object.class; c = c.getSuperclass()) {
+            String n = c.getSimpleName();
+            if (n.startsWith("Packet")) {
+                int end = 6;
+                while (end < n.length() && Character.isDigit(n.charAt(end))) end++;
+                if (end > 6) return Integer.parseInt(n.substring(6, end));
+            }
+        }
+        return 250;
+    }
+
     public void processPacket(INetHandler handler) {
     }
 

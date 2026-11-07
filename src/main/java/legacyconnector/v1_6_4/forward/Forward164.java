@@ -74,9 +74,10 @@ public final class Forward164 {
 
     /**
      * 1.6.4 {@code addSound(name)} / {@code addStreaming(name)}: registered a sound file by name. Sounds come from the mod's {@code sounds.json}
-     * and the resource packs here, so there is nothing to register.
+     * and the resource packs here, so the name is only remembered by the sound pool.
      */
     public static void addSound(legacyconnector.v1_7_10.net.minecraft.client.audio.SoundManager m, String name) {
+        legacyconnector.v1_6_4.net.minecraft.client.audio.SoundPool.SOUNDS.addSound(name);
     }
 
     /** 1.6.4 {@code setEntitySoundPitch}: entity sounds are one-shots here and cannot be changed after the start. */
