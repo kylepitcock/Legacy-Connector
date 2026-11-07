@@ -109,6 +109,50 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
         return null;
     }
 
+    /**
+     * A zip whose whole content sits in one top-level folder ("Advanced Survival/mymod/Main.class", "Advanced Survival/assets/...", often next to a
+     * __MACOSX folder): Forge's zip reader took classes by their package, but assets and mcmod.info under the folder were never found. Repacked here with
+     * the folder removed; null when the archive is not shaped like that.
+     */
+    private static Path unwrapRootFolder(Path archive, Path nestedDir) {
+        if (!archive.getFileName().toString().toLowerCase().endsWith(".zip")) return null;
+        try (java.util.zip.ZipFile zip = new java.util.zip.ZipFile(archive.toFile())) {
+            String root = null;
+            var entries = zip.entries();
+            while (entries.hasMoreElements()) {
+                String n = entries.nextElement().getName();
+                if (n.startsWith("__MACOSX/") || n.endsWith(".DS_Store")) continue;
+                int slash = n.indexOf('/');
+                if (slash <= 0) return null;
+                String top = n.substring(0, slash + 1);
+                if (root == null) root = top;
+                else if (!root.equals(top)) return null;
+            }
+            if (root == null || root.equalsIgnoreCase("META-INF/") || root.equals("assets/") || root.equals("mods/") || root.equals("net/") || root.equals("cpw/")) return null;
+            // a mod's own package folder is not a wrapper: the folder has to hold the archive's root files (assets, mcmod.info)
+            if (zip.getEntry(root + "assets/") == null && zip.getEntry(root + "mcmod.info") == null && zip.getEntry(root + "pack.mcmeta") == null) return null;
+            Files.createDirectories(nestedDir);
+            Path target = nestedDir.resolve(archive.getFileName().toString().replaceAll("[.]zip$", "") + "-unwrapped.jar");
+            try (java.util.zip.ZipOutputStream out = new java.util.zip.ZipOutputStream(Files.newOutputStream(target))) {
+                entries = zip.entries();
+                while (entries.hasMoreElements()) {
+                    ZipEntry e = entries.nextElement();
+                    String n = e.getName();
+                    if (n.startsWith("__MACOSX/") || n.endsWith(".DS_Store") || n.equals(root) || e.isDirectory()) continue;
+                    out.putNextEntry(new ZipEntry(n.substring(root.length())));
+                    try (var in = zip.getInputStream(e)) {
+                        in.transferTo(out);
+                    }
+                    out.closeEntry();
+                }
+            }
+            return target;
+        } catch (IOException | RuntimeException e) {
+            LOG.debug("Legacy Connector: could not unwrap the root folder of {}", archive, e);
+            return null;
+        }
+    }
+
     private static boolean forge1201NoticeLogged;
 
     /** Forge 1.20.1 support is unfinished: {@code experimental.forge1201=true} (config) or {@code -Dlegacyconnector.forge1201=true} turns it on. */
@@ -153,6 +197,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                         if (context.isLocated(p) || !seenNames.add(p.getFileName().toString().toLowerCase())) continue;
                         try {
                             Path packaged = packagedMod(p, gameDir.resolve(".legacyconnector").resolve("nested"));
+                            if (packaged == null) packaged = unwrapRootFolder(p, gameDir.resolve(".legacyconnector").resolve("nested"));
                             LegacyJar jar = LegacyJarInspector.inspect(packaged != null ? packaged : p);
                             if (jar == null && LegacyJarInspector.takeDerivative(p)) {
                                 // a translated jar taken out of a cache: only Legacy Connector itself loads those, from its own cache
