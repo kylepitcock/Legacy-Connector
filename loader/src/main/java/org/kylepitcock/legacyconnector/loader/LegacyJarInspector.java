@@ -814,7 +814,7 @@ public final class LegacyJarInspector {
                 if (!descriptor.equals(MOD_1_7) && !descriptor.equals(MOD_1_12)) return null;
                 LegacyModDecl decl = new LegacyModDecl();
                 decl.mainClass = className;
-                decl.clientSideOnly = sideOnlyClient;
+                decl.clientSideOnly = sideClient;
                 result[0] = decl;
                 return new AnnotationVisitor(Opcodes.ASM9) {
                     @Override

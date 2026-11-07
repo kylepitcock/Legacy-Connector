@@ -51,11 +51,6 @@ final class SplitPackageResolver {
                 || pkg.equals("org/xml/sax") || pkg.startsWith("org/xml/sax/");
     }
 
-    /** DROP, plus the JDK's own XML packages (Mo' Creatures bundles javax.xml.namespace.QName, which java.xml exports). */
-    private static boolean dropped(String pkg) {
-        return DROP.contains(pkg) || pkg.equals("javax/xml") || pkg.startsWith("javax/xml/") || pkg.startsWith("org/w3c/dom") || pkg.startsWith("org/xml/sax");
-    }
-
     record Outcome(List<Path> jars, Path sharedLibrary, Set<String> sharedPackages) {}
 
     static Outcome resolve(List<Path> jars, Path cacheDir) throws IOException {
