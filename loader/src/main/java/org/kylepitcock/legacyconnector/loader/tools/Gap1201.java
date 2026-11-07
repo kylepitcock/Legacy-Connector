@@ -180,7 +180,31 @@ public final class Gap1201 {
     private void run(List<Path> mods, Path report) throws IOException {
         Map<String, Cls> own = new HashMap<>();
         for (Path m : mods) index(m, own);
+        // the mods' own members must be renamed like the references to them (descriptors with moved classes, SRG names of overrides)
+        for (Cls c : own.values()) {
+            Set<String> ms = new HashSet<>(), fs = new HashSet<>();
+            for (String k : c.methods) {
+                int at = k.indexOf('(');
+                try {
+                    ms.add(member(k.substring(0, at)) + desc(k.substring(at)));
+                } catch (RuntimeException ex) {
+                    ms.add(k);
+                }
+            }
+            for (String k : c.fields) {
+                int at = k.indexOf(':');
+                fs.add(member(k.substring(0, at)) + ":" + desc(k.substring(at + 1)));
+            }
+            c.methods.clear();
+            c.methods.addAll(ms);
+            c.fields.clear();
+            c.fields.addAll(fs);
+            if (c.superName != null) c.superName = cls(c.superName);
+            if (c.interfaces != null) for (int i = 0; i < c.interfaces.length; i++) c.interfaces[i] = cls(c.interfaces[i]);
+        }
         PrintStream out = new PrintStream(Files.newOutputStream(report));
+        // per jar detail (jar TAB kind TAB symbol), input of tools/compat/gap1201_rank.py
+        PrintStream detail = new PrintStream(Files.newOutputStream(report.resolveSibling(report.getFileName() + ".detail.tsv")));
         out.println("Gap report: Forge 1.20.1 jars against Minecraft 1.21.1 + NeoForge (SRG renamed, Forge packages renamed)\n");
         for (Path mod : mods) {
             Set<String> mc = new TreeSet<>(), mm = new TreeSet<>(), mf = new TreeSet<>();
@@ -208,6 +232,10 @@ public final class Gap1201 {
             }
             out.printf("%s: %d references, %d missing classes, %d missing methods, %d missing fields%n", jar, refs, mc.size(), mm.size(), mf.size());
             final String jarName = jar;
+            mc.forEach(x -> detail.println(jarName + "	class	" + x));
+            mm.forEach(x -> detail.println(jarName + "	method	" + x));
+            mf.forEach(x -> detail.println(jarName + "	field	" + x));
+            detail.println(jarName + "	refs	" + refs);
             mc.forEach(s -> missingClasses.computeIfAbsent(s, k -> new TreeSet<>()).add(jarName));
             mm.forEach(s -> missingMethods.computeIfAbsent(s, k -> new TreeSet<>()).add(jarName));
             mf.forEach(s -> missingFields.computeIfAbsent(s, k -> new TreeSet<>()).add(jarName));
@@ -216,6 +244,7 @@ public final class Gap1201 {
         ranked(out, "Missing methods", missingMethods);
         ranked(out, "Missing fields", missingFields);
         out.close();
+        detail.close();
         System.out.println("report: " + report + " (" + missingClasses.size() + " classes, " + missingMethods.size() + " methods, " + missingFields.size() + " fields)");
     }
 

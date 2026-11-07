@@ -198,3 +198,19 @@ other jars of the set. First run on 44 Forge 1.20.1 jars from Modrinth (`test-mo
 - The heavy mods (Create 490 classes, Quark 368, Sophisticated Backpacks 410, Supplementaries 353) are dominated by the other mods they link against and by rendering.
 - Design consequence: relocate only the Forge API that no longer exists into a small facade package (`FMLJavaModLoadingContext`, `SimpleChannel`, `LazyOptional`,
   `RegistryObject`, `NonNull*`, `DistExecutor`, ...), pass everything else through to the real classes.
+
+### 9.1 Second run, 2026-11-07: 140 jars, 72 of them abandoned
+
+Full tables, method and the per-jar classification are in **[Legacy-1.20.1-Corpus](Legacy-1.20.1-Corpus.md)**. Summary of what changed against the 44-jar run above:
+
+- The value check of section 3 (option D) is answered: scanning down Modrinth's Forge 1.20.1 list by downloads until 72 abandoned content mods were found (so the 72 is a cap, not a rate), 72 projects have **no** NeoForge 1.21.1 file on Modrinth or
+  CurseForge (Alex's Mobs and Caves, Ice and Fire, Botania, Tinkers' Construct, Blue Skies, Species, Enigmatic Legacy, Spartan Weaponry, Goety Revelation, Steam 'n' Rails, Decorative Blocks...).
+  Some have unofficial community ports; none counts as an official one. The abandoned set is large, not marginal.
+- Tool fixes: the `Dist` annotation lives in its own API jar (it was reported as a missing class in 94 jars), and the mods' own members are now renamed like the references to them
+  (library gaps fell from 12,656 to 1,238 fields). Forge API gaps are unchanged by this.
+- Abandoned content mods: 8 data-only, 20 cheap (at most 40 Forge/Minecraft symbols, at most 1 mixin class), 21 medium, 23 heavy. Mixin classes: 30 of the 72 have none, 22 have 1 to 5, 20 have 6 or more.
+- Top gaps by number of the 72 abandoned jars: `FMLJavaModLoadingContext` 49, `ForgeRegistries`/`IForgeRegistry` 40, `new ResourceLocation(String)` 39, `DeferredRegister.create(IForgeRegistry, String)` 30,
+  `ItemStack.hurtAndBreak(int, LivingEntity, Consumer)` 29, `SimpleChannel` 28, `NetworkEvent$Context` 26, `ItemStack.getTag` 25, attribute fields and `AttributeModifier` 22 to 24,
+  `SynchedEntityData.define` 24, `Player.broadcastBreakEvent` 24, `MobEffectInstance` 23, `BlockBehaviour$Properties.copy` 22.
+- Recommended order (details in the corpus page): mod loading and registries first (about 50 and 40 jars; that alone loads the data-only and several cheap mods), then `ResourceLocation` and the
+  attribute/effect holders, networking, `ItemStack` NBT, vertex builder rewrite, capabilities, bridge methods, mixin triage last; heavy mods (Botania, Tinkers', Alex's, Ice and Fire, Blue Skies) are not a target for milestone 2.
