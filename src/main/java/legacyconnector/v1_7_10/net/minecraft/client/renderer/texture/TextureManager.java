@@ -28,6 +28,8 @@ public class TextureManager implements ITickable {
     /** Forge 1.5.2 (RenderEngine): textures are string paths, resolved by Textures152. */
     public void bindTexture(String path) {
         bindTexture(org.kylepitcock.legacyconnector.v1_6_4.bridge.Textures152.location(path));
+        // a 1.4.7 index sheet: tessellator UVs are tile positions of this image, not atlas UVs (IsbrhQuads maps them to the cut tiles)
+        if (path != null && path.indexOf(':') < 0 && path.endsWith(".png")) RenderContext.setSheet(path);
     }
 
     /** 1.5.2's cached binding is not tracked here (every bind goes through the render context). */

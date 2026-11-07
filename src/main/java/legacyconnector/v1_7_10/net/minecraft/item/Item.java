@@ -466,6 +466,12 @@ public class Item {
         return this;
     }
 
+    /** Minecraft 1.4.7: the item's tile as (column, row) of its 16x16 sprite sheet (RedPower's tools). */
+    public Item setIconCoord(int column, int row) {
+        this.iconIndex = row * 16 + column;
+        return this;
+    }
+
     /** Forge 1.4.7's per-item sprite sheet ({@code ITextureProvider}); {@code /gui/items.png} unless set. */
     public Item setTextureFile(String file) {
         this.mcc$textureFile = file;

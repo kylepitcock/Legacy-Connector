@@ -140,6 +140,19 @@ public final class BridgeMethods {
             il.add(new InsnNode(Opcodes.F2I));
             return true;
         }
+        if (from.getSort() == Type.BOOLEAN && to.getSort() == Type.INT) {   // 1.4.7's isProviding...Power returned a boolean: full strength
+            il.add(new org.objectweb.asm.tree.IntInsnNode(Opcodes.BIPUSH, 15));
+            il.add(new InsnNode(Opcodes.IMUL));
+            return true;
+        }
+        if (from.getSort() == Type.INT && to.getSort() == Type.BOOLEAN) {   // (x | -x) >>> 31: whether x is not 0
+            il.add(new InsnNode(Opcodes.DUP));
+            il.add(new InsnNode(Opcodes.INEG));
+            il.add(new InsnNode(Opcodes.IOR));
+            il.add(new org.objectweb.asm.tree.IntInsnNode(Opcodes.BIPUSH, 31));
+            il.add(new InsnNode(Opcodes.IUSHR));
+            return true;
+        }
         if (from.getSort() == Type.OBJECT && to.getSort() == Type.INT) {
             MethodInsnNode id = idOf(h, from.getInternalName());
             if (id == null) return false;

@@ -88,6 +88,8 @@ public final class RenderContext {
     static final class State {
         final Deque<Frame> frames = new ArrayDeque<>();
         Capture capture;
+        /** The 1.4.7 sprite sheet path last bound by string (null when a texture was bound by location). */
+        String sheet;
         /** glBegin/glEnd geometry (GL11's immediate mode). */
         final LegacyVertices immediate = new LegacyVertices();
         /** {@code glPolygonMode(..., GL_LINE)}: filled primitives are drawn as their edges (CustomOreGen's wireframes). */
@@ -165,6 +167,19 @@ public final class RenderContext {
         private double[] corners = new double[STRIDE * CORNERS * 16];
         private float[] normals = new float[3 * 16];
         private int quads;
+        /** The texture bound when each quad was drawn (null: the block atlas). */
+        private ResourceLocation[] textures = new ResourceLocation[16];
+        /** The 1.4.7 sprite sheet path bound when each quad was drawn (null: none; the quad's UVs are atlas UVs). */
+        private String[] sheets = new String[16];
+
+        public String sheet(int q) {
+            return sheets[q];
+        }
+
+        /** The texture the renderer had bound when quad {@code q} was drawn. */
+        public ResourceLocation texture(int q) {
+            return textures[q];
+        }
 
         public int size() {
             return quads;
@@ -191,6 +206,10 @@ public final class RenderContext {
         private int add() {
             if ((quads + 1) * STRIDE * CORNERS > corners.length) corners = java.util.Arrays.copyOf(corners, corners.length * 2);
             if ((quads + 1) * 3 > normals.length) normals = java.util.Arrays.copyOf(normals, normals.length * 2);
+            if (quads + 1 > textures.length) {
+                textures = java.util.Arrays.copyOf(textures, textures.length * 2);
+                sheets = java.util.Arrays.copyOf(sheets, sheets.length * 2);
+            }
             return quads++;
         }
     }
@@ -394,8 +413,15 @@ public final class RenderContext {
         // the resources being reloaded are not visible yet while the pack is built (mods bind textures in TextureStitchEvent.Pre)
         if (org.kylepitcock.legacyconnector.core.pack.GeneratedPack.building()) return;
         checkExists(rl);
-        STATE.get().texture = rl;
+        State st = STATE.get();
+        st.texture = rl;
+        st.sheet = null;
         RenderSystem.setShaderTexture(0, rl);
+    }
+
+    /** Minecraft 1.4.7: the sprite sheet path ({@code /eloraam/base/base1.png}) just bound, whose tiles the pack cut into the atlas (see IsbrhQuads). */
+    public static void setSheet(String path) {
+        STATE.get().sheet = path;
     }
 
     public static ResourceLocation texture() {
@@ -746,6 +772,8 @@ public final class RenderContext {
         if (capture != null) {
             org.joml.Matrix4f m = p.last().pose();
             int q = capture.add();
+            capture.textures[q] = s.texture;
+            capture.sheets[q] = s.sheet;
             // In double: captured positions are absolute block coordinates, made block-relative only when baked. Through a
             // float they were snapped to a float's step, 2 blocks at a Sable / Create Aeronautics plot (~20 million blocks
             // out): ChromatiCraft's crystals came out as skewed triangles and Thaumcraft's jar glass vanished on ships.

@@ -674,6 +674,20 @@ public class Block {
         return this.blockIcon;
     }
 
+    /** Minecraft 1.4.7: the sprite sheet index of a side for a metadata value. */
+    public int getBlockTextureFromSideAndMetadata(int side, int meta) {
+        return blockIndexInTexture;
+    }
+
+    /** Forge 1.4.7: whether the block draws the default sprite sheet's texture (RedPower's covers read it). */
+    public boolean isDefaultTexture = true;
+
+    /** Minecraft 1.4.7: the light level (0 to 1) the block shows at the position. */
+    public float getBlockBrightness(IBlockAccess world, int x, int y, int z) {
+        int packed = getMixedBrightnessForBlock(world, x, y, z);
+        return Math.max((packed >> 4) & 15, (packed >> 20) & 15) / 15.0F;
+    }
+
     /** Forge 1.4.7's per-block sprite sheet ({@code ITextureProvider}); {@code /terrain.png} unless set. */
     public Block setTextureFile(String file) {
         this.mcc$textureFile = file;

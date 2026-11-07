@@ -11,6 +11,8 @@ import net.minecraft.util.Mth;
 final class IsbrhQuads {
     private IsbrhQuads() {}
 
+    private static final java.util.Set<String> UNMAPPED = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
     private static final ThreadLocal<RenderContext.Capture> LAST = new ThreadLocal<>();
 
     /** The description of the capture this thread baked last (read right after the bake, for the one-time log line). */
@@ -25,6 +27,28 @@ final class IsbrhQuads {
         List<BakedQuad> out = new ArrayList<>(count);
         for (int q = 0; q < count; q++) {
             if (degenerate(capture, q)) continue;
+            // 1.4.7: the renderer bound a sprite sheet image and its UVs are positions in that image; they go to the tile the pack cut from it
+            TextureAtlasSprite quadSprite = sprite;
+            float[] tile = null; // {column, row, tile sprite u0, u1, v0, v1}
+            String sheet = capture.sheet(q);
+            if (sheet != null) {
+                if (UNMAPPED.add("sheet:" + sheet)) org.slf4j.LoggerFactory.getLogger("LegacyConnector/ISBRH").info("A renderer draws quads with the 1.4.7 sheet {}", sheet);
+                double cu = 0, cv = 0;
+                for (int i = 0; i < 4; i++) {
+                    cu += capture.get(q, i, 3) / 4;
+                    cv += capture.get(q, i, 4) / 4;
+                }
+                int col = Mth.clamp((int) Math.floor(cu * 16), 0, 15), row = Mth.clamp((int) Math.floor(cv * 16), 0, 15);
+                var found = sheetTile(sheet, row * 16 + col);
+                if (found != null) {
+                    quadSprite = found;
+                    tile = new float[] {col, row, found.getU0(), found.getU1(), found.getV0(), found.getV1()};
+                } else if (org.kylepitcock.legacyconnector.v1_6_4.bridge.SpriteSheets147.isCutSheet(sheet)) {
+                    if (UNMAPPED.add(sheet + "#" + (row * 16 + col)))
+                        org.slf4j.LoggerFactory.getLogger("LegacyConnector/ISBRH").info("1.4.7 sheet {} tile {} has no sprite; its quads are dropped", sheet, row * 16 + col);
+                    continue; // an empty (fully transparent) tile of a cut sheet: nothing to draw
+                }
+            }
             float n0 = capture.normal(q, 0), n1 = capture.normal(q, 1), n2 = capture.normal(q, 2);
             int[] data = new int[32];
             // A colour the renderer set (Thaumcraft's aspect tint on infused stone, a colorMultiplier) was the final colour in
@@ -52,15 +76,36 @@ final class IsbrhQuads {
                 data[o + 1] = Float.floatToRawIntBits((float) (capture.get(q, i, 1) - by));
                 data[o + 2] = Float.floatToRawIntBits((float) (capture.get(q, i, 2) - bz));
                 data[o + 3] = coloured ? abgr(unshade == 1.0F ? argb : scale((int) argb, unshade)) : 0xFFFFFFFF;
-                data[o + 4] = Float.floatToRawIntBits((float) capture.get(q, i, 3));
-                data[o + 5] = Float.floatToRawIntBits((float) capture.get(q, i, 4));
+                float tu = (float) capture.get(q, i, 3), tv = (float) capture.get(q, i, 4);
+                if (tile != null) {
+                    float lu = Mth.clamp(tu * 16.0F - tile[0], 0.0F, 1.0F), lv = Mth.clamp(tv * 16.0F - tile[1], 0.0F, 1.0F);
+                    tu = tile[2] + lu * (tile[3] - tile[2]);
+                    tv = tile[4] + lv * (tile[5] - tile[4]);
+                }
+                data[o + 4] = Float.floatToRawIntBits(tu);
+                data[o + 5] = Float.floatToRawIntBits(tv);
                 data[o + 6] = emissive(capture, q, i);
                 data[o + 7] = packedNormal;
             }
-            if (!coloured) out.add(new BakedQuad(data, -1, dir, sprite, true));
-            else out.add(new BakedQuad(data, -1, dir, sprite, unshade != 1.0F, uniform));
+            if (!coloured) out.add(new BakedQuad(data, -1, dir, quadSprite, true));
+            else out.add(new BakedQuad(data, -1, dir, quadSprite, unshade != 1.0F, uniform));
         }
         return out;
+    }
+
+    /** The block atlas sprite of tile {@code index} of a 1.4.7 sprite sheet; null when the pack has no such tile. */
+    private static TextureAtlasSprite sheetTile(String sheet, int index) {
+        var icon = org.kylepitcock.legacyconnector.v1_6_4.bridge.SpriteSheets147.icon(sheet, index, true);
+        String name = icon == null ? null : icon.mcc$modernName();
+        net.minecraft.resources.ResourceLocation rl = name == null ? null : net.minecraft.resources.ResourceLocation.tryParse(name);
+        if (rl == null) return null;
+        try {
+            var atlas = net.minecraft.client.Minecraft.getInstance().getModelManager().getAtlas(net.minecraft.client.renderer.texture.TextureAtlas.LOCATION_BLOCKS);
+            TextureAtlasSprite found = atlas.getSprite(rl);
+            return found.contents().name().equals(net.minecraft.client.renderer.texture.MissingTextureAtlasSprite.getLocation()) ? null : found;
+        } catch (RuntimeException e) {
+            return null;
+        }
     }
 
     /**

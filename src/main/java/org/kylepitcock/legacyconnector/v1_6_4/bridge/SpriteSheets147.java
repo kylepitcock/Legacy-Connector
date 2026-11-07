@@ -75,6 +75,22 @@ public final class SpriteSheets147 {
         return Assets1710.texture("legacy147:" + slug(norm) + "/" + index, true);
     }
 
+    private static final Map<String, Boolean> CUT = new ConcurrentHashMap<>();
+
+    /** Whether the sheet is one the pack has tiles for (a mod's cut sheet, or a vanilla sheet of the tables). */
+    public static boolean isCutSheet(String sheet) {
+        String norm = normalize(sheet);
+        if (norm.equals(TERRAIN) || norm.equals(ITEMS)) return true;
+        return CUT.computeIfAbsent(norm, n -> {
+            try {
+                var rm = net.minecraft.client.Minecraft.getInstance().getResourceManager();
+                return !rm.listResources("textures/blocks/" + slug(n), rl -> rl.getNamespace().equals("legacy147")).isEmpty();
+            } catch (RuntimeException | LinkageError e) {
+                return false;
+            }
+        });
+    }
+
     // ---- ModLoader
 
     /** {@code ModLoader.getUniqueSpriteIndex(sheet)}: a free index of the sheet (virtual: above the 256 the file has), which {@code addOverride} then fills. */

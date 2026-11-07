@@ -7,3 +7,5 @@ net/minecraft/block/Block	getBlockTextureFromSide	(I)I	getIcon	(II)Lnet/minecraf
 net/minecraft/block/Block	getBlockTexture	(Lnet/minecraft/world/IBlockAccess;IIII)I	getIcon	(Lnet/minecraft/world/IBlockAccess;IIII)Lnet/minecraft/util/IIcon;
 net/minecraft/item/Item	getIconFromDamage	(I)I	getIconFromDamage	(I)Lnet/minecraft/util/IIcon;
 net/minecraft/entity/EntityHanging	dropItemStack	()V	onBroken	(Lnet/minecraft/entity/Entity;)V
+net/minecraft/block/Block	isProvidingWeakPower	(Lnet/minecraft/world/IBlockAccess;IIII)Z	isProvidingWeakPower	(Lnet/minecraft/world/IBlockAccess;IIII)I
+net/minecraft/block/Block	isProvidingStrongPower	(Lnet/minecraft/world/IBlockAccess;IIII)Z	isProvidingStrongPower	(Lnet/minecraft/world/IBlockAccess;IIII)I
