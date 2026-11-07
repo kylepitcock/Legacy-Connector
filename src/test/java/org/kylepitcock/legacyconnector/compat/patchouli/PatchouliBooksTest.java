@@ -124,6 +124,7 @@ class PatchouliBooksTest {
         JsonObject template = convert("en_us/templates/foo.json", """
                 {"components": [{"type": "item", "item": "mymod:thing:1", "x": 1}], "include": [{"template": "other", "as": "o"}]}""");
         assertEquals("mymod:thing_1", template.getAsJsonArray("components").get(0).getAsJsonObject().get("item").getAsString());
+        assertEquals("patchouli:item", template.getAsJsonArray("components").get(0).getAsJsonObject().get("type").getAsString());
         assertEquals("mymod:other", template.getAsJsonArray("include").get(0).getAsJsonObject().get("template").getAsString());
     }
 }

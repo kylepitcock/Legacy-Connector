@@ -97,7 +97,11 @@ With the modern Patchouli (NeoForge 1.21.1) installed, 1.12.2 mods' Patchouli bo
   `mapping` blocks go through the state bridge (`mod:block[meta=3]`); `crafting` recipe names become the id of the data-pack recipe the
   layer generated (`mod:name_code`); `smelting` pages (1.12 names the input item) become recipe pages of the generated furnace
   recipe, or a `spotlight` of the input when there is none; page types get `patchouli:`; template pages and includes get the book's
-  namespace; resource ids are lower-cased; `creative_tab` maps the 1.12 tab names to modern tabs (an unknown tab is dropped).
+  namespace; template component types get `patchouli:` (the modern reader drops unknown types, which left every template page blank);
+  `advancement` locks on a mod's own advancements are dropped (1.12 keeps them in `assets/<mod>/advancements`, which the layer does not
+  convert, so the lock would hide the entry for good; vanilla ones stay); values 1.12 processors return are read as modern ids (stacks are
+  serialized with the modern item id, renamed vanilla entities such as `zombie_pigman` get their modern name); resource ids are lower-cased;
+  `creative_tab` maps the 1.12 tab names to modern tabs (an unknown tab is dropped).
 * **The book item.** `getBookStack("mod:book")` returns the modern guide book stack with its `patchouli:book` component, wrapped for legacy
   code (the `patchouli:guide_book` item is visible in the legacy item registry, so 1.12 recipes and loot that name it work, and a stack with
   the 1.12 NBT tag `patchouli:book` becomes the modern book stack and back).

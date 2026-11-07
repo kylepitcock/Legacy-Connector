@@ -29,7 +29,7 @@ public interface IComponentProcessor extends vazkii.patchouli.api.IComponentProc
 
     @Override
     default IVariable process(Level level, String key) {
-        String value = process(key);
+        String value = org.kylepitcock.legacyconnector.compat.patchouli.Ids1122.processed(process(key));
         return value == null ? null : IVariable.wrap(value, level == null ? null : level.registryAccess());
     }
 }

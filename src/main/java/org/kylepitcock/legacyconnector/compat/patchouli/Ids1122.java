@@ -163,7 +163,20 @@ public final class Ids1122 {
 
     /** {@code mod:name} of an entity with the id a 1.12 mod registered under; the modern id the layer gave it when known. */
     public static String entity(String id) {
-        return Ids.normalizePath(id);
+        String n = Ids.normalizePath(id);
+        if (n.startsWith("minecraft:")) return "minecraft:" + legacyconnector.v1_12_2.net.minecraft.entity.EntityList.modernVanillaPath(n.substring("minecraft:".length()));
+        return n;
+    }
+
+    /**
+     * A value a 1.12 processor returns, which can be an entity id: a renamed vanilla entity ("minecraft:zombie_pigman") gets its modern id,
+     * anything else stays (a processor does not say what the value is for, and no item or block has one of the renamed entity names).
+     */
+    public static String processed(String value) {
+        if (value == null || !value.startsWith("minecraft:")) return value;
+        String path = value.substring("minecraft:".length());
+        String modern = legacyconnector.v1_12_2.net.minecraft.entity.EntityList.modernVanillaPath(path);
+        return modern.equals(path) ? value : "minecraft:" + modern;
     }
 
     /** A recipe or other resource id as the modern namespace allows it. */

@@ -137,7 +137,7 @@ public final class PatchouliBooks {
     static void category(JsonObject o, Resolver r) {
         iconField(o, "icon", r);
         resourceField(o, "parent");
-        resourceField(o, "advancement");
+        advancementField(o);
     }
 
     // entries -------------------------------------------------------------------------------------------------------------------------
@@ -145,7 +145,7 @@ public final class PatchouliBooks {
     static void entry(JsonObject o, String namespace, Resolver r) {
         iconField(o, "icon", r);
         resourceField(o, "category");
-        resourceField(o, "advancement");
+        advancementField(o);
         if (o.has("extra_recipe_mappings") && o.get("extra_recipe_mappings").isJsonObject()) {
             JsonObject mapped = new JsonObject();
             for (var e : o.getAsJsonObject("extra_recipe_mappings").entrySet()) mapped.add(r.item(e.getKey()), e.getValue());
@@ -170,7 +170,7 @@ public final class PatchouliBooks {
             // a template of the book: referred to by name (with or without the mod prefix)
             p.addProperty("type", type.contains(":") ? Ids1122Lite.resource(type) : namespace + ":" + Ids1122Lite.path(type));
         }
-        resourceField(p, "advancement");
+        advancementField(p);
         resourceField(p, "anchor", false);
         switch (bare) {
             case "spotlight" -> stackListField(p, "item", r);
@@ -265,6 +265,10 @@ public final class PatchouliBooks {
             for (JsonElement c : o.getAsJsonArray("components")) {
                 if (!c.isJsonObject()) continue;
                 JsonObject comp = c.getAsJsonObject();
+                // the modern Patchouli reads a component type as a resource location and drops those it does not know ("item" would be minecraft:item)
+                if (comp.has("type") && comp.get("type").isJsonPrimitive() && !comp.get("type").getAsString().contains(":")) {
+                    comp.addProperty("type", "patchouli:" + comp.get("type").getAsString());
+                }
                 templateValues(comp, r);
                 if (comp.has("entity") && comp.get("entity").isJsonPrimitive() && !comp.get("entity").getAsString().startsWith("#")) {
                     comp.addProperty("entity", entity(comp.get("entity").getAsString(), r));
@@ -288,6 +292,15 @@ public final class PatchouliBooks {
         if (spec.startsWith("#")) return spec;
         int nbt = spec.indexOf('#');
         return nbt < 0 ? r.entity(spec) : r.entity(spec.substring(0, nbt));
+    }
+
+    /**
+     * A lock on an advancement: kept for vanilla advancements; a mod's own 1.12 advancements (assets/mod/advancements, a format the layer does not
+     * convert) never exist in the game, so the lock would hide the entry or category for good; they are dropped (the content is always unlocked).
+     */
+    private static void advancementField(JsonObject o) {
+        resourceField(o, "advancement");
+        if (o.has("advancement") && o.get("advancement").isJsonPrimitive() && !o.get("advancement").getAsString().startsWith("minecraft:")) o.remove("advancement");
     }
 
     private static void resourceField(JsonObject o, String key) {

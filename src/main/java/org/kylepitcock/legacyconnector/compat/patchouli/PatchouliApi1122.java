@@ -96,13 +96,11 @@ public final class PatchouliApi1122 implements PatchouliAPI.IPatchouliAPI {
     @Override
     public String serializeItemStack(ItemStack stack) {
         if (stack == null || stack.isEmpty()) return "";
-        var item = stack.getItem();
-        String name = item.getRegistryName() == null ? "minecraft:air" : item.getRegistryName().toString();
-        StringBuilder sb = new StringBuilder(name);
-        if (stack.getMetadata() != 0) sb.append(':').append(stack.getMetadata());
-        if (stack.getCount() != 1) sb.append('#').append(stack.getCount());
-        if (stack.getTagCompound() != null) sb.append(stack.getTagCompound());
-        return sb.toString();
+        // the string is read by the modern Patchouli: it names the modern item (a 1.12 "minecraft:sapling:1" is "minecraft:spruce_sapling" there)
+        var modern = org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122.toModern(stack);
+        if (modern == null || modern.isEmpty()) return "";
+        String id = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(modern.getItem()).toString();
+        return modern.getCount() == 1 ? id : id + "#" + modern.getCount();
     }
 
     @Override
