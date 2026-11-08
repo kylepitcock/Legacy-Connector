@@ -34,10 +34,35 @@ public class LivingEntityRenderer extends EntityRenderer {
             bindDownloadedTexture(entity.skinUrl,entity.mcc$texture());
             model.animateModel(entity,limb,amount,partial);
             model.render(limb,amount,age,head-body,pitch,.0625F);
-            for(int pass=0;pass<4;pass++)if(bindDecorationTexture(entity,pass,partial)&&decorationModel!=null)decorationModel.render(limb,amount,age,head-body,pitch,.0625F);
+            for(int pass=0;pass<4;pass++)if(bindTexture(entity,pass,partial)&&decorationModel!=null){
+                decorationModel.render(limb,amount,age,head-body,pitch,.0625F);
+                GL11.glDisable(3042);GL11.glEnable(3008);
+            }
             renderMore(entity,partial);
+            float brightness=entity.getBrightnessAtEyes(partial);
+            int color=getOverlayColor(entity,brightness,partial);
+            boolean hurt=entity.hurtTime>0||entity.deathTime>0;
+            if((color>>>24)>0||hurt){
+                GL11.glDisable(3553);GL11.glDisable(3008);GL11.glEnable(3042);
+                GL11.glBlendFunc(770,771);GL11.glDepthFunc(514);
+                try{
+                    if(hurt)renderOverlay(entity,partial,limb,amount,age,head-body,pitch,brightness,0,0,.4F);
+                    if((color>>>24)>0)renderOverlay(entity,partial,limb,amount,age,head-body,pitch,
+                        ((color>>16)&255)/255F,((color>>8)&255)/255F,(color&255)/255F,(color>>>24)/255F);
+                }finally{
+                    GL11.glDepthFunc(515);GL11.glDisable(3042);GL11.glEnable(3008);GL11.glEnable(3553);
+                }
+            }
         }finally{GL11.glPopMatrix();}
         renderNameTag(entity,x,y,z);
+    }
+    private void renderOverlay(LivingEntity entity,float partial,float limb,float amount,float age,float yaw,float pitch,float r,float g,float b,float a){
+        GL11.glColor4f(r,g,b,a);
+        model.render(limb,amount,age,yaw,pitch,.0625F);
+        for(int pass=0;pass<4;pass++)if(bindDecorationTexture(entity,pass,partial)&&decorationModel!=null){
+            GL11.glColor4f(r,g,b,a);
+            decorationModel.render(limb,amount,age,yaw,pitch,.0625F);
+        }
     }
     protected void applyTranslation(LivingEntity entity,double x,double y,double z){GL11.glTranslated(x,y,z);}
     protected void applyHandSwingRotation(LivingEntity entity,float age,float bodyYaw,float partial){

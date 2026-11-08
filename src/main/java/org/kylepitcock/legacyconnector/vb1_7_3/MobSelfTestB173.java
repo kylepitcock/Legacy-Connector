@@ -13,6 +13,7 @@ public final class MobSelfTestB173 {
         GuiSessionSelfTestB173.register(game);
         ModelSelfTestB173.register(game);
         RendererSelfTestB173.register(game);
+        RenderEffectsSelfTestB173.register(game);
         MoCreaturesGuiSelfTestB173.register(game);
         MoCreaturesRosterSelfTestB173.register(game);
         MoCreaturesFeaturesSelfTestB173.register(game);

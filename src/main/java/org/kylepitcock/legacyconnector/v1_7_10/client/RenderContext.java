@@ -39,9 +39,12 @@ public final class RenderContext {
 
     /** {@code open}: the matrices this frame's legacy code pushed and has not popped yet (what the frame may still pop at its end). */
     private record Frame(GuiGraphics gui, PoseStack pose, MultiBufferSource buffers, int light, int overlay, PoseStack.Pose base, boolean locked,
-            int kind, int[] open) {
+            int kind, boolean exactDepthState, int[] open) {
         Frame(GuiGraphics gui, PoseStack pose, MultiBufferSource buffers, int light, int overlay, PoseStack.Pose base, boolean locked, int kind) {
-            this(gui, pose, buffers, light, overlay, base, locked, kind, new int[1]);
+            this(gui, pose, buffers, light, overlay, base, locked, kind, false, new int[1]);
+        }
+        Frame(GuiGraphics gui, PoseStack pose, MultiBufferSource buffers, int light, int overlay, PoseStack.Pose base, boolean locked, int kind, boolean exactDepthState) {
+            this(gui, pose, buffers, light, overlay, base, locked, kind, exactDepthState, new int[1]);
         }
     }
 
@@ -245,10 +248,15 @@ public final class RenderContext {
 
     /** A world context for sky renderers ({@link #KIND_SKY}) or particles ({@link #KIND_PARTICLES}): see {@link #geometryBuffer}. */
     public static void beginWorld(PoseStack pose, MultiBufferSource buffers, int light, int overlay, int kind) {
+        beginWorld(pose, buffers, light, overlay, kind, false);
+    }
+
+    /** Opt in when original multipass world rendering requires its precise depth and alpha-blend state. */
+    public static void beginWorld(PoseStack pose, MultiBufferSource buffers, int light, int overlay, int kind, boolean exactDepthState) {
         boolean locked = lockRender();
         State s = STATE.get();
         if (s.frames.isEmpty()) legacyconnector.v1_7_10.net.minecraft.client.renderer.Tessellator.mcc$get$instance().mcc$reset();
-        s.frames.push(new Frame(null, pose, buffers, light, overlay, pose.last(), locked, kind));
+        s.frames.push(new Frame(null, pose, buffers, light, overlay, pose.last(), locked, kind, exactDepthState));
         resetColor(s);
     }
 
@@ -662,7 +670,9 @@ public final class RenderContext {
     public static void setDepthFunc(int func) {
         State s = STATE.get();
         if (func == s.depthFunc) return;
-        if (gui(s) != null) flushBatch(s);
+        Frame frame=s.frames.peek();
+        // An EQUAL overlay needs the body in depth first, even when its texture uses a fixed buffer.
+        if (gui(s) != null || frame!=null&&frame.exactDepthState) flushBatch(s);
         s.depthFunc = func;
     }
 
@@ -696,10 +706,11 @@ public final class RenderContext {
      * alpha blended it covered the slot and its neighbours with black squares and starbursts.
      */
     private static RenderType stated(State s, RenderType base) {
+        Frame frame=s.frames.peek();boolean exactDepthState=frame!=null&&frame.exactDepthState;
         // Untextured world glows (AM2's lectern rays) must not occlude geometry behind their transparent edges.
-        boolean depthState = gui(s) != null && !(s.depthFunc == 515 && s.depthWrite && s.colorWrite == 0xF)
+        boolean depthState = (gui(s) != null || exactDepthState) && !(s.depthFunc == 515 && s.depthWrite && s.colorWrite == 0xF)
                 || !s.texture2d && s.blend && !s.depthWrite;
-        boolean blendState = s.blend && (s.blendSrc != 770 || s.blendDst != 771);
+        boolean blendState = s.blend && (exactDepthState || s.blendSrc != 770 || s.blendDst != 771);
         if (!depthState && !blendState) return base;
         // -1: the part is not carried, the base type's own state stays (a translucent type's depth writes are off)
         Stated key = new Stated(base, depthState ? s.depthFunc : -1, !depthState || s.depthWrite, depthState ? s.colorWrite : 0xF,
