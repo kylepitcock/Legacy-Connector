@@ -14,9 +14,11 @@ public final class AnimalRenderingB173 {
         try(var readOnly=EntityViewsB173.readOnly()){
             var view=entity.prepareRenderView(partial);var info=RenderersB173.info(view.getClass());
             if(info==null)throw new IllegalStateException("No original renderer for "+view.getClass().getName());
-            info.renderer().mcc$camera(new legacyconnector.vb1_7_3.net.minecraft.client.render.entity.EntityRenderer.LivingEntityCamera(extras.camera()==null?view:extras.camera(),extras.yaw(),extras.pitch()));
-            try(var scope=RendererContextB173.open(path->EntityRenderingB173.texture(info.mod(),path),sink,EntityRenderingB173.sheets(extras))){
-                info.renderer().render(view,0,view.standingEyeHeight,0,Mth.rotLerp(partial,entity.yRotO,entity.getYRot()),partial);
+            synchronized(info.renderer()){
+                info.renderer().mcc$camera(new legacyconnector.vb1_7_3.net.minecraft.client.render.entity.EntityRenderer.LivingEntityCamera(extras.camera()==null?view:extras.camera(),extras.yaw(),extras.pitch()));
+                try(var scope=RendererContextB173.open(path->EntityRenderingB173.texture(info.mod(),path),sink,EntityRenderingB173.sheets(extras))){
+                    info.renderer().render(view,0,view.standingEyeHeight,0,Mth.rotLerp(partial,entity.yRotO,entity.getYRot()),partial);
+                }
             }
         }
     }

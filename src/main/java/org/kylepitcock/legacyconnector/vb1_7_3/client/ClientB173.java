@@ -28,6 +28,13 @@ public final class ClientB173 implements MenusB173.Client {
         });
         AnimatedTexturesB173.register(modBus);
         MobClientB173.register(modBus);
+        modBus.addListener((net.neoforged.neoforge.client.event.EntityRenderersEvent.RegisterRenderers e) ->
+                e.registerEntityRenderer(org.kylepitcock.legacyconnector.LegacyConnector.BETA_VANILLA_ARROW.get(), context ->
+                        new net.minecraft.client.renderer.entity.ArrowRenderer<org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173VanillaArrow>(context) {
+                            @Override public net.minecraft.resources.ResourceLocation getTextureLocation(org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173VanillaArrow arrow) {
+                                return org.kylepitcock.legacyconnector.vb1_7_3.ProjectileTexturesB173.FALLBACK;
+                            }
+                        }));
         modBus.addListener((net.neoforged.neoforge.client.event.ModelEvent.ModifyBakingResult e)->WorldTextureModelB173.wrap(e.getModels()));
         modBus.addListener((net.neoforged.neoforge.client.event.EntityRenderersEvent.RegisterRenderers e) ->
                 e.registerEntityRenderer(org.kylepitcock.legacyconnector.LegacyConnector.BETA_ARROW.get(), context ->

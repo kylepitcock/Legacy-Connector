@@ -159,7 +159,10 @@ public final class LegacyB173Animal extends PathfinderMob implements B173LivingH
         refreshDimensions();if(legacy.dead&&!isRemoved())discard();
     }
     private void callback(Runnable action){try(var minecraftContext=legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$context(World.mcc$wrap(level()),legacy);var views=EntityViewsB173.callbackScope()){boolean outer=callbacks==0;boolean referenced=false;if(outer){referenced=EntityViewsB173.prepareHostCallback(this);syncView();}callbacks++;try{action.run();flushView();if(outer)publishRenderState();}finally{callbacks--;if(outer)EntityViewsB173.resumeHostCallback(this,referenced);}}}
-    @Override public void tick(){if(legacy==null||level().isClientSide){super.tick();if(legacy!=null)syncView();return;}callback(()->legacy.tick());}
+    @Override public void tick(){if(legacy==null||level().isClientSide){super.tick();if(legacy!=null)syncView();return;}callback(()->{
+        legacy.tick();
+        if(!isRemoved()&&RendererBlockEffectsB173.hasBlockEffects(this))RendererBlockEffectsB173.render(this);
+    });}
     public void mcc$baseTick(){if(inTick)throw new IllegalStateException("Recursive Beta base tick");inTick=true;ticks++;try{if(legacy.attackCooldown>0)legacy.attackCooldown--;flushView();super.tick();syncView();}finally{inTick=false;}}
     @Override public void aiStep(){if(legacy==null||level().isClientSide){super.aiStep();return;}syncView();callback(()->legacy.tickMovement());}
     public void baseMovement(){if(inMovement)throw new IllegalStateException("Recursive Beta base movement");inMovement=true;movements++;try{flushView();super.aiStep();syncView();}finally{inMovement=false;}}
@@ -170,16 +173,23 @@ public final class LegacyB173Animal extends PathfinderMob implements B173LivingH
             legacy.despawnCounter++;
             legacy.mcc$tryDespawn();
             flushView();
+            legacyconnector.vb1_7_3.net.minecraft.entity.Entity aimingTarget=null;
             if(legacy instanceof MobEntity creature){
                 creature.mcc$setMovementBlocked(creature.mcc$isMovementBlocked());
-                if(creature.target!=null&&!creature.target.isAlive())creature.target=null;
-                if(creature.target==null)creature.target=creature.mcc$targetInRange();
+                boolean acquired=false;
+                if(creature.target==null){creature.target=creature.mcc$targetInRange();acquired=creature.target!=null;}
+                else if(!creature.target.isAlive())creature.target=null;
+                else if(creature.target.mcc$modern!=null){
+                    var target=creature.target;
+                    if(legacy.canSee(target))creature.mcc$attack(target,legacy.getDistance(target));else creature.mcc$resetAttack(target,legacy.getDistance(target));
+                }
+                // Attack/reset may clear or replace the target and set the shared attack flag.
                 var target=creature.target;
                 if(target!=null&&target.mcc$modern!=null){
-                    if(legacy.canSee(target))creature.mcc$attack(target,legacy.getDistance(target));else creature.mcc$resetAttack(target,legacy.getDistance(target));
-                    if(!creature.mcc$isMovementBlocked())getNavigation().moveTo(target.mcc$modern,Math.max(0,legacy.mcc$movementSpeed()));
+                    if(acquired||!creature.mcc$movementBlocked())getNavigation().moveTo(target.mcc$modern,Math.max(0,legacy.mcc$movementSpeed()));
                     getLookControl().setLookAt(target.mcc$modern,30F,30F);
-                }else if(!creature.mcc$isMovementBlocked()&&getNavigation().isDone()&&random.nextInt(80)==0){
+                    if(creature.mcc$movementBlocked()&&!getNavigation().isDone())aimingTarget=target;
+                }else if(!creature.mcc$movementBlocked()&&getNavigation().isDone()&&creature.mcc$wanderRoll()){
                     creature.mcc$pathingUpdate();
                 }
             }
@@ -193,7 +203,16 @@ public final class LegacyB173Animal extends PathfinderMob implements B173LivingH
                 getMoveControl().setWantedPosition(getX(),getY(),getZ(),0);setSpeed(0);
                 EntityFieldsB173.pauseNavigationTimeout(getNavigation(),level().getGameTime());
             }else getNavigation().tick();
-            getMoveControl().tick();getLookControl().tick();getJumpControl().tick();syncView();
+            getMoveControl().tick();getLookControl().tick();getJumpControl().tick();
+            if(aimingTarget!=null){
+                // Beta follows its existing route while facing the target, rotating movement inputs
+                // into that facing rather than stopping the route or letting controls overwrite aim.
+                float aim=(float)(Math.atan2(aimingTarget.z-legacy.z,aimingTarget.x-legacy.x)*180/Math.PI)-90F;
+                float delta=(getYRot()-aim)*net.minecraft.util.Mth.DEG_TO_RAD;
+                float forward=zza,sideways=xxa,cos=net.minecraft.util.Mth.cos(delta),sin=net.minecraft.util.Mth.sin(delta);
+                xxa=sideways*cos-forward*sin;zza=forward*cos+sideways*sin;setYRot(aim);
+            }
+            syncView();
         }finally{inAI=false;}
     }
     @Override public void moveTo(double x,double y,double z,float yaw,float pitch){
@@ -244,7 +263,11 @@ public final class LegacyB173Animal extends PathfinderMob implements B173LivingH
         flushView();if(path==null)getNavigation().stop();else if(path.mcc$modern()!=null)getNavigation().moveTo(path.mcc$modern(),Math.max(0,legacy.mcc$movementSpeed()));
     }
     @Override public float getWalkTargetValue(BlockPos pos,LevelReader level){return legacy instanceof MobEntity c?c.mcc$pathFavor(pos.getX(),pos.getY(),pos.getZ()):0;}
-    @Override public boolean hurt(DamageSource source,float amount){if(legacy==null||level().isClientSide)return super.hurt(source,amount);DamageSource previous=damageSource;damageSource=source;boolean[] result={false};try{callback(()->result[0]=legacy.damage(EntityViewsB173.wrap(source.getDirectEntity()!=null?source.getDirectEntity():source.getEntity()),(int)Math.ceil(amount)));return result[0];}finally{damageSource=previous;}}
+    @Override public boolean hurt(DamageSource source,float amount){if(legacy==null||level().isClientSide)return super.hurt(source,amount);DamageSource previous=damageSource;damageSource=source;boolean[] result={false};try{callback(()->{
+        var direct=source.getDirectEntity();
+        var attacker=direct instanceof LegacyB173VanillaArrow?source.getEntity():direct!=null?direct:source.getEntity();
+        result[0]=legacy.damage(EntityViewsB173.wrap(attacker),(int)Math.ceil(amount));
+    });return result[0];}finally{damageSource=previous;}}
     public boolean baseDamage(legacyconnector.vb1_7_3.net.minecraft.entity.Entity attacker,int amount){if(level().isClientSide)return false;flushView();DamageSource source=damageSource!=null?damageSource:attacker!=null&&attacker.mcc$modern instanceof net.minecraft.world.entity.LivingEntity living?damageSources().mobAttack(living):damageSources().generic();boolean result=super.hurt(source,amount);syncView();return result;}
     @Override public void knockback(double strength,double x,double z){if(legacy==null||level().isClientSide){super.knockback(strength,x,z);return;}syncView();callback(()->legacy.applyKnockback(EntityViewsB173.wrap(damageSource==null?null:damageSource.getEntity()),0,x,z));}
     public void baseKnockback(legacyconnector.vb1_7_3.net.minecraft.entity.Entity attacker,int amount,double x,double z){flushView();super.knockback(.4,x,z);syncView();}

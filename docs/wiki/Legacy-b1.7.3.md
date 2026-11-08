@@ -536,7 +536,27 @@ the original fire cell, resolved native texture, quad counts and sprite-local UV
 live appearance and animated fire-frame sampling still need client validation.
 [The pet, following and renderer snapshot](../data/b173-pet-follow-render-validation-2026-11-08.json) records this follow-up.
 
-Remaining checks include live client rendering/interaction, Hunchback autonomous following/timer transitions and army combat/expiry.
+Hunchback autonomous following, range/visibility gates, cake-timer lottery and expiration, tame-versus-wild damage and retaliation
+are now checked through original callbacks and ordinary host ticks. Army checks cover original allegiance, target acquisition,
+ranged cooldowns, retained paths while firing, off-axis aiming, lifetime/texture boundaries and expiration. The original army is
+autonomous: there is no master or formation controller to reproduce. Its allied-attack fall-through and omission of lifetime
+from NBT remain original mod quirks.
+
+Shared creature AI acquires a target before attacking on the next phase, re-reads targets after original attack/reset callbacks,
+and uses the post-attack field to suppress route replacement while preserving existing navigation and aim-relative movement.
+Exact vanilla Beta Arrow API spawns use a dedicated registered native arrow host with original fixed four damage, shooter
+attribution, gravity, water drag and rejected-hit bounce. Registry NBT and native spawn-packet tests retain that host and owner;
+ordinary native arrows retain their own factory and damage rules.
+
+Original renderer callbacks can contain block gameplay. A cached method-level call graph detects renderer-to-World block
+mutation paths and executes those original callbacks once per hosted server tick with discarded graphics. Pure visual
+renderers are excluded; client renderer block writes are suppressed. Shared renderer/model instances are synchronized between
+simulation and drawing. This fixes Ogre destruction that previously changed only the client's blocks: controlled actual-mod
+tests now remove the authoritative server block, mark the native chunk dirty, and independently decode AIR from its serialized
+section palette. The pass operates without a viewer rather than depending on render-frame timing. Reflective calls and arbitrary
+helper-interface dispatch are not inferred by the detector.
+[The army and Ogre validation snapshot](../data/b173-army-ogre-validation-2026-11-08.json) records these proofs and the reproduced
+pre-fix failures. Live client rendering/interaction remains to be verified.
 A separate API gap remains in native squid views: their Beta SquidEntity
 and WaterCreatureEntity identity is not yet represented, although the cap census handles native WaterAnimal ancestry directly.
 Actual aquatic prey bytecode does not establish a broken Mo' Creatures predation path from that view gap.

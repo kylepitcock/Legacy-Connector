@@ -56,9 +56,11 @@ public final class EntityRenderingB173 {
             var info=RenderersB173.info(view.getClass());
             if(info==null)return; // Original absence of a registration is intentionally invisible.
             var routed=sheets(extras);
-            info.renderer().mcc$camera(new legacyconnector.vb1_7_3.net.minecraft.client.render.entity.EntityRenderer.LivingEntityCamera(extras.camera(),extras.yaw(),extras.pitch()));
-            try(var scope=RendererContextB173.open(path->texture(info.mod(),path),sink,routed)){
-                info.renderer().render(view,0,view.standingEyeHeight,0,Mth.rotLerp(partial,entity.yRotO,entity.getYRot()),partial);
+            synchronized(info.renderer()){
+                info.renderer().mcc$camera(new legacyconnector.vb1_7_3.net.minecraft.client.render.entity.EntityRenderer.LivingEntityCamera(extras.camera(),extras.yaw(),extras.pitch()));
+                try(var scope=RendererContextB173.open(path->texture(info.mod(),path),sink,routed)){
+                    info.renderer().render(view,0,view.standingEyeHeight,0,Mth.rotLerp(partial,entity.yRotO,entity.getYRot()),partial);
+                }
             }
         }
     }

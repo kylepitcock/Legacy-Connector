@@ -155,7 +155,7 @@ public class World implements BlockView {
 
     /** MCP {@code setBlockTileEntity}: only a block with a tile entity can hold one. */
     public void setBlockEntity(int x, int y, int z, BlockEntity te) {
-        if (mcc$level == null) return;
+        if (mcc$level == null || clientRendererWrite()) return;
         if (mcc$level.getBlockEntity(pos(x, y, z)) instanceof org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173BlockEntity host) host.setLegacy(te);
         else if(te instanceof legacyconnector.vb1_7_3.net.minecraft.block.entity.MobSpawnerBlockEntity spawner&&mcc$level.getBlockEntity(pos(x,y,z)) instanceof net.minecraft.world.level.block.entity.SpawnerBlockEntity nativeSpawner){
             spawner.world=this;spawner.x=x;spawner.y=y;spawner.z=z;spawner.mcc$host=nativeSpawner;spawner.mcc$apply();
@@ -164,7 +164,7 @@ public class World implements BlockView {
 
     /** MCP {@code removeBlockTileEntity}. */
     public void removeBlockEntity(int x, int y, int z) {
-        if (mcc$level == null) return;
+        if (mcc$level == null || clientRendererWrite()) return;
         if (mcc$level.getBlockEntity(pos(x, y, z)) instanceof org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173BlockEntity host) host.setLegacy(null);
     }
 
@@ -208,8 +208,10 @@ public class World implements BlockView {
         return mcc$level != null && (mcc$access() instanceof net.minecraft.server.level.WorldGenRegion region?region.hasChunk(x>>4,z>>4):mcc$level.isLoaded(pos(x,y,z)));
     }
 
+    /** Original renderer-owned block gameplay is replayed authoritatively by the hosted server tick. */
+    private boolean clientRendererWrite(){return mcc$level.isClientSide&&org.kylepitcock.legacyconnector.vb1_7_3.RendererContextB173.active();}
     private boolean set(int x, int y, int z, int id, int meta, int flags) {
-        if (mcc$level == null) return false;
+        if (mcc$level == null || clientRendererWrite()) return false;
         BlockPos p = pos(x, y, z);
         BlockState next = BlocksB173.modernState(id, meta);
         if (mcc$level.getBlockState(p) == next) return false;
@@ -237,7 +239,7 @@ public class World implements BlockView {
     }
 
     private boolean setMeta(int x, int y, int z, int meta, int flags) {
-        if (mcc$level == null) return false;
+        if (mcc$level == null || clientRendererWrite()) return false;
         BlockPos p = pos(x, y, z);
         BlockState s = mcc$level.getBlockState(p);
         if (s.getBlock() instanceof org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Block) {
@@ -392,7 +394,7 @@ public class World implements BlockView {
         if(entity.getClass()==legacyconnector.vb1_7_3.net.minecraft.entity.projectile.ArrowEntity.class){
             if(mcc$level.isClientSide||entity.mcc$modern!=null)return false;
             var arrow=(legacyconnector.vb1_7_3.net.minecraft.entity.projectile.ArrowEntity)entity;
-            var host=new net.minecraft.world.entity.projectile.Arrow(net.minecraft.world.entity.EntityType.ARROW,mcc$level);
+            var host=new org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173VanillaArrow(mcc$level);
             host.setPos(entity.x,entity.y,entity.z);host.setYRot(entity.yaw);host.setXRot(entity.pitch);host.setDeltaMovement(entity.velocityX,entity.velocityY,entity.velocityZ);
             if(arrow.owner!=null)host.setOwner(arrow.owner.mcc$modern);
             entity.mcc$modern=host;boolean added=false;

@@ -1,0 +1,191 @@
+{
+  "snapshot_date": "2026-11-08",
+  "scope": "Generic hosted Beta creature AI, original arrow semantics and authoritative renderer-owned block gameplay",
+  "version": "0.4.12",
+  "tested_working_tree_base_revision": "bb25b61cc32d91df96055c0d63608d76f2871cc4",
+  "upstream_master_revision": "1b585fba65b444feff1cf174cf6d94a6fbff9341",
+  "source_sha256": {
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/entity/MobEntity.java": "898a6b7a03df642fa5716a39ceb6d26c20cb1435cb9dd12c58e88df3f2eec685",
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/world/World.java": "e815a0d246470d3422114c4f9e67335bce9f56f6b2f0af829fe73ebc4b380368",
+    "src/main/java/org/kylepitcock/legacyconnector/LegacyConnector.java": "6b626cf270686a3175ee18a2bf0c8e93c957ef7d6fa711332bdad087a04050b1",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/AnimalRenderingB173.java": "9031729b3c0006ce61cf6b5e30423ab883ec5b1fe3c4a68ff5e6dab55865f315",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/EntityRenderingB173.java": "2ebb10f175f750564ccdcc0e33eb5bb7ad863dcfb4445e25f650533488ad1794",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/LegacyB173Animal.java": "c2cef0bb01cdfa148cf3bbe634f61b73e4636c05954f9d638b202e5abd98167f",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/LegacyB173VanillaArrow.java": "5f1200b41765077a758b7f76eac8dc9b292761a6201da57089358bf326680aa0",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/MoCreaturesOgreDestructionSelfTestB173.java": "c55778e2346887b43327ae6b099d5852daaf45a8a9a872281e9749a549a573fa",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/MobSelfTestB173.java": "2189948fccf8f9500980e111182f09bb1dc175a47a63a7f11f23d1e14842dc12",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/MoreCreepsArmySelfTestB173.java": "1ff9d72b5c67e9aaea99e75a8a041eae8e5749f17adb67935afbe645cdae0205",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/MoreCreepsHunchbackAiSelfTestB173.java": "d8cd4fafee0f7caa50e774a5dd6fd3824b343a6f275a09dcd833887630137dd4",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/RendererBlockEffectsB173.java": "b95670d46907897955f14f0a0e84176ff80ec9431540c9465186f0aa080b74ca",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/client/ClientB173.java": "61cf9aba84253a6d779c14bf8596a2f14e5765a22279f93e78adb077bc544d2a",
+    "src/test/java/org/kylepitcock/legacyconnector/vb1_7_3/RendererBlockEffectsB173Test.java": "bdb212cf5641feb1554bfb44a176082fafe4fab1bbd970525a8fee99e7505654"
+  },
+  "tests": {
+    "runtime": {
+      "tests": 204,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "loader": {
+      "tests": 260,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "actual_mod_opt_in": {
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "fixtures": {
+    "morecreeps": {
+      "status": "headless-smoke-passed",
+      "source_archive": "MoreCreepsv2.12_b173.zip!PUT CONTENTS INTO MINECRAFT FOLDER/mods/MoreCreepsAndWeirdos.zip",
+      "payload_sha256": "1788a0e536accbdeba8bd04a6473b381034220d29bbfbfa8f4bd7890384f3c6d",
+      "game_directory": "run-b173-single/morecreeps-neutralbeta-placement-classic-flat-2-20261108-103954-36b915",
+      "resources_verified": 759,
+      "test_log_sha256": "7f7f2412dac39423f43401edc8f13dd7f4701fc730eaa5740cb96c771cd59b55"
+    },
+    "mocreatures": {
+      "status": "headless-smoke-passed",
+      "source_archive": "DrZharks_MoCreatures_Mod_v2.12.2_b1.7.3.zip!mods/MoCreatures.zip",
+      "payload_sha256": "67920304480c20070274eaa4b317fb9c0f1a5aa3bfa78293f7dc2a89a488a80c",
+      "game_directory": "run-b173-single/mocreatures-neutralbeta-placement-classic-flat-2-20261108-103953-e79051",
+      "resources_verified": 168,
+      "test_log_sha256": "cb158b21165140054b1b65bac41c3e4d29561c9c3b01ef678b823f2621a3d56e"
+    }
+  },
+  "actual_callback_proofs": {
+    "morecreeps": [
+      "[10:45:05] [Server thread/INFO] [LegacyConnector/B173HunchbackAiTest/]: B1.7.3 HUNCHBACK AI TEST: autonomous follow and visibility gates passed using actual original callbacks",
+      "[10:45:05] [Server thread/INFO] [LegacyConnector/B173HunchbackAiTest/]: B1.7.3 HUNCHBACK AI TEST: cake timer lottery and expiry passed using actual original callbacks",
+      "[10:45:05] [Server thread/INFO] [LegacyConnector/B173HunchbackAiTest/]: B1.7.3 HUNCHBACK AI TEST: tamed damage command and retaliation passed using actual original callbacks",
+      "[10:45:05] [Server thread/INFO] [LegacyConnector/B173HunchbackAiTest/]: B1.7.3 HUNCHBACK AI TEST: Beta player arrow owner attribution passed using actual original callbacks",
+      "[10:45:05] [Server thread/INFO] [LegacyConnector/B173CreepsArmyTest/]: B1.7.3 CREEPS ARMY TEST: original allegiance and visibility passed using original callbacks",
+      "[10:45:05] [Server thread/INFO] [LegacyConnector/B173CreepsArmyTest/]: B1.7.3 CREEPS ARMY TEST: normal acquisition ranged cooldown and navigation passed using original callbacks",
+      "[10:45:05] [Server thread/INFO] [LegacyConnector/B173CreepsArmyTest/]: B1.7.3 CREEPS ARMY TEST: attack flag preserves route and suppresses repath passed using original callbacks",
+      "[10:45:05] [Server thread/INFO] [LegacyConnector/B173CreepsArmyTest/]: B1.7.3 CREEPS ARMY TEST: low speed actual arrow fixed damage and attribution passed using original callbacks",
+      "[10:45:05] [Server thread/INFO] [LegacyConnector/B173CreepsArmyTest/]: B1.7.3 CREEPS ARMY TEST: actual army arrow air and water flight passed using original callbacks",
+      "[10:45:05] [Server thread/INFO] [LegacyConnector/B173CreepsArmyTest/]: B1.7.3 CREEPS ARMY TEST: army arrow registry NBT and spawn packet passed using original callbacks",
+      "[10:45:05] [Server thread/INFO] [LegacyConnector/B173CreepsArmyTest/]: B1.7.3 CREEPS ARMY TEST: original allied attack fall-through passed using original callbacks",
+      "[10:45:05] [Server thread/INFO] [LegacyConnector/B173CreepsArmyTest/]: B1.7.3 CREEPS ARMY TEST: timer texture boundaries and expiration passed using original callbacks",
+      "[10:45:05] [Server thread/INFO] [LegacyConnector/B173CreepsArmyTest/]: B1.7.3 CREEPS ARMY TEST: original NBT omits army timer passed using original callbacks",
+      "[10:45:05] [Server thread/INFO] [LegacyConnector/B173CreepsArmyTest/]: B1.7.3 CREEPS ARMY TEST: all 9 original-callback proofs passed"
+    ],
+    "mocreatures": [
+      "[10:46:12] [Server thread/INFO] [LegacyConnector/B173OgreDestructionTest/]: B1.7.3 MOC OGRE DESTRUCTION TEST: original renderer mutation and native chunk serialization passed",
+      "[10:46:12] [Server thread/INFO] [LegacyConnector/B173OgreDestructionTest/]: B1.7.3 MOC OGRE DESTRUCTION TEST: server tick authoritative destruction without a viewer passed",
+      "[10:46:12] [Server thread/INFO] [LegacyConnector/B173OgreDestructionTest/]: B1.7.3 MOC OGRE DESTRUCTION TEST: all original-callback proofs passed"
+    ]
+  },
+  "natural_spawn_regression": {
+    "morecreeps": {
+      "world_ticks": 500,
+      "group_opportunities": {
+        "CREATURE": 500
+      },
+      "confirmed_natural_insertions": {
+        "morecreepsandweirdos:armyguy": 1,
+        "morecreepsandweirdos:bigbaby": 2,
+        "morecreepsandweirdos:blorp": 3,
+        "morecreepsandweirdos:bubblescum": 8,
+        "morecreepsandweirdos:bum": 2,
+        "morecreepsandweirdos:digbug": 1,
+        "morecreepsandweirdos:floob": 2,
+        "morecreepsandweirdos:googoat": 2,
+        "morecreepsandweirdos:guineapig": 1,
+        "morecreepsandweirdos:hippo": 2,
+        "morecreepsandweirdos:hotdog": 3,
+        "morecreepsandweirdos:hunchback": 3,
+        "morecreepsandweirdos:kid": 1,
+        "morecreepsandweirdos:lawyerfromhell": 3,
+        "morecreepsandweirdos:lolliman": 1,
+        "morecreepsandweirdos:mandog": 1,
+        "morecreepsandweirdos:preacher": 1,
+        "morecreepsandweirdos:robotted": 3,
+        "morecreepsandweirdos:rocketgiraffe": 5,
+        "morecreepsandweirdos:rockmonster": 2,
+        "morecreepsandweirdos:sneakysal": 2,
+        "morecreepsandweirdos:thief": 4,
+        "morecreepsandweirdos:zebra": 8
+      },
+      "total_confirmed_insertions": 61
+    },
+    "mocreatures": {
+      "world_ticks": 500,
+      "group_opportunities": {
+        "MONSTER": 500,
+        "CREATURE": 500,
+        "WATER_CREATURE": 500
+      },
+      "confirmed_natural_insertions": {
+        "mocreatures:bigcat": 4,
+        "mocreatures:boar": 4,
+        "mocreatures:deer": 7,
+        "mocreatures:duck": 4,
+        "mocreatures:fox": 2,
+        "mocreatures:horse": 12,
+        "mocreatures:kitty": 2,
+        "mocreatures:mouse": 4
+      },
+      "total_confirmed_insertions": 39
+    }
+  },
+  "baseline_regression": {
+    "game_directory": "run-b173-single/morecreeps-neutralarmy-ai-baseline-20261108-101713-b1fffe",
+    "test_log_sha256": "4fca3e5de3cf07db10caa6a47f99fbe152235bfd16787464455ebb589853b29d",
+    "reproduced": [
+      "Army attack replaced the active route instead of honoring the post-attack field",
+      "Actual low-speed Army arrow dealt one damage instead of four",
+      "Tamed Hunchback received a projectile view instead of the Beta player shooter"
+    ]
+  },
+  "ai_checks": [
+    "New target acquisition creates a route without attacking until the next phase",
+    "Original attack/reset target clearing is respected before route refresh",
+    "Post-attack field suppresses route replacement while existing navigation continues",
+    "Aim-relative inputs preserve target facing along an existing route",
+    "Original Hunchback follow, visibility/range gates, cake-timer lottery and expiration",
+    "Original tame/wild damage and retaliation policy",
+    "Army allegiance, ranged cooldown, point-blank arrows, strict lifetime/texture intervals, removal and original timer NBT omission"
+  ],
+  "arrow_checks": [
+    "Exact Beta Arrow API spawns use a dedicated registered arrow class",
+    "Fixed four impact damage and shooter identity; rejected-hit bounce",
+    "Actual spawned-arrow native air/water ticks preserve .03 gravity, .99 air drag and .8 water drag",
+    "Registry NBT and native spawn-packet factory preserve class/type/shooter",
+    "Ordinary native arrow factory and low-speed one-damage control remain unchanged"
+  ],
+  "ogre_checks": [
+    "Original renderer-to-destruction-helper-to-World block mutation chain is detected generically",
+    "Actual original renderer removes a controlled authoritative server block",
+    "Hosted server tick performs pending original destruction without a viewer",
+    "Native chunk is marked unsaved",
+    "Independent native chunk section/palette serialization changes DIRT to AIR"
+  ],
+  "renderer_effects_policy": "Cached method-level reachability selects original renderers that call World block mutators. Original callbacks run once per hosted server tick with discarded graphics. Client renderer writes are suppressed; shared renderer instances are locked between simulation and drawing.",
+  "generic_guard": "PASS: 261 Beta production/loader source files; no listed mod-identity selectors outside tests",
+  "full_build": {
+    "command": "gradlew.bat build actualModTest --console=plain",
+    "log": "build/beta-army-ogre-full-build.log",
+    "log_sha256": "b33de4d8a08128e0a495d17b7d09da57ba63b5fc93f4f4842a9e43a127348dfa"
+  },
+  "additional_default_unit_gate": {
+    "command": "gradlew.bat :test -x compileJava -x generateShimIndex --console=plain",
+    "log": "build/beta-render-effects-tests.log",
+    "log_sha256": "93479d5c5edc74309479f519374eff90786e8060b33f7c1c760d9fe8bdb60d18",
+    "call_graph_cases": 4,
+    "covers": "Transitive reachable mutation, unreachable method exclusion, inherited virtual dispatch and pure visual renderer exclusion"
+  },
+  "limitations": [
+    "Headless callback, native collision and packet/factory tests do not establish live client rendering or a manual relog result.",
+    "Ogre persistence is proved by authoritative chunk state and independent serialized palette decoding in disposable worlds; no user world was modified.",
+    "Renderer effect discovery does not infer reflective calls or arbitrary helper-interface polymorphism; effects run per server tick rather than viewer frames.",
+    "Native collision and owner-collision grace policies remain; the complete original Beta arrow collision engine is not reproduced.",
+    "Original army allied-attack fall-through, autonomous targeting without a master controller, and lifetime NBT omission are preserved rather than corrected.",
+    "Vanilla and modern entities retain native rules. Existing modern fauna competition for Beta caps and fixed Beta height sampling remain."
+  ]
+}

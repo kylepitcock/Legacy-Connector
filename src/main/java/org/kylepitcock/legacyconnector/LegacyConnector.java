@@ -37,6 +37,10 @@ public final class LegacyConnector {
 
     private static final DeferredRegister<Feature<?>> FEATURES = DeferredRegister.create(Registries.FEATURE, MOD_ID);
     private static final DeferredRegister<net.minecraft.world.entity.EntityType<?>> BETA_ENTITIES = DeferredRegister.create(Registries.ENTITY_TYPE, MOD_ID);
+    public static final DeferredHolder<net.minecraft.world.entity.EntityType<?>, net.minecraft.world.entity.EntityType<org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173VanillaArrow>> BETA_VANILLA_ARROW =
+            BETA_ENTITIES.register("vanilla_arrow_b1_7_3", () -> net.minecraft.world.entity.EntityType.Builder
+                    .<org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173VanillaArrow>of(org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173VanillaArrow::new, net.minecraft.world.entity.MobCategory.MISC)
+                    .sized(0.5F,0.5F).clientTrackingRange(8).updateInterval(1).build("legacyconnector:vanilla_arrow_b1_7_3"));
     public static final DeferredHolder<net.minecraft.world.entity.EntityType<?>, net.minecraft.world.entity.EntityType<org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Arrow>> BETA_ARROW =
             BETA_ENTITIES.register("arrow_b1_7_3", () -> net.minecraft.world.entity.EntityType.Builder
                     .<org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Arrow>of(org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Arrow::new, net.minecraft.world.entity.MobCategory.MISC)
