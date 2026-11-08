@@ -2,8 +2,10 @@ package org.kylepitcock.legacyconnector.vb1_7_3;
 
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 
 /** Compares shim superclass animation and pivots with the user's original Beta jar. */
+@Tag("actual-mod")
 class VanillaModelsB173Test {
     @Test void vanillaModelPivotsAndAnimationMatchOriginalBeta() throws Exception {
         var jar=java.nio.file.Path.of("build/devtools/b1.7.3/client.jar");

@@ -6,6 +6,8 @@ Requires JDK 21.
 
 ```sh
 ./gradlew build                 # runtime mod + loader (also builds the distributable jar)
+./gradlew test                  # self-contained unit tests; no local mod corpus is required
+./gradlew actualModTest         # opt-in JUnit checks against locally supplied original jars
 ./gradlew bundleJar             # single distributable jar: build/dist/legacyconnector-<ver>.jar, the ONLY jar for a mods folder
                                 # (build/libs/*-runtime-only.jar has no loader: every legacy mod is then rejected as built for an old Minecraft)
 ./gradlew runClient             # dev client, mods from run/mods
@@ -31,6 +33,19 @@ tools/dev/survey.sh <namespace> <name>         # places every block of a mod on 
                                 # translate offline as one modset, list unlinkable references,
                                 # generate + JVM-verify the synthesized API (no game launch)
 ```
+
+Normal `test`, `check` and `build` exclude JUnit tests tagged `actual-mod`. These checks run only through
+`actualModTest`; unavailable local fixtures are reported as skipped. This task deliberately does not cache results because
+it discovers developer-supplied archives and translated jars dynamically.
+
+The current original-jar checks use the sibling `Minecraft Beta 1.7.3 Mods Archive - 1000+ Mods` directory for audio,
+translated Mo' Creatures/More Creeps fixtures under `run-b173-single/` for renderer capture, and
+`build/devtools/b1.7.3/client.jar` for Beta model comparisons. None of these files is required by the normal build or shipped
+in the repository. The `testmods` fixture jar is generated from the API stubs and Forge/MCP metadata resolved by Gradle;
+`build/devtools/legacy-1.7.10.sig` is not a build prerequisite.
+
+In-game self-tests under the runtime sources are compiled normally, but execute only when their self-test flag is enabled.
+The explicit server test tasks enable `legacyconnector.entitySelfTest`; ordinary builds do not launch them.
 
 Development commands (operator, any world): `/legacyconnector mods` lists the loaded legacy mods;
 `/legacyconnector dim list|<id> [pos]` switches to a legacy dimension; `/legacyconnector gui <mod> <id> [pos]` opens a mod

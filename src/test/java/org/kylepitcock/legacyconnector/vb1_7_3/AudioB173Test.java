@@ -9,6 +9,7 @@ import java.util.zip.ZipFile;
 import javax.sound.sampled.*;
 import legacyconnector.vb1_7_3.net.minecraft.client.sound.SoundEntry;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.io.TempDir;
 import org.kylepitcock.legacyconnector.vb1_7_3.AudioB173.*;
 import org.kylepitcock.legacyconnector.vb1_7_3.client.AudioStreamsB173;
@@ -103,7 +104,7 @@ class AudioB173Test {
         stream.resolve(null);assertEquals(.5F,stream.getVolume());assertEquals(1,stream.getPitch());assertEquals(64,stream.getSound().getAttenuationDistance());
     }
 
-    @Test void actualArchiveOggAndWavAssetsOneModAtATime() throws Exception {
+    @Tag("actual-mod") @Test void actualArchiveOggAndWavAssetsOneModAtATime() throws Exception {
         Path archive=Path.of("../Minecraft Beta 1.7.3 Mods Archive - 1000+ Mods").toAbsolutePath().normalize();
         org.junit.jupiter.api.Assumptions.assumeTrue(Files.isDirectory(archive),"Local user-owned mod archive is required");
         checkArchive(archive,"PortalGun_v5_b173.zip","Client/place in resources/mod/",239);

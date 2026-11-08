@@ -1,6 +1,7 @@
 package org.kylepitcock.legacyconnector.vb1_7_3;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import legacyconnector.vb1_7_3.net.minecraft.client.model.ModelPart;
 import org.joml.Vector3f;
 class ModelGeometryB173Test {
@@ -24,7 +25,7 @@ class ModelGeometryB173Test {
         assertEquals(0,normal.x,.00001);assertEquals(0,normal.y,.00001);assertEquals(-1,normal.z,.00001);
         assertEquals(1,forced.x,.00001);assertEquals(0,forced.y,.00001);assertEquals(0,forced.z,.00001);
     }
-    @Test void matchesOriginalBetaCuboidVerticesAndUvs() throws Exception {
+    @Tag("actual-mod") @Test void matchesOriginalBetaCuboidVerticesAndUvs() throws Exception {
         var jar=java.nio.file.Path.of("build/devtools/b1.7.3/client.jar");
         org.junit.jupiter.api.Assumptions.assumeTrue(java.nio.file.Files.isRegularFile(jar),"original Beta fixture unavailable");
         try(var loader=new java.net.URLClassLoader(new java.net.URL[]{jar.toUri().toURL()},null)){

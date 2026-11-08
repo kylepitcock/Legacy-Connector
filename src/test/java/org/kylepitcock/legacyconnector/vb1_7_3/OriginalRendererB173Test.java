@@ -11,10 +11,12 @@ import legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity;
 import legacyconnector.vb1_7_3.net.minecraft.world.World;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext;
 import org.kylepitcock.legacyconnector.vb1_7_3.client.ModelPartsB173;
 
 /** Client classes exercised with CPU capture only; no window, texture upload or graphics context. */
+@Tag("actual-mod")
 class OriginalRendererB173Test {
     @BeforeAll static void bootstrap()throws Exception {
         var dist=net.neoforged.fml.loading.FMLLoader.class.getDeclaredField("dist");dist.setAccessible(true);dist.set(null,net.neoforged.api.distmarker.Dist.CLIENT);

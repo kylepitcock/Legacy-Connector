@@ -223,6 +223,23 @@ sourceSets.test.runtimeClasspath += files(layout.buildDirectory.file("moddev/art
 // ... and the tests of the energy bridges name NeoForge's IEnergyStorage / Direction directly
 sourceSets.test.compileClasspath += sourceSets.main.compileClasspath
 tasks.withType(Test).configureEach { useJUnitPlatform() }
+tasks.named('test', Test) {
+    useJUnitPlatform { excludeTags 'actual-mod' }
+}
+
+// Local original jars are developer-supplied fixtures, never a dependency of check/build or release packaging.
+tasks.register('actualModTest', Test) {
+    group = 'verification'
+    description = 'Runs opt-in tests against locally supplied original mods and the Beta reference client.'
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    useJUnitPlatform { includeTags 'actual-mod' }
+    shouldRunAfter tasks.named('test')
+    // These tests discover local archives/caches dynamically; their results must not be reused across fixture sets.
+    outputs.upToDateWhen { false }
+    outputs.doNotCacheIf('uses locally supplied original jars') { true }
+    testLogging { events 'skipped' }
+}
 
 // The addon API alone (classes + sources), the compile-time dependency of addons: build/dist/legacyconnector-api-<version>.jar.
 // Not a mod: at runtime the API is part of the Legacy Connector jar.
