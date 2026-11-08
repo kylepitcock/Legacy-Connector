@@ -43,6 +43,9 @@ DEFAULT_DIRS = {
 
 def project_root():
     """Where gradle runs: the main checkout once the survey is merged there (it outlives a worktree), else the checkout of this script."""
+    pref = os.environ.get("SURVEY_ROOT")   # e.g. a worktree with its own build; used while it exists
+    if pref and (pathlib.Path(pref) / "gradlew.bat").exists():
+        return pathlib.Path(pref)
     if (MAIN / "tools" / "survey" / "survey.py").exists() and (MAIN / "gradlew.bat").exists():
         return MAIN
     return ROOT
@@ -240,6 +243,15 @@ def failed_mods(text):
     return out
 
 
+def crash_stack(text):
+    """The stack part of the last crash report (before the system details), lower-cased."""
+    i = text.rfind("---- Minecraft Crash Report ----")
+    if i < 0:
+        return ""
+    j = text.find("-- System Details --", i)
+    return text[i:j if j > 0 else i + 20000].lower()
+
+
 def crash_reason(text):
     """Description and exception line of the last crash report in a log, for the evidence note."""
     i = text.rfind("---- Minecraft Crash Report ----")
@@ -361,6 +373,7 @@ def collect(jars, mc, census, plan, ctl, text, report, crashed):
     failed = failed_mods(text)
     base = CONTROL / "out" / "base.png"
     culprit_done = False
+    cstack = crash_stack(text) if crashed else ""
     records = {}
     for jar in jars:
         rec = {"jar": jar.name, "mc": mc, "date": time.strftime("%Y-%m-%d"), "attempts": 1, "mods": []}
@@ -382,7 +395,7 @@ def collect(jars, mc, census, plan, ctl, text, report, crashed):
                     shot = CONTROL / "out" / f"{prefix}{ns}.png"
                     if a is None or not shot.exists():
                         m["reached"] = False
-                        if crashed and not culprit_done:
+                        if crashed and not culprit_done and ns.lower() in cstack:
                             m["crashedHere"], culprit_done = True, True
                         continue
                     try:
@@ -553,6 +566,8 @@ def cmd_run(args):
         stable = SURVEY / "tools"
         shutil.copytree(HERE, stable, dirs_exist_ok=True)
         extra = [a for a in sys.argv[2:] if a not in ("--all", "--foreground", "--worker")]
+        if ROOT != MAIN and "SURVEY_ROOT" not in os.environ:
+            os.environ["SURVEY_ROOT"] = str(ROOT)   # keep using this checkout's own build until it is removed
         p = subprocess.Popen([sys.executable, str(stable / "survey.py"), "run", "--all", "--worker"] + extra,
                              stdout=open(SURVEY / "progress.log", "a"), stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL,
                              cwd=str(MAIN), creationflags=0x00000008 | 0x00000200 | 0x08000000)   # DETACHED | NEW_PROCESS_GROUP | NO_WINDOW
