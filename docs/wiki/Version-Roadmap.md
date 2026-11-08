@@ -37,6 +37,9 @@ whether any of the above keeps working.
 
 - **1.8 to 1.11.2:** nothing useful lives only there (decision of 2026-10-25).
 - **Beta, Alpha, 1.0 to 1.1 (ModLoader/jar-mod era):** most mods patch `minecraft.jar` itself (replaced vanilla classes), which cannot be translated as a standalone jar.
+  Exception, started on request (2026-11-06): **Beta 1.7.3** ModLoader / Forge 1.0 mods, whose standalone mods (IndustrialCraft 2,
+  RedPower, NetherCraft, Portal Gun, Minefactory Renewed) translate: [Legacy b1.7.3](Legacy-b1.7.3.md). Its `ModLoader`/`BaseMod` emulation
+  is the groundwork 1.2.5 needs.
 
 ## Evidence
 

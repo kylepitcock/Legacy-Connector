@@ -9,11 +9,30 @@ final class Forge1211TargetMethodAliases {
     static final String TARGET_MINECRAFT_VERSION = "1.21.1";
 
     private static final String RESOURCE_LOCATION = "net/minecraft/resources/ResourceLocation";
-    private static final String DESCRIPTOR =
+    private static final String RESOURCE_LOCATION_DESCRIPTOR =
             "(Ljava/lang/String;Ljava/lang/String;)Lnet/minecraft/resources/ResourceLocation;";
+    private static final String ENTITY_DIMENSIONS = "net/minecraft/world/entity/EntityDimensions";
+    private static final String HOLDER = "net/minecraft/core/Holder";
+    private static final String HOLDER_VALUE_DESCRIPTOR = "()Ljava/lang/Object;";
+    private static final String WITH_EYE_HEIGHT_DESCRIPTOR =
+            "(F)Lnet/minecraft/world/entity/EntityDimensions;";
+    private static final String FLOAT_ACCESSOR_DESCRIPTOR = "()F";
+    private static final String BOOLEAN_ACCESSOR_DESCRIPTOR = "()Z";
     private static final Map<MethodKey, String> METHOD_ALIASES = Map.of(
-            new MethodKey(RESOURCE_LOCATION, "m_339182_", DESCRIPTOR),
-            "fromNamespaceAndPath");
+            new MethodKey(RESOURCE_LOCATION, "m_339182_", RESOURCE_LOCATION_DESCRIPTOR),
+            "fromNamespaceAndPath",
+            new MethodKey(ENTITY_DIMENSIONS, "m_320568_", WITH_EYE_HEIGHT_DESCRIPTOR),
+            "withEyeHeight",
+            new MethodKey(ENTITY_DIMENSIONS, "f_20377_", FLOAT_ACCESSOR_DESCRIPTOR),
+            "width",
+            new MethodKey(ENTITY_DIMENSIONS, "f_20378_", FLOAT_ACCESSOR_DESCRIPTOR),
+            "height",
+            new MethodKey(ENTITY_DIMENSIONS, "f_20379_", BOOLEAN_ACCESSOR_DESCRIPTOR),
+            "fixed",
+            new MethodKey(ENTITY_DIMENSIONS, "f_316573_", FLOAT_ACCESSOR_DESCRIPTOR),
+            "eyeHeight",
+            new MethodKey(HOLDER, "m_203334_", HOLDER_VALUE_DESCRIPTOR),
+            "value");
 
     private Forge1211TargetMethodAliases() {}
 

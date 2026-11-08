@@ -417,6 +417,7 @@ public final class RenderContext {
         State st = STATE.get();
         st.texture = rl;
         st.sheet = null;
+        if(st.capture!=null)return;
         RenderSystem.setShaderTexture(0, rl);
     }
 

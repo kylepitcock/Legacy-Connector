@@ -463,3 +463,51 @@ net/neoforged/neoforge/event/entity/EntityEvent$Size	getOldEyeHeight	()F	EventCo
 net/neoforged/neoforge/event/entity/EntityEvent$Size	getNewEyeHeight	()F	EventCompat	newEyeHeight	-
 net/neoforged/neoforge/event/entity/EntityEvent$Size	setNewEyeHeight	(F)V	EventCompat	setNewEyeHeight	-
 net/neoforged/neoforge/event/entity/EntityEvent$Size	setNewSize	(Lnet/minecraft/world/entity/EntityDimensions;Z)V	EventCompat	setNewSize	-
+net/neoforged/fml/common/EventBusSubscriber$Bus	bus	()Ljava/util/function/Supplier;	BusCompat	bus	-
+net/minecraft/world/item/crafting/RecipeManager	byType	(Lnet/minecraft/world/item/crafting/RecipeType;)Ljava/util/Map;	RoundCompat	byType	-
+net/minecraft/world/item/crafting/RecipeManager$CachedCheck	getRecipeFor	(Lnet/minecraft/world/Container;Lnet/minecraft/world/level/Level;)Ljava/util/Optional;	RoundCompat	cachedGetRecipeFor	-
+net/minecraft/world/item/crafting/RecipeManager	getRemainingItemsFor	(Lnet/minecraft/world/item/crafting/RecipeType;Lnet/minecraft/world/Container;Lnet/minecraft/world/level/Level;)Lnet/minecraft/core/NonNullList;	RoundCompat	getRemainingItemsFor	-
+net/minecraft/world/inventory/RecipeCraftingHolder	setRecipeUsed	(Lnet/minecraft/world/item/crafting/Recipe;)V	RoundCompat	setRecipeUsed	-
+net/minecraft/world/inventory/RecipeCraftingHolder	setRecipeUsed	(Lnet/minecraft/world/level/Level;Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/world/item/crafting/Recipe;)Z	RoundCompat	setRecipeUsed	-
+net/minecraft/world/inventory/RecipeCraftingHolder	getRecipeUsed	()Lnet/minecraft/world/item/crafting/Recipe;	RoundCompat	getRecipeUsed	-
+net/minecraft/world/level/Explosion	<init>	(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/damagesource/DamageSource;Lnet/minecraft/world/level/ExplosionDamageCalculator;DDDFZLnet/minecraft/world/level/Explosion$BlockInteraction;)V	RoundCompat	newExplosion	-
+net/minecraft/world/level/Explosion	<init>	(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/Entity;DDDFLjava/util/List;)V	RoundCompat	newExplosion	-
+net/minecraft/world/entity/item/ItemEntity	setThrower	(Ljava/util/UUID;)V	RoundCompat	setThrower	-
+net/minecraft/world/level/block/state/properties/BlockSetType	<init>	(Ljava/lang/String;ZLnet/minecraft/world/level/block/SoundType;Lnet/minecraft/sounds/SoundEvent;Lnet/minecraft/sounds/SoundEvent;Lnet/minecraft/sounds/SoundEvent;Lnet/minecraft/sounds/SoundEvent;Lnet/minecraft/sounds/SoundEvent;Lnet/minecraft/sounds/SoundEvent;Lnet/minecraft/sounds/SoundEvent;Lnet/minecraft/sounds/SoundEvent;)V	RoundCompat	newBlockSetType	-
+net/minecraft/world/entity/decoration/PaintingVariant	<init>	(II)V	RoundCompat	newPaintingVariant	-
+net/minecraft/world/level/block/entity/BannerPattern	<init>	(Ljava/lang/String;)V	RoundCompat	newBannerPattern	-
+net/minecraft/world/item/Rarity	create	(Ljava/lang/String;Lnet/minecraft/ChatFormatting;)Lnet/minecraft/world/item/Rarity;	RoundCompat	createRarity	-
+# --- round 2 batch 4
+net/minecraft/world/level/block/Block	canSustainPlant	(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;Llegacyconnector/v1_20_1/net/minecraftforge/common/IPlantable;)Z@special	MiddleCompat	superCanSustainPlant
+net/minecraft/world/level/block/Block	canSustainPlant	(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;Llegacyconnector/v1_20_1/net/minecraftforge/common/IPlantable;)Z	MiddleCompat	blockCanSustainPlant
+net/minecraft/world/level/block/state/BlockState	canSustainPlant	(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;Llegacyconnector/v1_20_1/net/minecraftforge/common/IPlantable;)Z	MiddleCompat	stateCanSustainPlant
+net/minecraft/world/entity/TamableAnimal	setTame	(Z)V@special	=args	0,MiddleCompat.sideEffects@0	(ZZ)V
+net/minecraft/world/entity/TamableAnimal	setTame	(Z)V	=args	0,MiddleCompat.sideEffects@0	(ZZ)V
+# --- round 2 batch 5
+net/minecraft/world/item/enchantment/EnchantmentHelper	getEnchantmentId	(Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/resources/ResourceLocation;	MiddleCompat	getEnchantmentId
+net/minecraft/world/item/enchantment/EnchantmentHelper	getEnchantmentLevel	(Lnet/minecraft/nbt/CompoundTag;)I	MiddleCompat	getEnchantmentLevel
+net/minecraft/world/item/enchantment/EnchantmentHelper	storeEnchantment	(Lnet/minecraft/resources/ResourceLocation;I)Lnet/minecraft/nbt/CompoundTag;	MiddleCompat	storeEnchantment
+net/minecraft/world/item/enchantment/EnchantmentHelper	setEnchantmentLevel	(Lnet/minecraft/nbt/CompoundTag;I)V	MiddleCompat	setEnchantmentLevel
+net/minecraft/world/item/enchantment/EnchantmentHelper	getEnchantmentId	(Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyEnchantment;)Lnet/minecraft/resources/ResourceLocation;	MiddleCompat	getEnchantmentId
+net/minecraft/world/item/enchantment/EnchantmentHelper	getRiptide	(Lnet/minecraft/world/item/ItemStack;)I	MiddleCompat	getRiptide
+net/minecraft/world/item/enchantment/EnchantmentHelper	hasChanneling	(Lnet/minecraft/world/item/ItemStack;)Z	MiddleCompat	hasChanneling
+net/minecraft/world/item/enchantment/EnchantmentHelper	hasSilkTouch	(Lnet/minecraft/world/item/ItemStack;)Z	MiddleCompat	hasSilkTouch
+net/minecraft/world/item/enchantment/EnchantmentHelper	getDepthStrider	(Lnet/minecraft/world/entity/LivingEntity;)I	MiddleCompat	getDepthStrider
+net/minecraft/world/item/enchantment/EnchantmentHelper	getRespiration	(Lnet/minecraft/world/entity/LivingEntity;)I	MiddleCompat	getRespiration
+net/minecraft/world/item/crafting/Ingredient	fromJson	(Lcom/google/gson/JsonElement;Z)Lnet/minecraft/world/item/crafting/Ingredient;	MiddleCompat	ingredientFromJson
+net/minecraft/world/item/crafting/Ingredient	isVanilla	()Z	MiddleCompat	isVanilla
+net/minecraft/world/item/crafting/Ingredient	checkInvalidation	()Z	MiddleCompat	checkInvalidation
+net/minecraft/world/item/crafting/Ingredient	invalidate	()V	MiddleCompat	invalidate
+net/minecraft/world/item/crafting/Ingredient	invalidateAll	()V	MiddleCompat	invalidateAll
+net/minecraft/world/item/crafting/Ingredient	merge	(Ljava/util/Collection;)Lnet/minecraft/world/item/crafting/Ingredient;	MiddleCompat	merge
+net/minecraft/network/FriendlyByteBuf	readWithCodec	(Lcom/mojang/serialization/DynamicOps;Lcom/mojang/serialization/Codec;)Ljava/lang/Object;	MiddleCompat	readWithCodec
+net/minecraft/network/FriendlyByteBuf	writeWithCodec	(Lcom/mojang/serialization/DynamicOps;Lcom/mojang/serialization/Codec;Ljava/lang/Object;)V	MiddleCompat	writeWithCodec
+net/minecraft/server/MinecraftServer	getServerDirectory	()Ljava/io/File;	MiddleCompat	getServerDirectory
+net/minecraft/server/MinecraftServer	getFile	(Ljava/lang/String;)Ljava/io/File;	MiddleCompat	getServerFile
+net/minecraft/server/MinecraftServer	isNetherEnabled	()Z	MiddleCompat	isNetherEnabled
+net/minecraft/world/level/Level	getFreeMapId	()I	MiddleCompat	getFreeMapId
+net/minecraft/world/level/Level	getExistingBlockEntity	(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/entity/BlockEntity;	MiddleCompat	getExistingBlockEntity
+net/minecraft/world/level/Level	dimensionTypeId	()Lnet/minecraft/resources/ResourceKey;	MiddleCompat	dimensionTypeId
+# --- round 2 batch 6
+net/minecraft/world/item/ItemStack	canApplyAtEnchantingTable	(Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyEnchantment;)Z	MiddleCompat	canApplyAtEnchantingTable
+net/minecraft/world/item/ItemStack	addAttributeModifier	(Lnet/minecraft/world/entity/ai/attributes/Attribute;Lnet/minecraft/world/entity/ai/attributes/AttributeModifier;Lnet/minecraft/world/entity/EquipmentSlot;)V	MiddleCompat	addAttributeModifier

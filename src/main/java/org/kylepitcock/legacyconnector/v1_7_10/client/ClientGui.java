@@ -54,6 +54,10 @@ public final class ClientGui {
             mc.setScreen(null);
             return;
         }
+        if (screen instanceof ModernViews1710.View view) {
+            mc.setScreen(view.modern());
+            return;
+        }
         if (screen instanceof LegacyConfigScreens.ModernParent parent) {
             mc.setScreen(parent.modern());
             return;
@@ -136,7 +140,7 @@ public final class ClientGui {
         if (s instanceof LegacyContainerScreen cs) return cs.legacy();
         // Any other open screen (chat, pause, a modern mod's): legacy code only asks whether one is open, e.g. to stop
         // reacting to hotkeys while the player types.
-        return s == null ? null : FOREIGN_SCREEN;
+        return s == null ? null : ModernViews1710.of(s);
     }
 
     private static final GuiScreen FOREIGN_SCREEN = new GuiScreen();

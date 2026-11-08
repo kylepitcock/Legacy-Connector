@@ -74,7 +74,7 @@ public final class LegacyConfigScreens {
     }
 
     /** A legacy stand-in for a modern screen: displaying it shows the modern screen again. */
-    public static final class ModernParent extends GuiScreen {
+    public static class ModernParent extends GuiScreen {
         private final Screen modern;
 
         public ModernParent(Screen modern) {
