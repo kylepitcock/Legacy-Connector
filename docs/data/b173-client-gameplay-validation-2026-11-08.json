@@ -1,0 +1,1127 @@
+{
+  "status": "passed",
+  "snapshot_date": "2026-11-08",
+  "validated_at_utc": "2026-11-08T18:46:42.189213+00:00",
+  "scope": "Actual Mo' Creatures and More Creeps native client gameplay, carry synchronization and save/relog; Beta and Forge Aether coexistence on fresh saves.",
+  "version": "0.4.13",
+  "version_policy": "The upstream 0.4.13 version is unchanged.",
+  "branch": "legacy-b1.7.3",
+  "tested_code_revision": "50f548fe98551f19edcea50d06937d81a0df0e75",
+  "working_tree_base_revision": "997fe5bb0d7231b6fc5a33effd83c502fbbe6993",
+  "source_sha256": {
+    "loader/src/main/java/org/kylepitcock/legacyconnector/loader/BetaJars.java": "90af648b195a651cf4a930494af47d4b387adb1e9412e4a825da71d468b4ef12",
+    "loader/src/main/java/org/kylepitcock/legacyconnector/loader/LegacyModDecl.java": "6228819d01cc8355b3cbcd24ec8dffb2c5e9e97c84894987ff60b433048e3bd3",
+    "loader/src/main/java/org/kylepitcock/legacyconnector/loader/meta/ModMetadataGenerator.java": "5ff45f4d4471f968036f5cfcd05668b11e6c7aec13ac1c01046595b44da69df3",
+    "loader/src/main/java/org/kylepitcock/legacyconnector/loader/transform/LegacyJarTransformer.java": "a7bdf04a375170542b15688938a21b1f6288bfd4729040347fa02548c82300e9",
+    "loader/src/test/java/org/kylepitcock/legacyconnector/loader/BetaNamespaceTest.java": "74e86e8a4312cfd202a23a9be2c1e4b6e81daf3d7a0605215e5312afb8d8b788",
+    "loader/src/test/java/org/kylepitcock/legacyconnector/loader/GeneratedEntrypointsSideBySideTest.java": "76213016460e17d39bedf8d993c404ce12cf7e59f8a852677f8c5f919f8d5bf4",
+    "loader/src/test/java/org/kylepitcock/legacyconnector/loader/meta/ModMetadataEntrypointIdentityTest.java": "1a84f90839a038bb536b17679d49a1a99ba2594d069d5299c6627c1591308d79",
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/item/Item.java": "ab22df3115dd49a8171a045f09d5b8416fac03ab61e190f9d72837393f00f2ee",
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/item/ItemStack.java": "018ed55d4beb104088bcb686d9f3601a86385e6097b432c8f5c5fb7d60c2c479",
+    "src/main/java/org/kylepitcock/legacyconnector/core/LegacyMods.java": "93dd9fda03183861dfb9565d11d2cac4393279fefb87b3a4d0e53e2e86c62c2f",
+    "src/main/java/org/kylepitcock/legacyconnector/v1_12_2/Platform1122.java": "942cdb90b8be8dd253c6216def3b735c82eb302da8636f128460b8ffe9450479",
+    "src/main/java/org/kylepitcock/legacyconnector/v1_7_10/Platform1710.java": "e638badfe84f3d579cf669459826660262af4e758e58abb69aabafb38cf2e68e",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/CreativeTabsB173.java": "5d0dce8dc35b49c7d98a6f06970cf59123a4aa6150e237a92b35c8a4679941ee",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/LegacyB173Animal.java": "9ad6e0d1da04b5e267edf7cd9fad7cb8f9b3a6397f48582d97008dbf7ec47253",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/LegacyB173Item.java": "6c45da01a29de7aa0c8394bb252f8a8cb3022475f69745d50a83a712e8a703c6",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/MoCreaturesHorseSaddleSelfTestB173.java": "fc3f49c02ca5a1c35246874bbd01f7e1560988d4e49f98eb0b2311047a25bba5",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/MobSelfTestB173.java": "f30428283ffc3bfaf556e1e32b4054323f46017b57bbe1fdd8d1cb9e546f8fee",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/MoreCreepsCarrierSyncSelfTestB173.java": "959972a3f9408a23745fd6f58fa0a4d9e6dbe169277cade41291bd706634914f",
+    "src/test/java/org/kylepitcock/legacyconnector/core/LegacyModsIdentityTest.java": "a4e7c0012b7d922fb156660d2a7bbcff8df35aee9a52321c0adc34fe1c7c41a8"
+  },
+  "source_manifest": {
+    "path": "build/client-gameplay-changed-java-files.json",
+    "sha256": "2d769358a82605165451b699037f93c314a65c964887c8aa3b6877a6e6efd534"
+  },
+  "tests": {
+    "runtime": {
+      "tests": 219,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "xml_files": 57,
+      "evidence_sha256": "e1e056d1f05c79141492176bbc5b08321834ca13de279c204538213fa0418dcd"
+    },
+    "loader": {
+      "tests": 267,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "xml_files": 49,
+      "evidence_sha256": "990a3a010346dd130ba85ef39fd0a8fc68b36472717028490807fcc588958a13"
+    },
+    "actual_mod_opt_in": {
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "xml_files": 4,
+      "evidence_sha256": "89bbd5e44e248ea5dd547c249fa1671fa4de5a4a66e11161dc2c0abf48926beb"
+    }
+  },
+  "artifact": {
+    "path": "build/dist/legacyconnector-0.4.13.jar",
+    "sha256": "d484fc3de22acb68df8db13dac0a33e8fe3cd838ab38a09f26c0cd8e868faa49"
+  },
+  "final_server_assessments": {
+    "mocreatures": {
+      "path": "build/placement-classic-flat-prefix-final-mocreatures-assessment.json",
+      "sha256": "166a21e8c75962f753d61cd08cfa194ff589ba9a7d892de7d1a1b558140a6062",
+      "status": "headless-smoke-passed",
+      "exit_code": 0,
+      "problems": [],
+      "missing_entrypoints": [],
+      "constructed": [
+        "[13:33:23] [modloading-sync-worker/INFO] [Le.7.3/]: b1.7.3 mod mocreatures v2.12.1 (MC 1.7_3) constructed"
+      ],
+      "acceptance_markers": {
+        "MOC ROSTER TEST: all 28 original registrations and 14 items": "[13:33:32] [Server thread/INFO] [LegacyConnector/B173RosterTest/]: B1.7.3 MOC ROSTER TEST: all 28 original registrations and 14 items passed core baseline; specialized behavior proofs tracked separately",
+        "MOC HORSE SADDLE TEST: all 5 actual-item proofs passed": "[13:33:33] [Server thread/INFO] [LegacyConnector/B173HorseSaddleTest/]: B1.7.3 MOC HORSE SADDLE TEST: all 5 actual-item proofs passed"
+      }
+    },
+    "morecreeps": {
+      "path": "build/placement-classic-flat-prefix-final-morecreeps-assessment.json",
+      "sha256": "338ca0c283e585256e2f99992a0ed2cba797da36ee0acf5c943eee037b342313",
+      "status": "headless-smoke-passed",
+      "exit_code": 0,
+      "problems": [],
+      "missing_entrypoints": [],
+      "constructed": [
+        "[13:34:24] [modloading-sync-worker/INFO] [Le.7.3/]: b1.7.3 mod MoreCreepsAndWeirdos MoreCreepsAndWeirdos constructed"
+      ],
+      "acceptance_markers": {
+        "CREEPS ROSTER TEST: all 53 original registrations and 40 items": "[13:34:34] [Server thread/INFO] [LegacyConnector/B173RosterTest/]: B1.7.3 CREEPS ROSTER TEST: all 53 original registrations and 40 items passed core baseline; specialized behavior proofs tracked separately",
+        "CREEPS CARRIER SYNC TEST: actual Kid pickup/head seat/release synchronize carrier connection": "[13:34:34] [Server thread/INFO] [LegacyConnector/B173CarrierSyncTest/]: B1.7.3 CREEPS CARRIER SYNC TEST: actual Kid pickup/head seat/release synchronize carrier connection; unchanged and rejected native mounts emit no extra packets"
+      }
+    }
+  },
+  "final_client_orchestration": {
+    "path": "build/prefix-final-client-controls.log",
+    "sha256": "d7e7020160367859f1443c0db94b032d28e886c75c1f875226470299a0b51798"
+  },
+  "clients": {
+    "mocreatures": {
+      "game_directory": "run-b173-single/mocreatures-neutralprefix-client-final-20261108-133613-e3eeb8",
+      "fixture": {
+        "path": "run-b173-single/mocreatures-neutralprefix-client-final-20261108-133613-e3eeb8/audit-manifest.json",
+        "sha256": "ae82465d8fcfaf0328054bdbd28120dc361db3bf6d621cd99ddb91de20990415",
+        "source_archive_entry": "DrZharks_MoCreatures_Mod_v2.12.2_b1.7.3.zip!mods/MoCreatures.zip",
+        "staged_payload_sha256": "e6943d044fe78f666f79e10b56313ff25690e546470f396e45d284ece42f02dc",
+        "entrypoints": [
+          "mod_mocreatures"
+        ],
+        "resource_and_config_files": 168,
+        "resource_and_config_manifest_sha256": "1b6eb8a05a580854fdd8a01f22da624a18e5a7643aa9fd501ed03cc1da511119"
+      },
+      "exercise": {
+        "path": "run-b173-single/mocreatures-neutralprefix-client-final-20261108-133613-e3eeb8/moc-gameplay-proof/exercise-results.json",
+        "sha256": "07f77245372fe0766801e204e06bbf6fdc3e971783becfaae3a2559dc7e823c3",
+        "passed_checks": 24,
+        "checks": [
+          {
+            "passed": true,
+            "detail": "actual wheat feed consumes one, heals five and lowers temper25"
+          },
+          {
+            "passed": true,
+            "detail": "actual apple interaction tames and consumes apple"
+          },
+          {
+            "passed": true,
+            "detail": "actual HorseSaddle native item/entity interaction equips and consumes saddle"
+          },
+          {
+            "passed": true,
+            "detail": "actual chest interaction equips type6 horse"
+          },
+          {
+            "passed": true,
+            "detail": "native QUICK_MOVE stores7diamonds in original horse inventory"
+          },
+          {
+            "passed": true,
+            "detail": "actual empty-hand horse interaction mounts native player"
+          },
+          {
+            "passed": true,
+            "detail": "horse responds to real client forward input through natural ticks"
+          },
+          {
+            "passed": true,
+            "detail": "horse responds to real client jump input"
+          },
+          {
+            "passed": true,
+            "detail": "native sneak dismounts horse"
+          },
+          {
+            "passed": true,
+            "detail": "native packet carries bunny on server player"
+          },
+          {
+            "passed": true,
+            "detail": "bunny carry relation reached client packet state"
+          },
+          {
+            "passed": true,
+            "detail": "bunny follows carrier through natural native ticks"
+          },
+          {
+            "passed": true,
+            "detail": "original native interaction releases bunny"
+          },
+          {
+            "passed": true,
+            "detail": "native packet carries bird on server player"
+          },
+          {
+            "passed": true,
+            "detail": "bird carry relation reached client packet state"
+          },
+          {
+            "passed": true,
+            "detail": "bird follows carrier through natural native ticks"
+          },
+          {
+            "passed": true,
+            "detail": "original native interaction releases bird"
+          },
+          {
+            "passed": true,
+            "detail": "native packet carries kitty on server player"
+          },
+          {
+            "passed": true,
+            "detail": "kitty carry relation reached client packet state"
+          },
+          {
+            "passed": true,
+            "detail": "kitty follows carrier through natural native ticks"
+          },
+          {
+            "passed": true,
+            "detail": "original native interaction releases kitty"
+          },
+          {
+            "passed": true,
+            "detail": "native packet carries kitty on server player"
+          },
+          {
+            "passed": true,
+            "detail": "kitty carry relation reached client packet state"
+          },
+          {
+            "passed": true,
+            "detail": "kitty follows carrier through natural native ticks"
+          }
+        ]
+      },
+      "relog": {
+        "path": "run-b173-single/mocreatures-neutralprefix-client-final-20261108-133613-e3eeb8/moc-gameplay-proof/relog-results.json",
+        "sha256": "1027f3bb26be34978846c1e360ba554a757e37599161d6702fbdf4cb6b1fe0fa",
+        "passed_checks": 33,
+        "checks": [
+          {
+            "passed": true,
+            "detail": "horse survives actual save/relog"
+          },
+          {
+            "passed": true,
+            "detail": "horse retains native UUID and survives"
+          },
+          {
+            "passed": true,
+            "detail": "horse original NBT field rideable"
+          },
+          {
+            "passed": true,
+            "detail": "horse original NBT field tamed"
+          },
+          {
+            "passed": true,
+            "detail": "horse original NBT field typeint"
+          },
+          {
+            "passed": true,
+            "detail": "horse original NBT field adult"
+          },
+          {
+            "passed": true,
+            "detail": "horse original NBT field b"
+          },
+          {
+            "passed": true,
+            "detail": "horse original NBT field chestedhorse"
+          },
+          {
+            "passed": true,
+            "detail": "horse original NBT field name"
+          },
+          {
+            "passed": true,
+            "detail": "horse original NBT field displayname"
+          },
+          {
+            "passed": true,
+            "detail": "actual horse chest slot/item/count/damage survives save/relog"
+          },
+          {
+            "passed": true,
+            "detail": "horse reload reaches real client tracking"
+          },
+          {
+            "passed": true,
+            "detail": "bunny survives actual save/relog"
+          },
+          {
+            "passed": true,
+            "detail": "bunny retains native UUID and survives"
+          },
+          {
+            "passed": true,
+            "detail": "bunny original NBT field typeint"
+          },
+          {
+            "passed": true,
+            "detail": "bunny original NBT field tamed"
+          },
+          {
+            "passed": true,
+            "detail": "bunny original NBT field adult"
+          },
+          {
+            "passed": true,
+            "detail": "bunny original NBT field edad"
+          },
+          {
+            "passed": true,
+            "detail": "bunny reload reaches real client tracking"
+          },
+          {
+            "passed": true,
+            "detail": "bird survives actual save/relog"
+          },
+          {
+            "passed": true,
+            "detail": "bird retains native UUID and survives"
+          },
+          {
+            "passed": true,
+            "detail": "bird original NBT field typeint"
+          },
+          {
+            "passed": true,
+            "detail": "bird original NBT field tamed"
+          },
+          {
+            "passed": true,
+            "detail": "bird reload reaches real client tracking"
+          },
+          {
+            "passed": true,
+            "detail": "kitty survives actual save/relog"
+          },
+          {
+            "passed": true,
+            "detail": "kitty retains native UUID and survives"
+          },
+          {
+            "passed": true,
+            "detail": "kitty original NBT field typeint"
+          },
+          {
+            "passed": true,
+            "detail": "kitty original NBT field adult"
+          },
+          {
+            "passed": true,
+            "detail": "kitty original NBT field edad"
+          },
+          {
+            "passed": true,
+            "detail": "kitty original NBT field name"
+          },
+          {
+            "passed": true,
+            "detail": "kitty original NBT field displayname"
+          },
+          {
+            "passed": true,
+            "detail": "kitty original carry state may settle to normal on landing"
+          },
+          {
+            "passed": true,
+            "detail": "kitty reload reaches real client tracking"
+          }
+        ]
+      },
+      "saved_actor_uuids": {
+        "horse": "4f671e23-34b6-4da2-94d0-b6ad5936a0d5",
+        "bunny": "0a473dab-b3b7-4d48-8915-9e983dcda943",
+        "bird": "22bdecb9-de5c-410c-9207-25b57834cad0",
+        "kitty": "95804ca8-e2f7-4126-9443-49ece52d1cda"
+      },
+      "before_relog": {
+        "path": "run-b173-single/mocreatures-neutralprefix-client-final-20261108-133613-e3eeb8/moc-gameplay-proof/before-relog.json",
+        "sha256": "51cba94701b8b2350ccb4b3b843cdca52961c8660821f4aa8a219c755b60a97e"
+      },
+      "after_relog": {
+        "path": "run-b173-single/mocreatures-neutralprefix-client-final-20261108-133613-e3eeb8/moc-gameplay-proof/after-relog.json",
+        "sha256": "f95abff10d8a1201f3cb7109c82af5f207ff93e1f0523e57ed770ddfff758edf"
+      },
+      "generic_uuid_and_ejection_proofs": [
+        {
+          "path": "run-b173-single/mocreatures-neutralprefix-client-final-20261108-133613-e3eeb8/carry-relog-1794163190732678900-assertions.json",
+          "sha256": "05b54f0e90284558fb617171a278c6b4c6351b689ad21683446cc4f21a7a050d",
+          "world": "GameplayValidation",
+          "player_uuid": "380df991-f603-344c-a090-369bad2a924a",
+          "carried_uuids": [
+            "95804ca8-e2f7-4126-9443-49ece52d1cda"
+          ],
+          "ridden_mount_uuid": null,
+          "surviving_original_entities": [
+            {
+              "uuid": "0a473dab-b3b7-4d48-8915-9e983dcda943",
+              "original": "legacyconnector_b173.mocreatures.EntityBunny",
+              "persistent": {
+                "tamed": true,
+                "typeint": 2
+              },
+              "carriedBefore": false,
+              "vehicleAfter": null
+            },
+            {
+              "uuid": "22bdecb9-de5c-410c-9207-25b57834cad0",
+              "original": "legacyconnector_b173.mocreatures.EntityBird",
+              "persistent": {
+                "tamed": true,
+                "typeint": 4
+              },
+              "carriedBefore": false,
+              "vehicleAfter": null
+            },
+            {
+              "uuid": "95804ca8-e2f7-4126-9443-49ece52d1cda",
+              "original": "legacyconnector_b173.mocreatures.EntityKitty",
+              "persistent": {
+                "name": "Carry proof",
+                "typeint": 2
+              },
+              "carriedBefore": true,
+              "vehicleAfter": null
+            },
+            {
+              "uuid": "4f671e23-34b6-4da2-94d0-b6ad5936a0d5",
+              "original": "legacyconnector_b173.mocreatures.EntityHorse",
+              "persistent": {
+                "tamed": true,
+                "name": "",
+                "typeint": 6,
+                "chestedhorse": true
+              },
+              "carriedBefore": false,
+              "vehicleAfter": null
+            }
+          ],
+          "native_root_vehicle_before": false
+        },
+        {
+          "path": "run-b173-single/mocreatures-neutralprefix-client-final-20261108-133613-e3eeb8/carry-relog-1794163214042959500-assertions.json",
+          "sha256": "642f6b427e2da3be6b7a9ae705c6323e3ca85b48af62e2e5002995c662501980",
+          "world": "GameplayValidation",
+          "player_uuid": "380df991-f603-344c-a090-369bad2a924a",
+          "carried_uuids": [],
+          "ridden_mount_uuid": "4f671e23-34b6-4da2-94d0-b6ad5936a0d5",
+          "surviving_original_entities": [
+            {
+              "uuid": "95804ca8-e2f7-4126-9443-49ece52d1cda",
+              "original": "legacyconnector_b173.mocreatures.EntityKitty",
+              "persistent": {
+                "name": "Carry proof",
+                "typeint": 2
+              },
+              "carriedBefore": false,
+              "vehicleAfter": null
+            },
+            {
+              "uuid": "22bdecb9-de5c-410c-9207-25b57834cad0",
+              "original": "legacyconnector_b173.mocreatures.EntityBird",
+              "persistent": {
+                "tamed": true,
+                "typeint": 4
+              },
+              "carriedBefore": false,
+              "vehicleAfter": null
+            },
+            {
+              "uuid": "0a473dab-b3b7-4d48-8915-9e983dcda943",
+              "original": "legacyconnector_b173.mocreatures.EntityBunny",
+              "persistent": {
+                "tamed": true,
+                "typeint": 2
+              },
+              "carriedBefore": false,
+              "vehicleAfter": null
+            },
+            {
+              "uuid": "4f671e23-34b6-4da2-94d0-b6ad5936a0d5",
+              "original": "legacyconnector_b173.mocreatures.EntityHorse",
+              "persistent": {
+                "tamed": true,
+                "name": "",
+                "typeint": 6,
+                "chestedhorse": true
+              },
+              "carriedBefore": false,
+              "vehicleAfter": null
+            }
+          ],
+          "native_root_vehicle_before": true
+        }
+      ],
+      "content_counts": {
+        "b173_mocreatures": {
+          "blocks": 0,
+          "items": 14,
+          "hosted_entity_keys_observed": 28
+        }
+      },
+      "mesa_client_log": {
+        "path": "build/prefix-final-mocreatures-client.log",
+        "sha256": "f946332d2fceb7d84369d21061053ff105b2d98095135b7b312b77813b488001"
+      },
+      "ridden_horse": {
+        "path": "run-b173-single/mocreatures-neutralprefix-client-final-20261108-133613-e3eeb8/moc-gameplay-proof/horse-ridden-after-relog.json",
+        "sha256": "bd2c11935b0596b1b48c080870984b5d9dd4d211addab514c0d98ee92b8269b5",
+        "uuid": "4f671e23-34b6-4da2-94d0-b6ad5936a0d5",
+        "native_root_vehicle_preserved": true,
+        "server_and_client_rider_restored": true,
+        "inventory": [
+          {
+            "slot": 0,
+            "id": 264,
+            "count": 7,
+            "damage": 0
+          }
+        ]
+      }
+    },
+    "morecreeps": {
+      "game_directory": "run-b173-single/morecreeps-neutralprefix-client-final-20261108-133613-e0863d",
+      "fixture": {
+        "path": "run-b173-single/morecreeps-neutralprefix-client-final-20261108-133613-e0863d/audit-manifest.json",
+        "sha256": "592a9f3eaefcb515add2fefb60b4bc0593fe08c052a51163ab05d4a632de3fd0",
+        "source_archive_entry": "MoreCreepsv2.12_b173.zip!PUT CONTENTS INTO MINECRAFT FOLDER/mods/MoreCreepsAndWeirdos.zip",
+        "staged_payload_sha256": "51ecba2c5c3d29ae2b1b997e8eb5fe6af238810d00a36d044e26ef99360b07e9",
+        "entrypoints": [
+          "mod_MoreCreepsAndWeirdos"
+        ],
+        "resource_and_config_files": 759,
+        "resource_and_config_manifest_sha256": "1cc0109b52487e3552f9037daf66e52af90c8454dc3aaacabc02044c26e07f0e"
+      },
+      "exercise": {
+        "path": "run-b173-single/morecreeps-neutralprefix-client-final-20261108-133613-e0863d/creeps-gameplay-proof/exercise-results.json",
+        "sha256": "30013a69ae936005a8e4bc5cc6a484e615029bf204b30306d755d7bfb2964041",
+        "passed_checks": 23,
+        "checks": [
+          {
+            "passed": true,
+            "detail": "all three actors begin with original untamed constructor state"
+          },
+          {
+            "passed": true,
+            "detail": "original Rocket Giraffe cookie countdown is five through twelve"
+          },
+          {
+            "passed": true,
+            "detail": "single native cookie click decrements original countdown once"
+          },
+          {
+            "passed": true,
+            "detail": "single native cookie click decrements original countdown once"
+          },
+          {
+            "passed": true,
+            "detail": "single native cookie click decrements original countdown once"
+          },
+          {
+            "passed": true,
+            "detail": "single native cookie click decrements original countdown once"
+          },
+          {
+            "passed": true,
+            "detail": "single native cookie click decrements original countdown once"
+          },
+          {
+            "passed": true,
+            "detail": "single native cookie click decrements original countdown once"
+          },
+          {
+            "passed": true,
+            "detail": "original cookie sequence tames Rocket Giraffe"
+          },
+          {
+            "passed": true,
+            "detail": "real player mount reaches both native server and client"
+          },
+          {
+            "passed": true,
+            "detail": "original riding survives natural native control ticks"
+          },
+          {
+            "passed": true,
+            "detail": "native sneak dismount releases Rocket Giraffe"
+          },
+          {
+            "passed": true,
+            "detail": "original golden apple recruits and names pig1"
+          },
+          {
+            "passed": true,
+            "detail": "original golden apple recruits and names pig2"
+          },
+          {
+            "passed": true,
+            "detail": "original Guinea Pig carry reaches carrier own client"
+          },
+          {
+            "passed": true,
+            "detail": "original second Guinea Pig builds reciprocal native stack"
+          },
+          {
+            "passed": true,
+            "detail": "top-of-stack relation reaches client"
+          },
+          {
+            "passed": true,
+            "detail": "original lower interaction releases top pig first"
+          },
+          {
+            "passed": true,
+            "detail": "next separated click releases base pig"
+          },
+          {
+            "passed": true,
+            "detail": "native flower packet cycles original command to 1"
+          },
+          {
+            "passed": true,
+            "detail": "native flower packet cycles original command to 2"
+          },
+          {
+            "passed": true,
+            "detail": "native flower packet cycles original command to 0"
+          },
+          {
+            "passed": true,
+            "detail": "actual pet is carried when testing save boundary"
+          }
+        ]
+      },
+      "relog": {
+        "path": "run-b173-single/morecreeps-neutralprefix-client-final-20261108-133613-e0863d/creeps-gameplay-proof/verify-relog-results.json",
+        "sha256": "8b394021b77e39788058e5f3f4e172924e3df6f6029cd07a8233ed1a0ac7097b",
+        "passed_checks": 30,
+        "checks": [
+          {
+            "passed": true,
+            "detail": "giraffe survives real save/relog"
+          },
+          {
+            "passed": true,
+            "detail": "giraffe native UUID and life retained"
+          },
+          {
+            "passed": true,
+            "detail": "giraffe original saved field tamed"
+          },
+          {
+            "passed": true,
+            "detail": "giraffe original saved field tamedfood"
+          },
+          {
+            "passed": true,
+            "detail": "giraffe original saved field name"
+          },
+          {
+            "passed": true,
+            "detail": "giraffe original saved field basetexture"
+          },
+          {
+            "passed": true,
+            "detail": "giraffe original saved field basehealth"
+          },
+          {
+            "passed": true,
+            "detail": "giraffe original saved field attempts"
+          },
+          {
+            "passed": true,
+            "detail": "giraffe original saved field foundplayer"
+          },
+          {
+            "passed": true,
+            "detail": "giraffe reloaded actor is tracked on real client"
+          },
+          {
+            "passed": true,
+            "detail": "pig1 survives real save/relog"
+          },
+          {
+            "passed": true,
+            "detail": "pig1 native UUID and life retained"
+          },
+          {
+            "passed": true,
+            "detail": "pig1 original saved field tamed"
+          },
+          {
+            "passed": true,
+            "detail": "pig1 original saved field interest"
+          },
+          {
+            "passed": true,
+            "detail": "pig1 original saved field name"
+          },
+          {
+            "passed": true,
+            "detail": "pig1 original saved field level"
+          },
+          {
+            "passed": true,
+            "detail": "pig1 original saved field basehealth"
+          },
+          {
+            "passed": true,
+            "detail": "pig1 original saved field basetexture"
+          },
+          {
+            "passed": true,
+            "detail": "pig1 original saved field wanderstate"
+          },
+          {
+            "passed": true,
+            "detail": "pig1 reloaded actor is tracked on real client"
+          },
+          {
+            "passed": true,
+            "detail": "pig2 survives real save/relog"
+          },
+          {
+            "passed": true,
+            "detail": "pig2 native UUID and life retained"
+          },
+          {
+            "passed": true,
+            "detail": "pig2 original saved field tamed"
+          },
+          {
+            "passed": true,
+            "detail": "pig2 original saved field interest"
+          },
+          {
+            "passed": true,
+            "detail": "pig2 original saved field name"
+          },
+          {
+            "passed": true,
+            "detail": "pig2 original saved field level"
+          },
+          {
+            "passed": true,
+            "detail": "pig2 original saved field basehealth"
+          },
+          {
+            "passed": true,
+            "detail": "pig2 original saved field basetexture"
+          },
+          {
+            "passed": true,
+            "detail": "pig2 original saved field wanderstate"
+          },
+          {
+            "passed": true,
+            "detail": "pig2 reloaded actor is tracked on real client"
+          }
+        ]
+      },
+      "saved_actor_uuids": {
+        "giraffe": "ca77a2cd-6062-4459-aef1-f74bd4400725",
+        "pig1": "1990c2e9-83a1-430f-8f7b-6ce82f1e4e63",
+        "pig2": "5055ed36-26b7-42ed-b535-94e674614e5b"
+      },
+      "before_relog": {
+        "path": "run-b173-single/morecreeps-neutralprefix-client-final-20261108-133613-e0863d/creeps-gameplay-proof/before-relog.json",
+        "sha256": "480d05b7b4c4afeb7cb150a81d5d0f394729bc9283b30b3e958b1faf20c603db"
+      },
+      "after_relog": {
+        "path": "run-b173-single/morecreeps-neutralprefix-client-final-20261108-133613-e0863d/creeps-gameplay-proof/after-relog.json",
+        "sha256": "fcf2037d554fc27fe8ad805474b134bed4a56801244b6a60ee6b36fbb87c5a7c"
+      },
+      "generic_uuid_and_ejection_proofs": [
+        {
+          "path": "run-b173-single/morecreeps-neutralprefix-client-final-20261108-133613-e0863d/carry-relog-1794163465169921000-assertions.json",
+          "sha256": "c54b573f0d6107c62a2713d0f6f0b30039e3d6668ab5c99cc8442b4ce407fdeb",
+          "world": "GameplayValidation",
+          "player_uuid": "380df991-f603-344c-a090-369bad2a924a",
+          "carried_uuids": [
+            "7d6ada4c-df2b-49d4-b739-8e2e90caa7b5"
+          ],
+          "ridden_mount_uuid": null,
+          "surviving_original_entities": [
+            {
+              "uuid": "7d6ada4c-df2b-49d4-b739-8e2e90caa7b5",
+              "original": "legacyconnector_b173.morecreepsandweirdos.CREEPSEntityKid",
+              "persistent": {
+                "modelsize": 0.6000000238418579
+              },
+              "carriedBefore": true,
+              "vehicleAfter": null
+            }
+          ],
+          "native_root_vehicle_before": false
+        },
+        {
+          "path": "run-b173-single/morecreeps-neutralprefix-client-final-20261108-133613-e0863d/carry-relog-1794163534774429800-assertions.json",
+          "sha256": "601eafd93cca519241df88bc8f1bd8e2d65abac72ab41c6eb757836a401e09dd",
+          "world": "GameplayValidation",
+          "player_uuid": "380df991-f603-344c-a090-369bad2a924a",
+          "carried_uuids": [
+            "1990c2e9-83a1-430f-8f7b-6ce82f1e4e63"
+          ],
+          "ridden_mount_uuid": null,
+          "surviving_original_entities": [
+            {
+              "uuid": "1990c2e9-83a1-430f-8f7b-6ce82f1e4e63",
+              "original": "legacyconnector_b173.morecreepsandweirdos.CREEPSEntityGuineaPig",
+              "persistent": {
+                "tamed": true,
+                "name": "Double Danny Dimples",
+                "modelsize": 1
+              },
+              "carriedBefore": true,
+              "vehicleAfter": null
+            },
+            {
+              "uuid": "ca77a2cd-6062-4459-aef1-f74bd4400725",
+              "original": "legacyconnector_b173.morecreepsandweirdos.CREEPSEntityRocketGiraffe",
+              "persistent": {
+                "tamed": true,
+                "name": "Tim"
+              },
+              "carriedBefore": false,
+              "vehicleAfter": null
+            },
+            {
+              "uuid": "5055ed36-26b7-42ed-b535-94e674614e5b",
+              "original": "legacyconnector_b173.morecreepsandweirdos.CREEPSEntityGuineaPig",
+              "persistent": {
+                "tamed": true,
+                "name": "Satin",
+                "modelsize": 1
+              },
+              "carriedBefore": false,
+              "vehicleAfter": null
+            }
+          ],
+          "native_root_vehicle_before": false
+        }
+      ],
+      "content_counts": {
+        "b173_morecreepsandweirdos": {
+          "blocks": 0,
+          "items": 40,
+          "hosted_entity_keys_observed": 53
+        }
+      },
+      "mesa_client_log": {
+        "path": "build/prefix-final-morecreeps-client.log",
+        "sha256": "2fc3ca6a8190373b4c33b53d109cfb66a2c11288e37dd9ddaddab6bdc6eb6f8a"
+      },
+      "kid": {
+        "path": "run-b173-single/morecreeps-neutralprefix-client-final-20261108-133613-e0863d/kid-fixed-proof/result.json",
+        "sha256": "d910aabfe82d5c882d2227d8d7121b3a8a7adec8e5cf56252fc4c226c2fe958a",
+        "uuid": "7d6ada4c-df2b-49d4-b739-8e2e90caa7b5",
+        "nativeId": 536,
+        "singlePickup": true,
+        "walkHeadPlacement": true,
+        "singleRelease": true,
+        "carriedAtSave": true
+      }
+    }
+  },
+  "aether_side_by_side": {
+    "results": {
+      "path": "run-b173-single/aether-side-by-side-pair-20261108/aether-pair-gameplay-proof/results.json",
+      "sha256": "c70b47c3f501b9774ce05f04e8944c438673a2ef78dc4ef987574a00882e3d5c",
+      "passed_checks": 23,
+      "checks": [
+        {
+          "passed": true,
+          "detail": "real native useItemOn packet places b173_aether:holystone on server and client"
+        },
+        {
+          "passed": true,
+          "detail": "placed b173_aether:holystone uses correct native adapter family"
+        },
+        {
+          "passed": true,
+          "detail": "real native useItemOn packet places b173_aether:quicksoil on server and client"
+        },
+        {
+          "passed": true,
+          "detail": "placed b173_aether:quicksoil uses correct native adapter family"
+        },
+        {
+          "passed": true,
+          "detail": "real native useItemOn packet places b173_aether:icestone on server and client"
+        },
+        {
+          "passed": true,
+          "detail": "placed b173_aether:icestone uses correct native adapter family"
+        },
+        {
+          "passed": true,
+          "detail": "real native useItemOn packet places aether:holystone on server and client"
+        },
+        {
+          "passed": true,
+          "detail": "placed aether:holystone uses correct native adapter family"
+        },
+        {
+          "passed": true,
+          "detail": "real native useItemOn packet places aether:quicksoil on server and client"
+        },
+        {
+          "passed": true,
+          "detail": "placed aether:quicksoil uses correct native adapter family"
+        },
+        {
+          "passed": true,
+          "detail": "real native useItemOn packet places aether:icestone on server and client"
+        },
+        {
+          "passed": true,
+          "detail": "placed aether:icestone uses correct native adapter family"
+        },
+        {
+          "passed": true,
+          "detail": "Beta and Forge blocks retain distinct original classes"
+        },
+        {
+          "passed": true,
+          "detail": "six actual block/item models have non-missing particle sprites"
+        },
+        {
+          "passed": true,
+          "detail": "native creative packet breaks b173_aether:holystone"
+        },
+        {
+          "passed": true,
+          "detail": "real native useItemOn packet places b173_aether:holystone on server and client"
+        },
+        {
+          "passed": true,
+          "detail": "placed b173_aether:holystone uses correct native adapter family"
+        },
+        {
+          "passed": true,
+          "detail": "native creative packet breaks aether:holystone"
+        },
+        {
+          "passed": true,
+          "detail": "real native useItemOn packet places aether:holystone on server and client"
+        },
+        {
+          "passed": true,
+          "detail": "placed aether:holystone uses correct native adapter family"
+        },
+        {
+          "passed": true,
+          "detail": "native save folder resolved without guessing"
+        },
+        {
+          "passed": true,
+          "detail": "all six real packet placements survive actual title/save/reopen"
+        },
+        {
+          "passed": true,
+          "detail": "placed grid original ownership and adapter classes survive reload"
+        }
+      ]
+    },
+    "after_relog": {
+      "path": "run-b173-single/aether-side-by-side-pair-20261108/aether-pair-gameplay-proof/after-relog.json",
+      "sha256": "fe068f1c4aee48370665b60f39e69d6ba87eb23624e4f88c26a3cb92f4d892f0"
+    },
+    "all_mod_instances": [
+      {
+        "legacyId": "Aether",
+        "version": "b1.7.3",
+        "registryNamespace": "b173_aether",
+        "fmlId": "b173_aether",
+        "mainClass": "legacyconnector_b173.trivia.mod_Aether",
+        "constructed": true,
+        "failed": false
+      },
+      {
+        "legacyId": "gilded-games-util",
+        "version": "1.7.10",
+        "registryNamespace": "gilded_games_util",
+        "fmlId": "gilded_games_util",
+        "mainClass": "com.gildedgames.util.core.UtilCore",
+        "constructed": true,
+        "failed": false
+      },
+      {
+        "legacyId": "Trivia",
+        "version": "b1.7.3",
+        "registryNamespace": "b173_trivia",
+        "fmlId": "b173_trivia",
+        "mainClass": "legacyconnector_b173.trivia.mod_Trivia",
+        "constructed": true,
+        "failed": false
+      },
+      {
+        "legacyId": "aether",
+        "version": "1.7.10",
+        "registryNamespace": "aether",
+        "fmlId": "aether",
+        "mainClass": "net.aetherteam.aether.Aether",
+        "constructed": true,
+        "failed": false
+      }
+    ],
+    "content_counts": {
+      "aether": {
+        "blocks": 130,
+        "items": 300
+      },
+      "b173_aether": {
+        "blocks": 35,
+        "items": 128
+      }
+    },
+    "saved_marker_and_inventory_states": [
+      {
+        "position": [
+          128,
+          150,
+          128
+        ],
+        "key": "b173_aether:holystone",
+        "state": "Block{b173_aether:holystone}[meta=0]",
+        "originalClass": "legacyconnector_b173.trivia.BlockHolystone",
+        "inventoryKey": "b173_aether:holystone",
+        "inventoryCount": 5
+      },
+      {
+        "position": [
+          130,
+          150,
+          128
+        ],
+        "key": "b173_aether:quicksoil",
+        "state": "Block{b173_aether:quicksoil}[meta=0]",
+        "originalClass": "legacyconnector_b173.trivia.BlockQuicksoil",
+        "inventoryKey": "b173_aether:quicksoil",
+        "inventoryCount": 5
+      },
+      {
+        "position": [
+          132,
+          150,
+          128
+        ],
+        "key": "b173_aether:icestone",
+        "state": "Block{b173_aether:icestone}[meta=0]",
+        "originalClass": "legacyconnector_b173.trivia.BlockIcestone",
+        "inventoryKey": "b173_aether:icestone",
+        "inventoryCount": 5
+      },
+      {
+        "position": [
+          134,
+          150,
+          128
+        ],
+        "key": "aether:holystone",
+        "state": "Block{aether:holystone}[meta=0]",
+        "originalClass": "net.aetherteam.aether.blocks.natural.BlockHolystone",
+        "inventoryKey": "aether:holystone",
+        "inventoryCount": 5
+      },
+      {
+        "position": [
+          136,
+          150,
+          128
+        ],
+        "key": "aether:quicksoil",
+        "state": "Block{aether:quicksoil}[meta=0]",
+        "originalClass": "net.aetherteam.aether.blocks.natural.BlockQuicksoil",
+        "inventoryKey": "aether:quicksoil",
+        "inventoryCount": 5
+      },
+      {
+        "position": [
+          138,
+          150,
+          128
+        ],
+        "key": "aether:icestone",
+        "state": "Block{aether:icestone}[meta=0]",
+        "originalClass": "net.aetherteam.aether.blocks.natural.BlockIcestone",
+        "inventoryKey": "aether:icestone",
+        "inventoryCount": 5
+      }
+    ],
+    "nonmissing_model_particles": [
+      {
+        "block": "b173_aether:block/b173/t85",
+        "item": "b173_aether:block/b173/t85"
+      },
+      {
+        "block": "b173_aether:block/b173/t78",
+        "item": "b173_aether:block/b173/t78"
+      },
+      {
+        "block": "b173_aether:block/b173/t101",
+        "item": "b173_aether:block/b173/t101"
+      },
+      {
+        "block": "aether:blocks/holystone",
+        "item": "aether:blocks/mossy_holystone"
+      },
+      {
+        "block": "aether:blocks/quicksoil",
+        "item": "aether:blocks/quicksoil"
+      },
+      {
+        "block": "aether:blocks/icestone",
+        "item": "aether:blocks/icestone"
+      }
+    ],
+    "model_particle_evidence": {
+      "path": "run-b173-single/aether-side-by-side-pair-20261108/aether-pair-gameplay-proof/model-particles.json",
+      "sha256": "f477100255c2b0b3df97ebbe338bf81de7904361fd3268fa7b10d6a6faccbecb"
+    },
+    "private_fixture_manifest": {
+      "path": "build/aether-side-by-side-validation/manifest.json",
+      "sha256": "32a802bd8b4bf1c17f2a09b090d2ca5a979ae417d4273c16a345d26c70856026"
+    },
+    "private_fixture_sha256": {
+      "mods/b1.7.3/Aether-b1.7.3-1.02.zip": "ae3ab77f001f64b1391aa5a5d148731d442e5a6041f5c30453fd9b6831cbae60",
+      "mods/1.7.10/aether-1.7.10-1.6.jar": "8e6221100a87fe1d0170d94360a0b33bc18fe1bac207fa03ab6df5197b34bd14",
+      "mods/1.7.10/gilded-games-util-1.7.10-1.9.jar": "b2c44f48e8e90d2f4aeacabb38c04ac6e985f683cb9e4b1b50f6b55aab5e795d"
+    },
+    "visual_review": "The coordinator inspected actual offscreen Mesa screenshots for both native adapter families. This does not establish all Aether gameplay."
+  },
+  "limits": [
+    "Actual clients used offscreen Mesa/llvmpipe, without Sodium or Iris; other graphics stacks are not verified.",
+    "Client checks cover the recorded real packets, native ticks, carry operations, menu transfers and save/reopen scenarios. Full gameplay for every Mo' Creatures, More Creeps or Aether feature is not claimed.",
+    "Private archived mods are optional fixtures and are not redistributed. The default build remains independent of private mod archives; the actual-mod JUnit task is opt-in.",
+    "The user explicitly excluded migration work. Only fresh disposable saves were used for the new Beta namespace and side-by-side validation.",
+    "Carried pets are coherently ejected on player logout and survive once; native ridden mounts use RootVehicle. Invented persistent player-passenger attachments are not required."
+  ]
+}

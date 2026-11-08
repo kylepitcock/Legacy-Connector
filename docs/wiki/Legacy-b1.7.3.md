@@ -20,6 +20,13 @@ with the same `mod_X` class; when both are present, the build for the running si
 
 ## How a jar is translated
 
+Beta mods use a stable `b173_` prefix for their FML identity and registered content namespace: for example,
+`b173_aether:holystone` can coexist with a Forge mod's `aether:holystone`. The prefix applies even when only the
+Beta copy is installed. Existing Java relocation, configuration names and resource paths remain unchanged.
+This changes previous Beta registry IDs; save migration is not included.
+Actual Beta Aether 1.02 and Aether II 1.7.10-1.6 have been checked together: both original mod instances initialize,
+and separate blocks/items retain their original ownership, textures and saved states across a real client save/reopen.
+
 1. **Detection** (`loader/.../BetaJars`). No `mcmod.info`, no `@Mod`: a jar is a b1.7.3 mod by its `mod_*` classes (ModLoader's entry
    points, default package) or its references to `BaseMod`, `ModLoader`, `forge/*`. Its references to obfuscated game members are resolved
    against the client and the server names: the side with more hits is the jar's side (the b1.7.3 client and server were obfuscated
@@ -247,7 +254,14 @@ An unhandled block use passes through. Items without an overridden air-use callb
 Offhand use passes through without calling Beta code (Beta only had a selected inventory slot).
 Callback exceptions are contained and logged, at most three per item. Individual items can still need missing legacy APIs.
 Block items retain their modern placement
-path; custom block-item callbacks, entity interactions, combat, eating animations and inventory ticks are separate work.
+path; custom block-item callbacks, eating animations and inventory ticks are separate work.
+
+An overridden `Item.useOnEntity(ItemStack, LivingEntity)` runs through native main-hand item/entity interaction.
+The server executes the original callback with canonical entity views and the initiating player's Minecraft context;
+target changes and inventory edits commit before the context closes. The native caller's stack keeps its components,
+and creative-mode stack copies retain native count behavior. Items without an override and offhand calls pass through.
+The actual Mo' Creatures horse-saddle fixture covers adult and rejected targets, repeated use, creative counts,
+custom components, offhand calls and ordinary items without this callback.
 
 The development server's `B1.7.3 ITEM USE TEST` checks position/side/world, consumption, returned replacements,
 direct inventory replacement, preservation of unrelated modern items, offhand pass-through and an item callback
@@ -455,6 +469,16 @@ APIs. No production branch selects behavior by a tested mod's identity.
 
 When original creatures ride a native player, passenger placement evaluates the original carried-offset getter inside the
 shared callback transaction. This preserves both placement and getter side effects, including furniture pickup state.
+Successful native attachment and detachment also send the player carrier its own passenger-list packet. Native tracking
+normally sends that player's updates only to observers, which previously left a carried creature on the carrier's client
+at its old ground position. Unchanged, rejected and canceled relationships retain native behavior.
+
+Isolated actual-mod client checks exercise Mo' Creatures horse feeding, taming, saddling, chest transfers, steering,
+jumping and dismounting; Bunny, Bird and Kitty carrying; and More Creeps Kid pickup/head placement, Rocket Giraffe riding,
+Guinea Pig taming, stacking and commands. Real save/quit/reopen checks retain pet UUIDs, original saved fields and horse
+inventory, eject carried pets coherently, and restore a ridden horse through native `RootVehicle` persistence.
+The [client gameplay validation snapshot](../data/b173-client-gameplay-validation-2026-11-08.json) records the exact
+fixture hashes, namespace counts, client assertions and separate final server gates.
 
 Nested callbacks share an entity-view transaction. Queried objects keep stable identities, pending writes are committed
 before a native refresh, and a nested damage callback cannot discard subsequent original fire or velocity changes.
