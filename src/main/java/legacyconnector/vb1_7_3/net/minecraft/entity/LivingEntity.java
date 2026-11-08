@@ -131,7 +131,8 @@ public abstract class LivingEntity extends Entity {
 
     /** The original skin path, also used by the native mob fallback renderer. */
     public String mcc$texture(){return getTexture();}
-    public void mcc$setTexture(String texture){this.texture=texture;}
+    /** Original renderers may compare texture paths with class literals by identity. */
+    public void mcc$setTexture(String texture){this.texture=texture==null?null:texture.intern();}
     public float getHandSwingProgress(float partial){return mcc$modern instanceof net.minecraft.world.entity.LivingEntity living?living.getAttackAnim(partial):0;}
 
     public ItemStack getHeldItem() {

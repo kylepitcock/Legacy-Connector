@@ -41,6 +41,8 @@ public final class BlocksB173 {
 
     public static int legacyMeta(BlockState state) {
         if (state.getBlock() instanceof LegacyB173Block) return state.getValue(LegacyB173Block.META);
+        Integer placed = VanillaBlockStatesB173.legacyMeta(state);
+        if (placed != null) return placed;
         if (state.getBlock() instanceof CropBlock crop) return crop.getAge(state);
         var fluid = state.getFluidState();
         if (!fluid.isEmpty() && !fluid.isSource()) return Math.max(0, 8 - fluid.getAmount());
@@ -63,6 +65,8 @@ public final class BlocksB173 {
         var block = VanillaB173.modernBlock(id);
         if (block == null) return Blocks.AIR.defaultBlockState();
         BlockState state = block.defaultBlockState();
+        BlockState placed = VanillaBlockStatesB173.modernState(id, meta, state);
+        if (placed != null) return placed;
         if (block instanceof CropBlock crop) state = crop.getStateForAge(Math.min(meta, crop.getMaxAge()));
         return state;
     }

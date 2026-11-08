@@ -25,6 +25,7 @@ public final class MobSelfTestB173 {
         MoCreaturesLifecycleExtraSelfTestB173.register(game);
         MoCreaturesPetBehaviorSelfTestB173.register(game);
         MoCreaturesFollowSelfTestB173.register(game);
+        MoCreaturesRenderCoverageSelfTestB173.register(game);
         MoCreaturesWaterSpawnSelfTestB173.register(game);
         MoCreaturesVanillaSpawnSelfTestB173.register(game);
         MoCreaturesCarrySelfTestB173.register(game);
@@ -37,6 +38,8 @@ public final class MobSelfTestB173 {
         MoreCreepsHunchbackAiSelfTestB173.register(game);
         MoreCreepsArmySelfTestB173.register(game);
         MoreCreepsRenderVariantSelfTestB173.register(game);
+        MoreCreepsRenderCoverageSelfTestB173.register(game);
+        MoreCreepsJailSelfTestB173.register(game);
         MoreCreepsNavigationSelfTestB173.register(game);
         MoreCreepsRemainingSelfTestB173.register(game);
         MoreCreepsEffectsSelfTestB173.register(game);

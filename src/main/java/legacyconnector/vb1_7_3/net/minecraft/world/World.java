@@ -211,16 +211,28 @@ public class World implements BlockView {
     /** Original renderer-owned block gameplay is replayed authoritatively by the hosted server tick. */
     private boolean clientRendererWrite(){return mcc$level.isClientSide&&org.kylepitcock.legacyconnector.vb1_7_3.RendererContextB173.active();}
     private boolean set(int x, int y, int z, int id, int meta, int flags) {
+        return set(x, y, z, id, meta, flags, false);
+    }
+    private boolean set(int x, int y, int z, int id, int meta, int flags, boolean inferDoorHalf) {
         if (mcc$level == null || clientRendererWrite()) return false;
         BlockPos p = pos(x, y, z);
         BlockState next = BlocksB173.modernState(id, meta);
+        // Beta builders commonly place each door id first and write its metadata afterwards.
+        // A temporary native LOWER above LOWER would delete its partner during shape updates.
+        if (inferDoorHalf && (id == 64 || id == 71) && next.getBlock() instanceof net.minecraft.world.level.block.DoorBlock) {
+            BlockState below = mcc$level.getBlockState(p.below());
+            if (below.is(next.getBlock()) && below.getValue(net.minecraft.world.level.block.DoorBlock.HALF)
+                    == net.minecraft.world.level.block.state.properties.DoubleBlockHalf.LOWER)
+                next = below.setValue(net.minecraft.world.level.block.DoorBlock.HALF,
+                        net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER);
+        }
         if (mcc$level.getBlockState(p) == next) return false;
         return mcc$level.setBlock(p, next, flags);
     }
 
     /** MCP {@code setBlock}: no neighbour updates. */
     public boolean setBlockWithoutNotifyingNeighbors(int x, int y, int z, int id) {
-        return set(x, y, z, id, 0, 2);
+        return set(x, y, z, id, 0, 2, true);
     }
 
     /** MCP {@code setBlockAndMetadata}. */
@@ -230,7 +242,7 @@ public class World implements BlockView {
 
     /** MCP {@code setBlockWithNotify}. */
     public boolean setBlock(int x, int y, int z, int id) {
-        return set(x, y, z, id, 0, 3);
+        return set(x, y, z, id, 0, 3, true);
     }
 
     /** MCP {@code setBlockAndMetadataWithNotify}. */
@@ -246,7 +258,8 @@ public class World implements BlockView {
             BlockState next = s.setValue(org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Block.META, meta & 15);
             return next != s && mcc$level.setBlock(p, next, flags);
         }
-        BlockState next = BlocksB173.modernState(BlocksB173.legacyId(s), meta);
+        BlockState next = org.kylepitcock.legacyconnector.vb1_7_3.VanillaBlockStatesB173.modernState(BlocksB173.legacyId(s), meta, s);
+        if (next == null) next = BlocksB173.modernState(BlocksB173.legacyId(s), meta);
         return next != s && next.getBlock() == s.getBlock() && mcc$level.setBlock(p, next, flags);
     }
 
