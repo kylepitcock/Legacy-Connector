@@ -24,7 +24,7 @@ public final class LegacyB173Arrow extends Arrow {
         try { type.getMethod(name,double.class,double.class,double.class,float.class,float.class);return true; }
         catch(NoSuchMethodException e) { return false; }
     }
-    private static boolean supported(Class<?> type) {
+    public static boolean supports(Class<?> type) {
         return heading(type,"setArrowHeading") || heading(type,"setSnowballHeading") || heading(type,"setEggHeading");
     }
     private static java.lang.reflect.Field shooterField(Class<?> type) {
@@ -42,21 +42,26 @@ public final class LegacyB173Arrow extends Arrow {
     }
     public LegacyB173Arrow(EntityType<? extends Arrow> type, Level level) { super(type, level); }
     public static boolean spawn(Level level, Entity entity) {
-        if (level.isClientSide) return false;
-        if(!supported(entity.getClass()))return false;
+        if (level.isClientSide||entity.mcc$modern!=null) return false;
+        if(!supports(entity.getClass()))return false;
         var type=heading(entity.getClass(),"setArrowHeading") ? org.kylepitcock.legacyconnector.LegacyConnector.BETA_ARROW.get()
                 : org.kylepitcock.legacyconnector.LegacyConnector.BETA_THROWN.get();
         var host = new LegacyB173Arrow(type, level);
         host.legacy = entity;
         entity.mcc$modern = host;
+        boolean added=false;
         try {
-            var field=shooterField(entity.getClass());
-            Object owner=field==null?null:field.get(entity);
-            if (owner instanceof Entity view && view.mcc$modern != null) host.setOwner(view.mcc$modern);
-        } catch (ReflectiveOperationException ignored) { }
-        host.sync();
-        host.entityData.set(SPRITE,ProjectileTexturesB173.sprite(entity.getClass()));
-        return level.addFreshEntity(host);
+            try {
+                var field=shooterField(entity.getClass());
+                Object owner=field==null?null:field.get(entity);
+                if (owner instanceof Entity view && view.mcc$modern != null) host.setOwner(view.mcc$modern);
+            } catch (ReflectiveOperationException ignored) { }
+            host.sync();
+            host.entityData.set(SPRITE,ProjectileTexturesB173.sprite(entity.getClass()));
+            added=level.addFreshEntity(host);
+            if(added)EntityViewsB173.spawned(host,entity);
+            return added;
+        }finally{if(!added){entity.mcc$modern=null;host.legacy=null;host.discard();}}
     }
     private void sync() {
         entityData.set(TEXTURE,ProjectileTexturesB173.of(legacy.getClass()).toString());
@@ -133,7 +138,7 @@ public final class LegacyB173Arrow extends Arrow {
             try {
                 Class<?> type=Class.forName(name,false,mod.getClass().getClassLoader());
                 if (type.getModule()!=mod.getClass().getModule() || !Entity.class.isAssignableFrom(type)) continue;
-                if(!supported(type))continue;
+                if(!supports(type))continue;
                 return type;
             } catch (ReflectiveOperationException | LinkageError ignored) { }
         }

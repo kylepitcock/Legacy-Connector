@@ -16,6 +16,8 @@ public final class MobClientB173 {
     private static final Set<String> MISSING=new HashSet<>();
     public static void register(IEventBus bus){
         bus.addListener((net.neoforged.neoforge.client.event.EntityRenderersEvent.RegisterRenderers e)->{
+            e.registerEntityRenderer(org.kylepitcock.legacyconnector.LegacyConnector.BETA_ENTITY.get(),NeutralEntityRendererB173::new);
+            e.registerEntityRenderer(org.kylepitcock.legacyconnector.LegacyConnector.BETA_ITEM_ENTITY.get(),NeutralEntityRendererB173::new);
             for(var info:AnimalsB173.all())e.registerEntityRenderer(info.type(),AnimalRendererB173::new);
             for(var info:MobsB173.all())e.registerEntityRenderer(info.type(),context->new CowRenderer(context){
                 @Override public ResourceLocation getTextureLocation(net.minecraft.world.entity.animal.Cow cow){

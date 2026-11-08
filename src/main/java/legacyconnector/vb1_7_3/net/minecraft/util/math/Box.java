@@ -16,6 +16,7 @@ public class Box {
     public boolean intersects(Box b) { return mcc$box().intersects(b.mcc$box()); }
     public boolean contains(Vec3d p) { return mcc$box().contains(p.x,p.y,p.z); }
     public Box copy() { return of(mcc$box()); }
+    public double getAverageSideLength(){return ((maxX-minX)+(maxY-minY)+(maxZ-minZ))/3.0;}
     public HitResult raycast(Vec3d from, Vec3d to) {
         var hit=mcc$box().clip(new net.minecraft.world.phys.Vec3(from.x,from.y,from.z), new net.minecraft.world.phys.Vec3(to.x,to.y,to.z));
         return hit.map(p -> new HitResult(0,0,0,0,Vec3d.create(p.x,p.y,p.z))).orElse(null);

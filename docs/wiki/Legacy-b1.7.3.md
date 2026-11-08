@@ -359,7 +359,7 @@ properties save/reload under the instance's `mods/<backend>/guiconfig.properties
 TWL widget/button-model hierarchy used by the tested mod. The loader relocates Beta TWL names into this bridge.
 
 `GuiModScreen.show` now lays out the supported TWL windows, columns, buttons and sliders using native GUI drawing and input.
-The title and options screens expose the registered mod-settings screens. Original settings callbacks retain ownership of
+The Options screen exposes the registered mod-settings screens. Original settings callbacks retain ownership of
 values and persistence. Unimplemented widget types remain outside this supported subset.
 
 Plain entity screens execute on the initiating player's server thread. A shared packet connection carries drawing commands
@@ -468,9 +468,24 @@ core roster checks. These tests exercise original mod classes, rather than repla
 The cases also verify retained-target fire mutations, native boar saddling and inherited duck-wing tracking.
 [The validation snapshot](../data/b173-living-validation-2026-11-07.json) records payload hashes, roster names and the exercised cases.
 
-The More Creeps nonliving projectiles and custom dropped-item families remain separate work. Eight original particle classes
-pass constructor, callback, selected-sprite, packet-state, geometry/UV/color and lifetime tests. This proves the exercised
-headless paths; native atlas/GPU drawing and every subtype/AI decision have not received equivalent visual gameplay proof.
+Original nonliving entities and custom `ItemEntity` subclasses use two shared native host types. Original ticks, collisions,
+pickup and NBT callbacks retain their original identities; explicit superclass calls select the base phase. A custom item
+tick does not receive an extra modern item-physics or merging phase. Tracking includes original scalar fields, dimensions,
+eye offsets and item ages, with canceled spawns rolling back their binding. Unregistered original classes can restore only
+from an installed mod with a public World constructor and supported direct API dependencies.
+
+Nine actual More Creeps cases pass: Bullet, Ray, Shrink, Frisbee, EvilEgg, Rocket, DesertLizardFireball, Money and GooDonut.
+The fixtures exercise actual weapon costs, launch motion, collision damage/removal, pickup, tracking codecs, bounds and NBT.
+Seven registered original sprite renderers emit geometry with their item-sheet cell mapped to a standalone texture and
+normalized UVs. Cross-cell atlas sampling remains unsupported. Rocket and Fireball have no original renderer registration;
+no replacement geometry is invented. The original Frisbee constructor leaves its owner unset; a separately controlled test
+verifies its owner-only pickup branch. Original shadow offsets are applied only to shadow projection, preserving model position.
+[The nonliving validation snapshot](../data/b173-neutral-validation-2026-11-07.json) records the payloads and exercised cases.
+
+GuiAPI settings appear in the native Options grid as **Legacy Mod Settings**, with Back and Escape returning to Options.
+Eight original particle classes pass constructor, callback, selected-sprite, packet-state, geometry/UV/color and lifetime tests.
+These prove the exercised headless paths; genuine client ticking, GPU drawing and every subtype/AI decision have not received
+equivalent visual gameplay proof.
 
 ## Tile entities
 

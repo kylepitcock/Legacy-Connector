@@ -5,9 +5,8 @@ import java.util.Random;
 import legacyconnector.vb1_7_3.net.minecraft.world.World;
 
 /**
- * Beta 1.7.3 {@code Entity}: position, motion and rotation fields. Mod entities are not hosted in the modern world yet; the layer's own
- * subclasses are views of modern entities (players in block callbacks), whose fields it copies before a callback. The bounding box and
- * data tracker (synthesized types) are not declared here.
+ * Beta 1.7.3 {@code Entity}: position, motion and rotation fields. Supported original entities retain this object as their
+ * native host's stable callback view. Ordinary native entities receive temporary synchronized views for original callbacks.
  */
 public abstract class Entity {
     private static int nextId;
@@ -87,7 +86,7 @@ public abstract class Entity {
 
     public void markDead() {
         this.dead = true;
-        if (mcc$modern instanceof org.kylepitcock.legacyconnector.vb1_7_3.B173LivingHost host) host.baseMarkDead();
+        if (mcc$modern instanceof org.kylepitcock.legacyconnector.vb1_7_3.B173EntityHost host) host.baseMarkDead();
         else if(mcc$modern!=null)mcc$modern.discard();
     }
 
@@ -99,7 +98,7 @@ public abstract class Entity {
                 x+width/2, y-standingEyeHeight+height, z+width/2);
     }
 
-    public void tick() {}
+    public void tick() {if(mcc$modern instanceof org.kylepitcock.legacyconnector.vb1_7_3.B173EntityHost host)host.mcc$baseTick();}
     protected void damage(int amount){if(!fireImmune)damage(null,amount);}
     protected void setOnFire(){if(!fireImmune){damage(null,4);fireTicks=600;}}
     protected void scheduleVelocityUpdate(){velocityModified=true;if(mcc$modern!=null)mcc$modern.hurtMarked=true;}
@@ -112,7 +111,7 @@ public abstract class Entity {
     public final void mcc$fallDistance(float distance){fallDistance=distance;}
     public double getSquaredDistance(Entity entity){return getSquaredDistance(entity.x,entity.y,entity.z);}
     public void move(double dx,double dy,double dz){
-        if(mcc$modern instanceof org.kylepitcock.legacyconnector.vb1_7_3.B173LivingHost host)host.baseMove(dx,dy,dz);
+        if(mcc$modern instanceof org.kylepitcock.legacyconnector.vb1_7_3.B173EntityHost host)host.baseMove(dx,dy,dz);
         else if(mcc$modern!=null){mcc$modern.move(net.minecraft.world.entity.MoverType.SELF,new net.minecraft.world.phys.Vec3(dx,dy,dz));setPosition(mcc$modern.getX(),mcc$modern.getY()+standingEyeHeight,mcc$modern.getZ());}
         else setPosition(x+dx,y+dy,z+dz);
     }
@@ -156,13 +155,21 @@ public abstract class Entity {
     public void setBoundingBoxSpacing(float width, float height) {
         this.width=width; this.height=height; setPosition(x,y,z);
     }
-    public boolean isCollidable() { return mcc$modern != null && mcc$modern.isPickable(); }
+    public boolean isCollidable() { return !(mcc$modern instanceof org.kylepitcock.legacyconnector.vb1_7_3.B173EntityHost)&&mcc$modern != null && mcc$modern.isPickable(); }
+    public boolean shouldRender(double squaredDistance){
+        double distance=((boundingBox.maxX-boundingBox.minX)+(boundingBox.maxY-boundingBox.minY)+(boundingBox.maxZ-boundingBox.minZ))/3*64*renderDistanceMultiplier;
+        return squaredDistance<distance*distance;
+    }
+    /** Biny names this radius, but original sn.x_ is the vertical shadow origin offset. */
+    public float getShadowRadius(){return height/2;}
+    public float getTargetingMargin(){return .1F;}
+    public void setVelocityClient(double x,double y,double z){velocityX=x;velocityY=y;velocityZ=z;if(mcc$modern!=null)mcc$modern.setDeltaMovement(x,y,z);}
     /** Native water contact is refreshed at the host's base-tick boundary, as Beta cached its fluid collision result. */
     public final void mcc$environment(boolean inWater){submergedInWater=inWater;}
     public boolean checkWaterCollisions() { return mcc$modern != null && mcc$modern.isInWater(); }
     public boolean isSubmergedInWater() { return submergedInWater; }
     public boolean damage(Entity attacker, int amount) {
-        if (mcc$modern instanceof org.kylepitcock.legacyconnector.vb1_7_3.B173LivingHost host) return host.baseDamage(attacker, amount);
+        if (mcc$modern instanceof org.kylepitcock.legacyconnector.vb1_7_3.B173EntityHost host) return host.baseDamage(attacker, amount);
         if (mcc$modern == null) return false;
         var source = attacker != null && attacker.mcc$modern instanceof net.minecraft.world.entity.player.Player p
                 ? mcc$modern.damageSources().playerAttack(p) : mcc$modern.damageSources().generic();

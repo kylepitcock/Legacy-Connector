@@ -76,7 +76,7 @@ public final class LegacyB173Animal extends PathfinderMob implements B173LivingH
         }
         if(key==WIDTH||key==HEIGHT)refreshDimensions();
     }
-    void publishRenderState(){if(legacy!=null&&!level().isClientSide)entityData.set(RENDER_STATE,AnimalRenderStateB173.capture(legacy));}
+    @Override public void publishRenderState(){if(legacy!=null&&!level().isClientSide)entityData.set(RENDER_STATE,AnimalRenderStateB173.capture(legacy));}
     public CompoundTag renderState(){return entityData.get(RENDER_STATE).copy();}
     public void applyRenderState(CompoundTag incoming){AnimalRenderStateB173.apply(legacy,receivedRenderState,incoming);receivedRenderState=incoming.copy();}
     /** Apply a complete native tracking snapshot, also used by the packet round-trip fixture. */

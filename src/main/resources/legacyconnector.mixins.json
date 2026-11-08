@@ -27,6 +27,7 @@
     "perf.LevelChunkStaticTickerMixin"
   ],
   "client": [
+    "BetaEntityShadowMixin",
     "Am2CameraPositionMixin",
     "Am2MouseMixin",
     "Am2PlayerModelMixin",

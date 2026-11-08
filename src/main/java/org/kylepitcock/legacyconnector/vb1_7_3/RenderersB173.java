@@ -29,7 +29,7 @@ public final class RenderersB173 {
             catch(RuntimeException|LinkageError e){LOG.warn("Beta AddRenderer for {} failed after {} entries; completed registrations remain isolated",mod.modernId,captured.size(),e);}
             finally{ContentB173.exit();}
             for(var entry:captured.entrySet()){
-                if(!(entry.getKey() instanceof Class<?> type)||!(entry.getValue() instanceof LivingEntityRenderer renderer))continue;
+                if(!(entry.getKey() instanceof Class<?> type)||!(entry.getValue() instanceof EntityRenderer renderer))continue;
                 String reason=unsupported(renderer);
                 if(reason!=null){LOG.warn("Beta renderer for {} not admitted: {}",type.getName(),reason);continue;}
                 REGISTERED.put(type,new Info(mod,type,renderer));
@@ -79,7 +79,19 @@ public final class RenderersB173 {
             return null;
         }catch(java.io.IOException|RuntimeException|LinkageError e){return "cannot inspect renderer/model closure: "+e.getClass().getSimpleName();}
     }
-    public static String unsupported(LivingEntityRenderer renderer){
+    public static String unsupported(EntityRenderer renderer){
+        String rendererReason=closure(renderer.getClass());if(rendererReason!=null)return rendererReason;
+        try{
+            for(Class<?> c=renderer.getClass();c!=null&&c!=Object.class;c=c.getSuperclass())for(var field:c.getDeclaredFields()){
+                if(java.lang.reflect.Modifier.isStatic(field.getModifiers())||!EntityModel.class.isAssignableFrom(field.getType()))continue;
+                if(!field.trySetAccessible())return "inaccessible renderer model field "+field.getName();
+                if(field.get(renderer) instanceof EntityModel model){String reason=closure(model.getClass());if(reason!=null)return reason;}
+            }
+        }catch(ReflectiveOperationException|RuntimeException|LinkageError error){return "cannot inspect renderer models: "+error.getClass().getSimpleName();}
+        if(!(renderer instanceof LivingEntityRenderer living))return null;
+        return unsupportedLiving(living);
+    }
+    private static String unsupportedLiving(LivingEntityRenderer renderer){
         if(renderer.mcc$model()==null)return "no original model";
         String reason=closure(renderer.getClass());if(reason!=null)return reason;
         reason=closure(renderer.mcc$model().getClass());if(reason!=null)return reason;

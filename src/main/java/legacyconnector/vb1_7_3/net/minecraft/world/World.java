@@ -330,10 +330,12 @@ public class World implements BlockView {
     public boolean spawnEntity(legacyconnector.vb1_7_3.net.minecraft.entity.Entity entity) {
         if(mcc$level==null||entity==null)return false;
         if(entity instanceof legacyconnector.vb1_7_3.net.minecraft.entity.ItemEntity item) {
+            if(entity.getClass()!=legacyconnector.vb1_7_3.net.minecraft.entity.ItemEntity.class)
+                return org.kylepitcock.legacyconnector.vb1_7_3.NeutralEntitiesB173.spawn(mcc$level,entity);
             if(mcc$level.isClientSide||item.mcc$modern!=null||item.stack==null)return false;
             var stack=StacksB173.toModern(item.stack);
             if(stack.isEmpty())return false;
-            var host=new net.minecraft.world.entity.item.ItemEntity(mcc$level,item.x,item.y,item.z,stack);
+            var host=new net.minecraft.world.entity.item.ItemEntity(mcc$level,item.x,item.y-item.standingEyeHeight,item.z,stack);
             host.setPickUpDelay(item.pickupDelay);host.setDeltaMovement(item.velocityX,item.velocityY,item.velocityZ);
             host.setYRot(item.yaw);host.setXRot(item.pitch);item.mcc$modern=host;
             boolean added=false;
@@ -355,7 +357,8 @@ public class World implements BlockView {
                 return org.kylepitcock.legacyconnector.vb1_7_3.AnimalsB173.spawn(mcc$level,living);
             return org.kylepitcock.legacyconnector.vb1_7_3.MobsB173.spawn(mcc$level,living);
         }
-        return org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Arrow.spawn(mcc$level, entity);
+        if(org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Arrow.supports(entity.getClass()))return org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Arrow.spawn(mcc$level,entity);
+        return org.kylepitcock.legacyconnector.vb1_7_3.NeutralEntitiesB173.spawn(mcc$level,entity);
     }
     public boolean spawnGlobalEntity(legacyconnector.vb1_7_3.net.minecraft.entity.Entity entity){
         if(!(entity instanceof legacyconnector.vb1_7_3.net.minecraft.entity.LightningEntity))return spawnEntity(entity);

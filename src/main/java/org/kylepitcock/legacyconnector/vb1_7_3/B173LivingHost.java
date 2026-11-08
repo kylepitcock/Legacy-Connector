@@ -4,7 +4,7 @@ import legacyconnector.vb1_7_3.net.minecraft.entity.Entity;
 import legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity;
 
 /** Explicit native-base operations; legacy superclass calls never redispatch the original override. */
-public interface B173LivingHost {
+public interface B173LivingHost extends B173EntityHost {
     LivingEntity legacy();
     boolean callbackActive();
     void syncView();

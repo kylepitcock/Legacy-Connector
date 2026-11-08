@@ -17,6 +17,7 @@ public final class MobSelfTestB173 {
         MoCreaturesRosterSelfTestB173.register(game);
         MoCreaturesFeaturesSelfTestB173.register(game);
         MoreCreepsRosterSelfTestB173.register(game);
+        MoreCreepsWeaponsSelfTestB173.register(game);
         AnimalLifecycleSelfTestB173.register(game);
         if(Boolean.getBoolean("legacyconnector.entitySelfTest"))game.addListener((ServerStartedEvent e)->run(e.getServer().overworld()));
     }

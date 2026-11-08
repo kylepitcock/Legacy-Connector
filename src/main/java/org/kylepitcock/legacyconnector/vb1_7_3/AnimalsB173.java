@@ -19,11 +19,15 @@ public final class AnimalsB173 {
     public record Info(ContentB173.Registration registration,EntityType<LegacyB173Animal> type){}
     private static final Map<Class<?>,Info> BY_CLASS=new LinkedHashMap<>();
     private static final Map<EntityType<?>,Info> BY_TYPE=new LinkedHashMap<>();
-    private static final Set<String> SUPPORTED=Set.of("tick","tickMovement","tickLiving","interact","damage","attack","getTargetInRange","getPathfindingFavor","applyKnockback","onLanding","markDead","writeNbt","readNbt","canSpawn","canDespawn","getStandingEyeHeight","getRandomSound","getHurtSound","getDeathSound","onKilledBy","getLimitPerChunk","travel","move","checkWaterCollisions","isOnLadder","isMovementBlocked","isImmobile","isPushable","onCollision","isCollidable","dropItems","getDroppedItemId","getSoundVolume","getTexture","canBreatheInWater","processServerEntityStatus","onPlayerInteraction","initDataTracker","canSee","pathingUpdate","resetAttack","getHeldItem","isInsideWall","fall","applyDamage","setOnFire","scheduleVelocityUpdate","getEyeHeight","setPositionAndAngles","setPositionAndAnglesAvoidEntities","setRotation");
+    private static final Set<String> SUPPORTED=Set.of("tick","tickMovement","tickLiving","interact","damage","attack","getTargetInRange","getPathfindingFavor","applyKnockback","onLanding","markDead","writeNbt","readNbt","canSpawn","canDespawn","getStandingEyeHeight","getRandomSound","getHurtSound","getDeathSound","onKilledBy","getLimitPerChunk","travel","move","checkWaterCollisions","isOnLadder","isMovementBlocked","isImmobile","isPushable","onCollision","isCollidable","dropItems","getDroppedItemId","getSoundVolume","getTexture","getShadowRadius","canBreatheInWater","processServerEntityStatus","onPlayerInteraction","initDataTracker","canSee","pathingUpdate","resetAttack","getHeldItem","isInsideWall","fall","applyDamage","setOnFire","scheduleVelocityUpdate","getEyeHeight","setPositionAndAngles","setPositionAndAnglesAvoidEntities","setRotation");
     private AnimalsB173(){}
     private static boolean api(Class<?> c){return c.getName().startsWith("legacyconnector.")||c.getName().startsWith("legacyconnector_synth.");}
     public static boolean supports(Class<?> c){return LivingEntity.class.isAssignableFrom(c)&&!MobsB173.cowFamily(c)&&unsupportedBehaviour(c)==null;}
     public static String unsupportedBehaviour(Class<?> type){
+        return unsupportedBehaviour(type,Set.of());
+    }
+    static String unsupportedBehaviour(Class<?> type,Set<String> extraSupported){
+        Set<String> supported=new HashSet<>(SUPPORTED);supported.addAll(extraSupported);
         Set<String> apiMethods=new HashSet<>();
         for(Class<?> parent=type.getSuperclass();parent!=null&&parent!=Object.class;parent=parent.getSuperclass()){
             if(!api(parent))continue;
@@ -43,11 +47,11 @@ public final class AnimalsB173 {
                 if(input==null)return "cannot inspect original callbacks";
                 new org.objectweb.asm.ClassReader(input).accept(new org.objectweb.asm.ClassVisitor(org.objectweb.asm.Opcodes.ASM9){
                     @Override public org.objectweb.asm.MethodVisitor visitMethod(int access,String name,String desc,String signature,String[] exceptions){
-                        if((access&(org.objectweb.asm.Opcodes.ACC_STATIC|org.objectweb.asm.Opcodes.ACC_SYNTHETIC|org.objectweb.asm.Opcodes.ACC_BRIDGE))==0&&apiMethods.contains(name+desc)&&!SUPPORTED.contains(name))failure[0]="unsupported original override "+name;
+                        if((access&(org.objectweb.asm.Opcodes.ACC_STATIC|org.objectweb.asm.Opcodes.ACC_SYNTHETIC|org.objectweb.asm.Opcodes.ACC_BRIDGE))==0&&apiMethods.contains(name+desc)&&!supported.contains(name))failure[0]="unsupported original override "+name;
                         return new org.objectweb.asm.MethodVisitor(org.objectweb.asm.Opcodes.ASM9){
                         @Override public void visitMethodInsn(int opcode,String owner,String called,String descriptor,boolean itf){
                             if((owner.contains("/Missing")||owner.contains("legacyconnector/synth/Missing")||owner.startsWith("legacyconnector_synth/vb1_7_3/net/minecraft/"))&&!supportedVanillaStatic(type,opcode,owner,called,descriptor))failure[0]="unsupported synthesized callback "+owner+"."+called;
-                            if(opcode==org.objectweb.asm.Opcodes.INVOKESPECIAL&&owner.startsWith("legacyconnector/vb1_7_3/net/minecraft/")&&!called.equals("<init>")&&!SUPPORTED.contains(called))failure[0]="unsupported superclass callback "+called;
+                            if(opcode==org.objectweb.asm.Opcodes.INVOKESPECIAL&&owner.startsWith("legacyconnector/vb1_7_3/net/minecraft/")&&!called.equals("<init>")&&!supported.contains(called))failure[0]="unsupported superclass callback "+called;
                         }
                     };}
                 },org.objectweb.asm.ClassReader.SKIP_DEBUG|org.objectweb.asm.ClassReader.SKIP_FRAMES);

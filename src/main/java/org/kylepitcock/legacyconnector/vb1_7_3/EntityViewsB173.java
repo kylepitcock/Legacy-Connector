@@ -16,13 +16,34 @@ public final class EntityViewsB173 {
         }
     }
     private record Extra(int itemAge,int pickupDelay,net.minecraft.world.item.ItemStack stack,int fuse,Entity owner) {}
+    private record NeutralState(double x,double y,double z,double vx,double vy,double vz,float yaw,float pitch,
+            int air,int fire,boolean ground,boolean dead,float width,float height,float eye,float fall,
+            boolean noClip,float step,boolean blocks,Entity vehicle,Entity passenger) {
+        static NeutralState of(Entity v){
+            return new NeutralState(v.x,v.y,v.z,v.velocityX,v.velocityY,v.velocityZ,v.yaw,v.pitch,v.air,v.fireTicks,
+                    v.onGround,v.dead,v.width,v.height,v.standingEyeHeight,v.mcc$fallDistance(),v.noClip,v.stepHeight,
+                    v.blocksSameBlockSpawning,v.vehicle,v.passenger);
+        }
+        void merge(Entity v,NeutralState before){
+            if(x!=before.x)v.x=x;if(y!=before.y)v.y=y;if(z!=before.z)v.z=z;
+            if(vx!=before.vx)v.velocityX=vx;if(vy!=before.vy)v.velocityY=vy;if(vz!=before.vz)v.velocityZ=vz;
+            if(yaw!=before.yaw)v.yaw=yaw;if(pitch!=before.pitch)v.pitch=pitch;
+            if(air!=before.air)v.air=air;if(fire!=before.fire)v.fireTicks=fire;
+            if(ground!=before.ground)v.onGround=ground;if(dead!=before.dead)v.dead=dead;
+            if(width!=before.width)v.width=width;if(height!=before.height)v.height=height;
+            if(eye!=before.eye)v.standingEyeHeight=eye;if(fall!=before.fall)v.mcc$fallDistance(fall);
+            if(noClip!=before.noClip)v.noClip=noClip;if(step!=before.step)v.stepHeight=step;
+            if(blocks!=before.blocks)v.blocksSameBlockSpawning=blocks;
+            if(vehicle!=before.vehicle)v.vehicle=vehicle;if(passenger!=before.passenger)v.passenger=passenger;
+        }
+    }
     private static Extra extra(Entity view){
         if(view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.ItemEntity item)return new Extra(item.itemAge,item.pickupDelay,item.stack==null?net.minecraft.world.item.ItemStack.EMPTY:StacksB173.toModern(item.stack).copy(),0,null);
         if(view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.mob.CreeperEntity creeper)return new Extra(0,0,net.minecraft.world.item.ItemStack.EMPTY,creeper.fuseTime,null);
         if(view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.projectile.ArrowEntity arrow)return new Extra(0,0,net.minecraft.world.item.ItemStack.EMPTY,0,arrow.owner);
         return null;
     }
-    private record Touched(Entity view,double vx,double vy,double vz,boolean ground,Entity target,HostState hostState,Extra extra) {}
+    private record Touched(Entity view,double vx,double vy,double vz,boolean ground,Entity target,HostState hostState,NeutralState neutralState,Extra extra) {}
     private static final java.util.Map<net.minecraft.world.entity.Entity,Entity> VIEWS =
             new com.google.common.collect.MapMaker().weakKeys().weakValues().makeMap();
     private static final ThreadLocal<java.util.Map<net.minecraft.world.entity.Entity,Touched>> TOUCHED =
@@ -67,7 +88,7 @@ public final class EntityViewsB173 {
 
     public static Entity wrap(net.minecraft.world.entity.Entity modern) {
         if (modern == null) return null;
-        if (modern instanceof B173LivingHost host && host.legacy()!=null) {
+        if (modern instanceof B173EntityHost host && host.legacy()!=null) {
             if (host.callbackActive()) return host.legacy();
             if (!TOUCHED.get().containsKey(modern)) host.syncView();
             return touch(modern,host.legacy());
@@ -78,7 +99,7 @@ public final class EntityViewsB173 {
         Entity view=modern instanceof net.minecraft.world.entity.player.Player player ? PlayerViewB173.of(player) : VIEWS.computeIfAbsent(modern, EntityViewsB173::create);
         view.mcc$modern=modern;
         view.world=World.mcc$wrap(modern.level());
-        if(!(modern instanceof net.minecraft.world.entity.player.Player))view.setPosition(modern.getX(),modern.getY(),modern.getZ());
+        if(!(modern instanceof net.minecraft.world.entity.player.Player))view.setPosition(modern.getX(),modern.getY()+view.standingEyeHeight,modern.getZ());
         var b=modern.getBoundingBox();
         view.boundingBox=legacyconnector.vb1_7_3.net.minecraft.util.math.Box.create(b.minX,b.minY,b.minZ,b.maxX,b.maxY,b.maxZ);
         view.fireTicks=modern.getRemainingFireTicks();
@@ -98,11 +119,11 @@ public final class EntityViewsB173 {
         touch(modern,view);
         if(view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.projectile.ArrowEntity arrow&&modern instanceof net.minecraft.world.entity.projectile.AbstractArrow nativeArrow){
             Entity owner=wrap(nativeArrow.getOwner());arrow.owner=owner instanceof legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity living?living:null;
-            TOUCHED.get().put(modern,new Touched(view,view.velocityX,view.velocityY,view.velocityZ,view.onGround,null,null,extra(view)));
+            TOUCHED.get().put(modern,new Touched(view,view.velocityX,view.velocityY,view.velocityZ,view.onGround,null,null,null,extra(view)));
         }
         if(view instanceof PathAwareEntity creature && modern instanceof net.minecraft.world.entity.Mob mob) {
             creature.target=wrap(mob.getTarget());
-            TOUCHED.get().put(modern,new Touched(view,view.velocityX,view.velocityY,view.velocityZ,view.onGround,creature.target,null,extra(view)));
+            TOUCHED.get().put(modern,new Touched(view,view.velocityX,view.velocityY,view.velocityZ,view.onGround,creature.target,null,null,extra(view)));
         }
         return view;
     }
@@ -122,7 +143,9 @@ public final class EntityViewsB173 {
         return new Entity(world) {};
     }
     private static Entity touch(net.minecraft.world.entity.Entity modern,Entity view) {
-        TOUCHED.get().putIfAbsent(modern,new Touched(view,view.velocityX,view.velocityY,view.velocityZ,view.onGround,view instanceof PathAwareEntity p?p.target:null,modern instanceof B173LivingHost host?HostState.of(host.legacy()):null,extra(view)));
+        TOUCHED.get().putIfAbsent(modern,new Touched(view,view.velocityX,view.velocityY,view.velocityZ,view.onGround,view instanceof PathAwareEntity p?p.target:null,
+                modern instanceof B173LivingHost host?HostState.of(host.legacy()):null,
+                modern instanceof B173EntityHost&&!(modern instanceof B173LivingHost)?NeutralState.of(view):null,extra(view)));
         return view;
     }
     /** Capture identity and a baseline before original code continues mutating a freshly spawned entity. */
@@ -132,14 +155,31 @@ public final class EntityViewsB173 {
         touch(modern,original);
     }
     /** Commit pending cross-entity writes before the host refreshes its own callback view. */
-    public static boolean prepareHostCallback(B173LivingHost host) {
+    public static boolean prepareHostCallback(B173EntityHost host) {
         if(host.callbackActive()||host.legacy()==null)return false;
         Touched touched=TOUCHED.get().remove(host.legacy().mcc$modern);
         if(touched!=null)flushHost(host,touched);
         return touched!=null;
     }
-    public static void resumeHostCallback(B173LivingHost host,boolean referenced){if((referenced||CALLBACK_DEPTH.get()>1)&&host.legacy()!=null)touch(host.legacy().mcc$modern,host.legacy());}
-    private static void flushHost(B173LivingHost host,Touched touched) {
+    public static void resumeHostCallback(B173EntityHost host,boolean referenced){if((referenced||CALLBACK_DEPTH.get()>1)&&host.legacy()!=null)touch(host.legacy().mcc$modern,host.legacy());}
+    private static void flushHost(B173EntityHost host,Touched touched) {
+        if(!(host instanceof B173LivingHost living)){flushNeutralHost(host,touched);return;}
+        flushLivingHost(living,touched);
+    }
+    private static void flushNeutralHost(B173EntityHost host,Touched touched){
+        NeutralState before=touched.neutralState;if(before==null)return;
+        Entity v=host.legacy();NeutralState wanted=NeutralState.of(v);
+        Extra oldExtra=touched.extra,wantedExtra=extra(v);
+        // A retained reference may outlive nested native damage or movement. Only original writes win.
+        host.syncView();wanted.merge(v,before);
+        if(v instanceof legacyconnector.vb1_7_3.net.minecraft.entity.ItemEntity item&&oldExtra!=null&&wantedExtra!=null){
+            if(wantedExtra.itemAge!=oldExtra.itemAge)item.itemAge=wantedExtra.itemAge;
+            if(wantedExtra.pickupDelay!=oldExtra.pickupDelay)item.pickupDelay=wantedExtra.pickupDelay;
+            if(!net.minecraft.world.item.ItemStack.matches(wantedExtra.stack,oldExtra.stack))item.stack=StacksB173.toLegacy(wantedExtra.stack);
+        }
+        host.flushView();host.publishRenderState();
+    }
+    private static void flushLivingHost(B173LivingHost host,Touched touched) {
         HostState before=touched.hostState;
         if(before==null)return;
         var v=host.legacy();HostState wanted=HostState.of(v);
@@ -166,7 +206,7 @@ public final class EntityViewsB173 {
         try {
             for(var entry:java.util.List.copyOf(touchedViews.entrySet())) {
                 var modern=entry.getKey();var touched=entry.getValue();Entity view=touched.view;
-                if(modern instanceof B173LivingHost host) {if(!host.callbackActive())flushHost(host,touched);continue;}
+                if(modern instanceof B173EntityHost host) {if(!host.callbackActive())flushHost(host,touched);continue;}
                 if(view instanceof PlayerViewB173 player)player.writeBack();
                 if(view.dead&&!modern.isRemoved()){modern.discard();continue;}
                 if(view.fireTicks>modern.getRemainingFireTicks())modern.setRemainingFireTicks(view.fireTicks);
