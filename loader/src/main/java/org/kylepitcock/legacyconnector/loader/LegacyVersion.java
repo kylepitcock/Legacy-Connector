@@ -46,7 +46,13 @@ public enum LegacyVersion {
      * packages) and runs as a native NeoForge mod; {@link #shimPrefix()} only holds the small facade of Forge API that 1.21.1 no longer has
      * ({@code FMLJavaModLoadingContext}, {@code DistExecutor}, ...). See {@code Forge1201Transformer}.
      */
-    V1_20_1("1.20.1", "legacyconnector/v1_20_1/", "legacyconnector_synth/v1_20_1/");
+    V1_20_1("1.20.1", "legacyconnector/v1_20_1/", "legacyconnector_synth/v1_20_1/"),
+    /**
+     * Minecraft Beta 1.7.3 with Risugami's ModLoader (+ ModLoaderMP) and Forge 1.0.x: {@code mod_*} classes in the default package,
+     * compiled against the obfuscated game. {@code transform.BetaDeobfuscator} names the jar first (Babric intermediary + biny names, the
+     * ModLoader/Forge API under {@code net/minecraft/src/}), then it is relocated like every other family.
+     */
+    VB1_7_3("b1.7.3", "legacyconnector/vb1_7_3/", "legacyconnector_synth/vb1_7_3/");
 
     /**
      * Package roots (internal names) that are owned by Minecraft/Forge in legacy versions and must be

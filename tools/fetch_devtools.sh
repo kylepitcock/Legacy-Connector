@@ -17,4 +17,16 @@ curl -sfo "$D/forge147-src.zip" $M/net/minecraftforge/forge/1.4.7-6.6.2.534/forg
 mkdir -p build/devtools/mojang
 curl -sfo build/devtools/mojang/client-1.5.2.jar https://launcher.mojang.com/v1/objects/465378c9dc2f779ae1d6e8046ebc46fb53a57968/client.jar
 curl -sfo build/devtools/mojang/client-1.4.7.jar https://launcher.mojang.com/v1/objects/53ed4b9d5c358ecfff2d8b846b4427b888287028/client.jar
-echo "Reference data in $D"
+# Beta 1.7.3 (tools/extract_beta_signatures.py): the game jars, Risugami's ModLoader, ModLoaderMP and Forge 1.0.7 (names and
+# supertypes are read from them; nothing is shipped)
+B=build/devtools/b1.7.3
+mkdir -p "$B"
+W=https://maven.wagyourtail.xyz/releases
+curl -sfLo "$B/client.jar" https://launcher.mojang.com/v1/objects/43db9b498cb67058d2e12d394e6507722e71bb45/client.jar
+curl -sfLo "$B/server.jar" https://files.betacraft.uk/server-archive/beta/b1.7.3.jar
+curl -sfLo "$B/modloader.jar" $W/risugami/modloader/b1.7.3/modloader-b1.7.3.jar
+curl -sfLo "$B/modloadermp-client.jar" $W/modloadermp/modloadermp/b1.7.3/modloadermp-b1.7.3-client.jar
+curl -sfLo "$B/modloadermp-server.jar" $W/modloadermp/modloadermp/b1.7.3/modloadermp-b1.7.3-server.jar
+curl -sfLo "$B/forge-client.zip" $W/net/minecraftforge/forge/b1.7.3-1.0.7/forge-b1.7.3-1.0.7-client.zip
+curl -sfLo "$B/forge-server.zip" $W/net/minecraftforge/forge/b1.7.3-1.0.7/forge-b1.7.3-1.0.7-server.zip
+echo "Reference data in $D and $B"

@@ -77,7 +77,8 @@ neoForge {
         // Server test over a hand-picked subset of mods (see build/devtools/run-subset.sh): run-subtest/mods holds links.
         serverSubTest {
             server()
-            gameDirectory = project.file('run-subtest')
+            // Separate game/config/world/cache directories allow one-mod regression runs.
+            gameDirectory = project.file(project.findProperty('subTestDir') ?: 'run-subtest')
             programArgument '--nogui'
             systemProperty 'legacytest.autostop', 'true'
             systemProperty 'legacyconnector.autostopTicks', project.findProperty('autostopTicks') ?: '700'
@@ -86,6 +87,11 @@ neoForge {
             // -PclientProxies=mekanism.client.ClientProxy,...: runs those mods' client registrations (state mappers) for the translation too
             if (project.hasProperty('clientProxies')) systemProperty 'legacyconnector.assetsClientProxies', project.property('clientProxies')
             systemProperty 'legacyconnector.entitySelfTest', project.findProperty('selfTests') ?: 'true'
+            // Opt-in observation of real player/chunk natural-spawn cycles; not part of normal build checks.
+            if (project.hasProperty('naturalSpawnTickSelfTest')) {
+                systemProperty 'legacyconnector.naturalSpawnTickSelfTest', project.property('naturalSpawnTickSelfTest')
+                systemProperty 'legacyconnector.naturalSpawnTickTestTicks', project.findProperty('naturalSpawnTickTestTicks') ?: '2400'
+            }
             // -PserverTickScript=<file.js>: runs that JavaScript on every server tick (see core/ServerTickScript; -PserverTickScriptFrom=<tick>)
             if (project.hasProperty('serverTickScript')) {
                 systemProperty 'legacyconnector.serverTickScript', project.property('serverTickScript')
@@ -209,13 +215,36 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation 'com.google.code.gson:gson:2.10.1' // book json conversion tests (Gson is not on the test class path otherwise)
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    // Match the launcher's parser; Nashorn otherwise pulls ASM 7 into standalone tests (cannot read Java 21 fixtures).
+    testRuntimeOnly "org.ow2.asm:asm:${asm_version}"
 }
 // Game classes (netty, vanilla packets) for the tests of shim classes that mention them in their signatures; nothing is bootstrapped.
 sourceSets.test.compileClasspath += sourceSets.main.compileClasspath
 sourceSets.test.runtimeClasspath += sourceSets.main.compileClasspath
+// CPU vertex captures use LWJGL's native memory allocator, with the same platform natives as the game launch.
+sourceSets.test.runtimeClasspath += sourceSets.main.runtimeClasspath.filter { it.name.startsWith('lwjgl-') && it.name.contains('-natives-') }
+// Audio instance tests bootstrap vanilla registries; their translations/version live in the generated resource artifact.
+sourceSets.test.runtimeClasspath += files(layout.buildDirectory.file("moddev/artifacts/neoforge-${neo_version}-client-extra-aka-minecraft-resources.jar"))
 // ... and the tests of the energy bridges name NeoForge's IEnergyStorage / Direction directly
 sourceSets.test.compileClasspath += sourceSets.main.compileClasspath
 tasks.withType(Test).configureEach { useJUnitPlatform() }
+tasks.named('test', Test) {
+    useJUnitPlatform { excludeTags 'actual-mod' }
+}
+
+// Local original jars are developer-supplied fixtures, never a dependency of check/build or release packaging.
+tasks.register('actualModTest', Test) {
+    group = 'verification'
+    description = 'Runs opt-in tests against locally supplied original mods and the Beta reference client.'
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    useJUnitPlatform { includeTags 'actual-mod' }
+    shouldRunAfter tasks.named('test')
+    // These tests discover local archives/caches dynamically; their results must not be reused across fixture sets.
+    outputs.upToDateWhen { false }
+    outputs.doNotCacheIf('uses locally supplied original jars') { true }
+    testLogging { events 'skipped' }
+}
 
 // The addon API alone (classes + sources), the compile-time dependency of addons: build/dist/legacyconnector-api-<version>.jar.
 // Not a mod: at runtime the API is part of the Legacy Connector jar.

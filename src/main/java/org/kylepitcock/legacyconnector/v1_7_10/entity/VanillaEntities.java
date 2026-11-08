@@ -78,6 +78,12 @@ public final class VanillaEntities {
         return null;
     }
 
+    /** Shared exact vanilla MCP-name lookup; unknown names never resolve to a registry default. */
+    public static EntityType<?> modernTypeNamed(String vanillaClassName) {
+        Supplier<EntityType<?>> type=TYPES.get(vanillaClassName);
+        return type==null?null:type.get();
+    }
+
     /** Whether instances of exactly this class are views of a modern vanilla entity. */
     public static boolean isVanilla(Class<?> cls) {
         String n = legacyName(cls);

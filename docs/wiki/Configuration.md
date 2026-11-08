@@ -4,7 +4,7 @@ Back to [Home](Home.md).
 
 Settings live in `config/legacyconnector.properties`, written with defaults and comments on first start.
 
-In game they can be edited from Options -> "Legacy Connector..." (top left) or Mods -> Legacy Connector -> Config: a toggle or text box per setting, the file's comment as the tooltip. Done writes the file; most settings (and everything marked "read by the loader at startup") apply after a restart. Legacy mods' own key bindings are listed in Options -> Controls -> Key Binds under their category, and legacy mods with a config GUI (`guiFactory`) get the Config button in the mod list.
+In game they can be edited from Options -> "Legacy Connector..." (top left) or Mods -> Legacy Connector -> Config: a toggle or text box per setting, the file's comment as the tooltip. Done writes the file; most settings (and everything marked "read by the loader at startup") apply after a restart. Legacy mods' own key bindings are listed in Options -> Controls -> Key Binds under their category,. Buttons that legacy mods add to the game's own screens (Options, Video Settings, Controls, Sounds, Pause, Main Menu) through `GuiScreenEvent.InitGuiEvent` become real widgets of those screens: the handler sees the screen's own buttons as `GuiButton`s (it can place its button beside "Mods", move or remove vanilla ones), a button that lands on a vanilla one is moved to the nearest free spot, and a click runs `ActionPerformedEvent` (1.7.10 and 1.12.2; 1.6.4 and older follow 1.7.10). Legacy mods with a config GUI (`guiFactory`) get the Config button in the mod list.
 
 | Key | Default | Effect |
 | --- | --- | --- |
