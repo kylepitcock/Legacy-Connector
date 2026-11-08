@@ -51,7 +51,7 @@ public class GuiNewChat extends Gui {
     }
 
     public void printChatMessageWithOptionalDeletion(ITextComponent chatComponent, int chatLineId) {
-        if (chatComponent == null) return;
+        if (chatComponent == null || net.minecraft.client.Minecraft.getInstance().gui == null) return; // before the HUD exists
         if (chatLineId != 0) {
             deleteChatLine(chatLineId);
             chat().addMessage(chatComponent.mcc$modern(), signature(chatLineId), net.minecraft.client.GuiMessageTag.system());

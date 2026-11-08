@@ -64,7 +64,7 @@ public final class ModMetadataGenerator {
             dependency(sb, mod.fmlId(), RUNTIME_MOD_ID, true, "AFTER");
             for (LegacyModDecl.Dependency dep : mod.parsedDependencies()) {
                 if (dep.isPlatform()) continue;
-                String target = LegacyModDecl.toFmlId(LegacyModDecl.toModernId(dep.legacyId()));
+                String target = org.kylepitcock.legacyconnector.loader.SideBySide.current().newId(jar.version, LegacyModDecl.toFmlId(LegacyModDecl.toModernId(dep.legacyId())));
                 if (target.equals(mod.fmlId())) continue;
                 // Dependencies between mods of the same jar are implicit; FML rejects self-file cycles badly.
                 if (ids.contains(target) && !dep.required()) continue;

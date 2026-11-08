@@ -32,13 +32,17 @@ public final class CoreModPlugins1122 {
         if (ran) return;
         ran = true;
         Set<String> classes = new LinkedHashSet<>();
+        Map<String, URL> where = new HashMap<>(); // plugin class -> the resource URL that named it (the translated jar)
         try {
             var urls = loader.getResources(RESOURCE);
             while (urls.hasMoreElements()) {
                 URL url = urls.nextElement();
                 try (InputStream in = url.openStream()) {
                     String name = new String(in.readAllBytes(), StandardCharsets.UTF_8).trim();
-                    if (!name.isEmpty()) classes.add(name);
+                    if (!name.isEmpty()) {
+                        classes.add(name);
+                        where.putIfAbsent(name, url);
+                    }
                 }
             }
         } catch (Exception e) {
@@ -49,7 +53,7 @@ public final class CoreModPlugins1122 {
         List<Object[]> constructed = new ArrayList<>();
         for (String name : classes) {
             try {
-                Class<?> cls = Class.forName(name, true, loader);
+                Class<?> cls = load(name, loader, where.get(name));
                 var ctor = cls.getDeclaredConstructor();
                 ctor.setAccessible(true);
                 Object plugin = ctor.newInstance();
@@ -64,6 +68,32 @@ public final class CoreModPlugins1122 {
         }
         constructed.sort(Comparator.comparingInt(o -> (Integer) o[2]));
         for (Object[] o : constructed) setUp((String) o[0], o[1], loader, gameDir);
+    }
+
+    /**
+     * The plugin class through the game's class loader; when that cannot see it (the coremod's package sits in a module the context loader does
+     * not resolve: EnderCore's plugin lives in a nested jar of its own, Mekanism's in a split part), through the loaders of the legacy mods' own
+     * classes, which are the ones that can reach every translated jar. A failure says which jar the plugin was announced from.
+     */
+    private static Class<?> load(String name, ClassLoader loader, URL announcedBy) throws ClassNotFoundException {
+        try {
+            return Class.forName(name, true, loader);
+        } catch (ClassNotFoundException first) {
+            Set<ClassLoader> tried = new LinkedHashSet<>();
+            tried.add(loader);
+            for (var mod : org.kylepitcock.legacyconnector.core.LegacyMods.all()) {
+                for (Class<?> c : new Class<?>[] {mod.mainClass, mod.instance == null ? null : mod.instance.getClass()}) {
+                    if (c == null || c.getClassLoader() == null || !tried.add(c.getClassLoader())) continue;
+                    try {
+                        return Class.forName(name, true, c.getClassLoader());
+                    } catch (ClassNotFoundException next) {
+                        // try the next loader
+                    }
+                }
+            }
+            LOG.warn("Legacy coremod {} is announced by {} but no class loader ({} tried) can load it", name, announcedBy, tried.size());
+            throw first;
+        }
     }
 
     private static void setUp(String name, Object plugin, ClassLoader loader, File gameDir) {

@@ -55,6 +55,37 @@ public final class ForgeApi1201 {
                 return;
             }
             if (e.getMessage() == null || !e.getMessage().contains("no @SubscribeEvent methods")) throw e;
+            if (e.getMessage() == null) throw e;
+            if (e.getMessage().contains("no @SubscribeEvent methods")) return;
+            // Forge ignored a subscriber method whose event belongs to the other bus (Citadel registers itself on the game bus with a ModConfigEvent
+            // handler); NeoForge rejects the whole object. The other methods are registered one by one, the foreign one is dropped.
+            if (!e.getMessage().contains("not valid for this bus")) throw e;
+            registerEachMethod(bus, target);
+        }
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static void registerEachMethod(net.neoforged.bus.api.IEventBus bus, Object target) {
+        boolean isClass = target instanceof Class<?>;
+        Class<?> type = isClass ? (Class<?>) target : target.getClass();
+        for (java.lang.reflect.Method m : type.getMethods()) {
+            net.neoforged.bus.api.SubscribeEvent sub = m.getAnnotation(net.neoforged.bus.api.SubscribeEvent.class);
+            if (sub == null || m.getParameterCount() != 1 || java.lang.reflect.Modifier.isStatic(m.getModifiers()) == isClass == false && isClass) continue;
+            if (!net.neoforged.bus.api.Event.class.isAssignableFrom(m.getParameterTypes()[0])) continue;
+            Class<? extends net.neoforged.bus.api.Event> eventType = (Class<? extends net.neoforged.bus.api.Event>) m.getParameterTypes()[0];
+            try {
+                bus.addListener(sub.priority(), sub.receiveCanceled(), (Class) eventType, (java.util.function.Consumer) event -> {
+                    try {
+                        m.invoke(java.lang.reflect.Modifier.isStatic(m.getModifiers()) ? null : target, event);
+                    } catch (java.lang.reflect.InvocationTargetException ex) {
+                        throw ex.getCause() instanceof RuntimeException r ? r : new RuntimeException(ex.getCause());
+                    } catch (IllegalAccessException ex) {
+                        throw new IllegalStateException(ex);
+                    }
+                });
+            } catch (IllegalArgumentException ignored) {
+                // an event of the other bus: Forge never delivered it here either
+            }
         }
     }
 

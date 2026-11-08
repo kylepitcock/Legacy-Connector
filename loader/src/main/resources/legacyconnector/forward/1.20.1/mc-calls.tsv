@@ -552,3 +552,4 @@ net/minecraft/world/level/storage/loot/LootContext$Builder	create	(Lnet/minecraf
 net/minecraft/world/level/storage/loot/LootContext	getLootingModifier	()I	MiddleCompat	getLootingModifier
 net/minecraft/world/level/storage/loot/entries/LootPoolSingletonContainer	<init>	(II[Lnet/minecraft/world/level/storage/loot/predicates/LootItemCondition;[Lnet/minecraft/world/level/storage/loot/functions/LootItemFunction;)V	=args	0,1,MiscCompat.conditions@2,MiddleCompat.functions@3	(IILjava/util/List;Ljava/util/List;)V
 net/minecraft/world/level/block/entity/SkullBlockEntity	updateGameprofile	(Lcom/mojang/authlib/GameProfile;Ljava/util/function/Consumer;)V	MiddleCompat	updateGameprofile
+net/minecraft/util/KeyDispatchDataCodec	codec	()Lcom/mojang/serialization/Codec;	MiddleCompat	keyDispatchCodec
