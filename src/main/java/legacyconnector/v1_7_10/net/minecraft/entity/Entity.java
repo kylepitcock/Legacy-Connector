@@ -1225,6 +1225,11 @@ public abstract class Entity implements ICommandSender {
         }
     }
 
+    /** Whether the renderer draws the fire overlay on a burning entity. */
+    public boolean canRenderOnFire() {
+        return isBurning();
+    }
+
     public void extinguish() {
         if (mcc$entity != null) mcc$entity.clearFire();
     }

@@ -80,6 +80,11 @@ public abstract class CreativeTabs {
         return creativeTabArray.length;
     }
 
+    /** Width of the search box of a tab that has one. */
+    public int getSearchbarWidth() {
+        return 89;
+    }
+
     public int getTabIndex() {
         return tabIndex;
     }

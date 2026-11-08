@@ -385,6 +385,11 @@ public abstract class EntityPlayer extends EntityLivingBase implements legacycon
         return null;
     }
 
+    /** Ticks the player has been asleep (0 when awake). */
+    public int getSleepTimer() {
+        return mcc$player().getSleepTimer();
+    }
+
     public boolean isPlayerFullyAsleep() {
         return mcc$player().isSleepingLongEnough();
     }

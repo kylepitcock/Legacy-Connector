@@ -157,6 +157,11 @@ public class MinecraftServer implements ICommandSender, Runnable {
         return mcc$server.getPlayerNames();
     }
 
+    /** The permission level of operators (4: everything). */
+    public int getOpPermissionLevel() {
+        return 4;
+    }
+
     public String getServerOwner() {
         return mcc$server.getSingleplayerProfile() == null ? null : mcc$server.getSingleplayerProfile().getName();
     }
