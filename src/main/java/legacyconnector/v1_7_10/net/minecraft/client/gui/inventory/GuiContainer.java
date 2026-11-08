@@ -97,6 +97,11 @@ public abstract class GuiContainer extends GuiScreen {
     protected void handleMouseClick(legacyconnector.v1_7_10.net.minecraft.inventory.Slot slot, int slotId, int button, int mode) {
     }
 
+    /** 1.6.4's name of the slot drawing. */
+    protected void drawSlotInventory(legacyconnector.v1_7_10.net.minecraft.inventory.Slot slot) {
+        drawSlot(slot);
+    }
+
     protected void drawSlot(legacyconnector.v1_7_10.net.minecraft.inventory.Slot slot) {
     }
 }

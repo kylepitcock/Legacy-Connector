@@ -25,6 +25,11 @@ public class BlockBush extends legacyconnector.v1_7_10.net.minecraft.block.Block
         setBlockBounds(0.5F - f, 0.0F, 0.5F - f, 0.5F + f, f * 3.0F, 0.5F + f);
     }
 
+    /** 1.6.4's name of the support test (by block id); mods override it. The default is the 1.7.10 test. */
+    protected boolean canThisPlantGrowOnThisBlockID(int id) {
+        return canPlaceBlockOn(legacyconnector.v1_7_10.net.minecraft.block.Block.getBlockById(id));
+    }
+
     /** The blocks this plant may stand on. */
     protected boolean canPlaceBlockOn(legacyconnector.v1_7_10.net.minecraft.block.Block block) {
         return block == legacyconnector.v1_7_10.net.minecraft.init.Blocks.grass || block == legacyconnector.v1_7_10.net.minecraft.init.Blocks.dirt

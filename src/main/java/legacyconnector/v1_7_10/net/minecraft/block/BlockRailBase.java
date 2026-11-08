@@ -42,6 +42,11 @@ public class BlockRailBase extends Block {
     }
 
     /** {@code func_150051_a}. */
+    /** 1.6.4: by block id. */
+    public static boolean isRailBlock(int id) {
+        return isRailBlock(Block.getBlockById(id));
+    }
+
     public static boolean isRailBlock(Block block) {
         return block instanceof BlockRailBase;
     }

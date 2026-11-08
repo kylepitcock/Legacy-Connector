@@ -7,6 +7,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import org.kylepitcock.legacyconnector.api.internal.ContentKeys;
+import org.kylepitcock.legacyconnector.api.internal.Convert;
 
 /**
  * Resolves modern registry ids to the keys a legacy mod expects, so an addon can feed modern content into a legacy mod's data tables
@@ -60,5 +61,30 @@ public final class LegacyContentHooks {
     public static Optional<ResourceLocation> modernItemId(Object legacyStack) {
         ItemStack modern = LegacyItems.fromLegacy(legacyStack);
         return modern.isEmpty() ? Optional.empty() : Optional.of(BuiltInRegistries.ITEM.getKey(modern.getItem()));
+    }
+
+    // ------------------------------------------------------------------ numeric ids (added in API 0.2)
+
+    /**
+     * The numeric block id a 1.4.7, 1.5.2 or 1.6.4 mod sees for a legacy block object (each version has its own id space; a block nobody
+     * claimed gets the next free id). Empty for other versions or objects.
+     */
+    public static java.util.OptionalInt numericBlockId(Object legacyBlock, LegacyVersion version) {
+        return version.usesNumericIds() ? Convert.numericBlockId(legacyBlock, version) : java.util.OptionalInt.empty();
+    }
+
+    /** As {@link #numericBlockId} for a legacy {@code Item} or {@code ItemStack} (an ItemBlock has its block's id). */
+    public static java.util.OptionalInt numericItemId(Object legacyItemOrStack, LegacyVersion version) {
+        return version.usesNumericIds() ? Convert.numericItemId(legacyItemOrStack, version) : java.util.OptionalInt.empty();
+    }
+
+    /** {@code Block.blocksList[id]} of a numeric-id version; empty for an unused id or another version. */
+    public static Optional<Object> legacyBlockById(int id, LegacyVersion version) {
+        return version.usesNumericIds() ? Convert.legacyBlockById(id, version) : Optional.empty();
+    }
+
+    /** {@code Item.itemsList[id]} of a numeric-id version; empty for an unused id or another version. */
+    public static Optional<Object> legacyItemById(int id, LegacyVersion version) {
+        return version.usesNumericIds() ? Convert.legacyItemById(id, version) : Optional.empty();
     }
 }

@@ -28,3 +28,6 @@ M	net/minecraft/block/Block	getBlockName	()Ljava/lang/String;	getUnlocalizedName
 # Texture indices: mods that call the index API of 1.4.7 get the sheet index behind the icon (round trip through SpriteSheets147)
 R	net/minecraft/item/Item	getIconFromDamage	(I)I	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	itemIconIndex	(Lnet/minecraft/item/Item;I)I
 R	net/minecraft/item/ItemStack	getIconIndex	()I	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	stackIconIndex	(Lnet/minecraft/item/ItemStack;)I
+# Texture indices (2): the guarded redirects of Redirects147 (a mod's int override answering through the shim's getIcon does not recurse)
+R	net/minecraft/block/Block	getBlockTextureFromSide	(I)I	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	blockTextureFromSide	(Lnet/minecraft/block/Block;I)I
+R	net/minecraft/block/Block	getBlockTexture	(Lnet/minecraft/world/IBlockAccess;IIII)I	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	blockTexture	(Lnet/minecraft/block/Block;Lnet/minecraft/world/IBlockAccess;IIII)I

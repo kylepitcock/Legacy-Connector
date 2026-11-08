@@ -390,6 +390,11 @@ public class RenderBlocks {
         }
     }
 
+    /** 1.6.4: the block's icon for the metadata, drawn as crossed squares. */
+    public void drawCrossedSquares(Block block, int meta, double x, double y, double z, float scale) {
+        drawCrossedSquares(block.getIcon(0, meta), x, y, z, scale);
+    }
+
     /** Draws {@code icon} as two crossing upright squares centred on the block (plants, crops, tall grass). */
     public void drawCrossedSquares(IIcon icon, double x, double y, double z, float scale) {
         Tessellator t = Tessellator.mcc$get$instance();

@@ -1,0 +1,34 @@
+modLoader = "javafml"
+loaderVersion = "[4,)"
+license = "MIT"
+
+[[mods]]
+modId = "versionprobe"
+version = "${version}"
+displayName = "Version Probe (Legacy Connector example addon)"
+description = '''Logs, per loaded legacy mod and per addon API call, what the API returns for every legacy version. Lines start with PROBE.'''
+
+[modproperties.versionprobe]
+legacyconnector-addon = "example.versionprobe.VersionProbeAddon"
+
+[[dependencies.versionprobe]]
+modId = "neoforge"
+type = "required"
+versionRange = "[21,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.versionprobe]]
+modId = "minecraft"
+type = "required"
+versionRange = "[1.21.1,1.22)"
+ordering = "NONE"
+side = "BOTH"
+
+# Legacy Connector provides the API at runtime and must load before this mod.
+[[dependencies.versionprobe]]
+modId = "legacyconnector"
+type = "required"
+versionRange = "[0.4.0,)"
+ordering = "AFTER"
+side = "BOTH"

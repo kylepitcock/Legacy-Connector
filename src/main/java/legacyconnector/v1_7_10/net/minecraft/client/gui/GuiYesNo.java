@@ -11,6 +11,15 @@ public class GuiYesNo extends GuiScreen {
     protected String cancelButtonText;
     protected int worldNumber;
 
+    /** 1.6.4: a screen asks (GuiScreen was the callback). */
+    public GuiYesNo(GuiScreen callback, String line1, String line2, int id) {
+        this((GuiYesNoCallback) callback, line1, line2, id);
+    }
+
+    public GuiYesNo(GuiScreen callback, String line1, String line2, String confirm, String cancel, int id) {
+        this((GuiYesNoCallback) callback, line1, line2, confirm, cancel, id);
+    }
+
     public GuiYesNo(GuiYesNoCallback callback, String line1, String line2, int id) {
         this(callback, line1, line2, StatCollector.translateToLocal("gui.yes"), StatCollector.translateToLocal("gui.no"), id);
     }

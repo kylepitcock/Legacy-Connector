@@ -72,6 +72,7 @@ public final class CapabilityRules implements LegacyCapabilities {
         addons.rules.forEach((cap, list) -> all.computeIfAbsent(cap, c -> new ArrayList<>()).addAll(list));
         registrar.rules.forEach((cap, list) -> all.computeIfAbsent(cap, c -> new ArrayList<>()).addAll(list));
         for (var e : all.entrySet()) register(event, e.getKey(), e.getValue());
+        if (!InPlaceMods.ids().isEmpty()) for (var e : addons.rules.entrySet()) registerInPlace(event, e.getKey(), e.getValue());
     }
 
     @SuppressWarnings("unchecked")
@@ -90,5 +91,24 @@ public final class CapabilityRules implements LegacyCapabilities {
         BlockEntityType<?> t1122 = TileEntityBridge1122.type();
         if (t1710 != null) event.registerBlockEntity(cap, t1710, provider);
         if (t1122 != null) event.registerBlockEntity(cap, t1122, provider);
+    }
+
+    /**
+     * Addon rules on the block entity types of Forge 1.20.1 mods: those are the mod's own types, so the "legacy tile" an adapter gets is
+     * the block entity itself (only addon rules; the mods expose their own capabilities natively).
+     */
+    @SuppressWarnings("unchecked")
+    private static <T> void registerInPlace(RegisterCapabilitiesEvent event, BlockCapability<T, Direction> cap, List<Rule<?>> list) {
+        ICapabilityProvider<BlockEntity, Direction, T> inPlace = (be, side) -> {
+            for (Rule<?> r : list) {
+                if (!r.matches(be)) continue;
+                T result = ((TileAdapter<T>) r.adapter).adapt(be, side, be);
+                if (result != null) return result;
+            }
+            return null;
+        };
+        for (var entry : net.minecraft.core.registries.BuiltInRegistries.BLOCK_ENTITY_TYPE.entrySet()) {
+            if (InPlaceMods.isInPlaceNamespace(entry.getKey().location().getNamespace())) event.registerBlockEntity(cap, entry.getValue(), inPlace);
+        }
     }
 }

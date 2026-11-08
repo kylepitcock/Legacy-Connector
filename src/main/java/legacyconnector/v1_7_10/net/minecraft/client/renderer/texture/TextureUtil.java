@@ -166,6 +166,12 @@ public class TextureUtil {
         uploadTextureSub(id, pixels, width, height, 0, 0, false, false);
     }
 
+    /** 1.6.4: uploads into the texture bound now. */
+    public static void uploadTextureSub(int[] pixels, int width, int height, int x, int y, boolean blur, boolean clamp) {
+        if (!com.mojang.blaze3d.systems.RenderSystem.isOnRenderThread()) return;
+        uploadTextureSub(GL11C.glGetInteger(GL11C.GL_TEXTURE_BINDING_2D), pixels, width, height, x, y, blur, clamp);
+    }
+
     public static void uploadTextureSub(int id, int[] pixels, int width, int height, int x, int y, boolean blur, boolean clamp) {
         if (!com.mojang.blaze3d.systems.RenderSystem.isOnRenderThread()) return; // no GL context off the render thread: a native call aborts the JVM
         GL11C.glBindTexture(GL11C.GL_TEXTURE_2D, id);
