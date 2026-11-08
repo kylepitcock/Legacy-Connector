@@ -107,7 +107,7 @@ Technical documentation is in [`docs/wiki`](docs/wiki/Home.md) (start at [Home](
 
 ## Writing addons for legacy mods
 
-Addons for legacy mods (a mod that registers content for, or hooks into, a translated 1.7.10 or 1.12.2 mod) are described in
+Addons for legacy mods (a mod that registers content for, or hooks into, a translated legacy mod of any supported version: 1.4.7, 1.5.2, 1.6.4, 1.7.10, 1.12.2 or 1.20.1) are described in
 [Addon API](docs/wiki/Addon-API.md).
 
 ## Screenshots
