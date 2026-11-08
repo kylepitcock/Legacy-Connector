@@ -49,3 +49,4 @@ Thumbs.db
 __pycache__/
 *.pyc
 /run-survey/
+/run-survey-main/
