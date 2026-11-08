@@ -173,7 +173,10 @@ public abstract class EntityLiving extends EntityLivingBase {
     }
 
     protected void despawnEntity() {
-        if (mcc$mob() != null) mcc$mob().checkDespawn();
+        // Despawning is the server's business: Mob.checkDespawn casts the level to a ServerLevel (NeoForge's despawn event), and mods that
+        // call despawnEntity from onLivingUpdate (Twilight Forest's hydra) run on the client copy too, where the cast crashed the game.
+        var mob = mcc$mob();
+        if (mob != null && !mob.level().isClientSide) mob.checkDespawn();
     }
 
     /** The new AI: target tasks, tasks, then custom move/look/jump helpers (vanilla ones are ticked by the host). */
