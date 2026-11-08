@@ -43,6 +43,9 @@ public final class LegacyResourceConverter {
     private final Map<String, byte[]> output = new LinkedHashMap<>();
     private final Map<String, Map<String, String>> langs = new LinkedHashMap<>();
     private boolean sawTextures;
+    private static final java.util.regex.Pattern OLD_SOUND = java.util.regex.Pattern.compile("assets/([^/]+)/sound/(.+)\\.ogg");
+    /** namespace -> sound event -> the files (without extension) of 1.4-1.6 sounds, written into a generated sounds.json. */
+    private final Map<String, Map<String, java.util.List<String>>> oldSounds = new LinkedHashMap<>();
     private final CtmBridge ctm = new CtmBridge();
 
     /**
@@ -75,6 +78,15 @@ public final class LegacyResourceConverter {
             // the modern Patchouli finds a mod's books by scanning its jar for data/<mod>/patchouli_books/<book>/book.json
             String bookJson = PatchouliBookJson.dataPath(modern);
             if (bookJson != null) output.putIfAbsent(bookJson, PatchouliBookJson.convert(data));
+        }
+        java.util.regex.Matcher oldSound = OLD_SOUND.matcher(modern);
+        if (oldSound.matches()) {
+            // 1.4-1.6 sound files: assets/<ns>/sound/mob/boom1.ogg, played by the event "mob.boom" (there was no sounds.json)
+            String ns = oldSound.group(1);
+            String rel = oldSound.group(2);
+            oldSounds.computeIfAbsent(ns, k -> new java.util.TreeMap<>()).computeIfAbsent(rel.replaceAll("[0-9]+$", "").replace('/', '.'), k -> new java.util.ArrayList<>()).add(rel);
+            output.putIfAbsent("assets/" + ns + "/sounds/" + rel + ".ogg", data);
+            return true;
         }
         if (modern.matches("assets/[^/]+/sounds\\.json")) {
             data = convertSounds(data, modern.substring("assets/".length(), modern.indexOf('/', "assets/".length())));
@@ -111,6 +123,27 @@ public final class LegacyResourceConverter {
             JsonObject obj = new JsonObject();
             lang.getValue().forEach(obj::addProperty);
             output.put(lang.getKey(), GSON.toJson(obj).getBytes(StandardCharsets.UTF_8));
+        }
+        for (var ns : oldSounds.entrySet()) {
+            String path = "assets/" + ns.getKey() + "/sounds.json";
+            JsonObject root = new JsonObject();
+            byte[] existing = output.get(path);
+            if (existing != null) {
+                try {
+                    root = JsonParser.parseString(new String(existing, StandardCharsets.UTF_8)).getAsJsonObject();
+                } catch (RuntimeException e) {
+                    root = new JsonObject();
+                }
+            }
+            for (var event : ns.getValue().entrySet()) {
+                if (root.has(event.getKey())) continue;
+                JsonObject o = new JsonObject();
+                JsonArray sounds = new JsonArray();
+                for (String file : event.getValue()) sounds.add(ns.getKey() + ":" + file);
+                o.add("sounds", sounds);
+                root.add(event.getKey(), o);
+            }
+            output.put(path, GSON.toJson(root).getBytes(StandardCharsets.UTF_8));
         }
         ctm.apply(output);
         if (sawTextures) {

@@ -1106,7 +1106,10 @@ public final class ItemBridge {
         if (block == null) return null;
         Item i = BLOCK_ITEMS.get(block);
         if (i != null) return i;
-        if (block.mcc$vanilla == null) return null;
+        if (block.mcc$vanilla == null) {
+            // a block a mod swapped in for a registered one (HEE's dragon egg) has the replaced block's item
+            return RegistryNamespaced.replacedBy(block) instanceof Block original && original != block ? fromBlock(original) : null;
+        }
         String name = block.mcc$vanilla.legacyName();
         Item existing = BY_NAME.get(name);
         if (existing instanceof ItemBlock) {

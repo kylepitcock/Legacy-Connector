@@ -518,7 +518,7 @@ public final class BlockBridge {
         String n = NAMES.get(block);
         if (n != null) return n;
         if (block != null && block.mcc$vanilla != null) return block.mcc$vanilla.legacyName();
-        return null;
+        return block == null ? null : RegistryNamespaced.replacementName(block);
     }
 
     public static int idOf(Block block) {
@@ -527,6 +527,7 @@ public final class BlockBridge {
             id = IDS.get(block);
         }
         if (id != null) return id;
+        if (block != null && block.mcc$vanilla == null && RegistryNamespaced.replacedBy(block) instanceof Block original && original != block) return idOf(original);
         // A modern-only block (beehive, bee nest, other modern mods' blocks) gets an id that byId resolves back (its item's
         // where possible, as 1.7.10 ItemBlocks shared their block's id); -1 made Thaumcraft's scans look up a null item.
         // Looked up outside this class's lock (it takes ItemBridge's).

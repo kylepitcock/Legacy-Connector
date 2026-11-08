@@ -12,9 +12,19 @@ import org.kylepitcock.legacyconnector.v1_7_10.bridge.FmlChannelBridge;
 public final class FMLEventChannel {
     private final String name;
     private final EventBus bus;
+    /**
+     * FML's private {@code channels} table of an event channel (per side, the pipeline whose attributes select the target and whose
+     * writes leave through {@link FMLOutboundHandler}). Mods read it by reflection (TheErebus' PacketPipeline: NoSuchFieldException:
+     * channels) and write FMLProxyPackets to it. Never registered with the bridge: incoming packets go to {@link #bus}.
+     */
+    private final java.util.EnumMap<legacyconnector.v1_7_10.cpw.mods.fml.relauncher.Side, FMLEmbeddedChannel> channels =
+            new java.util.EnumMap<>(legacyconnector.v1_7_10.cpw.mods.fml.relauncher.Side.class);
 
     public FMLEventChannel(String name) {
         this.name = name;
+        for (legacyconnector.v1_7_10.cpw.mods.fml.relauncher.Side side : legacyconnector.v1_7_10.cpw.mods.fml.relauncher.Side.values()) {
+            channels.put(side, new FMLEmbeddedChannel(name, side));
+        }
         this.bus = new EventBus("1.7.10-channel-" + name);
     }
 
