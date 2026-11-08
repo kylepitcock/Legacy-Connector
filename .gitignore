@@ -49,3 +49,4 @@ Thumbs.db
 __pycache__/
 *.pyc
 /run-survey/
+/test-mods-1201-batch*/

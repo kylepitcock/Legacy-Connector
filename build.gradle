@@ -292,6 +292,7 @@ tasks.register('gap1201', JavaExec) {
     // -Pgap.translate=true runs the jars through Forge1201Transformer first (the report then shows what the layer leaves); -Pgap.limit=N rows per list
     if (project.findProperty('gap.translate')) systemProperty 'gap.translate', project.findProperty('gap.translate').toString()
     systemProperty 'gap.shimIndex', shimIndexFile.get().asFile.absolutePath // -Pgap.translate: the translator sees the facades like the game
+    if (project.findProperty('gap.softlist')) systemProperty 'gap.softlist', project.findProperty('gap.softlist').toString()
     if (project.findProperty('gap.limit')) systemProperty 'gap.limit', project.findProperty('gap.limit').toString()
     if (project.findProperty('gap.translated.dir')) systemProperty 'gap.translated.dir', project.findProperty('gap.translated.dir').toString()
     maxHeapSize = '3g'
