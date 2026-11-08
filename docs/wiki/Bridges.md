@@ -25,6 +25,28 @@ ID extenders, LWJGL 3 ports) are not loaded; client mods (JourneyMap, Inventory 
 
 New bridges are declared in `loader/.../LibraryBridges.java` and implemented under the shim namespace.
 
+## Library decision order
+
+A legacy library (any jar other legacy mods depend on) can clash with a native NeoForge 1.21.1 jar of the same mod id or with another legacy
+version's copy. For every version the layer decides, in this order:
+
+1. **Native bridge**: the library is re-implemented in the shim on top of the modern mod (Baubles to Curios, Waila to Jade, NEI to JEI, RF to NeoForge energy), or
+   it is a 1.20.1 library of `libraries.tsv` whose native build is API compatible (Architectury, Curios, GeckoLib, Patchouli, Cloth Config, Resourceful Lib,
+   Jade, ...): the legacy jar is skipped and its dependents link against the native build. Report: `native bridge: replaced by <id>`.
+2. **Side by side** (`experimental.sideBySideLibraries`, default on): when the native API cannot be bridged (rows marked `sideBySide` in `libraries.tsv`,
+   Citadel is the first) or another legacy version holds the same mod id (CodeChickenLib for 1.7.10 and 1.12.2), the legacy copy runs as an isolated unit next to
+   the other one. Report: `side-by-side: citadel loads as citadel_l1201 next to its other copy ..., packages [...] relocated under ...`.
+3. **Skipped** with a report line (switch off, `exclude`, no packages to isolate, or the older rule "another file holds the same mod in a newer version" within one version).
+
+An isolated unit has: a distinct FML mod id `<id>_l<version>` (mods.toml `modId`, `[[dependencies.<id>]]` headers, `@Mod` value, `@Mod.EventBusSubscriber(modid)`,
+the dependents' dependency entries and `ModList.isLoaded("<id>")` calls); its Java packages relocated under `legacyconnector_relocated/sbs_<version>/` in the library
+and in every mod of the same legacy version (class references, descriptors, annotation and string constants such as `Class.forName` and mixin targets, `META-INF/services`
+files and their contents, access transformers, mixin config `package`/`plugin`); renamed mixin configs (`x_l1201.mixins.json`); and a unique translated jar name,
+so module names never clash. Registry namespaces and `assets`/`data` stay the library's own (`citadel:` ids resolve for the dependents); a library that registers the
+same ids as its native build would clash at registration, which is the open limit of the policy. Older versions (1.4.7 to 1.12.2) already relocate packages shared
+with modern mods or another version through `CrossVersionPackages`; the unit adds the id isolation there. Per-library overrides: `experimental.sideBySideLibraries.include`/`.exclude`.
+Implementation: `loader/.../SideBySide.java` (plan, relocation), `SideBySidePlanner.java` (decision), `Forge1201Transformer` (1.20.1 application).
+
 ## Waila and NEI per legacy version
 
 The bridged package roots are the same on every version (`mcp/mobius/waila/`, `codechicken/nei/`, `codechicken/lib/`, `baubles/`); a bridge
@@ -305,4 +327,4 @@ the capability are also visible to legacy code (1.7.10: `ModernCapabilityTile` i
 | Redstone Flux `cofh.redstoneflux.api` (`IEnergyReceiver`, `IEnergyProvider`, `IEnergyHandler`, `IEnergyConnection`, `IEnergyStorage`, `IEnergyContainerItem`) and `.impl` / `.util` helpers | 1.12.2 | `EnergyBridge1122` (tiles and items) | 1 RF = 1 FE |
 | Forge Energy `CapabilityEnergy.ENERGY` on tiles and items | 1.12.2 | `BuiltinAdapters.energy1122`, `ItemCapabilities1122` (entities are not bridged) | 1:1 |
 | IC2 EU `IEnergySink` / `IEnergySource` tiles, `IElectricItem` items | 1.7.10 only | `ForeignEnergy1710` (reflection) | `energy.fePerEu` = 4 |
-| BuildCraft MJ `IPowerReceptor` (`PowerHandler` 4.x, `IPowerProvider` 3.x) | 1.7.10 only | `ForeignEnergy1710` (receive only) | `energy.fePerMj` = 10 |
+| BuildCraft MJ `IPowerReceptor` (`PowerHandler` 4.x, `IPowerProvider` 3.x) | 1.7.10 only | `ForeignEnergy1710` (receive only) | `energy.fePerMj` = 10 |
