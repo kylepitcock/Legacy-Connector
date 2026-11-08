@@ -220,6 +220,37 @@ public final class RoundCompat {
         if (thrower != null) item.setThrower(thrower);
     }
 
+    /** {@code new BlockSetType(name, canOpenByHand, sounds...)}: the flags 1.21.1 added take the vanilla wooden defaults. */
+    public static net.minecraft.world.level.block.state.properties.BlockSetType newBlockSetType(String name, boolean canOpenByHand,
+            net.minecraft.world.level.block.SoundType soundType, net.minecraft.sounds.SoundEvent doorClose, net.minecraft.sounds.SoundEvent doorOpen,
+            net.minecraft.sounds.SoundEvent trapdoorClose, net.minecraft.sounds.SoundEvent trapdoorOpen, net.minecraft.sounds.SoundEvent plateOff,
+            net.minecraft.sounds.SoundEvent plateOn, net.minecraft.sounds.SoundEvent buttonOff, net.minecraft.sounds.SoundEvent buttonOn) {
+        return new net.minecraft.world.level.block.state.properties.BlockSetType(name, canOpenByHand, canOpenByHand, true,
+                net.minecraft.world.level.block.state.properties.BlockSetType.PressurePlateSensitivity.EVERYTHING, soundType, doorClose, doorOpen,
+                trapdoorClose, trapdoorOpen, plateOff, plateOn, buttonOff, buttonOn);
+    }
+
+    /** {@code new PaintingVariant(width, height)}: the texture is named after the variant by 1.21.1; unknown at construction, so the vanilla placeholder. */
+    public static net.minecraft.world.entity.decoration.PaintingVariant newPaintingVariant(int width, int height) {
+        return new net.minecraft.world.entity.decoration.PaintingVariant(width, height, ResourceLocation.withDefaultNamespace("kebab"));
+    }
+
+    /** {@code new BannerPattern(hashname)}: the asset id is the hash name in the layer's namespace. */
+    public static net.minecraft.world.level.block.entity.BannerPattern newBannerPattern(String hashName) {
+        return new net.minecraft.world.level.block.entity.BannerPattern(ResourceLocation.fromNamespaceAndPath("legacyconnector", hashName),
+                "block.legacyconnector.banner." + hashName);
+    }
+
+    /** {@code Rarity.create(name, color)}: enum constants cannot be added at runtime here, the nearest vanilla rarity stands in. */
+    public static net.minecraft.world.item.Rarity createRarity(String name, net.minecraft.ChatFormatting color) {
+        return switch (color) {
+            case AQUA, BLUE, DARK_AQUA, DARK_BLUE -> net.minecraft.world.item.Rarity.RARE;
+            case LIGHT_PURPLE, DARK_PURPLE, RED, DARK_RED -> net.minecraft.world.item.Rarity.EPIC;
+            case YELLOW, GOLD, GREEN, DARK_GREEN -> net.minecraft.world.item.Rarity.UNCOMMON;
+            default -> net.minecraft.world.item.Rarity.COMMON;
+        };
+    }
+
     /** {@code ComponentContents.EMPTY} moved to {@code PlainTextContents.EMPTY}. */
     public static net.minecraft.network.chat.ComponentContents emptyContents() {
         return net.minecraft.network.chat.contents.PlainTextContents.EMPTY;

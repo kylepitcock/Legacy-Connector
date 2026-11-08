@@ -477,3 +477,7 @@ net/minecraft/world/inventory/RecipeCraftingHolder	getRecipeUsed	()Lnet/minecraf
 net/minecraft/world/level/Explosion	<init>	(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/damagesource/DamageSource;Lnet/minecraft/world/level/ExplosionDamageCalculator;DDDFZLnet/minecraft/world/level/Explosion$BlockInteraction;)V	RoundCompat	newExplosion	-
 net/minecraft/world/level/Explosion	<init>	(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/Entity;DDDFLjava/util/List;)V	RoundCompat	newExplosion	-
 net/minecraft/world/entity/item/ItemEntity	setThrower	(Ljava/util/UUID;)V	RoundCompat	setThrower	-
+net/minecraft/world/level/block/state/properties/BlockSetType	<init>	(Ljava/lang/String;ZLnet/minecraft/world/level/block/SoundType;Lnet/minecraft/sounds/SoundEvent;Lnet/minecraft/sounds/SoundEvent;Lnet/minecraft/sounds/SoundEvent;Lnet/minecraft/sounds/SoundEvent;Lnet/minecraft/sounds/SoundEvent;Lnet/minecraft/sounds/SoundEvent;Lnet/minecraft/sounds/SoundEvent;Lnet/minecraft/sounds/SoundEvent;)V	RoundCompat	newBlockSetType	-
+net/minecraft/world/entity/decoration/PaintingVariant	<init>	(II)V	RoundCompat	newPaintingVariant	-
+net/minecraft/world/level/block/entity/BannerPattern	<init>	(Ljava/lang/String;)V	RoundCompat	newBannerPattern	-
+net/minecraft/world/item/Rarity	create	(Ljava/lang/String;Lnet/minecraft/ChatFormatting;)Lnet/minecraft/world/item/Rarity;	RoundCompat	createRarity	-
