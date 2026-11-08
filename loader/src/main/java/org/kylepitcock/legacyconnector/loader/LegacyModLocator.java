@@ -593,6 +593,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                     if (!n.endsWith(".class") || n.startsWith("META-INF/") || n.lastIndexOf('/') <= 0) continue;
                     String name = n.substring(0, n.length() - ".class".length());
                     if (LegacyVersion.isRelocatedRoot(name)) continue; // Minecraft, Forge and bridged APIs go to each version's shim anyway
+                    if (org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.isProvidedLibrary(name)) continue; // the game's copy serves it (lang3, Guava...): never relocated
                     out.add(jar.version, name);
                 }
             } catch (IOException | RuntimeException e) {

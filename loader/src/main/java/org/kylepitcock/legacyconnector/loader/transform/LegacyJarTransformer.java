@@ -200,6 +200,14 @@ public final class LegacyJarTransformer {
             "com/google/errorprone/", "com/google/j2objc/", "org/checkerframework/", "org/jetbrains/annotations/");
 
     /**
+     * A class of a library the game ships (commons-lang3, Guava, Netty...): dropped from every legacy jar and served by the game's copy, so
+     * it is never relocated either (a relocated reference would point at a copy no jar has any more).
+     */
+    public static boolean isProvidedLibrary(String internalName) {
+        return PROVIDED_LIBRARIES.stream().anyMatch(internalName::startsWith) && !isOptionalNativeClass(internalName);
+    }
+
+    /**
      * A class of Netty's optional native transports (kqueue, epoll...) the game's own Netty does not ship (it has no kqueue): a mod that
      * bundles Netty and names them in its network code keeps its copy, which is a package of its own and so splits nothing. The
      * rest of a bundled Netty is dropped for the game's. The game's Netty is recognised by its core classes being visible here.
