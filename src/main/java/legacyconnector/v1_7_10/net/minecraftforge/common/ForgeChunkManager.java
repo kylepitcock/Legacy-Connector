@@ -181,7 +181,7 @@ public class ForgeChunkManager {
         return getConfig().get("defaults", "playerTicketCount", 500).getInt();
     }
 
-    /** Forge 1.6.4: how many more tickets the mod may hold in the world (its limit minus the tickets that currently force chunks there). */
+    /** How many more tickets the mod may request in this world: its maximum minus the tickets that currently hold chunks there. */
     public static int ticketCountAvailableFor(Object mod, World world) {
         String id = modId(mod);
         if (id == null) return 0;
@@ -189,10 +189,11 @@ public class ForgeChunkManager {
         if (world != null && world.mcc$fullLevel() instanceof ServerLevel level) {
             SetMultimap<ChunkCoordIntPair, Ticket> forced = FORCED.get(level);
             if (forced != null) {
-                java.util.Set<Ticket> seen = new java.util.HashSet<>();
+                Set<Ticket> tickets = new java.util.HashSet<>();
                 synchronized (forced) {
-                    for (Ticket t : forced.values()) if (id.equals(t.modId) && seen.add(t)) used++;
+                    for (Ticket t : forced.values()) if (id.equals(t.getModId())) tickets.add(t);
                 }
+                used = tickets.size();
             }
         }
         return Math.max(0, getMaxTicketLengthFor(id) - used);

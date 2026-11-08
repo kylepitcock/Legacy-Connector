@@ -1392,6 +1392,11 @@ public abstract class Entity implements ICommandSender {
     public void onCollideWithPlayer(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player) {
     }
 
+    /** 1.5.2 {@code getTexture()}: the skin path of an entity that picks its own texture; null = the renderer's default. */
+    public String getTexture() {
+        return null;
+    }
+
     public boolean interactFirst(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player) {
         return false;
     }
