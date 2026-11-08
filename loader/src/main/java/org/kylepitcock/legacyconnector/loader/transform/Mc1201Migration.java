@@ -241,7 +241,9 @@ final class Mc1201Migration {
                     c.fields++;
                 }
             } else if (in instanceof FieldInsnNode f && f.getOpcode() == Opcodes.GETSTATIC) {
-                Field rule = t.fields.get(f.owner + "." + f.name + ":" + f.desc);
+                // a class of the jar itself keeps its own field (Farmer's Delight translated as a mod reads its ModBiomeFeatures.WILD_CROP RegistryObject;
+                // the rows exist for other mods that use it as a library)
+                Field rule = h.isMod(f.owner) ? null : t.fields.get(f.owner + "." + f.name + ":" + f.desc);
                 if (rule == null) {
                     // a static field inherited from a Minecraft class (a mod item reading Item.BASE_ATTACK_DAMAGE_UUID through its own class)
                     for (String owner : h.minecraftAncestors(f.owner)) {
