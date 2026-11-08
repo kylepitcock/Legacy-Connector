@@ -17,6 +17,12 @@ public class GuiNewChat extends Gui {
         gui.getChat().addMessage(Component.literal(message.getFormattedText()));
     }
 
+    /** 1.6.4: prints the translated, formatted message for a language key. */
+    public void addTranslatedMessage(String key, Object... args) {
+        printChatMessage(new legacyconnector.v1_7_10.net.minecraft.util.ChatComponentText(
+                legacyconnector.v1_7_10.net.minecraft.util.StatCollector.translateToLocalFormatted(key, args)));
+    }
+
     public void printChatMessageWithOptionalDeletion(IChatComponent message, int id) {
         printChatMessage(message);
     }

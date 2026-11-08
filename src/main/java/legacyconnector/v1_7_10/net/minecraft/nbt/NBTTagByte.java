@@ -6,6 +6,11 @@ import net.minecraft.nbt.Tag;
 public class NBTTagByte extends NBTBase.NBTPrimitive {
     private final byte data;
 
+    /** 1.6.4 tags carried a name: a bare named tag holds the default value. */
+    public NBTTagByte(String name) {
+        this((byte) 0);
+    }
+
     public NBTTagByte(byte data) {
         this.data = data;
     }

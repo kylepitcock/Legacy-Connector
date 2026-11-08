@@ -145,6 +145,16 @@ public class StructureVillagePieces {
             return 0;
         }
 
+        /** 1.6.4: the block id this piece uses for a block id in its biome. */
+        protected int getBiomeSpecificBlock(int id, int meta) {
+            return Block.getIdFromBlock(func_151558_b(Block.getBlockById(id), meta));
+        }
+
+        /** 1.6.4: the metadata this piece uses for a block id in its biome. */
+        protected int getBiomeSpecificBlockMetadata(int id, int meta) {
+            return func_151557_c(Block.getBlockById(id), meta);
+        }
+
         protected Block func_151558_b(Block block, int meta) {
             if (this.field_143014_b) {
                 if (block == Blocks.log || block == Blocks.log2) return Blocks.sandstone;

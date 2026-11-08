@@ -6,6 +6,11 @@ import net.minecraft.nbt.Tag;
 public class NBTTagDouble extends NBTBase.NBTPrimitive {
     private final double data;
 
+    /** 1.6.4 tags carried a name: a bare named tag holds the default value. */
+    public NBTTagDouble(String name) {
+        this(0D);
+    }
+
     public NBTTagDouble(double data) {
         this.data = data;
     }

@@ -195,3 +195,10 @@ R	net/minecraft/world/gen/structure/StructureComponent$BlockSelector	getSelected
 M	net/minecraft/entity/EntityLivingBase	func_110142_aN	()Lnet/minecraft/util/CombatTracker;	getCombatTracker
 R	net/minecraft/util/DamageSource	getDeathMessage	(Lnet/minecraft/entity/EntityLivingBase;)Lnet/minecraft/util/ChatMessageComponent;	static	legacyconnector/v1_6_4/forward/Forward164	deathMessage	(Lnet/minecraft/util/DamageSource;Lnet/minecraft/entity/EntityLivingBase;)Lnet/minecraft/util/ChatMessageComponent;
 R	net/minecraft/util/CombatTracker	func_94546_b	()Lnet/minecraft/util/ChatMessageComponent;	static	legacyconnector/v1_6_4/forward/Forward164	combatMessage	(Lnet/minecraft/util/CombatTracker;)Lnet/minecraft/util/ChatMessageComponent;
+M	net/minecraft/block/Block	addBlockHitEffects	(Lnet/minecraft/world/World;Lnet/minecraft/util/MovingObjectPosition;Lnet/minecraft/client/particle/EffectRenderer;)Z	addHitEffects
+M	net/minecraft/block/Block	addBlockDestroyEffects	(Lnet/minecraft/world/World;IIIILnet/minecraft/client/particle/EffectRenderer;)Z	addDestroyEffects
+M	net/minecraft/item/ItemDye	func_96603_a	(Lnet/minecraft/world/World;IIII)V	func_150918_a
+R	net/minecraft/client/renderer/texture/TextureAtlasSprite	getFrameTextureData	(I)[I	static	legacyconnector/v1_6_4/forward/Forward164	getFrameTextureData	(Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;I)[I
+G	net/minecraft/block/material/Material	materialCarpet	Lnet/minecraft/block/material/Material;	sfield	net/minecraft/block/material/Material	carpet
+G	net/minecraftforge/event/terraingen/BiomeEvent$GetVillageBlockID	replacement	I	=	mcc$getReplacementId	()I
+S	net/minecraftforge/event/terraingen/BiomeEvent$GetVillageBlockID	replacement	I	legacyconnector/v1_6_4/forward/Forward164	setVillageReplacement	(Lnet/minecraftforge/event/terraingen/BiomeEvent$GetVillageBlockID;I)V
