@@ -7,6 +7,11 @@ import legacyconnector.v1_7_10.net.minecraft.world.World;
 public class WorldGenForest extends WorldGenAbstractTree {
     private final boolean field_150531_a;
 
+    /** 1.6.4's constructor: an ordinary birch. */
+    public WorldGenForest(boolean notify) {
+        this(notify, false);
+    }
+
     public WorldGenForest(boolean notify, boolean superBirch) {
         super(notify);
         this.field_150531_a = superBirch;

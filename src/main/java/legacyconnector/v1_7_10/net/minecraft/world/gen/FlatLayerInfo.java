@@ -24,6 +24,11 @@ public class FlatLayerInfo {
     }
 
     /** The layer's block. */
+    /** 1.6.4: the fill block's id. */
+    public int getFillBlock() {
+        return Block.getIdFromBlock(func_151536_b());
+    }
+
     public Block func_151536_b() {
         return layerBlock;
     }

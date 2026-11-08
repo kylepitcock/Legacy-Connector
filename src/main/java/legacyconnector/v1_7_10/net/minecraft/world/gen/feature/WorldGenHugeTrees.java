@@ -15,6 +15,11 @@ public abstract class WorldGenHugeTrees extends WorldGenAbstractTree {
     /** The random extra trunk height (0..n-1 added to the base). */
     protected int field_150538_d;
 
+    /** 1.6.4's constructor: base height plus 0..2, no extra. */
+    public WorldGenHugeTrees(boolean notify, int baseHeight, int woodMeta, int leavesMeta) {
+        this(notify, baseHeight, 0, woodMeta, leavesMeta);
+    }
+
     public WorldGenHugeTrees(boolean notify, int baseHeight, int extraHeight, int woodMeta, int leavesMeta) {
         super(notify);
         this.baseHeight = baseHeight;

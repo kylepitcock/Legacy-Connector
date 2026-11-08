@@ -22,6 +22,20 @@ public class BiomeDecorator {
     public int clayPerChunk = 1;
     public int bigMushroomsPerChunk;
     public boolean generateLakes = true;
+    /** 1.6.4's decorator knew its biome (set by the constructor mods call). */
+    public BiomeGenBase biome;
+
+    public BiomeDecorator() {
+    }
+
+    public BiomeDecorator(BiomeGenBase biome) {
+        this.biome = biome;
+    }
+
+    /** 1.6.4's entry point: decorates the chunk at the given corner for this decorator's biome. */
+    public void decorate(World world, Random random, int chunkX, int chunkZ) {
+        decorateChunk(world, random, biome, chunkX, chunkZ);
+    }
 
     protected legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenerator dirtGen = minable(legacyconnector.v1_7_10.net.minecraft.init.Blocks.dirt, 32);
     protected legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenerator gravelGen = minable(legacyconnector.v1_7_10.net.minecraft.init.Blocks.gravel, 32);
@@ -136,10 +150,14 @@ public class BiomeDecorator {
                 int x = cx + rand.nextInt(16) + 8;
                 int z = cz + rand.nextInt(16) + 8;
                 int y = world.getHeightValue(x, z);
-                var tree = biome.func_150567_a(rand);
+                var tree = biome.getRandomWorldGenForTrees(rand);
                 if (tree == null) continue;
-                tree.setScale(1.0, 1.0, 1.0);
-                if (tree.generate(world, rand, x, y, z)) tree.func_150524_b(world, rand, x, y, z);
+                if (tree instanceof legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenAbstractTree t) {
+                    t.setScale(1.0, 1.0, 1.0);
+                    if (t.generate(world, rand, x, y, z)) t.func_150524_b(world, rand, x, y, z);
+                } else {
+                    tree.generate(world, rand, x, y, z);
+                }
             }
         }
         if (grassPerChunk > 0 && legacyconnector.v1_7_10.net.minecraftforge.event.terraingen.TerrainGen.decorate(world, rand, cx, cz,

@@ -12,7 +12,7 @@ import org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext;
  * 1.7.10 screen. Shown inside a modern screen ({@code LegacyScreen}/{@code LegacyContainerScreen}) that forwards
  * sizing, ticking, drawing, mouse and keyboard to these methods. Key codes are translated to LWJGL 2 values.
  */
-public class GuiScreen extends Gui {
+public class GuiScreen extends Gui implements GuiYesNoCallback {
     protected static RenderItem itemRender = new RenderItem();
     public Minecraft mc;
     public int width;

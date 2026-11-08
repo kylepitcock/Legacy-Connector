@@ -12,6 +12,9 @@ public class Util {
     }
 
     public enum EnumOS {
-        LINUX, SOLARIS, WINDOWS, OSX, UNKNOWN
+        LINUX, SOLARIS, WINDOWS, OSX, UNKNOWN;
+
+        /** 1.6.4's name of the macOS constant. */
+        public static final EnumOS MACOS = OSX;
     }
 }
