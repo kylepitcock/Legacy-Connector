@@ -212,3 +212,4 @@ net/minecraft/world/level/block/Block	appendHoverText	(Lnet/minecraft/world/item
 net/minecraft/core/HolderGetter$Provider	getLootTable	(Lnet/minecraft/resources/ResourceLocation;)Lnet/minecraft/world/level/storage/loot/LootTable;	BridgeHelpers	lootTable
 net/minecraft/world/level/pathfinder/NodeEvaluator	getBlockPathType	(Lnet/minecraft/world/level/BlockGetter;III)Lnet/minecraft/world/level/pathfinder/PathType;	BridgeHelpers	pathTypeAt
 net/minecraft/world/entity/SpawnPlacements	register	(Lnet/minecraft/world/entity/EntityType;Lnet/minecraft/world/entity/SpawnPlacementType;Lnet/minecraft/world/level/levelgen/Heightmap$Types;Lnet/minecraft/world/entity/SpawnPlacements$SpawnPredicate;)V	EntityCompat	registerSpawnPlacement
+net/minecraft/client/gui/screens/MenuScreens	register	(Lnet/minecraft/world/inventory/MenuType;Lnet/minecraft/client/gui/screens/MenuScreens$ScreenConstructor;)V	ClientCompat	registerMenuScreen
