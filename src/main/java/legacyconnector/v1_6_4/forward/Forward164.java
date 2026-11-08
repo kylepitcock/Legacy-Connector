@@ -27,16 +27,6 @@ public final class Forward164 {
         return levels == null || levels.length == 0 ? null : levels[0];
     }
 
-    /** 1.6.4 {@code event.replacement = id} on a village block event (a legacy block id). */
-    public static void setVillageReplacement(legacyconnector.v1_7_10.net.minecraftforge.event.terraingen.BiomeEvent.GetVillageBlockID event, int id) {
-        event.mcc$setReplacementId(id);
-    }
-
-    /** 1.6.4 {@code arrow.inTile = id}. */
-    public static void setArrowInTile(legacyconnector.v1_7_10.net.minecraft.entity.projectile.EntityArrow arrow, int id) {
-        arrow.mcc$setInTileId(id);
-    }
-
     /** 1.6.4 {@code NBTTagList.tagAt(i)}: the element of any type (1.7.10 only has typed getters). */
     public static NBTBase tagAt(NBTTagList list, int index) {
         if (index < 0 || index >= list.tagCount()) return null;

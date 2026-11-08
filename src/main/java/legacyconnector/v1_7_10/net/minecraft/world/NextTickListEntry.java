@@ -24,11 +24,6 @@ public class NextTickListEntry implements Comparable<NextTickListEntry> {
         this.field_151352_g = block;
     }
 
-    /** 1.6.4's {@code blockID} field: the legacy id of the block this tick is for. */
-    public int mcc$blockId() {
-        return Block.getIdFromBlock(field_151352_g);
-    }
-
     private static synchronized long nextId() {
         return nextTickEntryID++;
     }

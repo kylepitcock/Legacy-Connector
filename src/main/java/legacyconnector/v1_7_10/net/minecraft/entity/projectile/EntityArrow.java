@@ -23,17 +23,7 @@ public class EntityArrow extends Entity implements IProjectile {
     private int xTile = -1;
     private int yTile = -1;
     private int zTile = -1;
-    private Block inTile;
-
-    /** 1.6.4's {@code inTile} field: the legacy id of the block the arrow is stuck in. */
-    public int mcc$inTileId() {
-        return Block.getIdFromBlock(inTile);
-    }
-
-    public void mcc$setInTileId(int id) {
-        inTile = Block.getBlockById(id);
-    }
-    private int inData;
+    private Block inTile;    private int inData;
     private boolean inGround;
     /** 0: cannot be picked up, 1: can be picked up, 2: only in creative mode. */
     public int canBePickedUp;

@@ -18,15 +18,6 @@ public class BiomeEvent extends Event {
         public final int type;
         public Block replacement;
 
-        /** 1.6.4: the replacement as a legacy block id (-1 for none). */
-        public int mcc$getReplacementId() {
-            return replacement == null ? -1 : Block.getIdFromBlock(replacement);
-        }
-
-        public void mcc$setReplacementId(int id) {
-            replacement = id < 0 ? null : Block.getBlockById(id);
-        }
-
         public GetVillageBlockID(BiomeGenBase biome, Block original, int type) {
             super(biome);
             this.original = original;
