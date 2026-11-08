@@ -1,0 +1,255 @@
+{
+  "status": "passed",
+  "snapshot_date": "2026-11-08",
+  "scope": "Original natural Mo Creatures mating/birth, Werewolf day/night transformations, native Bunny right-click carry/release, and actual More Creeps egg-laying and shared bounds API regression.",
+  "tested_code_revision": "bceda1c313e01fbbfc2f7b0f42495ccf61aa8018",
+  "branch": "legacy-b1.7.3",
+  "version": "0.4.13",
+  "source_sha256": {
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/entity/Entity.java": "438b3a1bb4d6e443acb1ac6fce1cb07884fd4656b904909a555c01166992ce3e",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/BoundsSelfTestB173.java": "2138768a54909840066e8f3a8a6a7ce8790a7c7281e52268583018c5ed84b668",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/EntityViewsB173.java": "e045d35f70f833e95d7c9afec84fc8469a1004fa8ac07a6c169b736345616ec7",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/LegacyB173Animal.java": "4036cf95497a5e8394c5a2659f08b35b0df74adffdd7976334abdca11f091a22",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/LegacyB173Entity.java": "6ab684380dbef28f8412220840f0012fb052e54e13bf081ca54d8240d0827fca",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/LegacyB173ItemEntity.java": "da2f008921056dc93061f1beac9e5f4cae180883bd3d3081209d3e402f055a68",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/MoCreaturesCarrySelfTestB173.java": "1cfb95e3f14ed93695e628fefe715a6d216027a85015f481546cfe823e08ec2c",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/MoCreaturesFeaturesSelfTestB173.java": "3c35cddb670164fa2f12b590f321cf86666a548e54e3929348dbae3139bbd0e3",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/MobSelfTestB173.java": "c63dbb621fac40217c593bc893cebfe57b6c14d649ab688edad37d15969daede",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/NeutralEntityStateB173.java": "53f42a5ffb15d5276c41c729b61c81433fafb11f9e9674ee98409eda74d0e20e",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/RendererBlockEffectsB173.java": "796a76d982b4e0759a10fc88bfbcd3d25e1cbc1423fd4f890fd500157c4d9c4b",
+    "src/test/java/org/kylepitcock/legacyconnector/vb1_7_3/RendererBlockEffectsB173Test.java": "a233c79e620fbf676df9577de6752e4b288f5bd004eb0cac9a99ee730b2bb3c3"
+  },
+  "tests": {
+    "runtime": {
+      "tests": 233,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "loader": {
+      "tests": 267,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "generic_changes": [
+    "Existing reachable-renderer effect scan now recognizes direct writes to Beta entity owners, including transitive helpers and inherited owners. Original variant/gameplay initialization therefore runs on the authoritative hosted tick lane. Renderer/model-only writes do not promote a callback.",
+    "Beta raw XYZ, width/height and six collision-box coordinates remain independent through sync, flush and nested referenced-view merge. Explicit setPosition still updates position and bounds.",
+    "Beta movement derives coordinates from its existing collision box, including zero moves. A movement-scoped native setPos adapter translates the existing box while retaining the native collision engine. It does not rebuild bounds from separately changed size fields.",
+    "The original dimension setter changes only width and height, matching clean Beta bytecode.",
+    "Hosted Beta collidable entities opt into native canRiderInteract, allowing normal crosshair selection while carried by the player. Original interaction callbacks still decide pickup/release."
+  ],
+  "servers": {
+    "mocreatures": {
+      "status": "headless-smoke-passed",
+      "source": "DrZharks_MoCreatures_Mod_v2.12.2_b1.7.3.zip!mods/MoCreatures.zip",
+      "outer_archive_sha256": "77cac72cd428ea428eaa0a649ce8f901f7319ded7c5a88d04347e3fdf6343ec8",
+      "payload_entries": 227,
+      "payload_entry_digest_sha256": "f29a9c8fcc550727a6c97b8ee82b011c57d297a72636e4de2903f364a9085906",
+      "entry_bytes_match_previous_test": true,
+      "evidence": "build/placement-classic-flat-natural-release-mocreatures-assessment.json",
+      "sha256": "cba43fed60be480447dfaa93921f28caaffdc0c6fa97033dccdf1f22a3ff14a9",
+      "acceptance_lines": [
+        "[16:53:49] [Server thread/INFO] [LegacyConnector/B173FeaturesTest/]: B1.7.3 MOC FEATURES TEST: all 22 specialized original-callback proofs passed",
+        "[16:53:50] [Server thread/INFO] [LegacyConnector/B173CarryTest/]: B1.7.3 MOC CARRY TEST: carried bunny native ray pick and release passed using original callbacks",
+        "[16:53:50] [Server thread/INFO] [LegacyConnector/B173CarryTest/]: B1.7.3 MOC CARRY TEST: bird carried offset passed using original callbacks",
+        "[16:53:50] [Server thread/INFO] [LegacyConnector/B173CarryTest/]: B1.7.3 MOC CARRY TEST: mouse carried offset passed using original callbacks",
+        "[16:53:50] [Server thread/INFO] [LegacyConnector/B173CarryTest/]: B1.7.3 MOC CARRY TEST: kitty bed carried offset and pickup flag passed using original callbacks",
+        "[16:53:50] [Server thread/INFO] [LegacyConnector/B173CarryTest/]: B1.7.3 MOC CARRY TEST: litter carried offset and pickup flag passed using original callbacks",
+        "[16:53:50] [Server thread/INFO] [LegacyConnector/B173CarryTest/]: B1.7.3 MOC CARRY TEST: all 5 original-callback proofs passed",
+        "[16:53:50] [Server thread/INFO] [LegacyConnector/B173EcologyTest/]: B1.7.3 ECOLOGY TEST passed: hosted-only generation filter, unchanged native population entries, native CHUNK_GENERATION position checks observed=4, native Cow/Pig persistence and original Bunny policies when present; GenerateSurface is covered separately by existing worldgen smoke",
+        "[16:53:50] [Server thread/INFO] [LegacyConnector/B173BoundsTest/]: B1.7.3 BOUNDS TEST: legacyconnector_b173.mocreatures.EntityWerewolf controlled raw position, nested damage, native move, direct box, placement and size API proofs passed",
+        "[16:53:50] [Server thread/INFO] [LegacyConnector/B173BoundsTest/]: B1.7.3 BOUNDS TEST: 1 actual-mod controlled API fixtures passed; natural cycles require separate live proof",
+        "[16:54:17] [Server thread/INFO] [LegacyConnector/B173BetaScheduleTest/]: B1.7.3 BETA SCHEDULING TEST passed: ticks=500 opportunities={MONSTER=500, CREATURE=500, WATER_CREATURE=500} adjacent=[MONSTER, CREATURE, WATER_CREATURE] actualOriginalPositionChecks={b173_mocreatures:bird=6, b173_mocreatures:boar=4, b173_mocreatures:bunny=20, b173_mocreatures:caveogre=804, b173_mocreatures:fireogre=588, b173_mocreatures:flamewraith=525, b173_mocreatures:fox=1, b173_mocreatures:horse=12, b173_mocreatures:kitty=2, b173_mocreatures:ogre=1296, b173_mocreatures:rat=1989, b173_mocreatures:werewolf=1199, b173_mocreatures:wildwolf=1999, b173_mocreatures:wraith=1177} confirmedNativeInsertions={b173_mocreatures:bird=6, b173_mocreatures:boar=4, b173_mocreatures:bunny=20, b173_mocreatures:fox=1, b173_mocreatures:horse=6, b173_mocreatures:kitty=2} failures=[]; insertion abundance is not asserted"
+      ]
+    },
+    "morecreeps": {
+      "status": "headless-smoke-passed",
+      "source": "MoreCreepsv2.12_b173.zip!PUT CONTENTS INTO MINECRAFT FOLDER/mods/MoreCreepsAndWeirdos.zip",
+      "outer_archive_sha256": "e38787077c98c9517f439a55946540f16c8b1e1d9b6187964f366e042db93c09",
+      "payload_entries": 451,
+      "payload_entry_digest_sha256": "e9f96362c5e4c23cc73f6b0bbb331cbb8d05db8d176b55c70a88e08057ebe396",
+      "entry_bytes_match_previous_test": true,
+      "evidence": "build/placement-classic-flat-natural-release-morecreeps-assessment.json",
+      "sha256": "dd73a17f1c925906fe205f342902130772d8d025e146d77a622946960ba79457",
+      "acceptance_lines": [
+        "[16:54:59] [Server thread/INFO] [LegacyConnector/B173EcologyTest/]: B1.7.3 ECOLOGY TEST passed: hosted-only generation filter, unchanged native population entries, native CHUNK_GENERATION position checks observed=5, native Cow/Pig persistence and original Bunny policies when present; GenerateSurface is covered separately by existing worldgen smoke",
+        "[16:54:59] [Server thread/INFO] [LegacyConnector/B173BoundsTest/]: B1.7.3 BOUNDS TEST: legacyconnector_b173.morecreepsandweirdos.CREEPSEntityEvilChicken controlled raw position, nested damage, native move, direct box, placement and size API proofs passed",
+        "[16:54:59] [Server thread/INFO] [LegacyConnector/B173BoundsTest/]: B1.7.3 BOUNDS TEST: original Money controlled neutral raw position, zero/native move and independent size proofs passed",
+        "[16:54:59] [Server thread/INFO] [LegacyConnector/B173BoundsTest/]: B1.7.3 BOUNDS TEST: 1 actual-mod controlled API fixtures passed; natural cycles require separate live proof",
+        "[16:55:26] [Server thread/INFO] [LegacyConnector/B173BetaScheduleTest/]: B1.7.3 BETA SCHEDULING TEST passed: ticks=500 opportunities={CREATURE=500} adjacent=[CREATURE] actualOriginalPositionChecks={b173_morecreepsandweirdos:armyguy=24, b173_morecreepsandweirdos:babymummy=24, b173_morecreepsandweirdos:blacksoul=12, b173_morecreepsandweirdos:blorp=34, b173_morecreepsandweirdos:bubblescum=36, b173_morecreepsandweirdos:bum=1, b173_morecreepsandweirdos:camel=36, b173_morecreepsandweirdos:cameljockey=36, b173_morecreepsandweirdos:desertlizard=12, b173_morecreepsandweirdos:digbug=24, b173_morecreepsandweirdos:evilscientist=24, b173_morecreepsandweirdos:floobship=12, b173_morecreepsandweirdos:g=3, b173_morecreepsandweirdos:googoat=11, b173_morecreepsandweirdos:guineapig=37, b173_morecreepsandweirdos:hippo=26, b173_morecreepsandweirdos:horsehead=5, b173_morecreepsandweirdos:hotdog=5, b173_morecreepsandweirdos:hunchback=10, b173_morecreepsandweirdos:invisibleman=7, b173_morecreepsandweirdos:lawyerfromhell=12, b173_morecreepsandweirdos:robotted=5, b173_morecreepsandweirdos:robottodd=2, b173_morecreepsandweirdos:rocketgiraffe=4, b173_morecreepsandweirdos:rockmonster=28, b173_morecreepsandweirdos:sneakysal=41, b173_morecreepsandweirdos:snowdevil=36, b173_morecreepsandweirdos:thief=3, b173_morecreepsandweirdos:zebra=7} confirmedNativeInsertions={b173_morecreepsandweirdos:armyguy=4, b173_morecreepsandweirdos:blorp=5, b173_morecreepsandweirdos:bubblescum=1, b173_morecreepsandweirdos:bum=1, b173_morecreepsandweirdos:g=2, b173_morecreepsandweirdos:googoat=4, b173_morecreepsandweirdos:guineapig=6, b173_morecreepsandweirdos:hippo=3, b173_morecreepsandweirdos:horsehead=2, b173_morecreepsandweirdos:hotdog=4, b173_morecreepsandweirdos:hunchback=1, b173_morecreepsandweirdos:invisibleman=1, b173_morecreepsandweirdos:lawyerfromhell=3, b173_morecreepsandweirdos:robotted=1, b173_morecreepsandweirdos:robottodd=1, b173_morecreepsandweirdos:rocketgiraffe=1, b173_morecreepsandweirdos:rockmonster=4, b173_morecreepsandweirdos:sneakysal=1, b173_morecreepsandweirdos:zebra=3} failures=[]; insertion abundance is not asserted"
+      ]
+    }
+  },
+  "actual_clients": {
+    "mocreatures": {
+      "evidence_directory": "run-b173-single/mocreatures-neutralnatural-bounds-client-20261108-164659-23c7d6/natural-proof",
+      "births": {
+        "offspring_count": 12,
+        "families": {
+          "EntityBunny": [
+            "53f1f1ac-d230-49bc-acc9-2487889c0db4",
+            "c9fc771e-a247-41c8-9f49-46c2114c5f0a",
+            "c92c0bf3-e9ae-4fc8-b72c-8dae66ddee6c",
+            "3fab9dbd-db95-45c6-b399-87d32ddeac05",
+            "bdf8fd31-5fa9-4626-a809-740eb3394fbb",
+            "791d3c5d-1e33-489a-aefc-b3645092e669",
+            "7f36d067-472d-470e-af49-256ab701a13b",
+            "ff36ea11-e706-4dce-a8b0-8c016e9e4426",
+            "7a612b1c-6afa-4d08-b455-8a3b8603cbf6"
+          ],
+          "EntityDolphin": [
+            "7dd3f074-0a03-4964-8fb0-80bed1718aba"
+          ],
+          "EntityHorse": [
+            "6f304317-0c7a-469a-ae44-e89775161b04"
+          ],
+          "EntityKitty": [
+            "a2cf9676-373f-4531-8d6d-9d31e3739747"
+          ]
+        },
+        "evidence": "run-b173-single/mocreatures-neutralnatural-bounds-client-20261108-164659-23c7d6/natural-proof/natural-birth-proof.json",
+        "sha256": "b8dd5bb194997ba6dc06fb814b8ae4c6d37538e427b9c8d99791bc1964ed7252"
+      },
+      "cycles": [
+        {
+          "phase": "day-human",
+          "expectedHuman": true,
+          "sawTransforming": true,
+          "intermediateCounters": [
+            7,
+            18,
+            26
+          ],
+          "elapsedMovement": 180,
+          "elapsedGameTime": 180,
+          "endUUID": "5d33240e-1056-418d-8059-2b456112da5e",
+          "passed": true,
+          "render": {
+            "humanform": true,
+            "health": 15,
+            "dimensions": [
+              0.8999999761581421,
+              1.2999999523162842
+            ],
+            "finite_geometry": true,
+            "vertices": 168,
+            "textures": [
+              "b173_mocreatures:textures/b173/entity/6d6f622f7765726568756d616e2e706e67.png"
+            ]
+          }
+        },
+        {
+          "phase": "night-wolf",
+          "expectedHuman": false,
+          "sawTransforming": true,
+          "intermediateCounters": [
+            1,
+            11,
+            24
+          ],
+          "elapsedMovement": 762,
+          "elapsedGameTime": 762,
+          "endUUID": "5d33240e-1056-418d-8059-2b456112da5e",
+          "passed": true,
+          "render": {
+            "humanform": false,
+            "health": 40,
+            "dimensions": [
+              0.8999999761581421,
+              1.2999999523162842
+            ],
+            "finite_geometry": true,
+            "vertices": 480,
+            "textures": [
+              "b173_mocreatures:textures/b173/entity/6d6f622f77657265626c616e6b2e706e67.png",
+              "b173_mocreatures:textures/b173/entity/6d6f622f77657265776f6c662e706e67.png"
+            ]
+          }
+        }
+      ],
+      "collision_containment": "Every sampled cycle checks living original actor, raised solid-wall pen containment and matching original/native bounds. Original RNG, timers and private form fields are never overwritten.",
+      "cycles_evidence_sha256": "95354a8408b8c82f5e4e1799b522c2f3182f3337989dfc6e4e37b1be0ddbf5f8",
+      "save_relog": {
+        "actual_native_reopens": 2,
+        "checks": 84,
+        "passed": true,
+        "sha256": "38b08659d5c551d742b8c20e2e614b4e086947b597c5ce4dba54445039ed249b"
+      },
+      "ordinary_bunny_rightclick": {
+        "passed": true,
+        "input": "Native GameRenderer.pick and normal keyUse click queue; no explicit-target gameMode.interact in this check.",
+        "origin_outside_pick_bounds": true,
+        "checks": [
+          {
+            "phase": "pickup",
+            "hit_id": 2899,
+            "target_id": 2899,
+            "server_vehicle": "380df991-f603-344c-a090-369bad2a924a",
+            "client_vehicle": "380df991-f603-344c-a090-369bad2a924a"
+          },
+          {
+            "phase": "release",
+            "hit_id": 2899,
+            "target_id": 2899,
+            "server_vehicle": null,
+            "client_vehicle": null
+          }
+        ],
+        "sha256": "db66d06638469c84841a063d10901b01aba64ee007410fd0721b653680f4dac1"
+      }
+    },
+    "morecreeps": {
+      "evidence": "run-b173-single/morecreeps-neutralnatural-bounds-client-20261108-164700-e28557/natural-creeps-egg-proof/results.json",
+      "sha256": "09ecbcae89d9a6c5ce0dfc7b89779850d50fb204cd091d7a3e83b98c3c1015a9",
+      "natural_egg": {
+        "sample": 10,
+        "elapsedNativeTicks": 263,
+        "eggs": [
+          {
+            "id": 596,
+            "uuid": "cc869d26-c893-44da-9688-9a675544c441",
+            "key": "b173_morecreepsandweirdos:evil_egg",
+            "count": 1,
+            "position": [
+              -2.2934755513637937,
+              150.04693128706583,
+              -2.464935655412145
+            ]
+          }
+        ],
+        "observedResetTimer": 317,
+        "maxTicksSinceLaying": 4
+      },
+      "initial_original_timer": 259
+    }
+  },
+  "natural_method": {
+    "parents": "Actual archived constructors, original World/native spawn, native apple/pumpkin/fish/medallion/cake interactions, normal movement/carry, original courtship and gestation clocks. Fixture pens and scene time are native world controls.",
+    "rng": "Original default RNG untouched. No forced private readiness, form, gestation, growth or taming fields; no NoAI.",
+    "observation": "20 Hz native clocks. Already-born children marked native-persistent only after their birth was observed, to support UUID save/relog checks.",
+    "werewolf": "Native time changes trigger original random transformation decisions; intermediate counters, both original health/model/texture forms, collision containment and original form persistence observed.",
+    "fixture_corrections": "Initial Kitty food throws fell beyond the raised pen; later native player drops point down inside it and feed both animals. The observer waits outside the native command queue so observing births does not delay interaction positioning. No original gameplay fields were edited to bypass these setup errors."
+  },
+  "policy": {
+    "mod_versions_changed": false,
+    "actual_mod_tests_opt_in": true,
+    "native_modern_entity_rules_changed": false,
+    "generic_identity_guard": "267 Beta production/loader sources passed",
+    "desktop_window_opened": false,
+    "render_environment": "WSL Ubuntu, Xvfb :99, Mesa; isolated one mod per client/server; no Sodium/Iris"
+  },
+  "artifact": {
+    "path": "build/dist/legacyconnector-0.4.13.jar",
+    "sha256": "e20e9280b106990864f782f58bfe7cf983c5ce0c6f227890d659f4da49b6622a",
+    "compiled_runtime_classes_matched": 11
+  },
+  "limits": [
+    "Bounded actual-mod coverage, not a claim that every feature of either mod is complete.",
+    "Original gestation/transformation counters absent from original NBT are not made persistent. Stable forms and already-born offspring are the persistence contract tested.",
+    "More Creeps 2.12 has no paired natural mating or Werewolf family. EvilChicken egg laying is the applicable natural timer test; hatching and scientist reproduction are outside this pass.",
+    "Reachable-renderer promotion detects direct entity field writes and existing World writes, not arbitrary reflection, array mutation or opaque external setters.",
+    "Multiplayer with a separate remote client and Sodium/Iris were not tested."
+  ]
+}

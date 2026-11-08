@@ -12,7 +12,7 @@ final class NeutralEntityStateB173 {
     final B173EntityHost host;
     Entity original;
     int callbacks,originalTicks,baseTicks;
-    boolean syncing,rendering;
+    boolean syncing,rendering,moving;
     CompoundTag previousSnapshot;
     NeutralEntityStateB173(net.minecraft.world.entity.Entity nativeEntity,B173EntityHost host){this.nativeEntity=nativeEntity;this.host=host;}
     void attach(Entity value){
@@ -41,20 +41,37 @@ final class NeutralEntityStateB173 {
     private Entity relation(net.minecraft.world.entity.Entity entity){return entity instanceof B173EntityHost other&&other.legacy()!=null?other.legacy():EntityViewsB173.wrap(entity);}
     void flush(){
         if(original==null)return;
+        var bounds=original.boundingBox.mcc$box();
+        double rawX=original.x,rawY=original.y-original.standingEyeHeight,rawZ=original.z;
         nativeEntity.setPos(original.x,original.y-original.standingEyeHeight,original.z);
         nativeEntity.setYRot(original.yaw);nativeEntity.setXRot(original.pitch);
         nativeEntity.setDeltaMovement(original.velocityX,original.velocityY,original.velocityZ);
         nativeEntity.setOnGround(original.onGround);nativeEntity.setRemainingFireTicks(original.fireTicks);
         nativeEntity.setAirSupply(original.air);nativeEntity.fallDistance=original.mcc$fallDistance();nativeEntity.noPhysics=original.noClip;nativeEntity.blocksBuilding=original.blocksSameBlockSpawning;
-        nativeEntity.setBoundingBox(new net.minecraft.world.phys.AABB(original.x-original.width/2,original.y-original.standingEyeHeight,original.z-original.width/2,
-                original.x+original.width/2,original.y-original.standingEyeHeight+original.height,original.z+original.width/2));
         if(original instanceof ItemEntity item&&nativeEntity instanceof net.minecraft.world.entity.item.ItemEntity nativeItem){
             nativeItem.setItem(item.stack==null?net.minecraft.world.item.ItemStack.EMPTY:StacksB173.toModern(item.stack));
             EntityFieldsB173.itemAge(nativeItem,item.itemAge);nativeItem.setPickUpDelay(item.pickupDelay);
         }
         net.minecraft.world.entity.Entity vehicle=original.vehicle==null?null:original.vehicle.mcc$modern;
         if(nativeEntity.getVehicle()!=vehicle){if(vehicle==null)nativeEntity.stopRiding();else nativeEntity.startRiding(vehicle,true);}
+        // Native position/relationship setters may rebuild bounds. Beta owns raw
+        // coordinates and its six box coordinates independently until movement.
+        nativeEntity.setPos(rawX,rawY,rawZ);nativeEntity.setBoundingBox(bounds);
         if(original.dead)nativeEntity.discard();
+    }
+    /** Beta movement begins with the existing box, including after raw coordinate or size writes. */
+    void move(Runnable nativeMove){
+        if(moving)throw new IllegalStateException("Recursive Beta neutral movement");
+        flush();var box=nativeEntity.getBoundingBox();
+        nativeEntity.setPosRaw((box.minX+box.maxX)/2,box.minY,(box.minZ+box.maxZ)/2);
+        moving=true;
+        try{nativeMove.run();}finally{moving=false;sync();}
+    }
+    /** Native move calls setPos; translate the original box instead of rebuilding it from size fields. */
+    boolean movePosition(double x,double y,double z){
+        if(!moving)return false;
+        var box=nativeEntity.getBoundingBox().move(x-nativeEntity.getX(),y-nativeEntity.getY(),z-nativeEntity.getZ());
+        nativeEntity.setPosRaw(x,y,z);nativeEntity.setBoundingBox(box);return true;
     }
     void callback(Runnable action){
         if(original==null)return;

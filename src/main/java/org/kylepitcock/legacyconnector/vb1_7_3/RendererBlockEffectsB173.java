@@ -16,7 +16,7 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
-/** Moves reachable renderer-owned block effects onto hosted legacy entities' authoritative tick lane. */
+/** Moves reachable renderer-owned simulation effects onto hosted legacy entities' authoritative tick lane. */
 public final class RendererBlockEffectsB173 {
     private static final String ENTRY="(Llegacyconnector/vb1_7_3/net/minecraft/entity/Entity;DDDFF)V";
     private static final String WORLD="legacyconnector/vb1_7_3/net/minecraft/world/World";
@@ -30,7 +30,7 @@ public final class RendererBlockEffectsB173 {
     }
     /** Caller owns the host callback transaction, including synchronization, field flushing and publication. */
     public static void render(LegacyB173Animal host){
-        if(host.level().isClientSide)throw new IllegalStateException("Renderer block effects require an authoritative level");
+        if(host.level().isClientSide)throw new IllegalStateException("Renderer simulation effects require an authoritative level");
         var view=host.legacy();var info=RenderersB173.info(view.getClass());if(info==null||!EFFECTS.get(info.renderer().getClass()))return;
         try(var minecraft=legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$context(World.mcc$wrap(host.level()),view);var views=EntityViewsB173.callbackScope()){
             LivingEntity camera=view;var player=view.world.getClosestPlayer(view,-1D);if(player!=null)camera=player;
@@ -52,21 +52,27 @@ public final class RendererBlockEffectsB173 {
     }
     private record Call(int opcode,String owner,String name,String descriptor){}
     private record Method(Class<?> owner,String name,String descriptor){}
-    private record Code(Map<String,List<Call>> methods){}
+    private record Code(Map<String,List<Call>> methods,Map<String,List<String>> fieldWrites){}
     private static boolean mod(Class<?> type){return type.getName().startsWith("legacyconnector_b173.");}
     private static final class Scan {
         final Class<?> renderer;final ClassLoader loader;
+        final Map<String,Boolean> entityOwners=new HashMap<>();
         final Map<Class<?>,Code> classes=new HashMap<>();final HashSet<Method> visited=new HashSet<>();
         final ArrayDeque<Method> pending=new ArrayDeque<>();
         Scan(Class<?> renderer){this.renderer=renderer;loader=renderer.getClassLoader();}
         Code code(Class<?> type){return classes.computeIfAbsent(type,key->{
             var methods=new HashMap<String,List<Call>>();
+            var fieldWrites=new HashMap<String,List<String>>();
             try(var input=key.getResourceAsStream("/"+Type.getInternalName(key)+".class")){
                 if(input==null)throw new IllegalStateException("Missing renderer effect class bytes: "+key.getName());
                 new ClassReader(input).accept(new ClassVisitor(Opcodes.ASM9){
                     @Override public MethodVisitor visitMethod(int access,String name,String descriptor,String signature,String[] exceptions){
                         var calls=new java.util.ArrayList<Call>();methods.put(name+descriptor,calls);
+                        var writes=new java.util.ArrayList<String>();fieldWrites.put(name+descriptor,writes);
                         return new MethodVisitor(Opcodes.ASM9){
+                            @Override public void visitFieldInsn(int opcode,String owner,String name,String descriptor){
+                                if(opcode==Opcodes.PUTFIELD)writes.add(owner);
+                            }
                             @Override public void visitMethodInsn(int opcode,String owner,String called,String desc,boolean itf){calls.add(new Call(opcode,owner,called,desc));}
                             @Override public void visitInvokeDynamicInsn(String called,String desc,Handle bootstrap,Object... args){
                                 for(Object arg:args)if(arg instanceof Handle handle){int opcode=switch(handle.getTag()){case Opcodes.H_INVOKESTATIC->Opcodes.INVOKESTATIC;case Opcodes.H_INVOKESPECIAL,Opcodes.H_NEWINVOKESPECIAL->Opcodes.INVOKESPECIAL;case Opcodes.H_INVOKEINTERFACE->Opcodes.INVOKEINTERFACE;default->Opcodes.INVOKEVIRTUAL;};calls.add(new Call(opcode,handle.getOwner(),handle.getName(),handle.getDesc()));}
@@ -75,7 +81,7 @@ public final class RendererBlockEffectsB173 {
                     }
                 },ClassReader.SKIP_DEBUG|ClassReader.SKIP_FRAMES);
             }catch(IOException error){throw new IllegalStateException("Cannot inspect renderer effects: "+key.getName(),error);}
-            return new Code(methods);
+            return new Code(methods,fieldWrites);
         });}
         Class<?> type(String owner){
             try{return Class.forName(owner.replace('/','.'),false,loader);}
@@ -96,7 +102,11 @@ public final class RendererBlockEffectsB173 {
             var entry=resolve(renderer,"render",ENTRY);if(entry==null)return false;pending.add(entry);
             while(!pending.isEmpty()){
                 var method=pending.removeFirst();if(!visited.add(method))continue;
-                for(var call:code(method.owner).methods.get(method.name+method.descriptor)){
+                var reachable=code(method.owner);var key=method.name+method.descriptor;
+                // Resolve only reachable field owners; renderer/model state never promotes a visual callback.
+                for(var owner:reachable.fieldWrites.get(key))
+                    if(entityOwners.computeIfAbsent(owner,name->legacyconnector.vb1_7_3.net.minecraft.entity.Entity.class.isAssignableFrom(type(name))))return true;
+                for(var call:reachable.methods.get(key)){
                     if(call.owner.equals(WORLD)&&(call.name.startsWith("setBlock")||call.name.equals("removeBlockEntity")))return true;
                     // Do not inspect JDK/host methods or unrelated API method bodies.
                     if(!call.owner.startsWith("legacyconnector_b173/")&&!call.owner.startsWith("legacyconnector/vb1_7_3/net/minecraft/client/render/entity/"))continue;

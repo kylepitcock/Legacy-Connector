@@ -32,7 +32,7 @@ public final class MoCreaturesCarrySelfTestB173 {
     }
     @FunctionalInterface private interface Proof {void run(Context context)throws ReflectiveOperationException;}
     private record Case(String name,Proof proof){}
-    private static void run(net.minecraft.server.level.ServerLevel level){var selected=ContentB173.entities().stream().filter(r->r.type().getPackageName().equals("legacyconnector_b173.mocreatures")).findFirst();if(selected.isEmpty())return;var failures=new ArrayList<String>();var cases=List.of(new Case("bird carried offset",c->carried(c,"EntityBird",1.15F)),new Case("mouse carried offset",c->carried(c,"EntityMouse",1.7F)),new Case("kitty bed carried offset and pickup flag",c->carried(c,"EntityKittyBed",1.15F)),new Case("litter carried offset and pickup flag",c->carried(c,"EntityLitterBox",1.15F)));for(var proof:cases)try(var c=new Context(level,selected.get())){proof.proof.run(c);LOG.info("B1.7.3 MOC CARRY TEST: {} passed using original callbacks",proof.name);}catch(ReflectiveOperationException|RuntimeException|LinkageError error){failures.add(proof.name+": "+error);LOG.error("B1.7.3 MOC CARRY TEST failed: {}",proof.name,error);}if(!failures.isEmpty())LOG.error("B1.7.3 MOC CARRY TEST: {} failures: {}",failures.size(),failures);else LOG.info("B1.7.3 MOC CARRY TEST: all {} original-callback proofs passed",cases.size());}
+    private static void run(net.minecraft.server.level.ServerLevel level){var selected=ContentB173.entities().stream().filter(r->r.type().getPackageName().equals("legacyconnector_b173.mocreatures")).findFirst();if(selected.isEmpty())return;var failures=new ArrayList<String>();var cases=List.of(new Case("carried bunny native ray pick and release",MoCreaturesCarrySelfTestB173::bunnyTargeting),new Case("bird carried offset",c->carried(c,"EntityBird",1.15F)),new Case("mouse carried offset",c->carried(c,"EntityMouse",1.7F)),new Case("kitty bed carried offset and pickup flag",c->carried(c,"EntityKittyBed",1.15F)),new Case("litter carried offset and pickup flag",c->carried(c,"EntityLitterBox",1.15F)));for(var proof:cases)try(var c=new Context(level,selected.get())){proof.proof.run(c);LOG.info("B1.7.3 MOC CARRY TEST: {} passed using original callbacks",proof.name);}catch(ReflectiveOperationException|RuntimeException|LinkageError error){failures.add(proof.name+": "+error);LOG.error("B1.7.3 MOC CARRY TEST failed: {}",proof.name,error);}if(!failures.isEmpty())LOG.error("B1.7.3 MOC CARRY TEST: {} failures: {}",failures.size(),failures);else LOG.info("B1.7.3 MOC CARRY TEST: all {} original-callback proofs passed",cases.size());}
     private static net.minecraft.server.level.ServerPlayer actor(net.minecraft.server.level.ServerLevel level){
         var profile=new com.mojang.authlib.GameProfile(UUID.nameUUIDFromBytes("legacyconnector:moc-carry".getBytes(java.nio.charset.StandardCharsets.UTF_8)),"B173Carry");
         var player=new net.minecraft.server.level.ServerPlayer(level.getServer(),level,profile,net.minecraft.server.level.ClientInformation.createDefault());
@@ -41,6 +41,29 @@ public final class MoCreaturesCarrySelfTestB173 {
             @Override public void send(net.minecraft.network.protocol.Packet<?> packet){}
             @Override public void send(net.minecraft.network.protocol.Packet<?> packet,net.minecraft.network.PacketSendListener listener){}
         };return player;
+    }
+    private static void bunnyTargeting(Context c)throws ReflectiveOperationException {
+        var bunny=c.spawn("EntityBunny",.5);
+        var player=actor(c.level);c.entities.add(player);
+        player.setPos(c.origin.getX()+.5,c.origin.getY(),c.origin.getZ()+.5);c.level.addNewPlayer(player);
+        player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,net.minecraft.world.item.ItemStack.EMPTY);
+        require(bunny.mobInteract(player,net.minecraft.world.InteractionHand.MAIN_HAND).consumesAction()&&bunny.getVehicle()==player,
+                "original bunny interaction mounts the native player");
+        EntityViewsB173.flush();player.positionRider(bunny);
+        var start=player.getEyePosition();
+        var end=start.add(bunny.getBoundingBox().getCenter().subtract(start).normalize().scale(6));
+        require(bunny.getRootVehicle()==player.getRootVehicle(),"carried bunny shares native picker root vehicle");
+        require(!bunny.getBoundingBox().inflate(bunny.getPickRadius()).contains(start),
+                "ray starts outside bunny pick bounds so native origin-inside bypass cannot mask rider exclusion");
+        var hit=net.minecraft.world.entity.projectile.ProjectileUtil.getEntityHitResult(player,start,end,
+                player.getBoundingBox().expandTowards(end.subtract(start)).inflate(1),
+                entity->entity==bunny&&!entity.isSpectator()&&entity.isPickable(),36);
+        require(hit!=null&&hit.getEntity()==bunny,"native GameRenderer ray-pick helper selects actual carried bunny");
+        require(bunny.mobInteract(player,net.minecraft.world.InteractionHand.MAIN_HAND).consumesAction(),
+                "second actual server interaction executes original bunny release callback");
+        require(bunny.getVehicle()==null&&!player.hasPassenger(bunny)&&bunny.legacy().vehicle==null
+                        &&(Boolean)get(bunny.legacy(),"h")&&bunny.getDeltaMovement().y>0,
+                "original same-carrier toggle releases reciprocal native relations and retains throw state/impulse");
     }
     private static void carried(Context c,String name,float reduction)throws ReflectiveOperationException {
         var host=c.spawn(name,.5);if(name.equals("EntityBird"))put(host.legacy(),"tamed",true);

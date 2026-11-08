@@ -222,7 +222,9 @@ private static void originalDolphinReproduction(Context c)throws ReflectiveOpera
         require(!(Boolean)get(a.legacy(),"eatenpumpkin")&&!(Boolean)get(b.legacy(),"eatenpumpkin")&&(Integer)get(a.legacy(),"gestationtime")==0&&(Integer)get(b.legacy(),"gestationtime")==0,"original horse parents consume readiness and reset gestation");require(child.renderState().equals(AnimalRenderStateB173.capture(child.legacy())),"post-spawn original foal fields reach initial native tracking state");
     }
     private static void predatorFood(Context c)throws ReflectiveOperationException {
-        var cat=c.spawn("EntityBigCat");put(cat.legacy(),"adult",false);put(cat.legacy(),"edad",.5F);put(cat.legacy(),"hungry",true);put(cat.legacy(),"sitting",false);cat.setHealth(5);
+        var cat=c.spawn("EntityBigCat");cat.tick();
+        require((Boolean)get(cat.legacy(),"typechosen")&&(Integer)get(cat.legacy(),"typeint")>0&&cat.getHealth()==(Integer)get(cat.legacy(),"maxhealth"),"original renderer initializes authoritative predator type and health before injury/feeding");
+        put(cat.legacy(),"adult",false);put(cat.legacy(),"edad",.5F);put(cat.legacy(),"hungry",true);put(cat.legacy(),"sitting",false);cat.setHealth(5);
         var food=new net.minecraft.world.entity.item.ItemEntity(c.level,cat.getX()+.2,cat.getY(),cat.getZ(),new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.COD));require(c.level.addFreshEntity(food),"native dropped food enters world");c.entities.add(food);cat.tick();
         require(food.isRemoved()&&cat.getHealth()==15&&(Boolean)get(cat.legacy(),"eaten"),"original juvenile predator eats native dropped fish, heals and enters taming readiness");
         var bear=c.spawn("EntityBear");var fresh=new net.minecraft.world.entity.item.ItemEntity(c.level,bear.getX()+.2,bear.getY(),bear.getZ(),new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.PORKCHOP));var old=new net.minecraft.world.entity.item.ItemEntity(c.level,bear.getX()+.4,bear.getY(),bear.getZ(),new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.PORKCHOP));require(c.level.addFreshEntity(fresh)&&c.level.addFreshEntity(old),"native age-test drops enter world");c.entities.add(fresh);c.entities.add(old);EntityFieldsB173.itemAge(fresh,49);EntityFieldsB173.itemAge(old,50);
@@ -269,7 +271,7 @@ private static void originalDolphinReproduction(Context c)throws ReflectiveOpera
         var wide=c.world.getEntities(bunny.legacy(),wideBox);require(wide.contains(EntityViewsB173.wrap(nearby)),"wide original query sees native Cow");
         var typed=c.world.collectEntitiesByClass(legacyconnector.vb1_7_3.net.minecraft.entity.passive.CowEntity.class,wideBox);
         require(typed!=wide&&typed.contains(EntityViewsB173.wrap(nearby))&&wide.contains(EntityViewsB173.wrap(nearby)),"typed query owns a separate result without clearing untyped buffer");
-        var narrow=c.world.getEntities(bunny.legacy(),nearBox);require(narrow==wide&&wide.isEmpty(),"narrow original query replaces the same mutable wide-query list");
+        var narrow=c.world.getEntities(bunny.legacy(),nearBox);require(narrow==wide&&wide.isEmpty(),"narrow original query replaces the same mutable wide-query list: same="+(narrow==wide)+" nearby="+narrow.stream().map(e->e.getClass().getName()+"@"+e.x+","+e.y+","+e.z).toList());
         narrow.add(bunny.legacy());require(wide.contains(bunny.legacy()),"untyped original query result is mutable");
         c.world.getEntities(bunny.legacy(),nearBox);require(wide.isEmpty()&&typed.contains(EntityViewsB173.wrap(nearby)),"next untyped query clears mutations while typed snapshot survives");
         put(bunny.legacy(),"tamed",true);put(bunny.legacy(),"adult",true);put(bunny.legacy(),"j",1023);put(bunny.legacy(),"i",127);

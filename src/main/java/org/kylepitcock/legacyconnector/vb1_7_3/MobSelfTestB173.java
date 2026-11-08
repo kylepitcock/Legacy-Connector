@@ -53,6 +53,7 @@ public final class MobSelfTestB173 {
         BetaSpawnSchedulingSelfTestB173.register(game);
         BetaEcologySelfTestB173.register(game);
         AnimalLifecycleSelfTestB173.register(game);
+        BoundsSelfTestB173.register(game);
         if(Boolean.getBoolean("legacyconnector.entitySelfTest"))game.addListener((ServerStartedEvent e)->run(e.getServer().overworld()));
     }
     private static void require(boolean condition,String message){if(!condition)throw new IllegalStateException("B1.7.3 MOB TEST: "+message);}
