@@ -13,6 +13,14 @@ public class LogWrapper {
         log.myLog = to;
     }
 
+    public static void log(String logChannel, java.util.logging.Level level, String format, Object... data) {
+        log(logChannel, legacyconnector.v1_7_10.cpw.mods.fml.common.FMLLog.mcc$level(level), format, data);
+    }
+
+    public static void log(java.util.logging.Level level, String format, Object... data) {
+        log(legacyconnector.v1_7_10.cpw.mods.fml.common.FMLLog.mcc$level(level), format, data);
+    }
+
     public static void log(String logChannel, Level level, String format, Object... data) {
         makeLog(logChannel);
         LogManager.getLogger(logChannel).log(level, format(format, data));

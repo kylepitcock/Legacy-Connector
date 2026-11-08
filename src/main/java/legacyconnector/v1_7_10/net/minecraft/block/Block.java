@@ -154,6 +154,12 @@ public class Block {
 
     // ------------------------------------------------------------------ static lookups
 
+    /** Forge: whether the Ender Dragon's body may destroy this block (obsidian, end stone and bedrock resist it). */
+    public boolean canDragonDestroy(World world, int x, int y, int z) {
+        return this != legacyconnector.v1_7_10.net.minecraft.init.Blocks.obsidian && this != legacyconnector.v1_7_10.net.minecraft.init.Blocks.end_stone
+                && this != legacyconnector.v1_7_10.net.minecraft.init.Blocks.bedrock;
+    }
+
     public static int getIdFromBlock(Block block) {
         return BlockBridge.idOf(block);
     }

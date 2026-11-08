@@ -392,7 +392,8 @@ public class BiomeGenBase {
     }
 
     public void decorate(World world, Random rand, int chunkX, int chunkZ) {
-        theBiomeDecorator.decorateChunk(world, rand, this, chunkX, chunkZ);
+        if (theBiomeDecorator.biome == null) theBiomeDecorator.biome = this;
+        theBiomeDecorator.decorate(world, rand, chunkX, chunkZ);
     }
 
     protected static final legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenDoublePlant genTallFlowers =
@@ -408,6 +409,15 @@ public class BiomeGenBase {
     public legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenAbstractTree func_150567_a(Random rand) {
         return rand.nextInt(10) == 0 ? worldGeneratorBigTree : worldGeneratorTrees;
     }
+
+    /** 1.6.4's name (and result type) of the tree choice; mods override it. The default is the 1.7.10 choice. */
+    public legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenerator getRandomWorldGenForTrees(Random rand) {
+        return func_150567_a(rand);
+    }
+
+    /** 1.6.4's birch generator field (the forest biomes used it). */
+    protected legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenForest worldGeneratorForest =
+            new legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenForest(false, false);
 
     /** The plant generator for one grass patch of this biome. */
     public legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenerator getRandomWorldGenForGrass(Random rand) {

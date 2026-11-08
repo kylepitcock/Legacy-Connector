@@ -171,6 +171,29 @@ public class EntityHorse extends EntityAnimal {
         return true;
     }
 
+    /** The most temper a horse can have before it is tamed (100). */
+    public int getMaxTemper() {
+        var h = mcc$horse();
+        return h != null ? h.getMaxTemper() : 100;
+    }
+
+    /** Raises the temper (not above the maximum) and returns the new value (1.6.4 name). */
+    public int increaseTemper(int amount) {
+        var h = mcc$horse();
+        if (h == null) return 0;
+        int value = Math.max(0, Math.min(h.getMaxTemper(), h.getTemper() + amount));
+        h.setTemper(value);
+        return value;
+    }
+
+    /** The owner's player name ("" when untamed or offline; 1.6.4 stored the name, 1.7.10 the UUID). */
+    public String getOwnerName() {
+        var h = mcc$horse();
+        if (h == null || h.getOwnerUUID() == null) return "";
+        var owner = h.level().getPlayerByUUID(h.getOwnerUUID());
+        return owner != null ? owner.getGameProfile().getName() : "";
+    }
+
     /** The horse's temper (how far it is from being tamed by riding; 0 for a hosted or untamed one). */
     public int getTemper() {
         var h = mcc$horse();

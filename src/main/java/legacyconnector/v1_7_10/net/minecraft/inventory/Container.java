@@ -83,6 +83,22 @@ public abstract class Container {
         slotClick(slotId, mouseButton, 1, player);
     }
 
+    /** Vanilla's drag: the stack size each dragged-over slot receives for the mode. */
+    public static void func_94525_a(Set slots, int mode, ItemStack stack, int slotStackSize) {
+        computeStackSize(slots, mode, stack, slotStackSize);
+    }
+
+    /** Vanilla's drag: whether the stack may be added to the slot (empty or the same item with room). */
+    public static boolean func_94527_a(Slot slot, ItemStack stack, boolean ignoreStackSize) {
+        boolean ok = slot == null || !slot.getHasStack();
+        if (slot != null && slot.getHasStack() && stack != null && stack.isItemEqual(slot.getStack())
+                && ItemStack.areItemStackTagsEqual(slot.getStack(), stack)) {
+            int size = ignoreStackSize ? 0 : ItemStack.mcc$get$stackSize(stack);
+            ok |= ItemStack.mcc$get$stackSize(slot.getStack()) + size <= stack.getMaxStackSize();
+        }
+        return ok;
+    }
+
     // Drag helpers legacy containers call or override (the drag itself is handled by modern code).
     public static int extractDragMode(int mask) {
         return mask >> 2 & 3;

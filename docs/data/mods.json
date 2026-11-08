@@ -24724,6 +24724,15 @@
    "date": "2026-11-07",
    "status": "partial",
    "notes": "Loads on NeoForge 1.21.1 with GeckoLib, Caelus, Curios and Patchouli: registers 207 blocks, 754 items, 81 entity types and 19 block entity types, the server reaches Done, the client reaches a world; blocks and GeckoLib mobs and bosses render. Not working yet: the 12 custom enchantments only exist as data (their on-hit hooks do not run), the wrenches and Unholy Lance lose their attribute modifiers, brewing recipes, the first-person view of held gun items; the mod's own broken data (advancements with a missing parent, malformed Patchouli pages and one model) is rejected."
+  },
+  {
+   "name": "Management Wanted: More Decor",
+   "version": "2.7",
+   "mc": "1.20.1",
+   "source": "client",
+   "date": "2026-11-08",
+   "status": "fails",
+   "notes": "Player report on 0.4.7 (GitHub issue #198), first recorded wrongly as working: the game crashes while the mod loads, NoClassDefFoundError net/minecraft/world/item/RecordItem (the class no longer exists in 1.21; music discs are data components). Needs GeckoLib 4.9 for NeoForge 1.21.1 next to it. Master has a RecordItem stand-in (not in 0.4.7), not retested with this mod yet."
   }
  ],
  "hidden": [

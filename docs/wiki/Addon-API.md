@@ -1,7 +1,8 @@
 # Addon API: writing addons for legacy mods
 
-Legacy Connector runs unmodified 1.7.10 and 1.12.2 Forge mods on NeoForge 1.21.1. The **addon API** lets other NeoForge 1.21.1
-mods build on those legacy mods with modern code. Examples of what an addon can do:
+Legacy Connector runs unmodified 1.4.7, 1.5.2, 1.6.4, 1.7.10, 1.12.2 and 1.20.1 Forge mods on NeoForge 1.21.1. The **addon API**
+lets other NeoForge 1.21.1 mods build on those legacy mods with modern code (see [Support per legacy version](#support-per-legacy-version)
+for what works for which version). Examples of what an addon can do:
 
 - give modern items and blocks (copper, deepslate, bee nests, blocks of other modern mods) Thaumcraft 4 aspects;
 - expose a legacy tile entity (an essentia jar, an Iron Chest, a RotaryCraft machine) as a NeoForge capability
@@ -17,7 +18,7 @@ jar. Addons are ordinary NeoForge mods that compile against the API and the NeoF
   legacy shim. Legacy objects (a 1.7.10 `ItemStack`, a `TileEntity`, a `World`) are passed as `Object`.
 - While the mod is 0.x, PATCH releases (0.3.x -> 0.3.y) never break the API; a MINOR release may, and the release notes say so.
   From 1.0.0 on it is semantic versioning. `LegacyApi.API_VERSION` is the API's own `major.minor` for additions.
-- `api.internal` is not API. The legacy shim (`legacyconnector.v1_7_10`, `legacyconnector.v1_12_2`) is not API either and changes
+- `api.internal` is not API. The legacy shim (`legacyconnector.v1_7_10`, `v1_6_4`, `v1_12_2`, `v1_20_1`) is not API either and changes
   freely: reach into legacy objects by their **original legacy names** through `LegacyAccess`, exactly as the legacy mod would.
 
 ## Getting the API
@@ -87,16 +88,16 @@ Use REGISTERED only when the legacy mod must see your data before its own loadCo
 
 | Class | Purpose |
 | --- | --- |
-| `LegacyApi` | `mods()`, `mod(id)`, `isLoaded(id)`, `hasLegacyMods()`, `phase()`, `runWhen(phase, action)`, `classOf(modId, className)`, `API_VERSION` |
+| `LegacyApi` | `mods()`, `mods(version)`, `mod(id)`, `isLoaded(id)`, `hasLegacyMods()`, `phase()`, `runWhen(phase, action)`, `classOf(modId, className)`, `API_VERSION` |
 | `LegacyMod` | `id()`, `legacyId()`, `name()`, `version()`, `minecraftVersion()`, `failed()`, `failureMessage()`, `classLoader()`, `classOf(name)`, `instance()`, `file()` |
-| `LegacyVersion` | `V1_7_10`, `V1_12_2` |
+| `LegacyVersion` | `V1_4_7`, `V1_5_2`, `V1_6_4`, `V1_7_10`, `V1_12_2`, `V1_20_1`; `id()`, `family()` (1.4.7 to 1.6.4 share the 1.7.10 shim), `usesNumericIds()`, `isInPlace()` (1.20.1) |
 | `LegacyPhase` | `NOT_STARTED`, `DISCOVERED`, `REGISTERED`, `LOAD_COMPLETE` |
 | `LegacyAddon` | the entry point (see above) |
 | `LegacyAccess` | reflection on legacy objects: `invokeStatic`, `invoke`, `newInstance`, `getStatic`, `getField`, `setField`, `setStatic`, `isInstance`, `hasMethod` |
 | `LegacyItems` | `toLegacy(ItemStack, version)`, `fromLegacy(Object)` |
 | `LegacyBlocks` | `legacyBlock`, `legacyMeta`, `legacyState` (1.12.2), `fromLegacy`, `fromLegacyState`, `legacyTile(BlockEntity)`, `legacyTile(Level, BlockPos)`, `tileVersion`, `versionOf` |
 | `LegacyWorlds` | `toLegacy(Level, version)` |
-| `LegacyContentHooks` | `itemKey(id or stack, version)` -> `LegacyItemKey(version, legacyName, damage, legacyItem)`, `legacyStack(id, count, version)`, `legacyBlockStack(id, count, version)`, `modernItemId(legacyStack)` |
+| `LegacyContentHooks` | `itemKey(id or stack, version)` -> `LegacyItemKey(version, legacyName, damage, legacyItem)`, `legacyStack(id, count, version)`, `legacyBlockStack(id, count, version)`, `modernItemId(legacyStack)`, `numericBlockId` / `numericItemId` / `legacyBlockById` / `legacyItemById` (numeric-id versions) |
 | `LegacyCapabilities` | `forTile(modId, className, capability, adapter)`, `forAnyTile(capability, adapter)`, adapter constants |
 | `event.*` | `LegacyModsDiscoveredEvent`, `LegacyRegistrationFinishedEvent`, `LegacyLoadCompleteEvent` |
 
@@ -181,7 +182,51 @@ chest: legacy code asks `getTileEntity(...) instanceof IInventory`, which needs 
 batteries (only the 6.x `PowerHandler` API), extracting from BuildCraft engines, 1.12.2 fluid textures for the modern fluid types,
 `FIRESTARTER_LIGHT` and attribute modifiers for legacy items. An addon can supply these with `forTile` + `LegacyAccess`.
 
+## Support per legacy version
+
+`LegacyMod.minecraftVersion()` tells the version of every mod. The legacy objects behind the `Object`s of the API depend on it:
+
+- **1.4.7, 1.5.2, 1.6.4** run on the 1.7.10 shim, so their `ItemStack`, `Block`, `TileEntity` and `World` objects are the 1.7.10 shim's (`LegacyVersion.family()`
+  is `V1_7_10`); what differs is the numeric block and item id space (one per version, `usesNumericIds()`).
+- **1.12.2** has its own shim (`IBlockState`, metadata through the block's own `getStateFromMeta`; an item with subtypes is one modern item per subtype).
+- **1.20.1** mods are remapped in place, so "legacy" blocks, items, stacks, block entities and levels **are** the modern objects: the conversions return them
+  unchanged, there is no metadata, and `legacyTile` is the block entity itself.
+
+| API feature | 1.4.7 | 1.5.2 | 1.6.4 | 1.7.10 | 1.12.2 | 1.20.1 |
+| --- | --- | --- | --- | --- | --- | --- |
+| `LegacyApi.mods()` / `mod(id)` / `isLoaded` / `mods(version)` | yes | yes | yes | yes | yes | yes (not constructed by the layer: `failed()` is always false, `instance()` is empty, `classLoader()` is the mod's) |
+| `LegacyMod.minecraftVersion()` | `V1_4_7` | `V1_5_2` | `V1_6_4` | `V1_7_10` | `V1_12_2` | `V1_20_1` |
+| Phases and events (`DISCOVERED`, `REGISTERED`, `LOAD_COMPLETE`, `runWhen`, addon callbacks, mod bus events) | yes | yes | yes | yes | yes | yes, but the mods are plain NeoForge mods that registered already: `DISCOVERED` and `REGISTERED` run back to back after the last registry event (also when no other legacy mod exists) |
+| `requiredLegacyMods()` | yes | yes | yes | yes | yes | yes |
+| `LegacyAccess` on mod objects | yes | yes | yes | yes | yes | yes (the mod's remapped, modern-named classes: use the 1.21.1 names of Minecraft types) |
+| `LegacyContentHooks.itemKey` / `legacyStack` / `legacyBlockStack` | yes (name `mod:name`, damage; stand-in items for modern content) | yes | yes | yes | yes (a stand-in `Item` for modern content, registered nowhere; subtype items give name + damage) | key = the registry id, the stack IS the modern one |
+| `numericItemId` / `numericBlockId` / `legacyItemById` / `legacyBlockById` | yes | yes | yes | n.a. (empty) | n.a. | n.a. |
+| `LegacyItems.toLegacy` / `fromLegacy` | live view, `null` for empty | same | same | live view, `null` for empty | copy, `EMPTY` | the modern stack itself |
+| `LegacyBlocks.versionOf` / `tileVersion` | `V1_4_7` (by the owning mod) | `V1_5_2` | `V1_6_4` | `V1_7_10` | `V1_12_2` | `V1_20_1` |
+| `legacyBlock` / `legacyMeta` / `fromLegacy(block, meta)` | yes | yes | yes | yes | yes (`legacyState` / `fromLegacyState` too) | block = the modern block, `legacyMeta` empty, `legacyState` = the state |
+| `legacyTile(blockEntity)` | yes | yes | yes | yes | yes | the block entity itself |
+| `LegacyWorlds.toLegacy` | yes | yes | yes | yes | yes | the level itself |
+| `LegacyCapabilities.forTile` / `forAnyTile` (addon rules) | yes | yes | yes | yes | yes | yes, on the block entity types of the 1.20.1 mods (the adapter gets the block entity as the "tile") |
+| Built-in capability adapters for tiles | inventories, UE/IC2/BC power where the mod uses them | same | inventories, liquids (`ITankContainer`), power | items, fluids, RF, IC2 EU, BC MJ | Forge item/fluid/energy, RF | n.a.: the mods register NeoForge capabilities natively (`Caps1201`) |
+
+The matrix is checked by the example addon `examples/version-probe` against a mixed pack (see below).
+
+Limits:
+
+- 1.4.7, 1.5.2 and 1.6.4 have no separate shim classes, so `legacyBlock(state, V1_6_4)` returns the same kind of object as for 1.7.10; only the id tables differ.
+  A stand-in for modern content takes the next free id of the version's table (a high id such as 31998 when the table is large), so it is not stable across runs.
+- `numericItemId`/`numericBlockId` claim a free id for an object nobody claimed (as the legacy code would do on first use).
+- For 1.20.1 the item "damage" of a key is the stack's damage value, not a metadata value; `LegacyMod.instance()` is empty because FML does not keep NeoForge
+  mod instances.
+- Addon `forTile` rules for 1.20.1 apply only to block entity types registered by the translated 1.20.1 mods, not to other modern block entities.
+
 ## Example addon
+
+`examples/version-probe` (a standalone build like the one below) logs per legacy mod and per API call what the API returns for every
+version: lines start with `PROBE` (mod list with versions, stand-in item keys and round trips, numeric ids, items, blocks and tile
+entities of every mod pushed through the conversions, the three lifecycle events, and a `PROBE SUMMARY` of ok/bad counters per version). Use it as
+the smoke test of the API: put one mod per version in `run-subtest/mods/<version>/`, add `version-probe-1.0.0.jar` and run
+`./gradlew runServerSubTest`; `grep PROBE run-subtest/logs/latest.log` should show no `BAD` or `FAILED`.
 
 `examples/thaumcraft-modern-aspects` in this repository (a standalone Gradle build, not part of the release jar):
 
@@ -207,6 +252,6 @@ inspecting with the Thaumometer) a copper ingot should show Metallum and Permuta
 - Server and client: addon callbacks run on both; capabilities and recipes are server logic.
 - Legacy mods that fail to load are listed with `failed() == true`; `isLoaded` is false for them.
 - Names used with `LegacyAccess` are the legacy (deobfuscated MCP) names the mod itself uses; do not use SRG or shim names.
-- 1.7.10 has no flattening: modern-only blocks and items are stand-ins whose damage is always 0; a modern block with block states
+- 1.7.10 (and 1.4.7 to 1.6.4) has no flattening: modern-only blocks and items are stand-ins whose damage is always 0; a modern block with block states
   reports one stand-in per block, not per state.
 - No tile-entity events (placed/broken) are exposed yet; use NeoForge's own block events with `LegacyBlocks.legacyTile`.

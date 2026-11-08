@@ -81,6 +81,17 @@ public final class Redirects147 {
         }
     }
 
+    /** 1.4.7 {@code block.getBlockTexture(access, x, y, z, side)}: the sheet index at a position (guarded like {@link #blockTextureFromSide}). */
+    public static int blockTexture(legacyconnector.v1_7_10.net.minecraft.block.Block block, legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess access,
+            int x, int y, int z, int side) {
+        if (!enter(block, 3, ((x * 31 + y) * 31 + z) * 8 + side)) return Math.max(block.blockIndexInTexture, 0);
+        try {
+            return SpriteSheets147.indexOf(block.getIcon(access, x, y, z, side), true);
+        } finally {
+            leave();
+        }
+    }
+
     /** {@code world.setBlockAndMetadataWithNotify(x, y, z, id, meta)}. */
     public static boolean setBlockAndMetadataWithNotify(World w, int x, int y, int z, int id, int meta) {
         return w.setBlock(x, y, z, block(id), meta, 3);

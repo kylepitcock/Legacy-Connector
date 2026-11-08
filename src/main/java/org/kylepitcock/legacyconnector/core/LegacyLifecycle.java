@@ -69,7 +69,15 @@ public final class LegacyLifecycle {
 
     private static void runLoading() {
         List<LegacyModRecord> mods = LegacyMods.ordered();
-        if (mods.isEmpty()) return;
+        if (mods.isEmpty()) {
+            // Forge 1.20.1 mods are ordinary NeoForge mods after the in-place remap: nothing to construct, but the addon API still
+            // reports them and runs its phases (their content is registered by now)
+            if (!org.kylepitcock.legacyconnector.v1_20_1.Forge1201Runtime.modIds().isEmpty()) {
+                org.kylepitcock.legacyconnector.api.internal.AddonHost.enter(org.kylepitcock.legacyconnector.api.LegacyPhase.DISCOVERED);
+                org.kylepitcock.legacyconnector.api.internal.AddonHost.enter(org.kylepitcock.legacyconnector.api.LegacyPhase.REGISTERED);
+            }
+            return;
+        }
         LOG.info("Loading {} legacy mod(s): {}", mods.size(), mods);
         org.kylepitcock.legacyconnector.compat.jdk.JdkInternals.exportToLegacyMods();
         long start = System.currentTimeMillis();
@@ -100,7 +108,7 @@ public final class LegacyLifecycle {
     public static void onCommonSetup(FMLCommonSetupEvent event) {
         event.enqueueWork(() -> {
             phase(LegacyMods.ordered(), "loadComplete", m -> LegacyMods.platform(m.version).loadComplete(m));
-            if (!LegacyMods.isEmpty()) org.kylepitcock.legacyconnector.api.internal.AddonHost.enter(org.kylepitcock.legacyconnector.api.LegacyPhase.LOAD_COMPLETE);
+            if (!LegacyMods.isEmpty() || !org.kylepitcock.legacyconnector.v1_20_1.Forge1201Runtime.modIds().isEmpty()) org.kylepitcock.legacyconnector.api.internal.AddonHost.enter(org.kylepitcock.legacyconnector.api.LegacyPhase.LOAD_COMPLETE);
         });
     }
 
