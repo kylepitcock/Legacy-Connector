@@ -1035,8 +1035,9 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                         w.write("  WARNING: ships a coremod (" + jar.coreModClass + "): its plugin runs, its bytecode transformers do NOT. Features that\n"
                                 + "           depend on patching Minecraft code will be missing.\n");
                     }
-                    if (jar.mixinConfigs != null) w.write("  WARNING: ships mixins (" + jar.mixinConfigs + ") targeting legacy Minecraft; not applied"
-                            + (jar.version == LegacyVersion.V1_12_2 ? " (mixins on translated mod classes are, see notes).\n" : ".\n"));
+                    if (jar.mixinConfigs != null) {
+                        w.write("  " + LegacyModReportNotes.mixinStatus(jar.version, jar.mixinConfigs) + "\\n");
+                    }
                     if (jar.accessTransformer != null) w.write("  NOTE: legacy access transformer " + jar.accessTransformer + " ignored (shim members are public).\n");
                     for (String n : jar.notes) w.write("  note: " + n + "\n");
                     String outcome = e.getValue();
