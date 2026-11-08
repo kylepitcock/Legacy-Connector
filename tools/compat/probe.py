@@ -35,8 +35,10 @@ def norm(s):
     return re.sub(r"[^a-z0-9]+", "", s.lower())
 
 
-def run_probe(jar_dir, out):
+def run_probe(jar_dir, out, zips=False):
     jars = sorted(pathlib.Path(jar_dir).rglob("*.jar"))
+    if zips:   # Beta mods came as .zip files (ModLoader mods)
+        jars = sorted(jars + list(pathlib.Path(jar_dir).rglob("*.zip")))
     if not jars:
         sys.exit(f"no jars in {jar_dir}")
     # -PlegacyJar is a comma-separated list: a jar whose name contains a comma is probed through a symlink with a safe name
@@ -442,7 +444,7 @@ def main():
         path = a.from_json
     elif a.jar_dir:
         path = a.json or tempfile.mktemp(suffix=".json")
-        run_gap1201(a.jar_dir, path, a.detail) if a.mc == "1.20.1" else run_probe(a.jar_dir, path)
+        run_gap1201(a.jar_dir, path, a.detail) if a.mc == "1.20.1" else run_probe(a.jar_dir, path, zips=a.mc.startswith("b"))
     else:
         ap.error("jar directory or --from-json required")
     records = json.loads(pathlib.Path(path).read_text(encoding="utf-8"))

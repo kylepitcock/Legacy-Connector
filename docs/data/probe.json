@@ -83771,6 +83771,131 @@
     "regressedCount": 0,
     "fixedCount": 0
    }
+  },
+  {
+   "mc": "b1.7.3",
+   "date": "2026-11-08",
+   "version": "",
+   "counts": {
+    "links": 3,
+    "stubs": 13,
+    "gap_shim": 0,
+    "gap_mod": 0,
+    "gap_lib": 0,
+    "obsolete": 0
+   },
+   "env": {
+    "layer": "",
+    "jars": 25,
+    "minecraft": "1.21.1",
+    "neoforge": "21.1.258",
+    "shim": "893657eb2314"
+   },
+   "mods": [
+    [
+     "Aether",
+     "0.0.0-legacy",
+     "stubs",
+     "331 synthesized stub(s)"
+    ],
+    [
+     "BetterWood",
+     "0.0.0-legacy",
+     "stubs",
+     "139 synthesized stub(s)"
+    ],
+    [
+     "Dragon",
+     "0.0.0-legacy",
+     "stubs",
+     "59 synthesized stub(s)"
+    ],
+    [
+     "EE",
+     "0.0.0-legacy",
+     "stubs",
+     "199 synthesized stub(s)"
+    ],
+    [
+     "ElementalCreepers",
+     "0.0.0-legacy",
+     "stubs",
+     "10 synthesized stub(s)"
+    ],
+    [
+     "IC2_AdvMachine",
+     "0.0.0-legacy",
+     "stubs",
+     "44 synthesized stub(s)"
+    ],
+    [
+     "Mars",
+     "0.0.0-legacy",
+     "stubs",
+     "72 synthesized stub(s)"
+    ],
+    [
+     "MineFactory",
+     "0.0.0-legacy",
+     "stubs",
+     "30 synthesized stub(s)"
+    ],
+    [
+     "PortalGun",
+     "0.0.0-legacy",
+     "stubs",
+     "509 synthesized stub(s)"
+    ],
+    [
+     "RedPowerArray",
+     "0.0.0-legacy",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "RedPowerCore",
+     "0.0.0-legacy",
+     "stubs",
+     "31 synthesized stub(s)"
+    ],
+    [
+     "RedPowerLighting",
+     "0.0.0-legacy",
+     "links",
+     "5 synthesized stub(s)"
+    ],
+    [
+     "RedPowerLogic",
+     "0.0.0-legacy",
+     "stubs",
+     "17 synthesized stub(s)"
+    ],
+    [
+     "RedPowerWiring",
+     "0.0.0-legacy",
+     "stubs",
+     "31 synthesized stub(s)"
+    ],
+    [
+     "ReiMinimap",
+     "0.0.0-legacy",
+     "stubs",
+     "32 synthesized stub(s)"
+    ],
+    [
+     "TooManyItems",
+     "0.0.0-legacy",
+     "links",
+     "8 synthesized stub(s)"
+    ]
+   ],
+   "assets": {
+    "checked": 16,
+    "modsWithLayerProblems": 0,
+    "layerRefs": 0,
+    "modsWithOwnProblems": 0,
+    "ownRefs": 0
+   }
   }
  ]
 }
