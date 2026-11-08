@@ -310,6 +310,35 @@ public final class RoundCompat {
                 .thenAccept(found -> callback.accept(found.orElse(profile)));
     }
 
+    // ---- loot, spawning, capabilities, arrows ----
+
+    /** {@code LootContext.Builder.create(ResourceLocation)}: the random sequence is optional now. */
+    public static net.minecraft.world.level.storage.loot.LootContext createLootContext(net.minecraft.world.level.storage.loot.LootContext.Builder builder, ResourceLocation sequence) {
+        return builder.create(java.util.Optional.ofNullable(sequence));
+    }
+
+    /** {@code ItemStack.areCapsCompatible(provider)}: capabilities are not attached to stacks here, so two stacks always agree. */
+    public static boolean areCapsCompatible(ItemStack stack, legacyconnector.v1_20_1.net.minecraftforge.common.capabilities.CapabilityProvider<?> other) {
+        return true;
+    }
+
+    /** {@code NaturalSpawner.isSpawnPositionOk(type, level, pos, entityType)}: a method of the placement type now. */
+    public static boolean isSpawnPositionOk(net.minecraft.world.entity.SpawnPlacementType type, net.minecraft.world.level.LevelReader level,
+            net.minecraft.core.BlockPos pos, net.minecraft.world.entity.EntityType<?> entityType) {
+        return type.isSpawnPositionOk(level, pos, entityType);
+    }
+
+    /** {@code ForgeEventFactory.onFinalizeSpawn(mob, level, difficulty, reason, data, tag)}: the tag moved into the spawn data of the mob. */
+    public static net.minecraft.world.entity.SpawnGroupData onFinalizeSpawn(net.minecraft.world.entity.Mob mob, net.minecraft.world.level.ServerLevelAccessor level,
+            net.minecraft.world.DifficultyInstance difficulty, net.minecraft.world.entity.MobSpawnType reason, net.minecraft.world.entity.SpawnGroupData data,
+            CompoundTag tag) {
+        return net.neoforged.neoforge.event.EventHooks.finalizeMobSpawn(mob, level, difficulty, reason, data);
+    }
+
+    public static ItemStack noStack(net.minecraft.world.entity.projectile.AbstractArrow arrow) {
+        return ItemStack.EMPTY;
+    }
+
     // ---- advancement predicates ----
 
     /** {@code new EnchantmentPredicate(enchantment, levels)}: a set of enchantments in 1.21.1. */
