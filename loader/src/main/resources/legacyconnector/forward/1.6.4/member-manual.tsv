@@ -167,3 +167,31 @@ R	net/minecraftforge/common/MinecraftForge	getBlockHarvestLevel	(Lnet/minecraft/
 R	net/minecraft/client/Minecraft	getLogAgent	()Lnet/minecraft/logging/ILogAgent;	static	legacyconnector/v1_6_4/forward/Forward164	getLogAgent	(Ljava/lang/Object;)Lnet/minecraft/logging/ILogAgent;
 R	net/minecraft/server/MinecraftServer	getLogAgent	()Lnet/minecraft/logging/ILogAgent;	static	legacyconnector/v1_6_4/forward/Forward164	getLogAgent	(Ljava/lang/Object;)Lnet/minecraft/logging/ILogAgent;
 R	net/minecraft/client/resources/ResourcePackRepository	setRepositoryEntries	([Lnet/minecraft/client/resources/ResourcePackRepository$Entry;)V	static	legacyconnector/v1_6_4/forward/Forward164	setRepositoryEntries	(Lnet/minecraft/client/resources/ResourcePackRepository;[Ljava/lang/Object;)V
+M	net/minecraft/entity/EntityLiving	func_110163_bv	()V	enablePersistence
+M	net/minecraft/entity/EntityLiving	func_110159_bB	()V	updateLeashedState
+M	net/minecraft/block/BlockBasePressurePlate	func_94354_b_	(Lnet/minecraft/world/World;III)V	updateNeighbors
+M	net/minecraft/block/BlockStairs	func_82541_d	(Lnet/minecraft/world/IBlockAccess;III)V	setBaseBounds
+M	net/minecraft/block/BlockStairs	func_82542_g	(Lnet/minecraft/world/IBlockAccess;III)Z	func_150145_f
+M	net/minecraft/block/BlockStairs	func_82544_h	(Lnet/minecraft/world/IBlockAccess;III)Z	func_150144_g
+M	net/minecraft/client/gui/inventory/GuiContainer	func_102021_a	(Ljava/util/List;II)V	drawHoveringText
+F	net/minecraft/client/gui/inventory/GuiContainer	field_110408_a	inventoryBackground
+S	net/minecraft/client/settings/GameSettings	renderDistance	I	legacyconnector/v1_6_4/forward/Forward164	setRenderDistance	(Lnet/minecraft/client/settings/GameSettings;I)V
+G	net/minecraft/client/settings/GameSettings	musicVolume	F	static	legacyconnector/v1_6_4/forward/Forward164	musicVolume	(Lnet/minecraft/client/settings/GameSettings;)F
+S	net/minecraft/client/settings/GameSettings	musicVolume	F	legacyconnector/v1_6_4/forward/Forward164	setMusicVolume	(Lnet/minecraft/client/settings/GameSettings;F)V
+G	net/minecraft/client/settings/GameSettings	skin	Ljava/lang/String;	static	legacyconnector/v1_6_4/forward/Forward164	skin	(Lnet/minecraft/client/settings/GameSettings;)Ljava/lang/String;
+S	net/minecraft/client/settings/GameSettings	skin	Ljava/lang/String;	legacyconnector/v1_6_4/forward/Forward164	setSkin	(Lnet/minecraft/client/settings/GameSettings;Ljava/lang/String;)V
+G	net/minecraft/stats/StatBase	statId	I	static	legacyconnector/v1_6_4/forward/Forward164	statIdInt	(Lnet/minecraft/stats/StatBase;)I
+G	net/minecraft/stats/StatBase	statGuid	Ljava/lang/String;	field	statId	Ljava/lang/String;
+M	net/minecraft/world/World	func_82739_e	(IIIII)V	playBroadcastSound
+M	net/minecraft/world/World	func_92088_a	(DDDDDDLnet/minecraft/nbt/NBTTagCompound;)V	makeFireworks
+M	net/minecraft/world/World	getLocationTensionFactor	(DDD)F	getTensionFactorForBlock
+M	net/minecraft/block/BlockBaseRailLogic	getNumberOfAdjacentTracks	()I	countAdjacentRails
+M	net/minecraft/tileentity/TileEntitySkull	func_82119_b	()I	getSkullRotation
+R	net/minecraft/tileentity/TileEntitySkull	setSkullType	(ILjava/lang/String;)V	static	legacyconnector/v1_6_4/forward/Forward164	setSkullType	(Lnet/minecraft/tileentity/TileEntitySkull;ILjava/lang/String;)V
+R	net/minecraft/tileentity/TileEntitySkull	getExtraType	()Ljava/lang/String;	static	legacyconnector/v1_6_4/forward/Forward164	skullExtraType	(Lnet/minecraft/tileentity/TileEntitySkull;)Ljava/lang/String;
+G	net/minecraft/world/gen/structure/StructureComponent$BlockSelector	selectedBlockId	I	static	legacyconnector/v1_6_4/forward/Forward164	selectedBlockId	(Lnet/minecraft/world/gen/structure/StructureComponent$BlockSelector;)I
+S	net/minecraft/world/gen/structure/StructureComponent$BlockSelector	selectedBlockId	I	legacyconnector/v1_6_4/forward/Forward164	setSelectedBlockId	(Lnet/minecraft/world/gen/structure/StructureComponent$BlockSelector;I)V
+R	net/minecraft/world/gen/structure/StructureComponent$BlockSelector	getSelectedBlockId	()I	static	legacyconnector/v1_6_4/forward/Forward164	selectedBlockId	(Lnet/minecraft/world/gen/structure/StructureComponent$BlockSelector;)I
+M	net/minecraft/entity/EntityLivingBase	func_110142_aN	()Lnet/minecraft/util/CombatTracker;	getCombatTracker
+R	net/minecraft/util/DamageSource	getDeathMessage	(Lnet/minecraft/entity/EntityLivingBase;)Lnet/minecraft/util/ChatMessageComponent;	static	legacyconnector/v1_6_4/forward/Forward164	deathMessage	(Lnet/minecraft/util/DamageSource;Lnet/minecraft/entity/EntityLivingBase;)Lnet/minecraft/util/ChatMessageComponent;
+R	net/minecraft/util/CombatTracker	func_94546_b	()Lnet/minecraft/util/ChatMessageComponent;	static	legacyconnector/v1_6_4/forward/Forward164	combatMessage	(Lnet/minecraft/util/CombatTracker;)Lnet/minecraft/util/ChatMessageComponent;

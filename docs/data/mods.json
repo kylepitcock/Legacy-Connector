@@ -3312,7 +3312,7 @@
    "source": "probe",
    "date": "2026-11-07",
    "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (1036 classes). 5 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "notes": "Automated check: translates offline and everything it uses exists (1036 classes). 2 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Binnie Core",
@@ -4692,7 +4692,7 @@
    "source": "probe",
    "date": "2026-11-07",
    "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (49 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "notes": "Automated check: translates offline and everything it uses exists (49 classes). The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "ChickenChunks",
@@ -8663,7 +8663,7 @@
    "source": "probe",
    "date": "2026-11-07",
    "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (1036 classes). 5 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "notes": "Automated check: translates offline and everything it uses exists (1036 classes). 2 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Extra Bees",
@@ -14634,7 +14634,7 @@
    "source": "probe",
    "date": "2026-11-07",
    "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (321 classes). 2 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "notes": "Automated check: translates offline and everything it uses exists (321 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Lycanites Freshwater Mobs",
@@ -14661,7 +14661,7 @@
    "source": "probe",
    "date": "2026-11-07",
    "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (321 classes). 2 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "notes": "Automated check: translates offline and everything it uses exists (321 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Lycanites Jungle Mobs",
@@ -14679,7 +14679,7 @@
    "source": "probe",
    "date": "2026-11-07",
    "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (321 classes). 2 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "notes": "Automated check: translates offline and everything it uses exists (321 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Lycanites Mobs",
@@ -14724,7 +14724,7 @@
    "source": "probe",
    "date": "2026-11-07",
    "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (321 classes). 2 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "notes": "Automated check: translates offline and everything it uses exists (321 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Lycanites Plains Mobs",
@@ -14769,7 +14769,7 @@
    "source": "probe",
    "date": "2026-11-07",
    "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (321 classes). 2 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "notes": "Automated check: translates offline and everything it uses exists (321 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Lycanites Shadow Mobs",
@@ -14796,7 +14796,7 @@
    "source": "probe",
    "date": "2026-11-07",
    "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (321 classes). 2 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "notes": "Automated check: translates offline and everything it uses exists (321 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "m2paxel",
@@ -17411,7 +17411,7 @@
    "source": "probe",
    "date": "2026-11-07",
    "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (91 classes). But 16 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+   "notes": "Automated check: translates offline and everything it uses exists (91 classes). But 15 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "NEI Addons: Applied Energistics",
@@ -17438,7 +17438,7 @@
    "source": "probe",
    "date": "2026-11-07",
    "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (91 classes). But 16 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+   "notes": "Automated check: translates offline and everything it uses exists (91 classes). But 15 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "NEI Addons: Applied Energistics 2",
@@ -17492,7 +17492,7 @@
    "source": "probe",
    "date": "2026-11-07",
    "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (91 classes). But 16 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+   "notes": "Automated check: translates offline and everything it uses exists (91 classes). But 15 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "NEI Addons: Developer Tools",
@@ -17537,7 +17537,7 @@
    "source": "probe",
    "date": "2026-11-07",
    "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (91 classes). But 16 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+   "notes": "Automated check: translates offline and everything it uses exists (91 classes). But 15 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "NEI Addons: Extra Bees",
@@ -17546,7 +17546,7 @@
    "source": "probe",
    "date": "2026-11-07",
    "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (91 classes). But 16 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+   "notes": "Automated check: translates offline and everything it uses exists (91 classes). But 15 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "NEI Addons: Forestry",
@@ -17582,7 +17582,7 @@
    "source": "probe",
    "date": "2026-11-07",
    "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (91 classes). But 16 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+   "notes": "Automated check: translates offline and everything it uses exists (91 classes). But 15 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "NEI Custom Diagram",
@@ -24224,7 +24224,7 @@
    "source": "probe",
    "date": "2026-11-07",
    "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (724 classes). 3 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "notes": "Automated check: translates offline and everything it uses exists (724 classes). 2 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Thaumic Tinkerer unspecified",

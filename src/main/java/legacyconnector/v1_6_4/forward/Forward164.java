@@ -364,6 +364,72 @@ public final class Forward164 {
         return stat.getStatName().getUnformattedText();
     }
 
+    /** 1.6.4 {@code GameSettings.renderDistance = v}: 0 far (16 chunks), 1 normal (8), 2 short (4), 3 tiny (2). */
+    public static void setRenderDistance(legacyconnector.v1_7_10.net.minecraft.client.settings.GameSettings settings, int value) {
+        int chunks = new int[] {16, 8, 4, 2}[value & 3];
+        settings.renderDistanceChunks = chunks;
+        settings.setOptionFloatValue(legacyconnector.v1_7_10.net.minecraft.client.settings.GameSettings.Options.RENDER_DISTANCE, chunks);
+    }
+
+    /** 1.6.4 {@code GameSettings.musicVolume}. */
+    public static float musicVolume(legacyconnector.v1_7_10.net.minecraft.client.settings.GameSettings settings) {
+        return settings.getSoundLevel(legacyconnector.v1_7_10.net.minecraft.client.audio.SoundCategory.MUSIC);
+    }
+
+    public static void setMusicVolume(legacyconnector.v1_7_10.net.minecraft.client.settings.GameSettings settings, float volume) {
+        settings.setSoundLevel(legacyconnector.v1_7_10.net.minecraft.client.audio.SoundCategory.MUSIC, volume);
+    }
+
+    /** 1.6.4 {@code GameSettings.skin}: the name of the selected resource pack ("Default" for none). */
+    public static String skin(legacyconnector.v1_7_10.net.minecraft.client.settings.GameSettings settings) {
+        java.util.List packs = legacyconnector.v1_7_10.net.minecraft.client.settings.GameSettings.mcc$get$resourcePacks(settings);
+        return packs == null || packs.isEmpty() ? "Default" : String.valueOf(packs.get(packs.size() - 1));
+    }
+
+    public static void setSkin(legacyconnector.v1_7_10.net.minecraft.client.settings.GameSettings settings, String name) {
+        java.util.List packs = new java.util.ArrayList();
+        if (name != null && !name.isEmpty() && !"Default".equals(name)) packs.add(name);
+        legacyconnector.v1_7_10.net.minecraft.client.settings.GameSettings.mcc$set$resourcePacks(settings, packs);
+    }
+
+    /** 1.6.4 {@code Achievement.statId}: the numeric stat id (here stable, derived from the stat's key). */
+    public static int statIdInt(legacyconnector.v1_7_10.net.minecraft.stats.StatBase stat) {
+        return 0x500000 + (stat.statId.hashCode() & 0xFFFFF);
+    }
+
+    /** 1.6.4 {@code StructurePieceBlockSelector.selectedBlockId = id}: the block the selector picked, by id. */
+    public static void setSelectedBlockId(legacyconnector.v1_7_10.net.minecraft.world.gen.structure.StructureComponent.BlockSelector selector, int id) {
+        legacyconnector.v1_7_10.net.minecraft.block.Block block = legacyconnector.v1_6_4.net.minecraft.util.Ids.block(id);
+        selector.mcc$setSelectedBlock(block == null ? legacyconnector.v1_7_10.net.minecraft.init.Blocks.air : block);
+    }
+
+    /** 1.6.4 {@code selectedBlockId} / {@code getSelectedBlockId()}. */
+    public static int selectedBlockId(legacyconnector.v1_7_10.net.minecraft.world.gen.structure.StructureComponent.BlockSelector selector) {
+        return legacyconnector.v1_6_4.net.minecraft.util.Ids.blockId(selector.func_151561_a());
+    }
+
+    /** 1.6.4 {@code TileEntitySkull.setSkullType(type, extraType)}: the type and the owner's name. */
+    public static void setSkullType(legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntitySkull skull, int type, String owner) {
+        skull.func_145905_a(type, owner);
+    }
+
+    /** 1.6.4 {@code TileEntitySkull.getExtraType()}: the owner's name ("" for none). */
+    public static String skullExtraType(legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntitySkull skull) {
+        String owner = skull.func_145907_c();
+        return owner == null ? "" : owner;
+    }
+
+    /** 1.6.4 {@code DamageSource.getDeathMessage(victim)}: the death message as a 1.6.4 chat component. */
+    public static legacyconnector.v1_6_4.net.minecraft.util.ChatMessageComponent deathMessage(
+            legacyconnector.v1_7_10.net.minecraft.util.DamageSource source, legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase victim) {
+        return legacyconnector.v1_6_4.net.minecraft.util.ChatMessageComponent.createFromText(source.getDeathMessage(victim).getUnformattedText());
+    }
+
+    /** 1.6.4 {@code CombatTracker.func_94546_b()}: the death message of the tracked entity as a 1.6.4 chat component. */
+    public static legacyconnector.v1_6_4.net.minecraft.util.ChatMessageComponent combatMessage(legacyconnector.v1_7_10.net.minecraft.util.CombatTracker tracker) {
+        return legacyconnector.v1_6_4.net.minecraft.util.ChatMessageComponent.createFromText(tracker.func_151521_b().getUnformattedText());
+    }
+
     /** 1.6.4 {@code EntityPlayerMP.incrementWindowID()}: the next container window id (1-100). */
     public static void incrementWindowID(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayerMP player) {
         player.getNextWindowId();

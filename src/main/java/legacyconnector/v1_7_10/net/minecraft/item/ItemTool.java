@@ -175,6 +175,11 @@ public class ItemTool extends Item {
 
     @Override
     public float mcc$attackDamage() {
+        return getDamageVsEntity(null, null);
+    }
+
+    /** Forge 1.6.4 {@code getDamageVsEntity(target, stack)}: the damage as a float; mods override it, so the attack damage honours an override. */
+    public float getDamageVsEntity(legacyconnector.v1_7_10.net.minecraft.entity.Entity target, ItemStack stack) {
         return mcc$toolDamage();
     }
 

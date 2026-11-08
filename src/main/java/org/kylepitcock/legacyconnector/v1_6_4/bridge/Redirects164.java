@@ -45,6 +45,11 @@ public final class Redirects164 {
 
 
 
+    /** {@code BlockFence.isIdAFence(id)}: whether the block with that id is a fence. */
+    public static boolean isIdAFence(int id) {
+        return legacyconnector.v1_7_10.net.minecraft.block.BlockFence.isFence(legacyconnector.v1_6_4.net.minecraft.util.Ids.block(id));
+    }
+
     /** {@code netServerHandler.sendPacketToPlayer(Packet)} is 1.7.10's {@code sendPacket}. */
     public static void sendPacketToPlayer(Object handler, Packet packet) {
         if (handler instanceof NetHandlerPlayServer server && packet != null) server.sendPacket(packet);

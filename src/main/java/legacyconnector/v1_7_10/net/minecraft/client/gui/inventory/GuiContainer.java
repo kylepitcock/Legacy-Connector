@@ -94,7 +94,18 @@ public abstract class GuiContainer extends GuiScreen {
         drawGuiContainerForegroundLayer(mouseX, mouseY);
     }
 
+    /** Clicks a slot as the player would; {@code mode}: 0 pickup, 1 quick move, 2 swap, 3 clone, 4 throw, 5 quick craft, 6 pickup all (the server runs the container's slotClick). */
     protected void handleMouseClick(legacyconnector.v1_7_10.net.minecraft.inventory.Slot slot, int slotId, int button, int mode) {
+        if (slot != null) slotId = slot.slotNumber;
+        var mcm = net.minecraft.client.Minecraft.getInstance();
+        if (mcm.gameMode == null || mcm.player == null || inventorySlots == null) return;
+        var types = net.minecraft.world.inventory.ClickType.values();
+        mcm.gameMode.handleInventoryMouseClick(inventorySlots.windowId, slotId, button, types[Math.max(0, Math.min(mode, types.length - 1))], mcm.player);
+    }
+
+    /** NEI's public entry to {@link #handleMouseClick} (it clicks slots for its recipe overlay and item delete). */
+    public void sendMouseClick(legacyconnector.v1_7_10.net.minecraft.inventory.Slot slot, int slotId, int button, int mode) {
+        handleMouseClick(slot, slotId, button, mode);
     }
 
     /** 1.6.4's name of the slot drawing. */

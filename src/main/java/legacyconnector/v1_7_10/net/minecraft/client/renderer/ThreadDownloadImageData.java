@@ -30,6 +30,25 @@ public class ThreadDownloadImageData extends SimpleTexture {
         this.imageBuffer = buffer;
     }
 
+    /** 1.6.4: no cache file, the image is downloaded on every run. */
+    public ThreadDownloadImageData(String url, ResourceLocation fallback, IImageBuffer buffer) {
+        this(null, url, fallback, buffer);
+    }
+
+    /** 1.6.4 name of {@link #setBufferedImage} (the obfuscated accessor Mojang's inner download thread used). */
+    public void getBufferedImage(BufferedImage image) {
+        setBufferedImage(image);
+    }
+
+    /** 1.6.4 synthetic accessors of the download thread. */
+    public static IImageBuffer getImageBuffer(ThreadDownloadImageData data) {
+        return data.imageBuffer;
+    }
+
+    public static String getImageUrl(ThreadDownloadImageData data) {
+        return data.imageUrl;
+    }
+
     private void checkTextureUploaded() {
         if (textureUploaded || bufferedImage == null) return;
         if (textureLocation != null) deleteGlTexture();

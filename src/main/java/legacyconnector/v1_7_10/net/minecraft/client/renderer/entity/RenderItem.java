@@ -101,6 +101,18 @@ public class RenderItem extends Render {
         return original;
     }
 
+    /** 1.6.4: how many copies of a dropped block are drawn for a stack (1 to 5, by its size). */
+    public byte getMiniBlockCount(ItemStack stack) {
+        int size = ItemStack.mcc$get$stackSize(stack);
+        return (byte) (size > 40 ? 5 : size > 20 ? 4 : size > 5 ? 3 : size > 1 ? 2 : 1);
+    }
+
+    /** 1.6.4: how many copies of a dropped item are drawn for a stack (1 to 4, by its size). */
+    public byte getMiniItemCount(ItemStack stack) {
+        int size = ItemStack.mcc$get$stackSize(stack);
+        return (byte) (size > 31 ? 4 : size > 15 ? 3 : size > 1 ? 2 : 1);
+    }
+
     private static RenderItem mcc$instance;
 
     public static synchronized RenderItem getInstance() {

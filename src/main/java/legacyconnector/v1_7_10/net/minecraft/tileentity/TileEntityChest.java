@@ -107,12 +107,23 @@ public class TileEntityChest extends TileEntity implements IInventory {
 
     @Override
     public String getInventoryName() {
-        return "container.chest";
+        return mcc$customName != null ? mcc$customName : "container.chest";
     }
 
     @Override
     public boolean hasCustomInventoryName() {
-        return false;
+        return mcc$customName != null;
+    }
+
+    private String mcc$customName;
+
+    /** 1.6.4 {@code setChestGuiName}/{@code setCustomName}: the title shown by the chest's GUI. */
+    public void setCustomName(String name) {
+        this.mcc$customName = name == null || name.isEmpty() ? null : name;
+    }
+
+    public void func_145976_a(String name) {
+        setCustomName(name);
     }
 
     @Override

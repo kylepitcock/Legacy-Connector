@@ -46,3 +46,8 @@ net/minecraft/entity/Entity	shouldExplodeBlock	(Lnet/minecraft/world/Explosion;L
 net/minecraft/world/gen/structure/StructureComponent	randomlyPlaceBlock	(Lnet/minecraft/world/World;Lnet/minecraft/world/gen/structure/StructureBoundingBox;Ljava/util/Random;FIIIII)V	func_151552_a	(Lnet/minecraft/world/World;Lnet/minecraft/world/gen/structure/StructureBoundingBox;Ljava/util/Random;FIIILnet/minecraft/block/Block;I)V
 net/minecraft/world/gen/structure/StructureComponent	randomlyFillWithBlocks	(Lnet/minecraft/world/World;Lnet/minecraft/world/gen/structure/StructureBoundingBox;Ljava/util/Random;FIIIIIIIIZ)V	randomlyFillWithBlocks	(Lnet/minecraft/world/World;Lnet/minecraft/world/gen/structure/StructureBoundingBox;Ljava/util/Random;FIIIIIILnet/minecraft/block/Block;Lnet/minecraft/block/Block;Z)V
 net/minecraft/block/BlockFlower	canThisPlantGrowOnThisBlockID	(I)Z	canPlaceBlockOn	(Lnet/minecraft/block/Block;)Z
+net/minecraft/block/BlockBasePressurePlate	getMetaFromWeight	(I)I	getMetaFromPower	(I)I
+net/minecraft/block/BlockBasePressurePlate	getPowerSupply	(I)I	getPowerFromMeta	(I)I
+net/minecraft/block/BlockSlab	getFullSlabName	(I)Ljava/lang/String;	func_150002_b	(I)Ljava/lang/String;
+net/minecraft/item/Item	getPotionEffect	()Ljava/lang/String;	getPotionEffect	(Lnet/minecraft/item/ItemStack;)Ljava/lang/String;
+net/minecraft/item/Item	isPotionIngredient	()Z	isPotionIngredient	(Lnet/minecraft/item/ItemStack;)Z
