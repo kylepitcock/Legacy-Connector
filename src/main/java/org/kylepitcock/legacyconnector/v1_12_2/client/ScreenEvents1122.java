@@ -98,15 +98,113 @@ public final class ScreenEvents1122 {
     private static void onInit(ScreenEvent.Init.Post e) {
         Screen screen = e.getScreen();
         if (legacyHost(screen)) return; // their InitGuiEvents are posted by GuiScreen.setWorldAndResolution
-        if (!wants(GuiScreenEvent.InitGuiEvent.class)) return;
+        // a listener of Pre or Post does not count as one of the base class
+        if (!wants(GuiScreenEvent.InitGuiEvent.Pre.class) && !wants(GuiScreenEvent.InitGuiEvent.Post.class)) return;
         GuiScreen view = legacyOf(screen);
         view.setGuiSize(screen.width, screen.height);
         if (view instanceof Modern m) m.mcc$sync();
         List<GuiButton> buttons = view.mcc$buttons();
         buttons.clear();
+        // the screen's own buttons, as GuiButtons, so handlers can find "Mods", place theirs beside it, move or remove vanilla ones
+        List<Mirror> mirrors = new ArrayList<>();
+        int index = 0;
+        for (var child : new ArrayList<>(screen.children())) {
+            if (child instanceof net.minecraft.client.gui.components.AbstractButton w) {
+                Mirror m = new Mirror(w, mirrorId(w, index++));
+                mirrors.add(m);
+                buttons.add(m);
+            }
+        }
         post(new GuiScreenEvent.InitGuiEvent.Pre(view, buttons));
         post(new GuiScreenEvent.InitGuiEvent.Post(view, buttons));
-        for (GuiButton b : new ArrayList<>(buttons)) e.addListener(new ButtonWidget(view, b));
+        List<int[]> taken = new ArrayList<>();
+        for (Mirror m : mirrors) {
+            m.syncBack(buttons.contains(m));
+            if (buttons.contains(m) && m.visible) taken.add(new int[] {m.x, m.y, m.width, m.height});
+        }
+        for (GuiButton b : new ArrayList<>(buttons)) {
+            if (b instanceof Mirror) continue;
+            if (b.visible) {
+                // mods placed their buttons for the old layout: one on top of a vanilla button moves to the nearest free spot
+                int[] spot = org.kylepitcock.legacyconnector.client.ButtonPlacement.freeSpot(new int[] {b.x, b.y, b.width, b.height}, taken, screen.width, screen.height);
+                b.x = spot[0];
+                b.y = spot[1];
+                taken.add(spot);
+            }
+            e.addListener(new ButtonWidget(view, b));
+        }
+    }
+
+    /** 1.12.2's button ids for the title and pause screens' buttons that mods look for; others are numbered from 1000. */
+    private static int mirrorId(net.minecraft.client.gui.components.AbstractButton w, int index) {
+        if (w.getMessage().getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents t) {
+            switch (t.getKey()) {
+                case "menu.singleplayer" -> {
+                    return 1;
+                }
+                case "menu.multiplayer" -> {
+                    return 2;
+                }
+                case "menu.online" -> {
+                    return 14;
+                }
+                case "menu.options" -> {
+                    return 0;
+                }
+                case "menu.quit" -> {
+                    return 4;
+                }
+                case "menu.returnToMenu", "menu.disconnect" -> {
+                    return 1;
+                }
+                case "menu.returnToGame" -> {
+                    return 4;
+                }
+                case "gui.advancements" -> {
+                    return 5;
+                }
+                case "gui.stats" -> {
+                    return 6;
+                }
+                case "menu.shareToLan" -> {
+                    return 7;
+                }
+                default -> { }
+            }
+        }
+        return 1000 + index;
+    }
+
+    /** One of the screen's own buttons, as a GuiButton the handlers can read, move, rename, hide or remove. */
+    private static final class Mirror extends GuiButton {
+        private final net.minecraft.client.gui.components.AbstractButton widget;
+        private final int x0;
+        private final int y0;
+        private final String text0;
+
+        Mirror(net.minecraft.client.gui.components.AbstractButton widget, int id) {
+            super(id, widget.getX(), widget.getY(), widget.getWidth(), widget.getHeight(), widget.getMessage().getString());
+            this.widget = widget;
+            this.x0 = x;
+            this.y0 = y;
+            this.text0 = displayString;
+            this.enabled = widget.active;
+            this.visible = widget.visible;
+        }
+
+        void syncBack(boolean kept) {
+            if (!kept) {
+                widget.visible = false;
+                widget.active = false;
+                return;
+            }
+            if (x != x0 || y != y0) widget.setPosition(x, y);
+            if (width != widget.getWidth()) widget.setWidth(width);
+            if (height != widget.getHeight()) widget.setHeight(height);
+            widget.visible = visible;
+            widget.active = enabled;
+            if (displayString != null && !displayString.equals(text0)) widget.setMessage(Component.literal(displayString));
+        }
     }
 
     private static void onRenderPre(ScreenEvent.Render.Pre e) {

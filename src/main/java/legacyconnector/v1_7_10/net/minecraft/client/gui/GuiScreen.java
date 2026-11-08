@@ -76,8 +76,13 @@ public class GuiScreen extends Gui implements GuiYesNoCallback {
                 GuiButton b = (GuiButton) buttonList.get(i);
                 if (b.mousePressed(mc, mouseX, mouseY)) {
                     selectedButton = b;
+                    var pre = new legacyconnector.v1_7_10.net.minecraftforge.client.event.GuiScreenEvent.ActionPerformedEvent.Pre(this, b, buttonList);
+                    if (legacyconnector.v1_7_10.net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(pre)) break;
+                    b = pre.button;
                     b.playPressSound(SoundHandler.INSTANCE);
                     actionPerformed(b);
+                    legacyconnector.v1_7_10.net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(
+                            new legacyconnector.v1_7_10.net.minecraftforge.client.event.GuiScreenEvent.ActionPerformedEvent.Post(this, b, buttonList));
                 }
             }
         }
@@ -102,7 +107,16 @@ public class GuiScreen extends Gui implements GuiYesNoCallback {
         this.width = width;
         this.height = height;
         this.buttonList.clear();
-        initGui();
+        if (!legacyconnector.v1_7_10.net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(
+                new legacyconnector.v1_7_10.net.minecraftforge.client.event.GuiScreenEvent.InitGuiEvent.Pre(this, buttonList))) initGui();
+    }
+
+    /** A stand-in of a game screen: sized and given the game, without running initGui. */
+    public void mcc$initView(Minecraft mc, int width, int height) {
+        this.mc = mc;
+        this.fontRendererObj = mc.fontRenderer;
+        this.width = width;
+        this.height = height;
     }
 
     public void initGui() {
