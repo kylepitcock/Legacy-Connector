@@ -492,6 +492,16 @@ These fixes contain no content-mod identity dispatch. Original quirks remain, in
 GuineaPig carrying performing its effects while returning false.
 [The advanced validation snapshot](../data/b173-advanced-validation-2026-11-07.json) records the regressions and remaining limits.
 
+Ordinary native entity views also refresh dimensions and reciprocal mount relations. Actual Kitty prey selection now respects
+small animals and baby-to-adult size changes; an actual More Creeps Bullet recognizes its shooter's native mount during its
+original initial immunity window. Further original callbacks verify Bird leaf/tree steering, Thief partial/full theft and
+damaged-item restitution, and Preacher contact/release effects.
+
+Original zero movement speed pauses native navigation without discarding its route. The navigation timeout excludes paused
+world ticks, while stale movement-control intent is cleared. Actual GuineaPig flower commands remain stationary for 240 world
+ticks and resume the same route after FOLLOW, both with a retained target and with an explicit path.
+[The gameplay validation snapshot](../data/b173-gameplay-validation-2026-11-07.json) records these cases and the pickup-copy regression.
+
 Original nonliving entities and custom `ItemEntity` subclasses use two shared native host types. Original ticks, collisions,
 pickup and NBT callbacks retain their original identities; explicit superclass calls select the base phase. A custom item
 tick does not receive an extra modern item-physics or merging phase. Tracking includes original scalar fields, dimensions,
@@ -505,6 +515,11 @@ normalized UVs. Cross-cell atlas sampling remains unsupported. Rocket and Fireba
 no replacement geometry is invented. The original Frisbee constructor leaves its owner unset; a separately controlled test
 verifies its owner-only pickup branch. Original shadow offsets are applied only to shadow projection, preserving model position.
 [The nonliving validation snapshot](../data/b173-neutral-validation-2026-11-07.json) records the payloads and exercised cases.
+
+Native pickup-animation copies of hosted items preserve their host type, independent stack and original render snapshot.
+Vanilla's inherited item copy kept the custom entity type while returning a plain item entity, causing the Beta renderer to
+fail during pickup. Actual Money and GooDonut copy checks now exercise the virtual copy call and original sprite geometry;
+the fix applies to the shared item host rather than selecting either mod class.
 
 GuiAPI settings appear in the native Options grid as **Legacy Mod Settings**, with Back and Escape returning to Options.
 Eight original particle classes pass constructor, callback, selected-sprite, packet-state, geometry/UV/color and lifetime tests.

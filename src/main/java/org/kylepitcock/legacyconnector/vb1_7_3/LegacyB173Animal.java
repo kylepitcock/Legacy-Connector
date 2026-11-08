@@ -175,14 +175,23 @@ public final class LegacyB173Animal extends PathfinderMob implements B173LivingH
                 var target=creature.target;
                 if(target!=null&&target.mcc$modern!=null){
                     if(legacy.canSee(target))creature.mcc$attack(target,legacy.getDistance(target));else creature.mcc$resetAttack(target,legacy.getDistance(target));
-                    if(!creature.mcc$isMovementBlocked())getNavigation().moveTo(target.mcc$modern,Math.max(.01,legacy.mcc$movementSpeed()));
+                    if(!creature.mcc$isMovementBlocked())getNavigation().moveTo(target.mcc$modern,Math.max(0,legacy.mcc$movementSpeed()));
                     getLookControl().setLookAt(target.mcc$modern,30F,30F);
                 }else if(!creature.mcc$isMovementBlocked()&&getNavigation().isDone()&&random.nextInt(80)==0){
                     creature.mcc$pathingUpdate();
                 }
             }
             if(!(legacy instanceof MobEntity creature)||creature.target==null&&getNavigation().isDone())legacy.mcc$idleLook();
-            flushView();getNavigation().tick();getMoveControl().tick();getLookControl().tick();getJumpControl().tick();syncView();
+            float speed=Math.max(0,legacy.mcc$movementSpeed());
+            getNavigation().setSpeedModifier(speed);
+            if(speed==0)legacy.mcc$movementInputs(0,0,legacy.mcc$jumping());
+            flushView();
+            if(speed==0){
+                // Keep the route while original code pauses movement, without stale native control or timeout progress.
+                getMoveControl().setWantedPosition(getX(),getY(),getZ(),0);setSpeed(0);
+                EntityFieldsB173.pauseNavigationTimeout(getNavigation(),level().getGameTime());
+            }else getNavigation().tick();
+            getMoveControl().tick();getLookControl().tick();getJumpControl().tick();syncView();
         }finally{inAI=false;}
     }
     @Override public void moveTo(double x,double y,double z,float yaw,float pitch){
@@ -230,7 +239,7 @@ public final class LegacyB173Animal extends PathfinderMob implements B173LivingH
         inMove=true;moves++;try{flushView();super.move(nativeMoveType,new net.minecraft.world.phys.Vec3(x,y,z));syncView();}finally{inMove=false;}
     }
     public void baseSetPath(legacyconnector.vb1_7_3.net.minecraft.entity.ai.pathing.Path path){
-        flushView();if(path==null)getNavigation().stop();else if(path.mcc$modern()!=null)getNavigation().moveTo(path.mcc$modern(),Math.max(.01,legacy.mcc$movementSpeed()));
+        flushView();if(path==null)getNavigation().stop();else if(path.mcc$modern()!=null)getNavigation().moveTo(path.mcc$modern(),Math.max(0,legacy.mcc$movementSpeed()));
     }
     @Override public float getWalkTargetValue(BlockPos pos,LevelReader level){return legacy instanceof MobEntity c?c.mcc$pathFavor(pos.getX(),pos.getY(),pos.getZ()):0;}
     @Override public boolean hurt(DamageSource source,float amount){if(legacy==null||level().isClientSide)return super.hurt(source,amount);DamageSource previous=damageSource;damageSource=source;boolean[] result={false};try{callback(()->result[0]=legacy.damage(EntityViewsB173.wrap(source.getDirectEntity()!=null?source.getDirectEntity():source.getEntity()),(int)Math.ceil(amount)));return result[0];}finally{damageSource=previous;}}

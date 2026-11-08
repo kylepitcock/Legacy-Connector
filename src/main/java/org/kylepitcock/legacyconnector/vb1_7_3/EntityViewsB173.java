@@ -99,6 +99,7 @@ public final class EntityViewsB173 {
         Entity view=modern instanceof net.minecraft.world.entity.player.Player player ? PlayerViewB173.of(player) : VIEWS.computeIfAbsent(modern, EntityViewsB173::create);
         view.mcc$modern=modern;
         view.world=World.mcc$wrap(modern.level());
+        view.width=modern.getBbWidth();view.height=modern.getBbHeight();
         if(!(modern instanceof net.minecraft.world.entity.player.Player))view.setPosition(modern.getX(),modern.getY()+view.standingEyeHeight,modern.getZ());
         var b=modern.getBoundingBox();
         view.boundingBox=legacyconnector.vb1_7_3.net.minecraft.util.math.Box.create(b.minX,b.minY,b.minZ,b.maxX,b.maxY,b.maxZ);
@@ -115,8 +116,9 @@ public final class EntityViewsB173 {
             item.stack=StacksB173.toLegacy(nativeItem.getItem());item.itemAge=EntityFieldsB173.itemAge(nativeItem);item.pickupDelay=EntityFieldsB173.pickupDelay(nativeItem);
         }
         if(view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.mob.CreeperEntity creeper&&modern instanceof net.minecraft.world.entity.monster.Creeper nativeCreeper)creeper.fuseTime=EntityFieldsB173.creeperFuse(nativeCreeper);
-        // Register before resolving targets/owners, which may point back to this entity.
+        // Register before resolving relations/targets/owners, which may point back to this entity.
         touch(modern,view);
+        view.vehicle=wrap(modern.getVehicle());view.passenger=wrap(modern.getFirstPassenger());
         if(view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.projectile.ArrowEntity arrow&&modern instanceof net.minecraft.world.entity.projectile.AbstractArrow nativeArrow){
             Entity owner=wrap(nativeArrow.getOwner());arrow.owner=owner instanceof legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity living?living:null;
             TOUCHED.get().put(modern,new Touched(view,view.velocityX,view.velocityY,view.velocityZ,view.onGround,null,null,null,extra(view)));

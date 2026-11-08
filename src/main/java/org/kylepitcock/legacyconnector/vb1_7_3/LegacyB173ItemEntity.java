@@ -24,6 +24,16 @@ public final class LegacyB173ItemEntity extends net.minecraft.world.entity.item.
     @Override public Entity prepareRenderView(float partial){return state.render(entityData.get(ORIGINAL_CLASS),entityData.get(ORIGINAL_STATE),partial);}
     public void applyTrackedRenderData(){state.render(entityData.get(ORIGINAL_CLASS),entityData.get(ORIGINAL_STATE),0);}
     @Override public void onSyncedDataUpdated(EntityDataAccessor<?> key){super.onSyncedDataUpdated(key);if(state!=null&&level().isClientSide&&(key==ORIGINAL_CLASS||key==ORIGINAL_STATE))applyTrackedRenderData();}
+    /** Pickup particles call ItemEntity.copy(); retain the host required by this entity type's renderer. */
+    @Override public LegacyB173ItemEntity copy(){
+        var copy=(LegacyB173ItemEntity)java.util.Objects.requireNonNull(getType().create(level()));
+        copy.setItem(getItem().copy());copy.copyPosition(this);
+        EntityFieldsB173.itemAge(copy,EntityFieldsB173.itemAge(this));copy.lifespan=lifespan;
+        copy.entityData.set(ORIGINAL_CLASS,entityData.get(ORIGINAL_CLASS));
+        copy.entityData.set(ORIGINAL_STATE,entityData.get(ORIGINAL_STATE).copy());
+        copy.applyTrackedRenderData();
+        return copy;
+    }
     @Override public boolean shouldRenderAtSqrDistance(double distance){return legacy()==null?super.shouldRenderAtSqrDistance(distance):legacy().shouldRender(distance);}
     @Override public float getPickRadius(){return legacy()==null?super.getPickRadius():legacy().getTargetingMargin();}
     @Override public boolean isPickable(){return legacy()!=null&&legacy().isCollidable();}
