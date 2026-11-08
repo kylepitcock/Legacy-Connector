@@ -213,6 +213,8 @@ public final class Forge1201Transformer {
             hierarchy.add(node);
             nodes.add(node);
         }
+        Datagen1201.Stats datagen = Datagen1201.apply(nodes);
+        if (datagen.classes + datagen.methods > 0) result.notes.add("Data generation code dropped (dead in a running game): " + datagen);
         Mc1201Migration.Counts mc = new Mc1201Migration.Counts();
         Mixin1201.Stats mixinStats = new Mixin1201.Stats();
         Set<String> jarClasses = new HashSet<>();
