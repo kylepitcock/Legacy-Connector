@@ -98,7 +98,8 @@ def gap1201_targets():
     jars = [a.as_posix() for a in arts] + [pathlib.Path(j).as_posix() for _, j in best.values()]
     libs = os.environ.get("GAP1201_LIBS")   # a folder of NeoForge 1.21.1 mods (libraries the pack would install natively): references into them are checked against the real classes
     if libs:
-        jars += [j.as_posix() for j in sorted(pathlib.Path(libs).glob("*.jar"))]
+        for folder in libs.split(";"):   # several folders: ';'-separated (a ':' would clash with drive letters)
+            jars += [j.as_posix() for j in sorted(pathlib.Path(folder).glob("*.jar"))]
     return ",".join(jars)
 
 
