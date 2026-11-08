@@ -65,7 +65,22 @@ public final class ModViews {
 
         @Override
         public ClassLoader classLoader() {
-            return instance().map(o -> o.getClass().getClassLoader()).orElseGet(() -> container().map(c -> (ClassLoader) c.getClass().getClassLoader()).orElse(ModViews.class.getClassLoader()));
+            // FML keeps the mod's entry classes (not the instance); their loader is the mod's
+            return mainClass().map(Class::getClassLoader).orElse(ModViews.class.getClassLoader());
+        }
+
+        @SuppressWarnings("unchecked")
+        private Optional<Class<?>> mainClass() {
+            return container().filter(c -> c instanceof net.neoforged.fml.javafmlmod.FMLModContainer).flatMap(c -> {
+                try {
+                    var f = net.neoforged.fml.javafmlmod.FMLModContainer.class.getDeclaredField("modClasses");
+                    f.setAccessible(true);
+                    var classes = (java.util.List<Class<?>>) f.get(c);
+                    return classes.isEmpty() ? Optional.<Class<?>>empty() : Optional.<Class<?>>of(classes.get(0));
+                } catch (ReflectiveOperationException | RuntimeException e) {
+                    return Optional.<Class<?>>empty();
+                }
+            });
         }
 
         @Override
@@ -79,15 +94,7 @@ public final class ModViews {
 
         @Override
         public Optional<Object> instance() {
-            return container().filter(c -> c instanceof net.neoforged.fml.javafmlmod.FMLModContainer).flatMap(c -> {
-                try {
-                    var f = net.neoforged.fml.javafmlmod.FMLModContainer.class.getDeclaredField("modInstance");
-                    f.setAccessible(true);
-                    return Optional.ofNullable(f.get(c));
-                } catch (ReflectiveOperationException | RuntimeException e) {
-                    return Optional.<Object>empty();
-                }
-            });
+            return Optional.empty(); // FML does not keep the instance of a NeoForge mod; mainClass() is what the API can offer
         }
 
         @Override

@@ -29,9 +29,20 @@ public final class Convert {
     public static Object itemToLegacy(ItemStack modern, LegacyVersion version) {
         return switch (version) {
             case V1_7_10, V1_4_7, V1_5_2, V1_6_4 -> modern == null ? null : legacyconnector.v1_7_10.net.minecraft.item.ItemStack.mcc$wrap(modern);
-            case V1_12_2 -> Stacks1122.fromModern(modern == null ? ItemStack.EMPTY : modern);
+            case V1_12_2 -> standIn1122(modern == null ? ItemStack.EMPTY : modern);
             case V1_20_1 -> modern == null ? ItemStack.EMPTY : modern; // the legacy stack IS the modern one
         };
+    }
+
+    /** The 1.12.2 stack of a modern one; an item the legacy version never had gets a stable stand-in item (registered nowhere). */
+    static legacyconnector.v1_12_2.net.minecraft.item.ItemStack standIn1122(ItemStack modern) {
+        var legacy = Stacks1122.fromModern(modern);
+        if (!legacy.isEmpty() || modern.isEmpty()) return legacy;
+        var item = org.kylepitcock.legacyconnector.v1_12_2.bridge.Vanilla1122.standIn(modern.getItem());
+        var out = new legacyconnector.v1_12_2.net.minecraft.item.ItemStack(item, modern.getCount(), 0);
+        var data = modern.get(net.minecraft.core.component.DataComponents.CUSTOM_DATA);
+        if (data != null) out.setTagCompound(new legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound(data.copyTag()));
+        return out;
     }
 
     public static ItemStack itemFromLegacy(Object legacy) {

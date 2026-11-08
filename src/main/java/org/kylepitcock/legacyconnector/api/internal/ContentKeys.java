@@ -28,7 +28,7 @@ public final class ContentKeys {
             }
             case V1_12_2:
             default: {
-                var legacy = Stacks1122.fromModern(stack);
+                var legacy = Convert.standIn1122(stack);
                 if (legacy.isEmpty()) return Optional.empty();
                 var item = legacy.getItem();
                 var name = item.getRegistryName();

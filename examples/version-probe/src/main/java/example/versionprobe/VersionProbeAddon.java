@@ -133,6 +133,10 @@ public final class VersionProbeAddon implements LegacyAddon {
                 count(v, false);
             }
         }
+        // a class of the legacy mod resolved through the API (the loader of the mod's own classes)
+        var viaApi = LegacyContentHooks.itemKey(BuiltInRegistries.ITEM.keySet().stream().filter(k -> k.getNamespace().equals(mod.id())).findFirst().orElse(ResourceLocation.withDefaultNamespace("stick")), v)
+                .flatMap(k -> mod.classOf(k.legacyItem().getClass().getName()));
+        LOG.info("PROBE classOf mod={} mc={} itemClassResolved={}", mod.id(), v.id(), viaApi.isPresent());
         var cls = mod.instance().map(o -> o.getClass().getName()).orElse("-");
         LOG.info("PROBE modclass mod={} mc={} instance={} classLoader={}", mod.id(), v.id(), cls, mod.classLoader() == null ? "-" : mod.classLoader().getClass().getSimpleName());
     }
