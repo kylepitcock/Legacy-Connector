@@ -40,6 +40,7 @@ final class Forge1201Events {
         NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, Forge1201Events::onShieldBlock);
         NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, Forge1201Events::onItemPickup);
         NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, Forge1201Events::onCanSleep);
+        NeoForge.EVENT_BUS.addListener(EventPriority.HIGH, Forge1201Events::onSleepingTime);
     }
 
     private static void onIncomingDamage(LivingIncomingDamageEvent e) {
@@ -89,5 +90,14 @@ final class Forge1201Events {
         PlayerSleepInBedEvent old = new PlayerSleepInBedEvent(e.getEntity(), e.getPos());
         NeoForge.EVENT_BUS.post(old);
         if (old.getResultStatus() != null) e.setProblem(old.getResultStatus());
+    }
+
+    private static void onSleepingTime(net.neoforged.neoforge.event.entity.player.CanContinueSleepingEvent e) {
+        if (!(e.getEntity() instanceof net.minecraft.world.entity.player.Player player)) return;
+        legacyconnector.v1_20_1.net.minecraftforge.event.entity.player.SleepingTimeCheckEvent old =
+                new legacyconnector.v1_20_1.net.minecraftforge.event.entity.player.SleepingTimeCheckEvent(player, player.getSleepingPos());
+        NeoForge.EVENT_BUS.post(old);
+        if (old.getResult() == Event$Result.ALLOW) e.setContinueSleeping(true);
+        else if (old.getResult() == Event$Result.DENY) e.setContinueSleeping(false);
     }
 }
