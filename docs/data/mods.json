@@ -16261,7 +16261,7 @@
    "source": "client",
    "date": "2026-11-08",
    "status": "partial",
-   "notes": "Contributor's headless server tests (Zekken01, 2026-11-07/08; 160+ runtime and 137 loader unit tests plus 5 opt-in actual-mod tests, all passing): the mod translates, constructs as ModLoader did, 168 resources verified; its living-mob families run their original callbacks and models (spawning, sounds, taming/carrying, projectile hits, death and placement hooks) and new chunks generate without stalls. Not tested in a real graphical client (no GPU play test); native spawning still differs from the complete Beta scheduler and class-based caps."
+   "notes": "Contributor's headless server tests (Zekken01, 2026-11-07/08; 160+ runtime and 137 loader unit tests plus 5 opt-in actual-mod tests, all passing): the mod translates, constructs as ModLoader did, 168 resources verified; its living-mob families run their original callbacks and models (spawning, sounds, taming/carrying, projectile hits, death and placement hooks) and new chunks generate without stalls. Not tested in a real graphical client (no GPU play test); native spawning still differs from the complete Beta scheduler and class-based caps. Real graphical client check 2026-11-08 (summoned in a flat test area, with Sodium, Iris, C2ME): horse, deer, fox, boar, bear, duck and other animals render with their own models and textures."
   },
   {
    "name": "Mo' Creatures Legacy",
@@ -16801,7 +16801,7 @@
    "source": "client",
    "date": "2026-11-08",
    "status": "partial",
-   "notes": "Contributor's headless server tests (Zekken01, 2026-11-07/08; same suites as Mo' Creatures, all passing): the mod translates and loads, 759 resources verified, its creatures use their original callbacks, spawn checks and item pickup/theft/contact effects run, and fresh-world generation no longer stalls on its spawn checks. Natural spawning was observed only with a released spawn budget in a controlled run; not tested in a real graphical client."
+   "notes": "Contributor's headless server tests (Zekken01, 2026-11-07/08; same suites as Mo' Creatures, all passing): the mod translates and loads, 759 resources verified, its creatures use their original callbacks, spawn checks and item pickup/theft/contact effects run, and fresh-world generation no longer stalls on its spawn checks. Natural spawning was observed only with a released spawn budget in a controlled run; not tested in a real graphical client. Real graphical client check 2026-11-08: its mobs render with original models (zebra with its texture); at least one species (a magenta-and-black missing-texture model) lacks its texture in the generated pack, to investigate."
   },
   {
    "name": "MoreJS",
@@ -27432,7 +27432,7 @@
    "source": "client",
    "date": "2026-11-08",
    "status": "loads",
-   "notes": "Archive.org copy of the original download (SOURCES recorded, not redistributed). Fresh server run: 3 blocks and 7 items register, 0 failed callbacks. Its dragon mobs are not hosted yet (the layer reports the mob base family as unsupported). Not tested in a client."
+   "notes": "Archive.org copy of the original download (SOURCES recorded, not redistributed). Fresh server run: 3 blocks and 7 items register, 0 failed callbacks. Its dragon mobs are not hosted: the original classes override jump / moveNonSolid, which the mob host does not accept yet. Not tested in a client."
   },
   {
    "name": "Elemental Creepers",
@@ -27440,8 +27440,8 @@
    "mc": "b1.7.3",
    "source": "client",
    "date": "2026-11-08",
-   "status": "loads",
-   "notes": "Archive.org copy of the original download (SOURCES recorded, not redistributed). Fresh server run: constructs, no blocks or items; all 18 creeper species are rejected as mobs ('base mob family is not hosted yet': the Creeper/hostile base is not hosted for this mod's entity classes), so the mod adds nothing yet."
+   "status": "partial",
+   "notes": "Archive.org copy of the original download (SOURCES recorded, not redistributed). Fresh server run: all 9 creeper species host as native mobs with their original renderers (needed a real DataTracker, CreeperEntityModel, LightType and a few no-op legacy callbacks, added generically; the earlier 'base mob family' rejection message was misleading). Real graphical client check (with Sodium, Iris, C2ME): fire, water, ice, earth, electric, cookie and magma creepers render with their own textures and the creeper model. Their fuse white-flash overlay (getOverlayColor) is not drawn yet; explosion effects not checked."
   },
   {
    "name": "BuildCraft (Core and Energy)",
@@ -27451,6 +27451,60 @@
    "date": "2026-11-08",
    "status": "loads",
    "notes": "Archive.org copy of the original download (SOURCES recorded, not redistributed). Fresh server run with Core and Energy: 3 blocks and 10 items register (engine, oil and fuel), 0 failed callbacks, 1 tile entity saved and loaded back, 268 textures. Transport, factory and builders not run; not tested in a client."
+  },
+  {
+   "name": "IndustrialCraft 2 (b1.7.3)",
+   "version": "8.55",
+   "mc": "b1.7.3",
+   "source": "client",
+   "date": "2026-11-08",
+   "status": "loads",
+   "notes": "Archive.org copy of the original download (SOURCES recorded, not redistributed). Fresh server run: 67 blocks and 159 items register, 0 failed block callbacks (41 right clicks), 46 tile entities saved and loaded back. Not tested in a client; machines and energy network not run."
+  },
+  {
+   "name": "RedPower (Core, Wiring, Logic, Lighting, Array)",
+   "version": "1.7.1",
+   "mc": "b1.7.3",
+   "source": "client",
+   "date": "2026-11-08",
+   "status": "loads",
+   "notes": "Archive.org copy of the original download (SOURCES recorded, not redistributed). Fresh server run with all five parts: constructs, registers blocks and items of Logic, Wiring and Lighting, 0 failed callbacks, 3 tile entities saved and loaded back. Wire placement and logic gates not exercised; not tested in a client."
+  },
+  {
+   "name": "MineFactory Reloaded",
+   "version": "1.1.2",
+   "mc": "b1.7.3",
+   "source": "client",
+   "date": "2026-11-08",
+   "status": "partial",
+   "notes": "Archive.org copy of the original download (SOURCES recorded, not redistributed). Fresh server run: 4 blocks and 6 items register, 4 right clicks and 3 tile entities saved and loaded back with 0 failed callbacks. Its IndustrialCraft compat mod fails in postInit without IndustrialCraft installed (missing dependency, not a layer defect). Not tested in a client."
+  },
+  {
+   "name": "Portal Gun",
+   "version": "v5",
+   "mc": "b1.7.3",
+   "source": "client",
+   "date": "2026-11-08",
+   "status": "loads",
+   "notes": "Archive.org copy of the original download (SOURCES recorded, not redistributed). Fresh server run: 9 blocks and 22 items register, 0 failed callbacks, 4 tile entities saved and loaded back. Needs ModLoader, ModLoaderMP and AudioMod and its external sound files for full play; portals and the gun not exercised; not tested in a client."
+  },
+  {
+   "name": "Too Many Items",
+   "version": "2011-07-01",
+   "mc": "b1.7.3",
+   "source": "client",
+   "date": "2026-11-08",
+   "status": "loads",
+   "notes": "Archive.org copy of the original download (SOURCES recorded, not redistributed). Fresh server run: constructs without errors (a client-side item browser; its GUI was not opened because no graphical client run included it)."
+  },
+  {
+   "name": "Rei's Minimap",
+   "version": "1.8",
+   "mc": "b1.7.3",
+   "source": "client",
+   "date": "2026-11-08",
+   "status": "loads",
+   "notes": "Archive.org copy of the original download (SOURCES recorded, not redistributed). Fresh server run: constructs without errors (a client-side minimap; not run in a graphical client)."
   }
  ],
  "hidden": [

@@ -77,12 +77,19 @@ public abstract class Entity {
     public net.minecraft.world.entity.Entity mcc$modern;
     public legacyconnector.vb1_7_3.net.minecraft.util.math.Box boundingBox;
 
+    /** The entity's data slots, created before {@link #initDataTracker()} runs. */
+    public legacyconnector.vb1_7_3.net.minecraft.entity.data.DataTracker dataTracker = new legacyconnector.vb1_7_3.net.minecraft.entity.data.DataTracker();
+    public legacyconnector.vb1_7_3.net.minecraft.entity.data.DataTracker getDataTracker() { return dataTracker; }
+
     public Entity(World world) {
         this.world = world;
         setPosition(0.0, 0.0, 0.0);
         initDataTracker();
     }
     protected void initDataTracker() {}
+
+    /** Beta {@code onStruckByLightning}: fire damage; the host's own lightning handling applies the native effects. */
+    public void onStruckByLightning(LightningEntity lightning) {}
 
     public void markDead() {
         this.dead = true;

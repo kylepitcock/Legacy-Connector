@@ -329,6 +329,16 @@ public class World implements BlockView {
         requireRegionChunk(x>>4,z>>4);return mcc$level == null ? 15 : mcc$access().getMaxLocalRawBrightness(pos(x, y, z));
     }
 
+    /** Beta's sky darkness subtracted from sky light (0 by day). */
+    public int ambientDarkness;
+
+    /** MCP {@code getSavedLightValue(EnumSkyBlock, x, y, z)}: the raw light of one channel. */
+    public int getBrightness(LightType type, int x, int y, int z) {
+        requireRegionChunk(x>>4,z>>4);
+        if (mcc$level == null) return type.defaultValue;
+        return mcc$access().getBrightness(type == LightType.SKY ? net.minecraft.world.level.LightLayer.SKY : net.minecraft.world.level.LightLayer.BLOCK, pos(x, y, z));
+    }
+
     public boolean hasSkyLight(int x, int y, int z) {
         requireRegionChunk(x>>4,z>>4);return mcc$level != null && mcc$access().canSeeSky(pos(x, y, z));
     }
