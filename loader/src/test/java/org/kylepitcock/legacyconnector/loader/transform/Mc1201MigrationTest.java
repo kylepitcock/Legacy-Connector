@@ -95,7 +95,7 @@ class Mc1201MigrationTest implements Opcodes {
         m.instructions.add(new MethodInsnNode(INVOKESPECIAL, mobBucket, "<init>", oldDesc, false));
         m.instructions.add(new InsnNode(ARETURN));
         m.maxLocals = 4;
-        m.maxStack = 5;
+        m.maxStack = 6;
 
         assertEquals(1, apply(c).constructors);
         MethodInsnNode factory = find(m, MIGRATE + "LegacyMobBucketItem", "create");
