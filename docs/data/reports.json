@@ -443,6 +443,18 @@
    "link": "https://www.curseforge.com/minecraft/mc-mods/scape-and-run-parasites",
    "date": "2026-11-07",
    "open": false
+  },
+  {
+   "issue": 198,
+   "mod": "management wanted more decor forge 1.20.1",
+   "mc": "1.20.1 (Forge)",
+   "status": "works",
+   "details": "so i did put geckolib 4.8.4 1.20.1 forge mod and management wanted more decor in mods folder thats it",
+   "lc": "0.4.7",
+   "neoforge": "21.1.265",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/management-wanted-more-decor",
+   "date": "2026-11-08",
+   "open": true
   }
  ]
 }
