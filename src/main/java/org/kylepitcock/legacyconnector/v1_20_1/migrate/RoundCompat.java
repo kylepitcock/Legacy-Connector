@@ -341,6 +341,18 @@ public final class RoundCompat {
 
     // ---- advancement predicates ----
 
+    /** {@code MinMaxBounds.Doubles.fromJson(element)}: the codec decodes it now; no element is "any". */
+    public static net.minecraft.advancements.critereon.MinMaxBounds.Doubles doublesFromJson(com.google.gson.JsonElement json) {
+        if (json == null || json.isJsonNull()) return net.minecraft.advancements.critereon.MinMaxBounds.Doubles.ANY;
+        return net.minecraft.advancements.critereon.MinMaxBounds.Doubles.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, json).getOrThrow(com.google.gson.JsonSyntaxException::new);
+    }
+
+    public static net.minecraft.advancements.critereon.MinMaxBounds.Ints intsFromJson(com.google.gson.JsonElement json) {
+        if (json == null || json.isJsonNull()) return net.minecraft.advancements.critereon.MinMaxBounds.Ints.ANY;
+        return net.minecraft.advancements.critereon.MinMaxBounds.Ints.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, json).getOrThrow(com.google.gson.JsonSyntaxException::new);
+    }
+
+
     /** {@code new EnchantmentPredicate(enchantment, levels)}: a set of enchantments in 1.21.1. */
     public static net.minecraft.advancements.critereon.EnchantmentPredicate newEnchantmentPredicate(LegacyEnchantment enchantment,
             net.minecraft.advancements.critereon.MinMaxBounds.Ints levels) {
@@ -787,7 +799,7 @@ public final class RoundCompat {
     }
 
     private static Holder<Enchantment> ench(ResourceKey<Enchantment> key) {
-        return MigrateContext.registries().registryOrThrow(Registries.ENCHANTMENT).getHolderOrThrow(key);
+        return MigrateContext.provider().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(key);
     }
 
     public static boolean hasFrostWalker(LivingEntity entity) {

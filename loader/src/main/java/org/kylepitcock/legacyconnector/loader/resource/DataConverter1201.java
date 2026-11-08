@@ -201,6 +201,12 @@ public final class DataConverter1201 {
             if (dir.equals("dimension_type") && root.isJsonObject()) dimensionType(root.getAsJsonObject(), c);
             if (np.contains("/worldgen/structure_set/") && root.isJsonObject()) structureSet(root.getAsJsonObject(), c);
             if (np.contains("/worldgen/") || dir.equals("dimension_type")) worldgenShapes(root, c);
+            // a tag file with "replace": "false" (a string; 1.20.1 read it leniently) is a boolean in 1.21
+            if (np.contains("/tags/") && root.isJsonObject() && root.getAsJsonObject().has("replace") && root.getAsJsonObject().get("replace").isJsonPrimitive()
+                    && root.getAsJsonObject().get("replace").getAsJsonPrimitive().isString()) {
+                root.getAsJsonObject().addProperty("replace", Boolean.parseBoolean(root.getAsJsonObject().get("replace").getAsString()));
+                c.hit("forge_tags");
+            }
             generic(root, c, false);
             outs.add(new Out(np, bytes(root)));
         }
@@ -648,6 +654,17 @@ public final class DataConverter1201 {
         }
         if (!e.isJsonObject()) return;
         JsonObject o = e.getAsJsonObject();
+        // block state predicates: 1.20.1 accepted a boolean or a number for a property value, 1.21 wants the string ("ropelogged": false)
+        if (o.has("properties") && o.get("properties").isJsonObject() && o.has("block")) {
+            JsonObject props = o.getAsJsonObject("properties");
+            for (String key : new ArrayList<>(props.keySet())) {
+                JsonElement v = props.get(key);
+                if (v.isJsonPrimitive() && !v.getAsJsonPrimitive().isString()) {
+                    props.addProperty(key, v.getAsString());
+                    c.hit("loot_function");
+                }
+            }
+        }
         if (o.has("function") && o.get("function").isJsonPrimitive()) lootFunction(o, c);
         if (o.has("condition") && o.get("condition").isJsonPrimitive()) lootCondition(o, c);
         if (o.has("type") && o.get("type").isJsonPrimitive() && id(o.get("type").getAsString()).equals("minecraft:loot_table") && o.has("name")) {

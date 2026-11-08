@@ -94,6 +94,33 @@ public final class ForgeApi1201 {
         }
     }
 
+    // ---- reflection on fields whose type changed ----
+
+    /**
+     * {@code Field.get} in mod code: the three lists of a {@code LootPool} (entries, conditions, functions) were arrays in 1.20.1 and mods add loot to a
+     * table by reading them reflectively; a list is handed out as the array they cast it to.
+     */
+    public static Object fieldGet(java.lang.reflect.Field field, Object target) throws IllegalAccessException {
+        Object value = field.get(target);
+        if (value instanceof java.util.List<?> list && field.getDeclaringClass() == net.minecraft.world.level.storage.loot.LootPool.class) {
+            return switch (field.getName()) {
+                case "entries" -> list.toArray(new net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer[0]);
+                case "conditions" -> list.toArray(new net.minecraft.world.level.storage.loot.predicates.LootItemCondition[0]);
+                case "functions" -> list.toArray(new net.minecraft.world.level.storage.loot.functions.LootItemFunction[0]);
+                default -> value;
+            };
+        }
+        return value;
+    }
+
+    /** {@code Field.set} in mod code: the array a mod built for a {@code LootPool} list goes back as a list. */
+    public static void fieldSet(java.lang.reflect.Field field, Object target, Object value) throws IllegalAccessException {
+        if (value instanceof Object[] array && field.getType() == java.util.List.class && field.getDeclaringClass() == net.minecraft.world.level.storage.loot.LootPool.class) {
+            value = java.util.List.of(array);
+        }
+        field.set(target, value);
+    }
+
     private static final java.util.Set<String> SKIPPED_REGISTERS = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
     /**

@@ -61,7 +61,8 @@ public final class CraftingHelper {
                         });
                         Object parsed = s.parse(obj);
                         if (parsed instanceof AbstractIngredient a) return com.mojang.serialization.DataResult.success((AbstractIngredient.Bridge) a.getCustomIngredient());
-                        return com.mojang.serialization.DataResult.error(() -> "The ingredient serializer did not return an AbstractIngredient");
+                        if (parsed instanceof net.minecraft.world.item.crafting.Ingredient i) return com.mojang.serialization.DataResult.success(new AbstractIngredient.Bridge(i, s));
+                        return com.mojang.serialization.DataResult.error(() -> "The ingredient serializer did not return an ingredient");
                     } catch (RuntimeException e) {
                         return com.mojang.serialization.DataResult.error(() -> String.valueOf(e.getMessage()));
                     }
@@ -70,7 +71,7 @@ public final class CraftingHelper {
                 @Override
                 public <T> com.mojang.serialization.RecordBuilder<T> encode(AbstractIngredient.Bridge input, com.mojang.serialization.DynamicOps<T> ops,
                         com.mojang.serialization.RecordBuilder<T> prefix) {
-                    JsonElement json = input.owner().toJson();
+                    JsonElement json = input.toJson();
                     if (json instanceof JsonObject obj) {
                         for (var e : obj.entrySet()) {
                             if (!e.getKey().equals("type")) prefix.add(e.getKey(), JsonOps.INSTANCE.convertTo(ops, e.getValue()));
@@ -82,7 +83,9 @@ public final class CraftingHelper {
             net.minecraft.network.codec.StreamCodec<net.minecraft.network.RegistryFriendlyByteBuf, AbstractIngredient.Bridge> stream = new net.minecraft.network.codec.StreamCodec<>() {
                 @Override
                 public AbstractIngredient.Bridge decode(net.minecraft.network.RegistryFriendlyByteBuf buf) {
-                    return (AbstractIngredient.Bridge) ((AbstractIngredient) ((IIngredientSerializer) s).parse(buf)).getCustomIngredient();
+                    Object parsed = ((IIngredientSerializer) s).parse(buf);
+                    return parsed instanceof AbstractIngredient a ? (AbstractIngredient.Bridge) a.getCustomIngredient()
+                            : new AbstractIngredient.Bridge((net.minecraft.world.item.crafting.Ingredient) parsed, s);
                 }
 
                 @Override

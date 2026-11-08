@@ -63,10 +63,30 @@ public abstract class AbstractIngredient extends Ingredient {
 
     /** The {@link ICustomIngredient} NeoForge sees: everything goes to the 1.20.1 subclass. */
     public static final class Bridge implements ICustomIngredient {
-        AbstractIngredient owner;
+        Ingredient owner;
+        IIngredientSerializer<?> serializer;
 
-        public AbstractIngredient owner() {
+        public Bridge() {
+        }
+
+        /** For an ingredient that extends {@code Ingredient} directly (Farmers Delight's tool action ingredient) and is read by a 1.20.1 serializer. */
+        public Bridge(Ingredient owner, IIngredientSerializer<?> serializer) {
+            this.owner = owner;
+            this.serializer = serializer;
+        }
+
+        public Ingredient owner() {
             return owner;
+        }
+
+        /** The 1.20.1 JSON form of the ingredient, if it has one. */
+        public JsonElement toJson() {
+            if (owner instanceof AbstractIngredient a) return a.toJson();
+            try {
+                return (JsonElement) owner.getClass().getMethod("toJson").invoke(owner);
+            } catch (ReflectiveOperationException | ClassCastException e) {
+                return new JsonObject();
+            }
         }
 
         @Override
@@ -86,7 +106,7 @@ public abstract class AbstractIngredient extends Ingredient {
 
         @Override
         public IngredientType<?> getType() {
-            return CraftingHelper.typeFor(owner.getSerializer());
+            return CraftingHelper.typeFor(serializer != null ? serializer : ((AbstractIngredient) owner).getSerializer());
         }
     }
 }
