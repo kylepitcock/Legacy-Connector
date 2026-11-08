@@ -34,6 +34,11 @@ public final class Forward164 {
         return tool != null && tool.equals(toolClass) ? block.getHarvestLevel(metadata) : -1;
     }
 
+    /** 1.6.4 {@code repository.setRepositoryEntries(entry...)}: the active resource packs (1.7.10 takes a list). */
+    public static void setRepositoryEntries(legacyconnector.v1_7_10.net.minecraft.client.resources.ResourcePackRepository repository, Object[] entries) {
+        repository.func_148527_a(entries == null ? new java.util.ArrayList() : new java.util.ArrayList(java.util.Arrays.asList(entries)));
+    }
+
     /** 1.6.4 {@code minecraft.getLogAgent()} / {@code server.getLogAgent()}: the agent writing to FML's {@code java.util.logging} logger. */
     public static legacyconnector.v1_6_4.net.minecraft.logging.ILogAgent getLogAgent(Object minecraftOrServer) {
         return legacyconnector.v1_6_4.net.minecraft.logging.LogAgent.world();
