@@ -40,6 +40,51 @@ class RendererBlockEffectsB173Test implements Opcodes {
         method.visitInsn(ACONST_NULL);for(int i=0;i<4;i++)method.visitInsn(ICONST_0);
         method.visitMethodInsn(INVOKEVIRTUAL,"legacyconnector/vb1_7_3/net/minecraft/world/World","setBlock","(IIII)Z",false);method.visitInsn(POP);
     }
+    private static void fieldWrite(MethodVisitor method,String owner){
+        method.visitInsn(ACONST_NULL);method.visitInsn(ICONST_0);
+        method.visitFieldInsn(PUTFIELD,owner,"value","I");
+    }
+    private static void entity(Classes classes,String name,String parent){
+        var writer=begin(name,parent);writer.visitField(ACC_PUBLIC,"value","I",null,null).visitEnd();
+        writer.visitField(ACC_PUBLIC|ACC_STATIC,"staticValue","I",null,null).visitEnd();finish(classes,name,writer);
+    }
+    @Test void followsTransitiveEntityFieldWritesAndInheritedOwners()throws ReflectiveOperationException {
+        var classes=new Classes();
+        entity(classes,"Actor","legacyconnector/vb1_7_3/net/minecraft/entity/Entity");
+        finish(classes,"ChildActor",begin("ChildActor",PREFIX+"Actor"));
+        var renderer=begin("EntityEffects",RENDERER);
+        method(renderer,"render",ENTRY,ACC_PUBLIC,m->call(m,"EntityFirst","reachable"));finish(classes,"EntityEffects",renderer);
+        var first=begin("EntityFirst","java/lang/Object");method(first,"reachable","()V",ACC_PUBLIC|ACC_STATIC,m->call(m,"EntitySecond","mutate"));finish(classes,"EntityFirst",first);
+        var second=begin("EntitySecond","java/lang/Object");method(second,"mutate","()V",ACC_PUBLIC|ACC_STATIC,m->fieldWrite(m,PREFIX+"ChildActor"));finish(classes,"EntitySecond",second);
+        assertTrue(classes.effects("EntityEffects"),"inherited entity fields remain simulation effects through helper calls");
+        assertTrue(classes.effects("EntityEffects"),"entity effect result is cached");
+    }
+    @Test void ignoresVisualFieldsReadsStaticsAndUnreachableEntityWrites()throws ReflectiveOperationException {
+        var classes=new Classes();entity(classes,"VisualActor","legacyconnector/vb1_7_3/net/minecraft/entity/Entity");
+        entity(classes,"ModelState","java/lang/Object");
+        var renderer=begin("VisualFields",RENDERER);renderer.visitField(ACC_PUBLIC,"value","I",null,null).visitEnd();
+        method(renderer,"render",ENTRY,ACC_PUBLIC,m->{fieldWrite(m,PREFIX+"VisualFields");call(m,"VisualHelper","visual");});finish(classes,"VisualFields",renderer);
+        var helper=begin("VisualHelper","java/lang/Object");
+        method(helper,"visual","()V",ACC_PUBLIC|ACC_STATIC,m->{
+            fieldWrite(m,PREFIX+"ModelState");
+            m.visitInsn(ACONST_NULL);m.visitFieldInsn(GETFIELD,PREFIX+"VisualActor","value","I");m.visitInsn(POP);
+            m.visitFieldInsn(GETSTATIC,PREFIX+"VisualActor","staticValue","I");m.visitInsn(POP);
+            m.visitInsn(ICONST_0);m.visitFieldInsn(PUTSTATIC,PREFIX+"VisualActor","staticValue","I");
+        });
+        method(helper,"unreachable","()V",ACC_PUBLIC|ACC_STATIC,m->fieldWrite(m,PREFIX+"VisualActor"));
+        method(helper,"unlinkedUnreachable","()V",ACC_PUBLIC|ACC_STATIC,m->fieldWrite(m,PREFIX+"AbsentOwner"));finish(classes,"VisualHelper",helper);
+        assertFalse(classes.effects("VisualFields"),"only reachable entity instance writes qualify; unreachable owners need not link");
+    }
+    @Test void resolvesEntityFieldEffectsThroughVirtualOverrides()throws ReflectiveOperationException {
+        var classes=new Classes();entity(classes,"HookActor","legacyconnector/vb1_7_3/net/minecraft/entity/Entity");
+        var base=begin("EntityBase",RENDERER);
+        method(base,"render",ENTRY,ACC_PUBLIC,m->{m.visitVarInsn(ALOAD,0);m.visitMethodInsn(INVOKEVIRTUAL,PREFIX+"EntityBase","hook","()V",false);});
+        method(base,"hook","()V",ACC_PROTECTED,m->fieldWrite(m,PREFIX+"HookActor"));finish(classes,"EntityBase",base);
+        finish(classes,"EntityInherited",begin("EntityInherited",PREFIX+"EntityBase"));
+        var visual=begin("EntityVisualOverride",PREFIX+"EntityBase");method(visual,"hook","()V",ACC_PROTECTED,m->{});finish(classes,"EntityVisualOverride",visual);
+        var effect=begin("EntityEffectOverride",PREFIX+"EntityVisualOverride");method(effect,"hook","()V",ACC_PROTECTED,m->fieldWrite(m,PREFIX+"HookActor"));finish(classes,"EntityEffectOverride",effect);
+        assertTrue(classes.effects("EntityInherited"));assertFalse(classes.effects("EntityVisualOverride"));assertTrue(classes.effects("EntityEffectOverride"));
+    }
     @Test void followsReachableMethodsAcrossModHelpers()throws ReflectiveOperationException {
         var classes=new Classes();var renderer=begin("Transitive",RENDERER);
         method(renderer,"render",ENTRY,ACC_PUBLIC,m->call(m,"First","reachable"));finish(classes,"Transitive",renderer);
