@@ -98,7 +98,8 @@ def gap1201_targets():
     jars = [a.as_posix() for a in arts] + [pathlib.Path(j).as_posix() for _, j in best.values()]
     libs = os.environ.get("GAP1201_LIBS")   # a folder of NeoForge 1.21.1 mods (libraries the pack would install natively): references into them are checked against the real classes
     if libs:
-        jars += [j.as_posix() for j in sorted(pathlib.Path(libs).glob("*.jar"))]
+        for folder in libs.split(";"):   # several folders: ';'-separated (a ':' would clash with drive letters)
+            jars += [j.as_posix() for j in sorted(pathlib.Path(folder).glob("*.jar"))]
     return ",".join(jars)
 
 
@@ -254,7 +255,7 @@ def merge(records, mc, date, layer):
     for e in data["mods"]:
         if e.get("mc", "1.7.10") == mc:
             listed.setdefault(norm(e["name"]), []).append(e)
-    hidden = {norm(h) for h in data.get("hidden", [])}
+    hidden = {norm(h) for h in data.get("hidden", [])} | {norm(h) for h in data.get("hidden_by_mc", {}).get(mc, [])}
     added = refreshed = skipped = 0
     for rec in records:
         if rec["result"] not in ("links", "unresolved") or rec.get("mc") != mc:

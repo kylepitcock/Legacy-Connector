@@ -330,4 +330,9 @@ net/minecraft/world/level/storage/loot/BuiltInLootTables	SHEEP_YELLOW	Lnet/minec
 net/minecraft/world/level/storage/loot/BuiltInLootTables	JUNGLE_TEMPLE_DISPENSER	Lnet/minecraft/resources/ResourceLocation;	-	Lnet/minecraft/resources/ResourceKey;	location
 net/minecraft/core/registries/BuiltInRegistries	POTION	Lnet/minecraft/core/DefaultedRegistry;	-	Lnet/minecraft/core/Registry;	RoundCompat.defaulted
 net/minecraft/core/registries/BuiltInRegistries	PAINTING_VARIANT	Lnet/minecraft/core/DefaultedRegistry;	-	Lnet/minecraft/core/Registry;	RoundCompat.defaulted
+# --- round 3 batch 8 (client)
+net/minecraft/client/resources/model/ModelBakery	MISSING_MODEL_LOCATION	Lnet/minecraft/client/resources/model/ModelResourceLocation;	MISSING_MODEL_VARIANT	-	-
+net/minecraft/client/gui/screens/Screen	BACKGROUND_LOCATION	Lnet/minecraft/resources/ResourceLocation;	MENU_BACKGROUND	-	-
+net/minecraft/client/gui/Gui	GUI_ICONS_LOCATION	Lnet/minecraft/resources/ResourceLocation;	-	none	MiddleClientCompat.guiIcons
+net/neoforged/fml/common/EventBusSubscriber$Bus	FORGE	Lnet/neoforged/fml/common/EventBusSubscriber$Bus;	GAME	-	-
 net/minecraft/network/chat/ComponentContents	EMPTY	Lnet/minecraft/network/chat/ComponentContents;	-	none	RoundCompat.emptyContents

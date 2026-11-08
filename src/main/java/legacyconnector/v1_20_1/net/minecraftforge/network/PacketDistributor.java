@@ -42,23 +42,69 @@ public class PacketDistributor<T> {
     }
 
     public PacketTarget with(Supplier<T> input) {
-        return new PacketTarget(payload -> sender.accept(input.get(), payload));
+        return new PacketTarget(payload -> sender.accept(input.get(), payload), packet -> sendRaw(input.get(), packet), this);
     }
 
     public PacketTarget noArg() {
-        return new PacketTarget(payload -> sender.accept(null, payload));
+        return new PacketTarget(payload -> sender.accept(null, payload), packet -> sendRaw(null, packet), this);
+    }
+
+    /** Sends a vanilla packet (not a mod payload) to the receivers this distributor picks for the argument. */
+    @SuppressWarnings("unchecked")
+    private void sendRaw(Object arg, net.minecraft.network.protocol.Packet<?> packet) {
+        var server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
+        if (this == PLAYER) {
+            ServerPlayer p = (ServerPlayer) arg;
+            if (p != null && p.connection != null) p.connection.send(packet);
+        } else if (this == SERVER) {
+            var connection = net.minecraft.client.Minecraft.getInstance().getConnection();
+            if (connection != null) connection.send(packet);
+        } else if (server == null) {
+            return;
+        } else if (this == ALL) {
+            server.getPlayerList().broadcastAll(packet);
+        } else if (this == DIMENSION) {
+            server.getPlayerList().broadcastAll(packet, (ResourceKey<Level>) arg);
+        } else if (this == NEAR) {
+            TargetPoint t = (TargetPoint) arg;
+            server.getPlayerList().broadcast(t.excluded, t.x, t.y, t.z, t.r, t.dim, packet);
+        } else if (this == TRACKING_ENTITY && arg instanceof Entity e && e.level() instanceof ServerLevel level) {
+            level.getChunkSource().broadcast(e, packet);
+        } else if (this == TRACKING_ENTITY_AND_SELF && arg instanceof Entity e && e.level() instanceof ServerLevel level) {
+            level.getChunkSource().broadcastAndSend(e, packet);
+        } else if (this == TRACKING_CHUNK && arg instanceof LevelChunk chunk && chunk.getLevel() instanceof ServerLevel level) {
+            level.getChunkSource().chunkMap.getPlayers(chunk.getPos(), false).forEach(p -> p.connection.send(packet));
+        }
+    }
+
+    /** Which way messages of this distributor travel. */
+    public NetworkDirection direction() {
+        return this == SERVER ? NetworkDirection.PLAY_TO_SERVER : NetworkDirection.PLAY_TO_CLIENT;
     }
 
     /** Where a message goes. */
     public static final class PacketTarget {
         private final Consumer<CustomPacketPayload> send;
+        private final Consumer<net.minecraft.network.protocol.Packet<?>> sendRaw;
+        private final PacketDistributor<?> distributor;
 
-        PacketTarget(Consumer<CustomPacketPayload> send) {
+        PacketTarget(Consumer<CustomPacketPayload> send, Consumer<net.minecraft.network.protocol.Packet<?>> sendRaw, PacketDistributor<?> distributor) {
             this.send = send;
+            this.sendRaw = sendRaw;
+            this.distributor = distributor;
         }
 
         public void send(CustomPacketPayload payload) {
             send.accept(payload);
+        }
+
+        /** Forge's targets also carried plain vanilla packets (a mod sending a ClientboundSetEntityMotionPacket through a distributor). */
+        public void send(net.minecraft.network.protocol.Packet<?> packet) {
+            sendRaw.accept(packet);
+        }
+
+        public NetworkDirection getDirection() {
+            return distributor.direction();
         }
     }
 

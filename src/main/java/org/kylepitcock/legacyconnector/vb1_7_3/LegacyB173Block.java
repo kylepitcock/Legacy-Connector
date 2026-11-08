@@ -200,7 +200,9 @@ public class LegacyB173Block extends net.minecraft.world.level.block.Block imple
             net.minecraft.world.entity.player.Player player, net.minecraft.world.phys.BlockHitResult hit) {
         PlayerViewB173 view = PlayerViewB173.of(player);
         boolean[] used = new boolean[1];
-        call("blockActivated", () -> used[0] = legacy.onUse(view(level), pos.getX(), pos.getY(), pos.getZ(), view));
+        // The clicking player is the legacy client's player for this callback (mods read mc.thePlayer), even when not in the level's list yet.
+        call("blockActivated", () -> { World w = view(level); try (var ctx = legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$context(w, view)) {
+            used[0] = legacy.onUse(w, pos.getX(), pos.getY(), pos.getZ(), view); } });
         if (legacy instanceof legacyconnector.vb1_7_3.net.minecraft.block.BlockWithEntity) {
             MenusB173.trace("right click on {} ({}) on the {} side: {}", legacy.getClass().getName(), state.getValue(META),
                     level.isClientSide ? "client" : "server", used[0] ? "used" : "not used");

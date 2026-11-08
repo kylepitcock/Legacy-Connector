@@ -89,7 +89,10 @@ public final class BetaDeobfuscator {
         for (var e : classes.entrySet()) {
             ClassWriter w = new ClassWriter(0);
             try {
-                new ClassReader(e.getValue()).accept(new ClassRemapper(w, namer){
+                // Default-package classes shared one package in the original game directory; each mod now has its own package,
+                // so package-private and protected members that other mods' classes used are made public.
+                ClassVisitor sink = e.getKey().indexOf('/') < 0 ? widening(w) : w;
+                new ClassReader(e.getValue()).accept(new ClassRemapper(sink, namer){
                     @Override protected MethodVisitor createMethodRemapper(MethodVisitor visitor){
                         return new MethodRemapper(visitor,namer){
                             @Override public void visitFieldInsn(int opcode,String owner,String name,String descriptor){
@@ -112,6 +115,24 @@ public final class BetaDeobfuscator {
                     + abbreviate(namer.unresolvedGame));
         }
         return notes;
+    }
+
+    private static int widen(int access) {
+        return (access & Opcodes.ACC_PRIVATE) != 0 ? access : (access & ~Opcodes.ACC_PROTECTED) | Opcodes.ACC_PUBLIC;
+    }
+
+    private static ClassVisitor widening(ClassVisitor next) {
+        return new ClassVisitor(Opcodes.ASM9, next) {
+            @Override public void visit(int version, int access, String name, String sig, String superName, String[] itfs) {
+                super.visit(version, access | Opcodes.ACC_PUBLIC, name, sig, superName, itfs);
+            }
+            @Override public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
+                return super.visitField(widen(access), name, desc, signature, value);
+            }
+            @Override public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
+                return super.visitMethod(name.equals("<clinit>") ? access : widen(access), name, desc, signature, exceptions);
+            }
+        };
     }
 
     private static String abbreviate(TreeSet<String> names) {

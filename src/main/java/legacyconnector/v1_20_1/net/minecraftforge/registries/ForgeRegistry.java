@@ -22,6 +22,11 @@ public abstract class ForgeRegistry<V> implements IForgeRegistryInternal<V> {
         return v == null ? null : mcc$registry().getKey(v);
     }
 
+    /** {@code ForgeRegistry.addAlias(old, new)}: NeoForge keeps the aliases in the registry itself. */
+    public void addAlias(ResourceLocation from, ResourceLocation to) {
+        mcc$registry().addAlias(from, to);
+    }
+
     public boolean isLocked() {
         return true;
     }

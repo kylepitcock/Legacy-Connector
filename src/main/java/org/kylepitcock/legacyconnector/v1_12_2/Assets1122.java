@@ -1593,6 +1593,8 @@ public final class Assets1122 implements GeneratedPack.Contributor {
                 String path = colon >= 0 ? m.substring(colon + 1) : m;
                 String normalized = Ids.normalizePath(path);
                 String ns = colon >= 0 ? m.substring(0, colon) : modelExists(defaultNamespace, "block/" + normalized) ? defaultNamespace : "minecraft";
+                // a name that already carries the folder ("block/cube_all") would be models/block/block/..., which only exists by mistake
+                if (Ids.namespace(ns).equals("minecraft") && normalized.startsWith("block/") && !normalized.startsWith("block/builtin/")) normalized = normalized.substring(6);
                 model = Ids.namespace(ns) + ":block/" + normalized;
             } else if (k.equals("x") || k.equals("y")) {
                 int angle = e.getValue().isJsonPrimitive() ? Math.floorMod((int) Math.round(Math.round(e.getValue().getAsDouble() / 90.0) * 90.0), 360) : 0;

@@ -78,4 +78,28 @@ public final class CraftingHelper {
     public static JsonObject serialize(ICondition condition) {
         return ICondition.CODEC.encodeStart(JsonOps.INSTANCE, condition).result().map(JsonElement::getAsJsonObject).orElseGet(JsonObject::new);
     }
+
+    /** A condition from its JSON object ({"type": ...}). */
+    public static ICondition getCondition(JsonObject json) {
+        return ICondition.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow(JsonSyntaxException::new);
+    }
+
+    public static boolean processConditions(com.google.gson.JsonArray conditions, ICondition.IContext context) {
+        for (JsonElement e : conditions) {
+            if (!getCondition(e.getAsJsonObject()).test(context)) return false;
+        }
+        return true;
+    }
+
+    public static com.google.gson.JsonArray serialize(ICondition[] conditions) {
+        com.google.gson.JsonArray array = new com.google.gson.JsonArray();
+        for (ICondition c : conditions) array.add(serialize(c));
+        return array;
+    }
+
+    /** An ingredient from JSON (an item, a tag or an array of them); {@code array} said whether an array was allowed. */
+    public static net.minecraft.world.item.crafting.Ingredient getIngredient(JsonElement json, boolean array) {
+        if (json == null || json.isJsonNull()) throw new JsonSyntaxException("Json cannot be null");
+        return net.minecraft.world.item.crafting.Ingredient.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow(JsonSyntaxException::new);
+    }
 }

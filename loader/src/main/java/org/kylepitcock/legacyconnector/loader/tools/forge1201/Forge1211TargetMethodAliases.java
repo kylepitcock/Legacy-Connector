@@ -12,6 +12,8 @@ final class Forge1211TargetMethodAliases {
     private static final String RESOURCE_LOCATION_DESCRIPTOR =
             "(Ljava/lang/String;Ljava/lang/String;)Lnet/minecraft/resources/ResourceLocation;";
     private static final String ENTITY_DIMENSIONS = "net/minecraft/world/entity/EntityDimensions";
+    private static final String HOLDER = "net/minecraft/core/Holder";
+    private static final String HOLDER_VALUE_DESCRIPTOR = "()Ljava/lang/Object;";
     private static final String WITH_EYE_HEIGHT_DESCRIPTOR =
             "(F)Lnet/minecraft/world/entity/EntityDimensions;";
     private static final String FLOAT_ACCESSOR_DESCRIPTOR = "()F";
@@ -28,7 +30,9 @@ final class Forge1211TargetMethodAliases {
             new MethodKey(ENTITY_DIMENSIONS, "f_20379_", BOOLEAN_ACCESSOR_DESCRIPTOR),
             "fixed",
             new MethodKey(ENTITY_DIMENSIONS, "f_316573_", FLOAT_ACCESSOR_DESCRIPTOR),
-            "eyeHeight");
+            "eyeHeight",
+            new MethodKey(HOLDER, "m_203334_", HOLDER_VALUE_DESCRIPTOR),
+            "value");
 
     private Forge1211TargetMethodAliases() {}
 
