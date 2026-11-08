@@ -86,6 +86,19 @@ public final class HolderCompat {
         return ResourceLocation.fromNamespaceAndPath("legacyconnector", "modifier/" + uuid);
     }
 
+    /** The resource location of a 1.20.1 modifier given as a UUID string (anything that is not a valid path character is replaced). */
+    public static ResourceLocation modifierId(String uuid) {
+        StringBuilder sb = new StringBuilder();
+        for (char c : uuid.toLowerCase(java.util.Locale.ROOT).toCharArray()) sb.append(c >= 'a' && c <= 'z' || c >= '0' && c <= '9' || c == '_' || c == '-' || c == '.' ? c : '_');
+        return ResourceLocation.fromNamespaceAndPath("legacyconnector", "modifier/" + sb);
+    }
+
+    /** 1.20.1 {@code MobEffect.addAttributeModifier(Attribute, String uuid, double, Operation)}: the attribute is a holder and the id a resource location now. */
+    public static net.minecraft.world.effect.MobEffect addEffectModifier(net.minecraft.world.effect.MobEffect effect, Attribute attribute, String uuid,
+            double amount, AttributeModifier.Operation op) {
+        return effect.addAttributeModifier(holder(attribute), modifierId(uuid), amount, op);
+    }
+
     public static AttributeModifier newModifier(UUID id, String name, double amount, AttributeModifier.Operation op) {
         return new AttributeModifier(modifierId(id), amount, op);
     }

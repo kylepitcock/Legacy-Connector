@@ -316,3 +316,4 @@ com/mojang/blaze3d/vertex/VertexConsumer	vertex	(FFFFFFFFFIIFFF)V	VertexCompat	v
 com/mojang/serialization/DataResult	get	()Lcom/mojang/datafixers/util/Either;	MiscCompat	dataResultGet	(Lcom/mojang/serialization/DataResult;)Lcom/mojang/datafixers/util/Either;
 net/minecraft/world/level/block/entity/RandomizableContainerBlockEntity	setLootTable	(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/util/RandomSource;Lnet/minecraft/core/BlockPos;Lnet/minecraft/resources/ResourceLocation;)V	MiscCompat	setBlockEntityLootTable	-
 net/minecraft/world/level/block/entity/RandomizableContainerBlockEntity	setLootTable	(Lnet/minecraft/resources/ResourceLocation;J)V	MiscCompat	setLootTable	-
+net/minecraft/world/effect/MobEffect	addAttributeModifier	(Lnet/minecraft/world/entity/ai/attributes/Attribute;Ljava/lang/String;DLnet/minecraft/world/entity/ai/attributes/AttributeModifier$Operation;)Lnet/minecraft/world/effect/MobEffect;	HolderCompat	addEffectModifier	-

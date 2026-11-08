@@ -63,7 +63,7 @@ final class SoftLink1201 implements Opcodes {
         List<String> lines() {
             List<String> out = new ArrayList<>();
             for (String c : missingClasses) out.add("Soft link: class " + c.replace('/', '.') + " does not exist in 1.21.1; stand-in throws when used");
-            for (String m : missingMethods) out.add("Soft link: method " + m.replace('/', '.') + " does not exist in 1.21.1; stand-in throws when called");
+            for (String m : missingMethods) out.add("Soft link: method " + m.replace('/', '.') + " does not exist in 1.21.1; stand-in returns the receiver (fluent methods), does nothing (void or primitive results during construction or registration) or throws when called");
             for (String f : missingFields) out.add("Soft link: field " + f.replace('/', '.') + " does not exist in 1.21.1; reads give the default value");
             return out;
         }
@@ -233,7 +233,7 @@ final class SoftLink1201 implements Opcodes {
                     AbstractInsnNode pairedNew = ctor && !selfCtor && bad == null ? matchingNew(all, idx) : null;
                     if (selfCtor || (ctor && bad == null && pairedNew == null)) repl = terminate(sym);
                     else {
-                        repl = call(sym, mi.desc, mi.getOpcode() != INVOKESTATIC);
+                        repl = call(sym, mi.desc, mi.getOpcode() != INVOKESTATIC, mi.owner, construction(m), bad == null);
                         if (pairedNew != null) newsToNull.add(pairedNew);
                     }
                 }
@@ -354,13 +354,43 @@ final class SoftLink1201 implements Opcodes {
     }
 
     /** Stand-in for a call: throws when executed; the arguments (and receiver) are popped and the default of the result type left, as after the real call. */
-    private static InsnList call(String symbol, String desc, boolean receiver) {
+    private InsnList call(String symbol, String desc, boolean receiver) {
+        return call(symbol, desc, receiver, null, false, false);
+    }
+
+    /** The code of a method that runs while the mod constructs itself or registers its content. */
+    private static boolean construction(MethodNode m) {
+        return m.name.equals("<init>") || m.name.equals("<clinit>") || m.name.startsWith("lambda$static$") || m.name.startsWith("lambda$new$");
+    }
+
+    /** {@code target} is the receiver's class or one of its supertypes (builder-style setters answer the receiver). */
+    private boolean assignable(String owner, String target, Set<String> seen) {
+        if (owner.equals(target) || target.equals("java/lang/Object")) return true;
+        if (!seen.add(owner)) return false;
+        for (String s : hierarchy.supers(owner)) if (assignable(s, target, seen)) return true;
+        return false;
+    }
+
+    /**
+     * Stand-in for a call. Policy: a fluent method (non-static, returns the receiver's class or a supertype of it) logs once and RETURNS THE
+     * RECEIVER; a method with a void or primitive result called while the mod constructs or registers ({@code construction}) logs once and does
+     * nothing; every other call throws when executed. Arguments (and the receiver, unless it is the result) are popped and the default of the
+     * result type is left, as after the real call.
+     */
+    private InsnList call(String symbol, String desc, boolean receiver, String owner, boolean construction, boolean classExists) {
         InsnList l = new InsnList();
-        failCall(l, symbol);
+        Type r = Type.getReturnType(desc);
+        boolean fluent = receiver && classExists && owner != null && r.getSort() == Type.OBJECT && !owner.startsWith("[")
+                && assignable(owner, r.getInternalName(), new HashSet<>());
+        boolean quiet = fluent || (construction && classExists && r.getSort() != Type.OBJECT && r.getSort() != Type.ARRAY);
+        if (quiet) {
+            l.add(new LdcInsnNode(symbol));
+            l.add(new MethodInsnNode(INVOKESTATIC, RUNTIME, "note", "(Ljava/lang/String;)V", false));
+        } else failCall(l, symbol);
         Type[] args = Type.getArgumentTypes(desc);
         for (int i = args.length - 1; i >= 0; i--) l.add(new InsnNode(args[i].getSize() == 2 ? POP2 : POP));
+        if (fluent) return l; // the receiver stays on the stack as the result
         if (receiver) l.add(new InsnNode(POP));
-        Type r = Type.getReturnType(desc);
         if (r.getSort() != Type.VOID) l.add(defaultValue(r));
         return l;
     }
