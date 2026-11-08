@@ -53,6 +53,74 @@ public final class RoundCompat {
         return (net.minecraft.core.DefaultedRegistry<?>) registry;
     }
 
+    /** A crafting grid in the 1.21.1 shape ({@code CraftingInput}) for the methods of {@code ShapedRecipe}/{@code ShapelessRecipe} that take one. */
+    public static net.minecraft.world.item.crafting.CraftingInput craftInput(net.minecraft.world.Container container) {
+        net.minecraft.world.item.crafting.RecipeInput in = BridgeHelpers.input(container);
+        if (in instanceof net.minecraft.world.item.crafting.CraftingInput ci) return ci;
+        int n = in.size();
+        java.util.List<ItemStack> items = new java.util.ArrayList<>(n);
+        for (int i = 0; i < n; i++) items.add(in.getItem(i));
+        return net.minecraft.world.item.crafting.CraftingInput.of(n, 1, items);
+    }
+
+    /** The {@code CraftingContainer} a 1.20.1 recipe override expects, from the 1.21.1 grid. */
+    public static net.minecraft.world.inventory.CraftingContainer craftingContainer(net.minecraft.world.item.crafting.CraftingInput input) {
+        return (net.minecraft.world.inventory.CraftingContainer) BridgeHelpers.container(input);
+    }
+
+    /** The {@code scale} argument 1.21.1 added to {@code LivingEntityRenderer.setupRotations}: the 1.20.1 call had none, so it is 1. */
+    public static float defaultScale(float partialTick) {
+        return 1.0F;
+    }
+
+    /** {@code new ClientboundAddEntityPacket(Entity)}: 1.21.1 builds it from the entity's tracker entry; a detached one is enough for the packet data. */
+    public static net.minecraft.network.protocol.game.ClientboundAddEntityPacket addEntityPacket(net.minecraft.world.entity.Entity entity) {
+        net.minecraft.server.level.ServerEntity tracker = new net.minecraft.server.level.ServerEntity((net.minecraft.server.level.ServerLevel) entity.level(), entity,
+                entity.getType().updateInterval(), entity.getType().trackDeltas(), p -> { });
+        return new net.minecraft.network.protocol.game.ClientboundAddEntityPacket(entity, tracker);
+    }
+
+    /** {@code NbtUtils.writeGameProfile}: name, id and the properties (value and signature) in the 1.20.1 layout. */
+    public static CompoundTag writeGameProfile(CompoundTag tag, com.mojang.authlib.GameProfile profile) {
+        if (profile.getName() != null && !profile.getName().isEmpty()) tag.putString("Name", profile.getName());
+        if (profile.getId() != null) tag.putUUID("Id", profile.getId());
+        if (!profile.getProperties().isEmpty()) {
+            CompoundTag props = new CompoundTag();
+            for (String key : profile.getProperties().keySet()) {
+                ListTag list = new ListTag();
+                for (com.mojang.authlib.properties.Property p : profile.getProperties().get(key)) {
+                    CompoundTag e = new CompoundTag();
+                    e.putString("Value", p.value());
+                    if (p.hasSignature()) e.putString("Signature", p.signature());
+                    list.add(e);
+                }
+                props.put(key, list);
+            }
+            tag.put("Properties", props);
+        }
+        return tag;
+    }
+
+    /** {@code NbtUtils.readGameProfile}: null when the tag has neither name nor id. */
+    public static com.mojang.authlib.GameProfile readGameProfile(CompoundTag tag) {
+        String name = tag.contains("Name", 8) ? tag.getString("Name") : "";
+        java.util.UUID id = tag.hasUUID("Id") ? tag.getUUID("Id") : net.minecraft.core.UUIDUtil.createOfflinePlayerUUID(name);
+        if (name.isEmpty() && !tag.hasUUID("Id")) return null;
+        com.mojang.authlib.GameProfile profile = new com.mojang.authlib.GameProfile(id, name);
+        if (tag.contains("Properties", 10)) {
+            CompoundTag props = tag.getCompound("Properties");
+            for (String key : props.getAllKeys()) {
+                for (Tag t : props.getList(key, 10)) {
+                    CompoundTag e = (CompoundTag) t;
+                    profile.getProperties().put(key, e.contains("Signature", 8)
+                            ? new com.mojang.authlib.properties.Property(key, e.getString("Value"), e.getString("Signature"))
+                            : new com.mojang.authlib.properties.Property(key, e.getString("Value")));
+                }
+            }
+        }
+        return profile;
+    }
+
     private static Holder<Enchantment> ench(ResourceKey<Enchantment> key) {
         return MigrateContext.registries().registryOrThrow(Registries.ENCHANTMENT).getHolderOrThrow(key);
     }
