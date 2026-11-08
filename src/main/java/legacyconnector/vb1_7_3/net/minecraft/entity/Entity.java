@@ -171,9 +171,16 @@ public abstract class Entity {
     public boolean damage(Entity attacker, int amount) {
         if (mcc$modern instanceof org.kylepitcock.legacyconnector.vb1_7_3.B173EntityHost host) return host.baseDamage(attacker, amount);
         if (mcc$modern == null) return false;
-        var source = attacker != null && attacker.mcc$modern instanceof net.minecraft.world.entity.player.Player p
-                ? mcc$modern.damageSources().playerAttack(p) : mcc$modern.damageSources().generic();
-        return mcc$modern.hurt(source, amount);
+        var nativeAttacker = attacker == null ? null : attacker.mcc$modern;
+        var source = nativeAttacker instanceof net.minecraft.world.entity.player.Player p
+                ? mcc$modern.damageSources().playerAttack(p)
+                : nativeAttacker instanceof net.minecraft.world.entity.LivingEntity living
+                        ? mcc$modern.damageSources().mobAttack(living) : mcc$modern.damageSources().generic();
+        boolean damaged = mcc$modern.hurt(source, amount);
+        // Original callbacks can inspect health immediately after damage. Preserve their pending motion writes.
+        if (this instanceof LivingEntity view && mcc$modern instanceof net.minecraft.world.entity.LivingEntity living)
+            view.health = Math.round(living.getHealth());
+        return damaged;
     }
     public void onPlayerInteraction(legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity player) {}
     public void writeNbt(legacyconnector.vb1_7_3.net.minecraft.nbt.NbtCompound tag) {

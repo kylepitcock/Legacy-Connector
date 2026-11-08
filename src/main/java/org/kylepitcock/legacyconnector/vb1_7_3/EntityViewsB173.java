@@ -8,11 +8,11 @@ import legacyconnector.vb1_7_3.net.minecraft.world.World;
 public final class EntityViewsB173 {
     private record HostState(double x,double y,double z,double vx,double vy,double vz,float yaw,float pitch,
             int health,int air,int fire,boolean ground,boolean dead,float width,float height,String texture,
-            float sideways,float forward,boolean jumping,int hurt,int death,int age,float eye,float speed,Entity vehicle,Entity passenger) {
+            float sideways,float forward,boolean jumping,int hurt,int death,int age,float eye,float speed,float fall,Entity vehicle,Entity passenger) {
         static HostState of(legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity v) {
             return new HostState(v.x,v.y,v.z,v.velocityX,v.velocityY,v.velocityZ,v.yaw,v.pitch,v.health,v.air,v.fireTicks,
                     v.onGround,v.dead,v.width,v.height,v.mcc$texture(),v.mcc$sidewaysSpeed(),v.mcc$forwardSpeed(),v.mcc$jumping(),
-                    v.hurtTime,v.deathTime,v.age,v.standingEyeHeight,v.mcc$movementSpeed(),v.vehicle,v.passenger);
+                    v.hurtTime,v.deathTime,v.age,v.standingEyeHeight,v.mcc$movementSpeed(),v.mcc$fallDistance(),v.vehicle,v.passenger);
         }
     }
     private record Extra(int itemAge,int pickupDelay,net.minecraft.world.item.ItemStack stack,int fuse,Entity owner) {}
@@ -137,6 +137,8 @@ public final class EntityViewsB173 {
         if(modern instanceof net.minecraft.world.entity.monster.Creeper)return new legacyconnector.vb1_7_3.net.minecraft.entity.mob.CreeperEntity(world);
         if(modern instanceof net.minecraft.world.entity.monster.Monster)return new legacyconnector.vb1_7_3.net.minecraft.entity.mob.MonsterEntity(world) {};
         if(modern instanceof net.minecraft.world.entity.animal.Sheep)return new legacyconnector.vb1_7_3.net.minecraft.entity.passive.SheepEntity(world);
+        if(modern instanceof net.minecraft.world.entity.animal.Cow)return new legacyconnector.vb1_7_3.net.minecraft.entity.passive.CowEntity(world);
+        if(modern instanceof net.minecraft.world.entity.animal.Wolf)return new legacyconnector.vb1_7_3.net.minecraft.entity.passive.WolfEntity(world);
         if(modern instanceof net.minecraft.world.entity.animal.Animal)return new legacyconnector.vb1_7_3.net.minecraft.entity.passive.AnimalEntity(world) {};
         if(modern instanceof net.minecraft.world.entity.PathfinderMob)return new PathAwareEntity(world) {};
         if(modern instanceof net.minecraft.world.entity.LivingEntity)return new legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity(world) {};
@@ -194,6 +196,7 @@ public final class EntityViewsB173 {
         if(wanted.dead!=before.dead)v.dead=wanted.dead;
         if(wanted.hurt!=before.hurt)v.hurtTime=wanted.hurt;if(wanted.death!=before.death)v.deathTime=wanted.death;
         if(wanted.age!=before.age)v.age=wanted.age;
+        if(wanted.fall!=before.fall)v.mcc$fallDistance(wanted.fall);
         if(wanted.vehicle!=before.vehicle)v.vehicle=wanted.vehicle;if(wanted.passenger!=before.passenger)v.passenger=wanted.passenger;
         v.mcc$movementInputs(wanted.sideways!=before.sideways?wanted.sideways:v.mcc$sidewaysSpeed(),
                 wanted.forward!=before.forward?wanted.forward:v.mcc$forwardSpeed(),wanted.jumping!=before.jumping?wanted.jumping:v.mcc$jumping());

@@ -17,8 +17,23 @@ public class Box {
     public boolean contains(Vec3d p) { return mcc$box().contains(p.x,p.y,p.z); }
     public Box copy() { return of(mcc$box()); }
     public double getAverageSideLength(){return ((maxX-minX)+(maxY-minY)+(maxZ-minZ))/3.0;}
+    /** Beta tests all six faces, including exits when the segment starts inside the box. */
     public HitResult raycast(Vec3d from, Vec3d to) {
-        var hit=mcc$box().clip(new net.minecraft.world.phys.Vec3(from.x,from.y,from.z), new net.minecraft.world.phys.Vec3(to.x,to.y,to.z));
-        return hit.map(p -> new HitResult(0,0,0,0,Vec3d.create(p.x,p.y,p.z))).orElse(null);
+        Vec3d[] candidates={from.interpolateByX(to,minX),from.interpolateByX(to,maxX),
+                from.interpolateByY(to,minY),from.interpolateByY(to,maxY),
+                from.interpolateByZ(to,minZ),from.interpolateByZ(to,maxZ)};
+        int[] sides={4,5,0,1,2,3};
+        Vec3d nearest=null;int side=-1;
+        for(int i=0;i<candidates.length;i++){
+            Vec3d point=candidates[i];if(point==null)continue;
+            boolean onFace=switch(i/2){
+                case 0 -> point.y>=minY&&point.y<=maxY&&point.z>=minZ&&point.z<=maxZ;
+                case 1 -> point.x>=minX&&point.x<=maxX&&point.z>=minZ&&point.z<=maxZ;
+                default -> point.x>=minX&&point.x<=maxX&&point.y>=minY&&point.y<=maxY;
+            };
+            // Strictly closer preserves original X, then Y, then Z precedence at edges/corners.
+            if(onFace&&(nearest==null||from.squaredDistanceTo(point)<from.squaredDistanceTo(nearest))){nearest=point;side=sides[i];}
+        }
+        return nearest==null?null:new HitResult(0,0,0,side,nearest);
     }
 }

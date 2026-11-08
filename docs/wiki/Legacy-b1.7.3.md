@@ -480,6 +480,18 @@ mod-name checks. An actual Mo' Creatures run verifies its constructor's 70/30/25
 the original mod applies these settings at launch rather than on each slider change.
 [The lifecycle validation snapshot](../data/b173-lifecycle-validation-2026-11-07.json) records these checks and their limits.
 
+Four further Mo' Creatures cases exercise Werewolf transformations and form persistence, rare-horse subtype stats and landing
+damage, winged-horse animation/descent, and native cow/wolf prey exclusions. Native cows and wolves retain their Beta API class
+identities in original callbacks, so the mod's own settings and retaliation rules apply to vanilla creatures.
+
+Eleven further More Creeps cases cover Camel and Hotdog taming, GuineaPig commands, speed boosts, stacked carrying and level-five
+progression, RobotTed/Todd shrink and removal thresholds, player/Floob ray attribution, and lethal Rocket splash achievements.
+Shared entity transactions preserve cross-entity fall-distance writes; native damage refreshes the original health view without
+discarding pending motion. Beta box raycasts test all six faces, including an exit when a segment starts inside a target.
+These fixes contain no content-mod identity dispatch. Original quirks remain, including Camel cookies not being consumed and
+GuineaPig carrying performing its effects while returning false.
+[The advanced validation snapshot](../data/b173-advanced-validation-2026-11-07.json) records the regressions and remaining limits.
+
 Original nonliving entities and custom `ItemEntity` subclasses use two shared native host types. Original ticks, collisions,
 pickup and NBT callbacks retain their original identities; explicit superclass calls select the base phase. A custom item
 tick does not receive an extra modern item-physics or merging phase. Tracking includes original scalar fields, dimensions,
