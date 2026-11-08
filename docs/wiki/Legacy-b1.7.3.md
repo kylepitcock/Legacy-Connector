@@ -616,6 +616,22 @@ animated sprites such as Hotdog fire to sample the native animation frame. The o
 restored after drawing. Custom textures, missing sprites and wrapping UVs retain their original standalone texture binding.
 Portable tests exercise the native quad backend's atlas coordinates, matrix restoration and wrapping fallback.
 
+The shared living renderer now executes Beta's original hurt/death and optional ARGB color passes after ordinary models,
+decoration passes and `renderMore`. Ordinary decoration passes use `bindTexture`; overlays use `bindDecorationTexture`.
+Hurt or death produces one brightness-scaled red pass with alpha 0.4, including when both timers are active. Custom original
+render methods retain ownership of their passes. The Beta native adapter supplies no additional modern hurt overlay, avoiding
+double tint. Its opt-in render frame preserves EQUAL depth and alpha blending, with body/overlay draw boundaries; existing
+frame overloads and native entity renderers retain their behavior.
+
+Actual offscreen client attacks exercise Bunny, Hippo and the custom Ogre/Werewolf renderers, including normal colors after
+hurt expires and native Bunny/Hippo death poses. Actual cooked-pork interactions tame a Hotdog; a native redstone interaction
+adds and tracks 250 firepower. GPU readback samples eight distinct uploaded fire frames during normal gameplay from the
+native 32-frame sprite. A separate fixed-pose test advances the standard native atlas while world/entity ticks are frozen,
+confirming changing visible flame pixels and transparent holes. Native tick freeze otherwise stops texture animation too.
+Both unchanged original mod payloads also pass fresh isolated server regressions, alongside 497 portable tests.
+The [render effects snapshot](../data/b173-render-effects-validation-2026-11-08.json) records source hashes, exact coverage,
+pixel counts and reviewed captures. These remain bounded tests without Sodium/Iris or shader-pack coverage.
+
 Isolated offscreen clients enumerate all 28 Mo' Creatures and 53 More Creeps registered entity types in eight lineup pictures.
 Controlled scenes cover Horse equipment, Werewolf forms, Ogre and furniture, the actual Lawyer's wooden/iron doors and spiral,
 and Hotdog fire sampled from the native 32-frame sprite. Both Normal-difficulty integrated clients repeat the original-mod
@@ -777,9 +793,10 @@ The [pet naming and query validation snapshot](../data/b173-pet-naming-validatio
 More Creeps Giraffe and Mo' Creatures Horse naming through native client interactions, keyboard/pointer events and real
 save/reopen. More Creeps covers focus, typing, its original 31-character limit, explicit paste, Save and Cancel; Mo' Creatures
 retains its own 15-character `MoCGUI` and Done behavior. An actual original Bunny breeding tick also exercises the wide-query /
-empty-nearby-query crash boundary. Both mods pass fresh isolated server regressions. These checks do not establish complete
-mod compatibility: standard living-renderer hurt/death tint passes remain missing, and Hotdog animated fire, natural births
+empty-nearby-query crash boundary. Both mods pass fresh isolated server regressions. Hurt/death tint and Hotdog animation
+are covered separately by the render effects snapshot above. Complete mod compatibility remains unverified: natural births
 and full Werewolf transformation sequences still need end-to-end client checks.
+
 - **Placing a subtype.** b1.7.3's `ItemBlock` set block and metadata together (`getPlacedBlockMetadata` of the damage), so `onBlockAdded`
   and the tile entity it makes see the subtype; `getStateForPlacement` does the same (before, a Minefactory translocator or crafter
   placed from its item got the tile entity of metadata 0 and opened nothing).
