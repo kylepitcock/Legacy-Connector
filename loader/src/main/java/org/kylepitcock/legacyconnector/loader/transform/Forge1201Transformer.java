@@ -317,6 +317,9 @@ public final class Forge1201Transformer {
                 node.accept(writer);
                 bytes = writer.toByteArray();
             }
+            // a class of the jar that a table renames onto a class of the layer (Architectury's EventBuses): the layer's own copy is used, and a second one in this
+            // jar would put the same package in two modules
+            if (node.name.startsWith(Mc1201Tables.HELPER_PACKAGE.substring(0, Mc1201Tables.HELPER_PACKAGE.lastIndexOf("migrate/"))) && !ownClasses.contains(node.name)) continue;
             outClasses.put(node.name + ".class", bytes);
             result.classes++;
         }
@@ -350,7 +353,7 @@ public final class Forge1201Transformer {
             // multi-loader jars: Sinytra Connector would load the same jar a second time as a Fabric mod
             if (name.equals("fabric.mod.json") || name.equals("quilt.mod.json")) continue;
             byte[] data = e.getValue();
-            if (name.startsWith("META-INF/jarjar/")) {
+            if (name.startsWith("META-INF/jarjar/") || (name.startsWith("META-INF/jars/") && name.endsWith(".jar"))) {   // the metadata may name any path (Artifacts: META-INF/jars/)
                 if (name.endsWith(".jar")) {
                     byte[] nested = nestedJar(name, data, result);
                     if (nested == null) continue;

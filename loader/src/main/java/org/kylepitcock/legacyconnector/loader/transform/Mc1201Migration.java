@@ -129,11 +129,11 @@ final class Mc1201Migration {
      * {@code StructureType<S> type = () -> CODEC}: the lambda is built as a {@code Supplier} of the old codec instead, and a helper makes the interface
      * (via a proxy) whose {@code codec()} converts it to the {@code MapCodec} 1.21.1 asks for.
      */
-    private static void codecLambda(MethodNode m, org.objectweb.asm.tree.InvokeDynamicInsnNode d) {
+    private static boolean codecLambda(MethodNode m, org.objectweb.asm.tree.InvokeDynamicInsnNode d) {
         if (!d.name.equals("codec") || !d.bsm.getOwner().equals("java/lang/invoke/LambdaMetafactory") || d.bsmArgs.length < 3
-                || !(d.bsmArgs[0] instanceof Type sam) || !sam.getDescriptor().equals("()Lcom/mojang/serialization/Codec;")) return;
+                || !(d.bsmArgs[0] instanceof Type sam) || !sam.getDescriptor().equals("()Lcom/mojang/serialization/Codec;")) return false;
         Type made = Type.getReturnType(d.desc);
-        if (made.getSort() != Type.OBJECT || !MAP_CODEC_TYPES.contains(made.getInternalName()) || Type.getArgumentTypes(d.desc).length != 0) return;
+        if (made.getSort() != Type.OBJECT || !MAP_CODEC_TYPES.contains(made.getInternalName()) || Type.getArgumentTypes(d.desc).length != 0) return false;
         d.name = "get";
         d.desc = "()Ljava/util/function/Supplier;";
         d.bsmArgs[0] = Type.getMethodType("()Ljava/lang/Object;");
@@ -145,6 +145,7 @@ final class Mc1201Migration {
                 "(Ljava/lang/Class;Ljava/util/function/Supplier;)Ljava/lang/Object;", false));
         after.add(new org.objectweb.asm.tree.TypeInsnNode(Opcodes.CHECKCAST, made.getInternalName()));
         m.instructions.insert(d, after);
+        return true;
     }
 
     /**
@@ -197,7 +198,9 @@ final class Mc1201Migration {
             subscribers++;
             // FML removes @OnlyIn(CLIENT) methods on a dedicated server: a class with only those has no subscribers there
             if (m.visibleAnnotations.stream().anyMatch(a -> a.desc.equals("Lnet/neoforged/api/distmarker/OnlyIn;") && a.values != null && a.values.size() >= 2
-                    && a.values.get(1) instanceof String[] e && e[1].equals("CLIENT"))) clientOnly++;
+                    && a.values.get(1) instanceof String[] e && e[1].equals("CLIENT"))
+                    // a handler of a client event (RenderLevelStageEvent...) or one that mentions a client class: reading the methods of the class on a server loads it
+                    || m.desc.contains("Lnet/minecraft/client/") || m.desc.contains("Lnet/neoforged/neoforge/client/") || m.desc.contains("FMLClientSetupEvent")) clientOnly++;
         }
         if (subscribers == 0) {
             node.visibleAnnotations.remove(sub);
@@ -281,7 +284,7 @@ final class Mc1201Migration {
                     c.providerCalls++;
                 }
             } else if (in instanceof org.objectweb.asm.tree.InvokeDynamicInsnNode d) {
-                codecLambda(m, d);
+                if (codecLambda(m, d)) c.calls++;   // the stack grew: counted so the class gets its frames and limits computed again
                 registryBufferLambda(d);
                 redirectHandles(d, h, t, c);
             } else if (in instanceof FieldInsnNode f && (f.getOpcode() == Opcodes.GETFIELD || f.getOpcode() == Opcodes.PUTFIELD)) {

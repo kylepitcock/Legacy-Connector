@@ -43,6 +43,7 @@ public final class Forge1201Runtime {
         modBus.addListener(Forge1201Runtime::onRegisterCapabilities);
         modBus.addListener(Forge1201Runtime::onLoadComplete);
         modBus.addListener(org.kylepitcock.legacyconnector.v1_20_1.migrate.LegacyEnchantments::onNewRegistry);
+        org.kylepitcock.legacyconnector.v1_20_1.migrate.LegacyComponents.COMPONENTS.register(modBus);
         modBus.addListener((net.neoforged.neoforge.registries.RegisterEvent e) -> {
             if (e.getRegistryKey().equals(net.neoforged.neoforge.registries.NeoForgeRegistries.Keys.INGREDIENT_TYPES)) {
                 e.register(net.neoforged.neoforge.registries.NeoForgeRegistries.Keys.INGREDIENT_TYPES,

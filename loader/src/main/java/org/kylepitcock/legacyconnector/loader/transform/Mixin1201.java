@@ -82,6 +82,12 @@ final class Mixin1201 {
             fixAll(f.visibleAnnotations, ctx);
         }
         for (MethodNode m : node.methods) defineSynchedDataHandler(m);
+        String shadow = missingShadow(node, targets, h);
+        if (shadow != null) {
+            st.dropped.add(node.name + " (@Shadow " + shadow + " does not exist in " + targets.get(0) + ")");
+            st.droppedClasses.add(node.name);
+            return;
+        }
         // a mixin whose targets are all gone from 1.21.1 cannot apply
         if (!targets.isEmpty()) {
             boolean anyPresent = false;
@@ -97,7 +103,57 @@ final class Mixin1201 {
         }
     }
 
-    private static final String BUILDER = "Lnet/minecraft/network/syncher/SynchedEntityData$Builder;";
+    private static final String SHADOW = "Lorg/spongepowered/asm/mixin/Shadow;";
+
+    /**
+     * The first {@code @Shadow} member of the mixin that its single Minecraft target (and the classes above it) does not have in 1.21.1, or null. Mixin would
+     * refuse the whole mixin with an {@code InvalidMixinException} at apply time; dropping it from the config names the reason in the report instead.
+     */
+    static String missingShadow(ClassNode node, List<String> targets, Mc1201Hierarchy h) {
+        if (targets.size() != 1) return null;
+        String target = targets.get(0);
+        if (!target.startsWith("net/minecraft/") || McMembers1201.get(target) == null) return null;
+        for (MethodNode m : node.methods) {
+            if (!hasShadow(m.invisibleAnnotations) && !hasShadow(m.visibleAnnotations)) continue;
+            if (shadowHasPrefix(m.invisibleAnnotations) || shadowHasPrefix(m.visibleAnnotations)) continue;
+            Boolean found = hasMember(target, m.name + m.desc, true, h, new java.util.HashSet<>());
+            if (found != null && !found) return m.name + m.desc;
+        }
+        for (FieldNode f : node.fields) {
+            if (!hasShadow(f.invisibleAnnotations) && !hasShadow(f.visibleAnnotations)) continue;
+            if (shadowHasPrefix(f.invisibleAnnotations) || shadowHasPrefix(f.visibleAnnotations)) continue;
+            Boolean found = hasMember(target, f.name + ":" + f.desc, false, h, new java.util.HashSet<>());
+            if (found != null && !found) return f.name + ":" + f.desc;
+        }
+        return null;
+    }
+
+    private static boolean hasShadow(List<AnnotationNode> list) {
+        return find(list, SHADOW) != null;
+    }
+
+    private static boolean shadowHasPrefix(List<AnnotationNode> list) {
+        AnnotationNode a = find(list, SHADOW);
+        return a != null && a.values != null && a.values.contains("prefix");
+    }
+
+    /** True/false when the class chain is known, null when it leaves into classes the index does not know (then nothing is claimed). */
+    private static Boolean hasMember(String owner, String key, boolean method, Mc1201Hierarchy h, java.util.Set<String> seen) {
+        if (owner.equals("java/lang/Object")) return method && java.util.Set.of("equals(Ljava/lang/Object;)Z", "hashCode()I", "toString()Ljava/lang/String;").contains(key);
+        if (!seen.add(owner)) return false;
+        McMembers1201.Members mm = McMembers1201.get(owner);
+        if (mm == null) return null;
+        if ((method ? mm.methods() : mm.fields()).contains(key)) return true;
+        Boolean result = false;
+        for (String s : h.supers(owner)) {
+            Boolean r = hasMember(s, key, method, h, seen);
+            if (r == null) result = null;
+            else if (r) return true;
+        }
+        return result;
+    }
+
+    private static final String BUILDER ="Lnet/minecraft/network/syncher/SynchedEntityData$Builder;";
     private static final String CALLBACK = "Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfo;";
 
     /**

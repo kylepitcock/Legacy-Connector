@@ -28,6 +28,10 @@ public final class LegacyEntityData {
     public static <T> EntityDataAccessor<T> defineId(Class<? extends net.minecraft.network.syncher.SyncedDataHolder> owner, EntityDataSerializer<T> serializer) {
         EntityDataAccessor<T> accessor = SynchedEntityData.defineId(owner, serializer);
         if (owner.getName().startsWith("net.minecraft.")) RESERVED.add(new Reserved(owner, accessor));
+        if (Boolean.getBoolean("legacyconnector.entityDataDiag")) {
+            org.slf4j.LoggerFactory.getLogger("LegacyConnector/EntityData").info("defineId {} -> id {} by {}", owner.getSimpleName(), accessor.id(),
+                    java.util.Arrays.stream(new Throwable().getStackTrace()).skip(1).limit(2).map(StackTraceElement::toString).toList());
+        }
         return accessor;
     }
 
@@ -42,7 +46,16 @@ public final class LegacyEntityData {
             if (value == null) continue;
             builder.define((EntityDataAccessor) r.accessor(), value);
         }
+        for (int i = 0; i < itemsById.length; i++) {
+            if (itemsById[i] == null && REPORTED.add(entity.getClass().getName() + "#" + i)) {
+                StringBuilder known = new StringBuilder();
+                for (Reserved r : RESERVED) known.append(r.owner().getSimpleName()).append('#').append(r.accessor().id()).append(' ');
+                org.slf4j.LoggerFactory.getLogger("LegacyConnector/EntityData").warn("{} has no data for id {} (legacy accessors recorded: {}); the id was reserved by code that did not define it, or its serializer has no default", entity.getClass().getName(), i, known);
+            }
+        }
     }
+
+    private static final java.util.Set<String> REPORTED = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
     private static Object defaultOf(EntityDataSerializer<?> s) {
         if (s == EntityDataSerializers.BYTE) return (byte) 0;

@@ -35,10 +35,24 @@ final class Subscribers1201 {
         return null;
     }
 
+    /** Events NeoForge refuses to listen to directly (abstract); Forge delivered every subclass. */
+    private static final java.util.Set<String> ABSTRACT_EVENTS = java.util.Set.of(
+            "net/neoforged/neoforge/event/level/ExplosionEvent", "net/neoforged/neoforge/event/entity/player/AdvancementEvent",
+            "net/neoforged/neoforge/event/entity/player/PlayerEvent", "net/neoforged/neoforge/event/entity/living/LivingEvent",
+            "net/neoforged/neoforge/event/entity/EntityEvent", "net/neoforged/neoforge/event/level/LevelEvent",
+            "net/neoforged/neoforge/event/level/BlockEvent", "net/neoforged/neoforge/event/entity/player/PlayerInteractEvent",
+            "net/neoforged/neoforge/event/entity/living/LivingEntityUseItemEvent", "net/neoforged/neoforge/event/entity/item/ItemEvent",
+            "net/neoforged/neoforge/event/level/ChunkEvent", "net/neoforged/neoforge/event/level/ChunkWatchEvent",
+            "net/neoforged/neoforge/event/entity/living/MobEffectEvent", "net/neoforged/neoforge/event/entity/living/LivingChangeTargetEvent",
+            "net/neoforged/neoforge/event/entity/ProjectileImpactEvent", "net/neoforged/neoforge/event/entity/player/AnvilRepairEvent");
+
     private static boolean hasInstanceSubscriber(ClassNode node, Map<String, ClassNode> byName) {
         for (ClassNode c = node; c != null; c = c.superName == null ? null : byName.get(c.superName)) {
             for (MethodNode m : c.methods) {
-                if ((m.access & Opcodes.ACC_STATIC) == 0 && find(m.visibleAnnotations, SUBSCRIBE) != null) return true;
+                if (find(m.visibleAnnotations, SUBSCRIBE) == null) continue;
+                if ((m.access & Opcodes.ACC_STATIC) == 0) return true;
+                Type[] args = Type.getArgumentTypes(m.desc);
+                if (args.length == 1 && args[0].getSort() == Type.OBJECT && ABSTRACT_EVENTS.contains(args[0].getInternalName())) return true;
             }
         }
         return false;

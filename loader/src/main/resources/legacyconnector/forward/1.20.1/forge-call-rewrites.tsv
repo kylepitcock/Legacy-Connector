@@ -124,3 +124,7 @@ net/neoforged/neoforge/event/EventHooks.onBucketUse(Lnet/minecraft/world/entity/
 net/neoforged/neoforge/common/brewing/BrewingRecipeRegistry.addRecipe(Lnet/minecraft/world/item/crafting/Ingredient;Lnet/minecraft/world/item/crafting/Ingredient;Lnet/minecraft/world/item/ItemStack;)Z	Tail.brewAddRecipe
 net/neoforged/neoforge/common/brewing/BrewingRecipeRegistry.getRecipes()Ljava/util/List;	Tail.brewGetRecipes
 net/neoforged/neoforge/registries/DeferredHolder.createOptional(Lnet/minecraft/resources/ResourceLocation;Lnet/minecraft/resources/ResourceKey;Ljava/lang/String;)Lnet/neoforged/neoforge/registries/DeferredHolder;	Tail.holderCreateWithNamespace
+net/neoforged/bus/api/IEventBus.addListener(Ljava/util/function/Consumer;)V	addListenerSafe
+net/neoforged/bus/api/IEventBus.addListener(Lnet/neoforged/bus/api/EventPriority;Ljava/util/function/Consumer;)V	addListenerSafe
+net/neoforged/bus/api/IEventBus.addListener(Lnet/neoforged/bus/api/EventPriority;ZLjava/util/function/Consumer;)V	addListenerSafe
+net/neoforged/bus/api/IEventBus.addListener(Lnet/neoforged/bus/api/EventPriority;ZLjava/lang/Class;Ljava/util/function/Consumer;)V	addListenerSafe

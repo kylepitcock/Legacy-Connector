@@ -604,3 +604,4 @@ net/minecraft/world/item/crafting/SimpleCraftingRecipeSerializer	<init>	(Lorg/ky
 net/minecraft/world/level/storage/loot/predicates/LootItemConditions	orConditions	([Ljava/util/function/Predicate;)Ljava/util/function/Predicate;	RoundCompat	orConditions	-
 net/minecraft/world/level/storage/loot/predicates/LootItemConditions	andConditions	([Ljava/util/function/Predicate;)Ljava/util/function/Predicate;	RoundCompat	andConditions	-
 net/minecraft/network/syncher/SynchedEntityData	defineId	(Ljava/lang/Class;Lnet/minecraft/network/syncher/EntityDataSerializer;)Lnet/minecraft/network/syncher/EntityDataAccessor;	LegacyEntityData	defineId	-
+net/neoforged/neoforge/fluids/capability/templates/FluidHandlerItemStack	<init>	(Lnet/minecraft/world/item/ItemStack;I)V	=args	LegacyComponents.fluidContent@0,0,1	(Ljava/util/function/Supplier;Lnet/minecraft/world/item/ItemStack;I)V

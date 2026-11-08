@@ -22,6 +22,31 @@ public class NetworkEvent extends Event {
         return () -> context;
     }
 
+    /** Forge's event for a custom payload that reached the client (mods subscribe to read raw payloads of other channels); never posted here. */
+    public static class ClientCustomPayloadEvent extends NetworkEvent {
+        public ClientCustomPayloadEvent(Context context) {
+            super(context);
+        }
+    }
+
+    public static class ServerCustomPayloadEvent extends NetworkEvent {
+        public ServerCustomPayloadEvent(Context context) {
+            super(context);
+        }
+    }
+
+    public static class GatherLoginPayloadsEvent extends NetworkEvent {
+        public GatherLoginPayloadsEvent(Context context) {
+            super(context);
+        }
+    }
+
+    public static class LoginPayloadEvent extends NetworkEvent {
+        public LoginPayloadEvent(Context context) {
+            super(context);
+        }
+    }
+
     /** What a message handler gets: the direction, the sending player, the main-thread queue. Backed by NeoForge's payload context. */
     public static class Context {
         private final IPayloadContext delegate;
