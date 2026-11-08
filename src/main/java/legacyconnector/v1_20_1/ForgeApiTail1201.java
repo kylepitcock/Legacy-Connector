@@ -202,4 +202,40 @@ public final class ForgeApiTail1201 {
         java.util.function.Supplier supplier = ForgeApi1201.newRegistryCreate(event, builder);
         if (onCreate != null) onCreate.accept(supplier.get());
         return supplier;
-    }}
+    }
+
+    // ---- spawning, bone meal, buckets, brewing
+
+    public static net.minecraft.world.entity.SpawnGroupData onFinalizeSpawn(net.minecraft.world.entity.Mob mob, net.minecraft.world.level.ServerLevelAccessor level,
+            net.minecraft.world.DifficultyInstance difficulty, net.minecraft.world.entity.MobSpawnType type, net.minecraft.world.entity.SpawnGroupData data,
+            net.minecraft.nbt.CompoundTag tag) {
+        return net.neoforged.neoforge.event.EventHooks.finalizeMobSpawn(mob, level, difficulty, type, data);
+    }
+
+    /** Forge's result: -1 cancelled, 1 bone meal used up, 0 nothing special. */
+    public static int onApplyBonemeal(net.minecraft.world.entity.player.Player player, net.minecraft.world.level.Level level, net.minecraft.core.BlockPos pos,
+            net.minecraft.world.level.block.state.BlockState state, net.minecraft.world.item.ItemStack stack) {
+        var event = net.neoforged.neoforge.event.EventHooks.fireBonemealEvent(player, level, pos, state, stack);
+        if (event.isCanceled()) return -1;
+        if (event.isSuccessful()) {
+            stack.shrink(1);
+            return 1;
+        }
+        return 0;
+    }
+
+    /** Forge's bucket event could replace the result; no handler means null (the vanilla use goes on). */
+    public static net.minecraft.world.InteractionResultHolder<net.minecraft.world.item.ItemStack> onBucketUse(net.minecraft.world.entity.player.Player player,
+            net.minecraft.world.level.Level level, net.minecraft.world.item.ItemStack stack, net.minecraft.world.phys.HitResult target) {
+        return null;
+    }
+
+    /** Brewing recipes are registered through RegisterBrewingRecipesEvent now; recipes added the old way are accepted and not brewed. */
+    public static boolean brewAddRecipe(net.minecraft.world.item.crafting.Ingredient ingredient, net.minecraft.world.item.crafting.Ingredient input, net.minecraft.world.item.ItemStack output) {
+        return true;
+    }
+
+    public static java.util.List brewGetRecipes() {
+        return new java.util.ArrayList<>();
+    }
+}
