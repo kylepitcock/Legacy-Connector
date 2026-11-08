@@ -177,3 +177,12 @@ com/github/alexthe666/citadel/client/event/EventGetOutlineColor	getResult	()Lleg
 com/github/alexthe666/citadel/client/event/EventPosePlayerHand	setResult	(Llegacyconnector/v1_20_1/net/minecraftforge/eventbus/api/Event$Result;)V	CitadelCompat	setResult	(Ljava/lang/Object;Llegacyconnector/v1_20_1/net/minecraftforge/eventbus/api/Event$Result;)V
 com/github/alexthe666/citadel/client/event/EventPosePlayerHand	getResult	()Llegacyconnector/v1_20_1/net/minecraftforge/eventbus/api/Event$Result;	CitadelCompat	getResult	(Ljava/lang/Object;)Llegacyconnector/v1_20_1/net/minecraftforge/eventbus/api/Event$Result;
 # END library bridges from the 1.21.1 API diff
+# BEGIN Create 6 block entity NBT calls (super.read/write and writeSafe): the provider comes from the running level
+com/simibubi/create/foundation/blockEntity/SmartBlockEntity	read	(Lnet/minecraft/nbt/CompoundTag;Z)V	=args	0,BridgeHelpers.providerFor@0,1	(Lnet/minecraft/nbt/CompoundTag;Lnet/minecraft/core/HolderLookup$Provider;Z)V
+com/simibubi/create/foundation/blockEntity/SmartBlockEntity	write	(Lnet/minecraft/nbt/CompoundTag;Z)V	=args	0,BridgeHelpers.providerFor@0,1	(Lnet/minecraft/nbt/CompoundTag;Lnet/minecraft/core/HolderLookup$Provider;Z)V
+com/simibubi/create/foundation/blockEntity/SmartBlockEntity	writeSafe	(Lnet/minecraft/nbt/CompoundTag;)V	=args	0,BridgeHelpers.providerFor@0	(Lnet/minecraft/nbt/CompoundTag;Lnet/minecraft/core/HolderLookup$Provider;)V
+com/simibubi/create/content/kinetics/base/KineticBlockEntity	read	(Lnet/minecraft/nbt/CompoundTag;Z)V	=args	0,BridgeHelpers.providerFor@0,1	(Lnet/minecraft/nbt/CompoundTag;Lnet/minecraft/core/HolderLookup$Provider;Z)V
+com/simibubi/create/content/kinetics/base/KineticBlockEntity	write	(Lnet/minecraft/nbt/CompoundTag;Z)V	=args	0,BridgeHelpers.providerFor@0,1	(Lnet/minecraft/nbt/CompoundTag;Lnet/minecraft/core/HolderLookup$Provider;Z)V
+com/simibubi/create/content/kinetics/base/GeneratingKineticBlockEntity	read	(Lnet/minecraft/nbt/CompoundTag;Z)V	=args	0,BridgeHelpers.providerFor@0,1	(Lnet/minecraft/nbt/CompoundTag;Lnet/minecraft/core/HolderLookup$Provider;Z)V
+com/simibubi/create/content/kinetics/base/GeneratingKineticBlockEntity	write	(Lnet/minecraft/nbt/CompoundTag;Z)V	=args	0,BridgeHelpers.providerFor@0,1	(Lnet/minecraft/nbt/CompoundTag;Lnet/minecraft/core/HolderLookup$Provider;Z)V
+# END Create 6 block entity NBT calls

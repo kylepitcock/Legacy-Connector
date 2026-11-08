@@ -84,6 +84,10 @@ public final class LegacyConfig {
             # A reference to a missing Minecraft 1.21.1 class, method or field no longer keeps a Forge 1.20.1 mod from loading; the
             # stand-in throws only when it runs (read by the loader at startup).
             experimental.forge1201.softlink = true
+            # A legacy library that clashes with a native 1.21.1 jar (Citadel) or another legacy version's copy runs next to it as an isolated
+            # unit (own mod id, relocated packages) instead of being skipped. experimental.forge1201.sideBySideLibraries is an alias.
+            # Per-library overrides: experimental.sideBySideLibraries.include / .exclude = comma separated mod ids (read by the loader at startup).
+            experimental.sideBySideLibraries = true
 
             # Pack maker switches, read by the loader at startup.
             # Legacy mods to leave out entirely (their legacy ids, comma separated; the whole jar is skipped when all its mods are listed).

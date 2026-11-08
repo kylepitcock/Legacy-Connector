@@ -26,6 +26,11 @@ public final class BridgeHelpers {
     // ------------------------------------------------------------------ block interaction
 
     /** The result of the mod's {@code Block.use} as the result of {@code useItemOn}: a pass lets vanilla try the empty-hand interaction. */
+    /** The registry provider of the running level, for a call of a library method that gained a {@code HolderLookup.Provider} parameter (the argument is ignored). */
+    public static HolderLookup.Provider providerFor(net.minecraft.nbt.CompoundTag ignored) {
+        return MigrateContext.provider();
+    }
+
     public static ItemInteractionResult toItemResult(InteractionResult r) {
         if (r == null) return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         return switch (r) {
