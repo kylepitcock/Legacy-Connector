@@ -256,10 +256,38 @@ public final class Gap1201 {
     private final Map<String, Set<String>> missingMethods = new TreeMap<>();
     private final Map<String, Set<String>> missingFields = new TreeMap<>();
 
+    private static final java.util.regex.Pattern MOD_ID = java.util.regex.Pattern.compile("modId\\s*=\\s*\"([^\"]+)\"");
+
+    private static boolean isNativeLibrary(Path jar) {
+        try (ZipFile zip = new ZipFile(jar.toFile())) {
+            for (String name : new String[] {"META-INF/mods.toml", "META-INF/neoforge.mods.toml"}) {
+                ZipEntry e = zip.getEntry(name);
+                if (e == null) continue;
+                String toml = new String(zip.getInputStream(e).readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+                java.util.regex.Matcher m = MOD_ID.matcher(toml);
+                boolean any = false;
+                while (m.find()) {
+                    String id = m.group(1);
+                    if (id.equals("forge") || id.equals("minecraft") || id.equals("neoforge")) continue;
+                    any = true;
+                    if (!org.kylepitcock.legacyconnector.loader.NativeLibraries1201.table().containsKey(id.toLowerCase(java.util.Locale.ROOT))) return false;
+                }
+                return any;
+            }
+        } catch (IOException | RuntimeException e) {
+            // unreadable: treated as a normal mod
+        }
+        return false;
+    }
+
     private void run(List<Path> mods, Path report) throws IOException {
         if (Boolean.getBoolean("gap.translate")) mods = translated(mods);
         Map<String, Cls> own = new HashMap<>();
-        for (Path m : mods) index(m, own);
+        for (Path m : mods) {
+            // a library with a native 1.21.1 build (libraries.tsv) is replaced by that build at run time: its 1.20.1 classes must not shadow the 1.21.1 ones
+            if (!Boolean.getBoolean("gap.keepNativeLibs") && isNativeLibrary(m)) continue;
+            index(m, own);
+        }
         // the mods' own members must be renamed like the references to them (descriptors with moved classes, SRG names of overrides)
         for (Cls c : own.values()) {
             Set<String> ms = new HashSet<>(), fs = new HashSet<>();

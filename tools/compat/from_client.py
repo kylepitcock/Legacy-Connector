@@ -121,7 +121,8 @@ for r in results.values():
 mods_list.sort(key=lambda e: e["name"].lower())
 # mods listed in "hidden" (nothing to do on 1.21.1, or client mods with their own 1.21.1 version) stay off the site
 hidden = {norm(h) for h in data.get("hidden", [])}
-data["mods"] = [e for e in data["mods"] if norm(e["name"]) not in hidden]
+data["mods"] = [e for e in data["mods"] if norm(e["name"]) not in hidden
+                and norm(e["name"]) not in {norm(h) for h in data.get("hidden_by_mc", {}).get(e.get("mc", "1.7.10"), [])}]
 DATA.write_text(json.dumps(data, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
 counts = {s: sum(1 for r in results.values() if r["status"] == s) for s in RANK}
 print(f"{len(results)} mods rated ({counts}), {changed} entries written{'' if selftest else ' (no self test in this log)'}")
