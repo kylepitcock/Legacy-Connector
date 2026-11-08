@@ -71,3 +71,5 @@ net/minecraft/core/Holder$Reference	getTagKeys	*	tags
 net/minecraft/core/Holder$Reference	containsTag	*	is
 net/minecraft/util/random/WeightedEntry$Wrapper	getData	*	data
 net/minecraft/world/level/Explosion	getPosition	*	center
+net/minecraft/core/registries/Registries	DECORATED_POT_PATTERNS	:*	DECORATED_POT_PATTERN
+net/minecraft/core/registries/BuiltInRegistries	DECORATED_POT_PATTERNS	:*	DECORATED_POT_PATTERN

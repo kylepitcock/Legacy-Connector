@@ -446,6 +446,51 @@ public final class RoundCompat {
         return net.minecraft.server.network.CommonListenerCookie.createInitial(player.getGameProfile(), false);
     }
 
+    /** {@code Rarity.create(name, styleModifier)}: the colour the modifier gives a plain style picks the nearest vanilla rarity. */
+    public static net.minecraft.world.item.Rarity createRarityStyled(String name, java.util.function.UnaryOperator<net.minecraft.network.chat.Style> modifier) {
+        net.minecraft.network.chat.TextColor color = modifier.apply(net.minecraft.network.chat.Style.EMPTY).getColor();
+        net.minecraft.ChatFormatting nearest = net.minecraft.ChatFormatting.WHITE;
+        if (color != null) {
+            int best = Integer.MAX_VALUE;
+            for (net.minecraft.ChatFormatting f : net.minecraft.ChatFormatting.values()) {
+                if (!f.isColor() || f.getColor() == null) continue;
+                int d = Math.abs(((color.getValue() >> 16) & 255) - ((f.getColor() >> 16) & 255)) + Math.abs(((color.getValue() >> 8) & 255) - ((f.getColor() >> 8) & 255))
+                        + Math.abs((color.getValue() & 255) - (f.getColor() & 255));
+                if (d < best) {
+                    best = d;
+                    nearest = f;
+                }
+            }
+        }
+        return createRarity(name, nearest);
+    }
+
+    // ---- Forge enum extension ({@code Enum.create(...)}): constants cannot be added at runtime, the nearest vanilla one stands in ----
+
+    /** {@code MobCategory.create(name, key, max, friendly, persistent, despawn)}: friendly persistent mobs count as creatures, friendly ones as ambient, the rest as monsters. */
+    public static net.minecraft.world.entity.MobCategory createMobCategory(String name, String key, int max, boolean friendly, boolean persistent, int despawn) {
+        return friendly ? (persistent ? net.minecraft.world.entity.MobCategory.CREATURE : net.minecraft.world.entity.MobCategory.AMBIENT)
+                : net.minecraft.world.entity.MobCategory.MONSTER;
+    }
+
+    /** {@code SpawnPlacements.Type}-style custom placement: a placement type that asks the predicate. */
+    public static net.minecraft.world.entity.SpawnPlacementType createSpawnPlacementType(String name,
+            net.neoforged.neoforge.common.util.TriPredicate<net.minecraft.world.level.LevelReader, net.minecraft.core.BlockPos, net.minecraft.world.entity.EntityType<?>> predicate) {
+        return predicate::test;
+    }
+
+    public static net.minecraft.world.entity.raid.Raid.RaiderType createRaiderType(String name, net.minecraft.world.entity.EntityType<?> type, int[] counts) {
+        return net.minecraft.world.entity.raid.Raid.RaiderType.VINDICATOR;
+    }
+
+    public static net.minecraft.world.level.pathfinder.PathType createPathType(String name, float malus) {
+        return malus < 0 ? net.minecraft.world.level.pathfinder.PathType.BLOCKED : net.minecraft.world.level.pathfinder.PathType.OPEN;
+    }
+
+    public static net.minecraft.world.item.ItemDisplayContext createDisplayContext(String name, ResourceLocation id, net.minecraft.world.item.ItemDisplayContext parent) {
+        return parent != null ? parent : net.minecraft.world.item.ItemDisplayContext.NONE;
+    }
+
     /** {@code ComponentContents.EMPTY} moved to {@code PlainTextContents.EMPTY}. */
     public static net.minecraft.network.chat.ComponentContents emptyContents() {
         return net.minecraft.network.chat.contents.PlainTextContents.EMPTY;
