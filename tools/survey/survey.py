@@ -145,6 +145,9 @@ def prepare_game(jars, libs, mc, perf):
         for j in perf.glob("*.jar"):
             if "irisveil" in j.name.lower():
                 continue   # Iris Veil Compat needs the Veil library: its mixin crashes the client without it
+            tok = re.split(r"[-_+ ]", j.name)[0].lower()
+            if len(tok) >= 4 and any(x.name.lower().startswith(tok) for x in list(jars) + list(libs)):
+                continue   # a legacy mod with the same name as a perf mod (Clumps...): same module package, the client cannot start with both
             shutil.copy2(j, GAME / "mods" / j.name)
     for j in list(jars) + list(libs):
         shutil.copy2(j, GAME / "mods" / mc / j.name)
