@@ -291,15 +291,19 @@ public final class ForwardCalls {
         final Hierarchy hierarchy;
         private final String link;
         private final String synth;
+        /** The version's own shim classes (1.6.4's Vec3Pool, ILogAgent): the tables name them by their legacy name too. */
+        private final String own;
 
         Normalizer(LegacyVersion version, Hierarchy hierarchy) {
             this.hierarchy = hierarchy;
             this.link = version.linkPrefix();
             this.synth = version.synthPrefix();
+            this.own = version.shimPrefix();
         }
 
         String strip(String s) {
-            return s.replace(link, "").replace(synth, "");
+            String out = s.replace(link, "").replace(synth, "");
+            return own.equals(link) ? out : out.replace(own, "");
         }
 
         String link(String legacy) {

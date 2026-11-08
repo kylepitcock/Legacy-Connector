@@ -5568,7 +5568,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "partial",
-   "notes": "Loads now in a server test (0 failed mods): the ClassCastException in postInit is gone (1.6.4's FurnaceRecipes.getSmeltingList() is keyed by item id; the layer now gives it that shape). Not played in a client yet."
+   "notes": "Loads now in a server test (0 failed mods): the ClassCastException in postInit is gone (1.6.4's FurnaceRecipes.getSmeltingList() is keyed by item id; the layer now gives it that shape). Not played in a client yet. 2026-11-07: loads in a real client with the perf set; the custom wall and fence gate (no icon of their own) no longer show the missing-texture placeholder in inventories."
   },
   {
    "name": "Ender IO Applied Energistics Conduits",
@@ -6341,7 +6341,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "partial",
-   "notes": "Real client, survival, shaders: the gate recipe gives its result from the crafting grid; the Binnie machine blocks have no screen without a matching meta and were not tried further."
+   "notes": "Real client, survival, shaders: the gate recipe gives its result from the crafting grid; the Binnie machine blocks have no screen without a matching meta and were not tried further. 2026-11-07: machine blocks (extratrees machine, Extra Bees apiarist/genetic machines, alveary) had the missing texture as particle and inventory model; they now use the icon their registerBlockIcons registered (or a neutral texture); the items show a machine texture in a real client."
   },
   {
    "name": "Extra Trees",
@@ -6484,7 +6484,7 @@
    "source": "client",
    "date": "2026-11-06",
    "status": "fails",
-   "notes": "Disabled at startup (deobfuscated-environment check)."
+   "notes": "Disabled at startup (deobfuscated-environment check). 2026-11-07: loads in a real client (creative items registered); every item of the factory block drew the same Mixer icon because the inventory renderer was handed getMetadata() (15 for all of them) instead of the item damage, which is what 1.5.2 RenderItem passed to the block's rendering handler; each now draws its own machine (issue #194)."
   },
   {
    "name": "Factorization",
@@ -11311,7 +11311,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "partial",
-   "notes": "Real client, survival, shaders: the microscope screen opens and analyzes a gold ingot into 16 gold atoms (an element item in the output slot); the decomposer and synthesis screens open. The machines crash when they tick (Minechem calls Vector3.translate(ForgeDirection), which the Universal Electricity 3.0.0.1-dev jar of the test set does not have: a library version mismatch), so decomposing and synthesising were not tested."
+   "notes": "Real client, survival, shaders: the microscope screen opens and analyzes a gold ingot into 16 gold atoms (an element item in the output slot); the decomposer and synthesis screens open. The machines crash when they tick (Minechem calls Vector3.translate(ForgeDirection), which the Universal Electricity 3.0.0.1-dev jar of the test set does not have: a library version mismatch), so decomposing and synthesising were not tested. 2026-11-07: the chemical storage block (no icon, drawn by its tile renderer) uses a neutral texture instead of the missing-texture placeholder."
   },
   {
    "name": "Minecraft Multipart Plugin",
@@ -18059,7 +18059,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "works",
-   "notes": "Real client, survival, shaders: the ironwood axe recipe gives its result from the crafting grid (the 3 recipes with an empty result are code recipes). Earlier checks: blocks, items and several mobs render; hostile mobs and the dimension were not checked. 2026-11-07 round: the dimension generated nothing (void) because MapGenStructure.getStructureName was abstract; fixed. Portal (diamond into the flower pool) forms and teleports, terrain and trees generate, mobs (lich, knight phantom, tower golem, redcap, druid, minotaur, boar, deer, penguin) render with boss bars; the Naga draws as a leaf cube (issue #190)."
+   "notes": "Real client, survival, shaders: the ironwood axe recipe gives its result from the crafting grid (the 3 recipes with an empty result are code recipes). Earlier checks: blocks, items and several mobs render; hostile mobs and the dimension were not checked. 2026-11-07 round: the dimension generated nothing (void) because MapGenStructure.getStructureName was abstract; fixed. Portal (diamond into the flower pool) forms and teleports, terrain and trees generate, mobs (lich, knight phantom, tower golem, redcap, druid, minotaur, boar, deer, penguin) render with boss bars; the Naga draws as a leaf cube (issue #190). 2026-11-07 (later): the Naga no longer draws as one leaf cube: the legacy renderer draws its body segments through RenderManager.renderEntitySimple, which drew them all at the camera origin (now at the entity's position), and the Naga's own class recursed forever (StackOverflowError that crashed the server) because the mod method getMaximumHomeDistance() collided with the forward rename of the SRG func_110174_bM it calls (now renamed locally); the boss bar of a boss the player left (other dimension) or that unloaded is removed; entities created from a bare spawner/summon tag no longer run the legacy NBT read (the Naga's 'Home' list). Not fixed: purple oversized square particles at a killed Naga's position (issue #190 stays open)."
   },
   {
    "name": "The Twilight Forest",
@@ -19512,7 +19512,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "partial",
-   "notes": "Real client, survival, shaders: it loads now (the null potion statics are gone): the witches' oven and the distillery open their screens, the kobold helm recipe gives its result from the crafting grid, owl and goblin entities exist. Rituals, brewing and the altar were not played. 2026-11-07: witch's oven, kettle, distillery, candelabra, chalk circle and bramble render when placed; rituals not tried."
+   "notes": "Real client, survival, shaders: it loads now (the null potion statics are gone): the witches' oven and the distillery open their screens, the kobold helm recipe gives its result from the crafting grid, owl and goblin entities exist. Rituals, brewing and the altar were not played. 2026-11-07: witch's oven, kettle, distillery, candelabra, chalk circle and bramble render when placed; rituals not tried. 2026-11-07: the refilling chest (no icon, drawn by its tile renderer) uses a neutral texture instead of the missing-texture placeholder."
   },
   {
    "name": "WitcheryPatch",
