@@ -66,6 +66,24 @@ public final class VanillaB173 {
 
     private VanillaB173() {}
 
+    private static final class CubeFlags {
+        static final Map<Integer,Boolean> VALUES=load();
+        private static Map<Integer,Boolean> load(){
+            var flags=new HashMap<Integer,Boolean>();
+            try(var in=VanillaB173.class.getResourceAsStream("/legacyconnector/b1.7.3/vanilla-block-full-cubes.tsv")){
+                if(in==null)throw new IllegalStateException("vanilla-block-full-cubes.tsv missing from the runtime");
+                var reader=new BufferedReader(new InputStreamReader(in,StandardCharsets.UTF_8));
+                for(String line;(line=reader.readLine())!=null;){
+                    if(line.isBlank()||line.startsWith("#"))continue;
+                    var fields=line.split("\t");flags.put(Integer.parseInt(fields[0]),Boolean.parseBoolean(fields[1]));
+                }
+            }catch(IOException error){throw new IllegalStateException("cannot read original Beta full-cube flags",error);}
+            return Map.copyOf(flags);
+        }
+    }
+    /** Original per-id API results, including full-render blocks with partial collision such as soul sand. */
+    public static Boolean fullCube(int id){return CubeFlags.VALUES.get(id);}
+
     /** Fills {@code Block.BLOCKS} and {@code Item.ITEMS} with views of the vanilla content. Once, before the first mod runs. */
     public static synchronized void init() {
         if (initialized) return;

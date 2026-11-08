@@ -22,6 +22,8 @@ public interface B173LivingHost extends B173EntityHost {
     void baseEntityStatus(byte status);
     void baseSetPath(legacyconnector.vb1_7_3.net.minecraft.entity.ai.pathing.Path path);
     void baseAI();
+    /** Native event and persistence protections around the original despawn phase. */
+    default boolean baseCanDespawn(){return true;}
     void serverAIPhase();
     boolean baseDamage(Entity attacker,int amount);
     void baseKnockback(Entity attacker,int amount,double x,double z);

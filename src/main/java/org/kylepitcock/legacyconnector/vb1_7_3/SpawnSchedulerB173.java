@@ -69,7 +69,7 @@ public final class SpawnSchedulerB173 {
         var groups=new EnumMap<SpawnGroup,List<Policy>>(SpawnGroup.class);
         var managed=new HashSet<EntityType<?>>();
         for(var entry:SpawnRulesB173.changes()){
-            EntityType<?> type=SpawnRulesB173.resolvedType(entry.type());
+            EntityType<?> type=SpawnRulesB173.hostedType(entry.type());
             var biomes=entry.biomes().stream().map(legacyconnector.vb1_7_3.net.minecraft.world.biome.Biome::mcc$modernBiome).toList();
             if(type!=null&&!biomes.isEmpty()&&biomes.stream().noneMatch(Objects::isNull)){
                 var standard=legacyconnector.vb1_7_3.net.minecraft.world.biome.Biome.mcc$standardBiomes();
@@ -84,8 +84,26 @@ public final class SpawnSchedulerB173 {
         return result;
     }
     public static boolean managed(EntityType<?> type){return catalog().managed.contains(type);}
+    public static Set<EntityType<?>> ownedTypes(SpawnGroup group,Holder<Biome> biome,boolean positiveOnly){
+        return owned(catalog().groups.getOrDefault(group,List.of()),group,biome,positiveOnly);
+    }
 
-    /** No legacy policies means the native tick follows its original path without a lane or RNG changes. */
+    private static Set<EntityType<?>> selection(Cycle cycle,SpawnGroup group,Holder<Biome> biome,boolean positiveOnly){
+        return cycle.ownership.computeIfAbsent(new Selection(group,biome,positiveOnly),ignored->{
+            return owned(cycle.catalog.groups.getOrDefault(group,List.of()),group,biome,positiveOnly);
+        });
+    }
+
+    private static WeightedRandomList<MobSpawnSettings.SpawnerData> choices(Cycle cycle,SpawnGroup group,LevelChunk chunk){
+        var center=new BlockPos(chunk.getPos().getMiddleBlockX(),64,chunk.getPos().getMiddleBlockZ());
+        var biome=cycle.level.getBiome(center);
+        var entries=new ArrayList<MobSpawnSettings.SpawnerData>();
+        var positive=owned(cycle.catalog.groups.getOrDefault(group,List.of()),group,biome,true);
+        for(var entry:biome.value().getMobSettings().getMobs(group.mcc$modern()).unwrap())if(positive.contains(entry.type))entries.add(entry);
+        return net.neoforged.neoforge.event.EventHooks.getPotentialSpawns(cycle.level,group.mcc$modern(),center,WeightedRandomList.create(entries));
+    }
+
+    /** Only hosted legacy entities are scheduled here; vanilla API requests keep native lifecycle rules. */
     public static Scope cycle(ServerLevel level){
         Catalog catalog=catalog();
         if(catalog.managed.isEmpty())return NOOP;
@@ -133,7 +151,7 @@ public final class SpawnSchedulerB173 {
                 for(var observer:OBSERVERS)observer.accept(opportunity);
                 if(!allowed)continue;
                 cycle.group=group;
-                for(var chunk:chunks)NaturalSpawner.spawnCategoryForChunk(group.mcc$modern(),level,chunk,
+                for(var chunk:chunks)BetaSpawnPlacementB173.spawnChunk(group,level,chunk,choices(cycle,group,chunk),
                         state::legacyconnector$canSpawn,state::legacyconnector$afterSpawn);
             }
         }finally{cycle.group=previousGroup;cycle.lane=previous;}
@@ -148,12 +166,9 @@ public final class SpawnSchedulerB173 {
         for(var candidate:SpawnGroup.values())if(candidate.mcc$modern()==category){group=candidate;break;}
         if(group==null)return cycle.lane==Lane.BETA?WeightedRandomList.create():original;
         Holder<Biome> current=biome!=null?biome:level.getBiome(pos);
-        SpawnGroup selectedGroup=group;
-        Set<EntityType<?>> owned=cycle.ownership.computeIfAbsent(new Selection(group,current,false),ignored->
-                owned(cycle.catalog.groups.getOrDefault(selectedGroup,List.of()),selectedGroup,current,false));
+        Set<EntityType<?>> owned=selection(cycle,group,current,false);
         Set<EntityType<?>> selected=cycle.lane==Lane.BETA
-                ?cycle.ownership.computeIfAbsent(new Selection(group,current,true),ignored->
-                        owned(cycle.catalog.groups.getOrDefault(selectedGroup,List.of()),selectedGroup,current,true)):Set.of();
+                ?selection(cycle,group,current,true):Set.of();
         return filter(original,owned,selected,cycle.lane==Lane.BETA,
                 cycle.group!=null&&category==cycle.group.mcc$modern());
     }

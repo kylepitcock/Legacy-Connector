@@ -153,6 +153,10 @@ public class Block {
     }
 
     public boolean isFullCube() {
+        if(mcc$owner==null&&mcc$modern!=null&&!(mcc$modern instanceof org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Block)){
+            Boolean original=org.kylepitcock.legacyconnector.vb1_7_3.VanillaB173.fullCube(id);
+            if(original!=null)return original;
+        }
         return true;
     }
 

@@ -76,7 +76,7 @@ public final class SpawnRulesB173 {
         for(var registration:ContentB173.entities())if(registration.name().equals(name))return registration.type();
         return null;
     }
-    private static EntityType<?> hostedType(Class<?> original) {
+    static EntityType<?> hostedType(Class<?> original) {
         for(var info:AnimalsB173.all())if(info.registration().type()==original)return info.type();
         for(var info:MobsB173.all())if(info.registration().type()==original)return info.type();
         return null;
