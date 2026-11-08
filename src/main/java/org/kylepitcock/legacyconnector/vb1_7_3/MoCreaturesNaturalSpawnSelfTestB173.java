@@ -33,7 +33,15 @@ public final class MoCreaturesNaturalSpawnSelfTestB173 {
         var existing=new HashSet<Integer>();for(var entity:level.getAllEntities())existing.add(entity.getId());
         var blocks=new LinkedHashMap<BlockPos,net.minecraft.world.level.block.state.BlockState>();
         var player=actor(level);long previousTime=level.getDayTime();
-        var spawn=level.getSharedSpawnPos();var center=new BlockPos(((spawn.getX()+64)>>4)*16+8,65,(spawn.getZ()>>4)*16+8);
+        var spawn=level.getSharedSpawnPos();
+        int centerX=((spawn.getX()+64)>>4)*16+8,centerZ=(spawn.getZ()>>4)*16+8;
+        int highest=level.getMinBuildHeight();
+        // Keep the complete controlled platform above terrain so native skylight remains authoritative.
+        for(int x=-12;x<=12;x++)for(int z=-12;z<=12;z++){
+            level.getChunk(new BlockPos(centerX+x,0,centerZ+z));
+            highest=Math.max(highest,level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING,centerX+x,centerZ+z));
+        }
+        var center=new BlockPos(centerX,highest+2,centerZ);
         try{
             level.setDayTime(6000);
             for(int x=-12;x<=12;x++)for(int z=-12;z<=12;z++)for(int y=-1;y<=4;y++){

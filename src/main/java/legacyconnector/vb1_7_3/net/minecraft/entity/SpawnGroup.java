@@ -14,7 +14,7 @@ public enum SpawnGroup {
     private final Material material;
     private final MobCategory modern;
     SpawnGroup(int capacity,boolean peaceful,Material material,MobCategory modern){this.capacity=capacity;this.peaceful=peaceful;this.material=material;this.modern=modern;}
-    public Class<?> getCreatureClass(){return this==MONSTER?legacyconnector.vb1_7_3.net.minecraft.entity.mob.MonsterEntity.class:this==CREATURE?legacyconnector.vb1_7_3.net.minecraft.entity.passive.AnimalEntity.class:LivingEntity.class;}
+    public Class<?> getCreatureClass(){return switch(this){case MONSTER->Monster.class;case CREATURE->legacyconnector.vb1_7_3.net.minecraft.entity.passive.AnimalEntity.class;case WATER_CREATURE->WaterCreatureEntity.class;};}
     public int getCapacity(){return capacity;}
     public Material getSpawnMaterial(){return material;}
     public boolean isPeaceful(){return peaceful;}

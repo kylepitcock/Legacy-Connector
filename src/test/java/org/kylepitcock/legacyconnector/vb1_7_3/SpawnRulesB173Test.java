@@ -61,4 +61,24 @@ class SpawnRulesB173Test {
         assertEquals(net.minecraft.world.entity.MobCategory.MISC,SpawnRulesB173.categoryFor(Creature.class,net.minecraft.world.entity.MobCategory.MISC,registry.entries()));
     }
 
+    @Test void removalTombstonesRemainAuthoritativeAcrossAddRemoveAddCalls(){
+        var registry=new SpawnRulesB173.Registry();
+        registry.remove(Creature.class,SpawnGroup.CREATURE,new Biome[]{Biome.FOREST});
+        assertTrue(registry.entries().isEmpty());assertEquals(-1,registry.changes().getFirst().weight());
+        registry.add(Creature.class,4,SpawnGroup.CREATURE,null);assertEquals(11,registry.entries().getFirst().biomes().size());assertEquals(1,registry.changes().size());
+        registry.remove(Creature.class,SpawnGroup.CREATURE,new Biome[]{Biome.FOREST});
+        assertEquals(10,registry.entries().getFirst().biomes().size());assertEquals(1,registry.changes().stream().filter(e->e.weight()<0).count());
+        registry.add(Creature.class,9,SpawnGroup.CREATURE,new Biome[]{Biome.FOREST});
+        assertEquals(0,registry.changes().stream().filter(e->e.weight()<0).count());
+        assertEquals(9,registry.entries().stream().filter(e->e.biomes().contains(Biome.FOREST)).findFirst().orElseThrow().weight());
+    }
+    @Test void explicitRemovalGeneratesOneAuthoritativeModifierForOnlyRequestedCategoryAndBiomes(){
+        var registry=new SpawnRulesB173.Registry();registry.remove(Creature.class,SpawnGroup.CREATURE,new Biome[]{Biome.FOREST});
+        var out=new LinkedHashMap<String,Supplier<byte[]>>();SpawnRulesB173.contribute(out,registry.changes(),c->ResourceLocation.parse("fixture:creature"));
+        var json=out.entrySet().stream().filter(e->e.getKey().contains("biome_modifier")).map(e->JsonParser.parseString(new String(e.getValue().get(),StandardCharsets.UTF_8)).getAsJsonObject()).findFirst().orElseThrow();
+        assertEquals("legacyconnector:beta_spawn_override",json.get("type").getAsString());assertEquals("fixture:creature",json.get("entity").getAsString());
+        assertEquals("creature",json.get("category").getAsString());assertEquals(0,json.get("weight").getAsInt());assertNotEquals("#minecraft:is_overworld",json.get("biomes").getAsString());
+        registry.add(Creature.class,7,SpawnGroup.MONSTER,new Biome[]{Biome.FOREST});registry.remove(Creature.class,SpawnGroup.CREATURE,null);
+        assertEquals(SpawnGroup.MONSTER,registry.entries().getFirst().group());assertEquals(7,registry.entries().getFirst().weight());
+    }
 }

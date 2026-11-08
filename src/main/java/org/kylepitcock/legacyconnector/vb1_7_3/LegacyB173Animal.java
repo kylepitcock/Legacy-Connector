@@ -254,6 +254,11 @@ public final class LegacyB173Animal extends PathfinderMob implements B173LivingH
         if(legacy==null)return false;
         try(var generation=World.mcc$generation(level)){boolean[] allowed={false};callback(()->allowed[0]=legacy.canSpawn());return allowed[0];}catch(World.SpawnRegionUnavailable unavailable){return false;}
     }
+    @Override public boolean checkSpawnObstruction(LevelReader level){
+        // Match the native water-animal host: liquid is its habitat, not an obstruction.
+        if(legacy instanceof legacyconnector.vb1_7_3.net.minecraft.entity.WaterCreatureEntity)return level.isUnobstructed(this);
+        return super.checkSpawnObstruction(level);
+    }
     @Override public int getMaxSpawnClusterSize(){return legacy==null?4:Math.max(1,legacy.getLimitPerChunk());}
     public void baseMarkDead(){if(!isRemoved())discard();}
     @Override public void remove(net.minecraft.world.entity.Entity.RemovalReason reason){
@@ -266,6 +271,19 @@ public final class LegacyB173Animal extends PathfinderMob implements B173LivingH
             return;
         }
         super.remove(reason);
+    }
+    @Override public net.minecraft.world.phys.Vec3 getVehicleAttachmentPoint(net.minecraft.world.entity.Entity vehicle){
+        if(legacy==null||!(vehicle instanceof net.minecraft.world.entity.player.Player)||vehicle!=getVehicle())return super.getVehicleAttachmentPoint(vehicle);
+        net.minecraft.world.phys.Vec3[] attachment={null};
+        callback(()->{
+            var carrier=EntityViewsB173.wrap(vehicle);
+            // Native positionRider subtracts the passenger attachment from its native seat.
+            // Reconstruct Beta's seat in legacy coordinates, then normalize its eye origin once.
+            var desired=new net.minecraft.world.phys.Vec3(carrier.x,
+                    carrier.y+carrier.getPassengerRidingHeight()+legacy.getStandingEyeHeight()-legacy.standingEyeHeight,carrier.z);
+            attachment[0]=vehicle.getPassengerRidingPosition(this).subtract(desired);
+        });
+        return attachment[0];
     }
     @Override protected void positionRider(net.minecraft.world.entity.Entity passenger,net.minecraft.world.entity.Entity.MoveFunction move){
         if(legacy==null||passenger!=getFirstPassenger()||!hasPassenger(passenger)){super.positionRider(passenger,move);return;}

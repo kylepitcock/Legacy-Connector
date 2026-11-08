@@ -22,6 +22,9 @@ public final class MobSelfTestB173 {
         MoCreaturesAdvancedSelfTestB173.register(game);
         MoCreaturesRemainingSelfTestB173.register(game);
         MoCreaturesLifecycleExtraSelfTestB173.register(game);
+        MoCreaturesWaterSpawnSelfTestB173.register(game);
+        MoCreaturesVanillaSpawnSelfTestB173.register(game);
+        MoCreaturesCarrySelfTestB173.register(game);
         SpawnCapsSelfTestB173.register(game);
         MoreCreepsRosterSelfTestB173.register(game);
         MoreCreepsWeaponsSelfTestB173.register(game);
@@ -32,6 +35,7 @@ public final class MobSelfTestB173 {
         MoreCreepsEffectsSelfTestB173.register(game);
         MoreCreepsLifecycleExtraSelfTestB173.register(game);
         MoreCreepsGenerationEdgeSelfTestB173.register(game);
+        NaturalSpawningTickSelfTestB173.register(game);
         AnimalLifecycleSelfTestB173.register(game);
         if(Boolean.getBoolean("legacyconnector.entitySelfTest"))game.addListener((ServerStartedEvent e)->run(e.getServer().overworld()));
     }

@@ -133,6 +133,7 @@ public final class LegacyConnector {
         LegacyMods.registerPlatform(new org.kylepitcock.legacyconnector.vb1_7_3.PlatformB173());
 
         CompatComponents.REGISTER.register(modBus);
+        org.kylepitcock.legacyconnector.vb1_7_3.SpawnOverrideModifierB173.REGISTER.register(modBus);
         org.kylepitcock.legacyconnector.core.recipe.OversizedCraftingRecipe.REGISTER.register(modBus);
         org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyCraftingRecipe.REGISTER.register(modBus);
         org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyFishingLoot.REGISTER.register(modBus);

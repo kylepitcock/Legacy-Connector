@@ -435,7 +435,10 @@ ModLoader `AddSpawn`/`RemoveSpawn` record class/name, category, weight and biome
 `neoforge:add_spawns` biome modifiers; rejected mobs do not enter biome spawn lists. Default Beta overworld selections map
 to the native overworld biome tag; explicit vanilla selections use shared biome-family tags. Custom unbridged biomes are
 reported and omitted. Native natural-spawn checks invoke original `canSpawn`, and cluster limits use `getLimitPerChunk`.
-Removal currently updates recorded legacy entries; removing existing modern vanilla spawn entries is separate work.
+Vanilla-class requests replace or remove existing native entries for the requested category and biome selection, rather
+than adding duplicate weights. Final requests retain removals even when no added entry preceded them; later adds replace
+those removals. Replacements run after native add/remove modifier phases. Unknown classes never fall back to a default entity.
+Water-creature hosts use native water-animal obstruction checks, so valid liquid habitats survive the final placement check.
 
 The initial isolated Mo' Creatures and More Creeps runs verified the original Bunny renderer (66 faces) and Hippo renderer (96),
 including transforms, animation, exact PNG pack bytes, spawn/metadata packet replay, skin/eye-offset persistence and loaded
@@ -449,6 +452,9 @@ callback dependencies pass admission. Original custom travel and movement remain
 operations prevent recursion and preserve skipped-super behavior. Water/flying navigation, rider input, bucking, fire
 immunity, fall and placement callbacks, dropped-item age/pickup, typed arrow owners and mutable entity relations use shared
 APIs. No production branch selects behavior by a tested mod's identity.
+
+When original creatures ride a native player, passenger placement evaluates the original carried-offset getter inside the
+shared callback transaction. This preserves both placement and getter side effects, including furniture pickup state.
 
 Nested callbacks share an entity-view transaction. Queried objects keep stable identities, pending writes are committed
 before a native refresh, and a nested damage callback cannot discard subsequent original fire or velocity changes.
@@ -479,6 +485,22 @@ global and per-player spawn caps. Untouched categories retain Minecraft's defaul
 mod-name checks. An actual Mo' Creatures run verifies its constructor's 70/30/25 limits at the native cap boundaries;
 the original mod applies these settings at launch rather than on each slider change.
 [The lifecycle validation snapshot](../data/b173-lifecycle-validation-2026-11-07.json) records these checks and their limits.
+
+Spawn balance still depends on the modern scheduler: passive replenishment runs every 400 world ticks, and a full native
+category cap prevents original candidate checks from running. Terrain-generated fauna can already exceed that cap. Beta's
+original class/interface-based census is not yet reproduced by the native category census; the `SpawnGroup.getCreatureClass`
+API itself now returns the correct Monster marker interface, AnimalEntity and WaterCreatureEntity roots. More Creeps' original
+choice to register all configured species as CREATURE is preserved, including monster-derived species. No rates or limits are
+silently raised to compensate for these differences.
+
+The opt-in `naturalSpawnTickSelfTest` observer uses a real tracked native player and ordinary server ticks, recording candidate
+checks, finalization and confirmed world insertion separately. Isolated observations confirm original aquatic, hostile and
+passive Mo' Creatures spawning, and More Creeps land spawning. The land observations discard counted nonpersistent creatures
+once in disposable worlds to expose an available native budget; they do not establish spawn abundance in an untouched world.
+A short More Creeps forest window admitted none, while a longer window admitted an original Kid and Hunchback; original sky/light checks
+and per-candidate random gates remain intact. [The spawning and carrying snapshot](../data/b173-spawning-carry-validation-2026-11-08.json)
+records these observations, the failed short window, three aquatic insertion regressions, four carried-placement cases and
+positive/zero vanilla squid frequency checks across 53 native overworld biomes.
 
 Terrain-population spawn checks read through their supplied `WorldGenRegion`, including block, light, height and collision
 queries. Reading an unfinished chunk through the full server level made generation wait on itself; an actual SneakySal spawn

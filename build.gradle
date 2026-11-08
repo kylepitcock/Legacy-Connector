@@ -87,6 +87,11 @@ neoForge {
             // -PclientProxies=mekanism.client.ClientProxy,...: runs those mods' client registrations (state mappers) for the translation too
             if (project.hasProperty('clientProxies')) systemProperty 'legacyconnector.assetsClientProxies', project.property('clientProxies')
             systemProperty 'legacyconnector.entitySelfTest', project.findProperty('selfTests') ?: 'true'
+            // Opt-in observation of real player/chunk natural-spawn cycles; not part of normal build checks.
+            if (project.hasProperty('naturalSpawnTickSelfTest')) {
+                systemProperty 'legacyconnector.naturalSpawnTickSelfTest', project.property('naturalSpawnTickSelfTest')
+                systemProperty 'legacyconnector.naturalSpawnTickTestTicks', project.findProperty('naturalSpawnTickTestTicks') ?: '2400'
+            }
             // -PserverTickScript=<file.js>: runs that JavaScript on every server tick (see core/ServerTickScript; -PserverTickScriptFrom=<tick>)
             if (project.hasProperty('serverTickScript')) {
                 systemProperty 'legacyconnector.serverTickScript', project.property('serverTickScript')
