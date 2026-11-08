@@ -494,3 +494,6 @@ net/minecraft/server/MinecraftServer	isNetherEnabled	()Z	MiddleCompat	isNetherEn
 net/minecraft/world/level/Level	getFreeMapId	()I	MiddleCompat	getFreeMapId
 net/minecraft/world/level/Level	getExistingBlockEntity	(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/entity/BlockEntity;	MiddleCompat	getExistingBlockEntity
 net/minecraft/world/level/Level	dimensionTypeId	()Lnet/minecraft/resources/ResourceKey;	MiddleCompat	dimensionTypeId
+# --- round 2 batch 6
+net/minecraft/world/item/ItemStack	canApplyAtEnchantingTable	(Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyEnchantment;)Z	MiddleCompat	canApplyAtEnchantingTable
+net/minecraft/world/item/ItemStack	addAttributeModifier	(Lnet/minecraft/world/entity/ai/attributes/Attribute;Lnet/minecraft/world/entity/ai/attributes/AttributeModifier;Lnet/minecraft/world/entity/EquipmentSlot;)V	MiddleCompat	addAttributeModifier

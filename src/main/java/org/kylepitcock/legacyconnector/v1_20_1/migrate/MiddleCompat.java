@@ -694,6 +694,23 @@ public final class MiddleCompat {
         return level.dimensionTypeRegistration().unwrapKey().orElse(null);
     }
 
+    /** {@code ItemStack.canApplyAtEnchantingTable(Enchantment)}: the enchanting table picks primary items. */
+    public static boolean canApplyAtEnchantingTable(ItemStack stack, LegacyEnchantment enchantment) {
+        return stack.isPrimaryItemFor(HolderCompat.holder(enchantment));
+    }
+
+    /** {@code ItemStack.addAttributeModifier(Attribute, AttributeModifier, EquipmentSlot)}: edits the attribute modifiers component. */
+    public static void addAttributeModifier(ItemStack stack, Attribute attribute, AttributeModifier modifier, EquipmentSlot slot) {
+        net.minecraft.world.entity.EquipmentSlotGroup group = slot == null ? net.minecraft.world.entity.EquipmentSlotGroup.ANY
+                : net.minecraft.world.entity.EquipmentSlotGroup.bySlot(slot);
+        stack.set(DataComponents.ATTRIBUTE_MODIFIERS, stack.getAttributeModifiers().withModifierAdded(HolderCompat.holder(attribute), modifier, group));
+    }
+
+    /** The 1.21.1 primary-item hook for a bridged {@code canApplyAtEnchantingTable} override. */
+    public static LegacyEnchantment legacyEnchantment(Holder<Enchantment> holder) {
+        return HolderCompat.legacy(holder);
+    }
+
     /** {@code Potion.byName(String)}. */
     public static net.minecraft.world.item.alchemy.Potion potionByName(String name) {
         return net.minecraft.core.registries.BuiltInRegistries.POTION.get(net.minecraft.resources.ResourceLocation.parse(name));

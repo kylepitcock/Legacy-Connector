@@ -51,3 +51,5 @@ net/minecraft/client/renderer/entity/LivingEntityRenderer	setupRotations	(Lnet/m
 # --- round 2 batch 4
 net/minecraft/world/level/block/Block	canSustainPlant	(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;Llegacyconnector/v1_20_1/net/minecraftforge/common/IPlantable;)Z	canSustainPlant	(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;Lnet/minecraft/world/level/block/state/BlockState;)Lnet/neoforged/neoforge/common/util/TriState;	0,1,2,3,MiddleCompat.plantable@4	MiddleCompat.triState	-
 net/minecraft/world/entity/TamableAnimal	setTame	(Z)V	setTame	(ZZ)V	-	-	-
+# --- round 2 batch 6
+net/minecraft/world/item/Item	canApplyAtEnchantingTable	(Lnet/minecraft/world/item/ItemStack;Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyEnchantment;)Z	isPrimaryItemFor	(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/core/Holder;)Z	0,MiddleCompat.legacyEnchantment@1	-	-
