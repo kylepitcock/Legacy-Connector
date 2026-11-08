@@ -519,7 +519,8 @@ public final class MiscCompat {
     private static int cauldronMaps;
 
     /** {@code CauldronInteraction.newInteractionMap()}: a map of a mod's own cauldron kind (1.21.1 names it and keeps it in {@code INTERACTIONS}). */
-    public static java.util.Map<Item, net.minecraft.core.cauldron.CauldronInteraction> newCauldronMap() {
-        return net.minecraft.core.cauldron.CauldronInteraction.newInteractionMap("legacy_connector_" + cauldronMaps++).map();
+    public static it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap<Item, net.minecraft.core.cauldron.CauldronInteraction> newCauldronMap() {
+        return (it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap<Item, net.minecraft.core.cauldron.CauldronInteraction>)
+                net.minecraft.core.cauldron.CauldronInteraction.newInteractionMap("legacy_connector_" + cauldronMaps++).map();
     }
 }
