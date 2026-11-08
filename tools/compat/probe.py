@@ -95,7 +95,11 @@ def gap1201_targets():
             art = (parts[0], parts[1])
             if art not in best or vkey(parts[2]) > vkey(best[art][0]):
                 best[art] = (parts[2], j)
-    return ",".join([a.as_posix() for a in arts] + [pathlib.Path(j).as_posix() for _, j in best.values()])
+    jars = [a.as_posix() for a in arts] + [pathlib.Path(j).as_posix() for _, j in best.values()]
+    libs = os.environ.get("GAP1201_LIBS")   # a folder of NeoForge 1.21.1 mods (libraries the pack would install natively): references into them are checked against the real classes
+    if libs:
+        jars += [j.as_posix() for j in sorted(pathlib.Path(libs).glob("*.jar"))]
+    return ",".join(jars)
 
 
 def mod_info(jar):
@@ -145,7 +149,9 @@ def run_gap1201(jar_dir, out, keep_detail=None):
     listing = tmp / "targets.txt"   # "@file": the target list is longer than the Windows command line
     listing.write_text(gap1201_targets(), encoding="utf-8")
     cmd = [str(ROOT / ("gradlew.bat" if sys.platform == "win32" else "gradlew")), "-q", "gap1201", f"-PtargetJars=@{listing.as_posix()}",
-           f"-PgapJars={pathlib.Path(jar_dir).resolve()}", f"-PgapReport={report}", "-Pgap.translate=true"]   # the report is of the jars AFTER the layer (facades, library bridges, renames)
+           f"-PgapJars={pathlib.Path(jar_dir).resolve()}", f"-PgapReport={report}", "-Pgap.translate=true"]
+    if os.environ.get("GAP1201_ASSUME_NATIVE"):   # e.g. mcjty/theoneprobe/api/,dev/emi/emi/api/,me/shedaniel/rei/ : API packages of libraries the pack gets as native 1.21.1 builds
+        cmd.append("-Pgap.assumeNative=" + os.environ["GAP1201_ASSUME_NATIVE"])   # the report is of the jars AFTER the layer (facades, library bridges, renames)
     print(f"gap report for {len(jars)} Forge 1.20.1 jar(s) ...", flush=True)
     r = subprocess.run(cmd, cwd=ROOT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
     detail = pathlib.Path(str(report) + ".detail.tsv")

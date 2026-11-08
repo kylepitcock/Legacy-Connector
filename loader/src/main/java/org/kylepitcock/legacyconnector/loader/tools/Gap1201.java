@@ -118,6 +118,30 @@ public final class Gap1201 {
         try (ZipFile zip = new ZipFile(jar.toFile())) {
             for (var en = zip.entries(); en.hasMoreElements(); ) {
                 ZipEntry e = en.nextElement();
+                // jar-in-jar libraries (Create 1.21.1 carries Registrate, Flywheel, Ponder; mods carry Mixin extras...) are part of the mod at run time
+                if (e.getName().startsWith("META-INF/jarjar/") && e.getName().endsWith(".jar")) {
+                    try (java.util.zip.ZipInputStream nested = new java.util.zip.ZipInputStream(zip.getInputStream(e))) {
+                        for (ZipEntry ne; (ne = nested.getNextEntry()) != null; ) {
+                            if (!ne.getName().endsWith(".class") || ne.getName().startsWith("META-INF/versions/")) continue;
+                            try {
+                                ClassNode n = new ClassNode();
+                                new ClassReader(nested.readAllBytes()).accept(n, ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
+                                Cls c = new Cls();
+                                c.name = n.name;
+                                c.superName = n.superName;
+                                c.interfaces = n.interfaces.toArray(new String[0]);
+                                n.methods.forEach(m -> c.methods.add(m.name + m.desc));
+                                n.fields.forEach(f -> c.fields.add(f.name + ":" + f.desc));
+                                into.putIfAbsent(n.name, c);
+                            } catch (RuntimeException ignored) {
+                                // unreadable entry
+                            }
+                        }
+                    } catch (IOException ignored) {
+                        // unreadable nested jar
+                    }
+                    continue;
+                }
                 if (!e.getName().endsWith(".class") || e.getName().startsWith("META-INF/versions/")) continue;
                 try {
                     ClassNode n = new ClassNode();
@@ -432,8 +456,15 @@ public final class Gap1201 {
         if (t.getSort() == Type.OBJECT) type.accept(t.getInternalName());
     }
 
+    /**
+     * -Dgap.assumeNative=prefix,prefix: API packages of libraries that have a native 1.21.1 build the pack would install (EMI, REI, The One Probe...) but whose
+     * jar this offline run does not have; references to classes under them are not counted as gaps (off by default: it cannot see signature drift).
+     */
+    private static final String[] ASSUMED_NATIVE = System.getProperty("gap.assumeNative") == null ? null : System.getProperty("gap.assumeNative").split(",");
+
     /** Libraries a mod gets from the game at run time that this offline tool does not index (annotations, logging, Guava, Gson...). */
     private static boolean isLibrary(String name) {
+        if (ASSUMED_NATIVE != null) for (String prefix : ASSUMED_NATIVE) if (name.startsWith(prefix)) return true;
         return name.startsWith("com/google/") || name.startsWith("org/slf4j/") || name.startsWith("org/apache/") || name.startsWith("io/netty/")
                 || name.startsWith("org/lwjgl/") || name.startsWith("org/joml/") || name.startsWith("it/unimi/") || name.startsWith("com/mojang/")
                 || name.startsWith("org/jetbrains/") || name.startsWith("org/objectweb/") || name.startsWith("org/spongepowered/") || name.startsWith("javax/")

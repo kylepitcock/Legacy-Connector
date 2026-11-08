@@ -153,3 +153,22 @@ com/github/alexthe666/citadel/client/model/AdvancedModelBox	render	(Lcom/mojang/
 com/github/alexthe666/citadel/client/model/basic/BasicModelPart	render	(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;IIFFFF)V	=colour	-	(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;III)V
 # END generated (Citadel colour)
 com/illusivesoulworks/caelus/api/CaelusApi	getFlightAttribute	()Lnet/minecraft/world/entity/ai/attributes/Attribute;	CaelusCompat	flightAttribute	(Ljava/lang/Object;)Lnet/minecraft/world/entity/ai/attributes/Attribute;
+# BEGIN library bridges from the 1.21.1 API diff (Jade 15, JEI 19, Architectury 13; helpers JadeCompat/JeiCompat/ArchitecturyCompat)
+# Jade 15: providers are IComponentProvider<Accessor>; the block/entity provider interfaces are sub-interfaces of it
+snownee/jade/api/IWailaClientRegistration	registerBlockComponent	(Lsnownee/jade/api/IBlockComponentProvider;Ljava/lang/Class;)V	=	-	(Lsnownee/jade/api/IComponentProvider;Ljava/lang/Class;)V
+snownee/jade/api/IWailaClientRegistration	registerBlockIcon	(Lsnownee/jade/api/IBlockComponentProvider;Ljava/lang/Class;)V	=	-	(Lsnownee/jade/api/IComponentProvider;Ljava/lang/Class;)V
+snownee/jade/api/IWailaClientRegistration	registerEntityComponent	(Lsnownee/jade/api/IEntityComponentProvider;Ljava/lang/Class;)V	=	-	(Lsnownee/jade/api/IComponentProvider;Ljava/lang/Class;)V
+snownee/jade/api/IWailaClientRegistration	registerEntityIcon	(Lsnownee/jade/api/IEntityComponentProvider;Ljava/lang/Class;)V	=	-	(Lsnownee/jade/api/IComponentProvider;Ljava/lang/Class;)V
+snownee/jade/api/ITooltip	getElementHelper	()Lsnownee/jade/api/ui/IElementHelper;	JadeCompat	elementHelper	-
+snownee/jade/api/ITooltip	remove	(Lnet/minecraft/resources/ResourceLocation;)V	JadeCompat	remove	-
+snownee/jade/api/ui/IElementHelper	text	(Lnet/minecraft/network/chat/Component;)Lsnownee/jade/api/ui/IElement;	=	-	(Lnet/minecraft/network/chat/Component;)Lsnownee/jade/api/ui/ITextElement;
+# JEI 19: crafting category type, fluid holders, subtype interpreters
+mezz/jei/api/registration/IVanillaCategoryExtensionRegistration	getCraftingCategory	()Lmezz/jei/api/recipe/category/extensions/IExtendableRecipeCategory;	=	-	()Lmezz/jei/api/recipe/category/extensions/vanilla/crafting/IExtendableCraftingRecipeCategory;
+mezz/jei/api/helpers/IPlatformFluidHelper	create	(Lnet/minecraft/world/level/material/Fluid;J)Ljava/lang/Object;	JeiCompat	createFluid	(Lmezz/jei/api/helpers/IPlatformFluidHelper;Lnet/minecraft/world/level/material/Fluid;J)Ljava/lang/Object;
+mezz/jei/api/helpers/IPlatformFluidHelper	create	(Lnet/minecraft/world/level/material/Fluid;JLnet/minecraft/nbt/CompoundTag;)Ljava/lang/Object;	JeiCompat	createFluid	(Lmezz/jei/api/helpers/IPlatformFluidHelper;Lnet/minecraft/world/level/material/Fluid;JLnet/minecraft/nbt/CompoundTag;)Ljava/lang/Object;
+mezz/jei/api/registration/ISubtypeRegistration	useNbtForSubtypes	([Lnet/minecraft/world/item/Item;)V	JeiCompat	useNbtForSubtypes	-
+# Architectury 13: FluidStack carries a component patch, not a tag
+dev/architectury/fluid/FluidStack	getTag	()Lnet/minecraft/nbt/CompoundTag;	ArchitecturyCompat	fluidGetTag	(Ljava/lang/Object;)Lnet/minecraft/nbt/CompoundTag;
+dev/architectury/fluid/FluidStack	create	(Lnet/minecraft/world/level/material/Fluid;JLnet/minecraft/nbt/CompoundTag;)Ldev/architectury/fluid/FluidStack;	=args	0,1,ArchitecturyCompat.fluidPatch@2	(Lnet/minecraft/world/level/material/Fluid;JLnet/minecraft/core/component/DataComponentPatch;)Ldev/architectury/fluid/FluidStack;
+dev/architectury/fluid/FluidStack	create	(Ljava/util/function/Supplier;JLnet/minecraft/nbt/CompoundTag;)Ldev/architectury/fluid/FluidStack;	=args	0,1,ArchitecturyCompat.fluidPatch@2	(Ljava/util/function/Supplier;JLnet/minecraft/core/component/DataComponentPatch;)Ldev/architectury/fluid/FluidStack;
+# END library bridges from the 1.21.1 API diff

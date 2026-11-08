@@ -22,6 +22,24 @@ public final class ArchitecturyCompat {
         }
     }
 
+    /** {@code FluidStack.getTag()}: the stack's NBT is the custom data component of its patch (null without one). */
+    public static net.minecraft.nbt.CompoundTag fluidGetTag(Object stack) {
+        try {
+            var patch = (net.minecraft.core.component.DataComponentPatch) stack.getClass().getMethod("getPatch").invoke(stack);
+            var data = patch.get(net.minecraft.core.component.DataComponents.CUSTOM_DATA);
+            return data == null || data.isEmpty() ? null : data.get().copyTag();
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException("Architectury FluidStack.getPatch is not available", e);
+        }
+    }
+
+    /** The component patch that stands for a fluid stack's NBT (the third argument of {@code FluidStack.create}). */
+    public static net.minecraft.core.component.DataComponentPatch fluidPatch(net.minecraft.nbt.CompoundTag tag) {
+        var builder = net.minecraft.core.component.DataComponentPatch.builder();
+        if (tag != null && !tag.isEmpty()) builder.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.of(tag.copy()));
+        return builder.build();
+    }
+
     /** A pool builder that hands out a pool built earlier. */
     private static final class PrebuiltPool extends LootPool.Builder {
         private final LootPool pool;
