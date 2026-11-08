@@ -104,5 +104,6 @@
   "attribute.name.generic.movementSpeed": "Speed",
   "attribute.name.generic.attackDamage": "Attack Damage",
   "attribute.name.horse.jumpStrength": "Horse Jump Strength",
-  "attribute.name.zombie.spawnReinforcements": "Zombie Reinforcements"
+  "attribute.name.zombie.spawnReinforcements": "Zombie Reinforcements",
+  "entity.legacyconnector.legacy_entity": "Legacy entity"
 }

@@ -82,7 +82,15 @@ public class LegacyEntityHost extends net.minecraft.world.entity.Entity implemen
     @Override
     protected net.minecraft.network.chat.Component getTypeName() {
         var name = LegacyHosts.displayName(getType());
-        return name != null ? name : super.getTypeName();
+        if (name != null) return name;
+        // an entity no mod registered under a name (a visual trail spawned straight into the world): the legacy name or class, not the shared type's raw key
+        if (legacy != null) {
+            String own = null;
+            try { own = legacy.getCommandSenderName(); } catch (RuntimeException ignored) { }
+            if (own != null && !own.isBlank() && !own.startsWith("entity.")) return net.minecraft.network.chat.Component.literal(own);
+            return net.minecraft.network.chat.Component.literal(legacy.getClass().getSimpleName());
+        }
+        return super.getTypeName();
     }
 
     @Override

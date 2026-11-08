@@ -221,13 +221,30 @@ public final class BetaJars {
         for (String modClass : scan.modClasses) {
             LegacyModDecl decl = new LegacyModDecl();
             decl.legacyId = modClass.substring(4);
-            decl.name = decl.legacyId;
+            decl.name = displayName(path, decl.legacyId);
             decl.version = "0.0.0-legacy";
             decl.mainClass = MOD_ROOT + pkg + "/" + modClass;
             decl.description = "ModLoader mod for Minecraft Beta 1.7.3 (" + modClass + ")";
             jar.mods.add(decl);
         }
         return jar;
+    }
+
+    /**
+     * The name shown in mod lists: the archive's own name when it carries the mod's name (NetherCraftv1.9b.zip for mod_Nether: version and
+     * "b173" suffixes cut), otherwise the ModLoader class name without "mod_". A GUID-named file tells nothing, so it falls back to the class name.
+     */
+    static String displayName(Path path, String legacyId) {
+        String s = stem(path);
+        if (s == null || s.matches("[0-9a-fA-F-]{32,40}")) return legacyId;
+        String version = "(?i)[ _.-]*v?\\d+(\\.\\d+)*[a-z]?$";
+        String cleaned = s;
+        for (int i = 0; i < 3; i++) {
+            cleaned = cleaned.replaceAll("(?i)[ _.-]*(b1[._]?7[._]?3|beta)$", "").replaceAll(version, "");
+        }
+        cleaned = cleaned.replace('_', ' ').trim();
+        String norm = cleaned.toLowerCase(Locale.ROOT).replace(" ", "");
+        return !cleaned.isEmpty() && norm.contains(legacyId.toLowerCase(Locale.ROOT)) ? cleaned : legacyId;
     }
 
     private static String stem(Path path) {
