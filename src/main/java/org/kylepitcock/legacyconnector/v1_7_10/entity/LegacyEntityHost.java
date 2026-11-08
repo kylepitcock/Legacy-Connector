@@ -82,7 +82,15 @@ public class LegacyEntityHost extends net.minecraft.world.entity.Entity implemen
     @Override
     protected net.minecraft.network.chat.Component getTypeName() {
         var name = LegacyHosts.displayName(getType());
-        return name != null ? name : super.getTypeName();
+        if (name != null) return name;
+        // an entity no mod registered under a name (a visual trail spawned straight into the world): the legacy name or class, not the shared type's raw key
+        if (legacy != null) {
+            String own = null;
+            try { own = legacy.getCommandSenderName(); } catch (RuntimeException ignored) { }
+            if (own != null && !own.isBlank() && !own.startsWith("entity.")) return net.minecraft.network.chat.Component.literal(own);
+            return net.minecraft.network.chat.Component.literal(legacy.getClass().getSimpleName());
+        }
+        return super.getTypeName();
     }
 
     @Override
@@ -146,7 +154,34 @@ public class LegacyEntityHost extends net.minecraft.world.entity.Entity implemen
 
     @Override
     public boolean isPickable() {
-        return legacy != null && legacy.canBeCollidedWith();
+        if (legacy == null) return false;
+        // an entity no mod registered under a name is a visual effect (iChunUtil's trails, spawned straight into the world): never a target
+        // for the crosshair, Jade or projectiles unless its class says otherwise itself
+        if (LegacyHosts.displayName(getType()) == null && !declaresCollision(legacy.getClass())) return false;
+        return legacy.canBeCollidedWith();
+    }
+
+    private static final java.util.Map<Class<?>, Boolean> DECLARES_COLLISION = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** True when the mod's own class (not the shim's Entity) defines {@code canBeCollidedWith}. */
+    private static boolean declaresCollision(Class<?> c) {
+        return DECLARES_COLLISION.computeIfAbsent(c, k -> {
+            for (Class<?> x = k; x != null && x != Object.class; x = x.getSuperclass()) {
+                if (x.getName().startsWith("legacyconnector.")) return false;
+                try {
+                    x.getDeclaredMethod("canBeCollidedWith");
+                    return true;
+                } catch (NoSuchMethodException ignored) {
+                    // keep looking up the mod's own hierarchy
+                }
+            }
+            return false;
+        });
+    }
+
+    @Override
+    public boolean isAttackable() {
+        return isPickable() && super.isAttackable();
     }
 
     @Override

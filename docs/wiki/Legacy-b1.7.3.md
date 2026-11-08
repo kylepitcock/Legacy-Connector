@@ -12,7 +12,7 @@ render APIs, world generation and the mods' tick hooks remain incomplete.
 
 ## Putting the mods in
 
-Put b1.7.3 mods in `mods/b1.7.3/`. Jars and zips are both read there (most ModLoader mods were distributed as zips). A jar directly in
+Put b1.7.3 mods in `mods/b1.7.3/`. Jars and zips are both read there (most ModLoader mods were distributed as zips). A mod dropped directly into `mods/` that is recognised as a b1.7.3 mod (see below) is moved into `mods/b1.7.3/` on launch (`legacy.autoSortMods=false` turns that off); libraries without a `mod_*` class are not detected outside the folder, so they stay where you put them. A jar directly in
 `mods/` is also recognised when it has a `mod_*` class or references the ModLoader/Forge API and at least 60% of its references to the
 game resolve in the b1.7.3 names (ModLoader mods for 1.0 to 1.2.5 look the same but name other members). Library jars without a
 `mod_*` class (OverrideAPI) are only recognised in `mods/b1.7.3/`. Many mods came as a client build and a ModLoaderMP server build

@@ -16,7 +16,7 @@
 | --- | --- |
 | **1.7.10** | ✅ Supported (beta) |
 | **1.12.2** | ✅ Supported (beta) |
-| **1.6.4** | 🧪 Alpha (new in 0.4) |
+| **1.6.4** | ✅ Supported (beta) |
 | **1.5.2** | 🧪 Alpha (new in 0.4) |
 | **1.4.7** | 🧪 Alpha (new in 0.4) |
 | **1.20.1** | 🧪 Alpha (Forge mods remapped in place; on by default) |
@@ -197,9 +197,9 @@ Engine and launcher patches (FastCraft, Hodgepodge, NEID and other ID extenders)
 - [Retrofit](https://github.com/Astryxx/Retrofit) (Astryxx) is an interoperability mod: it lets 1.7.10 and 1.20.1 mods work together (energy systems such as RF and IC2, ore dictionary and tags). It does not load old mods onto a modern game.
 - Legacy Connector is for NeoForge 1.21.1 only. For each old version it provides the old game's API itself (the engine, ids, world generation, packets, rendering of the old blocks and items), so mods that use the game's internals can run: Thaumcraft, BuildCraft, Thermal Expansion, RedPower and many more. It bridges outdated libraries to modern equivalents (Baubles to Curios, Waila to Jade, NEI to JEI, RF to NeoForge energy) and exposes legacy containers as NeoForge capabilities.
 
-**Where do I put the mods?** Each legacy version has its own folder: `mods/1.7.10/`, `mods/1.12.2/`, `mods/1.6.4/`, `mods/1.5.2/`, `mods/1.4.7/`, `mods/1.20.1/`. Legacy jars and zips you drop into `mods/` itself are moved there for you on launch (`legacy.autoSortMods=false` turns that off).
+**Where do I put the mods?** Each legacy version has its own folder: `mods/1.7.10/`, `mods/1.12.2/`, `mods/1.6.4/`, `mods/1.5.2/`, `mods/1.4.7/`, `mods/1.20.1/`, `mods/b1.7.3/`. Legacy jars and zips you drop into `mods/` itself are moved there for you on launch (`legacy.autoSortMods=false` turns that off).
 
-**Which versions work, and how well?** 1.7.10 and 1.12.2 are in beta; 1.6.4, 1.5.2, 1.4.7, and 1.20.1 are in alpha. The [Status table](https://github.com/kylepitcock/Legacy-Connector/blob/master/README.md#status) has the details, and the [compatibility site](https://kylepitcock.github.io/Legacy-Connector/) lists results per mod.
+**Which versions work, and how well?** 1.7.10, 1.12.2, and 1.6.4 are in beta; 1.5.2, 1.4.7, 1.20.1, and Beta 1.7.3 are in alpha. The [Status table](https://github.com/kylepitcock/Legacy-Connector/blob/master/README.md#status) has the details, and the [compatibility site](https://kylepitcock.github.io/Legacy-Connector/) lists results per mod.
 
 **Will mod X work?** Check the compatibility site. After a launch, `logs/legacyconnector-report.txt` lists each legacy jar, what was detected, and any references that could not be translated or are only stubbed. Mods that only patch the old engine (performance patches, id extenders) are skipped on purpose, and coremods that patch Minecraft's own classes are not supported.
 
@@ -241,7 +241,7 @@ modern/legacy stack and tile conversion, and NeoForge capabilities for legacy ti
 
 ## Roadmap
 
-✅ 1.7.10 → ✅ **1.12.2** (beta) → **1.6.4** (alpha) → **1.5.2** (alpha) → **1.4.7** (alpha) → **1.20.1** (alpha) → **1.19.2** → **1.18.2** → **1.16.5** → **1.2.5**
+✅ 1.7.10 → ✅ **1.12.2** (beta) → **1.6.4** (beta) → **1.5.2** (alpha) → **1.4.7** (alpha) → **1.20.1** (alpha) → **1.19.2** → **1.18.2** → **1.16.5** → **1.2.5**
 
 Also in alpha: **Beta 1.7.3** ModLoader / Forge 1.0 mods (`mods/b1.7.3/`): their blocks, items and recipes load with their own textures, block behaviour, tile entities and GUIs. Fluid buckets, tool/sword durability and arrows with constant custom textures are bridged. Supported living-mob families run their original callbacks and models, with native spawning, sound and GuiAPI settings; general entities and world generation remain unfinished. Tested so far in headless server runs with Mo' Creatures and MoreCreeps (their results are on the compatibility site); no graphical client test yet.
 
