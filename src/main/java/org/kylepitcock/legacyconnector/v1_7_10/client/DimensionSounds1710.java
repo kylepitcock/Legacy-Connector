@@ -40,6 +40,23 @@ public final class DimensionSounds1710 {
                 org.slf4j.LoggerFactory.getLogger("LegacyConnector/Sound").warn("A PlaySoundEvent17 handler failed: {}", ex.toString());
             }
         });
+        // 1.4.7 to 1.6.4's PlaySoundEvent (name, position, volume, pitch; result null silences the sound)
+        gameBus.addListener((PlaySoundEvent e) -> {
+            SoundInstance sound = e.getSound();
+            var forge = legacyconnector.v1_7_10.net.minecraftforge.common.MinecraftForge.EVENT_BUS;
+            if (sound == null || !forge.mcc$hasListeners(legacyconnector.v1_6_4.net.minecraftforge.client.event.sound.PlaySoundEvent.class)) return;
+            sound.resolve(Minecraft.getInstance().getSoundManager());
+            if (sound.getSound() == null) return;
+            try {
+                var event = new legacyconnector.v1_6_4.net.minecraftforge.client.event.sound.PlaySoundEvent(
+                        legacyconnector.v1_7_10.net.minecraft.client.audio.SoundManager.INSTANCE, sound.getLocation().getPath(),
+                        (float) sound.getX(), (float) sound.getY(), (float) sound.getZ(), sound.getVolume(), sound.getPitch());
+                forge.post(event);
+                if (event.result == null) e.setSound(null);
+            } catch (RuntimeException | LinkageError ex) {
+                org.slf4j.LoggerFactory.getLogger("LegacyConnector/Sound").warn("A PlaySoundEvent handler failed: {}", ex.toString());
+            }
+        });
         // 1.7.10's source events: a sound's channel started (uuid names it while it plays)
         gameBus.addListener((net.neoforged.neoforge.client.event.sound.PlaySoundSourceEvent e) -> {
             var forge = legacyconnector.v1_7_10.net.minecraftforge.common.MinecraftForge.EVENT_BUS;

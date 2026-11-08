@@ -39,3 +39,6 @@ net/minecraft/world/gen/structure/StructureComponent	func_143012_a	(Lnet/minecra
 net/minecraft/world/gen/structure/StructureComponent	func_143011_b	(Lnet/minecraft/nbt/NBTTagCompound;)V	readStructureFromNBT	(Lnet/minecraft/nbt/NBTTagCompound;)V
 cpw/mods/fml/client/registry/ISimpleBlockRenderingHandler	shouldRender3DInInventory	()Z	shouldRender3DInInventory	(I)Z
 cofh/api/energy/IEnergyConnection	canInterface	(Lnet/minecraftforge/common/util/ForgeDirection;)Z	canConnectEnergy	(Lnet/minecraftforge/common/util/ForgeDirection;)Z
+net/minecraft/block/Block	isBlockNormalCube	(Lnet/minecraft/world/World;III)Z	isNormalCube	(Lnet/minecraft/world/IBlockAccess;III)Z
+net/minecraft/block/Block	isBlockBurning	(Lnet/minecraft/world/World;III)Z	isBurning	(Lnet/minecraft/world/IBlockAccess;III)Z
+net/minecraft/item/Item	onUsingItemTick	(Lnet/minecraft/item/ItemStack;Lnet/minecraft/entity/player/EntityPlayer;I)V	onUsingTick	(Lnet/minecraft/item/ItemStack;Lnet/minecraft/entity/player/EntityPlayer;I)V

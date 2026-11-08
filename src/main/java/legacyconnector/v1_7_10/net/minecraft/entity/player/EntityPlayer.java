@@ -150,8 +150,12 @@ public abstract class EntityPlayer extends EntityLivingBase implements legacycon
 
     @Override
     public String getCommandSenderName() {
-        return getGameProfile().getName();
+        String override = mcc$username;
+        return override != null ? override : getGameProfile().getName();
     }
+
+    /** A name a pre-1.7 mod assigned to {@code player.username} (custom and fake players name themselves that way); null leaves the profile's. */
+    public String mcc$username;
 
     public String getDisplayName() {
         return mcc$player().getDisplayName().getString();

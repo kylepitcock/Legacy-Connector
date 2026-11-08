@@ -134,6 +134,23 @@ public class LegacyMobHost extends PathfinderMob implements LegacyLivingHost, IE
             if (near) bossEvent.addPlayer(player);
             else bossEvent.removePlayer(player);
         }
+        // A player that left this dimension is no longer in sl.players(): drop it from the bar too.
+        for (var viewer : java.util.List.copyOf(bossEvent.getPlayers())) {
+            if (viewer.level() != sl) bossEvent.removePlayer(viewer);
+        }
+    }
+
+    /** Also called when the chunk unloads the entity (remove() is not): the bar must not outlive it. */
+    @Override
+    public void onRemovedFromLevel() {
+        clearBossBar();
+        super.onRemovedFromLevel();
+    }
+
+    @Override
+    public void stopSeenByPlayer(net.minecraft.server.level.ServerPlayer player) {
+        super.stopSeenByPlayer(player);
+        if (bossEvent != null && player.level() != level()) bossEvent.removePlayer(player);
     }
 
     private void clearBossBar() {
@@ -665,7 +682,7 @@ public class LegacyMobHost extends PathfinderMob implements LegacyLivingHost, IE
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
-        if (legacy != null) {
+        if (legacy != null && !LegacyHosts.bareTag(tag)) {
             try {
                 legacy.mcc$readEntityFromNBT(new NBTTagCompound(tag));
                 legacy.mcc$loadExtended(new NBTTagCompound(tag));

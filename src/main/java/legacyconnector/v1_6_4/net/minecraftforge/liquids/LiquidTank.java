@@ -35,6 +35,10 @@ public class LiquidTank implements ILiquidTank {
         return capacity;
     }
 
+    public boolean containsValidLiquid() {
+        return liquid != null && liquid.itemID > 0 && liquid.amount > 0;
+    }
+
     public void setLiquid(LiquidStack liquid) {
         this.liquid = liquid;
     }

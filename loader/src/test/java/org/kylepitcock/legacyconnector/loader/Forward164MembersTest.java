@@ -133,6 +133,8 @@ class Forward164MembersTest {
         t.fieldCallRules().forEach((key, r) -> {
             if (r[4].equals("static")) {
                 assertTrue(r[5].startsWith("legacyconnector/v1_6_4/"), key);
+            } else if (r[4].equals("sfield")) {
+                assertTrue(r[5].startsWith("legacyconnector/v1_6_4/"), key);
             } else if (r[4].equals("field")) {
                 if (!hasField(LegacyVersion.V1_7_10, H17, r[1], r[5])) bad.add("1.7.10 has no field " + r[1] + "." + r[5]);
             } else {
