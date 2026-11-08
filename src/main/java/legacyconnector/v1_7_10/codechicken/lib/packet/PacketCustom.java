@@ -182,7 +182,7 @@ public final class PacketCustom implements MCDataInput, MCDataOutput {
     }
 
     public void sendToChunk(World world, int chunkX, int chunkZ) {
-        sendToAllAround(chunkX * 16 + 8, 128, chunkZ * 16 + 8, 160, world.provider.dimensionId);
+        sendToAllAround(chunkX * 16 + 8, 128, chunkZ * 16 + 8, 160, legacyconnector.v1_7_10.net.minecraft.world.World.mcc$get$provider(world).dimensionId);
     }
 
     public void sendToOps() {
@@ -210,7 +210,7 @@ public final class PacketCustom implements MCDataInput, MCDataOutput {
     }
 
     public static void sendToChunk(Packet packet, World world, int chunkX, int chunkZ) {
-        sendToAllAround(packet, chunkX * 16 + 8, 128, chunkZ * 16 + 8, 160, world.provider.dimensionId);
+        sendToAllAround(packet, chunkX * 16 + 8, 128, chunkZ * 16 + 8, 160, legacyconnector.v1_7_10.net.minecraft.world.World.mcc$get$provider(world).dimensionId);
     }
 
     public static void sendToOps(Packet packet) {

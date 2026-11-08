@@ -47,6 +47,26 @@ public class API {
     public static void registerGuiOverlay(Class<? extends GuiContainer> gui, String identifier, int x, int y) {
     }
 
+    public static void registerGuiOverlay(Class<? extends GuiContainer> gui, String identifier, IStackPositioner positioner) {
+    }
+
+    /** Names the block under the cursor in NEI's highlight tooltip (recorded for {@link ItemInfo#getIdentifierItems}). */
+    public static void registerHighlightIdentifier(legacyconnector.v1_7_10.net.minecraft.block.Block block, IHighlightHandler handler) {
+        ItemInfo.highlightIdentifiers.computeIfAbsent(block, b -> new java.util.ArrayList<>()).add(handler);
+    }
+
+    public static void registerHighlightHandler(IHighlightHandler handler, ItemInfo.Layout... layouts) {
+        ItemInfo.highlightHandlers.add(handler);
+    }
+
+    /** A named item subset in NEI's list (the JEI bridge has no subset menu). */
+    public static void addSubset(String name, ItemFilter filter) {
+    }
+
+    public static void addKeyBind(String name, int defaultKey) {
+        legacyconnector.v1_7_10.codechicken.nei.NEIClientConfig.addKeyBinding(name, defaultKey);
+    }
+
     public static void registerGuiOverlayHandler(Class<? extends GuiContainer> gui, IOverlayHandler handler, String identifier) {
     }
 
