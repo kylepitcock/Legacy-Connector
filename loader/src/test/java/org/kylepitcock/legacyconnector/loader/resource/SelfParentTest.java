@@ -27,6 +27,20 @@ class SelfParentTest {
     }
 
     @Test
+    void overridesThatLeadBackToTheModelTheyWereReachedFromAreDropped() {
+        java.util.Map<String, byte[]> files = new java.util.LinkedHashMap<>();
+        files.put("assets/m/models/item/cane.json", "{\"overrides\":[{\"predicate\":{\"open\":1},\"model\":\"m:item/cane_open\"}]}".getBytes(StandardCharsets.UTF_8));
+        files.put("assets/m/models/item/cane_open.json", "{\"overrides\":[{\"predicate\":{\"open\":0},\"model\":\"m:item/cane\"},{\"predicate\":{\"x\":1},\"model\":\"m:item/other\"}]}".getBytes(StandardCharsets.UTF_8));
+        files.put("assets/m/models/item/other.json", "{\"overrides\":[]}".getBytes(StandardCharsets.UTF_8));
+        LegacyResourceConverter.breakOverrideCycles(files);
+        var cane = JsonParser.parseString(new String(files.get("assets/m/models/item/cane.json"), StandardCharsets.UTF_8)).getAsJsonObject().getAsJsonArray("overrides");
+        var open = JsonParser.parseString(new String(files.get("assets/m/models/item/cane_open.json"), StandardCharsets.UTF_8)).getAsJsonObject().getAsJsonArray("overrides");
+        assertEquals(1, cane.size());
+        assertEquals(1, open.size());
+        assertEquals("m:item/other", open.get(0).getAsJsonObject().get("model").getAsString());
+    }
+
+    @Test
     void otherParentsStayAsTheyAre() {
         assertEquals("item/generated", parent("{\"parent\":\"item/generated\"}", "assets/thedalekmod/models/item/chair.json"));
         assertEquals("thedalekmod:item/generated", parent("{\"parent\":\"thedalekmod:item/generated\"}", "assets/thedalekmod/models/item/generated.json"));

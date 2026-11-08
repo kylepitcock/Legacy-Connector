@@ -11,6 +11,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Mechanical, registry-independent asset fixes applied while a legacy jar is rewritten.
@@ -148,11 +149,67 @@ public final class LegacyResourceConverter {
             }
             output.put(path, GSON.toJson(root).getBytes(StandardCharsets.UTF_8));
         }
+        breakOverrideCycles(output);
         ctm.apply(output);
         if (sawTextures) {
             output.putIfAbsent("assets/minecraft/atlases/blocks.json", BLOCK_ATLAS.getBytes(StandardCharsets.UTF_8));
         }
         return output;
+    }
+
+    private static final java.util.regex.Pattern MODEL_FILE = java.util.regex.Pattern.compile("assets/([^/]+)/models/(.+)\\.json");
+
+    /**
+     * Item overrides that lead back to a model they were reached from (the Dalek Mod's sonic_cane and sonic_cane_open override each other)
+     * send vanilla's dependency resolution into a StackOverflowError that drops the resource packs in the middle of loading. The override
+     * that closes a cycle is removed: a model keeps the overrides that lead elsewhere (1.12 resolved each override once and stopped).
+     */
+    static void breakOverrideCycles(Map<String, byte[]> files) {
+        Map<String, JsonObject> models = new LinkedHashMap<>();
+        Map<String, String> paths = new LinkedHashMap<>();
+        for (var e : files.entrySet()) {
+            java.util.regex.Matcher m = MODEL_FILE.matcher(e.getKey());
+            if (!m.matches()) continue;
+            try {
+                if (JsonParser.parseString(new String(e.getValue(), StandardCharsets.UTF_8)) instanceof JsonObject o && o.get("overrides") instanceof JsonArray) {
+                    String key = m.group(1) + ":" + m.group(2).toLowerCase(java.util.Locale.ROOT);
+                    models.put(key, o);
+                    paths.put(key, e.getKey());
+                }
+            } catch (RuntimeException ex) {
+                // malformed JSON is left to the loader
+            }
+        }
+        if (models.isEmpty()) return;
+        Set<String> changed = new java.util.HashSet<>();
+        Set<String> done = new java.util.HashSet<>();
+        for (String start : models.keySet()) breakCyclesFrom(start, models, new java.util.HashSet<>(), done, changed);
+        for (String key : changed) files.put(paths.get(key), GSON.toJson(models.get(key)).getBytes(StandardCharsets.UTF_8));
+    }
+
+    private static void breakCyclesFrom(String key, Map<String, JsonObject> models, Set<String> onPath, Set<String> done, Set<String> changed) {
+        if (done.contains(key)) return;
+        onPath.add(key);
+        JsonObject model = models.get(key);
+        JsonArray kept = new JsonArray();
+        String ns = key.substring(0, key.indexOf(':'));
+        for (JsonElement o : model.getAsJsonArray("overrides")) {
+            boolean keep = true;
+            if (o instanceof JsonObject oo && oo.get("model") instanceof JsonPrimitive mp && mp.isString()) {
+                String ref = mp.getAsString().toLowerCase(java.util.Locale.ROOT);
+                String target = ref.indexOf(':') < 0 ? ns + ":" + ref : ref;
+                if (onPath.contains(target)) {
+                    keep = false;
+                    changed.add(key);
+                } else if (models.containsKey(target)) {
+                    breakCyclesFrom(target, models, onPath, done, changed);
+                }
+            }
+            if (keep) kept.add(o);
+        }
+        if (changed.contains(key)) model.add("overrides", kept);
+        onPath.remove(key);
+        done.add(key);
     }
 
     /**
