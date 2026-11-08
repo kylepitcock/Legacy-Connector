@@ -25,6 +25,33 @@ public final class FMLLog {
         LOG.log(level, safeFormat(format, data), ex);
     }
 
+
+    /** 1.4.7-1.6.4 logged with java.util.logging levels. */
+    public static org.apache.logging.log4j.Level mcc$level(java.util.logging.Level level) {
+        int v = level == null ? 800 : level.intValue();
+        if (v >= 1000) return Level.ERROR;
+        if (v >= 900) return Level.WARN;
+        if (v >= 800) return Level.INFO;
+        if (v >= 500) return Level.DEBUG;
+        return Level.TRACE;
+    }
+
+    public static void log(String targetLog, java.util.logging.Level level, String format, Object... data) {
+        log(targetLog, mcc$level(level), format, data);
+    }
+
+    public static void log(java.util.logging.Level level, String format, Object... data) {
+        log(mcc$level(level), format, data);
+    }
+
+    public static void log(String targetLog, java.util.logging.Level level, Throwable ex, String format, Object... data) {
+        log(targetLog, mcc$level(level), ex, format, data);
+    }
+
+    public static void log(java.util.logging.Level level, Throwable ex, String format, Object... data) {
+        log(mcc$level(level), ex, format, data);
+    }
+
     public static void severe(String format, Object... data) {
         log(Level.ERROR, format, data);
     }

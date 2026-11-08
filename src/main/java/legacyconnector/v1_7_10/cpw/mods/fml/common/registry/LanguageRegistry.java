@@ -30,6 +30,11 @@ public class LanguageRegistry {
         GeneratedTranslations.put(lang, key, value);
     }
 
+    /** Forge 1.4.7: a whole table of keys for the default language (en_US). */
+    public void addStringLocalization(java.util.Properties properties) {
+        addStringLocalization(properties, "en_US");
+    }
+
     /** Forge 1.5.2: a whole table of keys for one language. */
     public void addStringLocalization(java.util.Properties properties, String lang) {
         if (properties == null) return;

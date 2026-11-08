@@ -33,6 +33,11 @@ public class GuiInventory extends InventoryEffectRenderer {
      * Draws the entity standing at (x, y) of the screen, {@code scale} pixels per block, turned to look along the offsets
      * {@code lookX}/{@code lookY} (1.7.10 callers pass the GUI anchor minus the mouse position).
      */
+    /** 1.6.4's name of the entity preview. */
+    public static void func_110423_a(int x, int y, int scale, float lookX, float lookY, EntityLivingBase entity) {
+        drawEntityOnScreen(x, y, scale, lookX, lookY, entity);
+    }
+
     public static void drawEntityOnScreen(int x, int y, int scale, float lookX, float lookY, EntityLivingBase entity) {
         var gui = RenderContext.gui();
         if (gui == null || entity == null || !(entity.mcc$entity instanceof net.minecraft.world.entity.LivingEntity living)) return;

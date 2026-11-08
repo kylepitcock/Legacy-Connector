@@ -68,6 +68,12 @@ public class BlockFire extends legacyconnector.v1_7_10.net.minecraft.block.Block
         return Math.max(chance, oldChance);
     }
 
+    /** 1.6.4 Forge: whether the block at the position catches fire from the given side. */
+    public boolean canBlockCatchFire(legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess world, int x, int y, int z,
+            legacyconnector.v1_7_10.net.minecraftforge.common.util.ForgeDirection face) {
+        return canCatchFire(world, x, y, z, face);
+    }
+
     /** Vanilla 1.7.10: {@code canBlockCatchFire}, the face-less check. */
     public boolean canBlockCatchFire(legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess world, int x, int y, int z) {
         return canCatchFire(world, x, y, z, legacyconnector.v1_7_10.net.minecraftforge.common.util.ForgeDirection.UP);

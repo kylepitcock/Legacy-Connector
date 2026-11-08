@@ -6,6 +6,11 @@ import legacyconnector.v1_7_10.net.minecraft.entity.EntityLiving;
 import legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase;
 
 public class RenderLiving extends RendererLivingEntity {
+    /** 1.6.4's signature (the entity typed as a living entity). */
+    protected void renderLivingLabel(EntityLivingBase entity, String label, double x, double y, double z, int maxDistance) {
+        super.renderLivingLabel((Entity) entity, label, x, y, z, maxDistance);
+    }
+
     public RenderLiving(ModelBase model, float shadowSize) {
         super(model, shadowSize);
     }

@@ -1,0 +1,28 @@
+plugins {
+    id 'java-library'
+    id 'net.neoforged.moddev' version '2.0.148'
+}
+
+version = '1.0.0'
+base { archivesName = 'version-probe' }
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+neoForge {
+    version = '21.1.258'
+}
+
+dependencies {
+    // The addon API only: `./gradlew apiJar` in the repository root builds it. compileOnly: at runtime it is inside the Legacy Connector jar.
+    // Pass -PlegacyApiJar=<path> if the version differs.
+    compileOnly files(project.findProperty('legacyApiJar') ?: '../../build/dist/legacyconnector-api-0.4.7.jar')
+}
+
+tasks.named('processResources') {
+    inputs.property 'version', project.version
+    filesMatching('META-INF/neoforge.mods.toml') { expand(version: project.version) }
+}

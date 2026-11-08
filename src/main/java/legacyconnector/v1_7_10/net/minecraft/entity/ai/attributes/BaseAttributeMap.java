@@ -45,6 +45,11 @@ public abstract class BaseAttributeMap {
         return attributesByName.get(name);
     }
 
+    /** 1.6.4's name of the registration. */
+    public IAttributeInstance func_111150_b(IAttribute attribute) {
+        return registerAttribute(attribute);
+    }
+
     public IAttributeInstance registerAttribute(IAttribute attribute) {
         IAttributeInstance existing = SharedMonsterAttributes.mcc$instance(mcc$entity.get(), attribute);
         if (existing == null) existing = attributes.get(attribute);

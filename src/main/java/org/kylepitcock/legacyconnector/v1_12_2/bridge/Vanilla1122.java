@@ -111,6 +111,25 @@ public final class Vanilla1122 {
         return b;
     }
 
+    private static final Map<net.minecraft.world.item.Item, Item> STAND_INS = new IdentityHashMap<>();
+
+    /**
+     * A legacy stand-in for a modern item 1.12.2 never had (copper ingot, a modern mod's item): an unregistered legacy {@code Item} named like
+     * the modern one, mapping back to it. Used by the addon API only; the legacy registries and {@code ITEM_REVERSE} stay untouched.
+     */
+    public static synchronized Item standIn(net.minecraft.world.item.Item modern) {
+        Item existing = STAND_INS.get(modern);
+        if (existing != null) return existing;
+        ensureLoaded();
+        ResourceLocation id = BuiltInRegistries.ITEM.getKey(modern);
+        Item i = wrap(modern);
+        i.setRegistryName(id.getNamespace(), id.getPath());
+        i.mcc$modern = modern;
+        i.mcc$vanillaModern = modern;
+        STAND_INS.put(modern, i);
+        return i;
+    }
+
     /** The legacy wrapper of a modern vanilla item (made on first use). */
     public static synchronized Item itemForModern(net.minecraft.world.item.Item modern) {
         Item existing = ITEM_REVERSE.get(modern);

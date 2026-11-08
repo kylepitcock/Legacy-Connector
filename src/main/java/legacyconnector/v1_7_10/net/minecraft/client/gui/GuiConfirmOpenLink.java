@@ -9,6 +9,11 @@ public class GuiConfirmOpenLink extends GuiYesNo {
     private final String linkText;
     private boolean showSecurityWarning = true;
 
+    /** 1.6.4: a screen asks (GuiScreen was the callback). */
+    public GuiConfirmOpenLink(GuiScreen callback, String link, int id, boolean fromChat) {
+        this((GuiYesNoCallback) callback, link, id, fromChat);
+    }
+
     public GuiConfirmOpenLink(GuiYesNoCallback callback, String link, int id, boolean fromChat) {
         super(callback, StatCollector.translateToLocal(fromChat ? "chat.link.confirm" : "chat.link.confirmTrusted"), link, id);
         this.confirmButtonText = StatCollector.translateToLocal(fromChat ? "chat.link.open" : "gui.yes");

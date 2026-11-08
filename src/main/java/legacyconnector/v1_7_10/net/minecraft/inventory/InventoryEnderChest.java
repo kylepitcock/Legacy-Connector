@@ -10,6 +10,13 @@ import net.minecraft.world.inventory.PlayerEnderChestContainer;
 public class InventoryEnderChest extends InventoryBasic {
     private final PlayerEnderChestContainer mcc$modern;
 
+    private legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityEnderChest mcc$chest;
+
+    /** The ender chest block entity this inventory is opened from (1.6.4 Forge/vanilla: it animates the lid). */
+    public void setChestTileEntity(legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityEnderChest chest) {
+        this.mcc$chest = chest;
+    }
+
     public InventoryEnderChest() {
         this(null);
     }
