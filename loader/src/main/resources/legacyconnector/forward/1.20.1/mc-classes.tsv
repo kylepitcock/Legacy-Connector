@@ -68,7 +68,6 @@ net/neoforged/neoforge/common/crafting/StrictNBTIngredient	net/minecraft/world/i
 net/neoforged/neoforge/common/crafting/PartialNBTIngredient	net/minecraft/world/item/crafting/Ingredient
 net/minecraft/server/packs/repository/Pack$ResourcesSupplier	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyResourcesSupplier
 net/minecraft/world/item/BowlFoodItem	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyBowlFoodItem
-<<<<<<< HEAD
 net/minecraft/commands/CommandRuntimeException	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyCommandRuntimeException
 net/minecraft/world/level/storage/loot/entries/LootTableReference	net/minecraft/world/level/storage/loot/entries/NestedLootTable
 net/minecraft/world/level/block/grower/AbstractMegaTreeGrower	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyMegaTreeGrower
@@ -79,7 +78,5 @@ net/minecraft/world/item/enchantment/DamageEnchantment	org/kylepitcock/legacycon
 net/minecraft/world/item/Vanishable	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyVanishable
 net/minecraft/world/item/DyeableArmorItem	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyDyeableArmorItem
 net/minecraft/world/level/block/StemGrownBlock	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyStemGrownBlock
-=======
 # --- round 4 batch 9
 net/minecraft/world/scores/Score	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyScore
->>>>>>> master
