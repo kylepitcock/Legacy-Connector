@@ -150,7 +150,7 @@ public class GuiIngame extends Gui {
 
     /** A chat message of the given kind: game info goes to the action bar, the rest to the chat. */
     public void addChatMessage(legacyconnector.v1_12_2.net.minecraft.util.text.ChatType chatTypeIn, legacyconnector.v1_12_2.net.minecraft.util.text.ITextComponent message) {
-        if (message == null) return;
+        if (message == null || hud() == null) return; // a mod chatting during init (before the HUD exists)
         if (chatTypeIn == legacyconnector.v1_12_2.net.minecraft.util.text.ChatType.GAME_INFO) hud().setOverlayMessage(message.mcc$modern(), false);
         else hud().getChat().addMessage(message.mcc$modern());
     }
