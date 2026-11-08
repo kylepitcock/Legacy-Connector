@@ -32,6 +32,7 @@ import org.objectweb.asm.tree.MethodNode;
  */
 final class Mixin1201 {
     private static final String MIXIN = "Lorg/spongepowered/asm/mixin/Mixin;";
+    private static final String LOCAL_CAPTURE = "Lorg/spongepowered/asm/mixin/injection/callback/LocalCapture;";
     private static final Pattern MEMBER = Pattern.compile("^(L[^;]+;)?([^(:\\s]*)(\\(.*|:.*)?$");
 
     /** Totals for the report line. */
@@ -39,12 +40,13 @@ final class Mixin1201 {
         int mixinClasses;
         int stringsMoved;
         int requireRemoved;
+        int localsRelaxed;
         final List<String> dropped = new ArrayList<>();
         /** internal names of mixin classes dropped from their configs */
         final Set<String> droppedClasses = new HashSet<>();
 
         String summary() {
-            return mixinClasses + " mixin class(es), " + stringsMoved + " annotation name(s) moved to 1.21.1, " + requireRemoved + " injector requirement(s) relaxed, " + dropped.size()
+            return mixinClasses + " mixin class(es), " + stringsMoved + " annotation name(s) moved to 1.21.1, " + requireRemoved + " injector requirement(s) relaxed, " + localsRelaxed + " local capture(s) set to FAILSOFT (a vanilla method whose locals changed skips that injection with a Mixin warning naming the mod's mixin), " + dropped.size()
                     + " mixin(s) dropped (target missing in 1.21.1)";
         }
     }
@@ -150,6 +152,14 @@ final class Mixin1201 {
             }
         }
         if (injector) {
+            // @Inject(locals = CAPTURE_FAILHARD/FAILEXCEPTION/PRINT) throws when the 1.21.1 locals differ (not covered by require): FAILSOFT skips the injection
+            for (int i = 0; i + 1 < a.values.size(); i += 2) {
+                if ("locals".equals(a.values.get(i)) && a.values.get(i + 1) instanceof String[] e && e.length == 2 && LOCAL_CAPTURE.equals(e[0])
+                        && !"CAPTURE_FAILSOFT".equals(e[1]) && !"NO_CAPTURE".equals(e[1])) {
+                    a.values.set(i + 1, new String[] {LOCAL_CAPTURE, "CAPTURE_FAILSOFT"});
+                    ctx.st.localsRelaxed++;
+                }
+            }
             for (int i = 0; i + 1 < a.values.size(); i += 2) {
                 if ("require".equals(a.values.get(i)) && a.values.get(i + 1) instanceof Integer n && n > 0) {
                     a.values.set(i + 1, 0);

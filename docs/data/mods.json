@@ -64,6 +64,15 @@
    "notes": "Survival-tested 2026-11-01: the Gateway Key builds the portal and a survival player enters the Abyssal Wasteland; all four dimensions load with their own biomes; 166 blocks break and drop, 440 recipes and the chest/mob loot tables load, mobs drop their loot. The Transmutator burns fuel and cooks; the ritual altar runs a ritual end to end (range charm: pedestal offerings consumed, charm dropped). Chagaroth (damage cap, spawns, fists) dies and drops dread keys, dreadium and XP; Jzahar spawns and drops a scroll. Server-tested 2026-11-01 (second pass): crystallizer (shards, fuel), engraver (azathoth coin, engraving wears) and materializer (bag of crystals lists the recipe) work with valid recipe inputs; the sacrificial altar collects Potential Energy from a slain cow; the relay moves PE collector -> container; NecroDataCapability (Necronomicon unlocks) works; all 47 non-projectile entity types spawn and tick; plague and antimatter effects apply. Still untried: the other sacrifice rituals, spirit altar and statues, the Necronomicon GUI, Dreadlands/Omothol structure chests, tool/armour effects, Asorah/Sacthoth/Gatekeeper/Jzahar phases. Known: the mod's ACExplosion scheduler indexes Chunk.getBlockStorageArray with y<0 in 1.21 worlds (blocks below y=0 exist) and throws every tick until the explosion finishes (large Dread/antimatter bombs only). Known: with C2ME some Omothol chunks log a populate error (mob random used off-thread; being fixed). Item models of crystal subtypes and OBJ weapons fixed after 0.3.13 (#129)."
   },
   {
+   "name": "AbyssalCraft",
+   "version": "1.11.3",
+   "mc": "1.7.10",
+   "source": "client",
+   "date": "2026-11-07",
+   "status": "partial",
+   "notes": "Automated client survey: 485 items, 166 blocks, 57 entity types, 14 biomes; placed 27/27 sampled blocks; spawned 12/12 entity types; 1 missing texture/model log lines; 1 error log lines"
+  },
+  {
    "name": "Achievement Detection Fix",
    "version": "1.0.0",
    "mc": "1.7.10",
@@ -5135,6 +5144,15 @@
    "notes": "Automated client survey: alone in a world the game crashed before it started: "
   },
   {
+   "name": "Chocolate_Quest_Repoured-1.12.2-2.8.0B",
+   "version": "",
+   "mc": "1.7.10",
+   "source": "client",
+   "date": "2026-11-07",
+   "status": "fails",
+   "notes": "Automated client survey: alone in a world the game crashed before it started: "
+  },
+  {
    "name": "ChoiceTheorem's Overhauled Village",
    "version": "3.4.14",
    "mc": "1.20.1",
@@ -5150,6 +5168,15 @@
    "date": "2026-11-01",
    "status": "playable",
    "notes": "Server-side survival run (headless): 61 recipes all match their own ingredients; tiered ores generate (about 100 per chunk) and drop their shards/elemental items when mined with a pick as a survival player; pylon structure validates and a casting table crafts in survival; the dimension loads, a player stays in it and the mobs live; the rainbow forest biome is placed (about 300 blocks from spawn) and rainbow leaves, crystals, dye vines and structure chests generate. Not verified: the Lexicon GUI (the server side use does not open a menu), pylon-energy-gated casting recipes and the research tiers beyond the entry level; bare-spawned projectile entities log harmless NPEs."
+  },
+  {
+   "name": "ChromatiCraft v33a",
+   "version": "",
+   "mc": "1.7.10",
+   "source": "client",
+   "date": "2026-11-07",
+   "status": "partial",
+   "notes": "Automated client survey: 1213 items, 574 blocks, 26 entity types, 18 biomes; placed 27/27 sampled blocks; spawned 12/12 entity types; 51 missing texture/model log lines; 3 error log lines"
   },
   {
    "name": "Chronos Backups",
@@ -6411,6 +6438,15 @@
    "notes": "Automated check: translates offline and everything it uses exists (37 classes). The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "Critter Pet v33a",
+   "version": "",
+   "mc": "1.7.10",
+   "source": "client",
+   "date": "2026-11-07",
+   "status": "works",
+   "notes": "Automated client survey: 11 items, 0 blocks, 5 entity types; spawned 5/5 entity types"
+  },
+  {
    "name": "CrNOBr",
    "version": "0.0.2",
    "mc": "1.7.10",
@@ -6816,21 +6852,21 @@
   },
   {
    "name": "Cyclic",
-   "version": "1.20.8",
-   "mc": "1.12.2",
-   "source": "corpus",
-   "date": "2026-10-27",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
-  },
-  {
-   "name": "Cyclic",
    "version": "1.13.6",
    "mc": "1.20.1",
    "source": "probe",
    "date": "2026-11-07",
    "status": "fails",
    "notes": "Automated check 0.4.5: needs Minecraft or Forge features the layer does not have yet: net.minecraft.client.gui.components.AbstractSliderButton.mouseScrolled, net.minecraft.core.Holder$Reference.get, net.minecraft.core.Holder.get, net.minecraft.nbt.NbtIo.readCompressed, net.minecraft.network.protocol.game.ClientboundAddEntityPacket.<init> (+185 more). has a 1.21.1 version"
+  },
+  {
+   "name": "Cyclic",
+   "version": "1.20.8",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-11-07",
+   "status": "partial",
+   "notes": "Automated client survey: 245 items, 120 blocks, 17 entity types; placed 27/27 sampled blocks; spawned 12/12 entity types; 3 error log lines"
   },
   {
    "name": "Cyclops Core",
@@ -7187,10 +7223,10 @@
    "name": "Dimensional Doors",
    "version": "3.0.10",
    "mc": "1.12.2",
-   "source": "corpus",
-   "date": "2026-10-27",
-   "status": "fails",
-   "notes": "Fails during init: java.lang.NullPointerException: Cannot invoke \"org.dimdev.dimdoors.shared.tileentities.TileEntityEntranceRift.setPos(legacyconnector.v1_12_2.net.minecraft.util."
+   "source": "client",
+   "date": "2026-11-07",
+   "status": "works",
+   "notes": "Automated client survey: 26 items, 14 blocks, 1 entity types, 4 biomes; placed 14/14 sampled blocks; spawned 1/1 entity types"
   },
   {
    "name": "DimensionalWarps",
@@ -7304,10 +7340,10 @@
    "name": "Doggy Talents",
    "version": "1.15.1.6",
    "mc": "1.12.2",
-   "source": "corpus",
-   "date": "2026-10-27",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
+   "source": "client",
+   "date": "2026-11-07",
+   "status": "partial",
+   "notes": "Automated client survey: 31 items, 3 blocks, 2 entity types; placed 3/3 sampled blocks; spawned 2/2 entity types; 2 missing texture/model log lines; 3 error log lines; spawned entities left no visible pixels (invisible?)"
   },
   {
    "name": "Domestication Innovation",
@@ -7471,6 +7507,15 @@
    "notes": "Automated check: needs code from another mod or API that is not available or does not match: Reika.DragonAPI.ModInteract.Bees.BeeSpecies.isSecret()Z, Reika.DragonAPI.ModInteract.Bees.TreeSpecies.getPlantType()Llegacyconnector.v1_7_10.net.minecraftforge.common.EnumPlantType;, Reika.DragonAPI.ModInteract.Bees.TreeSpecies.isSecret()Z."
   },
   {
+   "name": "DragonAPI v33b",
+   "version": "",
+   "mc": "1.7.10",
+   "source": "client",
+   "date": "2026-11-07",
+   "status": "partial",
+   "notes": "Automated client survey: 0 items, 0 blocks, 1 entity types; spawned 1/1 entity types; 1 error log lines"
+  },
+  {
    "name": "Drama Generator: Ruby Edition Splash",
    "version": "1.0.0",
    "mc": "1.7.10",
@@ -7543,6 +7588,15 @@
    "notes": "Automated check: translates offline and everything it uses exists (169 classes). 2 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "Dungeons Mod @VERSION@",
+   "version": "",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-11-07",
+   "status": "partial",
+   "notes": "Automated client survey: 3 items, 0 blocks, 19 entity types; spawned 12/12 entity types; spawned entities left no visible pixels (invisible?)"
+  },
+  {
    "name": "Dungeons Plus",
    "version": "1.5.0",
    "mc": "1.20.1",
@@ -7559,6 +7613,15 @@
    "date": "2026-11-07",
    "status": "loads",
    "notes": "Automated check: translates offline and everything it uses exists (262 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "DungeonTactics DT-0.16.9",
+   "version": "",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-11-07",
+   "status": "partial",
+   "notes": "Automated client survey: 394 items, 73 blocks, 13 entity types; placed 27/27 sampled blocks; spawned 12/12 entity types; 1 error log lines"
   },
   {
    "name": "Durability Notifier",
@@ -7851,10 +7914,10 @@
    "name": "Electroblob's Wizardry",
    "version": "4.3.14",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (739 classes). 3 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "status": "works",
+   "notes": "Automated client survey: 692 items, 34 blocks, 72 entity types; placed 27/27 sampled blocks; spawned 12/12 entity types"
   },
   {
    "name": "Electroblob's Wizardry: Twilight Forest Spell Pack",
@@ -7882,6 +7945,15 @@
    "date": "2026-11-07",
    "status": "loads",
    "notes": "Loads in server self test, old-only 1.6.4 set without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "Elenai Dodge",
+   "version": "2 1.0.8b",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-11-07",
+   "status": "partial",
+   "notes": "Automated client survey: 2 items, 0 blocks, 0 entity types; 4 error log lines"
   },
   {
    "name": "Elenai Dodge 2",
@@ -8112,19 +8184,10 @@
    "name": "Ender IO Base",
    "version": "5.3.70",
    "mc": "1.12.2",
-   "source": "corpus",
-   "date": "2026-10-25",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
-  },
-  {
-   "name": "Ender IO Base",
-   "version": "5.3.72",
-   "mc": "1.12.2",
    "source": "client",
-   "date": "2026-10-30",
-   "status": "loads",
-   "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
+   "date": "2026-11-07",
+   "status": "partial",
+   "notes": "Automated client survey: 0 items, 9 blocks, 0 entity types; placed 9/9 sampled blocks; 1 error log lines"
   },
   {
    "name": "Ender IO Conduits",
@@ -8507,10 +8570,10 @@
    "name": "Energy Converters",
    "version": "1.3.7.30",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (46 classes). The game was not started: this only shows the jar translates, not that it works."
+   "status": "works",
+   "notes": "Automated client survey: 5 items, 5 blocks, 0 entity types; placed 5/5 sampled blocks"
   },
   {
    "name": "Energy Meter",
@@ -8723,10 +8786,19 @@
    "name": "Erebus",
    "version": "1.0.32",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (845 classes). The game was not started: this only shows the jar translates, not that it works. Resource check: 3 model/texture reference(s) are missing after translation (rendering may show missing textures or models), e.g. model erebus:item/blocks/swamp_vent.json has missing parent block/grass_normal; blockstate erebus:swamp_vent.json names missing model grass_snowed."
+   "status": "partial",
+   "notes": "Automated client survey: 422 items, 288 blocks, 70 entity types, 9 biomes; placed 27/27 sampled blocks; spawned 12/12 entity types; 1 missing texture/model log lines; 1 error log lines"
+  },
+  {
+   "name": "Erebus",
+   "version": "0.4.7",
+   "mc": "1.7.10",
+   "source": "client",
+   "date": "2026-11-07",
+   "status": "partial",
+   "notes": "Automated client survey: 612 items, 364 blocks, 77 entity types, 8 biomes; placed 27/27 sampled blocks; spawned 12/12 entity types; 25 missing texture/model log lines; 4 error log lines"
   },
   {
    "name": "ErebusFix",
@@ -8907,6 +8979,15 @@
    "date": "2026-11-07",
    "status": "loads",
    "notes": "Automated check: translates offline and everything it uses exists (86 classes). 2 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "ExpandedRedstone v33a",
+   "version": "",
+   "mc": "1.7.10",
+   "source": "client",
+   "date": "2026-11-07",
+   "status": "works",
+   "notes": "Automated client survey: 35 items, 5 blocks, 0 entity types; placed 5/5 sampled blocks"
   },
   {
    "name": "experiencebugfix",
@@ -9151,6 +9232,15 @@
    "notes": "Survival-tested 2026-11-01: 382 blocks (all drop), 456 recipes; a few hidden blocks show raw names."
   },
   {
+   "name": "Extra Utilities",
+   "version": "2 1.0",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-11-07",
+   "status": "partial",
+   "notes": "Automated client survey: 136 items, 69 blocks, 2 entity types; placed 27/27 sampled blocks; spawned 2/2 entity types; 73 missing texture/model log lines; 73 error log lines"
+  },
+  {
    "name": "Extra Utilities 2",
    "version": "1.0",
    "mc": "1.12.2",
@@ -9370,10 +9460,10 @@
    "name": "Fairy Lights",
    "version": "2.1.10",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (227 classes). 6 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "status": "partial",
+   "notes": "Automated client survey: 246 items, 1 blocks, 2 entity types; placed 1/1 sampled blocks; spawned 2/2 entity types; 11 error log lines"
   },
   {
    "name": "FalsePatternLib",
@@ -9469,10 +9559,10 @@
    "name": "Farming for Blockheads",
    "version": "3.1.28",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (110 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "status": "works",
+   "notes": "Automated client survey: 11 items, 8 blocks, 1 entity types; placed 8/8 sampled blocks; spawned 1/1 entity types"
   },
   {
    "name": "Farsight mod",
@@ -9676,10 +9766,10 @@
    "name": "Fish's Undead Rising",
    "version": "1.4.2",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (367 classes). 7 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works. Resource check: 2 model/texture reference(s) are missing after translation (rendering may show missing textures or models), e.g. blockstate mod_lavacow:glowshroom_block_stem.json names missing model brown_mushroom_block_inside_all; blockstate mod_lavacow:glowshroom_block_cap.json names missing model brown_mushroom_block_inside_all."
+   "status": "partial",
+   "notes": "Automated client survey: 127 items, 13 blocks, 45 entity types; placed 13/13 sampled blocks; spawned 12/12 entity types; 4 missing texture/model log lines; missing-texture magenta visible in the block shot"
   },
   {
    "name": "Fisk's Superheroes",
@@ -9828,10 +9918,10 @@
    "name": "Flux Networks",
    "version": "4.1.0",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (224 classes). The game was not started: this only shows the jar translates, not that it works."
+   "status": "partial",
+   "notes": "Automated client survey: 11 items, 7 blocks, 1 entity types; placed 7/7 sampled blocks; spawned 1/1 entity types; 1 missing texture/model log lines; 1 error log lines"
   },
   {
    "name": "Fluxed-Core",
@@ -9907,15 +9997,6 @@
   },
   {
    "name": "Forestry",
-   "version": "5.8.2.422",
-   "mc": "1.12.2",
-   "source": "corpus",
-   "date": "2026-10-25",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
-  },
-  {
-   "name": "Forestry",
    "version": "4.10.17",
    "mc": "1.7.10",
    "source": "client",
@@ -9939,6 +10020,15 @@
    "date": "2026-11-07",
    "status": "partial",
    "notes": "Mod has newer versions. Loads with Binnie's Extra Bees (genetics API shared once, plugins found, 330 alleles); container screens do not open because this build targets another obfuscation (see Forestry for Minecraft)."
+  },
+  {
+   "name": "Forestry",
+   "version": "5.8.2.422",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-11-07",
+   "status": "partial",
+   "notes": "Automated client survey: 520 items, 297 blocks, 3 entity types; placed 27/27 sampled blocks; spawned 3/3 entity types; 5 missing texture/model log lines; 10 error log lines; missing-texture magenta visible in the block shot"
   },
   {
    "name": "Forestry for Minecraft",
@@ -10041,15 +10131,6 @@
   },
   {
    "name": "Forge Microblocks",
-   "version": "2.6.2.83",
-   "mc": "1.12.2",
-   "source": "probe",
-   "date": "2026-11-08",
-   "status": "loads",
-   "notes": "Automated check 0.4.9: translates offline and everything it uses exists (684 classes). 2 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
-  },
-  {
-   "name": "Forge Microblocks",
    "version": "1.0.0.149",
    "mc": "1.5.2",
    "source": "client",
@@ -10065,6 +10146,15 @@
    "date": "2026-11-06",
    "status": "fails",
    "notes": "Automated check: needs code from another mod or API that is not available or does not match: scala.reflect.api.Trees$ClassDefExtractor.apply(Lscala.reflect.api.Trees$ModifiersApi;Lscala.reflect.api.Names$NameApi;Lscala.collection.immutable.List;Lscala.reflect.api.Trees$TreeApi;)Lscala.reflect.api.Trees$TreeApi;, scala.reflect.api.Trees$DefDefExtractor.apply(Lscala.reflect.api.Trees$ModifiersApi;Lscala.reflect.api.Names$NameApi;Lscala.collection.immutable.List;Lscala.collection.immutable.List;Lscala.reflect.api.Trees$TreeApi;Lscala.reflect.api.Trees$TreeApi;)Lscala.reflect.api.Trees$TreeApi;, scala.reflect.api.Trees$SuperExtractor.apply(Lscala.reflect.api.Trees$TreeApi;Lscala.reflect.api.Names$NameApi;)Lscala.reflect.api.Trees$TreeApi;, scala.reflect.api.Trees$TemplateExtractor.apply(Lscala.collection.immutable.List;Lscala.reflect.api.Trees$TreeApi;Lscala.collection.immutable.List;)Lscala.reflect.api.Trees$TreeApi;, scala.reflect.api.Trees$ThisExtractor.apply(Lscala.reflect.api.Names$NameApi;)Lscala.reflect.api.Trees$TreeApi; (+1 more)."
+  },
+  {
+   "name": "Forge Microblocks",
+   "version": "2.6.2.83",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-11-07",
+   "status": "fails",
+   "notes": "Automated client survey: 0 items, 0 blocks, 0 entity types; load failure during preInit: java.lang.RuntimeException: java.lang.VerifyError: Bad type on operand stack; 14 error log lines"
   },
   {
    "name": "Forge Multipart",
@@ -10106,10 +10196,10 @@
    "name": "Forge Multipart CBE",
    "version": "2.6.2.83",
    "mc": "1.12.2",
-   "source": "probe",
-   "date": "2026-11-08",
-   "status": "loads",
-   "notes": "Automated check 0.4.9: translates offline and everything it uses exists (684 classes). 2 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "source": "client",
+   "date": "2026-11-07",
+   "status": "fails",
+   "notes": "Automated client survey: 0 items, 0 blocks, 0 entity types; load failure during preInit: java.lang.RuntimeException: java.lang.VerifyError: Bad type on operand stack; 2 error log lines"
   },
   {
    "name": "Forgelin",
@@ -10196,10 +10286,10 @@
    "name": "Fossils and Archeology Revival",
    "version": "8.0.5",
    "mc": "1.12.2",
-   "source": "probe",
-   "date": "2026-11-08",
-   "status": "loads",
-   "notes": "Automated check 0.4.9: translates offline and everything it uses exists (605 classes). 3 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "source": "client",
+   "date": "2026-11-07",
+   "status": "partial",
+   "notes": "Automated client survey: 781 items, 120 blocks, 70 entity types, 3 biomes; placed 27/27 sampled blocks; spawned 12/12 entity types; 6 error log lines"
   },
   {
    "name": "FPS Reducer",
@@ -10331,10 +10421,10 @@
    "name": "Frozen Fiend",
    "version": "1.5",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (21 classes). 2 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "status": "partial",
+   "notes": "Automated client survey: 1 items, 0 blocks, 2 entity types; spawned 2/2 entity types; 1 error log lines"
   },
   {
    "name": "Frustrator",
@@ -10412,10 +10502,10 @@
    "name": "FTB Quests",
    "version": "1202.9.0.15",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (408 classes). 4 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "status": "partial",
+   "notes": "Automated client survey: 12 items, 11 blocks, 0 entity types; placed 11/11 sampled blocks; 17 error log lines"
   },
   {
    "name": "FTB Ranks",
@@ -10785,10 +10875,10 @@
    "name": "GasConduits",
    "version": "5.3.70",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (50 classes). The game was not started: this only shows the jar translates, not that it works."
+   "status": "fails",
+   "notes": "Automated client survey: 0 items, 0 blocks, 0 entity types; load failure during construction: java.lang.IllegalStateException: EnderCorePlugin accessed too early!; 2 error log lines"
   },
   {
    "name": "Gateways To Eternity",
@@ -10908,6 +10998,15 @@
    "notes": "Automated check: translates offline and everything it uses exists (146 classes). 4 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "GeoStrata v33a",
+   "version": "",
+   "mc": "1.7.10",
+   "source": "client",
+   "date": "2026-11-07",
+   "status": "partial",
+   "notes": "Automated client survey: 1051 items, 371 blocks, 0 entity types, 1 biomes; placed 27/27 sampled blocks; 2 missing texture/model log lines"
+  },
+  {
    "name": "Get It Together, Drops!",
    "version": "1.0.2",
    "mc": "1.12.2",
@@ -10938,10 +11037,10 @@
    "name": "Ghost's Explosives Mod",
    "version": "2.3.0 - MC 1.12.2",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (166 classes). The game was not started: this only shows the jar translates, not that it works."
+   "status": "works",
+   "notes": "Automated client survey: 54 items, 43 blocks, 36 entity types; placed 27/27 sampled blocks; spawned 12/12 entity types"
   },
   {
    "name": "GigaGramFab",
@@ -11379,10 +11478,10 @@
    "name": "Grue",
    "version": "1.8.0",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (23 classes). The game was not started: this only shows the jar translates, not that it works."
+   "status": "works",
+   "notes": "Automated client survey: 0 items, 0 blocks, 1 entity types; spawned 1/1 entity types"
   },
   {
    "name": "GT NEI Ore Plugin GT:NH Mod",
@@ -11559,10 +11658,10 @@
    "name": "GuardIllagers",
    "version": "1.0.1",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (19 classes). The game was not started: this only shows the jar translates, not that it works."
+   "status": "works",
+   "notes": "Automated client survey: 1 items, 0 blocks, 1 entity types; spawned 1/1 entity types"
   },
   {
    "name": "GUI Library",
@@ -11649,10 +11748,10 @@
    "name": "Hammer Core",
    "version": "2.0.6.32",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (1248 classes). But 20 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+   "status": "partial",
+   "notes": "Automated client survey: 6 items, 7 blocks, 0 entity types; placed 7/7 sampled blocks; 1 error log lines"
   },
   {
    "name": "HammerAnimations",
@@ -11710,21 +11809,12 @@
   },
   {
    "name": "Hardcore Ender Expansion",
-   "version": "1.12.16-GTNH",
-   "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-24",
-   "status": "fails",
-   "notes": "Fails during preInit: legacyconnector.v1_7_10.cpw.mods.fml.relauncher.ReflectionHelper$UnableToFindFieldException: deobfuscatedEnvironment"
-  },
-  {
-   "name": "Hardcore Ender Expansion",
-   "version": "1.12.16-GTNH",
+   "version": "1.8.6",
    "mc": "1.7.10",
    "source": "client",
-   "date": "2026-10-28",
-   "status": "partial",
-   "notes": "In the GT New Horizons server test 99 items, 54 blocks, 48 entity types register, but loading failed during preInit: legacyconnector.v1_7_10.cpw.mods.fml.relauncher.ReflectionHelper$UnableToFindFieldException: deobfuscatedEnvironment"
+   "date": "2026-11-07",
+   "status": "works",
+   "notes": "Automated client survey: 278 items, 114 blocks, 48 entity types; placed 27/27 sampled blocks; spawned 12/12 entity types"
   },
   {
    "name": "Hardcore Questing Mode",
@@ -12061,10 +12151,10 @@
    "name": "HT's TreeChop",
    "version": "0.14.6",
    "mc": "1.12.2",
-   "source": "probe",
-   "date": "2026-11-08",
-   "status": "loads",
-   "notes": "Automated check 0.4.9: translates offline and everything it uses exists (92 classes). The game was not started: this only shows the jar translates, not that it works."
+   "source": "client",
+   "date": "2026-11-07",
+   "status": "works",
+   "notes": "Automated client survey: 0 items, 13 blocks, 0 entity types; placed 13/13 sampled blocks"
   },
   {
    "name": "Hunger Overhaul",
@@ -12106,10 +12196,10 @@
    "name": "HunterIllager",
    "version": "1.2",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (14 classes). The game was not started: this only shows the jar translates, not that it works."
+   "status": "works",
+   "notes": "Automated client survey: 0 items, 0 blocks, 1 entity types; spawned 1/1 entity types"
   },
   {
    "name": "HydroEnergy",
@@ -12277,10 +12367,10 @@
    "name": "ICBM-Classic",
    "version": "1.12.2-4.0.1.75",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (414 classes). The game was not started: this only shows the jar translates, not that it works."
+   "status": "partial",
+   "notes": "Automated client survey: 86 items, 13 blocks, 9 entity types; placed 13/13 sampled blocks; spawned 9/9 entity types; 45 missing texture/model log lines; 46 error log lines"
   },
   {
    "name": "Ice and Fire",
@@ -12331,10 +12421,10 @@
    "name": "iChunUtil",
    "version": "7.2.2",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (235 classes). But 131 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+   "status": "partial",
+   "notes": "Automated client survey: 1 items, 1 blocks, 1 entity types; placed 1/1 sampled blocks; spawned 1/1 entity types; 2 error log lines"
   },
   {
    "name": "ID Conflicts Viewer",
@@ -12385,19 +12475,19 @@
    "name": "Illagers+",
    "version": "1.1",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (53 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "status": "partial",
+   "notes": "Automated client survey: 0 items, 0 blocks, 6 entity types; spawned 6/6 entity types; spawned entities left no visible pixels (invisible?)"
   },
   {
    "name": "Immersive Cables",
    "version": "1.3.2",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (54 classes). The game was not started: this only shows the jar translates, not that it works."
+   "status": "works",
+   "notes": "Automated client survey: 5 items, 1 blocks, 0 entity types; placed 1/1 sampled blocks"
   },
   {
    "name": "Immersive Cavegen",
@@ -12510,19 +12600,19 @@
    "name": "Immersive Petroleum",
    "version": "1.1.9",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (122 classes). 2 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "status": "partial",
+   "notes": "Automated client survey: 13 items, 9 blocks, 1 entity types; placed 9/9 sampled blocks; spawned 1/1 entity types; 1 missing texture/model log lines; 1 error log lines; missing-texture magenta visible in the block shot"
   },
   {
    "name": "Immersive Posts",
    "version": "0.2.1",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (26 classes). The game was not started: this only shows the jar translates, not that it works."
+   "status": "works",
+   "notes": "Automated client survey: 18 items, 25 blocks, 0 entity types; placed 25/25 sampled blocks"
   },
   {
    "name": "Immersive Railroading",
@@ -12690,10 +12780,10 @@
    "name": "Improved Backpacks",
    "version": "1.12.2-1.5.0.0",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (61 classes). The game was not started: this only shows the jar translates, not that it works."
+   "status": "works",
+   "notes": "Automated client survey: 10 items, 2 blocks, 0 entity types; placed 2/2 sampled blocks"
   },
   {
    "name": "Improving Minecraft",
@@ -12941,10 +13031,10 @@
    "name": "InfinityLib",
    "version": "1.12.2-1.12.0",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (174 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "status": "fails",
+   "notes": "Automated client survey: 0 items, 0 blocks, 0 entity types; load failure during construction: java.lang.RuntimeException: COULD NOT RETRIEVE FMLMODCONTAINER EVENT METHODS FIELD; 2 error log lines"
   },
   {
    "name": "InfiView",
@@ -13076,10 +13166,10 @@
    "name": "Instrumental Mobs",
    "version": "1.2",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (73 classes). 6 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "status": "works",
+   "notes": "Automated client survey: 10 items, 1 blocks, 9 entity types; placed 1/1 sampled blocks; spawned 9/9 entity types"
   },
   {
    "name": "Integrated Cataclysm",
@@ -13319,10 +13409,10 @@
    "name": "Inventory Tweaks",
    "version": "1.63+release.109.220f184",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (74 classes). 3 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "status": "fails",
+   "notes": "Automated client survey: 0 items, 0 blocks, 0 entity types; load failure during init: java.lang.NullPointerException: Cannot invoke \"net.minecraft.client.gui.Gui.getChat()\" because \"net.minecraft.client.Minecraft.getInstance().gui\" is null; 2 error log lines"
   },
   {
    "name": "Inventory Tweaks Refoxed",
@@ -13362,15 +13452,6 @@
   },
   {
    "name": "Iron Chest",
-   "version": "1.12.2-7.0.67.844",
-   "mc": "1.12.2",
-   "source": "corpus",
-   "date": "2026-10-25",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
-  },
-  {
-   "name": "Iron Chest",
    "version": "6.0.62.742",
    "mc": "1.7.10",
    "date": "2026-10-28",
@@ -13385,6 +13466,15 @@
    "date": "2026-10-28",
    "status": "works",
    "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 10 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "Iron Chest",
+   "version": "1.12.2-7.0.67.844",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-11-07",
+   "status": "partial",
+   "notes": "Automated client survey: 35 items, 17 blocks, 0 entity types; placed 17/17 sampled blocks; 16 missing texture/model log lines"
   },
   {
    "name": "Iron Chest Minecarts",
@@ -13552,10 +13642,10 @@
    "name": "Item Filters",
    "version": "1.0.4.2",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (50 classes). The game was not started: this only shows the jar translates, not that it works."
+   "status": "partial",
+   "notes": "Automated client survey: 2 items, 0 blocks, 0 entity types; 3 error log lines"
   },
   {
    "name": "Item Frame Remover",
@@ -13893,10 +13983,10 @@
    "name": "Just Enough Calculation",
    "version": "1.12.2-3.2.5",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (141 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "status": "works",
+   "notes": "Automated client survey: 2 items, 0 blocks, 0 entity types"
   },
   {
    "name": "Just Enough Energistics",
@@ -14181,10 +14271,10 @@
    "name": "Laser Creeper Robot Dino Riders From Space",
    "version": "2.0.0",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (79 classes). The game was not started: this only shows the jar translates, not that it works."
+   "status": "partial",
+   "notes": "Automated client survey: 43 items, 2 blocks, 5 entity types; placed 2/2 sampled blocks; spawned 5/5 entity types; spawned entities left no visible pixels (invisible?)"
   },
   {
    "name": "LaserIO",
@@ -14253,10 +14343,10 @@
    "name": "Legends Mod",
    "version": "8.6.2",
    "mc": "1.7.10",
-   "source": "probe",
-   "date": "2026-11-08",
-   "status": "loads",
-   "notes": "Automated check 0.4.9: translates offline and everything it uses exists (4298 classes). The game was not started: this only shows the jar translates, not that it works."
+   "source": "client",
+   "date": "2026-11-07",
+   "status": "works",
+   "notes": "Automated client survey: 2384 items, 811 blocks, 258 entity types, 16 biomes; placed 27/27 sampled blocks; spawned 12/12 entity types"
   },
   {
    "name": "LemonLib",
@@ -14325,10 +14415,10 @@
    "name": "Level Up! Reloaded",
    "version": "1.5.8",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (62 classes). The game was not started: this only shows the jar translates, not that it works."
+   "status": "partial",
+   "notes": "Automated client survey: 15 items, 0 blocks, 0 entity types; 1 error log lines"
   },
   {
    "name": "LevelHearts",
@@ -14550,10 +14640,10 @@
    "name": "Lods of Emone",
    "version": "0.1",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (6 classes). The game was not started: this only shows the jar translates, not that it works."
+   "status": "works",
+   "notes": "Automated client survey: 2 items, 0 blocks, 0 entity types"
   },
   {
    "name": "Login Shield",
@@ -15216,10 +15306,10 @@
    "name": "Macaw's Roofs",
    "version": "1.0.2",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (61 classes). The game was not started: this only shows the jar translates, not that it works."
+   "status": "works",
+   "notes": "Automated client survey: 218 items, 199 blocks, 0 entity types; placed 27/27 sampled blocks"
   },
   {
    "name": "Macaw's Trapdoors",
@@ -15243,10 +15333,10 @@
    "name": "MachineMuse's Modular Powersuits",
    "version": "1.12.2-1.0.46",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (402 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "status": "fails",
+   "notes": "Automated client survey: 0 items, 0 blocks, 0 entity types; load failure during construction: java.lang.NoSuchMethodException: net.machinemuse.powersuits.common.ModularPowersuits.<init>(); 25 error log lines"
   },
   {
    "name": "Machines",
@@ -15396,10 +15486,10 @@
    "name": "MalisisCore",
    "version": "1.12.2-6.5.1-SNAPSHOT",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (528 classes). The game was not started: this only shows the jar translates, not that it works."
+   "status": "fails",
+   "notes": "Automated client survey: 0 items, 0 blocks, 0 entity types; load failure during init: java.lang.RuntimeException: java.lang.ExceptionInInitializerError; 2 error log lines"
   },
   {
    "name": "MalisisDoors",
@@ -15540,10 +15630,10 @@
    "name": "Max Potion ID Extender",
    "version": "1.0.3",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (9 classes). The game was not started: this only shows the jar translates, not that it works."
+   "status": "fails",
+   "notes": "Automated client survey: 0 items, 0 blocks, 0 entity types; load failure during preInit: java.lang.NullPointerException: Cannot invoke \"java.lang.Number.intValue()\" because the return value of \"org.kylepitcock.legacyconnector.compat.jdk.ReflectionCo; 3 error log lines"
   },
   {
    "name": "MC Helicopter",
@@ -15553,6 +15643,15 @@
    "date": "2026-11-08",
    "status": "loads",
    "notes": "Automated check 0.4.9: translates offline and everything it uses exists (673 classes). But 12 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "MC Helicopter",
+   "version": "1.0.3",
+   "mc": "1.7.10",
+   "source": "client",
+   "date": "2026-11-07",
+   "status": "partial",
+   "notes": "Automated client survey: 16 items, 2 blocks, 25 entity types; placed 2/2 sampled blocks; spawned 12/12 entity types; 1 error log lines; spawned entities left no visible pixels (invisible?)"
   },
   {
    "name": "MC Helicopter Overdrive+",
@@ -15666,10 +15765,10 @@
    "name": "MCMultiPart",
    "version": "2.5.3",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (82 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "status": "works",
+   "notes": "Automated client survey: 0 items, 1 blocks, 0 entity types; placed 1/1 sampled blocks"
   },
   {
    "name": "MCT Mixin",
@@ -15932,6 +16031,15 @@
    "notes": "Automated check: translates offline and everything it uses exists (41 classes). The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "MeteorCraft v33a",
+   "version": "",
+   "mc": "1.7.10",
+   "source": "client",
+   "date": "2026-11-07",
+   "status": "works",
+   "notes": "Automated client survey: 5 items, 5 blocks, 2 entity types; placed 5/5 sampled blocks; spawned 2/2 entity types"
+  },
+  {
    "name": "MFR Compat: Vanilla",
    "version": "1.7.10R2.8.1",
    "mc": "1.7.10",
@@ -16060,10 +16168,10 @@
    "name": "MineColonies",
    "version": "1.12.2-0.11.841-ALPHA",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (1576 classes). But 11 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works. Resource check: 2 model/texture reference(s) are missing after translation (rendering may show missing textures or models), e.g. model minecolonies:block/oldblockconstructiontape.json names missing texture block/wool_yellow; model minecolonies:block/blockhutcombatacademy.json has missing parent model."
+   "status": "partial",
+   "notes": "Automated client survey: 66 items, 41 blocks, 10 entity types; placed 27/27 sampled blocks; spawned 10/10 entity types; 36 missing texture/model log lines; 33 error log lines; missing-texture magenta visible in the block shot"
   },
   {
    "name": "Minecraft Multipart Plugin",
@@ -16085,15 +16193,6 @@
   },
   {
    "name": "Minecraft Multipart Plugin",
-   "version": "2.6.2.83",
-   "mc": "1.12.2",
-   "source": "probe",
-   "date": "2026-11-08",
-   "status": "loads",
-   "notes": "Automated check 0.4.9: translates offline and everything it uses exists (684 classes). 2 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
-  },
-  {
-   "name": "Minecraft Multipart Plugin",
    "version": "1.0.0.149",
    "mc": "1.5.2",
    "source": "client",
@@ -16109,6 +16208,15 @@
    "date": "2026-11-06",
    "status": "fails",
    "notes": "Automated check: needs code from another mod or API that is not available or does not match: scala.reflect.api.Trees$ClassDefExtractor.apply(Lscala.reflect.api.Trees$ModifiersApi;Lscala.reflect.api.Names$NameApi;Lscala.collection.immutable.List;Lscala.reflect.api.Trees$TreeApi;)Lscala.reflect.api.Trees$TreeApi;, scala.reflect.api.Trees$DefDefExtractor.apply(Lscala.reflect.api.Trees$ModifiersApi;Lscala.reflect.api.Names$NameApi;Lscala.collection.immutable.List;Lscala.collection.immutable.List;Lscala.reflect.api.Trees$TreeApi;Lscala.reflect.api.Trees$TreeApi;)Lscala.reflect.api.Trees$TreeApi;, scala.reflect.api.Trees$SuperExtractor.apply(Lscala.reflect.api.Trees$TreeApi;Lscala.reflect.api.Names$NameApi;)Lscala.reflect.api.Trees$TreeApi;, scala.reflect.api.Trees$TemplateExtractor.apply(Lscala.collection.immutable.List;Lscala.reflect.api.Trees$TreeApi;Lscala.collection.immutable.List;)Lscala.reflect.api.Trees$TreeApi;, scala.reflect.api.Trees$ThisExtractor.apply(Lscala.reflect.api.Names$NameApi;)Lscala.reflect.api.Trees$TreeApi; (+1 more)."
+  },
+  {
+   "name": "Minecraft Multipart Plugin",
+   "version": "2.6.2.83",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-11-07",
+   "status": "fails",
+   "notes": "Automated client survey: 0 items, 0 blocks, 0 entity types; load failure during construction: java.lang.VerifyError: Bad type on operand stack; 2 error log lines"
   },
   {
    "name": "Minecraft Rich Presence",
@@ -16366,10 +16474,10 @@
    "name": "MmmMmmMmmMmm",
    "version": "1.12",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (20 classes). The game was not started: this only shows the jar translates, not that it works."
+   "status": "works",
+   "notes": "Automated client survey: 1 items, 0 blocks, 3 entity types; spawned 3/3 entity types"
   },
   {
    "name": "MMMTweaks",
@@ -16501,10 +16609,10 @@
    "name": "mob_grinding_utils",
    "version": "0.3.13",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (120 classes). The game was not started: this only shows the jar translates, not that it works."
+   "status": "works",
+   "notes": "Automated client survey: 26 items, 13 blocks, 0 entity types; placed 13/13 sampled blocks"
   },
   {
    "name": "Mobs no render",
@@ -16879,19 +16987,10 @@
    "name": "More Planets",
    "version": "1.4.4",
    "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-24",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
-  },
-  {
-   "name": "More Planets",
-   "version": "1.4.4",
-   "mc": "1.7.10",
    "source": "client",
-   "date": "2026-10-28",
-   "status": "fails",
-   "notes": "Fails during preInit: java.lang.IllegalArgumentException: UUID string too large"
+   "date": "2026-11-07",
+   "status": "partial",
+   "notes": "Automated client survey: 1180 items, 694 blocks, 75 entity types, 17 biomes; placed 27/27 sampled blocks; spawned 12/12 entity types; load failure during postInit: java.lang.RuntimeException: Two space station types registered with the same home planet ID: -29; 2 error log lines"
   },
   {
    "name": "More Plates",
@@ -17095,10 +17194,10 @@
    "name": "Mowzie's Mobs",
    "version": "1.5.8",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (351 classes). 2 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works. Resource check: 2 model/texture reference(s) are missing after translation (rendering may show missing textures or models), e.g. model mowziesmobs:block/diamond_grottol.json names missing texture for_llibrary_bug_not_putting_particle_into_textures_set; model mowziesmobs:block/black_pink_grottol.json names missing texture for_llibrary_bug_not_putting_particle_into_textures_set."
+   "status": "partial",
+   "notes": "Automated client survey: 25 items, 5 blocks, 24 entity types; placed 5/5 sampled blocks; spawned 12/12 entity types; 3 missing texture/model log lines; 3 error log lines"
   },
   {
    "name": "MrCrayfish's Construction Mod",
@@ -17126,6 +17225,15 @@
    "date": "2026-11-07",
    "status": "fails",
    "notes": "Automated check 0.4.5: needs Minecraft or Forge features the layer does not have yet: net.minecraft.advancements.Advancement$Builder.addCriterion, net.minecraft.advancements.Advancement$Builder.getCriteria, net.minecraft.advancements.Advancement$Builder.serializeToJson, net.minecraft.advancements.critereon.RecipeUnlockedTrigger.unlocked, net.minecraft.client.RecipeBookCategories.create (+115 more)."
+  },
+  {
+   "name": "MrCrayfish's Vehicle Mod",
+   "version": "0.44.1",
+   "mc": "1.7.10",
+   "source": "client",
+   "date": "2026-11-07",
+   "status": "partial",
+   "notes": "Automated client survey: 44 items, 18 blocks, 24 entity types; placed 18/18 sampled blocks; spawned 12/12 entity types; 9 missing texture/model log lines; 1 error log lines"
   },
   {
    "name": "MrTJPCore",
@@ -18279,21 +18387,12 @@
   },
   {
    "name": "NoMoreRecipeConflict",
-   "version": "0.15-b2",
+   "version": "0.13",
    "mc": "1.12.2",
-   "source": "probe",
-   "date": "2026-11-08",
-   "status": "loads",
-   "notes": "Automated check 0.4.9: translates offline and everything it uses exists (26 classes). 3 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
-  },
-  {
-   "name": "NoMoreRecipeConflict",
-   "version": "0.15-b2",
-   "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check 0.4.6: translates offline and everything it uses exists (26 classes). 3 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "status": "fails",
+   "notes": "Automated client survey: 0 items, 0 blocks, 0 entity types; load failure during construction: java.lang.ClassNotFoundException: assets.recipehandler.RecipeMod; 3 error log lines"
   },
   {
    "name": "NonConflictKeys",
@@ -18476,6 +18575,15 @@
    "notes": "Automated check 0.4.9: translates offline and everything it uses exists (15 classes). The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "NTM-CE-1.12.2-2.6.1.0",
+   "version": "",
+   "mc": "1.7.10",
+   "source": "client",
+   "date": "2026-11-07",
+   "status": "fails",
+   "notes": "Automated client survey: alone in a world the game crashed before it started: "
+  },
+  {
    "name": "NTM: Space",
    "version": "1.0.27 BETA (5852)",
    "mc": "1.7.10",
@@ -18530,6 +18638,15 @@
    "notes": "Automated check 0.4.6: needs code from another mod or API that is not available or does not match: nc.integration.gtce.GTCERecipeHelper.addGTCERecipe(Ljava.lang.String;Lnc.recipe.ProcessorRecipe;)V."
   },
   {
+   "name": "NuclearCraft @VERSION@",
+   "version": "",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-11-07",
+   "status": "fails",
+   "notes": "Automated client survey: 0 items, 0 blocks, 0 entity types; load failure during preInit: java.lang.NullPointerException: Cannot invoke \"legacyconnector.v1_12_2.net.minecraftforge.common.config.Property.setLanguageKey(String)\" because \"propertySpeedU; 8 error log lines"
+  },
+  {
    "name": "Nuclearcraft Neoteric",
    "version": "1.2.13",
    "mc": "1.20.1",
@@ -18560,10 +18677,10 @@
    "name": "Numina",
    "version": "1.12.2-1.0.38",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (269 classes). 4 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "status": "fails",
+   "notes": "Automated client survey: 0 items, 0 blocks, 0 entity types; load failure during construction: java.lang.NoSuchMethodException: net.machinemuse.numina.basemod.Numina.<init>(); 3 error log lines"
   },
   {
    "name": "Nutrition",
@@ -18731,10 +18848,10 @@
    "name": "OMLib",
    "version": "3.1.4-249",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (144 classes). 8 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "status": "partial",
+   "notes": "Automated client survey: 4 items, 1 blocks, 0 entity types; placed 1/1 sampled blocks; 1 missing texture/model log lines; 1 error log lines"
   },
   {
    "name": "Omni",
@@ -18794,10 +18911,10 @@
    "name": "Open Modular Turrets",
    "version": "3.1.12-378",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (195 classes). The game was not started: this only shows the jar translates, not that it works."
+   "status": "partial",
+   "notes": "Automated client survey: 51 items, 14 blocks, 4 entity types; placed 14/14 sampled blocks; spawned 4/4 entity types; spawned entities left no visible pixels (invisible?)"
   },
   {
    "name": "OpenBlocks",
@@ -18829,10 +18946,10 @@
    "name": "OpenBlocks",
    "version": "1.8.1",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (710 classes). 2 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "status": "partial",
+   "notes": "Automated client survey: 157 items, 41 blocks, 11 entity types; placed 27/27 sampled blocks; spawned 11/11 entity types; load failure during preInit: java.lang.NullPointerException: Cannot invoke \"legacyconnector.v1_12_2.net.minecraftforge.registries.IForgeRegistry.register(legacyconnector.v1_12_2.net.minecra; 83 missing texture/model log lines; 93 error log lines"
   },
   {
    "name": "OpenComputers",
@@ -18854,12 +18971,12 @@
   },
   {
    "name": "OpenComputers",
-   "version": "1.8.10",
+   "version": "1.7.5.192",
    "mc": "1.12.2",
    "source": "client",
-   "date": "2026-10-30",
-   "status": "fails",
-   "notes": "Fails during preInit: java.lang.RuntimeException: java.lang.NoClassDefFoundError: com/typesafe/config/ConfigValue"
+   "date": "2026-11-07",
+   "status": "partial",
+   "notes": "Automated client survey: 147 items, 36 blocks, 1 entity types; placed 27/27 sampled blocks; spawned 1/1 entity types; 1 error log lines"
   },
   {
    "name": "OpenMods",
@@ -18892,10 +19009,10 @@
    "name": "OpenModsLib",
    "version": "0.12.2",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "fails",
-   "notes": "Automated check: uses old Java or library code that no longer exists: org.lwjgl.opengl.KHRDebug.glDebugMessageCallback(Lorg.lwjgl.opengl.KHRDebugCallback;)V."
+   "status": "partial",
+   "notes": "Automated client survey: 0 items, 0 blocks, 1 entity types; spawned 1/1 entity types; 6 error log lines"
   },
   {
    "name": "OpenPeripheralAddons",
@@ -19125,10 +19242,10 @@
    "name": "p455w0rd's Library",
    "version": "2.3.161",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (133 classes). 8 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "status": "works",
+   "notes": "Automated client survey: 0 items, 0 blocks, 1 entity types; spawned 1/1 entity types"
   },
   {
    "name": "PackagedAuto",
@@ -19257,6 +19374,15 @@
    "notes": "Automated check: translates offline and everything it uses exists (45 classes). The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "Paintings++ $version",
+   "version": "",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-11-07",
+   "status": "works",
+   "notes": "Automated client survey: 0 items, 0 blocks, 1 entity types; spawned 1/1 entity types"
+  },
+  {
    "name": "PaintingSelectionGui",
    "version": "$version",
    "mc": "1.12.2",
@@ -19314,10 +19440,10 @@
    "name": "Pam's HarvestCraft",
    "version": "1.12.2zb",
    "mc": "1.12.2",
-   "source": "probe",
-   "date": "2026-11-08",
-   "status": "loads",
-   "notes": "Automated check 0.4.9: translates offline and everything it uses exists (138 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "source": "client",
+   "date": "2026-11-07",
+   "status": "partial",
+   "notes": "Automated client survey: 1300 items, 223 blocks, 0 entity types; placed 27/27 sampled blocks; load failure during postInit: java.lang.NullPointerException: Cannot invoke \"java.util.Set.add(Object)\" because \"temptationItems\" is null; 10 missing texture/model log lines; 42 error log lines"
   },
   {
    "name": "Paradigm",
@@ -19377,10 +19503,10 @@
    "name": "Patchouli",
    "version": "1.0-23.6",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check 0.3.23: translates offline and everything it uses exists (145 classes). The game was not started: this only shows the jar translates, not that it works."
+   "status": "works",
+   "notes": "Automated client survey: 1 items, 0 blocks, 0 entity types"
   },
   {
    "name": "PatPatPat",
@@ -19503,10 +19629,10 @@
    "name": "Pigstep",
    "version": "1.12",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (4 classes). The game was not started: this only shows the jar translates, not that it works."
+   "status": "works",
+   "notes": "Automated client survey: 1 items, 0 blocks, 0 entity types"
   },
   {
    "name": "Pineapple Psychic",
@@ -19611,10 +19737,10 @@
    "name": "Placebo",
    "version": "1.6.0",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
    "status": "fails",
-   "notes": "Automated check: needs Minecraft or Forge features the layer does not have yet: legacyconnector.v1_12_2.net.minecraft.advancements.AdvancementRewards.<init>(I[Llegacyconnector.v1_12_2.net.minecraft.util.ResourceLocation;[Llegacyconnector.v1_12_2.net.minecraft.util.ResourceLocation;Llegacyconnector.v1_12_2.net.minecraft.command.FunctionObject$CacheableFunction;)V."
+   "notes": "Automated client survey: 0 items, 0 blocks, 0 entity types; load failure during postInit: java.lang.NullPointerException: Cannot invoke \"java.lang.Boolean.booleanValue()\" because the return value of \"legacyconnector.v1_12_2.net.minecraftforge.fml.rel; 5 error log lines"
   },
   {
    "name": "Planetoid",
@@ -19926,10 +20052,10 @@
    "name": "Potion Core",
    "version": "1.9_for_1.12.2",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (64 classes). 3 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works. Resource check: 3 model/texture reference(s) are missing after translation (rendering may show missing textures or models), e.g. model potioncore:item/custom_splash_potion.json has missing parent item/bottle_splash; model potioncore:item/custom_potion.json has missing parent item/bottle_drinkable."
+   "status": "fails",
+   "notes": "Automated client survey: 0 items, 0 blocks, 0 entity types; load failure during preInit: java.lang.NullPointerException: Cannot invoke \"java.io.File.exists()\" because \"options\" is null; 5 error log lines"
   },
   {
    "name": "Potion Descriptions",
@@ -20052,10 +20178,10 @@
    "name": "Progressive Bosses",
    "version": "1.5.4",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (45 classes). 2 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "status": "works",
+   "notes": "Automated client survey: 1 items, 0 blocks, 0 entity types"
   },
   {
    "name": "Project Blue",
@@ -20573,10 +20699,10 @@
    "name": "Random Things",
    "version": "4.2.7.4",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (710 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "status": "partial",
+   "notes": "Automated client survey: 211 items, 107 blocks, 14 entity types, 1 biomes; placed 27/27 sampled blocks; spawned 12/12 entity types; load failure during postInit: java.lang.NullPointerException: Cannot invoke \"java.lang.reflect.Field.get(Object)\" because \"field\" is null; 3 missing texture/model log lines; 9 error log lines"
   },
   {
    "name": "Randomizer",
@@ -20848,6 +20974,15 @@
    "notes": "Automated check 0.4.9: translates offline and everything it uses exists (90 classes). The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "RebornCore-FORK-1.12.2-3.19.5-universal",
+   "version": "",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-11-07",
+   "status": "fails",
+   "notes": "Automated client survey: alone in a world the game crashed before it started: "
+  },
+  {
    "name": "RebornStorage",
    "version": "5.0.7",
    "mc": "1.20.1",
@@ -20905,10 +21040,10 @@
    "name": "Recurrent Complex",
    "version": "1.4.8.2",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (1734 classes). 3 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "status": "partial",
+   "notes": "Automated client survey: 14 items, 6 blocks, 0 entity types; placed 6/6 sampled blocks; 1 error log lines"
   },
   {
    "name": "Red Core",
@@ -21110,21 +21245,21 @@
   },
   {
    "name": "Reliquary",
-   "version": "1.12.2-1.3.4.796",
-   "mc": "1.12.2",
-   "source": "probe",
-   "date": "2026-11-08",
-   "status": "loads",
-   "notes": "Automated check 0.4.9: translates offline and everything it uses exists (365 classes). The game was not started: this only shows the jar translates, not that it works."
-  },
-  {
-   "name": "Reliquary",
    "version": "2.0.54.1304",
    "mc": "1.20.1",
    "source": "probe",
    "date": "2026-11-07",
    "status": "fails",
    "notes": "Automated check 0.4.5: needs Minecraft or Forge features the layer does not have yet: net.minecraft.advancements.Advancement$Builder.addCriterion, net.minecraft.advancements.Advancement$Builder.getCriteria, net.minecraft.advancements.Advancement$Builder.serializeToJson, net.minecraft.advancements.critereon.RecipeUnlockedTrigger.unlocked, net.minecraft.core.dispenser.AbstractProjectileDispenseBehavior (+94 more)."
+  },
+  {
+   "name": "Reliquary",
+   "version": "1.12.2-1.3.4.796",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-11-07",
+   "status": "partial",
+   "notes": "Automated client survey: 104 items, 8 blocks, 19 entity types; placed 8/8 sampled blocks; spawned 12/12 entity types; 1 error log lines"
   },
   {
    "name": "RelocationFMP",
@@ -21874,10 +22009,10 @@
    "name": "Scannable",
    "version": "1.6.3.26",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (101 classes). The game was not started: this only shows the jar translates, not that it works."
+   "status": "works",
+   "notes": "Automated client survey: 11 items, 0 blocks, 0 entity types"
   },
   {
    "name": "Scape and Run Parasites",
@@ -22314,10 +22449,10 @@
    "name": "Signpost",
    "version": "1.08.3",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (180 classes). The game was not started: this only shows the jar translates, not that it works."
+   "status": "works",
+   "notes": "Automated client survey: 25 items, 22 blocks, 0 entity types; placed 22/22 sampled blocks"
   },
   {
    "name": "Silent Gear",
@@ -22539,10 +22674,10 @@
    "name": "Simply Cats Mod",
    "version": "1.12.2-0.0.3.1",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (78 classes). 3 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "status": "partial",
+   "notes": "Automated client survey: 13 items, 4 blocks, 1 entity types; placed 4/4 sampled blocks; spawned 1/1 entity types; 105 error log lines"
   },
   {
    "name": "Simply Jetpacks",
@@ -22570,6 +22705,15 @@
    "date": "2026-11-06",
    "status": "works",
    "notes": "Client test: items render."
+  },
+  {
+   "name": "Simply Jetpacks",
+   "version": "2 2.2.14.67",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-11-07",
+   "status": "partial",
+   "notes": "Automated client survey: 8 items, 0 blocks, 0 entity types; 1 error log lines"
   },
   {
    "name": "Simply Jetpacks 2",
@@ -22863,10 +23007,10 @@
    "name": "SonarCore",
    "version": "5.0.19",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (451 classes). 2 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "status": "works",
+   "notes": "Automated client survey: 66 items, 66 blocks, 0 entity types; placed 27/27 sampled blocks"
   },
   {
    "name": "Sophisticated Backpacks",
@@ -23061,10 +23205,10 @@
    "name": "Spice of Life: Carrot Edition",
    "version": "1.8.3",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (59 classes). The game was not started: this only shows the jar translates, not that it works."
+   "status": "partial",
+   "notes": "Automated client survey: 1 items, 0 blocks, 0 entity types; 2 error log lines"
   },
   {
    "name": "Spring Boards",
@@ -23191,6 +23335,15 @@
    "date": "2026-11-07",
    "status": "fails",
    "notes": "Automated check 0.4.5: needs Minecraft or Forge features the layer does not have yet: com.mojang.serialization.DataResult.getOrThrow, net.minecraft.advancements.critereon.AbstractCriterionTriggerInstance, net.minecraft.advancements.critereon.DeserializationContext, net.minecraft.advancements.critereon.SerializationContext, net.minecraft.client.gui.components.ObjectSelectionList.<init> (+88 more). has a 1.21.1 version"
+  },
+  {
+   "name": "Starminer Mod",
+   "version": "0.9.7",
+   "mc": "1.7.10",
+   "source": "client",
+   "date": "2026-11-07",
+   "status": "partial",
+   "notes": "Automated client survey: 49 items, 34 blocks, 3 entity types; placed 27/27 sampled blocks; spawned 3/3 entity types; spawned entities left no visible pixels (invisible?)"
   },
   {
    "name": "StarSource",
@@ -23601,28 +23754,28 @@
    "name": "Structurize",
    "version": "1.12.2-0.10.277-RELEASE",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (294 classes). The game was not started: this only shows the jar translates, not that it works."
+   "status": "partial",
+   "notes": "Automated client survey: 82 items, 79 blocks, 0 entity types; placed 27/27 sampled blocks; 1 missing texture/model log lines; 2 error log lines"
   },
   {
    "name": "Stupid Things",
    "version": "1.1.6",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (96 classes). The game was not started: this only shows the jar translates, not that it works."
+   "status": "partial",
+   "notes": "Automated client survey: 112 items, 9 blocks, 5 entity types; placed 9/9 sampled blocks; spawned 5/5 entity types; 3 error log lines"
   },
   {
    "name": "Stygian End",
    "version": "1.0.4",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (50 classes). 3 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "status": "works",
+   "notes": "Automated client survey: 12 items, 12 blocks, 0 entity types, 2 biomes; placed 12/12 sampled blocks"
   },
   {
    "name": "stylecolonies mod",
@@ -24114,10 +24267,10 @@
    "name": "Tesla Core Lib",
    "version": "1.0.17",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "fails",
-   "notes": "Automated check: needs code from another mod or API that is not available or does not match: net.ndrei.teslacorelib.compatibility.RFPowerProxy.givePowerTo(Llegacyconnector.v1_12_2.net.minecraft.tileentity.TileEntity;Llegacyconnector.v1_12_2.net.minecraft.util.EnumFacing;JZ)J, net.ndrei.teslacorelib.compatibility.RFPowerProxy.isRFAcceptor(Llegacyconnector.v1_12_2.net.minecraft.tileentity.TileEntity;Llegacyconnector.v1_12_2.net.minecraft.util.EnumFacing;)Z."
+   "status": "works",
+   "notes": "Automated client survey: 1 items, 0 blocks, 0 entity types"
   },
   {
    "name": "Tesla Core Lib Registries",
@@ -24184,15 +24337,6 @@
   },
   {
    "name": "Thaumcraft",
-   "version": "6.1.BETA26",
-   "mc": "1.12.2",
-   "source": "corpus",
-   "date": "2026-10-25",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
-  },
-  {
-   "name": "Thaumcraft",
    "version": "4.2.3.5",
    "mc": "1.7.10",
    "source": "client",
@@ -24207,6 +24351,15 @@
    "date": "2026-11-01",
    "status": "perfect",
    "notes": "Survival-ready (played through 2026-11-01): scanning and research with the Thaumonomicon, arcane workbench and wands, aura nodes, crucible alchemy (aspects and catalyst consumed, output ejected), infusion, elemental tools, golems (placer, core, a Gather golem picks up loose items and fills its home chest), villages with Thaumcraft buildings, mob loot, 157 blocks, 50 recipes. Known: golem tasks beyond Gather are untested, some GUIs (#75)."
+  },
+  {
+   "name": "Thaumcraft",
+   "version": "6.1.BETA26",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-11-07",
+   "status": "partial",
+   "notes": "Automated client survey: 376 items, 200 blocks, 43 entity types, 3 biomes; placed 27/27 sampled blocks; spawned 12/12 entity types; 6 error log lines"
   },
   {
    "name": "Thaumcraft 4 : Patched",
@@ -24347,19 +24500,19 @@
    "name": "Thaumic Additions: Reconstructed",
    "version": "12.7.8",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (313 classes). 2 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "status": "fails",
+   "notes": "Automated client survey: 0 items, 0 blocks, 0 entity types; load failure during construction: java.lang.NullPointerException: Cannot invoke \"Object.getClass()\" because \"target\" is null; 4 error log lines"
   },
   {
    "name": "Thaumic Augmentation",
    "version": "1.12.2-2.1.8",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (866 classes). But 13 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works. Resource check: 3 model/texture reference(s) are missing after translation (rendering may show missing textures or models), e.g. model thaumicaugmentation:block/golem_table.json names missing texture golem_tinkering_workbench/golem_table_top; model thaumicaugmentation:block/golem_table.json names missing texture golem_tinkering_workbench/golem_table_sides."
+   "status": "partial",
+   "notes": "Automated client survey: 102 items, 58 blocks, 13 entity types, 3 biomes; placed 27/27 sampled blocks; spawned 12/12 entity types; 7 missing texture/model log lines; 13 error log lines"
   },
   {
    "name": "Thaumic Bases",
@@ -24491,10 +24644,10 @@
    "name": "Thaumic Periphery",
    "version": "0.3.1",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (33 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "status": "works",
+   "notes": "Automated client survey: 5 items, 0 blocks, 1 entity types; spawned 1/1 entity types"
   },
   {
    "name": "Thaumic Renaissance",
@@ -24608,19 +24761,19 @@
    "name": "The Aurorian",
    "version": "1.12.2-Release",
    "mc": "1.12.2",
-   "source": "probe",
-   "date": "2026-11-08",
-   "status": "loads",
-   "notes": "Automated check 0.4.9: translates offline and everything it uses exists (394 classes). The game was not started: this only shows the jar translates, not that it works."
+   "source": "client",
+   "date": "2026-11-07",
+   "status": "partial",
+   "notes": "Automated client survey: 213 items, 98 blocks, 18 entity types, 5 biomes; placed 27/27 sampled blocks; spawned 12/12 entity types; 3 error log lines"
   },
   {
    "name": "The Beneath",
    "version": "1.7.0",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (35 classes). The game was not started: this only shows the jar translates, not that it works."
+   "status": "partial",
+   "notes": "Automated client survey: 1 items, 1 blocks, 2 entity types, 1 biomes; placed 1/1 sampled blocks; spawned 2/2 entity types; spawned entities left no visible pixels (invisible?)"
   },
   {
    "name": "The Betweenlands",
@@ -24630,6 +24783,15 @@
    "date": "2026-11-07",
    "status": "loads",
    "notes": "Automated check: translates offline and everything it uses exists (2983 classes). But 16 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works. Resource check: 3 model/texture reference(s) are missing after translation (rendering may show missing textures or models), e.g. model thebetweenlands:item/item_frame_wood.json uses missing texture item_frame (via #0); model thebetweenlands:item/item_frame_wood.json names missing texture item_frame."
+  },
+  {
+   "name": "The Dalek Mod (Update",
+   "version": "64.1.0)",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-11-07",
+   "status": "partial",
+   "notes": "Automated client survey: 1126 items, 509 blocks, 70 entity types, 29 biomes; placed 27/27 sampled blocks; spawned 12/12 entity types; 21 missing texture/model log lines; 16 error log lines"
   },
   {
    "name": "The Hordes",
@@ -24777,15 +24939,6 @@
   },
   {
    "name": "The Twilight Forest",
-   "version": "3.11.1021",
-   "mc": "1.12.2",
-   "source": "corpus",
-   "date": "2026-10-25",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
-  },
-  {
-   "name": "The Twilight Forest",
    "version": "2.3.7",
    "mc": "1.7.10",
    "source": "client",
@@ -24828,6 +24981,15 @@
    "date": "2026-11-07",
    "status": "fails",
    "notes": "Automated check 0.4.5: needs Minecraft or Forge features the layer does not have yet: com.mojang.authlib.Environment.getSessionHost, com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService.performGetRequest, com.mojang.authlib.yggdrasil.response.MinecraftProfilePropertiesResponse.getCause, com.mojang.authlib.yggdrasil.response.MinecraftProfilePropertiesResponse.getError, com.mojang.authlib.yggdrasil.response.MinecraftProfilePropertiesResponse.getErrorMessage (+323 more)."
+  },
+  {
+   "name": "The Twilight Forest",
+   "version": "3.11.1021",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-11-07",
+   "status": "partial",
+   "notes": "Automated client survey: 272 items, 171 blocks, 80 entity types, 20 biomes; placed 27/27 sampled blocks; spawned 12/12 entity types; 9 missing texture/model log lines; 33 error log lines"
   },
   {
    "name": "The Undergarden",
@@ -24928,15 +25090,6 @@
   },
   {
    "name": "Thermal Expansion",
-   "version": "5.5.7",
-   "mc": "1.12.2",
-   "source": "corpus",
-   "date": "2026-10-25",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
-  },
-  {
-   "name": "Thermal Expansion",
    "version": "1.7.10R4.1.5",
    "mc": "1.7.10",
    "source": "client",
@@ -24954,6 +25107,15 @@
    "notes": "Automated check 0.4.5: needs Minecraft or Forge features the layer does not have yet: net.minecraft.data.loot.LootTableProvider$SubProviderEntry.<init>, net.minecraft.data.recipes.ShapedRecipeBuilder.save, net.minecraft.data.recipes.ShapedRecipeBuilder.unlockedBy, net.minecraft.world.inventory.ResultContainer.getRecipeUsed, net.minecraft.world.inventory.ResultContainer.setRecipeUsed (+629 more)."
   },
   {
+   "name": "Thermal Expansion",
+   "version": "5.5.7",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-11-07",
+   "status": "fails",
+   "notes": "Automated client survey: 0 items, 0 blocks, 0 entity types; load failure during preInit: java.lang.RuntimeException: java.lang.VerifyError: Bad return type; 2 error log lines"
+  },
+  {
    "name": "Thermal Extra",
    "version": "3.2.7-1.20.1",
    "mc": "1.20.1",
@@ -24961,15 +25123,6 @@
    "date": "2026-11-07",
    "status": "fails",
    "notes": "Automated check 0.4.5: needs Minecraft or Forge features the layer does not have yet: net.minecraft.data.loot.LootTableProvider$SubProviderEntry.<init>, net.minecraft.data.recipes.FinishedRecipe, net.minecraft.data.recipes.ShapedRecipeBuilder.save, net.minecraft.data.recipes.ShapedRecipeBuilder.unlockedBy, net.minecraft.data.recipes.ShapelessRecipeBuilder.save (+333 more)."
-  },
-  {
-   "name": "Thermal Foundation",
-   "version": "2.6.7",
-   "mc": "1.12.2",
-   "source": "corpus",
-   "date": "2026-10-25",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
    "name": "Thermal Foundation",
@@ -24997,6 +25150,15 @@
    "date": "2026-11-07",
    "status": "fails",
    "notes": "Automated check 0.4.5: needs Minecraft or Forge features the layer does not have yet: net.minecraft.data.loot.LootTableProvider$SubProviderEntry.<init>, net.minecraft.data.recipes.ShapelessRecipeBuilder.save, net.minecraft.data.recipes.ShapelessRecipeBuilder.unlockedBy, net.minecraft.world.level.block.Blocks.leaves, net.minecraft.world.level.block.Blocks.log (+14 more)."
+  },
+  {
+   "name": "Thermal Foundation",
+   "version": "2.6.7",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-11-07",
+   "status": "partial",
+   "notes": "Automated client survey: 444 items, 17 blocks, 6 entity types; placed 17/17 sampled blocks; spawned 6/6 entity types; spawned entities left no visible pixels (invisible?)"
   },
   {
    "name": "Thermal Innovation",
@@ -25125,6 +25287,15 @@
    "notes": "Automated check 0.4.9: translates offline and everything it uses exists (12 classes). The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "TimeCore-1.12.2-1.0.1.1",
+   "version": "",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-11-07",
+   "status": "fails",
+   "notes": "Automated client survey: alone in a world the game crashed before it started: "
+  },
+  {
    "name": "Timeless & Classics Guns: Zero",
    "version": "1.2.0",
    "mc": "1.20.1",
@@ -25146,10 +25317,10 @@
    "name": "Tinkers Alloying Addon",
    "version": "1.12.2-1.3.3",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (78 classes). The game was not started: this only shows the jar translates, not that it works."
+   "status": "works",
+   "notes": "Automated client survey: 206 items, 93 blocks, 0 entity types; placed 27/27 sampled blocks"
   },
   {
    "name": "Tinkers Defense",
@@ -25520,21 +25691,12 @@
   },
   {
    "name": "Totemic",
-   "version": "1.12.2-0.11.7",
+   "version": "1.12.2-0.11.6",
    "mc": "1.12.2",
-   "source": "probe",
-   "date": "2026-11-08",
-   "status": "loads",
-   "notes": "Automated check 0.4.9: translates offline and everything it uses exists (207 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works. Resource check: 1 model/texture reference(s) are missing after translation (rendering may show missing textures or models), e.g. blockstate totemic:wind_chime.json names missing model hardened_clay_white."
-  },
-  {
-   "name": "Totemic",
-   "version": "1.12.2-0.11.7",
-   "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check 0.4.6: translates offline and everything it uses exists (207 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works. Resource check: 1 model/texture reference(s) are missing after translation (rendering may show missing textures or models), e.g. blockstate totemic:wind_chime.json names missing model hardened_clay_white."
+   "status": "partial",
+   "notes": "Automated client survey: 36 items, 19 blocks, 0 entity types; placed 19/19 sampled blocks; load failure during postInit: java.lang.NullPointerException: Cannot invoke \"java.util.List.remove(Object)\" because \"listeners\" is null; 2 error log lines; missing-texture magenta visible in the block shot"
   },
   {
    "name": "TouchController",
@@ -25630,10 +25792,10 @@
    "name": "Traincraft - Community Edition",
    "version": "4.4.1_020-CE_7.1",
    "mc": "1.7.10",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "fails",
-   "notes": "Automated check: needs code from another mod or API that is not available or does not match: train.common.api.LiquidManager.addBCFluids()V, train.common.api.LiquidManager.addRCFluids()V."
+   "status": "works",
+   "notes": "Automated client survey: 706 items, 47 blocks, 505 entity types; placed 27/27 sampled blocks; spawned 12/12 entity types"
   },
   {
    "name": "Translocator",
@@ -26383,21 +26545,12 @@
   },
   {
    "name": "Village Names",
-   "version": "4.4.13",
+   "version": "4.1.5",
    "mc": "1.12.2",
-   "source": "probe",
-   "date": "2026-11-08",
-   "status": "loads",
-   "notes": "Automated check 0.4.9: translates offline and everything it uses exists (624 classes). 2 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
-  },
-  {
-   "name": "Village Names",
-   "version": "4.4.13",
-   "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check 0.4.6: translates offline and everything it uses exists (624 classes). 3 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "status": "partial",
+   "notes": "Automated client survey: 20 items, 2 blocks, 0 entity types; placed 2/2 sampled blocks; load failure during preInit: java.lang.NullPointerException: Cannot invoke \"legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.VillagerRegistry$VillagerProfession.getCareer(int); 11 error log lines"
   },
   {
    "name": "villagertools",
@@ -26511,10 +26664,10 @@
    "name": "Vulpes library",
    "version": "0.4.2.-75",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (200 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works. Resource check: 1 model/texture reference(s) are missing after translation (rendering may show missing textures or models), e.g. blockstate libvulpes:coalgenerator.json names missing model lit_furnace."
+   "status": "partial",
+   "notes": "Automated client survey: 76 items, 16 blocks, 0 entity types; placed 16/16 sampled blocks; 1 error log lines"
   },
   {
    "name": "Waddles",
@@ -26764,10 +26917,10 @@
    "name": "Waystones",
    "version": "4.1.0",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (86 classes). The game was not started: this only shows the jar translates, not that it works."
+   "status": "works",
+   "notes": "Automated client survey: 5 items, 1 blocks, 0 entity types; placed 1/1 sampled blocks"
   },
   {
    "name": "Waystones-X",
@@ -26854,10 +27007,10 @@
    "name": "Wings",
    "version": "1.1.6",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (219 classes). 6 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works. Resource check: 1 model/texture reference(s) are missing after translation (rendering may show missing textures or models), e.g. model wings:item/bat_blood.json names missing texture item/potion_bottle_drinkable."
+   "status": "partial",
+   "notes": "Automated client survey: 14 items, 2 blocks, 0 entity types; placed 2/2 sampled blocks; 1 missing texture/model log lines; 36 error log lines"
   },
   {
    "name": "Wireless Chargers",
@@ -26899,10 +27052,10 @@
    "name": "WirelessRedstone-CBE",
    "version": "2.3.2",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (80 classes). The game was not started: this only shows the jar translates, not that it works."
+   "status": "fails",
+   "notes": "Automated client survey: 0 items, 0 blocks, 0 entity types; load failure during construction: java.lang.VerifyError: Bad type on operand stack; 17 error log lines"
   },
   {
    "name": "Witchery",
@@ -27429,10 +27582,10 @@
    "name": "Yoyos",
    "version": "1.12.2-1.3.3.25",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (70 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "status": "partial",
+   "notes": "Automated client survey: 10 items, 0 blocks, 3 entity types; spawned 3/3 entity types; spawned entities left no visible pixels (invisible?)"
   },
   {
    "name": "YUNG's API",
