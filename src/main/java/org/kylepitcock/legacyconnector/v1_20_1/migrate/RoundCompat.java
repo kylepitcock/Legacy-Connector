@@ -251,6 +251,65 @@ public final class RoundCompat {
         };
     }
 
+    /** {@code LootTableReference.lootTableReference(ResourceLocation)}: 1.21.1 names loot tables by resource key ({@code NestedLootTable}). */
+    public static net.minecraft.world.level.storage.loot.entries.LootPoolSingletonContainer.Builder<?> lootTableReference(ResourceLocation id) {
+        return net.minecraft.world.level.storage.loot.entries.NestedLootTable.lootTableReference(
+                net.minecraft.resources.ResourceKey.create(Registries.LOOT_TABLE, id));
+    }
+
+    /** Registration-time type constructors that took a {@code Codec} (trunk placers, tree decorators): 1.21.1 wants the map form. */
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static com.mojang.serialization.MapCodec mapCodec(com.mojang.serialization.Codec codec) {
+        return com.mojang.serialization.MapCodec.assumeMapUnsafe(codec);
+    }
+
+    /** {@code new SmithingTemplateItem(5 components, 2 icon lists)}: 1.21.1 only adds the (empty) feature flag varargs. */
+    public static net.minecraft.world.item.SmithingTemplateItem newSmithingTemplate(net.minecraft.network.chat.Component a, net.minecraft.network.chat.Component b,
+            net.minecraft.network.chat.Component c, net.minecraft.network.chat.Component d, net.minecraft.network.chat.Component e,
+            java.util.List<ResourceLocation> base, java.util.List<ResourceLocation> additions) {
+        return new net.minecraft.world.item.SmithingTemplateItem(a, b, c, d, e, base, additions);
+    }
+
+    /** {@code new ServerGamePacketListenerImpl(server, connection, player)}: 1.21.1 also takes the listener cookie. */
+    public static net.minecraft.server.network.ServerGamePacketListenerImpl newGameListener(net.minecraft.server.MinecraftServer server,
+            net.minecraft.network.Connection connection, net.minecraft.server.level.ServerPlayer player) {
+        return new net.minecraft.server.network.ServerGamePacketListenerImpl(server, connection, player,
+                net.minecraft.server.network.CommonListenerCookie.createInitial(player.getGameProfile(), false));
+    }
+
+    /** {@code TextColor.parseColor(String)}: a {@code DataResult} now; null for text that is no colour, as before. */
+    public static net.minecraft.network.chat.TextColor parseColor(String text) {
+        return net.minecraft.network.chat.TextColor.parseColor(text).result().orElse(null);
+    }
+
+    /** {@code EntityType.updateCustomEntityTag(level, player, entity, tag)}: the tag is custom data now. */
+    public static void updateCustomEntityTag(net.minecraft.world.level.Level level, net.minecraft.world.entity.player.Player player, net.minecraft.world.entity.Entity entity, CompoundTag tag) {
+        net.minecraft.world.entity.EntityType.updateCustomEntityTag(level, player, entity, net.minecraft.world.item.component.CustomData.of(tag));
+    }
+
+    /** {@code GoalSelector.getRunningGoals()}. */
+    public static java.util.stream.Stream<net.minecraft.world.entity.ai.goal.WrappedGoal> getRunningGoals(net.minecraft.world.entity.ai.goal.GoalSelector selector) {
+        return selector.getAvailableGoals().stream().filter(net.minecraft.world.entity.ai.goal.WrappedGoal::isRunning);
+    }
+
+    /** {@code EnchantedBookItem.addEnchantment(book, instance)}: stored enchantments, keeping the higher level. */
+    public static void addBookEnchantment(ItemStack book, EnchantmentInstance instance) {
+        var stored = new net.minecraft.world.item.enchantment.ItemEnchantments.Mutable(
+                book.getOrDefault(net.minecraft.core.component.DataComponents.STORED_ENCHANTMENTS, net.minecraft.world.item.enchantment.ItemEnchantments.EMPTY));
+        stored.upgrade(instance.enchantment, instance.level);
+        book.set(net.minecraft.core.component.DataComponents.STORED_ENCHANTMENTS, stored.toImmutable());
+    }
+
+    /** {@code SkullBlockEntity.updateGameprofile(profile, callback)}: fetched through the profile cache by id, answering the given profile when none is found. */
+    public static void updateGameprofile(com.mojang.authlib.GameProfile profile, java.util.function.Consumer<com.mojang.authlib.GameProfile> callback) {
+        if (profile == null || profile.getId() == null) {
+            callback.accept(profile);
+            return;
+        }
+        net.minecraft.world.level.block.entity.SkullBlockEntity.fetchGameProfile(profile.getId())
+                .thenAccept(found -> callback.accept(found.orElse(profile)));
+    }
+
     /** {@code ComponentContents.EMPTY} moved to {@code PlainTextContents.EMPTY}. */
     public static net.minecraft.network.chat.ComponentContents emptyContents() {
         return net.minecraft.network.chat.contents.PlainTextContents.EMPTY;
