@@ -24715,6 +24715,15 @@
    "date": "2026-11-07",
    "status": "fails",
    "notes": "Automated check 0.4.4: needs Minecraft or Forge features the layer does not have yet: net.minecraft.client.gui.components.Checkbox.<init>, net.minecraft.world.item.crafting.Ingredient.fromJson, net.minecraft.world.item.crafting.ShapedRecipe.itemStackFromJson, net.minecraft.world.level.block.BaseEntityBlock.appendHoverText, net.neoforged.neoforge.registries.DeferredRegister.createOptional (+117 more)."
+  },
+  {
+   "name": "Terramity",
+   "version": "0.9.8",
+   "mc": "1.20.1",
+   "source": "client",
+   "date": "2026-11-07",
+   "status": "partial",
+   "notes": "Loads on NeoForge 1.21.1 with GeckoLib, Caelus, Curios and Patchouli: registers 207 blocks, 754 items, 81 entity types and 19 block entity types, the server reaches Done, the client reaches a world; blocks and GeckoLib mobs and bosses render. Not working yet: the 12 custom enchantments only exist as data (their on-hit hooks do not run), the wrenches and Unholy Lance lose their attribute modifiers, brewing recipes, the first-person view of held gun items; the mod's own broken data (advancements with a missing parent, malformed Patchouli pages and one model) is rejected."
   }
  ],
  "hidden": [
