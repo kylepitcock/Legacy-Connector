@@ -30,6 +30,7 @@ technical documentation; the [README](../../README.md) has installation and the 
 | [Version roadmap](Version-Roadmap.md) | Which versions come when, and why |
 | [Legacy 1.6.4 estimate](Legacy-1.6.4-Estimate.md) | Effort and approach for a 1.6.4 layer on top of the 1.7.10 shim |
 | [Legacy 1.6.4 corpus](Legacy-1.6.4-Corpus.md) | Measured API usage of 43 real 1.6.4 mods (numeric ids, old packets, renamed classes) |
+| [Legacy b1.7.3](Legacy-b1.7.3.md) | Beta 1.7.3 ModLoader / Forge 1.0 mods: status, how jars are deobfuscated and linked, plan |
 | [Legacy 1.4.7 estimate](Legacy-1.4.7-Estimate.md) | Effort and approach for a 1.4.7 layer (obfuscated names, ModLoader, sprite sheets) over the 1.5.2/1.6.4 layers |
 | [Legacy 1.4.7 corpus](Legacy-1.4.7-Corpus.md) | Measured API usage of 65 real 1.4.7 mods (notch names, sprite sheets, ModLoader, numeric ids) |
 | [Legacy 1.5.2 estimate](Legacy-1.5.2-Estimate.md) | Effort and measured state of a 1.5.2 layer (a delta over the 1.6.4 one) |

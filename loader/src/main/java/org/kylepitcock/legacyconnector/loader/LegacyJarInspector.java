@@ -138,8 +138,15 @@ public final class LegacyJarInspector {
                 }
             }
 
-            if (found.isEmpty() && refs17 == 0 && refs112 == 0 && infoById.isEmpty() && jar.coreModClass == null && modLoaderMods.isEmpty()) {
-                return null;
+            if (found.isEmpty() && refs17 == 0 && refs112 == 0 && infoById.isEmpty() && jar.coreModClass == null) {
+                // no FML at all: a Beta 1.7.3 ModLoader / Forge 1.0 mod (in mods/b1.7.3/, or linking to b1.7.3's names), else a 1.4.7
+                // ModLoader mod (BaseMod subclasses: decided below) or not a legacy mod; mods/1.4.7/ never holds b1.7.3 jars
+                Path folder = path.getParent() == null ? null : path.getParent().getFileName();
+                if (folder == null || !folder.toString().equals("1.4.7")) {
+                    LegacyJar beta = BetaJars.inspect(zip, path, jar);
+                    if (beta != null) return beta;
+                }
+                if (modLoaderMods.isEmpty()) return null;
             }
             // ModLoader-only jars have no @Mod: each BaseMod subclass is a mod (id = its class name, as ModLoader showed it)
             if (found.isEmpty()) {

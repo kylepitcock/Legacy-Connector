@@ -16516,6 +16516,15 @@
    "notes": "Real client, survival, shaders: ostrich, elephant, bear, wild horse and kitty spawn and draw with their own models; the rat burger, elephant harness and other recipes give results from the crafting grid (117 recipes, none with an empty result). Combat, taming and riding were not tried."
   },
   {
+   "name": "Mo' Creatures (DrZharks)",
+   "version": "2.12.2",
+   "mc": "b1.7.3",
+   "source": "client",
+   "date": "2026-11-08",
+   "status": "partial",
+   "notes": "Contributor's headless server tests (Zekken01, 2026-11-07/08; 160+ runtime and 137 loader unit tests plus 5 opt-in actual-mod tests, all passing): the mod translates, constructs as ModLoader did, 168 resources verified; its living-mob families run their original callbacks and models (spawning, sounds, taming/carrying, projectile hits, death and placement hooks) and new chunks generate without stalls. Not tested in a real graphical client (no GPU play test); native spawning still differs from the complete Beta scheduler and class-based caps."
+  },
+  {
    "name": "Mo' Creatures Legacy",
    "version": "1.2",
    "mc": "1.7.10",
@@ -17063,6 +17072,15 @@
    "date": "2026-11-08",
    "status": "loads",
    "notes": "Automated check 0.4.9: translates offline and everything it uses exists (33 classes). The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "MoreCreeps and Weirdos",
+   "version": "2.12",
+   "mc": "b1.7.3",
+   "source": "client",
+   "date": "2026-11-08",
+   "status": "partial",
+   "notes": "Contributor's headless server tests (Zekken01, 2026-11-07/08; same suites as Mo' Creatures, all passing): the mod translates and loads, 759 resources verified, its creatures use their original callbacks, spawn checks and item pickup/theft/contact effects run, and fresh-world generation no longer stalls on its spawn checks. Natural spawning was observed only with a released spawn budget in a controlled run; not tested in a real graphical client."
   },
   {
    "name": "MoreJS",

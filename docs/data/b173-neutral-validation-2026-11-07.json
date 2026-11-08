@@ -1,0 +1,64 @@
+{
+  "snapshot_date": "2026-11-07",
+  "scope": "Original nonliving entity/item callbacks and preservation of living-mob validation",
+  "generic_mod_identity_guard": "passed",
+  "unit_tests": {
+    "tests": 47,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "fixtures": {
+    "mocreatures": {
+      "game_directory": "run-b173-single/mocreatures-neutral2-20261107-204625-764218",
+      "status": "headless-smoke-passed",
+      "source_archive": "DrZharks_MoCreatures_Mod_v2.12.2_b1.7.3.zip!mods/MoCreatures.zip",
+      "payload_jar_sha256": "acb85165ab97cd3dea08691bdc1db517ded57906a7063abea9040367694399af",
+      "preserved_resource_config_files": 168
+    },
+    "morecreeps": {
+      "game_directory": "run-b173-single/morecreeps-neutral3-20261107-205259-1cdb00",
+      "status": "headless-smoke-passed",
+      "source_archive": "MoreCreepsv2.12_b173.zip!PUT CONTENTS INTO MINECRAFT FOLDER/mods/MoreCreepsAndWeirdos.zip",
+      "payload_jar_sha256": "84e436efd97be02f55eceafb51354f51a17b1e7a06dc2fd485efef6669a85a60",
+      "preserved_resource_config_files": 759
+    }
+  },
+  "living_regression": {
+    "mocreatures_registered_classes": 28,
+    "mocreatures_focused_gameplay_cases": 21,
+    "morecreeps_registered_classes": 53
+  },
+  "actual_nonliving_cases": [
+    "CREEPSEntityBullet",
+    "CREEPSEntityRay",
+    "CREEPSEntityShrink",
+    "CREEPSEntityFrisbee",
+    "CREEPSEntityEvilEgg",
+    "CREEPSEntityRocket",
+    "CREEPSEntityDesertLizardFireball",
+    "CREEPSEntityMoney",
+    "CREEPSEntityGooDonut"
+  ],
+  "exercised_paths": [
+    "Actual Gun/RayGun/ShrinkRay/Frisbee/EvilEgg item use, original durability and stack costs",
+    "Original shooter references and launch motion; original Frisbee null-owner constructor policy",
+    "Canceled native spawn rollback and retry",
+    "Exact-once original tick and explicit superclass phases, with no forced native item travel",
+    "Bullet entity hit, Rocket/Fireball block hit, controlled embedded Frisbee owner-only pickup",
+    "Original Money pickup and empty GooDonut pickup override",
+    "Native spawn/metadata codecs, original scalar and common fields, dimensions/bounds and registry NBT",
+    "Original sprite renderer geometry and normalized single-cell atlas UVs; no invented renderer for rendererless originals"
+  ],
+  "original_policy_notes": [
+    "Frisbee constructor does not assign its private owner field; controlled owner-only pickup is tested separately.",
+    "Rocket and DesertLizardFireball have no original renderer registration.",
+    "GooDonut intentionally overrides pickup with an empty method."
+  ],
+  "limitations": [
+    "Headless actual-mod tests and CPU renderer capture only; genuine ClientLevel ticking and GPU drawing remain unverified.",
+    "Living roster checks do not prove every specialized AI decision or subtype.",
+    "Atlas quad mapping supports sampling within a single cell; cross-cell sampling is rejected.",
+    "Admission inspects original ancestry and direct API references, not arbitrary helper-class method bodies."
+  ]
+}
