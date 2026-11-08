@@ -4,7 +4,7 @@
 
 [![Discord](https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/vC6x4Kwwdq) [![CurseForge](https://img.shields.io/badge/CurseForge-F16436?style=for-the-badge&logo=curseforge&logoColor=white)](https://www.curseforge.com/minecraft/mc-mods/legacy-connector) [![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/kylepitcock/Legacy-Connector) [![Ko-fi](https://img.shields.io/badge/Ko--fi-FF5E5B?style=for-the-badge&logo=kofi&logoColor=white)](https://ko-fi.com/kylepitcock)
 
-**Play unmodified 1.7.10, 1.12.2, 1.6.4, 1.5.2, 1.4.7 and 1.20.1 Forge mods on NeoForge 1.21.1.**
+**Play unmodified 1.7.10, 1.12.2, 1.6.4, 1.5.2, 1.4.7, and 1.20.1 Forge mods on NeoForge 1.21.1.**
 
 | Legacy version | Support |
 | --- | --- |
@@ -15,9 +15,9 @@
 | **1.4.7** | 🧪 Alpha (new in 0.4) |
 | **1.20.1** | 🧪 Alpha (Forge mods remapped in place; on by default) |
 
-Drop 1.7.10, 1.12.2, 1.6.4, 1.5.2, 1.4.7 or Forge 1.20.1 mod jars into your `mods` folder next to Legacy Connector. They get translated when the game loads and run as normal NeoForge mods. It's the same idea as Sinytra Connector, but for old Forge mods instead of Fabric. Your original jars are never modified.
+Drop 1.7.10, 1.12.2, 1.6.4, 1.5.2, 1.4.7, or Forge 1.20.1 mod jars into your `mods` folder next to Legacy Connector. They get translated when the game loads and run as normal NeoForge mods. It's the same idea as Sinytra Connector, but for old Forge mods instead of Fabric. Your original jars are never modified.
 
-**Built for mods that only exist on these old versions** and never got a 1.21.1 port. **Beta:** on 1.7.10, Thaumcraft 4, Witchery, HBM's Nuclear Tech, OreSpawn, Fisk's Superheroes, Morph, the Reika mods (RotaryCraft, ReactorCraft, ElectriCraft, ChromatiCraft) and Galacticraft with its addons (each planet's own gravity) run with their blocks, items, mobs, recipes, GUIs, world generation and dimensions, and big packs like GT New Horizons load most of their mods. 1.12.2 support is in alpha: Atum 2, The Midnight, Scape and Run: Parasites and Abyssalcraft load and play with their own models, mobs, GUIs, dimensions and world generation. Back up your worlds before trying a new mod set.
+**Built for mods that only exist on these old versions** and never got a 1.21.1 port. **Beta:** on 1.7.10, Thaumcraft 4, Witchery, HBM's Nuclear Tech, OreSpawn, Fisk's Superheroes, Morph, the Reika mods (RotaryCraft, ReactorCraft, ElectriCraft, ChromatiCraft), and Galacticraft with its addons (each planet's own gravity) run with their blocks, items, mobs, recipes, GUIs, world generation, and dimensions, and big packs like GT New Horizons load most of their mods. 1.12.2 support is in beta: Atum 2, The Midnight, Scape and Run: Parasites, and Abyssalcraft load and play with their own models, mobs, GUIs, dimensions and world generation. Back up your worlds before trying a new mod set.
 
 Old mods' content joins the game the way a modern mod's does: their biomes through the pack's biome placement (a TerraBlender region; TerraBlender is bundled, a separately installed one wins), their ores and world generators as normal features, their village buildings as houses in normal villages, and structure loot through loot tables. So it plays along with your other mods, and data packs can tweak it like anything else.
 
@@ -39,18 +39,18 @@ Old mods' content joins the game the way a modern mod's does: their biomes throu
 
 All taken in a real game client on NeoForge 1.21.1, with unmodified 1.7.10 mods that have no modern version running next to modern content.
 
-**A Thaumcraft 4 workshop: infusion altar, crucible, alembics, essentia jars, research table, an aura node and magical trees**
+**A Thaumcraft 4 workshop: infusion altar, crucible, alembics, essentia jars, research table, an aura node, and magical trees**
 
 ![A Thaumcraft workshop](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/thaumcraft-workshop.png)
 
 **Scanning stone with the Thaumometer, held in both hands (Complementary shaders)**
 ![Scanning with the Thaumometer](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/thaumometer.png)
 
-**A Create Aeronautics airship (Sable physics) carrying 1.7.10 blocks: Thaumcraft essentia jars, crucible and arcane workbench, an Iron Chest, a RotaryCraft engine and ChromatiCraft crystals**
+**A Create Aeronautics airship (Sable physics) carrying 1.7.10 blocks: Thaumcraft essentia jars, crucible and arcane workbench, an Iron Chest, a RotaryCraft engine, and ChromatiCraft crystals**
 
 ![A Create Aeronautics airship](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/create-aeronautics-ship.png)
 
-**A Witchery ritual site: chalk circle, altar, witch's oven, kettle, distillery and spinning wheel, crops and Witchery creatures**
+**A Witchery ritual site: chalk circle, altar, witch's oven, kettle, distillery, and spinning wheel, crops, and Witchery creatures**
 
 ![A Witchery ritual site](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/witchery-ritual.png)
 
@@ -62,7 +62,7 @@ All taken in a real game client on NeoForge 1.21.1, with unmodified 1.7.10 mods 
 
 ![OreSpawn's The King](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/orespawn-king-bossbar.png)
 
-**A vanilla village in All the Mods 10 with Witchery's town walls, keep and watchtowers and Thaumcraft's wizard tower, built by their legacy village code**
+**A vanilla village in All the Mods 10 with Witchery's town walls, keep, and watchtowers, and Thaumcraft's wizard tower, built by their legacy village code**
 
 ![Legacy village components](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/legacy-village-components.png)
 
@@ -70,7 +70,7 @@ All taken in a real game client on NeoForge 1.21.1, with unmodified 1.7.10 mods 
 
 ![An HBM nuclear explosion](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/hbm-nuke.png)
 
-**1.12.2: Atum 2, the desert dimension, with its pyramids, sandstorm haze and creatures**
+**1.12.2: Atum 2, the desert dimension, with its pyramids, sandstorm haze, and creatures**
 
 ![Atum's creatures](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/atum-creatures.png)
 
@@ -78,7 +78,7 @@ All taken in a real game client on NeoForge 1.21.1, with unmodified 1.7.10 mods 
 
 ![Scape and Run: Parasites lineup](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/srparasites-lineup.png)
 
-**1.12.2: The Midnight**, the Deceitful Bog with its own biomes, Bogshrooms and night sky:
+**1.12.2: The Midnight**, the Deceitful Bog with its own biomes, Bogshrooms, and night sky:
 
 ![The Midnight's Deceitful Bog](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/midnight-bog.png)
 
@@ -86,7 +86,7 @@ All taken in a real game client on NeoForge 1.21.1, with unmodified 1.7.10 mods 
 
 ## How it works
 
-1. **Inspect:** detects legacy mods and their Minecraft version from `mcmod.info`, `@Mod` annotations and FML references
+1. **Inspect:** detects legacy mods and their Minecraft version from `mcmod.info`, `@Mod` annotations, and FML references
 2. **Translate:** remaps old Minecraft/Forge classes and SRG names, and fixes Java 8 → 21 and LWJGL 2 → 3 incompatibilities
 3. **Link:** every legacy API call resolves against a hand-written re-implementation of that version's API built on NeoForge. Anything not implemented yet is generated automatically, so mods *load* instead of crashing with `NoClassDefFoundError`
 4. **Convert resources:** lang files, textures, blockstates and models are converted to 1.21 formats
@@ -184,7 +184,7 @@ Engine and launcher patches (FastCraft, Hodgepodge, NEID and other ID extenders)
 
 ## FAQ
 
-**What does it do?** It runs mods that were built for older Minecraft versions (Forge 1.4.7, 1.5.2, 1.6.4, 1.7.10, 1.12.2 and 1.20.1 (alpha)) on NeoForge 1.21.1, next to modern mods. Legacy jars are translated when the game loads; the original file is never modified.
+**What does it do?** It runs mods that were built for older Minecraft versions (Forge 1.4.7, 1.5.2, 1.6.4, 1.7.10, 1.12.2, and 1.20.1 (alpha)) on NeoForge 1.21.1, next to modern mods. Legacy jars are translated when the game loads; the original file is never modified.
 
 **How is it different from Retromod and Retrofit?** They are different tools. These summaries come from their own project pages, so check those for the details.
 - [Retromod](https://modrinth.com/mod/retromod) also rewrites old mods' bytecode when the game loads. It targets newer Minecraft versions across Fabric, Forge and NeoForge, and its pages recommend it for content, quality-of-life and library mods, not for mods that hook deep into the game (Create, Tinkers, Applied Energistics and similar).
@@ -193,7 +193,7 @@ Engine and launcher patches (FastCraft, Hodgepodge, NEID and other ID extenders)
 
 **Where do I put the mods?** Each legacy version has its own folder: `mods/1.7.10/`, `mods/1.12.2/`, `mods/1.6.4/`, `mods/1.5.2/`, `mods/1.4.7/`, `mods/1.20.1/`. Legacy jars and zips you drop into `mods/` itself are moved there for you on launch (`legacy.autoSortMods=false` turns that off).
 
-**Which versions work, and how well?** 1.7.10 and 1.12.2 are in beta; 1.6.4, 1.5.2, 1.4.7 and 1.20.1 are in alpha. The [Status table](https://github.com/kylepitcock/Legacy-Connector/blob/master/README.md#status) has the details, and the [compatibility site](https://kylepitcock.github.io/Legacy-Connector/) lists results per mod.
+**Which versions work, and how well?** 1.7.10 and 1.12.2 are in beta; 1.6.4, 1.5.2, 1.4.7, and 1.20.1 are in alpha. The [Status table](https://github.com/kylepitcock/Legacy-Connector/blob/master/README.md#status) has the details, and the [compatibility site](https://kylepitcock.github.io/Legacy-Connector/) lists results per mod.
 
 **Will mod X work?** Check the compatibility site. After a launch, `logs/legacyconnector-report.txt` lists each legacy jar, what was detected, and any references that could not be translated or are only stubbed. Mods that only patch the old engine (performance patches, id extenders) are skipped on purpose, and coremods that patch Minecraft's own classes are not supported.
 
@@ -229,7 +229,7 @@ IDs tab-complete.
 
 ## Writing addons
 
-Other NeoForge mods can add modern support to legacy mods (every supported version: 1.4.7, 1.5.2, 1.6.4, 1.7.10, 1.12.2 and 1.20.1) through a small public API: lifecycle events, access to legacy classes,
+Other NeoForge mods can add modern support to legacy mods (every supported version: 1.4.7, 1.5.2, 1.6.4, 1.7.10, 1.12.2, and 1.20.1) through a small public API: lifecycle events, access to legacy classes,
 modern/legacy stack and tile conversion, and NeoForge capabilities for legacy tile entities. Guide and example addon (modern aspects for Thaumcraft 4):
 [Addon API](https://github.com/kylepitcock/Legacy-Connector/blob/master/docs/wiki/Addon-API.md).
 
