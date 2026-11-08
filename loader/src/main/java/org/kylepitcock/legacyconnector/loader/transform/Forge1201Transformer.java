@@ -138,11 +138,9 @@ public final class Forge1201Transformer {
         @Override
         public String map(String internalName) {
             String r = mapClass(internalName);
-            if (r.equals(internalName)) {
-                String mc = Mc1201Tables.get().classes.get(internalName);
-                if (mc != null) return mc;
-            }
-            return r;
+            // mc-classes.tsv is keyed by the name after the Forge renames (a NeoForge class that has no counterpart in 1.21.1 maps on to a stand-in)
+            String mc = Mc1201Tables.get().classes.get(r);
+            return mc != null ? mc : r;
         }
 
         @Override

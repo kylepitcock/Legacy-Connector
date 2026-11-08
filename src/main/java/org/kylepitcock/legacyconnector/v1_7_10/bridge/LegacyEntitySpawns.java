@@ -98,10 +98,18 @@ public final class LegacyEntitySpawns {
         return v == null ? null : ResourceLocation.withDefaultNamespace(v);
     }
 
-    /**
-     * Writes a biome tag holding the given biome ids plus, as optional entries, the common (c:) tag of each vanilla biome among them,
-     * and returns the {@code #legacyconnector:name} reference for a biome modifier. Shared with the 1.12.2 spawns bridge.
-     */
+    /** Matches the same exact biome ids and optional common-family tags used by spawn data generation. */
+    public static boolean matchesBiome(net.minecraft.core.Holder<net.minecraft.world.level.biome.Biome> biome,Iterable<String> ids) {
+        for(String value:ids){
+            ResourceLocation id=ResourceLocation.parse(value);
+            if(biome.is(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.BIOME,id)))return true;
+            String common=id.getNamespace().equals("minecraft")?COMMON_TAGS.get(id.getPath()):null;
+            if(common!=null&&biome.is(net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.BIOME,ResourceLocation.parse(common))))return true;
+        }
+        return false;
+    }
+
+    /** Writes exact ids and optional common-family tags, returning the generated tag reference. */
     public static String biomeTag(Map<String, Supplier<byte[]>> out, String tag, Iterable<String> biomes) {
         JsonObject tagJson = new JsonObject();
         JsonArray values = new JsonArray();

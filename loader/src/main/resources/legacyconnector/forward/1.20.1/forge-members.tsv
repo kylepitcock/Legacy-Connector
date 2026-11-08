@@ -57,3 +57,4 @@ net/minecraftforge/common/Tags$Blocks	INGOTS_NETHER_BRICK	BRICKS_NETHER
 net/minecraftforge/event/entity/player/CriticalHitEvent	getDamageModifier	getDamageMultiplier
 net/minecraftforge/event/entity/player/CriticalHitEvent	setDamageModifier	setDamageMultiplier
 net/minecraftforge/event/ForgeEventFactory	getMobGriefingEvent	canEntityGrief
+net/minecraftforge/fml/common/Mod$EventBusSubscriber$Bus	FORGE	GAME

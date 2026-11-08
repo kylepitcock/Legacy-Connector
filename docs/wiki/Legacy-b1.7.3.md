@@ -480,18 +480,34 @@ aquatic prey/settings policies, contact damage and juvenile gates, Fishy offspri
 habitat also exercises Minecraft's native weighted spawn selection, original spawn checks, factory creation and world insertion.
 This preserves original quirks, including a pregnant Kitty rejecting the nearest occupied bed instead of choosing a farther one.
 
-Successful `ModLoader.setPrivateValue` writes to `SpawnGroup.capacity`, by original field name or index, now affect native
-global and per-player spawn caps. Untouched categories retain Minecraft's defaults. The bridge is shared API behavior with no
-mod-name checks. An actual Mo' Creatures run verifies its constructor's 70/30/25 limits at the native cap boundaries;
-the original mod applies these settings at launch rather than on each slider change.
-[The lifecycle validation snapshot](../data/b173-lifecycle-validation-2026-11-07.json) records these checks and their limits.
+Beta spawn requests now receive opportunities on every ordinary native world tick, independently of the native 400-tick
+passive cadence. The scheduler reads current `SpawnGroup.capacity` values, including untouched Beta defaults of 70/15/5 and
+successful mapped writes by field name or index. Mo' Creatures applies its configured 70/30/25 settings at launch rather than
+on each slider change. Native category limits and per-player budgets remain unchanged for native spawning.
 
-Spawn balance still depends on the modern scheduler: passive replenishment runs every 400 world ticks, and a full native
-category cap prevents original candidate checks from running. Terrain-generated fauna can already exceed that cap. Beta's
-original class/interface-based census is not yet reproduced by the native category census; the `SpawnGroup.getCreatureClass`
-API itself now returns the correct Monster marker interface, AnimalEntity and WaterCreatureEntity roots. More Creeps' original
-choice to register all configured species as CREATURE is preserved, including monster-derived species. No rates or limits are
-silently raised to compensate for these differences.
+Each Beta group counts all loaded entities by its original class or marker interface, including persistent entities. A host's
+original ancestry takes precedence over its native category; native entities use the corresponding Enemy, Animal and WaterAnimal
+families. Thus a More Creeps monster registered in CREATURE still counts as a Monster, preserving the original mod's policy.
+Player footprints are deduplicated unions of inclusive 17-by-17 chunk squares. A group starts when its count is at most
+`capacity * footprintSize / 256`, with integer division. This gate runs once before the group's chunk loop; cluster overshoot
+is retained, and the next group sees a fresh census. For one player, default thresholds are 79/16/5; Mo' Creatures' are 79/33/28.
+
+The bridge captures chunks already admitted by native player proximity, world-border, gamerule and tick-rate checks. It uses
+native weighted selection, placement, spawn events, finalization and insertion. The native PotentialSpawns event keeps managed
+entries out of ordinary selection and admits them to Beta selection, scoped to the requested category and biome policy. Entry
+objects, weights and order are preserved. Both paths update native spawn accounting, and scoped state is restored on exceptions.
+No scheduler dispatch selects a content mod by name.
+
+This restores Beta caps and cadence while retaining native candidate geometry, modern world-height sampling, biome spawn
+costs and terrain population. It does not reproduce the complete Beta candidate algorithm or make modern vanilla animals
+despawn like Beta animals. Modern terrain-generated fauna can therefore still fill the correct Beta class budget.
+[The cap and scheduling snapshot](../data/b173-cap-scheduling-validation-2026-11-08.json) records actual-mod and control proofs.
+
+Remaining checks for these two mods include Kitty fear/tree states, BigCat rope following and teleport fallback, Nightmare
+horse rider fire clearing, Bird seed taming, and live client rendering/interaction with the installed pack. These branches
+are unverified, rather than demonstrated failures. A separate API gap remains in native squid views: their Beta SquidEntity
+and WaterCreatureEntity identity is not yet represented, although the cap census handles native WaterAnimal ancestry directly.
+Actual aquatic prey bytecode does not establish a broken Mo' Creatures predation path from that view gap.
 
 The opt-in `naturalSpawnTickSelfTest` observer uses a real tracked native player and ordinary server ticks, recording candidate
 checks, finalization and confirmed world insertion separately. Isolated observations confirm original aquatic, hostile and

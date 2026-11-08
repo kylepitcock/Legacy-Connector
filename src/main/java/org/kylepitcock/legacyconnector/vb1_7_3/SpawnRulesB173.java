@@ -16,6 +16,7 @@ import org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyEntitySpawns;
 public final class SpawnRulesB173 {
     private static final org.slf4j.Logger LOG=org.slf4j.LoggerFactory.getLogger("LegacyConnector/b1.7.3/Spawns");
     private static final Registry RULES=new Registry();
+    private static final java.util.concurrent.atomic.AtomicLong REVISION=new java.util.concurrent.atomic.AtomicLong();
     private static final Set<String> WARNED=new HashSet<>();
     public record Entry(Class<?> type,int weight,SpawnGroup group,List<Biome> biomes) {}
     private record Key(Class<?> type,SpawnGroup group,Biome biome) {}
@@ -43,8 +44,9 @@ public final class SpawnRulesB173 {
         }
     }
     private SpawnRulesB173() {}
-    public static void add(Class<?> type,int weight,SpawnGroup group,Biome[] biomes){RULES.add(type,weight,group,biomes);}
-    public static void remove(Class<?> type,SpawnGroup group,Biome[] biomes){RULES.remove(type,group,biomes);}
+    public static void add(Class<?> type,int weight,SpawnGroup group,Biome[] biomes){RULES.add(type,weight,group,biomes);REVISION.incrementAndGet();}
+    public static void remove(Class<?> type,SpawnGroup group,Biome[] biomes){RULES.remove(type,group,biomes);REVISION.incrementAndGet();}
+    static long revision(){return REVISION.get();}
     public static List<Entry> all(){return RULES.entries();}
     public static List<Entry> changes(){return RULES.changes();}
     /** Only exact game API classes, never a mod subclass with a similar name. */
@@ -79,6 +81,7 @@ public final class SpawnRulesB173 {
         for(var info:MobsB173.all())if(info.registration().type()==original)return info.type();
         return null;
     }
+    static EntityType<?> resolvedType(Class<?> original){EntityType<?> type=hostedType(original);return type!=null?type:vanillaType(original);}
     public static void contribute(Map<String,Supplier<byte[]>> out) {
         contribute(out,changes(),original->{
             EntityType<?> type=hostedType(original);if(type==null)type=vanillaType(original);
