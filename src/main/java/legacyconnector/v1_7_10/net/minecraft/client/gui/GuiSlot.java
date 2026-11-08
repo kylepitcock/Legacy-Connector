@@ -56,6 +56,21 @@ public abstract class GuiSlot {
         this.right = width;
     }
 
+    /** 1.6.4 name of {@link #setDimensions}. */
+    public void func_77207_a(int width, int height, int top, int bottom) {
+        setDimensions(width, height, top, bottom);
+    }
+
+    /** 1.6.4 name of {@link #scrollBy}. */
+    public void func_77208_b(int amount) {
+        scrollBy(amount);
+    }
+
+    /** 1.6.4 name of {@link #func_148135_f} (how far the list can scroll). */
+    public int func_77209_d() {
+        return func_148135_f();
+    }
+
     public void setShowSelectionBox(boolean show) {
         this.showSelectionBox = show;
     }

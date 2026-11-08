@@ -34,7 +34,7 @@ public final class Tiles164 {
     }
 
     private static java.util.Optional<Method> find(Class<?> type) {
-        for (Class<?> c = type; c != null && c != Object.class; c = c.getSuperclass()) {
+        for (Class<?> c = type; c != null && c != Object.class && c != TileEntity.class; c = c.getSuperclass()) {
             for (Method m : c.getDeclaredMethods()) {
                 Class<?>[] p = m.getParameterTypes();
                 if (m.getName().equals("onDataPacket") && p.length == 2 && p[0] == INetworkManager.class && p[1] == Packet132TileEntityData.class) {

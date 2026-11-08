@@ -119,6 +119,13 @@ public final class LibraryBridges {
         return !"false".equalsIgnoreCase(readConfig(modsDir).getProperty("experimental.forge1201", "true").trim());
     }
 
+    /** {@code experimental.forge1201.softlink} (default on): references to 1.21.1 symbols that do not exist become stand-ins that throw when executed. */
+    static boolean forge1201SoftLinkOn(Path modsDir) {
+        String prop = System.getProperty("legacyconnector.forge1201.softlink");
+        if (prop != null && !prop.isBlank()) return Boolean.parseBoolean(prop.trim());
+        return !"false".equalsIgnoreCase(readConfig(modsDir).getProperty("experimental.forge1201.softlink", "true").trim());
+    }
+
     /** Modern mod ids of the mods folder seen by the last {@link #active} call. */
     public static Set<String> installedModernIds() {
         return installedModern;

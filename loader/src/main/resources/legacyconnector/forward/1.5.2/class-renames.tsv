@@ -9,3 +9,7 @@ net/minecraft/client/renderer/texture/TextureStitched	net/minecraft/client/rende
 net/minecraft/block/BlockCloth	net/minecraft/block/BlockColored
 net/minecraftforge/common/Configuration$UnicodeInputStreamReader	net/minecraftforge/common/config/UnicodeInputStreamReader
 ModLoader	net/minecraft/src/ModLoader
+# stub pass 2: classes 1.7.10 nests
+net/minecraft/world/gen/structure/StructurePieceBlockSelector	net/minecraft/world/gen/structure/StructureComponent$BlockSelector
+net/minecraft/world/storage/MapCoord	net/minecraft/world/storage/MapData$MapCoord
+net/minecraft/world/storage/MapInfo	net/minecraft/world/storage/MapData$MapInfo

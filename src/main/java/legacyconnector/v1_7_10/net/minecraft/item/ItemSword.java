@@ -95,12 +95,27 @@ public class ItemSword extends Item {
     public com.google.common.collect.Multimap getItemAttributeModifiers() {
         com.google.common.collect.Multimap map = super.getItemAttributeModifiers();
         map.put(legacyconnector.v1_7_10.net.minecraft.entity.SharedMonsterAttributes.attackDamage.getAttributeUnlocalizedName(),
-                new legacyconnector.v1_7_10.net.minecraft.entity.ai.attributes.AttributeModifier(field_111210_e, "Weapon modifier", field_150934_a, 0));
+                new legacyconnector.v1_7_10.net.minecraft.entity.ai.attributes.AttributeModifier(field_111210_e, "Weapon modifier", mcc$weaponDamage(), 0));
         return map;
     }
 
     @Override
     public float mcc$attackDamage() {
-        return field_150934_a;
+        return getDamageVsEntity(null, null);
+    }
+
+    /** Forge 1.6.4 {@code getDamageVsEntity(target, stack)}: the damage as a float; mods override it, so the attack damage honours an override. */
+    public float getDamageVsEntity(legacyconnector.v1_7_10.net.minecraft.entity.Entity target, ItemStack stack) {
+        return mcc$weaponDamage();
+    }
+
+    /** 1.5.2 {@code getDamageVsEntity(target)}: the weapon damage as an int; mods override it, so the attack damage honours an override. */
+    public int getDamageVsEntity(legacyconnector.v1_7_10.net.minecraft.entity.Entity target) {
+        return (int) field_150934_a;
+    }
+
+    private float mcc$weaponDamage() {
+        int legacy = getDamageVsEntity(null);
+        return legacy == (int) field_150934_a ? field_150934_a : legacy;
     }
 }

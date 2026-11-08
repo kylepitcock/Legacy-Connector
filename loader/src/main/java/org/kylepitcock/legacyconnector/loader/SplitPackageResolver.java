@@ -152,6 +152,7 @@ final class SplitPackageResolver {
 
         // Content-address everything so repeated launches reuse the same files.
         MessageDigest digest = sha256();
+        digest.update("services-v1".getBytes()); // stripped jars drop service providers that moved (format change)
         for (Path jar : jars) digest.update(jar.getFileName().toString().getBytes());
         for (String pkg : shared) digest.update(pkg.getBytes());
         for (var e : keptBy.entrySet()) digest.update((e.getKey() + "@" + e.getValue().getFileName()).getBytes());
@@ -319,23 +320,57 @@ final class SplitPackageResolver {
      */
     private static void copyWithout(Path jar, ZipFile zip, Path target, Set<String> packages) throws IOException {
         List<String> doomed = new ArrayList<>();
+        List<String> services = new ArrayList<>();
         Enumeration<? extends ZipEntry> names = zip.entries();
         while (names.hasMoreElements()) {
             String n = names.nextElement().getName();
             int slash = n.lastIndexOf('/');
             if (n.endsWith(".class") && slash > 0 && packages.contains(n.substring(0, slash))) doomed.add(n);
+            else if (n.startsWith(SERVICES) && !n.endsWith("/")) services.add(n);
         }
         Path tmp = target.resolveSibling(target.getFileName() + ".tmp");
         try {
             Files.copy(jar, tmp, StandardCopyOption.REPLACE_EXISTING);
             try (java.nio.file.FileSystem fs = java.nio.file.FileSystems.newFileSystem(tmp)) {
                 for (String n : doomed) Files.deleteIfExists(fs.getPath("/" + n));
+                for (String n : services) {
+                    Path file = fs.getPath("/" + n);
+                    byte[] kept = withoutProviders(Files.readAllBytes(file), packages);
+                    if (kept == null) Files.delete(file);
+                    else if (kept.length != Files.size(file)) Files.write(file, kept);
+                }
             }
             Files.move(tmp, target, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
         } catch (IOException | RuntimeException e) {
             Files.deleteIfExists(tmp);
             streamWithout(zip, target, packages);
         }
+    }
+
+    private static final String SERVICES = "META-INF/services/";
+
+    /**
+     * A service file without the providers whose classes moved to the shared library (a module's provider has to be in the module itself, so a
+     * stripped jar that kept the line fails to resolve: "Provider class ... not in JAR file"); null when no provider is left.
+     */
+    static byte[] withoutProviders(byte[] file, Set<String> packages) {
+        String text = new String(file, java.nio.charset.StandardCharsets.UTF_8);
+        StringBuilder out = new StringBuilder();
+        boolean any = false;
+        for (String line : text.split("\\R", -1)) {
+            String name = line;
+            int hash = name.indexOf('#');
+            if (hash >= 0) name = name.substring(0, hash);
+            name = name.trim();
+            if (!name.isEmpty()) {
+                int dot = name.lastIndexOf('.');
+                if (dot > 0 && packages.contains(name.substring(0, dot).replace('.', '/'))) continue;
+                any = true;
+            }
+            out.append(line).append(System.lineSeparator());
+        }
+        if (!any) return null;
+        return out.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
     }
 
     private static void streamWithout(ZipFile zip, Path target, Set<String> packages) throws IOException {
@@ -365,11 +400,22 @@ final class SplitPackageResolver {
                 }
                 int slash = n.lastIndexOf('/');
                 if (n.endsWith(".class") && slash > 0 && packages.contains(n.substring(0, slash))) continue;
+                byte[] replaced = null;
+                if (n.startsWith(SERVICES)) {
+                    try (InputStream in = zip.getInputStream(e)) {
+                        replaced = withoutProviders(in.readAllBytes(), packages);
+                    }
+                    if (replaced == null) continue;
+                }
                 ZipEntry z = new ZipEntry(n);
                 z.setTime(0);
                 jos.putNextEntry(z);
-                try (InputStream in = zip.getInputStream(e)) {
-                    in.transferTo(jos);
+                if (replaced != null) {
+                    jos.write(replaced);
+                } else {
+                    try (InputStream in = zip.getInputStream(e)) {
+                        in.transferTo(jos);
+                    }
                 }
                 jos.closeEntry();
             }

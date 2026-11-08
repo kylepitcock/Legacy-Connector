@@ -11,6 +11,11 @@ import legacyconnector.v1_7_10.net.minecraft.world.World;
  * Default rendering is a camera-facing quad of its icon (or its cell of the legacy particle sheet).
  */
 public class EntityFX extends Entity {
+    /** 1.4.7: the tile of the particle sheet the particle draws (the base particle uses the first one). */
+    public int getParticleTextureIndex() {
+        return 0;
+    }
+
     protected int particleTextureIndexX;
     protected int particleTextureIndexY;
     protected float particleTextureJitterX;

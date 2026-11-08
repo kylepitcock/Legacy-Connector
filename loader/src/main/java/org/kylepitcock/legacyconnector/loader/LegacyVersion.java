@@ -82,9 +82,16 @@ public enum LegacyVersion {
             // LWJGL 2's OpenAL context holder and exception (LWJGL 3 has neither); AL10 and the rest are LWJGL 3's own classes
             "org/lwjgl/openal/AL",
             "org/lwjgl/openal/OpenALException",
+            // LWJGL 2's device/context objects and the calls over them (LWJGL 3 uses long handles) and EFX10 (LWJGL 3: EXTEfx)
+            "org/lwjgl/openal/ALC10",
+            "org/lwjgl/openal/ALCdevice",
+            "org/lwjgl/openal/ALCcontext",
+            "org/lwjgl/openal/EFX10",
             "org/lwjgl/Sys",
             // The sound library 1.7.10 bundled (mods configure it directly); the modern game has its own engine.
-            "paulscode/sound/");
+            "paulscode/sound/",
+            // Guava's TreeTraverser, which the Guava the game ships no longer has (the 1.7.10 and 1.12.2 shims carry it)
+            "com/google/common/collect/TreeTraverser");
 
     private final String id;
     private final String shimPrefix;

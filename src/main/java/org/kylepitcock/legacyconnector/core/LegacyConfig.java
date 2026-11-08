@@ -76,6 +76,15 @@ public final class LegacyConfig {
             # Scales the land legacy mod biomes take in the overworld (1.0 is about their 1.7.10 share, 0.5 half as much, 0 none).
             legacyBiomeFrequency = 1.0
 
+            # Legacy mods (Minecraft 1.4.7 to 1.12.2 and Forge 1.20.1 jars) found directly in mods/ are moved into mods/<version>/ on
+            # launch (read by the loader at startup).
+            legacy.autoSortMods = true
+            # Forge 1.20.1 mods are remapped in place and loaded as NeoForge mods (alpha; read by the loader at startup).
+            experimental.forge1201 = true
+            # A reference to a missing Minecraft 1.21.1 class, method or field no longer keeps a Forge 1.20.1 mod from loading; the
+            # stand-in throws only when it runs (read by the loader at startup).
+            experimental.forge1201.softlink = true
+
             # Pack maker switches, read by the loader at startup.
             # Legacy mods to leave out entirely (their legacy ids, comma separated; the whole jar is skipped when all its mods are listed).
             # mods.skip = examplemod, othermod
@@ -144,6 +153,65 @@ public final class LegacyConfig {
     private static Properties values;
 
     private LegacyConfig() {}
+
+    /** One setting of the file for the in-game editor: its key, default and the comment text above it in the template. */
+    public record Entry(String key, String defaultValue, String description) {
+        public boolean isBoolean() {
+            return defaultValue.equals("true") || defaultValue.equals("false");
+        }
+    }
+
+    /** The settings the template defines (uncommented {@code key = value} lines, with the comment block above each). */
+    public static List<Entry> entries() {
+        List<Entry> out = new ArrayList<>();
+        StringBuilder comment = new StringBuilder();
+        for (String line : DEFAULTS.split("\n")) {
+            String t = line.strip();
+            if (t.isEmpty()) {
+                comment.setLength(0);
+            } else if (t.startsWith("#")) {
+                String text = t.substring(1).strip();
+                // "# key = value" example lines are not settings
+                if (!text.matches("[A-Za-z0-9_.]+ = .*")) comment.append(comment.length() == 0 ? "" : " ").append(text);
+            } else {
+                int eq = t.indexOf('=');
+                if (eq > 0) {
+                    out.add(new Entry(t.substring(0, eq).strip(), t.substring(eq + 1).strip(), comment.toString()));
+                    comment.setLength(0);
+                }
+            }
+        }
+        return out;
+    }
+
+    /** The current value of a setting (the file's, else the given default). */
+    public static String currentValue(String key, String defaultValue) {
+        return string(key, defaultValue);
+    }
+
+    /**
+     * Writes settings to the file (replacing the key's line, else appending it) and updates the values read from now on. Many are
+     * read once at startup, so the editor tells the player to restart.
+     */
+    public static synchronized void save(java.util.Map<String, String> changes) throws IOException {
+        Path file = FMLPaths.CONFIGDIR.get().resolve(FILE);
+        List<String> lines = Files.exists(file) ? new ArrayList<>(Files.readAllLines(file)) : new ArrayList<>(List.of(DEFAULTS.split("\n")));
+        for (var change : changes.entrySet()) {
+            String key = change.getKey();
+            boolean done = false;
+            for (int i = 0; i < lines.size(); i++) {
+                String t = lines.get(i).strip();
+                if (!t.startsWith("#") && t.startsWith(key) && t.substring(key.length()).strip().startsWith("=")) {
+                    lines.set(i, key + " = " + change.getValue());
+                    done = true;
+                    break;
+                }
+            }
+            if (!done) lines.add(key + " = " + change.getValue());
+            values().setProperty(key, change.getValue());
+        }
+        Files.write(file, lines);
+    }
 
     private static synchronized Properties values() {
         if (values != null) return values;

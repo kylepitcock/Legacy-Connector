@@ -127,6 +127,14 @@ public class TileEntity {
     public void onDataPacket(NetworkManager net, S35PacketUpdateTileEntity pkt) {
     }
 
+    /**
+     * Forge 1.6.4: the client receives the tile's description packet. A 1.6.4 tile overrides this; {@code Tiles164} finds the override
+     * by reflection and delivers the packet (this base does nothing, as in 1.6.4).
+     */
+    public void onDataPacket(legacyconnector.v1_6_4.net.minecraft.network.INetworkManager net,
+            legacyconnector.v1_6_4.net.minecraft.network.packet.Packet132TileEntityData pkt) {
+    }
+
     public boolean isInvalid() {
         return tileEntityInvalid;
     }

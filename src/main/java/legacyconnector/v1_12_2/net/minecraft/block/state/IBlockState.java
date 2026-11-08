@@ -7,7 +7,7 @@ import legacyconnector.v1_12_2.net.minecraft.block.material.Material;
 import legacyconnector.v1_12_2.net.minecraft.block.properties.IProperty;
 
 /** A block with one value for each of its properties. */
-public interface IBlockState {
+public interface IBlockState extends IBlockProperties {
     Collection<IProperty<?>> getPropertyKeys();
 
     <T extends Comparable<T>> T getValue(IProperty<T> property);

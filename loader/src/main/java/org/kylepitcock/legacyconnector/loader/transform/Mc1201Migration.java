@@ -171,6 +171,17 @@ final class Mc1201Migration {
             if (in instanceof TypeInsnNode ti && ti.getOpcode() == Opcodes.NEW) {
                 news.push(ti);
             } else if (in instanceof MethodInsnNode call) {
+                if (!call.name.equals("<init>") && h.isMod(call.owner) && h.declaredIn(call.owner, call.name, call.desc) != Origin.MOD) {
+                    // a renamed Minecraft member called through a class of the mod (the remapper only saw the mod class as the receiver)
+                    for (String ancestor : h.minecraftAncestors(call.owner)) {
+                        String renamed = t.renamedMember(ancestor, call.name, call.desc);
+                        if (!renamed.equals(call.name)) {
+                            call.name = renamed;
+                            c.calls++;
+                            break;
+                        }
+                    }
+                }
                 if (call.getOpcode() == Opcodes.INVOKEINTERFACE && CLASSES_THAT_WERE_INTERFACES.contains(call.owner)) {
                     call.setOpcode(Opcodes.INVOKEVIRTUAL);
                     call.itf = false;
@@ -197,6 +208,7 @@ final class Mc1201Migration {
                 }
             } else if (in instanceof org.objectweb.asm.tree.InvokeDynamicInsnNode d) {
                 registryBufferLambda(d);
+                redirectHandles(d, h, t, c);
             } else if (in instanceof FieldInsnNode f && (f.getOpcode() == Opcodes.GETFIELD || f.getOpcode() == Opcodes.PUTFIELD)) {
                 // an instance field Minecraft dropped: mc-calls.tsv rows named $get$field / $set$field (descriptors "()T" / "(T)V") with a helper taking the receiver
                 boolean get = f.getOpcode() == Opcodes.GETFIELD;
@@ -244,6 +256,35 @@ final class Mc1201Migration {
         for (int i : new int[] {0, 2}) {
             if (!(d.bsmArgs[i] instanceof Type t) || t.getSort() != Type.METHOD) continue;
             d.bsmArgs[i] = Type.getMethodType(t.getDescriptor().replace("Lnet/minecraft/network/FriendlyByteBuf;", "Lnet/minecraft/network/RegistryFriendlyByteBuf;"));
+        }
+    }
+
+    /**
+     * Method references ({@code ItemStack::of}, {@code Foo::new}) are handles, not calls: a call rule that redirects to a static helper
+     * (not the in-place {@code =} rules) applies to the handle as well; the helper takes the receiver first, as a static handle does for an
+     * unbound instance reference. A bound receiver ({@code obj::method}) is passed as the first captured argument, which is the same shape.
+     */
+    private static void redirectHandles(org.objectweb.asm.tree.InvokeDynamicInsnNode d, Mc1201Hierarchy h, Mc1201Tables t, Counts c) {
+        if (d.bsmArgs == null) return;
+        for (int i = 0; i < d.bsmArgs.length; i++) {
+            if (!(d.bsmArgs[i] instanceof org.objectweb.asm.Handle hd)) continue;
+            int tag = hd.getTag();
+            if (tag < Opcodes.H_INVOKEVIRTUAL || tag > Opcodes.H_NEWINVOKESPECIAL || hd.getOwner().startsWith("[")) continue;
+            boolean ctor = tag == Opcodes.H_NEWINVOKESPECIAL;
+            Call rule = null;
+            for (String owner : h.minecraftAncestors(hd.getOwner())) {
+                rule = t.calls.get(owner + "." + hd.getName() + hd.getDesc());
+                if (rule != null) break;
+            }
+            if (rule == null || rule.helper().startsWith("=")) continue;
+            if (!ctor && tag != Opcodes.H_INVOKESTATIC && h.declaredIn(hd.getOwner(), hd.getName(), hd.getDesc()) == Origin.MOD) continue;
+            String desc = rule.helperDesc();
+            if (desc == null) {
+                if (ctor) desc = hd.getDesc().substring(0, hd.getDesc().length() - 1) + "L" + hd.getOwner() + ";";
+                else desc = tag == Opcodes.H_INVOKESTATIC ? hd.getDesc() : "(L" + rule.owner() + ";" + hd.getDesc().substring(1);
+            }
+            d.bsmArgs[i] = new org.objectweb.asm.Handle(Opcodes.H_INVOKESTATIC, rule.helper(), rule.helperName(), desc, false);
+            c.calls++;
         }
     }
 

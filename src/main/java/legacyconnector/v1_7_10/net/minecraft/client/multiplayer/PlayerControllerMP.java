@@ -13,6 +13,10 @@ public class PlayerControllerMP {
     public PlayerControllerMP(legacyconnector.v1_7_10.net.minecraft.client.Minecraft mc, legacyconnector.v1_7_10.net.minecraft.client.network.NetHandlerPlayClient handler) {
     }
 
+    /** Per-tick sync of the selected hotbar slot with the server; the modern game mode does this itself. */
+    public void updateController() {
+    }
+
     private static net.minecraft.client.multiplayer.MultiPlayerGameMode mode() {
         return net.minecraft.client.Minecraft.getInstance().gameMode;
     }

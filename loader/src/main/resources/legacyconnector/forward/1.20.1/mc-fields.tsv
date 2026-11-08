@@ -289,3 +289,10 @@ net/minecraft/core/cauldron/CauldronInteraction	LAVA	Ljava/util/Map;	-	Lnet/mine
 net/minecraft/core/cauldron/CauldronInteraction	POWDER_SNOW	Ljava/util/Map;	-	Lnet/minecraft/core/cauldron/CauldronInteraction$InteractionMap;	MiscCompat.cauldronMap
 net/minecraft/core/cauldron/CauldronInteraction	EMPTY	Ljava/util/Map;	-	Lnet/minecraft/core/cauldron/CauldronInteraction$InteractionMap;	MiscCompat.cauldronMap
 net/minecraft/world/item/ItemStack	ATTRIBUTE_MODIFIER_FORMAT	Ljava/text/DecimalFormat;	-	none	MiscCompat.attributeModifierFormat
+net/minecraft/advancements/critereon/ContextAwarePredicate	ANY	Lnet/minecraft/advancements/critereon/ContextAwarePredicate;	-	none	CritCompat.anyPlayer
+net/minecraft/advancements/critereon/ItemPredicate	ANY	Lnet/minecraft/advancements/critereon/ItemPredicate;	-	none	CritCompat.anyItem
+net/minecraft/advancements/critereon/EntityPredicate	ANY	Lnet/minecraft/advancements/critereon/EntityPredicate;	-	none	CritCompat.anyEntity
+net/minecraft/advancements/critereon/LocationPredicate	ANY	Lnet/minecraft/advancements/critereon/LocationPredicate;	-	none	CritCompat.anyLocation
+net/minecraft/core/particles/ParticleTypes	ENTITY_EFFECT	Lnet/minecraft/core/particles/SimpleParticleType;	-	none	MiscCompat.entityEffectParticle
+net/minecraft/core/registries/BuiltInRegistries	POTION	Lnet/minecraft/core/DefaultedRegistry;	-	Lnet/minecraft/core/Registry;	RoundCompat.defaulted
+net/minecraft/core/registries/BuiltInRegistries	PAINTING_VARIANT	Lnet/minecraft/core/DefaultedRegistry;	-	Lnet/minecraft/core/Registry;	RoundCompat.defaulted

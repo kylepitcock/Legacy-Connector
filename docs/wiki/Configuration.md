@@ -4,6 +4,8 @@ Back to [Home](Home.md).
 
 Settings live in `config/legacyconnector.properties`, written with defaults and comments on first start.
 
+In game they can be edited from Options -> "Legacy Connector..." (top left) or Mods -> Legacy Connector -> Config: a toggle or text box per setting, the file's comment as the tooltip. Done writes the file; most settings (and everything marked "read by the loader at startup") apply after a restart. Legacy mods' own key bindings are listed in Options -> Controls -> Key Binds under their category, and legacy mods with a config GUI (`guiFactory`) get the Config button in the mod list.
+
 | Key | Default | Effect |
 | --- | --- | --- |
 | `mods.skip` | empty | Comma separated legacy mod ids to leave out entirely; a jar is skipped when all of its mods are listed (it is reported as switched off in `logs/legacyconnector-report.txt`). Read by the loader at startup |
@@ -52,6 +54,7 @@ Memory switches (`perf.*`, see [Performance](Performance.md#memory)); each can b
 | `perf.sweepDeadViews` | `true` | Views of closed connections (1.7.10 `NetworkManager`), of legacy inventories whose block entity was removed or unloaded, and 1.12.2 views of the game's block entities are swept |
 | `perf.weakStackViews1122` | `false` | 1.12.2 item stack views without capabilities are held weakly, so a stack nobody holds is collected with its view |
 | `experimental.forge1201` | `true` | Forge 1.20.1 mods (jars with `mods.toml`) are remapped in place and loaded as NeoForge mods. Alpha: some mods work, most still have unresolved references (see [the estimate](Legacy-1.20.1-Estimate.md)); on by default (nothing happens unless a Forge 1.20.1 jar is installed); set to `false` and such jars are left alone |
+| `experimental.forge1201.softlink` | `true` | Soft link for Forge 1.20.1 mods: a reference to a Minecraft 1.21.1 or NeoForge class, method or field that does not exist (removed or changed since 1.20.1) no longer keeps the mod from loading. It becomes a stand-in: a call throws an `UnsupportedOperationException` naming the symbol when (and only when) it runs, a field read gives the default value, an unavailable class used as a supertype is dropped. Every stand-in is listed in the translation report as `Soft link: ...`; such a mod is "loads" at best, never "works". Symbols that resolve are never touched. `false` restores the strict behaviour (see [the estimate](Legacy-1.20.1-Estimate.md)) |
 | `legacy.autoSortMods` | `true` | Legacy mods (jars and zips of Minecraft 1.4.7, 1.5.2, 1.6.4, 1.7.10, 1.12.2 and Forge 1.20.1) found directly in `mods/` are moved into the folder named after their Minecraft version (`mods/1.7.10/`, `mods/1.12.2/`, ...) on launch, so the mods folder stays clean and bug reports show which version a mod is for. A mod whose folder already holds a file of that name, or that cannot be moved, is loaded from where it is. Set to `false` to leave them in `mods/` |
 | `perf.releaseLoaderData` | `true` | The loader drops its translation tables (legacy hierarchy, methods, fields, MCP names, library class infos) after mod discovery (read by the loader at startup) |
 | `perf.cullLegacyParticles` | `true` | Legacy particles drawn by the built-in particle classes are skipped outside the view (pixel-identical) |

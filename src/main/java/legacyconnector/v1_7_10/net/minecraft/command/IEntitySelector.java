@@ -6,6 +6,8 @@ public interface IEntitySelector {
     /** {@code field_152785_b}: living entities that are not spectating/creative-flying players (alive and not a creative player). */
     IEntitySelector field_152785_b = e -> e.isEntityAlive() && !(e instanceof legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer p && legacyconnector.v1_7_10.net.minecraft.entity.player.PlayerCapabilities.mcc$get$disableDamage(p.capabilities));
     IEntitySelector selectAnything = e -> e.isEntityAlive();
+    /** 1.6.4: living entities that hold an inventory (chest minecarts, hopper minecarts). */
+    IEntitySelector selectInventories = e -> e.isEntityAlive() && e instanceof legacyconnector.v1_7_10.net.minecraft.inventory.IInventory;
 
     boolean isEntityApplicable(Entity entity);
 

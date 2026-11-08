@@ -79,6 +79,24 @@ public class TileEntityMobSpawner extends TileEntity {
         return logic;
     }
 
+    /** 1.4.7: the spawner's mob by entity name (the spawner logic holds it since 1.6). */
+    public void setMobID(String name) {
+        logic.setEntityName(name);
+    }
+
+    /** The reads of 1.4.7's public fields {@code delay}, {@code yaw} and {@code yaw2} (the cage's spin and its previous value). */
+    public int getDelay() {
+        return logic.spawnDelay;
+    }
+
+    public double getYaw() {
+        return logic.field_98287_c;
+    }
+
+    public double getYaw2() {
+        return logic.field_98284_d;
+    }
+
     /** 1.7.10 MCP has no readable name for this one: mods call it by its SRG name. */
     public MobSpawnerBaseLogic func_145881_a() {
         return logic;

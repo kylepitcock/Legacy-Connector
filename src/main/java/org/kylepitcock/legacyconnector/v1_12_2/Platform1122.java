@@ -113,9 +113,15 @@ public final class Platform1122 implements LegacyPlatform {
                 mod.instance = scalaModule.getField("MODULE$").get(null);
             } else {
                 mod.mainClass = Class.forName(mod.mainClassName, true, loader);
-                var ctor = mod.mainClass.getDeclaredConstructor();
-                ctor.setAccessible(true);
-                mod.instance = ctor.newInstance();
+                var constants = mod.mainClass.getEnumConstants();
+                if (constants != null && constants.length > 0) {
+                    // an enum mod class (Numina: enum Numina { INSTANCE }): FML 1.12 used its first constant
+                    mod.instance = constants[0];
+                } else {
+                    var ctor = mod.mainClass.getDeclaredConstructor();
+                    ctor.setAccessible(true);
+                    mod.instance = ctor.newInstance();
+                }
             }
             injectInstanceAndMetadata(mod, container);
             injectProxies(mod, loader);
@@ -285,6 +291,17 @@ public final class Platform1122 implements LegacyPlatform {
                     } catch (java.lang.reflect.InvocationTargetException e) {
                         throw e.getCause() instanceof Exception ex ? ex : new RuntimeException(e.getCause());
                     }
+                }
+            }
+            // handlers other mods added to the container's table (FMLModContainer.eventMethods)
+            for (var e : new ArrayList<>(container.mcc$eventMethods().entries())) {
+                if (!e.getKey().isInstance(event)) continue;
+                Method m = e.getValue();
+                m.setAccessible(true);
+                try {
+                    m.invoke(Modifier.isStatic(m.getModifiers()) ? null : mod.instance, event);
+                } catch (java.lang.reflect.InvocationTargetException ex) {
+                    throw ex.getCause() instanceof Exception cause ? cause : new RuntimeException(ex.getCause());
                 }
             }
         } finally {

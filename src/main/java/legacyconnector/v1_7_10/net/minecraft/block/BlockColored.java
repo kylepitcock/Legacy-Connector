@@ -21,6 +21,15 @@ public class BlockColored extends Block {
         return ~meta & 15;
     }
 
+    /** The 1.4.7 names of the two conversions above. */
+    public static int getBlockFromDye(int dye) {
+        return ~dye & 15;
+    }
+
+    public static int getDyeFromBlock(int meta) {
+        return ~meta & 15;
+    }
+
     @Override
     public int damageDropped(int meta) {
         return meta;

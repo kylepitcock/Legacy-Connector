@@ -158,6 +158,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
 
     /** Forge 1.20.1 support is experimental but on by default; {@code experimental.forge1201=false} (config) or {@code -Dlegacyconnector.forge1201=false} turns it off. */
     private static boolean forge1201Enabled(Path modsDir) {
+        System.setProperty("legacyconnector.forge1201.softlink", Boolean.toString(LibraryBridges.forge1201SoftLinkOn(modsDir)));
         return LibraryBridges.forge1201On(modsDir);
     }
 
@@ -595,6 +596,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                     if (!n.endsWith(".class") || n.startsWith("META-INF/") || n.lastIndexOf('/') <= 0) continue;
                     String name = n.substring(0, n.length() - ".class".length());
                     if (LegacyVersion.isRelocatedRoot(name)) continue; // Minecraft, Forge and bridged APIs go to each version's shim anyway
+                    if (org.kylepitcock.legacyconnector.loader.transform.LegacyJarTransformer.isProvidedLibrary(name)) continue; // the game's copy serves it (lang3, Guava...): never relocated
                     out.add(jar.version, name);
                 }
             } catch (IOException | RuntimeException e) {
@@ -917,6 +919,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
         MessageDigest md = SplitPackageResolver.sha256();
         md.update(fileDigest(jar.existing()));
         md.update(("v" + LegacyJarTransformer.TRANSFORMER_VERSION).getBytes(StandardCharsets.UTF_8));
+        if ("false".equals(System.getProperty("legacyconnector.forge1201.softlink"))) md.update("nosoftlink".getBytes(StandardCharsets.UTF_8));
         md.update(LOADER_DIGEST);
         // Any change to the embedded runtime (shim code, bridges) re-translates: no cache can outlive the build that wrote it.
         if (runtimeDigest != null) md.update(runtimeDigest);

@@ -6,6 +6,11 @@ import net.minecraft.nbt.Tag;
 public class NBTTagFloat extends NBTBase.NBTPrimitive {
     private final float data;
 
+    /** 1.6.4 tags carried a name: a bare named tag holds the default value. */
+    public NBTTagFloat(String name) {
+        this(0F);
+    }
+
     public NBTTagFloat(float data) {
         this.data = data;
     }

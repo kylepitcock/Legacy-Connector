@@ -225,6 +225,9 @@ public final class Gap1201 {
                 || s.contains("Lnet/minecraftforge/") || s.contains("Lcpw/");
     }
 
+    /** Offline report of a translated run: the symbols the soft link replaced by stand-ins, per original jar (still unresolved references of the mod: kind "soft" in the detail file). */
+    private static final Map<String, Set<String>> SOFT = new TreeMap<>();
+
     private final Map<String, Set<String>> missingClasses = new TreeMap<>();
     private final Map<String, Set<String>> missingMethods = new TreeMap<>();
     private final Map<String, Set<String>> missingFields = new TreeMap<>();
@@ -283,6 +286,15 @@ public final class Gap1201 {
                     if (src != null) jar = src; // a translated jar is named after the original
                 }
             }
+            for (String x : SOFT.getOrDefault(jar, Set.of())) {
+                int sp = x.indexOf(' ');
+                String sym = x.substring(sp + 1);
+                switch (x.substring(0, sp)) {
+                    case "class" -> mc.add(sym);
+                    case "method" -> mm.add(sym);
+                    default -> mf.add(sym);
+                }
+            }
             long forgeApi = java.util.stream.Stream.of(mc, mm, mf).flatMap(Set::stream).filter(Gap1201::forgeSymbol).count();
             out.printf("%s: %d references, %d missing classes, %d missing methods, %d missing fields, %d unresolved Forge-API symbols%n", jar, refs, mc.size(), mm.size(), mf.size(), forgeApi);
             totalForge += forgeApi;
@@ -328,7 +340,10 @@ public final class Gap1201 {
             try {
                 var lj = new org.kylepitcock.legacyconnector.loader.LegacyJar(m);
                 lj.version = org.kylepitcock.legacyconnector.loader.LegacyVersion.V1_20_1;
-                transformer.transform(lj, t);
+                var res = transformer.transform(lj, t);
+                if (res.softLinked > 0) SOFT.computeIfAbsent(m.getFileName().toString(), k -> new TreeSet<>()).addAll(res.softSymbols);
+                if (res.softLinked > 0) System.out.println("soft-linked " + res.softLinked + " symbol(s) in " + m.getFileName());
+                if (res.softLinked > 0 && Boolean.getBoolean("gap.softlist")) res.notes.stream().filter(n -> n.startsWith("Soft link: ") && n.length() > 40).forEach(n -> System.out.println("  " + m.getFileName() + " " + n));
                 out.add(t);
             } catch (RuntimeException | IOException e) {
                 System.out.println("translation failed for " + m.getFileName() + ": " + e);
@@ -384,6 +399,8 @@ public final class Gap1201 {
                     type.accept(mi.owner);
                     Cls c = find(owner, own);
                     if (c == null) continue; // reported as a missing class
+                    // signature-polymorphic JDK methods (MethodHandle.invoke/invokeExact, VarHandle.get/set/...) take any descriptor
+                    if ((owner.equals("java/lang/invoke/MethodHandle") || owner.equals("java/lang/invoke/VarHandle")) && polymorphic(owner, name)) continue;
                     if (!hasMember(owner, name + d, true, own, new HashSet<>()) && !callRewrites.contains(owner + "." + name + d) && !callRewrites.contains("*." + name + d)
                             && !(owner.startsWith("net/neoforged/") && callRewrites.contains("@event." + name + d))) mm.add(owner + "." + name + d);
                 } else if (in instanceof FieldInsnNode fi) {
@@ -405,6 +422,19 @@ public final class Gap1201 {
             }
         }
         return refs[0];
+    }
+
+    /** The methods javac compiles with the call site's own descriptor (JLS 15.12.3): the JVM links them whatever the descriptor says. */
+    private static boolean polymorphic(String owner, String name) {
+        if (owner.equals("java/lang/invoke/MethodHandle")) return name.equals("invoke") || name.equals("invokeExact");
+        return switch (name) {
+            case "get", "set", "getVolatile", "setVolatile", "getOpaque", "setOpaque", "getAcquire", "setRelease", "compareAndSet", "compareAndExchange",
+                    "compareAndExchangeAcquire", "compareAndExchangeRelease", "weakCompareAndSetPlain", "weakCompareAndSet", "weakCompareAndSetAcquire",
+                    "weakCompareAndSetRelease", "getAndSet", "getAndSetAcquire", "getAndSetRelease", "getAndAdd", "getAndAddAcquire", "getAndAddRelease",
+                    "getAndBitwiseOr", "getAndBitwiseOrAcquire", "getAndBitwiseOrRelease", "getAndBitwiseAnd", "getAndBitwiseAndAcquire",
+                    "getAndBitwiseAndRelease", "getAndBitwiseXor", "getAndBitwiseXorAcquire", "getAndBitwiseXorRelease" -> true;
+            default -> false;
+        };
     }
 
     private static void descTypes(String desc, java.util.function.Consumer<String> type) {

@@ -19,6 +19,11 @@ public class FakePlayerFactory {
         return get(world, MINECRAFT);
     }
 
+    /** 1.6.4 passed a plain {@code World}: the fake player of a server world, null on a client world. */
+    public static FakePlayer getMinecraft(legacyconnector.v1_7_10.net.minecraft.world.World world) {
+        return world instanceof WorldServer server ? get(server, MINECRAFT) : null;
+    }
+
     public static void unloadWorld(WorldServer world) {
     }
 }

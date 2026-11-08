@@ -38,7 +38,7 @@ import org.objectweb.asm.tree.ClassNode;
  */
 public final class LegacyJarTransformer {
     /** Bump whenever the output of this class changes, to invalidate caches. */
-    public static final int TRANSFORMER_VERSION = 10;
+    public static final int TRANSFORMER_VERSION = 11;
     /** Names the legacy coremod plugin class of a translated jar. */
     public static final String COREMOD_RESOURCE = "META-INF/legacyconnector-coremod.txt";
 
@@ -123,6 +123,10 @@ public final class LegacyJarTransformer {
         public int compatRedirects;
         public int virtualFieldRedirects;
         public int droppedShimDuplicates;
+        /** 1.20.1: symbols of Minecraft 1.21.1 / NeoForge the mod references that do not exist and were replaced by stand-ins (SoftLink1201). */
+        public int softLinked;
+        /** The stand-ins, one entry per symbol: {@code class owner}, {@code method owner.name(desc)}, {@code field owner.name:desc} (internal names). */
+        public final List<String> softSymbols = new ArrayList<>();
     }
 
     /** Raw contents of a legacy jar. */
@@ -196,6 +200,14 @@ public final class LegacyJarTransformer {
     private static final List<String> PROVIDED_LIBRARIES = List.of("it/unimi/dsi/fastutil/", "com/google/common/", "com/google/thirdparty/", "com/google/gson/",
             "org/slf4j/", "org/apache/logging/", "io/netty/", "org/joml/", "org/apache/commons/lang3/", "org/apache/commons/io/", "org/apache/commons/codec/",
             "com/google/errorprone/", "com/google/j2objc/", "org/checkerframework/", "org/jetbrains/annotations/");
+
+    /**
+     * A class of a library the game ships (commons-lang3, Guava, Netty...): dropped from every legacy jar and served by the game's copy, so
+     * it is never relocated either (a relocated reference would point at a copy no jar has any more).
+     */
+    public static boolean isProvidedLibrary(String internalName) {
+        return PROVIDED_LIBRARIES.stream().anyMatch(internalName::startsWith) && !isOptionalNativeClass(internalName);
+    }
 
     /**
      * A class of Netty's optional native transports (kqueue, epoll...) the game's own Netty does not ship (it has no kqueue): a mod that

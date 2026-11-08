@@ -560,6 +560,24 @@ public abstract class EntityLivingBase extends Entity {
         if (mcc$entity instanceof LivingEntity l && target != null && target.mcc$entity instanceof LivingEntity t) l.setLastHurtMob(t);
     }
 
+    /** The 1.4.7 name of {@link #setLastAttacker}. */
+    public void setLastAttackingEntity(Entity target) {
+        setLastAttacker(target);
+    }
+
+    /** 1.4.7: the factor Speed and Slowness effects put on the walking speed (+20% per Speed level, -15% per Slowness level). */
+    public float getSpeedModifier() {
+        float factor = 1.0F;
+        legacyconnector.v1_7_10.net.minecraft.potion.PotionEffect speed = getActivePotionEffect(legacyconnector.v1_7_10.net.minecraft.potion.Potion.moveSpeed);
+        if (speed != null) factor *= 1.0F + 0.2F * (speed.getAmplifier() + 1);
+        legacyconnector.v1_7_10.net.minecraft.potion.PotionEffect slow = getActivePotionEffect(legacyconnector.v1_7_10.net.minecraft.potion.Potion.moveSlowdown);
+        if (slow != null) factor *= 1.0F - 0.15F * (slow.getAmplifier() + 1);
+        return factor;
+    }
+
+    /** 1.4.7: the URL the entity's skin is downloaded from (null for the texture its renderer names). */
+    public String skinUrl;
+
     /** The entity's team on its level's scoreboard (players and mobs a team lists by UUID). */
     public legacyconnector.v1_7_10.net.minecraft.scoreboard.Team getTeam() {
         if (mcc$entity == null || !(mcc$entity.getTeam() instanceof net.minecraft.world.scores.PlayerTeam team)) return null;

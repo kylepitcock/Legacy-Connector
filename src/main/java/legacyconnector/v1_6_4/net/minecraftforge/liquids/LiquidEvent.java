@@ -45,6 +45,13 @@ public class LiquidEvent extends legacyconnector.v1_7_10.cpw.mods.fml.common.eve
         }
     }
 
+    /** A liquid spilled out of a pipe or tank into the world. */
+    public static class LiquidSpilledEvent extends LiquidEvent {
+        public LiquidSpilledEvent(LiquidStack liquid, World world, int x, int y, int z) {
+            super(liquid, world, x, y, z);
+        }
+    }
+
     public static final void fireEvent(LiquidEvent event) {
         try {
             legacyconnector.v1_7_10.net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(event);

@@ -523,4 +523,50 @@ public final class MiscCompat {
         return (it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap<Item, net.minecraft.core.cauldron.CauldronInteraction>)
                 net.minecraft.core.cauldron.CauldronInteraction.newInteractionMap("legacy_connector_" + cauldronMaps++).map();
     }
+
+    // ---- round 2 of the ATM 9 blockers
+
+    /** {@code RandomizableContainerBlockEntity.setLootTable(level, random, pos, id)} (static): now on {@code RandomizableContainer}, with a resource key. */
+    public static void setBlockEntityLootTable(net.minecraft.world.level.BlockGetter level, net.minecraft.util.RandomSource random, BlockPos pos, ResourceLocation table) {
+        net.minecraft.world.RandomizableContainer.setBlockEntityLootTable(level, random, pos,
+                net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.LOOT_TABLE, table));
+    }
+
+    /** {@code setLootTable(ResourceLocation, long)} of a loot container block entity: the table key and the seed are set apart now. */
+    public static void setLootTable(net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity container, ResourceLocation table, long seed) {
+        container.setLootTable(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.LOOT_TABLE, table));
+        container.setLootTableSeed(seed);
+    }
+
+    /** {@code DataResult.get()}: the value on the left, the partial result with the error on the right. */
+    public static <R> com.mojang.datafixers.util.Either<R, com.mojang.serialization.DataResult.Error<R>> dataResultGet(com.mojang.serialization.DataResult<R> result) {
+        var value = result.result();
+        if (value.isPresent()) return com.mojang.datafixers.util.Either.left(value.get());
+        return com.mojang.datafixers.util.Either.right(result.error().get());
+    }
+
+    /** {@code Entity.canChangeDimensions()}: 1.21.1 asks for the two levels; the entity's own is the answer without a destination. */
+    public static boolean canChangeDimensions(Entity entity) {
+        return entity.canChangeDimensions(entity.level(), entity.level());
+    }
+
+    /** {@code Entity.getMyRidingOffset()}: replaced by the vehicle's attachment points; no offset here. */
+    public static double myRidingOffset(Entity entity) {
+        return 0.0D;
+    }
+
+    /** {@code EnchantmentHelper.enchantItem(random, stack, level, allowTreasure)}: the enchantments come from the server's registry now. */
+    public static ItemStack enchantItem(net.minecraft.util.RandomSource random, ItemStack stack, int level, boolean allowTreasure) {
+        net.minecraft.server.MinecraftServer server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
+        if (server == null) return stack;
+        var holders = server.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).holders()
+                .<net.minecraft.core.Holder<net.minecraft.world.item.enchantment.Enchantment>>map(h -> h)
+                .filter(h -> allowTreasure || !h.is(net.minecraft.tags.EnchantmentTags.TREASURE));
+        return net.minecraft.world.item.enchantment.EnchantmentHelper.enchantItem(random, stack, level, holders);
+    }
+
+    /** {@code ParticleTypes.ENTITY_EFFECT} is a colour particle option now; the closest plain particle is the witch swirl. */
+    public static net.minecraft.core.particles.SimpleParticleType entityEffectParticle() {
+        return net.minecraft.core.particles.ParticleTypes.WITCH;
+    }
 }

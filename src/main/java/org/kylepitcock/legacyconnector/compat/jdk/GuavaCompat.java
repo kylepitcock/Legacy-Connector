@@ -27,6 +27,47 @@ public final class GuavaCompat {
         com.google.common.util.concurrent.Futures.addCallback(future, callback, com.google.common.util.concurrent.MoreExecutors.directExecutor());
     }
 
+    /** Guava 26 removed {@code CheckedFuture} and {@code Futures.immediateCheckedFuture}; callers use the result as a plain future (BuildCraft's chunk cache). */
+    public static <V> com.google.common.util.concurrent.ListenableFuture<V> immediateCheckedFuture(V value) {
+        return com.google.common.util.concurrent.Futures.immediateFuture(value);
+    }
+
+    /** Guava 26 dropped the executor-less transform; the old one ran the function on the completing thread. */
+    public static <I, O> com.google.common.util.concurrent.ListenableFuture<O> transform(com.google.common.util.concurrent.ListenableFuture<I> future,
+            com.google.common.base.Function<? super I, ? extends O> function) {
+        return com.google.common.util.concurrent.Futures.transform(future, function, com.google.common.util.concurrent.MoreExecutors.directExecutor());
+    }
+
+    public static <I, O> com.google.common.util.concurrent.ListenableFuture<O> transformAsync(com.google.common.util.concurrent.ListenableFuture<I> future,
+            com.google.common.util.concurrent.AsyncFunction<? super I, ? extends O> function) {
+        return com.google.common.util.concurrent.Futures.transformAsync(future, function, com.google.common.util.concurrent.MoreExecutors.directExecutor());
+    }
+
+    private static java.util.List<java.io.File> children(java.io.File dir) {
+        java.io.File[] files = dir.isDirectory() ? dir.listFiles() : null;
+        return files == null ? java.util.List.of() : java.util.Arrays.asList(files);
+    }
+
+    /** Guava's {@code Files.fileTreeTraverser()} (removed in Guava 33), as the 1.12.2 shim's TreeTraverser. */
+    public static legacyconnector.v1_12_2.com.google.common.collect.TreeTraverser<java.io.File> fileTreeTraverser1122() {
+        return new legacyconnector.v1_12_2.com.google.common.collect.TreeTraverser<>() {
+            @Override
+            public Iterable<java.io.File> children(java.io.File root) {
+                return GuavaCompat.children(root);
+            }
+        };
+    }
+
+    /** The same for the 1.7.10 shim (and the versions linked to it). */
+    public static legacyconnector.v1_7_10.com.google.common.collect.TreeTraverser<java.io.File> fileTreeTraverser1710() {
+        return new legacyconnector.v1_7_10.com.google.common.collect.TreeTraverser<>() {
+            @Override
+            public Iterable<java.io.File> children(java.io.File root) {
+                return GuavaCompat.children(root);
+            }
+        };
+    }
+
     private static final java.util.Map<ClassLoader, com.google.common.reflect.ClassPath> CLASS_PATHS = new java.util.concurrent.ConcurrentHashMap<>();
 
     /**

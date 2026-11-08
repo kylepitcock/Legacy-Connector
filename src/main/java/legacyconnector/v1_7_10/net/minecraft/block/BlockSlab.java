@@ -26,6 +26,16 @@ public class BlockSlab extends legacyconnector.v1_7_10.net.minecraft.block.Block
         this.lightOpacity = p0 ? 255 : 0;
     }
 
+    /** 1.7.10 {@code func_150002_b}: the name of the slab variant for a metadata value (plain slabs: the block's own name). */
+    public String func_150002_b(int meta) {
+        return getUnlocalizedName();
+    }
+
+    /** 1.6.4 {@code getFullSlabName}; a mod's override reaches {@link #func_150002_b} through the bridge-methods table. */
+    public String getFullSlabName(int meta) {
+        return func_150002_b(meta);
+    }
+
     /** Set by the legacy constructor: only slabs of mods know whether they are the double one (vanilla wrappers keep Block's answer). */
     private boolean mcc$slab;
 

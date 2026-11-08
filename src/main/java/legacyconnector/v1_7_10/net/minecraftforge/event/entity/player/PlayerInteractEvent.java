@@ -19,6 +19,11 @@ public class PlayerInteractEvent extends PlayerEvent {
     public Result useBlock = Result.DEFAULT;
     public Result useItem = Result.DEFAULT;
 
+    /** Forge 1.6.4: the world is the player's. */
+    public PlayerInteractEvent(EntityPlayer player, Action action, int x, int y, int z, int face) {
+        this(player, action, x, y, z, face, player == null ? null : EntityPlayer.mcc$get$worldObj(player));
+    }
+
     public PlayerInteractEvent(EntityPlayer player, Action action, int x, int y, int z, int face, World world) {
         super(player);
         this.action = action;

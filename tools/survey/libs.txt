@@ -1,0 +1,14 @@
+# name fragments of library jars that every survey batch loads in addition to its group (case-insensitive)
+codechickenlib
+cofhcore
+cofhlib
+redstoneflux
+redstone-flux
+baubles
+forgelin
+mantle
+brandonscore
+autoreglib
+llibrary
+ic2-lib
+mixinbooter

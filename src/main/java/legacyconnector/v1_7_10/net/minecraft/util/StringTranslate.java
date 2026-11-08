@@ -51,6 +51,11 @@ public class StringTranslate {
         return table;
     }
 
+    /** 1.4.7: the entry a name key maps to ({@code key.name}), for blocks, items and entities. */
+    public synchronized String translateNamedKey(String key) {
+        return StatCollector.translateToLocal(key + ".name");
+    }
+
     public synchronized String translateKey(String key) {
         return StatCollector.translateToLocal(key);
     }

@@ -11,6 +11,14 @@ public class TextureFXManager {
         return INSTANCE;
     }
 
+    /**
+     * The size of the texture at a GL id, as FML answered it: every sheet this layer hands out is made of 16 by 16 tiles, so animations
+     * (which draw a tile each) get the 16 by 16 of a vanilla sheet.
+     */
+    public java.awt.Dimension getTextureDimensions(int textureId) {
+        return new java.awt.Dimension(16, 16);
+    }
+
     public void addAnimation(TextureFX anim) {
         Animations147.register(anim);
     }

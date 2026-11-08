@@ -45,6 +45,18 @@ public class VillagerRegistry {
         VillagerBridge.registerSkin(id, skin.mcc$modern());
     }
 
+    /** 1.4.7: a profession with its skin texture path (the id is registered and the skin file assigned to it). */
+    public void registerVillagerType(int id, String texture) {
+        registerVillagerId(id);
+        registerVillagerSkin(id, new ResourceLocation(texture.startsWith("/") ? texture.substring(1) : texture));
+    }
+
+    /** 1.4.7: the skin texture path of a profession, the default when it has none. */
+    public static String getVillagerSkin(int id, String defaultSkin) {
+        var skin = VillagerBridge.skin(id);
+        return skin == null ? defaultSkin : skin.getNamespace() + ":" + skin.getPath();
+    }
+
     public static ResourceLocation getVillagerSkin(int id, ResourceLocation defaultSkin) {
         var skin = VillagerBridge.skin(id);
         return skin == null ? defaultSkin : new ResourceLocation(skin.getNamespace(), skin.getPath());

@@ -56,4 +56,13 @@ class SplitPackageResolverTest {
         }
         assertEquals(other, out.jars().get(1));
     }
+
+    @Test
+    void serviceFileLosesProvidersThatMoved() {
+        byte[] file = String.join(System.lineSeparator(), "# comment", "a.moved.Impl", "b.kept.Other").getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        String kept = new String(SplitPackageResolver.withoutProviders(file, Set.of("a/moved")), java.nio.charset.StandardCharsets.UTF_8);
+        assertFalse(kept.contains("a.moved.Impl"));
+        assertTrue(kept.contains("b.kept.Other"));
+        assertNull(SplitPackageResolver.withoutProviders("a.moved.Impl".getBytes(java.nio.charset.StandardCharsets.UTF_8), Set.of("a/moved")));
+    }
 }

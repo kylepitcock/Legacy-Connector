@@ -275,6 +275,26 @@ public final class LegacyResourceConverter {
             value = value.replaceAll("%(\\d+\\$)?[dfx]", "%$1s").replaceAll("%(\\d+\\$)?\\.\\d+f", "%$1s");
             out.put(key, value);
         }
+        addEntityTypeKeys(out);
+    }
+
+    /**
+     * Legacy lang files name an entity "entity.&lt;modid&gt;.&lt;name&gt;.name"; the modern entity type's translation key is
+     * "entity.&lt;modid&gt;.&lt;name&gt;" (no suffix), which is what Jade, death messages and every other reader of the type's name
+     * ask for (Scape and Run: Parasites' names showed as raw keys there). The suffix-less key is added unless the pack has one.
+     */
+    static void addEntityTypeKeys(Map<String, String> out) {
+        Map<String, String> extra = new java.util.LinkedHashMap<>();
+        for (var e : out.entrySet()) {
+            String k = e.getKey();
+            if (!k.startsWith("entity.") || !k.endsWith(".name")) continue;
+            String mid = k.substring(7, k.length() - 5); // <modid>.<name>
+            int dot = mid.indexOf('.');
+            if (dot <= 0 || dot == mid.length() - 1 || mid.indexOf('.', dot + 1) >= 0) continue;
+            String modern = "entity." + mid;
+            if (!out.containsKey(modern)) extra.put(modern, e.getValue());
+        }
+        out.putAll(extra);
     }
 
     /** java.util.Properties escapes: \n \t \r and unicode escapes, and a backslash before any other character (\: \= \\ ...) stands for that character. */

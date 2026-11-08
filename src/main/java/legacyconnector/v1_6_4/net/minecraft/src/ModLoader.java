@@ -187,7 +187,87 @@ public class ModLoader {
 
     public static void registerPacketChannel(BaseMod mod, String channel) {}
 
-    public static void registerKey(BaseMod mod, Object keyHandler, boolean allowRepeat) {}
+    public static void registerKey(BaseMod mod, Object keyHandler, boolean allowRepeat) {
+        if (keyHandler instanceof legacyconnector.v1_7_10.net.minecraft.client.settings.KeyBinding key) registerKey(mod, key, allowRepeat);
+    }
+
+    /** Lists the key in the controls screen and calls {@code mod.keyboardEvent(key)} when it goes down (every tick while held if {@code allowRepeat}). */
+    public static void registerKey(BaseMod mod, legacyconnector.v1_7_10.net.minecraft.client.settings.KeyBinding key, boolean allowRepeat) {
+        if (mod == null || key == null) return;
+        legacyconnector.v1_6_4.cpw.mods.fml.client.registry.KeyBindingRegistry.registerKeyBinding(
+                new legacyconnector.v1_6_4.cpw.mods.fml.client.registry.KeyBindingRegistry.KeyHandler(
+                        new legacyconnector.v1_7_10.net.minecraft.client.settings.KeyBinding[] {key}, new boolean[] {allowRepeat}) {
+                    @Override
+                    public void keyDown(EnumSet<TickType> types, legacyconnector.v1_7_10.net.minecraft.client.settings.KeyBinding kb, boolean tickEnd, boolean isRepeat) {
+                        if (tickEnd) mod.keyboardEvent(kb);
+                    }
+
+                    @Override
+                    public void keyUp(EnumSet<TickType> types, legacyconnector.v1_7_10.net.minecraft.client.settings.KeyBinding kb, boolean tickEnd) {}
+
+                    @Override
+                    public EnumSet<TickType> ticks() {
+                        return EnumSet.of(TickType.CLIENT);
+                    }
+
+                    @Override
+                    public String getLabel() {
+                        return "ModLoader key " + kb0();
+                    }
+
+                    private String kb0() {
+                        return key.getKeyDescription();
+                    }
+                });
+    }
+
+    private static final List<legacyconnector.v1_7_10.net.minecraft.command.ICommand> COMMANDS = new CopyOnWriteArrayList<>();
+    private static MinecraftServer commandsRegisteredOn;
+
+    /**
+     * Adds a command to the server command manager. It is registered on each server's first tick (a new world has a new command tree), so it
+     * also works when called while the mods load.
+     */
+    public static void addCommand(legacyconnector.v1_7_10.net.minecraft.command.ICommand command) {
+        if (command == null || COMMANDS.contains(command)) return;
+        COMMANDS.add(command);
+        if (COMMANDS.size() == 1) {
+            TickRegistry.registerTickHandler(new ITickHandler() {
+                @Override
+                public void tickStart(EnumSet<TickType> type, Object... tickData) {}
+
+                @Override
+                public void tickEnd(EnumSet<TickType> type, Object... tickData) {
+                    MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
+                    if (server == null || server == commandsRegisteredOn) return;
+                    commandsRegisteredOn = server;
+                    for (legacyconnector.v1_7_10.net.minecraft.command.ICommand c : COMMANDS) {
+                        try {
+                            org.kylepitcock.legacyconnector.v1_7_10.bridge.CommandBridge1710.register(server.mcc$modern(), c);
+                        } catch (RuntimeException e) {
+                            LOG.warning("Could not register the command " + c.getCommandName() + ": " + e);
+                        }
+                    }
+                }
+
+                @Override
+                public EnumSet<TickType> ticks() {
+                    return EnumSet.of(TickType.SERVER);
+                }
+
+                @Override
+                public String getLabel() {
+                    return "ModLoader commands";
+                }
+            }, Side.SERVER);
+        }
+    }
+
+    /** Sends a packet from the client to the server it is connected to. */
+    public static void clientSendPacket(legacyconnector.v1_7_10.net.minecraft.network.Packet packet) {
+        legacyconnector.v1_7_10.net.minecraft.client.network.NetHandlerPlayClient handler = Minecraft.getMinecraft().getNetHandler();
+        if (handler != null && packet != null) handler.addToSendQueue(packet);
+    }
 
     // information
 
