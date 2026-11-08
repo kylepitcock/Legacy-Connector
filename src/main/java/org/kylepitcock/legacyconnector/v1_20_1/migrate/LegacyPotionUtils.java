@@ -33,6 +33,10 @@ public final class LegacyPotionUtils {
         return stack.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY).customEffects();
     }
 
+    public static int getColor(java.util.Collection<MobEffectInstance> effects) {
+        return PotionContents.getColor(effects);
+    }
+
     public static int getColor(ItemStack stack) {
         return stack.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY).getColor();
     }

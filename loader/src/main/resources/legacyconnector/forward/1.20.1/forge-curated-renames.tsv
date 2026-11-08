@@ -95,3 +95,6 @@ net/minecraftforge/fml/common/Mod$EventBusSubscriber	net/neoforged/fml/common/Ev
 net/minecraftforge/fml/common/Mod$EventBusSubscriber$Bus	net/neoforged/fml/common/EventBusSubscriber$Bus
 # --- ATM 9 run
 net/minecraftforge/client/ForgeHooksClient	net/neoforged/neoforge/client/ClientHooks
+net/minecraftforge/common/extensions/IForgeItem	net/neoforged/neoforge/common/extensions/IItemExtension
+net/minecraftforge/common/extensions/IForgeBlockEntity	net/neoforged/neoforge/common/extensions/IBlockEntityExtension
+net/minecraftforge/common/extensions/IForgeMobEffect	net/neoforged/neoforge/common/extensions/IMobEffectExtension

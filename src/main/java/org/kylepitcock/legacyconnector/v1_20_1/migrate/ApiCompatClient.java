@@ -27,4 +27,9 @@ public final class ApiCompatClient {
         DeltaTracker tracker = event.getPartialTick();
         return tracker.getGameTimeDeltaPartialTick(false);
     }
+
+    /** {@code ModelManager.getModel(ResourceLocation)}: standalone models are looked up by {@code ModelResourceLocation.standalone}. */
+    public static net.minecraft.client.resources.model.BakedModel getModel(net.minecraft.client.resources.model.ModelManager manager, ResourceLocation id) {
+        return manager.getModel(ModelResourceLocation.standalone(id));
+    }
 }

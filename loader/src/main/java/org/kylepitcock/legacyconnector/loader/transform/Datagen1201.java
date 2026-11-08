@@ -90,11 +90,18 @@ final class Datagen1201 {
                 stats.classes++;
             }
             for (MethodNode m : n.methods) if (emptyIfDatagen(m)) stats.methods++;
+            if (!datagen.contains(n.name)) {
+                // abstract methods that only datagen implementations override
+                int before = n.methods.size();
+                n.methods.removeIf(m -> (m.access & (Opcodes.ACC_ABSTRACT | Opcodes.ACC_NATIVE)) != 0 && !m.name.equals("<init>") && descriptorUsesDatagen(m.desc));
+                stats.methods += before - n.methods.size();
+            }
         }
         return stats;
     }
 
     private static boolean isDatagenClass(ClassNode n, Set<String> known) {
+        if ((n.access & Opcodes.ACC_INTERFACE) == 0 && DATAGEN_NAME.matcher(n.name).matches()) return true;
         if (datagenSuper(n.superName, known)) return true;
         if (n.interfaces != null) for (String i : n.interfaces) if (datagenSuper(i, known)) return true;
         int dollar = n.name.lastIndexOf('$');
@@ -126,10 +133,11 @@ final class Datagen1201 {
         List<MethodNode> kept = new ArrayList<>();
         for (MethodNode m : n.methods) {
             if ((m.access & Opcodes.ACC_STATIC) != 0) {
+                m.signature = null; // generic signatures name the datagen types too
                 kept.add(m);
                 continue;
             }
-            if (!m.name.equals("<init>")) continue;
+            if (!m.name.equals("<init>") || descriptorUsesDatagen(m.desc)) continue;
             m.signature = null;
             m.visibleAnnotations = null;
             m.invisibleAnnotations = null;
@@ -158,12 +166,13 @@ final class Datagen1201 {
     private static boolean emptyIfDatagen(MethodNode m) {
         if (m.instructions == null || m.instructions.size() == 0 || (m.access & (Opcodes.ACC_ABSTRACT | Opcodes.ACC_NATIVE)) != 0) return false;
         if (m.name.equals("<init>") || m.name.equals("<clinit>")) return false;
-        boolean datagen = false;
+        boolean datagen = descriptorUsesDatagen(m.desc);
         for (Type t : Type.getArgumentTypes(m.desc)) {
             if (t.getSort() == Type.OBJECT && t.getInternalName().equals("net/neoforged/neoforge/data/event/GatherDataEvent")) datagen = true;
         }
         if (!datagen) datagen = usesDatagenOnly(m);
         if (!datagen) return false;
+        m.signature = null;
         m.instructions.clear();
         m.tryCatchBlocks = new ArrayList<>();
         m.localVariables = null;
@@ -195,6 +204,16 @@ final class Datagen1201 {
         }
         m.maxStack = 2;
         return true;
+    }
+
+    private static boolean descriptorUsesDatagen(String desc) {
+        for (Type t : Type.getArgumentTypes(desc)) if (datagenType(t)) return true;
+        return datagenType(Type.getReturnType(desc));
+    }
+
+    private static boolean datagenType(Type t) {
+        if (t.getSort() == Type.ARRAY) t = t.getElementType();
+        return t.getSort() == Type.OBJECT && datagenName(t.getInternalName());
     }
 
     private static boolean usesDatagenOnly(MethodNode m) {

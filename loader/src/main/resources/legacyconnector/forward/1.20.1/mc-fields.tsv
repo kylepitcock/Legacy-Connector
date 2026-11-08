@@ -280,3 +280,7 @@ net/minecraft/world/item/alchemy/Potions	STRONG_TURTLE_MASTER	Lnet/minecraft/wor
 net/minecraft/world/item/alchemy/Potions	LONG_TURTLE_MASTER	Lnet/minecraft/world/item/alchemy/Potion;	-	Lnet/minecraft/core/Holder;	value
 net/minecraft/world/item/alchemy/Potions	EMPTY	Lnet/minecraft/world/item/alchemy/Potion;	WATER	Lnet/minecraft/core/Holder;	value
 net/minecraft/sounds/SoundEvents	MUSIC_DISC_11	Lnet/minecraft/sounds/SoundEvent;	-	Lnet/minecraft/core/Holder$Reference;	value
+# --- ATM 9 run, batch 3: NeoForge fluid types are Holders now
+net/neoforged/neoforge/common/NeoForgeMod	WATER_TYPE	Lnet/neoforged/neoforge/registries/DeferredHolder;	-	Lnet/minecraft/core/Holder;	RegistryCompat.fromHolder
+net/neoforged/neoforge/common/NeoForgeMod	LAVA_TYPE	Lnet/neoforged/neoforge/registries/DeferredHolder;	-	Lnet/minecraft/core/Holder;	RegistryCompat.fromHolder
+net/neoforged/neoforge/common/NeoForgeMod	EMPTY_TYPE	Lnet/neoforged/neoforge/registries/DeferredHolder;	-	Lnet/minecraft/core/Holder;	RegistryCompat.fromHolder

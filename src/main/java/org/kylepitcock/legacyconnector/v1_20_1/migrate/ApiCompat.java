@@ -222,4 +222,106 @@ public final class ApiCompat {
         if (teleporter == null || !(entity.level() instanceof net.minecraft.server.level.ServerLevel current)) return entity.changeDimension(transition);
         return teleporter.placeEntity(entity, current, level, entity.getYRot(), repositioned -> entity.changeDimension(transition));
     }
+
+    // ------------------------------------------------------------------ parameters that came or went
+
+    public static double zero(double ignored) {
+        return 0.0;
+    }
+
+    public static float tickRate(float ignored) {
+        return 20.0f;
+    }
+
+    public static Player noPlayer(Object ignored) {
+        return null;
+    }
+
+    public static ItemStack noWeapon(Object ignored) {
+        return null;
+    }
+
+    public static boolean levelIsClient(net.minecraft.world.level.LevelReader level) {
+        return level.isClientSide();
+    }
+
+    /** {@code Block.getCloneItemStack(BlockGetter, pos, state)}: 1.21.1 asks a {@code LevelReader}; a plain getter that is not one answers empty. */
+    public static ItemStack cloneItemStack(Block block, net.minecraft.world.level.BlockGetter level, BlockPos pos, BlockState state) {
+        return level instanceof net.minecraft.world.level.LevelReader reader ? block.getCloneItemStack(reader, pos, state) : ItemStack.EMPTY;
+    }
+
+    /** {@code SpawnEggItem.getType(CompoundTag)}: the {@code EntityTag.id} of the old stack tag. */
+    public static net.minecraft.world.entity.EntityType<?> spawnEggType(CompoundTag tag) {
+        if (tag != null && tag.contains("EntityTag", Tag.TAG_COMPOUND)) {
+            CompoundTag entity = tag.getCompound("EntityTag");
+            if (entity.contains("id", Tag.TAG_STRING)) return net.minecraft.world.entity.EntityType.byString(entity.getString("id")).orElse(null);
+        }
+        return null;
+    }
+
+    /** {@code LiquidBlock.getFluid()}. */
+    public static net.minecraft.world.level.material.FlowingFluid liquidFluid(net.minecraft.world.level.block.LiquidBlock block) {
+        return block.fluid;
+    }
+
+    /** {@code ItemStack.getEnchantmentTags()}: the {@code Enchantments} list of the 1.20.1 stack tag. */
+    public static net.minecraft.nbt.ListTag enchantmentTags(ItemStack stack) {
+        net.minecraft.nbt.ListTag list = new net.minecraft.nbt.ListTag();
+        for (var e : stack.getEnchantments().entrySet()) {
+            CompoundTag tag = new CompoundTag();
+            e.getKey().unwrapKey().ifPresent(k -> tag.putString("id", k.location().toString()));
+            tag.putShort("lvl", (short) e.getIntValue());
+            list.add(tag);
+        }
+        return list;
+    }
+
+    /** {@code FoodProperties.Builder.meat()}: dogs eat what a tag says now; the flag is gone. */
+    public static net.minecraft.world.food.FoodProperties.Builder foodMeat(net.minecraft.world.food.FoodProperties.Builder builder) {
+        return builder;
+    }
+
+    public static double blockReach(Player player) {
+        return player.blockInteractionRange();
+    }
+
+    public static double entityReach(Player player) {
+        return player.entityInteractionRange();
+    }
+
+    /** {@code BuildCreativeModeTabContentsEvent.accept(Supplier<? extends ItemLike>)}. */
+    public static void tabAccept(net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent event, java.util.function.Supplier<? extends net.minecraft.world.level.ItemLike> item) {
+        event.accept(item.get());
+    }
+
+    public static void tabAccept(net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent event, java.util.function.Supplier<? extends net.minecraft.world.level.ItemLike> item,
+                                 net.minecraft.world.item.CreativeModeTab.TabVisibility visibility) {
+        event.accept(new ItemStack(item.get()), visibility);
+    }
+
+    /** {@code EnchantmentHelper.getDamageBonus(stack, mobType)}: sharpness, smite and bane of arthropods as 1.20.1 computed them. */
+    public static float damageBonus(ItemStack stack, LegacyMobType type) {
+        net.minecraft.core.HolderLookup.Provider provider = MigrateContext.provider();
+        var enchantments = provider.lookupOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT);
+        float bonus = 0.0f;
+        int sharp = stack.getEnchantments().getLevel(enchantments.getOrThrow(net.minecraft.world.item.enchantment.Enchantments.SHARPNESS));
+        if (sharp > 0) bonus += 1.0f + Math.max(0, sharp - 1) * 0.5f;
+        if (type == LegacyMobType.UNDEAD) {
+            bonus += stack.getEnchantments().getLevel(enchantments.getOrThrow(net.minecraft.world.item.enchantment.Enchantments.SMITE)) * 2.5f;
+        } else if (type == LegacyMobType.ARTHROPOD) {
+            bonus += stack.getEnchantments().getLevel(enchantments.getOrThrow(net.minecraft.world.item.enchantment.Enchantments.BANE_OF_ARTHROPODS)) * 2.5f;
+        }
+        return bonus;
+    }
+
+    /** {@code EnchantmentHelper.doPostDamageEffects(attacker, target)}: the post attack effects of the attacker's gear. */
+    public static void doPostDamageEffects(LivingEntity attacker, Entity target) {
+        if (attacker.level() instanceof net.minecraft.server.level.ServerLevel level) {
+            DamageSource source = attacker instanceof Player p ? attacker.damageSources().playerAttack(p) : attacker.damageSources().mobAttack(attacker);
+            net.minecraft.world.item.enchantment.EnchantmentHelper.doPostAttackEffects(level, target, source);
+        }
+    }
+
+    /** {@code EnchantmentHelper.doPostHurtEffects(victim, attacker)}: thorns and friends run inside {@code hurt} in 1.21.1. */
+    public static void doPostHurtEffects(LivingEntity victim, Entity attacker) {}
 }
