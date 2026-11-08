@@ -111,6 +111,11 @@ public final class Forge1201Transformer {
         return membersCache = map;
     }
 
+    /** {@code experimental.forge1201.softlink} (default on; the loader sets the system property from the config). */
+    static boolean softLinkEnabled() {
+        return !"false".equalsIgnoreCase(System.getProperty("legacyconnector.forge1201.softlink", "true").trim());
+    }
+
     // ---- names ----------------------------------------------------------------------------------------------------------------
 
     /** Maps one class name; names outside Forge are returned unchanged (Minecraft's own class names are the same in both runtimes). */
@@ -223,6 +228,8 @@ public final class Forge1201Transformer {
             jarClasses.add(node.name);
             if (CallRewrites1201.COMPOUND.equals(node.superName)) compoundSubclasses.add(node.name);
         }
+        Map<ClassNode, Integer> migrated = new java.util.IdentityHashMap<>();
+        SoftLink1201 soft = softLinkEnabled() ? new SoftLink1201(nodes, hierarchy) : null;
         for (ClassNode node : nodes) {
             stringsMapped += mapSrgStrings(node);
             int viaCalls = CallRewrites1201.apply(node, compoundSubclasses);
@@ -233,8 +240,13 @@ public final class Forge1201Transformer {
             Mc1201Migration.Counts changed = Mc1201Migration.apply(node, hierarchy);
             mc.add(changed);
             Mixin1201.apply(node, srg, hierarchy, Mc1201Tables.get(), mixinStats);
+            migrated.put(node, viaCalls + changed.total());
+        }
+        // the soft link runs when every class of the jar has been migrated: references to the mod's own members are judged by their final declarations
+        for (ClassNode node : nodes) {
+            int softened = soft == null ? 0 : soft.apply(node);
             byte[] bytes;
-            if (viaCalls + changed.total() > 0) {
+            if (migrated.get(node) + softened > 0) {
                 // the stack at branch targets changed: frames are computed again
                 try {
                     ClassWriter writer = hierarchy.frameWriter();
@@ -253,6 +265,11 @@ public final class Forge1201Transformer {
             }
             outClasses.put(node.name + ".class", bytes);
             result.classes++;
+        }
+        if (soft != null && soft.stats.symbols() > 0) {
+            result.notes.add("Soft link: " + soft.stats.summary() + " that 1.21.1 lacks were replaced by stand-ins (the mod loads, only the features using them fail; experimental.forge1201.softlink=false turns this off)");
+            result.notes.addAll(soft.stats.lines());
+            result.softLinked = soft.stats.symbols();
         }
         if (mc.total() > 0) result.notes.add("Minecraft 1.20.1 to 1.21.1 migration: " + mc);
         if (mixinStats.mixinClasses > 0) result.notes.add("Mixins: " + mixinStats.summary());

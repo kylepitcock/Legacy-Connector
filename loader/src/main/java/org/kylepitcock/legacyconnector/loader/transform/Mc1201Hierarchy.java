@@ -76,7 +76,7 @@ public final class Mc1201Hierarchy {
     }
 
     /** Direct supertypes (super class first). */
-    private List<String> supers(String name) {
+    List<String> supers(String name) {
         List<String> out = new ArrayList<>(3);
         ClassNode n = mod.get(name);
         if (n != null) {

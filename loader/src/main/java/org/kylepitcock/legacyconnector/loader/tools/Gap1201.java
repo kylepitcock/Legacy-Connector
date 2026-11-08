@@ -328,7 +328,9 @@ public final class Gap1201 {
             try {
                 var lj = new org.kylepitcock.legacyconnector.loader.LegacyJar(m);
                 lj.version = org.kylepitcock.legacyconnector.loader.LegacyVersion.V1_20_1;
-                transformer.transform(lj, t);
+                var res = transformer.transform(lj, t);
+                if (res.softLinked > 0) System.out.println("soft-linked " + res.softLinked + " symbol(s) in " + m.getFileName());
+                if (res.softLinked > 0 && Boolean.getBoolean("gap.softlist")) res.notes.stream().filter(n -> n.startsWith("Soft link: ") && n.length() > 40).forEach(n -> System.out.println("  " + m.getFileName() + " " + n));
                 out.add(t);
             } catch (RuntimeException | IOException e) {
                 System.out.println("translation failed for " + m.getFileName() + ": " + e);

@@ -1,0 +1,315 @@
+package org.kylepitcock.legacyconnector.loader.transform;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import org.objectweb.asm.Handle;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
+import org.objectweb.asm.tree.AbstractInsnNode;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.FieldInsnNode;
+import org.objectweb.asm.tree.FieldNode;
+import org.objectweb.asm.tree.InsnList;
+import org.objectweb.asm.tree.InsnNode;
+import org.objectweb.asm.tree.InvokeDynamicInsnNode;
+import org.objectweb.asm.tree.LdcInsnNode;
+import org.objectweb.asm.tree.MethodInsnNode;
+import org.objectweb.asm.tree.MethodNode;
+import org.objectweb.asm.tree.MultiANewArrayInsnNode;
+import org.objectweb.asm.tree.TryCatchBlockNode;
+import org.objectweb.asm.tree.TypeInsnNode;
+
+/**
+ * Soft link for Forge 1.20.1 mods. A reference to Minecraft 1.21.1 or NeoForge that does not exist (a class, method or field removed or changed in
+ * signature) used to count against the whole mod: the first execution threw {@code NoSuchMethodError}, and a class that merely mentions a missing
+ * class in a way the verifier checks failed to load, taking the registration of the mod's content down with it. After the migration has done its
+ * renames and rewrites, whatever still cannot link is replaced by a stand-in, so the mod loads and registers its content and only the feature that
+ * needs the symbol is lost:
+ * <ul>
+ *   <li>a call of a missing method throws an {@link UnsupportedOperationException} naming the symbol, when (and only when) it is executed;</li>
+ *   <li>a read of a missing field yields the default of its type (null, 0, false), a write is dropped;</li>
+ *   <li>an instruction that needs a class 1.21.1 does not have ({@code new}, cast, array, class literal, call on it) throws the same way,
+ *       {@code instanceof} is false, a {@code catch} of it is dropped, and as a supertype it becomes {@code Object} (an interface is removed).</li>
+ * </ul>
+ * Only symbols the layer can prove absent are touched: the owner must be a class of the mod or of the 1.21.1 index ({@link McMembers1201}) and every
+ * class on the way up must be known; a chain that leaves into another mod or a library is left as it was. A symbol that resolves is never changed.
+ * Each stand-in is reported, one line per symbol ({@link Stats#lines}); a mod with any is "loads" at best.
+ */
+final class SoftLink1201 implements Opcodes {
+    static final String RUNTIME = Mc1201Tables.HELPER_PACKAGE + "SoftLink1201Runtime";
+    private static final String[] HOST_PREFIXES = {"net/minecraft/", "net/neoforged/neoforge/", "com/mojang/blaze3d/", "com/mojang/math/"};
+    private static final Set<String> OBJECT_METHODS = Set.of("equals(Ljava/lang/Object;)Z", "hashCode()I", "toString()Ljava/lang/String;",
+            "getClass()Ljava/lang/Class;", "notify()V", "notifyAll()V", "wait()V", "wait(J)V", "wait(JI)V", "clone()Ljava/lang/Object;", "finalize()V");
+    private static final String MIXIN = "Lorg/spongepowered/asm/mixin/Mixin;";
+
+    /** What was replaced, for the report. */
+    static final class Stats {
+        final Set<String> missingClasses = new TreeSet<>();
+        final Set<String> missingMethods = new TreeSet<>();
+        final Set<String> missingFields = new TreeSet<>();
+        int sites;
+
+        int symbols() {
+            return missingClasses.size() + missingMethods.size() + missingFields.size();
+        }
+
+        /** One report line per stubbed symbol. */
+        List<String> lines() {
+            List<String> out = new ArrayList<>();
+            for (String c : missingClasses) out.add("Soft link: class " + c.replace('/', '.') + " does not exist in 1.21.1; stand-in throws when used");
+            for (String m : missingMethods) out.add("Soft link: method " + m.replace('/', '.') + " does not exist in 1.21.1; stand-in throws when called");
+            for (String f : missingFields) out.add("Soft link: field " + f.replace('/', '.') + " does not exist in 1.21.1; reads give the default value");
+            return out;
+        }
+
+        String summary() {
+            return missingClasses.size() + " class(es), " + missingMethods.size() + " method(s), " + missingFields.size() + " field(s) in " + sites + " place(s)";
+        }
+    }
+
+    private enum Res { FOUND, MISSING, UNKNOWN }
+
+    private final Mc1201Hierarchy hierarchy;
+    private final Map<String, ClassNode> mod = new HashMap<>();
+    final Stats stats = new Stats();
+
+    SoftLink1201(Iterable<ClassNode> nodes, Mc1201Hierarchy hierarchy) {
+        this.hierarchy = hierarchy;
+        for (ClassNode n : nodes) mod.put(n.name, n);
+    }
+
+    // ---- resolution ------------------------------------------------------------------------------------------------------------
+
+    private static boolean hostName(String name) {
+        for (String p : HOST_PREFIXES) if (name.startsWith(p)) return true;
+        return false;
+    }
+
+    /** A class of the 1.21.1 namespaces that exists neither in the mod nor in Minecraft/NeoForge. */
+    private boolean missingClass(String name) {
+        if (name == null || name.startsWith("[")) return false;
+        return hostName(name) && !mod.containsKey(name) && !McMembers1201.hasClass(name);
+    }
+
+    private boolean missingType(Type t) {
+        if (t.getSort() == Type.ARRAY) t = t.getElementType();
+        return t.getSort() == Type.OBJECT && missingClass(t.getInternalName());
+    }
+
+    private String missingIn(String desc) {
+        for (Type t : Type.getArgumentTypes(desc)) if (missingType(t)) return element(t);
+        Type r = Type.getReturnType(desc);
+        return missingType(r) ? element(r) : null;
+    }
+
+    private static String element(Type t) {
+        return (t.getSort() == Type.ARRAY ? t.getElementType() : t).getInternalName();
+    }
+
+    private Res resolve(String owner, String key, boolean method, Set<String> seen) {
+        if (owner == null) return Res.UNKNOWN;
+        if (owner.equals("java/lang/Object")) return method && OBJECT_METHODS.contains(key) ? Res.FOUND : Res.MISSING;
+        if (!seen.add(owner)) return Res.MISSING;
+        ClassNode n = mod.get(owner);
+        if (n != null) {
+            if (method) {
+                for (MethodNode m : n.methods) if ((m.name + m.desc).equals(key)) return Res.FOUND;
+            } else {
+                for (FieldNode f : n.fields) if ((f.name + ":" + f.desc).equals(key)) return Res.FOUND;
+            }
+        } else {
+            McMembers1201.Members mm = McMembers1201.get(owner);
+            if (mm == null) return Res.UNKNOWN;
+            if ((method ? mm.methods() : mm.fields()).contains(key)) return Res.FOUND;
+        }
+        Res result = Res.MISSING;
+        for (String s : hierarchy.supers(owner)) {
+            Res r = resolve(s, key, method, seen);
+            if (r == Res.FOUND) return Res.FOUND;
+            if (r == Res.UNKNOWN) result = Res.UNKNOWN;
+        }
+        return result;
+    }
+
+    /** The class does not have the method, whatever it inherits. */
+    private boolean methodMissing(String owner, String name, String desc) {
+        if (owner.startsWith("[")) return false;
+        if (mod.containsKey(owner) && name.equals("<init>")) return false;
+        if (name.equals("<init>") || name.equals("<clinit>")) {
+            McMembers1201.Members mm = McMembers1201.get(owner);
+            return mm != null && !mm.methods().contains(name + desc) && !mod.containsKey(owner);
+        }
+        return resolve(owner, name + desc, true, new HashSet<>()) == Res.MISSING;
+    }
+
+    private boolean fieldMissing(String owner, String name, String desc) {
+        if (owner.startsWith("[")) return false;
+        return resolve(owner, name + ":" + desc, false, new HashSet<>()) == Res.MISSING;
+    }
+
+    // ---- rewriting -------------------------------------------------------------------------------------------------------------
+
+    /** Replaces what cannot link in {@code node}; returns the number of changes (the class needs its frames computed again when above 0). */
+    int apply(ClassNode node) {
+        if (node.invisibleAnnotations != null && node.invisibleAnnotations.stream().anyMatch(a -> MIXIN.equals(a.desc))) return 0;
+        if (node.visibleAnnotations != null && node.visibleAnnotations.stream().anyMatch(a -> MIXIN.equals(a.desc))) return 0;
+        int changes = 0;
+        if (missingClass(node.superName)) {
+            stats.missingClasses.add(node.superName);
+            stats.sites++;
+            node.superName = "java/lang/Object";
+            changes++;
+        }
+        for (Iterator<String> it = node.interfaces.iterator(); it.hasNext(); ) {
+            String i = it.next();
+            if (missingClass(i)) {
+                stats.missingClasses.add(i);
+                stats.sites++;
+                it.remove();
+                changes++;
+            }
+        }
+        for (MethodNode m : node.methods) {
+            if (m.instructions == null || m.instructions.size() == 0) continue;
+            changes += method(m);
+        }
+        return changes;
+    }
+
+    private int method(MethodNode m) {
+        int changes = 0;
+        for (Iterator<TryCatchBlockNode> it = m.tryCatchBlocks.iterator(); it.hasNext(); ) {
+            TryCatchBlockNode t = it.next();
+            if (t.type != null && missingClass(t.type)) {
+                stats.missingClasses.add(t.type);
+                stats.sites++;
+                it.remove();
+                changes++;
+            }
+        }
+        for (AbstractInsnNode in : m.instructions.toArray()) {
+            InsnList repl = null;
+            if (in instanceof MethodInsnNode mi) {
+                String bad = missingClass(mi.owner) ? mi.owner : missingIn(mi.desc);
+                if (bad != null) {
+                    stats.missingClasses.add(bad);
+                    repl = fail(mi.owner + "." + mi.name + mi.desc);
+                } else if (hostOrMod(mi.owner) && methodMissing(mi.owner, mi.name, mi.desc)) {
+                    stats.missingMethods.add(mi.owner + "." + mi.name + mi.desc);
+                    repl = fail(mi.owner + "." + mi.name + mi.desc);
+                }
+            } else if (in instanceof FieldInsnNode fi) {
+                boolean cls = missingClass(fi.owner) || missingType(Type.getType(fi.desc));
+                if (cls) stats.missingClasses.add(missingClass(fi.owner) ? fi.owner : element(Type.getType(fi.desc)));
+                if (cls || (hostOrMod(fi.owner) && fieldMissing(fi.owner, fi.name, fi.desc))) {
+                    if (!cls) stats.missingFields.add(fi.owner + "." + fi.name + ":" + fi.desc);
+                    repl = field(fi);
+                }
+            } else if (in instanceof TypeInsnNode ti && missingClass(Type.getObjectType(ti.desc).getSort() == Type.ARRAY
+                    ? element(Type.getObjectType(ti.desc)) : ti.desc)) {
+                String c = Type.getObjectType(ti.desc).getSort() == Type.ARRAY ? element(Type.getObjectType(ti.desc)) : ti.desc;
+                stats.missingClasses.add(c);
+                if (ti.getOpcode() == INSTANCEOF) {
+                    repl = new InsnList();
+                    repl.add(new InsnNode(POP));
+                    repl.add(new InsnNode(ICONST_0));
+                } else repl = fail(c);
+            } else if (in instanceof MultiANewArrayInsnNode ma && missingType(Type.getType(ma.desc))) {
+                stats.missingClasses.add(element(Type.getType(ma.desc)));
+                repl = fail(element(Type.getType(ma.desc)));
+            } else if (in instanceof LdcInsnNode l && l.cst instanceof Type t && t.getSort() != Type.METHOD && missingType(t)) {
+                stats.missingClasses.add(element(t));
+                repl = fail(element(t));
+            } else if (in instanceof InvokeDynamicInsnNode indy) {
+                String bad = badHandle(indy);
+                if (bad != null) repl = fail(bad);
+            }
+            if (repl != null) {
+                m.instructions.insert(in, repl);
+                m.instructions.remove(in);
+                stats.sites++;
+                changes++;
+            }
+        }
+        return changes;
+    }
+
+    private boolean hostOrMod(String owner) {
+        return !owner.startsWith("[") && (mod.containsKey(owner) || McMembers1201.hasClass(owner));
+    }
+
+    private String badHandle(InvokeDynamicInsnNode indy) {
+        String bad = missingIn(indy.desc);
+        if (bad != null) {
+            stats.missingClasses.add(bad);
+            return bad;
+        }
+        for (Object arg : indy.bsmArgs) {
+            if (arg instanceof Handle h) {
+                if (missingClass(h.getOwner())) {
+                    stats.missingClasses.add(h.getOwner());
+                    return h.getOwner();
+                }
+                String hb = missingIn(h.getDesc().startsWith("(") ? h.getDesc() : "()" + h.getDesc());
+                if (hb != null) {
+                    stats.missingClasses.add(hb);
+                    return hb;
+                }
+                if (!hostOrMod(h.getOwner())) continue;
+                boolean isField = h.getTag() <= H_PUTSTATIC;
+                boolean gone = isField ? fieldMissing(h.getOwner(), h.getName(), h.getDesc())
+                        : methodMissing(h.getOwner(), h.getName(), h.getDesc());
+                if (gone) {
+                    (isField ? stats.missingFields : stats.missingMethods).add(h.getOwner() + "." + h.getName() + (isField ? ":" : "") + h.getDesc());
+                    return h.getOwner() + "." + h.getName() + h.getDesc();
+                }
+            }
+        }
+        return null;
+    }
+
+    /** {@code throw SoftLink1201Runtime.unresolved(symbol)}. */
+    private static InsnList fail(String symbol) {
+        InsnList l = new InsnList();
+        l.add(new LdcInsnNode(symbol));
+        l.add(new MethodInsnNode(INVOKESTATIC, RUNTIME, "unresolved", "(Ljava/lang/String;)Ljava/lang/UnsupportedOperationException;", false));
+        l.add(new InsnNode(ATHROW));
+        return l;
+    }
+
+    /** A missing field: a read leaves the default value, a write is dropped (receiver and value popped). */
+    private static InsnList field(FieldInsnNode fi) {
+        InsnList l = new InsnList();
+        Type t = Type.getType(fi.desc);
+        int size = t.getSize();
+        switch (fi.getOpcode()) {
+            case GETSTATIC -> l.add(defaultValue(t));
+            case GETFIELD -> {
+                l.add(new InsnNode(POP));
+                l.add(defaultValue(t));
+            }
+            case PUTSTATIC -> l.add(new InsnNode(size == 2 ? POP2 : POP));
+            default -> {
+                l.add(new InsnNode(size == 2 ? POP2 : POP));
+                l.add(new InsnNode(POP));
+            }
+        }
+        return l;
+    }
+
+    private static AbstractInsnNode defaultValue(Type t) {
+        return switch (t.getSort()) {
+            case Type.LONG -> new InsnNode(LCONST_0);
+            case Type.FLOAT -> new InsnNode(FCONST_0);
+            case Type.DOUBLE -> new InsnNode(DCONST_0);
+            case Type.OBJECT, Type.ARRAY -> new InsnNode(ACONST_NULL);
+            default -> new InsnNode(ICONST_0);
+        };
+    }
+}
