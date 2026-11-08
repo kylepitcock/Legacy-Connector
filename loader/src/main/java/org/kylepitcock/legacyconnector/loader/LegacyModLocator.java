@@ -1036,7 +1036,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                                 + "           depend on patching Minecraft code will be missing.\n");
                     }
                     if (jar.mixinConfigs != null) {
-                        w.write("  " + LegacyModReportNotes.mixinStatus(jar.version, jar.mixinConfigs) + "\\n");
+                        w.write("  " + LegacyModReportNotes.mixinStatus(jar.version, jar.mixinConfigs) + "\n");
                     }
                     if (jar.accessTransformer != null) w.write("  NOTE: legacy access transformer " + jar.accessTransformer + " ignored (shim members are public).\n");
                     for (String n : jar.notes) w.write("  note: " + n + "\n");
