@@ -4,7 +4,7 @@
 
 [![Discord](https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/vC6x4Kwwdq) [![CurseForge](https://img.shields.io/badge/CurseForge-F16436?style=for-the-badge&logo=curseforge&logoColor=white)](https://www.curseforge.com/minecraft/mc-mods/legacy-connector) [![Modrinth](https://img.shields.io/badge/Modrinth-00AF5C?style=for-the-badge&logo=modrinth&logoColor=white)](https://modrinth.com/mod/legacyconnector) [![Ko-fi](https://img.shields.io/badge/Ko--fi-FF5E5B?style=for-the-badge&logo=kofi&logoColor=white)](https://ko-fi.com/kylepitcock)
 
-Run **unmodified legacy Forge mods on NeoForge 1.21.1**. Drop 1.7.10, 1.12.2, 1.6.4, 1.5.2 or 1.4.7 mod jars into your `mods` folder next to
+Run **unmodified legacy Forge mods on NeoForge 1.21.1**. Drop 1.7.10, 1.12.2, 1.6.4, 1.5.2, 1.4.7 or Forge 1.20.1 mod jars into your `mods` folder next to
 this mod; it is translated at load time, the same way [Sinytra Connector](https://github.com/Sinytra/Connector)
 runs Fabric mods on NeoForge. The original jar is never modified. Legacy jars live in the folder of their Minecraft version (`mods/1.7.10/`, `mods/1.12.2/`,
 `mods/1.6.4/`, `mods/1.5.2/`, `mods/1.4.7/`, `mods/1.20.1/`): ones you drop into `mods/` itself are moved there for you on launch
@@ -18,6 +18,7 @@ NeoForge loads such jars from `mods/` as launcher plugins before they can be tra
 > entities, recipes, GUIs, world generation and dimensions, and large tech packs like GT New Horizons load most of their mods.
 > 1.12.2 is in beta: Atum 2, The Midnight, The Betweenlands, Scape and Run: Parasites and Abyssalcraft load and play in a real
 > client with their own models, GUIs, mobs, dimensions and world generation.
+> 1.20.1 (Forge) is in alpha: mods are remapped in place onto NeoForge 1.21.1. Terramity (with its GeckoLib bosses) runs in a real client and Another Furniture registers its content; most other 1.20.1 mods still have unresolved references. It is on by default and does nothing unless a Forge 1.20.1 jar is installed.
 > 1.6.4, 1.5.2 and 1.4.7 are new in 0.4 and in alpha: RedPower 2, BuildCraft, ComputerCraft and Applied Energistics (1.4.7), Twilight Forest and
 > Applied Energistics 1 (1.5.2), Tinkers' Construct, Mo' Creatures and Goblins! (1.6.4) and many more run in a real client. Some
 > features are still missing (see [Known compatibility issues](docs/wiki/Compatibility-and-Status.md#known-compatibility-issues)); back up your worlds before trying a new
@@ -82,7 +83,7 @@ All keys and the deepslate ore twins are described on the [Configuration](docs/w
 
 **Where do I put the mods?** Each legacy version has its own folder: `mods/1.7.10/`, `mods/1.12.2/`, `mods/1.6.4/`, `mods/1.5.2/`, `mods/1.4.7/`, `mods/1.20.1/`. Legacy jars and zips you drop into `mods/` itself are moved there for you on launch (`legacy.autoSortMods=false` turns that off).
 
-**Which versions work, and how well?** 1.7.10 and 1.12.2 are in beta, 1.6.4, 1.5.2 and 1.4.7 in alpha, and 1.20.1 in alpha. The [Status table](#status) has the details, and the [compatibility site](https://kylepitcock.github.io/Legacy-Connector/) lists results per mod.
+**Which versions work, and how well?** 1.7.10 and 1.12.2 are in beta; 1.6.4, 1.5.2, 1.4.7 and 1.20.1 are in alpha. The [Status table](#status) has the details, and the [compatibility site](https://kylepitcock.github.io/Legacy-Connector/) lists results per mod.
 
 **Will mod X work?** Check the compatibility site. After a launch, `logs/legacyconnector-report.txt` lists each legacy jar, what was detected, and any references that could not be translated or are only stubbed. Mods that only patch the old engine (performance patches, id extenders) are skipped on purpose, and coremods that patch Minecraft's own classes are not supported.
 
