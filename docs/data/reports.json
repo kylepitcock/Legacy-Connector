@@ -491,6 +491,18 @@
    "link": "https://www.mediafire.com/file/ufpd6s2tbtvkiew/Fisk%252527s_Superheroes_Renewed-0.0.1_1.20.1.jar",
    "date": "2026-11-08",
    "open": true
+  },
+  {
+   "issue": 219,
+   "mod": "JujutsuCraft-ver51-forge-1.20.1",
+   "mc": "1.20.1 (Forge)",
+   "status": "fails",
+   "details": "What error? I don’t understand. <img width=\"829\" height=\"500\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/3d87db26-ad90-479f-ad23-7fa79f291c21\" />",
+   "lc": "0.4.10",
+   "neoforge": "21.1.265",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/sorceryfight",
+   "date": "2026-11-08",
+   "open": true
   }
  ]
 }
