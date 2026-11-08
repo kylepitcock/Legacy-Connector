@@ -171,6 +171,20 @@ final class Mc1201Migration {
                 }
             } else if (in instanceof org.objectweb.asm.tree.InvokeDynamicInsnNode d) {
                 registryBufferLambda(d);
+            } else if (in instanceof FieldInsnNode f && (f.getOpcode() == Opcodes.GETFIELD || f.getOpcode() == Opcodes.PUTFIELD)) {
+                // an instance field Minecraft dropped: mc-calls.tsv rows named $get$field / $set$field (descriptors "()T" / "(T)V") with a helper taking the receiver
+                boolean get = f.getOpcode() == Opcodes.GETFIELD;
+                String cd = get ? "()" + f.desc : "(" + f.desc + ")V";
+                Call rule = null;
+                for (String owner : h.minecraftAncestors(f.owner)) {
+                    rule = t.calls.get(owner + (get ? ".$get$" : ".$set$") + f.name + cd);
+                    if (rule != null) break;
+                }
+                if (rule != null) {
+                    String hd = rule.helperDesc() != null ? rule.helperDesc() : "(L" + rule.owner() + ";" + cd.substring(1);
+                    m.instructions.set(f, new MethodInsnNode(Opcodes.INVOKESTATIC, rule.helper(), rule.helperName(), hd, false));
+                    c.fields++;
+                }
             } else if (in instanceof FieldInsnNode f && f.getOpcode() == Opcodes.GETSTATIC) {
                 Field rule = t.fields.get(f.owner + "." + f.name + ":" + f.desc);
                 if (rule == null) {

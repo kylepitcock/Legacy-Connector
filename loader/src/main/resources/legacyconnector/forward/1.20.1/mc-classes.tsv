@@ -56,3 +56,6 @@ net/minecraft/core/particles/ParticleOptions$Deserializer	org/kylepitcock/legacy
 net/minecraft/world/level/block/grower/AbstractTreeGrower	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyTreeGrower
 net/minecraft/world/level/storage/loot/Serializer	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyLootSerializer
 net/minecraft/world/level/storage/loot/functions/LootItemConditionalFunction$Serializer	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyConditionalFunctionSerializer
+net/minecraft/core/dispenser/AbstractProjectileDispenseBehavior	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyProjectileDispenseBehavior
+net/minecraft/world/level/portal/PortalInfo	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyPortalInfo
+net/minecraft/world/level/saveddata/maps/MapDecoration$Type	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyMapDecorationType

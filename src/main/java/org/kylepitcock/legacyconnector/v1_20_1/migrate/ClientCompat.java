@@ -188,4 +188,26 @@ public final class ClientCompat {
             throw new IllegalStateException("MenuScreens.register failed", e);
         }
     }
+
+    /** {@code EntityRenderersEvent.AddLayers.getSkin(String)} named the player model "default" or "slim"; 1.21.1 takes {@code PlayerSkin.Model}. */
+    public static net.minecraft.client.resources.PlayerSkin.Model skinModel(String name) {
+        return "slim".equals(name) ? net.minecraft.client.resources.PlayerSkin.Model.SLIM : net.minecraft.client.resources.PlayerSkin.Model.WIDE;
+    }
+
+    /** {@code EntityRenderersEvent.AddLayers.getSkin("default" | "slim")}: the player renderer of that model. */
+    @SuppressWarnings("unchecked")
+    public static net.minecraft.client.renderer.entity.LivingEntityRenderer getSkin(net.neoforged.neoforge.client.event.EntityRenderersEvent.AddLayers event, String name) {
+        return (net.minecraft.client.renderer.entity.LivingEntityRenderer) event.getSkin(skinModel(name));
+    }
+
+    /** {@code Options.renderDebug} (F3 overlay shown): the debug overlay keeps the flag now. */
+    public static boolean getRenderDebug(net.minecraft.client.Options options) {
+        Minecraft mc = Minecraft.getInstance();
+        return mc != null && mc.getDebugOverlay() != null && mc.getDebugOverlay().showDebugScreen();
+    }
+
+    public static void setRenderDebug(net.minecraft.client.Options options, boolean show) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc != null && mc.getDebugOverlay() != null && mc.getDebugOverlay().showDebugScreen() != show) mc.getDebugOverlay().toggleOverlay();
+    }
 }

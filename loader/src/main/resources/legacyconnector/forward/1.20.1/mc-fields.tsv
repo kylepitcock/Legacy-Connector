@@ -284,3 +284,8 @@ net/minecraft/sounds/SoundEvents	MUSIC_DISC_11	Lnet/minecraft/sounds/SoundEvent;
 net/neoforged/neoforge/common/NeoForgeMod	WATER_TYPE	Lnet/neoforged/neoforge/registries/DeferredHolder;	-	Lnet/minecraft/core/Holder;	RegistryCompat.fromHolder
 net/neoforged/neoforge/common/NeoForgeMod	LAVA_TYPE	Lnet/neoforged/neoforge/registries/DeferredHolder;	-	Lnet/minecraft/core/Holder;	RegistryCompat.fromHolder
 net/neoforged/neoforge/common/NeoForgeMod	EMPTY_TYPE	Lnet/neoforged/neoforge/registries/DeferredHolder;	-	Lnet/minecraft/core/Holder;	RegistryCompat.fromHolder
+net/minecraft/core/cauldron/CauldronInteraction	WATER	Ljava/util/Map;	-	Lnet/minecraft/core/cauldron/CauldronInteraction$InteractionMap;	MiscCompat.cauldronMap
+net/minecraft/core/cauldron/CauldronInteraction	LAVA	Ljava/util/Map;	-	Lnet/minecraft/core/cauldron/CauldronInteraction$InteractionMap;	MiscCompat.cauldronMap
+net/minecraft/core/cauldron/CauldronInteraction	POWDER_SNOW	Ljava/util/Map;	-	Lnet/minecraft/core/cauldron/CauldronInteraction$InteractionMap;	MiscCompat.cauldronMap
+net/minecraft/core/cauldron/CauldronInteraction	EMPTY	Ljava/util/Map;	-	Lnet/minecraft/core/cauldron/CauldronInteraction$InteractionMap;	MiscCompat.cauldronMap
+net/minecraft/world/item/ItemStack	ATTRIBUTE_MODIFIER_FORMAT	Ljava/text/DecimalFormat;	-	none	MiscCompat.attributeModifierFormat
