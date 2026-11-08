@@ -479,6 +479,18 @@
    "link": "https://www.curseforge.com/minecraft/mc-mods/lycanites-mobs/files/5750564",
    "date": "2026-11-08",
    "open": true
+  },
+  {
+   "issue": 218,
+   "mod": "Fisk Superheroes Renewed",
+   "mc": "1.20.1 (Forge)",
+   "status": "crashes",
+   "details": "crashes on startup",
+   "lc": "0.4.10",
+   "neoforge": "21.1.265",
+   "link": "https://www.mediafire.com/file/ufpd6s2tbtvkiew/Fisk%252527s_Superheroes_Renewed-0.0.1_1.20.1.jar",
+   "date": "2026-11-08",
+   "open": true
   }
  ]
 }
