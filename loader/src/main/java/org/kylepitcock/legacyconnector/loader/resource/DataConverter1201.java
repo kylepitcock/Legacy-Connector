@@ -76,6 +76,10 @@ public final class DataConverter1201 {
             Map.entry("obsidian", "obsidians"), Map.entry("netherrack", "netherracks"), Map.entry("leather", "leathers"),
             Map.entry("string", "strings"), Map.entry("gunpowder", "gunpowders"), Map.entry("concrete", "concretes"),
             Map.entry("glazed_terracotta", "glazed_terracottas"), Map.entry("heads", "skulls"), Map.entry("shears", "tools/shear"));
+    /** Tags whose whole path is spelled differently in NeoForge's 1.21 convention tags (tool types went singular). */
+    private static final Map<String, String> TAG_PATHS = Map.of(
+            "tools/shields", "tools/shield", "tools/bows", "tools/bow", "tools/crossbows", "tools/crossbow",
+            "tools/fishing_rods", "tools/fishing_rod", "tools/tridents", "tools/spear", "tools/shears", "tools/shear");
     private static final Set<String> ITEM_PRED_HOLDERS = Set.of("item", "tool", "weapon", "mainhand", "offhand", "head", "chest", "legs", "feet", "held_item");
     private static final Pattern POTION = Pattern.compile("Potion\\s*:\\s*[\"']([^\"']+)[\"']");
     private static final Pattern ENCHANT_ENTRY = Pattern.compile("\\{\\s*(?:id\\s*:\\s*[\"']([^\"']+)[\"']\\s*,\\s*lvl\\s*:\\s*(\\d+)\\s*[sS]?|lvl\\s*:\\s*(\\d+)\\s*[sS]?\\s*,\\s*id\\s*:\\s*[\"']([^\"']+)[\"'])\\s*\\}");
@@ -133,6 +137,8 @@ public final class DataConverter1201 {
         if (first.equals("is_coniferous")) first = "is_tree/coniferous"; // biome tags: forge:is_coniferous
         else if (first.equals("is_deciduous")) first = "is_tree/deciduous";
         if (first.contains("/")) return first + (slash < 0 ? "" : path.substring(slash)) + suffix;
+        String whole = TAG_PATHS.get(path);
+        if (whole != null) return whole + suffix;
         String mapped = TAG_SEGMENTS.get(first);
         if (mapped != null) path = mapped + (slash < 0 ? "" : path.substring(slash));
         return path + suffix;

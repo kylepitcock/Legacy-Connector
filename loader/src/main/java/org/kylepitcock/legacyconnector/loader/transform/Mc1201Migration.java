@@ -86,8 +86,26 @@ final class Mc1201Migration {
             addBridges(node, h, t, c);
             addRecipeSerializerCodecs(node, c);
             addTriggerCodec(node, c);
+            addConditionCodec(node, c);
         }
         return c;
+    }
+
+    /** A recipe condition written for 1.20.1 ({@code getID()} and {@code test}) lacks the {@code codec()} of 1.21.1: the codec of the serializer registered under its id. */
+    private static void addConditionCodec(ClassNode node, Counts c) {
+        if (node.interfaces == null || !node.interfaces.contains("net/neoforged/neoforge/common/conditions/ICondition")) return;
+        String desc = "()Lcom/mojang/serialization/MapCodec;";
+        if (declared(node, "codec", desc) != null) return;
+        MethodNode m = new MethodNode(Opcodes.ACC_PUBLIC, "codec", desc, null, null);
+        m.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+        m.instructions.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, node.name, "getID", "()Lnet/minecraft/resources/ResourceLocation;", false));
+        m.instructions.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "legacyconnector/v1_20_1/net/minecraftforge/common/crafting/CraftingHelper", "conditionCodecOf",
+                "(Lnet/minecraft/resources/ResourceLocation;)Lcom/mojang/serialization/MapCodec;", false));
+        m.instructions.add(new InsnNode(Opcodes.ARETURN));
+        m.maxStack = 1;
+        m.maxLocals = 1;
+        node.methods.add(m);
+        c.bridges++;
     }
 
     /** A class that implements {@code CriterionTrigger} itself (no {@code SimpleCriterionTrigger} base) lacks the {@code codec()} of 1.21.1: it reads the legacy instance. */
@@ -219,7 +237,8 @@ final class Mc1201Migration {
                     || m.desc.contains("Lnet/minecraft/client/") || m.desc.contains("Lnet/neoforged/neoforge/client/") || m.desc.contains("FMLClientSetupEvent")) clientOnly++;
         }
         if (subscribers == 0) {
-            node.visibleAnnotations.remove(sub);
+            // kept: Subscribers1201 replaces it by a load of the class (Forge loaded such a class for its static initializer: Aquaculture's Hooks registers its hook items there)
+            return;
         } else if (subscribers == clientOnly && (sub.values == null || !sub.values.contains("value"))) {
             if (sub.values == null) sub.values = new java.util.ArrayList<>();
             sub.values.add("value");

@@ -58,6 +58,12 @@ final class Subscribers1201 {
         return false;
     }
 
+    private static boolean hasAnySubscriber(ClassNode node, Map<String, ClassNode> byName) {
+        for (ClassNode c = node; c != null; c = c.superName == null ? null : byName.get(c.superName))
+            for (MethodNode m : c.methods) if (find(m.visibleAnnotations, SUBSCRIBE) != null) return true;
+        return false;
+    }
+
     /** @return the number of classes whose annotation was replaced */
     static int apply(List<ClassNode> nodes) {
         Map<String, ClassNode> byName = new LinkedHashMap<>();
@@ -65,7 +71,7 @@ final class Subscribers1201 {
         List<Spec> specs = new ArrayList<>();
         for (ClassNode n : nodes) {
             AnnotationNode sub = find(n.visibleAnnotations, SUBSCRIBER);
-            if (sub == null || !hasInstanceSubscriber(n, byName)) continue;
+            if (sub == null || hasAnySubscriber(n, byName) && !hasInstanceSubscriber(n, byName)) continue;
             String bus = "GAME";
             StringBuilder dists = new StringBuilder();
             if (sub.values != null) {

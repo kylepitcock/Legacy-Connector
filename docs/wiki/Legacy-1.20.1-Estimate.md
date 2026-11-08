@@ -605,3 +605,10 @@ Batch of 13 content mods (no native Architectury): the server now loads past reg
 - Batch of 16 content mods (Aquaculture, Croptopia, Cyclic, Farmers Delight, ToolBelt, Twigs, Comforts, Elevator, Iron Furnaces, Lootr, Naturalist and dependencies), server: Done; rows recorded as loads with from_client.py.
 - Remaining errors of that run: recipes naming modded items missing from the registry (aquaculture hooks), forge: tags that became c: tags, Curios API missing (no native Curios in the test folder), naturalist sound ids.
 - Real client regression check (Terramity with Patchouli, Caelus, Curios, GeckoLib): joins a superflat world, held legacy item renders (docs/screenshots/1.20.1/terramity-join-regression.jpg).
+
+## 43. Status 2026-11-08: conditions, empty subscriber classes, tag spellings
+
+- A class annotated with an event bus subscriber but without handlers is loaded for its static initializer (Forge did; Aquaculture Hooks registers its hook items there): Subscribers1201 now replaces the annotation by a load of the class. Aquaculture: 123 items, hook recipes parse.
+- Recipe condition serializers (CraftingHelper.register) are registered as codecs in neoforge:condition_codecs, also late (common setup, like Farmers Delight); condition classes get a generated codec(); IConditionSerializer is bounded by ICondition like Forge so mod bridge methods match.
+- Convention tag spelling: tools/shields to c:tools/shield (also bows, crossbows, fishing rods, tridents, shears).
+- Silent failure check: a sound registered under one key naming another sound of its own namespace passes (Naturalist). Batch of 16 mods: Done, 6 of 6 checks; remaining recipe errors are mod data bugs (a recipe with type forge:mod_loaded, a settings file in the recipes folder).

@@ -116,9 +116,68 @@ public final class CraftingHelper {
         return null;
     }
 
+    private static final Map<ResourceLocation, com.mojang.serialization.MapCodec<? extends ICondition>> PENDING_CONDITIONS = new ConcurrentHashMap<>();
+
     public static <T extends ICondition> IConditionSerializer<T> register(IConditionSerializer<T> serializer) {
         CONDITIONS.put(serializer.getID(), serializer);
+        com.mojang.serialization.MapCodec<? extends ICondition> codec = conditionCodec(serializer);
+        try {
+            org.kylepitcock.legacyconnector.v1_20_1.migrate.MiscCompat.registerLate((net.minecraft.core.Registry) net.neoforged.neoforge.registries.NeoForgeRegistries.CONDITION_SERIALIZERS, serializer.getID(), (Object) codec);
+        } catch (RuntimeException e) {
+            PENDING_CONDITIONS.put(serializer.getID(), codec); // the registry is not open yet; the layer's register event retries
+        }
         return serializer;
+    }
+
+    /** Called when NeoForge opens the condition serializer registry: serializers a mod registered earlier than that. */
+    public static void flushConditions(java.util.function.BiConsumer<ResourceLocation, com.mojang.serialization.MapCodec<? extends ICondition>> sink) {
+        PENDING_CONDITIONS.forEach(sink);
+        PENDING_CONDITIONS.clear();
+    }
+
+    /** The MapCodec of a 1.20.1 condition serializer: the JSON members of the condition object go through {@code read}/{@code write}. */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static com.mojang.serialization.MapCodec<? extends ICondition> conditionCodec(IConditionSerializer serializer) {
+        return new com.mojang.serialization.MapCodec<ICondition>() {
+            @Override
+            public <U> java.util.stream.Stream<U> keys(com.mojang.serialization.DynamicOps<U> ops) {
+                return java.util.stream.Stream.empty();
+            }
+
+            @Override
+            public <U> com.mojang.serialization.DataResult<ICondition> decode(com.mojang.serialization.DynamicOps<U> ops, com.mojang.serialization.MapLike<U> input) {
+                try {
+                    JsonObject json = new JsonObject();
+                    input.entries().forEach(p -> {
+                        String key = ops.getStringValue(p.getFirst()).result().orElse(null);
+                        if (key != null) json.add(key, ops.convertTo(JsonOps.INSTANCE, p.getSecond()));
+                    });
+                    return com.mojang.serialization.DataResult.success((ICondition) serializer.read(json));
+                } catch (RuntimeException e) {
+                    return com.mojang.serialization.DataResult.error(() -> "Cannot read condition " + serializer.getID() + ": " + e);
+                }
+            }
+
+            @Override
+            public <U> com.mojang.serialization.RecordBuilder<U> encode(ICondition input, com.mojang.serialization.DynamicOps<U> ops, com.mojang.serialization.RecordBuilder<U> prefix) {
+                try {
+                    JsonObject json = new JsonObject();
+                    serializer.write(json, input);
+                    for (var e : json.entrySet()) if (!e.getKey().equals("type")) prefix.add(e.getKey(), JsonOps.INSTANCE.convertTo(ops, e.getValue()));
+                } catch (RuntimeException e) {
+                    return prefix.withErrorsFrom(com.mojang.serialization.DataResult.error(() -> "Cannot write condition " + serializer.getID() + ": " + e));
+                }
+                return prefix;
+            }
+        };
+    }
+
+    /** {@code codec()} of a 1.20.1 {@code ICondition} implementation: the codec of the serializer registered under its id. */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static com.mojang.serialization.MapCodec conditionCodecOf(ResourceLocation id) {
+        IConditionSerializer s = CONDITIONS.get(id);
+        if (s == null) throw new IllegalStateException("No condition serializer registered for " + id);
+        return conditionCodec(s);
     }
 
     /** A 1.20.1 item stack object: {@code {"item": "ns:id", "count": 2, "nbt": {..} or "{snbt}"}}. */

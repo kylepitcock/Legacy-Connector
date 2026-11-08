@@ -45,6 +45,10 @@ public final class Forge1201Runtime {
         modBus.addListener(org.kylepitcock.legacyconnector.v1_20_1.migrate.LegacyEnchantments::onNewRegistry);
         org.kylepitcock.legacyconnector.v1_20_1.migrate.LegacyComponents.COMPONENTS.register(modBus);
         modBus.addListener((net.neoforged.neoforge.registries.RegisterEvent e) -> {
+            if (e.getRegistryKey().equals(net.neoforged.neoforge.registries.NeoForgeRegistries.Keys.CONDITION_CODECS)) {
+                e.register(net.neoforged.neoforge.registries.NeoForgeRegistries.Keys.CONDITION_CODECS,
+                        helper -> legacyconnector.v1_20_1.net.minecraftforge.common.crafting.CraftingHelper.flushConditions(helper::register));
+            }
             if (e.getRegistryKey().equals(net.neoforged.neoforge.registries.NeoForgeRegistries.Keys.INGREDIENT_TYPES)) {
                 e.register(net.neoforged.neoforge.registries.NeoForgeRegistries.Keys.INGREDIENT_TYPES,
                         helper -> legacyconnector.v1_20_1.net.minecraftforge.common.crafting.CraftingHelper.flushTypes(helper::register));
