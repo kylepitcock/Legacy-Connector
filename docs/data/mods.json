@@ -1496,9 +1496,9 @@
    "version": "2 2.5.5",
    "mc": "1.20.1",
    "source": "client",
-   "date": "2026-11-08",
+   "date": "2026-10-28",
    "status": "loads",
-   "notes": "Loads in ATM 9 server batch 1 without errors (no blocks, items or entities of its own)."
+   "notes": "Loads in 1.20.1 server batch 3 without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "Aquaculture 2",
@@ -4054,9 +4054,9 @@
    "version": "0.1.2",
    "mc": "1.20.1",
    "source": "client",
-   "date": "2026-11-08",
+   "date": "2026-10-28",
    "status": "loads",
-   "notes": "Loads in ATM 9 server batch 1 without errors (no blocks, items or entities of its own)."
+   "notes": "Loads in 1.20.1 server batch 3 without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "BQ Multiblock and Structure Expansion",
@@ -5327,9 +5327,9 @@
    "version": "11.1.136",
    "mc": "1.20.1",
    "source": "client",
-   "date": "2026-11-08",
+   "date": "2026-10-28",
    "status": "loads",
-   "notes": "Loads in ATM 9 server batch 1 without errors (no blocks, items or entities of its own)."
+   "notes": "Loads in 1.20.1 server batch 3 without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "Cloud Storage",
@@ -5543,9 +5543,9 @@
    "version": "6.4.0+1.20.1",
    "mc": "1.20.1",
    "source": "client",
-   "date": "2026-11-08",
+   "date": "2026-10-28",
    "status": "loads",
-   "notes": "Loads in ATM 9 server batch 1 without errors (no blocks, items or entities of its own)."
+   "notes": "Loads in 1.20.1 server batch 3 without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "Comics Bubbles Chat Mod",
@@ -6505,9 +6505,9 @@
    "version": "",
    "mc": "1.20.1",
    "source": "client",
-   "date": "2026-11-08",
+   "date": "2026-10-28",
    "status": "loads",
-   "notes": "Loads in ATM 9 server batch 1 without errors (no blocks, items or entities of its own)."
+   "notes": "Loads in 1.20.1 server batch 3 without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "CrossTie",
@@ -6613,9 +6613,9 @@
    "version": "",
    "mc": "1.20.1",
    "source": "client",
-   "date": "2026-11-08",
+   "date": "2026-10-28",
    "status": "loads",
-   "notes": "Loads in ATM 9 server batch 1 without errors (no blocks, items or entities of its own)."
+   "notes": "Loads in 1.20.1 server batch 3 without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "Curvy Pipes",
@@ -6891,9 +6891,9 @@
    "version": "1.13.6",
    "mc": "1.20.1",
    "source": "client",
-   "date": "2026-11-08",
+   "date": "2026-10-28",
    "status": "loads",
-   "notes": "Loads in ATM 9 server batch 1 without errors (no blocks, items or entities of its own)."
+   "notes": "Loads in 1.20.1 server batch 3 without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "Cyclops Core",
@@ -7996,9 +7996,9 @@
    "version": "1.20.1-1.9.1-forge",
    "mc": "1.20.1",
    "source": "client",
-   "date": "2026-11-08",
+   "date": "2026-10-28",
    "status": "loads",
-   "notes": "Loads in ATM 9 server batch 1 without errors (no blocks, items or entities of its own)."
+   "notes": "Loads in 1.20.1 server batch 3 without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "Elytra Mining",
@@ -9542,9 +9542,9 @@
    "version": "1.20.1-1.2.9",
    "mc": "1.20.1",
    "source": "client",
-   "date": "2026-11-08",
+   "date": "2026-10-28",
    "status": "loads",
-   "notes": "Loads in ATM 9 server batch 1 without errors (no blocks, items or entities of its own)."
+   "notes": "Loads in 1.20.1 server batch 3 without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "Farming for Blockheads",
@@ -9838,9 +9838,9 @@
    "version": "0.0.15",
    "mc": "1.20.1",
    "source": "client",
-   "date": "2026-11-08",
+   "date": "2026-10-28",
    "status": "loads",
-   "notes": "Loads in ATM 9 server batch 1 without errors (no blocks, items or entities of its own)."
+   "notes": "Loads in 1.20.1 server batch 3 without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "Floocraft",
@@ -10903,9 +10903,9 @@
    "version": "4 4.8.2",
    "mc": "1.20.1",
    "source": "client",
-   "date": "2026-11-08",
+   "date": "2026-10-28",
    "status": "loads",
-   "notes": "Loads in ATM 9 server batch 1 without errors (no blocks, items or entities of its own)."
+   "notes": "Loads in 1.20.1 server batch 3 without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "Gendustry",
@@ -13526,9 +13526,9 @@
    "version": "4.1.6",
    "mc": "1.20.1",
    "source": "client",
-   "date": "2026-11-08",
+   "date": "2026-10-28",
    "status": "loads",
-   "notes": "Loads in ATM 9 server batch 1 without errors (no blocks, items or entities of its own)."
+   "notes": "Loads in 1.20.1 server batch 3 without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "Iron Jetpacks",
@@ -14722,9 +14722,9 @@
    "version": "0.7.35.92",
    "mc": "1.20.1",
    "source": "client",
-   "date": "2026-11-08",
+   "date": "2026-10-28",
    "status": "loads",
-   "notes": "Loads in ATM 9 server batch 1 without errors (no blocks, items or entities of its own)."
+   "notes": "Loads in 1.20.1 server batch 3 without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "LootTweaker",
@@ -17616,9 +17616,9 @@
    "version": "4.0.3",
    "mc": "1.20.1",
    "source": "client",
-   "date": "2026-11-08",
+   "date": "2026-10-28",
    "status": "loads",
-   "notes": "Loads in ATM 9 server batch 1 without errors (no blocks, items or entities of its own)."
+   "notes": "Loads in 1.20.1 server batch 3 without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "Nature's Aura",
@@ -25514,9 +25514,9 @@
    "version": "",
    "mc": "1.20.1",
    "source": "client",
-   "date": "2026-11-08",
+   "date": "2026-10-28",
    "status": "loads",
-   "notes": "Loads in ATM 9 server batch 1 without errors (no blocks, items or entities of its own)."
+   "notes": "Loads in 1.20.1 server batch 3 without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "ToolStats",
@@ -26027,9 +26027,9 @@
    "version": "1.20.1-3.1.1",
    "mc": "1.20.1",
    "source": "client",
-   "date": "2026-11-08",
+   "date": "2026-10-28",
    "status": "loads",
-   "notes": "Loads in ATM 9 server batch 1 without errors (no blocks, items or entities of its own)."
+   "notes": "Loads in 1.20.1 server batch 3 without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "Twilight Forest",

@@ -85,8 +85,24 @@ final class Mc1201Migration {
         if ((node.access & Opcodes.ACC_INTERFACE) == 0) {
             addBridges(node, h, t, c);
             addRecipeSerializerCodecs(node, c);
+            addTriggerCodec(node, c);
         }
         return c;
+    }
+
+    /** A class that implements {@code CriterionTrigger} itself (no {@code SimpleCriterionTrigger} base) lacks the {@code codec()} of 1.21.1: it reads the legacy instance. */
+    private static void addTriggerCodec(ClassNode node, Counts c) {
+        if (node.interfaces == null || !node.interfaces.contains("net/minecraft/advancements/CriterionTrigger")) return;
+        String desc = "()Lcom/mojang/serialization/Codec;";
+        if (declared(node, "codec", desc) != null) return;
+        MethodNode m = new MethodNode(Opcodes.ACC_PUBLIC, "codec", desc, null, null);
+        m.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+        m.instructions.add(new MethodInsnNode(Opcodes.INVOKESTATIC, Mc1201Tables.HELPER_PACKAGE + "CritCompat", "directCodec", "(Ljava/lang/Object;)Lcom/mojang/serialization/Codec;", false));
+        m.instructions.add(new InsnNode(Opcodes.ARETURN));
+        m.maxStack = 1;
+        m.maxLocals = 1;
+        node.methods.add(m);
+        c.bridges++;
     }
 
     /**

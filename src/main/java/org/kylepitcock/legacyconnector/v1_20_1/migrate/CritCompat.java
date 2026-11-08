@@ -146,4 +146,51 @@ public final class CritCompat {
     static JsonObject asObject(JsonElement e) {
         return e != null && e.isJsonObject() ? e.getAsJsonObject() : new JsonObject();
     }
+
+    /**
+     * {@code codec()} of a trigger that implements {@code CriterionTrigger} directly (1.20.1 had {@code createInstance(JsonObject, DeserializationContext)}
+     * and {@code getId()} on the interface): reads the conditions as JSON and calls the mod's method.
+     */
+    public static Codec directCodec(Object trigger) {
+        java.lang.reflect.Method create = null;
+        for (java.lang.reflect.Method m : trigger.getClass().getMethods())
+            if (m.getName().equals("createInstance") && m.getParameterCount() == 2 && JsonObject.class.isAssignableFrom(m.getParameterTypes()[0])
+                    && !m.isBridge() && !m.isSynthetic()) create = m;
+        final java.lang.reflect.Method createFinal = create;
+        String id;
+        try {
+            id = String.valueOf(trigger.getClass().getMethod("getId").invoke(trigger));
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            id = trigger.getClass().getName();
+        }
+        final String name = id;
+        return new Codec<Object>() {
+            @Override
+            public <U> com.mojang.serialization.DataResult<com.mojang.datafixers.util.Pair<Object, U>> decode(DynamicOps<U> ops, U input) {
+                if (createFinal == null) return com.mojang.serialization.DataResult.error(() -> "Trigger " + name + " has no createInstance");
+                DynamicOps<?> before = CURRENT.get();
+                CURRENT.set(ops);
+                try {
+                    JsonObject json = asObject(ops.convertTo(JsonOps.INSTANCE, input));
+                    Object instance = createFinal.invoke(trigger, json, new LegacyDeserializationContext(net.minecraft.resources.ResourceLocation.parse(name)));
+                    return com.mojang.serialization.DataResult.success(com.mojang.datafixers.util.Pair.of(instance, ops.empty()));
+                } catch (ReflectiveOperationException | RuntimeException e) {
+                    return com.mojang.serialization.DataResult.error(() -> "Cannot read the conditions of trigger " + name + ": " + e);
+                } finally {
+                    CURRENT.set(before);
+                    if (before == null) CURRENT.remove();
+                }
+            }
+
+            @Override
+            public <U> com.mojang.serialization.DataResult<U> encode(Object instance, DynamicOps<U> ops, U prefix) {
+                try {
+                    JsonObject json = (JsonObject) instance.getClass().getMethod("serializeToJson", LegacySerializationContext.class).invoke(instance, LegacySerializationContext.INSTANCE);
+                    return com.mojang.serialization.DataResult.success(JsonOps.INSTANCE.convertTo(ops, (JsonElement) json));
+                } catch (ReflectiveOperationException | RuntimeException e) {
+                    return com.mojang.serialization.DataResult.error(() -> "Cannot write the conditions of trigger " + name + ": " + e);
+                }
+            }
+        };
+    }
 }
