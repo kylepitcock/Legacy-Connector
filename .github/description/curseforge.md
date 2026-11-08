@@ -229,7 +229,7 @@ IDs tab-complete.
 
 ## Writing addons
 
-Other NeoForge mods can add modern support to legacy mods through a small public API: lifecycle events, access to legacy classes,
+Other NeoForge mods can add modern support to legacy mods (every supported version: 1.4.7, 1.5.2, 1.6.4, 1.7.10, 1.12.2 and 1.20.1) through a small public API: lifecycle events, access to legacy classes,
 modern/legacy stack and tile conversion, and NeoForge capabilities for legacy tile entities. Guide and example addon (modern aspects for Thaumcraft 4):
 [Addon API](https://github.com/kylepitcock/Legacy-Connector/blob/master/docs/wiki/Addon-API.md).
 
