@@ -297,6 +297,93 @@ final class Forge1211TargetMethodAliasesTest {
         assertTrue(verified.methodIssues().isEmpty());
     }
 
+    @Test
+    void aliasesOnlyTheExactHolderValueOwnerAndDescriptor() {
+        String owner = "net/minecraft/core/Holder";
+        String otherOwner = "net/minecraft/core/OtherHolder";
+        String targetName = "m_203334_";
+        String descriptor = "()Ljava/lang/Object;";
+        String wrongDescriptor = "()Ljava/lang/String;";
+        Forge1201ApiUsageAnalyzer.Analysis source = analysis(
+                List.of(
+                        new Forge1201ApiUsageAnalyzer.ApiMemberReference(owner, targetName, descriptor, 1),
+                        new Forge1201ApiUsageAnalyzer.ApiMemberReference(otherOwner, targetName, descriptor, 1),
+                        new Forge1201ApiUsageAnalyzer.ApiMemberReference(owner, targetName, wrongDescriptor, 1)),
+                List.of(
+                        callSite(owner, targetName, descriptor),
+                        callSite(otherOwner, targetName, descriptor),
+                        callSite(owner, targetName, wrongDescriptor)));
+
+        Forge1211TargetMethodAliases.Normalization result =
+                Forge1211TargetMethodAliases.normalize(source);
+
+        assertEquals(List.of("value", targetName, targetName),
+                result.analysis().methodReferences().stream()
+                        .map(Forge1201ApiUsageAnalyzer.ApiMemberReference::name)
+                        .toList());
+        assertEquals(List.of("value", targetName, targetName),
+                result.analysis().methodCallSites().stream()
+                        .map(Forge1201ApiUsageAnalyzer.ApiMethodCallSite::targetName)
+                        .toList());
+        assertEquals(1, result.methodAliases().size());
+        assertTrue(result.methodAliases().get(0).endsWith(" -> value" + descriptor));
+    }
+
+    @Test
+    void holderValueTargetAliasRunsBeforeSourceVersionSrgNormalization() throws Exception {
+        String owner = "net/minecraft/core/Holder";
+        String descriptor = "()Ljava/lang/Object;";
+        Path methodsCsv = temporaryDirectory.resolve("holder-methods.csv");
+        Path fieldsCsv = temporaryDirectory.resolve("holder-fields.csv");
+        Files.writeString(methodsCsv,
+                "searge,name,side,desc\n" + "m_203334_,SHOULD_NOT_APPLY,0,\n");
+        Files.writeString(fieldsCsv, "searge,name,side,desc\nf_12345_,SAMPLE_FIELD,0,\n");
+
+        Forge1201SrgNameMappings mappings = Forge1201SrgNameMappings.load(methodsCsv, fieldsCsv);
+        Forge1211TargetMethodAliases.Normalization aliases =
+                Forge1211TargetMethodAliases.normalize(analysis(
+                        List.of(new Forge1201ApiUsageAnalyzer.ApiMemberReference(
+                                owner, "m_203334_", descriptor, 1)),
+                        List.of(callSite(owner, "m_203334_", descriptor))));
+        Forge1201SrgNameMappings.Normalization normalized = mappings.normalize(aliases.analysis());
+
+        assertEquals("value", normalized.analysis().methodReferences().get(0).name());
+        assertEquals("value", normalized.analysis().methodCallSites().get(0).targetName());
+        assertTrue(normalized.unmappedMethods().isEmpty());
+        assertTrue(normalized.methodMappings().isEmpty());
+        assertEquals(1, aliases.methodAliases().size());
+    }
+
+    @Test
+    void aliasedHolderValueMethodMatchesTargetInterfaceStructurally() throws Exception {
+        String owner = "net/minecraft/core/Holder";
+        String descriptor = "()Ljava/lang/Object;";
+        Forge1211TargetMethodAliases.Normalization aliases =
+                Forge1211TargetMethodAliases.normalize(analysis(
+                        List.of(new Forge1201ApiUsageAnalyzer.ApiMemberReference(
+                                owner, "m_203334_", descriptor, 1)),
+                        List.of()));
+
+        ClassWriter writer = new ClassWriter(0);
+        writer.visit(Opcodes.V17, Opcodes.ACC_PUBLIC | Opcodes.ACC_INTERFACE | Opcodes.ACC_ABSTRACT,
+                owner, null, "java/lang/Object", null);
+        writer.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_ABSTRACT,
+                "value", descriptor, null, null);
+        writer.visitEnd();
+
+        byte[] targetInterface = writer.toByteArray();
+        Forge1201TargetApiVerifier.Result verified = Forge1201TargetApiVerifier.verify(
+                aliases.analysis(),
+                internalName -> owner.equals(internalName)
+                        ? new ByteArrayInputStream(targetInterface) : null);
+
+        assertEquals(1, verified.candidateClassCount());
+        assertEquals(1, verified.verifiedClassCount());
+        assertEquals(1, verified.uniqueMethodReferences());
+        assertEquals(1, verified.verifiedMethodReferences());
+        assertTrue(verified.methodIssues().isEmpty());
+    }
+
     private static void writeConstantAccessor(
             ClassWriter writer, String name, String descriptor, int constantOpcode, int returnOpcode) {
         var method = writer.visitMethod(Opcodes.ACC_PUBLIC, name, descriptor, null, null);
