@@ -189,7 +189,7 @@ Engine and launcher patches (FastCraft, Hodgepodge, NEID and other ID extenders)
 
 ## FAQ
 
-**What does it do?** It runs mods that were built for older Minecraft versions (Forge 1.4.7, 1.5.2, 1.6.4, 1.7.10, 1.12.2 and, experimentally, 1.20.1) on NeoForge 1.21.1, next to modern mods. Legacy jars are translated when the game loads; the original file is never modified.
+**What does it do?** It runs mods that were built for older Minecraft versions (Forge 1.4.7, 1.5.2, 1.6.4, 1.7.10, 1.12.2 and 1.20.1 (alpha)) on NeoForge 1.21.1, next to modern mods. Legacy jars are translated when the game loads; the original file is never modified.
 
 **How is it different from Retromod and Retrofit?** They are different tools. These summaries come from their own project pages, so check those for the details.
 - [Retromod](https://modrinth.com/mod/retromod) also rewrites old mods' bytecode when the game loads. It targets newer Minecraft versions across Fabric, Forge and NeoForge, and its pages recommend it for content, quality-of-life and library mods, not for mods that hook deep into the game (Create, Tinkers, Applied Energistics and similar).
@@ -198,7 +198,7 @@ Engine and launcher patches (FastCraft, Hodgepodge, NEID and other ID extenders)
 
 **Where do I put the mods?** Each legacy version has its own folder: `mods/1.7.10/`, `mods/1.12.2/`, `mods/1.6.4/`, `mods/1.5.2/`, `mods/1.4.7/`, `mods/1.20.1/`. Legacy jars and zips you drop into `mods/` itself are moved there for you on launch (`legacy.autoSortMods=false` turns that off).
 
-**Which versions work, and how well?** 1.7.10 and 1.12.2 are in beta, 1.6.4, 1.5.2 and 1.4.7 in alpha, and 1.20.1 is experimental. The [Status table](https://github.com/kylepitcock/Legacy-Connector/blob/master/README.md#status) has the details, and the [compatibility site](https://kylepitcock.github.io/Legacy-Connector/) lists results per mod.
+**Which versions work, and how well?** 1.7.10 and 1.12.2 are in beta, 1.6.4, 1.5.2 and 1.4.7 in alpha, and 1.20.1 in alpha. The [Status table](https://github.com/kylepitcock/Legacy-Connector/blob/master/README.md#status) has the details, and the [compatibility site](https://kylepitcock.github.io/Legacy-Connector/) lists results per mod.
 
 **Will mod X work?** Check the compatibility site. After a launch, `logs/legacyconnector-report.txt` lists each legacy jar, what was detected, and any references that could not be translated or are only stubbed. Mods that only patch the old engine (performance patches, id extenders) are skipped on purpose, and coremods that patch Minecraft's own classes are not supported.
 
@@ -240,7 +240,7 @@ modern/legacy stack and tile conversion, and NeoForge capabilities for legacy ti
 
 ## Roadmap
 
-✅ 1.7.10 → ✅ **1.12.2** (beta) → **1.6.4** (alpha) → **1.5.2** (alpha) → **1.4.7** (alpha) → **1.20.1** (experimental, started) → **1.19.2** → **1.18.2** → **1.16.5** → **1.2.5**
+✅ 1.7.10 → ✅ **1.12.2** (beta) → **1.6.4** (alpha) → **1.5.2** (alpha) → **1.4.7** (alpha) → **1.20.1** (alpha) → **1.19.2** → **1.18.2** → **1.16.5** → **1.2.5**
 
 ## Star history
 
