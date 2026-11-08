@@ -74,6 +74,31 @@ public interface IForgeRegistry<V> extends Iterable<V> {
 
     void register(String key, V value);
 
+    @FunctionalInterface
+    interface AddCallback<V> {
+        void onAdd(IForgeRegistryInternal<V> owner, RegistryManager stage, int id, ResourceKey<V> key, V obj, V oldObj);
+    }
+
+    @FunctionalInterface
+    interface ClearCallback<V> {
+        void onClear(IForgeRegistryInternal<V> owner, RegistryManager stage);
+    }
+
+    @FunctionalInterface
+    interface BakeCallback<V> {
+        void onBake(IForgeRegistryInternal<V> owner, RegistryManager stage);
+    }
+
+    @FunctionalInterface
+    interface CreateCallback<V> {
+        void onCreate(IForgeRegistryInternal<V> owner, RegistryManager stage);
+    }
+
+    @FunctionalInterface
+    interface ValidateCallback<V> {
+        void onValidate(IForgeRegistryInternal<V> owner, RegistryManager stage, int id, ResourceLocation key, V obj);
+    }
+
     /** The vanilla registry behind this handle (not part of Forge's API). */
     Registry<V> mcc$registry();
 }

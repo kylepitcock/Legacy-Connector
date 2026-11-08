@@ -216,6 +216,37 @@ public final class ForgeApi1201 {
         return registry == null ? null : wrap(registry);
     }
 
+    /** {@code DeferredRegister.makeRegistry(() -> new RegistryBuilder<T>()...)}: NeoForge's builder is filled from the Forge one when the registry is created. */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static Supplier makeRegistry(DeferredRegister register, Supplier builder) {
+        net.minecraft.core.Registry reg = register.makeRegistry(b -> {
+            legacyconnector.v1_20_1.net.minecraftforge.registries.RegistryBuilder fb = (legacyconnector.v1_20_1.net.minecraftforge.registries.RegistryBuilder) builder.get();
+            net.neoforged.neoforge.registries.RegistryBuilder nb = fb.mcc$toNeo(register.getRegistryKey());
+            copy(nb, (net.neoforged.neoforge.registries.RegistryBuilder) b);
+        });
+        return () -> new ForgeRegistryWrapper(reg);
+    }
+
+    /** Copies the settings of one NeoForge builder onto the one NeoForge supplied (plain value fields; the key stays). */
+    private static void copy(net.neoforged.neoforge.registries.RegistryBuilder from, net.neoforged.neoforge.registries.RegistryBuilder to) {
+        for (var f : net.neoforged.neoforge.registries.RegistryBuilder.class.getDeclaredFields()) {
+            if (java.lang.reflect.Modifier.isStatic(f.getModifiers()) || java.lang.reflect.Modifier.isFinal(f.getModifiers())) continue;
+            try {
+                f.setAccessible(true);
+                f.set(to, f.get(from));
+            } catch (ReflectiveOperationException | RuntimeException e) {
+                // an unreadable field keeps NeoForge's value
+            }
+        }
+    }
+
+    /** {@code NewRegistryEvent.create(forgeBuilder)}. */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static Supplier newRegistryCreate(net.neoforged.neoforge.registries.NewRegistryEvent event, legacyconnector.v1_20_1.net.minecraftforge.registries.RegistryBuilder builder) {
+        net.minecraft.core.Registry reg = event.create(builder.mcc$toNeo(net.minecraft.resources.ResourceKey.createRegistryKey(builder.mcc$name())));
+        return () -> new ForgeRegistryWrapper(reg);
+    }
+
     /** A view of a vanilla registry as Forge's handle. */
     @SuppressWarnings({"unchecked", "rawtypes"})
     public static IForgeRegistry wrap(Registry<?> registry) {
