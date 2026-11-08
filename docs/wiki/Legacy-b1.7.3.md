@@ -2,7 +2,7 @@
 
 Status and design of Minecraft Beta 1.7.3 support. Back to [Home](Home.md). Started 2026-11-06.
 
-**Status: alpha, server-tested (blocks, items, recipes, textures, block behaviour, GUIs; Mo' Creatures and MoreCreeps tested in headless server runs, no graphical client test yet).** Beta 1.7.3 ModLoader / ModLoaderMP / Forge 1.0.x jars are
+**Status: alpha, server-tested (blocks, items, recipes, textures, block behaviour, GUIs; Mo' Creatures and MoreCreeps also have isolated offscreen client lineups).** Beta 1.7.3 ModLoader / ModLoaderMP / Forge 1.0.x jars are
 detected, deobfuscated and linked; the mods are constructed as ModLoader did, their blocks, items and recipes become modern content with
 their own textures, one creative tab per mod, and the blocks' own code runs (placing, breaking, neighbour updates, ticks, right and left
 click, redstone) with their tile entities (saved, loaded, ticked) and their GUIs (machines, furnaces, crafting tables as modern menus).
@@ -557,6 +557,30 @@ section palette. The pass operates without a viewer rather than depending on ren
 helper-interface dispatch are not inferred by the detector.
 [The army and Ogre validation snapshot](../data/b173-army-ogre-validation-2026-11-08.json) records these proofs and the reproduced
 pre-fix failures. Live client rendering/interaction remains to be verified.
+
+Vanilla door and stair metadata now translates through the Beta World view in both directions. Both Beta door halves carry
+facing and open bits; later upper-half hinge metadata is not used. The id-only placement API recognizes an upper door placed
+above its lower partner, so the original place-id-then-metadata sequence survives native neighbor updates. Existing hinge and
+power properties survive metadata changes. The actual Lawyer jail regression exercises live neighbor updates, wooden and iron
+door pairs, native opening/closing, and every step of the original eighteen-step spiral. Native placement rules are unchanged.
+
+Tracked legacy texture paths are canonicalized when restored from packets or saves, preserving original renderers that compare
+paths with Java string literals. The actual Horse renderer now retains its saddle/chest passes after a native tracking packet.
+Conditional renderer fixtures also cover Werewolf forms, Ogre decorations, aquatic skins/growth, KittyBed contents and LitterBox
+UV changes, More Creeps variants and tracked poses, GooGoat blend passes, and all 233 original More Creeps PNG resources.
+
+Immediate block/item sprite quads use the native stitched atlas when their transformed UVs remain within the sprite, allowing
+animated sprites such as Hotdog fire to sample the native animation frame. The original texture matrix is applied once and
+restored after drawing. Custom textures, missing sprites and wrapping UVs retain their original standalone texture binding.
+Portable tests exercise the native quad backend's atlas coordinates, matrix restoration and wrapping fallback.
+
+Isolated offscreen clients enumerate all 28 Mo' Creatures and 53 More Creeps registered entity types in eight lineup pictures.
+Controlled scenes cover Horse equipment, Werewolf forms, Ogre and furniture, the actual Lawyer's wooden/iron doors and spiral,
+and Hotdog fire sampled from the native 32-frame sprite. Both Normal-difficulty integrated clients repeat the original-mod
+regressions successfully. These are bounded visual checks, with no Sodium/Iris coverage; they do not establish complete mod
+compatibility. [The jail and client rendering snapshot](../data/b173-jail-client-render-validation-2026-11-08.json) records
+the source hashes, 477 passing tests, reproduced failures and reviewed captures. Existing malformed structures are not migrated.
+
 A separate API gap remains in native squid views: their Beta SquidEntity
 and WaterCreatureEntity identity is not yet represented, although the cap census handles native WaterAnimal ancestry directly.
 Actual aquatic prey bytecode does not establish a broken Mo' Creatures predation path from that view gap.
@@ -888,5 +912,6 @@ non-cow mob, was misleading (it is gone; `AnimalsB173` admits or reports every o
 `getOverlayColor` (accepted, not drawn: the fuse flash is missing) nor the no-op lightning/spawn callbacks. All 9 species now host.
 
 Real client check (superflat test area, performance mods on, mobs summoned and the tick frozen for the shot): `docs/screenshots/b1.7.3/mobs-*.jpg`.
-Elemental Creepers and Mo' Creatures animals render with their own models and textures; More Creeps mostly does, with at least one species
-showing a missing-texture model (to investigate). The Portal Gun audio self-test now skips when the mod's external sound files are not installed.
+Elemental Creepers and Mo' Creatures animals render with their own models and textures. Follow-up isolated More Creeps lineups
+and exact archive-byte checks found the expected textures, including intentionally bright BubbleScum artwork. The Portal Gun
+audio self-test skips when the mod's external sound files are not installed.

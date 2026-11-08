@@ -1,0 +1,173 @@
+{
+  "snapshot_date": "2026-11-08",
+  "scope": "Generic Beta door/stair state translation, tracked texture identity and native animated sprite quads",
+  "version": "0.4.12",
+  "tested_working_tree_base_revision": "50d94ebfc1e7972a347b0886e96f504b220181d7",
+  "upstream_master_revision": "03543a58fa40bdbc02bf13bc81647d001b33ba5b",
+  "source_sha256": {
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/entity/LivingEntity.java": "e43333ff168e45a834653c1142e0469444b1198eec0b936e188af854d2ad0499",
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/world/World.java": "a451db9b70aa95f497f4462db19e4357d21770940e64911ed8718466e7d1b947",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/BlocksB173.java": "ec30b39fb52499caf0566cc17e7c36f92d7459d8bce26d4721f0f19bba30c452",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/MobSelfTestB173.java": "2b5d6ade5c71867576217a864c38a80378a3b406199cd68cc5cfd63eba02e3ca",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/client/NativeRendererExtrasB173.java": "0064a39cc6eea6419073f7a067232004126be33d8d96b2ad613de6b7fdc127c4",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/MoCreaturesRenderCoverageSelfTestB173.java": "625a707873901f4bb73acbda1594dc2bb3107652605b5a7307c824592acc864f",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/MoreCreepsJailSelfTestB173.java": "768069ca143826d27c13bd083088dc7e948e5c4ef74a6eeacf697f116b4ddf0c",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/MoreCreepsRenderCoverageSelfTestB173.java": "ff175e5def3e24f51f29546873d5910e550b753916754b83a9ddf6ea494c25ac",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/VanillaBlockStatesB173.java": "28c1255b68a51cef60f2796903105356318fe31dbe219a9d63201f728f354111",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/client/SpriteQuadBindingB173.java": "c9915868f7e0f00ae97bba16da8b04379550521119058136d07bff4c0b0d500c",
+    "src/test/java/org/kylepitcock/legacyconnector/vb1_7_3/TextureIdentityB173Test.java": "367d44e5ae5e1fca3fd93ef6c3503008de7d7c74b790ae4d40d216d619fa2f21",
+    "src/test/java/org/kylepitcock/legacyconnector/vb1_7_3/VanillaBlockStatesB173Test.java": "6670eb5f19e35101c38d7ef3e89ccd32cf8069f73f7d11f01d7529482d506a0f",
+    "src/test/java/org/kylepitcock/legacyconnector/vb1_7_3/client/SpriteQuadBindingB173Test.java": "6706f4baf6af068184190b59825fb30a81fb997dda5a12e3fde9880910bfc6cd"
+  },
+  "tests": {
+    "runtime": {
+      "tests": 212,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "loader": {
+      "tests": 260,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "actual_mod_opt_in": {
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "fixtures": {
+    "mocreatures": {
+      "status": "headless-smoke-passed",
+      "source_archive": "DrZharks_MoCreatures_Mod_v2.12.2_b1.7.3.zip!mods/MoCreatures.zip",
+      "payload_sha256": "24f88dca6e39890b09c8403879eebeba17bd39d7db27197d3211dccd041f672a",
+      "game_directory": "run-b173-single/mocreatures-neutralbeta-placement-classic-flat-2-20261108-110854-aa1dc4",
+      "resources_verified": 168,
+      "test_log_sha256": "df2624ec997f8770d718a6c870d6d3af0dc8370b5a9917236c12cbe292ed1e07"
+    },
+    "morecreeps": {
+      "status": "headless-smoke-passed",
+      "source_archive": "MoreCreepsv2.12_b173.zip!PUT CONTENTS INTO MINECRAFT FOLDER/mods/MoreCreepsAndWeirdos.zip",
+      "payload_sha256": "d76ab91b7a8d6d5d32301e49448c671f3adbf4d91c12e9450af8f2513427c464",
+      "game_directory": "run-b173-single/morecreeps-neutralbeta-placement-classic-flat-2-20261108-110855-405a41",
+      "resources_verified": 759,
+      "test_log_sha256": "5370ea93b0d86fdef42f8d34a87d4227acd2dac049c1c6f20802a53686c4e94c"
+    }
+  },
+  "actual_callback_proofs": {
+    "mocreatures": [
+      "[11:12:10] [Server thread/INFO] [LegacyConnector/B173MocRenderCoverageTest/]: B1.7.3 MOC RENDER COVERAGE TEST: werewolf forms and hunch passed",
+      "[11:12:10] [Server thread/INFO] [LegacyConnector/B173MocRenderCoverageTest/]: B1.7.3 MOC RENDER COVERAGE TEST: ogre decoration pass passed",
+      "[11:12:10] [Server thread/INFO] [LegacyConnector/B173MocRenderCoverageTest/]: B1.7.3 MOC RENDER COVERAGE TEST: horse saddle chest and wings passed",
+      "[11:12:10] [Server thread/INFO] [LegacyConnector/B173MocRenderCoverageTest/]: B1.7.3 MOC RENDER COVERAGE TEST: water creature skins and growth passed",
+      "[11:12:10] [Server thread/INFO] [LegacyConnector/B173MocRenderCoverageTest/]: B1.7.3 MOC RENDER COVERAGE TEST: furniture contents and used litter passed",
+      "[11:12:10] [Server thread/INFO] [LegacyConnector/B173MocRenderCoverageTest/]: B1.7.3 MOC RENDER COVERAGE TEST: all 5 original-renderer CPU proofs passed",
+      "[11:12:10] [Server thread/INFO] [LegacyConnector/B173EcologyTest/]: B1.7.3 ECOLOGY TEST passed: hosted-only generation filter, unchanged native population entries, native CHUNK_GENERATION position checks observed=0, native Cow/Pig persistence and original Bunny policies when present; GenerateSurface is covered separately by existing worldgen smoke",
+      "[11:12:37] [Server thread/INFO] [LegacyConnector/B173BetaScheduleTest/]: B1.7.3 BETA SCHEDULING TEST passed: ticks=500 opportunities={MONSTER=500, CREATURE=500, WATER_CREATURE=500} adjacent=[MONSTER, CREATURE, WATER_CREATURE] actualOriginalPositionChecks={mocreatures:bigcat=5, mocreatures:bird=6, mocreatures:boar=4, mocreatures:bunny=4, mocreatures:caveogre=766, mocreatures:deer=8, mocreatures:duck=13, mocreatures:fireogre=437, mocreatures:flamewraith=514, mocreatures:horse=8, mocreatures:kitty=4, mocreatures:ogre=1488, mocreatures:rat=1881, mocreatures:werewolf=1531, mocreatures:wildwolf=1748, mocreatures:wraith=1057} confirmedNativeInsertions={mocreatures:bigcat=4, mocreatures:bird=6, mocreatures:boar=2, mocreatures:deer=8, mocreatures:duck=9, mocreatures:horse=6, mocreatures:kitty=4} failures=[]; insertion abundance is not asserted"
+    ],
+    "morecreeps": [
+      "[11:11:06] [Server thread/INFO] [LegacyConnector/B173CreepsRenderCoverageTest/]: B1.7.3 CREEPS RENDER COVERAGE TEST: 233 original PNG assets preserved",
+      "[11:11:06] [Server thread/INFO] [LegacyConnector/B173CreepsRenderCoverageTest/]: B1.7.3 CREEPS RENDER COVERAGE TEST: complete archive PNG pack coverage passed",
+      "[11:11:06] [Server thread/INFO] [LegacyConnector/B173CreepsRenderCoverageTest/]: B1.7.3 CREEPS RENDER COVERAGE TEST: concrete conditional texture families passed",
+      "[11:11:06] [Server thread/INFO] [LegacyConnector/B173CreepsRenderCoverageTest/]: B1.7.3 CREEPS RENDER COVERAGE TEST: ManDog flight and BigBaby hammer tracked poses passed",
+      "[11:11:06] [Server thread/INFO] [LegacyConnector/B173CreepsRenderCoverageTest/]: B1.7.3 CREEPS RENDER COVERAGE TEST: original GooGoat blend passes passed",
+      "[11:11:06] [Server thread/INFO] [LegacyConnector/B173CreepsRenderCoverageTest/]: B1.7.3 CREEPS RENDER COVERAGE TEST: all four original CPU proofs passed; no live GPU claim",
+      "[11:11:06] [Server thread/INFO] [LegacyConnector/B173JailTest/]: B1.7.3 CREEPS JAIL TEST: actual live-neighbor door halves, facing/open metadata, native door interaction and all eighteen spiral stairs passed",
+      "[11:11:07] [Server thread/INFO] [LegacyConnector/B173EcologyTest/]: B1.7.3 ECOLOGY TEST passed: hosted-only generation filter, unchanged native population entries, native CHUNK_GENERATION position checks observed=0, native Cow/Pig persistence and original Bunny policies when present; GenerateSurface is covered separately by existing worldgen smoke",
+      "[11:11:33] [Server thread/INFO] [LegacyConnector/B173BetaScheduleTest/]: B1.7.3 BETA SCHEDULING TEST passed: ticks=500 opportunities={CREATURE=500} adjacent=[CREATURE] actualOriginalPositionChecks={morecreepsandweirdos:armyguy=36, morecreepsandweirdos:babymummy=13, morecreepsandweirdos:blorp=29, morecreepsandweirdos:bubblescum=36, morecreepsandweirdos:cameljockey=24, morecreepsandweirdos:desertlizard=12, morecreepsandweirdos:digbug=17, morecreepsandweirdos:floob=12, morecreepsandweirdos:googoat=30, morecreepsandweirdos:hippo=21, morecreepsandweirdos:horsehead=1, morecreepsandweirdos:hotdog=12, morecreepsandweirdos:invisibleman=12, morecreepsandweirdos:kid=1, morecreepsandweirdos:lawyerfromhell=12, morecreepsandweirdos:mandog=13, morecreepsandweirdos:preacher=24, morecreepsandweirdos:rocketgiraffe=24, morecreepsandweirdos:rockmonster=1, morecreepsandweirdos:snowdevil=60, morecreepsandweirdos:thief=2, morecreepsandweirdos:zebra=12} confirmedNativeInsertions={morecreepsandweirdos:armyguy=3, morecreepsandweirdos:blorp=3, morecreepsandweirdos:bubblescum=10, morecreepsandweirdos:digbug=2, morecreepsandweirdos:floob=2, morecreepsandweirdos:googoat=3, morecreepsandweirdos:hippo=8, morecreepsandweirdos:horsehead=1, morecreepsandweirdos:kid=1, morecreepsandweirdos:lawyerfromhell=2, morecreepsandweirdos:mandog=1, morecreepsandweirdos:rockmonster=1, morecreepsandweirdos:thief=1, morecreepsandweirdos:zebra=3} failures=[]; insertion abundance is not asserted"
+    ]
+  },
+  "reproduced_baseline": {
+    "mocreatures": {
+      "game_directory": "run-b173-single/mocreatures-neutralbeta-placement-classic-flat-2-20261108-110356-ec56ca",
+      "test_log_sha256": "13c14234095a899b23529d540ddaa789eb0596f095d5bfb298f19aca580d66bd",
+      "failures": [
+        "[11:06:48] [Server thread/ERROR] [LegacyConnector/B173MocRenderCoverageTest/]: B1.7.3 MOC RENDER COVERAGE TEST failed: horse saddle chest and wings",
+        "java.lang.IllegalStateException: bare horse native packet model texture/color/shape",
+        "[11:06:48] [Server thread/ERROR] [LegacyConnector/B173MocRenderCoverageTest/]: B1.7.3 MOC RENDER COVERAGE TEST failed: furniture contents and used litter",
+        "[11:06:48] [Server thread/ERROR] [LegacyConnector/B173MocRenderCoverageTest/]: B1.7.3 MOC RENDER COVERAGE TEST: 2 failures: [horse saddle chest and wings: java.lang.IllegalStateException: bare horse native packet model texture/color/shape, furniture contents and used litter: java.lang.IllegalStateException: original used litter replaces clean fill with thicker waste geometry]"
+      ],
+      "fixture_correction": "Used litter changes UVs, not cuboid size; capture now verifies UVs and packet parity."
+    },
+    "morecreeps": {
+      "game_directory": "run-b173-single/morecreeps-neutralbeta-placement-classic-flat-2-20261108-110357-46c313",
+      "test_log_sha256": "3c5e9a9cc9cf28de693cb7ed48cf9cb279306d55e6a4dc00350973f260584269",
+      "failures": [
+        "[11:08:00] [Server thread/ERROR] [LegacyConnector/B173JailTest/]: B1.7.3 CREEPS JAIL TEST failed",
+        "java.lang.IllegalStateException: actual jail keeps both native door blocks: BlockPos{x=11, y=124, z=16}"
+      ],
+      "fixture_correction": null
+    }
+  },
+  "bundle_sha256": "6c8cb87d3794deda5f8607689220b511078881626800dc856fb62954f8e1e13c",
+  "graphical_client": {
+    "mode": "Real Minecraft/NeoForge client, isolated WSL Xvfb :99, Mesa llvmpipe OpenGL 4.5; no desktop window",
+    "version": "0.4.12",
+    "performance_mods": [],
+    "limitations": [
+      "run-perfmods was absent; Sodium/Iris interactions were not tested.",
+      "Lineups include original tick effects and moving entities; screenshots are bounded smoke checks, not exhaustive visual parity."
+    ],
+    "setup_notes": [
+      "Stale screenshot launch files omitted the compiled game artifact, current loader and required TerraBlender dependency. Corrected the ignored launcher and used fresh mod caches.",
+      "An initial MoCreatures control world was Peaceful, violating gameplay-fixture difficulty assumptions. Retested on the Normal-difficulty disposable world; final integrated regressions passed."
+    ],
+    "mods": {
+      "mocreatures": {
+        "status": "offscreen-client-passed",
+        "game_directory": "run-b173-single/mocreatures-neutralclient-render-current-gpu-20261108-111920-368e0c",
+        "gallery_registered_types_enumerated": 28,
+        "gallery_log_sha256": "01f995e2f4738781cc341060e6dbc3771452ae464fbc2d81ba86a31b443d4db9",
+        "control_log_sha256": "85e819377ac53e2b97ff692c9613ad02ab8a0070585b866defe64d42cd17bea6",
+        "original_callback_proofs": [
+          "[11:31:45] [Server thread/INFO] [LegacyConnector/B173MocRenderCoverageTest/]: B1.7.3 MOC RENDER COVERAGE TEST: all 5 original-renderer CPU proofs passed",
+          "[11:32:11] [Server thread/INFO] [LegacyConnector/DevScript/]: MOC CLIENT SCENE READY: 12 actual original entities; overview camera 0 155 21 yaw180 pitch12. Horse camera -10 153 10 yaw180 pitch10. Forms camera7 153 10 yaw180 pitch10. Furniture camera-4 153 3 yaw180 pitch20."
+        ],
+        "reviewed_images": {
+          "run-b173-single/mocreatures-neutralclient-render-current-gpu-20261108-111920-368e0c/control/out/moc-beds.png": "bb95b2083921856053b9f16c2e0fce2f34182d5d16a138ee95955a2fc80acb5e",
+          "run-b173-single/mocreatures-neutralclient-render-current-gpu-20261108-111920-368e0c/control/out/moc-horses.png": "08f868da8df9051f7b0f60ed94cd5fcbde22004aaf7c5c02a1b37b2d061bdbe9",
+          "run-b173-single/mocreatures-neutralclient-render-current-gpu-20261108-111920-368e0c/control/out/moc-litter.png": "4a55b419a227cc06bf7678e115fc24e90f3bd4e1b4ba927388adfd59a1de3dd7",
+          "run-b173-single/mocreatures-neutralclient-render-current-gpu-20261108-111920-368e0c/control/out/moc-ogre.png": "5d8d57506d692c14279dd34dd8241442bb35ed869a5f44cdd9dbe817170c71bf",
+          "run-b173-single/mocreatures-neutralclient-render-current-gpu-20261108-111920-368e0c/control/out/moc-werewolf-forms.png": "ebc5fbeffec154449961c985b01d956eef887ed4c0c03d61bec6a8b39c935b35",
+          "run-b173-single/mocreatures-neutralclient-render-current-gpu-20261108-111920-368e0c/shots/entities_mocreatures_0.png": "1abf067a945e7feb29daac4acf728e8985b760b80c520e68c99559ac5ee862e5",
+          "run-b173-single/mocreatures-neutralclient-render-current-gpu-20261108-111920-368e0c/shots/entities_mocreatures_1.png": "0e3624780b62455f822fdb92bd5c7e61258f58589b18f80cafd35f904e6deebf",
+          "run-b173-single/mocreatures-neutralclient-render-current-gpu-20261108-111920-368e0c/shots/entities_mocreatures_2.png": "d633bd043dc7658e8bd1c283780b43c8e4cc8bcf8526644fda0a48319215a1e4"
+        }
+      },
+      "morecreeps": {
+        "status": "offscreen-client-passed",
+        "game_directory": "run-b173-single/morecreeps-neutralclient-render-current-gpu-20261108-111920-5ba7d1",
+        "gallery_registered_types_enumerated": 53,
+        "gallery_log_sha256": "ccee7de8f59c7fb7e64230f15b87ac8a913bba8a2a34c5ef06d21da5bb4cd6fe",
+        "control_log_sha256": "4281bb0233191fe6b6fc175066ce89eddad0d736351f25c3f5f6caef5c1bf9a5",
+        "original_callback_proofs": [
+          "[11:34:58] [Server thread/INFO] [LegacyConnector/B173CreepsRenderCoverageTest/]: B1.7.3 CREEPS RENDER COVERAGE TEST: all four original CPU proofs passed; no live GPU claim",
+          "[11:34:58] [Server thread/INFO] [LegacyConnector/B173JailTest/]: B1.7.3 CREEPS JAIL TEST: actual live-neighbor door halves, facing/open metadata, native door interaction and all eighteen spiral stairs passed",
+          "[11:35:26] [Server thread/INFO] [LegacyConnector/DevScript/]: B173SCENES READY: actual Hotdog fire overlay at0,150,0; actual Lawyer jail origin20,150,0; wooddoor23,150,8; irondoor33,150,7; spiral35..36,150..167,7..8. Camera hints are in build/morecreeps-client-scenes.js"
+        ],
+        "reviewed_images": {
+          "run-b173-single/morecreeps-neutralclient-render-current-gpu-20261108-111920-5ba7d1/control/out/hotdog-fire-a.png": "e8649e0137df701b57d92cbae769c070180dc4831f62b0cfc95dd2b87f91a17b",
+          "run-b173-single/morecreeps-neutralclient-render-current-gpu-20261108-111920-5ba7d1/control/out/hotdog-fire-b.png": "56b3a4db2a8a8bb2d89ef4606ff9dab3ecfd7fa9f0bb032f7e6701371b4ced2a",
+          "run-b173-single/morecreeps-neutralclient-render-current-gpu-20261108-111920-5ba7d1/control/out/lawyer-iron-door.png": "471dd37af86e4a47dfddb053f2f3a7238a7027a9d40a17fd443acb6e0fb0a455",
+          "run-b173-single/morecreeps-neutralclient-render-current-gpu-20261108-111920-5ba7d1/control/out/lawyer-spiral.png": "b8000192057b6f6280f5d344545c9570e84e88685b3df6c705a3d03e1bbe8d17",
+          "run-b173-single/morecreeps-neutralclient-render-current-gpu-20261108-111920-5ba7d1/control/out/lawyer-wood-door.png": "0cc0477efd22882011bf2ad8f0589ea458f5df4f616ca31a89df08f4f5fc68ac",
+          "run-b173-single/morecreeps-neutralclient-render-current-gpu-20261108-111920-5ba7d1/shots/entities_morecreepsandweirdos_0.png": "88d7ce02913956e597b6d0b0dbd04e6ba96c453552873bf7918ed623f7b4d83b",
+          "run-b173-single/morecreeps-neutralclient-render-current-gpu-20261108-111920-5ba7d1/shots/entities_morecreepsandweirdos_1.png": "e91cc5a3b739ee20469d80d4dc5ade4d2857a8f66a46ae03a52f975b46d3212e",
+          "run-b173-single/morecreeps-neutralclient-render-current-gpu-20261108-111920-5ba7d1/shots/entities_morecreepsandweirdos_2.png": "5b5192de64a0ff43857be2748e263eee8fab7610aebe408959a29e2ea456355f",
+          "run-b173-single/morecreeps-neutralclient-render-current-gpu-20261108-111920-5ba7d1/shots/entities_morecreepsandweirdos_3.png": "db183c263fcf64a540f31e8b3179df22a3504b5430d75a841ad93cbabf5949a5",
+          "run-b173-single/morecreeps-neutralclient-render-current-gpu-20261108-111920-5ba7d1/shots/entities_morecreepsandweirdos_4.png": "e1d12dae4edba86195591d244e7ee235f0f2d4b24f7c792cb3e6719c07821c7e"
+        },
+        "native_fire_unique_frames": 32,
+        "fire_capture_image_data_changed": true
+      }
+    }
+  },
+  "limitations": [
+    "Controlled callbacks, tracking packets and staged visual scenes do not establish complete mod compatibility.",
+    "Native vanilla and modern mob spawning, despawn and placement rules remain unchanged.",
+    "Existing malformed door blocks are not migrated automatically; the construction fix applies to new legacy API placements."
+  ]
+}

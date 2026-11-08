@@ -34,15 +34,7 @@ final class NativeRendererExtrasB173 {
                 }
                 @Override public void quad(java.util.List<RendererContextB173.Vertex> vertices,Matrix4f transform,
                         ResourceLocation texture,RendererContextB173.Style style){
-                    if(vertices.size()!=4)throw new IllegalArgumentException("Beta quad needs four vertices");
-                    applyStyle(style);RenderContext.bindTexture(texture);pose.pushPose();
-                    try {
-                        pose.mulPose(transform);double[][] corners=new double[4][8];
-                        for(int i=0;i<4;i++){
-                            var vertex=vertices.get(i);corners[i]=new double[]{vertex.x(),vertex.y(),vertex.z(),vertex.u(),vertex.v(),vertex.argb(),RenderContext.vertexLight(),1};
-                        }
-                        var normal=vertices.getFirst();RenderContext.quad(corners,normal.nx(),normal.ny(),normal.nz());
-                    }finally{pose.popPose();}
+                    drawQuad(vertices,transform,texture,style,pose,NativeRendererExtrasB173::spriteBounds);
                 }
                 @Override public int width(String text){return Minecraft.getInstance().font.width(text);}
                 @Override public legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity camera(){
@@ -52,6 +44,30 @@ final class NativeRendererExtrasB173 {
                 @Override public float yaw(){return Minecraft.getInstance().gameRenderer.getMainCamera().getYRot();}
                 @Override public float pitch(){return Minecraft.getInstance().gameRenderer.getMainCamera().getXRot();}
             };
+    }
+    private static SpriteQuadBindingB173.Bounds spriteBounds(ResourceLocation id){
+        var sprite=Minecraft.getInstance().getTextureAtlas(net.minecraft.client.renderer.texture.TextureAtlas.LOCATION_BLOCKS).apply(id);
+        if(!sprite.contents().name().equals(id))return null;
+        return new SpriteQuadBindingB173.Bounds(sprite.getU0(),sprite.getU1(),sprite.getV0(),sprite.getV1());
+    }
+    static void drawQuad(java.util.List<RendererContextB173.Vertex> vertices,Matrix4f transform,ResourceLocation texture,
+            RendererContextB173.Style style,PoseStack pose,java.util.function.Function<ResourceLocation,SpriteQuadBindingB173.Bounds> sprites){
+        if(vertices.size()!=4)throw new IllegalArgumentException("Beta quad needs four vertices");
+        // Atlas cells cannot reproduce standalone texture wrapping outside the local sprite.
+        boolean atlasSafe=style.texture2d()&&SpriteQuadBindingB173.normalized(vertices,style.textureMatrix());
+        var binding=SpriteQuadBindingB173.resolve(texture,style.textureMatrix(),atlasSafe,sprites);
+        applyStyle(style);RenderContext.bindTexture(binding.texture());
+        RenderContext.matrixMode(5890);RenderContext.loadMatrix(binding.matrix());RenderContext.matrixMode(5888);
+        pose.pushPose();
+        try{
+            pose.mulPose(transform);double[][] corners=new double[4][8];
+            for(int i=0;i<4;i++){
+                var vertex=vertices.get(i);corners[i]=new double[]{vertex.x(),vertex.y(),vertex.z(),vertex.u(),vertex.v(),vertex.argb(),RenderContext.vertexLight(),1};
+            }
+            var normal=vertices.getFirst();RenderContext.quad(corners,normal.nx(),normal.ny(),normal.nz());
+        }finally{
+            pose.popPose();RenderContext.matrixMode(5890);RenderContext.loadMatrix(style.textureMatrix());RenderContext.matrixMode(5888);
+        }
     }
     static void applyStyle(RendererContextB173.Style style){
         RenderContext.setTexture2d(style.texture2d());RenderContext.setLighting(style.lighting());
