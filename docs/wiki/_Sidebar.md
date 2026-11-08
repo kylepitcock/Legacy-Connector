@@ -17,3 +17,4 @@
 - [Gameplay test log](Gameplay-Test-Log.md)
 - [Addon API](Addon-API.md)
 - [Legacy 1.20.1 estimate](Legacy-1.20.1-Estimate.md)
+- [Legacy b1.7.3](Legacy-b1.7.3.md)

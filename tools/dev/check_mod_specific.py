@@ -9,6 +9,7 @@ the designated places, which are not counted:
                                                    compatibility code (labelled, isolated, easy to remove)
   - legacyconnector/v*/<third-party package>/      the shim of another mod's API (codechicken, cofh, baubles, mcp, thaumcraft, ...): bridging
                                                    an outdated library to its modern replacement is the design, not a mod hack
+  - vb1_7_3/*SelfTestB173.java                     development-only actual-mod regression fixtures (explicitly authorized for Beta)
 Anywhere else a mention is counted per file and compared with tools/dev/mod-specific-baseline.txt, which records the existing ones. The
 check fails when a file is new in the baseline or has more mentions than recorded; it only reports when a file has fewer (run with
 --update to lower the baseline, which you should: the numbers are meant to go down). To add mod-specific code, put it under compat/.
@@ -24,6 +25,8 @@ GAME_PACKAGES = {"net", "cpw", "org", "com", "java", "javax", "paulscode", "io",
 
 
 def allowed(rel):
+    if re.fullmatch(r"src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/[^/]*SelfTestB173\.java", rel):
+        return True  # Actual-mod fixtures run only with the development self-test flag; production bridges remain checked.
     if "/compat/" in "/" + rel:   # org/kylepitcock/legacyconnector/compat/, v1_7_10/compat/chromaticraft/, mixin/compat/, ...
         return True
     m = re.match(r"src/main/java/legacyconnector/v[0-9_]+/([^/]+)/", rel)
@@ -91,4 +94,5 @@ def main():
     print(f"ok: {sum(found.values())} baseline mentions in {len(found)} files, none new")
 
 
-main()
+if __name__ == "__main__":
+    main()

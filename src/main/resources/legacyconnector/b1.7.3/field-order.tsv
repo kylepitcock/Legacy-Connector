@@ -1,0 +1,496 @@
+# b1.7.3 declared fields in order: named|client|server (tools/extract_beta_signatures.py)
+net/minecraft/achievement/Achievement	column|a|a	row|b|b	parent|c|c	translationKey|l|l	translationHelper|m|-	icon|d|d	isChallenge|n|m
+net/minecraft/achievement/Achievements	minColumn|a|a	minRow|b|b	maxColumn|c|c	maxRow|d|d	ACHIEVEMENTS|e|e	OPEN_INVENTORY|f|f	MINE_WOOD|g|g	CRAFT_WORKBENCH|h|h	CRAFT_PICKAXE|i|i	CRAFT_FURNACE|j|j	ACQUIRE_IRON|k|k	CRAFT_HOE|l|l	CRAFT_BREAD|m|m	CRAFT_CAKE|n|n	CRAFT_STONE_PICKAXE|o|o	COOK_FISH|p|p	CRAFT_RAIL|q|q	CRAFT_SWORD|r|r	KILL_ENEMY|s|s	KILL_COW|t|t	FLY_PIG|u|u
+net/minecraft/block/BedBlock	BED_OFFSETS|a|a
+net/minecraft/block/Block	DEFAULT_SOUND_GROUP|d|d	WOOD_SOUND_GROUP|e|e	GRAVEL_SOUND_GROUP|f|f	DIRT_SOUND_GROUP|g|g	STONE_SOUND_GROUP|h|h	METAL_SOUND_GROUP|i|i	GLASS_SOUND_GROUP|j|j	WOOL_SOUND_GROUP|k|k	SAND_SOUND_GROUP|l|l	BLOCKS|m|m	BLOCKS_RANDOM_TICK|n|n	BLOCKS_OPAQUE|o|o	BLOCKS_WITH_ENTITY|p|p	BLOCKS_LIGHT_OPACITY|q|q	BLOCKS_ALLOW_VISION|r|r	BLOCKS_LIGHT_LUMINANCE|s|s	BLOCKS_IGNORE_META_UPDATE|t|t	STONE|u|u	GRASS_BLOCK|v|v	DIRT|w|w	COBBLESTONE|x|x	PLANKS|y|y	SAPLING|z|z	BEDROCK|A|A	FLOWING_WATER|B|B	WATER|C|C	FLOWING_LAVA|D|D	LAVA|E|E	SAND|F|F	GRAVEL|G|G	GOLD_ORE|H|H	IRON_ORE|I|I	COAL_ORE|J|J	LOG|K|K	LEAVES|L|L	SPONGE|M|M	GLASS|N|N	LAPIS_ORE|O|O	LAPIS_BLOCK|P|P	DISPENSER|Q|Q	SANDSTONE|R|R	NOTE_BLOCK|S|S	BED|T|T	POWERED_RAIL|U|U	DETECTOR_RAIL|V|V	STICKY_PISTON|W|W	COBWEB|X|X	GRASS|Y|Y	DEAD_BUSH|Z|Z	PISTON|aa|aa	PISTON_HEAD|ab|ab	WOOL|ac|ac	MOVING_PISTON|ad|ad	DANDELION|ae|ae	ROSE|af|af	BROWN_MUSHROOM|ag|ag	RED_MUSHROOM|ah|ah	GOLD_BLOCK|ai|ai	IRON_BLOCK|aj|aj	DOUBLE_SLAB|ak|ak	SLAB|al|al	BRICKS|am|am	TNT|an|an	BOOKSHELF|ao|ao	MOSSY_COBBLESTONE|ap|ap	OBSIDIAN|aq|aq	TORCH|ar|ar	FIRE|as|as	SPAWNER|at|at	WOODEN_STAIRS|au|au	CHEST|av|av	REDSTONE_WIRE|aw|aw	DIAMOND_ORE|ax|ax	DIAMOND_BLOCK|ay|ay	CRAFTING_TABLE|az|az	WHEAT|aA|aA	FARMLAND|aB|aB	FURNACE|aC|aC	LIT_FURNACE|aD|aD	SIGN|aE|aE	DOOR|aF|aF	LADDER|aG|aG	RAIL|aH|aH	COBBLESTONE_STAIRS|aI|aI	WALL_SIGN|aJ|aJ	LEVER|aK|aK	STONE_PRESSURE_PLATE|aL|aL	IRON_DOOR|aM|aM	WOODEN_PRESSURE_PLATE|aN|aN	REDSTONE_ORE|aO|aO	LIT_REDSTONE_ORE|aP|aP	REDSTONE_TORCH|aQ|aQ	LIT_REDSTONE_TORCH|aR|aR	BUTTON|aS|aS	SNOW|aT|aT	ICE|aU|aU	SNOW_BLOCK|aV|aV	CACTUS|aW|aW	CLAY|aX|aX	SUGAR_CANE|aY|aY	JUKEBOX|aZ|aZ	FENCE|ba|ba	PUMPKIN|bb|bb	NETHERRACK|bc|bc	SOUL_SAND|bd|bd	GLOWSTONE|be|be	NETHER_PORTAL|bf|bf	JACK_O_LANTERN|bg|bg	CAKE|bh|bh	REPEATER|bi|bi	POWERED_REPEATER|bj|bj	LOCKED_CHEST|bk|bk	TRAPDOOR|bl|bl	textureId|bm|bm	id|bn|bn	hardness|bo|bo	resistance|bp|bp	constructed|bq|bq	shouldTrackStatistics|br|br	minX|bs|bs	minY|bt|bt	minZ|bu|bu	maxX|bv|bv	maxY|bw|bw	maxZ|bx|bx	soundGroup|by|by	particleFallSpeedModifier|bz|bz	material|bA|bA	slipperiness|bB|bB	translationKey|a|a
+net/minecraft/block/ChestBlock	random|a|a
+net/minecraft/block/DispenserBlock	random|a|a
+net/minecraft/block/FireBlock	burnChances|a|a	spreadChances|b|b
+net/minecraft/block/FlowingLiquidBlock	adjacentSources|a|a	spread|b|b	distanceToGap|c|c
+net/minecraft/block/FurnaceBlock	random|a|a	lit|b|b	ignoreBlockRemoval|c|c
+net/minecraft/block/LeavesBlock	spriteIndex|c|c	decayRegion|a|a
+net/minecraft/block/MapColor	COLORS|a|a	CLEAR|b|b	PALE_GREEN|c|c	PALE_YELLOW|d|d	LIGHT_GRAY|e|e	RED|f|f	LIGHT_BLUE|g|g	LIGHT_GRAY2|h|h	GREEN|i|i	WHITE|j|j	SILVER|k|k	ORANGE|l|l	GRAY|m|m	BLUE|n|n	BROWN|o|o	color|p|p	id|q|q
+net/minecraft/block/PistonBlock	sticky|a|a	deaf|b|b
+net/minecraft/block/PistonConstants	TEXTURE_SIDES|a|a	HEAD_OFFSET_X|b|b	HEAD_OFFSET_Y|c|c	HEAD_OFFSET_Z|d|d
+net/minecraft/block/PistonHeadBlock	pistonHeadSprite|a|a
+net/minecraft/block/PressurePlateActivationRule	EVERYTHING|a|a	MOBS|b|b	PLAYERS|c|c	field_1508|d|d
+net/minecraft/block/PressurePlateBlock	activationRule|a|a
+net/minecraft/block/PumpkinBlock	lit|a|a
+net/minecraft/block/RailBlock	alwaysStraight|a|a
+net/minecraft/block/RailBlock$RailNode	world|b|b	x|c|c	y|d|d	z|e|e	alwaysStraight|f|f	connections|g|g	field_1263|a|a
+net/minecraft/block/RedstoneOreBlock	lit|a|a
+net/minecraft/block/RedstoneTorchBlock	lit|a|a	burnoutEntries|b|b
+net/minecraft/block/RedstoneTorchBurnoutEntry	x|a|a	y|b|b	z|c|c	time|d|d
+net/minecraft/block/RedstoneWireBlock	powered|a|a	neighborsToUpdate|b|b
+net/minecraft/block/RepeaterBlock	RENDER_OFFSET|a|a	DELAY|b|b	lit|c|c
+net/minecraft/block/SandBlock	fallInstantly|a|a
+net/minecraft/block/SignBlock	blockEntityClazz|a|a	standing|b|b
+net/minecraft/block/SlabBlock	names|a|a	doubleSlab|b|b
+net/minecraft/block/StairsBlock	baseBlock|a|a
+net/minecraft/block/TranslucentBlock	transparent|a|a
+net/minecraft/block/TransparentBlock	renderSides|b|b
+net/minecraft/block/TrapdoorBlock	disableValidation|disableValidation|disableValidation
+net/minecraft/block/entity/BlockEntity	idToClass|a|a	classToId|b|b	world|d|d	x|e|e	y|f|f	z|g|g	removed|h|h
+net/minecraft/block/entity/ChestBlockEntity	inventory|a|a
+net/minecraft/block/entity/DispenserBlockEntity	inventory|a|a	random|b|b
+net/minecraft/block/entity/FurnaceBlockEntity	inventory|i|i	burnTime|a|a	fuelTime|b|b	cookTime|c|c
+net/minecraft/block/entity/JukeboxBlockEntity	recordId|a|a
+net/minecraft/block/entity/MobSpawnerBlockEntity	spawnDelay|a|a	spawnedEntityId|i|i	rotation|b|b	lastRotation|c|c
+net/minecraft/block/entity/NoteBlockBlockEntity	note|a|a	powered|b|b
+net/minecraft/block/entity/PistonBlockEntity	pushedBlockId|a|a	pushedBlockData|b|b	facing|c|c	extending|i|i	source|j|j	lastProgress|k|k	progress|l|l	pushedEntities|m|m
+net/minecraft/block/entity/SignBlockEntity	texts|a|a	currentRow|b|b	editable|c|c
+net/minecraft/block/material/Material	AIR|a|a	SOLID_ORGANIC|b|b	SOIL|c|c	WOOD|d|d	STONE|e|e	METAL|f|f	WATER|g|g	LAVA|h|h	LEAVES|i|i	PLANT|j|j	SPONGE|k|k	WOOL|l|l	FIRE|m|m	SAND|n|n	PISTON_BREAKABLE|o|o	GLASS|p|p	TNT|q|q	UNUSED|r|r	ICE|s|s	SNOW_LAYER|t|t	SNOW_BLOCK|u|u	CACTUS|v|v	CLAY|w|w	PUMPKIN|x|x	NETHER_PORTAL|y|y	CAKE|z|z	COBWEB|A|A	PISTON|B|B	burnable|D|D	replaceable|E|E	transparent|F|F	mapColor|C|C	handHarvestable|G|G	pistonBehavior|H|H
+net/minecraft/class_117$2	field_1300|a|a
+net/minecraft/class_117$3	field_1301|a|a
+net/minecraft/class_277$1	field_1127|d|d	field_1128|e|e
+net/minecraft/class_375	field_1426|a|-
+net/minecraft/client/InteractionManager	minecraft|a|-	noTick|b|-
+net/minecraft/client/LogoCanvas	logo|a|-
+net/minecraft/client/Minecraft	MEMORY_RESERVED_FOR_CRASH|b|-	INSTANCE|a|-	interactionManager|c|-	fullscreen|Q|-	crashed|R|-	displayWidth|d|-	displayHeight|e|-	openGlCapabilities|S|-	timer|T|-	world|f|-	worldRenderer|g|-	player|h|-	camera|i|-	particleManager|j|-	session|k|-	hostAddress|l|-	canvas|m|-	isApplet|n|-	paused|o|-	textureManager|p|-	textRenderer|q|-	currentScreen|r|-	progressRenderer|s|-	gameRenderer|t|-	resourceDownloadThread|U|-	ticksPlayed|V|-	attackCooldown|W|-	initWidth|X|-	initHeight|Y|-	toast|u|-	inGameHud|v|-	skipGameRender|w|-	bipedModel|x|-	crosshairTarget|y|-	options|z|-	applet|A|-	soundManager|B|-	mouse|C|-	texturePacks|D|-	runDirectory|Z|-	worldStorageSource|aa|-	frameTimes|E|-	tickTimes|F|-	frameTimeIndex|G|-	failedSessionCheckTime|H|-	stats|I|-	startupServerAddress|ab|-	startupServerPort|ac|-	waterSprite|ad|-	lavaSprite|ae|-	runDirectoryCache|af|-	running|J|-	debugText|K|-	screenshotKeyDown|L|-	timeAfterLastTick|M|-	focused|N|-	lastClickTicks|ag|-	raining|O|-	lastTickTime|P|-	joinPlayerCounter|ah|-
+net/minecraft/client/Minecraft$AchievementStatFormatter	field_2826|a|-
+net/minecraft/client/Minecraft$RunnableMinecraft	frame|a|-
+net/minecraft/client/Minecraft$SessionCheckThread	field_2829|a|-
+net/minecraft/client/Minecraft$TimerHackThread	field_2825|a|-
+net/minecraft/client/Minecraft$class_638	field_2827|a|-	field_2828|b|-
+net/minecraft/client/MinecraftApplet	canvas|a|-	minecraft|b|-	thread|c|-
+net/minecraft/client/MinecraftApplet$AppletCanvas	field_2835|a|-
+net/minecraft/client/MinecraftApplet$AppletMinecraft	field_2834|a|-
+net/minecraft/client/Mouse	parent|c|-	cursor|d|-	deltaX|a|-	deltaY|b|-	unused|e|-
+net/minecraft/client/MultiplayerInteractionManager	breakingPosX|c|-	breakingPosY|d|-	breakingPosZ|e|-	blockBreakingProgress|f|-	lastBlockBreakingProgress|g|-	breakingSoundDelayTicks|h|-	breakingDelayTicks|i|-	breakingBlock|j|-	networkHandler|k|-	selectedSlot|l|-
+net/minecraft/client/Screenshot	DATE_FORMAT|a|-	pixels|b|-	colorBuffer|c|-	pixelBuffer|d|-
+net/minecraft/client/SingleplayerInteractionManager	breakingPosX|c|-	breakingPosY|d|-	breakingPosZ|e|-	blockBreakingProgress|f|-	lastBlockBreakingProgress|g|-	breakingSoundDelayTicks|h|-	breakingDelayTicks|i|-
+net/minecraft/client/color/world/FoliageColors	colorMap|a|-
+net/minecraft/client/color/world/GrassColors	colorMap|a|-
+net/minecraft/client/color/world/WaterColors	colorMap|a|-
+net/minecraft/client/font/TextRenderer	characterWidths|b|-	boundTexture|a|-	boundPage|c|-	pageBuffer|d|-
+net/minecraft/client/gui/DrawContext	zOffset|k|-
+net/minecraft/client/gui/GuiParticle	RANDOM|s|-	x|a|-	y|b|-	lastX|c|-	lastY|d|-	velocityX|e|-	velocityY|f|-	velocityChange|g|-	removed|h|-	age|i|-	lifetime|j|-	r|k|-	g|l|-	b|m|-	a|n|-	lastR|o|-	lastG|p|-	lastB|q|-	lastA|r|-
+net/minecraft/client/gui/ParticlesGui	particles|a|-	minecraft|b|-
+net/minecraft/client/gui/hud/ChatHudLine	text|a|-	age|b|-
+net/minecraft/client/gui/hud/InGameHud	ITEM_RENDERER|d|-	messages|e|-	random|f|-	minecraft|g|-	selectedName|a|-	ticks|h|-	overlayMessage|i|-	overlayRemaining|j|-	overlayTinted|l|-	progress|b|-	vignetteDarkness|c|-
+net/minecraft/client/gui/hud/toast/AchievementToast	client|a|-	width|b|-	height|c|-	title|d|-	description|e|-	achievement|f|-	startTime|g|-	itemRenderer|h|-	tutorial|i|-
+net/minecraft/client/gui/screen/AchievementsScreen	MIN_COLUMN|s|-	MIN_ROW|t|-	MAX_COLUMN|u|-	MAX_ROW|v|-	iconWidth|a|-	iconHeight|i|-	prevMouseX|j|-	prevMouseY|l|-	mouseX|m|-	mouseY|n|-	scaledMouseDx|o|-	scaledMouseDy|p|-	scrollX|q|-	scrollY|r|-	scroll|w|-	stats|x|-
+net/minecraft/client/gui/screen/ChatScreen	text|a|-	focusedTicks|i|-	VALID_CHARACTERS|j|-
+net/minecraft/client/gui/screen/ConfirmScreen	parent|a|-	message1|i|-	message2|j|-	confirmText|l|-	cancelText|m|-	id|n|-
+net/minecraft/client/gui/screen/ConnectScreen	networkHandler|a|-	connectingCancelled|i|-
+net/minecraft/client/gui/screen/ConnectScreen$1	field_2582|a|-	field_2583|b|-	field_2584|c|-	field_2585|d|-
+net/minecraft/client/gui/screen/DisconnectedScreen	title|a|-	reason|i|-
+net/minecraft/client/gui/screen/DownloadingTerrainScreen	networkHandler|a|-	ticks|i|-
+net/minecraft/client/gui/screen/FatalErrorScreen	title|a|-	description|i|-
+net/minecraft/client/gui/screen/GameMenuScreen	saveStep|a|-	ticks|i|-
+net/minecraft/client/gui/screen/MultiplayerScreen	parent|a|-	serverField|i|-
+net/minecraft/client/gui/screen/OutOfMemoryScreen	ticksRan|a|-
+net/minecraft/client/gui/screen/Screen	minecraft|b|-	width|c|-	height|d|-	buttons|e|-	passEvents|f|-	textRenderer|g|-	particlesGui|h|-	selectedButton|a|-
+net/minecraft/client/gui/screen/StatsScreen	itemRenderer|j|-	parent|a|-	title|i|-	generalStats|l|-	itemStats|m|-	blockStats|n|-	stats|o|-	selectedStatsList|p|-
+net/minecraft/client/gui/screen/StatsScreen$AbstractStatsListWidget	clickedIconId|b|-	entries|c|-	statComparator|d|-	selectedTab|e|-	statSortOrder|f|-	field_319|g|-
+net/minecraft/client/gui/screen/StatsScreen$BlockStatsListWidget	field_311|a|-
+net/minecraft/client/gui/screen/StatsScreen$BlockStatsListWidget$1	field_312|a|-	field_313|b|-
+net/minecraft/client/gui/screen/StatsScreen$GeneralStatsListWidget	field_320|a|-
+net/minecraft/client/gui/screen/StatsScreen$ItemStatsListWidget	field_321|a|-
+net/minecraft/client/gui/screen/StatsScreen$ItemStatsListWidget$1	field_322|a|-	field_323|b|-
+net/minecraft/client/gui/screen/TitleScreen	RANDOM|a|-	ticks|i|-	splashText|j|-	multiplayerButton|l|-
+net/minecraft/client/gui/screen/ingame/DoubleChestScreen	playerInventory|l|-	inventory|m|-	rows|n|-
+net/minecraft/client/gui/screen/ingame/FurnaceScreen	furnaceBlockEntity|l|-
+net/minecraft/client/gui/screen/ingame/HandledScreen	itemRenderer|l|-	backgroundWidth|a|-	backgroundHeight|i|-	container|j|-
+net/minecraft/client/gui/screen/ingame/InventoryScreen	mouseX|l|-	mouseY|m|-
+net/minecraft/client/gui/screen/ingame/SignEditScreen	title|a|-	sign|i|-	ticksSinceOpened|j|-	currentRow|l|-	VALID_CHARACTERS|m|-
+net/minecraft/client/gui/screen/option/KeybindsScreen	parent|i|-	title|a|-	gameOptions|j|-	selectedKeyBinding|l|-
+net/minecraft/client/gui/screen/option/OptionsScreen	parent|i|-	title|a|-	options|j|-	RENDER_OPTIONS|l|-
+net/minecraft/client/gui/screen/option/VideoOptionsScreen	parent|i|-	title|a|-	options|j|-	VIDEO_OPTIONS|l|-
+net/minecraft/client/gui/screen/pack/PackScreen	parent|a|-	cooldown|i|-	texturePacksDir|j|-	texturePacks|l|-
+net/minecraft/client/gui/screen/pack/PackScreen$PackListWidget	field_707|a|-
+net/minecraft/client/gui/screen/world/CreateWorldScreen	parent|a|-	worldNameField|i|-	seedField|j|-	worldSaveName|l|-	creatingLevel|m|-
+net/minecraft/client/gui/screen/world/EditWorldScreen	parent|a|-	levelNameTextField|i|-	worldName|j|-
+net/minecraft/client/gui/screen/world/SelectWorldScreen	dateFormat|j|-	parent|a|-	title|i|-	selected|l|-	selectedWorldId|m|-	saves|n|-	worldList|o|-	worldText|p|-	conversionText|q|-	isInChildScreen|r|-	renameWorldButton|s|-	playSelectedWorldButton|t|-	deleteWorldButton|u|-
+net/minecraft/client/gui/screen/world/SelectWorldScreen$WorldListWidget	field_2444|a|-
+net/minecraft/client/gui/screen/world/WorldSaveConflictScreen	ticksRan|a|-
+net/minecraft/client/gui/widget/ButtonWidget	width|a|-	height|b|-	x|c|-	y|d|-	text|e|-	id|f|-	active|g|-	visible|h|-
+net/minecraft/client/gui/widget/EntryListWidget	minecraft|a|-	width|b|-	height|c|-	top|h|-	bottom|i|-	right|d|-	left|e|-	itemHeight|j|-	scrollUpButtonId|f|-	scrollDownButtonId|g|-	mostYStart|k|-	scrollSpeedMultiplier|l|-	scrollAmount|m|-	pos|n|-	time|o|-	renderSelectionHighlight|p|-	renderHeader|q|-	headerHeight|r|-
+net/minecraft/client/gui/widget/OptionButtonWidget	option|i|-
+net/minecraft/client/gui/widget/SliderWidget	value|i|-	dragging|j|-	option|l|-
+net/minecraft/client/gui/widget/TextFieldWidget	textRenderer|c|-	x|d|-	y|e|-	width|f|-	height|g|-	text|h|-	maxLength|i|-	focusedTicks|j|-	focused|a|-	enabled|b|-	parent|l|-
+net/minecraft/client/input/Input	movementSideways|a|-	movementForward|b|-	unused|c|-	jumping|d|-	sneaking|e|-
+net/minecraft/client/input/KeyboardInput	keys|f|-	options|g|-
+net/minecraft/client/model/ModelPart	corners|j|-	faces|k|-	u|l|-	v|m|-	pivotX|a|-	pivotY|b|-	pivotZ|c|-	pitch|d|-	yaw|e|-	roll|f|-	compiled|n|-	list|o|-	mirror|g|-	visible|h|-	hidden|i|-
+net/minecraft/client/model/Quad	vertices|a|-	verticesCount|b|-	flipNormal|c|-
+net/minecraft/client/model/Vertex	pos|a|-	u|b|-	v|c|-
+net/minecraft/client/network/ClientNetworkHandler	disconnected|d|-	connection|e|-	message|a|-	minecraft|f|-	world|g|-	started|h|-	clientPersistentStateManager|b|-	random|c|-
+net/minecraft/client/network/MultiplayerClientPlayerEntity	networkHandler|bN|-	field_2506|bO|-	field_2507|bP|-	field_2508|bQ|-	field_2509|bR|-	field_2510|bS|-	field_2511|bT|-	field_2512|bU|-	field_2513|bV|-	field_2514|bW|-	field_2515|bX|-	field_2516|bY|-
+net/minecraft/client/network/OtherPlayerEntity	field_2649|b|-	field_2650|bN|-	field_2651|bO|-	field_2652|bP|-	field_2653|bQ|-	field_2654|bR|-	field_2648|a|-
+net/minecraft/client/option/GameOptions	RENDER_DISTANCE_KEYS|J|-	DIFFICULTY_KEYS|K|-	GUI_SCALE_KEYS|L|-	PERFORMANCE_KEYS|M|-	musicVolume|a|-	soundVolume|b|-	mouseSensitivity|c|-	invertYMouse|d|-	viewDistance|e|-	bobView|f|-	anaglyph3d|g|-	advancedOpengl|h|-	fpsLimit|i|-	fancyGraphics|j|-	ao|k|-	skin|l|-	forwardKey|m|-	leftKey|n|-	backKey|o|-	rightKey|p|-	jumpKey|q|-	inventoryKey|r|-	dropKey|s|-	chatKey|t|-	fogKey|u|-	sneakKey|v|-	allKeys|w|-	minecraft|x|-	file|N|-	difficulty|y|-	hideHud|z|-	thirdPerson|A|-	debugHud|B|-	lastServer|C|-	discreteScroll|D|-	cinematicMode|E|-	debugCamera|F|-	totalDiscreteScroll|G|-	field_1449|H|-	guiScale|I|-
+net/minecraft/client/option/KeyBinding	translationKey|a|-	code|b|-
+net/minecraft/client/option/Option	MUSIC|a|-	SOUND|b|-	INVERT_MOUSE|c|-	SENSITIVITY|d|-	RENDER_DISTANCE|e|-	VIEW_BOBBING|f|-	ANAGLYPH|g|-	ADVANCED_OPENGL|h|-	FRAMERATE_LIMIT|i|-	DIFFICULTY|j|-	GRAPHICS|k|-	AMBIENT_OCCLUSION|l|-	GUI_SCALE|m|-	slider|n|-	toggle|o|-	key|p|-	field_1113|q|-
+net/minecraft/client/option/OptionsContainer	options|a|-
+net/minecraft/client/particle/BlockParticle	block|a|-	side|o|-
+net/minecraft/client/particle/FireSmokeParticle	initialScale|a|-
+net/minecraft/client/particle/FlameParticle	initialScale|a|-
+net/minecraft/client/particle/FootstepParticle	footstepAge|a|-	footstepMaxAge|o|-	textureManager|p|-
+net/minecraft/client/particle/HeartParticle	initialScale|a|-
+net/minecraft/client/particle/LavaEmberParticle	initialScale|a|-
+net/minecraft/client/particle/NoteParticle	startScale|a|-
+net/minecraft/client/particle/Particle	textureId|b|-	prevU|c|-	prevV|d|-	particleAge|e|-	maxParticleAge|f|-	scale|g|-	gravityStrength|h|-	red|i|-	green|j|-	blue|k|-	xOffset|l|-	yOffset|m|-	zOffset|n|-
+net/minecraft/client/particle/ParticleManager	world|a|-	particles|b|-	effectList|effectList|-	textureManager|c|-	random|d|-
+net/minecraft/client/particle/PickupParticle	entity|a|-	collector|o|-	pickupAge|p|-	lifetime|q|-	offsetY|r|-
+net/minecraft/client/particle/PortalParticle	initialScale|a|-	initialX|o|-	initialY|p|-	initialZ|q|-
+net/minecraft/client/particle/RedDustParticle	startScale|a|-
+net/minecraft/client/particle/SnowParticle	initialScale|a|-
+net/minecraft/client/render/Frustum	INSTANCE|e|-	projectionBuffer|f|-	modelBuffer|g|-	clipBuffer|h|-
+net/minecraft/client/render/FrustumCuller	frustum|a|-	offsetX|b|-	offsetY|c|-	offsetZ|d|-
+net/minecraft/client/render/FrustumData	frustum|a|-	projectionMatrix|b|-	modelMatrix|c|-	clipMatrix|d|-
+net/minecraft/client/render/GameRenderer	anaglyph3d|a|-	activeEye|b|-	client|j|-	viewDistance|k|-	heldItemRenderer|c|-	ticks|l|-	targetedEntity|m|-	cinematicCameraYawSmoother|n|-	cinematicCameraPitchSmoother|o|-	field_2355|p|-	field_2356|q|-	field_2357|r|-	field_2358|s|-	thirdPersonDistance|t|-	prevThirdPersonDistance|u|-	thirdPersonYaw|v|-	prevThirdPersonYaw|w|-	thirdPersonPitch|x|-	prevThirdPersonPitch|y|-	cameraRoll|z|-	prevCameraRoll|A|-	cameraRollAmount|B|-	prevCameraRollAmount|C|-	renderFog|D|-	zoom|E|-	zoomX|F|-	zoomY|G|-	lastInactiveTime|H|-	lastFrameTime|I|-	random|J|-	rainSoundCounter|K|-	leftEyeRenderPass|d|-	rightEyeRenderPass|e|-	fogColorBuffer|f|-	fogRed|g|-	fogGreen|h|-	fogBlue|i|-	lastViewBob|L|-	viewBob|M|-
+net/minecraft/client/render/MapRenderer	colors|a|-	texture|b|-	options|c|-	textRenderer|d|-
+net/minecraft/client/render/OpenGlCapabilities	USE_OCCLUSION_QUERY|a|-
+net/minecraft/client/render/ProgressRenderer	stage|a|-	minecraft|b|-	title|c|-	lastTime|d|-	noAbort|e|-
+net/minecraft/client/render/Tessellator	TRIANGLE_MODE|b|-	USE_VBO|c|-	useVbo|x|-	buffer|g|-	vertexCount|h|-	u|i|-	v|j|-	color|k|-	hasColor|l|-	hasTexture|m|-	hasNormals|n|-	bufferPosition|o|-	addedVertexCount|p|-	colorDisabled|q|-	mode|r|-	xOffset|s|-	yOffset|t|-	zOffset|u|-	normal|v|-	drawing|w|-	vbo|z|-	renderingWorldRenderer|renderingWorldRenderer|-	defaultTexture|defaultTexture|-	rawBufferSize|rawBufferSize|-	vboCount|A|-	vboBuffer|y|-	nativeBufferSize|nativeBufferSize|-	trivertsInBuffer|trivertsInBuffer|-	byteBuffer|d|-	intBuffer|e|-	floatBuffer|f|-	INSTANCE|a|-
+net/minecraft/client/render/WorldRenderer	globalBlockEntities|a|-	world|k|-	textureManager|l|-	dirtyChunks|m|-	sortedChunks|n|-	chunks|o|-	chunkCountX|p|-	chunkCountY|q|-	chunkCountZ|r|-	chunkGlList|s|-	client|t|-	blockRenderManager|u|-	occlusionBuffer|v|-	occlusion|w|-	ticks|x|-	starsGlList|y|-	lightSkyGlList|z|-	darkSkyGlList|A|-	minChunkX|B|-	minChunkY|C|-	minChunkZ|D|-	maxChunkX|E|-	maxChunkY|F|-	maxChunkZ|G|-	lastViewDistance|H|-	entityRenderCooldown|I|-	entityCount|J|-	renderedEntityCount|K|-	culledEntityCount|L|-	field_1796|b|-	occlusionQueryBuffer|c|-	chunkCount|M|-	invisibleChunkCount|N|-	occludedChunkCount|O|-	compiledChunkCount|P|-	emptyChunkCount|Q|-	field_1792|R|-	chunksInCurrentLayer|S|-	chunkRenderers|T|-	field_1798|d|-	field_1799|e|-	prevCameraX|f|-	prevCameraY|g|-	prevCameraZ|h|-	miningProgress|i|-	cullStep|j|-
+net/minecraft/client/render/block/BlockRenderManager	blockView|c|-	textureOverride|d|-	flipTextureHorizontally|e|-	skipFaceCulling|f|-	fancyGraphics|a|-	cfgGrassFix|cfgGrassFix|-	inventoryColorEnabled|b|-	eastFaceRotation|g|-	westFaceRotation|h|-	southFaceRotation|i|-	northFaceRotation|j|-	topFaceRotation|k|-	bottomFaceRotation|l|-	useAo|m|-	selfBrightness|n|-	northBrightness|o|-	bottomBrightness|p|-	eastBrightness|q|-	southBrightness|r|-	topBrightness|s|-	westBrightness|t|-	northEastBottomBrightness|u|-	northBottomBrightness|v|-	northWestBottomBrightness|w|-	eastBottomBrightness|x|-	westBottomBrightness|y|-	southEastBottomBrightness|z|-	southBottomBrightness|A|-	southWestBottomBrightness|B|-	northEastTopBrightness|C|-	northTopBrightness|D|-	northWestTopBrightness|E|-	eastTopBrightness|F|-	southEastTopBrightness|G|-	southTopBrightness|H|-	westTopBrightness|I|-	southWestTopBrightness|J|-	northEastBrightness|K|-	southEastBrightness|L|-	northWestBrightness|M|-	southWestBrightness|N|-	useSurroundingBrightness|O|-	firstVertexRed|P|-	secondVertexRed|Q|-	thirdVertexRed|R|-	fourthVertexRed|S|-	firstVertexGreen|T|-	secondVertexGreen|U|-	thirdVertexGreen|V|-	fourthVertexGreen|W|-	firstVertexBlue|X|-	secondVertexBlue|Y|-	thirdVertexBlue|Z|-	fourthVertexBlue|aa|-	topNorthEdgeTranslucent|ab|-	topEastEdgeTranslucent|ac|-	topWestEdgeTranslucent|ad|-	topSouthEdgeTranslucent|ae|-	northWestEdgeTranslucent|af|-	southEastEdgeTranslucent|ag|-	southWestEdgeTranslucent|ah|-	northEastEdgeTranslucent|ai|-	bottomNorthEdgeTranslucent|aj|-	bottomEastEdgeTranslucent|ak|-	bottomWestEdgeTranslucent|al|-	bottomSouthEdgeTranslucent|am|-	redstoneColors|redstoneColors|-
+net/minecraft/client/render/block/entity/BlockEntityRenderDispatcher	renderers|m|-	INSTANCE|a|-	textRenderer|n|-	offsetX|b|-	offsetY|c|-	offsetZ|d|-	textureManager|e|-	world|f|-	camera|g|-	cameraYaw|h|-	cameraPitch|i|-	cameraX|j|-	cameraY|k|-	cameraZ|l|-
+net/minecraft/client/render/block/entity/BlockEntityRenderer	dispatcher|a|-
+net/minecraft/client/render/block/entity/MobSpawnerBlockEntityRenderer	models|b|-
+net/minecraft/client/render/block/entity/PistonBlockEntityRenderer	blockRenderManager|b|-
+net/minecraft/client/render/block/entity/SignBlockEntityRenderer	model|b|-
+net/minecraft/client/render/block/entity/SignModel	root|a|-	stick|b|-
+net/minecraft/client/render/chunk/ChunkBuilder	world|a|-	baseRenderList|C|-	chunkUpdates|b|-	x|c|-	y|d|-	z|e|-	sizeX|f|-	sizeY|g|-	sizeZ|h|-	cameraOffsetX|i|-	cameraOffsetY|j|-	cameraOffsetZ|k|-	renderX|l|-	renderY|m|-	renderZ|n|-	inFrustum|o|-	renderLayerEmpty|p|-	centerX|q|-	centerY|r|-	centerZ|s|-	radius|t|-	dirty|u|-	cullingBox|v|-	id|w|-	unoccluded|x|-	occlusionQueryReady|y|-	occlusionQueryId|z|-	hasSkyLight|A|-	built|E|-	blockEntities|B|-	currentBlockEntities|F|-
+net/minecraft/client/render/entity/BoatEntityRenderer	model|a|-
+net/minecraft/client/render/entity/CreeperEntityRenderer	model|a|-
+net/minecraft/client/render/entity/EntityRenderDispatcher	renderers|o|-	INSTANCE|a|-	textRenderer|p|-	offsetX|b|-	offsetY|c|-	offsetZ|d|-	textureManager|e|-	heldItemRenderer|f|-	world|g|-	cameraEntity|h|-	yaw|i|-	pitch|j|-	options|k|-	x|l|-	y|m|-	z|n|-
+net/minecraft/client/render/entity/EntityRenderer	dispatcher|b|-	bipedModel|a|-	renderManager|e|-	shadowRadius|c|-	shadowDarkness|d|-
+net/minecraft/client/render/entity/FallingBlockEntityRenderer	blockRenderManager|a|-
+net/minecraft/client/render/entity/GiantEntityRenderer	scale|a|-
+net/minecraft/client/render/entity/LivingEntityRenderer	model|e|-	decorationModel|f|-
+net/minecraft/client/render/entity/MinecartEntityRenderer	model|a|-
+net/minecraft/client/render/entity/PaintingEntityRenderer	random|a|-
+net/minecraft/client/render/entity/PlayerEntityRenderer	bipedModel|a|-	armor1|g|-	armor2|h|-	armorTextureNames|i|-
+net/minecraft/client/render/entity/ProjectileEntityRenderer	itemTextureId|a|-
+net/minecraft/client/render/entity/SlimeEntityRenderer	innerModel|a|-
+net/minecraft/client/render/entity/TntEntityRenderer	blockRenderManager|a|-
+net/minecraft/client/render/entity/UndeadEntityRenderer	entityModel|a|-
+net/minecraft/client/render/entity/model/BipedEntityModel	head|a|-	hat|b|-	body|c|-	rightArm|d|-	leftArm|e|-	rightLeg|f|-	leftLeg|g|-	ears|h|-	cape|i|-	leftArmPose|j|-	rightArmPose|k|-	sneaking|l|-
+net/minecraft/client/render/entity/model/BoatEntityModel	parts|a|-
+net/minecraft/client/render/entity/model/ChickenEntityModel	head|a|-	body|b|-	rightLeg|c|-	leftLeg|d|-	rightWing|e|-	leftWing|f|-	beak|g|-	wattle|h|-
+net/minecraft/client/render/entity/model/CowEntityModel	udder|a|-	rightHorn|b|-	leftHorn|c|-
+net/minecraft/client/render/entity/model/CreeperEntityModel	head|a|-	hat|b|-	body|c|-	rightHindLeg|d|-	leftHindLeg|e|-	rightFrontLeg|f|-	leftFrontLeg|g|-
+net/minecraft/client/render/entity/model/EntityModel	handSwingProgress|m|-	riding|n|-
+net/minecraft/client/render/entity/model/GhastEntityModel	root|a|-	tentacles|b|-
+net/minecraft/client/render/entity/model/MinecartEntityModel	parts|a|-
+net/minecraft/client/render/entity/model/QuadrupedEntityModel	head|d|-	body|e|-	rightHindLeg|f|-	leftHindLeg|g|-	rightFrontLeg|h|-	leftFrontLeg|i|-
+net/minecraft/client/render/entity/model/SlimeEntityModel	cube|a|-	rightEye|b|-	leftEye|c|-	mouth|d|-
+net/minecraft/client/render/entity/model/SpiderEntityModel	head|a|-	body0|b|-	body1|c|-	rightHindLeg|d|-	leftHindLeg|e|-	rightMiddleHindLeg|f|-	leftMiddleHindLeg|g|-	rightMiddleFrontLeg|h|-	leftMiddleFrontLeg|i|-	rightFrontLeg|j|-	leftFrontLeg|k|-
+net/minecraft/client/render/entity/model/SquidEntityModel	root|a|-	tentacles|b|-
+net/minecraft/client/render/entity/model/WolfEntityModel	head|a|-	torso|b|-	rightHindLeg|c|-	leftHindLeg|d|-	rightFrontLeg|e|-	leftFrontLeg|f|-	field_2095|g|-	field_2096|h|-	field_2097|i|-	tail|j|-	neck|k|-
+net/minecraft/client/render/item/HeldItemRenderer	minecraft|a|-	stack|b|-	height|c|-	prevHeight|d|-	blockRenderManager|e|-	mapRenderer|f|-	slot|g|-
+net/minecraft/client/render/item/ItemRenderer	blockRenderer|e|-	random|f|-	useCustomDisplayColor|a|-
+net/minecraft/client/render/platform/Lighting	BUFFER|a|-
+net/minecraft/client/render/texture/ClockSprite	minecraft|g|-	clock|h|-	dial|i|-	angle|j|-	angleDelta|k|-
+net/minecraft/client/render/texture/CompassSprite	minecraft|g|-	compass|h|-	angle|i|-	angleDelta|j|-
+net/minecraft/client/render/texture/DynamicTexture	pixels|a|-	sprite|b|-	anaglyph|c|-	copyTo|d|-	replicate|e|-	atlas|f|-
+net/minecraft/client/render/texture/FireSprite	current|g|-	next|h|-
+net/minecraft/client/render/texture/LavaSideSprite	current|g|-	next|h|-	heat|i|-	heatDelta|j|-	ticks|k|-
+net/minecraft/client/render/texture/LavaSprite	current|g|-	next|h|-	heat|i|-	heatDelta|j|-
+net/minecraft/client/render/texture/NetherPortalSprite	ticks|g|-	frames|h|-
+net/minecraft/client/render/texture/WaterSideSprite	current|g|-	next|h|-	heat|i|-	heatDelta|j|-	ticks|k|-
+net/minecraft/client/render/texture/WaterSprite	current|g|-	next|h|-	heat|i|-	heatDelta|j|-	ticks|k|-
+net/minecraft/client/render/world/ChunkRenderer	x|a|-	y|b|-	z|c|-	offsetX|d|-	offsetY|e|-	offsetZ|f|-	glListBuffer|g|-	initialized|h|-	rendered|i|-
+net/minecraft/client/render/world/DirtyChunkSorter	camera|a|-
+net/minecraft/client/render/world/DistanceChunkSorter	cameraX|a|-	cameraY|b|-	cameraZ|c|-
+net/minecraft/client/resource/ResourceDownloadThread	resourcesDirectory|a|-	minecraft|b|-	cancelled|c|-
+net/minecraft/client/resource/language/I18n	translations|a|a
+net/minecraft/client/resource/language/TranslationStorage	INSTANCE|a|a	translations|b|b
+net/minecraft/client/resource/pack/BuiltInTexturePack	iconId|e|-	icon|f|-
+net/minecraft/client/resource/pack/TexturePack	name|a|-	descriptionLine1|b|-	descriptionLine2|c|-	key|d|-
+net/minecraft/client/resource/pack/TexturePacks	availablePacks|b|-	defaultPack|c|-	selected|a|-	availablePacksByKey|d|-	minecraft|e|-	dir|f|-	selectedName|g|-
+net/minecraft/client/resource/pack/ZippedTexturePack	zip|e|-	iconId|f|-	icon|g|-	file|h|-
+net/minecraft/client/sound/Sound	id|a|-	soundFile|b|-
+net/minecraft/client/sound/SoundEntry	random|c|-	weightedSoundSet|d|-	loadedSounds|e|-	loadedSoundCount|a|-	isRandom|b|-
+net/minecraft/client/sound/SoundManager	soundSystem|a|-	sounds|b|-	streamingSounds|c|-	music|d|-	soundSourceSuffix|e|-	gameOptions|f|-	started|g|-	random|h|-	timeUntilNextSong|i|-
+net/minecraft/client/texture/ImageDownload	image|a|-	requestCount|b|-	textureId|c|-	uploaded|d|-
+net/minecraft/client/texture/ImageDownload$Thread	url|a|-	processor|b|-	data|c|-
+net/minecraft/client/texture/SkinImageProcessor	data|a|-	width|b|-	height|c|-
+net/minecraft/client/texture/TextureManager	MIPMAP|a|-	textures|b|-	colors|c|-	images|d|-	idBuffer|e|-	imageBuffer|f|-	dynamicTextures|g|-	downloadedImages|h|-	gameOptions|i|-	clamp|j|-	blur|k|-	texturePacks|l|-	image|m|-
+net/minecraft/client/util/GlAllocationUtils	DISPLAY_LISTS|a|-	TEXTURE_NAMES|b|-
+net/minecraft/client/util/ScreenScaler	scaledWidth|d|-	scaledHeight|e|-	rawScaledWidth|a|-	rawScaledHeight|b|-	scaleFactor|c|-
+net/minecraft/client/util/Session	CREATIVE_INVENTORY|a|-	username|b|-	sessionId|c|-	mpPass|d|-
+net/minecraft/client/util/SmoothUtil	actualSum|a|-	smoothSum|b|-	movementLatency|c|-
+net/minecraft/client/util/Timer	tps|a|-	timeSec|f|-	ticksThisFrame|b|-	partialTick|c|-	tpsScale|d|-	tickDelta|e|-	prevTickTime|g|-	prevCorrectionTime|h|-	cooldownTickTime|i|-	tickTimeCorrection|j|-
+net/minecraft/client/world/chunk/MultiplayerChunkCache	empty|a|-	chunksByPos|b|-	chunks|c|-	world|d|-
+net/minecraft/entity/Entity	nextId|a|a	id|aD|aG	renderDistanceMultiplier|aE|aH	blocksSameBlockSpawning|aF|aI	passenger|aG|aJ	vehicle|aH|aK	world|aI|aL	prevX|aJ|aM	prevY|aK|aN	prevZ|aL|aO	x|aM|aP	y|aN|aQ	z|aO|aR	velocityX|aP|aS	velocityY|aQ|aT	velocityZ|aR|aU	yaw|aS|aV	pitch|aT|aW	prevYaw|aU|aX	prevPitch|aV|aY	boundingBox|aW|aZ	onGround|aX|ba	horizontalCollision|aY|bb	verticalCollision|aZ|bc	hasCollided|ba|bd	velocityModified|bb|be	slowed|bc|bf	keepVelocityOnCollision|bd|bg	dead|be|bh	standingEyeHeight|bf|bi	width|bg|bj	height|bh|bk	prevHorizontalSpeed|bi|bl	horizontalSpeed|bj|bm	fallDistance|bk|bn	nextStepSoundDistance|b|b	lastTickX|bl|bo	lastTickY|bm|bp	lastTickZ|bn|bq	cameraOffset|bo|br	stepHeight|bp|bs	noClip|bq|bt	pushSpeedReduction|br|bu	random|bs|bv	age|bt|bw	fireImmunityTicks|bu|bx	fireTicks|bv|by	maxAir|bw|bz	submergedInWater|bx|bA	hearts|by|bB	air|bz|bC	firstTick|c|c	skinUrl|bA|-	capeUrl|bB|-	fireImmune|bC|bD	dataTracker|bD|bE	minBrightness|bE|bF	vehiclePitchDelta|d|d	vehicleYawDelta|e|e	isPersistent|bF|bG	chunkX|bG|bH	chunkSlice|bH|bI	chunkZ|bI|bJ	trackedPosX|bJ|-	trackedPosY|bK|-	trackedPosZ|bL|-	ignoreFrustumCull|bM|bK
+net/minecraft/entity/EntityRegistry	idToClass|a|a	classToId|b|b	rawIdToClass|c|c	classToRawId|d|d
+net/minecraft/entity/FallingBlockEntity	blockId|a|a	timeFalling|b|b
+net/minecraft/entity/ItemEntity	stack|a|a	itemTicks|e|e	itemAge|b|b	pickupDelay|c|c	health|f|f	initialRotationAngle|d|d
+net/minecraft/entity/LightningEntity	ambientTick|b|b	seed|a|a	remainingActions|c|c
+net/minecraft/entity/LivingEntity	maxHealth|E|H	field_1010|F|I	field_1011|G|J	bodyYaw|H|K	lastBodyYaw|I|L	lastWalkProgress|J|M	walkProgress|K|N	field_1016|L|O	field_1017|M|P	field_1018|N|Q	texture|O|R	field_1020|P|S	rotationOffset|Q|T	modelName|R|U	field_1023|S|V	scoreAmount|T|W	damageAmount|U|X	interpolateOnly|V|Y	lastSwingAnimationProgress|W|Z	swingAnimationProgress|X|aa	health|Y|ab	lastHealth|Z|ac	ambientSoundTimer|a|a	hurtTime|aa|ad	damagedTime|ab|ae	damagedSwingDir|ac|af	deathTime|ad|ag	attackCooldown|ae|ah	prevTilt|af|ai	tilt|ag|aj	killedByOtherEntity|ah|ak	field_1046|ai|al	field_1047|aj|am	lastWalkAnimationSpeed|ak|an	walkAnimationSpeed|al|ao	walkAnimationProgress|am|ap	bodyTrackingIncrements|an|aq	lerpX|ao|ar	lerpY|ap|as	lerpZ|aq|at	lerpYaw|ar|au	lerpPitch|as|av	field_1057|at|aw	prevHealth|au|ax	despawnCounter|av|ay	sidewaysSpeed|aw|az	forwardSpeed|ax|aA	rotationSpeed|ay|aB	jumping|az|aC	defaultPitch|aA|aD	movementSpeed|aB|aE	lookTarget|b|b	lookTimer|aC|aF
+net/minecraft/entity/MobEntity	path|a|a	target|d|d	movementBlocked|e|e
+net/minecraft/entity/SpawnGroup	MONSTER|a|a	CREATURE|b|b	WATER_CREATURE|c|c	creatureClass|d|d	capacity|e|e	spawnMaterial|f|f	peaceful|g|g	field_949|h|h
+net/minecraft/entity/TntEntity	fuse|a|a
+net/minecraft/entity/ai/pathing/Path	nodes|b|b	length|a|a	currentNodeIndex|c|c
+net/minecraft/entity/ai/pathing/PathMinHeap	pathNodes|a|a	count|b|b
+net/minecraft/entity/ai/pathing/PathNode	x|a|a	y|b|b	z|c|c	hashCode|j|j	heapIndex|d|d	penalizedPathLength|e|e	distanceToNearestTarget|f|f	heapWeight|g|g	previous|h|h	visited|i|i
+net/minecraft/entity/ai/pathing/PathNodeNavigator	blockView|a|a	minHeap|b|b	pathNodeCache|c|c	successors|d|d
+net/minecraft/entity/data/DataTracker	DATA_TYPES|a|a	entries|b|b	dirty|c|c
+net/minecraft/entity/data/DataTrackerEntry	dataTypeId|a|a	id|b|b	value|c|c	dirty|d|d
+net/minecraft/entity/decoration/painting/PaintingEntity	obstructionCheckCounter|f|f	facing|a|a	attachmentX|b|b	attachmentY|c|c	attachmentZ|d|d	variant|e|e
+net/minecraft/entity/decoration/painting/PaintingVariants	KEBAB|a|a	AZTEC|b|b	ALBAN|c|c	AZTEC2|d|d	BOMB|e|e	PLANT|f|f	WASTELAND|g|g	POOL|h|h	COURBET|i|i	SEA|j|j	SUNSET|k|k	CREEBET|l|l	WANDERER|m|m	GRAHAM|n|n	MATCH|o|o	BUST|p|p	STAGE|q|q	VOID|r|r	SKULL_AND_ROSES|s|s	FIGHTERS|t|t	POINTER|u|u	PIGSCENE|v|v	BURNING_SKULL|w|w	SKELETON|x|x	DONKEY_KONG|y|y	LONGEST_NAME_LENGTH|z|z	id|A|A	width|B|B	height|C|C	textureOffsetX|D|D	textureOffsetY|E|E	field_671|F|F
+net/minecraft/entity/mob/CreeperEntity	fuseTime|a|a	lastFuseTime|b|b
+net/minecraft/entity/mob/GhastEntity	floatDuration|a|a	targetX|b|b	targetY|c|c	targetZ|d|d	target|g|g	angerCooldown|h|h	lastChargeTime|e|e	chargeTime|f|f
+net/minecraft/entity/mob/MonsterEntity	attackDamage|c|c
+net/minecraft/entity/mob/PigZombieEntity	anger|a|a	angrySoundDelay|b|b	heldItem|f|f
+net/minecraft/entity/mob/SkeletonEntity	heldItem|a|a
+net/minecraft/entity/mob/SlimeEntity	stretch|a|a	lastStretch|b|b	ticksUntilJump|c|c
+net/minecraft/entity/passive/ChickenEntity	unused|a|a	flapProgress|b|b	maxWingDeviation|c|c	prevMaxWingDeviation|f|f	prevFlapProgress|g|g	flapSpeed|h|h	eggLayTime|i|i
+net/minecraft/entity/passive/SheepEntity	COLORS|a|a
+net/minecraft/entity/passive/SquidEntity	tiltAngle|a|a	lastTiltAngle|b|b	rollAngle|c|c	lastRollAngle|f|f	thrustTimer|g|g	lastThrustTimer|h|h	tentacleAngle|i|i	lastTentacleAngle|j|j	swimVelocityScale|k|k	thrustTimerSpeed|l|l	turningSpeed|m|m	swimX|n|n	swimY|o|o	swimZ|p|p
+net/minecraft/entity/passive/WolfEntity	begging|a|a	begAnimationProgress|b|b	lastBegAnimationProcess|c|c	furWet|f|f	shakingWaterOff|g|g	shakeProgress|h|h	lastShakeProgress|i|i
+net/minecraft/entity/player/ClientPlayerEntity	input|a|-	minecraft|b|-	field_163|bN|-	field_164|bO|-	field_165|bP|-
+net/minecraft/entity/player/PlayerEntity	inventory|c|i	playerScreenHandler|d|j	currentScreenHandler|e|k	unused|f|l	score|g|m	prevStepBobbingAmount|h|n	stepBobbingAmount|i|o	handSwinging|j|p	handSwingTicks|k|q	name|l|r	dimensionId|m|s	playerCapeUrl|n|-	prevCapeX|o|t	prevCapeY|p|u	prevCapeZ|q|v	capeX|r|w	capeY|s|x	capeZ|t|y	sleeping|u|z	sleepingPos|v|A	sleepTimer|a|a	sleepOffsetX|w|B	sleepOffsetY|x|-	sleepOffsetZ|y|C	spawnPos|b|b	ridingStartPos|bN|c	portalCooldown|z|D	inTeleportationState|A|E	screenDistortion|B|-	lastScreenDistortion|C|-	damageSpill|bO|d	fishHook|D|G
+net/minecraft/entity/player/PlayerInventory	main|a|a	armor|b|b	selectedSlot|c|c	player|d|d	cursorStack|f|f	dirty|e|e
+net/minecraft/entity/player/ServerPlayerEntity	networkHandler|-|a	server|-|b	interactionManager|-|c	lastX|-|d	lastZ|-|e	pendingChunkUpdates|-|f	activeChunks|-|g	lastHealthScore|-|bL	joinInvulnerabilityTicks|-|bM	equipment|-|bN	screenHandlerSyncId|-|bO	skipPacketSlotUpdates|-|h
+net/minecraft/entity/player/SleepAttemptResult	OK|a|a	NOT_POSSIBLE_HERE|b|b	NOT_POSSIBLE_NOW|c|c	TOO_FAR_AWAY|d|d	OTHER_PROBLEM|e|e	field_2665|f|f
+net/minecraft/entity/projectile/ArrowEntity	blockX|d|d	blockY|e|e	blockZ|f|f	blockId|g|g	blockMeta|h|h	inGround|i|i	pickupAllowed|a|a	shake|b|b	owner|c|c	life|j|j	inAirTime|k|k
+net/minecraft/entity/projectile/FireballEntity	blockX|f|f	blockY|g|g	blockZ|h|h	blockId|i|i	inGround|j|j	shake|a|a	owner|b|b	removalTimer|k|k	inAirTime|l|l	powerX|c|c	powerY|d|d	powerZ|e|e
+net/minecraft/entity/projectile/FishingBobberEntity	blockX|d|d	blockY|e|e	blockZ|f|f	blockId|g|g	inGround|h|h	shake|a|a	owner|b|b	removalTimer|i|i	inAirTime|j|j	hookCountdown|k|k	hookedEntity|c|c	clientInterpolationSteps|l|l	clientX|m|m	clientY|n|n	clientZ|o|o	clientPitch|p|p	clientYaw|q|q	clientVelocityX|r|-	clientVelocityY|s|-	clientVelocityZ|t|-
+net/minecraft/entity/projectile/thrown/EggEntity	blockX|b|b	blockY|c|c	blockZ|d|d	blockId|e|e	inGround|f|f	shake|a|a	owner|g|g	removalTimer|h|h	inAirTime|i|i
+net/minecraft/entity/projectile/thrown/SnowballEntity	blockX|b|b	blockY|c|c	blockZ|d|d	blockId|e|e	inGround|f|f	shake|a|a	owner|g|g	removalTimer|h|h	inAirTime|i|i
+net/minecraft/entity/vehicle/BoatEntity	damageWobbleStrength|a|a	damageWobbleTicks|b|b	damageWobbleSide|c|c	clientInterpolationSteps|d|d	clientX|e|e	clientY|f|f	clientZ|g|g	clientPitch|h|h	clientYaw|i|i	clientVelocityX|j|-	clientVelocityY|k|-	clientVelocityZ|l|-
+net/minecraft/entity/vehicle/MinecartEntity	inventory|h|h	damageWobbleStrength|a|a	damageWobbleTicks|b|b	damageWobbleSide|c|c	yawFlipped|i|i	type|d|d	fuel|e|e	pushX|f|f	pushZ|g|g	ADJACENT_RAIL_POSITIONS_BY_SHAPE|j|j	clientInterpolationSteps|k|k	clientX|l|l	clientY|m|m	clientZ|n|n	clientPitch|o|o	clientYaw|p|p	clientVelocityX|q|-	clientVelocityY|r|-	clientVelocityZ|s|-
+net/minecraft/inventory/CraftingInventory	stacks|a|a	width|b|b	handler|c|c
+net/minecraft/inventory/CraftingResultInventory	stacks|a|a
+net/minecraft/inventory/DoubleInventory	name|a|a	first|b|b	second|c|c
+net/minecraft/inventory/SimpleInventory	name|a|-	size|b|-	stacks|c|-	listeners|d|-
+net/minecraft/isom/IsomChunkRenderer	colors|a|-	pixels|b|-	height|c|-	waterHeight|d|-	waterBrightness|e|-	depth|f|-	sprites|g|-
+net/minecraft/isom/IsomPreviewApplet	canvas|a|-
+net/minecraft/isom/IsomPreviewCanvas	frames|a|-	scale|b|-	renderDebugInfo|c|-	world|d|-	workingDir|e|-	running|f|-	chunksToRender|g|-	chunks|h|-	offsetX|i|-	offsetZ|j|-	mouseX|k|-	mouseY|l|-
+net/minecraft/isom/IsomPreviewCanvas$1	field_1966|a|-
+net/minecraft/isom/IsomRenderChunk	image|a|-	world|b|-	chunkX|c|-	chunkZ|d|-	rendered|e|-	empty|f|-	lastVisible|g|-	toBeRendered|h|-
+net/minecraft/isom/OS	LINUX|a|-	SOLARIS|b|-	WINDOWS|c|-	MACOS|d|-	UNKNOWN|e|-	field_1308|f|-
+net/minecraft/isom/class_581	field_2517|a|-
+net/minecraft/item/ArmorItem	PROTECTION_BY_SLOT|bn|bn	DURABILITY_BY_SLOT|bo|bo	type|a|a	equipmentSlot|bk|bk	maxProtection|bl|bl	textureIndex|bm|bm
+net/minecraft/item/AxeItem	axeEffectiveBlocks|bk|bk
+net/minecraft/item/BlockItem	itemId|a|a
+net/minecraft/item/BucketItem	fluidBlockId|a|a
+net/minecraft/item/DoorItem	material|a|a
+net/minecraft/item/DyeItem	names|a|a	colors|bk|bk
+net/minecraft/item/FoodItem	healthRestored|a|a	meat|bk|bk
+net/minecraft/item/Item	random|b|b	ITEMS|c|c	IRON_SHOVEL|d|d	IRON_PICKAXE|e|e	IRON_AXE|f|f	FLINT_AND_STEEL|g|g	APPLE|h|h	BOW|i|i	ARROW|j|j	COAL|k|k	DIAMOND|l|l	IRON_INGOT|m|m	GOLD_INGOT|n|n	IRON_SWORD|o|o	WOODEN_SWORD|p|p	WOODEN_SHOVEL|q|q	WOODEN_PICKAXE|r|r	WOODEN_AXE|s|s	STONE_SWORD|t|t	STONE_SHOVEL|u|u	STONE_PICKAXE|v|v	STONE_AXE|w|w	DIAMOND_SWORD|x|x	DIAMOND_SHOVEL|y|y	DIAMOND_PICKAXE|z|z	DIAMOND_AXE|A|A	STICK|B|B	BOWL|C|C	MUSHROOM_STEW|D|D	GOLDEN_SWORD|E|E	GOLDEN_SHOVEL|F|F	GOLDEN_PICKAXE|G|G	GOLDEN_AXE|H|H	STRING|I|I	FEATHER|J|J	GUNPOWDER|K|K	WOODEN_HOE|L|L	STONE_HOE|M|M	IRON_HOE|N|N	DIAMOND_HOE|O|O	GOLDEN_HOE|P|P	SEEDS|Q|Q	WHEAT|R|R	BREAD|S|S	LEATHER_HELMET|T|T	LEATHER_CHESTPLATE|U|U	LEATHER_LEGGINGS|V|V	LEATHER_BOOTS|W|W	CHAIN_HELMET|X|X	CHAIN_CHESTPLATE|Y|Y	CHAIN_LEGGINGS|Z|Z	CHAIN_BOOTS|aa|aa	IRON_HELMET|ab|ab	IRON_CHESTPLATE|ac|ac	IRON_LEGGINGS|ad|ad	IRON_BOOTS|ae|ae	DIAMOND_HELMET|af|af	DIAMOND_CHESTPLATE|ag|ag	DIAMOND_LEGGINGS|ah|ah	DIAMOND_BOOTS|ai|ai	GOLDEN_HELMET|aj|aj	GOLDEN_CHESTPLATE|ak|ak	GOLDEN_LEGGINGS|al|al	GOLDEN_BOOTS|am|am	FLINT|an|an	RAW_PORKCHOP|ao|ao	COOKED_PORKCHOP|ap|ap	PAINTING|aq|aq	GOLDEN_APPLE|ar|ar	SIGN|as|as	WOODEN_DOOR|at|at	BUCKET|au|au	WATER_BUCKET|av|av	LAVA_BUCKET|aw|aw	MINECART|ax|ax	SADDLE|ay|ay	IRON_DOOR|az|az	REDSTONE|aA|aA	SNOWBALL|aB|aB	BOAT|aC|aC	LEATHER|aD|aD	MILK_BUCKET|aE|aE	BRICK|aF|aF	CLAY|aG|aG	SUGAR_CANE|aH|aH	PAPER|aI|aI	BOOK|aJ|aJ	SLIMEBALL|aK|aK	CHEST_MINECART|aL|aL	FURNACE_MINECART|aM|aM	EGG|aN|aN	COMPASS|aO|aO	FISHING_ROD|aP|aP	CLOCK|aQ|aQ	GLOWSTONE_DUST|aR|aR	RAW_FISH|aS|aS	COOKED_FISH|aT|aT	DYE|aU|aU	BONE|aV|aV	SUGAR|aW|aW	CAKE|aX|aX	BED|aY|aY	REPEATER|aZ|aZ	COOKIE|ba|ba	MAP|bb|bb	SHEARS|bc|bc	RECORD_THIRTEEN|bd|bd	RECORD_CAT|be|be	id|bf|bf	maxCount|bg|bg	maxDamage|a|a	textureId|bh|bh	handheld|bi|bi	hasSubtypes|bj|bj	craftingReturnItem|bk|bk	translationKey|bl|bl
+net/minecraft/item/ItemStack	count|a|a	bobbingAnimationTime|b|b	itemId|c|c	damage|d|d
+net/minecraft/item/MinecartItem	type|a|a
+net/minecraft/item/MusicDiscItem	sound|a|a
+net/minecraft/item/PickaxeItem	pickaxeEffectiveBlocks|bk|bk
+net/minecraft/item/SecondaryBlockItem	blockId|a|a
+net/minecraft/item/SeedsItem	cropBlockId|a|a
+net/minecraft/item/ShovelItem	shovelEffectiveBlocks|bk|bk
+net/minecraft/item/SwordItem	damage|a|a
+net/minecraft/item/ToolItem	effectiveOnBlocks|bk|bk	miningSpeed|bl|bl	damage|bm|bm	toolMaterial|a|a
+net/minecraft/item/ToolMaterial	WOOD|a|a	STONE|b|b	IRON|c|c	DIAMOND|d|d	GOLD|e|e	miningLevel|f|f	itemDurability|g|g	miningSpeed|h|h	attackDamage|i|i	field_1697|j|j
+net/minecraft/item/map/MapState	centerX|b|b	centerZ|c|c	dimension|d|d	scale|e|e	colors|f|f	inventoryTicks|g|g	updateTrackers|h|h	updateTrackersByPlayer|j|j	icons|i|i
+net/minecraft/item/map/MapState$MapIcon	type|a|a	x|b|b	z|c|c	rotation|d|d	field_733|e|e
+net/minecraft/item/map/MapState$PlayerUpdateTracker	player|a|a	startZ|b|b	endZ|c|c	nextDirtyPixel|e|e	colorsUpdateInterval|f|f	field_737|d|d
+net/minecraft/nbt/NbtByte	value|a|a
+net/minecraft/nbt/NbtByteArray	value|a|a
+net/minecraft/nbt/NbtCompound	entries|a|a
+net/minecraft/nbt/NbtDouble	value|a|a
+net/minecraft/nbt/NbtElement	key|a|a
+net/minecraft/nbt/NbtFloat	value|a|a
+net/minecraft/nbt/NbtInt	value|a|a
+net/minecraft/nbt/NbtList	value|a|a	type|b|b
+net/minecraft/nbt/NbtLong	value|a|a
+net/minecraft/nbt/NbtShort	value|a|a
+net/minecraft/nbt/NbtString	value|a|a
+net/minecraft/network/Connection	LOCK|a|a	READ_THREAD_COUNTER|b|b	WRITE_THREAD_COUNTER|c|c	lock|g|g	socket|h|h	address|i|i	inputStream|j|j	outputStream|k|k	open|l|l	readQueue|m|m	sendQueue|n|n	delayedSendQueue|o|o	networkHandler|p|p	closed|q|q	writer|r|r	reader|s|s	disconnected|t|t	disconnectReason|u|u	disconnectReasonArgs|v|v	timeout|w|w	sendQueueSize|x|x	TOTAL_READ_SIZE|d|d	TOTAL_SEND_SIZE|e|e	lag|f|f	delay|y|y
+net/minecraft/network/Connection$1	field_1299|a|a
+net/minecraft/network/Connection$4	field_1302|a|a
+net/minecraft/network/packet/Packet	ID_TO_TYPE|a|a	TYPE_TO_ID|b|b	S2C|c|c	C2S|d|d	creationTime|j|j	worldPacket|k|k	trackers|e|e	incomingCount|f|f
+net/minecraft/network/packet/PacketTracker	count|a|a	size|b|b
+net/minecraft/network/packet/c2s/play/ClickSlotC2SPacket	syncId|a|a	slot|b|b	button|c|c	actionType|d|d	stack|e|e	holdingShift|f|f
+net/minecraft/network/packet/c2s/play/ClientCommandC2SPacket	entityId|a|a	mode|b|b
+net/minecraft/network/packet/c2s/play/PlayerActionC2SPacket	x|a|a	y|b|b	z|c|c	direction|d|d	action|e|e
+net/minecraft/network/packet/c2s/play/PlayerInputC2SPacket	sideways|a|a	forward|b|b	jumping|c|c	sneaking|d|d	pitch|e|e	yaw|f|f
+net/minecraft/network/packet/c2s/play/PlayerInteractBlockC2SPacket	x|a|a	y|b|b	z|c|c	side|d|d	stack|e|e
+net/minecraft/network/packet/c2s/play/PlayerInteractEntityC2SPacket	playerId|a|a	entityId|b|b	isLeftClick|c|c
+net/minecraft/network/packet/c2s/play/UpdateSelectedSlotC2SPacket	selectedSlot|a|a
+net/minecraft/network/packet/handshake/HandshakePacket	name|a|a
+net/minecraft/network/packet/login/LoginHelloPacket	protocolVersion|a|a	username|b|b	worldSeed|c|c	dimensionId|d|d
+net/minecraft/network/packet/play/ChatMessagePacket	chatMessage|a|a
+net/minecraft/network/packet/play/DisconnectPacket	reason|a|a
+net/minecraft/network/packet/play/EntityAnimationPacket	id|a|a	animationId|b|b
+net/minecraft/network/packet/play/PlayerMovePacket	x|a|a	y|b|b	z|c|c	eyeHeight|d|d	yaw|e|e	pitch|f|f	onGround|g|g	changePosition|h|h	changeLook|i|i
+net/minecraft/network/packet/play/PlayerRespawnPacket	dimensionRawId|a|a
+net/minecraft/network/packet/play/ScreenHandlerAcknowledgementPacket	syncId|a|a	actionType|b|b	accepted|c|c
+net/minecraft/network/packet/play/UpdateSignPacket	x|a|a	y|b|b	z|c|c	text|d|d
+net/minecraft/network/packet/s2c/play/BlockUpdateS2CPacket	x|a|a	y|b|b	z|c|c	blockRawId|d|d	blockMetadata|e|e
+net/minecraft/network/packet/s2c/play/ChunkDataS2CPacket	x|a|a	y|b|b	z|c|c	sizeX|d|d	sizeY|e|e	sizeZ|f|f	chunkData|g|g	chunkDataSize|h|h
+net/minecraft/network/packet/s2c/play/ChunkDeltaUpdateS2CPacket	x|a|a	z|b|b	positions|c|c	blockRawIds|d|d	blockMetadata|e|e	size|f|f
+net/minecraft/network/packet/s2c/play/ChunkStatusUpdateS2CPacket	x|a|a	z|b|b	load|c|c
+net/minecraft/network/packet/s2c/play/CloseScreenS2CPacket	syncId|a|a
+net/minecraft/network/packet/s2c/play/EntityDestroyS2CPacket	id|a|a
+net/minecraft/network/packet/s2c/play/EntityEquipmentUpdateS2CPacket	id|a|a	slot|b|b	itemRawId|c|c	itemDamage|d|d
+net/minecraft/network/packet/s2c/play/EntityPositionS2CPacket	id|a|a	x|b|b	y|c|c	z|d|d	yaw|e|e	pitch|f|f
+net/minecraft/network/packet/s2c/play/EntityS2CPacket	id|a|a	deltaX|b|b	deltaY|c|c	deltaZ|d|d	yaw|e|e	pitch|f|f	rotate|g|g
+net/minecraft/network/packet/s2c/play/EntitySpawnS2CPacket	id|a|a	x|b|b	y|c|c	z|d|d	velocityX|e|e	velocityY|f|f	velocityZ|g|g	entityType|h|h	entityData|i|i
+net/minecraft/network/packet/s2c/play/EntityStatusS2CPacket	id|a|a	status|b|b
+net/minecraft/network/packet/s2c/play/EntityTrackerUpdateS2CPacket	id|a|a	trackedValues|b|b
+net/minecraft/network/packet/s2c/play/EntityVehicleSetS2CPacket	id|a|a	vehicleId|b|b
+net/minecraft/network/packet/s2c/play/EntityVelocityUpdateS2CPacket	id|a|a	velocityX|b|b	velocityY|c|c	velocityZ|d|d
+net/minecraft/network/packet/s2c/play/ExplosionS2CPacket	x|a|a	y|b|b	z|c|c	radius|d|d	affectedBlocks|e|e
+net/minecraft/network/packet/s2c/play/GameStateChangeS2CPacket	REASONS|a|a	reason|b|b
+net/minecraft/network/packet/s2c/play/GlobalEntitySpawnS2CPacket	id|a|a	x|b|b	y|c|c	z|d|d	type|e|e
+net/minecraft/network/packet/s2c/play/HealthUpdateS2CPacket	health|a|a
+net/minecraft/network/packet/s2c/play/IncreaseStatS2CPacket	statId|a|a	amount|b|b
+net/minecraft/network/packet/s2c/play/InventoryS2CPacket	syncId|a|a	contents|b|b
+net/minecraft/network/packet/s2c/play/ItemEntitySpawnS2CPacket	id|a|a	x|b|b	y|c|c	z|d|d	velocityX|e|e	velocityY|f|f	velocityZ|g|g	itemRawId|h|h	itemCount|i|i	itemDamage|l|l
+net/minecraft/network/packet/s2c/play/ItemPickupAnimationS2CPacket	entityId|a|a	collectorEntityId|b|b
+net/minecraft/network/packet/s2c/play/LivingEntitySpawnS2CPacket	id|a|a	entityType|b|b	x|c|c	y|d|d	z|e|e	yaw|f|f	pitch|g|g	dataTracker|h|h	trackedValues|i|i
+net/minecraft/network/packet/s2c/play/MapUpdateS2CPacket	itemRawId|a|a	id|b|b	updateData|c|c
+net/minecraft/network/packet/s2c/play/OpenScreenS2CPacket	syncId|a|a	screenHandlerId|b|b	name|c|c	size|d|d
+net/minecraft/network/packet/s2c/play/PaintingEntitySpawnS2CPacket	id|a|a	x|b|b	y|c|c	z|d|d	facing|e|e	variant|f|f
+net/minecraft/network/packet/s2c/play/PlayNoteSoundS2CPacket	x|a|a	y|b|b	z|c|c	instrument|d|d	pitch|e|e
+net/minecraft/network/packet/s2c/play/PlayerSleepUpdateS2CPacket	id|a|a	x|b|b	y|c|c	z|d|d	status|e|e
+net/minecraft/network/packet/s2c/play/PlayerSpawnPositionS2CPacket	x|a|a	y|b|b	z|c|c
+net/minecraft/network/packet/s2c/play/PlayerSpawnS2CPacket	id|a|a	name|b|b	x|c|c	y|d|d	z|e|e	yaw|f|f	pitch|g|g	itemRawId|h|h
+net/minecraft/network/packet/s2c/play/ScreenHandlerPropertyUpdateS2CPacket	syncId|a|a	propertyId|b|b	value|c|c
+net/minecraft/network/packet/s2c/play/ScreenHandlerSlotUpdateS2CPacket	syncId|a|a	slot|b|b	stack|c|c
+net/minecraft/network/packet/s2c/play/WorldEventS2CPacket	eventId|a|a	data|b|b	x|c|c	y|d|d	z|e|e
+net/minecraft/network/packet/s2c/play/WorldTimeUpdateS2CPacket	time|a|a
+net/minecraft/recipe/ArmorRecipes	patterns|a|a	items|b|b
+net/minecraft/recipe/CraftingRecipeManager	INSTANCE|a|a	recipes|b|b
+net/minecraft/recipe/CraftingRecipeManager$1	field_563|a|a
+net/minecraft/recipe/ShapedRecipe	width|b|b	height|c|c	input|d|d	output|e|e	outputId|a|a
+net/minecraft/recipe/ShapelessRecipe	output|a|a	input|b|b
+net/minecraft/recipe/SmeltingRecipeManager	INSTANCE|a|a	recipes|b|b
+net/minecraft/recipe/StorageBlockRecipes	items|a|a
+net/minecraft/recipe/ToolRecipes	patterns|a|a	items|b|b
+net/minecraft/recipe/WeaponRecipes	patterns|a|a	items|b|b
+net/minecraft/screen/CraftingScreenHandler	input|a|a	result|b|b	world|c|c	x|h|h	y|i|i	z|j|j
+net/minecraft/screen/DispenserScreenHandler	dispenserBlockEntity|a|a
+net/minecraft/screen/FurnaceScreenHandler	furnaceBlockEntity|a|a	cookTime|b|b	burnTime|c|c	fuelTime|h|h
+net/minecraft/screen/GenericContainerScreenHandler	inventory|a|a	rows|b|b
+net/minecraft/screen/PlayerScreenHandler	craftingInput|a|a	craftingResult|b|b	isLocal|c|c
+net/minecraft/screen/ScreenHandler	trackedStacks|d|d	slots|e|e	syncId|f|f	revision|a|a	listeners|g|g	players|b|b
+net/minecraft/screen/slot/CraftingResultSlot	input|d|d	player|e|e
+net/minecraft/screen/slot/FurnaceOutputSlot	player|d|d
+net/minecraft/screen/slot/Slot	index|d|d	inventory|e|e	id|a|a	x|b|b	y|c|c
+net/minecraft/server/ChunkMap	players|-|a	chunkMapping|-|b	chunksToUpdate|-|c	server|-|d	dimensionId|-|e	viewDistance|-|f	DIRECTIONS|-|g
+net/minecraft/server/ChunkMap$TrackedChunk	players|-|b	chunkX|-|c	chunkZ|-|d	chunkPos|-|e	dirtyBlocks|-|f	dirtyBlockCount|-|g	minX|-|h	minY|-|i	minZ|-|j	maxX|-|k	maxY|-|l	maxZ|-|m	field_2136|-|a
+net/minecraft/server/ConsoleFormatter	dateFormat|-|a
+net/minecraft/server/MinecraftServer	LOGGER|-|a	field_2838|-|b	connections|-|c	properties|-|d	worlds|-|e	playerManager|-|f	commandHandler|-|p	running|-|q	stopped|-|g	ticks|-|h	progressMessage|-|i	progress|-|j	tickables|-|r	pendingCommands|-|s	entityTrackers|-|k	onlineMode|-|l	spawnAnimals|-|m	pvpEnabled|-|n	flightEnabled|-|o
+net/minecraft/server/MinecraftServer$BackgroundDaemon	field_2860|-|a
+net/minecraft/server/MinecraftServer$CommandThread	field_2859|-|a
+net/minecraft/server/MinecraftServer$ServerThread	server|-|a
+net/minecraft/server/MinecraftServer$WorldConversionProgress	lastLogTime|-|b	field_2857|-|a
+net/minecraft/server/PlayerManager	LOGGER|-|a	players|-|b	server|-|c	chunkMaps|-|d	maxPlayerCount|-|e	bannedPlayers|-|f	bannedIps|-|g	ops|-|h	whitelist|-|i	BANNED_PLAYERS_FILE|-|j	BANNED_IPS_FILE|-|k	OPERATORS_FILE|-|l	WHITELIST_FILE|-|m	saveHandler|-|n	whitelistEnabled|-|o
+net/minecraft/server/ServerLog	LOGGER|-|a
+net/minecraft/server/ServerProperties	logger|-|a	properties|-|b	propertiesFile|-|c
+net/minecraft/server/command/Command	commandAndArgs|-|a	output|-|b
+net/minecraft/server/command/ServerCommandHandler	logger|-|a	server|-|b
+net/minecraft/server/dedicated/gui/DedicatedServerGui	LOGGER|-|a	server|-|b
+net/minecraft/server/dedicated/gui/DedicatedServerGui$1	field_1979|-|a
+net/minecraft/server/dedicated/gui/DedicatedServerGui$2	field_1980|-|a	field_1981|-|b
+net/minecraft/server/dedicated/gui/DedicatedServerGui$3	field_1982|-|a
+net/minecraft/server/dedicated/gui/LogHandler	field_2707|-|b	field_2708|-|c	formatter|-|a	textArea|-|d
+net/minecraft/server/dedicated/gui/LogHandler$1	field_2710|-|a
+net/minecraft/server/dedicated/gui/PlayerListGui	server|-|a	tick|-|b
+net/minecraft/server/dedicated/gui/PlayerStatsGui	memoryUsePercentage|-|a	memoryUsage|-|b	lines|-|c
+net/minecraft/server/dedicated/gui/PlayerStatsGui$1	field_915|-|a
+net/minecraft/server/entity/EntityTracker	entries|-|a	entriesById|-|b	world|-|c	viewDistance|-|d	dimensionId|-|e
+net/minecraft/server/entity/EntityTrackerEntry	currentTrackedEntity|-|a	trackedDistance|-|b	trackingFrequency|-|c	lastX|-|d	lastY|-|e	lastZ|-|f	lastYaw|-|g	lastPitch|-|h	velocityX|-|i	velocityY|-|j	velocityZ|-|k	ticks|-|l	x|-|o	y|-|p	z|-|q	isInitialized|-|r	alwaysUpdateVelocity|-|s	ticksSinceLastDismount|-|t	newPlayerDataUpdated|-|m	listeners|-|n
+net/minecraft/server/network/ConnectionListener	LOGGER|-|a	socket|-|d	thread|-|e	open|-|b	connectionCounter|-|f	pendingConnections|-|g	connections|-|h	server|-|c
+net/minecraft/server/network/ConnectionListener$1	field_36|-|a	field_37|-|b
+net/minecraft/server/network/ServerLoginNetworkHandler	LOGGER|-|a	random|-|d	connection|-|b	closed|-|c	server|-|e	loginTicks|-|f	username|-|g	loginPacket|-|h	serverId|-|i
+net/minecraft/server/network/ServerLoginNetworkHandler$AuthThread	loginPacket|-|a	networkHandler|-|b
+net/minecraft/server/network/ServerPlayNetworkHandler	LOGGER|-|a	connection|-|b	disconnected|-|c	server|-|d	player|-|e	ticks|-|f	lastKeepAliveTime|-|g	floatingTime|-|h	moved|-|i	teleportTargetX|-|j	teleportTargetY|-|k	teleportTargetZ|-|l	teleported|-|m	transactions|-|n
+net/minecraft/server/network/ServerPlayerInteractionManager	world|-|b	player|-|a	blockBreakProgress|-|c	failedMiningStartTime|-|d	failedMiningX|-|e	failedMiningY|-|f	failedMiningZ|-|g	tickCounter|-|h	mining|-|i	miningX|-|j	miningY|-|k	miningZ|-|l	startMiningTime|-|m
+net/minecraft/server/world/ServerWorldEventListener	server|-|a	world|-|b
+net/minecraft/server/world/chunk/ServerChunkCache	chunksToUnload|-|b	empty|-|c	generator|-|d	storage|-|e	forceLoad|-|a	chunksByPos|-|f	chunks|-|g	world|-|h
+net/minecraft/sound/BlockSoundGroup	soundName|a|a	volume|b|b	pitch|c|c
+net/minecraft/src/EntityRendererProxy	game|game|-
+net/minecraft/src/EntityTrackerEntry2	entityId|-|entityId	entityHasOwner|-|entityHasOwner
+net/minecraft/src/ModLoader	animList|animList|-	blockModels|blockModels|-	blockSpecialInv|blockSpecialInv|-	cfgdir|cfgdir|cfgdir	cfgfile|cfgfile|cfgfile	cfgLoggingLevel|cfgLoggingLevel|cfgLoggingLevel	classMap|classMap|classMap	clock|clock|clock	DEBUG|DEBUG|DEBUG	field_animList|field_animList|-	field_armorList|field_armorList|-	field_blockList|field_blockList|-	field_modifiers|field_modifiers|field_modifiers	field_TileEntityRenderers|field_TileEntityRenderers|-	hasInit|hasInit|hasInit	highestEntityId|highestEntityId|highestEntityId	inGameHooks|inGameHooks|inGameHooks	inGUIHooks|inGUIHooks|-	instance|instance|instance	itemSpriteIndex|itemSpriteIndex|itemSpriteIndex	itemSpritesLeft|itemSpritesLeft|itemSpritesLeft	keyList|keyList|-	logfile|logfile|logfile	logger|logger|logger	logHandler|logHandler|logHandler	method_RegisterEntityID|method_RegisterEntityID|method_RegisterEntityID	method_RegisterTileEntity|method_RegisterTileEntity|method_RegisterTileEntity	modDir|modDir|modDir	modList|modList|modList	nextBlockModelID|nextBlockModelID|nextBlockModelID	overrides|overrides|overrides	props|props|props	standardBiomes|standardBiomes|standardBiomes	terrainSpriteIndex|terrainSpriteIndex|terrainSpriteIndex	terrainSpritesLeft|terrainSpritesLeft|terrainSpritesLeft	texPack|texPack|-	texturesAdded|texturesAdded|-	usedItemSprites|usedItemSprites|usedItemSprites	usedTerrainSprites|usedTerrainSprites|usedTerrainSprites	VERSION|VERSION|VERSION
+net/minecraft/src/ModLoaderMp	NAME|NAME|NAME	VERSION|VERSION|VERSION	hasInit|hasInit|hasInit	packet230Received|packet230Received|-	netClientHandlerEntityMap|netClientHandlerEntityMap|-	guiModMap|guiModMap|-
+net/minecraft/src/ModTextureAnimation	tickRate|tickRate|-	images|images|-	index|index|-	ticks|ticks|-
+net/minecraft/src/ModTextureStatic	oldanaglyph|oldanaglyph|-	pixels|pixels|-
+net/minecraft/src/NetClientHandlerEntity	entityClass|entityClass|-	entityHasOwner|entityHasOwner|-
+net/minecraft/src/Packet230ModLoader	MAX_DATA_LENGTH|MAX_DATA_LENGTH|MAX_DATA_LENGTH	modId|modId|modId	packetType|packetType|packetType	dataInt|dataInt|dataInt	dataFloat|dataFloat|dataFloat	dataString|dataString|dataString
+net/minecraft/src/forge/ArmorProperties	damageRemove|damageRemove|damageRemove	allowRegularComputation|allowRegularComputation|allowRegularComputation
+net/minecraft/src/forge/BlockTextureParticles	texture|texture|-	effects|effects|-
+net/minecraft/src/forge/Configuration	configBlocks|configBlocks|configBlocks	GENERAL_PROPERTY|GENERAL_PROPERTY|GENERAL_PROPERTY	BLOCK_PROPERTY|BLOCK_PROPERTY|BLOCK_PROPERTY	ITEM_PROPERTY|ITEM_PROPERTY|ITEM_PROPERTY	file|file|file	blockProperties|blockProperties|blockProperties	itemProperties|itemProperties|itemProperties	generalProperties|generalProperties|generalProperties
+net/minecraft/src/forge/ForgeHooks	craftingHandlers|craftingHandlers|craftingHandlers	destroyToolHandlers|destroyToolHandlers|destroyToolHandlers	sleepHandlers|sleepHandlers|sleepHandlers	majorVersion|majorVersion|majorVersion	minorVersion|minorVersion|minorVersion	revisionVersion|revisionVersion|revisionVersion	toolInit|toolInit|toolInit	toolClasses|toolClasses|toolClasses	toolHarvestLevels|toolHarvestLevels|toolHarvestLevels	toolEffectiveness|toolEffectiveness|toolEffectiveness
+net/minecraft/src/forge/ForgeHooksClient	highlightHandlers|highlightHandlers|-	tessellators|tessellators|-	textures|textures|-	inWorld|inWorld|-	renderTextureTest|renderTextureTest|-	renderTextureList|renderTextureList|-	defaultTessellator|defaultTessellator|-	renderPass|renderPass|-
+net/minecraft/src/forge/MinecraftForge	bucketHandlers|bucketHandlers|bucketHandlers
+net/minecraft/src/forge/MinecraftForgeClient	customItemRenderers|customItemRenderers|-
+net/minecraft/src/forge/Property	name|name|name	value|value|value	comment|comment|comment
+net/minecraft/stat/ItemOrBlockStat	itemOrBlockId|a|a
+net/minecraft/stat/PlayerStats	stats|a|-	unsentStats|b|-	dirty|c|-	syncer|d|-
+net/minecraft/stat/Stat	id|e|e	stringId|f|f	localOnly|g|g	uuid|h|h	formatter|a|a	DEFAULT_NUMBER_FORMAT|b|b	INTEGER_FORMAT|i|i	DEFAULT_DECIMAL_FORMAT|c|c	TIME_PROVIDER|j|j	DISTANCE_PROVIDER|k|k
+net/minecraft/stat/Stats	ID_TO_STAT|a|a	ALL_STATS|b|b	GENERAL_STATS|c|c	ITEM_STATS|d|d	BLOCK_MINED_STATS|e|e	START_GAME|f|f	CREATE_WORLD|g|g	LOAD_WORLD|h|h	JOIN_MULTIPLAYER|i|i	LEAVE_GAME|j|j	PLAY_ONE_MINUTE|k|k	WALK_ONE_CM|l|l	SWIM_ONE_CM|m|m	FALL_ONE_CM|n|n	CLIMB_ONE_CM|o|o	FLY_ONE_CM|p|p	DIVE_ONE_CM|q|q	MINECART_ONE_CM|r|r	BOAT_ONE_CM|s|s	PIG_ONE_CM|t|t	JUMP|u|u	DROP|v|v	DAMAGE_DEALT|w|w	DAMAGE_TAKEN|x|x	DEATHS|y|y	MOB_KILLS|z|z	PLAYER_KILLS|A|A	FISH_CAUGHT|B|B	MINE_BLOCK|C|C	CRAFTED|D|D	USED|E|E	BROKEN|F|F	hasBasicItemStatsInitialized|G|G	hasExtendedItemStatsInitialized|H|H
+net/minecraft/stat/StatsSyncer	busy|a|-	stats|b|-	unsentStats|c|-	statHandler|d|-	unsentStatsFile|e|-	statsFile|f|-	tempUnsentStatsFile|g|-	tempStatsFile|h|-	oldUnsentStatsFile|i|-	oldStatsFile|j|-	session|k|-	saveCooldown|l|-	saveUnsentCooldown|m|-
+net/minecraft/stat/StatsSyncer$1	field_2728|a|-	field_2729|b|-
+net/minecraft/stat/StatsSyncer$2	field_2730|a|-
+net/minecraft/stat/achievement/AchievementMap	INSTANCE|a|a	uuids|b|b
+net/minecraft/util/CharacterUtils	VALID_CHARACTERS|a|a	INVALID_CHARS_WORLD_NAME|b|b
+net/minecraft/util/IntHashMap	table|a|a	size|b|b	threshold|c|c	loadFactor|d|d	modCount|e|e
+net/minecraft/util/IntHashMapEntry	key|a|a	value|b|b	next|c|c	hash|d|d
+net/minecraft/util/LongObjectHashMap	entries|-|a	size|-|b	capacity|-|c	loadFactor|-|d	modCount|-|e
+net/minecraft/util/LongObjectHashMapEntry	key|-|a	value|-|b	next|-|c	hash|-|d
+net/minecraft/util/MD5MessageDigest	salt|a|-
+net/minecraft/util/OperatingSystem	LINUX|a|-	SOLARIS|b|-	WINDOWS|c|-	MACOS|d|-	UNKNOWN|e|-	field_2215|f|-
+net/minecraft/util/crash/CrashReport	description|a|-	exception|b|-
+net/minecraft/util/hit/HitResult	type|a|a	blockX|b|b	blockY|c|c	blockZ|d|d	side|e|e	pos|f|f	entity|g|g	subHit|subHit|subHit
+net/minecraft/util/hit/HitResultType	BLOCK|a|a	ENTITY|b|b	field_791|c|c
+net/minecraft/util/math/BlockPos	x|a|a	y|b|b	z|c|c
+net/minecraft/util/math/Box	cache|g|g	cacheCount|h|h	minX|a|a	minY|b|b	minZ|c|c	maxX|d|d	maxY|e|e	maxZ|f|f
+net/minecraft/util/math/ChunkPos	x|a|a	z|b|b
+net/minecraft/util/math/Facings	TO_DIR|a|a	OPPOSITE|b|b	BED_FACINGS|c|c
+net/minecraft/util/math/MathHelper	SINE_TABLE|a|a
+net/minecraft/util/math/Vec3d	cache|d|d	cacheCount|e|e	x|a|a	y|b|b	z|c|c
+net/minecraft/util/math/Vec3i	x|a|a	y|b|b	z|c|c
+net/minecraft/util/math/noise/OctavePerlinNoiseSampler	octaveSamplers|a|a	octaves|b|b
+net/minecraft/util/math/noise/OctaveSimplexNoiseSampler	octaveSamplers|a|a	octaves|b|b
+net/minecraft/util/math/noise/PerlinNoiseSampler	perm|d|d	offsetX|a|a	offsetY|b|b	offsetZ|c|c
+net/minecraft/util/math/noise/SimplexNoiseSampler	grads|d|d	perm|e|e	offsetX|a|a	offsetY|b|b	offsetZ|c|c	F2|f|f	G2|g|g
+net/minecraft/world/BlockEvent	counter|f|f	x|a|a	y|b|b	z|c|c	blockId|d|d	ticks|e|e	globalId|g|g
+net/minecraft/world/ClientWorld	blockResets|C|-	networkHandler|D|-	chunkCache|E|-	entitiesByNetworkId|F|-	forcedEntities|G|-	pendingEntities|H|-
+net/minecraft/world/ClientWorld$BlockReset	x|a|-	y|b|-	z|c|-	delay|d|-	block|e|-	meta|f|-	field_1734|g|-
+net/minecraft/world/LightType	SKY|a|a	BLOCK|b|b	lightValue|c|c	field_2760|d|d
+net/minecraft/world/NaturalSpawner	mobSpawningChunks|b|b	MONSTER_TYPE|a|a
+net/minecraft/world/PersistentState	id|a|a	dirty|b|b
+net/minecraft/world/ServerWorld	chunkCache|-|C	bypassSpawnProtection|-|D	savingDisabled|-|E	server|-|F	entitiesById|-|G
+net/minecraft/world/World	instantBlockUpdateEnabled|a|a	lightingQueue|C|C	entities|b|b	entitiesToUnload|D|D	scheduledUpdates|E|E	scheduledUpdateSet|F|F	blockEntities|c|c	blockEntityUpdateQueue|G|G	players|d|d	globalEntities|e|e	worldTimeMask|H|H	ambientDarkness|f|f	lcgBlockSeed|g|g	lcgBlockSeedIncrement|h|h	rainGradientPrev|i|i	rainGradient|j|j	thunderGradientPrev|k|k	thunderGradient|l|l	ticksSinceLightning|m|m	lightningTicksLeft|n|n	pauseTicking|o|o	timeLoaded|I|I	saveInterval|p|p	difficulty|q|q	random|r|r	newWorld|s|s	dimension|t|t	eventListeners|u|u	chunkSource|v|v	storage|w|w	properties|x|x	eventProcessingEnabled|y|y	allPlayersSleeping|J|J	persistentStateManager|z|z	tempCollisionBoxes|K|K	processingDeferred|L|L	lightingUpdateCount|M|M	allowMonsterSpawning|N|N	allowMobSpawning|O|O	lightingQueueCount|A|A	activeChunks|P|P	ambientSoundCounter|Q|Q	tempEntityList|R|R	isRemote|B|B
+net/minecraft/world/WorldProperties	seed|a|a	spawnX|b|b	spawnY|c|c	spawnZ|d|d	time|e|e	lastPlayed|f|f	sizeOnDisk|g|g	playerNbt|h|h	dimensionId|i|i	name|j|j	version|k|k	raining|l|l	rainTime|m|m	thundering|n|n	thunderTime|o|o
+net/minecraft/world/WorldRegion	chunkX|a|a	chunkZ|b|b	chunks|c|c	world|d|d
+net/minecraft/world/biome/Biome	RAINFOREST|a|a	SWAMPLAND|b|b	SEASONAL_FOREST|c|c	FOREST|d|d	SAVANNA|e|e	SHRUBLAND|f|f	TAIGA|g|g	DESERT|h|h	PLAINS|i|i	ICE_DESERT|j|j	TUNDRA|k|k	HELL|l|l	SKY|m|m	name|n|n	grassColor|o|o	topBlockId|p|p	soilBlockId|q|q	foliageColor|r|r	spawnableMonsters|s|s	spawnablePassive|t|t	spawnableWaterCreatures|u|u	hasSnow|v|v	hasRain|w|w	BIOMES|x|x
+net/minecraft/world/biome/EntitySpawnGroup	clazz|a|a	amount|b|b
+net/minecraft/world/biome/source/BiomeSource	temperatureSampler|e|e	downfallSampler|f|f	weirdnessSampler|g|g	temperatureMap|a|a	downfallMap|b|b	weirdnessMap|c|c	biomes|d|d
+net/minecraft/world/biome/source/FixedBiomeSource	biome|e|e	temperature|f|f	downfall|g|g
+net/minecraft/world/chunk/BlockSource	BLOCKS|a|a
+net/minecraft/world/chunk/Chunk	hasSkyLight|a|a	blocks|b|b	loaded|c|c	world|d|d	meta|e|e	skyLight|f|f	blockLight|g|g	heightmap|h|h	minHeightmapValue|i|i	x|j|j	z|k|k	blockEntities|l|l	entities|m|m	terrainPopulated|n|n	dirty|o|o	empty|p|p	lastSaveHadEntities|q|q	lastSaveTime|r|r
+net/minecraft/world/chunk/ChunkCache	chunksToUnload|a|a	empty|b|b	generator|c|c	storage|d|d	chunkByPos|e|e	chunks|f|f	world|g|g
+net/minecraft/world/chunk/ChunkNibbleArray	bytes|a|a
+net/minecraft/world/chunk/LegacyChunkCache	empty|c|-	generator|d|-	storage|e|-	chunks|f|-	world|g|-	cachedChunkX|a|-	cachedChunkZ|b|-	cachedChunk|h|-	spawnChunkX|i|-	spawnChunkZ|j|-
+net/minecraft/world/chunk/light/LightUpdate	lightType|a|a	minX|b|b	minY|c|c	minZ|d|d	maxX|e|e	maxY|f|f	maxZ|g|g
+net/minecraft/world/chunk/storage/AlphaChunkStorage	dir|a|a	make|b|b
+net/minecraft/world/chunk/storage/DataFile	file|a|a	chunkX|b|b	chunkZ|c|c
+net/minecraft/world/chunk/storage/RegionChunkStorage	dir|a|a
+net/minecraft/world/chunk/storage/RegionFile	BLOCK_BUFFER|a|a	file|b|b	randomAccessFile|c|c	chunkBlockInfo|d|d	chunkSaveTimes|e|e	blockEmptyFlags|f|f	bytesWritten|g|g	lastModifiedTime|h|h
+net/minecraft/world/chunk/storage/RegionFile$ChunkOutputStream	chunkX|b|b	chunkZ|c|c	field_1323|a|a
+net/minecraft/world/chunk/storage/RegionIo	REGION_FILES|a|a
+net/minecraft/world/dimension/Dimension	world|a|a	biomeSource|b|b	isNether|c|c	evaporatesWater|d|d	hasCeiling|e|e	lightLevelToLuminance|f|f	id|g|g	backgroundColor|h|h
+net/minecraft/world/dimension/PortalForcer	random|a|a
+net/minecraft/world/explosion/Explosion	fire|a|a	random|h|h	world|i|i	x|b|b	y|c|c	z|d|d	source|e|e	power|f|f	damagedBlocks|g|g
+net/minecraft/world/gen/carver/Carver	range|a|a	random|b|b
+net/minecraft/world/gen/chunk/NetherChunkGenerator	random|h|h	minLimitPerlinNoise|i|i	maxLimitPerlinNoise|j|j	perlinNoise1|k|k	perlinNoise2|l|l	perlinNoise3|m|m	scaleNoise|a|a	depthNoise|b|b	world|n|n	heightMap|o|o	sandBuffer|p|p	gravelBuffer|q|q	depthBuffer|r|r	cave|s|s	perlinNoiseBuffer|c|c	minLimitPerlinNoiseBuffer|d|d	maxLimitPerlinNoiseBuffer|e|e	scaleNoiseBuffer|f|f	depthNoiseBuffer|g|g
+net/minecraft/world/gen/chunk/OverworldChunkGenerator	random|j|j	minLimitPerlinNoise|k|k	maxLimitPerlinNoise|l|l	perlinNoise1|m|m	perlinNoise2|n|n	perlinNoise3|o|o	floatingIslandScale|a|a	floatingIslandNoise|b|b	forestNoise|c|c	world|p|p	heightMap|q|q	sandBuffer|r|r	gravelBuffer|s|s	depthBuffer|t|t	cave|u|u	biomes|v|v	perlinNoiseBuffer|d|d	minLimitPerlinNoiseBuffer|e|e	maxLimitPerlinNoiseBuffer|f|f	scaleNoiseBuffer|g|g	depthNoiseBuffer|h|h	waterDepths|i|i	temperatures|w|w
+net/minecraft/world/gen/chunk/SkyChunkGenerator	random|j|j	minLimitPerlinNoise|k|k	maxLimitPerlinNoise|l|l	perlinNoise1|m|m	perlinNoise2|n|n	perlinNoise3|o|o	floatingIslandScale|a|a	floatingIslandNoise|b|b	forestNoise|c|c	world|p|p	heightMap|q|q	sandBuffer|r|r	gravelBuffer|s|s	depthBuffer|t|t	cave|u|u	biomes|v|v	perlinNoiseBuffer|d|d	minLimitPerlinNoiseBuffer|e|e	maxLimitPerlinNoiseBuffer|f|f	scaleNoiseBuffer|g|g	depthNoiseBuffer|h|h	waterDepths|i|i	temperatures|w|w
+net/minecraft/world/gen/feature/ClayOreFeature	clayBlockId|a|a	blockCount|b|b
+net/minecraft/world/gen/feature/DeadBushPatchFeature	deadBushBlockId|a|a
+net/minecraft/world/gen/feature/GrassPatchFeature	tallGrassBlockId|a|a	tallGrassBlockMeta|b|b
+net/minecraft/world/gen/feature/LakeFeature	waterBlockId|a|a
+net/minecraft/world/gen/feature/LargeOakTreeFeature	MINOR_AXES|a|a	random|b|b	world|c|c	origin|d|d	height|e|e	trunkHeight|f|f	trunkScale|g|g	branchDensity|h|h	branchSlope|i|i	branchLengthScale|j|j	foliageDensity|k|k	trunkWidth|l|l	maxTrunkHeight|m|m	foliageClusterHeight|n|n	branches|o|o
+net/minecraft/world/gen/feature/NetherLavaSpringFeature	lavaBlockId|a|a
+net/minecraft/world/gen/feature/OreFeature	oreBlockId|a|a	oreCount|b|b
+net/minecraft/world/gen/feature/PlantPatchFeature	plantBlockId|a|a
+net/minecraft/world/gen/feature/SpringFeature	liquidBlockId|a|a
+net/minecraft/world/storage/AlphaWorldStorage	LOGGER|a|a	dir|b|b	playerDataDir|c|c	dataDir|d|d	startTime|e|e
+net/minecraft/world/storage/AlphaWorldStorageSource	dir|a|a
+net/minecraft/world/storage/DataFilenameFilter	PATTERN|a|a
+net/minecraft/world/storage/DimensionFileFilter	PATTERN|a|a
+net/minecraft/world/storage/SavedDataStorage	storage|a|a	loadedStatesById|b|b	loadedStates|c|c	idCounts|d|d
+net/minecraft/world/storage/WorldSaveInfo	saveName|a|-	name|b|-	lastPlayed|c|-	size|d|-	sameVersion|e|-

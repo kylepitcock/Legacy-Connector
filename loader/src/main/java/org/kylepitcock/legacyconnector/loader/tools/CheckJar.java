@@ -19,6 +19,7 @@ import com.google.gson.JsonObject;
 import org.kylepitcock.legacyconnector.loader.LegacyModDecl;
 import org.kylepitcock.legacyconnector.loader.LibraryBridges;
 import org.kylepitcock.legacyconnector.loader.transform.LinkReport;
+import org.kylepitcock.legacyconnector.loader.BetaJars;
 import org.kylepitcock.legacyconnector.loader.LegacyJar;
 import org.kylepitcock.legacyconnector.loader.LegacyJarInspector;
 import org.kylepitcock.legacyconnector.loader.LegacyVersion;
@@ -69,6 +70,13 @@ public final class CheckJar {
                 records.add(r);
             } else jars.add(jar);
         }
+        // b1.7.3 client + server builds of one mod: offline the client build is checked (as on a client)
+        Map<LegacyJar, String> otherBuilds = BetaJars.selectBuilds(jars, "CLIENT");
+        for (var e : otherBuilds.entrySet()) {
+            System.out.println(e.getKey().fileName() + " [" + e.getKey().version.id() + "]: not loaded with this set: " + e.getValue());
+            records.add(record(e.getKey(), "skipped", e.getValue(), null, 0));
+        }
+        jars.removeAll(otherBuilds.keySet());
         // As in a pack with Jade, JEI, Curios and Patchouli installed: bridged libraries are not translated, their API is relocated into the shim
         // (-Pbridges=false checks the legacy jars as plain mods instead).
         if (!"false".equalsIgnoreCase(System.getProperty("legacyconnector.check.bridges"))) {
