@@ -30,7 +30,27 @@ public class RegistryNamespaced extends RegistrySimple implements Iterable<Objec
     }
 
     public Object getObject(String name) {
-        return byName.apply(ensureNamespaced(name));
+        String full = ensureNamespaced(name);
+        Object replacement = REPLACEMENT_BY_NAME.isEmpty() ? null : REPLACEMENT_BY_NAME.get(full);
+        return replacement != null ? replacement : byName.apply(full);
+    }
+
+    /**
+     * Entries a mod swapped in for an existing one by writing {@code registryObjects} and the id map (HEE's dragon egg: it replaces
+     * the vanilla block's registry entry, id and Blocks field with its own subclass). The modern registries are frozen, so the new
+     * object takes over the old one's name, id and item by these tables.
+     */
+    private static final java.util.Map<Object, Object> REPLACED_BY = java.util.Collections.synchronizedMap(new java.util.IdentityHashMap<>());
+    private static final java.util.Map<Object, String> REPLACEMENT_NAMES = java.util.Collections.synchronizedMap(new java.util.IdentityHashMap<>());
+    private static final java.util.Map<String, Object> REPLACEMENT_BY_NAME = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** The registered object that {@code replacement} stands in for, or null. */
+    public static Object replacedBy(Object replacement) {
+        return replacement == null || REPLACED_BY.isEmpty() ? null : REPLACED_BY.get(replacement);
+    }
+
+    public static String replacementName(Object replacement) {
+        return replacement == null || REPLACEMENT_NAMES.isEmpty() ? null : REPLACEMENT_NAMES.get(replacement);
     }
 
     @Override
@@ -69,6 +89,13 @@ public class RegistryNamespaced extends RegistrySimple implements Iterable<Objec
         public Object put(Object key, Object value) {
             Object old = get(key);
             overrides.put(key, value);
+            if (old != null && value != null && old != value && key != null) {
+                String full = ensureNamespaced(String.valueOf(key));
+                Object original = REPLACED_BY.getOrDefault(old, old);
+                REPLACED_BY.put(value, original);
+                REPLACEMENT_NAMES.put(value, full);
+                REPLACEMENT_BY_NAME.put(full, value);
+            }
             return old;
         }
 
@@ -112,7 +139,8 @@ public class RegistryNamespaced extends RegistrySimple implements Iterable<Objec
     }
 
     public String getNameForObject(Object obj) {
-        return nameOf.apply(obj);
+        String n = nameOf.apply(obj);
+        return n != null ? n : replacementName(obj);
     }
 
     public boolean containsKey(String name) {
@@ -120,11 +148,16 @@ public class RegistryNamespaced extends RegistrySimple implements Iterable<Objec
     }
 
     public int getIDForObject(Object obj) {
-        return idOf.applyAsInt(obj);
+        int id = underlyingIntegerMap.func_148747_b(obj);
+        if (id < 0) {
+            Object original = replacedBy(obj);
+            if (original != null) return underlyingIntegerMap.func_148747_b(original);
+        }
+        return id;
     }
 
     public Object getObjectById(int id) {
-        return byId.apply(id);
+        return underlyingIntegerMap.func_148745_a(id);
     }
 
     public boolean containsId(int id) {

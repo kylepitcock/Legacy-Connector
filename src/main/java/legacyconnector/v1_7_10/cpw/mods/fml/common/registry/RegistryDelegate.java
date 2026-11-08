@@ -23,6 +23,11 @@ public interface RegistryDelegate<T> {
             this.registry = registry;
         }
 
+        /** FML's package-private setter; mods replacing a registry entry copy the old delegate's name by reflection. */
+        void setName(String name) {
+            this.name = name;
+        }
+
         @Override
         public T get() {
             return referant;
