@@ -447,6 +447,11 @@ public final class MiddleCompat {
         return net.minecraft.server.level.ClientInformation.createDefault();
     }
 
+    /** {@code KeyDispatchDataCodec.codec()}: a Codec in 1.20.1, a MapCodec in 1.21.1 (the record component). */
+    public static <A> com.mojang.serialization.Codec<A> keyDispatchCodec(net.minecraft.util.KeyDispatchDataCodec<A> k) {
+        return k.codec().codec();
+    }
+
     /** {@code ExtraCodecs.lazyInitializedCodec(Supplier)}. */
     public static <A> com.mojang.serialization.Codec<A> lazyInitializedCodec(java.util.function.Supplier<com.mojang.serialization.Codec<A>> supplier) {
         return com.mojang.serialization.Codec.lazyInitialized(supplier);
