@@ -463,6 +463,20 @@ net/neoforged/neoforge/event/entity/EntityEvent$Size	getOldEyeHeight	()F	EventCo
 net/neoforged/neoforge/event/entity/EntityEvent$Size	getNewEyeHeight	()F	EventCompat	newEyeHeight	-
 net/neoforged/neoforge/event/entity/EntityEvent$Size	setNewEyeHeight	(F)V	EventCompat	setNewEyeHeight	-
 net/neoforged/neoforge/event/entity/EntityEvent$Size	setNewSize	(Lnet/minecraft/world/entity/EntityDimensions;Z)V	EventCompat	setNewSize	-
+net/neoforged/fml/common/EventBusSubscriber$Bus	bus	()Ljava/util/function/Supplier;	BusCompat	bus	-
+net/minecraft/world/item/crafting/RecipeManager	byType	(Lnet/minecraft/world/item/crafting/RecipeType;)Ljava/util/Map;	RoundCompat	byType	-
+net/minecraft/world/item/crafting/RecipeManager$CachedCheck	getRecipeFor	(Lnet/minecraft/world/Container;Lnet/minecraft/world/level/Level;)Ljava/util/Optional;	RoundCompat	cachedGetRecipeFor	-
+net/minecraft/world/item/crafting/RecipeManager	getRemainingItemsFor	(Lnet/minecraft/world/item/crafting/RecipeType;Lnet/minecraft/world/Container;Lnet/minecraft/world/level/Level;)Lnet/minecraft/core/NonNullList;	RoundCompat	getRemainingItemsFor	-
+net/minecraft/world/inventory/RecipeCraftingHolder	setRecipeUsed	(Lnet/minecraft/world/item/crafting/Recipe;)V	RoundCompat	setRecipeUsed	-
+net/minecraft/world/inventory/RecipeCraftingHolder	setRecipeUsed	(Lnet/minecraft/world/level/Level;Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/world/item/crafting/Recipe;)Z	RoundCompat	setRecipeUsed	-
+net/minecraft/world/inventory/RecipeCraftingHolder	getRecipeUsed	()Lnet/minecraft/world/item/crafting/Recipe;	RoundCompat	getRecipeUsed	-
+net/minecraft/world/level/Explosion	<init>	(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/damagesource/DamageSource;Lnet/minecraft/world/level/ExplosionDamageCalculator;DDDFZLnet/minecraft/world/level/Explosion$BlockInteraction;)V	RoundCompat	newExplosion	-
+net/minecraft/world/level/Explosion	<init>	(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/Entity;DDDFLjava/util/List;)V	RoundCompat	newExplosion	-
+net/minecraft/world/entity/item/ItemEntity	setThrower	(Ljava/util/UUID;)V	RoundCompat	setThrower	-
+net/minecraft/world/level/block/state/properties/BlockSetType	<init>	(Ljava/lang/String;ZLnet/minecraft/world/level/block/SoundType;Lnet/minecraft/sounds/SoundEvent;Lnet/minecraft/sounds/SoundEvent;Lnet/minecraft/sounds/SoundEvent;Lnet/minecraft/sounds/SoundEvent;Lnet/minecraft/sounds/SoundEvent;Lnet/minecraft/sounds/SoundEvent;Lnet/minecraft/sounds/SoundEvent;Lnet/minecraft/sounds/SoundEvent;)V	RoundCompat	newBlockSetType	-
+net/minecraft/world/entity/decoration/PaintingVariant	<init>	(II)V	RoundCompat	newPaintingVariant	-
+net/minecraft/world/level/block/entity/BannerPattern	<init>	(Ljava/lang/String;)V	RoundCompat	newBannerPattern	-
+net/minecraft/world/item/Rarity	create	(Ljava/lang/String;Lnet/minecraft/ChatFormatting;)Lnet/minecraft/world/item/Rarity;	RoundCompat	createRarity	-
 # --- round 2 batch 4
 net/minecraft/world/level/block/Block	canSustainPlant	(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;Llegacyconnector/v1_20_1/net/minecraftforge/common/IPlantable;)Z@special	MiddleCompat	superCanSustainPlant
 net/minecraft/world/level/block/Block	canSustainPlant	(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;Llegacyconnector/v1_20_1/net/minecraftforge/common/IPlantable;)Z	MiddleCompat	blockCanSustainPlant

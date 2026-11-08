@@ -19,12 +19,12 @@ public final class RegistryManager {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public <V> IForgeRegistry<V> getRegistry(ResourceLocation key) {
+    public <V> ForgeRegistry<V> getRegistry(ResourceLocation key) {
         var reg = net.minecraft.core.registries.BuiltInRegistries.REGISTRY.get(key);
         return reg == null ? null : new ForgeRegistryWrapper((net.minecraft.core.Registry) reg);
     }
 
-    public <V> IForgeRegistry<V> getRegistry(ResourceKey<? extends net.minecraft.core.Registry<V>> key) {
+    public <V> ForgeRegistry<V> getRegistry(ResourceKey<? extends net.minecraft.core.Registry<V>> key) {
         return getRegistry(key.location());
     }
 
