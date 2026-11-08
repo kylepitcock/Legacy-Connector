@@ -828,7 +828,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
     private static volatile String currentSide = "CLIENT";
 
     /** The version folders under mods/ that Legacy Connector scans (a legacy jar belongs in the one named after its Minecraft version). */
-    private static final java.util.Set<String> VERSION_FOLDERS = java.util.Set.of("1.4.7", "1.5.2", "1.6.4", "1.7.10", "1.12.2", "1.20.1");
+    private static final java.util.Set<String> VERSION_FOLDERS = java.util.Set.of("1.4.7", "1.5.2", "1.6.4", "1.7.10", "1.12.2", "1.20.1", "b1.7.3");
 
     /** {@code legacy.autoSortMods} (default true): legacy jars found directly in mods/ are moved into mods/<minecraft version>/ on launch. */
     private static boolean autoSortMods(Path modsDir) {

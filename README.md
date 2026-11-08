@@ -7,7 +7,7 @@
 Run **unmodified legacy Forge mods on NeoForge 1.21.1**. Drop 1.7.10, 1.12.2, 1.6.4, 1.5.2, 1.4.7, Forge 1.20.1, or (alpha) Beta 1.7.3 mod jars into your `mods` folder next to
 this mod; it is translated at load time, the same way [Sinytra Connector](https://github.com/Sinytra/Connector)
 runs Fabric mods on NeoForge. The original jar is never modified. Legacy jars live in the folder of their Minecraft version (`mods/1.7.10/`, `mods/1.12.2/`,
-`mods/1.6.4/`, `mods/1.5.2/`, `mods/1.4.7/`, `mods/1.20.1/`): ones you drop into `mods/` itself are moved there for you on launch
+`mods/1.6.4/`, `mods/1.5.2/`, `mods/1.4.7/`, `mods/1.20.1/`, `mods/b1.7.3/`): ones you drop into `mods/` itself are moved there for you on launch
 (`legacy.autoSortMods=false` turns that off). It matters for mods that bundle their own Mixin (common in 1.12.2: Spartan Weaponry, MixinBooter mods):
 NeoForge loads such jars from `mods/` as launcher plugins before they can be translated, and the game stops with
 "Module ... contains package org.spongepowered..." (move them to the folder before the first launch).
@@ -82,7 +82,7 @@ All keys and the deepslate ore twins are described on the [Configuration](docs/w
 - [Retrofit](https://github.com/Astryxx/Retrofit) (Astryxx) is an interoperability mod: it lets 1.7.10 and 1.20.1 mods work together (energy systems such as RF and IC2, ore dictionary, and tags). It does not load old mods onto a modern game.
 - Legacy Connector is for NeoForge 1.21.1 only. For each old version it provides the old game's API itself (the engine, ids, world generation, packets, and rendering of the old blocks and items), so mods that use the game's internals can run: Thaumcraft, BuildCraft, Thermal Expansion, RedPower, and many more. It bridges outdated libraries to modern equivalents (Baubles to Curios, Waila to Jade, NEI to JEI, and RF to NeoForge energy) and exposes legacy containers as NeoForge capabilities.
 
-**Where do I put the mods?** Each legacy version has its own folder: `mods/1.7.10/`, `mods/1.12.2/`, `mods/1.6.4/`, `mods/1.5.2/`, `mods/1.4.7/`, `mods/1.20.1/`. Legacy jars and zips you drop into `mods/` itself are moved there for you on launch (`legacy.autoSortMods=false` turns that off).
+**Where do I put the mods?** Each legacy version has its own folder: `mods/1.7.10/`, `mods/1.12.2/`, `mods/1.6.4/`, `mods/1.5.2/`, `mods/1.4.7/`, `mods/1.20.1/`, `mods/b1.7.3/`. Legacy jars and zips you drop into `mods/` itself are moved there for you on launch (`legacy.autoSortMods=false` turns that off).
 
 **Which versions work, and how well?** 1.7.10, 1.12.2, and 1.6.4 are in beta; 1.5.2, 1.4.7, 1.20.1, and Beta 1.7.3 are in alpha. The [Status table](#status) has the details, and the [compatibility site](https://kylepitcock.github.io/Legacy-Connector/) lists results per mod.
 
