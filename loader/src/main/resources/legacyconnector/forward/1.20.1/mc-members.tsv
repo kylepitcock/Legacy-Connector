@@ -31,3 +31,6 @@ net/minecraft/network/FriendlyByteBuf	readAnySizeNbt	*	readNbt
 net/minecraft/server/ServerAdvancementManager	getAdvancement	*	get
 # --- ATM 9 run, batch 3
 net/minecraft/world/entity/ai/attributes/AttributeModifier$Operation	toValue	*	id
+net/minecraft/world/item/crafting/ShapedRecipe	getRecipeWidth	*	getWidth
+net/minecraft/world/item/crafting/ShapedRecipe	getRecipeHeight	*	getHeight
+net/minecraft/advancements/AdvancementHolder	getId	*	id

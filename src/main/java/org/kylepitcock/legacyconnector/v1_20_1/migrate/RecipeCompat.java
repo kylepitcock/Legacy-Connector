@@ -34,6 +34,10 @@ public final class RecipeCompat {
         return recipe.getResultItem(access);
     }
 
+    public static net.minecraft.core.NonNullList<ItemStack> getRemainingItems(Recipe recipe, Container container) {
+        return recipe.getRemainingItems(BridgeHelpers.input(container));
+    }
+
     public static Optional getRecipeFor(RecipeManager manager, RecipeType type, Container container, Level level) {
         Optional<RecipeHolder> found = manager.getRecipeFor(type, BridgeHelpers.input(container), level);
         return found.map(RecipeHolder::value);

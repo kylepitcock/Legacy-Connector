@@ -16,6 +16,12 @@ public interface ITeleporter {
         return repositionEntity.apply(true);
     }
 
+    /** The arrival position, speed and rotation; the default is what the vanilla placement would answer. */
+    default org.kylepitcock.legacyconnector.v1_20_1.migrate.LegacyPortalInfo getPortalInfo(Entity entity, ServerLevel destWorld,
+            Function<ServerLevel, org.kylepitcock.legacyconnector.v1_20_1.migrate.LegacyPortalInfo> defaultPortalInfo) {
+        return defaultPortalInfo.apply(destWorld);
+    }
+
     default boolean playTeleportSound(ServerPlayer player, ServerLevel sourceWorld, ServerLevel destWorld) {
         return true;
     }
