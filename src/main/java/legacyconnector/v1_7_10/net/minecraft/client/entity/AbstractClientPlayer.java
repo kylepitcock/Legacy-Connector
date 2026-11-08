@@ -89,6 +89,14 @@ public abstract class AbstractClientPlayer extends EntityPlayer implements SkinM
         return locationSkin == null ? locationStevePng : locationSkin;
     }
 
+    /** 1.6.4: the downloading texture of the player's cape; null while there is none (or it is a plain resource). */
+    public ThreadDownloadImageData getTextureCape() {
+        ResourceLocation cape = getLocationCape();
+        if (cape == null) return null;
+        Object texture = legacyconnector.v1_7_10.net.minecraft.client.Minecraft.getMinecraft().getTextureManager().getTexture(cape);
+        return texture instanceof ThreadDownloadImageData data ? data : null;
+    }
+
     public ResourceLocation getLocationCape() {
         mcc$requestSkins();
         return locationCape;

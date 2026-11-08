@@ -44,3 +44,50 @@ R	net/minecraft/block/BlockPistonBase	determineOrientation	(Lnet/minecraft/world
 R	cpw/mods/fml/relauncher/FMLRelaunchLog	getLogger	()Ljava/util/logging/Logger;	static	legacyconnector/v1_6_4/forward/Forward152	relaunchLogger	(Lcpw/mods/fml/relauncher/FMLRelaunchLog;)Ljava/util/logging/Logger;
 M	net/minecraft/tileentity/TileEntitySkull	getExtraType	()Ljava/lang/String;	func_145907_c
 R	net/minecraft/tileentity/TileEntityMobSpawner	getMobID	()Ljava/lang/String;	chain	=	getSpawnerBaseLogic	()Lnet/minecraft/tileentity/MobSpawnerBaseLogic;	net/minecraft/tileentity/MobSpawnerBaseLogic	getEntityNameToSpawn	()Ljava/lang/String;
+# Stub pass 2 2026-11-07 (1.5.2): real forwards for calls that linked to empty members
+R	net/minecraft/item/ItemStack	getDamageVsEntity	(Lnet/minecraft/entity/Entity;)I	static	legacyconnector/v1_6_4/forward/Forward152Calls	damageVsEntity	(Lnet/minecraft/item/ItemStack;Lnet/minecraft/entity/Entity;)I
+R	net/minecraft/item/Item	getDamageVsEntity	(Lnet/minecraft/entity/Entity;)I	static	legacyconnector/v1_6_4/forward/Forward152Calls	itemDamageVsEntity	(Lnet/minecraft/item/Item;Lnet/minecraft/entity/Entity;)I
+R	net/minecraft/item/ItemSword	getDamageVsEntity	(Lnet/minecraft/entity/Entity;)I	static	legacyconnector/v1_6_4/forward/Forward152Calls	itemDamageVsEntity	(Lnet/minecraft/item/Item;Lnet/minecraft/entity/Entity;)I
+R	net/minecraft/item/ItemAxe	getDamageVsEntity	(Lnet/minecraft/entity/Entity;)I	static	legacyconnector/v1_6_4/forward/Forward152Calls	itemDamageVsEntity	(Lnet/minecraft/item/Item;Lnet/minecraft/entity/Entity;)I
+R	net/minecraft/item/ItemPickaxe	getDamageVsEntity	(Lnet/minecraft/entity/Entity;)I	static	legacyconnector/v1_6_4/forward/Forward152Calls	itemDamageVsEntity	(Lnet/minecraft/item/Item;Lnet/minecraft/entity/Entity;)I
+R	net/minecraft/item/crafting/FurnaceRecipes	getExperience	(I)F	static	legacyconnector/v1_6_4/forward/Forward152Calls	smeltingExperience	(Lnet/minecraft/item/crafting/FurnaceRecipes;I)F
+M	net/minecraft/entity/Entity	interact	(Lnet/minecraft/entity/player/EntityPlayer;)Z	interactFirst
+M	net/minecraft/world/World	updateTileEntityChunkAndDoNothing	(IIILnet/minecraft/tileentity/TileEntity;)V	markTileEntityChunkModified
+R	net/minecraft/world/World	getBrightness	(IIII)F	static	legacyconnector/v1_6_4/forward/Forward152Calls	lightBrightness	(Lnet/minecraft/world/World;IIII)F
+R	cpw/mods/fml/common/registry/VillagerRegistry	registerVillagerType	(ILjava/lang/String;)V	static	legacyconnector/v1_6_4/forward/Forward152Calls	registerVillagerType	(Lcpw/mods/fml/common/registry/VillagerRegistry;ILjava/lang/String;)V
+R	net/minecraft/client/particle/EntityFX	setParticleIcon	(Lnet/minecraft/client/renderer/texture/TextureManager;Lnet/minecraft/util/IIcon;)V	static	legacyconnector/v1_6_4/forward/Forward152Calls	setParticleIcon	(Lnet/minecraft/client/particle/EntityFX;Lnet/minecraft/client/renderer/texture/TextureManager;Lnet/minecraft/util/IIcon;)V
+R	net/minecraft/client/particle/EntityDiggingFX	setParticleIcon	(Lnet/minecraft/client/renderer/texture/TextureManager;Lnet/minecraft/util/IIcon;)V	static	legacyconnector/v1_6_4/forward/Forward152Calls	setParticleIcon	(Lnet/minecraft/client/particle/EntityFX;Lnet/minecraft/client/renderer/texture/TextureManager;Lnet/minecraft/util/IIcon;)V
+C	net/minecraft/client/particle/EntityDiggingFX	(Lnet/minecraft/world/World;DDDDDDLnet/minecraft/block/Block;IILnet/minecraft/client/renderer/texture/TextureManager;)V	(Lnet/minecraft/world/World;DDDDDDLnet/minecraft/block/Block;II)V	args	0	1	2	3	4	5	6	7	8	9
+M	net/minecraft/client/particle/EntityDiggingFX	func_70596_a	(III)Lnet/minecraft/client/particle/EntityDiggingFX;	applyColourMultiplier
+M	net/minecraft/entity/boss/BossStatus	func_82824_a	(Lnet/minecraft/entity/boss/IBossDisplayData;Z)V	setBossStatus
+M	net/minecraft/entity/EntityLiving	func_94058_c	(Ljava/lang/String;)V	setCustomNameTag
+M	net/minecraft/entity/EntityLiving	func_94057_bL	()Ljava/lang/String;	getCustomNameTag
+M	net/minecraft/entity/EntityLiving	func_94056_bM	()Z	hasCustomNameTag
+R	net/minecraft/entity/Entity	playStepSound	(IIII)V	static	legacyconnector/v1_6_4/forward/Forward152Calls	playStepSound	(Lnet/minecraft/entity/Entity;IIII)V
+M	net/minecraft/entity/EntityLiving	setLastAttackingEntity	(Lnet/minecraft/entity/Entity;)V	setLastAttacker
+R	net/minecraft/entity/Entity	dropItemWithOffset	(IIF)Lnet/minecraft/entity/item/EntityItem;	static	legacyconnector/v1_6_4/forward/Forward152Calls	dropItemWithOffset	(Lnet/minecraft/entity/Entity;IIF)Lnet/minecraft/entity/item/EntityItem;
+M	net/minecraft/entity/EntityLiving	func_82162_bC	()V	addRandomArmor
+F	net/minecraft/block/BlockFluid	theIcon	field_149806_a
+G	net/minecraft/block/BlockLog	woodType	[Ljava/lang/String;	sfield	net/minecraft/block/BlockOldLog	field_150168_M
+R	net/minecraft/block/Block	idPicked	(Lnet/minecraft/world/World;III)I	static	legacyconnector/v1_6_4/forward/Forward152Calls	idPicked	(Lnet/minecraft/block/Block;Lnet/minecraft/world/World;III)I
+R	net/minecraft/block/BlockChest	isOcelotBlockingChest	(Lnet/minecraft/world/World;III)Z	static	legacyconnector/v1_6_4/forward/Forward152Calls	isOcelotBlockingChest	(Lnet/minecraft/block/BlockChest;Lnet/minecraft/world/World;III)Z
+R	net/minecraft/block/BlockFlowerPot	getMetaForPlant	(Lnet/minecraft/item/ItemStack;)I	static	legacyconnector/v1_6_4/forward/Forward152Calls	getMetaForPlant	(Lnet/minecraft/block/BlockFlowerPot;Lnet/minecraft/item/ItemStack;)I
+R	net/minecraft/block/BlockSapling	checkFlowerChange	(Lnet/minecraft/world/World;III)V	static	legacyconnector/v1_6_4/forward/Forward152Calls	checkFlowerChange	(Lnet/minecraft/block/Block;Lnet/minecraft/world/World;III)V
+R	net/minecraft/client/Minecraft	getOs	()Lnet/minecraft/util/Util$EnumOS;	static	legacyconnector/v1_6_4/forward/Forward152Calls	getOs	()Lnet/minecraft/util/Util$EnumOS;
+M	net/minecraft/client/gui/inventory/GuiContainer	func_85041_a	(IIIJ)V	mouseClickMove
+M	net/minecraft/client/gui/inventory/GuiContainerCreative	func_74230_h	()I	func_147056_g
+R	net/minecraft/client/particle/EffectRenderer	addBlockDestroyEffects	(IIIII)V	static	legacyconnector/v1_6_4/forward/Forward152Calls	addBlockDestroyEffects	(Lnet/minecraft/client/particle/EffectRenderer;IIIII)V
+M	net/minecraft/client/renderer/RenderBlocks	renderBlockFluids	(Lnet/minecraft/block/Block;III)Z	renderBlockLiquid
+R	net/minecraft/command/ICommandSender	translateString	(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;	static	legacyconnector/v1_6_4/forward/Forward152Calls	translateString	(Lnet/minecraft/command/ICommandSender;Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+R	net/minecraft/entity/EntityLivingBase	getSpeedModifier	()F	static	legacyconnector/v1_6_4/forward/Forward152Calls	getSpeedModifier	(Lnet/minecraft/entity/EntityLivingBase;)F
+C	net/minecraft/entity/ai/EntityAITasks	(Lnet/minecraft/profiler/Profiler;)V	()V	drop
+M	net/minecraft/entity/Entity	func_82146_a	(Lnet/minecraft/world/Explosion;Lnet/minecraft/world/World;IIILnet/minecraft/block/Block;)F	getExplosionResistance
+M	net/minecraft/inventory/Slot	setBackgroundIconIndex	(Lnet/minecraft/util/Icon;)V	setBackgroundIcon
+M	net/minecraft/item/ItemEnchantedBook	func_92115_a	(Lnet/minecraft/item/ItemStack;Lnet/minecraft/enchantment/EnchantmentData;)V	addEnchantment
+F	net/minecraft/tileentity/TileEntityEnchantmentTable	bookRotation2	bookRotation
+R	net/minecraft/util/StringTranslate	translateNamedKey	(Ljava/lang/String;)Ljava/lang/String;	static	legacyconnector/v1_6_4/forward/Forward152Calls	translateNamedKey	(Lnet/minecraft/util/StringTranslate;Ljava/lang/String;)Ljava/lang/String;
+M	net/minecraft/tileentity/TileEntitySkull	func_82119_b	()I	getSkullType
+R	net/minecraft/tileentity/TileEntitySkull	setSkullType	(ILjava/lang/String;)V	static	legacyconnector/v1_6_4/forward/Forward152Calls	setSkullType	(Lnet/minecraft/tileentity/TileEntitySkull;ILjava/lang/String;)V
+S	net/minecraft/world/gen/structure/StructureComponent$BlockSelector	selectedBlockId	I	legacyconnector/v1_6_4/forward/Forward152Calls	setSelectedBlockId	(Lnet/minecraft/world/gen/structure/StructureComponent$BlockSelector;I)V
+R	net/minecraft/world/gen/structure/StructureComponent$BlockSelector	getSelectedBlockId	()I	static	legacyconnector/v1_6_4/forward/Forward152Calls	getSelectedBlockId	(Lnet/minecraft/world/gen/structure/StructureComponent$BlockSelector;)I
+R	net/minecraft/item/ItemStack	onBlockDestroyed	(Lnet/minecraft/world/World;IIIILnet/minecraft/entity/player/EntityPlayer;)V	static	legacyconnector/v1_6_4/forward/Forward152Calls	onBlockDestroyed	(Lnet/minecraft/item/ItemStack;Lnet/minecraft/world/World;IIIILnet/minecraft/entity/player/EntityPlayer;)V

@@ -267,7 +267,7 @@ public class BlockRailBase extends Block {
         }
 
         /** {@code func_150649_b}: how many of the four horizontal neighbours (at any of three heights) are rails. */
-        protected int countAdjacentRails() {
+        public int countAdjacentRails() {
             int x = field_150661_c, y = field_150658_d, z = field_150659_e;
             int n = 0;
             if (hasRail(x, y, z - 1)) ++n;

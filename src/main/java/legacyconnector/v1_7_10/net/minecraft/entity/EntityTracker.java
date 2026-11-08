@@ -69,6 +69,10 @@ public class EntityTracker {
     public void updateTrackedEntities() {
     }
 
+    /** Sends the entities of a chunk that came into range to the player; the modern server does it for every watched chunk by itself. */
+    public void func_85172_a(EntityPlayerMP player, legacyconnector.v1_7_10.net.minecraft.world.chunk.Chunk chunk) {
+    }
+
     public void addEntityToTracker(Entity entity) {
     }
 

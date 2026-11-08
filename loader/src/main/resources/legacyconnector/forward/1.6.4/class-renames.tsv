@@ -101,3 +101,11 @@ net/minecraft/block/EnumMobType	net/minecraft/block/BlockPressurePlate$Sensitivi
 net/minecraft/world/PortalPosition	net/minecraft/world/Teleporter$PortalPosition
 net/minecraft/client/gui/GuiSmallButton	net/minecraft/client/gui/GuiOptionButton
 net/minecraft/client/resources/ResourcePackRepositoryEntry	net/minecraft/client/resources/ResourcePackRepository$Entry
+net/minecraft/entity/SpiderEffectsGroupData	net/minecraft/entity/monster/EntitySpider$GroupData
+net/minecraft/entity/passive/EntityHorseGroupData	net/minecraft/entity/passive/EntityHorse$GroupData
+net/minecraft/entity/monster/EntityZombieGroupData	net/minecraft/entity/monster/EntityZombie$GroupData
+net/minecraft/world/storage/MapCoord	net/minecraft/world/storage/MapData$MapCoord
+net/minecraft/world/storage/MapInfo	net/minecraft/world/storage/MapData$MapInfo
+net/minecraft/entity/EntitySelectorArmoredMob	net/minecraft/command/IEntitySelector$ArmoredMob
+net/minecraft/block/BlockBaseRailLogic	net/minecraft/block/BlockRailBase$Rail
+net/minecraft/world/gen/structure/StructurePieceBlockSelector	net/minecraft/world/gen/structure/StructureComponent$BlockSelector

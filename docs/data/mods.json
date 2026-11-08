@@ -35,7 +35,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "partial",
-   "notes": "Starts on the client (blocks draw, some with missing textures); on a dedicated server it fails in postInit because it loads a client screen class there."
+   "notes": "In server self test, old-only 1.6.4 set 8 items, 8 blocks, 1 entity types register, but loading failed during postInit: java.lang.RuntimeException: Attempted to load class net/minecraft/client/player/LocalPlayer for invalid dist DEDICATED_SERVER"
   },
   {
    "name": "Absent By Design Mod",
@@ -85,10 +85,10 @@
    "name": "Actually Additions",
    "version": "1.12.2-r152",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (582 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "status": "partial",
+   "notes": "Automated client survey: 367 items, 99 blocks, 1 entity types; placed 27/27 sampled blocks; spawned 1/1 entity types; 1 error log lines"
   },
   {
    "name": "Actually Unbreaking",
@@ -211,10 +211,10 @@
    "name": "Advanced Hook Launchers",
    "version": "1.12.2-3.3.0.0",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (35 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "status": "fails",
+   "notes": "Automated client survey: 0 items, 0 blocks, 0 entity types; load failure during construction: java.lang.NoClassDefFoundError: com/endertech/minecraft/forge/ForgeMod (the Legacy Connector layer does not implement this legacy API yet - see logs/legacyconne; 2 error log lines"
   },
   {
    "name": "Advanced Machines",
@@ -233,6 +233,15 @@
    "date": "2026-11-07",
    "status": "loads",
    "notes": "Loads in server self test, 1.5.2 set without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "Advanced Machines",
+   "version": "55.0.3",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-06",
+   "status": "loads",
+   "notes": "Automated check: translates offline and everything it uses exists (9 classes). The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Advanced Memory Card",
@@ -280,13 +289,22 @@
    "notes": "Self-tested in 1.4.7 corpus server self test (2026-11-07): 31 items, 2 blocks, 0 entity types; every block placed and used, every item used, every entity spawned; 1 threw errors (3%). 2 blocks did not stay placed."
   },
   {
+   "name": "Advanced Repulsion Systems",
+   "version": "55.1.4",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-06",
+   "status": "loads",
+   "notes": "Automated check: translates offline and everything it uses exists (115 classes). 9 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "Advanced Rocketry",
    "version": "1.7.0.-232",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (577 classes). 3 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works. Resource check: 5 model/texture reference(s) are missing after translation (rendering may show missing textures or models), e.g. blockstate advancedrocketry:platepress.json names missing model piston_extended_normal; blockstate advancedrocketry:platepress.json names missing model piston_normal."
+   "status": "fails",
+   "notes": "Automated client survey: 0 items, 0 blocks, 0 entity types; load failure during construction: java.lang.NoClassDefFoundError: zmaster587.libVulpes.api.material.MaterialRegistry (the Legacy Connector layer does not implement this legacy API yet - see logs; 118 error log lines"
   },
   {
    "name": "Advanced Rocketry Tweaker",
@@ -321,8 +339,8 @@
    "mc": "1.6.4",
    "source": "client",
    "date": "2026-11-07",
-   "status": "works",
-   "notes": "Loads now: the jar names Minecraft classes by their obfuscated names and declares no version, so it was taken for a 1.7.10 mod and failed on a missing class. Its mobs, armor and items register; the guardian mob draws; its textures sit under a wrapper folder in the zip, which the layer now unpacks."
+   "status": "fails",
+   "notes": "Fails during construction: java.lang.NoClassDefFoundError: yd (the Legacy Connector layer does not implement this legacy API yet - see logs/legacyconnector-report.txt)"
   },
   {
    "name": "Advanced Technology",
@@ -454,10 +472,10 @@
    "name": "AE2 Stuff",
    "version": "0.7.0.4",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (283 classes). The game was not started: this only shows the jar translates, not that it works."
+   "status": "fails",
+   "notes": "Automated client survey: 0 items, 0 blocks, 0 entity types; load failure during construction: java.lang.NoClassDefFoundError: net.bdew.lib.gui.GuiHandler (the Legacy Connector layer does not implement this legacy API yet - see logs/legacyconnector-report; 2 error log lines"
   },
   {
    "name": "AE2 Things",
@@ -499,10 +517,10 @@
    "name": "AE2 Wireless Terminals (AE2WTLib)",
    "version": "1.0.34",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
    "status": "fails",
-   "notes": "Automated check: needs code from another mod or API that is not available or does not match: p455w0rd.ae2wtlib.api.client.IBaubleItem.getRender()Lp455w0rd.ae2wtlib.api.client.IBaubleRender;."
+   "notes": "Automated client survey: 0 items, 0 blocks, 0 entity types; load failure during preInit: java.lang.RuntimeException: java.lang.NoClassDefFoundError: appeng.core.AEConfig; 12 error log lines"
   },
   {
    "name": "AE2NoUltimatePattern",
@@ -614,10 +632,10 @@
    "name": "AgriCraft",
    "version": "2.12.0-1.12.0-a6",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (439 classes). The game was not started: this only shows the jar translates, not that it works."
+   "status": "fails",
+   "notes": "Automated client survey: 0 items, 0 blocks, 0 entity types; load failure during construction: java.lang.NoClassDefFoundError: com/infinityraider/infinitylib/InfinityMod (the Legacy Connector layer does not implement this legacy API yet - see logs/legacyc; 35 error log lines"
   },
   {
    "name": "AGS ModernMarkings Mod",
@@ -742,8 +760,8 @@
    "mc": "1.6.4",
    "source": "client",
    "date": "2026-11-07",
-   "status": "partial",
-   "notes": "Starts on the client; on a dedicated server it fails in preInit because its @SidedProxy names a server proxy class (alchemymod.ServerProxy) that does not exist in the jar: the mod's own mistake."
+   "status": "fails",
+   "notes": "Fails during preInit: java.lang.NullPointerException: Cannot invoke \"alchemymod.common.ServerProxy.registerRenderThings()\" because \"alchemymod.common.alchemymod.p"
   },
   {
    "name": "AlchemyLib",
@@ -1019,10 +1037,10 @@
    "name": "Ancient Beasts",
    "version": "1.9.99999",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (266 classes). 4 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "status": "partial",
+   "notes": "Automated client survey: 34 items, 6 blocks, 27 entity types; placed 6/6 sampled blocks; spawned 12/12 entity types; 8 error log lines"
   },
   {
    "name": "Ancient Warfare",
@@ -1031,7 +1049,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "works",
-   "notes": "Real client, survival, shaders: the research table screen opens with its Craft, Research and Queue tabs and the crafting block recipes give results from the grid. The gate spawner item was used on two clicks without producing a gate (how it is meant to be used was not looked up), and the civic blocks have no screen of their own."
+   "notes": "Self-tested in server self test, old-only 1.6.4 set: 212 items, 11 blocks, 4 entity types; every block placed and used, every item used, every entity spawned; 3 threw errors (1%)."
   },
   {
    "name": "Ancient Warfare Automation",
@@ -1129,8 +1147,8 @@
    "mc": "1.6.4",
    "source": "client",
    "date": "2026-11-07",
-   "status": "works",
-   "notes": "Loads now: its block list asked for the comparator blocks, which had no 1.6.4 field forward (the field type BlockComparator was not mapped to the 1.7.10 class), and failed during init. Structure templates were not generated in a survival world."
+   "status": "partial",
+   "notes": "In server self test, old-only 1.6.4 set 6 items, 1 blocks, 0 entity types register, but loading failed during init: java.lang.NullPointerException: Cannot invoke \"legacyconnector.v1_7_10.net.minecraft.block.Block.getLocalizedName()\" because \"block\" is null"
   },
   {
    "name": "Ancient Warfare Vehicles",
@@ -1345,8 +1363,8 @@
    "mc": "1.4.7",
    "source": "client",
    "date": "2026-11-07",
-   "status": "works",
-   "notes": "Old-only. Real client 2026-11-07: cables draw as thin cables with their arms (they were dark cubes), controller, drive and crafting terminal place through the item path. A wooden BuildCraft engine beside the controller powers the network; a 1k storage cell in the drive shows '0 of 1024 bytes used', and 64 cobblestone put into the C-Terminal stay listed there. The ME Access Terminal item (multiblock1 meta 6) does not place. A light blue square is drawn on the ground under each cable (cause not found)."
+   "status": "partial",
+   "notes": "Old-only. Survival check 2026-11-07: controller, cables, drive and terminal place through the item path; the ME Terminal and ME Drive screens open and draw. Cables draw as dark cubes, and without power the network cannot be used (crafting through a network not reached)."
   },
   {
    "name": "Applied Energistics",
@@ -1399,7 +1417,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "partial",
-   "notes": "Real client, survival, shaders: 8 ME cables crafted from the grid recipe (an ore dictionary recipe), the Grind Stone placed and its screen opened, and iron ore shift-clicked into its input (this used to crash the server with an AbstractMethodError: the mod's inventory interface relies on the tile entity superclass having `onInventoryChanged`). Turning the wooden crank to grind was not reached (the crank did not attach through the test's block clicks). Terminal and drive screens worked before; the grind result and the ME network are untried."
+   "notes": "Real client, shaders: the blocks and multi-block items render with their textures; its own lang file (loadLocalization of /mods/appeng/lang/en_US.properties, a class path file in another jar than the shim) is now read, so the terminal's message reads 'Unable to communicate with controller.' (checked through StatCollector and the chat log); no GUI without a controller (the mod's design). Third round: a controller, ME terminal, drive and energy cell placed side by side in survival; the ME Terminal screen opens with its search box, sort buttons and slot grid. Item names are the mod's raw ones (block900_2 and similar registry names)."
   },
   {
    "name": "Applied Energistics rv14.finale3",
@@ -2108,7 +2126,16 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "works",
-   "notes": "Real client, survival, shaders: the Quantum Chest recipe crafted in the 3x3 grid, the chest placed and its own screen opened; a Backpack opened by right-click shows the mod's screen and takes a stack of cobblestone by shift-click. (The quantum chest slot only accepts backpacks, as designed.)"
+   "notes": "Self-tested in server self test, 1.5.2 set: 1 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "Backpacks!",
+   "version": "1.5.2 - 1.2.0",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-06",
+   "status": "loads",
+   "notes": "Automated check: translates offline and everything it uses exists (27 classes). 8 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Backported Animal Variants",
@@ -2390,6 +2417,15 @@
    "notes": "Loads in 1.4.7 corpus server self test (2026-11-07) without errors (no blocks, items or entities of its own)."
   },
   {
+   "name": "BC Builders",
+   "version": "3.7.4.1",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-06",
+   "status": "loads",
+   "notes": "Automated check: translates offline and everything it uses exists (581 classes). But 114 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "BC Energy",
    "version": "7.1.23",
    "mc": "1.7.10",
@@ -2426,6 +2462,15 @@
    "notes": "Self-tested in 1.4.7 corpus server self test (2026-11-07): 3 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
+   "name": "BC Energy",
+   "version": "3.7.4.1",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-06",
+   "status": "loads",
+   "notes": "Automated check: translates offline and everything it uses exists (581 classes). But 114 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "BC Factory",
    "version": "7.1.23",
    "mc": "1.7.10",
@@ -2458,8 +2503,17 @@
    "mc": "1.4.7",
    "source": "client",
    "date": "2026-11-07",
-   "status": "works",
-   "notes": "Real client 2026-11-07: a redstone-powered wooden engine drives the pump over a water source and the tank beside it fills with 1000 mB of water. The pump needs a world floor above y=0 (it scans down while y > 0)."
+   "status": "loads",
+   "notes": "Loads in 1.4.7 corpus server self test (2026-11-07) without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "BC Factory",
+   "version": "3.7.4.1",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-06",
+   "status": "loads",
+   "notes": "Automated check: translates offline and everything it uses exists (581 classes). But 114 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "BC Robotics",
@@ -2516,6 +2570,15 @@
    "notes": "Self-tested in 1.4.7 corpus server self test (2026-11-07): 2 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
+   "name": "BC Silicon",
+   "version": "3.7.4.1",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-06",
+   "status": "loads",
+   "notes": "Automated check: translates offline and everything it uses exists (581 classes). But 114 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "BC Transport",
    "version": "7.1.23",
    "mc": "1.7.10",
@@ -2550,6 +2613,15 @@
    "date": "2026-11-07",
    "status": "works",
    "notes": "Self-tested in 1.4.7 corpus server self test (2026-11-07): 25 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "BC Transport",
+   "version": "3.7.4.1",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-06",
+   "status": "loads",
+   "notes": "Automated check: translates offline and everything it uses exists (581 classes). But 114 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "BCMod (Brad16840.Common mod)",
@@ -3113,8 +3185,8 @@
    "mc": "1.5.2",
    "source": "client",
    "date": "2026-11-07",
-   "status": "partial",
-   "notes": "Real client, survival, shaders: the Spruce Desk recipe crafted in the grid and the desk placed and opened (its screen worked before); the Typesetting Table places and draws but a plain right-click does nothing by the mod's own design (it takes plates and chases first), so its screen was not seen. Lamps and bookcases draw."
+   "status": "works",
+   "notes": "Self-tested in server self test, 1.5.2 set: 79 items, 13 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "BiblioCraft",
@@ -3240,7 +3312,7 @@
    "source": "probe",
    "date": "2026-11-07",
    "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (1036 classes). 5 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "notes": "Automated check: translates offline and everything it uses exists (1036 classes). 2 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Binnie Core",
@@ -3248,8 +3320,8 @@
    "mc": "1.5.2",
    "source": "client",
    "date": "2026-11-07",
-   "status": "partial",
-   "notes": "Real client, survival, shaders: Extra Bees' Genetic Machine recipe crafted in the grid and the block placed and drawn with its own model; right-clicking it opened no screen (no log line; the mod's gui path was not traced). Crafting through Binnie's ore dictionary recipes works; one shapeless recipe fails to translate (output null)."
+   "status": "works",
+   "notes": "Self-tested in server self test, 1.5.2 set: 104 items, 17 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "Binnie Core",
@@ -3259,6 +3331,15 @@
    "date": "2026-11-07",
    "status": "works",
    "notes": "Self-tested in 1.4.7 corpus server self test (2026-11-07): 4 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "Binnie Core",
+   "version": "1.7.3b",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-06",
+   "status": "loads",
+   "notes": "Automated check: translates offline and everything it uses exists (874 classes). But 83 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Biome ID Extender",
@@ -3625,7 +3706,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "works",
-   "notes": "Real client, shaders: its blocks (barrels, stills, glass) render. Earlier server self test: 15 items and 15 blocks used without errors. Brewing was not tried."
+   "notes": "Self-tested in server self test, old-only 1.6.4 set: 15 items, 15 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "BOP Integrations",
@@ -3688,6 +3769,15 @@
    "date": "2026-11-07",
    "status": "fails",
    "notes": "Automated check 0.4.4: needs Minecraft or Forge features the layer does not have yet: com.mojang.authlib.yggdrasil.response.MinecraftTexturesPayload.getTextures, com.mojang.blaze3d.systems.RenderSystem.getModelViewStack, com.mojang.blaze3d.vertex.VertexConsumer.defaultColor, com.mojang.blaze3d.vertex.VertexConsumer.unsetDefaultColor, com.mojang.serialization.DataResult.get (+353 more)."
+  },
+  {
+   "name": "Botania",
+   "version": "r1.10-364",
+   "mc": "1.12.2",
+   "source": "probe",
+   "date": "2026-11-07",
+   "status": "loads",
+   "notes": "Automated check 0.4.6: translates offline and everything it uses exists (1077 classes). 4 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Botania r1.10-363",
@@ -3955,7 +4045,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "works",
-   "notes": "Real client, survival, shaders: the auto workbench places and its crafting screen opens with the grid, output slot and inventory; engines, pipes, tanks and pumps register (self test: 85 items and blocks across the modules, 3 entity types)."
+   "notes": "Self-tested in server self test, 1.5.2 set: 8 items, 1 blocks, 3 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "BuildCraft",
@@ -4278,7 +4368,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "works",
-   "notes": "Real client, survival, shaders: the carpenter's block places and draws through the mod's own block handler (its covers use the vanilla textures); 19 recipes register. Self test: doors threw a null tile entity (placed by command without a cover)."
+   "notes": "Self-tested in server self test, 1.5.2 set: 19 items, 17 blocks, 0 entity types; every block placed and used, every item used, every entity spawned; 2 threw errors (6%)."
   },
   {
    "name": "Carry On",
@@ -4449,7 +4539,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "works",
-   "notes": "Old-only. Real client 2026-11-07: the monitor item now hangs on a wall and draws its screen (it did not place); the camera block draws with a placeholder tile and the camera feed was not checked."
+   "notes": "Old-only. Loads in a real client; the camera block draws from the mod's sheet and the monitor item shows its icon (an item that never sets an icon index draws tile 0, fixed 2026-11-07); the picture-in-picture view was not exercised."
   },
   {
    "name": "Ceiling Torch",
@@ -4602,7 +4692,7 @@
    "source": "probe",
    "date": "2026-11-07",
    "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (49 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "notes": "Automated check: translates offline and everything it uses exists (49 classes). The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "ChickenChunks",
@@ -4611,7 +4701,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "works",
-   "notes": "Real client, survival, shaders: Chunk Loader recipe crafted in the grid, the block placed, its screen opened; the + button raised the radius from 2 to 3 (9 to 25 chunks) and Show Lasers drew the laser outline."
+   "notes": "Self-tested in server self test, 1.5.2 set: 2 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "ChickenChunks",
@@ -4621,6 +4711,15 @@
    "date": "2026-11-07",
    "status": "works",
    "notes": "Self-tested in 1.4.7 corpus server self test (2026-11-07): 2 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "ChickenChunks",
+   "version": "1.3.2.5",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-06",
+   "status": "fails",
+   "notes": "Automated check: needs code from another mod or API that is not available or does not match: codechicken.core.packet.PacketCustom.setChunkDataPacket()V, codechicken.core.packet.PacketCustom.writeBoolean(Z)V, codechicken.core.packet.PacketCustom.writeByte(I)V, codechicken.core.packet.PacketCustom.writeCoord(III)V, codechicken.core.packet.PacketCustom.writeFloat(F)V (+3 more)."
   },
   {
    "name": "Chimes",
@@ -5274,7 +5373,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "partial",
-   "notes": "Real client, survival, shaders: a computer places and its terminal screen opens and prints CraftOS 1.5 with the prompt. The turtle screens fail in the server self test only (fake player without a world); typing in the terminal and turtle programs are not tried in 1.5.2 (the 1.4.7 round did: they work)."
+   "notes": "Self-tested in server self test, 1.5.2 set: 9 items, 3 blocks, 0 entity types; every block placed and used, every item used, every entity spawned; 2 threw errors (17%)."
   },
   {
    "name": "ComputerCraft",
@@ -5282,8 +5381,8 @@
    "mc": "1.4.7",
    "source": "client",
    "date": "2026-11-07",
-   "status": "works",
-   "notes": "Real client 2026-11-07: the computer screen draws and works. 'help' and 'ls' print, the Lua prompt runs, keys reach the program. A turtle takes fuel by hand-in-slot, runs turtle.refuel() and moves forward. A MiscPeripherals block beside a computer shows up as a peripheral (getType and getMethods answer). Fixed: the font sheet the mod builds itself and uploads as an OpenGL texture, and the ROM mount (the translated jar had no folder entries)."
+   "status": "partial",
+   "notes": "Computer, disk drive and turtle place and draw; the computer screen opens but its terminal draws white rows (the font sheet is not applied to the terminal quads), so nothing can be typed or read yet."
   },
   {
    "name": "ComputerCraft Turtles",
@@ -5300,8 +5399,8 @@
    "mc": "1.4.7",
    "source": "client",
    "date": "2026-11-07",
-   "status": "works",
-   "notes": "A turtle placed in survival opens its screen (terminal and 4x4 inventory), refuels from coal put in its slot, moves and turns on Lua commands. A plain turtle cannot dig (no tool), which is the mod's own rule."
+   "status": "partial",
+   "notes": "Self-tested in 1.4.7 corpus server self test (2026-11-07): 1 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned; 2 threw errors (100%)."
   },
   {
    "name": "Computronics",
@@ -5625,7 +5724,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "partial",
-   "notes": "Real client, shaders: the AK-47 shows its own first-person model. No ammo item could be obtained to try the bullet damage and ammo HUD (shots at cows did nothing). In a world with the mod loaded its event handler cancelled right-clicks on the vanilla crafting table, furnace and chest (the mod protects blocks in its own game modes; not checked further)."
+   "notes": "Real client, shaders: blocks render and the bench opens the mod's own menu (Play, Inventory, Community, 'Cloud offline': the mod is an online lobby). The earlier 'full-screen logo' was the mod's intro splash, shown because its client setup had been aborted: it calls System.exit when more than five mods are loaded (an anti-modpack check), which the layer turned into an exception half way through. System.exit from a legacy mod is now ignored and the mod carries on. Guns were not tested."
   },
   {
    "name": "CPM OSC Compat",
@@ -5697,7 +5796,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "partial",
-   "notes": "Real client in survival: it starts now (the mod's download host is gone; the layer gives it offline settings and an empty resource pack, so its own gun sounds and a few overlay pictures are missing). Works: the radar and stats panel, thirst bar, AK-47 in hand with ammo counter (21/30), reload by key, recoil, loot spawns on the ground, its zombies draw with their own model and kill the player (death message uses their name), bleeding and infection statuses, bandage stops bleeding, sandbags and barbed wire place. Not seen working: bullets did no damage to a zombie in the test (the mod's server-side hit code; unresolved), the minigun and restraint poses, skins and capes by URL. Online lobby and servers do not exist."
+   "notes": "In server self test, old-only 1.6.4 set 51 items, 51 blocks, 16 entity types register, but loading failed during postInit: java.lang.NullPointerException: Cannot invoke \"legacyconnector.v1_7_10.net.minecraft.server.MinecraftServer.getMOTD()\" because \"<local2>\" is"
   },
   {
    "name": "Crafting On A Stick",
@@ -6352,8 +6451,8 @@
    "mc": "1.5.2",
    "source": "client",
    "date": "2026-11-07",
-   "status": "partial",
-   "notes": "Real client, survival, shaders: NPC entities (`customnpcs:npchumanfemale`, `npcdragon`) spawn and draw, but each shows a boss bar and a human NPC logs an ArrayIndexOutOfBounds when ticking on the client and a null NPC in its client packet handler; the NPC wand used on an NPC opened no editing screen."
+   "status": "works",
+   "notes": "Self-tested in server self test, 1.5.2 set: 3 items, 3 blocks, 22 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "CustomNpcs",
@@ -6479,7 +6578,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "works",
-   "notes": "Real client, shaders: its blocks render. Earlier server self test passed."
+   "notes": "Self-tested in server self test, old-only 1.6.4 set: 5 items, 7 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "Dark Utilities",
@@ -6757,8 +6856,8 @@
    "mc": "1.5.2",
    "source": "client",
    "date": "2026-11-07",
-   "status": "works",
-   "notes": "Real client, survival, shaders: recipe crafted in the grid, anchor placed, screen opens with owner, chunk limit, area and shape; the area buttons respond. It needed two generic fixes: Immibis Core's trait injection (a transformer the mod registers in a static initialiser, now applied, so the anchor's inventory exists; before, the screen and saving threw NullPointerExceptions) and the screen's background (a `/mods/immibis/chunkloader/...` path whose first segment is not the mod id now falls back to the class path file). The block's own icon is still the missing texture (its icon name is `immibis/chunkloader:chunkloader`)."
+   "status": "loads",
+   "notes": "Loads in server self test, 1.5.2 set without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "Dimensional Anchors",
@@ -6768,6 +6867,15 @@
    "date": "2026-11-07",
    "status": "loads",
    "notes": "Loads in 1.4.7 corpus server self test (2026-11-07) without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "Dimensional Anchors",
+   "version": "55.0.3",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-06",
+   "status": "loads",
+   "notes": "Automated check: translates offline and everything it uses exists (42 classes). But 10 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Dimensional Doors",
@@ -6785,7 +6893,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "works",
-   "notes": "Real client: the cryt dimension is not a flat plane. Its terrain is a Nether-style generator: block columns show a bedrock roof at y=127, cave pockets and its own ore. The flat plane seen before was the roof, viewed from above the ceiling. It is pitch dark under the shader pack (not checked without shaders). The sky dimension and the other mobs were checked earlier."
+   "notes": "Self-tested in server self test, old-only 1.6.4 set: 22 items, 32 blocks, 9 entity types; every block placed and used, every item used, every entity spawned without errors. 16 blocks did not stay placed. Real client, shaders: its blocks, seagull, bull, star cow and fish mobs draw with their own models, and the sky dimension (a grassy overworld-like world) now generates: its three dimensions (sky, skyer, cryt) failed in the chunk provider constructor because `TerrainGen.getModdedNoiseGenerators` took the wrong array type (fixed); the sea dimension was fine. The cryt dimension's terrain comes out as a flat bedrock plane that was not investigated."
   },
   {
    "name": "DimStorage",
@@ -6840,6 +6948,15 @@
    "date": "2026-11-07",
    "status": "works",
    "notes": "Self-tested in 1.4.7 corpus server self test (2026-11-07): 9 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "Dirt Tools and Armor",
+   "version": "24.07.19",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-06",
+   "status": "loads",
+   "notes": "Automated check: translates offline and everything it uses exists (12 classes). 2 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Discord Integration",
@@ -7017,8 +7134,8 @@
    "mc": "1.5.2",
    "source": "client",
    "date": "2026-11-07",
-   "status": "partial",
-   "notes": "Real client, shaders: the dragon entity (`/summon dragonmounts:dragonmount`) renders with its own model and boss bar; the Ender Dragon Spawn Egg used on a block spawned nothing. Taming, hatching eggs and riding were not tried."
+   "status": "works",
+   "notes": "Self-tested in server self test, 1.5.2 set: 1 items, 1 blocks, 1 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "Dragon Mounts Forge (WIP)",
@@ -7028,6 +7145,15 @@
    "date": "2026-11-07",
    "status": "works",
    "notes": "Self-tested in 1.4.7 corpus server self test (2026-11-07): 1 items, 1 blocks, 1 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "Dragon Mounts Forge (WIP)",
+   "version": "0.99.2",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-06",
+   "status": "loads",
+   "notes": "Automated check: translates offline and everything it uses exists (50 classes). But 44 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "DragonAPI",
@@ -7542,6 +7668,15 @@
    "notes": "Self-tested in server self test, 1.5.2 set: 1 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
+   "name": "Enchanting Plus",
+   "version": "1.15.6",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-06",
+   "status": "loads",
+   "notes": "Automated check: translates offline and everything it uses exists (58 classes). But 18 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "Enchantment Descriptions",
    "version": "1.1.15",
    "mc": "1.12.2",
@@ -7549,6 +7684,15 @@
    "date": "2026-11-07",
    "status": "loads",
    "notes": "Automated check: translates offline and everything it uses exists (3 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "Enchantment Descriptions",
+   "version": "1.1.20",
+   "mc": "1.12.2",
+   "source": "probe",
+   "date": "2026-11-07",
+   "status": "loads",
+   "notes": "Automated check 0.4.6: translates offline and everything it uses exists (3 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Enchantment ID Extender",
@@ -7988,7 +8132,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "works",
-   "notes": "Real client, survival, shaders: the Ender Chest recipe crafted in the grid, the chest placed and right-clicked while aimed at (the mod ray-traces the player's look, so a test that clicks a block position without aiming gets no screen: that was the earlier 'opens no screen'); the screen opens with its dye buttons and keeps 16 diamonds put in by shift-click. The item renderer still logs the missing 1.21.1 textures tunnel.png and particlefield.png."
+   "notes": "Self-tested in server self test, 1.5.2 set: 2 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "EnderStorage",
@@ -7998,6 +8142,15 @@
    "date": "2026-11-07",
    "status": "partial",
    "notes": "Self-tested in 1.4.7 corpus server self test (2026-11-07): 3 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned; 1 threw errors (25%)."
+  },
+  {
+   "name": "EnderStorage",
+   "version": "1.4.2.16",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-06",
+   "status": "loads",
+   "notes": "Automated check: translates offline and everything it uses exists (44 classes). But 22 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "EnderTanks",
@@ -8150,7 +8303,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "works",
-   "notes": "Old-only ModLoader mod. Real client 2026-11-07: the four detector blocks draw with their face textures and a detector powers a redstone lamp beside it when a cow comes near."
+   "notes": "Old-only ModLoader mod. Loads in a real client; the four detector blocks draw with their face textures (survival placement)."
   },
   {
    "name": "Entity Render Extender",
@@ -8411,7 +8564,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "fails",
-   "notes": "Needs Ex Nihilo, which is not in the download."
+   "notes": "Fails during preInit: java.lang.RuntimeException: java.lang.NoClassDefFoundError: exnihilo/items/hammers/ItemHammerBase"
   },
   {
    "name": "Exchangers",
@@ -8510,7 +8663,7 @@
    "source": "probe",
    "date": "2026-11-07",
    "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (1036 classes). 5 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "notes": "Automated check: translates offline and everything it uses exists (1036 classes). 2 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Extra Bees",
@@ -8518,8 +8671,8 @@
    "mc": "1.5.2",
    "source": "client",
    "date": "2026-11-07",
-   "status": "partial",
-   "notes": "Real client: the Genetic Machine block places and draws; its screen did not open (see Binnie Core)."
+   "status": "loads",
+   "notes": "Loads in server self test, 1.5.2 set without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "Extra Bees",
@@ -8529,6 +8682,15 @@
    "date": "2026-11-07",
    "status": "works",
    "notes": "Self-tested in 1.4.7 corpus server self test (2026-11-07): 154 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "Extra Bees",
+   "version": "1.7.3b",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-06",
+   "status": "loads",
+   "notes": "Automated check: translates offline and everything it uses exists (874 classes). But 83 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Extra Bit Manipulation",
@@ -8646,6 +8808,24 @@
    "date": "2026-11-07",
    "status": "loads",
    "notes": "Loads in server self test, 1.5.2 set without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "Extra Trees",
+   "version": "1.8.0",
+   "mc": "1.6.4",
+   "source": "probe",
+   "date": "2026-11-06",
+   "status": "loads",
+   "notes": "Automated check: translates offline and everything it uses exists (1036 classes). But 41 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "Extra Trees",
+   "version": "1.7.3b",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-06",
+   "status": "loads",
+   "notes": "Automated check: translates offline and everything it uses exists (874 classes). But 83 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Extra Utilities",
@@ -8815,7 +8995,7 @@
    "source": "client",
    "date": "2026-11-06",
    "status": "fails",
-   "notes": "Disabled at startup (deobfuscated-environment check). 2026-11-07: loads in a real client (creative items registered); every item of the factory block drew the same Mixer icon because the inventory renderer was handed getMetadata() (15 for all of them) instead of the item damage, which is what 1.5.2 RenderItem passed to the block's rendering handler; each now draws its own machine (issue #194)."
+   "notes": "Disabled at startup (deobfuscated-environment check)."
   },
   {
    "name": "Factorization",
@@ -9077,6 +9257,15 @@
    "date": "2026-11-07",
    "status": "fails",
    "notes": "Automated check 0.4.6: uses old Java or library code that no longer exists: org.spongepowered.asm.mixin.struct.SpecialMethodInfo.getTargetClassNode()Lorg.objectweb.asm.tree.ClassNode;."
+  },
+  {
+   "name": "FermiumBooter",
+   "version": "1.6.3",
+   "mc": "1.12.2",
+   "source": "probe",
+   "date": "2026-11-07",
+   "status": "fails",
+   "notes": "Automated check 0.3.23: uses old Java or library code that no longer exists: org.spongepowered.asm.mixin.struct.SpecialMethodInfo.getTargetClassNode()Lorg.objectweb.asm.tree.ClassNode;."
   },
   {
    "name": "Ferrite Core",
@@ -9469,8 +9658,8 @@
    "mc": "1.5.2",
    "source": "client",
    "date": "2026-11-07",
-   "status": "partial",
-   "notes": "Real client, survival, shaders: the apiary placed and its screen opens (the mod's own screen with the tool tabs, the slots and the hex bee slots); a princess bee shift-clicked from the hotbar lands in the queen slot and the bee item draws with its icon. Machine and apiary recipes of this build are Forestry's own recipe class (ShapedRecipeCustom): they list with no result item, crafting them in the grid was not verified. Bee breeding over time, the farm and engines are untried."
+   "status": "works",
+   "notes": "Self-tested in server self test, 1.5.2 set: 173 items, 35 blocks, 1 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "Forestry for Minecraft",
@@ -9563,6 +9752,15 @@
    "notes": "Loads in server self test, 1.5.2 set without errors (no blocks, items or entities of its own)."
   },
   {
+   "name": "Forge Microblocks",
+   "version": "1.0.0.149",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-06",
+   "status": "fails",
+   "notes": "Automated check: needs code from another mod or API that is not available or does not match: scala.reflect.api.Trees$ClassDefExtractor.apply(Lscala.reflect.api.Trees$ModifiersApi;Lscala.reflect.api.Names$NameApi;Lscala.collection.immutable.List;Lscala.reflect.api.Trees$TreeApi;)Lscala.reflect.api.Trees$TreeApi;, scala.reflect.api.Trees$DefDefExtractor.apply(Lscala.reflect.api.Trees$ModifiersApi;Lscala.reflect.api.Names$NameApi;Lscala.collection.immutable.List;Lscala.collection.immutable.List;Lscala.reflect.api.Trees$TreeApi;Lscala.reflect.api.Trees$TreeApi;)Lscala.reflect.api.Trees$TreeApi;, scala.reflect.api.Trees$SuperExtractor.apply(Lscala.reflect.api.Trees$TreeApi;Lscala.reflect.api.Names$NameApi;)Lscala.reflect.api.Trees$TreeApi;, scala.reflect.api.Trees$TemplateExtractor.apply(Lscala.collection.immutable.List;Lscala.reflect.api.Trees$TreeApi;Lscala.collection.immutable.List;)Lscala.reflect.api.Trees$TreeApi;, scala.reflect.api.Trees$ThisExtractor.apply(Lscala.reflect.api.Names$NameApi;)Lscala.reflect.api.Trees$TreeApi; (+1 more)."
+  },
+  {
    "name": "Forge Multipart",
    "version": "1.2.0.345",
    "mc": "1.7.10",
@@ -9586,8 +9784,17 @@
    "mc": "1.5.2",
    "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Loads now (server self test, 1.5.2 set): its Scala mixin compiler failed on the bytes of java.lang.Object (the FML loader view handed out JDK classes' bytes; it now returns none, as FML's did) and loaded the vanilla classes through the wrong loader."
+   "status": "fails",
+   "notes": "Fails during preInit: java.lang.NullPointerException: Cannot invoke \"codechicken.multipart.asm.ASMMixinCompiler$BaseNodeInfo$ClassInfoSource.methods()\" because \"o"
+  },
+  {
+   "name": "Forge Multipart",
+   "version": "1.0.0.149",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-06",
+   "status": "fails",
+   "notes": "Automated check: needs code from another mod or API that is not available or does not match: scala.reflect.api.Trees$ClassDefExtractor.apply(Lscala.reflect.api.Trees$ModifiersApi;Lscala.reflect.api.Names$NameApi;Lscala.collection.immutable.List;Lscala.reflect.api.Trees$TreeApi;)Lscala.reflect.api.Trees$TreeApi;, scala.reflect.api.Trees$DefDefExtractor.apply(Lscala.reflect.api.Trees$ModifiersApi;Lscala.reflect.api.Names$NameApi;Lscala.collection.immutable.List;Lscala.collection.immutable.List;Lscala.reflect.api.Trees$TreeApi;Lscala.reflect.api.Trees$TreeApi;)Lscala.reflect.api.Trees$TreeApi;, scala.reflect.api.Trees$SuperExtractor.apply(Lscala.reflect.api.Trees$TreeApi;Lscala.reflect.api.Names$NameApi;)Lscala.reflect.api.Trees$TreeApi;, scala.reflect.api.Trees$TemplateExtractor.apply(Lscala.collection.immutable.List;Lscala.reflect.api.Trees$TreeApi;Lscala.collection.immutable.List;)Lscala.reflect.api.Trees$TreeApi;, scala.reflect.api.Trees$ThisExtractor.apply(Lscala.reflect.api.Names$NameApi;)Lscala.reflect.api.Trees$TreeApi; (+1 more)."
   },
   {
    "name": "Forge Multipart CBE",
@@ -10544,8 +10751,8 @@
    "mc": "1.6.4",
    "source": "client",
    "date": "2026-11-07",
-   "status": "works",
-   "notes": "Real client, survival, shaders: the goblin mobs (soldier, mage, chief, ranger, dire wolf) render with their skins and boss bars, and a goblin soldier killed the player. The village spawner block builds its village on a superflat world without a freeze; the earlier server freeze did not repeat and its cause is still unknown. The download is a wrapper zip with the real mod in an inner archive ('Put contents into the Mods Folder'); the textures were missing until the layer started unpacking it."
+   "status": "crashes",
+   "notes": "Loads, but using its goblin village spawner block freezes the server: the village builder loops forever while reading blocks. Found in a server self test of the old-only 1.6.4 set; the cause is not found yet."
   },
   {
    "name": "Golden Glitter",
@@ -10809,13 +11016,22 @@
    "notes": "Automated check 0.4.6: needs code from another mod or API that is not available or does not match: xonin.backhand.api.core.BackhandUtils.getOffhandSlot(Llegacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer;)I."
   },
   {
+   "name": "Gregtech: New Horizons Customizer",
+   "version": "v0.18.1",
+   "mc": "1.7.10",
+   "source": "probe",
+   "date": "2026-11-06",
+   "status": "fails",
+   "notes": "Automated check 0.3.23: needs code from another mod or API that is not available or does not match: xonin.backhand.api.core.BackhandUtils.getOffhandSlot(Llegacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer;)I."
+  },
+  {
    "name": "Grimoire of Gaia",
    "version": "2 1.2.0",
    "mc": "1.5.2",
    "source": "client",
    "date": "2026-11-07",
    "status": "works",
-   "notes": "Real client, survival, shaders: the Ancient Sword shapeless recipe crafted in the grid (the mod's crafting handler now receives the grid instead of null: it threw a NullPointerException on every craft) and the sword in hand next to summoned creeper girl and harpy. Mob models and fights worked before. Its textures with capital letters in the file name (`Sphinx.png`) are read from the class path."
+   "notes": "Self-tested in server self test, 1.5.2 set: 0 items, 0 blocks, 52 entity types; every block placed and used, every item used, every entity spawned without errors. Real client, survival, shaders: valkyrie, harpy, dryad, centaur, slime girl, anubis, creeper girl and witch mobs draw with their own models; fought with a diamond sword, they drop items (feathers, gunpowder, ender pearls) that the player picks up."
   },
   {
    "name": "Grimoire of Gaia",
@@ -10824,7 +11040,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "works",
-   "notes": "Self-tested in 1.4.7 corpus server self test (2026-11-07): 10 items, 0 blocks, 48 entity types; every block placed and used, every item used, every entity spawned without errors. Real client 2026-11-07: harpy, valkyrie (boss bar), centaur, banshee, maid and mermaid spawn and render with their models."
+   "notes": "Self-tested in 1.4.7 corpus server self test (2026-11-07): 10 items, 0 blocks, 48 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "Grimoire of Gaia 3",
@@ -11416,7 +11632,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "works",
-   "notes": "Real client, shaders: Herobrine (with smoke), Notch, Chuck Norris, the zombie, cow and pig variants and the boss (with boss bar) render and spawn. Their behavior and the world generation were not played through."
+   "notes": "Self-tested in server self test, old-only 1.6.4 set: 1 items, 1 blocks, 14 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "HeroesExpansion",
@@ -11707,7 +11923,34 @@
    "notes": "Real client, survival, shaders: it loads once IC2 is installed (its Resonant Engine library needs IC2's API classes in postInit; without IC2 ICBM Explosion and Sentry are disabled); the spikes and camouflage recipes give results from the grid and the missile assembler screen opens. Building a launcher and firing a missile were not tried."
   },
   {
+   "name": "ICBM",
+   "version": "1.4.2",
+   "mc": "1.6.4",
+   "source": "probe",
+   "date": "2026-11-06",
+   "status": "loads",
+   "notes": "Automated check: translates offline and everything it uses exists (291 classes). But 44 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "ICBM Explosion",
+   "version": "1.4.2",
+   "mc": "1.6.4",
+   "source": "client",
+   "date": "2026-11-07",
+   "status": "partial",
+   "notes": "Real client, survival, shaders: it loads once IC2 is installed (its Resonant Engine library needs IC2's API classes in postInit; without IC2 ICBM Explosion and Sentry are disabled); the spikes and camouflage recipes give results from the grid and the missile assembler screen opens. Building a launcher and firing a missile were not tried."
+  },
+  {
+   "name": "ICBM Explosion",
+   "version": "1.4.2",
+   "mc": "1.6.4",
+   "source": "probe",
+   "date": "2026-11-06",
+   "status": "loads",
+   "notes": "Automated check: translates offline and everything it uses exists (291 classes). But 44 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "ICBM Sentry",
    "version": "1.4.2",
    "mc": "1.6.4",
    "source": "client",
@@ -11719,10 +11962,10 @@
    "name": "ICBM Sentry",
    "version": "1.4.2",
    "mc": "1.6.4",
-   "source": "client",
-   "date": "2026-11-07",
-   "status": "partial",
-   "notes": "Real client, survival, shaders: it loads once IC2 is installed (its Resonant Engine library needs IC2's API classes in postInit; without IC2 ICBM Explosion and Sentry are disabled); the spikes and camouflage recipes give results from the grid and the missile assembler screen opens. Building a launcher and firing a missile were not tried."
+   "source": "probe",
+   "date": "2026-11-06",
+   "status": "loads",
+   "notes": "Automated check: translates offline and everything it uses exists (291 classes). But 44 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "ICBM-Classic",
@@ -12012,6 +12255,15 @@
    "notes": "Automated check: needs code from another mod or API that is not available or does not match: zmaster587.advancedRocketry.dimension.DimensionProperties.getPeakInsolationMultiplier()D, zmaster587.advancedRocketry.dimension.DimensionProperties.getPeakInsolationMultiplierWithoutAtmosphere()D."
   },
   {
+   "name": "Immersive Technology",
+   "version": "1.11.216",
+   "mc": "1.12.2",
+   "source": "probe",
+   "date": "2026-11-07",
+   "status": "loads",
+   "notes": "Automated check 0.4.6: translates offline and everything it uses exists (411 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "Immersive Vehicles (formerly MTS)",
    "version": "24.0.0",
    "mc": "1.12.2",
@@ -12044,8 +12296,8 @@
    "mc": "1.5.2",
    "source": "client",
    "date": "2026-11-07",
-   "status": "works",
-   "notes": "Its trait system works now: the traits transformer it registers from a static initialiser is applied at translation time (Dimensional Anchors' inventory and screen need it). Id clashes with other mods' numeric ids still abort its allocator (see the wiki)."
+   "status": "loads",
+   "notes": "Loads in server self test, 1.5.2 set without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "Immibis Core",
@@ -12075,6 +12327,15 @@
    "notes": "Loads in server self test, 1.5.2 set without errors (no blocks, items or entities of its own)."
   },
   {
+   "name": "Immibis's Microblocks (Checks for incorrect installation, ignore this)",
+   "version": "55.0.7",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-06",
+   "status": "loads",
+   "notes": "Automated check: translates offline and everything it uses exists (79 classes). But 15 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "Immibis's Peripherals",
    "version": "59.0.3",
    "mc": "1.7.10",
@@ -12100,6 +12361,15 @@
    "date": "2026-11-07",
    "status": "works",
    "notes": "Self-tested in 1.4.7 corpus server self test (2026-11-07): 3 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "Immibis's Peripherals",
+   "version": "55.0.4",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-06",
+   "status": "loads",
+   "notes": "Automated check: translates offline and everything it uses exists (144 classes). But 15 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Improvable Skills",
@@ -12236,6 +12506,15 @@
    "notes": "Real client, survival, shaders: it loads (the earlier offline check that failed on NEI's RecipeInfo is out of date): the generator screen opens and burns coal (flame lit, energy bar fills). Cables, machines, ore processing and the reactor were not tried. 2026-11-07: machine, generator, cable and ore faces were magenta in the world (IC2's own sprite loader was not called); fixed, all 1812 sprites build. A generator burns coal, feeds an adjacent macerator and iron ore becomes crushed ore."
   },
   {
+   "name": "IndustrialCraft 2",
+   "version": "2.0.397-experimental",
+   "mc": "1.6.4",
+   "source": "probe",
+   "date": "2026-11-06",
+   "status": "fails",
+   "notes": "Automated check: needs Minecraft or Forge features the layer does not have yet: codechicken.nei.recipe.RecipeInfo.hasDefaultOverlay(Llegacyconnector.v1_7_10.net.minecraft.client.gui.inventory.GuiContainer;Ljava.lang.String;)Z, codechicken.nei.recipe.RecipeInfo.hasOverlayHandler(Llegacyconnector.v1_7_10.net.minecraft.client.gui.inventory.GuiContainer;Ljava.lang.String;)Z."
+  },
+  {
    "name": "IndustrialCraft 2 Classic",
    "version": "2.2.999",
    "mc": "1.7.10",
@@ -12304,8 +12583,8 @@
    "mc": "1.5.2",
    "source": "client",
    "date": "2026-11-07",
-   "status": "works",
-   "notes": "Real client, survival, shaders: the machine recipe crafted in the grid (8 transport items), a Teleposer placed, its screen opens (filter slots, colours, priority); the priority buttons respond. Moving items through tubes was not tried."
+   "status": "loads",
+   "notes": "Loads in server self test, 1.5.2 set without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "InfiniTubes",
@@ -12315,6 +12594,15 @@
    "date": "2026-11-07",
    "status": "loads",
    "notes": "Loads in 1.4.7 corpus server self test (2026-11-07) without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "InfiniTubes",
+   "version": "55.0.6",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-06",
+   "status": "loads",
+   "notes": "Automated check: translates offline and everything it uses exists (55 classes). But 10 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Infinity Water Bucket",
@@ -12368,7 +12656,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "works",
-   "notes": "Real client, shaders: the infused blocks (forge, grass, log, planks, glass, ore, furnace, TNT) draw with the mod's rainbow textures, and the infused sword, bow, emerald pickaxe and armor show in the inventory and in hand. Infusing was not tried."
+   "notes": "Self-tested in server self test, old-only 1.6.4 set: 22 items, 22 blocks, 4 entity types; every block placed and used, every item used, every entity spawned without errors. 4 blocks did not stay placed."
   },
   {
    "name": "InGame Info XML",
@@ -13063,6 +13351,15 @@
    "notes": "Automated check: translates offline and everything it uses exists (153 classes). The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "JAOPCA",
+   "version": "1.12.2-2.3.14.38",
+   "mc": "1.12.2",
+   "source": "probe",
+   "date": "2026-11-07",
+   "status": "loads",
+   "notes": "Automated check 0.4.6: translates offline and everything it uses exists (478 classes). The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "JAOPCAGT5",
    "version": "1.7.10-1.0.0.4",
    "mc": "1.7.10",
@@ -13177,6 +13474,15 @@
    "date": "2026-11-07",
    "status": "fails",
    "notes": "Automated check 0.4.5: needs Minecraft or Forge features the layer does not have yet: com.mojang.authlib.minecraft.MinecraftSessionService.getTextures, com.mojang.realmsclient.RealmsMainScreen.realmsServers, com.mojang.serialization.DataResult.getOrThrow, net.minecraft.client.Options.renderDebug, net.minecraft.client.Options.renderDebugCharts (+73 more). has a 1.21.1 version"
+  },
+  {
+   "name": "JourneyMap",
+   "version": "1.12.2-6.0.10",
+   "mc": "1.12.2",
+   "source": "probe",
+   "date": "2026-11-07",
+   "status": "fails",
+   "notes": "Automated check 0.4.6: uses old Java or library code that no longer exists: com.google.common.io.Files.fileTreeTraverser()Lcom.google.common.collect.TreeTraverser;."
   },
   {
    "name": "JourneyMap Integration",
@@ -13312,6 +13618,15 @@
    "date": "2026-11-07",
    "status": "loads",
    "notes": "Automated check: translates offline and everything it uses exists (371 classes). 4 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "Just Enough Items",
+   "version": "4.24.0.1042",
+   "mc": "1.12.2",
+   "source": "probe",
+   "date": "2026-11-07",
+   "status": "loads",
+   "notes": "Automated check 0.4.6: translates offline and everything it uses exists (416 classes). 4 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Just Enough Mekanism Multiblocks",
@@ -13551,10 +13866,10 @@
    "name": "Large Ore Deposits",
    "version": "1.12.2-1.0.8.0",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (27 classes). The game was not started: this only shows the jar translates, not that it works."
+   "status": "fails",
+   "notes": "Automated client survey: 0 items, 0 blocks, 0 entity types; load failure during construction: java.lang.NoClassDefFoundError: com/endertech/minecraft/forge/ForgeMod (the Legacy Connector layer does not implement this legacy API yet - see logs/legacyconne; 2 error log lines"
   },
   {
    "name": "Laser Creeper Robot Dino Riders From Space",
@@ -13797,7 +14112,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "works",
-   "notes": "Real client, survival, shaders: the LXP Collector recipe crafted in the grid and the block placed (it has no screen of its own: right-click does nothing). One recipe ingredient item draws the missing texture in the grid. Collecting XP was not tried."
+   "notes": "Real client, survival, shaders: it failed in preInit on a null `Minecraft.session` (a public field in 1.5.2, fixed); now its 8 LXP machines and the medallions register with their names and the Immibis blocks are placed (the remaining bad texture was Advanced Machines, which needs IC2)."
   },
   {
    "name": "Liquid XP",
@@ -13807,6 +14122,15 @@
    "date": "2026-11-07",
    "status": "works",
    "notes": "Self-tested in 1.4.7 corpus server self test (2026-11-07): 8 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "Liquid XP",
+   "version": "55.1.5",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-06",
+   "status": "loads",
+   "notes": "Automated check: translates offline and everything it uses exists (35 classes). But 19 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Litematica",
@@ -14232,6 +14556,15 @@
    "notes": "Real client, survival, shaders: the Reiver spawns without errors; its model was not looked at closely."
   },
   {
+   "name": "Lycanites Arctic Mobs",
+   "version": "1.5.1h - MC 1.6.4",
+   "mc": "1.6.4",
+   "source": "probe",
+   "date": "2026-11-06",
+   "status": "loads",
+   "notes": "Automated check: translates offline and everything it uses exists (321 classes). But 36 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "Lycanites Demon Mobs",
    "version": "1.13.0.5 - MC 1.7.10",
    "mc": "1.7.10",
@@ -14248,6 +14581,15 @@
    "date": "2026-11-07",
    "status": "works",
    "notes": "Real client, survival, shaders: the Belph spawns and draws with its own model (a bat-like flyer) and moves."
+  },
+  {
+   "name": "Lycanites Demon Mobs",
+   "version": "1.5.1h - MC 1.6.4",
+   "mc": "1.6.4",
+   "source": "probe",
+   "date": "2026-11-06",
+   "status": "loads",
+   "notes": "Automated check: translates offline and everything it uses exists (321 classes). But 36 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Lycanites Desert Mobs",
@@ -14268,6 +14610,15 @@
    "notes": "Real client, survival, shaders: the Manticore spawns and draws with its own model and moves."
   },
   {
+   "name": "Lycanites Desert Mobs",
+   "version": "1.5.1h - MC 1.6.4",
+   "mc": "1.6.4",
+   "source": "probe",
+   "date": "2026-11-06",
+   "status": "loads",
+   "notes": "Automated check: translates offline and everything it uses exists (321 classes). But 36 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "Lycanites Forest Mobs",
    "version": "1.13.0.5 - MC 1.7.10",
    "mc": "1.7.10",
@@ -14283,7 +14634,7 @@
    "source": "probe",
    "date": "2026-11-07",
    "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (321 classes). 2 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "notes": "Automated check: translates offline and everything it uses exists (321 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Lycanites Freshwater Mobs",
@@ -14310,7 +14661,7 @@
    "source": "probe",
    "date": "2026-11-07",
    "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (321 classes). 2 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "notes": "Automated check: translates offline and everything it uses exists (321 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Lycanites Jungle Mobs",
@@ -14328,7 +14679,7 @@
    "source": "probe",
    "date": "2026-11-07",
    "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (321 classes). 2 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "notes": "Automated check: translates offline and everything it uses exists (321 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Lycanites Mobs",
@@ -14349,6 +14700,15 @@
    "notes": "Real client, survival, shaders: with the Desert, Demon, Plains and Arctic packs loaded: a Manticore, Belph and Zoataur spawn and draw with their own models and move (they are removed at once on peaceful difficulty). Fighting and the summoning portal were not tried."
   },
   {
+   "name": "Lycanites Mobs",
+   "version": "1.5.1h - MC 1.6.4",
+   "mc": "1.6.4",
+   "source": "probe",
+   "date": "2026-11-06",
+   "status": "loads",
+   "notes": "Automated check: translates offline and everything it uses exists (321 classes). But 36 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "Lycanites Mountain Mobs",
    "version": "1.13.0.5 - MC 1.7.10",
    "mc": "1.7.10",
@@ -14364,7 +14724,7 @@
    "source": "probe",
    "date": "2026-11-07",
    "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (321 classes). 2 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "notes": "Automated check: translates offline and everything it uses exists (321 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Lycanites Plains Mobs",
@@ -14385,6 +14745,15 @@
    "notes": "Real client, survival, shaders: the Zoataur spawns and moves; hostile mobs vanish on peaceful difficulty."
   },
   {
+   "name": "Lycanites Plains Mobs",
+   "version": "1.5.1h - MC 1.6.4",
+   "mc": "1.6.4",
+   "source": "probe",
+   "date": "2026-11-06",
+   "status": "loads",
+   "notes": "Automated check: translates offline and everything it uses exists (321 classes). But 36 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "Lycanites Saltwater Mobs",
    "version": "1.13.0.5 - MC 1.7.10",
    "mc": "1.7.10",
@@ -14400,7 +14769,7 @@
    "source": "probe",
    "date": "2026-11-07",
    "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (321 classes). 2 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "notes": "Automated check: translates offline and everything it uses exists (321 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Lycanites Shadow Mobs",
@@ -14427,7 +14796,7 @@
    "source": "probe",
    "date": "2026-11-07",
    "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (321 classes). 2 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "notes": "Automated check: translates offline and everything it uses exists (321 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "m2paxel",
@@ -15057,7 +15426,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "partial",
-   "notes": "Loads alone; in a set with Emerald's Dimensional Warps the second mod fails with 'Failed to register dimension for id 3, One is already registered': both mods claim dimension 3, which Forge 1.6.4 refused as well."
+   "notes": "In server self test, old-only 1.6.4 set 6 items, 10 blocks, 0 entity types register, but loading failed during init: java.lang.IllegalArgumentException: Failed to register dimension for id 3, One is already registered"
   },
   {
    "name": "Mekalus (Oculus)",
@@ -15427,6 +15796,15 @@
    "notes": "Loads in server self test, 1.5.2 set without errors (no blocks, items or entities of its own)."
   },
   {
+   "name": "Minecraft Multipart Plugin",
+   "version": "1.0.0.149",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-06",
+   "status": "fails",
+   "notes": "Automated check: needs code from another mod or API that is not available or does not match: scala.reflect.api.Trees$ClassDefExtractor.apply(Lscala.reflect.api.Trees$ModifiersApi;Lscala.reflect.api.Names$NameApi;Lscala.collection.immutable.List;Lscala.reflect.api.Trees$TreeApi;)Lscala.reflect.api.Trees$TreeApi;, scala.reflect.api.Trees$DefDefExtractor.apply(Lscala.reflect.api.Trees$ModifiersApi;Lscala.reflect.api.Names$NameApi;Lscala.collection.immutable.List;Lscala.collection.immutable.List;Lscala.reflect.api.Trees$TreeApi;Lscala.reflect.api.Trees$TreeApi;)Lscala.reflect.api.Trees$TreeApi;, scala.reflect.api.Trees$SuperExtractor.apply(Lscala.reflect.api.Trees$TreeApi;Lscala.reflect.api.Names$NameApi;)Lscala.reflect.api.Trees$TreeApi;, scala.reflect.api.Trees$TemplateExtractor.apply(Lscala.collection.immutable.List;Lscala.reflect.api.Trees$TreeApi;Lscala.collection.immutable.List;)Lscala.reflect.api.Trees$TreeApi;, scala.reflect.api.Trees$ThisExtractor.apply(Lscala.reflect.api.Names$NameApi;)Lscala.reflect.api.Trees$TreeApi; (+1 more)."
+  },
+  {
    "name": "Minecraft Rich Presence",
    "version": "1.0",
    "mc": "1.12.2",
@@ -15479,6 +15857,15 @@
    "date": "2026-11-07",
    "status": "loads",
    "notes": "Automated check 0.4.6: translates offline and everything it uses exists (75 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "MineLights",
+   "version": "2.3.8",
+   "mc": "1.7.10",
+   "source": "probe",
+   "date": "2026-11-06",
+   "status": "loads",
+   "notes": "Automated check 0.3.23: translates offline and everything it uses exists (42 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "MineMenu",
@@ -15603,8 +15990,8 @@
    "mc": "1.6.4",
    "source": "client",
    "date": "2026-11-07",
-   "status": "fails",
-   "notes": "Needs a library mod (com.mod.guffcore.TaggingUtility) that is not in the download."
+   "status": "partial",
+   "notes": "In server self test, old-only 1.6.4 set 3 items, 3 blocks, 0 entity types register, but loading failed during preInit: java.lang.RuntimeException: java.lang.NoClassDefFoundError: com.mod.guffcore.TaggingUtility"
   },
   {
    "name": "MiscPeripherals",
@@ -15622,7 +16009,16 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "works",
-   "notes": "Old-only (needs ComputerCraft). Loads in a real client; eight of its blocks place and draw with their textures; a block beside a ComputerCraft computer is found as a peripheral (gateReader, with its 'get' method)."
+   "notes": "Old-only (needs ComputerCraft). Loads in a real client; eight of its blocks (charge station, iron note block, resupply station, interactive sorter, rail reader, teleporter, player detector, crafter) place and draw with their textures; use through a computer not tried."
+  },
+  {
+   "name": "MiscPeripherals",
+   "version": "3.3",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-06",
+   "status": "loads",
+   "notes": "Automated check: translates offline and everything it uses exists (320 classes). But 58 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Mithril",
@@ -15686,6 +16082,15 @@
    "date": "2026-11-07",
    "status": "fails",
    "notes": "Automated check 0.4.6: uses old Java or library code that no longer exists: com.mojang.authlib.minecraft.MinecraftSessionService.joinServer(Lcom.mojang.authlib.GameProfile;Ljava.lang.String;Ljava.lang.String;)V."
+  },
+  {
+   "name": "Mo' Bends",
+   "version": "1.2.2",
+   "mc": "1.12.2",
+   "source": "probe",
+   "date": "2026-11-07",
+   "status": "loads",
+   "notes": "Automated check 0.3.23: translates offline and everything it uses exists (1300 classes). 7 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Mo' Creatures",
@@ -15859,6 +16264,15 @@
    "notes": "Automated check: translates offline and everything it uses exists (390 classes). The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "Mod Tweaker",
+   "version": "4.0.19",
+   "mc": "1.12.2",
+   "source": "probe",
+   "date": "2026-11-07",
+   "status": "loads",
+   "notes": "Automated check 0.4.6: translates offline and everything it uses exists (394 classes). The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "Mod Tweaker 2",
    "version": "0.9.6",
    "mc": "1.7.10",
@@ -15901,7 +16315,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "fails",
-   "notes": "Does not start: patched-game jar mod. It replaces vanilla classes of minecraft.jar (mobs, blocks, world generation), which the layer cannot express."
+   "notes": "Fails during construction: java.lang.ClassNotFoundException: mod_FCBetterThanWolves"
   },
   {
    "name": "mod_genesesbosses",
@@ -15937,7 +16351,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "loads",
-   "notes": "Sprint on CTRL: a client-only ModLoader mod; a dedicated server skips it quietly (not 'failed'). Loads in the real client; sprinting itself not tried."
+   "notes": "Loads in 1.4.7 corpus server self test (2026-11-07) without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "Model Gap Fix",
@@ -16387,7 +16801,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "works",
-   "notes": "Real client, shaders: its blocks render. Earlier server self test passed."
+   "notes": "Self-tested in server self test, old-only 1.6.4 set: 3 items, 2 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "MrCrayfish's Furniture Mod",
@@ -16443,6 +16857,15 @@
    "date": "2026-11-07",
    "status": "loads",
    "notes": "Automated check: translates offline and everything it uses exists (20 classes). The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "MTLib",
+   "version": "3.0.7",
+   "mc": "1.12.2",
+   "source": "probe",
+   "date": "2026-11-07",
+   "status": "loads",
+   "notes": "Automated check 0.4.6: translates offline and everything it uses exists (20 classes). The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Multi-Piston",
@@ -16585,7 +17008,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "partial",
-   "notes": "Real client, survival, shaders: the writing desk recipe crafted in the grid, the desk placed and its screen opens; the panels are still laid out wrongly (symbol list at the left, the inventory panel at the far right of a window wider than the screen). Age creation and linking were not tried."
+   "notes": "Self-tested in server self test, 1.5.2 set: 9 items, 11 blocks, 3 entity types; every block placed and used, every item used, every entity spawned; 11 threw errors (48%). 2 blocks did not stay placed."
   },
   {
    "name": "Mystcraft",
@@ -16594,7 +17017,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "partial",
-   "notes": "Loads and registers (15 items, 10 blocks, 3 entities). Real client 2026-11-07: an age can be created and the writing desk screen opens in survival; ages beyond creation and the other machines were not tried."
+   "notes": "Loads and registers (15 items, 10 blocks, 3 entities). Client check 2026-11-07: an age can be created (DimensionUtils.createAge) and entered, it generates an empty sky; the self test found errors in 43% of the content (lectern, book binder, writing desk machines). Writing and linking books by hand not tried."
   },
   {
    "name": "Mysterious Mountain Lib",
@@ -16988,7 +17411,7 @@
    "source": "probe",
    "date": "2026-11-07",
    "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (91 classes). But 16 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+   "notes": "Automated check: translates offline and everything it uses exists (91 classes). But 15 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "NEI Addons: Applied Energistics",
@@ -17015,7 +17438,7 @@
    "source": "probe",
    "date": "2026-11-07",
    "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (91 classes). But 16 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+   "notes": "Automated check: translates offline and everything it uses exists (91 classes). But 15 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "NEI Addons: Applied Energistics 2",
@@ -17069,7 +17492,7 @@
    "source": "probe",
    "date": "2026-11-07",
    "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (91 classes). But 16 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+   "notes": "Automated check: translates offline and everything it uses exists (91 classes). But 15 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "NEI Addons: Developer Tools",
@@ -17114,7 +17537,7 @@
    "source": "probe",
    "date": "2026-11-07",
    "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (91 classes). But 16 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+   "notes": "Automated check: translates offline and everything it uses exists (91 classes). But 15 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "NEI Addons: Extra Bees",
@@ -17123,7 +17546,7 @@
    "source": "probe",
    "date": "2026-11-07",
    "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (91 classes). But 16 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+   "notes": "Automated check: translates offline and everything it uses exists (91 classes). But 15 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "NEI Addons: Forestry",
@@ -17150,7 +17573,7 @@
    "source": "client",
    "date": "2026-11-06",
    "status": "fails",
-   "notes": "The mod is disabled at startup (VerifyError in the configuration reader class). 2026-11-07: with other mods in mods/ it registered every item twice ('Tried to recreate an item') because getSourceFile gave the translated copy's name; fixed. Apiary, engine, factory, alveary, beehive and stump blocks render."
+   "notes": "The mod is disabled at startup (VerifyError in the configuration reader class)."
   },
   {
    "name": "NEI Addons: Misc Peripherals",
@@ -17159,7 +17582,7 @@
    "source": "probe",
    "date": "2026-11-07",
    "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (91 classes). But 16 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+   "notes": "Automated check: translates offline and everything it uses exists (91 classes). But 15 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "NEI Custom Diagram",
@@ -17558,6 +17981,15 @@
    "notes": "Automated check: translates offline and everything it uses exists (24 classes). 3 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "NoMoreRecipeConflict",
+   "version": "0.15-b2",
+   "mc": "1.12.2",
+   "source": "probe",
+   "date": "2026-11-07",
+   "status": "loads",
+   "notes": "Automated check 0.4.6: translates offline and everything it uses exists (26 classes). 3 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "NonConflictKeys",
    "version": "1.0.0",
    "mc": "1.12.2",
@@ -17781,6 +18213,15 @@
    "date": "2026-11-07",
    "status": "fails",
    "notes": "Automated check: needs code from another mod or API that is not available or does not match: nc.integration.gtce.GTCERecipeHelper.addGTCERecipe(Ljava.lang.String;Lnc.recipe.ProcessorRecipe;)V, nc.tile.energy.ITileEnergy.addTileToENet()V, nc.tile.energy.ITileEnergy.removeTileFromENet()V."
+  },
+  {
+   "name": "NuclearCraft",
+   "version": "2.19a",
+   "mc": "1.12.2",
+   "source": "probe",
+   "date": "2026-11-07",
+   "status": "fails",
+   "notes": "Automated check 0.4.6: needs code from another mod or API that is not available or does not match: nc.integration.gtce.GTCERecipeHelper.addGTCERecipe(Ljava.lang.String;Lnc.recipe.ProcessorRecipe;)V."
   },
   {
    "name": "Nuclearcraft Neoteric",
@@ -18371,8 +18812,8 @@
    "mc": "1.4.7",
    "source": "client",
    "date": "2026-11-07",
-   "status": "partial",
-   "notes": "Old-only (Old Vein Miner). Loads in a real client; the activation key and left-click events arrive, but the mod reaches the game by reflecting on method names (World.getBlockId...) the layer does not offer to reflection, so no vein is mined."
+   "status": "loads",
+   "notes": "Old-only (Old Vein Miner). Loads in a real client and prints its start message; the vein mining itself needs the LWJGL key ` held with left-click, which the test harness cannot press: not exercised."
   },
   {
    "name": "p455w0rd's Library",
@@ -19740,7 +20181,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "works",
-   "notes": "Real client, shaders: Quazar blocks, ore, glass, brick, the crafter controller and wall render; the diamond-shiny sword, pickaxe and chestplate are in the inventory and draw; the loot zombie spawns. The crafter multiblock was not built."
+   "notes": "Self-tested in server self test, old-only 1.6.4 set: 18 items, 21 blocks, 2 entity types; every block placed and used, every item used, every entity spawned; 1 threw errors (2%). 2 blocks did not stay placed."
   },
   {
    "name": "QueQiao",
@@ -19919,7 +20360,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "fails",
-   "notes": "Does not start: needs LWJGL joystick libs (JInput, net.java.games.input), which this game does not ship. Not a layer defect."
+   "notes": "Fails during init in a real client: needs JInput (net.java.games.input), a library the game does not ship. Not a layer defect; would need a JInput shim over GLFW."
   },
   {
    "name": "rawOre_on_1.12.2",
@@ -19965,6 +20406,15 @@
    "date": "2026-11-07",
    "status": "loads",
    "notes": "Automated check: translates offline and everything it uses exists (39 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "Reach Fix",
+   "version": "1.1.3",
+   "mc": "1.12.2",
+   "source": "probe",
+   "date": "2026-11-07",
+   "status": "loads",
+   "notes": "Automated check 0.4.6: translates offline and everything it uses exists (61 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "ReactorCraft",
@@ -20179,7 +20629,16 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "partial",
-   "notes": "Real client, survival, shaders: the wire recipe crafted in the grid (16 wires) and placed beside a redstone block; the wire still draws a flat light-grey pad around its stripe. The earlier test showed that wires conduct a lever's signal to a lamp."
+   "notes": "Needs Immibis Microblocks (its TileCoverableBase API class): the earlier failure was a missing dependency in the test set, not a layer defect. With Immibis Core and Microblocks it loads (0 failed). Placing a wire by command crashed the server: RedLogic reads BlockRedstoneWire.getDeclaredFields()[0] and asserts it is a boolean (the shim's wire had icon fields first) and the AssertionError escaped the tile entity creation; both fixed. Real client, survival, shaders (third round): lamps, wires and gates are given and placed with their items; a vanilla redstone block beside a lamp lights it (the lit lamp glows white). Fixed: its blocks and items were registered as minecraft:redlogic.* (Immibis Core registers them while no mod is active; the owner is now the mod whose package holds the class, so redlogic:redlogic.*), and its textures under /mods/immibis/redlogic/ (a resource domain with a slash) were not found, so the lamps drew as missing textures. Still open: a wire between a power source and a lamp does not conduct, wires draw as a flat white pad, and names show raw keys (the mod's own lang file format with item:/tile: keys is not read)."
+  },
+  {
+   "name": "RedLogic",
+   "version": "55.4.1",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-06",
+   "status": "loads",
+   "notes": "Automated check: translates offline and everything it uses exists (105 classes). But 21 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "RedPower",
@@ -20672,7 +21131,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "works",
-   "notes": "Real client, shaders: its ore and storage blocks render. Earlier server self test: every item used without errors."
+   "notes": "Self-tested in server self test, old-only 1.6.4 set: 8 items, 10 blocks, 1 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "Right Proper GUI Scale",
@@ -22065,7 +22524,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "works",
-   "notes": "Real client, shaders: its blocks render. Earlier server self test: every block and item used without errors. The apocalypse event itself was not watched."
+   "notes": "Self-tested in server self test, old-only 1.6.4 set: 8 items, 8 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors. 2 blocks did not stay placed."
   },
   {
    "name": "Solar Expansion",
@@ -22334,8 +22793,8 @@
    "mc": "1.5.2",
    "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Client-only mod: a dedicated server skips it quietly (info log, not 'failed'), as FML did. Loads in the real client; sprinting itself not tried."
+   "status": "fails",
+   "notes": "Fails during init: java.lang.RuntimeException: Attempted to load class net/minecraft/client/server/IntegratedServer for invalid dist DEDICATED_SERVER"
   },
   {
    "name": "Sprintable",
@@ -23765,7 +24224,7 @@
    "source": "probe",
    "date": "2026-11-07",
    "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (724 classes). 3 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "notes": "Automated check: translates offline and everything it uses exists (724 classes). 2 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Thaumic Tinkerer unspecified",
@@ -23909,7 +24368,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "works",
-   "notes": "Real client in survival: mobs and blocks draw, and the Pride Lands dimension (also Outlands and Upendi, registered as dimension ids -2, -3 and -4) generates terrain with its biomes, trees and a crowd of Zazu birds; entering it with /execute in works. Lions, simba, hyenas, zebras, rhinos, giraffes and crocodiles spawn and walk with their own models and health bars; its achievement page now loads. Known: under the shader pack the Pride Lands are covered in white fog (clear without shaders), the mod ships no mob sounds (the game logs them as unknown), its background music is not played, and the portal rituals, quests and crafting were not tried. A few technical blocks and items (double slabs, hanging banana, the outlands altar) show their raw name key; the mod's own code gives them no name."
+   "notes": "Real client, shaders: joins and plays. Cause of the old disconnect: its IConnectionHandler.connectionReceived returns an empty string for accepted, which the layer took as a refusal (a kick with an empty reason); null or an empty string now accepts, as in FML. Mobs (lions, giraffe, rhino) and blocks draw."
   },
   {
    "name": "The Lost Cities",
@@ -23936,7 +24395,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "works",
-   "notes": "Real client, shaders: its blocks render (some of the 3 show missing textures). Playing songs was not tried."
+   "notes": "Self-tested in server self test, old-only 1.6.4 set: 3 items, 3 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "The Offhand Mod",
@@ -24044,7 +24503,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "partial",
-   "notes": "Real client, survival, shaders: init succeeds; the wild boar, bighorn sheep, bunny and penguin draw with their models. A skeleton druid and a hedge spider spawned in survival walked up, attacked and killed the player (poison effect, damage, knockback): mob AI and attacks work. Dimension, structures and bosses not explored. Real client 2026-11-07: the dimension generates and renders (forest, ponds); the hydra, naga, tower golem and goblin knight spawn and draw with boss bars (the hydra crashed the client with a ClassCastException until EntityLiving.despawnEntity was made server-only). Mob sounds are unknown sound events (#195)."
+   "notes": "Real client, shaders: init succeeds now: Minecraft 1.5.2's RenderLiving was concrete (new RenderLiving(model, shadow)); the shim's is too, and binds the entity's string texture (EntityLiving.texture / getTexture, set by the mod's constructor) before the renderer's default, so the wild boar, bighorn sheep, bunny and penguin draw with their own models and skins."
   },
   {
    "name": "The Twilight Forest",
@@ -24053,7 +24512,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "works",
-   "notes": "Self-tested in 1.4.7 corpus server self test (2026-11-07): 144 items, 23 blocks, 52 entity types; every block placed and used, every item used, every entity spawned without errors. 6 blocks did not stay placed. Real client 2026-11-07 (Sodium and the usual performance mods): the client proxy used to fail verification (ModelIronGolem and TileEntityMobSpawnerRenderer were synthesized classes, no ModelBase or renderer); now it loads, the dimension generates (forest, ponds) and its mobs render (docs/screenshots/old-versions/1.4.7). Bosses, labyrinths and the portal were not tried."
+   "notes": "Self-tested in 1.4.7 corpus server self test (2026-11-07): 144 items, 23 blocks, 52 entity types; every block placed and used, every item used, every entity spawned without errors. 6 blocks did not stay placed."
   },
   {
    "name": "The Twilight Forest",
@@ -24502,6 +24961,15 @@
    "notes": "Automated check 0.4.5: needs Minecraft or Forge features the layer does not have yet: com.mojang.blaze3d.vertex.SheetedDecalTextureGenerator.<init>, net.minecraft.advancements.Advancement$Builder.addCriterion, net.minecraft.advancements.Advancement$Builder.parent, net.minecraft.advancements.Advancement$Builder.save, net.minecraft.advancements.Advancement$Builder.serializeToJson (+340 more)."
   },
   {
+   "name": "Tinkers' Construct",
+   "version": "1.5.13EX",
+   "mc": "1.6.4",
+   "source": "probe",
+   "date": "2026-11-06",
+   "status": "loads",
+   "notes": "Automated check: translates offline and everything it uses exists (543 classes). But 123 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "Tinkers' Gregworks",
    "version": "1.7.10-GTNH-1.0.28",
    "mc": "1.7.10",
@@ -24544,7 +25012,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "fails",
-   "notes": "Built for another Tinkers' Construct than EX.30: it fails at postInit with a missing member (FluidType.Water). 2026-11-07: a casting basin filled with molten iron produces an iron block (fluid API); Tinkers' Steelworks fails to load (#189)."
+   "notes": "Fails during construction: java.lang.NoClassDefFoundError: tconstruct.TConstruct (the Legacy Connector layer does not implement this legacy API yet - see logs/legacyco"
   },
   {
    "name": "Tiny Inv",
@@ -24754,6 +25222,15 @@
    "notes": "Automated check: translates offline and everything it uses exists (209 classes). The game was not started: this only shows the jar translates, not that it works. Resource check: 1 model/texture reference(s) are missing after translation (rendering may show missing textures or models), e.g. blockstate totemic:wind_chime.json names missing model hardened_clay_white."
   },
   {
+   "name": "Totemic",
+   "version": "1.12.2-0.11.7",
+   "mc": "1.12.2",
+   "source": "probe",
+   "date": "2026-11-07",
+   "status": "loads",
+   "notes": "Automated check 0.4.6: translates offline and everything it uses exists (207 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works. Resource check: 1 model/texture reference(s) are missing after translation (rendering may show missing textures or models), e.g. blockstate totemic:wind_chime.json names missing model hardened_clay_white."
+  },
+  {
    "name": "TouchController",
    "version": "0.2.1-beta15",
    "mc": "1.12.2",
@@ -24877,7 +25354,16 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "partial",
-   "notes": "Real client, survival, shaders: the recipe crafts in the grid (2 items) but the item cannot be placed: it is a Forge Multipart part and Forge Multipart's Scala compiler calls do not all link (6 unresolved references), so the item pops out as a drop."
+   "notes": "Self-tested in server self test, 1.5.2 set: 3 items, 2 blocks, 0 entity types; every block placed and used, every item used, every entity spawned; 1 threw errors (20%)."
+  },
+  {
+   "name": "Translocator",
+   "version": "1.1.0.5",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-06",
+   "status": "loads",
+   "notes": "Automated check: translates offline and everything it uses exists (28 classes). But 21 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Translocators",
@@ -25015,6 +25501,15 @@
    "notes": "Automated check: translates offline and everything it uses exists (18 classes). The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "TreeCapitator",
+   "version": "Forge 1.6.4.r06",
+   "mc": "1.6.4",
+   "source": "probe",
+   "date": "2026-11-06",
+   "status": "loads",
+   "notes": "Automated check: translates offline and everything it uses exists (27 classes). 2 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "TreeCapitator Forge",
    "version": "1.5.2.r14",
    "mc": "1.5.2",
@@ -25114,6 +25609,15 @@
    "notes": "Loads in 1.4.7 corpus server self test (2026-11-07) without errors (no blocks, items or entities of its own)."
   },
   {
+   "name": "Tubestuff",
+   "version": "55.0.5",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-06",
+   "status": "loads",
+   "notes": "Automated check: translates offline and everything it uses exists (56 classes). But 45 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "TuffBlocks",
    "version": "1.1-1.12.2",
    "mc": "1.12.2",
@@ -25129,7 +25633,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "fails",
-   "notes": "Needs the MC Delta core library (mcdelta.core.ModDelta), which is not in the download."
+   "notes": "Fails during construction: java.lang.NoClassDefFoundError: mcdelta/core/ModDelta (the Legacy Connector layer does not implement this legacy API yet - see logs/legacyco"
   },
   {
    "name": "Tweakeroo",
@@ -25442,8 +25946,8 @@
    "mc": "1.6.4",
    "source": "client",
    "date": "2026-11-07",
-   "status": "fails",
-   "notes": "Needs a base library (w577.mods.base.CustomFile) that is not in the download."
+   "status": "partial",
+   "notes": "In server self test, old-only 1.6.4 set 6 items, 6 blocks, 0 entity types register, but loading failed during postInit: java.lang.RuntimeException: java.lang.NoClassDefFoundError: w577.mods.base.CustomFile"
   },
   {
    "name": "V-Tweaks",
@@ -25579,6 +26083,15 @@
    "date": "2026-11-07",
    "status": "loads",
    "notes": "Automated check: translates offline and everything it uses exists (473 classes). 3 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "Village Names",
+   "version": "4.4.13",
+   "mc": "1.12.2",
+   "source": "probe",
+   "date": "2026-11-07",
+   "status": "loads",
+   "notes": "Automated check 0.4.6: translates offline and everything it uses exists (624 classes). 3 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "villagertools",
@@ -25850,6 +26363,15 @@
    "date": "2026-11-07",
    "status": "loads",
    "notes": "Automated check: translates offline and everything it uses exists (110 classes). The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "WanionLib",
+   "version": "1.12.2-2.91",
+   "mc": "1.12.2",
+   "source": "probe",
+   "date": "2026-11-07",
+   "status": "loads",
+   "notes": "Automated check 0.4.6: translates offline and everything it uses exists (136 classes). The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "WarpTheory",
@@ -26433,7 +26955,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "fails",
-   "notes": "Does not start: needs LWJGL joystick libs (JInput, net.java.games.input), which this game does not ship. Not a layer defect."
+   "notes": "Fails during init in a real client: needs JInput (net.java.games.input), a library the game does not ship. Not a layer defect; would need a JInput shim over GLFW."
   },
   {
    "name": "XNet",

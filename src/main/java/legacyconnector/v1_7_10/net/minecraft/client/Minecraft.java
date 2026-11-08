@@ -163,6 +163,18 @@ public class Minecraft {
         return false;
     }
 
+    /** Switches between fullscreen and windowed. */
+    public void toggleFullscreen() {
+        mc().getWindow().toggleFullScreen();
+    }
+
+    /** A legacy mod reports a fatal error: the report goes to the log and the game stops (vanilla showed the crash screen and quit). */
+    public void crashed(legacyconnector.v1_7_10.net.minecraft.crash.CrashReport report) {
+        org.apache.logging.log4j.LogManager.getLogger("LegacyConnector/Client").fatal("A legacy mod crashed the game:\n{}",
+                report == null ? "(no report)" : report.getCompleteReport());
+        mc().stop();
+    }
+
     /** Whether the game runs fullscreen. */
     public boolean isFullScreen() {
         return mc().getWindow().isFullscreen();

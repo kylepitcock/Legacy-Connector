@@ -133,6 +133,26 @@ public abstract class Container {
         dragSlots.clear();
     }
 
+    /** 1.6.4 names of the drag helpers: the stage in a drag mask (low bits). */
+    public static int func_94529_b(int mask) {
+        return getDragEvent(mask);
+    }
+
+    /** 1.6.4: the drag mode in a drag mask (high bits). */
+    public static int func_94532_c(int mask) {
+        return extractDragMode(mask);
+    }
+
+    /** 1.6.4: whether the drag mode is one a survival player may use (split evenly or one each). */
+    public static boolean func_94528_d(int mode) {
+        return mode == 0 || mode == 1;
+    }
+
+    /** 1.6.4: abandons the drag in progress. */
+    public void func_94533_d() {
+        resetDrag();
+    }
+
     public boolean enchantItem(EntityPlayer player, int id) {
         return false;
     }

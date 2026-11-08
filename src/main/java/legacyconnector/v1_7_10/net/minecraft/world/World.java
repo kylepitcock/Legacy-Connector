@@ -1002,6 +1002,16 @@ public class World implements IBlockAccess {
 
     // ------------------------------------------------------------------ tile entities
 
+    /** Every loaded tile entity inside the box (inclusive corners). */
+    public List func_147486_a(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
+        List out = new java.util.ArrayList();
+        for (Object o : new java.util.ArrayList((List) mcc$get$loadedTileEntityList(this))) {
+            TileEntity te = (TileEntity) o;
+            if (te.xCoord >= minX && te.xCoord <= maxX && te.yCoord >= minY && te.yCoord <= maxY && te.zCoord >= minZ && te.zCoord <= maxZ) out.add(te);
+        }
+        return out;
+    }
+
     @Override
     public TileEntity getTileEntity(int x, int y, int z) {
         if (outsideRegion(pos(x, y, z))) return deferredTile(pos(x, y, z));

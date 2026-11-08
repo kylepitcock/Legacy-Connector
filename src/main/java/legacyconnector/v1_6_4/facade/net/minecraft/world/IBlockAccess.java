@@ -9,6 +9,15 @@ import legacyconnector.v1_6_4.net.minecraft.util.Ids;
 public final class IBlockAccess {
     private IBlockAccess() {}
 
+    /** The brightness factor (0-1, vanilla's light curve) at a position, as seen by renderers and light-dependent blocks. */
+    public static float getLightBrightness(legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess self, int x, int y, int z) {
+        if (self instanceof legacyconnector.v1_7_10.net.minecraft.world.World world) return world.getLightBrightness(x, y, z);
+        int packed = self.getLightBrightnessForSkyBlocks(x, y, z, 0);
+        int level = Math.max(packed >> 20 & 15, packed >> 4 & 15);
+        float dark = 1.0F - level / 15.0F;
+        return (1.0F - dark) / (dark * 3.0F + 1.0F);
+    }
+
     /** The block id at a position: 0 for air. */
     public static int getBlockId(legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess self, int x, int y, int z) {
         return Ids.blockId(self.getBlock(x, y, z));

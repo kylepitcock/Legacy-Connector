@@ -424,5 +424,10 @@ public abstract class StructureComponent {
         public int getSelectedBlockMetaData() {
             return this.selectedBlockMetaData;
         }
+
+        /** Sets the selected block (1.5.2 mods wrote the numeric {@code selectedBlockId}; the forward layer converts the id and calls this). */
+        public void mcc$setSelectedBlock(Block block) {
+            this.field_151562_a = block == null ? Blocks.air : block;
+        }
     }
 }

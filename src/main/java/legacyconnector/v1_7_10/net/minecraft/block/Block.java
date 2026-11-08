@@ -1241,6 +1241,12 @@ public class Block {
         return Item.getItemFromBlock(this);
     }
 
+    /** 1.5.2 {@code idPicked(world, x, y, z)}: the numeric id of the item middle-click picks. */
+    public int idPicked(World world, int x, int y, int z) {
+        Item item = getItem(world, x, y, z);
+        return item == null ? 0 : Item.getIdFromItem(item);
+    }
+
     public int getDamageValue(World world, int x, int y, int z) {
         if (mcc$vanilla != null) {
             ItemStack pick = mcc$vanillaPick(world, x, y, z);
