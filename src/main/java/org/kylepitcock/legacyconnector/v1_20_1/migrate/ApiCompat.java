@@ -233,11 +233,16 @@ public final class ApiCompat {
         return 20.0f;
     }
 
-    public static Player noPlayer(Object ignored) {
+    /** The helpers below produce a parameter 1.21.1 added (null); the loader names them by the type of the old argument they are given. */
+    public static Player noPlayer(net.minecraft.world.level.LevelAccessor ignored) {
         return null;
     }
 
-    public static ItemStack noWeapon(Object ignored) {
+    public static Player noPlayer(net.minecraft.world.level.BlockGetter ignored) {
+        return null;
+    }
+
+    public static ItemStack noWeapon(ItemStack ignored) {
         return null;
     }
 
@@ -251,12 +256,12 @@ public final class ApiCompat {
     }
 
     /** {@code SpawnEggItem.getType(CompoundTag)}: the {@code EntityTag.id} of the old stack tag. */
-    public static net.minecraft.world.entity.EntityType<?> spawnEggType(CompoundTag tag) {
+    public static net.minecraft.world.entity.EntityType<?> spawnEggType(net.minecraft.world.item.SpawnEggItem egg, CompoundTag tag) {
         if (tag != null && tag.contains("EntityTag", Tag.TAG_COMPOUND)) {
             CompoundTag entity = tag.getCompound("EntityTag");
             if (entity.contains("id", Tag.TAG_STRING)) return net.minecraft.world.entity.EntityType.byString(entity.getString("id")).orElse(null);
         }
-        return null;
+        return egg.getType(new ItemStack(egg));
     }
 
     /** {@code LiquidBlock.getFluid()}. */

@@ -25,4 +25,9 @@ public interface LegacyDyeableLeatherItem {
     default void setColor(ItemStack stack, int color) {
         stack.set(DataComponents.DYED_COLOR, new DyedItemColor(color, true));
     }
+
+    /** {@code DyeableLeatherItem.dyeArmor(stack, dyes)}: mixes the colours as the crafting recipe did. */
+    public static ItemStack dyeArmor(ItemStack stack, java.util.List<net.minecraft.world.item.DyeItem> dyes) {
+        return net.minecraft.world.item.component.DyedItemColor.applyDyes(stack, dyes);
+    }
 }

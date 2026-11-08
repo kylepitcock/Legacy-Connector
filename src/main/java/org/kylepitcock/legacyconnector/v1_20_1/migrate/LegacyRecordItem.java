@@ -37,6 +37,11 @@ public class LegacyRecordItem extends Item {
         return lengthInTicks;
     }
 
+    /** The disc's description line ("C418 - 11"). */
+    public net.minecraft.network.chat.MutableComponent getDisplayName() {
+        return net.minecraft.network.chat.Component.translatable(getDescriptionId() + ".desc");
+    }
+
     public static LegacyRecordItem getBySound(SoundEvent sound) {
         return null;
     }
