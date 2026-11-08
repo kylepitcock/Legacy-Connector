@@ -171,4 +171,21 @@ public final class ClientCompat {
     public static com.mojang.blaze3d.platform.Window guiEventWindow(net.neoforged.neoforge.client.event.RenderGuiEvent.Pre event) {
         return Minecraft.getInstance().getWindow();
     }
+
+    private static java.lang.reflect.Method menuRegister;
+
+    /** {@code MenuScreens.register(type, constructor)}: private in 1.21.1 (NeoForge's {@code RegisterMenuScreensEvent} is the public way); called through reflection. */
+    @SuppressWarnings("rawtypes")
+    public static void registerMenuScreen(net.minecraft.world.inventory.MenuType type, net.minecraft.client.gui.screens.MenuScreens.ScreenConstructor constructor) {
+        try {
+            if (menuRegister == null) {
+                menuRegister = net.minecraft.client.gui.screens.MenuScreens.class.getDeclaredMethod("register", net.minecraft.world.inventory.MenuType.class,
+                        net.minecraft.client.gui.screens.MenuScreens.ScreenConstructor.class);
+                menuRegister.setAccessible(true);
+            }
+            menuRegister.invoke(null, type, constructor);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException("MenuScreens.register failed", e);
+        }
+    }
 }

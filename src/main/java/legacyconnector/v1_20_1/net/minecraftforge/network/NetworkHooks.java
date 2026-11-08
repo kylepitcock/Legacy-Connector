@@ -27,6 +27,6 @@ public final class NetworkHooks {
     public static net.minecraft.network.protocol.Packet<net.minecraft.network.protocol.game.ClientGamePacketListener> getEntitySpawningPacket(net.minecraft.world.entity.Entity entity) {
         if (!(entity.level() instanceof net.minecraft.server.level.ServerLevel level)) return null;
         var tracker = new net.minecraft.server.level.ServerEntity(level, entity, entity.getType().updateInterval(), entity.getType().trackDeltas(), p -> {});
-        return (net.minecraft.network.protocol.Packet) entity.getAddEntityPacket(tracker);
+        return (net.minecraft.network.protocol.Packet) new net.minecraft.network.protocol.game.ClientboundAddEntityPacket(entity, tracker);
     }
 }

@@ -145,6 +145,10 @@ final class Mc1201Migration {
             if (in instanceof TypeInsnNode ti && ti.getOpcode() == Opcodes.NEW) {
                 news.push(ti);
             } else if (in instanceof MethodInsnNode call) {
+                if (call.getOpcode() == Opcodes.INVOKEINTERFACE && CLASSES_THAT_WERE_INTERFACES.contains(call.owner)) {
+                    call.setOpcode(Opcodes.INVOKEVIRTUAL);
+                    call.itf = false;
+                }
                 if (call.name.equals("<init>")) {
                     TypeInsnNode made = call.getOpcode() == Opcodes.INVOKESPECIAL && !news.isEmpty() && news.peek().desc.equals(call.owner) ? news.pop() : null;
                     Call rule = t.calls.get(call.owner + ".<init>" + call.desc);
@@ -183,6 +187,9 @@ final class Mc1201Migration {
             }
         }
     }
+
+    /** Library interfaces of 1.20.1 that are classes now under the renamed name (GeckoLib's {@code CoreGeoBone} became {@code GeoBone}): their calls are virtual. */
+    private static final java.util.Set<String> CLASSES_THAT_WERE_INTERFACES = java.util.Set.of("software/bernie/geckolib/cache/object/GeoBone");
 
     /** Functional interfaces whose buffer parameter became a {@code RegistryFriendlyByteBuf}: a lambda written for the 1.20.1 {@code FriendlyByteBuf} would not link. */
     private static final java.util.Set<String> REGISTRY_BUFFER_INTERFACES = java.util.Set.of("net/neoforged/neoforge/network/IContainerFactory");
