@@ -718,6 +718,8 @@ public final class Assets1710 implements GeneratedPack.Contributor {
                 icon = item.getIconFromDamage(meta);
             } catch (RuntimeException ignored) {
             }
+            // a block item whose icon is vanilla's MISSING_ICON placeholder has no icon: the block's own fallbacks (iconName) apply
+            if (icon != null && item instanceof ItemBlock && placeholder(nameOf(icon))) icon = null;
             // (a cube block whose item class overrides getIcon(stack, pass) is still drawn as the block: Thaumcraft's double slabs were
             // flat sprites several times the size of a block in the hand)
             boolean cubeItem = item instanceof ItemBlock cb && cb.mcc$block().getRenderType() == 0 && inventory3d(cb.mcc$block());

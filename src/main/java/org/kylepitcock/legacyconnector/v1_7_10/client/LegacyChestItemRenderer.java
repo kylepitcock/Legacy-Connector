@@ -28,7 +28,7 @@ public class LegacyChestItemRenderer extends BlockEntityWithoutLevelRenderer {
         Item item = view.getItem();
         RenderContext.beginWorld(pose, buffers, light, overlay);
         try {
-            TileEntityRendererChestHelper.instance.renderChest(block, item.getMetadata(view.getItemDamage()), 0.0F);
+            TileEntityRendererChestHelper.instance.renderChest(block, view.getItemDamage(), 0.0F);
         } catch (RuntimeException | LinkageError e) {
             // keep the inventory usable if a legacy renderer breaks
         } finally {
