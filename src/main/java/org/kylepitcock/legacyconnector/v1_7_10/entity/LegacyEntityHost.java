@@ -258,7 +258,7 @@ public class LegacyEntityHost extends net.minecraft.world.entity.Entity implemen
 
     @Override
     protected void readAdditionalSaveData(CompoundTag tag) {
-        if (legacy != null) {
+        if (legacy != null && !LegacyHosts.bareTag(tag)) {
             try {
                 legacy.mcc$readEntityFromNBT(new NBTTagCompound(tag));
                 legacy.mcc$loadExtended(new NBTTagCompound(tag));

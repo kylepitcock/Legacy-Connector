@@ -27,6 +27,10 @@ public final class LiquidContainerRegistry {
         org.kylepitcock.legacyconnector.v1_6_4.bridge.Liquids164.containerRegistered(data);
     }
 
+    public static synchronized LiquidContainerData[] getRegisteredLiquidContainerData() {
+        return DATA.toArray(new LiquidContainerData[0]);
+    }
+
     /** The filled container made by filling {@code empty} from {@code liquid}, or null when the liquid does not fit (too little, no such container). */
     public static synchronized ItemStack fillLiquidContainer(LiquidStack liquid, ItemStack empty) {
         if (liquid == null || empty == null) return null;

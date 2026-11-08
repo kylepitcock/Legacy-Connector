@@ -140,7 +140,20 @@ public class RenderManager {
         return true;
     }
 
+    /**
+     * Draws the entity where it is, relative to the camera as 1.7.10 did (interpolated position minus {@code renderPos}). Mods draw the
+     * parts of a multipart entity this way (Twilight Forest's Naga body segments), which are no world entities of their own.
+     */
     public boolean renderEntitySimple(legacyconnector.v1_7_10.net.minecraft.entity.Entity entity, float partialTicks) {
-        return renderEntityWithPosYaw(entity, 0, 0, 0, 0, partialTicks);
+        if (entity == null) return false;
+        double x = lerp(legacyconnector.v1_7_10.net.minecraft.entity.Entity.mcc$get$lastTickPosX(entity), legacyconnector.v1_7_10.net.minecraft.entity.Entity.mcc$get$posX(entity), partialTicks) - renderPosX;
+        double y = lerp(legacyconnector.v1_7_10.net.minecraft.entity.Entity.mcc$get$lastTickPosY(entity), legacyconnector.v1_7_10.net.minecraft.entity.Entity.mcc$get$posY(entity), partialTicks) - renderPosY;
+        double z = lerp(legacyconnector.v1_7_10.net.minecraft.entity.Entity.mcc$get$lastTickPosZ(entity), legacyconnector.v1_7_10.net.minecraft.entity.Entity.mcc$get$posZ(entity), partialTicks) - renderPosZ;
+        float yaw = (float) lerp(legacyconnector.v1_7_10.net.minecraft.entity.Entity.mcc$get$prevRotationYaw(entity), legacyconnector.v1_7_10.net.minecraft.entity.Entity.mcc$get$rotationYaw(entity), partialTicks);
+        return renderEntityWithPosYaw(entity, x, y, z, yaw, partialTicks);
+    }
+
+    private static double lerp(double from, double to, float t) {
+        return from + (to - from) * t;
     }
 }

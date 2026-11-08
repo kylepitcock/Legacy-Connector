@@ -33,7 +33,7 @@ public final class ForwardCalls {
     /** @return the number of call sites rewritten */
     public static int apply(ClassNode node, Hierarchy h, LegacyVersion version) {
         ForwardMembers table = ForwardMembers.forVersion(version);
-        if (version.forward() == null || table.callRules().isEmpty() && table.fieldCallRules().isEmpty() && table.constructorRules().isEmpty()) return 0;
+        if (version.forward() == null || table.callRules().isEmpty() && table.fieldCallRules().isEmpty() && table.fieldSetRules().isEmpty() && table.constructorRules().isEmpty()) return 0;
         Normalizer norm = new Normalizer(version, h);
         int count = 0;
         for (MethodNode method : node.methods) {
@@ -45,6 +45,28 @@ public final class ForwardCalls {
                     AbstractInsnNode last = m.name.equals("<init>") ? constructor(method, m, table, norm) : call(method, m, table, norm);
                     if (last != null) {
                         insn = last;
+                        count++;
+                    }
+                } else if (insn instanceof FieldInsnNode f && f.getOpcode() == Opcodes.PUTFIELD) {
+                    // S owner field desc helperOwner helper helperDesc: the write of a field the shim lacks becomes helper(receiver, value)
+                    String desc = norm.strip(f.desc);
+                    String[] rule = walk(f.owner, c -> {
+                        String[] r = table.fieldSetRules().get(norm.strip(c) + "." + f.name);
+                        return r != null && r[3].equals(desc) ? r : null;
+                    }, norm);
+                    if (rule != null) {
+                        MethodInsnNode helper = new MethodInsnNode(Opcodes.INVOKESTATIC, rule[4], rule[5], norm.linkDesc(rule[6]), false);
+                        method.instructions.set(f, helper);
+                        insn = helper;
+                        count++;
+                    }
+                } else if (insn instanceof FieldInsnNode f && f.getOpcode() == Opcodes.GETSTATIC) {
+                    // G owner field desc sfield newOwner newField: a static the shim lacks is another class's static (Vec3.fakePool -> Vec3Pool.INSTANCE)
+                    String[] rule = findField(f, table, norm);
+                    if (rule != null && rule[4].equals("sfield") && rule.length >= 7) {
+                        FieldInsnNode target = new FieldInsnNode(Opcodes.GETSTATIC, rule[5], rule[6], f.desc);
+                        method.instructions.set(f, target);
+                        insn = target;
                         count++;
                     }
                 } else if (insn instanceof FieldInsnNode f && f.getOpcode() == Opcodes.GETFIELD) {

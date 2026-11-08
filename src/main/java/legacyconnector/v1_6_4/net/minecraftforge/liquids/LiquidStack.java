@@ -77,8 +77,54 @@ public class LiquidStack {
         return stack.itemID == 0 ? null : stack;
     }
 
+    /** The icon liquid renderers draw this liquid with (Forestry/BuildCraft tanks, pipes), the texture sheet it is on ("/terrain.png" or "/gui/items.png"). */
+    private legacyconnector.v1_7_10.net.minecraft.util.IIcon renderingIcon;
+    private String textureSheet = "/terrain.png";
+
+    public LiquidStack setRenderingIcon(legacyconnector.v1_7_10.net.minecraft.util.IIcon icon) {
+        this.renderingIcon = icon;
+        return this;
+    }
+
+    /** The icon set on this stack or on the liquid's canonical stack; a liquid without one is drawn with its block's icon. */
+    public legacyconnector.v1_7_10.net.minecraft.util.IIcon getRenderingIcon() {
+        if (renderingIcon != null) return renderingIcon;
+        LiquidStack canonical = canonical();
+        if (canonical != null && canonical != this && canonical.renderingIcon != null) return canonical.renderingIcon;
+        Block block = Ids.block(itemID);
+        if (block != null) {
+            try {
+                return block.getIcon(1, itemMeta);
+            } catch (RuntimeException | LinkageError e) {
+                return null;
+            }
+        }
+        return null;
+    }
+
+    public LiquidStack setTextureSheet(String sheet) {
+        this.textureSheet = sheet;
+        return this;
+    }
+
+    public String getTextureSheet() {
+        return textureSheet;
+    }
+
+    /** The dictionary's stack for this liquid (same id and metadata), or null when it was never registered. */
+    public LiquidStack canonical() {
+        return LiquidDictionary.getCanonicalLiquid(this);
+    }
+
+    public boolean isLiquidEqual(ItemStack other) {
+        return other != null && other.getItem() != null && itemID == Ids.itemId(other.getItem()) && itemMeta == other.getItemDamage();
+    }
+
     public LiquidStack copy() {
-        return new LiquidStack(itemID, amount, itemMeta);
+        LiquidStack copy = new LiquidStack(itemID, amount, itemMeta);
+        copy.renderingIcon = renderingIcon;
+        copy.textureSheet = textureSheet;
+        return copy;
     }
 
     /** Same liquid (id and metadata), whatever the amounts. */

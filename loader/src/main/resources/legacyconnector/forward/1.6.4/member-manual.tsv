@@ -11,12 +11,16 @@
 # R owner name desc chain o1 n1 d1 o2 n2 d2       call o1.n1 on the receiver, then o2.n2 on its result
 # G owner field desc getterOwner getter getterDesc  read of a field becomes a call (getterOwner "=" keeps the owner)
 # G owner field desc field newField newDesc [owner name desc]  read of a field retyped, optionally followed by a call on the value
+# G owner field desc sfield newOwner newField      read of a static becomes another class's static (same type)
+# S owner field desc helperOwner helper helperDesc  write of a field becomes a static helper call (receiver, value)
 # C owner desc newDesc drop                       constructor lost its leading (name) argument
 #
 # Entity names: players, mobs and minecarts all have getCommandSenderName in 1.7.10
 M	net/minecraft/entity/Entity	getEntityName	()Ljava/lang/String;	getCommandSenderName
 M	net/minecraft/entity/Entity	getTranslatedEntityName	()Ljava/lang/String;	getCommandSenderName
 G	net/minecraft/entity/player/EntityPlayer	username	Ljava/lang/String;	=	getCommandSenderName	()Ljava/lang/String;
+G	net/minecraft/util/Vec3	fakePool	Lnet/minecraft/util/Vec3Pool;	sfield	legacyconnector/v1_6_4/net/minecraft/util/Vec3Pool	INSTANCE
+S	net/minecraft/entity/player/EntityPlayer	username	Ljava/lang/String;	legacyconnector/v1_6_4/forward/Forward164	setUsername	(Lnet/minecraft/entity/player/EntityPlayer;Ljava/lang/String;)V
 R	net/minecraft/entity/player/EntityPlayer	addChatMessage	(Ljava/lang/String;)V	wrap-text	addChatMessage	(Lnet/minecraft/util/IChatComponent;)V
 # World: tile entities are addressed the way 1.7.10 names them; materials and opacity come from the block
 M	net/minecraft/world/World	removeBlockTileEntity	(III)V	removeTileEntity
@@ -158,3 +162,7 @@ M	net/minecraft/block/BlockColored	getBlockFromDye	(I)I	func_150032_b
 M	net/minecraft/village/MerchantRecipe	func_82784_g	()Z	isRecipeDisabled
 M	net/minecraft/item/ItemSword	func_82803_g	()F	func_150931_i
 M	net/minecraft/entity/EntityCreature	func_110174_bM	()F	getMaximumHomeDistance
+# Forge: the harvest level a block asks of a tool class
+R	net/minecraftforge/common/MinecraftForge	getBlockHarvestLevel	(Lnet/minecraft/block/Block;ILjava/lang/String;)I	static	legacyconnector/v1_6_4/forward/Forward164	getBlockHarvestLevel	(Lnet/minecraft/block/Block;ILjava/lang/String;)I
+R	net/minecraft/client/Minecraft	getLogAgent	()Lnet/minecraft/logging/ILogAgent;	static	legacyconnector/v1_6_4/forward/Forward164	getLogAgent	(Ljava/lang/Object;)Lnet/minecraft/logging/ILogAgent;
+R	net/minecraft/server/MinecraftServer	getLogAgent	()Lnet/minecraft/logging/ILogAgent;	static	legacyconnector/v1_6_4/forward/Forward164	getLogAgent	(Ljava/lang/Object;)Lnet/minecraft/logging/ILogAgent;
