@@ -18068,7 +18068,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "partial",
-   "notes": "Real client, survival, shaders: init succeeds; the wild boar, bighorn sheep, bunny and penguin draw with their models. A skeleton druid and a hedge spider spawned in survival walked up, attacked and killed the player (poison effect, damage, knockback): mob AI and attacks work. Dimension, structures and bosses not explored."
+   "notes": "Real client, survival, shaders: init succeeds; the wild boar, bighorn sheep, bunny and penguin draw with their models. A skeleton druid and a hedge spider spawned in survival walked up, attacked and killed the player (poison effect, damage, knockback): mob AI and attacks work. Dimension, structures and bosses not explored. Real client 2026-11-07: the dimension generates and renders (forest, ponds); the hydra, naga, tower golem and goblin knight spawn and draw with boss bars (the hydra crashed the client with a ClassCastException until EntityLiving.despawnEntity was made server-only). Mob sounds are unknown sound events (#195)."
   },
   {
    "name": "The Twilight Forest",
