@@ -565,3 +565,4 @@ net/minecraft/world/food/FoodProperties	isMeat	()Z	RoundCompat	isMeat	-
 net/minecraft/world/item/alchemy/PotionBrewing	addMix	(Lnet/minecraft/world/item/alchemy/Potion;Lnet/minecraft/world/item/Item;Lnet/minecraft/world/item/alchemy/Potion;)V	RoundCompat	addPotionMix	-
 net/minecraft/advancements/critereon/EnchantmentPredicate	<init>	(Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyEnchantment;Lnet/minecraft/advancements/critereon/MinMaxBounds$Ints;)V	RoundCompat	newEnchantmentPredicate	-
 net/minecraft/advancements/critereon/ItemPredicate$Builder	hasEnchantment	(Lnet/minecraft/advancements/critereon/EnchantmentPredicate;)Lnet/minecraft/advancements/critereon/ItemPredicate$Builder;	RoundCompat	hasEnchantment	-
+net/minecraft/util/KeyDispatchDataCodec	codec	()Lcom/mojang/serialization/Codec;	MiddleCompat	keyDispatchCodec

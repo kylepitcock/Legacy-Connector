@@ -1,19 +1,11 @@
 package legacyconnector.v1_20_1;
 
-import java.util.ArrayList;
-import java.util.List;
-import net.minecraft.client.DeltaTracker;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.client.event.CustomizeGuiOverlayEvent;
-import net.neoforged.neoforge.client.event.RenderGuiEvent;
-import net.neoforged.neoforge.client.event.RenderHighlightEvent;
-import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.energy.EnergyStorage;
 import net.neoforged.neoforge.event.entity.EntityEvent;
 import net.neoforged.neoforge.event.entity.living.LivingChangeTargetEvent;
@@ -70,39 +62,6 @@ public final class ForgeApiTail1201 {
     public static float sizeGetNewEyeHeight(EntityEvent.Size event) {
         EntityDimensions size = event.getNewSize();
         return size == null ? 0.0F : size.eyeHeight();
-    }
-
-    // ---- client events
-
-    private static float partial(DeltaTracker tracker) {
-        return tracker.getGameTimeDeltaPartialTick(false);
-    }
-
-    public static float guiPartialTick(RenderGuiEvent event) {
-        return partial(event.getPartialTick());
-    }
-
-    public static float highlightPartialTick(RenderHighlightEvent event) {
-        return partial(event.getDeltaTracker());
-    }
-
-    public static com.mojang.blaze3d.platform.Window guiWindow(RenderGuiEvent event) {
-        return Minecraft.getInstance().getWindow();
-    }
-
-    public static double scrollDelta(ScreenEvent.MouseScrolled event) {
-        return event.getScrollDeltaY();
-    }
-
-    /** The debug screen lists are ArrayLists in practice; a different list type is copied (and edits to the copy are lost). */
-    public static ArrayList<String> debugLeft(CustomizeGuiOverlayEvent.DebugText event) {
-        List<String> l = event.getLeft();
-        return l instanceof ArrayList<String> a ? a : new ArrayList<>(l);
-    }
-
-    public static ArrayList<String> debugRight(CustomizeGuiOverlayEvent.DebugText event) {
-        List<String> l = event.getRight();
-        return l instanceof ArrayList<String> a ? a : new ArrayList<>(l);
     }
 
     // ---- energy
@@ -192,22 +151,6 @@ public final class ForgeApiTail1201 {
         return e.has((net.minecraft.world.entity.EntityType<? extends LivingEntity>) type, holder(attribute));
     }
 
-    // ---- exact-owner overloads (the rewritten call passes the receiver typed as the class the mod called it on)
-
-    public static float guiPartialTick(RenderGuiEvent.Post e) { return guiPartialTick((RenderGuiEvent) e); }
-
-    public static float guiPartialTick(RenderGuiEvent.Pre e) { return guiPartialTick((RenderGuiEvent) e); }
-
-    public static com.mojang.blaze3d.platform.Window guiWindow(RenderGuiEvent.Post e) { return guiWindow((RenderGuiEvent) e); }
-
-    public static com.mojang.blaze3d.platform.Window guiWindow(RenderGuiEvent.Pre e) { return guiWindow((RenderGuiEvent) e); }
-
-    public static float highlightPartialTick(RenderHighlightEvent.Block e) { return highlightPartialTick((RenderHighlightEvent) e); }
-
-    public static double scrollDelta(ScreenEvent.MouseScrolled.Pre e) { return scrollDelta((ScreenEvent.MouseScrolled) e); }
-
-    public static double scrollDelta(ScreenEvent.MouseScrolled.Post e) { return scrollDelta((ScreenEvent.MouseScrolled) e); }
-
     public static void interactSetCancellationResult(net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.LeftClickBlock e,
             net.minecraft.world.InteractionResult result) {
     }
@@ -259,5 +202,40 @@ public final class ForgeApiTail1201 {
         java.util.function.Supplier supplier = ForgeApi1201.newRegistryCreate(event, builder);
         if (onCreate != null) onCreate.accept(supplier.get());
         return supplier;
+    }
+
+    // ---- spawning, bone meal, buckets, brewing
+
+    public static net.minecraft.world.entity.SpawnGroupData onFinalizeSpawn(net.minecraft.world.entity.Mob mob, net.minecraft.world.level.ServerLevelAccessor level,
+            net.minecraft.world.DifficultyInstance difficulty, net.minecraft.world.entity.MobSpawnType type, net.minecraft.world.entity.SpawnGroupData data,
+            net.minecraft.nbt.CompoundTag tag) {
+        return net.neoforged.neoforge.event.EventHooks.finalizeMobSpawn(mob, level, difficulty, type, data);
+    }
+
+    /** Forge's result: -1 cancelled, 1 bone meal used up, 0 nothing special. */
+    public static int onApplyBonemeal(net.minecraft.world.entity.player.Player player, net.minecraft.world.level.Level level, net.minecraft.core.BlockPos pos,
+            net.minecraft.world.level.block.state.BlockState state, net.minecraft.world.item.ItemStack stack) {
+        var event = net.neoforged.neoforge.event.EventHooks.fireBonemealEvent(player, level, pos, state, stack);
+        if (event.isCanceled()) return -1;
+        if (event.isSuccessful()) {
+            stack.shrink(1);
+            return 1;
+        }
+        return 0;
+    }
+
+    /** Forge's bucket event could replace the result; no handler means null (the vanilla use goes on). */
+    public static net.minecraft.world.InteractionResultHolder<net.minecraft.world.item.ItemStack> onBucketUse(net.minecraft.world.entity.player.Player player,
+            net.minecraft.world.level.Level level, net.minecraft.world.item.ItemStack stack, net.minecraft.world.phys.HitResult target) {
+        return null;
+    }
+
+    /** Brewing recipes are registered through RegisterBrewingRecipesEvent now; recipes added the old way are accepted and not brewed. */
+    public static boolean brewAddRecipe(net.minecraft.world.item.crafting.Ingredient ingredient, net.minecraft.world.item.crafting.Ingredient input, net.minecraft.world.item.ItemStack output) {
+        return true;
+    }
+
+    public static java.util.List brewGetRecipes() {
+        return new java.util.ArrayList<>();
     }
 }
