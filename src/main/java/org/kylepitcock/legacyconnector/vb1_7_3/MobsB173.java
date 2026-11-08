@@ -86,7 +86,8 @@ public final class MobsB173 {
             Class<?> legacy=registration.type();
             if(!LivingEntity.class.isAssignableFrom(legacy)||BY_CLASS.containsKey(legacy))continue;
             if(registration.mod()==null||LegacyLifecycle.isFailed(registration.mod().modernId))continue;
-            String reason=!cowFamily(legacy)?"base mob family is not hosted yet":unsupportedBehaviour(legacy);
+            if(!cowFamily(legacy))continue; // every other family is admitted (or reported) by AnimalsB173
+            String reason=unsupportedBehaviour(legacy);
             if(reason!=null){reject(legacy,reason);continue;}
             try{legacy.getConstructor(World.class);}catch(NoSuchMethodException e){reject(legacy,"missing public World constructor");continue;}
             String path=registration.name().toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9/._-]+","_");
