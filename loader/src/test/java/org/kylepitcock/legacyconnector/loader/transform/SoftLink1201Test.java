@@ -101,11 +101,11 @@ class SoftLink1201Test implements Opcodes {
         m.visitMethodInsn(INVOKEVIRTUAL, SUB, "removed", "(I)V", false);
         m.visitInsn(RETURN);
         SoftLink1201 s = link(c);
-        assertEquals(1, s.apply(c));
+        assertEquals(1, s.apply(c)); // frames are kept: the stand-in leaves the stack as the call did
         assertEquals(Set.of(SUB + ".removed(I)V"), s.stats.missingMethods);
         assertFalse(has(m, INVOKEVIRTUAL, "removed"));
-        assertTrue(has(m, INVOKESTATIC, "unresolved"));
-        assertTrue(has(m, ATHROW, null));
+        assertTrue(has(m, INVOKESTATIC, "fail"));
+        assertTrue(has(m, POP, null));
         assertTrue(s.stats.lines().get(0).contains("Soft link: method"));
     }
 
@@ -121,7 +121,7 @@ class SoftLink1201Test implements Opcodes {
         m.visitFieldInsn(PUTFIELD, SUB, "gone", "J");
         m.visitInsn(RETURN);
         SoftLink1201 s = link(c);
-        assertEquals(2, s.apply(c));
+        assertEquals(1, s.apply(c));
         assertEquals(Set.of(SUB + ".gone:J"), s.stats.missingFields);
         boolean lconst = false;
         for (AbstractInsnNode in : m.instructions) {
@@ -134,7 +134,7 @@ class SoftLink1201Test implements Opcodes {
 
     @Test
     void missingClassIsStubbed() {
-        ClassNode c = cls("mod/D", GONE);
+        ClassNode c = cls("mod/D", "java/lang/Object");
         c.interfaces.add("net/minecraft/world/RemovedIface");
         MethodNode m = method(c);
         m.visitTypeInsn(NEW, GONE);
@@ -147,11 +147,40 @@ class SoftLink1201Test implements Opcodes {
         m.visitInsn(RETURN);
         SoftLink1201 s = link(c);
         assertTrue(s.apply(c) > 0);
-        assertEquals("java/lang/Object", c.superName);
         assertTrue(c.interfaces.isEmpty());
         assertTrue(s.stats.missingClasses.containsAll(Set.of(GONE, "net/minecraft/world/RemovedIface")));
-        for (AbstractInsnNode in : m.instructions) assertFalse(in instanceof TypeInsnNode t && t.getOpcode() == INSTANCEOF);
-        assertTrue(has(m, ATHROW, null));
+        for (AbstractInsnNode in : m.instructions) assertFalse(in instanceof TypeInsnNode t && (t.getOpcode() == INSTANCEOF || t.getOpcode() == NEW));
+        assertFalse(has(m, INVOKESPECIAL, "<init>"));
+    }
+
+    @Test
+    void missingSuperclassIsReportedNotReplaced() {
+        ClassNode c = cls("mod/S", GONE);
+        MethodNode ctor = new MethodNode(ACC_PUBLIC, "<init>", "()V", null, null);
+        c.methods.add(ctor);
+        ctor.visitVarInsn(ALOAD, 0);
+        ctor.visitMethodInsn(INVOKESPECIAL, GONE, "<init>", "()V", false);
+        ctor.visitInsn(RETURN);
+        SoftLink1201 s = link(c);
+        assertEquals(2, s.apply(c)); // the constructor call on this cannot be skipped: it throws, the class needs its frames computed again
+        assertEquals(GONE, c.superName);
+        assertEquals(1, s.unfixable.size());
+        assertTrue(has(ctor, ATHROW, null));
+    }
+
+    @Test
+    void superConstructorWithAnotherSignatureThrows() {
+        ClassNode c = cls("mod/T", BASE);
+        MethodNode ctor = new MethodNode(ACC_PUBLIC, "<init>", "(I)V", null, null);
+        c.methods.add(ctor);
+        ctor.visitVarInsn(ALOAD, 0);
+        ctor.visitVarInsn(ILOAD, 1);
+        ctor.visitMethodInsn(INVOKESPECIAL, BASE, "<init>", "(I)V", false);
+        ctor.visitInsn(RETURN);
+        SoftLink1201 s = link(c);
+        assertEquals(2, s.apply(c));
+        assertEquals(Set.of(BASE + ".<init>(I)V"), s.stats.missingMethods);
+        assertTrue(has(ctor, ATHROW, null));
     }
 
     @Test

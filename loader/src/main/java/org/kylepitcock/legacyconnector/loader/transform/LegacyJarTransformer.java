@@ -123,6 +123,8 @@ public final class LegacyJarTransformer {
         public int droppedShimDuplicates;
         /** 1.20.1: symbols of Minecraft 1.21.1 / NeoForge the mod references that do not exist and were replaced by stand-ins (SoftLink1201). */
         public int softLinked;
+        /** The stand-ins, one entry per symbol: {@code class owner}, {@code method owner.name(desc)}, {@code field owner.name:desc} (internal names). */
+        public final List<String> softSymbols = new ArrayList<>();
     }
 
     /** Raw contents of a legacy jar. */

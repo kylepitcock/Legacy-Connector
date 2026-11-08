@@ -246,7 +246,7 @@ public final class Forge1201Transformer {
         for (ClassNode node : nodes) {
             int softened = soft == null ? 0 : soft.apply(node);
             byte[] bytes;
-            if (migrated.get(node) + softened > 0) {
+            if (migrated.get(node) > 0 || softened == 2) {
                 // the stack at branch targets changed: frames are computed again
                 try {
                     ClassWriter writer = hierarchy.frameWriter();
@@ -270,7 +270,9 @@ public final class Forge1201Transformer {
             result.notes.add("Soft link: " + soft.stats.summary() + " that 1.21.1 lacks were replaced by stand-ins (the mod loads, only the features using them fail; experimental.forge1201.softlink=false turns this off)");
             result.notes.addAll(soft.stats.lines());
             result.softLinked = soft.stats.symbols();
+            result.softSymbols.addAll(soft.stats.symbolList());
         }
+        if (soft != null) for (String u : soft.unfixable) result.notes.add("Soft link: class " + u.replace('/', '.') + " does not exist in 1.21.1; a mod class extending it cannot be stood in for and will not load");
         if (mc.total() > 0) result.notes.add("Minecraft 1.20.1 to 1.21.1 migration: " + mc);
         if (mixinStats.mixinClasses > 0) result.notes.add("Mixins: " + mixinStats.summary());
         for (String d : mixinStats.dropped) result.notes.add("Mixin dropped, its target no longer exists in Minecraft 1.21.1: " + d);

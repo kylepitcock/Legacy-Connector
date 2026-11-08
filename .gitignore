@@ -48,3 +48,4 @@ Thumbs.db
 /run-perfmods-off/
 __pycache__/
 *.pyc
+/test-mods-1201-batch*/

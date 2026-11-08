@@ -68,6 +68,15 @@ final class SoftLink1201 implements Opcodes {
             return out;
         }
 
+        /** {@code class owner}, {@code method owner.name(desc)}, {@code field owner.name:desc} per symbol (the offline gap report keeps them as unresolved). */
+        List<String> symbolList() {
+            List<String> out = new ArrayList<>();
+            for (String c : missingClasses) out.add("class " + c);
+            for (String m : missingMethods) out.add("method " + m);
+            for (String f : missingFields) out.add("field " + f);
+            return out;
+        }
+
         String summary() {
             return missingClasses.size() + " class(es), " + missingMethods.size() + " method(s), " + missingFields.size() + " field(s) in " + sites + " place(s)";
         }
@@ -155,31 +164,39 @@ final class SoftLink1201 implements Opcodes {
 
     // ---- rewriting -------------------------------------------------------------------------------------------------------------
 
-    /** Replaces what cannot link in {@code node}; returns the number of changes (the class needs its frames computed again when above 0). */
+    /** The class cannot be stood in for: it extends a class 1.21.1 lacks (a mod class is not given another superclass: code assigns it to the original). */
+    final Set<String> unfixable = new TreeSet<>();
+    private ClassNode current;
+    private boolean terminating;
+
+    /**
+     * Replaces what cannot link in {@code node}. Returns 0 when nothing changed, 1 when the class changed but keeps its stack map frames (a stand-in
+     * leaves the stack as the original instruction did: arguments popped, the default of the result type pushed), 2 when the frames must be computed
+     * again (a stand-in that throws: a constructor call on {@code this} cannot be skipped).
+     */
     int apply(ClassNode node) {
         if (node.invisibleAnnotations != null && node.invisibleAnnotations.stream().anyMatch(a -> MIXIN.equals(a.desc))) return 0;
         if (node.visibleAnnotations != null && node.visibleAnnotations.stream().anyMatch(a -> MIXIN.equals(a.desc))) return 0;
+        current = node;
+        terminating = false;
         int changes = 0;
-        if (missingClass(node.superName)) {
-            stats.missingClasses.add(node.superName);
-            stats.sites++;
-            node.superName = "java/lang/Object";
-            changes++;
-        }
+        if (missingClass(node.superName)) unfixable.add(node.superName + " (superclass of " + node.name + ")");
         for (Iterator<String> it = node.interfaces.iterator(); it.hasNext(); ) {
             String i = it.next();
             if (missingClass(i)) {
                 stats.missingClasses.add(i);
                 stats.sites++;
-                it.remove();
+                it.remove(); // the verifier does not check interface assignability, so the class loads without it
                 changes++;
             }
         }
         for (MethodNode m : node.methods) {
             if (m.instructions == null || m.instructions.size() == 0) continue;
-            changes += method(m);
+            int c = method(m);
+            if (c > 0) m.maxStack += 3;
+            changes += c;
         }
-        return changes;
+        return changes == 0 ? 0 : terminating ? 2 : 1;
     }
 
     private int method(MethodNode m) {
@@ -193,16 +210,32 @@ final class SoftLink1201 implements Opcodes {
                 changes++;
             }
         }
-        for (AbstractInsnNode in : m.instructions.toArray()) {
+        AbstractInsnNode[] all = m.instructions.toArray();
+        List<AbstractInsnNode> newsToNull = new ArrayList<>();
+        for (int idx = 0; idx < all.length; idx++) {
+            AbstractInsnNode in = all[idx];
             InsnList repl = null;
             if (in instanceof MethodInsnNode mi) {
                 String bad = missingClass(mi.owner) ? mi.owner : missingIn(mi.desc);
+                String sym = mi.owner + "." + mi.name + mi.desc;
+                boolean ctor = mi.name.equals("<init>") && mi.getOpcode() == INVOKESPECIAL;
+                boolean selfCtor = ctor && (mi.owner.equals(current.superName) || mi.owner.equals(current.name));
+                boolean gone = false;
                 if (bad != null) {
                     stats.missingClasses.add(bad);
-                    repl = fail(mi.owner + "." + mi.name + mi.desc);
+                    gone = true;
                 } else if (hostOrMod(mi.owner) && methodMissing(mi.owner, mi.name, mi.desc)) {
-                    stats.missingMethods.add(mi.owner + "." + mi.name + mi.desc);
-                    repl = fail(mi.owner + "." + mi.name + mi.desc);
+                    stats.missingMethods.add(sym);
+                    gone = true;
+                }
+                if (gone) {
+                    // a constructor of a class that exists: the new object stays uninitialized unless its NEW goes too (a null takes its place)
+                    AbstractInsnNode pairedNew = ctor && !selfCtor && bad == null ? matchingNew(all, idx) : null;
+                    if (selfCtor || (ctor && bad == null && pairedNew == null)) repl = terminate(sym);
+                    else {
+                        repl = call(sym, mi.desc, mi.getOpcode() != INVOKESTATIC);
+                        if (pairedNew != null) newsToNull.add(pairedNew);
+                    }
                 }
             } else if (in instanceof FieldInsnNode fi) {
                 boolean cls = missingClass(fi.owner) || missingType(Type.getType(fi.desc));
@@ -215,20 +248,37 @@ final class SoftLink1201 implements Opcodes {
                     ? element(Type.getObjectType(ti.desc)) : ti.desc)) {
                 String c = Type.getObjectType(ti.desc).getSort() == Type.ARRAY ? element(Type.getObjectType(ti.desc)) : ti.desc;
                 stats.missingClasses.add(c);
-                if (ti.getOpcode() == INSTANCEOF) {
-                    repl = new InsnList();
-                    repl.add(new InsnNode(POP));
-                    repl.add(new InsnNode(ICONST_0));
-                } else repl = fail(c);
+                repl = new InsnList();
+                switch (ti.getOpcode()) {
+                    case INSTANCEOF -> {
+                        repl.add(new InsnNode(POP));
+                        repl.add(new InsnNode(ICONST_0));
+                    }
+                    case NEW -> {
+                        failCall(repl, c);
+                        repl.add(new InsnNode(ACONST_NULL));
+                    }
+                    default -> { // CHECKCAST, ANEWARRAY (one operand popped, a null left in its place)
+                        failCall(repl, c);
+                        repl.add(new InsnNode(POP));
+                        repl.add(new InsnNode(ACONST_NULL));
+                    }
+                }
             } else if (in instanceof MultiANewArrayInsnNode ma && missingType(Type.getType(ma.desc))) {
-                stats.missingClasses.add(element(Type.getType(ma.desc)));
-                repl = fail(element(Type.getType(ma.desc)));
+                String c = element(Type.getType(ma.desc));
+                stats.missingClasses.add(c);
+                repl = new InsnList();
+                failCall(repl, c);
+                for (int i = 0; i < ma.dims; i++) repl.add(new InsnNode(POP));
+                repl.add(new InsnNode(ACONST_NULL));
             } else if (in instanceof LdcInsnNode l && l.cst instanceof Type t && t.getSort() != Type.METHOD && missingType(t)) {
                 stats.missingClasses.add(element(t));
-                repl = fail(element(t));
+                repl = new InsnList();
+                failCall(repl, element(t));
+                repl.add(new InsnNode(ACONST_NULL));
             } else if (in instanceof InvokeDynamicInsnNode indy) {
                 String bad = badHandle(indy);
-                if (bad != null) repl = fail(bad);
+                if (bad != null) repl = call(bad, indy.desc, false);
             }
             if (repl != null) {
                 m.instructions.insert(in, repl);
@@ -237,7 +287,30 @@ final class SoftLink1201 implements Opcodes {
                 changes++;
             }
         }
+        for (AbstractInsnNode n : newsToNull) {
+            if (!m.instructions.contains(n)) continue; // already replaced because its class is missing
+            InsnList l = new InsnList();
+            failCall(l, ((TypeInsnNode) n).desc);
+            l.add(new InsnNode(ACONST_NULL));
+            m.instructions.insert(n, l);
+            m.instructions.remove(n);
+        }
         return changes;
+    }
+
+    /** The NEW of the object a constructor call at {@code at} initializes (nested {@code new}s are skipped), or null. */
+    private static AbstractInsnNode matchingNew(AbstractInsnNode[] all, int at) {
+        String owner = ((MethodInsnNode) all[at]).owner;
+        int depth = 0;
+        for (int i = at - 1; i >= 0; i--) {
+            AbstractInsnNode p = all[i];
+            if (p instanceof MethodInsnNode pm && pm.getOpcode() == INVOKESPECIAL && pm.name.equals("<init>")) depth++;
+            else if (p.getOpcode() == NEW) {
+                if (depth == 0) return ((TypeInsnNode) p).desc.equals(owner) ? p : null;
+                depth--;
+            }
+        }
+        return null;
     }
 
     private boolean hostOrMod(String owner) {
@@ -274,8 +347,27 @@ final class SoftLink1201 implements Opcodes {
         return null;
     }
 
-    /** {@code throw SoftLink1201Runtime.unresolved(symbol)}. */
-    private static InsnList fail(String symbol) {
+    /** {@code SoftLink1201Runtime.fail(symbol)}: logs the symbol once and throws (the verifier does not know it never returns, so the stack stays valid). */
+    private static void failCall(InsnList l, String symbol) {
+        l.add(new LdcInsnNode(symbol));
+        l.add(new MethodInsnNode(INVOKESTATIC, RUNTIME, "fail", "(Ljava/lang/String;)V", false));
+    }
+
+    /** Stand-in for a call: throws when executed; the arguments (and receiver) are popped and the default of the result type left, as after the real call. */
+    private static InsnList call(String symbol, String desc, boolean receiver) {
+        InsnList l = new InsnList();
+        failCall(l, symbol);
+        Type[] args = Type.getArgumentTypes(desc);
+        for (int i = args.length - 1; i >= 0; i--) l.add(new InsnNode(args[i].getSize() == 2 ? POP2 : POP));
+        if (receiver) l.add(new InsnNode(POP));
+        Type r = Type.getReturnType(desc);
+        if (r.getSort() != Type.VOID) l.add(defaultValue(r));
+        return l;
+    }
+
+    /** {@code throw SoftLink1201Runtime.unresolved(symbol)}: for a constructor call on {@code this}, which cannot be skipped. */
+    private InsnList terminate(String symbol) {
+        terminating = true;
         InsnList l = new InsnList();
         l.add(new LdcInsnNode(symbol));
         l.add(new MethodInsnNode(INVOKESTATIC, RUNTIME, "unresolved", "(Ljava/lang/String;)Ljava/lang/UnsupportedOperationException;", false));

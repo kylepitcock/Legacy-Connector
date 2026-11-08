@@ -19,6 +19,11 @@ public final class SoftLink1201Runtime {
 
     private SoftLink1201Runtime() {}
 
+    /** A stand-in that keeps the stack of the original instruction: always throws. */
+    public static void fail(String symbol) {
+        throw unresolved(symbol);
+    }
+
     public static UnsupportedOperationException unresolved(String symbol) {
         UnsupportedOperationException e = new UnsupportedOperationException("Legacy Connector: " + symbol.replace('/', '.')
                 + " does not exist in Minecraft 1.21.1 / NeoForge (the mod was built for 1.20.1); the feature that needs it is unavailable");
