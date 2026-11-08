@@ -436,7 +436,7 @@ recipe serializers `fromNetwork`/`fromJson`/`toNetwork` (23/22/20, codecs), `Ite
 
 ## 19. Status 2026-11-08: Minecraft-side blockers of the ATM 9 run, round 2
 
-Fresh baseline on master with `tools/compat/atm9_run.py` (506 jars): links 79, jars with unresolved references 409, unresolved jar/symbol pairs 21,890. After this round: see the numbers in the commit message of the last commit of the branch (links 81, pairs 21,529 after the first batch; the second batch only removes more `AdvancementHolder.getId` and cauldron rows).
+Fresh baseline on master with `tools/compat/atm9_run.py` (506 jars): links 79, jars with unresolved references 409, unresolved jar/symbol pairs 21,890. After this round: links **81**, jars with unresolved references **407**, pairs **21,505 (-385, -1.8%)**; the big single-symbol blockers are gone, but most jars have many other misses, so few jars flip to linking.
 
 | Blocker (jars) | What was done |
 |---|---|
