@@ -256,3 +256,27 @@ net/neoforged/neoforge/common/NeoForgeMod	ENTITY_REACH	Lnet/neoforged/neoforge/r
 net/neoforged/neoforge/common/NeoForgeMod	ENTITY_GRAVITY	Lnet/neoforged/neoforge/registries/DeferredHolder;	-	none	EntityCompat.entityGravity
 net/neoforged/neoforge/common/NeoForgeMod	STEP_HEIGHT_ADDITION	Lnet/neoforged/neoforge/registries/DeferredHolder;	-	none	EntityCompat.stepHeightAddition
 net/neoforged/neoforge/common/NeoForgeMod	SWIM_SPEED	Lnet/neoforged/neoforge/registries/DeferredHolder;	-	none	EntityCompat.swimSpeed
+# --- ATM 9 run: more Potions constants (Holders now; Potions.EMPTY is the water potion, as LegacyPotionUtils answers for a stack without one) ---
+net/minecraft/world/item/alchemy/Potions	STRONG_HEALING	Lnet/minecraft/world/item/alchemy/Potion;	-	Lnet/minecraft/core/Holder;	value
+net/minecraft/world/item/alchemy/Potions	SLOW_FALLING	Lnet/minecraft/world/item/alchemy/Potion;	-	Lnet/minecraft/core/Holder;	value
+net/minecraft/world/item/alchemy/Potions	LEAPING	Lnet/minecraft/world/item/alchemy/Potion;	-	Lnet/minecraft/core/Holder;	value
+net/minecraft/world/item/alchemy/Potions	LUCK	Lnet/minecraft/world/item/alchemy/Potion;	-	Lnet/minecraft/core/Holder;	value
+net/minecraft/world/item/alchemy/Potions	STRONG_REGENERATION	Lnet/minecraft/world/item/alchemy/Potion;	-	Lnet/minecraft/core/Holder;	value
+net/minecraft/world/item/alchemy/Potions	LONG_REGENERATION	Lnet/minecraft/world/item/alchemy/Potion;	-	Lnet/minecraft/core/Holder;	value
+net/minecraft/world/item/alchemy/Potions	LONG_SLOW_FALLING	Lnet/minecraft/world/item/alchemy/Potion;	-	Lnet/minecraft/core/Holder;	value
+net/minecraft/world/item/alchemy/Potions	STRONG_LEAPING	Lnet/minecraft/world/item/alchemy/Potion;	-	Lnet/minecraft/core/Holder;	value
+net/minecraft/world/item/alchemy/Potions	STRONG_HARMING	Lnet/minecraft/world/item/alchemy/Potion;	-	Lnet/minecraft/core/Holder;	value
+net/minecraft/world/item/alchemy/Potions	LONG_WATER_BREATHING	Lnet/minecraft/world/item/alchemy/Potion;	-	Lnet/minecraft/core/Holder;	value
+net/minecraft/world/item/alchemy/Potions	LONG_SWIFTNESS	Lnet/minecraft/world/item/alchemy/Potion;	-	Lnet/minecraft/core/Holder;	value
+net/minecraft/world/item/alchemy/Potions	TURTLE_MASTER	Lnet/minecraft/world/item/alchemy/Potion;	-	Lnet/minecraft/core/Holder;	value
+net/minecraft/world/item/alchemy/Potions	LONG_WEAKNESS	Lnet/minecraft/world/item/alchemy/Potion;	-	Lnet/minecraft/core/Holder;	value
+net/minecraft/world/item/alchemy/Potions	LONG_NIGHT_VISION	Lnet/minecraft/world/item/alchemy/Potion;	-	Lnet/minecraft/core/Holder;	value
+net/minecraft/world/item/alchemy/Potions	LONG_STRENGTH	Lnet/minecraft/world/item/alchemy/Potion;	-	Lnet/minecraft/core/Holder;	value
+net/minecraft/world/item/alchemy/Potions	STRONG_SLOWNESS	Lnet/minecraft/world/item/alchemy/Potion;	-	Lnet/minecraft/core/Holder;	value
+net/minecraft/world/item/alchemy/Potions	LONG_SLOWNESS	Lnet/minecraft/world/item/alchemy/Potion;	-	Lnet/minecraft/core/Holder;	value
+net/minecraft/world/item/alchemy/Potions	LONG_FIRE_RESISTANCE	Lnet/minecraft/world/item/alchemy/Potion;	-	Lnet/minecraft/core/Holder;	value
+net/minecraft/world/item/alchemy/Potions	LONG_LEAPING	Lnet/minecraft/world/item/alchemy/Potion;	-	Lnet/minecraft/core/Holder;	value
+net/minecraft/world/item/alchemy/Potions	STRONG_TURTLE_MASTER	Lnet/minecraft/world/item/alchemy/Potion;	-	Lnet/minecraft/core/Holder;	value
+net/minecraft/world/item/alchemy/Potions	LONG_TURTLE_MASTER	Lnet/minecraft/world/item/alchemy/Potion;	-	Lnet/minecraft/core/Holder;	value
+net/minecraft/world/item/alchemy/Potions	EMPTY	Lnet/minecraft/world/item/alchemy/Potion;	WATER	Lnet/minecraft/core/Holder;	value
+net/minecraft/sounds/SoundEvents	MUSIC_DISC_11	Lnet/minecraft/sounds/SoundEvent;	-	Lnet/minecraft/core/Holder$Reference;	value

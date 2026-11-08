@@ -49,3 +49,10 @@ net/minecraft/advancements/Advancement	net/minecraft/advancements/AdvancementHol
 net/minecraft/client/gui/components/ImageButton	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyImageButton
 net/minecraft/world/level/storage/loot/LootDataResolver	net/minecraft/core/HolderGetter$Provider
 net/minecraft/world/item/alchemy/PotionUtils	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyPotionUtils
+# --- ATM 9 run: stand-ins for classes 1.21.1 removed
+net/minecraft/world/item/RecordItem	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyRecordItem
+net/minecraft/world/item/DyeableLeatherItem	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyDyeableLeatherItem
+net/minecraft/core/particles/ParticleOptions$Deserializer	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyParticleDeserializer
+net/minecraft/world/level/block/grower/AbstractTreeGrower	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyTreeGrower
+net/minecraft/world/level/storage/loot/Serializer	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyLootSerializer
+net/minecraft/world/level/storage/loot/functions/LootItemConditionalFunction$Serializer	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyConditionalFunctionSerializer

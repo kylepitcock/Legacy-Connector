@@ -213,3 +213,43 @@ net/minecraft/core/HolderGetter$Provider	getLootTable	(Lnet/minecraft/resources/
 net/minecraft/world/level/pathfinder/NodeEvaluator	getBlockPathType	(Lnet/minecraft/world/level/BlockGetter;III)Lnet/minecraft/world/level/pathfinder/PathType;	BridgeHelpers	pathTypeAt
 net/minecraft/world/entity/SpawnPlacements	register	(Lnet/minecraft/world/entity/EntityType;Lnet/minecraft/world/entity/SpawnPlacementType;Lnet/minecraft/world/level/levelgen/Heightmap$Types;Lnet/minecraft/world/entity/SpawnPlacements$SpawnPredicate;)V	EntityCompat	registerSpawnPlacement
 net/minecraft/client/gui/screens/MenuScreens	register	(Lnet/minecraft/world/inventory/MenuType;Lnet/minecraft/client/gui/screens/MenuScreens$ScreenConstructor;)V	ClientCompat	registerMenuScreen
+# --- ATM 9 run: ApiCompat / ApiCompatClient helpers (registry-aware NBT, NbtIo paths, hooks that moved) ---
+net/minecraft/world/item/ItemStack	serializeNBT	()Lnet/minecraft/nbt/CompoundTag;	ApiCompat	serializeNBT	-
+net/minecraft/world/level/block/entity/BlockEntity	saveWithoutMetadata	()Lnet/minecraft/nbt/CompoundTag;	ApiCompat	saveWithoutMetadata	-
+com/mojang/serialization/DataResult	getOrThrow	(ZLjava/util/function/Consumer;)Ljava/lang/Object;	ApiCompat	getOrThrow	-
+net/minecraft/nbt/NbtIo	readCompressed	(Ljava/io/InputStream;)Lnet/minecraft/nbt/CompoundTag;	ApiCompat	readCompressed	-
+net/minecraft/nbt/NbtIo	readCompressed	(Ljava/io/File;)Lnet/minecraft/nbt/CompoundTag;	ApiCompat	readCompressed	-
+net/minecraft/nbt/NbtIo	writeCompressed	(Lnet/minecraft/nbt/CompoundTag;Ljava/io/File;)V	ApiCompat	writeCompressed	-
+net/minecraft/nbt/NbtIo	read	(Ljava/io/File;)Lnet/minecraft/nbt/CompoundTag;	ApiCompat	read	-
+net/minecraft/nbt/NbtIo	write	(Lnet/minecraft/nbt/CompoundTag;Ljava/io/File;)V	ApiCompat	write	-
+net/minecraft/network/FriendlyByteBuf	writeItemStack	(Lnet/minecraft/world/item/ItemStack;Z)Lnet/minecraft/network/FriendlyByteBuf;	ApiCompat	writeItemStack	-
+net/minecraft/network/FriendlyByteBuf	writeFluidStack	(Lnet/neoforged/neoforge/fluids/FluidStack;)V	ApiCompat	writeFluidStack	(Lnet/minecraft/network/FriendlyByteBuf;Lnet/neoforged/neoforge/fluids/FluidStack;)Lnet/minecraft/network/FriendlyByteBuf;
+net/minecraft/network/FriendlyByteBuf	readFluidStack	()Lnet/neoforged/neoforge/fluids/FluidStack;	ApiCompat	readFluidStack	-
+net/neoforged/neoforge/fluids/FluidStack	<init>	(Lnet/neoforged/neoforge/fluids/FluidStack;I)V	ApiCompat	fluidCopy	-
+net/neoforged/neoforge/fluids/FluidStack	<init>	(Lnet/minecraft/world/level/material/Fluid;ILnet/minecraft/nbt/CompoundTag;)V	ApiCompat	fluidWithTag	-
+net/minecraft/world/level/block/Block	getLootTable	()Lnet/minecraft/resources/ResourceLocation;	ApiCompat	blockLootTable	-
+net/minecraft/network/protocol/game/ClientboundBlockEntityDataPacket	create	(Lnet/minecraft/world/level/block/entity/BlockEntity;Ljava/util/function/Function;)Lnet/minecraft/network/protocol/game/ClientboundBlockEntityDataPacket;	ApiCompat	blockEntityPacket	-
+net/minecraft/world/level/block/entity/BlockEntity	invalidateCaps	()V	ApiCompat	invalidateCaps	-
+net/minecraft/world/level/block/entity/BlockEntity	reviveCaps	()V	ApiCompat	noCapsLifecycle	(Ljava/lang/Object;)V
+net/minecraft/world/entity/Entity	invalidateCaps	()V	ApiCompat	noCapsLifecycle	(Ljava/lang/Object;)V
+net/minecraft/world/entity/Entity	reviveCaps	()V	ApiCompat	noCapsLifecycle	(Ljava/lang/Object;)V
+net/neoforged/neoforge/common/CommonHooks	getBurnTime	(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/crafting/RecipeType;)I	ApiCompat	getBurnTime	-
+net/neoforged/neoforge/common/CommonHooks	onCropsGrowPre	(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Z)Z	ApiCompat	onCropsGrowPre	-
+net/neoforged/neoforge/common/CommonHooks	onCropsGrowPost	(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;)V	ApiCompat	onCropsGrowPost	-
+net/neoforged/neoforge/common/CommonHooks	onBlockBreakEvent	(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/level/GameType;Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/core/BlockPos;)I	ApiCompat	onBlockBreakEvent	-
+net/neoforged/neoforge/common/CommonHooks	isCorrectToolForDrops	(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/entity/player/Player;)Z	ApiCompat	isCorrectToolForDrops	-
+net/neoforged/neoforge/common/CommonHooks	getCriticalHit	(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/entity/Entity;ZF)Lnet/neoforged/neoforge/event/entity/player/CriticalHitEvent;	ApiCompat	getCriticalHit	-
+net/neoforged/neoforge/common/CommonHooks	onLeftClickBlock	(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;)Lnet/neoforged/neoforge/event/entity/player/PlayerInteractEvent$LeftClickBlock;	ApiCompat	onLeftClickBlock	-
+net/neoforged/neoforge/common/CommonHooks	onLivingDrops	(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/damagesource/DamageSource;Ljava/util/Collection;IZ)Z	ApiCompat	onLivingDrops	-
+net/neoforged/neoforge/client/event/ModelEvent$RegisterGeometryLoaders	register	(Ljava/lang/String;Lnet/neoforged/neoforge/client/model/geometry/IGeometryLoader;)V	ApiCompatClient	registerGeometryLoader	-
+net/neoforged/neoforge/client/event/ModelEvent$RegisterAdditional	register	(Lnet/minecraft/resources/ResourceLocation;)V	ApiCompatClient	registerAdditionalModel	-
+net/neoforged/neoforge/client/event/RenderLevelStageEvent	getPartialTick	()F	ApiCompatClient	partialTick	-
+# --- ATM 9 run: particles, saplings, loot types, teleporting
+net/minecraft/core/particles/ParticleType	<init>	(ZLorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyParticleDeserializer;)V	=pop	<init>	(Z)V
+net/minecraft/core/particles/ParticleType	getDeserializer	()Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyParticleDeserializer;	ApiCompat	noDeserializer	-
+net/minecraft/world/level/block/TorchBlock	<init>	(Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;Lnet/minecraft/core/particles/ParticleOptions;)V	=args	ApiCompat.simpleParticle@1,0	(Lnet/minecraft/core/particles/SimpleParticleType;Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V
+net/minecraft/world/level/block/WallTorchBlock	<init>	(Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;Lnet/minecraft/core/particles/ParticleOptions;)V	=args	ApiCompat.simpleParticle@1,0	(Lnet/minecraft/core/particles/SimpleParticleType;Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V
+net/minecraft/world/level/block/SaplingBlock	<init>	(Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyTreeGrower;Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V	=args	ApiCompat.saplingGrower@0,1	(Lnet/minecraft/world/level/block/grower/TreeGrower;Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V
+net/minecraft/world/level/storage/loot/functions/LootItemFunctionType	<init>	(Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyLootSerializer;)V	=args	LootCompat.codec@0	(Lcom/mojang/serialization/MapCodec;)V
+net/minecraft/world/level/storage/loot/predicates/LootItemConditionType	<init>	(Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyLootSerializer;)V	=args	LootCompat.codec@0	(Lcom/mojang/serialization/MapCodec;)V
+net/minecraft/world/entity/Entity	changeDimension	(Lnet/minecraft/server/level/ServerLevel;Llegacyconnector/v1_20_1/net/minecraftforge/common/util/ITeleporter;)Lnet/minecraft/world/entity/Entity;	ApiCompat	changeDimension	-

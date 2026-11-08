@@ -93,3 +93,5 @@ net/minecraftforge/common/world/ForgeBiomeModifiers$RemoveSpawnCostsBiomeModifie
 net/minecraftforge/common/world/ForgeBiomeModifiers$RemoveCarversBiomeModifier	net/neoforged/neoforge/common/world/BiomeModifiers$RemoveCarversBiomeModifier
 net/minecraftforge/fml/common/Mod$EventBusSubscriber	net/neoforged/fml/common/EventBusSubscriber
 net/minecraftforge/fml/common/Mod$EventBusSubscriber$Bus	net/neoforged/fml/common/EventBusSubscriber$Bus
+# --- ATM 9 run
+net/minecraftforge/client/ForgeHooksClient	net/neoforged/neoforge/client/ClientHooks

@@ -29,3 +29,6 @@ net/minecraft/world/level/block/Block	appendHoverText	(Lnet/minecraft/world/item
 net/minecraft/world/entity/projectile/AbstractArrow	getPickupItem	()Lnet/minecraft/world/item/ItemStack;	getDefaultPickupItem	()Lnet/minecraft/world/item/ItemStack;	-	-	-
 net/minecraft/world/entity/Entity	getAddEntityPacket	()Lnet/minecraft/network/protocol/Packet;	getAddEntityPacket	(Lnet/minecraft/server/level/ServerEntity;)Lnet/minecraft/network/protocol/Packet;	-	-	-
 net/neoforged/neoforge/common/loot/IGlobalLootModifier	codec	()Lcom/mojang/serialization/Codec;	codec	()Lcom/mojang/serialization/MapCodec;	-	EntityCompat.toMapCodec	-
+# --- ATM 9 run: ParticleType.codec() was a Codec, is a MapCodec now, and the stream codec is new (built from the old codec)
+net/minecraft/core/particles/ParticleType	codec	()Lcom/mojang/serialization/Codec;	codec	()Lcom/mojang/serialization/MapCodec;	-	EntityCompat.toMapCodec	-
+net/minecraft/core/particles/ParticleType	codec	()Lcom/mojang/serialization/Codec;	streamCodec	()Lnet/minecraft/network/codec/StreamCodec;	-	ApiCompat.particleStreamCodec	-
