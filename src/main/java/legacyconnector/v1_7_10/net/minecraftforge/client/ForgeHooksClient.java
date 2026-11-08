@@ -130,7 +130,7 @@ public class ForgeHooksClient {
     public static boolean renderEntityItem(legacyconnector.v1_7_10.net.minecraft.entity.item.EntityItem entity, legacyconnector.v1_7_10.net.minecraft.item.ItemStack stack,
             float bobing, float rotation, java.util.Random random, legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureManager textures,
             legacyconnector.v1_7_10.net.minecraft.client.renderer.RenderBlocks blocks) {
-        return renderEntityItem(entity, stack, bobing, rotation, random, textures, blocks, stack == null ? 1 : stack.stackSize);
+        return renderEntityItem(entity, stack, bobing, rotation, random, textures, blocks, stack == null ? 1 : legacyconnector.v1_7_10.net.minecraft.item.ItemStack.mcc$get$stackSize(stack));
     }
 
     /** Custom item-entity rendering is not available; false makes the caller draw the item normally. */
