@@ -192,8 +192,9 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             for (Path dir : List.of(modsDir, modsDir.resolve("1.4.7"), modsDir.resolve("1.5.2"), modsDir.resolve("1.6.4"), modsDir.resolve("1.7.10"), modsDir.resolve("1.12.2"), modsDir.resolve("1.20.1"))) {
                 if (!Files.isDirectory(dir)) continue;
                 try (Stream<Path> files = Files.list(dir)) {
-                    for (Path p : files.filter(f -> isModArchive(f))
+                    for (Path p0 : files.filter(f -> isModArchive(f))
                             .sorted(Comparator.comparing(f -> f.getFileName().toString().toLowerCase())).toList()) {
+                        Path p = p0;
                         if (context.isLocated(p) || !seenNames.add(p.getFileName().toString().toLowerCase())) continue;
                         try {
                             Path packaged = packagedMod(p, gameDir.resolve(".legacyconnector").resolve("nested"));
@@ -213,6 +214,13 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                                             + "Remove the line (or set it to true) to load them.", p.getFileName());
                                 }
                                 continue;
+                            }
+                            if (jar != null && jar.version != null && dir.equals(modsDir) && autoSortMods(modsDir)) {
+                                Path moved = moveIntoVersionFolder(p, modsDir, jar.version);
+                                if (moved != null) {
+                                    if (jar.path != null && jar.path.equals(p)) jar.path = moved;
+                                    p = moved;
+                                }
                             }
                             if (jar != null) legacy.add(jar);
                             addContainedDeps(p, gameDir.resolve(".legacyconnector").resolve("nested"), legacy, seenNames);
@@ -803,6 +811,38 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
     }
 
     private static volatile String currentSide = "CLIENT";
+
+    /** The version folders under mods/ that Legacy Connector scans (a legacy jar belongs in the one named after its Minecraft version). */
+    private static final java.util.Set<String> VERSION_FOLDERS = java.util.Set.of("1.4.7", "1.5.2", "1.6.4", "1.7.10", "1.12.2", "1.20.1");
+
+    /** {@code legacy.autoSortMods} (default true): legacy jars found directly in mods/ are moved into mods/<minecraft version>/ on launch. */
+    private static boolean autoSortMods(Path modsDir) {
+        return !"false".equalsIgnoreCase(LibraryBridges.readConfig(modsDir).getProperty("legacy.autoSortMods", "true").trim());
+    }
+
+    /**
+     * Moves a legacy jar out of mods/ into mods/<version>/ (1.12.2 jars that bundle Mixin break NeoForge's own scan of mods/ itself, and a
+     * mods folder that mixes versions makes bug reports hard to read). Returns the new path, or null when it stayed where it is (a file of that
+     * name is already in the folder, or the move failed): it is then loaded from where it is.
+     */
+    private static Path moveIntoVersionFolder(Path jar, Path modsDir, LegacyVersion version) {
+        if (!VERSION_FOLDERS.contains(version.id())) return null;
+        try {
+            Path dir = modsDir.resolve(version.id());
+            Path target = dir.resolve(jar.getFileName());
+            if (Files.exists(target)) {
+                LOG.warn("Legacy Connector: {} is also in mods/{}/; the copy in mods/ is left where it is (delete one of them).", jar.getFileName(), version.id());
+                return null;
+            }
+            Files.createDirectories(dir);
+            Files.move(jar, target);
+            LOG.info("Legacy Connector: moved {} (a Minecraft {} mod) into mods/{}/ (legacy.autoSortMods=false turns this off)", jar.getFileName(), version.id(), version.id());
+            return target;
+        } catch (IOException | RuntimeException e) {
+            LOG.warn("Legacy Connector: could not move {} into mods/{}/ ({}); it is loaded from where it is. Move it there yourself.", jar.getFileName(), version.id(), e.toString());
+            return null;
+        }
+    }
 
     /** Jars left out because another jar holds the same mod id in a newer version (a player keeps two downloads of one mod in mods/). */
     private static final Map<LegacyJar, String> DUPLICATE_SKIPS = new java.util.concurrent.ConcurrentHashMap<>();
