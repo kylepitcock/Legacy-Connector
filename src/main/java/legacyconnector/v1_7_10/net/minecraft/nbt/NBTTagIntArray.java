@@ -6,6 +6,11 @@ import net.minecraft.nbt.Tag;
 public class NBTTagIntArray extends NBTBase {
     private final int[] data;
 
+    /** 1.6.4 tags carried a name: a bare named tag holds the default value. */
+    public NBTTagIntArray(String name) {
+        this(new int[0]);
+    }
+
     public NBTTagIntArray(int[] data) {
         this.data = data == null ? new int[0] : data;
     }

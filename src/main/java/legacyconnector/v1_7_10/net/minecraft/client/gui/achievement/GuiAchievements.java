@@ -51,6 +51,11 @@ public class GuiAchievements extends GuiScreen implements IProgressMeter {
     private GuiButton button;
     private final LinkedList<Achievement> minecraftAchievements = new LinkedList<>();
 
+    /** 1.6.4: the screen opened from the pause menu (no parent given: it closes to the game). */
+    public GuiAchievements(StatFileWriter writer) {
+        this(null, writer);
+    }
+
     public GuiAchievements(GuiScreen parent, StatFileWriter writer) {
         this.parentScreen = parent;
         this.statFileWriter = writer;

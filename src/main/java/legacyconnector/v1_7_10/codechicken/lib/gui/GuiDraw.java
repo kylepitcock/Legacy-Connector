@@ -56,6 +56,30 @@ public class GuiDraw {
     }
 
     /** x, y, width, height (not corners, unlike {@link Gui#drawRect}). */
+    /** A tooltip box with the lines at (x, y), in vanilla's tooltip style, kept inside the screen. */
+    public static void drawMultilineTip(FontRenderer font, int x, int y, java.util.List<String> list) {
+        if (list == null || list.isEmpty()) return;
+        int w = 0;
+        for (String line : list) w = Math.max(w, font.getStringWidth(line));
+        int h = list.size() > 1 ? 8 + (list.size() - 1) * 10 : 8;
+        Dimension screen = displaySize();
+        if (x + w + 6 > screen.width) x -= w + 24;
+        if (y + h + 6 > screen.height) y = screen.height - h - 6;
+        int bg = 0xF0100010;
+        int border1 = 0x505000FF;
+        int border2 = 0x5028007F;
+        drawGradientRect(x - 3, y - 3, w + 6, h + 6, bg, bg);
+        drawGradientRect(x - 4, y - 3, 1, h + 6, bg, bg);
+        drawGradientRect(x + w + 3, y - 3, 1, h + 6, bg, bg);
+        drawGradientRect(x - 3, y - 2, 1, h + 4, border1, border2);
+        drawGradientRect(x + w + 2, y - 2, 1, h + 4, border1, border2);
+        drawGradientRect(x - 3, y - 3, w + 6, 1, border1, border1);
+        drawGradientRect(x - 3, y + h + 2, w + 6, 1, border2, border2);
+        for (int i = 0; i < list.size(); i++) {
+            font.drawStringWithShadow(list.get(i), x, y + i * 10 + (i > 0 ? 2 : 0), -1);
+        }
+    }
+
     public static void drawRect(int x, int y, int w, int h, int colour) {
         Gui.drawRect(x, y, x + w, y + h, colour);
     }

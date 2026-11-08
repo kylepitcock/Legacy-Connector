@@ -118,11 +118,40 @@ public class BiomeDecorator {
         this.chunk_X = chunkX;
         this.chunk_Z = chunkZ;
         try {
-            genDecorations(biome);
+            if (OVERRIDES_DECORATE.get(getClass())) {
+                mcc$current = biome;
+                decorate();
+            } else {
+                genDecorations(biome);
+            }
         } finally {
             this.currentWorld = null;
             this.randomGenerator = null;
+            mcc$current = null;
         }
+    }
+
+    private BiomeGenBase mcc$current;
+
+    /** Whether a mod's decorator replaced the 1.6.4 {@code decorate()} (1.7.10 calls its {@code genDecorations(biome)} instead). */
+    private static final ClassValue<Boolean> OVERRIDES_DECORATE = new ClassValue<>() {
+        @Override
+        protected Boolean computeValue(Class<?> type) {
+            for (Class<?> c = type; c != null && c != BiomeDecorator.class; c = c.getSuperclass()) {
+                try {
+                    c.getDeclaredMethod("decorate");
+                    return true;
+                } catch (NoSuchMethodException e) {
+                    // keep looking up the hierarchy
+                }
+            }
+            return false;
+        }
+    };
+
+    /** 1.6.4's {@code decorate()}: the decoration passes of the chunk being decorated (mod decorators override it and call super). */
+    protected void decorate() {
+        genDecorations(mcc$current != null ? mcc$current : biome);
     }
 
     /**

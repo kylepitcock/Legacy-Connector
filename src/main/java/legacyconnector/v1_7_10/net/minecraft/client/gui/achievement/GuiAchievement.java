@@ -19,6 +19,11 @@ public class GuiAchievement {
         show(achievement, "Achievement");
     }
 
+    /** 1.6.4: queues the achievement information popup. */
+    public void queueAchievementInformation(Achievement achievement) {
+        displayInformation(achievement);
+    }
+
     public void func_146256_a(Achievement achievement) {
         displayAchievement(achievement);
     }

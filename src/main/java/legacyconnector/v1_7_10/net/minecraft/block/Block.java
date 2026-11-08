@@ -640,6 +640,12 @@ public class Block {
 
     public boolean addDestroyEffects(legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z, int meta,
             legacyconnector.v1_7_10.net.minecraft.client.particle.EffectRenderer effects) {
+        return addBlockDestroyEffects(world, x, y, z, meta, effects);
+    }
+
+    /** Forge 1.6.4's name of {@link #addDestroyEffects}: 1.6.4 blocks override this one, and the game's call reaches it. */
+    public boolean addBlockDestroyEffects(legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z, int meta,
+            legacyconnector.v1_7_10.net.minecraft.client.particle.EffectRenderer effects) {
         return false;
     }
 
@@ -1353,6 +1359,12 @@ public class Block {
     }
 
     public boolean addHitEffects(legacyconnector.v1_7_10.net.minecraft.world.World world, legacyconnector.v1_7_10.net.minecraft.util.MovingObjectPosition target,
+            legacyconnector.v1_7_10.net.minecraft.client.particle.EffectRenderer effects) {
+        return addBlockHitEffects(world, target, effects);
+    }
+
+    /** Forge 1.6.4's name of {@link #addHitEffects}: 1.6.4 blocks override this one, and the game's call reaches it. */
+    public boolean addBlockHitEffects(legacyconnector.v1_7_10.net.minecraft.world.World world, legacyconnector.v1_7_10.net.minecraft.util.MovingObjectPosition target,
             legacyconnector.v1_7_10.net.minecraft.client.particle.EffectRenderer effects) {
         return false;
     }

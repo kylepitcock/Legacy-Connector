@@ -21,6 +21,10 @@ public class NEIServerUtils {
                 || b.getItemDamage() == OreDictionary.WILDCARD_VALUE || a.getItem().isDamageable());
     }
 
+    public static boolean areStacksSameTypeCraftingWithNBT(ItemStack a, ItemStack b) {
+        return areStacksSameTypeCrafting(a, b) && ItemStack.areItemStackTagsEqual(a, b);
+    }
+
     public static boolean areStacksSameTypeWithNBT(ItemStack a, ItemStack b) {
         return areStacksSameType(a, b);
     }

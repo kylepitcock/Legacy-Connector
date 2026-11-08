@@ -92,7 +92,8 @@ public class Configuration {
     }
 
     public String getLoadedConfigVersion() {
-        return loadedConfigVersion;
+        // a file without a version line (new, or written by a mod that defines none) counts as the defined version: callers compare the two
+        return loadedConfigVersion != null ? loadedConfigVersion : definedConfigVersion;
     }
 
     // ------------------------------------------------------------------ typed getters (legacy signatures)

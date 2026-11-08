@@ -15,6 +15,11 @@ public class PlaySoundAtEntityEvent extends EntityEvent {
     private float newVolume;
     private float newPitch;
 
+    /** Mods look the event up by reflection (FutureMC does {@code getConstructor()}); the fields stay empty. */
+    public PlaySoundAtEntityEvent() {
+        this(null, null, null, 1.0F, 1.0F);
+    }
+
     public PlaySoundAtEntityEvent(Entity entity, SoundEvent name, SoundCategory category, float volume, float pitch) {
         super(entity);
         this.name = name;

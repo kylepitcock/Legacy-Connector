@@ -293,6 +293,17 @@ public final class Platform1122 implements LegacyPlatform {
                     }
                 }
             }
+            // handlers other mods added to the container's table (FMLModContainer.eventMethods)
+            for (var e : new ArrayList<>(container.mcc$eventMethods().entries())) {
+                if (!e.getKey().isInstance(event)) continue;
+                Method m = e.getValue();
+                m.setAccessible(true);
+                try {
+                    m.invoke(Modifier.isStatic(m.getModifiers()) ? null : mod.instance, event);
+                } catch (java.lang.reflect.InvocationTargetException ex) {
+                    throw ex.getCause() instanceof Exception cause ? cause : new RuntimeException(ex.getCause());
+                }
+            }
         } finally {
             LegacyModContainer1122.setActive(null);
         }

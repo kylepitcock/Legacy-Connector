@@ -21,6 +21,12 @@ public final class Forward164 {
         return value instanceof NBTTagList list ? list : new NBTTagList();
     }
 
+    /** 1.6.4 {@code sprite.getFrameTextureData(frame)}: the frame's pixels (1.7.10 returns one array per mipmap level; level 0 is the frame). */
+    public static int[] getFrameTextureData(legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureAtlasSprite sprite, int frame) {
+        int[][] levels = sprite.getFrameTextureData(frame);
+        return levels == null || levels.length == 0 ? null : levels[0];
+    }
+
     /** 1.6.4 {@code NBTTagList.tagAt(i)}: the element of any type (1.7.10 only has typed getters). */
     public static NBTBase tagAt(NBTTagList list, int index) {
         if (index < 0 || index >= list.tagCount()) return null;
