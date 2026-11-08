@@ -336,6 +336,8 @@ net/minecraft/client/gui/screens/Screen	BACKGROUND_LOCATION	Lnet/minecraft/resou
 net/minecraft/client/gui/Gui	GUI_ICONS_LOCATION	Lnet/minecraft/resources/ResourceLocation;	-	none	MiddleClientCompat.guiIcons
 net/neoforged/fml/common/EventBusSubscriber$Bus	FORGE	Lnet/neoforged/fml/common/EventBusSubscriber$Bus;	GAME	-	-
 net/minecraft/network/chat/ComponentContents	EMPTY	Lnet/minecraft/network/chat/ComponentContents;	-	none	RoundCompat.emptyContents
+# --- round 4 batch 9
+net/minecraft/world/level/block/entity/BlockEntity	INFINITE_EXTENT_AABB	Lnet/minecraft/world/phys/AABB;	-	none	MiddleCompat.infiniteExtent
 net/neoforged/neoforge/common/Tags$Blocks	GLASS_WHITE	Lnet/minecraft/tags/TagKey;	-	none	TagStandIns1201.glassWhite
 net/neoforged/neoforge/common/Tags$Blocks	GLASS_ORANGE	Lnet/minecraft/tags/TagKey;	-	none	TagStandIns1201.glassOrange
 net/neoforged/neoforge/common/Tags$Blocks	GLASS_MAGENTA	Lnet/minecraft/tags/TagKey;	-	none	TagStandIns1201.glassMagenta

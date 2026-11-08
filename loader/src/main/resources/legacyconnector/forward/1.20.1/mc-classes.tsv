@@ -68,3 +68,5 @@ net/neoforged/neoforge/common/crafting/StrictNBTIngredient	net/minecraft/world/i
 net/neoforged/neoforge/common/crafting/PartialNBTIngredient	net/minecraft/world/item/crafting/Ingredient
 net/minecraft/server/packs/repository/Pack$ResourcesSupplier	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyResourcesSupplier
 net/minecraft/world/item/BowlFoodItem	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyBowlFoodItem
+# --- round 4 batch 9
+net/minecraft/world/scores/Score	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyScore
