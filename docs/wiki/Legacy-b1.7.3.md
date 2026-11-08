@@ -469,6 +469,17 @@ core roster checks. These tests exercise original mod classes, rather than repla
 The cases also verify retained-target fire mutations, native boar saddling and inherited duck-wing tracking.
 [The validation snapshot](../data/b173-living-validation-2026-11-07.json) records payload hashes, roster names and the exercised cases.
 
+Additional original-callback checks cover Kitty litter use, courtship and bed selection, kitten protection and maturation,
+aquatic prey/settings policies, contact damage and juvenile gates, Fishy offspring, and aquatic drops/persistence. A controlled
+habitat also exercises Minecraft's native weighted spawn selection, original spawn checks, factory creation and world insertion.
+This preserves original quirks, including a pregnant Kitty rejecting the nearest occupied bed instead of choosing a farther one.
+
+Successful `ModLoader.setPrivateValue` writes to `SpawnGroup.capacity`, by original field name or index, now affect native
+global and per-player spawn caps. Untouched categories retain Minecraft's defaults. The bridge is shared API behavior with no
+mod-name checks. An actual Mo' Creatures run verifies its constructor's 70/30/25 limits at the native cap boundaries;
+the original mod applies these settings at launch rather than on each slider change.
+[The lifecycle validation snapshot](../data/b173-lifecycle-validation-2026-11-07.json) records these checks and their limits.
+
 Original nonliving entities and custom `ItemEntity` subclasses use two shared native host types. Original ticks, collisions,
 pickup and NBT callbacks retain their original identities; explicit superclass calls select the base phase. A custom item
 tick does not receive an extra modern item-physics or merging phase. Tracking includes original scalar fields, dimensions,

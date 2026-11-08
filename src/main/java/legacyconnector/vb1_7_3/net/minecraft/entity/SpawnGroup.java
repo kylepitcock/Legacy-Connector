@@ -8,7 +8,8 @@ public enum SpawnGroup {
     MONSTER(70,false,Material.AIR,MobCategory.MONSTER),
     CREATURE(15,true,Material.AIR,MobCategory.CREATURE),
     WATER_CREATURE(5,true,Material.WATER,MobCategory.WATER_CREATURE);
-    private final int capacity;
+    // Beta mods legitimately mutate this mapped field through ModLoader reflection.
+    private volatile int capacity;
     private final boolean peaceful;
     private final Material material;
     private final MobCategory modern;

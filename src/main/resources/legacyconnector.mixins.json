@@ -9,6 +9,7 @@
     "Varint21LengthFieldPrependerMixin",
     "EntityGravityMixin",
     "BetaAnimalAiStepMixin",
+    "BetaSpawnCapMixin",
     "OversizedCraftingMenuMixin",
     "PlayerStepSoundMixin",
     "FoodDataHealRateMixin",

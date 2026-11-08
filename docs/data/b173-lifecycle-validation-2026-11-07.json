@@ -1,0 +1,58 @@
+{
+  "snapshot_date": "2026-11-07",
+  "scope": "Native natural-spawn core path, Kitty/aquatic lifecycle and generic spawn-cap integration",
+  "unit_tests": {
+    "runtime": {
+      "tests": 151,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "loader": {
+      "tests": 135,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "fixtures": {
+    "mocreatures": {
+      "status": "headless-smoke-passed",
+      "source_archive": "DrZharks_MoCreatures_Mod_v2.12.2_b1.7.3.zip!mods/MoCreatures.zip",
+      "payload_sha256": "5aa61ec6d26b0fc5ac981bb45f8a8dda604e6722e1a2f39fb5a6bc68a73a0c37",
+      "game_directory": "run-b173-single/mocreatures-neutralspawn-caps-20261107-220224-579e55",
+      "resources_verified": 168
+    },
+    "morecreeps": {
+      "status": "headless-smoke-passed",
+      "source_archive": "MoreCreepsv2.12_b173.zip!PUT CONTENTS INTO MINECRAFT FOLDER/mods/MoreCreepsAndWeirdos.zip",
+      "payload_sha256": "b5b0090eed342b5fb5cfc95ded0bdf604d206f0d9ee13b859f4596c9351dcd55",
+      "game_directory": "run-b173-single/morecreeps-neutralspawn-caps-20261107-220225-f7f314",
+      "resources_verified": 759
+    }
+  },
+  "mocreatures": {
+    "registered_living_roster": 28,
+    "existing_gameplay_cases": 21,
+    "additional_kitty_cases": 3,
+    "additional_aquatic_cases": 4,
+    "native_natural_spawn_selection_placement_factory_and_insertion": true,
+    "explicit_constructor_caps": {
+      "MONSTER": 70,
+      "CREATURE": 30,
+      "WATER_CREATURE": 25
+    },
+    "native_global_289_chunk_boundary": true,
+    "native_local_player_count_boundary": true
+  },
+  "morecreeps_regression": {
+    "registered_living_roster": 53,
+    "nonliving_item_projectile_cases": 9
+  },
+  "generic_mod_identity_guard": "passed:250 production/loader files",
+  "limitations": [
+    "No live GPU/client gameplay validation; baseline roster checks do not prove every specialized AI decision.",
+    "Natural-spawn core path and cap decisions exercised separately; full tick scheduling and ecology are not end-to-end certified.",
+    "Original MoCreatures applies persisted category limits in its constructor; slider changes take effect at next launch."
+  ]
+}

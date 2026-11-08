@@ -256,6 +256,7 @@ public final class ModLoader {
             Field f = org.kylepitcock.legacyconnector.vb1_7_3.ReflectionB173.field(owner, index);
             f.setAccessible(true);
             f.set(instance, value);
+            org.kylepitcock.legacyconnector.vb1_7_3.SpawnCapsB173.afterWrite(f, instance);
         } catch (ReflectiveOperationException | RuntimeException e) {
             LOGGER.throwing("ModLoader", "setPrivateValue", e);
             ThrowException("An impossible error has occured!", e);
@@ -267,6 +268,7 @@ public final class ModLoader {
             Field f = org.kylepitcock.legacyconnector.vb1_7_3.ReflectionB173.field(owner, name);
             f.setAccessible(true);
             f.set(instance, value);
+            org.kylepitcock.legacyconnector.vb1_7_3.SpawnCapsB173.afterWrite(f, instance);
         } catch (IllegalAccessException | RuntimeException e) {
             LOGGER.throwing("ModLoader", "setPrivateValue", e);
             ThrowException("An impossible error has occured!", e);
