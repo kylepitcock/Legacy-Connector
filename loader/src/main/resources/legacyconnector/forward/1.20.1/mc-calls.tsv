@@ -463,3 +463,4 @@ net/neoforged/neoforge/event/entity/EntityEvent$Size	getOldEyeHeight	()F	EventCo
 net/neoforged/neoforge/event/entity/EntityEvent$Size	getNewEyeHeight	()F	EventCompat	newEyeHeight	-
 net/neoforged/neoforge/event/entity/EntityEvent$Size	setNewEyeHeight	(F)V	EventCompat	setNewEyeHeight	-
 net/neoforged/neoforge/event/entity/EntityEvent$Size	setNewSize	(Lnet/minecraft/world/entity/EntityDimensions;Z)V	EventCompat	setNewSize	-
+net/neoforged/fml/common/EventBusSubscriber$Bus	bus	()Ljava/util/function/Supplier;	BusCompat	bus	-
