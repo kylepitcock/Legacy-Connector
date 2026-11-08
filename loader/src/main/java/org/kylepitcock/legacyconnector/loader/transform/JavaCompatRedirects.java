@@ -125,6 +125,19 @@ public final class JavaCompatRedirects {
         INVOKES.put("com/google/common/util/concurrent/Futures.immediateCheckedFuture(Ljava/lang/Object;)Lcom/google/common/util/concurrent/CheckedFuture;",
                 new MethodInsnNode(Opcodes.INVOKESTATIC, COMPAT + "GuavaCompat", "immediateCheckedFuture",
                         "(Ljava/lang/Object;)Lcom/google/common/util/concurrent/ListenableFuture;", false));
+        // Guava 33 dropped Files.fileTreeTraverser (and TreeTraverser, which the shim carries per version): the same traversal from GuavaCompat.
+        for (String[] v : new String[][] {{"v1_12_2", "1122"}, {"v1_7_10", "1710"}}) {
+            INVOKES.put("com/google/common/io/Files.fileTreeTraverser()Llegacyconnector/" + v[0] + "/com/google/common/collect/TreeTraverser;",
+                    new MethodInsnNode(Opcodes.INVOKESTATIC, COMPAT + "GuavaCompat", "fileTreeTraverser" + v[1],
+                            "()Llegacyconnector/" + v[0] + "/com/google/common/collect/TreeTraverser;", false));
+        }
+        // Guava 26: Futures.transform needs an executor; sameThreadExecutor became newDirectExecutorService.
+        staticToStatic("com/google/common/util/concurrent/Futures", "transform",
+                "(Lcom/google/common/util/concurrent/ListenableFuture;Lcom/google/common/base/Function;)Lcom/google/common/util/concurrent/ListenableFuture;", COMPAT + "GuavaCompat", "transform");
+        staticToStatic("com/google/common/util/concurrent/Futures", "transform",
+                "(Lcom/google/common/util/concurrent/ListenableFuture;Lcom/google/common/util/concurrent/AsyncFunction;)Lcom/google/common/util/concurrent/ListenableFuture;", COMPAT + "GuavaCompat", "transformAsync");
+        staticToStatic("com/google/common/util/concurrent/MoreExecutors", "sameThreadExecutor",
+                "()Lcom/google/common/util/concurrent/ListeningExecutorService;", "com/google/common/util/concurrent/MoreExecutors", "newDirectExecutorService");
         // Guava 26: Futures.addCallback needs an executor.
         staticToStatic("com/google/common/util/concurrent/Futures", "addCallback",
                 "(Lcom/google/common/util/concurrent/ListenableFuture;Lcom/google/common/util/concurrent/FutureCallback;)V", COMPAT + "GuavaCompat", "addCallback");
@@ -409,6 +422,25 @@ public final class JavaCompatRedirects {
     }
 
     /**
+     * Stack map frames inside the arguments of a {@code new T(...)} (a conditional argument) hold the uninitialized object as a verification
+     * type naming the NEW instruction; once the NEW is replaced by a factory call that entry is gone (the JVM rejects the class with "bad offset
+     * for Uninitialized"), so the entries are taken out of the frames. Both slots (NEW and DUP) go.
+     */
+    private static void dropUninitializedFrames(InsnList insns, TypeInsnNode newInsn) {
+        java.util.Set<Object> labels = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+        for (AbstractInsnNode p = newInsn.getPrevious(); p != null && p.getOpcode() == -1; p = p.getPrevious()) {
+            if (p instanceof org.objectweb.asm.tree.LabelNode l) labels.add(l);
+        }
+        if (labels.isEmpty()) return;
+        for (AbstractInsnNode n = insns.getFirst(); n != null; n = n.getNext()) {
+            if (!(n instanceof org.objectweb.asm.tree.FrameNode f)) continue;
+            if (f.stack != null) f.stack.removeIf(labels::contains);
+            if (f.local != null && f.type == Opcodes.F_FULL) f.local.removeIf(labels::contains);
+            if (f.type == Opcodes.F_SAME1 && f.stack != null && f.stack.isEmpty()) f.type = Opcodes.F_SAME;
+        }
+    }
+
+    /**
      * Rewrites {@code NEW T; DUP; <args>; INVOKESPECIAL T.<init>(args)V} into {@code <args>; INVOKESTATIC T.factory(args)T}
      * when NEW/DUP directly precede the argument code, which is what javac emits.
      */
@@ -432,6 +464,7 @@ public final class JavaCompatRedirects {
         if (!(cursor instanceof TypeInsnNode newInsn) || !newInsn.desc.equals(init.owner)) return null;
         AbstractInsnNode dup = newInsn.getNext();
         if (dup == null || dup.getOpcode() != Opcodes.DUP) return null;
+        dropUninitializedFrames(insns, newInsn);
         insns.remove(newInsn);
         insns.remove(dup);
         String desc = init.desc.substring(0, init.desc.length() - 1) + "L" + init.owner + ";";
