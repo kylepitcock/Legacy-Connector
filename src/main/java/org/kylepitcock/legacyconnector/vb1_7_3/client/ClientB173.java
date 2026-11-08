@@ -65,12 +65,6 @@ public final class ClientB173 implements MenusB173.Client {
         AudioClientB173.install();
         ParticleClientB173.install();
         org.kylepitcock.legacyconnector.vb1_7_3.GuiSessionsB173.install();
-        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.client.event.ScreenEvent.Init.Post event)->{
-            var screen=event.getScreen();
-            if(!(screen instanceof net.minecraft.client.gui.screens.options.OptionsScreen)&&!(screen instanceof net.minecraft.client.gui.screens.TitleScreen))return;
-            if(legacyconnector.vb1_7_3.net.minecraft.src.ModSettingScreen.modscreens.isEmpty())return;
-            event.addListener(net.minecraft.client.gui.components.Button.builder(net.minecraft.network.chat.Component.literal("Legacy mod settings"),button->legacyconnector.vb1_7_3.net.minecraft.src.GuiModScreen.showSettings()).bounds(8,8,150,20).build());
-        });
     }
 
     @Override
@@ -124,9 +118,12 @@ public final class ClientB173 implements MenusB173.Client {
         mc.execute(() -> {
             if (screen == null) {
                 if (mc.screen instanceof AbstractContainerScreen<?> && mc.player != null) mc.player.closeContainer();
+                else if(mc.screen instanceof LegacyB173PlainScreen plain)plain.onClose();
                 else mc.setScreen(null);
             } else {
-                mc.setScreen(new LegacyB173PlainScreen(screen));
+                var parent=mc.screen instanceof LegacyB173PlainScreen plain?plain.returnScreen():
+                        mc.screen instanceof net.minecraft.client.gui.screens.options.OptionsScreen?mc.screen:null;
+                mc.setScreen(new LegacyB173PlainScreen(screen,parent));
             }
         });
     }

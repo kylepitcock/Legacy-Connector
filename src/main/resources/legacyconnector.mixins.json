@@ -33,6 +33,7 @@
     "ClientLevelSkyColorMixin",
     "MinecraftAttackMixin",
     "MultiPlayerGameModeMixin",
+    "OptionsScreenLegacySettingsMixin",
     "ClientLanguageLegacyKeysMixin"
   ],
   "injectors": {

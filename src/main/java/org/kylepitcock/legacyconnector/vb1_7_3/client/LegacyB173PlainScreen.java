@@ -9,13 +9,23 @@ import org.slf4j.LoggerFactory;
 /** A modern screen showing a b1.7.3 {@code GuiScreen} without container (a timer's settings, a naming screen): it draws, ticks and gets input. */
 public class LegacyB173PlainScreen extends Screen {
     private final legacyconnector.vb1_7_3.net.minecraft.client.gui.screen.Screen gui;
+    private final Screen returnScreen;
     private boolean failed;
     private int pendingKey = -1;
 
     public LegacyB173PlainScreen(legacyconnector.vb1_7_3.net.minecraft.client.gui.screen.Screen gui) {
+        this(gui,null);
+    }
+
+    public LegacyB173PlainScreen(legacyconnector.vb1_7_3.net.minecraft.client.gui.screen.Screen gui,Screen returnScreen) {
         super(Component.empty());
         this.gui = gui;
+        this.returnScreen=returnScreen;
     }
+
+    public Screen returnScreen(){return returnScreen;}
+
+    @Override public void onClose(){minecraft.setScreen(returnScreen);}
 
     public legacyconnector.vb1_7_3.net.minecraft.client.gui.screen.Screen legacy() {
         return gui;
