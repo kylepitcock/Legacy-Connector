@@ -491,6 +491,103 @@ public final class RoundCompat {
         return parent != null ? parent : net.minecraft.world.item.ItemDisplayContext.NONE;
     }
 
+    /** The (empty) feature flag varargs 1.21.1 added to {@code SmithingTemplateItem.createArmorTrimTemplate}. */
+    public static net.minecraft.world.flag.FeatureFlag[] noFlags(ResourceLocation ignored) {
+        return new net.minecraft.world.flag.FeatureFlag[0];
+    }
+
+    /** {@code new SimpleCookingSerializer(baker, cookingTime)}: the factory of 1.21.1 has no id; the recipe is made with the unknown id. */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static net.minecraft.world.item.crafting.SimpleCookingSerializer newCookingSerializer(LegacyCookieBaker baker, int cookingTime) {
+        return new net.minecraft.world.item.crafting.SimpleCookingSerializer(
+                (net.minecraft.world.item.crafting.AbstractCookingRecipe.Factory) (group, category, ingredient, result, xp, time) ->
+                        baker.create(UNKNOWN_RECIPE, (String) group, (net.minecraft.world.item.crafting.CookingBookCategory) category,
+                                (net.minecraft.world.item.crafting.Ingredient) ingredient, (ItemStack) result, (Float) xp, (Integer) time), cookingTime);
+    }
+
+    /** {@code BlockParticleOption.codec(type)}: a {@code MapCodec} now; the 1.20.1 form is the plain codec of it. */
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static com.mojang.serialization.Codec blockParticleCodec(net.minecraft.core.particles.ParticleType type) {
+        return net.minecraft.core.particles.BlockParticleOption.codec(type).codec();
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static com.mojang.serialization.Codec itemParticleCodec(net.minecraft.core.particles.ParticleType type) {
+        return net.minecraft.core.particles.ItemParticleOption.codec(type).codec();
+    }
+
+    /** {@code BlockParticleOption.DESERIALIZER}: the field is gone; particle types drop their deserializer on construction anyway. */
+    public static LegacyParticleDeserializer noParticleDeserializer() {
+        return null;
+    }
+
+    /** {@code Frog.getVariant()} is a holder now. */
+    public static net.minecraft.world.entity.animal.FrogVariant frogVariant(net.minecraft.world.entity.animal.frog.Frog frog) {
+        return frog.getVariant().value();
+    }
+
+    /** {@code AreaEffectCloud.setFixedColor(int)}: the colour is part of the potion contents. */
+    public static void setFixedColor(net.minecraft.world.entity.AreaEffectCloud cloud, int color) {
+        cloud.setPotionContents(new net.minecraft.world.item.alchemy.PotionContents(java.util.Optional.empty(), java.util.Optional.of(color), java.util.List.of()));
+    }
+
+    /** {@code new EntityDimensions(width, height, fixed)}: the constructor is private now, the factories make the same sizes. */
+    public static net.minecraft.world.entity.EntityDimensions newEntityDimensions(float width, float height, boolean fixed) {
+        return fixed ? net.minecraft.world.entity.EntityDimensions.fixed(width, height) : net.minecraft.world.entity.EntityDimensions.scalable(width, height);
+    }
+
+    /** {@code new SimpleCraftingRecipeSerializer(factory)}: the 1.21.1 factory takes the category only. */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static net.minecraft.world.item.crafting.SimpleCraftingRecipeSerializer newCraftingSerializer(LegacyCraftingFactory factory) {
+        return new net.minecraft.world.item.crafting.SimpleCraftingRecipeSerializer(
+                (net.minecraft.world.item.crafting.SimpleCraftingRecipeSerializer.Factory) category ->
+                        factory.create(UNKNOWN_RECIPE, (net.minecraft.world.item.crafting.CraftingBookCategory) category));
+    }
+
+    /** {@code LootItemConditions.orConditions(predicates)}: true when any predicate is. */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static java.util.function.Predicate orConditions(java.util.function.Predicate[] predicates) {
+        return t -> {
+            for (java.util.function.Predicate p : predicates) if (p.test(t)) return true;
+            return false;
+        };
+    }
+
+    /** {@code LootItemConditions.andConditions(predicates)}: true when all predicates are. */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static java.util.function.Predicate andConditions(java.util.function.Predicate[] predicates) {
+        return t -> {
+            for (java.util.function.Predicate p : predicates) if (!p.test(t)) return false;
+            return true;
+        };
+    }
+
+    /** {@code EntityDataSerializer.simpleEnum(Class)}: an enum value written by ordinal. */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static net.minecraft.network.syncher.EntityDataSerializer simpleEnum(Class enumClass) {
+        return net.minecraft.network.syncher.EntityDataSerializer.forValueType(net.minecraft.network.codec.StreamCodec.<net.minecraft.network.RegistryFriendlyByteBuf, Enum>of(
+                (buf, value) -> buf.writeEnum(value), buf -> buf.readEnum(enumClass)));
+    }
+
+    /** {@code EntityDataSerializer.simple(writer, reader)}. */
+    public static <T> net.minecraft.network.syncher.EntityDataSerializer<T> simpleSerializer(
+            net.minecraft.network.codec.StreamEncoder<net.minecraft.network.FriendlyByteBuf, T> writer,
+            net.minecraft.network.codec.StreamDecoder<net.minecraft.network.FriendlyByteBuf, T> reader) {
+        return net.minecraft.network.syncher.EntityDataSerializer.forValueType(net.minecraft.network.codec.StreamCodec.<net.minecraft.network.RegistryFriendlyByteBuf, T>of(
+                (buf, value) -> writer.encode(buf, value), buf -> reader.decode(buf)));
+    }
+
+    /** {@code EntityDataSerializer.optional(writer, reader)} of 1.20.1: an optional value written as a presence flag and the value. */
+    public static <T> net.minecraft.network.syncher.EntityDataSerializer<java.util.Optional<T>> optionalSerializer(
+            net.minecraft.network.codec.StreamEncoder<net.minecraft.network.FriendlyByteBuf, T> writer,
+            net.minecraft.network.codec.StreamDecoder<net.minecraft.network.FriendlyByteBuf, T> reader) {
+        return net.minecraft.network.syncher.EntityDataSerializer.forValueType(net.minecraft.network.codec.StreamCodec.<net.minecraft.network.RegistryFriendlyByteBuf, java.util.Optional<T>>of(
+                (buf, value) -> {
+                    buf.writeBoolean(value.isPresent());
+                    value.ifPresent(v -> writer.encode(buf, v));
+                }, buf -> buf.readBoolean() ? java.util.Optional.of(reader.decode(buf)) : java.util.Optional.empty()));
+    }
+
     /** {@code ComponentContents.EMPTY} moved to {@code PlainTextContents.EMPTY}. */
     public static net.minecraft.network.chat.ComponentContents emptyContents() {
         return net.minecraft.network.chat.contents.PlainTextContents.EMPTY;

@@ -275,6 +275,21 @@ public final class Forge1201Transformer {
             Mixin1201.apply(node, srg, hierarchy, Mc1201Tables.get(), mixinStats);
             migrated.put(node, viaCalls + changed.total());
         }
+        if (ownUnit) {
+            // an isolated library next to its native build registers the same ids as the native one: its deferred registers are not attached to the bus
+            for (ClassNode node : nodes) {
+                for (MethodNode m : node.methods) {
+                    if (m.instructions == null) continue;
+                    for (AbstractInsnNode in : m.instructions.toArray()) {
+                        if (in instanceof org.objectweb.asm.tree.MethodInsnNode mi && mi.name.equals("register") && mi.desc.equals("(Lnet/neoforged/bus/api/IEventBus;)V")
+                                && mi.owner.startsWith("net/neoforged/neoforge/registries/DeferredRegister") && mi.getOpcode() != org.objectweb.asm.Opcodes.INVOKESTATIC) {
+                            m.instructions.set(mi, new org.objectweb.asm.tree.MethodInsnNode(org.objectweb.asm.Opcodes.INVOKESTATIC, "legacyconnector/v1_20_1/ForgeApi1201",
+                                    "skipIsolatedRegister", "(Lnet/neoforged/neoforge/registries/DeferredRegister;Lnet/neoforged/bus/api/IEventBus;)V", false));
+                        }
+                    }
+                }
+            }
+        }
         int modCtors = ModConstructors1201.apply(nodes);
         if (modCtors > 0) result.notes.add("@Mod constructor taking FMLJavaModLoadingContext: a (IEventBus, ModContainer) constructor was generated for NeoForge");
         int subscribersMoved = Subscribers1201.apply(nodes);

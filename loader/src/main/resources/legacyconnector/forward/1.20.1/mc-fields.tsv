@@ -359,3 +359,5 @@ net/neoforged/neoforge/common/Tags$Blocks	GLASS_BLACK	Lnet/minecraft/tags/TagKey
 net/neoforged/neoforge/common/Tags$Blocks	STAINED_GLASS	Lnet/minecraft/tags/TagKey;	-	none	TagStandIns1201.stainedGlass
 net/neoforged/neoforge/common/Tags$Items	HEADS	Lnet/minecraft/tags/TagKey;	-	none	TagStandIns1201.heads
 net/neoforged/neoforge/common/Tags$Biomes	IS_WATER	Lnet/minecraft/tags/TagKey;	-	none	TagStandIns1201.isWater
+net/minecraft/core/particles/BlockParticleOption	DESERIALIZER	Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyParticleDeserializer;	-	none	RoundCompat.noParticleDeserializer
+net/minecraft/core/particles/ItemParticleOption	DESERIALIZER	Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyParticleDeserializer;	-	none	RoundCompat.noParticleDeserializer

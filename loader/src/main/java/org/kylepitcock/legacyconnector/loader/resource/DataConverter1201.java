@@ -200,6 +200,7 @@ public final class DataConverter1201 {
             if (dir.equals("loot_table") || dir.equals("loot_modifiers")) loot(root, c);
             if (dir.equals("dimension_type") && root.isJsonObject()) dimensionType(root.getAsJsonObject(), c);
             if (np.contains("/worldgen/structure_set/") && root.isJsonObject()) structureSet(root.getAsJsonObject(), c);
+            if (np.contains("/worldgen/") || dir.equals("dimension_type")) worldgenShapes(root, c);
             generic(root, c, false);
             outs.add(new Out(np, bytes(root)));
         }
@@ -782,10 +783,54 @@ public final class DataConverter1201 {
             else zone.remove("other_set");
             c.hit("worldgen_range");
         }
+        // a tag where one structure set is expected (1.20.1 skipped the set with a log line): the exclusion zone cannot be expressed, so it goes
+        if (zone.has("other_set") && zone.get("other_set").isJsonPrimitive() && zone.get("other_set").getAsString().startsWith("#")) {
+            placement.remove("exclusion_zone");
+            c.hit("worldgen_range");
+            return;
+        }
         if (zone.has("chunk_count") && zone.get("chunk_count").isJsonPrimitive() && zone.get("chunk_count").getAsInt() > 16) {
             zone.addProperty("chunk_count", 16);
             c.hit("worldgen_range");
         }
+    }
+
+    // ---- int providers and spawner categories ------------------------------------------------------------------------------------------
+
+    private static final Set<String> NESTED_INT_PROVIDERS = Set.of("minecraft:uniform", "minecraft:biased_to_bottom", "minecraft:clamped", "minecraft:clamped_normal");
+    private static final Set<String> VANILLA_MOB_CATEGORIES = Set.of("monster", "creature", "ambient", "axolotls", "underground_water_creature", "water_creature", "water_ambient", "misc");
+
+    /**
+     * 1.20.1 wrote an int provider other than a constant as {@code {"type": "minecraft:uniform", "value": {"min_inclusive": 1, "max_inclusive": 3}}} (the
+     * dispatch codec nested the fields of a plain codec); 1.20.2 and later put the fields next to the type. Height providers were always flat and have no
+     * {@code value} object, so a {@code uniform} object with one is an int provider. Also: a biome's {@code spawners} of a mod's own mob category (Forge
+     * enum extension, gone here) are read as the monster category.
+     */
+    private static void worldgenShapes(JsonElement e, Ctx c) {
+        if (e.isJsonArray()) {
+            for (JsonElement x : e.getAsJsonArray()) worldgenShapes(x, c);
+            return;
+        }
+        if (!e.isJsonObject()) return;
+        JsonObject o = e.getAsJsonObject();
+        if (o.has("type") && o.get("type").isJsonPrimitive() && NESTED_INT_PROVIDERS.contains(o.get("type").getAsString()) && o.has("value") && o.get("value").isJsonObject()) {
+            JsonObject inner = o.getAsJsonObject("value");
+            o.remove("value");
+            for (Map.Entry<String, JsonElement> en : inner.entrySet()) o.add(en.getKey(), en.getValue());
+            c.hit("int_provider");
+        }
+        if (o.has("spawners") && o.get("spawners").isJsonObject() && !o.has("type")) {
+            JsonObject spawners = o.getAsJsonObject("spawners");
+            for (String key : new ArrayList<>(spawners.keySet())) {
+                if (VANILLA_MOB_CATEGORIES.contains(key) || !spawners.get(key).isJsonArray()) continue;
+                JsonElement list = spawners.remove(key);
+                JsonElement existing = spawners.get("monster");
+                if (existing != null && existing.isJsonArray() && list.isJsonArray()) existing.getAsJsonArray().addAll(list.getAsJsonArray());
+                else spawners.add("monster", list);
+                c.hit("mob_category");
+            }
+        }
+        for (Map.Entry<String, JsonElement> en : new ArrayList<>(o.entrySet())) worldgenShapes(en.getValue(), c);
     }
 
     // ---- dimension types -----------------------------------------------------------------------------------------------------------

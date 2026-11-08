@@ -590,3 +590,16 @@ net/minecraft/world/entity/SpawnPlacementType	create	(Ljava/lang/String;Lnet/neo
 net/minecraft/world/entity/raid/Raid$RaiderType	create	(Ljava/lang/String;Lnet/minecraft/world/entity/EntityType;[I)Lnet/minecraft/world/entity/raid/Raid$RaiderType;	RoundCompat	createRaiderType	-
 net/minecraft/world/level/pathfinder/PathType	create	(Ljava/lang/String;F)Lnet/minecraft/world/level/pathfinder/PathType;	RoundCompat	createPathType	-
 net/minecraft/world/item/ItemDisplayContext	create	(Ljava/lang/String;Lnet/minecraft/resources/ResourceLocation;Lnet/minecraft/world/item/ItemDisplayContext;)Lnet/minecraft/world/item/ItemDisplayContext;	RoundCompat	createDisplayContext	-
+net/minecraft/world/item/SmithingTemplateItem	createArmorTrimTemplate	(Lnet/minecraft/resources/ResourceLocation;)Lnet/minecraft/world/item/SmithingTemplateItem;	=args	0,RoundCompat.noFlags@0	(Lnet/minecraft/resources/ResourceLocation;[Lnet/minecraft/world/flag/FeatureFlag;)Lnet/minecraft/world/item/SmithingTemplateItem;
+net/minecraft/world/item/crafting/SimpleCookingSerializer	<init>	(Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyCookieBaker;I)V	RoundCompat	newCookingSerializer	-
+net/minecraft/network/syncher/EntityDataSerializer	optional	(Lnet/minecraft/network/codec/StreamEncoder;Lnet/minecraft/network/codec/StreamDecoder;)Lnet/minecraft/network/syncher/EntityDataSerializer;	RoundCompat	optionalSerializer	-
+net/minecraft/network/syncher/EntityDataSerializer	simpleEnum	(Ljava/lang/Class;)Lnet/minecraft/network/syncher/EntityDataSerializer;	RoundCompat	simpleEnum	-
+net/minecraft/network/syncher/EntityDataSerializer	simple	(Lnet/minecraft/network/codec/StreamEncoder;Lnet/minecraft/network/codec/StreamDecoder;)Lnet/minecraft/network/syncher/EntityDataSerializer;	RoundCompat	simpleSerializer	-
+net/minecraft/world/entity/EntityDimensions	<init>	(FFZ)V	RoundCompat	newEntityDimensions	-
+net/minecraft/core/particles/BlockParticleOption	codec	(Lnet/minecraft/core/particles/ParticleType;)Lcom/mojang/serialization/Codec;	RoundCompat	blockParticleCodec	(Lnet/minecraft/core/particles/ParticleType;)Lcom/mojang/serialization/Codec;
+net/minecraft/core/particles/ItemParticleOption	codec	(Lnet/minecraft/core/particles/ParticleType;)Lcom/mojang/serialization/Codec;	RoundCompat	itemParticleCodec	(Lnet/minecraft/core/particles/ParticleType;)Lcom/mojang/serialization/Codec;
+net/minecraft/world/entity/animal/frog/Frog	getVariant	()Lnet/minecraft/world/entity/animal/FrogVariant;	RoundCompat	frogVariant	-
+net/minecraft/world/entity/AreaEffectCloud	setFixedColor	(I)V	RoundCompat	setFixedColor	-
+net/minecraft/world/item/crafting/SimpleCraftingRecipeSerializer	<init>	(Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyCraftingFactory;)V	RoundCompat	newCraftingSerializer	-
+net/minecraft/world/level/storage/loot/predicates/LootItemConditions	orConditions	([Ljava/util/function/Predicate;)Ljava/util/function/Predicate;	RoundCompat	orConditions	-
+net/minecraft/world/level/storage/loot/predicates/LootItemConditions	andConditions	([Ljava/util/function/Predicate;)Ljava/util/function/Predicate;	RoundCompat	andConditions	-

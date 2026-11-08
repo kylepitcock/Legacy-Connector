@@ -58,3 +58,5 @@ net/minecraftforge/event/entity/player/CriticalHitEvent	getDamageModifier	getDam
 net/minecraftforge/event/entity/player/CriticalHitEvent	setDamageModifier	setDamageMultiplier
 net/minecraftforge/event/ForgeEventFactory	getMobGriefingEvent	canEntityGrief
 net/minecraftforge/fml/common/Mod$EventBusSubscriber$Bus	FORGE	GAME
+net/minecraftforge/common/Tags$Biomes	IS_CONIFEROUS	IS_CONIFEROUS_TREE
+net/minecraftforge/event/ForgeEventFactory	blockGrowFeature	fireBlockGrowFeature

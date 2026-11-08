@@ -44,6 +44,18 @@ public final class ForgeApi1201 {
 
     // ---- event bus ----------------------------------------------------------------------------------------------------------
 
+    private static final java.util.Set<String> SKIPPED_REGISTERS = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    /**
+     * {@code DeferredRegister.register(bus)} of a library that runs next to its native 1.21.1 build ("side-by-side"): both copies register the library's own
+     * ids ({@code citadel:lectern}), which the registry refuses twice, and the native copy already provides them, so the isolated copy's register is not attached.
+     */
+    public static void skipIsolatedRegister(net.neoforged.neoforge.registries.DeferredRegister<?> register, net.neoforged.bus.api.IEventBus bus) {
+        if (SKIPPED_REGISTERS.add(String.valueOf(register.getNamespace()) + "/" + register.getRegistryKey().location()))
+            org.slf4j.LoggerFactory.getLogger("LegacyConnector/SideBySide").info("Deferred register {} of an isolated library is not attached: the native build registers the same ids",
+                    register.getRegistryKey().location());
+    }
+
     /** Forge accepted {@code bus.register(obj)} for an object without subscriber methods (a mod registering its main class "just in case"); NeoForge throws. */
     public static void busRegister(net.neoforged.bus.api.IEventBus bus, Object target) {
         try {

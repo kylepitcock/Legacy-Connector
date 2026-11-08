@@ -80,3 +80,5 @@ net/minecraft/world/item/DyeableArmorItem	org/kylepitcock/legacyconnector/v1_20_
 net/minecraft/world/level/block/StemGrownBlock	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyStemGrownBlock
 # --- round 4 batch 9
 net/minecraft/world/scores/Score	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyScore
+net/minecraft/world/item/crafting/SimpleCookingSerializer$CookieBaker	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyCookieBaker
+net/minecraft/world/item/crafting/SimpleCraftingRecipeSerializer$Factory	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyCraftingFactory
