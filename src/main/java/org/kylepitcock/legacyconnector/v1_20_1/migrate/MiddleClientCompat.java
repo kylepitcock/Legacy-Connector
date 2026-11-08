@@ -167,6 +167,91 @@ public final class MiddleClientCompat {
         return VertexFormatElement.NORMAL;
     }
 
+    // ------------------------------------------------------------------ vertex formats, quads, entity previews, models
+
+    public static com.google.common.collect.ImmutableList<VertexFormatElement> getElements(com.mojang.blaze3d.vertex.VertexFormat format) {
+        return com.google.common.collect.ImmutableList.copyOf(format.getElements());
+    }
+
+    public static int getIntegerSize(com.mojang.blaze3d.vertex.VertexFormat format) {
+        return format.getVertexSize() / 4;
+    }
+
+    /** {@code VertexFormat.getOffset(int index)}: the byte offset of the index-th element. */
+    public static int getOffset(com.mojang.blaze3d.vertex.VertexFormat format, int index) {
+        return format.getOffset(format.getElements().get(index));
+    }
+
+    /** {@code new VertexFormat(ImmutableMap<String, VertexFormatElement>)}. */
+    public static com.mojang.blaze3d.vertex.VertexFormat newVertexFormat(com.google.common.collect.ImmutableMap<String, VertexFormatElement> elements) {
+        com.mojang.blaze3d.vertex.VertexFormat.Builder builder = com.mojang.blaze3d.vertex.VertexFormat.builder();
+        elements.forEach(builder::add);
+        return builder.build();
+    }
+
+    /** {@code consumer.putBulkData(pose, quad, r, g, b, light, overlay)}: fully opaque. */
+    public static void putBulkData(com.mojang.blaze3d.vertex.VertexConsumer consumer, com.mojang.blaze3d.vertex.PoseStack.Pose pose,
+            net.minecraft.client.renderer.block.model.BakedQuad quad, float r, float g, float b, int light, int overlay) {
+        consumer.putBulkData(pose, quad, r, g, b, 1.0F, light, overlay);
+    }
+
+    public static int vertexElementTypeSize(VertexFormatElement.Type type) {
+        return type.size();
+    }
+
+    /** {@code MultiPlayerGameMode.getPickRange()}. */
+    public static float getPickRange(net.minecraft.client.multiplayer.MultiPlayerGameMode mode) {
+        var player = Minecraft.getInstance().player;
+        return player == null ? 4.5F : (float) player.blockInteractionRange();
+    }
+
+    /** {@code InventoryScreen.renderEntityInInventoryFollowsMouse(g, x, y, scale, mouseX, mouseY, entity)}: x and y were the feet, the mouse an offset. */
+    public static void renderEntityInInventoryFollowsMouse(GuiGraphics g, int x, int y, int scale, float mouseX, float mouseY,
+            net.minecraft.world.entity.LivingEntity entity) {
+        int centerY = y - Math.round(entity.getBbHeight() * scale / 2.0F);
+        net.minecraft.client.gui.screens.inventory.InventoryScreen.renderEntityInInventoryFollowsMouse(g, x - 1, centerY - 1, x + 1, centerY + 1, scale, 0.0625F,
+                x - mouseX, centerY - mouseY, entity);
+    }
+
+    public static ResourceLocation getDefaultSkin() {
+        return net.minecraft.client.resources.DefaultPlayerSkin.getDefaultTexture();
+    }
+
+    public static String getSkinModelName(java.util.UUID id) {
+        return net.minecraft.client.resources.DefaultPlayerSkin.get(id).model().id();
+    }
+
+    public static void moveCursorToStart(net.minecraft.client.gui.components.EditBox box) {
+        box.moveCursorToStart(false);
+    }
+
+    public static void putNonPlayerEntity(net.minecraft.client.multiplayer.ClientLevel level, int id, net.minecraft.world.entity.Entity entity) {
+        entity.setId(id);
+        level.addEntity(entity);
+    }
+
+    public static net.minecraft.core.RegistryAccess registryAccess(net.minecraft.client.multiplayer.ClientPacketListener listener) {
+        var level = Minecraft.getInstance().level;
+        return level != null ? level.registryAccess() : MigrateContext.registries();
+    }
+
+    /** The model location a 1.20.1 {@code new ModelResourceLocation(namespace, path, variant)} named. */
+    public static ResourceLocation modelId(String namespace, String path) {
+        return ResourceLocation.fromNamespaceAndPath(namespace, path);
+    }
+
+    public static String modelNamespace(net.minecraft.client.resources.model.ModelResourceLocation location) {
+        return location.id().getNamespace();
+    }
+
+    public static String modelPath(net.minecraft.client.resources.model.ModelResourceLocation location) {
+        return location.id().getPath();
+    }
+
+    public static ResourceLocation guiIcons() {
+        return ResourceLocation.withDefaultNamespace("textures/gui/icons.png");
+    }
+
     // ------------------------------------------------------------------ widgets and render types
 
     /** {@code MultiLineLabel.create(Font, FormattedText, int width)}. */

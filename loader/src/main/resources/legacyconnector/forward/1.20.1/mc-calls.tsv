@@ -497,3 +497,23 @@ net/minecraft/world/level/Level	dimensionTypeId	()Lnet/minecraft/resources/Resou
 # --- round 2 batch 6
 net/minecraft/world/item/ItemStack	canApplyAtEnchantingTable	(Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyEnchantment;)Z	MiddleCompat	canApplyAtEnchantingTable
 net/minecraft/world/item/ItemStack	addAttributeModifier	(Lnet/minecraft/world/entity/ai/attributes/Attribute;Lnet/minecraft/world/entity/ai/attributes/AttributeModifier;Lnet/minecraft/world/entity/EquipmentSlot;)V	MiddleCompat	addAttributeModifier
+# --- round 3 batch 7
+net/minecraft/world/level/block/state/BlockState	isPathfindable	(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/pathfinder/PathComputationType;)Z	=args	2	(Lnet/minecraft/world/level/pathfinder/PathComputationType;)Z
+# --- round 3 batch 8 (client)
+com/mojang/blaze3d/vertex/VertexFormat	getElements	()Lcom/google/common/collect/ImmutableList;	MiddleClientCompat	getElements
+com/mojang/blaze3d/vertex/VertexFormat	getIntegerSize	()I	MiddleClientCompat	getIntegerSize
+com/mojang/blaze3d/vertex/VertexFormat	getOffset	(I)I	MiddleClientCompat	getOffset
+com/mojang/blaze3d/vertex/VertexFormat	<init>	(Lcom/google/common/collect/ImmutableMap;)V	MiddleClientCompat	newVertexFormat
+com/mojang/blaze3d/vertex/VertexConsumer	putBulkData	(Lcom/mojang/blaze3d/vertex/PoseStack$Pose;Lnet/minecraft/client/renderer/block/model/BakedQuad;FFFII)V	MiddleClientCompat	putBulkData
+com/mojang/blaze3d/vertex/VertexFormatElement$Type	getSize	()I	MiddleClientCompat	vertexElementTypeSize
+net/minecraft/client/multiplayer/MultiPlayerGameMode	getPickRange	()F	MiddleClientCompat	getPickRange
+net/minecraft/client/gui/screens/inventory/InventoryScreen	renderEntityInInventoryFollowsMouse	(Lnet/minecraft/client/gui/GuiGraphics;IIIFFLnet/minecraft/world/entity/LivingEntity;)V	MiddleClientCompat	renderEntityInInventoryFollowsMouse
+net/minecraft/client/resources/DefaultPlayerSkin	getDefaultSkin	()Lnet/minecraft/resources/ResourceLocation;	MiddleClientCompat	getDefaultSkin
+net/minecraft/client/resources/DefaultPlayerSkin	getSkinModelName	(Ljava/util/UUID;)Ljava/lang/String;	MiddleClientCompat	getSkinModelName
+net/minecraft/client/gui/components/EditBox	moveCursorToStart	()V	MiddleClientCompat	moveCursorToStart
+net/minecraft/client/multiplayer/ClientLevel	putNonPlayerEntity	(ILnet/minecraft/world/entity/Entity;)V	MiddleClientCompat	putNonPlayerEntity
+net/minecraft/client/multiplayer/ClientPacketListener	registryAccess	()Lnet/minecraft/core/RegistryAccess;	MiddleClientCompat	registryAccess
+net/minecraft/client/resources/model/ModelResourceLocation	getNamespace	()Ljava/lang/String;	MiddleClientCompat	modelNamespace
+net/minecraft/client/resources/model/ModelResourceLocation	getPath	()Ljava/lang/String;	MiddleClientCompat	modelPath
+net/minecraft/client/resources/model/ModelResourceLocation	<init>	(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V	=args	MiddleClientCompat.modelId@0+1,2	(Lnet/minecraft/resources/ResourceLocation;Ljava/lang/String;)V
+net/minecraft/client/gui/components/AbstractSelectionList	<init>	(Lnet/minecraft/client/Minecraft;IIIII)V	=args	0,1,2,3,5	(Lnet/minecraft/client/Minecraft;IIII)V
