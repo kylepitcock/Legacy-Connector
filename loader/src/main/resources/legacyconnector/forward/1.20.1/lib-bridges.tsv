@@ -56,3 +56,7 @@ software/bernie/geckolib/renderer/GeoReplacedEntityRenderer	renderRecursively	(L
 com/github/alexthe666/citadel/client/model/AdvancedModelBox	render	(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;IIFFFF)V	render	(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;III)V	0,1,2,3,GeckoCompat.red@4,GeckoCompat.green@4,GeckoCompat.blue@4,GeckoCompat.alpha@4	-	-
 com/github/alexthe666/citadel/client/model/basic/BasicModelPart	render	(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;IIFFFF)V	render	(Lcom/mojang/blaze3d/vertex/PoseStack;Lcom/mojang/blaze3d/vertex/VertexConsumer;III)V	0,1,2,3,GeckoCompat.red@4,GeckoCompat.green@4,GeckoCompat.blue@4,GeckoCompat.alpha@4	-	-
 # END generated (Citadel colour)
+# BEGIN Create 6 (1.21.1) block entity NBT: read/write gained the registry provider
+com/simibubi/create/foundation/blockEntity/SmartBlockEntity	read	(Lnet/minecraft/nbt/CompoundTag;Z)V	read	(Lnet/minecraft/nbt/CompoundTag;Lnet/minecraft/core/HolderLookup$Provider;Z)V	0,2	-	1
+com/simibubi/create/foundation/blockEntity/SmartBlockEntity	write	(Lnet/minecraft/nbt/CompoundTag;Z)V	write	(Lnet/minecraft/nbt/CompoundTag;Lnet/minecraft/core/HolderLookup$Provider;Z)V	0,2	-	1
+# END Create 6 block entity NBT
