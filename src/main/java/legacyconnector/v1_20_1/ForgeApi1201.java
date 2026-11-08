@@ -49,7 +49,41 @@ public final class ForgeApi1201 {
         try {
             bus.register(target);
         } catch (IllegalArgumentException e) {
+            String message = e.getCause() != null && e.getCause().getMessage() != null ? e.getCause().getMessage() : e.getMessage();
+            if (message != null && message.contains("IModBusEvent events are not allowed")) {
+                registerSplit(bus, target);
+                return;
+            }
             if (e.getMessage() == null || !e.getMessage().contains("no @SubscribeEvent methods")) throw e;
+        }
+    }
+
+    /**
+     * Forge 1.20.1 let an object on the Forge bus hold handlers of mod bus events (Twigs' {@code BuildCreativeModeTabContentsEvent} listener); NeoForge
+     * refuses the whole object. Each {@code @SubscribeEvent} method is registered on its own bus instead: mod bus events on the mod's bus, the rest on {@code bus}.
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static void registerSplit(net.neoforged.bus.api.IEventBus bus, Object target) {
+        net.neoforged.bus.api.IEventBus modBus = net.neoforged.fml.ModLoadingContext.get().getActiveContainer().getEventBus();
+        boolean isClass = target instanceof Class<?>;
+        Class<?> type = isClass ? (Class<?>) target : target.getClass();
+        for (java.lang.reflect.Method method : type.getDeclaredMethods()) {
+            net.neoforged.bus.api.SubscribeEvent sub = method.getAnnotation(net.neoforged.bus.api.SubscribeEvent.class);
+            if (sub == null || method.getParameterCount() != 1 || !net.neoforged.bus.api.Event.class.isAssignableFrom(method.getParameterTypes()[0])) continue;
+            boolean isStatic = java.lang.reflect.Modifier.isStatic(method.getModifiers());
+            if (!isStatic && isClass) continue;
+            Class<? extends net.neoforged.bus.api.Event> eventType = (Class<? extends net.neoforged.bus.api.Event>) method.getParameterTypes()[0];
+            method.setAccessible(true);
+            net.neoforged.bus.api.IEventBus where = net.neoforged.fml.event.IModBusEvent.class.isAssignableFrom(eventType) && modBus != null ? modBus : bus;
+            where.addListener(sub.priority(), sub.receiveCanceled(), (Class) eventType, (java.util.function.Consumer) event -> {
+                try {
+                    method.invoke(isStatic ? null : target, event);
+                } catch (java.lang.reflect.InvocationTargetException ex) {
+                    throw new RuntimeException(ex.getCause());
+                } catch (IllegalAccessException ex) {
+                    throw new IllegalStateException(ex);
+                }
+            });
         }
     }
 
