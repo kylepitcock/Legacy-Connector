@@ -69,6 +69,7 @@ public class GL11 extends GL11Guard {
 
     private static final int GL_MODELVIEW_MATRIX = 0x0BA6;
     private static final int GL_PROJECTION_MATRIX = 0x0BA7;
+    private static final int GL_CURRENT_COLOR = 0x0B00;
 
     /** The matrix stack is emulated, so the current model-view and projection matrices come from the render context. */
     public static void glGetFloat(int pname, FloatBuffer params) {
@@ -76,6 +77,8 @@ public class GL11 extends GL11Guard {
             RenderContext.pose().last().pose().get(params.position(), params);
         } else if (pname == GL_PROJECTION_MATRIX && RenderSystem.isOnRenderThread()) {
             RenderSystem.getProjectionMatrix().get(params.position(), params);
+        } else if (pname == GL_CURRENT_COLOR) {
+            RenderContext.currentColor(params);
         } else if (!legacyOnly(pname)) {
             GL11Guard.glGetFloatv(pname, params);
         }
