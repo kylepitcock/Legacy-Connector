@@ -463,3 +463,17 @@ net/neoforged/neoforge/event/entity/EntityEvent$Size	getOldEyeHeight	()F	EventCo
 net/neoforged/neoforge/event/entity/EntityEvent$Size	getNewEyeHeight	()F	EventCompat	newEyeHeight	-
 net/neoforged/neoforge/event/entity/EntityEvent$Size	setNewEyeHeight	(F)V	EventCompat	setNewEyeHeight	-
 net/neoforged/neoforge/event/entity/EntityEvent$Size	setNewSize	(Lnet/minecraft/world/entity/EntityDimensions;Z)V	EventCompat	setNewSize	-
+net/minecraft/world/entity/TamableAnimal	setTame	(Z)V	RoundCompat	setTame	-
+net/minecraft/world/entity/TamableAnimal	setTame	(Z)V@special	=args	0,RoundCompat.yes@0	(ZZ)V
+net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase	isPathfindable	(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/pathfinder/PathComputationType;)Z	RoundCompat	isPathfindable	(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/pathfinder/PathComputationType;)Z
+net/minecraft/world/level/block/state/BlockBehaviour	isPathfindable	(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/pathfinder/PathComputationType;)Z@special	=args	0,3	(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/pathfinder/PathComputationType;)Z
+net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase	canSustainPlant	(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;Llegacyconnector/v1_20_1/net/minecraftforge/common/IPlantable;)Z	RoundCompat	canSustainPlant	(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;Llegacyconnector/v1_20_1/net/minecraftforge/common/IPlantable;)Z
+net/minecraft/world/item/crafting/RecipeManager	byType	(Lnet/minecraft/world/item/crafting/RecipeType;)Ljava/util/Map;	RoundCompat	byType	-
+net/minecraft/world/item/crafting/RecipeManager$CachedCheck	getRecipeFor	(Lnet/minecraft/world/Container;Lnet/minecraft/world/level/Level;)Ljava/util/Optional;	RoundCompat	cachedGetRecipeFor	-
+net/minecraft/world/item/crafting/RecipeManager	getRemainingItemsFor	(Lnet/minecraft/world/item/crafting/RecipeType;Lnet/minecraft/world/Container;Lnet/minecraft/world/level/Level;)Lnet/minecraft/core/NonNullList;	RoundCompat	getRemainingItemsFor	-
+net/minecraft/world/inventory/RecipeCraftingHolder	setRecipeUsed	(Lnet/minecraft/world/item/crafting/Recipe;)V	RoundCompat	setRecipeUsed	-
+net/minecraft/world/inventory/RecipeCraftingHolder	setRecipeUsed	(Lnet/minecraft/world/level/Level;Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/world/item/crafting/Recipe;)Z	RoundCompat	setRecipeUsed	-
+net/minecraft/world/inventory/RecipeCraftingHolder	getRecipeUsed	()Lnet/minecraft/world/item/crafting/Recipe;	RoundCompat	getRecipeUsed	-
+net/minecraft/world/level/Explosion	<init>	(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/damagesource/DamageSource;Lnet/minecraft/world/level/ExplosionDamageCalculator;DDDFZLnet/minecraft/world/level/Explosion$BlockInteraction;)V	RoundCompat	newExplosion	-
+net/minecraft/world/level/Explosion	<init>	(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/Entity;DDDFLjava/util/List;)V	RoundCompat	newExplosion	-
+net/minecraft/world/entity/item/ItemEntity	setThrower	(Ljava/util/UUID;)V	RoundCompat	setThrower	-

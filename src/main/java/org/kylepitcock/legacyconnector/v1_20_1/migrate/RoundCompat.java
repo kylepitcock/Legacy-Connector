@@ -139,6 +139,128 @@ public final class RoundCompat {
                 net.minecraft.world.item.component.CustomData.of(nbt), items);
     }
 
+    // ------------------------------------------------------------------ recipe holders (1.21.1 hands out RecipeHolder: id plus recipe)
+
+    private static final ResourceLocation UNKNOWN_RECIPE = ResourceLocation.fromNamespaceAndPath("legacyconnector", "unknown");
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private static net.minecraft.world.item.crafting.RecipeHolder holderOf(net.minecraft.world.item.crafting.Recipe recipe) {
+        if (recipe == null) return null;
+        ResourceLocation id = RecipeCompat.getId(recipe);
+        return new net.minecraft.world.item.crafting.RecipeHolder(id != null ? id : UNKNOWN_RECIPE, recipe);
+    }
+
+    /** {@code RecipeManager.byType(type)}: recipe id to recipe. */
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static Map<ResourceLocation, net.minecraft.world.item.crafting.Recipe> byType(net.minecraft.world.item.crafting.RecipeManager manager,
+            net.minecraft.world.item.crafting.RecipeType type) {
+        Map<ResourceLocation, net.minecraft.world.item.crafting.Recipe> out = new LinkedHashMap<>();
+        for (Object o : manager.getAllRecipesFor(type)) {
+            net.minecraft.world.item.crafting.RecipeHolder h = (net.minecraft.world.item.crafting.RecipeHolder) o;
+            out.put(h.id(), h.value());
+        }
+        return out;
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static java.util.Optional cachedGetRecipeFor(net.minecraft.world.item.crafting.RecipeManager.CachedCheck check, net.minecraft.world.Container container,
+            net.minecraft.world.level.Level level) {
+        return ((java.util.Optional<net.minecraft.world.item.crafting.RecipeHolder>) check.getRecipeFor(BridgeHelpers.input(container), level))
+                .map(net.minecraft.world.item.crafting.RecipeHolder::value);
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static net.minecraft.core.NonNullList<ItemStack> getRemainingItemsFor(net.minecraft.world.item.crafting.RecipeManager manager,
+            net.minecraft.world.item.crafting.RecipeType type, net.minecraft.world.Container container, net.minecraft.world.level.Level level) {
+        return manager.getRemainingItemsFor(type, BridgeHelpers.input(container), level);
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static void setRecipeUsed(net.minecraft.world.inventory.RecipeCraftingHolder holder, net.minecraft.world.item.crafting.Recipe recipe) {
+        holder.setRecipeUsed(holderOf(recipe));
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static boolean setRecipeUsed(net.minecraft.world.inventory.RecipeCraftingHolder holder, net.minecraft.world.level.Level level,
+            net.minecraft.server.level.ServerPlayer player, net.minecraft.world.item.crafting.Recipe recipe) {
+        return holder.setRecipeUsed(level, player, holderOf(recipe));
+    }
+
+    public static net.minecraft.world.item.crafting.Recipe<?> getRecipeUsed(net.minecraft.world.inventory.RecipeCraftingHolder holder) {
+        net.minecraft.world.item.crafting.RecipeHolder<?> h = holder.getRecipeUsed();
+        return h == null ? null : h.value();
+    }
+
+    // ------------------------------------------------------------------ small signature changes
+
+    /** {@code new Explosion(level, source, damageSource, calculator, x, y, z, radius, fire, interaction)}: 1.21.1 also takes the particles and the sound. */
+    public static net.minecraft.world.level.Explosion newExplosion(net.minecraft.world.level.Level level, net.minecraft.world.entity.Entity source,
+            net.minecraft.world.damagesource.DamageSource damage, net.minecraft.world.level.ExplosionDamageCalculator calculator, double x, double y, double z,
+            float radius, boolean fire, net.minecraft.world.level.Explosion.BlockInteraction interaction) {
+        return new net.minecraft.world.level.Explosion(level, source, damage, calculator, x, y, z, radius, fire, interaction,
+                net.minecraft.core.particles.ParticleTypes.EXPLOSION, net.minecraft.core.particles.ParticleTypes.EXPLOSION_EMITTER,
+                net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE);
+    }
+
+    /** {@code new Explosion(level, source, x, y, z, radius, positions)}. */
+    public static net.minecraft.world.level.Explosion newExplosion(net.minecraft.world.level.Level level, net.minecraft.world.entity.Entity source,
+            double x, double y, double z, float radius, java.util.List<net.minecraft.core.BlockPos> positions) {
+        return new net.minecraft.world.level.Explosion(level, source, x, y, z, radius, false,
+                net.minecraft.world.level.Explosion.BlockInteraction.DESTROY_WITH_DECAY, positions);
+    }
+
+    /** {@code ItemEntity.setThrower(UUID)}: 1.21.1 takes the entity (looked up when it is loaded). */
+    public static void setThrower(net.minecraft.world.entity.item.ItemEntity item, java.util.UUID uuid) {
+        if (uuid == null) {
+            item.setThrower((net.minecraft.world.entity.Entity) null);
+            return;
+        }
+        net.minecraft.world.level.Level level = item.level();
+        net.minecraft.world.entity.Entity thrower = level instanceof net.minecraft.server.level.ServerLevel sl ? sl.getEntity(uuid) : level.getPlayerByUUID(uuid);
+        if (thrower != null) item.setThrower(thrower);
+    }
+
+    /** {@code ComponentContents.EMPTY} moved to {@code PlainTextContents.EMPTY}. */
+    public static net.minecraft.network.chat.ComponentContents emptyContents() {
+        return net.minecraft.network.chat.contents.PlainTextContents.EMPTY;
+    }
+
+    // ------------------------------------------------------------------ blocks and entities (signatures that lost or gained arguments)
+
+    /** The constant {@code true}, as an argument built from an old one (1.21.1 methods that gained an {@code includeSideEffects} flag). */
+    public static boolean yes(boolean ignored) {
+        return true;
+    }
+
+    /** {@code TamableAnimal.setTame(boolean)}: 1.21.1 adds the side effects flag (the 1.20.1 method always applied them). */
+    public static void setTame(net.minecraft.world.entity.TamableAnimal animal, boolean tame) {
+        animal.setTame(tame, true);
+    }
+
+    /** {@code BlockState.isPathfindable(level, pos, type)}: the state alone decides in 1.21.1. */
+    public static boolean isPathfindable(net.minecraft.world.level.block.state.BlockState state, net.minecraft.world.level.BlockGetter level,
+            net.minecraft.core.BlockPos pos, net.minecraft.world.level.pathfinder.PathComputationType type) {
+        return state.isPathfindable(type);
+    }
+
+    /** The plant a 1.20.1 {@code IPlantable} stands for, as 1.21.1 passes it. */
+    public static legacyconnector.v1_20_1.net.minecraftforge.common.IPlantable plantable(net.minecraft.world.level.block.state.BlockState plant) {
+        return (level, pos) -> plant;
+    }
+
+    public static net.neoforged.neoforge.common.util.TriState triState(boolean value) {
+        return value ? net.neoforged.neoforge.common.util.TriState.TRUE : net.neoforged.neoforge.common.util.TriState.FALSE;
+    }
+
+    /** {@code BlockState.canSustainPlant(level, pos, facing, plantable)}: asks the block; a block without an opinion lets the plant's own survival check decide. */
+    public static boolean canSustainPlant(net.minecraft.world.level.block.state.BlockState state, net.minecraft.world.level.BlockGetter level,
+            net.minecraft.core.BlockPos pos, net.minecraft.core.Direction facing, legacyconnector.v1_20_1.net.minecraftforge.common.IPlantable plantable) {
+        net.minecraft.world.level.block.state.BlockState plant = plantable.getPlant(level, pos.relative(facing));
+        net.neoforged.neoforge.common.util.TriState r = state.canSustainPlant(level, pos, facing, plant);
+        if (r != net.neoforged.neoforge.common.util.TriState.DEFAULT) return r.isTrue();
+        return level instanceof net.minecraft.world.level.LevelReader reader && plant.canSurvive(reader, pos.relative(facing));
+    }
+
     // ------------------------------------------------------------------ mob effects
 
     /** {@code MobEffect.getAttributeModifiers()}: attribute to the modifier at amplifier 0 (1.21.1 keeps templates private and builds modifiers per level). */
