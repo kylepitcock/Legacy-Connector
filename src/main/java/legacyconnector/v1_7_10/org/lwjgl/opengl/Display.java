@@ -24,6 +24,10 @@ public class Display {
     public static void create() {
     }
 
+    /** The pixel format only matters to the window the host already created. */
+    public static void create(PixelFormat format) {
+    }
+
     public static void destroy() {
     }
 

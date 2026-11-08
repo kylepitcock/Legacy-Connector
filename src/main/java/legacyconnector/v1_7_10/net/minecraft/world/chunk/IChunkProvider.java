@@ -35,4 +35,9 @@ public interface IChunkProvider {
 
     default void saveExtraData() {
     }
+
+    /** The mobs that may spawn at this position (null = the biome's own list). */
+    default java.util.List getPossibleCreatures(legacyconnector.v1_7_10.net.minecraft.entity.EnumCreatureType type, int x, int y, int z) {
+        return null;
+    }
 }
