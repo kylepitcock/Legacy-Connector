@@ -93,6 +93,11 @@ public final class LegacyResourceConverter {
             data = convertSounds(data, modern.substring("assets/".length(), modern.indexOf('/', "assets/".length())));
         } else if (modern.endsWith(".mcmeta")) {
             data = sanitizeMcmeta(data);
+        } else if (modern.endsWith(".json") && modern.contains("/models/") && !isVanillaShapedModel(data)) {
+            // a mod's own data format under models/ (Lycanites Mobs' mob parts: a top-level array): the modern model loader reads every
+            // models/**.json as a model and logs an error per file. Staged outside the pack; the legacy resource manager finds it at its original path.
+            output.putIfAbsent(RAW_ROOT + modern, data);
+            return true;
         } else if (modern.endsWith(".json") && (modern.contains("/models/") || modern.contains("/blockstates/"))) {
             data = lowercaseResourceRefs(data);
             if (modern.contains("/models/")) {
@@ -103,6 +108,17 @@ public final class LegacyResourceConverter {
         ctm.offer(modern, data);
         output.putIfAbsent(modern, data);
         return true;
+    }
+
+    /** Folder (in the translated jar) holding JSON files from {@code models/} that are not models; the path below it is the original one. */
+    public static final String RAW_ROOT = "legacyconnector_raw/";
+
+    /** False for JSON whose top level is not an object: no model loader can read it (a model is always an object). */
+    static boolean isVanillaShapedModel(byte[] data) {
+        int i = 0;
+        if (data.length > 3 && (data[0] & 0xFF) == 0xEF && (data[1] & 0xFF) == 0xBB && (data[2] & 0xFF) == 0xBF) i = 3;
+        while (i < data.length && Character.isWhitespace((char) (data[i] & 0xFF))) i++;
+        return i >= data.length || data[i] != '[';
     }
 
     /** The jar adds textures of its own to the atlas (the sprite sheet tiles of {@link SheetCutter}). */
