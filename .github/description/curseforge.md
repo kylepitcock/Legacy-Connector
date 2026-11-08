@@ -4,7 +4,7 @@
 
 [![Discord](https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/vC6x4Kwwdq) [![Modrinth](https://img.shields.io/badge/Modrinth-00AF5C?style=for-the-badge&logo=modrinth&logoColor=white)](https://modrinth.com/mod/legacyconnector) [![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/kylepitcock/Legacy-Connector) [![Ko-fi](https://img.shields.io/badge/Ko--fi-FF5E5B?style=for-the-badge&logo=kofi&logoColor=white)](https://ko-fi.com/kylepitcock)
 
-**Play unmodified 1.7.10, 1.12.2, 1.6.4, 1.5.2 and 1.4.7 Forge mods on NeoForge 1.21.1.**
+**Play unmodified 1.7.10, 1.12.2, 1.6.4, 1.5.2, 1.4.7 and 1.20.1 Forge mods on NeoForge 1.21.1.**
 
 | Legacy version | Support |
 | --- | --- |
@@ -13,14 +13,15 @@
 | **1.6.4** | 🧪 Alpha (new in 0.4) |
 | **1.5.2** | 🧪 Alpha (new in 0.4) |
 | **1.4.7** | 🧪 Alpha (new in 0.4) |
+| **1.20.1** | 🧪 Alpha (Forge mods remapped in place; on by default) |
 
-Drop 1.7.10, 1.12.2, 1.6.4, 1.5.2 or 1.4.7 mod jars into your `mods` folder next to Legacy Connector. They get translated when the game loads and run as normal NeoForge mods. It's the same idea as Sinytra Connector, but for old Forge mods instead of Fabric. Your original jars are never modified.
+Drop 1.7.10, 1.12.2, 1.6.4, 1.5.2, 1.4.7 or Forge 1.20.1 mod jars into your `mods` folder next to Legacy Connector. They get translated when the game loads and run as normal NeoForge mods. It's the same idea as Sinytra Connector, but for old Forge mods instead of Fabric. Your original jars are never modified.
 
 **Built for mods that only exist on these old versions** and never got a 1.21.1 port. **Beta:** on 1.7.10, Thaumcraft 4, Witchery, HBM's Nuclear Tech, OreSpawn, Fisk's Superheroes, Morph, the Reika mods (RotaryCraft, ReactorCraft, ElectriCraft, ChromatiCraft) and Galacticraft with its addons (each planet's own gravity) run with their blocks, items, mobs, recipes, GUIs, world generation and dimensions, and big packs like GT New Horizons load most of their mods. 1.12.2 support is in alpha: Atum 2, The Midnight, Scape and Run: Parasites and Abyssalcraft load and play with their own models, mobs, GUIs, dimensions and world generation. Back up your worlds before trying a new mod set.
 
 Old mods' content joins the game the way a modern mod's does: their biomes through the pack's biome placement (a TerraBlender region; TerraBlender is bundled, a separately installed one wins), their ores and world generators as normal features, their village buildings as houses in normal villages, and structure loot through loot tables. So it plays along with your other mods, and data packs can tweak it like anything else.
 
-**[Compatibility list & reports](https://kylepitcock.github.io/Legacy-Connector/)**: check whether a mod works, or report how it went for you (1.7.10, 1.12.2 and the older versions in development, plus an experimental Forge 1.20.1 tab).
+**[Compatibility list & reports](https://kylepitcock.github.io/Legacy-Connector/)**: check whether a mod works, or report how it went for you (1.7.10, 1.12.2 and the older versions in development, plus a Forge 1.20.1 tab).
 
 ---
 
@@ -192,7 +193,7 @@ Engine and launcher patches (FastCraft, Hodgepodge, NEID and other ID extenders)
 
 **Where do I put the mods?** Each legacy version has its own folder: `mods/1.7.10/`, `mods/1.12.2/`, `mods/1.6.4/`, `mods/1.5.2/`, `mods/1.4.7/`, `mods/1.20.1/`. Legacy jars and zips you drop into `mods/` itself are moved there for you on launch (`legacy.autoSortMods=false` turns that off).
 
-**Which versions work, and how well?** 1.7.10 and 1.12.2 are in beta, 1.6.4, 1.5.2 and 1.4.7 in alpha, and 1.20.1 in alpha. The [Status table](https://github.com/kylepitcock/Legacy-Connector/blob/master/README.md#status) has the details, and the [compatibility site](https://kylepitcock.github.io/Legacy-Connector/) lists results per mod.
+**Which versions work, and how well?** 1.7.10 and 1.12.2 are in beta; 1.6.4, 1.5.2, 1.4.7 and 1.20.1 are in alpha. The [Status table](https://github.com/kylepitcock/Legacy-Connector/blob/master/README.md#status) has the details, and the [compatibility site](https://kylepitcock.github.io/Legacy-Connector/) lists results per mod.
 
 **Will mod X work?** Check the compatibility site. After a launch, `logs/legacyconnector-report.txt` lists each legacy jar, what was detected, and any references that could not be translated or are only stubbed. Mods that only patch the old engine (performance patches, id extenders) are skipped on purpose, and coremods that patch Minecraft's own classes are not supported.
 
