@@ -14,6 +14,9 @@ public abstract class MobEntity extends LivingEntity {
     protected boolean isMovementBlocked(){return false;}
     public final boolean mcc$isMovementBlocked(){return isMovementBlocked();}
     public void mcc$setMovementBlocked(boolean blocked){movementBlocked=blocked;}
+    /** The original attack may change this field after the virtual phase-start hook was evaluated. */
+    public final boolean mcc$movementBlocked(){return movementBlocked;}
+    public final boolean mcc$wanderRoll(){return random.nextInt(80)==0;}
     protected void pathingUpdate(){
         float best=-Float.MAX_VALUE;int bestX=0,bestY=0,bestZ=0;boolean found=false;
         for(int i=0;i<10;i++){int px=(int)Math.floor(x+random.nextInt(13)-6),py=(int)Math.floor(y+random.nextInt(7)-3),pz=(int)Math.floor(z+random.nextInt(13)-6);float favor=getPathfindingFavor(px,py,pz);if(favor>best){best=favor;bestX=px;bestY=py;bestZ=pz;found=true;}}
