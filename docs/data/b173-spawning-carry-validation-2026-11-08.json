@@ -1,0 +1,168 @@
+{
+  "snapshot_date": "2026-11-08",
+  "scope": "Shared aquatic spawning, authoritative vanilla spawn API requests, original carried placement, and native spawning observations",
+  "tests": {
+    "runtime": {
+      "tests": 167,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "loader": {
+      "tests": 137,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "actual_mod_opt_in": {
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "fixtures": {
+    "mocreatures": {
+      "status": "headless-smoke-passed",
+      "source_archive": "DrZharks_MoCreatures_Mod_v2.12.2_b1.7.3.zip!mods/MoCreatures.zip",
+      "payload_sha256": "19d77bacd8181378f9c5223f7068e4db8c2cb36e42b10015ff592aff07b355d4",
+      "game_directory": "run-b173-single/mocreatures-neutralspawn-carry-final-20261108-003539-1b0773",
+      "resources_verified": 168
+    },
+    "morecreeps": {
+      "status": "headless-smoke-passed",
+      "source_archive": "MoreCreepsv2.12_b173.zip!PUT CONTENTS INTO MINECRAFT FOLDER/mods/MoreCreepsAndWeirdos.zip",
+      "payload_sha256": "bbf884c889a356d0db347c8829885d34b530b4ee5747b473d4d2e75523bb0b33",
+      "game_directory": "run-b173-single/morecreeps-neutralspawn-carry-final-20261108-003539-50b5b4",
+      "resources_verified": 759
+    }
+  },
+  "reproductions": {
+    "aquatic": "All three original aquatic predicates admitted water, then native Mob obstruction rejected liquid before finalization.",
+    "carrying": "All four actual carried actors used native default passenger offsets; Mouse differed by about 0.53 blocks."
+  },
+  "shared_fixes": [
+    "WaterCreatureEntity hosts use native WaterAnimal-style final obstruction checks; terrestrial hosts retain Mob checks.",
+    "ModLoader vanilla-class AddSpawn replaces existing weights and RemoveSpawn retains final removal requests, scoped to category and biomes.",
+    "Native-player passenger attachment evaluates original carried-offset getter inside the callback transaction, retaining side effects.",
+    "SpawnGroup.getCreatureClass returns the original Monster interface, AnimalEntity and WaterCreatureEntity roots."
+  ],
+  "actual_original_regressions": {
+    "aquatic_species": [
+      "EntityFishy",
+      "EntityDolphin",
+      "EntityShark"
+    ],
+    "aquatic_path": "Native weighted selection, original predicate, native obstruction, finalization and loaded-world insertion.",
+    "vanilla_squid": {
+      "positive_frequency": 1,
+      "zero_frequency": 0,
+      "effective_overworld_biomes_checked": 53,
+      "zero_stage": "run-b173-single/mocreatures-neutralspawn-squid-zero-20261108-003637-17af25"
+    },
+    "carried_actors": [
+      "EntityBird",
+      "EntityMouse",
+      "EntityKittyBed",
+      "EntityLitterBox"
+    ],
+    "carry_checks": [
+      "Original interaction mounts native player",
+      "Original passenger Y offset and carrier X/Z",
+      "Moving player updates placement",
+      "Furniture original getter sets pickedUp",
+      "Release clears native vehicle"
+    ]
+  },
+  "natural_spawning": {
+    "seed": "8794669509186076339",
+    "difficulty": "normal",
+    "terrain": "Fresh normal terrain, no block/light/time/selection/predicate overrides.",
+    "method": "Real tracked native ServerPlayer and ordinary ServerChunkCache ticks. At world tick 600, counted nonpersistent CREATURE mobs are discarded once in each disposable stage; original weights/caps remain unchanged. This isolates replenishment when a native budget exists.",
+    "earlier_morecreeps_window": {
+      "duration_ticks": 2400,
+      "result": "No original insertion; original position checks ran but none reached finalization. Retained as a failed observation.",
+      "original_predicate_evidence": "Hotdog requires visible sky, light >8 and a 1/5 random check; DigBug uses 1/25, while InvisibleMan, Lolliman and RocketGiraffe use 1/15 with sky/light requirements."
+    },
+    "runs": {
+      "mocreatures": {
+        "status": "natural-spawn-observation-passed",
+        "game_directory": "run-b173-single/mocreatures-neutralspawn-live-loaded-20261108-004246-53b67e",
+        "duration_ticks": 2400,
+        "native_creature_cycles": 6,
+        "eligible_chunks": 289,
+        "confirmed_natural_insertions": {
+          "AMBIENT/minecraft:bat": 37,
+          "CREATURE/minecraft:chicken": 4,
+          "CREATURE/minecraft:cow": 1,
+          "CREATURE/mocreatures:bunny": 4,
+          "MONSTER/minecraft:creeper": 52,
+          "MONSTER/minecraft:drowned": 4,
+          "MONSTER/minecraft:enderman": 1,
+          "MONSTER/minecraft:skeleton": 38,
+          "MONSTER/minecraft:spider": 21,
+          "MONSTER/minecraft:zombie": 52,
+          "MONSTER/minecraft:zombie_villager": 1,
+          "MONSTER/mocreatures:caveogre": 1,
+          "MONSTER/mocreatures:rat": 5,
+          "MONSTER/mocreatures:wraith": 1,
+          "UNDERGROUND_WATER_CREATURE/minecraft:glow_squid": 14,
+          "WATER_AMBIENT/minecraft:salmon": 50,
+          "WATER_CREATURE/mocreatures:dolphin": 6,
+          "WATER_CREATURE/mocreatures:fishy": 35,
+          "WATER_CREATURE/mocreatures:shark": 12
+        },
+        "budget_control": "NATURAL CREATURE BUDGET FREED once at gameTime=600 before={\"counted\":78,\"excludedPersistent\":0,\"byType\":{\"minecraft:cow/counted\":15,\"mocreatures:kitty/counted\":2,\"mocreatures:bigcat/counted\":1,\"minecraft:chicken/counted\":27,\"minecraft:sheep/counted\":12,\"minecraft:wolf/counted\":6,\"mocreatures:duck/counted\":7,\"minecraft:bee/counted\":4,\"mocreatures:fox/counted\":1,\"mocreatures:boar/counted\":2,\"mocreatures:deer/counted\":1}} discarded=78 removed={\"minecraft:cow\":15,\"mocreatures:kitty\":2,\"mocreatures:bigcat\":1,\"minecraft:chicken\":27,\"minecraft:sheep\":12,\"minecraft:wolf\":6,\"mocreatures:duck\":7,\"minecraft:bee\":4,\"mocreatures:fox\":1,\"mocreatures:boar\":2,\"mocreatures:deer\":1} after={\"counted\":0,\"excludedPersistent\":0,\"byType\":{}}"
+      },
+      "morecreeps": {
+        "status": "natural-spawn-observation-passed",
+        "game_directory": "run-b173-single/morecreeps-neutralspawn-live-extended-20261108-005203-18f40e",
+        "duration_ticks": 8000,
+        "native_creature_cycles": 20,
+        "eligible_chunks": 289,
+        "confirmed_natural_insertions": {
+          "AMBIENT/minecraft:bat": 121,
+          "CREATURE/minecraft:chicken": 3,
+          "CREATURE/minecraft:cow": 2,
+          "CREATURE/minecraft:fox": 1,
+          "CREATURE/minecraft:pig": 2,
+          "CREATURE/morecreepsandweirdos:hunchback": 1,
+          "CREATURE/morecreepsandweirdos:kid": 1,
+          "MONSTER/minecraft:creeper": 134,
+          "MONSTER/minecraft:drowned": 12,
+          "MONSTER/minecraft:enderman": 7,
+          "MONSTER/minecraft:skeleton": 135,
+          "MONSTER/minecraft:slime": 1,
+          "MONSTER/minecraft:spider": 34,
+          "MONSTER/minecraft:witch": 1,
+          "MONSTER/minecraft:zombie": 121,
+          "MONSTER/minecraft:zombie_villager": 2,
+          "UNDERGROUND_WATER_CREATURE/minecraft:glow_squid": 47,
+          "WATER_AMBIENT/minecraft:salmon": 154,
+          "WATER_CREATURE/minecraft:squid": 40
+        },
+        "budget_control": "NATURAL CREATURE BUDGET FREED once at gameTime=600 before={\"counted\":16,\"excludedPersistent\":0,\"byType\":{\"minecraft:pig/counted\":7,\"minecraft:sheep/counted\":1,\"minecraft:bee/counted\":4,\"minecraft:cow/counted\":4}} discarded=16 removed={\"minecraft:pig\":7,\"minecraft:sheep\":1,\"minecraft:bee\":4,\"minecraft:cow\":4} after={\"counted\":0,\"excludedPersistent\":0,\"byType\":{}}"
+      }
+    }
+  },
+  "spawn_scarcity_findings": {
+    "unmodified_initial_observation": "Terrain-generated native CREATURE counts exceeded the native cap, preventing subsequent land position checks.",
+    "mocreatures_initial_count_and_cap": "91 / 30 at tick 400",
+    "morecreeps_initial_count_and_cap": "31 / 10 at tick 400",
+    "prism_current_world_saved_originals": {
+      "mocreatures": 17,
+      "morecreeps": 9
+    },
+    "saved_entity_provenance": "Presence in entity-region NBT does not establish natural spawn provenance.",
+    "original_morecreeps_policy": "All 36 configured spawn entries use CREATURE, including monster-derived classes; categories were preserved.",
+    "remaining_counting_difference": "Beta counts entities by SpawnGroup class/interface; modern native spawning counts registration categories. 29/36 MoreCreeps natural-spawn species count toward native CREATURE but do not inherit Beta AnimalEntity. No native census, cap or scheduler retuning was applied."
+  },
+  "generic_mod_identity_guard": "passed:253 production/loader files; broader guard retains 21 baseline mentions in 7 files, none added.",
+  "build_fixture_policy": "Default tests remain portable. actualModTest is opt-in; runtime fixtures require entitySelfTest, and the long observation requires naturalSpawnTickSelfTest explicitly.",
+  "limitations": [
+    "Controlled budget release proves replenishment, not visibility or abundance in an untouched player world.",
+    "Native spawning still differs from the complete Beta scheduler and class-based cap accounting.",
+    "No live client GPU play test; original rendering/packet CPU regressions are included in isolated suites.",
+    "Native tests use NeoForge 21.1.258; Prism uses 21.1.265 on Minecraft 1.21.1."
+  ]
+}

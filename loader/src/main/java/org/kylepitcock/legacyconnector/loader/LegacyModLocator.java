@@ -190,7 +190,8 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             // CodeChickenLib); a jar present in both places is taken from mods/. These folders are also where jars that ship
             // launcher services (a shaded Mixin, as many 1.12.2 mods have) must go: NeoForge's early scan of mods/ itself
             // loads such jars as launcher services before anything can translate them, and the game stops.
-            for (Path dir : List.of(modsDir, modsDir.resolve("1.4.7"), modsDir.resolve("1.5.2"), modsDir.resolve("1.6.4"), modsDir.resolve("1.7.10"), modsDir.resolve("1.12.2"), modsDir.resolve("1.20.1"))) {
+            // mods/b1.7.3/: Beta 1.7.3 ModLoader/Forge mods (BetaJars)
+            for (Path dir : List.of(modsDir, modsDir.resolve("1.4.7"), modsDir.resolve("1.5.2"), modsDir.resolve("1.6.4"), modsDir.resolve("1.7.10"), modsDir.resolve("1.12.2"), modsDir.resolve("1.20.1"), modsDir.resolve(BetaJars.FOLDER))) {
                 if (!Files.isDirectory(dir)) continue;
                 try (Stream<Path> files = Files.list(dir)) {
                     for (Path p0 : files.filter(f -> isModArchive(f))
@@ -255,6 +256,8 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                     legacy.stream().filter(j -> skipReason(j) == null && LibraryBridges.replacing(j, bridges) == null && LibraryBridges.obsoleteReason(j) == null).toList(),
                     List.of(modsDir, modsDir.resolve("1.4.7"), modsDir.resolve("1.5.2"), modsDir.resolve("1.6.4"), modsDir.resolve("1.7.10"), modsDir.resolve("1.12.2")), LOADER_DIGEST, libraryKeep);
             LIBRARY_SKIPS.putAll(libraries.unsupported());
+            // b1.7.3 mods released as a client and a server build: the build for this side loads
+            LIBRARY_SKIPS.putAll(BetaJars.selectBuilds(legacy, side()));
             libraryNotes = libraries.notes();
             liteNotes = liteLoaderNotes(List.of(modsDir, modsDir.resolve("1.5.2"), modsDir.resolve("1.6.4"), modsDir.resolve("1.7.10"), modsDir.resolve("1.12.2")));
             LegacyVersion.setBridgedRoots(bridges.stream().map(LibraryBridges.Bridge::apiRoot).toList());

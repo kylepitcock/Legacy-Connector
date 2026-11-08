@@ -4,7 +4,7 @@
 
 [![Discord](https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/vC6x4Kwwdq) [![CurseForge](https://img.shields.io/badge/CurseForge-F16436?style=for-the-badge&logo=curseforge&logoColor=white)](https://www.curseforge.com/minecraft/mc-mods/legacy-connector) [![Modrinth](https://img.shields.io/badge/Modrinth-00AF5C?style=for-the-badge&logo=modrinth&logoColor=white)](https://modrinth.com/mod/legacyconnector) [![Ko-fi](https://img.shields.io/badge/Ko--fi-FF5E5B?style=for-the-badge&logo=kofi&logoColor=white)](https://ko-fi.com/kylepitcock)
 
-Run **unmodified legacy Forge mods on NeoForge 1.21.1**. Drop 1.7.10, 1.12.2, 1.6.4, 1.5.2, 1.4.7, or Forge 1.20.1 mod jars into your `mods` folder next to
+Run **unmodified legacy Forge mods on NeoForge 1.21.1**. Drop 1.7.10, 1.12.2, 1.6.4, 1.5.2, 1.4.7, Forge 1.20.1, or (started) Beta 1.7.3 mod jars into your `mods` folder next to
 this mod; it is translated at load time, the same way [Sinytra Connector](https://github.com/Sinytra/Connector)
 runs Fabric mods on NeoForge. The original jar is never modified. Legacy jars live in the folder of their Minecraft version (`mods/1.7.10/`, `mods/1.12.2/`,
 `mods/1.6.4/`, `mods/1.5.2/`, `mods/1.4.7/`, `mods/1.20.1/`): ones you drop into `mods/` itself are moved there for you on launch
@@ -46,8 +46,9 @@ Screenshots of legacy mods running on 1.21.1 are at the [end of this page](#scre
 | 1.19.2, 1.18.2 | Planned (after 1.20.1; renames and diffs over the same pipeline). |
 | 1.16.5 | Planned (after 1.18.2). |
 | 1.2.5 | Planned (after 1.16.5; needs `ModLoader`/`BaseMod` emulation). |
+| b1.7.3 | **Started.** Beta 1.7.3 ModLoader / Forge 1.0 mods in `mods/b1.7.3/` (jars or zips) are translated and their blocks, items and recipes load with their own textures, the blocks' own behaviour (placing, ticks, clicks, redstone), their tile entities and their GUIs (machines, furnaces, crafting tables as modern menus), one creative tab per mod (IndustrialCraft 2, NetherCraft, Portal Gun, RedPower, Minefactory Renewed). Fluid buckets, tool/sword durability and arrows with constant custom textures are bridged. Supported living-mob families run their original callbacks and models, with native spawning, sound and GuiAPI settings; general entities and world generation remain unfinished ([details](docs/wiki/Legacy-b1.7.3.md)). |
 
-Order and reasons: [Version roadmap](docs/wiki/Version-Roadmap.md). Not planned: 1.8 to 1.11.2 and the Beta/Alpha jar-mod era.
+Order and reasons: [Version roadmap](docs/wiki/Version-Roadmap.md). Not planned: 1.8 to 1.11.2 and the Alpha/early-Beta jar-mod era; Beta 1.7.3 ModLoader mods were started on request (row above).
 
 Legacy tile entities and items are NeoForge item, fluid and energy capabilities by default (RF and Forge Energy, IC2 EU, BuildCraft MJ, Forge fluids, inventories), so hoppers, Create, and modern cables work with them ([details](docs/wiki/Addon-API.md#capabilities)). Outdated libraries are bridged to their modern equivalents instead of being loaded: Baubles to Curios, Waila to Jade, NEI to JEI, Patchouli books to Patchouli, and CoFH RF / Redstone Flux to NeoForge energy ([Bridges](docs/wiki/Bridges.md)).
 

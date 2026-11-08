@@ -1,0 +1,75 @@
+{
+  "snapshot_date": "2026-11-07",
+  "scope": "Original corpse-removal hooks, player placement, rider callbacks and additional creature lifecycle decisions",
+  "tests": {
+    "runtime": {
+      "tests": 160,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "loader": {
+      "tests": 137,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "actual_mod_opt_in": {
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "fixtures": {
+    "mocreatures": {
+      "status": "headless-smoke-passed",
+      "source_archive": "DrZharks_MoCreatures_Mod_v2.12.2_b1.7.3.zip!mods/MoCreatures.zip",
+      "payload_sha256": "15a3174bdbf8782065d5b89fca72bbd0ceb1919a035737bce43bfc2d045d5384",
+      "game_directory": "run-b173-single/mocreatures-neutralfinal-region-20261107-232927-316389",
+      "resources_verified": 168
+    },
+    "morecreeps": {
+      "status": "headless-smoke-passed",
+      "source_archive": "MoreCreepsv2.12_b173.zip!PUT CONTENTS INTO MINECRAFT FOLDER/mods/MoreCreepsAndWeirdos.zip",
+      "payload_sha256": "82faea9fe211d490aac843da299ccc756d5b321e7048dc3f4786ec4fd910dc6d",
+      "game_directory": "run-b173-single/morecreeps-neutralfinal-region-20261107-232928-a0e1c8",
+      "resources_verified": 759
+    }
+  },
+  "mocreatures": {
+    "registered_living_roster": 28,
+    "additional_cases": [
+      "Thrown Bunny landing attracts nearby native monsters and preserves distant targets",
+      "BigCat and Fish juvenile maturity thresholds preserve distinct original flags",
+      "Mouse climbs a native stone wall through its original ladder predicate"
+    ]
+  },
+  "morecreeps": {
+    "registered_living_roster": 53,
+    "additional_effect_cases": [
+      "Lawyer constructs a controlled loaded jail and teleports the real native player",
+      "Camel native rider-placement dispatch preserves original seat coordinates and eye normalization",
+      "EvilScientist transformation increases original/native health and summons two original EvilSnowmen",
+      "Original position/pitch edits merge with unrelated native X/Z/yaw changes; read-only views preserve native movement"
+    ],
+    "additional_lifecycle_cases": [
+      "Native fatal Hotdog damage and corpse removal create exactly one original Tombstone; LifeGem consumes one and restores pet stats",
+      "ArmyGuy health thresholds spawn one of each original limb; original lifetime expiration removes body parts"
+    ]
+  },
+  "shared_regressions_reproduced_before_fix": [
+    "Lawyer jail block construction succeeded but the real player did not move",
+    "Native rider positioning skipped original Camel seat callback",
+    "Native final corpse removal bypassed original markDead and created no pet tombstone"
+  ],
+  "admission_regression": "Newly implemented rider APIs are admitted; unrelated unsupported original overrides remain rejected.",
+  "generic_mod_identity_guard": "passed:252 production/loader files; no content-mod dispatch added",
+  "build_fixture_policy": "Actual-mod JUnit tests remain opt-in; runtime original-mod fixtures require entitySelfTest and skip absent mods.",
+  "limitations": [
+    "No live GPU/client gameplay replay of this batch.",
+    "Jail test uses a controlled previously selected site; initial terrain suitability and randomized jail loot are not certified.",
+    "Hosted vehicle placement is exercised; native-carrier attachment offsets and broader client poses remain unverified.",
+    "Roster and selected specialized callbacks do not establish every AI branch or full spawning ecology."
+  ]
+}
