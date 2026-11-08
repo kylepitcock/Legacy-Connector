@@ -1340,6 +1340,15 @@
    "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
   },
   {
+   "name": "AppleSkin ${file.jarVersion}",
+   "version": "",
+   "mc": "1.20.1",
+   "source": "client",
+   "date": "2026-11-08",
+   "status": "loads",
+   "notes": "Loads in server batch (1.20.1) without errors (no blocks, items or entities of its own)."
+  },
+  {
    "name": "Applied Botanics",
    "version": "1.5.1",
    "mc": "1.20.1",
@@ -5350,6 +5359,15 @@
    "notes": "Automated check 0.4.9: translates offline and everything it uses exists (60 classes). 6 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "Clumps ${file.jarVersion}",
+   "version": "",
+   "mc": "1.20.1",
+   "source": "client",
+   "date": "2026-11-08",
+   "status": "loads",
+   "notes": "Loads in server batch (1.20.1) without errors (no blocks, items or entities of its own)."
+  },
+  {
    "name": "CNPC-Gecko-Addon",
    "version": "1.0",
    "mc": "1.12.2",
@@ -8089,6 +8107,15 @@
    "date": "2026-11-07",
    "status": "fails",
    "notes": "Automated check 0.4.4: needs Minecraft or Forge features the layer does not have yet: com.mojang.serialization.DataResult.getOrThrow, net.minecraft.network.chat.Style.FORMATTING_CODEC, net.minecraft.world.item.enchantment.Enchantment.getDescriptionId, net.minecraft.world.item.enchantment.Enchantment.getFullname, net.darkhax.bookshelf.api.Services (+4 more)."
+  },
+  {
+   "name": "EnchantmentDescriptions",
+   "version": "17.1.21",
+   "mc": "1.20.1",
+   "source": "client",
+   "date": "2026-11-08",
+   "status": "loads",
+   "notes": "Loads in server batch (1.20.1) without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "End's Delight",
@@ -17754,6 +17781,15 @@
    "date": "2026-11-07",
    "status": "fails",
    "notes": "Automated check 0.4.4: needs Minecraft or Forge features the layer does not have yet: net.minecraft.client.Options.renderDebug, net.minecraft.client.gui.components.ObjectSelectionList.<init>, net.minecraft.core.Holder.getTagKeys, net.minecraft.world.level.storage.ServerLevelData.getAllowCommands, net.neoforged.neoforge.client.event.RegisterGuiOverlaysEvent (+11 more)."
+  },
+  {
+   "name": "Nature's Compass",
+   "version": "1.20.1-1.12.0-forge",
+   "mc": "1.20.1",
+   "source": "client",
+   "date": "2026-11-08",
+   "status": "loads",
+   "notes": "Loads in server batch (1.20.1) without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "NaturesAura",

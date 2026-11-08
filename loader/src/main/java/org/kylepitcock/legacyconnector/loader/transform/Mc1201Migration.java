@@ -75,6 +75,7 @@ final class Mc1201Migration {
     static Counts apply(ClassNode node, Mc1201Hierarchy h, Mc1201Tables t) {
         Counts c = new Counts();
         renameOverrides(node, h, t, c);
+        renameBusConstant(node);
         dropEmptySubscriber(node);
         for (MethodNode m : node.methods) {
             if (m.instructions == null || m.instructions.size() == 0) continue;
@@ -107,6 +108,22 @@ final class Mc1201Migration {
             m.maxLocals = 1;
             node.methods.add(m);
             c.bridges++;
+        }
+    }
+
+    /**
+     * {@code @Mod.EventBusSubscriber(bus = Bus.FORGE)}: the enum constant is {@code GAME} in NeoForge 21.1 (FML would fail with "No enum constant FORGE" while
+     * scanning); the default (no value) needs nothing.
+     */
+    private static void renameBusConstant(ClassNode node) {
+        if (node.visibleAnnotations == null) return;
+        for (var a : node.visibleAnnotations) {
+            if (!a.desc.equals("Lnet/neoforged/fml/common/EventBusSubscriber;") || a.values == null) continue;
+            for (int i = 0; i + 1 < a.values.size(); i += 2) {
+                if (a.values.get(i + 1) instanceof String[] e && e.length == 2 && e[0].equals("Lnet/neoforged/fml/common/EventBusSubscriber$Bus;") && e[1].equals("FORGE")) {
+                    a.values.set(i + 1, new String[] {e[0], "GAME"});
+                }
+            }
         }
     }
 
@@ -224,7 +241,9 @@ final class Mc1201Migration {
                     c.fields++;
                 }
             } else if (in instanceof FieldInsnNode f && f.getOpcode() == Opcodes.GETSTATIC) {
-                Field rule = t.fields.get(f.owner + "." + f.name + ":" + f.desc);
+                // a class of the jar itself keeps its own field (Farmer's Delight translated as a mod reads its ModBiomeFeatures.WILD_CROP RegistryObject;
+                // the rows exist for other mods that use it as a library)
+                Field rule = h.isMod(f.owner) ? null : t.fields.get(f.owner + "." + f.name + ":" + f.desc);
                 if (rule == null) {
                     // a static field inherited from a Minecraft class (a mod item reading Item.BASE_ATTACK_DAMAGE_UUID through its own class)
                     for (String owner : h.minecraftAncestors(f.owner)) {
