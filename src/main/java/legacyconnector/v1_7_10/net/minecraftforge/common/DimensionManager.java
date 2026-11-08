@@ -21,27 +21,28 @@ import net.neoforged.neoforge.server.ServerLifecycleHooks;
  * ({@code initDimension}, {@code worldServerForDimension}; see RuntimeDimensions).
  */
 public class DimensionManager {
-    private static final Map<Integer, Class<?>> PROVIDERS = new ConcurrentHashMap<>();
+    /** FML's name and type (HEE reads the table by reflection to verify its End provider replaced the vanilla one). */
+    private static final java.util.Hashtable<Integer, Class<?>> providers = new java.util.Hashtable<>();
     private static final Map<Integer, Boolean> SPAWN_LOADED = new ConcurrentHashMap<>();
     private static final Map<Integer, Integer> DIMENSIONS = new TreeMap<>();
 
     static {
-        PROVIDERS.put(0, WorldProvider.class);
-        PROVIDERS.put(-1, WorldProvider.class);
-        PROVIDERS.put(1, WorldProvider.class);
+        providers.put(0, WorldProvider.class);
+        providers.put(-1, WorldProvider.class);
+        providers.put(1, WorldProvider.class);
         DIMENSIONS.put(0, 0);
         DIMENSIONS.put(-1, -1);
         DIMENSIONS.put(1, 1);
     }
 
     public static boolean registerProviderType(int id, Class<?> provider, boolean keepLoaded) {
-        if (PROVIDERS.putIfAbsent(id, provider) != null) return false;
+        if (providers.putIfAbsent(id, provider) != null) return false;
         SPAWN_LOADED.put(id, keepLoaded);
         return true;
     }
 
     public static int[] unregisterProviderType(int providerId) {
-        PROVIDERS.remove(providerId);
+        providers.remove(providerId);
         // Forge only reports the dimensions of the type; they stay registered. Mods that replace a provider (the overworld's,
         // type 0) unregister the type and register their own under the same id, and removing the dimensions unregistered
         // the overworld (Mystcraft then took its home dimension for dead and failed every login).
@@ -62,13 +63,13 @@ public class DimensionManager {
             for (var e : DIMENSIONS.entrySet()) {
                 int id = e.getKey();
                 if (id == 0 || id == -1 || id == 1) continue;
-                Class<?> provider = PROVIDERS.get(e.getValue());
+                Class<?> provider = providers.get(e.getValue());
                 if (provider != null) out.put(id, provider);
             }
             // Mods such as Galacticraft register their planets' dimensions only when the server starts, long after the
             // dimension data is written: a provider type nobody has a dimension for gets one under its own id (the id
             // those mods register it under).
-            for (var e : PROVIDERS.entrySet()) {
+            for (var e : providers.entrySet()) {
                 int id = e.getKey();
                 if (id == 0 || id == -1 || id == 1 || DIMENSIONS.containsKey(id) || DIMENSIONS.containsValue(id)) continue;
                 out.putIfAbsent(id, e.getValue());
@@ -78,7 +79,7 @@ public class DimensionManager {
     }
 
     public static void registerDimension(int id, int providerType) {
-        if (!PROVIDERS.containsKey(providerType)) {
+        if (!providers.containsKey(providerType)) {
             throw new IllegalArgumentException(String.format("Failed to register dimension for id %d, provider type %d does not exist", id, providerType));
         }
         synchronized (DIMENSIONS) {
@@ -168,7 +169,7 @@ public class DimensionManager {
         synchronized (DIMENSIONS) {
             type = DIMENSIONS.get(dim);
         }
-        Class<?> cls = type == null ? null : PROVIDERS.get(type);
+        Class<?> cls = type == null ? null : providers.get(type);
         if (cls == null) return null;
         try {
             WorldProvider provider = (WorldProvider) cls.getDeclaredConstructor().newInstance();
