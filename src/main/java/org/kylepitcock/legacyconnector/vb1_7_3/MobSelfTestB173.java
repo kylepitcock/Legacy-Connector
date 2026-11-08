@@ -29,11 +29,13 @@ public final class MobSelfTestB173 {
         MoCreaturesWaterSpawnSelfTestB173.register(game);
         MoCreaturesVanillaSpawnSelfTestB173.register(game);
         MoCreaturesCarrySelfTestB173.register(game);
+        MoCreaturesHorseSaddleSelfTestB173.register(game);
         SpawnCapsSelfTestB173.register(game);
         MoreCreepsRosterSelfTestB173.register(game);
         MoreCreepsWeaponsSelfTestB173.register(game);
         MoreCreepsTamingSelfTestB173.register(game);
         MoreCreepsGameplaySelfTestB173.register(game);
+        MoreCreepsCarrierSyncSelfTestB173.register(game);
         MoreCreepsGameplayExtraSelfTestB173.register(game);
         MoreCreepsHunchbackAiSelfTestB173.register(game);
         MoreCreepsArmySelfTestB173.register(game);

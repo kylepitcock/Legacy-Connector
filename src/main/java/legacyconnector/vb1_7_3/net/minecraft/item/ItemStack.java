@@ -71,6 +71,11 @@ public class ItemStack {
         if (item != null) item.onCraft(this, world, player);
     }
 
+    public void useOnEntity(legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity target) {
+        Item item = getItem();
+        if (item != null) item.useOnEntity(this, target);
+    }
+
     public int getTextureId() {
         Item item = getItem();
         return item == null ? 0 : item.getTextureId(this);
