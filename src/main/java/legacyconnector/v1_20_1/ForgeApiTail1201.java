@@ -191,4 +191,64 @@ public final class ForgeApiTail1201 {
             net.minecraft.world.entity.ai.attributes.Attribute attribute) {
         return e.has((net.minecraft.world.entity.EntityType<? extends LivingEntity>) type, holder(attribute));
     }
+
+    // ---- exact-owner overloads (the rewritten call passes the receiver typed as the class the mod called it on)
+
+    public static float guiPartialTick(RenderGuiEvent.Post e) { return guiPartialTick((RenderGuiEvent) e); }
+
+    public static float guiPartialTick(RenderGuiEvent.Pre e) { return guiPartialTick((RenderGuiEvent) e); }
+
+    public static com.mojang.blaze3d.platform.Window guiWindow(RenderGuiEvent.Post e) { return guiWindow((RenderGuiEvent) e); }
+
+    public static com.mojang.blaze3d.platform.Window guiWindow(RenderGuiEvent.Pre e) { return guiWindow((RenderGuiEvent) e); }
+
+    public static float highlightPartialTick(RenderHighlightEvent.Block e) { return highlightPartialTick((RenderHighlightEvent) e); }
+
+    public static double scrollDelta(ScreenEvent.MouseScrolled.Pre e) { return scrollDelta((ScreenEvent.MouseScrolled) e); }
+
+    public static double scrollDelta(ScreenEvent.MouseScrolled.Post e) { return scrollDelta((ScreenEvent.MouseScrolled) e); }
+
+    public static void interactSetCancellationResult(net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.LeftClickBlock e,
+            net.minecraft.world.InteractionResult result) {
+    }
+
+    public static void interactSetCancellationResult(net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.RightClickEmpty e,
+            net.minecraft.world.InteractionResult result) {
+    }
+
+    // ---- fml event bus subscriber: Bus.bus() was a supplier of the bus
+
+    public static java.util.function.Supplier<net.neoforged.bus.api.IEventBus> busBus(net.neoforged.fml.common.EventBusSubscriber.Bus bus) {
+        if (bus == net.neoforged.fml.common.EventBusSubscriber.Bus.MOD) {
+            return () -> net.neoforged.fml.ModLoadingContext.get().getActiveContainer().getEventBus();
+        }
+        return () -> net.neoforged.neoforge.common.NeoForge.EVENT_BUS;
+    }
+
+    // ---- block break experience: no longer part of the event (it is a drop now); the value is kept per event so a handler reads back what it set
+
+    private static final java.util.Map<Object, Integer> EXP = java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>());
+
+    public static int breakGetExpToDrop(net.neoforged.neoforge.event.level.BlockEvent.BreakEvent e) {
+        return EXP.getOrDefault(e, 0);
+    }
+
+    public static void breakSetExpToDrop(net.neoforged.neoforge.event.level.BlockEvent.BreakEvent e, int exp) {
+        EXP.put(e, exp);
+    }
+
+    public static int commonHooksLootingLevel(net.minecraft.world.entity.Entity target, net.minecraft.world.entity.Entity killer,
+            net.minecraft.world.damagesource.DamageSource source) {
+        return 0;
+    }
+
+    public static net.minecraft.core.Registry<?> registerEventVanillaRegistry(net.neoforged.neoforge.registries.RegisterEvent e) {
+        return e.getRegistry();
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static net.neoforged.neoforge.registries.DeferredHolder holderCreateWithNamespace(net.minecraft.resources.ResourceLocation name,
+            net.minecraft.resources.ResourceKey registry, String modid) {
+        return net.neoforged.neoforge.registries.DeferredHolder.create(registry, name);
+    }
 }
