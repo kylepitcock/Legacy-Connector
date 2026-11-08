@@ -130,3 +130,4 @@ net/neoforged/bus/api/IEventBus.addListener(Lnet/neoforged/bus/api/EventPriority
 net/neoforged/bus/api/IEventBus.addListener(Lnet/neoforged/bus/api/EventPriority;ZLjava/lang/Class;Ljava/util/function/Consumer;)V	addListenerSafe
 java/lang/reflect/Field.get(Ljava/lang/Object;)Ljava/lang/Object;	fieldGet
 java/lang/reflect/Field.set(Ljava/lang/Object;Ljava/lang/Object;)V	fieldSet
+net/neoforged/fml/config/IConfigSpec.self()Lnet/neoforged/fml/config/IConfigSpec;	configSelf

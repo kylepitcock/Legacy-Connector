@@ -38,6 +38,23 @@ import net.minecraft.world.item.enchantment.ItemEnchantments;
 public final class ItemStackNbt {
     private ItemStackNbt() {}
 
+    // ------------------------------------------------------------------ item parser results (1.20.1: item + nbt, 1.21.1: item holder + component patch)
+
+    /** {@code ItemParser.parseForItem(HolderLookup<Item>, StringReader)}: the parser is an object over the registries now. */
+    public static net.minecraft.commands.arguments.item.ItemParser.ItemResult parseForItem(net.minecraft.core.HolderLookup lookup, com.mojang.brigadier.StringReader reader)
+            throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+        net.minecraft.core.HolderLookup.Provider provider = MigrateContext.provider();
+        if (provider == null || provider == net.minecraft.core.RegistryAccess.EMPTY) // before any server or level: a provider of the built-in registries
+            provider = net.minecraft.core.HolderLookup.Provider.create(java.util.stream.Stream.of(net.minecraft.core.registries.BuiltInRegistries.ITEM.asLookup(),
+                    net.minecraft.core.registries.BuiltInRegistries.DATA_COMPONENT_TYPE.asLookup()));
+        return new net.minecraft.commands.arguments.item.ItemParser(provider).parse(reader);
+    }
+
+    /** {@code ItemResult.nbt()}: the tag a 1.20.1 stack of this result would have carried (null when none). */
+    public static CompoundTag itemResultNbt(net.minecraft.commands.arguments.item.ItemParser.ItemResult result) {
+        return getTag(new ItemStack(result.item(), 1, result.components()));
+    }
+
     // ------------------------------------------------------------------ reading
 
     /** The 1.20.1 {@code getTag}: null when the stack carries no data a 1.20.1 stack would have had a tag for. */

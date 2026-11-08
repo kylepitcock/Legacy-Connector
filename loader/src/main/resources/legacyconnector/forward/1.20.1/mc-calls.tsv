@@ -623,3 +623,5 @@ net/minecraft/world/item/Item$Properties	arch$tab	(Ldev/architectury/registry/re
 net/minecraft/world/item/Item$Properties	arch$tab	(Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/world/item/Item$Properties;	RoundCompat	archTab	(Lnet/minecraft/world/item/Item$Properties;Ljava/lang/Object;)Lnet/minecraft/world/item/Item$Properties;
 net/minecraft/advancements/critereon/MinMaxBounds$Doubles	fromJson	(Lcom/google/gson/JsonElement;)Lnet/minecraft/advancements/critereon/MinMaxBounds$Doubles;	RoundCompat	doublesFromJson	-
 net/minecraft/advancements/critereon/MinMaxBounds$Ints	fromJson	(Lcom/google/gson/JsonElement;)Lnet/minecraft/advancements/critereon/MinMaxBounds$Ints;	RoundCompat	intsFromJson	-
+net/minecraft/commands/arguments/item/ItemParser	parseForItem	(Lnet/minecraft/core/HolderLookup;Lcom/mojang/brigadier/StringReader;)Lnet/minecraft/commands/arguments/item/ItemParser$ItemResult;	ItemStackNbt	parseForItem	-
+net/minecraft/commands/arguments/item/ItemParser$ItemResult	nbt	()Lnet/minecraft/nbt/CompoundTag;	ItemStackNbt	itemResultNbt	-

@@ -4632,6 +4632,15 @@
    "notes": "Automated check 0.4.4: needs Minecraft or Forge features the layer does not have yet: com.mojang.serialization.DataResult.getOrThrow, net.minecraft.client.renderer.MultiBufferSource.immediateWithBuffers, net.minecraft.client.renderer.RenderType.glintDirect, net.minecraft.commands.Commands.performPrefixedCommand, net.minecraft.commands.arguments.item.ItemParser$ItemResult.nbt (+21 more)."
   },
   {
+   "name": "Carry On ${file.jarVersion}",
+   "version": "",
+   "mc": "1.20.1",
+   "source": "client",
+   "date": "2026-10-28",
+   "status": "loads",
+   "notes": "Loads in 1.20.1 server batch 4 without errors (no blocks, items or entities of its own)."
+  },
+  {
    "name": "CartLoad",
    "version": "1.0.2",
    "mc": "1.7.10",
@@ -7067,6 +7076,15 @@
    "notes": "Automated check: needs Minecraft or Forge features the layer does not have yet: net.minecraft.Util.isBlank, net.minecraft.world.entity.Entity.portalEntrancePos, net.minecraft.world.entity.decoration.Painting.loadVariant, net.minecraft.world.entity.decoration.Painting.storeVariant, net.minecraft.world.entity.decoration.PaintingVariant.getHeight (+7 more)."
   },
   {
+   "name": "Deeper and Darker",
+   "version": "1.3.3",
+   "mc": "1.20.1",
+   "source": "client",
+   "date": "2026-10-28",
+   "status": "loads",
+   "notes": "Loads in 1.20.1 server batch 4 without errors (no blocks, items or entities of its own)."
+  },
+  {
    "name": "DeeperCaves",
    "version": "1.0.2",
    "mc": "1.7.10",
@@ -7595,6 +7613,15 @@
    "date": "2026-11-07",
    "status": "loads",
    "notes": "Automated check 0.4.4: translates offline and everything it uses exists (0 classes). The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "Dungeons and Taverns",
+   "version": "3.0.3.f",
+   "mc": "1.20.1",
+   "source": "client",
+   "date": "2026-10-28",
+   "status": "loads",
+   "notes": "Loads in 1.20.1 server batch 4 without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "Dungeons Mod",
@@ -11104,6 +11131,15 @@
    "date": "2026-11-07",
    "status": "fails",
    "notes": "Automated check 0.4.4: needs Minecraft or Forge features the layer does not have yet: net.minecraft.server.packs.FilePackResources.<init>, net.minecraft.server.packs.PathPackResources.<init>, net.minecraft.server.packs.repository.Pack$Info, net.minecraft.server.packs.repository.Pack.create, net.minecraft.server.packs.repository.Pack.readPackInfo."
+  },
+  {
+   "name": "Global Packs",
+   "version": "19.3.7",
+   "mc": "1.20.1",
+   "source": "client",
+   "date": "2026-10-28",
+   "status": "loads",
+   "notes": "Loads in 1.20.1 server batch 4 without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "Global XP",
@@ -17679,9 +17715,9 @@
    "version": "1.20.1-1.12.0-forge",
    "mc": "1.20.1",
    "source": "client",
-   "date": "2026-11-08",
+   "date": "2026-10-28",
    "status": "loads",
-   "notes": "Loads in server batch (1.20.1) without errors (no blocks, items or entities of its own)."
+   "notes": "Loads in 1.20.1 server batch 4 without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "NaturesAura",
@@ -19831,6 +19867,15 @@
    "date": "2026-11-07",
    "status": "fails",
    "notes": "Automated check 0.4.4: needs Minecraft or Forge features the layer does not have yet: net.minecraft.client.gui.components.ImageButton.<init>, net.minecraft.world.inventory.ResultContainer.setRecipeUsed, net.minecraft.world.item.crafting.Recipe.getId, net.neoforged.neoforge.common.crafting.IShapedRecipe, dev.shadowsoffire.fastbench.FastBench (+13 more)."
+  },
+  {
+   "name": "Polymorph",
+   "version": "0.49.11+1.20.1",
+   "mc": "1.20.1",
+   "source": "client",
+   "date": "2026-10-28",
+   "status": "loads",
+   "notes": "Loads in 1.20.1 server batch 4 without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "Polymorph+",
@@ -25492,6 +25537,15 @@
    "notes": "Automated check 0.4.4: needs Minecraft or Forge features the layer does not have yet: net.minecraft.client.gui.components.ImageButton.<init>, net.minecraft.client.gui.screens.inventory.AbstractContainerScreen.renderBackground, net.minecraft.network.FriendlyByteBuf.readAnySizeNbt, net.minecraft.network.FriendlyByteBuf.readById, net.minecraft.network.FriendlyByteBuf.writeId (+63 more)."
   },
   {
+   "name": "Tom's Simple Storage Mod ${file.jarVersion}",
+   "version": "",
+   "mc": "1.20.1",
+   "source": "client",
+   "date": "2026-10-28",
+   "status": "loads",
+   "notes": "Loads in 1.20.1 server batch 4 without errors (no blocks, items or entities of its own)."
+  },
+  {
    "name": "Too Many Items",
    "version": "2011-07-01",
    "mc": "b1.7.3",
@@ -25787,6 +25841,15 @@
    "date": "2026-11-07",
    "status": "fails",
    "notes": "Automated check 0.4.4: needs Minecraft or Forge features the layer does not have yet: net.minecraft.advancements.Advancement$Builder.addCriterion, net.minecraft.advancements.Advancement$Builder.getCriteria, net.minecraft.advancements.Advancement$Builder.requirements, net.minecraft.advancements.Advancement$Builder.serializeToJson, net.minecraft.advancements.CriteriaTriggers.register (+188 more)."
+  },
+  {
+   "name": "Traveler's Backpack",
+   "version": "9.1.58",
+   "mc": "1.20.1",
+   "source": "client",
+   "date": "2026-10-28",
+   "status": "loads",
+   "notes": "Loads in 1.20.1 server batch 4 without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "Traverse",
@@ -26389,6 +26452,15 @@
    "date": "2026-11-07",
    "status": "loads",
    "notes": "Automated check 0.4.4: translates offline and everything it uses exists (1 classes). The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "Veinminer",
+   "version": "1.1.0",
+   "mc": "1.20.1",
+   "source": "client",
+   "date": "2026-10-28",
+   "status": "loads",
+   "notes": "Loads in 1.20.1 server batch 4 without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "VeryLegacyZoomer",

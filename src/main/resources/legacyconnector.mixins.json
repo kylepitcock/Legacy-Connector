@@ -10,6 +10,7 @@
     "EntityGravityMixin",
     "SynchedEntityDataBuilderMixin",
     "SynchedEntityDataDefineIdMixin",
+    "TreeGrowerLegacyMixin",
     "BetaAnimalAiStepMixin",
     "BetaSpawnSchedulingMixin",
     "BetaChunkPopulationMixin",

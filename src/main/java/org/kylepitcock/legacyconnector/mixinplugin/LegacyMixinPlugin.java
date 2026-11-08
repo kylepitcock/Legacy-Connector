@@ -123,7 +123,8 @@ public final class LegacyMixinPlugin implements IMixinConfigPlugin {
                 mixins.removeIf(m -> {
                     String config = ((IMixinInfo) m).getConfig().getName();
                     if (config.startsWith(LEGACY_PREFIX)) return !legacy;
-                    return legacy && !config.startsWith("legacyconnector");
+                    if (legacy && !config.startsWith("legacyconnector")) return !sameJar(name, config);
+                    return false;
                 });
                 if (mixins.size() != before) {
                     System.out.println("[LegacyConnector] skipped " + (before - mixins.size()) + " mixin(s) on " + (legacy ? "legacy" : "non-legacy") + " class " + name.replace('/', '.'));
@@ -131,6 +132,27 @@ public final class LegacyMixinPlugin implements IMixinConfigPlugin {
             } catch (Throwable t) {
                 System.err.println("[LegacyConnector] legacy-class mixin guard failed: " + t);
             }
+        }
+
+        /**
+         * A mod's mixin config targeting a class of its own jar (Polymorph's {@code MixinPolymorphApi} sets the platform services of its own API class) is the
+         * mod's own business and applies; only configs from other jars are kept away from legacy classes.
+         */
+        private boolean sameJar(String internalName, String config) {
+            try {
+                ClassLoader cl = Thread.currentThread().getContextClassLoader();
+                if (cl == null) cl = LegacyMixinPlugin.class.getClassLoader();
+                URL classUrl = cl.getResource(internalName + ".class");
+                URL configUrl = cl.getResource(config);
+                if (classUrl == null || configUrl == null) return false;
+                return root(classUrl.toString(), internalName + ".class").equals(root(configUrl.toString(), config));
+            } catch (RuntimeException e) {
+                return false;
+            }
+        }
+
+        private static String root(String url, String resource) {
+            return url.endsWith(resource) ? url.substring(0, url.length() - resource.length()) : url;
         }
 
         private boolean isLegacy(String internalName) throws Exception {
