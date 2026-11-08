@@ -63,3 +63,6 @@ net/minecraft/client/RecipeBookCategories.create(Ljava/lang/String;[Lnet/minecra
 net/neoforged/neoforge/common/ModConfigSpec.setConfig(Lcom/electronwill/nightconfig/core/CommentedConfig;)V	specSetConfig
 net/neoforged/neoforge/registries/RegisterEvent$RegisterHelper.register(Ljava/lang/String;Ljava/lang/Object;)V	registerHelper
 net/neoforged/neoforge/registries/DeferredRegister.register(Ljava/lang/String;Ljava/util/function/Supplier;)Lnet/neoforged/neoforge/registries/DeferredHolder;	drRegister
+# Forge RegistryBuilder facade -> NeoForge registries
+net/neoforged/neoforge/registries/DeferredRegister.makeRegistry(Ljava/util/function/Supplier;)Ljava/util/function/Supplier;	makeRegistry
+net/neoforged/neoforge/registries/NewRegistryEvent.create(Llegacyconnector/v1_20_1/net/minecraftforge/registries/RegistryBuilder;)Ljava/util/function/Supplier;	newRegistryCreate
