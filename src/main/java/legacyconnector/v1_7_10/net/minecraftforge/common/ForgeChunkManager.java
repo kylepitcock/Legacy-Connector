@@ -193,7 +193,21 @@ public class ForgeChunkManager {
     public static Ticket requestTicket(Object mod, World world, Type type) {
         String id = modId(mod);
         if (id == null || !CALLBACKS.containsKey(id)) return null; // Forge refuses mods without a callback
-        return new Ticket(id, type, world);
+        Ticket ticket = new Ticket(id, type, world);
+        HELD.computeIfAbsent(id, k -> ConcurrentHashMap.newKeySet()).add(ticket);
+        return ticket;
+    }
+
+    /** Mod tickets handed out and not yet released, by mod id (the quota {@link #ticketCountAvailableFor(Object, World)} counts against). */
+    private static final Map<String, java.util.Set<Ticket>> HELD = new ConcurrentHashMap<>();
+
+    /** 1.4.7 and 1.5 Forge: how many more tickets the mod may request in the world before it reaches its limit. */
+    public static int ticketCountAvailableFor(Object mod, World world) {
+        String id = modId(mod);
+        if (id == null) return 0;
+        int used = 0;
+        for (Ticket t : HELD.getOrDefault(id, java.util.Set.of())) if (t.world == world) used++;
+        return Math.max(0, getMaxTicketLengthFor(id) - used);
     }
 
     public static Ticket requestPlayerTicket(Object mod, String player, World world, Type type) {
@@ -204,6 +218,8 @@ public class ForgeChunkManager {
 
     public static void releaseTicket(Ticket ticket) {
         if (ticket == null) return;
+        java.util.Set<Ticket> held = HELD.get(ticket.modId);
+        if (held != null) held.remove(ticket);
         for (ChunkCoordIntPair c : Set.copyOf(ticket.requestedChunks)) unforceChunk(ticket, c);
     }
 

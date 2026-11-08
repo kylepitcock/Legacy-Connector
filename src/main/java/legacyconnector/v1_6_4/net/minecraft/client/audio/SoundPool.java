@@ -35,23 +35,28 @@ public class SoundPool {
         addSound(name, (File) null);
     }
 
-    public synchronized SoundPoolEntry addSound(String name, File file) {
+    /** {@code addSound("mod/boom.ogg", url)}: a sound at a URL (a file inside the mod's jar) instead of a file. */
+    public synchronized SoundPoolEntry addSound(String name, java.net.URL url) {
         if (name == null) return null;
         String event = name;
         int dot = event.lastIndexOf('.');
         if (dot >= 0) event = event.substring(0, dot);
         event = event.replaceAll("[0-9]+$", "").replace('/', '.');
+        SoundPoolEntry entry = new SoundPoolEntry(name, url);
+        byEvent.computeIfAbsent(event, k -> new ArrayList<>()).add(entry);
+        all.add(entry);
+        numberOfSoundPoolEntries++;
+        return entry;
+    }
+
+    public synchronized SoundPoolEntry addSound(String name, File file) {
         java.net.URL url = null;
         try {
             if (file != null) url = file.toURI().toURL();
         } catch (java.net.MalformedURLException e) {
             // an entry without a location: the sound still plays by name
         }
-        SoundPoolEntry entry = new SoundPoolEntry(name, url);
-        byEvent.computeIfAbsent(event, k -> new ArrayList<>()).add(entry);
-        all.add(entry);
-        numberOfSoundPoolEntries++;
-        return entry;
+        return addSound(name, url);
     }
 
     /** A random sound of the event ("mod.boom"); null when nothing was added for it. */

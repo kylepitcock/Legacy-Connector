@@ -92,6 +92,107 @@ public final class Redirects147 {
         }
     }
 
+    /** 1.4.7 {@code item.getIconIndex(stack)}: the sheet index of the icon the stack shows (the item's own damage icon when it has no override). */
+    public static int itemIconIndexOfStack(legacyconnector.v1_7_10.net.minecraft.item.Item item, legacyconnector.v1_7_10.net.minecraft.item.ItemStack stack) {
+        if (stack == null) return Math.max(item.iconIndex, 0);
+        if (!enter(item, 4, stack.getItemDamage())) return Math.max(item.iconIndex, 0);
+        try {
+            return SpriteSheets147.indexOf(item.getIconIndex(stack), false);
+        } finally {
+            leave();
+        }
+    }
+
+    /** 1.4.7 {@code item.getIconIndex(stack, pass)}: the sheet index of one render pass of the stack. */
+    public static int itemIconIndexOfPass(legacyconnector.v1_7_10.net.minecraft.item.Item item, legacyconnector.v1_7_10.net.minecraft.item.ItemStack stack, int pass) {
+        if (stack == null) return Math.max(item.iconIndex, 0);
+        if (!enter(item, 5, stack.getItemDamage() * 4 + pass)) return Math.max(item.iconIndex, 0);
+        try {
+            return SpriteSheets147.indexOf(item.getIcon(stack, pass), false);
+        } finally {
+            leave();
+        }
+    }
+
+    /** 1.4.7 {@code item.getIconFromDamageForRenderPass(damage, pass)} (ItemPotion and other multi-layer items). */
+    public static int itemIconIndexFromDamagePass(legacyconnector.v1_7_10.net.minecraft.item.Item item, int damage, int pass) {
+        if (!enter(item, 6, damage * 4 + pass)) return Math.max(item.iconIndex, 0);
+        try {
+            return SpriteSheets147.indexOf(item.getIconFromDamageForRenderPass(damage, pass), false);
+        } finally {
+            leave();
+        }
+    }
+
+    /** 1.4.7 {@code slot.getBackgroundIconIndex()}: the index in /gui/items.png of the icon drawn in an empty slot (-1 for none). */
+    public static int slotBackgroundIconIndex(legacyconnector.v1_7_10.net.minecraft.inventory.Slot slot) {
+        legacyconnector.v1_7_10.net.minecraft.util.IIcon icon = slot.getBackgroundIconIndex();
+        return icon == null ? -1 : SpriteSheets147.indexOf(icon, false);
+    }
+
+    /** 1.4.7 {@code slot.setBackgroundIconIndex(index)}: the icon at that index of /gui/items.png (a negative index clears it). */
+    public static void setSlotBackgroundIconIndex(legacyconnector.v1_7_10.net.minecraft.inventory.Slot slot, int index) {
+        slot.setBackgroundIcon(index < 0 ? null : SpriteSheets147.icon(SpriteSheets147.ITEMS, index, false));
+    }
+
+    /** 1.4.7 {@code slot.setBackgroundIconTexture(path)}: the sheet the background index addresses; the block atlas for terrain.png, else the item atlas. */
+    public static void setSlotBackgroundIconTexture(legacyconnector.v1_7_10.net.minecraft.inventory.Slot slot, String path) {
+        boolean blocks = path != null && SpriteSheets147.normalize(path).equals(SpriteSheets147.TERRAIN);
+        slot.setBackgroundIconTexture(new legacyconnector.v1_7_10.net.minecraft.util.ResourceLocation(blocks ? "textures/atlas/blocks.png" : "textures/atlas/items.png"));
+    }
+
+    /** 1.4.7 {@code world.isBlockProvidingPowerTo(x, y, z, side)}: whether the block powers its neighbor on that side (1.7.10 answers the strength). */
+    public static boolean isBlockProvidingPowerTo(World w, int x, int y, int z, int side) {
+        return w.isBlockProvidingPowerTo(x, y, z, side) > 0;
+    }
+
+    /** 1.4.7 {@code entity.dropItemWithOffset(itemId, count, offsetY)}. */
+    public static legacyconnector.v1_7_10.net.minecraft.entity.item.EntityItem dropItemWithOffset(legacyconnector.v1_7_10.net.minecraft.entity.Entity entity,
+            int id, int count, float offset) {
+        legacyconnector.v1_7_10.net.minecraft.item.Item item = Ids.item(id);
+        return item == null ? null : entity.dropItemWithOffset(item, count, offset);
+    }
+
+    /** 1.4.7 {@code chunk.setBlockID(x, y, z, id)}: the block with metadata 0, true when something changed. */
+    public static boolean chunkSetBlockID(legacyconnector.v1_7_10.net.minecraft.world.chunk.Chunk chunk, int x, int y, int z, int id) {
+        return chunk.func_150807_a(x, y, z, block(id), 0);
+    }
+
+    /** 1.4.7 {@code stack.onBlockDestroyed(world, blockId, x, y, z, player)}. */
+    public static void stackOnBlockDestroyed(legacyconnector.v1_7_10.net.minecraft.item.ItemStack stack, World w, int id, int x, int y, int z,
+            legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player) {
+        stack.onBlockDestroyed(w, block(id), x, y, z, player);
+    }
+
+    /** 1.4.7 {@code settings.renderDistance}: 0 far (16 chunks) to 3 tiny (2 chunks); 1.7.10 stores the chunk count. */
+    public static int renderDistance(legacyconnector.v1_7_10.net.minecraft.client.settings.GameSettings settings) {
+        int chunks = settings.renderDistanceChunks;
+        return chunks >= 16 ? 0 : chunks >= 8 ? 1 : chunks >= 4 ? 2 : 3;
+    }
+
+    public static void setRenderDistance(legacyconnector.v1_7_10.net.minecraft.client.settings.GameSettings settings, int level) {
+        settings.renderDistanceChunks = new int[] {16, 8, 4, 2}[Math.max(0, Math.min(3, level))];
+    }
+
+    /** 1.4.7 {@code renderBlocks.overrideBlockTexture = index}: draw every face with that tile of terrain.png (-1 for the block's own). */
+    public static void setOverrideBlockTexture(legacyconnector.v1_7_10.net.minecraft.client.renderer.RenderBlocks rb, int index) {
+        rb.overrideBlockTexture = index < 0 ? null : SpriteSheets147.icon(SpriteSheets147.TERRAIN, index, true);
+    }
+
+    /** 1.4.7 {@code spawner.yaw} / {@code yaw2}: the cage's spin angle and its previous value. */
+    public static void setSpawnerYaw(legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityMobSpawner spawner, double yaw) {
+        spawner.getSpawnerBaseLogic().field_98287_c = yaw;
+    }
+
+    public static void setSpawnerYaw2(legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityMobSpawner spawner, double yaw) {
+        spawner.getSpawnerBaseLogic().field_98284_d = yaw;
+    }
+
+    /** 1.4.7 {@code spawner.delay} (the countdown to the next spawn; it lives in the spawner logic since 1.6). */
+    public static void setSpawnerDelay(legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityMobSpawner spawner, int delay) {
+        spawner.getSpawnerBaseLogic().spawnDelay = delay;
+    }
+
     /** {@code world.setBlockAndMetadataWithNotify(x, y, z, id, meta)}. */
     public static boolean setBlockAndMetadataWithNotify(World w, int x, int y, int z, int id, int meta) {
         return w.setBlock(x, y, z, block(id), meta, 3);

@@ -106,6 +106,14 @@ public class BlockLiquid extends legacyconnector.v1_7_10.net.minecraft.block.Blo
         return world.getBlock(x, y, z).getMaterial() == blockMaterial ? world.getBlockMetadata(x, y, z) : -1;
     }
 
+    /** The 1.4.7 form (no world): water flows every 5 ticks, lava every 30 (the Nether's 10 needs the world). */
+    @Override
+    public int tickRate() {
+        if (blockMaterial == legacyconnector.v1_7_10.net.minecraft.block.material.Material.water) return 5;
+        if (blockMaterial == legacyconnector.v1_7_10.net.minecraft.block.material.Material.lava) return 30;
+        return 0;
+    }
+
     @Override
     public int tickRate(legacyconnector.v1_7_10.net.minecraft.world.World world) {
         if (blockMaterial == legacyconnector.v1_7_10.net.minecraft.block.material.Material.water) return 5;

@@ -18,6 +18,12 @@ public class BlockFire extends legacyconnector.v1_7_10.net.minecraft.block.Block
         this(legacyconnector.v1_7_10.net.minecraft.block.material.Material.fire);
     }
 
+    /** Fire re-ticks every 30 ticks. */
+    @Override
+    public int tickRate() {
+        return 30;
+    }
+
     private static final java.util.Map<legacyconnector.v1_7_10.net.minecraft.block.Block, int[]> FIRE_INFO = new java.util.concurrent.ConcurrentHashMap<>();
 
     /** How readily fire spreads onto the block ({@code encouragement}) and how fast it burns away ({@code flammability}). */

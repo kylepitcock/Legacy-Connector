@@ -895,6 +895,19 @@ public class World implements IBlockAccess {
         if (isRemote) legacyconnector.v1_7_10.net.minecraft.client.renderer.RenderGlobal.mcc$dirty(x1 - 1, y1 - 1, z1 - 1, x2 + 1, y2 + 1, z2 + 1);
     }
 
+    /** 1.4.7: marks the block's section for a render update, even when the world is not updating its blocks. */
+    public void markBlockForRenderUpdate2(int x, int y, int z) {
+        markBlockRangeForRenderUpdate(x, y, z, x, y, z);
+    }
+
+    /** 1.4.7: the tile entity changed, so the chunk holding it is saved (the name 1.5 gave to {@link #markTileEntityChunkModified}). */
+    public void updateTileEntityChunkAndDoNothing(int x, int y, int z, TileEntity te) {
+        markTileEntityChunkModified(x, y, z, te);
+    }
+
+    /** 1.4.7: true while blocks are being edited in bulk (structure generation); nothing in this world sets it, mods read and write it. */
+    public boolean editingBlocks;
+
     public void markTileEntityChunkModified(int x, int y, int z, TileEntity te) {
         Level level = mcc$liveLevel();
         if (level != null) level.blockEntityChanged(pos(x, y, z));

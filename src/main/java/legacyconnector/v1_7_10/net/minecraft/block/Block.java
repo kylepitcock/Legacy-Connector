@@ -495,6 +495,11 @@ public class Block {
     }
 
     public int tickRate(World world) {
+        return tickRate();
+    }
+
+    /** The 1.4.7 form (no world): ticks between scheduled updates; the world-less default every vanilla block answers (10). */
+    public int tickRate() {
         return 10;
     }
 
@@ -818,7 +823,14 @@ public class Block {
     }
 
     public void getSubBlocks(Item item, CreativeTabs tab, List list) {
-        list.add(new ItemStack(item, 1, 0));
+        java.util.ArrayList<ItemStack> items = new java.util.ArrayList<>();
+        addCreativeItems(items);
+        if (items.isEmpty()) items.add(new ItemStack(item, 1, 0));
+        list.addAll(items);
+    }
+
+    /** 1.4.7: the stacks the block shows in the creative inventory (a block with subtypes overrides this; the default is the block itself). */
+    public void addCreativeItems(java.util.ArrayList itemList) {
     }
 
     public void randomDisplayTick(World world, int x, int y, int z, Random random) {
@@ -949,6 +961,21 @@ public class Block {
     public void onBlockExploded(World world, int x, int y, int z, legacyconnector.v1_7_10.net.minecraft.world.Explosion explosion) {
         world.setBlockToAir(x, y, z);
         onBlockDestroyedByExplosion(world, x, y, z, explosion);
+        onBlockDestroyedByExplosion(world, x, y, z);
+    }
+
+    /** The 1.4.7 form (no explosion argument): hook for blocks that react to being blown up. */
+    public void onBlockDestroyedByExplosion(World world, int x, int y, int z) {
+    }
+
+    /** 1.4.7 Forge: ore generation may replace this block (what 1.7.10 asks per target block through {@link #isReplaceableOreGen}). */
+    public boolean isGenMineableReplaceable(World world, int x, int y, int z) {
+        return isReplaceableOreGen(world, x, y, z, legacyconnector.v1_7_10.net.minecraft.init.Blocks.stone);
+    }
+
+    /** 1.4.7: the translated name of the block, from its unlocalized name. */
+    public String translateBlockName() {
+        return getLocalizedName();
     }
 
     public void onBlockDestroyedByExplosion(World world, int x, int y, int z, legacyconnector.v1_7_10.net.minecraft.world.Explosion explosion) {

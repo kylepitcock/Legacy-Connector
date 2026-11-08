@@ -163,6 +163,11 @@ public class Loader {
     }
 
     /** Mod container -> the mod's instance (FML's registry of {@code @Mod} objects). */
+    /** 1.4.7: the same pairs the other way round, mod instance to container. */
+    public com.google.common.collect.BiMap<Object, ModContainer> getReversedModObjectList() {
+        return getModObjectList().inverse();
+    }
+
     public com.google.common.collect.BiMap<ModContainer, Object> getModObjectList() {
         com.google.common.collect.BiMap<ModContainer, Object> map = com.google.common.collect.HashBiMap.create();
         for (ModContainer c : getModList()) {

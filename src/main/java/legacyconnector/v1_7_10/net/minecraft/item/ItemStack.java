@@ -592,6 +592,15 @@ public final class ItemStack {
         return mcc$item != null && mcc$item.hasEffect(this, pass);
     }
 
+    /** 1.4.7: the damage the stack deals to the entity (the item's attack damage modifiers, added up). */
+    public int getDamageVsEntity(legacyconnector.v1_7_10.net.minecraft.entity.Entity entity) {
+        int damage = 0;
+        for (Object modifier : getAttributeModifiers().get(legacyconnector.v1_7_10.net.minecraft.entity.SharedMonsterAttributes.attackDamage.getAttributeUnlocalizedName())) {
+            if (modifier instanceof legacyconnector.v1_7_10.net.minecraft.entity.ai.attributes.AttributeModifier m && m.getOperation() == 0) damage += (int) m.getAmount();
+        }
+        return damage;
+    }
+
     public com.google.common.collect.Multimap getAttributeModifiers() {
         return mcc$item == null ? com.google.common.collect.HashMultimap.create() : mcc$item.getAttributeModifiers(this);
     }

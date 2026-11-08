@@ -13,6 +13,10 @@ public class LanguageRegistry {
         return INSTANCE;
     }
 
+    /** 1.4.7: re-reads the language tables. They are read live here (a registration shows at once), so there is nothing left to reload. */
+    public static void reloadLanguageTable() {
+    }
+
     public String getStringLocalization(String key) {
         return getStringLocalization(key, "en_US");
     }

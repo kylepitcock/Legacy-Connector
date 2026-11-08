@@ -7,6 +7,21 @@ public class LiquidTank implements ILiquidTank {
     private LiquidStack liquid;
     private int capacity;
     private int tankPressure;
+    /** 1.4.7: the tile entity the tank belongs to; filling and draining it posts the liquid events at its position. */
+    private legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntity tile;
+
+    public LiquidTank(LiquidStack liquid, int capacity, legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntity tile) {
+        this(liquid, capacity);
+        this.tile = tile;
+    }
+
+    private void fire(boolean fill, LiquidStack amount) {
+        if (tile == null || tile.getWorldObj() == null || amount == null || amount.amount <= 0) return;
+        LiquidStack copy = new LiquidStack(amount.itemID, amount.amount, amount.itemMeta);
+        LiquidEvent.fireEvent(fill
+                ? new LiquidEvent.LiquidFillingEvent(copy, tile.getWorldObj(), tile.xCoord, tile.yCoord, tile.zCoord, this)
+                : new LiquidEvent.LiquidDrainingEvent(copy, tile.getWorldObj(), tile.xCoord, tile.yCoord, tile.zCoord, this));
+    }
 
     public LiquidTank(int capacity) {
         this(null, capacity);
@@ -52,13 +67,19 @@ public class LiquidTank implements ILiquidTank {
         if (resource == null || resource.itemID <= 0 || resource.amount <= 0) return 0;
         if (liquid == null || liquid.itemID <= 0) {
             int filled = Math.min(capacity, resource.amount);
-            if (doFill) liquid = new LiquidStack(resource.itemID, filled, resource.itemMeta);
+            if (doFill) {
+                liquid = new LiquidStack(resource.itemID, filled, resource.itemMeta);
+                fire(true, liquid);
+            }
             return filled;
         }
         if (!liquid.isLiquidEqual(resource)) return 0;
         int space = capacity - liquid.amount;
         int filled = Math.min(space, resource.amount);
-        if (doFill && filled > 0) liquid.amount += filled;
+        if (doFill && filled > 0) {
+            liquid.amount += filled;
+            fire(true, new LiquidStack(liquid.itemID, filled, liquid.itemMeta));
+        }
         return Math.max(filled, 0);
     }
 
@@ -70,6 +91,7 @@ public class LiquidTank implements ILiquidTank {
         if (doDrain) {
             liquid.amount -= drained;
             if (liquid.amount <= 0) liquid = null;
+            fire(false, out);
         }
         return out;
     }

@@ -1313,6 +1313,13 @@ public abstract class Entity implements ICommandSender {
         if (mcc$entity != null) SoundBridge.play(mcc$entity.level(), null, mcc$x(), mcc$y(), mcc$z(), name, volume, pitch, mcc$entity.getSoundSource());
     }
 
+    /** Forge: the stack middle-click picks for this entity: its spawn egg (damage = entity id) when it has one, else nothing. */
+    public ItemStack getPickedResult(legacyconnector.v1_7_10.net.minecraft.util.MovingObjectPosition target) {
+        Integer id = EntityList.classToIDMapping.get(getClass());
+        if (id != null && EntityList.entityEggs.containsKey(id)) return new ItemStack(legacyconnector.v1_7_10.net.minecraft.init.Items.spawn_egg, 1, id);
+        return null;
+    }
+
     public EntityItem dropItem(Item item, int count) {
         return dropItemWithOffset(item, count, 0.0F);
     }

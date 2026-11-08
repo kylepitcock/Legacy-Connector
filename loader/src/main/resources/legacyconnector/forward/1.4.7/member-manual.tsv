@@ -31,3 +31,26 @@ R	net/minecraft/item/ItemStack	getIconIndex	()I	static	org/kylepitcock/legacycon
 # Texture indices (2): the guarded redirects of Redirects147 (a mod's int override answering through the shim's getIcon does not recurse)
 R	net/minecraft/block/Block	getBlockTextureFromSide	(I)I	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	blockTextureFromSide	(Lnet/minecraft/block/Block;I)I
 R	net/minecraft/block/Block	getBlockTexture	(Lnet/minecraft/world/IBlockAccess;IIII)I	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	blockTexture	(Lnet/minecraft/block/Block;Lnet/minecraft/world/IBlockAccess;IIII)I
+# Stub pass 2 (members the shim lacked and the linker synthesized as empty): item icon indices with a stack, slot backgrounds, ids to blocks and items
+R	net/minecraft/item/Item	getIconIndex	(Lnet/minecraft/item/ItemStack;)I	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	itemIconIndexOfStack	(Lnet/minecraft/item/Item;Lnet/minecraft/item/ItemStack;)I
+R	net/minecraft/item/Item	getIconIndex	(Lnet/minecraft/item/ItemStack;I)I	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	itemIconIndexOfPass	(Lnet/minecraft/item/Item;Lnet/minecraft/item/ItemStack;I)I
+R	net/minecraft/item/Item	getIconFromDamageForRenderPass	(II)I	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	itemIconIndexFromDamagePass	(Lnet/minecraft/item/Item;II)I
+R	net/minecraft/inventory/Slot	getBackgroundIconIndex	()I	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	slotBackgroundIconIndex	(Lnet/minecraft/inventory/Slot;)I
+R	net/minecraft/inventory/Slot	setBackgroundIconIndex	(I)V	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	setSlotBackgroundIconIndex	(Lnet/minecraft/inventory/Slot;I)V
+R	net/minecraft/inventory/Slot	setBackgroundIconTexture	(Ljava/lang/String;)V	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	setSlotBackgroundIconTexture	(Lnet/minecraft/inventory/Slot;Ljava/lang/String;)V
+R	net/minecraft/world/World	isBlockProvidingPowerTo	(IIII)Z	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	isBlockProvidingPowerTo	(Lnet/minecraft/world/World;IIII)Z
+R	net/minecraft/entity/Entity	dropItemWithOffset	(IIF)Lnet/minecraft/entity/item/EntityItem;	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	dropItemWithOffset	(Lnet/minecraft/entity/Entity;IIF)Lnet/minecraft/entity/item/EntityItem;
+R	net/minecraft/world/chunk/Chunk	setBlockID	(IIII)Z	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	chunkSetBlockID	(Lnet/minecraft/world/chunk/Chunk;IIII)Z
+R	net/minecraft/item/ItemStack	onBlockDestroyed	(Lnet/minecraft/world/World;IIIILnet/minecraft/entity/player/EntityPlayer;)V	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	stackOnBlockDestroyed	(Lnet/minecraft/item/ItemStack;Lnet/minecraft/world/World;IIIILnet/minecraft/entity/player/EntityPlayer;)V
+G	net/minecraft/client/settings/GameSettings	renderDistance	I	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	renderDistance	(Lnet/minecraft/client/settings/GameSettings;)I
+S	net/minecraft/client/settings/GameSettings	renderDistance	I	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	setRenderDistance	(Lnet/minecraft/client/settings/GameSettings;I)V
+G	net/minecraft/tileentity/TileEntityMobSpawner	delay	I	=	getDelay	()I
+G	net/minecraft/tileentity/TileEntityMobSpawner	yaw	D	=	getYaw	()D
+G	net/minecraft/tileentity/TileEntityMobSpawner	yaw2	D	=	getYaw2	()D
+S	net/minecraft/tileentity/TileEntityMobSpawner	delay	I	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	setSpawnerDelay	(Lnet/minecraft/tileentity/TileEntityMobSpawner;I)V
+G	net/minecraft/util/Session	sessionId	Ljava/lang/String;	=	getSessionID	()Ljava/lang/String;
+F	net/minecraft/client/gui/GuiTextField	xPos	xPosition
+F	net/minecraft/client/gui/GuiTextField	yPos	yPosition
+S	net/minecraft/client/renderer/RenderBlocks	overrideBlockTexture	I	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	setOverrideBlockTexture	(Lnet/minecraft/client/renderer/RenderBlocks;I)V
+S	net/minecraft/tileentity/TileEntityMobSpawner	yaw	D	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	setSpawnerYaw	(Lnet/minecraft/tileentity/TileEntityMobSpawner;D)V
+S	net/minecraft/tileentity/TileEntityMobSpawner	yaw2	D	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	setSpawnerYaw2	(Lnet/minecraft/tileentity/TileEntityMobSpawner;D)V

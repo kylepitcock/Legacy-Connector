@@ -21,6 +21,11 @@ public class Event {
     private EventPriority phase;
 
     public Event() {
+        setup();
+    }
+
+    /** Forge hook run by the constructor, before the subclass constructors: nothing to do here, events that need early state override it. */
+    protected void setup() {
     }
 
     public boolean isCancelable() {

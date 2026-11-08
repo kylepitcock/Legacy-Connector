@@ -20,6 +20,14 @@ public class MinecraftForge {
         ForgeHooks.grassList.add(new ForgeHooks.GrassEntry(block, metadata, weight));
     }
 
+    /** 1.4.7 and 1.5: the tool class no longer mines the block (every metadata the class was set for). */
+    public static void removeBlockEffectiveness(legacyconnector.v1_7_10.net.minecraft.block.Block block, String toolClass) {
+        if (block == null || toolClass == null) return;
+        for (int m = 0; m < 16; m++) {
+            if (toolClass.equals(block.getHarvestTool(m))) block.setHarvestLevel(null, -1, m);
+        }
+    }
+
     public static void initialize() {
     }
 

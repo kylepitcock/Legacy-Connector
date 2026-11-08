@@ -12,11 +12,14 @@ public class ServerChatEvent extends Event {
     public final String username;
     public final EntityPlayerMP player;
     public ChatComponentTranslation component;
+    /** 1.4.7 and 1.5: the line broadcast to everyone, "&lt;name&gt; message"; a handler may rewrite it. */
+    public String line;
 
     public ServerChatEvent(EntityPlayerMP player, String message, ChatComponentTranslation component) {
         this.message = message;
         this.player = player;
         this.username = player == null ? "" : player.getCommandSenderName();
         this.component = component;
+        this.line = "<" + this.username + "> " + message;
     }
 }

@@ -34,6 +34,13 @@ public class DungeonHooks {
         }
     }
 
+    /** 1.4.7 and 1.5: a stack the dungeon chests can hold (stack size is both the minimum and the maximum), with its weight. */
+    public static void addDungeonLoot(legacyconnector.v1_7_10.net.minecraft.item.ItemStack stack, int rarity) {
+        if (stack == null) return;
+        ChestGenHooks.addItem(ChestGenHooks.DUNGEON_CHEST,
+                new legacyconnector.v1_7_10.net.minecraft.util.WeightedRandomChestContent(stack, stack.mcc$count(), stack.mcc$count(), rarity));
+    }
+
     public static synchronized float addDungeonMob(String name, int rarity) {
         if (rarity <= 0) throw new IllegalArgumentException("Rarity must be greater then zero");
         for (DungeonMob mob : DUNGEON_MOBS) {

@@ -58,6 +58,11 @@ public class BlockBush extends legacyconnector.v1_7_10.net.minecraft.block.Block
         checkAndDropBlock(world, x, y, z);
     }
 
+    /** The 1.4.7 name of {@link #checkAndDropBlock}. */
+    protected void checkFlowerChange(legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z) {
+        checkAndDropBlock(world, x, y, z);
+    }
+
     protected void checkAndDropBlock(legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z) {
         if (!canBlockStay(world, x, y, z)) {
             dropBlockAsItem(world, x, y, z, world.getBlockMetadata(x, y, z), 0);
