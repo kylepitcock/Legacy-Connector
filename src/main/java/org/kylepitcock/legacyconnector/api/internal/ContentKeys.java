@@ -13,7 +13,14 @@ public final class ContentKeys {
 
     public static Optional<LegacyItemKey> itemKey(ItemStack stack, LegacyVersion version) {
         switch (version) {
-            case V1_7_10: {
+            case V1_20_1: {
+                // the legacy item IS the modern one: its key is the registry id, damage is the stack's damage value
+                return Optional.of(new LegacyItemKey(version, net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem()).toString(), stack.getDamageValue(), stack.getItem()));
+            }
+            case V1_7_10:
+            case V1_4_7:
+            case V1_5_2:
+            case V1_6_4: {
                 var item = ItemBridge.legacyItemOf(stack);
                 if (item == null) return Optional.empty();
                 String name = ItemBridge.nameOf(item);

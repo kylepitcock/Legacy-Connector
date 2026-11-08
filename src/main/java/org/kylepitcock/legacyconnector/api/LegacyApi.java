@@ -15,13 +15,18 @@ import org.kylepitcock.legacyconnector.api.internal.ModViews;
  */
 public final class LegacyApi {
     /** Version of this API ({@code major.minor}); incremented in the minor part for additions, the major part for breaking changes. */
-    public static final String API_VERSION = "0.1";
+    public static final String API_VERSION = "0.2";
 
     private LegacyApi() {}
 
     /** Every legacy mod (failed ones included, see {@link LegacyMod#failed()}) in load order. Empty before discovery. */
     public static List<LegacyMod> mods() {
         return ModViews.all();
+    }
+
+    /** The legacy mods written for one Minecraft version (added in API 0.2). */
+    public static List<LegacyMod> mods(LegacyVersion version) {
+        return mods().stream().filter(m -> m.minecraftVersion() == version).toList();
     }
 
     /** A legacy mod by its NeoForge id ({@code thaumcraft}) or the id it declared ({@code Thaumcraft}). */

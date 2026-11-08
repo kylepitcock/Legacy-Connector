@@ -14,12 +14,86 @@ public final class ModViews {
     private ModViews() {}
 
     public static List<LegacyMod> all() {
-        return LegacyMods.ordered().stream().<LegacyMod>map(View::new).toList();
+        List<LegacyMod> out = new java.util.ArrayList<>();
+        LegacyMods.ordered().forEach(m -> out.add(new View(m)));
+        for (String id : InPlaceMods.ids()) out.add(new InPlaceView(id));
+        return out;
     }
 
     public static Optional<LegacyMod> find(String id) {
         LegacyModRecord record = LegacyMods.find(id);
-        return record == null ? Optional.empty() : Optional.of(new View(record));
+        if (record != null) return Optional.of(new View(record));
+        if (id != null && InPlaceMods.ids().contains(id)) return Optional.of(new InPlaceView(id));
+        return Optional.empty();
+    }
+
+    /** A Forge 1.20.1 mod: a real NeoForge mod after the in-place remap, so its container, class loader and instance are the ordinary ones. */
+    private record InPlaceView(String id) implements LegacyMod {
+        private java.util.Optional<net.neoforged.fml.ModContainer> container() {
+            return net.neoforged.fml.ModList.get().getModContainerById(id).map(c -> (net.neoforged.fml.ModContainer) c);
+        }
+
+        @Override
+        public String legacyId() {
+            return id;
+        }
+
+        @Override
+        public String name() {
+            return container().map(c -> c.getModInfo().getDisplayName()).orElse(id);
+        }
+
+        @Override
+        public String version() {
+            return container().map(c -> c.getModInfo().getVersion().toString()).orElse("");
+        }
+
+        @Override
+        public LegacyVersion minecraftVersion() {
+            return LegacyVersion.V1_20_1;
+        }
+
+        @Override
+        public boolean failed() {
+            return false;
+        }
+
+        @Override
+        public Optional<String> failureMessage() {
+            return Optional.empty();
+        }
+
+        @Override
+        public ClassLoader classLoader() {
+            return instance().map(o -> o.getClass().getClassLoader()).orElseGet(() -> container().map(c -> (ClassLoader) c.getClass().getClassLoader()).orElse(ModViews.class.getClassLoader()));
+        }
+
+        @Override
+        public Optional<Class<?>> classOf(String className) {
+            try {
+                return Optional.of(Class.forName(className, false, classLoader()));
+            } catch (ClassNotFoundException | LinkageError e) {
+                return Optional.empty();
+            }
+        }
+
+        @Override
+        public Optional<Object> instance() {
+            return container().filter(c -> c instanceof net.neoforged.fml.javafmlmod.FMLModContainer).flatMap(c -> {
+                try {
+                    var f = net.neoforged.fml.javafmlmod.FMLModContainer.class.getDeclaredField("modInstance");
+                    f.setAccessible(true);
+                    return Optional.ofNullable(f.get(c));
+                } catch (ReflectiveOperationException | RuntimeException e) {
+                    return Optional.<Object>empty();
+                }
+            });
+        }
+
+        @Override
+        public Path file() {
+            return container().map(c -> c.getModInfo().getOwningFile().getFile().getFilePath()).orElse(null);
+        }
     }
 
     private record View(LegacyModRecord mod) implements LegacyMod {
@@ -45,7 +119,7 @@ public final class ModViews {
 
         @Override
         public LegacyVersion minecraftVersion() {
-            return LegacyVersion.byId(org.kylepitcock.legacyconnector.core.LegacyMods.family(mod.version)).orElseThrow(() -> new IllegalStateException("Unknown legacy version " + mod.version));
+            return LegacyVersion.byId(mod.version).orElseThrow(() -> new IllegalStateException("Unknown legacy version " + mod.version));
         }
 
         @Override
