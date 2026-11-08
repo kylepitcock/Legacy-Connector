@@ -67,22 +67,27 @@ public final class VanillaB173 {
     private VanillaB173() {}
 
     private static final class CubeFlags {
-        static final Map<Integer,Boolean> VALUES=load();
-        private static Map<Integer,Boolean> load(){
-            var flags=new HashMap<Integer,Boolean>();
-            try(var in=VanillaB173.class.getResourceAsStream("/legacyconnector/b1.7.3/vanilla-block-full-cubes.tsv")){
-                if(in==null)throw new IllegalStateException("vanilla-block-full-cubes.tsv missing from the runtime");
-                var reader=new BufferedReader(new InputStreamReader(in,StandardCharsets.UTF_8));
-                for(String line;(line=reader.readLine())!=null;){
-                    if(line.isBlank()||line.startsWith("#"))continue;
-                    var fields=line.split("\t");flags.put(Integer.parseInt(fields[0]),Boolean.parseBoolean(fields[1]));
-                }
-            }catch(IOException error){throw new IllegalStateException("cannot read original Beta full-cube flags",error);}
-            return Map.copyOf(flags);
-        }
+        static final Map<Integer,Boolean> VALUES=metadata("vanilla-block-full-cubes.tsv",Boolean::parseBoolean);
+    }
+    private static final class TextureIndices {
+        static final Map<Integer,Integer> VALUES=metadata("vanilla-block-texture-indices.tsv",Integer::parseInt);
+    }
+    private static <T> Map<Integer,T> metadata(String name,java.util.function.Function<String,T> parse){
+        var values=new HashMap<Integer,T>();
+        try(var in=VanillaB173.class.getResourceAsStream("/legacyconnector/b1.7.3/"+name)){
+            if(in==null)throw new IllegalStateException(name+" missing from the runtime");
+            var reader=new BufferedReader(new InputStreamReader(in,StandardCharsets.UTF_8));
+            for(String line;(line=reader.readLine())!=null;){
+                if(line.isBlank()||line.startsWith("#"))continue;
+                var fields=line.split("\t");values.put(Integer.parseInt(fields[0]),parse.apply(fields[1]));
+            }
+        }catch(IOException error){throw new IllegalStateException("cannot read original Beta metadata: "+name,error);}
+        return Map.copyOf(values);
     }
     /** Original per-id API results, including full-render blocks with partial collision such as soul sand. */
     public static Boolean fullCube(int id){return CubeFlags.VALUES.get(id);}
+    /** Original default terrain-sheet index; vanilla views must not all inherit grass tile zero. */
+    public static int textureIndex(int id){return TextureIndices.VALUES.getOrDefault(id,0);}
 
     /** Fills {@code Block.BLOCKS} and {@code Item.ITEMS} with views of the vanilla content. Once, before the first mod runs. */
     public static synchronized void init() {
@@ -151,7 +156,7 @@ public final class VanillaB173 {
         if (!(o instanceof Block b)) return null;
         String key = "tile." + camel(row.field());
         var modern = modernBlock(row.id());
-        b.mcc$initVanilla(row.id(), 0, materialOf(modern), 0.0F, null, key);
+        b.mcc$initVanilla(row.id(), textureIndex(row.id()), materialOf(modern), 0.0F, null, key);
         b.mcc$modern = modern;
         if (modern != null) {
             b.hardness = modern.defaultDestroyTime();

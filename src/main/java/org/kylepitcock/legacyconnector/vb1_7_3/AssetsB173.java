@@ -65,6 +65,8 @@ public final class AssetsB173 implements GeneratedPack.Contributor {
                 "clay", "sugar_cane", "note_block", "jukebox_top", null, null, null, null,
                 "torch", null, null, "ladder", null, null, "farmland_moist", "farmland"};
         for (int i = 0; i < row.length; i++) if (row[i] != null) VANILLA_TERRAIN.put(i, row[i]);
+        VANILLA_TERRAIN.put(31, "fire_0");
+        VANILLA_TERRAIN.put(47, "fire_1");
         for (int s = 0; s < 8; s++) VANILLA_TERRAIN.put(88 + s, "wheat_stage" + s);
         VANILLA_TERRAIN.put(96, "lever");
         VANILLA_TERRAIN.put(99, "redstone_torch");

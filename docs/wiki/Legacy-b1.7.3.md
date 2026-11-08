@@ -518,13 +518,26 @@ cow-family host receives the same original eligibility and distance rules withou
 [The placement and ecology snapshot](../data/b173-placement-ecology-validation-2026-11-08.json) records separate normal-world
 and classic-height grass-flat runs of both actual mods, native population/persistence comparisons, all 96 original full-cube
 API results, and single/double slab metadata round trips. These fixtures are opt-in; normal builds need no private mod archive.
-The checked-in geometry table can be reproduced with JDK 21 using
-`java tools/dev/ExtractBetaFullCubes.java <original-client.jar> <output.tsv>`; the extractor loads the original block API in an
-isolated class loader and does not construct a Minecraft client. It is not part of the build.
+The original full-cube results and source-jar fingerprint are checked in with the geometry table; no external game jar or
+metadata extraction tool is required by the build.
 
-Remaining checks for these two mods include Kitty fear/tree states, BigCat rope following and teleport fallback, Nightmare
-horse rider fire clearing, Bird seed taming, and live client rendering/interaction with the installed pack. These branches
-are unverified, rather than demonstrated failures. A separate API gap remains in native squid views: their Beta SquidEntity
+Additional actual-mod fixtures cover Kitty fear exclusions and tree search/timeouts, BigCat rope following and its original
+null-path perimeter teleport, Nightmare rider fire clearing and charge exhaustion, and Bird wheat-seed taming. Rope distance
+checks use original entity coordinates, including eye offsets. The Bird preserves its original whole-drop consumption quirk.
+Native item entities without a Beta item representation are excluded from legacy World spatial queries and live entity lists,
+preventing null-stack access by original callbacks while preserving the native item entity and its stack. Ordinary represented
+Beta drops remain visible. This does not add post-Beta items to the old registry or change native mob/item behavior.
+
+Hunchback cake recruitment and bone-triggered five-Skeleton army formation are exercised through original More Creeps callbacks,
+including inventory/health boundaries, native advancement and canonical identities. Its original false interaction return is kept.
+The conditional Hotdog renderer now receives original vanilla block texture indices, recorded for all 96 vanilla block views,
+and living renderers share the existing terrain/item sheet routing used by nonliving renderers. Actual cold/fire callbacks verify
+the original fire cell, resolved native texture, quad counts and sprite-local UVs. This is headless callback/resource proof;
+live appearance and animated fire-frame sampling still need client validation.
+[The pet, following and renderer snapshot](../data/b173-pet-follow-render-validation-2026-11-08.json) records this follow-up.
+
+Remaining checks include live client rendering/interaction, Hunchback autonomous following/timer transitions and army combat/expiry.
+A separate API gap remains in native squid views: their Beta SquidEntity
 and WaterCreatureEntity identity is not yet represented, although the cap census handles native WaterAnimal ancestry directly.
 Actual aquatic prey bytecode does not establish a broken Mo' Creatures predation path from that view gap.
 
