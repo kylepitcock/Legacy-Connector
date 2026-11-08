@@ -676,6 +676,10 @@ public final class Forge1201Transformer {
             if (m.matches() && m.group(2).equals("modId")) modId = m.group(4).replaceAll("^[\"']|[\"']\\s*(#.*)?$", "");
         }
         boolean wroteType = false;
+        boolean hasType = block.stream().anyMatch(l -> {
+            Matcher k = KEY_LINE.matcher(l);
+            return k.matches() && k.group(2).equals("type");
+        });
         for (String l : block) {
             Matcher m = KEY_LINE.matcher(l);
             if (!m.matches()) {
@@ -688,6 +692,7 @@ public final class Forge1201Transformer {
             else if (key.equals("versionRange") && "minecraft".equals(modId)) out.append(m.group(1)).append("versionRange").append(m.group(3)).append("\"[1.21.1,1.22)\"\n");
             // other mods' 1.20.1 ranges ([1.20.1-x,1.21)) would reject their 1.21.1 versions: the dependency is kept, the range opened
             else if (key.equals("versionRange") && modId != null && !"minecraft".equals(modId) && !"forge".equals(modId)) out.append(m.group(1)).append("versionRange").append(m.group(3)).append("\"[0,)\"\n");
+            else if (key.equals("mandatory") && hasType) continue; // both keys in one table: the file's own type stays (a second one is a TOML error)
             else if (key.equals("mandatory")) {
                 out.append(m.group(1)).append("type").append(m.group(3)).append(m.group(4).strip().startsWith("true") ? "\"required\"" : "\"optional\"").append('\n');
                 wroteType = true;

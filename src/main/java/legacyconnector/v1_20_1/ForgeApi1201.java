@@ -286,6 +286,11 @@ public final class ForgeApi1201 {
         });
     }
 
+    /** {@code IConfigSpec.self()}: the spec itself (Forge's generic self-type accessor). */
+    public static net.neoforged.fml.config.IConfigSpec configSelf(net.neoforged.fml.config.IConfigSpec spec) {
+        return spec;
+    }
+
     /** {@code RegisterHelper.register(String, value)}: the name is in the namespace of the mod being loaded. */
     @SuppressWarnings({"unchecked", "rawtypes"})
     public static void registerHelper(RegisterEvent.RegisterHelper helper, String name, Object value) {
