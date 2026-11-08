@@ -467,6 +467,18 @@
    "link": "https://www.curseforge.com/minecraft/mc-mods/lycanites-mobs/files/5750564",
    "date": "2026-11-08",
    "open": true
+  },
+  {
+   "issue": 217,
+   "mod": "Lycanites Mobs",
+   "mc": "1.12.2",
+   "status": "partial",
+   "details": "- The mobs no longer crashes upon being slain - The Crafted equipments and its components now shows up as checkered textures but still works",
+   "lc": "0.4.10",
+   "neoforge": "21.1.265",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/lycanites-mobs/files/5750564",
+   "date": "2026-11-08",
+   "open": true
   }
  ]
 }
