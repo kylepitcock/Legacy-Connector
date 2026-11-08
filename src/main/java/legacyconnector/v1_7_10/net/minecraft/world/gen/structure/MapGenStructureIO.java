@@ -23,6 +23,11 @@ public class MapGenStructureIO {
         field_143037_d.put(cls, name);
     }
 
+    /** The obfuscated name of {@link #registerStructureComponent}. */
+    public static synchronized void func_143034_b(Class cls, String name) {
+        registerStructureComponent(cls, name);
+    }
+
     public static synchronized String func_143033_a(StructureStart start) {
         return field_143038_b.get(start.getClass());
     }

@@ -210,6 +210,51 @@ public class ExtendedBlockStorage {
         return out;
     }
 
+    private int[] mcc$setIds;
+
+    private void mcc$applyId(int i, int id) {
+        Block b = Block.getBlockById(id);
+        if (b == null) b = Blocks.air;
+        int x = i & 15, y = i >> 8, z = i >> 4 & 15;
+        if (ownBlocks != null || getBlockByExtId(x, y, z) != b) func_150818_a(x, y, z, b);
+    }
+
+    /** Sets the low eight bits of every block's legacy id (index y << 8 | z << 4 | x); the high bits set earlier by {@link #setBlockMSBArray} stay. */
+    public void setBlockLSBArray(byte[] lsb) {
+        if (lsb == null || lsb.length < 4096) return;
+        if (mcc$setIds == null) mcc$setIds = new int[4096];
+        for (int i = 0; i < 4096; i++) {
+            mcc$setIds[i] = mcc$setIds[i] & ~255 | lsb[i] & 255;
+            mcc$applyId(i, mcc$setIds[i]);
+        }
+    }
+
+    /** Sets the high four bits of the legacy ids (null clears them). */
+    public void setBlockMSBArray(legacyconnector.v1_7_10.net.minecraft.world.chunk.NibbleArray msb) {
+        if (mcc$setIds == null) mcc$setIds = new int[4096];
+        for (int i = 0; i < 4096; i++) {
+            int hi = msb == null ? 0 : msb.get(i & 15, i >> 8, i >> 4 & 15) & 15;
+            mcc$setIds[i] = mcc$setIds[i] & 255 | hi << 8;
+            if (hi != 0 || msb == null) mcc$applyId(i, mcc$setIds[i]);
+        }
+    }
+
+    public void setBlockMetadataArray(legacyconnector.v1_7_10.net.minecraft.world.chunk.NibbleArray meta) {
+        if (meta == null) return;
+        for (int i = 0; i < 4096; i++) {
+            int x = i & 15, y = i >> 8, z = i >> 4 & 15;
+            int m = meta.get(x, y, z) & 15;
+            if (ownBlocks != null || getExtBlockMetadata(x, y, z) != m) setExtBlockMetadata(x, y, z, m);
+        }
+    }
+
+    /** Light arrays of a section are owned by the light engine; a mod's copy is accepted and ignored. */
+    public void setBlocklightArray(legacyconnector.v1_7_10.net.minecraft.world.chunk.NibbleArray light) {
+    }
+
+    public void setSkylightArray(legacyconnector.v1_7_10.net.minecraft.world.chunk.NibbleArray light) {
+    }
+
     public void setExtBlockID(int x, int y, int z, Block block) {
         func_150818_a(x, y, z, block);
     }

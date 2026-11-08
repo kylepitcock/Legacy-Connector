@@ -205,6 +205,11 @@ public class EntityHorse extends EntityAnimal {
         return false;
     }
 
+    /** Vanilla's "is breeding" flag (legacy data flag 16): in love, as the modern animal tracks it. */
+    public boolean func_110205_ce() {
+        return isInLove();
+    }
+
     /** Whether the horse is eating (lowering its head to the grass). */
     public boolean isEatingHaystack() {
         var h = mcc$horse();

@@ -47,6 +47,11 @@ public abstract class MapGenStructure extends MapGenBase {
      * In a dimension where this generator is a modern structure ({@code MapGenStructures1710}) the game lays out the starts: the
      * legacy pass over the neighbouring chunks is skipped (it would also reseed {@link #rand} under the game's lay-out).
      */
+    /** The obfuscated name of {@link #getStructureName}. */
+    public String func_143025_a() {
+        return getStructureName();
+    }
+
     @Override
     public void generate(legacyconnector.v1_7_10.net.minecraft.world.chunk.IChunkProvider provider, World world, int chunkX, int chunkZ, Block[] blocks) {
         if (org.kylepitcock.legacyconnector.v1_7_10.bridge.MapGenStructures1710.modern(this, world, false)) return;

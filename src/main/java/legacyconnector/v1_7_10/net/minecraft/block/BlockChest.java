@@ -18,6 +18,15 @@ public class BlockChest extends legacyconnector.v1_7_10.net.minecraft.block.Bloc
         this(legacyconnector.v1_7_10.net.minecraft.block.material.Material.wood);
     }
 
+    /** Whether a sitting cat (ocelot) lies on top of the chest, which blocks opening it. */
+    public static boolean isOcelotBlockingChest(legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z) {
+        for (Object o : world.getEntitiesWithinAABB(legacyconnector.v1_7_10.net.minecraft.entity.passive.EntityOcelot.class,
+                legacyconnector.v1_7_10.net.minecraft.util.AxisAlignedBB.getBoundingBox(x, y + 1, z, x + 1, y + 2, z + 1))) {
+            if (o instanceof legacyconnector.v1_7_10.net.minecraft.entity.passive.EntityOcelot cat && cat.isSitting()) return true;
+        }
+        return false;
+    }
+
     /**
      * {@code func_149951_m}: the inventory a player opening the chest sees: the whole double chest, or null when the chest is blocked
      * (a solid block above it). A vanilla chest answers with the modern chest's combined container.
