@@ -294,3 +294,5 @@ net/minecraft/advancements/critereon/ItemPredicate	ANY	Lnet/minecraft/advancemen
 net/minecraft/advancements/critereon/EntityPredicate	ANY	Lnet/minecraft/advancements/critereon/EntityPredicate;	-	none	CritCompat.anyEntity
 net/minecraft/advancements/critereon/LocationPredicate	ANY	Lnet/minecraft/advancements/critereon/LocationPredicate;	-	none	CritCompat.anyLocation
 net/minecraft/core/particles/ParticleTypes	ENTITY_EFFECT	Lnet/minecraft/core/particles/SimpleParticleType;	-	none	MiscCompat.entityEffectParticle
+net/minecraft/core/registries/BuiltInRegistries	POTION	Lnet/minecraft/core/DefaultedRegistry;	-	Lnet/minecraft/core/Registry;	RoundCompat.defaulted
+net/minecraft/core/registries/BuiltInRegistries	PAINTING_VARIANT	Lnet/minecraft/core/DefaultedRegistry;	-	Lnet/minecraft/core/Registry;	RoundCompat.defaulted

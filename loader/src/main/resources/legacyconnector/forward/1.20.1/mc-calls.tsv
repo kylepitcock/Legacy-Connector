@@ -317,3 +317,15 @@ com/mojang/serialization/DataResult	get	()Lcom/mojang/datafixers/util/Either;	Mi
 net/minecraft/world/level/block/entity/RandomizableContainerBlockEntity	setLootTable	(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/util/RandomSource;Lnet/minecraft/core/BlockPos;Lnet/minecraft/resources/ResourceLocation;)V	MiscCompat	setBlockEntityLootTable	-
 net/minecraft/world/level/block/entity/RandomizableContainerBlockEntity	setLootTable	(Lnet/minecraft/resources/ResourceLocation;J)V	MiscCompat	setLootTable	-
 net/minecraft/world/effect/MobEffect	addAttributeModifier	(Lnet/minecraft/world/entity/ai/attributes/Attribute;Ljava/lang/String;DLnet/minecraft/world/entity/ai/attributes/AttributeModifier$Operation;)Lnet/minecraft/world/effect/MobEffect;	HolderCompat	addEffectModifier	-
+net/minecraft/world/item/ItemStack	equals	(Lnet/minecraft/world/item/ItemStack;Z)Z	RoundCompat	stackEquals	-
+net/neoforged/neoforge/event/BuildCreativeModeTabContentsEvent	getEntries	()Lnet/neoforged/neoforge/common/util/MutableHashedLinkedMap;	RoundCompat	tabEntries	-
+net/minecraft/world/item/enchantment/EnchantmentHelper	hasFrostWalker	(Lnet/minecraft/world/entity/LivingEntity;)Z	RoundCompat	hasFrostWalker	-
+net/minecraft/world/item/enchantment/EnchantmentHelper	getFireAspect	(Lnet/minecraft/world/entity/LivingEntity;)I	RoundCompat	getFireAspect	-
+net/minecraft/world/item/enchantment/EnchantmentHelper	getKnockbackBonus	(Lnet/minecraft/world/entity/LivingEntity;)I	RoundCompat	getKnockbackBonus	-
+net/minecraft/world/item/enchantment/EnchantmentHelper	hasBindingCurse	(Lnet/minecraft/world/item/ItemStack;)Z	RoundCompat	hasBindingCurse	-
+net/minecraft/world/item/enchantment/EnchantmentHelper	hasVanishingCurse	(Lnet/minecraft/world/item/ItemStack;)Z	RoundCompat	hasVanishingCurse	-
+net/minecraft/world/item/enchantment/EnchantmentHelper	getTagEnchantmentLevel	(Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyEnchantment;Lnet/minecraft/world/item/ItemStack;)I	RoundCompat	getTagEnchantmentLevel	-
+net/minecraft/world/item/enchantment/EnchantmentHelper	deserializeEnchantments	(Lnet/minecraft/nbt/ListTag;)Ljava/util/Map;	RoundCompat	deserializeEnchantments	-
+net/minecraft/world/item/enchantment/EnchantmentInstance	$get$enchantment	()Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyEnchantment;	RoundCompat	instanceEnchantment	-
+net/neoforged/neoforge/common/IShearable	isShearable	(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)Z	RoundCompat	isShearable	-
+net/neoforged/neoforge/common/IShearable	onSheared	(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;I)Ljava/util/List;	RoundCompat	onSheared	-
