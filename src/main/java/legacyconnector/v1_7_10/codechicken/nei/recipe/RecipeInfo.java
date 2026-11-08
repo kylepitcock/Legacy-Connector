@@ -18,6 +18,11 @@ public class RecipeInfo {
         return map == null ? null : map.get(ident);
     }
 
+    /** Whether an overlay handler is registered for the GUI class and handler id. */
+    public static boolean hasOverlayHandler(GuiContainer gui, String ident) {
+        return getOverlayHandler(gui, ident) != null;
+    }
+
     public static boolean hasDefaultOverlay(GuiContainer gui, String ident) {
         return getOverlayHandler(gui, ident) != null;
     }

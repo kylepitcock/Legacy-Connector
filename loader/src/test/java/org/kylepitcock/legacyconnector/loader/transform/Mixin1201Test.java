@@ -60,6 +60,21 @@ class Mixin1201Test implements Opcodes {
     }
 
     @Test
+    void failHardLocalCaptureBecomesFailSoft() {
+        ClassNode n = mixin("m/SkelMixin", "net/minecraft/world/entity/monster/AbstractSkeleton");
+        MethodNode m = new MethodNode(ACC_PRIVATE, "handler", "()V", null, null);
+        n.methods.add(m);
+        AnnotationNode a = inject(m, "Lorg/spongepowered/asm/mixin/injection/Inject;", "performRangedAttack", "Lfoo;bar()V", 1);
+        String cap = "Lorg/spongepowered/asm/mixin/injection/callback/LocalCapture;";
+        a.values.add("locals");
+        a.values.add(new String[] {cap, "CAPTURE_FAILHARD"});
+        Mixin1201.Stats st = new Mixin1201.Stats();
+        Mixin1201.apply(n, Map.of(), new Mc1201Hierarchy(), Mc1201Tables.get(), st);
+        assertEquals("CAPTURE_FAILSOFT", ((String[]) a.values.get(7))[1]);
+        assertEquals(1, st.localsRelaxed);
+    }
+
+    @Test
     void mixinWithMissingMinecraftTargetIsDropped() {
         ClassNode gone = mixin("m/GoneMixin", "net/minecraft/world/item/alchemy/PotionUtils");
         ClassNode there = mixin("m/ThereMixin", "net/minecraft/world/item/ItemStack");

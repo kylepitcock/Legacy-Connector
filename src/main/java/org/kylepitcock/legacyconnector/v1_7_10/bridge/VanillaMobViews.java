@@ -87,6 +87,8 @@ final class VanillaMobViews {
         if (modern instanceof net.minecraft.world.entity.animal.Squid) return new legacyconnector.v1_7_10.net.minecraft.entity.passive.EntitySquid(modern);
         if (modern instanceof Animal) return new AnimalView(modern);
         if (modern instanceof Monster) return new MobView(modern);
+        // any other Mob (a flying or water mob, a modded one): mods cast the living entity of spawn and AI events to EntityLiving
+        if (modern instanceof net.minecraft.world.entity.Mob) return new GenericMobView(modern);
         return null;
     }
 
@@ -99,6 +101,13 @@ final class VanillaMobViews {
         @Override
         public EntityAgeable createChild(EntityAgeable mate) {
             return null;
+        }
+    }
+
+    /** Any other mob that is neither an animal nor a monster. */
+    static final class GenericMobView extends legacyconnector.v1_7_10.net.minecraft.entity.EntityLiving {
+        GenericMobView(LivingEntity modern) {
+            super(modern);
         }
     }
 

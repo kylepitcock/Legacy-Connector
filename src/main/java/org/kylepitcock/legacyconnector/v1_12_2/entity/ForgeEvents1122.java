@@ -178,7 +178,43 @@ public final class ForgeEvents1122 {
             else if (event.getResult() == Event.Result.DENY) e.setCriticalHit(false);
             if (event.getDamageModifier() != event.getOldDamageModifier()) e.setDamageMultiplier(event.getDamageModifier());
         });
+        game.addListener((net.neoforged.neoforge.event.brewing.PotionBrewEvent.Pre e) -> {
+            var stacks = brewStacks(e);
+            var event = new legacyconnector.v1_12_2.net.minecraftforge.event.brewing.PotionBrewEvent.Pre(stacks);
+            boolean canceled = post(event);
+            brewWriteBack(e, stacks);
+            if (canceled) e.setCanceled(true);
+        });
+        game.addListener((net.neoforged.neoforge.event.brewing.PotionBrewEvent.Post e) -> {
+            var stacks = brewStacks(e);
+            post(new legacyconnector.v1_12_2.net.minecraftforge.event.brewing.PotionBrewEvent.Post(stacks));
+            brewWriteBack(e, stacks);
+        });
+        game.addListener((net.neoforged.neoforge.event.enchanting.EnchantmentLevelSetEvent e) -> {
+            var event = new legacyconnector.v1_12_2.net.minecraftforge.event.enchanting.EnchantmentLevelSetEvent(WorldBridge1122.wrap(e.getLevel()),
+                    BlockPos.mcc$of(e.getPos()), e.getEnchantRow(), e.getPower(), Stacks1122.view(e.getItem()), e.getOriginalLevel());
+            post(event);
+            if (event.getLevel() != e.getEnchantLevel()) e.setEnchantLevel(event.getLevel());
+        });
         registerEntityEvents(game);
+    }
+
+    /** The slots of a brewing stand as live legacy stacks. */
+    private static legacyconnector.v1_12_2.net.minecraft.util.NonNullList<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> brewStacks(
+            net.neoforged.neoforge.event.brewing.PotionBrewEvent e) {
+        var list = legacyconnector.v1_12_2.net.minecraft.util.NonNullList.withSize(e.getLength(), legacyconnector.v1_12_2.net.minecraft.item.ItemStack.EMPTY);
+        for (int i = 0; i < e.getLength(); i++) list.set(i, Stacks1122.view(e.getItem(i)));
+        return list;
+    }
+
+    /** Slots a handler replaced go back into the brewing stand (untouched slots keep their modern stack and components). */
+    private static void brewWriteBack(net.neoforged.neoforge.event.brewing.PotionBrewEvent e,
+            legacyconnector.v1_12_2.net.minecraft.util.NonNullList<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> stacks) {
+        for (int i = 0; i < stacks.size() && i < e.getLength(); i++) {
+            var now = stacks.get(i);
+            if (now == Stacks1122.view(e.getItem(i))) continue;
+            e.setItem(i, Stacks1122.toModernLive(now));
+        }
     }
 
     private static boolean wants(Class<? extends Event> type) {

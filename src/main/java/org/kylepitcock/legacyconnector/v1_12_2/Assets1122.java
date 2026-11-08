@@ -154,6 +154,7 @@ public final class Assets1122 implements GeneratedPack.Contributor {
                 }
             }
         }
+        itemFallbackModels(out);
         LOG.info("[LegacyConnector/Perf] 1.12.2 assets: item models {} ms, blockstates {} ms", itemsMs, (System.nanoTime() - t0) / 1_000_000 - itemsMs);
         stateModels = Map.copyOf(STATE_MODELS_BUILDING);
         if (!stateModels.isEmpty()) LOG.info("1.12.2 state models: {} block state(s) beyond their metadata got a model of their own", stateModels.size());
@@ -237,6 +238,9 @@ public final class Assets1122 implements GeneratedPack.Contributor {
                 }
                 // still no file, and the name is the item's own: a model that is its own parent (Botania's water bowl) loops; leave the item to the default one
                 if (target.equals(id.getNamespace() + ":item/" + id.getPath())) continue;
+                // the model the mod named has no file anywhere (a model a baked-model replacement stands behind): ModelBakery would log
+                // "Unable to load model" for the parent; the post pass (itemFallbackModels) gives the item a texture-based model instead
+                if (!modelPresent(target, out)) continue;
                 model = new JsonObject();
                 model.addProperty("parent", target);
                 String json = GSON.toJson(model);
@@ -1731,6 +1735,59 @@ public final class Assets1122 implements GeneratedPack.Contributor {
         if (ns.equals("minecraft")) return !path.startsWith("blocks/") && !path.startsWith("items/");
         return resourceExists("assets/" + ns + "/textures/" + path + ".png")
                 || (path.startsWith("blocks/") && resourceExists("assets/" + ns + "/textures/block/" + path.substring(7) + ".png"));
+    }
+
+    /** Whether the model {@code ns:path} (a path under models/) is in the mods or this pack; vanilla's models are assumed present. */
+    private static boolean modelPresent(String ref, Map<String, Supplier<byte[]>> out) {
+        int colon = ref.indexOf(':');
+        String ns = colon < 0 ? "minecraft" : ref.substring(0, colon);
+        String path = colon < 0 ? ref : ref.substring(colon + 1);
+        if (ns.equals("minecraft")) return true;
+        return out.containsKey("assets/" + ns + "/models/" + path + ".json") || modelExists(ns, path);
+    }
+
+    /**
+     * Items that ended with no model file (the mod's item model json is missing, the model the mod registered is a custom-loader one nobody backs, or
+     * the item was never registered with ModelLoader): vanilla's loader logs "Unable to load model" for each and shows the missing-model cube. Such an
+     * item gets a flat model of its texture ({@code textures/items/<name>.png} or {@code item/<name>.png}), or its block's model for an ItemBlock.
+     */
+    private static void itemFallbackModels(Map<String, Supplier<byte[]>> out) {
+        int made = 0;
+        for (legacyconnector.v1_12_2.net.minecraft.item.Item item : org.kylepitcock.legacyconnector.v1_12_2.bridge.ItemBridge1122.modItems()) {
+            if (item.getRegistryName() == null) continue;
+            for (int meta : org.kylepitcock.legacyconnector.v1_12_2.bridge.ItemBridge1122.variants(item).keySet()) {
+                var modern = org.kylepitcock.legacyconnector.v1_12_2.bridge.ItemBridge1122.modern(item, meta);
+                if (modern == null) continue;
+                ResourceLocation id = BuiltInRegistries.ITEM.getKey(modern);
+                String ns = id.getNamespace();
+                String file = "assets/" + ns + "/models/item/" + id.getPath() + ".json";
+                if (out.containsKey(file) || modelExists(ns, "item/" + id.getPath())) continue;
+                JsonObject model = new JsonObject();
+                String base = id.getPath().replaceFirst("_\\d+$", "");
+                String texture = null;
+                for (String candidate : new String[] {id.getPath(), base}) {
+                    for (String dir : new String[] {"items/", "item/"}) {
+                        if (texture == null && resourceExists("assets/" + ns + "/textures/" + dir + candidate + ".png")) texture = ns + ":" + dir + candidate;
+                    }
+                }
+                if (texture != null) {
+                    model.addProperty("parent", "minecraft:item/generated");
+                    JsonObject textures = new JsonObject();
+                    textures.addProperty("layer0", texture);
+                    model.add("textures", textures);
+                } else if (item instanceof legacyconnector.v1_12_2.net.minecraft.item.ItemBlock && modelExists(ns, "block/" + base)) {
+                    model.addProperty("parent", ns + ":block/" + base);
+                } else {
+                    continue;
+                }
+                String json = GSON.toJson(model);
+                byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
+                out.put(file, () -> bytes);
+                if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) org.kylepitcock.legacyconnector.v1_7_10.client.SharedItemModels.note(id, json);
+                made++;
+            }
+        }
+        if (made > 0) LOG.info("1.12.2 item models: {} item(s) without a model file got a flat model of their texture", made);
     }
 
     /** The item models of a block's items (an ItemBlock without a model file of its own draws the block's model of its metadata). */

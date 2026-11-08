@@ -218,6 +218,11 @@ public class EffectRenderer {
         }
     }
 
+    /** The same by legacy numeric block id (1.6.4). */
+    public void addBlockDestroyEffects(int x, int y, int z, int id, int meta) {
+        addBlockDestroyEffects(x, y, z, Block.getBlockById(id), meta);
+    }
+
     /** One digging particle on the given face of the block being mined. */
     public void addBlockHitEffects(int x, int y, int z, int side) {
         World world = mcc$world();
