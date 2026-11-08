@@ -55,6 +55,18 @@ public final class AnimalLifecycleSelfTestB173 {
         require(copy instanceof Mob&&copy instanceof B173LivingHost&&copy.getType()==host.getType(),"registry reload creates same native type");
         cleanup.add(copy);return (Mob)copy;
     }
+    private static net.minecraft.server.level.ServerPlayer observer(net.minecraft.server.level.ServerLevel level){
+        var profile=new com.mojang.authlib.GameProfile(java.util.UUID.nameUUIDFromBytes(
+                "legacyconnector:animal-lifecycle".getBytes(java.nio.charset.StandardCharsets.UTF_8)),"B173Lifecycle");
+        var player=new net.minecraft.server.level.ServerPlayer(level.getServer(),level,profile,net.minecraft.server.level.ClientInformation.createDefault());
+        var connection=new net.minecraft.network.Connection(net.minecraft.network.protocol.PacketFlow.SERVERBOUND);
+        new net.minecraft.server.network.ServerGamePacketListenerImpl(level.getServer(),connection,player,
+                net.minecraft.server.network.CommonListenerCookie.createInitial(profile,false)){
+            @Override public void send(net.minecraft.network.protocol.Packet<?> packet){}
+            @Override public void send(net.minecraft.network.protocol.Packet<?> packet,net.minecraft.network.PacketSendListener listener){}
+        };
+        player.setInvulnerable(true);return player;
+    }
     private static void run(net.minecraft.server.level.ServerLevel level) {
         for(var registration:ContentB173.entities()) {
             String name=registration.type().getSimpleName();
@@ -62,6 +74,11 @@ public final class AnimalLifecycleSelfTestB173 {
             var cleanup=new ArrayList<net.minecraft.world.entity.Entity>();
             try {
                 var world=World.mcc$wrap(level);var pos=level.getSharedSpawnPos().above(12);
+                var center=pos.offset(128,0,128);
+                for(int dx=-1;dx<=1;dx++)for(int dz=-1;dz<=1;dz++)level.getChunk((center.getX()>>4)+dx,(center.getZ()>>4)+dz);
+                // Keep lifecycle probes inside original despawn distance, outside Hippo's target query.
+                var observer=observer(level);cleanup.add(observer);
+                observer.setPos(center.getX()+24.5,center.getY(),center.getZ()+.5);level.addNewPlayer(observer);
                 var original=spawn(registration.type(),world,pos.getX()+128.5,pos.getY(),pos.getZ()+128.5,cleanup);
                 if(name.equals("EntityBunny"))bunny(original,world,level,cleanup);
                 else hippo(original,world,level,cleanup);
@@ -76,6 +93,7 @@ public final class AnimalLifecycleSelfTestB173 {
         mob.setOnGround(true);mob.setDeltaMovement(.1,0,0);
         double x=mob.getX(),y=mob.getY();int ticks=host.baseTickCount(),movement=host.baseMovementCount(),ai=host.baseAICount();
         mob.tick();
+        require(!mob.isRemoved()&&!original.dead,"nearby real lifecycle observer keeps untamed Bunny eligible for subsequent phases");
         require(Math.abs((Float)get(original,"edad")-.51F)<.0001,"original juvenile growth callback");
         require(host.baseTickCount()==ticks+1&&host.baseMovementCount()==movement+1&&host.baseAICount()==ai+1,"one superclass tick/movement/AI phase");
         var preTravel=(net.minecraft.world.phys.Vec3)call(mob,"lastPreTravelVelocity",new Class<?>[]{});

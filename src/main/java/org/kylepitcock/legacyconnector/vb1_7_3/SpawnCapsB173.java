@@ -36,6 +36,7 @@ public final class SpawnCapsB173 {
 
     public static boolean countsMembership(SpawnGroup group,Entity entity){
         if(entity instanceof B173EntityHost host&&host.legacy()!=null)return countsType(group,host.legacy().getClass(),entity.getClass());
+        if(entity instanceof LegacyB173Cow cow&&cow.legacy()!=null)return countsType(group,cow.legacy().getClass(),entity.getClass());
         return countsType(group,null,entity.getClass());
     }
 

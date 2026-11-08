@@ -43,17 +43,48 @@ public final class LegacyB173Cow extends Cow {
         legacy.velocityX=getDeltaMovement().x;legacy.velocityY=getDeltaMovement().y;legacy.velocityZ=getDeltaMovement().z;
         legacy.health=(int)Math.ceil(getHealth());legacy.hurtTime=hurtTime;legacy.deathTime=deathTime;
         legacy.onGround=onGround();legacy.fireTicks=getRemainingFireTicks();legacy.age=tickCount;
+        legacy.despawnCounter=getNoActionTime();legacy.dead=isRemoved();
     }
     private void push(){
         if(!Float.isFinite(legacy.width)||!Float.isFinite(legacy.height)||legacy.width<=0||legacy.height<=0)throw new IllegalStateException("Invalid legacy mob dimensions");
         setPos(legacy.x,legacy.y,legacy.z);setYRot(legacy.yaw);setXRot(legacy.pitch);
         setDeltaMovement(legacy.velocityX,legacy.velocityY,legacy.velocityZ);setHealth(legacy.health);setRemainingFireTicks(legacy.fireTicks);
+        setNoActionTime(legacy.despawnCounter);
         entityData.set(WIDTH,legacy.width);entityData.set(HEIGHT,legacy.height);entityData.set(TEXTURE,legacy.mcc$texture()==null?"/mob/cow.png":legacy.mcc$texture());
         refreshDimensions();if(legacy.dead)discard();
     }
     @Override public void tick(){
         if(legacy!=null&&legacy.dead){discard();return;}
         super.tick();pull();
+    }
+    private boolean despawnVeto;
+    @Override public void checkDespawn(){
+        if(!level().isClientSide)despawnVeto=net.neoforged.neoforge.event.EventHooks.checkMobDespawn(this);
+    }
+    public boolean baseCanDespawn(){
+        return !despawnVeto&&!isPersistenceRequired()&&!requiresCustomPersistence()&&!hasCustomName()
+                &&!isLeashed()&&!isPassenger();
+    }
+    @Override public int getMaxSpawnClusterSize(){return legacy==null?super.getMaxSpawnClusterSize():Math.max(1,legacy.getLimitPerChunk());}
+    @Override protected void customServerAiStep(){
+        super.customServerAiStep();
+        if(legacy==null||isRemoved())return;
+        try(var minecraft=legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$context(World.mcc$wrap(level()),legacy);
+            var views=EntityViewsB173.callbackScope()){
+            pull();legacy.mcc$tryDespawn();push();
+        }
+    }
+    public boolean baseCanSpawn(){
+        push();var world=World.mcc$wrap(level());world.mcc$requireSpawnCollisionArea(getBoundingBox());
+        var access=world.mcc$access();return access.noCollision(this)&&!access.containsAnyLiquid(getBoundingBox());
+    }
+    @Override public boolean checkSpawnRules(net.minecraft.world.level.LevelAccessor access,MobSpawnType reason){
+        if(legacy==null)return false;
+        try(var generation=World.mcc$generation(access);
+            var minecraft=legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$context(World.mcc$wrap(level()),legacy);
+            var views=EntityViewsB173.callbackScope()){
+            pull();boolean allowed=legacy.canSpawn();push();return allowed;
+        }catch(World.SpawnRegionUnavailable unavailable){return false;}
     }
     @Override public boolean hurt(net.minecraft.world.damagesource.DamageSource source,float amount){boolean result=super.hurt(source,amount);pull();return result;}
     @Override public InteractionResult mobInteract(net.minecraft.world.entity.player.Player player,InteractionHand hand){

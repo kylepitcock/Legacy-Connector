@@ -1,0 +1,292 @@
+{
+  "snapshot_date": "2026-11-08",
+  "scope": "Hosted legacy Beta placement, exclusion from native terrain animal population, and original despawning; native and modern mod entities retain native rules",
+  "upstream_master_revision": "c18e66ca8a93cdbf41b8c566b9dabd6d43747385",
+  "tested_working_tree_base_revision": "a0add9779dcc7032a9a619e250acb0af0158ea2c",
+  "source_sha256": {
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/block/Block.java": "9151f3698cd95766c16f75dc2e8d0ba6ccfed06971e842c9e1bcc7d3d7d03e1f",
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/entity/LivingEntity.java": "c6e84072497af556abfd328924a8279637898c3f202a2593a3f8c87d51b6dcf5",
+    "src/main/java/org/kylepitcock/legacyconnector/mixin/BetaChunkPopulationMixin.java": "a0e143569662d900cd16d11ebe97664dff38972af9f74e1d8f525f71e6e3d3c9",
+    "src/main/java/org/kylepitcock/legacyconnector/mixin/BetaSpawnMobAccess.java": "fe78fdc30ab6a05c5d654eaaac1f3c22a2b3755d233bf5f5414db2f4f691f667",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/AnimalLifecycleSelfTestB173.java": "95fdbd2912c97a415472cf0e40475d7ab92224b7d56bd81807e23b2f627f2652",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/B173LivingHost.java": "de273f40f74ef9546ff4e0c31422c877c81d674ee4a4a1bb9de3b19d408945d7",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/BetaEcologyB173.java": "0d65e10b2d19fd2610596f270fbf92edb41d35319b98caeca87e4548e5322563",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/BetaEcologySelfTestB173.java": "0ad00d427d6c70cfbdd6ac15c09b662653d296ef26254cbd87efe092d74f02df",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/BetaSpawnPlacementB173.java": "a353237aa988a6ca42a75d8f47ca5cf1a3a653dba3685e39936c2639bdf9c993",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/BlocksB173.java": "bdf98070a60d4252d73b42c3f49fce2b01df80aad8ffd4bf0ff0414fa2cbfa29",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/LegacyB173Animal.java": "6fd759d5dab4f365e6eced3942de74299fb426d1dd5930fd65142fd14e2f955b",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/LegacyB173Cow.java": "1ea1f232528760b18be02bfcacf06077ae91746b832416a6d4e49e8640d8a9bf",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/MobSelfTestB173.java": "cf7b024d6e11a45e6833d22e89a73b94d4e3f6fd322035958af4fba9e1e70bb9",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/SpawnCapsB173.java": "1019fccec92e654bcc76aeb3c6ed76f5c06ff1479bf963f45118f9bd1681246c",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/SpawnRulesB173.java": "d8b05c9f8e544743dee21bd6459446b1b40f6fefc7c271f6fa60a6993ba50b4a",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/SpawnSchedulerB173.java": "ed46a95429adb46b220ff3ac8523c1c6979cc3a7427f2dd200d2c56b5cd6b57c",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/VanillaB173.java": "84e7a4a586b802ea422cd99601c50755c28612ef5928f19e011a43eb59be1a11",
+    "src/main/resources/legacyconnector.mixins.json": "be873b01ebec5f2641d464f542bd217e86bea254f1307554eb318e85d4449844",
+    "src/main/resources/legacyconnector/b1.7.3/vanilla-block-full-cubes.tsv": "8da35bb7417b5618d4965b8b1b3525b5ad82acd75d312419a28d7e5f00c2f66d",
+    "src/test/java/org/kylepitcock/legacyconnector/vb1_7_3/BetaEcologyB173Test.java": "4ff66e10c519be3dd520d5c7513a011d5ffca84b0090158c5dadd8f43f0d3337",
+    "src/test/java/org/kylepitcock/legacyconnector/vb1_7_3/BetaSpawnPlacementB173Test.java": "3efcebc2848c4a1dfbea951338960da8c8f21076042a6db838f7fd1f6ae016d8",
+    "src/test/java/org/kylepitcock/legacyconnector/vb1_7_3/LegacyDespawnB173Test.java": "4103d3da84520944dcd661752c1adfe7417691ebaff33f209d9c8d5cdc3a8ac5"
+  },
+  "tests": {
+    "runtime": {
+      "tests": 192,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "loader": {
+      "tests": 244,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "actual_mod_opt_in": {
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "fixtures": {
+    "mocreatures_normal-final": {
+      "status": "headless-smoke-passed",
+      "source_archive": "DrZharks_MoCreatures_Mod_v2.12.2_b1.7.3.zip!mods/MoCreatures.zip",
+      "payload_sha256": "f0c374d1ca4ec0a809899186e81ded7c98814c82c98024f3a76992ac5ae3574e",
+      "game_directory": "run-b173-single/mocreatures-neutralbeta-placement-normal-2-20261108-030127-fc812a",
+      "resources_verified": 168,
+      "test_log_sha256": "4f77fad78978eec6f7248bcbde731136142c70046901fe18f0b9fde7a94a1214"
+    },
+    "morecreeps_normal-final": {
+      "status": "headless-smoke-passed",
+      "source_archive": "MoreCreepsv2.12_b173.zip!PUT CONTENTS INTO MINECRAFT FOLDER/mods/MoreCreepsAndWeirdos.zip",
+      "payload_sha256": "ae3a69376cc8764ece9bfc2dd63e911a79cc222c9d9319454cbccb5443ed743e",
+      "game_directory": "run-b173-single/morecreeps-neutralbeta-placement-normal-2-20261108-030128-814ef9",
+      "resources_verified": 759,
+      "test_log_sha256": "233b41d6c82aa9b309281eaed75ca3fac1b926af55b8e74b13e54a7f5b3d719d"
+    },
+    "mocreatures_classic-flat-final": {
+      "status": "headless-smoke-passed",
+      "source_archive": "DrZharks_MoCreatures_Mod_v2.12.2_b1.7.3.zip!mods/MoCreatures.zip",
+      "payload_sha256": "8120b503b046319fee2325f977452d3e214f15041d7bd9c8c139dbd458ccbafe",
+      "game_directory": "run-b173-single/mocreatures-neutralbeta-placement-classic-flat-2-20261108-030345-3a4f85",
+      "resources_verified": 168,
+      "test_log_sha256": "3c194cb678f5941cf849b958113cbc8a2a87dcccf8577c47f8a4918d8ee4eb7d"
+    },
+    "morecreeps_classic-flat-final": {
+      "status": "headless-smoke-passed",
+      "source_archive": "MoreCreepsv2.12_b173.zip!PUT CONTENTS INTO MINECRAFT FOLDER/mods/MoreCreepsAndWeirdos.zip",
+      "payload_sha256": "38b88a4aa5b3f6f6c400c1b12740218720cad37bae0b27c81489b3c13ba228cc",
+      "game_directory": "run-b173-single/morecreeps-neutralbeta-placement-classic-flat-3-20261108-031647-ca4484",
+      "resources_verified": 759,
+      "test_log_sha256": "36100e8ade93c0ff66627041b5c14f167464097e898b754b4a043367f733e93f"
+    }
+  },
+  "actual_tick_observations": {
+    "mocreatures_normal-final": {
+      "world_ticks": 500,
+      "group_opportunities": {
+        "MONSTER": 500,
+        "CREATURE": 500,
+        "WATER_CREATURE": 500
+      },
+      "original_position_checks": {
+        "mocreatures:caveogre": 16,
+        "mocreatures:fireogre": 10,
+        "mocreatures:fishy": 29,
+        "mocreatures:flamewraith": 7,
+        "mocreatures:ogre": 28,
+        "mocreatures:rat": 107,
+        "mocreatures:shark": 9,
+        "mocreatures:werewolf": 48,
+        "mocreatures:wildwolf": 52,
+        "mocreatures:wraith": 49
+      },
+      "confirmed_natural_insertions": {
+        "mocreatures:fishy": 24,
+        "mocreatures:rat": 21,
+        "mocreatures:shark": 8,
+        "mocreatures:werewolf": 4,
+        "mocreatures:wraith": 1
+      },
+      "inserted_species": 5,
+      "total_confirmed_insertions": 58,
+      "ecology_acceptance": "[03:04:03] [Server thread/INFO] [LegacyConnector/B173EcologyTest/]: B1.7.3 ECOLOGY TEST passed: hosted-only generation filter, unchanged native population entries, native CHUNK_GENERATION position checks observed=0, native Cow/Pig persistence and original Bunny policies when present; GenerateSurface is covered separately by existing worldgen smoke"
+    },
+    "morecreeps_normal-final": {
+      "world_ticks": 500,
+      "group_opportunities": {
+        "CREATURE": 500
+      },
+      "original_position_checks": {},
+      "confirmed_natural_insertions": {},
+      "inserted_species": 0,
+      "total_confirmed_insertions": 0,
+      "ecology_acceptance": "[03:05:44] [Server thread/INFO] [LegacyConnector/B173EcologyTest/]: B1.7.3 ECOLOGY TEST passed: hosted-only generation filter, unchanged native population entries, native CHUNK_GENERATION position checks observed=0, native Cow/Pig persistence and original Bunny policies when present; GenerateSurface is covered separately by existing worldgen smoke"
+    },
+    "mocreatures_classic-flat-final": {
+      "world_ticks": 500,
+      "group_opportunities": {
+        "MONSTER": 500,
+        "CREATURE": 500,
+        "WATER_CREATURE": 500
+      },
+      "original_position_checks": {
+        "mocreatures:bear": 2,
+        "mocreatures:bird": 12,
+        "mocreatures:boar": 4,
+        "mocreatures:caveogre": 706,
+        "mocreatures:deer": 4,
+        "mocreatures:fireogre": 457,
+        "mocreatures:flamewraith": 438,
+        "mocreatures:fox": 1,
+        "mocreatures:horse": 13,
+        "mocreatures:kitty": 2,
+        "mocreatures:mouse": 12,
+        "mocreatures:ogre": 1227,
+        "mocreatures:rat": 1963,
+        "mocreatures:werewolf": 1492,
+        "mocreatures:wildwolf": 1803,
+        "mocreatures:wraith": 1201
+      },
+      "confirmed_natural_insertions": {
+        "mocreatures:bear": 2,
+        "mocreatures:bird": 12,
+        "mocreatures:boar": 4,
+        "mocreatures:deer": 4,
+        "mocreatures:fox": 1,
+        "mocreatures:horse": 12,
+        "mocreatures:kitty": 2,
+        "mocreatures:mouse": 12
+      },
+      "inserted_species": 8,
+      "total_confirmed_insertions": 49,
+      "ecology_acceptance": "[03:14:02] [Server thread/INFO] [LegacyConnector/B173EcologyTest/]: B1.7.3 ECOLOGY TEST passed: hosted-only generation filter, unchanged native population entries, native CHUNK_GENERATION position checks observed=4, native Cow/Pig persistence and original Bunny policies when present; GenerateSurface is covered separately by existing worldgen smoke",
+      "habitat": "[03:14:05] [Server thread/INFO] [LegacyConnector/ServerScript/]: BETA HABITAT PROOF generator=net.minecraft.world.level.levelgen.FlatLevelSource minY=-64 sharedSpawn=BlockPos{x=0, y=64, z=0} grassFeet=BlockPos{x=0, y=64, z=0}",
+      "full_cube_api": "[03:14:05] [Server thread/INFO] [LegacyConnector/ServerScript/]: BETA VANILLA CUBE API PROOF checked=96 mismatches=[]",
+      "slab_roundtrip_api": "[03:14:05] [Server thread/INFO] [LegacyConnector/ServerScript/]: BETA SLAB API PROOF checked=8 mismatches=[]"
+    },
+    "morecreeps_classic-flat-final": {
+      "world_ticks": 500,
+      "group_opportunities": {
+        "CREATURE": 500
+      },
+      "original_position_checks": {
+        "morecreepsandweirdos:armyguy": 24,
+        "morecreepsandweirdos:babymummy": 24,
+        "morecreepsandweirdos:bigbaby": 6,
+        "morecreepsandweirdos:blacksoul": 36,
+        "morecreepsandweirdos:blorp": 24,
+        "morecreepsandweirdos:bubblescum": 30,
+        "morecreepsandweirdos:bum": 15,
+        "morecreepsandweirdos:cameljockey": 24,
+        "morecreepsandweirdos:desertlizard": 24,
+        "morecreepsandweirdos:digbug": 88,
+        "morecreepsandweirdos:evilscientist": 15,
+        "morecreepsandweirdos:floob": 14,
+        "morecreepsandweirdos:floobship": 24,
+        "morecreepsandweirdos:g": 7,
+        "morecreepsandweirdos:googoat": 8,
+        "morecreepsandweirdos:guineapig": 45,
+        "morecreepsandweirdos:hippo": 23,
+        "morecreepsandweirdos:horsehead": 3,
+        "morecreepsandweirdos:hotdog": 5,
+        "morecreepsandweirdos:hunchback": 25,
+        "morecreepsandweirdos:kid": 2,
+        "morecreepsandweirdos:lawyerfromhell": 72,
+        "morecreepsandweirdos:lolliman": 24,
+        "morecreepsandweirdos:mandog": 35,
+        "morecreepsandweirdos:mummy": 12,
+        "morecreepsandweirdos:preacher": 8,
+        "morecreepsandweirdos:robottodd": 1,
+        "morecreepsandweirdos:rocketgiraffe": 29,
+        "morecreepsandweirdos:rockmonster": 9,
+        "morecreepsandweirdos:sneakysal": 6,
+        "morecreepsandweirdos:snowdevil": 12,
+        "morecreepsandweirdos:thief": 33,
+        "morecreepsandweirdos:zebra": 17
+      },
+      "confirmed_natural_insertions": {
+        "morecreepsandweirdos:armyguy": 3,
+        "morecreepsandweirdos:bigbaby": 2,
+        "morecreepsandweirdos:blorp": 1,
+        "morecreepsandweirdos:bubblescum": 6,
+        "morecreepsandweirdos:bum": 2,
+        "morecreepsandweirdos:digbug": 1,
+        "morecreepsandweirdos:evilscientist": 1,
+        "morecreepsandweirdos:floob": 3,
+        "morecreepsandweirdos:g": 3,
+        "morecreepsandweirdos:googoat": 6,
+        "morecreepsandweirdos:guineapig": 3,
+        "morecreepsandweirdos:hippo": 4,
+        "morecreepsandweirdos:horsehead": 1,
+        "morecreepsandweirdos:hotdog": 2,
+        "morecreepsandweirdos:hunchback": 1,
+        "morecreepsandweirdos:kid": 2,
+        "morecreepsandweirdos:lawyerfromhell": 14,
+        "morecreepsandweirdos:lolliman": 2,
+        "morecreepsandweirdos:preacher": 1,
+        "morecreepsandweirdos:robottodd": 1,
+        "morecreepsandweirdos:rocketgiraffe": 2,
+        "morecreepsandweirdos:rockmonster": 1,
+        "morecreepsandweirdos:sneakysal": 1,
+        "morecreepsandweirdos:thief": 3,
+        "morecreepsandweirdos:zebra": 3
+      },
+      "inserted_species": 25,
+      "total_confirmed_insertions": 69,
+      "ecology_acceptance": "[03:17:24] [Server thread/INFO] [LegacyConnector/B173EcologyTest/]: B1.7.3 ECOLOGY TEST passed: hosted-only generation filter, unchanged native population entries, native CHUNK_GENERATION position checks observed=0, native Cow/Pig persistence and original Bunny policies when present; GenerateSurface is covered separately by existing worldgen smoke",
+      "habitat": "[03:17:27] [Server thread/INFO] [LegacyConnector/ServerScript/]: BETA HABITAT PROOF generator=net.minecraft.world.level.levelgen.FlatLevelSource minY=-64 sharedSpawn=BlockPos{x=0, y=64, z=0} grassFeet=BlockPos{x=0, y=64, z=0}",
+      "full_cube_api": "[03:17:27] [Server thread/INFO] [LegacyConnector/ServerScript/]: BETA VANILLA CUBE API PROOF checked=96 mismatches=[]",
+      "slab_roundtrip_api": "[03:17:27] [Server thread/INFO] [LegacyConnector/ServerScript/]: BETA SLAB API PROOF checked=8 mismatches=[]"
+    }
+  },
+  "original_block_geometry": {
+    "derived_from": "clean original b1.7.3 client uu.m[] / uu.d()",
+    "source_sha256": "af1fa04b8006d3ef78c7e24f8de4aa56f439a74d7f314827529062d5bab6db4c",
+    "entries": 96,
+    "contiguous_ids": [
+      1,
+      96
+    ],
+    "true_count": 48,
+    "false_count": 48,
+    "resource_sha256": "8da35bb7417b5618d4965b8b1b3525b5ad82acd75d312419a28d7e5f00c2f66d"
+  },
+  "placement_checks": [
+    "Weighted choice before X/Y/Z draws",
+    "Fixed Y 0..127",
+    "Three walks of four candidates",
+    "Zero-height RNG draws retained",
+    "Original material and full-cube API predicates",
+    "24-block player and world-spawn exclusions",
+    "Original dynamic canSpawn and cluster-size callbacks",
+    "Native event cancellation and insertion accounting; no modern mob initialization for hosted originals"
+  ],
+  "ecology_checks": [
+    "Only hosted original entries excluded from native animal terrain population",
+    "Native and modern mod population entries retain identity, order, weights and pack sizes",
+    "Native Cow/Pig far-player persistence retained",
+    "Hosted original Cow far-player despawn and cluster override",
+    "Actual untamed Bunny despawns while tamed Bunny persists",
+    "Original superclass AI skips suppress original despawn phase",
+    "Native block geometry includes half/double slabs, glass, stairs, fences, soul sand, cobweb and both piston bases"
+  ],
+  "despawn_checks": {
+    "hard_distance": "strictly greater than 128 blocks",
+    "lottery": "age > 600; nextInt(800) == 0",
+    "near_lottery_reset": "distance < 32 blocks resets age; equality removes",
+    "protections": "Original canDespawn dispatch, native event vetoes, persistence, custom names, leashes and passengers"
+  },
+  "generic_guard": "256 Beta production/loader source files; no listed content-mod identity selectors outside tests",
+  "full_build": {
+    "command": "gradlew.bat build actualModTest --console=plain",
+    "log": "build/beta-placement-full-build.log",
+    "log_sha256": "2709a11a159ae2b16901a6b7cc69e43f367ce1bc83f354212290847a4c80d726"
+  },
+  "validation_order": "Normal-world runs precede the final classic full-cube metadata/slab adaptation. Final complete build and both fresh classic-flat actual-mod runs include those corrections.",
+  "limitations": [
+    "Headless server and CPU renderer regression fixtures do not establish live client visual/interaction correctness.",
+    "Native fauna retains native persistence and still contributes to original Beta ancestry caps. A modern normal world can therefore leave no passive Beta budget; no cap increase or native despawn change is applied.",
+    "Fixed Beta Y sampling intentionally does not follow modern world height. Rates, caps, weights and RNG were not forced; the additional grass-flat habitat places its surface at Y=63."
+  ]
+}

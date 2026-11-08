@@ -32,9 +32,12 @@ public final class BlocksB173 {
             if (fluid.getType() == Fluids.FLOWING_LAVA) return 10;
         }
         int[] hit = reverse().get(state.getBlock());
-        if (hit != null) return hit[0];
+        if (hit != null) return hit[0]==44&&state.hasProperty(net.minecraft.world.level.block.SlabBlock.TYPE)
+                &&state.getValue(net.minecraft.world.level.block.SlabBlock.TYPE)==net.minecraft.world.level.block.state.properties.SlabType.DOUBLE?43:hit[0];
         return state.canOcclude() ? 1 : 0;
     }
+
+    static boolean hasVanillaId(BlockState state){return reverse().containsKey(state.getBlock());}
 
     public static int legacyMeta(BlockState state) {
         if (state.getBlock() instanceof LegacyB173Block) return state.getValue(LegacyB173Block.META);
@@ -53,7 +56,9 @@ public final class BlocksB173 {
         if (legacy != null && legacy.mcc$owner != null && legacy.mcc$modern != null) return legacy.mcc$modern.defaultBlockState();
         net.minecraft.world.item.Item variant = VanillaB173.modernItem(id, meta);
         if (variant instanceof net.minecraft.world.item.BlockItem bi && (id == 35 || id == 17 || id == 18 || id == 6 || id == 44 || id == 43)) {
-            return bi.getBlock().defaultBlockState();
+            var state=bi.getBlock().defaultBlockState();
+            return id==43&&state.hasProperty(net.minecraft.world.level.block.SlabBlock.TYPE)
+                    ?state.setValue(net.minecraft.world.level.block.SlabBlock.TYPE,net.minecraft.world.level.block.state.properties.SlabType.DOUBLE):state;
         }
         var block = VanillaB173.modernBlock(id);
         if (block == null) return Blocks.AIR.defaultBlockState();
