@@ -33,4 +33,4 @@ net/minecraft/server/ServerAdvancementManager	getAdvancement	*	get
 net/minecraft/world/entity/ai/attributes/AttributeModifier$Operation	toValue	*	id
 net/minecraft/world/item/crafting/ShapedRecipe	getRecipeWidth	*	getWidth
 net/minecraft/world/item/crafting/ShapedRecipe	getRecipeHeight	*	getHeight
-net/minecraft/advancements/AdvancementHolder	getId	*	id
+net/minecraft/advancements/Advancement	getId	*	id

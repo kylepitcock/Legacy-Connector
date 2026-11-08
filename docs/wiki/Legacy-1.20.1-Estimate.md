@@ -433,3 +433,23 @@ Lesson from the run: a helper row whose descriptor is derived from the old argum
 Remaining top blockers on the ATM 9 set (jars): custom advancement triggers and `critereon` (46), `EntityRenderersEvent.AddLayers.getSkin` (31), `Options.renderDebug` (29), `AbstractProjectileDispenseBehavior` (26), `CauldronInteraction.WATER` map type (24),
 recipe serializers `fromNetwork`/`fromJson`/`toNetwork` (23/22/20, codecs), `ItemStack.ATTRIBUTE_MODIFIER_FORMAT` (23), `ForgeRegistry` (22), `CraftingRecipe.getRemainingItems(Container)` (22), `UnbakedModel.bake` (22), `PathPackResources` (20),
 `DeferredRegister.makeRegistry` (20), `PortalInfo` (20), `RecipeWrapper` (19), `MapDecoration.Type` (18), `DiggerItem.<init>` with tag (18), `Entity.getMyRidingOffset` (18), `IFluidBlock` (18). Not run in a game: everything here is link level, like sections 10 to 16.
+
+## 19. Status 2026-11-08: Minecraft-side blockers of the ATM 9 run, round 2
+
+Fresh baseline on master with `tools/compat/atm9_run.py` (506 jars): links 79, jars with unresolved references 409, unresolved jar/symbol pairs 21,890. After this round: see the numbers in the commit message of the last commit of the branch (links 81, pairs 21,529 after the first batch; the second batch only removes more `AdvancementHolder.getId` and cauldron rows).
+
+| Blocker (jars) | What was done |
+|---|---|
+| `Options.renderDebug` 29 | the loader now rewrites dropped **instance fields**: `mc-calls.tsv` rows named `$get$field` / `$set$field` (descriptors `()T` / `(T)V`, helper takes the receiver) replace `GETFIELD` / `PUTFIELD`; `ClientCompat.getRenderDebug/setRenderDebug` read and toggle the `DebugScreenOverlay` |
+| `AbstractProjectileDispenseBehavior` 26 | stand-in class `LegacyProjectileDispenseBehavior` (the old `execute`/`getProjectile`/`getPower`/`getUncertainty` over `DefaultDispenseItemBehavior`), `mc-classes.tsv` |
+| `CauldronInteraction.WATER` 24 | `WATER/LAVA/POWDER_SNOW/EMPTY` fields read as `InteractionMap`, `MiscCompat.cauldronMap` returns its `map()`; `newInteractionMap()` registers a named map |
+| `ItemStack.ATTRIBUTE_MODIFIER_FORMAT` 23 | `none` field row with `MiscCompat.attributeModifierFormat` |
+| `CraftingRecipe.getRemainingItems(Container)` 22 | call row to `RecipeCompat.getRemainingItems`, and an `invokespecial` (super call) `=args` row that converts the `Container` with `BridgeHelpers.input` |
+| `UnbakedModel.bake` 22 | bridge (`0,1,2,null`: the mod's 4-argument override is called from 1.21.1's 3-argument one) and a `=pop` call row |
+| `PortalInfo` 20 | stand-in `LegacyPortalInfo` (the four public fields); `ITeleporter.getPortalInfo` default |
+| `MapDecoration.Type` 18 | stand-in enum `LegacyMapDecorationType` with `holder()` (`MapDecorationTypes` by reflection); `addTargetDecoration`/`addDecoration` convert it |
+| `AddLayers.getSkin(String)` 31 | `ClientCompat.getSkin` ("slim"/"default" to `PlayerSkin.Model`) |
+| smaller | `BucketItem.getFluid` (17, the `content` field), `MobEffectInstance.save(CompoundTag)` (18), `ShapedRecipe.getRecipeWidth/Height` and `Advancement.getId` renames (`mc-members.tsv`) |
+
+Not done (still the top Minecraft-side blockers): custom advancement triggers (`DeserializationContext` 46, `AbstractCriterionTriggerInstance` 42, `ContextAwarePredicate.ANY` 29, `SerializationContext` 27): a bridge needs stand-ins for the JSON context classes, an instance class implementing `SimpleCriterionTrigger.SimpleInstance`, and a `Codec` that reads the JSON object through the mod's `createInstance(JsonObject, ContextAwarePredicate, DeserializationContext)`
+(plus the predicate `fromJson`/`toJson` family: `ItemPredicate.fromJson`...); `FinishedRecipe` 21, `ParticleTypes.ENTITY_EFFECT` 20 (now `ParticleType<ColorParticleOption>`), `Block.getCloneItemStack` 4-argument form 20, `Entity.canChangeDimensions()` 18 and `getMyRidingOffset` 18, `DiggerItem.<init>` with tag 18, `Pack.readMetaAndCreate` 18, `ObjectSelectionList.<init>` 17, `BuiltInRegistries.POTION` type 17, `EnchantmentHelper.enchantItem` 17, `VertexConsumer.vertex` 14-argument 17, `DataResult.get()` 16, mixin accessors on `RandomizableContainerBlockEntity.setLootTable` 16. `PathPackResources` (20) belongs to the Forge-API side (`net.minecraftforge.resource`). Mod subclasses that inherit a renamed member (`ShapedRecipe.getRecipeWidth` called through the mod's own subclass) are not matched by `mc-members.tsv` (owner is the receiver type). No server run was done in this round (the processes limit was reached by other agents); verified by the unit tests (`Mc1201MigrationTest`), `./gradlew compileJava --rerun generateShimIndex check` and the ATM 9 link probe.
