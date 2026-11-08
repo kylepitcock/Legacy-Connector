@@ -151,6 +151,9 @@ public class GL11 extends GL11Guard {
     }
 
     public static void glTexGen(int coord, int pname, FloatBuffer params) {
+        if (params == null || params.remaining() < 4) return;
+        int p = params.position();
+        org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.mcc$texGenPlane(coord, pname, params.get(p), params.get(p + 1), params.get(p + 2), params.get(p + 3));
     }
 
     public static void glTexEnv(int target, int pname, FloatBuffer params) {
@@ -368,6 +371,7 @@ public class GL11 extends GL11Guard {
             case 3042 -> org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.setBlend(on); // GL_BLEND
             case 2929 -> org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.setDepthTest(on); // GL_DEPTH_TEST
             case 2896 -> org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.setLighting(on); // GL_LIGHTING
+            case 0x0C60, 0x0C61, 0x0C62, 0x0C63 -> org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.mcc$texGenEnable(cap - 0x0C60, on); // GL_TEXTURE_GEN_S..Q
             default -> {
             }
         }

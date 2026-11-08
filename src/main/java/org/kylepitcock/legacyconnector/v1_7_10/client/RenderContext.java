@@ -124,6 +124,12 @@ public final class RenderContext {
         /** The emulated texture matrix applied to legacy texture coordinates; null is the identity. */
         org.joml.Matrix4f textureMatrix;
         final Deque<org.joml.Matrix4f> textureStack = new ArrayDeque<>();
+        /** Emulated glTexGen per texture coordinate S, T, R, Q (end-portal style effects): enabled, mode, object and eye planes. */
+        final boolean[] texGenOn = new boolean[4];
+        final int[] texGenMode = {0x2400, 0x2400, 0x2400, 0x2400};
+        final float[][] texGenObjPlane = {{1, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}};
+        final float[][] texGenEyePlane = {{1, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}};
+        int texGenMask;
         /** The legacy projection while legacy code has replaced the modern one; null while it has not. */
         org.joml.Matrix4f projection;
         final Deque<org.joml.Matrix4f> projectionStack = new ArrayDeque<>();
@@ -774,7 +780,12 @@ public final class RenderContext {
 
     static void quad(State s, double[] v0, double[] v1, double[] v2, double[] v3, float nx, float ny, float nz) {
         s.quadCount++;
-        if (s.textureMatrix != null && s.texture2d) {
+        if (s.texture2d && s.texGenMask != 0) {
+            v0 = texGenerated(s, v0, 0);
+            v1 = texGenerated(s, v1, 1);
+            v2 = texGenerated(s, v2, 2);
+            v3 = texGenerated(s, v3, 3);
+        } else if (s.textureMatrix != null && s.texture2d) {
             v0 = textured(s, v0, 0);
             v1 = textured(s, v1, 1);
             v2 = textured(s, v2, 2);
@@ -1216,6 +1227,80 @@ public final class RenderContext {
         }
     }
 
+    // ------------------------------------------------------------------ glTexGen
+
+    public static void mcc$texGenEnable(int coord, boolean on) {
+        if (coord < 0 || coord > 3) return;
+        State s = STATE.get();
+        s.texGenOn[coord] = on;
+        int mask = 0;
+        for (int i = 0; i < 4; i++) if (s.texGenOn[i]) mask |= 1 << i;
+        s.texGenMask = mask;
+    }
+
+    /** {@code glTexGeni(GL_S..GL_Q, GL_TEXTURE_GEN_MODE, mode)}. */
+    public static void mcc$texGeni(int coord, int pname, int param) {
+        coord -= 0x2000;
+        if (coord < 0 || coord > 3 || pname != 0x2500) return;
+        STATE.get().texGenMode[coord] = param;
+    }
+
+    /** {@code glTexGen(GL_S..GL_Q, GL_OBJECT_PLANE | GL_EYE_PLANE, plane)}; an eye plane is taken through the inverse of the current modelview matrix, as GL does. */
+    public static void mcc$texGenPlane(int coord, int pname, float x, float y, float z, float w) {
+        coord -= 0x2000;
+        if (coord < 0 || coord > 3) return;
+        State s = STATE.get();
+        if (pname == 0x2501) {
+            s.texGenObjPlane[coord] = new float[] {x, y, z, w};
+        } else if (pname == 0x2502) {
+            org.joml.Vector4f v = new org.joml.Vector4f(x, y, z, w);
+            PoseStack p = pose(s);
+            if (p != null) new org.joml.Matrix4f(p.last().pose()).invert().transpose().transform(v);
+            s.texGenEyePlane[coord] = new float[] {v.x, v.y, v.z, v.w};
+        }
+    }
+
+    /**
+     * Texture coordinates of a corner generated from its position (object or eye linear planes, the others keep the corner's own), then through the
+     * emulated texture matrix with the perspective divide: the end-portal style effect of Thaumcraft's eldritch obelisk panel and other legacy
+     * renderers.
+     */
+    private static double[] texGenerated(State s, double[] v, int slot) {
+        double[] out = s.uvScratch[slot];
+        if (out.length < v.length) out = s.uvScratch[slot] = new double[v.length];
+        System.arraycopy(v, 0, out, 0, v.length);
+        for (int k = v.length; k < out.length; k++) out[k] = 0.0D;
+        float x = (float) v[0], y = (float) v[1], z = (float) v[2];
+        float[] c = {(float) v[3], (float) v[4], 0F, 1F};
+        org.joml.Vector4f eye = null;
+        for (int i = 0; i < 4; i++) {
+            if (!s.texGenOn[i]) continue;
+            int mode = s.texGenMode[i];
+            if (mode == 0x2401) {
+                float[] pl = s.texGenObjPlane[i];
+                c[i] = pl[0] * x + pl[1] * y + pl[2] * z + pl[3];
+            } else if (mode == 0x2400) {
+                if (eye == null) {
+                    eye = new org.joml.Vector4f(x, y, z, 1F);
+                    PoseStack p = pose(s);
+                    if (p != null) p.last().pose().transform(eye);
+                }
+                float[] pl = s.texGenEyePlane[i];
+                c[i] = pl[0] * eye.x + pl[1] * eye.y + pl[2] * eye.z + pl[3] * eye.w;
+            }
+        }
+        org.joml.Vector4f tc = new org.joml.Vector4f(c[0], c[1], c[2], c[3]);
+        if (s.textureMatrix != null) s.textureMatrix.transform(tc);
+        float w = tc.w;
+        if (Math.abs(w) > 1.0E-6F && w != 1F) {
+            tc.x /= w;
+            tc.y /= w;
+        }
+        out[3] = tc.x;
+        out[4] = tc.y;
+        return out;
+    }
+
     /** Texture coordinates of a corner through the emulated texture matrix, into the scratch corner {@code slot}. */
     private static double[] textured(State s, double[] v, int slot) {
         double[] out = s.uvScratch[slot];
@@ -1233,5 +1318,7 @@ public final class RenderContext {
         s.matrixMode = GL_MODELVIEW;
         s.textureMatrix = null;
         s.textureStack.clear();
+        java.util.Arrays.fill(s.texGenOn, false);
+        s.texGenMask = 0;
     }
 }
