@@ -121,6 +121,104 @@ public final class RoundCompat {
         return profile;
     }
 
+    // ------------------------------------------------------------------ ingredients (1.21.1: Ingredient is final, NBT ingredients are data component ingredients)
+
+    /** {@code StrictNBTIngredient.of(ItemStack)}: the item and all of its data (the NBT of 1.20.1 is the custom data component here). */
+    public static net.minecraft.world.item.crafting.Ingredient strictIngredient(ItemStack stack) {
+        return net.neoforged.neoforge.common.crafting.DataComponentIngredient.of(true, stack);
+    }
+
+    /** {@code PartialNBTIngredient.of(Item, CompoundTag)}: the item whose NBT contains the given tag. */
+    public static net.minecraft.world.item.crafting.Ingredient partialIngredient(net.minecraft.world.item.Item item, CompoundTag nbt) {
+        return net.neoforged.neoforge.common.crafting.DataComponentIngredient.of(false, net.minecraft.core.component.DataComponents.CUSTOM_DATA,
+                net.minecraft.world.item.component.CustomData.of(nbt), item);
+    }
+
+    public static net.minecraft.world.item.crafting.Ingredient partialIngredient(CompoundTag nbt, net.minecraft.world.level.ItemLike... items) {
+        return net.neoforged.neoforge.common.crafting.DataComponentIngredient.of(false, net.minecraft.core.component.DataComponents.CUSTOM_DATA,
+                net.minecraft.world.item.component.CustomData.of(nbt), items);
+    }
+
+    // ------------------------------------------------------------------ mob effects
+
+    /** {@code MobEffect.getAttributeModifiers()}: attribute to the modifier at amplifier 0 (1.21.1 keeps templates private and builds modifiers per level). */
+    public static Map<net.minecraft.world.entity.ai.attributes.Attribute, net.minecraft.world.entity.ai.attributes.AttributeModifier> getAttributeModifiers(
+            net.minecraft.world.effect.MobEffect effect) {
+        Map<net.minecraft.world.entity.ai.attributes.Attribute, net.minecraft.world.entity.ai.attributes.AttributeModifier> out = new LinkedHashMap<>();
+        effect.createModifiers(0, (attribute, modifier) -> out.put(attribute.value(), modifier));
+        return out;
+    }
+
+    /** {@code MobEffect.getAttributeModifierValue(amplifier, modifier)}: the amount scaled by the level. */
+    public static double getAttributeModifierValue(net.minecraft.world.effect.MobEffect effect, int amplifier,
+            net.minecraft.world.entity.ai.attributes.AttributeModifier modifier) {
+        return modifier.amount() * (amplifier + 1);
+    }
+
+    // ------------------------------------------------------------------ mod configs (NeoForge's ModConfig constructor is not public: the tracker makes and tracks it)
+
+    /** {@code new ModConfig(type, spec, container, fileName)}. */
+    public static net.neoforged.fml.config.ModConfig newModConfig(net.neoforged.fml.config.ModConfig.Type type, net.neoforged.fml.config.IConfigSpec spec,
+            net.neoforged.fml.ModContainer container, String fileName) {
+        return net.neoforged.fml.config.ConfigTracker.INSTANCE.registerConfig(type, spec, container, fileName);
+    }
+
+    public static net.neoforged.fml.config.ModConfig newModConfig(net.neoforged.fml.config.ModConfig.Type type, net.neoforged.fml.config.IConfigSpec spec,
+            net.neoforged.fml.ModContainer container) {
+        return net.neoforged.fml.config.ConfigTracker.INSTANCE.registerConfig(type, spec, container);
+    }
+
+    /** {@code ModContainer.addConfig(ModConfig)}: the config is tracked already when it is made. */
+    public static void addConfig(net.neoforged.fml.ModContainer container, net.neoforged.fml.config.ModConfig config) {
+    }
+
+    public static com.electronwill.nightconfig.core.CommentedConfig getConfigData(net.neoforged.fml.config.ModConfig config) {
+        var loaded = config.getLoadedConfig();
+        return loaded == null ? null : loaded.config();
+    }
+
+    public static void saveConfig(net.neoforged.fml.config.ModConfig config) {
+        var loaded = config.getLoadedConfig();
+        if (loaded != null) loaded.save();
+    }
+
+    // ------------------------------------------------------------------ packs
+
+    private static net.minecraft.server.packs.PackLocationInfo packInfo(String id, net.minecraft.network.chat.Component title,
+            net.minecraft.server.packs.repository.PackSource source) {
+        return new net.minecraft.server.packs.PackLocationInfo(id, title, source, java.util.Optional.empty());
+    }
+
+    /** Adapts the 1.20.1 one-method supplier to the two-method 1.21.1 interface. */
+    public static net.minecraft.server.packs.repository.Pack.ResourcesSupplier packSupplier(LegacyResourcesSupplier legacy) {
+        return new net.minecraft.server.packs.repository.Pack.ResourcesSupplier() {
+            @Override
+            public net.minecraft.server.packs.PackResources openPrimary(net.minecraft.server.packs.PackLocationInfo info) {
+                return legacy.open(info.id());
+            }
+
+            @Override
+            public net.minecraft.server.packs.PackResources openFull(net.minecraft.server.packs.PackLocationInfo info,
+                    net.minecraft.server.packs.repository.Pack.Metadata metadata) {
+                return legacy.open(info.id());
+            }
+        };
+    }
+
+    /** {@code Pack.readMetaAndCreate(id, title, required, supplier, type, position, source)} of 1.20.1. */
+    public static net.minecraft.server.packs.repository.Pack readMetaAndCreate(String id, net.minecraft.network.chat.Component title, boolean required,
+            LegacyResourcesSupplier supplier, net.minecraft.server.packs.PackType type, net.minecraft.server.packs.repository.Pack.Position position,
+            net.minecraft.server.packs.repository.PackSource source) {
+        return net.minecraft.server.packs.repository.Pack.readMetaAndCreate(packInfo(id, title, source), packSupplier(supplier), type,
+                new net.minecraft.server.packs.PackSelectionConfig(required, position, false));
+    }
+
+    /** {@code new PathPackResources(String name, Path root, boolean isBuiltin)}. */
+    public static net.minecraft.server.packs.PathPackResources newPathPack(String name, java.nio.file.Path root, boolean builtin) {
+        return new net.minecraft.server.packs.PathPackResources(packInfo(name, net.minecraft.network.chat.Component.literal(name),
+                builtin ? net.minecraft.server.packs.repository.PackSource.BUILT_IN : net.minecraft.server.packs.repository.PackSource.DEFAULT), root);
+    }
+
     private static Holder<Enchantment> ench(ResourceKey<Enchantment> key) {
         return MigrateContext.registries().registryOrThrow(Registries.ENCHANTMENT).getHolderOrThrow(key);
     }
