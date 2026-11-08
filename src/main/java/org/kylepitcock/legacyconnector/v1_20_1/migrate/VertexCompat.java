@@ -63,4 +63,9 @@ public final class VertexCompat {
 
     /** A vertex is complete once the next one starts: nothing to do. */
     public static void endVertex(VertexConsumer c) {}
+
+    /** {@code VertexConsumer.vertex(x, y, z, r, g, b, a, u, v, overlay, light, nx, ny, nz)} (a whole vertex in one call): {@code addVertex} with a packed colour. */
+    public static void vertex(VertexConsumer c, float x, float y, float z, float r, float g, float b, float a, float u, float v, int overlay, int light, float nx, float ny, float nz) {
+        c.addVertex(x, y, z, net.minecraft.util.FastColor.ARGB32.colorFromFloat(a, r, g, b), u, v, overlay, light, nx, ny, nz);
+    }
 }
