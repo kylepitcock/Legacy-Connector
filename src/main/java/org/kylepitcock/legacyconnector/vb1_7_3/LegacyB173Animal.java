@@ -168,6 +168,7 @@ public final class LegacyB173Animal extends PathfinderMob implements B173LivingH
         if(inAI)throw new IllegalStateException("Recursive Beta base AI");inAI=true;ais++;
         try{
             legacy.despawnCounter++;
+            legacy.mcc$tryDespawn();
             flushView();
             if(legacy instanceof MobEntity creature){
                 creature.mcc$setMovementBlocked(creature.mcc$isMovementBlocked());
@@ -321,6 +322,15 @@ public final class LegacyB173Animal extends PathfinderMob implements B173LivingH
     }
     @Override protected void doPush(net.minecraft.world.entity.Entity other){if(legacy==null||level().isClientSide){super.doPush(other);return;}callback(()->legacy.onCollision(EntityViewsB173.wrap(other)));}
     @Override protected float getSoundVolume(){return legacy==null?super.getSoundVolume():legacy.mcc$soundVolume();}
+    private boolean despawnVeto;
+    @Override public void checkDespawn(){
+        // The original AI owns its age, lottery and canDespawn dispatch. Retain native event priority.
+        if(!level().isClientSide)despawnVeto=net.neoforged.neoforge.event.EventHooks.checkMobDespawn(this);
+    }
+    @Override public boolean baseCanDespawn(){
+        return !despawnVeto&&!isPersistenceRequired()&&!requiresCustomPersistence()&&!hasCustomName()
+                &&!isLeashed()&&!isPassenger();
+    }
     @Override public boolean removeWhenFarAway(double distance){return legacy!=null&&legacy.mcc$canDespawn();}
     @Override public void playAmbientSound(){if(legacy==null||level().isClientSide)return;callback(()->playLegacySound(legacy.mcc$randomSound()));}
     private void playLegacySound(String name){if(name!=null)World.mcc$wrap(level()).playSound(legacy,name,getSoundVolume(),getVoicePitch());}

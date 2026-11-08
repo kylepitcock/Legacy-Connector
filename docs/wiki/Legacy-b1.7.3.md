@@ -480,7 +480,7 @@ aquatic prey/settings policies, contact damage and juvenile gates, Fishy offspri
 habitat also exercises Minecraft's native weighted spawn selection, original spawn checks, factory creation and world insertion.
 This preserves original quirks, including a pregnant Kitty rejecting the nearest occupied bed instead of choosing a farther one.
 
-Beta spawn requests now receive opportunities on every ordinary native world tick, independently of the native 400-tick
+Hosted legacy spawn requests now receive opportunities on every ordinary native world tick, independently of the native 400-tick
 passive cadence. The scheduler reads current `SpawnGroup.capacity` values, including untouched Beta defaults of 70/15/5 and
 successful mapped writes by field name or index. Mo' Creatures applies its configured 70/30/25 settings at launch rather than
 on each slider change. Native category limits and per-player budgets remain unchanged for native spawning.
@@ -492,16 +492,35 @@ Player footprints are deduplicated unions of inclusive 17-by-17 chunk squares. A
 `capacity * footprintSize / 256`, with integer division. This gate runs once before the group's chunk loop; cluster overshoot
 is retained, and the next group sees a fresh census. For one player, default thresholds are 79/16/5; Mo' Creatures' are 79/33/28.
 
-The bridge captures chunks already admitted by native player proximity, world-border, gamerule and tick-rate checks. It uses
-native weighted selection, placement, spawn events, finalization and insertion. The native PotentialSpawns event keeps managed
-entries out of ordinary selection and admits them to Beta selection, scoped to the requested category and biome policy. Entry
-objects, weights and order are preserved. Both paths update native spawn accounting, and scoped state is restored on exceptions.
+The bridge captures chunks already admitted by native player proximity, world-border, gamerule and tick-rate checks. It keeps
+native weighted entries, biome spawn costs, spawn events and insertion, while hosted originals use the Beta candidate algorithm.
+One species is selected before each chunk's X/Y/Z origin draws, with the original fixed Y range of 0 through 127. Three walks
+of four candidates consume the original zero-height RNG draws, preserve material/solid-floor checks and the 24-block player
+and world-spawn exclusions, and call the original spawn predicate and cluster-size override. Checked-in full-cube flags for all
+96 original vanilla blocks preserve unusual rules such as solid soul sand and non-solid pistons, alongside half/double slabs.
+Original mod blocks retain their own full-cube API callback; modern blocks without an old counterpart use native geometry.
+Modern mob initialization is skipped for these original hosts, while native finalization events and insertion accounting remain.
+The native PotentialSpawns event excludes hosted entries from ordinary selection, scoped to category and biome policy.
 No scheduler dispatch selects a content mod by name.
 
-This restores Beta caps and cadence while retaining native candidate geometry, modern world-height sampling, biome spawn
-costs and terrain population. It does not reproduce the complete Beta candidate algorithm or make modern vanilla animals
-despawn like Beta animals. Modern terrain-generated fauna can therefore still fill the correct Beta class budget.
+Beta did not have the modern chunk-generation animal-population pass. Hosted Beta creature entries are therefore excluded
+from that additional pass; native and modern mod entries retain their objects, order, weights and pack sizes. Terrain features
+and the original `GenerateSurface` callback path remain unchanged. Ordinary vanilla and modern mod entities retain native
+placement, population, caps and despawning. Original mods' explicit vanilla AddSpawn/RemoveSpawn requests still become biome
+modifiers and remain on the native lifecycle lane. Modern terrain-generated fauna can still fill the correct Beta class budget.
+
+Legacy living hosts now run the original despawn phase at their original superclass AI boundary. The phase calls the mod's
+dynamic `canDespawn` override, removes eligible entities strictly beyond 128 blocks from the nearest player, and uses the
+original age-over-600, 1-in-800 lottery with the 32-block reset/removal boundary. Skipped superclass AI also skips that phase.
+Taming overrides, native despawn-event vetoes, explicit persistence, names, leashes and passengers remain protected. The older
+cow-family host receives the same original eligibility and distance rules without modifying ordinary native cows.
 [The cap and scheduling snapshot](../data/b173-cap-scheduling-validation-2026-11-08.json) records actual-mod and control proofs.
+[The placement and ecology snapshot](../data/b173-placement-ecology-validation-2026-11-08.json) records separate normal-world
+and classic-height grass-flat runs of both actual mods, native population/persistence comparisons, all 96 original full-cube
+API results, and single/double slab metadata round trips. These fixtures are opt-in; normal builds need no private mod archive.
+The checked-in geometry table can be reproduced with JDK 21 using
+`java tools/dev/ExtractBetaFullCubes.java <original-client.jar> <output.tsv>`; the extractor loads the original block API in an
+isolated class loader and does not construct a Minecraft client. It is not part of the build.
 
 Remaining checks for these two mods include Kitty fear/tree states, BigCat rope following and teleport fallback, Nightmare
 horse rider fire clearing, Bird seed taming, and live client rendering/interaction with the installed pack. These branches

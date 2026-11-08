@@ -67,9 +67,24 @@ public abstract class LivingEntity extends Entity {
     public boolean canSee(Entity other) {
         return other!=null && other.mcc$modern!=null && mcc$modern instanceof net.minecraft.world.entity.LivingEntity nativeLiving && nativeLiving.hasLineOfSight(other.mcc$modern);
     }
-    public boolean canSpawn(){return mcc$modern instanceof org.kylepitcock.legacyconnector.vb1_7_3.B173LivingHost host && host.baseCanSpawn();}
+    public boolean canSpawn(){return mcc$modern instanceof org.kylepitcock.legacyconnector.vb1_7_3.B173LivingHost host?host.baseCanSpawn():mcc$modern instanceof org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Cow cow&&cow.baseCanSpawn();}
     protected boolean canDespawn(){return !isPersistent;}
     public final boolean mcc$canDespawn(){return canDespawn();}
+    protected void tryDespawn(){
+        if(world==null)return;
+        var player=world.getClosestPlayer(this,-1D);
+        if(!canDespawn()||player==null)return;
+        if(mcc$modern instanceof org.kylepitcock.legacyconnector.vb1_7_3.B173LivingHost host&&!host.baseCanDespawn())return;
+        if(mcc$modern instanceof org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Cow cow&&!cow.baseCanDespawn())return;
+        double dx=player.x-x,dy=player.y-y,dz=player.z-z;
+        double distance=dx*dx+dy*dy+dz*dz;
+        if(distance>16384D)markDead();
+        if(despawnCounter>600&&random.nextInt(800)==0){
+            if(distance<1024D)despawnCounter=0;
+            else markDead();
+        }
+    }
+    public final void mcc$tryDespawn(){tryDespawn();}
     protected String getRandomSound(){return null;}
     protected String getHurtSound(){return null;}
     protected String getDeathSound(){return null;}
