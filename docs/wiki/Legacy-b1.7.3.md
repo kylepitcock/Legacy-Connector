@@ -489,6 +489,12 @@ Vanilla model parents include biped, quadruped, chicken, pig, cow and sheep mode
 Original render callbacks can submit held items, nameplates, health-bar quads, blending/depth state and texture matrices
 through native rendering. ModLoader categories select native water/ground spawn placement, alongside original spawn checks.
 Achievement registration and awards use native advancements; original progress queries read the same native state.
+Top-level Beta achievements and those attached to vanilla parents are grouped under a synthetic category for their mod.
+The category becomes visible automatically, with no toast or chat announcement; original achievements still require
+their original award callbacks. Existing achievement IDs and custom parent chains remain intact. This lets Beta tabs
+appear alongside Forge pages before a player earns the first Beta achievement. The
+[advancement visibility validation](../data/b173-advancement-visibility-validation-2026-11-08.json) records the actual
+Beta Aether/Aether II screen, unchanged Forge progress, one explicit legacy award and save/reopen persistence.
 
 Fresh separate actual-mod runs pass all **28 Mo' Creatures registrations**, including original geometry, tracking packet
 round-trips, movement callbacks, interaction, damage, persistence and bounded death/drop checks. Twenty-one focused gameplay
