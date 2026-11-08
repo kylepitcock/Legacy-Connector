@@ -78,7 +78,9 @@ public enum LegacyVersion {
             "org/lwjgl/openal/OpenALException",
             "org/lwjgl/Sys",
             // The sound library 1.7.10 bundled (mods configure it directly); the modern game has its own engine.
-            "paulscode/sound/");
+            "paulscode/sound/",
+            // Guava's TreeTraverser, which the Guava the game ships no longer has (the 1.7.10 and 1.12.2 shims carry it)
+            "com/google/common/collect/TreeTraverser");
 
     private final String id;
     private final String shimPrefix;
