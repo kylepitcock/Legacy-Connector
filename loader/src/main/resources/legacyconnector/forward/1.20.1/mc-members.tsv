@@ -34,3 +34,5 @@ net/minecraft/world/entity/ai/attributes/AttributeModifier$Operation	toValue	*	i
 net/minecraft/world/item/crafting/ShapedRecipe	getRecipeWidth	*	getWidth
 net/minecraft/world/item/crafting/ShapedRecipe	getRecipeHeight	*	getHeight
 net/minecraft/advancements/Advancement	getId	*	id
+net/minecraft/advancements/critereon/ItemPredicate	matches	*	test
+net/minecraft/advancements/CriterionTrigger$Listener	getTriggerInstance	*	trigger
