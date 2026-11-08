@@ -246,7 +246,73 @@ public final class DataConverter1201 {
                 out.put(name, e.getValue());
             }
         }
+        emptyTagsForUnknownReferences(out, stats);
         return out;
+    }
+
+    private static volatile Set<String> neoForgeTags;
+    private static final Pattern TAG_KEY_REF = Pattern.compile("\"tag\"\\s*:\\s*\"#?c:([a-z0-9_./-]+)\"");
+    private static final Pattern HASH_REF = Pattern.compile("\"#c:([a-z0-9_./-]+)\"");
+
+    /** The {@code c:} tags NeoForge 1.21.1 ships ({@code <type>/<path>}), listed in {@code c-tags.txt}. */
+    private static Set<String> neoForgeTags() {
+        Set<String> r = neoForgeTags;
+        if (r != null) return r;
+        r = new java.util.HashSet<>();
+        try (var in = DataConverter1201.class.getResourceAsStream("/legacyconnector/forward/1.20.1/c-tags.txt")) {
+            if (in != null) for (String line : new String(in.readAllBytes(), StandardCharsets.UTF_8).split("\\R")) if (!line.isBlank()) r.add(line.trim());
+        } catch (java.io.IOException e) {
+            // no list: every referenced tag gets an (empty) file, which merges with the real one
+        }
+        neoForgeTags = r;
+        return r;
+    }
+
+    /**
+     * A recipe, loot table or advancement that names a tag nobody defines does not load (the recipe fails to parse). Every {@code c:} tag the converted data
+     * references that neither NeoForge nor this pack defines gets an empty tag file; a pack that does define it adds its values on top (tags merge).
+     */
+    private static void emptyTagsForUnknownReferences(Map<String, byte[]> out, Stats stats) {
+        Map<String, Set<String>> wanted = new TreeMap<>();
+        Set<String> defined = new java.util.HashSet<>();
+        for (var e : out.entrySet()) {
+            String n = e.getKey();
+            if (!n.startsWith("data/") || !n.endsWith(".json")) continue;
+            String[] p = n.split("/", 5);
+            if (p.length < 5) continue;
+            if (p[1].equals("c") && p[2].equals("tags")) {
+                String rest = n.substring("data/c/tags/".length());
+                defined.add(rest.substring(0, rest.length() - 5));
+            }
+            String kind = p[2];
+            String[] types;
+            if (kind.equals("recipe")) types = new String[] {"item"};
+            else if (kind.equals("loot_table") || kind.equals("advancement")) types = new String[] {"item", "block"};
+            else if (kind.equals("tags") && !p[3].equals("worldgen")) types = new String[] {p[3]};
+            else continue;
+            String text = new String(e.getValue(), StandardCharsets.UTF_8);
+            if (text.indexOf("c:") < 0) continue;
+            for (Pattern pat : new Pattern[] {TAG_KEY_REF, HASH_REF}) {
+                Matcher m = pat.matcher(text);
+                while (m.find()) {
+                    boolean entryOfTag = kind.equals("tags");
+                    // a "tag" key in a tag file is not a reference of that spelling; only "#c:" strings are
+                    if (entryOfTag && pat == TAG_KEY_REF) continue;
+                    for (String t : types) wanted.computeIfAbsent(t, k -> new java.util.TreeSet<>()).add(m.group(1));
+                }
+            }
+        }
+        Set<String> known = neoForgeTags();
+        int added = 0;
+        for (var e : wanted.entrySet()) {
+            for (String path : e.getValue()) {
+                String key = e.getKey() + "/" + path;
+                if (known.contains(key) || defined.contains(key)) continue;
+                out.put("data/c/tags/" + key + ".json", "{\"values\":[]}".getBytes(StandardCharsets.UTF_8));
+                added++;
+            }
+        }
+        for (int i = 0; i < added; i++) stats.add("empty_tags");
     }
 
     /** Two tag files that landed on one path (data/forge/tags/items/glass.json and data/forge/tags/items/glass_blocks.json both become c:glass_blocks): their values add up. */

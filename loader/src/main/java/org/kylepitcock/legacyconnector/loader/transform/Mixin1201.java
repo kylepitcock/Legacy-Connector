@@ -119,6 +119,30 @@ final class Mixin1201 {
             Boolean found = hasMember(target, m.name + m.desc, true, h, new java.util.HashSet<>());
             if (found != null && !found) return m.name + m.desc;
         }
+        for (MethodNode m : node.methods) {
+            // an @Accessor of a field whose type changed in 1.21.1 (LootPool.entries: array to List) cannot be found by Mixin either
+            AnnotationNode acc = find(m.invisibleAnnotations, "Lorg/spongepowered/asm/mixin/gen/Accessor;");
+            if (acc == null) acc = find(m.visibleAnnotations, "Lorg/spongepowered/asm/mixin/gen/Accessor;");
+            if (acc == null) continue;
+            String field = null;
+            if (acc.values != null) for (int i = 0; i + 1 < acc.values.size(); i += 2) if ("value".equals(acc.values.get(i)) && acc.values.get(i + 1) instanceof String s) field = s;
+            if (field == null) {
+                String n = m.name;
+                if (n.startsWith("get") || n.startsWith("set")) n = n.substring(3);
+                else if (n.startsWith("is")) n = n.substring(2);
+                else continue;
+                if (n.isEmpty()) continue;
+                field = Character.toLowerCase(n.charAt(0)) + n.substring(1);
+            }
+            Type[] args = Type.getArgumentTypes(m.desc);
+            String desc = args.length == 1 && Type.getReturnType(m.desc).getSort() == Type.VOID ? args[0].getDescriptor()
+                    : args.length == 0 ? Type.getReturnType(m.desc).getDescriptor() : null;
+            if (desc == null) continue;
+            Boolean found = hasMember(target, field + ":" + desc, false, h, new java.util.HashSet<>());
+            // the name may not be the field's own (a mapped name): only a field with this name and another type is a change we know of
+            Boolean byName = hasFieldNamed(target, field, h, new java.util.HashSet<>());
+            if (found != null && !found && Boolean.TRUE.equals(byName)) return m.name + m.desc + " (@Accessor " + field + ")";
+        }
         for (FieldNode f : node.fields) {
             if (!hasShadow(f.invisibleAnnotations) && !hasShadow(f.visibleAnnotations)) continue;
             if (shadowHasPrefix(f.invisibleAnnotations) || shadowHasPrefix(f.visibleAnnotations)) continue;
@@ -141,12 +165,28 @@ final class Mixin1201 {
     private static Boolean hasMember(String owner, String key, boolean method, Mc1201Hierarchy h, java.util.Set<String> seen) {
         if (owner.equals("java/lang/Object")) return method && java.util.Set.of("equals(Ljava/lang/Object;)Z", "hashCode()I", "toString()Ljava/lang/String;").contains(key);
         if (!seen.add(owner)) return false;
+        if (!method && owner.startsWith("java/")) return false; // a shadowed field is never one of the JDK's (an interface above the target, BiFunction, made the answer unknown)
         McMembers1201.Members mm = McMembers1201.get(owner);
         if (mm == null) return null;
         if ((method ? mm.methods() : mm.fields()).contains(key)) return true;
         Boolean result = false;
         for (String s : h.supers(owner)) {
             Boolean r = hasMember(s, key, method, h, seen);
+            if (r == null) result = null;
+            else if (r) return true;
+        }
+        return result;
+    }
+
+    /** True when the class (or one above it) declares a field of this name, whatever its type; null when the chain leaves the index. */
+    private static Boolean hasFieldNamed(String owner, String name, Mc1201Hierarchy h, java.util.Set<String> seen) {
+        if (owner.startsWith("java/") || !seen.add(owner)) return false;
+        McMembers1201.Members mm = McMembers1201.get(owner);
+        if (mm == null) return null;
+        for (String f : mm.fields()) if (f.startsWith(name + ":")) return true;
+        Boolean result = false;
+        for (String s : h.supers(owner)) {
+            Boolean r = hasFieldNamed(s, name, h, seen);
             if (r == null) result = null;
             else if (r) return true;
         }
