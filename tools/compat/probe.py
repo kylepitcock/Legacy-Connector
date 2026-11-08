@@ -254,7 +254,7 @@ def merge(records, mc, date, layer):
     for e in data["mods"]:
         if e.get("mc", "1.7.10") == mc:
             listed.setdefault(norm(e["name"]), []).append(e)
-    hidden = {norm(h) for h in data.get("hidden", [])}
+    hidden = {norm(h) for h in data.get("hidden", [])} | {norm(h) for h in data.get("hidden_by_mc", {}).get(mc, [])}
     added = refreshed = skipped = 0
     for rec in records:
         if rec["result"] not in ("links", "unresolved") or rec.get("mc") != mc:
