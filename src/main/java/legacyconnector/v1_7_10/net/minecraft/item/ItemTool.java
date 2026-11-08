@@ -169,13 +169,18 @@ public class ItemTool extends Item {
     public com.google.common.collect.Multimap getItemAttributeModifiers() {
         com.google.common.collect.Multimap map = super.getItemAttributeModifiers();
         map.put(legacyconnector.v1_7_10.net.minecraft.entity.SharedMonsterAttributes.attackDamage.getAttributeUnlocalizedName(),
-                new legacyconnector.v1_7_10.net.minecraft.entity.ai.attributes.AttributeModifier(field_111210_e, "Tool modifier", damageVsEntity, 0));
+                new legacyconnector.v1_7_10.net.minecraft.entity.ai.attributes.AttributeModifier(field_111210_e, "Tool modifier", getDamageVsEntity(null, null), 0));
         return map;
+    }
+
+    /** Forge 1.6.4: the attack damage against an entity (mod tools override it); used for the tool's attack damage attribute. */
+    public float getDamageVsEntity(legacyconnector.v1_7_10.net.minecraft.entity.Entity target, ItemStack stack) {
+        return damageVsEntity;
     }
 
     @Override
     public float mcc$attackDamage() {
-        return damageVsEntity;
+        return getDamageVsEntity(null, null);
     }
 
     public Item.ToolMaterial getToolMaterial() {

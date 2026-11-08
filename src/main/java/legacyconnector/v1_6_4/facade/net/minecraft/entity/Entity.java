@@ -8,6 +8,12 @@ import legacyconnector.v1_7_10.net.minecraft.item.Item;
 public final class Entity {
     private Entity() {}
 
+    /** {@code dropItemWithOffset(itemId, count, yOffset)}: as {@link #dropItem}, spawned {@code yOffset} above the entity's feet. */
+    public static EntityItem dropItemWithOffset(legacyconnector.v1_7_10.net.minecraft.entity.Entity self, int itemId, int count, float yOffset) {
+        Item item = Ids.item(itemId);
+        return item == null ? null : self.dropItemWithOffset(item, count, yOffset);
+    }
+
     /** {@code dropItem(itemId, count)}: drops {@code count} of the item with that id at the entity; null for an unused id or air, as in 1.6.4. */
     public static EntityItem dropItem(legacyconnector.v1_7_10.net.minecraft.entity.Entity self, int itemId, int count) {
         Item item = Ids.item(itemId);

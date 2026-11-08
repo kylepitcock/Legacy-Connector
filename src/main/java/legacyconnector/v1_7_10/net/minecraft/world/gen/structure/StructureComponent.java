@@ -412,6 +412,11 @@ public abstract class StructureComponent {
 
     /** Chooses the block (and metadata) of each position of a randomized fill. */
     public abstract static class BlockSelector {
+        /** Sets the selected block (the 1.6.4 forward writes {@code selectedBlockId} through it). */
+        public void mcc$setSelectedBlock(Block block) {
+            this.field_151562_a = block;
+        }
+
         protected Block field_151562_a = Blocks.air;
         protected int selectedBlockMetaData;
 

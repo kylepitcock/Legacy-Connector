@@ -25,6 +25,11 @@ public class ItemSword extends Item {
         this.field_150934_a = 4.0F + field_150933_b.getDamageVsEntity();
     }
 
+    /** Forge 1.6.4: the attack damage against an entity (mod swords override it); used for the weapon's attack damage attribute. */
+    public float getDamageVsEntity(legacyconnector.v1_7_10.net.minecraft.entity.Entity target, ItemStack stack) {
+        return field_150934_a;
+    }
+
     public float func_150931_i() {
         return field_150933_b.getDamageVsEntity();
     }
@@ -95,12 +100,12 @@ public class ItemSword extends Item {
     public com.google.common.collect.Multimap getItemAttributeModifiers() {
         com.google.common.collect.Multimap map = super.getItemAttributeModifiers();
         map.put(legacyconnector.v1_7_10.net.minecraft.entity.SharedMonsterAttributes.attackDamage.getAttributeUnlocalizedName(),
-                new legacyconnector.v1_7_10.net.minecraft.entity.ai.attributes.AttributeModifier(field_111210_e, "Weapon modifier", field_150934_a, 0));
+                new legacyconnector.v1_7_10.net.minecraft.entity.ai.attributes.AttributeModifier(field_111210_e, "Weapon modifier", getDamageVsEntity(null, null), 0));
         return map;
     }
 
     @Override
     public float mcc$attackDamage() {
-        return field_150934_a;
+        return getDamageVsEntity(null, null);
     }
 }
