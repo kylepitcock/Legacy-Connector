@@ -71,3 +71,5 @@ net/minecraft/world/item/BowlFoodItem	org/kylepitcock/legacyconnector/v1_20_1/mi
 net/minecraft/commands/CommandRuntimeException	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyCommandRuntimeException
 net/minecraft/world/item/MobBucketItem	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyMobBucketItem
 net/minecraft/world/level/storage/loot/entries/LootTableReference	net/minecraft/world/level/storage/loot/entries/NestedLootTable
+net/minecraft/world/level/block/grower/AbstractMegaTreeGrower	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyMegaTreeGrower
+net/minecraft/world/level/block/SandBlock	net/minecraft/world/level/block/ColoredFallingBlock

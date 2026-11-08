@@ -310,6 +310,40 @@ public final class RoundCompat {
                 .thenAccept(found -> callback.accept(found.orElse(profile)));
     }
 
+    // ---- argument producers for in-place constructor rewrites (=args rows; usable in super(...) calls) ----
+
+    public static net.minecraft.world.phys.Vec3 vec3(double x, double y, double z) {
+        return new net.minecraft.world.phys.Vec3(x, y, z);
+    }
+
+    public static net.minecraft.util.ColorRGBA colorRgba(int color) {
+        return new net.minecraft.util.ColorRGBA(color);
+    }
+
+    public static net.minecraft.core.particles.ParticleOptions explosionParticle(net.minecraft.world.level.Level level) {
+        return net.minecraft.core.particles.ParticleTypes.EXPLOSION;
+    }
+
+    public static net.minecraft.core.particles.ParticleOptions emitterParticle(net.minecraft.world.level.Level level) {
+        return net.minecraft.core.particles.ParticleTypes.EXPLOSION_EMITTER;
+    }
+
+    public static Holder<net.minecraft.sounds.SoundEvent> explodeSound(net.minecraft.world.level.Level level) {
+        return net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE;
+    }
+
+    public static boolean noFire(net.minecraft.world.level.Level level) {
+        return false;
+    }
+
+    public static net.minecraft.world.level.Explosion.BlockInteraction decay(net.minecraft.world.level.Level level) {
+        return net.minecraft.world.level.Explosion.BlockInteraction.DESTROY_WITH_DECAY;
+    }
+
+    public static net.minecraft.server.network.CommonListenerCookie cookie(net.minecraft.server.level.ServerPlayer player) {
+        return net.minecraft.server.network.CommonListenerCookie.createInitial(player.getGameProfile(), false);
+    }
+
     /** {@code ComponentContents.EMPTY} moved to {@code PlainTextContents.EMPTY}. */
     public static net.minecraft.network.chat.ComponentContents emptyContents() {
         return net.minecraft.network.chat.contents.PlainTextContents.EMPTY;
