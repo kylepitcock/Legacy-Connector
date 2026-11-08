@@ -64,6 +64,27 @@ public final class ForgeApi1201 {
         }
     }
 
+    /**
+     * Automatic subscription of a {@code @Mod.EventBusSubscriber} class whose hierarchy has instance {@code @SubscribeEvent} methods (Citadel's proxies):
+     * Forge registered the class for its static methods and ignored the others; NeoForge rejects the class. The loader removes the annotation and has the
+     * mod's main class constructor call this instead.
+     *
+     * @param owner a class of the mod (its class loader loads the subscriber)
+     * @param bus {@code MOD} or {@code GAME}/{@code FORGE}
+     * @param dists comma separated {@code CLIENT}/{@code DEDICATED_SERVER}, empty for both
+     */
+    public static void subscribeStatics(Class<?> owner, String bus, String dists, String className) {
+        net.neoforged.api.distmarker.Dist dist = net.neoforged.fml.loading.FMLEnvironment.dist;
+        if (!dists.isEmpty() && !java.util.Arrays.asList(dists.split(",")).contains(dist.name())) return;
+        try {
+            Class<?> type = Class.forName(className, true, owner.getClassLoader());
+            net.neoforged.bus.api.IEventBus target = bus.equals("MOD") ? net.neoforged.fml.ModLoadingContext.get().getActiveContainer().getEventBus() : net.neoforged.neoforge.common.NeoForge.EVENT_BUS;
+            registerEachMethod(target, type);
+        } catch (ClassNotFoundException | LinkageError e) {
+            org.slf4j.LoggerFactory.getLogger("LegacyConnector/Subscribers").warn("Subscriber class {} could not be loaded: {}", className, e.toString());
+        }
+    }
+
     @SuppressWarnings({"unchecked", "rawtypes"})
     private static void registerEachMethod(net.neoforged.bus.api.IEventBus bus, Object target) {
         boolean isClass = target instanceof Class<?>;

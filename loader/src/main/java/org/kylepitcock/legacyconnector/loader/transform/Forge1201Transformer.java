@@ -275,6 +275,8 @@ public final class Forge1201Transformer {
             Mixin1201.apply(node, srg, hierarchy, Mc1201Tables.get(), mixinStats);
             migrated.put(node, viaCalls + changed.total());
         }
+        int subscribersMoved = Subscribers1201.apply(nodes);
+        if (subscribersMoved > 0) result.notes.add("Event subscriber classes with instance handlers: " + subscribersMoved + " registered by the main class for their static handlers (Forge ignored the instance ones)");
         if (!plan.isEmpty()) for (ClassNode node : nodes) isolate(node);
         if (ownUnit) for (ClassNode node : nodes) renameInjectorHandlers(node, VER.id().replaceAll("[^a-z0-9]", ""));
         // the soft link runs when every class of the jar has been migrated: references to the mod's own members are judged by their final declarations
