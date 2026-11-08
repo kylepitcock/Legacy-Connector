@@ -206,12 +206,14 @@ public abstract class Entity {
         vehicle=next;if(next!=null)next.passenger=this;
     }
     public double getStandingEyeHeight(){return standingEyeHeight;}
+    public double getPassengerRidingHeight(){return height*.75D;}
+    public void updatePassengerPosition(){if(passenger!=null)passenger.setPosition(x,y+getPassengerRidingHeight()+passenger.getStandingEyeHeight(),z);}
     protected void onLanding(float distance) {
         if(mcc$modern instanceof org.kylepitcock.legacyconnector.vb1_7_3.B173LivingHost host)host.baseOnLanding(distance);
     }
     public final void mcc$onLanding(float distance){onLanding(distance);}
     public float getBrightnessAtEyes(float partial) {
-        return world==null||world.mcc$level()==null?0:world.mcc$level().getMaxLocalRawBrightness(net.minecraft.core.BlockPos.containing(x,y+getEyeHeight(),z))/15F;
+        return world==null||world.mcc$level()==null?0:world.mcc$access().getMaxLocalRawBrightness(net.minecraft.core.BlockPos.containing(x,y+getEyeHeight(),z))/15F;
     }
     public legacyconnector.vb1_7_3.net.minecraft.entity.ItemEntity dropItem(int id,int count) {
         if(count<=0||world==null)return null;

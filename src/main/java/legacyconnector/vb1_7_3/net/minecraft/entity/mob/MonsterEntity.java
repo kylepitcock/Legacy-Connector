@@ -17,9 +17,9 @@ public abstract class MonsterEntity extends PathAwareEntity implements Monster {
     @Override protected float getPathfindingFavor(int x,int y,int z){return .5F-world.getLightLevel(x,y,z)/15F;}
     @Override public boolean canSpawn(){
         if(world==null||world.mcc$level()==null)return false;
-        var level=world.mcc$level();var pos=net.minecraft.core.BlockPos.containing(x,boundingBox.minY,z);
+        var level=world.mcc$access();var pos=net.minecraft.core.BlockPos.containing(x,boundingBox.minY,z);
         if(level.getBrightness(net.minecraft.world.level.LightLayer.SKY,pos)>random.nextInt(32))return false;
-        int light=level.getMaxLocalRawBrightness(pos,level.isThundering()?10:level.getSkyDarken());
+        int light=level.getMaxLocalRawBrightness(pos,world.mcc$level().isThundering()?10:level.getSkyDarken());
         return light<=random.nextInt(8)&&super.canSpawn();
     }
 }

@@ -6,6 +6,19 @@ import legacyconnector.vb1_7_3.net.minecraft.world.World;
 
 /** Stable entity identities within callbacks, with weakly held ordinary views between callbacks. */
 public final class EntityViewsB173 {
+    record Placement(double x,double y,double z,float yaw,float pitch) {
+        static Placement of(Entity view){return new Placement(view.x,view.y,view.z,view.yaw,view.pitch);}
+        void apply(Entity view,net.minecraft.world.entity.Entity modern){
+            boolean px=view.x!=x,py=view.y!=y,pz=view.z!=z,ry=view.yaw!=yaw,rp=view.pitch!=pitch;
+            if(!px&&!py&&!pz&&!ry&&!rp)return;
+            double nx=px?view.x:modern.getX(),ny=py?view.y-view.standingEyeHeight:modern.getY(),nz=pz?view.z:modern.getZ();
+            float nextYaw=ry?view.yaw:modern.getYRot(),nextPitch=rp?view.pitch:modern.getXRot();
+            if(nx==modern.getX()&&ny==modern.getY()&&nz==modern.getZ()&&nextYaw==modern.getYRot()&&nextPitch==modern.getXRot())return;
+            if(modern instanceof net.minecraft.server.level.ServerPlayer player&&!player.isPassenger()&&player.connection!=null)
+                player.connection.teleport(nx,ny,nz,nextYaw,nextPitch);
+            else{modern.setPos(nx,ny,nz);modern.setYRot(nextYaw);modern.setXRot(nextPitch);}
+        }
+    }
     private record HostState(double x,double y,double z,double vx,double vy,double vz,float yaw,float pitch,
             int health,int air,int fire,boolean ground,boolean dead,float width,float height,String texture,
             float sideways,float forward,boolean jumping,int hurt,int death,int age,float eye,float speed,float fall,Entity vehicle,Entity passenger) {
@@ -43,7 +56,7 @@ public final class EntityViewsB173 {
         if(view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.projectile.ArrowEntity arrow)return new Extra(0,0,net.minecraft.world.item.ItemStack.EMPTY,0,arrow.owner);
         return null;
     }
-    private record Touched(Entity view,double vx,double vy,double vz,boolean ground,Entity target,HostState hostState,NeutralState neutralState,Extra extra) {}
+    private record Touched(Entity view,double vx,double vy,double vz,boolean ground,Entity target,HostState hostState,NeutralState neutralState,Extra extra,Placement placement) {}
     private static final java.util.Map<net.minecraft.world.entity.Entity,Entity> VIEWS =
             new com.google.common.collect.MapMaker().weakKeys().weakValues().makeMap();
     private static final ThreadLocal<java.util.Map<net.minecraft.world.entity.Entity,Touched>> TOUCHED =
@@ -121,11 +134,11 @@ public final class EntityViewsB173 {
         view.vehicle=wrap(modern.getVehicle());view.passenger=wrap(modern.getFirstPassenger());
         if(view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.projectile.ArrowEntity arrow&&modern instanceof net.minecraft.world.entity.projectile.AbstractArrow nativeArrow){
             Entity owner=wrap(nativeArrow.getOwner());arrow.owner=owner instanceof legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity living?living:null;
-            TOUCHED.get().put(modern,new Touched(view,view.velocityX,view.velocityY,view.velocityZ,view.onGround,null,null,null,extra(view)));
+            TOUCHED.get().put(modern,new Touched(view,view.velocityX,view.velocityY,view.velocityZ,view.onGround,null,null,null,extra(view),Placement.of(view)));
         }
         if(view instanceof PathAwareEntity creature && modern instanceof net.minecraft.world.entity.Mob mob) {
             creature.target=wrap(mob.getTarget());
-            TOUCHED.get().put(modern,new Touched(view,view.velocityX,view.velocityY,view.velocityZ,view.onGround,creature.target,null,null,extra(view)));
+            TOUCHED.get().put(modern,new Touched(view,view.velocityX,view.velocityY,view.velocityZ,view.onGround,creature.target,null,null,extra(view),Placement.of(view)));
         }
         return view;
     }
@@ -149,7 +162,8 @@ public final class EntityViewsB173 {
     private static Entity touch(net.minecraft.world.entity.Entity modern,Entity view) {
         TOUCHED.get().putIfAbsent(modern,new Touched(view,view.velocityX,view.velocityY,view.velocityZ,view.onGround,view instanceof PathAwareEntity p?p.target:null,
                 modern instanceof B173LivingHost host?HostState.of(host.legacy()):null,
-                modern instanceof B173EntityHost&&!(modern instanceof B173LivingHost)?NeutralState.of(view):null,extra(view)));
+                modern instanceof B173EntityHost&&!(modern instanceof B173LivingHost)?NeutralState.of(view):null,extra(view),
+                modern instanceof B173EntityHost||view instanceof PlayerViewB173?null:Placement.of(view)));
         return view;
     }
     /** Capture identity and a baseline before original code continues mutating a freshly spawned entity. */
@@ -214,6 +228,7 @@ public final class EntityViewsB173 {
                 if(modern instanceof B173EntityHost host) {if(!host.callbackActive())flushHost(host,touched);continue;}
                 if(view instanceof PlayerViewB173 player)player.writeBack();
                 if(view.dead&&!modern.isRemoved()){modern.discard();continue;}
+                if(touched.placement!=null)touched.placement.apply(view,modern);
                 if(view.fireTicks>modern.getRemainingFireTicks())modern.setRemainingFireTicks(view.fireTicks);
                 Extra before=touched.extra;
                 if(before!=null){

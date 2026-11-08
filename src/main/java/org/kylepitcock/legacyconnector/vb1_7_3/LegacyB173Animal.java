@@ -45,6 +45,7 @@ public final class LegacyB173Animal extends PathfinderMob implements B173LivingH
     private BlockPos fallingPos;
     private boolean inFall;
     private boolean inPlacement;
+    private boolean inDeathCompletion;
     private net.minecraft.world.phys.Vec3 preTravelVelocity=net.minecraft.world.phys.Vec3.ZERO;
     public net.minecraft.world.phys.Vec3 lastPreTravelVelocity(){return preTravelVelocity;}
     public LegacyB173Animal(EntityType<? extends PathfinderMob> type,Level level,LivingEntity original){
@@ -155,7 +156,7 @@ public final class LegacyB173Animal extends PathfinderMob implements B173LivingH
         setDropChance(EquipmentSlot.MAINHAND,0); // Original getHeldItem is a render attachment; original dropItems owns loot.
         entityData.set(WIDTH,legacy.width);entityData.set(HEIGHT,legacy.height);entityData.set(TEXTURE,legacy.mcc$texture()==null?"/mob/char.png":legacy.mcc$texture());
         entityData.set(EYE_OFFSET,legacy.standingEyeHeight);
-        refreshDimensions();if(legacy.dead)discard();
+        refreshDimensions();if(legacy.dead&&!isRemoved())discard();
     }
     private void callback(Runnable action){try(var minecraftContext=legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$context(World.mcc$wrap(level()),legacy);var views=EntityViewsB173.callbackScope()){boolean outer=callbacks==0;boolean referenced=false;if(outer){referenced=EntityViewsB173.prepareHostCallback(this);syncView();}callbacks++;try{action.run();flushView();if(outer)publishRenderState();}finally{callbacks--;if(outer)EntityViewsB173.resumeHostCallback(this,referenced);}}}
     @Override public void tick(){if(legacy==null||level().isClientSide){super.tick();if(legacy!=null)syncView();return;}callback(()->legacy.tick());}
@@ -248,13 +249,32 @@ public final class LegacyB173Animal extends PathfinderMob implements B173LivingH
     public void baseKnockback(legacyconnector.vb1_7_3.net.minecraft.entity.Entity attacker,int amount,double x,double z){flushView();super.knockback(.4,x,z);syncView();}
     @Override public boolean causeFallDamage(float distance,float multiplier,DamageSource source){if(legacy==null||level().isClientSide)return super.causeFallDamage(distance,multiplier,source);callback(()->legacy.mcc$onLanding(distance));return false;}
     public void baseOnLanding(float distance){flushView();super.causeFallDamage(distance,1F,damageSources().fall());syncView();}
-    public boolean baseCanSpawn(){flushView();return level().noCollision(this)&&!level().containsAnyLiquid(getBoundingBox());}
+    public boolean baseCanSpawn(){flushView();var access=World.mcc$wrap(level()).mcc$access();return access.noCollision(this)&&!access.containsAnyLiquid(getBoundingBox());}
     @Override public boolean checkSpawnRules(net.minecraft.world.level.LevelAccessor level,MobSpawnType reason){
         if(legacy==null)return false;
-        boolean[] allowed={false};callback(()->allowed[0]=legacy.canSpawn());return allowed[0];
+        try(var generation=World.mcc$generation(level)){boolean[] allowed={false};callback(()->allowed[0]=legacy.canSpawn());return allowed[0];}
     }
     @Override public int getMaxSpawnClusterSize(){return legacy==null?4:Math.max(1,legacy.getLimitPerChunk());}
-    public void baseMarkDead(){discard();}
+    public void baseMarkDead(){if(!isRemoved())discard();}
+    @Override public void remove(net.minecraft.world.entity.Entity.RemovalReason reason){
+        if(inDeathCompletion){
+            if(!isRemoved())super.remove(reason==net.minecraft.world.entity.Entity.RemovalReason.DISCARDED?net.minecraft.world.entity.Entity.RemovalReason.KILLED:reason);
+            return;
+        }
+        if(legacy!=null&&!level().isClientSide&&reason==net.minecraft.world.entity.Entity.RemovalReason.KILLED&&getHealth()<=0&&!isRemoved()){
+            inDeathCompletion=true;try{callback(()->legacy.markDead());}finally{inDeathCompletion=false;}
+            return;
+        }
+        super.remove(reason);
+    }
+    @Override protected void positionRider(net.minecraft.world.entity.Entity passenger,net.minecraft.world.entity.Entity.MoveFunction move){
+        if(legacy==null||passenger!=getFirstPassenger()||!hasPassenger(passenger)){super.positionRider(passenger,move);return;}
+        callback(()->{
+            legacy.updatePassengerPosition();
+            var view=EntityViewsB173.wrap(passenger);
+            move.accept(passenger,view.x,view.y-view.standingEyeHeight,view.z);
+        });
+    }
     @Override public void playerTouch(net.minecraft.world.entity.player.Player player){
         if(legacy==null||level().isClientSide){super.playerTouch(player);return;}
         var view=(PlayerViewB173)EntityViewsB173.wrap(player);callback(()->{legacy.onPlayerInteraction(view);view.writeBack();});

@@ -480,6 +480,12 @@ mod-name checks. An actual Mo' Creatures run verifies its constructor's 70/30/25
 the original mod applies these settings at launch rather than on each slider change.
 [The lifecycle validation snapshot](../data/b173-lifecycle-validation-2026-11-07.json) records these checks and their limits.
 
+Terrain-population spawn checks read through their supplied `WorldGenRegion`, including block, light, height and collision
+queries. Reading an unfinished chunk through the full server level made generation wait on itself; an actual SneakySal spawn
+check exposed this during a fresh-world load. The scoped accessor preserves the original World identity, matches its backing
+dimension and restores nested contexts. A diagnostic copy of the installed pack completed the failing seed and eight fresh
+distant chunks after this shared fix. [The world-generation snapshot](../data/b173-worldgen-validation-2026-11-07.json) records that proof.
+
 Four further Mo' Creatures cases exercise Werewolf transformations and form persistence, rare-horse subtype stats and landing
 damage, winged-horse animation/descent, and native cow/wolf prey exclusions. Native cows and wolves retain their Beta API class
 identities in original callbacks, so the mod's own settings and retaliation rules apply to vanilla creatures.
@@ -501,6 +507,17 @@ Original zero movement speed pauses native navigation without discarding its rou
 world ticks, while stale movement-control intent is cleared. Actual GuineaPig flower commands remain stationary for 240 world
 ticks and resume the same route after FOLLOW, both with a retained target and with an explicit path.
 [The gameplay validation snapshot](../data/b173-gameplay-validation-2026-11-07.json) records these cases and the pickup-copy regression.
+
+Original position and rotation edits on native entity views are committed per changed coordinate, preserving unrelated native
+corrections. Unmounted server players use native teleport synchronization. Hosted mounts dispatch the original
+`updatePassengerPosition` and `getPassengerRidingHeight` APIs through Minecraft's rider-placement callback, including Beta eye offsets.
+Actual Lawyer jail construction/teleport and Camel seat placement exercise these paths; a mixed-write test checks native corrections.
+
+Native death completion also invokes the original `markDead` callback before final removal, retaining the native death sequence
+and avoiding repeated removal. Actual Hotdog death creates one original Tombstone; its LifeGem callback consumes one gem and restores
+the original saved pet statistics. Further actual callbacks cover ArmyGuy limb spawning/expiration, EvilScientist experiments,
+Bunny landing retaliation, juvenile maturity differences and Mouse wall climbing.
+[The death and placement snapshot](../data/b173-death-placement-validation-2026-11-07.json) records these checks and remaining coverage gaps.
 
 Original nonliving entities and custom `ItemEntity` subclasses use two shared native host types. Original ticks, collisions,
 pickup and NBT callbacks retain their original identities; explicit superclass calls select the base phase. A custom item

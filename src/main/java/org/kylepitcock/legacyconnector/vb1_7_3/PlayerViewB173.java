@@ -24,6 +24,7 @@ public final class PlayerViewB173 extends legacyconnector.vb1_7_3.net.minecraft.
     private final ItemStack[] before = new ItemStack[36];
     private int beforeHealth,beforeAir,beforeFire;
     private float beforeFallDistance;
+    private EntityViewsB173.Placement beforePlacement;
 
     private PlayerViewB173(Player player) {
         super(World.mcc$wrap(player.level()));
@@ -67,10 +68,13 @@ public final class PlayerViewB173 extends legacyconnector.vb1_7_3.net.minecraft.
             inventory.main[i] = legacy;
             before[i] = legacy == null ? null : legacy.copy();
         }
+        beforePlacement=EntityViewsB173.Placement.of(this);
     }
 
     /** Applies the mod's changes of the main inventory slots to the modern player. */
     public void writeBack() {
+        if(beforePlacement!=null)beforePlacement.apply(this,player);
+        beforePlacement=EntityViewsB173.Placement.of(this);
         if(health!=beforeHealth){player.setHealth(health);beforeHealth=health;}
         if(air!=beforeAir){player.setAirSupply(air);beforeAir=air;}
         if(fireTicks!=beforeFire){player.setRemainingFireTicks(fireTicks);beforeFire=fireTicks;}
