@@ -1,0 +1,212 @@
+{
+  "snapshot_date": "2026-11-08",
+  "scope": "Original Beta spawn caps, ancestry census and every-world-tick scheduling on the native insertion pipeline",
+  "upstream_master_revision": "a3ae1543b549ced5a84c6623e1853c66196260a5",
+  "upstream_integration_pr": "https://github.com/kylepitcock/Legacy-Connector/pull/213",
+  "actual_runs_base_revision": "675b3066",
+  "subsequent_upstream_changes": "Only 1.20.1 bridge tables and MiddleCompat changed through the final upstream revision; tested Beta paths are unchanged. The full final build covers the combined tree.",
+  "tests": {
+    "runtime": {
+      "tests": 179,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "loader": {
+      "tests": 241,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "actual_mod_opt_in": {
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "fixtures": {
+    "mocreatures": {
+      "status": "headless-smoke-passed",
+      "source_archive": "DrZharks_MoCreatures_Mod_v2.12.2_b1.7.3.zip!mods/MoCreatures.zip",
+      "payload_sha256": "6dbab8c34c67f95fc02a16817b7cdb5a3bee752dd2e3e0244d93ba60423c3e0c",
+      "game_directory": "run-b173-single/mocreatures-neutralbeta-cadence-pr213-20261108-014148-2db1c6",
+      "resources_verified": 168
+    },
+    "morecreeps": {
+      "status": "headless-smoke-passed",
+      "source_archive": "MoreCreepsv2.12_b173.zip!PUT CONTENTS INTO MINECRAFT FOLDER/mods/MoreCreepsAndWeirdos.zip",
+      "payload_sha256": "ce3c557ba7cf94941246b6a30718042461b59470a8f8f19d0243eb664bca0013",
+      "game_directory": "run-b173-single/morecreeps-neutralbeta-cadence-pr213-20261108-014148-292d9b",
+      "resources_verified": 759
+    }
+  },
+  "actual_scheduler_controls": {
+    "mocreatures": {
+      "world_ticks": 500,
+      "expected_pause_ticks": 40,
+      "group_opportunities": {
+        "MONSTER": 460,
+        "CREATURE": 460,
+        "WATER_CREATURE": 460
+      },
+      "adjacent_ticks_verified": true,
+      "gamerule_disable_and_resume": "passed",
+      "spectator_disable_and_resume": "passed",
+      "controls_restored": true,
+      "original_native_insertions": {
+        "mocreatures:bear": 2,
+        "mocreatures:bigcat": 3,
+        "mocreatures:bird": 4,
+        "mocreatures:bunny": 6,
+        "mocreatures:deer": 2,
+        "mocreatures:dolphin": 15,
+        "mocreatures:duck": 8,
+        "mocreatures:fishy": 53,
+        "mocreatures:fox": 4,
+        "mocreatures:kitty": 1,
+        "mocreatures:mouse": 14,
+        "mocreatures:ogre": 1,
+        "mocreatures:rat": 30,
+        "mocreatures:shark": 17,
+        "mocreatures:werewolf": 26,
+        "mocreatures:wraith": 5
+      },
+      "original_species_inserted": 16,
+      "original_insertions_total": 191,
+      "budget_control": "Discard all entities counted by any Beta root once at world tick 200 in the disposable stage. No cap, weight, time or RNG retuning."
+    },
+    "morecreeps": {
+      "world_ticks": 500,
+      "expected_pause_ticks": 40,
+      "group_opportunities": {
+        "CREATURE": 460
+      },
+      "adjacent_ticks_verified": true,
+      "gamerule_disable_and_resume": "passed",
+      "spectator_disable_and_resume": "passed",
+      "controls_restored": true,
+      "original_native_insertions": {
+        "morecreepsandweirdos:blacksoul": 2,
+        "morecreepsandweirdos:blorp": 6,
+        "morecreepsandweirdos:bubblescum": 8,
+        "morecreepsandweirdos:bum": 3,
+        "morecreepsandweirdos:evilscientist": 1,
+        "morecreepsandweirdos:g": 2,
+        "morecreepsandweirdos:googoat": 2,
+        "morecreepsandweirdos:guineapig": 2,
+        "morecreepsandweirdos:hippo": 2,
+        "morecreepsandweirdos:horsehead": 4,
+        "morecreepsandweirdos:hotdog": 1,
+        "morecreepsandweirdos:hunchback": 1,
+        "morecreepsandweirdos:kid": 6,
+        "morecreepsandweirdos:lawyerfromhell": 5,
+        "morecreepsandweirdos:mummy": 17,
+        "morecreepsandweirdos:robotted": 1,
+        "morecreepsandweirdos:robottodd": 1,
+        "morecreepsandweirdos:thief": 1
+      },
+      "original_species_inserted": 18,
+      "original_insertions_total": 65,
+      "budget_control": "Discard all entities counted by any Beta root once at world tick 200 in the disposable stage. No cap, weight, time or RNG retuning."
+    }
+  },
+  "original_semantics": {
+    "cadence": "Each ordinary world tick for all configured groups, respecting native eligibility and enable flags.",
+    "census": "All loaded entities, including persistent entities and corpses awaiting removal; original class/interface membership takes precedence over native host category.",
+    "native_family_mapping": [
+      "Enemy",
+      "Animal",
+      "WaterAnimal"
+    ],
+    "player_footprint": "Union of inclusive radius-eight chunk squares: 289 chunks for one nonspectator player.",
+    "threshold": "loadedCount <= capacity * uniqueFootprintChunks / 256, using integer arithmetic.",
+    "gate_timing": "Once before the whole group chunk loop; cluster overshoot is preserved. Recount before the next group.",
+    "default_capacities": [
+      70,
+      15,
+      5
+    ],
+    "one_player_default_thresholds": [
+      79,
+      16,
+      5
+    ],
+    "actual_moc_capacities": [
+      70,
+      30,
+      25
+    ],
+    "one_player_moc_thresholds": [
+      79,
+      33,
+      28
+    ],
+    "native_category_limits_remain": [
+      70,
+      10,
+      5
+    ]
+  },
+  "integration": {
+    "native_stage": "ServerChunkCache native custom-spawner stage; exception-safe cycle scope.",
+    "selection_hook": "NeoForge PotentialSpawns event, scoped to original category and biome policy before weighted selection and native membership checks.",
+    "native_pipeline_retained": [
+      "loaded chunk eligibility",
+      "world border",
+      "gamerule and server flags",
+      "tick-rate gate",
+      "native placement",
+      "biome spawn costs",
+      "original canSpawn predicates",
+      "spawn events and finalization",
+      "entity insertion and native accounting"
+    ],
+    "duplicate_prevention": "Owned entries are excluded from ordinary selection only in the configured category/biomes; Beta selection retains those original entry objects and weights.",
+    "mod_identity_dispatch": false
+  },
+  "portable_regressions": [
+    "Default Beta capacities and live mapped writes",
+    "Inclusive equality and threshold-plus-one rejection",
+    "Footprint edges, negative coordinates, overlapping and duplicate players",
+    "Original ancestry precedence and independent multi-root membership",
+    "Native squid water-family membership",
+    "Weighted entry order, identity, group sizes and weights preserved",
+    "Unchanged list identity outside explicit scheduling scope",
+    "Category and biome ownership isolation for vanilla overrides",
+    "Overworld ownership excludes unrelated Nether biome",
+    "Removed policies block ordinary selection without entering Beta selection"
+  ],
+  "generic_guards": {
+    "beta": "passed: 254 production/loader files",
+    "broader": "passed: 21 baseline mentions in 7 files; none added"
+  },
+  "build_fixture_policy": "Private actual-mod tests remain opt-in. Long scheduler observation and its temporary control phases require explicit flags; normal builds do not launch Minecraft or require private jars.",
+  "remaining": {
+    "spawn_fidelity": [
+      "Native candidate geometry, group-size sampling and modern world-height sampling remain; the complete Beta candidate algorithm is not emulated.",
+      "Modern terrain fauna generation and native vanilla-animal lifetime differ from Beta; loaded fauna can still fill the correct class budget."
+    ],
+    "confirmed_api_gap": [
+      "Native squid views still lack Beta SquidEntity/WaterCreatureEntity identity. Cap accounting handles native WaterAnimal directly. No broken MoC predation branch was demonstrated."
+    ],
+    "unverified_moc_branches": [
+      "Kitty fear/tree state 16",
+      "BigCat rope following and teleport fallback",
+      "Nightmare horse rider fire clearing",
+      "Bird seed taming"
+    ],
+    "validation": [
+      "No exhaustive playthrough of every rare branch across both mods.",
+      "No live client GPU validation of carried poses, projectile/pickup visuals or GUI interactions."
+    ],
+    "next_mods": [
+      "Aether",
+      "Butterflies"
+    ]
+  },
+  "limitations": [
+    "Native tests use NeoForge 21.1.258; Prism uses 21.1.265 on Minecraft 1.21.1.",
+    "Controlled budget release proves scheduling and insertion with room available, not guaranteed abundance in untouched player worlds."
+  ]
+}
