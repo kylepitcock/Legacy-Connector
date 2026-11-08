@@ -12,4 +12,9 @@ final class ForgeApiClient1201 {
         Minecraft mc = Minecraft.getInstance();
         return mc != null && mc.level != null ? mc.level.registryAccess() : null;
     }
+
+    static net.minecraft.client.RecipeBookCategories categoriesCreate(String name, net.minecraft.world.item.ItemStack... icons) {
+        return org.kylepitcock.legacyconnector.core.LegacyEnums.add(net.minecraft.client.RecipeBookCategories.class, name,
+                new Class<?>[] {net.minecraft.world.item.ItemStack[].class}, new Object[] {icons});
+    }
 }

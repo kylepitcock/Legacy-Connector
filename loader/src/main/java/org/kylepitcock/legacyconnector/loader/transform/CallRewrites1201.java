@@ -40,6 +40,14 @@ final class CallRewrites1201 {
     private CallRewrites1201() {}
 
     static int apply(ClassNode node) {
+        return apply(node, java.util.Set.of());
+    }
+
+    /** Anonymous subclasses of NeoForge's now final {@code CompoundIngredient} that only open its constructor (a Forge 1.20.1 idiom). */
+    static final String COMPOUND = "net/neoforged/neoforge/common/crafting/CompoundIngredient";
+
+    /** {@code compoundSubclasses}: the mod's classes that extend {@link #COMPOUND}; {@code new Sub(list)} becomes the factory call. */
+    static int apply(ClassNode node, java.util.Set<String> compoundSubclasses) {
         int n = 0;
         for (MethodNode m : node.methods) {
             if (m.instructions == null || m.instructions.size() == 0) continue;
@@ -55,6 +63,13 @@ final class CallRewrites1201 {
                         TypeInsnNode made = news.isEmpty() ? null : news.peek();
                         if (made != null && made.desc.equals(call.owner)) {
                             news.pop();
+                            if (compoundSubclasses.contains(call.owner) && call.desc.equals("(Ljava/util/List;)V") && made.getNext() != null && made.getNext().getOpcode() == Opcodes.DUP) {
+                                m.instructions.remove(made.getNext());
+                                m.instructions.remove(made);
+                                m.instructions.set(call, new MethodInsnNode(Opcodes.INVOKESTATIC, HELPERS, "compoundIngredient", "(Ljava/util/List;)Lnet/minecraft/world/item/crafting/Ingredient;", false));
+                                n++;
+                                continue;
+                            }
                             String[] f = FACTORIES.get(call.owner + ".<init>" + call.desc);
                             if (f != null && made.getNext() != null && made.getNext().getOpcode() == Opcodes.DUP) {
                                 m.instructions.remove(made.getNext());

@@ -63,7 +63,6 @@ public final class WorldScreenshotTest {
             if (e.getNewScreen() instanceof net.minecraft.client.gui.screens.AccessibilityOnboardingScreen) {
                 Minecraft.getInstance().options.onboardAccessibility = false;
                 e.setNewScreen(new TitleScreen());
-                return;
             }
             if (started || !(e.getNewScreen() instanceof TitleScreen)) return;
             started = true;

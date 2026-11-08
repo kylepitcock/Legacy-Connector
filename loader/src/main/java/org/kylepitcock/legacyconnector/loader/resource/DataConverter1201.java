@@ -130,6 +130,9 @@ public final class DataConverter1201 {
         }
         int slash = path.indexOf('/');
         String first = slash < 0 ? path : path.substring(0, slash);
+        if (first.equals("is_coniferous")) first = "is_tree/coniferous"; // biome tags: forge:is_coniferous
+        else if (first.equals("is_deciduous")) first = "is_tree/deciduous";
+        if (first.contains("/")) return first + (slash < 0 ? "" : path.substring(slash)) + suffix;
         String mapped = TAG_SEGMENTS.get(first);
         if (mapped != null) path = mapped + (slash < 0 ? "" : path.substring(slash));
         return path + suffix;
@@ -655,7 +658,7 @@ public final class DataConverter1201 {
     }
 
     private static void itemPredicatesOfLoot(JsonObject o, Ctx c) {
-        if (o.has("condition") && id(o.get("condition").getAsString()).equals("minecraft:entity_properties") && o.has("predicate")) {
+        if (o.has("condition") && o.get("condition").isJsonPrimitive() && id(o.get("condition").getAsString()).equals("minecraft:entity_properties") && o.has("predicate")) {
             itemPredicates(o.get("predicate"), c);
         }
     }

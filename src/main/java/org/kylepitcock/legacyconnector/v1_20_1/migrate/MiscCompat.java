@@ -103,6 +103,18 @@ public final class MiscCompat {
 
     // ------------------------------------------------------------------ tools: attack damage and speed moved into the item attribute modifiers
 
+    public static Item.Properties swordProps(net.minecraft.world.item.Tier tier, int damage, float speed, Item.Properties props) {
+        return props.attributes(net.minecraft.world.item.SwordItem.createAttributes(tier, damage, speed));
+    }
+
+    public static Item.Properties diggerProps(net.minecraft.world.item.Tier tier, float damage, float speed, Item.Properties props) {
+        return props.attributes(net.minecraft.world.item.DiggerItem.createAttributes(tier, damage, speed));
+    }
+
+    public static Item.Properties diggerProps(net.minecraft.world.item.Tier tier, int damage, float speed, Item.Properties props) {
+        return props.attributes(net.minecraft.world.item.DiggerItem.createAttributes(tier, damage, speed));
+    }
+
     public static net.minecraft.world.item.SwordItem newSword(net.minecraft.world.item.Tier tier, int damage, float speed, Item.Properties props) {
         return new net.minecraft.world.item.SwordItem(tier, props.attributes(net.minecraft.world.item.SwordItem.createAttributes(tier, damage, speed)));
     }

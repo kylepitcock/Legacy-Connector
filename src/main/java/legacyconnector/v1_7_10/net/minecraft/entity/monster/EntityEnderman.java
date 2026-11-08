@@ -17,6 +17,15 @@ public class EntityEnderman extends EntityMob {
         setSize(0.6F, 2.9F);
     }
 
+    /** Teleports to a random spot within 32 blocks, to ground it can stand on (the modern enderman's own teleport rules). */
+    protected boolean teleportRandomly() {
+        if (mcc$entity instanceof net.minecraft.world.entity.LivingEntity e) {
+            var r = e.getRandom();
+            return e.randomTeleport(e.getX() + (r.nextDouble() - 0.5) * 64.0, e.getY() + (r.nextInt(64) - 32), e.getZ() + (r.nextDouble() - 0.5) * 64.0, true);
+        }
+        return false;
+    }
+
     /** Which blocks endermen may pick up; mods add their own. */
     public static void setCarriable(Block block, boolean value) {
         int id = Block.getIdFromBlock(block);

@@ -1,3 +1,4 @@
+# NOTE: the Block.getBlockTextureFromSide(I)I redirect was removed: it looped with the facade (StackOverflowError in Mystcraft); to be redone with a re-entry guard
 # Hand written 1.4.7 -> 1.5.2 -> 1.7.10 member forwards, on top of forward/1.6.4 and forward/1.5.2 (same line formats, see forward/1.6.4/member-manual.tsv; a later file wins).
 # Owners, names and descriptors in 1.5.2 (packaged) form: the loader moves 1.4.7's flat net/minecraft/src names there first (forward/1.4.7/flat-names.tsv).
 #
@@ -24,3 +25,6 @@ F	net/minecraft/entity/EntityHanging	yPosition	field_146064_c
 F	net/minecraft/entity/EntityHanging	zPosition	field_146062_d
 # 1.4.7 getBlockName() is the unlocalized name ("tile." + name), 1.7.10's getUnlocalizedName()
 M	net/minecraft/block/Block	getBlockName	()Ljava/lang/String;	getUnlocalizedName
+# Texture indices: mods that call the index API of 1.4.7 get the sheet index behind the icon (round trip through SpriteSheets147)
+R	net/minecraft/item/Item	getIconFromDamage	(I)I	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	itemIconIndex	(Lnet/minecraft/item/Item;I)I
+R	net/minecraft/item/ItemStack	getIconIndex	()I	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	stackIconIndex	(Lnet/minecraft/item/ItemStack;)I

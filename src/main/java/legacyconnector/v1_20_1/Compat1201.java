@@ -14,4 +14,9 @@ public final class Compat1201 {
         bus.post(event);
         return event instanceof ICancellableEvent cancellable && cancellable.isCanceled();
     }
+
+    /** {@code new CompoundIngredient(list) {}} (an anonymous subclass that opened the constructor): NeoForge's final class through its factory. */
+    public static net.minecraft.world.item.crafting.Ingredient compoundIngredient(java.util.List<net.minecraft.world.item.crafting.Ingredient> children) {
+        return net.neoforged.neoforge.common.crafting.CompoundIngredient.of(children.toArray(new net.minecraft.world.item.crafting.Ingredient[0]));
+    }
 }

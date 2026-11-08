@@ -112,11 +112,13 @@ public final class Assets1710 implements GeneratedPack.Contributor {
             // the icons leaf blocks register are candidates for the modern leaf pattern (ModernLeaves)
             boolean leaves = client && org.kylepitcock.legacyconnector.v1_7_10.client.ModernLeaves.isLeafBlock(b);
             int mark = leaves ? org.kylepitcock.legacyconnector.v1_7_10.client.ModernLeaves.mark(blocks) : 0;
+            int registeredBefore = blocks.mcc$count();
             try {
                 b.registerBlockIcons(blocks);
             } catch (RuntimeException | LinkageError e) {
                 LOG.warn("registerBlockIcons failed for {}", b, e);
             }
+            if (blocks.mcc$count() > registeredBefore) b.mcc$registeredIcons = java.util.List.copyOf(blocks.mcc$since(registeredBefore, 6));
             if (leaves) org.kylepitcock.legacyconnector.v1_7_10.client.ModernLeaves.noteIcons(blocks, mark);
         }
         // 1.7.10 fired TextureStitchEvent.Pre for a map after that map's registerIcons calls (mods such as BuildCraft register more
@@ -459,7 +461,37 @@ public final class Assets1710 implements GeneratedPack.Contributor {
         return "minecraft:missingno";
     }
 
+    /**
+     * A block with no icon at all that something else draws (a tile entity renderer, a block rendering handler: Witchery's chests, Minechem's
+     * storage, EnderIO's walls) shows a plain texture of its material in inventories and as break particles, not the purple-black cube; a block
+     * the game draws from icons stays the missing texture, so a real defect is still visible.
+     */
+    private static String neutralTexture(Block b) {
+        try {
+            boolean drawnElsewhere = b.getRenderType() != 0 || b.hasTileEntity(0);
+            if (!drawnElsewhere) return "minecraft:missingno";
+            var m = b.getMaterial();
+            if (m == legacyconnector.v1_7_10.net.minecraft.block.material.Material.wood) return "minecraft:block/oak_planks";
+            if (m == legacyconnector.v1_7_10.net.minecraft.block.material.Material.iron || m == legacyconnector.v1_7_10.net.minecraft.block.material.Material.anvil) {
+                return "minecraft:block/iron_block";
+            }
+            if (m == legacyconnector.v1_7_10.net.minecraft.block.material.Material.glass) return "minecraft:block/glass";
+            if (m == legacyconnector.v1_7_10.net.minecraft.block.material.Material.cloth) return "minecraft:block/white_wool";
+            return "minecraft:block/stone";
+        } catch (RuntimeException | LinkageError e) {
+            return "minecraft:missingno";
+        }
+    }
+
     private static final java.util.Set<String> ICON_FAILURES = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    /**
+     * The icon a block that never registered one got from vanilla's default ({@code MISSING_ICON_BLOCK_<id>_<name>}, a sprite no file backs):
+     * it counts as no icon, so the other fallbacks (the block's own registrations, a neutral texture) are tried before it is drawn.
+     */
+    private static boolean placeholder(String modernName) {
+        return modernName.equals("minecraft:missingno") || modernName.contains("missing_icon_block_") || modernName.contains("missing_icon_item_");
+    }
 
     private static String iconName(Block b, int side, int meta) {
         try {
@@ -467,7 +499,10 @@ public final class Assets1710 implements GeneratedPack.Contributor {
             if (System.getProperty("legacyconnector.debugIcons") != null && b.getClass().getName().contains(System.getProperty("legacyconnector.debugIcons")) && meta < 3) {
                 LOG.info("icon debug {} side {} meta {} -> {} ({})", b.getClass().getName(), side, meta, icon == null ? null : icon.getIconName(), icon == null ? null : icon.getClass().getName());
             }
-            if (icon != null) return nameOf(icon);
+            if (icon != null) {
+                String name = nameOf(icon);
+                if (!name.contains("missing_icon_block_") && !name.contains("missing_icon_item_")) return name;
+            }
             if (meta == 0 && ICON_FAILURES.add(b.getClass().getName())) {
                 LOG.warn("getIcon({}, 0) of {} returned null; its model uses the missing texture", side, b.getClass().getName());
             }
@@ -483,7 +518,7 @@ public final class Assets1710 implements GeneratedPack.Contributor {
             try {
                 IIcon icon = b.getIcon(side, m);
                 String name = icon == null ? null : nameOf(icon);
-                if (name != null && !name.equals("minecraft:missingno")) return name;
+                if (name != null && !placeholder(name)) return name;
             } catch (RuntimeException e) {
                 // next metadata
             }
@@ -491,11 +526,16 @@ public final class Assets1710 implements GeneratedPack.Contributor {
         // getIcon overridden to read a table registerBlockIcons left empty for this block (ChromatiCraft's TESR-drawn machines,
         // BlockModelledChromaTile): the icon it did register in blockIcon (their particle texture) beats the missing texture.
         IIcon own = b.mcc$blockIcon();
-        if (own != null && !nameOf(own).equals("minecraft:missingno")) return nameOf(own);
-        if (ICON_FAILURES.add(b.getClass().getName() + "#none")) {
-            LOG.warn("{} has no icon for side {} in any metadata; its model uses the missing texture", b.getClass().getName(), side);
+        if (own != null && !placeholder(nameOf(own))) return nameOf(own);
+        // the icons it registered, wherever it keeps them (Binnie's machines hand theirs to their own tables, drawn by a TESR)
+        for (IIcon registered : b.mcc$registeredIcons) {
+            String name = nameOf(registered);
+            if (!placeholder(name)) return name;
         }
-        return "minecraft:missingno";
+        if (ICON_FAILURES.add(b.getClass().getName() + "#none")) {
+            LOG.warn("{} has no icon for side {} in any metadata; its model uses a neutral texture if something else draws it", b.getClass().getName(), side);
+        }
+        return neutralTexture(b);
     }
 
     /**
@@ -678,6 +718,8 @@ public final class Assets1710 implements GeneratedPack.Contributor {
                 icon = item.getIconFromDamage(meta);
             } catch (RuntimeException ignored) {
             }
+            // a block item whose icon is vanilla's MISSING_ICON placeholder has no icon: the block's own fallbacks (iconName) apply
+            if (icon != null && item instanceof ItemBlock && placeholder(nameOf(icon))) icon = null;
             // (a cube block whose item class overrides getIcon(stack, pass) is still drawn as the block: Thaumcraft's double slabs were
             // flat sprites several times the size of a block in the hand)
             boolean cubeItem = item instanceof ItemBlock cb && cb.mcc$block().getRenderType() == 0 && inventory3d(cb.mcc$block());

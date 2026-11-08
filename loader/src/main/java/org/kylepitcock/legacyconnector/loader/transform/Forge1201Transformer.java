@@ -201,10 +201,11 @@ public final class Forge1201Transformer {
         int rewrites = 0;
         List<ClassNode> nodes = new ArrayList<>();
         Mc1201Hierarchy hierarchy = new Mc1201Hierarchy();
+        java.util.Set<String> serializable = SerialUids.serializable(classes);
         for (var e : classes.entrySet()) {
             ClassNode node = new ClassNode();
             try {
-                new ClassReader(e.getValue()).accept(new ClassRemapper(node, mapper), 0);
+                new ClassReader(e.getValue()).accept(SerialUids.head(serializable, e.getValue(), new ClassRemapper(node, mapper)), 0);
             } catch (RuntimeException ex) {
                 result.notes.add("Skipped unreadable class " + e.getKey() + ": " + ex);
                 continue;
@@ -212,13 +213,19 @@ public final class Forge1201Transformer {
             hierarchy.add(node);
             nodes.add(node);
         }
+        Datagen1201.Stats datagen = Datagen1201.apply(nodes);
+        if (datagen.classes + datagen.methods > 0) result.notes.add("Data generation code dropped (dead in a running game): " + datagen);
         Mc1201Migration.Counts mc = new Mc1201Migration.Counts();
         Mixin1201.Stats mixinStats = new Mixin1201.Stats();
         Set<String> jarClasses = new HashSet<>();
-        for (ClassNode node : nodes) jarClasses.add(node.name);
+        Set<String> compoundSubclasses = new HashSet<>();
+        for (ClassNode node : nodes) {
+            jarClasses.add(node.name);
+            if (CallRewrites1201.COMPOUND.equals(node.superName)) compoundSubclasses.add(node.name);
+        }
         for (ClassNode node : nodes) {
             stringsMapped += mapSrgStrings(node);
-            int viaCalls = CallRewrites1201.apply(node);
+            int viaCalls = CallRewrites1201.apply(node, compoundSubclasses);
             viaCalls += ForgeApiRewrites1201.apply(node);
             viaCalls += AttachGuards1201.apply(node, jarClasses);
             if (ForgeApiRewrites1201.markProviders(node)) viaCalls++;

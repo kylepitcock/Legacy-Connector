@@ -41,3 +41,18 @@ net/minecraft/world/entity/MobType	org/kylepitcock/legacyconnector/v1_20_1/migra
 net/minecraft/world/level/storage/loot/LootDataManager	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyLootData
 net/minecraft/world/item/ArmorMaterial	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyArmorMaterial
 net/minecraft/world/item/ArmorMaterials	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyArmorMaterials
+net/minecraft/world/item/enchantment/Enchantment	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyEnchantment
+net/minecraft/world/item/enchantment/Enchantment$Rarity	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyEnchantment$Rarity
+net/minecraft/world/item/enchantment/EnchantmentCategory	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyEnchantmentCategory
+net/minecraft/world/level/block/PressurePlateBlock$Sensitivity	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacySensitivity
+net/minecraft/advancements/Advancement	net/minecraft/advancements/AdvancementHolder
+net/minecraft/client/gui/components/ImageButton	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyImageButton
+net/minecraft/world/level/storage/loot/LootDataResolver	net/minecraft/core/HolderGetter$Provider
+net/minecraft/world/item/alchemy/PotionUtils	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyPotionUtils
+# --- ATM 9 run: stand-ins for classes 1.21.1 removed
+net/minecraft/world/item/RecordItem	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyRecordItem
+net/minecraft/world/item/DyeableLeatherItem	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyDyeableLeatherItem
+net/minecraft/core/particles/ParticleOptions$Deserializer	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyParticleDeserializer
+net/minecraft/world/level/block/grower/AbstractTreeGrower	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyTreeGrower
+net/minecraft/world/level/storage/loot/Serializer	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyLootSerializer
+net/minecraft/world/level/storage/loot/functions/LootItemConditionalFunction$Serializer	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyConditionalFunctionSerializer

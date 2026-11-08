@@ -28,3 +28,6 @@ net/minecraft/world/level/chunk/LevelChunk	getStatus	*	getPersistedStatus
 net/minecraft/world/level/chunk/ProtoChunk	getStatus	*	getPersistedStatus
 net/minecraft/world/level/chunk/ImposterProtoChunk	getStatus	*	getPersistedStatus
 net/minecraft/network/FriendlyByteBuf	readAnySizeNbt	*	readNbt
+net/minecraft/server/ServerAdvancementManager	getAdvancement	*	get
+# --- ATM 9 run, batch 3
+net/minecraft/world/entity/ai/attributes/AttributeModifier$Operation	toValue	*	id

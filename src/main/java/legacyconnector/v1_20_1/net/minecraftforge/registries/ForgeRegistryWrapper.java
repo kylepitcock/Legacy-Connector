@@ -45,6 +45,9 @@ public final class ForgeRegistryWrapper<V> implements IForgeRegistry<V> {
     @Override
     public Registry<V> mcc$registry() {
         if (fixed != null) return fixed;
+        @SuppressWarnings("unchecked")
+        Registry<V> builtin = (Registry<V>) net.minecraft.core.registries.BuiltInRegistries.REGISTRY.get(key.location());
+        if (builtin != null) return builtin; // a registry of the layer or of a mod (static, not data driven)
         var server = ServerLifecycleHooks.getCurrentServer();
         if (server != null) return server.registryAccess().registryOrThrow(key);
         throw new IllegalStateException("The registry " + key.location() + " is data driven and no world is loaded yet");

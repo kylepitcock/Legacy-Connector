@@ -40,6 +40,8 @@ final class Mc1201Tables {
     final Map<String, Call> calls = new HashMap<>();
     final Map<String, Field> fields = new HashMap<>();
     final List<Bridge> bridges = new ArrayList<>();
+    /** Overrides of methods that became final in 1.21.1: owner, name, descriptor, new name ({@code -}: no replacement, the override is disabled). */
+    final List<String[]> overrides = new ArrayList<>();
 
     private static volatile Mc1201Tables instance;
 
@@ -63,6 +65,7 @@ final class Mc1201Tables {
             t.calls.put(f[0] + "." + f[1] + f[2], new Call(f[0], f[1], f[2], helper, f[4], hdesc));
         }
         for (String[] f : rows("mc-fields.tsv", 6)) t.fields.put(f[0] + "." + f[1] + ":" + f[2], new Field(f[0], f[1], f[2], f[3], f[4], f[5]));
+        t.overrides.addAll(rows("mc-overrides.tsv", 4));
         for (String[] f : rows("mc-bridges.tsv", 8)) {
             List<String> args = f[5].equals("-") ? List.of() : List.of(f[5].split(","));
             t.bridges.add(new Bridge(f[0], f[1], f[2], f[3], f[4], args, f[6].equals("-") ? null : f[6], f[7].equals("-") ? -1 : Integer.parseInt(f[7])));

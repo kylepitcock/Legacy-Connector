@@ -27,6 +27,28 @@ public final class Forward164 {
         return NBTBase.mcc$wrap(list.mcc$modern().get(index), list);
     }
 
+    /** Forge 1.5.2/1.6.4 {@code MinecraftForge.getBlockHarvestLevel(block, metadata, toolClass)}: the level the block asks of that tool class, -1 when it takes another tool. */
+    public static int getBlockHarvestLevel(legacyconnector.v1_7_10.net.minecraft.block.Block block, int metadata, String toolClass) {
+        if (block == null) return -1;
+        String tool = block.getHarvestTool(metadata);
+        return tool != null && tool.equals(toolClass) ? block.getHarvestLevel(metadata) : -1;
+    }
+
+    /** 1.6.4 {@code repository.setRepositoryEntries(entry...)}: the active resource packs (1.7.10 takes a list). */
+    public static void setRepositoryEntries(legacyconnector.v1_7_10.net.minecraft.client.resources.ResourcePackRepository repository, Object[] entries) {
+        repository.func_148527_a(entries == null ? new java.util.ArrayList() : new java.util.ArrayList(java.util.Arrays.asList(entries)));
+    }
+
+    /** 1.6.4 {@code minecraft.getLogAgent()} / {@code server.getLogAgent()}: the agent writing to FML's {@code java.util.logging} logger. */
+    public static legacyconnector.v1_6_4.net.minecraft.logging.ILogAgent getLogAgent(Object minecraftOrServer) {
+        return legacyconnector.v1_6_4.net.minecraft.logging.LogAgent.world();
+    }
+
+    /** 1.6.4 {@code player.username = name} (a write: 1.7.10 players take their name from the game profile). */
+    public static void setUsername(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player, String name) {
+        player.mcc$username = name;
+    }
+
     /** 1.6.4 {@code FMLPreInitializationEvent.getModLog()}: a {@code java.util.logging.Logger} (1.7.10 returns a log4j one). */
     public static java.util.logging.Logger getModLog(legacyconnector.v1_7_10.cpw.mods.fml.common.event.FMLPreInitializationEvent event) {
         String id = event.getModMetadata() != null ? event.getModMetadata().modId : null;

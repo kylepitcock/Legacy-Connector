@@ -38,7 +38,7 @@ import org.objectweb.asm.tree.ClassNode;
  */
 public final class LegacyJarTransformer {
     /** Bump whenever the output of this class changes, to invalidate caches. */
-    public static final int TRANSFORMER_VERSION = 9;
+    public static final int TRANSFORMER_VERSION = 10;
     /** Names the legacy coremod plugin class of a translated jar. */
     public static final String COREMOD_RESOURCE = "META-INF/legacyconnector-coremod.txt";
 
@@ -400,10 +400,11 @@ public final class LegacyJarTransformer {
         Hierarchy hierarchy = new Hierarchy(shim, libraries, peers, version);
         hierarchy.bundledElsewhere(bundledByOtherVersions.getOrDefault(version, java.util.Set.of()));
         Map<String, ClassNode> nodes = new LinkedHashMap<>();
+        java.util.Set<String> serializable = SerialUids.serializable(classes);
         for (var e : classes.entrySet()) {
             ClassNode node = new ClassNode();
             try {
-                new ClassReader(e.getValue()).accept(classRemapper(node, remapper), 0);
+                new ClassReader(e.getValue()).accept(SerialUids.head(serializable, e.getValue(), classRemapper(node, remapper)), 0);
             } catch (RuntimeException ex) {
                 result.notes.add("Skipped unreadable class " + e.getKey() + ": " + ex);
                 continue;

@@ -42,6 +42,9 @@ public class FMLPreInitializationEvent extends FMLStateEvent {
     }
 
     public File getSourceFile() {
+        // 1.4.7 to 1.6.4 mods find themselves again by file name when they scan the mods folder for add-on jars (Forestry loads its plugins from
+        // this file and from every other jar in <game>/mods: with the translated copy's name it met its own jar twice and registered every item twice).
+        if (!"1.7.10".equals(mcc$mod.version)) return mcc$mod.originalFile().toFile();
         return mcc$mod.sourceFile().toFile();
     }
 

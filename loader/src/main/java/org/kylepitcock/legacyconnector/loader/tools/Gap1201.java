@@ -65,7 +65,11 @@ public final class Gap1201 {
         }
         for (String j : targets.split(",")) if (!j.isBlank()) gap.index(Path.of(j.trim()), gap.target);
         List<Path> mods = new ArrayList<>();
-        for (int i = 4; i < args.length; i++) mods.add(Path.of(args[i]));
+        for (int i = 4; i < args.length; i++) {
+            if (args[i].startsWith("@")) { // "@file": one jar path per line (a pack of hundreds of jars does not fit the Windows command line)
+                for (String l : Files.readAllLines(Path.of(args[i].substring(1)))) if (!l.isBlank()) mods.add(Path.of(l.trim()));
+            } else mods.add(Path.of(args[i]));
+        }
         gap.run(mods, Path.of(args[3]));
     }
 
@@ -96,7 +100,8 @@ public final class Gap1201 {
             try (Stream<Path> files = Files.walk(jar)) {
                 for (Path f : files.filter(x -> x.toString().endsWith(".class")).toList()) {
                     String rel = jar.relativize(f).toString().replace((char) 92, '/');
-                    if (!rel.startsWith("legacyconnector/v1_20_1/")) continue;
+                    // the facades, and the migrate helpers the translated jars call (org/kylepitcock/legacyconnector/v1_20_1/migrate: they exist at run time)
+                    if (!rel.startsWith("legacyconnector/v1_20_1/") && !rel.startsWith("org/kylepitcock/legacyconnector/v1_20_1/")) continue;
                     ClassNode n = new ClassNode();
                     new ClassReader(Files.readAllBytes(f)).accept(n, ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
                     Cls c = new Cls();

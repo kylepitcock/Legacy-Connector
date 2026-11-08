@@ -19,9 +19,22 @@ public final class FuelBridge {
     public static int burnTime(ItemStack stack) {
         if (stack == null) return 0;
         int best = 0;
-        for (IFuelHandler h : HANDLERS) best = Math.max(best, h.getBurnTime(stack));
+        for (IFuelHandler h : HANDLERS) {
+            try {
+                best = Math.max(best, h.getBurnTime(stack));
+            } catch (RuntimeException | LinkageError e) {
+                // Recipe viewers ask the burn time of every item of the game, including modern-only ones the handler never saw in its
+                // own version (a 1.6.4 handler indexing Block.blocksList with an ItemBlock's id outside its range): not fuel for it.
+                if (FAILED.add(h.getClass())) {
+                    org.slf4j.LoggerFactory.getLogger("LegacyConnector/Fuel").warn(
+                            "Legacy fuel handler {} failed for {} (logged once; such items count as no fuel for it)", h.getClass().getName(), stack, e);
+                }
+            }
+        }
         return best;
     }
+
+    private static final java.util.Set<Class<?>> FAILED = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
     public static void onBurnTime(FurnaceFuelBurnTimeEvent event) {
         if (HANDLERS.isEmpty()) return;

@@ -3,6 +3,7 @@
 # (0.3.10 appeared within a minute; a held file never shows in the public file list). Variants are NOT for playing.
 #   a = without the bundled mods (Pehkui, TerraBlender) in the runtime jar's jar-in-jar folder
 #   b = without the plain library jars under META-INF/legacyconnector/libs
+#   c = a and b together, and without the script console classes (core/*Script*) of the runtime jar
 # Remove this workflow once the cause is known.
 name: CurseForge moderation test
 
@@ -14,7 +15,7 @@ on:
         required: true
         default: v0.3.23
       variant:
-        description: a or b
+        description: a, b or c
         required: true
         default: a
 
@@ -49,7 +50,20 @@ jobs:
                           continue
                       zout.writestr(item, zin.read(item.filename))
 
-          if variant == "a":
+          if variant == "c":
+              rt = "META-INF/legacyconnector/legacyconnector-runtime.jar"
+              with zipfile.ZipFile(src) as z:
+                  open("work/rt.jar", "wb").write(z.read(rt))
+              rewrite("work/rt.jar", "work/rt2.jar",
+                      lambda n: (n.startswith("META-INF/jarjar/") and n.endswith(".jar") and ("pehkui" in n.lower() or "terrablender" in n.lower()))
+                      or (n.startswith("org/kylepitcock/legacyconnector/core/") and "Script" in n.rsplit("/", 1)[-1]))
+              with zipfile.ZipFile(src) as zin, zipfile.ZipFile(dst, "w", zipfile.ZIP_DEFLATED) as zout:
+                  for item in zin.infolist():
+                      if item.filename.startswith("META-INF/legacyconnector/libs/") and item.filename.endswith(".jar"):
+                          continue
+                      data = open("work/rt2.jar", "rb").read() if item.filename == rt else zin.read(item.filename)
+                      zout.writestr(item, data)
+          elif variant == "a":
               # the runtime jar sits inside the distributable jar: strip Pehkui and TerraBlender from its jarjar folder
               rt = "META-INF/legacyconnector/legacyconnector-runtime.jar"
               with zipfile.ZipFile(src) as z:

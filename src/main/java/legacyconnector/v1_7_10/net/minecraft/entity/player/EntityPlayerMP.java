@@ -6,6 +6,10 @@ import legacyconnector.v1_7_10.net.minecraft.world.WorldServer;
 import net.minecraft.server.level.ServerPlayer;
 
 public class EntityPlayerMP extends EntityPlayer implements legacyconnector.v1_7_10.net.minecraft.inventory.ICrafting {
+    /** Resets the idle timer (nothing to do: the modern server tracks activity itself). */
+    public void markPlayerActive() {
+    }
+
     public final MinecraftServer mcServer;
     public int ping;
     private legacyconnector.v1_7_10.net.minecraft.server.management.ItemInWorldManager mcc$manager;

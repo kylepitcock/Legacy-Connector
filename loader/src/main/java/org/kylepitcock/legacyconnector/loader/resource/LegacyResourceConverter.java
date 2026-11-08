@@ -11,6 +11,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Mechanical, registry-independent asset fixes applied while a legacy jar is rewritten.
@@ -43,6 +44,9 @@ public final class LegacyResourceConverter {
     private final Map<String, byte[]> output = new LinkedHashMap<>();
     private final Map<String, Map<String, String>> langs = new LinkedHashMap<>();
     private boolean sawTextures;
+    private static final java.util.regex.Pattern OLD_SOUND = java.util.regex.Pattern.compile("assets/([^/]+)/sound/(.+)\\.ogg");
+    /** namespace -> sound event -> the files (without extension) of 1.4-1.6 sounds, written into a generated sounds.json. */
+    private final Map<String, Map<String, java.util.List<String>>> oldSounds = new LinkedHashMap<>();
     private final CtmBridge ctm = new CtmBridge();
 
     /**
@@ -76,13 +80,25 @@ public final class LegacyResourceConverter {
             String bookJson = PatchouliBookJson.dataPath(modern);
             if (bookJson != null) output.putIfAbsent(bookJson, PatchouliBookJson.convert(data));
         }
+        java.util.regex.Matcher oldSound = OLD_SOUND.matcher(modern);
+        if (oldSound.matches()) {
+            // 1.4-1.6 sound files: assets/<ns>/sound/mob/boom1.ogg, played by the event "mob.boom" (there was no sounds.json)
+            String ns = oldSound.group(1);
+            String rel = oldSound.group(2);
+            oldSounds.computeIfAbsent(ns, k -> new java.util.TreeMap<>()).computeIfAbsent(rel.replaceAll("[0-9]+$", "").replace('/', '.'), k -> new java.util.ArrayList<>()).add(rel);
+            output.putIfAbsent("assets/" + ns + "/sounds/" + rel + ".ogg", data);
+            return true;
+        }
         if (modern.matches("assets/[^/]+/sounds\\.json")) {
             data = convertSounds(data, modern.substring("assets/".length(), modern.indexOf('/', "assets/".length())));
         } else if (modern.endsWith(".mcmeta")) {
             data = sanitizeMcmeta(data);
         } else if (modern.endsWith(".json") && (modern.contains("/models/") || modern.contains("/blockstates/"))) {
             data = lowercaseResourceRefs(data);
-            if (modern.contains("/models/")) addVineModels(data);
+            if (modern.contains("/models/")) {
+                data = qualifySelfParent(data, modern);
+                addVineModels(data);
+            }
         }
         ctm.offer(modern, data);
         output.putIfAbsent(modern, data);
@@ -112,11 +128,88 @@ public final class LegacyResourceConverter {
             lang.getValue().forEach(obj::addProperty);
             output.put(lang.getKey(), GSON.toJson(obj).getBytes(StandardCharsets.UTF_8));
         }
+        for (var ns : oldSounds.entrySet()) {
+            String path = "assets/" + ns.getKey() + "/sounds.json";
+            JsonObject root = new JsonObject();
+            byte[] existing = output.get(path);
+            if (existing != null) {
+                try {
+                    root = JsonParser.parseString(new String(existing, StandardCharsets.UTF_8)).getAsJsonObject();
+                } catch (RuntimeException e) {
+                    root = new JsonObject();
+                }
+            }
+            for (var event : ns.getValue().entrySet()) {
+                if (root.has(event.getKey())) continue;
+                JsonObject o = new JsonObject();
+                JsonArray sounds = new JsonArray();
+                for (String file : event.getValue()) sounds.add(ns.getKey() + ":" + file);
+                o.add("sounds", sounds);
+                root.add(event.getKey(), o);
+            }
+            output.put(path, GSON.toJson(root).getBytes(StandardCharsets.UTF_8));
+        }
+        breakOverrideCycles(output);
         ctm.apply(output);
         if (sawTextures) {
             output.putIfAbsent("assets/minecraft/atlases/blocks.json", BLOCK_ATLAS.getBytes(StandardCharsets.UTF_8));
         }
         return output;
+    }
+
+    private static final java.util.regex.Pattern MODEL_FILE = java.util.regex.Pattern.compile("assets/([^/]+)/models/(.+)\\.json");
+
+    /**
+     * Item overrides that lead back to a model they were reached from (the Dalek Mod's sonic_cane and sonic_cane_open override each other)
+     * send vanilla's dependency resolution into a StackOverflowError that drops the resource packs in the middle of loading. The override
+     * that closes a cycle is removed: a model keeps the overrides that lead elsewhere (1.12 resolved each override once and stopped).
+     */
+    static void breakOverrideCycles(Map<String, byte[]> files) {
+        Map<String, JsonObject> models = new LinkedHashMap<>();
+        Map<String, String> paths = new LinkedHashMap<>();
+        for (var e : files.entrySet()) {
+            java.util.regex.Matcher m = MODEL_FILE.matcher(e.getKey());
+            if (!m.matches()) continue;
+            try {
+                if (JsonParser.parseString(new String(e.getValue(), StandardCharsets.UTF_8)) instanceof JsonObject o && o.get("overrides") instanceof JsonArray) {
+                    String key = m.group(1) + ":" + m.group(2).toLowerCase(java.util.Locale.ROOT);
+                    models.put(key, o);
+                    paths.put(key, e.getKey());
+                }
+            } catch (RuntimeException ex) {
+                // malformed JSON is left to the loader
+            }
+        }
+        if (models.isEmpty()) return;
+        Set<String> changed = new java.util.HashSet<>();
+        Set<String> done = new java.util.HashSet<>();
+        for (String start : models.keySet()) breakCyclesFrom(start, models, new java.util.HashSet<>(), done, changed);
+        for (String key : changed) files.put(paths.get(key), GSON.toJson(models.get(key)).getBytes(StandardCharsets.UTF_8));
+    }
+
+    private static void breakCyclesFrom(String key, Map<String, JsonObject> models, Set<String> onPath, Set<String> done, Set<String> changed) {
+        if (done.contains(key)) return;
+        onPath.add(key);
+        JsonObject model = models.get(key);
+        JsonArray kept = new JsonArray();
+        String ns = key.substring(0, key.indexOf(':'));
+        for (JsonElement o : model.getAsJsonArray("overrides")) {
+            boolean keep = true;
+            if (o instanceof JsonObject oo && oo.get("model") instanceof JsonPrimitive mp && mp.isString()) {
+                String ref = mp.getAsString().toLowerCase(java.util.Locale.ROOT);
+                String target = ref.indexOf(':') < 0 ? ns + ":" + ref : ref;
+                if (onPath.contains(target)) {
+                    keep = false;
+                    changed.add(key);
+                } else if (models.containsKey(target)) {
+                    breakCyclesFrom(target, models, onPath, done, changed);
+                }
+            }
+            if (keep) kept.add(o);
+        }
+        if (changed.contains(key)) model.add("overrides", kept);
+        onPath.remove(key);
+        done.add(key);
     }
 
     /**
@@ -275,6 +368,52 @@ public final class LegacyResourceConverter {
             }
             return data; // keep malformed JSON byte-identical; the vanilla loader will report it
         }
+    }
+
+    /**
+     * A model whose bare {@code parent} names the model's own path ({@code assets/mod/models/item/generated.json} with
+     * {@code "parent": "item/generated"}: a mod overriding vanilla's display transforms) means the vanilla model of that path in 1.12. A bare parent
+     * is looked up in the model's own namespace first here, so it would be its own parent: a StackOverflowError in vanilla's parent resolution that
+     * makes the game drop its resource packs and reload in the middle of loading (The Dalek Mod never reached the main menu).
+     */
+    static byte[] qualifySelfParent(byte[] data, String assetPath) {
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("assets/[^/]+/models/(.+)\\.json").matcher(assetPath);
+        if (!m.matches()) return data;
+        try {
+            JsonElement root = JsonParser.parseString(new String(data, StandardCharsets.UTF_8));
+            if (root instanceof JsonObject obj) {
+                boolean changed = false;
+                if (obj.get("parent") instanceof JsonPrimitive p && p.isString()) {
+                    String parent = p.getAsString();
+                    if (parent.indexOf(':') < 0 && parent.equalsIgnoreCase(m.group(1))) {
+                        obj.addProperty("parent", "minecraft:" + parent);
+                        changed = true;
+                    }
+                }
+                // an item override whose model is the model itself (predicate ext=1 -> this very model: The Dalek Mod's sonic screwdriver) is the
+                // base model: 1.12 resolved it as that, here vanilla's dependency resolution recurses forever (StackOverflowError while loading)
+                if (obj.get("overrides") instanceof JsonArray overrides) {
+                    String self = assetPath.substring("assets/".length(), assetPath.indexOf('/', "assets/".length())) + ":" + m.group(1);
+                    JsonArray kept = new JsonArray();
+                    for (JsonElement o : overrides) {
+                        if (o instanceof JsonObject oo && oo.get("model") instanceof JsonPrimitive mp && mp.isString()) {
+                            String ref = mp.getAsString().toLowerCase(java.util.Locale.ROOT);
+                            String qualified = ref.indexOf(':') < 0 ? self.substring(0, self.indexOf(':') + 1) + ref : ref;
+                            if (qualified.equalsIgnoreCase(self)) {
+                                changed = true;
+                                continue;
+                            }
+                        }
+                        kept.add(o);
+                    }
+                    if (changed) obj.add("overrides", kept);
+                }
+                if (changed) return GSON.toJson(root).getBytes(StandardCharsets.UTF_8);
+            }
+        } catch (RuntimeException e) {
+            // malformed JSON stays as it is
+        }
+        return data;
     }
 
     /** The JSON text with the brackets still open at its end closed, or null when it is not cut off inside brackets. */

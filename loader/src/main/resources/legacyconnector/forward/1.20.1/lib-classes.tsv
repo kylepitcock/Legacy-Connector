@@ -51,3 +51,6 @@ software/bernie/geckolib/renderer/DynamicGeoEntityRenderer	software/bernie/gecko
 software/bernie/geckolib/core/animatable/model/CoreGeoBone	software/bernie/geckolib/cache/object/GeoBone
 software/bernie/geckolib/core/animatable/model/CoreGeoModel	software/bernie/geckolib/model/GeoModel
 software/bernie/geckolib/core/animatable/model/CoreBakedGeoModel	software/bernie/geckolib/cache/object/BakedGeoModel
+top/theillusivec4/caelus/api/CaelusApi	com/illusivesoulworks/caelus/api/CaelusApi
+top/theillusivec4/caelus/api/CaelusApi$TriState	com/illusivesoulworks/caelus/api/CaelusApi$TriState
+software/bernie/geckolib/util/RenderUtils	software/bernie/geckolib/util/RenderUtil

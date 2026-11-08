@@ -74,12 +74,65 @@ final class Mc1201Migration {
 
     static Counts apply(ClassNode node, Mc1201Hierarchy h, Mc1201Tables t) {
         Counts c = new Counts();
+        renameOverrides(node, h, t, c);
+        dropEmptySubscriber(node);
         for (MethodNode m : node.methods) {
             if (m.instructions == null || m.instructions.size() == 0) continue;
             rewriteBody(m, h, t, c);
         }
         if ((node.access & Opcodes.ACC_INTERFACE) == 0) addBridges(node, h, t, c);
         return c;
+    }
+
+    /** Forge ignored {@code @Mod.EventBusSubscriber} on a class without {@code @SubscribeEvent} methods; NeoForge's automatic subscriber throws, so the annotation goes. */
+    private static void dropEmptySubscriber(ClassNode node) {
+        if (node.visibleAnnotations == null) return;
+        org.objectweb.asm.tree.AnnotationNode sub = null;
+        for (var a : node.visibleAnnotations) if (a.desc.equals("Lnet/neoforged/fml/common/EventBusSubscriber;")) sub = a;
+        if (sub == null) return;
+        int subscribers = 0;
+        int clientOnly = 0;
+        for (MethodNode m : node.methods) {
+            if (m.visibleAnnotations == null || m.visibleAnnotations.stream().noneMatch(a -> a.desc.equals("Lnet/neoforged/bus/api/SubscribeEvent;"))) continue;
+            subscribers++;
+            // FML removes @OnlyIn(CLIENT) methods on a dedicated server: a class with only those has no subscribers there
+            if (m.visibleAnnotations.stream().anyMatch(a -> a.desc.equals("Lnet/neoforged/api/distmarker/OnlyIn;") && a.values != null && a.values.size() >= 2
+                    && a.values.get(1) instanceof String[] e && e[1].equals("CLIENT"))) clientOnly++;
+        }
+        if (subscribers == 0) {
+            node.visibleAnnotations.remove(sub);
+        } else if (subscribers == clientOnly && (sub.values == null || !sub.values.contains("value"))) {
+            if (sub.values == null) sub.values = new java.util.ArrayList<>();
+            sub.values.add("value");
+            sub.values.add(new java.util.ArrayList<Object>(java.util.Collections.singletonList((Object) new String[] {"Lnet/neoforged/api/distmarker/Dist;", "CLIENT"})));
+        }
+    }
+
+    /**
+     * A mod method that overrides a method which is final in 1.21.1 ({@code LivingEntity.getDimensions(Pose)}, the point to override moved to
+     * {@code getDefaultDimensions}) is renamed to the new override point, with its {@code super} and own-class calls; with no replacement it is disabled.
+     */
+    private static void renameOverrides(ClassNode node, Mc1201Hierarchy h, Mc1201Tables t, Counts c) {
+        for (String[] row : t.overrides) {
+            MethodNode decl = declared(node, row[1], row[2]);
+            if (decl == null || (decl.access & Opcodes.ACC_STATIC) != 0 || !h.isSubclassOf(node.name, row[0])) continue;
+            boolean disable = row[3].equals("-");
+            String newName = disable ? "mcc$disabled$" + row[1] : row[3];
+            if (declared(node, newName, row[2]) != null) continue;
+            decl.name = newName;
+            c.bridges++;
+            if (disable) continue;
+            for (MethodNode m : node.methods) {
+                if (m.instructions == null) continue;
+                for (AbstractInsnNode in = m.instructions.getFirst(); in != null; in = in.getNext()) {
+                    if (in instanceof MethodInsnNode call && call.name.equals(row[1]) && call.desc.equals(row[2])
+                            && (call.getOpcode() == Opcodes.INVOKESPECIAL ? h.isSubclassOf(call.owner, row[0]) && !call.owner.equals(node.name)
+                                    : call.getOpcode() == Opcodes.INVOKEVIRTUAL && call.owner.equals(node.name))) {
+                        call.name = newName;
+                    }
+                }
+            }
+        }
     }
 
     // ------------------------------------------------------------------ calls and fields
@@ -92,6 +145,10 @@ final class Mc1201Migration {
             if (in instanceof TypeInsnNode ti && ti.getOpcode() == Opcodes.NEW) {
                 news.push(ti);
             } else if (in instanceof MethodInsnNode call) {
+                if (call.getOpcode() == Opcodes.INVOKEINTERFACE && CLASSES_THAT_WERE_INTERFACES.contains(call.owner)) {
+                    call.setOpcode(Opcodes.INVOKEVIRTUAL);
+                    call.itf = false;
+                }
                 if (call.name.equals("<init>")) {
                     TypeInsnNode made = call.getOpcode() == Opcodes.INVOKESPECIAL && !news.isEmpty() && news.peek().desc.equals(call.owner) ? news.pop() : null;
                     Call rule = t.calls.get(call.owner + ".<init>" + call.desc);
@@ -112,13 +169,41 @@ final class Mc1201Migration {
                 } else if (addProvider(m, call, h, t)) {
                     c.providerCalls++;
                 }
+            } else if (in instanceof org.objectweb.asm.tree.InvokeDynamicInsnNode d) {
+                registryBufferLambda(d);
             } else if (in instanceof FieldInsnNode f && f.getOpcode() == Opcodes.GETSTATIC) {
                 Field rule = t.fields.get(f.owner + "." + f.name + ":" + f.desc);
+                if (rule == null) {
+                    // a static field inherited from a Minecraft class (a mod item reading Item.BASE_ATTACK_DAMAGE_UUID through its own class)
+                    for (String owner : h.minecraftAncestors(f.owner)) {
+                        rule = t.fields.get(owner + "." + f.name + ":" + f.desc);
+                        if (rule != null) break;
+                    }
+                }
                 if (rule != null) {
                     rewriteField(m, f, rule);
                     c.fields++;
                 }
             }
+        }
+    }
+
+    /** Library interfaces of 1.20.1 that are classes now under the renamed name (GeckoLib's {@code CoreGeoBone} became {@code GeoBone}): their calls are virtual. */
+    private static final java.util.Set<String> CLASSES_THAT_WERE_INTERFACES = java.util.Set.of("software/bernie/geckolib/cache/object/GeoBone");
+
+    /** Functional interfaces whose buffer parameter became a {@code RegistryFriendlyByteBuf}: a lambda written for the 1.20.1 {@code FriendlyByteBuf} would not link. */
+    private static final java.util.Set<String> REGISTRY_BUFFER_INTERFACES = java.util.Set.of("net/neoforged/neoforge/network/IContainerFactory");
+
+    /**
+     * {@code (id, inv, buf) -> ...} for {@code IContainerFactory}: the lambda method keeps taking the {@code FriendlyByteBuf} (a supertype), but the
+     * metafactory's own method types must name the {@code RegistryFriendlyByteBuf} of the interface.
+     */
+    private static void registryBufferLambda(org.objectweb.asm.tree.InvokeDynamicInsnNode d) {
+        if (!d.bsm.getOwner().equals("java/lang/invoke/LambdaMetafactory") || d.bsmArgs.length < 3) return;
+        if (!REGISTRY_BUFFER_INTERFACES.contains(Type.getReturnType(d.desc).getInternalName())) return;
+        for (int i : new int[] {0, 2}) {
+            if (!(d.bsmArgs[i] instanceof Type t) || t.getSort() != Type.METHOD) continue;
+            d.bsmArgs[i] = Type.getMethodType(t.getDescriptor().replace("Lnet/minecraft/network/FriendlyByteBuf;", "Lnet/minecraft/network/RegistryFriendlyByteBuf;"));
         }
     }
 

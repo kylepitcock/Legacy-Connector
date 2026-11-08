@@ -65,6 +65,15 @@ public final class LegacyHosts {
         }
     }
 
+    /**
+     * Whether a tag handed to an entity's load never came from its save: a spawner or /summon entity {@code {id: ...}} (every saved entity has
+     * the "Air" tag). Legacy {@code readEntityFromNBT} only ever read what the same entity wrote (Twilight Forest's Naga reads its "Home" list
+     * unconditionally), so a tag like that is not read as legacy data; the entity keeps its constructor defaults.
+     */
+    static boolean bareTag(net.minecraft.nbt.CompoundTag tag) {
+        return !tag.contains("Air");
+    }
+
     // ------------------------------------------------------------------ registration
 
     /** Legacy {@code EntityRegistry.registerModEntity}. Must run while registries are open (legacy loading). */

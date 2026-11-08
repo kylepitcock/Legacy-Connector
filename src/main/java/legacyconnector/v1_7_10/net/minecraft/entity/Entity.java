@@ -1217,6 +1217,19 @@ public abstract class Entity implements ICommandSender {
         if (mcc$entity != null) mcc$entity.igniteForSeconds(seconds);
     }
 
+    /** Lava contact: lava damage and ten more seconds of fire (1.7.10's Entity.setOnFireFromLava). */
+    public void setOnFireFromLava() {
+        if (!isImmuneToFire()) {
+            attackEntityFrom(DamageSource.lava, 4.0F);
+            setFire(15);
+        }
+    }
+
+    /** Whether the renderer draws the fire overlay on a burning entity. */
+    public boolean canRenderOnFire() {
+        return isBurning();
+    }
+
     public void extinguish() {
         if (mcc$entity != null) mcc$entity.clearFire();
     }

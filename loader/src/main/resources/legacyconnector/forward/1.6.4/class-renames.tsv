@@ -100,3 +100,4 @@ net/minecraft/block/BlockRedstoneLogic	net/minecraft/block/BlockRedstoneDiode
 net/minecraft/block/EnumMobType	net/minecraft/block/BlockPressurePlate$Sensitivity
 net/minecraft/world/PortalPosition	net/minecraft/world/Teleporter$PortalPosition
 net/minecraft/client/gui/GuiSmallButton	net/minecraft/client/gui/GuiOptionButton
+net/minecraft/client/resources/ResourcePackRepositoryEntry	net/minecraft/client/resources/ResourcePackRepository$Entry

@@ -164,7 +164,7 @@ public class LegacyItemRenderer extends BlockEntityWithoutLevelRenderer {
             long before = RenderContext.quadCount();
             boolean debug = context == ItemDisplayContext.GUI && DEBUG_BOUNDS;
             if (debug) RenderContext.setBounds(new double[] {1e9, 1e9, 1e9, -1e9, -1e9, -1e9});
-            handler.renderInventoryBlock(block, view.getItem().getMetadata(view.getItemDamage()), renderId, renderBlocks);
+            handler.renderInventoryBlock(block, view.getItemDamage(), renderId, renderBlocks); // RenderItem passed the damage, not getMetadata (Factorization's ItemBlock answers 15 for every subtype)
             if (debug) {
                 var b = RenderContext.bounds();
                 RenderContext.setBounds(null);

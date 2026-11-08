@@ -33,16 +33,40 @@ public final class ForwardCalls {
     /** @return the number of call sites rewritten */
     public static int apply(ClassNode node, Hierarchy h, LegacyVersion version) {
         ForwardMembers table = ForwardMembers.forVersion(version);
-        if (version.forward() == null || table.callRules().isEmpty() && table.fieldCallRules().isEmpty() && table.constructorRules().isEmpty()) return 0;
+        if (version.forward() == null || table.callRules().isEmpty() && table.fieldCallRules().isEmpty() && table.fieldSetRules().isEmpty() && table.constructorRules().isEmpty()) return 0;
         Normalizer norm = new Normalizer(version, h);
         int count = 0;
         for (MethodNode method : node.methods) {
             if (method.instructions == null) continue;
             for (AbstractInsnNode insn = method.instructions.getFirst(); insn != null; insn = insn.getNext()) {
                 if (insn instanceof MethodInsnNode m && !m.owner.startsWith("[")) {
+                    // a bridge method (BridgeMethods) calls the mod's own method of the same name under its old descriptor: that call stays
+                    if ((method.access & Opcodes.ACC_SYNTHETIC) != 0 && m.owner.equals(node.name) && m.name.equals(method.name)) continue;
                     AbstractInsnNode last = m.name.equals("<init>") ? constructor(method, m, table, norm) : call(method, m, table, norm);
                     if (last != null) {
                         insn = last;
+                        count++;
+                    }
+                } else if (insn instanceof FieldInsnNode f && f.getOpcode() == Opcodes.PUTFIELD) {
+                    // S owner field desc helperOwner helper helperDesc: the write of a field the shim lacks becomes helper(receiver, value)
+                    String desc = norm.strip(f.desc);
+                    String[] rule = walk(f.owner, c -> {
+                        String[] r = table.fieldSetRules().get(norm.strip(c) + "." + f.name);
+                        return r != null && r[3].equals(desc) ? r : null;
+                    }, norm);
+                    if (rule != null) {
+                        MethodInsnNode helper = new MethodInsnNode(Opcodes.INVOKESTATIC, rule[4], rule[5], norm.linkDesc(rule[6]), false);
+                        method.instructions.set(f, helper);
+                        insn = helper;
+                        count++;
+                    }
+                } else if (insn instanceof FieldInsnNode f && f.getOpcode() == Opcodes.GETSTATIC) {
+                    // G owner field desc sfield newOwner newField: a static the shim lacks is another class's static (Vec3.fakePool -> Vec3Pool.INSTANCE)
+                    String[] rule = findField(f, table, norm);
+                    if (rule != null && rule[4].equals("sfield") && rule.length >= 7) {
+                        FieldInsnNode target = new FieldInsnNode(Opcodes.GETSTATIC, rule[5], rule[6], f.desc);
+                        method.instructions.set(f, target);
+                        insn = target;
                         count++;
                     }
                 } else if (insn instanceof FieldInsnNode f && f.getOpcode() == Opcodes.GETFIELD) {
@@ -125,6 +149,7 @@ public final class ForwardCalls {
                 return m;
             }
             case "static" -> {
+                if (m.getOpcode() == Opcodes.INVOKESPECIAL) return null; // super.x(): a helper that calls back into the override would loop
                 MethodInsnNode helper = new MethodInsnNode(Opcodes.INVOKESTATIC, rule[5], rule[6], norm.linkDesc(rule[7]), false);
                 list.set(m, helper);
                 return helper;
@@ -266,15 +291,19 @@ public final class ForwardCalls {
         final Hierarchy hierarchy;
         private final String link;
         private final String synth;
+        /** The version's own shim classes (1.6.4's Vec3Pool, ILogAgent): the tables name them by their legacy name too. */
+        private final String own;
 
         Normalizer(LegacyVersion version, Hierarchy hierarchy) {
             this.hierarchy = hierarchy;
             this.link = version.linkPrefix();
             this.synth = version.synthPrefix();
+            this.own = version.shimPrefix();
         }
 
         String strip(String s) {
-            return s.replace(link, "").replace(synth, "");
+            String out = s.replace(link, "").replace(synth, "");
+            return own.equals(link) ? out : out.replace(own, "");
         }
 
         String link(String legacy) {

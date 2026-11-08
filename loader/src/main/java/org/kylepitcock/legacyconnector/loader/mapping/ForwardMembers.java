@@ -40,6 +40,7 @@ public final class ForwardMembers {
     /** Call-site rewrites (the manual table's R, G and C lines) by {@code owner.name+desc}, {@code owner.field}, {@code owner.<init>+desc}. */
     private final Map<String, String[]> calls = new HashMap<>();
     private final Map<String, String[]> fieldCalls = new HashMap<>();
+    private final Map<String, String[]> fieldSets = new HashMap<>();
     private final Map<String, String[]> ctors = new HashMap<>();
     private final LegacyVersion version;
 
@@ -88,12 +89,18 @@ public final class ForwardMembers {
         else if (p[0].equals("F") && p.length >= 4) fields.put(p[1] + "." + p[2], p[3].strip());
         else if (p[0].equals("R") && p.length >= 5) calls.put(p[1] + "." + p[2] + p[3], p);
         else if (p[0].equals("G") && p.length >= 4) fieldCalls.put(p[1] + "." + p[2], p);
+        else if (p[0].equals("S") && p.length >= 7) fieldSets.put(p[1] + "." + p[2], p);
         else if (p[0].equals("C") && p.length >= 4) ctors.put(p[1] + ".<init>" + p[2], p);
     }
 
     /** All call-site rewrite rules, keyed as above (see the header of member-manual.tsv for the line formats). */
     public Map<String, String[]> callRules() {
         return calls;
+    }
+
+    /** S rules: the write of a field becomes a static helper call (receiver and value as its arguments). */
+    public Map<String, String[]> fieldSetRules() {
+        return fieldSets;
     }
 
     public Map<String, String[]> fieldCallRules() {
@@ -121,7 +128,7 @@ public final class ForwardMembers {
     }
 
     public boolean isEmpty() {
-        return methods.isEmpty() && fields.isEmpty() && calls.isEmpty() && fieldCalls.isEmpty() && ctors.isEmpty();
+        return methods.isEmpty() && fields.isEmpty() && calls.isEmpty() && fieldCalls.isEmpty() && fieldSets.isEmpty() && ctors.isEmpty();
     }
 
     /**

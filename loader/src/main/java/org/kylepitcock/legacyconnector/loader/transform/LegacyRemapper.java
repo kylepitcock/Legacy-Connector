@@ -243,6 +243,8 @@ public final class LegacyRemapper extends Remapper {
             for (var insn = m.instructions.getFirst(); insn != null; insn = insn.getNext()) {
                 if (insn instanceof org.objectweb.asm.tree.MethodInsnNode call && call.owner.equals(original.name) && call.name.startsWith("func_")) {
                     String readable = mcp.method(call.name);
+                    // a forward version renames some SRG names itself (1.6.4 func_110174_bM -> getMaximumHomeDistance): the final name counts
+                    if (members != null) readable = members.method(legacyClass(original.name), readable, legacyDesc(call.desc), this::localSupers);
                     if (!readable.equals(call.name) && declared.contains(readable + call.desc)) {
                         renameLocal.add(original.name + "." + readable + call.desc);
                     }

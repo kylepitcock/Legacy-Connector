@@ -130,6 +130,7 @@ public class ChunkProviderHell implements IChunkProvider {
     public void func_147418_b(int cx, int cz, Block[] blocks) {
         ChunkProviderEvent.ReplaceBiomeBlocks event = new ChunkProviderEvent.ReplaceBiomeBlocks(this, cx, cz, blocks, (BiomeGenBase[]) null);
         MinecraftForge.EVENT_BUS.post(event);
+        event.mcc$syncIds(); // block ids an old (1.4.7 to 1.6.4) handler edited in its byte array
         if (event.getResult() == Event.Result.DENY) return;
         final int surface = 64;
         final double scale = 0.03125D;

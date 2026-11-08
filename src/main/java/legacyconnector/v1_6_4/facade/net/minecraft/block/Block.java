@@ -138,10 +138,16 @@ public final class Block {
         return legacyconnector.v1_7_10.net.minecraft.block.Block.soundTypeAnvil;
     }
 
-    /** 1.6.4 asked the ambient occlusion value per position; 1.7.10 per block. */
+    /**
+     * 1.4.7 to 1.6.4 asked the ambient occlusion value per position (vanilla: 0.2 for a normal cube at the position, 1.0 otherwise, whatever the
+     * receiver); 1.7.10 asks the block. Handlers call it on their own block with the neighbours' coordinates (RedPower's RenderContext averages
+     * the cells around the block: reading the receiver gave every cell the opaque 0.2 and drew every RedPower block near-black), so it is the
+     * block at the position that answers.
+     */
     public static float getAmbientOcclusionLightValue(legacyconnector.v1_7_10.net.minecraft.block.Block self,
             legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess world, int x, int y, int z) {
-        return self.getAmbientOcclusionLightValue();
+        legacyconnector.v1_7_10.net.minecraft.block.Block at = world == null ? null : world.getBlock(x, y, z);
+        return (at != null ? at : self).getAmbientOcclusionLightValue();
     }
 
     /** Forge's {@code Block.isBlockSolidOnSide} (1.7.10: isSideSolid). */

@@ -752,6 +752,9 @@ public class Block {
         return this.blockIcon;
     }
 
+    /** The first icons registerBlockIcons registered, whichever way it keeps them (Binnie's machines hand them to their own tables): the last resort of model generation. */
+    public java.util.List<IIcon> mcc$registeredIcons = java.util.List.of();
+
     /** The icon of a vanilla block's face under its 1.7.10 name (see {@code VanillaIcons}). */
     protected final IIcon mcc$vanillaBlockIcon(int side, int meta) {
         return mcc$vanillaIcon(org.kylepitcock.legacyconnector.v1_7_10.bridge.VanillaIcons.name(this, textureName, side, meta));

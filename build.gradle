@@ -305,6 +305,12 @@ tasks.register('gap1201', JavaExec) {
     argumentProviders.add({
         def renames = fileTree(dir: 'loader/src/main/resources/legacyconnector/forward/1.20.1', include: ['forge-*.tsv', 'mc-classes.tsv']).files.join(',')
         def jars = fileTree(dir: project.findProperty('gapJars') ?: 'test-mods4', include: '*.jar').files.collect { it.absolutePath }.sort()
+        if (jars.join(' ').length() > 6000) { // a pack of hundreds of jars: the Windows command line is limited, hand over "@file" (one path per line)
+            def jarList = new File(buildDir, 'gap1201-jars.txt')
+            jarList.parentFile.mkdirs()
+            jarList.text = jars.join(System.lineSeparator())
+            jars = ['@' + jarList.absolutePath]
+        }
         [(project.findProperty('srgTable') ?: project(':loader').layout.buildDirectory.file('generated/srg-mojang/legacyconnector/mappings/1.20.1/srg-mojang.tsv').get().asFile.absolutePath).toString(), renames, gapTargets(project.findProperty('targetJars').toString(), sourceSets.main.output.classesDirs.files.collect { it.absolutePath }.join(',')),
          (project.findProperty('gapReport') ?: layout.buildDirectory.file('reports/gap1201.txt').get().asFile.absolutePath).toString()] + jars
     } as CommandLineArgumentProvider)
