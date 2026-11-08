@@ -486,6 +486,13 @@ check exposed this during a fresh-world load. The scoped accessor preserves the 
 dimension and restores nested contexts. A diagnostic copy of the installed pack completed the failing seed and eight fresh
 distant chunks after this shared fix. [The world-generation snapshot](../data/b173-worldgen-validation-2026-11-07.json) records that proof.
 
+Spawn collision checks also validate the complete native scan footprint, including its epsilon-expanded one-block shell.
+When a required chunk lies outside the generation region, the candidate is rejected through a dedicated internal signal;
+unrelated original exceptions still propagate. Missing required block, tile, light, sky or height data cannot become an
+empty-space success. Actual FloobShip checks cover clear and blocked interiors, body/shell boundary rejection, ordinary-world
+fallback and scope cleanup. A fresh pack world and 56 new flying-route chunks pass the boundary regression.
+[The generation-edge snapshot](../data/b173-generation-edge-validation-2026-11-07.json) records this follow-up.
+
 Four further Mo' Creatures cases exercise Werewolf transformations and form persistence, rare-horse subtype stats and landing
 damage, winged-horse animation/descent, and native cow/wolf prey exclusions. Native cows and wolves retain their Beta API class
 identities in original callbacks, so the mod's own settings and retaliation rules apply to vanilla creatures.

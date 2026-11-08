@@ -249,10 +249,10 @@ public final class LegacyB173Animal extends PathfinderMob implements B173LivingH
     public void baseKnockback(legacyconnector.vb1_7_3.net.minecraft.entity.Entity attacker,int amount,double x,double z){flushView();super.knockback(.4,x,z);syncView();}
     @Override public boolean causeFallDamage(float distance,float multiplier,DamageSource source){if(legacy==null||level().isClientSide)return super.causeFallDamage(distance,multiplier,source);callback(()->legacy.mcc$onLanding(distance));return false;}
     public void baseOnLanding(float distance){flushView();super.causeFallDamage(distance,1F,damageSources().fall());syncView();}
-    public boolean baseCanSpawn(){flushView();var access=World.mcc$wrap(level()).mcc$access();return access.noCollision(this)&&!access.containsAnyLiquid(getBoundingBox());}
+    public boolean baseCanSpawn(){flushView();var world=World.mcc$wrap(level());world.mcc$requireSpawnCollisionArea(getBoundingBox());var access=world.mcc$access();return access.noCollision(this)&&!access.containsAnyLiquid(getBoundingBox());}
     @Override public boolean checkSpawnRules(net.minecraft.world.level.LevelAccessor level,MobSpawnType reason){
         if(legacy==null)return false;
-        try(var generation=World.mcc$generation(level)){boolean[] allowed={false};callback(()->allowed[0]=legacy.canSpawn());return allowed[0];}
+        try(var generation=World.mcc$generation(level)){boolean[] allowed={false};callback(()->allowed[0]=legacy.canSpawn());return allowed[0];}catch(World.SpawnRegionUnavailable unavailable){return false;}
     }
     @Override public int getMaxSpawnClusterSize(){return legacy==null?4:Math.max(1,legacy.getLimitPerChunk());}
     public void baseMarkDead(){if(!isRemoved())discard();}

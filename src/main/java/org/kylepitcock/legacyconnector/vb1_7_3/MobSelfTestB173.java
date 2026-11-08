@@ -31,6 +31,7 @@ public final class MobSelfTestB173 {
         MoreCreepsRemainingSelfTestB173.register(game);
         MoreCreepsEffectsSelfTestB173.register(game);
         MoreCreepsLifecycleExtraSelfTestB173.register(game);
+        MoreCreepsGenerationEdgeSelfTestB173.register(game);
         AnimalLifecycleSelfTestB173.register(game);
         if(Boolean.getBoolean("legacyconnector.entitySelfTest"))game.addListener((ServerStartedEvent e)->run(e.getServer().overworld()));
     }

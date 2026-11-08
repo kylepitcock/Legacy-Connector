@@ -78,6 +78,21 @@ public class World implements BlockView {
         var region=GENERATION.get();return region!=null&&region.getLevel()==mcc$level?region:mcc$level;
     }
 
+    /** Only explicit missing generation dependencies reject a spawn; original mod exceptions still propagate. */
+    public static final class SpawnRegionUnavailable extends RuntimeException {
+        private SpawnRegionUnavailable(){super(null,null,false,false);}
+    }
+    private void requireRegionChunk(int chunkX,int chunkZ){
+        if(mcc$access() instanceof net.minecraft.server.level.WorldGenRegion region&&!region.hasChunk(chunkX,chunkZ))throw new SpawnRegionUnavailable();
+    }
+    /** Native BlockCollisions scans a one-block shell, including its epsilon-expanded boundary. */
+    public void mcc$requireSpawnCollisionArea(net.minecraft.world.phys.AABB bounds){
+        if(!(mcc$access() instanceof net.minecraft.server.level.WorldGenRegion))return;
+        int minX=(net.minecraft.util.Mth.floor(bounds.minX-1.0E-7)-1)>>4,maxX=(net.minecraft.util.Mth.floor(bounds.maxX+1.0E-7)+1)>>4;
+        int minZ=(net.minecraft.util.Mth.floor(bounds.minZ-1.0E-7)-1)>>4,maxZ=(net.minecraft.util.Mth.floor(bounds.maxZ+1.0E-7)+1)>>4;
+        for(int x=minX;x<=maxX;x++)for(int z=minZ;z<=maxZ;z++)requireRegionChunk(x,z);
+    }
+
     public Level mcc$level() {
         return mcc$level;
     }
@@ -117,8 +132,8 @@ public class World implements BlockView {
 
     private BlockState state(int x, int y, int z) {
         var access=mcc$access();
-        return access==null||access instanceof net.minecraft.server.level.WorldGenRegion&&!access.hasChunk(x>>4,z>>4)
-                ?net.minecraft.world.level.block.Blocks.AIR.defaultBlockState():access.getBlockState(pos(x,y,z));
+        if(access==null)return net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();
+        requireRegionChunk(x>>4,z>>4);return access.getBlockState(pos(x,y,z));
     }
 
     // -------------------------------------------------------------------------------------------------------- BlockView
@@ -132,7 +147,7 @@ public class World implements BlockView {
     @Override
     public BlockEntity getBlockEntity(int x, int y, int z) {
         if (mcc$level == null) return null;
-        var access=mcc$access();if(access instanceof net.minecraft.server.level.WorldGenRegion&&!access.hasChunk(x>>4,z>>4))return null;
+        var access=mcc$access();requireRegionChunk(x>>4,z>>4);
         var nativeBlockEntity=access.getBlockEntity(pos(x,y,z));
         if(nativeBlockEntity instanceof org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173BlockEntity host)return host.legacy();
         return org.kylepitcock.legacyconnector.vb1_7_3.BlockEntityViewsB173.wrap(nativeBlockEntity);
@@ -155,7 +170,7 @@ public class World implements BlockView {
 
     @Override
     public float method_1782(int x, int y, int z) {
-        return mcc$level == null ? 1.0F : mcc$access().getMaxLocalRawBrightness(pos(x, y, z)) / 15.0F;
+        requireRegionChunk(x>>4,z>>4);return mcc$level == null ? 1.0F : mcc$access().getMaxLocalRawBrightness(pos(x, y, z)) / 15.0F;
     }
 
     @Override
@@ -311,11 +326,11 @@ public class World implements BlockView {
     }
 
     public int getLightLevel(int x, int y, int z) {
-        return mcc$level == null ? 15 : mcc$access().getMaxLocalRawBrightness(pos(x, y, z));
+        requireRegionChunk(x>>4,z>>4);return mcc$level == null ? 15 : mcc$access().getMaxLocalRawBrightness(pos(x, y, z));
     }
 
     public boolean hasSkyLight(int x, int y, int z) {
-        return mcc$level != null && mcc$access().canSeeSky(pos(x, y, z));
+        requireRegionChunk(x>>4,z>>4);return mcc$level != null && mcc$access().canSeeSky(pos(x, y, z));
     }
 
     /** MCP {@code getChunkFromBlockCoords}. */
@@ -329,7 +344,7 @@ public class World implements BlockView {
     }
 
     public int getTopY(int x, int z) {
-        return mcc$level == null ? 64 : mcc$access().getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);
+        requireRegionChunk(x>>4,z>>4);return mcc$level == null ? 64 : mcc$access().getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);
     }
 
     /** Drops a stack at the block, as {@code Block.dropStack} spawned an item entity. */
@@ -494,7 +509,7 @@ public class World implements BlockView {
             legacyconnector.vb1_7_3.net.minecraft.entity.Entity entity,legacyconnector.vb1_7_3.net.minecraft.util.math.Box box) {
         var result=new ArrayList<legacyconnector.vb1_7_3.net.minecraft.util.math.Box>();
         if(mcc$level==null)return result;
-        var bounds=box.mcc$box();
+        var bounds=box.mcc$box();mcc$requireSpawnCollisionArea(bounds);
         for(var shape:mcc$access().getBlockCollisions(entity==null?null:entity.mcc$modern,bounds))
             for(var b:shape.toAabbs())result.add(legacyconnector.vb1_7_3.net.minecraft.util.math.Box.create(b.minX,b.minY,b.minZ,b.maxX,b.maxY,b.maxZ));
         for(var other:mcc$level.getEntities(entity==null?null:entity.mcc$modern,bounds.inflate(.25))) {
