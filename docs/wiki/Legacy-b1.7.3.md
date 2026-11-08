@@ -777,3 +777,31 @@ patterns/constant paths; being generic does not make it a complete renderer. The
 5. LWJGL 2 / GL11 for b1.7.3 mods: the GUI subset is the shim's; world rendering calls (tile entity renderers) still go nowhere.
 6. Reflection outside ModLoader (`Class.getDeclaredField("a")` with an obfuscated name) and by method name.
 7. The legacy client instance (`ModLoader.getMinecraftInstance()`: `renderEngine`, `gameSettings`, `theWorld`, `thePlayer`) as views.
+
+## Archive.org test run (2026-11-08)
+
+Mods downloaded from archive.org copies of their original distributions (the "Minecraft Beta 1.7.3 Mod Archive", the NetherCraft and BuildCraft items), each
+tested alone in a fresh game directory with only its reviewed dependencies, server side first (`runServerSubTest`), then a real graphical client with the
+usual performance mods for three of them. Results are in `docs/data/mods.json`; screenshots in `docs/screenshots/b1.7.3/`.
+
+| Mod | Server run | Client |
+|---|---|---|
+| NetherCraft 1.9b (ModLoader-only zip) | 35 blocks, 110 items, 0 failed callbacks, 3 tile entities round-trip | blocks render, textured |
+| The Aether 1.01 (+ Trivia) | 29 blocks, 112 items, 0 failed callbacks | blocks render, textured |
+| Equivalent Exchange (Forge) 3.55 | 11 blocks, 42 items, 8 tile entities round-trip | blocks render, textured |
+| Mars Mod 1.2 | 10 blocks, 20 items | not run |
+| PremiumWood 14.4 (+ ScotTools 10.1) | 34 blocks, 41 items | not run |
+| Dragon Mod 2.3 | 3 blocks, 7 items; dragons not hosted | not run |
+| Elemental Creepers 1.4 | constructs; all 18 creeper mobs rejected (hostile base family not hosted) | not run |
+| BuildCraft Core + Energy 2.1.1 | 3 blocks, 10 items | not run |
+
+Defects found and fixed generically:
+
+- Classes of the default package shared one package in the original game; each mod now has its own package, so one mod's use of another's package-private
+  or protected members (ScotTools' `ToolMaterial` constructor from PremiumWood) failed with `IllegalAccessError`. The deobfuscator widens members and classes
+  that came from the default package to public.
+- A block right click now runs with the clicking player as the legacy client's player (`mc.thePlayer`), also when the player is not in the level's player list
+  yet (Mars Mod's vacuum heater read a null player).
+
+Not usable as test input: NetherCraft's ScotTools zip needs ScotTools (use the ModLoader-only zip), and the Fringe Lands archive is only obfuscated base class
+edits (no `mod_` class, 0 classes translated). Dragon Mod and Elemental Creepers show the next gap: their mobs extend a hostile/creeper base the mob host does not accept yet.

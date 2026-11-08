@@ -27838,6 +27838,69 @@
    "date": "2026-11-08",
    "status": "loads",
    "notes": "Automated check 0.4.9: translates offline and everything it uses exists (50 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "NetherCraft (ModLoader-only build)",
+   "version": "1.9b",
+   "mc": "b1.7.3",
+   "source": "client",
+   "date": "2026-11-08",
+   "status": "partial",
+   "notes": "Archive.org copy of the original download (SOURCES recorded, not redistributed). Fresh server run: translates, constructs, 35 blocks and 110 items registered, 0 failed block callbacks (4 right clicks), 3 tile entities saved and loaded back. Real graphical client check (with Sodium, Iris and C2ME): its ore, wood, glass and shroom blocks render with their own textures. Mobs, world generation and the Nether-style dimension were not exercised. The ScotTools variant of the zip needs ScotTools."
+  },
+  {
+   "name": "Equivalent Exchange (Forge)",
+   "version": "3.55",
+   "mc": "b1.7.3",
+   "source": "client",
+   "date": "2026-11-08",
+   "status": "partial",
+   "notes": "Archive.org copy of the original download (SOURCES recorded, not redistributed). Fresh server run: 11 blocks and 42 items, 0 failed callbacks (8 right clicks), 8 tile entities saved and loaded back. Real graphical client check: dark matter block, furnace, chests, nova catalyst and torches render with their textures. Transmutation and GUIs not exercised."
+  },
+  {
+   "name": "Mars Mod",
+   "version": "1.2",
+   "mc": "b1.7.3",
+   "source": "client",
+   "date": "2026-11-08",
+   "status": "loads",
+   "notes": "Archive.org copy of the original download (SOURCES recorded, not redistributed). Fresh server run: 10 blocks and 20 items, 1 tile entity saved and loaded back. Its vacuum heater read the legacy client player in a right click (fixed generically: the clicking player is now the legacy mc.thePlayer during block callbacks); 0 failed callbacks afterwards. Not tested in a client; the Mars dimension was not entered."
+  },
+  {
+   "name": "PremiumWood (BetterWood)",
+   "version": "14.4",
+   "mc": "b1.7.3",
+   "source": "client",
+   "date": "2026-11-08",
+   "status": "loads",
+   "notes": "Archive.org copy of the original download (SOURCES recorded, not redistributed). Needs ScotTools (tested with ScotTools 10.1): 34 blocks and 41 items, 0 failed callbacks. Failed first with an IllegalAccessError (mod classes of the default package lost package access to each other's protected members when each mod got its own package); fixed generically in the loader. 13 sprite references without a texture; not tested in a client."
+  },
+  {
+   "name": "Dragon Mod",
+   "version": "2.3",
+   "mc": "b1.7.3",
+   "source": "client",
+   "date": "2026-11-08",
+   "status": "loads",
+   "notes": "Archive.org copy of the original download (SOURCES recorded, not redistributed). Fresh server run: 3 blocks and 7 items register, 0 failed callbacks. Its dragon mobs are not hosted yet (the layer reports the mob base family as unsupported). Not tested in a client."
+  },
+  {
+   "name": "Elemental Creepers",
+   "version": "1.4",
+   "mc": "b1.7.3",
+   "source": "client",
+   "date": "2026-11-08",
+   "status": "loads",
+   "notes": "Archive.org copy of the original download (SOURCES recorded, not redistributed). Fresh server run: constructs, no blocks or items; all 18 creeper species are rejected as mobs ('base mob family is not hosted yet': the Creeper/hostile base is not hosted for this mod's entity classes), so the mod adds nothing yet."
+  },
+  {
+   "name": "BuildCraft (Core and Energy)",
+   "version": "2.1.1",
+   "mc": "b1.7.3",
+   "source": "client",
+   "date": "2026-11-08",
+   "status": "loads",
+   "notes": "Archive.org copy of the original download (SOURCES recorded, not redistributed). Fresh server run with Core and Energy: 3 blocks and 10 items register (engine, oil and fuel), 0 failed callbacks, 1 tile entity saved and loaded back, 268 textures. Transport, factory and builders not run; not tested in a client."
   }
  ],
  "hidden": [
