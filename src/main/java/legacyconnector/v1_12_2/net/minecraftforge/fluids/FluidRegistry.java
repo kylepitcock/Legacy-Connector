@@ -9,6 +9,8 @@ import legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation;
 public abstract class FluidRegistry {
     private static final Map<String, Fluid> FLUIDS = new LinkedHashMap<>();
     private static final Map<Fluid, Integer> IDS = new HashMap<>();
+    /** The mod that registered each fluid (the active mod during loading; minecraft for water and lava). */
+    private static final Map<String, String> OWNERS = new HashMap<>();
     private static boolean universalBucket;
     private static final java.util.Set<Fluid> BUCKET_FLUIDS = new java.util.LinkedHashSet<>();
 
@@ -24,6 +26,8 @@ public abstract class FluidRegistry {
     public static synchronized boolean registerFluid(Fluid fluid) {
         if (FLUIDS.containsKey(fluid.getName())) return false;
         FLUIDS.put(fluid.getName(), fluid);
+        var active = legacyconnector.v1_12_2.net.minecraftforge.fml.common.Loader.instance().activeModContainer();
+        OWNERS.put(fluid.getName(), active == null || active.getModId() == null ? "minecraft" : active.getModId().toLowerCase(java.util.Locale.ROOT));
         IDS.put(fluid, IDS.size());
         return true;
     }
@@ -75,9 +79,11 @@ public abstract class FluidRegistry {
         return null;
     }
 
-    /** The registered name of the fluid ("modid:name" in Forge's default-fluid table; the plain name here). */
+    /** The registered name of the fluid in Forge's default-fluid table: "modid:name" (the mod that registered it). */
     public static synchronized String getDefaultFluidName(Fluid fluid) {
-        return getFluidName(fluid);
+        if (fluid == null) return null;
+        String owner = OWNERS.get(fluid.getName());
+        return (owner == null ? "minecraft" : owner) + ":" + fluid.getName();
     }
 
     /** The mod that registered the fluid of a stack (minecraft for water and lava). */

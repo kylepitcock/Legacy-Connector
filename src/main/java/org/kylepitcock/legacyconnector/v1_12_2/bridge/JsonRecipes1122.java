@@ -29,6 +29,13 @@ public final class JsonRecipes1122 {
 
     private JsonRecipes1122() {}
 
+    /** Forge 1.12 read recipe files leniently and stopped after the first value: libVulpes ships files with the recipe written twice. */
+    private static JsonElement parseLenient(java.io.Reader in) {
+        com.google.gson.stream.JsonReader reader = new com.google.gson.stream.JsonReader(in);
+        reader.setLenient(true);
+        return JsonParser.parseReader(reader);
+    }
+
     /** Loads the JSON recipes of every 1.12.2 mod and registers them. */
     public static void load() {
         int loaded = 0, failed = 0, skipped = 0;
@@ -44,7 +51,7 @@ public final class JsonRecipes1122 {
                 if (!rel.endsWith(".json") || rel.startsWith("_") || rel.contains("/_")) return true;
                 String name = rel.substring(0, rel.length() - ".json".length());
                 try (BufferedReader in = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
-                    JsonElement root0 = JsonParser.parseReader(in);
+                    JsonElement root0 = parseLenient(in);
                     if (!root0.isJsonObject()) {
                         counts[2]++;
                         return true;
@@ -114,7 +121,7 @@ public final class JsonRecipes1122 {
         java.nio.file.Path file = root.resolve("_constants.json");
         if (!Files.exists(file)) return;
         try (BufferedReader in = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
-            JsonElement parsed = JsonParser.parseReader(in);
+            JsonElement parsed = parseLenient(in);
             if (!parsed.isJsonArray()) return;
             JsonArray array = parsed.getAsJsonArray();
             for (JsonElement e : array) {

@@ -155,10 +155,16 @@ public class Configuration {
     }
 
     public Property get(String category, String key, boolean[] defaultValues, String comment) {
+        return get(category, key, defaultValues, comment, false, -1);
+    }
+
+    public Property get(String category, String key, boolean[] defaultValues, String comment, boolean fixed, int maxLength) {
         String[] values = new String[defaultValues.length];
         for (int i = 0; i < defaultValues.length; i++) values[i] = Boolean.toString(defaultValues[i]);
         Property prop = get(category, key, values, comment, Property.Type.BOOLEAN);
         prop.setDefaultValues(values);
+        prop.setIsListLengthFixed(fixed);
+        prop.setMaxListLength(maxLength);
         if (!prop.isBooleanList()) prop.set(values);
         return prop;
     }
@@ -185,10 +191,22 @@ public class Configuration {
     }
 
     public Property get(String category, String key, double[] defaultValues, String comment) {
+        return get(category, key, defaultValues, comment, -Double.MAX_VALUE, Double.MAX_VALUE, false, -1);
+    }
+
+    public Property get(String category, String key, double[] defaultValues, String comment, double min, double max) {
+        return get(category, key, defaultValues, comment, min, max, false, -1);
+    }
+
+    public Property get(String category, String key, double[] defaultValues, String comment, double min, double max, boolean fixed, int maxLength) {
         String[] values = new String[defaultValues.length];
         for (int i = 0; i < defaultValues.length; i++) values[i] = Double.toString(defaultValues[i]);
         Property prop = get(category, key, values, comment, Property.Type.DOUBLE);
         prop.setDefaultValues(values);
+        prop.setMinValue(min);
+        prop.setMaxValue(max);
+        prop.setIsListLengthFixed(fixed);
+        prop.setMaxListLength(maxLength);
         if (!prop.isDoubleList()) prop.set(values);
         return prop;
     }
