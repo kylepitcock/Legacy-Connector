@@ -794,8 +794,32 @@ More Creeps Giraffe and Mo' Creatures Horse naming through native client interac
 save/reopen. More Creeps covers focus, typing, its original 31-character limit, explicit paste, Save and Cancel; Mo' Creatures
 retains its own 15-character `MoCGUI` and Done behavior. An actual original Bunny breeding tick also exercises the wide-query /
 empty-nearby-query crash boundary. Both mods pass fresh isolated server regressions. Hurt/death tint and Hotdog animation
-are covered separately by the render effects snapshot above. Complete mod compatibility remains unverified: natural births
-and full Werewolf transformation sequences still need end-to-end client checks.
+are covered separately by the render effects snapshot above.
+
+The [natural lifecycle validation snapshot](../data/b173-natural-lifecycle-validation-2026-11-08.json) records subsequent
+client checks of original Bunny, Horse, Dolphin and Kitty births, both day/night Werewolf transformations, and native
+save/reopen of offspring and stable forms. Parents receive ordinary food, taming and carrying interactions; original
+readiness, growth, gestation and transformation fields and RNG are not forced. Already-born observation fixtures receive
+native persistence only after birth so their UUIDs can be checked after reopening. Original counters absent from the mods'
+NBT remain absent. More Creeps has no equivalent paired mating or Werewolf family; its actual EvilChicken lays its original
+egg through normal ticks in a separate client run.
+
+Shared fixes supporting these checks preserve the original APIs:
+
+- Reachable original renderer methods that directly write Beta entity fields join the existing authoritative renderer-effect
+  tick lane. This includes original variant initialization used by gameplay, rather than leaving server-side type and stats
+  at their constructor defaults. Renderer/model-only field writes do not activate this lane.
+- Raw position fields, dimensions and collision bounds remain independent through host synchronization and nested callbacks.
+  Original `setBoundingBoxSpacing` changes dimensions only; `setPosition` explicitly rebuilds bounds. Movement derives position
+  from the existing box and translates it through the native collision engine, including zero moves. This prevents original
+  transformation animation offsets from becoming collision displacement through walls.
+- Collidable hosted Beta passengers opt into native rider interaction targeting. An ordinary native crosshair/right-click
+  check picks up and releases the original Bunny; the original callback still decides the mount toggle and throw behavior.
+  Vanilla and modern entity targeting implementations are unchanged.
+
+Fresh isolated server runs also exercise the controlled bounds API on the original Werewolf, EvilChicken and Money entity,
+plus the original mods' existing regression suites. These are opt-in fixtures; the default build needs no private mod jars.
+Complete compatibility for either mod, remote multiplayer and Sodium/Iris remain unverified.
 
 - **Placing a subtype.** b1.7.3's `ItemBlock` set block and metadata together (`getPlacedBlockMetadata` of the damage), so `onBlockAdded`
   and the tile entity it makes see the subtype; `getStateForPlacement` does the same (before, a Minefactory translocator or crafter
