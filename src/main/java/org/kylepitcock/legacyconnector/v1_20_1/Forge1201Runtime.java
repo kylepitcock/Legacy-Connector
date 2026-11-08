@@ -43,6 +43,12 @@ public final class Forge1201Runtime {
         modBus.addListener(Forge1201Runtime::onRegisterCapabilities);
         modBus.addListener(Forge1201Runtime::onLoadComplete);
         modBus.addListener(org.kylepitcock.legacyconnector.v1_20_1.migrate.LegacyEnchantments::onNewRegistry);
+        modBus.addListener((net.neoforged.neoforge.registries.RegisterEvent e) -> {
+            if (e.getRegistryKey().equals(net.neoforged.neoforge.registries.NeoForgeRegistries.Keys.INGREDIENT_TYPES)) {
+                e.register(net.neoforged.neoforge.registries.NeoForgeRegistries.Keys.INGREDIENT_TYPES,
+                        helper -> legacyconnector.v1_20_1.net.minecraftforge.common.crafting.CraftingHelper.flushTypes(helper::register));
+            }
+        });
         modBus.addListener((net.neoforged.neoforge.common.world.chunk.RegisterTicketControllersEvent e) ->
                 legacyconnector.v1_20_1.net.minecraftforge.common.world.ForgeChunkManager.registerControllers(e, modIds));
         org.kylepitcock.legacyconnector.core.pack.GeneratedPack.addContributor(org.kylepitcock.legacyconnector.v1_20_1.migrate.LegacyEnchantments::contribute);

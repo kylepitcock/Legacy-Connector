@@ -31,7 +31,81 @@ public final class CraftingHelper {
 
     public static <T extends net.minecraft.world.item.crafting.Ingredient> IIngredientSerializer<T> register(ResourceLocation key, IIngredientSerializer<T> serializer) {
         INGREDIENTS.put(key, serializer);
+        registerType(key, typeFor(serializer));
         return serializer;
+    }
+
+    // ---- custom ingredient types (AbstractIngredient subclasses) ----------------------------------------------------------------
+
+    private static final Map<IIngredientSerializer<?>, net.neoforged.neoforge.common.crafting.IngredientType<AbstractIngredient.Bridge>> TYPES = new ConcurrentHashMap<>();
+    private static final Map<ResourceLocation, net.neoforged.neoforge.common.crafting.IngredientType<?>> PENDING_TYPES = new ConcurrentHashMap<>();
+
+    /** The NeoForge ingredient type of a 1.20.1 serializer: its JSON and network forms, read and written by the serializer. */
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static net.neoforged.neoforge.common.crafting.IngredientType<AbstractIngredient.Bridge> typeFor(IIngredientSerializer<?> serializer) {
+        return TYPES.computeIfAbsent(serializer, s -> {
+            com.mojang.serialization.MapCodec<AbstractIngredient.Bridge> codec = new com.mojang.serialization.MapCodec<>() {
+                @Override
+                public <T> java.util.stream.Stream<T> keys(com.mojang.serialization.DynamicOps<T> ops) {
+                    return java.util.stream.Stream.empty();
+                }
+
+                @Override
+                public <T> com.mojang.serialization.DataResult<AbstractIngredient.Bridge> decode(com.mojang.serialization.DynamicOps<T> ops,
+                        com.mojang.serialization.MapLike<T> input) {
+                    try {
+                        JsonObject obj = new JsonObject();
+                        input.entries().forEach(p -> {
+                            String k = ops.getStringValue(p.getFirst()).result().orElse(null);
+                            if (k != null) obj.add(k, ops.convertTo(JsonOps.INSTANCE, p.getSecond()));
+                        });
+                        Object parsed = s.parse(obj);
+                        if (parsed instanceof AbstractIngredient a) return com.mojang.serialization.DataResult.success((AbstractIngredient.Bridge) a.getCustomIngredient());
+                        return com.mojang.serialization.DataResult.error(() -> "The ingredient serializer did not return an AbstractIngredient");
+                    } catch (RuntimeException e) {
+                        return com.mojang.serialization.DataResult.error(() -> String.valueOf(e.getMessage()));
+                    }
+                }
+
+                @Override
+                public <T> com.mojang.serialization.RecordBuilder<T> encode(AbstractIngredient.Bridge input, com.mojang.serialization.DynamicOps<T> ops,
+                        com.mojang.serialization.RecordBuilder<T> prefix) {
+                    JsonElement json = input.owner().toJson();
+                    if (json instanceof JsonObject obj) {
+                        for (var e : obj.entrySet()) {
+                            if (!e.getKey().equals("type")) prefix.add(e.getKey(), JsonOps.INSTANCE.convertTo(ops, e.getValue()));
+                        }
+                    }
+                    return prefix;
+                }
+            };
+            net.minecraft.network.codec.StreamCodec<net.minecraft.network.RegistryFriendlyByteBuf, AbstractIngredient.Bridge> stream = new net.minecraft.network.codec.StreamCodec<>() {
+                @Override
+                public AbstractIngredient.Bridge decode(net.minecraft.network.RegistryFriendlyByteBuf buf) {
+                    return (AbstractIngredient.Bridge) ((AbstractIngredient) ((IIngredientSerializer) s).parse(buf)).getCustomIngredient();
+                }
+
+                @Override
+                public void encode(net.minecraft.network.RegistryFriendlyByteBuf buf, AbstractIngredient.Bridge value) {
+                    ((IIngredientSerializer) s).write(buf, value.owner());
+                }
+            };
+            return new net.neoforged.neoforge.common.crafting.IngredientType<>(codec, stream);
+        });
+    }
+
+    private static void registerType(ResourceLocation key, net.neoforged.neoforge.common.crafting.IngredientType<?> type) {
+        try {
+            net.minecraft.core.Registry.register(net.neoforged.neoforge.registries.NeoForgeRegistries.INGREDIENT_TYPES, key, type);
+        } catch (RuntimeException e) {
+            PENDING_TYPES.put(key, type); // the registry is not open yet (or any more); the register event of the layer retries
+        }
+    }
+
+    /** Called when NeoForge opens the ingredient type registry: types a mod registered earlier than that. */
+    public static void flushTypes(java.util.function.BiConsumer<ResourceLocation, net.neoforged.neoforge.common.crafting.IngredientType<?>> sink) {
+        PENDING_TYPES.forEach(sink);
+        PENDING_TYPES.clear();
     }
 
     public static ResourceLocation getID(IIngredientSerializer<?> serializer) {
