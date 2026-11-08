@@ -202,3 +202,8 @@ R	net/minecraft/client/renderer/texture/TextureAtlasSprite	getFrameTextureData	(
 G	net/minecraft/block/material/Material	materialCarpet	Lnet/minecraft/block/material/Material;	sfield	net/minecraft/block/material/Material	carpet
 G	net/minecraftforge/event/terraingen/BiomeEvent$GetVillageBlockID	replacement	I	=	mcc$getReplacementId	()I
 S	net/minecraftforge/event/terraingen/BiomeEvent$GetVillageBlockID	replacement	I	legacyconnector/v1_6_4/forward/Forward164	setVillageReplacement	(Lnet/minecraftforge/event/terraingen/BiomeEvent$GetVillageBlockID;I)V
+M	net/minecraft/item/ItemStack	func_111282_a	(Lnet/minecraft/entity/player/EntityPlayer;Lnet/minecraft/entity/EntityLivingBase;)Z	interactWithEntity
+G	net/minecraft/stats/StatBase	statGuid	Ljava/lang/String;	field	statId	Ljava/lang/String;
+G	net/minecraft/world/NextTickListEntry	blockID	I	=	mcc$blockId	()I
+G	net/minecraft/entity/projectile/EntityArrow	inTile	I	=	mcc$inTileId	()I
+S	net/minecraft/entity/projectile/EntityArrow	inTile	I	legacyconnector/v1_6_4/forward/Forward164	setArrowInTile	(Lnet/minecraft/entity/projectile/EntityArrow;I)V

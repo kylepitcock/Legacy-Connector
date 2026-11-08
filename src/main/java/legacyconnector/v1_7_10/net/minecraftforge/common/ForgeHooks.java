@@ -184,6 +184,12 @@ public class ForgeHooks {
         return !MinecraftForge.EVENT_BUS.post(new legacyconnector.v1_7_10.net.minecraftforge.event.entity.living.LivingAttackEvent(entity, source, amount));
     }
 
+    /** Posts the death event; true when a handler cancelled the death (the entity stays alive). */
+    public static boolean onLivingDeath(legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase entity,
+            legacyconnector.v1_7_10.net.minecraft.util.DamageSource source) {
+        return MinecraftForge.EVENT_BUS.post(new legacyconnector.v1_7_10.net.minecraftforge.event.entity.living.LivingDeathEvent(entity, source));
+    }
+
     /** Posts the hurt event; the damage to apply (0 when cancelled). */
     public static float onLivingHurt(legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase entity,
             legacyconnector.v1_7_10.net.minecraft.util.DamageSource source, float amount) {

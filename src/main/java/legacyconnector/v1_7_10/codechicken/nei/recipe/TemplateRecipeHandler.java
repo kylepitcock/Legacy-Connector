@@ -274,6 +274,11 @@ public abstract class TemplateRecipeHandler implements ICraftingHandler, IUsageH
             return false;
         }
 
+        /** NEI 1.6: whether any ingredient slot accepts the item with this legacy id. */
+        public boolean contains(Collection<PositionedStack> ingredients, int ingredientId) {
+            return contains(ingredients, Item.getItemById(ingredientId));
+        }
+
         public boolean contains(Collection<PositionedStack> ingredients, Item ingredient) {
             for (PositionedStack stack : ingredients) if (stack.contains(ingredient)) return true;
             return false;

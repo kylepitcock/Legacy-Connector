@@ -32,6 +32,11 @@ public final class Forward164 {
         event.mcc$setReplacementId(id);
     }
 
+    /** 1.6.4 {@code arrow.inTile = id}. */
+    public static void setArrowInTile(legacyconnector.v1_7_10.net.minecraft.entity.projectile.EntityArrow arrow, int id) {
+        arrow.mcc$setInTileId(id);
+    }
+
     /** 1.6.4 {@code NBTTagList.tagAt(i)}: the element of any type (1.7.10 only has typed getters). */
     public static NBTBase tagAt(NBTTagList list, int index) {
         if (index < 0 || index >= list.tagCount()) return null;

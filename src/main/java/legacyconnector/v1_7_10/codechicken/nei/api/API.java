@@ -29,6 +29,18 @@ public class API {
     public static void addSetRange(String name, legacyconnector.v1_7_10.codechicken.nei.MultiItemRange range) {
     }
 
+    /** Adds a stack with NBT to NEI's item list; JEI lists the stack's item itself, so the entry is accepted and ignored. */
+    public static void addNBTItem(ItemStack stack) {
+    }
+
+    /** Adds a range to a named NEI subset (accepted and ignored: JEI has no subsets). */
+    public static void addToRange(String name, legacyconnector.v1_7_10.codechicken.nei.MultiItemRange range) {
+    }
+
+    /** NEI 1.6: the damage variants of an item by legacy id (JEI lists the subtypes itself). */
+    public static void setItemDamageVariants(int id, java.util.Collection<ItemStack> variants) {
+    }
+
     public static void addItemListEntry(ItemStack stack) {
     }
 

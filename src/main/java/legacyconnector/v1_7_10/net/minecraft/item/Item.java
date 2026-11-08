@@ -577,6 +577,11 @@ public class Item {
         return false;
     }
 
+    /** Forge: true when a sneaking click should still reach {@link #onItemUse} instead of the block's own activation. */
+    public boolean shouldPassSneakingClickToBlock(World world, int x, int y, int z) {
+        return false;
+    }
+
     public boolean itemInteractionForEntity(ItemStack stack, EntityPlayer player, EntityLivingBase entity) {
         return false;
     }
