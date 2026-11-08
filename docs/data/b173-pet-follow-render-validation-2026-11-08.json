@@ -1,0 +1,174 @@
+{
+  "snapshot_date": "2026-11-08",
+  "scope": "Original pet, following, recruitment and conditional-renderer callbacks, generic modern-item query admission and legacy atlas/default-texture APIs",
+  "version": "0.4.12",
+  "upstream_master_revision": "78b158dec2b3507a4e424003352caf64ed9e0111",
+  "tested_working_tree_base_revision": "c8443c070d09a8195dc011bd048c0383bbe8cba8",
+  "source_sha256": {
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/world/World.java": "9f50eb0bce3ee923005bfee8efce171e5e9cd15361ff091e795630c1bd9d961a",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/AnimalRenderingB173.java": "dff68dba18d913a75ad663750e4fd28082f3290fbb804ffe4d2b2784c84306f0",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/AssetsB173.java": "ac59bfad1738085917b73ddf88d9d02dcff6d1a1bdc5c331a0447efd07272ca2",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/EntityRenderingB173.java": "1367d7f6fcba189393a5428b7f977837d5d19b60c7f1bcaa0e42cf7dcd208554",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/MoCreaturesFollowSelfTestB173.java": "aacf34f02ee21237691d0981cdf88babbc441dca199e38e11978948768a530fb",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/MoCreaturesPetBehaviorSelfTestB173.java": "b7f63ff70273e2ed78827ddc56a72df4ac2f9460e59023336cb1807884bee622",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/MobSelfTestB173.java": "86e2e73055f45ad4ad4d1be4a3d238f6905cf243a03f37336313c5b04b602a91",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/MoreCreepsGameplayExtraSelfTestB173.java": "3d82581389babce3af03e483d4d131cafb3c38b915472ae83b7eab2e818c3305",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/MoreCreepsRenderVariantSelfTestB173.java": "f70e278823013f4ba96568eceff860d48c3b7e248a1591e67724e94a4e61a26e",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/StacksB173.java": "2aecfa41e00d244315f944bff19e28542ab2962f1ca8c9b00ce782a898f4315c",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/VanillaB173.java": "1b2e7dafe54a666f1dd2fa15d3465c8749c95e9b338def2d0aa19a3e26d01c20",
+    "src/main/resources/legacyconnector/b1.7.3/vanilla-block-texture-indices.tsv": "1e6a7765730ee5a41357079e8fdfa8f2d4d3ec33365063be52cf67a0c9faef57",
+    "src/test/java/org/kylepitcock/legacyconnector/vb1_7_3/EntityRenderingB173Test.java": "284cdcea0a6a733aa44cb4d568ea37b78244d1e57893f9bb26aac5987fe11035"
+  },
+  "tests": {
+    "runtime": {
+      "tests": 200,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "loader": {
+      "tests": 260,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "actual_mod_opt_in": {
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "fixtures": {
+    "mocreatures": {
+      "status": "headless-smoke-passed",
+      "source_archive": "DrZharks_MoCreatures_Mod_v2.12.2_b1.7.3.zip!mods/MoCreatures.zip",
+      "payload_sha256": "84bb44f41a34615c1aec6a2e6c3adb5c99b7b315682cabf504b61c4e569443bf",
+      "game_directory": "run-b173-single/mocreatures-neutralbeta-placement-classic-flat-2-20261108-100045-9a46df",
+      "resources_verified": 168,
+      "test_log_sha256": "7f6943cc07695491fe21cf4b19e44eb76a559f5ba5966b952d78448f9da2f8a8"
+    },
+    "morecreeps": {
+      "status": "headless-smoke-passed",
+      "source_archive": "MoreCreepsv2.12_b173.zip!PUT CONTENTS INTO MINECRAFT FOLDER/mods/MoreCreepsAndWeirdos.zip",
+      "payload_sha256": "8e1fd090a6d9a84608281ceae5dba7053d553a14f3d5b453cb06f2b010bb7e3d",
+      "game_directory": "run-b173-single/morecreeps-neutralbeta-placement-classic-flat-2-20261108-100046-7e7fad",
+      "resources_verified": 759,
+      "test_log_sha256": "7c90a8798c601bdc5e1d62d864e24ee0593fbd858f277ba250b40107f1d8a6a3"
+    }
+  },
+  "actual_callback_proofs": {
+    "mocreatures": [
+      "[10:02:17] [Server thread/INFO] [LegacyConnector/B173PetBehaviorTest/]: B1.7.3 MOC PET BEHAVIOR TEST: kitty original fear exclusions passed using original callbacks",
+      "[10:02:17] [Server thread/INFO] [LegacyConnector/B173PetBehaviorTest/]: B1.7.3 MOC PET BEHAVIOR TEST: kitty tree search and timeout passed using original callbacks",
+      "[10:02:17] [Server thread/INFO] [LegacyConnector/B173PetBehaviorTest/]: B1.7.3 MOC PET BEHAVIOR TEST: bird native seed taming passed using original callbacks",
+      "[10:02:17] [Server thread/INFO] [LegacyConnector/B173PetBehaviorTest/]: B1.7.3 MOC PET BEHAVIOR TEST: all 3 original-callback proofs passed",
+      "[10:02:17] [Server thread/INFO] [LegacyConnector/B173FollowTest/]: B1.7.3 MOC FOLLOW TEST: bigcat rope path and sitting boundaries passed using original callbacks",
+      "[10:02:17] [Server thread/INFO] [LegacyConnector/B173FollowTest/]: B1.7.3 MOC FOLLOW TEST: bigcat original teleport fallback passed using original callbacks",
+      "[10:02:17] [Server thread/INFO] [LegacyConnector/B173FollowTest/]: B1.7.3 MOC FOLLOW TEST: nightmare rider fire clearing passed using original callbacks",
+      "[10:02:17] [Server thread/INFO] [LegacyConnector/B173FollowTest/]: B1.7.3 MOC FOLLOW TEST: all 3 original-callback proofs passed",
+      "[10:02:21] [Server thread/INFO] [LegacyConnector/ServerScript/]: BETA VANILLA CUBE API PROOF checked=96 mismatches=[]",
+      "[10:02:21] [Server thread/INFO] [LegacyConnector/ServerScript/]: BETA VANILLA TEXTURE API PROOF checked=96 mismatches=[]",
+      "[10:02:21] [Server thread/INFO] [LegacyConnector/ServerScript/]: BETA SLAB API PROOF checked=8 mismatches=[]"
+    ],
+    "morecreeps": [
+      "[10:03:23] [Server thread/INFO] [LegacyConnector/B173CreepsGameplayExtraTest/]: B1.7.3 CREEPS GAMEPLAY EXTRA TEST: actual Hunchback cake recruitment, native advancement, health/inventory boundaries and five-Skeleton army formation passed",
+      "[10:03:23] [Server thread/INFO] [LegacyConnector/B173CreepsRenderVariantTest/]: B1.7.3 CREEPS RENDER VARIANT TEST: original fire atlas input passed",
+      "[10:03:23] [Server thread/INFO] [LegacyConnector/B173CreepsRenderVariantTest/]: B1.7.3 CREEPS RENDER VARIANT TEST: original Hotdog cold/fire native sprite and UV proofs passed",
+      "[10:03:23] [Server thread/INFO] [LegacyConnector/B173CreepsRenderVariantTest/]: B1.7.3 CREEPS RENDER VARIANT TEST: all original-callback proofs passed",
+      "[10:03:27] [Server thread/INFO] [LegacyConnector/ServerScript/]: BETA VANILLA CUBE API PROOF checked=96 mismatches=[]",
+      "[10:03:27] [Server thread/INFO] [LegacyConnector/ServerScript/]: BETA VANILLA TEXTURE API PROOF checked=96 mismatches=[]",
+      "[10:03:27] [Server thread/INFO] [LegacyConnector/ServerScript/]: BETA SLAB API PROOF checked=8 mismatches=[]"
+    ]
+  },
+  "natural_spawn_regression": {
+    "mocreatures": {
+      "world_ticks": 500,
+      "group_opportunities": {
+        "MONSTER": 500,
+        "CREATURE": 500,
+        "WATER_CREATURE": 500
+      },
+      "confirmed_natural_insertions": {
+        "mocreatures:bigcat": 12,
+        "mocreatures:boar": 4,
+        "mocreatures:bunny": 8,
+        "mocreatures:deer": 4,
+        "mocreatures:kitty": 4,
+        "mocreatures:mouse": 6
+      },
+      "total_confirmed_insertions": 38,
+      "inserted_species": 6
+    },
+    "morecreeps": {
+      "world_ticks": 500,
+      "group_opportunities": {
+        "CREATURE": 500
+      },
+      "confirmed_natural_insertions": {
+        "morecreepsandweirdos:blorp": 3,
+        "morecreepsandweirdos:bubblescum": 11,
+        "morecreepsandweirdos:bum": 2,
+        "morecreepsandweirdos:evilscientist": 2,
+        "morecreepsandweirdos:floob": 3,
+        "morecreepsandweirdos:g": 1,
+        "morecreepsandweirdos:googoat": 7,
+        "morecreepsandweirdos:hippo": 2,
+        "morecreepsandweirdos:horsehead": 3,
+        "morecreepsandweirdos:hotdog": 4,
+        "morecreepsandweirdos:lawyerfromhell": 11,
+        "morecreepsandweirdos:robottodd": 1,
+        "morecreepsandweirdos:rocketgiraffe": 2,
+        "morecreepsandweirdos:rockmonster": 1,
+        "morecreepsandweirdos:sneakysal": 1,
+        "morecreepsandweirdos:thief": 1,
+        "morecreepsandweirdos:zebra": 3
+      },
+      "total_confirmed_insertions": 58,
+      "inserted_species": 17
+    }
+  },
+  "original_block_geometry": {
+    "derived_from": "clean original b1.7.3 client uu.m[] / uu.d()",
+    "source_sha256": "af1fa04b8006d3ef78c7e24f8de4aa56f439a74d7f314827529062d5bab6db4c",
+    "entries": 96,
+    "contiguous_ids": [
+      1,
+      96
+    ],
+    "true_count": 48,
+    "false_count": 48,
+    "resource_sha256": "8da35bb7417b5618d4965b8b1b3525b5ad82acd75d312419a28d7e5f00c2f66d"
+  },
+  "original_default_textures": {
+    "entries": 96,
+    "source_jar_sha256": "af1fa04b8006d3ef78c7e24f8de4aa56f439a74d7f314827529062d5bab6db4c",
+    "resource_sha256": "1e6a7765730ee5a41357079e8fdfa8f2d4d3ec33365063be52cf67a0c9faef57",
+    "STONE": 1,
+    "FIRE": 31
+  },
+  "generic_guard": "PASS: 259 Beta production/loader source files; no listed mod-identity selectors outside tests",
+  "full_build": {
+    "command": "gradlew.bat build actualModTest --console=plain",
+    "log": "build/beta-pet-follow-full-build.log",
+    "log_sha256": "f4d496ff756d01854691da958b0e38a45fb12b61648a3316de2f6c2b133686b2"
+  },
+  "production_fixes": [
+    "Legacy World queries/live lists exclude item entities without a nonempty Beta stack before wrapping; native entity/stack stays untouched",
+    "All original vanilla block views receive their original default terrain texture indices",
+    "Living and nonliving original renderer quads share terrain/item sheet routing and sprite-local UV conversion; standard fire cells 31/47 map to native fire resources"
+  ],
+  "predicate_controls": "Only isolated callback fixtures replace their original per-entity Random to select bounded branches. The independent 500-tick native spawn observer keeps rates, caps, weights and RNG unchanged.",
+  "baseline_regression": {
+    "game_directory": "run-b173-single/mocreatures-neutralbeta-placement-classic-flat-2-20261108-094155-d355c6",
+    "symptom": "Actual Bird callback dereferenced ItemEntity.stack=null for native pumpkin seeds without a Beta item mapping",
+    "fixed_acceptance": "Actual Bird ignores the intact unsupported native drop, rejects Beta wheat, and tames/consumes the nearest wheat-seed entity using its original predicates"
+  },
+  "limitations": [
+    "Headless callback, resource and geometry proof does not establish live client appearance or animated fire-frame sampling.",
+    "The item admission rule is scoped to World queries/lists; direct or retained ItemEntity views bypassing those boundaries are not covered.",
+    "Post-Beta item ids are not added to the old registry. Native item entities and ordinary modern/vanilla rules are retained.",
+    "Hunchback autonomous following/timer transitions and Skeleton army combat/expiry remain unverified.",
+    "Native fauna still contributes to original Beta ancestry caps. Original fixed-height sampling and native population/despawn policies are unchanged."
+  ]
+}

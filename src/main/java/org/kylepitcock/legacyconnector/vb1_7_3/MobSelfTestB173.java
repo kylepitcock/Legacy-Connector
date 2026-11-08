@@ -22,6 +22,8 @@ public final class MobSelfTestB173 {
         MoCreaturesAdvancedSelfTestB173.register(game);
         MoCreaturesRemainingSelfTestB173.register(game);
         MoCreaturesLifecycleExtraSelfTestB173.register(game);
+        MoCreaturesPetBehaviorSelfTestB173.register(game);
+        MoCreaturesFollowSelfTestB173.register(game);
         MoCreaturesWaterSpawnSelfTestB173.register(game);
         MoCreaturesVanillaSpawnSelfTestB173.register(game);
         MoCreaturesCarrySelfTestB173.register(game);
@@ -30,6 +32,8 @@ public final class MobSelfTestB173 {
         MoreCreepsWeaponsSelfTestB173.register(game);
         MoreCreepsTamingSelfTestB173.register(game);
         MoreCreepsGameplaySelfTestB173.register(game);
+        MoreCreepsGameplayExtraSelfTestB173.register(game);
+        MoreCreepsRenderVariantSelfTestB173.register(game);
         MoreCreepsNavigationSelfTestB173.register(game);
         MoreCreepsRemainingSelfTestB173.register(game);
         MoreCreepsEffectsSelfTestB173.register(game);

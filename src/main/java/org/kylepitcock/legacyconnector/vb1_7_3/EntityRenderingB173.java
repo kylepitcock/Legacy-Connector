@@ -26,6 +26,21 @@ public final class EntityRenderingB173 {
         final int x=column,y=row;
         return new Quad(vertices.stream().map(v->new RendererContextB173.Vertex(v.x(),v.y(),v.z(),v.u()*16-x,v.v()*16-y,v.argb(),v.nx(),v.ny(),v.nz())).toList(),sprite);
     }
+    static ResourceLocation texture(org.kylepitcock.legacyconnector.core.LegacyModRecord mod,String path){
+        return switch(path){case "/gui/items.png","gui/items.png"->ITEMS;case "/terrain.png","terrain.png"->TERRAIN;default->MobTexturesB173.resolve(mod,path);};
+    }
+    /** Both living and nonliving original renderers may emit immediate quads from old sheets. */
+    static RendererContextB173.Extras sheets(RendererContextB173.Extras extras){
+        return new RendererContextB173.Extras(){
+            @Override public void quad(List<RendererContextB173.Vertex> vertices,Matrix4f transform,ResourceLocation texture,RendererContextB173.Style style){var q=resolveQuad(vertices,texture);extras.quad(q.vertices(),transform,q.texture(),style);}
+            @Override public void item(legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity living,legacyconnector.vb1_7_3.net.minecraft.item.ItemStack stack,Matrix4f transform,RendererContextB173.Style style){extras.item(living,stack,transform,style);}
+            @Override public void text(String text,float x,float y,int argb,boolean shadow,Matrix4f transform,RendererContextB173.Style style){extras.text(text,x,y,argb,shadow,transform,style);}
+            @Override public int width(String text){return extras.width(text);}
+            @Override public legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity camera(){return extras.camera();}
+            @Override public float yaw(){return extras.yaw();}
+            @Override public float pitch(){return extras.pitch();}
+        };
+    }
     public static void draw(net.minecraft.world.entity.Entity entity,B173EntityHost host,float partial,
             BiConsumer<ModelGeometryB173.Draw,ResourceLocation> sink,RendererContextB173.Extras extras){
         try(var readOnly=EntityViewsB173.readOnly()){
@@ -40,17 +55,9 @@ public final class EntityRenderingB173 {
         try(var readOnly=EntityViewsB173.readOnly()){
             var info=RenderersB173.info(view.getClass());
             if(info==null)return; // Original absence of a registration is intentionally invisible.
-            var routed=new RendererContextB173.Extras(){
-                @Override public void quad(List<RendererContextB173.Vertex> vertices,Matrix4f transform,ResourceLocation texture,RendererContextB173.Style style){var q=resolveQuad(vertices,texture);extras.quad(q.vertices(),transform,q.texture(),style);}
-                @Override public void item(legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity living,legacyconnector.vb1_7_3.net.minecraft.item.ItemStack stack,Matrix4f transform,RendererContextB173.Style style){extras.item(living,stack,transform,style);}
-                @Override public void text(String text,float x,float y,int argb,boolean shadow,Matrix4f transform,RendererContextB173.Style style){extras.text(text,x,y,argb,shadow,transform,style);}
-                @Override public int width(String text){return extras.width(text);}
-                @Override public legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity camera(){return extras.camera();}
-                @Override public float yaw(){return extras.yaw();}
-                @Override public float pitch(){return extras.pitch();}
-            };
+            var routed=sheets(extras);
             info.renderer().mcc$camera(new legacyconnector.vb1_7_3.net.minecraft.client.render.entity.EntityRenderer.LivingEntityCamera(extras.camera(),extras.yaw(),extras.pitch()));
-            try(var scope=RendererContextB173.open(path->switch(path){case "/gui/items.png","gui/items.png"->ITEMS;case "/terrain.png","terrain.png"->TERRAIN;default->MobTexturesB173.resolve(info.mod(),path);},sink,routed)){
+            try(var scope=RendererContextB173.open(path->texture(info.mod(),path),sink,routed)){
                 info.renderer().render(view,0,view.standingEyeHeight,0,Mth.rotLerp(partial,entity.yRotO,entity.getYRot()),partial);
             }
         }

@@ -425,6 +425,7 @@ public class World implements BlockView {
             legacyconnector.vb1_7_3.net.minecraft.util.math.Box box) {
         if (mcc$level == null) return List.of();
         return mcc$level.getEntities(except == null ? null : except.mcc$modern,box.mcc$box()).stream()
+                .filter(World::legacyVisible)
                 .map(org.kylepitcock.legacyconnector.vb1_7_3.EntityViewsB173::wrap).toList();
     }
     public List<Object> getEntities(){return new ArrayList<>(entities);}
@@ -480,7 +481,10 @@ public class World implements BlockView {
         return total==0?0:visible/(float)total;
     }
 
-    /** Each traversal reflects the level's current loaded entities and preserves hosted originals. */
+    private static boolean legacyVisible(net.minecraft.world.entity.Entity entity){
+        return !(entity instanceof net.minecraft.world.entity.item.ItemEntity item)||StacksB173.canRepresent(item.getItem());
+    }
+    /** Each traversal reflects the level's current representable entities and preserves hosted originals. */
     private List<Object> liveEntities(boolean onlyPlayers) {
         return new java.util.AbstractList<>() {
             private List<net.minecraft.world.entity.Entity> snapshot() {
@@ -490,6 +494,7 @@ public class World implements BlockView {
                     server.getAllEntities().forEach(result::add);
                 else if(mcc$level instanceof net.minecraft.client.multiplayer.ClientLevel client)
                     client.entitiesForRendering().forEach(result::add);
+                result.removeIf(entity->!legacyVisible(entity));
                 return result;
             }
             @Override public int size(){return snapshot().size();}

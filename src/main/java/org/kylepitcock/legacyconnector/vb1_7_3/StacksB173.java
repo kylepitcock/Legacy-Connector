@@ -44,6 +44,9 @@ public final class StacksB173 {
 
     private static volatile java.util.Map<net.minecraft.world.item.Item, int[]> reverse;
 
+    /** Old item-entity queries require a real nonempty Beta stack, never a null payload. */
+    public static boolean canRepresent(ItemStack modern){return modern!=null&&!modern.isEmpty()&&reverse().containsKey(modern.getItem());}
+
     /**
      * The legacy stack of a modern one: a mod's item or block item (metadata from its {@code block_state}), or the b1.7.3 id of a vanilla
      * item (metadata variants such as wool and dye colours). Null for an empty stack or an item b1.7.3 did not have.
