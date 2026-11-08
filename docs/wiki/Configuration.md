@@ -4,6 +4,8 @@ Back to [Home](Home.md).
 
 Settings live in `config/legacyconnector.properties`, written with defaults and comments on first start.
 
+In game they can be edited from Options -> "Legacy Connector..." (top left) or Mods -> Legacy Connector -> Config: a toggle or text box per setting, the file's comment as the tooltip. Done writes the file; most settings (and everything marked "read by the loader at startup") apply after a restart. Legacy mods' own key bindings are listed in Options -> Controls -> Key Binds under their category, and legacy mods with a config GUI (`guiFactory`) get the Config button in the mod list.
+
 | Key | Default | Effect |
 | --- | --- | --- |
 | `mods.skip` | empty | Comma separated legacy mod ids to leave out entirely; a jar is skipped when all of its mods are listed (it is reported as switched off in `logs/legacyconnector-report.txt`). Read by the loader at startup |
