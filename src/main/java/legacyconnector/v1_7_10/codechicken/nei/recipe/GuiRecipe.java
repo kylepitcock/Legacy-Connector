@@ -22,9 +22,4 @@ public abstract class GuiRecipe extends GuiContainer {
     public boolean isMouseOver(legacyconnector.v1_7_10.codechicken.nei.PositionedStack stack, int recipe) {
         return false;
     }
-
-    /** The screen position of a recipe in the page (none under JEI: the origin). */
-    public java.awt.Point getRecipePosition(int recipe) {
-        return new java.awt.Point(0, 0);
-    }
 }
