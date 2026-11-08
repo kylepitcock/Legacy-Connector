@@ -12,7 +12,14 @@ The hashes (shared with TextureModernizer.java): the exact hash is the first 16 
 (4-byte big endian) and every pixel as big-endian ARGB, fully transparent pixels as 0. The pixel fingerprint is
 fmix32(argb ^ (index * 0x9E3779B9)) & 0xFF (murmur3's finaliser; index = y * 16 + x).
 
-usage: tools/gen_texture_fingerprints.py <1.7.10 client jar> <1.12.2 client jar> <1.21.1 client jar>"""
+Older vanilla art (optional, each adds the textures that differ from the sets before it): --b173, --147, --152 and --164 take the
+Beta 1.7.3 / 1.4.7 / 1.5.2 / 1.6.4 client jars (download them from the Mojang version manifest, see docs/wiki/Rendering.md). Beta and 1.4.7
+keep their art in the 16x16 sprite sheets terrain.png and gui/items.png: a tile gets the name of the 1.4.7 tile at the same index
+(v1_6_4/sheet-terrain.tsv, sheet-items.tsv: the same tables SpriteSheets147 uses), 1.5.2's separate files are matched to 1.7.10 names by
+name or by pixels, 1.6.4 already uses the 1.7.10 names. Mods of those versions cut into tiles (SheetCutter) or copying tiles keep the vanilla
+tile pixels, which is what the exact hashes recognise.
+
+usage: tools/gen_texture_fingerprints.py <1.7.10 client jar> <1.12.2 client jar> <1.21.1 client jar> [--b173 jar] [--147 jar] [--152 jar] [--164 jar]"""
 import hashlib, io, os, re, sys, zipfile
 from PIL import Image
 
@@ -54,18 +61,114 @@ def fingerprint(argb, index):
     return fmix32(argb ^ ((index * 0x9E3779B9) & 0xFFFFFFFF)) & 0xFF
 
 
-def textures(jar):
+def textures(jar, prefix=T):
     out = {}
     with zipfile.ZipFile(jar) as z:
         names = set(z.namelist())
         for n in names:
-            if n.startswith(T) and n.endswith(".png"):
+            if n.startswith(prefix) and n.endswith(".png"):
                 try:
                     img = Image.open(io.BytesIO(z.read(n)))
                     img.load()
                 except Exception:
                     continue
-                out[n[len(T):-4]] = (img.size, pixels(img), n + ".mcmeta" in names)
+                out[n[len(prefix):-4]] = (img.size, pixels(img), n + ".mcmeta" in names)
+    return out
+
+
+SHEETS = os.path.join(ROOT, "src", "main", "resources", "legacyconnector", "v1_6_4")
+# Old GUI files (Beta 1.7.3 to 1.5.2: textures/gui/<file>.png) and the 1.6+ texture they became.
+OLD_GUI = {"crafting": "crafting_table", "furnace": "furnace", "inventory": "inventory", "trap": "dispenser", "container": "generic_54",
+           "alchemy": "brewing_stand", "enchant": "enchanting_table", "beacon": "beacon", "repair": "anvil", "trading": "villager"}
+# A Beta tile whose pixels are further than this from the 1.4.7 tile at the same index is another thing (the sheets were rearranged).
+BETA_MAX_DIFF = 140
+
+
+def sheet_names(file):
+    out = {}
+    for line in open(os.path.join(SHEETS, file), encoding="utf-8"):
+        p = line.split("	")
+        if not line.startswith("#") and len(p) >= 2:
+            out[int(p[0])] = p[1]
+    return out
+
+
+def sheet_tiles(jar, sheet, names, folder, ref=None):
+    """[(legacy name, (size, ARGB pixels, False))] for the tiles of a vanilla sprite sheet, named by the 1.4.7 index table; with ref (the
+    1.4.7 jar), tiles unlike the 1.4.7 tile at that index are left out."""
+    out = []
+    with zipfile.ZipFile(jar) as z:
+        im = Image.open(io.BytesIO(z.read(sheet))).convert("RGBA")
+        old = Image.open(io.BytesIO(zipfile.ZipFile(ref).read(sheet))).convert("RGBA") if ref else None
+    t = im.size[0] // 16
+    for i in range(256):
+        name = names.get(i)
+        if name is None:
+            continue
+        tile = im.crop(((i % 16) * t, (i // 16) * t, (i % 16) * t + t, (i // 16) * t + t))
+        px = pixels(tile)
+        if all(p == 0 for p in px):
+            continue
+        if old is not None:
+            ot = pixels(old.crop(((i % 16) * t, (i // 16) * t, (i % 16) * t + t, (i // 16) * t + t)))
+            d = sum(abs(((a >> 24) & 255) - ((b >> 24) & 255)) + (0 if not a and not b else sum(abs(((a >> s) & 255) - ((b >> s) & 255)) for s in (16, 8, 0)))
+                    for a, b in zip(px, ot)) / len(px)
+            if d > BETA_MAX_DIFF and any(ot):
+                continue
+        out.append((f"{folder}/{name}", ((t, t), px, False)))
+    return out
+
+
+def old_gui(jar):
+    out = []
+    with zipfile.ZipFile(jar) as z:
+        for old, new in OLD_GUI.items():
+            n = f"gui/{old}.png"
+            if n in z.namelist():
+                img = Image.open(io.BytesIO(z.read(n)))
+                out.append((f"gui/container/{new}", (img.size, pixels(img), False)))
+    return out
+
+
+def norm_name(s):
+    return re.sub(r"[^a-z0-9]", "", s.lower())
+
+
+def pixel_gap(a, b):
+    return sum(abs(((x >> 24) & 255) - ((y >> 24) & 255)) + (0 if not x and not y else sum(abs(((x >> s) & 255) - ((y >> s) & 255)) for s in (16, 8, 0)))
+               for x, y in zip(a, b)) / len(a)
+
+
+def files_1_5_2(jar, old17):
+    """1.5.2's textures/blocks and textures/items files (names like cloth_8, bootsIron, whiteStone): named by the 1.7.10 texture with the
+    same name ignoring case and underscores, else by the closest 1.7.10 texture (16x16, same folder)."""
+    by_norm = {}
+    for n in old17:
+        by_norm.setdefault(norm_name(n), []).append(n)
+    out = []
+    with zipfile.ZipFile(jar) as z:
+        for n in sorted(z.namelist()):
+            if not (n.startswith("textures/blocks/") or n.startswith("textures/items/")) or not n.endswith(".png"):
+                continue
+            try:
+                img = Image.open(io.BytesIO(z.read(n)))
+                img.load()
+            except Exception:
+                continue
+            if img.size != (16, 16):
+                continue
+            name = n[len("textures/"):-4]
+            px = pixels(img)
+            target = name if name in old17 else None
+            if target is None and len(by_norm.get(norm_name(name), [])) == 1:
+                target = by_norm[norm_name(name)][0]
+            if target is None:
+                best = min(((pixel_gap(px, t[1]), k) for k, t in old17.items() if k.split("/")[0] == name.split("/")[0] and t[0] == (16, 16)),
+                           default=(1e9, None))
+                if best[0] < 30:
+                    target = best[1]
+            if target is not None:
+                out.append((target, ((16, 16), px, False)))
     return out
 
 
@@ -159,15 +262,36 @@ BASES += [f"wool_colored_{c}" for c in COLORS] + [f"hardened_clay_stained_{c}" f
 
 
 def main():
-    old17, old12, new = (textures(j) for j in sys.argv[1:4])
+    args = sys.argv[1:]
+    extra = {}
+    for flag in ("--b173", "--147", "--152", "--164"):
+        if flag in args:
+            i = args.index(flag)
+            extra[flag] = args[i + 1]
+            del args[i:i + 2]
+    old17, old12, new = (textures(j) for j in args[:3])
+    sources = [("", list(old17.items())), ("", list(old12.items()))]
+    if "--164" in extra:
+        sources.append(("", list(textures(extra["--164"], "assets/minecraft/textures/").items())))
+    if "--152" in extra:
+        sources.append(("", files_1_5_2(extra["--152"], old17) + [(k, v) for k, v in old_gui(extra["--152"])]))
+    if "--147" in extra:
+        j = extra["--147"]
+        sources.append(("", sheet_tiles(j, "terrain.png", sheet_names("sheet-terrain.tsv"), "blocks")
+                        + sheet_tiles(j, "gui/items.png", sheet_names("sheet-items.tsv"), "items") + old_gui(j)))
+    if "--b173" in extra:
+        j = extra["--b173"]
+        ref = extra.get("--147")
+        sources.append(("b173", sheet_tiles(j, "terrain.png", sheet_names("sheet-terrain.tsv"), "blocks", ref)
+                        + sheet_tiles(j, "gui/items.png", sheet_names("sheet-items.tsv"), "items", ref) + old_gui(j)))
     renames = {}
     for line in open(RENAMES, encoding="utf-8"):
         p = line.split()
         if len(p) == 2:
             renames[p[0]] = p[1]
     exact, rejected = {}, []
-    for olds in (old17, old12):
-        for legacy, tex in sorted(olds.items()):
+    for _tag, olds in sources:
+        for legacy, tex in sorted(olds, key=lambda e: e[0]):
             folder = legacy.split("/")[0]
             if folder not in ("blocks", "items", "gui") or tex[2]:
                 continue  # animated sheets (water, fire, clock) keep their frames
@@ -194,8 +318,24 @@ def main():
             continue
         fp = "".join("%02x" % fingerprint(p, i) for i, p in enumerate(tex[1]))
         bases.append(f"B {legacy} {modern} {fp}")
+    # the same bases as the older games drew them (Beta 1.7.3, 1.4.7...): only those that differ from every base so far
+    seen = {b.split()[3] for b in bases}
+    for tag, olds in sources[2:]:
+        by_name = {k: v for k, v in olds}
+        for legacy in BASES:
+            tex = by_name.get("blocks/" + legacy)
+            if tex is None or tex[0] != (16, 16) or any(p >> 24 != 255 for p in tex[1]):
+                continue
+            modern = modern_name("blocks/" + legacy, renames)
+            if modern is None or modern not in new or new[modern][2] or new[modern][0] != (16, 16) or new[modern][1] == tex[1]:
+                continue
+            fp = "".join("%02x" % fingerprint(p, i) for i, p in enumerate(tex[1]))
+            if fp in seen:
+                continue
+            seen.add(fp)
+            bases.append(f"B {tag or 'old'}_{len(bases)}_{legacy} {modern} {fp}")
     with open(OUT, "w", encoding="utf-8", newline="\n") as f:
-        f.write("# Generated by tools/gen_texture_fingerprints.py: fingerprints of old (1.7.10, 1.12.2) vanilla textures, no pixels.\n")
+        f.write("# Generated by tools/gen_texture_fingerprints.py: fingerprints of old (Beta 1.7.3, 1.4.7, 1.5.2, 1.6.4, 1.7.10, 1.12.2) vanilla textures, no pixels.\n")
         for h, m in sorted(exact.items()):
             f.write(f"E {h} {m}\n")
         for b in bases:

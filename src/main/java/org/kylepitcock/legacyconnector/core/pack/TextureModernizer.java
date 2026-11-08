@@ -79,6 +79,43 @@ public final class TextureModernizer {
 
     private static volatile TextureModernizer instance;
 
+    /** A modernizer over the given table text (tests; the game uses {@link #get()}). */
+    static TextureModernizer forTable(String table) {
+        return new TextureModernizer(table);
+    }
+
+    private static final java.util.regex.Pattern GENERATED_B173 = java.util.regex.Pattern.compile("assets/[^/]+/textures/(block|item)/b173/[^/]+\\.png");
+
+    /**
+     * Beta 1.7.3 mods have no textures in their jars to scan: {@code AssetsB173} cuts the sprite sheets and ModLoader overrides into
+     * textures of the generated pack ({@code assets/<mod>/textures/block/b173/<name>.png}). Those that copy old vanilla art are
+     * replaced in {@code out} by the modern texture. Returns the replaced textures (animated sprites are left alone).
+     */
+    public List<Hit> modernizeGenerated(Map<String, java.util.function.Supplier<byte[]>> out, Function<String, byte[]> modernTexture) {
+        List<Hit> done = new ArrayList<>();
+        for (String path : new ArrayList<>(out.keySet())) {
+            if (!GENERATED_B173.matcher(path).matches() || path.contains("/animated_")) continue;
+            byte[] png;
+            try {
+                png = out.get(path).get();
+            } catch (RuntimeException e) {
+                continue;
+            }
+            if (png == null) continue;
+            Hit hit = classify(path, png);
+            if (hit == null) continue;
+            try {
+                byte[] made = apply(hit, png, modernTexture);
+                if (made == null) continue;
+                out.put(path, () -> made);
+                done.add(hit);
+            } catch (IOException | RuntimeException e) {
+                // keep the mod's texture
+            }
+        }
+        return done;
+    }
+
     /** The fingerprint table shipped in the jar; an empty table when it is missing. */
     public static TextureModernizer get() {
         TextureModernizer t = instance;

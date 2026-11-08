@@ -63,7 +63,12 @@ public final class Gap1201 {
             String rest = comma < 0 ? "" : "," + targets.substring(comma + 1);
             targets = Files.readString(Path.of(targets.substring(1, comma < 0 ? targets.length() : comma))).replace("\r", "").replace('\n', ',') + rest;
         }
+        nestedMode = 1;
         for (String j : targets.split(",")) if (!j.isBlank()) gap.index(Path.of(j.trim()), gap.target);
+        // jar-in-jar libraries last: a mod carrying an old copy of a library must not shadow the library jar the pack installs
+        nestedMode = 2;
+        for (String j : targets.split(",")) if (!j.isBlank()) gap.index(Path.of(j.trim()), gap.target);
+        nestedMode = 0;
         List<Path> mods = new ArrayList<>();
         for (int i = 4; i < args.length; i++) {
             if (args[i].startsWith("@")) { // "@file": one jar path per line (a pack of hundreds of jars does not fit the Windows command line)
@@ -94,8 +99,12 @@ public final class Gap1201 {
         }
     }
 
+    /** The target jars are indexed twice: first without, then only their jar-in-jar libraries. */
+    private static int nestedMode;   // 0 everything (mods), 1 without jar-in-jar, 2 only jar-in-jar
+
     private static void index(Path jar, Map<String, Cls> into) throws IOException {
         if (Files.isDirectory(jar)) {
+            if (nestedMode == 2) return;
             // compiled facade classes (legacyconnector/v1_20_1/...): the Forge API the layer provides itself
             try (Stream<Path> files = Files.walk(jar)) {
                 for (Path f : files.filter(x -> x.toString().endsWith(".class")).toList()) {
@@ -119,7 +128,10 @@ public final class Gap1201 {
             for (var en = zip.entries(); en.hasMoreElements(); ) {
                 ZipEntry e = en.nextElement();
                 // jar-in-jar libraries (Create 1.21.1 carries Registrate, Flywheel, Ponder; mods carry Mixin extras...) are part of the mod at run time
-                if (e.getName().startsWith("META-INF/jarjar/") && e.getName().endsWith(".jar")) {
+                boolean nestedJar = e.getName().startsWith("META-INF/jarjar/") && e.getName().endsWith(".jar");
+                if (nestedMode == 1 && nestedJar) continue;
+                if (nestedMode == 2 && !nestedJar) continue;
+                if (nestedJar) {
                     try (java.util.zip.ZipInputStream nested = new java.util.zip.ZipInputStream(zip.getInputStream(e))) {
                         for (ZipEntry ne; (ne = nested.getNextEntry()) != null; ) {
                             if (!ne.getName().endsWith(".class") || ne.getName().startsWith("META-INF/versions/")) continue;

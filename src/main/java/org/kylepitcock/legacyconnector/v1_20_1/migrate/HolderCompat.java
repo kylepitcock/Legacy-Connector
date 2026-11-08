@@ -201,7 +201,7 @@ public final class HolderCompat {
 
     /** The unwrapped {@code Enchantments.X} (a resource key in 1.21.1, the object in 1.20.1). */
     public static LegacyEnchantment enchantment(ResourceKey<Enchantment> key) {
-        return LegacyEnchantments.legacy(MigrateContext.registries().registryOrThrow(Registries.ENCHANTMENT).getHolderOrThrow(key));
+        return LegacyEnchantments.legacy(MigrateContext.provider().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(key));
     }
 
     /** {@code EnchantmentInstance.enchantment} (a holder in 1.21.1). */

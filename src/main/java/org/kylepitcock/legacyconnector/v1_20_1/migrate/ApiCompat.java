@@ -200,19 +200,30 @@ public final class ApiCompat {
         return net.minecraft.network.codec.ByteBufCodecs.fromCodecWithRegistries(codec);
     }
 
-    /** {@code new SaplingBlock(AbstractTreeGrower, props)}: a {@code TreeGrower} for the feature keys the old grower answers. */
+    /** The legacy grower behind each {@code TreeGrower} made for a sapling: asked for its feature when the tree grows (see {@code TreeGrowerLegacyMixin}). */
+    private static final java.util.Map<net.minecraft.world.level.block.grower.TreeGrower, LegacyTreeGrower> LEGACY_GROWERS = java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>());
+
+    /** {@code new SaplingBlock(AbstractTreeGrower, props)}: a {@code TreeGrower} that asks the old grower for its feature key when a tree grows. */
     public static net.minecraft.world.level.block.grower.TreeGrower saplingGrower(LegacyTreeGrower grower) {
-        net.minecraft.util.RandomSource random = net.minecraft.util.RandomSource.create();
-        java.util.Optional<net.minecraft.resources.ResourceKey<net.minecraft.world.level.levelgen.feature.ConfiguredFeature<?, ?>>> tree = java.util.Optional.empty();
-        java.util.Optional<net.minecraft.resources.ResourceKey<net.minecraft.world.level.levelgen.feature.ConfiguredFeature<?, ?>>> flowers = java.util.Optional.empty();
+        net.minecraft.world.level.block.grower.TreeGrower made = new net.minecraft.world.level.block.grower.TreeGrower(
+                "legacy_" + grower.getClass().getName().toLowerCase(java.util.Locale.ROOT).replaceAll("[^a-z0-9_]", "_"), java.util.Optional.empty(), java.util.Optional.empty(),
+                java.util.Optional.empty());
+        LEGACY_GROWERS.put(made, grower);
+        return made;
+    }
+
+    /** Called by the mixin of {@code TreeGrower.getConfiguredFeature}: true when the grower is a legacy one and the answer is set. */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static boolean legacyGrowerFeature(net.minecraft.world.level.block.grower.TreeGrower grower, net.minecraft.util.RandomSource random, boolean flowers,
+            org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable cir) {
+        LegacyTreeGrower legacy = LEGACY_GROWERS.get(grower);
+        if (legacy == null) return false;
         try {
-            tree = java.util.Optional.ofNullable(grower.getConfiguredFeature(random, false));
-            flowers = java.util.Optional.ofNullable(grower.getConfiguredFeature(random, true)).filter(k -> !k.equals(grower.getConfiguredFeature(random, false)));
+            cir.setReturnValue(legacy.getConfiguredFeature(random, flowers));
         } catch (RuntimeException e) {
-            // a grower that needs a level to answer: no tree
+            cir.setReturnValue(null); // a grower that needs a level to answer: no tree
         }
-        return new net.minecraft.world.level.block.grower.TreeGrower("legacy_" + grower.getClass().getName().toLowerCase(java.util.Locale.ROOT).replaceAll("[^a-z0-9_]", "_"),
-                java.util.Optional.empty(), tree, flowers);
+        return true;
     }
 
     /** {@code Entity.changeDimension(level, teleporter)}: the teleporter may reposition; the default moves the entity to the same position in the other level. */

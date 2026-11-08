@@ -43,10 +43,24 @@ public final class Forge1201Runtime {
         modBus.addListener(Forge1201Runtime::onRegisterCapabilities);
         modBus.addListener(Forge1201Runtime::onLoadComplete);
         modBus.addListener(org.kylepitcock.legacyconnector.v1_20_1.migrate.LegacyEnchantments::onNewRegistry);
+        org.kylepitcock.legacyconnector.v1_20_1.migrate.LegacyComponents.COMPONENTS.register(modBus);
+        modBus.addListener((net.neoforged.neoforge.registries.RegisterEvent e) -> {
+            if (e.getRegistryKey().equals(net.neoforged.neoforge.registries.NeoForgeRegistries.Keys.CONDITION_CODECS)) {
+                e.register(net.neoforged.neoforge.registries.NeoForgeRegistries.Keys.CONDITION_CODECS,
+                        helper -> legacyconnector.v1_20_1.net.minecraftforge.common.crafting.CraftingHelper.flushConditions(helper::register));
+            }
+            if (e.getRegistryKey().equals(net.neoforged.neoforge.registries.NeoForgeRegistries.Keys.INGREDIENT_TYPES)) {
+                e.register(net.neoforged.neoforge.registries.NeoForgeRegistries.Keys.INGREDIENT_TYPES,
+                        helper -> legacyconnector.v1_20_1.net.minecraftforge.common.crafting.CraftingHelper.flushTypes(helper::register));
+            }
+        });
         modBus.addListener((net.neoforged.neoforge.common.world.chunk.RegisterTicketControllersEvent e) ->
                 legacyconnector.v1_20_1.net.minecraftforge.common.world.ForgeChunkManager.registerControllers(e, modIds));
         org.kylepitcock.legacyconnector.core.pack.GeneratedPack.addContributor(org.kylepitcock.legacyconnector.v1_20_1.migrate.LegacyEnchantments::contribute);
         modBus.addListener(legacyconnector.v1_20_1.net.minecraftforge.network.simple.SimpleChannel::registerAll);
+        // loot tables are parsed before the server exists: the handlers of legacy mods read enchantments through the registries of this reload
+        NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, (net.neoforged.neoforge.event.LootTableLoadEvent e) ->
+                org.kylepitcock.legacyconnector.v1_20_1.migrate.MigrateContext.remember(e.getRegistries()));
         NeoForge.EVENT_BUS.addListener(Forge1201Runtime::onServerTickPre);
         NeoForge.EVENT_BUS.addListener(Forge1201Runtime::onServerTickPost);
         NeoForge.EVENT_BUS.addListener(Forge1201Runtime::onLevelTickPre);

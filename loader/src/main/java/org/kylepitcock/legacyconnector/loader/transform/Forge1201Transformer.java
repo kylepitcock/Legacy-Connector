@@ -27,6 +27,7 @@ import org.kylepitcock.legacyconnector.loader.LegacyJar;
 import org.kylepitcock.legacyconnector.loader.LegacyJarInspector;
 import org.kylepitcock.legacyconnector.loader.LegacyVersion;
 import org.kylepitcock.legacyconnector.loader.Provenance;
+import org.kylepitcock.legacyconnector.loader.SideBySide;
 import org.kylepitcock.legacyconnector.loader.mapping.SrgMojangTable;
 import org.kylepitcock.legacyconnector.loader.shim.ShimIndex;
 import org.kylepitcock.legacyconnector.loader.resource.DataConverter1201;
@@ -64,6 +65,18 @@ public final class Forge1201Transformer {
     private final ShimIndex shim;
     private final Map<String, String> srg;
     private final Map<String, String> classRenames;
+
+    private static final LegacyVersion VER = LegacyVersion.V1_20_1;
+    /** Isolated library copies (side-by-side libraries): their packages are relocated, their mod ids replaced. */
+    private SideBySide plan = SideBySide.current();
+    /** Classes (original internal names) and lower-case mod ids of the jar being translated. */
+    private Set<String> ownClasses = Set.of();
+    private Set<String> ownIds = Set.of();
+
+    public Forge1201Transformer sideBySide(SideBySide plan) {
+        this.plan = plan == null ? SideBySide.NONE : plan;
+        return this;
+    }
 
     public Forge1201Transformer(ShimIndex shim) {
         this.shim = shim;
@@ -134,9 +147,24 @@ public final class Forge1201Transformer {
         return name;
     }
 
+    /** A class of an isolated library that this jar does not define: the library tables of the native build do not apply to it. */
+    private boolean isForeignIsolated(String owner) {
+        return owner != null && !plan.isEmpty() && !ownClasses.contains(owner) && plan.mapClass(VER, owner) != null;
+    }
+
+    private String srgOnly(String name) {
+        if (name.length() > 3 && name.charAt(1) == '_') {
+            String m = srg.get(name);
+            if (m != null) return m;
+        }
+        return name;
+    }
+
     private final class Mapper extends Remapper {
         @Override
         public String map(String internalName) {
+            String moved = plan.isEmpty() ? null : plan.mapClass(VER, internalName);
+            if (moved != null) return moved;
             String r = mapClass(internalName);
             // mc-classes.tsv is keyed by the name after the Forge renames (a NeoForge class that has no counterpart in 1.21.1 maps on to a stand-in)
             String mc = Mc1201Tables.get().classes.get(r);
@@ -145,6 +173,7 @@ public final class Forge1201Transformer {
 
         @Override
         public String mapMethodName(String owner, String name, String descriptor) {
+            if (isForeignIsolated(owner)) return srgOnly(name);
             if (owner != null) {
                 String forge = forgeMembers().get(owner + "." + name);
                 if (forge != null) return forge;
@@ -158,6 +187,7 @@ public final class Forge1201Transformer {
 
         @Override
         public String mapFieldName(String owner, String name, String descriptor) {
+            if (isForeignIsolated(owner)) return srgOnly(name);
             String forge = forgeMembers().get(owner + "." + name);
             if (forge != null) return forge;
             if (name.length() > 3 && name.charAt(1) == '_') {
@@ -198,6 +228,11 @@ public final class Forge1201Transformer {
                 else other.put(name, data);
             }
         }
+        ownClasses = new HashSet<>(classes.keySet());
+        ownIds = new HashSet<>();
+        for (var m : jar.mods) ownIds.add(m.modernId());
+        boolean ownUnit = false;
+        for (String id : ownIds) if (plan.unit(VER, id) != null) ownUnit = true;
         Mapper mapper = new Mapper();
         Map<String, byte[]> outClasses = new LinkedHashMap<>();
         int stringsMapped = 0;
@@ -240,6 +275,27 @@ public final class Forge1201Transformer {
             Mixin1201.apply(node, srg, hierarchy, Mc1201Tables.get(), mixinStats);
             migrated.put(node, viaCalls + changed.total());
         }
+        if (ownUnit) {
+            // an isolated library next to its native build registers the same ids as the native one: its deferred registers are not attached to the bus
+            for (ClassNode node : nodes) {
+                for (MethodNode m : node.methods) {
+                    if (m.instructions == null) continue;
+                    for (AbstractInsnNode in : m.instructions.toArray()) {
+                        if (in instanceof org.objectweb.asm.tree.MethodInsnNode mi && mi.name.equals("register") && mi.desc.equals("(Lnet/neoforged/bus/api/IEventBus;)V")
+                                && mi.owner.startsWith("net/neoforged/neoforge/registries/DeferredRegister") && mi.getOpcode() != org.objectweb.asm.Opcodes.INVOKESTATIC) {
+                            m.instructions.set(mi, new org.objectweb.asm.tree.MethodInsnNode(org.objectweb.asm.Opcodes.INVOKESTATIC, "legacyconnector/v1_20_1/ForgeApi1201",
+                                    "skipIsolatedRegister", "(Lnet/neoforged/neoforge/registries/DeferredRegister;Lnet/neoforged/bus/api/IEventBus;)V", false));
+                        }
+                    }
+                }
+            }
+        }
+        int modCtors = ModConstructors1201.apply(nodes);
+        if (modCtors > 0) result.notes.add("@Mod constructor taking FMLJavaModLoadingContext: a (IEventBus, ModContainer) constructor was generated for NeoForge");
+        int subscribersMoved = Subscribers1201.apply(nodes);
+        if (subscribersMoved > 0) result.notes.add("Event subscriber classes with instance handlers: " + subscribersMoved + " registered by the main class for their static handlers (Forge ignored the instance ones)");
+        if (!plan.isEmpty()) for (ClassNode node : nodes) isolate(node);
+        if (ownUnit) for (ClassNode node : nodes) renameInjectorHandlers(node, VER.id().replaceAll("[^a-z0-9]", ""));
         // the soft link runs when every class of the jar has been migrated: references to the mod's own members are judged by their final declarations
         for (ClassNode node : nodes) {
             int softened = soft == null ? 0 : soft.apply(node);
@@ -261,6 +317,9 @@ public final class Forge1201Transformer {
                 node.accept(writer);
                 bytes = writer.toByteArray();
             }
+            // a class of the jar that a table renames onto a class of the layer (Architectury's EventBuses): the layer's own copy is used, and a second one in this
+            // jar would put the same package in two modules
+            if (node.name.startsWith(Mc1201Tables.HELPER_PACKAGE.substring(0, Mc1201Tables.HELPER_PACKAGE.lastIndexOf("migrate/"))) && !ownClasses.contains(node.name)) continue;
             outClasses.put(node.name + ".class", bytes);
             result.classes++;
         }
@@ -278,13 +337,23 @@ public final class Forge1201Transformer {
         if (stringsMapped > 0) result.notes.add(stringsMapped + " reflection string(s) with SRG names now use Mojang names");
 
         Map<String, byte[]> outResources = new LinkedHashMap<>();
+        Map<String, String> cfgRename = new HashMap<>();
+        if (ownUnit) {
+            String suffix = "_l" + VER.id().replaceAll("[^a-z0-9]", "");
+            for (var e : other.entrySet()) {
+                String n = e.getKey();
+                if (n.indexOf('/') < 0 && n.endsWith(".json") && looksLikeMixinConfig(e.getValue())) cfgRename.put(n, SideBySide.mixinConfigName(n, suffix));
+            }
+        }
         for (var e : other.entrySet()) {
             String name = e.getKey();
             if (LegacyJarTransformer.isSignatureFile(name)) continue;
+            // the config's refmap entry is removed (Mojang names); the file would be found by name for the native copy's config (same name) and break it
+            if (ownUnit && name.indexOf('/') < 0 && name.endsWith(".refmap.json")) continue;
             // multi-loader jars: Sinytra Connector would load the same jar a second time as a Fabric mod
             if (name.equals("fabric.mod.json") || name.equals("quilt.mod.json")) continue;
             byte[] data = e.getValue();
-            if (name.startsWith("META-INF/jarjar/")) {
+            if (name.startsWith("META-INF/jarjar/") || (name.startsWith("META-INF/jars/") && name.endsWith(".jar"))) {   // the metadata may name any path (Artifacts: META-INF/jars/)
                 if (name.endsWith(".jar")) {
                     byte[] nested = nestedJar(name, data, result);
                     if (nested == null) continue;
@@ -294,12 +363,38 @@ public final class Forge1201Transformer {
                 }
             }
             if (name.equals("META-INF/mods.toml")) {
-                outResources.put("META-INF/neoforge.mods.toml", modsToml(new String(data, StandardCharsets.UTF_8), mixinConfigs(manifest)).getBytes(StandardCharsets.UTF_8));
+                String toml = modsToml(new String(data, StandardCharsets.UTF_8), mixinConfigs(manifest));
+                if (!plan.isEmpty()) {
+                    for (var c : cfgRename.entrySet()) toml = toml.replace("\"" + c.getKey() + "\"", "\"" + c.getValue() + "\"");
+                    // a dependent that lists the library's mixin config in its manifest (Alex's Caves: MixinConfigs=citadel.mixins.json,...) must not register it
+                    // a second time under the library's name: configs that are not resources of this jar are not its own
+                    Matcher cm = Pattern.compile("\n\\[\\[mixins\\]\\]\\s*\nconfig\\s*=\\s*\"([^\"]+)\"\\s*\n").matcher(toml);
+                    StringBuilder cleaned = new StringBuilder();
+                    while (cm.find()) {
+                        String config = cm.group(1);
+                        cm.appendReplacement(cleaned, other.containsKey(config) || cfgRename.containsValue(config) ? Matcher.quoteReplacement(cm.group()) : "\n");
+                    }
+                    cm.appendTail(cleaned);
+                    toml = cleaned.toString();
+                    toml = plan.rewriteToml(VER, toml, ownIds);
+                }
+                outResources.put("META-INF/neoforge.mods.toml", toml.getBytes(StandardCharsets.UTF_8));
                 continue;
             }
             if (name.equals("META-INF/accesstransformer.cfg")) data = accessTransformer(new String(data, StandardCharsets.UTF_8)).getBytes(StandardCharsets.UTF_8);
-            else if (name.endsWith(".json") && looksLikeMixinConfig(data)) data = Mixin1201.config(new String(data, StandardCharsets.UTF_8), mixinStats.droppedClasses, null).getBytes(StandardCharsets.UTF_8);
+            else if (name.endsWith(".json") && looksLikeMixinConfig(data)) {
+                String json = new String(data, StandardCharsets.UTF_8);
+                if (!plan.isEmpty()) json = relocateMixinConfig(json, ownUnit);
+                data = Mixin1201.config(json, mixinStats.droppedClasses, null).getBytes(StandardCharsets.UTF_8);
+                name = cfgRename.getOrDefault(name, name);
+            }
             outResources.put(name, data);
+        }
+        if (!plan.isEmpty()) {
+            outResources = new LinkedHashMap<>(plan.rewriteResources(VER, outResources));
+            if (ownUnit) dropDanglingProviders(outResources, outClasses.keySet());
+            if (ownUnit) result.notes.add("Side-by-side library: mod id(s) " + ownIds + " load as separate unit(s), packages relocated under " + SideBySide.prefix(VER));
+            else result.notes.add("Side-by-side: references to isolated libraries " + plan.units().stream().filter(u -> u.version() == VER).map(SideBySide.Unit::modId).toList() + " link to their relocated copies");
         }
         // the data and resource packs: 1.21 folder names, recipe/loot/advancement/tag/model formats, forge: ids, pack.mcmeta (DataConverter1201)
         DataConverter1201.Stats dataStats = new DataConverter1201.Stats();
@@ -312,6 +407,135 @@ public final class Forge1201Transformer {
         outResources.put(Provenance.RESOURCE, Provenance.json(jar, originalSha, LegacyJarTransformer.TRANSFORMER_VERSION));
         LegacyJarTransformer.write(output, outManifest, outClasses, outResources);
         return result;
+    }
+
+    // ---- side-by-side libraries ---------------------------------------------------------------------------------------------
+
+    private static final String MOD_DESC = "Lnet/neoforged/fml/common/Mod;";
+    private static final String SUBSCRIBER_DESC = "Lnet/neoforged/fml/common/Mod$EventBusSubscriber;";
+
+    /** Relocates string constants and annotation values that name isolated classes, and swaps the mod id of an isolated library's own annotations. */
+    private void isolate(ClassNode node) {
+        for (MethodNode m : node.methods) {
+            if (m.instructions != null) {
+                for (AbstractInsnNode in : m.instructions) {
+                    if (in instanceof LdcInsnNode l && l.cst instanceof String s) {
+                        String moved = plan.mapString(VER, s);
+                        if (!moved.equals(s)) {
+                            l.cst = moved;
+                            continue;
+                        }
+                        // ModList.isLoaded("citadel") in a dependent asks about the isolated copy it is linked to
+                        SideBySide.Unit u = plan.unit(VER, s.toLowerCase(java.util.Locale.ROOT));
+                        AbstractInsnNode next = l.getNext();
+                        if (u != null && !ownIds.contains(u.modId()) && next instanceof org.objectweb.asm.tree.MethodInsnNode mi
+                                && mi.owner.equals("net/neoforged/fml/ModList")) l.cst = u.newId();
+                    }
+                }
+            }
+            annotations(m.visibleAnnotations);
+            annotations(m.invisibleAnnotations);
+        }
+        for (org.objectweb.asm.tree.FieldNode f : node.fields) {
+            if (f.value instanceof String s) f.value = plan.mapString(VER, s);
+            annotations(f.visibleAnnotations);
+            annotations(f.invisibleAnnotations);
+        }
+        annotations(node.visibleAnnotations);
+        annotations(node.invisibleAnnotations);
+    }
+
+    private void annotations(List<org.objectweb.asm.tree.AnnotationNode> list) {
+        if (list == null) return;
+        for (var a : list) {
+            String idKey = MOD_DESC.equals(a.desc) ? "value" : SUBSCRIBER_DESC.equals(a.desc) ? "modid" : null;
+            annotationValues(a.values, idKey);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void annotationValues(List<Object> values, String idKey) {
+        if (values == null) return;
+        for (int i = 0; i + 1 < values.size(); i += 2) {
+            Object v = values.get(i + 1);
+            if (v instanceof String s) {
+                String moved = plan.mapString(VER, s);
+                if (idKey != null && idKey.equals(values.get(i)) && ownIds.contains(s.toLowerCase(java.util.Locale.ROOT))) {
+                    SideBySide.Unit u = plan.unit(VER, s.toLowerCase(java.util.Locale.ROOT));
+                    if (u != null) moved = u.newId();
+                }
+                values.set(i + 1, moved);
+            } else if (v instanceof List<?> l) {
+                List<Object> copy = (List<Object>) l;
+                for (int k = 0; k < copy.size(); k++) {
+                    Object x = copy.get(k);
+                    if (x instanceof String s) copy.set(k, plan.mapString(VER, s));
+                    else if (x instanceof org.objectweb.asm.tree.AnnotationNode an) annotationValues(an.values, null);
+                }
+            } else if (v instanceof org.objectweb.asm.tree.AnnotationNode an) {
+                annotationValues(an.values, null);
+            }
+        }
+    }
+
+    /**
+     * Service files of an isolated library naming providers the jar does not contain (Citadel lists net.sourceforge.jaad..., which only its native
+     * build has): the module system adds a provider's package to the automatic module, and the native copy exports the same package.
+     */
+    private static void dropDanglingProviders(Map<String, byte[]> resources, Set<String> classEntries) {
+        for (String name : new ArrayList<>(resources.keySet())) {
+            if (!name.startsWith("META-INF/services/")) continue;
+            StringBuilder kept = new StringBuilder();
+            for (String line : new String(resources.get(name), StandardCharsets.UTF_8).split("\\R")) {
+                String t = line.strip();
+                int hash = t.indexOf('#');
+                if (hash >= 0) t = t.substring(0, hash).strip();
+                if (t.isEmpty()) continue;
+                if (classEntries.contains(t.replace('.', '/') + ".class")) kept.append(t).append('\n');
+            }
+            if (kept.length() == 0) resources.remove(name);
+            else resources.put(name, kept.toString().getBytes(StandardCharsets.UTF_8));
+        }
+    }
+
+    private static final String MIXIN_DESC = "Lorg/spongepowered/asm/mixin/Mixin;";
+
+    /**
+     * An isolated library's mixins merge into the same vanilla classes as the native copy's: two injector handlers with one name in one target fail the
+     * class ("Critical injection failure"). The handlers (injector annotations from Mixin and MixinExtras) get a version suffix.
+     */
+    private static void renameInjectorHandlers(ClassNode node, String suffix) {
+        if (node.invisibleAnnotations == null || node.invisibleAnnotations.stream().noneMatch(a -> MIXIN_DESC.equals(a.desc))) return;
+        for (MethodNode m : node.methods) {
+            if (m.name.startsWith("<") || !hasInjector(m.visibleAnnotations) && !hasInjector(m.invisibleAnnotations)) continue;
+            m.name = m.name + "_l" + suffix;
+        }
+    }
+
+    private static boolean hasInjector(List<org.objectweb.asm.tree.AnnotationNode> list) {
+        if (list == null) return false;
+        for (var a : list) {
+            String d = a.desc;
+            if (d.startsWith("Lorg/spongepowered/asm/mixin/injection/") && !d.contains("/At;") && !d.contains("/Slice;") && !d.contains("/Coerce;") && !d.contains("/Desc;")
+                    && !d.contains("/Group;") && !d.contains("/Constant;")) return true;
+            if (d.startsWith("Lcom/llamalad7/mixinextras/injector/")) return true;
+        }
+        return false;
+    }
+
+    /** A mixin config of this jar: its package and plugin class follow the relocation. */
+    private String relocateMixinConfig(String json, boolean ownUnit) {
+        try {
+            JsonObject root = JsonParser.parseString(json).getAsJsonObject();
+            for (String key : new String[] {"package", "plugin"}) {
+                if (root.has(key) && root.get(key).isJsonPrimitive()) root.addProperty(key, plan.mapString(VER, root.get(key).getAsString()));
+            }
+            // the native copy of the library injects into the same vanilla code: the isolated copy is applied after it (a lost injection is only logged)
+            if (ownUnit) root.addProperty("priority", 2000);
+            return root.toString();
+        } catch (RuntimeException e) {
+            return json;
+        }
     }
 
     // ---- jar-in-jar ------------------------------------------------------------------------------------------------------------
@@ -337,7 +561,7 @@ public final class Forge1201Transformer {
             Files.write(in, data);
             LegacyJar nested = LegacyJarInspector.inspect(in);
             if (nested == null || nested.version != LegacyVersion.V1_20_1) return data;
-            new Forge1201Transformer(shim).transform(nested, out);
+            new Forge1201Transformer(shim).sideBySide(plan).transform(nested, out);
             result.notes.add("Translated nested " + path.substring(path.lastIndexOf('/') + 1));
             return Files.readAllBytes(out);
         } finally {
@@ -452,6 +676,10 @@ public final class Forge1201Transformer {
             if (m.matches() && m.group(2).equals("modId")) modId = m.group(4).replaceAll("^[\"']|[\"']\\s*(#.*)?$", "");
         }
         boolean wroteType = false;
+        boolean hasType = block.stream().anyMatch(l -> {
+            Matcher k = KEY_LINE.matcher(l);
+            return k.matches() && k.group(2).equals("type");
+        });
         for (String l : block) {
             Matcher m = KEY_LINE.matcher(l);
             if (!m.matches()) {
@@ -464,6 +692,7 @@ public final class Forge1201Transformer {
             else if (key.equals("versionRange") && "minecraft".equals(modId)) out.append(m.group(1)).append("versionRange").append(m.group(3)).append("\"[1.21.1,1.22)\"\n");
             // other mods' 1.20.1 ranges ([1.20.1-x,1.21)) would reject their 1.21.1 versions: the dependency is kept, the range opened
             else if (key.equals("versionRange") && modId != null && !"minecraft".equals(modId) && !"forge".equals(modId)) out.append(m.group(1)).append("versionRange").append(m.group(3)).append("\"[0,)\"\n");
+            else if (key.equals("mandatory") && hasType) continue; // both keys in one table: the file's own type stays (a second one is a TOML error)
             else if (key.equals("mandatory")) {
                 out.append(m.group(1)).append("type").append(m.group(3)).append(m.group(4).strip().startsWith("true") ? "\"required\"" : "\"optional\"").append('\n');
                 wroteType = true;

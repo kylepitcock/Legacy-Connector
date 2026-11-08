@@ -24,9 +24,15 @@ import java.util.zip.ZipFile;
  */
 public final class NativeLibraries1201 {
     /** A library with a native 1.21.1 build. */
-    public record Library(String modId, String name, String url) {}
+    public record Library(String modId, String name, String url, boolean preferSideBySide) {}
 
     private static volatile Map<String, Library> table;
+    /** Library jars the planner loads next to the native build instead of skipping them. */
+    private static volatile Set<LegacyJar> isolated = Set.of();
+
+    static void setIsolated(Set<LegacyJar> jars) {
+        isolated = jars;
+    }
 
     private NativeLibraries1201() {}
 
@@ -39,7 +45,7 @@ public final class NativeLibraries1201 {
                     for (String l : new String(in.readAllBytes(), StandardCharsets.UTF_8).split("\\R")) {
                         if (l.isBlank() || l.startsWith("#")) continue;
                         String[] a = l.strip().split("\t");
-                        if (a.length >= 3) m.put(a[0], new Library(a[0], a[1], a[2]));
+                        if (a.length >= 3) m.put(a[0], new Library(a[0], a[1], a[2], a.length >= 4 && a[3].equalsIgnoreCase("sideBySide")));
                     }
                 }
             } catch (IOException e) {
@@ -55,6 +61,7 @@ public final class NativeLibraries1201 {
      * null for any other jar. Called with the modern mod ids of the mods folder.
      */
     public static LibraryBridges.Bridge replacing(LegacyJar jar, Set<String> modernIds) {
+        if (isolated.contains(jar)) return null; // loaded side by side with the native build (SideBySidePlanner)
         if (jar.version != LegacyVersion.V1_20_1 || jar.mods.isEmpty()) return null;
         for (LegacyModDecl m : jar.mods) {
             String id = m.legacyId.toLowerCase(Locale.ROOT);

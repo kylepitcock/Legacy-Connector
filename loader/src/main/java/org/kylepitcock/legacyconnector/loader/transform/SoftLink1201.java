@@ -230,8 +230,8 @@ final class SoftLink1201 implements Opcodes {
                 }
                 if (gone) {
                     // a constructor of a class that exists: the new object stays uninitialized unless its NEW goes too (a null takes its place)
-                    AbstractInsnNode pairedNew = ctor && !selfCtor && bad == null ? matchingNew(all, idx) : null;
-                    if (selfCtor || (ctor && bad == null && pairedNew == null)) repl = terminate(sym);
+                    AbstractInsnNode pairedNew = ctor && !selfCtor && !missingClass(mi.owner) ? matchingNew(all, idx) : null;
+                    if (selfCtor || (ctor && !missingClass(mi.owner) && pairedNew == null)) repl = terminate(sym);
                     else {
                         repl = call(sym, mi.desc, mi.getOpcode() != INVOKESTATIC, mi.owner, construction(m), bad == null);
                         if (pairedNew != null) newsToNull.add(pairedNew);

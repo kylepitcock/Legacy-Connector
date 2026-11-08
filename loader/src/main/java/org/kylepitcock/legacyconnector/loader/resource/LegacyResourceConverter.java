@@ -93,16 +93,33 @@ public final class LegacyResourceConverter {
             data = convertSounds(data, modern.substring("assets/".length(), modern.indexOf('/', "assets/".length())));
         } else if (modern.endsWith(".mcmeta")) {
             data = sanitizeMcmeta(data);
+        } else if (modern.endsWith(".json") && modern.contains("/models/") && !isVanillaShapedModel(data)) {
+            // a mod's own data format under models/ (Lycanites Mobs' mob parts: a top-level array): the modern model loader reads every
+            // models/**.json as a model and logs an error per file. Staged outside the pack; the legacy resource manager finds it at its original path.
+            output.putIfAbsent(RAW_ROOT + modern, data);
+            return true;
         } else if (modern.endsWith(".json") && (modern.contains("/models/") || modern.contains("/blockstates/"))) {
             data = lowercaseResourceRefs(data);
             if (modern.contains("/models/")) {
                 data = qualifySelfParent(data, modern);
+                data = renameForgeModelLoader(data);
                 addVineModels(data);
             }
         }
         ctm.offer(modern, data);
         output.putIfAbsent(modern, data);
         return true;
+    }
+
+    /** Folder (in the translated jar) holding JSON files from {@code models/} that are not models; the path below it is the original one. */
+    public static final String RAW_ROOT = "legacyconnector_raw/";
+
+    /** False for JSON whose top level is not an object: no model loader can read it (a model is always an object). */
+    static boolean isVanillaShapedModel(byte[] data) {
+        int i = 0;
+        if (data.length > 3 && (data[0] & 0xFF) == 0xEF && (data[1] & 0xFF) == 0xBB && (data[2] & 0xFF) == 0xBF) i = 3;
+        while (i < data.length && Character.isWhitespace((char) (data[i] & 0xFF))) i++;
+        return i >= data.length || data[i] != '[';
     }
 
     /** The jar adds textures of its own to the atlas (the sprite sheet tiles of {@link SheetCutter}). */
@@ -396,6 +413,31 @@ public final class LegacyResourceConverter {
      * is looked up in the model's own namespace first here, so it would be its own parent: a StackOverflowError in vanilla's parent resolution that
      * makes the game drop its resource packs and reload in the middle of loading (The Dalek Mod never reached the main menu).
      */
+    /**
+     * Forge 1.12 named its model loaders {@code forge:obj} / {@code forge:bucket}; NeoForge 1.21.1's are {@code neoforge:obj} and
+     * {@code neoforge:fluid_container}. A model file with {@code "loader": "forge:obj"} (Scape and Run: Parasites' relay controller and its tower)
+     * failed to load with "Model loader 'forge:obj' not found".
+     */
+    static byte[] renameForgeModelLoader(byte[] data) {
+        try {
+            JsonElement root = JsonParser.parseString(new String(data, StandardCharsets.UTF_8));
+            if (root instanceof JsonObject obj && obj.get("loader") instanceof JsonPrimitive p && p.isString()) {
+                String mapped = switch (p.getAsString()) {
+                    case "forge:obj" -> "neoforge:obj";
+                    case "forge:bucket" -> "neoforge:fluid_container";
+                    default -> null;
+                };
+                if (mapped != null) {
+                    obj.addProperty("loader", mapped);
+                    return new com.google.gson.Gson().toJson(obj).getBytes(StandardCharsets.UTF_8);
+                }
+            }
+        } catch (RuntimeException ignored) {
+            // not JSON: left as it is
+        }
+        return data;
+    }
+
     static byte[] qualifySelfParent(byte[] data, String assetPath) {
         java.util.regex.Matcher m = java.util.regex.Pattern.compile("assets/[^/]+/models/(.+)\\.json").matcher(assetPath);
         if (!m.matches()) return data;

@@ -447,6 +447,11 @@ public final class MiddleCompat {
         return net.minecraft.server.level.ClientInformation.createDefault();
     }
 
+    /** {@code KeyDispatchDataCodec.codec()}: a Codec in 1.20.1, a MapCodec in 1.21.1 (the record component). */
+    public static <A> com.mojang.serialization.Codec<A> keyDispatchCodec(net.minecraft.util.KeyDispatchDataCodec<A> k) {
+        return k.codec().codec();
+    }
+
     /** {@code ExtraCodecs.lazyInitializedCodec(Supplier)}. */
     public static <A> com.mojang.serialization.Codec<A> lazyInitializedCodec(java.util.function.Supplier<com.mojang.serialization.Codec<A>> supplier) {
         return com.mojang.serialization.Codec.lazyInitialized(supplier);
@@ -711,8 +716,103 @@ public final class MiddleCompat {
         return HolderCompat.legacy(holder);
     }
 
+    /** The level a bridged {@code isPathfindable} override gets: 1.21.1 has no level there, so an empty one (all air). */
+    public static net.minecraft.world.level.BlockGetter emptyGetter(BlockState state) {
+        return net.minecraft.world.level.EmptyBlockGetter.INSTANCE;
+    }
+
+    /** The position a bridged {@code isPathfindable} override gets: the origin. */
+    public static BlockPos originPos(BlockState state) {
+        return BlockPos.ZERO;
+    }
+
     /** {@code Potion.byName(String)}. */
     public static net.minecraft.world.item.alchemy.Potion potionByName(String name) {
         return net.minecraft.core.registries.BuiltInRegistries.POTION.get(net.minecraft.resources.ResourceLocation.parse(name));
+    }
+
+    // ------------------------------------------------------------------ registration codecs, goals, attributes, scores, loot
+
+    /** A type-codec registration that took a Codec in 1.20.1 and takes a MapCodec now. */
+    public static <T> com.mojang.serialization.MapCodec<T> asMapCodec(com.mojang.serialization.Codec<T> codec) {
+        @SuppressWarnings("unchecked")
+        com.mojang.serialization.MapCodec<T> map = (com.mojang.serialization.MapCodec<T>) EntityCompat.toMapCodec(codec);
+        return map;
+    }
+
+    /** {@code Structure.simpleCodec(Function)} answered a Codec. */
+    public static <S extends net.minecraft.world.level.levelgen.structure.Structure> com.mojang.serialization.Codec<S> simpleStructureCodec(
+            java.util.function.Function<net.minecraft.world.level.levelgen.structure.Structure.StructureSettings, S> factory) {
+        return net.minecraft.world.level.levelgen.structure.Structure.simpleCodec(factory).codec();
+    }
+
+    /** {@code GoalSelector.getRunningGoals()}. */
+    public static java.util.stream.Stream<net.minecraft.world.entity.ai.goal.WrappedGoal> getRunningGoals(net.minecraft.world.entity.ai.goal.GoalSelector selector) {
+        return selector.getAvailableGoals().stream().filter(net.minecraft.world.entity.ai.goal.WrappedGoal::isRunning);
+    }
+
+    /** {@code DispenserBlockEntity.addItem(ItemStack)}: the first empty slot, or -1. */
+    public static int addItem(net.minecraft.world.level.block.entity.DispenserBlockEntity dispenser, ItemStack stack) {
+        for (int slot = 0; slot < dispenser.getContainerSize(); slot++) {
+            if (dispenser.getItem(slot).isEmpty()) {
+                dispenser.setItem(slot, stack);
+                return slot;
+            }
+        }
+        return -1;
+    }
+
+    public static net.minecraft.world.entity.ai.attributes.AttributeInstance mapGetInstance(net.minecraft.world.entity.ai.attributes.AttributeMap map, Attribute attribute) {
+        return map.getInstance(HolderCompat.holder(attribute));
+    }
+
+    public static double mapGetValue(net.minecraft.world.entity.ai.attributes.AttributeMap map, Attribute attribute) {
+        return map.getValue(HolderCompat.holder(attribute));
+    }
+
+    public static boolean supplierHasAttribute(net.minecraft.world.entity.ai.attributes.AttributeSupplier supplier, Attribute attribute) {
+        return supplier.hasAttribute(HolderCompat.holder(attribute));
+    }
+
+    public static double supplierGetBaseValue(net.minecraft.world.entity.ai.attributes.AttributeSupplier supplier, Attribute attribute) {
+        return supplier.getBaseValue(HolderCompat.holder(attribute));
+    }
+
+    /** {@code AttributeInstance.removePermanentModifier(UUID)}. */
+    public static boolean removePermanentModifier(net.minecraft.world.entity.ai.attributes.AttributeInstance instance, java.util.UUID id) {
+        return instance.removeModifier(HolderCompat.modifierId(id));
+    }
+
+    /** {@code scoreboard.getOrCreatePlayerScore(String name, Objective)}. */
+    public static LegacyScore playerScore(net.minecraft.world.scores.Scoreboard scoreboard, String name, net.minecraft.world.scores.Objective objective) {
+        return new LegacyScore(scoreboard.getOrCreatePlayerScore(net.minecraft.world.scores.ScoreHolder.forNameOnly(name), objective), name);
+    }
+
+    /** The queried table id a 1.20.1 {@code LootContext.Builder.create(ResourceLocation)} passes. */
+    public static java.util.Optional<net.minecraft.resources.ResourceLocation> optionalId(net.minecraft.resources.ResourceLocation id) {
+        return java.util.Optional.ofNullable(id);
+    }
+
+    /** {@code LootContext.getLootingModifier()}: the looting level of the killer's main hand. */
+    public static int getLootingModifier(net.minecraft.world.level.storage.loot.LootContext context) {
+        Entity killer = context.getParamOrNull(net.minecraft.world.level.storage.loot.parameters.LootContextParams.ATTACKING_ENTITY);
+        return killer instanceof LivingEntity living ? level(living.getMainHandItem(), Enchantments.LOOTING) : 0;
+    }
+
+    /** The function list of a 1.20.1 loot entry constructor that took an array. */
+    public static java.util.List<net.minecraft.world.level.storage.loot.functions.LootItemFunction> functions(
+            net.minecraft.world.level.storage.loot.functions.LootItemFunction[] functions) {
+        return functions == null ? java.util.List.of() : java.util.Arrays.asList(functions);
+    }
+
+    /** {@code SkullBlockEntity.updateGameprofile(GameProfile, Consumer)}: the profile as it is (no online lookup). */
+    public static void updateGameprofile(com.mojang.authlib.GameProfile profile, java.util.function.Consumer<com.mojang.authlib.GameProfile> then) {
+        then.accept(profile);
+    }
+
+    /** {@code BlockEntity.INFINITE_EXTENT_AABB}. */
+    public static net.minecraft.world.phys.AABB infiniteExtent() {
+        return new net.minecraft.world.phys.AABB(Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY);
     }
 }

@@ -24,6 +24,8 @@ public final class LegacyModDecl {
     public String acceptedMinecraftVersions;
     /** A ModLoader mod (1.4.x and earlier): the main class extends {@code BaseMod} and there is no {@code @Mod} annotation. */
     public boolean modLoader;
+    /** Set by {@link SideBySidePlanner} when this copy of a library runs isolated next to another one: the FML id it loads as. */
+    public String fmlIdOverride;
     public boolean clientSideOnly;
     public boolean serverSideOnly;
 
@@ -53,7 +55,7 @@ public final class LegacyModDecl {
 
     /** The mod id FML knows this mod by (its modern id unless a modern mod uses that id). */
     public String fmlId() {
-        return toFmlId(modernId());
+        return fmlIdOverride != null ? fmlIdOverride : toFmlId(modernId());
     }
 
     public static String toFmlId(String modernId) {

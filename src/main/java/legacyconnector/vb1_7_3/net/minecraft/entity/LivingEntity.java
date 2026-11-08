@@ -108,6 +108,8 @@ public abstract class LivingEntity extends Entity {
     public final void mcc$dropItems(){dropItems();}
     public int getMinAmbientSoundDelay(){return 80;}
     public boolean canBreatheInWater(){return false;}
+    /** Beta {@code spawnExplosionParticle}-style spawn animation (puffs of smoke); the host spawns no extra particles. */
+    public void animateSpawn(){}
     public String getTexture(){return texture;}
     public void travel(float sideways,float forward){if(mcc$modern instanceof org.kylepitcock.legacyconnector.vb1_7_3.B173LivingHost host)host.baseTravel(sideways,forward);}
     public boolean isOnLadder(){return mcc$modern instanceof org.kylepitcock.legacyconnector.vb1_7_3.B173LivingHost host?host.baseIsOnLadder():mcc$modern instanceof net.minecraft.world.entity.LivingEntity living&&living.onClimbable();}

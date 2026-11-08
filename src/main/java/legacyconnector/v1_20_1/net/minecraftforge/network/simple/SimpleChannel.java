@@ -192,6 +192,19 @@ public class SimpleChannel {
             return this;
         }
 
+        /** Forge's boolean-returning handler form: the result says whether the packet was handled (it always is here). */
+        @FunctionalInterface
+        public interface ToBooleanBiFunction<A, B> {
+            boolean apply(A a, B b);
+        }
+
+        public MessageBuilder<MSG> consumerNetworkThread(ToBooleanBiFunction<MSG, Supplier<NetworkEvent.Context>> handler) {
+            this.consumer = (msg, ctx) -> {
+                if (handler.apply(msg, ctx)) ctx.get().setPacketHandled(true);
+            };
+            return this;
+        }
+
         /** Login-phase messages are not part of NeoForge's play payloads: the message is registered like any other and never sent at login. */
         public MessageBuilder<MSG> markAsLoginPacket() {
             return this;

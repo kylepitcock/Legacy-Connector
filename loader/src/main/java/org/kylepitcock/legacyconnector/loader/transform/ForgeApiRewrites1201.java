@@ -70,7 +70,10 @@ final class ForgeApiRewrites1201 {
                 }
                 if (helper == null) continue;
                 String helperOwner = null;
-                if (helper.startsWith("Tail.")) {   // forge-call-rewrites.tsv value "Tail.name": the helper is in ForgeApiTail1201 (the long tail of small event/hook adapters)
+                if (helper.startsWith("TailClient.")) {   // the client-only part of the tail (client event classes must not be loaded by a dedicated server)
+                    helperOwner = TAIL_CLIENT;
+                    helper = helper.substring(11);
+                } else if (helper.startsWith("Tail.")) {   // forge-call-rewrites.tsv value "Tail.name": the helper is in ForgeApiTail1201 (the long tail of small event/hook adapters)
                     helperOwner = TAIL;
                     helper = helper.substring(5);
                 }
@@ -100,6 +103,7 @@ final class ForgeApiRewrites1201 {
     }
 
     static final String TAIL = "legacyconnector/v1_20_1/ForgeApiTail1201";
+    static final String TAIL_CLIENT = "legacyconnector/v1_20_1/ForgeApiTailClient1201";
     static final String CAPS = "legacyconnector/v1_20_1/Caps1201";
     static final String PROVIDER = "legacyconnector/v1_20_1/net/minecraftforge/common/capabilities/ICapabilityProvider";
     static final String GET_CAPABILITY_DESC = "(Llegacyconnector/v1_20_1/net/minecraftforge/common/capabilities/Capability;Lnet/minecraft/core/Direction;)"

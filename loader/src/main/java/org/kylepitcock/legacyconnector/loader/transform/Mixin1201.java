@@ -81,6 +81,13 @@ final class Mixin1201 {
             fixAll(f.invisibleAnnotations, ctx);
             fixAll(f.visibleAnnotations, ctx);
         }
+        for (MethodNode m : node.methods) defineSynchedDataHandler(m);
+        String shadow = missingShadow(node, targets, h);
+        if (shadow != null) {
+            st.dropped.add(node.name + " (@Shadow " + shadow + " does not exist in " + targets.get(0) + ")");
+            st.droppedClasses.add(node.name);
+            return;
+        }
         // a mixin whose targets are all gone from 1.21.1 cannot apply
         if (!targets.isEmpty()) {
             boolean anyPresent = false;
@@ -94,6 +101,141 @@ final class Mixin1201 {
                 st.droppedClasses.add(node.name);
             }
         }
+    }
+
+    private static final String SHADOW = "Lorg/spongepowered/asm/mixin/Shadow;";
+
+    /**
+     * The first {@code @Shadow} member of the mixin that its single Minecraft target (and the classes above it) does not have in 1.21.1, or null. Mixin would
+     * refuse the whole mixin with an {@code InvalidMixinException} at apply time; dropping it from the config names the reason in the report instead.
+     */
+    static String missingShadow(ClassNode node, List<String> targets, Mc1201Hierarchy h) {
+        if (targets.size() != 1) return null;
+        String target = targets.get(0);
+        if (!target.startsWith("net/minecraft/") || McMembers1201.get(target) == null) return null;
+        for (MethodNode m : node.methods) {
+            if (!hasShadow(m.invisibleAnnotations) && !hasShadow(m.visibleAnnotations)) continue;
+            if (shadowHasPrefix(m.invisibleAnnotations) || shadowHasPrefix(m.visibleAnnotations)) continue;
+            Boolean found = hasMember(target, m.name + m.desc, true, h, new java.util.HashSet<>());
+            if (found != null && !found) return m.name + m.desc;
+        }
+        for (MethodNode m : node.methods) {
+            // an @Accessor of a field whose type changed in 1.21.1 (LootPool.entries: array to List) cannot be found by Mixin either
+            AnnotationNode acc = find(m.invisibleAnnotations, "Lorg/spongepowered/asm/mixin/gen/Accessor;");
+            if (acc == null) acc = find(m.visibleAnnotations, "Lorg/spongepowered/asm/mixin/gen/Accessor;");
+            if (acc == null) continue;
+            String field = null;
+            if (acc.values != null) for (int i = 0; i + 1 < acc.values.size(); i += 2) if ("value".equals(acc.values.get(i)) && acc.values.get(i + 1) instanceof String s) field = s;
+            if (field == null) {
+                String n = m.name;
+                if (n.startsWith("get") || n.startsWith("set")) n = n.substring(3);
+                else if (n.startsWith("is")) n = n.substring(2);
+                else continue;
+                if (n.isEmpty()) continue;
+                field = Character.toLowerCase(n.charAt(0)) + n.substring(1);
+            }
+            Type[] args = Type.getArgumentTypes(m.desc);
+            String desc = args.length == 1 && Type.getReturnType(m.desc).getSort() == Type.VOID ? args[0].getDescriptor()
+                    : args.length == 0 ? Type.getReturnType(m.desc).getDescriptor() : null;
+            if (desc == null) continue;
+            Boolean found = hasMember(target, field + ":" + desc, false, h, new java.util.HashSet<>());
+            // the name may not be the field's own (a mapped name): only a field with this name and another type is a change we know of
+            Boolean byName = hasFieldNamed(target, field, h, new java.util.HashSet<>());
+            if (found != null && !found && Boolean.TRUE.equals(byName)) return m.name + m.desc + " (@Accessor " + field + ")";
+        }
+        for (FieldNode f : node.fields) {
+            if (!hasShadow(f.invisibleAnnotations) && !hasShadow(f.visibleAnnotations)) continue;
+            if (shadowHasPrefix(f.invisibleAnnotations) || shadowHasPrefix(f.visibleAnnotations)) continue;
+            Boolean found = hasMember(target, f.name + ":" + f.desc, false, h, new java.util.HashSet<>());
+            if (found != null && !found) return f.name + ":" + f.desc;
+        }
+        return null;
+    }
+
+    private static boolean hasShadow(List<AnnotationNode> list) {
+        return find(list, SHADOW) != null;
+    }
+
+    private static boolean shadowHasPrefix(List<AnnotationNode> list) {
+        AnnotationNode a = find(list, SHADOW);
+        return a != null && a.values != null && a.values.contains("prefix");
+    }
+
+    /** True/false when the class chain is known, null when it leaves into classes the index does not know (then nothing is claimed). */
+    private static Boolean hasMember(String owner, String key, boolean method, Mc1201Hierarchy h, java.util.Set<String> seen) {
+        if (owner.equals("java/lang/Object")) return method && java.util.Set.of("equals(Ljava/lang/Object;)Z", "hashCode()I", "toString()Ljava/lang/String;").contains(key);
+        if (!seen.add(owner)) return false;
+        if (!method && owner.startsWith("java/")) return false; // a shadowed field is never one of the JDK's (an interface above the target, BiFunction, made the answer unknown)
+        McMembers1201.Members mm = McMembers1201.get(owner);
+        if (mm == null) return null;
+        if ((method ? mm.methods() : mm.fields()).contains(key)) return true;
+        Boolean result = false;
+        for (String s : h.supers(owner)) {
+            Boolean r = hasMember(s, key, method, h, seen);
+            if (r == null) result = null;
+            else if (r) return true;
+        }
+        return result;
+    }
+
+    /** True when the class (or one above it) declares a field of this name, whatever its type; null when the chain leaves the index. */
+    private static Boolean hasFieldNamed(String owner, String name, Mc1201Hierarchy h, java.util.Set<String> seen) {
+        if (owner.startsWith("java/") || !seen.add(owner)) return false;
+        McMembers1201.Members mm = McMembers1201.get(owner);
+        if (mm == null) return null;
+        for (String f : mm.fields()) if (f.startsWith(name + ":")) return true;
+        Boolean result = false;
+        for (String s : h.supers(owner)) {
+            Boolean r = hasFieldNamed(s, name, h, seen);
+            if (r == null) result = null;
+            else if (r) return true;
+        }
+        return result;
+    }
+
+    private static final String BUILDER ="Lnet/minecraft/network/syncher/SynchedEntityData$Builder;";
+    private static final String CALLBACK = "Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfo;";
+
+    /**
+     * An {@code @Inject} into {@code Entity.defineSynchedData()} (the place a mod defines its own entity data): the method takes the data builder in 1.21.1, so the
+     * target gets the new descriptor and the handler {@code (CallbackInfo)} becomes {@code (Builder, CallbackInfo)}; its locals move up by one and the builder is
+     * remembered for {@code SynchedEntityData.define}, which the call table redirects to it. Without this the injection silently matches nothing, the entity data
+     * the mod's static {@code defineId} reserved is never defined, and every entity of that class fails in its constructor.
+     */
+    static void defineSynchedDataHandler(MethodNode m) {
+        if (!m.desc.equals("(" + CALLBACK + ")V")) return;
+        AnnotationNode inject = null;
+        for (List<AnnotationNode> list : java.util.Arrays.asList(m.invisibleAnnotations, m.visibleAnnotations)) {
+            if (list != null) for (AnnotationNode a : list) if (a.desc.equals("Lorg/spongepowered/asm/mixin/injection/Inject;")) inject = a;
+        }
+        if (inject == null || inject.values == null) return;
+        boolean changed = false;
+        for (int i = 0; i + 1 < inject.values.size(); i += 2) {
+            if (!"method".equals(inject.values.get(i)) || !(inject.values.get(i + 1) instanceof List<?> l)) continue;
+            @SuppressWarnings("unchecked") List<Object> list = (List<Object>) l;
+            for (int k = 0; k < list.size(); k++) {
+                if (list.get(k) instanceof String s && (s.equals("defineSynchedData()V") || s.equals("defineSynchedData"))) {
+                    list.set(k, "defineSynchedData(" + BUILDER + ")V");
+                    changed = true;
+                }
+            }
+        }
+        if (!changed) return;
+        int slot = (m.access & org.objectweb.asm.Opcodes.ACC_STATIC) != 0 ? 0 : 1;
+        for (org.objectweb.asm.tree.AbstractInsnNode in : m.instructions) {
+            if (in instanceof org.objectweb.asm.tree.VarInsnNode v && v.var >= slot) v.var++;
+            else if (in instanceof org.objectweb.asm.tree.IincInsnNode v && v.var >= slot) v.var++;
+        }
+        if (m.localVariables != null) for (org.objectweb.asm.tree.LocalVariableNode lv : m.localVariables) if (lv.index >= slot) lv.index++;
+        m.desc = "(" + BUILDER + CALLBACK + ")V";
+        m.signature = null;
+        org.objectweb.asm.tree.InsnList head = new org.objectweb.asm.tree.InsnList();
+        head.add(new org.objectweb.asm.tree.VarInsnNode(org.objectweb.asm.Opcodes.ALOAD, slot));
+        head.add(new org.objectweb.asm.tree.MethodInsnNode(org.objectweb.asm.Opcodes.INVOKESTATIC, "org/kylepitcock/legacyconnector/v1_20_1/migrate/MigrateContext",
+                "remember", "(Ljava/lang/Object;)V", false));
+        m.instructions.insert(head);
+        m.maxLocals++;
+        m.maxStack = Math.max(m.maxStack, 1);
     }
 
     private static boolean isMissing(String target, Mc1201Hierarchy h) {

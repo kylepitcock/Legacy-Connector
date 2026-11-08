@@ -60,6 +60,8 @@ final class Datagen1201 {
 
     private static boolean datagenName(String owner) {
         if (owner == null) return false;
+        // the world generation "BlockStateProvider" (stateproviders) shares its name with the model data provider
+        if (owner.startsWith("net/minecraft/world/level/levelgen/")) return false;
         if (DATAGEN_CLASSES.contains(owner)) return true;
         if (DATAGEN_NAME.matcher(owner).matches()) return true;
         for (String p : DATAGEN_PREFIXES) if (owner.startsWith(p)) return true;
@@ -101,7 +103,8 @@ final class Datagen1201 {
     }
 
     private static boolean isDatagenClass(ClassNode n, Set<String> known) {
-        if ((n.access & Opcodes.ACC_INTERFACE) == 0 && DATAGEN_NAME.matcher(n.name).matches()) return true;
+        if ((n.access & Opcodes.ACC_INTERFACE) == 0 && DATAGEN_NAME.matcher(n.name).matches()
+                && !(n.superName != null && n.superName.startsWith("net/minecraft/world/level/levelgen/"))) return true;
         if (datagenSuper(n.superName, known)) return true;
         if (n.interfaces != null) for (String i : n.interfaces) if (datagenSuper(i, known)) return true;
         int dollar = n.name.lastIndexOf('$');

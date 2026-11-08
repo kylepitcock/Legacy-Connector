@@ -826,8 +826,8 @@ usual performance mods for three of them. Results are in `docs/data/mods.json`; 
 | Equivalent Exchange (Forge) 3.55 | 11 blocks, 42 items, 8 tile entities round-trip | blocks render, textured |
 | Mars Mod 1.2 | 10 blocks, 20 items | not run |
 | PremiumWood 14.4 (+ ScotTools 10.1) | 34 blocks, 41 items | not run |
-| Dragon Mod 2.3 | 3 blocks, 7 items; dragons not hosted | not run |
-| Elemental Creepers 1.4 | constructs; all 18 creeper mobs rejected (hostile base family not hosted) | not run |
+| Dragon Mod 2.3 | 3 blocks, 7 items; dragons not hosted (original `jump` / `moveNonSolid` overrides) | not run |
+| Elemental Creepers 1.4 | 9 creeper species hosted with their renderers (see below) | creepers render, textured |
 | BuildCraft Core + Energy 2.1.1 | 3 blocks, 10 items | not run |
 
 Defects found and fixed generically:
@@ -839,4 +839,21 @@ Defects found and fixed generically:
   yet (Mars Mod's vacuum heater read a null player).
 
 Not usable as test input: NetherCraft's ScotTools zip needs ScotTools (use the ModLoader-only zip), and the Fringe Lands archive is only obfuscated base class
-edits (no `mod_` class, 0 classes translated). Dragon Mod and Elemental Creepers show the next gap: their mobs extend a hostile/creeper base the mob host does not accept yet.
+edits (no `mod_` class, 0 classes translated). Dragon Mod shows the next mob-host gap (`jump` / `moveNonSolid` overrides).
+
+### Second round (2026-11-08)
+
+More archive.org mods, server runs in fresh directories: IndustrialCraft 2 8.55 (67 blocks, 159 items, 46 tile entities round-trip, 0 failed callbacks),
+RedPower 1.7.1 (Core, Wiring, Logic, Lighting, Array together), MineFactory Reloaded 1.1.2 (its IC2 compat mod needs IC2), Portal Gun v5, More Creeps
+and Weirdos 2.12 (53 mobs hosted), Too Many Items and Rei's Minimap (construct). Single Player Commands 2.11.1 and Fringe Lands are base class edits
+without a `mod_` class and cannot be loaded.
+
+**Elemental Creepers** were reported as "base mob family is not hosted yet". That message, printed by the cow-only host (`MobsB173`) for every
+non-cow mob, was misleading (it is gone; `AnimalsB173` admits or reports every other family). The real blockers were generic gaps: the shim had no
+`DataTracker` (now a real per-entity slot store on `Entity`), no `CreeperEntityModel`, `LightType`, `World.getBrightness(LightType, ...)`,
+`World.ambientDarkness`, `Entity.onStruckByLightning` or `LivingEntity.animateSpawn`; and the admission lists did not accept the renderer's
+`getOverlayColor` (accepted, not drawn: the fuse flash is missing) nor the no-op lightning/spawn callbacks. All 9 species now host.
+
+Real client check (superflat test area, performance mods on, mobs summoned and the tick frozen for the shot): `docs/screenshots/b1.7.3/mobs-*.jpg`.
+Elemental Creepers and Mo' Creatures animals render with their own models and textures; More Creeps mostly does, with at least one species
+showing a missing-texture model (to investigate). The Portal Gun audio self-test now skips when the mod's external sound files are not installed.

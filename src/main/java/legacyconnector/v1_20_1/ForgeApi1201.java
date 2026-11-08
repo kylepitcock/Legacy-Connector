@@ -44,12 +44,233 @@ public final class ForgeApi1201 {
 
     // ---- event bus ----------------------------------------------------------------------------------------------------------
 
+    // ---- listeners on the wrong bus: Forge accepted them and never delivered the event; NeoForge throws ----
+
+    private static boolean wrongBus(IllegalArgumentException e) {
+        String m = String.valueOf(e.getMessage());
+        return m.contains("not valid for this bus") || m.contains("not allowed on the common");
+    }
+
+    private static void ignoredWrongBus(IllegalArgumentException e) {
+        org.slf4j.LoggerFactory.getLogger("LegacyConnector/Events").debug("Listener ignored (its event belongs to the other bus): {}", e.getMessage());
+    }
+
+    public static <T extends net.neoforged.bus.api.Event> void addListenerSafe(net.neoforged.bus.api.IEventBus bus, java.util.function.Consumer<T> listener) {
+        try {
+            bus.addListener(listener);
+        } catch (IllegalArgumentException e) {
+            if (!wrongBus(e)) throw e;
+            ignoredWrongBus(e);
+        }
+    }
+
+    public static <T extends net.neoforged.bus.api.Event> void addListenerSafe(net.neoforged.bus.api.IEventBus bus, net.neoforged.bus.api.EventPriority priority,
+            java.util.function.Consumer<T> listener) {
+        try {
+            bus.addListener(priority, listener);
+        } catch (IllegalArgumentException e) {
+            if (!wrongBus(e)) throw e;
+            ignoredWrongBus(e);
+        }
+    }
+
+    public static <T extends net.neoforged.bus.api.Event> void addListenerSafe(net.neoforged.bus.api.IEventBus bus, net.neoforged.bus.api.EventPriority priority,
+            boolean receiveCanceled, java.util.function.Consumer<T> listener) {
+        try {
+            bus.addListener(priority, receiveCanceled, listener);
+        } catch (IllegalArgumentException e) {
+            if (!wrongBus(e)) throw e;
+            ignoredWrongBus(e);
+        }
+    }
+
+    public static <T extends net.neoforged.bus.api.Event> void addListenerSafe(net.neoforged.bus.api.IEventBus bus, net.neoforged.bus.api.EventPriority priority,
+            boolean receiveCanceled, Class<T> type, java.util.function.Consumer<T> listener) {
+        try {
+            bus.addListener(priority, receiveCanceled, type, listener);
+        } catch (IllegalArgumentException e) {
+            if (!wrongBus(e)) throw e;
+            ignoredWrongBus(e);
+        }
+    }
+
+    // ---- reflection on fields whose type changed ----
+
+    /**
+     * {@code Field.get} in mod code: the three lists of a {@code LootPool} (entries, conditions, functions) were arrays in 1.20.1 and mods add loot to a
+     * table by reading them reflectively; a list is handed out as the array they cast it to.
+     */
+    public static Object fieldGet(java.lang.reflect.Field field, Object target) throws IllegalAccessException {
+        Object value = field.get(target);
+        if (value instanceof java.util.List<?> list && field.getDeclaringClass() == net.minecraft.world.level.storage.loot.LootPool.class) {
+            return switch (field.getName()) {
+                case "entries" -> list.toArray(new net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer[0]);
+                case "conditions" -> list.toArray(new net.minecraft.world.level.storage.loot.predicates.LootItemCondition[0]);
+                case "functions" -> list.toArray(new net.minecraft.world.level.storage.loot.functions.LootItemFunction[0]);
+                default -> value;
+            };
+        }
+        return value;
+    }
+
+    /** {@code Field.set} in mod code: the array a mod built for a {@code LootPool} list goes back as a list. */
+    public static void fieldSet(java.lang.reflect.Field field, Object target, Object value) throws IllegalAccessException {
+        if (value instanceof Object[] array && field.getType() == java.util.List.class && field.getDeclaringClass() == net.minecraft.world.level.storage.loot.LootPool.class) {
+            value = java.util.List.of(array);
+        }
+        field.set(target, value);
+    }
+
+    private static final java.util.Set<String> SKIPPED_REGISTERS = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    /**
+     * {@code DeferredRegister.register(bus)} of a library that runs next to its native 1.21.1 build ("side-by-side"): both copies register the library's own
+     * ids ({@code citadel:lectern}), which the registry refuses twice, and the native copy already provides them, so the isolated copy's register is not attached.
+     */
+    public static void skipIsolatedRegister(net.neoforged.neoforge.registries.DeferredRegister<?> register, net.neoforged.bus.api.IEventBus bus) {
+        if (SKIPPED_REGISTERS.add(String.valueOf(register.getNamespace()) + "/" + register.getRegistryKey().location()))
+            org.slf4j.LoggerFactory.getLogger("LegacyConnector/SideBySide").info("Deferred register {} of an isolated library is not attached: the native build registers the same ids",
+                    register.getRegistryKey().location());
+    }
+
     /** Forge accepted {@code bus.register(obj)} for an object without subscriber methods (a mod registering its main class "just in case"); NeoForge throws. */
     public static void busRegister(net.neoforged.bus.api.IEventBus bus, Object target) {
         try {
             bus.register(target);
         } catch (IllegalArgumentException e) {
+            String message = e.getCause() != null && e.getCause().getMessage() != null ? e.getCause().getMessage() : e.getMessage();
+            if (message != null && message.contains("IModBusEvent events are not allowed")) {
+                registerSplit(bus, target);
+                return;
+            }
+            if (message != null && message.contains("Cannot register listeners for abstract class")) {
+                registerEachMethod(bus, target);
+                return;
+            }
             if (e.getMessage() == null || !e.getMessage().contains("no @SubscribeEvent methods")) throw e;
+            if (e.getMessage() == null) throw e;
+            if (e.getMessage().contains("no @SubscribeEvent methods")) return;
+            // Forge ignored a subscriber method whose event belongs to the other bus (Citadel registers itself on the game bus with a ModConfigEvent
+            // handler); NeoForge rejects the whole object. The other methods are registered one by one, the foreign one is dropped.
+            if (!e.getMessage().contains("not valid for this bus")) throw e;
+            registerEachMethod(bus, target);
+        }
+    }
+
+    /**
+     * Automatic subscription of a {@code @Mod.EventBusSubscriber} class whose hierarchy has instance {@code @SubscribeEvent} methods (Citadel's proxies):
+     * Forge registered the class for its static methods and ignored the others; NeoForge rejects the class. The loader removes the annotation and has the
+     * mod's main class constructor call this instead.
+     *
+     * @param owner a class of the mod (its class loader loads the subscriber)
+     * @param bus {@code MOD} or {@code GAME}/{@code FORGE}
+     * @param dists comma separated {@code CLIENT}/{@code DEDICATED_SERVER}, empty for both
+     */
+    public static void subscribeStatics(Class<?> owner, String bus, String dists, String className) {
+        net.neoforged.api.distmarker.Dist dist = net.neoforged.fml.loading.FMLEnvironment.dist;
+        if (!dists.isEmpty() && !java.util.Arrays.asList(dists.split(",")).contains(dist.name())) return;
+        try {
+            Class<?> type = Class.forName(className, true, owner.getClassLoader());
+            net.neoforged.bus.api.IEventBus target = bus.equals("MOD") ? net.neoforged.fml.ModLoadingContext.get().getActiveContainer().getEventBus() : net.neoforged.neoforge.common.NeoForge.EVENT_BUS;
+            registerEachMethod(target, type);
+        } catch (ClassNotFoundException | LinkageError e) {
+            org.slf4j.LoggerFactory.getLogger("LegacyConnector/Subscribers").warn("Subscriber class {} could not be loaded: {}", className, e.toString());
+        }
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static void registerEachMethod(net.neoforged.bus.api.IEventBus bus, Object target) {
+        boolean isClass = target instanceof Class<?>;
+        Class<?> type = isClass ? (Class<?>) target : target.getClass();
+        for (java.lang.reflect.Method m : type.getMethods()) {
+            net.neoforged.bus.api.SubscribeEvent sub = m.getAnnotation(net.neoforged.bus.api.SubscribeEvent.class);
+            if (sub == null || m.getParameterCount() != 1 || java.lang.reflect.Modifier.isStatic(m.getModifiers()) == isClass == false && isClass) continue;
+            if (!net.neoforged.bus.api.Event.class.isAssignableFrom(m.getParameterTypes()[0])) continue;
+            Class<? extends net.neoforged.bus.api.Event> eventType = (Class<? extends net.neoforged.bus.api.Event>) m.getParameterTypes()[0];
+            m.setAccessible(true);
+            java.util.List<Class<? extends net.neoforged.bus.api.Event>> types = java.lang.reflect.Modifier.isAbstract(eventType.getModifiers())
+                    ? concreteEvents(eventType) : java.util.List.of(eventType);
+            for (Class<? extends net.neoforged.bus.api.Event> t : types) {
+                try {
+                    bus.addListener(sub.priority(), sub.receiveCanceled(), (Class) t, (java.util.function.Consumer) event -> {
+                        try {
+                            m.invoke(java.lang.reflect.Modifier.isStatic(m.getModifiers()) ? null : target, event);
+                        } catch (java.lang.reflect.InvocationTargetException ex) {
+                            throw ex.getCause() instanceof RuntimeException r ? r : new RuntimeException(ex.getCause());
+                        } catch (IllegalAccessException ex) {
+                            throw new IllegalStateException(ex);
+                        }
+                    });
+                } catch (IllegalArgumentException ignored) {
+                    // an event of the other bus: Forge never delivered it here either
+                }
+            }
+        }
+    }
+
+    private static final java.util.Map<Class<?>, java.util.List<Class<? extends net.neoforged.bus.api.Event>>> CONCRETE = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /**
+     * Forge let a handler listen to an abstract event class (every subclass is delivered: {@code ExplosionEvent}, {@code PlayerEvent}, {@code AdvancementEvent});
+     * NeoForge refuses it. The concrete subclasses in the jar the class comes from are found once and the handler is registered for each.
+     */
+    @SuppressWarnings("unchecked")
+    public static java.util.List<Class<? extends net.neoforged.bus.api.Event>> concreteEvents(Class<? extends net.neoforged.bus.api.Event> abstractType) {
+        return CONCRETE.computeIfAbsent(abstractType, base -> {
+            java.util.List<Class<? extends net.neoforged.bus.api.Event>> out = new java.util.ArrayList<>();
+            try {
+                java.net.URL where = base.getProtectionDomain().getCodeSource() == null ? null : base.getProtectionDomain().getCodeSource().getLocation();
+                String pkg = base.getName().substring(0, base.getName().lastIndexOf('.', base.getName().indexOf('$') > 0 ? base.getName().indexOf('$') : base.getName().length())).replace('.', '/');
+                if (where != null) {
+                    java.nio.file.Path path = java.nio.file.Path.of(where.toURI());
+                    try (java.util.zip.ZipFile zip = new java.util.zip.ZipFile(path.toFile())) {
+                        var entries = zip.entries();
+                        while (entries.hasMoreElements()) {
+                            String n = entries.nextElement().getName();
+                            if (!n.endsWith(".class") || !n.startsWith("net/neoforged/neoforge/event/")) continue;
+                            String cn = n.substring(0, n.length() - 6).replace('/', '.');
+                            try {
+                                Class<?> c = Class.forName(cn, false, base.getClassLoader());
+                                if (base.isAssignableFrom(c) && c != base && !java.lang.reflect.Modifier.isAbstract(c.getModifiers()) && !c.isInterface()) out.add((Class<? extends net.neoforged.bus.api.Event>) c);
+                            } catch (Throwable ignored) {
+                                // a client class on a server and the like: not an event this side can get
+                            }
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                org.slf4j.LoggerFactory.getLogger("LegacyConnector/Events").warn("Could not list the subclasses of {}: {}", base.getName(), e.toString());
+            }
+            return out;
+        });
+    }
+
+    /**
+     * Forge 1.20.1 let an object on the Forge bus hold handlers of mod bus events (Twigs' {@code BuildCreativeModeTabContentsEvent} listener); NeoForge
+     * refuses the whole object. Each {@code @SubscribeEvent} method is registered on its own bus instead: mod bus events on the mod's bus, the rest on {@code bus}.
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static void registerSplit(net.neoforged.bus.api.IEventBus bus, Object target) {
+        net.neoforged.bus.api.IEventBus modBus = net.neoforged.fml.ModLoadingContext.get().getActiveContainer().getEventBus();
+        boolean isClass = target instanceof Class<?>;
+        Class<?> type = isClass ? (Class<?>) target : target.getClass();
+        for (java.lang.reflect.Method method : type.getDeclaredMethods()) {
+            net.neoforged.bus.api.SubscribeEvent sub = method.getAnnotation(net.neoforged.bus.api.SubscribeEvent.class);
+            if (sub == null || method.getParameterCount() != 1 || !net.neoforged.bus.api.Event.class.isAssignableFrom(method.getParameterTypes()[0])) continue;
+            boolean isStatic = java.lang.reflect.Modifier.isStatic(method.getModifiers());
+            if (!isStatic && isClass) continue;
+            Class<? extends net.neoforged.bus.api.Event> eventType = (Class<? extends net.neoforged.bus.api.Event>) method.getParameterTypes()[0];
+            method.setAccessible(true);
+            net.neoforged.bus.api.IEventBus where = net.neoforged.fml.event.IModBusEvent.class.isAssignableFrom(eventType) && modBus != null ? modBus : bus;
+            where.addListener(sub.priority(), sub.receiveCanceled(), (Class) eventType, (java.util.function.Consumer) event -> {
+                try {
+                    method.invoke(isStatic ? null : target, event);
+                } catch (java.lang.reflect.InvocationTargetException ex) {
+                    throw new RuntimeException(ex.getCause());
+                } catch (IllegalAccessException ex) {
+                    throw new IllegalStateException(ex);
+                }
+            });
         }
     }
 
@@ -63,6 +284,11 @@ public final class ForgeApi1201 {
             Object value = supplier.get();
             return value instanceof com.mojang.serialization.MapCodec.MapCodecCodec<?> m ? m.codec() : value;
         });
+    }
+
+    /** {@code IConfigSpec.self()}: the spec itself (Forge's generic self-type accessor). */
+    public static net.neoforged.fml.config.IConfigSpec configSelf(net.neoforged.fml.config.IConfigSpec spec) {
+        return spec;
     }
 
     /** {@code RegisterHelper.register(String, value)}: the name is in the namespace of the mod being loaded. */

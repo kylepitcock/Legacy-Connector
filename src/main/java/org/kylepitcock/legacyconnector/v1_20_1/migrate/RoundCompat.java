@@ -251,6 +251,432 @@ public final class RoundCompat {
         };
     }
 
+    /** {@code LootTableReference.lootTableReference(ResourceLocation)}: 1.21.1 names loot tables by resource key ({@code NestedLootTable}). */
+    public static net.minecraft.world.level.storage.loot.entries.LootPoolSingletonContainer.Builder<?> lootTableReference(ResourceLocation id) {
+        return net.minecraft.world.level.storage.loot.entries.NestedLootTable.lootTableReference(
+                net.minecraft.resources.ResourceKey.create(Registries.LOOT_TABLE, id));
+    }
+
+    /** Registration-time type constructors that took a {@code Codec} (trunk placers, tree decorators): 1.21.1 wants the map form. */
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static com.mojang.serialization.MapCodec mapCodec(com.mojang.serialization.Codec codec) {
+        return com.mojang.serialization.MapCodec.assumeMapUnsafe(codec);
+    }
+
+    /** {@code new SmithingTemplateItem(5 components, 2 icon lists)}: 1.21.1 only adds the (empty) feature flag varargs. */
+    public static net.minecraft.world.item.SmithingTemplateItem newSmithingTemplate(net.minecraft.network.chat.Component a, net.minecraft.network.chat.Component b,
+            net.minecraft.network.chat.Component c, net.minecraft.network.chat.Component d, net.minecraft.network.chat.Component e,
+            java.util.List<ResourceLocation> base, java.util.List<ResourceLocation> additions) {
+        return new net.minecraft.world.item.SmithingTemplateItem(a, b, c, d, e, base, additions);
+    }
+
+    /** {@code new ServerGamePacketListenerImpl(server, connection, player)}: 1.21.1 also takes the listener cookie. */
+    public static net.minecraft.server.network.ServerGamePacketListenerImpl newGameListener(net.minecraft.server.MinecraftServer server,
+            net.minecraft.network.Connection connection, net.minecraft.server.level.ServerPlayer player) {
+        return new net.minecraft.server.network.ServerGamePacketListenerImpl(server, connection, player,
+                net.minecraft.server.network.CommonListenerCookie.createInitial(player.getGameProfile(), false));
+    }
+
+    /** {@code TextColor.parseColor(String)}: a {@code DataResult} now; null for text that is no colour, as before. */
+    public static net.minecraft.network.chat.TextColor parseColor(String text) {
+        return net.minecraft.network.chat.TextColor.parseColor(text).result().orElse(null);
+    }
+
+    /** {@code EntityType.updateCustomEntityTag(level, player, entity, tag)}: the tag is custom data now. */
+    public static void updateCustomEntityTag(net.minecraft.world.level.Level level, net.minecraft.world.entity.player.Player player, net.minecraft.world.entity.Entity entity, CompoundTag tag) {
+        net.minecraft.world.entity.EntityType.updateCustomEntityTag(level, player, entity, net.minecraft.world.item.component.CustomData.of(tag));
+    }
+
+    /** {@code GoalSelector.getRunningGoals()}. */
+    public static java.util.stream.Stream<net.minecraft.world.entity.ai.goal.WrappedGoal> getRunningGoals(net.minecraft.world.entity.ai.goal.GoalSelector selector) {
+        return selector.getAvailableGoals().stream().filter(net.minecraft.world.entity.ai.goal.WrappedGoal::isRunning);
+    }
+
+    /** {@code EnchantedBookItem.addEnchantment(book, instance)}: stored enchantments, keeping the higher level. */
+    public static void addBookEnchantment(ItemStack book, EnchantmentInstance instance) {
+        var stored = new net.minecraft.world.item.enchantment.ItemEnchantments.Mutable(
+                book.getOrDefault(net.minecraft.core.component.DataComponents.STORED_ENCHANTMENTS, net.minecraft.world.item.enchantment.ItemEnchantments.EMPTY));
+        stored.upgrade(instance.enchantment, instance.level);
+        book.set(net.minecraft.core.component.DataComponents.STORED_ENCHANTMENTS, stored.toImmutable());
+    }
+
+    /** {@code SkullBlockEntity.updateGameprofile(profile, callback)}: fetched through the profile cache by id, answering the given profile when none is found. */
+    public static void updateGameprofile(com.mojang.authlib.GameProfile profile, java.util.function.Consumer<com.mojang.authlib.GameProfile> callback) {
+        if (profile == null || profile.getId() == null) {
+            callback.accept(profile);
+            return;
+        }
+        net.minecraft.world.level.block.entity.SkullBlockEntity.fetchGameProfile(profile.getId())
+                .thenAccept(found -> callback.accept(found.orElse(profile)));
+    }
+
+    // ---- loot, spawning, capabilities, arrows ----
+
+    /** {@code LootContext.Builder.create(ResourceLocation)}: the random sequence is optional now. */
+    public static net.minecraft.world.level.storage.loot.LootContext createLootContext(net.minecraft.world.level.storage.loot.LootContext.Builder builder, ResourceLocation sequence) {
+        return builder.create(java.util.Optional.ofNullable(sequence));
+    }
+
+    /** {@code ItemStack.areCapsCompatible(provider)}: capabilities are not attached to stacks here, so two stacks always agree. */
+    public static boolean areCapsCompatible(ItemStack stack, Object other) {
+        return true;
+    }
+
+    /** {@code NaturalSpawner.isSpawnPositionOk(type, level, pos, entityType)}: a method of the placement type now. */
+    public static boolean isSpawnPositionOk(net.minecraft.world.entity.SpawnPlacementType type, net.minecraft.world.level.LevelReader level,
+            net.minecraft.core.BlockPos pos, net.minecraft.world.entity.EntityType<?> entityType) {
+        return type.isSpawnPositionOk(level, pos, entityType);
+    }
+
+    /** {@code ForgeEventFactory.onFinalizeSpawn(mob, level, difficulty, reason, data, tag)}: the tag moved into the spawn data of the mob. */
+    public static net.minecraft.world.entity.SpawnGroupData onFinalizeSpawn(net.minecraft.world.entity.Mob mob, net.minecraft.world.level.ServerLevelAccessor level,
+            net.minecraft.world.DifficultyInstance difficulty, net.minecraft.world.entity.MobSpawnType reason, net.minecraft.world.entity.SpawnGroupData data,
+            CompoundTag tag) {
+        return net.neoforged.neoforge.event.EventHooks.finalizeMobSpawn(mob, level, difficulty, reason, data);
+    }
+
+    public static ItemStack noStack(net.minecraft.world.entity.projectile.AbstractArrow arrow) {
+        return ItemStack.EMPTY;
+    }
+
+    // ---- advancement predicates ----
+
+    /** {@code MinMaxBounds.Doubles.fromJson(element)}: the codec decodes it now; no element is "any". */
+    public static net.minecraft.advancements.critereon.MinMaxBounds.Doubles doublesFromJson(com.google.gson.JsonElement json) {
+        if (json == null || json.isJsonNull()) return net.minecraft.advancements.critereon.MinMaxBounds.Doubles.ANY;
+        return net.minecraft.advancements.critereon.MinMaxBounds.Doubles.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, json).getOrThrow(com.google.gson.JsonSyntaxException::new);
+    }
+
+    public static net.minecraft.advancements.critereon.MinMaxBounds.Ints intsFromJson(com.google.gson.JsonElement json) {
+        if (json == null || json.isJsonNull()) return net.minecraft.advancements.critereon.MinMaxBounds.Ints.ANY;
+        return net.minecraft.advancements.critereon.MinMaxBounds.Ints.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, json).getOrThrow(com.google.gson.JsonSyntaxException::new);
+    }
+
+
+    /** {@code new EnchantmentPredicate(enchantment, levels)}: a set of enchantments in 1.21.1. */
+    public static net.minecraft.advancements.critereon.EnchantmentPredicate newEnchantmentPredicate(LegacyEnchantment enchantment,
+            net.minecraft.advancements.critereon.MinMaxBounds.Ints levels) {
+        return new net.minecraft.advancements.critereon.EnchantmentPredicate(
+                java.util.Optional.of(net.minecraft.core.HolderSet.direct(HolderCompat.holder(enchantment))), levels);
+    }
+
+    /** {@code ItemPredicate.Builder.hasEnchantment(predicate)}: a sub predicate on the item's enchantments. */
+    public static net.minecraft.advancements.critereon.ItemPredicate.Builder hasEnchantment(net.minecraft.advancements.critereon.ItemPredicate.Builder builder,
+            net.minecraft.advancements.critereon.EnchantmentPredicate predicate) {
+        return builder.withSubPredicate(net.minecraft.advancements.critereon.ItemSubPredicates.ENCHANTMENTS,
+                net.minecraft.advancements.critereon.ItemEnchantmentsPredicate.enchantments(java.util.List.of(predicate)));
+    }
+
+    /** {@code CraftingBookCategory.CODEC} is typed as the plain codec now (the object is still the enum codec). */
+    @SuppressWarnings("rawtypes")
+    public static net.minecraft.util.StringRepresentable.EnumCodec craftingCategoryCodec(com.mojang.serialization.Codec codec) {
+        return (net.minecraft.util.StringRepresentable.EnumCodec) codec;
+    }
+
+    // ---- text, saved data, brewing, small queries ----
+
+    @SuppressWarnings("unchecked")
+    public static <T extends net.minecraft.world.level.saveddata.SavedData> T getSavedData(net.minecraft.world.level.storage.DimensionDataStorage storage,
+            java.util.function.Function<CompoundTag, T> loader, String name) {
+        return storage.get(new net.minecraft.world.level.saveddata.SavedData.Factory<>(() -> {
+            throw new IllegalStateException("saved data " + name + " is only read here");
+        }, (tag, provider) -> {
+            MigrateContext.remember(provider);
+            return loader.apply(tag);
+        }, null), name);
+    }
+
+    public static void saveSavedData(net.minecraft.world.level.saveddata.SavedData data, java.io.File file) {
+        data.save(file, MigrateContext.provider());
+    }
+
+    public static net.minecraft.network.chat.MutableComponent fromJsonLenient(String json) {
+        return net.minecraft.network.chat.Component.Serializer.fromJsonLenient(json, MigrateContext.provider());
+    }
+
+    public static String toStableJson(net.minecraft.network.chat.Component component) {
+        return net.minecraft.network.chat.Component.Serializer.toJson(component, MigrateContext.provider());
+    }
+
+    public static com.google.gson.JsonElement toJsonTree(net.minecraft.network.chat.Component component) {
+        return com.google.gson.JsonParser.parseString(net.minecraft.network.chat.Component.Serializer.toJson(component, MigrateContext.provider()));
+    }
+
+    /** {@code FoodProperties.isMeat()}: the flag is gone (wolves ask the item tag), so no food answers true here. */
+    public static boolean isMeat(net.minecraft.world.food.FoodProperties food) {
+        return false;
+    }
+
+    private static final java.util.List<Object[]> PENDING_MIXES = new java.util.concurrent.CopyOnWriteArrayList<>();
+    private static volatile boolean brewingHooked;
+
+    /** {@code PotionBrewing.addMix(from, ingredient, to)} (static in 1.20.1): queued, and added when NeoForge asks for brewing recipes. */
+    public static void addPotionMix(net.minecraft.world.item.alchemy.Potion from, net.minecraft.world.item.Item ingredient, net.minecraft.world.item.alchemy.Potion to) {
+        PENDING_MIXES.add(new Object[] {from, ingredient, to});
+        if (!brewingHooked) {
+            brewingHooked = true;
+            net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.brewing.RegisterBrewingRecipesEvent.class, event -> {
+                for (Object[] m : PENDING_MIXES) {
+                    event.getBuilder().addMix(net.minecraft.core.registries.BuiltInRegistries.POTION.wrapAsHolder((net.minecraft.world.item.alchemy.Potion) m[0]), (net.minecraft.world.item.Item) m[1],
+                            net.minecraft.core.registries.BuiltInRegistries.POTION.wrapAsHolder((net.minecraft.world.item.alchemy.Potion) m[2]));
+                }
+            });
+        }
+    }
+
+    // ---- argument producers for in-place constructor rewrites (=args rows; usable in super(...) calls) ----
+
+    public static net.minecraft.world.phys.Vec3 vec3(double x, double y, double z) {
+        return new net.minecraft.world.phys.Vec3(x, y, z);
+    }
+
+    public static net.minecraft.util.ColorRGBA colorRgba(int color) {
+        return new net.minecraft.util.ColorRGBA(color);
+    }
+
+    public static net.minecraft.core.particles.ParticleOptions explosionParticle(net.minecraft.world.level.Level level) {
+        return net.minecraft.core.particles.ParticleTypes.EXPLOSION;
+    }
+
+    public static net.minecraft.core.particles.ParticleOptions emitterParticle(net.minecraft.world.level.Level level) {
+        return net.minecraft.core.particles.ParticleTypes.EXPLOSION_EMITTER;
+    }
+
+    public static Holder<net.minecraft.sounds.SoundEvent> explodeSound(net.minecraft.world.level.Level level) {
+        return net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE;
+    }
+
+    public static boolean noFire(net.minecraft.world.level.Level level) {
+        return false;
+    }
+
+    public static net.minecraft.world.level.Explosion.BlockInteraction decay(net.minecraft.world.level.Level level) {
+        return net.minecraft.world.level.Explosion.BlockInteraction.DESTROY_WITH_DECAY;
+    }
+
+    public static net.minecraft.server.network.CommonListenerCookie cookie(net.minecraft.server.level.ServerPlayer player) {
+        return net.minecraft.server.network.CommonListenerCookie.createInitial(player.getGameProfile(), false);
+    }
+
+    /** {@code Rarity.create(name, styleModifier)}: the colour the modifier gives a plain style picks the nearest vanilla rarity. */
+    public static net.minecraft.world.item.Rarity createRarityStyled(String name, java.util.function.UnaryOperator<net.minecraft.network.chat.Style> modifier) {
+        net.minecraft.network.chat.TextColor color = modifier.apply(net.minecraft.network.chat.Style.EMPTY).getColor();
+        net.minecraft.ChatFormatting nearest = net.minecraft.ChatFormatting.WHITE;
+        if (color != null) {
+            int best = Integer.MAX_VALUE;
+            for (net.minecraft.ChatFormatting f : net.minecraft.ChatFormatting.values()) {
+                if (!f.isColor() || f.getColor() == null) continue;
+                int d = Math.abs(((color.getValue() >> 16) & 255) - ((f.getColor() >> 16) & 255)) + Math.abs(((color.getValue() >> 8) & 255) - ((f.getColor() >> 8) & 255))
+                        + Math.abs((color.getValue() & 255) - (f.getColor() & 255));
+                if (d < best) {
+                    best = d;
+                    nearest = f;
+                }
+            }
+        }
+        return createRarity(name, nearest);
+    }
+
+    // ---- Forge enum extension ({@code Enum.create(...)}): constants cannot be added at runtime, the nearest vanilla one stands in ----
+
+    /** {@code MobCategory.create(name, key, max, friendly, persistent, despawn)}: friendly persistent mobs count as creatures, friendly ones as ambient, the rest as monsters. */
+    public static net.minecraft.world.entity.MobCategory createMobCategory(String name, String key, int max, boolean friendly, boolean persistent, int despawn) {
+        return friendly ? (persistent ? net.minecraft.world.entity.MobCategory.CREATURE : net.minecraft.world.entity.MobCategory.AMBIENT)
+                : net.minecraft.world.entity.MobCategory.MONSTER;
+    }
+
+    /** {@code SpawnPlacements.Type}-style custom placement: a placement type that asks the predicate. */
+    public static net.minecraft.world.entity.SpawnPlacementType createSpawnPlacementType(String name,
+            net.neoforged.neoforge.common.util.TriPredicate<net.minecraft.world.level.LevelReader, net.minecraft.core.BlockPos, net.minecraft.world.entity.EntityType<?>> predicate) {
+        return predicate::test;
+    }
+
+    public static net.minecraft.world.entity.raid.Raid.RaiderType createRaiderType(String name, net.minecraft.world.entity.EntityType<?> type, int[] counts) {
+        return net.minecraft.world.entity.raid.Raid.RaiderType.VINDICATOR;
+    }
+
+    public static net.minecraft.world.level.pathfinder.PathType createPathType(String name, float malus) {
+        return malus < 0 ? net.minecraft.world.level.pathfinder.PathType.BLOCKED : net.minecraft.world.level.pathfinder.PathType.OPEN;
+    }
+
+    public static net.minecraft.world.item.ItemDisplayContext createDisplayContext(String name, ResourceLocation id, net.minecraft.world.item.ItemDisplayContext parent) {
+        return parent != null ? parent : net.minecraft.world.item.ItemDisplayContext.NONE;
+    }
+
+    /** The (empty) feature flag varargs 1.21.1 added to {@code SmithingTemplateItem.createArmorTrimTemplate}. */
+    public static net.minecraft.world.flag.FeatureFlag[] noFlags(ResourceLocation ignored) {
+        return new net.minecraft.world.flag.FeatureFlag[0];
+    }
+
+    /** {@code new SimpleCookingSerializer(baker, cookingTime)}: the factory of 1.21.1 has no id; the recipe is made with the unknown id. */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static net.minecraft.world.item.crafting.SimpleCookingSerializer newCookingSerializer(LegacyCookieBaker baker, int cookingTime) {
+        return new net.minecraft.world.item.crafting.SimpleCookingSerializer(
+                (net.minecraft.world.item.crafting.AbstractCookingRecipe.Factory) (group, category, ingredient, result, xp, time) ->
+                        baker.create(UNKNOWN_RECIPE, (String) group, (net.minecraft.world.item.crafting.CookingBookCategory) category,
+                                (net.minecraft.world.item.crafting.Ingredient) ingredient, (ItemStack) result, (Float) xp, (Integer) time), cookingTime);
+    }
+
+    /** {@code BlockParticleOption.codec(type)}: a {@code MapCodec} now; the 1.20.1 form is the plain codec of it. */
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static com.mojang.serialization.Codec blockParticleCodec(net.minecraft.core.particles.ParticleType type) {
+        return net.minecraft.core.particles.BlockParticleOption.codec(type).codec();
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static com.mojang.serialization.Codec itemParticleCodec(net.minecraft.core.particles.ParticleType type) {
+        return net.minecraft.core.particles.ItemParticleOption.codec(type).codec();
+    }
+
+    /** {@code BlockParticleOption.DESERIALIZER}: the field is gone; particle types drop their deserializer on construction anyway. */
+    public static LegacyParticleDeserializer noParticleDeserializer() {
+        return null;
+    }
+
+    /** {@code Frog.getVariant()} is a holder now. */
+    public static net.minecraft.world.entity.animal.FrogVariant frogVariant(net.minecraft.world.entity.animal.frog.Frog frog) {
+        return frog.getVariant().value();
+    }
+
+    /** {@code AreaEffectCloud.setFixedColor(int)}: the colour is part of the potion contents. */
+    public static void setFixedColor(net.minecraft.world.entity.AreaEffectCloud cloud, int color) {
+        cloud.setPotionContents(new net.minecraft.world.item.alchemy.PotionContents(java.util.Optional.empty(), java.util.Optional.of(color), java.util.List.of()));
+    }
+
+    /** {@code new EntityDimensions(width, height, fixed)}: the constructor is private now, the factories make the same sizes. */
+    public static net.minecraft.world.entity.EntityDimensions newEntityDimensions(float width, float height, boolean fixed) {
+        return fixed ? net.minecraft.world.entity.EntityDimensions.fixed(width, height) : net.minecraft.world.entity.EntityDimensions.scalable(width, height);
+    }
+
+    /** {@code new SimpleCraftingRecipeSerializer(factory)}: the 1.21.1 factory takes the category only. */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static net.minecraft.world.item.crafting.SimpleCraftingRecipeSerializer newCraftingSerializer(LegacyCraftingFactory factory) {
+        return new net.minecraft.world.item.crafting.SimpleCraftingRecipeSerializer(
+                (net.minecraft.world.item.crafting.SimpleCraftingRecipeSerializer.Factory) category ->
+                        factory.create(UNKNOWN_RECIPE, (net.minecraft.world.item.crafting.CraftingBookCategory) category));
+    }
+
+    /** {@code LootItemConditions.orConditions(predicates)}: true when any predicate is. */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static java.util.function.Predicate orConditions(java.util.function.Predicate[] predicates) {
+        return t -> {
+            for (java.util.function.Predicate p : predicates) if (p.test(t)) return true;
+            return false;
+        };
+    }
+
+    /** {@code LootItemConditions.andConditions(predicates)}: true when all predicates are. */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static java.util.function.Predicate andConditions(java.util.function.Predicate[] predicates) {
+        return t -> {
+            for (java.util.function.Predicate p : predicates) if (!p.test(t)) return false;
+            return true;
+        };
+    }
+
+    // ---- food and tempt ingredients of animals (static fields in 1.20.1; tags and lists inside the entities now) ----
+
+    private static net.minecraft.world.item.crafting.Ingredient ingredient(net.minecraft.world.level.ItemLike... items) {
+        return net.minecraft.world.item.crafting.Ingredient.of(items);
+    }
+
+    public static net.minecraft.world.item.crafting.Ingredient chickenFood() {
+        return ingredient(net.minecraft.world.item.Items.WHEAT_SEEDS, net.minecraft.world.item.Items.MELON_SEEDS, net.minecraft.world.item.Items.PUMPKIN_SEEDS,
+                net.minecraft.world.item.Items.BEETROOT_SEEDS, net.minecraft.world.item.Items.TORCHFLOWER_SEEDS, net.minecraft.world.item.Items.PITCHER_POD);
+    }
+
+    /** {@code Parrot.TAME_FOOD}: a set mods add their seeds to; 1.21.1 reads the item tag instead, so additions have no effect. */
+    public static java.util.Set<net.minecraft.world.item.Item> parrotTameFood() {
+        return new java.util.HashSet<>(java.util.List.of(net.minecraft.world.item.Items.WHEAT_SEEDS, net.minecraft.world.item.Items.MELON_SEEDS,
+                net.minecraft.world.item.Items.PUMPKIN_SEEDS, net.minecraft.world.item.Items.BEETROOT_SEEDS, net.minecraft.world.item.Items.TORCHFLOWER_SEEDS,
+                net.minecraft.world.item.Items.PITCHER_POD));
+    }
+
+    public static net.minecraft.world.item.crafting.Ingredient catTempt() {
+        return ingredient(net.minecraft.world.item.Items.COD, net.minecraft.world.item.Items.SALMON);
+    }
+
+    public static net.minecraft.world.item.crafting.Ingredient pigFood() {
+        return ingredient(net.minecraft.world.item.Items.CARROT, net.minecraft.world.item.Items.POTATO, net.minecraft.world.item.Items.BEETROOT);
+    }
+
+    public static net.minecraft.world.item.crafting.Ingredient horseFood() {
+        return ingredient(net.minecraft.world.item.Items.WHEAT, net.minecraft.world.item.Items.SUGAR, net.minecraft.world.level.block.Blocks.HAY_BLOCK,
+                net.minecraft.world.item.Items.APPLE, net.minecraft.world.item.Items.GOLDEN_CARROT, net.minecraft.world.item.Items.GOLDEN_APPLE,
+                net.minecraft.world.item.Items.ENCHANTED_GOLDEN_APPLE);
+    }
+
+    public static net.minecraft.world.item.crafting.Ingredient striderFood() {
+        return ingredient(net.minecraft.world.item.Items.WARPED_FUNGUS);
+    }
+
+    public static net.minecraft.world.item.crafting.Ingredient striderTempt() {
+        return ingredient(net.minecraft.world.item.Items.WARPED_FUNGUS, net.minecraft.world.item.Items.WARPED_FUNGUS_ON_A_STICK);
+    }
+
+    // ---- Architectury 9's interface-injected members of registry objects (added by its mixins to the 1.20.1 classes) ----
+
+    public static ResourceLocation archRegistryName(net.minecraft.world.entity.EntityType<?> type) {
+        return net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(type);
+    }
+
+    public static ResourceLocation archRegistryName(net.minecraft.world.level.material.Fluid fluid) {
+        return net.minecraft.core.registries.BuiltInRegistries.FLUID.getKey(fluid);
+    }
+
+    public static ResourceLocation archRegistryName(net.minecraft.world.item.Item item) {
+        return net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(item);
+    }
+
+    public static ResourceLocation archRegistryName(net.minecraft.world.level.block.Block block) {
+        return net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(block);
+    }
+
+    public static net.minecraft.world.level.material.Fluid archGetFluid(net.minecraft.world.item.BucketItem bucket) {
+        return bucket.content;
+    }
+
+    /** {@code Item.Properties.arch$tab(...)}: the creative tab is chosen by the tab's own contents event here; the properties are returned unchanged. */
+    public static net.minecraft.world.item.Item.Properties archTab(net.minecraft.world.item.Item.Properties properties, Object tab) {
+        return properties;
+    }
+
+    /** {@code SynchedEntityData.hasItem(accessor)} (gone in 1.21.1): whether the entity has data for the accessor. */
+    public static boolean hasItem(net.minecraft.network.syncher.SynchedEntityData data, net.minecraft.network.syncher.EntityDataAccessor<?> accessor) {
+        try {
+            data.get(accessor);
+            return true;
+        } catch (RuntimeException e) {
+            return false;
+        }
+    }
+
+    /** {@code EntityDataSerializer.simpleEnum(Class)}: an enum value written by ordinal. */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static net.minecraft.network.syncher.EntityDataSerializer simpleEnum(Class enumClass) {
+        return net.minecraft.network.syncher.EntityDataSerializer.forValueType(net.minecraft.network.codec.StreamCodec.<net.minecraft.network.RegistryFriendlyByteBuf, Enum>of(
+                (buf, value) -> buf.writeEnum(value), buf -> buf.readEnum(enumClass)));
+    }
+
+    /** {@code EntityDataSerializer.simple(writer, reader)}. */
+    public static <T> net.minecraft.network.syncher.EntityDataSerializer<T> simpleSerializer(
+            net.minecraft.network.codec.StreamEncoder<net.minecraft.network.FriendlyByteBuf, T> writer,
+            net.minecraft.network.codec.StreamDecoder<net.minecraft.network.FriendlyByteBuf, T> reader) {
+        return net.minecraft.network.syncher.EntityDataSerializer.forValueType(net.minecraft.network.codec.StreamCodec.<net.minecraft.network.RegistryFriendlyByteBuf, T>of(
+                (buf, value) -> writer.encode(buf, value), buf -> reader.decode(buf)));
+    }
+
+    /** {@code EntityDataSerializer.optional(writer, reader)} of 1.20.1: an optional value written as a presence flag and the value. */
+    public static <T> net.minecraft.network.syncher.EntityDataSerializer<java.util.Optional<T>> optionalSerializer(
+            net.minecraft.network.codec.StreamEncoder<net.minecraft.network.FriendlyByteBuf, T> writer,
+            net.minecraft.network.codec.StreamDecoder<net.minecraft.network.FriendlyByteBuf, T> reader) {
+        return net.minecraft.network.syncher.EntityDataSerializer.forValueType(net.minecraft.network.codec.StreamCodec.<net.minecraft.network.RegistryFriendlyByteBuf, java.util.Optional<T>>of(
+                (buf, value) -> {
+                    buf.writeBoolean(value.isPresent());
+                    value.ifPresent(v -> writer.encode(buf, v));
+                }, buf -> buf.readBoolean() ? java.util.Optional.of(reader.decode(buf)) : java.util.Optional.empty()));
+    }
+
     /** {@code ComponentContents.EMPTY} moved to {@code PlainTextContents.EMPTY}. */
     public static net.minecraft.network.chat.ComponentContents emptyContents() {
         return net.minecraft.network.chat.contents.PlainTextContents.EMPTY;
@@ -373,7 +799,7 @@ public final class RoundCompat {
     }
 
     private static Holder<Enchantment> ench(ResourceKey<Enchantment> key) {
-        return MigrateContext.registries().registryOrThrow(Registries.ENCHANTMENT).getHolderOrThrow(key);
+        return MigrateContext.provider().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(key);
     }
 
     public static boolean hasFrostWalker(LivingEntity entity) {

@@ -76,6 +76,10 @@ public final class DataConverter1201 {
             Map.entry("obsidian", "obsidians"), Map.entry("netherrack", "netherracks"), Map.entry("leather", "leathers"),
             Map.entry("string", "strings"), Map.entry("gunpowder", "gunpowders"), Map.entry("concrete", "concretes"),
             Map.entry("glazed_terracotta", "glazed_terracottas"), Map.entry("heads", "skulls"), Map.entry("shears", "tools/shear"));
+    /** Tags whose whole path is spelled differently in NeoForge's 1.21 convention tags (tool types went singular). */
+    private static final Map<String, String> TAG_PATHS = Map.of(
+            "tools/shields", "tools/shield", "tools/bows", "tools/bow", "tools/crossbows", "tools/crossbow",
+            "tools/fishing_rods", "tools/fishing_rod", "tools/tridents", "tools/spear", "tools/shears", "tools/shear");
     private static final Set<String> ITEM_PRED_HOLDERS = Set.of("item", "tool", "weapon", "mainhand", "offhand", "head", "chest", "legs", "feet", "held_item");
     private static final Pattern POTION = Pattern.compile("Potion\\s*:\\s*[\"']([^\"']+)[\"']");
     private static final Pattern ENCHANT_ENTRY = Pattern.compile("\\{\\s*(?:id\\s*:\\s*[\"']([^\"']+)[\"']\\s*,\\s*lvl\\s*:\\s*(\\d+)\\s*[sS]?|lvl\\s*:\\s*(\\d+)\\s*[sS]?\\s*,\\s*id\\s*:\\s*[\"']([^\"']+)[\"'])\\s*\\}");
@@ -133,6 +137,8 @@ public final class DataConverter1201 {
         if (first.equals("is_coniferous")) first = "is_tree/coniferous"; // biome tags: forge:is_coniferous
         else if (first.equals("is_deciduous")) first = "is_tree/deciduous";
         if (first.contains("/")) return first + (slash < 0 ? "" : path.substring(slash)) + suffix;
+        String whole = TAG_PATHS.get(path);
+        if (whole != null) return whole + suffix;
         String mapped = TAG_SEGMENTS.get(first);
         if (mapped != null) path = mapped + (slash < 0 ? "" : path.substring(slash));
         return path + suffix;
@@ -200,6 +206,13 @@ public final class DataConverter1201 {
             if (dir.equals("loot_table") || dir.equals("loot_modifiers")) loot(root, c);
             if (dir.equals("dimension_type") && root.isJsonObject()) dimensionType(root.getAsJsonObject(), c);
             if (np.contains("/worldgen/structure_set/") && root.isJsonObject()) structureSet(root.getAsJsonObject(), c);
+            if (np.contains("/worldgen/") || dir.equals("dimension_type")) worldgenShapes(root, c);
+            // a tag file with "replace": "false" (a string; 1.20.1 read it leniently) is a boolean in 1.21
+            if (np.contains("/tags/") && root.isJsonObject() && root.getAsJsonObject().has("replace") && root.getAsJsonObject().get("replace").isJsonPrimitive()
+                    && root.getAsJsonObject().get("replace").getAsJsonPrimitive().isString()) {
+                root.getAsJsonObject().addProperty("replace", Boolean.parseBoolean(root.getAsJsonObject().get("replace").getAsString()));
+                c.hit("forge_tags");
+            }
             generic(root, c, false);
             outs.add(new Out(np, bytes(root)));
         }
@@ -233,7 +246,73 @@ public final class DataConverter1201 {
                 out.put(name, e.getValue());
             }
         }
+        emptyTagsForUnknownReferences(out, stats);
         return out;
+    }
+
+    private static volatile Set<String> neoForgeTags;
+    private static final Pattern TAG_KEY_REF = Pattern.compile("\"tag\"\\s*:\\s*\"#?c:([a-z0-9_./-]+)\"");
+    private static final Pattern HASH_REF = Pattern.compile("\"#c:([a-z0-9_./-]+)\"");
+
+    /** The {@code c:} tags NeoForge 1.21.1 ships ({@code <type>/<path>}), listed in {@code c-tags.txt}. */
+    private static Set<String> neoForgeTags() {
+        Set<String> r = neoForgeTags;
+        if (r != null) return r;
+        r = new java.util.HashSet<>();
+        try (var in = DataConverter1201.class.getResourceAsStream("/legacyconnector/forward/1.20.1/c-tags.txt")) {
+            if (in != null) for (String line : new String(in.readAllBytes(), StandardCharsets.UTF_8).split("\\R")) if (!line.isBlank()) r.add(line.trim());
+        } catch (java.io.IOException e) {
+            // no list: every referenced tag gets an (empty) file, which merges with the real one
+        }
+        neoForgeTags = r;
+        return r;
+    }
+
+    /**
+     * A recipe, loot table or advancement that names a tag nobody defines does not load (the recipe fails to parse). Every {@code c:} tag the converted data
+     * references that neither NeoForge nor this pack defines gets an empty tag file; a pack that does define it adds its values on top (tags merge).
+     */
+    private static void emptyTagsForUnknownReferences(Map<String, byte[]> out, Stats stats) {
+        Map<String, Set<String>> wanted = new TreeMap<>();
+        Set<String> defined = new java.util.HashSet<>();
+        for (var e : out.entrySet()) {
+            String n = e.getKey();
+            if (!n.startsWith("data/") || !n.endsWith(".json")) continue;
+            String[] p = n.split("/", 5);
+            if (p.length < 5) continue;
+            if (p[1].equals("c") && p[2].equals("tags")) {
+                String rest = n.substring("data/c/tags/".length());
+                defined.add(rest.substring(0, rest.length() - 5));
+            }
+            String kind = p[2];
+            String[] types;
+            if (kind.equals("recipe")) types = new String[] {"item"};
+            else if (kind.equals("loot_table") || kind.equals("advancement")) types = new String[] {"item", "block"};
+            else if (kind.equals("tags") && !p[3].equals("worldgen")) types = new String[] {p[3]};
+            else continue;
+            String text = new String(e.getValue(), StandardCharsets.UTF_8);
+            if (text.indexOf("c:") < 0) continue;
+            for (Pattern pat : new Pattern[] {TAG_KEY_REF, HASH_REF}) {
+                Matcher m = pat.matcher(text);
+                while (m.find()) {
+                    boolean entryOfTag = kind.equals("tags");
+                    // a "tag" key in a tag file is not a reference of that spelling; only "#c:" strings are
+                    if (entryOfTag && pat == TAG_KEY_REF) continue;
+                    for (String t : types) wanted.computeIfAbsent(t, k -> new java.util.TreeSet<>()).add(m.group(1));
+                }
+            }
+        }
+        Set<String> known = neoForgeTags();
+        int added = 0;
+        for (var e : wanted.entrySet()) {
+            for (String path : e.getValue()) {
+                String key = e.getKey() + "/" + path;
+                if (known.contains(key) || defined.contains(key)) continue;
+                out.put("data/c/tags/" + key + ".json", "{\"values\":[]}".getBytes(StandardCharsets.UTF_8));
+                added++;
+            }
+        }
+        for (int i = 0; i < added; i++) stats.add("empty_tags");
     }
 
     /** Two tag files that landed on one path (data/forge/tags/items/glass.json and data/forge/tags/items/glass_blocks.json both become c:glass_blocks): their values add up. */
@@ -647,6 +726,17 @@ public final class DataConverter1201 {
         }
         if (!e.isJsonObject()) return;
         JsonObject o = e.getAsJsonObject();
+        // block state predicates: 1.20.1 accepted a boolean or a number for a property value, 1.21 wants the string ("ropelogged": false)
+        if (o.has("properties") && o.get("properties").isJsonObject() && o.has("block")) {
+            JsonObject props = o.getAsJsonObject("properties");
+            for (String key : new ArrayList<>(props.keySet())) {
+                JsonElement v = props.get(key);
+                if (v.isJsonPrimitive() && !v.getAsJsonPrimitive().isString()) {
+                    props.addProperty(key, v.getAsString());
+                    c.hit("loot_function");
+                }
+            }
+        }
         if (o.has("function") && o.get("function").isJsonPrimitive()) lootFunction(o, c);
         if (o.has("condition") && o.get("condition").isJsonPrimitive()) lootCondition(o, c);
         if (o.has("type") && o.get("type").isJsonPrimitive() && id(o.get("type").getAsString()).equals("minecraft:loot_table") && o.has("name")) {
@@ -782,10 +872,54 @@ public final class DataConverter1201 {
             else zone.remove("other_set");
             c.hit("worldgen_range");
         }
+        // a tag where one structure set is expected (1.20.1 skipped the set with a log line): the exclusion zone cannot be expressed, so it goes
+        if (zone.has("other_set") && zone.get("other_set").isJsonPrimitive() && zone.get("other_set").getAsString().startsWith("#")) {
+            placement.remove("exclusion_zone");
+            c.hit("worldgen_range");
+            return;
+        }
         if (zone.has("chunk_count") && zone.get("chunk_count").isJsonPrimitive() && zone.get("chunk_count").getAsInt() > 16) {
             zone.addProperty("chunk_count", 16);
             c.hit("worldgen_range");
         }
+    }
+
+    // ---- int providers and spawner categories ------------------------------------------------------------------------------------------
+
+    private static final Set<String> NESTED_INT_PROVIDERS = Set.of("minecraft:uniform", "minecraft:biased_to_bottom", "minecraft:clamped", "minecraft:clamped_normal");
+    private static final Set<String> VANILLA_MOB_CATEGORIES = Set.of("monster", "creature", "ambient", "axolotls", "underground_water_creature", "water_creature", "water_ambient", "misc");
+
+    /**
+     * 1.20.1 wrote an int provider other than a constant as {@code {"type": "minecraft:uniform", "value": {"min_inclusive": 1, "max_inclusive": 3}}} (the
+     * dispatch codec nested the fields of a plain codec); 1.20.2 and later put the fields next to the type. Height providers were always flat and have no
+     * {@code value} object, so a {@code uniform} object with one is an int provider. Also: a biome's {@code spawners} of a mod's own mob category (Forge
+     * enum extension, gone here) are read as the monster category.
+     */
+    private static void worldgenShapes(JsonElement e, Ctx c) {
+        if (e.isJsonArray()) {
+            for (JsonElement x : e.getAsJsonArray()) worldgenShapes(x, c);
+            return;
+        }
+        if (!e.isJsonObject()) return;
+        JsonObject o = e.getAsJsonObject();
+        if (o.has("type") && o.get("type").isJsonPrimitive() && NESTED_INT_PROVIDERS.contains(o.get("type").getAsString()) && o.has("value") && o.get("value").isJsonObject()) {
+            JsonObject inner = o.getAsJsonObject("value");
+            o.remove("value");
+            for (Map.Entry<String, JsonElement> en : inner.entrySet()) o.add(en.getKey(), en.getValue());
+            c.hit("int_provider");
+        }
+        if (o.has("spawners") && o.get("spawners").isJsonObject() && !o.has("type")) {
+            JsonObject spawners = o.getAsJsonObject("spawners");
+            for (String key : new ArrayList<>(spawners.keySet())) {
+                if (VANILLA_MOB_CATEGORIES.contains(key) || !spawners.get(key).isJsonArray()) continue;
+                JsonElement list = spawners.remove(key);
+                JsonElement existing = spawners.get("monster");
+                if (existing != null && existing.isJsonArray() && list.isJsonArray()) existing.getAsJsonArray().addAll(list.getAsJsonArray());
+                else spawners.add("monster", list);
+                c.hit("mob_category");
+            }
+        }
+        for (Map.Entry<String, JsonElement> en : new ArrayList<>(o.entrySet())) worldgenShapes(en.getValue(), c);
     }
 
     // ---- dimension types -----------------------------------------------------------------------------------------------------------

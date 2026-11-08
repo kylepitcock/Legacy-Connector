@@ -113,6 +113,13 @@ public final class CheckJar {
             JsonObject rec = record(jar, result.links.errorCount() == 0 ? "links" : "unresolved", null, result.links, result.classes);
             records.add(rec);
             recordsByOutJar.put(outJar, rec);
+            // -Dlegacyconnector.check.keep=<dir>: keep the translated jars (for ./gradlew textureReport)
+            String keep = System.getProperty("legacyconnector.check.keep");
+            if (keep != null && !keep.isBlank() && Files.isRegularFile(outJar)) {
+                Files.createDirectories(Path.of(keep));
+                Files.copy(outJar, Path.of(keep).resolve(jar.fileName().replaceAll("[^A-Za-z0-9._-]", "_") + ".translated.jar"),
+                        java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            }
             verifyBytecode(index, jar, outJar, peers.get(jar.version), rec);
             originals.add(jar.existing());
             demand.computeIfAbsent(jar.version, v -> new SynthDemand()).merge(result.demand);

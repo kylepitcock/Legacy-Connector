@@ -233,7 +233,8 @@ public final class SilentFailureChecks {
         for (var e : BuiltInRegistries.SOUND_EVENT.entrySet()) {
             ResourceLocation id = e.getKey().location();
             if (id.getNamespace().equals("minecraft")) continue;
-            if (e.getValue() == null || !id.equals(e.getValue().getLocation())) out.add("sound " + id + " resolves to " + (e.getValue() == null ? "null" : e.getValue().getLocation()));
+            // a mod may register an event under one key and name another sound of its own namespace (sounds.json is keyed by the location): fine
+            if (e.getValue() == null || !id.getNamespace().equals(e.getValue().getLocation().getNamespace())) out.add("sound " + id + " resolves to " + (e.getValue() == null ? "null" : e.getValue().getLocation()));
         }
         return out;
     }

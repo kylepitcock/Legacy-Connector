@@ -53,3 +53,17 @@ net/minecraft/world/level/block/Block	canSustainPlant	(Lnet/minecraft/world/leve
 net/minecraft/world/entity/TamableAnimal	setTame	(Z)V	setTame	(ZZ)V	-	-	-
 # --- round 2 batch 6
 net/minecraft/world/item/Item	canApplyAtEnchantingTable	(Lnet/minecraft/world/item/ItemStack;Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyEnchantment;)Z	isPrimaryItemFor	(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/core/Holder;)Z	0,MiddleCompat.legacyEnchantment@1	-	-
+net/minecraft/world/level/block/state/BlockBehaviour	isPathfindable	(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/pathfinder/PathComputationType;)Z	isPathfindable	(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/pathfinder/PathComputationType;)Z	0,null,null,1	-	-
+# --- round 3 batch 7
+# Type interfaces whose codec() became a MapCodec (classes implementing them; lambdas are rewritten in Mc1201Migration.codecLambda)
+net/minecraft/world/level/levelgen/structure/StructureType	codec	()Lcom/mojang/serialization/Codec;	codec	()Lcom/mojang/serialization/MapCodec;	-	EntityCompat.toMapCodec	-
+net/minecraft/world/level/levelgen/structure/placement/StructurePlacementType	codec	()Lcom/mojang/serialization/Codec;	codec	()Lcom/mojang/serialization/MapCodec;	-	EntityCompat.toMapCodec	-
+net/minecraft/world/level/levelgen/structure/templatesystem/StructureProcessorType	codec	()Lcom/mojang/serialization/Codec;	codec	()Lcom/mojang/serialization/MapCodec;	-	EntityCompat.toMapCodec	-
+net/minecraft/world/level/levelgen/structure/templatesystem/RuleTestType	codec	()Lcom/mojang/serialization/Codec;	codec	()Lcom/mojang/serialization/MapCodec;	-	EntityCompat.toMapCodec	-
+net/minecraft/world/level/levelgen/structure/templatesystem/PosRuleTestType	codec	()Lcom/mojang/serialization/Codec;	codec	()Lcom/mojang/serialization/MapCodec;	-	EntityCompat.toMapCodec	-
+net/minecraft/world/level/levelgen/placement/PlacementModifierType	codec	()Lcom/mojang/serialization/Codec;	codec	()Lcom/mojang/serialization/MapCodec;	-	EntityCompat.toMapCodec	-
+net/minecraft/world/level/levelgen/feature/featuresize/FeatureSizeType	codec	()Lcom/mojang/serialization/Codec;	codec	()Lcom/mojang/serialization/MapCodec;	-	EntityCompat.toMapCodec	-
+net/minecraft/world/level/levelgen/feature/foliageplacers/FoliagePlacerType	codec	()Lcom/mojang/serialization/Codec;	codec	()Lcom/mojang/serialization/MapCodec;	-	EntityCompat.toMapCodec	-
+net/minecraft/world/level/levelgen/feature/stateproviders/BlockStateProviderType	codec	()Lcom/mojang/serialization/Codec;	codec	()Lcom/mojang/serialization/MapCodec;	-	EntityCompat.toMapCodec	-
+net/minecraft/world/level/levelgen/feature/trunkplacers/TrunkPlacerType	codec	()Lcom/mojang/serialization/Codec;	codec	()Lcom/mojang/serialization/MapCodec;	-	EntityCompat.toMapCodec	-
+net/minecraft/world/item/ProjectileWeaponItem	customArrow	(Lnet/minecraft/world/entity/projectile/AbstractArrow;)Lnet/minecraft/world/entity/projectile/AbstractArrow;	customArrow	(Lnet/minecraft/world/entity/projectile/AbstractArrow;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/entity/projectile/AbstractArrow;	0	-	-

@@ -75,6 +75,7 @@ final class Mc1201Migration {
     static Counts apply(ClassNode node, Mc1201Hierarchy h, Mc1201Tables t) {
         Counts c = new Counts();
         renameOverrides(node, h, t, c);
+        swapMobBucketSuper(node);
         renameBusConstant(node);
         dropEmptySubscriber(node);
         for (MethodNode m : node.methods) {
@@ -84,8 +85,42 @@ final class Mc1201Migration {
         if ((node.access & Opcodes.ACC_INTERFACE) == 0) {
             addBridges(node, h, t, c);
             addRecipeSerializerCodecs(node, c);
+            addTriggerCodec(node, c);
+            addConditionCodec(node, c);
         }
         return c;
+    }
+
+    /** A recipe condition written for 1.20.1 ({@code getID()} and {@code test}) lacks the {@code codec()} of 1.21.1: the codec of the serializer registered under its id. */
+    private static void addConditionCodec(ClassNode node, Counts c) {
+        if (node.interfaces == null || !node.interfaces.contains("net/neoforged/neoforge/common/conditions/ICondition")) return;
+        String desc = "()Lcom/mojang/serialization/MapCodec;";
+        if (declared(node, "codec", desc) != null) return;
+        MethodNode m = new MethodNode(Opcodes.ACC_PUBLIC, "codec", desc, null, null);
+        m.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+        m.instructions.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, node.name, "getID", "()Lnet/minecraft/resources/ResourceLocation;", false));
+        m.instructions.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "legacyconnector/v1_20_1/net/minecraftforge/common/crafting/CraftingHelper", "conditionCodecOf",
+                "(Lnet/minecraft/resources/ResourceLocation;)Lcom/mojang/serialization/MapCodec;", false));
+        m.instructions.add(new InsnNode(Opcodes.ARETURN));
+        m.maxStack = 1;
+        m.maxLocals = 1;
+        node.methods.add(m);
+        c.bridges++;
+    }
+
+    /** A class that implements {@code CriterionTrigger} itself (no {@code SimpleCriterionTrigger} base) lacks the {@code codec()} of 1.21.1: it reads the legacy instance. */
+    private static void addTriggerCodec(ClassNode node, Counts c) {
+        if (node.interfaces == null || !node.interfaces.contains("net/minecraft/advancements/CriterionTrigger")) return;
+        String desc = "()Lcom/mojang/serialization/Codec;";
+        if (declared(node, "codec", desc) != null) return;
+        MethodNode m = new MethodNode(Opcodes.ACC_PUBLIC, "codec", desc, null, null);
+        m.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+        m.instructions.add(new MethodInsnNode(Opcodes.INVOKESTATIC, Mc1201Tables.HELPER_PACKAGE + "CritCompat", "directCodec", "(Ljava/lang/Object;)Lcom/mojang/serialization/Codec;", false));
+        m.instructions.add(new InsnNode(Opcodes.ARETURN));
+        m.maxStack = 1;
+        m.maxLocals = 1;
+        node.methods.add(m);
+        c.bridges++;
     }
 
     /**
@@ -109,6 +144,63 @@ final class Mc1201Migration {
             node.methods.add(m);
             c.bridges++;
         }
+    }
+
+    /** The 1.21.1 type interfaces whose single {@code codec()} returns a {@code MapCodec} (it was a {@code Codec} in 1.20.1: a lambda {@code () -> CODEC} implements them). */
+    private static final java.util.Set<String> MAP_CODEC_TYPES = java.util.Set.of(
+            "net/minecraft/world/level/levelgen/structure/StructureType",
+            "net/minecraft/world/level/levelgen/structure/placement/StructurePlacementType",
+            "net/minecraft/world/level/levelgen/structure/templatesystem/StructureProcessorType",
+            "net/minecraft/world/level/levelgen/structure/templatesystem/RuleTestType",
+            "net/minecraft/world/level/levelgen/structure/templatesystem/PosRuleTestType",
+            "net/minecraft/world/level/levelgen/placement/PlacementModifierType",
+            "net/minecraft/world/level/levelgen/feature/featuresize/FeatureSizeType",
+            "net/minecraft/world/level/levelgen/feature/foliageplacers/FoliagePlacerType",
+            "net/minecraft/world/level/levelgen/feature/stateproviders/BlockStateProviderType",
+            "net/minecraft/world/level/levelgen/feature/trunkplacers/TrunkPlacerType");
+
+    /**
+     * {@code StructureType<S> type = () -> CODEC}: the lambda is built as a {@code Supplier} of the old codec instead, and a helper makes the interface
+     * (via a proxy) whose {@code codec()} converts it to the {@code MapCodec} 1.21.1 asks for.
+     */
+    private static boolean codecLambda(MethodNode m, org.objectweb.asm.tree.InvokeDynamicInsnNode d) {
+        if (!d.name.equals("codec") || !d.bsm.getOwner().equals("java/lang/invoke/LambdaMetafactory") || d.bsmArgs.length < 3
+                || !(d.bsmArgs[0] instanceof Type sam) || !sam.getDescriptor().equals("()Lcom/mojang/serialization/Codec;")) return false;
+        Type made = Type.getReturnType(d.desc);
+        if (made.getSort() != Type.OBJECT || !MAP_CODEC_TYPES.contains(made.getInternalName())) return false;
+        d.name = "get";
+        d.desc = d.desc.substring(0, d.desc.indexOf(')') + 1) + "Ljava/util/function/Supplier;";   // captured arguments (a lambda over a codec parameter) stay
+        d.bsmArgs[0] = Type.getMethodType("()Ljava/lang/Object;");
+        d.bsmArgs[2] = Type.getMethodType("()Lcom/mojang/serialization/Codec;");
+        InsnList after = new InsnList();
+        after.add(new org.objectweb.asm.tree.LdcInsnNode(made));
+        after.add(new InsnNode(Opcodes.SWAP));
+        after.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "org/kylepitcock/legacyconnector/v1_20_1/migrate/EntityCompat", "codecTypeLambda",
+                "(Ljava/lang/Class;Ljava/util/function/Supplier;)Ljava/lang/Object;", false));
+        after.add(new org.objectweb.asm.tree.TypeInsnNode(Opcodes.CHECKCAST, made.getInternalName()));
+        m.instructions.insert(d, after);
+        return true;
+    }
+
+    /**
+     * A bucket class extending {@code MobBucketItem} and calling the 1.20.1 supplier constructor (Aquaculture's fish bucket): it extends the stand-in
+     * {@code LegacyMobBucketItem}, which has that constructor, instead.
+     */
+    private static void swapMobBucketSuper(ClassNode node) {
+        final String mob = "net/minecraft/world/item/MobBucketItem";
+        final String standIn = "org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyMobBucketItem";
+        final String desc = "(Ljava/util/function/Supplier;Ljava/util/function/Supplier;Ljava/util/function/Supplier;Lnet/minecraft/world/item/Item$Properties;)V";
+        if (!mob.equals(node.superName)) return;
+        boolean swapped = false;
+        for (MethodNode m : node.methods) {
+            for (AbstractInsnNode in : m.instructions.toArray()) {
+                if (in instanceof MethodInsnNode call && call.getOpcode() == Opcodes.INVOKESPECIAL && call.owner.equals(mob) && call.name.equals("<init>") && call.desc.equals(desc)) {
+                    call.owner = standIn;
+                    swapped = true;
+                }
+            }
+        }
+        if (swapped) node.superName = standIn;
     }
 
     /**
@@ -140,10 +232,13 @@ final class Mc1201Migration {
             subscribers++;
             // FML removes @OnlyIn(CLIENT) methods on a dedicated server: a class with only those has no subscribers there
             if (m.visibleAnnotations.stream().anyMatch(a -> a.desc.equals("Lnet/neoforged/api/distmarker/OnlyIn;") && a.values != null && a.values.size() >= 2
-                    && a.values.get(1) instanceof String[] e && e[1].equals("CLIENT"))) clientOnly++;
+                    && a.values.get(1) instanceof String[] e && e[1].equals("CLIENT"))
+                    // a handler of a client event (RenderLevelStageEvent...) or one that mentions a client class: reading the methods of the class on a server loads it
+                    || m.desc.contains("Lnet/minecraft/client/") || m.desc.contains("Lnet/neoforged/neoforge/client/") || m.desc.contains("FMLClientSetupEvent")) clientOnly++;
         }
         if (subscribers == 0) {
-            node.visibleAnnotations.remove(sub);
+            // kept: Subscribers1201 replaces it by a load of the class (Forge loaded such a class for its static initializer: Aquaculture's Hooks registers its hook items there)
+            return;
         } else if (subscribers == clientOnly && (sub.values == null || !sub.values.contains("value"))) {
             if (sub.values == null) sub.values = new java.util.ArrayList<>();
             sub.values.add("value");
@@ -199,6 +294,11 @@ final class Mc1201Migration {
                         }
                     }
                 }
+                if (CLASSES_THAT_BECAME_INTERFACES.contains(call.owner) && !call.itf) {
+                    call.itf = true;
+                    if (call.getOpcode() == Opcodes.INVOKEVIRTUAL) call.setOpcode(Opcodes.INVOKEINTERFACE);
+                    c.calls++;
+                }
                 if (call.getOpcode() == Opcodes.INVOKEINTERFACE && CLASSES_THAT_WERE_INTERFACES.contains(call.owner)) {
                     call.setOpcode(Opcodes.INVOKEVIRTUAL);
                     call.itf = false;
@@ -224,6 +324,7 @@ final class Mc1201Migration {
                     c.providerCalls++;
                 }
             } else if (in instanceof org.objectweb.asm.tree.InvokeDynamicInsnNode d) {
+                if (codecLambda(m, d)) c.calls++;   // the stack grew: counted so the class gets its frames and limits computed again
                 registryBufferLambda(d);
                 redirectHandles(d, h, t, c);
             } else if (in instanceof FieldInsnNode f && (f.getOpcode() == Opcodes.GETFIELD || f.getOpcode() == Opcodes.PUTFIELD)) {
@@ -260,6 +361,9 @@ final class Mc1201Migration {
     }
 
     /** Library interfaces of 1.20.1 that are classes now under the renamed name (GeckoLib's {@code CoreGeoBone} became {@code GeoBone}): their calls are virtual. */
+    /** Classes of 1.20.1 that are interfaces in 1.21.1 (DataResult: Datafixer Upper 6 to 8): static calls need an interface method reference. */
+    private static final java.util.Set<String> CLASSES_THAT_BECAME_INTERFACES = java.util.Set.of("com/mojang/serialization/DataResult");
+
     private static final java.util.Set<String> CLASSES_THAT_WERE_INTERFACES = java.util.Set.of("software/bernie/geckolib/cache/object/GeoBone");
 
     /** Functional interfaces whose buffer parameter became a {@code RegistryFriendlyByteBuf}: a lambda written for the 1.20.1 {@code FriendlyByteBuf} would not link. */
@@ -313,6 +417,7 @@ final class Mc1201Migration {
         boolean special = call.getOpcode() == Opcodes.INVOKESPECIAL;
         for (String owner : h.minecraftAncestors(call.owner)) {
             if (special) rule = t.calls.get(owner + "." + call.name + call.desc + "@special");
+            else rule = t.calls.get(owner + "." + call.name + call.desc + "@virtual");   // rows that must not touch super calls
             if (rule == null) rule = t.calls.get(owner + "." + call.name + call.desc);
             if (rule != null) break;
         }
