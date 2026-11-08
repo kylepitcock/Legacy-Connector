@@ -110,6 +110,41 @@ class SoftLink1201Test implements Opcodes {
     }
 
     @Test
+    void fluentMissingMethodReturnsTheReceiver() {
+        ClassNode c = cls("mod/F", SUB);
+        MethodNode m = new MethodNode(ACC_PUBLIC, "<init>", "()V", null, null);
+        c.methods.add(m);
+        m.visitVarInsn(ALOAD, 0);
+        m.visitMethodInsn(INVOKESPECIAL, SUB, "<init>", "()V", false);
+        m.visitVarInsn(ALOAD, 0);
+        m.visitInsn(ICONST_1);
+        m.visitMethodInsn(INVOKEVIRTUAL, "mod/F", "addThing", "(I)L" + BASE + ";", false); // builder style, answers a supertype of the receiver
+        m.visitInsn(POP);
+        m.visitVarInsn(ALOAD, 0);
+        m.visitMethodInsn(INVOKEVIRTUAL, SUB, "setFlag", "(Z)V", false); // void, called during construction
+        m.visitInsn(RETURN);
+        SoftLink1201 s = link(c);
+        assertEquals(1, s.apply(c));
+        assertEquals(2, s.stats.missingMethods.size());
+        assertFalse(has(m, INVOKESTATIC, "fail"));
+        assertTrue(has(m, INVOKESTATIC, "note"));
+        assertFalse(has(m, ATHROW, null));
+    }
+
+    @Test
+    void missingVoidMethodOutsideConstructionStillThrows() {
+        ClassNode c = cls("mod/G", "java/lang/Object");
+        MethodNode m = method(c);
+        m.visitVarInsn(ALOAD, 0);
+        m.visitMethodInsn(INVOKEVIRTUAL, SUB, "setFlag", "(Z)V", false);
+        m.visitInsn(RETURN);
+        // the argument is missing on purpose: only the policy is checked
+        SoftLink1201 s = link(c);
+        s.apply(c);
+        assertTrue(has(m, INVOKESTATIC, "fail"));
+    }
+
+    @Test
     void missingFieldReadsTheDefault() {
         ClassNode c = cls("mod/C", "java/lang/Object");
         MethodNode m = method(c);

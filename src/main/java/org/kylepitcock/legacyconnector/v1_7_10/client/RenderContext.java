@@ -454,6 +454,14 @@ public final class RenderContext {
         if (gui != null) gui.setColor(red, green, blue, alpha);
     }
 
+    /** glGetFloat(GL_CURRENT_COLOR): the colour the legacy code last set (a model that multiplies its own colour by the current one reads it). */
+    public static void currentColor(java.nio.FloatBuffer out) {
+        State s = STATE.get();
+        int p = out.position();
+        if (out.remaining() < 4) return;
+        out.put(p, s.r).put(p + 1, s.g).put(p + 2, s.b).put(p + 3, s.a);
+    }
+
     private static void resetColor(State s) {
         s.r = s.g = s.b = s.a = 1;
     }

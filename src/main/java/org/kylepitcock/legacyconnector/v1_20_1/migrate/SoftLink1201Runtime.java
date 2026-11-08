@@ -24,6 +24,18 @@ public final class SoftLink1201Runtime {
         throw unresolved(symbol);
     }
 
+    /**
+     * A stand-in that does not throw: used for fluent methods (the receiver is returned) and for void/primitive methods called while the mod
+     * constructs itself or registers content, where a throw would take the whole mod and the game down. Logged once per symbol.
+     */
+    public static void note(String symbol) {
+        if (SEEN.add(symbol)) {
+            int n = LOGGED.incrementAndGet();
+            if (n <= MAX_LOGGED) LOG.warn("Soft-linked symbol ignored (first time, no effect): {}{}", symbol.replace('/', '.'),
+                    n == MAX_LOGGED ? " (further symbols are no longer logged)" : "");
+        }
+    }
+
     public static UnsupportedOperationException unresolved(String symbol) {
         UnsupportedOperationException e = new UnsupportedOperationException("Legacy Connector: " + symbol.replace('/', '.')
                 + " does not exist in Minecraft 1.21.1 / NeoForge (the mod was built for 1.20.1); the feature that needs it is unavailable");

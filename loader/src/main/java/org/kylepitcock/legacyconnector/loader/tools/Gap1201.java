@@ -423,6 +423,8 @@ public final class Gap1201 {
                     type.accept(mi.owner);
                     Cls c = find(owner, own);
                     if (c == null) continue; // reported as a missing class
+                    // signature-polymorphic JDK methods (MethodHandle.invoke/invokeExact, VarHandle.get/set/...) take any descriptor
+                    if ((owner.equals("java/lang/invoke/MethodHandle") || owner.equals("java/lang/invoke/VarHandle")) && polymorphic(owner, name)) continue;
                     if (!hasMember(owner, name + d, true, own, new HashSet<>()) && !callRewrites.contains(owner + "." + name + d) && !callRewrites.contains("*." + name + d)
                             && !(owner.startsWith("net/neoforged/") && callRewrites.contains("@event." + name + d))) mm.add(owner + "." + name + d);
                 } else if (in instanceof FieldInsnNode fi) {
@@ -444,6 +446,19 @@ public final class Gap1201 {
             }
         }
         return refs[0];
+    }
+
+    /** The methods javac compiles with the call site's own descriptor (JLS 15.12.3): the JVM links them whatever the descriptor says. */
+    private static boolean polymorphic(String owner, String name) {
+        if (owner.equals("java/lang/invoke/MethodHandle")) return name.equals("invoke") || name.equals("invokeExact");
+        return switch (name) {
+            case "get", "set", "getVolatile", "setVolatile", "getOpaque", "setOpaque", "getAcquire", "setRelease", "compareAndSet", "compareAndExchange",
+                    "compareAndExchangeAcquire", "compareAndExchangeRelease", "weakCompareAndSetPlain", "weakCompareAndSet", "weakCompareAndSetAcquire",
+                    "weakCompareAndSetRelease", "getAndSet", "getAndSetAcquire", "getAndSetRelease", "getAndAdd", "getAndAddAcquire", "getAndAddRelease",
+                    "getAndBitwiseOr", "getAndBitwiseOrAcquire", "getAndBitwiseOrRelease", "getAndBitwiseAnd", "getAndBitwiseAndAcquire",
+                    "getAndBitwiseAndRelease", "getAndBitwiseXor", "getAndBitwiseXorAcquire", "getAndBitwiseXorRelease" -> true;
+            default -> false;
+        };
     }
 
     private static void descTypes(String desc, java.util.function.Consumer<String> type) {

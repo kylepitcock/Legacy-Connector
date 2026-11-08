@@ -69,6 +69,11 @@ final class ForgeApiRewrites1201 {
                     anyReceiver = helper != null;
                 }
                 if (helper == null) continue;
+                String helperOwner = null;
+                if (helper.startsWith("Tail.")) {   // forge-call-rewrites.tsv value "Tail.name": the helper is in ForgeApiTail1201 (the long tail of small event/hook adapters)
+                    helperOwner = TAIL;
+                    helper = helper.substring(5);
+                }
                 if (call.getOpcode() == Opcodes.INVOKESPECIAL) {
                     // super.getCapability(...) of a legacy class whose parent is a Minecraft class has no method to call any more: the base behaviour is the helper's
                     if (call.name.equals("<init>") || !(call.owner.startsWith("net/minecraft/") || call.owner.startsWith("net/neoforged/"))) continue;
@@ -82,7 +87,7 @@ final class ForgeApiRewrites1201 {
                     System.arraycopy(args, 0, withReceiver, 1, args.length);
                     desc = Type.getMethodDescriptor(Type.getReturnType(call.desc), withReceiver);
                 }
-                m.instructions.set(call, new MethodInsnNode(Opcodes.INVOKESTATIC, helperClass(helper), helper, desc, false));
+                m.instructions.set(call, new MethodInsnNode(Opcodes.INVOKESTATIC, helperOwner != null ? helperOwner : helperClass(helper), helper, desc, false));
                 n++;
             }
         }
@@ -94,6 +99,7 @@ final class ForgeApiRewrites1201 {
         return helper.toLowerCase().contains("getcapability") ? CAPS : HELPERS;
     }
 
+    static final String TAIL = "legacyconnector/v1_20_1/ForgeApiTail1201";
     static final String CAPS = "legacyconnector/v1_20_1/Caps1201";
     static final String PROVIDER = "legacyconnector/v1_20_1/net/minecraftforge/common/capabilities/ICapabilityProvider";
     static final String GET_CAPABILITY_DESC = "(Llegacyconnector/v1_20_1/net/minecraftforge/common/capabilities/Capability;Lnet/minecraft/core/Direction;)"

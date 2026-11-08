@@ -195,3 +195,7 @@ R	net/minecraft/world/gen/structure/StructureComponent$BlockSelector	getSelected
 M	net/minecraft/entity/EntityLivingBase	func_110142_aN	()Lnet/minecraft/util/CombatTracker;	getCombatTracker
 R	net/minecraft/util/DamageSource	getDeathMessage	(Lnet/minecraft/entity/EntityLivingBase;)Lnet/minecraft/util/ChatMessageComponent;	static	legacyconnector/v1_6_4/forward/Forward164	deathMessage	(Lnet/minecraft/util/DamageSource;Lnet/minecraft/entity/EntityLivingBase;)Lnet/minecraft/util/ChatMessageComponent;
 R	net/minecraft/util/CombatTracker	func_94546_b	()Lnet/minecraft/util/ChatMessageComponent;	static	legacyconnector/v1_6_4/forward/Forward164	combatMessage	(Lnet/minecraft/util/CombatTracker;)Lnet/minecraft/util/ChatMessageComponent;
+M	net/minecraft/item/ItemDye	func_96603_a	(Lnet/minecraft/world/World;IIII)V	func_150918_a
+R	net/minecraft/client/renderer/texture/TextureAtlasSprite	getFrameTextureData	(I)[I	static	legacyconnector/v1_6_4/forward/Forward164	getFrameTextureData	(Lnet/minecraft/client/renderer/texture/TextureAtlasSprite;I)[I
+M	net/minecraft/item/ItemStack	func_111282_a	(Lnet/minecraft/entity/player/EntityPlayer;Lnet/minecraft/entity/EntityLivingBase;)Z	interactWithEntity
+G	net/minecraft/stats/StatBase	statGuid	Ljava/lang/String;	field	statId	Ljava/lang/String;

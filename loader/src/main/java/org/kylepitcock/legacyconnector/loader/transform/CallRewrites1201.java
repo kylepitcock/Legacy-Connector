@@ -56,7 +56,18 @@ final class CallRewrites1201 {
             for (AbstractInsnNode in = m.instructions.getFirst(); in != null; in = next) {
                 // InsnList.set/remove clear the replaced node's links: take the successor first
                 next = in.getNext();
-                if (in instanceof TypeInsnNode t && t.getOpcode() == Opcodes.NEW) {
+                if (in instanceof org.objectweb.asm.tree.InvokeDynamicInsnNode indy && indy.bsmArgs != null) {
+                    // ResourceLocation::new method references: the constructor handle becomes the factory handle
+                    for (int i = 0; i < indy.bsmArgs.length; i++) {
+                        if (indy.bsmArgs[i] instanceof org.objectweb.asm.Handle h && h.getTag() == Opcodes.H_NEWINVOKESPECIAL) {
+                            String[] f = FACTORIES.get(h.getOwner() + ".<init>" + h.getDesc());
+                            if (f != null) {
+                                indy.bsmArgs[i] = new org.objectweb.asm.Handle(Opcodes.H_INVOKESTATIC, f[0], f[1], f[2], false);
+                                n++;
+                            }
+                        }
+                    }
+                } else if (in instanceof TypeInsnNode t && t.getOpcode() == Opcodes.NEW) {
                     news.push(t);
                 } else if (in instanceof MethodInsnNode call) {
                     if (call.getOpcode() == Opcodes.INVOKESPECIAL && call.name.equals("<init>")) {
