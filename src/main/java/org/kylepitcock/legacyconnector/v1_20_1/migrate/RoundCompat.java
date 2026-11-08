@@ -562,6 +562,16 @@ public final class RoundCompat {
         };
     }
 
+    /** {@code SynchedEntityData.hasItem(accessor)} (gone in 1.21.1): whether the entity has data for the accessor. */
+    public static boolean hasItem(net.minecraft.network.syncher.SynchedEntityData data, net.minecraft.network.syncher.EntityDataAccessor<?> accessor) {
+        try {
+            data.get(accessor);
+            return true;
+        } catch (RuntimeException e) {
+            return false;
+        }
+    }
+
     /** {@code EntityDataSerializer.simpleEnum(Class)}: an enum value written by ordinal. */
     @SuppressWarnings({"unchecked", "rawtypes"})
     public static net.minecraft.network.syncher.EntityDataSerializer simpleEnum(Class enumClass) {

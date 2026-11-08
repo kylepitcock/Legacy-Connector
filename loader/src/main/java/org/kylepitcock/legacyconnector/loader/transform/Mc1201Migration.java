@@ -374,6 +374,7 @@ final class Mc1201Migration {
         boolean special = call.getOpcode() == Opcodes.INVOKESPECIAL;
         for (String owner : h.minecraftAncestors(call.owner)) {
             if (special) rule = t.calls.get(owner + "." + call.name + call.desc + "@special");
+            else rule = t.calls.get(owner + "." + call.name + call.desc + "@virtual");   // rows that must not touch super calls
             if (rule == null) rule = t.calls.get(owner + "." + call.name + call.desc);
             if (rule != null) break;
         }

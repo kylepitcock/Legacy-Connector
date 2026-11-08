@@ -20,14 +20,18 @@ import net.minecraft.world.item.ItemStack;
 public final class LegacyEntityData {
     private record Reserved(Class<?> owner, EntityDataAccessor<?> accessor) {}
 
+    /** Every accessor made by {@code SynchedEntityData.defineId}, whoever called it (the mixin {@code SynchedEntityDataDefineIdMixin}); only holes are ever filled. */
+    public static void record(Class<?> owner, EntityDataAccessor<?> accessor) {
+        RESERVED.add(new Reserved(owner, accessor));
+    }
+
     private static final List<Reserved> RESERVED = new CopyOnWriteArrayList<>();
 
     private LegacyEntityData() {}
 
     /** {@code SynchedEntityData.defineId}: the real call, recorded when the class is a Minecraft one. */
     public static <T> EntityDataAccessor<T> defineId(Class<? extends net.minecraft.network.syncher.SyncedDataHolder> owner, EntityDataSerializer<T> serializer) {
-        EntityDataAccessor<T> accessor = SynchedEntityData.defineId(owner, serializer);
-        if (owner.getName().startsWith("net.minecraft.")) RESERVED.add(new Reserved(owner, accessor));
+        EntityDataAccessor<T> accessor = SynchedEntityData.defineId(owner, serializer);   // the mixin below records it too
         if (Boolean.getBoolean("legacyconnector.entityDataDiag")) {
             org.slf4j.LoggerFactory.getLogger("LegacyConnector/EntityData").info("defineId {} -> id {} by {}", owner.getSimpleName(), accessor.id(),
                     java.util.Arrays.stream(new Throwable().getStackTrace()).skip(1).limit(2).map(StackTraceElement::toString).toList());

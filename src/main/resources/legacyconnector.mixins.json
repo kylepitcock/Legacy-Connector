@@ -9,6 +9,7 @@
     "Varint21LengthFieldPrependerMixin",
     "EntityGravityMixin",
     "SynchedEntityDataBuilderMixin",
+    "SynchedEntityDataDefineIdMixin",
     "BetaAnimalAiStepMixin",
     "BetaSpawnSchedulingMixin",
     "BetaChunkPopulationMixin",
