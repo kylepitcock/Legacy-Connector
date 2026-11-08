@@ -35,19 +35,50 @@ public final class Redirects147 {
         return item == null ? 0.0F : r.getSmeltingExperience(new legacyconnector.v1_7_10.net.minecraft.item.ItemStack(item, 1, 0));
     }
 
+    /**
+     * Index redirects in progress, by receiver and argument. The shim answers them through {@code getIcon}/{@code getIconFromDamage}, which a 1.4.7
+     * mod's own override (bridged from its int-returning method) may answer by calling the very method being redirected (Mystcraft's BlockLinkModifier:
+     * {@code getIcon} -> getBlockTextureFromSide -> {@code getIcon} ...): the nested call gets the plain sheet index of the block or item instead of recursing.
+     */
+    private static final ReentryGuard GUARD = new ReentryGuard();
+
+    private static boolean enter(Object owner, int kind, int arg) {
+        return GUARD.enter(owner, kind, arg);
+    }
+
+    private static void leave() {
+        GUARD.leave();
+    }
+
     /** 1.4.7 {@code item.getIconFromDamage(damage)}: the sheet index (1.5 returns an Icon). */
     public static int itemIconIndex(legacyconnector.v1_7_10.net.minecraft.item.Item item, int damage) {
-        return SpriteSheets147.indexOf(item.getIconFromDamage(damage), false);
+        if (!enter(item, 0, damage)) return Math.max(item.iconIndex, 0);
+        try {
+            return SpriteSheets147.indexOf(item.getIconFromDamage(damage), false);
+        } finally {
+            leave();
+        }
     }
 
     /** 1.4.7 {@code stack.getIconIndex()}. */
     public static int stackIconIndex(legacyconnector.v1_7_10.net.minecraft.item.ItemStack stack) {
-        return stack == null || stack.getItem() == null ? 0 : SpriteSheets147.indexOf(stack.getIconIndex(), false);
+        if (stack == null || stack.getItem() == null) return 0;
+        if (!enter(stack, 1, 0)) return Math.max(stack.getItem().iconIndex, 0);
+        try {
+            return SpriteSheets147.indexOf(stack.getIconIndex(), false);
+        } finally {
+            leave();
+        }
     }
 
     /** 1.4.7 {@code block.getBlockTextureFromSide(side)}. */
     public static int blockTextureFromSide(legacyconnector.v1_7_10.net.minecraft.block.Block block, int side) {
-        return SpriteSheets147.indexOf(block.getBlockTextureFromSide(side), true);
+        if (!enter(block, 2, side)) return Math.max(block.blockIndexInTexture, 0);
+        try {
+            return SpriteSheets147.indexOf(block.getBlockTextureFromSide(side), true);
+        } finally {
+            leave();
+        }
     }
 
     /** {@code world.setBlockAndMetadataWithNotify(x, y, z, id, meta)}. */
