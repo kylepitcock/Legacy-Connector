@@ -245,9 +245,19 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                 }
             }
             if (legacy.isEmpty()) return;
-            dropDuplicateMods(legacy);
+            List<SideBySide.Unit> crossVersionUnits = dropDuplicateMods(legacy, SideBySide.enabled(LibraryBridges.readConfig(modsDir)));
 
             List<LibraryBridges.Bridge> bridges = LibraryBridges.active(modsDir);
+            SideBySide.setCurrent(SideBySide.NONE);
+            NativeLibraries1201.setIsolated(Set.of());
+            Map<LegacyJar, String> sideBySideNotes = Map.of();
+            {
+                SideBySidePlanner.Result sbs = SideBySidePlanner.plan(legacy, forge1201Enabled(modsDir) ? LibraryBridges.installedModernIds() : Set.of(),
+                        LibraryBridges.readConfig(modsDir), crossVersionUnits);
+                SideBySide.setCurrent(sbs.plan());
+                sideBySideNotes = sbs.notes();
+                for (String line : sbs.notes().values()) LOG.info("Legacy Connector:{}", line.stripTrailing());
+            }
             if (forge1201Enabled(modsDir)) for (String missing : NativeLibraries1201.missing(legacy, LibraryBridges.installedModernIds())) LOG.warn("Legacy Connector: {}", missing);
             // Scala, trove, ... are handed to FML only when a legacy mod uses them and nothing else in the pack provides them.
             Set<Path> libraryKeep = new HashSet<>();
@@ -364,7 +374,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                 context.addLocated(jar.path);
                 LibraryBridges.Bridge replacedBy = LibraryBridges.replacing(jar, bridges);
                 String obsolete = LibraryBridges.obsoleteReason(jar);
-                String skip = replacedBy != null ? "replaced by " + (replacedBy.modernModId() == null ? "NeoForge" : replacedBy.modernModId()) + " (legacy " + replacedBy.legacyModId()
+                String skip = replacedBy != null ? ("native1201".equals(replacedBy.configKey()) ? "native bridge: " : "") + "replaced by " + (replacedBy.modernModId() == null ? "NeoForge" : replacedBy.modernModId()) + " (legacy " + replacedBy.legacyModId()
                         + " API bridged)" : obsolete != null ? "not loaded: " + obsolete : skipReason(jar);
                 if (skip != null) {
                     outcomes.put(jar, skip);
@@ -412,7 +422,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                     keep.add(riskFile);
                     RiskyMods.Summary risk = RiskyMods.read(riskFile);
                     if (risk != null) risky.add(RiskyMods.entry(jar, risk));
-                    outcomes.put(jar, Files.exists(linkReport) ? Files.readString(linkReport) : "  (cached, no link report)\n");
+                    outcomes.put(jar, sideBySideNotes.getOrDefault(jar, "") + (Files.exists(linkReport) ? Files.readString(linkReport) : "  (cached, no link report)\n"));
                     translated.add(out);
                     if (jar.version != null && jar.version.flatNames()) ownerKeeping.add(out);
                 } catch (Exception e) {
@@ -651,7 +661,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             md.update(side().getBytes(StandardCharsets.UTF_8)); // @SideOnly stripping differs per side
         }
         // the relocations depend on the other versions' jars, the FML ids on the modern mods
-        byte[] shared = (crossVersion.fingerprint() + "|fmlIds=" + new java.util.TreeMap<>(LegacyModDecl.fmlIds())).getBytes(StandardCharsets.UTF_8);
+        byte[] shared = (crossVersion.fingerprint() + "|fmlIds=" + new java.util.TreeMap<>(LegacyModDecl.fmlIds()) + "|" + SideBySide.current().fingerprint()).getBytes(StandardCharsets.UTF_8);
         digests.forEach((v, md) -> md.update(shared));
         // the classes of the other versions' jars decide which optional references are stubbed as absent
         digests.forEach((v, md) -> md.update(Integer.toString(bundledElsewhere.getOrDefault(v, Set.of()).hashCode()).getBytes(StandardCharsets.UTF_8)));
@@ -856,22 +866,47 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
      * FML refuses two files with one mod id; here the second copy used to make neither load (the mod never registered, with no message). Keeps the
      * jar with the highest declared version (ties: the newer file) and says which one was dropped.
      */
-    private static void dropDuplicateMods(List<LegacyJar> legacy) {
+    /**
+     * Two jars with one mod id: within a legacy version the newer one wins and the other is skipped. Across legacy versions (CodeChickenLib
+     * for 1.7.10 and for 1.12.2) both stay when side-by-side libraries are on: the best copy of the primary version keeps the id, the others become
+     * isolated units (their packages are relocated per version by {@link org.kylepitcock.legacyconnector.loader.transform.CrossVersionPackages}).
+     * @return the units of the copies that run next to another version's copy (id isolation only)
+     */
+    private static List<SideBySide.Unit> dropDuplicateMods(List<LegacyJar> legacy, boolean sideBySide) {
         DUPLICATE_SKIPS.clear();
+        List<SideBySide.Unit> units = new ArrayList<>();
         Map<String, List<LegacyJar>> byId = new java.util.LinkedHashMap<>();
         for (LegacyJar j : legacy) for (LegacyModDecl m : j.mods) byId.computeIfAbsent(m.modernId(), k -> new ArrayList<>()).add(j);
         for (Map.Entry<String, List<LegacyJar>> e : byId.entrySet()) {
             List<LegacyJar> jars = e.getValue().stream().distinct().toList();
             if (jars.size() < 2) continue;
-            LegacyJar best = jars.get(0);
-            for (LegacyJar j : jars) if (compareDeclared(j, e.getKey(), best, e.getKey()) > 0) best = j;
+            Map<LegacyVersion, LegacyJar> bestPerVersion = new java.util.LinkedHashMap<>();
             for (LegacyJar j : jars) {
+                LegacyJar best = bestPerVersion.get(j.version);
+                if (best == null || compareDeclared(j, e.getKey(), best, e.getKey()) > 0) bestPerVersion.put(j.version, j);
+            }
+            for (LegacyJar j : jars) {
+                LegacyJar best = bestPerVersion.get(j.version);
                 if (j == best || DUPLICATE_SKIPS.containsKey(j)) continue;
                 DUPLICATE_SKIPS.put(j, "another file holds the same mod (" + e.getKey() + ") in a newer version: " + best.fileName());
                 LOG.warn("Legacy Connector: {} and {} are two copies of the mod '{}'; only {} is loaded (remove the other from mods/).",
                         j.fileName(), best.fileName(), e.getKey(), best.fileName());
             }
+            if (bestPerVersion.size() < 2) continue;
+            LegacyVersion primary = null;
+            for (LegacyVersion v : bestPerVersion.keySet()) if (primary == null || v.ordinal() > primary.ordinal()) primary = v;
+            for (var v : bestPerVersion.entrySet()) {
+                if (v.getKey() == primary) continue;
+                if (!sideBySide) {
+                    DUPLICATE_SKIPS.put(v.getValue(), "another file holds the same mod (" + e.getKey() + ") for " + primary.id() + ": " + bestPerVersion.get(primary).fileName()
+                            + " (experimental.sideBySideLibraries=false)");
+                    continue;
+                }
+                units.add(new SideBySide.Unit(v.getKey(), e.getKey(), SideBySide.newIdFor(e.getKey(), v.getKey()), Set.of(),
+                        "the " + primary.id() + " copy " + bestPerVersion.get(primary).fileName() + " has the same mod id"));
+            }
         }
+        return units;
     }
 
     private static int compareDeclared(LegacyJar a, String idA, LegacyJar b, String idB) {

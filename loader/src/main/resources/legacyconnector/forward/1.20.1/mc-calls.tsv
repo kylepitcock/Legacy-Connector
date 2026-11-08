@@ -533,3 +533,4 @@ net/minecraft/client/resources/model/ModelResourceLocation	<init>	(Ljava/lang/St
 net/minecraft/client/gui/components/AbstractSelectionList	<init>	(Lnet/minecraft/client/Minecraft;IIIII)V	=args	0,1,2,3,5	(Lnet/minecraft/client/Minecraft;IIII)V
 net/minecraft/world/level/storage/loot/BuiltInLootTables	register	(Lnet/minecraft/resources/ResourceLocation;)Lnet/minecraft/resources/ResourceLocation;	LootTableCompat	lootTableId	(Lnet/minecraft/resources/ResourceLocation;)Lnet/minecraft/resources/ResourceLocation;
 net/minecraft/world/item/MobBucketItem	<init>	(Ljava/util/function/Supplier;Ljava/util/function/Supplier;Ljava/util/function/Supplier;Lnet/minecraft/world/item/Item$Properties;)V	LegacyMobBucketItem	create	-
+net/minecraft/util/KeyDispatchDataCodec	codec	()Lcom/mojang/serialization/Codec;	MiddleCompat	keyDispatchCodec
