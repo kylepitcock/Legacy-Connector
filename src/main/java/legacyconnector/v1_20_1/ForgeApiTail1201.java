@@ -251,4 +251,13 @@ public final class ForgeApiTail1201 {
             net.minecraft.resources.ResourceKey registry, String modid) {
         return net.neoforged.neoforge.registries.DeferredHolder.create(registry, name);
     }
+
+    /** {@code NewRegistryEvent.create(builder, onCreate)}: the callback gets the registry as soon as it exists (registries are bound at once here). */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static java.util.function.Supplier newRegistryCreateCallback(net.neoforged.neoforge.registries.NewRegistryEvent event,
+            legacyconnector.v1_20_1.net.minecraftforge.registries.RegistryBuilder builder, java.util.function.Consumer onCreate) {
+        java.util.function.Supplier supplier = ForgeApi1201.newRegistryCreate(event, builder);
+        if (onCreate != null) onCreate.accept(supplier.get());
+        return supplier;
+    }
 }

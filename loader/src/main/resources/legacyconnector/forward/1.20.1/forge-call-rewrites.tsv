@@ -139,3 +139,4 @@ net/neoforged/neoforge/event/level/BlockEvent$BreakEvent.setExpToDrop(I)V	Tail.b
 net/neoforged/neoforge/common/CommonHooks.getLootingLevel(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/damagesource/DamageSource;)I	Tail.commonHooksLootingLevel
 net/neoforged/neoforge/registries/RegisterEvent.getVanillaRegistry()Lnet/minecraft/core/Registry;	Tail.registerEventVanillaRegistry
 net/neoforged/neoforge/registries/DeferredHolder.create(Lnet/minecraft/resources/ResourceLocation;Lnet/minecraft/resources/ResourceKey;Ljava/lang/String;)Lnet/neoforged/neoforge/registries/DeferredHolder;	Tail.holderCreateWithNamespace
+net/neoforged/neoforge/registries/NewRegistryEvent.create(Llegacyconnector/v1_20_1/net/minecraftforge/registries/RegistryBuilder;Ljava/util/function/Consumer;)Ljava/util/function/Supplier;	Tail.newRegistryCreateCallback
