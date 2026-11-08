@@ -92,11 +92,6 @@ neoForge {
                 systemProperty 'legacyconnector.naturalSpawnTickSelfTest', project.property('naturalSpawnTickSelfTest')
                 systemProperty 'legacyconnector.naturalSpawnTickTestTicks', project.findProperty('naturalSpawnTickTestTicks') ?: '2400'
             }
-            if (project.hasProperty('betaSpawnSchedulingSelfTest')) {
-                systemProperty 'legacyconnector.betaSpawnSchedulingSelfTest', project.property('betaSpawnSchedulingSelfTest')
-                systemProperty 'legacyconnector.betaSpawnSchedulingTestTicks', project.findProperty('betaSpawnSchedulingTestTicks') ?: '300'
-                systemProperty 'legacyconnector.betaSpawnSchedulingControlTest', project.findProperty('betaSpawnSchedulingControlTest') ?: 'false'
-            }
             // -PserverTickScript=<file.js>: runs that JavaScript on every server tick (see core/ServerTickScript; -PserverTickScriptFrom=<tick>)
             if (project.hasProperty('serverTickScript')) {
                 systemProperty 'legacyconnector.serverTickScript', project.property('serverTickScript')
