@@ -7,4 +7,9 @@ public abstract class GuiRecipe extends GuiContainer {
     protected GuiRecipe() {
         super(null);
     }
+
+    /** True when the mouse is over the given recipe slot (never: there is no NEI recipe screen under JEI). */
+    public boolean isMouseOver(legacyconnector.v1_7_10.codechicken.nei.PositionedStack stack, int recipe) {
+        return false;
+    }
 }

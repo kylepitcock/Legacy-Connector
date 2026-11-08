@@ -35,6 +35,16 @@ public class EnumHelper {
         return addEnum(legacyconnector.v1_7_10.net.minecraft.entity.EnumCreatureAttribute.class, name);
     }
 
+    /** A new spawn category (Forge's EnumHelper.addCreatureType); it spawns under the modern monster/creature category by its peaceful flag. */
+    public static legacyconnector.v1_7_10.net.minecraft.entity.EnumCreatureType addCreatureType(String name, Class<?> typeClass, int maxNumber,
+            legacyconnector.v1_7_10.net.minecraft.block.material.Material material, boolean peaceful, boolean animal) {
+        return addEnum(legacyconnector.v1_7_10.net.minecraft.entity.EnumCreatureType.class, name,
+                new Class<?>[] {int.class, boolean.class, boolean.class, net.minecraft.world.entity.MobCategory.class, Class.class,
+                        legacyconnector.v1_7_10.net.minecraft.block.material.Material.class},
+                new Object[] {maxNumber, peaceful, animal,
+                        peaceful ? net.minecraft.world.entity.MobCategory.CREATURE : net.minecraft.world.entity.MobCategory.MONSTER, typeClass, material});
+    }
+
     public static EnumRarity addRarity(String name, EnumChatFormatting color, String displayName) {
         return addEnum(EnumRarity.class, name, new Object[] {color, displayName});
     }
