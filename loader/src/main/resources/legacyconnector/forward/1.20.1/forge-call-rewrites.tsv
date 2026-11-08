@@ -123,3 +123,4 @@ net/neoforged/neoforge/event/EventHooks.onApplyBonemeal(Lnet/minecraft/world/ent
 net/neoforged/neoforge/event/EventHooks.onBucketUse(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/level/Level;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/phys/HitResult;)Lnet/minecraft/world/InteractionResultHolder;	Tail.onBucketUse
 net/neoforged/neoforge/common/brewing/BrewingRecipeRegistry.addRecipe(Lnet/minecraft/world/item/crafting/Ingredient;Lnet/minecraft/world/item/crafting/Ingredient;Lnet/minecraft/world/item/ItemStack;)Z	Tail.brewAddRecipe
 net/neoforged/neoforge/common/brewing/BrewingRecipeRegistry.getRecipes()Ljava/util/List;	Tail.brewGetRecipes
+net/neoforged/neoforge/registries/DeferredHolder.createOptional(Lnet/minecraft/resources/ResourceLocation;Lnet/minecraft/resources/ResourceKey;Ljava/lang/String;)Lnet/neoforged/neoforge/registries/DeferredHolder;	Tail.holderCreateWithNamespace

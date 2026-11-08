@@ -455,6 +455,18 @@
    "link": "https://www.curseforge.com/minecraft/mc-mods/management-wanted-more-decor",
    "date": "2026-11-08",
    "open": true
+  },
+  {
+   "issue": 215,
+   "mod": "Lycanites Mobs",
+   "mc": "1.12.2",
+   "status": "partial",
+   "details": "-Items show up in creative tab, but no models and stayed invisible -Crafted item works, havent tested extensively -When killing any Lycanites mob, the game crashed",
+   "lc": "0.3.10",
+   "neoforge": "21.1.265",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/lycanites-mobs/files/5750564",
+   "date": "2026-11-08",
+   "open": true
   }
  ]
 }
