@@ -78,8 +78,13 @@ def game_javas():
     return res
 
 
+MY_PIDS = set()   # exact PIDs of the clients this driver started (the game's command line is an argfile: no marker to find it by)
+
+
 def my_game_pids():
-    return [pid for pid, cl in game_javas() if MARK in cl]
+    alive = {p for p, _ in game_javas()}
+    MY_PIDS.intersection_update(alive)
+    return sorted(MY_PIDS)
 
 
 def stop_requested():
@@ -89,7 +94,7 @@ def stop_requested():
 def wait_for_slot(max_games):
     """Waits politely until fewer than max_games game processes of other agents run. False when a STOP was requested."""
     while not stop_requested():
-        others = [p for p, cl in game_javas() if MARK not in cl]
+        others = [p for p, cl in game_javas() if p not in MY_PIDS]
         if len(others) < max_games:
             return True
         STATE["phase"] = f"waiting for a game slot ({len(others)} running elsewhere)"
@@ -157,15 +162,18 @@ def start_game(width=640, height=360):
         creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
 
 
-def stop_game(gradle):
-    """Kills only this driver's own client (exact PIDs of processes whose command line carries our run directory)."""
+def stop_game(gradle, before):
+    """Kills only this driver's own client: the PID the game reported (or, when it never got that far, the single new game process)."""
+    if not MY_PIDS:
+        new = [p for p, _ in game_javas() if p not in before]
+        if len(new) == 1:
+            MY_PIDS.add(new[0])
+        elif new:
+            log("cannot tell which of the new game processes is ours, leaving them:", new)
     for _ in range(3):
         for pid in my_game_pids():
             kill(pid)
-        try:
-            gradle.terminate()
-        except Exception:
-            pass
+        kill(gradle.pid)   # the gradle client tree (wrapper script and its java), not the shared daemon
         time.sleep(1)
         if not my_game_pids():
             break
@@ -297,6 +305,8 @@ def run_batch(jars, libs, mc, perf, args):
     prepare_game(jars, libs, mc, perf)
     STATE["phase"] = f"loading {len(jars)} jars"
     log(f"batch of {len(jars)} jars: {', '.join(j.name for j in jars[:3])}...")
+    before = {p for p, _ in game_javas()}
+    MY_PIDS.clear()
     gradle = start_game()
     t0 = time.time()
     ctl = Control()
@@ -312,6 +322,9 @@ def run_batch(jars, libs, mc, perf, args):
         if first is None:
             return ("crash" if gradle.poll() is not None else "timeout"), {}, time.time() - t0
         t_ready = time.time()
+        pid = ctl.answer(ctl.send("js String(Java.type('java.lang.ProcessHandle').current().pid())"), 20)
+        if pid and pid.isdigit():
+            MY_PIDS.add(int(pid))
         log(f"world ready after {t_ready - t0:.0f}s")
         STATE["phase"] = "staging"
         census = ctl.answer(ctl.send("js " + strip_js(TEMPLATES["enumerate.js"])), 120)
@@ -363,7 +376,7 @@ def run_batch(jars, libs, mc, perf, args):
             shutil.copy2(GAME / "logs" / "latest.log", SURVEY / "last-batch.log")
         except Exception:
             pass
-        stop_game(gradle)
+        stop_game(gradle, before)
 
 
 def collect(jars, mc, census, plan, ctl, text, report, crashed):
