@@ -212,6 +212,7 @@ public final class LegacyConnector {
         org.kylepitcock.legacyconnector.vb1_7_3.SelfTestB173.register(game);
         org.kylepitcock.legacyconnector.vb1_7_3.MobsB173.registerEvents(modBus,game);
         org.kylepitcock.legacyconnector.vb1_7_3.AnimalsB173.registerEvents(modBus);
+        org.kylepitcock.legacyconnector.vb1_7_3.SpawnSchedulerB173.register(game);
         game.addListener((net.neoforged.neoforge.event.server.ServerStoppedEvent e) -> {
             if (!e.getServer().isDedicatedServer()) return;
             // Legacy mods start non-daemon thread pools (IC2 and others) they never stop, which keep a stopped dedicated server's JVM alive.
