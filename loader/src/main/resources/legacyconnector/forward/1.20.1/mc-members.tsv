@@ -70,3 +70,4 @@ net/minecraft/core/Holder	containsTag	*	is
 net/minecraft/core/Holder$Reference	getTagKeys	*	tags
 net/minecraft/core/Holder$Reference	containsTag	*	is
 net/minecraft/util/random/WeightedEntry$Wrapper	getData	*	data
+net/minecraft/world/level/Explosion	getPosition	*	center

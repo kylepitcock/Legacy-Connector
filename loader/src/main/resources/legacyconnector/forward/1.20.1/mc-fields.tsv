@@ -336,3 +336,4 @@ net/minecraft/client/gui/screens/Screen	BACKGROUND_LOCATION	Lnet/minecraft/resou
 net/minecraft/client/gui/Gui	GUI_ICONS_LOCATION	Lnet/minecraft/resources/ResourceLocation;	-	none	MiddleClientCompat.guiIcons
 net/neoforged/fml/common/EventBusSubscriber$Bus	FORGE	Lnet/neoforged/fml/common/EventBusSubscriber$Bus;	GAME	-	-
 net/minecraft/network/chat/ComponentContents	EMPTY	Lnet/minecraft/network/chat/ComponentContents;	-	none	RoundCompat.emptyContents
+net/minecraft/world/item/crafting/CraftingBookCategory	CODEC	Lnet/minecraft/util/StringRepresentable$EnumCodec;	-	Lcom/mojang/serialization/Codec;	RoundCompat.craftingCategoryCodec

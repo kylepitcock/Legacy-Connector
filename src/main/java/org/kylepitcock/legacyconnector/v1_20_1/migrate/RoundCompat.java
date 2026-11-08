@@ -310,6 +310,79 @@ public final class RoundCompat {
                 .thenAccept(found -> callback.accept(found.orElse(profile)));
     }
 
+    // ---- advancement predicates ----
+
+    /** {@code new EnchantmentPredicate(enchantment, levels)}: a set of enchantments in 1.21.1. */
+    public static net.minecraft.advancements.critereon.EnchantmentPredicate newEnchantmentPredicate(LegacyEnchantment enchantment,
+            net.minecraft.advancements.critereon.MinMaxBounds.Ints levels) {
+        return new net.minecraft.advancements.critereon.EnchantmentPredicate(
+                java.util.Optional.of(net.minecraft.core.HolderSet.direct(HolderCompat.holder(enchantment))), levels);
+    }
+
+    /** {@code ItemPredicate.Builder.hasEnchantment(predicate)}: a sub predicate on the item's enchantments. */
+    public static net.minecraft.advancements.critereon.ItemPredicate.Builder hasEnchantment(net.minecraft.advancements.critereon.ItemPredicate.Builder builder,
+            net.minecraft.advancements.critereon.EnchantmentPredicate predicate) {
+        return builder.withSubPredicate(net.minecraft.advancements.critereon.ItemSubPredicates.ENCHANTMENTS,
+                net.minecraft.advancements.critereon.ItemEnchantmentsPredicate.enchantments(java.util.List.of(predicate)));
+    }
+
+    /** {@code CraftingBookCategory.CODEC} is typed as the plain codec now (the object is still the enum codec). */
+    @SuppressWarnings("rawtypes")
+    public static net.minecraft.util.StringRepresentable.EnumCodec craftingCategoryCodec(com.mojang.serialization.Codec codec) {
+        return (net.minecraft.util.StringRepresentable.EnumCodec) codec;
+    }
+
+    // ---- text, saved data, brewing, small queries ----
+
+    @SuppressWarnings("unchecked")
+    public static <T extends net.minecraft.world.level.saveddata.SavedData> T getSavedData(net.minecraft.world.level.storage.DimensionDataStorage storage,
+            java.util.function.Function<CompoundTag, T> loader, String name) {
+        return storage.get(new net.minecraft.world.level.saveddata.SavedData.Factory<>(() -> {
+            throw new IllegalStateException("saved data " + name + " is only read here");
+        }, (tag, provider) -> {
+            MigrateContext.remember(provider);
+            return loader.apply(tag);
+        }, null), name);
+    }
+
+    public static void saveSavedData(net.minecraft.world.level.saveddata.SavedData data, java.io.File file) {
+        data.save(file, MigrateContext.provider());
+    }
+
+    public static net.minecraft.network.chat.MutableComponent fromJsonLenient(String json) {
+        return net.minecraft.network.chat.Component.Serializer.fromJsonLenient(json, MigrateContext.provider());
+    }
+
+    public static String toStableJson(net.minecraft.network.chat.Component component) {
+        return net.minecraft.network.chat.Component.Serializer.toJson(component, MigrateContext.provider());
+    }
+
+    public static com.google.gson.JsonElement toJsonTree(net.minecraft.network.chat.Component component) {
+        return com.google.gson.JsonParser.parseString(net.minecraft.network.chat.Component.Serializer.toJson(component, MigrateContext.provider()));
+    }
+
+    /** {@code FoodProperties.isMeat()}: the flag is gone (wolves ask the item tag), so no food answers true here. */
+    public static boolean isMeat(net.minecraft.world.food.FoodProperties food) {
+        return false;
+    }
+
+    private static final java.util.List<Object[]> PENDING_MIXES = new java.util.concurrent.CopyOnWriteArrayList<>();
+    private static volatile boolean brewingHooked;
+
+    /** {@code PotionBrewing.addMix(from, ingredient, to)} (static in 1.20.1): queued, and added when NeoForge asks for brewing recipes. */
+    public static void addPotionMix(net.minecraft.world.item.alchemy.Potion from, net.minecraft.world.item.Item ingredient, net.minecraft.world.item.alchemy.Potion to) {
+        PENDING_MIXES.add(new Object[] {from, ingredient, to});
+        if (!brewingHooked) {
+            brewingHooked = true;
+            net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.brewing.RegisterBrewingRecipesEvent.class, event -> {
+                for (Object[] m : PENDING_MIXES) {
+                    event.getBuilder().addMix(net.minecraft.core.registries.BuiltInRegistries.POTION.wrapAsHolder((net.minecraft.world.item.alchemy.Potion) m[0]), (net.minecraft.world.item.Item) m[1],
+                            net.minecraft.core.registries.BuiltInRegistries.POTION.wrapAsHolder((net.minecraft.world.item.alchemy.Potion) m[2]));
+                }
+            });
+        }
+    }
+
     // ---- argument producers for in-place constructor rewrites (=args rows; usable in super(...) calls) ----
 
     public static net.minecraft.world.phys.Vec3 vec3(double x, double y, double z) {
