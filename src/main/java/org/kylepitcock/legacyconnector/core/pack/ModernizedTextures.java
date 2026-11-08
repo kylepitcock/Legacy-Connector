@@ -87,6 +87,13 @@ public final class ModernizedTextures {
                     : String.join(", ", file.getMods().stream().map(m -> m.getModId()).toList());
             summary.add(mods + ": modernized " + (exact + base) + " textures (" + exact + " exact copies, " + base + " backgrounds)");
         }
+        List<TextureModernizer.Hit> generated = modernizer.modernizeGenerated(out, modern);
+        if (!generated.isEmpty()) {
+            int exact = (int) generated.stream().filter(h -> h.kind() == TextureModernizer.Kind.EXACT).count();
+            all[0] += exact;
+            all[1] += generated.size() - exact;
+            summary.add("b1.7.3 sprites: modernized " + generated.size() + " textures (" + exact + " exact copies, " + (generated.size() - exact) + " backgrounds)");
+        }
         if (!logged) {
             logged = true;
             for (String line : summary) LOG.info(line);

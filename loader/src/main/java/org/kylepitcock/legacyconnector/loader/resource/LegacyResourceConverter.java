@@ -102,6 +102,7 @@ public final class LegacyResourceConverter {
             data = lowercaseResourceRefs(data);
             if (modern.contains("/models/")) {
                 data = qualifySelfParent(data, modern);
+                data = renameForgeModelLoader(data);
                 addVineModels(data);
             }
         }
@@ -412,6 +413,31 @@ public final class LegacyResourceConverter {
      * is looked up in the model's own namespace first here, so it would be its own parent: a StackOverflowError in vanilla's parent resolution that
      * makes the game drop its resource packs and reload in the middle of loading (The Dalek Mod never reached the main menu).
      */
+    /**
+     * Forge 1.12 named its model loaders {@code forge:obj} / {@code forge:bucket}; NeoForge 1.21.1's are {@code neoforge:obj} and
+     * {@code neoforge:fluid_container}. A model file with {@code "loader": "forge:obj"} (Scape and Run: Parasites' relay controller and its tower)
+     * failed to load with "Model loader 'forge:obj' not found".
+     */
+    static byte[] renameForgeModelLoader(byte[] data) {
+        try {
+            JsonElement root = JsonParser.parseString(new String(data, StandardCharsets.UTF_8));
+            if (root instanceof JsonObject obj && obj.get("loader") instanceof JsonPrimitive p && p.isString()) {
+                String mapped = switch (p.getAsString()) {
+                    case "forge:obj" -> "neoforge:obj";
+                    case "forge:bucket" -> "neoforge:fluid_container";
+                    default -> null;
+                };
+                if (mapped != null) {
+                    obj.addProperty("loader", mapped);
+                    return new com.google.gson.Gson().toJson(obj).getBytes(StandardCharsets.UTF_8);
+                }
+            }
+        } catch (RuntimeException ignored) {
+            // not JSON: left as it is
+        }
+        return data;
+    }
+
     static byte[] qualifySelfParent(byte[] data, String assetPath) {
         java.util.regex.Matcher m = java.util.regex.Pattern.compile("assets/[^/]+/models/(.+)\\.json").matcher(assetPath);
         if (!m.matches()) return data;

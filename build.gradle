@@ -367,6 +367,8 @@ tasks.register('checkLegacyMod', JavaExec) {
     mainClass = 'org.kylepitcock.legacyconnector.loader.tools.CheckJar'
     // -PcheckJson=<file> also writes a JSON record per jar (tools/compat/probe.py)
     if (project.findProperty('checkJson')) systemProperty 'legacyconnector.check.json', project.findProperty('checkJson').toString()
+    // -PkeepDir=<dir> keeps the translated jars there (input of textureReport)
+    if (project.findProperty('keepDir')) systemProperty 'legacyconnector.check.keep', project.findProperty('keepDir').toString()
     // -Pbridges=false: check Waila/NEI/Baubles... jars as ordinary mods instead of relocating their API into the shim
     if (project.findProperty('bridges')) systemProperty 'legacyconnector.check.bridges', project.findProperty('bridges').toString()
     argumentProviders.add({ [shimIndexFile.get().asFile.absolutePath] + (project.findProperty('legacyJar') ?: '').toString().split(',').findAll { it } } as CommandLineArgumentProvider)

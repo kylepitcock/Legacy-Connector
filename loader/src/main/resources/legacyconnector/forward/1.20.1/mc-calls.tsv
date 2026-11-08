@@ -556,6 +556,7 @@ net/minecraft/client/resources/model/ModelResourceLocation	<init>	(Ljava/lang/St
 net/minecraft/client/gui/components/AbstractSelectionList	<init>	(Lnet/minecraft/client/Minecraft;IIIII)V	=args	0,1,2,3,5	(Lnet/minecraft/client/Minecraft;IIII)V
 net/minecraft/world/level/storage/loot/BuiltInLootTables	register	(Lnet/minecraft/resources/ResourceLocation;)Lnet/minecraft/resources/ResourceLocation;	LootTableCompat	lootTableId	(Lnet/minecraft/resources/ResourceLocation;)Lnet/minecraft/resources/ResourceLocation;
 net/minecraft/world/item/MobBucketItem	<init>	(Ljava/util/function/Supplier;Ljava/util/function/Supplier;Ljava/util/function/Supplier;Lnet/minecraft/world/item/Item$Properties;)V	LegacyMobBucketItem	create	-
+<<<<<<< HEAD
 net/minecraft/world/level/storage/DimensionDataStorage	get	(Ljava/util/function/Function;Ljava/lang/String;)Lnet/minecraft/world/level/saveddata/SavedData;	RoundCompat	getSavedData	-
 net/minecraft/world/level/saveddata/SavedData	save	(Ljava/io/File;)V	RoundCompat	saveSavedData	(Lnet/minecraft/world/level/saveddata/SavedData;Ljava/io/File;)V
 net/minecraft/network/chat/Component$Serializer	fromJsonLenient	(Ljava/lang/String;)Lnet/minecraft/network/chat/MutableComponent;	RoundCompat	fromJsonLenient	-
@@ -565,8 +566,23 @@ net/minecraft/world/food/FoodProperties	isMeat	()Z	RoundCompat	isMeat	-
 net/minecraft/world/item/alchemy/PotionBrewing	addMix	(Lnet/minecraft/world/item/alchemy/Potion;Lnet/minecraft/world/item/Item;Lnet/minecraft/world/item/alchemy/Potion;)V	RoundCompat	addPotionMix	-
 net/minecraft/advancements/critereon/EnchantmentPredicate	<init>	(Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyEnchantment;Lnet/minecraft/advancements/critereon/MinMaxBounds$Ints;)V	RoundCompat	newEnchantmentPredicate	-
 net/minecraft/advancements/critereon/ItemPredicate$Builder	hasEnchantment	(Lnet/minecraft/advancements/critereon/EnchantmentPredicate;)Lnet/minecraft/advancements/critereon/ItemPredicate$Builder;	RoundCompat	hasEnchantment	-
+=======
+# --- round 4 batch 9
+net/minecraft/world/level/levelgen/feature/stateproviders/BlockStateProviderType	<init>	(Lcom/mojang/serialization/Codec;)V	=args	MiddleCompat.asMapCodec@0	(Lcom/mojang/serialization/MapCodec;)V
+net/minecraft/world/level/levelgen/structure/Structure	simpleCodec	(Ljava/util/function/Function;)Lcom/mojang/serialization/Codec;	MiddleCompat	simpleStructureCodec
+net/minecraft/world/level/block/entity/DispenserBlockEntity	addItem	(Lnet/minecraft/world/item/ItemStack;)I	MiddleCompat	addItem
+net/minecraft/world/entity/ai/attributes/AttributeMap	getInstance	(Lnet/minecraft/world/entity/ai/attributes/Attribute;)Lnet/minecraft/world/entity/ai/attributes/AttributeInstance;	MiddleCompat	mapGetInstance
+net/minecraft/world/entity/ai/attributes/AttributeMap	getValue	(Lnet/minecraft/world/entity/ai/attributes/Attribute;)D	MiddleCompat	mapGetValue
+net/minecraft/world/entity/ai/attributes/AttributeSupplier	hasAttribute	(Lnet/minecraft/world/entity/ai/attributes/Attribute;)Z	MiddleCompat	supplierHasAttribute
+net/minecraft/world/entity/ai/attributes/AttributeSupplier	getBaseValue	(Lnet/minecraft/world/entity/ai/attributes/Attribute;)D	MiddleCompat	supplierGetBaseValue
+net/minecraft/world/entity/ai/attributes/AttributeInstance	removePermanentModifier	(Ljava/util/UUID;)Z	MiddleCompat	removePermanentModifier
+net/minecraft/world/entity/ai/attributes/AttributeInstance	<init>	(Lnet/minecraft/world/entity/ai/attributes/Attribute;Ljava/util/function/Consumer;)V	=args	HolderCompat.holder@0,1	(Lnet/minecraft/core/Holder;Ljava/util/function/Consumer;)V
+net/minecraft/world/scores/Scoreboard	getOrCreatePlayerScore	(Ljava/lang/String;Lnet/minecraft/world/scores/Objective;)Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyScore;	MiddleCompat	playerScore
+net/minecraft/world/level/storage/loot/LootContext$Builder	create	(Lnet/minecraft/resources/ResourceLocation;)Lnet/minecraft/world/level/storage/loot/LootContext;	=args	MiddleCompat.optionalId@0	(Ljava/util/Optional;)Lnet/minecraft/world/level/storage/loot/LootContext;
+net/minecraft/world/level/storage/loot/LootContext	getLootingModifier	()I	MiddleCompat	getLootingModifier
+net/minecraft/world/level/storage/loot/entries/LootPoolSingletonContainer	<init>	(II[Lnet/minecraft/world/level/storage/loot/predicates/LootItemCondition;[Lnet/minecraft/world/level/storage/loot/functions/LootItemFunction;)V	=args	0,1,MiscCompat.conditions@2,MiddleCompat.functions@3	(IILjava/util/List;Ljava/util/List;)V
+>>>>>>> master
 net/minecraft/util/KeyDispatchDataCodec	codec	()Lcom/mojang/serialization/Codec;	MiddleCompat	keyDispatchCodec
-net/minecraft/world/level/storage/loot/LootContext$Builder	create	(Lnet/minecraft/resources/ResourceLocation;)Lnet/minecraft/world/level/storage/loot/LootContext;	RoundCompat	createLootContext	-
 net/minecraft/world/item/ItemStack	areCapsCompatible	(Llegacyconnector/v1_20_1/net/minecraftforge/common/capabilities/CapabilityProvider;)Z	RoundCompat	areCapsCompatible	-
 net/minecraft/world/level/NaturalSpawner	isSpawnPositionOk	(Lnet/minecraft/world/entity/SpawnPlacementType;Lnet/minecraft/world/level/LevelReader;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/EntityType;)Z	RoundCompat	isSpawnPositionOk	-
 net/minecraft/world/item/ProjectileWeaponItem	customArrow	(Lnet/minecraft/world/entity/projectile/AbstractArrow;)Lnet/minecraft/world/entity/projectile/AbstractArrow;@special	=args	0,RoundCompat.noStack@0,RoundCompat.noStack@0	(Lnet/minecraft/world/entity/projectile/AbstractArrow;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/entity/projectile/AbstractArrow;

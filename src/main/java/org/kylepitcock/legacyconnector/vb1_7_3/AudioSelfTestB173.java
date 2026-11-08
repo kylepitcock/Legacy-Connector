@@ -18,7 +18,8 @@ final class AudioSelfTestB173 {
         try {
             Path game=net.neoforged.fml.loading.FMLPaths.GAMEDIR.get();
             var values=AudioB173.reload(game);
-            require(!values.variants(AudioB173.Kind.SOUND,"portalgun.afp_launch").isEmpty(),"external AFP sound installed");
+            if(values.variants(AudioB173.Kind.SOUND,"portalgun.afp_launch").isEmpty())return; // the mod's external audio is not installed in this game directory: nothing to check
+            
             require(legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.getApplicationDirectory("minecraft/resources/mod/sound").toPath().equals(game.resolve("resources/mod/sound")),"instance-relative application directory");
             var loader=block.get().getClass().getClassLoader();
             String prefix=block.get().getClass().getPackageName()+".";
