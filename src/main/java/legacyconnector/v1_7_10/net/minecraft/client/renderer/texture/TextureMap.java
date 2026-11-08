@@ -151,6 +151,23 @@ public class TextureMap implements IIconRegister, ITickableTextureObject {
     }
 
     /** The sprites mods registered, by their legacy name. */
+    /** The number of icons registered so far. */
+    public synchronized int mcc$count() {
+        return mapRegisteredSprites.size();
+    }
+
+    /** The icons registered after the first {@code mark} ones, in registration order (at most {@code limit}). */
+    public synchronized java.util.List<TextureAtlasSprite> mcc$since(int mark, int limit) {
+        java.util.List<TextureAtlasSprite> out = new java.util.ArrayList<>();
+        int i = 0;
+        for (Object o : mapRegisteredSprites.values()) {
+            if (i++ < mark) continue;
+            if (o instanceof TextureAtlasSprite sprite) out.add(sprite);
+            if (out.size() >= limit) break;
+        }
+        return out;
+    }
+
     public synchronized Map<String, TextureAtlasSprite> mcc$sprites() {
         return new LinkedHashMap<String, TextureAtlasSprite>(mapRegisteredSprites);
     }
