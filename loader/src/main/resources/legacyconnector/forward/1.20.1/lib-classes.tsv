@@ -54,3 +54,7 @@ software/bernie/geckolib/core/animatable/model/CoreBakedGeoModel	software/bernie
 top/theillusivec4/caelus/api/CaelusApi	com/illusivesoulworks/caelus/api/CaelusApi
 top/theillusivec4/caelus/api/CaelusApi$TriState	com/illusivesoulworks/caelus/api/CaelusApi$TriState
 software/bernie/geckolib/util/RenderUtils	software/bernie/geckolib/util/RenderUtil
+# JEI 19 (NeoForge): the Forge types moved to NeoForgeTypes
+mezz/jei/api/forge/ForgeTypes	mezz/jei/api/neoforge/NeoForgeTypes
+# Jade 15: the identifier constants interface was renamed
+snownee/jade/api/Identifiers	snownee/jade/api/JadeIds
