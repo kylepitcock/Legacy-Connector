@@ -316,6 +316,108 @@ com/mojang/blaze3d/vertex/VertexConsumer	vertex	(FFFFFFFFFIIFFF)V	VertexCompat	v
 com/mojang/serialization/DataResult	get	()Lcom/mojang/datafixers/util/Either;	MiscCompat	dataResultGet	(Lcom/mojang/serialization/DataResult;)Lcom/mojang/datafixers/util/Either;
 net/minecraft/world/level/block/entity/RandomizableContainerBlockEntity	setLootTable	(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/util/RandomSource;Lnet/minecraft/core/BlockPos;Lnet/minecraft/resources/ResourceLocation;)V	MiscCompat	setBlockEntityLootTable	-
 net/minecraft/world/level/block/entity/RandomizableContainerBlockEntity	setLootTable	(Lnet/minecraft/resources/ResourceLocation;J)V	MiscCompat	setLootTable	-
+# --- middle/tail batch 1 (MiddleCompat)
+net/minecraft/world/item/ItemStack	getBaseRepairCost	()I	MiddleCompat	getBaseRepairCost
+net/minecraft/world/item/ItemStack	setRepairCost	(I)V	MiddleCompat	setRepairCost
+net/minecraft/world/item/ItemStack	hurtEnemy	(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/player/Player;)V	MiddleCompat	hurtEnemy
+net/minecraft/world/item/ItemStack	<init>	(Lnet/minecraft/world/level/ItemLike;ILnet/minecraft/nbt/CompoundTag;)V	MiddleCompat	newStack
+net/minecraft/world/item/ItemStack	getAllEnchantments	()Ljava/util/Map;	MiddleCompat	getAllEnchantments
+net/minecraft/world/item/ItemStack	onBlockStartBreak	(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;)Z	MiddleCompat	onBlockStartBreak
+net/minecraft/world/item/ItemStack	getShareTag	()Lnet/minecraft/nbt/CompoundTag;	MiddleCompat	stackShareTag
+net/minecraft/world/item/ItemStack	readShareTag	(Lnet/minecraft/nbt/CompoundTag;)V	MiddleCompat	readShareTag
+net/minecraft/world/item/ItemStack	areShareTagsEqual	(Lnet/minecraft/world/item/ItemStack;)Z	MiddleCompat	areShareTagsEqual
+net/minecraft/world/item/ItemStack	canEquip	(Lnet/minecraft/world/entity/EquipmentSlot;Lnet/minecraft/world/entity/Entity;)Z	MiddleCompat	stackCanEquip
+net/minecraft/world/item/Item	onBlockStartBreak	(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;)Z	MiddleCompat	itemOnBlockStartBreak
+net/minecraft/world/item/Item	getShareTag	(Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/nbt/CompoundTag;	MiddleCompat	getShareTag
+net/minecraft/world/item/Item	shouldOverrideMultiplayerNbt	()Z	MiddleCompat	shouldOverrideMultiplayerNbt
+net/minecraft/world/item/Item	verifyTagAfterLoad	(Lnet/minecraft/nbt/CompoundTag;)V	MiddleCompat	verifyTagAfterLoad
+net/minecraft/world/item/Item	getDefaultTooltipHideFlags	(Lnet/minecraft/world/item/ItemStack;)I	MiddleCompat	getDefaultTooltipHideFlags
+net/minecraft/world/item/Item	canBeDepleted	()Z	MiddleCompat	canBeDepleted
+net/minecraft/world/item/Item	getMaxStackSize	()I	MiddleCompat	itemMaxStackSize
+net/minecraft/world/item/Item	getRarity	(Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/item/Rarity;	MiddleCompat	getRarity
+net/minecraft/world/item/Item	isFireResistant	()Z	MiddleCompat	isFireResistant
+net/minecraft/world/item/Item	getUseDuration	(Lnet/minecraft/world/item/ItemStack;)I	MiddleCompat	getUseDuration
+net/minecraft/world/item/Item	isCorrectToolForDrops	(Lnet/minecraft/world/level/block/state/BlockState;)Z	MiddleCompat	isCorrectToolForDrops
+net/minecraft/world/item/Item	canEquip	(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/EquipmentSlot;Lnet/minecraft/world/entity/Entity;)Z	MiddleCompat	canEquip
+net/minecraft/world/item/Item	getAttributeModifiers	(Lnet/minecraft/world/entity/EquipmentSlot;Lnet/minecraft/world/item/ItemStack;)Lcom/google/common/collect/Multimap;	MiddleCompat	getAttributeModifiers
+net/minecraft/world/item/enchantment/EnchantmentHelper	hasAquaAffinity	(Lnet/minecraft/world/entity/LivingEntity;)Z	MiddleCompat	hasAquaAffinity
+net/minecraft/world/item/enchantment/EnchantmentHelper	getBlockEfficiency	(Lnet/minecraft/world/entity/LivingEntity;)I	MiddleCompat	getBlockEfficiency
+net/minecraft/world/item/enchantment/EnchantmentHelper	getSweepingDamageRatio	(Lnet/minecraft/world/entity/LivingEntity;)F	MiddleCompat	getSweepingDamageRatio
+net/minecraft/world/item/enchantment/EnchantmentHelper	getLoyalty	(Lnet/minecraft/world/item/ItemStack;)I	MiddleCompat	getLoyalty
+net/minecraft/world/item/enchantment/EnchantmentHelper	getFishingLuckBonus	(Lnet/minecraft/world/item/ItemStack;)I	MiddleCompat	getFishingLuckBonus
+net/minecraft/world/item/enchantment/EnchantmentHelper	getFishingSpeedBonus	(Lnet/minecraft/world/item/ItemStack;)I	MiddleCompat	getFishingSpeedBonus
+net/minecraft/world/entity/Entity	serializeNBT	()Lnet/minecraft/nbt/CompoundTag;	MiddleCompat	serializeNBT
+net/minecraft/world/entity/Entity	deserializeNBT	(Lnet/minecraft/nbt/CompoundTag;)V	MiddleCompat	deserializeNBT
+net/minecraft/world/entity/Entity	ignoreExplosion	()Z	MiddleCompat	ignoreExplosion
+net/minecraft/world/entity/Entity	getHandSlots	()Ljava/lang/Iterable;	MiddleCompat	getHandSlots
+net/minecraft/world/entity/Entity	getArmorSlots	()Ljava/lang/Iterable;	MiddleCompat	getArmorSlots
+net/minecraft/world/entity/Entity	setItemSlot	(Lnet/minecraft/world/entity/EquipmentSlot;Lnet/minecraft/world/item/ItemStack;)V	MiddleCompat	setItemSlot
+net/minecraft/world/entity/Entity	getFeetBlockState	()Lnet/minecraft/world/level/block/state/BlockState;	MiddleCompat	getFeetBlockState
+net/minecraft/world/entity/LivingEntity	curePotionEffects	(Lnet/minecraft/world/item/ItemStack;)Z	MiddleCompat	curePotionEffects
+net/minecraft/world/entity/LivingEntity	removeEffectNoUpdate	(Lnet/minecraft/world/effect/MobEffect;)Lnet/minecraft/world/effect/MobEffectInstance;	MiddleCompat	removeEffectNoUpdate
+net/minecraft/world/entity/player/Player	disableShield	(Z)V	MiddleCompat	disableShield
+net/minecraft/world/entity/player/Player	startAutoSpinAttack	(I)V	MiddleCompat	startAutoSpinAttack
+net/minecraft/world/entity/player/Player	canReach	(Lnet/minecraft/core/BlockPos;D)Z	MiddleCompat	canReach
+net/minecraft/world/entity/player/Player	canReach	(Lnet/minecraft/world/entity/Entity;D)Z	MiddleCompat	canReach
+net/minecraft/world/level/block/entity/BlockEntity	getUpdateTag	()Lnet/minecraft/nbt/CompoundTag;	MiddleCompat	getUpdateTag
+net/minecraft/world/level/block/entity/BlockEntity	saveWithId	()Lnet/minecraft/nbt/CompoundTag;	MiddleCompat	saveWithId
+net/minecraft/world/level/block/entity/BlockEntity	serializeNBT	()Lnet/minecraft/nbt/CompoundTag;	MiddleCompat	serializeNBT
+net/minecraft/world/level/block/entity/BlockEntity	deserializeNBT	(Lnet/minecraft/nbt/CompoundTag;)V	MiddleCompat	deserializeNBT
+net/minecraft/world/level/block/entity/BlockEntity	loadStatic	(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/world/level/block/entity/BlockEntity;	MiddleCompat	loadStatic
+net/minecraft/world/level/block/entity/BlockEntity	saveToItem	(Lnet/minecraft/world/item/ItemStack;)V	MiddleCompat	saveToItem
+net/minecraft/world/level/block/entity/BlockEntity	getRenderBoundingBox	()Lnet/minecraft/world/phys/AABB;	MiddleCompat	getRenderBoundingBox
+net/minecraft/util/GsonHelper	getAsItem	(Lcom/google/gson/JsonObject;Ljava/lang/String;)Lnet/minecraft/world/item/Item;	MiddleCompat	getAsItem
+net/minecraft/util/StringUtil	formatTickDuration	(I)Ljava/lang/String;	MiddleCompat	formatTickDuration
+net/minecraft/world/effect/MobEffectInstance	<init>	(Lnet/minecraft/world/effect/MobEffect;)V	MiddleCompat	newEffect
+net/minecraft/world/effect/MobEffect	byId	(I)Lnet/minecraft/world/effect/MobEffect;	MiddleCompat	effectById
+net/minecraft/world/effect/MobEffect	getId	(Lnet/minecraft/world/effect/MobEffect;)I	MiddleCompat	effectGetId
+net/minecraft/world/entity/ai/attributes/AttributeModifier	getId	()Ljava/util/UUID;	MiddleCompat	modifierUuid
+net/minecraft/world/item/BlockItem	getBlockEntityData	(Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/nbt/CompoundTag;	MiddleCompat	getBlockEntityData
+net/minecraft/world/entity/EntityType	getDefaultLootTable	()Lnet/minecraft/resources/ResourceLocation;	MiddleCompat	getDefaultLootTable
+net/minecraft/world/entity/EntityType	getAABB	(DDD)Lnet/minecraft/world/phys/AABB;	MiddleCompat	getAABB
+net/minecraft/Util	getOrThrow	(Lcom/mojang/serialization/DataResult;Ljava/util/function/Function;)Ljava/lang/Object;	MiddleCompat	getOrThrow
+net/minecraft/Util	identityStrategy	()Lit/unimi/dsi/fastutil/Hash$Strategy;	MiddleCompat	identityStrategy
+net/minecraft/Util	shuffle	(Lit/unimi/dsi/fastutil/objects/ObjectArrayList;Lnet/minecraft/util/RandomSource;)V	=	-	(Ljava/util/List;Lnet/minecraft/util/RandomSource;)V
+# --- middle/tail batch 2 (client: MiddleClientCompat)
+net/minecraft/client/multiplayer/PlayerInfo	getSkinLocation	()Lnet/minecraft/resources/ResourceLocation;	MiddleClientCompat	getSkinLocation
+net/minecraft/client/multiplayer/PlayerInfo	getModelName	()Ljava/lang/String;	MiddleClientCompat	getModelName
+net/minecraft/client/multiplayer/PlayerInfo	getCapeLocation	()Lnet/minecraft/resources/ResourceLocation;	MiddleClientCompat	getCapeLocation
+net/minecraft/client/multiplayer/PlayerInfo	getElytraLocation	()Lnet/minecraft/resources/ResourceLocation;	MiddleClientCompat	getElytraLocation
+net/minecraft/client/multiplayer/PlayerInfo	isSkinLoaded	()Z	MiddleClientCompat	isSkinLoaded
+net/minecraft/client/player/AbstractClientPlayer	getModelName	()Ljava/lang/String;	MiddleClientCompat	getModelName
+net/minecraft/client/player/AbstractClientPlayer	getCloakTextureLocation	()Lnet/minecraft/resources/ResourceLocation;	MiddleClientCompat	getCloakTextureLocation
+net/minecraft/client/player/AbstractClientPlayer	isCapeLoaded	()Z	MiddleClientCompat	isCapeLoaded
+net/minecraft/client/player/AbstractClientPlayer	getElytraTextureLocation	()Lnet/minecraft/resources/ResourceLocation;	MiddleClientCompat	getElytraTextureLocation
+net/minecraft/client/player/AbstractClientPlayer	isElytraLoaded	()Z	MiddleClientCompat	isElytraLoaded
+net/minecraft/client/gui/GuiGraphics	blitRepeating	(Lnet/minecraft/resources/ResourceLocation;IIIIIIII)V	MiddleClientCompat	blitRepeating
+net/minecraft/client/gui/GuiGraphics	blitRepeating	(Lnet/minecraft/resources/ResourceLocation;IIIIIIIIII)V	MiddleClientCompat	blitRepeating
+net/minecraft/client/gui/GuiGraphics	blitNineSliced	(Lnet/minecraft/resources/ResourceLocation;IIIIIIIII)V	MiddleClientCompat	blitNineSliced
+net/minecraft/client/gui/GuiGraphics	blitNineSliced	(Lnet/minecraft/resources/ResourceLocation;IIIIIIIIII)V	MiddleClientCompat	blitNineSliced
+net/minecraft/client/gui/GuiGraphics	blitNineSliced	(Lnet/minecraft/resources/ResourceLocation;IIIIIIIIIIII)V	MiddleClientCompat	blitNineSliced
+net/minecraft/client/gui/GuiGraphics	blitNineSlicedSized	(Lnet/minecraft/resources/ResourceLocation;IIIIIIIIIII)V	MiddleClientCompat	blitNineSlicedSized
+net/minecraft/client/gui/GuiGraphics	blitNineSlicedSized	(Lnet/minecraft/resources/ResourceLocation;IIIIIIIIIIII)V	MiddleClientCompat	blitNineSlicedSized
+net/minecraft/client/gui/GuiGraphics	blitNineSlicedSized	(Lnet/minecraft/resources/ResourceLocation;IIIIIIIIIIIIII)V	MiddleClientCompat	blitNineSlicedSized
+net/minecraft/client/gui/components/MultiLineLabel	create	(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/FormattedText;I)Lnet/minecraft/client/gui/components/MultiLineLabel;	MiddleClientCompat	createLabel
+net/minecraft/client/gui/components/MultiLineLabel	renderCentered	(Lnet/minecraft/client/gui/GuiGraphics;II)I	MiddleClientCompat	renderCentered
+net/minecraft/client/gui/components/MultiLineLabel	renderCentered	(Lnet/minecraft/client/gui/GuiGraphics;IIII)I	MiddleClientCompat	renderCentered
+net/minecraft/client/gui/components/MultiLineLabel	renderLeftAligned	(Lnet/minecraft/client/gui/GuiGraphics;IIII)I	MiddleClientCompat	renderLeftAligned
+net/minecraft/client/gui/components/Checkbox	<init>	(IIIILnet/minecraft/network/chat/Component;Z)V	MiddleClientCompat	newCheckbox
+net/minecraft/client/gui/components/Checkbox	<init>	(IIIILnet/minecraft/network/chat/Component;ZZ)V	MiddleClientCompat	newCheckbox
+net/minecraft/client/renderer/RenderType	glintDirect	()Lnet/minecraft/client/renderer/RenderType;	MiddleClientCompat	glintDirect
+net/minecraft/client/renderer/RenderType	armorGlint	()Lnet/minecraft/client/renderer/RenderType;	MiddleClientCompat	armorGlint
+# --- middle/tail batch 3
+net/minecraft/world/level/block/DropExperienceBlock	<init>	(Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V	=args	MiddleCompat.zeroXp@0,0	(Lnet/minecraft/util/valueproviders/IntProvider;Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V
+net/minecraft/world/level/block/DropExperienceBlock	<init>	(Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;Lnet/minecraft/util/valueproviders/IntProvider;)V	=args	1,0	(Lnet/minecraft/util/valueproviders/IntProvider;Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V
+net/minecraft/world/entity/projectile/Arrow	<init>	(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/LivingEntity;)V	=args	0,1,MiddleCompat.arrowStack@0,MiddleCompat.noWeapon@0	(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;)V
+net/minecraft/world/entity/projectile/Arrow	<init>	(Lnet/minecraft/world/level/Level;DDD)V	=args	0,1,2,3,MiddleCompat.arrowStack@0,MiddleCompat.noWeapon@0	(Lnet/minecraft/world/level/Level;DDDLnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;)V
+net/minecraft/server/level/ServerPlayer	<init>	(Lnet/minecraft/server/MinecraftServer;Lnet/minecraft/server/level/ServerLevel;Lcom/mojang/authlib/GameProfile;)V	=args	0,1,2,MiddleCompat.clientInfo@0	(Lnet/minecraft/server/MinecraftServer;Lnet/minecraft/server/level/ServerLevel;Lcom/mojang/authlib/GameProfile;Lnet/minecraft/server/level/ClientInformation;)V
+net/minecraft/world/level/gameevent/GameEvent	<init>	(Ljava/lang/String;I)V	=args	1	(I)V
+net/minecraft/util/ExtraCodecs	lazyInitializedCodec	(Ljava/util/function/Supplier;)Lcom/mojang/serialization/Codec;	MiddleCompat	lazyInitializedCodec
+net/minecraft/util/ExtraCodecs	stringResolverCodec	(Ljava/util/function/Function;Ljava/util/function/Function;)Lcom/mojang/serialization/Codec;	MiddleCompat	stringResolverCodec
+net/minecraft/util/ExtraCodecs	validate	(Lcom/mojang/serialization/Codec;Ljava/util/function/Function;)Lcom/mojang/serialization/Codec;	MiddleCompat	validate
+net/minecraft/util/ExtraCodecs	validate	(Lcom/mojang/serialization/MapCodec;Ljava/util/function/Function;)Lcom/mojang/serialization/MapCodec;	MiddleCompat	validate
+net/minecraft/world/item/alchemy/Potion	getName	(Ljava/lang/String;)Ljava/lang/String;	MiddleCompat	potionName
+net/minecraft/world/item/alchemy/Potion	byName	(Ljava/lang/String;)Lnet/minecraft/world/item/alchemy/Potion;	MiddleCompat	potionByName
 net/minecraft/world/effect/MobEffect	addAttributeModifier	(Lnet/minecraft/world/entity/ai/attributes/Attribute;Ljava/lang/String;DLnet/minecraft/world/entity/ai/attributes/AttributeModifier$Operation;)Lnet/minecraft/world/effect/MobEffect;	HolderCompat	addEffectModifier	-
 net/minecraft/world/item/ItemStack	equals	(Lnet/minecraft/world/item/ItemStack;Z)Z	RoundCompat	stackEquals	-
 net/neoforged/neoforge/event/BuildCreativeModeTabContentsEvent	getEntries	()Lnet/neoforged/neoforge/common/util/MutableHashedLinkedMap;	RoundCompat	tabEntries	-
