@@ -361,3 +361,11 @@ net/neoforged/neoforge/common/Tags$Items	HEADS	Lnet/minecraft/tags/TagKey;	-	non
 net/neoforged/neoforge/common/Tags$Biomes	IS_WATER	Lnet/minecraft/tags/TagKey;	-	none	TagStandIns1201.isWater
 net/minecraft/core/particles/BlockParticleOption	DESERIALIZER	Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyParticleDeserializer;	-	none	RoundCompat.noParticleDeserializer
 net/minecraft/core/particles/ItemParticleOption	DESERIALIZER	Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyParticleDeserializer;	-	none	RoundCompat.noParticleDeserializer
+net/minecraft/world/entity/animal/Chicken	FOOD_ITEMS	Lnet/minecraft/world/item/crafting/Ingredient;	-	none	RoundCompat.chickenFood
+net/minecraft/world/entity/animal/Cat	TEMPT_INGREDIENT	Lnet/minecraft/world/item/crafting/Ingredient;	-	none	RoundCompat.catTempt
+net/minecraft/world/entity/animal/Ocelot	TEMPT_INGREDIENT	Lnet/minecraft/world/item/crafting/Ingredient;	-	none	RoundCompat.catTempt
+net/minecraft/world/entity/animal/Pig	FOOD_ITEMS	Lnet/minecraft/world/item/crafting/Ingredient;	-	none	RoundCompat.pigFood
+net/minecraft/world/entity/animal/horse/AbstractHorse	FOOD_ITEMS	Lnet/minecraft/world/item/crafting/Ingredient;	-	none	RoundCompat.horseFood
+net/minecraft/world/entity/monster/Strider	FOOD_ITEMS	Lnet/minecraft/world/item/crafting/Ingredient;	-	none	RoundCompat.striderFood
+net/minecraft/world/entity/monster/Strider	TEMPT_ITEMS	Lnet/minecraft/world/item/crafting/Ingredient;	-	none	RoundCompat.striderTempt
+net/minecraft/world/entity/animal/Parrot	TAME_FOOD	Ljava/util/Set;	-	none	RoundCompat.parrotTameFood

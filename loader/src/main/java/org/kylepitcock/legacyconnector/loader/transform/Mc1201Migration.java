@@ -133,9 +133,9 @@ final class Mc1201Migration {
         if (!d.name.equals("codec") || !d.bsm.getOwner().equals("java/lang/invoke/LambdaMetafactory") || d.bsmArgs.length < 3
                 || !(d.bsmArgs[0] instanceof Type sam) || !sam.getDescriptor().equals("()Lcom/mojang/serialization/Codec;")) return false;
         Type made = Type.getReturnType(d.desc);
-        if (made.getSort() != Type.OBJECT || !MAP_CODEC_TYPES.contains(made.getInternalName()) || Type.getArgumentTypes(d.desc).length != 0) return false;
+        if (made.getSort() != Type.OBJECT || !MAP_CODEC_TYPES.contains(made.getInternalName())) return false;
         d.name = "get";
-        d.desc = "()Ljava/util/function/Supplier;";
+        d.desc = d.desc.substring(0, d.desc.indexOf(')') + 1) + "Ljava/util/function/Supplier;";   // captured arguments (a lambda over a codec parameter) stay
         d.bsmArgs[0] = Type.getMethodType("()Ljava/lang/Object;");
         d.bsmArgs[2] = Type.getMethodType("()Lcom/mojang/serialization/Codec;");
         InsnList after = new InsnList();
@@ -259,6 +259,11 @@ final class Mc1201Migration {
                         }
                     }
                 }
+                if (CLASSES_THAT_BECAME_INTERFACES.contains(call.owner) && !call.itf) {
+                    call.itf = true;
+                    if (call.getOpcode() == Opcodes.INVOKEVIRTUAL) call.setOpcode(Opcodes.INVOKEINTERFACE);
+                    c.calls++;
+                }
                 if (call.getOpcode() == Opcodes.INVOKEINTERFACE && CLASSES_THAT_WERE_INTERFACES.contains(call.owner)) {
                     call.setOpcode(Opcodes.INVOKEVIRTUAL);
                     call.itf = false;
@@ -321,6 +326,9 @@ final class Mc1201Migration {
     }
 
     /** Library interfaces of 1.20.1 that are classes now under the renamed name (GeckoLib's {@code CoreGeoBone} became {@code GeoBone}): their calls are virtual. */
+    /** Classes of 1.20.1 that are interfaces in 1.21.1 (DataResult: Datafixer Upper 6 to 8): static calls need an interface method reference. */
+    private static final java.util.Set<String> CLASSES_THAT_BECAME_INTERFACES = java.util.Set.of("com/mojang/serialization/DataResult");
+
     private static final java.util.Set<String> CLASSES_THAT_WERE_INTERFACES = java.util.Set.of("software/bernie/geckolib/cache/object/GeoBone");
 
     /** Functional interfaces whose buffer parameter became a {@code RegistryFriendlyByteBuf}: a lambda written for the 1.20.1 {@code FriendlyByteBuf} would not link. */

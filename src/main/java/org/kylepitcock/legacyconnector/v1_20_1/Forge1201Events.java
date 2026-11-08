@@ -93,6 +93,13 @@ final class Forge1201Events {
     }
 
     private static void onSleepingTime(net.neoforged.neoforge.event.entity.player.CanContinueSleepingEvent e) {
+        var sleepPos = e.getEntity().getSleepingPos();
+        if (sleepPos.isPresent()) {
+            var location = new legacyconnector.v1_20_1.net.minecraftforge.event.entity.player.SleepingLocationCheckEvent(e.getEntity(), sleepPos.get());
+            NeoForge.EVENT_BUS.post(location);
+            if (location.getResult() == Event$Result.ALLOW) e.setContinueSleeping(true);
+            else if (location.getResult() == Event$Result.DENY) e.setContinueSleeping(false);
+        }
         if (!(e.getEntity() instanceof net.minecraft.world.entity.player.Player player)) return;
         legacyconnector.v1_20_1.net.minecraftforge.event.entity.player.SleepingTimeCheckEvent old =
                 new legacyconnector.v1_20_1.net.minecraftforge.event.entity.player.SleepingTimeCheckEvent(player, player.getSleepingPos());

@@ -318,7 +318,7 @@ public final class RoundCompat {
     }
 
     /** {@code ItemStack.areCapsCompatible(provider)}: capabilities are not attached to stacks here, so two stacks always agree. */
-    public static boolean areCapsCompatible(ItemStack stack, legacyconnector.v1_20_1.net.minecraftforge.common.capabilities.CapabilityProvider<?> other) {
+    public static boolean areCapsCompatible(ItemStack stack, Object other) {
         return true;
     }
 
@@ -560,6 +560,73 @@ public final class RoundCompat {
             for (java.util.function.Predicate p : predicates) if (!p.test(t)) return false;
             return true;
         };
+    }
+
+    // ---- food and tempt ingredients of animals (static fields in 1.20.1; tags and lists inside the entities now) ----
+
+    private static net.minecraft.world.item.crafting.Ingredient ingredient(net.minecraft.world.level.ItemLike... items) {
+        return net.minecraft.world.item.crafting.Ingredient.of(items);
+    }
+
+    public static net.minecraft.world.item.crafting.Ingredient chickenFood() {
+        return ingredient(net.minecraft.world.item.Items.WHEAT_SEEDS, net.minecraft.world.item.Items.MELON_SEEDS, net.minecraft.world.item.Items.PUMPKIN_SEEDS,
+                net.minecraft.world.item.Items.BEETROOT_SEEDS, net.minecraft.world.item.Items.TORCHFLOWER_SEEDS, net.minecraft.world.item.Items.PITCHER_POD);
+    }
+
+    /** {@code Parrot.TAME_FOOD}: a set mods add their seeds to; 1.21.1 reads the item tag instead, so additions have no effect. */
+    public static java.util.Set<net.minecraft.world.item.Item> parrotTameFood() {
+        return new java.util.HashSet<>(java.util.List.of(net.minecraft.world.item.Items.WHEAT_SEEDS, net.minecraft.world.item.Items.MELON_SEEDS,
+                net.minecraft.world.item.Items.PUMPKIN_SEEDS, net.minecraft.world.item.Items.BEETROOT_SEEDS, net.minecraft.world.item.Items.TORCHFLOWER_SEEDS,
+                net.minecraft.world.item.Items.PITCHER_POD));
+    }
+
+    public static net.minecraft.world.item.crafting.Ingredient catTempt() {
+        return ingredient(net.minecraft.world.item.Items.COD, net.minecraft.world.item.Items.SALMON);
+    }
+
+    public static net.minecraft.world.item.crafting.Ingredient pigFood() {
+        return ingredient(net.minecraft.world.item.Items.CARROT, net.minecraft.world.item.Items.POTATO, net.minecraft.world.item.Items.BEETROOT);
+    }
+
+    public static net.minecraft.world.item.crafting.Ingredient horseFood() {
+        return ingredient(net.minecraft.world.item.Items.WHEAT, net.minecraft.world.item.Items.SUGAR, net.minecraft.world.level.block.Blocks.HAY_BLOCK,
+                net.minecraft.world.item.Items.APPLE, net.minecraft.world.item.Items.GOLDEN_CARROT, net.minecraft.world.item.Items.GOLDEN_APPLE,
+                net.minecraft.world.item.Items.ENCHANTED_GOLDEN_APPLE);
+    }
+
+    public static net.minecraft.world.item.crafting.Ingredient striderFood() {
+        return ingredient(net.minecraft.world.item.Items.WARPED_FUNGUS);
+    }
+
+    public static net.minecraft.world.item.crafting.Ingredient striderTempt() {
+        return ingredient(net.minecraft.world.item.Items.WARPED_FUNGUS, net.minecraft.world.item.Items.WARPED_FUNGUS_ON_A_STICK);
+    }
+
+    // ---- Architectury 9's interface-injected members of registry objects (added by its mixins to the 1.20.1 classes) ----
+
+    public static ResourceLocation archRegistryName(net.minecraft.world.entity.EntityType<?> type) {
+        return net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(type);
+    }
+
+    public static ResourceLocation archRegistryName(net.minecraft.world.level.material.Fluid fluid) {
+        return net.minecraft.core.registries.BuiltInRegistries.FLUID.getKey(fluid);
+    }
+
+    public static ResourceLocation archRegistryName(net.minecraft.world.item.Item item) {
+        return net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(item);
+    }
+
+    public static ResourceLocation archRegistryName(net.minecraft.world.level.block.Block block) {
+        return net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(block);
+    }
+
+    public static net.minecraft.world.level.material.Fluid archGetFluid(net.minecraft.world.item.BucketItem bucket) {
+        return bucket.content;
+    }
+
+    /** {@code Item.Properties.arch$tab(...)}: the creative tab is chosen by the tab's own contents event here; the properties are returned unchanged. */
+    public static net.minecraft.world.item.Item.Properties archTab(net.minecraft.world.item.Item.Properties properties, Object tab) {
+        return properties;
     }
 
     /** {@code SynchedEntityData.hasItem(accessor)} (gone in 1.21.1): whether the entity has data for the accessor. */

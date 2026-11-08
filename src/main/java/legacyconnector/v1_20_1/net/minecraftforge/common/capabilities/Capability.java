@@ -28,6 +28,12 @@ public final class Capability<T> {
         this.mcc$item = item;
     }
 
+    /** Forge's "tell me when this capability is registered": registration is immediate here, so the callback runs at once. */
+    public Capability<T> addListener(java.util.function.Consumer<Capability<T>> listener) {
+        listener.accept(this);
+        return this;
+    }
+
     public String getName() {
         return name;
     }
