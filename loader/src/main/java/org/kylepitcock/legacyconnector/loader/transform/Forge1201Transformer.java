@@ -54,6 +54,12 @@ import org.objectweb.asm.tree.MethodNode;
  */
 public final class Forge1201Transformer {
     private static final Pattern SRG = Pattern.compile("^[mf]_\\d+_$");
+    // KubeJS 7 moved ConsoleJS from the KubeJS 6 util package into script.
+    // Palladium 4.5.x was compiled against the old owner; its ConsoleJS method
+    // names and descriptors remain compatible after this owner/type relocation.
+    private static final String KUBEJS6_CONSOLE = "dev/latvian/mods/kubejs/util/ConsoleJS";
+    private static final String KUBEJS7_CONSOLE = "dev/latvian/mods/kubejs/script/ConsoleJS";
+
     private static final String[][] PACKAGE_MOVES = {
             {"net/minecraftforge/fml/", "net/neoforged/fml/"},
             {"net/minecraftforge/eventbus/", "net/neoforged/bus/"},
@@ -133,6 +139,11 @@ public final class Forge1201Transformer {
 
     /** Maps one class name; names outside Forge are returned unchanged (Minecraft's own class names are the same in both runtimes). */
     String mapClass(String name) {
+        // Also remap inner classes such as ConsoleJS$VarFunc, without moving
+        // the rest of KubeJS's util package.
+        if (name.equals(KUBEJS6_CONSOLE) || name.startsWith(KUBEJS6_CONSOLE + "$")) {
+            return KUBEJS7_CONSOLE + name.substring(KUBEJS6_CONSOLE.length());
+        }
         if (!name.startsWith("net/minecraftforge/")) return name;
         String facade = LegacyVersion.V1_20_1.shimPrefix() + name;
         if (shim.contains(facade)) return facade;
