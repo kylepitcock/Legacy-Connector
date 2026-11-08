@@ -40,15 +40,28 @@ public final class GuiWidgetsB173 {
         int x=widget.getX(),y=widget.getY(),w=widget.getWidth(),h=widget.getHeight();
         boolean full=y>=clipTop&&y+h<=clipBottom;
         if(full&&(widget instanceof Button||widget instanceof WidgetSlider)){
-            boolean hover=contains(widget,mx,my),enabled=enabled(widget);int color=!enabled?0xFF353535:pressed==widget?0xFF3B5264:hover?0xFF627C91:0xFF46505A;
-            GuiDrawB173.fill(x,y,x+w,y+h,color);if(focused==widget){GuiDrawB173.fill(x,y,x+w,y+1,0xFFFFFFFF);GuiDrawB173.fill(x,y+h-1,x+w,y+h,0xFFFFFFFF);}
+            boolean hover=contains(widget,mx,my),enabled=enabled(widget),highlight=enabled&&(hover||focused==widget||pressed==widget);
+            GuiDrawB173.bind(GuiDrawB173.textureId("/gui/gui.png"));GuiDrawB173.color(1,1,1,1);
             String text;
-            if(widget instanceof Button button){button.getModel().setHover(hover);text=button.getText();}
-            else{var slider=(WidgetSlider)widget;float range=slider.mcc$max()-slider.mcc$min();float fraction=range==0?0:(slider.getValue()-slider.mcc$min())/range;int knob=x+Math.round(Math.max(0,w-8)*fraction);GuiDrawB173.fill(knob,y,knob+8,y+h,enabled?0xFF92A8BB:0xFF666666);text=slider.getFormat();}
-            GuiDrawB173.text(text,x+Math.max(3,(w-GuiDrawB173.width(text))/2),y+(h-8)/2,enabled?0xFFFFFF:0x888888,true);
+            if(widget instanceof Button button){skin(x,y,w,h,!enabled?0:highlight?2:1);button.getModel().setHover(hover);text=button.getText();}
+            else{skin(x,y,w,h,0);var slider=(WidgetSlider)widget;float range=slider.mcc$max()-slider.mcc$min();float fraction=range==0?0:(slider.getValue()-slider.mcc$min())/range;int knob=x+Math.round(Math.max(0,w-8)*Math.max(0,Math.min(1,fraction)));skin(knob,y,Math.min(8,w),h,!enabled?0:highlight?2:1);text=slider.getFormat();}
+            GuiDrawB173.text(text,x+Math.max(3,(w-GuiDrawB173.width(text))/2),y+(h-8)/2,!enabled?0xA0A0A0:highlight?0xFFFFA0:0xE0E0E0,true);
         }else if(full&&widget instanceof Label label)GuiDrawB173.text(label.getText(),x+(w-GuiDrawB173.width(label.getText()))/2,y+5,0xFFFFFF,true);
         int childTop=widget instanceof WidgetSimplewindow?clipTop:Math.max(clipTop,y),childBottom=widget instanceof WidgetSimplewindow?clipBottom:Math.min(clipBottom,y+h);
         for(int i=0;i<widget.getNumChildren();i++)render(widget.getChild(i),mx,my,childTop,childBottom);
+    }
+    /** Reuse the same Minecraft button sheet as GuiButton, preserving borders at arbitrary widget sizes. */
+    private static void skin(int x,int y,int width,int height,int state){
+        int left=Math.min(4,width/2),right=Math.min(4,width-left),top=Math.min(4,height/2),bottom=Math.min(4,height-top);
+        int[] widths={left,width-left-right,right},heights={top,height-top-bottom,bottom};
+        int[] u={0,4,200-right},v={46+state*20,50+state*20,66+state*20-bottom};
+        int[] sourceWidths={left,192,right},sourceHeights={top,12,bottom};
+        int dy=y;
+        for(int row=0;row<3;row++){int dx=x;for(int column=0;column<3;column++){
+            for(int py=0;py<heights[row];py+=sourceHeights[row])for(int px=0;px<widths[column];px+=sourceWidths[column])
+                GuiDrawB173.blit(dx+px,dy+py,u[column],v[row],Math.min(sourceWidths[column],widths[column]-px),Math.min(sourceHeights[row],heights[row]-py));
+            dx+=widths[column];
+        }dy+=heights[row];}
     }
     private static boolean contains(Widget widget,int x,int y){return x>=widget.getX()&&y>=widget.getY()&&x<widget.getX()+widget.getWidth()&&y<widget.getY()+widget.getHeight();}
     private static boolean enabled(Widget widget){return widget.isEnabled()&&(!(widget instanceof Button button)||button.getModel().isEnabled());}

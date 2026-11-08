@@ -65,4 +65,44 @@ class GuiApiB173Test {
         ui.key(15);ui.key(28); // Tab reaches the always-visible Back button without selecting a hidden row.
         assertEquals(39,selected[0]);
     }
+    @Test void controlSkinsUseMinecraftTexturesAndKeepTheirBordersWithinEachState(){
+        var textures=new java.util.ArrayList<String>();var quads=new java.util.ArrayList<int[]>();int[] fills={0};
+        var sink=(GuiDrawB173.Sink)java.lang.reflect.Proxy.newProxyInstance(getClass().getClassLoader(),new Class<?>[]{GuiDrawB173.Sink.class},(proxy,method,args)->{
+            if(method.getName().equals("textureId"))textures.add((String)args[0]);
+            if(method.getName().equals("blit"))quads.add(java.util.Arrays.stream(args).mapToInt(value->(Integer)value).toArray());
+            if(method.getName().equals("fill"))fills[0]++;
+            if(method.getReturnType()==int.class)return method.getName().equals("width")?((String)args[0]).length()*6:1;
+            return null;
+        });
+        var button=new Button("Config");var ui=new GuiWidgetsB173(button);ui.resize(321,31);
+        java.util.function.IntConsumer check=bank->{
+            assertFalse(quads.isEmpty());assertTrue(textures.contains("/gui/gui.png"));assertEquals(0,fills[0]);
+            boolean[][] covered=new boolean[31][321];
+            for(var q:quads){
+                assertTrue(q[2]>=0&&q[2]+q[4]<=200&&q[3]>=bank&&q[3]+q[5]<=bank+20,"texture sampling stays in the Minecraft state");
+                assertTrue(q[0]>=0&&q[1]>=0&&q[0]+q[4]<=321&&q[1]+q[5]<=31,"skin stays inside the control");
+                for(int y=q[1];y<q[1]+q[5];y++)for(int x=q[0];x<q[0]+q[4];x++){assertFalse(covered[y][x],"skin patches do not overlap");covered[y][x]=true;}
+            }
+            for(var row:covered)for(boolean pixel:row)assertTrue(pixel,"skin has no gaps at a nonstandard control size");
+            quads.clear();textures.clear();
+        };
+        GuiDrawB173.withSink(sink,()->{
+            ui.render(-1,-1);check.accept(66);
+            ui.render(1,1);check.accept(86);
+            button.getModel().setEnabled(false);ui.render(1,1);check.accept(46);
+            var number=new WidgetInt(new SettingInt("skin",0,0,1,100),"Value");
+            try{
+                var sliderUi=new GuiWidgetsB173(number);sliderUi.resize(321,20);
+                for(int value:new int[]{0,100}){
+                    quads.clear();number.s.setValue(value);sliderUi.render(-1,-1);
+                    var thumb=quads.stream().filter(q->q[3]>=66&&q[3]+q[5]<=86).toList();
+                    assertFalse(thumb.isEmpty(),"slider thumb uses the enabled Minecraft skin");
+                    int left=value==0?0:313;
+                    assertEquals(left,thumb.stream().mapToInt(q->q[0]).min().orElseThrow());
+                    assertEquals(left+8,thumb.stream().mapToInt(q->q[0]+q[4]).max().orElseThrow());
+                    assertTrue(quads.stream().anyMatch(q->q[3]>=46&&q[3]+q[5]<=66),"slider keeps its recessed Minecraft track");
+                }
+            }finally{WidgetSetting.all.remove(number);}
+        });
+    }
 }

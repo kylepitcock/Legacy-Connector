@@ -359,6 +359,7 @@ properties save/reload under the instance's `mods/<backend>/guiconfig.properties
 TWL widget/button-model hierarchy used by the tested mod. The loader relocates Beta TWL names into this bridge.
 
 `GuiModScreen.show` now lays out the supported TWL windows, columns, buttons and sliders using native GUI drawing and input.
+Buttons and slider thumbs use the shared Minecraft button sheet, including hover, focus and disabled states.
 The Options screen exposes the registered mod-settings screens. Original settings callbacks retain ownership of
 values and persistence. Unimplemented widget types remain outside this supported subset.
 
