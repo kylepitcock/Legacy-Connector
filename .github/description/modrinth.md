@@ -181,6 +181,29 @@ See the **[compatibility site](https://kylepitcock.github.io/Legacy-Connector/)*
 
 Engine and launcher patches (FastCraft, Hodgepodge, NEID and other ID extenders) are skipped on purpose, since they only make sense on the old engine.
 
+## FAQ
+
+**What does it do?** It runs mods that were built for older Minecraft versions (Forge 1.4.7, 1.5.2, 1.6.4, 1.7.10, 1.12.2 and, experimentally, 1.20.1) on NeoForge 1.21.1, next to modern mods. Legacy jars are translated when the game loads; the original file is never modified.
+
+**How is it different from Retromod and Retrofit?** They are different tools. These summaries come from their own project pages, so check those for the details.
+- [Retromod](https://modrinth.com/mod/retromod) also rewrites old mods' bytecode when the game loads. It targets newer Minecraft versions across Fabric, Forge and NeoForge, and its pages recommend it for content, quality-of-life and library mods, not for mods that hook deep into the game (Create, Tinkers, Applied Energistics and similar).
+- [Retrofit](https://github.com/Astryxx/Retrofit) (Astryxx) is an interoperability mod: it lets 1.7.10 and 1.20.1 mods work together (energy systems such as RF and IC2, ore dictionary and tags). It does not load old mods onto a modern game.
+- Legacy Connector is for NeoForge 1.21.1 only. For each old version it provides the old game's API itself (the engine, ids, world generation, packets, rendering of the old blocks and items), so mods that use the game's internals can run: Thaumcraft, BuildCraft, Thermal Expansion, RedPower and many more. It bridges outdated libraries to modern equivalents (Baubles to Curios, Waila to Jade, NEI to JEI, RF to NeoForge energy) and exposes legacy containers as NeoForge capabilities.
+
+**Where do I put the mods?** Each legacy version has its own folder: `mods/1.7.10/`, `mods/1.12.2/`, `mods/1.6.4/`, `mods/1.5.2/`, `mods/1.4.7/`, `mods/1.20.1/`. Legacy jars and zips you drop into `mods/` itself are moved there for you on launch (`legacy.autoSortMods=false` turns that off).
+
+**Which versions work, and how well?** 1.7.10 and 1.12.2 are in beta, 1.6.4, 1.5.2 and 1.4.7 in alpha, and 1.20.1 is experimental. The [Status table](https://github.com/kylepitcock/Legacy-Connector/blob/master/README.md#status) has the details, and the [compatibility site](https://kylepitcock.github.io/Legacy-Connector/) lists results per mod.
+
+**Will mod X work?** Check the compatibility site. After a launch, `logs/legacyconnector-report.txt` lists each legacy jar, what was detected, and any references that could not be translated or are only stubbed. Mods that only patch the old engine (performance patches, id extenders) are skipped on purpose, and coremods that patch Minecraft's own classes are not supported.
+
+**Does it work on a dedicated server?** Yes. Legacy mods run on a dedicated server too; client-only mods are skipped there.
+
+**Does it work on Fabric or Forge?** No. It is a NeoForge 1.21.1 mod. (Fabric mods on NeoForge are what Sinytra Connector does; Legacy Connector is the equivalent for old Forge versions.)
+
+**Why does the game stop with "Module ... contains package org.spongepowered..."?** A 1.12.2 jar bundles its own Mixin. Put it in `mods/1.12.2/` before the first launch.
+
+**Something broke. How do I report it?** Open a [GitHub issue](https://github.com/kylepitcock/Legacy-Connector/issues) and attach `logs/latest.log` and `logs/legacyconnector-report.txt` (and the crash report if there is one). Please say the Legacy Connector version, the mod and its Minecraft version, and what you did. Crash reports of a translated mod belong here, not with the mod's author.
+
 ## Troubleshooting
 
 After launching, check **`logs/legacyconnector-report.txt`**. For each legacy jar, it lists the detected version, the mod IDs, any unresolved references, and which APIs are stubbed. Known issues and workarounds (ID conflicts, mismatched Forestry/Binnie versions, etc.) are on the GitHub page. Please report results on the [compatibility site](https://kylepitcock.github.io/Legacy-Connector/).
