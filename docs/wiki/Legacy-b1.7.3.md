@@ -2,7 +2,7 @@
 
 Status and design of Minecraft Beta 1.7.3 support. Back to [Home](Home.md). Started 2026-11-06.
 
-**Status: started (blocks, items, recipes, textures, block behaviour, GUIs).** Beta 1.7.3 ModLoader / ModLoaderMP / Forge 1.0.x jars are
+**Status: alpha, server-tested (blocks, items, recipes, textures, block behaviour, GUIs; Mo' Creatures and MoreCreeps tested in headless server runs, no graphical client test yet).** Beta 1.7.3 ModLoader / ModLoaderMP / Forge 1.0.x jars are
 detected, deobfuscated and linked; the mods are constructed as ModLoader did, their blocks, items and recipes become modern content with
 their own textures, one creative tab per mod, and the blocks' own code runs (placing, breaking, neighbour updates, ticks, right and left
 click, redstone) with their tile entities (saved, loaded, ticked) and their GUIs (machines, furnaces, crafting tables as modern menus).

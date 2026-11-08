@@ -362,7 +362,7 @@
     function code(t) { return el("code", null, t); }
     function b(t) { return el("b", null, t); }
     if (mc === "b1.7.3") {
-      host.appendChild(p([b("Started. "), "Beta 1.7.3 ModLoader and Forge 1.0 mods go in ", code("mods/b1.7.3/"), ". The layer was contributed by Zekken01. The results here come from that contributor's headless server tests (the mods translate, load, register their content and run their own callbacks); none was tested in a graphical client yet."]));
+      host.appendChild(p([b("Alpha (server-tested). "), "Beta 1.7.3 ModLoader and Forge 1.0 mods go in ", code("mods/b1.7.3/"), ". The layer was contributed by Zekken01. The results here come from that contributor's headless server tests (the mods translate, load, register their content and run their own callbacks); none was tested in a graphical client yet."]));
       host.appendChild(p([b("Archive audit. "), "An offline scan of a 1,040-file Beta 1.7.3 mod archive (1,222 mod payloads) found 544 payloads that need ModLoader, 74 ModLoaderMP and 42 Forge; 548 payloads replace no base game classes (the easiest to support), 572 replace some, 54 are libraries or resources and 20 bundle API patches. The full summary is in ", code("docs/data/b173-archive-audit-summary.json"), "."]));
       return;
     }

@@ -13,7 +13,7 @@ Per-mod results are on the [compatibility site](https://kylepitcock.github.io/Le
 | 1.19.2, 1.18.2 | Planned (after 1.20.1). |
 | 1.16.5 | Planned (after 1.18.2). |
 | 1.2.5 | Planned (after 1.16.5). |
-| b1.7.3 | **Started.** Beta 1.7.3 ModLoader / Forge 1.0 mods in `mods/b1.7.3/` (jars or zips) are translated and their blocks, items and recipes load with their own textures, the blocks' own behaviour (placing, ticks, clicks, redstone), their tile entities and their GUIs (machines, furnaces, crafting tables as modern menus), one creative tab per mod (IndustrialCraft 2, NetherCraft, Portal Gun, RedPower, Minefactory Renewed); no entities or world generation yet ([details](Legacy-b1.7.3.md)). |
+| b1.7.3 | **Alpha (server-tested).** Beta 1.7.3 ModLoader / Forge 1.0 mods in `mods/b1.7.3/` (jars or zips) are translated and their blocks, items and recipes load with their own textures, the blocks' own behaviour (placing, ticks, clicks, redstone), their tile entities and their GUIs (machines, furnaces, crafting tables as modern menus), one creative tab per mod (IndustrialCraft 2, NetherCraft, Portal Gun, RedPower, Minefactory Renewed); no entities or world generation yet ([details](Legacy-b1.7.3.md)). |
 
 Not supported (and likely never fully): coremod transformers and mixins that patch legacy Minecraft code itself,
 LaunchWrapper tweakers. They are reported, and the rest of the mod still loads. Where a coremod only exists to change
