@@ -493,6 +493,207 @@ public final class MiddleCompat {
         return prefix + net.minecraft.core.registries.BuiltInRegistries.POTION.getKey(potion).getPath();
     }
 
+    // ------------------------------------------------------------------ plants and taming (override bridges and calls)
+
+    /** The plantable a 1.20.1 {@code canSustainPlant} override receives, made from the plant state 1.21.1 passes. */
+    public static legacyconnector.v1_20_1.net.minecraftforge.common.IPlantable plantable(BlockState plant) {
+        return new legacyconnector.v1_20_1.net.minecraftforge.common.IPlantable() {
+            @Override
+            public legacyconnector.v1_20_1.net.minecraftforge.common.PlantType getPlantType(net.minecraft.world.level.BlockGetter level, BlockPos pos) {
+                return plantTypeOf(plant.getBlock());
+            }
+
+            @Override
+            public BlockState getPlant(net.minecraft.world.level.BlockGetter level, BlockPos pos) {
+                return plant;
+            }
+        };
+    }
+
+    private static legacyconnector.v1_20_1.net.minecraftforge.common.PlantType plantTypeOf(net.minecraft.world.level.block.Block block) {
+        if (block instanceof net.minecraft.world.level.block.CropBlock || block instanceof net.minecraft.world.level.block.StemBlock) {
+            return legacyconnector.v1_20_1.net.minecraftforge.common.PlantType.CROP;
+        }
+        if (block instanceof net.minecraft.world.level.block.NetherWartBlock) return legacyconnector.v1_20_1.net.minecraftforge.common.PlantType.NETHER;
+        if (block instanceof net.minecraft.world.level.block.WaterlilyBlock) return legacyconnector.v1_20_1.net.minecraftforge.common.PlantType.WATER;
+        if (block instanceof net.minecraft.world.level.block.CactusBlock || block instanceof net.minecraft.world.level.block.DeadBushBlock) {
+            return legacyconnector.v1_20_1.net.minecraftforge.common.PlantType.DESERT;
+        }
+        return legacyconnector.v1_20_1.net.minecraftforge.common.PlantType.PLAINS;
+    }
+
+    /** The answer of a bridged {@code canSustainPlant} override: a yes or a no, never "ask the default". */
+    public static net.neoforged.neoforge.common.util.TriState triState(boolean value) {
+        return value ? net.neoforged.neoforge.common.util.TriState.TRUE : net.neoforged.neoforge.common.util.TriState.FALSE;
+    }
+
+    /** Forge's default {@code canSustainPlant}: what the plant type needs under it. */
+    public static boolean defaultCanSustainPlant(BlockState soil, net.minecraft.world.level.BlockGetter level, BlockPos pos, net.minecraft.core.Direction facing,
+            legacyconnector.v1_20_1.net.minecraftforge.common.IPlantable plantable) {
+        var type = plantable.getPlantType(level, pos.relative(facing));
+        if (type == legacyconnector.v1_20_1.net.minecraftforge.common.PlantType.DESERT) return soil.is(net.minecraft.tags.BlockTags.SAND);
+        if (type == legacyconnector.v1_20_1.net.minecraftforge.common.PlantType.NETHER) return soil.is(net.minecraft.world.level.block.Blocks.SOUL_SAND);
+        if (type == legacyconnector.v1_20_1.net.minecraftforge.common.PlantType.CROP) return soil.is(net.minecraft.world.level.block.Blocks.FARMLAND);
+        if (type == legacyconnector.v1_20_1.net.minecraftforge.common.PlantType.CAVE) return soil.isFaceSturdy(level, pos, net.minecraft.core.Direction.UP);
+        if (type == legacyconnector.v1_20_1.net.minecraftforge.common.PlantType.WATER) {
+            return soil.getFluidState().is(net.minecraft.tags.FluidTags.WATER) || soil.getBlock() instanceof net.minecraft.world.level.block.IceBlock;
+        }
+        if (type == legacyconnector.v1_20_1.net.minecraftforge.common.PlantType.BEACH) {
+            boolean sandy = soil.is(net.minecraft.tags.BlockTags.DIRT) || soil.is(net.minecraft.tags.BlockTags.SAND);
+            boolean water = false;
+            for (net.minecraft.core.Direction side : net.minecraft.core.Direction.Plane.HORIZONTAL) {
+                var next = level.getBlockState(pos.relative(side));
+                if (next.getFluidState().is(net.minecraft.tags.FluidTags.WATER) || next.is(net.minecraft.world.level.block.Blocks.FROSTED_ICE)) water = true;
+            }
+            return sandy && water;
+        }
+        return soil.is(net.minecraft.tags.BlockTags.DIRT) || soil.is(net.minecraft.world.level.block.Blocks.FARMLAND);
+    }
+
+    /** {@code super.canSustainPlant(...)} of a block whose parent is Minecraft's: the default rules. */
+    public static boolean superCanSustainPlant(net.minecraft.world.level.block.Block block, BlockState soil, net.minecraft.world.level.BlockGetter level, BlockPos pos,
+            net.minecraft.core.Direction facing, legacyconnector.v1_20_1.net.minecraftforge.common.IPlantable plantable) {
+        return defaultCanSustainPlant(soil, level, pos, facing, plantable);
+    }
+
+    /** {@code block.canSustainPlant(state, level, pos, facing, plantable)}. */
+    public static boolean blockCanSustainPlant(net.minecraft.world.level.block.Block block, BlockState soil, net.minecraft.world.level.BlockGetter level, BlockPos pos,
+            net.minecraft.core.Direction facing, legacyconnector.v1_20_1.net.minecraftforge.common.IPlantable plantable) {
+        return stateCanSustainPlant(soil, level, pos, facing, plantable);
+    }
+
+    /** {@code state.canSustainPlant(level, pos, facing, plantable)}. */
+    public static boolean stateCanSustainPlant(BlockState soil, net.minecraft.world.level.BlockGetter level, BlockPos pos, net.minecraft.core.Direction facing,
+            legacyconnector.v1_20_1.net.minecraftforge.common.IPlantable plantable) {
+        BlockState plant = plantable.getPlant(level, pos.relative(facing));
+        net.neoforged.neoforge.common.util.TriState answer = soil.canSustainPlant(level, pos, facing, plant);
+        if (answer == net.neoforged.neoforge.common.util.TriState.TRUE) return true;
+        if (answer == net.neoforged.neoforge.common.util.TriState.FALSE) return false;
+        return defaultCanSustainPlant(soil, level, pos, facing, plantable);
+    }
+
+    /** The "apply taming side effects" flag a 1.20.1 {@code setTame(boolean)} always had. */
+    public static boolean sideEffects(boolean tame) {
+        return true;
+    }
+
+    // ------------------------------------------------------------------ enchantment tags, ingredients, server and level statics
+
+    /** {@code EnchantmentHelper.getEnchantmentId(CompoundTag)}: the {@code id} of a stored enchantment entry. */
+    public static net.minecraft.resources.ResourceLocation getEnchantmentId(CompoundTag entry) {
+        return net.minecraft.resources.ResourceLocation.tryParse(entry.getString("id"));
+    }
+
+    /** {@code EnchantmentHelper.getEnchantmentLevel(CompoundTag)}. */
+    public static int getEnchantmentLevel(CompoundTag entry) {
+        return net.minecraft.util.Mth.clamp(entry.getInt("lvl"), 0, 255);
+    }
+
+    /** {@code EnchantmentHelper.storeEnchantment(ResourceLocation, int)}. */
+    public static CompoundTag storeEnchantment(net.minecraft.resources.ResourceLocation id, int level) {
+        CompoundTag tag = new CompoundTag();
+        tag.putString("id", String.valueOf(id));
+        tag.putShort("lvl", (short) level);
+        return tag;
+    }
+
+    /** {@code EnchantmentHelper.setEnchantmentLevel(CompoundTag, int)}. */
+    public static void setEnchantmentLevel(CompoundTag entry, int level) {
+        entry.putShort("lvl", (short) level);
+    }
+
+    /** {@code EnchantmentHelper.getEnchantmentId(Enchantment)}. */
+    public static net.minecraft.resources.ResourceLocation getEnchantmentId(LegacyEnchantment enchantment) {
+        return HolderCompat.holder(enchantment).unwrapKey().map(ResourceKey::location).orElse(null);
+    }
+
+    public static int getRiptide(ItemStack stack) {
+        return level(stack, Enchantments.RIPTIDE);
+    }
+
+    public static boolean hasChanneling(ItemStack stack) {
+        return level(stack, Enchantments.CHANNELING) > 0;
+    }
+
+    public static boolean hasSilkTouch(ItemStack stack) {
+        return level(stack, Enchantments.SILK_TOUCH) > 0;
+    }
+
+    public static int getDepthStrider(LivingEntity entity) {
+        return level(entity, Enchantments.DEPTH_STRIDER);
+    }
+
+    public static int getRespiration(LivingEntity entity) {
+        return level(entity, Enchantments.RESPIRATION);
+    }
+
+    /** {@code Ingredient.fromJson(JsonElement, boolean allowEmpty)}. */
+    public static net.minecraft.world.item.crafting.Ingredient ingredientFromJson(com.google.gson.JsonElement json, boolean allowEmpty) {
+        var codec = allowEmpty ? net.minecraft.world.item.crafting.Ingredient.CODEC : net.minecraft.world.item.crafting.Ingredient.CODEC_NONEMPTY;
+        return codec.parse(com.mojang.serialization.JsonOps.INSTANCE, json).getOrThrow(com.google.gson.JsonParseException::new);
+    }
+
+    /** {@code Ingredient.isVanilla()}: no custom ingredient type behind it. */
+    public static boolean isVanilla(net.minecraft.world.item.crafting.Ingredient ingredient) {
+        return ingredient.isSimple();
+    }
+
+    /** {@code Ingredient.checkInvalidation()}: ingredients no longer cache a stack list that needs invalidating. */
+    public static boolean checkInvalidation(net.minecraft.world.item.crafting.Ingredient ingredient) {
+        return false;
+    }
+
+    public static void invalidate(net.minecraft.world.item.crafting.Ingredient ingredient) {}
+
+    public static void invalidateAll() {}
+
+    /** {@code Ingredient.merge(Collection)}: one ingredient accepting what any of them accepts. */
+    public static net.minecraft.world.item.crafting.Ingredient merge(java.util.Collection<net.minecraft.world.item.crafting.Ingredient> ingredients) {
+        return net.minecraft.world.item.crafting.Ingredient.of(ingredients.stream().flatMap(i -> java.util.Arrays.stream(i.getItems())));
+    }
+
+    /** {@code buf.readWithCodec(ops, codec)}. */
+    public static <T> T readWithCodec(net.minecraft.network.FriendlyByteBuf buf, com.mojang.serialization.DynamicOps<net.minecraft.nbt.Tag> ops,
+            com.mojang.serialization.Codec<T> codec) {
+        return buf.readWithCodec(ops, codec, net.minecraft.nbt.NbtAccounter.unlimitedHeap());
+    }
+
+    /** {@code buf.writeWithCodec(ops, codec, value)} returned nothing in 1.20.1. */
+    public static <T> void writeWithCodec(net.minecraft.network.FriendlyByteBuf buf, com.mojang.serialization.DynamicOps<net.minecraft.nbt.Tag> ops,
+            com.mojang.serialization.Codec<T> codec, T value) {
+        buf.writeWithCodec(ops, codec, value);
+    }
+
+    /** {@code MinecraftServer.getServerDirectory()} was a File. */
+    public static java.io.File getServerDirectory(net.minecraft.server.MinecraftServer server) {
+        return server.getServerDirectory().toFile();
+    }
+
+    /** {@code MinecraftServer.getFile(String)}. */
+    public static java.io.File getServerFile(net.minecraft.server.MinecraftServer server, String name) {
+        return server.getFile(name).toFile();
+    }
+
+    /** {@code MinecraftServer.isNetherEnabled()}: the nether level exists. */
+    public static boolean isNetherEnabled(net.minecraft.server.MinecraftServer server) {
+        return server.getLevel(Level.NETHER) != null;
+    }
+
+    /** {@code Level.getFreeMapId()} answered a plain int. */
+    public static int getFreeMapId(Level level) {
+        return level.getFreeMapId().id();
+    }
+
+    /** {@code Level.getExistingBlockEntity(BlockPos)}: the block entity if its chunk is loaded. */
+    public static BlockEntity getExistingBlockEntity(Level level, BlockPos pos) {
+        return level.isLoaded(pos) ? level.getBlockEntity(pos) : null;
+    }
+
+    /** {@code Level.dimensionTypeId()}. */
+    public static ResourceKey<net.minecraft.world.level.dimension.DimensionType> dimensionTypeId(Level level) {
+        return level.dimensionTypeRegistration().unwrapKey().orElse(null);
+    }
+
     /** {@code Potion.byName(String)}. */
     public static net.minecraft.world.item.alchemy.Potion potionByName(String name) {
         return net.minecraft.core.registries.BuiltInRegistries.POTION.get(net.minecraft.resources.ResourceLocation.parse(name));

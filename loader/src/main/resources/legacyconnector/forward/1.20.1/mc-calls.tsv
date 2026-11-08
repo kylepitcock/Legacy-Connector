@@ -463,3 +463,34 @@ net/neoforged/neoforge/event/entity/EntityEvent$Size	getOldEyeHeight	()F	EventCo
 net/neoforged/neoforge/event/entity/EntityEvent$Size	getNewEyeHeight	()F	EventCompat	newEyeHeight	-
 net/neoforged/neoforge/event/entity/EntityEvent$Size	setNewEyeHeight	(F)V	EventCompat	setNewEyeHeight	-
 net/neoforged/neoforge/event/entity/EntityEvent$Size	setNewSize	(Lnet/minecraft/world/entity/EntityDimensions;Z)V	EventCompat	setNewSize	-
+# --- round 2 batch 4
+net/minecraft/world/level/block/Block	canSustainPlant	(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;Llegacyconnector/v1_20_1/net/minecraftforge/common/IPlantable;)Z@special	MiddleCompat	superCanSustainPlant
+net/minecraft/world/level/block/Block	canSustainPlant	(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;Llegacyconnector/v1_20_1/net/minecraftforge/common/IPlantable;)Z	MiddleCompat	blockCanSustainPlant
+net/minecraft/world/level/block/state/BlockState	canSustainPlant	(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;Llegacyconnector/v1_20_1/net/minecraftforge/common/IPlantable;)Z	MiddleCompat	stateCanSustainPlant
+net/minecraft/world/entity/TamableAnimal	setTame	(Z)V@special	=args	0,MiddleCompat.sideEffects@0	(ZZ)V
+net/minecraft/world/entity/TamableAnimal	setTame	(Z)V	=args	0,MiddleCompat.sideEffects@0	(ZZ)V
+# --- round 2 batch 5
+net/minecraft/world/item/enchantment/EnchantmentHelper	getEnchantmentId	(Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/resources/ResourceLocation;	MiddleCompat	getEnchantmentId
+net/minecraft/world/item/enchantment/EnchantmentHelper	getEnchantmentLevel	(Lnet/minecraft/nbt/CompoundTag;)I	MiddleCompat	getEnchantmentLevel
+net/minecraft/world/item/enchantment/EnchantmentHelper	storeEnchantment	(Lnet/minecraft/resources/ResourceLocation;I)Lnet/minecraft/nbt/CompoundTag;	MiddleCompat	storeEnchantment
+net/minecraft/world/item/enchantment/EnchantmentHelper	setEnchantmentLevel	(Lnet/minecraft/nbt/CompoundTag;I)V	MiddleCompat	setEnchantmentLevel
+net/minecraft/world/item/enchantment/EnchantmentHelper	getEnchantmentId	(Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyEnchantment;)Lnet/minecraft/resources/ResourceLocation;	MiddleCompat	getEnchantmentId
+net/minecraft/world/item/enchantment/EnchantmentHelper	getRiptide	(Lnet/minecraft/world/item/ItemStack;)I	MiddleCompat	getRiptide
+net/minecraft/world/item/enchantment/EnchantmentHelper	hasChanneling	(Lnet/minecraft/world/item/ItemStack;)Z	MiddleCompat	hasChanneling
+net/minecraft/world/item/enchantment/EnchantmentHelper	hasSilkTouch	(Lnet/minecraft/world/item/ItemStack;)Z	MiddleCompat	hasSilkTouch
+net/minecraft/world/item/enchantment/EnchantmentHelper	getDepthStrider	(Lnet/minecraft/world/entity/LivingEntity;)I	MiddleCompat	getDepthStrider
+net/minecraft/world/item/enchantment/EnchantmentHelper	getRespiration	(Lnet/minecraft/world/entity/LivingEntity;)I	MiddleCompat	getRespiration
+net/minecraft/world/item/crafting/Ingredient	fromJson	(Lcom/google/gson/JsonElement;Z)Lnet/minecraft/world/item/crafting/Ingredient;	MiddleCompat	ingredientFromJson
+net/minecraft/world/item/crafting/Ingredient	isVanilla	()Z	MiddleCompat	isVanilla
+net/minecraft/world/item/crafting/Ingredient	checkInvalidation	()Z	MiddleCompat	checkInvalidation
+net/minecraft/world/item/crafting/Ingredient	invalidate	()V	MiddleCompat	invalidate
+net/minecraft/world/item/crafting/Ingredient	invalidateAll	()V	MiddleCompat	invalidateAll
+net/minecraft/world/item/crafting/Ingredient	merge	(Ljava/util/Collection;)Lnet/minecraft/world/item/crafting/Ingredient;	MiddleCompat	merge
+net/minecraft/network/FriendlyByteBuf	readWithCodec	(Lcom/mojang/serialization/DynamicOps;Lcom/mojang/serialization/Codec;)Ljava/lang/Object;	MiddleCompat	readWithCodec
+net/minecraft/network/FriendlyByteBuf	writeWithCodec	(Lcom/mojang/serialization/DynamicOps;Lcom/mojang/serialization/Codec;Ljava/lang/Object;)V	MiddleCompat	writeWithCodec
+net/minecraft/server/MinecraftServer	getServerDirectory	()Ljava/io/File;	MiddleCompat	getServerDirectory
+net/minecraft/server/MinecraftServer	getFile	(Ljava/lang/String;)Ljava/io/File;	MiddleCompat	getServerFile
+net/minecraft/server/MinecraftServer	isNetherEnabled	()Z	MiddleCompat	isNetherEnabled
+net/minecraft/world/level/Level	getFreeMapId	()I	MiddleCompat	getFreeMapId
+net/minecraft/world/level/Level	getExistingBlockEntity	(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/entity/BlockEntity;	MiddleCompat	getExistingBlockEntity
+net/minecraft/world/level/Level	dimensionTypeId	()Lnet/minecraft/resources/ResourceKey;	MiddleCompat	dimensionTypeId
