@@ -201,10 +201,11 @@ public final class Forge1201Transformer {
         int rewrites = 0;
         List<ClassNode> nodes = new ArrayList<>();
         Mc1201Hierarchy hierarchy = new Mc1201Hierarchy();
+        java.util.Set<String> serializable = SerialUids.serializable(classes);
         for (var e : classes.entrySet()) {
             ClassNode node = new ClassNode();
             try {
-                new ClassReader(e.getValue()).accept(new ClassRemapper(node, mapper), 0);
+                new ClassReader(e.getValue()).accept(SerialUids.head(serializable, e.getValue(), new ClassRemapper(node, mapper)), 0);
             } catch (RuntimeException ex) {
                 result.notes.add("Skipped unreadable class " + e.getKey() + ": " + ex);
                 continue;
