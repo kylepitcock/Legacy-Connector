@@ -64,3 +64,6 @@ net/minecraft/advancements/critereon/AbstractCriterionTriggerInstance	org/kylepi
 net/minecraft/advancements/critereon/DeserializationContext	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyDeserializationContext
 net/minecraft/advancements/critereon/SerializationContext	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacySerializationContext
 net/minecraft/data/recipes/FinishedRecipe	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyFinishedRecipe
+net/neoforged/neoforge/common/crafting/StrictNBTIngredient	net/minecraft/world/item/crafting/Ingredient
+net/neoforged/neoforge/common/crafting/PartialNBTIngredient	net/minecraft/world/item/crafting/Ingredient
+net/minecraft/server/packs/repository/Pack$ResourcesSupplier	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyResourcesSupplier

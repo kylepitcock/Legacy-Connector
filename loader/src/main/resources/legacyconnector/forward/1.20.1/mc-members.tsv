@@ -36,3 +36,36 @@ net/minecraft/world/item/crafting/ShapedRecipe	getRecipeHeight	*	getHeight
 net/minecraft/advancements/Advancement	getId	*	id
 net/minecraft/advancements/critereon/ItemPredicate	matches	*	test
 net/minecraft/advancements/CriterionTrigger$Listener	getTriggerInstance	*	trigger
+# --- middle/tail batch 1
+net/minecraft/world/entity/Entity	onAddedToWorld	*	onAddedToLevel
+net/minecraft/world/entity/Entity	onRemovedFromWorld	*	onRemovedFromLevel
+net/minecraft/world/entity/Entity	isAddedToWorld	*	isAddedToLevel
+net/minecraft/world/entity/Entity	teleportToWithTicket	*	teleportTo
+net/minecraft/world/entity/LivingEntity	onAddedToWorld	*	onAddedToLevel
+net/minecraft/world/entity/LivingEntity	onRemovedFromWorld	*	onRemovedFromLevel
+net/minecraft/world/entity/LivingEntity	isAddedToWorld	*	isAddedToLevel
+net/minecraft/world/entity/LivingEntity	teleportToWithTicket	*	teleportTo
+net/minecraft/world/entity/player/Player	onAddedToWorld	*	onAddedToLevel
+net/minecraft/world/entity/player/Player	onRemovedFromWorld	*	onRemovedFromLevel
+net/minecraft/world/entity/player/Player	isAddedToWorld	*	isAddedToLevel
+net/minecraft/world/entity/player/Player	teleportToWithTicket	*	teleportTo
+net/minecraft/server/level/ServerPlayer	onAddedToWorld	*	onAddedToLevel
+net/minecraft/server/level/ServerPlayer	onRemovedFromWorld	*	onRemovedFromLevel
+net/minecraft/server/level/ServerPlayer	isAddedToWorld	*	isAddedToLevel
+net/minecraft/server/level/ServerPlayer	teleportToWithTicket	*	teleportTo
+net/minecraft/world/entity/Mob	onAddedToWorld	*	onAddedToLevel
+net/minecraft/world/entity/Mob	onRemovedFromWorld	*	onRemovedFromLevel
+net/minecraft/world/entity/Mob	isAddedToWorld	*	isAddedToLevel
+net/minecraft/world/entity/Mob	teleportToWithTicket	*	teleportTo
+# --- middle/tail batch 2
+com/mojang/blaze3d/vertex/VertexFormatElement	getByteSize	*	byteSize
+com/mojang/blaze3d/vertex/VertexFormatElement	getType	*	type
+com/mojang/blaze3d/vertex/VertexFormatElement	getIndex	*	index
+com/mojang/blaze3d/vertex/VertexFormatElement	getUsage	*	usage
+com/mojang/blaze3d/vertex/VertexFormatElement	getCount	*	count
+com/mojang/blaze3d/vertex/VertexFormatElement	getElementCount	*	count
+# --- middle/tail batch 3
+net/minecraft/core/Holder	getTagKeys	*	tags
+net/minecraft/core/Holder	containsTag	*	is
+net/minecraft/core/Holder$Reference	getTagKeys	*	tags
+net/minecraft/core/Holder$Reference	containsTag	*	is
