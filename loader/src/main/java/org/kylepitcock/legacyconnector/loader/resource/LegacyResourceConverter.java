@@ -94,7 +94,10 @@ public final class LegacyResourceConverter {
             data = sanitizeMcmeta(data);
         } else if (modern.endsWith(".json") && (modern.contains("/models/") || modern.contains("/blockstates/"))) {
             data = lowercaseResourceRefs(data);
-            if (modern.contains("/models/")) addVineModels(data);
+            if (modern.contains("/models/")) {
+                data = qualifySelfParent(data, modern);
+                addVineModels(data);
+            }
         }
         ctm.offer(modern, data);
         output.putIfAbsent(modern, data);
@@ -308,6 +311,52 @@ public final class LegacyResourceConverter {
             }
             return data; // keep malformed JSON byte-identical; the vanilla loader will report it
         }
+    }
+
+    /**
+     * A model whose bare {@code parent} names the model's own path ({@code assets/mod/models/item/generated.json} with
+     * {@code "parent": "item/generated"}: a mod overriding vanilla's display transforms) means the vanilla model of that path in 1.12. A bare parent
+     * is looked up in the model's own namespace first here, so it would be its own parent: a StackOverflowError in vanilla's parent resolution that
+     * makes the game drop its resource packs and reload in the middle of loading (The Dalek Mod never reached the main menu).
+     */
+    static byte[] qualifySelfParent(byte[] data, String assetPath) {
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("assets/[^/]+/models/(.+)\\.json").matcher(assetPath);
+        if (!m.matches()) return data;
+        try {
+            JsonElement root = JsonParser.parseString(new String(data, StandardCharsets.UTF_8));
+            if (root instanceof JsonObject obj) {
+                boolean changed = false;
+                if (obj.get("parent") instanceof JsonPrimitive p && p.isString()) {
+                    String parent = p.getAsString();
+                    if (parent.indexOf(':') < 0 && parent.equalsIgnoreCase(m.group(1))) {
+                        obj.addProperty("parent", "minecraft:" + parent);
+                        changed = true;
+                    }
+                }
+                // an item override whose model is the model itself (predicate ext=1 -> this very model: The Dalek Mod's sonic screwdriver) is the
+                // base model: 1.12 resolved it as that, here vanilla's dependency resolution recurses forever (StackOverflowError while loading)
+                if (obj.get("overrides") instanceof JsonArray overrides) {
+                    String self = assetPath.substring("assets/".length(), assetPath.indexOf('/', "assets/".length())) + ":" + m.group(1);
+                    JsonArray kept = new JsonArray();
+                    for (JsonElement o : overrides) {
+                        if (o instanceof JsonObject oo && oo.get("model") instanceof JsonPrimitive mp && mp.isString()) {
+                            String ref = mp.getAsString().toLowerCase(java.util.Locale.ROOT);
+                            String qualified = ref.indexOf(':') < 0 ? self.substring(0, self.indexOf(':') + 1) + ref : ref;
+                            if (qualified.equalsIgnoreCase(self)) {
+                                changed = true;
+                                continue;
+                            }
+                        }
+                        kept.add(o);
+                    }
+                    if (changed) obj.add("overrides", kept);
+                }
+                if (changed) return GSON.toJson(root).getBytes(StandardCharsets.UTF_8);
+            }
+        } catch (RuntimeException e) {
+            // malformed JSON stays as it is
+        }
+        return data;
     }
 
     /** The JSON text with the brackets still open at its end closed, or null when it is not cut off inside brackets. */
