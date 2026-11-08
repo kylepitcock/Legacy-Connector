@@ -135,9 +135,9 @@ def dotted(kind, sym):
     return sym.replace("/", ".")
 
 
-def run_gap1201(jar_dir, out):
+def run_gap1201(jar_dir, out, keep_detail=None):
     """The 1.20.1 equivalent of run_probe: ./gradlew gap1201 over the directory, converted to the records checkLegacyMod writes."""
-    jars = sorted(pathlib.Path(jar_dir).rglob("*.jar"))
+    jars = sorted(pathlib.Path(jar_dir).glob("*.jar"))   # as the gradle task does: top level only (a pack's .connector/ holds Sinytra's remapped Fabric jars)
     if not jars:
         sys.exit(f"no jars in {jar_dir}")
     tmp = pathlib.Path(tempfile.mkdtemp(prefix="gap1201-"))
@@ -151,6 +151,9 @@ def run_gap1201(jar_dir, out):
     detail = pathlib.Path(str(report) + ".detail.tsv")
     if r.returncode != 0 or not detail.exists():
         sys.exit(r.stdout[-3000:] + "\nprobe failed")
+    if keep_detail:   # the full per-jar symbol list (records keep only 20): tools/compat/atm9_run.py ranks the blockers from it
+        import shutil
+        shutil.copyfile(detail, keep_detail)
     missing, refs = {}, {}
     for line in detail.read_text(encoding="utf-8").splitlines():
         jar, k, sym = line.split("\t", 2)
@@ -423,6 +426,7 @@ def main():
     ap.add_argument("--json", help="keep the raw probe records here")
     ap.add_argument("--from-json", help="skip translation, convert this probe file")
     ap.add_argument("--source", default="", help="label of the jar population (e.g. modrinth for CI); runs of different sources are kept and compared separately")
+    ap.add_argument("--detail", help="1.20.1: keep the full <jar, kind, symbol> report (gap1201 detail.tsv) here")
     ap.add_argument("--no-history", action="store_true", help="do not add the run to docs/data/probe.json")
     ap.add_argument("--fail-on-regression", action="store_true", help="exit 2 when a mod got worse than in the previous run (after writing the results)")
     ap.add_argument("--dry-run", action="store_true")
@@ -431,7 +435,7 @@ def main():
         path = a.from_json
     elif a.jar_dir:
         path = a.json or tempfile.mktemp(suffix=".json")
-        (run_gap1201 if a.mc == "1.20.1" else run_probe)(a.jar_dir, path)
+        run_gap1201(a.jar_dir, path, a.detail) if a.mc == "1.20.1" else run_probe(a.jar_dir, path)
     else:
         ap.error("jar directory or --from-json required")
     records = json.loads(pathlib.Path(path).read_text(encoding="utf-8"))

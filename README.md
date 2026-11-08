@@ -6,10 +6,11 @@
 
 Run **unmodified legacy Forge mods on NeoForge 1.21.1**. Drop 1.7.10, 1.12.2, 1.6.4, 1.5.2 or 1.4.7 mod jars into your `mods` folder next to
 this mod; it is translated at load time, the same way [Sinytra Connector](https://github.com/Sinytra/Connector)
-runs Fabric mods on NeoForge. The original jar is never modified. Legacy jars can also go in `mods/1.7.10/`, `mods/1.12.2/`,
-`mods/1.6.4/`, `mods/1.5.2/` or `mods/1.4.7/`; mods that bundle their own Mixin (common in 1.12.2: Spartan Weaponry, MixinBooter mods) must, because
+runs Fabric mods on NeoForge. The original jar is never modified. Legacy jars live in the folder of their Minecraft version (`mods/1.7.10/`, `mods/1.12.2/`,
+`mods/1.6.4/`, `mods/1.5.2/`, `mods/1.4.7/`, `mods/1.20.1/`): ones you drop into `mods/` itself are moved there for you on launch
+(`legacy.autoSortMods=false` turns that off). It matters for mods that bundle their own Mixin (common in 1.12.2: Spartan Weaponry, MixinBooter mods):
 NeoForge loads such jars from `mods/` as launcher plugins before they can be translated, and the game stops with
-"Module ... contains package org.spongepowered...".
+"Module ... contains package org.spongepowered..." (move them to the folder before the first launch).
 
 > **Status: beta (0.4.x).** The point is mods that **only exist on these old versions** and never got a 1.21.1 port.
 > 1.7.10 is in beta: Thaumcraft 4, Witchery, HBM's Nuclear Tech, the Reika mods (RotaryCraft, ReactorCraft, ChromatiCraft),
