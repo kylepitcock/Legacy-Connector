@@ -6,7 +6,7 @@ Which legacy Minecraft versions the layer supports or will support, in order, an
 |---|---|---|---|---|
 | 1 | 1.7.10 | Beta | Huge pool of mods with no modern port (Thaumcraft 4, Witchery, GTNH, the Reika mods...) | Hand-written shim over 1.21.1 |
 | 2 | 1.12.2 | Beta (2026-11-07) | The largest old pool of mods with no modern port | Hand-written shim (169k lines) |
-| 3 | 1.6.4 | Alpha (2026-11-07) | Closest old version to 1.7.10 (same `cpw.mods.fml` packages); cheap | Thin forward layer over the 1.7.10 shim: numeric ids, `Icon`, old packets ([estimate](Legacy-1.6.4-Estimate.md), [corpus](Legacy-1.6.4-Corpus.md)) |
+| 3 | 1.6.4 | Beta (2026-11-08) | Closest old version to 1.7.10 (same `cpw.mods.fml` packages); cheap | Thin forward layer over the 1.7.10 shim: numeric ids, `Icon`, old packets ([estimate](Legacy-1.6.4-Estimate.md), [corpus](Legacy-1.6.4-Corpus.md)) |
 | 4 | 1.5.2 | Alpha (2026-11-07) | Same numeric-id and old packet model as 1.6.4, so a small delta while that work is fresh; the FTB Ultimate/Unleashed era with mods that exist only there (Thaumcraft 3, early Railcraft/Forestry/BuildCraft, Equivalent Exchange 2) | Delta over the 1.6.4 layer |
 | 5 | 1.4.7 | Alpha (2026-11-07) | Same model; the Hexxit era | Delta over 1.5.2 plus obfuscated/flat class names, ModLoader `BaseMod` mods and sprite-sheet textures ([estimate](Legacy-1.4.7-Estimate.md), [corpus](Legacy-1.4.7-Corpus.md)) |
 | 6 | 1.20.1 | Alpha (2026-11-08) | Largest Forge ecosystem; most popular mods have 1.21.1 ports, so the value is the abandoned set; its pipeline is the base of the next three | In-place bytecode migration onto NeoForge 1.21.1 ([estimate](Legacy-1.20.1-Estimate.md)) |
