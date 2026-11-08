@@ -593,9 +593,16 @@ regressions successfully. These are bounded visual checks, with no Sodium/Iris c
 compatibility. [The jail and client rendering snapshot](../data/b173-jail-client-render-validation-2026-11-08.json) records
 the source hashes, 477 passing tests, reproduced failures and reviewed captures. Existing malformed structures are not migrated.
 
-A separate API gap remains in native squid views: their Beta SquidEntity
-and WaterCreatureEntity identity is not yet represented, although the cap census handles native WaterAnimal ancestry directly.
-Actual aquatic prey bytecode does not establish a broken Mo' Creatures predation path from that view gap.
+Ordinary native Squid and GlowSquid now expose canonical Beta `SquidEntity` / `WaterCreatureEntity` views to original callbacks
+and typed World queries. The eight animation fields are read snapshots of the native instance. Native entity types, goals,
+spawning, renderer and loot retain their existing lifecycle. Fresh translation caches are required so original class literals
+resolve the handwritten Squid shim rather than the older synthesized placeholder.
+
+Actual Mo' Creatures checks use its translated Squid class literal and exercise Shark/Piranha selection and damage plus Dolphin
+exclusion. Those prey policies already passed before the identity fix; the reproduced failure was the missing typed ancestry.
+Actual More Creeps Bullet callbacks hit wet native Squid and GlowSquid, alongside canonical-view, animation and native-goal/loot
+checks. [The native Squid validation snapshot](../data/b173-native-squid-validation-2026-11-08.json) records isolated actual-mod
+runs and the reproduced identity failures.
 
 The opt-in `naturalSpawnTickSelfTest` observer uses a real tracked native player and ordinary server ticks, recording candidate
 checks, finalization and confirmed world insertion separately. Isolated observations confirm original aquatic, hostile and

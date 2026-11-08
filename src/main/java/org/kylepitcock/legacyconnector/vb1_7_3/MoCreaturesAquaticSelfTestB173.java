@@ -33,7 +33,37 @@ public final class MoCreaturesAquaticSelfTestB173 {
     }
     @FunctionalInterface private interface Proof {void run(Context context)throws ReflectiveOperationException;}
     private record Case(String name,Proof proof){}
-    private static void run(net.minecraft.server.level.ServerLevel level){var selected=ContentB173.entities().stream().filter(r->r.type().getPackageName().equals("legacyconnector_b173.mocreatures")).findFirst();if(selected.isEmpty())return;var cases=List.of(new Case("original aquatic prey policies",MoCreaturesAquaticSelfTestB173::prey),new Case("original aquatic contact damage",MoCreaturesAquaticSelfTestB173::contact),new Case("original fishy offspring",MoCreaturesAquaticSelfTestB173::offspring),new Case("original aquatic drops and persistence",MoCreaturesAquaticSelfTestB173::policies));var failures=new ArrayList<String>();for(var proof:cases)try(var c=new Context(level,selected.get())){proof.proof.run(c);LOG.info("B1.7.3 MOC AQUATIC TEST: {} passed using original callbacks",proof.name);}catch(ReflectiveOperationException|RuntimeException|LinkageError e){failures.add(proof.name+": "+e);LOG.error("B1.7.3 MOC AQUATIC TEST failed: {}",proof.name,e);}require(failures.isEmpty(),"B1.7.3 MOC AQUATIC TEST: "+failures);LOG.info("B1.7.3 MOC AQUATIC TEST: all {} specialized original-callback proofs passed",cases.size());}
+    private static void run(net.minecraft.server.level.ServerLevel level){var selected=ContentB173.entities().stream().filter(r->r.type().getPackageName().equals("legacyconnector_b173.mocreatures")).findFirst();if(selected.isEmpty())return;var cases=List.of(new Case("native squid typed legacy views",MoCreaturesAquaticSelfTestB173::squidIdentity),new Case("original native squid prey policies",MoCreaturesAquaticSelfTestB173::squidPrey),new Case("original aquatic prey policies",MoCreaturesAquaticSelfTestB173::prey),new Case("original aquatic contact damage",MoCreaturesAquaticSelfTestB173::contact),new Case("original fishy offspring",MoCreaturesAquaticSelfTestB173::offspring),new Case("original aquatic drops and persistence",MoCreaturesAquaticSelfTestB173::policies));var failures=new ArrayList<String>();for(var proof:cases)try(var c=new Context(level,selected.get())){proof.proof.run(c);LOG.info("B1.7.3 MOC AQUATIC TEST: {} passed using original callbacks",proof.name);}catch(ReflectiveOperationException|RuntimeException|LinkageError e){failures.add(proof.name+": "+e);LOG.error("B1.7.3 MOC AQUATIC TEST failed: {}",proof.name,e);}require(failures.isEmpty(),"B1.7.3 MOC AQUATIC TEST: "+failures);LOG.info("B1.7.3 MOC AQUATIC TEST: all {} specialized original-callback proofs passed",cases.size());}
+    private static net.minecraft.world.entity.animal.Squid squid(Context c){
+        var squid=net.minecraft.world.entity.EntityType.SQUID.create(c.level);require(squid!=null,"native squid constructed");
+        squid.setPos(c.origin.getX()+1.5,c.origin.getY(),c.origin.getZ()+.5);squid.setNoAi(true);require(c.level.addFreshEntity(squid),"native squid enters loaded query sections");return squid;
+    }
+    private static void squidIdentity(Context c)throws ReflectiveOperationException {
+        var squid=squid(c);c.wet();squid.baseTick();var view=EntityViewsB173.wrap(squid);
+        require(view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.WaterCreatureEntity,"native squid exposes Beta WaterCreature identity");
+        // This class was supplied by the actual mod's AddSpawn/RemoveSpawn class literal, not guessed
+        // from a manually constructed shim. It may be the linked shim or a synthesized counterpart.
+        var originalClass=SpawnRulesB173.changes().stream().map(SpawnRulesB173.Entry::type).filter(type->type.getSimpleName().equals("SquidEntity")).findFirst().orElseThrow();
+        require(Class.forName(originalClass.getName(),false,c.registration.type().getClassLoader())==originalClass&&originalClass.isInstance(view),"native view matches actual mod-loader Squid class literal");
+        var box=legacyconnector.vb1_7_3.net.minecraft.util.math.Box.create(c.origin.getX()-3,c.origin.getY()-2,c.origin.getZ()-3,c.origin.getX()+4,c.origin.getY()+4,c.origin.getZ()+4);
+        require(c.world.collectEntitiesByClass(originalClass,box).contains(view)&&c.world.collectEntitiesByClass(legacyconnector.vb1_7_3.net.minecraft.entity.WaterCreatureEntity.class,box).contains(view),"actual World typed Squid and WaterCreature queries retain native squid");
+        require(EntityViewsB173.wrap(squid)==view&&c.world.getEntities(null,box).contains(view),"typed and untyped native squid queries retain stable wrapper identity");
+        require(view.mcc$modern==squid&&squid.getClass()==net.minecraft.world.entity.animal.Squid.class&&squid.isNoAi(),"typed view keeps original native squid host and native AI state");
+    }
+    private static void squidPrey(Context c)throws ReflectiveOperationException {
+        var shark=c.spawn("EntityShark",0);var squid=squid(c);c.wet();squid.baseTick();var view=EntityViewsB173.wrap(squid);require(view instanceof LivingEntity&&view.isSubmergedInWater(),"native squid living view exposes actual wet state");
+        put(shark.legacy(),"b",1.5F);put(shark.legacy(),"tamed",false);c.setting("attackdolphins",false);
+        require(c.invoke(shark,"FindTarget",new Class<?>[]{Entity.class,double.class},shark.legacy(),16D)==view&&c.invoke(shark,"getTargetInRange",new Class<?>[]{})==view,"original wild shark selects wet native squid independently of dolphin setting");
+        put(shark.legacy(),"tamed",true);require(c.invoke(shark,"getTargetInRange",new Class<?>[]{})==view,"original tame shark excludes dolphins but still accepts native squid");
+        squid.setHealth(10);squid.invulnerableTime=0;c.invoke(shark,"attack",new Class<?>[]{Entity.class,float.class},view,1F);require(squid.getHealth()==5,"original shark contact deals five damage to native squid");shark.discard();
+        var dolphin=c.spawn("EntityDolphin",0);put(dolphin.legacy(),"b",1.5F);c.setting("attackdolphins",true);c.wet();squid.baseTick();
+        require(c.invoke(dolphin,"FindTarget",new Class<?>[]{Entity.class,double.class},dolphin.legacy(),12D)==null&&c.invoke(dolphin,"getTargetInRange",new Class<?>[]{})==null,"original dolphin shark-only policy rejects native squid");dolphin.discard();
+        var fish=c.spawn("EntityFishy",0);put(fish.legacy(),"b",1.5F);put(fish.legacy(),"typeint",10);c.wet();squid.baseTick();
+        require(c.invoke(fish,"getTargetInRange",new Class<?>[]{})==view,"original piranha accepts native squid while excluding original custom aquatic family");
+        put(fish.legacy(),"typeint",9);require(c.invoke(fish,"getTargetInRange",new Class<?>[]{})==null,"original ordinary fish has no native squid predation");
+        put(fish.legacy(),"typeint",10);put(fish.legacy(),"b",.9F);require(c.invoke(fish,"getTargetInRange",new Class<?>[]{})==null,"original juvenile piranha retains size gate for native prey");
+        put(fish.legacy(),"b",1.5F);squid.setHealth(10);squid.invulnerableTime=0;c.invoke(fish,"attack",new Class<?>[]{Entity.class,float.class},view,1F);require(squid.getHealth()==9,"original piranha contact deals one damage to native squid");
+    }
     private static void prey(Context c)throws ReflectiveOperationException {
         var shark=c.spawn("EntityShark",0);var dolphin=c.spawn("EntityDolphin",2);c.wet();put(shark.legacy(),"b",1.5F);put(dolphin.legacy(),"b",1.5F);c.setting("attackdolphins",false);
         require(c.invoke(shark,"getTargetInRange",new Class<?>[]{})==null&&c.invoke(dolphin,"getTargetInRange",new Class<?>[]{})==null,"original attackdolphins=false blocks both aquatic predators");

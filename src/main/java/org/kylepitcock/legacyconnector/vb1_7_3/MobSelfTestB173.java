@@ -40,6 +40,7 @@ public final class MobSelfTestB173 {
         MoreCreepsRenderVariantSelfTestB173.register(game);
         MoreCreepsRenderCoverageSelfTestB173.register(game);
         MoreCreepsJailSelfTestB173.register(game);
+        MoreCreepsSquidViewSelfTestB173.register(game);
         MoreCreepsNavigationSelfTestB173.register(game);
         MoreCreepsRemainingSelfTestB173.register(game);
         MoreCreepsEffectsSelfTestB173.register(game);

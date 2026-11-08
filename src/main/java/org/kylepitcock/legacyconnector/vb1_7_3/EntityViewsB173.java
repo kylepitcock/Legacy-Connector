@@ -129,6 +129,13 @@ public final class EntityViewsB173 {
             item.stack=StacksB173.toLegacy(nativeItem.getItem());item.itemAge=EntityFieldsB173.itemAge(nativeItem);item.pickupDelay=EntityFieldsB173.pickupDelay(nativeItem);
         }
         if(view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.mob.CreeperEntity creeper&&modern instanceof net.minecraft.world.entity.monster.Creeper nativeCreeper)creeper.fuseTime=EntityFieldsB173.creeperFuse(nativeCreeper);
+        if(view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.passive.SquidEntity squid&&modern instanceof net.minecraft.world.entity.animal.Squid nativeSquid){
+            // Read snapshots only: native animation and swimming remain authoritative on ordinary native entities.
+            squid.tiltAngle=nativeSquid.xBodyRot;squid.lastTiltAngle=nativeSquid.xBodyRotO;
+            squid.rollAngle=nativeSquid.zBodyRot;squid.lastRollAngle=nativeSquid.zBodyRotO;
+            squid.thrustTimer=nativeSquid.tentacleMovement;squid.lastThrustTimer=nativeSquid.oldTentacleMovement;
+            squid.tentacleAngle=nativeSquid.tentacleAngle;squid.lastTentacleAngle=nativeSquid.oldTentacleAngle;
+        }
         // Register before resolving relations/targets/owners, which may point back to this entity.
         touch(modern,view);
         view.vehicle=wrap(modern.getVehicle());view.passenger=wrap(modern.getFirstPassenger());
@@ -151,6 +158,7 @@ public final class EntityViewsB173 {
         if(modern instanceof net.minecraft.world.entity.projectile.AbstractArrow)return new legacyconnector.vb1_7_3.net.minecraft.entity.projectile.ArrowEntity(world);
         if(modern instanceof net.minecraft.world.entity.monster.Creeper)return new legacyconnector.vb1_7_3.net.minecraft.entity.mob.CreeperEntity(world);
         if(modern instanceof net.minecraft.world.entity.monster.Monster)return new legacyconnector.vb1_7_3.net.minecraft.entity.mob.MonsterEntity(world) {};
+        if(modern instanceof net.minecraft.world.entity.animal.Squid)return new legacyconnector.vb1_7_3.net.minecraft.entity.passive.SquidEntity(world);
         if(modern instanceof net.minecraft.world.entity.animal.Sheep)return new legacyconnector.vb1_7_3.net.minecraft.entity.passive.SheepEntity(world);
         if(modern instanceof net.minecraft.world.entity.animal.Cow)return new legacyconnector.vb1_7_3.net.minecraft.entity.passive.CowEntity(world);
         if(modern instanceof net.minecraft.world.entity.animal.Wolf)return new legacyconnector.vb1_7_3.net.minecraft.entity.passive.WolfEntity(world);
