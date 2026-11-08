@@ -121,6 +121,10 @@ public final class JavaCompatRedirects {
         // authlib 6 has no com.mojang.util.UUIDTypeAdapter: its string conversions live in LibraryCompat.
         staticToStatic("com/mojang/util/UUIDTypeAdapter", "fromString", "(Ljava/lang/String;)Ljava/util/UUID;", COMPAT + "LibraryCompat", "uuidFromString");
         staticToStatic("com/mojang/util/UUIDTypeAdapter", "fromUUID", "(Ljava/util/UUID;)Ljava/lang/String;", COMPAT + "LibraryCompat", "uuidToString");
+        // Guava 26 removed CheckedFuture: the result becomes a ListenableFuture (its supertype, which is how callers use it).
+        INVOKES.put("com/google/common/util/concurrent/Futures.immediateCheckedFuture(Ljava/lang/Object;)Lcom/google/common/util/concurrent/CheckedFuture;",
+                new MethodInsnNode(Opcodes.INVOKESTATIC, COMPAT + "GuavaCompat", "immediateCheckedFuture",
+                        "(Ljava/lang/Object;)Lcom/google/common/util/concurrent/ListenableFuture;", false));
         // Guava 26: Futures.addCallback needs an executor.
         staticToStatic("com/google/common/util/concurrent/Futures", "addCallback",
                 "(Lcom/google/common/util/concurrent/ListenableFuture;Lcom/google/common/util/concurrent/FutureCallback;)V", COMPAT + "GuavaCompat", "addCallback");

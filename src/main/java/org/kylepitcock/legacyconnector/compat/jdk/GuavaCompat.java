@@ -27,6 +27,11 @@ public final class GuavaCompat {
         com.google.common.util.concurrent.Futures.addCallback(future, callback, com.google.common.util.concurrent.MoreExecutors.directExecutor());
     }
 
+    /** Guava 26 removed {@code CheckedFuture} and {@code Futures.immediateCheckedFuture}; callers use the result as a plain future (BuildCraft's chunk cache). */
+    public static <V> com.google.common.util.concurrent.ListenableFuture<V> immediateCheckedFuture(V value) {
+        return com.google.common.util.concurrent.Futures.immediateFuture(value);
+    }
+
     private static final java.util.Map<ClassLoader, com.google.common.reflect.ClassPath> CLASS_PATHS = new java.util.concurrent.ConcurrentHashMap<>();
 
     /**
