@@ -113,9 +113,15 @@ public final class Platform1122 implements LegacyPlatform {
                 mod.instance = scalaModule.getField("MODULE$").get(null);
             } else {
                 mod.mainClass = Class.forName(mod.mainClassName, true, loader);
-                var ctor = mod.mainClass.getDeclaredConstructor();
-                ctor.setAccessible(true);
-                mod.instance = ctor.newInstance();
+                var constants = mod.mainClass.getEnumConstants();
+                if (constants != null && constants.length > 0) {
+                    // an enum mod class (Numina: enum Numina { INSTANCE }): FML 1.12 used its first constant
+                    mod.instance = constants[0];
+                } else {
+                    var ctor = mod.mainClass.getDeclaredConstructor();
+                    ctor.setAccessible(true);
+                    mod.instance = ctor.newInstance();
+                }
             }
             injectInstanceAndMetadata(mod, container);
             injectProxies(mod, loader);
