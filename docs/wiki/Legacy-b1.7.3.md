@@ -765,6 +765,21 @@ callback runs on the server's and on the client's level here (as every block cal
 - **`displayGUIChest`** (`openChestScreen`) opens a vanilla chest menu over the legacy inventory (`LegacyInventoryB173`, whole rows only).
   Vanilla `TileEntityChest` (`ChestBlockEntity`), `ContainerChest` (`GenericContainerScreenHandler`) and `GuiChest` (`DoubleChestScreen`)
   are the shim's, for mods' own chests (Aether's treasure chests extend them).
+- **Text fields and language labels** use the shared Beta `TextFieldWidget` and `TranslationStorage` APIs. Text fields retain
+  the original focus, enabled state, character filter, backspace, maximum length and blinking end caret. An explicit Ctrl-V
+  event carries the client clipboard only for that screen callback, including server-owned naming screens. Beta's separate
+  32-character paste limit is preserved. Original screen callbacks still decide whether Save, Cancel or Done commits a name.
+- **Entity query results** retain Beta's list ownership rules: `World.getEntities(Entity, Box)` clears and returns one mutable
+  list per world; `collectEntitiesByClass` returns an independent mutable list. This matters when original gameplay retains
+  an earlier query while issuing another one, including Mo' Creatures' bunny breeding loop. Native world queries are unchanged.
+
+The [pet naming and query validation snapshot](../data/b173-pet-naming-validation-2026-11-08.json) records actual original
+More Creeps Giraffe and Mo' Creatures Horse naming through native client interactions, keyboard/pointer events and real
+save/reopen. More Creeps covers focus, typing, its original 31-character limit, explicit paste, Save and Cancel; Mo' Creatures
+retains its own 15-character `MoCGUI` and Done behavior. An actual original Bunny breeding tick also exercises the wide-query /
+empty-nearby-query crash boundary. Both mods pass fresh isolated server regressions. These checks do not establish complete
+mod compatibility: standard living-renderer hurt/death tint passes remain missing, and Hotdog animated fire, natural births
+and full Werewolf transformation sequences still need end-to-end client checks.
 - **Placing a subtype.** b1.7.3's `ItemBlock` set block and metadata together (`getPlacedBlockMetadata` of the damage), so `onBlockAdded`
   and the tile entity it makes see the subtype; `getStateForPlacement` does the same (before, a Minefactory translocator or crafter
   placed from its item got the tile entity of metadata 0 and opened nothing).
