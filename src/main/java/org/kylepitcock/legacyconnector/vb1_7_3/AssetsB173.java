@@ -132,6 +132,14 @@ public final class AssetsB173 implements GeneratedPack.Contributor {
     private Map<String, Supplier<byte[]>> out;
     private int missing;
     private static final Map<Block,Map<Integer,String>> WORLD_TEXTURES = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final Map<String,String> SPRITE_REFS=new java.util.concurrent.ConcurrentHashMap<>();
+    /** Single-sprite texture used by original terrain/item particle renderers. */
+    public static ResourceLocation particleSprite(int group,int index){
+        String sheet=group==1?TERRAIN:group==2?ITEMS:null;if(sheet==null)return null;
+        String reference=SPRITE_REFS.get(sheet+"#"+index);
+        if(reference==null){String vanilla=(group==1?VANILLA_TERRAIN:VANILLA_ITEMS).get(index);if(vanilla!=null)reference="minecraft:"+(group==1?"block/":"item/")+vanilla;}
+        if(reference==null)return null;var id=ResourceLocation.parse(reference);return ResourceLocation.fromNamespaceAndPath(id.getNamespace(),"textures/"+id.getPath()+".png");
+    }
 
     /** Palette baked into the atlas for world-dependent face selection. */
     public static Map<Integer,String> worldTextures(Block block) { return WORLD_TEXTURES.getOrDefault(block,Map.of()); }
@@ -174,11 +182,14 @@ public final class AssetsB173 implements GeneratedPack.Contributor {
         AnimationsB173.registerHooks();
         ProjectileTexturesB173.contribute(out);
         sprites.clear();
+        SPRITE_REFS.clear();
         sheets.clear();
         withAlpha.clear();
         missing = 0;
         overrides = new HashMap<>();
         for (var o : ContentB173.textureOverrides()) overrides.put(o.sheet() + "#" + o.index(), o);
+        // Overrides can be consumed exclusively by particle callbacks, without an item or block model referencing them.
+        for(var override:ContentB173.textureOverrides())texture(override.mod(),override.sheet(),override.index(),ITEMS.equals(override.sheet()));
         for(var animation:AnimationsB173.entries())if(animation.owner()!=null){
             int repeat=Math.max(1,animation.effect().replicate);
             for(int y=0;y<repeat;y++)for(int x=0;x<repeat;x++)texture(animation.owner(),animation.sheet(),animation.effect().sprite+x+y*16,animation.effect().atlas==1);
@@ -463,6 +474,7 @@ public final class AssetsB173 implements GeneratedPack.Contributor {
             ref = MISSING;
         }
         sprites.put(key, ref);
+        SPRITE_REFS.put(key,ref);
         return ref;
     }
 

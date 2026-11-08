@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
  * <ul>
  * <li>server, a {@code GuiContainer}: a {@link LegacyB173Menu} over its container. In single player the GUI object itself goes to the
  * client screen (handed over by id: same JVM), as b1.7.3's single player drew the GUI over the very tile entity that ticks;</li>
- * <li>server, another screen: shown on the client in single player (same object); a dedicated server cannot show it;</li>
+ * <li>server, another screen: original callbacks remain on the server; drawing and input cross the generic screen-session connection;</li>
  * <li>client: ignored in single player (the server's call shows it); on a server a {@code GuiContainer} waits for its menu (matched by
  * class) and another screen opens right away.</li>
  * </ul>
@@ -38,6 +38,29 @@ public final class MenusB173 {
     private static final AtomicInteger NEXT = new AtomicInteger();
     private static volatile MenuType<LegacyB173Menu> type;
     private static volatile Client client;
+    private static final class Actor {
+        final ServerPlayer player;Screen requested;boolean pending;
+        Actor(ServerPlayer player){this.player=player;}
+    }
+    private static final ThreadLocal<Actor> ACTOR=new ThreadLocal<>();
+    /** Defer nested screen construction until the initiating callback has committed its player inventory. */
+    public static void withActor(ServerPlayer player,Runnable callback){
+        Actor previous=ACTOR.get();if(previous!=null&&previous.player==player){callback.run();return;}
+        Actor actor=new Actor(player);ACTOR.set(actor);boolean completed=false;
+        try{callback.run();completed=true;}
+        finally{
+            if(previous==null)ACTOR.remove();else ACTOR.set(previous);
+            if(completed&&actor.pending)dispatchScreen(player,actor.requested);
+        }
+    }
+    public static ServerPlayer currentActor(){Actor actor=ACTOR.get();return actor==null?null:actor.player;}
+    public static Player localPlayer(){return client==null?null:client.localPlayer();}
+    static boolean hasPendingScreen(ServerPlayer player){Actor actor=ACTOR.get();return actor!=null&&actor.player==player&&actor.pending;}
+    private static void requestScreen(ServerPlayer player,Screen screen){Actor actor=ACTOR.get();if(actor!=null&&actor.player==player){actor.requested=screen;actor.pending=true;}else dispatchScreen(player,screen);}
+    private static void dispatchScreen(ServerPlayer player,Screen screen){
+        if(screen instanceof HandledScreen handled&&handled.container!=null){GuiSessionsB173.open(player,null);openMenu(player,handled.container,screen);}
+        else {GuiSessionsB173.open(player,screen);if(screen==null&&player.containerMenu!=player.inventoryMenu)player.closeContainer();}
+    }
 
     /** The client's part. */
     public interface Client {
@@ -54,12 +77,16 @@ public final class MenusB173 {
         void setScreen(Screen screen);
 
         String clipboard();
+        void remoteFrame(net.minecraft.nbt.CompoundTag frame);
+        default Player localPlayer(){return null;}
+        default boolean hasAchievement(net.minecraft.resources.ResourceLocation id){return false;}
     }
 
     private MenusB173() {}
 
     public static void setMenuType(MenuType<LegacyB173Menu> t) {
         type = t;
+        GuiSessionsB173.install();
     }
 
     public static MenuType<LegacyB173Menu> type() {
@@ -92,14 +119,7 @@ public final class MenusB173 {
         Player p = modern(player);
         trace("OpenGUI({}) by {} on the {} side", gui.getClass().getName(), p == null ? "an unknown player" : p.getGameProfile().getName(),
                 p == null ? "unknown" : p.level().isClientSide ? "client" : "server");
-        if (p instanceof ServerPlayer sp) {
-            if (gui instanceof HandledScreen hs && hs.container != null) {
-                openMenu(sp, hs.container, gui);
-            } else if (localHost(sp)) {
-                client.showFromServer(gui);
-            }
-            return;
-        }
+        if (p instanceof ServerPlayer sp) {requestScreen(sp,gui);return;}
         if (p != null && !p.level().isClientSide) return;
         Client c = client;
         if (c != null) c.openedOnClient(gui);
@@ -174,7 +194,7 @@ public final class MenusB173 {
     public static void close(PlayerEntity player) {
         Player p = modern(player);
         if (p instanceof ServerPlayer sp) {
-            sp.closeContainer();
+            requestScreen(sp,null);
         } else if (p == null || p.level().isClientSide) {
             setScreen(null);
         }
@@ -190,12 +210,16 @@ public final class MenusB173 {
 
     /** {@code Minecraft.displayGuiScreen}. */
     public static void setScreen(Screen screen) {
+        Actor actor=ACTOR.get();
+        if(actor!=null){actor.requested=screen;actor.pending=true;return;}
         Client c = client;
         if (c != null) c.setScreen(screen);
     }
 
+    public static void remoteFrame(net.minecraft.nbt.CompoundTag frame){Client c=client;if(c!=null)c.remoteFrame(frame);}
     public static String clipboard() {
         Client c = client;
         return c == null ? "" : c.clipboard();
     }
+    public static boolean hasAchievement(net.minecraft.resources.ResourceLocation id){Client current=client;return current!=null&&current.hasAchievement(id);}
 }

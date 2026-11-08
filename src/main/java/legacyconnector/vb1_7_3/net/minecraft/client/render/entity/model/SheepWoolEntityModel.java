@@ -1,0 +1,30 @@
+package legacyconnector.vb1_7_3.net.minecraft.client.render.entity.model;
+
+import legacyconnector.vb1_7_3.net.minecraft.client.model.ModelPart;
+import legacyconnector.vb1_7_3.net.minecraft.util.math.MathHelper;
+
+/** Beta vanilla model geometry and animation, used by original subclass callbacks. */
+public class SheepWoolEntityModel extends QuadrupedEntityModel {
+   public SheepWoolEntityModel() {
+      super(12, 0.0F);
+      this.head = new ModelPart(0, 0);
+      this.head.addCuboid(-3.0F, -4.0F, -4.0F, 6, 6, 6, 0.6F);
+      this.head.setPivot(0.0F, 6.0F, -8.0F);
+      this.body = new ModelPart(28, 8);
+      this.body.addCuboid(-4.0F, -10.0F, -7.0F, 8, 16, 6, 1.75F);
+      this.body.setPivot(0.0F, 5.0F, 2.0F);
+      float var1 = 0.5F;
+      this.rightHindLeg = new ModelPart(0, 16);
+      this.rightHindLeg.addCuboid(-2.0F, 0.0F, -2.0F, 4, 6, 4, var1);
+      this.rightHindLeg.setPivot(-3.0F, 12.0F, 7.0F);
+      this.leftHindLeg = new ModelPart(0, 16);
+      this.leftHindLeg.addCuboid(-2.0F, 0.0F, -2.0F, 4, 6, 4, var1);
+      this.leftHindLeg.setPivot(3.0F, 12.0F, 7.0F);
+      this.rightFrontLeg = new ModelPart(0, 16);
+      this.rightFrontLeg.addCuboid(-2.0F, 0.0F, -2.0F, 4, 6, 4, var1);
+      this.rightFrontLeg.setPivot(-3.0F, 12.0F, -5.0F);
+      this.leftFrontLeg = new ModelPart(0, 16);
+      this.leftFrontLeg.addCuboid(-2.0F, 0.0F, -2.0F, 4, 6, 4, var1);
+      this.leftFrontLeg.setPivot(3.0F, 12.0F, -5.0F);
+   }
+}

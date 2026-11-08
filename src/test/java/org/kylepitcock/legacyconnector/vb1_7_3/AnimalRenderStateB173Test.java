@@ -5,6 +5,24 @@ import net.minecraft.nbt.CompoundTag;
 import org.junit.jupiter.api.Test;
 
 class AnimalRenderStateB173Test {
+    @Test void vanillaFamilyAnimationAndSaddleFieldsTrackWithoutNativeCanonicalState() {
+        var server=new legacyconnector.vb1_7_3.net.minecraft.entity.passive.ChickenEntity(null);
+        var client=new legacyconnector.vb1_7_3.net.minecraft.entity.passive.ChickenEntity(null);
+        server.flapProgress=3.25F;server.prevFlapProgress=2.5F;server.maxWingDeviation=.8F;
+        server.health=2;server.x=123;
+        var snapshot=AnimalRenderStateB173.capture(server);
+        AnimalRenderStateB173.apply(client,null,snapshot);
+        assertEquals(3.25F,client.flapProgress);assertEquals(2.5F,client.prevFlapProgress);
+        assertEquals(.8F,client.maxWingDeviation);assertEquals(4,client.health);assertEquals(0,client.x);
+        assertFalse(snapshot.getAllKeys().stream().anyMatch(k->k.endsWith("#health")||k.endsWith("#x")));
+        client.flapProgress=9;server.maxWingDeviation=.6F;
+        AnimalRenderStateB173.apply(client,snapshot,AnimalRenderStateB173.capture(server));
+        assertEquals(9,client.flapProgress);assertEquals(.6F,client.maxWingDeviation);
+        var pig=new legacyconnector.vb1_7_3.net.minecraft.entity.passive.PigEntity(null);
+        var pigClient=new legacyconnector.vb1_7_3.net.minecraft.entity.passive.PigEntity(null);
+        pig.setSaddled(true);AnimalRenderStateB173.apply(pigClient,null,AnimalRenderStateB173.capture(pig));
+        assertTrue(pigClient.isSaddled());
+    }
     static class Parent {private long count=19;int same=7;}
     static class State extends Parent {
         static int shared=90;final int fixed=91;Object reference=new Object();

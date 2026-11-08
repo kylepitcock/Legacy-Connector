@@ -80,7 +80,16 @@ public final class StacksB173 {
                     if (item != net.minecraft.world.item.Items.AIR) r.putIfAbsent(item, new int[] {block.id, 0});
                 }
             }
-            for (int id = 1; id < Item.ITEMS.length && id < 2300; id++) {
+            // Native flattened items can alias both an old block and its real item (wheat crop / wheat, sign / sign item).
+            // Preserve the original item identity before considering block-item aliases.
+            addVanillaReverse(r,256,Math.min(Item.ITEMS.length,2300));
+            addVanillaReverse(r,1,Math.min(Item.ITEMS.length,256));
+            return reverse = r;
+        }
+    }
+
+    private static void addVanillaReverse(java.util.Map<net.minecraft.world.item.Item,int[]> r,int start,int end){
+            for (int id = start; id < end; id++) {
                 if (!VanillaB173.isVanillaId(id)) continue;
                 int variants = switch (id) {
                     case 35, 351 -> 16;
@@ -94,8 +103,6 @@ public final class StacksB173 {
                     if (item != null) r.putIfAbsent(item, new int[] {id, meta});
                 }
             }
-            return reverse = r;
-        }
     }
 
     /** The modern item of a legacy id with that damage/metadata, or null (unknown id, or a mod item not registered). */

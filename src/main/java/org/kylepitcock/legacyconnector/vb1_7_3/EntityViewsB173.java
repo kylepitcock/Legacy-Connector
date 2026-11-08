@@ -8,18 +8,54 @@ import legacyconnector.vb1_7_3.net.minecraft.world.World;
 public final class EntityViewsB173 {
     private record HostState(double x,double y,double z,double vx,double vy,double vz,float yaw,float pitch,
             int health,int air,int fire,boolean ground,boolean dead,float width,float height,String texture,
-            float sideways,float forward,boolean jumping,int hurt,int death,int age,float eye,float speed) {
+            float sideways,float forward,boolean jumping,int hurt,int death,int age,float eye,float speed,Entity vehicle,Entity passenger) {
         static HostState of(legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity v) {
             return new HostState(v.x,v.y,v.z,v.velocityX,v.velocityY,v.velocityZ,v.yaw,v.pitch,v.health,v.air,v.fireTicks,
                     v.onGround,v.dead,v.width,v.height,v.mcc$texture(),v.mcc$sidewaysSpeed(),v.mcc$forwardSpeed(),v.mcc$jumping(),
-                    v.hurtTime,v.deathTime,v.age,v.standingEyeHeight,v.mcc$movementSpeed());
+                    v.hurtTime,v.deathTime,v.age,v.standingEyeHeight,v.mcc$movementSpeed(),v.vehicle,v.passenger);
         }
     }
-    private record Touched(Entity view,double vx,double vy,double vz,boolean ground,Entity target,HostState hostState) {}
+    private record Extra(int itemAge,int pickupDelay,net.minecraft.world.item.ItemStack stack,int fuse,Entity owner) {}
+    private static Extra extra(Entity view){
+        if(view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.ItemEntity item)return new Extra(item.itemAge,item.pickupDelay,item.stack==null?net.minecraft.world.item.ItemStack.EMPTY:StacksB173.toModern(item.stack).copy(),0,null);
+        if(view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.mob.CreeperEntity creeper)return new Extra(0,0,net.minecraft.world.item.ItemStack.EMPTY,creeper.fuseTime,null);
+        if(view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.projectile.ArrowEntity arrow)return new Extra(0,0,net.minecraft.world.item.ItemStack.EMPTY,0,arrow.owner);
+        return null;
+    }
+    private record Touched(Entity view,double vx,double vy,double vz,boolean ground,Entity target,HostState hostState,Extra extra) {}
     private static final java.util.Map<net.minecraft.world.entity.Entity,Entity> VIEWS =
             new com.google.common.collect.MapMaker().weakKeys().weakValues().makeMap();
     private static final ThreadLocal<java.util.Map<net.minecraft.world.entity.Entity,Touched>> TOUCHED =
             ThreadLocal.withInitial(java.util.IdentityHashMap::new);
+    private static final ThreadLocal<Integer> CALLBACK_DEPTH=ThreadLocal.withInitial(()->0);
+    /** Nested native callbacks share one original-code transaction; later writes retain the same entity identities. */
+    public static final class CallbackScope implements AutoCloseable {
+        private boolean closed;
+        private CallbackScope(){CALLBACK_DEPTH.set(CALLBACK_DEPTH.get()+1);}
+        @Override public void close(){if(closed)return;closed=true;int depth=CALLBACK_DEPTH.get()-1;if(depth==0){CALLBACK_DEPTH.remove();flush();}else CALLBACK_DEPTH.set(depth);}
+    }
+    public static CallbackScope callbackScope(){return new CallbackScope();}
+    /** Retained original references are live entity fields, even when no World query runs this tick. */
+    private static final ClassValue<java.util.List<java.lang.reflect.Field>> ENTITY_REFERENCES=new ClassValue<>(){
+        @Override protected java.util.List<java.lang.reflect.Field> computeValue(Class<?> type){
+            var fields=new java.util.ArrayList<java.lang.reflect.Field>();
+            try{
+                for(Class<?> c=type;c!=null&&Entity.class.isAssignableFrom(c);c=c.getSuperclass()){
+                    for(var field:c.getDeclaredFields())if(!java.lang.reflect.Modifier.isStatic(field.getModifiers())&&Entity.class.isAssignableFrom(field.getType())){field.setAccessible(true);fields.add(field);}
+                }
+                return java.util.List.copyOf(fields);
+            }catch(RuntimeException|LinkageError error){throw new IllegalStateException("Cannot inspect retained Beta entity references of "+type.getName(),error);}
+        }
+    };
+    public static void refreshReferences(Entity original){
+        try{
+            for(var field:ENTITY_REFERENCES.get(original.getClass())){
+                Entity previous=(Entity)field.get(original);if(previous==null||previous.mcc$modern==null)continue;
+                Entity canonical=wrap(previous.mcc$modern);
+                if(canonical!=previous&&field.getType().isInstance(canonical))field.set(original,canonical);
+            }
+        }catch(IllegalAccessException error){throw new IllegalStateException("Cannot refresh retained Beta entity references",error);}
+    }
     public static final class ReadOnlyScope implements AutoCloseable {
         private final java.util.Map<net.minecraft.world.entity.Entity,Touched> previous;
         private ReadOnlyScope(){previous=TOUCHED.get();TOUCHED.set(new java.util.IdentityHashMap<>());}
@@ -46,17 +82,27 @@ public final class EntityViewsB173 {
         var b=modern.getBoundingBox();
         view.boundingBox=legacyconnector.vb1_7_3.net.minecraft.util.math.Box.create(b.minX,b.minY,b.minZ,b.maxX,b.maxY,b.maxZ);
         view.fireTicks=modern.getRemainingFireTicks();
-        view.velocityX=modern.getDeltaMovement().x;view.velocityY=modern.getDeltaMovement().y;view.velocityZ=modern.getDeltaMovement().z;
-        view.onGround=modern.onGround();view.dead=modern.isRemoved();
+        if(!(modern instanceof net.minecraft.world.entity.player.Player)){
+            view.velocityX=modern.getDeltaMovement().x;view.velocityY=modern.getDeltaMovement().y;view.velocityZ=modern.getDeltaMovement().z;
+        }
+        view.onGround=modern.onGround();view.dead=modern.isRemoved();view.mcc$environment(modern.isInWater());
         view.blocksSameBlockSpawning=modern.blocksBuilding;
         view.yaw=modern.getYRot();view.pitch=modern.getXRot();
         if(view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity living && modern instanceof net.minecraft.world.entity.LivingEntity nativeLiving)
             living.health=Math.round(nativeLiving.getHealth());
-        // Register before resolving targets, which may point back to this entity.
+        if(view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.ItemEntity item&&modern instanceof net.minecraft.world.entity.item.ItemEntity nativeItem){
+            item.stack=StacksB173.toLegacy(nativeItem.getItem());item.itemAge=EntityFieldsB173.itemAge(nativeItem);item.pickupDelay=EntityFieldsB173.pickupDelay(nativeItem);
+        }
+        if(view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.mob.CreeperEntity creeper&&modern instanceof net.minecraft.world.entity.monster.Creeper nativeCreeper)creeper.fuseTime=EntityFieldsB173.creeperFuse(nativeCreeper);
+        // Register before resolving targets/owners, which may point back to this entity.
         touch(modern,view);
+        if(view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.projectile.ArrowEntity arrow&&modern instanceof net.minecraft.world.entity.projectile.AbstractArrow nativeArrow){
+            Entity owner=wrap(nativeArrow.getOwner());arrow.owner=owner instanceof legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity living?living:null;
+            TOUCHED.get().put(modern,new Touched(view,view.velocityX,view.velocityY,view.velocityZ,view.onGround,null,null,extra(view)));
+        }
         if(view instanceof PathAwareEntity creature && modern instanceof net.minecraft.world.entity.Mob mob) {
             creature.target=wrap(mob.getTarget());
-            TOUCHED.get().put(modern,new Touched(view,view.velocityX,view.velocityY,view.velocityZ,view.onGround,creature.target,null));
+            TOUCHED.get().put(modern,new Touched(view,view.velocityX,view.velocityY,view.velocityZ,view.onGround,creature.target,null,extra(view)));
         }
         return view;
     }
@@ -66,27 +112,38 @@ public final class EntityViewsB173 {
         if(modern instanceof net.minecraft.world.entity.player.Player p)return PlayerViewB173.of(p);
         if(modern instanceof net.minecraft.world.entity.item.ItemEntity item)
             return new legacyconnector.vb1_7_3.net.minecraft.entity.ItemEntity(world,modern.getX(),modern.getY(),modern.getZ(),StacksB173.toLegacy(item.getItem()));
+        if(modern instanceof net.minecraft.world.entity.projectile.AbstractArrow)return new legacyconnector.vb1_7_3.net.minecraft.entity.projectile.ArrowEntity(world);
+        if(modern instanceof net.minecraft.world.entity.monster.Creeper)return new legacyconnector.vb1_7_3.net.minecraft.entity.mob.CreeperEntity(world);
         if(modern instanceof net.minecraft.world.entity.monster.Monster)return new legacyconnector.vb1_7_3.net.minecraft.entity.mob.MonsterEntity(world) {};
+        if(modern instanceof net.minecraft.world.entity.animal.Sheep)return new legacyconnector.vb1_7_3.net.minecraft.entity.passive.SheepEntity(world);
         if(modern instanceof net.minecraft.world.entity.animal.Animal)return new legacyconnector.vb1_7_3.net.minecraft.entity.passive.AnimalEntity(world) {};
         if(modern instanceof net.minecraft.world.entity.PathfinderMob)return new PathAwareEntity(world) {};
         if(modern instanceof net.minecraft.world.entity.LivingEntity)return new legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity(world) {};
         return new Entity(world) {};
     }
     private static Entity touch(net.minecraft.world.entity.Entity modern,Entity view) {
-        TOUCHED.get().putIfAbsent(modern,new Touched(view,view.velocityX,view.velocityY,view.velocityZ,view.onGround,view instanceof PathAwareEntity p?p.target:null,modern instanceof B173LivingHost host?HostState.of(host.legacy()):null));
+        TOUCHED.get().putIfAbsent(modern,new Touched(view,view.velocityX,view.velocityY,view.velocityZ,view.onGround,view instanceof PathAwareEntity p?p.target:null,modern instanceof B173LivingHost host?HostState.of(host.legacy()):null,extra(view)));
         return view;
     }
+    /** Capture identity and a baseline before original code continues mutating a freshly spawned entity. */
+    public static void spawned(net.minecraft.world.entity.Entity modern,Entity original){
+        VIEWS.put(modern,original);
+        if(modern instanceof net.minecraft.world.entity.item.ItemEntity item&&original instanceof legacyconnector.vb1_7_3.net.minecraft.entity.ItemEntity legacyItem){EntityFieldsB173.itemAge(item,legacyItem.itemAge);item.setPickUpDelay(legacyItem.pickupDelay);}
+        touch(modern,original);
+    }
     /** Commit pending cross-entity writes before the host refreshes its own callback view. */
-    public static void prepareHostCallback(B173LivingHost host) {
-        if(host.callbackActive()||host.legacy()==null)return;
+    public static boolean prepareHostCallback(B173LivingHost host) {
+        if(host.callbackActive()||host.legacy()==null)return false;
         Touched touched=TOUCHED.get().remove(host.legacy().mcc$modern);
         if(touched!=null)flushHost(host,touched);
+        return touched!=null;
     }
+    public static void resumeHostCallback(B173LivingHost host,boolean referenced){if((referenced||CALLBACK_DEPTH.get()>1)&&host.legacy()!=null)touch(host.legacy().mcc$modern,host.legacy());}
     private static void flushHost(B173LivingHost host,Touched touched) {
         HostState before=touched.hostState;
         if(before==null)return;
         var v=host.legacy();HostState wanted=HostState.of(v);
-        if(wanted.equals(before))return;
+        if(wanted.equals(before)){if(host instanceof LegacyB173Animal animal)animal.publishRenderState();return;}
         // Refresh unchanged native fields so a read earlier in this callback cannot undo later damage or movement.
         host.syncView();
         if(wanted.x!=before.x)v.x=wanted.x;if(wanted.y!=before.y)v.y=wanted.y;if(wanted.z!=before.z)v.z=wanted.z;
@@ -97,17 +154,33 @@ public final class EntityViewsB173 {
         if(wanted.dead!=before.dead)v.dead=wanted.dead;
         if(wanted.hurt!=before.hurt)v.hurtTime=wanted.hurt;if(wanted.death!=before.death)v.deathTime=wanted.death;
         if(wanted.age!=before.age)v.age=wanted.age;
+        if(wanted.vehicle!=before.vehicle)v.vehicle=wanted.vehicle;if(wanted.passenger!=before.passenger)v.passenger=wanted.passenger;
         v.mcc$movementInputs(wanted.sideways!=before.sideways?wanted.sideways:v.mcc$sidewaysSpeed(),
                 wanted.forward!=before.forward?wanted.forward:v.mcc$forwardSpeed(),wanted.jumping!=before.jumping?wanted.jumping:v.mcc$jumping());
         host.flushView();
+        if(host instanceof LegacyB173Animal animal)animal.publishRenderState();
     }
     public static void flush() {
+        if(CALLBACK_DEPTH.get()>0)return;
         var touchedViews=TOUCHED.get();
         try {
             for(var entry:java.util.List.copyOf(touchedViews.entrySet())) {
                 var modern=entry.getKey();var touched=entry.getValue();Entity view=touched.view;
                 if(modern instanceof B173LivingHost host) {if(!host.callbackActive())flushHost(host,touched);continue;}
+                if(view instanceof PlayerViewB173 player)player.writeBack();
+                if(view.dead&&!modern.isRemoved()){modern.discard();continue;}
                 if(view.fireTicks>modern.getRemainingFireTicks())modern.setRemainingFireTicks(view.fireTicks);
+                Extra before=touched.extra;
+                if(before!=null){
+                    if(view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.ItemEntity item&&modern instanceof net.minecraft.world.entity.item.ItemEntity nativeItem){
+                        if(item.itemAge!=before.itemAge)EntityFieldsB173.itemAge(nativeItem,item.itemAge);
+                        if(item.pickupDelay!=before.pickupDelay)nativeItem.setPickUpDelay(item.pickupDelay);
+                        var wanted=item.stack==null?net.minecraft.world.item.ItemStack.EMPTY:StacksB173.toModern(item.stack);
+                        if(!net.minecraft.world.item.ItemStack.matches(before.stack,wanted)){if(wanted.isEmpty()){nativeItem.discard();continue;}nativeItem.setItem(wanted);}
+                    }
+                    if(view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.mob.CreeperEntity creeper&&modern instanceof net.minecraft.world.entity.monster.Creeper nativeCreeper&&creeper.fuseTime!=before.fuse)EntityFieldsB173.creeperFuse(nativeCreeper,creeper.fuseTime);
+                    if(view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.projectile.ArrowEntity arrow&&modern instanceof net.minecraft.world.entity.projectile.AbstractArrow nativeArrow&&arrow.owner!=before.owner)nativeArrow.setOwner(arrow.owner==null?null:arrow.owner.mcc$modern);
+                }
                 if(view.velocityX!=touched.vx||view.velocityY!=touched.vy||view.velocityZ!=touched.vz) {
                     modern.setDeltaMovement(view.velocityX,view.velocityY,view.velocityZ);modern.hurtMarked=true;
                 }

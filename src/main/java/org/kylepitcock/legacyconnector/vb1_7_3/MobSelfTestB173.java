@@ -9,8 +9,14 @@ import net.minecraft.world.item.Items;
 /** Actual-mod regression fixture; production hosting is selected by vanilla API ancestry, never this name. */
 public final class MobSelfTestB173 {
     public static void register(IEventBus game){
+        ParticleSelfTestB173.register(game);
+        GuiSessionSelfTestB173.register(game);
         ModelSelfTestB173.register(game);
         RendererSelfTestB173.register(game);
+        MoCreaturesGuiSelfTestB173.register(game);
+        MoCreaturesRosterSelfTestB173.register(game);
+        MoCreaturesFeaturesSelfTestB173.register(game);
+        MoreCreepsRosterSelfTestB173.register(game);
         AnimalLifecycleSelfTestB173.register(game);
         if(Boolean.getBoolean("legacyconnector.entitySelfTest"))game.addListener((ServerStartedEvent e)->run(e.getServer().overworld()));
     }

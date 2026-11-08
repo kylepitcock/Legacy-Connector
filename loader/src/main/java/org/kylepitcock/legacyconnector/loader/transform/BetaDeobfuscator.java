@@ -11,6 +11,7 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.commons.ClassRemapper;
 import org.objectweb.asm.commons.Remapper;
+import org.objectweb.asm.commons.MethodRemapper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -88,7 +89,16 @@ public final class BetaDeobfuscator {
         for (var e : classes.entrySet()) {
             ClassWriter w = new ClassWriter(0);
             try {
-                new ClassReader(e.getValue()).accept(new ClassRemapper(w, namer), 0);
+                new ClassReader(e.getValue()).accept(new ClassRemapper(w, namer){
+                    @Override protected MethodVisitor createMethodRemapper(MethodVisitor visitor){
+                        return new MethodRemapper(visitor,namer){
+                            @Override public void visitFieldInsn(int opcode,String owner,String name,String descriptor){
+                                String declaring=namer.fieldOwner(owner,name,descriptor,0);
+                                super.visitFieldInsn(opcode,declaring==null?owner:declaring,name,descriptor);
+                            }
+                        };
+                    }
+                }, 0);
             } catch (RuntimeException ex) {
                 out.put(e.getKey(), e.getValue()); // unreadable: the translation reports it
                 continue;
@@ -172,6 +182,27 @@ public final class BetaDeobfuscator {
             if (!keep.isEmpty() && keep.contains(owner + "." + name + ":" + descriptor)) return name;
             String hit = resolve(owner, name, descriptor, true);
             return hit != null ? hit : name;
+        }
+
+        /** Keep inherited game fields bound to their declaring class when readable mod fields share the mapped name. */
+        private String fieldOwner(String owner,String name,String desc,int depth){
+            if(owner==null||depth>64)return null;
+            if(names.isVanilla(owner)){
+                if(names.field(owner,name,desc)!=null)return owner;
+                for(String parent:names.supertypes(owner)){String found=fieldOwner(parent,name,desc,depth+1);if(found!=null)return found;}
+                return null;
+            }
+            Local own=local.get(owner);
+            if(own!=null){
+                if(own.fields.contains(name+":"+desc))return owner;
+                String found=fieldOwner(own.superName,name,desc,depth+1);if(found!=null)return found;
+                for(String parent:own.interfaces){found=fieldOwner(parent,name,desc,depth+1);if(found!=null)return found;}
+            }else{
+                var metadata=BetaJars.meta(owner);if(metadata==null)return null;
+                String found=fieldOwner(metadata.superName(),name,desc,depth+1);if(found!=null)return found;
+                for(String parent:metadata.interfaces()){found=fieldOwner(parent,name,desc,depth+1);if(found!=null)return found;}
+            }
+            return null;
         }
 
         /** The game member a reference reaches through the jar's (or the mod set's) classes, or null if it is the mod's own. */

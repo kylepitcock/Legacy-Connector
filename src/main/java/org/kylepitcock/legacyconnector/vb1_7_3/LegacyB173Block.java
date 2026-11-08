@@ -135,7 +135,7 @@ public class LegacyB173Block extends net.minecraft.world.level.block.Block imple
 
     /** Runs a legacy callback; failures are logged for the first few times per block and otherwise ignored, as a broken hook would be. */
     private void call(String what, Runnable action) {
-        try {
+        try (var views=EntityViewsB173.callbackScope()) {
             action.run();
         } catch (RuntimeException | LinkageError e) {
             CALLBACK_FAILURES.incrementAndGet();

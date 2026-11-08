@@ -167,8 +167,15 @@ public final class VanillaB173 {
      */
     public static Object resolveStatic(String key, Class<?> accessor) {
         if (!accessor.getName().startsWith(SYNTH)) return null;
-        boolean blocks = key.startsWith("net.minecraft.block.Block.");
-        boolean items = key.startsWith("net.minecraft.item.Item.");
+        String owner=key.substring(0,key.lastIndexOf('.'));
+        boolean blocks = owner.equals("net.minecraft.block.Block");
+        boolean items = owner.equals("net.minecraft.item.Item");
+        if(!blocks&&!items){
+            Class<?> inheritedOwner=null;
+            for(String prefix:new String[]{SHIM,SYNTH})try{inheritedOwner=Class.forName(prefix+owner,false,accessor.getClassLoader());break;}catch(ClassNotFoundException ignored){}
+            if(inheritedOwner==null)return null;
+            blocks=Block.class.isAssignableFrom(inheritedOwner);items=Item.class.isAssignableFrom(inheritedOwner);
+        }
         if (!blocks && !items) return null;
         init();
         String field = key.substring(key.lastIndexOf('.') + 1);

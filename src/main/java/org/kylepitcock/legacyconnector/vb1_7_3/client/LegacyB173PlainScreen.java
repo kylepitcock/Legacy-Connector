@@ -80,6 +80,8 @@ public class LegacyB173PlainScreen extends Screen {
         }
         return true;
     }
+    @Override public boolean mouseDragged(double x,double y,int button,double dx,double dy){try{gui.mcc$mouseDragged((int)x,(int)y,button);}catch(RuntimeException|LinkageError e){fail("mouseDragged",e);}return true;}
+    @Override public boolean mouseScrolled(double x,double y,double horizontal,double vertical){try{gui.mcc$mouseScrolled(vertical);}catch(RuntimeException|LinkageError e){fail("mouseScrolled",e);}return true;}
 
     @Override
     public boolean keyPressed(int key, int scanCode, int modifiers) {

@@ -20,6 +20,12 @@ public final class ClientB173 implements MenusB173.Client {
     private ClientB173() {}
 
     public static void register(IEventBus modBus) {
+        legacyconnector.vb1_7_3.org.lwjgl.input.Keyboard.mcc$keys(code->{
+            if(code==0)return false;
+            for(var binding:Minecraft.getInstance().options.keyMappings)
+                if(KeysB173.lwjgl(binding.getKey().getValue())==code&&binding.isDown())return true;
+            return false;
+        });
         AnimatedTexturesB173.register(modBus);
         MobClientB173.register(modBus);
         modBus.addListener((net.neoforged.neoforge.client.event.ModelEvent.ModifyBakingResult e)->WorldTextureModelB173.wrap(e.getModels()));
@@ -57,6 +63,14 @@ public final class ClientB173 implements MenusB173.Client {
         GuiDrawB173.install(new ClientGuiB173());
         MenusB173.installClient(new ClientB173());
         AudioClientB173.install();
+        ParticleClientB173.install();
+        org.kylepitcock.legacyconnector.vb1_7_3.GuiSessionsB173.install();
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.client.event.ScreenEvent.Init.Post event)->{
+            var screen=event.getScreen();
+            if(!(screen instanceof net.minecraft.client.gui.screens.options.OptionsScreen)&&!(screen instanceof net.minecraft.client.gui.screens.TitleScreen))return;
+            if(legacyconnector.vb1_7_3.net.minecraft.src.ModSettingScreen.modscreens.isEmpty())return;
+            event.addListener(net.minecraft.client.gui.components.Button.builder(net.minecraft.network.chat.Component.literal("Legacy mod settings"),button->legacyconnector.vb1_7_3.net.minecraft.src.GuiModScreen.showSettings()).bounds(8,8,150,20).build());
+        });
     }
 
     @Override
@@ -70,6 +84,24 @@ public final class ClientB173 implements MenusB173.Client {
         } else {
             mc.execute(() -> mc.setScreen(new LegacyB173PlainScreen(gui)));
         }
+    }
+
+    @Override public net.minecraft.world.entity.player.Player localPlayer(){
+        var mc=Minecraft.getInstance();
+        legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$instance().options.jumpKey.code=KeysB173.lwjgl(mc.options.keyJump.getKey().getValue());
+        return mc.player;
+    }
+    private static final class AdvancementAccess {
+        static final java.lang.reflect.Field PROGRESS=net.neoforged.fml.util.ObfuscationReflectionHelper.findField(net.minecraft.client.multiplayer.ClientAdvancements.class,"progress");
+    }
+    @Override public boolean hasAchievement(net.minecraft.resources.ResourceLocation id){
+        var connection=Minecraft.getInstance().getConnection();if(connection==null)return false;
+        try {
+            var progress=(java.util.Map<?,?>)AdvancementAccess.PROGRESS.get(connection.getAdvancements());
+            for(var entry:progress.entrySet())if(entry.getKey() instanceof net.minecraft.advancements.AdvancementHolder holder&&holder.id().equals(id)
+                    &&entry.getValue() instanceof net.minecraft.advancements.AdvancementProgress value)return value.isDone();
+            return false;
+        }catch(IllegalAccessException error){throw new IllegalStateException("Cannot read native client advancement progress",error);}
     }
 
     @Override
@@ -99,6 +131,13 @@ public final class ClientB173 implements MenusB173.Client {
         });
     }
 
+    @Override public void remoteFrame(net.minecraft.nbt.CompoundTag frame){
+        Minecraft mc=Minecraft.getInstance();mc.execute(()->{
+            if(frame.getBoolean("closed")){if(mc.screen instanceof ServerGuiScreenB173 remote&&(frame.getInt("id")==0||remote.sessionId()==frame.getInt("id")))remote.closeFromServer();return;}
+            if(mc.screen instanceof ServerGuiScreenB173 remote&&remote.sessionId()==frame.getInt("id"))remote.frame(frame);
+            else mc.setScreen(new ServerGuiScreenB173(frame));
+        });
+    }
     @Override
     public String clipboard() {
         try {

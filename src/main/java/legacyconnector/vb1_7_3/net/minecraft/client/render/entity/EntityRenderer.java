@@ -9,6 +9,9 @@ public abstract class EntityRenderer {
     protected float shadowRadius;
     protected float shadowDarkness=1F;
     protected EntityModel bipedModel;
+    protected EntityRenderDispatcher dispatcher=new EntityRenderDispatcher();
+    public final void mcc$camera(LivingEntityCamera camera){dispatcher.cameraEntity=camera.entity();dispatcher.yaw=camera.yaw();dispatcher.pitch=camera.pitch();}
+    public record LivingEntityCamera(legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity entity,float yaw,float pitch){}
     protected legacyconnector.vb1_7_3.net.minecraft.client.render.block.BlockRenderManager renderManager=new legacyconnector.vb1_7_3.net.minecraft.client.render.block.BlockRenderManager();
     public EntityRenderer(){}
     public abstract void render(Entity entity,double x,double y,double z,float yaw,float partial);

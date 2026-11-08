@@ -5,7 +5,7 @@ import org.kylepitcock.legacyconnector.vb1_7_3.RendererContextB173;
 
 /**
  * The GL 1.1 calls b1.7.3 GUIs make: colour, texture binding and the matrix stack go to the screen being drawn ({@link GuiDrawB173}); state
- * switches (lighting, depth, blending) are left to the modern renderer. Calls not written here are synthesized and do nothing. The real GL11
+ * switches (lighting, depth, blending) are captured for native entity draw pipelines. The real GL11
  * is never called: the modern game runs a core profile in which these immediate-mode functions do not exist.
  */
 public final class GL11 {
@@ -20,7 +20,7 @@ public final class GL11 {
     }
 
     public static void glBindTexture(int target, int texture) {
-        GuiDrawB173.bind(texture);
+        if(RendererContextB173.active())RendererContextB173.bind(texture);else GuiDrawB173.bind(texture);
     }
 
     public static void glPushMatrix() {
@@ -47,15 +47,18 @@ public final class GL11 {
         if(RendererContextB173.active())RendererContextB173.scale((float)x,(float)y,(float)z);else GuiDrawB173.scale((float) x, (float) y, (float) z);
     }
 
-    public static void glEnable(int cap) {}
+    public static void glEnable(int cap) {if(RendererContextB173.active())RendererContextB173.enable(cap,true);}
 
-    public static void glDisable(int cap) {}
+    public static void glDisable(int cap) {if(RendererContextB173.active())RendererContextB173.enable(cap,false);}
 
-    public static void glBlendFunc(int src, int dst) {}
+    public static void glBlendFunc(int src, int dst) {if(RendererContextB173.active())RendererContextB173.blendFunc(src,dst);}
 
     public static void glAlphaFunc(int func, float ref) {}
 
-    public static void glDepthMask(boolean flag) {}
+    public static void glDepthMask(boolean flag) {if(RendererContextB173.active())RendererContextB173.depthMask(flag);}
+    public static void glDepthFunc(int func) {if(RendererContextB173.active())RendererContextB173.depthFunc(func);}
+    public static void glMatrixMode(int mode) {if(RendererContextB173.active())RendererContextB173.matrixMode(mode);}
+    public static void glLoadIdentity() {if(RendererContextB173.active())RendererContextB173.loadIdentity();}
 
     public static void glShadeModel(int mode) {}
 

@@ -27,6 +27,12 @@ public abstract class PlayerEntity extends LivingEntity {
     }
 
     public void sendMessage(String message) {}
+    @Override public void heal(int amount){if(mcc$modern instanceof net.minecraft.world.entity.LivingEntity living){living.heal(amount);health=Math.round(living.getHealth());}else super.heal(amount);}
+    public void incrementStat(legacyconnector.vb1_7_3.net.minecraft.stat.Stat stat,int amount){if(mcc$modern instanceof net.minecraft.server.level.ServerPlayer player)org.kylepitcock.legacyconnector.vb1_7_3.AdvancementsB173.increment(player,stat,amount);}
+    public void incrementStat(legacyconnector.vb1_7_3.net.minecraft.stat.Stat stat){incrementStat(stat,1);}
+    public void increaseStat(legacyconnector.vb1_7_3.net.minecraft.stat.Stat stat,int amount){incrementStat(stat,amount);}
+    public void increaseStat(legacyconnector.vb1_7_3.net.minecraft.stat.Stat stat){incrementStat(stat,1);}
+    public void swingHand(){if(mcc$modern instanceof net.minecraft.world.entity.LivingEntity living)living.swing(net.minecraft.world.InteractionHand.MAIN_HAND);}
     @Override public float getEyeHeight() { return 0.12F; }
     public void sendPickup(legacyconnector.vb1_7_3.net.minecraft.entity.Entity entity, int count) {
         if (mcc$modern instanceof net.minecraft.world.entity.player.Player p && entity.mcc$modern != null) p.take(entity.mcc$modern,count);

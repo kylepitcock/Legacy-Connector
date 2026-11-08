@@ -114,6 +114,8 @@ public class Screen extends DrawContext {
     public void mcc$mouseReleased(int mouseX, int mouseY, int button) {
         mouseReleased(mouseX, mouseY, button);
     }
+    public void mcc$mouseDragged(int mouseX,int mouseY,int button) {}
+    public void mcc$mouseScrolled(double amount) {}
 
     public void mcc$keyPressed(char character, int keyCode) {
         keyPressed(character, keyCode);

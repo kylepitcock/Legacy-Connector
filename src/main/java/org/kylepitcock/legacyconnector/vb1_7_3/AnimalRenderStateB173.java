@@ -14,7 +14,7 @@ public final class AnimalRenderStateB173 {
         @Override protected Schema computeValue(Class<?> type) {
             var slots=new ArrayList<Slot>();
             try {
-                for(Class<?> c=type;c!=null&&c!=Object.class&&!api(c);c=c.getSuperclass()) {
+                for(Class<?> c=type;c!=null&&c!=Object.class&&!nativeBoundary(c);c=c.getSuperclass()) {
                     for(Field field:c.getDeclaredFields()) {
                         int modifiers=field.getModifiers();
                         if(Modifier.isStatic(modifiers)||Modifier.isFinal(modifiers)||field.isSynthetic())continue;
@@ -32,6 +32,12 @@ public final class AnimalRenderStateB173 {
     private AnimalRenderStateB173() {}
     private static boolean api(Class<?> type) {
         String name=type.getName();return name.startsWith("legacyconnector.")||name.startsWith("legacyconnector_synth.");
+    }
+    private static boolean nativeBoundary(Class<?> type) {
+        // Native tracking owns LivingEntity/Entity coordinates and health. Vanilla family
+        // subclasses still own renderer state, such as chicken wings and pig saddles.
+        return api(type)&&(!legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity.class.isAssignableFrom(type)
+                ||type==legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity.class);
     }
     /** Null means the complete original scalar schema can be inspected. Reference-valued fields remain local. */
     public static String unsupportedReason(Class<?> type){return SCHEMAS.get(type).failure;}

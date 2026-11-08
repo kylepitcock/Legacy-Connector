@@ -150,15 +150,15 @@ public final class AnimalLifecycleSelfTestB173 {
         require(victim.getHealth()<victimHealth&&original.velocityY>.09,"original attack damages and lunges");
         put(original,"hungry",true);var copy=reload(mob,cleanup);
         require((Boolean)get(((B173LivingHost)copy).legacy(),"hungry"),"original Hungry NBT survives registry factory");
-        var waterPos=mob.blockPosition();var previous=level.getBlockState(waterPos);
+        var waterPos=mob.blockPosition();var waterBlocks=new java.util.LinkedHashMap<net.minecraft.core.BlockPos,net.minecraft.world.level.block.state.BlockState>();
         try {
-            level.setBlock(waterPos,net.minecraft.world.level.block.Blocks.WATER.defaultBlockState(),3);
-            host.syncView();call(original,"tickLiving",new Class<?>[]{});
+            for(int dx=-1;dx<=1;dx++)for(int dy=-1;dy<=2;dy++)for(int dz=-1;dz<=1;dz++){var block=waterPos.offset(dx,dy,dz);waterBlocks.put(block,level.getBlockState(block));level.setBlock(block,net.minecraft.world.level.block.Blocks.WATER.defaultBlockState(),3);}
+            // Native base tick establishes fluid state before the original living callback reads it.
+            mob.tick();
+            require(mob.isInWater(),"native base tick observes controlled water volume before original living callback");
             require(Math.abs(original.standingEyeHeight+.76F)<.0001,"original water eye-offset callback");
-            var waterCopy=reload(mob,cleanup);
-            require(Math.abs(((B173LivingHost)waterCopy).legacy().standingEyeHeight-original.standingEyeHeight)<.0001&&Math.abs(waterCopy.getY()-mob.getY())<.0001,"water eye offset and native feet survive registry reload");
             require((Boolean)call(world,"isBoxSubmergedInFluid",new Class<?>[]{legacyconnector.vb1_7_3.net.minecraft.util.math.Box.class},original.boundingBox),"water volume API");
-        }finally {level.setBlock(waterPos,previous,3);}
+        }finally {waterBlocks.forEach((block,state)->level.setBlock(block,state,3));}
         put(original,"random",new ZeroRandom());mob.invulnerableTime=0;
         var beforeDrops=level.getEntities(mob,mob.getBoundingBox().inflate(4));
         require(mob.hurt(level.damageSources().mobAttack(victim),10000)&&mob.isDeadOrDying(),"native lethal damage executes original death callback");

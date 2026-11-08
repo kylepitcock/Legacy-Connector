@@ -22,6 +22,7 @@ public class TextureManager {
 
     /** MCP {@code getTexture}. */
     public int getTextureId(String path) {
+        if(org.kylepitcock.legacyconnector.vb1_7_3.RendererContextB173.active())return org.kylepitcock.legacyconnector.vb1_7_3.RendererContextB173.textureId(path);
         Integer captured=org.kylepitcock.legacyconnector.vb1_7_3.AnimationsB173.textureId(path);
         if(captured!=null)return captured;
         return GuiDrawB173.textureId(path);
@@ -33,6 +34,7 @@ public class TextureManager {
     }
 
     public void bindTexture(int id) {
+        if(org.kylepitcock.legacyconnector.vb1_7_3.RendererContextB173.active()){org.kylepitcock.legacyconnector.vb1_7_3.RendererContextB173.bind(id);return;}
         if(org.kylepitcock.legacyconnector.vb1_7_3.AnimationsB173.bindId(id))return;
         GuiDrawB173.bind(id);
     }

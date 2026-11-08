@@ -111,13 +111,18 @@ public class World implements BlockView {
     @Override
     public BlockEntity getBlockEntity(int x, int y, int z) {
         if (mcc$level == null) return null;
-        return mcc$level.getBlockEntity(pos(x, y, z)) instanceof org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173BlockEntity host ? host.legacy() : null;
+        var nativeBlockEntity=mcc$level.getBlockEntity(pos(x,y,z));
+        if(nativeBlockEntity instanceof org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173BlockEntity host)return host.legacy();
+        return org.kylepitcock.legacyconnector.vb1_7_3.BlockEntityViewsB173.wrap(nativeBlockEntity);
     }
 
     /** MCP {@code setBlockTileEntity}: only a block with a tile entity can hold one. */
     public void setBlockEntity(int x, int y, int z, BlockEntity te) {
         if (mcc$level == null) return;
         if (mcc$level.getBlockEntity(pos(x, y, z)) instanceof org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173BlockEntity host) host.setLegacy(te);
+        else if(te instanceof legacyconnector.vb1_7_3.net.minecraft.block.entity.MobSpawnerBlockEntity spawner&&mcc$level.getBlockEntity(pos(x,y,z)) instanceof net.minecraft.world.level.block.entity.SpawnerBlockEntity nativeSpawner){
+            spawner.world=this;spawner.x=x;spawner.y=y;spawner.z=z;spawner.mcc$host=nativeSpawner;spawner.mcc$apply();
+        }
     }
 
     /** MCP {@code removeBlockTileEntity}. */
@@ -332,8 +337,18 @@ public class World implements BlockView {
             host.setPickUpDelay(item.pickupDelay);host.setDeltaMovement(item.velocityX,item.velocityY,item.velocityZ);
             host.setYRot(item.yaw);host.setXRot(item.pitch);item.mcc$modern=host;
             boolean added=false;
-            try {added=mcc$level.addFreshEntity(host);return added;}
+            try {added=mcc$level.addFreshEntity(host);if(added)org.kylepitcock.legacyconnector.vb1_7_3.EntityViewsB173.spawned(host,item);return added;}
             finally {if(!added){item.mcc$modern=null;host.discard();}}
+        }
+        if(entity.getClass()==legacyconnector.vb1_7_3.net.minecraft.entity.projectile.ArrowEntity.class){
+            if(mcc$level.isClientSide||entity.mcc$modern!=null)return false;
+            var arrow=(legacyconnector.vb1_7_3.net.minecraft.entity.projectile.ArrowEntity)entity;
+            var host=new net.minecraft.world.entity.projectile.Arrow(net.minecraft.world.entity.EntityType.ARROW,mcc$level);
+            host.setPos(entity.x,entity.y,entity.z);host.setYRot(entity.yaw);host.setXRot(entity.pitch);host.setDeltaMovement(entity.velocityX,entity.velocityY,entity.velocityZ);
+            if(arrow.owner!=null)host.setOwner(arrow.owner.mcc$modern);
+            entity.mcc$modern=host;boolean added=false;
+            try{added=mcc$level.addFreshEntity(host);if(added)org.kylepitcock.legacyconnector.vb1_7_3.EntityViewsB173.spawned(host,entity);return added;}
+            finally{if(!added){entity.mcc$modern=null;host.discard();}}
         }
         if(entity instanceof legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity living) {
             if(org.kylepitcock.legacyconnector.vb1_7_3.AnimalsB173.supports(living.getClass()))
@@ -342,11 +357,77 @@ public class World implements BlockView {
         }
         return org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Arrow.spawn(mcc$level, entity);
     }
+    public boolean spawnGlobalEntity(legacyconnector.vb1_7_3.net.minecraft.entity.Entity entity){
+        if(!(entity instanceof legacyconnector.vb1_7_3.net.minecraft.entity.LightningEntity))return spawnEntity(entity);
+        if(mcc$level==null||mcc$level.isClientSide||entity.mcc$modern!=null)return false;
+        var bolt=new net.minecraft.world.entity.LightningBolt(net.minecraft.world.entity.EntityType.LIGHTNING_BOLT,mcc$level);bolt.setPos(entity.x,entity.y,entity.z);
+        entity.mcc$modern=bolt;boolean added=false;
+        try{added=mcc$level.addFreshEntity(bolt);if(added)org.kylepitcock.legacyconnector.vb1_7_3.EntityViewsB173.spawned(bolt,entity);return added;}
+        finally{if(!added){entity.mcc$modern=null;bolt.discard();}}
+    }
+    public legacyconnector.vb1_7_3.net.minecraft.world.explosion.Explosion createExplosion(legacyconnector.vb1_7_3.net.minecraft.entity.Entity source,double x,double y,double z,float power){return createExplosion(source,x,y,z,power,false);}
+    public legacyconnector.vb1_7_3.net.minecraft.world.explosion.Explosion createExplosion(legacyconnector.vb1_7_3.net.minecraft.entity.Entity source,double x,double y,double z,float power,boolean fire){
+        if(mcc$level==null)return null;
+        var nativeExplosion=mcc$level.explode(source==null?null:source.mcc$modern,x,y,z,power,fire,Level.ExplosionInteraction.MOB);
+        return new legacyconnector.vb1_7_3.net.minecraft.world.explosion.Explosion(this,source,x,y,z,power,fire,nativeExplosion);
+    }
     public List<legacyconnector.vb1_7_3.net.minecraft.entity.Entity> getEntities(legacyconnector.vb1_7_3.net.minecraft.entity.Entity except,
             legacyconnector.vb1_7_3.net.minecraft.util.math.Box box) {
         if (mcc$level == null) return List.of();
         return mcc$level.getEntities(except == null ? null : except.mcc$modern,box.mcc$box()).stream()
                 .map(org.kylepitcock.legacyconnector.vb1_7_3.EntityViewsB173::wrap).toList();
+    }
+    public List<Object> getEntities(){return new ArrayList<>(entities);}
+    public int countEntities(Class<?> type){
+        java.util.Objects.requireNonNull(type,"entity class");int count=0;
+        for(Object entity:entities)if(type.isInstance(entity))count++;
+        return count;
+    }
+    public List<legacyconnector.vb1_7_3.net.minecraft.entity.Entity> collectEntitiesByClass(Class<?> type,legacyconnector.vb1_7_3.net.minecraft.util.math.Box box){
+        return getEntities(null,box).stream().filter(type::isInstance).toList();
+    }
+    public legacyconnector.vb1_7_3.net.minecraft.entity.ai.pathing.Path findPath(legacyconnector.vb1_7_3.net.minecraft.entity.Entity entity,legacyconnector.vb1_7_3.net.minecraft.entity.Entity target,float range){
+        if(entity==null||target==null||!(entity.mcc$modern instanceof net.minecraft.world.entity.Mob mob)||target.mcc$modern==null)return null;
+        return legacyconnector.vb1_7_3.net.minecraft.entity.ai.pathing.Path.mcc$wrap(mob.getNavigation().createPath(target.mcc$modern.blockPosition(),0,Math.max(1,(int)Math.ceil(range))));
+    }
+    public legacyconnector.vb1_7_3.net.minecraft.entity.ai.pathing.Path findPath(legacyconnector.vb1_7_3.net.minecraft.entity.Entity entity,int x,int y,int z,float range){
+        if(entity==null||!(entity.mcc$modern instanceof net.minecraft.world.entity.Mob mob))return null;
+        return legacyconnector.vb1_7_3.net.minecraft.entity.ai.pathing.Path.mcc$wrap(mob.getNavigation().createPath(new BlockPos(x,y,z),0,Math.max(1,(int)Math.ceil(range))));
+    }
+    /** Biny's historical name refers to the daytime sky-darkening test, not a spawn gamerule. */
+    public boolean canMonsterSpawn(){return mcc$level!=null&&mcc$level.getSkyDarken()<4;}
+    public legacyconnector.vb1_7_3.net.minecraft.util.math.Vec3d getSkyColor(legacyconnector.vb1_7_3.net.minecraft.entity.Entity entity,float partial){
+        if(mcc$level==null)return legacyconnector.vb1_7_3.net.minecraft.util.math.Vec3d.create(0,0,0);
+        int rgb=mcc$level.getBiome(BlockPos.containing(entity.x,entity.y,entity.z)).value().getSkyColor();
+        double brightness=Math.max(0,Math.min(1,Math.cos(mcc$level.getSunAngle(partial))*2+.5));
+        double r=((rgb>>16)&255)/255D*brightness,g=((rgb>>8)&255)/255D*brightness,b=(rgb&255)/255D*brightness;
+        double rain=mcc$level.getRainLevel(partial),gray=(r*.3+g*.59+b*.11)*.6,blend=rain*.75;
+        r=r*(1-blend)+gray*blend;g=g*(1-blend)+gray*blend;b=b*(1-blend)+gray*blend;
+        double thunder=mcc$level.getThunderLevel(partial)*.75;gray=(r*.3+g*.59+b*.11)*.2;
+        return legacyconnector.vb1_7_3.net.minecraft.util.math.Vec3d.create(r*(1-thunder)+gray*thunder,g*(1-thunder)+gray*thunder,b*(1-thunder)+gray*thunder);
+    }
+    public boolean updateMovementInFluid(legacyconnector.vb1_7_3.net.minecraft.util.math.Box box,Material material,legacyconnector.vb1_7_3.net.minecraft.entity.Entity entity){
+        if(mcc$level==null)return false;boolean wet=false;net.minecraft.world.phys.Vec3 flow=net.minecraft.world.phys.Vec3.ZERO;
+        int minX=(int)Math.floor(box.minX),minY=(int)Math.floor(box.minY),minZ=(int)Math.floor(box.minZ);
+        int maxX=(int)Math.floor(box.maxX+1),maxY=(int)Math.floor(box.maxY+1),maxZ=(int)Math.floor(box.maxZ+1);
+        for(int x=minX;x<maxX;x++)for(int y=minY;y<maxY;y++)for(int z=minZ;z<maxZ;z++){
+            var pos=new BlockPos(x,y,z);var state=mcc$level.getFluidState(pos);
+            if(state.isEmpty()||getMaterial(x,y,z)!=material||maxY<y+state.getHeight(mcc$level,pos))continue;
+            wet=true;flow=flow.add(state.getFlow(mcc$level,pos));
+        }
+        if(flow.lengthSqr()>0){flow=flow.normalize().scale(.014);entity.velocityX+=flow.x;entity.velocityY+=flow.y;entity.velocityZ+=flow.z;}
+        return wet;
+    }
+    public float getVisibilityRatio(legacyconnector.vb1_7_3.net.minecraft.util.math.Vec3d source,legacyconnector.vb1_7_3.net.minecraft.util.math.Box box){
+        if(mcc$level==null)return 0;int visible=0,total=0;
+        double sx=1/((box.maxX-box.minX)*2+1),sy=1/((box.maxY-box.minY)*2+1),sz=1/((box.maxZ-box.minZ)*2+1);
+        for(double x=0;x<=1;x+=sx)for(double y=0;y<=1;y+=sy)for(double z=0;z<=1;z+=sz){
+            var start=new net.minecraft.world.phys.Vec3(box.minX+(box.maxX-box.minX)*x,box.minY+(box.maxY-box.minY)*y,box.minZ+(box.maxZ-box.minZ)*z);
+            var end=new net.minecraft.world.phys.Vec3(source.x,source.y,source.z);
+            if(mcc$level.clip(new net.minecraft.world.level.ClipContext(start,end,net.minecraft.world.level.ClipContext.Block.COLLIDER,net.minecraft.world.level.ClipContext.Fluid.NONE,net.minecraft.world.phys.shapes.CollisionContext.empty())).getType()==net.minecraft.world.phys.HitResult.Type.MISS)visible++;
+            total++;
+        }
+        return total==0?0:visible/(float)total;
     }
 
     /** Each traversal reflects the level's current loaded entities and preserves hosted originals. */

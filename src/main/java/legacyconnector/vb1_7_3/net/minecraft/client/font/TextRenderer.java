@@ -1,6 +1,7 @@
 package legacyconnector.vb1_7_3.net.minecraft.client.font;
 
 import org.kylepitcock.legacyconnector.vb1_7_3.GuiDrawB173;
+import org.kylepitcock.legacyconnector.vb1_7_3.RendererContextB173;
 
 /** Beta 1.7.3 {@code FontRenderer}: drawn with the modern font ({@link GuiDrawB173}); § formatting codes still apply. */
 public class TextRenderer {
@@ -15,19 +16,19 @@ public class TextRenderer {
     }
 
     public void drawWithShadow(String text, int x, int y, int color) {
-        GuiDrawB173.text(text, x, y, color, true);
+        draw(text,x,y,color,true);
     }
 
     public void draw(String text, int x, int y, int color) {
-        GuiDrawB173.text(text, x, y, color, false);
+        draw(text,x,y,color,false);
     }
 
     public void draw(String text, int x, int y, int color, boolean shadow) {
-        GuiDrawB173.text(text, x, y, color, shadow);
+        if(RendererContextB173.active())RendererContextB173.text(text,x,y,color,shadow);else GuiDrawB173.text(text, x, y, color, shadow);
     }
 
     public int getWidth(String text) {
-        return GuiDrawB173.width(text);
+        return RendererContextB173.active()?RendererContextB173.width(text):GuiDrawB173.width(text);
     }
 
     /** MCP {@code drawSplitString}: word-wrapped at {@code width}. */

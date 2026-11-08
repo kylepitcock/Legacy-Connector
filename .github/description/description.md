@@ -219,7 +219,7 @@ modern/legacy stack and tile conversion, and NeoForge capabilities for legacy ti
 
 ✅ 1.7.10 → ✅ **1.12.2** (beta) → **1.6.4** (alpha) → **1.5.2** (alpha) → **1.4.7** (alpha) → **1.20.1** (experimental, started) → **1.19.2** → **1.18.2** → **1.16.5** → **1.2.5**
 
-Also started: **Beta 1.7.3** ModLoader / Forge 1.0 mods (`mods/b1.7.3/`): their blocks, items and recipes load with their own textures, block behaviour, tile entities and GUIs. Fluid buckets, tool/sword durability and arrows with constant custom textures are bridged; general entities and world generation remain unfinished.
+Also started: **Beta 1.7.3** ModLoader / Forge 1.0 mods (`mods/b1.7.3/`): their blocks, items and recipes load with their own textures, block behaviour, tile entities and GUIs. Fluid buckets, tool/sword durability and arrows with constant custom textures are bridged. Supported living-mob families run their original callbacks and models, with native spawning, sound and GuiAPI settings; general entities and world generation remain unfinished.
 
 ## Star history
 

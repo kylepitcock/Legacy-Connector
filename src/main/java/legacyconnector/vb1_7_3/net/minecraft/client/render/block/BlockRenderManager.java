@@ -9,6 +9,7 @@ public class BlockRenderManager {
     public BlockView blockView;
     public int textureOverride=-1;
     public boolean flipTextureHorizontally,renderAllSides;
+    public static boolean isSideLit(int type){return type==0||type==13||type==10||type==11||type==16;}
     public BlockRenderManager(){}
     public BlockRenderManager(BlockView view){blockView=view;}
     public boolean render(Block b,int x,int y,int z){return renderBlock(b,x,y,z);}

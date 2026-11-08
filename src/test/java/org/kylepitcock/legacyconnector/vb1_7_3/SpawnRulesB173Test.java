@@ -51,4 +51,14 @@ class SpawnRulesB173Test {
         registry.add(Creature.class,6,SpawnGroup.CREATURE,new Biome[]{new UnknownBiome()});
         SpawnRulesB173.contribute(out,registry.entries(),c->ResourceLocation.parse("fixture:creature"));assertTrue(out.isEmpty());
     }
+    @Test void originalSpawnGroupOverridesAmbiguousFamilyAndConflictsRemainDiagnosed() {
+        var registry=new SpawnRulesB173.Registry();
+        registry.add(Creature.class,8,SpawnGroup.MONSTER,new Biome[]{Biome.FOREST});
+        assertEquals(net.minecraft.world.entity.MobCategory.MONSTER,SpawnRulesB173.categoryFor(Creature.class,net.minecraft.world.entity.MobCategory.MISC,registry.entries()));
+        registry.add(Creature.class,0,SpawnGroup.CREATURE,new Biome[]{Biome.FOREST});
+        assertEquals(net.minecraft.world.entity.MobCategory.MONSTER,SpawnRulesB173.categoryFor(Creature.class,net.minecraft.world.entity.MobCategory.MISC,registry.entries()));
+        registry.add(Creature.class,4,SpawnGroup.CREATURE,new Biome[]{Biome.FOREST});
+        assertEquals(net.minecraft.world.entity.MobCategory.MISC,SpawnRulesB173.categoryFor(Creature.class,net.minecraft.world.entity.MobCategory.MISC,registry.entries()));
+    }
+
 }

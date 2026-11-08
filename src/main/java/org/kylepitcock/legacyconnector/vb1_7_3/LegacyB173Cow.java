@@ -62,7 +62,7 @@ public final class LegacyB173Cow extends Cow {
         // Beta has only a main hand; false from an original override must not fall through to native milking.
         if(hand!=InteractionHand.MAIN_HAND)return InteractionResult.PASS;
         var view=PlayerViewB173.of(player);pull();
-        try{
+        try(var views=EntityViewsB173.callbackScope()){
             boolean result=(Boolean)info.interact().invoke(legacy,view);view.writeBack();push();
             return result?InteractionResult.sidedSuccess(level().isClientSide):InteractionResult.PASS;
         }catch(ReflectiveOperationException e){throw new IllegalStateException("Beta mob interaction failed",e);}

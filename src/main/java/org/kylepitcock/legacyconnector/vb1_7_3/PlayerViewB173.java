@@ -13,7 +13,7 @@ import net.minecraft.world.entity.player.Player;
  * health and the 36 main inventory slots (as legacy stacks); afterwards {@link #writeBack} gives the modern player whatever the mod did to
  * those slots (a used-up item, a filled bucket). One view per player.
  */
-public final class PlayerViewB173 extends PlayerEntity {
+public final class PlayerViewB173 extends legacyconnector.vb1_7_3.net.minecraft.entity.player.ClientPlayerEntity {
     /**
      * Keyed by identity: {@code Entity.equals} compares entity ids, and in single player the client's and the server's player have the same
      * id (a WeakHashMap gave the server the client player's view, so OpenGUI saw a client player and no menu opened).
@@ -22,6 +22,8 @@ public final class PlayerViewB173 extends PlayerEntity {
 
     private final Player player;
     private final ItemStack[] before = new ItemStack[36];
+    private int beforeHealth,beforeAir,beforeFire;
+    private float beforeFallDistance;
 
     private PlayerViewB173(Player player) {
         super(World.mcc$wrap(player.level()));
@@ -47,7 +49,16 @@ public final class PlayerViewB173 extends PlayerEntity {
         yaw = prevYaw = player.getYRot();
         pitch = prevPitch = player.getXRot();
         onGround = player.onGround();
+        mcc$environment(player.isInWater());
+        var motion=player.getDeltaMovement();velocityX=motion.x;velocityY=motion.y;velocityZ=motion.z;
+        mcc$movementInputs(player.xxa,player.zza,EntityFieldsB173.jumpInput(player));
+        // Modern passengers do not integrate walking input into their own motion. Beta mounts read that rider motion.
+        // Preserve real motion (knockback, swimming, other integrations); supply only the missing horizontal intent.
+        if(player.getVehicle() instanceof B173LivingHost&&velocityX==0&&velocityZ==0)
+            moveNonSolid(player.xxa*.98F,player.zza*.98F,onGround?.1F:.02F);
         health = Math.round(player.getHealth());
+        beforeHealth=health;beforeAir=air=player.getAirSupply();beforeFire=fireTicks=player.getRemainingFireTicks();
+        beforeFallDistance=fallDistance=player.fallDistance;
         name = player.getGameProfile().getName();
         dead = !player.isAlive();
         inventory.selectedSlot = player.getInventory().selected;
@@ -60,6 +71,10 @@ public final class PlayerViewB173 extends PlayerEntity {
 
     /** Applies the mod's changes of the main inventory slots to the modern player. */
     public void writeBack() {
+        if(health!=beforeHealth){player.setHealth(health);beforeHealth=health;}
+        if(air!=beforeAir){player.setAirSupply(air);beforeAir=air;}
+        if(fireTicks!=beforeFire){player.setRemainingFireTicks(fireTicks);beforeFire=fireTicks;}
+        if(fallDistance!=beforeFallDistance){player.fallDistance=fallDistance;beforeFallDistance=fallDistance;}
         for (int i = 0; i < 36; i++) {
             ItemStack now = inventory.main[i];
             ItemStack was = before[i];

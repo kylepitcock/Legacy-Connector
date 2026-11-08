@@ -73,7 +73,7 @@ public final class LegacyB173Arrow extends Arrow {
         }
         if (legacy == null) { discard(); return; }
         xo=getX(); yo=getY(); zo=getZ(); yRotO=getYRot(); xRotO=getXRot();
-        try {
+        try (var views=EntityViewsB173.callbackScope()) {
             if (getOwner() != null) {
                 try {
                     var field=shooterField(legacy.getClass());
@@ -91,7 +91,7 @@ public final class LegacyB173Arrow extends Arrow {
     @Override public void playerTouch(net.minecraft.world.entity.player.Player player) {
         if (level().isClientSide || legacy == null) return;
         var view=PlayerViewB173.of(player);
-        try {
+        try (var views=EntityViewsB173.callbackScope()) {
             legacy.onPlayerInteraction(view);
             view.writeBack();
             if (legacy.dead) discard();

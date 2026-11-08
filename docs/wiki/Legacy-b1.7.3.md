@@ -358,10 +358,15 @@ The shared Beta GuiAPI bridge implements typed Boolean/Integer/Float/Multi setti
 properties save/reload under the instance's `mods/<backend>/guiconfig.properties`, reflective `ModAction` callbacks and the
 TWL widget/button-model hierarchy used by the tested mod. The loader relocates Beta TWL names into this bridge.
 
-Mo' Creatures 2.12.2 from the archive (internally labelled 2.12.1) now constructs in isolation: 14 items, 48 recipes and
-28 entity registrations. Three focused tests and the runtime settings/context/callback test pass. This does not host those
-custom mobs. TWL drawing/input/layout and broader GuiAPI setting types remain incomplete; `GuiModScreen.show` explicitly
-reports unsupported rendering instead of displaying a nonfunctional settings screen.
+`GuiModScreen.show` now lays out the supported TWL windows, columns, buttons and sliders using native GUI drawing and input.
+The title and options screens expose the registered mod-settings screens. Original settings callbacks retain ownership of
+values and persistence. Unimplemented widget types remain outside this supported subset.
+
+Plain entity screens execute on the initiating player's server thread. A shared packet connection carries drawing commands
+and keyboard/pointer input; original Done callbacks mutate the server-owned creature. Nested screen requests wait until the
+initiating inventory callback commits, so opening a naming screen cannot restore a consumed item. The actual Mo' Creatures
+settings navigation, five naming-screen variants, and frame/input packet round-trip pass headless tests. Dynamic bitmap
+uploads through server-owned screens are not implemented.
 
 ## First living-mob host
 
@@ -431,11 +436,41 @@ to the native overworld biome tag; explicit vanilla selections use shared biome-
 reported and omitted. Native natural-spawn checks invoke original `canSpawn`, and cluster limits use `getLimitPerChunk`.
 Removal currently updates recorded legacy entries; removing existing modern vanilla spawn entries is separate work.
 
-Fresh isolated Mo' Creatures and More Creeps runs verify the original Bunny renderer (66 faces) and Hippo renderer (96),
+The initial isolated Mo' Creatures and More Creeps runs verified the original Bunny renderer (66 faces) and Hippo renderer (96),
 including transforms, animation, exact PNG pack bytes, spawn/metadata packet replay, skin/eye-offset persistence and loaded
 native biome weights/spawn rules. Two independent CLIENT-side CPU probes compare every native emitted position and UV
-with the same original render invocation. All 31 Beta tests pass with none skipped. No live window/GPU visual check was run;
-these results cover the exercised Bunny/Hippo path, not either mod's entire mob roster.
+with the same original render invocation. No live window/GPU visual check was run.
+
+### Additional creature families
+
+The common host now supports original passive, pig, chicken, hostile, water, flying and plain-living families when their
+callback dependencies pass admission. Original custom travel and movement remain virtual; explicit native superclass
+operations prevent recursion and preserve skipped-super behavior. Water/flying navigation, rider input, bucking, fire
+immunity, fall and placement callbacks, dropped-item age/pickup, typed arrow owners and mutable entity relations use shared
+APIs. No production branch selects behavior by a tested mod's identity.
+
+Nested callbacks share an entity-view transaction. Queried objects keep stable identities, pending writes are committed
+before a native refresh, and a nested damage callback cannot discard subsequent original fire or velocity changes.
+Original post-spawn scalar changes are published before the next simulation tick. World entity-list snapshots preserve
+indexed traversal when original code removes entries during the loop.
+
+Vanilla model parents include biped, quadruped, chicken, pig, cow and sheep models, compared against unmodified Beta models.
+Original render callbacks can submit held items, nameplates, health-bar quads, blending/depth state and texture matrices
+through native rendering. ModLoader categories select native water/ground spawn placement, alongside original spawn checks.
+Achievement registration and awards use native advancements; original progress queries read the same native state.
+
+Fresh separate actual-mod runs pass all **28 Mo' Creatures registrations**, including original geometry, tracking packet
+round-trips, movement callbacks, interaction, damage, persistence and bounded death/drop checks. Twenty-one focused gameplay
+cases cover eggs, feeding/taming, rider controls and bucking, packhorse storage, naming, achievements, original destruction,
+fire attacks, reproduction and item-age/projectile-owner behavior. All **53 More Creeps living registrations** pass their
+core roster checks. These tests exercise original mod classes, rather than replacement behavior.
+
+The cases also verify retained-target fire mutations, native boar saddling and inherited duck-wing tracking.
+[The validation snapshot](../data/b173-living-validation-2026-11-07.json) records payload hashes, roster names and the exercised cases.
+
+The More Creeps nonliving projectiles and custom dropped-item families remain separate work. Eight original particle classes
+pass constructor, callback, selected-sprite, packet-state, geometry/UV/color and lifetime tests. This proves the exercised
+headless paths; native atlas/GPU drawing and every subtype/AI decision have not received equivalent visual gameplay proof.
 
 ## Tile entities
 

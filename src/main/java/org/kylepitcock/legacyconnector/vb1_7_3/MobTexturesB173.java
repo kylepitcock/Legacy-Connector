@@ -13,6 +13,9 @@ import org.kylepitcock.legacyconnector.core.pack.GeneratedPack;
 
 /** Original entity PNGs are resources in the native pack, including conditional renderer texture choices. */
 public final class MobTexturesB173 implements GeneratedPack.Contributor {
+    /** Vanilla Beta's powered-creeper layer, renamed when entity textures were reorganized. */
+    private static final Map<String,String> VANILLA=Map.of("armor/power.png","textures/entity/creeper/creeper_armor.png",
+            "mob/saddle.png","textures/entity/pig/pig_saddle.png");
     private static String path(String name){
         if(name==null)return null;String p=name.replace('\\','/');while(p.startsWith("/"))p=p.substring(1);
         if(p.isEmpty()||p.contains(":")||java.util.Arrays.asList(p.split("/")).contains(".."))return null;return p;
@@ -22,6 +25,7 @@ public final class MobTexturesB173 implements GeneratedPack.Contributor {
         String p=path(name);if(p==null)return ResourceLocation.withDefaultNamespace("missingno");
         if(mod!=null&&Files.isRegularFile(mod.container.getModInfo().getOwningFile().getFile().findResource(p.split("/"))))return id(mod,p);
         for(var other:LegacyMods.all())if(PlatformB173.VERSION.equals(other.version)&&Files.isRegularFile(other.container.getModInfo().getOwningFile().getFile().findResource(p.split("/"))))return id(other,p);
+        String vanilla=VANILLA.get(p);if(vanilla!=null)return ResourceLocation.withDefaultNamespace(vanilla);
         return ResourceLocation.withDefaultNamespace("missingno");
     }
     @Override public void contribute(PackType type,Map<String,Supplier<byte[]>> out){

@@ -34,11 +34,11 @@ public final class LegacyB173Item extends Item {
     public InteractionResult useOn(UseOnContext context) {
         Player player = context.getPlayer();
         if (player == null || context.getHand() != InteractionHand.MAIN_HAND) return InteractionResult.PASS;
-        PlayerViewB173 view = PlayerViewB173.of(player);
+        PlayerViewB173 view = (PlayerViewB173)EntityViewsB173.wrap(player);
         var held = view.inventory.main[view.inventory.selectedSlot];
         if (held == null) return InteractionResult.PASS;
         var pos = context.getClickedPos();
-        try {
+        try (var views=EntityViewsB173.callbackScope()) {
             World world = World.mcc$wrap(context.getLevel());
             legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$use(world);
             boolean used = legacy.useOnBlock(held, view, world, pos.getX(), pos.getY(), pos.getZ(), context.getClickedFace().get3DDataValue());
@@ -47,17 +47,17 @@ public final class LegacyB173Item extends Item {
         } catch (RuntimeException | LinkageError e) {
             failed("useOnBlock", e);
             return InteractionResult.FAIL;
-        }
+        } finally {EntityViewsB173.flush();BlockEntityViewsB173.flush();}
     }
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         if (hand != InteractionHand.MAIN_HAND || !usesAir) return InteractionResultHolder.pass(player.getItemInHand(hand));
-        PlayerViewB173 view = PlayerViewB173.of(player);
+        PlayerViewB173 view = (PlayerViewB173)EntityViewsB173.wrap(player);
         int slot = view.inventory.selectedSlot;
         var held = view.inventory.main[slot];
         if (held == null) return InteractionResultHolder.pass(player.getItemInHand(hand));
-        try {
+        try (var views=EntityViewsB173.callbackScope()) {
             World world = World.mcc$wrap(level);
             legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$use(world);
             var result = legacy.use(held, world, view);
@@ -68,7 +68,7 @@ public final class LegacyB173Item extends Item {
         } catch (RuntimeException | LinkageError e) {
             failed("use", e);
             return InteractionResultHolder.fail(player.getItemInHand(hand));
-        }
+        } finally {EntityViewsB173.flush();BlockEntityViewsB173.flush();}
     }
 
     private void failed(String callback, Throwable error) {
@@ -95,7 +95,7 @@ public final class LegacyB173Item extends Item {
         var held=StacksB173.toLegacy(stack);
         if (held==null) return false;
         var view=(legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity)EntityViewsB173.wrap(actor);
-        try {
+        try (var views=EntityViewsB173.callbackScope()) {
             legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$use(World.mcc$wrap(actor.level()));
             boolean result=target==null ? legacy.postMine(held,BlocksB173.legacyId(state),pos.getX(),pos.getY(),pos.getZ(),view)
                     : legacy.postHit(held,(legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity)EntityViewsB173.wrap(target),view);

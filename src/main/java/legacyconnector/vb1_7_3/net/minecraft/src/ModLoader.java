@@ -58,6 +58,10 @@ public final class ModLoader {
         Class<?> type=org.kylepitcock.legacyconnector.vb1_7_3.SpawnRulesB173.namedEntity(name);if(type!=null)RemoveSpawn(type,group,biomes);
     }
 
+    public static void AddAchievementDesc(legacyconnector.vb1_7_3.net.minecraft.achievement.Achievement achievement,String title,String description) {
+        org.kylepitcock.legacyconnector.vb1_7_3.AdvancementsB173.describe(achievement,title,description);
+    }
+
     public static Logger getLogger() {
         return LOGGER;
     }

@@ -44,6 +44,15 @@ public final class SpawnRulesB173 {
     public static void add(Class<?> type,int weight,SpawnGroup group,Biome[] biomes){RULES.add(type,weight,group,biomes);}
     public static void remove(Class<?> type,SpawnGroup group,Biome[] biomes){RULES.remove(type,group,biomes);}
     public static List<Entry> all(){return RULES.entries();}
+    /** A unique original ModLoader category is authoritative even for custom direct-LivingEntity families. */
+    public static net.minecraft.world.entity.MobCategory categoryFor(Class<?> type,net.minecraft.world.entity.MobCategory fallback){return categoryFor(type,fallback,all());}
+    static net.minecraft.world.entity.MobCategory categoryFor(Class<?> type,net.minecraft.world.entity.MobCategory fallback,List<Entry> entries){
+        var categories=new LinkedHashSet<net.minecraft.world.entity.MobCategory>();
+        for(Entry entry:entries)if(entry.type()==type&&entry.weight()>0)categories.add(entry.group().mcc$modern());
+        if(categories.size()==1)return categories.iterator().next();
+        if(categories.size()>1)warn("Conflicting Beta spawn groups for "+type.getName()+": "+categories+"; using family category "+fallback);
+        return fallback;
+    }
     public static Class<?> namedEntity(String name) {
         for(var registration:ContentB173.entities())if(registration.name().equals(name))return registration.type();
         return null;

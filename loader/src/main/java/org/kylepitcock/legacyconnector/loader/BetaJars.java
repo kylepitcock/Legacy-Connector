@@ -206,7 +206,8 @@ public final class BetaJars {
         BetaMappings.Side side = hits[BetaMappings.Side.SERVER.ordinal()] > hits[BetaMappings.Side.CLIENT.ordinal()]
                 ? BetaMappings.Side.SERVER : BetaMappings.Side.CLIENT;
         double share = total == 0 ? 1.0 : hits[side.ordinal()] / (double) total;
-        if (!inFolder && share < MIN_RESOLVED) return null; // a ModLoader mod of another release (1.0 - 1.2.5)
+        // The shared ModLoader API alone does not identify a Minecraft release. Keep the existing fallback unless game members identify Beta.
+        if (!inFolder && (total == 0 || share < MIN_RESOLVED)) return null;
 
         jar.version = LegacyVersion.VB1_7_3;
         jar.versionEvidence = (scan.modClasses.isEmpty() ? "ModLoader/Forge API references" : "ModLoader entry point " + scan.modClasses.get(0))

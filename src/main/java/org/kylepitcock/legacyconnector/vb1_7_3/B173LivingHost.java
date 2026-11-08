@@ -11,6 +11,16 @@ public interface B173LivingHost {
     void flushView();
     void mcc$baseTick();
     void baseMovement();
+    void baseTravel(float sideways,float forward);
+    void baseMove(double x,double y,double z);
+    boolean baseIsOnLadder();
+    boolean baseInsideWall();
+    void baseFall(double deltaY,boolean landed);
+    void baseSetPositionAndAngles(double x,double y,double z,float yaw,float pitch);
+    void baseSetRotation(float yaw,float pitch);
+    void baseInterpolate(double x,double y,double z,float yaw,float pitch,int steps);
+    void baseEntityStatus(byte status);
+    void baseSetPath(legacyconnector.vb1_7_3.net.minecraft.entity.ai.pathing.Path path);
     void baseAI();
     void serverAIPhase();
     boolean baseDamage(Entity attacker,int amount);

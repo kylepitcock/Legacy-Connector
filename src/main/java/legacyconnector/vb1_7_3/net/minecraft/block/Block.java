@@ -124,6 +124,13 @@ public class Block {
     }
 
     protected void init() {}
+    public float getBlastResistance(legacyconnector.vb1_7_3.net.minecraft.entity.Entity source){return mcc$owner==null&&mcc$modern!=null?mcc$modern.getExplosionResistance():resistance/5F;}
+    /** The vanilla base hook is empty; original block subclasses override it (for example priming explosives). */
+    public void onDestroyedByExplosion(legacyconnector.vb1_7_3.net.minecraft.world.World world,int x,int y,int z){
+        if(mcc$owner==null&&mcc$modern instanceof net.minecraft.world.level.block.TntBlock&&world.mcc$level()!=null&&!world.mcc$level().isClientSide){
+            var tnt=new net.minecraft.world.entity.item.PrimedTnt(world.mcc$level(),x+.5,y+.5,z+.5,null);tnt.setFuse(world.random.nextInt(tnt.getFuse()/4)+tnt.getFuse()/8);world.mcc$level().addFreshEntity(tnt);
+        }
+    }
 
     protected Block setSoundGroup(BlockSoundGroup group) {
         this.soundGroup = group;

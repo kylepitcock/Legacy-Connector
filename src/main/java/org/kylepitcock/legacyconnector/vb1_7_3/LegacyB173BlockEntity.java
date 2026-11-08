@@ -87,7 +87,7 @@ public class LegacyB173BlockEntity extends net.minecraft.world.level.block.entit
         World w = World.mcc$wrap(level);
         te.world = w;
         legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$use(w);
-        try {
+        try (var views=EntityViewsB173.callbackScope()) {
             te.tick();
         } catch (RuntimeException | LinkageError e) {
             tickFailed = true;

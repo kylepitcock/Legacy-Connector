@@ -44,7 +44,7 @@ final class GuiApiSelfTestB173 {
             var control=new WidgetBoolean(flag,"Boolean");control.b.getModel().fireActionCallback();
             require(flag.get("")&&control.b.getText().endsWith("true"),"button writes setting and updates text");
             WidgetSetting.all.remove(control);
-            org.slf4j.LoggerFactory.getLogger("LegacyConnector/b1.7.3").info("B1.7.3 GUIAPI TEST: typed defaults, rounding, context isolation, properties reload, widget hierarchy and Runnable callbacks passed (TWL rendering unsupported)");
+            org.slf4j.LoggerFactory.getLogger("LegacyConnector/b1.7.3").info("B1.7.3 GUIAPI TEST: typed defaults, rounding, context isolation, properties reload, widget hierarchy and Runnable callbacks passed; rendering/input verified separately");
         }finally{
             ModSettings.all.remove(settings);if(reload!=null)ModSettings.all.remove(reload);
             ModSettings.currentContext=originalContext;

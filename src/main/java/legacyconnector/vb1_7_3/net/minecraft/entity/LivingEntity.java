@@ -16,6 +16,9 @@ public abstract class LivingEntity extends Entity {
     public int deathTime;
     public int attackCooldown;
     public boolean killedByOtherEntity;
+    public float rotationSpeed,swingAnimationProgress;
+    public int scoreAmount,despawnCounter;
+    protected boolean interpolateOnly;
     protected float sidewaysSpeed;
     protected float forwardSpeed;
     protected boolean jumping;
@@ -23,7 +26,7 @@ public abstract class LivingEntity extends Entity {
     protected String texture = "/mob/char.png";
 
     public LivingEntity(World world) {
-        super(world);
+        super(world);stepHeight=.5F;
     }
 
     @Override public void tick() {
@@ -46,6 +49,21 @@ public abstract class LivingEntity extends Entity {
         if(mcc$modern instanceof org.kylepitcock.legacyconnector.vb1_7_3.B173LivingHost host)host.baseKnockback(attacker,amount,x,z);
         else {double length=Math.sqrt(x*x+z*z);if(length>0){velocityX=velocityX/2-x/length*.4;velocityY=Math.min(velocityY/2+.4,.4);velocityZ=velocityZ/2-z/length*.4;}}
     }
+    protected Entity lookTarget;
+    protected int lookTimer;
+    public boolean hasLookTarget(){return lookTarget!=null;}
+    public Entity getLookTarget(){return lookTarget;}
+    public final void mcc$idleLook(){
+        sidewaysSpeed=0;forwardSpeed=0;
+        if(random.nextFloat()<.02F){var player=world.getClosestPlayer(this,8);if(player!=null){lookTarget=player;lookTimer=10+random.nextInt(20);}else rotationSpeed=(random.nextFloat()-.5F)*20;}
+        if(lookTarget!=null){lookAt(lookTarget,10,40);if(lookTimer--<=0||lookTarget.dead||getSquaredDistance(lookTarget)>64)lookTarget=null;}
+        else{if(random.nextFloat()<.05F)rotationSpeed=(random.nextFloat()-.5F)*20;yaw+=rotationSpeed;pitch=0;}
+        if(isSubmergedInWater()||isTouchingLava())jumping=random.nextFloat()<.8F;
+    }
+    protected void applyDamage(int amount){
+        health-=amount;
+        if(mcc$modern instanceof net.minecraft.world.entity.LivingEntity living&&!(mcc$modern instanceof org.kylepitcock.legacyconnector.vb1_7_3.B173LivingHost))living.setHealth(health);
+    }
     public boolean canSee(Entity other) {
         return other!=null && other.mcc$modern!=null && mcc$modern instanceof net.minecraft.world.entity.LivingEntity nativeLiving && nativeLiving.hasLineOfSight(other.mcc$modern);
     }
@@ -59,8 +77,31 @@ public abstract class LivingEntity extends Entity {
     public final String mcc$hurtSound(){return getHurtSound();}
     public final String mcc$deathSound(){return getDeathSound();}
     @Override public boolean isAlive(){return !dead&&health>0;}
+    @Override public boolean isPushable(){return !dead;}
+    @Override public boolean isCollidable(){return !dead;}
     public boolean interact(legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity player){return false;}
-    public void onKilledBy(Entity killer) {}
+    public void onKilledBy(Entity killer) {
+        if(scoreAmount>=0&&killer!=null)killer.updateKilledAchievement(this,scoreAmount);
+        if(killer!=null)killer.onKilledOther(this);
+        killedByOtherEntity=true;
+        if(world!=null&&!world.isRemote)dropItems();
+    }
+    protected void dropItems(){int id=getDroppedItemId();if(id>0){int amount=random.nextInt(3);for(int i=0;i<amount;i++)dropItem(id,1);}}
+    protected int getDroppedItemId(){return 0;}
+    protected float getSoundVolume(){return 1F;}
+    public final float mcc$soundVolume(){return getSoundVolume();}
+    public final void mcc$dropItems(){dropItems();}
+    public int getMinAmbientSoundDelay(){return 80;}
+    public boolean canBreatheInWater(){return false;}
+    public String getTexture(){return texture;}
+    public void travel(float sideways,float forward){if(mcc$modern instanceof org.kylepitcock.legacyconnector.vb1_7_3.B173LivingHost host)host.baseTravel(sideways,forward);}
+    public boolean isOnLadder(){return mcc$modern instanceof org.kylepitcock.legacyconnector.vb1_7_3.B173LivingHost host?host.baseIsOnLadder():mcc$modern instanceof net.minecraft.world.entity.LivingEntity living&&living.onClimbable();}
+    protected boolean isImmobile(){return health<=0;}
+    public final boolean mcc$isImmobile(){return isImmobile();}
+    protected void jump(){velocityY=.42;}
+    public void heal(int amount){if(health>0){health=Math.min(maxHealth,health+amount);damagedTime=20;}}
+    public void processServerEntityStatus(byte status){if(mcc$modern instanceof org.kylepitcock.legacyconnector.vb1_7_3.B173LivingHost host)host.baseEntityStatus(status);else if(status==2){hurtTime=10;damagedTime=10;}else if(status==3){health=0;deathTime=1;}}
+
     public int getLimitPerChunk(){return 4;}
     @Override public void writeNbt(legacyconnector.vb1_7_3.net.minecraft.nbt.NbtCompound tag){
         super.writeNbt(tag);tag.putShort("Health",(short)health);tag.putShort("HurtTime",(short)hurtTime);
@@ -72,12 +113,14 @@ public abstract class LivingEntity extends Entity {
     }
 
     /** The original skin path, also used by the native mob fallback renderer. */
-    public String mcc$texture(){return texture;}
+    public String mcc$texture(){return getTexture();}
     public void mcc$setTexture(String texture){this.texture=texture;}
     public float getHandSwingProgress(float partial){return mcc$modern instanceof net.minecraft.world.entity.LivingEntity living?living.getAttackAnim(partial):0;}
 
     public ItemStack getHeldItem() {
-        return null;
+        if(mcc$modern instanceof org.kylepitcock.legacyconnector.vb1_7_3.B173LivingHost)return null;
+        return mcc$modern instanceof net.minecraft.world.entity.LivingEntity living
+                ?org.kylepitcock.legacyconnector.vb1_7_3.StacksB173.toLegacy(living.getMainHandItem()):null;
     }
 
     @Override

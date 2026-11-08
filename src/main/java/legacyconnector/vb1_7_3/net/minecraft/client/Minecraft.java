@@ -16,12 +16,51 @@ import org.kylepitcock.legacyconnector.vb1_7_3.MenusB173;
  */
 public class Minecraft {
     private static final Minecraft INSTANCE = new Minecraft();
+    private static final ThreadLocal<Minecraft> SCOPED=new ThreadLocal<>();
+    public static void mcc$scope(Minecraft minecraft,Runnable callback){Minecraft previous=SCOPED.get();SCOPED.set(minecraft);try{callback.run();}finally{if(previous==null)SCOPED.remove();else SCOPED.set(previous);}}
 
     public World world;
+    private legacyconnector.vb1_7_3.net.minecraft.entity.player.ClientPlayerEntity explicitPlayer;
+    private record Context(World world,legacyconnector.vb1_7_3.net.minecraft.entity.Entity focus){}
+    private static final ThreadLocal<Context> CONTEXT=new ThreadLocal<>();
+    private static final ThreadLocal<legacyconnector.vb1_7_3.net.minecraft.entity.player.ClientPlayerEntity> PLAYER_OVERRIDE=new ThreadLocal<>();
+    public legacyconnector.vb1_7_3.net.minecraft.client.gui.hud.InGameHud inGameHud=new legacyconnector.vb1_7_3.net.minecraft.client.gui.hud.InGameHud();
+    public legacyconnector.vb1_7_3.net.minecraft.client.option.GameOptions options=new legacyconnector.vb1_7_3.net.minecraft.client.option.GameOptions();
+    public legacyconnector.vb1_7_3.net.minecraft.stat.PlayerStats stats=new legacyconnector.vb1_7_3.net.minecraft.stat.PlayerStats();
+    public static final class ContextScope implements AutoCloseable {
+        private final Context previous;private final legacyconnector.vb1_7_3.net.minecraft.entity.player.ClientPlayerEntity override;
+        private ContextScope(World world,legacyconnector.vb1_7_3.net.minecraft.entity.Entity focus){previous=CONTEXT.get();override=PLAYER_OVERRIDE.get();CONTEXT.set(new Context(world,focus));if(world!=null)mcc$instance().world=world;PLAYER_OVERRIDE.remove();}
+        @Override public void close(){if(previous==null)CONTEXT.remove();else CONTEXT.set(previous);if(override==null)PLAYER_OVERRIDE.remove();else PLAYER_OVERRIDE.set(override);}
+    }
+    public static ContextScope mcc$context(World world,legacyconnector.vb1_7_3.net.minecraft.entity.Entity focus){return new ContextScope(world,focus);}
+    /** Phantom field accessor: cached Minecraft references resolve the actor of this callback, rather than another world's player. */
+    public static legacyconnector.vb1_7_3.net.minecraft.entity.player.ClientPlayerEntity mcc$get$player(Minecraft minecraft){
+        Minecraft active=SCOPED.get()==null?minecraft:SCOPED.get();
+        if(active.explicitPlayer!=null)return active.explicitPlayer;
+        var overridden=PLAYER_OVERRIDE.get();if(overridden!=null)return overridden;
+        var actor=MenusB173.currentActor();
+        if(actor!=null)return (legacyconnector.vb1_7_3.net.minecraft.entity.player.ClientPlayerEntity)org.kylepitcock.legacyconnector.vb1_7_3.EntityViewsB173.wrap(actor);
+        Context context=CONTEXT.get();World world=context==null?active.world:context.world;
+        if(world!=null&&world.mcc$level()!=null&&!world.isRemote){
+            if(context!=null&&context.focus instanceof legacyconnector.vb1_7_3.net.minecraft.entity.player.ClientPlayerEntity player)return player;
+            net.minecraft.world.entity.player.Player closest=null;double best=Double.POSITIVE_INFINITY;
+            for(var player:world.mcc$level().players()){
+                double distance=context==null||context.focus==null?0:player.distanceToSqr(context.focus.x,context.focus.y,context.focus.z);
+                if(distance<best){best=distance;closest=player;}
+            }
+            return closest==null?null:(legacyconnector.vb1_7_3.net.minecraft.entity.player.ClientPlayerEntity)org.kylepitcock.legacyconnector.vb1_7_3.EntityViewsB173.wrap(closest);
+        }
+        var local=MenusB173.localPlayer();return local==null?null:(legacyconnector.vb1_7_3.net.minecraft.entity.player.ClientPlayerEntity)org.kylepitcock.legacyconnector.vb1_7_3.EntityViewsB173.wrap(local);
+    }
+    public static void mcc$set$player(Minecraft minecraft,legacyconnector.vb1_7_3.net.minecraft.entity.player.ClientPlayerEntity player){
+        Minecraft active=SCOPED.get()==null?minecraft:SCOPED.get();
+        if(active!=INSTANCE)active.explicitPlayer=player;else if(player==null)PLAYER_OVERRIDE.remove();else PLAYER_OVERRIDE.set(player);
+    }
     public int displayWidth = 854;
     public int displayHeight = 480;
     public volatile boolean paused;
     public TextureManager textureManager = TextureManager.mcc$instance();
+    public legacyconnector.vb1_7_3.net.minecraft.client.particle.ParticleManager particleManager=new legacyconnector.vb1_7_3.net.minecraft.client.particle.ParticleManager();
     public TextRenderer textRenderer = TextRenderer.mcc$instance();
     public legacyconnector.vb1_7_3.net.minecraft.client.sound.SoundManager soundManager = new legacyconnector.vb1_7_3.net.minecraft.client.sound.SoundManager();
     /** The legacy screen shown, if any. */
@@ -30,12 +69,15 @@ public class Minecraft {
     protected Minecraft() {}
 
     public static Minecraft mcc$instance() {
-        return INSTANCE;
+        Minecraft scoped=SCOPED.get();return scoped==null?INSTANCE:scoped;
     }
 
     /** The world legacy code is about to run on (set before a block callback or a mod's tick). */
     public static void mcc$use(World world) {
-        if (world != null) INSTANCE.world = world;
+        if (world != null){mcc$instance().world=world;CONTEXT.set(new Context(world,null));}
+    }
+    public static void mcc$use(World world,legacyconnector.vb1_7_3.net.minecraft.entity.Entity focus){
+        if(world!=null){mcc$instance().world=world;CONTEXT.set(new Context(world,focus));}
     }
 
     /** MCP {@code displayGuiScreen}: shows a legacy screen on the client (null closes it). */

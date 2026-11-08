@@ -16,7 +16,7 @@ public final class RenderersB173 {
     public record Info(LegacyModRecord mod,Class<?> entityType,EntityRenderer renderer){}
     private static final Map<Class<?>,Info> REGISTERED=new LinkedHashMap<>();
     private static final Set<String> SUPPORTED=Set.of("render","animateModel","setAngles","applyTranslation","applyHandSwingRotation","getHandSwingProgress","getHeadBob","renderMore","bindDecorationTexture","bindTexture","getDeathYaw","applyScale");
-    private static final Set<String> MODEL_GL=Set.of("glPushMatrix","glPopMatrix","glTranslatef","glTranslated","glScalef","glScaled","glRotatef","glColor3f","glColor4f");
+    private static final Set<String> MODEL_GL=Set.of("glPushMatrix","glPopMatrix","glTranslatef","glTranslated","glScalef","glScaled","glRotatef","glColor3f","glColor4f","glBindTexture","glEnable","glDisable","glBlendFunc","glDepthMask","glDepthFunc","glMatrixMode","glLoadIdentity","glNormal3f");
     private static boolean discovered;
     private RenderersB173(){}
     public static synchronized void discover(){
@@ -66,7 +66,7 @@ public final class RenderersB173 {
                             if((access&(org.objectweb.asm.Opcodes.ACC_STATIC|org.objectweb.asm.Opcodes.ACC_PRIVATE|org.objectweb.asm.Opcodes.ACC_SYNTHETIC|org.objectweb.asm.Opcodes.ACC_BRIDGE))==0&&methods.contains(name+descriptor)&&!SUPPORTED.contains(name))reason[0]="unsupported renderer/model override "+name;
                             return new org.objectweb.asm.MethodVisitor(org.objectweb.asm.Opcodes.ASM9){
                                 @Override public void visitMethodInsn(int opcode,String owner,String called,String desc,boolean itf){
-                                    if(owner.startsWith("legacyconnector_synth/vb1_7_3/"))reason[0]="unsupported synthesized renderer/model callback "+owner+"."+called;
+                                    if(owner.startsWith("legacyconnector_synth/vb1_7_3/")&&!AnimalsB173.supportedVanillaStatic(type,opcode,owner,called,desc))reason[0]="unsupported synthesized renderer/model callback "+owner+"."+called;
                                     if(owner.equals("legacyconnector/vb1_7_3/org/lwjgl/opengl/GL11")&&!MODEL_GL.contains(called))reason[0]="unsupported model GL call "+called;
                                 }
                                 @Override public void visitFieldInsn(int opcode,String owner,String field,String desc){if(owner.startsWith("legacyconnector_synth/vb1_7_3/"))reason[0]="unsupported synthesized renderer/model field "+owner+"."+field;}
