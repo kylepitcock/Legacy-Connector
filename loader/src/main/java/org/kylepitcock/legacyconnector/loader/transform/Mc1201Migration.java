@@ -80,8 +80,34 @@ final class Mc1201Migration {
             if (m.instructions == null || m.instructions.size() == 0) continue;
             rewriteBody(m, h, t, c);
         }
-        if ((node.access & Opcodes.ACC_INTERFACE) == 0) addBridges(node, h, t, c);
+        if ((node.access & Opcodes.ACC_INTERFACE) == 0) {
+            addBridges(node, h, t, c);
+            addRecipeSerializerCodecs(node, c);
+        }
         return c;
+    }
+
+    /**
+     * A recipe serializer written for 1.20.1 ({@code fromJson}/{@code fromNetwork}/{@code toNetwork}) lacks the {@code codec()} and {@code streamCodec()} of 1.21.1:
+     * the class gets both, answered by {@code RecipeCompat} from the legacy methods.
+     */
+    private static void addRecipeSerializerCodecs(ClassNode node, Counts c) {
+        if (declared(node, "fromNetwork", "(Lnet/minecraft/resources/ResourceLocation;Lnet/minecraft/network/FriendlyByteBuf;)Lnet/minecraft/world/item/crafting/Recipe;") == null
+                && node.methods.stream().noneMatch(m -> m.name.equals("fromNetwork") && m.desc.startsWith("(Lnet/minecraft/resources/ResourceLocation;Lnet/minecraft/network/FriendlyByteBuf;)"))) return;
+        String helper = Mc1201Tables.HELPER_PACKAGE + "RecipeCompat";
+        String[][] adds = {{"codec", "()Lcom/mojang/serialization/MapCodec;", "(Ljava/lang/Object;)Lcom/mojang/serialization/MapCodec;"},
+                {"streamCodec", "()Lnet/minecraft/network/codec/StreamCodec;", "(Ljava/lang/Object;)Lnet/minecraft/network/codec/StreamCodec;"}};
+        for (String[] a : adds) {
+            if (declared(node, a[0], a[1]) != null) continue;
+            MethodNode m = new MethodNode(Opcodes.ACC_PUBLIC, a[0], a[1], null, null);
+            m.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+            m.instructions.add(new MethodInsnNode(Opcodes.INVOKESTATIC, helper, a[0], a[2], false));
+            m.instructions.add(new InsnNode(Opcodes.ARETURN));
+            m.maxStack = 1;
+            m.maxLocals = 1;
+            node.methods.add(m);
+            c.bridges++;
+        }
     }
 
     /** Forge ignored {@code @Mod.EventBusSubscriber} on a class without {@code @SubscribeEvent} methods; NeoForge's automatic subscriber throws, so the annotation goes. */
