@@ -36,6 +36,23 @@ public final class LegacyConnector {
     public static final String MOD_ID = "legacyconnector";
 
     private static final DeferredRegister<Feature<?>> FEATURES = DeferredRegister.create(Registries.FEATURE, MOD_ID);
+    private static final DeferredRegister<net.minecraft.world.entity.EntityType<?>> BETA_ENTITIES = DeferredRegister.create(Registries.ENTITY_TYPE, MOD_ID);
+    public static final DeferredHolder<net.minecraft.world.entity.EntityType<?>, net.minecraft.world.entity.EntityType<org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Arrow>> BETA_ARROW =
+            BETA_ENTITIES.register("arrow_b1_7_3", () -> net.minecraft.world.entity.EntityType.Builder
+                    .<org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Arrow>of(org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Arrow::new, net.minecraft.world.entity.MobCategory.MISC)
+                    .sized(0.5F,0.5F).clientTrackingRange(8).updateInterval(1).build("legacyconnector:arrow_b1_7_3"));
+    public static final DeferredHolder<net.minecraft.world.entity.EntityType<?>, net.minecraft.world.entity.EntityType<org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Arrow>> BETA_THROWN =
+            BETA_ENTITIES.register("thrown_b1_7_3", () -> net.minecraft.world.entity.EntityType.Builder
+                    .<org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Arrow>of(org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Arrow::new, net.minecraft.world.entity.MobCategory.MISC)
+                    .sized(0.25F,0.25F).clientTrackingRange(8).updateInterval(1).build("legacyconnector:thrown_b1_7_3"));
+    public static final DeferredHolder<net.minecraft.world.entity.EntityType<?>, net.minecraft.world.entity.EntityType<org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Entity>> BETA_ENTITY =
+            BETA_ENTITIES.register("entity_b1_7_3", () -> net.minecraft.world.entity.EntityType.Builder
+                    .<org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Entity>of(org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Entity::new, net.minecraft.world.entity.MobCategory.MISC)
+                    .sized(.25F,.25F).clientTrackingRange(8).updateInterval(1).build("legacyconnector:entity_b1_7_3"));
+    public static final DeferredHolder<net.minecraft.world.entity.EntityType<?>, net.minecraft.world.entity.EntityType<org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173ItemEntity>> BETA_ITEM_ENTITY =
+            BETA_ENTITIES.register("item_entity_b1_7_3", () -> net.minecraft.world.entity.EntityType.Builder
+                    .<org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173ItemEntity>of(org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173ItemEntity::new, net.minecraft.world.entity.MobCategory.MISC)
+                    .sized(.25F,.25F).clientTrackingRange(8).updateInterval(1).build("legacyconnector:item_entity_b1_7_3"));
     public static final DeferredHolder<Feature<?>, LegacyWorldGenFeature> LEGACY_WORLDGEN =
             FEATURES.register("legacy_worldgen", () -> new LegacyWorldGenFeature(NoneFeatureConfiguration.CODEC));
     static {
@@ -97,8 +114,12 @@ public final class LegacyConnector {
     public static final DeferredHolder<net.minecraft.world.inventory.MenuType<?>, net.minecraft.world.inventory.MenuType<org.kylepitcock.legacyconnector.v1_12_2.gui.LegacyMenu1122>> LEGACY_MENU_1_12_2 =
             MENUS.register("legacy_1_12_2", () -> net.neoforged.neoforge.common.extensions.IMenuTypeExtension.create(
                     org.kylepitcock.legacyconnector.v1_12_2.bridge.GuiBridge1122::clientMenu));
+    public static final DeferredHolder<net.minecraft.world.inventory.MenuType<?>, net.minecraft.world.inventory.MenuType<org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Menu>> LEGACY_MENU_B1_7_3 =
+            MENUS.register("legacy_b1_7_3", () -> net.neoforged.neoforge.common.extensions.IMenuTypeExtension.create(
+                    org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Menu::client));
 
     public LegacyConnector(IEventBus modBus, ModContainer container) {
+        BETA_ENTITIES.register(modBus);
         if (!System.getProperty("legacyconnector.forge1201.mods", "").isEmpty()) org.kylepitcock.legacyconnector.v1_20_1.Forge1201Runtime.init(modBus);
         org.slf4j.LoggerFactory.getLogger("LegacyConnector").info("Legacy Connector {} (runtime) loaded",
                 container.getModInfo().getVersion());
@@ -109,8 +130,11 @@ public final class LegacyConnector {
         org.kylepitcock.legacyconnector.core.SilentFailureChecks.register();
         LegacyMods.registerPlatform(new Platform1710());
         LegacyMods.registerPlatform(new org.kylepitcock.legacyconnector.v1_12_2.Platform1122());
+        LegacyMods.registerPlatform(new org.kylepitcock.legacyconnector.vb1_7_3.PlatformB173());
 
         CompatComponents.REGISTER.register(modBus);
+        org.kylepitcock.legacyconnector.vb1_7_3.SpawnOverrideModifierB173.REGISTER.register(modBus);
+        org.kylepitcock.legacyconnector.core.recipe.OversizedCraftingRecipe.REGISTER.register(modBus);
         org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyCraftingRecipe.REGISTER.register(modBus);
         org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyFishingLoot.REGISTER.register(modBus);
         FEATURES.register(modBus);
@@ -129,6 +153,7 @@ public final class LegacyConnector {
             if (e.getRegistryKey().equals(Registries.MENU)) {
                 org.kylepitcock.legacyconnector.v1_7_10.bridge.GuiBridge.setMenuType(LEGACY_MENU_1_7_10.get());
                 org.kylepitcock.legacyconnector.v1_12_2.bridge.GuiBridge1122.setMenuType(LEGACY_MENU_1_12_2.get());
+                org.kylepitcock.legacyconnector.vb1_7_3.MenusB173.setMenuType(LEGACY_MENU_B1_7_3.get());
             }
         });
         modBus.addListener(LegacyConnector::registerCapabilities);
@@ -136,6 +161,7 @@ public final class LegacyConnector {
         if (net.neoforged.fml.ModList.get().isLoaded("create")) org.kylepitcock.legacyconnector.compat.create.CreateCompat.init();
         if (FMLEnvironment.dist.isClient()) org.kylepitcock.legacyconnector.v1_7_10.client.Client1710.register(modBus);
         if (FMLEnvironment.dist.isClient()) org.kylepitcock.legacyconnector.v1_12_2.client.Client1122.register(modBus);
+        if (FMLEnvironment.dist.isClient()) org.kylepitcock.legacyconnector.vb1_7_3.client.ClientB173.register(modBus);
         if (FMLEnvironment.dist.isClient()) org.kylepitcock.legacyconnector.client.LegacyConnectorClient.register(container);
         if (FMLEnvironment.dist.isClient()) org.kylepitcock.legacyconnector.core.pack.ModernizedTextures.register();
         // LOWEST: legacy loading runs after every modern mod registered its own entries for that registry.
@@ -146,15 +172,20 @@ public final class LegacyConnector {
         modBus.addListener(org.kylepitcock.legacyconnector.core.pack.GameResourcesFolderPack::onAddPackFinders);
         modBus.addListener(org.kylepitcock.legacyconnector.v1_7_10.LegacyModPacks::onAddPackFinders);
         modBus.addListener(LegacyNetwork::onRegisterPayloads);
+        org.kylepitcock.legacyconnector.vb1_7_3.AudioB173.init();
         modBus.addListener(CreativeTabBridge::onBuildContents);
         modBus.addListener(org.kylepitcock.legacyconnector.v1_12_2.bridge.CreativeTabBridge1122::onBuildContents);
         modBus.addListener(org.kylepitcock.legacyconnector.v1_7_10.entity.LegacySpawnEggs::addToTab);
 
         GeneratedPack.addContributor(new CoreData());
+        GeneratedPack.addContributor(new org.kylepitcock.legacyconnector.vb1_7_3.AudioB173());
         GeneratedPack.addContributor(new Data1710());
         GeneratedPack.addContributor(new org.kylepitcock.legacyconnector.v1_12_2.Data1122());
         GeneratedPack.addContributor(new org.kylepitcock.legacyconnector.v1_12_2.Assets1122());
         GeneratedPack.addContributor(new Assets1710());
+        GeneratedPack.addContributor(new org.kylepitcock.legacyconnector.vb1_7_3.AssetsB173());
+        GeneratedPack.addContributor(new org.kylepitcock.legacyconnector.vb1_7_3.MobTexturesB173());
+        GeneratedPack.addContributor((type,out)->{if(type==net.minecraft.server.packs.PackType.SERVER_DATA){org.kylepitcock.legacyconnector.vb1_7_3.SpawnRulesB173.contribute(out);org.kylepitcock.legacyconnector.vb1_7_3.AdvancementsB173.contribute(out);}});
         GeneratedPack.addRecipeContributor((type, out) -> {
             if (type == net.minecraft.server.packs.PackType.SERVER_DATA) org.kylepitcock.legacyconnector.v1_7_10.bridge.RecipeBridge.generate(out);
         });
@@ -166,6 +197,9 @@ public final class LegacyConnector {
         });
         org.kylepitcock.legacyconnector.core.pack.LegacyRecipeSync.watch(org.kylepitcock.legacyconnector.v1_7_10.bridge.RecipeBridge::changedSinceGenerate);
         org.kylepitcock.legacyconnector.core.pack.LegacyRecipeSync.watch(org.kylepitcock.legacyconnector.v1_12_2.bridge.RecipeBridge1122::changedSinceGenerate);
+        GeneratedPack.addRecipeContributor((type, out) -> {
+            if (type == net.minecraft.server.packs.PackType.SERVER_DATA) org.kylepitcock.legacyconnector.vb1_7_3.RecipesB173.generate(out);
+        });
 
         IEventBus game = NeoForge.EVENT_BUS;
         org.kylepitcock.legacyconnector.core.LevelReleases.register(game);
@@ -175,6 +209,9 @@ public final class LegacyConnector {
         org.kylepitcock.legacyconnector.v1_7_10.bridge.DimensionPhysics1710.register(game);
         org.kylepitcock.legacyconnector.v1_7_10.compat.chromaticraft.ChromaDimensionBarriers.register(game);
         org.kylepitcock.legacyconnector.v1_12_2.entity.Entities1122.register(game);
+        org.kylepitcock.legacyconnector.vb1_7_3.SelfTestB173.register(game);
+        org.kylepitcock.legacyconnector.vb1_7_3.MobsB173.registerEvents(modBus,game);
+        org.kylepitcock.legacyconnector.vb1_7_3.AnimalsB173.registerEvents(modBus);
         game.addListener((net.neoforged.neoforge.event.server.ServerStoppedEvent e) -> {
             if (!e.getServer().isDedicatedServer()) return;
             // Legacy mods start non-daemon thread pools (IC2 and others) they never stop, which keep a stopped dedicated server's JVM alive.

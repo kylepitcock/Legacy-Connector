@@ -39,14 +39,19 @@ def devJar = tasks.register('legacy1710DevJar', Jar) {
 }
 
 tasks.register('legacy1710Jar', JavaExec) {
-    dependsOn devJar, ':loader:classes'
+    dependsOn devJar, ':loader:classes', ':legacyApiStubs1_7_10'
     classpath = project(':loader').sourceSets.main.runtimeClasspath
     mainClass = 'org.kylepitcock.legacyconnector.loader.tools.Reobfuscator'
     def input = devJar.get().archiveFile
     def output = layout.buildDirectory.file('libs/LegacyTest-1.0-1.7.10.jar')
+    def forge = project(':loader').configurations.forge1710
+    def api = rootProject.layout.buildDirectory.file('legacy-api/legacy-api-1_7_10.jar')
     inputs.file input
+    inputs.files forge
+    inputs.file api
     outputs.file output
-    args input.get().asFile.absolutePath, rootProject.file('build/devtools/legacy-1.7.10.sig').absolutePath, output.get().asFile.absolutePath
+    argumentProviders.add({ [input.get().asFile.absolutePath, '--forge1710', forge.singleFile.absolutePath,
+                             api.get().asFile.absolutePath, output.get().asFile.absolutePath] } as CommandLineArgumentProvider)
 }
 
 tasks.named('assemble') { dependsOn 'legacy1710Jar' }

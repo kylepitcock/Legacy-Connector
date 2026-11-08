@@ -8,7 +8,7 @@
   var ORDER = ["perfect", "playable", "works", "partial", "loads", "fails", "crashes"];
   // legacy Minecraft versions with a tab: supported ones first, planned ones greyed out until they have data
   var SUPPORTED = ["1.7.10", "1.12.2"];
-  var PLANNED = ["1.6.4", "1.5.2", "1.4.7", "1.20.1", "1.19.2", "1.18.2", "1.16.5", "1.2.5"]; // roadmap order (docs/wiki/Version-Roadmap.md)
+  var PLANNED = ["1.6.4", "1.5.2", "1.4.7", "1.20.1", "1.19.2", "1.18.2", "1.16.5", "1.2.5", "b1.7.3"]; // roadmap order (docs/wiki/Version-Roadmap.md)
   // Plain-language result categories of the automated check (probe.py "kind"). "unresolved" is the older, unsplit cause of runs made before the split.
   var KINDS = [
     { key: "links", label: "Ready to test", color: "var(--links)", hint: "translates, and nothing it needs is missing" },
@@ -352,7 +352,7 @@
   function versionNote(host, mc) {
     if (!host) return;
     host.textContent = "";
-    host.hidden = mc !== "1.20.1";
+    host.hidden = mc !== "1.20.1" && mc !== "b1.7.3";
     if (host.hidden) return;
     function p(parts) {
       var e = el("p");
@@ -361,6 +361,11 @@
     }
     function code(t) { return el("code", null, t); }
     function b(t) { return el("b", null, t); }
+    if (mc === "b1.7.3") {
+      host.appendChild(p([b("Alpha (server-tested). "), "Beta 1.7.3 ModLoader and Forge 1.0 mods go in ", code("mods/b1.7.3/"), ". The layer was contributed by Zekken01. The results here come from that contributor's headless server tests (the mods translate, load, register their content and run their own callbacks); none was tested in a graphical client yet."]));
+      host.appendChild(p([b("Archive audit. "), "An offline scan of a 1,040-file Beta 1.7.3 mod archive (1,222 mod payloads) found 544 payloads that need ModLoader, 74 ModLoaderMP and 42 Forge; 548 payloads replace no base game classes (the easiest to support), 572 replace some, 54 are libraries or resources and 20 bundle API patches. The full summary is in ", code("docs/data/b173-archive-audit-summary.json"), "."]));
+      return;
+    }
     host.appendChild(p([b("Alpha, on by default. "), "Forge 1.20.1 support is remapped in place onto NeoForge 1.21.1 (there is no old game to emulate) and is on by default (it only does something when a Forge 1.20.1 jar is installed); ", code("experimental.forge1201=false"), " in the Legacy Connector config turns it off. Early alpha: a first set of mods works (Terramity and Another Furniture run), most mods below do not link yet: the Minecraft 1.20.1 to 1.21.1 migration covers the common cases, not all of them."]));
     host.appendChild(p([b("What the automated result means here. "), b("Ready to test"), " means every reference of the translated jar resolves against Minecraft 1.21.1, NeoForge and the other jars of the run, including the layer's Forge facades. It is a link check only. A server start that registers a mod's content is a higher rating (", b("Starts, untested"), " and up, from the in-game test). Mods that fail the link check can still start, since unresolved code may sit on paths that never run, so a red result is not a verdict (on this tab 201CDoes not start201D on an automated row means unresolved references, not a failed start)."]));
     host.appendChild(p([b("Libraries. "), "Architectury, Curios, Patchouli, GeckoLib, Cloth Config, Resourceful Lib/Config, Puzzles Lib, Citadel, Jade and a few more use the ", b("native NeoForge 1.21.1 build"), " (same mod id): install it in the mods folder and the 1.20.1 jar is skipped (counted as \u201CNot needed\u201D). Without the 1.21.1 build the pack's 1.20.1 jar is translated as a fallback; with neither, the log names the build to install. Rewrites exist for Architectury, Curios and Patchouli; GeckoLib content mods are not fully supported yet."]));

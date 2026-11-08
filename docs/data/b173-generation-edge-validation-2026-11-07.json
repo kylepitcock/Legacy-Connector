@@ -1,0 +1,104 @@
+{
+  "snapshot_date": "2026-11-07",
+  "scope": "Unavailable generation-region collision data rejects spawn candidates instead of disconnecting the world",
+  "tests": {
+    "runtime": {
+      "tests": 160,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "loader": {
+      "tests": 137,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "actual_mod_opt_in": {
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "fixtures": {
+    "mocreatures": {
+      "status": "headless-smoke-passed",
+      "source_archive": "DrZharks_MoCreatures_Mod_v2.12.2_b1.7.3.zip!mods/MoCreatures.zip",
+      "payload_sha256": "763c732589f76631d40a6d1e49edb478db1a8cf1b168fd97bdf4006377555609",
+      "game_directory": "run-b173-single/mocreatures-neutralgeneration-edge-20261107-234609-3d7b35",
+      "resources_verified": 168
+    },
+    "morecreeps": {
+      "status": "headless-smoke-passed",
+      "source_archive": "MoreCreepsv2.12_b173.zip!PUT CONTENTS INTO MINECRAFT FOLDER/mods/MoreCreepsAndWeirdos.zip",
+      "payload_sha256": "771369f07b3b84fc9d76c669c5724e425f78db95aabf7c8723768bdd0727dfb5",
+      "game_directory": "run-b173-single/morecreeps-neutralgeneration-edge-20261107-234609-d6ed8c",
+      "resources_verified": 759
+    }
+  },
+  "observed_failure": {
+    "original_callback": "MoreCreeps 2.12 FloobShip.canSpawn",
+    "exception": "Requested chunk unavailable during world generation",
+    "path": "World.getEntityCollisions -> native BlockCollisions -> WorldGenRegion.getChunk",
+    "entity_dimensions": "4 x 3",
+    "missed_boundary": "Native collision scan includes epsilon 1E-7 and one block of padding beyond entity bounds"
+  },
+  "shared_policy": {
+    "required_region_data_unavailable": "reject only the spawn candidate",
+    "unrelated_original_errors": "propagate normally",
+    "ordinary_world_behavior": "preserved",
+    "content_mod_dispatch": false
+  },
+  "actual_original_regressions": [
+    "Clear interior spawn accepted",
+    "Body crossing unavailable chunk rejected",
+    "Only collision-scan padding crossing unavailable chunk rejected",
+    "Blocked interior rejected",
+    "Ordinary server-level edge check accepted",
+    "Unavailable block reads signal rejection and restore scope",
+    "Unrelated original IllegalArgumentException propagates and restores scope"
+  ],
+  "full_pack_generation": {
+    "seed": "8794669509186076339",
+    "diagnostic_stage": "run-prism-worldload-20261107-231949",
+    "log": "edge-fixed.log",
+    "fresh_world_ready_seconds": 6.13,
+    "fresh_flying_route_chunks": 56,
+    "chunk_x_values": [
+      0,
+      4,
+      8,
+      12,
+      16,
+      20,
+      24
+    ],
+    "chunk_z_values": [
+      -20,
+      -16,
+      -12,
+      -8,
+      -4,
+      0,
+      4,
+      8
+    ],
+    "fresh_chunk_generation_ms": 17110.207,
+    "exit_code": 0,
+    "result": "passed"
+  },
+  "save_check": {
+    "current_and_old_level_metadata_valid": true,
+    "world_visible_after_user_relaunch": true,
+    "full_world_snapshot_created": true,
+    "metadata_restoration_performed": false,
+    "agent_save_edits": false
+  },
+  "generic_mod_identity_guard": "passed:252 production/loader files; no content-mod dispatch added",
+  "build_fixture_policy": "Actual-mod JUnit tests remain opt-in; runtime original-mod fixtures require entitySelfTest and skip absent mods.",
+  "limitations": [
+    "Dedicated headless pack and original-callback validation; no live client flight replay of the fixed build.",
+    "Native test platform NeoForge 21.1.258; Prism uses 21.1.265, both Minecraft 1.21.1."
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "snapshot_date": "2026-11-07",
+  "scope": "Hosted-item pickup copies, native prey dimensions and mount relations, zero-speed navigation, theft and contact effects",
+  "tests": {
+    "runtime": {
+      "tests": 158,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "loader": {
+      "tests": 137,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "actual_mod_opt_in": {
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "fixtures": {
+    "mocreatures": {
+      "status": "headless-smoke-passed",
+      "source_archive": "DrZharks_MoCreatures_Mod_v2.12.2_b1.7.3.zip!mods/MoCreatures.zip",
+      "payload_sha256": "1e52821bbdc98bff6aab94394269580e7c9baf64a8dc218198ab32cb5310f156",
+      "game_directory": "run-b173-single/mocreatures-neutralremaining-fixed-20261107-224622-d10f2a",
+      "resources_verified": 168
+    },
+    "morecreeps": {
+      "status": "headless-smoke-passed",
+      "source_archive": "MoreCreepsv2.12_b173.zip!PUT CONTENTS INTO MINECRAFT FOLDER/mods/MoreCreepsAndWeirdos.zip",
+      "payload_sha256": "53d00a01db43c17056ce345fe5905fb79d6951ce398bcc79d9b21ecab60b66b8",
+      "game_directory": "run-b173-single/morecreeps-neutralremaining-fixed-20261107-224622-d0d222",
+      "resources_verified": 759
+    }
+  },
+  "mocreatures": {
+    "registered_living_roster": 28,
+    "additional_cases": [
+      "Kitty size-based native chicken/cow prey selection and cached baby-to-adult dimensions",
+      "Bird native leaf/wood scan and original tree-flight steering"
+    ]
+  },
+  "morecreeps": {
+    "registered_living_roster": 53,
+    "existing_nonliving_cases": 9,
+    "additional_navigation_cases": [
+      "Original STAY with a retained target: prewarmed route, 240 paused world ticks, same-route FOLLOW without repathing",
+      "Original STAY with an explicit path: prewarmed route, 240 paused world ticks, same-route FOLLOW without repathing"
+    ],
+    "additional_specialized_cases": [
+      "Thief partial-stack theft and restitution",
+      "Thief full-stack theft and restitution",
+      "Thief damaged-tool theft and restitution",
+      "Preacher captured-player contact velocity",
+      "Preacher retained-player release velocity",
+      "Bullet initial native-mount immunity and cyclic rider/vehicle view refresh"
+    ],
+    "extended_pickup_copy_cases": [
+      "Actual Money virtual native ItemEntity.copy retains host/type, independent original state/stack and original renderer geometry",
+      "Actual GooDonut virtual native ItemEntity.copy retains host/type, independent original state/stack and original renderer geometry"
+    ]
+  },
+  "shared_regressions_reproduced_before_fix": [
+    "User client crash-2026-11-07_22.40.18-client.txt: ItemPickupParticle rendered a plain ItemEntity retaining the hosted item EntityType, causing a B173EntityHost ClassCastException",
+    "Kitty rejected eligible small native prey because ordinary views retained default dimensions",
+    "STAY drifted 6.396 blocks in 20 host ticks with native speed 0.42 while original movement speed remained zero",
+    "Bullet damaged its own native mount during the original initial immunity window because the owner view lost its vehicle relation"
+  ],
+  "generic_mod_identity_guard": "passed:252 production/loader files; broader guard unchanged at 21 baseline mentions in 7 files",
+  "build_fixture_policy": "Actual-mod JUnit tests remain opt-in; runtime original-mod fixtures require entitySelfTest and skip absent mods.",
+  "limitations": [
+    "Actual-mod server callbacks and CPU renderer geometry pass; no live GPU pickup-animation replay was performed.",
+    "Roster and selected specialized callbacks do not certify every AI decision or full gameplay ecology."
+  ]
+}
