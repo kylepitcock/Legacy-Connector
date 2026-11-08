@@ -1,0 +1,176 @@
+{
+  "snapshot_date": "2026-11-08",
+  "scope": "Generic native Beta torch metadata and support selection; actual MoreCreeps Lawyer jail",
+  "version": "0.4.12",
+  "tested_working_tree_base_revision": "786fbee86d90486aeaa7a9e1914c364f1472a284",
+  "source_sha256": {
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/world/World.java": "dc7da5a2f24d6e4c12c4b4260d992139e4594d918efe22f7ebaff0ba1eb2aa7a",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/BlocksB173.java": "0a0fa088b7d30ba2ba5561beb17f1f142e2c71551609cc0855f1646e7bfa6bb9",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/MoreCreepsJailSelfTestB173.java": "40dddb36ba755f54d1b5634628d20f90e7df333a15bf963d22f66275825916dc",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/VanillaBlockStatesB173.java": "b6db2e83addb4e534fd78e0887c1618e55a3bbeb70577f4cfbc326eb2c9afefb",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/VanillaTorchPlacementB173.java": "81f168267c3e27b4ddd610532737bb60473d7bcba50149ea77c80d6606c7df1c",
+    "src/test/java/org/kylepitcock/legacyconnector/vb1_7_3/VanillaTorchStatesB173Test.java": "a86a19ce3d9ee811d785001e052484b58f1d3f89cc29f7e6f55aec487c93f9ff"
+  },
+  "tests": {
+    "runtime": {
+      "tests": 216,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "loader": {
+      "tests": 260,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "actual_mod_opt_in": {
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "fixture": {
+    "status": "headless-smoke-passed",
+    "source_archive": "MoreCreepsv2.12_b173.zip!PUT CONTENTS INTO MINECRAFT FOLDER/mods/MoreCreepsAndWeirdos.zip",
+    "payload_sha256": "e97e59dffb135c07af88a7a66b6e4eee642248a1f7f1b9fb7dc8a7c62d7ab64b",
+    "game_directory": "run-b173-single/morecreeps-neutralwalltorch-fixed-20261108-115501-b4d400",
+    "resources_verified": 759,
+    "test_log_sha256": "6408b9893752cb622fe879116915f0adaf6a1ed1f0dd2f4d2fa8bcc98d4afa30"
+  },
+  "server_proofs": [
+    "[11:58:55] [Server thread/INFO] [LegacyConnector/B173JailTest/]: B1.7.3 CREEPS JAIL TEST: actual live-neighbor door halves, facing/open metadata, native door interaction, eighteen spiral stairs, three wall torches, all support directions/light and native torch drops passed",
+    "[11:58:55] [Server thread/INFO] [LegacyConnector/B173EcologyTest/]: B1.7.3 ECOLOGY TEST passed: hosted-only generation filter, unchanged native population entries, native CHUNK_GENERATION position checks observed=0, native Cow/Pig persistence and original Bunny policies when present; GenerateSurface is covered separately by existing worldgen smoke"
+  ],
+  "baseline": {
+    "game_directory": "run-b173-single/morecreeps-neutralwalltorch-baseline-20261108-114911-d61c92",
+    "test_log_sha256": "2d7d55cf6a7b1043214c7856730b6ab3f9b3cf9a69e5699d912c907a97499bf7",
+    "failure": "Original Lawyer id50 metadata-zero wall placements produced unsupported native standing torches."
+  },
+  "graphical": {
+    "status": "wall-torch-offscreen-client-passed",
+    "mode": "WSL Xvfb :99, Mesa llvmpipe OpenGL 4.5, isolated actual mod, fresh Normal fixture world at midnight",
+    "game_directory": "run-b173-single/morecreeps-neutralwalltorch-client-20261108-115625-d79bda",
+    "client_log_sha256": "1a3dbba0f08cfa9f3e2ac49fb9affc60fd18c4bea2ee2cfdcf1d0289ccaf1b14",
+    "native_light_proofs": [
+      {
+        "time": 2645,
+        "dayTime": 18199,
+        "difficulty": "NORMAL",
+        "torchPositions": [
+          {
+            "position": [
+              20,
+              152,
+              13
+            ],
+            "nativeBlock": "minecraft:wall_torch",
+            "nativeState": "Block{minecraft:wall_torch}[facing=east]",
+            "legacyId": 50,
+            "legacyMetadata": 1,
+            "blockLight": 14,
+            "emission": 14,
+            "neighborLight": 13,
+            "belowLight": 13
+          },
+          {
+            "position": [
+              32,
+              152,
+              1
+            ],
+            "nativeBlock": "minecraft:wall_torch",
+            "nativeState": "Block{minecraft:wall_torch}[facing=west]",
+            "legacyId": 50,
+            "legacyMetadata": 2,
+            "blockLight": 14,
+            "emission": 14,
+            "neighborLight": 13,
+            "belowLight": 13
+          },
+          {
+            "position": [
+              26,
+              152,
+              9
+            ],
+            "nativeBlock": "minecraft:wall_torch",
+            "nativeState": "Block{minecraft:wall_torch}[facing=north]",
+            "legacyId": 50,
+            "legacyMetadata": 4,
+            "blockLight": 14,
+            "emission": 14,
+            "neighborLight": 13,
+            "belowLight": 13
+          }
+        ]
+      },
+      {
+        "time": 3101,
+        "dayTime": 18655,
+        "difficulty": "NORMAL",
+        "torchPositions": [
+          {
+            "position": [
+              20,
+              152,
+              13
+            ],
+            "nativeBlock": "minecraft:wall_torch",
+            "nativeState": "Block{minecraft:wall_torch}[facing=east]",
+            "legacyId": 50,
+            "legacyMetadata": 1,
+            "blockLight": 14,
+            "emission": 14,
+            "neighborLight": 13,
+            "belowLight": 13
+          },
+          {
+            "position": [
+              32,
+              152,
+              1
+            ],
+            "nativeBlock": "minecraft:wall_torch",
+            "nativeState": "Block{minecraft:wall_torch}[facing=west]",
+            "legacyId": 50,
+            "legacyMetadata": 2,
+            "blockLight": 14,
+            "emission": 14,
+            "neighborLight": 13,
+            "belowLight": 13
+          },
+          {
+            "position": [
+              26,
+              152,
+              9
+            ],
+            "nativeBlock": "minecraft:wall_torch",
+            "nativeState": "Block{minecraft:wall_torch}[facing=north]",
+            "legacyId": 50,
+            "legacyMetadata": 4,
+            "blockLight": 14,
+            "emission": 14,
+            "neighborLight": 13,
+            "belowLight": 13
+          }
+        ]
+      }
+    ],
+    "reviewed_images": {
+      "run-b173-single/morecreeps-neutralwalltorch-client-20261108-115625-d79bda/control/out/lawyer-torch-west-wall.png": "2abd65ec199a107ad5ea1b68ba8f61f7f89306e0f50c31b954b7670c53a9206a",
+      "run-b173-single/morecreeps-neutralwalltorch-client-20261108-115625-d79bda/control/out/lawyer-torch-east-wall.png": "ab8e958aa9d06c50c08fbe5597a1dba7421a84b60c32473d5eaf8e6e54b58a2a",
+      "run-b173-single/morecreeps-neutralwalltorch-client-20261108-115625-d79bda/control/out/lawyer-torch-inner-wall.png": "cb59da0b02340c823dfc31b3378f3b7ce3f967f6f8b2498177d33021c8128786"
+    },
+    "capture_limitations": "Only the three torch closeups were accepted. Optional door/stair camera controls were excluded: an unqualified console spectator command failed, leaving the observer vulnerable to a later fall. Native door/stair regression assertions still passed."
+  },
+  "bundle_sha256": "09220eff367999fedad4a197b95e0d5772a39a30971d2ce2c9a906dbf8dc155e",
+  "limitations": [
+    "Only native classic torch families are translated; foreign/mod-owned blocks retain their own callbacks.",
+    "Native redstone lit/unlit metadata is unit tested; native power/burnout rules remain unchanged.",
+    "Existing malformed torch states are not scanned or migrated automatically.",
+    "No Sodium/Iris client verification."
+  ]
+}

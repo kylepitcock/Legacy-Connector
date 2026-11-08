@@ -216,7 +216,15 @@ public class World implements BlockView {
     private boolean set(int x, int y, int z, int id, int meta, int flags, boolean inferDoorHalf) {
         if (mcc$level == null || clientRendererWrite()) return false;
         BlockPos p = pos(x, y, z);
+        BlockState previous=mcc$level.getBlockState(p);
+        if(inferDoorHalf&&BlocksB173.legacyId(previous)==id
+                &&org.kylepitcock.legacyconnector.vb1_7_3.VanillaBlockStatesB173.isTorch(id,previous))return false;
         BlockState next = BlocksB173.modernState(id, meta);
+        BlockState torch=BlocksB173.legacyId(previous)==id?null:
+                org.kylepitcock.legacyconnector.vb1_7_3.VanillaTorchPlacementB173.resolve(id,meta,next,
+                        direction->torchSupport(x,y,z,direction));
+        boolean unsupportedTorch=torch!=null&&torch.isAir();
+        if(torch!=null&&!unsupportedTorch)next=torch;
         // Beta builders commonly place each door id first and write its metadata afterwards.
         // A temporary native LOWER above LOWER would delete its partner during shape updates.
         if (inferDoorHalf && (id == 64 || id == 71) && next.getBlock() instanceof net.minecraft.world.level.block.DoorBlock) {
@@ -227,7 +235,19 @@ public class World implements BlockView {
                         net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER);
         }
         if (mcc$level.getBlockState(p) == next) return false;
-        return mcc$level.setBlock(p, next, flags);
+        boolean changed=mcc$level.setBlock(p,next,flags);
+        // Original onBlockAdded drops an unsupported torch. Native destruction owns loot and neighbor updates.
+        if(changed&&unsupportedTorch&&mcc$level.getBlockState(p)==next)mcc$level.destroyBlock(p,true);
+        return changed;
+    }
+
+    private boolean torchSupport(int x,int y,int z,int meta){
+        return switch(meta){
+            case 1->shouldSuffocate(x-1,y,z);case 2->shouldSuffocate(x+1,y,z);
+            case 3->shouldSuffocate(x,y,z-1);case 4->shouldSuffocate(x,y,z+1);
+            case 5->shouldSuffocate(x,y-1,z)||getBlockId(x,y-1,z)==85;
+            default->false;
+        };
     }
 
     /** MCP {@code setBlock}: no neighbour updates. */
@@ -260,7 +280,9 @@ public class World implements BlockView {
         }
         BlockState next = org.kylepitcock.legacyconnector.vb1_7_3.VanillaBlockStatesB173.modernState(BlocksB173.legacyId(s), meta, s);
         if (next == null) next = BlocksB173.modernState(BlocksB173.legacyId(s), meta);
-        return next != s && next.getBlock() == s.getBlock() && mcc$level.setBlock(p, next, flags);
+        boolean torchVariant=org.kylepitcock.legacyconnector.vb1_7_3.VanillaBlockStatesB173.isTorch(BlocksB173.legacyId(s),s)
+                &&org.kylepitcock.legacyconnector.vb1_7_3.VanillaBlockStatesB173.isTorch(BlocksB173.legacyId(s),next);
+        return next != s && (next.getBlock() == s.getBlock()||torchVariant) && mcc$level.setBlock(p, next, flags);
     }
 
     /** MCP {@code setBlockMetadataWithNotify}. */

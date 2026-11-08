@@ -24,6 +24,9 @@ public final class BlocksB173 {
     public static int legacyId(BlockState state) {
         if (state.getBlock() instanceof LegacyB173Block l) return l.legacy().id;
         if (state.isAir()) return 0;
+        if(state.is(Blocks.TORCH)||state.is(Blocks.WALL_TORCH))return 50;
+        if(state.is(Blocks.REDSTONE_TORCH)||state.is(Blocks.REDSTONE_WALL_TORCH))
+            return state.getValue(net.minecraft.world.level.block.RedstoneTorchBlock.LIT)?76:75;
         var fluid = state.getFluidState();
         if (!fluid.isEmpty() && state.getBlock() instanceof net.minecraft.world.level.block.LiquidBlock) {
             if (fluid.getType() == Fluids.WATER) return 9;
@@ -98,6 +101,8 @@ public final class BlocksB173 {
             for (int m = 0; m < 4; m++) put(r, slabs[m], 44, m);
             r.put(Blocks.SHORT_GRASS, new int[] {31, 1});
             r.put(Blocks.FERN, new int[] {31, 2});
+            r.put(Blocks.WALL_TORCH,new int[]{50,0});
+            r.put(Blocks.REDSTONE_WALL_TORCH,new int[]{75,0});
             return reverse = r;
         }
     }
