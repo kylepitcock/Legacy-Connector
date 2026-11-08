@@ -341,3 +341,11 @@ net/minecraft/client/renderer/entity/LivingEntityRenderer	setupRotations	(Lnet/m
 net/minecraft/network/protocol/game/ClientboundAddEntityPacket	<init>	(Lnet/minecraft/world/entity/Entity;)V	RoundCompat	addEntityPacket	-
 net/minecraft/nbt/NbtUtils	writeGameProfile	(Lnet/minecraft/nbt/CompoundTag;Lcom/mojang/authlib/GameProfile;)Lnet/minecraft/nbt/CompoundTag;	RoundCompat	writeGameProfile	-
 net/minecraft/nbt/NbtUtils	readGameProfile	(Lnet/minecraft/nbt/CompoundTag;)Lcom/mojang/authlib/GameProfile;	RoundCompat	readGameProfile	-
+net/neoforged/neoforge/event/VanillaGameEvent	getVanillaEvent	()Lnet/minecraft/world/level/gameevent/GameEvent;	EventCompat	vanillaEvent	-
+net/neoforged/neoforge/event/entity/EntityAttributeModificationEvent	add	(Lnet/minecraft/world/entity/EntityType;Lnet/minecraft/world/entity/ai/attributes/Attribute;D)V	EventCompat	attributeAdd	-
+net/neoforged/neoforge/event/entity/EntityAttributeModificationEvent	add	(Lnet/minecraft/world/entity/EntityType;Lnet/minecraft/world/entity/ai/attributes/Attribute;)V	EventCompat	attributeAdd	-
+net/neoforged/neoforge/event/entity/EntityAttributeModificationEvent	has	(Lnet/minecraft/world/entity/EntityType;Lnet/minecraft/world/entity/ai/attributes/Attribute;)Z	EventCompat	attributeHas	-
+net/neoforged/neoforge/event/entity/EntityEvent$Size	getOldEyeHeight	()F	EventCompat	oldEyeHeight	-
+net/neoforged/neoforge/event/entity/EntityEvent$Size	getNewEyeHeight	()F	EventCompat	newEyeHeight	-
+net/neoforged/neoforge/event/entity/EntityEvent$Size	setNewEyeHeight	(F)V	EventCompat	setNewEyeHeight	-
+net/neoforged/neoforge/event/entity/EntityEvent$Size	setNewSize	(Lnet/minecraft/world/entity/EntityDimensions;Z)V	EventCompat	setNewSize	-
