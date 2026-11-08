@@ -212,6 +212,45 @@ public class Vector3 implements Cloneable {
         return l == 0 ? 0 : dotProduct(b) / l;
     }
 
+    public Translation translation() {
+        return new Translation(this);
+    }
+
+    public Vector3 apply(Transformation t) {
+        t.apply(this);
+        return this;
+    }
+
+    public Vector3 apply(Matrix4 m) {
+        m.apply(this);
+        return this;
+    }
+
+    public Vector3 subtract(double d) {
+        return add(-d);
+    }
+
+    public double distance(Vector3 v) {
+        return Math.sqrt((x - v.x) * (x - v.x) + (y - v.y) * (y - v.y) + (z - v.z) * (z - v.z));
+    }
+
+    public double getSide(int side) {
+        return switch (side) {
+            case 0, 1 -> y;
+            case 2, 3 -> z;
+            default -> x;
+        };
+    }
+
+    public Vector3 setSide(int side, double d) {
+        switch (side) {
+            case 0, 1 -> y = d;
+            case 2, 3 -> z = d;
+            default -> x = d;
+        }
+        return this;
+    }
+
     public Vector3 clone() {
         return copy();
     }

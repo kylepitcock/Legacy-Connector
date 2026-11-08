@@ -52,6 +52,59 @@ public class Cuboid6 {
         return this;
     }
 
+    public Cuboid6 sub(Vector3 v) {
+        min.sub(v);
+        max.sub(v);
+        return this;
+    }
+
+    /** The coordinate of a face: the minimum for the down/north/west sides (even... 0, 2, 4), else the maximum. */
+    public double getSide(int s) {
+        return switch (s) {
+            case 0 -> min.y;
+            case 1 -> max.y;
+            case 2 -> min.z;
+            case 3 -> max.z;
+            case 4 -> min.x;
+            default -> max.x;
+        };
+    }
+
+    public Cuboid6 setSide(int s, double d) {
+        switch (s) {
+            case 0 -> min.y = d;
+            case 1 -> max.y = d;
+            case 2 -> min.z = d;
+            case 3 -> max.z = d;
+            case 4 -> min.x = d;
+            default -> max.x = d;
+        }
+        return this;
+    }
+
+    /** Transforms both corners and keeps min below max. */
+    public Cuboid6 apply(Transformation t) {
+        t.apply(min);
+        t.apply(max);
+        double d;
+        if (min.x > max.x) { d = min.x; min.x = max.x; max.x = d; }
+        if (min.y > max.y) { d = min.y; min.y = max.y; max.y = d; }
+        if (min.z > max.z) { d = min.z; min.z = max.z; max.z = d; }
+        return this;
+    }
+
+    public Cuboid6 enclose(Vector3 v) {
+        min.set(Math.min(min.x, v.x), Math.min(min.y, v.y), Math.min(min.z, v.z));
+        max.set(Math.max(max.x, v.x), Math.max(max.y, v.y), Math.max(max.z, v.z));
+        return this;
+    }
+
+    public Cuboid6 expand(Vector3 v) {
+        min.sub(v);
+        max.add(v);
+        return this;
+    }
+
     public Cuboid6 expand(double d) {
         min.add(-d);
         max.add(d);

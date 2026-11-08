@@ -19,6 +19,10 @@ public class BlockCoord implements Comparable<BlockCoord> {
         this(tile.xCoord, tile.yCoord, tile.zCoord);
     }
 
+    public BlockCoord(Vector3 v) {
+        this((int) Math.floor(v.x), (int) Math.floor(v.y), (int) Math.floor(v.z));
+    }
+
     public BlockCoord(int[] ia) {
         this(ia[0], ia[1], ia[2]);
     }
