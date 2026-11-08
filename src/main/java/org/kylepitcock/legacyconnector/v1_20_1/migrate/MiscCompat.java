@@ -490,4 +490,37 @@ public final class MiscCompat {
         net.minecraft.core.Registry registry = BuiltInRegistries.TRIGGER_TYPES;
         return (net.minecraft.advancements.CriterionTrigger) registerLate(registry, ResourceLocation.parse(name), trigger);
     }
+
+    // ---- cauldron interaction maps (CauldronInteraction.WATER... were Map<Item, CauldronInteraction>, are InteractionMap records now)
+
+    public static java.util.Map<Item, net.minecraft.core.cauldron.CauldronInteraction> cauldronMap(net.minecraft.core.cauldron.CauldronInteraction.InteractionMap map) {
+        return map.map();
+    }
+
+    /** {@code ItemStack.ATTRIBUTE_MODIFIER_FORMAT}: the format of attribute tooltips (removed in 1.21). */
+    private static final java.text.DecimalFormat ATTRIBUTE_FORMAT = net.minecraft.Util.make(new java.text.DecimalFormat("#.##"),
+            f -> f.setDecimalFormatSymbols(java.text.DecimalFormatSymbols.getInstance(java.util.Locale.ROOT)));
+
+    public static java.text.DecimalFormat attributeModifierFormat() {
+        return ATTRIBUTE_FORMAT;
+    }
+
+    public static net.minecraft.world.level.material.Fluid bucketFluid(net.minecraft.world.item.BucketItem bucket) {
+        return bucket.content;
+    }
+
+    /** {@code MobEffectInstance.save(CompoundTag)}: writes the effect into the tag and returns it (1.21.1 encodes with a codec). */
+    public static CompoundTag saveEffect(net.minecraft.world.effect.MobEffectInstance effect, CompoundTag tag) {
+        Tag saved = effect.save();
+        if (saved instanceof CompoundTag c) tag.merge(c);
+        return tag;
+    }
+
+    private static int cauldronMaps;
+
+    /** {@code CauldronInteraction.newInteractionMap()}: a map of a mod's own cauldron kind (1.21.1 names it and keeps it in {@code INTERACTIONS}). */
+    public static it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap<Item, net.minecraft.core.cauldron.CauldronInteraction> newCauldronMap() {
+        return (it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap<Item, net.minecraft.core.cauldron.CauldronInteraction>)
+                net.minecraft.core.cauldron.CauldronInteraction.newInteractionMap("legacy_connector_" + cauldronMaps++).map();
+    }
 }

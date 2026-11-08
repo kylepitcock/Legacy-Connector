@@ -93,6 +93,49 @@ class Mc1201MigrationTest implements Opcodes {
     }
 
     @Test
+    void droppedInstanceFieldBecomesHelperCalls() {
+        String opts = "net/minecraft/client/Options";
+        ClassNode c = cls("test/Mod", "java/lang/Object");
+        MethodNode m = method(c, ACC_PUBLIC | ACC_STATIC, "toggle", "(L" + opts + ";)V");
+        m.instructions.add(new VarInsnNode(ALOAD, 0));
+        m.instructions.add(new VarInsnNode(ALOAD, 0));
+        m.instructions.add(new FieldInsnNode(GETFIELD, opts, "renderDebug", "Z"));
+        m.instructions.add(new InsnNode(ICONST_1));
+        m.instructions.add(new InsnNode(IXOR));
+        m.instructions.add(new FieldInsnNode(PUTFIELD, opts, "renderDebug", "Z"));
+        m.instructions.add(new InsnNode(RETURN));
+        assertEquals(2, apply(c).fields);
+        MethodInsnNode get = find(m, MIGRATE + "ClientCompat", "getRenderDebug");
+        MethodInsnNode set = find(m, MIGRATE + "ClientCompat", "setRenderDebug");
+        assertNotNull(get);
+        assertNotNull(set);
+        assertEquals("(L" + opts + ";)Z", get.desc);
+        assertEquals("(L" + opts + ";Z)V", set.desc);
+    }
+
+    @Test
+    void cauldronMapFieldIsUnwrappedAndRecipeRemainderIsConverted() {
+        ClassNode c = cls("test/Mod", "java/lang/Object");
+        MethodNode m = method(c, ACC_PUBLIC | ACC_STATIC, "water", "()Ljava/util/Map;");
+        m.instructions.add(new FieldInsnNode(GETSTATIC, "net/minecraft/core/cauldron/CauldronInteraction", "WATER", "Ljava/util/Map;"));
+        m.instructions.add(new InsnNode(ARETURN));
+        assertEquals(1, apply(c).fields);
+        FieldInsnNode f = (FieldInsnNode) m.instructions.getFirst();
+        assertEquals("Lnet/minecraft/core/cauldron/CauldronInteraction$InteractionMap;", f.desc);
+        assertNotNull(find(m, MIGRATE + "MiscCompat", "cauldronMap"));
+
+        ClassNode r = cls("test/Rec", "java/lang/Object");
+        MethodNode n = method(r, ACC_PUBLIC | ACC_STATIC, "rest", "(Lnet/minecraft/world/item/crafting/CraftingRecipe;Lnet/minecraft/world/Container;)Lnet/minecraft/core/NonNullList;");
+        n.instructions.add(new VarInsnNode(ALOAD, 0));
+        n.instructions.add(new VarInsnNode(ALOAD, 1));
+        n.instructions.add(new MethodInsnNode(INVOKEINTERFACE, "net/minecraft/world/item/crafting/CraftingRecipe", "getRemainingItems",
+                "(Lnet/minecraft/world/Container;)Lnet/minecraft/core/NonNullList;", true));
+        n.instructions.add(new InsnNode(ARETURN));
+        assertEquals(1, apply(r).calls);
+        assertNotNull(find(n, MIGRATE + "RecipeCompat", "getRemainingItems"));
+    }
+
+    @Test
     void itemStackNbtCallsGoToTheHelper() {
         ClassNode c = cls("test/Mod", "java/lang/Object");
         MethodNode m = method(c, ACC_PUBLIC | ACC_STATIC, "tag", "(L" + STACK + ";)L" + CT + ";");

@@ -28,7 +28,7 @@ import net.neoforged.neoforge.server.ServerLifecycleHooks;
  * An {@link IForgeRegistry} answering from a vanilla registry. Static registries are bound directly; data-driven ones (biomes, enchantments in 1.21.1) are
  * looked up in the running server's registry access on every call.
  */
-public final class ForgeRegistryWrapper<V> implements IForgeRegistry<V> {
+public final class ForgeRegistryWrapper<V> extends ForgeRegistry<V> {
     private final ResourceKey<? extends Registry<V>> key;
     private final Registry<V> fixed;
 
