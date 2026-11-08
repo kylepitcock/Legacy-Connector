@@ -4,6 +4,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.StairBlock;
+import net.minecraft.world.level.block.RedstoneTorchBlock;
+import net.minecraft.world.level.block.WallTorchBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.block.state.properties.Half;
@@ -14,6 +16,15 @@ public final class VanillaBlockStatesB173 {
 
     /** Null means this utility does not handle the id. Existing unrelated state properties are retained. */
     public static BlockState modernState(int id,int meta,BlockState base){
+        if(isTorch(id,base)){
+            meta&=15;
+            var torch=id==50?(meta>=1&&meta<=4?Blocks.WALL_TORCH:Blocks.TORCH)
+                    :(meta>=1&&meta<=4?Blocks.REDSTONE_WALL_TORCH:Blocks.REDSTONE_TORCH);
+            BlockState state=base.is(torch)?base:torch.defaultBlockState();
+            if(state.hasProperty(WallTorchBlock.FACING))state=state.setValue(WallTorchBlock.FACING,
+                    switch(meta){case 1->Direction.EAST;case 2->Direction.WEST;case 3->Direction.SOUTH;default->Direction.NORTH;});
+            return id==50?state:state.setValue(RedstoneTorchBlock.LIT,id==76);
+        }
         if((id==53&&base.is(Blocks.OAK_STAIRS))||(id==67&&base.is(Blocks.COBBLESTONE_STAIRS))){
             Direction facing=switch(meta&3){case 0->Direction.EAST;case 1->Direction.WEST;case 2->Direction.SOUTH;default->Direction.NORTH;};
             // Upside-down stairs were added after Beta; bit four is not a top-half flag here.
@@ -28,8 +39,17 @@ public final class VanillaBlockStatesB173 {
         return null;
     }
 
+    /** Only the original native torch families; mod-owned blocks keep their own metadata callbacks. */
+    public static boolean isTorch(int id,BlockState state){
+        return id==50&&(state.is(Blocks.TORCH)||state.is(Blocks.WALL_TORCH))
+                ||(id==75||id==76)&&(state.is(Blocks.REDSTONE_TORCH)||state.is(Blocks.REDSTONE_WALL_TORCH));
+    }
+
     /** Null means unsupported. Do not interpret modern upper-door hinge bits as Beta metadata. */
     public static Integer legacyMeta(BlockState state){
+        if(state.is(Blocks.TORCH)||state.is(Blocks.REDSTONE_TORCH))return 5;
+        if(state.is(Blocks.WALL_TORCH)||state.is(Blocks.REDSTONE_WALL_TORCH))
+            return switch(state.getValue(WallTorchBlock.FACING)){case EAST->1;case WEST->2;case SOUTH->3;case NORTH->4;default->throw new IllegalStateException("Nonhorizontal torch facing");};
         if(state.is(Blocks.OAK_STAIRS)||state.is(Blocks.COBBLESTONE_STAIRS)){
             return switch(state.getValue(StairBlock.FACING)){case EAST->0;case WEST->1;case SOUTH->2;case NORTH->3;default->throw new IllegalStateException("Nonhorizontal stair facing");};
         }

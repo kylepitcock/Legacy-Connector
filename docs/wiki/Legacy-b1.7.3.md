@@ -564,6 +564,18 @@ above its lower partner, so the original place-id-then-metadata sequence survive
 power properties survive metadata changes. The actual Lawyer jail regression exercises live neighbor updates, wooden and iron
 door pairs, native opening/closing, and every step of the original eighteen-step spiral. Native placement rules are unchanged.
 
+Vanilla torch placement through the Beta World API now selects west, east, north, south, then floor support in the original
+order. The classic fence can support a floor torch. Metadata 1–4 maps to native wall-torch facings and 5 to a standing torch;
+metadata writes can move between those native block variants while retaining the same Beta id. Redstone torches use the same
+orientation encoding and retain their lit/unlit ids 76/75. Initial redstone placement normalizes only metadata zero, matching
+the original subclass callback. Ordinary native placement and foreign torch blocks keep their own behavior.
+Native torch blocks own lighting, support-loss removal and loot. Original Lawyer jail checks exercise all three wall torches,
+wall/floor transitions, fence support, unchanged-id writes and drops, alongside the existing door/stair regression.
+The actual jail's three torches also pass an isolated offscreen midnight check: native block light 14 at each torch and 13
+in adjacent air, checked twice after lighting settles. Three reviewed wall-torch closeups supplement 481 passing tests.
+[The wall-torch validation snapshot](../data/b173-wall-torch-validation-2026-11-08.json) records the reproduced standing-torch
+failure, source hashes and accepted captures. Existing malformed torches are not migrated automatically; no mod versions changed.
+
 Tracked legacy texture paths are canonicalized when restored from packets or saves, preserving original renderers that compare
 paths with Java string literals. The actual Horse renderer now retains its saddle/chest passes after a native tracking packet.
 Conditional renderer fixtures also cover Werewolf forms, Ogre decorations, aquatic skins/growth, KittyBed contents and LitterBox

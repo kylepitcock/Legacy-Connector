@@ -10,6 +10,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.StairBlock;
+import net.minecraft.world.level.block.WallTorchBlock;
 import net.minecraft.world.level.block.state.properties.DoorHingeSide;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.block.state.properties.Half;
@@ -48,6 +49,54 @@ public final class MoreCreepsJailSelfTestB173 {
                 &&state.getValue(DoorBlock.HINGE)==DoorHingeSide.LEFT,"actual jail metadata zero/eight yields matching closed east-facing left-hinge pair");
         require(world.getBlockMeta(pos.getX(),pos.getY(),pos.getZ())==0&&world.getBlockMeta(pos.getX(),pos.getY()+1,pos.getZ())==8,"jail door metadata round-trips through legacy view");
     }
+    private static void torch(ServerLevel level,World world,BlockPos pos,int meta,Direction facing){
+        var state=level.getBlockState(pos);
+        require(state.is(facing==Direction.UP?Blocks.TORCH:Blocks.WALL_TORCH),"legacy torch uses native supported torch family: "+pos+" state="+state);
+        if(facing!=Direction.UP)require(state.getValue(WallTorchBlock.FACING)==facing,"original wall torch preserves Beta support direction: "+pos);
+        require(state.canSurvive(level,pos)&&state.getLightEmission()==14,"original jail torch has native support and light emission14: "+pos);
+        require(world.getBlockId(pos.getX(),pos.getY(),pos.getZ())==50&&world.getBlockMeta(pos.getX(),pos.getY(),pos.getZ())==meta,"native torch maps back to Beta id50/meta"+meta+": "+pos);
+    }
+    private static int torchDrops(ServerLevel level,BlockPos pos){return level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,new net.minecraft.world.phys.AABB(pos).inflate(1.5)).stream().filter(e->e.getItem().is(net.minecraft.world.item.Items.TORCH)).mapToInt(e->e.getItem().getCount()).sum();}
+    private static void torches(ServerLevel level,World world,BlockPos origin){
+        // Original Lawyer places id50 with implicit metadata0 at these three coordinates.
+        // Clean Beta TorchBlock.onAdded chooses WEST/EAST/NORTH/SOUTH/floor support in that order.
+        var positions=List.of(origin.offset(0,2,13),origin.offset(12,2,1),origin.offset(6,2,9));
+        int[] metas={1,2,4};Direction[] facings={Direction.EAST,Direction.WEST,Direction.NORTH};
+        for(int i=0;i<positions.size();i++)torch(level,world,positions.get(i),metas[i],facings[i]);
+        var rule=level.getGameRules().getRule(net.minecraft.world.level.GameRules.RULE_DOBLOCKDROPS);boolean before=rule.get();rule.set(true,level.getServer());
+        try{
+            for(int i=0;i<positions.size();i++){
+                var pos=positions.get(i);int drops=torchDrops(level,pos);var support=pos.relative(facings[i].getOpposite());
+                require(level.getBlockState(support).is(Blocks.STONE),"actual original jail torch attaches to stone wall");
+                require(level.setBlock(support,Blocks.AIR.defaultBlockState(),3),"native wall support removal admitted");
+                require(level.getBlockState(pos).isAir()&&torchDrops(level,pos)==drops+1,"native support loss removes original torch and drops one torch item");
+            }
+            // Reuse a bounded empty cell inside the fixture's saved region for all four wall directions and floor.
+            var pos=origin.offset(18,19,14);Direction[] directions={Direction.EAST,Direction.WEST,Direction.SOUTH,Direction.NORTH,Direction.UP};
+            for(int i=0;i<directions.length;i++){
+                level.setBlock(pos,Blocks.AIR.defaultBlockState(),3);for(Direction direction:Direction.values())level.setBlock(pos.relative(direction),Blocks.AIR.defaultBlockState(),3);
+                var facing=directions[i];level.setBlock(pos.relative(facing.getOpposite()),Blocks.STONE.defaultBlockState(),3);
+                require(world.setBlock(pos.getX(),pos.getY(),pos.getZ(),50),"legacy metadata0 torch placement admitted for support "+facing);
+                torch(level,world,pos,i+1,facing);
+                world.setBlockMeta(pos.getX(),pos.getY(),pos.getZ(),i+1);torch(level,world,pos,i+1,facing);
+            }
+            level.setBlock(pos,Blocks.AIR.defaultBlockState(),3);for(Direction direction:Direction.values())level.setBlock(pos.relative(direction),Blocks.AIR.defaultBlockState(),3);
+            level.setBlock(pos.west(),Blocks.STONE.defaultBlockState(),3);level.setBlock(pos.below(),Blocks.STONE.defaultBlockState(),3);
+            require(world.setBlock(pos.getX(),pos.getY(),pos.getZ(),50),"legacy torch chooses wall before available floor");torch(level,world,pos,1,Direction.EAST);
+            world.setBlockMeta(pos.getX(),pos.getY(),pos.getZ(),5);torch(level,world,pos,5,Direction.UP);
+            world.setBlockMeta(pos.getX(),pos.getY(),pos.getZ(),1);torch(level,world,pos,1,Direction.EAST);
+            require(level.setBlock(pos,Blocks.TORCH.defaultBlockState(),3),"direct native standing torch placement admitted");torch(level,world,pos,5,Direction.UP);
+            require(!world.setBlock(pos.getX(),pos.getY(),pos.getZ(),50),"same legacy torch id write remains a no-op");torch(level,world,pos,5,Direction.UP);
+            level.setBlock(pos,Blocks.AIR.defaultBlockState(),3);level.setBlock(pos.west(),Blocks.AIR.defaultBlockState(),3);
+            level.setBlock(pos.below(),Blocks.OAK_FENCE.defaultBlockState(),3);
+            require(world.setBlock(pos.getX(),pos.getY(),pos.getZ(),50),"original fence supports floor torch");torch(level,world,pos,5,Direction.UP);
+            level.setBlock(pos,Blocks.AIR.defaultBlockState(),3);for(Direction direction:Direction.values())level.setBlock(pos.relative(direction),Blocks.AIR.defaultBlockState(),3);
+            int unsupportedDrops=torchDrops(level,pos);world.setBlock(pos.getX(),pos.getY(),pos.getZ(),50);
+            require(level.getBlockState(pos).isAir()&&torchDrops(level,pos)==unsupportedDrops+1,"unsupported original torch placement drops exactly one torch and leaves native air");
+            // Ordinary native stone remains an ordinary stone block through the same legacy write API.
+            require(world.setBlock(pos.getX(),pos.getY(),pos.getZ(),1)&&level.getBlockState(pos).is(Blocks.STONE),"non-torch legacy placement keeps native block identity");
+        }finally{rule.set(before,level.getServer());}
+    }
     private static void run(ServerLevel level)throws ReflectiveOperationException {
         var selected=ContentB173.entities().stream().filter(r->r.type().getPackageName().equals("legacyconnector_b173.morecreepsandweirdos")&&r.type().getSimpleName().equals("CREEPSEntityLawyerFromHell")).findFirst();if(selected.isEmpty())return;
         var registration=selected.get();var world=World.mcc$wrap(level);var origin=level.getSharedSpawnPos().offset(8,60,8);
@@ -84,7 +133,8 @@ public final class MoreCreepsJailSelfTestB173 {
             ((DoorBlock)Blocks.OAK_DOOR).setOpen(player,level,level.getBlockState(wood),wood,false);
             require(world.getBlockMeta(wood.getX(),wood.getY(),wood.getZ())==0&&!level.getBlockState(wood.above()).getValue(DoorBlock.OPEN),"native door interaction remains reflected in legacy metadata");
             require(level.getBlockState(origin.offset(7,1,4)).is(Blocks.GLASS)&&level.getBlockState(origin.offset(7,-1,7)).is(Blocks.STONE),"unrelated original jail glass and stone remain unchanged");
-            LOG.info("B1.7.3 CREEPS JAIL TEST: actual live-neighbor door halves, facing/open metadata, native door interaction and all eighteen spiral stairs passed");
+            torches(level,world,origin);
+            LOG.info("B1.7.3 CREEPS JAIL TEST: actual live-neighbor door halves, facing/open metadata, native door interaction, eighteen spiral stairs, three wall torches, all support directions/light and native torch drops passed");
         }finally{
             for(var entry:globals.entrySet())entry.getKey().set(null,entry.getValue());EntityViewsB173.flush();
             var added=new ArrayList<net.minecraft.world.entity.Entity>();for(var entity:level.getAllEntities())if(!before.contains(entity.getId()))added.add(entity);added.forEach(net.minecraft.world.entity.Entity::discard);player.discard();
