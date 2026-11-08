@@ -711,6 +711,16 @@ public final class MiddleCompat {
         return HolderCompat.legacy(holder);
     }
 
+    /** The level a bridged {@code isPathfindable} override gets: 1.21.1 has no level there, so an empty one (all air). */
+    public static net.minecraft.world.level.BlockGetter emptyGetter(BlockState state) {
+        return net.minecraft.world.level.EmptyBlockGetter.INSTANCE;
+    }
+
+    /** The position a bridged {@code isPathfindable} override gets: the origin. */
+    public static BlockPos originPos(BlockState state) {
+        return BlockPos.ZERO;
+    }
+
     /** {@code Potion.byName(String)}. */
     public static net.minecraft.world.item.alchemy.Potion potionByName(String name) {
         return net.minecraft.core.registries.BuiltInRegistries.POTION.get(net.minecraft.resources.ResourceLocation.parse(name));
