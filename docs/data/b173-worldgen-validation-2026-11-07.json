@@ -1,0 +1,50 @@
+{
+  "snapshot_date": "2026-11-07",
+  "scope": "Legacy spawn checks during fresh-world and new-chunk terrain generation",
+  "seed": "8794669509186076339",
+  "reported_symptoms": [
+    "New-world loading stalls at 18 percent",
+    "Generating new chunks also stalls"
+  ],
+  "cause": {
+    "original_callback": "MoreCreeps 2.12 SneakySal.canSpawn",
+    "blocking_path": [
+      "NaturalSpawner.spawnMobsForChunkGeneration",
+      "LegacyB173Animal.checkSpawnRules",
+      "Original canSpawn callback",
+      "Beta World.getBlockId",
+      "Full ServerLevel.getBlockState",
+      "ServerChunkCache.getChunk waiting for the unfinished generation task"
+    ],
+    "thread_dump_samples": 2,
+    "same_blocking_stack_after_seconds": 30
+  },
+  "shared_fix": {
+    "accessor": "Use the supplied WorldGenRegion during original spawn checks",
+    "reads": ["blocks", "metadata", "material", "block entities", "light", "sky", "height", "block collisions", "base spawn collision/fluid checks"],
+    "world_identity_preserved": true,
+    "region_matches_backing_dimension": true,
+    "nested_scope_restoration": true,
+    "ordinary_level_fallback": true,
+    "content_mod_dispatch": false
+  },
+  "validation": {
+    "stage": "run-prism-worldload-20261107-231949",
+    "inputs": "Isolated copies of installed Prism mods, configuration and legacy root properties; no user saves copied",
+    "staging_note": "The initial diagnostic stage omitted legacy root properties and logged a noncausal PortalGun ID conflict; original properties were restored for complete pack parity in the fixed run.",
+    "minecraft": "1.21.1",
+    "neoforge_test": "21.1.258",
+    "neoforge_prism": "21.1.265",
+    "fresh_world_spawn_ms": 3150,
+    "server_ready_seconds": 7.253,
+    "fresh_distant_chunks": [[100, 100], [101, 100], [102, 100], [103, 100], [104, 100], [105, 100], [106, 100], [107, 100]],
+    "fresh_distant_chunk_generation_ms": 6304.3829,
+    "real_region_scope_identity_checks": "passed",
+    "both_fixed_server_runs_exit_code": 0,
+    "evidence": ["threads-initial.txt", "threads-stalled.txt", "fixed.log", "scope-check.log", "scripts/scope-check.txt"]
+  },
+  "limitations": [
+    "Dedicated headless pack reproduction; no live client loading-screen replay.",
+    "Generation timings describe this seed and diagnostic run."
+  ]
+}

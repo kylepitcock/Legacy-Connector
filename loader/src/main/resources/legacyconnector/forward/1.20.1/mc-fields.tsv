@@ -330,3 +330,4 @@ net/minecraft/world/level/storage/loot/BuiltInLootTables	SHEEP_YELLOW	Lnet/minec
 net/minecraft/world/level/storage/loot/BuiltInLootTables	JUNGLE_TEMPLE_DISPENSER	Lnet/minecraft/resources/ResourceLocation;	-	Lnet/minecraft/resources/ResourceKey;	location
 net/minecraft/core/registries/BuiltInRegistries	POTION	Lnet/minecraft/core/DefaultedRegistry;	-	Lnet/minecraft/core/Registry;	RoundCompat.defaulted
 net/minecraft/core/registries/BuiltInRegistries	PAINTING_VARIANT	Lnet/minecraft/core/DefaultedRegistry;	-	Lnet/minecraft/core/Registry;	RoundCompat.defaulted
+net/minecraft/network/chat/ComponentContents	EMPTY	Lnet/minecraft/network/chat/ComponentContents;	-	none	RoundCompat.emptyContents

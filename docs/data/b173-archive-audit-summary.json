@@ -1,0 +1,459 @@
+{
+  "snapshot_date": "2026-11-07",
+  "upstream_master": "46304d60",
+  "merge_commit": "63c234da",
+  "scan": {
+    "input": "C:\\Users\\zekken\\Desktop\\minecrafting\\Minecraft Beta 1.7.3 Mods Archive - 1000+ Mods",
+    "archive_files": 1040,
+    "units": 1222,
+    "statuses": {
+      "base-class-replacements": 572,
+      "no-base-class-replacements": 548,
+      "library-or-resource-classes": 54,
+      "bundled-api-patches": 20,
+      "loose-class-review": 2,
+      "api-distribution": 24,
+      "review-errors": 2
+    },
+    "errors": 4
+  },
+  "classifications_are_payload_variants_not_unique_mods": true,
+  "api_demand": {
+    "ModLoader": 544,
+    "ModLoaderMP": 74,
+    "Forge": 42,
+    "ShockAhPI": 23,
+    "GuiAPI": 14,
+    "Player API": 9,
+    "ItemSpriteAPI": 9,
+    "ScotTools": 8,
+    "InfSprites": 6,
+    "PropertyReader (outside scope)": 6,
+    "TMT (outside scope)": 4,
+    "OverrideAPI": 2
+  },
+  "empty_downloads": [
+    {
+      "archive": "Arkans_Mod_v.1.4_128x12_b1738.zip",
+      "error": "File is not a zip file"
+    },
+    {
+      "archive": "Arkans_Mod_v._1.4_16x_b173.zip",
+      "error": "File is not a zip file"
+    },
+    {
+      "archive": "Glow_ColoredGlass_Mod_v1.01_b173.zip",
+      "error": "File is not a zip file"
+    },
+    {
+      "archive": "Stacks_1.3_b173.zip",
+      "error": "File is not a zip file"
+    }
+  ],
+  "mislabeled_rar_files": [
+    "athletics_mod_(Hack)_b173.zip",
+    "IronCraft_b173.zip",
+    "New_way_to_Diamonds_b173.zip",
+    "TNTOre_-_Update_8.26.11_b173.zip"
+  ],
+  "priority_basis": "Curated major mods from user history and recognizable archive families; not a measured popularity ranking. Order favors actionable shared-API work.",
+  "testing_queue": [
+    {
+      "priority": 1,
+      "mod": "PlasticCraft 2.1.3",
+      "archive": "PlasticCraft_(v2.1.3)_b173.zip",
+      "root": "minecraft/",
+      "api_references": "ModLoader",
+      "next_check": "Isolated construction and exercised callbacks pass after generic dye/wool and armor fixes; native armor equipment, original GUI rendering and spawn APIs remain incomplete or unverified."
+    },
+    {
+      "priority": 2,
+      "mod": "BuildCraft Core 2.1.1",
+      "archive": "buildcraft-client-A-core-2.1.1_b173.zip",
+      "root": "",
+      "api_references": "Forge; ModLoader; ModLoaderMP",
+      "next_check": "Core+Energy pass isolated bucket and tile persistence checks; optional missing Energy framework is caught by original Core. Machine simulation, GUI and model APIs remain partial."
+    },
+    {
+      "priority": 3,
+      "mod": "Equivalent Exchange 3.55",
+      "archive": "EquivalentExchange_Forge_3.55_b173.zip",
+      "root": "",
+      "api_references": "Forge; ModLoader",
+      "next_check": "Untested in isolation; Forge branch avoids the alternative ItemSpriteAPI variant."
+    },
+    {
+      "priority": 4,
+      "mod": "IndustrialCraft 2 v1.00",
+      "archive": "IndustrialCraftÃ‚Â²_v1.00_b173.zip",
+      "root": "",
+      "api_references": "Forge; ModLoader; ModLoaderMP",
+      "next_check": "Untested in isolation; this archive version differs from the existing v1.337b test jar."
+    },
+    {
+      "priority": 5,
+      "mod": "MineFactory Reloaded 1.1.2",
+      "archive": "MinefactoryReloaded_Client_1.1.2_b173.zip",
+      "root": "",
+      "api_references": "ModLoader; ModLoaderMP",
+      "next_check": "Untested in isolation; inspect mod_IC2 references for optional integration, do not assume mandatory dependency."
+    },
+    {
+      "priority": 6,
+      "mod": "RedPower Core 1.7.1",
+      "archive": "RedPowerCore-1.7.1_b173.zip",
+      "root": "",
+      "api_references": "Forge; ModLoader; ModLoaderMP",
+      "next_check": "Core first; Lighting/Wiring/Logic/Array afterward with only required RedPower modules."
+    },
+    {
+      "priority": 7,
+      "mod": "Portal Gun v5",
+      "archive": "PortalGun_v5_b173.zip!Client/place in mods/portalgun1.7.3v5.zip",
+      "root": "",
+      "api_references": "ModLoader; ModLoaderMP; ShockAhPI",
+      "next_check": "Client payload only; separate bundled server builds and optional add-ons. SAPI references include achievements."
+    },
+    {
+      "priority": 8,
+      "mod": "Millenaire 1.4.4b",
+      "archive": "millenaire1.4.4b_b173.zip",
+      "root": "",
+      "api_references": "ModLoader",
+      "next_check": "Review external resource/village folders and world-generation hooks before staging."
+    },
+    {
+      "priority": 9,
+      "mod": "Mo Creatures 2.12.2",
+      "archive": "DrZharks_MoCreatures_Mod_v2.12.2_b1.7.3.zip!mods/MoCreatures.zip",
+      "root": "",
+      "api_references": "GuiAPI; ModLoader",
+      "next_check": "Constructs after generic GuiAPI/TWL settings fix; original Bunny model passes. Custom AI, renderer integration and natural spawns remain unfinished."
+    },
+    {
+      "mod": "More Creeps & Weirdos 2.12",
+      "archive": "MoreCreepsv2.12_b173.zip!PUT CONTENTS INTO MINECRAFT FOLDER/mods/MoreCreepsAndWeirdos.zip",
+      "root": "",
+      "api_references": "ModLoader; AudioMod; ShockAhPI ACPage",
+      "next_check": "Hippo renderer/tracking/spawn integration enabled; broaden mob API coverage and perform live visual QA.",
+      "priority": 10
+    },
+    {
+      "priority": 11,
+      "mod": "Aether 1.01",
+      "archive": "Aether_1.7.3_v1.01.zip",
+      "root": "Jar/",
+      "api_references": "ModLoader; ShockAhPI",
+      "next_check": "No detected base replacements in this older payload; SAPI/dimension work required. Do not substitute 1.02."
+    },
+    {
+      "priority": 12,
+      "mod": "Twilight Forest 1.4",
+      "archive": "twilightforest.1p4_b173.zip",
+      "root": "",
+      "api_references": "ModLoader; ShockAhPI",
+      "next_check": "SAPI dimensions/world generation are blockers; defer until shared hooks work."
+    }
+  ],
+  "isolated_runs": [
+    {
+      "source": "buildcraft-client-A-core-2.1.1_b173.zip",
+      "root": "",
+      "status": "failed-or-needs-review",
+      "problems": [
+        "java.lang.ClassNotFoundException: buildcraft.energy.PneumaticPowerFramework"
+      ],
+      "constructed": [
+        "[15:35:26] [modloading-sync-worker/INFO] [Le.7.3/]: b1.7.3 mod BuildCraftCore 2.1.1 constructed"
+      ],
+      "test_evidence": [
+        "[15:35:36] [Server thread/INFO] [Le.7.3/]: B1.7.3 BEHAVIOUR TEST: 0 blocks; 0 legacy callbacks failed, 0 escaped; 0 used a right click; 0 emit redstone",
+        "[15:35:36] [Server thread/INFO] [Le.7.3/]: B1.7.3 TILE ENTITY TEST: 0 blocks with a tile entity, 0 made one, 0 saved and loaded back",
+        "[15:35:36] [Server thread/INFO] [Le.7.3/]: B1.7.3 ITEM USE TEST: all interaction and item GUI checks passed",
+        "[15:35:36] [Server thread/INFO] [Le.7.3/]: B1.7.3 ACTUAL BUCKET/BOW TEST: 0 items passed, 0 failed",
+        "[15:35:36] [Server thread/INFO] [Le.7.3/]: B1.7.3 ACTUAL DURABILITY TEST: 0 tools/swords passed mining, combat, save, creative and breakage checks",
+        "[15:35:36] [Server thread/INFO] [Le.7.3/]: B1.7.3 ACTUAL THROWN TEST: 0 items passed",
+        "[15:35:36] [Server thread/INFO] [Le.7.3/]: B1.7.3 ACTUAL BLOCK FAMILIES TEST: 0 stairs, 0 torches, 0 doors, 0 conveyors, 0 pressure plates, 0 furnaces, 0 chests (both double-chest axes), 0 fences passed",
+        "[15:35:36] [Server thread/INFO] [Le.7.3/]: B1.7.3 ACTUAL ANIMATION TEST: 0 factory + 0 portal animations, 2 ticks of source-pixel/atlas checks, reload and strip timing passed",
+        "[15:35:36] [Server thread/INFO] [Le.7.3/]: B1.7.3 GUI TEST: 0 blocks/metadata right-clicked (0 placed from their item), 0 opened a menu (0 container classes, 0 slots, 0 of the containers; 0 client layouts match); shift-click: 0 took coal in, 0 gave it back; crafting grids: 0 of 0 crafted; 0 failed; players with the same entity id get their own view: true",
+        "[15:35:36] [Server thread/INFO] [Le.7.3/]: B1.7.3 SELF TEST: 0 of 0 blocks placed, 0 drop something; 6 items; recipes 6 translated, 0 not; 0 texture overrides; 0 tile entities and 0 entities registered (not bridged yet)"
+      ],
+      "manifest": "run-b173-single/buildcraft-core-211-20261107-153508-9c9305/audit-manifest.json"
+    },
+    {
+      "source": "PlasticCraft_(v2.1.3)_b173.zip",
+      "root": "minecraft/",
+      "status": "failed-or-needs-review",
+      "problems": [
+        "[15:36:18] [modloading-sync-worker/ERROR] [Legacy Connector/]: Legacy mod PlasticCraft (b1.7.3, from plasticcraft-213-74577cfb4639b113.jar) failed during construction: java.lang.ArrayIndexOutOfBoundsException: Index 0 out of bounds for length 0",
+        "java.lang.ArrayIndexOutOfBoundsException: Index 0 out of bounds for length 0",
+        "[15:36:20] [modloading-worker-0/ERROR] [Legacy Connector/]:   PlasticCraft: Legacy mod PlasticCraft (b1.7.3, from plasticcraft-213-74577cfb4639b113.jar) failed during construction: java.lang.ArrayIndexOutOfBoundsException: Index 0 out of bounds for length 0"
+      ],
+      "constructed": [],
+      "test_evidence": [
+        "[15:36:28] [Server thread/INFO] [Le.7.3/]: B1.7.3 BEHAVIOUR TEST: 0 blocks; 0 legacy callbacks failed, 0 escaped; 0 used a right click; 0 emit redstone",
+        "[15:36:28] [Server thread/INFO] [Le.7.3/]: B1.7.3 TILE ENTITY TEST: 0 blocks with a tile entity, 0 made one, 0 saved and loaded back",
+        "[15:36:28] [Server thread/INFO] [Le.7.3/]: B1.7.3 ITEM USE TEST: all interaction and item GUI checks passed",
+        "[15:36:28] [Server thread/INFO] [Le.7.3/]: B1.7.3 ACTUAL BUCKET/BOW TEST: 0 items passed, 0 failed",
+        "[15:36:28] [Server thread/INFO] [Le.7.3/]: B1.7.3 ACTUAL DURABILITY TEST: 0 tools/swords passed mining, combat, save, creative and breakage checks",
+        "[15:36:28] [Server thread/INFO] [Le.7.3/]: B1.7.3 ACTUAL THROWN TEST: 0 items passed",
+        "[15:36:28] [Server thread/INFO] [Le.7.3/]: B1.7.3 ACTUAL BLOCK FAMILIES TEST: 0 stairs, 0 torches, 0 doors, 0 conveyors, 0 pressure plates, 0 furnaces, 0 chests (both double-chest axes), 0 fences passed",
+        "[15:36:28] [Server thread/INFO] [Le.7.3/]: B1.7.3 ACTUAL ANIMATION TEST: 0 factory + 0 portal animations, 2 ticks of source-pixel/atlas checks, reload and strip timing passed",
+        "[15:36:28] [Server thread/INFO] [Le.7.3/]: B1.7.3 GUI TEST: 0 blocks/metadata right-clicked (0 placed from their item), 0 opened a menu (0 container classes, 0 slots, 0 of the containers; 0 client layouts match); shift-click: 0 took coal in, 0 gave it back; crafting grids: 0 of 0 crafted; 0 failed; players with the same entity id get their own view: true",
+        "[15:36:28] [Server thread/INFO] [Le.7.3/]: B1.7.3 SELF TEST: 0 of 0 blocks placed, 0 drop something; 0 items; recipes 0 translated, 0 not; 51 texture overrides; 0 tile entities and 0 entities registered (not bridged yet)"
+      ],
+      "manifest": "run-b173-single/plasticcraft-213-20261107-153602-79f487/audit-manifest.json"
+    }
+  ],
+  "generic_review": {
+    "checked_beta_production_and_loader_files": 131,
+    "identity_guard": "passed",
+    "global_guard": "21 existing mentions across unrelated/version-wide sources; no new mentions",
+    "reviewed_paths": [
+      "LegacyB173Item",
+      "LegacyB173Block",
+      "EntityViewsB173",
+      "ProjectileTexturesB173",
+      "BlockRenderB173",
+      "AnimationsB173",
+      "DoubleInventory",
+      "BetaDeobfuscator",
+      "PlatformB173"
+    ],
+    "finding": "No content-mod identity-specific behavior found in reviewed Beta production paths. Mod identities occur in test fixtures. This is not a proof of complete semantics.",
+    "limitations": [
+      "Projectile texture discovery recognizes bytecode patterns and constant texture paths; it is not a complete renderer executor.",
+      "Several APIs store registrations or synthesize defaults without behavior; preserve explicit partial/unsupported status."
+    ]
+  },
+  "limitations": [
+    "No detected class replacements does not prove no engine changes: reflection, runtime patching and installer instructions require review.",
+    "Direct API references, reflective class strings and README mentions are separate evidence, not guaranteed mandatory dependency lists.",
+    "Archive API patch fingerprints identify matching bundled API installers; unknown replacements remain deferred.",
+    "Only isolated headless checks were run; no graphical or complete gameplay verification."
+  ],
+  "audio_followup": {
+    "date": "2026-11-07",
+    "implementation": "Generic AudioMod OGG/WAV folders rooted at FMLPaths.GAMEDIR, explicit external File registrations, native client playback and server sound payloads",
+    "decoded_assets": {
+      "PortalGun v5": 239,
+      "MoCreatures 2.12.2": 168,
+      "Aether 1.01": 15
+    },
+    "archive_defects": [
+      "Aether has one MP3-framed file named .wav inside the sound folder, rejected by the WAV decoder",
+      "Two additional Aether files are outside recognized AudioMod folders"
+    ],
+    "original_callback": "PortalGun Aerial Faith Plate launch passed: external source discovery, World sound dispatch, payload roundtrip and resource-pack bytes",
+    "manifest": "run-b173-single/portalgun-audio-20261107-160126-f18f20/audit-manifest.json",
+    "whole_mod_status": "failed-or-needs-review: Portal Spawner placement accesses a null legacy Minecraft.player; audio-specific test passed",
+    "remaining": [
+      "Tracker codecs and encrypted .mus",
+      "Direct Paulscode/OpenAL APIs and synthesized options/init internals",
+      "Audible playback, music timing and complete gameplay verification"
+    ]
+  },
+  "api_followups": [
+    {
+      "mod": "PlasticCraft 2.1.3",
+      "manifest": "run-b173-single/plasticcraft-armor-20261107-162827-99f367/audit-manifest.json",
+      "result": "headless-smoke-passed",
+      "proof": "15 blocks, 48 items, 134 recipes; shared dye/wool metadata and armor constructor/reflection APIs",
+      "limits": "Native armor equipment, original GUI rendering and spawn APIs remain incomplete or unverified"
+    },
+    {
+      "mod": "BuildCraft Core+Energy 2.1.1",
+      "manifest": "run-b173-single/bc-bucket-final-20261107-162029-5e406f/audit-manifest.json",
+      "result": "headless-smoke-passed",
+      "proof": "Original Forge custom bucket handler through native empty bucket, source/flowing distinction, filled placement, crafting remainder, creative/permission checks and engine tile save/reload",
+      "limits": "Machines/pipes, GUI registration and model APIs remain partial"
+    },
+    {
+      "mod": "Twilight Forest 1p4",
+      "manifest": "run-b173-single/twilight-mobs-final-20261107-163515-efbf5d/audit-manifest.json",
+      "result": "mob-specific checks passed; not a complete mod rating",
+      "proof": "Supported CowEntity-derived deer identity, spawn cancellation/retry, interaction, health/damage, original texture, dimensions, NBT reload and 0-2 leather loot",
+      "limits": "Native cow movement and geometry approximation; unsupported other families, custom AI, models and natural spawning"
+    },
+    {
+      "mod": "MoCreatures 2.12.2 (internal 2.12.1)",
+      "manifest": "run-b173-single/mocreatures-guiapi-20261107-164452-c30ef9/audit-manifest.json",
+      "result": "headless-smoke-passed",
+      "proof": "14 items, 48 recipes; typed GuiAPI settings, instance properties persistence and Runnable/TWL model callbacks",
+      "limits": "28 entity registrations remain unhosted; full TWL rendering/input unsupported"
+    }
+  ],
+  "custom_mob_test_candidates": [
+    {
+      "mod": "MoCreatures 2.12.2",
+      "classes": 93,
+      "models": 27,
+      "renderers": 24,
+      "entities": 30,
+      "pngs": 134,
+      "external_oggs": 168,
+      "base_replacements": false,
+      "status": "Bunny original renderer, native tracking and spawn integration enabled in normal gameplay; broader roster remains partial"
+    },
+    {
+      "mod": "More Creeps & Weirdos 2.12",
+      "classes": 218,
+      "pngs": 233,
+      "external_oggs": 757,
+      "base_replacements": false,
+      "apis": [
+        "ModLoader",
+        "AudioMod",
+        "ShockAhPI ACPage"
+      ],
+      "status": "Hippo original renderer, native tracking and spawn integration enabled in normal gameplay; broader roster remains partial",
+      "limits": "53 living registrations unhosted; achievements and natural spawning incomplete; no GuiAPI/TWL references in selected payload"
+    }
+  ],
+  "model_followup": {
+    "implementation": "Shared Beta EntityModel/ModelPart geometry and callbacks, client RenderContext quad adapter",
+    "focused_tests": 3,
+    "skipped": 0,
+    "original_beta_parity": "Vertex positions and UVs including mirror, expansion and zero-depth cuboids",
+    "fixtures": [
+      {
+        "mod": "MoCreatures",
+        "model": "ModelBunny",
+        "parts": 11,
+        "manifest": "run-b173-single/mocreatures-models-20261107-165340-f38d77/audit-manifest.json"
+      },
+      {
+        "mod": "More Creeps & Weirdos",
+        "model": "CREEPSModelHippo",
+        "parts": 16,
+        "manifest": "run-b173-single/morecreeps-models-20261107-165340-5dbf55/audit-manifest.json"
+      }
+    ],
+    "result": "Original constructors, textured geometry, animation and draw capture passed separately",
+    "limits": [
+      "Headless model foundation only",
+      "Custom renderer integration and renderer GL transformations unfinished",
+      "Custom mob AI and natural spawns unfinished"
+    ]
+  },
+  "recipe_count_followup": {
+    "mod": "More Creeps & Weirdos 2.12",
+    "manifest": "run-b173-single/morecreeps-212-transfers-20261107-170058-82ba9a/audit-manifest.json",
+    "implementation": "Generic oversized shaped/shapeless recipe counts; recipe-gated native crafting transfer handling",
+    "original_recipe": "Four frisbees with original max stack size one",
+    "transfer_scenarios_passed": 48,
+    "transfer_failures": 0,
+    "coverage": [
+      "Actual original recipe",
+      "Crafting table and player 2x2 menus",
+      "Pickup and repeated shift-click",
+      "Hotbar/offhand swaps and occupied destinations",
+      "Partial/full inventory output conservation and valid slot limits",
+      "Ingredient consumption and bucket remainders",
+      "Ordinary recipe regression control",
+      "Codec and network roundtrip"
+    ],
+    "limits": "Does not implement custom mob AI, renderer integration or natural spawning"
+  },
+  "validation_followup": {
+    "beta_tests": 22,
+    "loader_tests": 124,
+    "python_tests": 7,
+    "failures": 0,
+    "skipped": 0,
+    "beta_identity_guard": "passed (173 production/loader files)",
+    "global_identity_guard": "passed (21 existing baseline mentions, no new)",
+    "bundle": "build/dist/legacyconnector-0.4.5.jar",
+    "visual_gameplay_validation": false
+  },
+  "animal_lifecycle_followup": {
+    "date": "2026-11-07",
+    "implementation": "Shared AnimalEntity/PathAwareEntity/LivingEntity superclass lifecycle against neutral native physics/navigation; original tick, movement and AI callbacks nested exactly once",
+    "fixtures": [
+      {
+        "mod": "MoCreatures 2.12.2",
+        "entity": "EntityBunny",
+        "manifest": "run-b173-single/mocreatures-lifecycle-final-20261107-173923-153d92/audit-manifest.json",
+        "status": "headless-smoke-passed",
+        "proof": [
+          "Growth and original 0.45 hop before travel",
+          "One tick/movement/AI phase; skip-super AI preserves physics",
+          "Original and native mounting/dismounting, throwing and identity",
+          "Registry NBT and native/legacy damage",
+          "Pending cross-host mutations and original offspring spawning"
+        ]
+      },
+      {
+        "mod": "More Creeps & Weirdos 2.12",
+        "entity": "CREEPSEntityHippo",
+        "manifest": "run-b173-single/morecreeps-animal-20261107-172530-359fb3/audit-manifest.json",
+        "status": "headless-smoke-passed",
+        "proof": [
+          "Visible/occluded original target selection",
+          "Retaliation, native/legacy damage without super-call recursion",
+          "Original lunge attack",
+          "Hungry NBT and water eye-offset callback",
+          "Original deterministic death drops as native item entities"
+        ]
+      }
+    ],
+    "admission": "Isolated server validation under existing legacyconnector.entitySelfTest; normal gameplay admission remains disabled until client renderer integration is verified",
+    "limits": [
+      "Client renderer integration and natural spawning unfinished",
+      "Other unsupported mob families/callbacks remain rejected",
+      "Modern navigation retains original path preference; exact Beta wandering timing unproven"
+    ]
+  },
+  "renderer_followup": {
+    "date": "2026-11-07",
+    "implementation": "Generic original AddRenderer registry, Beta living renderer hooks and model matrix context, native renderer adapter, tracking snapshots and native biome spawn modifiers",
+    "normal_gameplay_admission": "Enabled for simulation + renderer/model + render-state closures that pass admission; no entitySelfTest gate",
+    "fixtures": [
+      {
+        "mod": "MoCreatures 2.12.2",
+        "entity": "EntityBunny",
+        "renderer": "RenderBunny",
+        "faces": 66,
+        "manifest": "run-b173-single/mocreatures-client-ready-20261107-183007-5d64c7/audit-manifest.json",
+        "status": "headless-smoke-passed"
+      },
+      {
+        "mod": "More Creeps & Weirdos 2.12",
+        "entity": "CREEPSEntityHippo",
+        "renderer": "CREEPSRenderHippo",
+        "faces": 96,
+        "manifest": "run-b173-single/morecreeps-client-ready-20261107-183008-860be8/audit-manifest.json",
+        "status": "headless-smoke-passed"
+      }
+    ],
+    "client_probe": "31 Beta tests passed, zero skipped; two actual original renderer CLIENT probes compare all native emitted positions/UVs and texture bindings",
+    "coverage": [
+      "Original AddRenderer instance and virtual renderer hooks",
+      "Growth scaling, airborne rotation, animation and Hippo scale two",
+      "Exact original PNG bytes in generated client pack",
+      "Native spawn packet plus metadata packet roundtrip and renderer output",
+      "Original scalar state deltas preserve unchanged local cosmetic choices",
+      "Loaded native biome entries retain configured weights",
+      "Original grass/light/collision spawn checks and cluster limits",
+      "Previous lifecycle and crafting regressions",
+      "Skin and eye-offset save/reload remain consistent with subsequent view updates"
+    ],
+    "limits": [
+      "Headless CPU rendering; no live window or GPU visual test",
+      "Unsupported mob families and renderer APIs remain rejected; not a whole-mod compatibility rating",
+      "General wandering uses native navigation, not exact Beta path timing",
+      "Arbitrary object/collection render state and downloaded skins incomplete",
+      "Client-only cosmetic selections remain client-local",
+      "Vanilla modern spawn removal and unbridged custom biomes incomplete"
+    ],
+    "validation": {
+      "beta_tests": 31,
+      "loader_tests": 124,
+      "python_tests": 7,
+      "skipped": 0,
+      "failures": 0,
+      "beta_identity_guard": "190 production/loader files passed",
+      "global_identity_guard": "21 existing mentions, no new ones"
+    }
+  }
+}

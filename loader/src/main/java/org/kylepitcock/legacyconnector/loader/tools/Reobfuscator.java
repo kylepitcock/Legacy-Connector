@@ -1,5 +1,8 @@
 package org.kylepitcock.legacyconnector.loader.tools;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -13,6 +16,8 @@ import java.util.Map;
 import java.util.jar.JarOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import org.kylepitcock.legacyconnector.loader.LegacyVersion;
+import org.kylepitcock.legacyconnector.loader.mapping.McpMappings;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.commons.ClassRemapper;
@@ -20,6 +25,9 @@ import org.objectweb.asm.commons.Remapper;
 import org.objectweb.asm.tree.ClassNode;
 
 /**
+ * Fixture tool: {@code Reobfuscator <in.jar> --forge1710 <userdev.jar> <api.jar> <out.jar>}.
+ * Uses the resolved Forge SRG declarations and generated API hierarchy; no developer signature file is needed.
+ * The original signature CLI remains supported:
  * Developer tool: {@code Reobfuscator <in.jar> <legacy-x.sig> <out.jar>}. Renames MCP member names to SRG ids
  * exactly like ForgeGradle's {@code reobf} did for released legacy mods, using the signature table produced by
  * {@code tools/extract_legacy_signatures.py}. Used to turn test fixtures into realistic legacy release jars.
@@ -36,8 +44,62 @@ public final class Reobfuscator {
 
     public static void main(String[] args) throws IOException {
         Reobfuscator r = new Reobfuscator();
-        r.loadSig(Path.of(args[1]));
-        r.run(Path.of(args[0]), Path.of(args[2]));
+        if (args.length == 5 && args[1].equals("--forge1710")) {
+            r.loadForge1710(Path.of(args[2]), Path.of(args[3]));
+            r.run(Path.of(args[0]), Path.of(args[4]));
+        } else if (args.length == 3) {
+            r.loadSig(Path.of(args[1]));
+            r.run(Path.of(args[0]), Path.of(args[2]));
+        } else {
+            throw new IllegalArgumentException("Usage: Reobfuscator <in.jar> <legacy.sig> <out.jar> or "
+                    + "<in.jar> --forge1710 <userdev.jar> <api.jar> <out.jar>");
+        }
+    }
+
+    private void loadForge1710(Path forge, Path api) throws IOException {
+        McpMappings names = McpMappings.forVersion(LegacyVersion.V1_7_10);
+        if (names.size() == 0) throw new IOException("Missing packaged 1.7.10 MCP mappings");
+        try (ZipFile zip = new ZipFile(forge.toFile())) {
+            ZipEntry entry = zip.getEntry("conf/packaged.srg");
+            if (entry == null) throw new IOException("Missing conf/packaged.srg in " + forge);
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(zip.getInputStream(entry), StandardCharsets.UTF_8))) {
+                for (String line; (line = reader.readLine()) != null;) {
+                    String[] p = line.split(" ");
+                    if (p[0].equals("MD:")) {
+                        int slash = p[3].lastIndexOf('/');
+                        String srg = p[3].substring(slash + 1);
+                        methods.put(new Member(p[3].substring(0, slash), names.method(srg), p[4]), srg);
+                    } else if (p[0].equals("FD:")) {
+                        int slash = p[2].lastIndexOf('/');
+                        String srg = p[2].substring(slash + 1);
+                        fields.put(p[2].substring(0, slash) + "." + names.field(srg), srg);
+                    }
+                }
+            }
+        }
+        if (methods.isEmpty() || fields.isEmpty()) throw new IOException("Empty Forge SRG declarations in " + forge);
+        // The complete legacy hierarchy also covers ancestors not exposed by the compile-only stubs.
+        try (InputStream in = Reobfuscator.class.getResourceAsStream("/legacyconnector/legacy/1.7.10/hierarchy.txt")) {
+            if (in == null) throw new IOException("Missing packaged 1.7.10 hierarchy");
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
+                for (String line; (line = reader.readLine()) != null;) {
+                    String[] p = line.split(" ");
+                    supers.put(p[0], p[1].equals("-") ? null : p[1]);
+                    interfaces.put(p[0], p[2].equals("-") ? List.of() : List.of(p[2].split(",")));
+                }
+            }
+        }
+        try (ZipFile zip = new ZipFile(api.toFile())) {
+            for (var entries = zip.entries(); entries.hasMoreElements();) {
+                ZipEntry entry = entries.nextElement();
+                if (!entry.getName().endsWith(".class")) continue;
+                try (InputStream in = zip.getInputStream(entry)) {
+                    ClassReader cls = new ClassReader(in);
+                    supers.put(cls.getClassName(), cls.getSuperName());
+                    interfaces.put(cls.getClassName(), List.of(cls.getInterfaces()));
+                }
+            }
+        }
     }
 
     private void loadSig(Path sig) throws IOException {

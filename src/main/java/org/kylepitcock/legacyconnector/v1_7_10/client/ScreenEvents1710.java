@@ -18,6 +18,8 @@ public final class ScreenEvents1710 {
 
     public static void register() {
         NeoForge.EVENT_BUS.addListener(ScreenEvents1710::onOpening);
+        NeoForge.EVENT_BUS.addListener(ModernViews1710::onInit);
+        NeoForge.EVENT_BUS.addListener((ScreenEvent.Closing e) -> ModernViews1710.closed(e.getScreen()));
         NeoForge.EVENT_BUS.addListener((ScreenEvent.MouseScrolled.Pre e) -> legacyconnector.v1_7_10.org.lwjgl.input.Mouse.mcc$scrolled(e.getScrollDeltaY()));
         NeoForge.EVENT_BUS.addListener((ScreenEvent.Init.Post e) -> {
             if (!(e.getScreen() instanceof LegacyScreen ls) || !wants(GuiScreenEvent.InitGuiEvent.Post.class)) return;
@@ -35,7 +37,7 @@ public final class ScreenEvents1710 {
         });
     }
 
-    private static boolean wants(Class<? extends legacyconnector.v1_7_10.cpw.mods.fml.common.eventhandler.Event> type) {
+    static boolean wants(Class<? extends legacyconnector.v1_7_10.cpw.mods.fml.common.eventhandler.Event> type) {
         return MinecraftForge.EVENT_BUS.mcc$hasListeners(type);
     }
 

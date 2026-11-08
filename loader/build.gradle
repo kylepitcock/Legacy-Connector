@@ -23,6 +23,8 @@ configurations {
     mcp1710
     mcp1122
     mcpconfig1201
+    betaIntermediary
+    betaBiny
 }
 
 dependencies {
@@ -50,6 +52,10 @@ dependencies {
     mcp1122 "de.oceanlabs.mcp:mcp_stable:${mcp_1_12_2}@zip"
     // Forge 1.20.1 mods are SRG-named; the SRG -> Mojang table is chained from MCPConfig and Mojang's mappings at build time (never committed)
     mcpconfig1201 "de.oceanlabs.mcp:mcp_config:1.20.1-20230612.114412@zip"
+    // Beta 1.7.3 mods use the obfuscated names: Babric intermediary (official client/server -> intermediary) chained with
+    // biny (intermediary -> named), both CC0, into one table at build time (BetaMappings; never committed)
+    betaIntermediary "babric:intermediary:${beta_intermediary}:v2@jar"
+    betaBiny "net.glasslauncher:biny:${beta_biny}:v2@jar"
 
     testImplementation platform('org.junit:junit-bom:5.10.2')
     testImplementation 'org.junit.jupiter:junit-jupiter'
@@ -61,6 +67,16 @@ dependencies {
 }
 
 repositories {
+    maven {
+        url = 'https://maven.glass-launcher.net/babric'
+        metadataSources { mavenPom(); artifact() }
+        content { includeModule 'babric', 'intermediary' }
+    }
+    maven {
+        url = 'https://maven.glass-launcher.net/releases'
+        metadataSources { mavenPom(); artifact() }
+        content { includeModule 'net.glasslauncher', 'biny' }
+    }
     maven {
         url = 'https://maven.minecraftforge.net'
         metadataSources { mavenPom(); artifact() } // ancient Forge artifacts have no POM
@@ -135,6 +151,29 @@ tasks.named('jar') { dependsOn genSrgMojang; from(srgMojangDir) }
 // offline tools (checkLegacyMod, gap1201) run from the class directories: give them the generated table too
 sourceSets.main.runtimeClasspath += files(srgMojangDir).builtBy(genSrgMojang)
 
+// Beta 1.7.3 official -> named table (BetaMappings): Babric intermediary + biny
+def betaMappingsDir = layout.buildDirectory.dir('generated/beta-mappings')
+def genBetaMappings = tasks.register('genBetaMappings', JavaExec) {
+    dependsOn tasks.named('classes')
+    inputs.files(configurations.betaIntermediary, configurations.betaBiny)
+    outputs.dir(betaMappingsDir)
+    classpath = sourceSets.main.output
+    mainClass = 'org.kylepitcock.legacyconnector.loader.mapping.BetaMappings'
+    argumentProviders.add({
+        def tmp = layout.buildDirectory.dir('tmp/beta-mappings').get().asFile
+        tmp.mkdirs()
+        def extract = { conf, name ->
+            def f = new File(tmp, name)
+            zipTree(conf.singleFile).matching { include 'mappings/mappings.tiny' }.singleFile.withInputStream { i -> f.withOutputStream { it << i } }
+            f.absolutePath
+        }
+        [extract(configurations.betaIntermediary, 'intermediary.tiny'), extract(configurations.betaBiny, 'biny.tiny'),
+         betaMappingsDir.get().file('legacyconnector/mappings/b1.7.3/official-named.tsv').asFile.absolutePath]
+    } as CommandLineArgumentProvider)
+}
+tasks.named('jar') { dependsOn genBetaMappings; from(betaMappingsDir) }
+sourceSets.main.runtimeClasspath += files(betaMappingsDir).builtBy(genBetaMappings)
+
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
@@ -143,6 +182,8 @@ tasks.withType(JavaCompile).configureEach {
 
 test {
     useJUnitPlatform()
+    dependsOn genBetaMappings
+    classpath += files(betaMappingsDir)
 }
 
 jar {

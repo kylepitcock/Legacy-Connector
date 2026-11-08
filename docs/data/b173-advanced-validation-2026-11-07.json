@@ -1,0 +1,82 @@
+{
+  "snapshot_date": "2026-11-07",
+  "scope": "Original advanced creature decisions, native prey identity, carried-pet fall protection and projectile hit semantics",
+  "tests": {
+    "runtime": {
+      "tests": 158,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "loader": {
+      "tests": 137,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "actual_mod_opt_in": {
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "fixtures": {
+    "mocreatures": {
+      "status": "headless-smoke-passed",
+      "source_archive": "DrZharks_MoCreatures_Mod_v2.12.2_b1.7.3.zip!mods/MoCreatures.zip",
+      "payload_sha256": "715cf88738a0915d67573ce49555d600c6b31690af75517f38f91ea7cdc06553",
+      "game_directory": "run-b173-single/mocreatures-neutraladvanced-fixed-20261107-222716-14acc1",
+      "resources_verified": 168
+    },
+    "morecreeps": {
+      "status": "headless-smoke-passed",
+      "source_archive": "MoreCreepsv2.12_b173.zip!PUT CONTENTS INTO MINECRAFT FOLDER/mods/MoreCreepsAndWeirdos.zip",
+      "payload_sha256": "064e96aed7c5ad4e5cc036927c055b626d06df16e0c9bb6089d6a1fdeffa7698",
+      "game_directory": "run-b173-single/morecreeps-neutraladvanced-fixed-20261107-222716-d5853f",
+      "resources_verified": 759
+    }
+  },
+  "mocreatures": {
+    "registered_living_roster": 28,
+    "additional_cases": [
+      "Werewolf daylight transformation, native form health, target clearing, form NBT and death guard",
+      "Horse types 1/3/5/7/8: original health/speed/fire immunity and native landing damage",
+      "Pegasus and black Pegasus wing animation and descent damping",
+      "Bear attackwolves setting, horse wolf retaliation suppression and wild-wolf cow exclusion against native entities"
+    ]
+  },
+  "morecreeps": {
+    "registered_living_roster": 53,
+    "existing_nonliving_cases": 9,
+    "additional_taming_cases": [
+      "Camel cookie countdown, healing, taming, owner, advancement and riding",
+      "GuineaPig taming, commands, speed boost, carrying and top-of-stack fall protection",
+      "GuineaPig level-four to level-five original attack progression and advancement",
+      "Hotdog food threshold, consumption, taming, owner and advancement"
+    ],
+    "additional_collision_cases": [
+      "RobotTed nonterminal shrink",
+      "RobotTed terminal shrink",
+      "RobotTodd nonterminal shrink",
+      "RobotTodd terminal shrink",
+      "Player Ray damage and attribution",
+      "Floob Ray damage and attribution",
+      "Lethal Rocket splash health, pending velocity and native advancement"
+    ]
+  },
+  "shared_regressions_reproduced_before_fix": [
+    "Native wolves bypassed original attackwolves=false exclusions because views lost Beta class identity",
+    "Cross-host GuineaPig stack release lost original fallDistance=-25 (native remained 7)",
+    "Floob Ray damage lost the native living attacker identity",
+    "Rocket splash observed stale native-victim health after lethal damage",
+    "Shrink ray missed targets after original ItemEntity movement placed its next ray inside their box"
+  ],
+  "box_raycast_unit_cases": 7,
+  "generic_mod_identity_guard": "passed:252 production/loader files; broader guard unchanged at 21 baseline mentions in 7 files",
+  "build_fixture_policy": "Actual-mod JUnit tests remain opt-in; runtime original-mod fixtures require entitySelfTest and skip absent mods.",
+  "limitations": [
+    "No live GPU/client gameplay certification of this build; roster checks do not establish every specialized AI branch.",
+    "Original quirks are preserved, including unconsumed Camel cookies and GuineaPig carry returning false after side effects."
+  ]
+}

@@ -306,6 +306,10 @@ public final class JavaCompatRedirects {
         for (MethodNode method : node.methods) {
             InsnList insns = method.instructions;
             for (AbstractInsnNode insn = insns.getFirst(); insn != null; insn = insn.getNext()) {
+                if (insn instanceof MethodInsnNode call && typedToArray(insns, call)) {
+                    count++;
+                    continue;
+                }
                 if (insn instanceof MethodInsnNode call) {
                     MethodInsnNode target = INVOKES.get(call.owner + "." + call.name + call.desc);
                     // Only virtual call sites are rewritten for virtual methods; super calls stay intact.
@@ -384,6 +388,29 @@ public final class JavaCompatRedirects {
         }
         count += addFilterLifeCycle(node);
         return count;
+    }
+
+    /**
+     * Up to Java 8, {@code Arrays.asList(...).toArray()} returned the backing array with its own type, and code cast it straight to
+     * that type ({@code (Integer[]) list.toArray()}: RedPower's power search). Since Java 9 it is always an {@code Object[]} and the cast
+     * fails. A {@code java.util} collection's {@code toArray()} followed by a cast to a typed array becomes {@code toArray(new T[0])},
+     * which gives that type for every collection.
+     */
+    private static boolean typedToArray(InsnList insns, MethodInsnNode call) {
+        if (!call.name.equals("toArray") || !call.desc.equals("()[Ljava/lang/Object;") || !call.owner.startsWith("java/util/")) return false;
+        AbstractInsnNode next = call.getNext();
+        while (next != null && next.getOpcode() < 0) next = next.getNext();
+        if (!(next instanceof org.objectweb.asm.tree.TypeInsnNode cast) || cast.getOpcode() != Opcodes.CHECKCAST) return false;
+        if (!cast.desc.startsWith("[") || cast.desc.equals("[Ljava/lang/Object;") || cast.desc.length() < 3) return false;
+        String element = cast.desc.substring(1);
+        if (element.startsWith("L")) element = element.substring(1, element.length() - 1);
+        else if (!element.startsWith("[")) return false; // primitive arrays are not what toArray returns
+        InsnList fix = new InsnList();
+        fix.add(new InsnNode(Opcodes.ICONST_0));
+        fix.add(new org.objectweb.asm.tree.TypeInsnNode(Opcodes.ANEWARRAY, element));
+        insns.insertBefore(call, fix);
+        call.desc = "([Ljava/lang/Object;)[Ljava/lang/Object;";
+        return true;
     }
 
     private static final String LOG4J_FILTER = "org/apache/logging/log4j/core/Filter";

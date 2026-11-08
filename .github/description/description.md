@@ -21,7 +21,7 @@
 | **1.4.7** | 🧪 Alpha (new in 0.4) |
 | **1.20.1** | 🧪 Alpha (Forge mods remapped in place; on by default) |
 
-Drop 1.7.10, 1.12.2, 1.6.4, 1.5.2, 1.4.7, or Forge 1.20.1 mod jars into your `mods` folder next to Legacy Connector. They get translated when the game loads and run as normal NeoForge mods. It's the same idea as Sinytra Connector, but for old Forge mods instead of Fabric. Your original jars are never modified.
+Drop 1.7.10, 1.12.2, 1.6.4, 1.5.2, 1.4.7, Forge 1.20.1, or (alpha) Beta 1.7.3 mod jars into your `mods` folder next to Legacy Connector. They get translated when the game loads and run as normal NeoForge mods. It's the same idea as Sinytra Connector, but for old Forge mods instead of Fabric. Your original jars are never modified.
 
 **Built for mods that only exist on these old versions** and never got a 1.21.1 port. **Beta:** on 1.7.10, Thaumcraft 4, Witchery, HBM's Nuclear Tech, OreSpawn, Fisk's Superheroes, Morph, the Reika mods (RotaryCraft, ReactorCraft, ElectriCraft, ChromatiCraft), and Galacticraft with its addons (each planet's own gravity) run with their blocks, items, mobs, recipes, GUIs, world generation, and dimensions, and big packs like GT New Horizons load most of their mods. 1.12.2 support is in beta: Atum 2, The Midnight, Scape and Run: Parasites, and Abyssalcraft load and play with their own models, mobs, GUIs, dimensions and world generation. Back up your worlds before trying a new mod set.
 
@@ -242,6 +242,8 @@ modern/legacy stack and tile conversion, and NeoForge capabilities for legacy ti
 ## Roadmap
 
 ✅ 1.7.10 → ✅ **1.12.2** (beta) → **1.6.4** (alpha) → **1.5.2** (alpha) → **1.4.7** (alpha) → **1.20.1** (alpha) → **1.19.2** → **1.18.2** → **1.16.5** → **1.2.5**
+
+Also in alpha: **Beta 1.7.3** ModLoader / Forge 1.0 mods (`mods/b1.7.3/`): their blocks, items and recipes load with their own textures, block behaviour, tile entities and GUIs. Fluid buckets, tool/sword durability and arrows with constant custom textures are bridged. Supported living-mob families run their original callbacks and models, with native spawning, sound and GuiAPI settings; general entities and world generation remain unfinished. Tested so far in headless server runs with Mo' Creatures and MoreCreeps (their results are on the compatibility site); no graphical client test yet.
 
 ## Star history
 

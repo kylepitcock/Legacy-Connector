@@ -8,6 +8,9 @@
     "Varint21FrameDecoderMixin",
     "Varint21LengthFieldPrependerMixin",
     "EntityGravityMixin",
+    "BetaAnimalAiStepMixin",
+    "BetaSpawnCapMixin",
+    "OversizedCraftingMenuMixin",
     "PlayerStepSoundMixin",
     "FoodDataHealRateMixin",
     "LivingEntityTravelMixin",
@@ -25,12 +28,14 @@
     "perf.LevelChunkStaticTickerMixin"
   ],
   "client": [
+    "BetaEntityShadowMixin",
     "Am2CameraPositionMixin",
     "Am2MouseMixin",
     "Am2PlayerModelMixin",
     "ClientLevelSkyColorMixin",
     "MinecraftAttackMixin",
     "MultiPlayerGameModeMixin",
+    "OptionsScreenLegacySettingsMixin",
     "ClientLanguageLegacyKeysMixin"
   ],
   "injectors": {
