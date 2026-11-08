@@ -64,6 +64,12 @@ public class ForgeEventFactory {
         return event;
     }
 
+    /** The same, in the player's world. */
+    public static legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.PlayerInteractEvent onPlayerInteract(EntityPlayer player,
+            legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.PlayerInteractEvent.Action action, int x, int y, int z, int face) {
+        return onPlayerInteract(player, action, x, y, z, face, EntityPlayer.mcc$get$worldObj(player));
+    }
+
     /** Posts {@code HarvestCheck}; whether the player gets the block's drops. */
     public static boolean doPlayerHarvestCheck(EntityPlayer player, Block block, boolean success) {
         var event = new legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.PlayerEvent.HarvestCheck(player, block, success);

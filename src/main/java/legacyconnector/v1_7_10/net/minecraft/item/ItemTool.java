@@ -169,13 +169,23 @@ public class ItemTool extends Item {
     public com.google.common.collect.Multimap getItemAttributeModifiers() {
         com.google.common.collect.Multimap map = super.getItemAttributeModifiers();
         map.put(legacyconnector.v1_7_10.net.minecraft.entity.SharedMonsterAttributes.attackDamage.getAttributeUnlocalizedName(),
-                new legacyconnector.v1_7_10.net.minecraft.entity.ai.attributes.AttributeModifier(field_111210_e, "Tool modifier", damageVsEntity, 0));
+                new legacyconnector.v1_7_10.net.minecraft.entity.ai.attributes.AttributeModifier(field_111210_e, "Tool modifier", mcc$toolDamage(), 0));
         return map;
     }
 
     @Override
     public float mcc$attackDamage() {
-        return damageVsEntity;
+        return mcc$toolDamage();
+    }
+
+    /** 1.5.2 {@code getDamageVsEntity(target)}: the tool damage as an int; mods override it, so the attack damage honours an override. */
+    public int getDamageVsEntity(legacyconnector.v1_7_10.net.minecraft.entity.Entity target) {
+        return (int) damageVsEntity;
+    }
+
+    private float mcc$toolDamage() {
+        int legacy = getDamageVsEntity(null);
+        return legacy == (int) damageVsEntity ? damageVsEntity : legacy;
     }
 
     public Item.ToolMaterial getToolMaterial() {
