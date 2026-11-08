@@ -85,10 +85,10 @@
    "name": "Actually Additions",
    "version": "1.12.2-r152",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (582 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "status": "partial",
+   "notes": "Automated client survey: 367 items, 99 blocks, 1 entity types; placed 27/27 sampled blocks; spawned 1/1 entity types; 1 error log lines"
   },
   {
    "name": "Actually Unbreaking",
@@ -211,10 +211,10 @@
    "name": "Advanced Hook Launchers",
    "version": "1.12.2-3.3.0.0",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (35 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "status": "fails",
+   "notes": "Automated client survey: 0 items, 0 blocks, 0 entity types; load failure during construction: java.lang.NoClassDefFoundError: com/endertech/minecraft/forge/ForgeMod (the Legacy Connector layer does not implement this legacy API yet - see logs/legacyconne; 2 error log lines"
   },
   {
    "name": "Advanced Machines",
@@ -301,19 +301,10 @@
    "name": "Advanced Rocketry",
    "version": "1.7.0.-232",
    "mc": "1.12.2",
-   "source": "probe",
-   "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (577 classes). 3 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works. Resource check: 5 model/texture reference(s) are missing after translation (rendering may show missing textures or models), e.g. blockstate advancedrocketry:platepress.json names missing model piston_extended_normal; blockstate advancedrocketry:platepress.json names missing model piston_normal."
-  },
-  {
-   "name": "Advanced Rocketry",
-   "version": "2.1.9-2",
-   "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
    "status": "fails",
-   "notes": "Automated check 0.4.6: needs Minecraft or Forge features the layer does not have yet: legacyconnector.v1_12_2.net.minecraft.world.WorldServerDemo.<init>(Llegacyconnector.v1_12_2.net.minecraft.server.MinecraftServer;Llegacyconnector.v1_12_2.net.minecraft.world.storage.ISaveHandler;Llegacyconnector.v1_12_2.net.minecraft.world.storage.WorldInfo;ILlegacyconnector.v1_12_2.net.minecraft.profiler.Profiler;)V. Resource check: 1 model/texture reference(s) are missing after translation (rendering may show missing textures or models), e.g. model minecraft:block/normal_torch_wall.json uses missing texture block/rebellion/torch/tempered_iron (via #0)."
+   "notes": "Automated client survey: 0 items, 0 blocks, 0 entity types; load failure during construction: java.lang.NoClassDefFoundError: zmaster587.libVulpes.api.material.MaterialRegistry (the Legacy Connector layer does not implement this legacy API yet - see logs; 118 error log lines"
   },
   {
    "name": "Advanced Rocketry Tweaker",
@@ -481,10 +472,10 @@
    "name": "AE2 Stuff",
    "version": "0.7.0.4",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (283 classes). The game was not started: this only shows the jar translates, not that it works."
+   "status": "fails",
+   "notes": "Automated client survey: 0 items, 0 blocks, 0 entity types; load failure during construction: java.lang.NoClassDefFoundError: net.bdew.lib.gui.GuiHandler (the Legacy Connector layer does not implement this legacy API yet - see logs/legacyconnector-report; 2 error log lines"
   },
   {
    "name": "AE2 Things",
@@ -526,10 +517,10 @@
    "name": "AE2 Wireless Terminals (AE2WTLib)",
    "version": "1.0.34",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
    "status": "fails",
-   "notes": "Automated check: needs code from another mod or API that is not available or does not match: p455w0rd.ae2wtlib.api.client.IBaubleItem.getRender()Lp455w0rd.ae2wtlib.api.client.IBaubleRender;."
+   "notes": "Automated client survey: 0 items, 0 blocks, 0 entity types; load failure during preInit: java.lang.RuntimeException: java.lang.NoClassDefFoundError: appeng.core.AEConfig; 12 error log lines"
   },
   {
    "name": "AE2NoUltimatePattern",
@@ -641,10 +632,10 @@
    "name": "AgriCraft",
    "version": "2.12.0-1.12.0-a6",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (439 classes). The game was not started: this only shows the jar translates, not that it works."
+   "status": "fails",
+   "notes": "Automated client survey: 0 items, 0 blocks, 0 entity types; load failure during construction: java.lang.NoClassDefFoundError: com/infinityraider/infinitylib/InfinityMod (the Legacy Connector layer does not implement this legacy API yet - see logs/legacyc; 35 error log lines"
   },
   {
    "name": "AGS ModernMarkings Mod",
@@ -1046,10 +1037,10 @@
    "name": "Ancient Beasts",
    "version": "1.9.99999",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (266 classes). 4 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "status": "partial",
+   "notes": "Automated client survey: 34 items, 6 blocks, 27 entity types; placed 6/6 sampled blocks; spawned 12/12 entity types; 8 error log lines"
   },
   {
    "name": "Ancient Warfare",
@@ -13875,10 +13866,10 @@
    "name": "Large Ore Deposits",
    "version": "1.12.2-1.0.8.0",
    "mc": "1.12.2",
-   "source": "probe",
+   "source": "client",
    "date": "2026-11-07",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (27 classes). The game was not started: this only shows the jar translates, not that it works."
+   "status": "fails",
+   "notes": "Automated client survey: 0 items, 0 blocks, 0 entity types; load failure during construction: java.lang.NoClassDefFoundError: com/endertech/minecraft/forge/ForgeMod (the Legacy Connector layer does not implement this legacy API yet - see logs/legacyconne; 2 error log lines"
   },
   {
    "name": "Laser Creeper Robot Dino Riders From Space",
