@@ -57,3 +57,4 @@ lead's `make_tasks.py` (or grep game logs for `is not implemented yet`), and dro
 Merge each branch into master, rebuild (`compileJava --rerun`, `generateShimIndex`), move the translation cache aside,
 run the 1.7.10 server regression (`run-subtest`, see `CLAUDE.md`) and, for client entries, a quick-shots control session.
 Then push, and delete the entries that were done from these lists.
+- 15 PNGs in docs/screenshots/old-versions/1.4.7 from the round-5 agent are palette-quantized (PNG colour type 3): retake as full-colour JPEG q90 (converting them does not restore colour).
