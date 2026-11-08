@@ -490,6 +490,23 @@ def process(jars, libs, mc, perf, args):
         write_records(mc, {jars[0].name: rec})
         STATE["jarsDone"] += 1
         return
+    # a crash report that names exactly one jar's mod: record that jar and rerun the rest as one batch instead of bisecting
+    lp = SURVEY / "last-batch.log"
+    text = lp.read_text(encoding="utf-8", errors="replace") if lp.exists() else ""
+    stack = crash_stack(text)
+    report = parse_report(GAME / "logs" / "legacyconnector-report.txt")
+    named = [j for j in jars if stack and any(len(m[0]) >= 4 and re.search(r"(?<![a-z0-9_])" + re.escape(m[0].lower()) + r"[./:]", stack)
+                                              for m in report.get(j.name, []))]
+    if status == "crash" and len(named) == 1:
+        why = crash_reason(text)
+        rec = {"jar": named[0].name, "mc": mc, "date": time.strftime("%Y-%m-%d"), "attempts": 2,
+               "mods": [{"ns": None, "name": named[0].stem, "version": "", "reached": True, "counts": {}, "fail": "", "loadCrash": True,
+                         "note": f"the client crashed while starting with it: {why}"}]}
+        write_records(mc, {named[0].name: rec})
+        STATE["jarsDone"] += 1
+        log(f"crash blamed on {named[0].name}; rerunning the other {len(jars) - 1}")
+        process([j for j in jars if j != named[0]], libs, mc, perf, args)
+        return
     mid = len(jars) // 2
     process(jars[:mid], libs, mc, perf, args)
     process(jars[mid:], libs, mc, perf, args)
