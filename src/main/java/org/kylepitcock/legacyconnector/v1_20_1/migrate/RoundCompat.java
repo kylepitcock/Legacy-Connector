@@ -251,6 +251,201 @@ public final class RoundCompat {
         };
     }
 
+    /** {@code LootTableReference.lootTableReference(ResourceLocation)}: 1.21.1 names loot tables by resource key ({@code NestedLootTable}). */
+    public static net.minecraft.world.level.storage.loot.entries.LootPoolSingletonContainer.Builder<?> lootTableReference(ResourceLocation id) {
+        return net.minecraft.world.level.storage.loot.entries.NestedLootTable.lootTableReference(
+                net.minecraft.resources.ResourceKey.create(Registries.LOOT_TABLE, id));
+    }
+
+    /** Registration-time type constructors that took a {@code Codec} (trunk placers, tree decorators): 1.21.1 wants the map form. */
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static com.mojang.serialization.MapCodec mapCodec(com.mojang.serialization.Codec codec) {
+        return com.mojang.serialization.MapCodec.assumeMapUnsafe(codec);
+    }
+
+    /** {@code new SmithingTemplateItem(5 components, 2 icon lists)}: 1.21.1 only adds the (empty) feature flag varargs. */
+    public static net.minecraft.world.item.SmithingTemplateItem newSmithingTemplate(net.minecraft.network.chat.Component a, net.minecraft.network.chat.Component b,
+            net.minecraft.network.chat.Component c, net.minecraft.network.chat.Component d, net.minecraft.network.chat.Component e,
+            java.util.List<ResourceLocation> base, java.util.List<ResourceLocation> additions) {
+        return new net.minecraft.world.item.SmithingTemplateItem(a, b, c, d, e, base, additions);
+    }
+
+    /** {@code new ServerGamePacketListenerImpl(server, connection, player)}: 1.21.1 also takes the listener cookie. */
+    public static net.minecraft.server.network.ServerGamePacketListenerImpl newGameListener(net.minecraft.server.MinecraftServer server,
+            net.minecraft.network.Connection connection, net.minecraft.server.level.ServerPlayer player) {
+        return new net.minecraft.server.network.ServerGamePacketListenerImpl(server, connection, player,
+                net.minecraft.server.network.CommonListenerCookie.createInitial(player.getGameProfile(), false));
+    }
+
+    /** {@code TextColor.parseColor(String)}: a {@code DataResult} now; null for text that is no colour, as before. */
+    public static net.minecraft.network.chat.TextColor parseColor(String text) {
+        return net.minecraft.network.chat.TextColor.parseColor(text).result().orElse(null);
+    }
+
+    /** {@code EntityType.updateCustomEntityTag(level, player, entity, tag)}: the tag is custom data now. */
+    public static void updateCustomEntityTag(net.minecraft.world.level.Level level, net.minecraft.world.entity.player.Player player, net.minecraft.world.entity.Entity entity, CompoundTag tag) {
+        net.minecraft.world.entity.EntityType.updateCustomEntityTag(level, player, entity, net.minecraft.world.item.component.CustomData.of(tag));
+    }
+
+    /** {@code GoalSelector.getRunningGoals()}. */
+    public static java.util.stream.Stream<net.minecraft.world.entity.ai.goal.WrappedGoal> getRunningGoals(net.minecraft.world.entity.ai.goal.GoalSelector selector) {
+        return selector.getAvailableGoals().stream().filter(net.minecraft.world.entity.ai.goal.WrappedGoal::isRunning);
+    }
+
+    /** {@code EnchantedBookItem.addEnchantment(book, instance)}: stored enchantments, keeping the higher level. */
+    public static void addBookEnchantment(ItemStack book, EnchantmentInstance instance) {
+        var stored = new net.minecraft.world.item.enchantment.ItemEnchantments.Mutable(
+                book.getOrDefault(net.minecraft.core.component.DataComponents.STORED_ENCHANTMENTS, net.minecraft.world.item.enchantment.ItemEnchantments.EMPTY));
+        stored.upgrade(instance.enchantment, instance.level);
+        book.set(net.minecraft.core.component.DataComponents.STORED_ENCHANTMENTS, stored.toImmutable());
+    }
+
+    /** {@code SkullBlockEntity.updateGameprofile(profile, callback)}: fetched through the profile cache by id, answering the given profile when none is found. */
+    public static void updateGameprofile(com.mojang.authlib.GameProfile profile, java.util.function.Consumer<com.mojang.authlib.GameProfile> callback) {
+        if (profile == null || profile.getId() == null) {
+            callback.accept(profile);
+            return;
+        }
+        net.minecraft.world.level.block.entity.SkullBlockEntity.fetchGameProfile(profile.getId())
+                .thenAccept(found -> callback.accept(found.orElse(profile)));
+    }
+
+    // ---- loot, spawning, capabilities, arrows ----
+
+    /** {@code LootContext.Builder.create(ResourceLocation)}: the random sequence is optional now. */
+    public static net.minecraft.world.level.storage.loot.LootContext createLootContext(net.minecraft.world.level.storage.loot.LootContext.Builder builder, ResourceLocation sequence) {
+        return builder.create(java.util.Optional.ofNullable(sequence));
+    }
+
+    /** {@code ItemStack.areCapsCompatible(provider)}: capabilities are not attached to stacks here, so two stacks always agree. */
+    public static boolean areCapsCompatible(ItemStack stack, legacyconnector.v1_20_1.net.minecraftforge.common.capabilities.CapabilityProvider<?> other) {
+        return true;
+    }
+
+    /** {@code NaturalSpawner.isSpawnPositionOk(type, level, pos, entityType)}: a method of the placement type now. */
+    public static boolean isSpawnPositionOk(net.minecraft.world.entity.SpawnPlacementType type, net.minecraft.world.level.LevelReader level,
+            net.minecraft.core.BlockPos pos, net.minecraft.world.entity.EntityType<?> entityType) {
+        return type.isSpawnPositionOk(level, pos, entityType);
+    }
+
+    /** {@code ForgeEventFactory.onFinalizeSpawn(mob, level, difficulty, reason, data, tag)}: the tag moved into the spawn data of the mob. */
+    public static net.minecraft.world.entity.SpawnGroupData onFinalizeSpawn(net.minecraft.world.entity.Mob mob, net.minecraft.world.level.ServerLevelAccessor level,
+            net.minecraft.world.DifficultyInstance difficulty, net.minecraft.world.entity.MobSpawnType reason, net.minecraft.world.entity.SpawnGroupData data,
+            CompoundTag tag) {
+        return net.neoforged.neoforge.event.EventHooks.finalizeMobSpawn(mob, level, difficulty, reason, data);
+    }
+
+    public static ItemStack noStack(net.minecraft.world.entity.projectile.AbstractArrow arrow) {
+        return ItemStack.EMPTY;
+    }
+
+    // ---- advancement predicates ----
+
+    /** {@code new EnchantmentPredicate(enchantment, levels)}: a set of enchantments in 1.21.1. */
+    public static net.minecraft.advancements.critereon.EnchantmentPredicate newEnchantmentPredicate(LegacyEnchantment enchantment,
+            net.minecraft.advancements.critereon.MinMaxBounds.Ints levels) {
+        return new net.minecraft.advancements.critereon.EnchantmentPredicate(
+                java.util.Optional.of(net.minecraft.core.HolderSet.direct(HolderCompat.holder(enchantment))), levels);
+    }
+
+    /** {@code ItemPredicate.Builder.hasEnchantment(predicate)}: a sub predicate on the item's enchantments. */
+    public static net.minecraft.advancements.critereon.ItemPredicate.Builder hasEnchantment(net.minecraft.advancements.critereon.ItemPredicate.Builder builder,
+            net.minecraft.advancements.critereon.EnchantmentPredicate predicate) {
+        return builder.withSubPredicate(net.minecraft.advancements.critereon.ItemSubPredicates.ENCHANTMENTS,
+                net.minecraft.advancements.critereon.ItemEnchantmentsPredicate.enchantments(java.util.List.of(predicate)));
+    }
+
+    /** {@code CraftingBookCategory.CODEC} is typed as the plain codec now (the object is still the enum codec). */
+    @SuppressWarnings("rawtypes")
+    public static net.minecraft.util.StringRepresentable.EnumCodec craftingCategoryCodec(com.mojang.serialization.Codec codec) {
+        return (net.minecraft.util.StringRepresentable.EnumCodec) codec;
+    }
+
+    // ---- text, saved data, brewing, small queries ----
+
+    @SuppressWarnings("unchecked")
+    public static <T extends net.minecraft.world.level.saveddata.SavedData> T getSavedData(net.minecraft.world.level.storage.DimensionDataStorage storage,
+            java.util.function.Function<CompoundTag, T> loader, String name) {
+        return storage.get(new net.minecraft.world.level.saveddata.SavedData.Factory<>(() -> {
+            throw new IllegalStateException("saved data " + name + " is only read here");
+        }, (tag, provider) -> {
+            MigrateContext.remember(provider);
+            return loader.apply(tag);
+        }, null), name);
+    }
+
+    public static void saveSavedData(net.minecraft.world.level.saveddata.SavedData data, java.io.File file) {
+        data.save(file, MigrateContext.provider());
+    }
+
+    public static net.minecraft.network.chat.MutableComponent fromJsonLenient(String json) {
+        return net.minecraft.network.chat.Component.Serializer.fromJsonLenient(json, MigrateContext.provider());
+    }
+
+    public static String toStableJson(net.minecraft.network.chat.Component component) {
+        return net.minecraft.network.chat.Component.Serializer.toJson(component, MigrateContext.provider());
+    }
+
+    public static com.google.gson.JsonElement toJsonTree(net.minecraft.network.chat.Component component) {
+        return com.google.gson.JsonParser.parseString(net.minecraft.network.chat.Component.Serializer.toJson(component, MigrateContext.provider()));
+    }
+
+    /** {@code FoodProperties.isMeat()}: the flag is gone (wolves ask the item tag), so no food answers true here. */
+    public static boolean isMeat(net.minecraft.world.food.FoodProperties food) {
+        return false;
+    }
+
+    private static final java.util.List<Object[]> PENDING_MIXES = new java.util.concurrent.CopyOnWriteArrayList<>();
+    private static volatile boolean brewingHooked;
+
+    /** {@code PotionBrewing.addMix(from, ingredient, to)} (static in 1.20.1): queued, and added when NeoForge asks for brewing recipes. */
+    public static void addPotionMix(net.minecraft.world.item.alchemy.Potion from, net.minecraft.world.item.Item ingredient, net.minecraft.world.item.alchemy.Potion to) {
+        PENDING_MIXES.add(new Object[] {from, ingredient, to});
+        if (!brewingHooked) {
+            brewingHooked = true;
+            net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.brewing.RegisterBrewingRecipesEvent.class, event -> {
+                for (Object[] m : PENDING_MIXES) {
+                    event.getBuilder().addMix(net.minecraft.core.registries.BuiltInRegistries.POTION.wrapAsHolder((net.minecraft.world.item.alchemy.Potion) m[0]), (net.minecraft.world.item.Item) m[1],
+                            net.minecraft.core.registries.BuiltInRegistries.POTION.wrapAsHolder((net.minecraft.world.item.alchemy.Potion) m[2]));
+                }
+            });
+        }
+    }
+
+    // ---- argument producers for in-place constructor rewrites (=args rows; usable in super(...) calls) ----
+
+    public static net.minecraft.world.phys.Vec3 vec3(double x, double y, double z) {
+        return new net.minecraft.world.phys.Vec3(x, y, z);
+    }
+
+    public static net.minecraft.util.ColorRGBA colorRgba(int color) {
+        return new net.minecraft.util.ColorRGBA(color);
+    }
+
+    public static net.minecraft.core.particles.ParticleOptions explosionParticle(net.minecraft.world.level.Level level) {
+        return net.minecraft.core.particles.ParticleTypes.EXPLOSION;
+    }
+
+    public static net.minecraft.core.particles.ParticleOptions emitterParticle(net.minecraft.world.level.Level level) {
+        return net.minecraft.core.particles.ParticleTypes.EXPLOSION_EMITTER;
+    }
+
+    public static Holder<net.minecraft.sounds.SoundEvent> explodeSound(net.minecraft.world.level.Level level) {
+        return net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE;
+    }
+
+    public static boolean noFire(net.minecraft.world.level.Level level) {
+        return false;
+    }
+
+    public static net.minecraft.world.level.Explosion.BlockInteraction decay(net.minecraft.world.level.Level level) {
+        return net.minecraft.world.level.Explosion.BlockInteraction.DESTROY_WITH_DECAY;
+    }
+
+    public static net.minecraft.server.network.CommonListenerCookie cookie(net.minecraft.server.level.ServerPlayer player) {
+        return net.minecraft.server.network.CommonListenerCookie.createInitial(player.getGameProfile(), false);
+    }
+
     /** {@code ComponentContents.EMPTY} moved to {@code PlainTextContents.EMPTY}. */
     public static net.minecraft.network.chat.ComponentContents emptyContents() {
         return net.minecraft.network.chat.contents.PlainTextContents.EMPTY;
