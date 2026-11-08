@@ -24727,12 +24727,12 @@
   },
   {
    "name": "Management Wanted: More Decor",
-   "version": "",
+   "version": "2.7",
    "mc": "1.20.1",
    "source": "client",
    "date": "2026-11-08",
-   "status": "works",
-   "notes": "Reported by a player on 0.4.7 (GitHub issue #198): the Forge 1.20.1 mod with the 1.20.1 GeckoLib 4.8.4 jar (and one other mod, Yet Another FNAF Mod) loads and works; no problems found. Version of the mod not stated."
+   "status": "fails",
+   "notes": "Player report on 0.4.7 (GitHub issue #198), first recorded wrongly as working: the game crashes while the mod loads, NoClassDefFoundError net/minecraft/world/item/RecordItem (the class no longer exists in 1.21; music discs are data components). Needs GeckoLib 4.9 for NeoForge 1.21.1 next to it. Master has a RecordItem stand-in (not in 0.4.7), not retested with this mod yet."
   }
  ],
  "hidden": [
