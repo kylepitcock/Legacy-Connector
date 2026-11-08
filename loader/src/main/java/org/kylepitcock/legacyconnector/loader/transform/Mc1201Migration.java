@@ -112,6 +112,41 @@ final class Mc1201Migration {
         }
     }
 
+    /** The 1.21.1 type interfaces whose single {@code codec()} returns a {@code MapCodec} (it was a {@code Codec} in 1.20.1: a lambda {@code () -> CODEC} implements them). */
+    private static final java.util.Set<String> MAP_CODEC_TYPES = java.util.Set.of(
+            "net/minecraft/world/level/levelgen/structure/StructureType",
+            "net/minecraft/world/level/levelgen/structure/placement/StructurePlacementType",
+            "net/minecraft/world/level/levelgen/structure/templatesystem/StructureProcessorType",
+            "net/minecraft/world/level/levelgen/structure/templatesystem/RuleTestType",
+            "net/minecraft/world/level/levelgen/structure/templatesystem/PosRuleTestType",
+            "net/minecraft/world/level/levelgen/placement/PlacementModifierType",
+            "net/minecraft/world/level/levelgen/feature/featuresize/FeatureSizeType",
+            "net/minecraft/world/level/levelgen/feature/foliageplacers/FoliagePlacerType",
+            "net/minecraft/world/level/levelgen/feature/stateproviders/BlockStateProviderType",
+            "net/minecraft/world/level/levelgen/feature/trunkplacers/TrunkPlacerType");
+
+    /**
+     * {@code StructureType<S> type = () -> CODEC}: the lambda is built as a {@code Supplier} of the old codec instead, and a helper makes the interface
+     * (via a proxy) whose {@code codec()} converts it to the {@code MapCodec} 1.21.1 asks for.
+     */
+    private static void codecLambda(MethodNode m, org.objectweb.asm.tree.InvokeDynamicInsnNode d) {
+        if (!d.name.equals("codec") || !d.bsm.getOwner().equals("java/lang/invoke/LambdaMetafactory") || d.bsmArgs.length < 3
+                || !(d.bsmArgs[0] instanceof Type sam) || !sam.getDescriptor().equals("()Lcom/mojang/serialization/Codec;")) return;
+        Type made = Type.getReturnType(d.desc);
+        if (made.getSort() != Type.OBJECT || !MAP_CODEC_TYPES.contains(made.getInternalName()) || Type.getArgumentTypes(d.desc).length != 0) return;
+        d.name = "get";
+        d.desc = "()Ljava/util/function/Supplier;";
+        d.bsmArgs[0] = Type.getMethodType("()Ljava/lang/Object;");
+        d.bsmArgs[2] = Type.getMethodType("()Lcom/mojang/serialization/Codec;");
+        InsnList after = new InsnList();
+        after.add(new org.objectweb.asm.tree.LdcInsnNode(made));
+        after.add(new InsnNode(Opcodes.SWAP));
+        after.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "org/kylepitcock/legacyconnector/v1_20_1/migrate/EntityCompat", "codecTypeLambda",
+                "(Ljava/lang/Class;Ljava/util/function/Supplier;)Ljava/lang/Object;", false));
+        after.add(new org.objectweb.asm.tree.TypeInsnNode(Opcodes.CHECKCAST, made.getInternalName()));
+        m.instructions.insert(d, after);
+    }
+
     /**
      * A bucket class extending {@code MobBucketItem} and calling the 1.20.1 supplier constructor (Aquaculture's fish bucket): it extends the stand-in
      * {@code LegacyMobBucketItem}, which has that constructor, instead.
@@ -246,6 +281,7 @@ final class Mc1201Migration {
                     c.providerCalls++;
                 }
             } else if (in instanceof org.objectweb.asm.tree.InvokeDynamicInsnNode d) {
+                codecLambda(m, d);
                 registryBufferLambda(d);
                 redirectHandles(d, h, t, c);
             } else if (in instanceof FieldInsnNode f && (f.getOpcode() == Opcodes.GETFIELD || f.getOpcode() == Opcodes.PUTFIELD)) {

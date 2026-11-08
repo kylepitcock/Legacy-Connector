@@ -256,4 +256,18 @@ public final class EntityCompat {
         if (codec instanceof com.mojang.serialization.MapCodec.MapCodecCodec<?> m) return m.codec();
         return codec.fieldOf("value");
     }
+
+    /**
+     * A 1.20.1 {@code () -> CODEC} lambda for a type interface (StructureType, PlacementModifierType, ...) whose {@code codec()} is a {@code MapCodec} now:
+     * a proxy of that interface converting the supplied codec on each call.
+     */
+    public static Object codecTypeLambda(Class<?> type, java.util.function.Supplier<?> codec) {
+        return java.lang.reflect.Proxy.newProxyInstance(type.getClassLoader(), new Class<?>[] {type}, (proxy, method, args) -> {
+            if (method.getName().equals("codec") && method.getParameterCount() == 0) return toMapCodec((com.mojang.serialization.Codec<?>) codec.get());
+            if (method.getName().equals("toString")) return type.getSimpleName() + "$LegacyLambda";
+            if (method.getName().equals("hashCode")) return System.identityHashCode(proxy);
+            if (method.getName().equals("equals")) return proxy == args[0];
+            throw new UnsupportedOperationException(method.getName());
+        });
+    }
 }
