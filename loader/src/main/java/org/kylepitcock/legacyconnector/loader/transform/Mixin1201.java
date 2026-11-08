@@ -81,6 +81,7 @@ final class Mixin1201 {
             fixAll(f.invisibleAnnotations, ctx);
             fixAll(f.visibleAnnotations, ctx);
         }
+        for (MethodNode m : node.methods) defineSynchedDataHandler(m);
         // a mixin whose targets are all gone from 1.21.1 cannot apply
         if (!targets.isEmpty()) {
             boolean anyPresent = false;
@@ -94,6 +95,51 @@ final class Mixin1201 {
                 st.droppedClasses.add(node.name);
             }
         }
+    }
+
+    private static final String BUILDER = "Lnet/minecraft/network/syncher/SynchedEntityData$Builder;";
+    private static final String CALLBACK = "Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfo;";
+
+    /**
+     * An {@code @Inject} into {@code Entity.defineSynchedData()} (the place a mod defines its own entity data): the method takes the data builder in 1.21.1, so the
+     * target gets the new descriptor and the handler {@code (CallbackInfo)} becomes {@code (Builder, CallbackInfo)}; its locals move up by one and the builder is
+     * remembered for {@code SynchedEntityData.define}, which the call table redirects to it. Without this the injection silently matches nothing, the entity data
+     * the mod's static {@code defineId} reserved is never defined, and every entity of that class fails in its constructor.
+     */
+    static void defineSynchedDataHandler(MethodNode m) {
+        if (!m.desc.equals("(" + CALLBACK + ")V")) return;
+        AnnotationNode inject = null;
+        for (List<AnnotationNode> list : java.util.Arrays.asList(m.invisibleAnnotations, m.visibleAnnotations)) {
+            if (list != null) for (AnnotationNode a : list) if (a.desc.equals("Lorg/spongepowered/asm/mixin/injection/Inject;")) inject = a;
+        }
+        if (inject == null || inject.values == null) return;
+        boolean changed = false;
+        for (int i = 0; i + 1 < inject.values.size(); i += 2) {
+            if (!"method".equals(inject.values.get(i)) || !(inject.values.get(i + 1) instanceof List<?> l)) continue;
+            @SuppressWarnings("unchecked") List<Object> list = (List<Object>) l;
+            for (int k = 0; k < list.size(); k++) {
+                if (list.get(k) instanceof String s && (s.equals("defineSynchedData()V") || s.equals("defineSynchedData"))) {
+                    list.set(k, "defineSynchedData(" + BUILDER + ")V");
+                    changed = true;
+                }
+            }
+        }
+        if (!changed) return;
+        int slot = (m.access & org.objectweb.asm.Opcodes.ACC_STATIC) != 0 ? 0 : 1;
+        for (org.objectweb.asm.tree.AbstractInsnNode in : m.instructions) {
+            if (in instanceof org.objectweb.asm.tree.VarInsnNode v && v.var >= slot) v.var++;
+            else if (in instanceof org.objectweb.asm.tree.IincInsnNode v && v.var >= slot) v.var++;
+        }
+        if (m.localVariables != null) for (org.objectweb.asm.tree.LocalVariableNode lv : m.localVariables) if (lv.index >= slot) lv.index++;
+        m.desc = "(" + BUILDER + CALLBACK + ")V";
+        m.signature = null;
+        org.objectweb.asm.tree.InsnList head = new org.objectweb.asm.tree.InsnList();
+        head.add(new org.objectweb.asm.tree.VarInsnNode(org.objectweb.asm.Opcodes.ALOAD, slot));
+        head.add(new org.objectweb.asm.tree.MethodInsnNode(org.objectweb.asm.Opcodes.INVOKESTATIC, "org/kylepitcock/legacyconnector/v1_20_1/migrate/MigrateContext",
+                "remember", "(Ljava/lang/Object;)V", false));
+        m.instructions.insert(head);
+        m.maxLocals++;
+        m.maxStack = Math.max(m.maxStack, 1);
     }
 
     private static boolean isMissing(String target, Mc1201Hierarchy h) {

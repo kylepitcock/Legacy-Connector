@@ -149,6 +149,15 @@ public final class MiscCompat {
 
     /** {@code SynchedEntityData.define} inside {@code defineSynchedData}: the 1.21.1 builder of the call in progress (remembered by the generated bridge). */
     public static <T> void define(net.minecraft.network.syncher.SynchedEntityData data, net.minecraft.network.syncher.EntityDataAccessor<T> accessor, T value) {
+        if (data != null) {
+            // after the entity exists (a mixin at the end of Entity.<init>): the id was defined with its default by LegacyEntityData; this sets the value wanted
+            try {
+                data.set(accessor, value);
+            } catch (RuntimeException e) {
+                // undefined id: nothing to set
+            }
+            return;
+        }
         MigrateContext.builder().define(accessor, value);
     }
 
