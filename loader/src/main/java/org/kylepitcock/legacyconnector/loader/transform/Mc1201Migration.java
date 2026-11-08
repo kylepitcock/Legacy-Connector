@@ -75,6 +75,7 @@ final class Mc1201Migration {
     static Counts apply(ClassNode node, Mc1201Hierarchy h, Mc1201Tables t) {
         Counts c = new Counts();
         renameOverrides(node, h, t, c);
+        swapMobBucketSuper(node);
         renameBusConstant(node);
         dropEmptySubscriber(node);
         for (MethodNode m : node.methods) {
@@ -109,6 +110,27 @@ final class Mc1201Migration {
             node.methods.add(m);
             c.bridges++;
         }
+    }
+
+    /**
+     * A bucket class extending {@code MobBucketItem} and calling the 1.20.1 supplier constructor (Aquaculture's fish bucket): it extends the stand-in
+     * {@code LegacyMobBucketItem}, which has that constructor, instead.
+     */
+    private static void swapMobBucketSuper(ClassNode node) {
+        final String mob = "net/minecraft/world/item/MobBucketItem";
+        final String standIn = "org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyMobBucketItem";
+        final String desc = "(Ljava/util/function/Supplier;Ljava/util/function/Supplier;Ljava/util/function/Supplier;Lnet/minecraft/world/item/Item$Properties;)V";
+        if (!mob.equals(node.superName)) return;
+        boolean swapped = false;
+        for (MethodNode m : node.methods) {
+            for (AbstractInsnNode in : m.instructions.toArray()) {
+                if (in instanceof MethodInsnNode call && call.getOpcode() == Opcodes.INVOKESPECIAL && call.owner.equals(mob) && call.name.equals("<init>") && call.desc.equals(desc)) {
+                    call.owner = standIn;
+                    swapped = true;
+                }
+            }
+        }
+        if (swapped) node.superName = standIn;
     }
 
     /**
