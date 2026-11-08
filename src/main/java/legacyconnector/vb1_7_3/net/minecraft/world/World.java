@@ -36,6 +36,7 @@ public class World implements BlockView {
     public legacyconnector.vb1_7_3.net.minecraft.world.dimension.Dimension dimension = new legacyconnector.vb1_7_3.net.minecraft.world.dimension.Dimension();
 
     private final Level mcc$level;
+    private final List<legacyconnector.vb1_7_3.net.minecraft.entity.Entity> mcc$entityQuery = new ArrayList<>();
 
     protected World() {
         this.mcc$level = null;
@@ -460,10 +461,16 @@ public class World implements BlockView {
     }
     public List<legacyconnector.vb1_7_3.net.minecraft.entity.Entity> getEntities(legacyconnector.vb1_7_3.net.minecraft.entity.Entity except,
             legacyconnector.vb1_7_3.net.minecraft.util.math.Box box) {
-        if (mcc$level == null) return List.of();
-        return mcc$level.getEntities(except == null ? null : except.mcc$modern,box.mcc$box()).stream()
-                .filter(World::legacyVisible)
-                .map(org.kylepitcock.legacyconnector.vb1_7_3.EntityViewsB173::wrap).toList();
+        var result=mcc$queryEntities(except,box);
+        // Beta clears and returns the same mutable per-world list on every untyped query.
+        mcc$entityQuery.clear();mcc$entityQuery.addAll(result);return mcc$entityQuery;
+    }
+    private List<legacyconnector.vb1_7_3.net.minecraft.entity.Entity> mcc$queryEntities(legacyconnector.vb1_7_3.net.minecraft.entity.Entity except,
+            legacyconnector.vb1_7_3.net.minecraft.util.math.Box box){
+        var result=new ArrayList<legacyconnector.vb1_7_3.net.minecraft.entity.Entity>();
+        if(mcc$level!=null)for(var entity:mcc$level.getEntities(except==null?null:except.mcc$modern,box.mcc$box()))
+            if(legacyVisible(entity))result.add(org.kylepitcock.legacyconnector.vb1_7_3.EntityViewsB173.wrap(entity));
+        return result;
     }
     public List<Object> getEntities(){return new ArrayList<>(entities);}
     public int countEntities(Class<?> type){
@@ -472,7 +479,7 @@ public class World implements BlockView {
         return count;
     }
     public List<legacyconnector.vb1_7_3.net.minecraft.entity.Entity> collectEntitiesByClass(Class<?> type,legacyconnector.vb1_7_3.net.minecraft.util.math.Box box){
-        return getEntities(null,box).stream().filter(type::isInstance).toList();
+        var result=mcc$queryEntities(null,box);result.removeIf(entity->!type.isInstance(entity));return result;
     }
     public legacyconnector.vb1_7_3.net.minecraft.entity.ai.pathing.Path findPath(legacyconnector.vb1_7_3.net.minecraft.entity.Entity entity,legacyconnector.vb1_7_3.net.minecraft.entity.Entity target,float range){
         if(entity==null||target==null||!(entity.mcc$modern instanceof net.minecraft.world.entity.Mob mob)||target.mcc$modern==null)return null;

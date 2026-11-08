@@ -1,0 +1,92 @@
+{
+  "snapshot_date": "2026-11-08",
+  "scope": "Canonical Beta native Squid/WaterCreature views and native animation read snapshots",
+  "version": "0.4.13",
+  "version_policy": "0.4.13 inherited from upstream release commit 785ec5c7; this feature makes no version-file edits.",
+  "tested_working_tree_base_revision": "ccb44d76790159716630aa789f28ae4c0b825c31",
+  "upstream_master_revision": "0bd6b4fe1ca310613c8ccc08e5acdeae55db7236",
+  "post_test_upstream_update": "Fast-forward to 0bd6b4fe changed only tools/dev/agent-tasks/README.md; tested Java sources are unchanged.",
+  "source_sha256": {
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/entity/passive/SquidEntity.java": "4808d720f06483f337a42e598498d12c1eba913c27d66e9bd9c3a7c997ac6d97",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/EntityViewsB173.java": "c75d443a735dd696b20c7f7a99876a462f46fa1557e524990a9a638d1235d5e3",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/MoCreaturesAquaticSelfTestB173.java": "3cc7b716734fe7f90e6879e458fe5b06ceca132360d6542382a65110f298db79",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/MobSelfTestB173.java": "159159dca5cf8753ad5e88a3c2dda52855f6aa97bd14d9498881b8110ce364a5",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/MoreCreepsSquidViewSelfTestB173.java": "aaa1b433cb3588278484a47a09105a97384aa85051770908cdea8b579282af85"
+  },
+  "tests": {
+    "runtime": {
+      "tests": 216,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "loader": {
+      "tests": 262,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "actual_mod_opt_in": {
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "fixtures": {
+    "mocreatures": {
+      "status": "headless-smoke-passed",
+      "source_archive": "DrZharks_MoCreatures_Mod_v2.12.2_b1.7.3.zip!mods/MoCreatures.zip",
+      "payload_sha256": "3e6e71c206fcd94cff10dfea0857a2fab49f56d42418e88f277d881c2199212c",
+      "game_directory": "run-b173-single/mocreatures-neutralbeta-placement-classic-flat-2-20261108-122919-0fa534",
+      "resources_verified": 168,
+      "test_log_sha256": "c492bea03b65ed856ed2f9e0f56efc8f013bc6d03394507e7425e34947216241"
+    },
+    "morecreeps": {
+      "status": "headless-smoke-passed",
+      "source_archive": "MoreCreepsv2.12_b173.zip!PUT CONTENTS INTO MINECRAFT FOLDER/mods/MoreCreepsAndWeirdos.zip",
+      "payload_sha256": "516c9cf3b76e898d68f276bbc00ee88372acaa2a7f91439e6a9a010a7233344b",
+      "game_directory": "run-b173-single/morecreeps-neutralbeta-placement-classic-flat-2-20261108-122920-5f1af2",
+      "resources_verified": 759,
+      "test_log_sha256": "1246b7b922a378ef7abb45a7618c5010b0f9921a086b5a1fdca5f72b742a05c0"
+    }
+  },
+  "actual_callback_proofs": {
+    "mocreatures": [
+      "[12:31:53] [Server thread/INFO] [LegacyConnector/B173AquaticTest/]: B1.7.3 MOC AQUATIC TEST: native squid typed legacy views passed using original callbacks",
+      "[12:31:53] [Server thread/INFO] [LegacyConnector/B173AquaticTest/]: B1.7.3 MOC AQUATIC TEST: original native squid prey policies passed using original callbacks",
+      "[12:31:53] [Server thread/INFO] [LegacyConnector/B173AquaticTest/]: B1.7.3 MOC AQUATIC TEST: original aquatic prey policies passed using original callbacks",
+      "[12:31:53] [Server thread/INFO] [LegacyConnector/B173AquaticTest/]: B1.7.3 MOC AQUATIC TEST: original aquatic contact damage passed using original callbacks",
+      "[12:31:53] [Server thread/INFO] [LegacyConnector/B173AquaticTest/]: B1.7.3 MOC AQUATIC TEST: original fishy offspring passed using original callbacks",
+      "[12:31:53] [Server thread/INFO] [LegacyConnector/B173AquaticTest/]: B1.7.3 MOC AQUATIC TEST: original aquatic drops and persistence passed using original callbacks",
+      "[12:31:53] [Server thread/INFO] [LegacyConnector/B173AquaticTest/]: B1.7.3 MOC AQUATIC TEST: all 6 specialized original-callback proofs passed",
+      "[12:31:53] [Server thread/INFO] [LegacyConnector/B173VanillaSpawnTest/]: B1.7.3 VANILLA SPAWN TEST: actual MoC frequency 1, original constructor request and authoritative native squid policy passed in 53 overworld biomes",
+      "[12:31:54] [Server thread/INFO] [LegacyConnector/B173EcologyTest/]: B1.7.3 ECOLOGY TEST passed: hosted-only generation filter, unchanged native population entries, native CHUNK_GENERATION position checks observed=0, native Cow/Pig persistence and original Bunny policies when present; GenerateSurface is covered separately by existing worldgen smoke"
+    ],
+    "morecreeps": [
+      "[12:33:01] [Server thread/INFO] [LegacyConnector/B173SquidViewTest/]: B1.7.3 CREEPS SQUID VIEW TEST: native Squid/GlowSquid identity, typed queries, animation/AI/loot preservation and actual original Bullet wet collisions passed",
+      "[12:33:01] [Server thread/INFO] [LegacyConnector/B173EcologyTest/]: B1.7.3 ECOLOGY TEST passed: hosted-only generation filter, unchanged native population entries, native CHUNK_GENERATION position checks observed=0, native Cow/Pig persistence and original Bunny policies when present; GenerateSurface is covered separately by existing worldgen smoke"
+    ]
+  },
+  "reproduced_baseline": {
+    "mocreatures": {
+      "game_directory": "run-b173-single/mocreatures-neutralbeta-placement-classic-flat-2-20261108-122427-aa326f",
+      "test_log_sha256": "0fc08939def3e68a6d1df549ed5e907a33c75d369cf5befc544e54a0148ab377",
+      "failure": "native squid exposes Beta WaterCreature identity",
+      "original_predation_already_passed": true
+    },
+    "morecreeps": {
+      "game_directory": "run-b173-single/morecreeps-neutralbeta-placement-classic-flat-2-20261108-122427-204a96",
+      "test_log_sha256": "5aff8434d4680a4fed654a285640c08e2a7f6099edce772825b7102575b39c88",
+      "failure": "native Squid view must retain original water-creature ancestry",
+      "original_predation_already_passed": null
+    }
+  },
+  "bundle_sha256": "e34d69ac986e181342bdb9d67a3b61a04d75d3a4cde2e9e2d8a639d21026dffe",
+  "limitations": [
+    "Identity and typed-query interoperability were broken; original MoCreatures broad LivingEntity predation already passed before this fix.",
+    "Animation fields mirror native values for reads; this change does not implement arbitrary direct-field animation writeback.",
+    "Native entity AI, spawning, renderer and loot remain authoritative; no extra native Squid type or simulation is registered.",
+    "Actual native instances and callbacks were tested server-side; no new graphical-client pass was required for this view-only change."
+  ]
+}

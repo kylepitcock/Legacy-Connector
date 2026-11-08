@@ -145,7 +145,7 @@ public final class Platform1122 implements LegacyPlatform {
             if (inst != null) {
                 Object value = mod.instance;
                 if (!inst.value().isEmpty() && !inst.value().equals(mod.legacyId)) {
-                    LegacyModRecord other = LegacyMods.byLegacyId(inst.value());
+                    LegacyModRecord other = LegacyMods.byLegacyId(inst.value(), mod.version);
                     value = other == null ? null : other.instance;
                 }
                 if (value != null && f.getType().isInstance(value)) f.set(target, value);

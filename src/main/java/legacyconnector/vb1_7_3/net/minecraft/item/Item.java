@@ -80,6 +80,8 @@ public class Item {
         return stack;
     }
 
+    public void useOnEntity(ItemStack stack, legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity target) {}
+
     /** Forge's metadata-aware mining speed. */
     public float getStrVsBlock(ItemStack stack, Block block, int meta) {
         return getMiningSpeedMultiplier(stack, block);

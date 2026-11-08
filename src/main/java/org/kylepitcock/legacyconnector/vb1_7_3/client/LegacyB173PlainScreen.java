@@ -99,7 +99,7 @@ public class LegacyB173PlainScreen extends Screen {
             pendingKey = key;
             return true;
         }
-        legacyKey(KeysB173.character(key), KeysB173.lwjgl(key));
+        legacyKey(KeysB173.character(key,modifiers), KeysB173.lwjgl(key));
         // a screen that swallowed Escape still closes
         if (key == GLFW.GLFW_KEY_ESCAPE && minecraft != null && minecraft.screen == this) onClose();
         return true;

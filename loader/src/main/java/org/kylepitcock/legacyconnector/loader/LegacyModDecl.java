@@ -10,6 +10,8 @@ import java.util.Locale;
 public final class LegacyModDecl {
     /** The mod id exactly as the legacy mod declares it (may contain upper case, '|' and so on). */
     public String legacyId;
+    /** Stable identity override for a legacy lane with an independent registry namespace. */
+    public String modernIdOverride;
     /** Internal name of the {@code @Mod} class, before relocation (mod classes are never relocated). */
     public String mainClass;
     public String name;
@@ -35,7 +37,7 @@ public final class LegacyModDecl {
      * {@code Loader.isModLoaded("BuildCraft|Core")} keeps working.
      */
     public String modernId() {
-        return toModernId(legacyId);
+        return modernIdOverride != null ? modernIdOverride : toModernId(legacyId);
     }
 
     /**
@@ -60,6 +62,18 @@ public final class LegacyModDecl {
 
     public static String toFmlId(String modernId) {
         return fmlIds.getOrDefault(modernId, modernId);
+    }
+
+    /** Beta content always has its own namespace, independent of which other legacy versions are installed. */
+    public static String betaModernId(String legacyId) {
+        String id = toModernId(legacyId);
+        if (id.length() <= 59) return "b173_" + id;
+        // Keep long identities distinct even when the ordinary FML normalizer truncates them.
+        String normalized = legacyId.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9_]", "_");
+        try {
+            byte[] digest = java.security.MessageDigest.getInstance("SHA-256").digest(normalized.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            return "b173_" + id.substring(0, 50) + "_" + java.util.HexFormat.of().formatHex(digest, 0, 4);
+        } catch (java.security.NoSuchAlgorithmException impossible) { throw new AssertionError(impossible); }
     }
 
     public static String toModernId(String legacyId) {

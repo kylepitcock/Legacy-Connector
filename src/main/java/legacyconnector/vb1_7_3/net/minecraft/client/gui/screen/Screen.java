@@ -23,6 +23,7 @@ public class Screen extends DrawContext {
     public boolean passEvents;
     protected TextRenderer textRenderer;
     private ButtonWidget selectedButton;
+    private static final ThreadLocal<String> CLIPBOARD=new ThreadLocal<>();
 
     public Screen() {}
 
@@ -37,7 +38,12 @@ public class Screen extends DrawContext {
     }
 
     public static String getClipboard() {
-        return MenusB173.clipboard();
+        String supplied=CLIPBOARD.get();return supplied==null?MenusB173.clipboard():supplied;
+    }
+    /** Clipboard text accompanies an explicit client paste event, scoped to its original screen callback. */
+    public static void mcc$withClipboard(String text,Runnable callback){
+        String previous=CLIPBOARD.get();CLIPBOARD.set(text==null?"":text);
+        try{callback.run();}finally{if(previous==null)CLIPBOARD.remove();else CLIPBOARD.set(previous);}
     }
 
     /** MCP {@code mouseClicked}: a left click on a button selects it and calls {@link #buttonClicked}. */

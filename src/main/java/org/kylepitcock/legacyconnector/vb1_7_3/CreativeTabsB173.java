@@ -42,7 +42,7 @@ public final class CreativeTabsB173 {
         for (var e : byMod.entrySet()) {
             LegacyModRecord mod = e.getKey();
             List<Object> content = e.getValue();
-            ResourceLocation id = ResourceLocation.fromNamespaceAndPath("legacyconnector", "b173_" + mod.modernId);
+            ResourceLocation id = ResourceLocation.fromNamespaceAndPath("legacyconnector", mod.modernId.startsWith("b173_") ? mod.modernId : "b173_" + mod.modernId);
             if (BuiltInRegistries.CREATIVE_MODE_TAB.containsKey(id)) continue;
             CreativeModeTab tab = CreativeModeTab.builder()
                     .title(Component.literal(mod.legacyId))

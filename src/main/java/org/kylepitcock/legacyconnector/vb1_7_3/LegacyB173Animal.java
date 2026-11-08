@@ -95,6 +95,22 @@ public final class LegacyB173Animal extends PathfinderMob implements B173LivingH
     private static legacyconnector.vb1_7_3.net.minecraft.entity.Entity relationView(net.minecraft.world.entity.Entity entity){
         return entity instanceof B173LivingHost host?host.legacy():entity!=null&&entity.level().isClientSide?EntityViewsB173.wrapReadOnly(entity):EntityViewsB173.wrap(entity);
     }
+    @Override public boolean startRiding(Entity vehicle,boolean force){
+        Entity previous=getVehicle();
+        boolean mounted=super.startRiding(vehicle,force);
+        if(mounted&&getVehicle()==vehicle&&previous!=vehicle)syncCarrierPassengers(vehicle);
+        return mounted;
+    }
+    @Override public void removeVehicle(){
+        Entity previous=getVehicle();
+        super.removeVehicle();
+        if(previous!=null&&getVehicle()!=previous)syncCarrierPassengers(previous);
+    }
+    /** Native tracking excludes the player being tracked, including a player carrying a Beta entity. */
+    private void syncCarrierPassengers(Entity carrier){
+        if(legacy!=null&&carrier instanceof net.minecraft.server.level.ServerPlayer player&&player.connection!=null)
+            player.connection.send(new net.minecraft.network.protocol.game.ClientboundSetPassengersPacket(carrier));
+    }
     public void syncView(){
         if(legacy==null||syncingView)return;
         syncingView=true;

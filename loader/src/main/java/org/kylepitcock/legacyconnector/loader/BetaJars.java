@@ -221,6 +221,7 @@ public final class BetaJars {
         for (String modClass : scan.modClasses) {
             LegacyModDecl decl = new LegacyModDecl();
             decl.legacyId = modClass.substring(4);
+            decl.modernIdOverride = LegacyModDecl.betaModernId(decl.legacyId);
             decl.name = displayName(path, decl.legacyId);
             decl.version = "0.0.0-legacy";
             decl.mainClass = MOD_ROOT + pkg + "/" + modClass;
