@@ -57,3 +57,15 @@ net/minecraft/world/entity/Mob	onAddedToWorld	*	onAddedToLevel
 net/minecraft/world/entity/Mob	onRemovedFromWorld	*	onRemovedFromLevel
 net/minecraft/world/entity/Mob	isAddedToWorld	*	isAddedToLevel
 net/minecraft/world/entity/Mob	teleportToWithTicket	*	teleportTo
+# --- middle/tail batch 2
+com/mojang/blaze3d/vertex/VertexFormatElement	getByteSize	*	byteSize
+com/mojang/blaze3d/vertex/VertexFormatElement	getType	*	type
+com/mojang/blaze3d/vertex/VertexFormatElement	getIndex	*	index
+com/mojang/blaze3d/vertex/VertexFormatElement	getUsage	*	usage
+com/mojang/blaze3d/vertex/VertexFormatElement	getCount	*	count
+com/mojang/blaze3d/vertex/VertexFormatElement	getElementCount	*	count
+# --- middle/tail batch 3
+net/minecraft/core/Holder	getTagKeys	*	tags
+net/minecraft/core/Holder	containsTag	*	is
+net/minecraft/core/Holder$Reference	getTagKeys	*	tags
+net/minecraft/core/Holder$Reference	containsTag	*	is

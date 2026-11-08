@@ -424,4 +424,77 @@ public final class MiddleCompat {
             }
         };
     }
+
+    // ------------------------------------------------------------------ constructors with a new parameter, codecs, potions
+
+    /** The experience range 1.20.1's one-argument {@code DropExperienceBlock} constructor stood for: none. */
+    public static net.minecraft.util.valueproviders.IntProvider zeroXp(net.minecraft.world.level.block.state.BlockBehaviour.Properties properties) {
+        return net.minecraft.util.valueproviders.ConstantInt.of(0);
+    }
+
+    /** The pickup stack of {@code new Arrow(level, ...)}: an arrow. */
+    public static ItemStack arrowStack(Level level) {
+        return new ItemStack(net.minecraft.world.item.Items.ARROW);
+    }
+
+    /** The weapon that fired a {@code new Arrow(level, ...)}: none known. */
+    public static ItemStack noWeapon(Level level) {
+        return null;
+    }
+
+    /** The client settings of a server player made without any ({@code new ServerPlayer(server, level, profile)}). */
+    public static net.minecraft.server.level.ClientInformation clientInfo(net.minecraft.server.MinecraftServer server) {
+        return net.minecraft.server.level.ClientInformation.createDefault();
+    }
+
+    /** {@code ExtraCodecs.lazyInitializedCodec(Supplier)}. */
+    public static <A> com.mojang.serialization.Codec<A> lazyInitializedCodec(java.util.function.Supplier<com.mojang.serialization.Codec<A>> supplier) {
+        return com.mojang.serialization.Codec.lazyInitialized(supplier);
+    }
+
+    /** {@code ExtraCodecs.validate(Codec, Function)}. */
+    public static <A> com.mojang.serialization.Codec<A> validate(com.mojang.serialization.Codec<A> codec,
+            java.util.function.Function<A, com.mojang.serialization.DataResult<A>> check) {
+        return codec.validate(check);
+    }
+
+    /** {@code ExtraCodecs.validate(MapCodec, Function)}. */
+    public static <A> com.mojang.serialization.MapCodec<A> validate(com.mojang.serialization.MapCodec<A> codec,
+            java.util.function.Function<A, com.mojang.serialization.DataResult<A>> check) {
+        return codec.validate(check);
+    }
+
+    /** {@code ExtraCodecs.stringResolverCodec(toString, fromString)}: a string key that must name an element. */
+    public static <E> com.mojang.serialization.Codec<E> stringResolverCodec(java.util.function.Function<E, String> toString,
+            java.util.function.Function<String, E> fromString) {
+        return com.mojang.serialization.Codec.STRING.flatXmap(name -> {
+            E value = fromString.apply(name);
+            return value == null ? com.mojang.serialization.DataResult.<E>error(() -> "Unknown element name: " + name)
+                    : com.mojang.serialization.DataResult.success(value);
+        }, element -> {
+            String name = toString.apply(element);
+            return name == null ? com.mojang.serialization.DataResult.<String>error(() -> "Element with unknown name: " + element)
+                    : com.mojang.serialization.DataResult.success(name);
+        });
+    }
+
+    /** {@code ExtraCodecs.COMPONENT}. */
+    public static com.mojang.serialization.Codec<net.minecraft.network.chat.Component> componentCodec() {
+        return net.minecraft.network.chat.ComponentSerialization.CODEC;
+    }
+
+    /** {@code ExtraCodecs.FLAT_COMPONENT}. */
+    public static com.mojang.serialization.Codec<net.minecraft.network.chat.Component> flatComponentCodec() {
+        return net.minecraft.network.chat.ComponentSerialization.FLAT_CODEC;
+    }
+
+    /** {@code Potion.getName(String prefix)}: the prefix and the potion's registry name. */
+    public static String potionName(net.minecraft.world.item.alchemy.Potion potion, String prefix) {
+        return prefix + net.minecraft.core.registries.BuiltInRegistries.POTION.getKey(potion).getPath();
+    }
+
+    /** {@code Potion.byName(String)}. */
+    public static net.minecraft.world.item.alchemy.Potion potionByName(String name) {
+        return net.minecraft.core.registries.BuiltInRegistries.POTION.get(net.minecraft.resources.ResourceLocation.parse(name));
+    }
 }

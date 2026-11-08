@@ -385,3 +385,43 @@ net/minecraft/world/entity/EntityType	getAABB	(DDD)Lnet/minecraft/world/phys/AAB
 net/minecraft/Util	getOrThrow	(Lcom/mojang/serialization/DataResult;Ljava/util/function/Function;)Ljava/lang/Object;	MiddleCompat	getOrThrow
 net/minecraft/Util	identityStrategy	()Lit/unimi/dsi/fastutil/Hash$Strategy;	MiddleCompat	identityStrategy
 net/minecraft/Util	shuffle	(Lit/unimi/dsi/fastutil/objects/ObjectArrayList;Lnet/minecraft/util/RandomSource;)V	=	-	(Ljava/util/List;Lnet/minecraft/util/RandomSource;)V
+# --- middle/tail batch 2 (client: MiddleClientCompat)
+net/minecraft/client/multiplayer/PlayerInfo	getSkinLocation	()Lnet/minecraft/resources/ResourceLocation;	MiddleClientCompat	getSkinLocation
+net/minecraft/client/multiplayer/PlayerInfo	getModelName	()Ljava/lang/String;	MiddleClientCompat	getModelName
+net/minecraft/client/multiplayer/PlayerInfo	getCapeLocation	()Lnet/minecraft/resources/ResourceLocation;	MiddleClientCompat	getCapeLocation
+net/minecraft/client/multiplayer/PlayerInfo	getElytraLocation	()Lnet/minecraft/resources/ResourceLocation;	MiddleClientCompat	getElytraLocation
+net/minecraft/client/multiplayer/PlayerInfo	isSkinLoaded	()Z	MiddleClientCompat	isSkinLoaded
+net/minecraft/client/player/AbstractClientPlayer	getModelName	()Ljava/lang/String;	MiddleClientCompat	getModelName
+net/minecraft/client/player/AbstractClientPlayer	getCloakTextureLocation	()Lnet/minecraft/resources/ResourceLocation;	MiddleClientCompat	getCloakTextureLocation
+net/minecraft/client/player/AbstractClientPlayer	isCapeLoaded	()Z	MiddleClientCompat	isCapeLoaded
+net/minecraft/client/player/AbstractClientPlayer	getElytraTextureLocation	()Lnet/minecraft/resources/ResourceLocation;	MiddleClientCompat	getElytraTextureLocation
+net/minecraft/client/player/AbstractClientPlayer	isElytraLoaded	()Z	MiddleClientCompat	isElytraLoaded
+net/minecraft/client/gui/GuiGraphics	blitRepeating	(Lnet/minecraft/resources/ResourceLocation;IIIIIIII)V	MiddleClientCompat	blitRepeating
+net/minecraft/client/gui/GuiGraphics	blitRepeating	(Lnet/minecraft/resources/ResourceLocation;IIIIIIIIII)V	MiddleClientCompat	blitRepeating
+net/minecraft/client/gui/GuiGraphics	blitNineSliced	(Lnet/minecraft/resources/ResourceLocation;IIIIIIIII)V	MiddleClientCompat	blitNineSliced
+net/minecraft/client/gui/GuiGraphics	blitNineSliced	(Lnet/minecraft/resources/ResourceLocation;IIIIIIIIII)V	MiddleClientCompat	blitNineSliced
+net/minecraft/client/gui/GuiGraphics	blitNineSliced	(Lnet/minecraft/resources/ResourceLocation;IIIIIIIIIIII)V	MiddleClientCompat	blitNineSliced
+net/minecraft/client/gui/GuiGraphics	blitNineSlicedSized	(Lnet/minecraft/resources/ResourceLocation;IIIIIIIIIII)V	MiddleClientCompat	blitNineSlicedSized
+net/minecraft/client/gui/GuiGraphics	blitNineSlicedSized	(Lnet/minecraft/resources/ResourceLocation;IIIIIIIIIIII)V	MiddleClientCompat	blitNineSlicedSized
+net/minecraft/client/gui/GuiGraphics	blitNineSlicedSized	(Lnet/minecraft/resources/ResourceLocation;IIIIIIIIIIIIII)V	MiddleClientCompat	blitNineSlicedSized
+net/minecraft/client/gui/components/MultiLineLabel	create	(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/FormattedText;I)Lnet/minecraft/client/gui/components/MultiLineLabel;	MiddleClientCompat	createLabel
+net/minecraft/client/gui/components/MultiLineLabel	renderCentered	(Lnet/minecraft/client/gui/GuiGraphics;II)I	MiddleClientCompat	renderCentered
+net/minecraft/client/gui/components/MultiLineLabel	renderCentered	(Lnet/minecraft/client/gui/GuiGraphics;IIII)I	MiddleClientCompat	renderCentered
+net/minecraft/client/gui/components/MultiLineLabel	renderLeftAligned	(Lnet/minecraft/client/gui/GuiGraphics;IIII)I	MiddleClientCompat	renderLeftAligned
+net/minecraft/client/gui/components/Checkbox	<init>	(IIIILnet/minecraft/network/chat/Component;Z)V	MiddleClientCompat	newCheckbox
+net/minecraft/client/gui/components/Checkbox	<init>	(IIIILnet/minecraft/network/chat/Component;ZZ)V	MiddleClientCompat	newCheckbox
+net/minecraft/client/renderer/RenderType	glintDirect	()Lnet/minecraft/client/renderer/RenderType;	MiddleClientCompat	glintDirect
+net/minecraft/client/renderer/RenderType	armorGlint	()Lnet/minecraft/client/renderer/RenderType;	MiddleClientCompat	armorGlint
+# --- middle/tail batch 3
+net/minecraft/world/level/block/DropExperienceBlock	<init>	(Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V	=args	MiddleCompat.zeroXp@0,0	(Lnet/minecraft/util/valueproviders/IntProvider;Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V
+net/minecraft/world/level/block/DropExperienceBlock	<init>	(Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;Lnet/minecraft/util/valueproviders/IntProvider;)V	=args	1,0	(Lnet/minecraft/util/valueproviders/IntProvider;Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V
+net/minecraft/world/entity/projectile/Arrow	<init>	(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/LivingEntity;)V	=args	0,1,MiddleCompat.arrowStack@0,MiddleCompat.noWeapon@0	(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;)V
+net/minecraft/world/entity/projectile/Arrow	<init>	(Lnet/minecraft/world/level/Level;DDD)V	=args	0,1,2,3,MiddleCompat.arrowStack@0,MiddleCompat.noWeapon@0	(Lnet/minecraft/world/level/Level;DDDLnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;)V
+net/minecraft/server/level/ServerPlayer	<init>	(Lnet/minecraft/server/MinecraftServer;Lnet/minecraft/server/level/ServerLevel;Lcom/mojang/authlib/GameProfile;)V	=args	0,1,2,MiddleCompat.clientInfo@0	(Lnet/minecraft/server/MinecraftServer;Lnet/minecraft/server/level/ServerLevel;Lcom/mojang/authlib/GameProfile;Lnet/minecraft/server/level/ClientInformation;)V
+net/minecraft/world/level/gameevent/GameEvent	<init>	(Ljava/lang/String;I)V	=args	1	(I)V
+net/minecraft/util/ExtraCodecs	lazyInitializedCodec	(Ljava/util/function/Supplier;)Lcom/mojang/serialization/Codec;	MiddleCompat	lazyInitializedCodec
+net/minecraft/util/ExtraCodecs	stringResolverCodec	(Ljava/util/function/Function;Ljava/util/function/Function;)Lcom/mojang/serialization/Codec;	MiddleCompat	stringResolverCodec
+net/minecraft/util/ExtraCodecs	validate	(Lcom/mojang/serialization/Codec;Ljava/util/function/Function;)Lcom/mojang/serialization/Codec;	MiddleCompat	validate
+net/minecraft/util/ExtraCodecs	validate	(Lcom/mojang/serialization/MapCodec;Ljava/util/function/Function;)Lcom/mojang/serialization/MapCodec;	MiddleCompat	validate
+net/minecraft/world/item/alchemy/Potion	getName	(Ljava/lang/String;)Ljava/lang/String;	MiddleCompat	potionName
+net/minecraft/world/item/alchemy/Potion	byName	(Ljava/lang/String;)Lnet/minecraft/world/item/alchemy/Potion;	MiddleCompat	potionByName
