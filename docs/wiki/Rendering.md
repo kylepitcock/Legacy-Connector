@@ -117,3 +117,28 @@ section compiler; quads without a cull face are never culled. The `LevelSlice` c
 **Not covered.** Legacy code that binds a framebuffer of its own while the level is drawn (1.12.2 `Framebuffer.bindFramebuffer`) draws into
 it only until the next draw: Iris binds its gbuffers when it applies a program. Iris's `block.properties` ids do not know legacy blocks, so a
 pack treats them as plain blocks (no waving leaves, no emissive ores).
+
+## Modernized vanilla art (`modernizeTextures`)
+
+Legacy mods copy or paint on the vanilla art of their time. With `modernizeTextures = true` (default, see [Configuration](Configuration.md)) the
+generated pack replaces exact copies of old vanilla block, item and GUI textures by the modern 1.21.1 texture of the same thing, and
+the old vanilla base (stone, cobblestone, planks, furnace, wool...) under a mod's own painting by the modern base (the mod's pixels
+stay). The matching uses a table of fingerprints, never Mojang's pixels: `src/main/resources/legacyconnector/legacy/texture-fingerprints.txt`,
+written by `tools/gen_texture_fingerprints.py`. The log has a line per mod: `<mod>: modernized N textures (X exact copies, Y backgrounds)`.
+
+Vanilla art covered (each version's textures that differ from the later ones are in the table, so a mod copying any of them is recognised):
+
+| Version | Source of the old art | Where the mod's copies are looked for |
+|---|---|---|
+| Beta 1.7.3 | `terrain.png`, `gui/items.png`, `gui/*.png` of the b1.7.3 client (tile index -> 1.4.7 index table) | the sprites `AssetsB173` generates (sheet tiles, ModLoader overrides): `textures/block/b173/*` of the generated pack |
+| 1.4.7 | `terrain.png`, `gui/items.png`, `gui/*.png` (index table `v1_6_4/sheet-terrain.tsv`, `sheet-items.tsv`) | the tiles `SheetCutter` cuts from the mod's sprite sheets (`assets/legacy147/textures/blocks/<sheet>/<n>.png`) and its single textures |
+| 1.5.2 | `textures/blocks|items/*.png` (camelCase names matched to 1.7.10 names by name or pixels) | the mod's texture files |
+| 1.6.4 | `assets/minecraft/textures/blocks|items|gui/container` | the mod's texture files |
+| 1.7.10, 1.12.2 | the client jars | the mod's texture files |
+
+Regenerate the table with the client jars from the Mojang version manifest (`https://launchermeta.mojang.com/mc/game/version_manifest_v2.json`;
+download only from `launcher.mojang.com` / `piston-data.mojang.com` and check the sha1), extracted outside the repository:
+`tools/gen_texture_fingerprints.py <1.7.10 jar> <1.12.2 jar> <1.21.1 jar> --b173 <jar> --147 <jar> --152 <jar> --164 <jar>`.
+Not covered: entity (mob) textures (their layouts changed), animated textures (water, lava, fire, portal keep their frames) and
+sheets of 1.5.2/1.6.4 mods that have no vanilla counterpart. Offline report: `./gradlew checkLegacyMod -PlegacyJar=... -PkeepDir=<dir>`
+keeps the translated jars, then `./gradlew textureReport -PlegacyJar=<dir>/a.translated.jar`. Pictures: `docs/screenshots/modernize/`.
