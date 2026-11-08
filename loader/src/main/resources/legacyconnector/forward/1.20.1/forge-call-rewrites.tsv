@@ -66,3 +66,14 @@ net/neoforged/neoforge/registries/DeferredRegister.register(Ljava/lang/String;Lj
 # Forge RegistryBuilder facade -> NeoForge registries
 net/neoforged/neoforge/registries/DeferredRegister.makeRegistry(Ljava/util/function/Supplier;)Ljava/util/function/Supplier;	makeRegistry
 net/neoforged/neoforge/registries/NewRegistryEvent.create(Llegacyconnector/v1_20_1/net/minecraftforge/registries/RegistryBuilder;)Ljava/util/function/Supplier;	newRegistryCreate
+net/minecraft/network/FriendlyByteBuf.readRegistryIdUnsafe(Llegacyconnector/v1_20_1/net/minecraftforge/registries/IForgeRegistry;)Ljava/lang/Object;	readRegistryIdUnsafe
+net/minecraft/network/FriendlyByteBuf.writeRegistryIdUnsafe(Llegacyconnector/v1_20_1/net/minecraftforge/registries/IForgeRegistry;Ljava/lang/Object;)V	writeRegistryIdUnsafe
+net/minecraft/network/FriendlyByteBuf.readRegistryId(Llegacyconnector/v1_20_1/net/minecraftforge/registries/IForgeRegistry;)Ljava/lang/Object;	readRegistryId
+net/minecraft/network/FriendlyByteBuf.writeRegistryId(Llegacyconnector/v1_20_1/net/minecraftforge/registries/IForgeRegistry;Ljava/lang/Object;)V	writeRegistryId
+net/neoforged/neoforge/common/DeferredSpawnEggItem.fromEntityType(Lnet/minecraft/world/entity/EntityType;)Lnet/minecraft/world/item/SpawnEggItem;	spawnEggFromType
+net/neoforged/neoforge/event/AnvilUpdateEvent.setCost(I)V	anvilSetCost
+net/neoforged/neoforge/event/AnvilUpdateEvent.getCost()I	anvilGetCost
+net/neoforged/neoforge/event/entity/player/PlayerInteractEvent$RightClickBlock.getUseBlock()Llegacyconnector/v1_20_1/net/minecraftforge/eventbus/api/Event$Result;	rightClickGetUseBlock
+net/neoforged/neoforge/event/entity/player/PlayerInteractEvent$RightClickBlock.getUseItem()Llegacyconnector/v1_20_1/net/minecraftforge/eventbus/api/Event$Result;	rightClickGetUseItem
+net/neoforged/neoforge/event/entity/player/PlayerInteractEvent$RightClickBlock.setUseBlock(Llegacyconnector/v1_20_1/net/minecraftforge/eventbus/api/Event$Result;)V	rightClickSetUseBlock
+net/neoforged/neoforge/event/entity/player/PlayerInteractEvent$RightClickBlock.setUseItem(Llegacyconnector/v1_20_1/net/minecraftforge/eventbus/api/Event$Result;)V	rightClickSetUseItem

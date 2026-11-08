@@ -289,6 +289,15 @@
    "notes": "Automated check: translates offline and everything it uses exists (577 classes). 3 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works. Resource check: 5 model/texture reference(s) are missing after translation (rendering may show missing textures or models), e.g. blockstate advancedrocketry:platepress.json names missing model piston_extended_normal; blockstate advancedrocketry:platepress.json names missing model piston_normal."
   },
   {
+   "name": "Advanced Rocketry",
+   "version": "2.1.9-2",
+   "mc": "1.12.2",
+   "source": "probe",
+   "date": "2026-11-07",
+   "status": "fails",
+   "notes": "Automated check 0.4.6: needs Minecraft or Forge features the layer does not have yet: legacyconnector.v1_12_2.net.minecraft.world.WorldServerDemo.<init>(Llegacyconnector.v1_12_2.net.minecraft.server.MinecraftServer;Llegacyconnector.v1_12_2.net.minecraft.world.storage.ISaveHandler;Llegacyconnector.v1_12_2.net.minecraft.world.storage.WorldInfo;ILlegacyconnector.v1_12_2.net.minecraft.profiler.Profiler;)V. Resource check: 1 model/texture reference(s) are missing after translation (rendering may show missing textures or models), e.g. model minecraft:block/normal_torch_wall.json uses missing texture block/rebellion/torch/tempered_iron (via #0)."
+  },
+  {
    "name": "Advanced Rocketry Tweaker",
    "version": "1.0.0",
    "mc": "1.12.2",
@@ -3688,6 +3697,15 @@
    "date": "2026-11-07",
    "status": "fails",
    "notes": "Automated check 0.4.4: needs Minecraft or Forge features the layer does not have yet: com.mojang.authlib.yggdrasil.response.MinecraftTexturesPayload.getTextures, com.mojang.blaze3d.systems.RenderSystem.getModelViewStack, com.mojang.blaze3d.vertex.VertexConsumer.defaultColor, com.mojang.blaze3d.vertex.VertexConsumer.unsetDefaultColor, com.mojang.serialization.DataResult.get (+353 more)."
+  },
+  {
+   "name": "Botania",
+   "version": "r1.10-364",
+   "mc": "1.12.2",
+   "source": "probe",
+   "date": "2026-11-07",
+   "status": "loads",
+   "notes": "Automated check 0.4.6: translates offline and everything it uses exists (1077 classes). 4 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Botania r1.10-363",
@@ -7551,6 +7569,15 @@
    "notes": "Automated check: translates offline and everything it uses exists (3 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "Enchantment Descriptions",
+   "version": "1.1.20",
+   "mc": "1.12.2",
+   "source": "probe",
+   "date": "2026-11-07",
+   "status": "loads",
+   "notes": "Automated check 0.4.6: translates offline and everything it uses exists (3 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "Enchantment ID Extender",
    "version": "1.0a",
    "mc": "1.7.10",
@@ -10824,7 +10851,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "works",
-   "notes": "Self-tested in 1.4.7 corpus server self test (2026-11-07): 10 items, 0 blocks, 48 entity types; every block placed and used, every item used, every entity spawned without errors. Real client 2026-11-07: harpy, valkyrie (boss bar), centaur, banshee, maid and mermaid spawn and render with their models."
+   "notes": "Self-tested in 1.4.7 corpus server self test (2026-11-07): 10 items, 0 blocks, 48 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "Grimoire of Gaia 3",
@@ -12012,6 +12039,15 @@
    "notes": "Automated check: needs code from another mod or API that is not available or does not match: zmaster587.advancedRocketry.dimension.DimensionProperties.getPeakInsolationMultiplier()D, zmaster587.advancedRocketry.dimension.DimensionProperties.getPeakInsolationMultiplierWithoutAtmosphere()D."
   },
   {
+   "name": "Immersive Technology",
+   "version": "1.11.216",
+   "mc": "1.12.2",
+   "source": "probe",
+   "date": "2026-11-07",
+   "status": "loads",
+   "notes": "Automated check 0.4.6: translates offline and everything it uses exists (411 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "Immersive Vehicles (formerly MTS)",
    "version": "24.0.0",
    "mc": "1.12.2",
@@ -13063,6 +13099,15 @@
    "notes": "Automated check: translates offline and everything it uses exists (153 classes). The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "JAOPCA",
+   "version": "1.12.2-2.3.14.38",
+   "mc": "1.12.2",
+   "source": "probe",
+   "date": "2026-11-07",
+   "status": "loads",
+   "notes": "Automated check 0.4.6: translates offline and everything it uses exists (478 classes). The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "JAOPCAGT5",
    "version": "1.7.10-1.0.0.4",
    "mc": "1.7.10",
@@ -13177,6 +13222,15 @@
    "date": "2026-11-07",
    "status": "fails",
    "notes": "Automated check 0.4.5: needs Minecraft or Forge features the layer does not have yet: com.mojang.authlib.minecraft.MinecraftSessionService.getTextures, com.mojang.realmsclient.RealmsMainScreen.realmsServers, com.mojang.serialization.DataResult.getOrThrow, net.minecraft.client.Options.renderDebug, net.minecraft.client.Options.renderDebugCharts (+73 more). has a 1.21.1 version"
+  },
+  {
+   "name": "JourneyMap",
+   "version": "1.12.2-6.0.10",
+   "mc": "1.12.2",
+   "source": "probe",
+   "date": "2026-11-07",
+   "status": "fails",
+   "notes": "Automated check 0.4.6: uses old Java or library code that no longer exists: com.google.common.io.Files.fileTreeTraverser()Lcom.google.common.collect.TreeTraverser;."
   },
   {
    "name": "JourneyMap Integration",
@@ -13312,6 +13366,15 @@
    "date": "2026-11-07",
    "status": "loads",
    "notes": "Automated check: translates offline and everything it uses exists (371 classes). 4 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "Just Enough Items",
+   "version": "4.24.0.1042",
+   "mc": "1.12.2",
+   "source": "probe",
+   "date": "2026-11-07",
+   "status": "loads",
+   "notes": "Automated check 0.4.6: translates offline and everything it uses exists (416 classes). 4 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Just Enough Mekanism Multiblocks",
@@ -15859,6 +15922,15 @@
    "notes": "Automated check: translates offline and everything it uses exists (390 classes). The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "Mod Tweaker",
+   "version": "4.0.19",
+   "mc": "1.12.2",
+   "source": "probe",
+   "date": "2026-11-07",
+   "status": "loads",
+   "notes": "Automated check 0.4.6: translates offline and everything it uses exists (394 classes). The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "Mod Tweaker 2",
    "version": "0.9.6",
    "mc": "1.7.10",
@@ -16443,6 +16515,15 @@
    "date": "2026-11-07",
    "status": "loads",
    "notes": "Automated check: translates offline and everything it uses exists (20 classes). The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "MTLib",
+   "version": "3.0.7",
+   "mc": "1.12.2",
+   "source": "probe",
+   "date": "2026-11-07",
+   "status": "loads",
+   "notes": "Automated check 0.4.6: translates offline and everything it uses exists (20 classes). The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Multi-Piston",
@@ -17558,6 +17639,15 @@
    "notes": "Automated check: translates offline and everything it uses exists (24 classes). 3 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "NoMoreRecipeConflict",
+   "version": "0.15-b2",
+   "mc": "1.12.2",
+   "source": "probe",
+   "date": "2026-11-07",
+   "status": "loads",
+   "notes": "Automated check 0.4.6: translates offline and everything it uses exists (26 classes). 3 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "NonConflictKeys",
    "version": "1.0.0",
    "mc": "1.12.2",
@@ -17781,6 +17871,15 @@
    "date": "2026-11-07",
    "status": "fails",
    "notes": "Automated check: needs code from another mod or API that is not available or does not match: nc.integration.gtce.GTCERecipeHelper.addGTCERecipe(Ljava.lang.String;Lnc.recipe.ProcessorRecipe;)V, nc.tile.energy.ITileEnergy.addTileToENet()V, nc.tile.energy.ITileEnergy.removeTileFromENet()V."
+  },
+  {
+   "name": "NuclearCraft",
+   "version": "2.19a",
+   "mc": "1.12.2",
+   "source": "probe",
+   "date": "2026-11-07",
+   "status": "fails",
+   "notes": "Automated check 0.4.6: needs code from another mod or API that is not available or does not match: nc.integration.gtce.GTCERecipeHelper.addGTCERecipe(Ljava.lang.String;Lnc.recipe.ProcessorRecipe;)V."
   },
   {
    "name": "Nuclearcraft Neoteric",
@@ -19965,6 +20064,15 @@
    "date": "2026-11-07",
    "status": "loads",
    "notes": "Automated check: translates offline and everything it uses exists (39 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "Reach Fix",
+   "version": "1.1.3",
+   "mc": "1.12.2",
+   "source": "probe",
+   "date": "2026-11-07",
+   "status": "loads",
+   "notes": "Automated check 0.4.6: translates offline and everything it uses exists (61 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "ReactorCraft",
@@ -24044,7 +24152,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "partial",
-   "notes": "Real client, survival, shaders: init succeeds; the wild boar, bighorn sheep, bunny and penguin draw with their models. A skeleton druid and a hedge spider spawned in survival walked up, attacked and killed the player (poison effect, damage, knockback): mob AI and attacks work. Dimension, structures and bosses not explored. Real client 2026-11-07: the dimension generates and renders (forest, ponds); the hydra, naga, tower golem and goblin knight spawn and draw with boss bars (the hydra crashed the client with a ClassCastException until EntityLiving.despawnEntity was made server-only). Mob sounds are unknown sound events (#195)."
+   "notes": "Real client, survival, shaders: init succeeds; the wild boar, bighorn sheep, bunny and penguin draw with their models. A skeleton druid and a hedge spider spawned in survival walked up, attacked and killed the player (poison effect, damage, knockback): mob AI and attacks work. Dimension, structures and bosses not explored."
   },
   {
    "name": "The Twilight Forest",
@@ -24053,7 +24161,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "works",
-   "notes": "Self-tested in 1.4.7 corpus server self test (2026-11-07): 144 items, 23 blocks, 52 entity types; every block placed and used, every item used, every entity spawned without errors. 6 blocks did not stay placed. Real client 2026-11-07 (Sodium and the usual performance mods): the client proxy used to fail verification (ModelIronGolem and TileEntityMobSpawnerRenderer were synthesized classes, no ModelBase or renderer); now it loads, the dimension generates (forest, ponds) and its mobs render (docs/screenshots/old-versions/1.4.7). Bosses, labyrinths and the portal were not tried."
+   "notes": "Self-tested in 1.4.7 corpus server self test (2026-11-07): 144 items, 23 blocks, 52 entity types; every block placed and used, every item used, every entity spawned without errors. 6 blocks did not stay placed."
   },
   {
    "name": "The Twilight Forest",
@@ -24752,6 +24860,15 @@
    "date": "2026-11-07",
    "status": "loads",
    "notes": "Automated check: translates offline and everything it uses exists (209 classes). The game was not started: this only shows the jar translates, not that it works. Resource check: 1 model/texture reference(s) are missing after translation (rendering may show missing textures or models), e.g. blockstate totemic:wind_chime.json names missing model hardened_clay_white."
+  },
+  {
+   "name": "Totemic",
+   "version": "1.12.2-0.11.7",
+   "mc": "1.12.2",
+   "source": "probe",
+   "date": "2026-11-07",
+   "status": "loads",
+   "notes": "Automated check 0.4.6: translates offline and everything it uses exists (207 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works. Resource check: 1 model/texture reference(s) are missing after translation (rendering may show missing textures or models), e.g. blockstate totemic:wind_chime.json names missing model hardened_clay_white."
   },
   {
    "name": "TouchController",
@@ -25581,6 +25698,15 @@
    "notes": "Automated check: translates offline and everything it uses exists (473 classes). 3 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "Village Names",
+   "version": "4.4.13",
+   "mc": "1.12.2",
+   "source": "probe",
+   "date": "2026-11-07",
+   "status": "loads",
+   "notes": "Automated check 0.4.6: translates offline and everything it uses exists (624 classes). 3 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "villagertools",
    "version": "1.0.3",
    "mc": "1.20.1",
@@ -25850,6 +25976,15 @@
    "date": "2026-11-07",
    "status": "loads",
    "notes": "Automated check: translates offline and everything it uses exists (110 classes). The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "WanionLib",
+   "version": "1.12.2-2.91",
+   "mc": "1.12.2",
+   "source": "probe",
+   "date": "2026-11-07",
+   "status": "loads",
+   "notes": "Automated check 0.4.6: translates offline and everything it uses exists (136 classes). The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "WarpTheory",
