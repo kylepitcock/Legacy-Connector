@@ -31,6 +31,7 @@ public class LegacyEntityRenderer1122 extends EntityRenderer<Entity> {
     private static final ResourceLocation NONE = ResourceLocation.withDefaultNamespace("textures/misc/white.png");
     private static final Map<Class<?>, Integer> FAILURES = new ConcurrentHashMap<>();
     private static final int MAX_FAILURES = 20;
+    private static final ThreadLocal<Entity> DRAWING = new ThreadLocal<>();
 
     public LegacyEntityRenderer1122(EntityRendererProvider.Context context) {
         super(context);
@@ -136,10 +137,16 @@ public class LegacyEntityRenderer1122 extends EntityRenderer<Entity> {
         PoseStack pose = RenderContext.pose();
         MultiBufferSource buffers = RenderContext.buffers();
         if (pose == null || buffers == null || modern == null) return;
+        // An entity whose modern renderer is this legacy renderer (a host drawn as its own "EntityItem", e.g. CodeChickenLib's
+        // WrappedEntityItemRenderer) would re-enter doRender without end: StackOverflowError, then a client crash in the crash handler.
+        if (DRAWING.get() == modern) return;
+        DRAWING.set(modern);
         try {
             Minecraft.getInstance().getEntityRenderDispatcher().render(modern, x, y, z, yaw, partialTicks, pose, buffers, RenderContext.vertexLight());
         } catch (RuntimeException e) {
             RenderErrors1122.report("drawing the modern entity " + modern.getType(), e);
+        } finally {
+            DRAWING.remove();
         }
     }
 }
