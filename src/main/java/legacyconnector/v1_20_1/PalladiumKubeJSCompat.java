@@ -59,6 +59,92 @@ public final class PalladiumKubeJSCompat {
     }
 
     /**
+     * KubeJS 7 discovers custom script builders through BuilderTypeRegistry.
+     * Palladium 4.5.x used the removed RegistryInfo API, so bridge its two
+     * builder registrations through the new registry callback without linking
+     * the connector itself against KubeJS classes.
+     */
+    public static void registerBuilderTypes(Object registry) {
+        Objects.requireNonNull(registry, "KubeJS BuilderTypeRegistry");
+        ClassLoader loader = registry.getClass().getClassLoader();
+        try {
+            registerBuilderType(
+                    loader,
+                    registry,
+                    "net.threetag.palladium.power.ability.Ability",
+                    "net.threetag.palladium.compat.kubejs.ability.AbilityBuilder");
+            registerBuilderType(
+                    loader,
+                    registry,
+                    "net.threetag.palladium.condition.ConditionSerializer",
+                    "net.threetag.palladium.compat.kubejs.condition.ConditionBuilder");
+        } catch (Throwable error) {
+            throw new IllegalStateException("Failed to register Palladium's KubeJS 7 ability/condition builders", unwrap(error));
+        }
+    }
+
+    private static void registerBuilderType(
+            ClassLoader loader,
+            Object registry,
+            String contentClassName,
+            String builderClassName) throws ReflectiveOperationException {
+        Class<?> contentClass = Class.forName(contentClassName, true, loader);
+        Object palladiumRegistry = contentClass.getField("REGISTRY").get(null);
+        Object registryKey = invoke(palladiumRegistry, new String[] {"getRegistryKey"});
+
+        Class<?> builderClass = Class.forName(builderClassName, true, loader);
+        Class<?> builderFactoryClass = Class.forName(
+                "dev.latvian.mods.kubejs.registry.BuilderFactory", true, loader);
+        Object factory = Proxy.newProxyInstance(
+                builderFactoryClass.getClassLoader(),
+                new Class<?>[] {builderFactoryClass},
+                (proxy, method, arguments) -> {
+                    if (method.getDeclaringClass() == Object.class) {
+                        return switch (method.getName()) {
+                            case "toString" -> "PalladiumBuilderFactory[" + builderClass.getName() + "]";
+                            case "hashCode" -> System.identityHashCode(proxy);
+                            case "equals" -> proxy == (arguments == null ? null : arguments[0]);
+                            default -> null;
+                        };
+                    }
+                    if (method.getName().equals("createBuilder")
+                            && arguments != null && arguments.length == 1) {
+                        for (Constructor<?> constructor : builderClass.getConstructors()) {
+                            Class<?>[] parameters = constructor.getParameterTypes();
+                            if (parameters.length == 1 && parameters[0].isInstance(arguments[0])) {
+                                return constructor.newInstance(arguments[0]);
+                            }
+                        }
+                        throw new NoSuchMethodException(builderClass.getName()
+                                + " has no public one-argument builder constructor for "
+                                + arguments[0].getClass().getName());
+                    }
+                    throw new UnsupportedOperationException("Unexpected Palladium builder factory method: " + method);
+                });
+
+        java.util.function.Consumer<Object> registerBasicType = callback -> {
+            try {
+                invoke(callback, new String[] {"add"}, "basic", builderClass, factory);
+            } catch (ReflectiveOperationException error) {
+                throw new IllegalStateException("Could not register KubeJS builder type for " + contentClassName, unwrap(error));
+            }
+        };
+        invoke(registry, new String[] {"of"}, registryKey, registerBasicType);
+    }
+
+    /**
+     * KubeJS 7 requires an explicit ScriptType when posting events from groups
+     * whose predicate is common rather than a single ScriptType.
+     */
+    public static Object postEvent(Object scriptType, Object handler, Object event) {
+        try {
+            return invoke(handler, new String[] {"post"}, scriptType, event);
+        } catch (ReflectiveOperationException error) {
+            throw new IllegalStateException("Could not post a migrated Palladium KubeJS event", unwrap(error));
+        }
+    }
+
+    /**
      * Called by the translated Palladium ScriptManagerMixin at the end of
      * KubeJS 7 ScriptManager.loadFromDirectory().
      *
