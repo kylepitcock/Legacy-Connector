@@ -990,7 +990,7 @@ public final class RenderContext {
      * A GL_LINES segment in the world through the line pipeline (screen-space width); false when there is nowhere to draw it
      * (chunk capture), and the caller draws a thin quad instead.
      */
-    static boolean line(double[] a, double[] b) {
+    public static boolean line(double[] a, double[] b) {
         State s = STATE.get();
         PoseStack p = pose(s);
         if (p == null || s.capture != null) return false;

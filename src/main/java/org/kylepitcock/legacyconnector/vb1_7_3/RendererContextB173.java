@@ -15,6 +15,7 @@ public final class RendererContextB173 {
         default void item(legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity entity,legacyconnector.vb1_7_3.net.minecraft.item.ItemStack stack,Matrix4f transform,Style style){}
         default void text(String text,float x,float y,int argb,boolean shadow,Matrix4f transform,Style style){}
         default void quad(List<Vertex> vertices,Matrix4f transform,ResourceLocation texture,Style style){}
+        default void line(Vertex start,Vertex end,Matrix4f transform,Style style){}
         default int width(String text){return text==null?0:text.replaceAll("§.","").length()*6;}
         default legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity camera(){return null;}
         default float yaw(){return 0;}
@@ -70,5 +71,6 @@ public final class RendererContextB173 {
     public static void text(String text,float x,float y,int argb,boolean shadow){var s=CURRENT.get();s.extras.text(text,x,y,argb,shadow,matrix(),style());}
     public static int width(String text){return CURRENT.get().extras.width(text);}
     public static void quad(List<Vertex> vertices){if(vertices.size()!=4)throw new IllegalArgumentException("Beta quad requires four vertices");var s=CURRENT.get();s.extras.quad(List.copyOf(vertices),matrix(),s.texture,style());}
+    public static void line(Vertex start,Vertex end){var s=CURRENT.get();s.extras.line(start,end,matrix(),style());}
     public static void draw(ModelGeometryB173.Draw draw){var s=CURRENT.get();s.sink.accept(new ModelGeometryB173.Draw(draw.cuboids(),new Matrix4f(s.poses.peek()).mul(draw.transform()),draw.scale()),s.texture);}
 }

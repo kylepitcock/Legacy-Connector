@@ -62,7 +62,7 @@ public class LegacyB173BlockEntity extends net.minecraft.world.level.block.entit
         pending = null;
         tickFailed = false;
         attach();
-        setChanged();
+        if(!WorldGenWritesB173.generation())setChanged();
     }
 
     private void attach() {

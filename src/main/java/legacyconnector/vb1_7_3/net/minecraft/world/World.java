@@ -74,6 +74,7 @@ public class World implements BlockView {
         @Override public void close(){if(closed)return;closed=true;if(previous==null)GENERATION.remove();else GENERATION.set(previous);}
     }
     public static GenerationScope mcc$generation(net.minecraft.world.level.LevelAccessor access){return new GenerationScope(access);}
+    public static boolean mcc$generationActive(){return GENERATION.get()!=null;}
     /** The region is thread scoped and applies only to views of its own backing level. */
     public net.minecraft.world.level.LevelAccessor mcc$access(){
         var region=GENERATION.get();return region!=null&&region.getLevel()==mcc$level?region:mcc$level;
@@ -134,6 +135,7 @@ public class World implements BlockView {
     private BlockState state(int x, int y, int z) {
         var access=mcc$access();
         if(access==null)return net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();
+        var pending=org.kylepitcock.legacyconnector.vb1_7_3.WorldGenWritesB173.pending(this,pos(x,y,z));if(pending!=null)return pending;
         requireRegionChunk(x>>4,z>>4);return access.getBlockState(pos(x,y,z));
     }
 
@@ -148,17 +150,23 @@ public class World implements BlockView {
     @Override
     public BlockEntity getBlockEntity(int x, int y, int z) {
         if (mcc$level == null) return null;
+        if(org.kylepitcock.legacyconnector.vb1_7_3.WorldGenWritesB173.outside(this,pos(x,y,z)))return org.kylepitcock.legacyconnector.vb1_7_3.WorldGenWritesB173.tile(this,pos(x,y,z));
         var access=mcc$access();requireRegionChunk(x>>4,z>>4);
         var nativeBlockEntity=access.getBlockEntity(pos(x,y,z));
         if(nativeBlockEntity instanceof org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173BlockEntity host)return host.legacy();
-        return org.kylepitcock.legacyconnector.vb1_7_3.BlockEntityViewsB173.wrap(nativeBlockEntity);
+        var view=org.kylepitcock.legacyconnector.vb1_7_3.BlockEntityViewsB173.wrap(nativeBlockEntity);if(view!=null)view.world=this;return view;
     }
 
     /** MCP {@code setBlockTileEntity}: only a block with a tile entity can hold one. */
     public void setBlockEntity(int x, int y, int z, BlockEntity te) {
         if (mcc$level == null || clientRendererWrite()) return;
-        if (mcc$level.getBlockEntity(pos(x, y, z)) instanceof org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173BlockEntity host) host.setLegacy(te);
-        else if(te instanceof legacyconnector.vb1_7_3.net.minecraft.block.entity.MobSpawnerBlockEntity spawner&&mcc$level.getBlockEntity(pos(x,y,z)) instanceof net.minecraft.world.level.block.entity.SpawnerBlockEntity nativeSpawner){
+        if(org.kylepitcock.legacyconnector.vb1_7_3.WorldGenWritesB173.outside(this,pos(x,y,z))){org.kylepitcock.legacyconnector.vb1_7_3.WorldGenWritesB173.replace(this,pos(x,y,z),te);return;}
+        requireRegionChunk(x>>4,z>>4);var nativeEntity=mcc$access().getBlockEntity(pos(x,y,z));
+        if (nativeEntity instanceof org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173BlockEntity host) host.setLegacy(te);
+        else if(te instanceof legacyconnector.vb1_7_3.net.minecraft.block.entity.ChestBlockEntity chest&&nativeEntity instanceof net.minecraft.world.level.block.entity.ChestBlockEntity nativeChest){
+            chest.world=this;org.kylepitcock.legacyconnector.vb1_7_3.BlockEntityViewsB173.attachChest(chest,nativeChest);org.kylepitcock.legacyconnector.vb1_7_3.BlockEntityViewsB173.flush(chest);
+        }
+        else if(te instanceof legacyconnector.vb1_7_3.net.minecraft.block.entity.MobSpawnerBlockEntity spawner&&nativeEntity instanceof net.minecraft.world.level.block.entity.SpawnerBlockEntity nativeSpawner){
             spawner.world=this;spawner.x=x;spawner.y=y;spawner.z=z;spawner.mcc$host=nativeSpawner;spawner.mcc$apply();
         }
     }
@@ -217,7 +225,7 @@ public class World implements BlockView {
     private boolean set(int x, int y, int z, int id, int meta, int flags, boolean inferDoorHalf) {
         if (mcc$level == null || clientRendererWrite()) return false;
         BlockPos p = pos(x, y, z);
-        BlockState previous=mcc$level.getBlockState(p);
+        BlockState previous=state(x,y,z);
         if(inferDoorHalf&&BlocksB173.legacyId(previous)==id
                 &&org.kylepitcock.legacyconnector.vb1_7_3.VanillaBlockStatesB173.isTorch(id,previous))return false;
         BlockState next = BlocksB173.modernState(id, meta);
@@ -229,16 +237,18 @@ public class World implements BlockView {
         // Beta builders commonly place each door id first and write its metadata afterwards.
         // A temporary native LOWER above LOWER would delete its partner during shape updates.
         if (inferDoorHalf && (id == 64 || id == 71) && next.getBlock() instanceof net.minecraft.world.level.block.DoorBlock) {
-            BlockState below = mcc$level.getBlockState(p.below());
+            BlockState below = state(x,y-1,z);
             if (below.is(next.getBlock()) && below.getValue(net.minecraft.world.level.block.DoorBlock.HALF)
                     == net.minecraft.world.level.block.state.properties.DoubleBlockHalf.LOWER)
                 next = below.setValue(net.minecraft.world.level.block.DoorBlock.HALF,
                         net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER);
         }
-        if (mcc$level.getBlockState(p) == next) return false;
-        boolean changed=mcc$level.setBlock(p,next,flags);
+        if (previous == next) return false;
+        if(org.kylepitcock.legacyconnector.vb1_7_3.WorldGenWritesB173.defer(this,p,next))return true;
+        var access=mcc$access();if(!org.kylepitcock.legacyconnector.core.worldgen.InPlaceStructureGuard.allowWrite(access,p,next))return false;
+        boolean changed=access.setBlock(p,next,access instanceof net.minecraft.server.level.WorldGenRegion?2:flags);
         // Original onBlockAdded drops an unsupported torch. Native destruction owns loot and neighbor updates.
-        if(changed&&unsupportedTorch&&mcc$level.getBlockState(p)==next)mcc$level.destroyBlock(p,true);
+        if(changed&&unsupportedTorch&&state(x,y,z)==next)access.destroyBlock(p,true);
         return changed;
     }
 
@@ -274,16 +284,20 @@ public class World implements BlockView {
     private boolean setMeta(int x, int y, int z, int meta, int flags) {
         if (mcc$level == null || clientRendererWrite()) return false;
         BlockPos p = pos(x, y, z);
-        BlockState s = mcc$level.getBlockState(p);
+        BlockState s = state(x,y,z);
         if (s.getBlock() instanceof org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Block) {
             BlockState next = s.setValue(org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Block.META, meta & 15);
-            return next != s && mcc$level.setBlock(p, next, flags);
+            return next != s && writeMeta(p,next,flags);
         }
         BlockState next = org.kylepitcock.legacyconnector.vb1_7_3.VanillaBlockStatesB173.modernState(BlocksB173.legacyId(s), meta, s);
         if (next == null) next = BlocksB173.modernState(BlocksB173.legacyId(s), meta);
         boolean torchVariant=org.kylepitcock.legacyconnector.vb1_7_3.VanillaBlockStatesB173.isTorch(BlocksB173.legacyId(s),s)
                 &&org.kylepitcock.legacyconnector.vb1_7_3.VanillaBlockStatesB173.isTorch(BlocksB173.legacyId(s),next);
-        return next != s && (next.getBlock() == s.getBlock()||torchVariant) && mcc$level.setBlock(p, next, flags);
+        return next != s && (next.getBlock() == s.getBlock()||torchVariant||BlocksB173.legacyId(next)==BlocksB173.legacyId(s)) && writeMeta(p,next,flags);
+    }
+    private boolean writeMeta(BlockPos pos,BlockState next,int flags){
+        if(org.kylepitcock.legacyconnector.vb1_7_3.WorldGenWritesB173.defer(this,pos,next))return true;
+        var access=mcc$access();return org.kylepitcock.legacyconnector.core.worldgen.InPlaceStructureGuard.allowWrite(access,pos,next)&&access.setBlock(pos,next,access instanceof net.minecraft.server.level.WorldGenRegion?2:flags);
     }
 
     /** MCP {@code setBlockMetadataWithNotify}. */
@@ -412,6 +426,12 @@ public class World implements BlockView {
     public void playStreaming(String name,int x,int y,int z){
         org.kylepitcock.legacyconnector.vb1_7_3.AudioB173.play(mcc$level,new org.kylepitcock.legacyconnector.vb1_7_3.AudioB173.Request(org.kylepitcock.legacyconnector.vb1_7_3.AudioB173.Kind.STREAMING,name,x+.5,y+.5,z+.5,4,1,false));
     }
+    /** Explicit legacy spawns during decoration enter proto chunks through their native generation region. */
+    public boolean mcc$spawnNative(net.minecraft.world.entity.Entity entity) {
+        if(mcc$level==null||mcc$level.isClientSide)return false;
+        requireRegionChunk(entity.blockPosition().getX()>>4,entity.blockPosition().getZ()>>4);
+        return mcc$access().addFreshEntity(entity);
+    }
     public boolean spawnEntity(legacyconnector.vb1_7_3.net.minecraft.entity.Entity entity) {
         if(mcc$level==null||entity==null)return false;
         if(entity instanceof legacyconnector.vb1_7_3.net.minecraft.entity.ItemEntity item) {
@@ -424,7 +444,7 @@ public class World implements BlockView {
             host.setPickUpDelay(item.pickupDelay);host.setDeltaMovement(item.velocityX,item.velocityY,item.velocityZ);
             host.setYRot(item.yaw);host.setXRot(item.pitch);item.mcc$modern=host;
             boolean added=false;
-            try {added=mcc$level.addFreshEntity(host);if(added)org.kylepitcock.legacyconnector.vb1_7_3.EntityViewsB173.spawned(host,item);return added;}
+            try {added=mcc$spawnNative(host);if(added)org.kylepitcock.legacyconnector.vb1_7_3.EntityViewsB173.spawned(host,item);return added;}
             finally {if(!added){item.mcc$modern=null;host.discard();}}
         }
         if(entity.getClass()==legacyconnector.vb1_7_3.net.minecraft.entity.projectile.ArrowEntity.class){
@@ -434,7 +454,7 @@ public class World implements BlockView {
             host.setPos(entity.x,entity.y,entity.z);host.setYRot(entity.yaw);host.setXRot(entity.pitch);host.setDeltaMovement(entity.velocityX,entity.velocityY,entity.velocityZ);
             if(arrow.owner!=null)host.setOwner(arrow.owner.mcc$modern);
             entity.mcc$modern=host;boolean added=false;
-            try{added=mcc$level.addFreshEntity(host);if(added)org.kylepitcock.legacyconnector.vb1_7_3.EntityViewsB173.spawned(host,entity);return added;}
+            try{added=mcc$spawnNative(host);if(added)org.kylepitcock.legacyconnector.vb1_7_3.EntityViewsB173.spawned(host,entity);return added;}
             finally{if(!added){entity.mcc$modern=null;host.discard();}}
         }
         if(entity instanceof legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity living) {
@@ -450,7 +470,7 @@ public class World implements BlockView {
         if(mcc$level==null||mcc$level.isClientSide||entity.mcc$modern!=null)return false;
         var bolt=new net.minecraft.world.entity.LightningBolt(net.minecraft.world.entity.EntityType.LIGHTNING_BOLT,mcc$level);bolt.setPos(entity.x,entity.y,entity.z);
         entity.mcc$modern=bolt;boolean added=false;
-        try{added=mcc$level.addFreshEntity(bolt);if(added)org.kylepitcock.legacyconnector.vb1_7_3.EntityViewsB173.spawned(bolt,entity);return added;}
+        try{added=mcc$spawnNative(bolt);if(added)org.kylepitcock.legacyconnector.vb1_7_3.EntityViewsB173.spawned(bolt,entity);return added;}
         finally{if(!added){entity.mcc$modern=null;bolt.discard();}}
     }
     public legacyconnector.vb1_7_3.net.minecraft.world.explosion.Explosion createExplosion(legacyconnector.vb1_7_3.net.minecraft.entity.Entity source,double x,double y,double z,float power){return createExplosion(source,x,y,z,power,false);}

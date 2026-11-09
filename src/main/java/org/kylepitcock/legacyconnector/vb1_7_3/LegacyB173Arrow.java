@@ -58,7 +58,7 @@ public final class LegacyB173Arrow extends Arrow {
             } catch (ReflectiveOperationException ignored) { }
             host.sync();
             host.entityData.set(SPRITE,ProjectileTexturesB173.sprite(entity.getClass()));
-            added=level.addFreshEntity(host);
+            added=legacyconnector.vb1_7_3.net.minecraft.world.World.mcc$wrap(level).mcc$spawnNative(host);
             if(added)EntityViewsB173.spawned(host,entity);
             return added;
         }finally{if(!added){entity.mcc$modern=null;host.legacy=null;host.discard();}}

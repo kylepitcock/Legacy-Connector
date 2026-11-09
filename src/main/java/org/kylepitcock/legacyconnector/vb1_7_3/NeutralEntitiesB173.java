@@ -44,7 +44,7 @@ public final class NeutralEntitiesB173 {
             if(original instanceof legacyconnector.vb1_7_3.net.minecraft.entity.ItemEntity){
                 var item=new LegacyB173ItemEntity(org.kylepitcock.legacyconnector.LegacyConnector.BETA_ITEM_ENTITY.get(),level);nativeHost=item;item.bind(original);
             }else{var entity=new LegacyB173Entity(org.kylepitcock.legacyconnector.LegacyConnector.BETA_ENTITY.get(),level);nativeHost=entity;entity.bind(original);}
-            added=level.addFreshEntity(nativeHost);if(added)EntityViewsB173.spawned(nativeHost,original);return added;
+            added=World.mcc$wrap(level).mcc$spawnNative(nativeHost);if(added)EntityViewsB173.spawned(nativeHost,original);return added;
         }catch(RuntimeException|LinkageError error){org.slf4j.LoggerFactory.getLogger("LegacyConnector/b1.7.3").error("Cannot spawn original neutral entity {}",original.getClass().getName(),error);return false;}
         finally{if(!added){original.mcc$modern=null;if(nativeHost!=null)nativeHost.discard();}}
     }

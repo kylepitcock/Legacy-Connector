@@ -47,7 +47,41 @@ public final class MoCreaturesRenderCoverageSelfTestB173 {
     }
     @FunctionalInterface private interface Proof {void run(Context context)throws ReflectiveOperationException;}
     private record Case(String name,Proof proof){}
-    private static void run(net.minecraft.server.level.ServerLevel level){var selected=ContentB173.entities().stream().filter(r->r.type().getPackageName().equals("legacyconnector_b173.mocreatures")).findFirst();if(selected.isEmpty())return;RenderersB173.discover();var resources=new LinkedHashMap<String,java.util.function.Supplier<byte[]>>();new MobTexturesB173().contribute(net.minecraft.server.packs.PackType.CLIENT_RESOURCES,resources);var cases=List.of(new Case("werewolf forms and hunch",MoCreaturesRenderCoverageSelfTestB173::werewolf),new Case("ogre decoration pass",MoCreaturesRenderCoverageSelfTestB173::ogre),new Case("horse saddle chest and wings",MoCreaturesRenderCoverageSelfTestB173::horse),new Case("water creature skins and growth",MoCreaturesRenderCoverageSelfTestB173::water),new Case("furniture contents and used litter",MoCreaturesRenderCoverageSelfTestB173::furniture));var failures=new ArrayList<String>();for(var test:cases)try(var c=new Context(level,selected.get(),resources)){test.proof.run(c);LOG.info("B1.7.3 MOC RENDER COVERAGE TEST: {} passed",test.name);}catch(ReflectiveOperationException|RuntimeException|LinkageError error){failures.add(test.name+": "+error);LOG.error("B1.7.3 MOC RENDER COVERAGE TEST failed: {}",test.name,error);}if(!failures.isEmpty())LOG.error("B1.7.3 MOC RENDER COVERAGE TEST: {} failures: {}",failures.size(),failures);else LOG.info("B1.7.3 MOC RENDER COVERAGE TEST: all {} original-renderer CPU proofs passed",cases.size());}
+    private static void run(net.minecraft.server.level.ServerLevel level){var selected=ContentB173.entities().stream().filter(r->r.type().getPackageName().equals("legacyconnector_b173.mocreatures")).findFirst();if(selected.isEmpty())return;RenderersB173.discover();var resources=new LinkedHashMap<String,java.util.function.Supplier<byte[]>>();new MobTexturesB173().contribute(net.minecraft.server.packs.PackType.CLIENT_RESOURCES,resources);var cases=List.of(new Case("original roped big cat line strips",MoCreaturesRenderCoverageSelfTestB173::rope),new Case("werewolf forms and hunch",MoCreaturesRenderCoverageSelfTestB173::werewolf),new Case("ogre decoration pass",MoCreaturesRenderCoverageSelfTestB173::ogre),new Case("horse saddle chest and wings",MoCreaturesRenderCoverageSelfTestB173::horse),new Case("water creature skins and growth",MoCreaturesRenderCoverageSelfTestB173::water),new Case("furniture contents and used litter",MoCreaturesRenderCoverageSelfTestB173::furniture));var failures=new ArrayList<String>();for(var test:cases)try(var c=new Context(level,selected.get(),resources)){test.proof.run(c);LOG.info("B1.7.3 MOC RENDER COVERAGE TEST: {} passed",test.name);}catch(ReflectiveOperationException|RuntimeException|LinkageError error){failures.add(test.name+": "+error);LOG.error("B1.7.3 MOC RENDER COVERAGE TEST failed: {}",test.name,error);}if(!failures.isEmpty())LOG.error("B1.7.3 MOC RENDER COVERAGE TEST: {} failures: {}",failures.size(),failures);else LOG.info("B1.7.3 MOC RENDER COVERAGE TEST: all {} original-renderer CPU proofs passed",cases.size());}
+    private static void rope(Context c)throws ReflectiveOperationException {
+        var cat=c.host("EntityBigCat");cat.setPos(8,100,8);put(cat.legacy(),"adult",true);put(cat.legacy(),"tamed",true);
+        var profile=new com.mojang.authlib.GameProfile(UUID.randomUUID(),"B173Rope");
+        var player=new net.minecraft.server.level.ServerPlayer(c.level.getServer(),c.level,profile,net.minecraft.server.level.ClientInformation.createDefault());
+        new net.minecraft.server.network.ServerGamePacketListenerImpl(c.level.getServer(),new net.minecraft.network.Connection(net.minecraft.network.protocol.PacketFlow.SERVERBOUND),player,net.minecraft.server.network.CommonListenerCookie.createInitial(profile,false)){
+            @Override public void send(net.minecraft.network.protocol.Packet<?> packet){}
+            @Override public void send(net.minecraft.network.protocol.Packet<?> packet,net.minecraft.network.PacketSendListener listener){}
+        };
+        try{
+            player.setPos(12,100,8);c.level.addNewPlayer(player);put(cat.legacy(),"roper",PlayerViewB173.of(player));cat.flushView();cat.publishRenderState();
+            var lines=new ArrayList<List<RendererContextB173.Vertex>>();
+            var extras=new RendererContextB173.Extras(){
+                @Override public void line(RendererContextB173.Vertex start,RendererContextB173.Vertex end,org.joml.Matrix4f transform,RendererContextB173.Style style){
+                    require(!style.texture2d()&&!style.lighting(),"original rope disables texture and lighting");
+                    require(start.argb()==0xFF7F664C&&end.argb()==0xFF7F664C,"original rope brown reaches both native line endpoints");
+                    require(Double.isFinite(start.x()+start.y()+start.z()+end.x()+end.y()+end.z()),"original rope emits finite endpoints");
+                    lines.add(List.of(start,end));
+                }
+            };
+            AnimalRenderingB173.draw(cat,.5F,(draw,texture)->{},extras);
+            require(lines.size()==48,"original rope emits three 17-vertex line strips, not placeholder quads: "+lines.size());
+            for(int strip=0;strip<3;strip++)for(int i=0;i<15;i++)require(lines.get(strip*16+i).getLast().equals(lines.get(strip*16+i+1).getFirst()),"original rope strip preserves adjoining endpoint continuity");
+            var copy=new LegacyB173Animal(AnimalsB173.info(cat.getType()).type(),c.level,null);c.hosts.add(copy);
+            var buffer=new net.minecraft.network.RegistryFriendlyByteBuf(io.netty.buffer.Unpooled.buffer(),c.level.registryAccess());
+            try{
+                var values=cat.getEntityData().getNonDefaultValues();require(values!=null,"roped cat has tracked state");
+                net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket.STREAM_CODEC.encode(buffer,new net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket(cat.getId(),values));
+                copy.getEntityData().assignValues(net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket.STREAM_CODEC.decode(buffer).packedItems());
+            }finally{buffer.release();}
+            copy.applyTrackedRenderData();var roper=(legacyconnector.vb1_7_3.net.minecraft.entity.Entity)field(copy.legacy(),"roper").get(copy.legacy());
+            require(roper!=null&&roper.mcc$modern==player&&roper.mcc$modern.getUUID().equals(player.getUUID()),"native metadata packet resolves original roper to exact player UUID");
+            lines.clear();AnimalRenderingB173.draw(copy,.5F,(draw,texture)->{},extras);require(lines.size()==48,"packet clone executes all original rope line strips");
+        }finally{put(cat.legacy(),"roper",null);player.discard();EntityViewsB173.flush();}
+    }
     private static void werewolf(Context c)throws ReflectiveOperationException {
         var host=c.host("EntityWerewolf");put(host.legacy(),"wereboolean",false);put(host.legacy(),"humanform",true);var human=c.proof(host,"human form");require(human.textures().contains(c.texture(host,"/mob/werehuman.png")),"original human model skin selected");
         put(host.legacy(),"humanform",false);put(host.legacy(),"hunched",false);var wolf=c.proof(host,"wolf form");require(wolf.textures().contains(c.texture(host,"/mob/werewolf.png")),"original wolf model skin selected");require(!human.parts.equals(wolf.parts),"original form switch changes captured model");

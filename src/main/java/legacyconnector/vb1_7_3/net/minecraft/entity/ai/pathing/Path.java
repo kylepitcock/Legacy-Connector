@@ -11,7 +11,11 @@ public class Path {
     public Path(PathNode[] nodes){this(nodes,null);}
     private Path(PathNode[] nodes,net.minecraft.world.level.pathfinder.Path modern){this.nodes=nodes;length=nodes.length;this.modern=modern;}
     public static Path mcc$wrap(net.minecraft.world.level.pathfinder.Path path){
-        if(path==null)return null;PathNode[] nodes=new PathNode[path.getNodeCount()];
+        // Beta PathNodeNavigator returns null when its closest node remains the start.
+        // Native A* represents that failure as an unreached singleton instead. A
+        // reached singleton (already at the goal) and useful partial routes remain valid.
+        if(path==null||path.getNodeCount()==0||(!path.canReach()&&path.getNodeCount()==1))return null;
+        PathNode[] nodes=new PathNode[path.getNodeCount()];
         for(int i=0;i<nodes.length;i++){var n=path.getNode(i);nodes[i]=new PathNode(n.x,n.y,n.z);}
         Path wrapped=new Path(nodes,path);wrapped.currentNodeIndex=path.getNextNodeIndex();return wrapped;
     }

@@ -37,6 +37,16 @@ final class NativeRendererExtrasB173 {
                     drawQuad(vertices,transform,texture,style,pose,NativeRendererExtrasB173::spriteBounds);
                 }
                 @Override public int width(String text){return Minecraft.getInstance().font.width(text);}
+                @Override public void line(RendererContextB173.Vertex start,RendererContextB173.Vertex end,Matrix4f transform,RendererContextB173.Style style){
+                    if(start.x()==end.x()&&start.y()==end.y()&&start.z()==end.z())return;
+                    applyStyle(style);pose.pushPose();
+                    try{
+                        pose.mulPose(transform);
+                        double[] a={start.x(),start.y(),start.z(),0,0,start.argb(),RenderContext.vertexLight(),1};
+                        double[] b={end.x(),end.y(),end.z(),0,0,end.argb(),RenderContext.vertexLight(),1};
+                        if(!RenderContext.line(a,b))throw new IllegalStateException("Beta line requires an active native render context");
+                    }finally{pose.popPose();}
+                }
                 @Override public legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity camera(){
                     var camera=Minecraft.getInstance().getCameraEntity();
                     var view=EntityViewsB173.wrap(camera);return view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity living?living:null;

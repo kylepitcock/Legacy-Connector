@@ -15,6 +15,8 @@ public class ChestBlockEntity extends BlockEntity implements Inventory {
 
     public ChestBlockEntity() {}
 
+    @Override public void markDirty(){if(!org.kylepitcock.legacyconnector.vb1_7_3.WorldGenWritesB173.generation())super.markDirty();org.kylepitcock.legacyconnector.vb1_7_3.BlockEntityViewsB173.flush(this);}
+
     @Override
     public int size() {
         return 27;
