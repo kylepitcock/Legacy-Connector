@@ -65,6 +65,8 @@ holding the hand-written shim under `src/main/java/legacyconnector/v1_7_10`, bri
   and `tools/dev/survey.sh <namespace> <name>` (grid of a mod's blocks); screenshots land in
   `~/.cache/legacyconnector-docker/work/run-screenshots/control/out/`. Code changes need `session.sh stop` and a restart.
   Clear the docker volume `legacyconnector-cache` when pack-generation code changes.
+- Headless graphical tests must be silent. Use OpenAL Soft's null backend (`ALSOFT_DRIVERS=null`) and master volume zero
+  in the disposable test profile. Keep the user's Prism audio settings intact.
 - On a Windows desktop (no Docker) `tools/dev/quick-shots.sh` runs the graphical test directly in about a minute: superflat world, no terrain tour, render
   distance 4, 640x360, 12 blocks/items per mod (`EXTRA="-PshotMods=chisel -PdebugIcons=Stairs"` narrows it and logs icon lookups of block classes
   containing that text). Mods go in `run-screenshots/mods`; move `run-screenshots/.legacyconnector/cache` aside after code changes. The shot list comes from the

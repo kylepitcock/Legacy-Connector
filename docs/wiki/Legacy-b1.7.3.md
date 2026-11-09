@@ -460,6 +460,26 @@ The [food rollback validation](../data/b173-food-rollback-validation-2026-11-09.
 checks with unchanged PlasticCraft 2.1.3 on a disposable dedicated server and 657 passing portable build tests. The item-use
 fixture uses a native fake player rather than a connected client.
 
+### Dedicated boats and explosives
+
+The unchanged PlasticCraft 2.1.3 jar passes a separate-process dedicated server and native remote-client run for boat
+placement, buoyancy, riding, forward/heading controls, dismounting, original damage/drop handling and the same boat/rider
+after a full server restart. C4 checks cover native placement and lever priming, replicated original countdown/render state,
+placed-charge defusing and multiple-entity air defusing with original item returns and tool wear. Defused charges leave
+the floor intact after waiting beyond the original fuse. Natural detonations damage a native entity and destroy terrain;
+the final crater retains the same 1,875-cell fingerprint after saving and restarting the dedicated server.
+
+The shared Beta `World.createExplosion` bridge classifies explosions without a source as native block explosions.
+Previously these entered the mob lane, so `mobGriefing=false` suppressed C4 terrain damage even though the original mod
+explicitly supplied no source. Calls with a source retain their existing mob interaction. Native creeper and TNT controls
+still use their own 30/80-tick fuses: the creeper preserves terrain under that rule, while TNT destroys it. Native vanilla
+and modern explosion call paths are unchanged.
+
+The [dedicated boats and C4 validation](../data/b173-plasticcraft-dedicated-boats-c4-validation-2026-11-09.json) records
+55 passing acceptance assertions and 657 passing portable build tests. It separates exploratory fixture corrections from
+acceptance evidence. The original 120-tick fuse, power 10 and disabled enhanced-C4 option remain unchanged; simultaneous
+two-client play, optional enhanced mode and primed-C4 disk reload are outside this run's claims.
+
 ### Crafting outputs larger than an inventory stack
 
 Beta recipes can return several non-stackable items. The shared shaped/shapeless recipe serializers retain a separate
@@ -474,6 +494,11 @@ partial/full inventories, output conservation, ingredient consumption and bucket
 recipe codecs, network round-trips, matching and output copies. No frisbee-specific behavior is selected in production.
 
 ## GuiAPI settings and TWL models
+
+Contributor follow-up: Aether is the next target after PlasticCraft's dedicated boat and C4 checks. Its original auxiliary
+inventory uses PlayerAPI and its own inventory/container screens, rather than GuiAPI settings widgets. Prefer a separate
+inventory tab while preserving the main inventory layout. Implement the shared player lifecycle, inventory ownership and
+slot synchronization before exposing that screen; keep the installed mod version and avoid production mod selectors.
 
 The shared Beta GuiAPI bridge implements typed Boolean/Integer/Float/Multi settings, context values, original step rounding,
 properties save/reload under the instance's `mods/<backend>/guiconfig.properties`, reflective `ModAction` callbacks and the

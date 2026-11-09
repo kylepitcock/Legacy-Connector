@@ -1,0 +1,616 @@
+{
+  "status": "passed",
+  "snapshot_date": "2026-11-09",
+  "scope": "Actual unchanged PlasticCraft 2.1.3 boats and C4 with one native remote client and a separate dedicated server; generic explosion correction and native controls.",
+  "branch": "legacy-b1.7.3",
+  "tested_base_revision": "7575b46fe10143097e501d3cd113f69bd8a38fb8",
+  "version": "0.4.13",
+  "neoforge": "21.1.258",
+  "artifact": {
+    "path": "build/dist/legacyconnector-0.4.13.jar",
+    "sha256": "faf436e7cc87bfa68812fe2b8d33891f0d20b17149502b5d20e6b39680b66f32"
+  },
+  "original_mod": {
+    "version": "PlasticCraft 2.1.3",
+    "sha256": "2e361f5398e27c5821f132ff1bf3d7ab71564e58df13051dde86c215c534c55b",
+    "client_server_payloads_equal": true,
+    "options_equal_original": true,
+    "c4Fuse": 120,
+    "c4Power": 10,
+    "c4Enhanced": false
+  },
+  "generic_changes": [
+    "Legacy World.createExplosion without a source uses native BLOCK explosion interaction; explicit sources retain their existing MOB interaction.",
+    "The original mods still own boat movement, riding, damage/drop, fuse, priming, defusing, wear and custom saved NBT. No production mod-identity selector was added.",
+    "Headless graphical test instructions now require a silent backend and zero master volume in the disposable test profile; user Prism audio settings are preserved."
+  ],
+  "source_sha256": {
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/world/World.java": "2ceaea3a9d56e0e4884f5724fdebe5960ca81d2e6d23be9981a9d66be1f6679a",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/LegacyB173Entity.java": "0a3fd5501ab26602a44637bbc56d524b52c425ca4f2c5099631fbd4e6183f01a",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/NeutralEntityStateB173.java": "53f42a5ffb15d5276c41c729b61c81433fafb11f9e9674ee98409eda74d0e20e",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/ItemCallbacksB173.java": "d703c2598f299c0b476b3a8bbe6bb897bc0b209c868aaf4af9a740f45d010c57",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/LegacyB173Item.java": "037f0e349ee452861da311b30dbee4a185172830a8a910e3096b34bec82432bd",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/LegacyB173Block.java": "fce3b9294bbed7975fe5a017b33c89380bc423cd767343f19ea4cfdc251b6b00",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/client/NeutralEntityRendererB173.java": "bd3be448bdf06b9d4f039a73ca4cbdc87cdbfd8ef42d6400df9d0e6a25c11dcc"
+  },
+  "distribution_classes_equal_live_test_classes": true,
+  "distribution_classes_compared": 6749,
+  "portable_tests": {
+    "runtime": {
+      "tests": 361,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "loader": {
+      "tests": 296,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "causal_baseline": {
+    "compiled_world_sha256_before": "819ed911c417d77f96cceda5002764218dd9dfb685f8ac40f86c673721875272",
+    "compiled_world_sha256_after": "72f104f0b9e8b3e3657dbd9f4877e2f433192aa587f911cb617b7c4f436d8a61",
+    "initial_default_blast_changed_cells": 114,
+    "false_gamerule_old_behavior": "Natural C4 detonates and damages native pig but leaves all1875floor cells intact; original null source was incorrectly classified as MOB."
+  },
+  "actual_native_checks": {
+    "assertions_passed": 55,
+    "assertions": [
+      {
+        "name": "Native C4 placement consumes exactly one original block item",
+        "passed": true
+      },
+      {
+        "name": "C4 block placed at targeted native position",
+        "passed": true
+      },
+      {
+        "name": "Native defuser removes placed C4",
+        "passed": true
+      },
+      {
+        "name": "Placed defuse returns exactly one C4 item",
+        "passed": true
+      },
+      {
+        "name": "Placed defuse spends one durability",
+        "passed": true
+      },
+      {
+        "name": "Two native C4 placements consume two original items",
+        "passed": true
+      },
+      {
+        "name": "Native redstone lever primes two original C4",
+        "passed": true
+      },
+      {
+        "name": "Original C4 options remain unchanged",
+        "passed": true
+      },
+      {
+        "name": "Both original primed entities visible on remote client",
+        "passed": true
+      },
+      {
+        "name": "Remote renderer receives original countdown state",
+        "passed": true
+      },
+      {
+        "name": "Native air defuser removes all loaded primed C4",
+        "passed": true
+      },
+      {
+        "name": "Multiple air defuse returns two original C4 items",
+        "passed": true
+      },
+      {
+        "name": "Multiple air defuse wears tool only once",
+        "passed": true
+      },
+      {
+        "name": "Defused C4 produces no later explosion",
+        "passed": true
+      },
+      {
+        "name": "Defused C4 leaves all terrain unchanged",
+        "passed": true
+      },
+      {
+        "name": "mob-griefing-false-after-fix native pig starts with unchanged AI/default health",
+        "passed": true
+      },
+      {
+        "name": "mob-griefing-false-after-fix complete floor before blast",
+        "passed": true
+      },
+      {
+        "name": "mob-griefing-false-after-fix native redstone primes original explosive",
+        "passed": true
+      },
+      {
+        "name": "mob-griefing-false-after-fix original fuse/power/enhanced options preserved",
+        "passed": true
+      },
+      {
+        "name": "mob-griefing-false-after-fix original fuse counts down on ordinary server ticks",
+        "passed": true
+      },
+      {
+        "name": "mob-griefing-false-after-fix natural fuse removes original primed host",
+        "passed": true
+      },
+      {
+        "name": "mob-griefing-false-after-fix native explosion damages native pig",
+        "passed": true
+      },
+      {
+        "name": "mob-griefing-false-after-fix expected terrain outcome destroy",
+        "passed": true
+      },
+      {
+        "name": "Native controls keep default creeper AI/health/fuse",
+        "passed": true
+      },
+      {
+        "name": "Native TNT keeps original native80-tick fuse",
+        "passed": true
+      },
+      {
+        "name": "Both native explosion lifecycles finish normally",
+        "passed": true
+      },
+      {
+        "name": "Native creeper still respects mobGriefing=false",
+        "passed": true
+      },
+      {
+        "name": "Native TNT still destroys terrain with mobGriefing=false",
+        "passed": true
+      },
+      {
+        "name": "default-after-fix native pig starts with unchanged AI/default health",
+        "passed": true
+      },
+      {
+        "name": "default-after-fix complete floor before blast",
+        "passed": true
+      },
+      {
+        "name": "default-after-fix native redstone primes original explosive",
+        "passed": true
+      },
+      {
+        "name": "default-after-fix original fuse/power/enhanced options preserved",
+        "passed": true
+      },
+      {
+        "name": "default-after-fix original fuse counts down on ordinary server ticks",
+        "passed": true
+      },
+      {
+        "name": "default-after-fix natural fuse removes original primed host",
+        "passed": true
+      },
+      {
+        "name": "default-after-fix native explosion damages native pig",
+        "passed": true
+      },
+      {
+        "name": "default-after-fix expected terrain outcome destroy",
+        "passed": true
+      },
+      {
+        "name": "Final build native boat placement and original item consumption",
+        "passed": true
+      },
+      {
+        "name": "Final build remote boat uses same authoritative UUID",
+        "passed": true
+      },
+      {
+        "name": "Final build native mount and rider replication client",
+        "passed": true
+      },
+      {
+        "name": "Final build native mount and rider replication server",
+        "passed": true
+      },
+      {
+        "name": "Final build native forward controls steer boat",
+        "passed": true
+      },
+      {
+        "name": "Final build native heading controls turn boat",
+        "passed": true
+      },
+      {
+        "name": "Final build native dismount synchronized client",
+        "passed": true
+      },
+      {
+        "name": "Final build native dismount synchronized server",
+        "passed": true
+      },
+      {
+        "name": "Final build remount before true save/restart",
+        "passed": true
+      },
+      {
+        "name": "Final C4 crater unchanged before save",
+        "passed": true
+      },
+      {
+        "name": "Final C4 crater persists through true dedicated restart",
+        "passed": true
+      },
+      {
+        "name": "Final native client fully receives world and restored boat rider",
+        "passed": true
+      },
+      {
+        "name": "Headless client remains muted after reconnect",
+        "passed": true
+      },
+      {
+        "name": "Final original boat UUID and rider survive save/restart client",
+        "passed": true
+      },
+      {
+        "name": "Final original boat UUID and rider survive save/restart server",
+        "passed": true
+      },
+      {
+        "name": "Final restored boat position matches native tracking timing",
+        "passed": true
+      },
+      {
+        "name": "Final stable native crosshair targets original boat",
+        "passed": true
+      },
+      {
+        "name": "Final native sword attack destroys original boat from stable footing",
+        "passed": true
+      },
+      {
+        "name": "Final dedicated boat returns exactly one original item",
+        "passed": true
+      }
+    ],
+    "boats": {
+      "final_uuid": "82a379a1-4826-4342-87db-06a9fcdbe008",
+      "native_input": "Placement, entity right-click, forward/heading, sneak and sword attack via native client controls; server scripts supply terrain/inventory/camera fixtures only.",
+      "same_boat_and_rider_after_dedicated_restart": true,
+      "drop_count": 1
+    },
+    "placed_and_multiple_air_defuse": {
+      "placed_returned_items": 1,
+      "placed_wear": 1,
+      "primed_count": 2,
+      "multiple_air_returned_items": 2,
+      "multiple_air_wear": 1,
+      "final_tool_damage": 2,
+      "after_wait_ticks": 130,
+      "floor_changed_cells": 0,
+      "executed_before_explosion_patch": true,
+      "callback_sources_equal_7575b46f": [
+        "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/LegacyB173Entity.java",
+        "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/NeutralEntityStateB173.java",
+        "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/ItemCallbacksB173.java",
+        "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/LegacyB173Item.java",
+        "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/LegacyB173Block.java",
+        "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/client/NeutralEntityRendererB173.java"
+      ]
+    },
+    "blasts": {
+      "mob-griefing-false-before-fix": {
+        "mobGriefing": false,
+        "options": {
+          "c4Fuse": 120,
+          "c4Power": 10,
+          "c4Enhanced": false
+        },
+        "first_original_countdown": {
+          "a": 113,
+          "power": 10,
+          "fuse": 120,
+          "connectedCount": 1,
+          "renderScale": 1
+        },
+        "later_original_countdown": {
+          "a": 63,
+          "power": 10,
+          "fuse": 120,
+          "connectedCount": 1,
+          "renderScale": 1
+        },
+        "remaining_primed_after_natural_fuse": 0,
+        "changed_floor_cells": 0,
+        "floor_sha256": "6f89006e970d11786e1666d9cd48004adc14835282b5215c99091139d6928adb",
+        "native_pig_before": {
+          "uuid": "1c4692f4-78a5-4c08-81fd-f060b59d117d",
+          "health": 10,
+          "maxHealth": 10,
+          "noAi": false,
+          "mobGriefing": false
+        },
+        "native_pig_after": {
+          "uuid": "1c4692f4-78a5-4c08-81fd-f060b59d117d",
+          "health": 9,
+          "alive": true,
+          "damageSource": "DamageSource (explosion)"
+        },
+        "evidence": {
+          "path": "run-b173-single/plasticcraft-remote-boat-c4-20261109/proof/mob-griefing-false-before-fix.json",
+          "sha256": "75bf78163e58e3c2dbceb9cb200a1b03802108b82accda9392b0db0ee08f72ce"
+        }
+      },
+      "mob-griefing-false-after-fix": {
+        "mobGriefing": false,
+        "options": {
+          "c4Fuse": 120,
+          "c4Power": 10,
+          "c4Enhanced": false
+        },
+        "first_original_countdown": {
+          "a": 114,
+          "power": 10,
+          "fuse": 120,
+          "connectedCount": 1,
+          "renderScale": 1
+        },
+        "later_original_countdown": {
+          "a": 54,
+          "power": 10,
+          "fuse": 120,
+          "connectedCount": 1,
+          "renderScale": 1
+        },
+        "remaining_primed_after_natural_fuse": 0,
+        "changed_floor_cells": 125,
+        "floor_sha256": "747e49d71374f1d6a9bbddc882b7b651a827ed13a020c4eec87bc998082dc32a",
+        "native_pig_before": {
+          "uuid": "de579222-e03d-4dfa-99f7-aef8f0ff8d60",
+          "health": 10,
+          "maxHealth": 10,
+          "noAi": false,
+          "mobGriefing": false
+        },
+        "native_pig_after": {
+          "uuid": "de579222-e03d-4dfa-99f7-aef8f0ff8d60",
+          "health": 9,
+          "alive": true,
+          "damageSource": "DamageSource (explosion)"
+        },
+        "evidence": {
+          "path": "run-b173-single/plasticcraft-remote-boat-c4-20261109/proof/mob-griefing-false-after-fix.json",
+          "sha256": "97217e78838ceb0b197cdb5eba9d0a1d7f7ceed21ac7499d5e5b29f6c946f98c"
+        }
+      },
+      "default-after-fix": {
+        "mobGriefing": true,
+        "options": {
+          "c4Fuse": 120,
+          "c4Power": 10,
+          "c4Enhanced": false
+        },
+        "first_original_countdown": {
+          "a": 110,
+          "power": 10,
+          "fuse": 120,
+          "connectedCount": 1,
+          "renderScale": 1
+        },
+        "later_original_countdown": {
+          "a": 60,
+          "power": 10,
+          "fuse": 120,
+          "connectedCount": 1,
+          "renderScale": 1
+        },
+        "remaining_primed_after_natural_fuse": 0,
+        "changed_floor_cells": 115,
+        "floor_sha256": "8548f5ac09d14f74119fd44d55851a17c2d6a8ec1e13bdc81041d18c344d8883",
+        "native_pig_before": {
+          "uuid": "50438eaa-fe9d-4afb-8be9-2b3620835e41",
+          "health": 10,
+          "maxHealth": 10,
+          "noAi": false,
+          "mobGriefing": true
+        },
+        "native_pig_after": {
+          "uuid": "50438eaa-fe9d-4afb-8be9-2b3620835e41",
+          "health": 9,
+          "alive": true,
+          "damageSource": "DamageSource (explosion)"
+        },
+        "evidence": {
+          "path": "run-b173-single/plasticcraft-remote-boat-c4-20261109/proof/default-after-fix.json",
+          "sha256": "ffb90f4592eb25f6ad870729625ba73792f1497ba81b1f61d9edae466019a150"
+        }
+      }
+    },
+    "native_controls": {
+      "before": {
+        "classification": "fixture plus native Creeper.ignite; no direct explosion/fuse edits",
+        "tick": 22420,
+        "mobGriefing": false,
+        "creeper": {
+          "uuid": "f386ef53-2234-443e-a86a-feb2990aa517",
+          "nativeClass": "net.minecraft.world.entity.monster.Creeper",
+          "health": 20,
+          "noAi": false,
+          "ignited": true,
+          "swell": 0,
+          "maxSwell": 30,
+          "floorBefore": {
+            "cells": 507,
+            "counts": {
+              "minecraft:stone": 507
+            },
+            "changedFromStone": 0,
+            "sha256": "b52e60460bbf412d52d831ba3a37591267da8483534ad1107f3b085c2e65d551"
+          }
+        },
+        "tnt": {
+          "uuid": "69f300ba-ec0c-4e17-9502-9b139b8e251c",
+          "nativeClass": "net.minecraft.world.entity.item.PrimedTnt",
+          "fuse": 80,
+          "floorBefore": {
+            "cells": 507,
+            "counts": {
+              "minecraft:stone": 507
+            },
+            "changedFromStone": 0,
+            "sha256": "74efcf60c29e8cf480fd9915ce5b509fa3ee6e673c56282850bd7277e95a6fe2"
+          }
+        }
+      },
+      "after": {
+        "classification": "read only native lifecycle and floor census",
+        "elapsedTicks": 80,
+        "mobGriefing": false,
+        "creeper": {
+          "nativeClass": "net.minecraft.world.entity.monster.Creeper",
+          "removed": true,
+          "alive": false,
+          "health": 20,
+          "noAi": false,
+          "ignited": true,
+          "swell": 30,
+          "maxSwell": 30,
+          "floorBefore": {
+            "cells": 507,
+            "counts": {
+              "minecraft:stone": 507
+            },
+            "changedFromStone": 0,
+            "sha256": "b52e60460bbf412d52d831ba3a37591267da8483534ad1107f3b085c2e65d551"
+          },
+          "floorNow": {
+            "cells": 507,
+            "counts": {
+              "minecraft:stone": 507
+            },
+            "changedFromStone": 0,
+            "sha256": "b52e60460bbf412d52d831ba3a37591267da8483534ad1107f3b085c2e65d551"
+          }
+        },
+        "tnt": {
+          "nativeClass": "net.minecraft.world.entity.item.PrimedTnt",
+          "removed": true,
+          "alive": false,
+          "fuse": 0,
+          "floorBefore": {
+            "cells": 507,
+            "counts": {
+              "minecraft:stone": 507
+            },
+            "changedFromStone": 0,
+            "sha256": "74efcf60c29e8cf480fd9915ce5b509fa3ee6e673c56282850bd7277e95a6fe2"
+          },
+          "floorNow": {
+            "cells": 507,
+            "counts": {
+              "minecraft:stone": 498,
+              "minecraft:air": 9
+            },
+            "changedFromStone": 9,
+            "sha256": "51d2cc983f77a16804dd897a464340952648097bd2ff9e8652e884c6577693f2"
+          }
+        }
+      }
+    },
+    "persistence": {
+      "server_process_replaced": true,
+      "old_pid": 2425,
+      "new_pid": 3331,
+      "changed_cells": 115,
+      "floor_sha256_before": "8548f5ac09d14f74119fd44d55851a17c2d6a8ec1e13bdc81041d18c344d8883",
+      "floor_sha256_after": "8548f5ac09d14f74119fd44d55851a17c2d6a8ec1e13bdc81041d18c344d8883"
+    }
+  },
+  "visual_inspection": [
+    {
+      "path": "run-b173-single/plasticcraft-remote-boat-c4-20261109/client/control/out/boat-placed.png",
+      "sha256": "bb48c68fa38440360e272c49215d6a345b4035356e7ea73bc715e7b0ad242c81",
+      "status": "viewed"
+    },
+    {
+      "path": "run-b173-single/plasticcraft-remote-boat-c4-20261109/client/control/out/c4-two-primed.png",
+      "sha256": "63d484d51d097bd6b172cb5e9b328fc9e9197ed5444eb3d40848260bfdbd0834",
+      "status": "viewed"
+    },
+    {
+      "path": "run-b173-single/plasticcraft-remote-boat-c4-20261109/client/control/out/final-boat-rider-restarted.png",
+      "sha256": "01d8ca1cce65f52035fd9ac6d56fa91a642b088a59be5ea2acc7f405b758b1de",
+      "status": "viewed"
+    },
+    {
+      "path": "run-b173-single/plasticcraft-remote-boat-c4-20261109/client/control/out/default-after-fix-crater.png",
+      "sha256": "2ee1ae3c8af0f28e56341b74412cdfd63f4b1c2057d7e72a0d243524b04a30a7",
+      "status": "viewed"
+    }
+  ],
+  "evidence": [
+    {
+      "path": "run-b173-single/plasticcraft-remote-boat-c4-20261109/proof/native-explosion-controls.json",
+      "sha256": "0e8349cd57b6685c0a3f7f1a1708e35efa278177e888fc3258daac9a5cb9e6fe"
+    },
+    {
+      "path": "run-b173-single/plasticcraft-remote-boat-c4-20261109/proof/progress.json",
+      "sha256": "beca2a3073f9e1f84d303f203373e4b54e62895890de29d0c6b84443d6586cb0"
+    },
+    {
+      "path": "run-b173-single/plasticcraft-remote-boat-c4-20261109/proof/fixed-client-launch.log",
+      "sha256": "f0cf86f6e635f67afce8a7bf1e360c3ad43aa86b33bfa41256bdecd983585c01"
+    },
+    {
+      "path": "run-b173-single/plasticcraft-remote-boat-c4-20261109/proof/fixed-server-launch.log",
+      "sha256": "5124f82930f3ad49be909a64906158e8dd108136863ef9ba97008470f3c896c5"
+    }
+  ],
+  "exploratory_fixture_failures": {
+    "excluded_from_acceptance_count": [
+      "Native use placed one original boat on dedicated server",
+      "Remote boat horizontal position agrees with server",
+      "Saved boat rider restores after reconnect client",
+      "Native attacks destroy original dedicated boat",
+      "Native redstone lever primes both original C4",
+      "default-before-fix native explosion damages native pig",
+      "Final native weapon attack destroys original boat"
+    ],
+    "corrections": [
+      "Initial dock pitch30 put water surface beyond the original 5-block ray reach; repeat with pitch45. Initial placement assertion is exploratory fixture calibration, not a product defect.",
+      "Moving client/server snapshots are sequential: initial horizontal comparison ignored 9 elapsed ticks of coasting. Repeat using timestamps and a settled boat; no product defect established.",
+      "Initial reconnect readiness checked player/world presence while ReceivingLevelScreen was still active. Authoritative rider already restored; wait for loaded terrain and tracked boat before client assertions.",
+      "Unarmed break probes were spaced longer than original boat damage decay; repeated damage reached zero between probes. Use one sufficiently strong native iron-sword attack for the original >40 accumulated-damage threshold.",
+      "Lever center aim at Y70.5 missed its native low collision shape; authoritative lever stayed OFF. Aim at native lever base Y70.125 and use empty hand.",
+      "Explosion damage-source inspection initially occurred more than40 native ticks after blast, after vanilla clears lastDamageSource. Poll authoritative completion and capture damage source in the same server tick; health9 from initial10 was already observed.",
+      "Final sword attempt began while the dismounted player was sinking; camera alignment changed relative to boat before native ray picking, so attack had no entity hit. Repeat from stable native stone footing and assert actual crosshair UUID first."
+    ]
+  },
+  "headless_audio": {
+    "masterVolume": 0,
+    "soundManagerStopped": true,
+    "futureBackend": "OpenAL Soft null"
+  },
+  "boundaries": [
+    "One real remote client socket is exercised; simultaneous two-client interactions are not claimed.",
+    "Original enhancedC4=false and120-tick fuse options remain unchanged. Optional enhanced-mode behavior and primed-C4 disk reload are not established by these checks.",
+    "Placed and multiple-air-defuse cases precede the explosion-only patch; listed callback sources are byte-for-byte unchanged after line-ending normalization. Boats and both gamerule explosion cases are rerun on the final artifact.",
+    "Native Creeper and TNT controls use their own unmodified30/80-tick fuses and native lifecycle, without direct explosion calls, AI changes or attribute edits.",
+    "Fixture preparation uses isolated native block/player/inventory/camera APIs. No original gameplay callback is invoked manually and no fuse is shortened.",
+    "Private archives, generated game caches/worlds and local helper scripts are not committed or required by the default build.",
+    "Earlier fixture-calibration failures are retained separately, including reach, sequential snapshot timing, early world reception, damage-source expiry, lever shape and moving camera alignment. They are excluded from acceptance assertions."
+  ],
+  "generic_guard": {
+    "status": "passed",
+    "beta_source_files": 303,
+    "mod_specific_baseline_mentions": 21,
+    "mod_specific_baseline_files": 7,
+    "new_mentions": 0
+  }
+}

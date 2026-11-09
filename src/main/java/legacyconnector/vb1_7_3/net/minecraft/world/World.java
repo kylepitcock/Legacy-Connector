@@ -525,7 +525,9 @@ public class World implements BlockView {
     public legacyconnector.vb1_7_3.net.minecraft.world.explosion.Explosion createExplosion(legacyconnector.vb1_7_3.net.minecraft.entity.Entity source,double x,double y,double z,float power){return createExplosion(source,x,y,z,power,false);}
     public legacyconnector.vb1_7_3.net.minecraft.world.explosion.Explosion createExplosion(legacyconnector.vb1_7_3.net.minecraft.entity.Entity source,double x,double y,double z,float power,boolean fire){
         if(mcc$level==null)return null;
-        var nativeExplosion=mcc$level.explode(source==null?null:source.mcc$modern,x,y,z,power,fire,Level.ExplosionInteraction.MOB);
+        // Legacy explosions without a source use native block destruction rules.
+        var interaction=source==null?Level.ExplosionInteraction.BLOCK:Level.ExplosionInteraction.MOB;
+        var nativeExplosion=mcc$level.explode(source==null?null:source.mcc$modern,x,y,z,power,fire,interaction);
         return new legacyconnector.vb1_7_3.net.minecraft.world.explosion.Explosion(this,source,x,y,z,power,fire,nativeExplosion);
     }
     public List<legacyconnector.vb1_7_3.net.minecraft.entity.Entity> getEntities(legacyconnector.vb1_7_3.net.minecraft.entity.Entity except,
