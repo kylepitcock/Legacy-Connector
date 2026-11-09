@@ -61,15 +61,45 @@ final class PalladiumKubeJS1201 {
     }
 
     /** Migrate Palladium's KubeJS 6 plugin, event types, and addon-script mixin. */
+    private static final String ABILITY_BUILDER =
+            "net/threetag/palladium/compat/kubejs/ability/AbilityBuilder";
+    private static final String CONDITION_BUILDER =
+            "net/threetag/palladium/compat/kubejs/condition/ConditionBuilder";
+    private static final String KUBEJS6_REGISTRY_INFO =
+            "Ldev/latvian/mods/kubejs/registry/RegistryInfo;";
+
     static int apply(ClassNode node) {
+        int builderApiChanges = rewriteLegacyBuilderApi(node);
         int eventApiChanges = rewriteLegacyEventApi(node);
         if (PLUGIN.equals(node.name)) {
-            return eventApiChanges + rewritePlugin(node);
+            return builderApiChanges + eventApiChanges + rewritePlugin(node);
         }
         if (SCRIPT_MANAGER_MIXIN.equals(node.name)) {
-            return eventApiChanges + rewriteScriptManagerMixin(node);
+            return builderApiChanges + eventApiChanges + rewriteScriptManagerMixin(node);
         }
-        return eventApiChanges;
+        return builderApiChanges + eventApiChanges;
+    }
+
+    /**
+     * KubeJS 7 removed RegistryInfo and no longer asks builders for their registry type:
+     * BuilderTypeRegistry supplies the registry key and factory instead. These two
+     * obsolete overrides also leave a method descriptor that points at the removed
+     * KubeJS 6 class, which can prevent Rhino from discovering the builders' remaining
+     * public methods. Remove only the dead overrides; retain every script-facing method.
+     */
+    private static int rewriteLegacyBuilderApi(ClassNode node) {
+        if (!ABILITY_BUILDER.equals(node.name) && !CONDITION_BUILDER.equals(node.name)) {
+            return 0;
+        }
+
+        MethodNode legacyRegistryGetter = findMethod(
+                node, "getRegistryType", "()" + KUBEJS6_REGISTRY_INFO);
+        if (legacyRegistryGetter == null) {
+            return 0;
+        }
+
+        node.methods.remove(legacyRegistryGetter);
+        return 1;
     }
 
     /**
