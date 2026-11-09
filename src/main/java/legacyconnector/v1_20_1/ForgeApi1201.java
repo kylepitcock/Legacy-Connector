@@ -689,4 +689,36 @@ public final class ForgeApi1201 {
             throw new IllegalStateException("Could not hand a config to " + spec, e);
         }
     }
+
+    /** Forge 1.20.1's MavenVersionStringHelper implementation; the NeoForge 1.21.1 class no longer exposes this helper. */
+    public static String artifactVersionToString(org.apache.maven.artifact.versioning.ArtifactVersion artifactVersion) {
+        return artifactVersion.toString();
+    }
+
+    // ---- Forge 1.20.1 ResourcePackLoader -------------------------------------------------------------------------------
+
+    /**
+     * Forge 1.20.1 returned a concrete PathPackResources from
+     * ResourcePackLoader.createPackForMod(IModFileInfo). NeoForge 1.21.1 returns a
+     * Pack.ResourcesSupplier instead. Palladium 4.5.10 consumes the concrete legacy type:
+     * it reads the pack ID, builtin flag and source path before constructing its own wrapper.
+     *
+     * <p>Use the same SecureJar root as NeoForge 1.21.1's own ResourcePackLoader. This is
+     * important for ordinary mod JARs and exploded development mods: FML owns the secure
+     * filesystem, so the compatibility layer must neither open a second ZIP filesystem nor
+     * close/copy the underlying resources itself.
+     */
+    public static legacyconnector.v1_20_1.net.minecraftforge.resource.PathPackResources createPackForMod(
+            net.neoforged.neoforgespi.language.IModFileInfo modFileInfo) {
+        java.util.Objects.requireNonNull(modFileInfo, "modFileInfo");
+        var modFile = java.util.Objects.requireNonNull(modFileInfo.getFile(), "modFileInfo.file");
+        var mods = java.util.Objects.requireNonNull(modFileInfo.getMods(), "modFileInfo.mods");
+        String packId = mods.isEmpty() ? modFile.getFileName() : mods.get(0).getModId();
+        java.nio.file.Path root = java.util.Objects.requireNonNull(
+                modFile.getSecureJar(), "modFile.secureJar").getRootPath();
+
+        return new legacyconnector.v1_20_1.net.minecraftforge.resource.PathPackResources(packId, true, root);
+    }
+
+
 }
