@@ -201,7 +201,7 @@ class PalladiumKubeJS1201Test implements Opcodes {
         MethodNode rewrittenPost = find(node, "post", "()V");
         assertTrue(hasCall(rewrittenPost, INVOKESTATIC, "legacyconnector/v1_20_1/PalladiumKubeJSCompat",
                 "postEvent", "(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;"));
-        assertTrue(hasCall(rewrittenPost, GETSTATIC, "dev/latvian/mods/kubejs/script/ScriptType",
+        assertTrue(hasField(rewrittenPost, GETSTATIC, "dev/latvian/mods/kubejs/script/ScriptType",
                 "SERVER", "Ldev/latvian/mods/kubejs/script/ScriptType;"));
     }
 
@@ -243,6 +243,17 @@ class PalladiumKubeJS1201Test implements Opcodes {
                     && call.owner.equals(owner)
                     && call.name.equals(name)
                     && call.desc.equals(descriptor)) return true;
+        }
+        return false;
+    }
+
+    private static boolean hasField(MethodNode method, int opcode, String owner, String name, String descriptor) {
+        for (AbstractInsnNode instruction : method.instructions.toArray()) {
+            if (instruction instanceof FieldInsnNode field
+                    && field.getOpcode() == opcode
+                    && field.owner.equals(owner)
+                    && field.name.equals(name)
+                    && field.desc.equals(descriptor)) return true;
         }
         return false;
     }
