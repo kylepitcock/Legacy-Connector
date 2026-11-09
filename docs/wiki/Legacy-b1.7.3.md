@@ -353,6 +353,18 @@ Five focused tests cover dye/wool metadata and armor constructor/reflection beha
 original GUI rendering are not established by these checks; the GUI test uses the current generic layouts. Its latex tap
 requires a neighboring log, so a stone-only placement sweep does not establish tap placement compatibility.
 
+The subsequent [PlasticCraft latex validation](../data/b173-plasticcraft-latex-validation-2026-11-09.json) reproduces the
+Latex Extractor's bucket failure with actual PlasticCraft 2.1.3. The original bucket traces for the non-colliding tap, but
+the old bridge traced collision boxes and selected the log behind it; the tap's original selection callback also called a
+stubbed base method. Shared Beta world ray traces now invoke original block selection callbacks, and the base block API
+clips its state-dependent selection bounds. The explicit collision-only filter and source-fluid pickup rules are retained;
+native vanilla interactions are unchanged.
+
+Native placement and survival right-clicks fill an actual plastic bucket on all four horizontal log faces. Plastic water
+pickup/placement and a native vanilla bucket control pass, as do filled-bucket save/reopen and another fill from the same
+existing extractor afterward. The original mod archive is byte-identical to Prism's 2.1.3 jar. The default build passes
+568 portable tests without private mod archives; other PlasticCraft systems are outside this bounded interaction check.
+
 ### Crafting outputs larger than an inventory stack
 
 Beta recipes can return several non-stackable items. The shared shaped/shapeless recipe serializers retain a separate

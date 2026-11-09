@@ -62,6 +62,14 @@ public class Block {
     public legacyconnector.vb1_7_3.net.minecraft.util.math.Box getBoundingBox(legacyconnector.vb1_7_3.net.minecraft.world.World world,int x,int y,int z) {
         return legacyconnector.vb1_7_3.net.minecraft.util.math.Box.create(x+minX,y+minY,z+minZ,x+maxX,y+maxY,z+maxZ);
     }
+    /** Selection bounds are independent of the collision box; subclasses may customize this callback. */
+    public legacyconnector.vb1_7_3.net.minecraft.util.hit.HitResult raycast(
+            legacyconnector.vb1_7_3.net.minecraft.world.World world,int x,int y,int z,
+            legacyconnector.vb1_7_3.net.minecraft.util.math.Vec3d from,legacyconnector.vb1_7_3.net.minecraft.util.math.Vec3d to) {
+        updateBoundingBox(world,x,y,z);
+        var hit=legacyconnector.vb1_7_3.net.minecraft.util.math.Box.create(x+minX,y+minY,z+minZ,x+maxX,y+maxY,z+maxZ).raycast(from,to);
+        return hit==null?null:new legacyconnector.vb1_7_3.net.minecraft.util.hit.HitResult(x,y,z,hit.side,hit.pos);
+    }
     public void addIntersectingBoundingBox(legacyconnector.vb1_7_3.net.minecraft.world.World world,int x,int y,int z,
             legacyconnector.vb1_7_3.net.minecraft.util.math.Box mask,java.util.ArrayList<legacyconnector.vb1_7_3.net.minecraft.util.math.Box> boxes) {
         var box=getCollisionShape(world,x,y,z);if(box!=null && box.intersects(mask))boxes.add(box);

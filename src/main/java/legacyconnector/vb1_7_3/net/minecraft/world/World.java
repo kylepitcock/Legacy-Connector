@@ -111,15 +111,7 @@ public class World implements BlockView {
 
     public legacyconnector.vb1_7_3.net.minecraft.util.hit.HitResult raycast(
             legacyconnector.vb1_7_3.net.minecraft.util.math.Vec3d from, legacyconnector.vb1_7_3.net.minecraft.util.math.Vec3d to, boolean fluids) {
-        if (mcc$level == null || from == null || to == null) return null;
-        var hit = mcc$level.clip(new net.minecraft.world.level.ClipContext(
-                new net.minecraft.world.phys.Vec3(from.x, from.y, from.z), new net.minecraft.world.phys.Vec3(to.x, to.y, to.z),
-                net.minecraft.world.level.ClipContext.Block.COLLIDER, fluids ? net.minecraft.world.level.ClipContext.Fluid.SOURCE_ONLY
-                        : net.minecraft.world.level.ClipContext.Fluid.NONE, net.minecraft.world.phys.shapes.CollisionContext.empty()));
-        if (hit.getType() == net.minecraft.world.phys.HitResult.Type.MISS) return null;
-        var p = hit.getBlockPos(); var v = hit.getLocation();
-        return new legacyconnector.vb1_7_3.net.minecraft.util.hit.HitResult(p.getX(), p.getY(), p.getZ(), hit.getDirection().get3DDataValue(),
-                legacyconnector.vb1_7_3.net.minecraft.util.math.Vec3d.create(v.x, v.y, v.z));
+        return raycast(from,to,fluids,false);
     }
 
     public boolean canInteract(legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity player, int x, int y, int z) {
@@ -130,7 +122,35 @@ public class World implements BlockView {
     public legacyconnector.vb1_7_3.net.minecraft.util.hit.HitResult raycast(
             legacyconnector.vb1_7_3.net.minecraft.util.math.Vec3d from, legacyconnector.vb1_7_3.net.minecraft.util.math.Vec3d to,
             boolean fluids, boolean ignoreWithoutCollision) {
-        return raycast(from,to,fluids);
+        var access=mcc$access();
+        if(access==null||from==null||to==null||!Double.isFinite(from.x)||!Double.isFinite(from.y)||!Double.isFinite(from.z)
+                ||!Double.isFinite(to.x)||!Double.isFinite(to.y)||!Double.isFinite(to.z))return null;
+        var start=new net.minecraft.world.phys.Vec3(from.x,from.y,from.z);var end=new net.minecraft.world.phys.Vec3(to.x,to.y,to.z);
+        var context=new net.minecraft.world.level.ClipContext(start,end,net.minecraft.world.level.ClipContext.Block.OUTLINE,
+                fluids?net.minecraft.world.level.ClipContext.Fluid.SOURCE_ONLY:net.minecraft.world.level.ClipContext.Fluid.NONE,
+                net.minecraft.world.phys.shapes.CollisionContext.empty());
+        return net.minecraft.world.level.BlockGetter.traverseBlocks(start,end,context,(clip,p)->{
+            var state=state(p.getX(),p.getY(),p.getZ());
+            if(state.getBlock() instanceof org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Block hosted){
+                var block=hosted.legacy();
+                synchronized(block){
+                    double[] bounds={block.minX,block.minY,block.minZ,block.maxX,block.maxY,block.maxZ};
+                    try{
+                        if(ignoreWithoutCollision&&block.getCollisionShape(this,p.getX(),p.getY(),p.getZ())==null)return null;
+                        if(!block.hasCollision(BlocksB173.legacyMeta(state),fluids))return null;
+                        return block.raycast(this,p.getX(),p.getY(),p.getZ(),from,to);
+                    }finally{block.minX=bounds[0];block.minY=bounds[1];block.minZ=bounds[2];block.maxX=bounds[3];block.maxY=bounds[4];block.maxZ=bounds[5];}
+                }
+            }
+            if(ignoreWithoutCollision&&state.getCollisionShape(access,p).isEmpty())return null;
+            var blockHit=access.clipWithInteractionOverride(start,end,p,clip.getBlockShape(state,access,p),state);
+            var fluidHit=clip.getFluidShape(state.getFluidState(),access,p).clip(start,end,p);
+            var hit=blockHit==null?fluidHit:fluidHit==null||start.distanceToSqr(blockHit.getLocation())<=start.distanceToSqr(fluidHit.getLocation())?blockHit:fluidHit;
+            if(hit==null)return null;
+            var at=hit.getBlockPos();var v=hit.getLocation();
+            return new legacyconnector.vb1_7_3.net.minecraft.util.hit.HitResult(at.getX(),at.getY(),at.getZ(),hit.getDirection().get3DDataValue(),
+                    legacyconnector.vb1_7_3.net.minecraft.util.math.Vec3d.create(v.x,v.y,v.z));
+        },clip->null);
     }
 
     private static BlockPos pos(int x, int y, int z) {

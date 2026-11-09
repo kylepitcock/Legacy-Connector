@@ -1,0 +1,243 @@
+{
+  "status": "passed",
+  "snapshot_date": "2026-11-09",
+  "scope": "Actual unchanged PlasticCraft 2.1.3 Latex Extractor / plastic bucket interaction; selected water controls and native save/reopen. Not complete PlasticCraft compatibility.",
+  "branch": "legacy-b1.7.3",
+  "tested_base_revision": "74c24681ced832df74888d36f1e0767d72dc82a6",
+  "version": "0.4.13",
+  "artifact": {
+    "path": "build\\dist\\legacyconnector-0.4.13.jar",
+    "sha256": "7891b7d5109a7a79bde3226922cadbde2cfc403ebe3f0d53a6e86e9ecc9d3f1d"
+  },
+  "source_sha256": {
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/block/Block.java": "0c8dc2bae50bbe1147e0dca212062735676132a609b997febe6e3488169bd235",
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/world/World.java": "6af703db704a82839a2ea07a11309bdc40f656688eaf9c63ee4d8306a8f1e365",
+    "src/test/java/org/kylepitcock/legacyconnector/vb1_7_3/BlockRaycastB173Test.java": "532a67941e928026b660e84a5eb6068d295cf79139e6acf72ff71b91ce83927c"
+  },
+  "tests": {
+    "runtime": {
+      "tests": 294,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "loader": {
+      "tests": 274,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "default_build": {
+    "passed": true,
+    "command": "./gradlew.bat build bundleJar",
+    "private_mod_archives_required": false,
+    "evidence": {
+      "path": "build\\plasticcraft-latex-final-build-20261109.log",
+      "sha256": "d2e4badf92808169a1b800d68a0713f2218c4e87c46d0a5ba794e16fb517878c"
+    }
+  },
+  "generic_guard": {
+    "passed": true,
+    "files_checked": 277
+  },
+  "generic_changes": [
+    "Shared Beta World ray tracing selects non-colliding blocks through original virtual block selection callbacks; no block/mod identity selectors",
+    "Base Beta Block.raycast updates selection bounds and returns original face/hit coordinates independently of collision boxes",
+    "Explicit ignore-without-collision and source-fluid flags are honored; native vanilla world/item interaction code is unchanged"
+  ],
+  "original_mod": {
+    "version": "2.1.3",
+    "test_archive": {
+      "path": "run-b173-single\\plasticcraft-latex-client-20261109-545d9d\\mods\\b1.7.3\\PlasticCraft-2.1.3-ModLoader.jar",
+      "sha256": "2e361f5398e27c5821f132ff1bf3d7ab71564e58df13051dde86c215c534c55b"
+    },
+    "prism_archive": {
+      "path": "C:\\Users\\zekken\\AppData\\Roaming\\PrismLauncher\\instances\\Legacy Connector\\minecraft\\mods\\b1.7.3\\PlasticCraft-2.1.3-ModLoader.jar",
+      "sha256": "2e361f5398e27c5821f132ff1bf3d7ab71564e58df13051dde86c215c534c55b"
+    },
+    "entire_archives_byte_identical": true
+  },
+  "causal_baseline": {
+    "native_placement": true,
+    "native_bucket_input": true,
+    "held_before": "b173_plasticcraft:p_plastic_bucket",
+    "held_after": "b173_plasticcraft:p_plastic_bucket",
+    "native_crosshair_selected_tap": true,
+    "original_bucket_ray_incorrectly_hit_log": {
+      "xyz": [
+        0,
+        70,
+        0
+      ],
+      "side": 5,
+      "pos": [
+        1,
+        70.49462685555126,
+        0.5000000000000002
+      ]
+    },
+    "original_tap_super_ray_was_null": true,
+    "evidence": {
+      "path": "run-b173-single\\plasticcraft-latex-client-20261109-545d9d\\latex-proof\\baseline-result.json",
+      "sha256": "4d3bee910e6529afa73365a5c1f020cc78468a56654a0397f7ab5b32407c0ab7"
+    }
+  },
+  "actual_native_cases": [
+    {
+      "facing": "east",
+      "meta": 1,
+      "xyz": [
+        1,
+        70,
+        0
+      ],
+      "before_item": "b173_plasticcraft:p_plastic_bucket",
+      "after_item": "b173_plasticcraft:p_plastic_latex_bucket",
+      "count": 1,
+      "evidence": {
+        "path": "run-b173-single\\plasticcraft-latex-client-20261109-545d9d\\latex-proof\\fixed-east-result.json",
+        "sha256": "88fc5cf63055229a885c1eb38b2f0c442200326d566a6511cf6535c7054e2de8"
+      }
+    },
+    {
+      "facing": "west",
+      "meta": 2,
+      "xyz": [
+        -1,
+        70,
+        0
+      ],
+      "before_item": "b173_plasticcraft:p_plastic_bucket",
+      "after_item": "b173_plasticcraft:p_plastic_latex_bucket",
+      "count": 1,
+      "evidence": {
+        "path": "run-b173-single\\plasticcraft-latex-client-20261109-545d9d\\latex-proof\\fixed-west-result.json",
+        "sha256": "f4aa3a04717759d05dba3ca41c8650977f08dee1705fb658a88f063d45fb629a"
+      }
+    },
+    {
+      "facing": "north",
+      "meta": 4,
+      "xyz": [
+        0,
+        70,
+        -1
+      ],
+      "before_item": "b173_plasticcraft:p_plastic_bucket",
+      "after_item": "b173_plasticcraft:p_plastic_latex_bucket",
+      "count": 1,
+      "evidence": {
+        "path": "run-b173-single\\plasticcraft-latex-client-20261109-545d9d\\latex-proof\\fixed-north-result.json",
+        "sha256": "d1b34b687cd4b5f9ad7a9d1bd48c75756230da4476750f78b6665de17109bbfa"
+      }
+    },
+    {
+      "facing": "south",
+      "meta": 3,
+      "xyz": [
+        0,
+        70,
+        1
+      ],
+      "before_item": "b173_plasticcraft:p_plastic_bucket",
+      "after_item": "b173_plasticcraft:p_plastic_latex_bucket",
+      "count": 1,
+      "evidence": {
+        "path": "run-b173-single\\plasticcraft-latex-client-20261109-545d9d\\latex-proof\\fixed-south-result.json",
+        "sha256": "169df53f285e31d8afd6739d0b6d532c566a8a7aee21dbfa5d939b1d27b744a7"
+      }
+    }
+  ],
+  "water_controls": {
+    "passed": true,
+    "cases": [
+      {
+        "case": "original PlasticCraft source-water pickup",
+        "before": {
+          "held": "b173_plasticcraft:p_plastic_bucket",
+          "count": 1,
+          "state": "Block{minecraft:water}[level=0]",
+          "water": true,
+          "air": false
+        },
+        "after": {
+          "held": "b173_plasticcraft:p_plastic_water_bucket",
+          "count": 1,
+          "state": "Block{minecraft:air}",
+          "water": false,
+          "air": true
+        }
+      },
+      {
+        "case": "original PlasticCraft water placement and empty return",
+        "before": {
+          "held": "b173_plasticcraft:p_plastic_water_bucket",
+          "count": 1,
+          "state": "Block{minecraft:air}",
+          "water": false,
+          "air": true
+        },
+        "after": {
+          "held": "b173_plasticcraft:p_plastic_bucket",
+          "count": 1,
+          "state": "Block{minecraft:water}[level=0]",
+          "water": true,
+          "air": false
+        }
+      },
+      {
+        "case": "native vanilla bucket control",
+        "before": {
+          "held": "minecraft:bucket",
+          "count": 1,
+          "state": "Block{minecraft:water}[level=0]",
+          "water": true,
+          "air": false
+        },
+        "after": {
+          "held": "minecraft:water_bucket",
+          "count": 1,
+          "state": "Block{minecraft:air}",
+          "water": false,
+          "air": true
+        }
+      }
+    ],
+    "evidence": {
+      "path": "run-b173-single\\plasticcraft-latex-client-20261109-545d9d\\latex-proof\\water-controls-result.json",
+      "sha256": "a05c4d89b26b97a8d8c51f194e13e4131102587152b388fd66a179e481feec3b"
+    }
+  },
+  "persistence": {
+    "passed": true,
+    "filled_bucket_before": "b173_plasticcraft:p_plastic_latex_bucket",
+    "filled_bucket_after": "b173_plasticcraft:p_plastic_latex_bucket",
+    "refill_existing_after_relog": "b173_plasticcraft:p_plastic_latex_bucket",
+    "count": 1,
+    "extractor_replaced_after_relog": false,
+    "evidence": [
+      {
+        "path": "run-b173-single\\plasticcraft-latex-client-20261109-545d9d\\latex-proof\\persistence-result.json",
+        "sha256": "e8cd8ebb3749885f1c40710e282ad6de16b6875121d2fc5fc5adc403b8cdf31d"
+      },
+      {
+        "path": "run-b173-single\\plasticcraft-latex-client-20261109-545d9d\\latex-proof\\native-reopen-latex.json",
+        "sha256": "f1e09a1ecfeb126712f8138167bc5f657de7753ebd7fd46cabacdd644c1505a0"
+      }
+    ]
+  },
+  "visual_review": {
+    "passed": true,
+    "path": "run-b173-single\\plasticcraft-latex-client-20261109-545d9d\\control\\out\\plasticcraft-latex-fixed-south.png",
+    "sha256": "14694c685a0473bd03182551896aa7e05f0dd6069a87fc35f3c8048a4d1b17bf",
+    "observation": "Native client shows original Latex Extractor on its log and original filled Plastic Latex Bucket model/label after survival use; screenshot reviewed."
+  },
+  "distribution_matches_live_production_classes": true,
+  "limits": [
+    "Disposable isolated client stage with only the actual PlasticCraft legacy payload; existing native Sodium/Iris dependencies, no shader pack",
+    "Native setup provides support logs and empty buckets; the original mod performs placement and filling through native input",
+    "No original mod class, archive, item/block ID, mod version, user setting or user save was changed",
+    "Other PlasticCraft machines, armor and natural spawning are not validated in this pass"
+  ]
+}
