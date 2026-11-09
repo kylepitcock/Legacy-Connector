@@ -32,7 +32,22 @@ final class CallRewrites1201 {
             new String[] {"net/minecraft/resources/ResourceLocation", "parse", "(Ljava/lang/String;)Lnet/minecraft/resources/ResourceLocation;"},
             "net/minecraft/resources/ResourceLocation.<init>(Ljava/lang/String;Ljava/lang/String;)V",
             new String[] {"net/minecraft/resources/ResourceLocation", "fromNamespaceAndPath",
-                    "(Ljava/lang/String;Ljava/lang/String;)Lnet/minecraft/resources/ResourceLocation;"});
+                    "(Ljava/lang/String;Ljava/lang/String;)Lnet/minecraft/resources/ResourceLocation;",
+
+            "net/minecraft/server/packs/repository/FolderRepositorySource.<init>(Ljava/nio/file/Path;Lnet/minecraft/server/packs/PackType;Lnet/minecraft/server/packs/repository/PackSource;)V",
+            new String[] {HELPERS, "folderRepositorySource",
+                    "(Ljava/nio/file/Path;Lnet/minecraft/server/packs/PackType;Lnet/minecraft/server/packs/repository/PackSource;)Lnet/minecraft/server/packs/repository/FolderRepositorySource;"}});
+
+
+    private static final String PALLADIUM_ADDON_PACK_MANAGER = "net/threetag/palladium/addonpack/AddonPackManager";
+    private static final String FOLDER_REPOSITORY_SOURCE = "net/minecraft/server/packs/repository/FolderRepositorySource";
+    private static final String ARMOR_MATERIALS = "net/minecraft/world/item/ArmorMaterials";
+    private static final String ARMOR_MATERIALS_DESC = "Lnet/minecraft/world/item/ArmorMaterials;";
+    private static final String HOLDER_DESC = "Lnet/minecraft/core/Holder;";
+    private static final String HOLDER = "net/minecraft/core/Holder";
+    private static final String ARMOR_MATERIAL = "net/minecraft/world/item/ArmorMaterial";
+    private static final java.util.Set<String> VANILLA_ARMOR_MATERIALS = java.util.Set.of(
+            "LEATHER", "CHAIN", "IRON", "GOLD", "DIAMOND", "TURTLE", "NETHERITE");
 
     /** owner.name+desc of an instance call to {helper name, helper descriptor (receiver first)}. */
     private static final Map<String, String[]> STATICS = Map.of(
