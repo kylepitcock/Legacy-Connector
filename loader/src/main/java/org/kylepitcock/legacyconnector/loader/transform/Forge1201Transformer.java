@@ -432,6 +432,9 @@ public final class Forge1201Transformer {
             if (ownUnit) result.notes.add("Side-by-side library: mod id(s) " + ownIds + " load as separate unit(s), packages relocated under " + SideBySide.prefix(VER));
             else result.notes.add("Side-by-side: references to isolated libraries " + plan.units().stream().filter(u -> u.version() == VER).map(SideBySide.Unit::modId).toList() + " link to their relocated copies");
         }
+        if (PalladiumKubeJS1201.addPluginDiscoveryResource(outResources, outClasses.keySet())) {
+            result.notes.add("Palladium KubeJS 7 plugin discovery entry added to kubejs.plugins.txt");
+        }
         // the data and resource packs: 1.21 folder names, recipe/loot/advancement/tag/model formats, forge: ids, pack.mcmeta (DataConverter1201)
         DataConverter1201.Stats dataStats = new DataConverter1201.Stats();
         outResources = new LinkedHashMap<>(DataConverter1201.convertAll(outResources, dataStats));
