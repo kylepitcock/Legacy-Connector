@@ -158,6 +158,7 @@ public final class BridgeB173 {
             var p = new net.minecraft.world.item.Item.Properties();
             if (item.isDamageable()) p.durability(item.getMaxDamage());
             else p.stacksTo(Math.max(1, Math.min(99, item.getMaxCount())));
+            if(item instanceof legacyconnector.vb1_7_3.net.minecraft.item.FoodItem food)p.food(FoodUseB173.properties(food));
             if(item instanceof legacyconnector.vb1_7_3.net.minecraft.item.ArmorItem armor){
                 var group=new net.minecraft.world.entity.EquipmentSlotGroup[]{net.minecraft.world.entity.EquipmentSlotGroup.HEAD,
                         net.minecraft.world.entity.EquipmentSlotGroup.CHEST,net.minecraft.world.entity.EquipmentSlotGroup.LEGS,

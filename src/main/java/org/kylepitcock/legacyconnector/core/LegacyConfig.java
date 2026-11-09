@@ -54,6 +54,11 @@ public final class LegacyConfig {
             # (the subtype blocks stay registered, and their blocks in saved worlds turn back into the base block on chunk load).
             blocks.flattenSubtypes = true
 
+            # Hosted Beta food restores hunger using its original health-restored value as nutrition (clamped to 0..20),
+            # saturation modifier 0.6, and the native 32-tick eating action. false keeps original instant Beta health healing.
+            # Native vanilla foods and non-food medicine items are unchanged. A connected server controls this choice.
+            b173.foodUsesHunger = true
+
             # Library bridges replace an outdated legacy library by its modern equivalent when that mod is installed.
             # Set one to false to load the legacy library itself instead (read by the loader at startup).
             bridges.baubles.enabled = true
@@ -326,6 +331,11 @@ public final class LegacyConfig {
 
     public static boolean modernizeTexturesEnabled() {
         return bool("modernizeTextures", true);
+    }
+
+    /** Hosted Beta food uses native hunger and saturation; false retains original instant health healing. */
+    public static boolean b173FoodUsesHunger() {
+        return bool("b173.foodUsesHunger", true);
     }
 
     /** Whether legacy leaf textures that recolour the old vanilla leaves are rebuilt in the modern leaf pattern. */

@@ -1,0 +1,3373 @@
+{
+  "status": "passed",
+  "snapshot_date": "2026-11-09",
+  "scope": "Dedicated original Goo stun and cooldown, native fall boots, two-player hook ownership, remote HUD replay, and native Beta food hunger/original-healing modes through the existing connector settings.",
+  "branch": "legacy-b1.7.3",
+  "tested_base_revision": "4616993a7536f2e2f2a3fdb1e02e09117bb52d3a",
+  "version": "0.4.13",
+  "neoforge": "21.1.258",
+  "artifact": {
+    "path": "build\\dist\\legacyconnector-0.4.13.jar",
+    "sha256": "87c79469f451c1c5186cfe0e16470369402bc4fee7501bc68050dd7054bf4fa7"
+  },
+  "source_sha256": {
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/client/Minecraft.java": "e1fb919c6246f7420d52fb80ecfbe2587dfb77a78cd0d21f84921ec959c30199",
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/entity/player/PlayerEntity.java": "6c16154b999ec4407d68618d1d61cd018950702550281257de9753f0778ee507",
+    "src/main/java/org/kylepitcock/legacyconnector/LegacyConnector.java": "554d4f571f881b09a50742eaa0d9f670cd1769c1d10a6193dbceb942e42b8074",
+    "src/main/java/org/kylepitcock/legacyconnector/client/LegacyConnectorConfigScreen.java": "5bf18b5a590cd7a43fac01d026a0cf23654226ab6b9df87fde56b369a44e1fbc",
+    "src/main/java/org/kylepitcock/legacyconnector/core/LegacyConfig.java": "3de8a8651a4fd5f77cf4e8f383ec22c39eae835e3172197cbbdf7aa51014dcc9",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/BetaGameplayConfigB173.java": "c041b92284b6efc762accc21622bf5efa7930e5579eb3b555b3b801611f960ab",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/BetaGameplaySettingsNetworkB173.java": "b0300e949d9e32b9e8a3572715244bbab16656232e3c709991e6ac1d102a9e16",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/BridgeB173.java": "473ae26049431dfa2434b7904cf97c804e9761c2f7252cf1579f65c4a2bc14fa",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/ContentB173.java": "4df4c274ca4ea3a3d53d24b11edf2d881e735a9f981d0468e334930ff4b5678e",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/FoodUseB173.java": "c77a922b70f9616fede44780382dc28aca79aa8057df1f307e23c11061d690e1",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/GameHookCanvasB173.java": "b1333c73c90ed162b45fa3b32c25b942f30956a5680c2f2c10eab7284999ec9b",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/GameHookHudB173.java": "c662ee3fcd3c90c9f617fb2e972885557931ea0b983a14ed35fce4c05dc3ff55",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/GameHookNetworkB173.java": "b65dc48d8499e8ea9300d928e0b6099f47a7896958c8c4b3b3535b18844c4161",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/HookActorStateB173.java": "cd8867cd86f21e5d7b6a49689c93aa3eb677564aa3fa1a3e7fe651e5f8b352ca",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/ItemCallbacksB173.java": "be35d751e5e1d356ce35e5acc4fb08b8ca8189ba4c47c8814d5b35a0bc0816a2",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/LegacyB173Block.java": "fce3b9294bbed7975fe5a017b33c89380bc423cd767343f19ea4cfdc251b6b00",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/LegacyB173Item.java": "02df60b08f99ae6a7d0c5edef73ea3abd6fa0d426e690fe461436f31f72754ee",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/MenusB173.java": "f2cad53e214244e098dbfcf5dfdcca47659689f55919d946496acbbf74e15009",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/NativeMovementSpeedB173.java": "61d1482f1f8093e5cda6f6fd072b9f2e658279729a995b13c0d4d6abaf55e23d",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/ServerGameHooksB173.java": "42e773c653eb4c95ed2cb2c7c3fb3442ffccd72b7d422185644ff999aedfae1b",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/client/BetaGameplaySettingsClientB173.java": "a0ba6fc333e0512543fc3c12a4ce021870793496087173cb09861bb11cdde234",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/client/ClientB173.java": "67c6e3143c6abbd5d88c918cfd43ae425fc27eb873c2137cdcaa08fd94a1cfdd",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/client/ModTicksClientB173.java": "1c0ac415ae60148d3ec984af8ef7c9697223df99163bd0d437b495cf51aa918a",
+    "src/test/java/org/kylepitcock/legacyconnector/vb1_7_3/BetaGameplayConfigB173Test.java": "5110060776ed49cc90d5731117a51d45529ce13c0316c627c8182c1648482ca9",
+    "src/test/java/org/kylepitcock/legacyconnector/vb1_7_3/BetaGameplaySettingsNetworkB173Test.java": "a79bc75299dc72d3629bb4a110c2466817577af4f3fc1427b9a581808c8eceb6",
+    "src/test/java/org/kylepitcock/legacyconnector/vb1_7_3/FoodUseB173Test.java": "872f4bb78dbff1d53a22bcb597e80896981f67cecab0998bae4a2c487f5dc2d8",
+    "src/test/java/org/kylepitcock/legacyconnector/vb1_7_3/GameHookCanvasB173Test.java": "7c13789884ef863d97198eb1ac3fdda2dcad164aa2fff776ff0b60c1dea85758",
+    "src/test/java/org/kylepitcock/legacyconnector/vb1_7_3/GameHookPresentationB173Test.java": "d653368b0c18a31f85773acbca9355dfbbae11d0facb81cf7b7beaa01b20ec16",
+    "src/test/java/org/kylepitcock/legacyconnector/vb1_7_3/HookActorStateB173Test.java": "9a91c01d4fd338bb1114a087424e708824625770cb77f7506a5ab3ac2ca50e2d",
+    "src/test/java/org/kylepitcock/legacyconnector/vb1_7_3/NativeMovementSpeedB173Test.java": "0db48e0f3158854f326de66c0a4e17a0c825c3540056a57c25e322c1526c5428",
+    "src/test/java/org/kylepitcock/legacyconnector/vb1_7_3/ServerGameHooksB173Test.java": "76bf3fefa7d649730c19f71c401a6664b8c8592e1ed7e8b2d219009ba73fcccd"
+  },
+  "distribution_classes_equal_live_test_classes": true,
+  "distribution_classes_compared": 6753,
+  "original_mod": {
+    "version": "2.1.3",
+    "test_archive": {
+      "path": "run-b173-single\\plasticcraft-complete-client-20261109-856c59\\mods\\b1.7.3\\PlasticCraft-2.1.3-ModLoader.jar",
+      "sha256": "2e361f5398e27c5821f132ff1bf3d7ab71564e58df13051dde86c215c534c55b"
+    },
+    "prism_archive": {
+      "path": "C:\\Users\\zekken\\AppData\\Roaming\\PrismLauncher\\instances\\Legacy Connector\\minecraft\\mods\\b1.7.3\\PlasticCraft-2.1.3-ModLoader.jar",
+      "sha256": "2e361f5398e27c5821f132ff1bf3d7ab71564e58df13051dde86c215c534c55b"
+    },
+    "entire_archives_byte_identical": true,
+    "configuration_values_unchanged": true
+  },
+  "default_build": {
+    "passed": true,
+    "command": "./gradlew.bat build bundleJar",
+    "private_mod_archives_required": false,
+    "evidence": {
+      "path": "build\\plasticcraft-hooks-food-existing-config-build-20261109.log",
+      "sha256": "d8a9e9f66eb700cbd68e838a44575be7ed7ca33d382b1cc43d694cfa46a192da"
+    }
+  },
+  "tests": {
+    "runtime": {
+      "tests": 369,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "loader": {
+      "tests": 274,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "generic_guard": {
+    "passed": true,
+    "beta_source_files_checked": 307,
+    "existing_mod_specific_mentions": 21,
+    "new_mentions": 0
+  },
+  "generic_changes": [
+    "Dedicated original game hooks use native ServerTick.Pre with per-player clocks, retention and authenticated server actor/world/equipment; bounded client presentation is independent of HUD rendering",
+    "Hook-reachable mutable primitive/String fields on each original BaseMod implementation hierarchy have scoped per-UUID values; helper-class collections and wall clocks remain original shared code",
+    "Native player/block/menu callbacks restore the owning actor or neutral scalar state through nested calls and exceptions; logout/server stop clear scoped state",
+    "Movement-speed intent remembers a released baseline so repeated original cooldown writes cannot reinstall an override over foreign native modifiers",
+    "Remote hook HUD recording retains original alpha/depth/matrix state and one common GUI canvas; oversized or unbalanced drawing frames are discarded without aborting gameplay",
+    "Hosted Beta FoodItem and StackableFoodItem have native nutrition (original healing clamped0..20), saturation modifier0.6 and32-tick eating; original callbacks still own held counts and remainders",
+    "Only positive healing of the consuming actor inside the original FoodItem callback is suppressed in hunger mode; native eating supplies food/saturation/statistics without double consumption",
+    "Food mode uses existing config/legacyconnector.properties and existing config screen, key b173.foodUsesHunger defaulttrue; a separate bounded handshake synchronizes the dedicated server value independently of game hooks"
+  ],
+  "causal_baseline": {
+    "evidence": {
+      "path": "run-b173-single\\plasticcraft-complete-client-20261109-856c59\\complete-proof\\baseline-repaired-dedicated-effects.json",
+      "sha256": "b8330c6bdc84c3bb16abbc411ffd8231b98941fa0e5fb0ddf49db20ed36b75c3"
+    },
+    "verified_failures": [
+      "No dedicated original per-player hooks",
+      "Boot/no-boot Goo damage ownership incorrect",
+      "Original six-second stun never restores native speed or expires cooldown"
+    ],
+    "fall_baseline_not_claimed": "The old fall observer could accept a stale onGround flag immediately after teleport; final checks require observed airborne movement, an actual12-block drop and landing atY69."
+  },
+  "actual_native_checks": [
+    {
+      "scope": "final-hidden-hud-dedicated-effects",
+      "evidence": {
+        "path": "run-b173-single\\plasticcraft-complete-client-20261109-856c59\\complete-proof\\final-hidden-hud-dedicated-effects.json",
+        "sha256": "1c0ffeeaa55fc24c4261c11961aed5bddc185d95da34a70b64bb34d9f77da6ba"
+      },
+      "results": {
+        "label": "final-hidden-hud",
+        "normalWallClockTimers": true,
+        "originalTimerOrListWrites": false,
+        "secondaryActor": "native ServerPlayer with packet sink, no second live socket",
+        "errors": [],
+        "playerName": "Dev",
+        "realClient": {
+          "remote": true,
+          "name": "Dev",
+          "hideHud": true,
+          "alive": true,
+          "deathScreen": false
+        },
+        "originalJarSha256": [
+          "2e361f5398e27c5821f132ff1bf3d7ab71564e58df13051dde86c215c534c55b"
+        ],
+        "partnerActivation": {
+          "activatedThroughGenericScheduler": true,
+          "partnerHasLiveSocket": false
+        },
+        "bootedGearReady": {
+          "ready": true,
+          "live": {
+            "uuid": "380df991-f603-344c-a090-369bad2a924a",
+            "name": "Dev",
+            "type": "net.minecraft.server.level.ServerPlayer",
+            "health": 20,
+            "alive": true,
+            "removed": false,
+            "spawnInvulnerableTicks": 0,
+            "abilitiesInvulnerable": false,
+            "genericInvulnerable": false,
+            "creative": false,
+            "fallDistance": -1,
+            "onGround": true,
+            "xyz": [
+              48.5,
+              69,
+              12.5
+            ],
+            "boots": "b173_plasticcraft:p_fall_dampener",
+            "speed": {
+              "base": 0.10000000149011612,
+              "value": 0.10000000149011612,
+              "modifiers": []
+            }
+          },
+          "partner": {
+            "uuid": "bb52a8d2-9d41-4ce4-aede-f9ea86603e73",
+            "name": "EffectsProbe",
+            "type": "net.minecraft.server.level.ServerPlayer",
+            "health": 20,
+            "alive": true,
+            "removed": false,
+            "spawnInvulnerableTicks": 0,
+            "abilitiesInvulnerable": false,
+            "genericInvulnerable": false,
+            "creative": false,
+            "fallDistance": 0,
+            "onGround": false,
+            "xyz": [
+              60.5,
+              69,
+              12.5
+            ],
+            "boots": "minecraft:air",
+            "speed": {
+              "base": 0.10000000149011612,
+              "value": 0.10000000149011612,
+              "modifiers": []
+            }
+          }
+        },
+        "cowBegin": {
+          "uuid": "a89131b8-f472-42b3-90a0-083438fb03d0",
+          "base": 0.20000000298023224,
+          "speedBefore": 0.22500000335276127,
+          "speedAfter": 0,
+          "nativeAiEnabled": true,
+          "normalOriginalStunSeconds": 6,
+          "originalTimersWritten": false
+        },
+        "bareGearReady": {
+          "ready": true,
+          "live": {
+            "uuid": "380df991-f603-344c-a090-369bad2a924a",
+            "name": "Dev",
+            "type": "net.minecraft.server.level.ServerPlayer",
+            "health": 20,
+            "alive": true,
+            "removed": false,
+            "spawnInvulnerableTicks": 0,
+            "abilitiesInvulnerable": false,
+            "genericInvulnerable": false,
+            "creative": false,
+            "fallDistance": 0,
+            "onGround": true,
+            "xyz": [
+              55.5,
+              69,
+              12.5
+            ],
+            "boots": "minecraft:air",
+            "speed": {
+              "base": 0.10000000149011612,
+              "value": 0.10000000149011612,
+              "modifiers": []
+            }
+          },
+          "partner": {
+            "uuid": "bb52a8d2-9d41-4ce4-aede-f9ea86603e73",
+            "name": "EffectsProbe",
+            "type": "net.minecraft.server.level.ServerPlayer",
+            "health": 19,
+            "alive": true,
+            "removed": false,
+            "spawnInvulnerableTicks": 0,
+            "abilitiesInvulnerable": false,
+            "genericInvulnerable": false,
+            "creative": false,
+            "fallDistance": -1,
+            "onGround": false,
+            "xyz": [
+              60.5,
+              69,
+              12.5
+            ],
+            "boots": "b173_plasticcraft:p_fall_dampener",
+            "speed": {
+              "base": 0.10000000149011612,
+              "value": 0.10000000149011612,
+              "modifiers": []
+            }
+          }
+        },
+        "checks": [
+          {
+            "name": "two native actor contexts observed once per tick without gaps or duplicates",
+            "passed": true
+          },
+          {
+            "name": "original hook uses owning server thread/world",
+            "passed": true
+          },
+          {
+            "name": "boot/no-boot Goo damage isolates both actor orders",
+            "passed": true
+          },
+          {
+            "name": "native cow AI remained enabled",
+            "passed": true
+          },
+          {
+            "name": "foreign native speed base/modifier survives changed modifier and recovery",
+            "passed": true
+          },
+          {
+            "name": "normal original six-second recovery not accelerated or frozen",
+            "passed": true,
+            "recoveredAtSeconds": 6.046351328999968,
+            "elapsed": 21.500619676999982
+          },
+          {
+            "name": "restored native speed remains released during original four-second cooldown writes",
+            "passed": true,
+            "samples": 14
+          },
+          {
+            "name": "original additional four-second immunity expires without timer edits",
+            "passed": true
+          },
+          {
+            "name": "live native booted fall traversed actual height and landed",
+            "passed": true,
+            "wasAirborne": true,
+            "airborneSamples": 18,
+            "minY": 69,
+            "maxY": 81,
+            "endY": 69,
+            "heightDrop": 12,
+            "elapsed": 1.0213783780000523,
+            "movementSource": "connected native client position packets"
+          },
+          {
+            "name": "live native booted fall damage",
+            "passed": true,
+            "health": 20
+          },
+          {
+            "name": "live native unbooted fall traversed actual height and landed",
+            "passed": true,
+            "wasAirborne": true,
+            "airborneSamples": 18,
+            "minY": 69,
+            "maxY": 81,
+            "endY": 69,
+            "heightDrop": 12,
+            "elapsed": 1.0292681999999913,
+            "movementSource": "connected native client position packets"
+          },
+          {
+            "name": "live native unbooted fall damage",
+            "passed": true,
+            "health": 12
+          }
+        ],
+        "passed": true,
+        "rootInspectionNote": "Connected live client provided native inventory packets and actual fall physics. Secondary native ServerPlayer has no real network socket; its checks cover server actor contexts, ordering and damage only."
+      }
+    },
+    {
+      "scope": "hunger-dedicated-food",
+      "evidence": {
+        "path": "run-b173-single\\plasticcraft-complete-client-20261109-856c59\\complete-proof\\hunger-dedicated-food.json",
+        "sha256": "25f2244fbe64759ac8a8b587ab89adef776477bdd82efe17835ea94a884ff346"
+      },
+      "results": {
+        "mode": "hunger",
+        "configFileName": "legacyconnector.properties",
+        "configKey": "b173.foodUsesHunger",
+        "configMutationByHelper": false,
+        "checks": [
+          {
+            "name": "original actual payload",
+            "actual": [
+              "2e361f5398e27c5821f132ff1bf3d7ab71564e58df13051dde86c215c534c55b"
+            ],
+            "expected": [
+              "2e361f5398e27c5821f132ff1bf3d7ab71564e58df13051dde86c215c534c55b"
+            ],
+            "passed": true
+          },
+          {
+            "name": "stable fixture floor",
+            "actual": true,
+            "expected": true,
+            "passed": true
+          },
+          {
+            "name": "natural regeneration disabled",
+            "actual": false,
+            "expected": false,
+            "passed": true
+          },
+          {
+            "name": "existing server properties mode",
+            "actual": true,
+            "expected": true,
+            "passed": true
+          },
+          {
+            "name": "server uses its own properties value",
+            "actual": true,
+            "expected": true,
+            "passed": true
+          },
+          {
+            "name": "server has no client override",
+            "actual": false,
+            "expected": false,
+            "passed": true
+          },
+          {
+            "name": "server effective food mode",
+            "actual": true,
+            "expected": true,
+            "passed": true
+          },
+          {
+            "name": "server native difficulty NORMAL",
+            "actual": "NORMAL",
+            "expected": "NORMAL",
+            "passed": true
+          },
+          {
+            "name": "client received native difficulty NORMAL",
+            "actual": "NORMAL",
+            "expected": "NORMAL",
+            "passed": true
+          },
+          {
+            "name": "client received authoritative mode",
+            "actual": true,
+            "expected": true,
+            "passed": true
+          },
+          {
+            "name": "client effective food mode matches server",
+            "actual": true,
+            "expected": true,
+            "passed": true
+          },
+          {
+            "name": "four original FoodItem subclasses",
+            "actual": 4,
+            "expected": 4,
+            "passed": true
+          },
+          {
+            "name": "itemWATERBOTTLE nutrition derives from original",
+            "actual": 3,
+            "expected": 3,
+            "passed": true
+          },
+          {
+            "name": "itemWATERBOTTLE saturation modifier .6",
+            "actual": 3.6000001430511475,
+            "expected": 3.5999999999999996,
+            "passed": true
+          },
+          {
+            "name": "itemWATERBOTTLE native FOOD component duration",
+            "actual": 32,
+            "expected": 32,
+            "passed": true
+          },
+          {
+            "name": "itemMILKBOTTLE nutrition derives from original",
+            "actual": 8,
+            "expected": 8,
+            "passed": true
+          },
+          {
+            "name": "itemMILKBOTTLE saturation modifier .6",
+            "actual": 9.600000381469727,
+            "expected": 9.6,
+            "passed": true
+          },
+          {
+            "name": "itemMILKBOTTLE native FOOD component duration",
+            "actual": 32,
+            "expected": 32,
+            "passed": true
+          },
+          {
+            "name": "itemNEEDLERED nutrition derives from original",
+            "actual": 20,
+            "expected": 20,
+            "passed": true
+          },
+          {
+            "name": "itemNEEDLERED saturation modifier .6",
+            "actual": 24,
+            "expected": 24.0,
+            "passed": true
+          },
+          {
+            "name": "itemNEEDLERED native FOOD component duration",
+            "actual": 32,
+            "expected": 32,
+            "passed": true
+          },
+          {
+            "name": "itemJELLO nutrition derives from original",
+            "actual": 4,
+            "expected": 4,
+            "passed": true
+          },
+          {
+            "name": "itemJELLO saturation modifier .6",
+            "actual": 4.800000190734863,
+            "expected": 4.8,
+            "passed": true
+          },
+          {
+            "name": "itemJELLO native FOOD component duration",
+            "actual": 32,
+            "expected": 32,
+            "passed": true
+          },
+          {
+            "name": "Beta food is actively eaten during short hold",
+            "actual": true,
+            "expected": true,
+            "passed": true
+          },
+          {
+            "name": "Beta food native use duration is 32 ticks",
+            "actual": 32,
+            "expected": 32,
+            "passed": true
+          },
+          {
+            "name": "Beta food short hold is below completion",
+            "actual": true,
+            "expected": true,
+            "passed": true
+          },
+          {
+            "name": "Beta food early release preserves stack",
+            "actual": {
+              "id": "b173_plasticcraft:p_water_bottle",
+              "count": 1,
+              "legacyId": 1054,
+              "meta": 0,
+              "duration": 32,
+              "animation": "EAT"
+            },
+            "expected": {
+              "id": "b173_plasticcraft:p_water_bottle",
+              "count": 1,
+              "legacyId": 1054,
+              "meta": 0,
+              "duration": 32,
+              "animation": "EAT"
+            },
+            "passed": true
+          },
+          {
+            "name": "Beta food early release preserves hunger",
+            "actual": 4,
+            "expected": 4,
+            "passed": true
+          },
+          {
+            "name": "Beta food early release preserves saturation",
+            "actual": 0,
+            "expected": 0,
+            "passed": true
+          },
+          {
+            "name": "Beta food early release preserves health",
+            "actual": 2,
+            "expected": 2,
+            "passed": true
+          },
+          {
+            "name": "water-full-hunger-use client/server health agree",
+            "actual": 2,
+            "expected": 2,
+            "passed": true
+          },
+          {
+            "name": "water-full-hunger-use client/server food agree",
+            "actual": 20,
+            "expected": 20,
+            "passed": true
+          },
+          {
+            "name": "water-full-hunger-use client/server saturation agree",
+            "actual": 0,
+            "expected": 0,
+            "passed": true
+          },
+          {
+            "name": "full hunger rejects Beta food even at health2",
+            "actual": "b173_plasticcraft:p_water_bottle",
+            "expected": "b173_plasticcraft:p_water_bottle",
+            "passed": true
+          },
+          {
+            "name": "full hunger rejection preserves count",
+            "actual": 1,
+            "expected": 1,
+            "passed": true
+          },
+          {
+            "name": "full hunger rejection preserves health2",
+            "actual": 2,
+            "expected": 2,
+            "passed": true
+          },
+          {
+            "name": "full hunger rejection never starts use",
+            "actual": false,
+            "expected": false,
+            "passed": true
+          },
+          {
+            "name": "full hunger control remains20",
+            "actual": 20,
+            "expected": 20,
+            "passed": true
+          },
+          {
+            "name": "full hunger control saturation unchanged",
+            "actual": 0,
+            "expected": 0,
+            "passed": true
+          },
+          {
+            "name": "itemWATERBOTTLE starts with health2",
+            "actual": 2,
+            "expected": 2,
+            "passed": true
+          },
+          {
+            "name": "itemWATERBOTTLE starts with hunger4",
+            "actual": 4,
+            "expected": 4,
+            "passed": true
+          },
+          {
+            "name": "itemWATERBOTTLE effective use duration",
+            "actual": 32,
+            "expected": 32,
+            "passed": true
+          },
+          {
+            "name": "itemWATERBOTTLE effective animation",
+            "actual": "EAT",
+            "expected": "EAT",
+            "passed": true
+          },
+          {
+            "name": "itemWATERBOTTLE-after client/server health agree",
+            "actual": 2,
+            "expected": 2,
+            "passed": true
+          },
+          {
+            "name": "itemWATERBOTTLE-after client/server food agree",
+            "actual": 7,
+            "expected": 7,
+            "passed": true
+          },
+          {
+            "name": "itemWATERBOTTLE-after client/server saturation agree",
+            "actual": 3.6000001430511475,
+            "expected": 3.6000001430511475,
+            "passed": true
+          },
+          {
+            "name": "itemWATERBOTTLE original remainder",
+            "actual": "b173_plasticcraft:p_empty_bottle",
+            "expected": "b173_plasticcraft:p_empty_bottle",
+            "passed": true
+          },
+          {
+            "name": "itemWATERBOTTLE consumes exactly one",
+            "actual": 1,
+            "expected": 1,
+            "passed": true
+          },
+          {
+            "name": "itemWATERBOTTLE health",
+            "actual": 2,
+            "expected": 2,
+            "passed": true
+          },
+          {
+            "name": "itemWATERBOTTLE hunger",
+            "actual": 7,
+            "expected": 7,
+            "passed": true
+          },
+          {
+            "name": "itemWATERBOTTLE saturation",
+            "actual": 3.6000001430511475,
+            "expected": 3.6000001430511475,
+            "passed": true
+          },
+          {
+            "name": "itemMILKBOTTLE starts with health2",
+            "actual": 2,
+            "expected": 2,
+            "passed": true
+          },
+          {
+            "name": "itemMILKBOTTLE starts with hunger4",
+            "actual": 4,
+            "expected": 4,
+            "passed": true
+          },
+          {
+            "name": "itemMILKBOTTLE effective use duration",
+            "actual": 32,
+            "expected": 32,
+            "passed": true
+          },
+          {
+            "name": "itemMILKBOTTLE effective animation",
+            "actual": "EAT",
+            "expected": "EAT",
+            "passed": true
+          },
+          {
+            "name": "itemMILKBOTTLE-after client/server health agree",
+            "actual": 2,
+            "expected": 2,
+            "passed": true
+          },
+          {
+            "name": "itemMILKBOTTLE-after client/server food agree",
+            "actual": 12,
+            "expected": 12,
+            "passed": true
+          },
+          {
+            "name": "itemMILKBOTTLE-after client/server saturation agree",
+            "actual": 9.600000381469727,
+            "expected": 9.600000381469727,
+            "passed": true
+          },
+          {
+            "name": "itemMILKBOTTLE original remainder",
+            "actual": "b173_plasticcraft:p_empty_bottle",
+            "expected": "b173_plasticcraft:p_empty_bottle",
+            "passed": true
+          },
+          {
+            "name": "itemMILKBOTTLE consumes exactly one",
+            "actual": 1,
+            "expected": 1,
+            "passed": true
+          },
+          {
+            "name": "itemMILKBOTTLE health",
+            "actual": 2,
+            "expected": 2,
+            "passed": true
+          },
+          {
+            "name": "itemMILKBOTTLE hunger",
+            "actual": 12,
+            "expected": 12,
+            "passed": true
+          },
+          {
+            "name": "itemMILKBOTTLE saturation",
+            "actual": 9.600000381469727,
+            "expected": 9.600000381469727,
+            "passed": true
+          },
+          {
+            "name": "itemNEEDLERED starts with health2",
+            "actual": 2,
+            "expected": 2,
+            "passed": true
+          },
+          {
+            "name": "itemNEEDLERED starts with hunger4",
+            "actual": 4,
+            "expected": 4,
+            "passed": true
+          },
+          {
+            "name": "itemNEEDLERED effective use duration",
+            "actual": 32,
+            "expected": 32,
+            "passed": true
+          },
+          {
+            "name": "itemNEEDLERED effective animation",
+            "actual": "EAT",
+            "expected": "EAT",
+            "passed": true
+          },
+          {
+            "name": "itemNEEDLERED-after client/server health agree",
+            "actual": 2,
+            "expected": 2,
+            "passed": true
+          },
+          {
+            "name": "itemNEEDLERED-after client/server food agree",
+            "actual": 20,
+            "expected": 20,
+            "passed": true
+          },
+          {
+            "name": "itemNEEDLERED-after client/server saturation agree",
+            "actual": 20,
+            "expected": 20,
+            "passed": true
+          },
+          {
+            "name": "itemNEEDLERED original remainder",
+            "actual": "b173_plasticcraft:p_needle",
+            "expected": "b173_plasticcraft:p_needle",
+            "passed": true
+          },
+          {
+            "name": "itemNEEDLERED consumes exactly one",
+            "actual": 1,
+            "expected": 1,
+            "passed": true
+          },
+          {
+            "name": "itemNEEDLERED health",
+            "actual": 2,
+            "expected": 2,
+            "passed": true
+          },
+          {
+            "name": "itemNEEDLERED hunger",
+            "actual": 20,
+            "expected": 20,
+            "passed": true
+          },
+          {
+            "name": "itemNEEDLERED saturation",
+            "actual": 20,
+            "expected": 20,
+            "passed": true
+          },
+          {
+            "name": "itemJELLO starts with health2",
+            "actual": 2,
+            "expected": 2,
+            "passed": true
+          },
+          {
+            "name": "itemJELLO starts with hunger4",
+            "actual": 4,
+            "expected": 4,
+            "passed": true
+          },
+          {
+            "name": "itemJELLO effective use duration",
+            "actual": 32,
+            "expected": 32,
+            "passed": true
+          },
+          {
+            "name": "itemJELLO effective animation",
+            "actual": "EAT",
+            "expected": "EAT",
+            "passed": true
+          },
+          {
+            "name": "itemJELLO-after client/server health agree",
+            "actual": 2,
+            "expected": 2,
+            "passed": true
+          },
+          {
+            "name": "itemJELLO-after client/server food agree",
+            "actual": 8,
+            "expected": 8,
+            "passed": true
+          },
+          {
+            "name": "itemJELLO-after client/server saturation agree",
+            "actual": 4.800000190734863,
+            "expected": 4.800000190734863,
+            "passed": true
+          },
+          {
+            "name": "itemJELLO original remainder",
+            "actual": "b173_plasticcraft:q_jello",
+            "expected": "b173_plasticcraft:q_jello",
+            "passed": true
+          },
+          {
+            "name": "itemJELLO consumes exactly one",
+            "actual": 1,
+            "expected": 1,
+            "passed": true
+          },
+          {
+            "name": "itemJELLO health",
+            "actual": 2,
+            "expected": 2,
+            "passed": true
+          },
+          {
+            "name": "itemJELLO hunger",
+            "actual": 8,
+            "expected": 8,
+            "passed": true
+          },
+          {
+            "name": "itemJELLO saturation",
+            "actual": 4.800000190734863,
+            "expected": 4.800000190734863,
+            "passed": true
+          },
+          {
+            "name": "native apple active during short hold",
+            "actual": true,
+            "expected": true,
+            "passed": true
+          },
+          {
+            "name": "native apple remains 32 ticks in both modes",
+            "actual": 32,
+            "expected": 32,
+            "passed": true
+          },
+          {
+            "name": "native apple short hold below completion",
+            "actual": true,
+            "expected": true,
+            "passed": true
+          },
+          {
+            "name": "native apple early release preserves stack",
+            "actual": {
+              "id": "minecraft:apple",
+              "count": 2,
+              "legacyId": 260,
+              "meta": 0,
+              "duration": 32,
+              "animation": "EAT"
+            },
+            "expected": {
+              "id": "minecraft:apple",
+              "count": 2,
+              "legacyId": 260,
+              "meta": 0,
+              "duration": 32,
+              "animation": "EAT"
+            },
+            "passed": true
+          },
+          {
+            "name": "native apple early release preserves hunger",
+            "actual": 4,
+            "expected": 4,
+            "passed": true
+          },
+          {
+            "name": "native apple early release preserves health",
+            "actual": 2,
+            "expected": 2,
+            "passed": true
+          },
+          {
+            "name": "native-apple-full-eat-after client/server health agree",
+            "actual": 2,
+            "expected": 2,
+            "passed": true
+          },
+          {
+            "name": "native-apple-full-eat-after client/server food agree",
+            "actual": 8,
+            "expected": 8,
+            "passed": true
+          },
+          {
+            "name": "native-apple-full-eat-after client/server saturation agree",
+            "actual": 2.4000000953674316,
+            "expected": 2.4000000953674316,
+            "passed": true
+          },
+          {
+            "name": "native apple consumes one",
+            "actual": "minecraft:apple",
+            "expected": "minecraft:apple",
+            "passed": true
+          },
+          {
+            "name": "native apple retains one",
+            "actual": 1,
+            "expected": 1,
+            "passed": true
+          },
+          {
+            "name": "native apple restores native hunger",
+            "actual": 8,
+            "expected": 8,
+            "passed": true
+          },
+          {
+            "name": "native apple restores native saturation",
+            "actual": 2.4000000953674316,
+            "expected": 2.4000000953674316,
+            "passed": true
+          },
+          {
+            "name": "native apple does not instant-heal health2",
+            "actual": 2,
+            "expected": 2,
+            "passed": true
+          }
+        ],
+        "errors": [],
+        "playerName": "Dev",
+        "realClient": {
+          "remote": true,
+          "name": "Dev",
+          "alive": true,
+          "deathScreen": false
+        },
+        "setup": {
+          "prepared": true,
+          "nativeSurvivalAfterFloor": true,
+          "originalDifficulty": "PEACEFUL",
+          "testDifficulty": "NORMAL",
+          "difficultySync": "native MinecraftServer.setDifficulty broadcasts ClientboundChangeDifficultyPacket"
+        },
+        "specs": {
+          "foods": {
+            "itemWATERBOTTLE": {
+              "originalClass": "legacyconnector_b173.plasticcraft.ItemConsumable",
+              "nativeClass": "org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Item",
+              "isFoodItem": true,
+              "originalNutrition": 3,
+              "hasSubtypes": false,
+              "nativeNutrition": 3,
+              "nativeSaturation": 3.6000001430511475,
+              "propertyDuration": 32,
+              "nativeDuration": 32,
+              "nativeAnimation": "EAT"
+            },
+            "itemMILKBOTTLE": {
+              "originalClass": "legacyconnector_b173.plasticcraft.ItemConsumable",
+              "nativeClass": "org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Item",
+              "isFoodItem": true,
+              "originalNutrition": 8,
+              "hasSubtypes": false,
+              "nativeNutrition": 8,
+              "nativeSaturation": 9.600000381469727,
+              "propertyDuration": 32,
+              "nativeDuration": 32,
+              "nativeAnimation": "EAT"
+            },
+            "itemNEEDLERED": {
+              "originalClass": "legacyconnector_b173.plasticcraft.ItemConsumable",
+              "nativeClass": "org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Item",
+              "isFoodItem": true,
+              "originalNutrition": 20,
+              "hasSubtypes": false,
+              "nativeNutrition": 20,
+              "nativeSaturation": 24,
+              "propertyDuration": 32,
+              "nativeDuration": 32,
+              "nativeAnimation": "EAT"
+            },
+            "itemJELLO": {
+              "originalClass": "legacyconnector_b173.plasticcraft.ItemConsumable",
+              "nativeClass": "org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Item",
+              "isFoodItem": true,
+              "originalNutrition": 4,
+              "hasSubtypes": false,
+              "nativeNutrition": 4,
+              "nativeSaturation": 4.800000190734863,
+              "propertyDuration": 32,
+              "nativeDuration": 32,
+              "nativeAnimation": "EAT"
+            }
+          },
+          "ids": {
+            "itemWATERBOTTLE": "b173_plasticcraft:p_water_bottle",
+            "itemMILKBOTTLE": "b173_plasticcraft:p_milk_bottle",
+            "itemNEEDLERED": "b173_plasticcraft:p_health_needle",
+            "itemJELLO": "b173_plasticcraft:q_jello",
+            "itemEMPTYBOTTLE": "b173_plasticcraft:p_empty_bottle",
+            "itemNEEDLE": "b173_plasticcraft:p_needle"
+          },
+          "apple": {
+            "nativeNutrition": 4,
+            "nativeSaturation": 2.4000000953674316,
+            "duration": 32
+          },
+          "configPath": "/mnt/c/Users/zekken/Desktop/minecrafting/Legacy-Connector/run-b173-single/plasticcraft-dedicated-20261109/config/legacyconnector.properties",
+          "storedFoodValue": null,
+          "regeneration": false,
+          "floorSolid": true
+        },
+        "realServerConfig": {
+          "path": "/mnt/c/Users/zekken/Desktop/minecrafting/Legacy-Connector/run-b173-single/plasticcraft-dedicated-20261109/config/legacyconnector.properties",
+          "sha256": "f71a740522ddaa65d5cb876a21e752109ce20fd64b26def0a56bc9322c1f0624",
+          "rawValue": null,
+          "defaultWhenMissingOrMalformed": true,
+          "foodUsesHunger": true
+        },
+        "originalJarSha256": [
+          "2e361f5398e27c5821f132ff1bf3d7ab71564e58df13051dde86c215c534c55b"
+        ],
+        "plainMedicineControl": {
+          "tested": false,
+          "reason": "All four verified original healing consumables extend FoodItem; no unverified plain Item medicine was invented."
+        },
+        "subtypeRemainder": {
+          "applicable": false,
+          "reason": "These four actual FoodItem subclasses have no subtypes; generic metadata7 custom remainders are covered by portable FoodUseB173Test."
+        },
+        "passed": true,
+        "passedChecks": 102,
+        "totalChecks": 102
+      }
+    },
+    {
+      "scope": "beta-dedicated-food",
+      "evidence": {
+        "path": "run-b173-single\\plasticcraft-complete-client-20261109-856c59\\complete-proof\\beta-dedicated-food.json",
+        "sha256": "cc70d657290fb6da3bec8b09ba66b920586bc300e7c2f3ae1d72aa356acc1d3a"
+      },
+      "results": {
+        "mode": "beta",
+        "configFileName": "legacyconnector.properties",
+        "configKey": "b173.foodUsesHunger",
+        "configMutationByHelper": false,
+        "checks": [
+          {
+            "name": "original actual payload",
+            "actual": [
+              "2e361f5398e27c5821f132ff1bf3d7ab71564e58df13051dde86c215c534c55b"
+            ],
+            "expected": [
+              "2e361f5398e27c5821f132ff1bf3d7ab71564e58df13051dde86c215c534c55b"
+            ],
+            "passed": true
+          },
+          {
+            "name": "stable fixture floor",
+            "actual": true,
+            "expected": true,
+            "passed": true
+          },
+          {
+            "name": "natural regeneration disabled",
+            "actual": false,
+            "expected": false,
+            "passed": true
+          },
+          {
+            "name": "existing server properties mode",
+            "actual": false,
+            "expected": false,
+            "passed": true
+          },
+          {
+            "name": "server uses its own properties value",
+            "actual": false,
+            "expected": false,
+            "passed": true
+          },
+          {
+            "name": "server has no client override",
+            "actual": false,
+            "expected": false,
+            "passed": true
+          },
+          {
+            "name": "server effective food mode",
+            "actual": false,
+            "expected": false,
+            "passed": true
+          },
+          {
+            "name": "server native difficulty NORMAL",
+            "actual": "NORMAL",
+            "expected": "NORMAL",
+            "passed": true
+          },
+          {
+            "name": "client received native difficulty NORMAL",
+            "actual": "NORMAL",
+            "expected": "NORMAL",
+            "passed": true
+          },
+          {
+            "name": "client received authoritative mode",
+            "actual": true,
+            "expected": true,
+            "passed": true
+          },
+          {
+            "name": "client effective food mode matches server",
+            "actual": false,
+            "expected": false,
+            "passed": true
+          },
+          {
+            "name": "four original FoodItem subclasses",
+            "actual": 4,
+            "expected": 4,
+            "passed": true
+          },
+          {
+            "name": "itemWATERBOTTLE nutrition derives from original",
+            "actual": 3,
+            "expected": 3,
+            "passed": true
+          },
+          {
+            "name": "itemWATERBOTTLE saturation modifier .6",
+            "actual": 3.6000001430511475,
+            "expected": 3.5999999999999996,
+            "passed": true
+          },
+          {
+            "name": "itemWATERBOTTLE native FOOD component duration",
+            "actual": 32,
+            "expected": 32,
+            "passed": true
+          },
+          {
+            "name": "itemMILKBOTTLE nutrition derives from original",
+            "actual": 8,
+            "expected": 8,
+            "passed": true
+          },
+          {
+            "name": "itemMILKBOTTLE saturation modifier .6",
+            "actual": 9.600000381469727,
+            "expected": 9.6,
+            "passed": true
+          },
+          {
+            "name": "itemMILKBOTTLE native FOOD component duration",
+            "actual": 32,
+            "expected": 32,
+            "passed": true
+          },
+          {
+            "name": "itemNEEDLERED nutrition derives from original",
+            "actual": 20,
+            "expected": 20,
+            "passed": true
+          },
+          {
+            "name": "itemNEEDLERED saturation modifier .6",
+            "actual": 24,
+            "expected": 24.0,
+            "passed": true
+          },
+          {
+            "name": "itemNEEDLERED native FOOD component duration",
+            "actual": 32,
+            "expected": 32,
+            "passed": true
+          },
+          {
+            "name": "itemJELLO nutrition derives from original",
+            "actual": 4,
+            "expected": 4,
+            "passed": true
+          },
+          {
+            "name": "itemJELLO saturation modifier .6",
+            "actual": 4.800000190734863,
+            "expected": 4.8,
+            "passed": true
+          },
+          {
+            "name": "itemJELLO native FOOD component duration",
+            "actual": 32,
+            "expected": 32,
+            "passed": true
+          },
+          {
+            "name": "water-full-hunger-use client/server health agree",
+            "actual": 5,
+            "expected": 5,
+            "passed": true
+          },
+          {
+            "name": "water-full-hunger-use client/server food agree",
+            "actual": 20,
+            "expected": 20,
+            "passed": true
+          },
+          {
+            "name": "water-full-hunger-use client/server saturation agree",
+            "actual": 0,
+            "expected": 0,
+            "passed": true
+          },
+          {
+            "name": "Beta mode heals with full hunger",
+            "actual": 5,
+            "expected": 5,
+            "passed": true
+          },
+          {
+            "name": "Beta mode full hunger yields original bottle",
+            "actual": "b173_plasticcraft:p_empty_bottle",
+            "expected": "b173_plasticcraft:p_empty_bottle",
+            "passed": true
+          },
+          {
+            "name": "full hunger control remains20",
+            "actual": 20,
+            "expected": 20,
+            "passed": true
+          },
+          {
+            "name": "full hunger control saturation unchanged",
+            "actual": 0,
+            "expected": 0,
+            "passed": true
+          },
+          {
+            "name": "itemWATERBOTTLE starts with health2",
+            "actual": 2,
+            "expected": 2,
+            "passed": true
+          },
+          {
+            "name": "itemWATERBOTTLE starts with hunger4",
+            "actual": 4,
+            "expected": 4,
+            "passed": true
+          },
+          {
+            "name": "itemWATERBOTTLE effective use duration",
+            "actual": 0,
+            "expected": 0,
+            "passed": true
+          },
+          {
+            "name": "itemWATERBOTTLE effective animation",
+            "actual": "NONE",
+            "expected": "NONE",
+            "passed": true
+          },
+          {
+            "name": "itemWATERBOTTLE-after client/server health agree",
+            "actual": 5,
+            "expected": 5,
+            "passed": true
+          },
+          {
+            "name": "itemWATERBOTTLE-after client/server food agree",
+            "actual": 4,
+            "expected": 4,
+            "passed": true
+          },
+          {
+            "name": "itemWATERBOTTLE-after client/server saturation agree",
+            "actual": 0,
+            "expected": 0,
+            "passed": true
+          },
+          {
+            "name": "itemWATERBOTTLE original remainder",
+            "actual": "b173_plasticcraft:p_empty_bottle",
+            "expected": "b173_plasticcraft:p_empty_bottle",
+            "passed": true
+          },
+          {
+            "name": "itemWATERBOTTLE consumes exactly one",
+            "actual": 1,
+            "expected": 1,
+            "passed": true
+          },
+          {
+            "name": "itemWATERBOTTLE health",
+            "actual": 5,
+            "expected": 5,
+            "passed": true
+          },
+          {
+            "name": "itemWATERBOTTLE hunger",
+            "actual": 4,
+            "expected": 4,
+            "passed": true
+          },
+          {
+            "name": "itemWATERBOTTLE saturation",
+            "actual": 0,
+            "expected": 0,
+            "passed": true
+          },
+          {
+            "name": "itemMILKBOTTLE starts with health2",
+            "actual": 2,
+            "expected": 2,
+            "passed": true
+          },
+          {
+            "name": "itemMILKBOTTLE starts with hunger4",
+            "actual": 4,
+            "expected": 4,
+            "passed": true
+          },
+          {
+            "name": "itemMILKBOTTLE effective use duration",
+            "actual": 0,
+            "expected": 0,
+            "passed": true
+          },
+          {
+            "name": "itemMILKBOTTLE effective animation",
+            "actual": "NONE",
+            "expected": "NONE",
+            "passed": true
+          },
+          {
+            "name": "itemMILKBOTTLE-after client/server health agree",
+            "actual": 10,
+            "expected": 10,
+            "passed": true
+          },
+          {
+            "name": "itemMILKBOTTLE-after client/server food agree",
+            "actual": 4,
+            "expected": 4,
+            "passed": true
+          },
+          {
+            "name": "itemMILKBOTTLE-after client/server saturation agree",
+            "actual": 0,
+            "expected": 0,
+            "passed": true
+          },
+          {
+            "name": "itemMILKBOTTLE original remainder",
+            "actual": "b173_plasticcraft:p_empty_bottle",
+            "expected": "b173_plasticcraft:p_empty_bottle",
+            "passed": true
+          },
+          {
+            "name": "itemMILKBOTTLE consumes exactly one",
+            "actual": 1,
+            "expected": 1,
+            "passed": true
+          },
+          {
+            "name": "itemMILKBOTTLE health",
+            "actual": 10,
+            "expected": 10,
+            "passed": true
+          },
+          {
+            "name": "itemMILKBOTTLE hunger",
+            "actual": 4,
+            "expected": 4,
+            "passed": true
+          },
+          {
+            "name": "itemMILKBOTTLE saturation",
+            "actual": 0,
+            "expected": 0,
+            "passed": true
+          },
+          {
+            "name": "itemNEEDLERED starts with health2",
+            "actual": 2,
+            "expected": 2,
+            "passed": true
+          },
+          {
+            "name": "itemNEEDLERED starts with hunger4",
+            "actual": 4,
+            "expected": 4,
+            "passed": true
+          },
+          {
+            "name": "itemNEEDLERED effective use duration",
+            "actual": 0,
+            "expected": 0,
+            "passed": true
+          },
+          {
+            "name": "itemNEEDLERED effective animation",
+            "actual": "NONE",
+            "expected": "NONE",
+            "passed": true
+          },
+          {
+            "name": "itemNEEDLERED-after client/server health agree",
+            "actual": 20,
+            "expected": 20,
+            "passed": true
+          },
+          {
+            "name": "itemNEEDLERED-after client/server food agree",
+            "actual": 4,
+            "expected": 4,
+            "passed": true
+          },
+          {
+            "name": "itemNEEDLERED-after client/server saturation agree",
+            "actual": 0,
+            "expected": 0,
+            "passed": true
+          },
+          {
+            "name": "itemNEEDLERED original remainder",
+            "actual": "b173_plasticcraft:p_needle",
+            "expected": "b173_plasticcraft:p_needle",
+            "passed": true
+          },
+          {
+            "name": "itemNEEDLERED consumes exactly one",
+            "actual": 1,
+            "expected": 1,
+            "passed": true
+          },
+          {
+            "name": "itemNEEDLERED health",
+            "actual": 20,
+            "expected": 20,
+            "passed": true
+          },
+          {
+            "name": "itemNEEDLERED hunger",
+            "actual": 4,
+            "expected": 4,
+            "passed": true
+          },
+          {
+            "name": "itemNEEDLERED saturation",
+            "actual": 0,
+            "expected": 0,
+            "passed": true
+          },
+          {
+            "name": "itemJELLO starts with health2",
+            "actual": 2,
+            "expected": 2,
+            "passed": true
+          },
+          {
+            "name": "itemJELLO starts with hunger4",
+            "actual": 4,
+            "expected": 4,
+            "passed": true
+          },
+          {
+            "name": "itemJELLO effective use duration",
+            "actual": 0,
+            "expected": 0,
+            "passed": true
+          },
+          {
+            "name": "itemJELLO effective animation",
+            "actual": "NONE",
+            "expected": "NONE",
+            "passed": true
+          },
+          {
+            "name": "itemJELLO-after client/server health agree",
+            "actual": 6,
+            "expected": 6,
+            "passed": true
+          },
+          {
+            "name": "itemJELLO-after client/server food agree",
+            "actual": 4,
+            "expected": 4,
+            "passed": true
+          },
+          {
+            "name": "itemJELLO-after client/server saturation agree",
+            "actual": 0,
+            "expected": 0,
+            "passed": true
+          },
+          {
+            "name": "itemJELLO original remainder",
+            "actual": "b173_plasticcraft:q_jello",
+            "expected": "b173_plasticcraft:q_jello",
+            "passed": true
+          },
+          {
+            "name": "itemJELLO consumes exactly one",
+            "actual": 1,
+            "expected": 1,
+            "passed": true
+          },
+          {
+            "name": "itemJELLO health",
+            "actual": 6,
+            "expected": 6,
+            "passed": true
+          },
+          {
+            "name": "itemJELLO hunger",
+            "actual": 4,
+            "expected": 4,
+            "passed": true
+          },
+          {
+            "name": "itemJELLO saturation",
+            "actual": 0,
+            "expected": 0,
+            "passed": true
+          },
+          {
+            "name": "native apple active during short hold",
+            "actual": true,
+            "expected": true,
+            "passed": true
+          },
+          {
+            "name": "native apple remains 32 ticks in both modes",
+            "actual": 32,
+            "expected": 32,
+            "passed": true
+          },
+          {
+            "name": "native apple short hold below completion",
+            "actual": true,
+            "expected": true,
+            "passed": true
+          },
+          {
+            "name": "native apple early release preserves stack",
+            "actual": {
+              "id": "minecraft:apple",
+              "count": 2,
+              "legacyId": 260,
+              "meta": 0,
+              "duration": 32,
+              "animation": "EAT"
+            },
+            "expected": {
+              "id": "minecraft:apple",
+              "count": 2,
+              "legacyId": 260,
+              "meta": 0,
+              "duration": 32,
+              "animation": "EAT"
+            },
+            "passed": true
+          },
+          {
+            "name": "native apple early release preserves hunger",
+            "actual": 4,
+            "expected": 4,
+            "passed": true
+          },
+          {
+            "name": "native apple early release preserves health",
+            "actual": 2,
+            "expected": 2,
+            "passed": true
+          },
+          {
+            "name": "native-apple-full-eat-after client/server health agree",
+            "actual": 2,
+            "expected": 2,
+            "passed": true
+          },
+          {
+            "name": "native-apple-full-eat-after client/server food agree",
+            "actual": 8,
+            "expected": 8,
+            "passed": true
+          },
+          {
+            "name": "native-apple-full-eat-after client/server saturation agree",
+            "actual": 2.4000000953674316,
+            "expected": 2.4000000953674316,
+            "passed": true
+          },
+          {
+            "name": "native apple consumes one",
+            "actual": "minecraft:apple",
+            "expected": "minecraft:apple",
+            "passed": true
+          },
+          {
+            "name": "native apple retains one",
+            "actual": 1,
+            "expected": 1,
+            "passed": true
+          },
+          {
+            "name": "native apple restores native hunger",
+            "actual": 8,
+            "expected": 8,
+            "passed": true
+          },
+          {
+            "name": "native apple restores native saturation",
+            "actual": 2.4000000953674316,
+            "expected": 2.4000000953674316,
+            "passed": true
+          },
+          {
+            "name": "native apple does not instant-heal health2",
+            "actual": 2,
+            "expected": 2,
+            "passed": true
+          }
+        ],
+        "errors": [],
+        "playerName": "Dev",
+        "realClient": {
+          "remote": true,
+          "name": "Dev",
+          "alive": true,
+          "deathScreen": false
+        },
+        "setup": {
+          "prepared": true,
+          "nativeSurvivalAfterFloor": true,
+          "originalDifficulty": "PEACEFUL",
+          "testDifficulty": "NORMAL",
+          "difficultySync": "native MinecraftServer.setDifficulty broadcasts ClientboundChangeDifficultyPacket"
+        },
+        "specs": {
+          "foods": {
+            "itemWATERBOTTLE": {
+              "originalClass": "legacyconnector_b173.plasticcraft.ItemConsumable",
+              "nativeClass": "org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Item",
+              "isFoodItem": true,
+              "originalNutrition": 3,
+              "hasSubtypes": false,
+              "nativeNutrition": 3,
+              "nativeSaturation": 3.6000001430511475,
+              "propertyDuration": 32,
+              "nativeDuration": 0,
+              "nativeAnimation": "NONE"
+            },
+            "itemMILKBOTTLE": {
+              "originalClass": "legacyconnector_b173.plasticcraft.ItemConsumable",
+              "nativeClass": "org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Item",
+              "isFoodItem": true,
+              "originalNutrition": 8,
+              "hasSubtypes": false,
+              "nativeNutrition": 8,
+              "nativeSaturation": 9.600000381469727,
+              "propertyDuration": 32,
+              "nativeDuration": 0,
+              "nativeAnimation": "NONE"
+            },
+            "itemNEEDLERED": {
+              "originalClass": "legacyconnector_b173.plasticcraft.ItemConsumable",
+              "nativeClass": "org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Item",
+              "isFoodItem": true,
+              "originalNutrition": 20,
+              "hasSubtypes": false,
+              "nativeNutrition": 20,
+              "nativeSaturation": 24,
+              "propertyDuration": 32,
+              "nativeDuration": 0,
+              "nativeAnimation": "NONE"
+            },
+            "itemJELLO": {
+              "originalClass": "legacyconnector_b173.plasticcraft.ItemConsumable",
+              "nativeClass": "org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Item",
+              "isFoodItem": true,
+              "originalNutrition": 4,
+              "hasSubtypes": false,
+              "nativeNutrition": 4,
+              "nativeSaturation": 4.800000190734863,
+              "propertyDuration": 32,
+              "nativeDuration": 0,
+              "nativeAnimation": "NONE"
+            }
+          },
+          "ids": {
+            "itemWATERBOTTLE": "b173_plasticcraft:p_water_bottle",
+            "itemMILKBOTTLE": "b173_plasticcraft:p_milk_bottle",
+            "itemNEEDLERED": "b173_plasticcraft:p_health_needle",
+            "itemJELLO": "b173_plasticcraft:q_jello",
+            "itemEMPTYBOTTLE": "b173_plasticcraft:p_empty_bottle",
+            "itemNEEDLE": "b173_plasticcraft:p_needle"
+          },
+          "apple": {
+            "nativeNutrition": 4,
+            "nativeSaturation": 2.4000000953674316,
+            "duration": 32
+          },
+          "configPath": "/mnt/c/Users/zekken/Desktop/minecrafting/Legacy-Connector/run-b173-single/plasticcraft-dedicated-20261109/config/legacyconnector.properties",
+          "storedFoodValue": "false",
+          "regeneration": false,
+          "floorSolid": true
+        },
+        "realServerConfig": {
+          "path": "/mnt/c/Users/zekken/Desktop/minecrafting/Legacy-Connector/run-b173-single/plasticcraft-dedicated-20261109/config/legacyconnector.properties",
+          "sha256": "c9531b399dbdfca164db2d1ed8ebdc075d477ef27eaaf079aa8bf63c10197773",
+          "rawValue": "false",
+          "defaultWhenMissingOrMalformed": true,
+          "foodUsesHunger": false
+        },
+        "originalJarSha256": [
+          "2e361f5398e27c5821f132ff1bf3d7ab71564e58df13051dde86c215c534c55b"
+        ],
+        "plainMedicineControl": {
+          "tested": false,
+          "reason": "All four verified original healing consumables extend FoodItem; no unverified plain Item medicine was invented."
+        },
+        "subtypeRemainder": {
+          "applicable": false,
+          "reason": "These four actual FoodItem subclasses have no subtypes; generic metadata7 custom remainders are covered by portable FoodUseB173Test."
+        },
+        "passed": true,
+        "passedChecks": 93,
+        "totalChecks": 93
+      }
+    },
+    {
+      "scope": "food-settings-ui-proof",
+      "evidence": {
+        "path": "run-b173-single\\plasticcraft-complete-client-20261109-856c59\\complete-proof\\food-settings-ui-proof.json",
+        "sha256": "472ca3e2212957a960f07edd86eacb797fd7873c609ce77e7de75f61d028b64e"
+      },
+      "results": {
+        "passed": true,
+        "propertyKey": "b173.foodUsesHunger",
+        "nativeUiClass": "org.kylepitcock.legacyconnector.client.LegacyConnectorConfigScreen",
+        "requiredModes": [
+          "hunger",
+          "local",
+          "beta"
+        ],
+        "modes": {
+          "hunger": {
+            "passed": true,
+            "passedChecks": 24,
+            "totalChecks": 24,
+            "checks": [
+              {
+                "name": "connected native remote client",
+                "actual": true,
+                "expected": true,
+                "passed": true
+              },
+              {
+                "name": "received authoritative server override",
+                "actual": true,
+                "expected": true,
+                "passed": true
+              },
+              {
+                "name": "effective mode follows server",
+                "actual": true,
+                "expected": true,
+                "passed": true
+              },
+              {
+                "name": "local preference deliberately disagrees",
+                "actual": false,
+                "expected": false,
+                "passed": true
+              },
+              {
+                "name": "actual reflected row key",
+                "actual": "b173.foodUsesHunger",
+                "expected": "b173.foodUsesHunger",
+                "passed": true
+              },
+              {
+                "name": "actual row scrolled into view",
+                "actual": true,
+                "expected": true,
+                "passed": true
+              },
+              {
+                "name": "existing properties file present",
+                "actual": true,
+                "expected": true,
+                "passed": true
+              },
+              {
+                "name": "opening UI did not change properties",
+                "actual": "c9531b399dbdfca164db2d1ed8ebdc075d477ef27eaaf079aa8bf63c10197773",
+                "expected": "c9531b399dbdfca164db2d1ed8ebdc075d477ef27eaaf079aa8bf63c10197773",
+                "passed": true
+              },
+              {
+                "name": "food row enabled only locally",
+                "actual": false,
+                "expected": false,
+                "passed": true
+              },
+              {
+                "name": "native label displays effective mode",
+                "actual": "ON",
+                "expected": "ON",
+                "passed": true
+              },
+              {
+                "name": "click alone does not save properties",
+                "actual": "c9531b399dbdfca164db2d1ed8ebdc075d477ef27eaaf079aa8bf63c10197773",
+                "expected": "c9531b399dbdfca164db2d1ed8ebdc075d477ef27eaaf079aa8bf63c10197773",
+                "passed": true
+              },
+              {
+                "name": "disabled native click preserves local draft",
+                "actual": false,
+                "expected": false,
+                "passed": true
+              },
+              {
+                "name": "disabled native click preserves server label",
+                "actual": "ON",
+                "expected": "ON",
+                "passed": true
+              },
+              {
+                "name": "disabled native click preserves effective server mode",
+                "actual": true,
+                "expected": true,
+                "passed": true
+              },
+              {
+                "name": "disabled native click preserves local preference",
+                "actual": false,
+                "expected": false,
+                "passed": true
+              },
+              {
+                "name": "existing native Done button active",
+                "actual": true,
+                "expected": true,
+                "passed": true
+              },
+              {
+                "name": "native Done closed existing settings screen",
+                "actual": false,
+                "expected": false,
+                "passed": true
+              },
+              {
+                "name": "same existing properties file",
+                "actual": "/mnt/c/Users/zekken/Desktop/minecrafting/Legacy-Connector/run-b173-single/plasticcraft-complete-client-20261109-856c59/config/legacyconnector.properties",
+                "expected": "/mnt/c/Users/zekken/Desktop/minecrafting/Legacy-Connector/run-b173-single/plasticcraft-complete-client-20261109-856c59/config/legacyconnector.properties",
+                "passed": true
+              },
+              {
+                "name": "helper created no extra TOML file",
+                "actual": [
+                  "fml.toml",
+                  "neoforge-client.toml",
+                  "neoforge-common.toml",
+                  "neoforge-server.toml",
+                  "pehkui-client.toml",
+                  "pehkui-common.toml",
+                  "pehkui-server.toml",
+                  "terrablender.toml"
+                ],
+                "expected": [
+                  "fml.toml",
+                  "neoforge-client.toml",
+                  "neoforge-common.toml",
+                  "neoforge-server.toml",
+                  "pehkui-client.toml",
+                  "pehkui-common.toml",
+                  "pehkui-server.toml",
+                  "terrablender.toml"
+                ],
+                "passed": true
+              },
+              {
+                "name": "other properties preserved by existing Save",
+                "actual": {
+                  "perf.cullLegacyParticles": "true",
+                  "bridges.waila.enabled": "true",
+                  "perf.packSpill": "true",
+                  "textures.modernLeaves": "true",
+                  "perf.blockLookupCache": "true",
+                  "oreBackgrounds.enabled": "true",
+                  "perf.worldViewCache": "true",
+                  "experimental.forge1201": "true",
+                  "experimental.sideBySideLibraries": "true",
+                  "energy.fePerEu": "4",
+                  "structures.locatable": "true",
+                  "blocks.flattenSubtypes": "true",
+                  "perf.releaseLoaderData": "true",
+                  "bridges.patchouli.enabled": "true",
+                  "perf.sweepDeadViews": "true",
+                  "perf.reuseBlockPos": "true",
+                  "perf.shareBlockModels": "true",
+                  "oreBackgrounds.netherrack": "netherrack",
+                  "perf.sweepRemovedPlayers": "true",
+                  "perf.entityViewCache": "true",
+                  "perf.releaseUnloadedLevels": "true",
+                  "perf.shareItemModels": "true",
+                  "deepLayer.enabled": "true",
+                  "perf.itemLookupCache": "true",
+                  "perf.staticTileEntities": "true",
+                  "oreBackgrounds.stone": "stone",
+                  "bridges.cofhEnergy.enabled": "true",
+                  "perf.biomeJarCache": "true",
+                  "oreBackgrounds.endStone": "end_stone",
+                  "perf.asyncBiomeSample": "true",
+                  "perf.particleSetting": "true",
+                  "experimental.forge1201.softlink": "true",
+                  "perf.lazyPackMetadata": "true",
+                  "deepLayer.excludeGenerators": "",
+                  "perf.hookOverrideCache": "true",
+                  "modernizeTextures": "true",
+                  "legacy.autoSortMods": "true",
+                  "energy.fePerMj": "10",
+                  "legacyBiomeFrequency": "1.0",
+                  "warnings.riskyMods": "true",
+                  "perf.weakStackViews1122": "false",
+                  "perf.cullModParticles": "false",
+                  "bridges.nei.enabled": "true",
+                  "bridges.baubles.enabled": "true",
+                  "perf.cacheTextureLocations": "true"
+                },
+                "expected": {
+                  "perf.cullLegacyParticles": "true",
+                  "bridges.waila.enabled": "true",
+                  "perf.packSpill": "true",
+                  "textures.modernLeaves": "true",
+                  "perf.blockLookupCache": "true",
+                  "oreBackgrounds.enabled": "true",
+                  "perf.worldViewCache": "true",
+                  "experimental.forge1201": "true",
+                  "experimental.sideBySideLibraries": "true",
+                  "energy.fePerEu": "4",
+                  "structures.locatable": "true",
+                  "blocks.flattenSubtypes": "true",
+                  "perf.releaseLoaderData": "true",
+                  "bridges.patchouli.enabled": "true",
+                  "perf.sweepDeadViews": "true",
+                  "perf.reuseBlockPos": "true",
+                  "perf.shareBlockModels": "true",
+                  "oreBackgrounds.netherrack": "netherrack",
+                  "perf.sweepRemovedPlayers": "true",
+                  "perf.entityViewCache": "true",
+                  "perf.releaseUnloadedLevels": "true",
+                  "perf.shareItemModels": "true",
+                  "deepLayer.enabled": "true",
+                  "perf.itemLookupCache": "true",
+                  "perf.staticTileEntities": "true",
+                  "oreBackgrounds.stone": "stone",
+                  "bridges.cofhEnergy.enabled": "true",
+                  "perf.biomeJarCache": "true",
+                  "oreBackgrounds.endStone": "end_stone",
+                  "perf.asyncBiomeSample": "true",
+                  "perf.particleSetting": "true",
+                  "experimental.forge1201.softlink": "true",
+                  "perf.lazyPackMetadata": "true",
+                  "deepLayer.excludeGenerators": "",
+                  "perf.hookOverrideCache": "true",
+                  "modernizeTextures": "true",
+                  "legacy.autoSortMods": "true",
+                  "energy.fePerMj": "10",
+                  "legacyBiomeFrequency": "1.0",
+                  "warnings.riskyMods": "true",
+                  "perf.weakStackViews1122": "false",
+                  "perf.cullModParticles": "false",
+                  "bridges.nei.enabled": "true",
+                  "bridges.baubles.enabled": "true",
+                  "perf.cacheTextureLocations": "true"
+                },
+                "passed": true
+              },
+              {
+                "name": "remote Done leaves client file unchanged",
+                "actual": "c9531b399dbdfca164db2d1ed8ebdc075d477ef27eaaf079aa8bf63c10197773",
+                "expected": "c9531b399dbdfca164db2d1ed8ebdc075d477ef27eaaf079aa8bf63c10197773",
+                "passed": true
+              },
+              {
+                "name": "remote Done preserves opposite local preference",
+                "actual": false,
+                "expected": false,
+                "passed": true
+              },
+              {
+                "name": "remote Done preserves authoritative mode",
+                "actual": true,
+                "expected": true,
+                "passed": true
+              },
+              {
+                "name": "remote Done retains server override",
+                "actual": true,
+                "expected": true,
+                "passed": true
+              }
+            ],
+            "errors": [],
+            "screenshots": [
+              {
+                "path": "/mnt/c/Users/zekken/Desktop/minecrafting/Legacy-Connector/run-b173-single/plasticcraft-complete-client-20261109-856c59/complete-proof/food-settings-ui-hunger-before-click.png",
+                "rowVisible": true,
+                "pixelValidation": "pending root inspection"
+              },
+              {
+                "path": "/mnt/c/Users/zekken/Desktop/minecrafting/Legacy-Connector/run-b173-single/plasticcraft-complete-client-20261109-856c59/complete-proof/food-settings-ui-hunger-after-click.png",
+                "rowVisible": true,
+                "pixelValidation": "pending root inspection"
+              }
+            ],
+            "nativeClicks": [
+              {
+                "x": 477.0,
+                "y": 46.0,
+                "purpose": "food setting toggle",
+                "input": "Native Screen.mouseClicked; release only while the same screen remains open"
+              },
+              {
+                "x": 240,
+                "y": 342,
+                "purpose": "existing Done button saves and closes",
+                "input": "Native Screen.mouseClicked; release only while the same screen remains open"
+              }
+            ]
+          },
+          "local": {
+            "passed": true,
+            "passedChecks": 25,
+            "totalChecks": 25,
+            "checks": [
+              {
+                "name": "root disconnected to native title screen",
+                "actual": true,
+                "expected": true,
+                "passed": true
+              },
+              {
+                "name": "disconnect cleared server override",
+                "actual": false,
+                "expected": false,
+                "passed": true
+              },
+              {
+                "name": "local preference starts false",
+                "actual": false,
+                "expected": false,
+                "passed": true
+              },
+              {
+                "name": "local effective mode starts false",
+                "actual": false,
+                "expected": false,
+                "passed": true
+              },
+              {
+                "name": "actual reflected row key",
+                "actual": "b173.foodUsesHunger",
+                "expected": "b173.foodUsesHunger",
+                "passed": true
+              },
+              {
+                "name": "actual row scrolled into view",
+                "actual": true,
+                "expected": true,
+                "passed": true
+              },
+              {
+                "name": "existing properties file present",
+                "actual": true,
+                "expected": true,
+                "passed": true
+              },
+              {
+                "name": "opening UI did not change properties",
+                "actual": "c9531b399dbdfca164db2d1ed8ebdc075d477ef27eaaf079aa8bf63c10197773",
+                "expected": "c9531b399dbdfca164db2d1ed8ebdc075d477ef27eaaf079aa8bf63c10197773",
+                "passed": true
+              },
+              {
+                "name": "food row enabled only locally",
+                "actual": true,
+                "expected": true,
+                "passed": true
+              },
+              {
+                "name": "native label displays effective mode",
+                "actual": "OFF",
+                "expected": "OFF",
+                "passed": true
+              },
+              {
+                "name": "click alone does not save properties",
+                "actual": "c9531b399dbdfca164db2d1ed8ebdc075d477ef27eaaf079aa8bf63c10197773",
+                "expected": "c9531b399dbdfca164db2d1ed8ebdc075d477ef27eaaf079aa8bf63c10197773",
+                "passed": true
+              },
+              {
+                "name": "native local mouse click toggles draft true",
+                "actual": true,
+                "expected": true,
+                "passed": true
+              },
+              {
+                "name": "local draft label is native ON",
+                "actual": "ON",
+                "expected": "ON",
+                "passed": true
+              },
+              {
+                "name": "local draft waits for Done before applying",
+                "actual": false,
+                "expected": false,
+                "passed": true
+              },
+              {
+                "name": "existing native Done button active",
+                "actual": true,
+                "expected": true,
+                "passed": true
+              },
+              {
+                "name": "native Done closed existing settings screen",
+                "actual": false,
+                "expected": false,
+                "passed": true
+              },
+              {
+                "name": "same existing properties file",
+                "actual": "/mnt/c/Users/zekken/Desktop/minecrafting/Legacy-Connector/run-b173-single/plasticcraft-complete-client-20261109-856c59/config/legacyconnector.properties",
+                "expected": "/mnt/c/Users/zekken/Desktop/minecrafting/Legacy-Connector/run-b173-single/plasticcraft-complete-client-20261109-856c59/config/legacyconnector.properties",
+                "passed": true
+              },
+              {
+                "name": "helper created no extra TOML file",
+                "actual": [
+                  "fml.toml",
+                  "neoforge-client.toml",
+                  "neoforge-common.toml",
+                  "neoforge-server.toml",
+                  "pehkui-client.toml",
+                  "pehkui-common.toml",
+                  "pehkui-server.toml",
+                  "terrablender.toml"
+                ],
+                "expected": [
+                  "fml.toml",
+                  "neoforge-client.toml",
+                  "neoforge-common.toml",
+                  "neoforge-server.toml",
+                  "pehkui-client.toml",
+                  "pehkui-common.toml",
+                  "pehkui-server.toml",
+                  "terrablender.toml"
+                ],
+                "passed": true
+              },
+              {
+                "name": "other properties preserved by existing Save",
+                "actual": {
+                  "perf.cullLegacyParticles": "true",
+                  "bridges.waila.enabled": "true",
+                  "perf.packSpill": "true",
+                  "textures.modernLeaves": "true",
+                  "perf.blockLookupCache": "true",
+                  "oreBackgrounds.enabled": "true",
+                  "perf.worldViewCache": "true",
+                  "experimental.forge1201": "true",
+                  "experimental.sideBySideLibraries": "true",
+                  "energy.fePerEu": "4",
+                  "structures.locatable": "true",
+                  "blocks.flattenSubtypes": "true",
+                  "perf.releaseLoaderData": "true",
+                  "bridges.patchouli.enabled": "true",
+                  "perf.sweepDeadViews": "true",
+                  "perf.reuseBlockPos": "true",
+                  "perf.shareBlockModels": "true",
+                  "oreBackgrounds.netherrack": "netherrack",
+                  "perf.sweepRemovedPlayers": "true",
+                  "perf.entityViewCache": "true",
+                  "perf.releaseUnloadedLevels": "true",
+                  "perf.shareItemModels": "true",
+                  "deepLayer.enabled": "true",
+                  "perf.itemLookupCache": "true",
+                  "perf.staticTileEntities": "true",
+                  "oreBackgrounds.stone": "stone",
+                  "bridges.cofhEnergy.enabled": "true",
+                  "perf.biomeJarCache": "true",
+                  "oreBackgrounds.endStone": "end_stone",
+                  "perf.asyncBiomeSample": "true",
+                  "perf.particleSetting": "true",
+                  "experimental.forge1201.softlink": "true",
+                  "perf.lazyPackMetadata": "true",
+                  "deepLayer.excludeGenerators": "",
+                  "perf.hookOverrideCache": "true",
+                  "modernizeTextures": "true",
+                  "legacy.autoSortMods": "true",
+                  "energy.fePerMj": "10",
+                  "legacyBiomeFrequency": "1.0",
+                  "warnings.riskyMods": "true",
+                  "perf.weakStackViews1122": "false",
+                  "perf.cullModParticles": "false",
+                  "bridges.nei.enabled": "true",
+                  "bridges.baubles.enabled": "true",
+                  "perf.cacheTextureLocations": "true"
+                },
+                "expected": {
+                  "perf.cullLegacyParticles": "true",
+                  "bridges.waila.enabled": "true",
+                  "perf.packSpill": "true",
+                  "textures.modernLeaves": "true",
+                  "perf.blockLookupCache": "true",
+                  "oreBackgrounds.enabled": "true",
+                  "perf.worldViewCache": "true",
+                  "experimental.forge1201": "true",
+                  "experimental.sideBySideLibraries": "true",
+                  "energy.fePerEu": "4",
+                  "structures.locatable": "true",
+                  "blocks.flattenSubtypes": "true",
+                  "perf.releaseLoaderData": "true",
+                  "bridges.patchouli.enabled": "true",
+                  "perf.sweepDeadViews": "true",
+                  "perf.reuseBlockPos": "true",
+                  "perf.shareBlockModels": "true",
+                  "oreBackgrounds.netherrack": "netherrack",
+                  "perf.sweepRemovedPlayers": "true",
+                  "perf.entityViewCache": "true",
+                  "perf.releaseUnloadedLevels": "true",
+                  "perf.shareItemModels": "true",
+                  "deepLayer.enabled": "true",
+                  "perf.itemLookupCache": "true",
+                  "perf.staticTileEntities": "true",
+                  "oreBackgrounds.stone": "stone",
+                  "bridges.cofhEnergy.enabled": "true",
+                  "perf.biomeJarCache": "true",
+                  "oreBackgrounds.endStone": "end_stone",
+                  "perf.asyncBiomeSample": "true",
+                  "perf.particleSetting": "true",
+                  "experimental.forge1201.softlink": "true",
+                  "perf.lazyPackMetadata": "true",
+                  "deepLayer.excludeGenerators": "",
+                  "perf.hookOverrideCache": "true",
+                  "modernizeTextures": "true",
+                  "legacy.autoSortMods": "true",
+                  "energy.fePerMj": "10",
+                  "legacyBiomeFrequency": "1.0",
+                  "warnings.riskyMods": "true",
+                  "perf.weakStackViews1122": "false",
+                  "perf.cullModParticles": "false",
+                  "bridges.nei.enabled": "true",
+                  "bridges.baubles.enabled": "true",
+                  "perf.cacheTextureLocations": "true"
+                },
+                "passed": true
+              },
+              {
+                "name": "Done returns to native title screen",
+                "actual": true,
+                "expected": true,
+                "passed": true
+              },
+              {
+                "name": "existing Save persisted food key true",
+                "actual": "true",
+                "expected": "true",
+                "passed": true
+              },
+              {
+                "name": "existing properties hash changed after local Save",
+                "actual": true,
+                "expected": true,
+                "passed": true
+              },
+              {
+                "name": "saved local preference now true",
+                "actual": true,
+                "expected": true,
+                "passed": true
+              },
+              {
+                "name": "saved local effective mode now true",
+                "actual": true,
+                "expected": true,
+                "passed": true
+              },
+              {
+                "name": "title screen still has no remote override",
+                "actual": false,
+                "expected": false,
+                "passed": true
+              }
+            ],
+            "errors": [],
+            "screenshots": [
+              {
+                "path": "/mnt/c/Users/zekken/Desktop/minecrafting/Legacy-Connector/run-b173-single/plasticcraft-complete-client-20261109-856c59/complete-proof/food-settings-ui-local-before-click.png",
+                "rowVisible": true,
+                "pixelValidation": "pending root inspection"
+              },
+              {
+                "path": "/mnt/c/Users/zekken/Desktop/minecrafting/Legacy-Connector/run-b173-single/plasticcraft-complete-client-20261109-856c59/complete-proof/food-settings-ui-local-after-click.png",
+                "rowVisible": true,
+                "pixelValidation": "pending root inspection"
+              }
+            ],
+            "nativeClicks": [
+              {
+                "x": 477.0,
+                "y": 46.0,
+                "purpose": "food setting toggle",
+                "input": "Native Screen.mouseClicked; release only while the same screen remains open"
+              },
+              {
+                "x": 240,
+                "y": 342,
+                "purpose": "existing Done button saves and closes",
+                "input": "Native Screen.mouseClicked; release only while the same screen remains open"
+              }
+            ]
+          },
+          "beta": {
+            "passed": true,
+            "passedChecks": 24,
+            "totalChecks": 24,
+            "checks": [
+              {
+                "name": "connected native remote client",
+                "actual": true,
+                "expected": true,
+                "passed": true
+              },
+              {
+                "name": "received authoritative server override",
+                "actual": true,
+                "expected": true,
+                "passed": true
+              },
+              {
+                "name": "effective mode follows server",
+                "actual": false,
+                "expected": false,
+                "passed": true
+              },
+              {
+                "name": "local preference deliberately disagrees",
+                "actual": true,
+                "expected": true,
+                "passed": true
+              },
+              {
+                "name": "actual reflected row key",
+                "actual": "b173.foodUsesHunger",
+                "expected": "b173.foodUsesHunger",
+                "passed": true
+              },
+              {
+                "name": "actual row scrolled into view",
+                "actual": true,
+                "expected": true,
+                "passed": true
+              },
+              {
+                "name": "existing properties file present",
+                "actual": true,
+                "expected": true,
+                "passed": true
+              },
+              {
+                "name": "opening UI did not change properties",
+                "actual": "17f0866bfe8b25ffb57d1953e6af13e349508d192c4e23f2bf08d45d21d71eaa",
+                "expected": "17f0866bfe8b25ffb57d1953e6af13e349508d192c4e23f2bf08d45d21d71eaa",
+                "passed": true
+              },
+              {
+                "name": "food row enabled only locally",
+                "actual": false,
+                "expected": false,
+                "passed": true
+              },
+              {
+                "name": "native label displays effective mode",
+                "actual": "OFF",
+                "expected": "OFF",
+                "passed": true
+              },
+              {
+                "name": "click alone does not save properties",
+                "actual": "17f0866bfe8b25ffb57d1953e6af13e349508d192c4e23f2bf08d45d21d71eaa",
+                "expected": "17f0866bfe8b25ffb57d1953e6af13e349508d192c4e23f2bf08d45d21d71eaa",
+                "passed": true
+              },
+              {
+                "name": "disabled native click preserves local draft",
+                "actual": true,
+                "expected": true,
+                "passed": true
+              },
+              {
+                "name": "disabled native click preserves server label",
+                "actual": "OFF",
+                "expected": "OFF",
+                "passed": true
+              },
+              {
+                "name": "disabled native click preserves effective server mode",
+                "actual": false,
+                "expected": false,
+                "passed": true
+              },
+              {
+                "name": "disabled native click preserves local preference",
+                "actual": true,
+                "expected": true,
+                "passed": true
+              },
+              {
+                "name": "existing native Done button active",
+                "actual": true,
+                "expected": true,
+                "passed": true
+              },
+              {
+                "name": "native Done closed existing settings screen",
+                "actual": false,
+                "expected": false,
+                "passed": true
+              },
+              {
+                "name": "same existing properties file",
+                "actual": "/mnt/c/Users/zekken/Desktop/minecrafting/Legacy-Connector/run-b173-single/plasticcraft-complete-client-20261109-856c59/config/legacyconnector.properties",
+                "expected": "/mnt/c/Users/zekken/Desktop/minecrafting/Legacy-Connector/run-b173-single/plasticcraft-complete-client-20261109-856c59/config/legacyconnector.properties",
+                "passed": true
+              },
+              {
+                "name": "helper created no extra TOML file",
+                "actual": [
+                  "fml.toml",
+                  "neoforge-client.toml",
+                  "neoforge-common.toml",
+                  "neoforge-server.toml",
+                  "pehkui-client.toml",
+                  "pehkui-common.toml",
+                  "pehkui-server.toml",
+                  "terrablender.toml"
+                ],
+                "expected": [
+                  "fml.toml",
+                  "neoforge-client.toml",
+                  "neoforge-common.toml",
+                  "neoforge-server.toml",
+                  "pehkui-client.toml",
+                  "pehkui-common.toml",
+                  "pehkui-server.toml",
+                  "terrablender.toml"
+                ],
+                "passed": true
+              },
+              {
+                "name": "other properties preserved by existing Save",
+                "actual": {
+                  "perf.cullLegacyParticles": "true",
+                  "bridges.waila.enabled": "true",
+                  "perf.packSpill": "true",
+                  "textures.modernLeaves": "true",
+                  "perf.blockLookupCache": "true",
+                  "oreBackgrounds.enabled": "true",
+                  "perf.worldViewCache": "true",
+                  "experimental.forge1201": "true",
+                  "experimental.sideBySideLibraries": "true",
+                  "energy.fePerEu": "4",
+                  "structures.locatable": "true",
+                  "blocks.flattenSubtypes": "true",
+                  "perf.releaseLoaderData": "true",
+                  "bridges.patchouli.enabled": "true",
+                  "perf.sweepDeadViews": "true",
+                  "perf.reuseBlockPos": "true",
+                  "perf.shareBlockModels": "true",
+                  "oreBackgrounds.netherrack": "netherrack",
+                  "perf.sweepRemovedPlayers": "true",
+                  "perf.entityViewCache": "true",
+                  "perf.releaseUnloadedLevels": "true",
+                  "perf.shareItemModels": "true",
+                  "deepLayer.enabled": "true",
+                  "perf.itemLookupCache": "true",
+                  "perf.staticTileEntities": "true",
+                  "oreBackgrounds.stone": "stone",
+                  "bridges.cofhEnergy.enabled": "true",
+                  "perf.biomeJarCache": "true",
+                  "oreBackgrounds.endStone": "end_stone",
+                  "perf.asyncBiomeSample": "true",
+                  "perf.particleSetting": "true",
+                  "experimental.forge1201.softlink": "true",
+                  "perf.lazyPackMetadata": "true",
+                  "deepLayer.excludeGenerators": "",
+                  "perf.hookOverrideCache": "true",
+                  "modernizeTextures": "true",
+                  "legacy.autoSortMods": "true",
+                  "energy.fePerMj": "10",
+                  "legacyBiomeFrequency": "1.0",
+                  "warnings.riskyMods": "true",
+                  "perf.weakStackViews1122": "false",
+                  "perf.cullModParticles": "false",
+                  "bridges.nei.enabled": "true",
+                  "bridges.baubles.enabled": "true",
+                  "perf.cacheTextureLocations": "true"
+                },
+                "expected": {
+                  "perf.cullLegacyParticles": "true",
+                  "bridges.waila.enabled": "true",
+                  "perf.packSpill": "true",
+                  "textures.modernLeaves": "true",
+                  "perf.blockLookupCache": "true",
+                  "oreBackgrounds.enabled": "true",
+                  "perf.worldViewCache": "true",
+                  "experimental.forge1201": "true",
+                  "experimental.sideBySideLibraries": "true",
+                  "energy.fePerEu": "4",
+                  "structures.locatable": "true",
+                  "blocks.flattenSubtypes": "true",
+                  "perf.releaseLoaderData": "true",
+                  "bridges.patchouli.enabled": "true",
+                  "perf.sweepDeadViews": "true",
+                  "perf.reuseBlockPos": "true",
+                  "perf.shareBlockModels": "true",
+                  "oreBackgrounds.netherrack": "netherrack",
+                  "perf.sweepRemovedPlayers": "true",
+                  "perf.entityViewCache": "true",
+                  "perf.releaseUnloadedLevels": "true",
+                  "perf.shareItemModels": "true",
+                  "deepLayer.enabled": "true",
+                  "perf.itemLookupCache": "true",
+                  "perf.staticTileEntities": "true",
+                  "oreBackgrounds.stone": "stone",
+                  "bridges.cofhEnergy.enabled": "true",
+                  "perf.biomeJarCache": "true",
+                  "oreBackgrounds.endStone": "end_stone",
+                  "perf.asyncBiomeSample": "true",
+                  "perf.particleSetting": "true",
+                  "experimental.forge1201.softlink": "true",
+                  "perf.lazyPackMetadata": "true",
+                  "deepLayer.excludeGenerators": "",
+                  "perf.hookOverrideCache": "true",
+                  "modernizeTextures": "true",
+                  "legacy.autoSortMods": "true",
+                  "energy.fePerMj": "10",
+                  "legacyBiomeFrequency": "1.0",
+                  "warnings.riskyMods": "true",
+                  "perf.weakStackViews1122": "false",
+                  "perf.cullModParticles": "false",
+                  "bridges.nei.enabled": "true",
+                  "bridges.baubles.enabled": "true",
+                  "perf.cacheTextureLocations": "true"
+                },
+                "passed": true
+              },
+              {
+                "name": "remote Done leaves client file unchanged",
+                "actual": "17f0866bfe8b25ffb57d1953e6af13e349508d192c4e23f2bf08d45d21d71eaa",
+                "expected": "17f0866bfe8b25ffb57d1953e6af13e349508d192c4e23f2bf08d45d21d71eaa",
+                "passed": true
+              },
+              {
+                "name": "remote Done preserves opposite local preference",
+                "actual": true,
+                "expected": true,
+                "passed": true
+              },
+              {
+                "name": "remote Done preserves authoritative mode",
+                "actual": false,
+                "expected": false,
+                "passed": true
+              },
+              {
+                "name": "remote Done retains server override",
+                "actual": true,
+                "expected": true,
+                "passed": true
+              }
+            ],
+            "errors": [],
+            "screenshots": [
+              {
+                "path": "/mnt/c/Users/zekken/Desktop/minecrafting/Legacy-Connector/run-b173-single/plasticcraft-complete-client-20261109-856c59/complete-proof/food-settings-ui-beta-before-click.png",
+                "rowVisible": true,
+                "pixelValidation": "pending root inspection"
+              },
+              {
+                "path": "/mnt/c/Users/zekken/Desktop/minecrafting/Legacy-Connector/run-b173-single/plasticcraft-complete-client-20261109-856c59/complete-proof/food-settings-ui-beta-after-click.png",
+                "rowVisible": true,
+                "pixelValidation": "pending root inspection"
+              }
+            ],
+            "nativeClicks": [
+              {
+                "x": 477.0,
+                "y": 46.0,
+                "purpose": "food setting toggle",
+                "input": "Native Screen.mouseClicked; release only while the same screen remains open"
+              },
+              {
+                "x": 240,
+                "y": 342,
+                "purpose": "existing Done button saves and closes",
+                "input": "Native Screen.mouseClicked; release only while the same screen remains open"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "scope": "remote-hook-hud-proof",
+      "evidence": {
+        "path": "run-b173-single\\plasticcraft-complete-client-20261109-856c59\\complete-proof\\remote-hook-hud-proof.json",
+        "sha256": "9a888cd5df002c8dd15dddb83b3da4552f2e9ba19479725fb87bd115dcf0f413"
+      },
+      "results": {
+        "sourceTexture": "TehKrush/PlasticCraft/guiNightVisionClassic.png",
+        "originalTimerOrListWrites": false,
+        "manualOriginalHooks": false,
+        "scenarios": [
+          {
+            "name": "normal",
+            "expectedOverlay": false,
+            "screenshot": "/mnt/c/Users/zekken/Desktop/minecrafting/Legacy-Connector/run-b173-single/plasticcraft-complete-client-20261109-856c59/control/out/remote-hook-hud-normal.png",
+            "clientFrame": {
+              "remoteReady": true,
+              "session": 1,
+              "width": 640,
+              "height": 360,
+              "commands": [],
+              "expectedTexture": "b173_plasticcraft:textures/b173/entity/5465684b727573682f506c617374696343726166742f6775694e69676874566973696f6e436c61737369632e706e67.png",
+              "hideHud": false,
+              "thirdPerson": false,
+              "screen": false
+            },
+            "serverBefore": {
+              "calls": 30,
+              "duplicateTicks": 0,
+              "last": {
+                "tick": 51159,
+                "serverThread": true,
+                "serverWorld": true,
+                "hideHud": false,
+                "thirdPerson": false,
+                "screen": false
+              },
+              "originalStunLastTime": 1794246952722,
+              "serverGameTime": 51160,
+              "health": 20,
+              "alive": true
+            },
+            "serverAfter": {
+              "calls": 70,
+              "duplicateTicks": 0,
+              "last": {
+                "tick": 51199,
+                "serverThread": true,
+                "serverWorld": true,
+                "hideHud": false,
+                "thirdPerson": false,
+                "screen": false
+              },
+              "originalStunLastTime": 1794246954721,
+              "serverGameTime": 51200,
+              "health": 20,
+              "alive": true
+            },
+            "serverHooksStayedActive": true,
+            "presentationContextMatched": true,
+            "overlayQuadCount": 0,
+            "passed": true
+          },
+          {
+            "name": "goggles",
+            "expectedOverlay": true,
+            "screenshot": "/mnt/c/Users/zekken/Desktop/minecrafting/Legacy-Connector/run-b173-single/plasticcraft-complete-client-20261109-856c59/control/out/remote-hook-hud-goggles.png",
+            "clientFrame": {
+              "remoteReady": true,
+              "session": 1,
+              "width": 640,
+              "height": 360,
+              "commands": [
+                {
+                  "op": "quad",
+                  "texture": "b173_plasticcraft:textures/b173/entity/5465684b727573682f506c617374696343726166742f6775694e69676874566973696f6e436c61737369632e706e67.png",
+                  "color": -1,
+                  "blend": true,
+                  "src": 770,
+                  "dst": 771,
+                  "vertices": [
+                    {
+                      "x": 0,
+                      "y": 360,
+                      "u": 0,
+                      "v": 1,
+                      "color": -1
+                    },
+                    {
+                      "x": 640,
+                      "y": 360,
+                      "u": 1,
+                      "v": 1,
+                      "color": -1
+                    },
+                    {
+                      "x": 640,
+                      "y": 0,
+                      "u": 1,
+                      "v": 0,
+                      "color": -1
+                    },
+                    {
+                      "x": 0,
+                      "y": 0,
+                      "u": 0,
+                      "v": 0,
+                      "color": -1
+                    }
+                  ]
+                }
+              ],
+              "expectedTexture": "b173_plasticcraft:textures/b173/entity/5465684b727573682f506c617374696343726166742f6775694e69676874566973696f6e436c61737369632e706e67.png",
+              "hideHud": false,
+              "thirdPerson": false,
+              "screen": false
+            },
+            "serverBefore": {
+              "calls": 100,
+              "duplicateTicks": 0,
+              "last": {
+                "tick": 51229,
+                "serverThread": true,
+                "serverWorld": true,
+                "hideHud": false,
+                "thirdPerson": false,
+                "screen": false
+              },
+              "originalStunLastTime": 1794246956222,
+              "serverGameTime": 51230,
+              "health": 20,
+              "alive": true
+            },
+            "serverAfter": {
+              "calls": 140,
+              "duplicateTicks": 0,
+              "last": {
+                "tick": 51269,
+                "serverThread": true,
+                "serverWorld": true,
+                "hideHud": false,
+                "thirdPerson": false,
+                "screen": false
+              },
+              "originalStunLastTime": 1794246958222,
+              "serverGameTime": 51270,
+              "health": 20,
+              "alive": true
+            },
+            "serverHooksStayedActive": true,
+            "presentationContextMatched": true,
+            "overlayQuadCount": 1,
+            "passed": true
+          },
+          {
+            "name": "third-person",
+            "expectedOverlay": false,
+            "screenshot": "/mnt/c/Users/zekken/Desktop/minecrafting/Legacy-Connector/run-b173-single/plasticcraft-complete-client-20261109-856c59/control/out/remote-hook-hud-third-person.png",
+            "clientFrame": {
+              "remoteReady": true,
+              "session": 1,
+              "width": 640,
+              "height": 360,
+              "commands": [],
+              "expectedTexture": "b173_plasticcraft:textures/b173/entity/5465684b727573682f506c617374696343726166742f6775694e69676874566973696f6e436c61737369632e706e67.png",
+              "hideHud": false,
+              "thirdPerson": true,
+              "screen": false
+            },
+            "serverBefore": {
+              "calls": 160,
+              "duplicateTicks": 0,
+              "last": {
+                "tick": 51289,
+                "serverThread": true,
+                "serverWorld": true,
+                "hideHud": false,
+                "thirdPerson": true,
+                "screen": false
+              },
+              "originalStunLastTime": 1794246959222,
+              "serverGameTime": 51290,
+              "health": 20,
+              "alive": true
+            },
+            "serverAfter": {
+              "calls": 200,
+              "duplicateTicks": 0,
+              "last": {
+                "tick": 51329,
+                "serverThread": true,
+                "serverWorld": true,
+                "hideHud": false,
+                "thirdPerson": true,
+                "screen": false
+              },
+              "originalStunLastTime": 1794246961222,
+              "serverGameTime": 51330,
+              "health": 20,
+              "alive": true
+            },
+            "serverHooksStayedActive": true,
+            "presentationContextMatched": true,
+            "overlayQuadCount": 0,
+            "passed": true
+          },
+          {
+            "name": "hidden-hud",
+            "expectedOverlay": false,
+            "screenshot": "/mnt/c/Users/zekken/Desktop/minecrafting/Legacy-Connector/run-b173-single/plasticcraft-complete-client-20261109-856c59/control/out/remote-hook-hud-hidden-hud.png",
+            "clientFrame": {
+              "remoteReady": true,
+              "session": 1,
+              "width": 640,
+              "height": 360,
+              "commands": [],
+              "expectedTexture": "b173_plasticcraft:textures/b173/entity/5465684b727573682f506c617374696343726166742f6775694e69676874566973696f6e436c61737369632e706e67.png",
+              "hideHud": true,
+              "thirdPerson": false,
+              "screen": false
+            },
+            "serverBefore": {
+              "calls": 220,
+              "duplicateTicks": 0,
+              "last": {
+                "tick": 51349,
+                "serverThread": true,
+                "serverWorld": true,
+                "hideHud": true,
+                "thirdPerson": false,
+                "screen": false
+              },
+              "originalStunLastTime": 1794246962222,
+              "serverGameTime": 51350,
+              "health": 20,
+              "alive": true
+            },
+            "serverAfter": {
+              "calls": 260,
+              "duplicateTicks": 0,
+              "last": {
+                "tick": 51389,
+                "serverThread": true,
+                "serverWorld": true,
+                "hideHud": true,
+                "thirdPerson": false,
+                "screen": false
+              },
+              "originalStunLastTime": 1794246964221,
+              "serverGameTime": 51390,
+              "health": 20,
+              "alive": true
+            },
+            "serverHooksStayedActive": true,
+            "presentationContextMatched": true,
+            "overlayQuadCount": 0,
+            "passed": true
+          },
+          {
+            "name": "inventory",
+            "expectedOverlay": false,
+            "screenshot": "/mnt/c/Users/zekken/Desktop/minecrafting/Legacy-Connector/run-b173-single/plasticcraft-complete-client-20261109-856c59/control/out/remote-hook-hud-inventory.png",
+            "clientFrame": {
+              "remoteReady": true,
+              "session": 1,
+              "width": 640,
+              "height": 360,
+              "commands": [],
+              "expectedTexture": "b173_plasticcraft:textures/b173/entity/5465684b727573682f506c617374696343726166742f6775694e69676874566973696f6e436c61737369632e706e67.png",
+              "hideHud": false,
+              "thirdPerson": false,
+              "screen": true
+            },
+            "serverBefore": {
+              "calls": 290,
+              "duplicateTicks": 0,
+              "last": {
+                "tick": 51419,
+                "serverThread": true,
+                "serverWorld": true,
+                "hideHud": false,
+                "thirdPerson": false,
+                "screen": true
+              },
+              "originalStunLastTime": 1794246965721,
+              "serverGameTime": 51420,
+              "health": 20,
+              "alive": true
+            },
+            "serverAfter": {
+              "calls": 330,
+              "duplicateTicks": 0,
+              "last": {
+                "tick": 51459,
+                "serverThread": true,
+                "serverWorld": true,
+                "hideHud": false,
+                "thirdPerson": false,
+                "screen": true
+              },
+              "originalStunLastTime": 1794246967722,
+              "serverGameTime": 51460,
+              "health": 20,
+              "alive": true
+            },
+            "serverHooksStayedActive": true,
+            "presentationContextMatched": true,
+            "overlayQuadCount": 0,
+            "passed": true
+          },
+          {
+            "name": "goggles-restored",
+            "expectedOverlay": true,
+            "screenshot": "/mnt/c/Users/zekken/Desktop/minecrafting/Legacy-Connector/run-b173-single/plasticcraft-complete-client-20261109-856c59/control/out/remote-hook-hud-goggles-restored.png",
+            "clientFrame": {
+              "remoteReady": true,
+              "session": 1,
+              "width": 640,
+              "height": 360,
+              "commands": [
+                {
+                  "op": "quad",
+                  "texture": "b173_plasticcraft:textures/b173/entity/5465684b727573682f506c617374696343726166742f6775694e69676874566973696f6e436c61737369632e706e67.png",
+                  "color": -1,
+                  "blend": true,
+                  "src": 770,
+                  "dst": 771,
+                  "vertices": [
+                    {
+                      "x": 0,
+                      "y": 360,
+                      "u": 0,
+                      "v": 1,
+                      "color": -1
+                    },
+                    {
+                      "x": 640,
+                      "y": 360,
+                      "u": 1,
+                      "v": 1,
+                      "color": -1
+                    },
+                    {
+                      "x": 640,
+                      "y": 0,
+                      "u": 1,
+                      "v": 0,
+                      "color": -1
+                    },
+                    {
+                      "x": 0,
+                      "y": 0,
+                      "u": 0,
+                      "v": 0,
+                      "color": -1
+                    }
+                  ]
+                }
+              ],
+              "expectedTexture": "b173_plasticcraft:textures/b173/entity/5465684b727573682f506c617374696343726166742f6775694e69676874566973696f6e436c61737369632e706e67.png",
+              "hideHud": false,
+              "thirdPerson": false,
+              "screen": false
+            },
+            "serverBefore": {
+              "calls": 350,
+              "duplicateTicks": 0,
+              "last": {
+                "tick": 51479,
+                "serverThread": true,
+                "serverWorld": true,
+                "hideHud": false,
+                "thirdPerson": false,
+                "screen": false
+              },
+              "originalStunLastTime": 1794246968722,
+              "serverGameTime": 51480,
+              "health": 20,
+              "alive": true
+            },
+            "serverAfter": {
+              "calls": 390,
+              "duplicateTicks": 0,
+              "last": {
+                "tick": 51519,
+                "serverThread": true,
+                "serverWorld": true,
+                "hideHud": false,
+                "thirdPerson": false,
+                "screen": false
+              },
+              "originalStunLastTime": 1794246970722,
+              "serverGameTime": 51520,
+              "health": 20,
+              "alive": true
+            },
+            "serverHooksStayedActive": true,
+            "presentationContextMatched": true,
+            "overlayQuadCount": 1,
+            "passed": true
+          }
+        ],
+        "errors": [],
+        "originalJarSha256": [
+          "2e361f5398e27c5821f132ff1bf3d7ab71564e58df13051dde86c215c534c55b"
+        ],
+        "alphaPixelSamples": [
+          {
+            "normalized": [
+              0.2,
+              0.2
+            ],
+            "xy": [
+              128,
+              72
+            ],
+            "base": [
+              155,
+              159,
+              160
+            ],
+            "originalRGBA": [
+              66,
+              66,
+              66,
+              51
+            ],
+            "actual": [
+              137,
+              140,
+              141
+            ],
+            "expected": [
+              137,
+              140,
+              141
+            ],
+            "maxError": 0,
+            "passed": true
+          },
+          {
+            "normalized": [
+              0.4,
+              0.2
+            ],
+            "xy": [
+              256,
+              72
+            ],
+            "base": [
+              155,
+              159,
+              160
+            ],
+            "originalRGBA": [
+              81,
+              80,
+              81,
+              51
+            ],
+            "actual": [
+              140,
+              143,
+              144
+            ],
+            "expected": [
+              140,
+              143,
+              144
+            ],
+            "maxError": 0,
+            "passed": true
+          },
+          {
+            "normalized": [
+              0.6,
+              0.2
+            ],
+            "xy": [
+              384,
+              72
+            ],
+            "base": [
+              155,
+              160,
+              161
+            ],
+            "originalRGBA": [
+              80,
+              80,
+              80,
+              51
+            ],
+            "actual": [
+              140,
+              144,
+              145
+            ],
+            "expected": [
+              140,
+              144,
+              145
+            ],
+            "maxError": 0,
+            "passed": true
+          },
+          {
+            "normalized": [
+              0.8,
+              0.2
+            ],
+            "xy": [
+              512,
+              72
+            ],
+            "base": [
+              155,
+              159,
+              160
+            ],
+            "originalRGBA": [
+              65,
+              65,
+              64,
+              51
+            ],
+            "actual": [
+              137,
+              140,
+              141
+            ],
+            "expected": [
+              137,
+              140,
+              141
+            ],
+            "maxError": 0,
+            "passed": true
+          },
+          {
+            "normalized": [
+              0.2,
+              0.4
+            ],
+            "xy": [
+              128,
+              144
+            ],
+            "base": [
+              155,
+              160,
+              161
+            ],
+            "originalRGBA": [
+              81,
+              81,
+              81,
+              51
+            ],
+            "actual": [
+              140,
+              144,
+              145
+            ],
+            "expected": [
+              140,
+              144,
+              145
+            ],
+            "maxError": 0,
+            "passed": true
+          },
+          {
+            "normalized": [
+              0.4,
+              0.4
+            ],
+            "xy": [
+              256,
+              144
+            ],
+            "base": [
+              155,
+              160,
+              161
+            ],
+            "originalRGBA": [
+              107,
+              108,
+              107,
+              51
+            ],
+            "actual": [
+              145,
+              150,
+              150
+            ],
+            "expected": [
+              145,
+              150,
+              150
+            ],
+            "maxError": 0,
+            "passed": true
+          },
+          {
+            "normalized": [
+              0.6,
+              0.4
+            ],
+            "xy": [
+              384,
+              144
+            ],
+            "base": [
+              154,
+              158,
+              159
+            ],
+            "originalRGBA": [
+              105,
+              105,
+              105,
+              51
+            ],
+            "actual": [
+              144,
+              147,
+              148
+            ],
+            "expected": [
+              144,
+              147,
+              148
+            ],
+            "maxError": 0,
+            "passed": true
+          },
+          {
+            "normalized": [
+              0.8,
+              0.4
+            ],
+            "xy": [
+              512,
+              144
+            ],
+            "base": [
+              155,
+              159,
+              160
+            ],
+            "originalRGBA": [
+              79,
+              79,
+              78,
+              51
+            ],
+            "actual": [
+              140,
+              143,
+              144
+            ],
+            "expected": [
+              140,
+              143,
+              144
+            ],
+            "maxError": 0,
+            "passed": true
+          }
+        ],
+        "passed": true
+      }
+    }
+  ],
+  "settings": {
+    "file": "config/legacyconnector.properties",
+    "key": "b173.foodUsesHunger",
+    "default": true,
+    "false_behavior": "Original instant Beta health healing",
+    "server_authoritative": true,
+    "existing_config_screen": true,
+    "separate_food_config_file": false,
+    "vanilla_foods_unchanged": true
+  },
+  "boundaries": [
+    "Actual tests use unchanged isolated PlasticCraft2.1.3 and disposable native worlds; arbitrary legacy mod/version combinations are not implied",
+    "Two native ServerPlayer actors are exercised; one is the connected graphical client, the secondary has a packet-sink connection and no second real socket",
+    "Actual game hooks run original wall-clock Stun code; fixtures read timers/lists but never call its tick directly or shorten its6+4-second timers",
+    "Scalar isolation covers hook-reachable writes in the original BaseMod hierarchy; helper object graphs are deliberately shared",
+    "The gameplay protocols are optional and bounded; existing single-player dispatch and modern-only gameplay are preserved",
+    "Mod versions, original resources and original PlasticCraft options were not changed; no private archives, credentials or generated test worlds are committed"
+  ]
+}

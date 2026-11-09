@@ -34,6 +34,7 @@ public final class ContentB173 {
     private static final List<Registration> ENTITIES = new ArrayList<>();
     private static final List<BaseMod> MODS = new ArrayList<>();
     private static final Map<BaseMod, boolean[]> TICK_HOOKS = new LinkedHashMap<>();
+    private static final Map<BaseMod,long[]> TICK_REVISIONS=new IdentityHashMap<>();
     private static final List<String> ARMOR = new ArrayList<>(List.of("cloth", "chain", "iron", "diamond", "gold"));
 
     private ContentB173() {}
@@ -224,6 +225,7 @@ public final class ContentB173 {
         boolean[] hooks = TICK_HOOKS.computeIfAbsent(mod, k -> new boolean[4]);
         hooks[gui ? 1 : 0] = enable;
         hooks[gui ? 3 : 2] = useClock;
+        TICK_REVISIONS.computeIfAbsent(mod,key->new long[2])[gui?1:0]++;
     }
     public static synchronized boolean hasClientHooks(){
         for(boolean[] hooks:TICK_HOOKS.values())if(hooks[0]||hooks[1])return true;
@@ -243,6 +245,28 @@ public final class ContentB173 {
                 flags[index]=false;
                 org.slf4j.LoggerFactory.getLogger("LegacyConnector/b1.7.3").warn("Beta ModLoader client hook failed for {}",entry.getKey().getClass().getName(),error);
             }
+        }
+    }
+
+    /** Dedicated hook retention belongs to its actor; returning false or failing cannot unregister another player. */
+    public static final class ActorHooks {
+        private static final class State {final long[] revision={Long.MIN_VALUE,Long.MIN_VALUE};final boolean[] stopped=new boolean[2];}
+        private final Map<BaseMod,State> states=new IdentityHashMap<>();
+        void invoke(BaseMod mod,boolean gui,long revision,boolean enabled,boolean clock,boolean advanced,java.util.function.BooleanSupplier callback){
+            int index=gui?1:0;var state=states.computeIfAbsent(mod,key->new State());
+            if(state.revision[index]!=revision){state.revision[index]=revision;state.stopped[index]=false;}
+            if(!enabled||state.stopped[index]||clock&&!advanced)return;
+            try{if(!callback.getAsBoolean())state.stopped[index]=true;}
+            catch(RuntimeException|LinkageError error){state.stopped[index]=true;org.slf4j.LoggerFactory.getLogger("LegacyConnector/b1.7.3").warn("Beta actor hook failed for {}",mod.getClass().getName(),error);}
+        }
+    }
+    public static synchronized void serverHooks(legacyconnector.vb1_7_3.net.minecraft.client.Minecraft minecraft,
+            boolean gui,boolean clockAdvanced,ActorHooks actor){
+        int index=gui?1:0;
+        for(var entry:new ArrayList<>(TICK_HOOKS.entrySet())){
+            var mod=entry.getKey();boolean[] flags=entry.getValue().clone();long[] revisions=TICK_REVISIONS.get(mod);
+            actor.invoke(mod,gui,revisions==null?0:revisions[index],flags[index],flags[index+2],clockAdvanced,
+                    ()->gui?mod.OnTickInGUI(minecraft,minecraft.currentScreen):mod.OnTickInGame(minecraft));
         }
     }
 

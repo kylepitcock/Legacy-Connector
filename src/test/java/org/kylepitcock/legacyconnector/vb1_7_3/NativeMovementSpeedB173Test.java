@@ -38,6 +38,19 @@ class NativeMovementSpeedB173Test {
         assertFalse(attribute.hasModifier(NativeMovementSpeedB173.MODIFIER));assertEquals(.3,attribute.getValue(),1E-9);
         assertEquals(nested,attribute.getModifier(nested.id()));assertEquals(.2,attribute.getBaseValue());
     }
+    @Test void repeatedCooldownRestorationRetainsForeignChangesAndDifferentIntentStartsNewOverride(){
+        var attribute=attribute();float saved=(float)attribute.getValue();
+        NativeMovementSpeedB173.commit(attribute,saved,0);
+        var foreign=foreign("during_stun",.1,AttributeModifier.Operation.ADD_VALUE);attribute.addTransientModifier(foreign);
+        NativeMovementSpeedB173.commit(attribute,0,saved);
+        for(int tick=0;tick<80;tick++)NativeMovementSpeedB173.commit(attribute,(float)attribute.getValue(),saved);
+        assertFalse(attribute.hasModifier(NativeMovementSpeedB173.MODIFIER));assertEquals(.3,attribute.getValue(),1E-9);
+        var later=foreign("during_cooldown",.2,AttributeModifier.Operation.ADD_VALUE);attribute.addTransientModifier(later);
+        NativeMovementSpeedB173.commit(attribute,(float)attribute.getValue(),saved);assertEquals(.5,attribute.getValue(),1E-9);
+        float newSaved=(float)attribute.getValue();NativeMovementSpeedB173.commit(attribute,newSaved,0);assertEquals(0,attribute.getValue());
+        NativeMovementSpeedB173.commit(attribute,0,newSaved);assertEquals(.5,attribute.getValue(),1E-9);
+        assertFalse(attribute.hasModifier(NativeMovementSpeedB173.MODIFIER));assertEquals(foreign,attribute.getModifier(foreign.id()));assertEquals(later,attribute.getModifier(later.id()));
+    }
     @Test void zeroNativeBaseSupportsExplicitPositiveWriteWithoutReplacingForeignMultipliers(){
         var attribute=attribute();attribute.setBaseValue(0);
         var multiplier=foreign("total",.5,AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);attribute.addTransientModifier(multiplier);

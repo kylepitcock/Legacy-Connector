@@ -234,7 +234,10 @@ public class LegacyB173Block extends net.minecraft.world.level.block.Block imple
         super.attack(state, level, pos, player);
         if (level.isClientSide) return;
         PlayerViewB173 view = PlayerViewB173.of(player);
-        call("onBlockClicked", () -> legacy.onBlockBreakStart(view(level), pos.getX(), pos.getY(), pos.getZ(), view));
+        World world=view(level);
+        try(var context=legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$context(world,view)){
+            call("onBlockClicked", () -> legacy.onBlockBreakStart(world, pos.getX(), pos.getY(), pos.getZ(), view));
+        }
         view.writeBack();
     }
 
@@ -281,7 +284,8 @@ public class LegacyB173Block extends net.minecraft.world.level.block.Block imple
         super.stepOn(level, pos, state, entity);
         if (level.isClientSide) return;
         var view=EntityViewsB173.wrap(entity);
-        try { call("onEntityWalking", () -> legacy.onSteppedOn(view(level), pos.getX(), pos.getY(), pos.getZ(), view)); }
+        World world=view(level);
+        try(var context=legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$context(world,view)) { call("onEntityWalking", () -> legacy.onSteppedOn(world, pos.getX(), pos.getY(), pos.getZ(), view)); }
         finally { EntityViewsB173.flush(); }
     }
 
@@ -290,7 +294,8 @@ public class LegacyB173Block extends net.minecraft.world.level.block.Block imple
         super.entityInside(state, level, pos, entity);
         if (level.isClientSide) return;
         var view=EntityViewsB173.wrap(entity);
-        try { call("onEntityCollidedWithBlock", () -> legacy.onEntityCollision(view(level), pos.getX(), pos.getY(), pos.getZ(), view)); }
+        World world=view(level);
+        try(var context=legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$context(world,view)) { call("onEntityCollidedWithBlock", () -> legacy.onEntityCollision(world, pos.getX(), pos.getY(), pos.getZ(), view)); }
         finally { EntityViewsB173.flush(); }
     }
 
@@ -328,16 +333,18 @@ public class LegacyB173Block extends net.minecraft.world.level.block.Block imple
             net.minecraft.world.level.block.entity.BlockEntity blockEntity, ItemStack tool) {
         int meta = state.getValue(META);
         World w = view(level);
-        call("onBlockDestroyedByPlayer", () -> legacy.onMetadataChange(w, pos.getX(), pos.getY(), pos.getZ(), meta));
-        if (ownHarvest()) {
-            PlayerViewB173 view = PlayerViewB173.of(player);
-            call("harvestBlock", () -> legacy.afterBreak(w, view, pos.getX(), pos.getY(), pos.getZ(), meta));
-            view.writeBack();
-            player.awardStat(net.minecraft.stats.Stats.BLOCK_MINED.get(this));
-            player.causeFoodExhaustion(0.005F);
-            return;
+        PlayerViewB173 view = PlayerViewB173.of(player);
+        try(var context=legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$context(w,view)){
+            call("onBlockDestroyedByPlayer", () -> legacy.onMetadataChange(w, pos.getX(), pos.getY(), pos.getZ(), meta));
+            if (ownHarvest()) {
+                call("harvestBlock", () -> legacy.afterBreak(w, view, pos.getX(), pos.getY(), pos.getZ(), meta));
+                view.writeBack();
+                player.awardStat(net.minecraft.stats.Stats.BLOCK_MINED.get(this));
+                player.causeFoodExhaustion(0.005F);
+                return;
+            }
+            super.playerDestroy(level, player, pos, state, blockEntity, tool);
         }
-        super.playerDestroy(level, player, pos, state, blockEntity, tool);
     }
 
     @Override
