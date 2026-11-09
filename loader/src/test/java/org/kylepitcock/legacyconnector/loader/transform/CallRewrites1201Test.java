@@ -76,18 +76,20 @@ class CallRewrites1201Test {
         assertEquals(Opcodes.ALOAD, instructions[3].getOpcode());
         assertEquals(Opcodes.ASTORE, instructions[4].getOpcode());
         assertEquals(2, ((VarInsnNode) instructions[4]).var);
-        assertEquals(Opcodes.I2F, instructions[5].getOpcode());
-        assertEquals(Opcodes.I2F, instructions[6].getOpcode());
-        assertEquals(Opcodes.ALOAD, instructions[7].getOpcode());
-        assertEquals(2, ((VarInsnNode) instructions[7]).var);
-        assertTrue(instructions[8] instanceof MethodInsnNode);
-        MethodInsnNode rewritten = (MethodInsnNode) instructions[8];
+        assertEquals(Opcodes.I2F, instructions[5].getOpcode()); // second dimension: int -> float
+        assertEquals(Opcodes.SWAP, instructions[6].getOpcode()); // expose the first int without losing the float
+        assertEquals(Opcodes.I2F, instructions[7].getOpcode()); // first dimension: int -> float
+        assertEquals(Opcodes.SWAP, instructions[8].getOpcode()); // restore original dimension order
+        assertEquals(Opcodes.ALOAD, instructions[9].getOpcode());
+        assertEquals(2, ((VarInsnNode) instructions[9]).var);
+        assertTrue(instructions[10] instanceof MethodInsnNode);
+        MethodInsnNode rewritten = (MethodInsnNode) instructions[10];
         assertEquals(Opcodes.INVOKESPECIAL, rewritten.getOpcode());
         assertEquals(AMETHYST_CLUSTER_BLOCK, rewritten.owner);
         assertEquals(AMETHYST_CLUSTER_CONSTRUCTOR_1211, rewritten.desc);
         // The rewrite updates the descriptor on the existing call node; it does not replace the node.
         assertTrue(method.instructions.contains(oldConstructor));
-        assertEquals(Opcodes.RETURN, instructions[9].getOpcode());
+        assertEquals(Opcodes.RETURN, instructions[11].getOpcode());
         assertEquals(3, method.maxLocals);
     }
 
