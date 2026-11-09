@@ -387,6 +387,50 @@ multi-output capacity quirks, the omitted progress property 2 update and fuel-de
 preserved. The default build passes 573 portable tests without private archives. This singleplayer check does not establish
 dedicated-server GUI/network parity or complete PlasticCraft compatibility.
 
+### Expanded PlasticCraft validation
+
+The [expanded PlasticCraft validation](../data/b173-plasticcraft-complete-validation-2026-11-09.json) extends the machine
+checks to the unchanged 2.1.3 mod's items, entities and remaining blocks. Production changes implement shared Beta APIs
+and invoke original callbacks; mod identities appear only in optional regression fixtures.
+
+`FoodItem` and `StackableFoodItem` now perform Beta's immediate healing and consumption, including original bottle and
+needle replacements. Native armor hosts retain original equipment slots, textures and callbacks. PlasticCraft explicitly
+sets both utility items' maximum damage and protection to zero: the boots and goggles remain unbreakable and grant no
+armor points. Beta's lack of right-click autoequip is preserved. The goggles supply an original texture overlay only;
+they do not add illumination or a night-vision potion effect. ModLoader frame hooks run with synchronized equipment and,
+in integrated play, authoritative server state plus captured HUD commands. Replay retains original blend and depth state.
+These remain client-driven hooks; full dedicated-server effects parity is not implemented.
+
+Native crafting and furnace result pickups invoke the original item and ModLoader achievement callbacks. Recipe outputs
+retain their complete native component patch, and metadata ingredients distinguish subtype zero from variants 1–5 while
+preserving wildcard damage for repairs. Actual crafting-table packet checks cover plastic wrap packing/unpacking, damaged
+tool repair and achievement pickup. Native shovel mining and hits retain the original durability callbacks. Records use
+native jukebox insertion, playback, ejection and saved item state. A related existing-native-view guard prevents 1.12
+wrapper construction from reapplying default attributes to native entities; newly constructed legacy entities and later
+explicit attribute writes retain their existing behavior.
+
+Neutral entity hosts execute original boat and explosive callbacks, including rider motion and model rendering. Shared
+world fluid/current queries and typed native TNT/falling-block timer views support those callbacks. Block rendering retains
+original face decisions, per-face tint and item texture providers; neighbor flags, metadata updates, signal-source queries
+and `Vec3i` value semantics now support the exercised block behavior. The original animation-strip callback supplies live
+frames to the stitched GPU atlas. Goo's original six-second stun and restoration use retained entity views while preserving
+foreign native movement attributes.
+
+Remote machine GUI reconstruction has a finite context: installed-jar ownership, registered tile identities, bounded NBT
+and an exact slot-layout check select an original player-inventory/tile constructor. Unsupported contexts retain the
+existing fallback. The original containers' omitted progress-property-2 update is still preserved; this addition does not
+establish support for arbitrary GUI constructor forms. Both actual PlasticCraft machine GUIs now pass separate-process
+client/server checks for construction, original progress fields, slot packets, output insertion rejection, processing and
+reopening.
+
+Completed checks include 83 original item/achievement assertions, 40 native item controls, 26 native block controls and
+49 native crafting/mining controls, plus boat/relog, C4, record, timed Goo and animated-atlas checks. The default suite
+passes 616 portable tests without a private mod archive. Final overlay-alpha framebuffer comparison, native cow attribute
+controls and dedicated-server validation use separate recorded controls: eight framebuffer samples match the original
+PNG's alpha blend exactly, a native cow takes one shovel damage while retaining its configured maximum health of 100,
+and 20 original plastic cows have observed `NATURAL` spawn reasons on above-zero grass terrain. The dedicated machine
+run passes 28 controls; save/restart persistence is recorded separately in the validation manifest.
+
 ### Crafting outputs larger than an inventory stack
 
 Beta recipes can return several non-stackable items. The shared shaped/shapeless recipe serializers retain a separate
@@ -801,10 +845,12 @@ callback runs on the server's and on the client's level here (as every block cal
   the foreground translated to the GUI's corner, buttons; the modern screen draws slots, items, carried stack and tooltips over it and
   handles slot clicks; mouse clicks, keys (LWJGL 2 codes, `KeysB173`) and ticks also go to the GUI. In single player the GUI object the
   server built is handed over (same JVM, by id in the menu's extra data), so it reads the ticking tile entity itself, as b1.7.3's single
-  player did. On a dedicated server the client uses the GUI its own block callback built (same class), which gets the menu data through
-  `updateProgressBar`; without one (or after an exception) a plain panel with the slots is drawn.
+  player did. On a dedicated server the client first uses the GUI its own block callback built (same class), then tries a public
+  player-inventory/registered-tile constructor from that installed mod with bounded initial NBT and an exact slot-layout match.
+  Both remote paths receive original progress and slot updates. Unsupported contexts retain a plain panel with the slots.
 - **Other screens** (no container: a timer's settings, a naming screen) open on the client in single player through
-  `LegacyB173PlainScreen`; `Minecraft.displayGuiScreen` opens and closes them. A dedicated server cannot show a screen it built.
+  `LegacyB173PlainScreen`; `Minecraft.displayGuiScreen` opens and closes them. Server-owned screens use `GuiSessionsB173` and
+  `ServerGuiScreenB173` to exchange captured drawing commands and input events with their owning client.
 - **GUI drawing** goes through `GuiDrawB173`, a sink with plain types only, so the shim's `Gui` (`DrawContext`), `GuiScreen`,
   `GuiContainer`, `GuiButton`, `FontRenderer`, `RenderEngine` and `GL11` load on a dedicated server too; the client's `ClientGuiB173`
   draws into the screen's `GuiGraphics`. `GL11` of b1.7.3 mods is the shim's (colour, texture binding and the matrix stack; state switches

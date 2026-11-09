@@ -34,6 +34,8 @@ public final class BridgeB173 {
     private BridgeB173() {}
 
     public static synchronized void registerAll() {
+        ItemEventsB173.install();
+        ArmorMaterialsB173.install();
         int replaced = 0;
         for (Block block : ContentB173.blocks()) {
             if (block.mcc$modern != null || !(block.mcc$owner instanceof LegacyModRecord mod) || Block.BLOCKS[block.id] != block) continue;
@@ -156,7 +158,19 @@ public final class BridgeB173 {
             var p = new net.minecraft.world.item.Item.Properties();
             if (item.isDamageable()) p.durability(item.getMaxDamage());
             else p.stacksTo(Math.max(1, Math.min(99, item.getMaxCount())));
-            modern = new LegacyB173Item(item, p);
+            if(item instanceof legacyconnector.vb1_7_3.net.minecraft.item.ArmorItem armor){
+                var group=new net.minecraft.world.entity.EquipmentSlotGroup[]{net.minecraft.world.entity.EquipmentSlotGroup.HEAD,
+                        net.minecraft.world.entity.EquipmentSlotGroup.CHEST,net.minecraft.world.entity.EquipmentSlotGroup.LEGS,
+                        net.minecraft.world.entity.EquipmentSlotGroup.FEET}[armor.equipmentSlot];
+                p.attributes(net.minecraft.world.item.component.ItemAttributeModifiers.builder().add(
+                        net.minecraft.world.entity.ai.attributes.Attributes.ARMOR,new net.minecraft.world.entity.ai.attributes.AttributeModifier(
+                                ResourceLocation.fromNamespaceAndPath("legacyconnector","beta_armor_"+armor.equipmentSlot),armor.maxProtection,
+                                net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE),group).build());
+            }
+            if(item instanceof legacyconnector.vb1_7_3.net.minecraft.item.MusicDiscItem disc)
+                p.jukeboxPlayable(RecordsB173.song(id,disc.sound));
+            modern = item instanceof legacyconnector.vb1_7_3.net.minecraft.item.ArmorItem armor
+                    ?new LegacyB173ArmorItem(armor,p):new LegacyB173Item(item,p);
             translation("item." + id.getNamespace() + "." + id.getPath(), item, item.getTranslationKey());
         }
         LegacyRegistrar.register(BuiltInRegistries.ITEM, id, modern);

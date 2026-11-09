@@ -27,6 +27,20 @@ public final class LegacyB173Entity extends net.minecraft.world.entity.Entity im
     @Override public boolean shouldRenderAtSqrDistance(double distance){return legacy()==null?super.shouldRenderAtSqrDistance(distance):legacy().shouldRender(distance);}
     @Override public float getPickRadius(){return legacy()==null?super.getPickRadius():legacy().getTargetingMargin();}
     @Override public boolean isPickable(){return legacy()!=null&&legacy().isCollidable();}
+    @Override public boolean isPushable(){return legacy()!=null&&legacy().isPushable();}
+    @Override public void push(net.minecraft.world.entity.Entity other){
+        if(legacy()==null){super.push(other);return;}
+        state.callback(()->legacy().onCollision(EntityViewsB173.wrap(other)));
+    }
+    @Override public void animateHurt(float yaw){if(legacy()==null)super.animateHurt(yaw);else state.callback(()->legacy().animateHurt());}
+    @Override public boolean canBeCollidedWith(){return legacy()!=null&&legacy().getBoundingBox()!=null;}
+    @Override public boolean canCollideWith(net.minecraft.world.entity.Entity other){
+        if(legacy()==null||isPassengerOfSameVehicle(other))return false;
+        try(var readOnly=EntityViewsB173.readOnly()){
+            return legacy().getCollisionAgainstShape(EntityViewsB173.wrap(other))!=null||other.canBeCollidedWith();
+        }
+    }
+    @Override protected MovementEmission getMovementEmission(){return legacy()!=null&&!legacy().mcc$steppingEffects()?MovementEmission.NONE:super.getMovementEmission();}
     /** Keep collidable legacy passengers targetable within their carrier's native riding tree. */
     @Override public boolean canRiderInteract(){return legacy()==null?super.canRiderInteract():isPickable();}
     @Override public net.minecraft.world.entity.EntityDimensions getDimensions(net.minecraft.world.entity.Pose pose){return legacy()==null?super.getDimensions(pose):net.minecraft.world.entity.EntityDimensions.scalable(legacy().width,legacy().height);}
@@ -65,6 +79,24 @@ public final class LegacyB173Entity extends net.minecraft.world.entity.Entity im
         state.flush();boolean result=super.hurt(retainedDamage!=null?retainedDamage:damageSources().generic(),amount);state.sync();return result;
     }
     @Override public void baseMarkDead(){discard();}
+    @Override public net.minecraft.world.InteractionResult interact(net.minecraft.world.entity.player.Player player,net.minecraft.world.InteractionHand hand){
+        if(legacy()==null||hand!=net.minecraft.world.InteractionHand.MAIN_HAND)return net.minecraft.world.InteractionResult.PASS;
+        if(level().isClientSide)return net.minecraft.world.InteractionResult.SUCCESS;
+        boolean[] result={false};state.callback(()->{
+            var view=(PlayerViewB173)EntityViewsB173.wrap(player);
+            Runnable action=()->{result[0]=legacy().interact(view);view.writeBack();};
+            if(player instanceof net.minecraft.server.level.ServerPlayer serverPlayer)MenusB173.withActor(serverPlayer,action);else action.run();
+        });
+        return result[0]?net.minecraft.world.InteractionResult.CONSUME:net.minecraft.world.InteractionResult.PASS;
+    }
+    @Override protected void positionRider(net.minecraft.world.entity.Entity passenger,MoveFunction move){
+        if(legacy()==null||passenger!=getFirstPassenger()||!hasPassenger(passenger)){super.positionRider(passenger,move);return;}
+        state.callback(()->{
+            legacy().updatePassengerPosition();
+            var view=EntityViewsB173.wrap(passenger);
+            move.accept(passenger,view.x,view.y-view.standingEyeHeight,view.z);
+        });
+    }
     @Override public void playerTouch(net.minecraft.world.entity.player.Player player){if(!level().isClientSide)state.pickup(player);}
     @Override protected void addAdditionalSaveData(CompoundTag tag){state.save(tag);}
     @Override protected void readAdditionalSaveData(CompoundTag tag){state.load(tag);publishRenderState();}

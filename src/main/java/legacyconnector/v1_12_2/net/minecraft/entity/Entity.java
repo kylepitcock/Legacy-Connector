@@ -197,6 +197,9 @@ public abstract class Entity implements legacyconnector.v1_12_2.net.minecraft.co
 
     /** The modern entity this one stands for. */
     public net.minecraft.world.entity.Entity mcc$entity;
+    /** This constructor is a view of an entity that already owns its native attributes and state. */
+    private boolean mcc$existingNativeView;
+    protected final boolean mcc$existingNativeView(){return mcc$existingNativeView;}
     /**
      * The level accessor to answer {@code world} with instead of the entity's own level: spawn checks during chunk generation run
      * against the generation region (asking the real level for a chunk under generation deadlocks).
@@ -217,6 +220,7 @@ public abstract class Entity implements legacyconnector.v1_12_2.net.minecraft.co
         var viewed = EntityBridge1122.takeViewBinding();
         if (viewed != null) {
             this.mcc$entity = viewed;
+            this.mcc$existingNativeView = true;
             try {
                 entityInit();
             } catch (RuntimeException | LinkageError e) {
@@ -247,6 +251,7 @@ public abstract class Entity implements legacyconnector.v1_12_2.net.minecraft.co
     protected Entity(net.minecraft.world.entity.Entity modern) {
         var viewed = EntityBridge1122.takeViewBinding();
         this.mcc$entity = modern != null ? modern : viewed;
+        this.mcc$existingNativeView = this.mcc$entity != null;
         this.dataManager = new legacyconnector.v1_12_2.net.minecraft.network.datasync.EntityDataManager(this);
     }
 

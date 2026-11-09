@@ -251,7 +251,8 @@ public class Block {
     }
 
     public boolean canEmitRedstonePower() {
-        return false;
+        return mcc$modern != null && !(mcc$modern instanceof org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Block)
+                && mcc$modern.defaultBlockState().isSignalSource();
     }
 
     public void setupRenderBoundingBox() {}
@@ -349,6 +350,18 @@ public class Block {
     /** MCP {@code canPlaceBlockOnSide}. */
     public boolean canPlaceAt(legacyconnector.vb1_7_3.net.minecraft.world.World world, int x, int y, int z, int side) {
         return canPlaceAt(world, x, y, z);
+    }
+
+    /** MCP {@code canBlockStay}; despite the mapped name, this is a survival check, not a growth tick. */
+    public boolean canGrow(legacyconnector.vb1_7_3.net.minecraft.world.World world, int x, int y, int z) {
+        return true;
+    }
+
+    /** MCP {@code shouldSideBeRendered}; coordinates identify the neighbour on the queried face. */
+    public boolean isSideVisible(legacyconnector.vb1_7_3.net.minecraft.world.BlockView view, int x, int y, int z, int side) {
+        if (side == 0 && minY > 0 || side == 1 && maxY < 1 || side == 2 && minZ > 0
+                || side == 3 && maxZ < 1 || side == 4 && minX > 0 || side == 5 && maxX < 1) return true;
+        return !view.method_1783(x, y, z);
     }
 
     /** MCP {@code isPoweringTo}: weak power towards {@code side}. */

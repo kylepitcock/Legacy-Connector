@@ -9,9 +9,33 @@ public class BlockRenderManager {
     public BlockView blockView;
     public int textureOverride=-1;
     public boolean flipTextureHorizontally,renderAllSides;
+    public boolean inventoryColorEnabled=true;
     public static boolean isSideLit(int type){return type==0||type==13||type==10||type==11||type==16;}
     public BlockRenderManager(){}
     public BlockRenderManager(BlockView view){blockView=view;}
+    /** Beta's centered inventory/entity cuboid path, with per-face normals and metadata textures. */
+    public void render(Block block,int metadata,float brightness){
+        int type=block.getRenderType();
+        if(type!=0&&type!=16)throw new UnsupportedOperationException("Beta inventory block render type "+type);
+        if(inventoryColorEnabled){
+            int color=block.getColor(metadata);
+            legacyconnector.vb1_7_3.org.lwjgl.opengl.GL11.glColor4f(((color>>16)&255)/255F*brightness,((color>>8)&255)/255F*brightness,(color&255)/255F*brightness,1);
+        }
+        if(type==16)metadata=1;
+        block.setupRenderBoundingBox();
+        legacyconnector.vb1_7_3.org.lwjgl.opengl.GL11.glTranslatef(-.5F,-.5F,-.5F);
+        try{
+            float[][] normals={{0,-1,0},{0,1,0},{0,0,-1},{0,0,1},{-1,0,0},{1,0,0}};
+            for(int side=0;side<6;side++){
+                Tessellator.INSTANCE.startQuads();var normal=normals[side];Tessellator.INSTANCE.normal(normal[0],normal[1],normal[2]);
+                if(org.kylepitcock.legacyconnector.vb1_7_3.RendererContextB173.active()){
+                    int color=org.kylepitcock.legacyconnector.vb1_7_3.RendererContextB173.argb();
+                    Tessellator.INSTANCE.color(color&0xFFFFFF,(color>>>24)&255);
+                }
+                face(block,0,0,0,side,block.getTexture(side,metadata));Tessellator.INSTANCE.draw();
+            }
+        }finally{legacyconnector.vb1_7_3.org.lwjgl.opengl.GL11.glTranslatef(.5F,.5F,.5F);}
+    }
     public boolean render(Block b,int x,int y,int z){return renderBlock(b,x,y,z);}
     public boolean renderFence(Block b,int x,int y,int z){
         double[] saved={b.minX,b.minY,b.minZ,b.maxX,b.maxY,b.maxZ};

@@ -62,7 +62,7 @@ public final class StacksB173 {
             if (meta != null) damage = meta;
         } else if (modern.isDamageableItem()) {
             damage = modern.getDamageValue();
-        } else if (modern.getItem() instanceof LegacyB173Item && modern.has(DataComponents.CUSTOM_DATA)) {
+        } else if ((modern.getItem() instanceof LegacyB173Item||modern.getItem() instanceof LegacyB173ArmorItem) && modern.has(DataComponents.CUSTOM_DATA)) {
             damage = modern.get(DataComponents.CUSTOM_DATA).copyTag().getInt("b173_meta");
         }
         return new legacyconnector.vb1_7_3.net.minecraft.item.ItemStack(hit[0], modern.getCount(), damage);

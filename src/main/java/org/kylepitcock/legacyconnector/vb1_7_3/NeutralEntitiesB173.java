@@ -19,7 +19,7 @@ public final class NeutralEntitiesB173 {
             }
             if(!installed)return "class is not owned by an installed original mod";
             try{type.getConstructor(World.class);}catch(NoSuchMethodException e){return "no World restore constructor";}
-            String closure=AnimalsB173.unsupportedBehaviour(type,java.util.Set.of("shouldRender","getShadowRadius","getTargetingMargin","setVelocityClient"));
+            String closure=AnimalsB173.unsupportedBehaviour(type,java.util.Set.of("shouldRender","getShadowRadius","getTargetingMargin","setVelocityClient","getBoundingBox","getCollisionAgainstShape","bypassesSteppingEffects","animateHurt"));
             return closure==null?"":closure;
         }
     };

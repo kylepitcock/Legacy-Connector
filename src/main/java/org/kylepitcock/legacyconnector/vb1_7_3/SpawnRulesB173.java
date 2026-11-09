@@ -73,8 +73,7 @@ public final class SpawnRulesB173 {
         return fallback;
     }
     public static Class<?> namedEntity(String name) {
-        for(var registration:ContentB173.entities())if(registration.name().equals(name))return registration.type();
-        return null;
+        return legacyconnector.vb1_7_3.net.minecraft.entity.EntityRegistry.stringToClassMapping.get(name);
     }
     static EntityType<?> hostedType(Class<?> original) {
         for(var info:AnimalsB173.all())if(info.registration().type()==original)return info.type();

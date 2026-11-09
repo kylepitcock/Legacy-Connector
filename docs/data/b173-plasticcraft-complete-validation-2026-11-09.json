@@ -1,0 +1,4283 @@
+{
+  "status": "passed",
+  "snapshot_date": "2026-11-09",
+  "scope": "Unchanged PlasticCraft 2.1.3 single-player items, utility equipment, neutral entities, block callbacks/rendering, natural cows, native recipes/records and separate-process microwave/extractor GUI, packets and save/restart. Full dedicated multiplayer effects are outside this validated scope.",
+  "branch": "legacy-b1.7.3",
+  "tested_base_revision": "fa75d556a0c55a52554f3c3d6a83d57973922e23",
+  "version": "0.4.13",
+  "neoforge": "21.1.258",
+  "artifact": {
+    "path": "build\\dist\\legacyconnector-0.4.13.jar",
+    "sha256": "8a0aeff3aff1e86488368d55ffb8496963342ea0b159bc10296b2d61246f149c"
+  },
+  "source_sha256": {
+    "src/main/java/legacyconnector/v1_12_2/net/minecraft/entity/Entity.java": "2a5767bb906ca568286c93d97d9f35b2850c8ae011a0e356142913b01da5c944",
+    "src/main/java/legacyconnector/v1_12_2/net/minecraft/entity/EntityLivingBase.java": "6fde610a3c082fc4b4feeef364bd46570b1816974dabab31b181c3bac4ad2b9d",
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/block/Block.java": "ef6342c5ed21c9e99f0d4ac7a9276591bf14ba74c3695ef054f82b7f63d2eec4",
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/block/TranslucentBlock.java": "a460318a81e60e1b2c11b84f4278d737ebe3ecfc0a0168c913c06243189fdbaa",
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/block/TransparentBlock.java": "b38b217f7b1e80096c15af03240bd0195170da61767dd47e1e2c31ac78bfb1ad",
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/client/option/GameOptions.java": "4b4bcd0c4419b5edcd9c998590b8efcfea3d6a025bf9ba41e049049a88dcfd05",
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/client/render/block/BlockRenderManager.java": "e47017223dc551e8cd3bacfb05b483306cb6a8fc444a8cf97262bac31fe1dbe5",
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/client/render/entity/model/BoatEntityModel.java": "4ba3b6fdca05f4f3ee58b4af3f35415e38251ce46f09982806bd8fa493c9b52e",
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/client/util/ScreenScaler.java": "6870909c6f90f10e050c8c3339974d310c3d4946a4fcbb518831a118dfad4b6a",
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/entity/Entity.java": "a86dd677c6997444b31305c5d201e766bc4b132a62fc5c6b27368c7acdcf64a5",
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/entity/EntityRegistry.java": "145a470c3ca359b914f7c5814a7dbdc3ce0fc9d7d3ea09e17b65fff21f8733cc",
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/entity/FallingBlockEntity.java": "1503613e85887ab53291607cc7af60697ebb3dfc0e7dab0788bd133c6054ac79",
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/entity/LivingEntity.java": "5328fbf54870e14016b3c838f2ec9f32fea1e5ef174c1d1e134ef956fb039c78",
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/entity/TntEntity.java": "16c1e49196846b0df3caa558b26325c044eaf1b8a1802438bfb06b422bd692c8",
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/item/FoodItem.java": "a7e76d042a9b7e0373d4fba427c53db6651b1ead33363d6cfdd6e7f9a69d7e24",
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/item/MusicDiscItem.java": "c4ff39c3334dc091888269dc226722711695bca1e1c215f48207a9451635454f",
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/item/StackableFoodItem.java": "036a0186bb534d1dad057fd21b8c8952d76adc91f7e4ba424f7a336e76602bd6",
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/screen/slot/CraftingResultSlot.java": "96f90a0fe191fc6ba02b2499319ebf49909da2bdd93e6de938b49e84a6076ba0",
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/screen/slot/FurnaceOutputSlot.java": "4f03464256a3c1d39742172c9588552ae05a485b7f804403d8f91a7199ce02b9",
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/src/BaseMod.java": "fcb8e2626ff83d81b05d817166492e18a4e2aaa79592a3b7974f7a4df64bb980",
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/src/ModLoader.java": "bb925b02532f2dfc9d9024ea6fc3b7236016ac7f6e21f7d32cba02cca48772d3",
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/util/math/Vec3i.java": "66d251a590c6c9d43273afddc3b37afbfd9d20250760d8f5982ffc40178467d9",
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/world/World.java": "737052e611c645b399a9155b35b64feb12d2a00ac4d593aba6ea2dda4eb2e09c",
+    "src/main/java/org/kylepitcock/legacyconnector/LegacyConnector.java": "cb4aefc05ba4f19d768e9d711653288e98f18a154cf166ba4dede8f672d05998",
+    "src/main/java/org/kylepitcock/legacyconnector/compat/b173/PlasticCraftEntitiesSelfTest.java": "de1ff43750e60b7ff526cf6208c2ec392dc627b4c2efc441e8b901bbd2d46737",
+    "src/main/java/org/kylepitcock/legacyconnector/compat/b173/PlasticCraftItemsSelfTest.java": "3b72d5683acb83a22d5ed106ea22594466822bb2608ebbe29fe8785f214d1abc",
+    "src/main/java/org/kylepitcock/legacyconnector/compat/b173/PlasticCraftStunSelfTest.java": "178d442c4d3e2cea86d46ebf71062e107a1776b2b2d39c1ec058edaeadc2666c",
+    "src/main/java/org/kylepitcock/legacyconnector/v1_7_10/client/WorldScreenshotTest.java": "5287e68de690b2bb20ddee352ae9c1b83a4d3f76f7bf699efc186f080a41ca46",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/ArmorMaterialsB173.java": "561465d4d709abc1097728dda995dbdc3d62aa356910458722c528c2ccb5a84e",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/AssetsB173.java": "a220d29d626a0ec439afed09f8e25db568850bb536f3078d498779aa17fe1585",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/BetaMetadataIngredient.java": "ed97b9233ccc216d103a873ca36ba1df6ff21b0048c2e54845f015f275a931c2",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/BlockFacesB173.java": "124db722c57db47df26e6bf594010a776dafd2057aec233a18023a0b6c59af67",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/BlockTintB173.java": "ef21d0c575ce48fe7f84c72f8f29cbadb44737f54144ea62b83f65968ba218a4",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/BridgeB173.java": "3c89b4147e6cefab9218f86e83fdd25477fb324a27836c336fa6d4646c432896",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/ContentB173.java": "16c9138a3a1a2b69e5b06a117ef7da9f9b17a8d3a5d89a9c9a259cfab88acd00",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/EntityFieldsB173.java": "a04f09e7d5d64743a361d827a24ec3907d2292ac5ba5d3d49b9d4ee4f8151430",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/EntityViewsB173.java": "8c2a8529a2fadd9951ed34c40a82f6f2039037e98fa10d98a77886c5e970130f",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/ItemCallbacksB173.java": "d703c2598f299c0b476b3a8bbe6bb897bc0b209c868aaf4af9a740f45d010c57",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/ItemEventsB173.java": "68a9dcf8b3978c0f3188585cd5ceb8a970c8d8abc6b849d539abce07543aeaa7",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/LegacyB173ArmorItem.java": "b8e131ce0d3b80a81176e91ea4ef9e3f4fe3cfe0c1e233d8262d9a4c76dd55ca",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/LegacyB173Block.java": "2eaaefae9067debf3c8314851684b83c93161edfd292fffdd81d61d8812fb003",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/LegacyB173Entity.java": "0a3fd5501ab26602a44637bbc56d524b52c425ca4f2c5099631fbd4e6183f01a",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/LegacyB173Item.java": "037f0e349ee452861da311b30dbee4a185172830a8a910e3096b34bec82432bd",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/LegacyB173Menu.java": "18b41aa42a9bac5bdbe557a33f9f0baf991c1253e34b6bdd1eec8ec7e63788a8",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/MobsB173.java": "1eadf69ff41609b65f72b859375f114bace10dd6b824e42aaf9b1dedd54c3575",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/NativeMovementSpeedB173.java": "1bd16cef412b7f497f798d2e450976d16b8d9d8b045f419393f16dc20919c708",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/NeutralEntitiesB173.java": "53071687dccfb4bec12fadd76acadd7bcced957485c32347ac355aac7e4566cf",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/PlasticCraftBlocksSelfTestB173.java": "0775197c262bf6098814150d6d635f477de3598e838891dfd443bbe08c4158b7",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/PlayerViewB173.java": "1e62da17246fbf6ef2e159400f8cd08b82de75e4508c6c1079d76be3210e88b8",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/RecipesB173.java": "95d2d15517b5acdeb446178b3a53c8490dd4b9bb3af69a1005141dc5ff73f1be",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/RecordsB173.java": "f59fa4cdd9b57ff21a07fe6a28a84f6ac10927f1133837e35816cf2d44e97eec",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/RemoteMenuContextB173.java": "cf129bd805aab8b6ce6d6690932f37312ce7c65becd1a9f7b50747f18aeed5b8",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/SpawnRulesB173.java": "afac0b6b4d19843d351e8a351734e86d4bb7ba36c39439695845c9a117ec44ff",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/StacksB173.java": "5d8400bf50ee5f9985e7d6cf8eb863320b48c64484054e14b96284194fc6cfbf",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/client/BlockColorsB173.java": "a518f6d445f53dcf195b85899e0e16fafbeb45ba56baf3200b0994b64319b6d7",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/client/ClientB173.java": "fa1dd276256941b26698bae37711901040aba458e80e06b0d67e65aa21b4b5f9",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/client/ModTicksClientB173.java": "e3523425c1e4efb2beed59c6c88bafc33e7668bbd220efa3248c729ef1ba52d7",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/client/WorldTextureModelB173.java": "e5cb2bcc6cb77b3e7cdc4a1f2064edc622afcdb6e42945a902aa46e8bd2804e8",
+    "src/test/java/legacyconnector/v1_12_2/net/minecraft/entity/ExistingEntityAttributes1122Test.java": "87eb80bc51c4bd8702f104a4216a67877e2202c5e0f353dab5c49ae5db17a706",
+    "src/test/java/org/kylepitcock/legacyconnector/vb1_7_3/ArmorMetadataB173Test.java": "0eac6c8f866e42ae3a736f7cfa131b4ad9d26f69c1a623d901637a9e4321dae2",
+    "src/test/java/org/kylepitcock/legacyconnector/vb1_7_3/BlockCallbacksB173Test.java": "46ee26d4b567ddf0c98575772925462d889567e1348f6a96b50265730a59aa0a",
+    "src/test/java/org/kylepitcock/legacyconnector/vb1_7_3/BlockTintB173Test.java": "fc206aa5b0da29e3910d790ee043c4b7087e90e9dc2cce5605edbe748b950e88",
+    "src/test/java/org/kylepitcock/legacyconnector/vb1_7_3/BoatApisB173Test.java": "b0c842a68159dd00b9cb1fe080db9e9ab308d62e1ef15b922ff8ff51dc598ca4",
+    "src/test/java/org/kylepitcock/legacyconnector/vb1_7_3/EntityRegistryB173Test.java": "44556ff6c12d9833cae2ae78e3154d0792e4436a2db90dcb5e90e238c6b341e6",
+    "src/test/java/org/kylepitcock/legacyconnector/vb1_7_3/IntegerPositionB173Test.java": "0edd4fc34e78327217924f53d478a584d2abee00a3759df8b19b858ca70667fd",
+    "src/test/java/org/kylepitcock/legacyconnector/vb1_7_3/ModLoaderItemCallbacksB173Test.java": "1dbc978f135f224b4db5a947c65cd095907425e8b0126149d3739372cce30311",
+    "src/test/java/org/kylepitcock/legacyconnector/vb1_7_3/NativeMovementSpeedB173Test.java": "44f3f70a027f142279a8ea55a421cc63747fab93db4c3f71e5769f591213cd7c",
+    "src/test/java/org/kylepitcock/legacyconnector/vb1_7_3/RecipeMetadataB173Test.java": "18d3cf15558690578b381c58fa269757f9d9e5385dbd33e2a36db612fb8bef3c",
+    "src/test/java/org/kylepitcock/legacyconnector/vb1_7_3/RemoteMenuContextB173Test.java": "51abc6cad96ff77a505c8d184025c2e35ec94a78f419457bb30723443c2081c0",
+    "src/test/java/org/kylepitcock/legacyconnector/vb1_7_3/WorldMaterialSurfaceB173Test.java": "8767f11beea8a7218ffe7ba4175042d0fd804dc8c886d4875e36bc6c2462b5c1"
+  },
+  "distribution_classes_equal_live_test_classes": true,
+  "distribution_classes_compared": 6719,
+  "original_mod": {
+    "version": "2.1.3",
+    "test_archive": {
+      "path": "run-b173-single\\plasticcraft-complete-client-20261109-856c59\\mods\\b1.7.3\\PlasticCraft-2.1.3-ModLoader.jar",
+      "sha256": "2e361f5398e27c5821f132ff1bf3d7ab71564e58df13051dde86c215c534c55b"
+    },
+    "prism_archive": {
+      "path": "C:\\Users\\zekken\\AppData\\Roaming\\PrismLauncher\\instances\\Legacy Connector\\minecraft\\mods\\b1.7.3\\PlasticCraft-2.1.3-ModLoader.jar",
+      "sha256": "2e361f5398e27c5821f132ff1bf3d7ab71564e58df13051dde86c215c534c55b"
+    },
+    "entire_archives_byte_identical": true,
+    "configuration_unchanged": true,
+    "configuration_comparison": "All lines/values match Prism after normalizing Windows/Linux line endings. No options or mod versions changed."
+  },
+  "default_build": {
+    "passed": true,
+    "command": "./gradlew.bat build bundleJar",
+    "private_mod_archives_required": false,
+    "evidence": {
+      "path": "build\\plasticcraft-complete-release-build-clean-20261109.log",
+      "sha256": "d75660d1558e09344009d76de88b9038071301e1ae9ea477acdb78563641063f"
+    },
+    "portable_suite_run": {
+      "path": "build\\plasticcraft-complete-release-build-20261109.log",
+      "sha256": "0b5baada39e62ea5f36329d14d487319a7ac4c0bea725149fa1a025b1682d286"
+    }
+  },
+  "tests": {
+    "runtime": {
+      "tests": 342,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "loader": {
+      "tests": 274,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "live_gameplay_classes_equal_final_rebuild": {
+    "passed": true,
+    "evidence": {
+      "path": "build\\plasticcraft-final-bytecode-equality-20261109.json",
+      "sha256": "71787a5e9ba1516cd1f4c475749a7b6a984d2ce10e233d4dcefedb2d9414a793"
+    },
+    "classes": 6719
+  },
+  "original_beta_boat_model": {
+    "passed": true,
+    "opt_in_only": true,
+    "tests": 1,
+    "skipped": 0,
+    "evidence": {
+      "path": "build\\plasticcraft-complete-original-boat-model-final-20261109.log",
+      "sha256": "31fd24e9a4e92aea995c47dc47a1800f5cdc38555e9e19b4ffba15eeb5749310"
+    }
+  },
+  "generic_guard": {
+    "passed": true,
+    "files_checked": 298,
+    "existing_mod_specific_baseline_mentions": 21,
+    "new_mentions": 0
+  },
+  "generic_changes": [
+    "Shared Beta food, armor, mining/durability and native result-slot callbacks invoke original item and ModLoader behavior; armor layers copy original AddArmor-prefix textures",
+    "Recipe result codecs retain full components and exact Beta metadata ingredients preserve implicit-zero, subtype and wildcard-damage semantics",
+    "Authoritative integrated-server frame callbacks refresh retained canonical views, flush dirty fields only and replay immutable HUD commands with original blending and depth state",
+    "Neutral entity hosts invoke original collision, interaction, rider and renderer callbacks; fluid-surface queries, boat geometry, typed TNT/falling timers and value-coordinate semantics match original APIs",
+    "Original block face/color callbacks, generated model tint indices, current neighbor sources and native vanilla signal-source identity are bridged generically",
+    "Native movement overrides preserve foreign attributes/modifiers; creating an existing native 1.12 entity view no longer reapplies constructor attribute defaults",
+    "Vanilla entity names resolve before replacement registrations, so explicit original ModLoader spawn removals and latest-registration replacement remain distinct",
+    "Remote machine menus reconstruct installed original public player-inventory/registered-tile GUI constructors with bounded tile/NBT context and exact slot-layout matching, then forward authoritative slot/progress packets",
+    "Original custom records use native jukebox song components, insertion/ejection, playback and item persistence; original texture animation callbacks update the stitched GPU atlas",
+    "Opt-in graphical harness accepts an explicit remote-server target for separate-process checks without starting an integrated server"
+  ],
+  "actual_native_checks": [
+    {
+      "scope": "fixtures-verified",
+      "evidence": {
+        "path": "run-b173-single\\plasticcraft-complete-client-20261109-856c59\\complete-proof\\fixtures-verified.json",
+        "sha256": "35e45a9a0baaa5e336704774f93b3a18869c8d96c0568b9df03536fadbf250df"
+      },
+      "results": [
+        {
+          "scope": "entities",
+          "passed": true
+        },
+        {
+          "scope": "blocks",
+          "passed": true
+        },
+        {
+          "scope": "items",
+          "passed": true,
+          "result": "83 original item/achievement checks passed"
+        }
+      ]
+    },
+    {
+      "scope": "final-native-items-proof",
+      "evidence": {
+        "path": "run-b173-single\\plasticcraft-complete-client-20261109-856c59\\complete-proof\\final-native-items-proof.json",
+        "sha256": "e8b4115a8edb5282a2e0a48109938f762cd4435839d6c533c0492294d2742f45"
+      },
+      "results": {
+        "checks": [
+          {
+            "name": "natural regeneration disabled",
+            "actual": false,
+            "expected": false,
+            "passed": true
+          },
+          {
+            "name": "landing platform solid at Y68",
+            "actual": true,
+            "expected": true,
+            "passed": true
+          },
+          {
+            "name": "itemWATERBOTTLE initial health",
+            "actual": 2,
+            "expected": 2,
+            "passed": true
+          },
+          {
+            "name": "itemWATERBOTTLE real right-click health",
+            "actual": 5,
+            "expected": 5,
+            "passed": true
+          },
+          {
+            "name": "itemWATERBOTTLE real right-click remainder",
+            "actual": {
+              "id": "b173_plasticcraft:p_empty_bottle",
+              "count": 1
+            },
+            "expected": {
+              "id": "b173_plasticcraft:p_empty_bottle",
+              "count": 1
+            },
+            "passed": true
+          },
+          {
+            "name": "itemMILKBOTTLE initial health",
+            "actual": 2,
+            "expected": 2,
+            "passed": true
+          },
+          {
+            "name": "itemMILKBOTTLE real right-click health",
+            "actual": 10,
+            "expected": 10,
+            "passed": true
+          },
+          {
+            "name": "itemMILKBOTTLE real right-click remainder",
+            "actual": {
+              "id": "b173_plasticcraft:p_empty_bottle",
+              "count": 1
+            },
+            "expected": {
+              "id": "b173_plasticcraft:p_empty_bottle",
+              "count": 1
+            },
+            "passed": true
+          },
+          {
+            "name": "itemNEEDLERED initial health",
+            "actual": 2,
+            "expected": 2,
+            "passed": true
+          },
+          {
+            "name": "itemNEEDLERED real right-click health",
+            "actual": 20,
+            "expected": 20,
+            "passed": true
+          },
+          {
+            "name": "itemNEEDLERED real right-click remainder",
+            "actual": {
+              "id": "b173_plasticcraft:p_needle",
+              "count": 1
+            },
+            "expected": {
+              "id": "b173_plasticcraft:p_needle",
+              "count": 1
+            },
+            "passed": true
+          },
+          {
+            "name": "itemJELLO initial health",
+            "actual": 2,
+            "expected": 2,
+            "passed": true
+          },
+          {
+            "name": "itemJELLO real right-click health",
+            "actual": 6,
+            "expected": 6,
+            "passed": true
+          },
+          {
+            "name": "itemJELLO real right-click remainder",
+            "actual": {
+              "id": "b173_plasticcraft:q_jello",
+              "count": 1
+            },
+            "expected": {
+              "id": "b173_plasticcraft:q_jello",
+              "count": 1
+            },
+            "passed": true
+          },
+          {
+            "name": "native inventory screen opens",
+            "actual": "net.minecraft.client.gui.screens.inventory.InventoryScreen",
+            "expected": "net.minecraft.client.gui.screens.inventory.InventoryScreen",
+            "passed": true
+          },
+          {
+            "name": "native inventory container id",
+            "actual": 0,
+            "expected": 0,
+            "passed": true
+          },
+          {
+            "name": "feet equipped by native menu click",
+            "actual": "b173_plasticcraft:p_fall_dampener",
+            "expected": "b173_plasticcraft:p_fall_dampener",
+            "passed": true
+          },
+          {
+            "name": "head equipped by native menu click",
+            "actual": "b173_plasticcraft:p_nvgoggles",
+            "expected": "b173_plasticcraft:p_nvgoggles",
+            "passed": true
+          },
+          {
+            "name": "original utility protection remains zero",
+            "actual": 0,
+            "expected": 0,
+            "passed": true
+          },
+          {
+            "name": "head native armor host",
+            "actual": "org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173ArmorItem",
+            "expected": "org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173ArmorItem",
+            "passed": true
+          },
+          {
+            "name": "head original maxDamage zero",
+            "actual": 0,
+            "expected": 0,
+            "passed": true
+          },
+          {
+            "name": "head original damageable false",
+            "actual": false,
+            "expected": false,
+            "passed": true
+          },
+          {
+            "name": "head original protection zero",
+            "actual": 0,
+            "expected": 0,
+            "passed": true
+          },
+          {
+            "name": "feet native armor host",
+            "actual": "org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173ArmorItem",
+            "expected": "org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173ArmorItem",
+            "passed": true
+          },
+          {
+            "name": "feet original maxDamage zero",
+            "actual": 0,
+            "expected": 0,
+            "passed": true
+          },
+          {
+            "name": "feet original damageable false",
+            "actual": false,
+            "expected": false,
+            "passed": true
+          },
+          {
+            "name": "feet original protection zero",
+            "actual": 0,
+            "expected": 0,
+            "passed": true
+          },
+          {
+            "name": "native inventory screen opens",
+            "actual": "net.minecraft.client.gui.screens.inventory.InventoryScreen",
+            "expected": "net.minecraft.client.gui.screens.inventory.InventoryScreen",
+            "passed": true
+          },
+          {
+            "name": "native inventory container id",
+            "actual": 0,
+            "expected": 0,
+            "passed": true
+          },
+          {
+            "name": "boots fall landed",
+            "actual": true,
+            "expected": true,
+            "passed": true
+          },
+          {
+            "name": "boots fall lands at platform top",
+            "actual": 69,
+            "expected": 69.0,
+            "passed": true
+          },
+          {
+            "name": "boots actual twelve-block fall health",
+            "actual": 20,
+            "expected": 20,
+            "passed": true
+          },
+          {
+            "name": "native inventory screen opens",
+            "actual": "net.minecraft.client.gui.screens.inventory.InventoryScreen",
+            "expected": "net.minecraft.client.gui.screens.inventory.InventoryScreen",
+            "passed": true
+          },
+          {
+            "name": "native inventory container id",
+            "actual": 0,
+            "expected": 0,
+            "passed": true
+          },
+          {
+            "name": "boots removed by native menu click",
+            "actual": null,
+            "expected": null,
+            "passed": true
+          },
+          {
+            "name": "bare fall landed",
+            "actual": true,
+            "expected": true,
+            "passed": true
+          },
+          {
+            "name": "bare fall lands at same platform top",
+            "actual": 69,
+            "expected": 69.0,
+            "passed": true
+          },
+          {
+            "name": "bare actual twelve-block fall damages player",
+            "actual": 12,
+            "expected": "less than 20",
+            "passed": true
+          },
+          {
+            "name": "native inventory screen opens",
+            "actual": "net.minecraft.client.gui.screens.inventory.InventoryScreen",
+            "expected": "net.minecraft.client.gui.screens.inventory.InventoryScreen",
+            "passed": true
+          },
+          {
+            "name": "native inventory container id",
+            "actual": 0,
+            "expected": 0,
+            "passed": true
+          }
+        ],
+        "fallComparison": {
+          "distance": 12,
+          "platformY": 68,
+          "bootsHealth": 20,
+          "bareHealth": 12,
+          "sameLanding": true
+        },
+        "passed": true,
+        "passedCount": 40,
+        "checkCount": 40
+      }
+    },
+    {
+      "scope": "release-native-blocks",
+      "evidence": {
+        "path": "run-b173-single\\plasticcraft-complete-client-20261109-856c59\\complete-proof\\release-native-blocks.json",
+        "sha256": "4d8050358326388d50aba426c1e8183717b8deee224e7e9d1f1d307e271843a8"
+      },
+      "results": {
+        "checks": [
+          {
+            "name": "original PlasticCraft version remains 2.1.3",
+            "passed": true,
+            "details": {
+              "className": "legacyconnector_b173.plasticcraft.mod_PlasticCraft",
+              "version": "v2.1.3 (for b1.7.3)"
+            }
+          },
+          {
+            "name": "original supplied mod payload unchanged",
+            "passed": true,
+            "details": {
+              "mods\\b1.7.3\\PlasticCraft-2.1.3-ModLoader.jar": "2e361f5398e27c5821f132ff1bf3d7ab71564e58df13051dde86c215c534c55b"
+            }
+          },
+          {
+            "name": "native place blockPLASTIC (20, 0, 0)",
+            "passed": true,
+            "details": {
+              "field": "blockPLASTIC",
+              "meta": 0,
+              "held": {
+                "held": {
+                  "id": "b173_plasticcraft:p_plastic_block",
+                  "count": 1
+                },
+                "legacy": {
+                  "id": 133,
+                  "count": 1,
+                  "damage": 0,
+                  "name": "null"
+                }
+              },
+              "aim": {
+                "hit": "net.minecraft.world.phys.BlockHitResult@50cd6946",
+                "xyz": [
+                  20,
+                  68,
+                  0
+                ]
+              },
+              "block": {
+                "xyz": [
+                  20,
+                  69,
+                  0
+                ],
+                "state": "Block{b173_plasticcraft:p_plastic_block}[meta=0]",
+                "id": 133,
+                "meta": 0,
+                "light": 0,
+                "lightBlocked": 15,
+                "collisionEmpty": false,
+                "bounds": [
+                  0,
+                  0,
+                  0,
+                  1,
+                  1,
+                  1
+                ]
+              }
+            }
+          },
+          {
+            "name": "native place blockPLASTIC (21, 0, 1)",
+            "passed": true,
+            "details": {
+              "field": "blockPLASTIC",
+              "meta": 1,
+              "held": {
+                "held": {
+                  "id": "b173_plasticcraft:p_plastic_block",
+                  "count": 1
+                },
+                "legacy": {
+                  "id": 133,
+                  "count": 1,
+                  "damage": 1,
+                  "name": "null"
+                }
+              },
+              "aim": {
+                "hit": "net.minecraft.world.phys.BlockHitResult@5f022340",
+                "xyz": [
+                  21,
+                  68,
+                  0
+                ]
+              },
+              "block": {
+                "xyz": [
+                  21,
+                  69,
+                  0
+                ],
+                "state": "Block{b173_plasticcraft:p_plastic_block}[meta=1]",
+                "id": 133,
+                "meta": 1,
+                "light": 0,
+                "lightBlocked": 15,
+                "collisionEmpty": false,
+                "bounds": [
+                  0,
+                  0,
+                  0,
+                  1,
+                  1,
+                  1
+                ]
+              }
+            }
+          },
+          {
+            "name": "native place blockPLASTIC (22, 0, 5)",
+            "passed": true,
+            "details": {
+              "field": "blockPLASTIC",
+              "meta": 5,
+              "held": {
+                "held": {
+                  "id": "b173_plasticcraft:p_plastic_block",
+                  "count": 1
+                },
+                "legacy": {
+                  "id": 133,
+                  "count": 1,
+                  "damage": 5,
+                  "name": "null"
+                }
+              },
+              "aim": {
+                "hit": "net.minecraft.world.phys.BlockHitResult@1c100314",
+                "xyz": [
+                  22,
+                  68,
+                  0
+                ]
+              },
+              "block": {
+                "xyz": [
+                  22,
+                  69,
+                  0
+                ],
+                "state": "Block{b173_plasticcraft:p_plastic_block}[meta=5]",
+                "id": 133,
+                "meta": 5,
+                "light": 0,
+                "lightBlocked": 15,
+                "collisionEmpty": false,
+                "bounds": [
+                  0,
+                  0,
+                  0,
+                  1,
+                  1,
+                  1
+                ]
+              }
+            }
+          },
+          {
+            "name": "native place blockPLASTIC (23, 0, 11)",
+            "passed": true,
+            "details": {
+              "field": "blockPLASTIC",
+              "meta": 11,
+              "held": {
+                "held": {
+                  "id": "b173_plasticcraft:p_plastic_block",
+                  "count": 1
+                },
+                "legacy": {
+                  "id": 133,
+                  "count": 1,
+                  "damage": 11,
+                  "name": "null"
+                }
+              },
+              "aim": {
+                "hit": "net.minecraft.world.phys.BlockHitResult@50b90535",
+                "xyz": [
+                  23,
+                  68,
+                  0
+                ]
+              },
+              "block": {
+                "xyz": [
+                  23,
+                  69,
+                  0
+                ],
+                "state": "Block{b173_plasticcraft:p_plastic_block}[meta=11]",
+                "id": 133,
+                "meta": 11,
+                "light": 0,
+                "lightBlocked": 15,
+                "collisionEmpty": false,
+                "bounds": [
+                  0,
+                  0,
+                  0,
+                  1,
+                  1,
+                  1
+                ]
+              }
+            }
+          },
+          {
+            "name": "native place blockPLASTIC (24, 0, 14)",
+            "passed": true,
+            "details": {
+              "field": "blockPLASTIC",
+              "meta": 14,
+              "held": {
+                "held": {
+                  "id": "b173_plasticcraft:p_plastic_block",
+                  "count": 1
+                },
+                "legacy": {
+                  "id": 133,
+                  "count": 1,
+                  "damage": 14,
+                  "name": "null"
+                }
+              },
+              "aim": {
+                "hit": "net.minecraft.world.phys.BlockHitResult@257e54b2",
+                "xyz": [
+                  24,
+                  68,
+                  0
+                ]
+              },
+              "block": {
+                "xyz": [
+                  24,
+                  69,
+                  0
+                ],
+                "state": "Block{b173_plasticcraft:p_plastic_block}[meta=14]",
+                "id": 133,
+                "meta": 14,
+                "light": 0,
+                "lightBlocked": 15,
+                "collisionEmpty": false,
+                "bounds": [
+                  0,
+                  0,
+                  0,
+                  1,
+                  1,
+                  1
+                ]
+              }
+            }
+          },
+          {
+            "name": "native place blockPLEXIGLASS (26, 0, 0)",
+            "passed": true,
+            "details": {
+              "field": "blockPLEXIGLASS",
+              "meta": 0,
+              "held": {
+                "held": {
+                  "id": "b173_plasticcraft:p_plexiglass",
+                  "count": 1
+                },
+                "legacy": {
+                  "id": 137,
+                  "count": 1,
+                  "damage": 0,
+                  "name": "null"
+                }
+              },
+              "aim": {
+                "hit": "net.minecraft.world.phys.BlockHitResult@4b0b1f22",
+                "xyz": [
+                  26,
+                  68,
+                  0
+                ]
+              },
+              "block": {
+                "xyz": [
+                  26,
+                  69,
+                  0
+                ],
+                "state": "Block{b173_plasticcraft:p_plexiglass}[meta=0]",
+                "id": 137,
+                "meta": 0,
+                "light": 0,
+                "lightBlocked": 1,
+                "collisionEmpty": false,
+                "bounds": [
+                  0,
+                  0,
+                  0,
+                  1,
+                  1,
+                  1
+                ]
+              }
+            }
+          },
+          {
+            "name": "native place blockPLEXIGLASS (27, 0, 0)",
+            "passed": true,
+            "details": {
+              "field": "blockPLEXIGLASS",
+              "meta": 0,
+              "held": {
+                "held": {
+                  "id": "b173_plasticcraft:p_plexiglass",
+                  "count": 1
+                },
+                "legacy": {
+                  "id": 137,
+                  "count": 1,
+                  "damage": 0,
+                  "name": "null"
+                }
+              },
+              "aim": {
+                "hit": "net.minecraft.world.phys.BlockHitResult@378ec278",
+                "xyz": [
+                  27,
+                  68,
+                  0
+                ]
+              },
+              "block": {
+                "xyz": [
+                  27,
+                  69,
+                  0
+                ],
+                "state": "Block{b173_plasticcraft:p_plexiglass}[meta=0]",
+                "id": 137,
+                "meta": 0,
+                "light": 0,
+                "lightBlocked": 1,
+                "collisionEmpty": false,
+                "bounds": [
+                  0,
+                  0,
+                  0,
+                  1,
+                  1,
+                  1
+                ]
+              }
+            }
+          },
+          {
+            "name": "native place blockLITPLEXIGLASS (28, 0, 0)",
+            "passed": true,
+            "details": {
+              "field": "blockLITPLEXIGLASS",
+              "meta": 0,
+              "held": {
+                "held": {
+                  "id": "b173_plasticcraft:p_lit_plexiglass",
+                  "count": 1
+                },
+                "legacy": {
+                  "id": 138,
+                  "count": 1,
+                  "damage": 0,
+                  "name": "null"
+                }
+              },
+              "aim": {
+                "hit": "net.minecraft.world.phys.BlockHitResult@72c7381",
+                "xyz": [
+                  28,
+                  68,
+                  0
+                ]
+              },
+              "block": {
+                "xyz": [
+                  28,
+                  69,
+                  0
+                ],
+                "state": "Block{b173_plasticcraft:p_lit_plexiglass}[meta=0]",
+                "id": 138,
+                "meta": 0,
+                "light": 15,
+                "lightBlocked": 1,
+                "collisionEmpty": false,
+                "bounds": [
+                  0,
+                  0,
+                  0,
+                  1,
+                  1,
+                  1
+                ]
+              }
+            }
+          },
+          {
+            "name": "native place blockGLOWSTICK (30, 0, 0)",
+            "passed": true,
+            "details": {
+              "field": "blockGLOWSTICK",
+              "meta": 0,
+              "held": {
+                "held": {
+                  "id": "b173_plasticcraft:p_glowstick",
+                  "count": 1
+                },
+                "legacy": {
+                  "id": 139,
+                  "count": 1,
+                  "damage": 0,
+                  "name": "null"
+                }
+              },
+              "aim": {
+                "hit": "net.minecraft.world.phys.BlockHitResult@161830d9",
+                "xyz": [
+                  30,
+                  68,
+                  0
+                ]
+              },
+              "block": {
+                "xyz": [
+                  30,
+                  69,
+                  0
+                ],
+                "state": "Block{b173_plasticcraft:p_glowstick}[meta=5]",
+                "id": 139,
+                "meta": 5,
+                "light": 15,
+                "lightBlocked": 0,
+                "collisionEmpty": true,
+                "bounds": null
+              }
+            }
+          },
+          {
+            "name": "native place itemPLASTICDOOR (32, 0, 0)",
+            "passed": true,
+            "details": {
+              "field": "itemPLASTICDOOR",
+              "meta": 0,
+              "held": {
+                "held": {
+                  "id": "b173_plasticcraft:p_item_plastic_door",
+                  "count": 1
+                },
+                "legacy": {
+                  "id": 1016,
+                  "count": 1,
+                  "damage": 0,
+                  "name": "Plexiglass Door"
+                }
+              },
+              "aim": {
+                "hit": "net.minecraft.world.phys.BlockHitResult@1d24c0f4",
+                "xyz": [
+                  32,
+                  68,
+                  0
+                ]
+              },
+              "block": {
+                "xyz": [
+                  32,
+                  69,
+                  0
+                ],
+                "state": "Block{b173_plasticcraft:p_plastic_door}[meta=3]",
+                "id": 142,
+                "meta": 3,
+                "light": 0,
+                "lightBlocked": 0,
+                "collisionEmpty": false,
+                "bounds": [
+                  0,
+                  0,
+                  0.8125,
+                  1,
+                  1,
+                  1
+                ]
+              }
+            }
+          },
+          {
+            "name": "native place blockJELLO (20, 3, 0)",
+            "passed": true,
+            "details": {
+              "field": "blockJELLO",
+              "meta": 0,
+              "held": {
+                "held": {
+                  "id": "b173_plasticcraft:p_jello_block",
+                  "count": 1
+                },
+                "legacy": {
+                  "id": 140,
+                  "count": 1,
+                  "damage": 0,
+                  "name": "null"
+                }
+              },
+              "aim": {
+                "hit": "net.minecraft.world.phys.BlockHitResult@18c47d20",
+                "xyz": [
+                  20,
+                  68,
+                  3
+                ]
+              },
+              "block": {
+                "xyz": [
+                  20,
+                  69,
+                  3
+                ],
+                "state": "Block{b173_plasticcraft:p_jello_block}[meta=0]",
+                "id": 140,
+                "meta": 0,
+                "light": 0,
+                "lightBlocked": 0,
+                "collisionEmpty": false,
+                "bounds": [
+                  0.0625,
+                  0,
+                  0.0625,
+                  0.9375,
+                  0.4375,
+                  0.9375
+                ]
+              }
+            }
+          },
+          {
+            "name": "native place blockGOOPLASTIC (22, 3, 0)",
+            "passed": true,
+            "details": {
+              "field": "blockGOOPLASTIC",
+              "meta": 0,
+              "held": {
+                "held": {
+                  "id": "b173_plasticcraft:p_goo_plastic_block",
+                  "count": 1
+                },
+                "legacy": {
+                  "id": 134,
+                  "count": 1,
+                  "damage": 0,
+                  "name": "null"
+                }
+              },
+              "aim": {
+                "hit": "net.minecraft.world.phys.BlockHitResult@20e1b9af",
+                "xyz": [
+                  22,
+                  68,
+                  3
+                ]
+              },
+              "block": {
+                "xyz": [
+                  22,
+                  69,
+                  3
+                ],
+                "state": "Block{b173_plasticcraft:p_goo_plastic_block}[meta=0]",
+                "id": 134,
+                "meta": 0,
+                "light": 0,
+                "lightBlocked": 15,
+                "collisionEmpty": false,
+                "bounds": [
+                  0,
+                  0,
+                  0,
+                  1,
+                  0.8000030517578125,
+                  1
+                ]
+              }
+            }
+          },
+          {
+            "name": "native place blockTRAMPOLINE (24, 3, 0)",
+            "passed": true,
+            "details": {
+              "field": "blockTRAMPOLINE",
+              "meta": 0,
+              "held": {
+                "held": {
+                  "id": "b173_plasticcraft:p_trampoline",
+                  "count": 1
+                },
+                "legacy": {
+                  "id": 145,
+                  "count": 1,
+                  "damage": 0,
+                  "name": "null"
+                }
+              },
+              "aim": {
+                "hit": "net.minecraft.world.phys.BlockHitResult@331de830",
+                "xyz": [
+                  24,
+                  68,
+                  3
+                ]
+              },
+              "block": {
+                "xyz": [
+                  24,
+                  69,
+                  3
+                ],
+                "state": "Block{b173_plasticcraft:p_trampoline}[meta=0]",
+                "id": 145,
+                "meta": 0,
+                "light": 0,
+                "lightBlocked": 0,
+                "collisionEmpty": false,
+                "bounds": [
+                  0,
+                  0,
+                  0,
+                  1,
+                  0.5,
+                  1
+                ]
+              }
+            }
+          },
+          {
+            "name": "native place blockTRAMPOLINE (25, 3, 0)",
+            "passed": true,
+            "details": {
+              "field": "blockTRAMPOLINE",
+              "meta": 0,
+              "held": {
+                "held": {
+                  "id": "b173_plasticcraft:p_trampoline",
+                  "count": 1
+                },
+                "legacy": {
+                  "id": 145,
+                  "count": 1,
+                  "damage": 0,
+                  "name": "null"
+                }
+              },
+              "aim": {
+                "hit": "net.minecraft.world.phys.BlockHitResult@2e36a063",
+                "xyz": [
+                  25,
+                  68,
+                  3
+                ]
+              },
+              "block": {
+                "xyz": [
+                  25,
+                  69,
+                  3
+                ],
+                "state": "Block{b173_plasticcraft:p_trampoline}[meta=0]",
+                "id": 145,
+                "meta": 0,
+                "light": 0,
+                "lightBlocked": 0,
+                "collisionEmpty": false,
+                "bounds": [
+                  0,
+                  0,
+                  0,
+                  1,
+                  0.5,
+                  1
+                ]
+              }
+            }
+          },
+          {
+            "name": "native place blockACCELERATOR (27, 3, 0)",
+            "passed": true,
+            "details": {
+              "field": "blockACCELERATOR",
+              "meta": 0,
+              "held": {
+                "held": {
+                  "id": "b173_plasticcraft:p_accelerator",
+                  "count": 1
+                },
+                "legacy": {
+                  "id": 146,
+                  "count": 1,
+                  "damage": 0,
+                  "name": "null"
+                }
+              },
+              "aim": {
+                "hit": "net.minecraft.world.phys.BlockHitResult@26acdb",
+                "xyz": [
+                  27,
+                  68,
+                  3
+                ]
+              },
+              "block": {
+                "xyz": [
+                  27,
+                  69,
+                  3
+                ],
+                "state": "Block{b173_plasticcraft:p_accelerator}[meta=0]",
+                "id": 146,
+                "meta": 0,
+                "light": 0,
+                "lightBlocked": 0,
+                "collisionEmpty": false,
+                "bounds": [
+                  0,
+                  0,
+                  0,
+                  1,
+                  0.25,
+                  1
+                ]
+              }
+            }
+          },
+          {
+            "name": "native use opens both original door halves",
+            "passed": true,
+            "details": [
+              {
+                "xyz": [
+                  32,
+                  69,
+                  0
+                ],
+                "state": "Block{b173_plasticcraft:p_plastic_door}[meta=7]",
+                "id": 142,
+                "meta": 7,
+                "light": 0,
+                "lightBlocked": 0,
+                "collisionEmpty": false,
+                "bounds": [
+                  0,
+                  0,
+                  0,
+                  0.1875,
+                  1,
+                  1
+                ]
+              },
+              {
+                "xyz": [
+                  32,
+                  70,
+                  0
+                ],
+                "state": "Block{b173_plasticcraft:p_plastic_door}[meta=15]",
+                "id": 142,
+                "meta": 15,
+                "light": 0,
+                "lightBlocked": 0,
+                "collisionEmpty": false,
+                "bounds": [
+                  0,
+                  0,
+                  0,
+                  0.1875,
+                  1,
+                  1
+                ]
+              }
+            ]
+          },
+          {
+            "name": "native redstone opens both door halves",
+            "passed": true,
+            "details": [
+              {
+                "xyz": [
+                  32,
+                  69,
+                  0
+                ],
+                "state": "Block{b173_plasticcraft:p_plastic_door}[meta=7]",
+                "id": 142,
+                "meta": 7,
+                "light": 0,
+                "lightBlocked": 0,
+                "collisionEmpty": false,
+                "bounds": [
+                  0,
+                  0,
+                  0,
+                  0.1875,
+                  1,
+                  1
+                ]
+              },
+              {
+                "xyz": [
+                  32,
+                  70,
+                  0
+                ],
+                "state": "Block{b173_plasticcraft:p_plastic_door}[meta=15]",
+                "id": 142,
+                "meta": 15,
+                "light": 0,
+                "lightBlocked": 0,
+                "collisionEmpty": false,
+                "bounds": [
+                  0,
+                  0,
+                  0,
+                  0.1875,
+                  1,
+                  1
+                ]
+              }
+            ]
+          },
+          {
+            "name": "native power removal closes both door halves",
+            "passed": true,
+            "details": [
+              {
+                "xyz": [
+                  32,
+                  69,
+                  0
+                ],
+                "state": "Block{b173_plasticcraft:p_plastic_door}[meta=3]",
+                "id": 142,
+                "meta": 3,
+                "light": 0,
+                "lightBlocked": 0,
+                "collisionEmpty": false,
+                "bounds": [
+                  0,
+                  0,
+                  0.8125,
+                  1,
+                  1,
+                  1
+                ]
+              },
+              {
+                "xyz": [
+                  32,
+                  70,
+                  0
+                ],
+                "state": "Block{b173_plasticcraft:p_plastic_door}[meta=11]",
+                "id": 142,
+                "meta": 11,
+                "light": 0,
+                "lightBlocked": 0,
+                "collisionEmpty": false,
+                "bounds": [
+                  0,
+                  0,
+                  0.8125,
+                  1,
+                  1,
+                  1
+                ]
+              }
+            ]
+          },
+          {
+            "name": "native falling sand typed view bounces and writes original negative timer",
+            "passed": true,
+            "details": {
+              "type": "net.minecraft.world.entity.item.FallingBlockEntity",
+              "id": 154,
+              "xyz": [
+                24.5,
+                69.5,
+                3.5
+              ],
+              "velocity": [
+                0,
+                1.0368,
+                0
+              ],
+              "ticks": 0,
+              "onGround": false,
+              "timeBefore": 0,
+              "timeAfter": -47,
+              "ticksBefore": 0,
+              "view": "legacyconnector.vb1_7_3.net.minecraft.entity.FallingBlockEntity"
+            }
+          },
+          {
+            "name": "native TNT typed view bounces without second lifecycle or fuse advancement",
+            "passed": true,
+            "details": {
+              "type": "net.minecraft.world.entity.item.PrimedTnt",
+              "id": 155,
+              "xyz": [
+                24.5,
+                69.5,
+                3.5
+              ],
+              "velocity": [
+                0,
+                1.0368,
+                0
+              ],
+              "ticks": 0,
+              "onGround": false,
+              "fuseBefore": 80,
+              "fuseAfter": 80,
+              "ticksBefore": 0,
+              "view": "legacyconnector.vb1_7_3.net.minecraft.entity.TntEntity"
+            }
+          },
+          {
+            "name": "original cow grass/light/collision spawn check passes and stone fails",
+            "passed": true,
+            "details": {
+              "actor": {
+                "type": "org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Cow",
+                "id": 158,
+                "xyz": [
+                  34.5,
+                  69,
+                  3.5
+                ],
+                "velocity": [
+                  0,
+                  0,
+                  0
+                ],
+                "ticks": 0,
+                "onGround": false
+              },
+              "grass": true,
+              "stone": false,
+              "light": 15,
+              "view": "legacyconnector_b173.plasticcraft.EntityPlasticCow",
+              "originalClass": "legacyconnector_b173.plasticcraft.EntityPlasticCow",
+              "uuid": "1c6a2de2-894e-4a70-8fdc-0387d4ca2d68",
+              "nativeNavigation": true
+            }
+          },
+          {
+            "name": "original cow canonical view and native navigation",
+            "passed": true,
+            "details": {
+              "actor": {
+                "type": "org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Cow",
+                "id": 158,
+                "xyz": [
+                  34.5,
+                  69,
+                  3.5
+                ],
+                "velocity": [
+                  0,
+                  0,
+                  0
+                ],
+                "ticks": 0,
+                "onGround": false
+              },
+              "grass": true,
+              "stone": false,
+              "light": 15,
+              "view": "legacyconnector_b173.plasticcraft.EntityPlasticCow",
+              "originalClass": "legacyconnector_b173.plasticcraft.EntityPlasticCow",
+              "uuid": "1c6a2de2-894e-4a70-8fdc-0387d4ca2d68",
+              "nativeNavigation": true
+            }
+          },
+          {
+            "name": "native entity-use packet reaches original cow milking",
+            "passed": true,
+            "details": {
+              "held": {
+                "id": "minecraft:milk_bucket",
+                "count": 1
+              },
+              "isMilk": true
+            }
+          },
+          {
+            "name": "installed mod files and versions unchanged",
+            "passed": true,
+            "details": null
+          }
+        ],
+        "errors": [],
+        "player_input_note": "Real native walk/jump commands recorded; server snapshots are evidence for root inspection, not a claim of pixel quality or complete client motion fidelity.",
+        "passed": true
+      }
+    },
+    {
+      "scope": "verified-native-crafting-proof",
+      "evidence": {
+        "path": "run-b173-single\\plasticcraft-complete-client-20261109-856c59\\complete-proof\\verified-native-crafting-proof.json",
+        "sha256": "6b2d3cf0c8160def676b0dce667319b2374ae55da7813d178c83e53cc6bc6380"
+      },
+      "results": {
+        "checks": [
+          {
+            "name": "wrap achievement starts revoked",
+            "actual": false,
+            "expected": false,
+            "passed": true
+          },
+          {
+            "name": "opened native crafting table",
+            "actual": "net.minecraft.world.inventory.CraftingMenu",
+            "expected": "net.minecraft.world.inventory.CraftingMenu",
+            "passed": true
+          },
+          {
+            "name": "wrap-pack native recipe output id",
+            "actual": "b173_plasticcraft:p_plastic_wrap",
+            "expected": "b173_plasticcraft:p_plastic_wrap",
+            "passed": true
+          },
+          {
+            "name": "wrap-pack native recipe output count",
+            "actual": 1,
+            "expected": 1,
+            "passed": true
+          },
+          {
+            "name": "wrap-pack native recipe output legacyId",
+            "actual": 1017,
+            "expected": 1017,
+            "passed": true
+          },
+          {
+            "name": "wrap-pack native recipe output meta",
+            "actual": 1,
+            "expected": 1,
+            "passed": true
+          },
+          {
+            "name": "wrap-pack native recipe output damage",
+            "actual": 0,
+            "expected": 0,
+            "passed": true
+          },
+          {
+            "name": "wrap-pack native result pickup id",
+            "actual": "b173_plasticcraft:p_plastic_wrap",
+            "expected": "b173_plasticcraft:p_plastic_wrap",
+            "passed": true
+          },
+          {
+            "name": "wrap-pack native result pickup count",
+            "actual": 1,
+            "expected": 1,
+            "passed": true
+          },
+          {
+            "name": "wrap-pack native result pickup legacyId",
+            "actual": 1017,
+            "expected": 1017,
+            "passed": true
+          },
+          {
+            "name": "wrap-pack native result pickup meta",
+            "actual": 1,
+            "expected": 1,
+            "passed": true
+          },
+          {
+            "name": "wrap-pack native result pickup damage",
+            "actual": 0,
+            "expected": 0,
+            "passed": true
+          },
+          {
+            "name": "wrap-pack consumes all staged ingredients",
+            "actual": true,
+            "expected": true,
+            "passed": true
+          },
+          {
+            "name": "wrap-pack cursor empty after result storage",
+            "actual": null,
+            "expected": null,
+            "passed": true
+          },
+          {
+            "name": "original wrap achievement awarded by native result pickup",
+            "actual": true,
+            "expected": true,
+            "passed": true
+          },
+          {
+            "name": "wrap-unpack native recipe output id",
+            "actual": "minecraft:porkchop",
+            "expected": "minecraft:porkchop",
+            "passed": true
+          },
+          {
+            "name": "wrap-unpack native recipe output count",
+            "actual": 6,
+            "expected": 6,
+            "passed": true
+          },
+          {
+            "name": "wrap-unpack native recipe output legacyId",
+            "actual": 319,
+            "expected": 319,
+            "passed": true
+          },
+          {
+            "name": "wrap-unpack native recipe output meta",
+            "actual": 0,
+            "expected": 0,
+            "passed": true
+          },
+          {
+            "name": "wrap-unpack native recipe output damage",
+            "actual": 0,
+            "expected": 0,
+            "passed": true
+          },
+          {
+            "name": "wrap-unpack native result pickup id",
+            "actual": "minecraft:porkchop",
+            "expected": "minecraft:porkchop",
+            "passed": true
+          },
+          {
+            "name": "wrap-unpack native result pickup count",
+            "actual": 6,
+            "expected": 6,
+            "passed": true
+          },
+          {
+            "name": "wrap-unpack native result pickup legacyId",
+            "actual": 319,
+            "expected": 319,
+            "passed": true
+          },
+          {
+            "name": "wrap-unpack native result pickup meta",
+            "actual": 0,
+            "expected": 0,
+            "passed": true
+          },
+          {
+            "name": "wrap-unpack native result pickup damage",
+            "actual": 0,
+            "expected": 0,
+            "passed": true
+          },
+          {
+            "name": "wrap-unpack consumes all staged ingredients",
+            "actual": true,
+            "expected": true,
+            "passed": true
+          },
+          {
+            "name": "wrap-unpack cursor empty after result storage",
+            "actual": null,
+            "expected": null,
+            "passed": true
+          },
+          {
+            "name": "unwrap restores original six foods",
+            "actual": 6,
+            "expected": 6,
+            "passed": true
+          },
+          {
+            "name": "tape-repair native recipe output id",
+            "actual": "minecraft:wooden_sword",
+            "expected": "minecraft:wooden_sword",
+            "passed": true
+          },
+          {
+            "name": "tape-repair native recipe output count",
+            "actual": 1,
+            "expected": 1,
+            "passed": true
+          },
+          {
+            "name": "tape-repair native recipe output legacyId",
+            "actual": 268,
+            "expected": 268,
+            "passed": true
+          },
+          {
+            "name": "tape-repair native recipe output meta",
+            "actual": 0,
+            "expected": 0,
+            "passed": true
+          },
+          {
+            "name": "tape-repair native recipe output damage",
+            "actual": 0,
+            "expected": 0,
+            "passed": true
+          },
+          {
+            "name": "tape-repair native result pickup id",
+            "actual": "minecraft:wooden_sword",
+            "expected": "minecraft:wooden_sword",
+            "passed": true
+          },
+          {
+            "name": "tape-repair native result pickup count",
+            "actual": 1,
+            "expected": 1,
+            "passed": true
+          },
+          {
+            "name": "tape-repair native result pickup legacyId",
+            "actual": 268,
+            "expected": 268,
+            "passed": true
+          },
+          {
+            "name": "tape-repair native result pickup meta",
+            "actual": 0,
+            "expected": 0,
+            "passed": true
+          },
+          {
+            "name": "tape-repair native result pickup damage",
+            "actual": 0,
+            "expected": 0,
+            "passed": true
+          },
+          {
+            "name": "tape-repair consumes all staged ingredients",
+            "actual": true,
+            "expected": true,
+            "passed": true
+          },
+          {
+            "name": "tape-repair cursor empty after result storage",
+            "actual": null,
+            "expected": null,
+            "passed": true
+          },
+          {
+            "name": "repaired damaged tool resets to zero",
+            "actual": 0,
+            "expected": 0,
+            "passed": true
+          },
+          {
+            "name": "repair input was actually damaged",
+            "actual": true,
+            "expected": true,
+            "passed": true
+          },
+          {
+            "name": "original shovel native max damage",
+            "actual": 250,
+            "expected": 250,
+            "passed": true
+          },
+          {
+            "name": "native shovel mining speed invokes original",
+            "actual": 2,
+            "expected": 2,
+            "passed": true
+          },
+          {
+            "name": "native shovel broke dirt",
+            "actual": "Block{minecraft:air}",
+            "expected": "Block{minecraft:air}",
+            "passed": true
+          },
+          {
+            "name": "native mining wears shovel once",
+            "actual": 1,
+            "expected": 1,
+            "passed": true
+          },
+          {
+            "name": "native crosshair selects test cow",
+            "actual": "b4e32c2b-5704-449c-8999-9ef85022cd18",
+            "expected": "b4e32c2b-5704-449c-8999-9ef85022cd18",
+            "passed": true
+          },
+          {
+            "name": "native entity hit adds two wear",
+            "actual": 3,
+            "expected": 3,
+            "passed": true
+          },
+          {
+            "name": "native shovel hit reaches cow",
+            "actual": true,
+            "expected": true,
+            "passed": true
+          }
+        ],
+        "passed": true,
+        "passedCount": 49,
+        "checkCount": 49
+      }
+    },
+    {
+      "scope": "native-entities-records-summary",
+      "evidence": {
+        "path": "run-b173-single\\plasticcraft-complete-client-20261109-856c59\\complete-proof\\native-entities-records-summary.json",
+        "sha256": "8699b7d9a109015a9be1dd5ff0b0771e8c807bb5a3c7cb3de706da103720149b"
+      },
+      "results": {
+        "status": "passed",
+        "checks": [
+          {
+            "check": "Native jukebox accepts and plays original plastic record",
+            "passed": true,
+            "data": {
+              "item": {
+                "id": "b173_plasticcraft:record",
+                "count": 1
+              },
+              "playing": true
+            }
+          },
+          {
+            "check": "Native jukebox ejects exactly one original mod record",
+            "passed": true,
+            "data": null
+          },
+          {
+            "check": "Same picked-up record reinserts",
+            "passed": true,
+            "data": null
+          },
+          {
+            "check": "Native original boat placement consumes item and spawns one host",
+            "passed": true,
+            "data": [
+              {
+                "uuid": "f8c4c81c-20cb-4746-83df-42526785e72b",
+                "nativeType": "org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Entity",
+                "xyz": [
+                  0.5,
+                  69.86351109409,
+                  1.5
+                ],
+                "motion": [
+                  0,
+                  0.030824446386132385,
+                  0
+                ],
+                "type": "EntityPlasticBoat",
+                "originalTicks": 15,
+                "baseTicks": 15,
+                "a": 0
+              }
+            ]
+          },
+          {
+            "check": "Original boat survives and floats with original ticking",
+            "passed": true,
+            "data": {
+              "uuid": "f8c4c81c-20cb-4746-83df-42526785e72b",
+              "nativeType": "org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Entity",
+              "xyz": [
+                0.5,
+                69.86955598340103,
+                1.5
+              ],
+              "motion": [
+                0,
+                0.00652711416880887,
+                0
+              ],
+              "type": "EntityPlasticBoat",
+              "originalTicks": 54,
+              "baseTicks": 54,
+              "a": 0
+            }
+          },
+          {
+            "check": "Native right-click mounts original boat",
+            "passed": true,
+            "data": "f8c4c81c-20cb-4746-83df-42526785e72b"
+          },
+          {
+            "check": "Native rider input steers original boat",
+            "passed": true,
+            "data": {
+              "before": [
+                0.5,
+                69.89745677292845,
+                1.5
+              ],
+              "after": [
+                0.5,
+                69.88545468030644,
+                0.8476480499250602
+              ]
+            }
+          },
+          {
+            "check": "Actual server replaced during native world reopen",
+            "passed": true,
+            "data": null
+          },
+          {
+            "check": "Original boat UUID and rider persist through native save/reopen",
+            "passed": true,
+            "data": "f8c4c81c-20cb-4746-83df-42526785e72b"
+          },
+          {
+            "check": "Native jukebox retains original mod record after reopen",
+            "passed": true,
+            "data": {
+              "item": {
+                "id": "b173_plasticcraft:record",
+                "count": 1
+              },
+              "playing": true
+            }
+          },
+          {
+            "check": "Native sneak dismounts",
+            "passed": true,
+            "data": null
+          },
+          {
+            "check": "Native attack destroys original boat and returns one boat item",
+            "passed": true,
+            "data": [
+              {
+                "uuid": "90a5a8a1-cf31-4864-b410-ac06c379d569",
+                "nativeType": "net.minecraft.world.entity.item.ItemEntity",
+                "xyz": [
+                  54.443544200114474,
+                  -60,
+                  1.5378251278078625
+                ],
+                "motion": [
+                  4.407476969256896e-70,
+                  -0.04,
+                  -1.8026136732445723e-70
+                ],
+                "item": {
+                  "id": "b173_plasticcraft:p_glowstick",
+                  "count": 1
+                }
+              },
+              {
+                "uuid": "01173f35-6e6d-49d8-8b01-3b32be69d5fd",
+                "nativeType": "net.minecraft.world.entity.item.ItemEntity",
+                "xyz": [
+                  1.7157863044739525,
+                  69,
+                  -1.3227401736965536
+                ],
+                "motion": [
+                  0.03982459788977604,
+                  0,
+                  0.03075289767272376
+                ],
+                "item": {
+                  "id": "b173_plasticcraft:p_boat",
+                  "count": 1
+                }
+              }
+            ],
+            "fixtureCorrection": "Used actual registered original boat item b173_plasticcraft:p_boat instead of guessed p_plastic_boat; recorded native attack result already contains one correct drop and no remaining boat."
+          },
+          {
+            "check": "Native defuser removes placed C4 and spends one durability",
+            "passed": true,
+            "data": null
+          },
+          {
+            "check": "Native redstone primes two original C4",
+            "passed": true,
+            "data": [
+              {
+                "uuid": "2629b73a-e55b-4430-a7e0-6e802e5a7db2",
+                "nativeType": "org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Entity",
+                "xyz": [
+                  32.5,
+                  69.00999999046326,
+                  0.5
+                ],
+                "motion": [
+                  -0.000550455937627703,
+                  0.2000000029802322,
+                  -0.019992422312498093
+                ],
+                "type": "EntityC4Primed",
+                "originalTicks": 0,
+                "baseTicks": 0,
+                "a": 120,
+                "power": 10,
+                "connectedCount": 1,
+                "renderScale": 1
+              },
+              {
+                "uuid": "9b83930f-2568-4c64-8cfb-730ca5d73ffe",
+                "nativeType": "org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Entity",
+                "xyz": [
+                  35.5,
+                  69.00999999046326,
+                  0.5
+                ],
+                "motion": [
+                  -0.00024721198133192956,
+                  0.2000000029802322,
+                  -0.019998472183942795
+                ],
+                "type": "EntityC4Primed",
+                "originalTicks": 0,
+                "baseTicks": 0,
+                "a": 120,
+                "power": 10,
+                "connectedCount": 1,
+                "renderScale": 1
+              }
+            ]
+          },
+          {
+            "check": "Original air defuser removes all loaded primed C4 once",
+            "passed": true,
+            "data": null
+          },
+          {
+            "check": "Defused C4 does not explode later",
+            "passed": true,
+            "data": null
+          },
+          {
+            "check": "Original C4 fuse decreases on normal ticks",
+            "passed": true,
+            "data": null
+          },
+          {
+            "check": "Original fuse produces an authoritative terrain explosion",
+            "passed": true,
+            "data": {
+              "missingFloorBlocks": 22
+            }
+          }
+        ]
+      }
+    },
+    {
+      "scope": "native-stun-animation-summary",
+      "evidence": {
+        "path": "run-b173-single\\plasticcraft-complete-client-20261109-856c59\\complete-proof\\native-stun-animation-summary.json",
+        "sha256": "82a4defe50f9968c6017e95beab110ac6876f74ddb5222cecec4f653d70aeb3a"
+      },
+      "results": {
+        "status": "passed",
+        "stun": {
+          "begin": {
+            "id": "4b366398-fd34-4a20-a11d-a73e329fdfb6"
+          },
+          "during": {
+            "result": "native AI cow movement speed remains zero"
+          },
+          "after": {
+            "result": "native AI cow baseline -> zero -> six-second restoration; foreign attribute state preserved"
+          },
+          "normalTimeElapsed": true
+        },
+        "animation": {
+          "samples": 24,
+          "targets": [
+            "b173_plasticcraft:block/b173/animated__terrain_png_126"
+          ],
+          "distinct_gpu_frame_hashes": [
+            -1874719437,
+            1514428432,
+            1762648229,
+            1768449239,
+            2037060243,
+            2101252912,
+            2122879034
+          ],
+          "all_gpu_frames_match_original": true
+        }
+      }
+    },
+    {
+      "scope": "native-goggles-alpha-proof",
+      "evidence": {
+        "path": "run-b173-single\\plasticcraft-complete-client-20261109-856c59\\complete-proof\\native-goggles-alpha-proof.json",
+        "sha256": "3b0538cddaff661648ea5c130f36a4e3bc63798d8fa9610050ddfa366d81b6d3"
+      },
+      "results": {
+        "status": "passed",
+        "sourceTexture": "TehKrush/PlasticCraft/guiNightVisionClassic.png",
+        "samples": [
+          {
+            "xy": [
+              128,
+              72
+            ],
+            "base": [
+              155,
+              159,
+              160
+            ],
+            "originalRGBA": [
+              66,
+              66,
+              66,
+              51
+            ],
+            "actual": [
+              137,
+              140,
+              141
+            ],
+            "expected": [
+              137,
+              140,
+              141
+            ],
+            "error": 0,
+            "passed": true
+          },
+          {
+            "xy": [
+              256,
+              72
+            ],
+            "base": [
+              155,
+              159,
+              160
+            ],
+            "originalRGBA": [
+              81,
+              80,
+              81,
+              51
+            ],
+            "actual": [
+              140,
+              143,
+              144
+            ],
+            "expected": [
+              140,
+              143,
+              144
+            ],
+            "error": 0,
+            "passed": true
+          },
+          {
+            "xy": [
+              384,
+              72
+            ],
+            "base": [
+              155,
+              160,
+              161
+            ],
+            "originalRGBA": [
+              80,
+              80,
+              80,
+              51
+            ],
+            "actual": [
+              140,
+              144,
+              145
+            ],
+            "expected": [
+              140,
+              144,
+              145
+            ],
+            "error": 0,
+            "passed": true
+          },
+          {
+            "xy": [
+              512,
+              72
+            ],
+            "base": [
+              154,
+              158,
+              159
+            ],
+            "originalRGBA": [
+              65,
+              65,
+              64,
+              51
+            ],
+            "actual": [
+              136,
+              139,
+              140
+            ],
+            "expected": [
+              136,
+              139,
+              140
+            ],
+            "error": 0,
+            "passed": true
+          },
+          {
+            "xy": [
+              128,
+              144
+            ],
+            "base": [
+              155,
+              159,
+              160
+            ],
+            "originalRGBA": [
+              81,
+              81,
+              81,
+              51
+            ],
+            "actual": [
+              140,
+              143,
+              144
+            ],
+            "expected": [
+              140,
+              143,
+              144
+            ],
+            "error": 0,
+            "passed": true
+          },
+          {
+            "xy": [
+              256,
+              144
+            ],
+            "base": [
+              155,
+              160,
+              161
+            ],
+            "originalRGBA": [
+              107,
+              108,
+              107,
+              51
+            ],
+            "actual": [
+              145,
+              150,
+              150
+            ],
+            "expected": [
+              145,
+              150,
+              150
+            ],
+            "error": 0,
+            "passed": true
+          },
+          {
+            "xy": [
+              384,
+              144
+            ],
+            "base": [
+              155,
+              160,
+              161
+            ],
+            "originalRGBA": [
+              105,
+              105,
+              105,
+              51
+            ],
+            "actual": [
+              145,
+              149,
+              150
+            ],
+            "expected": [
+              145,
+              149,
+              150
+            ],
+            "error": 0,
+            "passed": true
+          },
+          {
+            "xy": [
+              512,
+              144
+            ],
+            "base": [
+              154,
+              158,
+              159
+            ],
+            "originalRGBA": [
+              79,
+              79,
+              78,
+              51
+            ],
+            "actual": [
+              139,
+              142,
+              143
+            ],
+            "expected": [
+              139,
+              142,
+              143
+            ],
+            "error": 0,
+            "passed": true
+          }
+        ],
+        "screenshots": [
+          "goggles-alpha-control.png",
+          "goggles-alpha-overlay.png"
+        ]
+      }
+    },
+    {
+      "scope": "native-natural-cows-summary",
+      "evidence": {
+        "path": "run-b173-single\\plasticcraft-complete-client-20261109-856c59\\complete-proof\\native-natural-cows-summary.json",
+        "sha256": "f396fed280af6b02d68184c940bd01a7af484fca3bcf15e8d3464f34bede9fe0"
+      },
+      "results": {
+        "status": "passed",
+        "normalNativeSpawnScheduling": true,
+        "noManualEntitySpawns": true,
+        "noRngMutation": true,
+        "testOnlyCapResets": true,
+        "fixture": {
+          "grassY": 63,
+          "bounds": [
+            208,
+            208,
+            447,
+            447
+          ],
+          "temporaryForceloadUsedForConstruction": true
+        },
+        "samples": [
+          {
+            "time": 59519,
+            "legacy": 20,
+            "mobs": [
+              {
+                "type": "b173_plasticcraft:cow",
+                "uuid": "88839e0a-1d72-428d-ad47-3bde667309f4",
+                "reason": "NATURAL",
+                "xyz": [
+                  426.5,
+                  64,
+                  249.5
+                ]
+              },
+              {
+                "type": "b173_plasticcraft:cow",
+                "uuid": "8f1a5686-4163-4ef0-b448-3b1d3f9b4c2f",
+                "reason": "NATURAL",
+                "xyz": [
+                  224.14193097235994,
+                  64,
+                  280.85805731939496
+                ]
+              },
+              {
+                "type": "b173_plasticcraft:cow",
+                "uuid": "ae2817ef-2c11-4c87-9a03-6fed67158178",
+                "reason": "NATURAL",
+                "xyz": [
+                  225.2365574549484,
+                  64,
+                  274.81633312191
+                ]
+              },
+              {
+                "type": "b173_plasticcraft:cow",
+                "uuid": "aa147edb-ecf0-4246-b4f9-1467247bf576",
+                "reason": "NATURAL",
+                "xyz": [
+                  225.5,
+                  64,
+                  277.5
+                ]
+              },
+              {
+                "type": "b173_plasticcraft:cow",
+                "uuid": "7f87a05b-dd09-4d34-8eb0-59144225aec3",
+                "reason": "NATURAL",
+                "xyz": [
+                  390.5,
+                  64,
+                  280.5
+                ]
+              },
+              {
+                "type": "b173_plasticcraft:cow",
+                "uuid": "5c62e0b2-25b9-4b44-8b42-3b329329776d",
+                "reason": "NATURAL",
+                "xyz": [
+                  387.5,
+                  64,
+                  287.5
+                ]
+              },
+              {
+                "type": "b173_plasticcraft:cow",
+                "uuid": "2533556f-e875-4e3b-b2b6-ce0521ea2a37",
+                "reason": "NATURAL",
+                "xyz": [
+                  390.5,
+                  64,
+                  289.5
+                ]
+              },
+              {
+                "type": "b173_plasticcraft:cow",
+                "uuid": "bee2acdc-ad1d-45f0-b73f-a179839cd080",
+                "reason": "NATURAL",
+                "xyz": [
+                  326.8811965328925,
+                  64,
+                  237.8811965328925
+                ]
+              },
+              {
+                "type": "b173_plasticcraft:cow",
+                "uuid": "44dc0a7e-3b00-4ad4-822b-22f1cc632535",
+                "reason": "NATURAL",
+                "xyz": [
+                  314.8532956723825,
+                  64,
+                  232.80164144273814
+                ]
+              },
+              {
+                "type": "b173_plasticcraft:cow",
+                "uuid": "962a033d-4031-4f1b-b841-f3a88f5191b8",
+                "reason": "NATURAL",
+                "xyz": [
+                  328.1252508728746,
+                  64,
+                  250.12524501618105
+                ]
+              },
+              {
+                "type": "b173_plasticcraft:cow",
+                "uuid": "535973b2-03b3-4935-bf45-d64218c308ee",
+                "reason": "NATURAL",
+                "xyz": [
+                  286.5,
+                  64,
+                  231.5
+                ]
+              },
+              {
+                "type": "b173_plasticcraft:cow",
+                "uuid": "c9aec204-fadf-47a5-aa12-f94ac7d9fff3",
+                "reason": "NATURAL",
+                "xyz": [
+                  273.82660174790294,
+                  64,
+                  235.2312081185642
+                ]
+              },
+              {
+                "type": "b173_plasticcraft:cow",
+                "uuid": "05b5a7ed-6285-48a9-bc76-61abb481b9ed",
+                "reason": "NATURAL",
+                "xyz": [
+                  282.5,
+                  64,
+                  239.5
+                ]
+              },
+              {
+                "type": "minecraft:bat",
+                "uuid": "34d5a659-9d31-4d72-b9fa-7618b8e3f7a4",
+                "reason": "NATURAL",
+                "xyz": [
+                  352.2739144447409,
+                  -58.954126762527466,
+                  330.70629541924114
+                ]
+              },
+              {
+                "type": "minecraft:bat",
+                "uuid": "18434500-74ac-4659-be97-10a8b76e964f",
+                "reason": "NATURAL",
+                "xyz": [
+                  334.20858886290785,
+                  -57.53666994206566,
+                  308.1369661482916
+                ]
+              },
+              {
+                "type": "minecraft:bat",
+                "uuid": "8273403d-8c39-4aa2-8abd-4ce80a067002",
+                "reason": "NATURAL",
+                "xyz": [
+                  317.08860190603934,
+                  -53.9388634633325,
+                  292.4696660486831
+                ]
+              },
+              {
+                "type": "minecraft:bat",
+                "uuid": "43499126-4259-412c-b69b-1ef155bf95ab",
+                "reason": "NATURAL",
+                "xyz": [
+                  318.56121968540305,
+                  -58.38343114445247,
+                  321.0114351452227
+                ]
+              },
+              {
+                "type": "minecraft:bat",
+                "uuid": "9ddd3114-82ef-4a03-9e83-56a295ec9e9f",
+                "reason": "NATURAL",
+                "xyz": [
+                  314.8229075193556,
+                  -59.62680908743888,
+                  337.8745359733162
+                ]
+              },
+              {
+                "type": "minecraft:bat",
+                "uuid": "e64f5fab-bc89-4446-9ea2-91e8ad14d31d",
+                "reason": "NATURAL",
+                "xyz": [
+                  324.2127700692706,
+                  -54.31028626859606,
+                  326.1802260420243
+                ]
+              },
+              {
+                "type": "minecraft:bat",
+                "uuid": "72e19697-9e7e-4341-90ca-6bf2ded12035",
+                "reason": "NATURAL",
+                "xyz": [
+                  294.19183669924615,
+                  -50.00873045654862,
+                  337.63151074031475
+                ]
+              },
+              {
+                "type": "minecraft:bat",
+                "uuid": "3f1f602f-c11f-4678-9403-28ecb4d3bda7",
+                "reason": "NATURAL",
+                "xyz": [
+                  336.7059063466748,
+                  -54.6417952587351,
+                  319.63858833480174
+                ]
+              },
+              {
+                "type": "minecraft:bat",
+                "uuid": "bb37d94d-62a7-4476-9c25-31880b1940e6",
+                "reason": "NATURAL",
+                "xyz": [
+                  333.5046272186917,
+                  -55.88722090030988,
+                  347.0371282096032
+                ]
+              },
+              {
+                "type": "minecraft:bat",
+                "uuid": "d2c66634-04ea-4415-90fd-fbd082776546",
+                "reason": "NATURAL",
+                "xyz": [
+                  330.2222806898663,
+                  -54.97725929510739,
+                  319.74411805205506
+                ]
+              },
+              {
+                "type": "minecraft:bat",
+                "uuid": "1e5a576d-ea5b-4982-8644-93a47eeda94c",
+                "reason": "NATURAL",
+                "xyz": [
+                  324.4439709519236,
+                  -59.79451448832099,
+                  349.60421448666835
+                ]
+              },
+              {
+                "type": "minecraft:bat",
+                "uuid": "b8c2bf97-0b05-41b8-b6bc-e45f55a6358e",
+                "reason": "NATURAL",
+                "xyz": [
+                  301.37949895342456,
+                  -55.72140945587873,
+                  331.5608713720863
+                ]
+              },
+              {
+                "type": "minecraft:bat",
+                "uuid": "5f4bf895-9e02-4ca7-a508-ac30772e64f4",
+                "reason": "NATURAL",
+                "xyz": [
+                  321.41071543759637,
+                  -59.92800763531948,
+                  324.88279966299433
+                ]
+              },
+              {
+                "type": "minecraft:bat",
+                "uuid": "1c0b313e-e96e-4fda-bc9a-93879936a4b3",
+                "reason": "NATURAL",
+                "xyz": [
+                  320.92245869741953,
+                  -56.86995671343953,
+                  327.612701901805
+                ]
+              },
+              {
+                "type": "minecraft:bat",
+                "uuid": "877a1587-baa7-48f3-9ee7-14e07b3ce791",
+                "reason": "NATURAL",
+                "xyz": [
+                  331.7430590320774,
+                  -57.437983728779095,
+                  344.0621123651305
+                ]
+              },
+              {
+                "type": "minecraft:bat",
+                "uuid": "cf055363-418e-427a-91cf-365760acc6c6",
+                "reason": "NATURAL",
+                "xyz": [
+                  343.50656819321034,
+                  -56.98937912614249,
+                  343.8038089272232
+                ]
+              },
+              {
+                "type": "minecraft:bat",
+                "uuid": "ead58405-7a00-42a9-b567-aab7a15b39f8",
+                "reason": "NATURAL",
+                "xyz": [
+                  341.9357636425697,
+                  -59.125892922694064,
+                  333.11709669755925
+                ]
+              },
+              {
+                "type": "b173_plasticcraft:cow",
+                "uuid": "fb67e221-6dbf-4dba-8137-51a79feb5f7c",
+                "reason": "NATURAL",
+                "xyz": [
+                  217.7448475416822,
+                  64,
+                  266.815722041257
+                ]
+              },
+              {
+                "type": "b173_plasticcraft:cow",
+                "uuid": "f2c34dd8-9c59-48e5-9295-e7ed94f71b5c",
+                "reason": "NATURAL",
+                "xyz": [
+                  220.5,
+                  64,
+                  276.5
+                ]
+              },
+              {
+                "type": "b173_plasticcraft:cow",
+                "uuid": "e6e9b95c-9ce3-4cfb-8c79-d6588aac0ad1",
+                "reason": "NATURAL",
+                "xyz": [
+                  224.5,
+                  64,
+                  274.5
+                ]
+              },
+              {
+                "type": "b173_plasticcraft:cow",
+                "uuid": "b0f4b070-f950-46fa-a52c-fc5888e8c9b8",
+                "reason": "NATURAL",
+                "xyz": [
+                  418.5,
+                  64,
+                  254.5
+                ]
+              },
+              {
+                "type": "b173_plasticcraft:cow",
+                "uuid": "53f6f250-33e3-4068-859b-7bd587f2b141",
+                "reason": "NATURAL",
+                "xyz": [
+                  417.2260535124324,
+                  64,
+                  259.14886536249907
+                ]
+              },
+              {
+                "type": "b173_plasticcraft:cow",
+                "uuid": "b0c9e4bf-234c-4a76-a9d3-e54258abfd53",
+                "reason": "NATURAL",
+                "xyz": [
+                  410.84328157548623,
+                  64,
+                  257.1567301327559
+                ]
+              },
+              {
+                "type": "b173_plasticcraft:cow",
+                "uuid": "c5d1a790-3dce-4e06-8fe0-ae138bfc29c3",
+                "reason": "NATURAL",
+                "xyz": [
+                  425.1491255441674,
+                  64,
+                  251.23562346476777
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "scope": "release-native-colors",
+      "evidence": {
+        "path": "run-b173-single\\plasticcraft-complete-client-20261109-856c59\\complete-proof\\release-native-colors.json",
+        "sha256": "7df62e3bbc50dd549fedadf4d0ed42cf9500b828cf5438e02b2eb82371a1077f"
+      },
+      "results": {
+        "rows": [
+          {
+            "x": 20,
+            "meta": 0,
+            "state": "Block{b173_plasticcraft:p_plastic_block}[meta=0]",
+            "originalClass": "legacyconnector_b173.plasticcraft.BlockPlastic",
+            "expectedWorld": -1,
+            "expectedItem": -1,
+            "worldColor": -1,
+            "itemColor": -1,
+            "worldQuads": [
+              {
+                "side": "down",
+                "tint": 0
+              },
+              {
+                "side": "up",
+                "tint": 0
+              },
+              {
+                "side": "north",
+                "tint": 0
+              },
+              {
+                "side": "south",
+                "tint": 0
+              },
+              {
+                "side": "west",
+                "tint": 0
+              },
+              {
+                "side": "east",
+                "tint": 0
+              }
+            ],
+            "itemQuads": [
+              {
+                "side": "down",
+                "tint": 0
+              },
+              {
+                "side": "up",
+                "tint": 0
+              },
+              {
+                "side": "north",
+                "tint": 0
+              },
+              {
+                "side": "south",
+                "tint": 0
+              },
+              {
+                "side": "west",
+                "tint": 0
+              },
+              {
+                "side": "east",
+                "tint": 0
+              }
+            ],
+            "passed": true
+          },
+          {
+            "x": 21,
+            "meta": 1,
+            "state": "Block{b173_plasticcraft:p_plastic_block}[meta=1]",
+            "originalClass": "legacyconnector_b173.plasticcraft.BlockPlastic",
+            "expectedWorld": -39424,
+            "expectedItem": -39424,
+            "worldColor": -39424,
+            "itemColor": -39424,
+            "worldQuads": [
+              {
+                "side": "down",
+                "tint": 0
+              },
+              {
+                "side": "up",
+                "tint": 0
+              },
+              {
+                "side": "north",
+                "tint": 0
+              },
+              {
+                "side": "south",
+                "tint": 0
+              },
+              {
+                "side": "west",
+                "tint": 0
+              },
+              {
+                "side": "east",
+                "tint": 0
+              }
+            ],
+            "itemQuads": [
+              {
+                "side": "down",
+                "tint": 0
+              },
+              {
+                "side": "up",
+                "tint": 0
+              },
+              {
+                "side": "north",
+                "tint": 0
+              },
+              {
+                "side": "south",
+                "tint": 0
+              },
+              {
+                "side": "west",
+                "tint": 0
+              },
+              {
+                "side": "east",
+                "tint": 0
+              }
+            ],
+            "passed": true
+          },
+          {
+            "x": 22,
+            "meta": 5,
+            "state": "Block{b173_plasticcraft:p_plastic_block}[meta=5]",
+            "originalClass": "legacyconnector_b173.plasticcraft.BlockPlastic",
+            "expectedWorld": -4980922,
+            "expectedItem": -4980922,
+            "worldColor": -4980922,
+            "itemColor": -4980922,
+            "worldQuads": [
+              {
+                "side": "down",
+                "tint": 0
+              },
+              {
+                "side": "up",
+                "tint": 0
+              },
+              {
+                "side": "north",
+                "tint": 0
+              },
+              {
+                "side": "south",
+                "tint": 0
+              },
+              {
+                "side": "west",
+                "tint": 0
+              },
+              {
+                "side": "east",
+                "tint": 0
+              }
+            ],
+            "itemQuads": [
+              {
+                "side": "down",
+                "tint": 0
+              },
+              {
+                "side": "up",
+                "tint": 0
+              },
+              {
+                "side": "north",
+                "tint": 0
+              },
+              {
+                "side": "south",
+                "tint": 0
+              },
+              {
+                "side": "west",
+                "tint": 0
+              },
+              {
+                "side": "east",
+                "tint": 0
+              }
+            ],
+            "passed": true
+          },
+          {
+            "x": 23,
+            "meta": 11,
+            "state": "Block{b173_plasticcraft:p_plastic_block}[meta=11]",
+            "originalClass": "legacyconnector_b173.plasticcraft.BlockPlastic",
+            "expectedWorld": -16776961,
+            "expectedItem": -16776961,
+            "worldColor": -16776961,
+            "itemColor": -16776961,
+            "worldQuads": [
+              {
+                "side": "down",
+                "tint": 0
+              },
+              {
+                "side": "up",
+                "tint": 0
+              },
+              {
+                "side": "north",
+                "tint": 0
+              },
+              {
+                "side": "south",
+                "tint": 0
+              },
+              {
+                "side": "west",
+                "tint": 0
+              },
+              {
+                "side": "east",
+                "tint": 0
+              }
+            ],
+            "itemQuads": [
+              {
+                "side": "down",
+                "tint": 0
+              },
+              {
+                "side": "up",
+                "tint": 0
+              },
+              {
+                "side": "north",
+                "tint": 0
+              },
+              {
+                "side": "south",
+                "tint": 0
+              },
+              {
+                "side": "west",
+                "tint": 0
+              },
+              {
+                "side": "east",
+                "tint": 0
+              }
+            ],
+            "passed": true
+          },
+          {
+            "x": 24,
+            "meta": 14,
+            "state": "Block{b173_plasticcraft:p_plastic_block}[meta=14]",
+            "originalClass": "legacyconnector_b173.plasticcraft.BlockPlastic",
+            "expectedWorld": -65536,
+            "expectedItem": -65536,
+            "worldColor": -65536,
+            "itemColor": -65536,
+            "worldQuads": [
+              {
+                "side": "down",
+                "tint": 0
+              },
+              {
+                "side": "up",
+                "tint": 0
+              },
+              {
+                "side": "north",
+                "tint": 0
+              },
+              {
+                "side": "south",
+                "tint": 0
+              },
+              {
+                "side": "west",
+                "tint": 0
+              },
+              {
+                "side": "east",
+                "tint": 0
+              }
+            ],
+            "itemQuads": [
+              {
+                "side": "down",
+                "tint": 0
+              },
+              {
+                "side": "up",
+                "tint": 0
+              },
+              {
+                "side": "north",
+                "tint": 0
+              },
+              {
+                "side": "south",
+                "tint": 0
+              },
+              {
+                "side": "west",
+                "tint": 0
+              },
+              {
+                "side": "east",
+                "tint": 0
+              }
+            ],
+            "passed": true
+          }
+        ],
+        "passed": true
+      }
+    },
+    {
+      "scope": "release-remote-machines-summary",
+      "evidence": {
+        "path": "run-b173-single\\plasticcraft-complete-client-20261109-856c59\\complete-proof\\release-remote-machines-summary.json",
+        "sha256": "6b6660f54f48931025cb51de0a84436350a33e045abbc6fd43b95158b06fd599"
+      },
+      "results": {
+        "label": "release",
+        "checks": [
+          {
+            "name": "microwave remote connection",
+            "actual": false,
+            "expected": false,
+            "passed": true
+          },
+          {
+            "name": "microwave original GUI present",
+            "actual": true,
+            "expected": true,
+            "passed": true
+          },
+          {
+            "name": "microwave progress forwarding",
+            "actual": true,
+            "expected": true,
+            "passed": true
+          },
+          {
+            "name": "microwave remote handoff",
+            "actual": 0,
+            "expected": 0,
+            "passed": true
+          },
+          {
+            "name": "microwave output insertion rejected",
+            "actual": null,
+            "expected": null,
+            "passed": true
+          },
+          {
+            "name": "rejected insertion retained cursor",
+            "actual": {
+              "id": "minecraft:stone",
+              "count": 3
+            },
+            "expected": {
+              "id": "minecraft:stone",
+              "count": 3
+            },
+            "passed": true
+          },
+          {
+            "name": "microwave synchronized progress changes",
+            "actual": true,
+            "expected": true,
+            "passed": true
+          },
+          {
+            "name": "microwave original iron output",
+            "actual": {
+              "id": "minecraft:iron_ingot",
+              "count": 2
+            },
+            "expected": {
+              "id": "minecraft:iron_ingot",
+              "count": 2
+            },
+            "passed": true
+          },
+          {
+            "name": "microwave actual output pickup",
+            "actual": {
+              "id": "minecraft:iron_ingot",
+              "count": 2
+            },
+            "expected": {
+              "id": "minecraft:iron_ingot",
+              "count": 2
+            },
+            "passed": true
+          },
+          {
+            "name": "microwave reopen remote connection",
+            "actual": false,
+            "expected": false,
+            "passed": true
+          },
+          {
+            "name": "microwave reopen original GUI present",
+            "actual": true,
+            "expected": true,
+            "passed": true
+          },
+          {
+            "name": "microwave reopen progress forwarding",
+            "actual": true,
+            "expected": true,
+            "passed": true
+          },
+          {
+            "name": "microwave reopen remote handoff",
+            "actual": 0,
+            "expected": 0,
+            "passed": true
+          },
+          {
+            "name": "extractor remote connection",
+            "actual": false,
+            "expected": false,
+            "passed": true
+          },
+          {
+            "name": "extractor original GUI present",
+            "actual": true,
+            "expected": true,
+            "passed": true
+          },
+          {
+            "name": "extractor progress forwarding",
+            "actual": true,
+            "expected": true,
+            "passed": true
+          },
+          {
+            "name": "extractor remote handoff",
+            "actual": 0,
+            "expected": 0,
+            "passed": true
+          },
+          {
+            "name": "extractor output 2 rejects insertion",
+            "actual": null,
+            "expected": null,
+            "passed": true
+          },
+          {
+            "name": "extractor rejected cursor 2",
+            "actual": {
+              "id": "minecraft:stone",
+              "count": 3
+            },
+            "expected": {
+              "id": "minecraft:stone",
+              "count": 3
+            },
+            "passed": true
+          },
+          {
+            "name": "extractor output 3 rejects insertion",
+            "actual": null,
+            "expected": null,
+            "passed": true
+          },
+          {
+            "name": "extractor rejected cursor 3",
+            "actual": {
+              "id": "minecraft:stone",
+              "count": 3
+            },
+            "expected": {
+              "id": "minecraft:stone",
+              "count": 3
+            },
+            "passed": true
+          },
+          {
+            "name": "extractor synchronized progress changes",
+            "actual": true,
+            "expected": true,
+            "passed": true
+          },
+          {
+            "name": "extractor rubber output",
+            "actual": {
+              "id": "b173_plasticcraft:p_rubber_ball",
+              "count": 2
+            },
+            "expected": {
+              "id": "b173_plasticcraft:p_rubber_ball",
+              "count": 2
+            },
+            "passed": true
+          },
+          {
+            "name": "extractor bucket returned",
+            "actual": {
+              "id": "b173_plasticcraft:p_plastic_bucket",
+              "count": 1
+            },
+            "expected": {
+              "id": "b173_plasticcraft:p_plastic_bucket",
+              "count": 1
+            },
+            "passed": true
+          },
+          {
+            "name": "extractor reopen remote connection",
+            "actual": false,
+            "expected": false,
+            "passed": true
+          },
+          {
+            "name": "extractor reopen original GUI present",
+            "actual": true,
+            "expected": true,
+            "passed": true
+          },
+          {
+            "name": "extractor reopen progress forwarding",
+            "actual": true,
+            "expected": true,
+            "passed": true
+          },
+          {
+            "name": "extractor reopen remote handoff",
+            "actual": 0,
+            "expected": 0,
+            "passed": true
+          }
+        ],
+        "microwaveProgressServerNbt": "0, 69, 0 has the following block data: {legacy: {CookTime: 12s, x: 0, BurnTime: 1989s, y: 69, z: 0, Items: [{Slot: 0b, id: 15s, Count: 2b, Damage: 0s}, {Slot: 1b, id: 331s, Count: 2b, Damage: 0s}], id: \"Microwave\"}, x: 0, y: 69, z: 0, id: \"legacyconnector:legacy_tile_b1_7_3\"}\n",
+        "extractorProgressServerNbt": "3, 69, 0 has the following block data: {legacy: {CookTime: 43s, x: 3, BurnTime: 1558s, y: 69, z: 0, Items: [{Slot: 0b, id: 1058s, Count: 1b, Damage: 0s}, {Slot: 1b, id: 263s, Count: 1b, Damage: 0s}], id: \"Extracting Furnace\"}, x: 3, y: 69, z: 0, id: \"legacyconnector:legacy_tile_b1_7_3\"}\n",
+        "savedMachines": [
+          "0, 69, 0 has the following block data: {legacy: {CookTime: 0s, x: 0, BurnTime: 1761s, y: 69, z: 0, Items: [{Slot: 1b, id: 331s, Count: 2b, Damage: 0s}], id: \"Microwave\"}, x: 0, y: 69, z: 0, id: \"legacyconnector:legacy_tile_b1_7_3\"}\n",
+          "3, 69, 0 has the following block data: {legacy: {CookTime: 0s, x: 3, BurnTime: 1342s, y: 69, z: 0, Items: [{Slot: 1b, id: 263s, Count: 1b, Damage: 0s}, {Slot: 2b, id: 1014s, Count: 2b, Damage: 0s}, {Slot: 3b, id: 1050s, Count: 1b, Damage: 0s}], id: \"Extracting Furnace\"}, x: 3, y: 69, z: 0, id: \"legacyconnector:legacy_tile_b1_7_3\"}\n"
+        ],
+        "passed": true,
+        "checkCount": 28,
+        "passedCount": 28,
+        "original_gui_progress": {
+          "microwave-progress": {
+            "forwardData": true,
+            "handoff": 0,
+            "originalGui": "legacyconnector_b173.plasticcraft.GuiMicrowave",
+            "data": [
+              8,
+              1993,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "originalScalars": {
+              "microwaveInventory.microwaveBurnTime": 1993,
+              "microwaveInventory.currentItemBurnTime": 120,
+              "microwaveInventory.microwaveCookTime": 8,
+              "microwaveInventory.cookTime": 120
+            }
+          },
+          "microwave-progress-later": {
+            "forwardData": true,
+            "handoff": 0,
+            "originalGui": "legacyconnector_b173.plasticcraft.GuiMicrowave",
+            "data": [
+              45,
+              1956,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "originalScalars": {
+              "microwaveInventory.microwaveBurnTime": 1956,
+              "microwaveInventory.currentItemBurnTime": 120,
+              "microwaveInventory.microwaveCookTime": 45,
+              "microwaveInventory.cookTime": 120
+            }
+          },
+          "extractor-progress": {
+            "forwardData": true,
+            "handoff": 0,
+            "originalGui": "legacyconnector_b173.plasticcraft.GuiExtract",
+            "data": [
+              9,
+              1592,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "originalScalars": {
+              "extractorInventory.extractorBurnTime": 1592,
+              "extractorInventory.currentItemBurnTime": 180,
+              "extractorInventory.extractorCookTime": 9,
+              "extractorInventory.cookTime": 180
+            }
+          },
+          "extractor-progress-later": {
+            "forwardData": true,
+            "handoff": 0,
+            "originalGui": "legacyconnector_b173.plasticcraft.GuiExtract",
+            "data": [
+              40,
+              1561,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "originalScalars": {
+              "extractorInventory.extractorBurnTime": 1561,
+              "extractorInventory.currentItemBurnTime": 180,
+              "extractorInventory.extractorCookTime": 40,
+              "extractorInventory.cookTime": 180
+            }
+          }
+        }
+      }
+    },
+    {
+      "scope": "native-health-control",
+      "evidence": {
+        "path": "run-b173-single\\plasticcraft-complete-client-20261109-856c59\\complete-proof\\native-health-control.json",
+        "sha256": "4fa5a4c5d8bdd8ed438bec353ced918d494ac0f704aa953e8f5c3c2d6da9dd3d"
+      },
+      "results": {
+        "created": {
+          "uuid": "d280d6f0-62b0-4766-adf7-7b7073681b6d",
+          "health": 100,
+          "max": 100
+        },
+        "after30ticks": {
+          "health": 100,
+          "max": 100,
+          "base": 100,
+          "nativeClass": "net.minecraft.world.entity.animal.Cow",
+          "existing1122": null
+        },
+        "beforeAttack": {
+          "health": 100,
+          "max": 100,
+          "base": 100,
+          "nativeClass": "net.minecraft.world.entity.animal.Cow",
+          "existing1122": null
+        },
+        "afterAttack": {
+          "health": 99,
+          "max": 100,
+          "base": 100,
+          "nativeClass": "net.minecraft.world.entity.animal.Cow",
+          "existing1122": "legacyconnector.v1_12_2.net.minecraft.entity.passive.EntityCow"
+        }
+      }
+    },
+    {
+      "scope": "dedicated-save-restart",
+      "evidence": {
+        "path": "run-b173-single\\plasticcraft-complete-client-20261109-856c59\\complete-proof\\release-remote-persistence-summary.json",
+        "sha256": "699283fc27142c5c85223cf30cda9684d84449425a17775b2cb5ec5754236a07"
+      },
+      "results": {
+        "passed": true,
+        "checks": [
+          {
+            "name": "live original secondary result follows native pickup",
+            "actual": null,
+            "expected": null,
+            "passed": true
+          },
+          {
+            "name": "live native secondary result removed",
+            "actual": null,
+            "expected": null,
+            "passed": true
+          },
+          {
+            "name": "before microwave remote connection",
+            "actual": false,
+            "expected": false,
+            "passed": true
+          },
+          {
+            "name": "before microwave original GUI present",
+            "actual": true,
+            "expected": true,
+            "passed": true
+          },
+          {
+            "name": "before microwave progress forwarding",
+            "actual": true,
+            "expected": true,
+            "passed": true
+          },
+          {
+            "name": "before microwave remote handoff",
+            "actual": 0,
+            "expected": 0,
+            "passed": true
+          },
+          {
+            "name": "before microwave original inventory agrees with native slots",
+            "actual": [
+              null,
+              {
+                "id": "minecraft:redstone",
+                "count": 2
+              },
+              null
+            ],
+            "expected": [
+              null,
+              {
+                "id": "minecraft:redstone",
+                "count": 2
+              },
+              null
+            ],
+            "passed": true
+          },
+          {
+            "name": "before microwave original progress CookTime",
+            "actual": 0,
+            "expected": 0,
+            "passed": true
+          },
+          {
+            "name": "before microwave original progress BurnTime",
+            "actual": 1761,
+            "expected": 1761,
+            "passed": true
+          },
+          {
+            "name": "before extractor remote connection",
+            "actual": false,
+            "expected": false,
+            "passed": true
+          },
+          {
+            "name": "before extractor original GUI present",
+            "actual": true,
+            "expected": true,
+            "passed": true
+          },
+          {
+            "name": "before extractor progress forwarding",
+            "actual": true,
+            "expected": true,
+            "passed": true
+          },
+          {
+            "name": "before extractor remote handoff",
+            "actual": 0,
+            "expected": 0,
+            "passed": true
+          },
+          {
+            "name": "before extractor original inventory agrees with native slots",
+            "actual": [
+              null,
+              {
+                "id": "minecraft:coal",
+                "count": 1
+              },
+              {
+                "id": "b173_plasticcraft:p_rubber_ball",
+                "count": 2
+              },
+              null
+            ],
+            "expected": [
+              null,
+              {
+                "id": "minecraft:coal",
+                "count": 1
+              },
+              {
+                "id": "b173_plasticcraft:p_rubber_ball",
+                "count": 2
+              },
+              null
+            ],
+            "passed": true
+          },
+          {
+            "name": "before extractor original progress CookTime",
+            "actual": 0,
+            "expected": 0,
+            "passed": true
+          },
+          {
+            "name": "before extractor original progress BurnTime",
+            "actual": 0,
+            "expected": 0,
+            "passed": true
+          },
+          {
+            "name": "after microwave remote connection",
+            "actual": false,
+            "expected": false,
+            "passed": true
+          },
+          {
+            "name": "after microwave original GUI present",
+            "actual": true,
+            "expected": true,
+            "passed": true
+          },
+          {
+            "name": "after microwave progress forwarding",
+            "actual": true,
+            "expected": true,
+            "passed": true
+          },
+          {
+            "name": "after microwave remote handoff",
+            "actual": 0,
+            "expected": 0,
+            "passed": true
+          },
+          {
+            "name": "after microwave original inventory agrees with native slots",
+            "actual": [
+              null,
+              {
+                "id": "minecraft:redstone",
+                "count": 2
+              },
+              null
+            ],
+            "expected": [
+              null,
+              {
+                "id": "minecraft:redstone",
+                "count": 2
+              },
+              null
+            ],
+            "passed": true
+          },
+          {
+            "name": "after microwave original progress CookTime",
+            "actual": 0,
+            "expected": 0,
+            "passed": true
+          },
+          {
+            "name": "after microwave original progress BurnTime",
+            "actual": 1761,
+            "expected": 1761,
+            "passed": true
+          },
+          {
+            "name": "after extractor remote connection",
+            "actual": false,
+            "expected": false,
+            "passed": true
+          },
+          {
+            "name": "after extractor original GUI present",
+            "actual": true,
+            "expected": true,
+            "passed": true
+          },
+          {
+            "name": "after extractor progress forwarding",
+            "actual": true,
+            "expected": true,
+            "passed": true
+          },
+          {
+            "name": "after extractor remote handoff",
+            "actual": 0,
+            "expected": 0,
+            "passed": true
+          },
+          {
+            "name": "after extractor original inventory agrees with native slots",
+            "actual": [
+              null,
+              {
+                "id": "minecraft:coal",
+                "count": 1
+              },
+              {
+                "id": "b173_plasticcraft:p_rubber_ball",
+                "count": 2
+              },
+              null
+            ],
+            "expected": [
+              null,
+              {
+                "id": "minecraft:coal",
+                "count": 1
+              },
+              {
+                "id": "b173_plasticcraft:p_rubber_ball",
+                "count": 2
+              },
+              null
+            ],
+            "passed": true
+          },
+          {
+            "name": "after extractor original progress CookTime",
+            "actual": 0,
+            "expected": 0,
+            "passed": true
+          },
+          {
+            "name": "after extractor original progress BurnTime",
+            "actual": 0,
+            "expected": 0,
+            "passed": true
+          },
+          {
+            "name": "microwave native inventory survives actual dedicated restart",
+            "actual": [
+              null,
+              {
+                "id": "minecraft:redstone",
+                "count": 2
+              },
+              null
+            ],
+            "expected": [
+              null,
+              {
+                "id": "minecraft:redstone",
+                "count": 2
+              },
+              null
+            ],
+            "passed": true
+          },
+          {
+            "name": "extractor native inventory survives actual dedicated restart",
+            "actual": [
+              null,
+              {
+                "id": "minecraft:coal",
+                "count": 1
+              },
+              {
+                "id": "b173_plasticcraft:p_rubber_ball",
+                "count": 2
+              },
+              null
+            ],
+            "expected": [
+              null,
+              {
+                "id": "minecraft:coal",
+                "count": 1
+              },
+              {
+                "id": "b173_plasticcraft:p_rubber_ball",
+                "count": 2
+              },
+              null
+            ],
+            "passed": true
+          },
+          {
+            "name": "saved extractor rubber quantity",
+            "actual": {
+              "id": "b173_plasticcraft:p_rubber_ball",
+              "count": 2
+            },
+            "expected": {
+              "id": "b173_plasticcraft:p_rubber_ball",
+              "count": 2
+            },
+            "passed": true
+          },
+          {
+            "name": "taken secondary bucket stays taken after restart",
+            "actual": null,
+            "expected": null,
+            "passed": true
+          }
+        ],
+        "checkCount": 34,
+        "before": {
+          "machines": {
+            "microwave": {
+              "slots": [
+                null,
+                {
+                  "id": "minecraft:redstone",
+                  "count": 2
+                },
+                null
+              ],
+              "originalSlots": [
+                null,
+                {
+                  "id": "minecraft:redstone",
+                  "count": 2
+                },
+                null
+              ],
+              "scalars": {
+                "microwaveInventory.microwaveBurnTime": 1761,
+                "microwaveInventory.currentItemBurnTime": 120,
+                "microwaveInventory.microwaveCookTime": 0,
+                "microwaveInventory.cookTime": 120
+              },
+              "data": [
+                0,
+                1761,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            "extractor": {
+              "slots": [
+                null,
+                {
+                  "id": "minecraft:coal",
+                  "count": 1
+                },
+                {
+                  "id": "b173_plasticcraft:p_rubber_ball",
+                  "count": 2
+                },
+                null
+              ],
+              "originalSlots": [
+                null,
+                {
+                  "id": "minecraft:coal",
+                  "count": 1
+                },
+                {
+                  "id": "b173_plasticcraft:p_rubber_ball",
+                  "count": 2
+                },
+                null
+              ],
+              "scalars": {
+                "extractorInventory.extractorBurnTime": 0,
+                "extractorInventory.currentItemBurnTime": 0,
+                "extractorInventory.extractorCookTime": 0,
+                "extractorInventory.cookTime": 180
+              },
+              "data": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          },
+          "serverNbt": [
+            "0, 69, 0 has the following block data: {legacy: {CookTime: 0s, x: 0, BurnTime: 1761s, y: 69, z: 0, Items: [{Slot: 1b, id: 331s, Count: 2b, Damage: 0s}], id: \"Microwave\"}, x: 0, y: 69, z: 0, id: \"legacyconnector:legacy_tile_b1_7_3\"}\n",
+            "3, 69, 0 has the following block data: {legacy: {CookTime: 0s, x: 3, BurnTime: 0s, y: 69, z: 0, Items: [{Slot: 1b, id: 263s, Count: 1b, Damage: 0s}, {Slot: 2b, id: 1014s, Count: 2b, Damage: 0s}], id: \"Extracting Furnace\"}, x: 3, y: 69, z: 0, id: \"legacyconnector:legacy_tile_b1_7_3\"}\n"
+          ],
+          "livePickupChecks": [
+            {
+              "name": "live original secondary result follows native pickup",
+              "actual": null,
+              "expected": null,
+              "passed": true
+            },
+            {
+              "name": "live native secondary result removed",
+              "actual": null,
+              "expected": null,
+              "passed": true
+            },
+            {
+              "name": "before microwave remote connection",
+              "actual": false,
+              "expected": false,
+              "passed": true
+            },
+            {
+              "name": "before microwave original GUI present",
+              "actual": true,
+              "expected": true,
+              "passed": true
+            },
+            {
+              "name": "before microwave progress forwarding",
+              "actual": true,
+              "expected": true,
+              "passed": true
+            },
+            {
+              "name": "before microwave remote handoff",
+              "actual": 0,
+              "expected": 0,
+              "passed": true
+            },
+            {
+              "name": "before microwave original inventory agrees with native slots",
+              "actual": [
+                null,
+                {
+                  "id": "minecraft:redstone",
+                  "count": 2
+                },
+                null
+              ],
+              "expected": [
+                null,
+                {
+                  "id": "minecraft:redstone",
+                  "count": 2
+                },
+                null
+              ],
+              "passed": true
+            },
+            {
+              "name": "before microwave original progress CookTime",
+              "actual": 0,
+              "expected": 0,
+              "passed": true
+            },
+            {
+              "name": "before microwave original progress BurnTime",
+              "actual": 1761,
+              "expected": 1761,
+              "passed": true
+            },
+            {
+              "name": "before extractor remote connection",
+              "actual": false,
+              "expected": false,
+              "passed": true
+            },
+            {
+              "name": "before extractor original GUI present",
+              "actual": true,
+              "expected": true,
+              "passed": true
+            },
+            {
+              "name": "before extractor progress forwarding",
+              "actual": true,
+              "expected": true,
+              "passed": true
+            },
+            {
+              "name": "before extractor remote handoff",
+              "actual": 0,
+              "expected": 0,
+              "passed": true
+            },
+            {
+              "name": "before extractor original inventory agrees with native slots",
+              "actual": [
+                null,
+                {
+                  "id": "minecraft:coal",
+                  "count": 1
+                },
+                {
+                  "id": "b173_plasticcraft:p_rubber_ball",
+                  "count": 2
+                },
+                null
+              ],
+              "expected": [
+                null,
+                {
+                  "id": "minecraft:coal",
+                  "count": 1
+                },
+                {
+                  "id": "b173_plasticcraft:p_rubber_ball",
+                  "count": 2
+                },
+                null
+              ],
+              "passed": true
+            },
+            {
+              "name": "before extractor original progress CookTime",
+              "actual": 0,
+              "expected": 0,
+              "passed": true
+            },
+            {
+              "name": "before extractor original progress BurnTime",
+              "actual": 0,
+              "expected": 0,
+              "passed": true
+            }
+          ]
+        },
+        "after": {
+          "machines": {
+            "microwave": {
+              "slots": [
+                null,
+                {
+                  "id": "minecraft:redstone",
+                  "count": 2
+                },
+                null
+              ],
+              "originalSlots": [
+                null,
+                {
+                  "id": "minecraft:redstone",
+                  "count": 2
+                },
+                null
+              ],
+              "scalars": {
+                "microwaveInventory.microwaveBurnTime": 1761,
+                "microwaveInventory.currentItemBurnTime": 120,
+                "microwaveInventory.microwaveCookTime": 0,
+                "microwaveInventory.cookTime": 120
+              },
+              "data": [
+                0,
+                1761,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            "extractor": {
+              "slots": [
+                null,
+                {
+                  "id": "minecraft:coal",
+                  "count": 1
+                },
+                {
+                  "id": "b173_plasticcraft:p_rubber_ball",
+                  "count": 2
+                },
+                null
+              ],
+              "originalSlots": [
+                null,
+                {
+                  "id": "minecraft:coal",
+                  "count": 1
+                },
+                {
+                  "id": "b173_plasticcraft:p_rubber_ball",
+                  "count": 2
+                },
+                null
+              ],
+              "scalars": {
+                "extractorInventory.extractorBurnTime": 0,
+                "extractorInventory.currentItemBurnTime": 0,
+                "extractorInventory.extractorCookTime": 0,
+                "extractorInventory.cookTime": 180
+              },
+              "data": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          },
+          "serverNbt": [
+            "0, 69, 0 has the following block data: {legacy: {CookTime: 0s, x: 0, BurnTime: 1761s, y: 69, z: 0, Items: [{Slot: 1b, id: 331s, Count: 2b, Damage: 0s}], id: \"Microwave\"}, x: 0, y: 69, z: 0, id: \"legacyconnector:legacy_tile_b1_7_3\"}\n",
+            "3, 69, 0 has the following block data: {legacy: {CookTime: 0s, x: 3, BurnTime: 0s, y: 69, z: 0, Items: [{Slot: 1b, id: 263s, Count: 1b, Damage: 0s}, {Slot: 2b, id: 1014s, Count: 2b, Damage: 0s}], id: \"Extracting Furnace\"}, x: 3, y: 69, z: 0, id: \"legacyconnector:legacy_tile_b1_7_3\"}\n"
+          ]
+        },
+        "actualDedicatedServerRestart": true,
+        "integratedServerUsed": false
+      }
+    }
+  ],
+  "visual_inspection": {
+    "passed": true,
+    "scope": "Root inspected boat riding, worn armor, translucent goggles, colored world blocks, plexiglass/door/glow/Jello/Goo/trampoline, and remote machine GUI screenshots",
+    "images": [
+      {
+        "path": "run-b173-single\\plasticcraft-complete-client-20261109-856c59\\control\\out\\release-blocks-overview.png",
+        "sha256": "0928eaaf4e0cda27ecaa57f52354c1f3545ea1b59dea3f856f0f1e0d4832eb6b"
+      },
+      {
+        "path": "run-b173-single\\plasticcraft-complete-client-20261109-856c59\\control\\out\\goggles-alpha-control.png",
+        "sha256": "e699f2eff3eb8de497367dac74f1c931fffa12be5ae10d780a1351a3f02fb1ab"
+      },
+      {
+        "path": "run-b173-single\\plasticcraft-complete-client-20261109-856c59\\control\\out\\goggles-alpha-overlay.png",
+        "sha256": "062514d2174c4440bb7b53d8e2d7ccf6045f404687bace1a7d8862de4509cdfd"
+      },
+      {
+        "path": "run-b173-single\\plasticcraft-complete-client-20261109-856c59\\control\\out\\remote-microwave-progress.png",
+        "sha256": "fcd0694d191ed6ec8205303206812e0a7c6877151763cd7e76d3bb5009d0a324"
+      },
+      {
+        "path": "run-b173-single\\plasticcraft-complete-client-20261109-856c59\\control\\out\\remote-extractor-progress.png",
+        "sha256": "4425e4ef41f2777a1a83c80708ba9cb031d38a0f4ad953696f7ea6869e6a2a33"
+      }
+    ]
+  },
+  "preserved_original_behaviors": [
+    "Utility boots/goggles explicitly set maximum damage and protection to zero; goggles supply only the original visual overlay, with no added lighting/potion effect",
+    "Original accelerator multiplies motion, Jello heals six times, and original Goo/trampoline thresholds and timers are retained",
+    "Original C4 stores signed-byte Fuse only; enhanced power/count/scale omission is not changed",
+    "Original machine containers omit property 2 and custom shift-click; recipe capacity/fuel-denominator quirks are retained",
+    "Beta natural spawn candidate Y remains 0..127; the invalid negative-Y superflat fixture was replaced by an above-zero test habitat",
+    "Vanilla/native behavior is altered only by an explicit original mod callback or spawn removal; no global Beta spawn or attribute defaults are imposed"
+  ],
+  "boundaries": [
+    "Actual tests use disposable isolated worlds and the unchanged original mod, not every mod/version combination",
+    "Native single-player utility/effect hooks are established; dedicated OnTickInGame ownership, cross-player global state and full multiplayer gameplay remain unimplemented and are not claimed by machine synchronization checks",
+    "Dedicated original Goo can apply a stun without an authoritative client hook to restore it, and remote fall boots do not establish authoritative fall protection; these require a separate generic multiplayer hook contract",
+    "Optional mod fixtures are not part of the portable/default build; no private archives, generated local classes, credentials or test-world files are committed"
+  ]
+}

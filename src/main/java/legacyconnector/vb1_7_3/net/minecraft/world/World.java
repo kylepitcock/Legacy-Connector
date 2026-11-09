@@ -360,6 +360,11 @@ public class World implements BlockView {
         mcc$level.sendBlockUpdated(pos(x, y, z), s, s, 3);
     }
 
+    /** Beta's dirty-region listener redraws the block without notifying its neighbours. */
+    public void setBlockDirty(int x,int y,int z) {
+        blockUpdateEvent(x,y,z);
+    }
+
     /** MCP {@code notifyBlockChange}. */
     protected void blockUpdate(int x, int y, int z, int id) {
         blockUpdateEvent(x, y, z);
@@ -655,6 +660,19 @@ public class World implements BlockView {
         int maxX=(int)Math.floor(box.maxX+1),maxY=(int)Math.floor(box.maxY+1),maxZ=(int)Math.floor(box.maxZ+1);
         for(int x=minX;x<maxX;x++)for(int y=minY;y<maxY;y++)for(int z=minZ;z<maxZ;z++)
             if(getMaterial(x,y,z).isFluid())return true;
+        return false;
+    }
+
+    /** Beta's material surface query, used independently of fluid-current acceleration. */
+    public boolean isFluidInBox(legacyconnector.vb1_7_3.net.minecraft.util.math.Box box,Material material) {
+        int minX=(int)Math.floor(box.minX),minY=(int)Math.floor(box.minY),minZ=(int)Math.floor(box.minZ);
+        int maxX=(int)Math.floor(box.maxX+1),maxY=(int)Math.floor(box.maxY+1),maxZ=(int)Math.floor(box.maxZ+1);
+        for(int x=minX;x<maxX;x++)for(int y=minY;y<maxY;y++)for(int z=minZ;z<maxZ;z++){
+            if(getBlockId(x,y,z)==0||getMaterial(x,y,z)!=material)continue;
+            int metadata=getBlockMeta(x,y,z);
+            double surface=y+1D-(metadata<8?metadata/8D:0);
+            if(surface>=box.minY)return true;
+        }
         return false;
     }
 

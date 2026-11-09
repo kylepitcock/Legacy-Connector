@@ -88,6 +88,16 @@ public final class WorldScreenshotTest {
         mc.options.tutorialStep = net.minecraft.client.tutorial.TutorialSteps.NONE;
         mc.options.cloudStatus().set(net.minecraft.client.CloudStatus.OFF);
         mc.options.renderDistance().set(intProp("legacyconnector.shotRenderDistance", 16));
+        String remote = System.getProperty("legacyconnector.shotServer", "");
+        if (!remote.isEmpty()) {
+            LOG.info("Connecting the screenshot client to '{}', shots go to {}", remote, dir);
+            var data = new net.minecraft.client.multiplayer.ServerData("Compatibility test", remote,
+                    net.minecraft.client.multiplayer.ServerData.Type.OTHER);
+            net.minecraft.client.gui.screens.ConnectScreen.startConnecting(new TitleScreen(), mc,
+                    net.minecraft.client.multiplayer.resolver.ServerAddress.parseString(remote), data, false, null);
+            queueScript();
+            return;
+        }
         String type = System.getProperty("legacyconnector.shotWorldType", "");
         long seed = Long.parseLong(System.getProperty("legacyconnector.shotSeed", "20241022"));
         String existing = System.getProperty("legacyconnector.shotLoadWorld", "");

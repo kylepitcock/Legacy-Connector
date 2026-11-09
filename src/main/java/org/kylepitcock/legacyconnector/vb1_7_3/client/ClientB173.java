@@ -27,6 +27,8 @@ public final class ClientB173 implements MenusB173.Client {
             return false;
         });
         AnimatedTexturesB173.register(modBus);
+        BlockColorsB173.register(modBus);
+        ModTicksClientB173.install();
         MobClientB173.register(modBus);
         modBus.addListener((net.neoforged.neoforge.client.event.EntityRenderersEvent.RegisterRenderers e) ->
                 e.registerEntityRenderer(org.kylepitcock.legacyconnector.LegacyConnector.BETA_VANILLA_ARROW.get(), context ->
@@ -54,7 +56,7 @@ public final class ClientB173 implements MenusB173.Client {
         // block items with subtypes pick their model per metadata (Minefactory's machines are one block item)
         modBus.addListener((net.neoforged.fml.event.lifecycle.FMLClientSetupEvent e) -> e.enqueueWork(() -> {
             for (var item : net.minecraft.core.registries.BuiltInRegistries.ITEM) {
-                if (item instanceof org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Item) {
+                if (item instanceof org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Item||item instanceof org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173ArmorItem) {
                     net.minecraft.client.renderer.item.ItemProperties.register(item, org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173BlockItem.META,
                             (stack,level,entity,seed) -> {
                                 var legacy=org.kylepitcock.legacyconnector.vb1_7_3.StacksB173.toLegacy(stack);

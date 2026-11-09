@@ -27,6 +27,13 @@ public final class MobsB173 {
         modBus.addListener((net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent e)->{
             for(var info:BY_TYPE.values())e.put(info.type(),net.minecraft.world.entity.animal.Cow.createAttributes().build());
         });
+        modBus.addListener((net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent event)->{
+            // Only registered hosted cows enter the Beta candidate walk; native cows keep their own placement predicate.
+            for(var info:BY_TYPE.values())event.register(info.type(),net.minecraft.world.entity.SpawnPlacementTypes.ON_GROUND,
+                    net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                    (type,level,reason,pos,random)->true,
+                    net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent.Operation.REPLACE);
+        });
         org.kylepitcock.legacyconnector.core.pack.GeneratedPack.addContributor((type,out)->{
             if(type!=net.minecraft.server.packs.PackType.SERVER_DATA)return;
             // Beta Cow.getDroppedItemId is leather; EntityLiving.dropItems chooses random.nextInt(3), with no beef.
@@ -37,6 +44,8 @@ public final class MobsB173 {
             }
         });
         MobSelfTestB173.register(game);
+        if(Boolean.getBoolean("legacyconnector.plasticCraftBlocksSelfTest"))game.addListener(
+                (net.neoforged.neoforge.event.server.ServerStartedEvent event)->PlasticCraftBlocksSelfTestB173.run(event.getServer().overworld()));
     }
     private static boolean api(Class<?> type){String name=type.getName();return name.startsWith("legacyconnector.")||name.startsWith("legacyconnector_synth.");}
     public static boolean cowFamily(Class<?> type){
@@ -100,7 +109,7 @@ public final class MobsB173 {
             LegacyRegistrar.register(BuiltInRegistries.ENTITY_TYPE,id,type);
             Info info=new Info(registration,type,override(legacy,"interact",legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity.class),override(legacy,"getRandomSound"));
             BY_CLASS.put(legacy,info);BY_TYPE.put(type,info);
-            LOG.info("Hosted Beta mob {} as {} (native cow AI/model fallback; original custom models and natural spawns are not bridged)",legacy.getName(),id);
+            LOG.info("Hosted Beta mob {} as {} (native cow AI/model fallback; original interaction/save and legacy spawn callbacks)",legacy.getName(),id);
         }
     }
     private static void reject(Class<?> type,String reason){if(REPORTED.add(type.getName()+":"+reason))LOG.warn("Beta mob {} not hosted: {}",type.getName(),reason);}

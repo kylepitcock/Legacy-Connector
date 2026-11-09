@@ -19,6 +19,14 @@ import org.kylepitcock.legacyconnector.vb1_7_3.RecipesB173;
  * Methods that take client or world types (GUIs, renderers, key bindings) are synthesized for now.
  */
 public final class ModLoader {
+    public static void TakenFromCrafting(legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity player,
+            legacyconnector.vb1_7_3.net.minecraft.item.ItemStack stack){
+        org.kylepitcock.legacyconnector.vb1_7_3.ItemEventsB173.taken(player,stack,false);
+    }
+    public static void TakenFromFurnace(legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity player,
+            legacyconnector.vb1_7_3.net.minecraft.item.ItemStack stack){
+        org.kylepitcock.legacyconnector.vb1_7_3.ItemEventsB173.taken(player,stack,true);
+    }
     public static final String VERSION = "ModLoader Beta 1.7.3";
     private static final Logger LOGGER = Logger.getLogger("ModLoader");
 

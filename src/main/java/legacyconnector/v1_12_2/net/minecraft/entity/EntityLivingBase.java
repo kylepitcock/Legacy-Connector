@@ -128,7 +128,9 @@ public abstract class EntityLivingBase extends Entity {
 
     public EntityLivingBase(World world) {
         super(world);
-        try {
+        // A vanilla view reaches this World constructor through the bridge's existing-entity binding.
+        // Its native attributes may belong to another mod; constructor defaults are only for new entities.
+        if (!mcc$existingNativeView()) try {
             applyEntityAttributes();
         } catch (RuntimeException | LinkageError e) {
             org.slf4j.LoggerFactory.getLogger("LegacyConnector/Entities").warn("applyEntityAttributes of {} failed: {}", getClass().getName(), e.toString());

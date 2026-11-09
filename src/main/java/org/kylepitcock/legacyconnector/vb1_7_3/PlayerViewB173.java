@@ -22,6 +22,7 @@ public final class PlayerViewB173 extends legacyconnector.vb1_7_3.net.minecraft.
 
     private final Player player;
     private final ItemStack[] before = new ItemStack[36];
+    private final ItemStack[] beforeArmor = new ItemStack[4];
     private int beforeHealth,beforeAir,beforeFire;
     private float beforeFallDistance;
     private EntityViewsB173.Placement beforePlacement;
@@ -55,7 +56,7 @@ public final class PlayerViewB173 extends legacyconnector.vb1_7_3.net.minecraft.
         mcc$movementInputs(player.xxa,player.zza,EntityFieldsB173.jumpInput(player));
         // Modern passengers do not integrate walking input into their own motion. Beta mounts read that rider motion.
         // Preserve real motion (knockback, swimming, other integrations); supply only the missing horizontal intent.
-        if(player.getVehicle() instanceof B173LivingHost&&velocityX==0&&velocityZ==0)
+        if(player.getVehicle() instanceof B173EntityHost&&velocityX==0&&velocityZ==0)
             moveNonSolid(player.xxa*.98F,player.zza*.98F,onGround?.1F:.02F);
         health = Math.round(player.getHealth());
         beforeHealth=health;beforeAir=air=player.getAirSupply();beforeFire=fireTicks=player.getRemainingFireTicks();
@@ -67,6 +68,10 @@ public final class PlayerViewB173 extends legacyconnector.vb1_7_3.net.minecraft.
             ItemStack legacy = StacksB173.toLegacy(player.getInventory().items.get(i));
             inventory.main[i] = legacy;
             before[i] = legacy == null ? null : legacy.copy();
+        }
+        for(int i=0;i<4;i++){
+            ItemStack stack=StacksB173.toLegacy(player.getInventory().armor.get(i));
+            inventory.armor[i]=stack;beforeArmor[i]=stack==null?null:stack.copy();
         }
         beforePlacement=EntityViewsB173.Placement.of(this);
     }
@@ -85,6 +90,11 @@ public final class PlayerViewB173 extends legacyconnector.vb1_7_3.net.minecraft.
             if (same(now, was)) continue;
             player.getInventory().items.set(i, now == null || now.count <= 0 ? net.minecraft.world.item.ItemStack.EMPTY : StacksB173.toModern(now));
             before[i] = now == null ? null : now.copy();
+        }
+        for(int i=0;i<4;i++){
+            ItemStack now=inventory.armor[i];if(same(now,beforeArmor[i]))continue;
+            player.getInventory().armor.set(i,now==null||now.count<=0?net.minecraft.world.item.ItemStack.EMPTY:StacksB173.toModern(now));
+            beforeArmor[i]=now==null?null:now.copy();
         }
     }
 

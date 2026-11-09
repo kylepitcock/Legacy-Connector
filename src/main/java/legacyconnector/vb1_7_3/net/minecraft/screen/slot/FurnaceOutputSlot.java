@@ -22,6 +22,7 @@ public class FurnaceOutputSlot extends Slot {
     @Override
     public void onTakeItem(ItemStack stack) {
         stack.onCraft(player.world, player);
+        legacyconnector.vb1_7_3.net.minecraft.src.ModLoader.TakenFromFurnace(player,stack);
         if (stack.itemId == 265) player.increaseStat(Achievements.ACQUIRE_IRON, 1);
         if (stack.itemId == 350) player.increaseStat(Achievements.COOK_FISH, 1);
         super.onTakeItem(stack);

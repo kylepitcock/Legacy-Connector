@@ -6,6 +6,28 @@ import legacyconnector.vb1_7_3.net.minecraft.src.ModLoader;
 import org.junit.jupiter.api.Test;
 
 class ArmorMetadataB173Test {
+    @Test void utilityArmorKeepsZeroProtectionAndDurabilityAfterOriginalReflection()throws Exception{
+        int[] mark=ContentB173.mark();
+        try{
+            for(int slot:new int[]{0,3}){
+                var armor=new ArmorItem(30070+slot,-1,ModLoader.AddArmor("FixtureUtility"),slot);
+                assertEquals(Integer.MIN_VALUE,armor.getMaxDamage());assertFalse(armor.isDamageable());
+                ModLoader.setPrivateValue(legacyconnector.vb1_7_3.net.minecraft.item.Item.class,armor,"maxDamage",0);
+                ModLoader.setPrivateValue(ArmorItem.class,armor,4,0);
+                assertEquals(0,armor.getMaxDamage());assertEquals(0,armor.maxProtection);assertFalse(armor.isDamageable());
+            }
+        }finally{ContentB173.release(mark);}
+    }
+    @Test void nativeArmorLayerLocationsPreserveCaseSensitiveOriginalPrefixAndSlot(){
+        assertEquals(net.minecraft.world.item.ArmorItem.Type.HELMET,ArmorMaterialsB173.type(0));
+        assertEquals(net.minecraft.world.item.ArmorItem.Type.BOOTS,ArmorMaterialsB173.type(3));
+        var asset=ArmorMaterialsB173.asset("fixture","CaseSensitivePrefix");
+        assertEquals("fixture:textures/models/armor/beta/4361736553656e736974697665507265666978_layer_1.png",ArmorMaterialsB173.texture(asset,1).toString());
+        var layer=new net.minecraft.world.item.ArmorMaterial.Layer(asset);
+        assertEquals(ArmorMaterialsB173.texture(asset,1),layer.texture(false));
+        assertEquals(ArmorMaterialsB173.texture(asset,2),layer.texture(true));
+        assertNotEquals(asset,ArmorMaterialsB173.asset("fixture","casesensitiveprefix"));
+    }
     @Test void everySlotAndTierRetainsBetaConstructorState() {
         int[] mark = ContentB173.mark();
         try {
