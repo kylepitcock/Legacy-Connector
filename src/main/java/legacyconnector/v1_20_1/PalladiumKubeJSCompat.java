@@ -12,13 +12,11 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Stream;
 import net.neoforged.fml.loading.FMLPaths;
 
 /**
@@ -90,13 +88,14 @@ public final class PalladiumKubeJSCompat {
             Object selectedPacks = invoke(repository, new String[] {"getSelectedPacks", "m_10519_"});
 
             Path typeCache = FMLPaths.GAMEDIR.get().resolve(CACHE_ROOT).resolve(scriptTypeName.toLowerCase(Locale.ROOT));
-            recreateDirectory(typeCache);
+            Files.createDirectories(typeCache);
 
             Map<String, ScriptGroup> groups = new LinkedHashMap<>();
             int packIndex = 0;
             for (Object pack : asCollection(selectedPacks)) {
                 String packId = stringResult(invoke(pack, new String[] {"getId"}), "pack-" + packIndex);
-                Path packCache = typeCache.resolve(String.format(Locale.ROOT, "%04d-%s", packIndex, safeSegment(packId)));
+                String stablePackKey = safeSegment(packId) + "-" + Integer.toHexString(packId.hashCode());
+                Path packCache = typeCache.resolve(stablePackKey);
                 try {
                     collectPackScripts(pack, packType, packCache, groups, loader);
                 } catch (Throwable packError) {
@@ -254,8 +253,19 @@ public final class PalladiumKubeJSCompat {
         }
 
         Files.createDirectories(backingFile.getParent());
+        byte[] contents;
         try (InputStream input = openInputStream(ioSupplier, loader)) {
-            Files.copy(input, backingFile, StandardCopyOption.REPLACE_EXISTING);
+            contents = input.readAllBytes();
+        }
+        if (!Files.exists(backingFile) || !java.util.Arrays.equals(contents, Files.readAllBytes(backingFile))) {
+            Path temporary = backingFile.resolveSibling(backingFile.getFileName() + ".tmp");
+            Files.write(temporary, contents);
+            try {
+                Files.move(temporary, backingFile,
+                        StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            } catch (java.nio.file.AtomicMoveNotSupportedException ignored) {
+                Files.move(temporary, backingFile, StandardCopyOption.REPLACE_EXISTING);
+            }
         }
 
         groups.computeIfAbsent(namespace, ScriptGroup::new).scripts.add(new AddonScript(backingFile, resourcePath));
@@ -303,17 +313,6 @@ public final class PalladiumKubeJSCompat {
         String safe = value.replaceAll("[^A-Za-z0-9._-]", "_");
         if (safe.isBlank() || safe.equals(".") || safe.equals("..")) return "unnamed";
         return safe;
-    }
-
-    private static void recreateDirectory(Path directory) throws IOException {
-        if (Files.exists(directory)) {
-            try (Stream<Path> paths = Files.walk(directory)) {
-                for (Path path : paths.sorted(Comparator.reverseOrder()).toList()) {
-                    Files.deleteIfExists(path);
-                }
-            }
-        }
-        Files.createDirectories(directory);
     }
 
     private static Object invokeStatic(Class<?> owner, String[] names, Object... arguments) throws ReflectiveOperationException {
