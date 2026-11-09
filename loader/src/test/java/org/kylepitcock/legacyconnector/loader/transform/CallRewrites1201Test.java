@@ -72,17 +72,22 @@ class CallRewrites1201Test {
         AbstractInsnNode[] instructions = method.instructions.toArray();
         assertEquals(Opcodes.ALOAD, instructions[0].getOpcode());
         assertEquals(Opcodes.ICONST_1, instructions[1].getOpcode());
-        assertEquals(Opcodes.I2F, instructions[2].getOpcode());
-        assertEquals(Opcodes.BIPUSH, instructions[3].getOpcode());
-        assertEquals(Opcodes.I2F, instructions[4].getOpcode());
-        assertEquals(Opcodes.ALOAD, instructions[5].getOpcode());
-        assertTrue(instructions[6] instanceof MethodInsnNode);
-        MethodInsnNode rewritten = (MethodInsnNode) instructions[6];
+        assertEquals(Opcodes.BIPUSH, instructions[2].getOpcode());
+        assertEquals(Opcodes.ALOAD, instructions[3].getOpcode());
+        assertEquals(Opcodes.ASTORE, instructions[4].getOpcode());
+        assertEquals(2, ((VarInsnNode) instructions[4]).var);
+        assertEquals(Opcodes.I2F, instructions[5].getOpcode());
+        assertEquals(Opcodes.I2F, instructions[6].getOpcode());
+        assertEquals(Opcodes.ALOAD, instructions[7].getOpcode());
+        assertEquals(2, ((VarInsnNode) instructions[7]).var);
+        assertTrue(instructions[8] instanceof MethodInsnNode);
+        MethodInsnNode rewritten = (MethodInsnNode) instructions[8];
         assertEquals(Opcodes.INVOKESPECIAL, rewritten.getOpcode());
         assertEquals(AMETHYST_CLUSTER_BLOCK, rewritten.owner);
         assertEquals(AMETHYST_CLUSTER_CONSTRUCTOR_1211, rewritten.desc);
         assertFalse(method.instructions.contains(oldConstructor));
-        assertEquals(Opcodes.RETURN, instructions[7].getOpcode());
+        assertEquals(Opcodes.RETURN, instructions[9].getOpcode());
+        assertEquals(3, method.maxLocals);
     }
 
     @Test
