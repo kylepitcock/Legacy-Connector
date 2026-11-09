@@ -16,7 +16,6 @@ import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TypeInsnNode;
-import org.objectweb.asm.tree.VarInsnNode;
 
 /** Regression tests for Minecraft 1.20.1 -> 1.21.1 call-site and field-shape migrations. */
 class CallRewrites1201Test {
