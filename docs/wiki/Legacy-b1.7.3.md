@@ -876,8 +876,20 @@ accumulated full-chunk dependency radius from 11 to 18 in Beta generation packs;
 
 The previously hanging chunk completes through its original native callback. Original Pyramid/Castle generators succeed
 on explicitly controlled terrain, and 90 recorded native block states, chest Items and spawner SpawnData survive real
-save/reopen. Positive unforced natural structure placement remains unverified. These controlled calls are not presented
-as proof of ordinary random site selection.
+save/reopen. Those controlled calls are distinct from ordinary random site selection.
+
+The subsequent [natural structures and chest validation](../data/b173-natural-structures-chests-validation-2026-11-08.json)
+records positive original More Creeps 2.12 Pyramid and Castle placement through native `FEATURES` in fresh, unedited terrain.
+The original readiness counters, random rolls and generator bodies run unchanged. Read-only debugger observations,
+completed native callbacks and physical native contents independently identify the successful sites. Exact block states,
+chest Items and spawner SpawnData at 88 recorded positions survive a real native save/reopen.
+
+The original Castle fills only one half of its central double chest. Explicit Beta vanilla-chest writes now pair native
+chest states and retain matching facing, preserving each original block entity, inventory and item components. Both
+highest-floor halves open the same six-row native menu with the original loot. Portable tests and an explicit native
+fixture cover both axes, metadata changes, ambiguous triples and deferred cross-chunk inventories. Existing SINGLE chest
+states are not scanned or migrated; pairing applies to subsequent explicit Beta writes. Modern chest placement has no
+global hook. The default build passes 558 portable tests without private mod archives.
 
 The shared Beta painting API retains all 25 original motives, facing and wall checks, then uses native painting tracking,
 rendering and persistence. Double-precision bounds prevent thin boxes collapsing at far modern coordinates. Native-region

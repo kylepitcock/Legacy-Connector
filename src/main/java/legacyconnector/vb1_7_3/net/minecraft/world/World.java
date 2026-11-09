@@ -249,12 +249,26 @@ public class World implements BlockView {
                         net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER);
         }
         if (previous == next) return false;
-        if(org.kylepitcock.legacyconnector.vb1_7_3.WorldGenWritesB173.defer(this,p,next))return true;
+        boolean chestChange=previous.is(net.minecraft.world.level.block.Blocks.CHEST)||next.is(net.minecraft.world.level.block.Blocks.CHEST);
+        if(org.kylepitcock.legacyconnector.vb1_7_3.WorldGenWritesB173.defer(this,p,next)){if(chestChange)chestChanged(p);return true;}
         var access=mcc$access();if(!org.kylepitcock.legacyconnector.core.worldgen.InPlaceStructureGuard.allowWrite(access,p,next))return false;
         boolean changed=access.setBlock(p,next,access instanceof net.minecraft.server.level.WorldGenRegion?2:flags);
+        if(changed&&chestChange)chestChanged(p);
         // Original onBlockAdded drops an unsupported torch. Native destruction owns loot and neighbor updates.
         if(changed&&unsupportedTorch&&state(x,y,z)==next)access.destroyBlock(p,true);
         return changed;
+    }
+
+    private void chestChanged(BlockPos pos){
+        java.util.function.Function<BlockPos,BlockState> read=p->state(p.getX(),p.getY(),p.getZ());
+        java.util.function.BiConsumer<BlockPos,BlockState> write=this::writeChestState;
+        org.kylepitcock.legacyconnector.vb1_7_3.VanillaChestPlacementB173.placed(pos,read,write);
+        for(var side:net.minecraft.core.Direction.Plane.HORIZONTAL)
+            org.kylepitcock.legacyconnector.vb1_7_3.VanillaChestPlacementB173.placed(pos.relative(side),read,write);
+    }
+    private void writeChestState(BlockPos pos,BlockState state){
+        if(org.kylepitcock.legacyconnector.vb1_7_3.WorldGenWritesB173.defer(this,pos,state))return;
+        var access=mcc$access();if(org.kylepitcock.legacyconnector.core.worldgen.InPlaceStructureGuard.allowWrite(access,pos,state))access.setBlock(pos,state,2);
     }
 
     private boolean torchSupport(int x,int y,int z,int meta){
@@ -301,8 +315,12 @@ public class World implements BlockView {
         return next != s && (next.getBlock() == s.getBlock()||torchVariant||BlocksB173.legacyId(next)==BlocksB173.legacyId(s)) && writeMeta(p,next,flags);
     }
     private boolean writeMeta(BlockPos pos,BlockState next,int flags){
-        if(org.kylepitcock.legacyconnector.vb1_7_3.WorldGenWritesB173.defer(this,pos,next))return true;
-        var access=mcc$access();return org.kylepitcock.legacyconnector.core.worldgen.InPlaceStructureGuard.allowWrite(access,pos,next)&&access.setBlock(pos,next,access instanceof net.minecraft.server.level.WorldGenRegion?2:flags);
+        boolean chest=next.is(net.minecraft.world.level.block.Blocks.CHEST);
+        if(chest)next=org.kylepitcock.legacyconnector.vb1_7_3.VanillaChestPlacementB173.metadata(pos,state(pos.getX(),pos.getY(),pos.getZ()),next,
+                p->state(p.getX(),p.getY(),p.getZ()),this::writeChestState);
+        if(org.kylepitcock.legacyconnector.vb1_7_3.WorldGenWritesB173.defer(this,pos,next)){if(chest)chestChanged(pos);return true;}
+        var access=mcc$access();boolean changed=org.kylepitcock.legacyconnector.core.worldgen.InPlaceStructureGuard.allowWrite(access,pos,next)&&access.setBlock(pos,next,access instanceof net.minecraft.server.level.WorldGenRegion?2:flags);
+        if(changed&&chest)chestChanged(pos);return changed;
     }
 
     /** MCP {@code setBlockMetadataWithNotify}. */
