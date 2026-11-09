@@ -28,6 +28,14 @@ class CallRewrites1201Test {
             "(IILnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V";
     private static final String AMETHYST_CLUSTER_CONSTRUCTOR_1211 =
             "(FFLnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V";
+    private static final String PALLADIUM_CORE_ENTITY_RENDERER_REGISTRY =
+            "net/threetag/palladiumcore/registry/client/forge/EntityRendererRegistryImpl";
+    private static final String ADD_LAYERS_EVENT =
+            "net/neoforged/neoforge/client/event/EntityRenderersEvent$AddLayers";
+    private static final String ADD_LAYERS_GET_RENDERER_1201_DESC =
+            "(Lnet/minecraft/world/entity/EntityType;)Lnet/minecraft/client/renderer/entity/LivingEntityRenderer;";
+    private static final String ADD_LAYERS_GET_RENDERER_1211_DESC =
+            "(Lnet/minecraft/world/entity/EntityType;)Lnet/minecraft/client/renderer/entity/EntityRenderer;";
     private static final String FOLDER_CONSTRUCTOR =
             "(Ljava/nio/file/Path;Lnet/minecraft/server/packs/PackType;Lnet/minecraft/server/packs/repository/PackSource;)V";
     private static final String FOLDER_HELPER =
@@ -91,6 +99,61 @@ class CallRewrites1201Test {
         assertTrue(method.instructions.contains(oldConstructor));
         assertEquals(Opcodes.RETURN, instructions[11].getOpcode());
         assertEquals(3, method.maxLocals);
+    }
+
+    @Test
+    void palladiumCoreAddLayersLookupUsesTargetEntityRendererReturnType() {
+        MethodNode method = new MethodNode(
+                Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "renderLayers",
+                "(L" + ADD_LAYERS_EVENT + ";Lnet/minecraft/world/entity/EntityType;)V", null, null);
+        method.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+        method.instructions.add(new VarInsnNode(Opcodes.ALOAD, 1));
+        MethodInsnNode oldLookup = new MethodInsnNode(
+                Opcodes.INVOKEVIRTUAL, ADD_LAYERS_EVENT, "getRenderer",
+                ADD_LAYERS_GET_RENDERER_1201_DESC, false);
+        method.instructions.add(oldLookup);
+        // PalladiumCore's existing guard handles non-living renderers without casting them.
+        method.instructions.add(new TypeInsnNode(
+                Opcodes.INSTANCEOF, "net/minecraft/client/renderer/entity/LivingEntityRenderer"));
+        method.instructions.add(new InsnNode(Opcodes.POP));
+        method.instructions.add(new InsnNode(Opcodes.RETURN));
+        ClassNode node = node(PALLADIUM_CORE_ENTITY_RENDERER_REGISTRY, method);
+
+        assertEquals(1, CallRewrites1201.apply(node));
+
+        AbstractInsnNode[] instructions = method.instructions.toArray();
+        assertEquals(Opcodes.ALOAD, instructions[0].getOpcode());
+        assertEquals(Opcodes.ALOAD, instructions[1].getOpcode());
+        assertTrue(instructions[2] instanceof MethodInsnNode);
+        MethodInsnNode rewritten = (MethodInsnNode) instructions[2];
+        assertEquals(Opcodes.INVOKEVIRTUAL, rewritten.getOpcode());
+        assertEquals(ADD_LAYERS_EVENT, rewritten.owner);
+        assertEquals("getRenderer", rewritten.name);
+        assertEquals(ADD_LAYERS_GET_RENDERER_1211_DESC, rewritten.desc);
+        assertTrue(method.instructions.contains(oldLookup));
+        assertEquals(Opcodes.INSTANCEOF, instructions[3].getOpcode());
+        assertEquals(Opcodes.POP, instructions[4].getOpcode());
+        assertEquals(Opcodes.RETURN, instructions[5].getOpcode());
+    }
+
+    @Test
+    void palladiumCoreRendererLookupRewriteIsScopedToItsRegistryClass() {
+        MethodNode method = new MethodNode(
+                Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "lookup",
+                "(L" + ADD_LAYERS_EVENT + ";Lnet/minecraft/world/entity/EntityType;)V", null, null);
+        method.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+        method.instructions.add(new VarInsnNode(Opcodes.ALOAD, 1));
+        MethodInsnNode lookup = new MethodInsnNode(
+                Opcodes.INVOKEVIRTUAL, ADD_LAYERS_EVENT, "getRenderer",
+                ADD_LAYERS_GET_RENDERER_1201_DESC, false);
+        method.instructions.add(lookup);
+        method.instructions.add(new InsnNode(Opcodes.POP));
+        method.instructions.add(new InsnNode(Opcodes.RETURN));
+        ClassNode node = node("example/OtherRendererRegistry", method);
+
+        assertEquals(0, CallRewrites1201.apply(node));
+        assertEquals(ADD_LAYERS_GET_RENDERER_1201_DESC, lookup.desc);
+        assertTrue(method.instructions.contains(lookup));
     }
 
     @Test
