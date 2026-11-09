@@ -93,7 +93,14 @@ public final class PalladiumKubeJSCompat {
             Map<String, ScriptGroup> groups = new LinkedHashMap<>();
             int packIndex = 0;
             for (Object pack : asCollection(selectedPacks)) {
-                String packId = stringResult(invoke(pack, new String[] {"getId"}), "pack-" + packIndex);
+                String packId;
+                try {
+                    packId = stringResult(invoke(pack, new String[] {"getId"}), "pack-" + packIndex);
+                } catch (ReflectiveOperationException missingPackId) {
+                    packId = "pack-" + packIndex;
+                    LOGGER.log(System.Logger.Level.WARNING,
+                            "Could not read a selected resource pack ID; using a stable per-order cache name", missingPackId);
+                }
                 String stablePackKey = safeSegment(packId) + "-" + Integer.toHexString(packId.hashCode());
                 Path packCache = typeCache.resolve(stablePackKey);
                 try {
