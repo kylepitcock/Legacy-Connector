@@ -32,12 +32,10 @@ final class CallRewrites1201 {
             new String[] {"net/minecraft/resources/ResourceLocation", "parse", "(Ljava/lang/String;)Lnet/minecraft/resources/ResourceLocation;"},
             "net/minecraft/resources/ResourceLocation.<init>(Ljava/lang/String;Ljava/lang/String;)V",
             new String[] {"net/minecraft/resources/ResourceLocation", "fromNamespaceAndPath",
-                    "(Ljava/lang/String;Ljava/lang/String;)Lnet/minecraft/resources/ResourceLocation;",
-
+                    "(Ljava/lang/String;Ljava/lang/String;)Lnet/minecraft/resources/ResourceLocation;"},
             "net/minecraft/server/packs/repository/FolderRepositorySource.<init>(Ljava/nio/file/Path;Lnet/minecraft/server/packs/PackType;Lnet/minecraft/server/packs/repository/PackSource;)V",
             new String[] {HELPERS, "folderRepositorySource",
-                    "(Ljava/nio/file/Path;Lnet/minecraft/server/packs/PackType;Lnet/minecraft/server/packs/repository/PackSource;)Lnet/minecraft/server/packs/repository/FolderRepositorySource;"}});
-
+                    "(Ljava/nio/file/Path;Lnet/minecraft/server/packs/PackType;Lnet/minecraft/server/packs/repository/PackSource;)Lnet/minecraft/server/packs/repository/FolderRepositorySource;"});
 
     private static final String PALLADIUM_ADDON_PACK_MANAGER = "net/threetag/palladium/addonpack/AddonPackManager";
     private static final String FOLDER_REPOSITORY_SOURCE = "net/minecraft/server/packs/repository/FolderRepositorySource";
