@@ -135,6 +135,26 @@ public final class PalladiumKubeJSCompat {
     }
 
     /**
+     * Preserve Palladium's "basic" named type, but also register it as the
+     * default builder. KubeJS 7 uses defaultType() for event.create(id), while
+     * add(String, ...) only populates the named-type map.
+     *
+     * Invoke through the public Callback interface rather than the concrete
+     * callback implementation, which may be a non-public nested class.
+     */
+    static void registerBasicBuilderType(
+            Object callback,
+            Class<?> callbackApi,
+            Class<?> builderClass,
+            Class<?> builderFactoryClass,
+            Object factory) throws ReflectiveOperationException {
+        callbackApi.getMethod("addDefault", Class.class, builderFactoryClass)
+                .invoke(callback, builderClass, factory);
+        callbackApi.getMethod("add", String.class, Class.class, builderFactoryClass)
+                .invoke(callback, "basic", builderClass, factory);
+    }
+
+    /**
      * KubeJS 7 requires an explicit ScriptType when posting events from groups
      * whose predicate is common rather than a single ScriptType.
      */
