@@ -194,8 +194,13 @@ final class CallRewrites1201 {
 
                 InsnList conversions = new InsnList();
                 conversions.add(new VarInsnNode(Opcodes.ASTORE, propertiesLocal));
+                // Convert the second integer first. SWAP brings the first integer
+                // to the top without losing the already-converted float; the final
+                // SWAP restores the original argument order (height, xzOffset).
                 conversions.add(new InsnNode(Opcodes.I2F));
+                conversions.add(new InsnNode(Opcodes.SWAP));
                 conversions.add(new InsnNode(Opcodes.I2F));
+                conversions.add(new InsnNode(Opcodes.SWAP));
                 conversions.add(new VarInsnNode(Opcodes.ALOAD, propertiesLocal));
                 method.instructions.insertBefore(call, conversions);
                 call.desc = AMETHYST_CLUSTER_CONSTRUCTOR_1211;
