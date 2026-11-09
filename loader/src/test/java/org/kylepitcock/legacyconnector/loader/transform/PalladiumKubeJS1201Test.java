@@ -64,6 +64,26 @@ class PalladiumKubeJS1201Test implements Opcodes {
         return node;
     }
 
+    private static ClassNode builderNode(String name) {
+        ClassNode node = new ClassNode();
+        node.version = V21;
+        node.access = ACC_PUBLIC;
+        node.name = name;
+        node.superName = "dev/latvian/mods/kubejs/registry/BuilderBase";
+        return node;
+    }
+
+    private static MethodNode returningReferenceMethod(int access, String name, String descriptor) {
+        MethodNode method = new MethodNode(access, name, descriptor, null, null);
+        method.instructions.add(new org.objectweb.asm.tree.InsnNode(ACONST_NULL));
+        method.instructions.add(new org.objectweb.asm.tree.InsnNode(ARETURN));
+        return method;
+    }
+
+    private static boolean hasMethod(ClassNode node, String name, String descriptor) {
+        return node.methods.stream().anyMatch(method -> method.name.equals(name) && method.desc.equals(descriptor));
+    }
+
     private static MethodNode returningMethod(int access, String name, String descriptor) {
         MethodNode method = new MethodNode(access, name, descriptor, null, null);
         method.instructions.add(new org.objectweb.asm.tree.InsnNode(RETURN));
@@ -119,6 +139,50 @@ class PalladiumKubeJS1201Test implements Opcodes {
         ClassWriter writer = new ClassWriter(0);
         node.accept(writer);
         assertTrue(writer.toByteArray().length > 0, "rewritten plugin should serialize as a class file");
+    }
+
+    @Test
+    void obsoleteKubeJs6RegistryInfoOverridesAreRemovedFromAbilityAndConditionBuilders() {
+        String registryInfo = "()Ldev/latvian/mods/kubejs/registry/RegistryInfo;";
+
+        String abilityName = "net/threetag/palladium/compat/kubejs/ability/AbilityBuilder";
+        String abilityType = "L" + abilityName + ";";
+        ClassNode ability = builderNode(abilityName);
+        ability.methods.add(returningReferenceMethod(ACC_PUBLIC, "getRegistryType", registryInfo));
+        ability.methods.add(returningReferenceMethod(ACC_PUBLIC, "icon",
+                "(Lnet/threetag/palladium/util/icon/IIcon;)" + abilityType));
+        ability.methods.add(returningReferenceMethod(ACC_PUBLIC, "addProperty",
+                "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;Ljava/lang/String;)" + abilityType));
+        ability.methods.add(returningReferenceMethod(ACC_PUBLIC, "firstTick",
+                "(L" + abilityName + "$TickFunction;)" + abilityType));
+        ability.methods.add(returningReferenceMethod(ACC_PUBLIC, "documentationDescription",
+                "(Ljava/lang/String;)" + abilityType));
+
+        assertEquals(1, PalladiumKubeJS1201.apply(ability));
+        assertFalse(hasMethod(ability, "getRegistryType", registryInfo));
+        assertTrue(hasMethod(ability, "icon", "(Lnet/threetag/palladium/util/icon/IIcon;)" + abilityType));
+        assertTrue(hasMethod(ability, "addProperty",
+                "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;Ljava/lang/String;)" + abilityType));
+        assertTrue(hasMethod(ability, "firstTick", "(L" + abilityName + "$TickFunction;)" + abilityType));
+        assertTrue(hasMethod(ability, "documentationDescription", "(Ljava/lang/String;)" + abilityType));
+
+        String conditionName = "net/threetag/palladium/compat/kubejs/condition/ConditionBuilder";
+        String conditionType = "L" + conditionName + ";";
+        ClassNode condition = builderNode(conditionName);
+        condition.methods.add(returningReferenceMethod(ACC_PUBLIC, "getRegistryType", registryInfo));
+        condition.methods.add(returningReferenceMethod(ACC_PUBLIC, "test",
+                "(L" + conditionName + "$TestFunction;)" + conditionType));
+        condition.methods.add(returningReferenceMethod(ACC_PUBLIC, "addProperty",
+                "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;Ljava/lang/String;)" + conditionType));
+        condition.methods.add(returningReferenceMethod(ACC_PUBLIC, "documentationDescription",
+                "(Ljava/lang/String;)" + conditionType));
+
+        assertEquals(1, PalladiumKubeJS1201.apply(condition));
+        assertFalse(hasMethod(condition, "getRegistryType", registryInfo));
+        assertTrue(hasMethod(condition, "test", "(L" + conditionName + "$TestFunction;)" + conditionType));
+        assertTrue(hasMethod(condition, "addProperty",
+                "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;Ljava/lang/String;)" + conditionType));
+        assertTrue(hasMethod(condition, "documentationDescription", "(Ljava/lang/String;)" + conditionType));
     }
 
     @Test
