@@ -83,7 +83,7 @@ public final class PalladiumKubeJSCompat {
                     new String[] {"getInstance"});
             Object repository = invoke(addonPackManager, new String[] {"getPackList"});
             invoke(repository, new String[] {"reload", "m_10506_"});
-            Object availablePacks = invoke(repository, new String[] {"getAvailablePacks", "m_10514_"});
+            Object availablePacks = invoke(repository, new String[] {"getAvailableIds", "m_10514_"});
             invoke(repository, new String[] {"setSelected", "m_10509_"}, availablePacks);
             Object selectedPacks = invoke(repository, new String[] {"getSelectedPacks", "m_10519_"});
 
