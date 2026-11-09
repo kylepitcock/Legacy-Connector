@@ -10,6 +10,8 @@ import org.objectweb.asm.Handle;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.FieldNode;
+import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.InvokeDynamicInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
@@ -36,10 +38,29 @@ class PalladiumKubeJS1201Test implements Opcodes {
         constructor.instructions.add(new org.objectweb.asm.tree.InsnNode(RETURN));
         node.methods.add(constructor);
 
-        node.methods.add(returningMethod(ACC_PUBLIC, "init", "()V"));
+        node.fields.add(new FieldNode(ACC_PUBLIC | ACC_STATIC, "ABILITY",
+                "Ldev/latvian/mods/kubejs/registry/RegistryInfo;", null, null));
+        node.fields.add(new FieldNode(ACC_PUBLIC | ACC_STATIC, "CONDITION",
+                "Ldev/latvian/mods/kubejs/registry/RegistryInfo;", null, null));
+
+        MethodNode init = new MethodNode(ACC_PUBLIC, "init", "()V", null, null);
+        init.instructions.add(new InvokeDynamicInsnNode("accept", "()Ljava/util/function/Consumer;",
+                new Handle(H_INVOKESTATIC, "java/lang/invoke/LambdaMetafactory", "metafactory",
+                        "(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;"
+                                + "Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)"
+                                + "Ljava/lang/invoke/CallSite;", false),
+                org.objectweb.asm.Type.getMethodType("(Ljava/lang/Object;)V"),
+                new Handle(H_INVOKESTATIC, node.name, "lambda$init$0", "(Ljava/lang/Object;)V", false),
+                org.objectweb.asm.Type.getMethodType("(Ljava/lang/Object;)V")));
+        init.instructions.add(new org.objectweb.asm.tree.InsnNode(RETURN));
+        node.methods.add(init);
         node.methods.add(returningMethod(ACC_PUBLIC, "clientInit", "()V"));
         node.methods.add(returningMethod(ACC_PUBLIC, "registerBindings", "(" + BINDINGS_EVENT + ")V"));
         node.methods.add(returningMethod(ACC_PUBLIC, "registerTypeWrappers", OLD_WRAPPERS));
+
+        MethodNode clinit = new MethodNode(ACC_STATIC, "<clinit>", "()V", null, null);
+        clinit.instructions.add(new org.objectweb.asm.tree.InsnNode(RETURN));
+        node.methods.add(clinit);
         return node;
     }
 
@@ -53,7 +74,7 @@ class PalladiumKubeJS1201Test implements Opcodes {
     void pluginIsConvertedToKubeJs7InterfaceAndKeepsItsPublicHooks() {
         ClassNode node = pluginNode();
 
-        assertEquals(4, PalladiumKubeJS1201.apply(node));
+        assertEquals(8, PalladiumKubeJS1201.apply(node));
 
         assertEquals("java/lang/Object", node.superName);
         assertTrue(node.interfaces.contains("dev/latvian/mods/kubejs/plugin/KubeJSPlugin"));
@@ -72,6 +93,22 @@ class PalladiumKubeJS1201Test implements Opcodes {
                 "(Ldev/latvian/mods/kubejs/script/TypeWrapperRegistry;)V");
         assertEquals(3, countDynamicCalls(wrappers));
         assertEquals(3, countCalls(wrappers, "dev/latvian/mods/kubejs/script/TypeWrapperRegistry", "register"));
+
+        MethodNode builderTypes = find(node, "registerBuilderTypes",
+                "(Ldev/latvian/mods/kubejs/registry/BuilderTypeRegistry;)V");
+        assertTrue(hasCall(builderTypes, INVOKESTATIC, "legacyconnector/v1_20_1/PalladiumKubeJSCompat",
+                "registerBuilderTypes", "(Ljava/lang/Object;)V"));
+
+        MethodNode events = find(node, "registerEvents",
+                "(Ldev/latvian/mods/kubejs/event/EventGroupRegistry;)V");
+        assertTrue(hasCall(events, INVOKEINTERFACE, "dev/latvian/mods/kubejs/event/EventGroupRegistry",
+                "register", "(Ldev/latvian/mods/kubejs/event/EventGroup;)V"));
+
+        MethodNode init = find(node, "init", "()V");
+        assertEquals(1, countDynamicCalls(init), "the CustomProjectile and Palladium property listeners must remain");
+        assertFalse(node.fields.stream().anyMatch(field -> field.name.equals("ABILITY") || field.name.equals("CONDITION")));
+        MethodNode clinit = find(node, "<clinit>", "()V");
+        assertEquals(1, clinit.instructions.size(), "the old RegistryInfo static initializer must be removed");
 
         MethodNode afterInit = find(node, "afterInit", "()V");
         assertTrue(hasCall(afterInit, INVOKESTATIC, "net/neoforged/fml/loading/FMLLoader", "getDist",
@@ -125,6 +162,63 @@ class PalladiumKubeJS1201Test implements Opcodes {
         ClassWriter writer = new ClassWriter(0);
         node.accept(writer);
         assertTrue(writer.toByteArray().length > 0, "rewritten mixin should serialize as a class file");
+    }
+
+    @Test
+    void kubeJs6EventWrappersBecomeKubeJs7EventsAndCommonPostsSpecifyTheirScriptType() {
+        ClassNode node = new ClassNode();
+        node.version = V21;
+        node.access = ACC_PUBLIC;
+        node.name = "net/threetag/palladium/compat/kubejs/TestEventJS";
+        node.superName = "dev/latvian/mods/kubejs/event/EventJS";
+
+        MethodNode constructor = new MethodNode(ACC_PUBLIC, "<init>", "()V", null, null);
+        constructor.instructions.add(new VarInsnNode(ALOAD, 0));
+        constructor.instructions.add(new MethodInsnNode(INVOKESPECIAL, node.superName, "<init>", "()V", false));
+        constructor.instructions.add(new org.objectweb.asm.tree.InsnNode(RETURN));
+        node.methods.add(constructor);
+
+        MethodNode post = new MethodNode(ACC_PUBLIC | ACC_STATIC, "post", "()V", null, null);
+        post.instructions.add(new FieldInsnNode(GETSTATIC,
+                "net/threetag/palladium/compat/kubejs/PalladiumJSEvents", "CUSTOM_PROJECTILE_TICK",
+                "Ldev/latvian/mods/kubejs/event/EventHandler;"));
+        post.instructions.add(new org.objectweb.asm.tree.TypeInsnNode(NEW, node.name));
+        post.instructions.add(new org.objectweb.asm.tree.InsnNode(DUP));
+        post.instructions.add(new MethodInsnNode(INVOKESPECIAL, node.name, "<init>", "()V", false));
+        post.instructions.add(new MethodInsnNode(INVOKEVIRTUAL,
+                "dev/latvian/mods/kubejs/event/EventHandler", "post",
+                "(Ldev/latvian/mods/kubejs/event/EventJS;)Ldev/latvian/mods/kubejs/event/EventResult;", false));
+        post.instructions.add(new org.objectweb.asm.tree.InsnNode(POP));
+        post.instructions.add(new org.objectweb.asm.tree.InsnNode(RETURN));
+        node.methods.add(post);
+
+        assertTrue(PalladiumKubeJS1201.apply(node) > 0);
+        assertEquals("java/lang/Object", node.superName);
+        assertTrue(node.interfaces.contains("dev/latvian/mods/kubejs/event/KubeEvent"));
+
+        MethodNode rewrittenConstructor = find(node, "<init>", "()V");
+        assertTrue(hasCall(rewrittenConstructor, INVOKESPECIAL, "java/lang/Object", "<init>", "()V"));
+        MethodNode rewrittenPost = find(node, "post", "()V");
+        assertTrue(hasCall(rewrittenPost, INVOKESTATIC, "legacyconnector/v1_20_1/PalladiumKubeJSCompat",
+                "postEvent", "(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;"));
+        assertTrue(hasCall(rewrittenPost, GETSTATIC, "dev/latvian/mods/kubejs/script/ScriptType",
+                "SERVER", "Ldev/latvian/mods/kubejs/script/ScriptType;"));
+    }
+
+    @Test
+    void pluginDiscoveryResourceIsAddedOnlyForPalladiumAndPreservesExistingEntries() {
+        java.util.Map<String, byte[]> resources = new java.util.LinkedHashMap<>();
+        resources.put("kubejs.plugins.txt", "example.Plugin\n".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        java.util.Set<String> classEntries = java.util.Set.of(PalladiumKubeJS1201.PLUGIN + ".class");
+
+        assertTrue(PalladiumKubeJS1201.addPluginDiscoveryResource(resources, classEntries));
+        String content = new String(resources.get("kubejs.plugins.txt"), java.nio.charset.StandardCharsets.UTF_8);
+        assertTrue(content.contains("example.Plugin"));
+        assertTrue(content.contains("net.threetag.palladium.compat.kubejs.PalladiumKubeJSPlugin"));
+        assertFalse(PalladiumKubeJS1201.addPluginDiscoveryResource(resources, classEntries));
+
+        java.util.Map<String, byte[]> otherResources = new java.util.LinkedHashMap<>();
+        assertFalse(PalladiumKubeJS1201.addPluginDiscoveryResource(otherResources, java.util.Set.of("some/Other.class")));
     }
 
     @Test
