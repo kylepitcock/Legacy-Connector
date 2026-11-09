@@ -81,8 +81,13 @@ public final class MoCreaturesFollowSelfTestB173 {
         var cat=c.spawn("EntityBigCat",.5);var player=roper(c,15.5);prepareCat(c,cat,player);
         // Enclose the start so native navigation cannot reach the isolated landing pad.
         for(int x=-2;x<=2;x++)for(int z=-2;z<=2;z++)for(int y=-1;y<=3;y++)if(x!=0||z!=0||y==-1||y==3)c.block(c.origin.offset(x,y,z),net.minecraft.world.level.block.Blocks.STONE.defaultBlockState());
-        c.block(c.origin.offset(13,-1,-2),net.minecraft.world.level.block.Blocks.STONE.defaultBlockState());cat.syncView();
+        c.block(c.origin.offset(13,-1,-2),net.minecraft.world.level.block.Blocks.STONE.defaultBlockState());
+        cat.setOnGround(true);cat.setDeltaMovement(0,-.08,0);cat.syncView();
+        var failedNative=cat.getNavigation().createPath(player.blockPosition(),0,16);
+        require(failedNative!=null&&!failedNative.canReach()&&failedNative.getNodeCount()==1,"grounded enclosed original cat exposes native unreached start-only path");
         require(c.world.findPath(cat.legacy(),PlayerViewB173.of(player),16)==null,"teleport fixture proves native path failure before original callback");
+        cat.getNavigation().moveTo(failedNative,.2);
+        require(c.world.findPath(cat.legacy(),PlayerViewB173.of(player),16)==null,"reused native start-only result retains original null-path fallback contract");
         cat.aiStep();
         require(Math.abs(cat.getX()-(c.origin.getX()+13.5))<.00001&&Math.abs(cat.getY()-c.origin.getY())<.00001&&Math.abs(cat.getZ()-(c.origin.getZ()-1.5))<.00001,"original rope fallback selects first solid-ground, two-clear-block perimeter position: "+cat.position());
         require(get(cat.legacy(),"roper")!=null,"walking cat preserves rope after original fallback teleport");

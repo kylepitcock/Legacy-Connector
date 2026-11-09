@@ -103,7 +103,7 @@ public final class LegacyJarTransformer {
         Contents c = read(jar);
         if (patcher != null) c.classes.replaceAll((name, bytes) -> patcher.patch(jar, name, bytes));
         // Beta 1.7.3 jars are obfuscated: named first, then relocated like the other families
-        if (jar.version == LegacyVersion.VB1_7_3) c.notes.addAll(BetaDeobfuscator.apply(jar, c.classes));
+        if (jar.version == LegacyVersion.VB1_7_3) c.notes.addAll(BetaDeobfuscator.apply(jar, c.classes,shim));
         return c;
     }
 

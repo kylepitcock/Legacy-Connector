@@ -16,6 +16,8 @@ public final class VanillaBlockStatesB173 {
 
     /** Null means this utility does not handle the id. Existing unrelated state properties are retained. */
     public static BlockState modernState(int id,int meta,BlockState base){
+        if(id==54&&base.is(Blocks.CHEST))return base.setValue(net.minecraft.world.level.block.ChestBlock.FACING,
+                switch(meta&15){case 3->Direction.SOUTH;case 4->Direction.WEST;case 5->Direction.EAST;default->Direction.NORTH;});
         if(isTorch(id,base)){
             meta&=15;
             var torch=id==50?(meta>=1&&meta<=4?Blocks.WALL_TORCH:Blocks.TORCH)
@@ -47,6 +49,8 @@ public final class VanillaBlockStatesB173 {
 
     /** Null means unsupported. Do not interpret modern upper-door hinge bits as Beta metadata. */
     public static Integer legacyMeta(BlockState state){
+        if(state.is(Blocks.CHEST))return switch(state.getValue(net.minecraft.world.level.block.ChestBlock.FACING)){
+            case NORTH->2;case SOUTH->3;case WEST->4;case EAST->5;default->throw new IllegalStateException("Nonhorizontal chest facing");};
         if(state.is(Blocks.TORCH)||state.is(Blocks.REDSTONE_TORCH))return 5;
         if(state.is(Blocks.WALL_TORCH)||state.is(Blocks.REDSTONE_WALL_TORCH))
             return switch(state.getValue(WallTorchBlock.FACING)){case EAST->1;case WEST->2;case SOUTH->3;case NORTH->4;default->throw new IllegalStateException("Nonhorizontal torch facing");};

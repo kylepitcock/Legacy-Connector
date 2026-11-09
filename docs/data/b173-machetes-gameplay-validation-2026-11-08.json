@@ -1,0 +1,699 @@
+{
+  "status": "passed",
+  "snapshot_date": "2026-11-08",
+  "scope": "Actual unchanged Machetes3.0 class/texture payloads after explicit repacking; generic Beta melee damage API, native rendering and player-attack regression checks. Not full tool/mining compatibility certification.",
+  "tested_code_revision": "ed655226893ef38dae74a9ed83c899209da25158",
+  "branch": "legacy-b1.7.3",
+  "version": "0.4.13",
+  "artifact": {
+    "path": "build/dist/legacyconnector-0.4.13.jar",
+    "sha256": "16cae8f88b22a1a11c635d6eee8d71a71237c10257c6ca355ca3ca6fd0f7e305"
+  },
+  "source_sha256": {
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/item/Item.java": "0a638044d0a2a5f3ce139fd4fa842f0538e740cca307149b21f6f998501653d6",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/LegacyB173Item.java": "786bc555b467db1a186887fab7e6b1565e74d37269e829713be8adc70ef92f97",
+    "src/test/java/org/kylepitcock/legacyconnector/vb1_7_3/ItemAttackDamageB173Test.java": "bedfb78aa07bca5faf49ac6c9e3ddce3741d11feadaa7eb2a0cf05e1c77721bd"
+  },
+  "generic_changes": [
+    "Original Beta Item.getAttackDamage(Entity) supplies target-aware melee contribution through the native attack-bonus hook; native cooldown, critical hits, attributes and enchantments retain ownership"
+  ],
+  "archive_preparation": {
+    "original_sha256": "46ef2dfd581171b29507138958db2b009f80f9aee78bd6f5cdaa7292f05ea75f",
+    "repacked_sha256": "3812d162501f80cf5c5858fb5b82e068864be80a0cb1fcceeb5794bfc64faa5f",
+    "payloads": [
+      {
+        "original_entry": "add-to-minecraft-jar/ItemSlimeMachete.class",
+        "repacked_entry": "ItemSlimeMachete.class",
+        "sha256": "b3c6fa250375c7e2f836e361b7d7fe9420980378855db7cb25b5a758014bd063"
+      },
+      {
+        "original_entry": "add-to-minecraft-jar/machete/machete-diamond.png",
+        "repacked_entry": "machete/machete-diamond.png",
+        "sha256": "ee33d81f0251442b22f48db43ca854bf65c40975152d70357684da09562b49f3"
+      },
+      {
+        "original_entry": "add-to-minecraft-jar/machete/machete-gold.png",
+        "repacked_entry": "machete/machete-gold.png",
+        "sha256": "1205897ff3378ef8d818f008e43c5c214faa754ccdae0e58a08eabfb41655bd4"
+      },
+      {
+        "original_entry": "add-to-minecraft-jar/machete/machete-iron.png",
+        "repacked_entry": "machete/machete-iron.png",
+        "sha256": "eb2dff4aa5adbb103a230c61475b862516d328796e77913978498141660da287"
+      },
+      {
+        "original_entry": "add-to-minecraft-jar/machete/machete-slime.png",
+        "repacked_entry": "machete/machete-slime.png",
+        "sha256": "38a4d4f7b7d3cfdf12b417481a1a2b2e3ae3cd0ba3f988371a498adf300d4f09"
+      },
+      {
+        "original_entry": "add-to-minecraft-jar/machete/machete-stone.png",
+        "repacked_entry": "machete/machete-stone.png",
+        "sha256": "9f7b11ff9a2e7009bdc169055062ca17def7c1457f519b6b76d94e3057e22d4a"
+      },
+      {
+        "original_entry": "add-to-minecraft-jar/machete/machete-wood.png",
+        "repacked_entry": "machete/machete-wood.png",
+        "sha256": "35145bab2938d42f4de34f422bb8285a8e5904465a2b0ad72791d067c9cb8f38"
+      },
+      {
+        "original_entry": "add-to-minecraft-jar/mod_Machetes.class",
+        "repacked_entry": "mod_Machetes.class",
+        "sha256": "3743567365197ee359a28799b8db732a0a85541d5a388039771298c60a2d6f01"
+      },
+      {
+        "original_entry": "Installation.txt",
+        "repacked_entry": "Installation.txt",
+        "sha256": "1a4a4176df687bde6eaef064ff65f3396a58821e0cca184bede06773c328a3e8"
+      }
+    ],
+    "changes": "Installation folder removed from entry paths only; two class files, six textures and installation text retain identical bytes; no version changes; no runtime archive-layout support.",
+    "original_backed_up": true,
+    "runtime_archive_layout_support_added": false,
+    "redistributed_in_repository": false
+  },
+  "tests": {
+    "runtime": {
+      "tests": 274,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "loader": {
+      "tests": 270,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "default_build": {
+    "passed": true,
+    "log": "build/machetes-damage-build.log",
+    "log_sha256": "8069ad39e8e0b486cd42060d79c7f9f7ad5285baedae807c93d2343293e7aaae",
+    "private_mod_archives_required": false
+  },
+  "generic_guard": {
+    "passed": true,
+    "files_checked": 273
+  },
+  "baseline": {
+    "code_revision": "8e8cba4eb82dee4c4b01401cf286d08e7e78e391",
+    "models": {
+      "items": [
+        {
+          "id": 22256,
+          "native": "b173_machetes:machete_gold",
+          "type": "legacyconnector.vb1_7_3.net.minecraft.src.ItemCustomMaterialTool",
+          "texture": 38,
+          "sprite": "minecraft:missingno",
+          "width": 16,
+          "height": 16,
+          "quads": 0
+        },
+        {
+          "id": 22257,
+          "native": "b173_machetes:machete_iron",
+          "type": "legacyconnector.vb1_7_3.net.minecraft.src.ItemCustomMaterialTool",
+          "texture": 46,
+          "sprite": "minecraft:missingno",
+          "width": 16,
+          "height": 16,
+          "quads": 0
+        },
+        {
+          "id": 22258,
+          "native": "b173_machetes:machete_diamond",
+          "type": "legacyconnector.vb1_7_3.net.minecraft.src.ItemCustomMaterialTool",
+          "texture": 61,
+          "sprite": "minecraft:missingno",
+          "width": 16,
+          "height": 16,
+          "quads": 0
+        },
+        {
+          "id": 22259,
+          "native": "b173_machetes:machete_stone",
+          "type": "legacyconnector.vb1_7_3.net.minecraft.src.ItemCustomMaterialTool",
+          "texture": 62,
+          "sprite": "minecraft:missingno",
+          "width": 16,
+          "height": 16,
+          "quads": 0
+        },
+        {
+          "id": 22260,
+          "native": "b173_machetes:machete_wood",
+          "type": "legacyconnector.vb1_7_3.net.minecraft.src.ItemCustomMaterialTool",
+          "texture": 91,
+          "sprite": "minecraft:missingno",
+          "width": 16,
+          "height": 16,
+          "quads": 0
+        },
+        {
+          "id": 22261,
+          "native": "b173_machetes:machete_slime",
+          "type": "legacyconnector_b173.machetes.ItemSlimeMachete",
+          "texture": 101,
+          "sprite": "minecraft:missingno",
+          "width": 16,
+          "height": 16,
+          "quads": 0
+        }
+      ],
+      "overrides": [
+        {
+          "sheet": "/gui/items.png",
+          "path": "/machete/machete-gold.png",
+          "index": 38
+        },
+        {
+          "sheet": "/gui/items.png",
+          "path": "/machete/machete-iron.png",
+          "index": 46
+        },
+        {
+          "sheet": "/gui/items.png",
+          "path": "/machete/machete-diamond.png",
+          "index": 61
+        },
+        {
+          "sheet": "/gui/items.png",
+          "path": "/machete/machete-stone.png",
+          "index": 62
+        },
+        {
+          "sheet": "/gui/items.png",
+          "path": "/machete/machete-wood.png",
+          "index": 91
+        },
+        {
+          "sheet": "/gui/items.png",
+          "path": "/machete/machete-slime.png",
+          "index": 101
+        }
+      ],
+      "playerNativeAttack": 1
+    },
+    "native_attacks": {
+      "passed": true,
+      "label": "baseline",
+      "scope": "Actual native ServerPlayer.attack and original postHit callbacks; native cow targets, no armor/effects except named control cases; normal native cooldown ticks.",
+      "cases": [
+        {
+          "key": "empty",
+          "targetUUID": "78f4b47d-52cc-4f05-afe2-459848e7e7f9",
+          "before": 10,
+          "after": 9,
+          "damage": 1,
+          "nativeAttributes": 1,
+          "strength": 1,
+          "onGround": true,
+          "fallDistance": 0,
+          "wearBefore": 0,
+          "wearAfter": 0,
+          "gameTime": 4602,
+          "expectedNativeDamage": 1,
+          "originalTotalDamage": 1
+        },
+        {
+          "key": "minecraft:iron_sword",
+          "targetUUID": "0b4bfac3-ae96-497c-bc05-f56511869b9d",
+          "before": 10,
+          "after": 4,
+          "damage": 6,
+          "nativeAttributes": 6,
+          "strength": 1,
+          "onGround": true,
+          "fallDistance": 0,
+          "wearBefore": 0,
+          "wearAfter": 1,
+          "gameTime": 4651,
+          "expectedNativeDamage": 6,
+          "originalTotalDamage": 6
+        },
+        {
+          "key": "b173_machetes:machete_gold",
+          "targetUUID": "69f6136c-5d2b-4edb-b691-68f0db813b66",
+          "before": 10,
+          "after": 9,
+          "damage": 1,
+          "nativeAttributes": 1,
+          "strength": 1,
+          "onGround": true,
+          "fallDistance": 0,
+          "wearBefore": 0,
+          "wearAfter": 2,
+          "gameTime": 4690,
+          "expectedNativeDamage": 1,
+          "originalTotalDamage": 5
+        },
+        {
+          "key": "b173_machetes:machete_iron",
+          "targetUUID": "abb5391c-a27d-4b31-b616-4ea605e2b31e",
+          "before": 10,
+          "after": 9,
+          "damage": 1,
+          "nativeAttributes": 1,
+          "strength": 1,
+          "onGround": true,
+          "fallDistance": 0,
+          "wearBefore": 0,
+          "wearAfter": 2,
+          "gameTime": 4736,
+          "expectedNativeDamage": 1,
+          "originalTotalDamage": 7
+        },
+        {
+          "key": "b173_machetes:machete_diamond",
+          "targetUUID": "88ddc83e-924e-4543-a7d2-abfc8749719e",
+          "before": 10,
+          "after": 9,
+          "damage": 1,
+          "nativeAttributes": 1,
+          "strength": 1,
+          "onGround": true,
+          "fallDistance": 0,
+          "wearBefore": 0,
+          "wearAfter": 2,
+          "gameTime": 4775,
+          "expectedNativeDamage": 1,
+          "originalTotalDamage": 9
+        },
+        {
+          "key": "b173_machetes:machete_stone",
+          "targetUUID": "ac302aed-f2ca-4746-89ec-0c89370565b0",
+          "before": 10,
+          "after": 9,
+          "damage": 1,
+          "nativeAttributes": 1,
+          "strength": 1,
+          "onGround": true,
+          "fallDistance": 0,
+          "wearBefore": 0,
+          "wearAfter": 2,
+          "gameTime": 4814,
+          "expectedNativeDamage": 1,
+          "originalTotalDamage": 6
+        },
+        {
+          "key": "b173_machetes:machete_wood",
+          "targetUUID": "f0a3aa89-452b-4ec7-8dd5-00d309b85249",
+          "before": 10,
+          "after": 9,
+          "damage": 1,
+          "nativeAttributes": 1,
+          "strength": 1,
+          "onGround": true,
+          "fallDistance": 0,
+          "wearBefore": 0,
+          "wearAfter": 2,
+          "gameTime": 4853,
+          "expectedNativeDamage": 1,
+          "originalTotalDamage": 4
+        },
+        {
+          "key": "b173_machetes:machete_slime",
+          "targetUUID": "b04dadbc-011f-4165-bc75-7046cd4c6016",
+          "before": 10,
+          "after": 9,
+          "damage": 1,
+          "nativeAttributes": 1,
+          "strength": 1,
+          "onGround": true,
+          "fallDistance": 0,
+          "wearBefore": 0,
+          "wearAfter": 2,
+          "gameTime": 4892,
+          "expectedNativeDamage": 1,
+          "originalTotalDamage": 7
+        }
+      ]
+    }
+  },
+  "fixed_models": {
+    "items": [
+      {
+        "id": 22256,
+        "native": "b173_machetes:machete_gold",
+        "type": "legacyconnector.vb1_7_3.net.minecraft.src.ItemCustomMaterialTool",
+        "texture": 38,
+        "sprite": "b173_machetes:block/b173/i38",
+        "width": 16,
+        "height": 16,
+        "quads": 51
+      },
+      {
+        "id": 22257,
+        "native": "b173_machetes:machete_iron",
+        "type": "legacyconnector.vb1_7_3.net.minecraft.src.ItemCustomMaterialTool",
+        "texture": 46,
+        "sprite": "b173_machetes:block/b173/i46",
+        "width": 16,
+        "height": 16,
+        "quads": 51
+      },
+      {
+        "id": 22258,
+        "native": "b173_machetes:machete_diamond",
+        "type": "legacyconnector.vb1_7_3.net.minecraft.src.ItemCustomMaterialTool",
+        "texture": 61,
+        "sprite": "b173_machetes:block/b173/i61",
+        "width": 16,
+        "height": 16,
+        "quads": 51
+      },
+      {
+        "id": 22259,
+        "native": "b173_machetes:machete_stone",
+        "type": "legacyconnector.vb1_7_3.net.minecraft.src.ItemCustomMaterialTool",
+        "texture": 62,
+        "sprite": "b173_machetes:block/b173/i62",
+        "width": 16,
+        "height": 16,
+        "quads": 51
+      },
+      {
+        "id": 22260,
+        "native": "b173_machetes:machete_wood",
+        "type": "legacyconnector.vb1_7_3.net.minecraft.src.ItemCustomMaterialTool",
+        "texture": 91,
+        "sprite": "b173_machetes:block/b173/i91",
+        "width": 16,
+        "height": 16,
+        "quads": 51
+      },
+      {
+        "id": 22261,
+        "native": "b173_machetes:machete_slime",
+        "type": "legacyconnector_b173.machetes.ItemSlimeMachete",
+        "texture": 101,
+        "sprite": "b173_machetes:block/b173/i101",
+        "width": 16,
+        "height": 16,
+        "quads": 51
+      }
+    ],
+    "overrides": [
+      {
+        "sheet": "/gui/items.png",
+        "path": "/machete/machete-gold.png",
+        "index": 38
+      },
+      {
+        "sheet": "/gui/items.png",
+        "path": "/machete/machete-iron.png",
+        "index": 46
+      },
+      {
+        "sheet": "/gui/items.png",
+        "path": "/machete/machete-diamond.png",
+        "index": 61
+      },
+      {
+        "sheet": "/gui/items.png",
+        "path": "/machete/machete-stone.png",
+        "index": 62
+      },
+      {
+        "sheet": "/gui/items.png",
+        "path": "/machete/machete-wood.png",
+        "index": 91
+      },
+      {
+        "sheet": "/gui/items.png",
+        "path": "/machete/machete-slime.png",
+        "index": 101
+      }
+    ],
+    "playerNativeAttack": 1
+  },
+  "fixed_gpu": {
+    "passed": true,
+    "items": [
+      {
+        "id": 22256,
+        "sprite": "b173_machetes:block/b173/i38",
+        "sourceVisiblePixels": 57,
+        "gpuVisiblePixels": 57,
+        "mismatchedPixels": 0
+      },
+      {
+        "id": 22257,
+        "sprite": "b173_machetes:block/b173/i46",
+        "sourceVisiblePixels": 57,
+        "gpuVisiblePixels": 57,
+        "mismatchedPixels": 0
+      },
+      {
+        "id": 22258,
+        "sprite": "b173_machetes:block/b173/i61",
+        "sourceVisiblePixels": 57,
+        "gpuVisiblePixels": 57,
+        "mismatchedPixels": 0
+      },
+      {
+        "id": 22259,
+        "sprite": "b173_machetes:block/b173/i62",
+        "sourceVisiblePixels": 57,
+        "gpuVisiblePixels": 57,
+        "mismatchedPixels": 0
+      },
+      {
+        "id": 22260,
+        "sprite": "b173_machetes:block/b173/i91",
+        "sourceVisiblePixels": 57,
+        "gpuVisiblePixels": 57,
+        "mismatchedPixels": 0
+      },
+      {
+        "id": 22261,
+        "sprite": "b173_machetes:block/b173/i101",
+        "sourceVisiblePixels": 57,
+        "gpuVisiblePixels": 57,
+        "mismatchedPixels": 0
+      }
+    ]
+  },
+  "fixed_native_attacks": {
+    "passed": true,
+    "label": "fixed",
+    "scope": "Actual native ServerPlayer.attack and original postHit callbacks; unmodified native 20-health villager targets, no armor/effects except named control cases; normal native cooldown ticks.",
+    "cases": [
+      {
+        "key": "empty",
+        "targetUUID": "42007ca8-4e5b-453c-b446-885eccf24acd",
+        "before": 20,
+        "after": 19,
+        "damage": 1,
+        "nativeAttributes": 1,
+        "strength": 1,
+        "onGround": true,
+        "fallDistance": 0,
+        "wearBefore": 0,
+        "wearAfter": 0,
+        "gameTime": 8064,
+        "expectedNativeDamage": 1,
+        "originalTotalDamage": 1
+      },
+      {
+        "key": "minecraft:iron_sword",
+        "targetUUID": "197db693-1614-40ae-a094-9a3314680948",
+        "before": 20,
+        "after": 14,
+        "damage": 6,
+        "nativeAttributes": 6,
+        "strength": 1,
+        "onGround": true,
+        "fallDistance": 0,
+        "wearBefore": 0,
+        "wearAfter": 1,
+        "gameTime": 8103,
+        "expectedNativeDamage": 6,
+        "originalTotalDamage": 6
+      },
+      {
+        "key": "b173_machetes:machete_gold",
+        "targetUUID": "ce89d091-c795-4618-a7a3-4b04cf164cd6",
+        "before": 20,
+        "after": 15,
+        "damage": 5,
+        "nativeAttributes": 1,
+        "strength": 1,
+        "onGround": true,
+        "fallDistance": 0,
+        "wearBefore": 0,
+        "wearAfter": 2,
+        "gameTime": 8142,
+        "expectedNativeDamage": 5,
+        "originalTotalDamage": 5
+      },
+      {
+        "key": "b173_machetes:machete_iron",
+        "targetUUID": "a9005252-5e7f-4eb6-8bbd-7ff4201c12bf",
+        "before": 20,
+        "after": 13,
+        "damage": 7,
+        "nativeAttributes": 1,
+        "strength": 1,
+        "onGround": true,
+        "fallDistance": 0,
+        "wearBefore": 0,
+        "wearAfter": 2,
+        "gameTime": 8187,
+        "expectedNativeDamage": 7,
+        "originalTotalDamage": 7
+      },
+      {
+        "key": "b173_machetes:machete_diamond",
+        "targetUUID": "1ad0d4de-c026-430e-afa8-fc2c31e90812",
+        "before": 20,
+        "after": 11,
+        "damage": 9,
+        "nativeAttributes": 1,
+        "strength": 1,
+        "onGround": true,
+        "fallDistance": 0,
+        "wearBefore": 0,
+        "wearAfter": 2,
+        "gameTime": 8226,
+        "expectedNativeDamage": 9,
+        "originalTotalDamage": 9
+      },
+      {
+        "key": "b173_machetes:machete_stone",
+        "targetUUID": "c7cd81e6-f2b3-4c60-b084-ed89e3e3a757",
+        "before": 20,
+        "after": 14,
+        "damage": 6,
+        "nativeAttributes": 1,
+        "strength": 1,
+        "onGround": true,
+        "fallDistance": 0,
+        "wearBefore": 0,
+        "wearAfter": 2,
+        "gameTime": 8265,
+        "expectedNativeDamage": 6,
+        "originalTotalDamage": 6
+      },
+      {
+        "key": "b173_machetes:machete_wood",
+        "targetUUID": "ab1e4a90-a140-465a-a761-191921c7b3ca",
+        "before": 20,
+        "after": 16,
+        "damage": 4,
+        "nativeAttributes": 1,
+        "strength": 1,
+        "onGround": true,
+        "fallDistance": 0,
+        "wearBefore": 0,
+        "wearAfter": 2,
+        "gameTime": 8305,
+        "expectedNativeDamage": 4,
+        "originalTotalDamage": 4
+      },
+      {
+        "key": "b173_machetes:machete_slime",
+        "targetUUID": "9c3b4d0a-cca2-467f-a2fa-3822900610af",
+        "before": 20,
+        "after": 13,
+        "damage": 7,
+        "nativeAttributes": 1,
+        "strength": 1,
+        "onGround": true,
+        "fallDistance": 0,
+        "wearBefore": 0,
+        "wearAfter": 2,
+        "gameTime": 8342,
+        "expectedNativeDamage": 7,
+        "originalTotalDamage": 7
+      },
+      {
+        "key": "b173_machetes:machete_diamond+strength",
+        "targetUUID": "70ca36f8-991b-432c-ac74-05f855ce48c8",
+        "before": 20,
+        "after": 8,
+        "damage": 12,
+        "nativeAttributes": 4,
+        "strength": 1,
+        "onGround": true,
+        "fallDistance": 0,
+        "wearBefore": 0,
+        "wearAfter": 2,
+        "gameTime": 8381,
+        "expectedNativeDamage": 12,
+        "originalTotalDamage": 12
+      },
+      {
+        "key": "b173_machetes:machete_diamond+sharpness",
+        "targetUUID": "a3f6febf-f4b5-4298-a769-6ccac06ec6f0",
+        "before": 20,
+        "after": 9,
+        "damage": 11,
+        "nativeAttributes": 1,
+        "strength": 1,
+        "onGround": true,
+        "fallDistance": 0,
+        "wearBefore": 0,
+        "wearAfter": 2,
+        "gameTime": 8418,
+        "expectedNativeDamage": 11,
+        "originalTotalDamage": 11
+      },
+      {
+        "key": "b173_machetes:machete_diamond+cooldown",
+        "targetUUID": "f4bc4054-a4b3-4094-8394-01bf9982368a",
+        "before": 20,
+        "after": 18.128000259399414,
+        "damage": 1.871999740600586,
+        "nativeAttributes": 1,
+        "strength": 0.10000000149011612,
+        "onGround": true,
+        "fallDistance": 0,
+        "wearBefore": 0,
+        "wearAfter": 2,
+        "gameTime": 8457,
+        "expectedNativeDamage": 1.8720000021457672,
+        "originalTotalDamage": 1.8720000021457672
+      }
+    ]
+  },
+  "fixed_normal_client_attack_key": {
+    "passed": true,
+    "target": {
+      "id": 40,
+      "uuid": "078dbc38-0185-4399-b7a4-285ab3d13a17",
+      "health": 20
+    },
+    "input": {
+      "queuedNativeAttackKey": true,
+      "target": 40
+    },
+    "after": {
+      "health": 11,
+      "wear": 2,
+      "onGround": true
+    },
+    "scope": "Normal native client crosshair and attack key, server-authoritative target loses9 health and original callback applies2 durability wear."
+  },
+  "graphical_test": {
+    "runtime": "WSL Xvfb Mesa",
+    "mods": {
+      "iris-neoforge-1.8.12+mc1.21.1.jar": "3e3f94d2d5cdcb8145c4385d521974aa2d8669b2cc212351f70cf06488182e83",
+      "pehkui-3.8.3+1.21-neoforge.jar": "50aab835b0f98dedf33383483b021789c2991786f02b00e6d1b7152dc43570ec",
+      "sodium-neoforge-0.6.13+mc1.21.1.jar": "7acd7af2ef75ec883a6872c17494ead65e38025151eb08a1d60e36d34377f403",
+      "TerraBlender-neoforge-1.21.1-4.1.0.8.jar": "6f9b488dbfebe134b848d1a07f462fed711bb1c96b6bd50645eaa8b9569da0b1"
+    },
+    "screenshot": "run-b173-single\\machetes-gameplay-client-20261108-202725\\control\\out\\machetes-fixed-hand-hotbar.png",
+    "screenshot_sha256": "702e2dcb0a873db038d322dc3da38ddefe1692ea586c526568572faacdbc58c0",
+    "visually_reviewed": true,
+    "shader_pack": null
+  },
+  "limits": [
+    "Initial increased-health cow fixture was unusable because its health was clamped during a native empty-hand attack; final quantitative cases use ordinary unmodified20-health villagers. No production health behavior was changed.",
+    "No archive-layout normalization was added to the connector. Repacking changes archive paths and compression only; class, texture and installation-text bytes remain identical.",
+    "Mining speed and every unrelated Machetes callback are not certified by these combat/render checks."
+  ],
+  "local_only": true,
+  "push_authorized": false
+}

@@ -1,0 +1,660 @@
+{
+  "status": "passed",
+  "scope": "Prism load-failure checkpoint and actual Robot Ted native death/respawn regression; not full mod gameplay certification.",
+  "snapshot_date": "2026-11-08",
+  "tested_code_revision": "c1d1f613bdeb18f2aea8e85b2e362ada30d81b1b",
+  "branch": "legacy-b1.7.3",
+  "version": "0.4.13",
+  "artifact": {
+    "path": "build/dist/legacyconnector-0.4.13.jar",
+    "sha256": "571c2d07aef6cee6d14e9c7e935d2063937b368cd7506e71731b59dae22882b8"
+  },
+  "source_sha256": {
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/client/Minecraft.java": "03639f03e9181a0d2ca2ed2eac7ea19d745cfb03a2078f65c86826e8308743ab",
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/src/ItemCustomMaterialTool.java": "d01a03195d4285c4f548dba1b0a50ace360c4d6eafe5bbc5e62ed6348466a9fd",
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/src/CanHarvest.java": "bcaafd2984337fa65e84430625b32ff8079ecb53de84f1e1f4392e19899d1997",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/WorldGenB173.java": "25ba2a5a4afce9c44e2f6326039834b89b644c0d10c4f8969efe76752d803183",
+    "loader/src/main/java/org/kylepitcock/legacyconnector/loader/transform/BetaDeobfuscator.java": "5f7a975290476e8011a9390031d5aa1945105bea88194f090900787b71e4a11a",
+    "loader/src/main/java/org/kylepitcock/legacyconnector/loader/transform/LegacyJarTransformer.java": "7f556fb062b75777c8aa4454051a76201ffefbf0bdf220ac677932843b354b8a"
+  },
+  "generic_changes": [
+    "Known shared Beta shim ancestry resolves inherited vanilla members when an original dependency class is absent from mod-jar metadata",
+    "ScotTools ItemCustomMaterialTool and CanHarvest use shared item, material and tool APIs",
+    "ModLoader generation override lookup resolves only the requested callback descriptor, preserving absent unrelated optional signatures",
+    "The current same-level connected player remains available through the native death screen; native respawn switches to the replacement player object"
+  ],
+  "tests": {
+    "runtime": {
+      "tests": 270,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "loader": {
+      "tests": 270,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "default_build": {
+    "passed": true,
+    "log": "build/death-player-context-build.log",
+    "log_sha256": "7db1059a2b618f641d138ff5c8eda104ad1aa3ffd52c1f8a034ca96019fb67f7",
+    "private_mod_archives_required": false
+  },
+  "generic_guard": {
+    "passed": true,
+    "command": "python tools/dev/check_b173_generic.py",
+    "files_checked": 273
+  },
+  "isolated_actual_mod_load_checks": [
+    {
+      "key": "machetes",
+      "passed": true,
+      "original_archive": "Machetesv3.0_b173.zip",
+      "source_sha256": "46ef2dfd581171b29507138958db2b009f80f9aee78bd6f5cdaa7292f05ea75f",
+      "log_sha256": "8974aa0deb7c36f2556a43fd0ac072c0bf1fe7cd1372c212f171f26e7f7df564",
+      "proof": {
+        "passed": true,
+        "entrypoint": "legacyconnector_b173.machetes.mod_Machetes",
+        "legacyId": "Machetes",
+        "namespace": "b173_machetes",
+        "registeredItems": [
+          {
+            "id": 22256,
+            "native": "b173_machetes:machete_gold",
+            "chain": [
+              "legacyconnector.vb1_7_3.net.minecraft.src.ItemCustomMaterialTool",
+              "legacyconnector.vb1_7_3.net.minecraft.item.Item",
+              "java.lang.Object"
+            ]
+          },
+          {
+            "id": 22257,
+            "native": "b173_machetes:machete_iron",
+            "chain": [
+              "legacyconnector.vb1_7_3.net.minecraft.src.ItemCustomMaterialTool",
+              "legacyconnector.vb1_7_3.net.minecraft.item.Item",
+              "java.lang.Object"
+            ]
+          },
+          {
+            "id": 22258,
+            "native": "b173_machetes:machete_diamond",
+            "chain": [
+              "legacyconnector.vb1_7_3.net.minecraft.src.ItemCustomMaterialTool",
+              "legacyconnector.vb1_7_3.net.minecraft.item.Item",
+              "java.lang.Object"
+            ]
+          },
+          {
+            "id": 22259,
+            "native": "b173_machetes:machete_stone",
+            "chain": [
+              "legacyconnector.vb1_7_3.net.minecraft.src.ItemCustomMaterialTool",
+              "legacyconnector.vb1_7_3.net.minecraft.item.Item",
+              "java.lang.Object"
+            ]
+          },
+          {
+            "id": 22260,
+            "native": "b173_machetes:machete_wood",
+            "chain": [
+              "legacyconnector.vb1_7_3.net.minecraft.src.ItemCustomMaterialTool",
+              "legacyconnector.vb1_7_3.net.minecraft.item.Item",
+              "java.lang.Object"
+            ]
+          },
+          {
+            "id": 22261,
+            "native": "b173_machetes:machete_slime",
+            "chain": [
+              "legacyconnector_b173.machetes.ItemSlimeMachete",
+              "legacyconnector.vb1_7_3.net.minecraft.src.ItemCustomMaterialTool",
+              "legacyconnector.vb1_7_3.net.minecraft.item.Item",
+              "java.lang.Object"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "key": "minefactory",
+      "passed": true,
+      "original_archive": "MinefactoryRenewed-A17d-Waterfix.zip",
+      "source_sha256": "d235f687d4966c7bd83d88e12a5ce68a32c76f2ab8e0d638d4d642c5cf1f7d18",
+      "log_sha256": "a108ce4a661ea435f07b2b05d74dff457cf7c0bf3d5ac1bc8d52a5071277079b",
+      "proof": {
+        "passed": true,
+        "entrypoint": "legacyconnector_b173.minefactory.mod_MineFactory",
+        "legacyId": "MineFactory",
+        "namespace": "b173_minefactory",
+        "registeredItems": [
+          {
+            "id": 380,
+            "native": "b173_minefactory:steel_ingot",
+            "chain": [
+              "fizz.minefactoryreloaded.items.ItemFactory",
+              "legacyconnector.vb1_7_3.net.minecraft.item.Item",
+              "java.lang.Object"
+            ]
+          },
+          {
+            "id": 1244,
+            "native": "b173_minefactory:factory_wrench",
+            "chain": [
+              "fizz.minefactoryreloaded.items.ItemFactory",
+              "legacyconnector.vb1_7_3.net.minecraft.item.Item",
+              "java.lang.Object"
+            ]
+          },
+          {
+            "id": 1248,
+            "native": "b173_minefactory:rawbeef",
+            "chain": [
+              "legacyconnector_synth.vb1_7_3.net.minecraft.item.FoodItem",
+              "legacyconnector.vb1_7_3.net.minecraft.item.Item",
+              "java.lang.Object"
+            ]
+          },
+          {
+            "id": 1249,
+            "native": "b173_minefactory:cookedbeef",
+            "chain": [
+              "legacyconnector_synth.vb1_7_3.net.minecraft.item.FoodItem",
+              "legacyconnector.vb1_7_3.net.minecraft.item.Item",
+              "java.lang.Object"
+            ]
+          },
+          {
+            "id": 1246,
+            "native": "b173_minefactory:rawchicken",
+            "chain": [
+              "fizz.minefactoryreloaded.items.ItemFactoryFood",
+              "legacyconnector_synth.vb1_7_3.net.minecraft.item.FoodItem",
+              "legacyconnector.vb1_7_3.net.minecraft.item.Item",
+              "java.lang.Object"
+            ]
+          },
+          {
+            "id": 1247,
+            "native": "b173_minefactory:cookenchicken",
+            "chain": [
+              "fizz.minefactoryreloaded.items.ItemFactoryFood",
+              "legacyconnector_synth.vb1_7_3.net.minecraft.item.FoodItem",
+              "legacyconnector.vb1_7_3.net.minecraft.item.Item",
+              "java.lang.Object"
+            ]
+          },
+          {
+            "id": 124,
+            "native": "b173_minefactory:block_124",
+            "chain": [
+              "fizz.minefactoryreloaded.core.ItemFactoryMachine",
+              "legacyconnector.vb1_7_3.net.minecraft.item.BlockItem",
+              "legacyconnector.vb1_7_3.net.minecraft.item.Item",
+              "java.lang.Object"
+            ]
+          },
+          {
+            "id": 236,
+            "native": "b173_minefactory:conveoyor",
+            "chain": [
+              "legacyconnector.vb1_7_3.net.minecraft.item.BlockItem",
+              "legacyconnector.vb1_7_3.net.minecraft.item.Item",
+              "java.lang.Object"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "key": "portalgun",
+      "passed": true,
+      "original_archive": "portalgun-1.7.3v5.zip",
+      "source_sha256": "ade379de3ff3e433e23fbb064a2df7a9d8010e898977aa08f865b509ecf29a5f",
+      "log_sha256": "650e006fc95cd34eb76a0a028573c6ce4de3f32faed65ad145aa0c1cb3924d13",
+      "proof": {
+        "passed": true,
+        "entrypoint": "legacyconnector_b173.portalgun.mod_PortalGun",
+        "legacyId": "PortalGun",
+        "namespace": "b173_portalgun",
+        "registeredItems": [
+          {
+            "id": 2269,
+            "native": "b173_portalgun:record",
+            "chain": [
+              "legacyconnector_synth.vb1_7_3.net.minecraft.item.MusicDiscItem",
+              "legacyconnector.vb1_7_3.net.minecraft.item.Item",
+              "java.lang.Object"
+            ]
+          },
+          {
+            "id": 2268,
+            "native": "b173_portalgun:record_2",
+            "chain": [
+              "legacyconnector_synth.vb1_7_3.net.minecraft.item.MusicDiscItem",
+              "legacyconnector.vb1_7_3.net.minecraft.item.Item",
+              "java.lang.Object"
+            ]
+          },
+          {
+            "id": 2267,
+            "native": "b173_portalgun:record_3",
+            "chain": [
+              "legacyconnector_synth.vb1_7_3.net.minecraft.item.MusicDiscItem",
+              "legacyconnector.vb1_7_3.net.minecraft.item.Item",
+              "java.lang.Object"
+            ]
+          },
+          {
+            "id": 13456,
+            "native": "b173_portalgun:portal_gun_blue",
+            "chain": [
+              "legacyconnector_b173.portalgun.Portal_ItemPortalGunBlue",
+              "legacyconnector.vb1_7_3.net.minecraft.item.Item",
+              "java.lang.Object"
+            ]
+          },
+          {
+            "id": 13457,
+            "native": "b173_portalgun:portal_gun_orange",
+            "chain": [
+              "legacyconnector_b173.portalgun.Portal_ItemPortalGunOrange",
+              "legacyconnector.vb1_7_3.net.minecraft.item.Item",
+              "java.lang.Object"
+            ]
+          },
+          {
+            "id": 13458,
+            "native": "b173_portalgun:portal_gun_core",
+            "chain": [
+              "legacyconnector_b173.portalgun.Portal_ItemPortalGunCore",
+              "legacyconnector.vb1_7_3.net.minecraft.item.Item",
+              "java.lang.Object"
+            ]
+          },
+          {
+            "id": 13459,
+            "native": "b173_portalgun:knee_replacement",
+            "chain": [
+              "legacyconnector.vb1_7_3.net.minecraft.item.ArmorItem",
+              "legacyconnector.vb1_7_3.net.minecraft.item.Item",
+              "java.lang.Object"
+            ]
+          },
+          {
+            "id": 13460,
+            "native": "b173_portalgun:heel_spring",
+            "chain": [
+              "legacyconnector_b173.portalgun.Portal_ItemHeelSpring",
+              "legacyconnector.vb1_7_3.net.minecraft.item.Item",
+              "java.lang.Object"
+            ]
+          },
+          {
+            "id": 13461,
+            "native": "b173_portalgun:fizzler_bucket",
+            "chain": [
+              "legacyconnector_b173.portalgun.Portal_ItemGrid",
+              "legacyconnector.vb1_7_3.net.minecraft.item.Item",
+              "java.lang.Object"
+            ]
+          },
+          {
+            "id": 13462,
+            "native": "b173_portalgun:sentry_turret",
+            "chain": [
+              "legacyconnector_b173.portalgun.Portal_ItemTurret",
+              "legacyconnector.vb1_7_3.net.minecraft.item.Item",
+              "java.lang.Object"
+            ]
+          },
+          {
+            "id": 13463,
+            "native": "b173_portalgun:portal_apg",
+            "chain": [
+              "legacyconnector_b173.portalgun.Portal_ItemAPG",
+              "legacyconnector.vb1_7_3.net.minecraft.item.Item",
+              "java.lang.Object"
+            ]
+          },
+          {
+            "id": 13464,
+            "native": "b173_portalgun:portal_afpitem",
+            "chain": [
+              "legacyconnector_b173.portalgun.Portal_ItemAFP",
+              "legacyconnector.vb1_7_3.net.minecraft.item.Item",
+              "java.lang.Object"
+            ]
+          },
+          {
+            "id": 13465,
+            "native": "b173_portalgun:portal_radio",
+            "chain": [
+              "legacyconnector_b173.portalgun.Portal_ItemRadio",
+              "legacyconnector.vb1_7_3.net.minecraft.item.Item",
+              "java.lang.Object"
+            ]
+          },
+          {
+            "id": 104,
+            "native": "b173_portalgun:portal_mod",
+            "chain": [
+              "legacyconnector.vb1_7_3.net.minecraft.item.BlockItem",
+              "legacyconnector.vb1_7_3.net.minecraft.item.Item",
+              "java.lang.Object"
+            ]
+          },
+          {
+            "id": 105,
+            "native": "b173_portalgun:portal_cube",
+            "chain": [
+              "legacyconnector_b173.portalgun.Portal_ItemCube",
+              "legacyconnector.vb1_7_3.net.minecraft.item.BlockItem",
+              "legacyconnector.vb1_7_3.net.minecraft.item.Item",
+              "java.lang.Object"
+            ]
+          },
+          {
+            "id": 106,
+            "native": "b173_portalgun:portal_grid",
+            "chain": [
+              "legacyconnector.vb1_7_3.net.minecraft.item.BlockItem",
+              "legacyconnector.vb1_7_3.net.minecraft.item.Item",
+              "java.lang.Object"
+            ]
+          },
+          {
+            "id": 107,
+            "native": "b173_portalgun:portal_hept",
+            "chain": [
+              "legacyconnector.vb1_7_3.net.minecraft.item.BlockItem",
+              "legacyconnector.vb1_7_3.net.minecraft.item.Item",
+              "java.lang.Object"
+            ]
+          },
+          {
+            "id": 108,
+            "native": "b173_portalgun:portal_hepc",
+            "chain": [
+              "legacyconnector.vb1_7_3.net.minecraft.item.BlockItem",
+              "legacyconnector.vb1_7_3.net.minecraft.item.Item",
+              "java.lang.Object"
+            ]
+          },
+          {
+            "id": 109,
+            "native": "b173_portalgun:portal_sign",
+            "chain": [
+              "legacyconnector.vb1_7_3.net.minecraft.item.BlockItem",
+              "legacyconnector.vb1_7_3.net.minecraft.item.Item",
+              "java.lang.Object"
+            ]
+          },
+          {
+            "id": 110,
+            "native": "b173_portalgun:portal_spawner",
+            "chain": [
+              "legacyconnector.vb1_7_3.net.minecraft.item.BlockItem",
+              "legacyconnector.vb1_7_3.net.minecraft.item.Item",
+              "java.lang.Object"
+            ]
+          },
+          {
+            "id": 111,
+            "native": "b173_portalgun:portal_checkpoint",
+            "chain": [
+              "legacyconnector.vb1_7_3.net.minecraft.item.BlockItem",
+              "legacyconnector.vb1_7_3.net.minecraft.item.Item",
+              "java.lang.Object"
+            ]
+          },
+          {
+            "id": 112,
+            "native": "b173_portalgun:portal_afp",
+            "chain": [
+              "legacyconnector.vb1_7_3.net.minecraft.item.BlockItem",
+              "legacyconnector.vb1_7_3.net.minecraft.item.Item",
+              "java.lang.Object"
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "mixed_pack": {
+    "passed": true,
+    "loaded_legacy_mods": [
+      {
+        "id": "Nether",
+        "namespace": "b173_nether",
+        "entrypoint": "legacyconnector_b173.nether.mod_Nether",
+        "failed": false
+      },
+      {
+        "id": "Machetes",
+        "namespace": "b173_machetes",
+        "entrypoint": "legacyconnector_b173.machetes.mod_Machetes",
+        "failed": false
+      },
+      {
+        "id": "witchery",
+        "namespace": "witchery",
+        "entrypoint": "com.emoniph.witchery.Witchery",
+        "failed": false
+      },
+      {
+        "id": "PlasticCraft",
+        "namespace": "b173_plasticcraft",
+        "entrypoint": "legacyconnector_b173.plasticcraft.mod_PlasticCraft",
+        "failed": false
+      },
+      {
+        "id": "PortalGun",
+        "namespace": "b173_portalgun",
+        "entrypoint": "legacyconnector_b173.portalgun.mod_PortalGun",
+        "failed": false
+      },
+      {
+        "id": "Thaumcraft",
+        "namespace": "thaumcraft",
+        "entrypoint": "thaumcraft.common.Thaumcraft",
+        "failed": false
+      },
+      {
+        "id": "Trivia",
+        "namespace": "b173_trivia",
+        "entrypoint": "legacyconnector_b173.trivia.mod_Trivia",
+        "failed": false
+      },
+      {
+        "id": "mocreatures",
+        "namespace": "b173_mocreatures",
+        "entrypoint": "legacyconnector_b173.mocreatures.mod_mocreatures",
+        "failed": false
+      },
+      {
+        "id": "MoreCreepsAndWeirdos",
+        "namespace": "b173_morecreepsandweirdos",
+        "entrypoint": "legacyconnector_b173.morecreepsandweirdos.mod_MoreCreepsAndWeirdos",
+        "failed": false
+      },
+      {
+        "id": "MineFactory",
+        "namespace": "b173_minefactory",
+        "entrypoint": "legacyconnector_b173.minefactory.mod_MineFactory",
+        "failed": false
+      },
+      {
+        "id": "Aether",
+        "namespace": "b173_aether",
+        "entrypoint": "legacyconnector_b173.trivia.mod_Aether",
+        "failed": false
+      },
+      {
+        "id": "gilded-games-util",
+        "namespace": "gilded_games_util",
+        "entrypoint": "com.gildedgames.util.core.UtilCore",
+        "failed": false
+      },
+      {
+        "id": "TwilightForest",
+        "namespace": "b173_twilightforest",
+        "entrypoint": "legacyconnector_b173.twilightforest.mod_TwilightForest",
+        "failed": false
+      },
+      {
+        "id": "Butterfly",
+        "namespace": "b173_butterfly",
+        "entrypoint": "legacyconnector_b173.butterfly.mod_Butterfly",
+        "failed": false
+      }
+    ],
+    "failure_count": 0,
+    "original_files_sha256": {
+      "mods\\jei-1.21.1-neoforge-19.70.0.469.jar": "9ab82d9bdbc8d9a08b80bc2023e1d886f6335b92f937d3afac878c9ea995dc33",
+      "mods\\mezz_config-1.21.1-neoforge-0.6.11-standalone.jar": "f4b93ad61fca9c95d6293384a66b9d4ef83c6b6ee1b304996cf899a06c136aa8",
+      "mods\\mezz_config_gui-1.21.1-neoforge-mc1.21.1-0.5.5.jar": "a8811c08b4283be65b9623d66776a45064ff7b5213295d5e3a31f1f3453b140f",
+      "mods\\MoreCreeps.txt": "aed242e37e1947e9e2e878801fcd0fadba402ac1219287f88cbb4bebaf20ce74",
+      "mods\\.index\\jei.pw.toml": "e5b92bd86a29cd873e0eaef4944f9e849d5ed451c28d3ed9e197802c6e502dc0",
+      "mods\\.index\\mezzconfig.pw.toml": "5de6b4444587cdafb54462ec3bab59d61db092fa0833b3ec6069dd272108220d",
+      "mods\\.index\\mezzconfiggui.pw.toml": "78e0bed0d4a54de1247e880157f424f5dac8100dfaa0c574b00f509a85f76fa7",
+      "mods\\1.7.10\\aether-1.7.10-1.6.disabled": "8e6221100a87fe1d0170d94360a0b33bc18fe1bac207fa03ab6df5197b34bd14",
+      "mods\\1.7.10\\gilded-games-util-1.7.10-1.9.jar": "b2c44f48e8e90d2f4aeacabb38c04ac6e985f683cb9e4b1b50f6b55aab5e795d",
+      "mods\\1.7.10\\Thaumcraft-1.7.10-4.2.3.5.jar": "3dba9786966974701578a658d1bb369bf35bdf5f363079f5ac9c4910a39113be",
+      "mods\\1.7.10\\witchery-1.7.10-0.24.1.jar": "68c331f624cea6c0827a31e96a6dce2e75461227c42da70f11ba765a8c6a8cec",
+      "mods\\b1.7.3\\Aether-b1.7.3-1.02.zip": "ae3ab77f001f64b1391aa5a5d148731d442e5a6041f5c30453fd9b6831cbae60",
+      "mods\\b1.7.3\\butterflies-1.3.1.zip": "353c8a80eaa3bfda05c775c1a779bf091870ca8fd82cbbd05fe9af6b00dbd234",
+      "mods\\b1.7.3\\Machetesv3.0_b173.zip": "46ef2dfd581171b29507138958db2b009f80f9aee78bd6f5cdaa7292f05ea75f",
+      "mods\\b1.7.3\\MinefactoryRenewed-A17d-Waterfix.zip": "d235f687d4966c7bd83d88e12a5ce68a32c76f2ab8e0d638d4d642c5cf1f7d18",
+      "mods\\b1.7.3\\MoCreatures-2.12.2-b173.jar": "94ed9d7d6cc2792184a87beff7e5441594d3af433a2119f076eabb0ba0dc48d3",
+      "mods\\b1.7.3\\MoreCreepsAndWeirdos-2.12-b173.jar": "06e6ad852b8aa0ff08913a010c47ef81093aa124976a688af05438022d50690b",
+      "mods\\b1.7.3\\NetherCraft-1.9b-ModLoader.jar": "4edd51ac230ab0cb599eb7011a060c615ba8e67e837498e3ab1c9cb88593220f",
+      "mods\\b1.7.3\\PlasticCraft-2.1.3-ModLoader.jar": "2e361f5398e27c5821f132ff1bf3d7ab71564e58df13051dde86c215c534c55b",
+      "mods\\b1.7.3\\portalgun-1.7.3v5.zip": "ade379de3ff3e433e23fbb064a2df7a9d8010e898977aa08f865b509ecf29a5f",
+      "mods\\b1.7.3\\twilightforest-client-1p4_b173.zip": "10bf94fe513d3e2ad385ac18fe4bc5df6823c09952359bee716eb2e54aaaa9b7",
+      "mods\\mocreatures\\guiconfig.properties": "bba7dc26273bb686f35bf3b41d4db65cfaeeed9159d979aea496bb13e2d7dbea",
+      "mods\\portalgun\\mod_PortalGun.properties": "8c27e2dbd7661056cec1d240a104a1eb90b2dda03109cf1fa4d2656c0d92abf9"
+    },
+    "source_nonconnector_files": 23,
+    "log": "build/prism-load-fixed-pack-death-client.log",
+    "log_sha256": "a7c26961377ccfde02c7cb2cb2954608de9425b43e5484f4ad0e542561dd6996",
+    "native_ticks_elapsed": 109,
+    "existing_configured_item_id_collisions": [
+      {
+        "losingMod": "PortalGun",
+        "id": 2269,
+        "winner": "Butterfly",
+        "nativeWinner": "b173_butterfly:jar6"
+      },
+      {
+        "losingMod": "PortalGun",
+        "id": 2268,
+        "winner": "Butterfly",
+        "nativeWinner": "b173_butterfly:jar5"
+      },
+      {
+        "losingMod": "PortalGun",
+        "id": 2267,
+        "winner": "Butterfly",
+        "nativeWinner": "b173_butterfly:jar4"
+      }
+    ],
+    "root_settings": "Exact original PlasticCraft.props, mod_PortalGun.properties and mod_Trivia.txt copied into the test stage; user settings unchanged.",
+    "test_runtime": "WSL Xvfb/Mesa client with Sodium/Iris. The dev classpath stages exact bundled TerraBlender separately; absent dev-only Pehkui caused caught Witchery callbacks. Both dependencies are verified embedded in the distributed jar; no Witchery gameplay certification is claimed."
+  },
+  "actual_robot_ted_death_respawn": {
+    "passed": true,
+    "initial": {
+      "playerUUID": "380df991-f603-344c-a090-369bad2a924a",
+      "playerId": 55,
+      "nativeIdentity": 90722438,
+      "lookupIdentity": 90722438,
+      "alive": true,
+      "removed": false,
+      "inLevel": true,
+      "connectedCount": 1,
+      "gameTime": 14742,
+      "lookupUUID": "380df991-f603-344c-a090-369bad2a924a",
+      "lookupId": 55,
+      "canonical": true,
+      "robot": {
+        "id": 2,
+        "uuid": "75205a3e-b093-4e36-a325-6913e238ed07",
+        "position": [
+          -7.969406799280077,
+          65.4701231563634,
+          35.7993287244712
+        ]
+      }
+    },
+    "death": {
+      "playerUUID": "380df991-f603-344c-a090-369bad2a924a",
+      "playerId": 55,
+      "nativeIdentity": 90722438,
+      "lookupIdentity": 90722438,
+      "alive": false,
+      "removed": true,
+      "inLevel": false,
+      "connectedCount": 1,
+      "gameTime": 14849,
+      "lookupUUID": "380df991-f603-344c-a090-369bad2a924a",
+      "lookupId": 55,
+      "canonical": true,
+      "robot": {
+        "id": 2,
+        "uuid": "75205a3e-b093-4e36-a325-6913e238ed07",
+        "position": [
+          -7.205602095736917,
+          64,
+          36.437128659180864
+        ]
+      }
+    },
+    "actualOriginalCallback": {
+      "passed": true,
+      "uuid": "75205a3e-b093-4e36-a325-6913e238ed07",
+      "original": "legacyconnector_b173.morecreepsandweirdos.CREEPSEntityRobotTed",
+      "controlledPrerequisite": "one floatdir=0 branch, restored immediately; normal native death and existing actor retained"
+    },
+    "respawn": {
+      "playerUUID": "380df991-f603-344c-a090-369bad2a924a",
+      "playerId": 55,
+      "nativeIdentity": 1429797138,
+      "lookupIdentity": 1429797138,
+      "alive": true,
+      "removed": false,
+      "inLevel": true,
+      "connectedCount": 1,
+      "gameTime": 14894,
+      "lookupUUID": "380df991-f603-344c-a090-369bad2a924a",
+      "lookupId": 55,
+      "canonical": true,
+      "robot": {
+        "id": 2,
+        "uuid": "75205a3e-b093-4e36-a325-6913e238ed07",
+        "position": [
+          -1.5720054972222823,
+          64,
+          39.44902418277423
+        ]
+      }
+    },
+    "scope": "Actual Robot Ted, native player death, 100 world ticks through death screen and native Respawn; no mod-specific production handling."
+  },
+  "versions_unchanged": {
+    "mocreatures_outer_archive": "2.12.2",
+    "mocreatures_runtime": "2.12.1",
+    "morecreeps": "2.12",
+    "all_installed_originals": "Original file hashes preserved; no mod versions changed."
+  },
+  "limitations": [
+    "Three pre-existing PortalGun record IDs 2267-2269 overlap Butterfly jar items in the supplied pack; existing IDs/configurations were not rewritten.",
+    "Passing construction, postInit and native registration does not certify full MineFactory, PortalGun or Machetes gameplay.",
+    "Earlier mob checkpoint remains bounded: advanced More Creeps gameplay, particles, structure/deferred-loot census, advancement display, shaders and separate multiplayer still need proof."
+  ],
+  "local_only": true,
+  "push_authorized": false
+}

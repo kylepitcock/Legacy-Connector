@@ -33,6 +33,7 @@ public final class EntityRenderingB173 {
     static RendererContextB173.Extras sheets(RendererContextB173.Extras extras){
         return new RendererContextB173.Extras(){
             @Override public void quad(List<RendererContextB173.Vertex> vertices,Matrix4f transform,ResourceLocation texture,RendererContextB173.Style style){var q=resolveQuad(vertices,texture);extras.quad(q.vertices(),transform,q.texture(),style);}
+            @Override public void line(RendererContextB173.Vertex start,RendererContextB173.Vertex end,Matrix4f transform,RendererContextB173.Style style){extras.line(start,end,transform,style);}
             @Override public void item(legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity living,legacyconnector.vb1_7_3.net.minecraft.item.ItemStack stack,Matrix4f transform,RendererContextB173.Style style){extras.item(living,stack,transform,style);}
             @Override public void text(String text,float x,float y,int argb,boolean shadow,Matrix4f transform,RendererContextB173.Style style){extras.text(text,x,y,argb,shadow,transform,style);}
             @Override public int width(String text){return extras.width(text);}

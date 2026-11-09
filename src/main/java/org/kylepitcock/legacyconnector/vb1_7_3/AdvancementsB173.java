@@ -7,6 +7,7 @@ import java.util.function.Supplier;
 import legacyconnector.vb1_7_3.net.minecraft.achievement.Achievement;
 import legacyconnector.vb1_7_3.net.minecraft.achievement.Achievements;
 import legacyconnector.vb1_7_3.net.minecraft.stat.Stat;
+import legacyconnector.vb1_7_3.net.minecraft.src.ACPage;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -29,28 +30,36 @@ public final class AdvancementsB173 {
         return ResourceLocation.fromNamespaceAndPath(achievement.mcc$namespace,"beta/achievements/"+name+"_"+achievement.id);
     }
     static ResourceLocation rootOf(String namespace){return ResourceLocation.fromNamespaceAndPath(namespace,"beta/root");}
+    static ResourceLocation pageRoot(ACPage page){
+        String name=page.title.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9/._-]","_");
+        return ResourceLocation.fromNamespaceAndPath(page.mcc$namespace,"beta/pages/"+(name.isEmpty()?"unnamed":name)+"_"+Integer.toUnsignedString(page.title.hashCode(),16)+"_"+page.mcc$titleOrdinal);
+    }
+    static ResourceLocation categoryOf(Achievement achievement){var page=ACPage.mcc$pageOf(achievement);return page==null?rootOf(achievement.mcc$namespace):pageRoot(page);}
     static ResourceLocation parentOf(Achievement achievement){
-        return achievement.parent==null||achievement.parent.mcc$vanilla?rootOf(achievement.mcc$namespace):idOf(achievement.parent);
+        return achievement.parent==null||achievement.parent.mcc$vanilla||ACPage.mcc$pageOf(achievement)!=ACPage.mcc$pageOf(achievement.parent)?categoryOf(achievement):idOf(achievement.parent);
     }
     public static void describe(Achievement achievement,String title,String description){
         Objects.requireNonNull(achievement,"achievement");achievement.mcc$title=title;achievement.mcc$description=description;
         ContentB173.addLocalization(achievement.stringId,title);ContentB173.addLocalization(achievement.translationKey,description);
     }
     public static void contribute(Map<String,Supplier<byte[]>> out){
-        Map<String,String> roots=new LinkedHashMap<>();
+        Map<ResourceLocation,String> roots=new LinkedHashMap<>();
+        Map<ResourceLocation,String> titles=new LinkedHashMap<>();
         for(Stat stat:all())if(stat instanceof Achievement achievement&&!achievement.mcc$vanilla&&!org.kylepitcock.legacyconnector.core.LegacyLifecycle.isFailed(achievement.mcc$namespace)){
             ResourceLocation id=idOf(achievement),parent=parentOf(achievement);
             var stack=achievement.icon==null?net.minecraft.world.item.ItemStack.EMPTY:StacksB173.toModern(achievement.icon);
             String icon=stack.isEmpty()?"minecraft:barrier":BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();
             byte[] bytes=definition(achievement,parent,icon).toString().getBytes(StandardCharsets.UTF_8);
             out.put("data/"+id.getNamespace()+"/advancement/"+id.getPath()+".json",()->bytes);
-            if(parent.equals(rootOf(achievement.mcc$namespace)))roots.putIfAbsent(achievement.mcc$namespace,icon);
+            if(parent.equals(categoryOf(achievement))){
+                roots.putIfAbsent(parent,icon);var page=ACPage.mcc$pageOf(achievement);
+                if(page!=null)titles.put(parent,page.title);
+            }
         }
         for(var entry:roots.entrySet()){
-            String namespace=entry.getKey();var mod=org.kylepitcock.legacyconnector.core.LegacyMods.find(namespace);
+            ResourceLocation id=entry.getKey();String namespace=id.getNamespace();var mod=org.kylepitcock.legacyconnector.core.LegacyMods.find(namespace);
             String title=mod==null?namespace:mod.name();
-            byte[] bytes=rootDefinition(title+" (Beta 1.7.3)",entry.getValue()).toString().getBytes(StandardCharsets.UTF_8);
-            ResourceLocation id=rootOf(namespace);
+            byte[] bytes=rootDefinition(titles.getOrDefault(id,title+" (Beta 1.7.3)"),entry.getValue()).toString().getBytes(StandardCharsets.UTF_8);
             out.put("data/"+id.getNamespace()+"/advancement/"+id.getPath()+".json",()->bytes);
         }
     }

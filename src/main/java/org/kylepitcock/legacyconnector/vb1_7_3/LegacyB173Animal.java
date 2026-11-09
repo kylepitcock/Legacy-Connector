@@ -88,7 +88,7 @@ public final class LegacyB173Animal extends PathfinderMob implements B173LivingH
     }
     /** Native tracking supplies pose/animation; rendering never writes this view back into simulation. */
     public LivingEntity prepareRenderView(float partial){
-        syncView();legacy.bodyYaw=yBodyRot;legacy.lastBodyYaw=yBodyRotO;
+        syncView();if(level().isClientSide)AnimalRenderStateB173.retryReferences(legacy);legacy.bodyYaw=yBodyRot;legacy.lastBodyYaw=yBodyRotO;
         legacy.yaw=getYHeadRot();legacy.prevYaw=yHeadRotO;
         legacy.lastWalkAnimationSpeed=walkAnimation.speed(0);legacy.walkAnimationSpeed=walkAnimation.speed(1);
         legacy.walkAnimationProgress=walkAnimation.position(1);return legacy;

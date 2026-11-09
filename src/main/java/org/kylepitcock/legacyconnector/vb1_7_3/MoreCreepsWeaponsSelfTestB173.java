@@ -32,6 +32,15 @@ public final class MoreCreepsWeaponsSelfTestB173 {
         try{require(!World.mcc$wrap(level).spawnEntity(original)&&original.mcc$modern==null,"canceled actual neutral spawn rolls back original binding");}finally{net.neoforged.neoforge.common.NeoForge.EVENT_BUS.unregister(cancel);}
         require(World.mcc$wrap(level).spawnEntity(original)&&original.mcc$modern instanceof B173EntityHost,"same original neutral entity can retry canceled spawn");original.mcc$modern.discard();
     }
+    /** FakePlayer shooters are intentionally outside native entity tracking in this graphics-free fixture. */
+    private static Entity fixtureReference(Entity source,int id,UUID uuid){
+        for(Class<?> type=source.getClass();type!=null&&Entity.class.isAssignableFrom(type);type=type.getSuperclass())for(var field:type.getDeclaredFields()){
+            if(Modifier.isStatic(field.getModifiers())||!Entity.class.isAssignableFrom(field.getType()))continue;
+            try{field.setAccessible(true);var value=(Entity)field.get(source);if(value!=null&&value.mcc$modern!=null&&value.mcc$modern.getId()==id&&value.mcc$modern.getUUID().equals(uuid))return EntityViewsB173.wrapReadOnly(value.mcc$modern);}
+            catch(IllegalAccessException error){throw new IllegalStateException(error);}
+        }
+        return null;
+    }
     private static void wireAndSave(ServerLevel level,net.minecraft.world.entity.Entity source,B173EntityHost host)throws ReflectiveOperationException {
         var copy=source.getType().create(level);require(copy instanceof B173EntityHost,"neutral native type factory creates shared host");
         try{
@@ -40,7 +49,7 @@ public final class MoreCreepsWeaponsSelfTestB173 {
             try{net.minecraft.network.protocol.game.ClientboundAddEntityPacket.STREAM_CODEC.encode(buffer,spawn);copy.recreateFromPacket(net.minecraft.network.protocol.game.ClientboundAddEntityPacket.STREAM_CODEC.decode(buffer));}finally{buffer.release();}
             var values=source.getEntityData().getNonDefaultValues();require(values!=null,"neutral tracked class/state snapshot exists");buffer=new net.minecraft.network.RegistryFriendlyByteBuf(io.netty.buffer.Unpooled.buffer(),level.registryAccess());
             try{net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket.STREAM_CODEC.encode(buffer,new net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket(source.getId(),values));copy.getEntityData().assignValues(net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket.STREAM_CODEC.decode(buffer).packedItems());((B173EntityHost)copy).prepareRenderView(.5F);}finally{buffer.release();}
-            var clone=(B173EntityHost)copy;require(clone.legacy().getClass()==host.legacy().getClass(),"neutral tracking reconstructs exact original class");require(AnimalRenderStateB173.capture(clone.legacy()).equals(AnimalRenderStateB173.capture(host.legacy())),"neutral metadata wire preserves original scalar fields");
+            var clone=(B173EntityHost)copy;require(clone.legacy().getClass()==host.legacy().getClass(),"neutral tracking reconstructs exact original class");AnimalRenderStateB173.retryReferences(clone.legacy(),(id,uuid)->fixtureReference(host.legacy(),id,uuid));require(AnimalRenderStateB173.capture(clone.legacy()).equals(AnimalRenderStateB173.capture(host.legacy())),"neutral metadata wire preserves original scalar fields");
             var received=clone.legacy();var sent=host.legacy();require(received.width==sent.width&&received.height==sent.height&&received.standingEyeHeight==sent.standingEyeHeight&&received.age==sent.age&&received.renderDistanceMultiplier==sent.renderDistanceMultiplier&&received.noClip==sent.noClip,"neutral codec preserves common original dimensions, eye, age, distance and clip state");
             require(Math.abs(copy.getBoundingBox().getXsize()-sent.width)<.00001&&Math.abs(copy.getBoundingBox().getYsize()-sent.height)<.00001&&Math.abs(copy.getBbWidth()-sent.width)<.00001&&Math.abs(copy.getBbHeight()-sent.height)<.00001,"neutral codec common dimensions update native bounds");
             if(sent instanceof legacyconnector.vb1_7_3.net.minecraft.entity.ItemEntity item){var receivedItem=(legacyconnector.vb1_7_3.net.minecraft.entity.ItemEntity)received;require(receivedItem.itemAge==item.itemAge&&receivedItem.pickupDelay==item.pickupDelay,"neutral item codec preserves original age and pickup delay");}

@@ -110,7 +110,7 @@ public final class AnimalsB173 {
     public static boolean spawn(Level level,LivingEntity legacy){
         Info i=BY_CLASS.get(legacy.getClass());if(level.isClientSide||i==null||legacy.mcc$modern!=null)return false;
         LegacyB173Animal host=null;boolean added=false;
-        try{host=new LegacyB173Animal(i.type(),level,legacy);added=level.addFreshEntity(host);if(added)EntityViewsB173.spawned(host,legacy);return added;}
+        try{host=new LegacyB173Animal(i.type(),level,legacy);added=legacyconnector.vb1_7_3.net.minecraft.world.World.mcc$wrap(level).mcc$spawnNative(host);if(added)EntityViewsB173.spawned(host,legacy);return added;}
         catch(RuntimeException|LinkageError e){LOG.error("Cannot spawn original Beta animal {}",legacy.getClass().getName(),e);return false;}
         finally{if(!added){legacy.mcc$modern=null;if(host!=null)host.discard();}}
     }

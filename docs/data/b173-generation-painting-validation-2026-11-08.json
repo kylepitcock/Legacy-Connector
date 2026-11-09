@@ -1,0 +1,2209 @@
+{
+  "status": "passed",
+  "snapshot_date": "2026-11-08",
+  "scope": "Generic native terrain prerequisites/read validation and Beta painting APIs; bounded actual More Creeps generation bodies, anti-hang regression, native data persistence and full-pack startup. Not full Mo Creatures/More Creeps compatibility certification.",
+  "tested_code_revision": "3763c27e6017ad8b7ebc08976d5372f47963894b",
+  "branch": "legacy-b1.7.3",
+  "version": "0.4.13",
+  "artifact": {
+    "path": "build/dist/legacyconnector-0.4.13.jar",
+    "sha256": "3cbcb2cd453ce9e2ae35ba256a75d66910d17209f3586fe9ec4bae703954fdb2"
+  },
+  "source_sha256": {
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/entity/decoration/painting/PaintingEntity.java": "d90608d48d83d3cea0c93eb8cd30222b65904869042691aede50d8eed17a76a0",
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/entity/decoration/painting/PaintingVariants.java": "d8163512661751a9bd9217f136a7eac6a36f364ce4c2f9c7b4d4046812083b15",
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/world/World.java": "babc9f7480285ecf7515b1c4c456ea96eca3da05ddef8eea618c68aa0db03055",
+    "src/main/java/org/kylepitcock/legacyconnector/mixin/BetaGenerationDependenciesMixin.java": "79de9a03daa205d4978d4d6bba6e3e4eb75f477d42c9f09237e06ecd002f9a76",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/PaintingsB173.java": "719d0eda2ab8ae4e8dc048ccfcf716dda63d9ae7d88687070f5497843d631b9b",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/PaintingsSelfTestB173.java": "2dab22d3bc793baa21ec55942e2df28724dd0740b82a680e1c8147f9c31e336a",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/WorldGenB173.java": "52f61409602d2e68f147f7257e4ff34134e14acfa86ee8abc7ad2c173af4300c",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/WorldGenEntitiesSelfTestB173.java": "ba81bf020777b898646b59487bd89fa1519455035e52417c3f1d3b149191d4f3",
+    "src/main/resources/legacyconnector.mixins.json": "e72e3a5922aefa1bdbf0c899f2163dfa604f0ee9527160df3b858a3b5ba1960c",
+    "src/test/java/org/kylepitcock/legacyconnector/vb1_7_3/PaintingsB173Test.java": "9e773d5ae058fe13c3879e11acf43e6b4f26dcfa346d8b1d7a593b3ffcccbadd"
+  },
+  "generic_changes": [
+    "Native FEATURES prerequisites request finished CARVERS terrain across the existing eight-chunk read area only when Beta generators are registered; native feature task/write radius and loading pyramid remain intact",
+    "Beta world reads reject cached EMPTY/BIOMES terrain rather than expose unfinished columns as air; explicit pending writes still take priority",
+    "Vanilla Beta painting motives, facing, attachment, native entity tracking/rendering and persistence use shared APIs; double-precision bounds prevent collapsed thin geometry at modern world coordinates"
+  ],
+  "tests": {
+    "runtime": {
+      "tests": 278,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "loader": {
+      "tests": 270,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "default_build": {
+    "passed": true,
+    "log": "build/b173-generation-paintings-final-build.log",
+    "log_sha256": "f1d7b2e64f920e4e51d6f2cbeeada3bd8abd779fbf72b2684374243a086661fb",
+    "private_mod_archives_required": false
+  },
+  "generic_guard": {
+    "passed": true,
+    "files_checked": 276
+  },
+  "original_mod_source": {
+    "stage": "run-b173-single\\morecreeps-neutralcompletion-client-20261108-172059-fe91e7\\mods\\b1.7.3\\morecreeps-neutralcompletion-client.jar",
+    "stage_sha256": "484e85d1aee3e773daaaa23117f7c60160d77da591e75851437b647cd0149626",
+    "prism_sha256": "06e6ad852b8aa0ff08913a010c47ef81093aa124976a688af05438022d50690b",
+    "all_archive_payloads_identical": true,
+    "version": "2.12"
+  },
+  "causal_regression": {
+    "original_generator": "CREEPSWorldGenCastle.generate:64",
+    "previous_hang": {
+      "regionCenter": [
+        6017,
+        6013
+      ],
+      "seed": "20241022",
+      "originalPyramidRoll": 6,
+      "originalCastleRoll": 0,
+      "originalCastleOrigin": [
+        96300,
+        85,
+        96230
+      ],
+      "originalScanAnchor": [
+        96297,
+        200,
+        96234
+      ],
+      "columns": [
+        {
+          "xz": [
+            96293,
+            96230
+          ],
+          "chunk": [
+            6018,
+            6014
+          ],
+          "persistedStatus": "minecraft:carvers",
+          "nonair": 143,
+          "castleValidSupport": 143,
+          "highestSupport": 94
+        },
+        {
+          "xz": [
+            96327,
+            96230
+          ],
+          "chunk": [
+            6020,
+            6014
+          ],
+          "persistedStatus": "minecraft:structure_starts",
+          "nonair": 0,
+          "castleValidSupport": 0,
+          "highestSupport": null
+        },
+        {
+          "xz": [
+            96293,
+            96264
+          ],
+          "chunk": [
+            6018,
+            6016
+          ],
+          "persistedStatus": "minecraft:noise",
+          "nonair": 156,
+          "castleValidSupport": 156,
+          "highestSupport": 91
+        },
+        {
+          "xz": [
+            96327,
+            96264
+          ],
+          "chunk": [
+            6020,
+            6016
+          ],
+          "persistedStatus": "minecraft:structure_starts",
+          "nonair": 0,
+          "castleValidSupport": 0,
+          "highestSupport": null
+        }
+      ],
+      "layersWithAtLeastThreeSupports": [],
+      "nativeMinimumY": -64,
+      "note": "Exact existing region-cache reads, no server chunk loads, RNG state edits, terrain writes or mod changes."
+    },
+    "fixed_native_callback": "b173_morecreepsandweirdos@0:6017,6013 completed",
+    "fixed_log": "build/completion-generation-fixed-client.log",
+    "fixed_log_sha256": "8f12ca8299936fbb8c11890e9c0e5e480942be033ba14eba1eb55ab58d2e7fda",
+    "baseline_test_jvm": "Stopped after thread/region evidence capture; user Prism process and saves were untouched."
+  },
+  "native_prerequisites_and_region_fixtures": {
+    "passed": true,
+    "regionReadGuard": "cached EMPTY/BIOMES rejected; generated NOISE air readable",
+    "itemArrow": "actual proto-chunk entity IDs/UUIDs retained; no live level insertion",
+    "painting": "passed: Beta attachment/motive, native painting proto ID/UUID, overlap rejection, deferred support without full-level load",
+    "dependencies": {
+      "passed": true,
+      "betaGenerators": true,
+      "featureCarversRadius": 8,
+      "featureWriteRadius": 1,
+      "loadingWriteRadius": -1,
+      "loadingCarversRadius": 0,
+      "accumulatedFullRadius": 18,
+      "cachedChunkLevelRadius": 18,
+      "allCachedStatusesMatch": true,
+      "firstConstruction": {
+        "generators": 1,
+        "carversRadius": 8
+      }
+    }
+  },
+  "no_beta_scheduler_control": {
+    "passed": true,
+    "betaGenerators": false,
+    "featureCarversRadius": 1,
+    "featureWriteRadius": 1,
+    "loadingWriteRadius": -1,
+    "loadingCarversRadius": 0,
+    "accumulatedFullRadius": 11,
+    "cachedChunkLevelRadius": 11,
+    "allCachedStatusesMatch": true,
+    "firstConstruction": {}
+  },
+  "controlled_original_generators": [
+    {
+      "kind": "Pyramid",
+      "accepted": true,
+      "origin": [
+        640,
+        65,
+        640
+      ],
+      "seed": 10231,
+      "controlled": true,
+      "native_chests": 1,
+      "native_spawners": 6,
+      "evidence": "run-b173-single\\morecreeps-generation-fixed-client-20261108-210749\\control\\out\\completion-worldgen-1794190714653155600.json"
+    },
+    {
+      "kind": "Castle",
+      "accepted": true,
+      "origin": [
+        960,
+        64,
+        960
+      ],
+      "seed": 10231,
+      "controlled": true,
+      "native_chests": 50,
+      "native_spawners": 29,
+      "evidence": "run-b173-single\\morecreeps-generation-fixed-client-20261108-210749\\control\\out\\completion-worldgen-1794190741337411400.json"
+    }
+  ],
+  "ordinary_native_generation": [
+    {
+      "chunk_origin": [
+        6000,
+        6000
+      ],
+      "before_callbacks": 873,
+      "after_callbacks": 1357,
+      "loaded_full_chunks": 256,
+      "no_counter_rng_terrain_edits": true,
+      "mod_structure_placement_proven": false
+    },
+    {
+      "chunk_origin": [
+        6040,
+        6000
+      ],
+      "before_callbacks": 1357,
+      "after_callbacks": 1841,
+      "loaded_full_chunks": 256,
+      "no_counter_rng_terrain_edits": true,
+      "mod_structure_placement_proven": false
+    }
+  ],
+  "native_block_entity_persistence": {
+    "passed": true,
+    "positions": 90,
+    "native_server_replaced": true,
+    "before": [
+      {
+        "xyz": [
+          652,
+          64,
+          656
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:blacksoul\"}}"
+      },
+      {
+        "xyz": [
+          658,
+          64,
+          669
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:mummy\"}}"
+      },
+      {
+        "xyz": [
+          662,
+          64,
+          665
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:blacksoul\"}}"
+      },
+      {
+        "xyz": [
+          664,
+          64,
+          666
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:babymummy\"}}"
+      },
+      {
+        "xyz": [
+          666,
+          64,
+          666
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:mummy\"}}"
+      },
+      {
+        "xyz": [
+          672,
+          64,
+          658
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:mummy\"}}"
+      },
+      {
+        "xyz": [
+          673,
+          64,
+          673
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:1b,count:9,id:\"minecraft:bucket\"},{Slot:2b,count:2,id:\"minecraft:iron_ingot\"},{Slot:3b,count:8,id:\"minecraft:bucket\"},{Slot:5b,count:1,id:\"minecraft:iron_sword\"},{Slot:10b,count:14,id:\"b173_morecreepsandweirdos:blorp_cola\"},{Slot:11b,count:12,id:\"b173_morecreepsandweirdos:money\"},{Slot:12b,count:1,id:\"minecraft:stick\"},{Slot:14b,count:1,id:\"minecraft:book\"},{Slot:15b,count:5,id:\"b173_morecreepsandweirdos:evil_egg\"},{Slot:18b,count:9,id:\"minecraft:bucket\"},{Slot:19b,count:1,id:\"minecraft:bone\"},{Slot:22b,count:6,id:\"minecraft:wheat\"},{Slot:23b,count:6,id:\"minecraft:cookie\"},{Slot:25b,count:18,id:\"b173_morecreepsandweirdos:evil_egg\"}]"
+      },
+      {
+        "xyz": [
+          957,
+          64,
+          962
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:castleguard\"}}"
+      },
+      {
+        "xyz": [
+          957,
+          64,
+          987
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:castleguard\"}}"
+      },
+      {
+        "xyz": [
+          957,
+          71,
+          962
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:castlecritter\"}}"
+      },
+      {
+        "xyz": [
+          957,
+          71,
+          987
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:castlecritter\"}}"
+      },
+      {
+        "xyz": [
+          957,
+          78,
+          962
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:castlecritter\"}}"
+      },
+      {
+        "xyz": [
+          957,
+          78,
+          987
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"minecraft:skeleton\"}}"
+      },
+      {
+        "xyz": [
+          957,
+          85,
+          962
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"minecraft:skeleton\"}}"
+      },
+      {
+        "xyz": [
+          957,
+          85,
+          987
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"minecraft:skeleton\"}}"
+      },
+      {
+        "xyz": [
+          957,
+          92,
+          962
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:castlecritter\"}}"
+      },
+      {
+        "xyz": [
+          957,
+          92,
+          987
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:castleguard\"}}"
+      },
+      {
+        "xyz": [
+          959,
+          65,
+          957
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:4b,count:2,id:\"b173_morecreepsandweirdos:money\"},{Slot:5b,count:4,id:\"minecraft:wheat\"},{Slot:11b,count:1,id:\"minecraft:leather\"}]"
+      },
+      {
+        "xyz": [
+          959,
+          65,
+          982
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:18b,count:31,id:\"minecraft:arrow\"}]"
+      },
+      {
+        "xyz": [
+          959,
+          72,
+          957
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:13b,count:1,id:\"minecraft:apple\"}]"
+      },
+      {
+        "xyz": [
+          959,
+          72,
+          982
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:6b,count:7,id:\"minecraft:wheat_seeds\"}]"
+      },
+      {
+        "xyz": [
+          959,
+          79,
+          957
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:9b,count:12,id:\"b173_morecreepsandweirdos:blorp_cola\"},{Slot:19b,count:3,id:\"minecraft:wheat\"},{Slot:26b,count:6,id:\"b173_morecreepsandweirdos:goo_donut\"}]"
+      },
+      {
+        "xyz": [
+          959,
+          79,
+          982
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:6b,count:3,id:\"b173_morecreepsandweirdos:evil_egg\"},{Slot:10b,count:1,id:\"minecraft:iron_axe\"}]"
+      },
+      {
+        "xyz": [
+          959,
+          86,
+          957
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:2b,count:9,id:\"b173_morecreepsandweirdos:blorp_cola\"},{Slot:4b,count:4,id:\"b173_morecreepsandweirdos:money\"},{Slot:23b,count:1,id:\"b173_morecreepsandweirdos:frisbee\"}]"
+      },
+      {
+        "xyz": [
+          959,
+          86,
+          982
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:21b,count:4,id:\"b173_morecreepsandweirdos:evil_egg\"},{Slot:25b,count:1,id:\"minecraft:iron_pickaxe\"}]"
+      },
+      {
+        "xyz": [
+          959,
+          93,
+          957
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:1b,count:17,id:\"b173_morecreepsandweirdos:money\"},{Slot:2b,count:1,id:\"minecraft:wooden_axe\"},{Slot:25b,count:1,id:\"minecraft:golden_apple\"}]"
+      },
+      {
+        "xyz": [
+          959,
+          93,
+          982
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:6b,count:1,id:\"minecraft:bread\"},{Slot:22b,count:1,id:\"b173_morecreepsandweirdos:horse_head_gem\"}]"
+      },
+      {
+        "xyz": [
+          960,
+          65,
+          957
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:13b,count:8,id:\"minecraft:cookie\"},{Slot:14b,count:1,id:\"minecraft:leather\"}]"
+      },
+      {
+        "xyz": [
+          960,
+          65,
+          982
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:5b,count:3,id:\"b173_morecreepsandweirdos:money\"}]"
+      },
+      {
+        "xyz": [
+          960,
+          72,
+          957
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:16b,count:6,id:\"minecraft:cookie\"},{Slot:25b,count:1,id:\"minecraft:bow\"}]"
+      },
+      {
+        "xyz": [
+          960,
+          72,
+          982
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:0b,count:1,id:\"b173_morecreepsandweirdos:healing_gem\"}]"
+      },
+      {
+        "xyz": [
+          960,
+          79,
+          957
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:9b,count:1,id:\"b173_morecreepsandweirdos:evil_egg\"},{Slot:19b,count:1,id:\"minecraft:oak_sign\"}]"
+      },
+      {
+        "xyz": [
+          960,
+          79,
+          982
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:14b,count:1,id:\"minecraft:bread\"}]"
+      },
+      {
+        "xyz": [
+          960,
+          86,
+          957
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:0b,count:1,id:\"b173_morecreepsandweirdos:earth_gem\"},{Slot:14b,count:2,id:\"b173_morecreepsandweirdos:evil_egg\"}]"
+      },
+      {
+        "xyz": [
+          960,
+          86,
+          982
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:2b,count:1,id:\"b173_morecreepsandweirdos:lolly\"}]"
+      },
+      {
+        "xyz": [
+          960,
+          93,
+          957
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:24b,count:1,id:\"minecraft:iron_shovel\"}]"
+      },
+      {
+        "xyz": [
+          960,
+          93,
+          982
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:9b,count:1,id:\"b173_morecreepsandweirdos:money\"}]"
+      },
+      {
+        "xyz": [
+          962,
+          71,
+          962
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:mummy\"}}"
+      },
+      {
+        "xyz": [
+          966,
+          64,
+          968
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:castlecritter\"}}"
+      },
+      {
+        "xyz": [
+          967,
+          78,
+          957
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:castlecritter\"}}"
+      },
+      {
+        "xyz": [
+          968,
+          92,
+          956
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:castleguard\"}}"
+      },
+      {
+        "xyz": [
+          972,
+          65,
+          972
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[]"
+      },
+      {
+        "xyz": [
+          972,
+          65,
+          973
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:6b,count:9,id:\"minecraft:wheat\"}]"
+      },
+      {
+        "xyz": [
+          972,
+          72,
+          972
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[]"
+      },
+      {
+        "xyz": [
+          972,
+          72,
+          973
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:3b,count:6,id:\"minecraft:wheat\"},{Slot:7b,count:34,id:\"minecraft:arrow\"},{Slot:8b,count:7,id:\"minecraft:wheat_seeds\"},{Slot:13b,count:1,id:\"minecraft:iron_pickaxe\"},{Slot:18b,count:18,id:\"b173_morecreepsandweirdos:money\"},{Slot:21b,count:7,id:\"b173_morecreepsandweirdos:money\"},{Slot:22b,count:40,id:\"b173_morecreepsandweirdos:money\"},{Slot:23b,count:8,id:\"minecraft:wheat\"},{Slot:24b,count:1,id:\"minecraft:bow\"}]"
+      },
+      {
+        "xyz": [
+          972,
+          79,
+          972
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[]"
+      },
+      {
+        "xyz": [
+          972,
+          79,
+          973
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:0b,count:1,id:\"b173_morecreepsandweirdos:frisbee\"},{Slot:3b,count:32,id:\"b173_morecreepsandweirdos:money\"},{Slot:6b,count:1,id:\"minecraft:diamond\"},{Slot:7b,count:1,id:\"minecraft:diamond\"},{Slot:13b,count:21,id:\"b173_morecreepsandweirdos:money\"}]"
+      },
+      {
+        "xyz": [
+          972,
+          86,
+          972
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[]"
+      },
+      {
+        "xyz": [
+          972,
+          86,
+          973
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:0b,count:11,id:\"minecraft:cookie\"},{Slot:16b,count:11,id:\"minecraft:cookie\"},{Slot:18b,count:6,id:\"minecraft:wheat\"}]"
+      },
+      {
+        "xyz": [
+          972,
+          92,
+          962
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:castlecritter\"}}"
+      },
+      {
+        "xyz": [
+          972,
+          93,
+          972
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[]"
+      },
+      {
+        "xyz": [
+          972,
+          93,
+          973
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:9b,count:1,id:\"minecraft:water_bucket\"},{Slot:25b,count:4,id:\"b173_morecreepsandweirdos:money\"}]"
+      },
+      {
+        "xyz": [
+          973,
+          64,
+          967
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:castleguard\"}}"
+      },
+      {
+        "xyz": [
+          976,
+          92,
+          966
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:castleguard\"}}"
+      },
+      {
+        "xyz": [
+          977,
+          71,
+          964
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:castlecritter\"}}"
+      },
+      {
+        "xyz": [
+          982,
+          64,
+          962
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:castlecritter\"}}"
+      },
+      {
+        "xyz": [
+          982,
+          64,
+          987
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:castleguard\"}}"
+      },
+      {
+        "xyz": [
+          982,
+          71,
+          962
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:mummy\"}}"
+      },
+      {
+        "xyz": [
+          982,
+          71,
+          987
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:castlecritter\"}}"
+      },
+      {
+        "xyz": [
+          982,
+          78,
+          962
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"minecraft:skeleton\"}}"
+      },
+      {
+        "xyz": [
+          982,
+          78,
+          987
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:castlecritter\"}}"
+      },
+      {
+        "xyz": [
+          982,
+          85,
+          962
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"minecraft:spider\"}}"
+      },
+      {
+        "xyz": [
+          982,
+          85,
+          987
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"minecraft:skeleton\"}}"
+      },
+      {
+        "xyz": [
+          982,
+          92,
+          962
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:castleguard\"}}"
+      },
+      {
+        "xyz": [
+          982,
+          92,
+          987
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:castleguard\"}}"
+      },
+      {
+        "xyz": [
+          984,
+          65,
+          957
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:5b,count:9,id:\"minecraft:cookie\"},{Slot:17b,count:13,id:\"minecraft:arrow\"},{Slot:25b,count:3,id:\"b173_morecreepsandweirdos:evil_egg\"}]"
+      },
+      {
+        "xyz": [
+          984,
+          65,
+          982
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:8b,count:8,id:\"minecraft:wheat_seeds\"},{Slot:19b,count:16,id:\"minecraft:arrow\"}]"
+      },
+      {
+        "xyz": [
+          984,
+          72,
+          957
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:16b,count:7,id:\"b173_morecreepsandweirdos:blorp_cola\"},{Slot:19b,count:1,id:\"minecraft:bow\"},{Slot:25b,count:2,id:\"b173_morecreepsandweirdos:evil_egg\"}]"
+      },
+      {
+        "xyz": [
+          984,
+          72,
+          982
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:3b,count:1,id:\"minecraft:oak_sign\"},{Slot:11b,count:1,id:\"minecraft:apple\"},{Slot:15b,count:33,id:\"minecraft:arrow\"}]"
+      },
+      {
+        "xyz": [
+          984,
+          79,
+          957
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:13b,count:1,id:\"minecraft:leather\"},{Slot:15b,count:1,id:\"minecraft:oak_sign\"},{Slot:25b,count:5,id:\"b173_morecreepsandweirdos:money\"}]"
+      },
+      {
+        "xyz": [
+          984,
+          79,
+          982
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:10b,count:1,id:\"minecraft:iron_pickaxe\"},{Slot:25b,count:34,id:\"minecraft:arrow\"},{Slot:26b,count:6,id:\"b173_morecreepsandweirdos:blorp_cola\"}]"
+      },
+      {
+        "xyz": [
+          984,
+          86,
+          957
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:1b,count:1,id:\"minecraft:paper\"},{Slot:5b,count:14,id:\"minecraft:wheat\"},{Slot:8b,count:1,id:\"minecraft:water_bucket\"}]"
+      },
+      {
+        "xyz": [
+          984,
+          86,
+          982
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:0b,count:8,id:\"b173_morecreepsandweirdos:money\"},{Slot:7b,count:1,id:\"minecraft:iron_axe\"},{Slot:14b,count:1,id:\"b173_morecreepsandweirdos:lolly\"}]"
+      },
+      {
+        "xyz": [
+          984,
+          93,
+          957
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:8b,count:6,id:\"minecraft:wheat_seeds\"},{Slot:9b,count:1,id:\"minecraft:golden_boots\"},{Slot:18b,count:1,id:\"minecraft:iron_shovel\"}]"
+      },
+      {
+        "xyz": [
+          984,
+          93,
+          982
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:4b,count:1,id:\"minecraft:iron_axe\"},{Slot:16b,count:1,id:\"minecraft:golden_helmet\"},{Slot:21b,count:11,id:\"minecraft:wheat\"}]"
+      },
+      {
+        "xyz": [
+          985,
+          65,
+          957
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:0b,count:1,id:\"b173_morecreepsandweirdos:mining_gem\"},{Slot:20b,count:3,id:\"b173_morecreepsandweirdos:evil_egg\"}]"
+      },
+      {
+        "xyz": [
+          985,
+          65,
+          982
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:0b,count:1,id:\"b173_morecreepsandweirdos:sky_gem\"}]"
+      },
+      {
+        "xyz": [
+          985,
+          72,
+          957
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:5b,count:3,id:\"b173_morecreepsandweirdos:evil_egg\"},{Slot:9b,count:1,id:\"minecraft:paper\"}]"
+      },
+      {
+        "xyz": [
+          985,
+          72,
+          982
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:9b,count:20,id:\"minecraft:arrow\"},{Slot:18b,count:5,id:\"b173_morecreepsandweirdos:band_aid\"}]"
+      },
+      {
+        "xyz": [
+          985,
+          79,
+          957
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:7b,count:1,id:\"minecraft:bread\"},{Slot:11b,count:1,id:\"minecraft:paper\"}]"
+      },
+      {
+        "xyz": [
+          985,
+          79,
+          982
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:21b,count:1,id:\"minecraft:bow\"},{Slot:26b,count:1,id:\"minecraft:oak_sign\"}]"
+      },
+      {
+        "xyz": [
+          985,
+          86,
+          957
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:3b,count:4,id:\"minecraft:wheat\"},{Slot:21b,count:9,id:\"b173_morecreepsandweirdos:money\"}]"
+      },
+      {
+        "xyz": [
+          985,
+          86,
+          982
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:0b,count:1,id:\"b173_morecreepsandweirdos:frisbee\"},{Slot:11b,count:15,id:\"b173_morecreepsandweirdos:band_aid\"}]"
+      },
+      {
+        "xyz": [
+          985,
+          93,
+          957
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:4b,count:3,id:\"b173_morecreepsandweirdos:money\"},{Slot:6b,count:9,id:\"b173_morecreepsandweirdos:evil_egg\"}]"
+      },
+      {
+        "xyz": [
+          985,
+          93,
+          982
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:5b,count:8,id:\"b173_morecreepsandweirdos:money\"},{Slot:8b,count:1,id:\"b173_morecreepsandweirdos:money\"}]"
+      },
+      {
+        "xyz": [
+          987,
+          85,
+          962
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"minecraft:spider\"}}"
+      },
+      {
+        "xyz": [
+          51202,
+          220,
+          51202
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:0b,count:4,id:\"minecraft:diamond\"}]"
+      },
+      {
+        "xyz": [
+          51250,
+          220,
+          51202
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:5b,count:6,id:\"minecraft:gold_ingot\"}]"
+      },
+      {
+        "xyz": [
+          51251,
+          220,
+          51202
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"minecraft:pig\"}}"
+      },
+      {
+        "xyz": [
+          51252,
+          220,
+          51202
+        ],
+        "state": "Block{minecraft:lime_wool}",
+        "type": null
+      }
+    ],
+    "after": [
+      {
+        "xyz": [
+          652,
+          64,
+          656
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:blacksoul\"}}"
+      },
+      {
+        "xyz": [
+          658,
+          64,
+          669
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:mummy\"}}"
+      },
+      {
+        "xyz": [
+          662,
+          64,
+          665
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:blacksoul\"}}"
+      },
+      {
+        "xyz": [
+          664,
+          64,
+          666
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:babymummy\"}}"
+      },
+      {
+        "xyz": [
+          666,
+          64,
+          666
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:mummy\"}}"
+      },
+      {
+        "xyz": [
+          672,
+          64,
+          658
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:mummy\"}}"
+      },
+      {
+        "xyz": [
+          673,
+          64,
+          673
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:1b,count:9,id:\"minecraft:bucket\"},{Slot:2b,count:2,id:\"minecraft:iron_ingot\"},{Slot:3b,count:8,id:\"minecraft:bucket\"},{Slot:5b,count:1,id:\"minecraft:iron_sword\"},{Slot:10b,count:14,id:\"b173_morecreepsandweirdos:blorp_cola\"},{Slot:11b,count:12,id:\"b173_morecreepsandweirdos:money\"},{Slot:12b,count:1,id:\"minecraft:stick\"},{Slot:14b,count:1,id:\"minecraft:book\"},{Slot:15b,count:5,id:\"b173_morecreepsandweirdos:evil_egg\"},{Slot:18b,count:9,id:\"minecraft:bucket\"},{Slot:19b,count:1,id:\"minecraft:bone\"},{Slot:22b,count:6,id:\"minecraft:wheat\"},{Slot:23b,count:6,id:\"minecraft:cookie\"},{Slot:25b,count:18,id:\"b173_morecreepsandweirdos:evil_egg\"}]"
+      },
+      {
+        "xyz": [
+          957,
+          64,
+          962
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:castleguard\"}}"
+      },
+      {
+        "xyz": [
+          957,
+          64,
+          987
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:castleguard\"}}"
+      },
+      {
+        "xyz": [
+          957,
+          71,
+          962
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:castlecritter\"}}"
+      },
+      {
+        "xyz": [
+          957,
+          71,
+          987
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:castlecritter\"}}"
+      },
+      {
+        "xyz": [
+          957,
+          78,
+          962
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:castlecritter\"}}"
+      },
+      {
+        "xyz": [
+          957,
+          78,
+          987
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"minecraft:skeleton\"}}"
+      },
+      {
+        "xyz": [
+          957,
+          85,
+          962
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"minecraft:skeleton\"}}"
+      },
+      {
+        "xyz": [
+          957,
+          85,
+          987
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"minecraft:skeleton\"}}"
+      },
+      {
+        "xyz": [
+          957,
+          92,
+          962
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:castlecritter\"}}"
+      },
+      {
+        "xyz": [
+          957,
+          92,
+          987
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:castleguard\"}}"
+      },
+      {
+        "xyz": [
+          959,
+          65,
+          957
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:4b,count:2,id:\"b173_morecreepsandweirdos:money\"},{Slot:5b,count:4,id:\"minecraft:wheat\"},{Slot:11b,count:1,id:\"minecraft:leather\"}]"
+      },
+      {
+        "xyz": [
+          959,
+          65,
+          982
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:18b,count:31,id:\"minecraft:arrow\"}]"
+      },
+      {
+        "xyz": [
+          959,
+          72,
+          957
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:13b,count:1,id:\"minecraft:apple\"}]"
+      },
+      {
+        "xyz": [
+          959,
+          72,
+          982
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:6b,count:7,id:\"minecraft:wheat_seeds\"}]"
+      },
+      {
+        "xyz": [
+          959,
+          79,
+          957
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:9b,count:12,id:\"b173_morecreepsandweirdos:blorp_cola\"},{Slot:19b,count:3,id:\"minecraft:wheat\"},{Slot:26b,count:6,id:\"b173_morecreepsandweirdos:goo_donut\"}]"
+      },
+      {
+        "xyz": [
+          959,
+          79,
+          982
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:6b,count:3,id:\"b173_morecreepsandweirdos:evil_egg\"},{Slot:10b,count:1,id:\"minecraft:iron_axe\"}]"
+      },
+      {
+        "xyz": [
+          959,
+          86,
+          957
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:2b,count:9,id:\"b173_morecreepsandweirdos:blorp_cola\"},{Slot:4b,count:4,id:\"b173_morecreepsandweirdos:money\"},{Slot:23b,count:1,id:\"b173_morecreepsandweirdos:frisbee\"}]"
+      },
+      {
+        "xyz": [
+          959,
+          86,
+          982
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:21b,count:4,id:\"b173_morecreepsandweirdos:evil_egg\"},{Slot:25b,count:1,id:\"minecraft:iron_pickaxe\"}]"
+      },
+      {
+        "xyz": [
+          959,
+          93,
+          957
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:1b,count:17,id:\"b173_morecreepsandweirdos:money\"},{Slot:2b,count:1,id:\"minecraft:wooden_axe\"},{Slot:25b,count:1,id:\"minecraft:golden_apple\"}]"
+      },
+      {
+        "xyz": [
+          959,
+          93,
+          982
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:6b,count:1,id:\"minecraft:bread\"},{Slot:22b,count:1,id:\"b173_morecreepsandweirdos:horse_head_gem\"}]"
+      },
+      {
+        "xyz": [
+          960,
+          65,
+          957
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:13b,count:8,id:\"minecraft:cookie\"},{Slot:14b,count:1,id:\"minecraft:leather\"}]"
+      },
+      {
+        "xyz": [
+          960,
+          65,
+          982
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:5b,count:3,id:\"b173_morecreepsandweirdos:money\"}]"
+      },
+      {
+        "xyz": [
+          960,
+          72,
+          957
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:16b,count:6,id:\"minecraft:cookie\"},{Slot:25b,count:1,id:\"minecraft:bow\"}]"
+      },
+      {
+        "xyz": [
+          960,
+          72,
+          982
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:0b,count:1,id:\"b173_morecreepsandweirdos:healing_gem\"}]"
+      },
+      {
+        "xyz": [
+          960,
+          79,
+          957
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:9b,count:1,id:\"b173_morecreepsandweirdos:evil_egg\"},{Slot:19b,count:1,id:\"minecraft:oak_sign\"}]"
+      },
+      {
+        "xyz": [
+          960,
+          79,
+          982
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:14b,count:1,id:\"minecraft:bread\"}]"
+      },
+      {
+        "xyz": [
+          960,
+          86,
+          957
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:0b,count:1,id:\"b173_morecreepsandweirdos:earth_gem\"},{Slot:14b,count:2,id:\"b173_morecreepsandweirdos:evil_egg\"}]"
+      },
+      {
+        "xyz": [
+          960,
+          86,
+          982
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:2b,count:1,id:\"b173_morecreepsandweirdos:lolly\"}]"
+      },
+      {
+        "xyz": [
+          960,
+          93,
+          957
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:24b,count:1,id:\"minecraft:iron_shovel\"}]"
+      },
+      {
+        "xyz": [
+          960,
+          93,
+          982
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:9b,count:1,id:\"b173_morecreepsandweirdos:money\"}]"
+      },
+      {
+        "xyz": [
+          962,
+          71,
+          962
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:mummy\"}}"
+      },
+      {
+        "xyz": [
+          966,
+          64,
+          968
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:castlecritter\"}}"
+      },
+      {
+        "xyz": [
+          967,
+          78,
+          957
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:castlecritter\"}}"
+      },
+      {
+        "xyz": [
+          968,
+          92,
+          956
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:castleguard\"}}"
+      },
+      {
+        "xyz": [
+          972,
+          65,
+          972
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[]"
+      },
+      {
+        "xyz": [
+          972,
+          65,
+          973
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:6b,count:9,id:\"minecraft:wheat\"}]"
+      },
+      {
+        "xyz": [
+          972,
+          72,
+          972
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[]"
+      },
+      {
+        "xyz": [
+          972,
+          72,
+          973
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:3b,count:6,id:\"minecraft:wheat\"},{Slot:7b,count:34,id:\"minecraft:arrow\"},{Slot:8b,count:7,id:\"minecraft:wheat_seeds\"},{Slot:13b,count:1,id:\"minecraft:iron_pickaxe\"},{Slot:18b,count:18,id:\"b173_morecreepsandweirdos:money\"},{Slot:21b,count:7,id:\"b173_morecreepsandweirdos:money\"},{Slot:22b,count:40,id:\"b173_morecreepsandweirdos:money\"},{Slot:23b,count:8,id:\"minecraft:wheat\"},{Slot:24b,count:1,id:\"minecraft:bow\"}]"
+      },
+      {
+        "xyz": [
+          972,
+          79,
+          972
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[]"
+      },
+      {
+        "xyz": [
+          972,
+          79,
+          973
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:0b,count:1,id:\"b173_morecreepsandweirdos:frisbee\"},{Slot:3b,count:32,id:\"b173_morecreepsandweirdos:money\"},{Slot:6b,count:1,id:\"minecraft:diamond\"},{Slot:7b,count:1,id:\"minecraft:diamond\"},{Slot:13b,count:21,id:\"b173_morecreepsandweirdos:money\"}]"
+      },
+      {
+        "xyz": [
+          972,
+          86,
+          972
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[]"
+      },
+      {
+        "xyz": [
+          972,
+          86,
+          973
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:0b,count:11,id:\"minecraft:cookie\"},{Slot:16b,count:11,id:\"minecraft:cookie\"},{Slot:18b,count:6,id:\"minecraft:wheat\"}]"
+      },
+      {
+        "xyz": [
+          972,
+          92,
+          962
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:castlecritter\"}}"
+      },
+      {
+        "xyz": [
+          972,
+          93,
+          972
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[]"
+      },
+      {
+        "xyz": [
+          972,
+          93,
+          973
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:9b,count:1,id:\"minecraft:water_bucket\"},{Slot:25b,count:4,id:\"b173_morecreepsandweirdos:money\"}]"
+      },
+      {
+        "xyz": [
+          973,
+          64,
+          967
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:castleguard\"}}"
+      },
+      {
+        "xyz": [
+          976,
+          92,
+          966
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:castleguard\"}}"
+      },
+      {
+        "xyz": [
+          977,
+          71,
+          964
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:castlecritter\"}}"
+      },
+      {
+        "xyz": [
+          982,
+          64,
+          962
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:castlecritter\"}}"
+      },
+      {
+        "xyz": [
+          982,
+          64,
+          987
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:castleguard\"}}"
+      },
+      {
+        "xyz": [
+          982,
+          71,
+          962
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:mummy\"}}"
+      },
+      {
+        "xyz": [
+          982,
+          71,
+          987
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:castlecritter\"}}"
+      },
+      {
+        "xyz": [
+          982,
+          78,
+          962
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"minecraft:skeleton\"}}"
+      },
+      {
+        "xyz": [
+          982,
+          78,
+          987
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:castlecritter\"}}"
+      },
+      {
+        "xyz": [
+          982,
+          85,
+          962
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"minecraft:spider\"}}"
+      },
+      {
+        "xyz": [
+          982,
+          85,
+          987
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"minecraft:skeleton\"}}"
+      },
+      {
+        "xyz": [
+          982,
+          92,
+          962
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:castleguard\"}}"
+      },
+      {
+        "xyz": [
+          982,
+          92,
+          987
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"b173_morecreepsandweirdos:castleguard\"}}"
+      },
+      {
+        "xyz": [
+          984,
+          65,
+          957
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:5b,count:9,id:\"minecraft:cookie\"},{Slot:17b,count:13,id:\"minecraft:arrow\"},{Slot:25b,count:3,id:\"b173_morecreepsandweirdos:evil_egg\"}]"
+      },
+      {
+        "xyz": [
+          984,
+          65,
+          982
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:8b,count:8,id:\"minecraft:wheat_seeds\"},{Slot:19b,count:16,id:\"minecraft:arrow\"}]"
+      },
+      {
+        "xyz": [
+          984,
+          72,
+          957
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:16b,count:7,id:\"b173_morecreepsandweirdos:blorp_cola\"},{Slot:19b,count:1,id:\"minecraft:bow\"},{Slot:25b,count:2,id:\"b173_morecreepsandweirdos:evil_egg\"}]"
+      },
+      {
+        "xyz": [
+          984,
+          72,
+          982
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:3b,count:1,id:\"minecraft:oak_sign\"},{Slot:11b,count:1,id:\"minecraft:apple\"},{Slot:15b,count:33,id:\"minecraft:arrow\"}]"
+      },
+      {
+        "xyz": [
+          984,
+          79,
+          957
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:13b,count:1,id:\"minecraft:leather\"},{Slot:15b,count:1,id:\"minecraft:oak_sign\"},{Slot:25b,count:5,id:\"b173_morecreepsandweirdos:money\"}]"
+      },
+      {
+        "xyz": [
+          984,
+          79,
+          982
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:10b,count:1,id:\"minecraft:iron_pickaxe\"},{Slot:25b,count:34,id:\"minecraft:arrow\"},{Slot:26b,count:6,id:\"b173_morecreepsandweirdos:blorp_cola\"}]"
+      },
+      {
+        "xyz": [
+          984,
+          86,
+          957
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:1b,count:1,id:\"minecraft:paper\"},{Slot:5b,count:14,id:\"minecraft:wheat\"},{Slot:8b,count:1,id:\"minecraft:water_bucket\"}]"
+      },
+      {
+        "xyz": [
+          984,
+          86,
+          982
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:0b,count:8,id:\"b173_morecreepsandweirdos:money\"},{Slot:7b,count:1,id:\"minecraft:iron_axe\"},{Slot:14b,count:1,id:\"b173_morecreepsandweirdos:lolly\"}]"
+      },
+      {
+        "xyz": [
+          984,
+          93,
+          957
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:8b,count:6,id:\"minecraft:wheat_seeds\"},{Slot:9b,count:1,id:\"minecraft:golden_boots\"},{Slot:18b,count:1,id:\"minecraft:iron_shovel\"}]"
+      },
+      {
+        "xyz": [
+          984,
+          93,
+          982
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:4b,count:1,id:\"minecraft:iron_axe\"},{Slot:16b,count:1,id:\"minecraft:golden_helmet\"},{Slot:21b,count:11,id:\"minecraft:wheat\"}]"
+      },
+      {
+        "xyz": [
+          985,
+          65,
+          957
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:0b,count:1,id:\"b173_morecreepsandweirdos:mining_gem\"},{Slot:20b,count:3,id:\"b173_morecreepsandweirdos:evil_egg\"}]"
+      },
+      {
+        "xyz": [
+          985,
+          65,
+          982
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:0b,count:1,id:\"b173_morecreepsandweirdos:sky_gem\"}]"
+      },
+      {
+        "xyz": [
+          985,
+          72,
+          957
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:5b,count:3,id:\"b173_morecreepsandweirdos:evil_egg\"},{Slot:9b,count:1,id:\"minecraft:paper\"}]"
+      },
+      {
+        "xyz": [
+          985,
+          72,
+          982
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:9b,count:20,id:\"minecraft:arrow\"},{Slot:18b,count:5,id:\"b173_morecreepsandweirdos:band_aid\"}]"
+      },
+      {
+        "xyz": [
+          985,
+          79,
+          957
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:7b,count:1,id:\"minecraft:bread\"},{Slot:11b,count:1,id:\"minecraft:paper\"}]"
+      },
+      {
+        "xyz": [
+          985,
+          79,
+          982
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:21b,count:1,id:\"minecraft:bow\"},{Slot:26b,count:1,id:\"minecraft:oak_sign\"}]"
+      },
+      {
+        "xyz": [
+          985,
+          86,
+          957
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:3b,count:4,id:\"minecraft:wheat\"},{Slot:21b,count:9,id:\"b173_morecreepsandweirdos:money\"}]"
+      },
+      {
+        "xyz": [
+          985,
+          86,
+          982
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:0b,count:1,id:\"b173_morecreepsandweirdos:frisbee\"},{Slot:11b,count:15,id:\"b173_morecreepsandweirdos:band_aid\"}]"
+      },
+      {
+        "xyz": [
+          985,
+          93,
+          957
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:4b,count:3,id:\"b173_morecreepsandweirdos:money\"},{Slot:6b,count:9,id:\"b173_morecreepsandweirdos:evil_egg\"}]"
+      },
+      {
+        "xyz": [
+          985,
+          93,
+          982
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:5b,count:8,id:\"b173_morecreepsandweirdos:money\"},{Slot:8b,count:1,id:\"b173_morecreepsandweirdos:money\"}]"
+      },
+      {
+        "xyz": [
+          987,
+          85,
+          962
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"minecraft:spider\"}}"
+      },
+      {
+        "xyz": [
+          51202,
+          220,
+          51202
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:0b,count:4,id:\"minecraft:diamond\"}]"
+      },
+      {
+        "xyz": [
+          51250,
+          220,
+          51202
+        ],
+        "state": "Block{minecraft:chest}[facing=north,type=single,waterlogged=false]",
+        "type": "net.minecraft.world.level.block.entity.ChestBlockEntity",
+        "Items": "[{Slot:5b,count:6,id:\"minecraft:gold_ingot\"}]"
+      },
+      {
+        "xyz": [
+          51251,
+          220,
+          51202
+        ],
+        "state": "Block{minecraft:spawner}",
+        "type": "net.minecraft.world.level.block.entity.SpawnerBlockEntity",
+        "SpawnData": "{entity:{id:\"minecraft:pig\"}}"
+      },
+      {
+        "xyz": [
+          51252,
+          220,
+          51202
+        ],
+        "state": "Block{minecraft:lime_wool}",
+        "type": null
+      }
+    ],
+    "spawner_delay_excluded": true,
+    "evidence": "run-b173-single\\morecreeps-generation-fixed-client-20261108-210749\\completion-worldgen-persistence.json"
+  },
+  "native_painting_persistence": {
+    "nativeIdentity": 191539177,
+    "proofMode": "controlled ordinary Beta API wall/motive; not original Castle placement",
+    "attachment": [
+      1100,
+      72,
+      1100
+    ],
+    "painting": {
+      "uuid": "79d37d50-ff4f-4b12-9b2c-004a2b111f62",
+      "variant": "minecraft:pointer",
+      "front": [
+        1100,
+        72,
+        1101
+      ],
+      "attachment": [
+        1100,
+        72,
+        1100
+      ],
+      "direction": "south",
+      "survives": true,
+      "positiveBounds": true
+    },
+    "afterRealReopen": {
+      "world": "/mnt/c/Users/zekken/Desktop/minecrafting/Legacy-Connector/run-b173-single/morecreeps-generation-fixed-client-20261108-210749/saves/LegacyConnectorShots1794190492187",
+      "nativeIdentity": 2008317173,
+      "painting": {
+        "uuid": "79d37d50-ff4f-4b12-9b2c-004a2b111f62",
+        "variant": "minecraft:pointer",
+        "front": [
+          1100,
+          72,
+          1101
+        ],
+        "attachment": [
+          1100,
+          72,
+          1100
+        ],
+        "direction": "south",
+        "survives": true,
+        "positiveBounds": true
+      }
+    },
+    "passed": true
+  },
+  "painting_render": {
+    "screenshot": "run-b173-single\\morecreeps-generation-fixed-client-20261108-210749\\control\\out\\beta-native-painting-final.png",
+    "sha256": "95002dfa1755a101163401ecbea114a9008bfe3c627e0163f9af6358147a5fd8",
+    "visually_reviewed": true,
+    "runtime": "WSL Xvfb Mesa with Sodium/Iris; no shader pack"
+  },
+  "original_castle_painting_requests": {
+    "tested": 10,
+    "support_ids": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "fitting_motives": [
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      []
+    ],
+    "behavior": "Original AIR support rejection preserved; no mod-specific wall-placement correction. Positive painting proof uses a separately labeled valid shared-API wall fixture."
+  },
+  "mixed_pack": {
+    "passed": true,
+    "legacy_mods": 14,
+    "failures": 0,
+    "dependencies": {
+      "passed": true,
+      "betaGenerators": true,
+      "featureCarversRadius": 8,
+      "featureWriteRadius": 1,
+      "loadingWriteRadius": -1,
+      "loadingCarversRadius": 0,
+      "accumulatedFullRadius": 18,
+      "cachedChunkLevelRadius": 18,
+      "allCachedStatusesMatch": true,
+      "firstConstruction": {
+        "generators": 3,
+        "carversRadius": 8
+      }
+    },
+    "repacked_machetes_models": [
+      {
+        "id": 22256,
+        "sprite": "b173_machetes:block/b173/i357",
+        "quads": 51
+      },
+      {
+        "id": 22257,
+        "sprite": "b173_machetes:block/b173/i358",
+        "quads": 51
+      },
+      {
+        "id": 22258,
+        "sprite": "b173_machetes:block/b173/i359",
+        "quads": 51
+      },
+      {
+        "id": 22259,
+        "sprite": "b173_machetes:block/b173/i360",
+        "quads": 51
+      },
+      {
+        "id": 22260,
+        "sprite": "b173_machetes:block/b173/i361",
+        "quads": 51
+      },
+      {
+        "id": 22261,
+        "sprite": "b173_machetes:block/b173/i362",
+        "quads": 51
+      }
+    ],
+    "existing_id_collisions": [
+      {
+        "losingMod": "PortalGun",
+        "id": 2269,
+        "winner": "Butterfly",
+        "nativeWinner": "b173_butterfly:jar6"
+      },
+      {
+        "losingMod": "PortalGun",
+        "id": 2268,
+        "winner": "Butterfly",
+        "nativeWinner": "b173_butterfly:jar5"
+      },
+      {
+        "losingMod": "PortalGun",
+        "id": 2267,
+        "winner": "Butterfly",
+        "nativeWinner": "b173_butterfly:jar4"
+      }
+    ],
+    "stage_manifest": "build/completion-generation-mixed-stage.json",
+    "log": "build/completion-generation-mixed-client.log",
+    "log_sha256": "a541fa370f3c309a1081d854503b001c35e5fc4637ff39f170b71c0000a40f53"
+  },
+  "limits": [
+    "Native CARVERS prerequisites expand the accumulated FULL terrain dependency radius from11 to18 in packs with Beta generators, increasing generation work; no-Beta remains11 and native feature/loading tasks are unchanged.",
+    "Native callbacks and the previously hanging chunk completed, but positive unforced natural Pyramid/Castle placement is not claimed; successful generator-body tests used explicit controlled terrain.",
+    "Controlled original-generator checks preceded the final painting precision correction; generation bridge sources were unchanged, and all recorded native data persisted under the final build.",
+    "Scientist/Evil Egg/army/Hotdog stats, remaining particles/projectiles, achievement display, shader packs and separate multiplayer still need gameplay proof.",
+    "Original versions were preserved; Machetes was explicitly repacked without changing class/texture bytes. No runtime archive-layout support was added."
+  ],
+  "local_only": true,
+  "push_authorized": false
+}

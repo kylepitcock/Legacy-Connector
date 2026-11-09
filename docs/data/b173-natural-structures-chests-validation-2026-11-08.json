@@ -1,0 +1,310 @@
+{
+  "status": "passed",
+  "snapshot_date": "2026-11-08",
+  "scope": "Natural placement of actual More Creeps 2.12 Pyramid/Castle through native FEATURES and generic Beta vanilla double-chest placement; not full mod compatibility certification.",
+  "tested_base_revision": "053e819cf95b6f136421e00e2acff8537891456f",
+  "branch": "legacy-b1.7.3",
+  "version": "0.4.13",
+  "artifact": {
+    "path": "build/dist/legacyconnector-0.4.13.jar",
+    "sha256": "b8cbe28870d9980c84bd91a1676f2979fbaead165145cc4b31fc04d83619ee37"
+  },
+  "source_sha256": {
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/world/World.java": "8eae08bd6db70daabef1ce595bd7aa79bd6518d3ce1a3da483972fca381ac4f1",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/VanillaBlockStatesB173.java": "5a474f9b94892d52a64841fa77f7d24b112fada5ec3f213eed257c652cb20551",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/VanillaChestPlacementB173.java": "c2709f4d59758233ab7b0cdc943debad8f48db08ebc4b37fb8c3cef7fba34ad0",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/ChestsSelfTestB173.java": "4403b2ee47247431ce41cb85b6521ca86c3303e595a4462332d7ed49027f35e8",
+    "src/test/java/org/kylepitcock/legacyconnector/vb1_7_3/VanillaChestPlacementB173Test.java": "e115cb8f35717cb682ef6716c6f2cdd18106672968ece89ab4449aa47afb28ad"
+  },
+  "generic_changes": [
+    "Only explicit Beta World vanilla-chest block/metadata/removal writes normalize native reciprocal LEFT/RIGHT/facing; no global native-chest hook or mod identity selectors",
+    "Native block entities, original inventories, stack components and deferred stand-in attachments remain intact; ambiguous triples are not paired"
+  ],
+  "tests": {
+    "runtime": {
+      "tests": 284,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "loader": {
+      "tests": 274,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "default_build": {
+    "passed": true,
+    "command": "./gradlew.bat build bundleJar",
+    "log": "build/natural-chest-pairing-final-build.log",
+    "log_sha256": "854e38d0e37fa66b92c0bab7d66dad94c8ebfd5c8629c20fa646ee02f0f972e3",
+    "private_mod_archives_required": false
+  },
+  "generic_guard": {
+    "passed": true,
+    "files_checked": 277,
+    "command": "python tools/dev/check_b173_generic.py"
+  },
+  "original_mod_source": {
+    "stage": "run-b173-single\\morecreeps-generation-fixed-client-20261108-210749\\mods\\b1.7.3\\morecreeps-neutralcompletion-client.jar",
+    "stage_sha256": "484e85d1aee3e773daaaa23117f7c60160d77da591e75851437b647cd0149626",
+    "prism_sha256": "06e6ad852b8aa0ff08913a010c47ef81093aa124976a688af05438022d50690b",
+    "all_archive_payloads_identical": true,
+    "version": "2.12"
+  },
+  "natural_placement": {
+    "passed": true,
+    "world": "/mnt/c/Users/zekken/Desktop/minecrafting/Legacy-Connector/run-b173-single/morecreeps-generation-fixed-client-20261108-210749/saves/LegacyConnectorShots1794190492187",
+    "native_feature_chunk_area": [
+      -182,
+      -29,
+      16,
+      16
+    ],
+    "sites": [
+      {
+        "kind": "Castle",
+        "origin": [
+          -2847,
+          88,
+          -187
+        ],
+        "controlled": false,
+        "world_seed": 20241022,
+        "native_block_entities": {
+          "ChestBlockEntity": 50,
+          "SpawnerBlockEntity": 31
+        },
+        "selection_bounds": [
+          -2866,
+          -2816,
+          65,
+          120,
+          -198,
+          -148
+        ],
+        "trace": [
+          {
+            "event": "attempt-entry",
+            "attempt": 18,
+            "thread": 36846,
+            "generator": "legacyconnector_b173.morecreepsandweirdos.CREEPSWorldGenCastle",
+            "arguments": [
+              {
+                "type": "legacyconnector.vb1_7_3.net.minecraft.world.World",
+                "jdiIdentity": 36606
+              },
+              {
+                "type": "java.util.Random",
+                "jdiIdentity": 39172
+              },
+              "-2847",
+              "88",
+              "-187"
+            ],
+            "rngSeed48": "99920426877038",
+            "observedAt": "2026-11-09T03:32:35.353488565Z"
+          },
+          {
+            "event": "return-path-constant",
+            "attempt": 18,
+            "matchedEntry": true,
+            "thread": 36846,
+            "generator": "legacyconnector_b173.morecreepsandweirdos.CREEPSWorldGenCastle",
+            "constant": true,
+            "constantBci": 4445,
+            "returnBci": 4446,
+            "evidenceKind": "constant path reached before IRETURN; not MethodExit return value",
+            "observedAt": "2026-11-09T03:32:35.765587707Z"
+          }
+        ]
+      },
+      {
+        "kind": "Pyramid",
+        "origin": [
+          -2832,
+          65,
+          -380
+        ],
+        "controlled": false,
+        "world_seed": 20241022,
+        "native_block_entities": {
+          "SpawnerBlockEntity": 6,
+          "ChestBlockEntity": 1
+        },
+        "selection_bounds": [
+          -2832,
+          -2797,
+          60,
+          90,
+          -380,
+          -345
+        ],
+        "trace": [
+          {
+            "event": "attempt-entry",
+            "attempt": 19,
+            "thread": 36841,
+            "generator": "legacyconnector_b173.morecreepsandweirdos.CREEPSWorldGenPyramid",
+            "arguments": [
+              {
+                "type": "legacyconnector.vb1_7_3.net.minecraft.world.World",
+                "jdiIdentity": 36606
+              },
+              {
+                "type": "java.util.Random",
+                "jdiIdentity": 39254
+              },
+              "-2832",
+              "65",
+              "-380"
+            ],
+            "rngSeed48": "77765950947093",
+            "observedAt": "2026-11-09T03:32:36.548858219Z"
+          },
+          {
+            "event": "return-path-constant",
+            "attempt": 19,
+            "matchedEntry": true,
+            "thread": 36841,
+            "generator": "legacyconnector_b173.morecreepsandweirdos.CREEPSWorldGenPyramid",
+            "constant": true,
+            "constantBci": 2686,
+            "returnBci": 2687,
+            "evidenceKind": "constant path reached before IRETURN; not MethodExit return value",
+            "observedAt": "2026-11-09T03:32:36.635373254Z"
+          }
+        ]
+      }
+    ],
+    "completed_native_callbacks": [
+      "b173_morecreepsandweirdos@0:-180,-13",
+      "b173_morecreepsandweirdos@0:-178,-25"
+    ],
+    "counter_or_rng_mutation": false,
+    "direct_generator_calls": false,
+    "terrain_edits": false,
+    "observation": "Read-only JDI entry and constant-before-IRETURN breakpoints, independently confirmed by completed native callbacks and physical original structure contents. A return-path breakpoint is not a MethodExit return value. Native biome/noise reads selected a suitable fresh search area; original placement gates and RNG decide each site."
+  },
+  "generic_native_fixture": {
+    "passed": true,
+    "result": "passed: native X/Z 54-slot ordering, metadata, no triples, native BE/stack/components, deferred stand-in loot"
+  },
+  "castle_top_chest": {
+    "passed": true,
+    "scope": "Naturally generated original Castle highest-floor center double chest; native client crosshair and use key opens both halves, same 54-slot contents; no inventory edits.",
+    "halves": [
+      {
+        "input": {
+          "nativeUseKey": true,
+          "xyz": [
+            -2842,
+            100,
+            -174
+          ]
+        },
+        "gui": {
+          "rows": 6,
+          "slots": 90,
+          "items": [
+            {
+              "slot": 30,
+              "item": "1 minecraft:golden_boots"
+            },
+            {
+              "slot": 35,
+              "item": "27 b173_morecreepsandweirdos:money"
+            },
+            {
+              "slot": 37,
+              "item": "1 minecraft:cake"
+            },
+            {
+              "slot": 44,
+              "item": "1 minecraft:iron_shovel"
+            },
+            {
+              "slot": 47,
+              "item": "1 minecraft:diamond"
+            },
+            {
+              "slot": 53,
+              "item": "1 minecraft:iron_pickaxe"
+            }
+          ],
+          "screen": "net.minecraft.client.gui.screens.inventory.ContainerScreen"
+        }
+      },
+      {
+        "input": {
+          "nativeUseKey": true,
+          "xyz": [
+            -2842,
+            100,
+            -173
+          ]
+        },
+        "gui": {
+          "rows": 6,
+          "slots": 90,
+          "items": [
+            {
+              "slot": 30,
+              "item": "1 minecraft:golden_boots"
+            },
+            {
+              "slot": 35,
+              "item": "27 b173_morecreepsandweirdos:money"
+            },
+            {
+              "slot": 37,
+              "item": "1 minecraft:cake"
+            },
+            {
+              "slot": 44,
+              "item": "1 minecraft:iron_shovel"
+            },
+            {
+              "slot": 47,
+              "item": "1 minecraft:diamond"
+            },
+            {
+              "slot": 53,
+              "item": "1 minecraft:iron_pickaxe"
+            }
+          ],
+          "screen": "net.minecraft.client.gui.screens.inventory.ContainerScreen"
+        }
+      }
+    ],
+    "visual_review": {
+      "passed": true,
+      "screenshot": "run-b173-single\\morecreeps-generation-fixed-client-20261108-210749\\control\\out\\natural-castle-top-174.png",
+      "observation": "Visible native Large Chest with six rows, money, equipment and original loot; screenshot reviewed."
+    }
+  },
+  "persistence": {
+    "passed": true,
+    "comparison": "Exact native block states, chest Items and spawner SpawnData before/after actual title disconnect and native world reopen; ticking spawner Delay excluded",
+    "positions": 88,
+    "native_identity_before": {
+      "server": 1753295452,
+      "level": 990207077
+    },
+    "native_identity_after": {
+      "server": 1496576783,
+      "level": 1639377477
+    },
+    "manifest": "run-b173-single\\morecreeps-generation-fixed-client-20261108-210749\\natural-worldgen-persistence.json",
+    "manifest_sha256": "3c65d39ae4f66d3e4ae0affa4632dabcccccc9a1e190de627daea48180f6d2dc"
+  },
+  "limits": [
+    "Existing generated SINGLE chest states are not globally scanned or migrated; fixes apply to subsequent explicit Beta placement/metadata writes",
+    "Original castle fills only the adjacent half of its central double chest. No loot tables, RNG, counters or mod bytecode were changed",
+    "Native GUI input was checked before relog; exact native paired states and inventories were then independently compared across real relog",
+    "The 88 persistence positions are observed chest/spawner positions within recorded structure bounds; this is not a claim that every generated block/entity was audited",
+    "No user Prism save was edited; live tests use an isolated disposable offscreen client world",
+    "Complete Mo Creatures/More Creeps gameplay remains outside this bounded generation/chest check"
+  ]
+}

@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
  * ({@link VanillaB173}), each {@code mod_*} class gets its {@code @MLProp} config ({@link MLPropsB173}) and is constructed (a ModLoader
  * mod registers its blocks, items, names, recipes and textures from its constructor), then every mod gets {@code ModsLoaded()}. Their
  * blocks and items become modern registry entries afterwards ({@link BridgeB173}); recipes join the generated data pack
- * ({@link RecipesB173}). Not run yet: tick hooks, world generation, rendering, GUIs, tile entities and entities (recorded only).
+ * ({@link RecipesB173}); original chunk callbacks join the native feature pipeline ({@link WorldGenB173}).
  */
 public final class PlatformB173 implements LegacyPlatform {
     public static final String VERSION = "b1.7.3";
@@ -138,6 +138,7 @@ public final class PlatformB173 implements LegacyPlatform {
         ContentB173.enter(mod);
         try {
             base.ModsLoaded();
+            WorldGenB173.register(mod);
         } finally {
             ContentB173.exit();
         }

@@ -819,7 +819,84 @@ Shared fixes supporting these checks preserve the original APIs:
 
 Fresh isolated server runs also exercise the controlled bounds API on the original Werewolf, EvilChicken and Money entity,
 plus the original mods' existing regression suites. These are opt-in fixtures; the default build needs no private mod jars.
-Complete compatibility for either mod, remote multiplayer and Sodium/Iris remain unverified.
+At that snapshot, complete compatibility, remote multiplayer and Sodium/Iris were unverified.
+
+The [mob API checkpoint](../data/b173-mob-api-checkpoint-2026-11-08.json) adds shared ModLoader generation callbacks through
+native placed features, generation-region block/entity writes, deferred chest/spawner attachment, component-preserving chest
+views, ShockAhPI achievement pages and reflective entity-registry aliases. Original line pairs, loops and strips use the
+native renderer; mod-declared entity references track native IDs plus UUIDs and resolve delayed spawn packets. The Beta path
+wrapper returns null for an unreached start-only native path, matching clean Beta bytecode while preserving reached
+singletons, useful partial routes and cursors. These changes apply through Beta APIs; vanilla and modern mob rules are unchanged.
+
+The checkpoint passed 526 portable build tests and fresh isolated server suites with the supplied Mo' Creatures and More
+Creeps archives. Mo' Creatures client checks with Sodium/Iris cover natural fish/shark egg hatching, original models and
+textures, rare-horse riding/flight, Nightmare fire and charge expiry, rope attachment/following/teleport/detachment, and a
+visible native rope render. A separate Kitty cohort completed milk consumption, litter use and native sand cleaning with
+only initial adult/state prerequisites controlled; subsequent RNG and timers ran normally. Seven original actor UUIDs/classes
+survived native save/quit/reopen. The original Fishy feeding limitation, Kitty sleep/tree/random drink interruption and
+unsaved rope-holder policy remain intact. A fallen elevated-platform cat was explicitly replaced under a new fixture UUID;
+its replacement is not presented as survival of the deceased actor.
+
+A fresh normal-terrain More Creeps server completed 434 original generation callbacks and saved/stopped successfully.
+That additional optional run exposed a bounds-test setup issue: the original EvilChicken damage callback assumes a nearby
+player, which the normal-spawn fixture did not provide. It is recorded separately from the passing isolated suites.
+Advanced More Creeps client gameplay, additional naming screens, advancement-page display, deferred-loot/structure census,
+mixed-pack gameplay, shader packs and separate multiplayer checks remain pending. This checkpoint is bounded validation,
+not full compatibility certification; actual-mod fixtures remain opt-in and the default build needs no private archives.
+
+The subsequent [Prism load-failure checkpoint](../data/b173-prism-load-fixes-2026-11-08.json) fixes shared ScotTools tool
+inheritance and descriptor-specific ModLoader generation override lookup. Original Machetes, MineFactory and PortalGun
+archives each pass isolated loading and native item registration; the copied Prism pack loads all 14 legacy mods without
+construction or lifecycle failures. The default build passes 540 portable tests without private mod archives. Three existing
+PortalGun record IDs (2267–2269) overlap Butterfly jar items in that pack; settings and original versions were preserved.
+These load checks do not establish complete gameplay compatibility.
+
+The legacy client player lookup also retains the current same-level connected actor during the native death screen,
+matching Beta's player lifetime without caching logged-out actors or borrowing players from other dimensions. Actual
+More Creeps Robot Ted callbacks survive native death and 100 subsequent ticks, and native respawn resolves the new player
+object with the same UUID. The distributed jar contains its Pehkui and TerraBlender dependencies; missing Pehkui in the
+development-only test classpath produced separately recorded Witchery callbacks, not a passing Witchery gameplay claim.
+
+The [Machetes gameplay regression](../data/b173-machetes-gameplay-validation-2026-11-08.json) subsequently found that its
+distribution still contained an installation folder around the textures. The archive was explicitly repacked with identical
+class and image bytes; no archive-layout support was added to the loader. All six original sprites match the uploaded GPU
+pixels and render in the hand/hotbar. The shared Beta `Item.getAttackDamage(Entity)` callback now contributes to native
+attacks with native cooldown and critical handling preserved. Actual attacks produce the original gold/iron/diamond/stone/
+wood/slime totals of 5/7/9/6/4/7, with two durability wear per hit; native unarmed/sword, Strength, Sharpness and cooldown
+controls pass. A normal client attack-key hit independently deals nine damage with the diamond machete. The default build
+passes 544 portable tests; mining and every other tool callback are outside this bounded check.
+
+The [generation and painting validation snapshot](../data/b173-generation-painting-validation-2026-11-08.json) reproduces
+an actual More Creeps Castle hang: two sampled neighboring chunks had only reached structure starts and returned entirely
+empty columns, so the original downward ground search never found three supports. Native `FEATURES` prerequisites now
+require completed `CARVERS` terrain throughout the existing eight-chunk read area when Beta generators are registered.
+The Beta world view also rejects cached chunks that have not completed noise generation, while preserving explicit pending
+writes. Native feature tasks, write radius and the loading pyramid retain their original behavior. This increases the
+accumulated full-chunk dependency radius from 11 to 18 in Beta generation packs; a vanilla-only server retains radius 11.
+
+The previously hanging chunk completes through its original native callback. Original Pyramid/Castle generators succeed
+on explicitly controlled terrain, and 90 recorded native block states, chest Items and spawner SpawnData survive real
+save/reopen. Those controlled calls are distinct from ordinary random site selection.
+
+The subsequent [natural structures and chest validation](../data/b173-natural-structures-chests-validation-2026-11-08.json)
+records positive original More Creeps 2.12 Pyramid and Castle placement through native `FEATURES` in fresh, unedited terrain.
+The original readiness counters, random rolls and generator bodies run unchanged. Read-only debugger observations,
+completed native callbacks and physical native contents independently identify the successful sites. Exact block states,
+chest Items and spawner SpawnData at 88 recorded positions survive a real native save/reopen.
+
+The original Castle fills only one half of its central double chest. Explicit Beta vanilla-chest writes now pair native
+chest states and retain matching facing, preserving each original block entity, inventory and item components. Both
+highest-floor halves open the same six-row native menu with the original loot. Portable tests and an explicit native
+fixture cover both axes, metadata changes, ambiguous triples and deferred cross-chunk inventories. Existing SINGLE chest
+states are not scanned or migrated; pairing applies to subsequent explicit Beta writes. Modern chest placement has no
+global hook. The default build passes 558 portable tests without private mod archives.
+
+The shared Beta painting API retains all 25 original motives, facing and wall checks, then uses native painting tracking,
+rendering and persistence. Double-precision bounds prevent thin boxes collapsing at far modern coordinates. Native-region
+tests cover overlap, deferred supports and proto-chunk entity NBT; a visible valid-wall painting retains its UUID, motive,
+facing and support after real reopen. The tested Castle's ten painting requests target air support cells and have no fitting
+motives; those original rejections are preserved. The positive painting fixture is separate from Castle placement.
+The default build passes 548 portable tests without private archives; full-pack startup checks retain all 14 legacy mods.
 
 - **Placing a subtype.** b1.7.3's `ItemBlock` set block and metadata together (`getPlacedBlockMetadata` of the damage), so `onBlockAdded`
   and the tile entity it makes see the subtype; `getStateForPlacement` does the same (before, a Minefactory translocator or crafter

@@ -121,6 +121,9 @@ public class Item {
         return false;
     }
 
+    /** Beta returns total melee damage, including the player's one point of base damage. */
+    public int getAttackDamage(legacyconnector.vb1_7_3.net.minecraft.entity.Entity target) { return 1; }
+
     public boolean postHit(ItemStack stack, legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity target,
             legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity attacker) { return false; }
 

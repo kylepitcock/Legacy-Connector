@@ -112,7 +112,7 @@ public final class MobsB173 {
         if(info==null){reject(legacy.getClass(),"no supported registered mob type");return false;}
         if(legacy.mcc$modern!=null)return false;
         LegacyB173Cow host=null;boolean added=false;
-        try{host=new LegacyB173Cow(info.type(),level,legacy);added=level.addFreshEntity(host);return added;}
+        try{host=new LegacyB173Cow(info.type(),level,legacy);added=World.mcc$wrap(level).mcc$spawnNative(host);return added;}
         catch(RuntimeException|LinkageError e){LOG.error("Cannot spawn Beta mob {}",legacy.getClass().getName(),e);return false;}
         finally{if(!added){legacy.mcc$modern=null;if(host!=null)host.discard();}}
     }
