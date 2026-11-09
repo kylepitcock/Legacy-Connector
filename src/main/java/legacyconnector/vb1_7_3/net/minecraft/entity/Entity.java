@@ -160,7 +160,7 @@ public abstract class Entity {
     public void onKilledOther(LivingEntity killed){}
 
     public void setBoundingBoxSpacing(float width, float height) {
-        this.width=width; this.height=height; setPosition(x,y,z);
+        this.width=width; this.height=height;
     }
     public boolean isCollidable() { return !(mcc$modern instanceof org.kylepitcock.legacyconnector.vb1_7_3.B173EntityHost)&&mcc$modern != null && mcc$modern.isPickable(); }
     public boolean shouldRender(double squaredDistance){

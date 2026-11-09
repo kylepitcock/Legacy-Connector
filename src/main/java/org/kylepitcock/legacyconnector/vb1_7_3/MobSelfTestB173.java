@@ -13,6 +13,7 @@ public final class MobSelfTestB173 {
         GuiSessionSelfTestB173.register(game);
         ModelSelfTestB173.register(game);
         RendererSelfTestB173.register(game);
+        RenderEffectsSelfTestB173.register(game);
         MoCreaturesGuiSelfTestB173.register(game);
         MoCreaturesRosterSelfTestB173.register(game);
         MoCreaturesFeaturesSelfTestB173.register(game);
@@ -29,17 +30,20 @@ public final class MobSelfTestB173 {
         MoCreaturesWaterSpawnSelfTestB173.register(game);
         MoCreaturesVanillaSpawnSelfTestB173.register(game);
         MoCreaturesCarrySelfTestB173.register(game);
+        MoCreaturesHorseSaddleSelfTestB173.register(game);
         SpawnCapsSelfTestB173.register(game);
         MoreCreepsRosterSelfTestB173.register(game);
         MoreCreepsWeaponsSelfTestB173.register(game);
         MoreCreepsTamingSelfTestB173.register(game);
         MoreCreepsGameplaySelfTestB173.register(game);
+        MoreCreepsCarrierSyncSelfTestB173.register(game);
         MoreCreepsGameplayExtraSelfTestB173.register(game);
         MoreCreepsHunchbackAiSelfTestB173.register(game);
         MoreCreepsArmySelfTestB173.register(game);
         MoreCreepsRenderVariantSelfTestB173.register(game);
         MoreCreepsRenderCoverageSelfTestB173.register(game);
         MoreCreepsJailSelfTestB173.register(game);
+        MoreCreepsSquidViewSelfTestB173.register(game);
         MoreCreepsNavigationSelfTestB173.register(game);
         MoreCreepsRemainingSelfTestB173.register(game);
         MoreCreepsEffectsSelfTestB173.register(game);
@@ -49,6 +53,7 @@ public final class MobSelfTestB173 {
         BetaSpawnSchedulingSelfTestB173.register(game);
         BetaEcologySelfTestB173.register(game);
         AnimalLifecycleSelfTestB173.register(game);
+        BoundsSelfTestB173.register(game);
         if(Boolean.getBoolean("legacyconnector.entitySelfTest"))game.addListener((ServerStartedEvent e)->run(e.getServer().overworld()));
     }
     private static void require(boolean condition,String message){if(!condition)throw new IllegalStateException("B1.7.3 MOB TEST: "+message);}

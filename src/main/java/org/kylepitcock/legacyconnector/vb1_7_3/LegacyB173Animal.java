@@ -34,6 +34,7 @@ public final class LegacyB173Animal extends PathfinderMob implements B173LivingH
     private legacyconnector.vb1_7_3.net.minecraft.entity.Entity syncedVehicle,syncedPassenger;
     private int callbacks,ticks,movements,ais;
     private boolean inTick,inMovement,inAI,inTravel,inMove;
+    private boolean nativeBoundsMovement;
     private MoverType nativeMoveType=MoverType.SELF;
     private int travels,moves;
     public int baseTravelCount(){return travels;}
@@ -95,6 +96,22 @@ public final class LegacyB173Animal extends PathfinderMob implements B173LivingH
     private static legacyconnector.vb1_7_3.net.minecraft.entity.Entity relationView(net.minecraft.world.entity.Entity entity){
         return entity instanceof B173LivingHost host?host.legacy():entity!=null&&entity.level().isClientSide?EntityViewsB173.wrapReadOnly(entity):EntityViewsB173.wrap(entity);
     }
+    @Override public boolean startRiding(Entity vehicle,boolean force){
+        Entity previous=getVehicle();
+        boolean mounted=super.startRiding(vehicle,force);
+        if(mounted&&getVehicle()==vehicle&&previous!=vehicle)syncCarrierPassengers(vehicle);
+        return mounted;
+    }
+    @Override public void removeVehicle(){
+        Entity previous=getVehicle();
+        super.removeVehicle();
+        if(previous!=null&&getVehicle()!=previous)syncCarrierPassengers(previous);
+    }
+    /** Native tracking excludes the player being tracked, including a player carrying a Beta entity. */
+    private void syncCarrierPassengers(Entity carrier){
+        if(legacy!=null&&carrier instanceof net.minecraft.server.level.ServerPlayer player&&player.connection!=null)
+            player.connection.send(new net.minecraft.network.protocol.game.ClientboundSetPassengersPacket(carrier));
+    }
     public void syncView(){
         if(legacy==null||syncingView)return;
         syncingView=true;
@@ -102,6 +119,10 @@ public final class LegacyB173Animal extends PathfinderMob implements B173LivingH
         legacy.world=World.mcc$wrap(level());
         legacy.prevX=xo;legacy.prevY=yo+legacy.standingEyeHeight;legacy.prevZ=zo;legacy.prevYaw=yRotO;legacy.prevPitch=xRotO;
         legacy.setPosition(getX(),getY()+legacy.standingEyeHeight,getZ());legacy.yaw=getYRot();legacy.pitch=getXRot();
+        // Beta move clips the existing box, then derives position from it. Raw position writes
+        // (for example animation offsets) do not relocate that collision box.
+        var bounds=getBoundingBox();
+        legacy.boundingBox.set(bounds.minX,bounds.minY,bounds.minZ,bounds.maxX,bounds.maxY,bounds.maxZ);
         var v=getDeltaMovement();legacy.velocityX=v.x;legacy.velocityY=v.y;legacy.velocityZ=v.z;
         legacy.onGround=onGround();legacy.horizontalCollision=horizontalCollision;legacy.verticalCollision=verticalCollision;legacy.mcc$environment(isInWater());
         legacy.health=(int)Math.ceil(getHealth());legacy.hurtTime=hurtTime;legacy.deathTime=deathTime;legacy.dead=isRemoved();
@@ -144,6 +165,8 @@ public final class LegacyB173Animal extends PathfinderMob implements B173LivingH
         if(legacy==null||level().isClientSide)return;
         reconcileRelations();
         if(!Float.isFinite(legacy.width)||!Float.isFinite(legacy.height)||legacy.width<=0||legacy.height<=0)throw new IllegalStateException("Invalid Beta animal dimensions");
+        var bounds=legacy.boundingBox.mcc$box();
+        double rawX=legacy.x,rawY=legacy.y-legacy.standingEyeHeight,rawZ=legacy.z;
         setPos(legacy.x,legacy.y-legacy.standingEyeHeight,legacy.z);setYRot(legacy.yaw);setXRot(legacy.pitch);setDeltaMovement(legacy.velocityX,legacy.velocityY,legacy.velocityZ);
         if(legacy.health>getMaxHealth())getAttribute(Attributes.MAX_HEALTH).setBaseValue(legacy.health);
         noPhysics=legacy.noClip;fallDistance=legacy.mcc$fallDistance();
@@ -156,7 +179,11 @@ public final class LegacyB173Animal extends PathfinderMob implements B173LivingH
         setDropChance(EquipmentSlot.MAINHAND,0); // Original getHeldItem is a render attachment; original dropItems owns loot.
         entityData.set(WIDTH,legacy.width);entityData.set(HEIGHT,legacy.height);entityData.set(TEXTURE,legacy.mcc$texture()==null?"/mob/char.png":legacy.mcc$texture());
         entityData.set(EYE_OFFSET,legacy.standingEyeHeight);
-        refreshDimensions();if(legacy.dead&&!isRemoved())discard();
+        refreshDimensions();
+        // Native setPos/refreshDimensions reconstruct a box from position. Preserve both
+        // independently, including original direct box edits and explicit setPosition calls.
+        setPos(rawX,rawY,rawZ);setBoundingBox(bounds);
+        if(legacy.dead&&!isRemoved())discard();
     }
     private void callback(Runnable action){try(var minecraftContext=legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$context(World.mcc$wrap(level()),legacy);var views=EntityViewsB173.callbackScope()){boolean outer=callbacks==0;boolean referenced=false;if(outer){referenced=EntityViewsB173.prepareHostCallback(this);syncView();}callbacks++;try{action.run();flushView();if(outer)publishRenderState();}finally{callbacks--;if(outer)EntityViewsB173.resumeHostCallback(this,referenced);}}}
     @Override public void tick(){if(legacy==null||level().isClientSide){super.tick();if(legacy!=null)syncView();return;}callback(()->{
@@ -257,7 +284,25 @@ public final class LegacyB173Animal extends PathfinderMob implements B173LivingH
     public void baseMove(double x,double y,double z){
         if(inMove)throw new IllegalStateException("Recursive Beta base move");
         if(!Double.isFinite(x)||!Double.isFinite(y)||!Double.isFinite(z))throw new IllegalStateException("Non-finite Beta movement");
-        inMove=true;moves++;try{flushView();super.move(nativeMoveType,new net.minecraft.world.phys.Vec3(x,y,z));syncView();}finally{inMove=false;}
+        inMove=true;moves++;
+        try{
+            flushView();
+            // Beta move derives coordinates from the collision box, even for a zero move.
+            // Native move instead adds its resolved delta to raw coordinates.
+            var bounds=getBoundingBox();
+            setPosRaw((bounds.minX+bounds.maxX)/2,bounds.minY,(bounds.minZ+bounds.maxZ)/2);
+            nativeBoundsMovement=true;
+            try{super.move(nativeMoveType,new net.minecraft.world.phys.Vec3(x,y,z));}
+            finally{nativeBoundsMovement=false;}
+            syncView();
+        }finally{inMove=false;}
+    }
+    @Override public void setPos(double x,double y,double z){
+        if(!nativeBoundsMovement){super.setPos(x,y,z);return;}
+        // Reuse native collision resolution while translating its actual starting box.
+        // Dimension fields may have changed independently since that box was placed.
+        var bounds=getBoundingBox().move(x-getX(),y-getY(),z-getZ());
+        setPosRaw(x,y,z);setBoundingBox(bounds);
     }
     public void baseSetPath(legacyconnector.vb1_7_3.net.minecraft.entity.ai.pathing.Path path){
         flushView();if(path==null)getNavigation().stop();else if(path.mcc$modern()!=null)getNavigation().moveTo(path.mcc$modern(),Math.max(0,legacy.mcc$movementSpeed()));
@@ -326,6 +371,9 @@ public final class LegacyB173Animal extends PathfinderMob implements B173LivingH
     @Override protected boolean isImmobile(){return legacy==null?super.isImmobile():legacy.mcc$isImmobile();}
     @Override public boolean isPushable(){return legacy==null?super.isPushable():legacy.isPushable();}
     @Override public boolean isPickable(){return legacy==null?super.isPickable():legacy.isCollidable();}
+    // Beta interactions may toggle a carried entity off its current player vehicle.
+    // Native picking otherwise excludes candidates sharing the camera entity's root vehicle.
+    @Override public boolean canRiderInteract(){return legacy==null?super.canRiderInteract():isPickable();}
     @Override public boolean fireImmune(){return legacy==null?super.fireImmune():legacy.mcc$fireImmune();}
     @Override public boolean canDrownInFluidType(net.neoforged.neoforge.fluids.FluidType type){
         return legacy!=null&&type==net.neoforged.neoforge.common.NeoForgeMod.WATER_TYPE.value()&&legacy.canBreatheInWater()?false:super.canDrownInFluidType(type);

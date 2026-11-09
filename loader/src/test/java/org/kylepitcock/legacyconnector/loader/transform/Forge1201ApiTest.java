@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import org.junit.jupiter.api.Test;
+import org.kylepitcock.legacyconnector.loader.shim.ShimIndex;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.InsnNode;
@@ -36,6 +37,29 @@ class Forge1201ApiTest {
 
     private static MethodInsnNode firstCall(ClassNode node) {
         return (MethodInsnNode) node.methods.get(0).instructions.getFirst();
+    }
+
+    @Test
+    void mapsKubeJs6ConsoleClassAndNestedTypesToKubeJs7() {
+        Forge1201Transformer transformer = new Forge1201Transformer(ShimIndex.empty());
+
+        assertEquals(
+                "dev/latvian/mods/kubejs/script/ConsoleJS",
+                transformer.mapClass("dev/latvian/mods/kubejs/util/ConsoleJS"));
+        assertEquals(
+                "dev/latvian/mods/kubejs/script/ConsoleJS$VarFunc",
+                transformer.mapClass("dev/latvian/mods/kubejs/util/ConsoleJS$VarFunc"));
+
+        // Only ConsoleJS moved; KubeJS 7 already keeps these types in script.
+        assertEquals(
+                "dev/latvian/mods/kubejs/script/ScriptType",
+                transformer.mapClass("dev/latvian/mods/kubejs/script/ScriptType"));
+        assertEquals(
+                "dev/latvian/mods/kubejs/script/ConsoleLine",
+                transformer.mapClass("dev/latvian/mods/kubejs/script/ConsoleLine"));
+        assertEquals(
+                "dev/latvian/mods/kubejs/util/LogType",
+                transformer.mapClass("dev/latvian/mods/kubejs/util/LogType"));
     }
 
     @Test

@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 public final class LegacyB173Item extends Item {
     private final legacyconnector.vb1_7_3.net.minecraft.item.Item legacy;
     private final boolean usesAir;
+    private final boolean usesEntity;
     private int failures;
     static final java.util.concurrent.atomic.AtomicInteger CALLBACK_FAILURES = new java.util.concurrent.atomic.AtomicInteger();
 
@@ -24,6 +25,9 @@ public final class LegacyB173Item extends Item {
         try {
             usesAir = legacy.getClass().getMethod("use", legacyconnector.vb1_7_3.net.minecraft.item.ItemStack.class,
                     World.class, legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity.class).getDeclaringClass()
+                    != legacyconnector.vb1_7_3.net.minecraft.item.Item.class;
+            usesEntity = legacy.getClass().getMethod("useOnEntity", legacyconnector.vb1_7_3.net.minecraft.item.ItemStack.class,
+                    legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity.class).getDeclaringClass()
                     != legacyconnector.vb1_7_3.net.minecraft.item.Item.class;
         } catch (NoSuchMethodException e) {
             throw new IllegalStateException(e);
@@ -75,6 +79,33 @@ public final class LegacyB173Item extends Item {
         CALLBACK_FAILURES.incrementAndGet();
         if (failures++ < 3) LoggerFactory.getLogger("LegacyConnector/b1.7.3").warn(
                 "b1.7.3 item {} callback {} failed", legacy, callback, error);
+    }
+
+    @Override
+    public InteractionResult interactLivingEntity(ItemStack stack, Player player, net.minecraft.world.entity.LivingEntity target,
+            InteractionHand hand) {
+        if (hand != InteractionHand.MAIN_HAND || !usesEntity) return InteractionResult.PASS;
+        if (player.level().isClientSide) return InteractionResult.SUCCESS;
+        var held = StacksB173.toLegacy(stack);
+        if (held == null) return InteractionResult.PASS;
+        var actor = (PlayerViewB173)EntityViewsB173.wrap(player);
+        try (var minecraft = legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$context(World.mcc$wrap(player.level()), actor);
+                var views = EntityViewsB173.callbackScope()) {
+            var original = (legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity)EntityViewsB173.wrap(target);
+            Runnable callback = () -> {
+                legacy.useOnEntity(held, original);
+                // Creative interactions receive a copy; preserve the native caller's stack and components.
+                stack.setCount(Math.max(0, held.count));
+                if (!stack.isEmpty() && stack.isDamageableItem()) stack.setDamageValue(held.getDamage());
+                actor.writeBack();
+            };
+            if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) MenusB173.withActor(serverPlayer, callback);
+            else callback.run();
+            return InteractionResult.CONSUME;
+        } catch (RuntimeException | LinkageError e) {
+            failed("useOnEntity", e);
+            return InteractionResult.FAIL;
+        } finally { EntityViewsB173.flush(); BlockEntityViewsB173.flush(); }
     }
 
     @Override

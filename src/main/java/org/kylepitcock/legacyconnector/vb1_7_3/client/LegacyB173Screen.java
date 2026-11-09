@@ -123,7 +123,7 @@ public class LegacyB173Screen extends AbstractContainerScreen<LegacyB173Menu> {
             if (KeysB173.types(key, modifiers)) {
                 pendingKey = key;
             } else {
-                legacyKey(KeysB173.character(key), KeysB173.lwjgl(key));
+                legacyKey(KeysB173.character(key,modifiers), KeysB173.lwjgl(key));
             }
         }
         return super.keyPressed(key, scanCode, modifiers);

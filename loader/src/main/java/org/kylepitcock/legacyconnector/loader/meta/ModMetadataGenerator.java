@@ -38,7 +38,7 @@ public final class ModMetadataGenerator {
     }
 
     public static String entrypointName(LegacyModDecl decl) {
-        return "legacyconnector/generated/" + decl.modernId() + "/LegacyModEntrypoint";
+        return "legacyconnector/generated/" + decl.fmlId() + "/LegacyModEntrypoint";
     }
 
     public static byte[] modsToml(LegacyJar jar) {

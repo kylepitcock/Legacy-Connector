@@ -1,0 +1,365 @@
+{
+  "status": "passed",
+  "snapshot_date": "2026-11-08",
+  "scope": "Shared Beta hurt/death/color overlay rendering and actual original Hotdog fire activation, GPU atlas animation and visible transparency.",
+  "tested_code_revision": "c97ec20e04d8c5f3aef68c22ba342e5560088e21",
+  "branch": "legacy-b1.7.3",
+  "version": "0.4.13",
+  "source_sha256": {
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/client/render/entity/LivingEntityRenderer.java": "ccc9d88ebfe571ffe6d7ab521b31ae452adbbedbe404e31f2c4a3048d0937396",
+    "src/main/java/org/kylepitcock/legacyconnector/v1_7_10/client/RenderContext.java": "14646cf7d682799ddd99325b5d957b92d4ab81b5f46405d9b6cc9f7bd58b95d8",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/MobSelfTestB173.java": "274536ee0f144f042e16bc1bc2b1fc2d0b38c445b82d72c81237cb342ef661ed",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/RenderEffectsSelfTestB173.java": "6793188861086fd97d4295187ed8fba7b4b184ca491c22780c0f7e832591f3ae",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/client/AnimalRendererB173.java": "70861f9258913244cf82ceee55f6a0f68ee0b7084b2a11b59dbef75c7c5c8936",
+    "src/test/java/org/kylepitcock/legacyconnector/vb1_7_3/LivingOverlayB173Test.java": "58eb869189bdb3ca2e3b303e70dca2992d3c673cdd3dbb845eddbed2536e9a30",
+    "src/test/java/org/kylepitcock/legacyconnector/vb1_7_3/client/WorldOverlayStateB173Test.java": "13a9fc3cbcb8ff9dc03e34333c4c21e7fe8e997abaef9888da4f0db873c46263"
+  },
+  "tests": {
+    "runtime": {
+      "tests": 230,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "loader": {
+      "tests": 267,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "generic_changes": [
+    "LivingEntityRenderer normal passes use bindTexture; overlays use bindDecorationTexture after renderMore.",
+    "Original brightness-scaled red alpha .4 pass covers hurt or death once, followed by a separate optional ARGB multiplier pass.",
+    "Original custom renderers retain ownership of replacement render methods and overlays.",
+    "Beta native adapter uses NO_OVERLAY to prevent an additional modern hurt tint.",
+    "An opt-in world render frame carries exact EQUAL depth/alpha blend state and flushes body/overlay depth transitions; existing overloads retain their prior behavior."
+  ],
+  "servers": {
+    "mocreatures": {
+      "status": "headless-smoke-passed",
+      "source": "DrZharks_MoCreatures_Mod_v2.12.2_b1.7.3.zip!mods/MoCreatures.zip",
+      "outer_archive_sha256": "77cac72cd428ea428eaa0a649ce8f901f7319ded7c5a88d04347e3fdf6343ec8",
+      "staged_jar_sha256": "983331b8f3b6762740d713db7f53fad3bbf8483803407c50125a5eb9b481c185",
+      "payload_entry_digest_sha256": "f29a9c8fcc550727a6c97b8ee82b011c57d297a72636e4de2903f364a9085906",
+      "payload_entries": 227,
+      "payload_entry_bytes_match_previous_test": true,
+      "evidence": "build/placement-classic-flat-render-effects-final-mocreatures-assessment.json",
+      "sha256": "184f5edfccfd491669ac2359f07a91f5e9935b5b2c8b55d103780eddc386adaa",
+      "acceptance_lines": [
+        "[15:24:57] [Server thread/INFO] [LegacyConnector/B173RenderEffectsTest/]: B1.7.3 RENDER EFFECTS TEST: ordinary Bunny hurt/death restoration passed (CPU only)",
+        "[15:24:57] [Server thread/INFO] [LegacyConnector/B173RenderEffectsTest/]: B1.7.3 RENDER EFFECTS TEST: original Ogre own overlay passed (CPU only)",
+        "[15:24:57] [Server thread/INFO] [LegacyConnector/B173RenderEffectsTest/]: B1.7.3 RENDER EFFECTS TEST: original Werewolf own overlay passed (CPU only)",
+        "[15:24:59] [Server thread/INFO] [LegacyConnector/B173EcologyTest/]: B1.7.3 ECOLOGY TEST passed: hosted-only generation filter, unchanged native population entries, native CHUNK_GENERATION position checks observed=0, native Cow/Pig persistence and original Bunny policies when present; GenerateSurface is covered separately by existing worldgen smoke",
+        "[15:25:26] [Server thread/INFO] [LegacyConnector/B173BetaScheduleTest/]: B1.7.3 BETA SCHEDULING TEST passed: ticks=500 opportunities={MONSTER=500, CREATURE=500, WATER_CREATURE=500} adjacent=[MONSTER, CREATURE, WATER_CREATURE] actualOriginalPositionChecks={b173_mocreatures:bigcat=8, b173_mocreatures:caveogre=667, b173_mocreatures:deer=8, b173_mocreatures:duck=8, b173_mocreatures:fireogre=514, b173_mocreatures:flamewraith=397, b173_mocreatures:horse=7, b173_mocreatures:mouse=12, b173_mocreatures:ogre=1163, b173_mocreatures:rat=1979, b173_mocreatures:werewolf=1461, b173_mocreatures:wildwolf=1487, b173_mocreatures:wraith=1147} confirmedNativeInsertions={b173_mocreatures:bigcat=8, b173_mocreatures:deer=8, b173_mocreatures:duck=8, b173_mocreatures:horse=6, b173_mocreatures:mouse=12} failures=[]; insertion abundance is not asserted"
+      ]
+    },
+    "morecreeps": {
+      "status": "headless-smoke-passed",
+      "source": "MoreCreepsv2.12_b173.zip!PUT CONTENTS INTO MINECRAFT FOLDER/mods/MoreCreepsAndWeirdos.zip",
+      "outer_archive_sha256": "e38787077c98c9517f439a55946540f16c8b1e1d9b6187964f366e042db93c09",
+      "staged_jar_sha256": "714f2308cdbf85c251054619f515b13897a4c2fc35c066967c80aa75c10c07b4",
+      "payload_entry_digest_sha256": "e9f96362c5e4c23cc73f6b0bbb331cbb8d05db8d176b55c70a88e08057ebe396",
+      "payload_entries": 451,
+      "payload_entry_bytes_match_previous_test": true,
+      "evidence": "build/placement-classic-flat-render-effects-final-morecreeps-assessment.json",
+      "sha256": "970af1569900deb3e8d5518ae31d755c8f820db824af51521c48a3865f68c54d",
+      "acceptance_lines": [
+        "[15:26:05] [Server thread/INFO] [LegacyConnector/B173RenderEffectsTest/]: B1.7.3 RENDER EFFECTS TEST: ordinary Hippo hurt/death restoration passed (CPU only)",
+        "[15:26:05] [Server thread/INFO] [LegacyConnector/B173RenderEffectsTest/]: B1.7.3 RENDER EFFECTS TEST: original Hotdog cold/fire tracked immediate quads passed (CPU only)",
+        "[15:26:07] [Server thread/INFO] [LegacyConnector/B173EcologyTest/]: B1.7.3 ECOLOGY TEST passed: hosted-only generation filter, unchanged native population entries, native CHUNK_GENERATION position checks observed=0, native Cow/Pig persistence and original Bunny policies when present; GenerateSurface is covered separately by existing worldgen smoke",
+        "[15:26:34] [Server thread/INFO] [LegacyConnector/B173BetaScheduleTest/]: B1.7.3 BETA SCHEDULING TEST passed: ticks=500 opportunities={CREATURE=500} adjacent=[CREATURE] actualOriginalPositionChecks={b173_morecreepsandweirdos:armyguy=12, b173_morecreepsandweirdos:babymummy=48, b173_morecreepsandweirdos:bigbaby=6, b173_morecreepsandweirdos:blacksoul=24, b173_morecreepsandweirdos:bubblescum=25, b173_morecreepsandweirdos:bum=25, b173_morecreepsandweirdos:camel=36, b173_morecreepsandweirdos:cameljockey=24, b173_morecreepsandweirdos:desertlizard=24, b173_morecreepsandweirdos:digbug=13, b173_morecreepsandweirdos:evilscientist=58, b173_morecreepsandweirdos:floob=31, b173_morecreepsandweirdos:floobship=64, b173_morecreepsandweirdos:g=31, b173_morecreepsandweirdos:googoat=33, b173_morecreepsandweirdos:guineapig=20, b173_morecreepsandweirdos:hippo=41, b173_morecreepsandweirdos:horsehead=31, b173_morecreepsandweirdos:hotdog=74, b173_morecreepsandweirdos:hunchback=21, b173_morecreepsandweirdos:invisibleman=24, b173_morecreepsandweirdos:kid=1, b173_morecreepsandweirdos:lawyerfromhell=12, b173_morecreepsandweirdos:lolliman=15, b173_morecreepsandweirdos:mandog=22, b173_morecreepsandweirdos:mummy=48, b173_morecreepsandweirdos:preacher=35, b173_morecreepsandweirdos:robotted=34, b173_morecreepsandweirdos:robottodd=8, b173_morecreepsandweirdos:rocketgiraffe=24, b173_morecreepsandweirdos:rockmonster=25, b173_morecreepsandweirdos:sneakysal=9, b173_morecreepsandweirdos:snowdevil=57, b173_morecreepsandweirdos:thief=36, b173_morecreepsandweirdos:zebra=24} confirmedNativeInsertions={b173_morecreepsandweirdos:armyguy=1, b173_morecreepsandweirdos:bigbaby=3, b173_morecreepsandweirdos:bubblescum=7, b173_morecreepsandweirdos:bum=2, b173_morecreepsandweirdos:digbug=1, b173_morecreepsandweirdos:evilscientist=1, b173_morecreepsandweirdos:floob=2, b173_morecreepsandweirdos:g=5, b173_morecreepsandweirdos:googoat=7, b173_morecreepsandweirdos:hippo=5, b173_morecreepsandweirdos:horsehead=2, b173_morecreepsandweirdos:hotdog=12, b173_morecreepsandweirdos:hunchback=2, b173_morecreepsandweirdos:kid=1, b173_morecreepsandweirdos:lawyerfromhell=2, b173_morecreepsandweirdos:lolliman=2, b173_morecreepsandweirdos:mandog=1, b173_morecreepsandweirdos:preacher=2, b173_morecreepsandweirdos:robotted=5, b173_morecreepsandweirdos:robottodd=2, b173_morecreepsandweirdos:rockmonster=2, b173_morecreepsandweirdos:sneakysal=1, b173_morecreepsandweirdos:zebra=3} failures=[]; insertion abundance is not asserted"
+      ]
+    }
+  },
+  "actual_clients": {
+    "mocreatures": {
+      "evidence": "run-b173-single/mocreatures-neutralrender-effects-client-20261108-150457-f47a9c/render-effects-live-proof/results.json",
+      "sha256": "203f1dda6a50527c1053d520713b27abe926116052d7e94788517dc6b4823285",
+      "checks": [
+        {
+          "label": "bunny native client attack changed authoritative health",
+          "passed": true
+        },
+        {
+          "label": "bunny real client received native hurt state",
+          "passed": true
+        },
+        {
+          "label": "bunny client hurt timer naturally expired after fifteen native ticks",
+          "passed": true
+        },
+        {
+          "label": "ogre native client attack changed authoritative health",
+          "passed": true
+        },
+        {
+          "label": "ogre real client received native hurt state",
+          "passed": true
+        },
+        {
+          "label": "ogre client hurt timer naturally expired after fifteen native ticks",
+          "passed": true
+        },
+        {
+          "label": "werewolf native client attack changed authoritative health",
+          "passed": true
+        },
+        {
+          "label": "werewolf real client received native hurt state",
+          "passed": true
+        },
+        {
+          "label": "werewolf client hurt timer naturally expired after fifteen native ticks",
+          "passed": true
+        },
+        {
+          "label": "bunny native lethal damage reaches real client death timer",
+          "passed": true
+        }
+      ],
+      "pixels": {
+        "tints": [
+          {
+            "role": "bunny",
+            "crop": [
+              200,
+              35,
+              440,
+              325
+            ],
+            "hurt_pixels_shifted_toward_red": 2666,
+            "healthy_red_pixels": 448,
+            "hurt_red_pixels": 2764,
+            "recovered_red_pixels": 448
+          },
+          {
+            "role": "ogre",
+            "crop": [
+              200,
+              35,
+              440,
+              325
+            ],
+            "hurt_pixels_shifted_toward_red": 9770,
+            "healthy_red_pixels": 216,
+            "hurt_red_pixels": 12869,
+            "recovered_red_pixels": 216
+          },
+          {
+            "role": "werewolf",
+            "crop": [
+              200,
+              35,
+              440,
+              325
+            ],
+            "hurt_pixels_shifted_toward_red": 13384,
+            "healthy_red_pixels": 0,
+            "hurt_red_pixels": 16778,
+            "recovered_red_pixels": 0
+          }
+        ],
+        "death_red_pixels": 3477,
+        "screenshots": {
+          "bunny-death.png": "e9c891026c968073c15ae15c41288f791431db6ccb88e89eef7fdc77fdd6541c",
+          "bunny-healthy.png": "b49ccea03877231f61a84f7335a23fc4e43b81998e76ad50ad505b609be2ac7a",
+          "bunny-hurt.png": "f28ea7d69dd29f5c1219d7733c5adf2a2c24bee61d2d98dd0aac981c6f4c1d98",
+          "bunny-recovered.png": "b49ccea03877231f61a84f7335a23fc4e43b81998e76ad50ad505b609be2ac7a",
+          "ogre-healthy.png": "5d7f58cccbe35c5f6d82dd45997be2bc61496e00202c9559e24a9ea089006639",
+          "ogre-hurt.png": "b6a40853435cddce05ebc2ef26208be64b7ceb63a4b5ba24bb5722a18f814b76",
+          "ogre-recovered.png": "634fffe20def5819cff8c626cb4a6960cd78231d33a331792df6a9cbb204d891",
+          "werewolf-healthy.png": "b2f8a60e389d98bf0c01fff491fca69d16090a38026f5dbab3d38fd2ea5dc61e",
+          "werewolf-hurt.png": "7cd389d885cca52eca241cc50ee231815fbd77b546236b42885a8fda1011d378",
+          "werewolf-recovered.png": "8db0fbfe839a441284b3d1285a980e053dd7c804dd356a0a9db0885273cfa4b6"
+        }
+      },
+      "visually_reviewed": true
+    },
+    "morecreeps": {
+      "evidence": "run-b173-single/morecreeps-neutralrender-effects-client-20261108-150458-0bb4db/render-effects-live-proof/results.json",
+      "sha256": "a9b3c1ba38939f4dcbc76d7fb6c0c1a1264d7aee53f1c38ae6e15772600071d2",
+      "checks": [
+        {
+          "label": "hippo native client attack changed authoritative health",
+          "passed": true
+        },
+        {
+          "label": "hippo real client received native hurt state",
+          "passed": true
+        },
+        {
+          "label": "hippo client hurt timer naturally expired after fifteen native ticks",
+          "passed": true
+        },
+        {
+          "label": "Hotdog starts with original untamed/firepower-zero constructor state",
+          "passed": true
+        },
+        {
+          "label": "two actual cooked-pork interactions tame original Hotdog and replicate state",
+          "passed": true
+        },
+        {
+          "label": "native redstone interaction grants and replicates exact original firepower250",
+          "passed": true
+        },
+        {
+          "label": "uploaded native fire atlas animates during normal gameplay ticks",
+          "passed": true
+        },
+        {
+          "label": "explicit standard native atlas steps change uploaded fire frames with world/entity motion frozen",
+          "passed": true
+        },
+        {
+          "label": "actual uploaded flame frames contain transparent holes and opaque fire pixels",
+          "passed": true
+        },
+        {
+          "label": "hippo native lethal damage reaches real client death timer",
+          "passed": true
+        }
+      ],
+      "pixels": {
+        "tints": [
+          {
+            "role": "hippo",
+            "crop": [
+              200,
+              35,
+              440,
+              325
+            ],
+            "hurt_pixels_shifted_toward_red": 58073,
+            "healthy_red_pixels": 0,
+            "hurt_red_pixels": 58096,
+            "recovered_red_pixels": 0
+          }
+        ],
+        "death_red_pixels": 33391,
+        "screenshots": {
+          "hippo-death.png": "be65ab1125790fd0337daf53e17349178ac8fde60f63e5fc4dc9d27297e88ac7",
+          "hippo-healthy.png": "9efeb6fac94511c0385ade71b3e82be6ee41ff452fbb1220808348fc86448b31",
+          "hippo-hurt.png": "e45e81a05b2aa2dc808d69b6a76b99fa7d1d35587e2b2f5a17714918f9133921",
+          "hippo-recovered.png": "9efeb6fac94511c0385ade71b3e82be6ee41ff452fbb1220808348fc86448b31",
+          "hotdog-cold.png": "76b2fcbf7477e6fd72a030b85a8cea47580bbbd391e48036afd74de1a207c438",
+          "hotdog-hot-0.png": "477d8f77b797ff5e1a9ef0aa68a90a3cdc58b147e66b96b87ff835d44e68bf30",
+          "hotdog-hot-1.png": "9a3b308743107e4fbc07c591e1c47e9fd8eee446c708eef6c7efeca097188d21",
+          "hotdog-hot-2.png": "aa39367d23ad714b90416a6732bc2d139e2ee3b263b18f0552feab2c814a730c",
+          "hotdog-hot-3.png": "26411ab0890a3f5ffc6d2644ce8e3b63869208cd748060156b50dd0c42243fd2",
+          "hotdog-hot-4.png": "c8ef41447960e073617065ea317f250882da28138b76778e6f5b0176f40e86c0",
+          "hotdog-hot-5.png": "5817562500fe04c55397beeda6a4e7719fab2e3e543f7592f5b085eda5367616",
+          "hotdog-hot-6.png": "e929960c8b5b2040f7c10079c8b307cfd977f30e8ab747a00e65c98d4aa678db",
+          "hotdog-hot-7.png": "91856f46523e1c4ff0cf8216127f87161c0e2f2171ed25e32fd535fafee17c2b",
+          "hotdog-normal-0.png": "a3578b41c49c9088f088e57ff480bafe5c2b75792bc07346fe9c4626273ba05a",
+          "hotdog-normal-1.png": "a3776b3cd01841fbaa48924fb71268567d1da70bb466318751866866d1ed9c6b",
+          "hotdog-normal-2.png": "69a2f52b79e170f3520601a3e5ec775742f4c51875a7952919da0e199ce81262",
+          "hotdog-normal-3.png": "681840481c4a09401892f319b627bae8c045fa1360f424fe995c340e45e27c5c",
+          "hotdog-normal-4.png": "75bd00319d251320d445c07a5ba77f4b4be623650e0d56b8fa65849ac0e7e89c",
+          "hotdog-normal-5.png": "78cac5bf0e3f1398f38d238cd7d24a445b9e5ad97b3ca1638f6dd8b47ae1449f",
+          "hotdog-normal-6.png": "fcfa9d5407a1cd4de1c1b41cc2424748020b5a321c97f59a3a6f8f6879e41b1d",
+          "hotdog-normal-7.png": "7a46c2a8ae76a765b0d1b1c60a168ec0bf0d908dfe7a7ecb384a9fba4bd12af7"
+        },
+        "fire": {
+          "crop": [
+            200,
+            35,
+            440,
+            325
+          ],
+          "changed_pixels_from_first_fire_capture": [
+            361,
+            364,
+            365,
+            343,
+            361,
+            382,
+            354
+          ],
+          "normal_gameplay_uploaded_fire_frame_hashes": [
+            "1000408462",
+            "1252415932",
+            "1722433676",
+            "2399668758",
+            "2614528536",
+            "519760562",
+            "601252413",
+            "63081280"
+          ],
+          "normal_gameplay_level_times": [
+            1702,
+            1720,
+            1738,
+            1756,
+            1774,
+            1792,
+            1811,
+            1829
+          ],
+          "controlled_native_atlas_step_hashes": [
+            "1941763709",
+            "2614528536",
+            "2622726242",
+            "2797413117",
+            "4117354206",
+            "421558723",
+            "63081280",
+            "707689372"
+          ],
+          "sampled_frozen_level_time": 1841,
+          "source_animation_frames": 32,
+          "uploaded_sprite_transparent_pixels": [
+            106,
+            110,
+            133,
+            137,
+            130,
+            124,
+            113,
+            107
+          ],
+          "uploaded_sprite_opaque_pixels": [
+            150,
+            146,
+            123,
+            119,
+            126,
+            132,
+            143,
+            149
+          ]
+        }
+      },
+      "visually_reviewed": true
+    }
+  },
+  "hotdog_mechanism": "Existing generic terrain-cell resolution and native animated atlas UV binding already support the original burnDog callback. No production Hotdog identity or invented fire behavior was added.",
+  "animation_method": {
+    "normal_gameplay": "Real native cooked-pork interactions tame the original Hotdog; native redstone interaction grants and replicates firepower250. Native client/world ticks animate uploaded fire atlas pixels.",
+    "isolated_pixel_check": "World/entity ticks are frozen, then the standard native TextureAtlas.tick is advanced explicitly. Fixed-camera flame captures and uploaded atlas hashes change with a constant level time.",
+    "freeze_diagnostic": "Minecraft.tick deliberately skips textureManager.tick when isLevelRunningNormally is false. The initial frozen-world-only animation assertion failed for that native reason; the corrected normal and isolated checks passed.",
+    "source_animation_frames": 32,
+    "normal_uploaded_frames_sampled": 8,
+    "controlled_uploaded_frames_sampled": 8
+  },
+  "policy": {
+    "generic_identity_guard": "267 Beta production/loader sources passed",
+    "mod_versions_changed": false,
+    "actual_mod_fixtures_opt_in": true,
+    "modern_native_renderer_changed": false,
+    "default_other_legacy_frame_behavior_changed": false,
+    "desktop_window_opened": false,
+    "render_environment": "WSL Ubuntu Xvfb :99, Mesa llvmpipe; no Sodium/Iris"
+  },
+  "artifact": {
+    "path": "build/dist/legacyconnector-0.4.13.jar",
+    "sha256": "f3c99bc6eef5fdca3518284e954516fc3952a315f68ca3a319aab7a5a51cc992"
+  },
+  "limits": [
+    "Bounded renderer coverage: Bunny, Hippo, original custom Ogre/Werewolf overlays, and Hotdog fire; not complete mod compatibility.",
+    "Sodium/Iris and shader-pack batching were not tested.",
+    "Controlled atlas stepping is a separate render-isolation check, not a claim that native textures continue animating under tick freeze.",
+    "Natural breeding/birth and complete Werewolf transformation sequences remain outside this pass."
+  ]
+}

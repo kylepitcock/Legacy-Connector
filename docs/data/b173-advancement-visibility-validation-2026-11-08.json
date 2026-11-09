@@ -1,0 +1,156 @@
+{
+  "status": "passed",
+  "snapshot_date": "2026-11-08",
+  "scope": "Beta advancement category visibility alongside actual Aether II achievements.",
+  "tested_code_revision": "18ecc853891c6915a7be313171eaa5670a6f7b63",
+  "branch": "legacy-b1.7.3",
+  "version": "0.4.13",
+  "source_sha256": {
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/AdvancementsB173.java": "f7b49826ebaaf22aedf987256259cf178e9a307accd8827c84671b5a473c8b4a",
+    "src/test/java/org/kylepitcock/legacyconnector/vb1_7_3/AdvancementsB173Test.java": "18d5cbb0142a5309ac778a84a6b5467901de10a4f4d805187e4607de3ea632f7"
+  },
+  "tests": {
+    "runtime": {
+      "tests": 221,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "loader": {
+      "tests": 267,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "servers": {
+    "mocreatures": {
+      "status": "headless-smoke-passed",
+      "evidence": "build/placement-classic-flat-advancement-visibility-mocreatures-assessment.json",
+      "sha256": "186752ae21daa18bd13e371016621dfe164c6996cd718bdb9f8cb7aeae961743",
+      "constructed": [
+        "[14:10:05] [modloading-sync-worker/INFO] [Le.7.3/]: b1.7.3 mod mocreatures v2.12.1 (MC 1.7_3) constructed"
+      ]
+    },
+    "morecreeps": {
+      "status": "headless-smoke-passed",
+      "evidence": "build/placement-classic-flat-advancement-visibility-morecreeps-assessment.json",
+      "sha256": "29c7d6522681bd6cc4abec2a59faac663f7e1414ba678ff148c29cb520510ce4",
+      "constructed": [
+        "[14:11:08] [modloading-sync-worker/INFO] [Le.7.3/]: b1.7.3 mod MoreCreepsAndWeirdos MoreCreepsAndWeirdos constructed"
+      ]
+    }
+  },
+  "reproduction": {
+    "beta_achievements_loaded": 11,
+    "beta_achievements_visible_to_client": 0,
+    "visible_client_roots": [
+      "minecraft:recipes/root",
+      "legacyconnector:achievements/page_aether_ii"
+    ]
+  },
+  "fixed_client": {
+    "original_achievement_ids_preserved": true,
+    "all_originals_unearned_before_explicit_award": true,
+    "native_screen_tabs": [
+      "legacyconnector:achievements/page_aether_ii",
+      "b173_aether:beta/root"
+    ],
+    "earned_original_after_relog": "b173_aether:beta/achievements/enteraether_5243680",
+    "original_achievements_earned_after_relog": 1,
+    "checks": [
+      {
+        "passed": true,
+        "detail": "All eleven original Beta achievement IDs remain unchanged"
+      },
+      {
+        "passed": true,
+        "detail": "Actual original Beta achievements stay registered and unearned"
+      },
+      {
+        "passed": true,
+        "detail": "Both Beta and Forge roots reach actual client together before earning any Beta achievement"
+      },
+      {
+        "passed": true,
+        "detail": "Synthetic Beta category becomes visible automatically"
+      },
+      {
+        "passed": true,
+        "detail": "Automatic category does not award any actual original achievement"
+      },
+      {
+        "passed": true,
+        "detail": "Existing Forge achievement progress is unchanged"
+      },
+      {
+        "passed": true,
+        "detail": "Native advancement screen creates separate Beta and Forge tabs"
+      },
+      {
+        "passed": true,
+        "detail": "Original legacy award API synchronizes earned progress to actual client"
+      },
+      {
+        "passed": true,
+        "detail": "Only the explicitly earned original achievement completes"
+      },
+      {
+        "passed": true,
+        "detail": "Original Beta award does not modify Forge progress"
+      },
+      {
+        "passed": true,
+        "detail": "Original earned Beta advancement persists through actual save/reopen"
+      },
+      {
+        "passed": true,
+        "detail": "Unearned Beta achievements and existing Forge progress retain their states"
+      },
+      {
+        "passed": true,
+        "detail": "Both native tabs remain visible after relog"
+      }
+    ]
+  },
+  "private_fixture_sha256": {
+    "mods/b1.7.3/Aether-b1.7.3-1.02.zip": "ae3ab77f001f64b1391aa5a5d148731d442e5a6041f5c30453fd9b6831cbae60",
+    "mods/1.7.10/aether-1.7.10-1.6.jar": "8e6221100a87fe1d0170d94360a0b33bc18fe1bac207fa03ab6df5197b34bd14",
+    "mods/1.7.10/gilded-games-util-1.7.10-1.9.jar": "b2c44f48e8e90d2f4aeacabb38c04ac6e985f683cb9e4b1b50f6b55aab5e795d"
+  },
+  "evidence": {
+    "baseline.json": {
+      "path": "run-b173-single/aether-side-by-side-pair-20261108/advancement-visibility-proof/baseline.json",
+      "sha256": "1b5ef9905953b167bf9433f2614fb874ed45bdbc4c2f25091942871f2d49f7f2"
+    },
+    "fixed-after-relog.json": {
+      "path": "run-b173-single/aether-side-by-side-pair-20261108/advancement-visibility-proof/fixed-after-relog.json",
+      "sha256": "4603c5e4e2e89d07cbd7f8454cd246472e8873868ce9c2c4286c5d09cca9544e"
+    },
+    "fixed-awarded.json": {
+      "path": "run-b173-single/aether-side-by-side-pair-20261108/advancement-visibility-proof/fixed-awarded.json",
+      "sha256": "b8053b911ef3eacb50d798fa8c06c7b80480d115d81bf38e8e83b87eccee26ef"
+    },
+    "fixed-result.json": {
+      "path": "run-b173-single/aether-side-by-side-pair-20261108/advancement-visibility-proof/fixed-result.json",
+      "sha256": "4bf63e3f7807ce1bec4e6ac3c0b1e95cdd15101ae530560df49fede6a6214c83"
+    },
+    "fixed-unearned.json": {
+      "path": "run-b173-single/aether-side-by-side-pair-20261108/advancement-visibility-proof/fixed-unearned.json",
+      "sha256": "e58908025c8417397984c6a2bc2e9e512fb03b1cdc72b2040df5a39ef48f31a0"
+    }
+  },
+  "screenshot": {
+    "path": "run-b173-single/aether-side-by-side-pair-20261108/control/out/advancement-fixed-beta-and-forge.png",
+    "sha256": "5f801c11297b6b062659c8e04818c1da1d6aa888bed4b683f305b0a0334619f9"
+  },
+  "artifact": {
+    "path": "build/dist/legacyconnector-0.4.13.jar",
+    "sha256": "78d1bb527bdc9ff4ae33bb57794a54401c98c3c7996dc2a2a9dceb892db54ee6"
+  },
+  "limits": [
+    "Actual client used offscreen Mesa/llvmpipe.",
+    "This change adds synthetic Beta category advancements; original achievement IDs, criteria and custom parent links remain intact.",
+    "Vanilla and Forge advancement definitions are not replaced; actual Forge progress was compared before award and after relog."
+  ]
+}

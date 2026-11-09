@@ -116,7 +116,7 @@ public final class Platform1710 implements LegacyPlatform {
             if (inst != null) {
                 Object value = mod.instance;
                 if (!inst.value().isEmpty() && !inst.value().equals(mod.legacyId)) {
-                    LegacyModRecord other = LegacyMods.byLegacyId(inst.value());
+                    LegacyModRecord other = LegacyMods.byLegacyId(inst.value(), mod.version);
                     value = other == null ? null : other.instance;
                 }
                 // FML wrote static finals too (AE2's INSTANCE): ReflectionCompat falls back to Unsafe where the JVM refuses.

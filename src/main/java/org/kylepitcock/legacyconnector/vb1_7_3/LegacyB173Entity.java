@@ -27,6 +27,8 @@ public final class LegacyB173Entity extends net.minecraft.world.entity.Entity im
     @Override public boolean shouldRenderAtSqrDistance(double distance){return legacy()==null?super.shouldRenderAtSqrDistance(distance):legacy().shouldRender(distance);}
     @Override public float getPickRadius(){return legacy()==null?super.getPickRadius():legacy().getTargetingMargin();}
     @Override public boolean isPickable(){return legacy()!=null&&legacy().isCollidable();}
+    /** Keep collidable legacy passengers targetable within their carrier's native riding tree. */
+    @Override public boolean canRiderInteract(){return legacy()==null?super.canRiderInteract():isPickable();}
     @Override public net.minecraft.world.entity.EntityDimensions getDimensions(net.minecraft.world.entity.Pose pose){return legacy()==null?super.getDimensions(pose):net.minecraft.world.entity.EntityDimensions.scalable(legacy().width,legacy().height);}
     @Override public float maxUpStep(){return legacy()==null?super.maxUpStep():legacy().stepHeight;}
     @Override public void lerpMotion(double x,double y,double z){if(legacy()==null){super.lerpMotion(x,y,z);return;}state.callback(()->legacy().setVelocityClient(x,y,z));}
@@ -47,7 +49,8 @@ public final class LegacyB173Entity extends net.minecraft.world.entity.Entity im
         MoverType previous=retainedMover;retainedMover=mover;
         try{state.callback(()->legacy().move(movement.x,movement.y,movement.z));}finally{retainedMover=previous;}
     }
-    @Override public void baseMove(double x,double y,double z){state.flush();super.move(retainedMover,new Vec3(x,y,z));state.sync();}
+    @Override public void baseMove(double x,double y,double z){state.move(()->super.move(retainedMover,new Vec3(x,y,z)));}
+    @Override public void setPos(double x,double y,double z){if(state==null||!state.movePosition(x,y,z))super.setPos(x,y,z);}
     @Override public boolean hurt(DamageSource source,float amount){
         if(legacy()==null||level().isClientSide)return false;
         DamageSource previous=retainedDamage;retainedDamage=source;boolean[] result={false};

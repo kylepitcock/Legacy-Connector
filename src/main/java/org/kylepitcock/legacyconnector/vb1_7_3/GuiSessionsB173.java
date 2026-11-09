@@ -72,7 +72,10 @@ public final class GuiSessionsB173 {
                 case "release"->session.gui.mcc$mouseReleased(x,y,button);
                 case "drag"->session.gui.mcc$mouseDragged(x,y,button);
                 case "scroll"->session.gui.mcc$mouseScrolled(input.getDouble("scroll"));
-                case "key"->session.gui.mcc$keyPressed((char)input.getInt("character"),input.getInt("key"));
+                case "key"->{
+                    if(input.getInt("character")==22)Screen.mcc$withClipboard(input.getString("clipboard"),()->session.gui.mcc$keyPressed((char)22,input.getInt("key")));
+                    else session.gui.mcc$keyPressed((char)input.getInt("character"),input.getInt("key"));
+                }
                 case "tick"->session.gui.tick();
                 default->{}
             }

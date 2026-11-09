@@ -9,7 +9,7 @@ import net.minecraft.world.item.ItemDisplayContext;
 import org.joml.Matrix4f;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.client.renderer.entity.LivingEntityRenderer;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext;
@@ -27,7 +27,8 @@ public final class AnimalRendererB173 extends EntityRenderer<LegacyB173Animal> {
     @Override public void render(LegacyB173Animal entity,float yaw,float partial,PoseStack pose,MultiBufferSource buffers,int light){
         var info=RenderersB173.info(entity.legacy().getClass());if(info==null)return;
         shadowRadius=info.renderer().mcc$shadowRadius();
-        RenderContext.beginWorld(pose,buffers,light,LivingEntityRenderer.getOverlayCoords(entity,0));
+        // Original renderers own hurt/color passes, including renderers that replace the living implementation.
+        RenderContext.beginWorld(pose,buffers,light,OverlayTexture.NO_OVERLAY,RenderContext.KIND_WORLD,true);
         pose.pushPose();
         try {
             var extras=NativeRendererExtrasB173.create(entity,pose,buffers);

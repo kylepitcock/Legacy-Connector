@@ -70,6 +70,12 @@ final class KeysB173 {
         };
     }
 
+    static char character(int key,int modifiers){
+        if((modifiers&GLFW.GLFW_MOD_CONTROL)!=0&&(modifiers&GLFW.GLFW_MOD_ALT)==0&&key>=GLFW.GLFW_KEY_A&&key<=GLFW.GLFW_KEY_Z)
+            return (char)(key-GLFW.GLFW_KEY_A+1);
+        return character(key);
+    }
+
     /** True if the key will also send a character event (printable, no Control or Alt held). */
     static boolean types(int key, int modifiers) {
         return key >= GLFW.GLFW_KEY_SPACE && key <= GLFW.GLFW_KEY_GRAVE_ACCENT && (modifiers & (GLFW.GLFW_MOD_CONTROL | GLFW.GLFW_MOD_ALT)) == 0;

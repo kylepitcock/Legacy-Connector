@@ -20,6 +20,13 @@ with the same `mod_X` class; when both are present, the build for the running si
 
 ## How a jar is translated
 
+Beta mods use a stable `b173_` prefix for their FML identity and registered content namespace: for example,
+`b173_aether:holystone` can coexist with a Forge mod's `aether:holystone`. The prefix applies even when only the
+Beta copy is installed. Existing Java relocation, configuration names and resource paths remain unchanged.
+This changes previous Beta registry IDs; save migration is not included.
+Actual Beta Aether 1.02 and Aether II 1.7.10-1.6 have been checked together: both original mod instances initialize,
+and separate blocks/items retain their original ownership, textures and saved states across a real client save/reopen.
+
 1. **Detection** (`loader/.../BetaJars`). No `mcmod.info`, no `@Mod`: a jar is a b1.7.3 mod by its `mod_*` classes (ModLoader's entry
    points, default package) or its references to `BaseMod`, `ModLoader`, `forge/*`. Its references to obfuscated game members are resolved
    against the client and the server names: the side with more hits is the jar's side (the b1.7.3 client and server were obfuscated
@@ -247,7 +254,14 @@ An unhandled block use passes through. Items without an overridden air-use callb
 Offhand use passes through without calling Beta code (Beta only had a selected inventory slot).
 Callback exceptions are contained and logged, at most three per item. Individual items can still need missing legacy APIs.
 Block items retain their modern placement
-path; custom block-item callbacks, entity interactions, combat, eating animations and inventory ticks are separate work.
+path; custom block-item callbacks, eating animations and inventory ticks are separate work.
+
+An overridden `Item.useOnEntity(ItemStack, LivingEntity)` runs through native main-hand item/entity interaction.
+The server executes the original callback with canonical entity views and the initiating player's Minecraft context;
+target changes and inventory edits commit before the context closes. The native caller's stack keeps its components,
+and creative-mode stack copies retain native count behavior. Items without an override and offhand calls pass through.
+The actual Mo' Creatures horse-saddle fixture covers adult and rejected targets, repeated use, creative counts,
+custom components, offhand calls and ordinary items without this callback.
 
 The development server's `B1.7.3 ITEM USE TEST` checks position/side/world, consumption, returned replacements,
 direct inventory replacement, preservation of unrelated modern items, offhand pass-through and an item callback
@@ -455,6 +469,16 @@ APIs. No production branch selects behavior by a tested mod's identity.
 
 When original creatures ride a native player, passenger placement evaluates the original carried-offset getter inside the
 shared callback transaction. This preserves both placement and getter side effects, including furniture pickup state.
+Successful native attachment and detachment also send the player carrier its own passenger-list packet. Native tracking
+normally sends that player's updates only to observers, which previously left a carried creature on the carrier's client
+at its old ground position. Unchanged, rejected and canceled relationships retain native behavior.
+
+Isolated actual-mod client checks exercise Mo' Creatures horse feeding, taming, saddling, chest transfers, steering,
+jumping and dismounting; Bunny, Bird and Kitty carrying; and More Creeps Kid pickup/head placement, Rocket Giraffe riding,
+Guinea Pig taming, stacking and commands. Real save/quit/reopen checks retain pet UUIDs, original saved fields and horse
+inventory, eject carried pets coherently, and restore a ridden horse through native `RootVehicle` persistence.
+The [client gameplay validation snapshot](../data/b173-client-gameplay-validation-2026-11-08.json) records the exact
+fixture hashes, namespace counts, client assertions and separate final server gates.
 
 Nested callbacks share an entity-view transaction. Queried objects keep stable identities, pending writes are committed
 before a native refresh, and a nested damage callback cannot discard subsequent original fire or velocity changes.
@@ -465,6 +489,12 @@ Vanilla model parents include biped, quadruped, chicken, pig, cow and sheep mode
 Original render callbacks can submit held items, nameplates, health-bar quads, blending/depth state and texture matrices
 through native rendering. ModLoader categories select native water/ground spawn placement, alongside original spawn checks.
 Achievement registration and awards use native advancements; original progress queries read the same native state.
+Top-level Beta achievements and those attached to vanilla parents are grouped under a synthetic category for their mod.
+The category becomes visible automatically, with no toast or chat announcement; original achievements still require
+their original award callbacks. Existing achievement IDs and custom parent chains remain intact. This lets Beta tabs
+appear alongside Forge pages before a player earns the first Beta achievement. The
+[advancement visibility validation](../data/b173-advancement-visibility-validation-2026-11-08.json) records the actual
+Beta Aether/Aether II screen, unchanged Forge progress, one explicit legacy award and save/reopen persistence.
 
 Fresh separate actual-mod runs pass all **28 Mo' Creatures registrations**, including original geometry, tracking packet
 round-trips, movement callbacks, interaction, damage, persistence and bounded death/drop checks. Twenty-one focused gameplay
@@ -586,6 +616,22 @@ animated sprites such as Hotdog fire to sample the native animation frame. The o
 restored after drawing. Custom textures, missing sprites and wrapping UVs retain their original standalone texture binding.
 Portable tests exercise the native quad backend's atlas coordinates, matrix restoration and wrapping fallback.
 
+The shared living renderer now executes Beta's original hurt/death and optional ARGB color passes after ordinary models,
+decoration passes and `renderMore`. Ordinary decoration passes use `bindTexture`; overlays use `bindDecorationTexture`.
+Hurt or death produces one brightness-scaled red pass with alpha 0.4, including when both timers are active. Custom original
+render methods retain ownership of their passes. The Beta native adapter supplies no additional modern hurt overlay, avoiding
+double tint. Its opt-in render frame preserves EQUAL depth and alpha blending, with body/overlay draw boundaries; existing
+frame overloads and native entity renderers retain their behavior.
+
+Actual offscreen client attacks exercise Bunny, Hippo and the custom Ogre/Werewolf renderers, including normal colors after
+hurt expires and native Bunny/Hippo death poses. Actual cooked-pork interactions tame a Hotdog; a native redstone interaction
+adds and tracks 250 firepower. GPU readback samples eight distinct uploaded fire frames during normal gameplay from the
+native 32-frame sprite. A separate fixed-pose test advances the standard native atlas while world/entity ticks are frozen,
+confirming changing visible flame pixels and transparent holes. Native tick freeze otherwise stops texture animation too.
+Both unchanged original mod payloads also pass fresh isolated server regressions, alongside 497 portable tests.
+The [render effects snapshot](../data/b173-render-effects-validation-2026-11-08.json) records source hashes, exact coverage,
+pixel counts and reviewed captures. These remain bounded tests without Sodium/Iris or shader-pack coverage.
+
 Isolated offscreen clients enumerate all 28 Mo' Creatures and 53 More Creeps registered entity types in eight lineup pictures.
 Controlled scenes cover Horse equipment, Werewolf forms, Ogre and furniture, the actual Lawyer's wooden/iron doors and spiral,
 and Hotdog fire sampled from the native 32-frame sprite. Both Normal-difficulty integrated clients repeat the original-mod
@@ -593,9 +639,16 @@ regressions successfully. These are bounded visual checks, with no Sodium/Iris c
 compatibility. [The jail and client rendering snapshot](../data/b173-jail-client-render-validation-2026-11-08.json) records
 the source hashes, 477 passing tests, reproduced failures and reviewed captures. Existing malformed structures are not migrated.
 
-A separate API gap remains in native squid views: their Beta SquidEntity
-and WaterCreatureEntity identity is not yet represented, although the cap census handles native WaterAnimal ancestry directly.
-Actual aquatic prey bytecode does not establish a broken Mo' Creatures predation path from that view gap.
+Ordinary native Squid and GlowSquid now expose canonical Beta `SquidEntity` / `WaterCreatureEntity` views to original callbacks
+and typed World queries. The eight animation fields are read snapshots of the native instance. Native entity types, goals,
+spawning, renderer and loot retain their existing lifecycle. Fresh translation caches are required so original class literals
+resolve the handwritten Squid shim rather than the older synthesized placeholder.
+
+Actual Mo' Creatures checks use its translated Squid class literal and exercise Shark/Piranha selection and damage plus Dolphin
+exclusion. Those prey policies already passed before the identity fix; the reproduced failure was the missing typed ancestry.
+Actual More Creeps Bullet callbacks hit wet native Squid and GlowSquid, alongside canonical-view, animation and native-goal/loot
+checks. [The native Squid validation snapshot](../data/b173-native-squid-validation-2026-11-08.json) records isolated actual-mod
+runs and the reproduced identity failures.
 
 The opt-in `naturalSpawnTickSelfTest` observer uses a real tracked native player and ordinary server ticks, recording candidate
 checks, finalization and confirmed world insertion separately. Isolated observations confirm original aquatic, hostile and
@@ -728,6 +781,46 @@ callback runs on the server's and on the client's level here (as every block cal
 - **`displayGUIChest`** (`openChestScreen`) opens a vanilla chest menu over the legacy inventory (`LegacyInventoryB173`, whole rows only).
   Vanilla `TileEntityChest` (`ChestBlockEntity`), `ContainerChest` (`GenericContainerScreenHandler`) and `GuiChest` (`DoubleChestScreen`)
   are the shim's, for mods' own chests (Aether's treasure chests extend them).
+- **Text fields and language labels** use the shared Beta `TextFieldWidget` and `TranslationStorage` APIs. Text fields retain
+  the original focus, enabled state, character filter, backspace, maximum length and blinking end caret. An explicit Ctrl-V
+  event carries the client clipboard only for that screen callback, including server-owned naming screens. Beta's separate
+  32-character paste limit is preserved. Original screen callbacks still decide whether Save, Cancel or Done commits a name.
+- **Entity query results** retain Beta's list ownership rules: `World.getEntities(Entity, Box)` clears and returns one mutable
+  list per world; `collectEntitiesByClass` returns an independent mutable list. This matters when original gameplay retains
+  an earlier query while issuing another one, including Mo' Creatures' bunny breeding loop. Native world queries are unchanged.
+
+The [pet naming and query validation snapshot](../data/b173-pet-naming-validation-2026-11-08.json) records actual original
+More Creeps Giraffe and Mo' Creatures Horse naming through native client interactions, keyboard/pointer events and real
+save/reopen. More Creeps covers focus, typing, its original 31-character limit, explicit paste, Save and Cancel; Mo' Creatures
+retains its own 15-character `MoCGUI` and Done behavior. An actual original Bunny breeding tick also exercises the wide-query /
+empty-nearby-query crash boundary. Both mods pass fresh isolated server regressions. Hurt/death tint and Hotdog animation
+are covered separately by the render effects snapshot above.
+
+The [natural lifecycle validation snapshot](../data/b173-natural-lifecycle-validation-2026-11-08.json) records subsequent
+client checks of original Bunny, Horse, Dolphin and Kitty births, both day/night Werewolf transformations, and native
+save/reopen of offspring and stable forms. Parents receive ordinary food, taming and carrying interactions; original
+readiness, growth, gestation and transformation fields and RNG are not forced. Already-born observation fixtures receive
+native persistence only after birth so their UUIDs can be checked after reopening. Original counters absent from the mods'
+NBT remain absent. More Creeps has no equivalent paired mating or Werewolf family; its actual EvilChicken lays its original
+egg through normal ticks in a separate client run.
+
+Shared fixes supporting these checks preserve the original APIs:
+
+- Reachable original renderer methods that directly write Beta entity fields join the existing authoritative renderer-effect
+  tick lane. This includes original variant initialization used by gameplay, rather than leaving server-side type and stats
+  at their constructor defaults. Renderer/model-only field writes do not activate this lane.
+- Raw position fields, dimensions and collision bounds remain independent through host synchronization and nested callbacks.
+  Original `setBoundingBoxSpacing` changes dimensions only; `setPosition` explicitly rebuilds bounds. Movement derives position
+  from the existing box and translates it through the native collision engine, including zero moves. This prevents original
+  transformation animation offsets from becoming collision displacement through walls.
+- Collidable hosted Beta passengers opt into native rider interaction targeting. An ordinary native crosshair/right-click
+  check picks up and releases the original Bunny; the original callback still decides the mount toggle and throw behavior.
+  Vanilla and modern entity targeting implementations are unchanged.
+
+Fresh isolated server runs also exercise the controlled bounds API on the original Werewolf, EvilChicken and Money entity,
+plus the original mods' existing regression suites. These are opt-in fixtures; the default build needs no private mod jars.
+Complete compatibility for either mod, remote multiplayer and Sodium/Iris remain unverified.
+
 - **Placing a subtype.** b1.7.3's `ItemBlock` set block and metadata together (`getPlacedBlockMetadata` of the damage), so `onBlockAdded`
   and the tile entity it makes see the subtype; `getStateForPlacement` does the same (before, a Minefactory translocator or crafter
   placed from its item got the tile entity of metadata 0 and opened nothing).

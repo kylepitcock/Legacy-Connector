@@ -1,0 +1,246 @@
+{
+  "status": "passed",
+  "snapshot_date": "2026-11-08",
+  "scope": "Generic Beta text fields, GUI labels and explicit paste transport; original MoCreatures naming regression and shared entity-query list ownership.",
+  "tested_code_revision": "9b1a8d0e0be0375a3a34a015c94ef3f30ad6d5b3",
+  "branch": "legacy-b1.7.3",
+  "version": "0.4.13",
+  "source_sha256": {
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/client/gui/screen/Screen.java": "27fbcc121eb644e58db5cbf50a4ca1e9c0ae79a30448d6469cc2bf28efde78a3",
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/client/gui/widget/TextFieldWidget.java": "a18a05fb0e3b04efb9e969f8ca8096dd97097e7fd538b5f8c6408544d01fe829",
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/client/resource/language/TranslationStorage.java": "32c7ecbd1a0946469dadf1dabef73f0de0ee3680b0a2594b8564779f750372e9",
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/world/World.java": "66eb779abbc4bbd020eee3f2b6b866e751515a275d877b06d1064bf5e8eb6d02",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/GuiSessionsB173.java": "57093d62f518b7ac32f9b2ef9afe193584d2ea6a049015d9377847a8edd3441e",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/MoCreaturesFeaturesSelfTestB173.java": "33cd770c6944ccbbd676150998137624ecaa955125442d1277139d425b468744",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/client/KeysB173.java": "1dd699f555cb94495483e10b4f353518d2f852d50446b7862ecc58edf6cf6b25",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/client/LegacyB173PlainScreen.java": "495c927537b91c1e952511759e91b5c8a11741f8c1b1b6e5338ea362525e297c",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/client/LegacyB173Screen.java": "f96756d6e7f61b7121bfa0b868bed38380243fa87e017774e78a0934e3eb68e0",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/client/ServerGuiScreenB173.java": "a9a1e36d5979bcbd5372844c34294e2c6cb2c5477afb4ca3f91a5b935b57a41b",
+    "src/test/java/org/kylepitcock/legacyconnector/vb1_7_3/EntityQueryB173Test.java": "c6f7e5b3b835c7627562f38143f9c379c02410963508ea860dcacd53fa57f894",
+    "src/test/java/org/kylepitcock/legacyconnector/vb1_7_3/TextFieldWidgetB173Test.java": "5c3e7505e3a890d353fd969b5e53ece30e87ea5fa63681cca348ed0c8f9f9d83",
+    "src/test/java/org/kylepitcock/legacyconnector/vb1_7_3/client/KeysB173Test.java": "a3fb042f3ec2d97cc3fdb646583a91d616e2384903546008a0e086b888b2a3af"
+  },
+  "tests": {
+    "runtime": {
+      "tests": 227,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "loader": {
+      "tests": 267,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "servers": {
+    "mocreatures": {
+      "status": "headless-smoke-passed",
+      "source": "DrZharks_MoCreatures_Mod_v2.12.2_b1.7.3.zip!mods/MoCreatures.zip",
+      "original_mod_sha256": "870451e658053537f71154ad45f199466afc80bfbe35dff21b3807f64114d92c",
+      "evidence": "build/placement-classic-flat-pet-naming-mocreatures-assessment.json",
+      "sha256": "ae554f800458a5ff23d5408a206291b20fae54cedc3adee9c68eb30c5f1f7e6c",
+      "acceptance_lines": [
+        "[14:55:47] [Server thread/INFO] [Le.7.3/]: B1.7.3 GUI TEST: 0 blocks/metadata right-clicked (0 placed from their item), 0 opened a menu (0 container classes, 0 slots, 0 of the containers; 0 client layouts match); shift-click: 0 took coal in, 0 gave it back; crafting grids: 0 of 0 crafted; 0 failed; players with the same entity id get their own view: true",
+        "[14:55:47] [Server thread/INFO] [LegacyConnector/B173GuiSessionTest/]: B1.7.3 GUI SESSION TEST: original MoCGUI server ownership, frame/input packet round-trip, Done naming mutation, close cleanup and stale input passed",
+        "[14:55:47] [Server thread/INFO] [LegacyConnector/B173GuiTest/]: B1.7.3 MOC GUI TEST: actual settings navigation/drawing/pointer callbacks and five original naming-screen keyboard/button callbacks passed (headless; GUI networking tested separately)",
+        "[14:55:48] [Server thread/INFO] [LegacyConnector/B173FeaturesTest/]: B1.7.3 MOC FEATURES TEST: original bunny breeding query aliasing passed using original callbacks",
+        "[14:55:48] [Server thread/INFO] [LegacyConnector/B173FeaturesTest/]: B1.7.3 MOC FEATURES TEST: all 22 specialized original-callback proofs passed",
+        "[14:55:48] [Server thread/INFO] [LegacyConnector/B173KittyTest/]: B1.7.3 MOC KITTY TEST: all 3 original-callback proofs passed",
+        "[14:55:48] [Server thread/INFO] [LegacyConnector/B173AquaticTest/]: B1.7.3 MOC AQUATIC TEST: all 6 specialized original-callback proofs passed",
+        "[14:55:48] [Server thread/INFO] [LegacyConnector/B173AdvancedTest/]: B1.7.3 MOC ADVANCED TEST: all 4 original-callback proofs passed",
+        "[14:55:48] [Server thread/INFO] [LegacyConnector/B173OgreDestructionTest/]: B1.7.3 MOC OGRE DESTRUCTION TEST: all original-callback proofs passed",
+        "[14:55:48] [Server thread/INFO] [LegacyConnector/B173RemainingTest/]: B1.7.3 MOC REMAINING TEST: all 2 original-callback proofs passed",
+        "[14:55:48] [Server thread/INFO] [LegacyConnector/B173LifecycleExtraTest/]: B1.7.3 MOC LIFECYCLE EXTRA TEST: all 3 original-callback proofs passed",
+        "[14:55:48] [Server thread/INFO] [LegacyConnector/B173PetBehaviorTest/]: B1.7.3 MOC PET BEHAVIOR TEST: all 3 original-callback proofs passed",
+        "[14:55:48] [Server thread/INFO] [LegacyConnector/B173FollowTest/]: B1.7.3 MOC FOLLOW TEST: all 3 original-callback proofs passed",
+        "[14:55:48] [Server thread/INFO] [LegacyConnector/B173MocRenderCoverageTest/]: B1.7.3 MOC RENDER COVERAGE TEST: all 5 original-renderer CPU proofs passed",
+        "[14:55:48] [Server thread/INFO] [LegacyConnector/B173CarryTest/]: B1.7.3 MOC CARRY TEST: all 4 original-callback proofs passed",
+        "[14:55:48] [Server thread/INFO] [LegacyConnector/B173HorseSaddleTest/]: B1.7.3 MOC HORSE SADDLE TEST: all 5 actual-item proofs passed",
+        "[14:55:49] [Server thread/INFO] [LegacyConnector/B173EcologyTest/]: B1.7.3 ECOLOGY TEST passed: hosted-only generation filter, unchanged native population entries, native CHUNK_GENERATION position checks observed=0, native Cow/Pig persistence and original Bunny policies when present; GenerateSurface is covered separately by existing worldgen smoke",
+        "[14:56:15] [Server thread/INFO] [LegacyConnector/B173BetaScheduleTest/]: B1.7.3 BETA SCHEDULING TEST passed: ticks=500 opportunities={MONSTER=500, CREATURE=500, WATER_CREATURE=500} adjacent=[MONSTER, CREATURE, WATER_CREATURE] actualOriginalPositionChecks={b173_mocreatures:bird=17, b173_mocreatures:bunny=8, b173_mocreatures:caveogre=665, b173_mocreatures:duck=21, b173_mocreatures:fireogre=419, b173_mocreatures:flamewraith=511, b173_mocreatures:fox=1, b173_mocreatures:horse=7, b173_mocreatures:mouse=6, b173_mocreatures:ogre=1454, b173_mocreatures:rat=1996, b173_mocreatures:werewolf=1426, b173_mocreatures:wildwolf=2057, b173_mocreatures:wraith=1146} confirmedNativeInsertions={b173_mocreatures:bird=12, b173_mocreatures:bunny=8, b173_mocreatures:duck=18, b173_mocreatures:fox=1, b173_mocreatures:horse=6, b173_mocreatures:mouse=4} failures=[]; insertion abundance is not asserted"
+      ]
+    },
+    "morecreeps": {
+      "status": "headless-smoke-passed",
+      "source": "MoreCreepsv2.12_b173.zip!PUT CONTENTS INTO MINECRAFT FOLDER/mods/MoreCreepsAndWeirdos.zip",
+      "original_mod_sha256": "3bb55b345f8d05d394710471595799c15f8005cd0813feb0f8efdaecf46bb736",
+      "evidence": "build/placement-classic-flat-pet-naming-morecreeps-assessment.json",
+      "sha256": "61e49a4c8980f5028d820c74e0bfbab8383a61e2dc172fcc23aceb8aeb316b05",
+      "acceptance_lines": [
+        "[14:56:49] [Server thread/INFO] [Le.7.3/]: B1.7.3 GUI TEST: 0 blocks/metadata right-clicked (0 placed from their item), 0 opened a menu (0 container classes, 0 slots, 0 of the containers; 0 client layouts match); shift-click: 0 took coal in, 0 gave it back; crafting grids: 0 of 0 crafted; 0 failed; players with the same entity id get their own view: true",
+        "[14:56:50] [Server thread/INFO] [LegacyConnector/B173CreepsTamingTest/]: B1.7.3 CREEPS TAMING TEST: all 4 specialized original-callback proofs passed",
+        "[14:56:50] [Server thread/INFO] [LegacyConnector/B173CreepsArmyTest/]: B1.7.3 CREEPS ARMY TEST: all 9 original-callback proofs passed",
+        "[14:56:50] [Server thread/INFO] [LegacyConnector/B173CreepsRenderVariantTest/]: B1.7.3 CREEPS RENDER VARIANT TEST: original Hotdog cold/fire native sprite and UV proofs passed",
+        "[14:56:50] [Server thread/INFO] [LegacyConnector/B173CreepsRenderVariantTest/]: B1.7.3 CREEPS RENDER VARIANT TEST: all original-callback proofs passed",
+        "[14:56:50] [Server thread/INFO] [LegacyConnector/B173CreepsRenderCoverageTest/]: B1.7.3 CREEPS RENDER COVERAGE TEST: all four original CPU proofs passed; no live GPU claim",
+        "[14:56:50] [Server thread/INFO] [LegacyConnector/B173CreepsNavigationTest/]: B1.7.3 CREEPS NAVIGATION TEST: all 2 original command/navigation proofs passed",
+        "[14:56:50] [Server thread/INFO] [LegacyConnector/B173CreepsLifecycleExtraTest/]: B1.7.3 CREEPS LIFECYCLE EXTRA TEST: all 2 original lifecycle proofs passed",
+        "[14:56:51] [Server thread/INFO] [LegacyConnector/B173EcologyTest/]: B1.7.3 ECOLOGY TEST passed: hosted-only generation filter, unchanged native population entries, native CHUNK_GENERATION position checks observed=0, native Cow/Pig persistence and original Bunny policies when present; GenerateSurface is covered separately by existing worldgen smoke",
+        "[14:57:17] [Server thread/INFO] [LegacyConnector/B173BetaScheduleTest/]: B1.7.3 BETA SCHEDULING TEST passed: ticks=500 opportunities={CREATURE=500} adjacent=[CREATURE] actualOriginalPositionChecks={b173_morecreepsandweirdos:armyguy=24, b173_morecreepsandweirdos:babymummy=24, b173_morecreepsandweirdos:bigbaby=1, b173_morecreepsandweirdos:blorp=15, b173_morecreepsandweirdos:bubblescum=41, b173_morecreepsandweirdos:bum=5, b173_morecreepsandweirdos:camel=12, b173_morecreepsandweirdos:cameljockey=24, b173_morecreepsandweirdos:desertlizard=18, b173_morecreepsandweirdos:digbug=27, b173_morecreepsandweirdos:evilscientist=4, b173_morecreepsandweirdos:floob=3, b173_morecreepsandweirdos:floobship=36, b173_morecreepsandweirdos:g=27, b173_morecreepsandweirdos:googoat=20, b173_morecreepsandweirdos:guineapig=30, b173_morecreepsandweirdos:hippo=12, b173_morecreepsandweirdos:horsehead=21, b173_morecreepsandweirdos:hotdog=12, b173_morecreepsandweirdos:hunchback=2, b173_morecreepsandweirdos:invisibleman=23, b173_morecreepsandweirdos:lawyerfromhell=12, b173_morecreepsandweirdos:lolliman=12, b173_morecreepsandweirdos:mandog=20, b173_morecreepsandweirdos:mummy=22, b173_morecreepsandweirdos:preacher=29, b173_morecreepsandweirdos:robotted=8, b173_morecreepsandweirdos:rocketgiraffe=8, b173_morecreepsandweirdos:rockmonster=23, b173_morecreepsandweirdos:sneakysal=12, b173_morecreepsandweirdos:snowdevil=12, b173_morecreepsandweirdos:thief=21, b173_morecreepsandweirdos:zebra=31} confirmedNativeInsertions={b173_morecreepsandweirdos:armyguy=1, b173_morecreepsandweirdos:bigbaby=1, b173_morecreepsandweirdos:blorp=4, b173_morecreepsandweirdos:bubblescum=9, b173_morecreepsandweirdos:bum=1, b173_morecreepsandweirdos:digbug=1, b173_morecreepsandweirdos:evilscientist=1, b173_morecreepsandweirdos:floob=1, b173_morecreepsandweirdos:g=5, b173_morecreepsandweirdos:googoat=3, b173_morecreepsandweirdos:guineapig=6, b173_morecreepsandweirdos:hippo=1, b173_morecreepsandweirdos:horsehead=4, b173_morecreepsandweirdos:hotdog=2, b173_morecreepsandweirdos:hunchback=1, b173_morecreepsandweirdos:invisibleman=1, b173_morecreepsandweirdos:lawyerfromhell=2, b173_morecreepsandweirdos:mandog=1, b173_morecreepsandweirdos:preacher=1, b173_morecreepsandweirdos:robotted=2, b173_morecreepsandweirdos:rocketgiraffe=1, b173_morecreepsandweirdos:rockmonster=3, b173_morecreepsandweirdos:thief=1, b173_morecreepsandweirdos:zebra=6} failures=[]; insertion abundance is not asserted"
+      ]
+    }
+  },
+  "actual_clients": {
+    "morecreeps": {
+      "evidence": "run-b173-single/morecreeps-neutralprefix-client-final-20261108-133613-e0863d/pet-naming-proof/fixed-result.json",
+      "sha256": "d159689f11ca4253e406517d1a94fb4e9dc158c04bba6c3958373f4a04759608",
+      "checks": [
+        {
+          "passed": true,
+          "detail": "Actual original More Creeps GUI uses the implemented text field and existing pet name"
+        },
+        {
+          "passed": true,
+          "detail": "Actual original Cancel button resolves its vanilla translation"
+        },
+        {
+          "passed": true,
+          "detail": "Typing outside unfocused original field leaves the name unchanged"
+        },
+        {
+          "passed": true,
+          "detail": "Original Giraffe GUI length31 is enforced by native character events"
+        },
+        {
+          "passed": true,
+          "detail": "Native Ctrl+V transports clipboard into the owning original server GUI"
+        },
+        {
+          "passed": true,
+          "detail": "Editing changes the original field while the pet remains unchanged until Save"
+        },
+        {
+          "passed": true,
+          "detail": "Native Save click invokes original naming mutation and closes the screen"
+        },
+        {
+          "passed": true,
+          "detail": "Saved original name reaches the actual tracked client entity"
+        },
+        {
+          "passed": true,
+          "detail": "Native Cancel leaves the saved original pet name intact"
+        },
+        {
+          "passed": true,
+          "detail": "Renamed actual pet retains its UUID and name after real save/reopen"
+        }
+      ],
+      "saved_name": "OrbitBeta"
+    },
+    "mocreatures": {
+      "evidence": "run-b173-single/mocreatures-neutralprefix-client-final-20261108-133613-e3eeb8/moc-naming-proof/result.json",
+      "sha256": "3d281c43d88bc31ac41d58b6091c4bf3b0a6bff1bf9a4d07de19e78d7fe9e49b",
+      "checks": [
+        {
+          "passed": true,
+          "detail": "actual BOOK packet opens original MoCGUI through Horse.interact"
+        },
+        {
+          "passed": true,
+          "detail": "original MoCGUI exposes Done only; no invented Cancel button"
+        },
+        {
+          "passed": true,
+          "detail": "native backspace clears original NameToSet"
+        },
+        {
+          "passed": true,
+          "detail": "original allowed-character filter rejects snowman after native A event"
+        },
+        {
+          "passed": true,
+          "detail": "native B and backspace preserve original edit semantics"
+        },
+        {
+          "passed": true,
+          "detail": "original MoCGUI enforces fifteen-character maximum"
+        },
+        {
+          "passed": true,
+          "detail": "actual server-generated drawing frame reaches client with edited text"
+        },
+        {
+          "passed": true,
+          "detail": "original Done commits name and closes server GUI"
+        },
+        {
+          "passed": true,
+          "detail": "committed original name reaches real client legacy tracking"
+        },
+        {
+          "passed": true,
+          "detail": "naming retains actual horse UUID"
+        },
+        {
+          "passed": true,
+          "detail": "actual BOOK packet opens original MoCGUI through Horse.interact"
+        },
+        {
+          "passed": true,
+          "detail": "second actual naming session has a distinct uncommitted edit"
+        },
+        {
+          "passed": true,
+          "detail": "closing native GUI without original Done leaves name unchanged"
+        },
+        {
+          "passed": true,
+          "detail": "actual save-quit/reopen preserves same horse UUID and original Name NBT"
+        },
+        {
+          "passed": true,
+          "detail": "reloaded horse name reaches actual client view"
+        }
+      ],
+      "saved_name": "A12345678901234",
+      "trigger": "Actual tamed Horse.interact with BOOK sent by native client interaction packet",
+      "limits": "Original MoCGUI uses its own NameToSet string and Done button, not TextFieldWidget; no Ctrl-V behavior is invented for this screen. Native key/char/mouse events, drawing frame, and real save/reopen verified; GPU frames are captured for coordinator inspection.",
+      "originalCancelButton": false,
+      "closeWithoutDoneAborts": true
+    }
+  },
+  "reproduction": {
+    "morecreeps": {
+      "evidence": "run-b173-single/morecreeps-neutralprefix-client-final-20261108-133613-e0863d/pet-naming-proof/baseline.json",
+      "sha256": "8cd08a21d5ea6f2b7126ef41e1605af9b690cd0b437d6874656d1eacde71c3fa",
+      "symptoms": [
+        "Original Giraffe naming text field returned null before and after native typing.",
+        "Original Cancel label was blank."
+      ]
+    },
+    "mocreatures_bunny": {
+      "exception": "ArrayIndexOutOfBoundsException: Index 0 out of bounds for length 0",
+      "frame": "EntityBunny.tick(EntityBunny.java:165)",
+      "cause": "Original loop retains wide query, replaces shared list with narrow query, then reads wide.size() and narrow.get(i). Fresh independent shim lists broke Beta aliasing."
+    }
+  },
+  "original_api_evidence": {
+    "clean_beta_client_sha256": "af1fa04b8006d3ef78c7e24f8de4aa56f439a74d7f314827529062d5bab6db4c",
+    "untyped_query": "fd.b(sn,eq) clears and returns fd.R (per-world List).",
+    "typed_query": "fd.a(Class,eq) allocates an independent ArrayList.",
+    "text_field": "ro; original focus, append/backspace, character filter and separate 32-character clipboard cap retained.",
+    "translation_storage": "nh; shared singleton with mod overrides and native language fallback."
+  },
+  "policy": {
+    "generic_identity_guard": "267 Beta production/loader sources passed",
+    "mod_versions_changed": false,
+    "vanilla_native_queries_changed": false,
+    "actual_mod_fixtures_opt_in": true,
+    "desktop_window_opened": false,
+    "render_environment": "WSL Ubuntu Xvfb :99, Mesa llvmpipe; no Sodium/Iris"
+  },
+  "artifact": {
+    "path": "build/dist/legacyconnector-0.4.13.jar",
+    "sha256": "11dc7f9f87f19aab198e5c7d5185e5e33fa9aa9b20bf3ec05e7b783e0c93c2a4"
+  },
+  "limits": [
+    "This bounded pass does not establish complete MoCreatures or More Creeps compatibility.",
+    "One original More Creeps Giraffe naming screen exercises the TextFieldWidget API shared by five naming screens; all five were not exercised separately.",
+    "MoCreatures own MoCGUI uses NameToSet and Done; no new Cancel or paste behavior was invented.",
+    "Standard living-renderer hurt/death tint passes remain a source-visible omission; no new live failure is claimed.",
+    "Hotdog animated fire sampling, natural breeding/birth and full Werewolf transformation sequences still need end-to-end client checks."
+  ]
+}

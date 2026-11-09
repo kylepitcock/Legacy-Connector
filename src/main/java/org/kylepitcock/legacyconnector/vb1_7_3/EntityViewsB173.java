@@ -6,6 +6,15 @@ import legacyconnector.vb1_7_3.net.minecraft.world.World;
 
 /** Stable entity identities within callbacks, with weakly held ordinary views between callbacks. */
 public final class EntityViewsB173 {
+    /** Value snapshot: original Box instances are mutable and independent of raw position fields. */
+    private record Bounds(double minX,double minY,double minZ,double maxX,double maxY,double maxZ) {
+        static Bounds of(Entity view){var b=view.boundingBox;return new Bounds(b.minX,b.minY,b.minZ,b.maxX,b.maxY,b.maxZ);}
+        void merge(Entity view,Bounds before){
+            var b=view.boundingBox;
+            if(minX!=before.minX)b.minX=minX;if(minY!=before.minY)b.minY=minY;if(minZ!=before.minZ)b.minZ=minZ;
+            if(maxX!=before.maxX)b.maxX=maxX;if(maxY!=before.maxY)b.maxY=maxY;if(maxZ!=before.maxZ)b.maxZ=maxZ;
+        }
+    }
     record Placement(double x,double y,double z,float yaw,float pitch) {
         static Placement of(Entity view){return new Placement(view.x,view.y,view.z,view.yaw,view.pitch);}
         void apply(Entity view,net.minecraft.world.entity.Entity modern){
@@ -21,21 +30,21 @@ public final class EntityViewsB173 {
     }
     private record HostState(double x,double y,double z,double vx,double vy,double vz,float yaw,float pitch,
             int health,int air,int fire,boolean ground,boolean dead,float width,float height,String texture,
-            float sideways,float forward,boolean jumping,int hurt,int death,int age,float eye,float speed,float fall,Entity vehicle,Entity passenger) {
+            float sideways,float forward,boolean jumping,int hurt,int death,int age,float eye,float speed,float fall,Entity vehicle,Entity passenger,Bounds bounds) {
         static HostState of(legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity v) {
             return new HostState(v.x,v.y,v.z,v.velocityX,v.velocityY,v.velocityZ,v.yaw,v.pitch,v.health,v.air,v.fireTicks,
                     v.onGround,v.dead,v.width,v.height,v.mcc$texture(),v.mcc$sidewaysSpeed(),v.mcc$forwardSpeed(),v.mcc$jumping(),
-                    v.hurtTime,v.deathTime,v.age,v.standingEyeHeight,v.mcc$movementSpeed(),v.mcc$fallDistance(),v.vehicle,v.passenger);
+                    v.hurtTime,v.deathTime,v.age,v.standingEyeHeight,v.mcc$movementSpeed(),v.mcc$fallDistance(),v.vehicle,v.passenger,Bounds.of(v));
         }
     }
     private record Extra(int itemAge,int pickupDelay,net.minecraft.world.item.ItemStack stack,int fuse,Entity owner) {}
     private record NeutralState(double x,double y,double z,double vx,double vy,double vz,float yaw,float pitch,
             int air,int fire,boolean ground,boolean dead,float width,float height,float eye,float fall,
-            boolean noClip,float step,boolean blocks,Entity vehicle,Entity passenger) {
+            boolean noClip,float step,boolean blocks,Entity vehicle,Entity passenger,Bounds bounds) {
         static NeutralState of(Entity v){
             return new NeutralState(v.x,v.y,v.z,v.velocityX,v.velocityY,v.velocityZ,v.yaw,v.pitch,v.air,v.fireTicks,
                     v.onGround,v.dead,v.width,v.height,v.standingEyeHeight,v.mcc$fallDistance(),v.noClip,v.stepHeight,
-                    v.blocksSameBlockSpawning,v.vehicle,v.passenger);
+                    v.blocksSameBlockSpawning,v.vehicle,v.passenger,Bounds.of(v));
         }
         void merge(Entity v,NeutralState before){
             if(x!=before.x)v.x=x;if(y!=before.y)v.y=y;if(z!=before.z)v.z=z;
@@ -48,6 +57,7 @@ public final class EntityViewsB173 {
             if(noClip!=before.noClip)v.noClip=noClip;if(step!=before.step)v.stepHeight=step;
             if(blocks!=before.blocks)v.blocksSameBlockSpawning=blocks;
             if(vehicle!=before.vehicle)v.vehicle=vehicle;if(passenger!=before.passenger)v.passenger=passenger;
+            bounds.merge(v,before.bounds);
         }
     }
     private static Extra extra(Entity view){
@@ -129,6 +139,13 @@ public final class EntityViewsB173 {
             item.stack=StacksB173.toLegacy(nativeItem.getItem());item.itemAge=EntityFieldsB173.itemAge(nativeItem);item.pickupDelay=EntityFieldsB173.pickupDelay(nativeItem);
         }
         if(view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.mob.CreeperEntity creeper&&modern instanceof net.minecraft.world.entity.monster.Creeper nativeCreeper)creeper.fuseTime=EntityFieldsB173.creeperFuse(nativeCreeper);
+        if(view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.passive.SquidEntity squid&&modern instanceof net.minecraft.world.entity.animal.Squid nativeSquid){
+            // Read snapshots only: native animation and swimming remain authoritative on ordinary native entities.
+            squid.tiltAngle=nativeSquid.xBodyRot;squid.lastTiltAngle=nativeSquid.xBodyRotO;
+            squid.rollAngle=nativeSquid.zBodyRot;squid.lastRollAngle=nativeSquid.zBodyRotO;
+            squid.thrustTimer=nativeSquid.tentacleMovement;squid.lastThrustTimer=nativeSquid.oldTentacleMovement;
+            squid.tentacleAngle=nativeSquid.tentacleAngle;squid.lastTentacleAngle=nativeSquid.oldTentacleAngle;
+        }
         // Register before resolving relations/targets/owners, which may point back to this entity.
         touch(modern,view);
         view.vehicle=wrap(modern.getVehicle());view.passenger=wrap(modern.getFirstPassenger());
@@ -151,6 +168,7 @@ public final class EntityViewsB173 {
         if(modern instanceof net.minecraft.world.entity.projectile.AbstractArrow)return new legacyconnector.vb1_7_3.net.minecraft.entity.projectile.ArrowEntity(world);
         if(modern instanceof net.minecraft.world.entity.monster.Creeper)return new legacyconnector.vb1_7_3.net.minecraft.entity.mob.CreeperEntity(world);
         if(modern instanceof net.minecraft.world.entity.monster.Monster)return new legacyconnector.vb1_7_3.net.minecraft.entity.mob.MonsterEntity(world) {};
+        if(modern instanceof net.minecraft.world.entity.animal.Squid)return new legacyconnector.vb1_7_3.net.minecraft.entity.passive.SquidEntity(world);
         if(modern instanceof net.minecraft.world.entity.animal.Sheep)return new legacyconnector.vb1_7_3.net.minecraft.entity.passive.SheepEntity(world);
         if(modern instanceof net.minecraft.world.entity.animal.Cow)return new legacyconnector.vb1_7_3.net.minecraft.entity.passive.CowEntity(world);
         if(modern instanceof net.minecraft.world.entity.animal.Wolf)return new legacyconnector.vb1_7_3.net.minecraft.entity.passive.WolfEntity(world);
@@ -212,7 +230,11 @@ public final class EntityViewsB173 {
         if(wanted.dead!=before.dead)v.dead=wanted.dead;
         if(wanted.hurt!=before.hurt)v.hurtTime=wanted.hurt;if(wanted.death!=before.death)v.deathTime=wanted.death;
         if(wanted.age!=before.age)v.age=wanted.age;
+        if(wanted.width!=before.width)v.width=wanted.width;if(wanted.height!=before.height)v.height=wanted.height;
+        if(wanted.eye!=before.eye)v.standingEyeHeight=wanted.eye;
+        if(!java.util.Objects.equals(wanted.texture,before.texture))v.mcc$setTexture(wanted.texture);
         if(wanted.fall!=before.fall)v.mcc$fallDistance(wanted.fall);
+        wanted.bounds.merge(v,before.bounds);
         if(wanted.vehicle!=before.vehicle)v.vehicle=wanted.vehicle;if(wanted.passenger!=before.passenger)v.passenger=wanted.passenger;
         v.mcc$movementInputs(wanted.sideways!=before.sideways?wanted.sideways:v.mcc$sidewaysSpeed(),
                 wanted.forward!=before.forward?wanted.forward:v.mcc$forwardSpeed(),wanted.jumping!=before.jumping?wanted.jumping:v.mcc$jumping());

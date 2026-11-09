@@ -28,18 +28,40 @@ public final class AdvancementsB173 {
         if(name.isEmpty())name="unnamed";
         return ResourceLocation.fromNamespaceAndPath(achievement.mcc$namespace,"beta/achievements/"+name+"_"+achievement.id);
     }
+    static ResourceLocation rootOf(String namespace){return ResourceLocation.fromNamespaceAndPath(namespace,"beta/root");}
+    static ResourceLocation parentOf(Achievement achievement){
+        return achievement.parent==null||achievement.parent.mcc$vanilla?rootOf(achievement.mcc$namespace):idOf(achievement.parent);
+    }
     public static void describe(Achievement achievement,String title,String description){
         Objects.requireNonNull(achievement,"achievement");achievement.mcc$title=title;achievement.mcc$description=description;
         ContentB173.addLocalization(achievement.stringId,title);ContentB173.addLocalization(achievement.translationKey,description);
     }
     public static void contribute(Map<String,Supplier<byte[]>> out){
+        Map<String,String> roots=new LinkedHashMap<>();
         for(Stat stat:all())if(stat instanceof Achievement achievement&&!achievement.mcc$vanilla&&!org.kylepitcock.legacyconnector.core.LegacyLifecycle.isFailed(achievement.mcc$namespace)){
-            ResourceLocation id=idOf(achievement),parent=achievement.parent==null?null:idOf(achievement.parent);
+            ResourceLocation id=idOf(achievement),parent=parentOf(achievement);
             var stack=achievement.icon==null?net.minecraft.world.item.ItemStack.EMPTY:StacksB173.toModern(achievement.icon);
             String icon=stack.isEmpty()?"minecraft:barrier":BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();
             byte[] bytes=definition(achievement,parent,icon).toString().getBytes(StandardCharsets.UTF_8);
             out.put("data/"+id.getNamespace()+"/advancement/"+id.getPath()+".json",()->bytes);
+            if(parent.equals(rootOf(achievement.mcc$namespace)))roots.putIfAbsent(achievement.mcc$namespace,icon);
         }
+        for(var entry:roots.entrySet()){
+            String namespace=entry.getKey();var mod=org.kylepitcock.legacyconnector.core.LegacyMods.find(namespace);
+            String title=mod==null?namespace:mod.name();
+            byte[] bytes=rootDefinition(title+" (Beta 1.7.3)",entry.getValue()).toString().getBytes(StandardCharsets.UTF_8);
+            ResourceLocation id=rootOf(namespace);
+            out.put("data/"+id.getNamespace()+"/advancement/"+id.getPath()+".json",()->bytes);
+        }
+    }
+    /** Only the synthetic category unlocks automatically; original achievements retain their award callbacks. */
+    static JsonObject rootDefinition(String title,String icon){
+        JsonObject json=new JsonObject(),display=new JsonObject(),item=new JsonObject();item.addProperty("id",icon);display.add("icon",item);
+        display.addProperty("title",title);display.addProperty("description","Achievements of Beta 1.7.3 mods");display.addProperty("frame","task");
+        display.addProperty("background","minecraft:textures/gui/advancements/backgrounds/stone.png");
+        display.addProperty("show_toast",false);display.addProperty("announce_to_chat",false);json.add("display",display);
+        JsonObject criteria=new JsonObject(),automatic=new JsonObject();automatic.addProperty("trigger","minecraft:tick");criteria.add("visible",automatic);json.add("criteria",criteria);
+        return json;
     }
     static JsonObject definition(Achievement achievement,ResourceLocation parent,String icon){
         JsonObject json=new JsonObject();if(parent!=null)json.addProperty("parent",parent.toString());
