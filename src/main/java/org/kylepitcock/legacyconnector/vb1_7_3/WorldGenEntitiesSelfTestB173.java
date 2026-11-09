@@ -31,7 +31,7 @@ public final class WorldGenEntitiesSelfTestB173 {
         var biomes=level.registryAccess().registryOrThrow(Registries.BIOME);
         var chunks=new java.util.HashMap<ChunkPos,ProtoChunk>();
         var cache=StaticCache2D.<GenerationChunkHolder>create(cx,cz,radius,(x,z)->{
-            var pos=new ChunkPos(x,z);var chunk=new ProtoChunk(pos,UpgradeData.EMPTY,level,biomes,null);chunks.put(pos,chunk);
+            var pos=new ChunkPos(x,z);var chunk=new ProtoChunk(pos,UpgradeData.EMPTY,level,biomes,null);chunk.setPersistedStatus(ChunkStatus.CARVERS);chunks.put(pos,chunk);
             return new GenerationChunkHolder(pos){
                 @Override public int getTicketLevel(){return 33;}
                 @Override public int getQueueLevel(){return 0;}
@@ -42,6 +42,18 @@ public final class WorldGenEntitiesSelfTestB173 {
         var world=World.mcc$wrap(level);
         EntityViewsB173.flush();
         try(var scope=World.mcc$generation(region)){
+            // Cache membership is insufficient: a native early proto chunk contains no terrain yet.
+            require(region.hasChunk(cx,cz),"fixture center is present in the native region cache");
+            for(var status:java.util.List.of(ChunkStatus.EMPTY,ChunkStatus.BIOMES)){
+                center.setPersistedStatus(status);
+                boolean rejected=false;
+                try{world.getBlockId(cx*16,80,cz*16);}
+                catch(World.SpawnRegionUnavailable expected){rejected=true;}
+                require(rejected,"cached terrain-unready "+status+" read rejects instead of reporting air");
+            }
+            center.setPersistedStatus(ChunkStatus.NOISE);
+            require(world.getBlockId(cx*16,80,cz*16)==0,"terrain-generated native empty space remains readable air");
+            center.setPersistedStatus(ChunkStatus.CARVERS);
             var item=new legacyconnector.vb1_7_3.net.minecraft.entity.ItemEntity(world,cx*16+.5,80,cz*16+.5,
                     new legacyconnector.vb1_7_3.net.minecraft.item.ItemStack(280,1,0));
             require(world.spawnEntity(item),"original item API accepts generation spawn");

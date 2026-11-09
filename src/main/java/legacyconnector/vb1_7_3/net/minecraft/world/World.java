@@ -85,7 +85,12 @@ public class World implements BlockView {
         private SpawnRegionUnavailable(){super(null,null,false,false);}
     }
     private void requireRegionChunk(int chunkX,int chunkZ){
-        if(mcc$access() instanceof net.minecraft.server.level.WorldGenRegion region&&!region.hasChunk(chunkX,chunkZ))throw new SpawnRegionUnavailable();
+        if(mcc$access() instanceof net.minecraft.server.level.WorldGenRegion region){
+            if(!region.hasChunk(chunkX,chunkZ))throw new SpawnRegionUnavailable();
+            var chunk=region.getChunk(chunkX,chunkZ,net.minecraft.world.level.chunk.status.ChunkStatus.EMPTY,false);
+            if(chunk==null||chunk.getPersistedStatus().isBefore(net.minecraft.world.level.chunk.status.ChunkStatus.NOISE))
+                throw new SpawnRegionUnavailable();
+        }
     }
     /** Native BlockCollisions scans a one-block shell, including its epsilon-expanded boundary. */
     public void mcc$requireSpawnCollisionArea(net.minecraft.world.phys.AABB bounds){
@@ -434,6 +439,7 @@ public class World implements BlockView {
     }
     public boolean spawnEntity(legacyconnector.vb1_7_3.net.minecraft.entity.Entity entity) {
         if(mcc$level==null||entity==null)return false;
+        if(entity instanceof legacyconnector.vb1_7_3.net.minecraft.entity.decoration.painting.PaintingEntity painting&&entity.getClass()==legacyconnector.vb1_7_3.net.minecraft.entity.decoration.painting.PaintingEntity.class)return org.kylepitcock.legacyconnector.vb1_7_3.PaintingsB173.spawn(painting);
         if(entity instanceof legacyconnector.vb1_7_3.net.minecraft.entity.ItemEntity item) {
             if(entity.getClass()!=legacyconnector.vb1_7_3.net.minecraft.entity.ItemEntity.class)
                 return org.kylepitcock.legacyconnector.vb1_7_3.NeutralEntitiesB173.spawn(mcc$level,entity);

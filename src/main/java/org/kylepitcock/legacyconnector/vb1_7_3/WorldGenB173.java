@@ -26,7 +26,18 @@ public final class WorldGenB173 {
     private static final boolean DIAGNOSTICS=Boolean.getBoolean("legacyconnector.worldGenSelfTest");
     private static final Map<String,java.util.concurrent.atomic.AtomicLong> CALLBACKS=new java.util.concurrent.ConcurrentHashMap<>();
     private static boolean hooked;
+    private static Map<String,Integer> dependencyConfiguration=Map.of();
     private WorldGenB173(){}
+
+    public static synchronized boolean hasGenerators(){return !ENTRIES.isEmpty();}
+
+    /** Opt-in evidence of the first native generation FEATURES construction, including an early empty registration set. */
+    public static synchronized void recordGenerationDependencies(int radius){
+        if(DIAGNOSTICS&&dependencyConfiguration.isEmpty())
+            dependencyConfiguration=Map.of("generators",ENTRIES.size(),"carversRadius",radius);
+    }
+
+    public static synchronized Map<String,Integer> generationDependencies(){return dependencyConfiguration;}
 
     /** Opt-in native-feature proof: successful original callbacks by namespace, dimension and chunk. */
     public static Map<String,Long> callbackCounts(){
