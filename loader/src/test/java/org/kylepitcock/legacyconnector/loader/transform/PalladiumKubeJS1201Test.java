@@ -68,7 +68,7 @@ class PalladiumKubeJS1201Test implements Opcodes {
                 "(Ldev/latvian/mods/kubejs/script/BindingRegistry;)V");
         assertTrue(hasCall(bindings, INVOKEVIRTUAL, "dev/latvian/mods/kubejs/script/BindingRegistry",
                 "type", "()Ldev/latvian/mods/kubejs/script/ScriptType;"));
-        assertEquals(4, countCalls(bindings, "dev/latvian/mods/kubejs/script/BindingRegistry", "add"));
+        assertEquals(5, countCalls(bindings, "dev/latvian/mods/kubejs/script/BindingRegistry", "add"));
 
         MethodNode wrappers = find(node, "registerTypeWrappers",
                 "(Ldev/latvian/mods/kubejs/script/TypeWrapperRegistry;)V");
