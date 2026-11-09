@@ -276,6 +276,7 @@ public final class Forge1201Transformer {
         SoftLink1201 soft = softLinkEnabled() ? new SoftLink1201(nodes, hierarchy) : null;
         int palladiumKubejsChanges = 0;
         int palladiumKubejsClassesDropped = 0;
+        int palladiumAddonPackChanges = 0;
         for (ClassNode node : nodes) {
             if (PalladiumKubeJS1201.dropLegacyKubejsClass(node.name)) {
                 palladiumKubejsClassesDropped++;
@@ -289,6 +290,8 @@ public final class Forge1201Transformer {
             int viaCalls = CallRewrites1201.apply(node, compoundSubclasses);
             int palladiumChanges = PalladiumKubeJS1201.apply(node);
             palladiumKubejsChanges += palladiumChanges;
+            int palladiumAddonPackChange = PalladiumAddonPackManager1201.apply(node);
+            palladiumAddonPackChanges += palladiumAddonPackChange;
             viaCalls += ForgeApiRewrites1201.apply(node);
             viaCalls += AttachGuards1201.apply(node, jarClasses);
             if (ForgeApiRewrites1201.markProviders(node)) viaCalls++;
@@ -296,12 +299,16 @@ public final class Forge1201Transformer {
             Mc1201Migration.Counts changed = Mc1201Migration.apply(node, hierarchy);
             mc.add(changed);
             Mixin1201.apply(node, srg, hierarchy, Mc1201Tables.get(), mixinStats);
-            migrated.put(node, viaCalls + changed.total() + palladiumChanges);
+            migrated.put(node, viaCalls + changed.total() + palladiumChanges + palladiumAddonPackChange);
         }
         if (palladiumKubejsChanges > 0 || palladiumKubejsClassesDropped > 0) {
             result.notes.add("Palladium KubeJS 6 integration adapted for KubeJS 7: "
                     + palladiumKubejsChanges + " bytecode rewrite(s), "
                     + palladiumKubejsClassesDropped + " obsolete KubeJS 6 class(es) removed");
+        }
+        if (palladiumAddonPackChanges > 0) {
+            result.notes.add("Palladium addon-pack FolderRepositorySource constructor adapted with Minecraft's symlink validator: "
+                    + palladiumAddonPackChanges + " constructor call(s)");
         }
         if (ownUnit) {
             // an isolated library next to its native build registers the same ids as the native one: its deferred registers are not attached to the bus
