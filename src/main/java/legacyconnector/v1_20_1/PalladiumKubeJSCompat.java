@@ -179,9 +179,13 @@ public final class PalladiumKubeJSCompat {
     }
 
     private static Object enumConstant(Class<?> enumClass, String name) {
-        @SuppressWarnings({"rawtypes", "unchecked"})
-        Object value = Enum.valueOf((Class<? extends Enum>) enumClass.asSubclass(Enum.class), name);
-        return value;
+        if (!enumClass.isEnum()) {
+            throw new IllegalArgumentException(enumClass.getName() + " is not an enum type");
+        }
+        for (Object value : enumClass.getEnumConstants()) {
+            if (value instanceof Enum<?> constant && constant.name().equals(name)) return value;
+        }
+        throw new IllegalArgumentException("No " + enumClass.getName() + " constant named " + name);
     }
 
     private static void collectPackScripts(
