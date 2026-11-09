@@ -178,6 +178,16 @@ class PalladiumKubeJS1201Test implements Opcodes {
         constructor.instructions.add(new org.objectweb.asm.tree.InsnNode(RETURN));
         node.methods.add(constructor);
 
+        MethodNode cancel = new MethodNode(ACC_PUBLIC, "cancelFromScript",
+                "(Ldev/latvian/mods/rhino/Context;)Ljava/lang/Object;", null, null);
+        cancel.instructions.add(new VarInsnNode(ALOAD, 0));
+        cancel.instructions.add(new VarInsnNode(ALOAD, 1));
+        cancel.instructions.add(new MethodInsnNode(INVOKEVIRTUAL,
+                "dev/latvian/mods/kubejs/event/EventJS", "cancel",
+                "(Ldev/latvian/mods/rhino/Context;)Ljava/lang/Object;", false));
+        cancel.instructions.add(new org.objectweb.asm.tree.InsnNode(ARETURN));
+        node.methods.add(cancel);
+
         MethodNode post = new MethodNode(ACC_PUBLIC | ACC_STATIC, "post", "()V", null, null);
         post.instructions.add(new FieldInsnNode(GETSTATIC,
                 "net/threetag/palladium/compat/kubejs/PalladiumJSEvents", "CUSTOM_PROJECTILE_TICK",
@@ -198,6 +208,10 @@ class PalladiumKubeJS1201Test implements Opcodes {
 
         MethodNode rewrittenConstructor = find(node, "<init>", "()V");
         assertTrue(hasCall(rewrittenConstructor, INVOKESPECIAL, "java/lang/Object", "<init>", "()V"));
+        MethodNode cancel = find(node, "cancelFromScript",
+                "(Ldev/latvian/mods/rhino/Context;)Ljava/lang/Object;");
+        assertTrue(hasCall(cancel, INVOKEINTERFACE, "dev/latvian/mods/kubejs/event/KubeEvent",
+                "cancel", "(Ldev/latvian/mods/rhino/Context;)Ljava/lang/Object;"));
         MethodNode rewrittenPost = find(node, "post", "()V");
         assertTrue(hasCall(rewrittenPost, INVOKESTATIC, "legacyconnector/v1_20_1/PalladiumKubeJSCompat",
                 "postEvent", "(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;"));
