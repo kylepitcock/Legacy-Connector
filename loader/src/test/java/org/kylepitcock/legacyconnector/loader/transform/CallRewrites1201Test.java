@@ -85,7 +85,8 @@ class CallRewrites1201Test {
         assertEquals(Opcodes.INVOKESPECIAL, rewritten.getOpcode());
         assertEquals(AMETHYST_CLUSTER_BLOCK, rewritten.owner);
         assertEquals(AMETHYST_CLUSTER_CONSTRUCTOR_1211, rewritten.desc);
-        assertFalse(method.instructions.contains(oldConstructor));
+        // The rewrite updates the descriptor on the existing call node; it does not replace the node.
+        assertTrue(method.instructions.contains(oldConstructor));
         assertEquals(Opcodes.RETURN, instructions[9].getOpcode());
         assertEquals(3, method.maxLocals);
     }
