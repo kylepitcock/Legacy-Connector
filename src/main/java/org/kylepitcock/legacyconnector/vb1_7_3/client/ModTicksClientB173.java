@@ -119,7 +119,8 @@ final class ModTicksClientB173 {
                                         commands.add(g->drawQuad(g,copy,transform,texture,color,style,(float)options.guiWidth/scaler.getScaledWidth(),(float)options.guiHeight/scaler.getScaledHeight()));
                                     }
                                 })){
-                    GuiDrawB173.withSink(sink,()->{ContentB173.clientHooks(original,false,advanced);if(options.screen)ContentB173.clientHooks(original,true,advanced);});
+                    PlayerInventoryNetworkB173.capture(player,original,options.screen,()->
+                        GuiDrawB173.withSink(sink,()->{ContentB173.clientHooks(original,false,advanced);if(options.screen)ContentB173.clientHooks(original,true,advanced);}));
                     player.writeBack();
                 }
             }finally{EntityViewsB173.flush();BlockEntityViewsB173.flush();}

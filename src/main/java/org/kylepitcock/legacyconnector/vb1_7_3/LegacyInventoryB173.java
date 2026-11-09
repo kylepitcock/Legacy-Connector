@@ -13,7 +13,7 @@ import net.minecraft.world.entity.player.Player;
  */
 public final class LegacyInventoryB173 implements Container {
     /** Keyed by identity (a mod's inventory class may define equals). */
-    private static final Map<Inventory, LegacyInventoryB173> ADAPTERS = new com.google.common.collect.MapMaker().weakKeys().makeMap();
+    private static final Map<Inventory, LegacyInventoryB173> ADAPTERS = new com.google.common.collect.MapMaker().weakKeys().weakValues().makeMap();
 
     private final Inventory legacy;
     private SyncedStackB173[] stacks = new SyncedStackB173[0];

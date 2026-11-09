@@ -14,7 +14,7 @@ final class SyncedStackB173 {
     private int seenDamage;
     private boolean valid;
     private net.minecraft.world.item.ItemStack modern = net.minecraft.world.item.ItemStack.EMPTY;
-    private int handedCount;
+    private net.minecraft.world.item.ItemStack handed = net.minecraft.world.item.ItemStack.EMPTY;
 
     /** The modern form of the legacy stack now in place. */
     net.minecraft.world.item.ItemStack get(ItemStack now) {
@@ -26,7 +26,7 @@ final class SyncedStackB173 {
                 seenDamage = now.getDamage();
             }
             modern = StacksB173.toModern(now);
-            handedCount = modern.getCount();
+            handed = modern.copy();
             valid = true;
         }
         return modern;
@@ -34,7 +34,7 @@ final class SyncedStackB173 {
 
     /** True if modern code changed the stack it was given while the legacy stack stayed as it was. */
     boolean changedInPlace(ItemStack now) {
-        return valid && same(now) && modern.getCount() != handedCount;
+        return valid && same(now) && !net.minecraft.world.item.ItemStack.matches(modern, handed);
     }
 
     net.minecraft.world.item.ItemStack modern() {

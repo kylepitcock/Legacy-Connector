@@ -33,6 +33,9 @@ public class World implements BlockView {
     public int difficulty = 2;
     public Random random = new Random();
     public boolean isRemote;
+    public WorldProperties properties = new WorldProperties(this);
+    public int saveInterval = 40;
+    public legacyconnector.vb1_7_3.net.minecraft.world.storage.WorldStorage storage = new legacyconnector.vb1_7_3.net.minecraft.world.storage.AlphaWorldStorage(this);
     public legacyconnector.vb1_7_3.net.minecraft.world.dimension.Dimension dimension = new legacyconnector.vb1_7_3.net.minecraft.world.dimension.Dimension();
 
     private final Level mcc$level;

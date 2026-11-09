@@ -29,6 +29,7 @@ public final class ClientB173 implements MenusB173.Client {
         AnimatedTexturesB173.register(modBus);
         BlockColorsB173.register(modBus);
         ModTicksClientB173.install();
+        PlayerInventoryClientB173.install();
         MobClientB173.register(modBus);
         modBus.addListener((net.neoforged.neoforge.client.event.EntityRenderersEvent.RegisterRenderers e) ->
                 e.registerEntityRenderer(org.kylepitcock.legacyconnector.LegacyConnector.BETA_VANILLA_ARROW.get(), context ->
@@ -129,6 +130,8 @@ public final class ClientB173 implements MenusB173.Client {
                 if (mc.screen instanceof AbstractContainerScreen<?> && mc.player != null) mc.player.closeContainer();
                 else if(mc.screen instanceof LegacyB173PlainScreen plain)plain.onClose();
                 else mc.setScreen(null);
+            } else if (screen.getClass() == legacyconnector.vb1_7_3.net.minecraft.client.gui.screen.ingame.InventoryScreen.class) {
+                if (mc.player != null) mc.setScreen(new net.minecraft.client.gui.screens.inventory.InventoryScreen(mc.player));
             } else {
                 var parent=mc.screen instanceof LegacyB173PlainScreen plain?plain.returnScreen():
                         mc.screen instanceof net.minecraft.client.gui.screens.options.OptionsScreen?mc.screen:null;

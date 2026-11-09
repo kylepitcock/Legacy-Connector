@@ -64,7 +64,7 @@ public final class GL11 {
 
     public static void glNormal3f(float x, float y, float z) {}
 
-    public static void glRotatef(float angle, float x, float y, float z) {if(RendererContextB173.active())RendererContextB173.rotate(angle,x,y,z);}
+    public static void glRotatef(float angle, float x, float y, float z) {if(RendererContextB173.active())RendererContextB173.rotate(angle,x,y,z);else GuiDrawB173.rotate(angle,x,y,z);}
 
     public static void glTexParameteri(int target, int name, int value) {}
 

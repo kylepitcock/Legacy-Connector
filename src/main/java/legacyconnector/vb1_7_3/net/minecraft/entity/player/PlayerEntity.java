@@ -9,6 +9,9 @@ import org.kylepitcock.legacyconnector.vb1_7_3.MenusB173;
 /** Beta 1.7.3 {@code EntityPlayer}: inventory and name. The layer's player is a view of the modern one ({@code PlayerViewB173}). */
 public abstract class PlayerEntity extends LivingEntity {
     public PlayerInventory inventory = new PlayerInventory(this);
+    public legacyconnector.vb1_7_3.net.minecraft.screen.ScreenHandler playerScreenHandler;
+    public legacyconnector.vb1_7_3.net.minecraft.screen.ScreenHandler currentScreenHandler;
+    public legacyconnector.vb1_7_3.net.minecraft.client.gui.screen.ingame.HandledScreen mcc$inventoryScreen;
     public String name;
     public String playerCapeUrl;
 

@@ -493,12 +493,38 @@ Coverage includes both table and 2×2 menus, repeated shift-click, pickup, hotba
 partial/full inventories, output conservation, ingredient consumption and bucket remainders. Two focused tests also cover
 recipe codecs, network round-trips, matching and output copies. No frisbee-specific behavior is selected in production.
 
-## GuiAPI settings and TWL models
+## PlayerAPI inventory
 
-Contributor follow-up: Aether is the next target after PlasticCraft's dedicated boat and C4 checks. Its original auxiliary
-inventory uses PlayerAPI and its own inventory/container screens, rather than GuiAPI settings widgets. Prefer a separate
-inventory tab while preserving the main inventory layout. Implement the shared player lifecycle, inventory ownership and
-slot synchronization before exposing that screen; keep the installed mod version and avoid production mod selectors.
+The shared Beta PlayerAPI bridge implements original `RegisterPlayerBase` registration and stable per-player base lookup.
+Bases initialize after the native player's inventory and world view are ready. Native player events and a serializable
+attachment run the original initialization, living-update, NBT and death callbacks; logout saves before releasing the view,
+and relog/respawn creates the appropriate new view. Legacy ages follow the native tick counter. Player-owned external files
+resolve beneath the owning server world's `playerdata/<UUID>/legacy-b173` directory during PlayerAPI callbacks and registered
+modules' actor-scoped helpers. Unrelated world storage keeps its normal root; client mirrors use disposable local storage.
+
+Original replacement-inventory requests expose their owned equipment slots in an extra panel beside the native inventory,
+through native screen events. There are no inventory tabs, native menu replacements, or changes to the native slot list.
+An auxiliary native transaction container invokes the original slot-click/quick-move behavior and slot predicates, with the
+server owning the equipment and cursor. Bounded snapshots, player/screen context, equipment revisions, native menu state IDs,
+request replay checks and acknowledgements reject stale or malformed transactions. Native full-content synchronization and
+component-preserving stack conversion retain modern item names, enchantments and other components.
+
+The unchanged Aether b1.7.3 1.02 payload passes dedicated-server tests driven through native client input: all eight equipment
+slots, rejection of stone and gear in the wrong slots, left/right/Shift clicks, and the creative cursor. The native inventory
+retains all 46 slots, recipe-book movement and crafting twelve planks; offhand storage stays separate. An independent widget
+fixture coexists with the panel. Malformed/replayed requests are rejected, and equipment survives save/relog.
+
+Native single-player input also passes all eight equipment slots, component retention and the unchanged 46-slot inventory.
+Saving and reopening the world preserves the eight equipped stacks and their data. Native death/Respawn clears the original
+equipment on both server and client; the panel is rediscovered for the new native player, and another world reopen keeps the
+equipment cleared. Both modes finish with zero PlayerAPI callback failures. The combined dedicated/single-player report
+passes 75 native assertions with zero failures; portable checks pass 385 runtime and 296 loader tests (681 total).
+
+This is partial PlayerAPI inventory support. Remaining PlayerAPI combat/movement hooks and the complete Aether dimension
+and gameplay are not established by these tests. Production behavior uses shared APIs and ownership, with no mod or file-name
+selectors; original-mod names belong to regression evidence.
+
+## GuiAPI settings and TWL models
 
 The shared Beta GuiAPI bridge implements typed Boolean/Integer/Float/Multi settings, context values, original step rounding,
 properties save/reload under the instance's `mods/<backend>/guiconfig.properties`, reflective `ModAction` callbacks and the
@@ -1120,7 +1146,8 @@ legacy client instance: `ModLoader.getMinecraftInstance().renderEngine`), Coral 
 
 With Aether 1.02 (Modrinth `aether` b1.7.3-1.02: the zip's `Jar/` folder as a mod zip; it is a ModLoader mod, only its title screen is a
 base class edit) the set has 17 mods: Aether and its `mod_Trivia` construct with ShockAhPI and PlayerAPI linked to synthesized classes
-(`SAPI.interceptAdd`, `reachAdd`, `ToolBase`, `PlayerAPI.RegisterPlayerBase` do nothing yet) and register 35 blocks and 128 items; its
+(`SAPI.interceptAdd`, `reachAdd`, `ToolBase`, `PlayerAPI.RegisterPlayerBase` did nothing in that historical run; current partial
+[PlayerAPI inventory support](#playerapi-inventory) supersedes that registration result) and register 35 blocks and 128 items; its
 freezer, enchanter, incubator and treasure chests open their GUIs. Not yet: the Aether dimension (`DimensionBase`), its portal, mobs and
 the player changes. Moon Mod now gets past ShockAhPI and stops at a hard-coded block id Portal Gun holds; More Creeps stops at GuiAPI's
 settings classes (synthesized without their hierarchy: `VerifyError`).

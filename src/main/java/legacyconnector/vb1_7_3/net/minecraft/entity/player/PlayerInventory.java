@@ -9,6 +9,10 @@ public class PlayerInventory implements Inventory {
     public ItemStack[] armor = new ItemStack[4];
     public int selectedSlot;
     public PlayerEntity player;
+    private ItemStack cursorStack;
+
+    public ItemStack getCursorStack() { return cursorStack; }
+    public void setCursorStack(ItemStack stack) { cursorStack = stack; }
 
     public PlayerInventory(PlayerEntity player) {
         this.player = player;
@@ -33,7 +37,8 @@ public class PlayerInventory implements Inventory {
         if (stack == null) return false;
         for (int i = 0; i < main.length && stack.count > 0; i++) {
             ItemStack s = main[i];
-            if (s != null && s.itemId == stack.itemId && s.getDamage() == stack.getDamage() && s.count < s.getMaxCount()) {
+            if (s != null && s.itemId == stack.itemId && s.getDamage() == stack.getDamage() && s.count < s.getMaxCount()
+                    && org.kylepitcock.legacyconnector.vb1_7_3.StacksB173.sameComponents(s, stack)) {
                 int moved = Math.min(stack.count, s.getMaxCount() - s.count);
                 s.count += moved;
                 stack.count -= moved;

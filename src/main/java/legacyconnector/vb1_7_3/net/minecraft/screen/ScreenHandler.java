@@ -54,6 +54,11 @@ public abstract class ScreenHandler {
         return slot != null ? slot.getStack() : null;
     }
 
+    /** Original virtual click entrypoint. Native-backed views reuse the shared slot transaction engine. */
+    public ItemStack onSlotClick(int slot, int button, boolean quick, PlayerEntity player) {
+        return org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Menu.transactionClick(this, player, slot, button, quick);
+    }
+
     public void onClosed(PlayerEntity player) {}
 
     /** MCP {@code onCraftMatrixChanged}. */
@@ -89,7 +94,8 @@ public abstract class ScreenHandler {
             while (stack.count > 0 && (!reverse && k < end || reverse && k >= start)) {
                 Slot slot = slots.get(k);
                 ItemStack s = slot.getStack();
-                if (s != null && s.itemId == stack.itemId && (!stack.hasSubtypes() || stack.getDamage() == s.getDamage())) {
+                if (s != null && s.itemId == stack.itemId && (!stack.hasSubtypes() || stack.getDamage() == s.getDamage())
+                        && org.kylepitcock.legacyconnector.vb1_7_3.StacksB173.sameComponents(s, stack)) {
                     int total = s.count + stack.count;
                     if (total <= stack.getMaxCount()) {
                         stack.count = 0;

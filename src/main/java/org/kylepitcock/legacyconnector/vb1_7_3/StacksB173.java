@@ -12,7 +12,73 @@ public final class StacksB173 {
     private StacksB173() {}
 
     public static ItemStack toModern(legacyconnector.vb1_7_3.net.minecraft.item.ItemStack legacy) {
-        return legacy == null ? ItemStack.EMPTY : toModern(legacy.itemId, legacy.count, legacy.getDamage());
+        if (legacy == null) return ItemStack.EMPTY;
+        ItemStack result = toModern(legacy.itemId, legacy.count, legacy.getDamage());
+        ItemStack snapshot = legacy.mcc$nativeSnapshot();
+        if (result.isEmpty() || snapshot == null) return result;
+        result.applyComponents(snapshot.getComponentsPatch());
+        // A native snapshot must never restore stale values after an original callback edits Beta's fields.
+        if (result.isDamageableItem()) result.setDamageValue(Math.max(0, Math.min(legacy.getDamage(), result.getMaxDamage())));
+        Item item = legacy.getItem();
+        if (item != null && item.mcc$owner != null) {
+            if (item instanceof BlockItem && result.getItem() instanceof net.minecraft.world.item.BlockItem block
+                    && block.getBlock() instanceof LegacyB173Block) {
+                var state = result.getOrDefault(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY);
+                result.set(DataComponents.BLOCK_STATE, state.with(LegacyB173Block.META, legacy.getDamage() & 15));
+            } else if (!result.isDamageableItem() && item.hasSubtypes()) {
+                var data = result.getOrDefault(DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
+                data.putInt("b173_meta", legacy.getDamage());
+                result.set(DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.of(data));
+            }
+        }
+        return result;
+    }
+
+    public static boolean sameComponents(legacyconnector.vb1_7_3.net.minecraft.item.ItemStack a,
+            legacyconnector.vb1_7_3.net.minecraft.item.ItemStack b) {
+        if (a == null || b == null) return a == b;
+        return ItemStack.isSameItemSameComponents(toModern(a), toModern(b));
+    }
+
+    private static final String NATIVE_TAG = "legacyconnector:native_stack";
+    private static net.minecraft.core.HolderLookup.Provider registries() {
+        var actor = PlayerApiB173.currentPlayer();
+        if (actor != null && actor.mcc$modern instanceof net.minecraft.world.entity.player.Player player) return player.registryAccess();
+        var server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
+        if (server != null) return server.registryAccess();
+        var player = MenusB173.localPlayer();
+        if (player != null) return player.registryAccess();
+        return net.minecraft.core.RegistryAccess.fromRegistryOfRegistries(net.minecraft.core.registries.BuiltInRegistries.REGISTRY);
+    }
+
+    public static void writeNative(legacyconnector.vb1_7_3.net.minecraft.item.ItemStack stack,
+            legacyconnector.vb1_7_3.net.minecraft.nbt.NbtCompound nbt) {
+        if (stack.mcc$nativeSnapshot() == null) return;
+        var saved = new net.minecraft.nbt.CompoundTag();
+        saved.putInt("legacy_id", stack.itemId);
+        saved.put("stack", toModern(stack).saveOptional(registries()));
+        // Beta NBT has no int/long array tags. Store native NBT bytes so component data stays lossless.
+        try {
+            var bytes = new java.io.ByteArrayOutputStream();
+            try (var output = new java.io.DataOutputStream(bytes)) { net.minecraft.nbt.NbtIo.write(saved, output); }
+            nbt.putByteArray(NATIVE_TAG, bytes.toByteArray());
+        } catch (java.io.IOException error) { throw new IllegalStateException("Cannot save native stack components", error); }
+    }
+
+    public static void readNative(legacyconnector.vb1_7_3.net.minecraft.item.ItemStack stack,
+            legacyconnector.vb1_7_3.net.minecraft.nbt.NbtCompound nbt) {
+        if (!nbt.contains(NATIVE_TAG)) return;
+        try {
+            byte[] bytes = nbt.getByteArray(NATIVE_TAG);
+            if (bytes.length > 2_097_152) throw new IllegalArgumentException("Native stack component tag exceeds limit");
+            var saved = net.minecraft.nbt.NbtIo.read(new java.io.DataInputStream(new java.io.ByteArrayInputStream(bytes)),
+                    net.minecraft.nbt.NbtAccounter.create(2_097_152));
+            if (saved.getInt("legacy_id") != stack.itemId) return;
+            ItemStack modern = ItemStack.parseOptional(registries(), saved.getCompound("stack"));
+            if (modern.isEmpty()) return;
+            var origin = toLegacy(modern);
+            if (origin != null && origin.itemId == stack.itemId) stack.mcc$nativeSnapshot(modern);
+        } catch (java.io.IOException error) { throw new IllegalStateException("Cannot read native stack components", error); }
     }
 
     /**
@@ -65,7 +131,9 @@ public final class StacksB173 {
         } else if ((modern.getItem() instanceof LegacyB173Item||modern.getItem() instanceof LegacyB173ArmorItem) && modern.has(DataComponents.CUSTOM_DATA)) {
             damage = modern.get(DataComponents.CUSTOM_DATA).copyTag().getInt("b173_meta");
         }
-        return new legacyconnector.vb1_7_3.net.minecraft.item.ItemStack(hit[0], modern.getCount(), damage);
+        var legacy = new legacyconnector.vb1_7_3.net.minecraft.item.ItemStack(hit[0], modern.getCount(), damage);
+        legacy.mcc$nativeSnapshot(modern);
+        return legacy;
     }
 
     private static java.util.Map<net.minecraft.world.item.Item, int[]> reverse() {

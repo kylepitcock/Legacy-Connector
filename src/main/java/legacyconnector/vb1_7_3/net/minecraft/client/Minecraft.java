@@ -34,6 +34,13 @@ public class Minecraft {
         @Override public void close(){try{actor.close();}finally{if(previous==null)CONTEXT.remove();else CONTEXT.set(previous);if(override==null)PLAYER_OVERRIDE.remove();else PLAYER_OVERRIDE.set(override);}}
     }
     public static ContextScope mcc$context(World world,legacyconnector.vb1_7_3.net.minecraft.entity.Entity focus){return new ContextScope(world,focus);}
+    /** Existing callback actor only: directory lookup must never refresh a player view midway through a callback. */
+    public static legacyconnector.vb1_7_3.net.minecraft.entity.player.ClientPlayerEntity mcc$currentPlayerContext(){
+        Context context=CONTEXT.get();
+        if(context!=null&&context.focus instanceof legacyconnector.vb1_7_3.net.minecraft.entity.player.ClientPlayerEntity player)return player;
+        var overridden=PLAYER_OVERRIDE.get();if(overridden!=null)return overridden;
+        Minecraft active=SCOPED.get();return active==null?null:active.explicitPlayer;
+    }
     /** Phantom field accessor: cached Minecraft references resolve the actor of this callback, rather than another world's player. */
     public static legacyconnector.vb1_7_3.net.minecraft.entity.player.ClientPlayerEntity mcc$get$player(Minecraft minecraft){
         Minecraft active=SCOPED.get()==null?minecraft:SCOPED.get();

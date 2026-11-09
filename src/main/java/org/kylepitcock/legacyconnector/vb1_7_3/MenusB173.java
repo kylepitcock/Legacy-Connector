@@ -116,6 +116,7 @@ public final class MenusB173 {
     /** {@code ModLoader.OpenGUI(player, gui)}. */
     public static void open(PlayerEntity player, Screen gui) {
         if (gui == null) return;
+        if (PlayerInventoryNetworkB173.offer(player,gui)) return;
         Player p = modern(player);
         trace("OpenGUI({}) by {} on the {} side", gui.getClass().getName(), p == null ? "an unknown player" : p.getGameProfile().getName(),
                 p == null ? "unknown" : p.level().isClientSide ? "client" : "server");
@@ -210,6 +211,7 @@ public final class MenusB173 {
 
     /** {@code Minecraft.displayGuiScreen}. */
     public static void setScreen(Screen screen) {
+        if(PlayerInventoryNetworkB173.offer(screen))return;
         Actor actor=ACTOR.get();
         if(actor!=null){actor.requested=screen;actor.pending=true;return;}
         Client c = client;
