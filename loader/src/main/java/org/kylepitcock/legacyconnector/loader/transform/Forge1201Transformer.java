@@ -287,7 +287,8 @@ public final class Forge1201Transformer {
             }
             stringsMapped += mapSrgStrings(node);
             int viaCalls = CallRewrites1201.apply(node, compoundSubclasses);
-            palladiumKubejsChanges += PalladiumKubeJS1201.apply(node);
+            int palladiumChanges = PalladiumKubeJS1201.apply(node);
+            palladiumKubejsChanges += palladiumChanges;
             viaCalls += ForgeApiRewrites1201.apply(node);
             viaCalls += AttachGuards1201.apply(node, jarClasses);
             if (ForgeApiRewrites1201.markProviders(node)) viaCalls++;
@@ -295,7 +296,7 @@ public final class Forge1201Transformer {
             Mc1201Migration.Counts changed = Mc1201Migration.apply(node, hierarchy);
             mc.add(changed);
             Mixin1201.apply(node, srg, hierarchy, Mc1201Tables.get(), mixinStats);
-            migrated.put(node, viaCalls + changed.total());
+            migrated.put(node, viaCalls + changed.total() + palladiumChanges);
         }
         if (palladiumKubejsChanges > 0 || palladiumKubejsClassesDropped > 0) {
             result.notes.add("Palladium KubeJS 6 integration adapted for KubeJS 7: "
