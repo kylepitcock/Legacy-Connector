@@ -108,13 +108,15 @@ public final class PalladiumKubeJSCompat {
             int discovered = 0;
             int loaded = 0;
             Map<String, Object> managerPacks = asMap(publicField(manager, "packs"));
+            Class<?> scriptManagerClass = Class.forName("dev.latvian.mods.kubejs.script.ScriptManager", true, loader);
             Class<?> packInfoClass = Class.forName(SCRIPT_PACK_INFO, true, loader);
             Class<?> scriptPackClass = Class.forName(SCRIPT_PACK, true, loader);
             Class<?> scriptFileInfoClass = Class.forName(SCRIPT_FILE_INFO, true, loader);
             Class<?> scriptFileClass = Class.forName(SCRIPT_FILE, true, loader);
 
             Constructor<?> packInfoConstructor = packInfoClass.getConstructor(String.class, String.class);
-            Constructor<?> scriptPackConstructor = scriptPackClass.getConstructor(manager.getClass(), packInfoClass);
+            // StartupScriptManager / ClientScriptManager / ServerScriptManager all extend ScriptManager.
+            Constructor<?> scriptPackConstructor = scriptPackClass.getConstructor(scriptManagerClass, packInfoClass);
             Constructor<?> fileInfoConstructor = scriptFileInfoClass.getConstructor(packInfoClass, Path.class, String.class);
             Constructor<?> scriptFileConstructor = scriptFileClass.getConstructor(scriptPackClass, scriptFileInfoClass);
             Field infoScriptsField = packInfoClass.getField("scripts");
