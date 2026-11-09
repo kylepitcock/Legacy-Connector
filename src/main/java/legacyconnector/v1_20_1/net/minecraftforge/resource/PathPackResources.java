@@ -1,40 +1,20 @@
 package legacyconnector.v1_20_1.net.minecraftforge.resource;
 
-import java.io.IOException;
-import java.nio.file.FileSystem;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Comparator;
 import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Stream;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.packs.PackLocationInfo;
 import net.minecraft.server.packs.repository.PackSource;
 
 /**
- * Forge 1.20.1's {@code PathPackResources}: a pack read from a directory or file-system root.
- * In 1.21.1 the path is associated with a {@code PackLocationInfo}.
+ * Forge 1.20.1's {@code PathPackResources}, backed by the NeoForge 1.21.1 secure-jar root.
  *
- * <p>Some legacy resource-pack implementations (including Palladium 4.5.10) wrap this class
- * and retain only the {@link Path} returned by {@link #getSource()}. Owned ZIP file systems
- * and extracted composite roots are therefore tracked by source, rather than by the instance
- * that first opened them, so the final wrapper can release them from {@link #close()}.
+ * <p>Palladium 4.5.10 wraps this type and reads both {@link #getSource()} and
+ * {@link #isBuiltin()} from its parent, so both values must be preserved by this facade.
  */
 public class PathPackResources extends net.minecraft.server.packs.PathPackResources {
-    private static final Set<FileSystem> OWNED_FILE_SYSTEMS = ConcurrentHashMap.newKeySet();
-    private static final Set<Path> OWNED_TEMPORARY_ROOTS = ConcurrentHashMap.newKeySet();
-
-    static {
-        // Some legacy callers construct a resource object and then skip it (Palladium skips
-        // the vanilla "minecraft" pack before a Pack owns the resources). Release anything
-        // that did not receive close() when the game process exits.
-        Runtime.getRuntime().addShutdownHook(new Thread(
-                PathPackResources::cleanupOwnedResources, "LegacyConnector resource-pack cleanup"));
-    }
-
     private final Path source;
+    private final boolean builtin;
 
     public PathPackResources(String packId, Path source) {
         this(packId, true, source);
@@ -46,84 +26,18 @@ public class PathPackResources extends net.minecraft.server.packs.PathPackResour
                 Component.literal(packId),
                 isBuiltin ? PackSource.BUILT_IN : PackSource.DEFAULT,
                 Optional.empty()),
-                requireSource(source));
+                java.util.Objects.requireNonNull(source, "source"));
         this.source = source;
+        this.builtin = isBuiltin;
     }
 
-    private static Path requireSource(Path source) {
-        return java.util.Objects.requireNonNull(source, "source");
-    }
-
-    /**
-     * Registers a ZIP file system opened for one legacy path-backed resource pack and returns
-     * its root. The legacy wrapper constructed by a mod receives this same root and owns the
-     * eventual close.
-     */
-    public static Path ownFileSystem(FileSystem fileSystem) {
-        OWNED_FILE_SYSTEMS.add(java.util.Objects.requireNonNull(fileSystem, "fileSystem"));
-        return fileSystem.getPath("/");
-    }
-
-    /** Registers a temporary directory materialized from composite JarContents. */
-    public static Path ownTemporaryRoot(Path root) {
-        Path normalized = requireSource(root).toAbsolutePath().normalize();
-        OWNED_TEMPORARY_ROOTS.add(normalized);
-        return normalized;
-    }
-
-    /** Forge's accessor used by legacy mods; this must be the actual resource root, not null. */
+    /** Forge's accessor used by legacy mods; returns the actual root containing assets and data. */
     public Path getSource() {
         return source;
     }
 
-    @Override
-    public void close() {
-        super.close();
-        releaseOwnedSource(source);
-    }
-
-    private static void cleanupOwnedResources() {
-        for (FileSystem fileSystem : OWNED_FILE_SYSTEMS.toArray(FileSystem[]::new)) {
-            if (OWNED_FILE_SYSTEMS.remove(fileSystem) && fileSystem.isOpen()) {
-                try {
-                    fileSystem.close();
-                } catch (IOException e) {
-                    org.slf4j.LoggerFactory.getLogger("LegacyConnector/ResourcePacks")
-                            .warn("Failed to close a legacy mod resource-pack file system during shutdown", e);
-                }
-            }
-        }
-        for (Path root : OWNED_TEMPORARY_ROOTS.toArray(Path[]::new)) {
-            if (OWNED_TEMPORARY_ROOTS.remove(root)) {
-                deleteTemporaryRoot(root);
-            }
-        }
-    }
-
-    private static void releaseOwnedSource(Path source) {
-        FileSystem fileSystem = source.getFileSystem();
-        if (OWNED_FILE_SYSTEMS.remove(fileSystem) && fileSystem.isOpen()) {
-            try {
-                fileSystem.close();
-            } catch (IOException e) {
-                org.slf4j.LoggerFactory.getLogger("LegacyConnector/ResourcePacks")
-                        .warn("Failed to close a legacy mod resource-pack file system for {}", source, e);
-            }
-        }
-
-        if (OWNED_TEMPORARY_ROOTS.remove(source.toAbsolutePath().normalize())) {
-            deleteTemporaryRoot(source);
-        }
-    }
-
-    private static void deleteTemporaryRoot(Path root) {
-        try (Stream<Path> paths = Files.walk(root)) {
-            for (Path path : paths.sorted(Comparator.reverseOrder()).toList()) {
-                Files.deleteIfExists(path);
-            }
-        } catch (IOException e) {
-            org.slf4j.LoggerFactory.getLogger("LegacyConnector/ResourcePacks")
-                    .warn("Failed to remove a temporary legacy mod resource-pack root {}", root, e);
-        }
+    /** Retains Forge 1.20.1's explicit builtin flag for wrappers such as Palladium's ModResourcePack. */
+    public boolean isBuiltin() {
+        return builtin;
     }
 }
