@@ -82,6 +82,31 @@ public final class LegacyB173Item extends Item {
     }
 
     @Override
+    public float getAttackDamageBonus(net.minecraft.world.entity.Entity target, float damage,
+            net.minecraft.world.damagesource.DamageSource source) {
+        var attacker = source.getEntity();
+        try (var views = EntityViewsB173.callbackScope()) {
+            var actor = EntityViewsB173.wrap(attacker);
+            var original = EntityViewsB173.wrap(target);
+            try (var minecraft = legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$context(
+                    World.mcc$wrap(target.level()), actor)) {
+                float strength = attacker instanceof Player player ? player.getAttackStrengthScale(0.5F) : 1F;
+                // Native Player.attack invokes this after cooldown scaling and before critical damage.
+                // Add only the legacy item's contribution; retain native attributes and enchantments.
+                return attackDamageBonus(legacy, original, strength);
+            }
+        } catch (RuntimeException | LinkageError error) {
+            failed("getAttackDamage", error);
+            return 0F;
+        } finally { EntityViewsB173.flush(); BlockEntityViewsB173.flush(); }
+    }
+
+    static float attackDamageBonus(legacyconnector.vb1_7_3.net.minecraft.item.Item item,
+            legacyconnector.vb1_7_3.net.minecraft.entity.Entity target, float strength) {
+        return (item.getAttackDamage(target) - 1F) * (0.2F + strength * strength * 0.8F);
+    }
+
+    @Override
     public InteractionResult interactLivingEntity(ItemStack stack, Player player, net.minecraft.world.entity.LivingEntity target,
             InteractionHand hand) {
         if (hand != InteractionHand.MAIN_HAND || !usesEntity) return InteractionResult.PASS;
