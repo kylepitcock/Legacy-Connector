@@ -88,8 +88,11 @@ public abstract class Entity {
     }
     protected void initDataTracker() {}
 
-    /** Beta {@code onStruckByLightning}: fire damage; the host's own lightning handling applies the native effects. */
-    public void onStruckByLightning(LightningEntity lightning) {}
+    /** Beta lightning uses the fire-immune damage helper, then advances the ignition counter. */
+    public void onStruckByLightning(LightningEntity lightning) {
+        damage(5);
+        if (++fireTicks == 0) fireTicks = 300;
+    }
 
     public void markDead() {
         this.dead = true;

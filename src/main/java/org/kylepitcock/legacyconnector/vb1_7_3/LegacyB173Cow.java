@@ -86,6 +86,12 @@ public final class LegacyB173Cow extends Cow {
             pull();boolean allowed=legacy.canSpawn();push();return allowed;
         }catch(World.SpawnRegionUnavailable unavailable){return false;}
     }
+    @Override public void thunderHit(net.minecraft.server.level.ServerLevel level,net.minecraft.world.entity.LightningBolt bolt){
+        if(legacy==null){super.thunderHit(level,bolt);return;}
+        try(var views=EntityViewsB173.callbackScope()){
+            pull();legacy.onStruckByLightning((legacyconnector.vb1_7_3.net.minecraft.entity.LightningEntity)EntityViewsB173.wrap(bolt));push();
+        }
+    }
     @Override public boolean hurt(net.minecraft.world.damagesource.DamageSource source,float amount){boolean result=super.hurt(source,amount);pull();return result;}
     @Override public InteractionResult mobInteract(net.minecraft.world.entity.player.Player player,InteractionHand hand){
         var info=MobsB173.info(getType());

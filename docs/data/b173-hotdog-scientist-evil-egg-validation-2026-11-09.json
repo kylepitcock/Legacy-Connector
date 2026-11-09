@@ -1,0 +1,268 @@
+{
+  "date": "2026-11-09",
+  "branch": "legacy-b1.7.3",
+  "status": "passed",
+  "scope": "Actual unchanged MoreCreeps 2.12 Hotdog, Scientist and Evil Egg persistence observations and focused API regression; no full compatibility claim",
+  "generic_changes": [
+    "Generic native lightning dispatch delegates to original Beta callbacks across living, neutral, item and arrow hosts, preserving original immunity and the vanilla control"
+  ],
+  "hotdogFinding": "DogSize .6 to .7 on read is original MoreCreeps 2.12 policy. Changed test expectation/oracle, not production Hotdog persistence behavior.",
+  "originalOmissions": "Original unsaved timers, owner/references and runtime fields remain omitted; no invented NBT added.",
+  "evilEggLimitation": "Earlier floor-hatch v2 child vanished before laying. Original 2.12 bytecode permits later rolls and a nearby-collidable query exploding against its own newborn; production behavior was preserved. Final horizontal-wall v3 hatch survived, naturally laid a real egg, and the same child was saved/reloaded. No separate constructor laying fixture was used; survival of every hatch is not claimed.",
+  "earlierEvilEggOutcome": {
+    "path": "run-b173-single\\morecreeps-persistence-client-20261109-25c53c\\creeps-persistence-proof\\evil-egg-v2-proof.json",
+    "sha256": "0ea9bcc8dedf3420b8d7b819dd4088fccf327f98c3cbfe9de55363bc87c2b495",
+    "status": "native hatch proved; child vanished before laying baseline"
+  },
+  "fixtureLimits": [
+    "Controlled dry native platform and spawning isolate tested behavior.",
+    "Gameplay observations use original constructor RNG and stages/timers with ordinary clocks; no forced live progression stats.",
+    "Opt-in .6/.7/.8 API boundary fixtures deliberately set fixture stats and are labeled controlled tests, separate from gameplay evidence."
+  ],
+  "proofs": {
+    "hotdog-native-relog-passed.json": {
+      "path": "run-b173-single\\morecreeps-persistence-client-20261109-25c53c\\creeps-persistence-proof\\hotdog-native-relog-passed.json",
+      "sha256": "3c2b70884772ea99b92c6d47d38f96ad9f5d3ceab79efb23e339d81561d2905d",
+      "summary": {
+        "evidenceStatus": true,
+        "uuid": "a466ffbd-6a7e-47e3-b467-e8d4c48225a2",
+        "originalSizeNormalization": {
+          "before": 0.6000000238418579,
+          "after": 0.699999988079071
+        }
+      }
+    },
+    "scientist-native-passed.json": {
+      "path": "run-b173-single\\morecreeps-persistence-client-20261109-25c53c\\creeps-persistence-proof\\scientist-native-passed.json",
+      "sha256": "7cc84ff5a8be4d3a27254c5bdffa4e23bb33f7f8b4ede7bc5390d3288d0b1392",
+      "summary": {
+        "evidenceStatus": "validated native contract",
+        "initialHealth": 20,
+        "finalHealth": 70,
+        "largestObservedGapTicks": 5,
+        "trulyevil": true
+      }
+    },
+    "scientist-native-relog-passed.json": {
+      "path": "run-b173-single\\morecreeps-persistence-client-20261109-25c53c\\creeps-persistence-proof\\scientist-native-relog-passed.json",
+      "sha256": "6609a6485395f5ca81c9bee780aa624d901bcc6cb17fe0964908edf9eacfb896",
+      "summary": {
+        "evidenceStatus": "validated native contract",
+        "uuid": "8e857b8f-e7f9-4493-b037-3303b489d5e7",
+        "elapsedTicks": 43,
+        "timerDecrement": 38
+      }
+    },
+    "evil-egg-v3-proof.json": {
+      "path": "run-b173-single\\morecreeps-persistence-client-20261109-25c53c\\creeps-persistence-proof\\evil-egg-v3-proof.json",
+      "sha256": "9d35f927edf56cc0bf0c24ee91f8d8c489d65e2de0a8a16e93800b5400375cb0",
+      "summary": {
+        "evidenceStatus": "native causal hatch and same-child laying proved; native saved child; reload verification pending",
+        "uses": 138,
+        "birthGameTime": 32320,
+        "childUUID": "30a24be4-89e6-42db-a179-9df398c09ff8",
+        "matchingParents": [
+          "1358dd14-e69f-488a-93c2-6a5cc800cc32"
+        ],
+        "layingGameTime": 32520,
+        "layingTimerReset": {
+          "gameTime": 32520,
+          "before": 5,
+          "after": 773
+        },
+        "droppedItemUUID": "d7f7f402-28b5-4e6b-a946-66f31216b1a8"
+      }
+    },
+    "evil-egg-relog-passed.json": {
+      "path": "run-b173-single\\morecreeps-persistence-client-20261109-25c53c\\creeps-persistence-proof\\evil-egg-relog-passed.json",
+      "sha256": "b1db97f14eaf5d92050db0f3d68e0dd2625ad8a76c0a68be1ece47290f4fd6bd",
+      "summary": {
+        "evidenceStatus": true,
+        "uuid": "30a24be4-89e6-42db-a179-9df398c09ff8",
+        "source": "native EvilEgg hatch; same naturally hatched child"
+      }
+    }
+  },
+  "unitTests": {
+    "tests": 562,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "directories": [
+      "build\\test-results\\test",
+      "loader\\build\\test-results\\test"
+    ],
+    "xmlCount": 126,
+    "xmlManifestSha256": "ba07fcab1f1f0623b955b7ee1767e415994284d2644567c21cb100bb352410b0"
+  },
+  "scientistObservedLightning": {
+    "count": 10,
+    "uuids": [
+      "0e2c0ac5-e2db-44dc-b358-6d14a64bfdb5",
+      "12862eca-c1e0-4c46-86c7-e4e71c973c51",
+      "171c9cf9-5216-4fbf-ae09-7d9c92a73602",
+      "38ecbff9-dba9-472a-bd0f-d8ce9e0cf22d",
+      "87f134d7-ef2f-4a1a-9507-77c121e31981",
+      "acf58a9f-e31a-45c9-8d3d-ec8abf250b14",
+      "ba29806c-c80d-4004-a119-b3a9294b564d",
+      "d78ed858-9da1-4868-a54c-e4e6310d2b19",
+      "e7724f8c-e5c3-4f1d-80e4-5c929de38151",
+      "f1174179-984f-4ff3-9bf3-1ad1d9f39d88"
+    ],
+    "evidence": {
+      "path": "run-b173-single\\morecreeps-persistence-client-20261109-25c53c\\creeps-persistence-proof\\scientist-native-observations.jsonl",
+      "sha256": "23e647a3934a40779470b42e0e2aa97eb02e587c9f1ee5582b7f01b356b499ab"
+    }
+  },
+  "scientistOffspring": {
+    "evidence": {
+      "path": "run-b173-single\\morecreeps-persistence-client-20261109-25c53c\\creeps-persistence-proof\\scientist-native-first-offspring.json",
+      "sha256": "83d43918da8f525a072f19a90a9fd883afce3b0d230e552cbc4fb8bb61835126"
+    },
+    "uuid": "9ed8301f-e77e-4a12-9ddb-b948d6fe295b",
+    "species": "CREEPSEntityEvilPig",
+    "distanceSquared": 5
+  },
+  "lightning": {
+    "baseline": {
+      "scope": "Controlled actual original Scientist constructor, one native thunderHit dispatch; original immunity unchanged; vanilla cow control",
+      "scientist": {
+        "className": "legacyconnector_b173.morecreepsandweirdos.CREEPSEntityEvilScientist",
+        "fireImmune": true,
+        "before": 20,
+        "after": 15
+      },
+      "vanillaCow": {
+        "before": 10,
+        "after": 5
+      }
+    },
+    "fixed": {
+      "scope": "Controlled actual original Scientist constructor, one native thunderHit dispatch; original immunity unchanged; vanilla cow control",
+      "scientist": {
+        "className": "legacyconnector_b173.morecreepsandweirdos.CREEPSEntityEvilScientist",
+        "fireImmune": true,
+        "before": 10,
+        "after": 10
+      },
+      "vanillaCow": {
+        "before": 10,
+        "after": 5
+      }
+    },
+    "evidence": [
+      {
+        "path": "build\\creeps-lightning-baseline-20261109.json",
+        "sha256": "81e63a5dadcd2da7531b5d5f5760663fc39865cbecbbc601c7ea09c53794f5c9"
+      },
+      {
+        "path": "build\\creeps-lightning-fixed-20261109.log",
+        "sha256": "9781bfa241df124cc8e58d9be17655b2de2a19f8b1d9388245f79f769da46964"
+      }
+    ]
+  },
+  "finalBuild": {
+    "path": "build\\creeps-persistence-final-build-20261109.log",
+    "sha256": "c2f8fe4f11847ce0cdd7cae8d37ba38c350e58d0433fda4c77331301cef50603"
+  },
+  "finalClient": {
+    "path": "build\\creeps-persistence-final-client-20261109.log",
+    "sha256": "3ee2c89cdd912fe2a7659430ab508ab17aab66eb6d6d2aa9f9e2299723003fd7"
+  },
+  "artifact": {
+    "path": "build\\dist\\legacyconnector-0.4.13.jar",
+    "sha256": "9e3452672d75619c6e38fe1695d2c005ce1dd729e5d36dc835c19719c3580c6e"
+  },
+  "originalMod": {
+    "path": "run-b173-single\\morecreeps-persistence-client-20261109-25c53c\\mods\\b1.7.3\\morecreeps-neutralcompletion-client.jar",
+    "sha256": "484e85d1aee3e773daaaa23117f7c60160d77da591e75851437b647cd0149626"
+  },
+  "prismMod": {
+    "path": "C:\\Users\\zekken\\AppData\\Roaming\\PrismLauncher\\instances\\Legacy Connector\\minecraft\\mods\\b1.7.3\\MoreCreepsAndWeirdos-2.12-b173.jar",
+    "sha256": "06e6ad852b8aa0ff08913a010c47ef81093aa124976a688af05438022d50690b"
+  },
+  "originalZipEntryPayloadEquality": true,
+  "originalZipEntryCount": 451,
+  "sources": [
+    {
+      "path": "src\\main\\java\\legacyconnector\\vb1_7_3\\net\\minecraft\\entity\\Entity.java",
+      "sha256": "1abf633b58d1f8666b83f8dcd72393478034de1863edfc87ef5d05eabb643c6c"
+    },
+    {
+      "path": "src\\main\\java\\org\\kylepitcock\\legacyconnector\\vb1_7_3\\EntityViewsB173.java",
+      "sha256": "aeeb9cfc31fd28520639acdc5dbf3cf74196d2d4c8caf982a702aebc0ac13acb"
+    },
+    {
+      "path": "src\\main\\java\\org\\kylepitcock\\legacyconnector\\vb1_7_3\\LegacyB173Animal.java",
+      "sha256": "99f9f1b68e050c94d1cb50dcf3fa4be9e2dd70e3c775850b381fe6048e9578e4"
+    },
+    {
+      "path": "src\\main\\java\\org\\kylepitcock\\legacyconnector\\vb1_7_3\\LegacyB173Arrow.java",
+      "sha256": "4a4630b4825c40567a1a7a1855f4d993f0f43105cfb997d3b1e03be08f9a67a2"
+    },
+    {
+      "path": "src\\main\\java\\org\\kylepitcock\\legacyconnector\\vb1_7_3\\LegacyB173Cow.java",
+      "sha256": "13d0f7eb73e2f23b56a83ea381c8540c3be3130744664d2e0917eca0cfe7b583"
+    },
+    {
+      "path": "src\\main\\java\\org\\kylepitcock\\legacyconnector\\vb1_7_3\\LegacyB173Entity.java",
+      "sha256": "e258c7c2280136b7099364a4ae9c05552aceed911c515b483651aaa233031023"
+    },
+    {
+      "path": "src\\main\\java\\org\\kylepitcock\\legacyconnector\\vb1_7_3\\LegacyB173ItemEntity.java",
+      "sha256": "969058ef03f017976f131369b41ee0a297d3590aaf98063f63ca19510404de57"
+    },
+    {
+      "path": "src\\main\\java\\org\\kylepitcock\\legacyconnector\\vb1_7_3\\MoreCreepsRosterSelfTestB173.java",
+      "sha256": "c86ecc7e6745ad08d696ba94d96aec3133fc7c7390b2aab6b90348e7ab75a086"
+    },
+    {
+      "path": "src\\test\\java\\org\\kylepitcock\\legacyconnector\\vb1_7_3\\LightningB173Test.java",
+      "sha256": "a0dceffeb0f4bcfd4d313f25fca2b5a4662c4d69892b836e333ccea544c9a75d"
+    }
+  ],
+  "sourceManifestSha256": "691b5a34629a4d6328eb86ecac2d32a449305fb2bfe9f517637d31dd930a0ffb",
+  "generator": {
+    "path": "build\\record-creeps-persistence-validation-20261109.py",
+    "sha256": "d7b971f2dadd9e2d6ddd4e375d89af6689dcc28502dfc03aa77f16945e27a9ac"
+  },
+  "tested_base_revision": "2b8ed6fb3387e160c99bda2ba560c7d19c6b2339",
+  "version": "0.4.13",
+  "snapshot_date": "2026-11-09",
+  "default_build": {
+    "passed": true,
+    "command": "./gradlew.bat build bundleJar",
+    "private_mod_archives_required": false
+  },
+  "final_reloaded_actors": {
+    "path": "run-b173-single\\morecreeps-persistence-client-20261109-25c53c\\creeps-persistence-proof\\final-actors-after-final-build-reload.json",
+    "sha256": "6eaf588b26cb2771e7c8cf787d824c8891b2e1a20482692501861bf74e55218a",
+    "result": {
+      "passed": true,
+      "world": "LegacyConnectorShots1794226046233",
+      "actors": [
+        {
+          "uuid": "a466ffbd-6a7e-47e3-b467-e8d4c48225a2",
+          "species": "CREEPSEntityHotdog",
+          "health": 5
+        },
+        {
+          "uuid": "8e857b8f-e7f9-4493-b037-3303b489d5e7",
+          "species": "CREEPSEntityEvilScientist",
+          "health": 870
+        },
+        {
+          "uuid": "30a24be4-89e6-42db-a179-9df398c09ff8",
+          "species": "CREEPSEntityEvilChicken",
+          "health": 8
+        }
+      ]
+    }
+  },
+  "visual_review": {
+    "passed": true,
+    "path": "run-b173-single\\morecreeps-persistence-client-20261109-25c53c\\control\\out\\evil-egg-same-hatchling-after-relog.png",
+    "sha256": "a75bb280359bddc9a4028b99bbf1461fb34c415e09c1f23f3eb5a7e4dc777659",
+    "observation": "Native client shows the same original EvilChicken and green egg items after actual relog; screenshot visually reviewed."
+  }
+}

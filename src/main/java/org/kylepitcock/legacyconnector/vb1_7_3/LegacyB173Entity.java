@@ -51,6 +51,10 @@ public final class LegacyB173Entity extends net.minecraft.world.entity.Entity im
     }
     @Override public void baseMove(double x,double y,double z){state.move(()->super.move(retainedMover,new Vec3(x,y,z)));}
     @Override public void setPos(double x,double y,double z){if(state==null||!state.movePosition(x,y,z))super.setPos(x,y,z);}
+    @Override public void thunderHit(net.minecraft.server.level.ServerLevel level,net.minecraft.world.entity.LightningBolt bolt){
+        if(legacy()==null){super.thunderHit(level,bolt);return;}
+        state.callback(()->legacy().onStruckByLightning((legacyconnector.vb1_7_3.net.minecraft.entity.LightningEntity)EntityViewsB173.wrap(bolt)));
+    }
     @Override public boolean hurt(DamageSource source,float amount){
         if(legacy()==null||level().isClientSide)return false;
         DamageSource previous=retainedDamage;retainedDamage=source;boolean[] result={false};

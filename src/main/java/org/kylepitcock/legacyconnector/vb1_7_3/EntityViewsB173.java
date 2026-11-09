@@ -163,6 +163,8 @@ public final class EntityViewsB173 {
         World world=World.mcc$wrap(modern.level());
         if(modern instanceof LegacyB173Cow cow && cow.legacy()!=null)return cow.legacy();
         if(modern instanceof net.minecraft.world.entity.player.Player p)return PlayerViewB173.of(p);
+        if(modern instanceof net.minecraft.world.entity.LightningBolt)
+            return new legacyconnector.vb1_7_3.net.minecraft.entity.LightningEntity(world,modern.getX(),modern.getY(),modern.getZ());
         if(modern instanceof net.minecraft.world.entity.item.ItemEntity item)
             return new legacyconnector.vb1_7_3.net.minecraft.entity.ItemEntity(world,modern.getX(),modern.getY(),modern.getZ(),StacksB173.toLegacy(item.getItem()));
         if(modern instanceof net.minecraft.world.entity.projectile.AbstractArrow)return new legacyconnector.vb1_7_3.net.minecraft.entity.projectile.ArrowEntity(world);

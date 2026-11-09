@@ -93,6 +93,15 @@ public final class LegacyB173Arrow extends Arrow {
             discard();
         } finally { EntityViewsB173.flush(); }
     }
+    @Override public void thunderHit(net.minecraft.server.level.ServerLevel level,net.minecraft.world.entity.LightningBolt bolt) {
+        if(legacy==null){super.thunderHit(level,bolt);return;}
+        try(var views=EntityViewsB173.callbackScope()){
+            legacy.fireTicks=getRemainingFireTicks();
+            legacy.onStruckByLightning((legacyconnector.vb1_7_3.net.minecraft.entity.LightningEntity)EntityViewsB173.wrap(bolt));
+            sync();
+            if(legacy.dead)discard();
+        }
+    }
     @Override public void playerTouch(net.minecraft.world.entity.player.Player player) {
         if (level().isClientSide || legacy == null) return;
         var view=PlayerViewB173.of(player);

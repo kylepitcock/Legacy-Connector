@@ -891,6 +891,26 @@ fixture cover both axes, metadata changes, ambiguous triples and deferred cross-
 states are not scanned or migrated; pairing applies to subsequent explicit Beta writes. Modern chest placement has no
 global hook. The default build passes 558 portable tests without private mod archives.
 
+The [Hotdog, Scientist and EvilEgg validation](../data/b173-hotdog-scientist-evil-egg-validation-2026-11-09.json)
+adds generic native-lightning dispatch to the original Beta callback across hosted entity families. The Beta default
+uses its fire-immune damage helper and original ignition counter; mod overrides retain control. Vanilla entities retain
+native lightning handling. An actual More Creeps Scientist survives its original experiment lightning, builds and climbs
+its tower, produces offspring and gains the original 50 health on transformation. An in-progress experiment retains its
+UUID, tower and stage across native save/reopen; its timer continues on entity ticks rather than assuming every startup
+world tick also ticks the entity.
+
+Hotdog's original 2.12 reader deliberately raises `DogSize` below `0.7` to `0.7`; this is preserved. Native feeding, death,
+Tombstone/LifeGem revival and save/reopen match an independent original-reader oracle. The opt-in
+`-Dlegacyconnector.hotdogPersistenceSelfTest=true` fixture covers sizes `0.6`, `0.7` and `0.8`, repeated native registry
+loads, saved stats, item components and renderer tracking, without requiring the private mod during a default build.
+
+Actual native EvilEgg inputs, owner tracking, collision and original hatch callbacks are observed with unchanged RNG.
+The original code can explode after a successful hatch, including after detecting its own newborn; that behavior remains
+intact. A later wall-impact hatch survives and lays a real original egg through its natural timer. The same offspring UUID
+and health survive native save/reopen. Safe native observation placement happens only after the hatch and laying proofs;
+it does not replace the offspring or force its gameplay fields. Original unsaved laying timers remain unsaved.
+The default build passes 562 portable tests; these bounded actual-mod checks do not establish complete mod compatibility.
+
 The shared Beta painting API retains all 25 original motives, facing and wall checks, then uses native painting tracking,
 rendering and persistence. Double-precision bounds prevent thin boxes collapsing at far modern coordinates. Native-region
 tests cover overlap, deferred supports and proto-chunk entity NBT; a visible valid-wall painting retains its UUID, motive,

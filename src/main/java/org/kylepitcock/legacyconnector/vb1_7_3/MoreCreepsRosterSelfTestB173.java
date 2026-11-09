@@ -12,8 +12,66 @@ public final class MoreCreepsRosterSelfTestB173 {
     private static final Set<String> EXPECTED=Set.of("CREEPSEntityArmyGuy","CREEPSEntityArmyGuyArm","CREEPSEntityAtom","CREEPSEntityBabyMummy","CREEPSEntityBigBaby","CREEPSEntityBlackSoul","CREEPSEntityBlorp","CREEPSEntityBubbleScum","CREEPSEntityBum","CREEPSEntityCamel","CREEPSEntityCamelJockey","CREEPSEntityCastleCritter","CREEPSEntityCastleGuard","CREEPSEntityCastleKing","CREEPSEntityDesertLizard","CREEPSEntityDigBug","CREEPSEntityEvilChicken","CREEPSEntityEvilCreature","CREEPSEntityEvilLight","CREEPSEntityEvilPig","CREEPSEntityEvilScientist","CREEPSEntityEvilSnowman","CREEPSEntityFloob","CREEPSEntityFloobBeam","CREEPSEntityFloobShip","CREEPSEntityFloobMotherShip","CREEPSEntityG","CREEPSEntityGooGoat","CREEPSEntityGuineaPig","CREEPSEntityHippo","CREEPSEntityHorseHead","CREEPSEntityHotdog","CREEPSEntityHunchback","CREEPSEntityHunchbackSkeleton","CREEPSEntityInvisibleMan","CREEPSEntityKid","CREEPSEntityLawyerFromHell","CREEPSEntityLolliman","CREEPSEntityManDog","CREEPSEntityMummy","CREEPSEntityPreacher","CREEPSEntityPyramidGuardian","CREEPSEntityRatMan","CREEPSEntityRobotTed","CREEPSEntityRobotTodd","CREEPSEntityRocketGiraffe","CREEPSEntityRockMonster","CREEPSEntitySneakySal","CREEPSEntitySnowDevil","CREEPSEntityThief","CREEPSEntityTombstone","CREEPSEntityTrophy","CREEPSEntityZebra");
     private static final Set<String> AQUATIC=Set.of("CREEPSEntitySquimp");
     private MoreCreepsRosterSelfTestB173(){}
-    public static void register(IEventBus bus){if(Boolean.getBoolean("legacyconnector.entitySelfTest"))bus.addListener((ServerStartedEvent event)->{try{var level=event.getServer().overworld();MenusB173.withActor(net.neoforged.neoforge.common.util.FakePlayerFactory.getMinecraft(level),()->run(level));}catch(RuntimeException|LinkageError error){LOG.error("B1.7.3 CREEPS ROSTER TEST failed",error);}});}
+    public static void register(IEventBus bus){if(Boolean.getBoolean("legacyconnector.entitySelfTest")||Boolean.getBoolean("legacyconnector.hotdogPersistenceSelfTest"))bus.addListener((ServerStartedEvent event)->{try{var level=event.getServer().overworld();MenusB173.withActor(net.neoforged.neoforge.common.util.FakePlayerFactory.getMinecraft(level),()->{if(Boolean.getBoolean("legacyconnector.entitySelfTest"))run(level);if(Boolean.getBoolean("legacyconnector.hotdogPersistenceSelfTest"))hotdogPersistence(level);});}catch(RuntimeException|LinkageError error){LOG.error("B1.7.3 CREEPS ROSTER TEST failed",error);}});}
     private static void require(boolean condition,String detail){if(!condition)throw new IllegalStateException(detail);}
+    /** Controlled API boundary fixtures, not evidence of ordinary gameplay progression. Requires the actual mod at runtime only. */
+    private static void hotdogPersistence(net.minecraft.server.level.ServerLevel level){
+        var selected=ContentB173.entities().stream().filter(r->r.type().getPackageName().equals("legacyconnector_b173.morecreepsandweirdos")&&r.type().getSimpleName().equals("CREEPSEntityHotdog")).findFirst();
+        require(selected.isPresent(),"Hotdog persistence proof requires actual MoreCreeps 2.12 runtime jar");
+        var registration=selected.get();var cleanup=new ArrayList<net.minecraft.world.entity.Entity>();
+        try{
+            var world=World.mcc$wrap(level);var nativeInfo=AnimalsB173.all().stream().filter(i->i.registration().type()==registration.type()).findFirst().orElseThrow();
+            for(float size:new float[]{.6F,.7F,.8F}){
+                var original=(LivingEntity)registration.type().getConstructor(World.class).newInstance(world);
+                fieldIfPresent(original,"dogsize",size);fieldIfPresent(original,"tamed",true);fieldIfPresent(original,"name","Persistence boundary "+size);fieldIfPresent(original,"level",7);fieldIfPresent(original,"skillattack",2);fieldIfPresent(original,"totalexperience",123);fieldIfPresent(original,"wanderstate",1);
+                var host=new LegacyB173Animal(nativeInfo.type(),level,original);cleanup.add(host);host.setHealth(4);host.addTag("controlled_hotdog_persistence");
+                var item=new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.DIAMOND);
+                item.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME,net.minecraft.network.chat.Component.literal("Persistence component"));
+                host.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD,item);
+                var uuid=host.getUUID();
+                for(int round=0;round<2;round++){
+                    var preSaveState=AnimalRenderStateB173.capture(host.legacy());
+                    var saved=new net.minecraft.nbt.CompoundTag();require(host.save(saved),"Hotdog native registry save");
+                    var loaded=net.minecraft.world.entity.EntityType.loadEntityRecursive(saved,level,e->e);require(loaded instanceof LegacyB173Animal,"Hotdog native registry reload host");cleanup.add(loaded);var restored=(LegacyB173Animal)loaded;
+                    require(restored.getUUID().equals(uuid)&&restored.getHealth()==4&&restored.getTags().contains("controlled_hotdog_persistence"),"native UUID health and tags survive round "+round);
+                    require(net.minecraft.world.item.ItemStack.isSameItemSameComponents(item,restored.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.HEAD)),"native equipment data components survive round "+round);
+                    var oracle=(LivingEntity)registration.type().getConstructor(World.class).newInstance(world);
+                    AnimalRenderStateB173.apply(oracle,null,preSaveState);
+                    oracle.readNbt(NbtB173.fromModern(saved.getCompound("beta")));
+                    var expected=new legacyconnector.vb1_7_3.net.minecraft.nbt.NbtCompound();oracle.writeNbt(expected);
+                    var actual=new legacyconnector.vb1_7_3.net.minecraft.nbt.NbtCompound();restored.legacy().writeNbt(actual);
+                    require(NbtB173.toModern(expected).equals(NbtB173.toModern(actual)),"Hotdog registry follows original reader oracle at size "+size+" round "+round+": expected="+NbtB173.toModern(expected)+" actual="+NbtB173.toModern(actual));
+                    var actualTag=NbtB173.toModern(actual);
+                    require(actualTag.getBoolean("Tamed")&&actualTag.getString("Name").equals("Persistence boundary "+size)
+                            &&actualTag.getInt("Level")==7&&actualTag.getInt("SkillAttack")==2
+                            &&actualTag.getInt("TotalExperience")==123&&actualTag.getInt("WanderState")==1,
+                            "explicit seeded Hotdog pet stats survive size "+size+" round "+round);
+                    float expectedSize=Math.max(.7F,size);String key=registration.type().getName()+"#dogsize";
+                    require(NbtB173.toModern(actual).getFloat("DogSize")==expectedSize,"actual 2.12 minimum size contract");
+                    require(restored.renderState().getFloat(key)==expectedSize,"post-read renderer tracking publishes normalized size");
+                    var packet=new net.minecraft.network.FriendlyByteBuf(io.netty.buffer.Unpooled.buffer());
+                    try{packet.writeNbt(restored.renderState());require(packet.readNbt().getFloat(key)==expectedSize,"renderer size survives packet NBT");}finally{packet.release();}
+                    var draws=new ArrayList<ModelGeometryB173.Draw>();AnimalRenderingB173.draw(restored,.5F,(draw,texture)->draws.add(draw));require(!draws.isEmpty(),"actual reloaded Hotdog renderer emits geometry");for(var draw:draws)finite(draw.transform());
+                    host=restored;
+                }
+                // A missing mod-owned size field leaves native-owned saved health and other base fields intact.
+                // Erasing the entire beta compound instead creates a different native/base-reader ownership fixture.
+                var missingPreSaveState=AnimalRenderStateB173.capture(host.legacy());
+                var missingSaved=new net.minecraft.nbt.CompoundTag();require(host.save(missingSaved),"missing-DogSize fixture save");missingSaved.getCompound("beta").remove("DogSize");
+                var missing=(LivingEntity)registration.type().getConstructor(World.class).newInstance(world);
+                AnimalRenderStateB173.apply(missing,null,missingPreSaveState);
+                missing.readNbt(NbtB173.fromModern(missingSaved.getCompound("beta")));
+                var missingExpected=new legacyconnector.vb1_7_3.net.minecraft.nbt.NbtCompound();missing.writeNbt(missingExpected);
+                var emptyLoaded=net.minecraft.world.entity.EntityType.loadEntityRecursive(missingSaved,level,e->e);require(emptyLoaded instanceof LegacyB173Animal,"missing-DogSize native host");cleanup.add(emptyLoaded);
+                var missingActual=new legacyconnector.vb1_7_3.net.minecraft.nbt.NbtCompound();((LegacyB173Animal)emptyLoaded).legacy().writeNbt(missingActual);
+                require(NbtB173.toModern(missingExpected).equals(NbtB173.toModern(missingActual)),"missing DogSize follows original reader: expected="+NbtB173.toModern(missingExpected)+" actual="+NbtB173.toModern(missingActual));
+                require(NbtB173.toModern(missingActual).getFloat("DogSize")==.7F,"missing DogSize uses original minimum .7");
+                LOG.info("B1.7.3 HOTDOG PERSISTENCE TEST: controlled boundary {} passed two native registry loads, original NBT oracle, native UUID/health/tags/item components, post-read renderer packet and missing-DogSize policy",size);
+            }
+            LOG.info("B1.7.3 HOTDOG PERSISTENCE TEST: all 3 actual-mod controlled API boundaries passed");
+        }catch(ReflectiveOperationException error){throw new IllegalStateException("actual Hotdog persistence fixture",error);}
+        finally{for(var entity:cleanup)entity.discard();EntityViewsB173.flush();}
+    }
     private static void finite(org.joml.Matrix4f matrix){for(float value:matrix.get(new float[16]))require(Float.isFinite(value),"nonfinite original renderer extra transform");}
     private static void fieldIfPresent(Object value,String name,Object data)throws ReflectiveOperationException {for(Class<?> type=value.getClass();type!=null;type=type.getSuperclass())try{var field=type.getDeclaredField(name);field.setAccessible(true);field.set(value,data);return;}catch(NoSuchFieldException ignored){}}
     private static void rendererExtras(LegacyB173Animal host,ContentB173.Registration registration)throws ReflectiveOperationException {
