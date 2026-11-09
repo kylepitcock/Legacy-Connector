@@ -8,6 +8,7 @@ import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.InsnList;
+import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
@@ -43,6 +44,11 @@ final class CallRewrites1201 {
     private static final String PALLADIUM_PACK_METADATA_FORMAT = "{\"pack\":{\"id\": \"%s\", \"version\": \"%s\", \"description\":\"%s\"}}";
     private static final String PALLADIUM_PACK_METADATA_FORMAT_1211 = "{\"pack\":{\"id\": \"%s\", \"version\": \"%s\", \"description\":\"%s\", \"pack_format\":%d}}";
     private static final String FOLDER_REPOSITORY_SOURCE = "net/minecraft/server/packs/repository/FolderRepositorySource";
+    private static final String ATTRIBUTE_MODIFIER_OPERATION =
+            "net/minecraft/world/entity/ai/attributes/AttributeModifier$Operation";
+    private static final String OPERATION_FROM_VALUE_DESC =
+            "(I)Lnet/minecraft/world/entity/ai/attributes/AttributeModifier$Operation;";
+    private static final String OPERATION_BY_ID_DESC = "Ljava/util/function/IntFunction;";
     private static final String ARMOR_MATERIALS = "net/minecraft/world/item/ArmorMaterials";
     private static final String ARMOR_MATERIALS_DESC = "Lnet/minecraft/world/item/ArmorMaterials;";
     private static final String HOLDER_DESC = "Lnet/minecraft/core/Holder;";
@@ -222,6 +228,30 @@ final class CallRewrites1201 {
                                 n++;
                             }
                         }
+                    } else if (call.getOpcode() == Opcodes.INVOKESTATIC
+                            && call.owner.equals(ATTRIBUTE_MODIFIER_OPERATION)
+                            && call.name.equals("fromValue")
+                            && call.desc.equals(OPERATION_FROM_VALUE_DESC)) {
+                        // 1.20.1 exposed Operation.fromValue(int). In 1.21.1 the
+                        // equivalent ID lookup is the public IntFunction BY_ID field.
+                        // Input stack: [int]. Output stack: [Operation].
+                        InsnList lookup = new InsnList();
+                        lookup.add(new FieldInsnNode(
+                                Opcodes.GETSTATIC,
+                                ATTRIBUTE_MODIFIER_OPERATION,
+                                "BY_ID",
+                                OPERATION_BY_ID_DESC));
+                        lookup.add(new InsnNode(Opcodes.SWAP));
+                        lookup.add(new MethodInsnNode(
+                                Opcodes.INVOKEINTERFACE,
+                                "java/util/function/IntFunction",
+                                "apply",
+                                "(I)Ljava/lang/Object;",
+                                true));
+                        lookup.add(new TypeInsnNode(Opcodes.CHECKCAST, ATTRIBUTE_MODIFIER_OPERATION));
+                        m.instructions.insertBefore(call, lookup);
+                        m.instructions.remove(call);
+                        n++;
                     } else {
                         String[] h = STATICS.get(call.owner + "." + call.name + call.desc);
                         if (h != null && call.getOpcode() != Opcodes.INVOKESTATIC) {
