@@ -19,4 +19,26 @@ public final class Compat1201 {
     public static net.minecraft.world.item.crafting.Ingredient compoundIngredient(java.util.List<net.minecraft.world.item.crafting.Ingredient> children) {
         return net.neoforged.neoforge.common.crafting.CompoundIngredient.of(children.toArray(new net.minecraft.world.item.crafting.Ingredient[0]));
     }
+
+    /**
+     * Palladium 4.5.x's addon-pack folder is a child of the game directory. Minecraft
+     * 1.21.1 requires the repository's symlink validator explicitly; use the same
+     * allowed_symlinks.txt policy as the game's own pack discovery.
+     */
+    public static net.minecraft.server.packs.repository.FolderRepositorySource folderRepositorySource(
+            java.nio.file.Path folder,
+            net.minecraft.server.packs.PackType packType,
+            net.minecraft.server.packs.repository.PackSource packSource) {
+        java.nio.file.Path gameDirectory = folder.getParent();
+        if (gameDirectory == null) {
+            throw new IllegalArgumentException("Palladium addon-pack directory has no game-directory parent: " + folder);
+        }
+        net.minecraft.world.level.validation.DirectoryValidator validator =
+                net.minecraft.world.level.storage.LevelStorageSource.parseValidator(
+                        gameDirectory.resolve("allowed_symlinks.txt"));
+        return new net.minecraft.server.packs.repository.FolderRepositorySource(
+                folder, packType, packSource, validator);
+    }
+
+
 }
