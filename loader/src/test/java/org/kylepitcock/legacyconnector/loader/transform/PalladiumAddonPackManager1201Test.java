@@ -26,6 +26,11 @@ class PalladiumAddonPackManager1201Test implements Opcodes {
                     + "Lnet/minecraft/world/level/validation/DirectoryValidator;)V";
     private static final String HELPER_DESCRIPTOR =
             "()Lnet/minecraft/world/level/validation/DirectoryValidator;";
+    private static final String COMPAT_HELPERS = "legacyconnector/v1_20_1/Compat1201";
+    private static final String COMPAT_FACTORY_DESCRIPTOR =
+            "(Ljava/nio/file/Path;Lnet/minecraft/server/packs/PackType;"
+                    + "Lnet/minecraft/server/packs/repository/PackSource;)"
+                    + "Lnet/minecraft/server/packs/repository/FolderRepositorySource;";
 
     @Test
     void addonPackManagerUsesMinecraftSymlinkValidatorForFolderRepositorySource() {
@@ -41,6 +46,25 @@ class PalladiumAddonPackManager1201Test implements Opcodes {
                 "addonPackDirectoryValidator", HELPER_DESCRIPTOR));
         assertEquals(6, constructor.maxStack, "the validator return value adds one stack slot");
         assertFalse(hasLegacyFolderSourceConstructor(constructor));
+    }
+
+    @Test
+    void recognizesFactoryCallInsertedByGeneralCallRewriter() {
+        ClassNode node = addonPackManagerNodeWithCompatFactory();
+
+        assertEquals(0, PalladiumAddonPackManager1201.apply(node));
+
+        boolean foundFactory = false;
+        for (var instruction : node.methods.get(0).instructions.toArray()) {
+            if (instruction instanceof MethodInsnNode call
+                    && call.getOpcode() == INVOKESTATIC
+                    && COMPAT_HELPERS.equals(call.owner)
+                    && "folderRepositorySource".equals(call.name)
+                    && COMPAT_FACTORY_DESCRIPTOR.equals(call.desc)) {
+                foundFactory = true;
+            }
+        }
+        assertTrue(foundFactory, "the already-inserted shared compatibility factory remains intact");
     }
 
     @Test
@@ -61,6 +85,29 @@ class PalladiumAddonPackManager1201Test implements Opcodes {
         assertFalse(hasCallBefore(node.methods.get(0), findFolderSourceConstructor(node.methods.get(0)),
                 INVOKESTATIC, "legacyconnector/v1_20_1/PalladiumAddonPackCompat",
                 "addonPackDirectoryValidator", HELPER_DESCRIPTOR));
+    }
+
+    private static ClassNode addonPackManagerNodeWithCompatFactory() {
+        ClassNode node = new ClassNode();
+        node.version = V21;
+        node.access = ACC_PUBLIC;
+        node.name = PalladiumAddonPackManager1201.ADDON_PACK_MANAGER;
+        node.superName = "java/lang/Object";
+
+        MethodNode constructor = new MethodNode(ACC_PUBLIC, "<init>", "()V", null, null);
+        constructor.instructions.add(new VarInsnNode(ALOAD, 0));
+        constructor.instructions.add(new MethodInsnNode(INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false));
+        constructor.instructions.add(new InsnNode(ACONST_NULL));
+        constructor.instructions.add(new InsnNode(ACONST_NULL));
+        constructor.instructions.add(new InsnNode(ACONST_NULL));
+        constructor.instructions.add(new MethodInsnNode(
+                INVOKESTATIC, COMPAT_HELPERS, "folderRepositorySource", COMPAT_FACTORY_DESCRIPTOR, false));
+        constructor.instructions.add(new InsnNode(POP));
+        constructor.instructions.add(new InsnNode(RETURN));
+        constructor.maxStack = 3;
+        constructor.maxLocals = 1;
+        node.methods.add(constructor);
+        return node;
     }
 
     private static ClassNode addonPackManagerNode(String constructorDescriptor) {
