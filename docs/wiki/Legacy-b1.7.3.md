@@ -866,6 +866,26 @@ wood/slime totals of 5/7/9/6/4/7, with two durability wear per hit; native unarm
 controls pass. A normal client attack-key hit independently deals nine damage with the diamond machete. The default build
 passes 544 portable tests; mining and every other tool callback are outside this bounded check.
 
+The [generation and painting validation snapshot](../data/b173-generation-painting-validation-2026-11-08.json) reproduces
+an actual More Creeps Castle hang: two sampled neighboring chunks had only reached structure starts and returned entirely
+empty columns, so the original downward ground search never found three supports. Native `FEATURES` prerequisites now
+require completed `CARVERS` terrain throughout the existing eight-chunk read area when Beta generators are registered.
+The Beta world view also rejects cached chunks that have not completed noise generation, while preserving explicit pending
+writes. Native feature tasks, write radius and the loading pyramid retain their original behavior. This increases the
+accumulated full-chunk dependency radius from 11 to 18 in Beta generation packs; a vanilla-only server retains radius 11.
+
+The previously hanging chunk completes through its original native callback. Original Pyramid/Castle generators succeed
+on explicitly controlled terrain, and 90 recorded native block states, chest Items and spawner SpawnData survive real
+save/reopen. Positive unforced natural structure placement remains unverified. These controlled calls are not presented
+as proof of ordinary random site selection.
+
+The shared Beta painting API retains all 25 original motives, facing and wall checks, then uses native painting tracking,
+rendering and persistence. Double-precision bounds prevent thin boxes collapsing at far modern coordinates. Native-region
+tests cover overlap, deferred supports and proto-chunk entity NBT; a visible valid-wall painting retains its UUID, motive,
+facing and support after real reopen. The tested Castle's ten painting requests target air support cells and have no fitting
+motives; those original rejections are preserved. The positive painting fixture is separate from Castle placement.
+The default build passes 548 portable tests without private archives; full-pack startup checks retain all 14 legacy mods.
+
 - **Placing a subtype.** b1.7.3's `ItemBlock` set block and metadata together (`getPlacedBlockMetadata` of the damage), so `onBlockAdded`
   and the tile entity it makes see the subtype; `getStateForPlacement` does the same (before, a Minefactory translocator or crafter
   placed from its item got the tile entity of metadata 0 and opened nothing).
