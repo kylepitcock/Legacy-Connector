@@ -363,6 +363,42 @@ class Mc1201MigrationTest implements Opcodes {
     }
 
     @Test
+    void overrideOfFinalAbstractWidgetRenderMovesToRenderWidget() {
+        String widget = "net/minecraft/client/gui/components/AbstractWidget";
+        String graphics = "net/minecraft/client/gui/GuiGraphics";
+        String desc = "(L" + graphics + ";IIF)V";
+        ClassNode c = cls("test/RotatingIconButton", widget);
+
+        MethodNode render = method(c, ACC_PUBLIC, "render", desc);
+        render.instructions.add(new InsnNode(RETURN));
+        render.maxStack = 0;
+        render.maxLocals = 5;
+
+        // A same-class virtual call must follow the renamed override too.
+        MethodNode invoke = method(c, ACC_PUBLIC, "renderFromCallback", desc);
+        invoke.instructions.add(new VarInsnNode(ALOAD, 0));
+        invoke.instructions.add(new VarInsnNode(ALOAD, 1));
+        invoke.instructions.add(new VarInsnNode(ILOAD, 2));
+        invoke.instructions.add(new VarInsnNode(ILOAD, 3));
+        invoke.instructions.add(new VarInsnNode(FLOAD, 4));
+        invoke.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, c.name, "render", desc, false));
+        invoke.instructions.add(new InsnNode(RETURN));
+        invoke.maxStack = 5;
+        invoke.maxLocals = 5;
+
+        assertEquals(1, apply(c).bridges);
+
+        MethodNode renamed = null;
+        for (MethodNode m : c.methods) {
+            if (m.name.equals("renderWidget") && m.desc.equals(desc)) renamed = m;
+        }
+        assertNotNull(renamed, "the old override must use AbstractWidget's 1.21.1 renderWidget hook");
+        assertNotNull(find(invoke, c.name, "renderWidget"), "calls to the renamed override must follow it");
+        assertNull(find(invoke, c.name, "render"), "the obsolete final render method must not be called");
+        verify(c);
+    }
+
+    @Test
     void migratedClassesStillVerify() {
         ClassNode c = cls("test/MyBE", BE);
         MethodNode load = method(c, ACC_PUBLIC, "load", "(L" + CT + ";)V");

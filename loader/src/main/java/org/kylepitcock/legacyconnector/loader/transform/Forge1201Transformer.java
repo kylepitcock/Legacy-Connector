@@ -274,9 +274,24 @@ public final class Forge1201Transformer {
         }
         Map<ClassNode, Integer> migrated = new java.util.IdentityHashMap<>();
         SoftLink1201 soft = softLinkEnabled() ? new SoftLink1201(nodes, hierarchy) : null;
+        int palladiumKubejsChanges = 0;
+        int palladiumKubejsClassesDropped = 0;
+        int palladiumAddonPackChanges = 0;
         for (ClassNode node : nodes) {
+            if (PalladiumKubeJS1201.dropLegacyKubejsClass(node.name)) {
+                palladiumKubejsClassesDropped++;
+                if (PalladiumKubeJS1201.SCRIPT_FILE_INFO_MIXIN.equals(node.name)) {
+                    mixinStats.dropped.add(node.name + " (KubeJS 7 moved script metadata from ScriptFileInfo to ScriptFile)");
+                    mixinStats.droppedClasses.add(node.name);
+                }
+                continue;
+            }
             stringsMapped += mapSrgStrings(node);
             int viaCalls = CallRewrites1201.apply(node, compoundSubclasses);
+            int palladiumChanges = PalladiumKubeJS1201.apply(node);
+            palladiumKubejsChanges += palladiumChanges;
+            int palladiumAddonPackChange = PalladiumAddonPackManager1201.apply(node);
+            palladiumAddonPackChanges += palladiumAddonPackChange;
             viaCalls += ForgeApiRewrites1201.apply(node);
             viaCalls += AttachGuards1201.apply(node, jarClasses);
             if (ForgeApiRewrites1201.markProviders(node)) viaCalls++;
@@ -284,7 +299,16 @@ public final class Forge1201Transformer {
             Mc1201Migration.Counts changed = Mc1201Migration.apply(node, hierarchy);
             mc.add(changed);
             Mixin1201.apply(node, srg, hierarchy, Mc1201Tables.get(), mixinStats);
-            migrated.put(node, viaCalls + changed.total());
+            migrated.put(node, viaCalls + changed.total() + palladiumChanges + palladiumAddonPackChange);
+        }
+        if (palladiumKubejsChanges > 0 || palladiumKubejsClassesDropped > 0) {
+            result.notes.add("Palladium KubeJS 6 integration adapted for KubeJS 7: "
+                    + palladiumKubejsChanges + " bytecode rewrite(s), "
+                    + palladiumKubejsClassesDropped + " obsolete KubeJS 6 class(es) removed");
+        }
+        if (palladiumAddonPackChanges > 0) {
+            result.notes.add("Palladium addon-pack FolderRepositorySource constructor adapted with Minecraft's symlink validator: "
+                    + palladiumAddonPackChanges + " constructor call(s)");
         }
         if (ownUnit) {
             // an isolated library next to its native build registers the same ids as the native one: its deferred registers are not attached to the bus
@@ -309,6 +333,7 @@ public final class Forge1201Transformer {
         if (ownUnit) for (ClassNode node : nodes) renameInjectorHandlers(node, VER.id().replaceAll("[^a-z0-9]", ""));
         // the soft link runs when every class of the jar has been migrated: references to the mod's own members are judged by their final declarations
         for (ClassNode node : nodes) {
+            if (PalladiumKubeJS1201.dropLegacyKubejsClass(node.name)) continue;
             int softened = soft == null ? 0 : soft.apply(node);
             byte[] bytes;
             if (migrated.get(node) > 0 || softened == 2) {
@@ -344,7 +369,7 @@ public final class Forge1201Transformer {
         if (mc.total() > 0) result.notes.add("Minecraft 1.20.1 to 1.21.1 migration: " + mc);
         if (mixinStats.mixinClasses > 0) result.notes.add("Mixins: " + mixinStats.summary());
         for (String d : mixinStats.dropped) result.notes.add("Mixin dropped, its target no longer exists in Minecraft 1.21.1: " + d);
-        if (rewrites > 0) result.notes.add(rewrites + " call site(s) rewritten for changed 1.21.1 signatures (ResourceLocation factories, event bus post)");
+        if (rewrites > 0) result.notes.add(rewrites + " call site(s) rewritten for changed 1.21.1 signatures (ResourceLocation factories, event bus post, PalladiumCore renderer lookup)");
         if (stringsMapped > 0) result.notes.add(stringsMapped + " reflection string(s) with SRG names now use Mojang names");
 
         Map<String, byte[]> outResources = new LinkedHashMap<>();
@@ -406,6 +431,9 @@ public final class Forge1201Transformer {
             if (ownUnit) dropDanglingProviders(outResources, outClasses.keySet());
             if (ownUnit) result.notes.add("Side-by-side library: mod id(s) " + ownIds + " load as separate unit(s), packages relocated under " + SideBySide.prefix(VER));
             else result.notes.add("Side-by-side: references to isolated libraries " + plan.units().stream().filter(u -> u.version() == VER).map(SideBySide.Unit::modId).toList() + " link to their relocated copies");
+        }
+        if (PalladiumKubeJS1201.addPluginDiscoveryResource(outResources, outClasses.keySet())) {
+            result.notes.add("Palladium KubeJS 7 plugin discovery entry added to kubejs.plugins.txt");
         }
         // the data and resource packs: 1.21 folder names, recipe/loot/advancement/tag/model formats, forge: ids, pack.mcmeta (DataConverter1201)
         DataConverter1201.Stats dataStats = new DataConverter1201.Stats();
