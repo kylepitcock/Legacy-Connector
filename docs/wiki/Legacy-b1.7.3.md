@@ -844,6 +844,19 @@ Advanced More Creeps client gameplay, additional naming screens, advancement-pag
 mixed-pack gameplay, shader packs and separate multiplayer checks remain pending. This checkpoint is bounded validation,
 not full compatibility certification; actual-mod fixtures remain opt-in and the default build needs no private archives.
 
+The subsequent [Prism load-failure checkpoint](../data/b173-prism-load-fixes-2026-11-08.json) fixes shared ScotTools tool
+inheritance and descriptor-specific ModLoader generation override lookup. Original Machetes, MineFactory and PortalGun
+archives each pass isolated loading and native item registration; the copied Prism pack loads all 14 legacy mods without
+construction or lifecycle failures. The default build passes 540 portable tests without private mod archives. Three existing
+PortalGun record IDs (2267–2269) overlap Butterfly jar items in that pack; settings and original versions were preserved.
+These load checks do not establish complete gameplay compatibility.
+
+The legacy client player lookup also retains the current same-level connected actor during the native death screen,
+matching Beta's player lifetime without caching logged-out actors or borrowing players from other dimensions. Actual
+More Creeps Robot Ted callbacks survive native death and 100 subsequent ticks, and native respawn resolves the new player
+object with the same UUID. The distributed jar contains its Pehkui and TerraBlender dependencies; missing Pehkui in the
+development-only test classpath produced separately recorded Witchery callbacks, not a passing Witchery gameplay claim.
+
 - **Placing a subtype.** b1.7.3's `ItemBlock` set block and metadata together (`getPlacedBlockMetadata` of the damage), so `onBlockAdded`
   and the tile entity it makes see the subtype; `getStateForPlacement` does the same (before, a Minefactory translocator or crafter
   placed from its item got the tile entity of metadata 0 and opened nothing).
