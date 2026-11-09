@@ -50,6 +50,14 @@ final class CallRewrites1201 {
             "(IILnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V";
     private static final String AMETHYST_CLUSTER_CONSTRUCTOR_1211 =
             "(FFLnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V";
+    private static final String PALLADIUM_CORE_ENTITY_RENDERER_REGISTRY =
+            "net/threetag/palladiumcore/registry/client/forge/EntityRendererRegistryImpl";
+    private static final String ENTITY_RENDERERS_ADD_LAYERS =
+            "net/neoforged/neoforge/client/event/EntityRenderersEvent$AddLayers";
+    private static final String ADD_LAYERS_GET_RENDERER_1201_DESC =
+            "(Lnet/minecraft/world/entity/EntityType;)Lnet/minecraft/client/renderer/entity/LivingEntityRenderer;";
+    private static final String ADD_LAYERS_GET_RENDERER_1211_DESC =
+            "(Lnet/minecraft/world/entity/EntityType;)Lnet/minecraft/client/renderer/entity/EntityRenderer;";
     private static final String ATTRIBUTE_MODIFIER_OPERATION =
             "net/minecraft/world/entity/ai/attributes/AttributeModifier$Operation";
     private static final String OPERATION_FROM_VALUE_DESC =
@@ -155,6 +163,36 @@ final class CallRewrites1201 {
         return next;
     }
 
+    /**
+     * PalladiumCore 1.0.1 was compiled against the 1.20.1 AddLayers#getRenderer
+     * erasure, which returned LivingEntityRenderer. NeoForge 1.21.1 broadens the
+     * generic method's erased return type to EntityRenderer. The caller already
+     * checks the result with instanceof LivingEntityRenderer before adding a layer,
+     * so changing only the call descriptor preserves that compatibility behavior.
+     */
+    private static int rewritePalladiumCoreRendererLookup(ClassNode node) {
+        if (!PALLADIUM_CORE_ENTITY_RENDERER_REGISTRY.equals(node.name)) return 0;
+
+        int rewritten = 0;
+        for (MethodNode method : node.methods) {
+            if (method.instructions == null) continue;
+            for (AbstractInsnNode instruction = method.instructions.getFirst();
+                    instruction != null;
+                    instruction = instruction.getNext()) {
+                if (!(instruction instanceof MethodInsnNode call)
+                        || call.getOpcode() != Opcodes.INVOKEVIRTUAL
+                        || !ENTITY_RENDERERS_ADD_LAYERS.equals(call.owner)
+                        || !"getRenderer".equals(call.name)
+                        || !ADD_LAYERS_GET_RENDERER_1201_DESC.equals(call.desc)) {
+                    continue;
+                }
+                call.desc = ADD_LAYERS_GET_RENDERER_1211_DESC;
+                rewritten++;
+            }
+        }
+        return rewritten;
+    }
+
     static int apply(ClassNode node) {
         return apply(node, java.util.Set.of());
     }
@@ -211,7 +249,9 @@ final class CallRewrites1201 {
     }
 
     static int apply(ClassNode node, java.util.Set<String> compoundSubclasses) {
-        int n = rewritePalladiumPackMetadata(node) + rewriteAmethystClusterConstructors(node);
+        int n = rewritePalladiumPackMetadata(node)
+                + rewriteAmethystClusterConstructors(node)
+                + rewritePalladiumCoreRendererLookup(node);
         for (MethodNode m : node.methods) {
             if (m.instructions == null || m.instructions.size() == 0) continue;
             Deque<TypeInsnNode> news = new ArrayDeque<>();
