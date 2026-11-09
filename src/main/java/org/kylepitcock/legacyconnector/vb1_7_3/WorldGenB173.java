@@ -47,8 +47,22 @@ public final class WorldGenB173 {
     }
 
     static boolean overrides(Class<? extends BaseMod> type,boolean nether){
-        try{return type.getMethod(nether?"GenerateNether":"GenerateSurface",World.class,Random.class,int.class,int.class).getDeclaringClass()!=BaseMod.class;}
-        catch(NoSuchMethodException error){throw new IllegalStateException("Missing Beta BaseMod generation API",error);}
+        // Class.getMethod enumerates a class's public methods and resolves unrelated
+        // signature types (including optional multiplayer APIs). Resolve only this
+        // runtime method descriptor; class resources may still contain pre-remap bytes.
+        var lookup=java.lang.invoke.MethodHandles.lookup();
+        try{
+            String name=nether?"GenerateNether":"GenerateSurface";
+            var signature=java.lang.invoke.MethodType.methodType(void.class,World.class,Random.class,int.class,int.class);
+            java.lang.invoke.MethodHandle callback;
+            try{callback=lookup.findVirtual(type,name,signature);}
+            catch(IllegalAccessException inaccessible){
+                // A mod entry class can be package-private even though the API method is public.
+                lookup=java.lang.invoke.MethodHandles.privateLookupIn(type,lookup);
+                callback=lookup.findVirtual(type,name,signature);
+            }
+            return lookup.revealDirect(callback).getDeclaringClass()!=BaseMod.class;
+        }catch(NoSuchMethodException|IllegalAccessException error){throw new IllegalStateException("Cannot resolve Beta BaseMod generation API on "+type.getName(),error);}
     }
 
     private static synchronized List<Entry> entries(){return List.copyOf(ENTRIES);}

@@ -52,4 +52,37 @@ class WorldGenB173Test {
         var mod=new Defaults(){@Override public void GenerateSurface(World world,Random random,int x,int z){throw expected;}};
         assertSame(expected,assertThrows(IllegalStateException.class,()->WorldGenB173.dispatch(mod,0,null,new Random(),0,0)));
     }
+    /** Runtime methods remain callable even if an optional, unrelated signature cannot link. */
+    private static final class OptionalSignatureLoader extends ClassLoader {
+        OptionalSignatureLoader(){super(WorldGenB173Test.class.getClassLoader());}
+        @Override public java.io.InputStream getResourceAsStream(String name){return name.startsWith("fixture/worldgen/")?null:super.getResourceAsStream(name);}
+        Class<? extends BaseMod> make(String simple,Class<? extends BaseMod> parent,boolean surface,boolean nether){
+            return make(simple,parent,surface,nether,true);
+        }
+        Class<? extends BaseMod> make(String simple,Class<? extends BaseMod> parent,boolean surface,boolean nether,boolean publicClass){
+            String name="fixture/worldgen/"+simple,superName=org.objectweb.asm.Type.getInternalName(parent);
+            var writer=new org.objectweb.asm.ClassWriter(0);int pub=org.objectweb.asm.Opcodes.ACC_PUBLIC;
+            writer.visit(org.objectweb.asm.Opcodes.V1_6,publicClass?pub:0,name,null,superName,null);
+            var init=writer.visitMethod(pub,"<init>","()V",null,null);init.visitCode();init.visitVarInsn(org.objectweb.asm.Opcodes.ALOAD,0);init.visitMethodInsn(org.objectweb.asm.Opcodes.INVOKESPECIAL,superName,"<init>","()V",false);init.visitInsn(org.objectweb.asm.Opcodes.RETURN);init.visitMaxs(1,1);init.visitEnd();
+            var version=writer.visitMethod(pub,"Version","()Ljava/lang/String;",null,null);version.visitCode();version.visitLdcInsn("optional-signature fixture");version.visitInsn(org.objectweb.asm.Opcodes.ARETURN);version.visitMaxs(1,1);version.visitEnd();
+            var unrelated=writer.visitMethod(pub,"optionalMultiplayerCommand","(Lfixture/worldgen/AbsentCommandOutput;)V",null,null);unrelated.visitCode();unrelated.visitInsn(org.objectweb.asm.Opcodes.RETURN);unrelated.visitMaxs(0,2);unrelated.visitEnd();
+            writer.visitField(pub|org.objectweb.asm.Opcodes.ACC_STATIC,"calls","I",null,null).visitEnd();
+            String descriptor=org.objectweb.asm.Type.getMethodDescriptor(org.objectweb.asm.Type.VOID_TYPE,org.objectweb.asm.Type.getType(World.class),org.objectweb.asm.Type.getType(Random.class),org.objectweb.asm.Type.INT_TYPE,org.objectweb.asm.Type.INT_TYPE);
+            for(String callback:new String[]{"GenerateSurface","GenerateNether"})if(callback.equals("GenerateSurface")?surface:nether){
+                var method=writer.visitMethod(pub,callback,descriptor,null,null);method.visitCode();method.visitFieldInsn(org.objectweb.asm.Opcodes.GETSTATIC,name,"calls","I");method.visitInsn(org.objectweb.asm.Opcodes.ICONST_1);method.visitInsn(org.objectweb.asm.Opcodes.IADD);method.visitFieldInsn(org.objectweb.asm.Opcodes.PUTSTATIC,name,"calls","I");method.visitInsn(org.objectweb.asm.Opcodes.RETURN);method.visitMaxs(2,5);method.visitEnd();
+            }
+            writer.visitEnd();byte[] bytes=writer.toByteArray();return defineClass(name.replace('/','.'),bytes,0,bytes.length).asSubclass(BaseMod.class);
+        }
+    }
+    @Test void missingUnrelatedMethodTypeCannotBlockRelevantRuntimeOverrides()throws Exception {
+        var loader=new OptionalSignatureLoader();var both=loader.make("Both",BaseMod.class,true,true);
+        assertThrows(NoClassDefFoundError.class,()->both.getMethod("GenerateSurface",World.class,Random.class,int.class,int.class),"old reflective enumeration reproduces optional-type linkage failure");
+        assertNull(both.getResourceAsStream("Both.class"),"detection must not depend on remapped class resources");
+        assertTrue(WorldGenB173.overrides(both,false));assertTrue(WorldGenB173.overrides(both,true));
+        BaseMod mod=both.getConstructor().newInstance();WorldGenB173.dispatch(mod,0,null,new Random(),0,0);WorldGenB173.dispatch(mod,-1,null,new Random(),0,0);assertEquals(2,both.getField("calls").getInt(null));
+        var inherited=loader.make("Inherited",both,false,false);assertTrue(WorldGenB173.overrides(inherited,false));assertTrue(WorldGenB173.overrides(inherited,true));
+        WorldGenB173.dispatch(inherited.getConstructor().newInstance(),0,null,new Random(),0,0);assertEquals(3,both.getField("calls").getInt(null));
+        var defaults=loader.make("Defaults",BaseMod.class,false,false);assertFalse(WorldGenB173.overrides(defaults,false));assertFalse(WorldGenB173.overrides(defaults,true));
+        var hidden=loader.make("PackagePrivate",BaseMod.class,true,false,false);assertTrue(WorldGenB173.overrides(hidden,false));assertFalse(WorldGenB173.overrides(hidden,true));
+    }
 }
