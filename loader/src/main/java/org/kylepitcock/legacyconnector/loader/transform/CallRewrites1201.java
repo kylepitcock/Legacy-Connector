@@ -40,8 +40,8 @@ final class CallRewrites1201 {
 
     private static final String PALLADIUM_ADDON_PACK_MANAGER = "net/threetag/palladium/addonpack/AddonPackManager";
     private static final String PALLADIUM_MOD_RESOURCE_PACK = "net/threetag/palladium/addonpack/forge/AddonPackManagerImpl$ModResourcePack";
-    private static final String PALLADIUM_PACK_METADATA_FORMAT = "{\\"pack\\":{\\"id\\": \\"%s\\", \\"version\\": \\"%s\\", \\"description\\":\\"%s\\"}}";
-    private static final String PALLADIUM_PACK_METADATA_FORMAT_1211 = "{\\"pack\\":{\\"id\\": \\"%s\\", \\"version\\": \\"%s\\", \\"description\\":\\"%s\\", \\"pack_format\\":%d}}";
+    private static final String PALLADIUM_PACK_METADATA_FORMAT = "{\"pack\":{\"id\": \"%s\", \"version\": \"%s\", \"description\":\"%s\"}}";
+    private static final String PALLADIUM_PACK_METADATA_FORMAT_1211 = "{\"pack\":{\"id\": \"%s\", \"version\": \"%s\", \"description\":\"%s\", \"pack_format\":%d}}";
     private static final String FOLDER_REPOSITORY_SOURCE = "net/minecraft/server/packs/repository/FolderRepositorySource";
     private static final String ARMOR_MATERIALS = "net/minecraft/world/item/ArmorMaterials";
     private static final String ARMOR_MATERIALS_DESC = "Lnet/minecraft/world/item/ArmorMaterials;";

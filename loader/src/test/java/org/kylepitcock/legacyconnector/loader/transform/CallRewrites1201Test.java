@@ -170,7 +170,7 @@ class CallRewrites1201Test {
         MethodNode method = new MethodNode(Opcodes.ACC_PUBLIC, "getRootResource",
                 "([Ljava/lang/String;)Lnet/minecraft/server/packs/resources/IoSupplier;", null, null);
         method.instructions.add(new org.objectweb.asm.tree.LdcInsnNode(
-                "{\\"pack\\":{\\"id\\": \\"%s\\", \\"version\\": \\"%s\\", \\"description\\":\\"%s\\"}}"));
+                "{\"pack\":{\"id\": \"%s\", \"version\": \"%s\", \"description\":\"%s\"}}"));
         method.instructions.add(new InsnNode(Opcodes.ICONST_3));
         method.instructions.add(new TypeInsnNode(Opcodes.ANEWARRAY, "java/lang/Object"));
         for (int i = 0; i < 3; i++) {
@@ -193,7 +193,7 @@ class CallRewrites1201Test {
         MethodInsnNode packFormat = null;
         for (AbstractInsnNode instruction : method.instructions.toArray()) {
             if (instruction instanceof LdcInsnNode ldc && ldc.cst instanceof String value
-                    && value.contains("\\"pack_format\\":%d")) format = ldc;
+                    && value.contains("\"pack_format\":%d")) format = ldc;
             if (instruction instanceof InsnNode insn && insn.getOpcode() == Opcodes.ICONST_4) newArraySize = insn;
             if (instruction.getOpcode() == Opcodes.AASTORE) arrayStores++;
             if (instruction instanceof MethodInsnNode call && call.name.equals("getPackType")) packType = call;
@@ -203,7 +203,7 @@ class CallRewrites1201Test {
         assertTrue(newArraySize != null, "formatter argument array must grow to four entries");
         assertEquals(4, arrayStores);
         assertTrue(packType != null);
-        assertEquals(PALLADIUM_ADDON_PACK_MANAGER, packType.owner);
+        assertEquals("net/threetag/palladium/addonpack/AddonPackManager", packType.owner);
         assertTrue(packFormat != null);
         assertEquals(CallRewrites1201.HELPERS, packFormat.owner);
         assertEquals("(Lnet/minecraft/server/packs/PackType;)I", packFormat.desc);
@@ -214,7 +214,7 @@ class CallRewrites1201Test {
         MethodNode method = new MethodNode(Opcodes.ACC_PUBLIC, "getRootResource",
                 "([Ljava/lang/String;)Lnet/minecraft/server/packs/resources/IoSupplier;", null, null);
         method.instructions.add(new org.objectweb.asm.tree.LdcInsnNode(
-                "{\\"pack\\":{\\"id\\": \\"%s\\", \\"version\\": \\"%s\\", \\"description\\":\\"%s\\"}}"));
+                "{\"pack\":{\"id\": \"%s\", \"version\": \"%s\", \"description\":\"%s\"}}"));
         method.instructions.add(new InsnNode(Opcodes.ICONST_3));
         method.instructions.add(new TypeInsnNode(Opcodes.ANEWARRAY, "java/lang/Object"));
         method.instructions.add(new InsnNode(Opcodes.ARETURN));
