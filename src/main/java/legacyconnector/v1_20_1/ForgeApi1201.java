@@ -716,8 +716,7 @@ public final class ForgeApi1201 {
             if (contents instanceof net.neoforged.fml.jarcontents.FolderJarContents) {
                 source = contents.getPrimaryPath();
             } else if (contents instanceof net.neoforged.fml.jarcontents.JarFileContents) {
-                var fileSystem = java.nio.file.FileSystems.newFileSystem(
-                        contents.getPrimaryPath(), java.util.Map.of("readonly", "true"));
+                var fileSystem = java.nio.file.FileSystems.newFileSystem(contents.getPrimaryPath(), java.util.Map.of());
                 source = legacyconnector.v1_20_1.net.minecraftforge.resource.PathPackResources.ownFileSystem(fileSystem);
             } else {
                 source = legacyconnector.v1_20_1.net.minecraftforge.resource.PathPackResources

@@ -26,6 +26,14 @@ public class PathPackResources extends net.minecraft.server.packs.PathPackResour
     private static final Set<FileSystem> OWNED_FILE_SYSTEMS = ConcurrentHashMap.newKeySet();
     private static final Set<Path> OWNED_TEMPORARY_ROOTS = ConcurrentHashMap.newKeySet();
 
+    static {
+        // Some legacy callers construct a resource object and then skip it (Palladium skips
+        // the vanilla "minecraft" pack before a Pack owns the resources). Release anything
+        // that did not receive close() when the game process exits.
+        Runtime.getRuntime().addShutdownHook(new Thread(
+                PathPackResources::cleanupOwnedResources, "LegacyConnector resource-pack cleanup"));
+    }
+
     private final Path source;
 
     public PathPackResources(String packId, Path source) {
@@ -70,9 +78,30 @@ public class PathPackResources extends net.minecraft.server.packs.PathPackResour
 
     @Override
     public void close() {
-        FileSystem fileSystem = source.getFileSystem();
         super.close();
+        releaseOwnedSource(source);
+    }
 
+    private static void cleanupOwnedResources() {
+        for (FileSystem fileSystem : OWNED_FILE_SYSTEMS.toArray(FileSystem[]::new)) {
+            if (OWNED_FILE_SYSTEMS.remove(fileSystem) && fileSystem.isOpen()) {
+                try {
+                    fileSystem.close();
+                } catch (IOException e) {
+                    org.slf4j.LoggerFactory.getLogger("LegacyConnector/ResourcePacks")
+                            .warn("Failed to close a legacy mod resource-pack file system during shutdown", e);
+                }
+            }
+        }
+        for (Path root : OWNED_TEMPORARY_ROOTS.toArray(Path[]::new)) {
+            if (OWNED_TEMPORARY_ROOTS.remove(root)) {
+                deleteTemporaryRoot(root);
+            }
+        }
+    }
+
+    private static void releaseOwnedSource(Path source) {
+        FileSystem fileSystem = source.getFileSystem();
         if (OWNED_FILE_SYSTEMS.remove(fileSystem) && fileSystem.isOpen()) {
             try {
                 fileSystem.close();
