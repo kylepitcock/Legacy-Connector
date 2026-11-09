@@ -689,4 +689,92 @@ public final class ForgeApi1201 {
             throw new IllegalStateException("Could not hand a config to " + spec, e);
         }
     }
+
+    // ---- Forge 1.20.1 ResourcePackLoader -------------------------------------------------------------------------------
+
+    /**
+     * Forge 1.20.1 returned a concrete PathPackResources from
+     * ResourcePackLoader.createPackForMod(IModFileInfo). NeoForge 1.21.1 returns a
+     * Pack.ResourcesSupplier instead. Palladium 4.5.10 consumes the concrete legacy type:
+     * it reads its pack ID/source and passes it to its own ModResourcePack subclass.
+     *
+     * <p>Folder mods can use their real root directly. A normal mod JAR is exposed through a
+     * read-only ZIP file system. Composite/in-memory JarContents are materialized to a small
+     * temporary tree containing only resource-pack paths (assets, data, overlays and root
+     * metadata), preserving the precedence and filtering implemented by JarContents.
+     */
+    public static legacyconnector.v1_20_1.net.minecraftforge.resource.PathPackResources createPackForMod(
+            net.neoforged.neoforgespi.language.IModFileInfo modFileInfo) {
+        java.util.Objects.requireNonNull(modFileInfo, "modFileInfo");
+        var modFile = java.util.Objects.requireNonNull(modFileInfo.getFile(), "modFileInfo.file");
+        var contents = java.util.Objects.requireNonNull(modFile.getContents(), "modFile.contents");
+        var mods = java.util.Objects.requireNonNull(modFileInfo.getMods(), "modFileInfo.mods");
+        String packId = mods.isEmpty() ? modFile.getFileName() : mods.get(0).getModId();
+
+        java.nio.file.Path source;
+        try {
+            if (contents instanceof net.neoforged.fml.jarcontents.FolderJarContents) {
+                source = contents.getPrimaryPath();
+            } else if (contents instanceof net.neoforged.fml.jarcontents.JarFileContents) {
+                var fileSystem = java.nio.file.FileSystems.newFileSystem(
+                        contents.getPrimaryPath(), java.util.Map.of("readonly", "true"));
+                source = legacyconnector.v1_20_1.net.minecraftforge.resource.PathPackResources.ownFileSystem(fileSystem);
+            } else {
+                source = legacyconnector.v1_20_1.net.minecraftforge.resource.PathPackResources
+                        .ownTemporaryRoot(materializeResourcePackContents(contents));
+            }
+        } catch (java.io.IOException e) {
+            throw new java.io.UncheckedIOException(
+                    "Could not expose the resource-pack contents of mod file " + modFile.getFileName(), e);
+        }
+
+        return new legacyconnector.v1_20_1.net.minecraftforge.resource.PathPackResources(packId, true, source);
+    }
+
+    private static java.nio.file.Path materializeResourcePackContents(net.neoforged.fml.jarcontents.JarContents contents)
+            throws java.io.IOException {
+        java.nio.file.Path root = java.nio.file.Files.createTempDirectory("legacyconnector-mod-pack-");
+        try {
+            contents.visitContent((relativeName, resource) -> {
+                String name = relativeName.replace('\\', '/');
+                if (!(name.equals("pack.mcmeta") || name.equals("pack.png")
+                        || name.startsWith("assets/") || name.startsWith("data/") || name.startsWith("overlays/"))) {
+                    return;
+                }
+
+                java.nio.file.Path relative = java.nio.file.Path.of(name);
+                if (relative.isAbsolute()) {
+                    throw new IllegalArgumentException("Absolute resource-pack entry in mod contents: " + relativeName);
+                }
+                java.nio.file.Path target = root.resolve(relative).normalize();
+                if (!target.startsWith(root)) {
+                    throw new IllegalArgumentException("Resource-pack entry escapes its mod root: " + relativeName);
+                }
+
+                try {
+                    java.nio.file.Files.createDirectories(target.getParent());
+                    try (java.io.InputStream input = resource.open()) {
+                        java.nio.file.Files.copy(input, target, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                    }
+                } catch (java.io.IOException e) {
+                    throw new java.io.UncheckedIOException("Could not copy mod resource " + relativeName, e);
+                }
+            });
+            return root;
+        } catch (RuntimeException | Error e) {
+            deleteTemporaryResourcePackRoot(root);
+            throw e;
+        }
+    }
+
+    private static void deleteTemporaryResourcePackRoot(java.nio.file.Path root) {
+        try (var paths = java.nio.file.Files.walk(root)) {
+            for (java.nio.file.Path path : paths.sorted(java.util.Comparator.reverseOrder()).toList()) {
+                java.nio.file.Files.deleteIfExists(path);
+            }
+        } catch (java.io.IOException ignored) {
+            // Preserve the original materialization failure; the pack resource logs cleanup failures on normal close.
+        }
+    }
+
 }

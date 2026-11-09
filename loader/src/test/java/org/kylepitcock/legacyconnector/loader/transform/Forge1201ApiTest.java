@@ -203,4 +203,20 @@ class Forge1201ApiTest {
             }
         }
     }
+
+    @Test
+    void forgeModResourcePackFactoryCallUsesTheConcreteLegacyFacade() {
+        String descriptor = "(Lnet/neoforged/neoforgespi/language/IModFileInfo;)"
+                + "Llegacyconnector/v1_20_1/net/minecraftforge/resource/PathPackResources;";
+        ClassNode node = with(new MethodInsnNode(Opcodes.INVOKESTATIC,
+                "net/neoforged/neoforge/resource/ResourcePackLoader", "createPackForMod", descriptor, false));
+
+        assertEquals(1, ForgeApiRewrites1201.apply(node));
+        MethodInsnNode rewritten = firstCall(node);
+        assertEquals(Opcodes.INVOKESTATIC, rewritten.getOpcode());
+        assertEquals("legacyconnector/v1_20_1/ForgeApi1201", rewritten.owner);
+        assertEquals("createPackForMod", rewritten.name);
+        assertEquals(descriptor, rewritten.desc);
+    }
+
 }
