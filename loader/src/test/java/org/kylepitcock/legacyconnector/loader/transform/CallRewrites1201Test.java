@@ -16,6 +16,7 @@ import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TypeInsnNode;
+import org.objectweb.asm.tree.VarInsnNode;
 
 /** Regression tests for Minecraft 1.20.1 -> 1.21.1 call-site and field-shape migrations. */
 class CallRewrites1201Test {
@@ -86,6 +87,49 @@ class CallRewrites1201Test {
         }
         assertEquals(Opcodes.RETURN, instruction.getOpcode());
         assertEquals(null, instruction.getNext());
+    }
+
+    @Test
+    void attributeModifierOperationFromValueUsesTargetByIdLookup() {
+        String operation = "net/minecraft/world/entity/ai/attributes/AttributeModifier$Operation";
+        String fromValueDescriptor = "(I)Lnet/minecraft/world/entity/ai/attributes/AttributeModifier$Operation;";
+        MethodNode method = new MethodNode(
+                Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "readOperation", "()V", null, null);
+        method.instructions.add(new InsnNode(Opcodes.ICONST_1));
+        MethodInsnNode oldLookup = new MethodInsnNode(
+                Opcodes.INVOKESTATIC, operation, "fromValue", fromValueDescriptor, false);
+        method.instructions.add(oldLookup);
+        method.instructions.add(new InsnNode(Opcodes.POP));
+        method.instructions.add(new InsnNode(Opcodes.RETURN));
+        ClassNode node = node("example/AttributeOperationRead", method);
+
+        assertEquals(1, CallRewrites1201.apply(node));
+
+        AbstractInsnNode[] instructions = method.instructions.toArray();
+        assertEquals(Opcodes.ICONST_1, instructions[0].getOpcode());
+        assertTrue(instructions[1] instanceof FieldInsnNode);
+        FieldInsnNode byId = (FieldInsnNode) instructions[1];
+        assertEquals(Opcodes.GETSTATIC, byId.getOpcode());
+        assertEquals(operation, byId.owner);
+        assertEquals("BY_ID", byId.name);
+        assertEquals("Ljava/util/function/IntFunction;", byId.desc);
+
+        assertEquals(Opcodes.SWAP, instructions[2].getOpcode());
+        assertTrue(instructions[3] instanceof MethodInsnNode);
+        MethodInsnNode apply = (MethodInsnNode) instructions[3];
+        assertEquals(Opcodes.INVOKEINTERFACE, apply.getOpcode());
+        assertEquals("java/util/function/IntFunction", apply.owner);
+        assertEquals("apply", apply.name);
+        assertEquals("(I)Ljava/lang/Object;", apply.desc);
+        assertTrue(apply.itf);
+
+        assertTrue(instructions[4] instanceof TypeInsnNode);
+        TypeInsnNode cast = (TypeInsnNode) instructions[4];
+        assertEquals(Opcodes.CHECKCAST, cast.getOpcode());
+        assertEquals(operation, cast.desc);
+        assertEquals(Opcodes.POP, instructions[5].getOpcode());
+        assertEquals(Opcodes.RETURN, instructions[6].getOpcode());
+        assertFalse(method.instructions.contains(oldLookup));
     }
 
     @Test
