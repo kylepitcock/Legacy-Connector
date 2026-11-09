@@ -29,7 +29,6 @@ public final class ClientB173 implements MenusB173.Client {
         AnimatedTexturesB173.register(modBus);
         BlockColorsB173.register(modBus);
         ModTicksClientB173.install();
-        BetaGameplaySettingsClientB173.install();
         MobClientB173.register(modBus);
         modBus.addListener((net.neoforged.neoforge.client.event.EntityRenderersEvent.RegisterRenderers e) ->
                 e.registerEntityRenderer(org.kylepitcock.legacyconnector.LegacyConnector.BETA_VANILLA_ARROW.get(), context ->

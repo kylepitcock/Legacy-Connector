@@ -1,0 +1,441 @@
+{
+  "status": "passed",
+  "snapshot_date": "2026-11-09",
+  "scope": "Revert only the experimental Beta food hunger conversion, food setting and settings exchange; preserve dedicated hook, Goo recovery, fall-boot and HUD fixes.",
+  "branch": "legacy-b1.7.3",
+  "tested_base_revision": "be96ee1d406b01059dc1c8b27b72dde9d9fab162",
+  "upstream_default_branch": "master",
+  "upstream_revision": "65527d87fffce333285d67b34674fdb68675eb8e",
+  "version": "0.4.13",
+  "neoforge": "21.1.258",
+  "artifact": {
+    "path": "build/dist/legacyconnector-0.4.13.jar",
+    "sha256": "eca679f744b4887ac87eaf57f4d7253f860495a5e7fcb30d19e312dbd663495d"
+  },
+  "original_mod": {
+    "version": "PlasticCraft 2.1.3",
+    "sha256": "2e361f5398e27c5821f132ff1bf3d7ab71564e58df13051dde86c215c534c55b",
+    "options_sha256": "5957d4e682663a79c29b14b87b6670f624c98adc22620804572f5635f954e569",
+    "modified": false
+  },
+  "generic_changes": [
+    "Hosted Beta foods again execute their original immediate-use callbacks, retaining health healing, original consumption and remainders.",
+    "Remove hunger-conversion food components, scoped healing suppression, eating overrides, configuration row/key and optional food-settings protocol.",
+    "Retain the dedicated game-hook handshake, actor-scoped dispatch, Goo recovery, fall-boot and remote HUD fixes.",
+    "Merge upstream master; rename one duplicated local variable in an upstream test so the clean build compiles."
+  ],
+  "source_sha256": {
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/entity/player/PlayerEntity.java": "8026b53b9f8682c45bbb1aceeb4d7dec08396ddb274771f32aa62ab305adba28",
+    "src/main/java/org/kylepitcock/legacyconnector/client/LegacyConnectorConfigScreen.java": "8b49a8e11fcfb89dfc9b370e65c41b1a07d1205aacb76a871098c4ec61515027",
+    "src/main/java/org/kylepitcock/legacyconnector/core/LegacyConfig.java": "79f4268849b9e88067cdcd927f472ffc5c10f15c3ef4c987a5d9784d5df0d545",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/BridgeB173.java": "3c89b4147e6cefab9218f86e83fdd25477fb324a27836c336fa6d4646c432896",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/ItemCallbacksB173.java": "d703c2598f299c0b476b3a8bbe6bb897bc0b209c868aaf4af9a740f45d010c57",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/LegacyB173Item.java": "037f0e349ee452861da311b30dbee4a185172830a8a910e3096b34bec82432bd",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/client/ClientB173.java": "fa1dd276256941b26698bae37711901040aba458e80e06b0d67e65aa21b4b5f9",
+    "src/main/java/org/kylepitcock/legacyconnector/LegacyConnector.java": "20fb15085a3a83747356727dd7ddbf9f2574d53755ffcfb3961d522eb726105d",
+    "loader/src/test/java/org/kylepitcock/legacyconnector/loader/transform/PalladiumKubeJS1201Test.java": "dfabf3721f2d360e37d09360aa15eab9aca1b89ef75405da608dcd856f68112c"
+  },
+  "removed_production_files": [
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/BetaGameplayConfigB173.java",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/BetaGameplaySettingsNetworkB173.java",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/FoodUseB173.java",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/client/BetaGameplaySettingsClientB173.java"
+  ],
+  "pre_change_source_proof": {
+    "revision": "4616993a",
+    "files": [
+      "src/main/java/legacyconnector/vb1_7_3/net/minecraft/entity/player/PlayerEntity.java",
+      "src/main/java/org/kylepitcock/legacyconnector/client/LegacyConnectorConfigScreen.java",
+      "src/main/java/org/kylepitcock/legacyconnector/core/LegacyConfig.java",
+      "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/BridgeB173.java",
+      "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/ItemCallbacksB173.java",
+      "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/LegacyB173Item.java",
+      "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/client/ClientB173.java"
+    ],
+    "all_equal_after_line_ending_normalization": true
+  },
+  "distribution_classes_equal_tested_compiled_classes": true,
+  "distribution_classes_compared": 6749,
+  "default_build": {
+    "command": "gradlew.bat build --console=plain",
+    "preceded_by_clean": true,
+    "private_mods_required": false,
+    "status": "passed"
+  },
+  "portable_tests": {
+    "runtime": {
+      "tests": 361,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "loader": {
+      "tests": 296,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "generic_guard": {
+    "status": "passed",
+    "source_files": 303
+  },
+  "actual_native_checks": {
+    "status": "passed",
+    "scope": "Original PlasticCraft 2.1.3 foods through native dedicated-server item use with one FakePlayer; no real client socket",
+    "checks": [
+      {
+        "name": "itemWATERBOTTLE no converted food component",
+        "actual": true,
+        "expected": true,
+        "passed": true
+      },
+      {
+        "name": "itemWATERBOTTLE immediate use duration",
+        "actual": 0,
+        "expected": 0,
+        "passed": true
+      },
+      {
+        "name": "itemWATERBOTTLE no eating animation",
+        "actual": "NONE",
+        "expected": "NONE",
+        "passed": true
+      },
+      {
+        "name": "itemWATERBOTTLE original healing",
+        "actual": 5,
+        "expected": 5,
+        "passed": true
+      },
+      {
+        "name": "itemWATERBOTTLE unchanged hunger",
+        "actual": 4,
+        "expected": 4,
+        "passed": true
+      },
+      {
+        "name": "itemWATERBOTTLE unchanged saturation",
+        "actual": 0,
+        "expected": 0,
+        "passed": true
+      },
+      {
+        "name": "itemWATERBOTTLE original remainder",
+        "actual": "b173_plasticcraft:p_empty_bottle",
+        "expected": "b173_plasticcraft:p_empty_bottle",
+        "passed": true
+      },
+      {
+        "name": "itemWATERBOTTLE remainder count",
+        "actual": 1,
+        "expected": 1,
+        "passed": true
+      },
+      {
+        "name": "itemWATERBOTTLE no active eating action",
+        "actual": false,
+        "expected": false,
+        "passed": true
+      },
+      {
+        "name": "itemMILKBOTTLE no converted food component",
+        "actual": true,
+        "expected": true,
+        "passed": true
+      },
+      {
+        "name": "itemMILKBOTTLE immediate use duration",
+        "actual": 0,
+        "expected": 0,
+        "passed": true
+      },
+      {
+        "name": "itemMILKBOTTLE no eating animation",
+        "actual": "NONE",
+        "expected": "NONE",
+        "passed": true
+      },
+      {
+        "name": "itemMILKBOTTLE original healing",
+        "actual": 10,
+        "expected": 10,
+        "passed": true
+      },
+      {
+        "name": "itemMILKBOTTLE unchanged hunger",
+        "actual": 4,
+        "expected": 4,
+        "passed": true
+      },
+      {
+        "name": "itemMILKBOTTLE unchanged saturation",
+        "actual": 0,
+        "expected": 0,
+        "passed": true
+      },
+      {
+        "name": "itemMILKBOTTLE original remainder",
+        "actual": "b173_plasticcraft:p_empty_bottle",
+        "expected": "b173_plasticcraft:p_empty_bottle",
+        "passed": true
+      },
+      {
+        "name": "itemMILKBOTTLE remainder count",
+        "actual": 1,
+        "expected": 1,
+        "passed": true
+      },
+      {
+        "name": "itemMILKBOTTLE no active eating action",
+        "actual": false,
+        "expected": false,
+        "passed": true
+      },
+      {
+        "name": "itemNEEDLERED no converted food component",
+        "actual": true,
+        "expected": true,
+        "passed": true
+      },
+      {
+        "name": "itemNEEDLERED immediate use duration",
+        "actual": 0,
+        "expected": 0,
+        "passed": true
+      },
+      {
+        "name": "itemNEEDLERED no eating animation",
+        "actual": "NONE",
+        "expected": "NONE",
+        "passed": true
+      },
+      {
+        "name": "itemNEEDLERED original healing",
+        "actual": 20,
+        "expected": 20,
+        "passed": true
+      },
+      {
+        "name": "itemNEEDLERED unchanged hunger",
+        "actual": 4,
+        "expected": 4,
+        "passed": true
+      },
+      {
+        "name": "itemNEEDLERED unchanged saturation",
+        "actual": 0,
+        "expected": 0,
+        "passed": true
+      },
+      {
+        "name": "itemNEEDLERED original remainder",
+        "actual": "b173_plasticcraft:p_needle",
+        "expected": "b173_plasticcraft:p_needle",
+        "passed": true
+      },
+      {
+        "name": "itemNEEDLERED remainder count",
+        "actual": 1,
+        "expected": 1,
+        "passed": true
+      },
+      {
+        "name": "itemNEEDLERED no active eating action",
+        "actual": false,
+        "expected": false,
+        "passed": true
+      },
+      {
+        "name": "itemJELLO no converted food component",
+        "actual": true,
+        "expected": true,
+        "passed": true
+      },
+      {
+        "name": "itemJELLO immediate use duration",
+        "actual": 0,
+        "expected": 0,
+        "passed": true
+      },
+      {
+        "name": "itemJELLO no eating animation",
+        "actual": "NONE",
+        "expected": "NONE",
+        "passed": true
+      },
+      {
+        "name": "itemJELLO original healing",
+        "actual": 6,
+        "expected": 6,
+        "passed": true
+      },
+      {
+        "name": "itemJELLO unchanged hunger",
+        "actual": 4,
+        "expected": 4,
+        "passed": true
+      },
+      {
+        "name": "itemJELLO unchanged saturation",
+        "actual": 0,
+        "expected": 0,
+        "passed": true
+      },
+      {
+        "name": "itemJELLO original remainder",
+        "actual": "b173_plasticcraft:q_jello",
+        "expected": "b173_plasticcraft:q_jello",
+        "passed": true
+      },
+      {
+        "name": "itemJELLO remainder count",
+        "actual": 1,
+        "expected": 1,
+        "passed": true
+      },
+      {
+        "name": "itemJELLO no active eating action",
+        "actual": false,
+        "expected": false,
+        "passed": true
+      },
+      {
+        "name": "Original food heals at full hunger",
+        "actual": 5,
+        "expected": 5,
+        "passed": true
+      },
+      {
+        "name": "Full hunger remains unchanged",
+        "actual": 20,
+        "expected": 20,
+        "passed": true
+      },
+      {
+        "name": "Original food still consumes at full health",
+        "actual": "b173_plasticcraft:p_empty_bottle",
+        "expected": "b173_plasticcraft:p_empty_bottle",
+        "passed": true
+      },
+      {
+        "name": "Full health stays capped",
+        "actual": 20,
+        "expected": 20,
+        "passed": true
+      },
+      {
+        "name": "Native apple retains food component",
+        "actual": true,
+        "expected": true,
+        "passed": true
+      },
+      {
+        "name": "Native apple retains eating duration",
+        "actual": 32,
+        "expected": 32,
+        "passed": true
+      },
+      {
+        "name": "Native apple retains eating animation",
+        "actual": "EAT",
+        "expected": "EAT",
+        "passed": true
+      },
+      {
+        "name": "Native apple starts eating",
+        "actual": true,
+        "expected": true,
+        "passed": true
+      },
+      {
+        "name": "Native apple does not instantly heal",
+        "actual": 2,
+        "expected": 2,
+        "passed": true
+      },
+      {
+        "name": "Native apple does not instantly feed",
+        "actual": 4,
+        "expected": 4,
+        "passed": true
+      },
+      {
+        "name": "Native apple completion feeds hunger",
+        "actual": 8,
+        "expected": 8,
+        "passed": true
+      },
+      {
+        "name": "Native apple completion supplies saturation",
+        "actual": true,
+        "expected": true,
+        "passed": true
+      },
+      {
+        "name": "Native apple completion leaves health unchanged",
+        "actual": 2,
+        "expected": 2,
+        "passed": true
+      },
+      {
+        "name": "Native apple consumes once",
+        "actual": 1,
+        "expected": 1,
+        "passed": true
+      }
+    ],
+    "samples": [
+      {
+        "food": "itemWATERBOTTLE",
+        "result": {
+          "health": 5,
+          "hunger": 4,
+          "saturation": 0,
+          "using": false,
+          "id": "b173_plasticcraft:p_empty_bottle",
+          "count": 1
+        }
+      },
+      {
+        "food": "itemMILKBOTTLE",
+        "result": {
+          "health": 10,
+          "hunger": 4,
+          "saturation": 0,
+          "using": false,
+          "id": "b173_plasticcraft:p_empty_bottle",
+          "count": 1
+        }
+      },
+      {
+        "food": "itemNEEDLERED",
+        "result": {
+          "health": 20,
+          "hunger": 4,
+          "saturation": 0,
+          "using": false,
+          "id": "b173_plasticcraft:p_needle",
+          "count": 1
+        }
+      },
+      {
+        "food": "itemJELLO",
+        "result": {
+          "health": 6,
+          "hunger": 4,
+          "saturation": 0,
+          "using": false,
+          "id": "b173_plasticcraft:q_jello",
+          "count": 1
+        }
+      }
+    ]
+  },
+  "boundaries": [
+    "The actual-mod rollback check uses native ServerPlayerGameMode item use with one NeoForge FakePlayer on a disposable dedicated server; it does not claim a connected-client input or timing test.",
+    "Native apple completion is invoked through its native ItemStack entry point; earlier eating-input checks remain historical evidence.",
+    "The previous dedicated hooks/food validation file is historical: its experimental hunger conversion and food-setting behavior have been reverted.",
+    "No mod versions, original mod resources, original PlasticCraft options, existing worlds or unrelated gameplay behavior were changed."
+  ]
+}

@@ -81,9 +81,6 @@ final class ItemCallbacksB173 {
 
 
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
-        return use(level,player,hand,false);
-    }
-    private InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand,boolean hunger) {
         if (hand != InteractionHand.MAIN_HAND || !usesAir) return InteractionResultHolder.pass(player.getItemInHand(hand));
         PlayerViewB173 view = (PlayerViewB173)EntityViewsB173.wrap(player);
         int slot = view.inventory.selectedSlot;
@@ -92,7 +89,7 @@ final class ItemCallbacksB173 {
         try (var views=EntityViewsB173.callbackScope()) {
             World world = World.mcc$wrap(level);
             legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$use(world);
-            var result = FoodUseB173.invoke(legacy,held,world,view,hunger);
+            var result = legacy.use(held, world, view);
             // Returning a new stack replaces the held item; otherwise retain direct inventory edits by the mod.
             if (result != held) view.inventory.main[slot] = result;
             if (!level.isClientSide) view.writeBack();
@@ -101,15 +98,6 @@ final class ItemCallbacksB173 {
             failed("use", e);
             return InteractionResultHolder.fail(player.getItemInHand(hand));
         } finally {EntityViewsB173.flush();BlockEntityViewsB173.flush();}
-    }
-    boolean isFood(){return legacy instanceof legacyconnector.vb1_7_3.net.minecraft.item.FoodItem;}
-    ItemStack finishFood(ItemStack stack,Level level,Player player,boolean hunger){
-        if(level.isClientSide)return stack;
-        var food=stack.get(net.minecraft.core.component.DataComponents.FOOD);
-        var consumed=stack.copyWithCount(1);
-        var result=use(level,player,InteractionHand.MAIN_HAND,hunger);
-        if(hunger&&food!=null&&result.getResult().consumesAction())player.eat(level,consumed,food);
-        return player.getMainHandItem();
     }
 
     private void failed(String callback, Throwable error) {

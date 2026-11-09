@@ -18,7 +18,6 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import org.kylepitcock.legacyconnector.core.LegacyConfig;
-import org.kylepitcock.legacyconnector.vb1_7_3.BetaGameplayConfigB173;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -57,7 +56,6 @@ public final class LegacyConnectorConfigScreen extends Screen {
     private void saveAndClose() {
         Map<String, String> changed = new LinkedHashMap<>();
         for (Row r : rows) {
-            if (r.serverControlled()) continue;
             String now = r.value();
             if (!now.equals(r.initial)) changed.put(r.entry.key(), now);
         }
@@ -85,20 +83,13 @@ public final class LegacyConnectorConfigScreen extends Screen {
 
         Row(LegacyConfig.Entry entry) {
             this.entry = entry;
-            this.initial = entry.key().equals(BetaGameplayConfigB173.FOOD_KEY)
-                    ? Boolean.toString(BetaGameplayConfigB173.localFoodUsesHunger())
-                    : LegacyConfig.currentValue(entry.key(), entry.defaultValue());
+            this.initial = LegacyConfig.currentValue(entry.key(), entry.defaultValue());
             this.flag = initial.equalsIgnoreCase("true");
         }
 
         String value() {
             if (entry.isBoolean()) return Boolean.toString(flag);
             return text != null ? text.getValue().trim() : initial;
-        }
-
-        boolean serverControlled() {
-            Minecraft mc = Minecraft.getInstance();
-            return entry.key().equals(BetaGameplayConfigB173.FOOD_KEY) && mc.level != null && mc.getSingleplayerServer() == null;
         }
     }
 
@@ -142,22 +133,15 @@ public final class LegacyConnectorConfigScreen extends Screen {
                     widget = box;
                 }
                 widget.setTooltip(tip);
-                widget.active = !row.serverControlled();
             }
 
             private Component label(Row r) {
-                if (r.serverControlled()) {
-                    if (!BetaGameplayConfigB173.hasServerOverride()) return Component.literal("Waiting for server");
-                    return BetaGameplayConfigB173.foodUsesHunger() ? CommonComponents.OPTION_ON : CommonComponents.OPTION_OFF;
-                }
                 return r.flag ? CommonComponents.OPTION_ON : CommonComponents.OPTION_OFF;
             }
 
             @Override
             public void render(GuiGraphics g, int index, int top, int left, int width, int height, int mouseX, int mouseY, boolean hovering, float partial) {
                 String name = row.entry.key();
-                widget.active = !row.serverControlled();
-                if (row.entry.isBoolean()) widget.setMessage(label(row));
                 g.drawString(font, name, left, top + 6, 0xFFFFFF);
                 widget.setX(left + width - 110);
                 widget.setY(top);
