@@ -819,7 +819,30 @@ Shared fixes supporting these checks preserve the original APIs:
 
 Fresh isolated server runs also exercise the controlled bounds API on the original Werewolf, EvilChicken and Money entity,
 plus the original mods' existing regression suites. These are opt-in fixtures; the default build needs no private mod jars.
-Complete compatibility for either mod, remote multiplayer and Sodium/Iris remain unverified.
+At that snapshot, complete compatibility, remote multiplayer and Sodium/Iris were unverified.
+
+The [mob API checkpoint](../data/b173-mob-api-checkpoint-2026-11-08.json) adds shared ModLoader generation callbacks through
+native placed features, generation-region block/entity writes, deferred chest/spawner attachment, component-preserving chest
+views, ShockAhPI achievement pages and reflective entity-registry aliases. Original line pairs, loops and strips use the
+native renderer; mod-declared entity references track native IDs plus UUIDs and resolve delayed spawn packets. The Beta path
+wrapper returns null for an unreached start-only native path, matching clean Beta bytecode while preserving reached
+singletons, useful partial routes and cursors. These changes apply through Beta APIs; vanilla and modern mob rules are unchanged.
+
+The checkpoint passed 526 portable build tests and fresh isolated server suites with the supplied Mo' Creatures and More
+Creeps archives. Mo' Creatures client checks with Sodium/Iris cover natural fish/shark egg hatching, original models and
+textures, rare-horse riding/flight, Nightmare fire and charge expiry, rope attachment/following/teleport/detachment, and a
+visible native rope render. A separate Kitty cohort completed milk consumption, litter use and native sand cleaning with
+only initial adult/state prerequisites controlled; subsequent RNG and timers ran normally. Seven original actor UUIDs/classes
+survived native save/quit/reopen. The original Fishy feeding limitation, Kitty sleep/tree/random drink interruption and
+unsaved rope-holder policy remain intact. A fallen elevated-platform cat was explicitly replaced under a new fixture UUID;
+its replacement is not presented as survival of the deceased actor.
+
+A fresh normal-terrain More Creeps server completed 434 original generation callbacks and saved/stopped successfully.
+That additional optional run exposed a bounds-test setup issue: the original EvilChicken damage callback assumes a nearby
+player, which the normal-spawn fixture did not provide. It is recorded separately from the passing isolated suites.
+Advanced More Creeps client gameplay, additional naming screens, advancement-page display, deferred-loot/structure census,
+mixed-pack gameplay, shader packs and separate multiplayer checks remain pending. This checkpoint is bounded validation,
+not full compatibility certification; actual-mod fixtures remain opt-in and the default build needs no private archives.
 
 - **Placing a subtype.** b1.7.3's `ItemBlock` set block and metadata together (`getPlacedBlockMetadata` of the damage), so `onBlockAdded`
   and the tile entity it makes see the subtype; `getStateForPlacement` does the same (before, a Minefactory translocator or crafter

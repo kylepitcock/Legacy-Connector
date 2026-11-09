@@ -1,0 +1,351 @@
+{
+  "status": "passed",
+  "scope": "Local checkpoint: default build, isolated actual-mod server suites, bounded Mo Creatures gameplay/client checks. This is not full compatibility certification.",
+  "snapshot_date": "2026-11-08",
+  "tested_code_revision": "5a3c6a4921fd6f329284b566f22929d1f71c1f52",
+  "branch": "legacy-b1.7.3",
+  "version": "0.4.13",
+  "artifact": {
+    "path": "build/dist/legacyconnector-0.4.13.jar",
+    "sha256": "32975c730cc2e1b29c6dc1d4a54c9475541e814cbbc88a63e50e3ecd66ab46b1"
+  },
+  "source_sha256": {
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/block/Block.java": "0c0daf58ba84685e78bb3befb67a58ef176624f6be167aac44c733dad0f5c2c3",
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/block/entity/ChestBlockEntity.java": "9ac875ac8ba9c72b1625b5c88065d97937116b711bef4f4d95d495715c3ecc44",
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/block/entity/MobSpawnerBlockEntity.java": "15b12d511d38ec7ca592bb3f9cd7c97c3470a1dd87d2dff1d9339afa600ae704",
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/client/render/Tessellator.java": "5bb4f128614e6b6a593f6d0f687e24d69ed79a140f67cbd1b44e81d6d709802a",
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/entity/ai/pathing/Path.java": "5713cda05c88a24c36d42b4c68685781bf8c2e523e301525ab2eb8f9834ba77b",
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/src/BaseMod.java": "08436948937f216879c85ba044cbf3c3e2220e382a54c4c75890c0127bc85e12",
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/world/World.java": "1a2c7d80c5d5a6220fb86b62a28276cc70b72529379aa9b653b7362952517c51",
+    "src/main/java/org/kylepitcock/legacyconnector/v1_7_10/client/RenderContext.java": "5dc6be15340c8a36d6e24945f456e25309c7dfbe10e332a6b233fda1a63159fb",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/AdvancementsB173.java": "508505b3477bbb1f5be274ee8cfc9c8205ca4dfd118fe5f2d15894785ff49c66",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/AnimalRenderStateB173.java": "98f462fea1331091ccb1bee5d2a32aac157f096ca3687c433ee5b0c1d03eadf4",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/AnimalsB173.java": "58626a87c243b66f5dcd92e82485c4cc1d63d0e363cbd27e7be11482d7634608",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/BlockEntityViewsB173.java": "d6bcbbc0a98c436191c2ed1ad7aff4364a893336be3f485990f65b50626ea699",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/EntityRenderingB173.java": "cd53ddd7ed0877a17672e9794265337fa11ebc5ba4351e851f0fe421fa558867",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/LegacyB173Animal.java": "3272d0650be6a3454d214ca7b34b27de0074469456b333368caf5ab17ff50fee",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/LegacyB173Arrow.java": "0ba845bfa4858e2d9da4deb153b1c44d52fd68dc1f93159ea0d9738166dd4cb3",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/LegacyB173BlockEntity.java": "d488aa85ca72f53d5cd360157e3d2c21b4e06b211fef57fbbcb7bd57afcd0034",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/MoCreaturesFollowSelfTestB173.java": "567371dfa989c7a0a67a8e079ca4e3b3644e7d0a72ff8041b86eb2713b9d3b83",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/MoCreaturesRenderCoverageSelfTestB173.java": "3d1471b14b5baa855793948e60a028dba81a5d1f22897e5f7fc966f58105b5de",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/MobSelfTestB173.java": "5663723c882430cbe3f96d4b8a32daf04ec2a2132e6118472064998cc3160572",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/MobsB173.java": "d034a111af7bf86f6e96e86f1edb7822ffa46ea2862baa090309251e394495a6",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/MoreCreepsWeaponsSelfTestB173.java": "66b166c0448d948c545399ee2dd456151d91e34e916aae18d930ae9d66c94c53",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/NeutralEntitiesB173.java": "94b6e488c20cd89db0b2799ebe3ba08b96a64643c9296311ebf2fa637e044f5f",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/PlatformB173.java": "81f8745a6ddb94313b99507437b916c3f15fc72fd3783a00387eec1e750f0053",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/RendererContextB173.java": "eef9916c1f50e65064f111d0c7c208862b2567c0bbabb218786df85f1f50110f",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/client/NativeRendererExtrasB173.java": "24f3cb089a5b85799f461a33c434f1dfc32a155734290d366b346343e017ac32",
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/entity/EntityRegistry.java": "7baba39f79d46f97dc44076a095fe2dba7d2e8f565dac584308ebff48665f32d",
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/src/ACPage.java": "88dee0884c9bd4cfafb2cb3cce2b75304b7b6af65109e648209e378c70e0d691",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/WorldGenB173.java": "7eceaf8e57daf37fd4780db492c096d9b33a9ba78e94121d96e52ba5f727043a",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/WorldGenEntitiesSelfTestB173.java": "2a32d45b07c08e77ffd7ccddb4ad637a447ef1867b23b7b551359a19c0567c6f",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/WorldGenWritesB173.java": "29d750c5be40fa846ec8666d6cc8b6509cd8220e2c4624ddcaffacfd82855b89",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/WorldGenWritesSelfTestB173.java": "76318b7ee8ee642e23f0519b3dc50eb4c0280ad2e5a04e2f0a760fd91a42f41e",
+    "src/test/java/org/kylepitcock/legacyconnector/vb1_7_3/AchievementPagesB173Test.java": "56feedf8dab06302aec17b5305a692a53886b76df2b7864646f87eea553d8c69",
+    "src/test/java/org/kylepitcock/legacyconnector/vb1_7_3/ChestViewsB173Test.java": "592c5d98b6a4bb078eba0a73f6ca1a2f4600420397b6eb69a63bf82090b767f1",
+    "src/test/java/org/kylepitcock/legacyconnector/vb1_7_3/EntityRegistryB173Test.java": "081a2bc616397f39514b24ce4f801339d022c3595e4f88a54bec25084560f3fa",
+    "src/test/java/org/kylepitcock/legacyconnector/vb1_7_3/EntityRenderReferencesB173Test.java": "44d3ec2a5935b4d7f014ea105041459887e7d1c5dbe254b675320e8158fe4c46",
+    "src/test/java/org/kylepitcock/legacyconnector/vb1_7_3/PathB173Test.java": "65da8bec5aab9c9bbf3ba509b9a784e5ad67e22355a9a28762a882d878908032",
+    "src/test/java/org/kylepitcock/legacyconnector/vb1_7_3/TessellatorLinesB173Test.java": "d974dfce37b6a6dcdf3cf49f4880b514933e0e8dfd57a70f602ffb08b481ba18",
+    "src/test/java/org/kylepitcock/legacyconnector/vb1_7_3/WorldGenB173Test.java": "9e31c169dbaa444ccb7ee5e5e4d4f02fafd650e26b0f00766e93e63105908fca"
+  },
+  "versions_unchanged": {
+    "connector": "0.4.13",
+    "mocreatures_outer_archive": "2.12.2",
+    "mocreatures_runtime_version": "2.12.1",
+    "morecreeps": "2.12"
+  },
+  "tests": {
+    "runtime": {
+      "tests": 259,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "loader": {
+      "tests": 267,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "generic_guard": {
+    "status": "passed",
+    "production_files": 271
+  },
+  "generic_changes": [
+    "ModLoader GenerateSurface/GenerateNether callbacks through native placed features and original Beta seeded random streams",
+    "Generation-region block/entity writes and deferred chest/spawner attachment",
+    "Chest views preserve untouched modern stacks and components on count-only changes",
+    "ShockAhPI achievement pages and reflective entity-name registry aliases",
+    "Original line primitives through the native renderer",
+    "Typed mod-declared entity references tracked by native ID and UUID with lazy resolution",
+    "Beta null-path semantics for unreached single-node native paths"
+  ],
+  "servers": {
+    "mocreatures": {
+      "status": "headless-smoke-passed",
+      "source": "DrZharks_MoCreatures_Mod_v2.12.2_b1.7.3.zip!mods/MoCreatures.zip",
+      "jar_sha256": "c174fabe32b4cc95b314ceef229835a61e44f39f83999ce114b0905df03c9002",
+      "evidence": "build/placement-classic-flat-completion-path-final-mocreatures-assessment.json",
+      "sha256": "76074945feaf997c59a50e038fa928b1d5278c25fa8cad3fd6476e700ed1998a"
+    },
+    "morecreeps": {
+      "status": "headless-smoke-passed",
+      "source": "MoreCreepsv2.12_b173.zip!PUT CONTENTS INTO MINECRAFT FOLDER/mods/MoreCreepsAndWeirdos.zip",
+      "jar_sha256": "9d7bbb525115f8fa351982a818b106af4199a21aebafd25e3122f5066c4370bb",
+      "evidence": "build/placement-classic-flat-completion-path-final-morecreeps-assessment.json",
+      "sha256": "d29e8dd7b98a7acbcc50a66fd62dba176e54cdad0f70c908d322857c71ca89f8"
+    }
+  },
+  "normal_world_generation": {
+    "passed": false,
+    "gameDirectory": "run-b173-single\\morecreeps-neutralcompletion-checkpoint-normal-20261108-191502-39cfc9",
+    "nativeFeatureCallbacks": 434,
+    "sampleCallbacks": [
+      "[19:15:32] [worldgen/INFO] [LegacyConnector/B173WorldGenTest/]: B1.7.3 WORLDGEN TEST: native feature callback b173_morecreepsandweirdos@0:-1,-1 completed",
+      "[19:15:33] [worldgen/INFO] [LegacyConnector/B173WorldGenTest/]: B1.7.3 WORLDGEN TEST: native feature callback b173_morecreepsandweirdos@0:-1,0 completed",
+      "[19:15:33] [worldgen/INFO] [LegacyConnector/B173WorldGenTest/]: B1.7.3 WORLDGEN TEST: native feature callback b173_morecreepsandweirdos@0:-1,1 completed",
+      "[19:15:33] [worldgen/INFO] [LegacyConnector/B173WorldGenTest/]: B1.7.3 WORLDGEN TEST: native feature callback b173_morecreepsandweirdos@0:0,-1 completed"
+    ],
+    "problems": [
+      "[19:15:42] [Server thread/ERROR] [LegacyConnector/B173BoundsTest/]: B1.7.3 BOUNDS TEST failed: legacyconnector_b173.morecreepsandweirdos.CREEPSEntityEvilChicken"
+    ],
+    "limitations": "Fresh native normal-terrain GenerateSurface dispatch and startup/shutdown; no natural structure-selection or deferred loot census claim.",
+    "status": "native-generation-dispatch-completed",
+    "optional_full_suite_status": "one controlled damage fixture failed because the original EvilChicken assumes a nearby player",
+    "explanation": "Fresh normal terrain completed 434 original native GenerateSurface callbacks and saved/stopped successfully. BoundsSelfTestB173 invokes original EvilChicken.damage(null,1) without a nearby player at the normal spawn; that original callback dereferences a null nearest player. This extra optional run is not reported as a passing full suite. Both isolated classic-flat suites above passed.",
+    "evidence": "build/completion-checkpoint-normal.log"
+  },
+  "client_environment": {
+    "platform": "WSL Ubuntu, Xvfb :99, Mesa llvmpipe",
+    "sodium": "0.6.13+mc1.21.1",
+    "iris": "1.8.12+mc1.21.1",
+    "shader_pack": "none; shader-pack behavior unverified"
+  },
+  "mocreatures": {
+    "rare_horses": {
+      "status": "passed",
+      "mode": "Controlled original subtype5/7/8 and adult prerequisites; actual native apple/saddle/riding/jump/redstone inputs; RNG/timers unchanged.",
+      "claims": [
+        "Type5 and type8 native flight exercised.",
+        "Type7 original Nightmare fire and natural redstone charge exhaustion exercised."
+      ],
+      "evidence": [
+        {
+          "path": "run-b173-single/mocreatures-neutralcompletion-client-20261108-172058-9d4195/completion-gameplay-proof/rare-horses-passed.json",
+          "sha256": "56fb8c53d2765980672343bdecf8d28582b80e7a369f12e781ad874e8d0b14e7",
+          "exists": true
+        },
+        {
+          "path": "run-b173-single/mocreatures-neutralcompletion-client-20261108-172058-9d4195/completion-gameplay-proof/rare-horses-flight-5.json",
+          "sha256": "2921485408d4248574cd8eb650bacc41e7e81eef2e859e809122a37cfbf1573a",
+          "exists": true
+        },
+        {
+          "path": "run-b173-single/mocreatures-neutralcompletion-client-20261108-172058-9d4195/completion-gameplay-proof/rare-horses-flight-8.json",
+          "sha256": "7e82e6af497df34b03dd78d33149277db4b66c2b4bcc88cc644d83a210304d78",
+          "exists": true
+        },
+        {
+          "path": "run-b173-single/mocreatures-neutralcompletion-client-20261108-172058-9d4195/completion-gameplay-proof/rare-horses-nightmare-original-fire-passed.json",
+          "sha256": "dc08250e3f901e0a224cda15398a4aaf31e8b9cd6d04b7bf0d75671707e5a461",
+          "exists": true
+        },
+        {
+          "path": "run-b173-single/mocreatures-neutralcompletion-client-20261108-172058-9d4195/completion-gameplay-proof/rare-horses-nightmare-natural-charge-expiry-passed.json",
+          "sha256": "26c5eea95905021c0416bf1e49a0257a5fd7633848d9ea105fd3dc63048bcb06",
+          "exists": true
+        }
+      ]
+    },
+    "eggs": {
+      "status": "passed",
+      "claims": [
+        "Actual FishyEgg and SharkEgg naturally hatched through original RNG/timers.",
+        "Same naturally born Fishy and Shark UUIDs survived save/reopen and selected original client model textures."
+      ],
+      "evidence": [
+        {
+          "path": "run-b173-single/mocreatures-neutralcompletion-client-20261108-172058-9d4195/completion-gameplay-proof/eggs-passed.json",
+          "sha256": "06503c4e6b9ab670aa06d8296d9593cc2c9910908bf172039cd8ad398802e7b4",
+          "exists": true
+        },
+        {
+          "path": "run-b173-single/mocreatures-neutralcompletion-client-20261108-172058-9d4195/completion-gameplay-proof/eggs-fishyegg-birth-first-observed.json",
+          "sha256": "4bdb5e6fb8d2400cde4b9da82c2a31cfff7fce619083c89302c26c0b3e44630d",
+          "exists": true
+        },
+        {
+          "path": "run-b173-single/mocreatures-neutralcompletion-client-20261108-172058-9d4195/completion-gameplay-proof/eggs-sharkegg-birth-first-observed.json",
+          "sha256": "f9208e36947a02382cc19782d47967592823abfe10e1f29744b3567a791d5cde",
+          "exists": true
+        },
+        {
+          "path": "run-b173-single/mocreatures-neutralcompletion-client-20261108-172058-9d4195/completion-gameplay-proof/eggs-client-relog-render.json",
+          "sha256": "8152ab2052047238f69a4d4015ce865f1dd71ec084523fe575c7b40e3eb330fe",
+          "exists": true
+        }
+      ],
+      "offspring_UUIDs": [
+        "d3763bf2-43c9-4bf7-846c-3af7743c3343",
+        "98da6646-bd65-4d45-8ad7-23d4b346e5eb"
+      ],
+      "limit": "Egg hatching is distinct from Fishy breeding; original eaten parenting gate remains unreachable by audited ordinary feeding."
+    },
+    "native_motion_comparison": {
+      "status": "passed",
+      "claims": [
+        "Native Cow and actual Beta Bunny both passed the same128-block entity/player teleport with unchanged UUIDs, native retracking, updated packet codec/lerp targets and ordinary motion."
+      ],
+      "evidence": [
+        {
+          "path": "run-b173-single/mocreatures-neutralcompletion-client-20261108-172058-9d4195/completion-motion-proof/setup.json",
+          "sha256": "ee401bef58c1314086de5cf4e745163e6f1a8cf59d1ecac032240c90c0c436af",
+          "exists": true
+        },
+        {
+          "path": "run-b173-single/mocreatures-neutralcompletion-client-20261108-172058-9d4195/completion-motion-proof/before-client.json",
+          "sha256": "b66b47a832210e6e24af473679ccfccc34d0a7c9ff668b210bcbc348078877d6",
+          "exists": true
+        },
+        {
+          "path": "run-b173-single/mocreatures-neutralcompletion-client-20261108-172058-9d4195/completion-motion-proof/move-server.json",
+          "sha256": "504ccb0462fe1b74f6a6ed8dd4aa19b26d09cc97dcd3b79b67430286ed74985c",
+          "exists": true
+        },
+        {
+          "path": "run-b173-single/mocreatures-neutralcompletion-client-20261108-172058-9d4195/completion-motion-proof/after20-client.json",
+          "sha256": "a5f1d96bfd099988928ddc2d268cc0d10061b87d200d3563e2a7d21ba8f3b75c",
+          "exists": true
+        },
+        {
+          "path": "run-b173-single/mocreatures-neutralcompletion-client-20261108-172058-9d4195/completion-motion-proof/after60-server.json",
+          "sha256": "230aa284d7495b9f5b67e0591645448005b4a8a9d0216cfdd9cdb5045d7477d5",
+          "exists": true
+        },
+        {
+          "path": "run-b173-single/mocreatures-neutralcompletion-client-20261108-172058-9d4195/completion-motion-proof/after60-client.json",
+          "sha256": "7330f1a76a87cbb2c1483a38f12b8c87a4122ab6f5bf2bf9fc20b3b051071957",
+          "exists": true
+        }
+      ],
+      "conclusion": "No broad Beta client interpolation patch justified."
+    },
+    "pets": {
+      "status": "passed-bounded-path-rope-and-kitty-cohort1",
+      "claims": [
+        "New shared Path normalization exercised by original BigCat rope follow and null-path perimeter fallback.",
+        "Native input attaches and detaches the rope; the original renderer emits 48 finite brown segments with the expected tracked holder, and the rope is visible in a native framebuffer screenshot.",
+        "Kitty cohort1 completed full ordinary milk consumption/litter cycle and native sand cleaning; only initial adult/state3 prerequisites controlled.",
+        "Explicit replacement BigCat UUID is distinct from old native fall-death fixture; no actor substitution hidden as persistence."
+      ],
+      "old_BigCat_UUID": "6f196b7e-9cdf-4258-b87e-d191251562b4",
+      "new_controlled_BigCat_UUID": "78c3db1f-6c30-422b-bdfd-bda9e2ef2967",
+      "replacement": "Explicit new fixture recorded; no same-actor survival claim. New platform grounded atY64; Kitty keeps original identity and running clocks.",
+      "old_actor_cause": "Root/offline evidence found original death loot BigCatClaw at271.113086,64,-28.111979 beyond the elevated camera floor, consistent with native fall death; not an original rope-removal policy or broad tracking defect.",
+      "evidence": [
+        {
+          "path": "run-b173-single/mocreatures-neutralcompletion-client-20261108-172058-9d4195/completion-gameplay-proof/pets-explicit-replacement.json",
+          "sha256": "39d52259b02d350aadcb4340be1348d3e05d3cee4b448d57d6fc315c91a36580",
+          "exists": true
+        },
+        {
+          "path": "build/completion-gameplay-offline-current-all.json",
+          "sha256": "fd46176144239bdace4e2376e5e5c3546f25d810ab2340c50d96d2834e95779e",
+          "exists": true
+        },
+        {
+          "path": "run-b173-single/mocreatures-neutralcompletion-client-20261108-172058-9d4195/completion-gameplay-proof/kitty-needs-passed.json",
+          "exists": true,
+          "sha256": "702aa17ec323484430c82b0611aea03c8c938ce01f3b2c08ee76c2979b8e4013"
+        }
+      ],
+      "archived_old_ledger": {
+        "path": "run-b173-single/mocreatures-neutralcompletion-client-20261108-172058-9d4195/completion-gameplay-proof/archive-pets-before-explicit-replacement-1794181395396423700/pets-failed.json",
+        "sha256": "700ec3c63e1ae49e54554ba5ff723efdf6da6bf4485c06734e3f6c5aafdd3296",
+        "exists": true
+      },
+      "limits": [
+        "The original BigCat NBT omits roper; attachment is not persisted artificially.",
+        "The deceased elevated-platform fixture was replaced explicitly under a different UUID.",
+        "The needs cohort uses initial adult/state3 prerequisites, then ordinary native input and original timers/RNG."
+      ],
+      "rope_visual_evidence": {
+        "status": "root-visually-reviewed",
+        "image": "run-b173-single/mocreatures-neutralcompletion-client-20261108-172058-9d4195/control/out/completion-bigcat-native-rope-grounded.png",
+        "sha256": "ea1d427da752a6b4918ca97431aea62461917ee9648a1592d131975ebc730dbd",
+        "result": "run-b173-single/mocreatures-neutralcompletion-client-20261108-172058-9d4195/completion-gameplay-proof/rope-native-camera-result.json",
+        "limits": "Current client pose renders normally; moving native actors interpolate asynchronously rather than matching the authoritative pose in lockstep."
+      }
+    },
+    "final_native_relog": {
+      "status": "passed",
+      "expected_UUID_count": 7,
+      "UUIDs": [
+        "1b713f88-79a2-487a-8309-cb9c2fbaaa33",
+        "40f0844f-cbd5-4620-af77-a68a6577919f",
+        "78c3db1f-6c30-422b-bdfd-bda9e2ef2967",
+        "8c429fe5-3c5e-46d1-9fec-501babe47bfd",
+        "98da6646-bd65-4d45-8ad7-23d4b346e5eb",
+        "a0a3502b-2066-4b5b-a6d5-754613020e51",
+        "d3763bf2-43c9-4bf7-846c-3af7743c3343"
+      ],
+      "claims": [
+        "Native save-all, quit to title, reopen same save and player, seven original actor UUIDs/classes survive alive."
+      ],
+      "evidence": [
+        {
+          "path": "run-b173-single/mocreatures-neutralcompletion-client-20261108-172058-9d4195/control/out/completion-relog-1794183179015172600.json",
+          "exists": true,
+          "sha256": "c6023ed47d91f7eea53454e6e7ba276e3002bb7198307ea3d01bb7f8a28dfd51"
+        },
+        {
+          "path": "build/completion-moc-final-relog.log",
+          "exists": true,
+          "sha256": "8ef710827fa63bb563773182fdfade68cba40110e3e0884398f755d9a83e1c36"
+        }
+      ]
+    }
+  },
+  "original_archive_policies": [
+    {
+      "family": "MoC Fishy",
+      "finding": "Original EntityFishy parenting requires tamed && eaten && adult. Audited selected archive has no reachable ordinary feeding path that sets eaten=true; constructor leaves it false.",
+      "evidence": [
+        "build/moc-entities-decompiled/legacyconnector_b173/mocreatures/EntityFishy.java:105",
+        "build/completion-gameplay-fishy-archive-audit.json"
+      ],
+      "claim": "Do not force eaten or invent a new mating rule; no natural Fishy breeding claim."
+    },
+    {
+      "family": "More Creeps Frisbee",
+      "finding": "Original constructor leaves private owner unassigned; controlled owner-only pickup proof remains separate from ordinary throwing.",
+      "claim": "No fabricated owner or promised natural owner pickup."
+    },
+    {
+      "family": "More Creeps Rocket/DesertLizardFireball",
+      "finding": "No original renderer registration.",
+      "claim": "No replacement projectile geometry invented; verify original flight/impact policy."
+    },
+    {
+      "family": "More Creeps GooDonut",
+      "finding": "Original pickup override is empty; World-only ctor fuse=0, shooter ctor fuse=25.",
+      "claim": "No inventory grant invented; preserve original fuse and explosion behavior."
+    },
+    {
+      "family": "More Creeps natural reproduction",
+      "finding": "No paired mating/werewolf family in selected archive; EvilChicken timer lays an EvilEgg.",
+      "claim": "Do not call egg laying paired breeding or equate it with MoC mating."
+    },
+    "Original Kitty 1/2500 drink-exit roll, tree and sleep policies remain intact; no shortened clocks or forced success."
+  ],
+  "pending": [
+    "More Creeps advanced client gameplay, particles/projectiles and four additional naming screens",
+    "Actual native advancement page display",
+    "Deferred worldgen chest/spawner census and original Castle/Pyramid structure placement",
+    "Mixed Prism pack and separate client/dedicated-server gameplay checks",
+    "Repair the optional normal-terrain bounds fixture to establish its required nearby-player precondition"
+  ],
+  "publication": "Local commit and Prism checkpoint requested; no push authorized."
+}
