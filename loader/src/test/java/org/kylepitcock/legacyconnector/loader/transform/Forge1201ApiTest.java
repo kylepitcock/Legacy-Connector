@@ -219,4 +219,18 @@ class Forge1201ApiTest {
         assertEquals(descriptor, rewritten.desc);
     }
 
+    @Test
+    void mavenArtifactVersionStringUsesTheForgeCompatibilityHelper() {
+        String descriptor = "(Lorg/apache/maven/artifact/versioning/ArtifactVersion;)Ljava/lang/String;";
+        ClassNode node = with(new MethodInsnNode(Opcodes.INVOKESTATIC,
+                "net/neoforged/neoforge/common/util/MavenVersionStringHelper", "artifactVersionToString", descriptor, false));
+
+        assertEquals(1, ForgeApiRewrites1201.apply(node));
+        MethodInsnNode rewritten = firstCall(node);
+        assertEquals(Opcodes.INVOKESTATIC, rewritten.getOpcode());
+        assertEquals("legacyconnector/v1_20_1/ForgeApi1201", rewritten.owner);
+        assertEquals("artifactVersionToString", rewritten.name);
+        assertEquals(descriptor, rewritten.desc);
+    }
+
 }

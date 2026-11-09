@@ -690,6 +690,11 @@ public final class ForgeApi1201 {
         }
     }
 
+    /** Forge 1.20.1's MavenVersionStringHelper implementation; the NeoForge 1.21.1 class no longer exposes this helper. */
+    public static String artifactVersionToString(org.apache.maven.artifact.versioning.ArtifactVersion artifactVersion) {
+        return artifactVersion.toString();
+    }
+
     // ---- Forge 1.20.1 ResourcePackLoader -------------------------------------------------------------------------------
 
     /**

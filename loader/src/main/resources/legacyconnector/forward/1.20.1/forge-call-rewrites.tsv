@@ -19,6 +19,8 @@ net/neoforged/neoforge/registries/RegisterEvent.getForgeRegistry()Llegacyconnect
 *.getCapability(Llegacyconnector/v1_20_1/net/minecraftforge/common/capabilities/Capability;)Llegacyconnector/v1_20_1/net/minecraftforge/common/util/LazyOptional;	getCapability
 # event bus
 net/neoforged/bus/api/IEventBus.register(Ljava/lang/Object;)V	busRegister
+# Forge's MavenVersionStringHelper class is absent in 1.21.1; preserve the 1.20.1 artifact-version string conversion
+net/neoforged/neoforge/common/util/MavenVersionStringHelper.artifactVersionToString(Lorg/apache/maven/artifact/versioning/ArtifactVersion;)Ljava/lang/String;	artifactVersionToString
 # resource packs: Forge returned the concrete legacy PathPackResources; NeoForge returns a supplier
 net/neoforged/neoforge/resource/ResourcePackLoader.createPackForMod(Lnet/neoforged/neoforgespi/language/IModFileInfo;)Llegacyconnector/v1_20_1/net/minecraftforge/resource/PathPackResources;	createPackForMod
 # mod loading
