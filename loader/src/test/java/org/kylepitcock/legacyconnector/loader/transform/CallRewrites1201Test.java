@@ -12,6 +12,7 @@ import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.InsnNode;
+import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TypeInsnNode;
@@ -161,4 +162,67 @@ class CallRewrites1201Test {
         assertEquals(allocation, method.instructions.getFirst());
         assertTrue(method.instructions.contains(constructor));
     }
+
+    @Test
+    void palladiumGeneratedPackMetadataDeclaresTheActivePackFormat() {
+        String palladiumResourcePack =
+                "net/threetag/palladium/addonpack/forge/AddonPackManagerImpl$ModResourcePack";
+        MethodNode method = new MethodNode(Opcodes.ACC_PUBLIC, "getRootResource",
+                "([Ljava/lang/String;)Lnet/minecraft/server/packs/resources/IoSupplier;", null, null);
+        method.instructions.add(new org.objectweb.asm.tree.LdcInsnNode(
+                "{\\"pack\\":{\\"id\\": \\"%s\\", \\"version\\": \\"%s\\", \\"description\\":\\"%s\\"}}"));
+        method.instructions.add(new InsnNode(Opcodes.ICONST_3));
+        method.instructions.add(new TypeInsnNode(Opcodes.ANEWARRAY, "java/lang/Object"));
+        for (int i = 0; i < 3; i++) {
+            method.instructions.add(new InsnNode(Opcodes.DUP));
+            method.instructions.add(new InsnNode(Opcodes.ICONST_0 + i));
+            method.instructions.add(new InsnNode(Opcodes.ACONST_NULL));
+            method.instructions.add(new InsnNode(Opcodes.AASTORE));
+        }
+        method.instructions.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "java/lang/String", "format",
+                "(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;", false));
+        method.instructions.add(new InsnNode(Opcodes.ARETURN));
+        ClassNode node = node(palladiumResourcePack, method);
+
+        assertEquals(1, CallRewrites1201.apply(node));
+
+        LdcInsnNode format = null;
+        InsnNode newArraySize = null;
+        int arrayStores = 0;
+        MethodInsnNode packType = null;
+        MethodInsnNode packFormat = null;
+        for (AbstractInsnNode instruction : method.instructions.toArray()) {
+            if (instruction instanceof LdcInsnNode ldc && ldc.cst instanceof String value
+                    && value.contains("\\"pack_format\\":%d")) format = ldc;
+            if (instruction instanceof InsnNode insn && insn.getOpcode() == Opcodes.ICONST_4) newArraySize = insn;
+            if (instruction.getOpcode() == Opcodes.AASTORE) arrayStores++;
+            if (instruction instanceof MethodInsnNode call && call.name.equals("getPackType")) packType = call;
+            if (instruction instanceof MethodInsnNode call && call.name.equals("packFormat")) packFormat = call;
+        }
+        assertTrue(format != null, "pack.mcmeta fallback must include pack_format");
+        assertTrue(newArraySize != null, "formatter argument array must grow to four entries");
+        assertEquals(4, arrayStores);
+        assertTrue(packType != null);
+        assertEquals(PALLADIUM_ADDON_PACK_MANAGER, packType.owner);
+        assertTrue(packFormat != null);
+        assertEquals(CallRewrites1201.HELPERS, packFormat.owner);
+        assertEquals("(Lnet/minecraft/server/packs/PackType;)I", packFormat.desc);
+    }
+
+    @Test
+    void palladiumPackMetadataRewriteIsScopedToItsModResourcePack() {
+        MethodNode method = new MethodNode(Opcodes.ACC_PUBLIC, "getRootResource",
+                "([Ljava/lang/String;)Lnet/minecraft/server/packs/resources/IoSupplier;", null, null);
+        method.instructions.add(new org.objectweb.asm.tree.LdcInsnNode(
+                "{\\"pack\\":{\\"id\\": \\"%s\\", \\"version\\": \\"%s\\", \\"description\\":\\"%s\\"}}"));
+        method.instructions.add(new InsnNode(Opcodes.ICONST_3));
+        method.instructions.add(new TypeInsnNode(Opcodes.ANEWARRAY, "java/lang/Object"));
+        method.instructions.add(new InsnNode(Opcodes.ARETURN));
+        ClassNode node = node("example/ModResourcePack", method);
+
+        assertEquals(0, CallRewrites1201.apply(node));
+        LdcInsnNode format = (LdcInsnNode) method.instructions.getFirst();
+        assertFalse(((String) format.cst).contains("pack_format"));
+    }
+
 }

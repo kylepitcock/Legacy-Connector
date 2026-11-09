@@ -11,6 +11,7 @@ import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
+import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.TypeInsnNode;
 
 /**
@@ -22,7 +23,8 @@ import org.objectweb.asm.tree.TypeInsnNode;
  *   <li>instance calls that need other semantics ({@code IEventBus.post} returned whether the event was cancelled) to a static helper in
  *       {@link #HELPERS} taking the receiver first;</li>
  *   <li>Minecraft 1.21.1's {@code ArmorMaterials} constants are {@code Holder<ArmorMaterial>} values, unwrapped at legacy enum-field reads;</li>
- *   <li>Palladium 4.5.x's addon-pack repository constructor is redirected through the game-root symlink validator.</li>
+ *   <li>Palladium 4.5.x's addon-pack repository constructor is redirected through the game-root symlink validator;</li>
+ *   <li>Palladium 4.5.x's synthesized mod-pack metadata declares the active 1.21.1 resource/data pack format.</li>
  * </ul>
  */
 final class CallRewrites1201 {
@@ -37,6 +39,9 @@ final class CallRewrites1201 {
                     "(Ljava/lang/String;Ljava/lang/String;)Lnet/minecraft/resources/ResourceLocation;"});
 
     private static final String PALLADIUM_ADDON_PACK_MANAGER = "net/threetag/palladium/addonpack/AddonPackManager";
+    private static final String PALLADIUM_MOD_RESOURCE_PACK = "net/threetag/palladium/addonpack/forge/AddonPackManagerImpl$ModResourcePack";
+    private static final String PALLADIUM_PACK_METADATA_FORMAT = "{\\"pack\\":{\\"id\\": \\"%s\\", \\"version\\": \\"%s\\", \\"description\\":\\"%s\\"}}";
+    private static final String PALLADIUM_PACK_METADATA_FORMAT_1211 = "{\\"pack\\":{\\"id\\": \\"%s\\", \\"version\\": \\"%s\\", \\"description\\":\\"%s\\", \\"pack_format\\":%d}}";
     private static final String FOLDER_REPOSITORY_SOURCE = "net/minecraft/server/packs/repository/FolderRepositorySource";
     private static final String ARMOR_MATERIALS = "net/minecraft/world/item/ArmorMaterials";
     private static final String ARMOR_MATERIALS_DESC = "Lnet/minecraft/world/item/ArmorMaterials;";
@@ -53,6 +58,91 @@ final class CallRewrites1201 {
 
     private CallRewrites1201() {}
 
+
+    /**
+     * Palladium synthesizes pack.mcmeta for mod resource packs that do not ship one. Its
+     * 1.20.1 fallback omits pack_format, which Minecraft 1.21.1 requires. Keep the
+     * generated pack tied to the active PackType rather than assuming every use is a
+     * client resource pack.
+     */
+    private static int rewritePalladiumPackMetadata(ClassNode node) {
+        if (!PALLADIUM_MOD_RESOURCE_PACK.equals(node.name)) return 0;
+
+        for (MethodNode method : node.methods) {
+            if (method.instructions == null) continue;
+            for (AbstractInsnNode instruction = method.instructions.getFirst();
+                    instruction != null;
+                    instruction = instruction.getNext()) {
+                if (!(instruction instanceof LdcInsnNode format)
+                        || !PALLADIUM_PACK_METADATA_FORMAT.equals(format.cst)) {
+                    continue;
+                }
+
+                AbstractInsnNode arraySize = nextRealInstruction(instruction);
+                AbstractInsnNode arrayAllocation = nextRealInstruction(arraySize);
+                if (arraySize == null || arraySize.getOpcode() != Opcodes.ICONST_3
+                        || !(arrayAllocation instanceof TypeInsnNode arrayType)
+                        || arrayAllocation.getOpcode() != Opcodes.ANEWARRAY
+                        || !"java/lang/Object".equals(arrayType.desc)) {
+                    throw new IllegalStateException("Palladium ModResourcePack pack.mcmeta formatter shape changed");
+                }
+
+                AbstractInsnNode lastArrayStore = null;
+                MethodInsnNode stringFormat = null;
+                for (AbstractInsnNode cursor = arrayAllocation.getNext(); cursor != null; cursor = cursor.getNext()) {
+                    if (cursor.getOpcode() == Opcodes.AASTORE) lastArrayStore = cursor;
+                    if (cursor instanceof MethodInsnNode call
+                            && call.getOpcode() == Opcodes.INVOKESTATIC
+                            && call.owner.equals("java/lang/String")
+                            && call.name.equals("format")
+                            && call.desc.equals("(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;")) {
+                        stringFormat = call;
+                        break;
+                    }
+                }
+                if (lastArrayStore == null || stringFormat == null) {
+                    throw new IllegalStateException("Palladium ModResourcePack pack.mcmeta String.format call was not found");
+                }
+
+                method.instructions.set(arraySize, new InsnNode(Opcodes.ICONST_4));
+                format.cst = PALLADIUM_PACK_METADATA_FORMAT_1211;
+
+                InsnList packFormatArgument = new InsnList();
+                packFormatArgument.add(new InsnNode(Opcodes.DUP));
+                packFormatArgument.add(new InsnNode(Opcodes.ICONST_3));
+                packFormatArgument.add(new MethodInsnNode(
+                        Opcodes.INVOKESTATIC,
+                        PALLADIUM_ADDON_PACK_MANAGER,
+                        "getPackType",
+                        "()Lnet/minecraft/server/packs/PackType;",
+                        false));
+                packFormatArgument.add(new MethodInsnNode(
+                        Opcodes.INVOKESTATIC,
+                        HELPERS,
+                        "packFormat",
+                        "(Lnet/minecraft/server/packs/PackType;)I",
+                        false));
+                packFormatArgument.add(new MethodInsnNode(
+                        Opcodes.INVOKESTATIC,
+                        "java/lang/Integer",
+                        "valueOf",
+                        "(I)Ljava/lang/Integer;",
+                        false));
+                packFormatArgument.add(new InsnNode(Opcodes.AASTORE));
+                method.instructions.insert(lastArrayStore, packFormatArgument);
+                return 1;
+            }
+        }
+        return 0;
+    }
+
+    private static AbstractInsnNode nextRealInstruction(AbstractInsnNode instruction) {
+        if (instruction == null) return null;
+        AbstractInsnNode next = instruction.getNext();
+        while (next != null && next.getOpcode() < 0) next = next.getNext();
+        return next;
+    }
+
     static int apply(ClassNode node) {
         return apply(node, java.util.Set.of());
     }
@@ -62,7 +152,7 @@ final class CallRewrites1201 {
 
     /** {@code compoundSubclasses}: the mod's classes that extend {@link #COMPOUND}; {@code new Sub(list)} becomes the factory call. */
     static int apply(ClassNode node, java.util.Set<String> compoundSubclasses) {
-        int n = 0;
+        int n = rewritePalladiumPackMetadata(node);
         for (MethodNode m : node.methods) {
             if (m.instructions == null || m.instructions.size() == 0) continue;
             Deque<TypeInsnNode> news = new ArrayDeque<>();

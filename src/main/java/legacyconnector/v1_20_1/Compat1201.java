@@ -40,5 +40,15 @@ public final class Compat1201 {
                 folder, packType, packSource, validator);
     }
 
+    
+    /**
+     * Minecraft 1.21.1 uses resource-pack format 34 and data-pack format 48.
+     * Keep Palladium's generated pack.mcmeta accurate for the PackType being loaded.
+     */
+    public static int packFormat(net.minecraft.server.packs.PackType packType) {
+        if (packType == net.minecraft.server.packs.PackType.CLIENT_RESOURCES) return 34;
+        if (packType == net.minecraft.server.packs.PackType.SERVER_DATA) return 48;
+        throw new IllegalArgumentException("Unsupported Palladium addon-pack type: " + packType);
+    }
 
 }
