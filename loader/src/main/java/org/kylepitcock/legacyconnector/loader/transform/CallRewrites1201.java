@@ -20,7 +20,9 @@ import org.objectweb.asm.tree.TypeInsnNode;
  *   <li>constructors that became factories ({@code new ResourceLocation("a:b")} to {@code ResourceLocation.parse}): {@code NEW, DUP, args, INVOKESPECIAL <init>}
  *       becomes {@code args, INVOKESTATIC factory};</li>
  *   <li>instance calls that need other semantics ({@code IEventBus.post} returned whether the event was cancelled) to a static helper in
- *       {@link #HELPERS} taking the receiver first.</li>
+ *       {@link #HELPERS} taking the receiver first;</li>
+ *   <li>Minecraft 1.21.1's {@code ArmorMaterials} constants are {@code Holder<ArmorMaterial>} values, unwrapped at legacy enum-field reads;</li>
+ *   <li>Palladium 4.5.x's addon-pack repository constructor is redirected through the game-root symlink validator.</li>
  * </ul>
  */
 final class CallRewrites1201 {
