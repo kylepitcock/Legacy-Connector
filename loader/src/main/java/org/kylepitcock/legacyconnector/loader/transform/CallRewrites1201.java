@@ -2,11 +2,8 @@ package org.kylepitcock.legacyconnector.loader.transform;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.Set;
 import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldInsnNode;
@@ -16,11 +13,7 @@ import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.TypeInsnNode;
-import org.objectweb.asm.tree.analysis.Analyzer;
-import org.objectweb.asm.tree.analysis.AnalyzerException;
-import org.objectweb.asm.tree.analysis.Frame;
-import org.objectweb.asm.tree.analysis.SourceInterpreter;
-import org.objectweb.asm.tree.analysis.SourceValue;
+import org.objectweb.asm.tree.VarInsnNode;
 
 /**
  * Signature changes between Forge 1.20.1 / Minecraft 1.20.1 and NeoForge 1.21.1 that a rename cannot express, rewritten at the call site
@@ -172,40 +165,21 @@ final class CallRewrites1201 {
     /** {@code compoundSubclasses}: the mod's classes that extend {@link #COMPOUND}; {@code new Sub(list)} becomes the factory call. */
     /**
      * 1.20.1 accepted integer pixel dimensions for AmethystClusterBlock; 1.21.1
-     * keeps the same height/xzOffset values as floats. Widen each integer argument
-     * where it is produced, then update the invokespecial descriptor. Integer and
-     * float values are both category-1, so this preserves the operand-stack shape.
+     * keeps the same height/xzOffset values as floats. At each exact legacy call,
+     * temporarily store the Properties reference, widen the two now-adjacent ints,
+     * and reload Properties. This changes only the call's arguments, not their
+     * producers, which might also feed unrelated integer consumers.
      */
     private static int rewriteAmethystClusterConstructors(ClassNode node) {
         int rewritten = 0;
         for (MethodNode method : node.methods) {
             if (method.instructions == null || method.instructions.size() == 0) continue;
-            AbstractInsnNode[] instructions = method.instructions.toArray();
-            boolean containsLegacyCall = false;
-            for (AbstractInsnNode instruction : instructions) {
-                if (instruction instanceof MethodInsnNode call
-                        && call.getOpcode() == Opcodes.INVOKESPECIAL
-                        && call.owner.equals(AMETHYST_CLUSTER_BLOCK)
-                        && call.name.equals("<init>")
-                        && call.desc.equals(AMETHYST_CLUSTER_CONSTRUCTOR_1201)) {
-                    containsLegacyCall = true;
-                    break;
-                }
-            }
-            if (!containsLegacyCall) continue;
 
-            Frame<SourceValue>[] frames;
-            try {
-                frames = new Analyzer<>(new SourceInterpreter()).analyze(node.name, method);
-            } catch (AnalyzerException e) {
-                throw new IllegalStateException(
-                        "Could not analyze AmethystClusterBlock constructor call in " + node.name + "." + method.name + method.desc,
-                        e);
-            }
-
-            Set<AbstractInsnNode> convertedProducers = new LinkedHashSet<>();
-            for (int i = 0; i < instructions.length; i++) {
-                if (!(instructions[i] instanceof MethodInsnNode call)
+            int propertiesLocal = -1;
+            for (AbstractInsnNode instruction = method.instructions.getFirst();
+                    instruction != null;
+                    instruction = instruction.getNext()) {
+                if (!(instruction instanceof MethodInsnNode call)
                         || call.getOpcode() != Opcodes.INVOKESPECIAL
                         || !call.owner.equals(AMETHYST_CLUSTER_BLOCK)
                         || !call.name.equals("<init>")
@@ -213,51 +187,22 @@ final class CallRewrites1201 {
                     continue;
                 }
 
-                Frame<SourceValue> frame = frames[i];
-                if (frame == null) {
-                    throw new IllegalStateException(
-                            "AmethystClusterBlock constructor call is unreachable in " + node.name + "." + method.name + method.desc);
+                if (propertiesLocal < 0) {
+                    propertiesLocal = method.maxLocals;
+                    method.maxLocals++;
                 }
 
-                Type[] arguments = Type.getArgumentTypes(call.desc);
-                int firstArgument = frame.getStackSize() - arguments.length;
-                if (arguments.length != 3 || firstArgument < 1
-                        || frame.getStack(firstArgument).getSize() != 1
-                        || frame.getStack(firstArgument + 1).getSize() != 1) {
-                    throw new IllegalStateException(
-                            "Unexpected AmethystClusterBlock constructor stack in " + node.name + "." + method.name + method.desc);
-                }
-
-                addIntToFloatConversions(method, frame.getStack(firstArgument), convertedProducers, node, method);
-                addIntToFloatConversions(method, frame.getStack(firstArgument + 1), convertedProducers, node, method);
+                InsnList conversions = new InsnList();
+                conversions.add(new VarInsnNode(Opcodes.ASTORE, propertiesLocal));
+                conversions.add(new InsnNode(Opcodes.I2F));
+                conversions.add(new InsnNode(Opcodes.I2F));
+                conversions.add(new VarInsnNode(Opcodes.ALOAD, propertiesLocal));
+                method.instructions.insertBefore(call, conversions);
                 call.desc = AMETHYST_CLUSTER_CONSTRUCTOR_1211;
                 rewritten++;
             }
         }
         return rewritten;
-    }
-
-    private static void addIntToFloatConversions(
-            MethodNode method,
-            SourceValue value,
-            Set<AbstractInsnNode> convertedProducers,
-            ClassNode owner,
-            MethodNode enclosingMethod) {
-        if (value.insns == null || value.insns.isEmpty()) {
-            throw new IllegalStateException(
-                    "Missing integer source for AmethystClusterBlock dimension in "
-                            + owner.name + "." + enclosingMethod.name + enclosingMethod.desc);
-        }
-        for (AbstractInsnNode producer : value.insns) {
-            if (producer.getOpcode() < 0) {
-                throw new IllegalStateException(
-                        "Unexpected non-instruction source for AmethystClusterBlock dimension in "
-                                + owner.name + "." + enclosingMethod.name + enclosingMethod.desc);
-            }
-            if (convertedProducers.add(producer)) {
-                method.instructions.insert(producer, new InsnNode(Opcodes.I2F));
-            }
-        }
     }
 
     static int apply(ClassNode node, java.util.Set<String> compoundSubclasses) {
