@@ -79,14 +79,20 @@ public class LegacyEntityHost extends net.minecraft.world.entity.Entity implemen
 
     private int failedTicks;
 
+    private static final ThreadLocal<Boolean> NAMING = ThreadLocal.withInitial(() -> false);
+
     @Override
     protected net.minecraft.network.chat.Component getTypeName() {
         var name = LegacyHosts.displayName(getType());
         if (name != null) return name;
         // an entity no mod registered under a name (a visual trail spawned straight into the world): the legacy name or class, not the shared type's raw key
         if (legacy != null) {
+            // the shim's default getCommandSenderName asks this entity for its name again: answer the class on that re-entry (a StackOverflowError otherwise)
             String own = null;
-            try { own = legacy.getCommandSenderName(); } catch (RuntimeException ignored) { }
+            if (!NAMING.get()) {
+                NAMING.set(true);
+                try { own = legacy.getCommandSenderName(); } catch (RuntimeException ignored) { } finally { NAMING.set(false); }
+            }
             if (own != null && !own.isBlank() && !own.startsWith("entity.")) return net.minecraft.network.chat.Component.literal(own);
             return net.minecraft.network.chat.Component.literal(legacy.getClass().getSimpleName());
         }

@@ -1478,7 +1478,7 @@ public class GL11Guard extends org.lwjgl.opengl.GL11 {
     }
 
     public static void glTexGeni(int p0, int p1, int p2) {
-        // not in the core profile
+        org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.mcc$texGeni(p0, p1, p2);
     }
 
     public static void glTexGeniv(int p0, int p1, java.nio.IntBuffer p2) {
