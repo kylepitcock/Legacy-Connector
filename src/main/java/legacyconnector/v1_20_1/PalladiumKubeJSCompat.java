@@ -95,7 +95,7 @@ public final class PalladiumKubeJSCompat {
             for (Object pack : asCollection(selectedPacks)) {
                 String packId;
                 try {
-                    packId = stringResult(invoke(pack, new String[] {"getId"}), "pack-" + packIndex);
+                    packId = stringResult(invoke(pack, new String[] {"getId", "m_10446_"}), "pack-" + packIndex);
                 } catch (ReflectiveOperationException missingPackId) {
                     packId = "pack-" + packIndex;
                     LOGGER.log(System.Logger.Level.WARNING,
