@@ -178,15 +178,15 @@ class PalladiumKubeJS1201Test implements Opcodes {
         constructor.instructions.add(new org.objectweb.asm.tree.InsnNode(RETURN));
         node.methods.add(constructor);
 
-        MethodNode cancel = new MethodNode(ACC_PUBLIC, "cancelFromScript",
+        MethodNode cancelMethod = new MethodNode(ACC_PUBLIC, "cancelFromScript",
                 "(Ldev/latvian/mods/rhino/Context;)Ljava/lang/Object;", null, null);
-        cancel.instructions.add(new VarInsnNode(ALOAD, 0));
-        cancel.instructions.add(new VarInsnNode(ALOAD, 1));
-        cancel.instructions.add(new MethodInsnNode(INVOKEVIRTUAL,
+        cancelMethod.instructions.add(new VarInsnNode(ALOAD, 0));
+        cancelMethod.instructions.add(new VarInsnNode(ALOAD, 1));
+        cancelMethod.instructions.add(new MethodInsnNode(INVOKEVIRTUAL,
                 "dev/latvian/mods/kubejs/event/EventJS", "cancel",
                 "(Ldev/latvian/mods/rhino/Context;)Ljava/lang/Object;", false));
-        cancel.instructions.add(new org.objectweb.asm.tree.InsnNode(ARETURN));
-        node.methods.add(cancel);
+        cancelMethod.instructions.add(new org.objectweb.asm.tree.InsnNode(ARETURN));
+        node.methods.add(cancelMethod);
 
         MethodNode post = new MethodNode(ACC_PUBLIC | ACC_STATIC, "post", "()V", null, null);
         post.instructions.add(new FieldInsnNode(GETSTATIC,
@@ -208,9 +208,9 @@ class PalladiumKubeJS1201Test implements Opcodes {
 
         MethodNode rewrittenConstructor = find(node, "<init>", "()V");
         assertTrue(hasCall(rewrittenConstructor, INVOKESPECIAL, "java/lang/Object", "<init>", "()V"));
-        MethodNode cancel = find(node, "cancelFromScript",
+        MethodNode rewrittenCancelMethod = find(node, "cancelFromScript",
                 "(Ldev/latvian/mods/rhino/Context;)Ljava/lang/Object;");
-        assertTrue(hasCall(cancel, INVOKEINTERFACE, "dev/latvian/mods/kubejs/event/KubeEvent",
+        assertTrue(hasCall(rewrittenCancelMethod, INVOKEINTERFACE, "dev/latvian/mods/kubejs/event/KubeEvent",
                 "cancel", "(Ldev/latvian/mods/rhino/Context;)Ljava/lang/Object;"));
         MethodNode rewrittenPost = find(node, "post", "()V");
         assertTrue(hasCall(rewrittenPost, INVOKESTATIC, "legacyconnector/v1_20_1/PalladiumKubeJSCompat",
