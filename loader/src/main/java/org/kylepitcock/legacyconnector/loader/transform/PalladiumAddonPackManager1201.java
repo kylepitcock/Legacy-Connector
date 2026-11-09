@@ -26,6 +26,13 @@ final class PalladiumAddonPackManager1201 {
                     + "Lnet/minecraft/world/level/validation/DirectoryValidator;)V";
     private static final String VALIDATOR_HELPER =
             "legacyconnector/v1_20_1/PalladiumAddonPackCompat";
+    // CallRewrites1201 runs immediately before this adapter and normally has
+    // already replaced this exact constructor with Compat1201.folderRepositorySource.
+    private static final String COMPAT_HELPERS = "legacyconnector/v1_20_1/Compat1201";
+    private static final String COMPAT_FACTORY_DESCRIPTOR =
+            "(Ljava/nio/file/Path;Lnet/minecraft/server/packs/PackType;"
+                    + "Lnet/minecraft/server/packs/repository/PackSource;)"
+                    + "Lnet/minecraft/server/packs/repository/FolderRepositorySource;" ;
 
     private PalladiumAddonPackManager1201() {
     }
@@ -36,10 +43,21 @@ final class PalladiumAddonPackManager1201 {
 
         int rewritten = 0;
         boolean alreadyModern = false;
+        boolean alreadyAdapted = false;
         for (MethodNode method : node.methods) {
             for (var instruction = method.instructions.getFirst(); instruction != null; instruction = instruction.getNext()) {
-                if (!(instruction instanceof MethodInsnNode call)
-                        || call.getOpcode() != Opcodes.INVOKESPECIAL
+                if (!(instruction instanceof MethodInsnNode call)) {
+                    continue;
+                }
+                if (call.getOpcode() == Opcodes.INVOKESTATIC
+                        && COMPAT_HELPERS.equals(call.owner)
+                        && "folderRepositorySource".equals(call.name)
+                        && COMPAT_FACTORY_DESCRIPTOR.equals(call.desc)) {
+                    // The general call rewriter has already supplied the game-root symlink validator.
+                    alreadyAdapted = true;
+                    continue;
+                }
+                if (call.getOpcode() != Opcodes.INVOKESPECIAL
                         || !FOLDER_REPOSITORY_SOURCE.equals(call.owner)
                         || !"<init>".equals(call.name)) {
                     continue;
@@ -64,9 +82,9 @@ final class PalladiumAddonPackManager1201 {
             }
         }
 
-        if (rewritten == 0 && !alreadyModern) {
+        if (rewritten == 0 && !alreadyModern && !alreadyAdapted) {
             throw new IllegalStateException(
-                    "Palladium AddonPackManager no longer contains the inspected FolderRepositorySource constructor call");
+                    "Palladium AddonPackManager has no recognized FolderRepositorySource migration form");
         }
         return rewritten;
     }
