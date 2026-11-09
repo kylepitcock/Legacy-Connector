@@ -208,9 +208,9 @@ class PalladiumKubeJS1201Test implements Opcodes {
 
         MethodNode rewrittenConstructor = find(node, "<init>", "()V");
         assertTrue(hasCall(rewrittenConstructor, INVOKESPECIAL, "java/lang/Object", "<init>", "()V"));
-        MethodNode cancel = find(node, "cancelFromScript",
+        MethodNode rewrittenCancel = find(node, "cancelFromScript",
                 "(Ldev/latvian/mods/rhino/Context;)Ljava/lang/Object;");
-        assertTrue(hasCall(cancel, INVOKEINTERFACE, "dev/latvian/mods/kubejs/event/KubeEvent",
+        assertTrue(hasCall(rewrittenCancel, INVOKEINTERFACE, "dev/latvian/mods/kubejs/event/KubeEvent",
                 "cancel", "(Ldev/latvian/mods/rhino/Context;)Ljava/lang/Object;"));
         MethodNode rewrittenPost = find(node, "post", "()V");
         assertTrue(hasCall(rewrittenPost, INVOKESTATIC, "legacyconnector/v1_20_1/PalladiumKubeJSCompat",

@@ -11,7 +11,8 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 /** Explicit original field writes own one transient modifier, preserving native bases and foreign modifiers. */
 public final class NativeMovementSpeedB173 {
     static final ResourceLocation MODIFIER=ResourceLocation.fromNamespaceAndPath("legacyconnector","beta_movement_speed");
-    private static final Map<AttributeInstance,Double> BASELINES=Collections.synchronizedMap(new WeakHashMap<>());
+    private static final class Intent {final double baseline;Float releasedTarget;Intent(double baseline){this.baseline=baseline;}}
+    private static final Map<AttributeInstance,Intent> INTENTS=Collections.synchronizedMap(new WeakHashMap<>());
     private NativeMovementSpeedB173(){}
     static float read(net.minecraft.world.entity.LivingEntity entity){
         var attribute=entity.getAttribute(Attributes.MOVEMENT_SPEED);
@@ -23,14 +24,21 @@ public final class NativeMovementSpeedB173 {
     }
     static void commit(AttributeInstance attribute,float before,float wanted){
         if(Float.compare(before,wanted)==0||!Float.isFinite(wanted))return;
+        Intent intent=INTENTS.get(attribute);
+        if(intent!=null&&intent.releasedTarget!=null){
+            if(same(wanted,intent.releasedTarget)){attribute.removeModifier(MODIFIER);return;}
+            // A different explicit write starts a new override, rather than inheriting an old restoration target.
+            INTENTS.remove(attribute);intent=null;
+        }
         attribute.removeModifier(MODIFIER);
         double underlying=attribute.getValue();
-        Double baseline=BASELINES.get(attribute);
         // Restoring the original saved speed releases our override even if another mod changed its own state meanwhile.
-        if(same(wanted,underlying)||baseline!=null&&same(wanted,baseline)){
-            BASELINES.remove(attribute);return;
+        if(intent!=null&&same(wanted,intent.baseline)){
+            // Some original callbacks repeat restoration throughout a cooldown. Those writes must keep foreign changes.
+            intent.releasedTarget=wanted;return;
         }
-        if(baseline==null)BASELINES.put(attribute,(double)before);
+        if(same(wanted,underlying)){INTENTS.remove(attribute);return;}
+        if(intent==null)INTENTS.put(attribute,new Intent(before));
         if(underlying>0){
             attribute.addTransientModifier(new AttributeModifier(MODIFIER,Math.max(0,wanted)/underlying-1,
                     AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));

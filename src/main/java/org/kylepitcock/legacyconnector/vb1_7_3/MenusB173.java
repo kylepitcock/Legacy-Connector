@@ -47,7 +47,7 @@ public final class MenusB173 {
     public static void withActor(ServerPlayer player,Runnable callback){
         Actor previous=ACTOR.get();if(previous!=null&&previous.player==player){callback.run();return;}
         Actor actor=new Actor(player);ACTOR.set(actor);boolean completed=false;
-        try{callback.run();completed=true;}
+        try(var state=HookActorStateB173.forPlayer(player)){callback.run();completed=true;}
         finally{
             if(previous==null)ACTOR.remove();else ACTOR.set(previous);
             if(completed&&actor.pending)dispatchScreen(player,actor.requested);

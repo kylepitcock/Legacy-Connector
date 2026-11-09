@@ -8,6 +8,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import org.kylepitcock.legacyconnector.vb1_7_3.*;
+import net.minecraft.nbt.*;
 
 /** ModLoader frame callbacks use authoritative integrated-server state and replay immutable HUD commands. */
 final class ModTicksClientB173 {
@@ -15,11 +16,38 @@ final class ModTicksClientB173 {
     private static volatile List<Consumer<GuiGraphics>> display=List.of();
     private static long lastTick=Long.MIN_VALUE;
     private static net.minecraft.world.level.Level previous;
+    private static Object remoteConnection;
+    private static net.minecraft.world.level.Level remoteLevel;
+    private static int remoteSession,helloTicks;
+    private static boolean remoteReady;
+    private static CompoundTag remoteFrame;
     private static final class TickMinecraft extends legacyconnector.vb1_7_3.net.minecraft.client.Minecraft {}
     private record Options(int width,int height,int guiWidth,int guiHeight,int scale,boolean hide,boolean thirdPerson,
             boolean screen,boolean paused,int[] metrics){}
     static void install(){
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.client.event.RenderGuiEvent.Post event)->frame(event.getGuiGraphics()));
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.client.event.ClientTickEvent.Post event)->remoteTick());
+        GameHookNetworkB173.installClient(new GameHookNetworkB173.Client(){
+            public void ready(int session){var mc=Minecraft.getInstance();if(remoteConnection!=null&&remoteLevel!=null&&session==remoteSession&&remoteConnection==mc.getConnection()&&remoteLevel==mc.level){remoteReady=true;remoteFrame=null;}}
+            public void frame(int session,CompoundTag frame){if(session==remoteSession&&remoteReady)remoteFrame=frame.copy();}
+        });
+    }
+    private static void remoteTick(){
+        var mc=Minecraft.getInstance();var connection=mc.getConnection();
+        if(!ContentB173.hasClientHooks()||connection==null||mc.level==null||mc.player==null||mc.getSingleplayerServer()!=null
+                ||!connection.hasChannel(org.kylepitcock.legacyconnector.core.network.LegacyPayload.TYPE)){
+            if(remoteConnection==connection&&connection!=null&&(remoteReady||helloTicks>0))GameHookNetworkB173.stop(remoteSession);
+            remoteConnection=null;remoteLevel=null;remoteReady=false;remoteFrame=null;helloTicks=0;return;
+        }
+        if(remoteConnection!=connection||remoteLevel!=mc.level){
+            if(remoteConnection==connection&&(remoteReady||helloTicks>0))GameHookNetworkB173.stop(remoteSession);
+            remoteConnection=connection;remoteLevel=mc.level;remoteSession++;remoteReady=false;remoteFrame=null;helloTicks=0;
+        }
+        int[] metrics=new int[256];for(int i=0;i<metrics.length;i++)metrics[i]=mc.font.width(String.valueOf((char)i));
+        var context=new ServerGameHooksB173.Context(mc.getWindow().getWidth(),mc.getWindow().getHeight(),mc.getWindow().getGuiScaledWidth(),
+                mc.getWindow().getGuiScaledHeight(),mc.options.guiScale().get(),mc.options.hideGui,!mc.options.getCameraType().isFirstPerson(),mc.screen!=null,mc.isPaused(),metrics);
+        if(remoteReady)GameHookNetworkB173.sendContext(GameHookNetworkB173.ACTIVE,remoteSession,context);
+        else if(helloTicks++%20==0)GameHookNetworkB173.sendContext(GameHookNetworkB173.HELLO,remoteSession,context);
     }
     private static void frame(GuiGraphics graphics){
         if(!ContentB173.hasClientHooks()){display=List.of();return;}
@@ -29,8 +57,8 @@ final class ModTicksClientB173 {
         var options=new Options(mc.getWindow().getWidth(),mc.getWindow().getHeight(),mc.getWindow().getGuiScaledWidth(),
                 mc.getWindow().getGuiScaledHeight(),mc.options.guiScale().get(),mc.options.hideGui,!mc.options.getCameraType().isFirstPerson(),mc.screen!=null,mc.isPaused(),metrics);
         var server=mc.getSingleplayerServer();
-        if(server==null)display=capture(mc.player,options);
-        else if(PENDING.compareAndSet(false,true)){
+        if(server==null&&!remoteReady)display=capture(mc.player,options);
+        else if(server!=null&&PENDING.compareAndSet(false,true)){
             var uuid=mc.player.getUUID();var level=mc.level;
             server.execute(()->{
                 try{var player=server.getPlayerList().getPlayer(uuid);if(player!=null){var next=capture(player,options);if(previous==level)display=next;}}
@@ -39,8 +67,34 @@ final class ModTicksClientB173 {
             });
         }
         var before=HudState.capture();
-        try{graphics.flush();ClientGuiB173.begin(graphics);for(var command:display)command.accept(graphics);}
+        try{graphics.flush();ClientGuiB173.begin(graphics);if(server==null&&remoteReady)replayRemote(graphics);else for(var command:display)command.accept(graphics);}
         finally{try{ClientGuiB173.end();graphics.flush();}finally{before.restore();}}
+    }
+    private static void replayRemote(GuiGraphics graphics){
+        var frame=remoteFrame;if(frame==null||!GameHookCanvasB173.balanced(frame))return;var mc=Minecraft.getInstance();
+        var scale=GameHookCanvasB173.scale(frame.getInt("width"),frame.getInt("height"),mc.getWindow().getGuiScaledWidth(),mc.getWindow().getGuiScaledHeight());
+        var commands=frame.getList("commands",Tag.TAG_COMPOUND);
+        graphics.pose().pushPose();int depth=0;
+        try{
+        graphics.pose().scale(scale.x(),scale.y(),1);
+        for(Tag raw:commands){var command=(CompoundTag)raw;int[] v=command.getIntArray("values");switch(command.getString("op")){
+            case "quad"->{
+                var points=command.getList("vertices",Tag.TAG_COMPOUND);if(points.size()!=4)continue;
+                var vertices=new ArrayList<RendererContextB173.Vertex>();for(Tag point:points){var p=(CompoundTag)point;vertices.add(new RendererContextB173.Vertex(p.getDouble("x"),p.getDouble("y"),p.getDouble("z"),p.getDouble("u"),p.getDouble("v"),p.getInt("color"),0,1,0));}
+                var state=command.getCompound("style");var style=new RendererContextB173.Style(true,false,state.getBoolean("depthTest"),state.getBoolean("depthWrite"),state.getBoolean("blend"),state.getInt("src"),state.getInt("dst"),state.getInt("depthFunc"),GameHookHudB173.matrix(state,"textureMatrix"));
+                var texture=net.minecraft.resources.ResourceLocation.tryParse(command.getString("texture"));if(texture!=null)drawQuad(graphics,vertices,GameHookHudB173.matrix(command,"matrix"),texture,command.getInt("color"),style,1,1);
+            }
+            case "blit"->{if(v.length==6)GuiDrawB173.blit(v[0],v[1],v[2],v[3],v[4],v[5]);}
+            case "fill"->{if(v.length==5)GuiDrawB173.fill(v[0],v[1],v[2],v[3],v[4]);}
+            case "gradient"->{if(v.length==6)GuiDrawB173.fillGradient(v[0],v[1],v[2],v[3],v[4],v[5]);}
+            case "text"->{if(v.length==4){graphics.pose().pushPose();try{graphics.pose().mulPose(GameHookHudB173.matrix(command,"matrix"));GuiDrawB173.text(command.getString("text"),v[0],v[1],v[2],v[3]!=0);}finally{graphics.pose().popPose();}}}
+            case "bind"->GuiDrawB173.bind(GuiDrawB173.textureId(command.getString("path")));
+            case "color"->GuiDrawB173.color(command.getFloat("r"),command.getFloat("g"),command.getFloat("b"),command.getFloat("a"));
+            case "push"->{GuiDrawB173.push();depth++;}case "pop"->{GuiDrawB173.pop();depth--;}
+            case "translate"->GuiDrawB173.translate(command.getFloat("x"),command.getFloat("y"),command.getFloat("z"));
+            case "scale"->GuiDrawB173.scale(command.getFloat("x"),command.getFloat("y"),command.getFloat("z"));case "click"->GuiDrawB173.click();default->{}
+        }}
+        }finally{while(depth>0){graphics.pose().popPose();depth--;}graphics.pose().popPose();}
     }
     private static List<Consumer<GuiGraphics>> capture(net.minecraft.world.entity.player.Player nativePlayer,Options options){
         var commands=new ArrayList<Consumer<GuiGraphics>>();var original=new TickMinecraft();

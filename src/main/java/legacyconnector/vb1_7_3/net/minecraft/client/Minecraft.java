@@ -29,8 +29,9 @@ public class Minecraft {
     public legacyconnector.vb1_7_3.net.minecraft.stat.PlayerStats stats=new legacyconnector.vb1_7_3.net.minecraft.stat.PlayerStats();
     public static final class ContextScope implements AutoCloseable {
         private final Context previous;private final legacyconnector.vb1_7_3.net.minecraft.entity.player.ClientPlayerEntity override;
-        private ContextScope(World world,legacyconnector.vb1_7_3.net.minecraft.entity.Entity focus){previous=CONTEXT.get();override=PLAYER_OVERRIDE.get();CONTEXT.set(new Context(world,focus));if(world!=null)mcc$instance().world=world;PLAYER_OVERRIDE.remove();}
-        @Override public void close(){if(previous==null)CONTEXT.remove();else CONTEXT.set(previous);if(override==null)PLAYER_OVERRIDE.remove();else PLAYER_OVERRIDE.set(override);}
+        private final org.kylepitcock.legacyconnector.vb1_7_3.HookActorStateB173.Scope actor;
+        private ContextScope(World world,legacyconnector.vb1_7_3.net.minecraft.entity.Entity focus){previous=CONTEXT.get();override=PLAYER_OVERRIDE.get();actor=org.kylepitcock.legacyconnector.vb1_7_3.HookActorStateB173.forContext(world,focus);CONTEXT.set(new Context(world,focus));if(world!=null)mcc$instance().world=world;PLAYER_OVERRIDE.remove();}
+        @Override public void close(){try{actor.close();}finally{if(previous==null)CONTEXT.remove();else CONTEXT.set(previous);if(override==null)PLAYER_OVERRIDE.remove();else PLAYER_OVERRIDE.set(override);}}
     }
     public static ContextScope mcc$context(World world,legacyconnector.vb1_7_3.net.minecraft.entity.Entity focus){return new ContextScope(world,focus);}
     /** Phantom field accessor: cached Minecraft references resolve the actor of this callback, rather than another world's player. */

@@ -399,7 +399,7 @@ sets both utility items' maximum damage and protection to zero: the boots and go
 armor points. Beta's lack of right-click autoequip is preserved. The goggles supply an original texture overlay only;
 they do not add illumination or a night-vision potion effect. ModLoader frame hooks run with synchronized equipment and,
 in integrated play, authoritative server state plus captured HUD commands. Replay retains original blend and depth state.
-These remain client-driven hooks; full dedicated-server effects parity is not implemented.
+That validation build used client-driven hooks; its dedicated-effects limitation is addressed by the scoped addition below.
 
 Native crafting and furnace result pickups invoke the original item and ModLoader achievement callbacks. Recipe outputs
 retain their complete native component patch, and metadata ingredients distinguish subtype zero from variants 1–5 while
@@ -430,6 +430,35 @@ controls and dedicated-server validation use separate recorded controls: eight f
 PNG's alpha blend exactly, a native cow takes one shovel damage while retaining its configured maximum health of 100,
 and 20 original plastic cows have observed `NATURAL` spawn reasons on above-zero grass terrain. The dedicated machine
 run passes 28 controls; save/restart persistence is recorded separately in the validation manifest.
+
+### Dedicated game hooks
+
+Dedicated game hooks use an optional client/server handshake. After activation, `ServerTick.Pre` dispatches the original
+`OnTickInGame` once per participating player per authoritative server tick, respecting registered clock behavior. Dispatch
+does not depend on HUD rendering or fresh presentation packets. The server binds the native player, world, equipment and
+health; client input supplies only bounded presentation context. Captured HUD commands return to that player, and the
+handshake transfers execution from the client fallback without running both copies.
+
+Hook retention and clock state are kept per player UUID. Mutable scalar state written by hook-reachable methods on the
+original `BaseMod` implementation and its custom ancestry is scoped to the actor, including player-origin block callbacks.
+Nested scopes restore the previous actor or neutral state even on failure. Helper-class globals, including PlasticCraft's
+shared `Stun` lists and wall-clock timer, remain shared and retain their original behavior. Logout and server stop clear
+actor state. Single-player hook dispatch remains unchanged.
+
+The unchanged PlasticCraft 2.1.3 jar passes dedicated checks for the original six-second stun, four-second cooldown,
+foreign movement modifiers, both player orders and real 12-block falls: the connected player retains 20 health with boots
+and has 12 without them. Two native player actors are exercised; the secondary actor has a packet sink rather than a
+second live socket. The same checks pass with the HUD hidden. Six remote HUD scenarios and eight framebuffer samples
+verify the original goggles texture, alpha and presentation controls while server hooks continue running.
+
+The [dedicated hooks validation snapshot](../data/b173-dedicated-hooks-food-validation-2026-11-09.json) also records an
+experimental food conversion and its configuration checks. That food change was subsequently reverted at the contributor's
+request. Hosted Beta food again runs its original immediate-use callback, retaining original health healing, consumption,
+remainders and custom effects. There is no hunger-conversion setting or food-settings exchange. Native vanilla food
+behavior is unchanged; the dedicated hook, Goo recovery, fall-boot and goggles fixes remain in place.
+The [food rollback validation](../data/b173-food-rollback-validation-2026-11-09.json) records 50 passing native item-use
+checks with unchanged PlasticCraft 2.1.3 on a disposable dedicated server and 657 passing portable build tests. The item-use
+fixture uses a native fake player rather than a connected client.
 
 ### Crafting outputs larger than an inventory stack
 
