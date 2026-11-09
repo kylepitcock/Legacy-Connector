@@ -16,11 +16,18 @@ import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TypeInsnNode;
+import org.objectweb.asm.tree.IntInsnNode;
+import org.objectweb.asm.tree.VarInsnNode;
 
 /** Regression tests for Minecraft 1.20.1 -> 1.21.1 call-site and field-shape migrations. */
 class CallRewrites1201Test {
     private static final String ADDON_PACK_MANAGER = "net/threetag/palladium/addonpack/AddonPackManager";
     private static final String FOLDER_REPOSITORY_SOURCE = "net/minecraft/server/packs/repository/FolderRepositorySource";
+    private static final String AMETHYST_CLUSTER_BLOCK = "net/minecraft/world/level/block/AmethystClusterBlock";
+    private static final String AMETHYST_CLUSTER_CONSTRUCTOR_1201 =
+            "(IILnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V";
+    private static final String AMETHYST_CLUSTER_CONSTRUCTOR_1211 =
+            "(FFLnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V";
     private static final String FOLDER_CONSTRUCTOR =
             "(Ljava/nio/file/Path;Lnet/minecraft/server/packs/PackType;Lnet/minecraft/server/packs/repository/PackSource;)V";
     private static final String FOLDER_HELPER =
@@ -40,6 +47,42 @@ class CallRewrites1201Test {
         node.superName = "java/lang/Object";
         node.methods.add(method);
         return node;
+    }
+
+    @Test
+    void amethystClusterIntegerDimensionsAreWidenedToFloat() {
+        String properties = "net/minecraft/world/level/block/state/BlockBehaviour$Properties";
+        MethodNode method = new MethodNode(
+                Opcodes.ACC_PUBLIC, "<init>", "(L" + properties + ";)V", null, null);
+        method.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+        method.instructions.add(new InsnNode(Opcodes.ICONST_1));
+        method.instructions.add(new IntInsnNode(Opcodes.BIPUSH, 13));
+        method.instructions.add(new VarInsnNode(Opcodes.ALOAD, 1));
+        MethodInsnNode oldConstructor = new MethodInsnNode(
+                Opcodes.INVOKESPECIAL, AMETHYST_CLUSTER_BLOCK, "<init>", AMETHYST_CLUSTER_CONSTRUCTOR_1201, false);
+        method.instructions.add(oldConstructor);
+        method.instructions.add(new InsnNode(Opcodes.RETURN));
+        method.maxStack = 4;
+        method.maxLocals = 2;
+        ClassNode node = node("example/CrystalClusterSubclass", method);
+        node.superName = AMETHYST_CLUSTER_BLOCK;
+
+        assertEquals(1, CallRewrites1201.apply(node));
+
+        AbstractInsnNode[] instructions = method.instructions.toArray();
+        assertEquals(Opcodes.ALOAD, instructions[0].getOpcode());
+        assertEquals(Opcodes.ICONST_1, instructions[1].getOpcode());
+        assertEquals(Opcodes.I2F, instructions[2].getOpcode());
+        assertEquals(Opcodes.BIPUSH, instructions[3].getOpcode());
+        assertEquals(Opcodes.I2F, instructions[4].getOpcode());
+        assertEquals(Opcodes.ALOAD, instructions[5].getOpcode());
+        assertTrue(instructions[6] instanceof MethodInsnNode);
+        MethodInsnNode rewritten = (MethodInsnNode) instructions[6];
+        assertEquals(Opcodes.INVOKESPECIAL, rewritten.getOpcode());
+        assertEquals(AMETHYST_CLUSTER_BLOCK, rewritten.owner);
+        assertEquals(AMETHYST_CLUSTER_CONSTRUCTOR_1211, rewritten.desc);
+        assertFalse(method.instructions.contains(oldConstructor));
+        assertEquals(Opcodes.RETURN, instructions[7].getOpcode());
     }
 
     @Test
