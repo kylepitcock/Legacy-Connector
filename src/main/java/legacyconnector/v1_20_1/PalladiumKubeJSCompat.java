@@ -122,9 +122,11 @@ public final class PalladiumKubeJSCompat {
                     throw new UnsupportedOperationException("Unexpected Palladium builder factory method: " + method);
                 });
 
+        Class<?> builderTypeCallbackClass = Class.forName(
+                "dev.latvian.mods.kubejs.registry.BuilderTypeRegistry$Callback", true, loader);
         java.util.function.Consumer<Object> registerBasicType = callback -> {
             try {
-                invoke(callback, new String[] {"add"}, "basic", builderClass, factory);
+                registerBasicBuilderType(callback, builderTypeCallbackClass, builderClass, builderFactoryClass, factory);
             } catch (ReflectiveOperationException error) {
                 throw new IllegalStateException("Could not register KubeJS builder type for " + contentClassName, unwrap(error));
             }
