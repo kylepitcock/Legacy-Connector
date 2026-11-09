@@ -43,14 +43,26 @@ public class Minecraft {
         Context context=CONTEXT.get();World world=context==null?active.world:context.world;
         if(world!=null&&world.mcc$level()!=null&&!world.isRemote){
             if(context!=null&&context.focus instanceof legacyconnector.vb1_7_3.net.minecraft.entity.player.ClientPlayerEntity player)return player;
-            net.minecraft.world.entity.player.Player closest=null;double best=Double.POSITIVE_INFINITY;
-            for(var player:world.mcc$level().players()){
-                double distance=context==null||context.focus==null?0:player.distanceToSqr(context.focus.x,context.focus.y,context.focus.z);
-                if(distance<best){best=distance;closest=player;}
-            }
+            net.minecraft.world.entity.player.Player closest=mcc$contextPlayer(world.mcc$level().players(),
+                    ()->world.mcc$level() instanceof net.minecraft.server.level.ServerLevel level
+                            ?level.getServer().getPlayerList().getPlayers():java.util.List.of(),
+                    player->player.level()==world.mcc$level(),
+                    player->context==null||context.focus==null?0:player.distanceToSqr(context.focus.x,context.focus.y,context.focus.z));
             return closest==null?null:(legacyconnector.vb1_7_3.net.minecraft.entity.player.ClientPlayerEntity)org.kylepitcock.legacyconnector.vb1_7_3.EntityViewsB173.wrap(closest);
         }
         var local=MenusB173.localPlayer();return local==null?null:(legacyconnector.vb1_7_3.net.minecraft.entity.player.ClientPlayerEntity)org.kylepitcock.legacyconnector.vb1_7_3.EntityViewsB173.wrap(local);
+    }
+    /** Beta keeps Minecraft.player during the death screen, after level membership ends. */
+    static <P> P mcc$contextPlayer(Iterable<? extends P> levelPlayers,
+            java.util.function.Supplier<? extends Iterable<? extends P>> registeredPlayers,
+            java.util.function.Predicate<? super P> sameLevel,java.util.function.ToDoubleFunction<? super P> distance){
+        P closest=null;double best=Double.POSITIVE_INFINITY;
+        for(P player:levelPlayers)if(sameLevel.test(player)){double value=distance.applyAsDouble(player);if(value<best){best=value;closest=player;}}
+        if(closest!=null)return closest;
+        // The server's connected-player registry retains the real death-screen actor.
+        // Do not cache it beyond logout or borrow an actor from another dimension.
+        for(P player:registeredPlayers.get())if(sameLevel.test(player)){double value=distance.applyAsDouble(player);if(value<best){best=value;closest=player;}}
+        return closest;
     }
     public static void mcc$set$player(Minecraft minecraft,legacyconnector.vb1_7_3.net.minecraft.entity.player.ClientPlayerEntity player){
         Minecraft active=SCOPED.get()==null?minecraft:SCOPED.get();
