@@ -46,9 +46,19 @@ public final class Compat1201 {
      * Keep Palladium's generated pack.mcmeta accurate for the PackType being loaded.
      */
     public static int packFormat(net.minecraft.server.packs.PackType packType) {
-        if (packType == net.minecraft.server.packs.PackType.CLIENT_RESOURCES) return 34;
-        if (packType == net.minecraft.server.packs.PackType.SERVER_DATA) return 48;
-        throw new IllegalArgumentException("Unsupported Palladium addon-pack type: " + packType);
+        if (packType == null) {
+            throw new IllegalArgumentException("Palladium addon-pack type must not be null");
+        }
+        return packFormat(packType.name());
+    }
+
+    /** Palladium extends PackType with ADDON; its pack.mcmeta pack_format follows the resource-pack format. */
+    static int packFormat(String packTypeName) {
+        return switch (packTypeName) {
+            case "CLIENT_RESOURCES", "ADDON" -> 34;
+            case "SERVER_DATA" -> 48;
+            default -> throw new IllegalArgumentException("Unsupported Palladium addon-pack type: " + packTypeName);
+        };
     }
 
 }
