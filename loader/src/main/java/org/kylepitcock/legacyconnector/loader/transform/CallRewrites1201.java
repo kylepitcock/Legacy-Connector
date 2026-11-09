@@ -32,10 +32,7 @@ final class CallRewrites1201 {
             new String[] {"net/minecraft/resources/ResourceLocation", "parse", "(Ljava/lang/String;)Lnet/minecraft/resources/ResourceLocation;"},
             "net/minecraft/resources/ResourceLocation.<init>(Ljava/lang/String;Ljava/lang/String;)V",
             new String[] {"net/minecraft/resources/ResourceLocation", "fromNamespaceAndPath",
-                    "(Ljava/lang/String;Ljava/lang/String;)Lnet/minecraft/resources/ResourceLocation;"},
-            "net/minecraft/server/packs/repository/FolderRepositorySource.<init>(Ljava/nio/file/Path;Lnet/minecraft/server/packs/PackType;Lnet/minecraft/server/packs/repository/PackSource;)V",
-            new String[] {HELPERS, "folderRepositorySource",
-                    "(Ljava/nio/file/Path;Lnet/minecraft/server/packs/PackType;Lnet/minecraft/server/packs/repository/PackSource;)Lnet/minecraft/server/packs/repository/FolderRepositorySource;"});
+                    "(Ljava/lang/String;Ljava/lang/String;)Lnet/minecraft/resources/ResourceLocation;"});
 
     private static final String PALLADIUM_ADDON_PACK_MANAGER = "net/threetag/palladium/addonpack/AddonPackManager";
     private static final String FOLDER_REPOSITORY_SOURCE = "net/minecraft/server/packs/repository/FolderRepositorySource";
@@ -120,7 +117,12 @@ final class CallRewrites1201 {
                             boolean palladiumFolderRepository = call.owner.equals(FOLDER_REPOSITORY_SOURCE)
                                     && node.name.equals(PALLADIUM_ADDON_PACK_MANAGER)
                                     && m.name.equals("<init>") && m.desc.equals("()V");
-                            if (call.owner.equals(FOLDER_REPOSITORY_SOURCE) && !palladiumFolderRepository) f = null;
+                            if (palladiumFolderRepository) {
+                                f = new String[] {HELPERS, "folderRepositorySource",
+                                        "(Ljava/nio/file/Path;Lnet/minecraft/server/packs/PackType;Lnet/minecraft/server/packs/repository/PackSource;)Lnet/minecraft/server/packs/repository/FolderRepositorySource;"};
+                            } else if (call.owner.equals(FOLDER_REPOSITORY_SOURCE)) {
+                                f = null;
+                            }
                             if (f != null && made.getNext() != null && made.getNext().getOpcode() == Opcodes.DUP) {
                                 m.instructions.remove(made.getNext());
                                 m.instructions.remove(made);
