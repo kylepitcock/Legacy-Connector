@@ -1,7 +1,6 @@
 package org.kylepitcock.legacyconnector.loader.transform;
 
 import java.util.Iterator;
-import java.util.List;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -66,11 +65,6 @@ final class PalladiumKubeJS1201 {
     /** KubeJS 7 owns metadata on ScriptFile, so these Palladium KubeJS 6 classes are obsolete. */
     static boolean dropLegacyKubejsClass(String name) {
         return SCRIPT_FILE_INFO_MIXIN.equals(name) || ADDON_SCRIPT_FILE_INFO.equals(name);
-    }
-
-    /** Remove the old accessor mixin from Palladium's config after its class is dropped. */
-    static void dropScriptFileInfoMixin(Mixin1201.Stats stats) {
-        stats.droppedClasses.add(SCRIPT_FILE_INFO_MIXIN);
     }
 
     private static int rewritePlugin(ClassNode node) {
