@@ -857,6 +857,15 @@ More Creeps Robot Ted callbacks survive native death and 100 subsequent ticks, a
 object with the same UUID. The distributed jar contains its Pehkui and TerraBlender dependencies; missing Pehkui in the
 development-only test classpath produced separately recorded Witchery callbacks, not a passing Witchery gameplay claim.
 
+The [Machetes gameplay regression](../data/b173-machetes-gameplay-validation-2026-11-08.json) subsequently found that its
+distribution still contained an installation folder around the textures. The archive was explicitly repacked with identical
+class and image bytes; no archive-layout support was added to the loader. All six original sprites match the uploaded GPU
+pixels and render in the hand/hotbar. The shared Beta `Item.getAttackDamage(Entity)` callback now contributes to native
+attacks with native cooldown and critical handling preserved. Actual attacks produce the original gold/iron/diamond/stone/
+wood/slime totals of 5/7/9/6/4/7, with two durability wear per hit; native unarmed/sword, Strength, Sharpness and cooldown
+controls pass. A normal client attack-key hit independently deals nine damage with the diamond machete. The default build
+passes 544 portable tests; mining and every other tool callback are outside this bounded check.
+
 - **Placing a subtype.** b1.7.3's `ItemBlock` set block and metadata together (`getPlacedBlockMetadata` of the damage), so `onBlockAdded`
   and the tile entity it makes see the subtype; `getStateForPlacement` does the same (before, a Minefactory translocator or crafter
   placed from its item got the tile entity of metadata 0 and opened nothing).
