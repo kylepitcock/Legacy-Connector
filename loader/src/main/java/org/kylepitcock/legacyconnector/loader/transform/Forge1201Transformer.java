@@ -274,9 +274,20 @@ public final class Forge1201Transformer {
         }
         Map<ClassNode, Integer> migrated = new java.util.IdentityHashMap<>();
         SoftLink1201 soft = softLinkEnabled() ? new SoftLink1201(nodes, hierarchy) : null;
+        int palladiumKubejsChanges = 0;
+        int palladiumKubejsClassesDropped = 0;
         for (ClassNode node : nodes) {
+            if (PalladiumKubeJS1201.dropLegacyKubejsClass(node.name)) {
+                palladiumKubejsClassesDropped++;
+                if (PalladiumKubeJS1201.SCRIPT_FILE_INFO_MIXIN.equals(node.name)) {
+                    mixinStats.dropped.add(node.name + " (KubeJS 7 moved script metadata from ScriptFileInfo to ScriptFile)");
+                    mixinStats.droppedClasses.add(node.name);
+                }
+                continue;
+            }
             stringsMapped += mapSrgStrings(node);
             int viaCalls = CallRewrites1201.apply(node, compoundSubclasses);
+            palladiumKubejsChanges += PalladiumKubeJS1201.apply(node);
             viaCalls += ForgeApiRewrites1201.apply(node);
             viaCalls += AttachGuards1201.apply(node, jarClasses);
             if (ForgeApiRewrites1201.markProviders(node)) viaCalls++;
@@ -285,6 +296,11 @@ public final class Forge1201Transformer {
             mc.add(changed);
             Mixin1201.apply(node, srg, hierarchy, Mc1201Tables.get(), mixinStats);
             migrated.put(node, viaCalls + changed.total());
+        }
+        if (palladiumKubejsChanges > 0 || palladiumKubejsClassesDropped > 0) {
+            result.notes.add("Palladium KubeJS 6 integration adapted for KubeJS 7: "
+                    + palladiumKubejsChanges + " bytecode rewrite(s), "
+                    + palladiumKubejsClassesDropped + " obsolete KubeJS 6 class(es) removed");
         }
         if (ownUnit) {
             // an isolated library next to its native build registers the same ids as the native one: its deferred registers are not attached to the bus
@@ -309,6 +325,7 @@ public final class Forge1201Transformer {
         if (ownUnit) for (ClassNode node : nodes) renameInjectorHandlers(node, VER.id().replaceAll("[^a-z0-9]", ""));
         // the soft link runs when every class of the jar has been migrated: references to the mod's own members are judged by their final declarations
         for (ClassNode node : nodes) {
+            if (PalladiumKubeJS1201.dropLegacyKubejsClass(node.name)) continue;
             int softened = soft == null ? 0 : soft.apply(node);
             byte[] bytes;
             if (migrated.get(node) > 0 || softened == 2) {
