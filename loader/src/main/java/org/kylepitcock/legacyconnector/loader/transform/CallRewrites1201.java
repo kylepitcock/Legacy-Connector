@@ -6,6 +6,8 @@ import java.util.Map;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.FieldInsnNode;
+import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
@@ -69,6 +71,21 @@ final class CallRewrites1201 {
                     }
                 } else if (in instanceof TypeInsnNode t && t.getOpcode() == Opcodes.NEW) {
                     news.push(t);
+                } else if (in instanceof FieldInsnNode field
+                        && field.getOpcode() == Opcodes.GETSTATIC
+                        && field.owner.equals(ARMOR_MATERIALS)
+                        && VANILLA_ARMOR_MATERIALS.contains(field.name)
+                        && field.desc.equals(ARMOR_MATERIALS_DESC)) {
+                    // In 1.20.1 ArmorMaterials was an enum implementing ArmorMaterial.
+                    // In 1.21.1 its vanilla constants are Holder<ArmorMaterial>.
+                    // Unwrap the holder at the read site to preserve the old value shape.
+                    field.desc = HOLDER_DESC;
+                    InsnList unwrap = new InsnList();
+                    unwrap.add(new MethodInsnNode(
+                            Opcodes.INVOKEINTERFACE, HOLDER, "value", "()Ljava/lang/Object;", true));
+                    unwrap.add(new TypeInsnNode(Opcodes.CHECKCAST, ARMOR_MATERIAL));
+                    m.instructions.insert(field, unwrap);
+                    n++;
                 } else if (in instanceof MethodInsnNode call) {
                     if (call.getOpcode() == Opcodes.INVOKESPECIAL && call.name.equals("<init>")) {
                         TypeInsnNode made = news.isEmpty() ? null : news.peek();
@@ -82,6 +99,15 @@ final class CallRewrites1201 {
                                 continue;
                             }
                             String[] f = FACTORIES.get(call.owner + ".<init>" + call.desc);
+                            // Palladium's addon-pack directory is a direct child of the game
+                            // directory. Its 1.20.1 constructor call is adapted using the
+                            // game's standard allowed_symlinks.txt validator. Keep this
+                            // specific because another mod may pass a folder with a different
+                            // root relationship.
+                            boolean palladiumFolderRepository = call.owner.equals(FOLDER_REPOSITORY_SOURCE)
+                                    && node.name.equals(PALLADIUM_ADDON_PACK_MANAGER)
+                                    && m.name.equals("<init>") && m.desc.equals("()V");
+                            if (call.owner.equals(FOLDER_REPOSITORY_SOURCE) && !palladiumFolderRepository) f = null;
                             if (f != null && made.getNext() != null && made.getNext().getOpcode() == Opcodes.DUP) {
                                 m.instructions.remove(made.getNext());
                                 m.instructions.remove(made);
