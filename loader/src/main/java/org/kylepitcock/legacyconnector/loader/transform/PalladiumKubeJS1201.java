@@ -105,7 +105,9 @@ final class PalladiumKubeJS1201 {
                             && call.getOpcode() == Opcodes.INVOKESPECIAL
                             && call.owner.equals(KUBEJS7_EVENT)
                             && call.name.equals("<init>")) {
-                        method.instructions.remove(call);
+                        // EventJS used to be the class superclass; KubeEvent is
+                        // an interface, so the wrapper now invokes Object.<init>.
+                        call.owner = "java/lang/Object";
                     }
                     instruction = next;
                 }
