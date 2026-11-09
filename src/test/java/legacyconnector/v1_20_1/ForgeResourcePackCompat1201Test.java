@@ -57,12 +57,20 @@ class ForgeResourcePackCompat1201Test {
             assertEquals("symbiote", pack.packId());
             assertEquals(root, pack.getSource());
             assertTrue(pack.isBuiltin());
+            assertEquals(root.resolve("assets").resolve("symbiote").resolve("lang").resolve("en_us.json"),
+                    invokeLegacyResolve(pack, "assets", "symbiote", "lang", "en_us.json"));
             assertEquals("{\"hello\":\"world\"}",
                     Files.readString(pack.getSource().resolve("assets/symbiote/lang/en_us.json")));
         } finally {
             pack.close();
             deleteTree(root);
         }
+    }
+
+    private static Path invokeLegacyResolve(PathPackResources pack, String... paths) throws Exception {
+        Method resolve = PathPackResources.class.getDeclaredMethod("resolve", String[].class);
+        resolve.setAccessible(true);
+        return (Path) resolve.invoke(pack, (Object) paths);
     }
 
     private static Object defaultValue(Object proxy, Method method, Object[] args) {

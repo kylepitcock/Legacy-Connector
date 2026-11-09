@@ -36,6 +36,23 @@ public class PathPackResources extends net.minecraft.server.packs.PathPackResour
         return source;
     }
 
+    /**
+     * Forge 1.20.1's path resolver. Palladium 4.5.10 uses a Mixin invoker for this
+     * protected method when wrapping a mod pack. The 1.21.1 vanilla superclass no
+     * longer declares it, so the compatibility facade must keep the legacy method
+     * on this concrete class for that invoker to bind.
+     *
+     * <p>Each argument is a path component (and may itself contain slash-separated
+     * directories), matching Forge 1.20.1's implementation.
+     */
+    protected Path resolve(String... paths) {
+        Path resolved = getSource();
+        for (String path : paths) {
+            resolved = resolved.resolve(path);
+        }
+        return resolved;
+    }
+
     /** Retains Forge 1.20.1's explicit builtin flag for wrappers such as Palladium's ModResourcePack. */
     public boolean isBuiltin() {
         return builtin;
