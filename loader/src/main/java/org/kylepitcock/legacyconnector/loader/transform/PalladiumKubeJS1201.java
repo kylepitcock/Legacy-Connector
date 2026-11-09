@@ -22,12 +22,9 @@ import org.objectweb.asm.tree.TypeInsnNode;
 import org.objectweb.asm.tree.VarInsnNode;
 
 /**
- * Palladium 4.5.x shipped a KubeJS 6 integration. Its plugin superclass,
- * binding event, wrapper hook and addon-script file model changed in KubeJS 7.
- *
- * Keep Palladium's public scripting hooks, adapt its plugin class to the KubeJS
- * 7 interface, and replace only the old addon-script injection body with a
- * runtime helper that uses KubeJS 7 ScriptFileInfo / ScriptFile.
+ * Palladium 4.5.x shipped a KubeJS 6 integration. Migrate its plugin discovery,
+ * builder/event registration, EventJS wrappers, and addon-script loading to
+ * KubeJS 7 while keeping optional KubeJS linkage behind the runtime bridge.
  */
 final class PalladiumKubeJS1201 {
     static final String PLUGIN = "net/threetag/palladium/compat/kubejs/PalladiumKubeJSPlugin";
@@ -43,7 +40,6 @@ final class PalladiumKubeJS1201 {
     private static final String KUBEJS7_EVENT_GROUP = "dev/latvian/mods/kubejs/event/EventGroup";
     private static final String KUBEJS7_EVENT_GROUP_REGISTRY = "dev/latvian/mods/kubejs/event/EventGroupRegistry";
     private static final String KUBEJS7_BUILDER_TYPE_REGISTRY = "dev/latvian/mods/kubejs/registry/BuilderTypeRegistry";
-    private static final String SCRIPT_TYPE_HOLDER = "dev/latvian/mods/kubejs/script/ScriptTypeHolder";
     private static final String COMPAT_HELPER = "legacyconnector/v1_20_1/PalladiumKubeJSCompat";
     private static final String KUBEJS7_PLUGIN = "dev/latvian/mods/kubejs/plugin/KubeJSPlugin";
     private static final String BINDING_REGISTRY = "dev/latvian/mods/kubejs/script/BindingRegistry";
@@ -292,7 +288,7 @@ final class PalladiumKubeJS1201 {
         // replaced by registerBuilderTypes(), while its custom event listeners
         // remain and run from init().
         node.fields.removeIf(field -> field.name.equals("ABILITY") || field.name.equals("CONDITION"));
-        rewritePluginInitializer(init, node);
+        rewritePluginInitializer(init);
         MethodNode classInitializer = findMethod(node, "<clinit>", "()V");
         if (classInitializer != null) {
             classInitializer.instructions.clear();
@@ -318,7 +314,7 @@ final class PalladiumKubeJS1201 {
         return 8;
     }
 
-    private static void rewritePluginInitializer(MethodNode init, ClassNode owner) {
+    private static void rewritePluginInitializer(MethodNode init) {
         InvokeDynamicInsnNode eventConsumer = null;
         for (var instruction = init.instructions.getFirst(); instruction != null; instruction = instruction.getNext()) {
             if (instruction instanceof InvokeDynamicInsnNode dynamic
