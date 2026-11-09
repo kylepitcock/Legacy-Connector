@@ -71,9 +71,11 @@ class PalladiumAddonPackManager1201Test implements Opcodes {
         node.superName = "java/lang/Object";
 
         MethodNode constructor = new MethodNode(ACC_PUBLIC, "<init>", "()V", null, null);
+        constructor.instructions.add(new VarInsnNode(ALOAD, 0));
+        constructor.instructions.add(new MethodInsnNode(INVOKESPECIAL, "java/lang/Object", "<init>", "()V", false));
         constructor.instructions.add(new TypeInsnNode(NEW, FOLDER_SOURCE));
         constructor.instructions.add(new InsnNode(DUP));
-        constructor.instructions.add(new VarInsnNode(ALOAD, 1));
+        constructor.instructions.add(new InsnNode(ACONST_NULL));
         constructor.instructions.add(new InsnNode(ACONST_NULL));
         constructor.instructions.add(new InsnNode(ACONST_NULL));
         if (TARGET_DESCRIPTOR.equals(constructorDescriptor)) {
@@ -83,7 +85,7 @@ class PalladiumAddonPackManager1201Test implements Opcodes {
         constructor.instructions.add(new InsnNode(POP));
         constructor.instructions.add(new InsnNode(RETURN));
         constructor.maxStack = TARGET_DESCRIPTOR.equals(constructorDescriptor) ? 6 : 5;
-        constructor.maxLocals = 2;
+        constructor.maxLocals = 1;
         node.methods.add(constructor);
         return node;
     }
