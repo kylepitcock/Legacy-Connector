@@ -252,19 +252,23 @@ final class PalladiumKubeJS1201 {
 
     private static int rewriteScriptManagerMixin(ClassNode node) {
         MethodNode injection = findMethod(node, "loadFromDirectory", "(L" + CALLBACK_INFO + ";)V");
-        if (injection == null) {
-            throw new IllegalStateException("Palladium ScriptManagerMixin no longer has the inspected loadFromDirectory injection");
+        MethodNode namespaceFactory = findMethod(node, "lambda$loadFromDirectory$0", "(Ljava/lang/String;)Lcom/mojang/datafixers/util/Pair;");
+        if (injection == null || namespaceFactory == null) {
+            throw new IllegalStateException("Palladium ScriptManagerMixin no longer has the inspected KubeJS 6 loadFromDirectory shape");
         }
+        String[] namespaceParts = namespaceConcatParts(namespaceFactory);
 
         injection.instructions.clear();
         injection.tryCatchBlocks.clear();
         injection.localVariables = null;
         injection.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+        injection.instructions.add(new LdcInsnNode(namespaceParts[0]));
+        injection.instructions.add(new LdcInsnNode(namespaceParts[1]));
         injection.instructions.add(new MethodInsnNode(Opcodes.INVOKESTATIC,
                 "legacyconnector/v1_20_1/PalladiumKubeJSCompat", "loadAddonScripts",
-                "(Ljava/lang/Object;)V", false));
+                "(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;)V", false));
         injection.instructions.add(new InsnNode(Opcodes.RETURN));
-        injection.maxStack = 1;
+        injection.maxStack = 3;
         injection.maxLocals = 1;
 
         // All lambda bodies belonged to the replaced KubeJS 6 script-file construction path.
@@ -277,6 +281,29 @@ final class PalladiumKubeJS1201 {
             }
         }
         return 1 + removed;
+    }
+
+    /**
+     * Palladium builds its addon ScriptPackInfo namespace with StringConcatFactory.
+     * Read the original concat recipe before dropping that lambda so the KubeJS 7
+     * adapter preserves the exact pack namespace rather than guessing a suffix.
+     */
+    private static String[] namespaceConcatParts(MethodNode method) {
+        for (var instruction = method.instructions.getFirst(); instruction != null; instruction = instruction.getNext()) {
+            if (!(instruction instanceof InvokeDynamicInsnNode dynamic)
+                    || !dynamic.name.equals("makeConcatWithConstants")
+                    || !dynamic.bsm.getOwner().equals("java/lang/invoke/StringConcatFactory")
+                    || dynamic.bsmArgs.length == 0
+                    || !(dynamic.bsmArgs[0] instanceof String recipe)) {
+                continue;
+            }
+            int placeholder = recipe.indexOf('\u0001');
+            if (placeholder < 0 || recipe.indexOf('\u0001', placeholder + 1) >= 0 || recipe.indexOf('\u0002') >= 0) {
+                throw new IllegalStateException("Palladium addon script namespace concat recipe changed: " + recipe);
+            }
+            return new String[] {recipe.substring(0, placeholder), recipe.substring(placeholder + 1)};
+        }
+        throw new IllegalStateException("Palladium addon script namespace StringConcatFactory recipe was not found");
     }
 
     private static MethodNode findMethod(ClassNode node, String name, String descriptor) {
