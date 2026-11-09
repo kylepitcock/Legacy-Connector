@@ -2,8 +2,11 @@ package org.kylepitcock.legacyconnector.loader.transform;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldInsnNode;
@@ -13,6 +16,11 @@ import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.TypeInsnNode;
+import org.objectweb.asm.tree.analysis.Analyzer;
+import org.objectweb.asm.tree.analysis.AnalyzerException;
+import org.objectweb.asm.tree.analysis.Frame;
+import org.objectweb.asm.tree.analysis.SourceInterpreter;
+import org.objectweb.asm.tree.analysis.SourceValue;
 
 /**
  * Signature changes between Forge 1.20.1 / Minecraft 1.20.1 and NeoForge 1.21.1 that a rename cannot express, rewritten at the call site
@@ -22,6 +30,7 @@ import org.objectweb.asm.tree.TypeInsnNode;
  *       becomes {@code args, INVOKESTATIC factory};</li>
  *   <li>instance calls that need other semantics ({@code IEventBus.post} returned whether the event was cancelled) to a static helper in
  *       {@link #HELPERS} taking the receiver first;</li>
+ *   <li>Minecraft 1.21.1's {@code AmethystClusterBlock} dimensions are floats, so legacy integer arguments are widened at their producers;</li>
  *   <li>Minecraft 1.21.1's {@code ArmorMaterials} constants are {@code Holder<ArmorMaterial>} values, unwrapped at legacy enum-field reads;</li>
  *   <li>Palladium 4.5.x's addon-pack repository constructor is redirected through the game-root symlink validator;</li>
  *   <li>Palladium 4.5.x's synthesized mod-pack metadata declares the active 1.21.1 resource/data pack format.</li>
@@ -43,6 +52,11 @@ final class CallRewrites1201 {
     private static final String PALLADIUM_PACK_METADATA_FORMAT = "{\"pack\":{\"id\": \"%s\", \"version\": \"%s\", \"description\":\"%s\"}}";
     private static final String PALLADIUM_PACK_METADATA_FORMAT_1211 = "{\"pack\":{\"id\": \"%s\", \"version\": \"%s\", \"description\":\"%s\", \"pack_format\":%d}}";
     private static final String FOLDER_REPOSITORY_SOURCE = "net/minecraft/server/packs/repository/FolderRepositorySource";
+    private static final String AMETHYST_CLUSTER_BLOCK = "net/minecraft/world/level/block/AmethystClusterBlock";
+    private static final String AMETHYST_CLUSTER_CONSTRUCTOR_1201 =
+            "(IILnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V";
+    private static final String AMETHYST_CLUSTER_CONSTRUCTOR_1211 =
+            "(FFLnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V";
     private static final String ATTRIBUTE_MODIFIER_OPERATION =
             "net/minecraft/world/entity/ai/attributes/AttributeModifier$Operation";
     private static final String OPERATION_FROM_VALUE_DESC =
@@ -156,8 +170,98 @@ final class CallRewrites1201 {
     static final String COMPOUND = "net/neoforged/neoforge/common/crafting/CompoundIngredient";
 
     /** {@code compoundSubclasses}: the mod's classes that extend {@link #COMPOUND}; {@code new Sub(list)} becomes the factory call. */
+    /**
+     * 1.20.1 accepted integer pixel dimensions for AmethystClusterBlock; 1.21.1
+     * keeps the same height/xzOffset values as floats. Widen each integer argument
+     * where it is produced, then update the invokespecial descriptor. Integer and
+     * float values are both category-1, so this preserves the operand-stack shape.
+     */
+    private static int rewriteAmethystClusterConstructors(ClassNode node) {
+        int rewritten = 0;
+        for (MethodNode method : node.methods) {
+            if (method.instructions == null || method.instructions.size() == 0) continue;
+            AbstractInsnNode[] instructions = method.instructions.toArray();
+            boolean containsLegacyCall = false;
+            for (AbstractInsnNode instruction : instructions) {
+                if (instruction instanceof MethodInsnNode call
+                        && call.getOpcode() == Opcodes.INVOKESPECIAL
+                        && call.owner.equals(AMETHYST_CLUSTER_BLOCK)
+                        && call.name.equals("<init>")
+                        && call.desc.equals(AMETHYST_CLUSTER_CONSTRUCTOR_1201)) {
+                    containsLegacyCall = true;
+                    break;
+                }
+            }
+            if (!containsLegacyCall) continue;
+
+            Frame<SourceValue>[] frames;
+            try {
+                frames = new Analyzer<>(new SourceInterpreter()).analyze(node.name, method);
+            } catch (AnalyzerException e) {
+                throw new IllegalStateException(
+                        "Could not analyze AmethystClusterBlock constructor call in " + node.name + "." + method.name + method.desc,
+                        e);
+            }
+
+            Set<AbstractInsnNode> convertedProducers = new LinkedHashSet<>();
+            for (int i = 0; i < instructions.length; i++) {
+                if (!(instructions[i] instanceof MethodInsnNode call)
+                        || call.getOpcode() != Opcodes.INVOKESPECIAL
+                        || !call.owner.equals(AMETHYST_CLUSTER_BLOCK)
+                        || !call.name.equals("<init>")
+                        || !call.desc.equals(AMETHYST_CLUSTER_CONSTRUCTOR_1201)) {
+                    continue;
+                }
+
+                Frame<SourceValue> frame = frames[i];
+                if (frame == null) {
+                    throw new IllegalStateException(
+                            "AmethystClusterBlock constructor call is unreachable in " + node.name + "." + method.name + method.desc);
+                }
+
+                Type[] arguments = Type.getArgumentTypes(call.desc);
+                int firstArgument = frame.getStackSize() - arguments.length;
+                if (arguments.length != 3 || firstArgument < 1
+                        || frame.getStack(firstArgument).getSize() != 1
+                        || frame.getStack(firstArgument + 1).getSize() != 1) {
+                    throw new IllegalStateException(
+                            "Unexpected AmethystClusterBlock constructor stack in " + node.name + "." + method.name + method.desc);
+                }
+
+                addIntToFloatConversions(method, frame.getStack(firstArgument), convertedProducers, node, method);
+                addIntToFloatConversions(method, frame.getStack(firstArgument + 1), convertedProducers, node, method);
+                call.desc = AMETHYST_CLUSTER_CONSTRUCTOR_1211;
+                rewritten++;
+            }
+        }
+        return rewritten;
+    }
+
+    private static void addIntToFloatConversions(
+            MethodNode method,
+            SourceValue value,
+            Set<AbstractInsnNode> convertedProducers,
+            ClassNode owner,
+            MethodNode enclosingMethod) {
+        if (value.insns == null || value.insns.isEmpty()) {
+            throw new IllegalStateException(
+                    "Missing integer source for AmethystClusterBlock dimension in "
+                            + owner.name + "." + enclosingMethod.name + enclosingMethod.desc);
+        }
+        for (AbstractInsnNode producer : value.insns) {
+            if (producer.getOpcode() < 0) {
+                throw new IllegalStateException(
+                        "Unexpected non-instruction source for AmethystClusterBlock dimension in "
+                                + owner.name + "." + enclosingMethod.name + enclosingMethod.desc);
+            }
+            if (convertedProducers.add(producer)) {
+                method.instructions.insert(producer, new InsnNode(Opcodes.I2F));
+            }
+        }
+    }
+
     static int apply(ClassNode node, java.util.Set<String> compoundSubclasses) {
-        int n = rewritePalladiumPackMetadata(node);
+        int n = rewritePalladiumPackMetadata(node) + rewriteAmethystClusterConstructors(node);
         for (MethodNode m : node.methods) {
             if (m.instructions == null || m.instructions.size() == 0) continue;
             Deque<TypeInsnNode> news = new ArrayDeque<>();
