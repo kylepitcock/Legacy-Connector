@@ -97,19 +97,22 @@ final class PalladiumKubeJS1201 {
             if (!node.interfaces.contains(KUBEJS7_EVENT)) {
                 node.interfaces.add(KUBEJS7_EVENT);
             }
-            for (MethodNode method : node.methods) {
-                if (!method.name.equals("<init>")) continue;
-                for (var instruction = method.instructions.getFirst(); instruction != null; ) {
-                    var next = instruction.getNext();
-                    if (instruction instanceof MethodInsnNode call
-                            && call.getOpcode() == Opcodes.INVOKESPECIAL
-                            && call.owner.equals(KUBEJS7_EVENT)
-                            && call.name.equals("<init>")) {
-                        // EventJS used to be the class superclass; KubeEvent is
-                        // an interface, so the wrapper now invokes Object.<init>.
-                        call.owner = "java/lang/Object";
-                    }
-                    instruction = next;
+        }
+        // ClassRemapper updates descriptors and owners, but it cannot infer that
+        // EventJS changed from a class to an interface. Normalize invocation
+        // opcodes as well as the constructor's new Object superclass call.
+        for (MethodNode method : node.methods) {
+            if (method.instructions == null) continue;
+            for (var instruction = method.instructions.getFirst(); instruction != null; instruction = instruction.getNext()) {
+                if (!(instruction instanceof MethodInsnNode call) || !call.owner.equals(KUBEJS7_EVENT)) continue;
+                if (call.name.equals("<init>") && wasEventSubclass) {
+                    call.owner = "java/lang/Object";
+                    call.itf = false;
+                } else if (call.getOpcode() == Opcodes.INVOKEVIRTUAL) {
+                    call.setOpcode(Opcodes.INVOKEINTERFACE);
+                    call.itf = true;
+                } else if (call.getOpcode() == Opcodes.INVOKESPECIAL) {
+                    call.itf = true;
                 }
             }
         }
