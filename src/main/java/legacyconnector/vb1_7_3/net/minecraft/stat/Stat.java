@@ -10,7 +10,9 @@ public class Stat {
     public boolean localOnly;
     public String uuid;
     public final String mcc$namespace;
-    public Stat(int id,String name){this.id=id;this.stringId=name;var owner=ContentB173.current();mcc$namespace=owner==null?"legacyconnector":owner.modernId;}
+    public Stat(int id,String name){this(id,name,null);}
+    /** Bridge-owned statistics can retain their namespace even during a mod callback. */
+    protected Stat(int id,String name,String namespace){this.id=id;this.stringId=name;var owner=ContentB173.current();mcc$namespace=namespace!=null?namespace:owner==null?"legacyconnector":owner.modernId;}
     public Stat addStat(){AdvancementsB173.register(this);return this;}
     public Stat localOnly(){localOnly=true;return this;}
     public boolean isAchievement(){return false;}

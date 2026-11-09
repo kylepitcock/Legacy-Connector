@@ -1,0 +1,560 @@
+{
+  "status": "passed",
+  "snapshot_date": "2026-11-09",
+  "scope": "Actual unchanged PlasticCraft 2.1.3 microwave and processing Extractor; original recipes/fuels, result slots, native GUI packets, normal ticking and native save/reopen. Not complete PlasticCraft compatibility.",
+  "branch": "legacy-b1.7.3",
+  "tested_base_revision": "3ee6c8ee8b8790b90c9fd6d47848c89d9a0063cc",
+  "version": "0.4.13",
+  "artifact": {
+    "path": "build\\dist\\legacyconnector-0.4.13.jar",
+    "sha256": "cc07955bae6c9de6cc7d90241b93e5fc8cc732e8f0e5e6c8d975e63714bd71fb"
+  },
+  "source_sha256": {
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/screen/slot/FurnaceOutputSlot.java": "cca3fc617b0bd12282b440ed934b7fcc835188c5e32d7b8dc5422f7c5ccf3bdb",
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/achievement/Achievement.java": "eadfca291709251b724be1f4e80d4c1fceeda5e784b3ca94fd5c3b8c88c47fe6",
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/achievement/Achievements.java": "c2f18dcae460f2e2a0898b2bb025c183d86f7befea148851d07d023aeb3869a2",
+    "src/main/java/legacyconnector/vb1_7_3/net/minecraft/stat/Stat.java": "10b237919234e04aaddf9a2aab9ef964dabd585a9213bdf09e679ef92d305852",
+    "src/main/java/org/kylepitcock/legacyconnector/vb1_7_3/AdvancementsB173.java": "0bb612d113acb8572dd84ffadf5dd6e5c82e63b4f626c5eaa23e3b8edb144928",
+    "src/test/java/org/kylepitcock/legacyconnector/vb1_7_3/FurnaceOutputSlotB173Test.java": "83aed3184da55481c6eaede02088c6c0a21c439d957179b396316fd0dbeace22",
+    "src/test/java/org/kylepitcock/legacyconnector/vb1_7_3/AdvancementsB173Test.java": "2026600da428119783f081da7fdbb35289a8b656b1455d88c534981a757868ad",
+    "src/test/java/legacyconnector/vb1_7_3/net/minecraft/achievement/VanillaAchievementNamespaceB173Test.java": "2be4dfc379c5f9d8d36c2b2520e57733ae2c4d09cfea391a53c78300d50506e5"
+  },
+  "distribution_classes_equal_live_test_classes": true,
+  "original_mod": {
+    "version": "2.1.3",
+    "test_archive": {
+      "path": "run-b173-single\\plasticcraft-machines-client-20261109-53d679\\mods\\b1.7.3\\PlasticCraft-2.1.3-ModLoader.jar",
+      "sha256": "2e361f5398e27c5821f132ff1bf3d7ab71564e58df13051dde86c215c534c55b"
+    },
+    "prism_archive": {
+      "path": "C:\\Users\\zekken\\AppData\\Roaming\\PrismLauncher\\instances\\Legacy Connector\\minecraft\\mods\\b1.7.3\\PlasticCraft-2.1.3-ModLoader.jar",
+      "sha256": "2e361f5398e27c5821f132ff1bf3d7ab71564e58df13051dde86c215c534c55b"
+    },
+    "entire_archives_byte_identical": true
+  },
+  "default_build": {
+    "passed": true,
+    "command": "./gradlew.bat build bundleJar",
+    "private_mod_archives_required": false,
+    "evidence": {
+      "path": "build\\plasticcraft-machines-final-build-20261109.log",
+      "sha256": "4b80d5685fd93c79c78386ea5b2077dd83cb835beb0de51add78cf6fc337c9eb"
+    }
+  },
+  "tests": {
+    "runtime": {
+      "tests": 299,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "loader": {
+      "tests": 274,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "generic_guard": {
+    "passed": true,
+    "files_checked": 278
+  },
+  "generic_changes": [
+    "Shared Beta FurnaceOutputSlot rejects inserted items and runs original ItemStack.onCraft, iron/fish statistic and inventory-dirty callbacks without XP or extra input consumption",
+    "Beta furnace achievement identities retain original IDs, icons and parent objects in a fixed bridge namespace; callback-only advancements use an independent Beta category",
+    "Achievement contribution requires an actually constructed nonfailed Beta mod; modern-only instances emit no Beta files and native vanilla acquisition triggers are untouched"
+  ],
+  "causal_baseline": {
+    "failure": "Original Beta furnace output slot accepts insertion through native machine GUI",
+    "server_accepted_native_gui_output_insertion": true,
+    "evidence": {
+      "path": "run-b173-single\\plasticcraft-machines-client-20261109-53d679\\machine-proof\\baseline-confirmed.json",
+      "sha256": "28aeec738b51a6540cccff0fceb70ccbe20bbd4cfb22b092e8c239e90eb7f697"
+    }
+  },
+  "actual_native_checks": [
+    {
+      "scope": "fixed-processing-summary",
+      "checks": [
+        {
+          "check": "Microwave output insertion rejected authoritatively",
+          "passed": true,
+          "data": null
+        },
+        {
+          "check": "Client corrected rejected output insertion",
+          "passed": true,
+          "data": null
+        },
+        {
+          "check": "Microwave requires supported fuel",
+          "passed": true,
+          "data": null
+        },
+        {
+          "check": "Microwave cooks with original redstone fuel",
+          "passed": true,
+          "data": null
+        },
+        {
+          "check": "Microwave active swap preserves tile, facing and inventory",
+          "passed": true,
+          "data": {
+            "x": 0,
+            "state": "Block{b173_plasticcraft:p_microwave_2}[meta=3]",
+            "legacyId": 144,
+            "meta": 3,
+            "type": "legacyconnector_b173.plasticcraft.TileEntityMicrowave",
+            "identity": 1741056323,
+            "removed": false,
+            "slots": [
+              {
+                "id": 15,
+                "count": 2,
+                "damage": 0,
+                "name": "null"
+              },
+              null,
+              null
+            ],
+            "microwaveBurnTime": 1959,
+            "microwaveCookTime": 42,
+            "currentItemBurnTime": 2000,
+            "cookTime": 120
+          }
+        },
+        {
+          "check": "Microwave iron recipe quantities",
+          "passed": true,
+          "data": null
+        },
+        {
+          "check": "Original microwave fuel pauses without valid input",
+          "passed": true,
+          "data": null
+        },
+        {
+          "check": "Microwave pickup preserves inputs/fuel and transfers output once",
+          "passed": true,
+          "data": null
+        },
+        {
+          "check": "Original furnace pickup awards Beta iron achievement without XP",
+          "passed": true,
+          "data": {
+            "id": "legacyconnector:beta/achievements/acquireiron_5242885",
+            "exists": true,
+            "earned": true,
+            "experience": 0
+          }
+        },
+        {
+          "check": "Original glowstone fuel duration",
+          "passed": true,
+          "data": null
+        },
+        {
+          "check": "Microwave original multi-output recipe count",
+          "passed": true,
+          "data": {
+            "x": 0,
+            "state": "Block{b173_plasticcraft:p_microwave_2}[meta=3]",
+            "legacyId": 144,
+            "meta": 3,
+            "type": "legacyconnector_b173.plasticcraft.TileEntityMicrowave",
+            "identity": 1862064080,
+            "removed": false,
+            "slots": [
+              null,
+              null,
+              {
+                "id": 1001,
+                "count": 3,
+                "damage": 0,
+                "name": "Plastic Ball"
+              }
+            ],
+            "microwaveBurnTime": 4681,
+            "microwaveCookTime": 0,
+            "currentItemBurnTime": 4800,
+            "cookTime": 120
+          }
+        },
+        {
+          "check": "Original microwave rejects coal as fuel",
+          "passed": true,
+          "data": null
+        },
+        {
+          "check": "Original microwave battery fuel duration",
+          "passed": true,
+          "data": null
+        },
+        {
+          "check": "Microwave battery powers real recipe",
+          "passed": true,
+          "data": null
+        },
+        {
+          "check": "Extractor primary output rejects insertion",
+          "passed": true,
+          "data": null
+        },
+        {
+          "check": "Extractor secondary output rejects insertion",
+          "passed": true,
+          "data": null
+        },
+        {
+          "check": "Extractor waits for fuel",
+          "passed": true,
+          "data": null
+        },
+        {
+          "check": "Extractor real server ticking and original coal fuel",
+          "passed": true,
+          "data": null
+        },
+        {
+          "check": "Extractor latex produces rubber and returns plastic bucket",
+          "passed": true,
+          "data": null
+        },
+        {
+          "check": "Extractor pickup consumes no extra input and duplicates neither output",
+          "passed": true,
+          "data": null
+        },
+        {
+          "check": "Extractor secondary recipe retains counts and metadata",
+          "passed": true,
+          "data": null
+        },
+        {
+          "check": "Extractor iron ore yields both original outputs",
+          "passed": true,
+          "data": null
+        },
+        {
+          "check": "Extractor invalid recipe does not consume input; original fuel keeps burning",
+          "passed": true,
+          "data": null
+        },
+        {
+          "check": "Original missing shift-click override is inert and does not hang",
+          "passed": true,
+          "data": null
+        }
+      ],
+      "evidence": {
+        "path": "run-b173-single\\plasticcraft-machines-client-20261109-53d679\\machine-proof\\fixed-processing-summary.json",
+        "sha256": "e9a0687bab593d246ca0558cf665ebd23fdb92cafd078c6dcf151034b008ea65"
+      }
+    },
+    {
+      "scope": "persistence-summary",
+      "checks": [
+        {
+          "check": "Both machines saved while mid-cook",
+          "passed": true,
+          "data": null
+        },
+        {
+          "check": "Real world save/reopen replaced server and level",
+          "passed": true,
+          "data": null
+        },
+        {
+          "check": "microwave tile recreated from original NBT",
+          "passed": true,
+          "data": null
+        },
+        {
+          "check": "microwave inventory conserved through save/reopen",
+          "passed": true,
+          "data": null
+        },
+        {
+          "check": "microwave burn time restored and resumes with elapsed ticks",
+          "passed": true,
+          "data": {
+            "before": 1880,
+            "after": 1862,
+            "elapsed": 19
+          }
+        },
+        {
+          "check": "microwave cook time restored and continues original schedule",
+          "passed": true,
+          "data": null
+        },
+        {
+          "check": "microwave fuel denominator recomputed from saved remaining fuel",
+          "passed": true,
+          "data": null
+        },
+        {
+          "check": "extractor tile recreated from original NBT",
+          "passed": true,
+          "data": null
+        },
+        {
+          "check": "extractor inventory conserved through save/reopen",
+          "passed": true,
+          "data": null
+        },
+        {
+          "check": "extractor burn time restored and resumes with elapsed ticks",
+          "passed": true,
+          "data": {
+            "before": 1571,
+            "after": 1553,
+            "elapsed": 19
+          }
+        },
+        {
+          "check": "extractor cook time restored and continues original schedule",
+          "passed": true,
+          "data": null
+        },
+        {
+          "check": "extractor fuel denominator recomputed from saved remaining fuel",
+          "passed": true,
+          "data": null
+        },
+        {
+          "check": "Extractor secondary output conserved after reload",
+          "passed": true,
+          "data": null
+        },
+        {
+          "check": "Both original machine tick callbacks continue after reopen",
+          "passed": true,
+          "data": null
+        },
+        {
+          "check": "Original microwave GUI opens after reload",
+          "passed": true,
+          "data": null
+        }
+      ],
+      "evidence": {
+        "path": "run-b173-single\\plasticcraft-machines-client-20261109-53d679\\machine-proof\\persistence-summary.json",
+        "sha256": "2bd787d4abdd8129ecfa28aa34fd10ec7364079bce49231ff35669e573561e21"
+      }
+    },
+    {
+      "scope": "boundary-summary",
+      "checks": [
+        {
+          "check": "Microwave full output stops processing and pauses original remaining fuel",
+          "passed": true,
+          "data": null
+        },
+        {
+          "check": "Extractor both full outputs stop processing while original fuel continues",
+          "passed": true,
+          "data": null
+        },
+        {
+          "check": "Original shared smelting recipe cooks fish",
+          "passed": true,
+          "data": null
+        },
+        {
+          "check": "Fish pickup invokes original Beta award without XP",
+          "passed": true,
+          "data": {
+            "exists": true,
+            "earned": true,
+            "experience": 0
+          }
+        },
+        {
+          "check": "Extractor original fuel minecraft:oak_log",
+          "passed": true,
+          "data": {
+            "fuel": "minecraft:oak_log",
+            "originalDuration": 250
+          }
+        },
+        {
+          "check": "Extractor completes with minecraft:oak_log",
+          "passed": true,
+          "data": null
+        },
+        {
+          "check": "Extractor original fuel minecraft:stick",
+          "passed": true,
+          "data": {
+            "fuel": "minecraft:stick",
+            "originalDuration": 80
+          }
+        },
+        {
+          "check": "Extractor completes with minecraft:stick",
+          "passed": true,
+          "data": null
+        },
+        {
+          "check": "Extractor original fuel minecraft:oak_sapling",
+          "passed": true,
+          "data": {
+            "fuel": "minecraft:oak_sapling",
+            "originalDuration": 100
+          }
+        },
+        {
+          "check": "Extractor completes with minecraft:oak_sapling",
+          "passed": true,
+          "data": null
+        },
+        {
+          "check": "Extractor original fuel minecraft:netherrack",
+          "passed": true,
+          "data": {
+            "fuel": "minecraft:netherrack",
+            "originalDuration": 120
+          }
+        },
+        {
+          "check": "Extractor completes with minecraft:netherrack",
+          "passed": true,
+          "data": null
+        },
+        {
+          "check": "Extractor original fuel itemBATTERY",
+          "passed": true,
+          "data": {
+            "fuel": "itemBATTERY",
+            "originalDuration": 25000
+          }
+        },
+        {
+          "check": "Extractor completes with itemBATTERY",
+          "passed": true,
+          "data": null
+        },
+        {
+          "check": "Microwave natural active-to-inactive swap preserves exact tile and facing",
+          "passed": true,
+          "data": null
+        },
+        {
+          "check": "Extractor fuel exhaustion preserves input and resets incomplete work",
+          "passed": true,
+          "data": null
+        },
+        {
+          "check": "Breaking active microwave drops remaining inventory exactly once",
+          "passed": true,
+          "data": {
+            "inventoryBefore": [
+              {
+                "id": 15,
+                "count": 1,
+                "damage": 0,
+                "name": "null"
+              },
+              null,
+              null
+            ],
+            "drops": [
+              {
+                "id": "b173_plasticcraft:p_microwave",
+                "count": 1
+              },
+              {
+                "id": "minecraft:iron_ore",
+                "count": 1
+              }
+            ],
+            "blockAfter": "Block{minecraft:air}"
+          }
+        }
+      ],
+      "evidence": {
+        "path": "run-b173-single\\plasticcraft-machines-client-20261109-53d679\\machine-proof\\boundary-summary.json",
+        "sha256": "3d04d52d6af235be7c15be25be7e186c532f56fc0f223e18cd3b58a3d68bd4a3"
+      }
+    }
+  ],
+  "original_gui_and_awards_after_reload": {
+    "observed": {
+      "status": "passed",
+      "gui": {
+        "nativeScreen": "org.kylepitcock.legacyconnector.vb1_7_3.client.LegacyB173Screen",
+        "originalGui": "legacyconnector_b173.plasticcraft.GuiMicrowave",
+        "renderFailed": false
+      },
+      "achievements": {
+        "MINE_WOOD": {
+          "id": "legacyconnector:beta/achievements/minewood_5242881",
+          "parent": "legacyconnector:beta/root",
+          "earned": false,
+          "criteria": [
+            "legacy_earned"
+          ]
+        },
+        "ACQUIRE_IRON": {
+          "id": "legacyconnector:beta/achievements/acquireiron_5242885",
+          "parent": "legacyconnector:beta/achievements/buildfurnace_5242884",
+          "earned": true,
+          "criteria": [
+            "legacy_earned"
+          ]
+        },
+        "COOK_FISH": {
+          "id": "legacyconnector:beta/achievements/cookfish_5242890",
+          "parent": "legacyconnector:beta/achievements/buildfurnace_5242884",
+          "earned": true,
+          "criteria": [
+            "legacy_earned"
+          ]
+        }
+      }
+    },
+    "evidence": {
+      "path": "run-b173-single\\plasticcraft-machines-client-20261109-53d679\\machine-proof\\gui-and-achievements-after-reload.json",
+      "sha256": "04b1bd5b3ca47eb8e4c2314667eb8a5b2b0505651c20cc971597069951ca22f4"
+    }
+  },
+  "visually_reviewed_screenshots": [
+    {
+      "path": "run-b173-single\\plasticcraft-machines-client-20261109-53d679\\control\\out\\plasticcraft-microwave-cooking.png",
+      "sha256": "d08c71846339001587661c97fcdaa388a681090a015719e048eac335dfc9bb9d"
+    },
+    {
+      "path": "run-b173-single\\plasticcraft-machines-client-20261109-53d679\\control\\out\\plasticcraft-extractor-cooking.png",
+      "sha256": "ae81d05f75b5b67883c06ba20cb96f976d8f989ba48808ecc542aad62fbf3303"
+    }
+  ],
+  "preserved_original_behavior": [
+    "Both original containers lack a shift-click transfer override; shift-click remains inert without hanging",
+    "Microwave accepts redstone, glowstone dust and its battery and pauses burn while a recipe is blocked; Extractor fuel continues to burn while blocked",
+    "Original multi-output capacity quirks and the omitted progress property 2 update are preserved; no mod-specific capacity or network rewrite",
+    "Original NBT reader recomputes currentItemBurnTime from the remaining fuel slot"
+  ],
+  "limitations": [
+    "This is a bounded singleplayer gameplay check, not a dedicated-server GUI/network guarantee",
+    "Existing unrelated PlasticCraft cow spawn-placement warning is outside machine scope"
+  ],
+  "evidence": [
+    {
+      "path": "build\\microwave-original-audit.txt",
+      "sha256": "a3820928256864e2d219da6698fcd596512e4e7d9349464f3d2b1ec32a7d9b7b"
+    },
+    {
+      "path": "build\\extractor-audit.txt",
+      "sha256": "d694c01c0ccae7381a82913c72e68f5409c6a3fc61ebee98a4720003b53321a9"
+    },
+    {
+      "path": "build\\beta-achievements-original-audit.txt",
+      "sha256": "6128715002d3bd48f9390d64399d14538ce338a287d6906055f1056b44865e52"
+    },
+    {
+      "path": "build\\plasticcraft-machines-fixed-client-20261109.log",
+      "sha256": "4373c1544dea8c97e1da413d167cf3e7541dd977d0fdebadcb09b31b0512be04"
+    }
+  ]
+}

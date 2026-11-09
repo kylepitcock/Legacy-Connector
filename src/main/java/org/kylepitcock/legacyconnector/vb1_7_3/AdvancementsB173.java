@@ -36,6 +36,7 @@ public final class AdvancementsB173 {
     }
     static ResourceLocation categoryOf(Achievement achievement){var page=ACPage.mcc$pageOf(achievement);return page==null?rootOf(achievement.mcc$namespace):pageRoot(page);}
     static ResourceLocation parentOf(Achievement achievement){
+        if(achievement.mcc$vanilla&&achievement.parent!=null)return achievement.parent==Achievements.OPEN_INVENTORY?rootOf(achievement.mcc$namespace):idOf(achievement.parent);
         return achievement.parent==null||achievement.parent.mcc$vanilla||ACPage.mcc$pageOf(achievement)!=ACPage.mcc$pageOf(achievement.parent)?categoryOf(achievement):idOf(achievement.parent);
     }
     public static void describe(Achievement achievement,String title,String description){
@@ -43,9 +44,13 @@ public final class AdvancementsB173 {
         ContentB173.addLocalization(achievement.stringId,title);ContentB173.addLocalization(achievement.translationKey,description);
     }
     public static void contribute(Map<String,Supplier<byte[]>> out){
+        if(org.kylepitcock.legacyconnector.core.LegacyMods.ordered().stream().noneMatch(mod->PlatformB173.VERSION.equals(mod.version)
+                &&mod.instance!=null&&!org.kylepitcock.legacyconnector.core.LegacyLifecycle.isFailed(mod.modernId)))return;
+        // Register bridge-owned Beta identities before taking the registry snapshot.
+        Achievement vanillaRoot=Achievements.OPEN_INVENTORY;
         Map<ResourceLocation,String> roots=new LinkedHashMap<>();
         Map<ResourceLocation,String> titles=new LinkedHashMap<>();
-        for(Stat stat:all())if(stat instanceof Achievement achievement&&!achievement.mcc$vanilla&&!org.kylepitcock.legacyconnector.core.LegacyLifecycle.isFailed(achievement.mcc$namespace)){
+        for(Stat stat:all())if(stat instanceof Achievement achievement&&achievement!=vanillaRoot&&!org.kylepitcock.legacyconnector.core.LegacyLifecycle.isFailed(achievement.mcc$namespace)){
             ResourceLocation id=idOf(achievement),parent=parentOf(achievement);
             var stack=achievement.icon==null?net.minecraft.world.item.ItemStack.EMPTY:StacksB173.toModern(achievement.icon);
             String icon=stack.isEmpty()?"minecraft:barrier":BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();
@@ -92,7 +97,7 @@ public final class AdvancementsB173 {
         if(stat instanceof Achievement achievement){
             var advancement=player.getServer().getAdvancements().get(idOf(achievement));
             if(advancement!=null){
-                if(achievement.mcc$vanilla)for(String criterion:advancement.value().criteria().keySet())player.getAdvancements().award(advancement,criterion);
+                if(achievement==Achievements.OPEN_INVENTORY)for(String criterion:advancement.value().criteria().keySet())player.getAdvancements().award(advancement,criterion);
                 else player.getAdvancements().award(advancement,CRITERION);
             }
             return;

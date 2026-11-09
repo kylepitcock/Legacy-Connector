@@ -365,6 +365,28 @@ pickup/placement and a native vanilla bucket control pass, as do filled-bucket s
 existing extractor afterward. The original mod archive is byte-identical to Prism's 2.1.3 jar. The default build passes
 568 portable tests without private mod archives; other PlasticCraft systems are outside this bounded interaction check.
 
+### Furnace result slots and PlasticCraft machines
+
+Shared Beta `FurnaceOutputSlot` rejects insertion and calls the original stack crafting callback, iron/fish achievement
+callback and inventory dirty callback in their original order. Taking a result neither grants XP nor consumes machine
+inputs again. Furnace achievements retain their original numeric identities, icons and parent objects. Their generated
+advancements use callback-only criteria and an independent Beta category; no Beta definitions are emitted without an
+actually constructed, nonfailed Beta mod. Existing native vanilla acquisition triggers remain unchanged.
+
+The [PlasticCraft machine validation](../data/b173-plasticcraft-machines-validation-2026-11-09.json) reproduces the old
+output insertion failure through the actual microwave menu, then checks unchanged PlasticCraft 2.1.3 with native menu
+packets and normal server ticks. Microwave iron, fish and mould recipes, all three fuels, blocked outputs, pause behavior
+and both active-state swaps pass. Extractor latex returns two rubber balls and the empty plastic bucket; log and ore
+recipes retain both outputs and metadata. Both result slots reject insertion, output pickup transfers results once,
+supported fuels process recipes, and exhausted fuel preserves incomplete input. Original GUI textures and progress render.
+Both machines retain inventory, burn/cook timers, facing and continued processing after a real world save/reopen; furnace
+awards persist too. Breaking the active microwave drops its remaining inventory once.
+
+Both original containers lack a shift-click transfer override, so shift-click remains inert without hanging. Original
+multi-output capacity quirks, the omitted progress property 2 update and fuel-denominator recomputation on load are
+preserved. The default build passes 573 portable tests without private archives. This singleplayer check does not establish
+dedicated-server GUI/network parity or complete PlasticCraft compatibility.
+
 ### Crafting outputs larger than an inventory stack
 
 Beta recipes can return several non-stackable items. The shared shaped/shapeless recipe serializers retain a separate
