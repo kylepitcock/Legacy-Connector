@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Handle;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
@@ -96,8 +97,20 @@ class PalladiumKubeJS1201Test implements Opcodes {
 
         MethodNode injection = returningMethod(ACC_PUBLIC, "loadFromDirectory", "(" + CALLBACK_INFO + ")V");
         node.methods.add(injection);
-        node.methods.add(returningMethod(ACC_PRIVATE | ACC_STATIC, "lambda$loadFromDirectory$0",
-                "(Ljava/lang/String;)Ljava/lang/Object;"));
+        MethodNode namespaceFactory = new MethodNode(ACC_PRIVATE | ACC_STATIC,
+                "lambda$loadFromDirectory$0", "(Ljava/lang/String;)Lcom/mojang/datafixers/util/Pair;", null, null);
+        namespaceFactory.instructions.add(new InvokeDynamicInsnNode(
+                "makeConcatWithConstants",
+                "(Ljava/lang/String;)Ljava/lang/String;",
+                new Handle(H_INVOKESTATIC, "java/lang/invoke/StringConcatFactory", "makeConcatWithConstants",
+                        "(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;"
+                                + "Ljava/lang/invoke/MethodType;Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite;",
+                        false),
+                "\u0001_addon_scripts"));
+        namespaceFactory.instructions.add(new org.objectweb.asm.tree.InsnNode(POP));
+        namespaceFactory.instructions.add(new org.objectweb.asm.tree.InsnNode(ACONST_NULL));
+        namespaceFactory.instructions.add(new org.objectweb.asm.tree.InsnNode(ARETURN));
+        node.methods.add(namespaceFactory);
         node.methods.add(returningMethod(ACC_PRIVATE | ACC_STATIC, "lambda$loadFromDirectory$1", "()V"));
         node.methods.add(returningMethod(ACC_PRIVATE | ACC_STATIC, "lambda$loadFromDirectory$2", "()V"));
         node.methods.add(returningMethod(ACC_PRIVATE | ACC_STATIC, "lambda$unrelated$0", "()V"));
@@ -106,7 +119,9 @@ class PalladiumKubeJS1201Test implements Opcodes {
 
         MethodNode rewritten = find(node, "loadFromDirectory", "(" + CALLBACK_INFO + ")V");
         assertTrue(hasCall(rewritten, INVOKESTATIC, "legacyconnector/v1_20_1/PalladiumKubeJSCompat",
-                "loadAddonScripts", "(Ljava/lang/Object;)V"));
+                "loadAddonScripts", "(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;)V"));
+        assertTrue(hasLdc(rewritten, ""));
+        assertTrue(hasLdc(rewritten, "_addon_scripts"));
         assertEquals(2, node.methods.size(), "only injection and unrelated method should remain");
         assertTrue(find(node, "lambda$unrelated$0", "()V") != null);
 
@@ -137,6 +152,13 @@ class PalladiumKubeJS1201Test implements Opcodes {
                     && call.owner.equals(owner)
                     && call.name.equals(name)
                     && call.desc.equals(descriptor)) return true;
+        }
+        return false;
+    }
+
+    private static boolean hasLdc(MethodNode method, Object value) {
+        for (AbstractInsnNode instruction : method.instructions.toArray()) {
+            if (instruction instanceof org.objectweb.asm.tree.LdcInsnNode ldc && value.equals(ldc.cst)) return true;
         }
         return false;
     }
