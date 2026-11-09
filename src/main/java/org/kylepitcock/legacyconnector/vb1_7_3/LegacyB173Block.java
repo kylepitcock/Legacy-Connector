@@ -70,6 +70,18 @@ public class LegacyB173Block extends net.minecraft.world.level.block.Block imple
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return queryShape(state,level,pos,false);
     }
+    @Override protected int getLightBlock(BlockState state,BlockGetter level,BlockPos pos) {
+        // Beta's opacity table is independent of the opaque-cube flag (glass and leaves may absorb one level).
+        return legacy==null?super.getLightBlock(state,level,pos):Math.clamp(Block.BLOCKS_LIGHT_OPACITY[legacy.id],0,15);
+    }
+    @Override public net.minecraft.world.level.material.PushReaction getPistonPushReaction(BlockState state) {
+        if(legacy==null)return super.getPistonPushReaction(state);
+        return switch(legacy.getPistonBehavior()) {
+            case 1 -> net.minecraft.world.level.material.PushReaction.DESTROY;
+            case 2 -> net.minecraft.world.level.material.PushReaction.BLOCK;
+            default -> net.minecraft.world.level.material.PushReaction.NORMAL;
+        };
+    }
     @Override protected VoxelShape getCollisionShape(BlockState state,BlockGetter level,BlockPos pos,CollisionContext context) {
         return queryShape(state,level,pos,true);
     }
@@ -168,13 +180,19 @@ public class LegacyB173Block extends net.minecraft.world.level.block.Block imple
             BlockPos neighborPos, boolean moved) {
         super.neighborChanged(state, level, pos, neighbor, neighborPos, moved);
         if (level.isClientSide) return;
-        int neighborId = BlocksB173.legacyId(neighbor.defaultBlockState());
+        int neighborId = neighborId(neighbor,level.getBlockState(neighborPos));
         call("onNeighborBlockChange", () -> legacy.neighborUpdate(view(level), pos.getX(), pos.getY(), pos.getZ(), neighborId));
         if(legacy instanceof legacyconnector.vb1_7_3.net.minecraft.block.DoorBlock door && level.getBlockState(pos).is(this)
                 && neighbor.defaultBlockState().isSignalSource()) {
             int y=pos.getY()-((level.getBlockState(pos).getValue(META)&8)!=0?1:0);
             call("door power",()->door.setOpen(view(level),pos.getX(),y,pos.getZ(),level.hasNeighborSignal(new BlockPos(pos.getX(),y,pos.getZ())) || level.hasNeighborSignal(new BlockPos(pos.getX(),y+1,pos.getZ()))));
         }
+    }
+
+    static int neighborId(net.minecraft.world.level.block.Block reportedSource,BlockState current) {
+        // Modern setBlock reports the OLD block to its neighbours; Beta reported the newly placed id.
+        // Keep explicit removal-source notifications (notably power sources) when the cell is now empty.
+        return BlocksB173.legacyId(current.isAir()?reportedSource.defaultBlockState():current);
     }
 
     @Override

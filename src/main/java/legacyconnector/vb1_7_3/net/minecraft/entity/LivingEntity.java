@@ -18,6 +18,8 @@ public abstract class LivingEntity extends Entity {
     public boolean killedByOtherEntity;
     public float rotationSpeed,swingAnimationProgress;
     public int scoreAmount,despawnCounter;
+    /** Target Y retained by the original living-entity interpolation callbacks. */
+    public double lerpY;
     protected boolean interpolateOnly;
     protected float sidewaysSpeed;
     protected float forwardSpeed;
@@ -43,6 +45,7 @@ public abstract class LivingEntity extends Entity {
     public float mcc$sidewaysSpeed(){return sidewaysSpeed;}
     public float mcc$forwardSpeed(){return forwardSpeed;}
     public float mcc$movementSpeed(){return movementSpeed;}
+    public void mcc$movementSpeed(float speed){movementSpeed=speed;}
     public boolean mcc$jumping(){return jumping;}
     public void mcc$movementInputs(float sideways,float forward,boolean jump){sidewaysSpeed=sideways;forwardSpeed=forward;jumping=jump;}
     public void applyKnockback(Entity attacker,int amount,double x,double z) {

@@ -353,10 +353,11 @@ public final class AssetsB173 implements GeneratedPack.Contributor {
     private static JsonObject boundedBlockModel(Block block, int renderType, String[] tex, boolean opaque, int layer,int meta) {
         JsonObject model = new JsonObject();
         JsonObject textures = new JsonObject();
+        boolean tinted=BlockTintB173.hasColor(block);
         switch (renderType) {
             case 11 -> {model.addProperty("parent","minecraft:block/fence_inventory");textures.addProperty("texture",tex[0]);textures.addProperty("particle",tex[0]);}
             case 1 -> { // crossed squares: flowers, saplings, reeds
-                model.addProperty("parent", "minecraft:block/cross");
+                model.addProperty("parent", tinted?"minecraft:block/tinted_cross":"minecraft:block/cross");
                 textures.addProperty("cross", tex[0]);
                 textures.addProperty("particle", tex[0]);
                 model.addProperty("render_type", "minecraft:cutout");
@@ -383,9 +384,10 @@ public final class AssetsB173 implements GeneratedPack.Contributor {
                 textures.addProperty("particle", tex[2]);
                 double x0 = block.minX, y0 = block.minY, z0 = block.minZ, x1 = block.maxX, y1 = block.maxY, z1 = block.maxZ;
                 boolean full = x0 <= 0 && y0 <= 0 && z0 <= 0 && x1 >= 1 && y1 >= 1 && z1 >= 1 || x1 <= x0 || y1 <= y0 || z1 <= z0;
-                if (full) {
+                if (full && !tinted) {
                     model.addProperty("parent", "minecraft:block/cube");
                 } else {
+                    if(full){x0=y0=z0=0;x1=y1=z1=1;}
                     model.addProperty("parent", "minecraft:block/block");
                     JsonObject element = new JsonObject();
                     element.add("from", vec(x0, y0, z0));
@@ -395,6 +397,7 @@ public final class AssetsB173 implements GeneratedPack.Contributor {
                     for (int i = 0; i < 6; i++) {
                         JsonObject f = new JsonObject();
                         f.addProperty("texture", "#" + faces[i]);
+                        if(tinted)f.addProperty("tintindex",0);
                         final int face=i;
                         if(safe(()->block.getTexture(face,meta),block.textureId)<0) {
                             JsonArray uv=new JsonArray();for(int v:new int[]{16,0,0,16})uv.add(v);f.add("uv",uv);

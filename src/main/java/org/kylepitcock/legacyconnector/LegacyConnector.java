@@ -138,6 +138,7 @@ public final class LegacyConnector {
 
         CompatComponents.REGISTER.register(modBus);
         org.kylepitcock.legacyconnector.vb1_7_3.SpawnOverrideModifierB173.REGISTER.register(modBus);
+        org.kylepitcock.legacyconnector.vb1_7_3.BetaMetadataIngredient.REGISTER.register(modBus);
         org.kylepitcock.legacyconnector.core.recipe.OversizedCraftingRecipe.REGISTER.register(modBus);
         org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyCraftingRecipe.REGISTER.register(modBus);
         org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyFishingLoot.REGISTER.register(modBus);
@@ -189,7 +190,7 @@ public final class LegacyConnector {
         GeneratedPack.addContributor(new Assets1710());
         GeneratedPack.addContributor(new org.kylepitcock.legacyconnector.vb1_7_3.AssetsB173());
         GeneratedPack.addContributor(new org.kylepitcock.legacyconnector.vb1_7_3.MobTexturesB173());
-        GeneratedPack.addContributor((type,out)->{if(type==net.minecraft.server.packs.PackType.SERVER_DATA){org.kylepitcock.legacyconnector.vb1_7_3.SpawnRulesB173.contribute(out);org.kylepitcock.legacyconnector.vb1_7_3.AdvancementsB173.contribute(out);}});
+        GeneratedPack.addContributor((type,out)->{if(type==net.minecraft.server.packs.PackType.SERVER_DATA){org.kylepitcock.legacyconnector.vb1_7_3.SpawnRulesB173.contribute(out);org.kylepitcock.legacyconnector.vb1_7_3.AdvancementsB173.contribute(out);org.kylepitcock.legacyconnector.vb1_7_3.RecordsB173.contribute(out);}});
         GeneratedPack.addRecipeContributor((type, out) -> {
             if (type == net.minecraft.server.packs.PackType.SERVER_DATA) org.kylepitcock.legacyconnector.v1_7_10.bridge.RecipeBridge.generate(out);
         });

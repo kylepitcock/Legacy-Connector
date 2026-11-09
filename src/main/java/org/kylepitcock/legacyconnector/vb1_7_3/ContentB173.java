@@ -33,7 +33,7 @@ public final class ContentB173 {
     private static final List<Registration> TILE_ENTITIES = new ArrayList<>();
     private static final List<Registration> ENTITIES = new ArrayList<>();
     private static final List<BaseMod> MODS = new ArrayList<>();
-    private static final Map<BaseMod, boolean[]> TICK_HOOKS = new IdentityHashMap<>();
+    private static final Map<BaseMod, boolean[]> TICK_HOOKS = new LinkedHashMap<>();
     private static final List<String> ARMOR = new ArrayList<>(List.of("cloth", "chain", "iron", "diamond", "gold"));
 
     private ContentB173() {}
@@ -221,8 +221,29 @@ public final class ContentB173 {
     }
 
     public static synchronized void setTickHook(BaseMod mod, boolean enable, boolean useClock, boolean gui) {
-        boolean[] hooks = TICK_HOOKS.computeIfAbsent(mod, k -> new boolean[2]);
+        boolean[] hooks = TICK_HOOKS.computeIfAbsent(mod, k -> new boolean[4]);
         hooks[gui ? 1 : 0] = enable;
+        hooks[gui ? 3 : 2] = useClock;
+    }
+    public static synchronized boolean hasClientHooks(){
+        for(boolean[] hooks:TICK_HOOKS.values())if(hooks[0]||hooks[1])return true;
+        return false;
+    }
+
+    /** ModLoader hooks returning false unregister themselves. The clock flag limits them to world ticks. */
+    public static synchronized void clientHooks(legacyconnector.vb1_7_3.net.minecraft.client.Minecraft minecraft,
+            boolean gui,boolean clockAdvanced){
+        int index=gui?1:0;
+        for(var entry:new ArrayList<>(TICK_HOOKS.entrySet())){
+            boolean[] flags=entry.getValue();if(!flags[index]||flags[index+2]&&!clockAdvanced)continue;
+            try{
+                boolean retain=gui?entry.getKey().OnTickInGUI(minecraft,minecraft.currentScreen):entry.getKey().OnTickInGame(minecraft);
+                if(!retain)flags[index]=false;
+            }catch(RuntimeException|LinkageError error){
+                flags[index]=false;
+                org.slf4j.LoggerFactory.getLogger("LegacyConnector/b1.7.3").warn("Beta ModLoader client hook failed for {}",entry.getKey().getClass().getName(),error);
+            }
+        }
     }
 
     /** ModLoader asked every mod for the burn time of a fuel id; the hook is per mod ({@code BaseMod.AddFuel}), asked by the bridge. */
@@ -241,5 +262,6 @@ public final class ContentB173 {
         ARMOR.add(name);
         return ARMOR.size() - 1;
     }
+    public static synchronized String armorTexture(int index){return ARMOR.get(index);}
 
 }

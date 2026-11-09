@@ -1,167 +1,27 @@
 package org.kylepitcock.legacyconnector.vb1_7_3;
 
-import legacyconnector.vb1_7_3.net.minecraft.world.World;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
-import org.slf4j.LoggerFactory;
 
-/** Modern entry points for a legacy item's right clicks. Beta had only the selected main-hand slot. */
-public final class LegacyB173Item extends Item {
-    private final legacyconnector.vb1_7_3.net.minecraft.item.Item legacy;
-    private final boolean usesAir;
-    private final boolean usesEntity;
-    private int failures;
-    static final java.util.concurrent.atomic.AtomicInteger CALLBACK_FAILURES = new java.util.concurrent.atomic.AtomicInteger();
-
-    public LegacyB173Item(legacyconnector.vb1_7_3.net.minecraft.item.Item legacy, Properties properties) {
-        super(properties);
-        this.legacy = legacy;
-        try {
-            usesAir = legacy.getClass().getMethod("use", legacyconnector.vb1_7_3.net.minecraft.item.ItemStack.class,
-                    World.class, legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity.class).getDeclaringClass()
-                    != legacyconnector.vb1_7_3.net.minecraft.item.Item.class;
-            usesEntity = legacy.getClass().getMethod("useOnEntity", legacyconnector.vb1_7_3.net.minecraft.item.ItemStack.class,
-                    legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity.class).getDeclaringClass()
-                    != legacyconnector.vb1_7_3.net.minecraft.item.Item.class;
-        } catch (NoSuchMethodException e) {
-            throw new IllegalStateException(e);
-        }
-    }
-
-    @Override
-    public InteractionResult useOn(UseOnContext context) {
-        Player player = context.getPlayer();
-        if (player == null || context.getHand() != InteractionHand.MAIN_HAND) return InteractionResult.PASS;
-        PlayerViewB173 view = (PlayerViewB173)EntityViewsB173.wrap(player);
-        var held = view.inventory.main[view.inventory.selectedSlot];
-        if (held == null) return InteractionResult.PASS;
-        var pos = context.getClickedPos();
-        try (var views=EntityViewsB173.callbackScope()) {
-            World world = World.mcc$wrap(context.getLevel());
-            legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$use(world);
-            boolean used = legacy.useOnBlock(held, view, world, pos.getX(), pos.getY(), pos.getZ(), context.getClickedFace().get3DDataValue());
-            if (!context.getLevel().isClientSide) view.writeBack();
-            return used ? InteractionResult.sidedSuccess(context.getLevel().isClientSide) : InteractionResult.PASS;
-        } catch (RuntimeException | LinkageError e) {
-            failed("useOnBlock", e);
-            return InteractionResult.FAIL;
-        } finally {EntityViewsB173.flush();BlockEntityViewsB173.flush();}
-    }
-
-    @Override
-    public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
-        if (hand != InteractionHand.MAIN_HAND || !usesAir) return InteractionResultHolder.pass(player.getItemInHand(hand));
-        PlayerViewB173 view = (PlayerViewB173)EntityViewsB173.wrap(player);
-        int slot = view.inventory.selectedSlot;
-        var held = view.inventory.main[slot];
-        if (held == null) return InteractionResultHolder.pass(player.getItemInHand(hand));
-        try (var views=EntityViewsB173.callbackScope()) {
-            World world = World.mcc$wrap(level);
-            legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$use(world);
-            var result = legacy.use(held, world, view);
-            // Returning a new stack replaces the held item; otherwise retain direct inventory edits by the mod.
-            if (result != held) view.inventory.main[slot] = result;
-            if (!level.isClientSide) view.writeBack();
-            return InteractionResultHolder.sidedSuccess(player.getItemInHand(hand), level.isClientSide);
-        } catch (RuntimeException | LinkageError e) {
-            failed("use", e);
-            return InteractionResultHolder.fail(player.getItemInHand(hand));
-        } finally {EntityViewsB173.flush();BlockEntityViewsB173.flush();}
-    }
-
-    private void failed(String callback, Throwable error) {
-        CALLBACK_FAILURES.incrementAndGet();
-        if (failures++ < 3) LoggerFactory.getLogger("LegacyConnector/b1.7.3").warn(
-                "b1.7.3 item {} callback {} failed", legacy, callback, error);
-    }
-
-    @Override
-    public float getAttackDamageBonus(net.minecraft.world.entity.Entity target, float damage,
-            net.minecraft.world.damagesource.DamageSource source) {
-        var attacker = source.getEntity();
-        try (var views = EntityViewsB173.callbackScope()) {
-            var actor = EntityViewsB173.wrap(attacker);
-            var original = EntityViewsB173.wrap(target);
-            try (var minecraft = legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$context(
-                    World.mcc$wrap(target.level()), actor)) {
-                float strength = attacker instanceof Player player ? player.getAttackStrengthScale(0.5F) : 1F;
-                // Native Player.attack invokes this after cooldown scaling and before critical damage.
-                // Add only the legacy item's contribution; retain native attributes and enchantments.
-                return attackDamageBonus(legacy, original, strength);
-            }
-        } catch (RuntimeException | LinkageError error) {
-            failed("getAttackDamage", error);
-            return 0F;
-        } finally { EntityViewsB173.flush(); BlockEntityViewsB173.flush(); }
-    }
-
-    static float attackDamageBonus(legacyconnector.vb1_7_3.net.minecraft.item.Item item,
-            legacyconnector.vb1_7_3.net.minecraft.entity.Entity target, float strength) {
-        return (item.getAttackDamage(target) - 1F) * (0.2F + strength * strength * 0.8F);
-    }
-
-    @Override
-    public InteractionResult interactLivingEntity(ItemStack stack, Player player, net.minecraft.world.entity.LivingEntity target,
-            InteractionHand hand) {
-        if (hand != InteractionHand.MAIN_HAND || !usesEntity) return InteractionResult.PASS;
-        if (player.level().isClientSide) return InteractionResult.SUCCESS;
-        var held = StacksB173.toLegacy(stack);
-        if (held == null) return InteractionResult.PASS;
-        var actor = (PlayerViewB173)EntityViewsB173.wrap(player);
-        try (var minecraft = legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$context(World.mcc$wrap(player.level()), actor);
-                var views = EntityViewsB173.callbackScope()) {
-            var original = (legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity)EntityViewsB173.wrap(target);
-            Runnable callback = () -> {
-                legacy.useOnEntity(held, original);
-                // Creative interactions receive a copy; preserve the native caller's stack and components.
-                stack.setCount(Math.max(0, held.count));
-                if (!stack.isEmpty() && stack.isDamageableItem()) stack.setDamageValue(held.getDamage());
-                actor.writeBack();
-            };
-            if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) MenusB173.withActor(serverPlayer, callback);
-            else callback.run();
-            return InteractionResult.CONSUME;
-        } catch (RuntimeException | LinkageError e) {
-            failed("useOnEntity", e);
-            return InteractionResult.FAIL;
-        } finally { EntityViewsB173.flush(); BlockEntityViewsB173.flush(); }
-    }
-
-    @Override
-    public boolean mineBlock(ItemStack stack, Level level, net.minecraft.world.level.block.state.BlockState state,
-            net.minecraft.core.BlockPos pos, net.minecraft.world.entity.LivingEntity miner) {
-        if (level.isClientSide) return false;
-        return wear(stack, miner, null, state, pos);
-    }
-
-    @Override
-    public boolean hurtEnemy(ItemStack stack, net.minecraft.world.entity.LivingEntity target, net.minecraft.world.entity.LivingEntity attacker) {
-        if (attacker.level().isClientSide) return false;
-        return wear(stack, attacker, target, null, null);
-    }
-
-    private boolean wear(ItemStack stack, net.minecraft.world.entity.LivingEntity actor, net.minecraft.world.entity.LivingEntity target,
-            net.minecraft.world.level.block.state.BlockState state, net.minecraft.core.BlockPos pos) {
-        var held=StacksB173.toLegacy(stack);
-        if (held==null) return false;
-        var view=(legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity)EntityViewsB173.wrap(actor);
-        try (var views=EntityViewsB173.callbackScope()) {
-            legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$use(World.mcc$wrap(actor.level()));
-            boolean result=target==null ? legacy.postMine(held,BlocksB173.legacyId(state),pos.getX(),pos.getY(),pos.getZ(),view)
-                    : legacy.postHit(held,(legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity)EntityViewsB173.wrap(target),view);
-            // Keep the caller's modern stack identity and components; vanilla still holds this object after the callback.
-            stack.setCount(Math.max(0,held.count));
-            if (!stack.isEmpty() && stack.isDamageableItem()) stack.setDamageValue(held.getDamage());
-            if (view instanceof PlayerViewB173 player) player.writeBack();
-            return result;
-        } catch (RuntimeException | LinkageError e) {
-            failed(target==null?"postMine":"postHit",e);return false;
-        } finally { EntityViewsB173.flush(); }
-    }
+/** Native ordinary-item host; callbacks are shared with native armor without allocating delegate Items. */
+public final class LegacyB173Item extends net.minecraft.world.item.Item {
+    private final ItemCallbacksB173 callbacks;
+    static final java.util.concurrent.atomic.AtomicInteger CALLBACK_FAILURES=new java.util.concurrent.atomic.AtomicInteger();
+    public LegacyB173Item(legacyconnector.vb1_7_3.net.minecraft.item.Item legacy,Properties properties){super(properties);callbacks=new ItemCallbacksB173(legacy);}
+    static float attackDamageBonus(legacyconnector.vb1_7_3.net.minecraft.item.Item item,legacyconnector.vb1_7_3.net.minecraft.entity.Entity target,float strength){return ItemCallbacksB173.attackDamageBonus(item,target,strength);}
+    @Override public net.minecraft.world.entity.EquipmentSlot getEquipmentSlot(ItemStack stack){return callbacks.getEquipmentSlot(stack);}
+    @Override public net.minecraft.network.chat.Component getName(ItemStack stack){var name=callbacks.getName(stack);return name==null?super.getName(stack):name;}
+    @Override public float getDestroySpeed(ItemStack stack,net.minecraft.world.level.block.state.BlockState state){return callbacks.getDestroySpeed(stack,state);}
+    @Override public boolean isCorrectToolForDrops(ItemStack stack,net.minecraft.world.level.block.state.BlockState state){return callbacks.isCorrectToolForDrops(stack,state);}
+    @Override public InteractionResult useOn(UseOnContext context){return callbacks.useOn(context);}
+    @Override public InteractionResultHolder<ItemStack> use(Level level,Player player,InteractionHand hand){return callbacks.use(level,player,hand);}
+    @Override public float getAttackDamageBonus(net.minecraft.world.entity.Entity target,float damage,net.minecraft.world.damagesource.DamageSource source){return callbacks.getAttackDamageBonus(target,damage,source);}
+    @Override public InteractionResult interactLivingEntity(ItemStack stack,Player player,net.minecraft.world.entity.LivingEntity target,InteractionHand hand){return callbacks.interactLivingEntity(stack,player,target,hand);}
+    @Override public boolean mineBlock(ItemStack stack,Level level,net.minecraft.world.level.block.state.BlockState state,net.minecraft.core.BlockPos pos,net.minecraft.world.entity.LivingEntity miner){return callbacks.mineBlock(stack,level,state,pos,miner);}
+    @Override public boolean hurtEnemy(ItemStack stack,net.minecraft.world.entity.LivingEntity target,net.minecraft.world.entity.LivingEntity attacker){return callbacks.hurtEnemy(stack,target,attacker);}
 }

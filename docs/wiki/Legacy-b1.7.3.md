@@ -353,6 +353,84 @@ Five focused tests cover dye/wool metadata and armor constructor/reflection beha
 original GUI rendering are not established by these checks; the GUI test uses the current generic layouts. Its latex tap
 requires a neighboring log, so a stone-only placement sweep does not establish tap placement compatibility.
 
+The subsequent [PlasticCraft latex validation](../data/b173-plasticcraft-latex-validation-2026-11-09.json) reproduces the
+Latex Extractor's bucket failure with actual PlasticCraft 2.1.3. The original bucket traces for the non-colliding tap, but
+the old bridge traced collision boxes and selected the log behind it; the tap's original selection callback also called a
+stubbed base method. Shared Beta world ray traces now invoke original block selection callbacks, and the base block API
+clips its state-dependent selection bounds. The explicit collision-only filter and source-fluid pickup rules are retained;
+native vanilla interactions are unchanged.
+
+Native placement and survival right-clicks fill an actual plastic bucket on all four horizontal log faces. Plastic water
+pickup/placement and a native vanilla bucket control pass, as do filled-bucket save/reopen and another fill from the same
+existing extractor afterward. The original mod archive is byte-identical to Prism's 2.1.3 jar. The default build passes
+568 portable tests without private mod archives; other PlasticCraft systems are outside this bounded interaction check.
+
+### Furnace result slots and PlasticCraft machines
+
+Shared Beta `FurnaceOutputSlot` rejects insertion and calls the original stack crafting callback, iron/fish achievement
+callback and inventory dirty callback in their original order. Taking a result neither grants XP nor consumes machine
+inputs again. Furnace achievements retain their original numeric identities, icons and parent objects. Their generated
+advancements use callback-only criteria and an independent Beta category; no Beta definitions are emitted without an
+actually constructed, nonfailed Beta mod. Existing native vanilla acquisition triggers remain unchanged.
+
+The [PlasticCraft machine validation](../data/b173-plasticcraft-machines-validation-2026-11-09.json) reproduces the old
+output insertion failure through the actual microwave menu, then checks unchanged PlasticCraft 2.1.3 with native menu
+packets and normal server ticks. Microwave iron, fish and mould recipes, all three fuels, blocked outputs, pause behavior
+and both active-state swaps pass. Extractor latex returns two rubber balls and the empty plastic bucket; log and ore
+recipes retain both outputs and metadata. Both result slots reject insertion, output pickup transfers results once,
+supported fuels process recipes, and exhausted fuel preserves incomplete input. Original GUI textures and progress render.
+Both machines retain inventory, burn/cook timers, facing and continued processing after a real world save/reopen; furnace
+awards persist too. Breaking the active microwave drops its remaining inventory once.
+
+Both original containers lack a shift-click transfer override, so shift-click remains inert without hanging. Original
+multi-output capacity quirks, the omitted progress property 2 update and fuel-denominator recomputation on load are
+preserved. The default build passes 573 portable tests without private archives. This singleplayer check does not establish
+dedicated-server GUI/network parity or complete PlasticCraft compatibility.
+
+### Expanded PlasticCraft validation
+
+The [expanded PlasticCraft validation](../data/b173-plasticcraft-complete-validation-2026-11-09.json) extends the machine
+checks to the unchanged 2.1.3 mod's items, entities and remaining blocks. Production changes implement shared Beta APIs
+and invoke original callbacks; mod identities appear only in optional regression fixtures.
+
+`FoodItem` and `StackableFoodItem` now perform Beta's immediate healing and consumption, including original bottle and
+needle replacements. Native armor hosts retain original equipment slots, textures and callbacks. PlasticCraft explicitly
+sets both utility items' maximum damage and protection to zero: the boots and goggles remain unbreakable and grant no
+armor points. Beta's lack of right-click autoequip is preserved. The goggles supply an original texture overlay only;
+they do not add illumination or a night-vision potion effect. ModLoader frame hooks run with synchronized equipment and,
+in integrated play, authoritative server state plus captured HUD commands. Replay retains original blend and depth state.
+These remain client-driven hooks; full dedicated-server effects parity is not implemented.
+
+Native crafting and furnace result pickups invoke the original item and ModLoader achievement callbacks. Recipe outputs
+retain their complete native component patch, and metadata ingredients distinguish subtype zero from variants 1–5 while
+preserving wildcard damage for repairs. Actual crafting-table packet checks cover plastic wrap packing/unpacking, damaged
+tool repair and achievement pickup. Native shovel mining and hits retain the original durability callbacks. Records use
+native jukebox insertion, playback, ejection and saved item state. A related existing-native-view guard prevents 1.12
+wrapper construction from reapplying default attributes to native entities; newly constructed legacy entities and later
+explicit attribute writes retain their existing behavior.
+
+Neutral entity hosts execute original boat and explosive callbacks, including rider motion and model rendering. Shared
+world fluid/current queries and typed native TNT/falling-block timer views support those callbacks. Block rendering retains
+original face decisions, per-face tint and item texture providers; neighbor flags, metadata updates, signal-source queries
+and `Vec3i` value semantics now support the exercised block behavior. The original animation-strip callback supplies live
+frames to the stitched GPU atlas. Goo's original six-second stun and restoration use retained entity views while preserving
+foreign native movement attributes.
+
+Remote machine GUI reconstruction has a finite context: installed-jar ownership, registered tile identities, bounded NBT
+and an exact slot-layout check select an original player-inventory/tile constructor. Unsupported contexts retain the
+existing fallback. The original containers' omitted progress-property-2 update is still preserved; this addition does not
+establish support for arbitrary GUI constructor forms. Both actual PlasticCraft machine GUIs now pass separate-process
+client/server checks for construction, original progress fields, slot packets, output insertion rejection, processing and
+reopening.
+
+Completed checks include 83 original item/achievement assertions, 40 native item controls, 26 native block controls and
+49 native crafting/mining controls, plus boat/relog, C4, record, timed Goo and animated-atlas checks. The default suite
+passes 616 portable tests without a private mod archive. Final overlay-alpha framebuffer comparison, native cow attribute
+controls and dedicated-server validation use separate recorded controls: eight framebuffer samples match the original
+PNG's alpha blend exactly, a native cow takes one shovel damage while retaining its configured maximum health of 100,
+and 20 original plastic cows have observed `NATURAL` spawn reasons on above-zero grass terrain. The dedicated machine
+run passes 28 controls; save/restart persistence is recorded separately in the validation manifest.
+
 ### Crafting outputs larger than an inventory stack
 
 Beta recipes can return several non-stackable items. The shared shaped/shapeless recipe serializers retain a separate
@@ -767,10 +845,12 @@ callback runs on the server's and on the client's level here (as every block cal
   the foreground translated to the GUI's corner, buttons; the modern screen draws slots, items, carried stack and tooltips over it and
   handles slot clicks; mouse clicks, keys (LWJGL 2 codes, `KeysB173`) and ticks also go to the GUI. In single player the GUI object the
   server built is handed over (same JVM, by id in the menu's extra data), so it reads the ticking tile entity itself, as b1.7.3's single
-  player did. On a dedicated server the client uses the GUI its own block callback built (same class), which gets the menu data through
-  `updateProgressBar`; without one (or after an exception) a plain panel with the slots is drawn.
+  player did. On a dedicated server the client first uses the GUI its own block callback built (same class), then tries a public
+  player-inventory/registered-tile constructor from that installed mod with bounded initial NBT and an exact slot-layout match.
+  Both remote paths receive original progress and slot updates. Unsupported contexts retain a plain panel with the slots.
 - **Other screens** (no container: a timer's settings, a naming screen) open on the client in single player through
-  `LegacyB173PlainScreen`; `Minecraft.displayGuiScreen` opens and closes them. A dedicated server cannot show a screen it built.
+  `LegacyB173PlainScreen`; `Minecraft.displayGuiScreen` opens and closes them. Server-owned screens use `GuiSessionsB173` and
+  `ServerGuiScreenB173` to exchange captured drawing commands and input events with their owning client.
 - **GUI drawing** goes through `GuiDrawB173`, a sink with plain types only, so the shim's `Gui` (`DrawContext`), `GuiScreen`,
   `GuiContainer`, `GuiButton`, `FontRenderer`, `RenderEngine` and `GL11` load on a dedicated server too; the client's `ClientGuiB173`
   draws into the screen's `GuiGraphics`. `GL11` of b1.7.3 mods is the shim's (colour, texture binding and the matrix stack; state switches
@@ -890,6 +970,26 @@ highest-floor halves open the same six-row native menu with the original loot. P
 fixture cover both axes, metadata changes, ambiguous triples and deferred cross-chunk inventories. Existing SINGLE chest
 states are not scanned or migrated; pairing applies to subsequent explicit Beta writes. Modern chest placement has no
 global hook. The default build passes 558 portable tests without private mod archives.
+
+The [Hotdog, Scientist and EvilEgg validation](../data/b173-hotdog-scientist-evil-egg-validation-2026-11-09.json)
+adds generic native-lightning dispatch to the original Beta callback across hosted entity families. The Beta default
+uses its fire-immune damage helper and original ignition counter; mod overrides retain control. Vanilla entities retain
+native lightning handling. An actual More Creeps Scientist survives its original experiment lightning, builds and climbs
+its tower, produces offspring and gains the original 50 health on transformation. An in-progress experiment retains its
+UUID, tower and stage across native save/reopen; its timer continues on entity ticks rather than assuming every startup
+world tick also ticks the entity.
+
+Hotdog's original 2.12 reader deliberately raises `DogSize` below `0.7` to `0.7`; this is preserved. Native feeding, death,
+Tombstone/LifeGem revival and save/reopen match an independent original-reader oracle. The opt-in
+`-Dlegacyconnector.hotdogPersistenceSelfTest=true` fixture covers sizes `0.6`, `0.7` and `0.8`, repeated native registry
+loads, saved stats, item components and renderer tracking, without requiring the private mod during a default build.
+
+Actual native EvilEgg inputs, owner tracking, collision and original hatch callbacks are observed with unchanged RNG.
+The original code can explode after a successful hatch, including after detecting its own newborn; that behavior remains
+intact. A later wall-impact hatch survives and lays a real original egg through its natural timer. The same offspring UUID
+and health survive native save/reopen. Safe native observation placement happens only after the hatch and laying proofs;
+it does not replace the offspring or force its gameplay fields. Original unsaved laying timers remain unsaved.
+The default build passes 562 portable tests; these bounded actual-mod checks do not establish complete mod compatibility.
 
 The shared Beta painting API retains all 25 original motives, facing and wall checks, then uses native painting tracking,
 rendering and persistence. Double-precision bounds prevent thin boxes collapsing at far modern coordinates. Native-region

@@ -15,4 +15,8 @@ public class TransparentBlock extends Block {
     public boolean isOpaque() {
         return false;
     }
+
+    @Override public boolean isSideVisible(legacyconnector.vb1_7_3.net.minecraft.world.BlockView view,int x,int y,int z,int side) {
+        return (renderSides || view.getBlockId(x,y,z) != id) && super.isSideVisible(view,x,y,z,side);
+    }
 }

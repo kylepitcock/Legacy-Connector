@@ -62,6 +62,14 @@ public class Block {
     public legacyconnector.vb1_7_3.net.minecraft.util.math.Box getBoundingBox(legacyconnector.vb1_7_3.net.minecraft.world.World world,int x,int y,int z) {
         return legacyconnector.vb1_7_3.net.minecraft.util.math.Box.create(x+minX,y+minY,z+minZ,x+maxX,y+maxY,z+maxZ);
     }
+    /** Selection bounds are independent of the collision box; subclasses may customize this callback. */
+    public legacyconnector.vb1_7_3.net.minecraft.util.hit.HitResult raycast(
+            legacyconnector.vb1_7_3.net.minecraft.world.World world,int x,int y,int z,
+            legacyconnector.vb1_7_3.net.minecraft.util.math.Vec3d from,legacyconnector.vb1_7_3.net.minecraft.util.math.Vec3d to) {
+        updateBoundingBox(world,x,y,z);
+        var hit=legacyconnector.vb1_7_3.net.minecraft.util.math.Box.create(x+minX,y+minY,z+minZ,x+maxX,y+maxY,z+maxZ).raycast(from,to);
+        return hit==null?null:new legacyconnector.vb1_7_3.net.minecraft.util.hit.HitResult(x,y,z,hit.side,hit.pos);
+    }
     public void addIntersectingBoundingBox(legacyconnector.vb1_7_3.net.minecraft.world.World world,int x,int y,int z,
             legacyconnector.vb1_7_3.net.minecraft.util.math.Box mask,java.util.ArrayList<legacyconnector.vb1_7_3.net.minecraft.util.math.Box> boxes) {
         var box=getCollisionShape(world,x,y,z);if(box!=null && box.intersects(mask))boxes.add(box);
@@ -243,7 +251,8 @@ public class Block {
     }
 
     public boolean canEmitRedstonePower() {
-        return false;
+        return mcc$modern != null && !(mcc$modern instanceof org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Block)
+                && mcc$modern.defaultBlockState().isSignalSource();
     }
 
     public void setupRenderBoundingBox() {}
@@ -341,6 +350,18 @@ public class Block {
     /** MCP {@code canPlaceBlockOnSide}. */
     public boolean canPlaceAt(legacyconnector.vb1_7_3.net.minecraft.world.World world, int x, int y, int z, int side) {
         return canPlaceAt(world, x, y, z);
+    }
+
+    /** MCP {@code canBlockStay}; despite the mapped name, this is a survival check, not a growth tick. */
+    public boolean canGrow(legacyconnector.vb1_7_3.net.minecraft.world.World world, int x, int y, int z) {
+        return true;
+    }
+
+    /** MCP {@code shouldSideBeRendered}; coordinates identify the neighbour on the queried face. */
+    public boolean isSideVisible(legacyconnector.vb1_7_3.net.minecraft.world.BlockView view, int x, int y, int z, int side) {
+        if (side == 0 && minY > 0 || side == 1 && maxY < 1 || side == 2 && minZ > 0
+                || side == 3 && maxZ < 1 || side == 4 && minX > 0 || side == 5 && maxX < 1) return true;
+        return !view.method_1783(x, y, z);
     }
 
     /** MCP {@code isPoweringTo}: weak power towards {@code side}. */

@@ -25,8 +25,8 @@ import org.slf4j.LoggerFactory;
  * container: slots of the player's inventory become slots of the modern inventory, the others {@link LegacySlotB173}s over the legacy slots;
  * shift-click, validity and closing call the container; the progress values it reports to its crafters ({@code updateCraftingInventoryInfo})
  * become menu data. The client builds the same slot layout from the menu's extra data and draws it with the mod's GUI: in single player the
- * one the server built (it reads the tile entity directly, as b1.7.3 did), on a server the one the client's own block callback built, which
- * gets the menu data through {@code updateProgressBar}.
+ * one the server built (it reads the tile entity directly, as b1.7.3 did). Remote clients use their own block callback's GUI or reconstruct
+ * its public machine constructor from the canonical client tile. Both remote paths receive original container slot and progress updates.
  */
 public class LegacyB173Menu extends AbstractContainerMenu {
     private static final Logger LOG = LoggerFactory.getLogger("LegacyConnector/b1.7.3");
@@ -88,18 +88,17 @@ public class LegacyB173Menu extends AbstractContainerMenu {
         int height = buf.readVarInt();
         int[][] layout = new int[buf.readVarInt()][];
         for (int i = 0; i < layout.length; i++) layout[i] = new int[] {buf.readByte(), buf.readVarInt(), buf.readVarInt(), buf.readVarInt()};
-        Object gui = handoff != 0 ? MenusB173.handedOff(handoff) : null;
-        boolean forward = false;
-        if (gui == null && !guiClass.isEmpty()) {
-            gui = MenusB173.pending(guiClass);
-            forward = gui != null;
-        }
+        var context=RemoteMenuContextB173.read(buf);
+        var selected=RemoteMenuContextB173.select(handoff!=0?MenusB173.handedOff(handoff):null,
+                ()->guiClass.isEmpty()?null:MenusB173.pending(guiClass),
+                ()->guiClass.isEmpty()||context==null?null:RemoteMenuContextB173.reconstruct(guiClass,context,inventory,layout));
+        Object gui=selected.gui();boolean forward=selected.forward();
         MenusB173.trace("client menu {}: {} slots, drawn by {}", id, layout.length,
                 gui != null ? gui.getClass().getName() + (forward ? " (the client's own)" : " (handed over)") : "a plain panel (" + guiClass + " not found)");
         return new LegacyB173Menu(id, inventory, layout, gui, forward, width, height);
     }
 
-    /** Extra data of the open-screen packet: the GUI to draw with (handed over in single player, else by class name) and the slots. */
+    /** Open-screen data: GUI identity, slots and finite registered-tile context for remote reconstruction. */
     static void write(RegistryFriendlyByteBuf buf, ScreenHandler container, Object gui, int handoff) {
         buf.writeVarInt(handoff);
         buf.writeUtf(gui == null ? "" : gui.getClass().getName());
@@ -113,9 +112,10 @@ public class LegacyB173Menu extends AbstractContainerMenu {
             buf.writeVarInt(s.x);
             buf.writeVarInt(s.y);
         }
+        buf.writeNbt(handoff==0&&gui instanceof HandledScreen?RemoteMenuContextB173.capture(container):new net.minecraft.nbt.CompoundTag());
     }
 
-    private static boolean isPlayerSlot(Slot s) {
+    static boolean isPlayerSlot(Slot s) {
         return s.inventory instanceof PlayerInventory && s.index >= 0 && s.index < 40;
     }
 
@@ -243,13 +243,18 @@ public class LegacyB173Menu extends AbstractContainerMenu {
     /** The client's slots come from the server's layout; extra or missing entries are ignored instead of disconnecting. */
     @Override
     public void initializeContents(int stateId, List<ItemStack> items, ItemStack carried) {
-        for (int i = 0; i < items.size() && i < slots.size(); i++) getSlot(i).set(items.get(i));
+        for (int i = 0; i < items.size() && i < slots.size(); i++) {getSlot(i).set(items.get(i));forwardStack(i,items.get(i));}
         setCarried(carried);
     }
 
     @Override
     public void setItem(int slot, int stateId, ItemStack stack) {
-        if (slot >= 0 && slot < slots.size()) super.setItem(slot, stateId, stack);
+        if (slot >= 0 && slot < slots.size()) {super.setItem(slot, stateId, stack);forwardStack(slot,stack);}
+    }
+
+    private void forwardStack(int slot,ItemStack stack){
+        if(!failed&&forwardData&&gui instanceof HandledScreen handled)try{RemoteMenuContextB173.forward(handled,slot,stack);}
+        catch(RuntimeException|LinkageError error){failed=true;LOG.warn("Original remote menu {} failed to receive slot {}",gui.getClass().getName(),slot,error);}
     }
 
     /** {@code ICrafting} of the modern menu: progress values become menu data. */

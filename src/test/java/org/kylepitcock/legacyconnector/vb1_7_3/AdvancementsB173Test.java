@@ -6,6 +6,39 @@ import legacyconnector.vb1_7_3.net.minecraft.item.ItemStack;
 import org.junit.jupiter.api.Test;
 
 class AdvancementsB173Test {
+    @Test void furnaceAwardsRetainBetaIdentitiesAndUseOriginalCallbackCriteria() {
+        var iron=Achievements.ACQUIRE_IRON;var fish=Achievements.COOK_FISH;
+        assertEquals(5242885,iron.id);assertEquals("achievement.acquireIron",iron.stringId);
+        assertEquals(1,iron.column);assertEquals(4,iron.row);assertEquals(265,iron.icon.itemId);
+        assertEquals(5242890,fish.id);assertEquals("achievement.cookFish",fish.stringId);
+        assertEquals(2,fish.column);assertEquals(6,fish.row);assertEquals(350,fish.icon.itemId);
+        assertSame(Achievements.BUILD_FURNACE,iron.parent);assertSame(iron.parent,fish.parent);
+        assertSame(Achievements.BUILD_PICKAXE,iron.parent.parent);
+        assertSame(Achievements.BUILD_WORKBENCH,iron.parent.parent.parent);
+        assertSame(Achievements.MINE_WOOD,iron.parent.parent.parent.parent);
+        assertSame(Achievements.OPEN_INVENTORY,iron.parent.parent.parent.parent.parent);
+        for(var a:java.util.List.of(Achievements.MINE_WOOD,Achievements.BUILD_WORKBENCH,Achievements.BUILD_PICKAXE,Achievements.BUILD_FURNACE,iron,fish)){
+            assertTrue(a.mcc$vanilla);assertEquals("legacyconnector",a.mcc$namespace);
+            assertTrue(AdvancementsB173.all().contains(a));assertTrue(Achievements.ACHIEVEMENTS.contains(a));
+            var id=AdvancementsB173.idOf(a);assertEquals("legacyconnector",id.getNamespace());
+            assertEquals(a.parent==Achievements.OPEN_INVENTORY?AdvancementsB173.rootOf("legacyconnector"):AdvancementsB173.idOf(a.parent),AdvancementsB173.parentOf(a));
+            var definition=AdvancementsB173.definition(a,AdvancementsB173.parentOf(a),"minecraft:book");
+            assertEquals("minecraft:impossible",definition.getAsJsonObject("criteria").getAsJsonObject(AdvancementsB173.CRITERION).get("trigger").getAsString());
+        }
+        assertTrue(Achievements.OPEN_INVENTORY.localOnly);
+        assertEquals("minecraft:story/root",AdvancementsB173.idOf(Achievements.OPEN_INVENTORY).toString());
+    }
+    @Test void registeredAchievementsCannotGenerateBetaPackOnModernOnlyInstance() {
+        assertTrue(org.kylepitcock.legacyconnector.core.LegacyMods.ordered().isEmpty());
+        new Achievement(91953,"registeredWithoutLoadedBetaMod",0,0,new ItemStack(340,1,0),Achievements.OPEN_INVENTORY).addStat();
+        assertTrue(AdvancementsB173.all().contains(Achievements.COOK_FISH));
+        var out=new java.util.LinkedHashMap<String,java.util.function.Supplier<byte[]>>();
+        AdvancementsB173.contribute(out);
+        assertTrue(out.isEmpty());
+        assertSame(Achievements.OPEN_INVENTORY,Achievements.MINE_WOOD.parent);
+        assertEquals("legacyconnector:beta/root",AdvancementsB173.parentOf(Achievements.MINE_WOOD).toString());
+        assertEquals("minecraft:story/root",AdvancementsB173.idOf(Achievements.OPEN_INVENTORY).toString());
+    }
     @Test void originalConstructorsRegistrationAndDescriptionProduceNativeDefinition() {
         var achievement=new Achievement(91821,"example",-4,-5,new ItemStack(340,1,0),Achievements.OPEN_INVENTORY).challenge().addStat();
         assertSame(achievement,achievement.localOnly());assertTrue(achievement.isAchievement());assertTrue(achievement.localOnly);

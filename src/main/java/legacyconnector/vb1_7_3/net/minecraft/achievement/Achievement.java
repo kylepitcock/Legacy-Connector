@@ -18,7 +18,10 @@ public class Achievement extends Stat {
     public Achievement(int id,String name,int column,int row,Item item,Achievement parent){this(id,name,column,row,new ItemStack(item),parent);}
     public Achievement(int id,String name,int column,int row,Block block,Achievement parent){this(id,name,column,row,new ItemStack(block),parent);}
     public Achievement(int id,String name,int column,int row,ItemStack icon,Achievement parent){
-        super(5242880+id,"achievement."+name);this.column=column;this.row=row;this.icon=icon;this.parent=parent;
+        this(id,name,column,row,icon,parent,null);
+    }
+    Achievement(int id,String name,int column,int row,ItemStack icon,Achievement parent,String namespace){
+        super(5242880+id,"achievement."+name,namespace);this.column=column;this.row=row;this.icon=icon;this.parent=parent;
         translationKey="achievement."+name+".desc";
         Achievements.minColumn=Math.min(Achievements.minColumn,column);Achievements.maxColumn=Math.max(Achievements.maxColumn,column);
         Achievements.minRow=Math.min(Achievements.minRow,row);Achievements.maxRow=Math.max(Achievements.maxRow,row);

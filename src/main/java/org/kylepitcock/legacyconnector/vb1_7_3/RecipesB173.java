@@ -245,7 +245,8 @@ public final class RecipesB173 {
     }
 
     /** One item, or every variant of a vanilla id with metadata when any damage matches (-1). */
-    private static JsonElement stackIngredient(int id, int damage) {
+    static JsonElement stackIngredient(int id, int damage) {
+        boolean wildcard=damage==-1;
         if (damage == -1) {
             int variants = switch (id) {
                 case 35, 351 -> 16;
@@ -264,7 +265,17 @@ public final class RecipesB173 {
             damage = 0;
         }
         var item = StacksB173.modernItem(id, damage);
-        return item == null ? null : itemIngredient(item);
+        if(item==null)return null;
+        Item legacy=id>=0&&id<Item.ITEMS.length?Item.ITEMS[id]:null;
+        if(!wildcard&&(item.components().has(net.minecraft.core.component.DataComponents.MAX_DAMAGE)
+                ||item instanceof net.minecraft.world.item.BlockItem block&&block.getBlock() instanceof LegacyB173Block
+                ||legacy!=null&&legacy.mcc$owner!=null&&legacy.hasSubtypes())){
+            JsonObject ingredient=itemIngredient(item);
+            ingredient.addProperty("type","legacyconnector:beta_metadata");
+            ingredient.addProperty("metadata",damage);
+            return ingredient;
+        }
+        return itemIngredient(item);
     }
 
     private static JsonObject itemIngredient(net.minecraft.world.item.Item item) {
@@ -277,17 +288,11 @@ public final class RecipesB173 {
         if (legacy == null) return null;
         var stack = StacksB173.toModern(legacy.itemId, Math.max(1, legacy.count), legacy.getDamage());
         if (stack.isEmpty()) return null;
-        JsonObject o = new JsonObject();
-        o.addProperty("id", BuiltInRegistries.ITEM.getKey(stack.getItem()).toString());
-        if (stack.getCount() > 1) o.addProperty("count", stack.getCount());
-        var state = stack.get(net.minecraft.core.component.DataComponents.BLOCK_STATE);
-        if (state != null && !state.isEmpty()) {
-            JsonObject components = new JsonObject();
-            JsonObject props = new JsonObject();
-            state.properties().forEach(props::addProperty);
-            components.add("minecraft:block_state", props);
-            o.add("components", components);
-        }
-        return o;
+        return result(stack);
+    }
+
+    /** Use the native stack codec so subtype data, block metadata and durability all survive recipe assembly. */
+    static JsonObject result(net.minecraft.world.item.ItemStack stack){
+        return net.minecraft.world.item.ItemStack.CODEC.encodeStart(com.mojang.serialization.JsonOps.INSTANCE,stack).getOrThrow().getAsJsonObject();
     }
 }

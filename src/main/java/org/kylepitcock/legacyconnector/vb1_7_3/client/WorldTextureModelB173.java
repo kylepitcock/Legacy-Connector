@@ -25,12 +25,13 @@ import org.kylepitcock.legacyconnector.vb1_7_3.*;
 final class WorldTextureModelB173 extends BakedModelWrapper<BakedModel> {
     private static final ModelProperty<int[]> FACES=new ModelProperty<>();
     private static final ModelProperty<List<BakedQuad>> CUSTOM=new ModelProperty<>();
+    private static final ModelProperty<Integer> VISIBLE=new ModelProperty<>();
     private final Block block;
     private final Map<Integer,String> palette;
     private WorldTextureModelB173(BakedModel base,Block block){super(base);this.block=block;palette=AssetsB173.worldTextures(block);}
     static void wrap(Map<ModelResourceLocation,BakedModel> models){
         for(var block:ContentB173.blocks()){
-            if(!(block.mcc$modern instanceof LegacyB173Block) || (!AssetsB173.usesWorldTextures(block) && !BlockRenderB173.hasRenderer(block.getRenderType())))continue;
+            if(!(block.mcc$modern instanceof LegacyB173Block) || (!AssetsB173.usesWorldTextures(block) && !BlockFacesB173.hasCallback(block) && !BlockRenderB173.hasRenderer(block.getRenderType())))continue;
             for(var state:block.mcc$modern.getStateDefinition().getPossibleStates()){
                 var key=BlockModelShaper.stateToModelLocation(state);var base=models.get(key);
                 if(base!=null)models.put(key,new WorldTextureModelB173(base,block));
@@ -39,6 +40,7 @@ final class WorldTextureModelB173 extends BakedModelWrapper<BakedModel> {
     }
     @Override public ModelData getModelData(BlockAndTintGetter level,BlockPos pos,BlockState state,ModelData data){
         var result=originalModel.getModelData(level,pos,state,data).derive().with(FACES,AssetsB173.faceTextures(block,level,pos,state));
+        if(BlockFacesB173.hasCallback(block))result.with(VISIBLE,BlockFacesB173.visibleFaces(block,new BlockQueryB173(level,pos,state),pos.getX(),pos.getY(),pos.getZ()));
         if(BlockRenderB173.hasRenderer(block.getRenderType())){
             var captured=BlockRenderB173.capture(block,new BlockQueryB173(level,pos,state),pos.getX(),pos.getY(),pos.getZ());
             var quads=bake(captured,pos);if(!quads.isEmpty())result.with(CUSTOM,quads);
@@ -47,7 +49,19 @@ final class WorldTextureModelB173 extends BakedModelWrapper<BakedModel> {
     }
     @Override public List<BakedQuad> getQuads(BlockState state,Direction side,RandomSource random,ModelData data,RenderType renderType){
         var custom=data.get(CUSTOM);if(custom!=null)return side==null?custom:List.of();
-        var quads=originalModel.getQuads(state,side,random,data,renderType);int[] faces=data.get(FACES);
+        var visible=data.get(VISIBLE);
+        List<BakedQuad> quads;
+        if(visible!=null) {
+            // Unculled output lets the original callback decide visibility even against native opaque neighbours.
+            if(side!=null)return List.of();
+            var selected=new java.util.ArrayList<BakedQuad>();
+            for(var quad:originalModel.getQuads(state,null,random,data,renderType))
+                if((visible&(1<<quad.getDirection().get3DDataValue()))!=0)selected.add(quad);
+            for(var face:Direction.values())if((visible&(1<<face.get3DDataValue()))!=0)
+                selected.addAll(originalModel.getQuads(state,face,random,data,renderType));
+            quads=selected;
+        }else quads=originalModel.getQuads(state,side,random,data,renderType);
+        int[] faces=data.get(FACES);
         if(faces==null)return quads;
         return quads.stream().map(q->retexture(q,faces[q.getDirection().get3DDataValue()])).toList();
     }

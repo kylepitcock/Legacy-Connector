@@ -61,12 +61,15 @@ public final class EntityViewsB173 {
         }
     }
     private static Extra extra(Entity view){
+        if(view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.FallingBlockEntity falling)return new Extra(falling.timeFalling,0,net.minecraft.world.item.ItemStack.EMPTY,0,null);
+        if(view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.TntEntity tnt)return new Extra(0,0,net.minecraft.world.item.ItemStack.EMPTY,tnt.fuse,null);
         if(view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.ItemEntity item)return new Extra(item.itemAge,item.pickupDelay,item.stack==null?net.minecraft.world.item.ItemStack.EMPTY:StacksB173.toModern(item.stack).copy(),0,null);
         if(view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.mob.CreeperEntity creeper)return new Extra(0,0,net.minecraft.world.item.ItemStack.EMPTY,creeper.fuseTime,null);
         if(view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.projectile.ArrowEntity arrow)return new Extra(0,0,net.minecraft.world.item.ItemStack.EMPTY,0,arrow.owner);
         return null;
     }
-    private record Touched(Entity view,double vx,double vy,double vz,boolean ground,Entity target,HostState hostState,NeutralState neutralState,Extra extra,Placement placement) {}
+    private record Touched(Entity view,double vx,double vy,double vz,boolean ground,Entity target,HostState hostState,NeutralState neutralState,Extra extra,Placement placement,float movementSpeed) {}
+    private static float movementSpeed(Entity view){return view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity living?living.mcc$movementSpeed():Float.NaN;}
     private static final java.util.Map<net.minecraft.world.entity.Entity,Entity> VIEWS =
             new com.google.common.collect.MapMaker().weakKeys().weakValues().makeMap();
     private static final ThreadLocal<java.util.Map<net.minecraft.world.entity.Entity,Touched>> TOUCHED =
@@ -109,9 +112,16 @@ public final class EntityViewsB173 {
     public static ReadOnlyScope readOnly(){return new ReadOnlyScope();}
     public static Entity wrapReadOnly(net.minecraft.world.entity.Entity modern){try(var scope=readOnly()){return wrap(modern);}}
 
+    /** Refresh retained original views on the owning level's thread before a mod's game hook runs. */
+    public static void refreshCached(net.minecraft.world.level.Level level) {
+        for(var modern:java.util.List.copyOf(VIEWS.keySet()))
+            if(modern.level()==level&&!modern.isRemoved())wrap(modern);
+    }
+
     public static Entity wrap(net.minecraft.world.entity.Entity modern) {
         if (modern == null) return null;
         if (modern instanceof B173EntityHost host && host.legacy()!=null) {
+            VIEWS.put(modern,host.legacy());
             if (host.callbackActive()) return host.legacy();
             if (!TOUCHED.get().containsKey(modern)) host.syncView();
             return touch(modern,host.legacy());
@@ -133,12 +143,17 @@ public final class EntityViewsB173 {
         view.onGround=modern.onGround();view.dead=modern.isRemoved();view.mcc$environment(modern.isInWater());
         view.blocksSameBlockSpawning=modern.blocksBuilding;
         view.yaw=modern.getYRot();view.pitch=modern.getXRot();
-        if(view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity living && modern instanceof net.minecraft.world.entity.LivingEntity nativeLiving)
-            living.health=Math.round(nativeLiving.getHealth());
+        if(view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity living && modern instanceof net.minecraft.world.entity.LivingEntity nativeLiving){
+            living.health=Math.round(nativeLiving.getHealth());living.mcc$movementSpeed(NativeMovementSpeedB173.read(nativeLiving));
+        }
         if(view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.ItemEntity item&&modern instanceof net.minecraft.world.entity.item.ItemEntity nativeItem){
             item.stack=StacksB173.toLegacy(nativeItem.getItem());item.itemAge=EntityFieldsB173.itemAge(nativeItem);item.pickupDelay=EntityFieldsB173.pickupDelay(nativeItem);
         }
         if(view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.mob.CreeperEntity creeper&&modern instanceof net.minecraft.world.entity.monster.Creeper nativeCreeper)creeper.fuseTime=EntityFieldsB173.creeperFuse(nativeCreeper);
+        if(view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.TntEntity tnt&&modern instanceof net.minecraft.world.entity.item.PrimedTnt nativeTnt)tnt.fuse=nativeTnt.getFuse();
+        if(view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.FallingBlockEntity falling&&modern instanceof net.minecraft.world.entity.item.FallingBlockEntity nativeFalling){
+            falling.blockId=BlocksB173.legacyId(nativeFalling.getBlockState());falling.timeFalling=EntityFieldsB173.fallingTime(nativeFalling);
+        }
         if(view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.passive.SquidEntity squid&&modern instanceof net.minecraft.world.entity.animal.Squid nativeSquid){
             // Read snapshots only: native animation and swimming remain authoritative on ordinary native entities.
             squid.tiltAngle=nativeSquid.xBodyRot;squid.lastTiltAngle=nativeSquid.xBodyRotO;
@@ -151,11 +166,11 @@ public final class EntityViewsB173 {
         view.vehicle=wrap(modern.getVehicle());view.passenger=wrap(modern.getFirstPassenger());
         if(view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.projectile.ArrowEntity arrow&&modern instanceof net.minecraft.world.entity.projectile.AbstractArrow nativeArrow){
             Entity owner=wrap(nativeArrow.getOwner());arrow.owner=owner instanceof legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity living?living:null;
-            TOUCHED.get().put(modern,new Touched(view,view.velocityX,view.velocityY,view.velocityZ,view.onGround,null,null,null,extra(view),Placement.of(view)));
+            TOUCHED.get().put(modern,new Touched(view,view.velocityX,view.velocityY,view.velocityZ,view.onGround,null,null,null,extra(view),Placement.of(view),movementSpeed(view)));
         }
         if(view instanceof PathAwareEntity creature && modern instanceof net.minecraft.world.entity.Mob mob) {
             creature.target=wrap(mob.getTarget());
-            TOUCHED.get().put(modern,new Touched(view,view.velocityX,view.velocityY,view.velocityZ,view.onGround,creature.target,null,null,extra(view),Placement.of(view)));
+            TOUCHED.get().put(modern,new Touched(view,view.velocityX,view.velocityY,view.velocityZ,view.onGround,creature.target,null,null,extra(view),Placement.of(view),movementSpeed(view)));
         }
         return view;
     }
@@ -163,9 +178,13 @@ public final class EntityViewsB173 {
         World world=World.mcc$wrap(modern.level());
         if(modern instanceof LegacyB173Cow cow && cow.legacy()!=null)return cow.legacy();
         if(modern instanceof net.minecraft.world.entity.player.Player p)return PlayerViewB173.of(p);
+        if(modern instanceof net.minecraft.world.entity.LightningBolt)
+            return new legacyconnector.vb1_7_3.net.minecraft.entity.LightningEntity(world,modern.getX(),modern.getY(),modern.getZ());
         if(modern instanceof net.minecraft.world.entity.item.ItemEntity item)
             return new legacyconnector.vb1_7_3.net.minecraft.entity.ItemEntity(world,modern.getX(),modern.getY(),modern.getZ(),StacksB173.toLegacy(item.getItem()));
         if(modern instanceof net.minecraft.world.entity.projectile.AbstractArrow)return new legacyconnector.vb1_7_3.net.minecraft.entity.projectile.ArrowEntity(world);
+        if(modern instanceof net.minecraft.world.entity.item.PrimedTnt)return new legacyconnector.vb1_7_3.net.minecraft.entity.TntEntity(world);
+        if(modern instanceof net.minecraft.world.entity.item.FallingBlockEntity)return new legacyconnector.vb1_7_3.net.minecraft.entity.FallingBlockEntity(world);
         if(modern instanceof net.minecraft.world.entity.monster.Creeper)return new legacyconnector.vb1_7_3.net.minecraft.entity.mob.CreeperEntity(world);
         if(modern instanceof net.minecraft.world.entity.monster.Monster)return new legacyconnector.vb1_7_3.net.minecraft.entity.mob.MonsterEntity(world) {};
         if(modern instanceof net.minecraft.world.entity.animal.Squid)return new legacyconnector.vb1_7_3.net.minecraft.entity.passive.SquidEntity(world);
@@ -181,7 +200,7 @@ public final class EntityViewsB173 {
         TOUCHED.get().putIfAbsent(modern,new Touched(view,view.velocityX,view.velocityY,view.velocityZ,view.onGround,view instanceof PathAwareEntity p?p.target:null,
                 modern instanceof B173LivingHost host?HostState.of(host.legacy()):null,
                 modern instanceof B173EntityHost&&!(modern instanceof B173LivingHost)?NeutralState.of(view):null,extra(view),
-                modern instanceof B173EntityHost||view instanceof PlayerViewB173?null:Placement.of(view)));
+                modern instanceof B173EntityHost||view instanceof PlayerViewB173?null:Placement.of(view),movementSpeed(view)));
         return view;
     }
     /** Capture identity and a baseline before original code continues mutating a freshly spawned entity. */
@@ -249,11 +268,15 @@ public final class EntityViewsB173 {
                 var modern=entry.getKey();var touched=entry.getValue();Entity view=touched.view;
                 if(modern instanceof B173EntityHost host) {if(!host.callbackActive())flushHost(host,touched);continue;}
                 if(view instanceof PlayerViewB173 player)player.writeBack();
+                if(view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity living&&modern instanceof net.minecraft.world.entity.LivingEntity nativeLiving)
+                    NativeMovementSpeedB173.commit(nativeLiving,touched.movementSpeed,living.mcc$movementSpeed());
                 if(view.dead&&!modern.isRemoved()){modern.discard();continue;}
                 if(touched.placement!=null)touched.placement.apply(view,modern);
                 if(view.fireTicks>modern.getRemainingFireTicks())modern.setRemainingFireTicks(view.fireTicks);
                 Extra before=touched.extra;
                 if(before!=null){
+                    if(view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.TntEntity tnt&&modern instanceof net.minecraft.world.entity.item.PrimedTnt nativeTnt&&tnt.fuse!=before.fuse)nativeTnt.setFuse(tnt.fuse);
+                    if(view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.FallingBlockEntity falling&&modern instanceof net.minecraft.world.entity.item.FallingBlockEntity nativeFalling&&falling.timeFalling!=before.itemAge)EntityFieldsB173.fallingTime(nativeFalling,falling.timeFalling);
                     if(view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.ItemEntity item&&modern instanceof net.minecraft.world.entity.item.ItemEntity nativeItem){
                         if(item.itemAge!=before.itemAge)EntityFieldsB173.itemAge(nativeItem,item.itemAge);
                         if(item.pickupDelay!=before.pickupDelay)nativeItem.setPickUpDelay(item.pickupDelay);

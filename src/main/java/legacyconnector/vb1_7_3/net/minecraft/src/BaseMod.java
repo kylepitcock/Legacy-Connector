@@ -16,11 +16,18 @@ public abstract class BaseMod {
 
     public void AddRenderer(java.util.Map<?, ?> renderers) {}
     public void RegisterAnimation(legacyconnector.vb1_7_3.net.minecraft.client.Minecraft minecraft){}
+    public boolean OnTickInGame(legacyconnector.vb1_7_3.net.minecraft.client.Minecraft minecraft){return false;}
+    public boolean OnTickInGUI(legacyconnector.vb1_7_3.net.minecraft.client.Minecraft minecraft,
+            legacyconnector.vb1_7_3.net.minecraft.client.gui.screen.Screen screen){return false;}
     public boolean RenderWorldBlock(legacyconnector.vb1_7_3.net.minecraft.client.render.block.BlockRenderManager renderer,
             legacyconnector.vb1_7_3.net.minecraft.world.BlockView world,int x,int y,int z,
             legacyconnector.vb1_7_3.net.minecraft.block.Block block,int model){return false;}
 
     public void ModsLoaded() {}
+    public void TakenFromCrafting(legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity player,
+            legacyconnector.vb1_7_3.net.minecraft.item.ItemStack stack){}
+    public void TakenFromFurnace(legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity player,
+            legacyconnector.vb1_7_3.net.minecraft.item.ItemStack stack){}
 
     public void GenerateSurface(legacyconnector.vb1_7_3.net.minecraft.world.World world,java.util.Random random,int blockX,int blockZ) {}
     public void GenerateNether(legacyconnector.vb1_7_3.net.minecraft.world.World world,java.util.Random random,int blockX,int blockZ) {}

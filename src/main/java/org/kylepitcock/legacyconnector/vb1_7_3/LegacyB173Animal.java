@@ -308,6 +308,10 @@ public final class LegacyB173Animal extends PathfinderMob implements B173LivingH
         flushView();if(path==null)getNavigation().stop();else if(path.mcc$modern()!=null)getNavigation().moveTo(path.mcc$modern(),Math.max(0,legacy.mcc$movementSpeed()));
     }
     @Override public float getWalkTargetValue(BlockPos pos,LevelReader level){return legacy instanceof MobEntity c?c.mcc$pathFavor(pos.getX(),pos.getY(),pos.getZ()):0;}
+    @Override public void thunderHit(net.minecraft.server.level.ServerLevel level,net.minecraft.world.entity.LightningBolt bolt){
+        if(legacy==null){super.thunderHit(level,bolt);return;}
+        callback(()->legacy.onStruckByLightning((legacyconnector.vb1_7_3.net.minecraft.entity.LightningEntity)EntityViewsB173.wrap(bolt)));
+    }
     @Override public boolean hurt(DamageSource source,float amount){if(legacy==null||level().isClientSide)return super.hurt(source,amount);DamageSource previous=damageSource;damageSource=source;boolean[] result={false};try{callback(()->{
         var direct=source.getDirectEntity();
         var attacker=direct instanceof LegacyB173VanillaArrow?source.getEntity():direct!=null?direct:source.getEntity();

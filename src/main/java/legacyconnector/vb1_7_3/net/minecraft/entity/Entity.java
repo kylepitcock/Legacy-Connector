@@ -87,9 +87,19 @@ public abstract class Entity {
         initDataTracker();
     }
     protected void initDataTracker() {}
+    /** Biny's historical name is inverted: true enables walking sounds and block stepping. */
+    protected boolean bypassesSteppingEffects(){return true;}
+    public final boolean mcc$steppingEffects(){return bypassesSteppingEffects();}
+    public legacyconnector.vb1_7_3.net.minecraft.util.math.Box getBoundingBox(){return null;}
+    public legacyconnector.vb1_7_3.net.minecraft.util.math.Box getCollisionAgainstShape(Entity other){return null;}
+    public void animateHurt(){}
+    public boolean interact(legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity player){return false;}
 
-    /** Beta {@code onStruckByLightning}: fire damage; the host's own lightning handling applies the native effects. */
-    public void onStruckByLightning(LightningEntity lightning) {}
+    /** Beta lightning uses the fire-immune damage helper, then advances the ignition counter. */
+    public void onStruckByLightning(LightningEntity lightning) {
+        damage(5);
+        if (++fireTicks == 0) fireTicks = 300;
+    }
 
     public void markDead() {
         this.dead = true;
@@ -226,6 +236,9 @@ public abstract class Entity {
         if(count<=0||world==null)return null;
         var item=new legacyconnector.vb1_7_3.net.minecraft.entity.ItemEntity(world,x,y,z,new legacyconnector.vb1_7_3.net.minecraft.item.ItemStack(id,count,0));
         item.pickupDelay=10;return world.spawnEntity(item)?item:null;
+    }
+    public legacyconnector.vb1_7_3.net.minecraft.entity.ItemEntity dropItem(int id,int count,float offset){
+        return dropItem(new legacyconnector.vb1_7_3.net.minecraft.item.ItemStack(id,count,0),offset);
     }
     public legacyconnector.vb1_7_3.net.minecraft.entity.ItemEntity dropItem(legacyconnector.vb1_7_3.net.minecraft.item.ItemStack stack,float offset){
         if(stack==null||stack.count<=0||world==null)return null;

@@ -6,6 +6,9 @@ import legacyconnector.vb1_7_3.net.minecraft.src.ModLoader;
 import org.junit.jupiter.api.Test;
 
 class EntityRegistryB173Test {
+    static class ReplacementCow extends legacyconnector.vb1_7_3.net.minecraft.entity.passive.CowEntity {
+        ReplacementCow(legacyconnector.vb1_7_3.net.minecraft.world.World world){super(world);}
+    }
     @Test void originalReflectionAliasesExposeTheSameLiveNameMap() throws Exception {
         var map=EntityRegistry.stringToClassMapping;
         assertSame(map,ModLoader.getPrivateValue(EntityRegistry.class,null,"a"));
@@ -24,5 +27,27 @@ class EntityRegistryB173Test {
             assertEquals(legacyconnector.vb1_7_3.net.minecraft.entity.Entity.class,map.get("RegistryLateProbe"));
             assertTrue(map.entrySet().stream().anyMatch(entry->entry.getKey().equals("RegistryLateProbe")));
         } finally {registrations.subList(size,registrations.size()).clear();}
+    }
+    @Test void namedVanillaRemovalBeforeReplacementKeepsOriginalIdentityAndLatestRegistrationWins()throws Exception {
+        var field=ContentB173.class.getDeclaredField("ENTITIES");field.setAccessible(true);
+        @SuppressWarnings("unchecked") var registrations=(java.util.List<ContentB173.Registration>)field.get(null);
+        var previous=new java.util.ArrayList<>(registrations);
+        try {
+            registrations.clear();
+            var vanilla=legacyconnector.vb1_7_3.net.minecraft.entity.passive.CowEntity.class;
+            assertSame(vanilla,SpawnRulesB173.namedEntity("Cow"));assertSame(vanilla,EntityRegistry.stringToClassMapping.get("Cow"));
+            assertSame(legacyconnector.vb1_7_3.net.minecraft.entity.passive.PigEntity.class,SpawnRulesB173.namedEntity("Pig"));
+            assertNull(SpawnRulesB173.namedEntity("cow"));assertNull(SpawnRulesB173.namedEntity("UnknownNativeCreature"));
+            var rules=new SpawnRulesB173.Registry();
+            rules.remove(SpawnRulesB173.namedEntity("Cow"),legacyconnector.vb1_7_3.net.minecraft.entity.SpawnGroup.CREATURE,null);
+            ContentB173.registerEntity(ReplacementCow.class,"Cow",92);
+            assertSame(ReplacementCow.class,SpawnRulesB173.namedEntity("Cow"));
+            rules.add(SpawnRulesB173.namedEntity("Cow"),8,legacyconnector.vb1_7_3.net.minecraft.entity.SpawnGroup.CREATURE,null);
+            assertTrue(rules.changes().stream().anyMatch(e->e.type()==vanilla&&e.weight()==-1));
+            assertTrue(rules.changes().stream().anyMatch(e->e.type()==ReplacementCow.class&&e.weight()==8));
+            ContentB173.registerEntity(legacyconnector.vb1_7_3.net.minecraft.entity.Entity.class,"Cow",31943);
+            assertSame(legacyconnector.vb1_7_3.net.minecraft.entity.Entity.class,SpawnRulesB173.namedEntity("Cow"));
+            assertEquals(1,EntityRegistry.stringToClassMapping.entrySet().stream().filter(e->e.getKey().equals("Cow")).count());
+        }finally{registrations.clear();registrations.addAll(previous);}
     }
 }
