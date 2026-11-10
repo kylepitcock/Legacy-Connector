@@ -82,6 +82,7 @@ public class ItemStack {
     }
 
     public Item getItem() {
+        if (itemId == org.kylepitcock.legacyconnector.vb1_7_3.NativeStackItemB173.ID) org.kylepitcock.legacyconnector.vb1_7_3.NativeStackItemB173.get();
         return itemId >= 0 && itemId < Item.ITEMS.length ? Item.ITEMS[itemId] : null;
     }
 
@@ -102,6 +103,8 @@ public class ItemStack {
     }
 
     public int getMaxCount() {
+        var nativeStack = org.kylepitcock.legacyconnector.vb1_7_3.NativeStackItemB173.is(itemId) ? mcc$nativeSnapshot() : null;
+        if (nativeStack != null) return nativeStack.getMaxStackSize();
         Item item = getItem();
         return item == null ? 64 : item.getMaxCount();
     }
