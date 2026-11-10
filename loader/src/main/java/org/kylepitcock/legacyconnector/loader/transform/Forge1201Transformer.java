@@ -337,6 +337,10 @@ public final class Forge1201Transformer {
             result.notes.add("Palladium 1.21.1 mixin compatibility adapters applied to "
                     + palladiumMixinChanges + " mixin class(es); the obsolete Watcher render hook is omitted");
         }
+        if (palladiumSuitStandChanges > 0) {
+            result.notes.add("Palladium SuitStand migrated to the 1.21.1 SynchedEntityData builder lifecycle: "
+                    + palladiumSuitStandChanges + " entity class(es)");
+        }
         if (palladiumLootChanges > 0) {
             result.notes.add("Palladium loot-pool Gson deserialization migrated to NeoForge 1.21.1 loot codecs: "
                     + palladiumLootChanges + " manager class(es)");
