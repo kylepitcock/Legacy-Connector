@@ -138,30 +138,42 @@ class CallRewrites1201Test {
         assertEquals(14, method.maxLocals);
 
         AbstractInsnNode[] instructions = method.instructions.toArray();
-        // The seven original arguments are spilled into fresh locals.
-        assertEquals(Opcodes.ASTORE, instructions[0].getOpcode());
-        assertEquals(Opcodes.ASTORE, instructions[1].getOpcode());
-        assertEquals(Opcodes.ASTORE, instructions[2].getOpcode());
-        assertEquals(Opcodes.ISTORE, instructions[3].getOpcode());
-        assertEquals(Opcodes.ISTORE, instructions[4].getOpcode());
-        assertEquals(Opcodes.ISTORE, instructions[5].getOpcode());
-        assertEquals(Opcodes.ASTORE, instructions[6].getOpcode());
+        // The original argument producers remain in place. The seven values are
+        // spilled immediately before the old call, in reverse stack order.
+        int[] originalLoadOpcodes = {
+                Opcodes.ALOAD, Opcodes.ILOAD, Opcodes.ILOAD, Opcodes.ILOAD,
+                Opcodes.ALOAD, Opcodes.ALOAD, Opcodes.ALOAD
+        };
+        for (int i = 0; i < originalLoadOpcodes.length; i++) {
+            assertEquals(originalLoadOpcodes[i], instructions[i].getOpcode());
+        }
+
+        int[] expectedSpillOpcodes = {
+                Opcodes.ASTORE, Opcodes.ASTORE, Opcodes.ASTORE,
+                Opcodes.ISTORE, Opcodes.ISTORE, Opcodes.ISTORE, Opcodes.ASTORE
+        };
+        int[] expectedSpillLocals = {7, 8, 9, 10, 11, 12, 13};
+        for (int i = 0; i < expectedSpillOpcodes.length; i++) {
+            AbstractInsnNode spill = instructions[7 + i];
+            assertEquals(expectedSpillOpcodes[i], spill.getOpcode());
+            assertEquals(expectedSpillLocals[i], ((VarInsnNode) spill).var);
+        }
 
         int[] expectedReloadOpcodes = {
                 Opcodes.ALOAD, Opcodes.ILOAD, Opcodes.I2F, Opcodes.ILOAD, Opcodes.I2F,
                 Opcodes.ILOAD, Opcodes.I2F, Opcodes.NEW, Opcodes.DUP, Opcodes.INVOKESPECIAL,
                 Opcodes.ALOAD, Opcodes.ALOAD, Opcodes.ALOAD
         };
-        int cursor = 7;
+        int cursor = 14;
         for (int opcode : expectedReloadOpcodes) {
             assertEquals(opcode, instructions[cursor++].getOpcode());
         }
-        MethodInsnNode vectorCtor = (MethodInsnNode) instructions[16];
+        MethodInsnNode vectorCtor = (MethodInsnNode) instructions[23];
         assertEquals("org/joml/Vector3f", vectorCtor.owner);
         assertEquals("<init>", vectorCtor.name);
         assertEquals("()V", vectorCtor.desc);
-        assertEquals(oldCall, instructions[20]);
-        assertEquals(Opcodes.RETURN, instructions[21].getOpcode());
+        assertEquals(oldCall, instructions[27]);
+        assertEquals(Opcodes.RETURN, instructions[28].getOpcode());
         assertTrue(method.maxStack >= 10);
     }
 
