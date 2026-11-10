@@ -28,13 +28,14 @@ final class PalladiumSelectionLists1201 implements Opcodes {
     private static final String ABSTRACT_SELECTION_LIST =
             "net/minecraft/client/gui/components/AbstractSelectionList";
     private static final String UPDATE_NARRATION = "updateNarration";
+    private static final String UPDATE_WIDGET_NARRATION = "updateWidgetNarration";
     private static final String UPDATE_NARRATION_DESC =
             "(Lnet/minecraft/client/gui/narration/NarrationElementOutput;)V";
 
     private PalladiumSelectionLists1201() {
     }
 
-    /** Returns one when the exact legacy no-op narration override is removed. */
+    /** Returns one when the exact legacy no-op is renamed to the 1.21.1 hook. */
     static int apply(ClassNode node) {
         if (!TARGETS.contains(node.name)) return 0;
         if (!ABSTRACT_SELECTION_LIST.equals(node.superName)) {
@@ -71,7 +72,13 @@ final class PalladiumSelectionLists1201 implements Opcodes {
                     "Palladium list widget updateNarration no longer contains exactly one RETURN: " + node.name);
         }
 
-        node.methods.remove(target);
+        for (MethodNode method : node.methods) {
+            if (UPDATE_WIDGET_NARRATION.equals(method.name) && UPDATE_NARRATION_DESC.equals(method.desc)) {
+                throw new IllegalStateException(
+                        "Palladium list widget already declares updateWidgetNarration: " + node.name);
+            }
+        }
+        target.name = UPDATE_WIDGET_NARRATION;
         return 1;
     }
 }
