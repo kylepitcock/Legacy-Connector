@@ -1,6 +1,7 @@
 package legacyconnector.v1_20_1;
 
 import java.util.Objects;
+import net.minecraft.util.FastColor;
 import net.minecraft.world.entity.animal.Sheep;
 import net.minecraft.world.item.DyeColor;
 
@@ -13,6 +14,11 @@ public final class PalladiumColorCompat {
     public static float[] sheepColorArray(DyeColor color) {
         Objects.requireNonNull(color, "Dye color");
         return rgbToFloatArray(Sheep.getColor(color));
+    }
+
+    /** Packs the legacy normalized RGB floats into the opaque ARGB tint expected by 1.21.1 RenderLayer. */
+    public static int packRgb(float red, float green, float blue) {
+        return FastColor.ARGB32.colorFromFloat(1.0F, red, green, blue);
     }
 
     static float[] rgbToFloatArray(int rgb) {

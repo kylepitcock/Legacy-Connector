@@ -1,6 +1,7 @@
 package legacyconnector.v1_20_1;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 
@@ -15,5 +16,13 @@ class PalladiumColorCompatTest {
     void extractsRgbChannelsWithoutTreatingTheHighByteAsAlpha() {
         assertArrayEquals(new float[] {18 / 255.0F, 52 / 255.0F, 86 / 255.0F},
                 PalladiumColorCompat.rgbToFloatArray(0xFF123456), 0.000001F);
+    }
+
+    @Test
+    void packsNormalizedRgbAsAnOpaqueArgbTint() {
+        assertEquals(0xFFE6E6E6,
+                PalladiumColorCompat.packRgb(230 / 255.0F, 230 / 255.0F, 230 / 255.0F));
+        assertEquals(0xFF123456,
+                PalladiumColorCompat.packRgb(18 / 255.0F, 52 / 255.0F, 86 / 255.0F));
     }
 }

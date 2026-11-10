@@ -284,6 +284,7 @@ public final class Forge1201Transformer {
         int palladiumSuitStandChanges = 0;
         int palladiumTailoringScreenChanges = 0;
         int palladiumSheepColorChanges = 0;
+        int palladiumRenderLayerChanges = 0;
         for (ClassNode node : nodes) {
             if (PalladiumKubeJS1201.dropLegacyKubejsClass(node.name)) {
                 palladiumKubejsClassesDropped++;
@@ -301,6 +302,8 @@ public final class Forge1201Transformer {
             palladiumTailoringScreenChanges += palladiumTailoringScreenChange;
             int palladiumSheepColorChange = PalladiumColor1201.apply(node);
             palladiumSheepColorChanges += palladiumSheepColorChange;
+            int palladiumRenderLayerChange = PalladiumRenderLayer1201.apply(node);
+            palladiumRenderLayerChanges += palladiumRenderLayerChange;
             int palladiumChanges = PalladiumKubeJS1201.apply(node);
             palladiumKubejsChanges += palladiumChanges;
             int palladiumAddonPackChange = PalladiumAddonPackManager1201.apply(node);
@@ -325,7 +328,8 @@ public final class Forge1201Transformer {
             migrated.put(node, viaCalls + changed.total() + palladiumChanges + palladiumAddonPackChange
                     + palladiumWidgetButtonChange + palladiumMixinChange + palladiumLootChange
                     + palladiumAccessoryScreenChange + palladiumSuitStandChange
-                    + palladiumTailoringScreenChange + palladiumSheepColorChange);
+                    + palladiumTailoringScreenChange + palladiumSheepColorChange
+                    + palladiumRenderLayerChange);
         }
         if (palladiumKubejsChanges > 0 || palladiumKubejsClassesDropped > 0) {
             result.notes.add("Palladium KubeJS 6 integration adapted for KubeJS 7: "
@@ -431,6 +435,10 @@ public final class Forge1201Transformer {
         if (palladiumSheepColorChanges > 0) {
             result.notes.add("Palladium SuitStand sheep-color calls migrated to 1.21.1 Sheep.getColor(DyeColor), preserving normalized RGB float arrays: "
                     + palladiumSheepColorChanges + " call site(s)");
+        }
+        if (palladiumRenderLayerChanges > 0) {
+            result.notes.add("Palladium SuitStand RenderLayer color-copy call migrated from nine float arguments to the 1.21.1 six-float plus packed ARGB color overload: "
+                    + palladiumRenderLayerChanges + " call site(s)");
         }
         if (ownUnit) {
             String suffix = "_l" + VER.id().replaceAll("[^a-z0-9]", "");
