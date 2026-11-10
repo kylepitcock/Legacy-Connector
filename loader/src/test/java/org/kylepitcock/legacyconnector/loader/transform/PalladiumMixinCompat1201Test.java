@@ -141,6 +141,44 @@ class PalladiumMixinCompat1201Test implements Opcodes {
     }
 
     @Test
+    void humanoidArmorPieceHandlerTargetsNeoForgeAnimationOverload() {
+        ClassNode node = new ClassNode();
+        node.name = "net/threetag/palladium/mixin/client/HumanoidArmorLayerMixin";
+        String oldDesc = "(L" + POSE + ";Lnet/minecraft/client/renderer/MultiBufferSource;"
+                + "Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/EquipmentSlot;I"
+                + "L" + MODEL + ";" + CI + ")V";
+        String newDesc = "(L" + POSE + ";Lnet/minecraft/client/renderer/MultiBufferSource;"
+                + "Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/EquipmentSlot;I"
+                + "L" + MODEL + ";FFFFFF" + CI + ")V";
+        MethodNode handler = new MethodNode(ACC_PRIVATE, "renderArmorPiece", oldDesc, null, null);
+        handler.parameters = new java.util.ArrayList<>();
+        for (int i = 0; i < 7; i++) handler.parameters.add(new ParameterNode("p" + i, 0));
+        handler.visibleAnnotations = new java.util.ArrayList<>();
+        handler.visibleAnnotations.add(new AnnotationNode("Lorg/spongepowered/asm/mixin/injection/Inject;"));
+        handler.instructions.add(new VarInsnNode(ALOAD, 7)); // CallbackInfo
+        handler.instructions.add(new VarInsnNode(ALOAD, 8)); // first temporary
+        handler.instructions.add(new InsnNode(POP));
+        handler.instructions.add(new InsnNode(POP));
+        handler.instructions.add(new InsnNode(RETURN));
+        handler.maxLocals = 9;
+        handler.maxStack = 1;
+        node.methods.add(handler);
+
+        assertEquals(1, PalladiumMixinCompat1201.apply(node));
+        assertEquals(newDesc, handler.desc);
+        assertTrue(hasVar(handler, ALOAD, 13), "CallbackInfo must move behind the six new float arguments");
+        assertTrue(hasVar(handler, ALOAD, 14), "existing locals must move behind the inserted arguments");
+        assertFalse(hasVar(handler, ALOAD, 7));
+        assertFalse(hasVar(handler, ALOAD, 8));
+        assertEquals(15, handler.maxLocals);
+        assertNull(handler.parameters, "stale MethodParameters metadata must not describe the old argument list");
+        assertNotNull(handler.visibleAnnotations);
+        assertEquals("Lorg/spongepowered/asm/mixin/injection/Inject;", handler.visibleAnnotations.get(0).desc);
+        assertClassCanBeSerialized(node);
+        assertEquals(0, PalladiumMixinCompat1201.apply(node), "the descriptor adaptation must be idempotent");
+    }
+
+    @Test
     void humanoidArmorMixinUsesTheCurrentRenderModelSignature() {
         ClassNode node = new ClassNode();
         node.name = "net/threetag/palladium/mixin/client/HumanoidArmorLayerMixin";
