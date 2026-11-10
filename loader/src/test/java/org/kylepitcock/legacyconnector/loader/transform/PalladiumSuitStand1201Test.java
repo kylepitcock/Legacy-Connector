@@ -130,7 +130,7 @@ class PalladiumSuitStand1201Test implements Opcodes {
         define.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, "java/lang/Byte", "byteValue", "()B", false));
         define.instructions.add(new InsnNode(ICONST_4));
         define.instructions.add(new InsnNode(ICONST_1));
-        define.instructions.add(new MethodInsnNode(INVOKESPECIAL, SUIT_STAND, "setBit", "(BIZ)B", false));
+        define.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, SUIT_STAND, "setBit", "(BIZ)B", false));
         define.instructions.add(new MethodInsnNode(INVOKESTATIC, "java/lang/Byte", "valueOf", "(B)Ljava/lang/Byte;", false));
         define.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, SYNCHED, "set",
                 "(" + ACCESSOR_DESC + "Ljava/lang/Object;)V", false));
