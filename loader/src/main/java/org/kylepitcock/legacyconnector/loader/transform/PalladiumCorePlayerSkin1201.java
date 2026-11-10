@@ -15,18 +15,18 @@ import org.objectweb.asm.tree.TypeInsnNode;
  * Adapts only PalladiumCore 1.0.1's player-skin Consumer in the existing
  * EntityRendererRegistryImpl.renderLayers callback.
  *
- * Forge 1.20.1 exposes AddLayers.getSkins() as Set<String> and getSkin(String)
- * as LivingEntityRenderer. NeoForge 1.21.1 keeps the erased Set return type,
- * but its elements are PlayerSkin.Model and getSkin(PlayerSkin.Model) erases
- * to EntityRenderer. The old LambdaMetafactory target therefore casts each
- * PlayerSkin.Model to String before the renderer lookup can run.
+ * Forge 1.20.1 exposes AddLayers.getSkins() as Set<String>. Depending on the
+ * PalladiumCore build, the lambda may call either getSkin(String), whose erased
+ * return type is LivingEntityRenderer, or getPlayerSkin(String), whose erased
+ * return type is EntityRenderer. NeoForge 1.21.1 changes the set elements to
+ * PlayerSkin.Model and exposes getSkin(PlayerSkin.Model), returning EntityRenderer.
  *
  * Keep the original callback intact. In particular, it has a per-entity
  * try/catch that deliberately prevents one renderer factory failure from
- * aborting all layer registration. Replacing the whole callback would discard
- * that behavior. Retarget the lambda's captured implementation method and
- * instantiated SAM type, update its getSkin call, and restore the old
- * LivingEntityRenderer result type with an explicit CHECKCAST.
+ * aborting all layer registration. Retarget only the lambda's captured
+ * implementation method and instantiated SAM type, map either legacy lookup
+ * to NeoForge's getSkin(PlayerSkin.Model), and preserve the legacy renderer
+ * type at the call site where an explicit LivingEntityRenderer cast is needed.
  */
 final class PalladiumCorePlayerSkin1201 implements Opcodes {
     static final String REGISTRY_IMPL =
@@ -45,6 +45,8 @@ final class PalladiumCorePlayerSkin1201 implements Opcodes {
     private static final String GET_SKINS_DESC = "()Ljava/util/Set;";
     private static final String GET_SKIN_1201_DESC =
             "(Ljava/lang/String;)L" + LIVING_ENTITY_RENDERER + ";";
+    private static final String GET_PLAYER_SKIN_1201_DESC =
+            "(Ljava/lang/String;)L" + ENTITY_RENDERER + ";";
     private static final String GET_SKIN_1211_DESC =
             "(L" + PLAYER_SKIN_MODEL + ";)L" + ENTITY_RENDERER + ";";
     private static final String OLD_SKIN_PARAMETER = "Ljava/lang/String;";
@@ -130,20 +132,34 @@ final class PalladiumCorePlayerSkin1201 implements Opcodes {
         }
 
         MethodInsnNode skinLookup = null;
-        int oldSkinLookups = 0;
+        String legacyLookupName = null;
+        StringBuilder observedLookups = new StringBuilder();
+        int legacyLookupCount = 0;
         for (AbstractInsnNode instruction : lambda.instructions) {
-            if (instruction instanceof MethodInsnNode call
-                    && ADD_LAYERS.equals(call.owner)
-                    && "getSkin".equals(call.name)
-                    && GET_SKIN_1201_DESC.equals(call.desc)) {
+            if (!(instruction instanceof MethodInsnNode call)
+                    || !ADD_LAYERS.equals(call.owner)
+                    || !("getSkin".equals(call.name) || "getPlayerSkin".equals(call.name))) {
+                continue;
+            }
+            if (observedLookups.length() > 0) observedLookups.append(", ");
+            observedLookups.append(call.name).append(call.desc);
+
+            boolean legacyGetSkin = "getSkin".equals(call.name)
+                    && GET_SKIN_1201_DESC.equals(call.desc);
+            boolean legacyGetPlayerSkin = "getPlayerSkin".equals(call.name)
+                    && GET_PLAYER_SKIN_1201_DESC.equals(call.desc);
+            if (legacyGetSkin || legacyGetPlayerSkin) {
                 skinLookup = call;
-                oldSkinLookups++;
+                legacyLookupName = call.name;
+                legacyLookupCount++;
             }
         }
-        if (oldSkinLookups != 1) {
+        if (legacyLookupCount != 1) {
+            String observed = observedLookups.length() == 0 ? "none" : observedLookups.toString();
             throw new IllegalStateException(
-                    "PalladiumCore player-skin lambda expected one legacy getSkin(String) call; found "
-                            + oldSkinLookups);
+                    "PalladiumCore player-skin lambda expected one legacy getSkin(String) or "
+                            + "getPlayerSkin(String) call; found " + legacyLookupCount
+                            + " (observed: " + observed + ")");
         }
 
         Type[] newArguments = lambdaArguments.clone();
@@ -160,13 +176,20 @@ final class PalladiumCorePlayerSkin1201 implements Opcodes {
         lambda.desc = newLambdaDescriptor;
         lambda.signature = null;
         updateSkinParameterLocal(lambda, lambdaArguments);
+        skinLookup.name = "getSkin";
         skinLookup.desc = GET_SKIN_1211_DESC;
 
-        AbstractInsnNode next = nextRealInstruction(skinLookup);
-        if (!(next instanceof TypeInsnNode cast
-                && cast.getOpcode() == CHECKCAST
-                && LIVING_ENTITY_RENDERER.equals(cast.desc))) {
-            lambda.instructions.insert(skinLookup, new TypeInsnNode(CHECKCAST, LIVING_ENTITY_RENDERER));
+        // getSkin(String) promised a LivingEntityRenderer in the old API, while
+        // getPlayerSkin(String) already promised only EntityRenderer. Preserve
+        // the former's narrower local type, but do not add an unnecessary cast
+        // to the latter's existing EntityRenderer path.
+        if ("getSkin".equals(legacyLookupName)) {
+            AbstractInsnNode next = nextRealInstruction(skinLookup);
+            if (!(next instanceof TypeInsnNode cast
+                    && cast.getOpcode() == CHECKCAST
+                    && LIVING_ENTITY_RENDERER.equals(cast.desc))) {
+                lambda.instructions.insert(skinLookup, new TypeInsnNode(CHECKCAST, LIVING_ENTITY_RENDERER));
+            }
         }
 
         consumer.bsmArgs[1] = newImplementation;
