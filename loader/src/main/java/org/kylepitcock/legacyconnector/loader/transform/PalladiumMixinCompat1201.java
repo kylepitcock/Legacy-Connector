@@ -17,7 +17,9 @@ final class PalladiumMixinCompat1201 implements Opcodes {
     private static final String ARMOR_ITEM_MIXIN = "net/threetag/palladium/mixin/ArmorItemMixin";
     private static final String ARMOR_STAND_MIXIN = "net/threetag/palladium/mixin/ArmorStandMixin";
     private static final String SCOREBOARD_MIXIN = "net/threetag/palladium/mixin/ServerScoreboardMixin";
+    private static final String ENTITY_SELECTOR_PARSER_MIXIN = "net/threetag/palladium/mixin/EntitySelectorParserMixin";
     private static final String PLAYER_RENDERER_INVOKER = "net/threetag/palladium/mixin/client/PlayerRendererInvoker";
+    private static final String MIXIN_SHADOW = "Lorg/spongepowered/asm/mixin/Shadow;";
     private static final String HUMANOID_ARMOR_MIXIN = "net/threetag/palladium/mixin/client/HumanoidArmorLayerMixin";
     private static final String GEO_RENDERER_MIXIN = "net/threetag/palladium/mixin/client/GeoRendererMixin";
     private static final String LEVEL_RENDERER_MIXIN = "net/threetag/palladium/mixin/client/LevelRendererMixin";
@@ -46,6 +48,7 @@ final class PalladiumMixinCompat1201 implements Opcodes {
             case ARMOR_ITEM_MIXIN -> adaptArmorItemMixin(node) ? 1 : 0;
             case ARMOR_STAND_MIXIN -> adaptArmorStandMixin(node) ? 1 : 0;
             case SCOREBOARD_MIXIN -> adaptScoreboardMixin(node) ? 1 : 0;
+            case ENTITY_SELECTOR_PARSER_MIXIN -> adaptEntitySelectorParserMixin(node) ? 1 : 0;
             case PLAYER_RENDERER_INVOKER -> adaptPlayerRendererInvoker(node) ? 1 : 0;
             case HUMANOID_ARMOR_MIXIN -> adaptHumanoidArmorMixin(node) ? 1 : 0;
             case GEO_RENDERER_MIXIN -> adaptGeoRendererMixin(node) ? 1 : 0;
@@ -266,6 +269,49 @@ final class PalladiumMixinCompat1201 implements Opcodes {
         code.add(new InsnNode(RETURN));
         method.maxStack = 5;
         method.maxLocals = 8;
+    }
+
+    /**
+     * Minecraft 1.20.1's EntitySelectorParser exposed a single "predicate"
+     * field. In 1.21.1 it owns a list named "predicates" and the old field no
+     * longer exists. Palladium's mixin only declared that field as a @Shadow;
+     * its power-id extension uses its own @Unique field instead. Remove only
+     * the unused stale shadow, and reject any bytecode that actually depends
+     * on it rather than silently changing selector behavior.
+     */
+    private static boolean adaptEntitySelectorParserMixin(ClassNode node) {
+        FieldNode obsolete = null;
+        for (FieldNode field : node.fields) {
+            if (!"Ljava/util/function/Predicate;".equals(field.desc) || !hasAnnotation(field.visibleAnnotations, MIXIN_SHADOW)) {
+                continue;
+            }
+            if (obsolete != null) {
+                throw new IllegalStateException("Palladium EntitySelectorParserMixin has multiple obsolete Predicate @Shadow fields");
+            }
+            obsolete = field;
+        }
+        if (obsolete == null) return false;
+
+        for (MethodNode method : node.methods) {
+            if (method.instructions == null) continue;
+            for (AbstractInsnNode instruction : method.instructions) {
+                if (instruction instanceof FieldInsnNode access
+                        && access.owner.equals(node.name)
+                        && access.name.equals(obsolete.name)
+                        && access.desc.equals(obsolete.desc)) {
+                    throw new IllegalStateException("Palladium EntitySelectorParserMixin uses the obsolete predicate @Shadow field in "
+                            + method.name + method.desc);
+                }
+            }
+        }
+
+        node.fields.remove(obsolete);
+        return true;
+    }
+
+    private static boolean hasAnnotation(List<AnnotationNode> annotations, String descriptor) {
+        if (annotations == null) return false;
+        return annotations.stream().anyMatch(annotation -> descriptor.equals(annotation.desc));
     }
 
     private static boolean adaptPlayerRendererInvoker(ClassNode node) {
