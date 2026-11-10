@@ -14,6 +14,7 @@ final class PalladiumMixinCompat1201 implements Opcodes {
     private static final String CALLBACK_RETURN = "Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfoReturnable;";
 
     private static final String ITEM_MIXIN = "net/threetag/palladium/mixin/ItemMixin";
+    private static final String ARMOR_ITEM_MIXIN = "net/threetag/palladium/mixin/ArmorItemMixin";
     private static final String ARMOR_STAND_MIXIN = "net/threetag/palladium/mixin/ArmorStandMixin";
     private static final String SCOREBOARD_MIXIN = "net/threetag/palladium/mixin/ServerScoreboardMixin";
     private static final String PLAYER_RENDERER_INVOKER = "net/threetag/palladium/mixin/client/PlayerRendererInvoker";
@@ -42,6 +43,7 @@ final class PalladiumMixinCompat1201 implements Opcodes {
     static int apply(ClassNode node) {
         return switch (node.name) {
             case ITEM_MIXIN -> adaptItemMixin(node) ? 1 : 0;
+            case ARMOR_ITEM_MIXIN -> adaptArmorItemMixin(node) ? 1 : 0;
             case ARMOR_STAND_MIXIN -> adaptArmorStandMixin(node) ? 1 : 0;
             case SCOREBOARD_MIXIN -> adaptScoreboardMixin(node) ? 1 : 0;
             case PLAYER_RENDERER_INVOKER -> adaptPlayerRendererInvoker(node) ? 1 : 0;
@@ -81,6 +83,54 @@ final class PalladiumMixinCompat1201 implements Opcodes {
         method.signature = null;
         method.maxLocals = levelLocal + 1;
         method.maxStack = Math.max(method.maxStack, 2);
+        return true;
+    }
+
+    /**
+     * In 1.20.1 Mob.getEquipmentSlotForItem(ItemStack) was static. In 1.21.1
+     * it is an instance method on LivingEntity; this handler's Player parameter
+     * is the receiver required by the new API.
+     */
+    private static boolean adaptArmorItemMixin(ClassNode node) {
+        String handlerDesc = "(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/player/Player;"
+                + "Lnet/minecraft/world/InteractionHand;" + CALLBACK_RETURN + ")V";
+        String itemStack = "Lnet/minecraft/world/item/ItemStack;";
+        String equipmentSlot = "Lnet/minecraft/world/entity/EquipmentSlot;";
+        String callDesc = "(" + itemStack + ")" + equipmentSlot;
+        String mob = "net/minecraft/world/entity/Mob";
+        String livingEntity = "net/minecraft/world/entity/LivingEntity";
+        MethodNode handler = find(node, "use", handlerDesc);
+        if (handler == null) return false;
+
+        MethodInsnNode target = null;
+        for (AbstractInsnNode instruction : handler.instructions) {
+            if (!(instruction instanceof MethodInsnNode call)
+                    || !call.name.equals("getEquipmentSlotForItem")
+                    || !call.desc.equals(callDesc)) continue;
+            if (target != null) {
+                throw new IllegalStateException("Palladium ArmorItemMixin.use has multiple equipment-slot lookups");
+            }
+            target = call;
+        }
+        if (target == null) return false;
+
+        if (target.getOpcode() == INVOKEVIRTUAL && target.owner.equals(livingEntity)) {
+            return false; // already in the 1.21.1 form
+        }
+        if (target.getOpcode() != INVOKESTATIC || !(target.owner.equals(mob) || target.owner.equals(livingEntity))) {
+            throw new IllegalStateException("Palladium ArmorItemMixin.getEquipmentSlotForItem call has an unexpected owner/opcode: "
+                    + target.owner + "." + target.name + target.desc + " opcode=" + target.getOpcode());
+        }
+
+        // Before: [ItemStack]. After: [Player, ItemStack], ready for invokevirtual.
+        InsnList receiver = new InsnList();
+        receiver.add(new VarInsnNode(ALOAD, 2));
+        receiver.add(new InsnNode(SWAP));
+        handler.instructions.insertBefore(target, receiver);
+        target.setOpcode(INVOKEVIRTUAL);
+        target.owner = livingEntity;
+        target.itf = false;
+        handler.maxStack = Math.max(handler.maxStack, 2);
         return true;
     }
 
