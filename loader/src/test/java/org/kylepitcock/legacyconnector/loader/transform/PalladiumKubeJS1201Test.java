@@ -358,4 +358,38 @@ class PalladiumKubeJS1201Test implements Opcodes {
         }
         return count;
     }
+
+    @Test
+    void kubeJs6LevelEventSubclassBecomesKubeJs7LevelEventInterface() {
+        String oldLevelEvent = "dev/latvian/mods/kubejs/level/LevelEventJS";
+        String newLevelEvent = "dev/latvian/mods/kubejs/level/KubeLevelEvent";
+        ClassNode node = new ClassNode();
+        node.version = V21;
+        node.access = ACC_PUBLIC;
+        node.name = "net/threetag/palladium/compat/kubejs/RegisterPalladiumPropertyEventJS";
+        node.superName = oldLevelEvent;
+
+        MethodNode constructor = new MethodNode(ACC_PUBLIC, "<init>", "()V", null, null);
+        constructor.instructions.add(new VarInsnNode(ALOAD, 0));
+        constructor.instructions.add(new MethodInsnNode(INVOKESPECIAL, oldLevelEvent, "<init>", "()V", false));
+        constructor.instructions.add(new org.objectweb.asm.tree.InsnNode(RETURN));
+        node.methods.add(constructor);
+
+        MethodNode getLevel = new MethodNode(ACC_PUBLIC, "getLevel",
+                "()Lnet/minecraft/world/level/Level;", null, null);
+        getLevel.instructions.add(new org.objectweb.asm.tree.InsnNode(ACONST_NULL));
+        getLevel.instructions.add(new org.objectweb.asm.tree.InsnNode(ARETURN));
+        node.methods.add(getLevel);
+
+        assertEquals(1, PalladiumKubeJS1201.apply(node));
+        assertEquals("java/lang/Object", node.superName);
+        assertTrue(node.interfaces.contains(newLevelEvent),
+                "the migrated wrapper must implement KubeJS 7's level-event contract");
+        assertTrue(hasCall(find(node, "<init>", "()V"), INVOKESPECIAL,
+                "java/lang/Object", "<init>", "()V"));
+        assertFalse(hasCall(find(node, "<init>", "()V"), INVOKESPECIAL,
+                oldLevelEvent, "<init>", "()V"));
+        assertTrue(hasMethod(node, "getLevel", "()Lnet/minecraft/world/level/Level;"));
+    }
+
 }
