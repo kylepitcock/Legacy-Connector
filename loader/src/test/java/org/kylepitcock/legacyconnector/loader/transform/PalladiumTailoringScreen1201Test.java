@@ -64,7 +64,7 @@ class PalladiumTailoringScreen1201Test implements Opcodes {
         node.methods.add(method);
 
         assertThrows(IllegalStateException.class, () -> PalladiumTailoringScreen1201.apply(node));
-        org.junit.jupiter.api.Assertions.assertSame(method, find(node));
+        org.junit.jupiter.api.Assertions.assertSame(method, find(node, "updateNarration"));
     }
 
     private static ClassNode legacyRecipeList() {
