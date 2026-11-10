@@ -30,6 +30,7 @@ class PalladiumMixinCompat1201Test implements Opcodes {
         handler.instructions.add(new VarInsnNode(ALOAD, 2));
         handler.instructions.add(new InsnNode(POP));
         handler.instructions.add(new InsnNode(RETURN));
+        handler.maxLocals = 6;
         node.methods.add(handler);
 
         assertEquals(1, PalladiumMixinCompat1201.apply(node));

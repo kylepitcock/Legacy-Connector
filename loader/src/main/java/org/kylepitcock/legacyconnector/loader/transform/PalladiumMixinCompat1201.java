@@ -63,20 +63,23 @@ final class PalladiumMixinCompat1201 implements Opcodes {
 
         // Preserve the old handler body, which expected a Level in local 2.
         // Kube's 1.21.1 Item.TooltipContext exposes that Level through level().
+        // Allocate the extracted Level after all existing locals; local 6 may
+        // already hold the old method's first temporary.
+        int levelLocal = Math.max(method.maxLocals, 6);
         for (AbstractInsnNode instruction : method.instructions.toArray()) {
             if (instruction instanceof VarInsnNode var && var.getOpcode() == ALOAD && var.var == 2) {
-                var.var = 6;
+                var.var = levelLocal;
             }
         }
         InsnList head = new InsnList();
         head.add(new VarInsnNode(ALOAD, 2));
         head.add(new MethodInsnNode(INVOKEINTERFACE, "net/minecraft/world/item/Item$TooltipContext",
                 "level", "()Lnet/minecraft/world/level/Level;", true));
-        head.add(new VarInsnNode(ASTORE, 6));
+        head.add(new VarInsnNode(ASTORE, levelLocal));
         method.instructions.insert(head);
         method.desc = newDesc;
         method.signature = null;
-        method.maxLocals = Math.max(method.maxLocals, 7);
+        method.maxLocals = levelLocal + 1;
         method.maxStack = Math.max(method.maxStack, 2);
         return true;
     }
