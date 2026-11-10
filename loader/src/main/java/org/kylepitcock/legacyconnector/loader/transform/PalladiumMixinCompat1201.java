@@ -279,6 +279,30 @@ final class PalladiumMixinCompat1201 implements Opcodes {
     }
 
     private static boolean adaptHumanoidArmorMixin(ClassNode node) {
+        // The normal 1.21.1 HumanoidArmorLayer.render() path calls the overload
+        // carrying six animation floats. Palladium 4.5.x's old handler omitted
+        // those values, so Mixin attached it to the legacy no-float overload,
+        // which is not used by the normal renderer.
+        String oldArmorPieceDesc = "(L" + POSE_STACK + ";L" + MULTI_BUFFER + ";"
+                + "Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/EquipmentSlot;I"
+                + "L" + HUMANOID_MODEL + ";" + CALLBACK + ")V";
+        String newArmorPieceDesc = "(L" + POSE_STACK + ";L" + MULTI_BUFFER + ";"
+                + "Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/EquipmentSlot;I"
+                + "L" + HUMANOID_MODEL + ";FFFFFF" + CALLBACK + ")V";
+        MethodNode armorPiece = find(node, "renderArmorPiece", oldArmorPieceDesc);
+        boolean changed = false;
+        if (armorPiece != null) {
+            // The six floats occupy local slots 7..12. Move CallbackInfo and
+            // every existing temporary local after them without changing the
+            // original handler logic.
+            shiftLocals(armorPiece, 7, 6);
+            armorPiece.desc = newArmorPieceDesc;
+            armorPiece.signature = null;
+            armorPiece.parameters = null;
+            clearParameterAnnotations(armorPiece);
+            changed = true;
+        }
+
         String oldDesc = "(L" + POSE_STACK + ";L" + MULTI_BUFFER + ";I"
                 + "Lnet/minecraft/world/item/ArmorItem;L" + HUMANOID_MODEL + ";ZFFF"
                 + "Ljava/lang/String;" + CALLBACK + ")V";
@@ -286,36 +310,38 @@ final class PalladiumMixinCompat1201 implements Opcodes {
                 + "L" + HUMANOID_MODEL + ";ILnet/minecraft/resources/ResourceLocation;"
                 + CALLBACK + ")V";
         MethodNode method = find(node, "renderModel", oldDesc);
-        if (method == null) return false;
-
-        method.instructions.clear();
-        method.tryCatchBlocks.clear();
-        method.localVariables = null;
-        clearParameterAnnotations(method);
-        LabelNode returnLabel = new LabelNode();
-        InsnList code = method.instructions;
-        code.add(new VarInsnNode(ALOAD, 4));
-        code.add(new TypeInsnNode(INSTANCEOF,
-                "net/threetag/palladium/compat/geckolib/armor/CancelGeckoArmorBuffer"));
-        code.add(new JumpInsnNode(IFEQ, returnLabel));
-        code.add(new VarInsnNode(ALOAD, 4));
-        code.add(new VarInsnNode(ALOAD, 1));
-        code.add(new InsnNode(ACONST_NULL));
-        code.add(new VarInsnNode(ILOAD, 3));
-        code.add(new VarInsnNode(ILOAD, 5));
-        code.add(new InsnNode(ICONST_M1));
-        code.add(new MethodInsnNode(INVOKEVIRTUAL, HUMANOID_MODEL, "renderToBuffer",
-                "(L" + POSE_STACK + ";L" + VERTEX_CONSUMER + ";III)V", false));
-        code.add(new VarInsnNode(ALOAD, 7));
-        code.add(new MethodInsnNode(INVOKEVIRTUAL,
-                "org/spongepowered/asm/mixin/injection/callback/CallbackInfo", "cancel", "()V", false));
-        code.add(returnLabel);
-        code.add(new InsnNode(RETURN));
-        method.desc = newDesc;
-        method.signature = null;
-        method.maxStack = 6;
-        method.maxLocals = 8;
-        return true;
+        if (method != null) {
+            method.instructions.clear();
+            method.tryCatchBlocks.clear();
+            method.localVariables = null;
+            method.parameters = null;
+            clearParameterAnnotations(method);
+            LabelNode returnLabel = new LabelNode();
+            InsnList code = method.instructions;
+            code.add(new VarInsnNode(ALOAD, 4));
+            code.add(new TypeInsnNode(INSTANCEOF,
+                    "net/threetag/palladium/compat/geckolib/armor/CancelGeckoArmorBuffer"));
+            code.add(new JumpInsnNode(IFEQ, returnLabel));
+            code.add(new VarInsnNode(ALOAD, 4));
+            code.add(new VarInsnNode(ALOAD, 1));
+            code.add(new InsnNode(ACONST_NULL));
+            code.add(new VarInsnNode(ILOAD, 3));
+            code.add(new VarInsnNode(ILOAD, 5));
+            code.add(new InsnNode(ICONST_M1));
+            code.add(new MethodInsnNode(INVOKEVIRTUAL, HUMANOID_MODEL, "renderToBuffer",
+                    "(L" + POSE_STACK + ";L" + VERTEX_CONSUMER + ";III)V", false));
+            code.add(new VarInsnNode(ALOAD, 7));
+            code.add(new MethodInsnNode(INVOKEVIRTUAL,
+                    "org/spongepowered/asm/mixin/injection/callback/CallbackInfo", "cancel", "()V", false));
+            code.add(returnLabel);
+            code.add(new InsnNode(RETURN));
+            method.desc = newDesc;
+            method.signature = null;
+            method.maxStack = 6;
+            method.maxLocals = 8;
+            changed = true;
+        }
+        return changed;
     }
 
     /**
