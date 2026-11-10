@@ -2,6 +2,7 @@ package org.kylepitcock.legacyconnector.loader.transform;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -25,7 +26,7 @@ class PalladiumSelectionLists1201Test implements Opcodes {
     };
 
     @Test
-    void removesOnlyTheEmptyNarrationOverrideFromEveryAffectedPalladiumList() {
+    void renamesOnlyTheEmptyNarrationOverrideToTheNewHookForEveryAffectedPalladiumList() {
         for (String name : TARGETS) {
             ClassNode node = listNode(name);
             MethodNode method = new MethodNode(ACC_PUBLIC, "updateNarration", DESC, null, null);
@@ -35,7 +36,8 @@ class PalladiumSelectionLists1201Test implements Opcodes {
             node.methods.add(method);
 
             assertEquals(1, PalladiumSelectionLists1201.apply(node), name);
-            assertNull(find(node), name);
+            assertNull(find(node, "updateNarration"), name);
+            assertNotNull(find(node, "updateWidgetNarration"), name);
             assertEquals(0, PalladiumSelectionLists1201.apply(node), name);
             org.junit.jupiter.api.Assertions.assertDoesNotThrow(() -> {
                 ClassWriter writer = new ClassWriter(0);
@@ -54,7 +56,7 @@ class PalladiumSelectionLists1201Test implements Opcodes {
         node.methods.add(method);
 
         assertEquals(0, PalladiumSelectionLists1201.apply(node));
-        assertSame(method, find(node));
+        assertSame(method, find(node, "updateNarration"));
     }
 
     @Test
@@ -85,9 +87,9 @@ class PalladiumSelectionLists1201Test implements Opcodes {
         return node;
     }
 
-    private static MethodNode find(ClassNode node) {
+    private static MethodNode find(ClassNode node, String name) {
         for (MethodNode method : node.methods) {
-            if ("updateNarration".equals(method.name) && DESC.equals(method.desc)) return method;
+            if (name.equals(method.name) && DESC.equals(method.desc)) return method;
         }
         return null;
     }
