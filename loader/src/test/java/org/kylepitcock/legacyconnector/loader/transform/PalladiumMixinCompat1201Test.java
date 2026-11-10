@@ -114,13 +114,22 @@ class PalladiumMixinCompat1201Test implements Opcodes {
         String newDesc = "(L" + POSE + ";Lnet/minecraft/client/renderer/MultiBufferSource;I"
                 + "L" + MODEL + ";ILnet/minecraft/resources/ResourceLocation;" + CI + ")V";
         MethodNode handler = new MethodNode(ACC_PRIVATE, "renderModel", oldDesc, null, null);
+        handler.visibleParameterAnnotations = parameterAnnotations(11, 9);
+        handler.visibleAnnotableParameterCount = 11;
+        handler.invisibleParameterAnnotations = parameterAnnotations(11, 10);
+        handler.invisibleAnnotableParameterCount = 11;
         handler.instructions.add(new InsnNode(RETURN));
         node.methods.add(handler);
 
         assertEquals(1, PalladiumMixinCompat1201.apply(node));
         assertEquals(newDesc, handler.desc);
+        assertNull(handler.visibleParameterAnnotations);
+        assertNull(handler.invisibleParameterAnnotations);
+        assertEquals(0, handler.visibleAnnotableParameterCount);
+        assertEquals(0, handler.invisibleAnnotableParameterCount);
         assertTrue(hasCall(handler, INVOKEVIRTUAL, MODEL, "renderToBuffer",
                 "(L" + POSE + ";L" + VERTEX + ";III)V"));
+        assertClassCanBeSerialized(node);
     }
 
     @Test
@@ -130,13 +139,18 @@ class PalladiumMixinCompat1201Test implements Opcodes {
         String oldDesc = "(L" + QUAD + ";L" + MATRIX + ";Lorg/joml/Vector3f;L" + VERTEX + ";IIFFFF)V";
         String newDesc = "(L" + QUAD + ";L" + MATRIX + ";Lorg/joml/Vector3f;L" + VERTEX + ";III)V";
         MethodNode method = new MethodNode(ACC_PUBLIC, "createVerticesOfQuad", oldDesc, null, null);
+        method.visibleParameterAnnotations = parameterAnnotations(10, 9);
+        method.visibleAnnotableParameterCount = 10;
         method.instructions.add(new InsnNode(RETURN));
         node.methods.add(method);
 
         assertEquals(1, PalladiumMixinCompat1201.apply(node));
         assertEquals(newDesc, method.desc);
+        assertNull(method.visibleParameterAnnotations);
+        assertEquals(0, method.visibleAnnotableParameterCount);
         assertTrue(hasCall(method, INVOKEINTERFACE, VERTEX, "addVertex", "(FFFIFFIIFFF)V"));
         assertTrue(hasCall(method, INVOKESTATIC, "net/minecraft/util/Mth", "clamp", "(III)I"));
+        assertClassCanBeSerialized(node);
     }
 
     @Test
@@ -163,10 +177,33 @@ class PalladiumMixinCompat1201Test implements Opcodes {
         node.name = "net/threetag/palladium/mixin/client/ModelPartInvoker";
         String oldDesc = "(L" + POSE + "$Pose;L" + VERTEX + ";IIFFFF)V";
         String newDesc = "(L" + POSE + "$Pose;L" + VERTEX + ";III)V";
-        node.methods.add(new MethodNode(ACC_PUBLIC, "invokeCompile", oldDesc, null, null));
+        MethodNode method = new MethodNode(ACC_PUBLIC, "invokeCompile", oldDesc, null, null);
+        method.invisibleParameterAnnotations = parameterAnnotations(8, 7);
+        method.invisibleAnnotableParameterCount = 8;
+        node.methods.add(method);
 
         assertEquals(1, PalladiumMixinCompat1201.apply(node));
         assertTrue(find(node, "invokeCompile", newDesc) != null);
+        assertNull(method.invisibleParameterAnnotations);
+        assertEquals(0, method.invisibleAnnotableParameterCount);
+        assertClassCanBeSerialized(node);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static java.util.List<AnnotationNode>[] parameterAnnotations(int parameterCount, int annotatedParameter) {
+        java.util.List<AnnotationNode>[] annotations =
+                (java.util.List<AnnotationNode>[]) new java.util.List<?>[parameterCount];
+        annotations[annotatedParameter] = new java.util.ArrayList<>();
+        annotations[annotatedParameter].add(new AnnotationNode("Ltest/ParameterMarker;"));
+        return annotations;
+    }
+
+    private static void assertClassCanBeSerialized(ClassNode node) {
+        assertDoesNotThrow(() -> {
+            org.objectweb.asm.ClassWriter writer = new org.objectweb.asm.ClassWriter(0);
+            node.accept(writer);
+            writer.toByteArray();
+        });
     }
 
     private static MethodNode find(ClassNode node, String name, String desc) {
