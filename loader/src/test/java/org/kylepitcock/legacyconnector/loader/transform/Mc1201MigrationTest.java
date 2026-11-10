@@ -51,6 +51,19 @@ class Mc1201MigrationTest implements Opcodes {
         return null;
     }
 
+    private static MethodNode findDeclared(ClassNode node, String name, String descriptor) {
+        for (MethodNode method : node.methods) {
+            if (name.equals(method.name) && descriptor.equals(method.desc)) return method;
+        }
+        return null;
+    }
+
+    private static Mc1201Hierarchy hierarchy(ClassNode... nodes) {
+        Mc1201Hierarchy h = new Mc1201Hierarchy();
+        for (ClassNode n : nodes) h.add(n);
+        return h;
+    }
+
     private static Mc1201Migration.Counts apply(ClassNode... nodes) {
         Mc1201Hierarchy h = new Mc1201Hierarchy();
         for (ClassNode n : nodes) h.add(n);
@@ -161,6 +174,39 @@ class Mc1201MigrationTest implements Opcodes {
         MethodInsnNode call = find(m, MIGRATE + "HolderCompat", "hasEffect");
         assertNotNull(call);
         assertEquals("(Lnet/minecraft/world/entity/LivingEntity;L" + ME + ";)Z", call.desc);
+    }
+
+    @Test
+    void legacyAbstractWidgetNarrationOverridesUseTheNewWidgetHook() {
+        String selectionList = "net/minecraft/client/gui/components/AbstractSelectionList";
+        ClassNode list = cls("test/LegacyList", selectionList);
+        String descriptor = "(Lnet/minecraft/client/gui/narration/NarrationElementOutput;)V";
+        MethodNode legacy = method(list, ACC_PUBLIC, "updateNarration", descriptor);
+        legacy.instructions.add(new InsnNode(RETURN));
+        legacy.maxStack = 0;
+        legacy.maxLocals = 2;
+
+        Mc1201Migration.Counts counts = apply(list);
+        assertEquals(1, counts.widgetNarrationOverrides);
+        assertNull(findDeclared(list, "updateNarration", descriptor));
+        MethodNode modern = findDeclared(list, "updateWidgetNarration", descriptor);
+        assertNotNull(modern);
+        assertEquals(ACC_PUBLIC, modern.access & (ACC_PUBLIC | ACC_PROTECTED | ACC_PRIVATE));
+        assertEquals(0, Mc1201Migration.apply(list, hierarchy(list)).widgetNarrationOverrides,
+                "the widget narration migration must be idempotent");
+    }
+
+    @Test
+    void unrelatedNonWidgetNarrationMethodsAreNotRenamed() {
+        ClassNode other = cls("test/OtherNarratable", "java/lang/Object");
+        String descriptor = "(Lnet/minecraft/client/gui/narration/NarrationElementOutput;)V";
+        MethodNode legacy = method(other, ACC_PUBLIC, "updateNarration", descriptor);
+        legacy.instructions.add(new InsnNode(RETURN));
+
+        Mc1201Migration.Counts counts = apply(other);
+        assertEquals(0, counts.widgetNarrationOverrides);
+        assertNotNull(findDeclared(other, "updateNarration", descriptor));
+        assertNull(findDeclared(other, "updateWidgetNarration", descriptor));
     }
 
     @Test
