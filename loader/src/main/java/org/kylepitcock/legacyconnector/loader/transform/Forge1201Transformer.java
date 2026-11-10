@@ -277,6 +277,7 @@ public final class Forge1201Transformer {
         int palladiumKubejsChanges = 0;
         int palladiumKubejsClassesDropped = 0;
         int palladiumAddonPackChanges = 0;
+        int palladiumWidgetButtonChanges = 0;
         for (ClassNode node : nodes) {
             if (PalladiumKubeJS1201.dropLegacyKubejsClass(node.name)) {
                 palladiumKubejsClassesDropped++;
@@ -298,8 +299,13 @@ public final class Forge1201Transformer {
             rewrites += viaCalls;
             Mc1201Migration.Counts changed = Mc1201Migration.apply(node, hierarchy);
             mc.add(changed);
+            // Runs after GuiGraphics.blitNineSliced has been redirected, but before SoftLink1201
+            // would replace Palladium's now-missing inherited Button.WIDGETS_LOCATION with null.
+            int palladiumWidgetButtonChange = PalladiumWidgetButtons1201.apply(node);
+            palladiumWidgetButtonChanges += palladiumWidgetButtonChange;
             Mixin1201.apply(node, srg, hierarchy, Mc1201Tables.get(), mixinStats);
-            migrated.put(node, viaCalls + changed.total() + palladiumChanges + palladiumAddonPackChange);
+            migrated.put(node, viaCalls + changed.total() + palladiumChanges + palladiumAddonPackChange
+                    + palladiumWidgetButtonChange);
         }
         if (palladiumKubejsChanges > 0 || palladiumKubejsClassesDropped > 0) {
             result.notes.add("Palladium KubeJS 6 integration adapted for KubeJS 7: "
@@ -309,6 +315,10 @@ public final class Forge1201Transformer {
         if (palladiumAddonPackChanges > 0) {
             result.notes.add("Palladium addon-pack FolderRepositorySource constructor adapted with Minecraft's symlink validator: "
                     + palladiumAddonPackChanges + " constructor call(s)");
+        }
+        if (palladiumWidgetButtonChanges > 0) {
+            result.notes.add("Palladium default button backgrounds migrated to 1.21.1 GUI sprites: "
+                    + palladiumWidgetButtonChanges + " button class(es)");
         }
         if (ownUnit) {
             // an isolated library next to its native build registers the same ids as the native one: its deferred registers are not attached to the bus
