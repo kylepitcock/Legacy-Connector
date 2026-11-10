@@ -281,6 +281,7 @@ public final class Forge1201Transformer {
         int palladiumMixinChanges = 0;
         int palladiumLootChanges = 0;
         int palladiumAccessoryScreenChanges = 0;
+        int palladiumSuitStandChanges = 0;
         for (ClassNode node : nodes) {
             if (PalladiumKubeJS1201.dropLegacyKubejsClass(node.name)) {
                 palladiumKubejsClassesDropped++;
@@ -292,6 +293,8 @@ public final class Forge1201Transformer {
             }
             stringsMapped += mapSrgStrings(node);
             int viaCalls = CallRewrites1201.apply(node, compoundSubclasses);
+            int palladiumSuitStandChange = PalladiumSuitStand1201.apply(node);
+            palladiumSuitStandChanges += palladiumSuitStandChange;
             int palladiumChanges = PalladiumKubeJS1201.apply(node);
             palladiumKubejsChanges += palladiumChanges;
             int palladiumAddonPackChange = PalladiumAddonPackManager1201.apply(node);
@@ -315,7 +318,7 @@ public final class Forge1201Transformer {
             Mixin1201.apply(node, srg, hierarchy, Mc1201Tables.get(), mixinStats);
             migrated.put(node, viaCalls + changed.total() + palladiumChanges + palladiumAddonPackChange
                     + palladiumWidgetButtonChange + palladiumMixinChange + palladiumLootChange
-                    + palladiumAccessoryScreenChange);
+                    + palladiumAccessoryScreenChange + palladiumSuitStandChange);
         }
         if (palladiumKubejsChanges > 0 || palladiumKubejsClassesDropped > 0) {
             result.notes.add("Palladium KubeJS 6 integration adapted for KubeJS 7: "
@@ -402,6 +405,10 @@ public final class Forge1201Transformer {
 
         Map<String, byte[]> outResources = new LinkedHashMap<>();
         Map<String, String> cfgRename = new HashMap<>();
+        if (palladiumSuitStandChanges > 0) {
+            result.notes.add("Palladium SuitStand migrated to the 1.21.1 SynchedEntityData.Builder lifecycle; DATA_CLIENT_FLAGS setup deferred until after the ArmorStand constructor: "
+                    + palladiumSuitStandChanges + " entity class(es)");
+        }
         if (palladiumAccessoryScreenChanges > 0) {
             result.notes.add("Palladium AccessoryScreen supplied the Minecraft 1.21.1 OptionsSubScreen.addOptions() hook: "
                     + palladiumAccessoryScreenChanges + " screen class(es)");
