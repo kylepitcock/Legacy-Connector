@@ -281,7 +281,7 @@ public final class Forge1201Transformer {
         int palladiumMixinChanges = 0;
         int palladiumLootChanges = 0;
         int palladiumAccessoryScreenChanges = 0;
-        int palladiumAccessoryListNarrationChanges = 0;
+        int palladiumSelectionListNarrationChanges = 0;
         int palladiumSuitStandChanges = 0;
         int palladiumTailoringScreenChanges = 0;
         int palladiumSheepColorChanges = 0;
@@ -325,12 +325,12 @@ public final class Forge1201Transformer {
             palladiumLootChanges += palladiumLootChange;
             int palladiumAccessoryScreenChange = PalladiumAccessoryScreen1201.apply(node);
             palladiumAccessoryScreenChanges += palladiumAccessoryScreenChange;
-            int palladiumAccessoryListNarrationChange = PalladiumAccessoryLists1201.apply(node);
-            palladiumAccessoryListNarrationChanges += palladiumAccessoryListNarrationChange;
+            int palladiumSelectionListNarrationChange = PalladiumSelectionLists1201.apply(node);
+            palladiumSelectionListNarrationChanges += palladiumSelectionListNarrationChange;
             Mixin1201.apply(node, srg, hierarchy, Mc1201Tables.get(), mixinStats);
             migrated.put(node, viaCalls + changed.total() + palladiumChanges + palladiumAddonPackChange
                     + palladiumWidgetButtonChange + palladiumMixinChange + palladiumLootChange
-                    + palladiumAccessoryScreenChange + palladiumAccessoryListNarrationChange + palladiumSuitStandChange
+                    + palladiumAccessoryScreenChange + palladiumSelectionListNarrationChange + palladiumSuitStandChange
                     + palladiumTailoringScreenChange + palladiumSheepColorChange
                     + palladiumRenderLayerChange);
         }
@@ -431,9 +431,9 @@ public final class Forge1201Transformer {
             result.notes.add("Palladium AccessoryScreen supplies Minecraft 1.21.1 OptionsSubScreen.addOptions() and passes Minecraft.options to its superclass: "
                     + palladiumAccessoryScreenChanges + " screen class(es)");
         }
-        if (palladiumAccessoryListNarrationChanges > 0) {
-            result.notes.add("Palladium AccessoryScreen list widgets removed their empty updateNarration() overrides, which conflict with 1.21.1's final AbstractWidget implementation: "
-                    + palladiumAccessoryListNarrationChanges + " list class(es)");
+        if (palladiumSelectionListNarrationChanges > 0) {
+            result.notes.add("Palladium 1.20.1 list widgets removed their empty updateNarration() overrides, which conflict with 1.21.1's final AbstractWidget implementation: "
+                    + palladiumSelectionListNarrationChanges + " list class(es)");
         }
         if (palladiumTailoringScreenChanges > 0) {
             result.notes.add("Palladium TailoringScreen removed its obsolete empty updateNarration() override, which conflicts with 1.21.1's final AbstractWidget implementation: "
