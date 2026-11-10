@@ -279,27 +279,30 @@ final class PalladiumMixinCompat1201 implements Opcodes {
     }
 
     private static boolean adaptHumanoidArmorMixin(ClassNode node) {
-        // The normal 1.21.1 HumanoidArmorLayer.render() path calls the overload
-        // carrying six animation floats. Palladium 4.5.x's old handler omitted
-        // those values, so Mixin attached it to the legacy no-float overload,
-        // which is not used by the normal renderer.
         String oldArmorPieceDesc = "(L" + POSE_STACK + ";L" + MULTI_BUFFER + ";"
                 + "Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/EquipmentSlot;I"
                 + "L" + HUMANOID_MODEL + ";" + CALLBACK + ")V";
         String newArmorPieceDesc = "(L" + POSE_STACK + ";L" + MULTI_BUFFER + ";"
                 + "Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/EquipmentSlot;I"
                 + "L" + HUMANOID_MODEL + ";FFFFFF" + CALLBACK + ")V";
+        String targetArmorPieceDesc = "(L" + POSE_STACK + ";L" + MULTI_BUFFER + ";"
+                + "Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/EquipmentSlot;I"
+                + "L" + HUMANOID_MODEL + ";FFFFFF)V";
         MethodNode armorPiece = find(node, "renderArmorPiece", oldArmorPieceDesc);
         boolean changed = false;
         if (armorPiece != null) {
-            // The six floats occupy local slots 7..12. Move CallbackInfo and
-            // every existing temporary local after them without changing the
-            // original handler logic.
+            // In 1.21.1 HumanoidArmorLayer.render() calls the six-float overload.
+            // Palladium's old refmap maps the bare selector to the no-float
+            // overload, so changing only the handler descriptor still binds
+            // the wrong target. Use an exact named selector for the active
+            // overload and bypass that stale 1.20.1 refmap entry.
             shiftLocals(armorPiece, 7, 6);
             armorPiece.desc = newArmorPieceDesc;
             armorPiece.signature = null;
             armorPiece.parameters = null;
             clearParameterAnnotations(armorPiece);
+            setInjectMethodSelector(armorPiece, "renderArmorPiece",
+                    "renderArmorPiece" + targetArmorPieceDesc);
             changed = true;
         }
 
@@ -342,6 +345,51 @@ final class PalladiumMixinCompat1201 implements Opcodes {
             changed = true;
         }
         return changed;
+    }
+
+    /**
+     * Palladium's 1.20.1 refmap maps the bare selector to the old no-float
+     * HumanoidArmorLayer method. Point this one injection at the exact 1.21.1
+     * overload and disable the obsolete refmap lookup for that selector only.
+     */
+    private static void setInjectMethodSelector(MethodNode handler, String oldSelector, String newSelector) {
+        if (replaceInjectMethodSelector(handler.visibleAnnotations, oldSelector, newSelector)) return;
+        if (replaceInjectMethodSelector(handler.invisibleAnnotations, oldSelector, newSelector)) return;
+        throw new IllegalStateException("Palladium HumanoidArmorLayerMixin is missing @Inject(method=[\""
+                + oldSelector + "\"])");
+    }
+
+    private static boolean replaceInjectMethodSelector(List<AnnotationNode> annotations,
+                                                       String oldSelector, String newSelector) {
+        if (annotations == null) return false;
+        for (AnnotationNode annotation : annotations) {
+            if (!annotation.desc.equals("Lorg/spongepowered/asm/mixin/injection/Inject;")
+                    || annotation.values == null) continue;
+            for (int i = 0; i + 1 < annotation.values.size(); i += 2) {
+                if (!"method".equals(annotation.values.get(i))
+                        || !(annotation.values.get(i + 1) instanceof List<?> methods)) continue;
+                List<Object> replacement = new java.util.ArrayList<>(methods);
+                int index = replacement.indexOf(oldSelector);
+                if (index < 0) continue;
+                replacement.set(index, newSelector);
+                annotation.values.set(i + 1, replacement);
+
+                boolean remapPresent = false;
+                for (int j = 0; j + 1 < annotation.values.size(); j += 2) {
+                    if ("remap".equals(annotation.values.get(j))) {
+                        annotation.values.set(j + 1, Boolean.FALSE);
+                        remapPresent = true;
+                        break;
+                    }
+                }
+                if (!remapPresent) {
+                    annotation.values.add("remap");
+                    annotation.values.add(Boolean.FALSE);
+                }
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
