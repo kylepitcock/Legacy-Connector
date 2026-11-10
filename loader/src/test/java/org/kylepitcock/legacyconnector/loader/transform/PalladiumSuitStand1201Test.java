@@ -40,7 +40,7 @@ class PalladiumSuitStand1201Test implements Opcodes {
         MethodNode constructor = find(node, "<init>", PRIMARY_CTOR);
         assertNotNull(constructor);
         int superCall = indexOfCall(constructor, INVOKESPECIAL, ARMOR_STAND, "<init>", PRIMARY_CTOR);
-        int flagsUpdate = indexOfCall(constructor, INVOKESPECIAL, SUIT_STAND, "setBit", "(BIZ)B");
+        int flagsUpdate = indexOfCall(constructor, INVOKEVIRTUAL, SUIT_STAND, "setBit", "(BIZ)B");
         assertTrue(superCall >= 0);
         assertTrue(flagsUpdate > superCall,
                 "DATA_CLIENT_FLAGS bit 4 must be set only after ArmorStand's constructor returns");
