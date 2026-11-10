@@ -36,6 +36,8 @@ class PalladiumCorePlayerSkin1201Test implements Opcodes {
             "net/minecraft/client/renderer/entity/LivingEntityRenderer";
     private static final String OLD_GET_SKIN =
             "(Ljava/lang/String;)L" + LIVING_RENDERER + ";";
+    private static final String OLD_GET_PLAYER_SKIN =
+            "(Ljava/lang/String;)L" + ENTITY_RENDERER + ";";
     private static final String NEW_GET_SKIN =
             "(L" + PLAYER_SKIN_MODEL + ";)L" + ENTITY_RENDERER + ";";
     private static final String OLD_LAMBDA_DESC =
@@ -91,6 +93,39 @@ class PalladiumCorePlayerSkin1201Test implements Opcodes {
     }
 
     @Test
+    void migratesPlayerSkinAccessorWithoutAddingLivingRendererCast() {
+        ClassNode node = legacyRegistry("getPlayerSkin", OLD_GET_PLAYER_SKIN);
+        MethodNode callback = findMethod(node, "renderLayers", "(L" + EVENT + ";)V");
+        TryCatchBlockNode originalCatch = callback.tryCatchBlocks.get(0);
+
+        assertEquals(1, PalladiumCorePlayerSkin1201.apply(node));
+        assertEquals(1, callback.tryCatchBlocks.size());
+        assertSame(originalCatch, callback.tryCatchBlocks.get(0));
+
+        MethodNode lambda = findMethod(node, "lambda$renderLayers$0", NEW_LAMBDA_DESC);
+        assertNotNull(lambda);
+        MethodInsnNode lookup = findCall(lambda, EVENT, "getSkin", NEW_GET_SKIN);
+        assertNotNull(lookup);
+        AbstractInsnNode next = nextReal(lookup);
+        assertTrue(next instanceof VarInsnNode store && store.getOpcode() == ASTORE,
+                "the EntityRenderer-returning legacy accessor must not gain a LivingEntityRenderer cast");
+
+        InvokeDynamicInsnNode indy = findConsumer(callback);
+        assertNotNull(indy);
+        Handle implementation = (Handle) indy.bsmArgs[1];
+        assertEquals(NEW_LAMBDA_DESC, implementation.getDesc());
+        assertEquals("(L" + PLAYER_SKIN_MODEL + ";)V", ((Type) indy.bsmArgs[2]).getDescriptor());
+
+        assertEquals(0, PalladiumCorePlayerSkin1201.apply(node),
+                "the migration must be idempotent");
+        assertDoesNotThrow(() -> {
+            ClassWriter writer = new ClassWriter(0);
+            node.accept(writer);
+            writer.toByteArray();
+        });
+    }
+
+    @Test
     void unrelatedClassesAreNotChanged() {
         ClassNode node = legacyRegistry();
         node.name = "example/OtherRendererRegistry";
@@ -117,6 +152,10 @@ class PalladiumCorePlayerSkin1201Test implements Opcodes {
     }
 
     private static ClassNode legacyRegistry() {
+        return legacyRegistry("getSkin", OLD_GET_SKIN);
+    }
+
+    private static ClassNode legacyRegistry(String lookupName, String lookupDesc) {
         ClassNode node = new ClassNode();
         node.version = V17;
         node.access = ACC_PUBLIC;
@@ -165,7 +204,7 @@ class PalladiumCorePlayerSkin1201Test implements Opcodes {
         lambda.instructions.add(lambdaStart);
         lambda.instructions.add(new VarInsnNode(ALOAD, 0));
         lambda.instructions.add(new VarInsnNode(ALOAD, 2));
-        MethodInsnNode lookup = new MethodInsnNode(INVOKEVIRTUAL, EVENT, "getSkin", OLD_GET_SKIN, false);
+        MethodInsnNode lookup = new MethodInsnNode(INVOKEVIRTUAL, EVENT, lookupName, lookupDesc, false);
         lambda.instructions.add(lookup);
         lambda.instructions.add(new VarInsnNode(ASTORE, 3));
         lambda.instructions.add(new VarInsnNode(ALOAD, 3));
