@@ -186,6 +186,7 @@ public final class LegacyConnector {
         modBus.addListener(org.kylepitcock.legacyconnector.core.pack.GameResourcesFolderPack::onAddPackFinders);
         modBus.addListener(org.kylepitcock.legacyconnector.v1_7_10.LegacyModPacks::onAddPackFinders);
         modBus.addListener(LegacyNetwork::onRegisterPayloads);
+        org.kylepitcock.legacyconnector.vb1_7_3.PlayerMotionB173.init();
         org.kylepitcock.legacyconnector.vb1_7_3.AudioB173.init();
         org.kylepitcock.legacyconnector.vb1_7_3.DimensionsB173.install();
         org.kylepitcock.legacyconnector.vb1_7_3.BetaDeferredGenData.install();

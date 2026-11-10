@@ -75,6 +75,12 @@ public final class EntityViewsB173 {
         return null;
     }
     private record Touched(Entity view,double vx,double vy,double vz,boolean ground,Entity target,HostState hostState,NeutralState neutralState,Extra extra,Placement placement,float movementSpeed) {}
+    /** A native refresh of an already touched view is a new baseline, not an edit by original code. */
+    static void rebaseMotion(net.minecraft.world.entity.Entity modern,Entity view){
+        var touched=TOUCHED.get().get(modern);
+        if(touched!=null&&touched.view==view)TOUCHED.get().put(modern,new Touched(view,view.velocityX,view.velocityY,view.velocityZ,view.onGround,
+                touched.target,touched.hostState,touched.neutralState,touched.extra,touched.placement,touched.movementSpeed));
+    }
     private static float movementSpeed(Entity view){return view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity living?living.mcc$movementSpeed():Float.NaN;}
     private static final java.util.Map<net.minecraft.world.entity.Entity,Entity> VIEWS =
             new com.google.common.collect.MapMaker().weakKeys().weakValues().makeMap();
@@ -304,7 +310,18 @@ public final class EntityViewsB173 {
                     if(view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.projectile.ArrowEntity arrow&&modern instanceof net.minecraft.world.entity.projectile.AbstractArrow nativeArrow&&arrow.owner!=before.owner)nativeArrow.setOwner(arrow.owner==null?null:arrow.owner.mcc$modern);
                 }
                 if(view.velocityX!=touched.vx||view.velocityY!=touched.vy||view.velocityZ!=touched.vz) {
-                    modern.setDeltaMovement(view.velocityX,view.velocityY,view.velocityZ);modern.hurtMarked=true;
+                    if(modern instanceof net.minecraft.world.entity.player.Player nativePlayer){
+                        // A player's own motion is authoritative: apply only components original code actually set to a new value.
+                        var current=nativePlayer.getDeltaMovement();
+                        int changed=PlayerMotionB173.mask(view.velocityX,view.velocityY,view.velocityZ,touched.vx,touched.vy,touched.vz)
+                                &PlayerMotionB173.mask(view.velocityX,view.velocityY,view.velocityZ,current.x,current.y,current.z);
+                        if(changed!=0&&!(nativePlayer instanceof net.minecraft.server.level.ServerPlayer server&&PlayerMotionB173.send(server,changed,view.velocityX,view.velocityY,view.velocityZ))){
+                            nativePlayer.setDeltaMovement(PlayerMotionB173.merge(current,changed,view.velocityX,view.velocityY,view.velocityZ));
+                            if(nativePlayer instanceof net.minecraft.server.level.ServerPlayer)nativePlayer.hurtMarked=true;
+                        }
+                    }else{
+                        modern.setDeltaMovement(view.velocityX,view.velocityY,view.velocityZ);modern.hurtMarked=true;
+                    }
                 }
                 if(view.onGround!=touched.ground)NativeGroundB173.commit(modern,view.onGround);
                 if(view instanceof PathAwareEntity p && p.target!=touched.target && modern instanceof net.minecraft.world.entity.Mob mob)

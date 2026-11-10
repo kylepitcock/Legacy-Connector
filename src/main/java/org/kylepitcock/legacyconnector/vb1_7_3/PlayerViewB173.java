@@ -111,6 +111,7 @@ public final class PlayerViewB173 extends legacyconnector.vb1_7_3.net.minecraft.
             inventory.armor[i]=stack;beforeArmor[i]=stack==null?null:stack.copy();
         }
         beforePlacement=EntityViewsB173.Placement.of(this);
+        EntityViewsB173.rebaseMotion(player,this);
     }
 
     /** A native world transfer keeps the original player and inventory; refresh only its placement boundary. */
