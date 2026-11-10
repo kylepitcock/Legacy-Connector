@@ -154,7 +154,11 @@ class PalladiumMixinCompat1201Test implements Opcodes {
         handler.parameters = new java.util.ArrayList<>();
         for (int i = 0; i < 7; i++) handler.parameters.add(new ParameterNode("p" + i, 0));
         handler.visibleAnnotations = new java.util.ArrayList<>();
-        handler.visibleAnnotations.add(new AnnotationNode("Lorg/spongepowered/asm/mixin/injection/Inject;"));
+        AnnotationNode inject = new AnnotationNode("Lorg/spongepowered/asm/mixin/injection/Inject;");
+        inject.values = new java.util.ArrayList<>();
+        inject.values.add("method");
+        inject.values.add(new java.util.ArrayList<>(List.of("renderArmorPiece")));
+        handler.visibleAnnotations.add(inject);
         handler.instructions.add(new VarInsnNode(ALOAD, 7)); // CallbackInfo
         handler.instructions.add(new InsnNode(POP));
         handler.instructions.add(new VarInsnNode(ALOAD, 8)); // first temporary
@@ -166,6 +170,12 @@ class PalladiumMixinCompat1201Test implements Opcodes {
 
         assertEquals(1, PalladiumMixinCompat1201.apply(node));
         assertEquals(newDesc, handler.desc);
+        String targetDesc = "(L" + POSE + ";Lnet/minecraft/client/renderer/MultiBufferSource;"
+                + "Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/EquipmentSlot;I"
+                + "L" + MODEL + ";FFFFFF)V";
+        assertEquals(List.of("renderArmorPiece" + targetDesc), annotationValue(inject, "method"));
+        assertEquals(Boolean.FALSE, annotationValue(inject, "remap"),
+                "the stale 1.20.1 refmap must not redirect the exact 1.21.1 selector");
         assertTrue(hasVar(handler, ALOAD, 13), "CallbackInfo must move behind the six new float arguments");
         assertTrue(hasVar(handler, ALOAD, 14), "existing locals must move behind the inserted arguments");
         assertFalse(hasVar(handler, ALOAD, 7));
@@ -270,6 +280,14 @@ class PalladiumMixinCompat1201Test implements Opcodes {
         annotations[annotatedParameter] = new java.util.ArrayList<>();
         annotations[annotatedParameter].add(new AnnotationNode("Ltest/ParameterMarker;"));
         return annotations;
+    }
+
+    private static Object annotationValue(AnnotationNode annotation, String name) {
+        if (annotation.values == null) return null;
+        for (int i = 0; i + 1 < annotation.values.size(); i += 2) {
+            if (name.equals(annotation.values.get(i))) return annotation.values.get(i + 1);
+        }
+        return null;
     }
 
     private static void assertClassCanBeSerialized(ClassNode node) {
