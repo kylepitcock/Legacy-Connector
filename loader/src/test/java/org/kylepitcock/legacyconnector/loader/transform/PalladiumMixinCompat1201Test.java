@@ -239,6 +239,129 @@ class PalladiumMixinCompat1201Test implements Opcodes {
     }
 
     @Test
+    void entitySelectorParserMixinDropsOnlyItsUnusedLegacyPredicateShadow() {
+        ClassNode node = new ClassNode();
+        node.version = V21;
+        node.access = ACC_PUBLIC | ACC_ABSTRACT;
+        node.name = "net/threetag/palladium/mixin/EntitySelectorParserMixin";
+        node.superName = "java/lang/Object";
+
+        FieldNode obsoletePredicate = new FieldNode(
+                ACC_PRIVATE,
+                "f_121170_",
+                "Ljava/util/function/Predicate;",
+                "Ljava/util/function/Predicate<Lnet/minecraft/world/entity/Entity;>;",
+                null);
+        obsoletePredicate.visibleAnnotations = new java.util.ArrayList<>();
+        obsoletePredicate.visibleAnnotations.add(new AnnotationNode(
+                "Lorg/spongepowered/asm/mixin/Shadow;"));
+        node.fields.add(obsoletePredicate);
+
+        FieldNode powerId = new FieldNode(
+                ACC_PUBLIC,
+                "palladium$powerId",
+                "Lnet/minecraft/resources/ResourceLocation;",
+                null,
+                null);
+        powerId.visibleAnnotations = new java.util.ArrayList<>();
+        powerId.visibleAnnotations.add(new AnnotationNode(
+                "Lorg/spongepowered/asm/mixin/Unique;"));
+        node.fields.add(powerId);
+
+        MethodNode isLimited = new MethodNode(ACC_PUBLIC | ACC_ABSTRACT, "m_121330_", "()Z", null, null);
+        isLimited.visibleAnnotations = new java.util.ArrayList<>();
+        isLimited.visibleAnnotations.add(new AnnotationNode("Lorg/spongepowered/asm/mixin/Shadow;"));
+        node.methods.add(isLimited);
+
+        MethodNode getter = new MethodNode(
+                ACC_PUBLIC,
+                "palladium$getPower",
+                "()Lnet/minecraft/resources/ResourceLocation;",
+                null,
+                null);
+        getter.instructions.add(new VarInsnNode(ALOAD, 0));
+        getter.instructions.add(new FieldInsnNode(
+                GETFIELD,
+                node.name,
+                "palladium$powerId",
+                "Lnet/minecraft/resources/ResourceLocation;"));
+        getter.instructions.add(new InsnNode(ARETURN));
+        node.methods.add(getter);
+
+        MethodNode setter = new MethodNode(
+                ACC_PUBLIC,
+                "palladium$setPower",
+                "(Lnet/minecraft/resources/ResourceLocation;)V",
+                null,
+                null);
+        setter.instructions.add(new VarInsnNode(ALOAD, 0));
+        setter.instructions.add(new VarInsnNode(ALOAD, 1));
+        setter.instructions.add(new FieldInsnNode(
+                PUTFIELD,
+                node.name,
+                "palladium$powerId",
+                "Lnet/minecraft/resources/ResourceLocation;"));
+        setter.instructions.add(new InsnNode(RETURN));
+        node.methods.add(setter);
+
+        assertEquals(1, PalladiumMixinCompat1201.apply(node));
+        assertFalse(node.fields.contains(obsoletePredicate));
+        assertTrue(node.fields.contains(powerId));
+        assertNotNull(find(node, "m_121330_", "()Z"),
+                "the still-valid parser method shadow must be retained");
+        assertNotNull(find(node, "palladium$getPower", "()Lnet/minecraft/resources/ResourceLocation;"));
+        assertNotNull(find(node, "palladium$setPower", "(Lnet/minecraft/resources/ResourceLocation;)V"));
+        assertEquals(0, PalladiumMixinCompat1201.apply(node), "adaptation must be idempotent");
+        assertClassCanBeSerialized(node);
+    }
+
+    @Test
+    void entitySelectorParserMixinRejectsPredicateShadowWhenItsCodeUsesIt() {
+        ClassNode node = new ClassNode();
+        node.version = V21;
+        node.access = ACC_PUBLIC | ACC_ABSTRACT;
+        node.name = "net/threetag/palladium/mixin/EntitySelectorParserMixin";
+        node.superName = "java/lang/Object";
+
+        FieldNode obsoletePredicate = new FieldNode(ACC_PRIVATE, "f_121170_",
+                "Ljava/util/function/Predicate;", null, null);
+        obsoletePredicate.visibleAnnotations = new java.util.ArrayList<>();
+        obsoletePredicate.visibleAnnotations.add(new AnnotationNode(
+                "Lorg/spongepowered/asm/mixin/Shadow;"));
+        node.fields.add(obsoletePredicate);
+
+        MethodNode method = new MethodNode(ACC_PUBLIC, "usesPredicate", "()Ljava/util/function/Predicate;", null, null);
+        method.instructions.add(new VarInsnNode(ALOAD, 0));
+        method.instructions.add(new FieldInsnNode(
+                GETFIELD,
+                node.name,
+                obsoletePredicate.name,
+                obsoletePredicate.desc));
+        method.instructions.add(new InsnNode(ARETURN));
+        node.methods.add(method);
+
+        assertThrows(IllegalStateException.class, () -> PalladiumMixinCompat1201.apply(node));
+        assertTrue(node.fields.contains(obsoletePredicate), "unexpected usage must be rejected before mutation");
+    }
+
+    @Test
+    void entitySelectorParserAdapterDoesNotTouchUnrelatedClasses() {
+        ClassNode node = new ClassNode();
+        node.version = V21;
+        node.access = ACC_PUBLIC;
+        node.name = "example/OtherMixin";
+        node.superName = "java/lang/Object";
+        FieldNode shadow = new FieldNode(ACC_PRIVATE, "predicate",
+                "Ljava/util/function/Predicate;", null, null);
+        shadow.visibleAnnotations = new java.util.ArrayList<>();
+        shadow.visibleAnnotations.add(new AnnotationNode("Lorg/spongepowered/asm/mixin/Shadow;"));
+        node.fields.add(shadow);
+
+        assertEquals(0, PalladiumMixinCompat1201.apply(node));
+        assertTrue(node.fields.contains(shadow));
+    }
+
+    @Test
     void levelRendererKeepsPhasingHookButDropsObsoleteWatcherPoseStackHook() {
         ClassNode node = new ClassNode();
         node.name = "net/threetag/palladium/mixin/client/LevelRendererMixin";
