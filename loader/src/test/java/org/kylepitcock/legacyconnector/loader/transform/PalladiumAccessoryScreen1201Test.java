@@ -20,6 +20,7 @@ class PalladiumAccessoryScreen1201Test implements Opcodes {
     private static final String COMPONENT = "net/minecraft/network/chat/Component";
     private static final String MUTABLE_COMPONENT = "net/minecraft/network/chat/MutableComponent";
     private static final String GUI_GRAPHICS = "net/minecraft/client/gui/GuiGraphics";
+    private static final String ADD_CONTENTS = "addContents";
     private static final String ADD_TITLE = "addTitle";
     private static final String ADD_FOOTER = "addFooter";
     private static final String RENDER = "render";
@@ -40,6 +41,7 @@ class PalladiumAccessoryScreen1201Test implements Opcodes {
         assertEquals(0, addOptions.maxStack);
         assertEquals(1, addOptions.maxLocals);
 
+        assertEmptyProtectedHook(node, ADD_CONTENTS);
         assertEmptyProtectedHook(node, ADD_TITLE);
         assertEmptyProtectedHook(node, ADD_FOOTER);
 

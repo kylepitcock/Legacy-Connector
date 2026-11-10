@@ -16,7 +16,7 @@ import org.objectweb.asm.tree.*;
  * options), so pass Minecraft.getInstance().options instead.
  *
  * Palladium's slot list, accessory list, and rotation slider remain in its
- * existing init() implementation; the new vanilla options list stays empty.
+ * existing init() implementation; the new vanilla options body is omitted.
  */
 final class PalladiumAccessoryScreen1201 implements Opcodes {
     static final String ACCESSORY_SCREEN =
@@ -35,6 +35,7 @@ final class PalladiumAccessoryScreen1201 implements Opcodes {
     private static final String MUTABLE_COMPONENT =
             "net/minecraft/network/chat/MutableComponent";
     private static final String ADD_OPTIONS = "addOptions";
+    private static final String ADD_CONTENTS = "addContents";
     private static final String ADD_TITLE = "addTitle";
     private static final String ADD_FOOTER = "addFooter";
     private static final String GUI_GRAPHICS = "net/minecraft/client/gui/GuiGraphics";
@@ -69,6 +70,7 @@ final class PalladiumAccessoryScreen1201 implements Opcodes {
 
         boolean changed = supplyCurrentOptions(node);
         changed |= supplyAddOptions(node);
+        changed |= supplyEmptyChromeHook(node, ADD_CONTENTS);
         changed |= supplyEmptyChromeHook(node, ADD_TITLE);
         changed |= supplyEmptyChromeHook(node, ADD_FOOTER);
         changed |= removeLegacyDirtBackgroundCall(node);
@@ -104,9 +106,9 @@ final class PalladiumAccessoryScreen1201 implements Opcodes {
     }
 
     /**
-     * The legacy screen draws its own title and Done button. The 1.21.1
-     * OptionsSubScreen hooks would otherwise add a second title and footer
-     * button to the modern HeaderAndFooterLayout.
+     * The legacy screen constructs its own lists and draws its own title and Done
+     * button. The 1.21.1 OptionsSubScreen hooks would otherwise create an
+     * unused vanilla OptionsList and add duplicate title/footer widgets.
      */
     private static boolean supplyEmptyChromeHook(ClassNode node, String hookName) {
         for (MethodNode method : node.methods) {
