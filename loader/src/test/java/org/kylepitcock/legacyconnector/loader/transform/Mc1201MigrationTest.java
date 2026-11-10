@@ -164,6 +164,22 @@ class Mc1201MigrationTest implements Opcodes {
     }
 
     @Test
+    void directMinecraftCallsUseRenamedMemberTable() {
+        String gameRenderer = "net/minecraft/client/renderer/GameRenderer";
+        String shaderInstance = "net/minecraft/client/renderer/ShaderInstance";
+        String desc = "()L" + shaderInstance + ";";
+        ClassNode c = cls("test/PalladiumIcon", "java/lang/Object");
+        MethodNode m = method(c, ACC_PUBLIC | ACC_STATIC, "shader", desc);
+        m.instructions.add(new MethodInsnNode(INVOKESTATIC, gameRenderer, "getPositionColorTexShader", desc, false));
+        m.instructions.add(new InsnNode(ARETURN));
+
+        assertEquals(1, apply(c).calls);
+        assertNotNull(find(m, gameRenderer, "getPositionTexColorShader"),
+                "the 1.20.1 shader getter must be renamed to its 1.21.1 equivalent");
+        verify(c);
+    }
+
+    @Test
     void aMethodOfTheModKeepsItsSignature() {
         // the mod's own getTag() on its own class must not be sent to the ItemStack helper
         ClassNode holder = cls("test/MyStack", "java/lang/Object");

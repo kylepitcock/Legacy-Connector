@@ -283,8 +283,11 @@ final class Mc1201Migration {
             if (in instanceof TypeInsnNode ti && ti.getOpcode() == Opcodes.NEW) {
                 news.push(ti);
             } else if (in instanceof MethodInsnNode call) {
-                if (!call.name.equals("<init>") && h.isMod(call.owner) && h.declaredIn(call.owner, call.name, call.desc) != Origin.MOD) {
-                    // a renamed Minecraft member called through a class of the mod (the remapper only saw the mod class as the receiver)
+                if (!call.name.equals("<init>")
+                        && (h.isMinecraft(call.owner)
+                                || (h.isMod(call.owner) && h.declaredIn(call.owner, call.name, call.desc) != Origin.MOD))) {
+                    // Renamed Minecraft members can be called directly on Minecraft classes or inherited through a mod-owned subclass.
+                    // A method declared by the mod itself must keep its own name.
                     for (String ancestor : h.minecraftAncestors(call.owner)) {
                         String renamed = t.renamedMember(ancestor, call.name, call.desc);
                         if (!renamed.equals(call.name)) {
