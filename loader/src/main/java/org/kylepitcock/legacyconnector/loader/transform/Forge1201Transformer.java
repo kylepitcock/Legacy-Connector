@@ -314,11 +314,12 @@ public final class Forge1201Transformer {
             viaCalls += AttachGuards1201.apply(node, jarClasses);
             if (ForgeApiRewrites1201.markProviders(node)) viaCalls++;
             rewrites += viaCalls;
-            Mc1201Migration.Counts changed = Mc1201Migration.apply(node, hierarchy);
-            mc.add(changed);
-            // Keep PalladiumCore's original callback/try-catch; adapt only its player-skin lambda.
+            // Adapt before Mc1201Migration redirects AddLayers.getSkin(String) to ClientCompat.getSkin.
+            // The Palladium adapter must see and retarget the original lookup before that generic pass.
             int palladiumPlayerSkinChange = PalladiumCorePlayerSkin1201.apply(node);
             palladiumPlayerSkinChanges += palladiumPlayerSkinChange;
+            Mc1201Migration.Counts changed = Mc1201Migration.apply(node, hierarchy);
+            mc.add(changed);
             // Runs after GuiGraphics.blitNineSliced has been redirected, but before SoftLink1201
             // would replace Palladium's now-missing inherited Button.WIDGETS_LOCATION with null.
             int palladiumWidgetButtonChange = PalladiumWidgetButtons1201.apply(node);
