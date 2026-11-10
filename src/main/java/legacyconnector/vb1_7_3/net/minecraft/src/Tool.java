@@ -17,7 +17,10 @@ public class Tool extends Item {
     public ArrayList<Material> mineMaterials=new ArrayList<>();
     public Tool(boolean usingSAPI,ToolBase family,int id,int uses,float damage,float power,float speed){this(usingSAPI,family,id,uses,damage,power,speed,1F);}
     public Tool(boolean usingSAPI,ToolBase family,int id,int uses,float damage,float power,float speed,float defaultSpeed){
-        super(id);setMaxDamage(uses);maxCount=1;this.usingSAPI=usingSAPI;toolBase=family;
+        this(usingSAPI,family,id,uses,damage,power,speed,defaultSpeed,false);
+    }
+    protected Tool(boolean usingSAPI,ToolBase family,int id,int uses,float damage,float power,float speed,float defaultSpeed,boolean vanillaView){
+        super(id,vanillaView);setMaxDamage(uses);maxCount=1;this.usingSAPI=usingSAPI;toolBase=family;
         baseDamage=damage;basePower=power;toolSpeed=speed;this.defaultSpeed=defaultSpeed;
     }
     @Override public boolean isHandheld(){return true;}

@@ -11,7 +11,7 @@ import legacyconnector.vb1_7_3.net.minecraft.screen.ScreenHandler;
 import legacyconnector.vb1_7_3.net.minecraft.world.World;
 import net.minecraft.nbt.*;
 
-/** Finite context for original machine GUI constructors: a player inventory and one canonical registered tile. */
+/** Bounded context for original menu constructors using canonical inventories and captured scalar arguments. */
 final class RemoteMenuContextB173 {
     static final int MAX_TILES=8,MAX_SLOTS=512,MAX_BYTES=16_384;
     private static final org.slf4j.Logger LOG=org.slf4j.LoggerFactory.getLogger("LegacyConnector/b1.7.3");
@@ -46,6 +46,12 @@ final class RemoteMenuContextB173 {
             if(PlayerMenuContextB173.isPlayerMenu(container))context.putBoolean("player",true);
             return bounded(context)?context:new CompoundTag();
         }catch(java.io.IOException|RuntimeException|LinkageError error){LOG.warn("Cannot capture original remote menu tile context",error);return new CompoundTag();}
+    }
+    static CompoundTag capture(HandledScreen gui){
+        var context=capture(gui.container);var constructor=MenuConstructorStateB173.capture(gui);
+        if(constructor==null)return context;
+        context.put("constructor",constructor);
+        try{return bounded(context)?context:new CompoundTag();}catch(java.io.IOException error){return new CompoundTag();}
     }
     private static boolean bounded(CompoundTag context)throws java.io.IOException{
         var bytes=new ByteArrayOutputStream();
@@ -82,6 +88,7 @@ final class RemoteMenuContextB173 {
         if(layout.length>MAX_SLOTS)return null;
         if(context.getBoolean("player"))return PlayerMenuContextB173.construct(type,inventory.player,layout);
         var entries=context.getList("tiles",Tag.TAG_COMPOUND);if(entries.isEmpty()||entries.size()>MAX_TILES)return null;
+        if(context.contains("constructor",Tag.TAG_COMPOUND))return constructCaptured(type,context,inventory,world,layout,entries);
         java.lang.reflect.Constructor<?> selected=null;BlockEntity selectedTile=null;CompoundTag selectedNbt=null;
         for(Tag raw:entries){
             var entry=(CompoundTag)raw;var nbt=entry.getCompound("nbt");String id=entry.getString("type");
@@ -100,6 +107,21 @@ final class RemoteMenuContextB173 {
         selectedTile.readNbt(NbtB173.fromModern(selectedNbt));
         var gui=(HandledScreen)selected.newInstance(inventory,selectedTile);
         return matches(gui.container,layout)?gui:null;
+    }
+    private static HandledScreen constructCaptured(Class<? extends HandledScreen> type,CompoundTag context,PlayerInventory inventory,World world,int[][] layout,ListTag entries)throws ReflectiveOperationException{
+        var tiles=new LinkedHashMap<String,BlockEntity>();var snapshots=new LinkedHashMap<BlockEntity,CompoundTag>();
+        for(var raw:entries){
+            var entry=(CompoundTag)raw;var nbt=entry.getCompound("nbt");String id=entry.getString("type");
+            int x=entry.getInt("x"),y=entry.getInt("y"),z=entry.getInt("z");
+            if(id.isEmpty()||!id.equals(nbt.getString("id"))||nbt.getInt("x")!=x||nbt.getInt("y")!=y||nbt.getInt("z")!=z)return null;
+            var tile=world.getBlockEntity(x,y,z);String key=id+":"+x+":"+y+":"+z;
+            if(tile==null||!id.equals(BlockEntity.mcc$idOf(tile.getClass()))||tiles.putIfAbsent(key,tile)!=null)return null;
+            snapshots.put(tile,nbt);
+        }
+        var prepared=MenuConstructorStateB173.prepare(type,context.getCompound("constructor"),inventory,tiles);
+        if(prepared==null)return null;
+        for(var entry:snapshots.entrySet())entry.getKey().readNbt(NbtB173.fromModern(entry.getValue()));
+        var gui=prepared.create();return matches(gui.container,layout)?gui:null;
     }
     static boolean matches(ScreenHandler container,int[][] layout){
         if(container==null||layout.length>MAX_SLOTS||container.slots.size()!=layout.length)return false;

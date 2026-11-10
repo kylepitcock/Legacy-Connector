@@ -11,7 +11,10 @@ public class ArmorItem extends Item {
     public final int textureIndex;
 
     public ArmorItem(int id, int type, int textureIndex, int equipmentSlot) {
-        super(id);
+        this(id,type,textureIndex,equipmentSlot,false);
+    }
+    private ArmorItem(int id,int type,int textureIndex,int equipmentSlot,boolean vanillaView){
+        super(id,vanillaView);
         this.type = type;
         this.equipmentSlot = equipmentSlot;
         this.textureIndex = textureIndex;
@@ -19,4 +22,5 @@ public class ArmorItem extends Item {
         setMaxDamage((DURABILITY_BY_SLOT[equipmentSlot] * 3) << type);
         setMaxCount(1);
     }
+    public static ArmorItem mcc$vanilla(int id,int type,int textureIndex,int equipmentSlot){return new ArmorItem(id,type,textureIndex,equipmentSlot,true);}
 }

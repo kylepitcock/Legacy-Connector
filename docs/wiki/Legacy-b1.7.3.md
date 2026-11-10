@@ -635,9 +635,26 @@ putting the player to sleep.
 A naturally generated Bronze Slider also passes deferred **entity** persistence: its immutable complete NBT, UUID,
 original/native type, dungeon home and generated name survive a full server-process restart while its target chunk has
 never reached native FULL. Native chunk loading then materializes exactly one matching boss and acknowledges the queue
-entry. This proves natural generation and first materialization, separately from the block/chest checks; boss combat,
-death, dungeon unlocking and later entity lifecycle still need acceptance. Remaining combat, rendering and lifecycle
-scenarios need their own checks. The [PlayerAPI inventory](#playerapi-inventory) results retain their existing scope.
+entry. The same naturally generated 500-HP boss subsequently passes a Survival fight with 100 real native pickaxe
+hits, original charging and player damage, critical texture, death, doorway reopening, connected dungeon-block
+unlocking, trapdoors and actual key/drop pickup. The fixture uses native diamond armor and Resistance III for the
+damage check, then Resistance IV to finish; it does not change original boss health, motion or timers.
+
+The dropped key unlocks the generated Bronze chest through native interaction. Its original title, texture and 63-slot
+screen now reconstruct from the exact successful GUI constructor arguments, including inventory interfaces and a
+primitive argument that the constructor uses to compute its title. The bridge captures supported constructor inputs
+generically, uses canonical inventories, validates the installed class, descriptor and slot layout, and retains the
+bounded fallback for unsupported contexts. Three real mouse transfers collect the generated Fire Sword, Agility Cape
+and Hammer of Notch. Closing/reopening and a full client/server restart preserve the empty unlocked chest, doorway,
+defeated-boss outcome, and collected stacks with their native components. Silver/Gold combat, remaining rendering and
+lifecycle scenarios still need their own checks. The [PlayerAPI inventory](#playerapi-inventory) results retain their
+existing scope.
+
+Vanilla mining-tool and armor views also retain their complete Beta constructor state. All 15 pickaxe/axe/shovel views
+have the original tool-family, material, harvest and durability behavior; the native diamond pickaxe passes the actual
+Slider's tool check. All 20 armor views have canonical material, texture, slot, protection and durability fields. The
+actual original inventory accepts each armor item only in its correct slot, and real native helmet pickup/replacement
+preserves components. These compatibility views do not change native vanilla items, attributes or durability.
 
 The typed `TitleScreen` view also exposes the `mmactive` menu-activity flag used by supplied main-menu base-class
 patches. Native screen transitions and client ticks provide its snapshot, with a false dedicated-server fallback;

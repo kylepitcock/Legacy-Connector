@@ -29,6 +29,11 @@ public class Item {
     public Object mcc$owner;
 
     protected Item(int id) {
+        this(id,false);
+    }
+    /** Complete vanilla API proxies do not register content or borrow the active mod owner. */
+    protected Item(int id,boolean vanillaView) {
+        if(vanillaView){this.id=id;return;}
         this.id = 256 + id;
         if (ITEMS[256 + id] != null) System.out.println("CONFLICT @ " + id);
         ITEMS[256 + id] = this;

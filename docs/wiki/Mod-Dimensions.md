@@ -80,8 +80,13 @@ proof, not complete AI coverage for all eleven entries.
 
 A naturally generated Bronze Slider survives a full-process restart in the deferred entity queue with identical complete
 NBT, UUID, original/native type, dungeon home and name, while its target has never reached native FULL. Native chunk
-loading then materializes exactly one matching boss and acknowledges the entry. Boss combat, death and dungeon unlocking
-remain pending. These results do not establish complete Aether gameplay or universal ShockAhPI compatibility.
+loading then materializes exactly one matching boss and acknowledges the entry. The same 500-HP boss passes real native
+pickaxe combat in Survival, original charging/player damage and critical visuals, death, doorway/block unlocking,
+trapdoors and actual drop pickup. Native armor and declared Resistance protect the test actor; original boss state is
+not changed by the fixture. The actual key unlocks the generated chest, its original screen renders, and real mouse
+transactions collect all three generated items. A full client/server restart preserves the empty unlocked chest,
+doorway, defeated-boss outcome and exact collected native stacks. Silver/Gold encounters and other remaining gameplay
+checks are separate; these results do not establish complete Aether gameplay or universal ShockAhPI compatibility.
 
 ### NeoForge integration boundaries
 
