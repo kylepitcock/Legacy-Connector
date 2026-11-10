@@ -241,6 +241,7 @@ final class PalladiumMixinCompat1201 implements Opcodes {
         method.instructions.clear();
         method.tryCatchBlocks.clear();
         method.localVariables = null;
+        clearParameterAnnotations(method);
         LabelNode returnLabel = new LabelNode();
         InsnList code = method.instructions;
         code.add(new VarInsnNode(ALOAD, 4));
@@ -283,6 +284,7 @@ final class PalladiumMixinCompat1201 implements Opcodes {
         method.instructions.clear();
         method.tryCatchBlocks.clear();
         method.localVariables = null;
+        clearParameterAnnotations(method);
 
         String vertexArray = "[L" + GEO_VERTEX + ";";
         LabelNode loop = new LabelNode();
@@ -415,7 +417,21 @@ final class PalladiumMixinCompat1201 implements Opcodes {
         if (method == null) return false;
         method.desc = newDesc;
         method.signature = null;
+        clearParameterAnnotations(method);
         return true;
+    }
+
+    /**
+     * The rewritten handlers use a different parameter layout from the original
+     * 1.20.1 methods. Parameter annotations are indexed against that old layout,
+     * so retaining them can make ASM emit an annotation index outside the new
+     * descriptor's argument count. Keep method-level Mixin annotations untouched.
+     */
+    private static void clearParameterAnnotations(MethodNode method) {
+        method.visibleParameterAnnotations = null;
+        method.invisibleParameterAnnotations = null;
+        method.visibleAnnotableParameterCount = 0;
+        method.invisibleAnnotableParameterCount = 0;
     }
 
     private static void shiftLocals(MethodNode method, int first, int amount) {
