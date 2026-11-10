@@ -6,9 +6,9 @@ import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
 /**
- * Removes Palladium 4.5.10's empty RecipeList.updateNarration override.
- * Minecraft 1.21.1 makes AbstractWidget.updateNarration final, and this old
- * override performs no work; inheriting the final implementation is safe.
+ * Renames Palladium 4.5.10's empty RecipeList.updateNarration override to
+ * AbstractWidget's 1.21.1 updateWidgetNarration hook. The new final
+ * updateNarration method delegates to this hook.
  */
 final class PalladiumTailoringScreen1201 implements Opcodes {
     static final String RECIPE_LIST =
@@ -16,13 +16,14 @@ final class PalladiumTailoringScreen1201 implements Opcodes {
     private static final String ABSTRACT_SELECTION_LIST =
             "net/minecraft/client/gui/components/AbstractSelectionList";
     private static final String UPDATE_NARRATION = "updateNarration";
+    private static final String UPDATE_WIDGET_NARRATION = "updateWidgetNarration";
     private static final String UPDATE_NARRATION_DESC =
             "(Lnet/minecraft/client/gui/narration/NarrationElementOutput;)V";
 
     private PalladiumTailoringScreen1201() {
     }
 
-    /** Returns one when the exact legacy no-op override is removed. */
+    /** Returns one when the exact legacy no-op is renamed to the 1.21.1 hook. */
     static int apply(ClassNode node) {
         if (!RECIPE_LIST.equals(node.name)) return 0;
         if (!ABSTRACT_SELECTION_LIST.equals(node.superName)) {
@@ -56,7 +57,12 @@ final class PalladiumTailoringScreen1201 implements Opcodes {
                     "Palladium RecipeList updateNarration no longer contains exactly one RETURN");
         }
 
-        node.methods.remove(target);
+        for (MethodNode method : node.methods) {
+            if (UPDATE_WIDGET_NARRATION.equals(method.name) && UPDATE_NARRATION_DESC.equals(method.desc)) {
+                throw new IllegalStateException("Palladium RecipeList already declares updateWidgetNarration");
+            }
+        }
+        target.name = UPDATE_WIDGET_NARRATION;
         return 1;
     }
 }
