@@ -75,7 +75,7 @@ class PalladiumSelectionLists1201Test implements Opcodes {
         node.methods.add(method);
 
         assertThrows(IllegalStateException.class, () -> PalladiumSelectionLists1201.apply(node));
-        assertSame(method, find(node));
+        assertSame(method, find(node, "updateNarration"));
     }
 
     private static ClassNode listNode(String name) {
