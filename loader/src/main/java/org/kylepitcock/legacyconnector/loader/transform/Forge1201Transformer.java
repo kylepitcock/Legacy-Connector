@@ -278,6 +278,7 @@ public final class Forge1201Transformer {
         int palladiumKubejsClassesDropped = 0;
         int palladiumAddonPackChanges = 0;
         int palladiumWidgetButtonChanges = 0;
+        int palladiumMixinChanges = 0;
         for (ClassNode node : nodes) {
             if (PalladiumKubeJS1201.dropLegacyKubejsClass(node.name)) {
                 palladiumKubejsClassesDropped++;
@@ -303,9 +304,11 @@ public final class Forge1201Transformer {
             // would replace Palladium's now-missing inherited Button.WIDGETS_LOCATION with null.
             int palladiumWidgetButtonChange = PalladiumWidgetButtons1201.apply(node);
             palladiumWidgetButtonChanges += palladiumWidgetButtonChange;
+            int palladiumMixinChange = PalladiumMixinCompat1201.apply(node);
+            palladiumMixinChanges += palladiumMixinChange;
             Mixin1201.apply(node, srg, hierarchy, Mc1201Tables.get(), mixinStats);
             migrated.put(node, viaCalls + changed.total() + palladiumChanges + palladiumAddonPackChange
-                    + palladiumWidgetButtonChange);
+                    + palladiumWidgetButtonChange + palladiumMixinChange);
         }
         if (palladiumKubejsChanges > 0 || palladiumKubejsClassesDropped > 0) {
             result.notes.add("Palladium KubeJS 6 integration adapted for KubeJS 7: "
@@ -319,6 +322,10 @@ public final class Forge1201Transformer {
         if (palladiumWidgetButtonChanges > 0) {
             result.notes.add("Palladium default button backgrounds migrated to 1.21.1 GUI sprites: "
                     + palladiumWidgetButtonChanges + " button class(es)");
+        }
+        if (palladiumMixinChanges > 0) {
+            result.notes.add("Palladium 1.21.1 mixin compatibility adapters applied to "
+                    + palladiumMixinChanges + " mixin class(es); the obsolete Watcher render hook is omitted");
         }
         if (ownUnit) {
             // an isolated library next to its native build registers the same ids as the native one: its deferred registers are not attached to the bus
