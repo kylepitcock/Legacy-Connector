@@ -19,6 +19,42 @@ class PalladiumMixinCompat1201Test implements Opcodes {
     private static final String OBJECTIVE = "net/minecraft/world/scores/Objective";
 
     @Test
+    void armorItemMixinUsesPlayerReceiverForLivingEntityEquipmentSlotLookup() {
+        ClassNode node = new ClassNode();
+        node.name = "net/threetag/palladium/mixin/ArmorItemMixin";
+        String handlerDesc = "(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/player/Player;"
+                + "Lnet/minecraft/world/InteractionHand;" + CIR + ")V";
+        String itemStack = "Lnet/minecraft/world/item/ItemStack;";
+        String equipmentSlot = "Lnet/minecraft/world/entity/EquipmentSlot;";
+        MethodNode handler = new MethodNode(ACC_PUBLIC, "use", handlerDesc, null, null);
+        handler.instructions.add(new VarInsnNode(ALOAD, 5));
+        handler.instructions.add(new MethodInsnNode(INVOKESTATIC, "net/minecraft/world/entity/Mob",
+                "getEquipmentSlotForItem", "(" + itemStack + ")" + equipmentSlot, false));
+        handler.instructions.add(new VarInsnNode(ASTORE, 6));
+        handler.instructions.add(new InsnNode(RETURN));
+        handler.maxLocals = 7;
+        handler.maxStack = 1;
+        node.methods.add(handler);
+
+        assertEquals(1, PalladiumMixinCompat1201.apply(node));
+        MethodInsnNode lookup = findCall(handler, "getEquipmentSlotForItem");
+        assertNotNull(lookup);
+        assertEquals(INVOKEVIRTUAL, lookup.getOpcode());
+        assertEquals("net/minecraft/world/entity/LivingEntity", lookup.owner);
+        assertFalse(lookup.itf);
+
+        AbstractInsnNode before = previousReal(lookup);
+        assertTrue(before instanceof InsnNode && before.getOpcode() == SWAP);
+        before = previousReal(before);
+        assertTrue(before instanceof VarInsnNode receiver && receiver.getOpcode() == ALOAD && receiver.var == 2);
+
+        assertEquals(0, PalladiumMixinCompat1201.apply(node),
+                "an already-adapted instance call must not receive a second receiver");
+        assertClassCanBeSerialized(node);
+    }
+
+
+    @Test
     void itemTooltipHandlerExtractsLevelFromTooltipContext() {
         ClassNode node = new ClassNode();
         node.name = "net/threetag/palladium/mixin/ItemMixin";
