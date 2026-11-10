@@ -89,6 +89,10 @@ public final class OriginalInventoryScreenB173 {
         }catch(RuntimeException|LinkageError error){org.slf4j.LoggerFactory.getLogger("LegacyConnector/b1.7.3").warn("Original inventory UI could not attach; retaining native inventory",error);}
     }
     public static boolean active(Screen screen){var value=ACTIVE.get(screen);return value!=null&&!value.failed;}
+    /** Existing original GUI only; inspection must not refresh a player or create an inventory screen. */
+    public static legacyconnector.vb1_7_3.net.minecraft.client.gui.screen.Screen original(Screen screen){
+        var value=ACTIVE.get(screen);return value==null||value.failed?null:value.gui;
+    }
     public static boolean usingOriginal(Screen screen){return active(screen);}
     public static boolean renderOriginal(InventoryScreen screen,GuiGraphics graphics,float partial,int mouseX,int mouseY){return render(screen,graphics,partial,mouseX,mouseY);}
     public static boolean containsModernControl(Screen screen,double x,double y){return screen instanceof InventoryScreen inventory&&controlsContain(inventory,x,y);}

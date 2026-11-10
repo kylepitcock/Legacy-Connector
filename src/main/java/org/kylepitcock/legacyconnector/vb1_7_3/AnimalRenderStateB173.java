@@ -52,6 +52,26 @@ public final class AnimalRenderStateB173 {
         catch(IllegalAccessException error){throw new IllegalStateException("Cannot capture original render field "+slot.key,error);}
         return result;
     }
+    private static List<Slot> generationSlots(Object original){
+        return slots(original).stream().filter(slot->!api(slot.field.getDeclaringClass())
+            &&(slot.field.getType().isPrimitive()||slot.field.getType()==String.class)).toList();
+    }
+    /** Only first-materialization state: never captures SDK coordinates/health or transient numeric entity IDs. */
+    public static CompoundTag captureGenerationScalars(Object original){
+        var result=new CompoundTag();
+        for(var slot:generationSlots(original))try{result.put(slot.key,encode(slot.field.getType(),slot.field.get(original)));}
+        catch(IllegalAccessException error){throw new IllegalStateException("Cannot capture original generation field "+slot.key,error);}
+        return result;
+    }
+    /** Validate all fields before returning an apply action; callers can validate a complete passenger tree atomically. */
+    public static Runnable prepareGenerationScalars(Object original,CompoundTag incoming){
+        var slots=generationSlots(original);var expected=slots.stream().map(Slot::key).collect(java.util.stream.Collectors.toSet());
+        if(!expected.equals(incoming.getAllKeys()))throw new IllegalArgumentException("Original generation scalar schema mismatch for "+original.getClass().getName());
+        var changes=new ArrayList<java.util.Map.Entry<Slot,Object>>();
+        for(var slot:slots)changes.add(new java.util.AbstractMap.SimpleImmutableEntry<>(slot,decode(slot.field.getType(),incoming.get(slot.key),slot.key)));
+        return ()->{for(var change:changes)try{change.getKey().field.set(original,change.getValue());}
+            catch(IllegalAccessException error){throw new IllegalStateException("Cannot restore original generation field "+change.getKey().key,error);}};
+    }
     /**
      * Apply only values changed by the server since the previous received snapshot. An initial null snapshot applies all fields.
      * Compare against the received packet, never the mutable client view: render callbacks may deliberately change local fields.

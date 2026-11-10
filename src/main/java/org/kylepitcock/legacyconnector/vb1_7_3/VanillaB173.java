@@ -55,7 +55,8 @@ public final class VanillaB173 {
             Map.entry("CHAIN_LEGGINGS", "chainmail_leggings"), Map.entry("CHAIN_BOOTS", "chainmail_boots"), Map.entry("RAW_PORKCHOP", "porkchop"),
             Map.entry("SIGN", "oak_sign"), Map.entry("WOODEN_DOOR", "oak_door"), Map.entry("BOAT", "oak_boat"), Map.entry("CLAY", "clay_ball"),
             Map.entry("RAW_FISH", "cod"), Map.entry("COOKED_FISH", "cooked_cod"), Map.entry("DYE", "ink_sac"), Map.entry("BED", "red_bed"),
-            Map.entry("MAP", "filled_map"), Map.entry("RECORD_THIRTEEN", "music_disc_13"), Map.entry("RECORD_CAT", "music_disc_cat"));
+            Map.entry("MAP", "filled_map"), Map.entry("SLIMEBALL", "slime_ball"),
+            Map.entry("RECORD_THIRTEEN", "music_disc_13"), Map.entry("RECORD_CAT", "music_disc_cat"));
 
     private static final String[] COLORS = {"white", "orange", "magenta", "light_blue", "yellow", "lime", "pink", "gray", "light_gray", "cyan",
             "purple", "blue", "brown", "green", "red", "black"};

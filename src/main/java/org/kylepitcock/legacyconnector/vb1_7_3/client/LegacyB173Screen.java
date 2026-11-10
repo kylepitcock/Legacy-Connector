@@ -6,6 +6,7 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Menu;
+import org.kylepitcock.legacyconnector.vb1_7_3.LegacyMenuGeometryB173;
 import org.kylepitcock.legacyconnector.vb1_7_3.MenusB173;
 import org.slf4j.LoggerFactory;
 
@@ -18,6 +19,7 @@ public class LegacyB173Screen extends AbstractContainerScreen<LegacyB173Menu> {
     private final HandledScreen gui;
     private boolean failed;
     private int pendingKey = -1;
+    private boolean backgroundPrepared;
 
     public LegacyB173Screen(LegacyB173Menu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
@@ -79,8 +81,25 @@ public class LegacyB173Screen extends AbstractContainerScreen<LegacyB173Menu> {
 
     @Override
     public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
-        super.render(g, mouseX, mouseY, partialTick);
-        renderTooltip(g, mouseX, mouseY);
+        if(live()){
+            // AbstractContainerScreen snapshots its origin before renderBackground. Let the original
+            // draw once and publish any late size change before native slots and hitboxes use that origin.
+            var geometry=LegacyMenuGeometryB173.afterDraw(gui,width,height,
+                    ()->super.renderBackground(g,mouseX,mouseY,partialTick));
+            if(live()){
+                imageWidth=geometry.width();imageHeight=geometry.height();
+                leftPos=geometry.left();topPos=geometry.top();
+            }
+            backgroundPrepared=true;
+        }
+        try{
+            super.render(g, mouseX, mouseY, partialTick);
+            renderTooltip(g, mouseX, mouseY);
+        }finally{backgroundPrepared=false;}
+    }
+
+    @Override public void renderBackground(GuiGraphics g,int mouseX,int mouseY,float partialTick){
+        if(!backgroundPrepared)super.renderBackground(g,mouseX,mouseY,partialTick);
     }
 
     @Override

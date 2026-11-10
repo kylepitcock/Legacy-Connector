@@ -18,7 +18,7 @@ public final class NeutralEntitiesB173 {
                 }catch(SecurityException ignored){}
             }
             if(!installed)return "class is not owned by an installed original mod";
-            try{type.getConstructor(World.class);}catch(NoSuchMethodException e){return "no World restore constructor";}
+            try{restoreConstructor(type);}catch(NoSuchMethodException e){return "no World restore constructor";}
             String closure=AnimalsB173.unsupportedBehaviour(type,java.util.Set.of("shouldRender","getShadowRadius","getTargetingMargin","setVelocityClient","getBoundingBox","getCollisionAgainstShape","bypassesSteppingEffects","animateHurt"));
             return closure==null?"":closure;
         }
@@ -32,9 +32,14 @@ public final class NeutralEntitiesB173 {
         }catch(ClassNotFoundException|LinkageError ignored){}
         return null;
     }
+    private static java.lang.reflect.Constructor<? extends Entity> restoreConstructor(Class<?> type)throws NoSuchMethodException{
+        var entity=type.asSubclass(Entity.class);
+        try{return entity.getConstructor(World.class);}
+        catch(NoSuchMethodException missing){if(legacyconnector.vb1_7_3.net.minecraft.entity.LightningEntity.class.isAssignableFrom(type))return entity.getConstructor(World.class,double.class,double.class,double.class);throw missing;}
+    }
     public static Entity restore(String name,net.minecraft.world.level.Level level){
         Class<? extends Entity> type=savedType(name);if(type==null)return null;
-        try{return type.getConstructor(World.class).newInstance(World.mcc$wrap(level));}
+        try{var constructor=restoreConstructor(type);return constructor.getParameterCount()==1?constructor.newInstance(World.mcc$wrap(level)):constructor.newInstance(World.mcc$wrap(level),0D,0D,0D);}
         catch(ReflectiveOperationException|LinkageError e){throw new IllegalStateException("Cannot restore admitted original entity "+name,e);}
     }
     public static boolean spawn(net.minecraft.world.level.Level level,Entity original){

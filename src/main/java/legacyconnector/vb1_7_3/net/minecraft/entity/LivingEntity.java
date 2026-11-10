@@ -16,7 +16,8 @@ public abstract class LivingEntity extends Entity {
     public int deathTime;
     public int attackCooldown;
     public boolean killedByOtherEntity;
-    public float rotationSpeed,swingAnimationProgress;
+    public float rotationSpeed,swingAnimationProgress,lastSwingAnimationProgress;
+    public float walkProgress,lastWalkProgress;
     public int scoreAmount,despawnCounter;
     /** Target Y retained by the original living-entity interpolation callbacks. */
     public double lerpY;
@@ -111,14 +112,31 @@ public abstract class LivingEntity extends Entity {
     public final void mcc$dropItems(){dropItems();}
     public int getMinAmbientSoundDelay(){return 80;}
     public boolean canBreatheInWater(){return false;}
-    /** Beta {@code spawnExplosionParticle}-style spawn animation (puffs of smoke); the host spawns no extra particles. */
-    public void animateSpawn(){}
+    /** Beta spawn puffs use the actor's random stream, including before a native host is attached. */
+    public void animateSpawn(){
+        for(int i=0;i<20;i++){
+            double vx=random.nextGaussian()*.02D;
+            double vy=random.nextGaussian()*.02D;
+            double vz=random.nextGaussian()*.02D;
+            world.addParticle("explode",
+                    x+(double)(random.nextFloat()*width*2F)-(double)width-vx*10D,
+                    y+(double)(random.nextFloat()*height)-vy*10D,
+                    z+(double)(random.nextFloat()*width*2F)-(double)width-vz*10D,
+                    vx,vy,vz);
+        }
+    }
     public String getTexture(){return texture;}
     public void travel(float sideways,float forward){if(mcc$modern instanceof org.kylepitcock.legacyconnector.vb1_7_3.B173LivingHost host)host.baseTravel(sideways,forward);}
     public boolean isOnLadder(){return mcc$modern instanceof org.kylepitcock.legacyconnector.vb1_7_3.B173LivingHost host?host.baseIsOnLadder():mcc$modern instanceof net.minecraft.world.entity.LivingEntity living&&living.onClimbable();}
     protected boolean isImmobile(){return health<=0;}
     public final boolean mcc$isImmobile(){return isImmobile();}
-    protected void jump(){velocityY=.42;}
+    protected void jump(){
+        if(mcc$modern instanceof org.kylepitcock.legacyconnector.vb1_7_3.B173LivingHost host)host.baseJump();
+        else velocityY=.42;
+    }
+    public final void mcc$jump(){jump();}
+    @Override public void tickRiding(){super.tickRiding();lastWalkProgress=walkProgress;walkProgress=0;}
+
     public void heal(int amount){if(health>0){health=Math.min(maxHealth,health+amount);damagedTime=20;}}
     public void processServerEntityStatus(byte status){if(mcc$modern instanceof org.kylepitcock.legacyconnector.vb1_7_3.B173LivingHost host)host.baseEntityStatus(status);else if(status==2){hurtTime=10;damagedTime=10;}else if(status==3){health=0;deathTime=1;}}
 
@@ -136,7 +154,13 @@ public abstract class LivingEntity extends Entity {
     public String mcc$texture(){return getTexture();}
     /** Original renderers may compare texture paths with class literals by identity. */
     public void mcc$setTexture(String texture){this.texture=texture==null?null:texture.intern();}
-    public float getHandSwingProgress(float partial){return mcc$modern instanceof net.minecraft.world.entity.LivingEntity living?living.getAttackAnim(partial):0;}
+    public float getHandSwingProgress(float partial){
+        if(mcc$modern instanceof org.kylepitcock.legacyconnector.vb1_7_3.B173LivingHost||mcc$modern==null){
+            float delta=swingAnimationProgress-lastSwingAnimationProgress;if(delta<0)delta++;
+            return lastSwingAnimationProgress+delta*partial;
+        }
+        return mcc$modern instanceof net.minecraft.world.entity.LivingEntity living?living.getAttackAnim(partial):0;
+    }
 
     public ItemStack getHeldItem() {
         if(mcc$modern instanceof org.kylepitcock.legacyconnector.vb1_7_3.B173LivingHost)return null;

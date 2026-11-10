@@ -21,6 +21,8 @@ public final class GuiSessionsB173 {
     /** Scoped transport for packet-level regression capture; the server screen still executes the production path. */
     public static void withSender(java.util.function.BiConsumer<ServerPlayer,LegacyPayload> sender,Runnable callback){var previous=SENDER.get();SENDER.set(sender);try{callback.run();}finally{if(previous==null)SENDER.remove();else SENDER.set(previous);}}
     private GuiSessionsB173(){}
+    /** The original server-owned screen, without constructing or opening a new session. */
+    public static Screen currentScreen(ServerPlayer player){var session=SESSIONS.get(player.getUUID());return session==null?null:session.gui;}
     public static synchronized void install(){if(installed)return;installed=true;
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent event)->{if(event.getEntity() instanceof ServerPlayer player)disconnect(player);});
         LegacyNetwork.registerReceiver(VERSION,GuiSessionsB173::receive);
@@ -34,10 +36,14 @@ public final class GuiSessionsB173 {
     private static CompoundTag decode(byte[] bytes){FriendlyByteBuf buffer=new FriendlyByteBuf(Unpooled.wrappedBuffer(bytes));try{CompoundTag tag=buffer.readNbt();return tag==null?new CompoundTag():tag;}finally{buffer.release();}}
     public static void sendInput(CompoundTag tag){PacketDistributor.sendToServer(packet(0,tag));}
     private static void send(ServerPlayer player,CompoundTag frame){var payload=packet(1,frame);var sender=SENDER.get();if(sender==null)PacketDistributor.sendToPlayer(player,payload);else sender.accept(player,payload);}
+    public static void openNative(ServerPlayer player,NativeScreenRoutesB173.Route route){
+        var session=SESSIONS.get(player.getUUID());if(session!=null)session.suspended=true;
+        var frame=new CompoundTag();frame.putString("nativeScreen",route.name());send(player,frame);
+    }
     private static final class GuiMinecraft extends legacyconnector.vb1_7_3.net.minecraft.client.Minecraft {}
     private static final class Session {
         final int id=NEXT.incrementAndGet();final ServerPlayer player;final Screen gui;final GuiMinecraft minecraft=new GuiMinecraft();
-        final Map<Integer,String> paths=new HashMap<>();int nextTexture;int width=320,height=240;boolean initialized;int lastTick=Integer.MIN_VALUE;int[] metrics=new int[0];
+        final Map<Integer,String> paths=new HashMap<>();int nextTexture;int width=320,height=240;boolean initialized,suspended;int lastTick=Integer.MIN_VALUE;int[] metrics=new int[0];
         Session(ServerPlayer player,Screen gui){this.player=player;this.gui=gui;minecraft.world=legacyconnector.vb1_7_3.net.minecraft.world.World.mcc$wrap(player.level());minecraft.currentScreen=gui;legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$set$player(minecraft,PlayerViewB173.of(player));}
     }
     public static void open(ServerPlayer player,Screen gui){
@@ -56,6 +62,8 @@ public final class GuiSessionsB173 {
     }
     private static void input(ServerPlayer player,CompoundTag input){Session session=SESSIONS.get(player.getUUID());if(session==null||session.id!=input.getInt("id"))return;
         String action=input.getString("action");
+        if(session.suspended&&!action.equals("resize"))return;
+        session.suspended=false;
         if(action.equals("close")){open(player,null);return;}
         if(action.equals("tick")){if(session.lastTick==player.tickCount)return;session.lastTick=player.tickCount;}
         render(session,input,true);
@@ -81,7 +89,7 @@ public final class GuiSessionsB173 {
             }
             if(SESSIONS.get(session.player.getUUID())==session&&!MenusB173.hasPendingScreen(session.player))session.gui.render(x,y,0);
         }));
-            if(SESSIONS.get(session.player.getUUID())==session){CompoundTag frame=new CompoundTag();frame.putInt("id",session.id);frame.put("commands",capture.commands);send(session.player,frame);}
+            if(SESSIONS.get(session.player.getUUID())==session&&!session.suspended){CompoundTag frame=new CompoundTag();frame.putInt("id",session.id);frame.put("commands",capture.commands);send(session.player,frame);}
         }catch(RuntimeException|LinkageError e){org.slf4j.LoggerFactory.getLogger("LegacyConnector/b1.7.3/GuiSessions").error("Original server screen {} failed",session.gui.getClass().getName(),e);SESSIONS.remove(session.player.getUUID());CompoundTag frame=new CompoundTag();frame.putInt("id",session.id);frame.putBoolean("closed",true);send(session.player,frame);}
     }
     private static final class Capture implements GuiDrawB173.Sink {

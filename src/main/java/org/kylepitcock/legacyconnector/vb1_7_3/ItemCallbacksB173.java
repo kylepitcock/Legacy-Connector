@@ -13,6 +13,10 @@ import org.slf4j.LoggerFactory;
 
 /** Shared original item callbacks for ordinary items and native armor hosts. No native Item is allocated here. */
 final class ItemCallbacksB173 {
+    static legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.ContextScope actorScope(World world,
+            legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity actor){
+        return legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$context(world,actor);
+    }
     private final legacyconnector.vb1_7_3.net.minecraft.item.Item legacy;
     private final boolean usesAir;
     private final boolean usesEntity;
@@ -58,6 +62,13 @@ final class ItemCallbacksB173 {
         var block=legacyconnector.vb1_7_3.net.minecraft.block.Block.BLOCKS[BlocksB173.legacyId(state)];
         return block!=null&&legacy.isSuitableFor(block);
     }
+    public boolean canPerformAction(net.neoforged.neoforge.common.ItemAbility ability){
+        if(!(legacy instanceof legacyconnector.vb1_7_3.net.minecraft.src.Tool tool))return false;
+        var family=tool.toolBase;
+        return family==legacyconnector.vb1_7_3.net.minecraft.src.ToolBase.Pickaxe&&ability==net.neoforged.neoforge.common.ItemAbilities.PICKAXE_DIG
+                ||family==legacyconnector.vb1_7_3.net.minecraft.src.ToolBase.Shovel&&ability==net.neoforged.neoforge.common.ItemAbilities.SHOVEL_DIG
+                ||family==legacyconnector.vb1_7_3.net.minecraft.src.ToolBase.Axe&&ability==net.neoforged.neoforge.common.ItemAbilities.AXE_DIG;
+    }
 
 
     public InteractionResult useOn(UseOnContext context) {
@@ -67,9 +78,8 @@ final class ItemCallbacksB173 {
         var held = view.inventory.main[view.inventory.selectedSlot];
         if (held == null) return InteractionResult.PASS;
         var pos = context.getClickedPos();
-        try (var views=EntityViewsB173.callbackScope()) {
-            World world = World.mcc$wrap(context.getLevel());
-            legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$use(world);
+        World world = World.mcc$wrap(context.getLevel());
+        try (var views=EntityViewsB173.callbackScope();var minecraft=actorScope(world,view)) {
             boolean used = legacy.useOnBlock(held, view, world, pos.getX(), pos.getY(), pos.getZ(), context.getClickedFace().get3DDataValue());
             if (!context.getLevel().isClientSide) view.writeBack();
             return used ? InteractionResult.sidedSuccess(context.getLevel().isClientSide) : InteractionResult.PASS;
@@ -86,9 +96,8 @@ final class ItemCallbacksB173 {
         int slot = view.inventory.selectedSlot;
         var held = view.inventory.main[slot];
         if (held == null) return InteractionResultHolder.pass(player.getItemInHand(hand));
-        try (var views=EntityViewsB173.callbackScope()) {
-            World world = World.mcc$wrap(level);
-            legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$use(world);
+        World world = World.mcc$wrap(level);
+        try (var views=EntityViewsB173.callbackScope();var minecraft=actorScope(world,view)) {
             var result = legacy.use(held, world, view);
             // Returning a new stack replaces the held item; otherwise retain direct inventory edits by the mod.
             if (result != held) view.inventory.main[slot] = result;

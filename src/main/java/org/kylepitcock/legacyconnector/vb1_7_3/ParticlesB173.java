@@ -16,6 +16,11 @@ import org.kylepitcock.legacyconnector.core.network.*;
 public final class ParticlesB173 {
     private static final String FAMILY="b1.7.3-particles";
     private static final Set<String> WARNED=java.util.concurrent.ConcurrentHashMap.newKeySet();
+    private static final Set<Class<?>> SDK_PARTICLES=Set.of(Particle.class,
+            legacyconnector.vb1_7_3.net.minecraft.client.particle.PortalParticle.class,
+            legacyconnector.vb1_7_3.net.minecraft.client.particle.FireSmokeParticle.class,
+            legacyconnector.vb1_7_3.net.minecraft.client.particle.ExplosionParticle.class,
+            legacyconnector.vb1_7_3.net.minecraft.client.particle.ItemParticle.class);
     private static volatile Consumer<Particle> client;
     private static boolean installed;
     private ParticlesB173(){}
@@ -54,6 +59,11 @@ public final class ParticlesB173 {
             PacketDistributor.sendToPlayersNear(level,null,particle.x,particle.y,particle.z,64,request);
         }else{Consumer<Particle> sink=client;if(sink!=null)sink.accept(particle);}
     }
+    /** A subclass may compute an invalid terminal cell after incrementing age; valid late frames remain untouched. */
+    public static boolean warnInvalidSprite(Particle particle){
+        boolean invalid=particle.textureId<0||particle.getGroup()==0&&particle.textureId>7;
+        return !invalid||particle.maxParticleAge<=0||particle.particleAge<particle.maxParticleAge;
+    }
     private static final Map<Class<?>,List<Field>> FIELDS=new java.util.concurrent.ConcurrentHashMap<>();
     private static List<Field> fields(Class<?> type){return FIELDS.computeIfAbsent(type,ParticlesB173::inspectFields);}
     private static List<Field> inspectFields(Class<?> type){
@@ -88,16 +98,17 @@ public final class ParticlesB173 {
         tag.putDouble("x",p.x);tag.putDouble("y",p.y);tag.putDouble("z",p.z);tag.putDouble("px",p.prevX);tag.putDouble("py",p.prevY);tag.putDouble("pz",p.prevZ);
         tag.putDouble("vx",p.velocityX);tag.putDouble("vy",p.velocityY);tag.putDouble("vz",p.velocityZ);tag.putFloat("width",p.width);tag.putFloat("height",p.height);tag.putFloat("eye",p.standingEyeHeight);
         tag.putInt("texture",p.textureId);tag.putInt("age",p.particleAge);tag.putInt("maxAge",p.maxParticleAge);tag.putFloat("u",p.prevU);tag.putFloat("v",p.prevV);tag.putFloat("scale",p.scale);tag.putFloat("gravity",p.gravityStrength);tag.putFloat("r",p.red);tag.putFloat("g",p.green);tag.putFloat("b",p.blue);tag.putBoolean("ground",p.onGround);
+        tag.putBoolean("noClip",p.noClip);
         CompoundTag extra=new CompoundTag();try{for(Field f:fields(p.getClass())){String key=f.getDeclaringClass().getName()+"#"+f.getName();Object value=f.get(p);if(value instanceof String s)extra.putString(key,s);else if(value instanceof Boolean b)extra.putBoolean(key,b);else if(value instanceof Character c)extra.putInt(key,c);else if(value instanceof Number n){if(f.getType()==float.class||f.getType()==double.class)extra.putDouble(key,n.doubleValue());else extra.putLong(key,n.longValue());}}}catch(IllegalAccessException e){throw new IllegalStateException(e);}tag.put("fields",extra);return tag;
     }
     public static Particle restore(CompoundTag tag,World world){
         String name=tag.getString("class");Class<?> type;
         try{type=Class.forName(name,false,Thread.currentThread().getContextClassLoader());}catch(ClassNotFoundException e){throw new IllegalArgumentException("Unknown original particle",e);}
-        boolean owned=LegacyMods.ordered().stream().filter(m->PlatformB173.VERSION.equals(m.version)&&m.mainClass!=null).anyMatch(m->java.util.Objects.equals(m.mainClass.getProtectionDomain().getCodeSource(),type.getProtectionDomain().getCodeSource()));
+        boolean owned=SDK_PARTICLES.contains(type)||LegacyMods.ordered().stream().filter(m->PlatformB173.VERSION.equals(m.version)&&m.mainClass!=null).anyMatch(m->java.util.Objects.equals(m.mainClass.getProtectionDomain().getCodeSource(),type.getProtectionDomain().getCodeSource()));
         if(!owned||unsupported(type)!=null)throw new IllegalArgumentException("Particle class is not an admitted installed original");
         Particle p=(Particle)org.kylepitcock.legacyconnector.core.synth.Synth.blank(name);if(p==null)throw new IllegalArgumentException("Cannot allocate original particle");p.world=world;p.mcc$initializeRandom(System.nanoTime());
         p.width=tag.getFloat("width");p.height=tag.getFloat("height");p.standingEyeHeight=tag.getFloat("eye");p.setPosition(tag.getDouble("x"),tag.getDouble("y"),tag.getDouble("z"));p.prevX=tag.getDouble("px");p.prevY=tag.getDouble("py");p.prevZ=tag.getDouble("pz");p.velocityX=tag.getDouble("vx");p.velocityY=tag.getDouble("vy");p.velocityZ=tag.getDouble("vz");
-        p.textureId=tag.getInt("texture");p.particleAge=tag.getInt("age");p.maxParticleAge=tag.getInt("maxAge");p.prevU=tag.getFloat("u");p.prevV=tag.getFloat("v");p.scale=tag.getFloat("scale");p.gravityStrength=tag.getFloat("gravity");p.red=tag.getFloat("r");p.green=tag.getFloat("g");p.blue=tag.getFloat("b");p.onGround=tag.getBoolean("ground");
+        p.textureId=tag.getInt("texture");p.particleAge=tag.getInt("age");p.maxParticleAge=tag.getInt("maxAge");p.prevU=tag.getFloat("u");p.prevV=tag.getFloat("v");p.scale=tag.getFloat("scale");p.gravityStrength=tag.getFloat("gravity");p.red=tag.getFloat("r");p.green=tag.getFloat("g");p.blue=tag.getFloat("b");p.onGround=tag.getBoolean("ground");p.noClip=tag.getBoolean("noClip");
         CompoundTag extra=tag.getCompound("fields");try{for(Field f:fields(type)){String k=f.getDeclaringClass().getName()+"#"+f.getName();Class<?> t=f.getType();if(t==String.class)f.set(p,extra.getString(k));else if(t==boolean.class)f.setBoolean(p,extra.getBoolean(k));else if(t==char.class)f.setChar(p,(char)extra.getInt(k));else if(t==float.class)f.setFloat(p,(float)extra.getDouble(k));else if(t==double.class)f.setDouble(p,extra.getDouble(k));else if(t==long.class)f.setLong(p,extra.getLong(k));else if(t==int.class)f.setInt(p,(int)extra.getLong(k));else if(t==short.class)f.setShort(p,(short)extra.getLong(k));else if(t==byte.class)f.setByte(p,(byte)extra.getLong(k));}}catch(IllegalAccessException e){throw new IllegalStateException(e);}return p;
     }
     public static byte[] encode(CompoundTag tag){var b=new FriendlyByteBuf(Unpooled.buffer());try{b.writeNbt(tag);byte[] bytes=new byte[b.readableBytes()];b.readBytes(bytes);return bytes;}finally{b.release();}}

@@ -31,12 +31,22 @@ public class LegacyB173Block extends net.minecraft.world.level.block.Block imple
     private int failures;
 
     public LegacyB173Block(Block legacy, Properties properties) {
-        super(properties.dynamicShape());
+        super(nativeProperties(legacy,properties));
         this.legacy = legacy;
+        if(legacy.getRenderType()==14)BedsB173.install();
         this.shape = shapeOf(legacy);
         this.ownHarvest = overrides(legacy, "afterBreak", World.class, legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity.class,
                 int.class, int.class, int.class, int.class);
         registerDefaultState(stateDefinition.any().setValue(META, 0));
+    }
+
+    private static Properties nativeProperties(Block legacy,Properties properties){
+        properties.dynamicShape();
+        // Dynamic states have no native collision cache, so calculateSolid otherwise returns false.
+        // Beta's material movement flag is independent of opacity, metadata and collision shape.
+        // Keep native heightmaps/fluid solidity in that material lane without changing entity collisions.
+        if(legacy.material!=null&&legacy.material.blocksMovement())properties.forceSolidOn();
+        return properties;
     }
 
     private static VoxelShape shapeOf(Block legacy) {
@@ -48,6 +58,17 @@ public class LegacyB173Block extends net.minecraft.world.level.block.Block imple
 
     public Block legacy() {
         return legacy;
+    }
+
+    @Override public boolean isBed(BlockState state,net.minecraft.world.level.BlockGetter level,BlockPos pos,net.minecraft.world.entity.LivingEntity entity){return BedsB173.isBed(state);}
+    @Override public net.minecraft.core.Direction getBedDirection(BlockState state,net.minecraft.world.level.LevelReader level,BlockPos pos){return BedsB173.direction(state.getValue(META));}
+    @Override public void setBedOccupied(BlockState state,net.minecraft.world.level.Level level,BlockPos pos,net.minecraft.world.entity.LivingEntity entity,boolean occupied){
+        if(BedsB173.isBed(state))level.setBlock(pos,state.setValue(META,BedsB173.occupied(state.getValue(META),occupied)),3);
+    }
+    @Override public java.util.Optional<net.minecraft.server.level.ServerPlayer.RespawnPosAngle> getRespawnPosition(BlockState state,net.minecraft.world.entity.EntityType<?> type,net.minecraft.world.level.LevelReader level,BlockPos pos,float yaw){
+        if(!BedsB173.isBed(state))return java.util.Optional.empty();
+        return net.minecraft.world.level.block.BedBlock.findStandUpPosition(type,level,pos,BedsB173.direction(state.getValue(META)),yaw)
+                .map(p->net.minecraft.server.level.ServerPlayer.RespawnPosAngle.of(p,pos));
     }
 
     /** Native empty buckets (including stacked/creative buckets) execute the original Forge handler. */
@@ -292,7 +313,13 @@ public class LegacyB173Block extends net.minecraft.world.level.block.Block imple
     @Override
     protected void entityInside(BlockState state, net.minecraft.world.level.Level level, BlockPos pos, net.minecraft.world.entity.Entity entity) {
         super.entityInside(state, level, pos, entity);
-        if (level.isClientSide) return;
+        if (level.isClientSide) {
+            if (legacy instanceof legacyconnector.vb1_7_3.net.minecraft.block.PortalBlock portal
+                    && !entity.isPassenger() && !entity.isVehicle()
+                    && net.neoforged.fml.loading.FMLEnvironment.dist.isClient())
+                call("portalPresentation", () -> org.kylepitcock.legacyconnector.vb1_7_3.client.DimensionClientB173.portalContact(entity,portal.getDimNumber()));
+            return;
+        }
         var view=EntityViewsB173.wrap(entity);
         World world=view(level);
         try(var context=legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$context(world,view)) { call("onEntityCollidedWithBlock", () -> legacy.onEntityCollision(world, pos.getX(), pos.getY(), pos.getZ(), view)); }
@@ -337,7 +364,9 @@ public class LegacyB173Block extends net.minecraft.world.level.block.Block imple
         try(var context=legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$context(w,view)){
             call("onBlockDestroyedByPlayer", () -> legacy.onMetadataChange(w, pos.getX(), pos.getY(), pos.getZ(), meta));
             if (ownHarvest()) {
-                call("harvestBlock", () -> legacy.afterBreak(w, view, pos.getX(), pos.getY(), pos.getZ(), meta));
+                try(var award=StatisticsB173.nativeAward(player,net.minecraft.stats.Stats.BLOCK_MINED.get(this))){
+                    call("harvestBlock", () -> legacy.afterBreak(w, view, pos.getX(), pos.getY(), pos.getZ(), meta));
+                }
                 view.writeBack();
                 player.awardStat(net.minecraft.stats.Stats.BLOCK_MINED.get(this));
                 player.causeFoodExhaustion(0.005F);

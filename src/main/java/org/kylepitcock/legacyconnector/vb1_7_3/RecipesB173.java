@@ -54,6 +54,9 @@ public final class RecipesB173 {
     public static synchronized int size() {
         return RECIPES.size();
     }
+    public static synchronized java.util.Set<Integer> craftedItemIds(){
+        var ids=new java.util.LinkedHashSet<Integer>();for(var recipe:RECIPES)if(recipe.output()!=null)ids.add(recipe.output().itemId);return java.util.Set.copyOf(ids);
+    }
 
     // ------------------------------------------------------------------ lookups for mods' own crafting tables and furnaces
 

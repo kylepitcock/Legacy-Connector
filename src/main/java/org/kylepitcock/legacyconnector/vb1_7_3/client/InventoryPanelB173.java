@@ -14,7 +14,6 @@ import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -104,8 +103,9 @@ public final class InventoryPanelB173 {
             }
         });
     }
-    private static int kind(Screen screen){return screen instanceof InventoryScreen?1:screen instanceof CreativeModeInventoryScreen?2:0;}
-    private static EquipmentWidget panel(Screen screen){Entry entry=ENTRIES.get(screen);return entry==null?null:entry.panel;}
+    /** Equipment UI belongs to survival inventory; Creative's personal-inventory tab follows Creative policy too. */
+    private static int kind(Screen screen){return screen instanceof InventoryScreen?1:0;}
+    private static EquipmentWidget panel(Screen screen){if(kind(screen)==0)return null;Entry entry=ENTRIES.get(screen);return entry==null?null:entry.panel;}
     /** Current visible item origins, shared with pointer-input QA and screen integrations. */
     public static List<CellGeometry> cellGeometry(Screen screen){
         EquipmentWidget panel=panel(screen);if(panel==null||!panel.visible)return List.of();
@@ -146,10 +146,8 @@ public final class InventoryPanelB173 {
     }
     private static boolean blankDropArea(Screen raw,double x,double y){
         if(!(raw instanceof AbstractContainerScreen<?> screen))return false;
-        // Creative category tabs are native controls outside the container rectangle, not widget children.
-        int margin=screen instanceof CreativeModeInventoryScreen?32:0;
         if(x>=screen.getGuiLeft()&&x<screen.getGuiLeft()+screen.getXSize()
-                &&y>=screen.getGuiTop()-margin&&y<screen.getGuiTop()+screen.getYSize()+margin)return false;
+                &&y>=screen.getGuiTop()&&y<screen.getGuiTop()+screen.getYSize())return false;
         for(var child:screen.children())if(child instanceof AbstractWidget widget&&widget.visible&&widget.isMouseOver(x,y))return false;
         if(screen instanceof InventoryScreen inventory&&inventory.getRecipeBookComponent().isVisible()){
             int bookX=(screen.width-147)/2-(screen.width<379?0:86),bookY=(screen.height-166)/2;
@@ -173,7 +171,7 @@ public final class InventoryPanelB173 {
         }
         private void layout(){
             AbstractContainerScreen<?> screen=owner.get();visible=false;
-            if(screen==null||Minecraft.getInstance().screen!=screen)return;
+            if(screen==null||kind(screen)==0||Minecraft.getInstance().screen!=screen)return;
             var list=new ArrayList<Cell>();
             var seen=new HashSet<Integer>();
             for(var offer:entry.offers.entrySet())for(int slot:offer.getValue().slots()){

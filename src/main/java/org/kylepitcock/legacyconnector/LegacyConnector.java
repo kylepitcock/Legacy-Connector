@@ -53,6 +53,10 @@ public final class LegacyConnector {
             BETA_ENTITIES.register("entity_b1_7_3", () -> net.minecraft.world.entity.EntityType.Builder
                     .<org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Entity>of(org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Entity::new, net.minecraft.world.entity.MobCategory.MISC)
                     .sized(.25F,.25F).clientTrackingRange(8).updateInterval(1).build("legacyconnector:entity_b1_7_3"));
+    public static final DeferredHolder<net.minecraft.world.entity.EntityType<?>, net.minecraft.world.entity.EntityType<org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Lightning>> BETA_LIGHTNING =
+            BETA_ENTITIES.register("lightning_b1_7_3", () -> net.minecraft.world.entity.EntityType.Builder
+                    .<org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Lightning>of(org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Lightning::new, net.minecraft.world.entity.MobCategory.MISC)
+                    .sized(0F,0F).clientTrackingRange(64).updateInterval(1).build("legacyconnector:lightning_b1_7_3"));
     public static final DeferredHolder<net.minecraft.world.entity.EntityType<?>, net.minecraft.world.entity.EntityType<org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173ItemEntity>> BETA_ITEM_ENTITY =
             BETA_ENTITIES.register("item_entity_b1_7_3", () -> net.minecraft.world.entity.EntityType.Builder
                     .<org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173ItemEntity>of(org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173ItemEntity::new, net.minecraft.world.entity.MobCategory.MISC)
@@ -76,8 +80,10 @@ public final class LegacyConnector {
         // Mod dimensions (see org.kylepitcock.legacyconnector.v1_7_10.dimension): ids "legacyconnector:legacy".
         CHUNK_GENERATORS.register("legacy", () -> org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyChunkGenerator.CODEC);
         CHUNK_GENERATORS.register("legacy_1122", () -> org.kylepitcock.legacyconnector.v1_12_2.dimension.LegacyChunkGenerator1122.CODEC);
+        CHUNK_GENERATORS.register("legacy_b173", () -> org.kylepitcock.legacyconnector.vb1_7_3.dimension.ChunkGeneratorB173.CODEC);
         BIOME_SOURCES.register("legacy", () -> org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyBiomeSource.CODEC);
         BIOME_SOURCES.register("legacy_1122", () -> org.kylepitcock.legacyconnector.v1_12_2.dimension.LegacyBiomeSource1122.CODEC);
+        BIOME_SOURCES.register("legacy_b173", () -> org.kylepitcock.legacyconnector.vb1_7_3.dimension.BiomeSourceB173.CODEC);
         // World presets of legacy mod world types: the overworld multi-noise source with the world type's legacy biome layers.
         BIOME_SOURCES.register("legacy_layers", () -> org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyLayeredBiomeSource.CODEC);
     }
@@ -181,6 +187,10 @@ public final class LegacyConnector {
         modBus.addListener(org.kylepitcock.legacyconnector.v1_7_10.LegacyModPacks::onAddPackFinders);
         modBus.addListener(LegacyNetwork::onRegisterPayloads);
         org.kylepitcock.legacyconnector.vb1_7_3.AudioB173.init();
+        org.kylepitcock.legacyconnector.vb1_7_3.DimensionsB173.install();
+        org.kylepitcock.legacyconnector.vb1_7_3.BetaDeferredGenData.install();
+        org.kylepitcock.legacyconnector.vb1_7_3.KeyBindingsB173.install();
+        org.kylepitcock.legacyconnector.vb1_7_3.ReachB173.install();
         modBus.addListener(CreativeTabBridge::onBuildContents);
         modBus.addListener(org.kylepitcock.legacyconnector.v1_12_2.bridge.CreativeTabBridge1122::onBuildContents);
         modBus.addListener(org.kylepitcock.legacyconnector.v1_7_10.entity.LegacySpawnEggs::addToTab);
@@ -193,7 +203,7 @@ public final class LegacyConnector {
         GeneratedPack.addContributor(new Assets1710());
         GeneratedPack.addContributor(new org.kylepitcock.legacyconnector.vb1_7_3.AssetsB173());
         GeneratedPack.addContributor(new org.kylepitcock.legacyconnector.vb1_7_3.MobTexturesB173());
-        GeneratedPack.addContributor((type,out)->{if(type==net.minecraft.server.packs.PackType.SERVER_DATA){org.kylepitcock.legacyconnector.vb1_7_3.SpawnRulesB173.contribute(out);org.kylepitcock.legacyconnector.vb1_7_3.AdvancementsB173.contribute(out);org.kylepitcock.legacyconnector.vb1_7_3.RecordsB173.contribute(out);}});
+        GeneratedPack.addContributor((type,out)->{if(type==net.minecraft.server.packs.PackType.SERVER_DATA){org.kylepitcock.legacyconnector.vb1_7_3.SpawnRulesB173.contribute(out);org.kylepitcock.legacyconnector.vb1_7_3.AdvancementsB173.contribute(out);org.kylepitcock.legacyconnector.vb1_7_3.RecordsB173.contribute(out);org.kylepitcock.legacyconnector.vb1_7_3.DimensionsB173.contribute(out);}});
         GeneratedPack.addRecipeContributor((type, out) -> {
             if (type == net.minecraft.server.packs.PackType.SERVER_DATA) org.kylepitcock.legacyconnector.v1_7_10.bridge.RecipeBridge.generate(out);
         });
@@ -221,6 +231,7 @@ public final class LegacyConnector {
         org.kylepitcock.legacyconnector.vb1_7_3.MobsB173.registerEvents(modBus,game);
         org.kylepitcock.legacyconnector.vb1_7_3.AnimalsB173.registerEvents(modBus);
         org.kylepitcock.legacyconnector.vb1_7_3.SpawnSchedulerB173.register(game);
+        org.kylepitcock.legacyconnector.vb1_7_3.BlockHeightmapsB173.register(game);
         game.addListener((net.neoforged.neoforge.event.server.ServerStoppedEvent e) -> {
             if (!e.getServer().isDedicatedServer()) return;
             // Legacy mods start non-daemon thread pools (IC2 and others) they never stop, which keep a stopped dedicated server's JVM alive.

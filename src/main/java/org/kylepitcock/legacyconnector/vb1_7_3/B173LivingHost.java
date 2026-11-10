@@ -11,6 +11,7 @@ public interface B173LivingHost extends B173EntityHost {
     void flushView();
     void mcc$baseTick();
     void baseMovement();
+    void baseJump();
     void baseTravel(float sideways,float forward);
     void baseMove(double x,double y,double z);
     boolean baseIsOnLadder();

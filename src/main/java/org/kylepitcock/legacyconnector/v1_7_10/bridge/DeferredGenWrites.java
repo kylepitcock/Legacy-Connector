@@ -29,7 +29,11 @@ public final class DeferredGenWrites {
     private static final int MAX = 1_000_000;
 
     /** A block to place, or (state null) a metadata change of the block found there. */
-    private record Write(BlockPos pos, BlockState state, int meta, Consumer<BlockEntity> attach) {
+    private record Write(BlockPos pos, BlockState state, int meta, Consumer<BlockEntity> attach, boolean intercepted, long durable) {
+        Write(BlockPos pos,BlockState state,int meta,Consumer<BlockEntity> attach,boolean intercepted){this(pos,state,meta,attach,intercepted,0);}
+        Write(BlockPos pos, BlockState state, int meta, Consumer<BlockEntity> attach) {
+            this(pos,state,meta,attach,false);
+        }
         Write(BlockPos pos, BlockState state, int meta) {
             this(pos, state, meta, null);
         }
@@ -52,6 +56,54 @@ public final class DeferredGenWrites {
         BlockPos key = pos.immutable();
         STATES.computeIfAbsent(level, l -> new ConcurrentHashMap<>()).put(key, state);
         add(level, new Write(key, state, -1));
+    }
+
+    /** A Beta generation callback already handled this write before it entered the deferred queue. */
+    public static void interceptedBlock(ServerLevel level, BlockPos pos, BlockState state) {
+        if(!reserveIntercepted())return;
+        BlockPos key=pos.immutable();
+        long durable;
+        try{durable=org.kylepitcock.legacyconnector.vb1_7_3.BetaDeferredGenData.of(level).record(key,state,false);}
+        catch(RuntimeException|Error error){COUNT.decrementAndGet();throw error;}
+        STATES.computeIfAbsent(level,l->new ConcurrentHashMap<>()).put(key,state);
+        add(level,new Write(key,state,-1,null,true,durable));
+    }
+
+    public static void restoreIntercepted(ServerLevel level,long durable,BlockPos pos,BlockState state,boolean attachment,net.minecraft.nbt.CompoundTag tile){
+        if(!reserveIntercepted())throw new IllegalStateException("Saved Beta generation exceeds the deferred write admission limit; saved records were retained");
+        try{
+        if(attachment){
+            STATES.computeIfAbsent(level,l->new ConcurrentHashMap<>()).putIfAbsent(pos,state);
+            if(tile!=null){
+                Object view=org.kylepitcock.legacyconnector.vb1_7_3.WorldGenWritesB173.restoreTile(level,pos,tile);
+                if(view!=null)TILES.computeIfAbsent(level,l->new ConcurrentHashMap<>()).put(pos,view);
+            }
+            add(level,new Write(pos,null,-1,nativeEntity->org.kylepitcock.legacyconnector.vb1_7_3.WorldGenWritesB173.attachRestored(level,pos,nativeEntity),true,durable));
+        }else{
+            STATES.computeIfAbsent(level,l->new ConcurrentHashMap<>()).put(pos,state);
+            add(level,new Write(pos,state,-1,null,true,durable));
+        }
+        }catch(RuntimeException|Error error){COUNT.decrementAndGet();throw error;}
+    }
+
+    /** Called after the original populator has finished filling its retained stand-ins. */
+    public static void snapshotInterceptedTiles(ServerLevel level){
+        var data=org.kylepitcock.legacyconnector.vb1_7_3.BetaDeferredGenData.cached(level);var tiles=TILES.get(level);
+        if(data==null)return;
+        var current=data.populationPositions();
+        var snapshots=new java.util.LinkedHashMap<BlockPos,net.minecraft.nbt.CompoundTag>();
+        if(tiles!=null)for(var position:current){Object tile=tiles.get(position);
+            if(data.contains(position)&&tile instanceof legacyconnector.vb1_7_3.net.minecraft.block.entity.BlockEntity original){
+                var tag=new legacyconnector.vb1_7_3.net.minecraft.nbt.NbtCompound();original.writeNbt(tag);
+                snapshots.put(position,org.kylepitcock.legacyconnector.vb1_7_3.NbtB173.toModern(tag));
+            }
+        }
+        var positions=data.completedPopulation(snapshots);
+        if(!positions.isEmpty())later(level,()->{
+            var byChunk=PENDING.get(level);if(byChunk==null)return;
+            for(long key:new java.util.ArrayList<>(byChunk.keySet()))
+                if(level.getChunkSource().getChunkNow(ChunkPos.getX(key),ChunkPos.getZ(key))!=null)apply(level,key);
+        });
     }
 
     /** The stand-in tile entity of a deferred block, or null. */
@@ -80,19 +132,30 @@ public final class DeferredGenWrites {
      * Null when no block is waiting there or the factory made none.
      */
     public static Object tile(ServerLevel level, BlockPos pos, Function<BlockState, Object> factory, Consumer<BlockEntity> attach) {
+        return tile(level,pos,factory,attach,false);
+    }
+    public static Object interceptedTile(ServerLevel level,BlockPos pos,Function<BlockState,Object> factory,Consumer<BlockEntity> attach){
+        return tile(level,pos,factory,attach,true);
+    }
+    private static Object tile(ServerLevel level, BlockPos pos, Function<BlockState, Object> factory, Consumer<BlockEntity> attach,boolean intercepted) {
         BlockState state = pendingState(level, pos);
         if (state == null) return null;
         BlockPos key = pos.immutable();
         Map<BlockPos, Object> tiles = TILES.computeIfAbsent(level, l -> new ConcurrentHashMap<>());
         Object existing = tiles.get(key);
         if (existing != null) return existing;
+        if(intercepted&&!reserveIntercepted())return null;
+        boolean reserved=intercepted;
+        try{
         Object made = factory.apply(state);
-        if (made == null) return null;
+        if (made == null){if(reserved)COUNT.decrementAndGet();return null;}
         LOG.info("Stand-in tile entity {} made for the deferred block {} at {}", made.getClass().getName(), state.getBlock(), key);
+        long durable=intercepted?org.kylepitcock.legacyconnector.vb1_7_3.BetaDeferredGenData.of(level).record(key,state,true):0;
         Object raced = tiles.putIfAbsent(key, made);
-        if (raced != null) return raced;
-        add(level, new Write(key, null, -1, attach));
+        if (raced != null){if(reserved){org.kylepitcock.legacyconnector.vb1_7_3.BetaDeferredGenData.of(level).accepted(durable);COUNT.decrementAndGet();}return raced;}
+        add(level, new Write(key, null, -1, attach,intercepted,durable));
         return made;
+        }catch(RuntimeException|Error error){if(reserved)COUNT.decrementAndGet();throw error;}
     }
 
     public static void meta(ServerLevel level, BlockPos pos, int meta) {
@@ -125,7 +188,7 @@ public final class DeferredGenWrites {
 
     /** Queues a write under the chunk whose load (or generation) releases it. */
     private static void add(ServerLevel level, Write write, long key) {
-        if (COUNT.get() >= MAX) {
+        if (write.durable==0&&COUNT.get() >= MAX) {
             if (!warnedFull) {
                 warnedFull = true;
                 LOG.warn("Too many blocks placed by legacy generators outside their chunks; further ones are dropped");
@@ -134,17 +197,25 @@ public final class DeferredGenWrites {
         }
         listen();
         boolean[] created = {false};
-        PENDING.computeIfAbsent(level, l -> new ConcurrentHashMap<>()).computeIfAbsent(key, k -> {
-            created[0] = true;
-            return new ConcurrentLinkedQueue<>();
-        }).add(write);
-        COUNT.incrementAndGet();
+        PENDING.computeIfAbsent(level, l -> new ConcurrentHashMap<>()).compute(key, (k,queue) -> {
+            if(queue==null){created[0]=true;queue=new ConcurrentLinkedQueue<>();}
+            queue.add(write);return queue;
+        });
+        if(write.durable==0)COUNT.incrementAndGet();
         // the chunk may be loaded already (generated earlier): place the blocks on the server thread, once the populator is done
         if (created[0]) {
             later(level, () -> {
                 if (level.getChunkSource().getChunkNow(ChunkPos.getX(key), ChunkPos.getZ(key)) != null) apply(level, key);
             });
         }
+    }
+
+    /** A durable permit stays reserved while a write is queued, processing, or waiting for another chunk. */
+    private static boolean reserveIntercepted(){
+        for(;;){int count=COUNT.get();if(count>=MAX){
+            if(!warnedFull){warnedFull=true;LOG.warn("Too many deferred legacy generation writes; further Beta writes were not admitted");}
+            return false;
+        }if(COUNT.compareAndSet(count,count+1))return true;}
     }
 
     private static synchronized void listen() {
@@ -188,8 +259,9 @@ public final class DeferredGenWrites {
         if (byChunk == null || byChunk.isEmpty()) return;
         Queue<Write> writes = byChunk.remove(net.minecraft.world.level.ChunkPos.asLong(chunkX, chunkZ));
         if (writes == null) return;
-        COUNT.addAndGet(-writes.size());
+        COUNT.addAndGet(-(int)writes.stream().filter(write->write.durable==0).count());
         for (Write w : writes) {
+            if(w.durable!=0){applyIntercepted(level,region,w,net.minecraft.world.level.ChunkPos.asLong(chunkX,chunkZ));continue;}
             try {
                 if (w.attach != null) {
                     BlockEntity be = region.getBlockEntity(w.pos);
@@ -216,7 +288,7 @@ public final class DeferredGenWrites {
         if (byChunk == null) return;
         Queue<Write> writes = byChunk.remove(key);
         if (writes == null) return;
-        COUNT.addAndGet(-writes.size());
+        COUNT.addAndGet(-(int)writes.stream().filter(write->write.durable==0).count());
         for (Write w : writes) {
             try {
                 // a block on a chunk border whose neighbouring chunk is not loaded (onPlace of hoppers, rails, redstone reads the
@@ -226,6 +298,7 @@ public final class DeferredGenWrites {
                     add(level, w, missing);
                     continue;
                 }
+                if(w.durable!=0){applyIntercepted(level,level,w,key);continue;}
                 if (w.attach != null) {
                     BlockEntity be = level.getBlockEntity(w.pos);
                     if (be != null) w.attach.accept(be);
@@ -234,15 +307,44 @@ public final class DeferredGenWrites {
                 } else if (w.state != null) {
                     Map<BlockPos, BlockState> states = STATES.get(level);
                     if (states != null) states.remove(w.pos, w.state);
-                    level.setBlock(w.pos, w.state, WRITE_FLAGS);
+                    if(w.intercepted)org.kylepitcock.legacyconnector.vb1_7_3.BlockInterceptionB173.writeReplacement(level,w.pos,w.state,WRITE_FLAGS,512);
+                    else level.setBlock(w.pos, w.state, WRITE_FLAGS);
                 } else {
                     BlockState current = level.getBlockState(w.pos);
                     BlockState next = BlockBridge.withMeta(current, w.meta);
                     if (next != current) level.setBlock(w.pos, next, WRITE_FLAGS);
                 }
             } catch (RuntimeException e) {
+                if(w.durable!=0)retain(level,w,key);
                 LOG.debug("Deferred legacy generation write at {} failed", w.pos, e);
             }
         }
+    }
+
+    private static void retain(ServerLevel level,Write write,long key){
+        PENDING.computeIfAbsent(level,l->new ConcurrentHashMap<>()).compute(key,(k,queue)->{
+            if(queue==null)queue=new ConcurrentLinkedQueue<>();queue.add(write);return queue;
+        });
+    }
+    private static void applyIntercepted(ServerLevel level,net.minecraft.world.level.LevelAccessor access,Write write,long key){
+        try{
+            var data=org.kylepitcock.legacyconnector.vb1_7_3.BetaDeferredGenData.of(level);
+            if(!data.canApply(write.durable)){retain(level,write,key);return;}
+            if(write.attach!=null){
+                var entity=access.getBlockEntity(write.pos);
+                if(entity==null){retain(level,write,key);return;}
+                write.attach.accept(entity);
+                var tiles=TILES.get(level);if(tiles!=null)tiles.remove(write.pos);
+            }else{
+                boolean accepted=access instanceof ServerLevel
+                        ?org.kylepitcock.legacyconnector.vb1_7_3.BlockInterceptionB173.writeReplacement(level,write.pos,write.state,WRITE_FLAGS,512)
+                        :access.setBlock(write.pos,write.state,2);
+                if(!accepted&&access.getBlockState(write.pos)!=write.state){retain(level,write,key);return;}
+                var states=STATES.get(level);if(states!=null)states.remove(write.pos,write.state);
+            }
+            data.accepted(write.durable);
+            COUNT.decrementAndGet();
+            if(!data.contains(write.pos)){var states=STATES.get(level);if(states!=null)states.remove(write.pos);}
+        }catch(RuntimeException error){retain(level,write,key);LOG.warn("Pending Beta generation write retained at {} after failed replay",write.pos,error);}
     }
 }

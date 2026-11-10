@@ -15,7 +15,7 @@ public final class RenderersB173 {
     private static final org.slf4j.Logger LOG=org.slf4j.LoggerFactory.getLogger("LegacyConnector/b1.7.3/Renderers");
     public record Info(LegacyModRecord mod,Class<?> entityType,EntityRenderer renderer){}
     private static final Map<Class<?>,Info> REGISTERED=new LinkedHashMap<>();
-    private static final Set<String> SUPPORTED=Set.of("render","animateModel","setAngles","applyTranslation","applyHandSwingRotation","getHandSwingProgress","getHeadBob","renderMore","bindDecorationTexture","bindTexture","getDeathYaw","applyScale","getOverlayColor");
+    private static final Set<String> SUPPORTED=Set.of("render","renderHand","animateModel","setAngles","applyTranslation","applyHandSwingRotation","getHandSwingProgress","getHeadBob","renderMore","bindDecorationTexture","bindTexture","getDeathYaw","applyScale","getOverlayColor");
     private static final Set<String> MODEL_GL=Set.of("glPushMatrix","glPopMatrix","glTranslatef","glTranslated","glScalef","glScaled","glRotatef","glColor3f","glColor4f","glBindTexture","glEnable","glDisable","glBlendFunc","glDepthMask","glDepthFunc","glMatrixMode","glLoadIdentity","glNormal3f");
     private static boolean discovered;
     private RenderersB173(){}

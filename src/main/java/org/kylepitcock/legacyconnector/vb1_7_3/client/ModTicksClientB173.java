@@ -23,7 +23,7 @@ final class ModTicksClientB173 {
     private static CompoundTag remoteFrame;
     private static final class TickMinecraft extends legacyconnector.vb1_7_3.net.minecraft.client.Minecraft {}
     private record Options(int width,int height,int guiWidth,int guiHeight,int scale,boolean hide,boolean thirdPerson,
-            boolean screen,boolean paused,int[] metrics){}
+            boolean screen,boolean paused,boolean focused,int[] metrics){}
     static void install(){
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.client.event.RenderGuiEvent.Post event)->frame(event.getGuiGraphics()));
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.client.event.ClientTickEvent.Post event)->remoteTick());
@@ -45,7 +45,7 @@ final class ModTicksClientB173 {
         }
         int[] metrics=new int[256];for(int i=0;i<metrics.length;i++)metrics[i]=mc.font.width(String.valueOf((char)i));
         var context=new ServerGameHooksB173.Context(mc.getWindow().getWidth(),mc.getWindow().getHeight(),mc.getWindow().getGuiScaledWidth(),
-                mc.getWindow().getGuiScaledHeight(),mc.options.guiScale().get(),mc.options.hideGui,!mc.options.getCameraType().isFirstPerson(),mc.screen!=null,mc.isPaused(),metrics);
+                mc.getWindow().getGuiScaledHeight(),mc.options.guiScale().get(),mc.options.hideGui,!mc.options.getCameraType().isFirstPerson(),mc.screen!=null,mc.isPaused(),mc.mouseHandler.isMouseGrabbed()&&mc.isWindowActive(),metrics);
         if(remoteReady)GameHookNetworkB173.sendContext(GameHookNetworkB173.ACTIVE,remoteSession,context);
         else if(helloTicks++%20==0)GameHookNetworkB173.sendContext(GameHookNetworkB173.HELLO,remoteSession,context);
     }
@@ -55,7 +55,7 @@ final class ModTicksClientB173 {
         if(previous!=mc.level){previous=mc.level;display=List.of();lastTick=Long.MIN_VALUE;}
         int[] metrics=new int[256];for(int i=0;i<metrics.length;i++)metrics[i]=mc.font.width(String.valueOf((char)i));
         var options=new Options(mc.getWindow().getWidth(),mc.getWindow().getHeight(),mc.getWindow().getGuiScaledWidth(),
-                mc.getWindow().getGuiScaledHeight(),mc.options.guiScale().get(),mc.options.hideGui,!mc.options.getCameraType().isFirstPerson(),mc.screen!=null,mc.isPaused(),metrics);
+                mc.getWindow().getGuiScaledHeight(),mc.options.guiScale().get(),mc.options.hideGui,!mc.options.getCameraType().isFirstPerson(),mc.screen!=null,mc.isPaused(),mc.mouseHandler.isMouseGrabbed()&&mc.isWindowActive(),metrics);
         var server=mc.getSingleplayerServer();
         if(server==null&&!remoteReady)display=capture(mc.player,options);
         else if(server!=null&&PENDING.compareAndSet(false,true)){
@@ -102,6 +102,7 @@ final class ModTicksClientB173 {
         original.displayWidth=options.width;original.displayHeight=options.height;original.paused=options.paused;
         original.options.hideHud=options.hide;original.options.thirdPerson=options.thirdPerson;original.options.guiScale=options.scale;
         original.currentScreen=options.screen?new legacyconnector.vb1_7_3.net.minecraft.client.gui.screen.Screen():null;
+        original.focused=options.focused;
         var scaler=new legacyconnector.vb1_7_3.net.minecraft.client.util.ScreenScaler(original.options,options.width,options.height);
         long tick=nativePlayer.level().getGameTime();boolean advanced=tick!=lastTick;lastTick=tick;
         var sink=new GuiCapture(commands,options.metrics);

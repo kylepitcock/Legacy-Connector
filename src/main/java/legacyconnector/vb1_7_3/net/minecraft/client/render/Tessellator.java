@@ -16,10 +16,17 @@ public class Tessellator {
     public static void beginCapture(){CAPTURE.set(new Capture());}
     public static List<Vertex> endCapture(){var c=CAPTURE.get();CAPTURE.remove();return c==null?List.of():List.copyOf(c.vertices);}
     public void startQuads(){start(7);}
-    public void start(int mode){if(mode!=7&&mode!=1&&mode!=2&&mode!=3)throw new UnsupportedOperationException("Beta tessellation mode "+mode);if(RendererContextB173.active()){var c=new Capture();c.mode=mode;CAPTURE.set(c);}}
+    public void start(int mode){if(mode!=7&&mode!=5&&mode!=1&&mode!=2&&mode!=3)throw new UnsupportedOperationException("Beta tessellation mode "+mode);if(RendererContextB173.active()){var c=new Capture();c.mode=mode;CAPTURE.set(c);}}
     private static RendererContextB173.Vertex vertex(Vertex v,Capture c){int color=v.color();int argb=(color&0xff00ff00)|((color&255)<<16)|((color>>16)&255);return new RendererContextB173.Vertex(v.x(),v.y(),v.z(),v.u(),v.v(),argb,c.nx,c.ny,c.nz);}
     public void draw(){if(RendererContextB173.active()){
         var c=CAPTURE.get();CAPTURE.remove();if(c==null)return;
+        if(c.mode==5){
+            for(int i=2;i<c.vertices.size();i++){
+                int a=(i%2==0)?i-2:i-1,b=(i%2==0)?i-1:i-2;
+                var end=vertex(c.vertices.get(i),c);
+                RendererContextB173.quad(List.of(vertex(c.vertices.get(a),c),vertex(c.vertices.get(b),c),end,end));
+            }return;
+        }
         if(c.mode!=7){
             int n=c.vertices.size(),step=c.mode==1?2:1;
             for(int i=0;i+1<n;i+=step)RendererContextB173.line(vertex(c.vertices.get(i),c),vertex(c.vertices.get(i+1),c));

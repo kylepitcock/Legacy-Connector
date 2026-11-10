@@ -69,15 +69,28 @@ public final class PlayerInventoryStateB173 {
         return snapshot;
     }
 
-    /** Only the S2C receiver calls this method. Validate the whole snapshot before changing a single mirror slot. */
+    /** Owner inventory protocol retains its existing void application entry point. */
     public static void apply(ClientPlayerEntity actor, CompoundTag snapshot) {
-        if (!(actor.mcc$modern instanceof Player player) || !player.level().isClientSide
-                || snapshot == null || snapshot.getInt("version") != 1 || !bounded(snapshot)) return;
-        if (!snapshot.contains("inventories", Tag.TAG_LIST)) return;
+        Runnable prepared=prepare(actor,snapshot);if(prepared!=null)prepared.run();
+    }
+
+    static Runnable prepare(ClientPlayerEntity actor,CompoundTag snapshot){
+        if(!(actor.mcc$modern instanceof Player player)||!player.level().isClientSide
+                ||snapshot==null||snapshot.getInt("version")!=1||!bounded(snapshot))return null;
+        return prepare(bindings(PlayerApiB173.bases(actor),actor.inventory),snapshot,
+                tag->ItemStack.parseOptional(player.registryAccess(),tag));
+    }
+
+    /** Parse every stack and binding before returning a commit that changes any original inventory. */
+    static Runnable prepare(List<Binding> bindings,CompoundTag snapshot,
+            java.util.function.Function<CompoundTag,ItemStack> decode){
+        if(snapshot==null||snapshot.getInt("version")!=1||!bounded(snapshot))return null;
+        if (!snapshot.contains("inventories", Tag.TAG_LIST)) return null;
+        if(!((ListTag)snapshot.get("inventories")).isEmpty()&&((ListTag)snapshot.get("inventories")).getElementType()!=Tag.TAG_COMPOUND)return null;
         var entries = snapshot.getList("inventories", Tag.TAG_COMPOUND);
-        if (entries.size() > MAX_INVENTORIES) return;
+        if (entries.size() > MAX_INVENTORIES) return null;
         var local = new HashMap<String, Binding>();
-        for (Binding binding : bindings(PlayerApiB173.bases(actor), actor.inventory)) local.put(binding.key(), binding);
+        for (Binding binding : bindings) local.put(binding.key(), binding);
         record Update(Inventory inventory, List<ItemStack> stacks) {}
         var updates = new ArrayList<Update>();
         var seen = new HashSet<String>();
@@ -89,25 +102,27 @@ public final class PlayerInventoryStateB173 {
                 Binding binding = local.get(key);
                 int size = entry.getInt("size");
                 if (binding == null || !seen.add(key) || size < 0 || size > MAX_SLOTS
-                        || binding.inventory().size() != size || !entry.contains("stacks", Tag.TAG_LIST)) return;
+                        || binding.inventory().size() != size || !entry.contains("stacks", Tag.TAG_LIST)) return null;
                 total += size;
-                if (total > MAX_SLOTS) return;
+                if (total > MAX_SLOTS) return null;
                 var encoded = entry.getList("stacks", Tag.TAG_COMPOUND);
-                if (encoded.size() != size) return;
+                if (encoded.size() != size) return null;
                 var stacks = new ArrayList<ItemStack>(size);
                 for (Tag stack : encoded) {
-                    ItemStack parsed = ItemStack.parseOptional(player.registryAccess(), (CompoundTag) stack);
-                    if (!((CompoundTag) stack).isEmpty() && (parsed.isEmpty() || !StacksB173.canRepresent(parsed))) return;
+                    ItemStack parsed = decode.apply((CompoundTag) stack);
+                    if (!((CompoundTag) stack).isEmpty() && (parsed.isEmpty() || !StacksB173.canRepresent(parsed))) return null;
                     stacks.add(parsed);
                 }
                 updates.add(new Update(binding.inventory(), stacks));
             }
-        } catch (RuntimeException | LinkageError malformed) { return; }
+        } catch (RuntimeException | LinkageError malformed) { return null; }
+        return ()->{
         for (Update update : updates) {
             var inventory = LegacyInventoryB173.of(update.inventory());
             for (int slot = 0; slot < update.stacks().size(); slot++) inventory.setItem(slot, update.stacks().get(slot));
             inventory.setChanged();
         }
+        };
     }
 
     private static boolean bounded(CompoundTag snapshot) {

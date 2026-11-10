@@ -87,4 +87,36 @@ class SpawnSchedulerB173Test {
         assertEquals(Set.of(EntityType.COW),SpawnSchedulerB173.owned(List.of(removed),creature,desert,false));
         assertTrue(SpawnSchedulerB173.owned(List.of(removed),creature,desert,true).isEmpty());
     }
+    private static class RawBiome extends legacyconnector.vb1_7_3.net.minecraft.world.biome.Biome {RawBiome(){name="Shared custom source";}}
+    static class RawCreature {}
+    @Test void rawCustomBiomeWithoutApiCallsUsesBetaLaneAcrossScopedKeysButLeavesNativeBiomesAlone(){
+        var raw=new RawBiome();raw.spawnablePassive.add(new legacyconnector.vb1_7_3.net.minecraft.world.biome.EntitySpawnGroup(RawCreature.class,8));
+        var rules=new SpawnRulesB173.Registry();rules.capture(List.of(raw));
+        var registry=new net.minecraft.core.MappedRegistry<net.minecraft.world.level.biome.Biome>(net.minecraft.core.registries.Registries.BIOME,com.mojang.serialization.Lifecycle.stable());
+        var firstKey=net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.BIOME,net.minecraft.resources.ResourceLocation.parse("fixture:dimension_2/shared"));
+        var secondKey=net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.BIOME,net.minecraft.resources.ResourceLocation.parse("fixture:dimension_3/shared"));
+        var first=registry.register(firstKey,biome(),net.minecraft.core.RegistrationInfo.BUILT_IN);
+        var second=registry.register(secondKey,biome(),net.minecraft.core.RegistrationInfo.BUILT_IN);
+        var ordinary=registry.register(net.minecraft.world.level.biome.Biomes.FOREST,biome(),net.minecraft.core.RegistrationInfo.BUILT_IN);registry.freeze();
+        java.util.function.Function<legacyconnector.vb1_7_3.net.minecraft.world.biome.Biome,List<String>> keys=b->List.of(firstKey.location().toString(),secondKey.location().toString());
+        // Registered native types stand in for admitted original hosts; no global native registry is modified.
+        var catalog=SpawnSchedulerB173.catalog(1,rules.changes(),c->EntityType.COW,keys);
+        var group=legacyconnector.vb1_7_3.net.minecraft.entity.SpawnGroup.CREATURE;var policies=catalog.groups().get(group);
+        assertEquals(Set.of(EntityType.COW),catalog.managed(),"A raw source activates the Beta cycle without a ModLoader API call");
+        assertEquals(Set.of(EntityType.COW),SpawnSchedulerB173.owned(policies,group,first,true));
+        assertEquals(Set.of(EntityType.COW),SpawnSchedulerB173.owned(policies,group,second,true));
+        assertTrue(SpawnSchedulerB173.owned(policies,group,ordinary,false).isEmpty());
+        var cow=entry(EntityType.COW,8,1,4);var sheep=entry(EntityType.SHEEP,7,2,3);var choices=WeightedRandomList.create(List.of(cow,sheep));
+        assertEquals(List.of(sheep),SpawnSchedulerB173.filter(choices,SpawnSchedulerB173.owned(policies,group,first,false),Set.of(),false,false).unwrap());
+        assertSame(choices,SpawnSchedulerB173.filter(choices,SpawnSchedulerB173.owned(policies,group,ordinary,false),Set.of(),false,false));
+        assertEquals(List.of(cow),SpawnSchedulerB173.filter(choices,catalog.managed(),SpawnSchedulerB173.owned(policies,group,first,true),true,true).unwrap());
+        assertTrue(SpawnCapsB173.allows(group,15,256));assertFalse(SpawnCapsB173.allows(group,16,256));
+        for(int weight:new int[]{0,-1}){
+            if(weight==0)rules.add(RawCreature.class,0,group,new legacyconnector.vb1_7_3.net.minecraft.world.biome.Biome[]{raw});
+            else rules.remove(RawCreature.class,group,new legacyconnector.vb1_7_3.net.minecraft.world.biome.Biome[]{raw});
+            var removed=SpawnSchedulerB173.catalog(2,rules.changes(),c->EntityType.COW,keys).groups().get(group);
+            assertEquals(Set.of(EntityType.COW),SpawnSchedulerB173.owned(removed,group,first,false));
+            assertTrue(SpawnSchedulerB173.owned(removed,group,first,true).isEmpty());
+        }
+    }
 }

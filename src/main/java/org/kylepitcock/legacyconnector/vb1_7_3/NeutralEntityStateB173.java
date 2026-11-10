@@ -46,7 +46,7 @@ final class NeutralEntityStateB173 {
         nativeEntity.setPos(original.x,original.y-original.standingEyeHeight,original.z);
         nativeEntity.setYRot(original.yaw);nativeEntity.setXRot(original.pitch);
         nativeEntity.setDeltaMovement(original.velocityX,original.velocityY,original.velocityZ);
-        nativeEntity.setOnGround(original.onGround);nativeEntity.setRemainingFireTicks(original.fireTicks);
+        NativeGroundB173.commit(nativeEntity,original.onGround);nativeEntity.setRemainingFireTicks(original.fireTicks);
         nativeEntity.setAirSupply(original.air);nativeEntity.fallDistance=original.mcc$fallDistance();nativeEntity.noPhysics=original.noClip;nativeEntity.blocksBuilding=original.blocksSameBlockSpawning;
         if(original instanceof ItemEntity item&&nativeEntity instanceof net.minecraft.world.entity.item.ItemEntity nativeItem){
             nativeItem.setItem(item.stack==null?net.minecraft.world.item.ItemStack.EMPTY:StacksB173.toModern(item.stack));

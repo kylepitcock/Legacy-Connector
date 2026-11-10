@@ -15,6 +15,15 @@ import legacyconnector.vb1_7_3.net.minecraft.world.World;
 public class BlockEntity {
     private static Map<String, Class<?>> idToClass = new HashMap<>();
     private static Map<Class<?>, String> classToId = new HashMap<>();
+    private static final Map<String,String> VANILLA_TYPES=Map.of(
+            "Furnace","FurnaceBlockEntity","Chest","ChestBlockEntity","RecordPlayer","JukeboxBlockEntity",
+            "Trap","DispenserBlockEntity","Sign","SignBlockEntity","MobSpawner","MobSpawnerBlockEntity",
+            "Music","NoteBlockBlockEntity","Piston","PistonBlockEntity");
+    static {
+        create(ChestBlockEntity.class,"Chest");
+        create(SignBlockEntity.class,"Sign");
+        create(MobSpawnerBlockEntity.class,"MobSpawner");
+    }
 
     public World world;
     public int x;
@@ -28,18 +37,31 @@ public class BlockEntity {
     public BlockEntity() {}
 
     /** MCP {@code addMapping}. */
-    public static void create(Class<?> type, String id) {
+    public static synchronized void create(Class<?> type, String id) {
         if (classToId.containsKey(type)) throw new IllegalArgumentException("Duplicate id: " + id);
         idToClass.put(id, type);
         classToId.put(type, id);
     }
 
     public static synchronized Class<?> mcc$classOf(String id) {
-        return idToClass.get(id);
+        Class<?> registered=idToClass.get(id);
+        if(registered!=null)return registered;
+        String vanilla=VANILLA_TYPES.get(id);if(vanilla==null)return null;
+        // Other vanilla classes may be supplied by the generated API layer rather than this shim.
+        for(String prefix:new String[]{"legacyconnector.vb1_7_3.","legacyconnector_synth.vb1_7_3."})try{
+            Class<?> type=Class.forName(prefix+"net.minecraft.block.entity."+vanilla,false,BlockEntity.class.getClassLoader());
+            if(BlockEntity.class.isAssignableFrom(type)){idToClass.putIfAbsent(id,type);classToId.putIfAbsent(type,id);return idToClass.get(id);}
+        }catch(ClassNotFoundException ignored){}
+        return null;
     }
 
     public static synchronized String mcc$idOf(Class<?> type) {
-        return classToId.get(type);
+        String registered=classToId.get(type);if(registered!=null)return registered;
+        for(var entry:VANILLA_TYPES.entrySet())for(String prefix:new String[]{"legacyconnector.vb1_7_3.","legacyconnector_synth.vb1_7_3."})
+            if(type.getName().equals(prefix+"net.minecraft.block.entity."+entry.getValue())){
+                idToClass.putIfAbsent(entry.getKey(),type);classToId.put(type,entry.getKey());return entry.getKey();
+            }
+        return null;
     }
 
     public void readNbt(NbtCompound nbt) {
@@ -49,7 +71,7 @@ public class BlockEntity {
     }
 
     public void writeNbt(NbtCompound nbt) {
-        String id = classToId.get(getClass());
+        String id = mcc$idOf(getClass());
         if (id == null) throw new RuntimeException(getClass() + " is missing a mapping! This is a bug!");
         nbt.putString("id", id);
         nbt.putInt("x", x);
@@ -63,7 +85,7 @@ public class BlockEntity {
     public static BlockEntity createFromNbt(NbtCompound nbt) {
         BlockEntity te = null;
         try {
-            Class<?> type = idToClass.get(nbt.getString("id"));
+            Class<?> type = mcc$classOf(nbt.getString("id"));
             if (type != null) {
                 var ctor = type.getDeclaredConstructor();
                 ctor.setAccessible(true);

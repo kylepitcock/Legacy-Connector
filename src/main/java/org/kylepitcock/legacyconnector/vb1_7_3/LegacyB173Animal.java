@@ -33,7 +33,7 @@ public final class LegacyB173Animal extends PathfinderMob implements B173LivingH
     private LivingEntity legacy;
     private legacyconnector.vb1_7_3.net.minecraft.entity.Entity syncedVehicle,syncedPassenger;
     private int callbacks,ticks,movements,ais;
-    private boolean inTick,inMovement,inAI,inTravel,inMove;
+    private boolean inTick,inMovement,inAI,inTravel,inMove,inJump;
     private boolean nativeBoundsMovement;
     private MoverType nativeMoveType=MoverType.SELF;
     private int travels,moves;
@@ -164,14 +164,14 @@ public final class LegacyB173Animal extends PathfinderMob implements B173LivingH
     public void flushView(){
         if(legacy==null||level().isClientSide)return;
         reconcileRelations();
-        if(!Float.isFinite(legacy.width)||!Float.isFinite(legacy.height)||legacy.width<=0||legacy.height<=0)throw new IllegalStateException("Invalid Beta animal dimensions");
+        if(!Float.isFinite(legacy.width)||!Float.isFinite(legacy.height)||legacy.width<0||legacy.height<0)throw new IllegalStateException("Invalid Beta animal dimensions");
         var bounds=legacy.boundingBox.mcc$box();
         double rawX=legacy.x,rawY=legacy.y-legacy.standingEyeHeight,rawZ=legacy.z;
         setPos(legacy.x,legacy.y-legacy.standingEyeHeight,legacy.z);setYRot(legacy.yaw);setXRot(legacy.pitch);setDeltaMovement(legacy.velocityX,legacy.velocityY,legacy.velocityZ);
         if(legacy.health>getMaxHealth())getAttribute(Attributes.MAX_HEALTH).setBaseValue(legacy.health);
         noPhysics=legacy.noClip;fallDistance=legacy.mcc$fallDistance();
         var step=getAttribute(Attributes.STEP_HEIGHT);if(step!=null&&Float.isFinite(legacy.stepHeight))step.setBaseValue(Math.max(0,legacy.stepHeight));
-        setOnGround(legacy.onGround);setHealth(legacy.health);setRemainingFireTicks(legacy.fireTicks);setAirSupply(legacy.air);setNoActionTime(legacy.despawnCounter);
+        NativeGroundB173.commit(this,legacy.onGround);setHealth(legacy.health);setRemainingFireTicks(legacy.fireTicks);setAirSupply(legacy.air);setNoActionTime(legacy.despawnCounter);
         if(Float.compare(appliedMovementSpeed,legacy.mcc$movementSpeed())!=0){appliedMovementSpeed=legacy.mcc$movementSpeed();setSpeed(appliedMovementSpeed);}
         xxa=legacy.mcc$sidewaysSpeed();zza=legacy.mcc$forwardSpeed();jumping=legacy.mcc$jumping();
         var held=legacy.getHeldItem();var nativeHeld=held==null?net.minecraft.world.item.ItemStack.EMPTY:StacksB173.toModern(held);
@@ -190,9 +190,40 @@ public final class LegacyB173Animal extends PathfinderMob implements B173LivingH
         legacy.tick();
         if(!isRemoved()&&RendererBlockEffectsB173.hasBlockEffects(this))RendererBlockEffectsB173.render(this);
     });}
-    public void mcc$baseTick(){if(inTick)throw new IllegalStateException("Recursive Beta base tick");inTick=true;ticks++;try{if(legacy.attackCooldown>0)legacy.attackCooldown--;flushView();super.tick();syncView();}finally{inTick=false;}}
+    @Override public void rideTick(){
+        if(legacy==null||level().isClientSide){super.rideTick();return;}
+        callback(legacy::tickRiding);
+    }
+    @Override public void push(double x,double y,double z){
+        if(legacy==null||level().isClientSide){super.push(x,y,z);return;}
+        var previous=getDeltaMovement();callback(()->legacy.addVelocity(x,y,z));
+        if(!previous.equals(getDeltaMovement()))hasImpulse=true;
+    }
+    @Override public boolean shouldRenderAtSqrDistance(double distance){
+        if(legacy==null)return super.shouldRenderAtSqrDistance(distance);
+        var minecraft=legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$instance();var previousWorld=minecraft.world;
+        try(var context=legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$context(World.mcc$wrap(level()),legacy)){
+            syncView();return legacy.shouldRender(distance);
+        }finally{minecraft.world=previousWorld;}
+    }
+    public void mcc$baseTick(){if(inTick)throw new IllegalStateException("Recursive Beta base tick");inTick=true;ticks++;try{legacy.lastSwingAnimationProgress=legacy.swingAnimationProgress;if(legacy.attackCooldown>0)legacy.attackCooldown--;flushView();super.tick();syncView();}finally{inTick=false;}}
     @Override public void aiStep(){if(legacy==null||level().isClientSide){super.aiStep();return;}syncView();callback(()->legacy.tickMovement());}
     public void baseMovement(){if(inMovement)throw new IllegalStateException("Recursive Beta base movement");inMovement=true;movements++;try{flushView();super.aiStep();syncView();}finally{inMovement=false;}}
+    @Override public void jumpFromGround(){
+        if(legacy==null||level().isClientSide){super.jumpFromGround();return;}
+        syncView();callback(legacy::mcc$jump);
+    }
+    @Override public void baseJump(){
+        if(inJump)throw new IllegalStateException("Recursive Beta base jump");
+        inJump=true;try{flushView();super.jumpFromGround();syncView();}finally{inJump=false;}
+    }
+    @Override public int getAmbientSoundInterval(){
+        if(legacy==null)return super.getAmbientSoundInterval();
+        int[] interval={80};callback(()->interval[0]=legacy.getMinAmbientSoundDelay());return interval[0];
+    }
+    @Override protected MovementEmission getMovementEmission(){
+        return legacy!=null&&!legacy.mcc$steppingEffects()?MovementEmission.NONE:super.getMovementEmission();
+    }
     public void serverAIPhase(){if(legacy==null)return;syncView();callback(()->legacy.mcc$tickLiving());}
     public void baseAI(){
         if(inAI)throw new IllegalStateException("Recursive Beta base AI");inAI=true;ais++;

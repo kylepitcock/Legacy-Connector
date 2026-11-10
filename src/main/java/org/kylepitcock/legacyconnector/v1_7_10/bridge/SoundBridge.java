@@ -36,6 +36,7 @@ public final class SoundBridge {
         SOUNDS.put("random.fizz", SoundEvents.FIRE_EXTINGUISH);
         SOUNDS.put("random.bow", SoundEvents.ARROW_SHOOT);
         SOUNDS.put("random.bowhit", SoundEvents.ARROW_HIT);
+        SOUNDS.put("random.drr", SoundEvents.ARROW_HIT); // Beta arrow impact name, before random.bowhit.
         SOUNDS.put("random.break", SoundEvents.ITEM_BREAK);
         SOUNDS.put("random.burp", SoundEvents.PLAYER_BURP);
         SOUNDS.put("random.eat", SoundEvents.GENERIC_EAT);

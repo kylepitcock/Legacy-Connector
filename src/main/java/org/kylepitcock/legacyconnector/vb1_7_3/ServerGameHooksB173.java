@@ -10,7 +10,10 @@ import net.minecraft.server.level.ServerPlayer;
 
 /** Dedicated callbacks use server actors and clocks; clients contribute bounded presentation state only. */
 public final class ServerGameHooksB173 {
-    public record Context(int width,int height,int guiWidth,int guiHeight,int scale,boolean hideHud,boolean thirdPerson,boolean screen,boolean paused,int[] metrics){
+    public record Context(int width,int height,int guiWidth,int guiHeight,int scale,boolean hideHud,boolean thirdPerson,boolean screen,boolean paused,boolean focused,int[] metrics){
+        public Context(int width,int height,int guiWidth,int guiHeight,int scale,boolean hideHud,boolean thirdPerson,boolean screen,boolean paused,int[] metrics){
+            this(width,height,guiWidth,guiHeight,scale,hideHud,thirdPerson,screen,paused,false,metrics);
+        }
         public Context{
             width=clamp(width,1,8192);height=clamp(height,1,8192);guiWidth=clamp(guiWidth,1,8192);guiHeight=clamp(guiHeight,1,8192);scale=clamp(scale,0,16);
             int[] copy=new int[256];for(int i=0;i<copy.length;i++)copy[i]=metrics!=null&&i<metrics.length?clamp(metrics[i],0,64):6;metrics=copy;
@@ -49,6 +52,7 @@ public final class ServerGameHooksB173 {
             }
         });
         bus.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent event)->{if(event.getEntity() instanceof ServerPlayer player)removeContext(player);});
+        bus.addListener((net.neoforged.neoforge.event.level.LevelEvent.Unload event)->{if(event.getLevel() instanceof net.minecraft.server.level.ServerLevel level)HookActorStateB173.clearLevel(level);});
         bus.addListener((net.neoforged.neoforge.event.server.ServerStoppedEvent event)->{SESSIONS.clear();HookActorStateB173.clear();});
     }
     private static void run(ServerPlayer nativePlayer,Session session){
@@ -56,6 +60,7 @@ public final class ServerGameHooksB173 {
         minecraft.displayWidth=options.width();minecraft.displayHeight=options.height();minecraft.options.guiScale=options.scale();
         minecraft.options.hideHud=options.hideHud();minecraft.options.thirdPerson=options.thirdPerson();
         minecraft.currentScreen=options.screen()?new Screen():null;
+        minecraft.focused=options.focused();
         // A dedicated world keeps ticking while a remote player opens a pause menu.
         minecraft.paused=false;boolean advanced=session.clock.advanced(nativePlayer.level(),nativePlayer.level().getGameTime());
         CompoundTag[] frame={null};

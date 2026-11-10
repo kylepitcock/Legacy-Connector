@@ -9,6 +9,7 @@ public class EntityRenderDispatcher {
     public LivingEntity cameraEntity;
     public float yaw,pitch;
     public HeldItemRenderer heldItemRenderer=new HeldItemRenderer();
+    public legacyconnector.vb1_7_3.net.minecraft.client.texture.TextureManager textureManager=legacyconnector.vb1_7_3.net.minecraft.client.texture.TextureManager.mcc$instance();
     public void render(legacyconnector.vb1_7_3.net.minecraft.entity.Entity entity,double x,double y,double z,float yaw,float partial) {
         org.kylepitcock.legacyconnector.vb1_7_3.GuiDrawB173.entity(entity,x,y,z,yaw,partial);
     }

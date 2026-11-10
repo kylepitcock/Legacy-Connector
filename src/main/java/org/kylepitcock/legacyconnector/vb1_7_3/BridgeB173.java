@@ -69,10 +69,13 @@ public final class BridgeB173 {
         }
         if (Boolean.getBoolean("legacyconnector.entitySelfTest")) ItemUseSelfTestB173.register();
         TileEntitiesB173.registerType();
+        SpawnRulesB173.prepareCustomBiomes();
         MobsB173.registerAll();
         RenderersB173.discover();
         AnimalsB173.registerAll();
         flammability();
+        legacyconnector.vb1_7_3.net.minecraft.stat.Stats.initialize();
+        StatisticsB173.install();
         StringBuilder sb = new StringBuilder();
         PER_MOD.forEach((mod, n) -> sb.append(' ').append(mod).append('=').append(n[0]).append(" blocks/").append(n[1]).append(" items"));
         LOG.info("b1.7.3 content registered:{}{}", sb.length() == 0 ? " none" : sb,

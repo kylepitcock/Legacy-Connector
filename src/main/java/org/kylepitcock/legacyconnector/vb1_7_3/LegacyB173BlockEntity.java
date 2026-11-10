@@ -86,13 +86,28 @@ public class LegacyB173BlockEntity extends net.minecraft.world.level.block.entit
         if (te == null || tickFailed || !ticks(te.getClass())) return;
         World w = World.mcc$wrap(level);
         te.world = w;
-        legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$use(w);
-        try (var views=EntityViewsB173.callbackScope()) {
-            te.tick();
+        var minecraft=legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$instance();
+        World previousWorld=minecraft.world;
+        try {
+            tickAndCommit(()->{
+                try(var context=legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$context(w,null);
+                        var views=EntityViewsB173.callbackScope()){
+                    te.tick();
+                }
+            },()->level.blockEntityChanged(worldPosition));
         } catch (RuntimeException | LinkageError e) {
             tickFailed = true;
             LOG.error("b1.7.3 tile entity {} at {} failed while ticking; it stops ticking", te.getClass().getName(), worldPosition, e);
+        } finally {
+            minecraft.world=previousWorld;
         }
+    }
+
+    /** Commit only completed callbacks, including their view flush, without comparator/neighbor notifications.
+     * Original ticking tiles can change inventory/timers without calling markDirty themselves. */
+    static void tickAndCommit(Runnable callback,Runnable storageDirty){
+        callback.run();
+        storageDirty.run();
     }
 
     /** b1.7.3 ticked every tile entity; only those whose class has its own {@code updateEntity} need it. */

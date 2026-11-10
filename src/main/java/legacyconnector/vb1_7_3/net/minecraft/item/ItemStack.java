@@ -63,6 +63,9 @@ public class ItemStack {
         return nbt;
     }
 
+    /** Original vanilla removal notification is empty; subclasses retain virtual override behavior. */
+    public void onRemoved(legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity player){}
+
     public void readNbt(legacyconnector.vb1_7_3.net.minecraft.nbt.NbtCompound nbt) {
         itemId = nbt.getShort("id");
         count = nbt.getByte("Count");
