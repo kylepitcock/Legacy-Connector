@@ -36,6 +36,9 @@ public final class GuiDrawB173 {
         void translate(float x, float y, float z);
 
         void scale(float x, float y, float z);
+        default void rotate(float angle,float x,float y,float z) {}
+        default void lighting(boolean enabled) {}
+        default void entity(Object entity,double x,double y,double z,float yaw,float partial) {}
 
         /** A button's click sound. */
         void click();
@@ -121,4 +124,7 @@ public final class GuiDrawB173 {
         Sink s = sink();
         if (s != null) s.click();
     }
+    public static void rotate(float angle,float x,float y,float z) {Sink s=sink();if(s!=null)s.rotate(angle,x,y,z);}
+    public static void lighting(boolean enabled) {Sink s=sink();if(s!=null)s.lighting(enabled);}
+    public static void entity(Object entity,double x,double y,double z,float yaw,float partial) {Sink s=sink();if(s!=null)s.entity(entity,x,y,z,yaw,partial);}
 }

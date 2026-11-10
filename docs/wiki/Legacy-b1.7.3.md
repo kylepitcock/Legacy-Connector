@@ -460,6 +460,26 @@ The [food rollback validation](../data/b173-food-rollback-validation-2026-11-09.
 checks with unchanged PlasticCraft 2.1.3 on a disposable dedicated server and 657 passing portable build tests. The item-use
 fixture uses a native fake player rather than a connected client.
 
+### Dedicated boats and explosives
+
+The unchanged PlasticCraft 2.1.3 jar passes a separate-process dedicated server and native remote-client run for boat
+placement, buoyancy, riding, forward/heading controls, dismounting, original damage/drop handling and the same boat/rider
+after a full server restart. C4 checks cover native placement and lever priming, replicated original countdown/render state,
+placed-charge defusing and multiple-entity air defusing with original item returns and tool wear. Defused charges leave
+the floor intact after waiting beyond the original fuse. Natural detonations damage a native entity and destroy terrain;
+the final crater retains the same 1,875-cell fingerprint after saving and restarting the dedicated server.
+
+The shared Beta `World.createExplosion` bridge classifies explosions without a source as native block explosions.
+Previously these entered the mob lane, so `mobGriefing=false` suppressed C4 terrain damage even though the original mod
+explicitly supplied no source. Calls with a source retain their existing mob interaction. Native creeper and TNT controls
+still use their own 30/80-tick fuses: the creeper preserves terrain under that rule, while TNT destroys it. Native vanilla
+and modern explosion call paths are unchanged.
+
+The [dedicated boats and C4 validation](../data/b173-plasticcraft-dedicated-boats-c4-validation-2026-11-09.json) records
+55 passing acceptance assertions and 657 passing portable build tests. It separates exploratory fixture corrections from
+acceptance evidence. The original 120-tick fuse, power 10 and disabled enhanced-C4 option remain unchanged; simultaneous
+two-client play, optional enhanced mode and primed-C4 disk reload are outside this run's claims.
+
 ### Crafting outputs larger than an inventory stack
 
 Beta recipes can return several non-stackable items. The shared shaped/shapeless recipe serializers retain a separate
@@ -472,6 +492,62 @@ isolated run passes 48 transfer scenarios across the original recipe, a remainde
 Coverage includes both table and 2×2 menus, repeated shift-click, pickup, hotbar/offhand swaps, occupied destinations,
 partial/full inventories, output conservation, ingredient consumption and bucket remainders. Two focused tests also cover
 recipe codecs, network round-trips, matching and output copies. No frisbee-specific behavior is selected in production.
+
+## PlayerAPI inventory
+
+The shared Beta PlayerAPI bridge implements original `RegisterPlayerBase` registration and stable per-player base lookup.
+Bases initialize after the native player's inventory and world view are ready. Native player events and a serializable
+attachment run the original initialization, living-update, NBT and death callbacks; logout saves before releasing the view,
+and relog/respawn creates the appropriate new view. Legacy ages follow the native tick counter. Player-owned external files
+resolve beneath the owning server world's `playerdata/<UUID>/legacy-b173` directory during PlayerAPI callbacks and registered
+modules' actor-scoped helpers. Unrelated world storage keeps its normal root; client mirrors use disposable local storage.
+
+Original replacement-inventory requests present the full original artwork, player preview and equipment layout inside the
+existing native `InventoryScreen`, through native screen events. The 45 corresponding native slot coordinates temporarily
+follow the original layout by storage identity; owned equipment cells use their original coordinates. All 46 native slots,
+their IDs, storage and menu remain intact. Coordinates restore on close, reinitialization or player/world replacement;
+conflicting changes by another mod stop the coordinate adaptation. Creative and custom native screens retain their own UI,
+with the original equipment cluster drawn using vanilla slot sprites.
+
+Native offhand and recipe-book controls have independently draggable 32×32 frames, both initially docked to the left.
+Frames match the inventory's padding, use its runtime texture and finish both inward joins and flush corner positions.
+Drag a frame border, or the center of an empty offhand slot, to move it; the occupied offhand center and recipe-book button
+center retain native clicks. No key binding is required. Inventory-relative anchors save in the existing connector config.
+Viewport bounds, other widgets, foreign slots, effects and recipe-book categories can temporarily move controls to a safe
+position without overwriting saved intent. GUI resizing preserves relative placement. A narrow viewport with the recipe book
+open temporarily hides the adapted controls and equipment cells until the native inventory becomes visible again.
+The bridge adds no visible equipment headings or empty-slot/drag-hint tooltips. Occupied cells retain normal item tooltips;
+slot highlights use the native hover overlay and clear when the pointer leaves. Original GUI preview transforms determine
+the model's facing without an extra half-turn, and temporary preview rotations restore the live native entity afterward.
+
+An auxiliary native transaction container invokes the original slot-click/quick-move behavior and slot predicates, with the
+server owning the equipment and cursor. Bounded snapshots, player/screen context, equipment revisions, native menu state IDs,
+request replay checks and acknowledgements reject stale or malformed transactions. Native full-content synchronization and
+component-preserving stack conversion retain modern item names, enchantments and other components.
+
+The unchanged Aether b1.7.3 1.02 payload passes 82 of 82 final native checks. Real XTest input covers all eight equipment
+slots, component retention, unequip/re-equip, rejection of stone and gear in the wrong slots, left/right/Shift clicks,
+all eight docking corner endpoints, independent control movement and Escape cancellation. Native offhand and recipe-book
+clicks remain intact; carrying an item or awaiting an equipment acknowledgement suppresses frame dragging. A 7000 ms
+server-tick delay exercises pending-transaction handling and restores the equipment correctly. Native crafting converts
+three logs into twelve planks. Viewport checks at 427×240 and 320×240 retain safe placement and restore the original
+inventory after the recipe book closes; only the narrow viewport temporarily hides controls and equipment cells.
+
+Final original-layout single-player checks retain all 46 native slots and 45 original coordinates. Real save/world reopen
+preserves all eight equipped stacks, their components and independently moved control positions. A full client restart
+and dedicated-server relog also preserve anchors, equipment and native item data. Server and client finish with zero
+PlayerAPI callback failures.
+
+Additional native checks cover the creative cursor, an independent widget, a pending-acknowledgement press/release race,
+dragging outside the inventory and fallback for an `InventoryScreen` subclass. Malformed and replayed requests are rejected.
+Separate lifecycle tests establish that native death and Respawn clear original equipment on server and client, rediscover
+the equipment panel for the new player, and preserve the cleared state after world reopen; that death/respawn evidence
+comes from the additive-panel implementation. Current portable checks pass 693 tests; the generic Beta code gate passes
+across 326 files.
+
+This is partial PlayerAPI inventory support. Remaining PlayerAPI combat/movement hooks and the complete Aether dimension
+and gameplay are not established by these tests. Production behavior uses shared APIs and ownership, with no mod or file-name
+selectors; original-mod names belong to regression evidence.
 
 ## GuiAPI settings and TWL models
 
@@ -1095,7 +1171,8 @@ legacy client instance: `ModLoader.getMinecraftInstance().renderEngine`), Coral 
 
 With Aether 1.02 (Modrinth `aether` b1.7.3-1.02: the zip's `Jar/` folder as a mod zip; it is a ModLoader mod, only its title screen is a
 base class edit) the set has 17 mods: Aether and its `mod_Trivia` construct with ShockAhPI and PlayerAPI linked to synthesized classes
-(`SAPI.interceptAdd`, `reachAdd`, `ToolBase`, `PlayerAPI.RegisterPlayerBase` do nothing yet) and register 35 blocks and 128 items; its
+(`SAPI.interceptAdd`, `reachAdd`, `ToolBase`, `PlayerAPI.RegisterPlayerBase` did nothing in that historical run; current partial
+[PlayerAPI inventory support](#playerapi-inventory) supersedes that registration result) and register 35 blocks and 128 items; its
 freezer, enchanter, incubator and treasure chests open their GUIs. Not yet: the Aether dimension (`DimensionBase`), its portal, mobs and
 the player changes. Moon Mod now gets past ShockAhPI and stops at a hard-coded block id Portal Gun holds; More Creeps stops at GuiAPI's
 settings classes (synthesized without their hierarchy: `VerifyError`).

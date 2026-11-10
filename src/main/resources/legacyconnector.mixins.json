@@ -35,6 +35,7 @@
     "perf.LevelChunkStaticTickerMixin"
   ],
   "client": [
+    "InventoryScreenLegacyLayoutMixin",
     "BetaEntityShadowMixin",
     "Am2CameraPositionMixin",
     "Am2MouseMixin",

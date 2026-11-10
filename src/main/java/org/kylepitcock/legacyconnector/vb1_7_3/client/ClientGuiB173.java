@@ -33,6 +33,10 @@ public final class ClientGuiB173 implements GuiDrawB173.Sink {
     private static GuiGraphics graphics;
     private static Texture bound;
     private static float red = 1.0F, green = 1.0F, blue = 1.0F, alpha = 1.0F;
+    public record Background(ResourceLocation texture,int u,int v,int width,int height) {}
+    private record BackgroundBounds(int x,int y,int width,int height) {}
+    private static BackgroundBounds backgroundBounds;
+    private static Background background;
 
     private static final class Texture {
         final int id;
@@ -51,11 +55,19 @@ public final class ClientGuiB173 implements GuiDrawB173.Sink {
     public static void begin(GuiGraphics g) {
         graphics = g;
         red = green = blue = alpha = 1.0F;
+        backgroundBounds=null;background=null;
     }
+
+    /** Observe the original full background blit so attached native controls share its artwork. */
+    public static void begin(GuiGraphics g,int x,int y,int width,int height) {
+        begin(g);backgroundBounds=new BackgroundBounds(x,y,width,height);
+    }
+    public static Background background(){return background;}
 
     public static void end() {
         if (graphics != null) graphics.setColor(1.0F, 1.0F, 1.0F, 1.0F);
         graphics = null;
+        backgroundBounds=null;
     }
 
     @Override
@@ -64,7 +76,12 @@ public final class ClientGuiB173 implements GuiDrawB173.Sink {
         Texture t = bound;
         if (g == null || t == null) return;
         ResourceLocation rl = upload(t);
-        if (rl != null) g.blit(rl, x, y, u, v, width, height);
+        if (rl != null) {
+            var bounds=backgroundBounds;
+            if(bounds!=null&&background==null&&x==bounds.x()&&y==bounds.y()&&width==bounds.width()&&height==bounds.height())
+                background=new Background(rl,u,v,width,height);
+            g.blit(rl, x, y, u, v, width, height);
+        }
     }
 
     @Override
@@ -151,6 +168,68 @@ public final class ClientGuiB173 implements GuiDrawB173.Sink {
     public void scale(float x, float y, float z) {
         GuiGraphics g = graphics;
         if (g != null) g.pose().scale(x, y, z);
+    }
+
+    @Override public void rotate(float angle,float x,float y,float z) {
+        if(graphics!=null&&x*x+y*y+z*z>0)graphics.pose().mulPose(new org.joml.Quaternionf().rotationAxis(
+                (float)Math.toRadians(angle),new org.joml.Vector3f(x,y,z).normalize()));
+    }
+    @Override public void lighting(boolean enabled) {
+        if(graphics==null)return;
+        graphics.flush();
+        if(enabled)com.mojang.blaze3d.platform.Lighting.setupForEntityInInventory();
+        else com.mojang.blaze3d.platform.Lighting.setupFor3DItems();
+    }
+
+    /** Render the client's entity through the native dispatcher under the original GUI's matrix and temporary pose. */
+    @Override public void entity(Object raw,double x,double y,double z,float yaw,float partial) {
+        GuiGraphics g=graphics;
+        if(g==null||!(raw instanceof legacyconnector.vb1_7_3.net.minecraft.entity.Entity original))return;
+        Minecraft mc=Minecraft.getInstance();
+        if(mc.level==null)return;
+        net.minecraft.world.entity.Entity entity=original.mcc$modern;
+        if(entity==null)return;
+        // Integrated-server GUI handoff objects retain a server actor; rendering never touches that actor's native state.
+        if(!entity.level().isClientSide)entity=mc.player!=null&&entity.getUUID().equals(mc.player.getUUID())?mc.player:mc.level.getEntity(entity.getId());
+        if(entity==null||entity.level()!=mc.level)return;
+        var dispatcher=mc.getEntityRenderDispatcher();
+        var camera=new org.joml.Quaternionf(dispatcher.cameraOrientation());
+        float oldYaw=entity.getYRot(),oldPitch=entity.getXRot(),oldYawO=entity.yRotO,oldPitchO=entity.xRotO;
+        var living=entity instanceof net.minecraft.world.entity.LivingEntity value?value:null;
+        float body=living==null?0:living.yBodyRot,bodyO=living==null?0:living.yBodyRotO;
+        float head=living==null?0:living.yHeadRot,headO=living==null?0:living.yHeadRotO;
+        boolean shadow;
+        try {shadow=ShadowAccess.FIELD.getBoolean(dispatcher);}
+        catch(IllegalAccessException error){throw new IllegalStateException("Cannot preserve native GUI entity shadow state",error);}
+        g.flush();g.pose().pushPose();
+        try {
+            entity.setYRot(original.yaw);entity.yRotO=original.yaw;
+            entity.setXRot(original.pitch);entity.xRotO=original.pitch;
+            if(living!=null){
+                living.yHeadRot=living.yHeadRotO=original.yaw;
+                if(original instanceof legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity legacy)living.yBodyRot=living.yBodyRotO=legacy.bodyYaw;
+            }
+            // Preserve the caller's model orientation: its mirrored scale and the native renderer's
+            // body-yaw rotation already produce the legacy preview's facing direction.
+            com.mojang.blaze3d.platform.Lighting.setupForEntityInInventory();
+            dispatcher.overrideCameraOrientation(new org.joml.Quaternionf());
+            dispatcher.setRenderShadow(false);
+            net.minecraft.world.entity.Entity target=entity;
+            // Beta RenderPlayer subtracts yOffset; native players already use a feet-relative render origin.
+            double renderY=original instanceof legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity?y-original.standingEyeHeight:y;
+            com.mojang.blaze3d.systems.RenderSystem.runAsFancy(()->dispatcher.render(target,x,renderY,z,yaw,partial,g.pose(),g.bufferSource(),15728880));
+            g.flush();
+        } finally {
+            dispatcher.setRenderShadow(shadow);dispatcher.overrideCameraOrientation(camera);
+            entity.setYRot(oldYaw);entity.yRotO=oldYawO;entity.setXRot(oldPitch);entity.xRotO=oldPitchO;
+            if(living!=null){living.yBodyRot=body;living.yBodyRotO=bodyO;living.yHeadRot=head;living.yHeadRotO=headO;}
+            g.pose().popPose();
+            com.mojang.blaze3d.platform.Lighting.setupFor3DItems();
+        }
+    }
+    private static final class ShadowAccess {
+        static final java.lang.reflect.Field FIELD=net.neoforged.fml.util.ObfuscationReflectionHelper.findField(
+                net.minecraft.client.renderer.entity.EntityRenderDispatcher.class,"shouldRenderShadow");
     }
 
     @Override

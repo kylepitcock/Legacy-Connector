@@ -136,6 +136,8 @@ public final class LegacyConnector {
         LegacyMods.registerPlatform(new org.kylepitcock.legacyconnector.v1_12_2.Platform1122());
         LegacyMods.registerPlatform(new org.kylepitcock.legacyconnector.vb1_7_3.PlatformB173());
         org.kylepitcock.legacyconnector.vb1_7_3.GameHookNetworkB173.install();
+        org.kylepitcock.legacyconnector.vb1_7_3.PlayerApiLifecycleB173.install(modBus);
+        org.kylepitcock.legacyconnector.vb1_7_3.PlayerInventoryNetworkB173.install();
 
         CompatComponents.REGISTER.register(modBus);
         org.kylepitcock.legacyconnector.vb1_7_3.SpawnOverrideModifierB173.REGISTER.register(modBus);

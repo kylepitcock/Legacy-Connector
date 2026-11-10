@@ -42,7 +42,9 @@ final class RemoteMenuContextB173 {
                 var entry=new CompoundTag();entry.putString("type",type);entry.putInt("x",tile.x);entry.putInt("y",tile.y);entry.putInt("z",tile.z);
                 entry.put("nbt",NbtB173.toModern(snapshot));tiles.add(entry);
             }
-            context.put("tiles",tiles);return bounded(context)?context:new CompoundTag();
+            context.put("tiles",tiles);
+            if(PlayerMenuContextB173.isPlayerMenu(container))context.putBoolean("player",true);
+            return bounded(context)?context:new CompoundTag();
         }catch(java.io.IOException|RuntimeException|LinkageError error){LOG.warn("Cannot capture original remote menu tile context",error);return new CompoundTag();}
     }
     private static boolean bounded(CompoundTag context)throws java.io.IOException{
@@ -78,6 +80,7 @@ final class RemoteMenuContextB173 {
     /** Structural half kept graphics-free for regression tests; the production entry first verifies installed ownership. */
     static HandledScreen construct(Class<? extends HandledScreen> type,CompoundTag context,PlayerInventory inventory,World world,int[][] layout)throws ReflectiveOperationException{
         if(layout.length>MAX_SLOTS)return null;
+        if(context.getBoolean("player"))return PlayerMenuContextB173.construct(type,inventory.player,layout);
         var entries=context.getList("tiles",Tag.TAG_COMPOUND);if(entries.isEmpty()||entries.size()>MAX_TILES)return null;
         java.lang.reflect.Constructor<?> selected=null;BlockEntity selectedTile=null;CompoundTag selectedNbt=null;
         for(Tag raw:entries){

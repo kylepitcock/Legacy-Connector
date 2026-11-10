@@ -39,11 +39,22 @@ public final class PlayerViewB173 extends legacyconnector.vb1_7_3.net.minecraft.
             view = VIEWS.computeIfAbsent(player, PlayerViewB173::new);
         }
         view.sync();
+        if(PlayerApiB173.hasRegistered()){
+            if(view.playerScreenHandler==null){
+                view.playerScreenHandler=new legacyconnector.vb1_7_3.net.minecraft.screen.PlayerScreenHandler(view.inventory,!view.world.isRemote);
+                view.currentScreenHandler=view.playerScreenHandler;
+            }
+            PlayerApiLifecycleB173.initializeView(view);
+        }
         return view;
     }
 
+    public static void release(Player player){synchronized(VIEWS){VIEWS.remove(player);}}
+    public static void clear(){synchronized(VIEWS){VIEWS.clear();}}
+
     private void sync() {
         world = World.mcc$wrap(player.level());
+        age = player.tickCount;
         prevX = x = player.getX();
         y = player.getY() + standingEyeHeight;
         prevY = y;
@@ -100,7 +111,7 @@ public final class PlayerViewB173 extends legacyconnector.vb1_7_3.net.minecraft.
 
     private static boolean same(ItemStack a, ItemStack b) {
         if (a == null || a.count <= 0) return b == null || b.count <= 0;
-        return b != null && a.itemId == b.itemId && a.count == b.count && a.getDamage() == b.getDamage();
+        return b != null && a.itemId == b.itemId && a.count == b.count && a.getDamage() == b.getDamage() && StacksB173.sameComponents(a,b);
     }
 
     @Override

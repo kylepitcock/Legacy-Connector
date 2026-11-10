@@ -65,10 +65,10 @@ public final class ServerGameHooksB173 {
                     for(var level:nativePlayer.server.getAllLevels())EntityViewsB173.refreshCached(level);
                     var player=(PlayerViewB173)EntityViewsB173.wrap(nativePlayer);Minecraft.mcc$set$player(minecraft,player);
                     try(var context=Minecraft.mcc$context(player.world,player)){
-                        frame[0]=GameHookHudB173.capture(options,()->{
+                        PlayerInventoryNetworkB173.capture(player,minecraft,options.screen(),()->frame[0]=GameHookHudB173.capture(options,()->{
                             try{ContentB173.serverHooks(minecraft,false,advanced,session.hooks);if(options.screen())ContentB173.serverHooks(minecraft,true,advanced,session.hooks);}
                             finally{player.writeBack();}
-                        });
+                        }));
                     }
                 }finally{EntityViewsB173.flush();BlockEntityViewsB173.flush();}
             }));

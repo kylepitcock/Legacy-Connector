@@ -91,7 +91,9 @@ public final class ContentB173 {
         if (!module.isNamed()) return current;
         LegacyModRecord hit = BY_MODULE.get(module);
         if (hit != null) return hit;
-        for (LegacyModRecord m : org.kylepitcock.legacyconnector.core.LegacyMods.all()) {
+        // A jar may contain several entrypoints sharing one module. FML discovery order differs by side;
+        // use the same dependency/id order as platform initialization when selecting that module's owner.
+        for (LegacyModRecord m : org.kylepitcock.legacyconnector.core.LegacyMods.ordered()) {
             if (!PlatformB173.VERSION.equals(m.version)) continue;
             try {
                 Class<?> main = m.mainClass != null ? m.mainClass : Class.forName(m.mainClassName, false, type.getClassLoader());
