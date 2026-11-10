@@ -3,6 +3,7 @@ package org.kylepitcock.legacyconnector.loader.transform;
 import org.junit.jupiter.api.Test;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.*;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
