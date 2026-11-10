@@ -79,14 +79,13 @@ class PalladiumWidgetButtons1201Test implements Opcodes {
 
         MethodNode render = new MethodNode(
                 ACC_PUBLIC | ACC_STATIC, "renderWidget", "(L" + GUI_GRAPHICS + ";)V", null, null);
-        render.instructions.add(new VarInsnNode(ALOAD, 0));
         if (includeFlatIconTexture) {
             render.instructions.add(new FieldInsnNode(GETSTATIC,
                     "net/threetag/palladium/client/screen/components/FlatIconButton",
                     "WIDGETS_LOCATION", RESOURCE_LOCATION));
             render.instructions.add(new InsnNode(POP));
-            render.instructions.add(new VarInsnNode(ALOAD, 0));
         }
+        render.instructions.add(new VarInsnNode(ALOAD, 0));
         render.instructions.add(new FieldInsnNode(GETSTATIC, name, "WIDGETS_LOCATION", RESOURCE_LOCATION));
         for (int i = 0; i < 10; i++) {
             render.instructions.add(new InsnNode(ICONST_0));
