@@ -156,8 +156,8 @@ class PalladiumMixinCompat1201Test implements Opcodes {
         handler.visibleAnnotations = new java.util.ArrayList<>();
         handler.visibleAnnotations.add(new AnnotationNode("Lorg/spongepowered/asm/mixin/injection/Inject;"));
         handler.instructions.add(new VarInsnNode(ALOAD, 7)); // CallbackInfo
-        handler.instructions.add(new VarInsnNode(ALOAD, 8)); // first temporary
         handler.instructions.add(new InsnNode(POP));
+        handler.instructions.add(new VarInsnNode(ALOAD, 8)); // first temporary
         handler.instructions.add(new InsnNode(POP));
         handler.instructions.add(new InsnNode(RETURN));
         handler.maxLocals = 9;
