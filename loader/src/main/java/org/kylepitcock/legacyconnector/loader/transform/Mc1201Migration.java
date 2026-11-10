@@ -46,9 +46,10 @@ final class Mc1201Migration {
         int fields;
         int bridges;
         int providerCalls;
+        int selectionListPositionCalls;
 
         int total() {
-            return calls + constructors + fields + bridges + providerCalls;
+            return calls + constructors + fields + bridges + providerCalls + selectionListPositionCalls;
         }
 
         void add(Counts o) {
@@ -57,12 +58,17 @@ final class Mc1201Migration {
             fields += o.fields;
             bridges += o.bridges;
             providerCalls += o.providerCalls;
+            selectionListPositionCalls += o.selectionListPositionCalls;
         }
 
         @Override
         public String toString() {
-            return calls + " call(s) redirected to helpers, " + constructors + " constructor(s) made factory calls, " + fields + " static field read(s) converted, "
-                    + bridges + " bridge method(s) for changed overrides, " + providerCalls + " call(s) given the registry provider";
+            return calls + " call(s) redirected to helpers, "
+                    + selectionListPositionCalls + " selection-list position call(s) renamed to setX, "
+                    + constructors + " constructor(s) made factory calls, "
+                    + fields + " static field read(s) converted, "
+                    + bridges + " bridge method(s) for changed overrides, "
+                    + providerCalls + " call(s) given the registry provider";
         }
     }
 
@@ -275,6 +281,31 @@ final class Mc1201Migration {
 
     // ------------------------------------------------------------------ calls and fields
 
+    private static final String ABSTRACT_SELECTION_LIST =
+            "net/minecraft/client/gui/components/AbstractSelectionList";
+    private static final String OBJECT_SELECTION_LIST =
+            "net/minecraft/client/gui/components/ObjectSelectionList";
+
+    /**
+     * Minecraft 1.20.1's AbstractSelectionList.setLeftPos(int) only moved the
+     * widget's left edge. In 1.21.1 the list inherits AbstractWidget.setX(int),
+     * with width and row bounds derived from the widget geometry. Redirect
+     * calls on any known selection-list subclass to that equivalent setter.
+     */
+    private static boolean rewriteSelectionListPosition(MethodInsnNode call, Mc1201Hierarchy hierarchy) {
+        if ((call.getOpcode() != Opcodes.INVOKEVIRTUAL && call.getOpcode() != Opcodes.INVOKEINTERFACE)
+                || !"setLeftPos".equals(call.name)
+                || !"(I)V".equals(call.desc)) {
+            return false;
+        }
+        if (!hierarchy.isSubclassOf(call.owner, ABSTRACT_SELECTION_LIST)
+                && !hierarchy.isSubclassOf(call.owner, OBJECT_SELECTION_LIST)) {
+            return false;
+        }
+        call.name = "setX";
+        return true;
+    }
+
     private static void rewriteBody(MethodNode m, Mc1201Hierarchy h, Mc1201Tables t, Counts c) {
         Deque<TypeInsnNode> news = new ArrayDeque<>();
         AbstractInsnNode next;
@@ -283,6 +314,9 @@ final class Mc1201Migration {
             if (in instanceof TypeInsnNode ti && ti.getOpcode() == Opcodes.NEW) {
                 news.push(ti);
             } else if (in instanceof MethodInsnNode call) {
+                if (rewriteSelectionListPosition(call, h)) {
+                    c.selectionListPositionCalls++;
+                }
                 if (!call.name.equals("<init>")
                         && (h.isMinecraft(call.owner)
                                 || (h.isMod(call.owner) && h.declaredIn(call.owner, call.name, call.desc) != Origin.MOD))) {
