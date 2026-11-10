@@ -30,7 +30,7 @@ public final class LegacyB173Entity extends net.minecraft.world.entity.Entity im
     @Override public boolean isPushable(){return legacy()!=null&&legacy().isPushable();}
     @Override public void push(net.minecraft.world.entity.Entity other){
         if(legacy()==null){super.push(other);return;}
-        state.callback(()->legacy().onCollision(EntityViewsB173.wrap(other)));
+        state.autonomous(()->legacy().onCollision(EntityViewsB173.wrap(other)));
     }
     @Override public void animateHurt(float yaw){if(legacy()==null)super.animateHurt(yaw);else state.callback(()->legacy().animateHurt());}
     @Override public boolean canBeCollidedWith(){return legacy()!=null&&legacy().getBoundingBox()!=null;}
@@ -61,7 +61,7 @@ public final class LegacyB173Entity extends net.minecraft.world.entity.Entity im
     @Override public void move(MoverType mover,Vec3 movement){
         if(legacy()==null){super.move(mover,movement);return;}
         MoverType previous=retainedMover;retainedMover=mover;
-        try{state.callback(()->legacy().move(movement.x,movement.y,movement.z));}finally{retainedMover=previous;}
+        try{state.physical(()->legacy().move(movement.x,movement.y,movement.z));}finally{retainedMover=previous;}
     }
     @Override public void baseMove(double x,double y,double z){state.move(()->super.move(retainedMover,new Vec3(x,y,z)));}
     @Override public void setPos(double x,double y,double z){if(state==null||!state.movePosition(x,y,z))super.setPos(x,y,z);}
@@ -72,7 +72,7 @@ public final class LegacyB173Entity extends net.minecraft.world.entity.Entity im
     @Override public boolean hurt(DamageSource source,float amount){
         if(legacy()==null||level().isClientSide)return false;
         DamageSource previous=retainedDamage;retainedDamage=source;boolean[] result={false};
-        try{state.callback(()->result[0]=legacy().damage(EntityViewsB173.wrap(source.getEntity()),(int)Math.ceil(amount)));return result[0];}
+        try{state.autonomous(()->result[0]=legacy().damage(EntityViewsB173.wrap(source.getEntity()),(int)Math.ceil(amount)));return result[0];}
         finally{retainedDamage=previous;}
     }
     @Override public boolean baseDamage(Entity attacker,int amount){
@@ -92,7 +92,9 @@ public final class LegacyB173Entity extends net.minecraft.world.entity.Entity im
     @Override protected void positionRider(net.minecraft.world.entity.Entity passenger,MoveFunction move){
         if(legacy()==null||passenger!=getFirstPassenger()||!hasPassenger(passenger)){super.positionRider(passenger,move);return;}
         state.callback(()->{
+            if(!RiderPositionB173.attached(legacy(),passenger))return;
             legacy().updatePassengerPosition();
+            if(!RiderPositionB173.attached(legacy(),passenger))return;
             var view=EntityViewsB173.wrap(passenger);
             move.accept(passenger,view.x,view.y-view.standingEyeHeight,view.z);
         });

@@ -50,6 +50,11 @@ public final class PlayerViewB173 extends legacyconnector.vb1_7_3.net.minecraft.
     }
 
     public static void release(Player player){synchronized(VIEWS){VIEWS.remove(player);}}
+    /** Client owner thread only. Server identities and live, untracked client players remain cached. */
+    public static void releaseDepartedClientViews(net.minecraft.world.level.Level currentLevel){
+        synchronized(VIEWS){VIEWS.keySet().removeIf(player->player.level().isClientSide
+                &&(player.isRemoved()||player.level()!=currentLevel));}
+    }
     public static PlayerViewB173 peek(Player player){return VIEWS.get(player);}
     /** Refresh unchanged health without syncing over pending original inventory/placement writes. */
     public void mcc$prepareNativeHeal(){if(health==beforeHealth)beforeHealth=health=Math.round(player.getHealth());}

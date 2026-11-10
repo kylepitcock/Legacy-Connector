@@ -461,6 +461,7 @@ public final class LegacyJarTransformer {
         int absent = 0;
         for (ClassNode node : nodes.values()) absent += AbsentDependencyStubber.apply(node, hierarchy);
         if (absent > 0) result.notes.add(absent + " method(s) use mods that are not installed; they throw NoClassDefFoundError if called");
+        BetaCombatProvenance.apply(nodes,hierarchy,version,result.notes);
         int buildHeightChecks = 0;
         int floorClamps = 0;
         int forwardCalls = 0;

@@ -73,17 +73,22 @@ final class NeutralEntityStateB173 {
         var box=nativeEntity.getBoundingBox().move(x-nativeEntity.getX(),y-nativeEntity.getY(),z-nativeEntity.getZ());
         nativeEntity.setPosRaw(x,y,z);nativeEntity.setBoundingBox(box);return true;
     }
-    void callback(Runnable action){
+    void callback(Runnable action){callback(false,action);}
+    void autonomous(Runnable action){callback(true,action);}
+    void physical(Runnable action){callback(false,true,action);}
+    private void callback(boolean autonomous,Runnable action){callback(autonomous,false,action);}
+    private void callback(boolean autonomous,boolean physical,Runnable action){
         if(original==null)return;
         try(var context=legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$context(World.mcc$wrap(nativeEntity.level()),original);
+            var combat=physical?CombatTargetsB173.continuation(original):CombatTargetsB173.enter(autonomous?original:null);
             var views=EntityViewsB173.callbackScope()){
             boolean outer=callbacks==0,referenced=false;
-            if(outer){referenced=EntityViewsB173.prepareHostCallback(host);sync();}callbacks++;
+            if(outer){referenced=EntityViewsB173.prepareHostCallback(host);sync();if(autonomous)CombatTargetsB173.beforeAI(original);}callbacks++;
             try{action.run();flush();if(outer)host.publishRenderState();}
             finally{callbacks--;if(outer)EntityViewsB173.resumeHostCallback(host,referenced);}
         }
     }
-    void tick(){callback(()->{originalTicks++;original.tick();});}
+    void tick(){autonomous(()->{originalTicks++;original.tick();});}
     void beforeBaseTick(){
         original.age++;original.prevHorizontalSpeed=original.horizontalSpeed;
         original.prevX=original.x;original.prevY=original.y;original.prevZ=original.z;

@@ -191,6 +191,7 @@ public final class LegacyConnector {
         org.kylepitcock.legacyconnector.vb1_7_3.BetaDeferredGenData.install();
         org.kylepitcock.legacyconnector.vb1_7_3.KeyBindingsB173.install();
         org.kylepitcock.legacyconnector.vb1_7_3.ReachB173.install();
+        org.kylepitcock.legacyconnector.vb1_7_3.CombatTargetsB173.install();
         modBus.addListener(CreativeTabBridge::onBuildContents);
         modBus.addListener(org.kylepitcock.legacyconnector.v1_12_2.bridge.CreativeTabBridge1122::onBuildContents);
         modBus.addListener(org.kylepitcock.legacyconnector.v1_7_10.entity.LegacySpawnEggs::addToTab);

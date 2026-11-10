@@ -193,6 +193,9 @@ public final class EntityViewsB173 {
         if(modern instanceof net.minecraft.world.entity.item.PrimedTnt)return new legacyconnector.vb1_7_3.net.minecraft.entity.TntEntity(world);
         if(modern instanceof net.minecraft.world.entity.item.FallingBlockEntity)return new legacyconnector.vb1_7_3.net.minecraft.entity.FallingBlockEntity(world);
         if(modern instanceof net.minecraft.world.entity.monster.Creeper)return new legacyconnector.vb1_7_3.net.minecraft.entity.mob.CreeperEntity(world);
+        if(modern instanceof net.minecraft.world.entity.monster.ZombifiedPiglin)return new legacyconnector.vb1_7_3.net.minecraft.entity.mob.PigZombieEntity(world);
+        if(modern instanceof net.minecraft.world.entity.monster.Zombie)return new legacyconnector.vb1_7_3.net.minecraft.entity.mob.ZombieEntity(world);
+        if(modern instanceof net.minecraft.world.entity.monster.AbstractSkeleton)return new legacyconnector.vb1_7_3.net.minecraft.entity.mob.SkeletonEntity(world);
         if(modern instanceof net.minecraft.world.entity.monster.Monster)return new legacyconnector.vb1_7_3.net.minecraft.entity.mob.MonsterEntity(world) {};
         if(modern instanceof net.minecraft.world.entity.animal.Squid)return new legacyconnector.vb1_7_3.net.minecraft.entity.passive.SquidEntity(world);
         if(modern instanceof net.minecraft.world.entity.animal.Sheep)return new legacyconnector.vb1_7_3.net.minecraft.entity.passive.SheepEntity(world);

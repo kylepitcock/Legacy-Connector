@@ -10,6 +10,8 @@ import org.joml.Matrix4f;
 /** Beta model rendering state, shared by the client adapter and graphics-free callback tests. */
 public final class RendererContextB173 {
     public record Style(boolean texture2d,boolean lighting,boolean depthTest,boolean depthWrite,boolean blend,int blendSrc,int blendDst,int depthFunc,Matrix4f textureMatrix){}
+    public record Normal(float x,float y,float z){}
+    private record CurrentAttributes(int mask,int argb,Normal normal){}
     public record Vertex(double x,double y,double z,double u,double v,int argb,float nx,float ny,float nz){}
     public interface Extras {
         default void item(legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity entity,legacyconnector.vb1_7_3.net.minecraft.item.ItemStack stack,Matrix4f transform,Style style){}
@@ -32,6 +34,8 @@ public final class RendererContextB173 {
         final java.util.Map<Integer,String> textureIds=new java.util.HashMap<>();
         ResourceLocation texture=ResourceLocation.withDefaultNamespace("missingno");
         int argb=-1;
+        Normal normal=new Normal(0,0,1);
+        final ArrayDeque<CurrentAttributes> currentAttributes=new ArrayDeque<>();
         int matrixMode=5888,blendSrc=770,blendDst=771,depthFunc=515;
         boolean texture2d=true,lighting=true,depthTest=true,depthWrite=true,blend;
         State(Function<String,ResourceLocation> textures,BiConsumer<ModelGeometryB173.Draw,ResourceLocation> sink,Extras extras){this.textures=textures;this.sink=sink;this.extras=extras;poses.push(new Matrix4f());texturePoses.push(new Matrix4f());}
@@ -48,6 +52,14 @@ public final class RendererContextB173 {
     public static boolean active(){return CURRENT.get()!=null;}
     public static Matrix4f matrix(){return new Matrix4f(CURRENT.get().poses.peek());}
     public static int argb(){return CURRENT.get().argb;}
+    public static Normal normal(){return CURRENT.get().normal;}
+    public static void normal(float x,float y,float z){CURRENT.get().normal=new Normal(x,y,z);}
+    /** GL_CURRENT_BIT saves current attributes, independently of either matrix stack. */
+    public static void pushCurrentAttributes(int mask){var s=CURRENT.get();s.currentAttributes.push(new CurrentAttributes(mask,s.argb,s.normal));}
+    public static void popCurrentAttributes(){
+        var s=CURRENT.get();if(s.currentAttributes.isEmpty())throw new IllegalStateException("Unbalanced Beta renderer attribute pop");
+        var previous=s.currentAttributes.pop();if((previous.mask()&1)!=0){s.argb=previous.argb();s.normal=previous.normal();}
+    }
     public static ResourceLocation texture(){return CURRENT.get().texture;}
     public static Style style(){var s=CURRENT.get();return new Style(s.texture2d,s.lighting,s.depthTest,s.depthWrite,s.blend,s.blendSrc,s.blendDst,s.depthFunc,new Matrix4f(s.texturePoses.peek()));}
     public static void push(){var stack=CURRENT.get().stack();stack.push(new Matrix4f(stack.peek()));}

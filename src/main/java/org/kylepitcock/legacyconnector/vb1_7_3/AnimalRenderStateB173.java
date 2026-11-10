@@ -50,6 +50,8 @@ public final class AnimalRenderStateB173 {
         var result=new CompoundTag();
         for(Slot slot:slots(original))try{result.put(slot.key,encode(slot.field.getType(),slot.field.get(original)));}
         catch(IllegalAccessException error){throw new IllegalStateException("Cannot capture original render field "+slot.key,error);}
+        if(original instanceof legacyconnector.vb1_7_3.net.minecraft.entity.Entity entity&&entity.dataTracker!=null)
+            result.put("$tracker",entity.dataTracker.mcc$snapshot());
         return result;
     }
     private static List<Slot> generationSlots(Object original){
@@ -97,6 +99,11 @@ public final class AnimalRenderStateB173 {
             if(previousReceived==null||!next.equals(previousReceived.get(slot.key)))
                 changes.add(new java.util.AbstractMap.SimpleImmutableEntry<>(slot,value));
         }
+        Runnable tracker=()->{};
+        if(original instanceof legacyconnector.vb1_7_3.net.minecraft.entity.Entity entity&&entity.dataTracker!=null){
+            if(!incoming.contains("$tracker",Tag.TAG_COMPOUND))throw new IllegalArgumentException("Missing original tracker snapshot");
+            tracker=entity.dataTracker.mcc$prepare(previousReceived==null?null:previousReceived.getCompound("$tracker"),incoming.getCompound("$tracker"));
+        }
         for(var change:changes)try{
             var slot=change.getKey();var value=change.getValue();
             if(entityReference(slot.field.getType())){
@@ -109,6 +116,7 @@ public final class AnimalRenderStateB173 {
             }else slot.field.set(original,value);
         }
         catch(IllegalAccessException error){throw new IllegalStateException("Cannot apply original render field "+change.getKey().key,error);}
+        tracker.run();
         retryReferences(original,resolver);
     }
     /** A referent's spawn packet can arrive after this snapshot, without another metadata update. */

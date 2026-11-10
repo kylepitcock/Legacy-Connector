@@ -39,7 +39,7 @@ public final class AudioClientB173 implements AudioB173.Client {
         }
         else {
             String name=request.kind()==Kind.STREAMING && !request.name().contains(".")?"records."+request.name():request.name();
-            var event=org.kylepitcock.legacyconnector.v1_7_10.bridge.SoundBridge.sound(name);
+            var event=org.kylepitcock.legacyconnector.v1_7_10.bridge.SoundBridge.sound(AudioB173.fallbackSoundName(name));
             if(event==null)return;
             sound=new SimpleSoundInstance(event.getLocation(),category(request.kind()),request.volume(),request.pitch(),SoundInstance.createUnseededRandom(),false,0,
                     request.relative()?SoundInstance.Attenuation.NONE:SoundInstance.Attenuation.LINEAR,request.x(),request.y(),request.z(),request.relative());

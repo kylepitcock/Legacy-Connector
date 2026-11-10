@@ -339,9 +339,12 @@ public class Block {
     /** MCP {@code playBlock}: note blocks, pistons. */
     public void onBlockAction(legacyconnector.vb1_7_3.net.minecraft.world.World world, int x, int y, int z, int a, int b) {}
 
-    /** MCP {@code harvestBlock}: the drops are the modern block's ({@code getDroppedItemId/Count/Meta}). */
+    /** Original superclass harvest baseline, including subclasses that delegate their ordinary-tool branch here. */
     public void afterBreak(legacyconnector.vb1_7_3.net.minecraft.world.World world, legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity player,
-            int x, int y, int z, int meta) {}
+            int x, int y, int z, int meta) {
+        player.increaseStat(legacyconnector.vb1_7_3.net.minecraft.stat.Stats.MINE_BLOCK[id],1);
+        dropStacks(world,x,y,z,meta);
+    }
 
     /** MCP {@code canPlaceBlockAt}. */
     public boolean canPlaceAt(legacyconnector.vb1_7_3.net.minecraft.world.World world, int x, int y, int z) {
