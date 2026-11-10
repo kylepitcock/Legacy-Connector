@@ -247,6 +247,19 @@ class PalladiumMixinCompat1201Test implements Opcodes {
         return null;
     }
 
+    private static MethodInsnNode findCall(MethodNode method, String name) {
+        for (AbstractInsnNode instruction : method.instructions) {
+            if (instruction instanceof MethodInsnNode call && call.name.equals(name)) return call;
+        }
+        return null;
+    }
+
+    private static AbstractInsnNode previousReal(AbstractInsnNode instruction) {
+        AbstractInsnNode previous = instruction == null ? null : instruction.getPrevious();
+        while (previous != null && previous.getOpcode() < 0) previous = previous.getPrevious();
+        return previous;
+    }
+
     private static boolean hasVar(MethodNode method, int opcode, int slot) {
         for (AbstractInsnNode instruction : method.instructions) {
             if (instruction instanceof VarInsnNode var && var.getOpcode() == opcode && var.var == slot) return true;
