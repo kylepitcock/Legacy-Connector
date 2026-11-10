@@ -86,6 +86,7 @@ public final class PlayerViewB173 extends legacyconnector.vb1_7_3.net.minecraft.
         yaw = prevYaw = player.getYRot();
         pitch = prevPitch = player.getXRot();
         onGround = player.onGround();
+        EntityViewsB173.syncCollisions(this,player);
         handSwinging=player.swinging;
         mcc$environment(PlayerAbilitiesB173.nativeWaterBaseline(player));
         var motion=player.getDeltaMovement();velocityX=motion.x;velocityY=motion.y;velocityZ=motion.z;

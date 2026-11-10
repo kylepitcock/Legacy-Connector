@@ -124,7 +124,7 @@ public final class LegacyB173Animal extends PathfinderMob implements B173LivingH
         var bounds=getBoundingBox();
         legacy.boundingBox.set(bounds.minX,bounds.minY,bounds.minZ,bounds.maxX,bounds.maxY,bounds.maxZ);
         var v=getDeltaMovement();legacy.velocityX=v.x;legacy.velocityY=v.y;legacy.velocityZ=v.z;
-        legacy.onGround=onGround();legacy.horizontalCollision=horizontalCollision;legacy.verticalCollision=verticalCollision;legacy.mcc$environment(isInWater());
+        legacy.onGround=onGround();EntityViewsB173.syncCollisions(legacy,this);legacy.mcc$environment(isInWater());
         legacy.health=(int)Math.ceil(getHealth());legacy.hurtTime=hurtTime;legacy.deathTime=deathTime;legacy.dead=isRemoved();
         legacy.mcc$fallDistance(fallDistance);
         legacy.fireTicks=getRemainingFireTicks();legacy.air=getAirSupply();legacy.age=tickCount;legacy.despawnCounter=getNoActionTime();

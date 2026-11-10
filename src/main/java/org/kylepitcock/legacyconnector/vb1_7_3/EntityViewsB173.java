@@ -6,6 +6,12 @@ import legacyconnector.vb1_7_3.net.minecraft.world.World;
 
 /** Stable entity identities within callbacks, with weakly held ordinary views between callbacks. */
 public final class EntityViewsB173 {
+    /** Beta's combined collision flag is derived from the two native movement results. */
+    static void syncCollisions(Entity view,net.minecraft.world.entity.Entity modern){
+        view.horizontalCollision=modern.horizontalCollision;
+        view.verticalCollision=modern.verticalCollision;
+        view.hasCollided=view.horizontalCollision||view.verticalCollision;
+    }
     /** Value snapshot: original Box instances are mutable and independent of raw position fields. */
     private record Bounds(double minX,double minY,double minZ,double maxX,double maxY,double maxZ) {
         static Bounds of(Entity view){var b=view.boundingBox;return new Bounds(b.minX,b.minY,b.minZ,b.maxX,b.maxY,b.maxZ);}
@@ -146,6 +152,7 @@ public final class EntityViewsB173 {
         if(!(modern instanceof net.minecraft.world.entity.player.Player)){
             view.velocityX=modern.getDeltaMovement().x;view.velocityY=modern.getDeltaMovement().y;view.velocityZ=modern.getDeltaMovement().z;
         }
+        syncCollisions(view,modern);
         view.onGround=modern.onGround();view.dead=modern.isRemoved();view.mcc$environment(modern.isInWater());
         view.blocksSameBlockSpawning=modern.blocksBuilding;
         view.yaw=modern.getYRot();view.pitch=modern.getXRot();

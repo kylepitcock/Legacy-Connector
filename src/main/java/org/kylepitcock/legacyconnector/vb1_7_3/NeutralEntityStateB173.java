@@ -29,8 +29,8 @@ final class NeutralEntityStateB173 {
             original.yaw=nativeEntity.getYRot();original.pitch=nativeEntity.getXRot();
             original.onGround=nativeEntity.onGround();original.dead=nativeEntity.isRemoved();original.fireTicks=nativeEntity.getRemainingFireTicks();
             original.air=nativeEntity.getAirSupply();original.mcc$fallDistance(nativeEntity.fallDistance);original.mcc$environment(nativeEntity.isInWater());
-            original.horizontalCollision=nativeEntity.horizontalCollision;original.verticalCollision=nativeEntity.verticalCollision;
-            original.hasCollided=original.horizontalCollision||original.verticalCollision;if(!rendering&&!nativeEntity.level().isClientSide)original.noClip=nativeEntity.noPhysics;original.blocksSameBlockSpawning=nativeEntity.blocksBuilding;
+            EntityViewsB173.syncCollisions(original,nativeEntity);
+            if(!rendering&&!nativeEntity.level().isClientSide)original.noClip=nativeEntity.noPhysics;original.blocksSameBlockSpawning=nativeEntity.blocksBuilding;
             original.vehicle=relation(nativeEntity.getVehicle());original.passenger=relation(nativeEntity.getFirstPassenger());
             if(original instanceof ItemEntity item&&nativeEntity instanceof net.minecraft.world.entity.item.ItemEntity nativeItem){
                 item.stack=StacksB173.toLegacy(nativeItem.getItem());if(!rendering&&!nativeEntity.level().isClientSide){item.itemAge=EntityFieldsB173.itemAge(nativeItem);item.pickupDelay=EntityFieldsB173.pickupDelay(nativeItem);}
