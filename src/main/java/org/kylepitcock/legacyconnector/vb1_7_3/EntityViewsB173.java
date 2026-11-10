@@ -304,11 +304,7 @@ public final class EntityViewsB173 {
                     if(view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.projectile.ArrowEntity arrow&&modern instanceof net.minecraft.world.entity.projectile.AbstractArrow nativeArrow&&arrow.owner!=before.owner)nativeArrow.setOwner(arrow.owner==null?null:arrow.owner.mcc$modern);
                 }
                 if(view.velocityX!=touched.vx||view.velocityY!=touched.vy||view.velocityZ!=touched.vz) {
-                    // A real player's client owns its velocity: deliver only the components the original code changed.
-                    int changed=PlayerMotionB173.mask(view.velocityX,view.velocityY,view.velocityZ,touched.vx,touched.vy,touched.vz);
-                    if(!(modern instanceof net.minecraft.server.level.ServerPlayer player)||!PlayerMotionB173.send(player,changed,view.velocityX,view.velocityY,view.velocityZ)){
-                        modern.setDeltaMovement(view.velocityX,view.velocityY,view.velocityZ);modern.hurtMarked=true;
-                    }
+                    modern.setDeltaMovement(view.velocityX,view.velocityY,view.velocityZ);modern.hurtMarked=true;
                 }
                 if(view.onGround!=touched.ground)NativeGroundB173.commit(modern,view.onGround);
                 if(view instanceof PathAwareEntity p && p.target!=touched.target && modern instanceof net.minecraft.world.entity.Mob mob)
