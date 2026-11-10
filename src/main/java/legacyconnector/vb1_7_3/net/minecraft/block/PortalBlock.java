@@ -26,7 +26,8 @@ public class PortalBlock extends Block {
                 ||world.getBlockId(x+1,y,z)==id&&world.getBlockId(x+2,y,z)!=id;
         boolean acrossZ=world.getBlockId(x,y,z-1)==id&&world.getBlockId(x,y,z-2)!=id
                 ||world.getBlockId(x,y,z+1)==id&&world.getBlockId(x,y,z+2)!=id;
-        return acrossX&&(side==2||side==3)||acrossZ&&(side==4||side==5);
+        // Coordinates are the neighbour's: a portal beside it along X shows its west/east face, along Z its north/south face.
+        return acrossX&&(side==4||side==5)||acrossZ&&(side==2||side==3);
     }
     public boolean create(World world,int x,int y,int z){
         boolean acrossX=world.getBlockId(x-1,y,z)==49||world.getBlockId(x+1,y,z)==49;
