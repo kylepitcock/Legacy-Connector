@@ -32,9 +32,5 @@ public abstract class BetaSpawnSchedulingMixin {
                 ()->original.call(world,chunk,state,friendlies,enemies,persistent));
     }
 
-    @WrapOperation(method="tickChunks",at=@At(value="INVOKE",target="Lnet/minecraft/server/level/ServerLevel;tickCustomSpawners(ZZ)V"))
-    private void legacyconnector$betaSpawns(ServerLevel world,boolean enemies,boolean friendlies,Operation<Void> original) {
-        SpawnSchedulerB173.spawn(world,friendlies,enemies);
-        original.call(world,enemies,friendlies);
-    }
+
 }

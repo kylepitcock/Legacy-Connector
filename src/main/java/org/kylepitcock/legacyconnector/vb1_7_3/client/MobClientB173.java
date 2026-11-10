@@ -15,7 +15,9 @@ public final class MobClientB173 {
     private static final Map<String,ResourceLocation> TEXTURES=new HashMap<>();
     private static final Set<String> MISSING=new HashSet<>();
     public static void register(IEventBus bus){
+        legacyconnector.vb1_7_3.net.minecraft.world.World.mcc$installFlashReader(level->level instanceof net.minecraft.client.multiplayer.ClientLevel client?client.getSkyFlashTime():0);
         bus.addListener((net.neoforged.neoforge.client.event.EntityRenderersEvent.RegisterRenderers e)->{
+            e.registerEntityRenderer(org.kylepitcock.legacyconnector.LegacyConnector.BETA_LIGHTNING.get(),NeutralEntityRendererB173::new);
             e.registerEntityRenderer(org.kylepitcock.legacyconnector.LegacyConnector.BETA_ENTITY.get(),NeutralEntityRendererB173::new);
             e.registerEntityRenderer(org.kylepitcock.legacyconnector.LegacyConnector.BETA_ITEM_ENTITY.get(),NeutralEntityRendererB173::new);
             for(var info:AnimalsB173.all())e.registerEntityRenderer(info.type(),AnimalRendererB173::new);

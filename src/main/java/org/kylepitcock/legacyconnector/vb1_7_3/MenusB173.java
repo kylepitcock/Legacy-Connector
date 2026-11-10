@@ -47,8 +47,10 @@ public final class MenusB173 {
     public static void withActor(ServerPlayer player,Runnable callback){
         Actor previous=ACTOR.get();if(previous!=null&&previous.player==player){callback.run();return;}
         Actor actor=new Actor(player);ACTOR.set(actor);boolean completed=false;
-        try(var state=HookActorStateB173.forPlayer(player)){callback.run();completed=true;}
-        finally{
+        try{
+            var view=PlayerViewB173.peek(player);if(view==null)view=PlayerViewB173.of(player);
+            try(var context=legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$context(legacyconnector.vb1_7_3.net.minecraft.world.World.mcc$wrap(player.level()),view)){callback.run();completed=true;}
+        }finally{
             if(previous==null)ACTOR.remove();else ACTOR.set(previous);
             if(completed&&actor.pending)dispatchScreen(player,actor.requested);
         }
@@ -58,6 +60,8 @@ public final class MenusB173 {
     static boolean hasPendingScreen(ServerPlayer player){Actor actor=ACTOR.get();return actor!=null&&actor.player==player&&actor.pending;}
     private static void requestScreen(ServerPlayer player,Screen screen){Actor actor=ACTOR.get();if(actor!=null&&actor.player==player){actor.requested=screen;actor.pending=true;}else dispatchScreen(player,screen);}
     private static void dispatchScreen(ServerPlayer player,Screen screen){
+        var route=NativeScreenRoutesB173.route(screen);
+        if(route!=NativeScreenRoutesB173.Route.ORIGINAL){GuiSessionsB173.openNative(player,route);return;}
         if(screen instanceof HandledScreen handled&&handled.container!=null){GuiSessionsB173.open(player,null);openMenu(player,handled.container,screen);}
         else {GuiSessionsB173.open(player,screen);if(screen==null&&player.containerMenu!=player.inventoryMenu)player.closeContainer();}
     }
@@ -85,6 +89,7 @@ public final class MenusB173 {
     private MenusB173() {}
 
     public static void setMenuType(MenuType<LegacyB173Menu> t) {
+        HudOverlayB173.install();
         type = t;
         GuiSessionsB173.install();
     }

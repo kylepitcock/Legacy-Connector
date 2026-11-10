@@ -81,4 +81,39 @@ class SpawnRulesB173Test {
         registry.add(Creature.class,7,SpawnGroup.MONSTER,new Biome[]{Biome.FOREST});registry.remove(Creature.class,SpawnGroup.CREATURE,null);
         assertEquals(SpawnGroup.MONSTER,registry.entries().getFirst().group());assertEquals(7,registry.entries().getFirst().weight());
     }
+    @Test void rawCustomBiomeListsSelectCategoryBeforeHostingWithoutAnyModLoaderAddSpawn(){
+        var biome=new UnknownBiome();biome.spawnableMonsters.add(new legacyconnector.vb1_7_3.net.minecraft.world.biome.EntitySpawnGroup(Creature.class,8));
+        var registry=new SpawnRulesB173.Registry();registry.capture(List.of(biome));
+        assertEquals(1,registry.changes().size());assertEquals(8,registry.entries().getFirst().weight());assertTrue(registry.overrides().isEmpty());
+        assertEquals(net.minecraft.world.entity.MobCategory.MONSTER,SpawnRulesB173.categoryFor(Creature.class,net.minecraft.world.entity.MobCategory.MISC,registry.entries()));
+        biome.spawnableMonsters.clear();assertEquals(8,registry.entries().getFirst().weight(),"Public lists are snapshotted at the pre-host registration boundary");
+    }
+    @Test void explicitZeroRemovalAndRecreatedCustomBiomeOverrideInitialListsInOrder(){
+        var source=new UnknownBiome();source.spawnablePassive.add(new legacyconnector.vb1_7_3.net.minecraft.world.biome.EntitySpawnGroup(Creature.class,8));
+        var registry=new SpawnRulesB173.Registry();registry.capture(List.of(source));
+        var recreated=new UnknownBiome();registry.add(Creature.class,0,SpawnGroup.CREATURE,new Biome[]{recreated});
+        assertTrue(registry.changes().stream().allMatch(e->e.weight()==0));
+        registry.remove(Creature.class,SpawnGroup.CREATURE,new Biome[]{source});assertTrue(registry.entries().isEmpty());
+        assertTrue(registry.changes().stream().allMatch(e->e.weight()==-1));
+        registry.add(Creature.class,3,SpawnGroup.CREATURE,new Biome[]{recreated});
+        assertTrue(registry.entries().stream().allMatch(e->e.weight()==3));assertEquals(1,registry.overrides().size());
+        assertEquals(8,source.spawnablePassive.getFirst().amount,"Explicit overlays do not mutate source lists or duplicate base JSON");
+    }
+    @Test void customBiomeExplicitModifiersReplaceOrRemoveAllScopedKeysAndDoNotDuplicateRawRows(){
+        var source=new UnknownBiome();source.spawnablePassive.add(new legacyconnector.vb1_7_3.net.minecraft.world.biome.EntitySpawnGroup(Creature.class,8));
+        var registry=new SpawnRulesB173.Registry();registry.capture(List.of(source));
+        var out=new LinkedHashMap<String,Supplier<byte[]>>();
+        java.util.function.Function<Biome,List<String>> keys=b->List.of("fixture:dimension_2/shared","fixture:dimension_3/shared");
+        SpawnRulesB173.contribute(out,registry.overrides(),c->ResourceLocation.parse("fixture:creature"),keys);assertTrue(out.isEmpty());
+        registry.add(Creature.class,0,SpawnGroup.CREATURE,new Biome[]{source});
+        SpawnRulesB173.contribute(out,registry.overrides(),c->ResourceLocation.parse("fixture:creature"),keys);
+        String tag=out.entrySet().stream().filter(e->e.getKey().contains("tags/worldgen/biome")).map(e->new String(e.getValue().get(),StandardCharsets.UTF_8)).findFirst().orElseThrow();
+        assertTrue(tag.contains("fixture:dimension_2/shared"));assertTrue(tag.contains("fixture:dimension_3/shared"));
+        var json=out.entrySet().stream().filter(e->e.getKey().contains("biome_modifier")).map(e->JsonParser.parseString(new String(e.getValue().get(),StandardCharsets.UTF_8)).getAsJsonObject()).findFirst().orElseThrow();
+        assertEquals("legacyconnector:beta_spawn_override",json.get("type").getAsString());assertEquals(0,json.get("weight").getAsInt());
+        out.clear();registry.add(Creature.class,5,SpawnGroup.CREATURE,new Biome[]{source});
+        SpawnRulesB173.contribute(out,registry.overrides(),c->ResourceLocation.parse("fixture:creature"),keys);
+        assertEquals(1,out.keySet().stream().filter(k->k.contains("biome_modifier")).count());
+        assertTrue(out.entrySet().stream().filter(e->e.getKey().contains("biome_modifier")).allMatch(e->new String(e.getValue().get(),StandardCharsets.UTF_8).contains("\"weight\":5")));
+    }
 }

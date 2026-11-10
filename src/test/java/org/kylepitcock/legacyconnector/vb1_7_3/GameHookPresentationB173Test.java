@@ -15,7 +15,7 @@ class GameHookPresentationB173Test {
     private static ServerGameHooksB173.Context context(){int[] metrics=new int[256];Arrays.fill(metrics,6);metrics['A']=14;return new ServerGameHooksB173.Context(854,480,427,240,0,false,false,false,false,metrics);}
     @Test void contextTransportContainsPresentationOnlyAndRoundTripsOptions(){
         var value=context();var encoded=GameHookNetworkB173.writeContext(value);
-        assertEquals(Set.of("width","height","guiWidth","guiHeight","scale","hideHud","thirdPerson","screen","paused","metrics"),encoded.getAllKeys());
+        assertEquals(Set.of("width","height","guiWidth","guiHeight","scale","hideHud","thirdPerson","screen","paused","focused","metrics"),encoded.getAllKeys());
         encoded.putString("uuid","ignored");encoded.putFloat("fallDistance",-1);encoded.putBoolean("wearingBoots",true);
         var decoded=GameHookNetworkB173.readContext(encoded);assertEquals(value.width(),decoded.width());assertEquals(value.height(),decoded.height());assertEquals(value.guiWidth(),decoded.guiWidth());assertArrayEquals(value.metrics(),decoded.metrics());
         var again=GameHookNetworkB173.writeContext(decoded);assertFalse(again.contains("uuid"));assertFalse(again.contains("fallDistance"));assertFalse(again.contains("wearingBoots"));

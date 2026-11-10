@@ -126,7 +126,7 @@ public class LegacyB173Menu extends AbstractContainerMenu {
             buf.writeVarInt(s.x);
             buf.writeVarInt(s.y);
         }
-        var context = handoff==0&&gui instanceof HandledScreen?RemoteMenuContextB173.capture(container):new net.minecraft.nbt.CompoundTag();
+        var context = handoff==0&&gui instanceof HandledScreen handled?RemoteMenuContextB173.capture(handled):new net.minecraft.nbt.CompoundTag();
         if (PlayerMenuContextB173.isPlayerMenu(container)) context.putBoolean("player", true);
         buf.writeNbt(context);
     }

@@ -8,7 +8,8 @@ their own textures, one creative tab per mod, and the blocks' own code runs (pla
 click, redstone) with their tile entities (saved, loaded, ticked) and their GUIs (machines, furnaces, crafting tables as modern menus).
 Projectiles, external OGG/WAV audio and supported living mobs have partial bridges. Supported animal subclasses use their
 original renderer/model callbacks and ModLoader spawn registrations in normal gameplay. Broader mob families, custom
-render APIs, world generation and the mods' tick hooks remain incomplete.
+render APIs and complete mod compatibility remain incomplete. The [ShockAhPI foundation](#shockahpi-dimensions-and-generation)
+now includes original dimension generation, portals and scoped game hooks, with native Aether gameplay checks described below.
 
 ## Putting the mods in
 
@@ -439,11 +440,13 @@ does not depend on HUD rendering or fresh presentation packets. The server binds
 health; client input supplies only bounded presentation context. Captured HUD commands return to that player, and the
 handshake transfers execution from the client fallback without running both copies.
 
-Hook retention and clock state are kept per player UUID. Mutable scalar state written by hook-reachable methods on the
-original `BaseMod` implementation and its custom ancestry is scoped to the actor, including player-origin block callbacks.
-Nested scopes restore the previous actor or neutral state even on failure. Helper-class globals, including PlasticCraft's
-shared `Stun` lists and wall-clock timer, remain shared and retain their original behavior. Logout and server stop clear
-actor state. Single-player hook dispatch remains unchanged.
+Hook retention and clock state are kept per player UUID. Mutable scalar state written by executable hook-reachable
+methods on the original `BaseMod` hierarchy and eligible helpers from the same artifact is scoped to the actor, including
+world-identity metadata. Discovery is bounded and excludes constructors, static initialization and foreign code. Helpers
+coordinating shared collections, maps or arrays retain their shared clocks and metadata; these mutable ledgers are not
+copied per player. Explicit caller context wins; a proven scoped writer with an explicit player argument can supply the
+victim context for a projectile callback. Nested scopes restore prior state on failure, and logout/world unload/server stop
+release actor state. Single-player hook dispatch remains unchanged.
 
 The unchanged PlasticCraft 2.1.3 jar passes dedicated checks for the original six-second stun, four-second cooldown,
 foreign movement modifiers, both player orders and real 12-block falls: the connected player retains 20 health with boots
@@ -506,8 +509,8 @@ Original replacement-inventory requests present the full original artwork, playe
 existing native `InventoryScreen`, through native screen events. The 45 corresponding native slot coordinates temporarily
 follow the original layout by storage identity; owned equipment cells use their original coordinates. All 46 native slots,
 their IDs, storage and menu remain intact. Coordinates restore on close, reinitialization or player/world replacement;
-conflicting changes by another mod stop the coordinate adaptation. Creative and custom native screens retain their own UI,
-with the original equipment cluster drawn using vanilla slot sprites.
+conflicting changes by another mod stop the coordinate adaptation. InventoryScreen subclasses retain their own UI, with the original equipment cluster drawn using vanilla slot sprites.
+Creative inventory tabs receive no equipment panel or equipment UI transactions; equipped items remain stored normally.
 
 Native offhand and recipe-book controls have independently draggable 32×32 frames, both initially docked to the left.
 Frames match the inventory's padding, use its runtime texture and finish both inward joins and flush corner positions.
@@ -547,7 +550,135 @@ across 326 files.
 
 This is partial PlayerAPI inventory support. Remaining PlayerAPI combat/movement hooks and the complete Aether dimension
 and gameplay are not established by these tests. Production behavior uses shared APIs and ownership, with no mod or file-name
-selectors; original-mod names belong to regression evidence.
+selectors; original-mod names belong to regression evidence. The separate [dimension foundation](#shockahpi-dimensions-and-generation) has its own verification scope.
+
+## ShockAhPI dimensions and generation
+
+The shared Beta dimension foundation implements ShockAhPI `DimensionBase`, `Loc`, portal blocks and teleporters.
+Each registered custom realm receives an owner-scoped native key such as `b173_<owner>:dimension_<number>`.
+The registration number chooses the native realm and player travel destination; the original provider's `id` remains
+whatever its initialization assigns. These values need not match. Vanilla Overworld and Nether registrations retain
+their native levels. See [Mod dimensions](Mod-Dimensions.md#beta-173-shockahpi-dimensions) for the generation lifecycle.
+
+- **Original terrain.** Provider binding initializes its original biome source and brightness table before creating the
+  chunk source. `ChunkSource.getChunk` supplies a retained 32,768-byte block array with unsigned IDs, metadata and a
+  128-block height. Shared Perlin/octave noise, climate biome sources, cave carving and lake generation implement the
+  Beta APIs. Custom biome identities become owner-scoped native biome resources; the native biome source queries the
+  original source rather than substituting an End biome.
+- **Original population.** `ChunkSource.decorate` runs during native biome decoration against the generation region.
+  Provider and biome scratch state are serialized under the owning mod's generation lock. Explicit modern biome
+  modifiers can contribute their native features afterward. The generator adds no modern terrain, surface or cave pass.
+- **Neighbour reads and writes.** A population read beyond available native terrain uses bounded detached terrain
+  snapshots from an independent original chunk source. It never requests a full native chunk. The secondary source
+  preserves the active populator's random stream and restores shared biome scratch arrays. Pending deferred writes
+  take precedence over baseline terrain; distant writes and writable tile stand-ins use the existing deferred-write
+  bridge. Per-level SavedData preserves completed ordered writes and final tile NBT through a process restart until
+  native chunk loading accepts them. Explicit spawn collision checks still require available native terrain.
+- **SAPI block interception.** `interceptAdd` and `interceptBlockSet` run the first matching original interceptor before
+  storage changes. Replacement writes avoid intercepting themselves a second time. Original batched writes still
+  synchronize clients while deferring neighbour and shape callbacks; they do not turn into a new terrain algorithm.
+- **Travel and client presentation.** Registered portal contact drives native server-level travel and the original
+  distance-scale/teleporter callbacks. Keep-previous-angle placement preserves the legacy position/eye-offset boundary.
+  Client portal distortion and configured trigger/travel sounds follow the shared portal state. Provider fog, sky and
+  cloud settings remain scoped to the registered realm. Travel refreshes the player view without rebuilding its inventory.
+
+Canonical vanilla entity NBT registrations resolve the materialized Beta entity classes for original save/load paths;
+this does not admit every mob family to a native host. The vanilla item audit covers all 106 original item rows and
+154 distinct item/metadata cases, including coal, dyes and flattened block-item variants. Those are item identity and
+conversion checks, not a claim that every original item action is implemented.
+
+### Verified native gameplay and current limits
+
+Unchanged Aether 1.02 passes native dedicated-server and integrated single-player portal activation, walking travel in
+both directions and save/reopen checks. Original landing positions, eight equipped accessories and their native components
+survive travel. Dedicated full-process restarts preserve the realm, custom biomes and complete block/metadata digests of
+two island chunks. Another restart preserves 26,476 queued population writes and two unloaded dungeon-chest inventories;
+normal chunk loading materializes their exact loot. Original ticks also return a falling player to the Overworld.
+
+The verified gameplay foundation includes:
+
+- **Tools and reach:** native Skyroot, Gravitite and Zanite mining runs original drops, metadata, wear and mined statistics;
+  Zanite's changed speed with wear and the worn pendant's mining effect are exercised. Lance mining/combat reach and
+  ordinary-item range restoration use native interaction attributes.
+- **Machines and animals:** real GUI input drives freezer/enchanter processing and a full 6,000-tick incubator hatch.
+  Original Moa feeding, Aerbunny carrying, Flying Cow/Phyg/Moa saddling and riding, and Sheepuff dye/shear/drop behavior
+  pass native checks; passive state also has save/relog evidence. Successful legacy tile ticks mark native chunk storage
+  dirty after callback/view completion without issuing comparator updates. A fresh hatch has empty egg/progress0 in both
+  live state and stored chunk NBT. A full-process restart preserves that empty state and the same hatched Moa UUID,
+  with no duplicate hatch even after another 6,000 native ticks. The hatch check keeps a real player
+  in the realm: original SSP-only achievement assumptions with no realm actor are not resolved by borrowing another player.
+- **Player effects:** two real connected clients exercise native poison-shooter use and projectile collision. Only the
+  victim receives distraction and timed damage, then recovers naturally; the attacker's timer stays zero while the attacker
+  travels to another realm. Native Life Shard use raises the acting player's health and capacity to 22, with no increase for
+  the other player. The bridge preserves native base values and foreign additive/multiplicative health modifiers.
+  Server and owning client agree on capacity 22 after native death/Respawn and full-process rejoin. Two real clients
+  also pass owner-inventory and remote-player presentation/tracking checks; owner scalar hydration does not apply
+  remote inventory snapshots to the owner's inventory.
+  Actual Neptune equipment, including its required glove, changes native submerged movement: the controlled comparison
+  records 2.1548 versus 0.9608 displacement, and removing the glove restores the physical water predicate.
+- **Natural spawning:** the custom biome's eight passive and three hostile registrations enter the Beta scheduler.
+  Fresh-world native `NATURAL` finalization and joins admit Zephyr, Aerwhale, Cockatrice and Aechor Plant, followed by
+  more than 20 original ticks. Native category counts and caps still gate attempts: the observed passive limit of 16
+  blocks attempts at counts 17 and 20. Ordinary Overworld spawn ownership remains unchanged. These checks do not
+  establish every species' complete AI or a guaranteed spawn during any particular wait.
+- **Presentation:** original lightning is reached through a real weapon hit, with native callback/flash evidence; ordinary
+  native lightning keeps its own behavior. Physical Lore Book input, GUI insertion/descriptions and close-time item
+  preservation pass, as does Creative equipment-panel exclusion.
+
+These checks establish specific shared APIs, not complete Aether or universal ShockAhPI support. White and gold parachutes
+pass native falls with health preserved at 22; the gold parachute retains its stack and takes one durability point. A real
+air click also fires MiniCloud's two original projectiles, which tick and track/render on the client. This establishes
+firing and initial hosting, not full combat behavior or expiry. Native cloak equipment also exercises the original
+distance-query concealment and real swing reversal; a daytime bed use in the Aether returns original feedback without
+putting the player to sleep.
+
+A naturally generated Bronze Slider also passes deferred **entity** persistence: its immutable complete NBT, UUID,
+original/native type, dungeon home and generated name survive a full server-process restart while its target chunk has
+never reached native FULL. Native chunk loading then materializes exactly one matching boss and acknowledges the queue
+entry. The same naturally generated 500-HP boss subsequently passes a Survival fight with 100 real native pickaxe
+hits, original charging and player damage, critical texture, death, doorway reopening, connected dungeon-block
+unlocking, trapdoors and actual key/drop pickup. The fixture uses native diamond armor and Resistance III for the
+damage check, then Resistance IV to finish; it does not change original boss health, motion or timers.
+
+The dropped key unlocks the generated Bronze chest through native interaction. Its original title, texture and 63-slot
+screen now reconstruct from the exact successful GUI constructor arguments, including inventory interfaces and a
+primitive argument that the constructor uses to compute its title. The bridge captures supported constructor inputs
+generically, uses canonical inventories, validates the installed class, descriptor and slot layout, and retains the
+bounded fallback for unsupported contexts. Three real mouse transfers collect the generated Fire Sword, Agility Cape
+and Hammer of Notch. Closing/reopening and a full client/server restart preserve the empty unlocked chest, doorway,
+defeated-boss outcome, and collected stacks with their native components. Silver/Gold combat, remaining rendering and
+lifecycle scenarios still need their own checks. The [PlayerAPI inventory](#playerapi-inventory) results retain their
+existing scope.
+
+Vanilla mining-tool and armor views also retain their complete Beta constructor state. All 15 pickaxe/axe/shovel views
+have the original tool-family, material, harvest and durability behavior; the native diamond pickaxe passes the actual
+Slider's tool check. All 20 armor views have canonical material, texture, slot, protection and durability fields. The
+actual original inventory accepts each armor item only in its correct slot, and real native helmet pickup/replacement
+preserves components. These compatibility views do not change native vanilla items, attributes or durability.
+
+The typed `TitleScreen` view also exposes the `mmactive` menu-activity flag used by supplied main-menu base-class
+patches. Native screen transitions and client ticks provide its snapshot, with a false dedicated-server fallback;
+GUI class queries recognize the native title screen. This is base-class-patch compatibility, not a vanilla ModLoader
+or ShockAhPI API. It preserves the native main menu and does not recreate custom menu artwork or preview worlds.
+
+### Native APIs and narrow mixin gaps
+
+The Beta bridge uses NeoForge events where they cover the required behavior. Natural-spawn scheduling enters the native
+custom-spawner list through `ModifyCustomSpawnersEvent`, at index zero, retaining its native gates and existing spawner
+order. PlayerAPI lifecycle uses player/tick/clone events and attachments; inventory initialization, input and overlays use
+`ScreenEvent`. The remaining hooks have narrower requirements than the available NeoForge 21.1.258 APIs:
+
+| Hook | Why an event does not cover the complete operation |
+|---|---|
+| SAPI block interception | Placement/fluid events do not intercept every `Level.setBlock` before storage changes. |
+| Provider celestial time | Level extensions and sleep-time events do not override the shared celestial fraction. |
+| Original inventory background/labels | `ContainerScreenEvent` layers fire afterward and are not cancellable; cancelling screen rendering would also remove native slots. |
+| Inventory outside-click classification | Mouse events cannot change native outside/drop classification while retaining the native click handler. |
+| Options settings grid row | `ScreenEvent.Init.Post` adds widgets but does not expose insertion into the native grid row/span layout. |
+| Spawn cycle and accounting | Custom spawners do not expose the native eligible-chunk collection or private `SpawnState` accounting; only that capture remains hooked. |
+| Spawn provenance and generation fauna | Finalize-spawn events expose no provenance setter without initialization; `PotentialSpawns` does not cover the generation-fauna list lookup. |
+| Generation prerequisites | Feature events do not expose chunk-stage dependency radii. |
+| Hosted mob AI and shadow placement | Entity tick cancellation affects the whole tick; living render events do not surround dispatcher shadow drawing. |
 
 ## GuiAPI settings and TWL models
 
@@ -920,7 +1051,9 @@ equivalent visual gameplay proof.
   (`legacyconnector:legacy_tile_b1_7_3`, `TileEntitiesB173`) hosts every legacy tile entity (`LegacyB173BlockEntity`). The legacy one is
   made by the block's `getBlockEntity()` the first time it is asked for (as b1.7.3's chunk did) or loaded from the save: its `writeNbt`
   output (with the id `ModLoader.RegisterTileEntity` gave the class, also the overload with a renderer) is stored under `legacy`.
-- **Ticking.** The server ticks it when its class has its own `updateEntity`; one that throws stops ticking (logged once).
+- **Ticking.** The server ticks it when its class has its own `updateEntity`, with scoped world context. A successful tick
+  and view flush mark native chunk storage unsaved, preserving timer/inventory changes even if the original omits
+  `markDirty`, without comparator notifications. One that throws stops ticking (logged once).
 - `World.getBlockTileEntity` / `setBlockTileEntity` / `removeBlockTileEntity` reach it; `markDirty` marks the modern block entity changed.
   Clients get the same NBT in the block entity data packet (for renderers later).
 

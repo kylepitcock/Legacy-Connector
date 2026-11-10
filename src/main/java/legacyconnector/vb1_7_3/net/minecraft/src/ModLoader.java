@@ -19,6 +19,10 @@ import org.kylepitcock.legacyconnector.vb1_7_3.RecipesB173;
  * Methods that take client or world types (GUIs, renderers, key bindings) are synthesized for now.
  */
 public final class ModLoader {
+    public static void RegisterKey(BaseMod mod,legacyconnector.vb1_7_3.net.minecraft.client.option.KeyBinding key,boolean repeat){
+        org.kylepitcock.legacyconnector.vb1_7_3.KeyBindingsB173.register(mod,key,repeat);
+    }
+    public static boolean isGUIOpen(Class<?> type){return org.kylepitcock.legacyconnector.vb1_7_3.GuiQueriesB173.isOpen(type);}
     public static void TakenFromCrafting(legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity player,
             legacyconnector.vb1_7_3.net.minecraft.item.ItemStack stack){
         org.kylepitcock.legacyconnector.vb1_7_3.ItemEventsB173.taken(player,stack,false);

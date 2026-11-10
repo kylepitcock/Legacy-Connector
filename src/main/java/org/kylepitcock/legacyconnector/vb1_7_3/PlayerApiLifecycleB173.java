@@ -35,25 +35,30 @@ public final class PlayerApiLifecycleB173 {
         private Data(Player player){this.player=player;}
     }
     private static Consumer<ServerPlayer> snapshotSink=player->{};
+    private static java.util.function.BiConsumer<ServerPlayer,PlayerViewB173> presentationSink=(player,view)->{};
     private static boolean installed;
     private PlayerApiLifecycleB173(){}
     public static void installSnapshotSink(Consumer<ServerPlayer> sink){snapshotSink=java.util.Objects.requireNonNull(sink);}
+    public static void installPresentationSink(java.util.function.BiConsumer<ServerPlayer,PlayerViewB173> sink){presentationSink=java.util.Objects.requireNonNull(sink);}
     public static synchronized void install(IEventBus modBus){
         if(installed)return;installed=true;ATTACHMENTS.register(modBus);
+        PlayerPresentationNetworkB173.install();
+        PlayerAbilitiesB173.install();
+        PlayerHealthCapacityB173.install();
         var bus=net.neoforged.neoforge.common.NeoForge.EVENT_BUS;
         bus.addListener((net.neoforged.neoforge.event.tick.PlayerTickEvent.Post event)->{
             if(!(event.getEntity() instanceof ServerPlayer player)||!PlayerApiB173.hasRegistered())return;
             Data data=player.getData(DATA);if(data.dead||data.lastTick==player.tickCount)return;data.lastTick=player.tickCount;
-            run(data,"tick",()->{PlayerViewB173 view=ready(data);try{PlayerApiB173.tick(view);}finally{view.writeBack();}snapshotSink.accept(player);});
+            run(data,"tick",()->{PlayerViewB173 view=ready(data);try{PlayerApiB173.tick(view);}finally{view.writeBack();}PlayerPresentationNetworkB173.guard("lifecycle",()->presentationSink.accept(player,view));snapshotSink.accept(player);});
         });
         bus.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent event)->{
             if(event.getEntity() instanceof ServerPlayer player&&PlayerApiB173.hasRegistered()){
-                Data data=player.getData(DATA);run(data,"login",()->{ready(data).writeBack();snapshotSink.accept(player);});
+                Data data=player.getData(DATA);run(data,"login",()->{var view=ready(data);view.writeBack();PlayerPresentationNetworkB173.guard("lifecycle",()->presentationSink.accept(player,view));snapshotSink.accept(player);});
             }
         });
         bus.addListener(net.neoforged.bus.api.EventPriority.LOWEST,false,(net.neoforged.neoforge.event.entity.living.LivingDeathEvent event)->{
             if(event.getEntity() instanceof ServerPlayer player&&PlayerApiB173.hasRegistered()){
-                Data data=player.getData(DATA);run(data,"death",()->{PlayerViewB173 view=ready(data);try{PlayerApiB173.death(view);}finally{data.dead=true;view.writeBack();}});
+                Data data=player.getData(DATA);run(data,"death",()->{PlayerViewB173 view=ready(data);try{PlayerApiB173.death(view);}finally{data.dead=true;view.writeBack();}PlayerPresentationNetworkB173.guard("lifecycle",()->presentationSink.accept(player,view));});
             }
         });
         bus.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.Clone event)->{
@@ -64,7 +69,7 @@ public final class PlayerApiLifecycleB173 {
         });
         bus.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerRespawnEvent event)->{
             if(event.getEntity() instanceof ServerPlayer player&&PlayerApiB173.hasRegistered()){
-                Data data=player.getData(DATA);run(data,"respawn",()->{ready(data).writeBack();snapshotSink.accept(player);});
+                Data data=player.getData(DATA);run(data,"respawn",()->{var view=ready(data);view.writeBack();PlayerPresentationNetworkB173.guard("lifecycle",()->presentationSink.accept(player,view));snapshotSink.accept(player);});
             }
         });
         bus.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent event)->{

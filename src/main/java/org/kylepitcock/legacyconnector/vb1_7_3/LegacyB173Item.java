@@ -18,6 +18,7 @@ public final class LegacyB173Item extends net.minecraft.world.item.Item {
     @Override public net.minecraft.network.chat.Component getName(ItemStack stack){var name=callbacks.getName(stack);return name==null?super.getName(stack):name;}
     @Override public float getDestroySpeed(ItemStack stack,net.minecraft.world.level.block.state.BlockState state){return callbacks.getDestroySpeed(stack,state);}
     @Override public boolean isCorrectToolForDrops(ItemStack stack,net.minecraft.world.level.block.state.BlockState state){return callbacks.isCorrectToolForDrops(stack,state);}
+    @Override public boolean canPerformAction(ItemStack stack,net.neoforged.neoforge.common.ItemAbility ability){return callbacks.canPerformAction(ability)||super.canPerformAction(stack,ability);}
     @Override public InteractionResult useOn(UseOnContext context){return callbacks.useOn(context);}
     @Override public InteractionResultHolder<ItemStack> use(Level level,Player player,InteractionHand hand){return callbacks.use(level,player,hand);}
     @Override public float getAttackDamageBonus(net.minecraft.world.entity.Entity target,float damage,net.minecraft.world.damagesource.DamageSource source){return callbacks.getAttackDamageBonus(target,damage,source);}

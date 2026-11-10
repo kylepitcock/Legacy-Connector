@@ -30,6 +30,14 @@ public class World implements BlockView {
     public List<Object> entities = new ArrayList<>();
     public List<Object> players = new ArrayList<>();
     public boolean pauseTicking;
+    public int lightningTicksLeft;
+    private long mcc$flashWrittenAt;
+    private static java.util.function.ToIntFunction<Level> mcc$flashReader=level->0;
+    public static void mcc$installFlashReader(java.util.function.ToIntFunction<Level> reader){mcc$flashReader=java.util.Objects.requireNonNull(reader);}
+    public int mcc$get$lightningTicksLeft(){return mcc$level!=null&&mcc$level.isClientSide?mcc$flashReader.applyAsInt(mcc$level):mcc$level==null?lightningTicksLeft:(int)Math.max(0L,(long)lightningTicksLeft-(mcc$level.getGameTime()-mcc$flashWrittenAt));}
+    public void mcc$set$lightningTicksLeft(int ticks){lightningTicksLeft=ticks;if(mcc$level!=null){mcc$flashWrittenAt=mcc$level.getGameTime();mcc$level.setSkyFlashTime(ticks);}}
+
+    public boolean instantBlockUpdateEnabled;
     public int difficulty = 2;
     public Random random = new Random();
     public boolean isRemote;
@@ -59,7 +67,13 @@ public class World implements BlockView {
     public static World mcc$wrap(Level level) {
         if (level == null) return null;
         synchronized (VIEWS) {
-            World view=VIEWS.computeIfAbsent(level, World::new);view.difficulty=level.getDifficulty().getId();return view;
+            World view=VIEWS.get(level);
+            if(view==null){
+                view=new World(level);VIEWS.put(level,view);
+                try{view.dimension=org.kylepitcock.legacyconnector.vb1_7_3.DimensionsB173.providerFor(view);}
+                catch(RuntimeException|LinkageError error){VIEWS.remove(level);throw error;}
+            }
+            view.difficulty=level.getDifficulty().getId();return view;
         }
     }
 
@@ -68,15 +82,33 @@ public class World implements BlockView {
     /** Spawn checks run against unfinished chunks; never request those chunks through the full server level. */
     public static final class GenerationScope implements AutoCloseable {
         private final net.minecraft.server.level.WorldGenRegion previous;
+        private final TerrainReader previousTerrain;
         private boolean closed;
-        private GenerationScope(net.minecraft.world.level.LevelAccessor access) {
+        private GenerationScope(net.minecraft.world.level.LevelAccessor access,TerrainReader terrain) {
             previous=GENERATION.get();
+            previousTerrain=TERRAIN.get();
             if(access instanceof net.minecraft.server.level.WorldGenRegion region)GENERATION.set(region);
             else GENERATION.remove();
+            if(access instanceof net.minecraft.server.level.WorldGenRegion&&terrain!=null)TERRAIN.set(terrain);
+            else TERRAIN.remove();
         }
-        @Override public void close(){if(closed)return;closed=true;if(previous==null)GENERATION.remove();else GENERATION.set(previous);}
+        @Override public void close(){
+            if(closed)return;closed=true;
+            try{
+                var current=GENERATION.get();
+                if(current!=null&&(previous==null||previous.getLevel()!=current.getLevel()))
+                    org.kylepitcock.legacyconnector.vb1_7_3.WorldGenWritesB173.snapshot(current.getLevel());
+            }finally{
+                if(previous==null)GENERATION.remove();else GENERATION.set(previous);
+                if(previousTerrain==null)TERRAIN.remove();else TERRAIN.set(previousTerrain);
+            }
+        }
     }
-    public static GenerationScope mcc$generation(net.minecraft.world.level.LevelAccessor access){return new GenerationScope(access);}
+    /** Detached original terrain only; unavailable reads must return null rather than requesting native chunks. */
+    @FunctionalInterface public interface TerrainReader {BlockState read(int x,int y,int z);}
+    private static final ThreadLocal<TerrainReader> TERRAIN=new ThreadLocal<>();
+    public static GenerationScope mcc$generation(net.minecraft.world.level.LevelAccessor access){return new GenerationScope(access,null);}
+    public static GenerationScope mcc$generation(net.minecraft.world.level.LevelAccessor access,TerrainReader terrain){return new GenerationScope(access,terrain);}
     public static boolean mcc$generationActive(){return GENERATION.get()!=null;}
     /** The region is thread scoped and applies only to views of its own backing level. */
     public net.minecraft.world.level.LevelAccessor mcc$access(){
@@ -87,13 +119,18 @@ public class World implements BlockView {
     public static final class SpawnRegionUnavailable extends RuntimeException {
         private SpawnRegionUnavailable(){super(null,null,false,false);}
     }
+    private boolean regionHasTerrain(int chunkX,int chunkZ){
+        if(!(mcc$access() instanceof net.minecraft.server.level.WorldGenRegion region))return true;
+        if(!region.hasChunk(chunkX,chunkZ))return false;
+        var chunk=region.getChunk(chunkX,chunkZ,net.minecraft.world.level.chunk.status.ChunkStatus.EMPTY,false);
+        return chunk!=null&&!chunk.getPersistedStatus().isBefore(net.minecraft.world.level.chunk.status.ChunkStatus.NOISE);
+    }
+    private TerrainReader missingTerrain(int x,int z){
+        var region=GENERATION.get();
+        return region!=null&&region.getLevel()==mcc$level&&TERRAIN.get()!=null&&!regionHasTerrain(x>>4,z>>4)?TERRAIN.get():null;
+    }
     private void requireRegionChunk(int chunkX,int chunkZ){
-        if(mcc$access() instanceof net.minecraft.server.level.WorldGenRegion region){
-            if(!region.hasChunk(chunkX,chunkZ))throw new SpawnRegionUnavailable();
-            var chunk=region.getChunk(chunkX,chunkZ,net.minecraft.world.level.chunk.status.ChunkStatus.EMPTY,false);
-            if(chunk==null||chunk.getPersistedStatus().isBefore(net.minecraft.world.level.chunk.status.ChunkStatus.NOISE))
-                throw new SpawnRegionUnavailable();
-        }
+        if(!regionHasTerrain(chunkX,chunkZ))throw new SpawnRegionUnavailable();
     }
     /** Native BlockCollisions scans a one-block shell, including its epsilon-expanded boundary. */
     public void mcc$requireSpawnCollisionArea(net.minecraft.world.phys.AABB bounds){
@@ -164,6 +201,7 @@ public class World implements BlockView {
         var access=mcc$access();
         if(access==null)return net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();
         var pending=org.kylepitcock.legacyconnector.vb1_7_3.WorldGenWritesB173.pending(this,pos(x,y,z));if(pending!=null)return pending;
+        var terrain=missingTerrain(x,z);if(terrain!=null){var value=terrain.read(x,y,z);if(value==null)throw new SpawnRegionUnavailable();return value;}
         requireRegionChunk(x>>4,z>>4);return access.getBlockState(pos(x,y,z));
     }
 
@@ -207,6 +245,7 @@ public class World implements BlockView {
 
     @Override
     public float method_1782(int x, int y, int z) {
+        if(missingTerrain(x,z)!=null)return getLightLevel(x,y,z)/15.0F;
         requireRegionChunk(x>>4,z>>4);return mcc$level == null ? 1.0F : mcc$access().getMaxLocalRawBrightness(pos(x, y, z)) / 15.0F;
     }
 
@@ -245,13 +284,32 @@ public class World implements BlockView {
         return mcc$level != null && (mcc$access() instanceof net.minecraft.server.level.WorldGenRegion region?region.hasChunk(x>>4,z>>4):mcc$level.isLoaded(pos(x,y,z)));
     }
 
+    /** Inclusive Beta chunk-presence query; never requests or generates a chunk. */
+    public boolean isRegionLoaded(int x,int y,int z,int radius){
+        return isRegionLoaded(x-radius,y-radius,z-radius,x+radius,y+radius,z+radius);
+    }
+    public boolean isRegionLoaded(int minX,int minY,int minZ,int maxX,int maxY,int maxZ){
+        if(maxY<0||minY>=128)return false;
+        for(int x=minX>>4;x<=maxX>>4;x++)for(int z=minZ>>4;z<=maxZ>>4;z++)
+            if(!isPosLoaded(x<<4,0,z<<4))return false;
+        return true;
+    }
+
     /** Original renderer-owned block gameplay is replayed authoritatively by the hosted server tick. */
     private boolean clientRendererWrite(){return mcc$level.isClientSide&&org.kylepitcock.legacyconnector.vb1_7_3.RendererContextB173.active();}
     private boolean set(int x, int y, int z, int id, int meta, int flags) {
         return set(x, y, z, id, meta, flags, false);
     }
+    /** Original batched writes still synchronize clients but defer neighbor and shape callbacks. */
+    private int writeFlags(int flags){
+        return pauseTicking?(flags&~net.minecraft.world.level.block.Block.UPDATE_NEIGHBORS)
+                |net.minecraft.world.level.block.Block.UPDATE_KNOWN_SHAPE:flags;
+    }
     private boolean set(int x, int y, int z, int id, int meta, int flags, boolean inferDoorHalf) {
         if (mcc$level == null || clientRendererWrite()) return false;
+        if(mcc$access() instanceof net.minecraft.server.level.WorldGenRegion)
+            id=org.kylepitcock.legacyconnector.vb1_7_3.BlockInterceptionB173.intercept(this,
+                    new legacyconnector.vb1_7_3.net.minecraft.src.Loc(x,y,z),id);
         BlockPos p = pos(x, y, z);
         BlockState previous=state(x,y,z);
         if(inferDoorHalf&&BlocksB173.legacyId(previous)==id
@@ -271,11 +329,13 @@ public class World implements BlockView {
                 next = below.setValue(net.minecraft.world.level.block.DoorBlock.HALF,
                         net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER);
         }
-        if (previous == next) return false;
+        // Live writes must reach the native before-write interceptor even when the requested state is unchanged.
+        if (previous == next && (mcc$access() instanceof net.minecraft.server.level.WorldGenRegion
+                || !org.kylepitcock.legacyconnector.vb1_7_3.BlockInterceptionB173.hasInterceptors())) return false;
         boolean chestChange=previous.is(net.minecraft.world.level.block.Blocks.CHEST)||next.is(net.minecraft.world.level.block.Blocks.CHEST);
         if(org.kylepitcock.legacyconnector.vb1_7_3.WorldGenWritesB173.defer(this,p,next)){if(chestChange)chestChanged(p);return true;}
         var access=mcc$access();if(!org.kylepitcock.legacyconnector.core.worldgen.InPlaceStructureGuard.allowWrite(access,p,next))return false;
-        boolean changed=access.setBlock(p,next,access instanceof net.minecraft.server.level.WorldGenRegion?2:flags);
+        boolean changed=access.setBlock(p,next,writeFlags(access instanceof net.minecraft.server.level.WorldGenRegion?2:flags));
         if(changed&&chestChange)chestChanged(p);
         // Original onBlockAdded drops an unsupported torch. Native destruction owns loot and neighbor updates.
         if(changed&&unsupportedTorch&&state(x,y,z)==next)access.destroyBlock(p,true);
@@ -291,7 +351,7 @@ public class World implements BlockView {
     }
     private void writeChestState(BlockPos pos,BlockState state){
         if(org.kylepitcock.legacyconnector.vb1_7_3.WorldGenWritesB173.defer(this,pos,state))return;
-        var access=mcc$access();if(org.kylepitcock.legacyconnector.core.worldgen.InPlaceStructureGuard.allowWrite(access,pos,state))access.setBlock(pos,state,2);
+        var access=mcc$access();if(org.kylepitcock.legacyconnector.core.worldgen.InPlaceStructureGuard.allowWrite(access,pos,state))access.setBlock(pos,state,writeFlags(2));
     }
 
     private boolean torchSupport(int x,int y,int z,int meta){
@@ -342,7 +402,7 @@ public class World implements BlockView {
         if(chest)next=org.kylepitcock.legacyconnector.vb1_7_3.VanillaChestPlacementB173.metadata(pos,state(pos.getX(),pos.getY(),pos.getZ()),next,
                 p->state(p.getX(),p.getY(),p.getZ()),this::writeChestState);
         if(org.kylepitcock.legacyconnector.vb1_7_3.WorldGenWritesB173.defer(this,pos,next)){if(chest)chestChanged(pos);return true;}
-        var access=mcc$access();boolean changed=org.kylepitcock.legacyconnector.core.worldgen.InPlaceStructureGuard.allowWrite(access,pos,next)&&access.setBlock(pos,next,access instanceof net.minecraft.server.level.WorldGenRegion?2:flags);
+        var access=mcc$access();boolean changed=org.kylepitcock.legacyconnector.core.worldgen.InPlaceStructureGuard.allowWrite(access,pos,next)&&access.setBlock(pos,next,writeFlags(access instanceof net.minecraft.server.level.WorldGenRegion?2:flags));
         if(changed&&chest)chestChanged(pos);return changed;
     }
 
@@ -376,15 +436,34 @@ public class World implements BlockView {
 
     /** MCP {@code notifyBlocksOfNeighborChange}. */
     public void notifyNeighbors(int x, int y, int z, int id) {
-        if (mcc$level == null) return;
+        if (mcc$level == null || pauseTicking) return;
         mcc$level.updateNeighborsAt(pos(x, y, z), id > 0 ? BlocksB173.modernBlock(id) : state(x, y, z).getBlock());
     }
 
     /** MCP {@code scheduleBlockUpdate}. */
     public void scheduleBlockUpdate(int x, int y, int z, int id, int delay) {
+        if(instantBlockUpdateEnabled){
+            if(isRegionLoaded(x-8,y-8,z-8,x+8,y+8,z+8)&&id>0&&id<Block.BLOCKS.length
+                    &&getBlockId(x,y,z)==id&&Block.BLOCKS[id]!=null)Block.BLOCKS[id].onTick(this,x,y,z,random);
+            return;
+        }
         if (mcc$level == null || mcc$level.isClientSide) return;
-        mcc$level.scheduleTick(pos(x, y, z), BlocksB173.modernBlock(id), Math.max(1, delay));
+        if(isRegionLoaded(x-8,y-8,z-8,x+8,y+8,z+8))mcc$access().scheduleTick(pos(x,y,z),BlocksB173.modernBlock(id),Math.max(1,delay));
     }
+
+    /** Native fluids own their propagation; generation regions enqueue into their chunk's fluid tick container. */
+    public void mcc$scheduleVanillaFluidTick(int x,int y,int z,int id){
+        if(mcc$level==null||mcc$level.isClientSide||(id!=8&&id!=10))return;
+        var p=pos(x,y,z);
+        if(org.kylepitcock.legacyconnector.vb1_7_3.WorldGenWritesB173.outside(this,p))return;
+        requireRegionChunk(x>>4,z>>4);var access=mcc$access();var fluid=access.getFluidState(p);
+        if(!fluid.isEmpty()&&((id<=9&&fluid.is(net.minecraft.tags.FluidTags.WATER))
+                ||(id>=10&&fluid.is(net.minecraft.tags.FluidTags.LAVA))))
+            access.scheduleTick(p,fluid.getType(),fluid.getType().getTickDelay(access));
+    }
+
+    /** Beta spawn columns start at sea level and stop at the first air block above the column. */
+    public int getSpawnBlockId(int x,int z){int y=63;while(y<127&&!isAir(x,y+1,z))y++;return getBlockId(x,y,z);}
 
     public boolean canPlace(int id, int x, int y, int z, boolean ignoreEntities, int side) {
         if (id <= 0 || id >= Block.BLOCKS.length || Block.BLOCKS[id] == null) return false;
@@ -420,8 +499,21 @@ public class World implements BlockView {
         return mcc$level instanceof net.minecraft.server.level.ServerLevel s ? s.getSeed() : 0;
     }
 
+    /** Original providers retain their own biome manager and its mutable climate arrays. */
+    public legacyconnector.vb1_7_3.net.minecraft.world.biome.source.BiomeSource getBiomeSource(){
+        if(dimension.biomeSource==null)dimension.biomeSource=new legacyconnector.vb1_7_3.net.minecraft.world.biome.source.BiomeSource(this);
+        return dimension.biomeSource;
+    }
+    public legacyconnector.vb1_7_3.net.minecraft.world.biome.source.BiomeSource method_1781(){return getBiomeSource();}
+
     public boolean isRaining() {
         return mcc$level != null && mcc$level.isRaining();
+    }
+
+    /** Rain exposure at the original entity/block position, including shelter and biome precipitation. */
+    public boolean isRaining(int x,int y,int z){
+        if(mcc$level==null)return false;
+        requireRegionChunk(x>>4,z>>4);return mcc$level.isRainingAt(pos(x,y,z));
     }
 
     public boolean isThundering() {
@@ -429,7 +521,15 @@ public class World implements BlockView {
     }
 
     public int getLightLevel(int x, int y, int z) {
+        if(missingTerrain(x,z)!=null)return Math.max(getBrightness(LightType.BLOCK,x,y,z),Math.max(0,getBrightness(LightType.SKY,x,y,z)-ambientDarkness));
         requireRegionChunk(x>>4,z>>4);return mcc$level == null ? 15 : mcc$access().getMaxLocalRawBrightness(pos(x, y, z));
+    }
+
+    /** Raw combined Beta chunk light: unlike getLightLevel, sky darkness is not subtracted. */
+    public int getBrightness(int x, int y, int z) {
+        if(y<0)return 0;
+        int height=Math.min(y,127);
+        return Math.max(getBrightness(LightType.SKY,x,height,z),getBrightness(LightType.BLOCK,x,height,z));
     }
 
     /** Beta's sky darkness subtracted from sky light (0 by day). */
@@ -437,12 +537,28 @@ public class World implements BlockView {
 
     /** MCP {@code getSavedLightValue(EnumSkyBlock, x, y, z)}: the raw light of one channel. */
     public int getBrightness(LightType type, int x, int y, int z) {
+        if(missingTerrain(x,z)!=null){
+            if(type==LightType.BLOCK){
+                int emitted=Block.BLOCKS_LIGHT_LUMINANCE[BlocksB173.legacyId(state(x,y,z))];
+                // The native light engine is a non-loading lookup; retain any already propagated light.
+                return Math.max(emitted,mcc$level.getBrightness(net.minecraft.world.level.LightLayer.BLOCK,pos(x,y,z)));
+            }
+            if(dimension.hasNoSky)return 0;
+            int light=15;
+            for(int height=127;height>=Math.max(0,y)&&light>0;height--){
+                int opacity=Block.BLOCKS_LIGHT_OPACITY[BlocksB173.legacyId(state(x,height,z))];
+                if(opacity==0&&light<15)opacity=1;
+                light=Math.max(0,light-opacity);
+            }
+            return y<0?0:light;
+        }
         requireRegionChunk(x>>4,z>>4);
         if (mcc$level == null) return type.defaultValue;
         return mcc$access().getBrightness(type == LightType.SKY ? net.minecraft.world.level.LightLayer.SKY : net.minecraft.world.level.LightLayer.BLOCK, pos(x, y, z));
     }
 
     public boolean hasSkyLight(int x, int y, int z) {
+        if(missingTerrain(x,z)!=null)return y>=getTopY(x,z);
         requireRegionChunk(x>>4,z>>4);return mcc$level != null && mcc$access().canSeeSky(pos(x, y, z));
     }
 
@@ -457,6 +573,7 @@ public class World implements BlockView {
     }
 
     public int getTopY(int x, int z) {
+        if(missingTerrain(x,z)!=null){for(int y=127;y>=0;y--)if(Block.BLOCKS_LIGHT_OPACITY[BlocksB173.legacyId(state(x,y,z))]>0)return y+1;return 0;}
         requireRegionChunk(x>>4,z>>4);return mcc$level == null ? 64 : mcc$access().getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);
     }
 
@@ -480,10 +597,12 @@ public class World implements BlockView {
     /** Explicit legacy spawns during decoration enter proto chunks through their native generation region. */
     public boolean mcc$spawnNative(net.minecraft.world.entity.Entity entity) {
         if(mcc$level==null||mcc$level.isClientSide)return false;
-        requireRegionChunk(entity.blockPosition().getX()>>4,entity.blockPosition().getZ()>>4);
+        if(mcc$access() instanceof net.minecraft.server.level.WorldGenRegion region)
+            return org.kylepitcock.legacyconnector.vb1_7_3.BetaDeferredGenEntities.stage(region.getLevel(),entity);
         return mcc$access().addFreshEntity(entity);
     }
     public boolean spawnEntity(legacyconnector.vb1_7_3.net.minecraft.entity.Entity entity) {
+        if(entity instanceof legacyconnector.vb1_7_3.net.minecraft.entity.LightningEntity lightning)return mcc$spawnLightning(lightning);
         if(mcc$level==null||entity==null)return false;
         if(entity instanceof legacyconnector.vb1_7_3.net.minecraft.entity.decoration.painting.PaintingEntity painting&&entity.getClass()==legacyconnector.vb1_7_3.net.minecraft.entity.decoration.painting.PaintingEntity.class)return org.kylepitcock.legacyconnector.vb1_7_3.PaintingsB173.spawn(painting);
         if(entity instanceof legacyconnector.vb1_7_3.net.minecraft.entity.ItemEntity item) {
@@ -518,8 +637,18 @@ public class World implements BlockView {
         return org.kylepitcock.legacyconnector.vb1_7_3.NeutralEntitiesB173.spawn(mcc$level,entity);
     }
     public boolean spawnGlobalEntity(legacyconnector.vb1_7_3.net.minecraft.entity.Entity entity){
-        if(!(entity instanceof legacyconnector.vb1_7_3.net.minecraft.entity.LightningEntity))return spawnEntity(entity);
+        if(entity instanceof legacyconnector.vb1_7_3.net.minecraft.entity.LightningEntity lightning)return mcc$spawnLightning(lightning);
+        return spawnEntity(entity);
+    }
+    /** Both original spawn APIs preserve the lightning family before considering neutral entity hosts. */
+    protected boolean mcc$spawnLightning(legacyconnector.vb1_7_3.net.minecraft.entity.LightningEntity entity){
         if(mcc$level==null||mcc$level.isClientSide||entity.mcc$modern!=null)return false;
+        if(entity.getClass()!=legacyconnector.vb1_7_3.net.minecraft.entity.LightningEntity.class){
+            if(!org.kylepitcock.legacyconnector.vb1_7_3.NeutralEntitiesB173.supports(entity.getClass()))return false;
+            var host=new org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Lightning(org.kylepitcock.legacyconnector.LegacyConnector.BETA_LIGHTNING.get(),mcc$level);
+            boolean added=false;try{host.bind(entity);added=mcc$spawnNative(host);if(added)org.kylepitcock.legacyconnector.vb1_7_3.EntityViewsB173.spawned(host,entity);return added;}
+            finally{if(!added){entity.mcc$modern=null;host.discard();}}
+        }
         var bolt=new net.minecraft.world.entity.LightningBolt(net.minecraft.world.entity.EntityType.LIGHTNING_BOLT,mcc$level);bolt.setPos(entity.x,entity.y,entity.z);
         entity.mcc$modern=bolt;boolean added=false;
         try{added=mcc$spawnNative(bolt);if(added)org.kylepitcock.legacyconnector.vb1_7_3.EntityViewsB173.spawned(bolt,entity);return added;}
@@ -690,5 +819,9 @@ public class World implements BlockView {
         }
     }
 
-    public void worldEvent(int event, int x, int y, int z, int data) {}
+    public void updateSleepingPlayers(){if(mcc$level!=null)org.kylepitcock.legacyconnector.vb1_7_3.PlayerViewB173.updateSleepingPlayers(mcc$level);}
+    public void worldEvent(int event, int x, int y, int z, int data) {worldEvent(null,event,x,y,z,data);}
+    public void worldEvent(legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity player,int event,int x,int y,int z,int data) {
+        org.kylepitcock.legacyconnector.vb1_7_3.RecordsB173.worldEvent(this,player,event,x,y,z,data);
+    }
 }

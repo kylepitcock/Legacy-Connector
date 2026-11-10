@@ -35,7 +35,7 @@ public final class SpawnSchedulerB173 {
                     :org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyEntitySpawns.matchesBiome(biome,biomes);
         }
     }
-    private record Catalog(long revision,Map<SpawnGroup,List<Policy>> groups,Set<EntityType<?>> managed) {}
+    static record Catalog(long revision,Map<SpawnGroup,List<Policy>> groups,Set<EntityType<?>> managed) {}
     private record Selection(SpawnGroup group,Holder<Biome> biome,boolean positiveOnly) {}
     private static final class Cycle {
         final ServerLevel level;
@@ -51,6 +51,14 @@ public final class SpawnSchedulerB173 {
     private SpawnSchedulerB173() {}
 
     public static void register(net.neoforged.bus.api.IEventBus bus){
+        // The native custom-spawner lane already supplies its gamerule/tick gates and side flags.
+        // Run first, preserving the ordering of the former invocation hook and every other spawner.
+        bus.addListener(net.neoforged.bus.api.EventPriority.LOWEST,
+                (net.neoforged.neoforge.event.level.ModifyCustomSpawnersEvent event)->
+                        event.getCustomSpawners().add(0,(level,enemies,friendlies)->{
+                            spawn(level,friendlies,enemies);
+                            return 0;
+                        }));
         bus.addListener(net.neoforged.bus.api.EventPriority.LOWEST,
                 (net.neoforged.neoforge.event.level.LevelEvent.PotentialSpawns event)->{
                     Cycle cycle=CURRENT.get();
@@ -66,22 +74,28 @@ public final class SpawnSchedulerB173 {
         long revision=SpawnRulesB173.revision();
         Catalog previous=cached;
         if(previous.revision==revision)return previous;
+        Catalog result=catalog(revision,SpawnRulesB173.changes(),SpawnRulesB173::hostedType,SpawnRulesB173::biomeIds);
+        cached=result;
+        return result;
+    }
+    static Catalog catalog(long revision,List<SpawnRulesB173.Entry> entries,
+            java.util.function.Function<Class<?>,EntityType<?>> resolve,
+            java.util.function.Function<legacyconnector.vb1_7_3.net.minecraft.world.biome.Biome,List<String>> biomeIds){
         var groups=new EnumMap<SpawnGroup,List<Policy>>(SpawnGroup.class);
         var managed=new HashSet<EntityType<?>>();
-        for(var entry:SpawnRulesB173.changes()){
-            EntityType<?> type=SpawnRulesB173.hostedType(entry.type());
-            var biomes=entry.biomes().stream().map(legacyconnector.vb1_7_3.net.minecraft.world.biome.Biome::mcc$modernBiome).toList();
-            if(type!=null&&!biomes.isEmpty()&&biomes.stream().noneMatch(Objects::isNull)){
+        for(var entry:entries){
+            EntityType<?> type=resolve.apply(entry.type());
+            var biomes=new LinkedHashSet<String>();boolean complete=true;
+            for(var biome:entry.biomes()){var ids=biomeIds.apply(biome);if(ids.isEmpty()){complete=false;break;}biomes.addAll(ids);}
+            if(type!=null&&complete&&!biomes.isEmpty()){
                 var standard=legacyconnector.vb1_7_3.net.minecraft.world.biome.Biome.mcc$standardBiomes();
                 boolean overworld=entry.biomes().size()==standard.size()&&entry.biomes().containsAll(standard);
-                groups.computeIfAbsent(entry.group(),ignored->new ArrayList<>()).add(new Policy(type,entry.group(),entry.weight(),overworld,biomes));
+                groups.computeIfAbsent(entry.group(),ignored->new ArrayList<>()).add(new Policy(type,entry.group(),entry.weight(),overworld,List.copyOf(biomes)));
                 managed.add(type);
             }
         }
         groups.replaceAll((group,policies)->List.copyOf(policies));
-        Catalog result=new Catalog(revision,Map.copyOf(groups),Set.copyOf(managed));
-        cached=result;
-        return result;
+        return new Catalog(revision,Map.copyOf(groups),Set.copyOf(managed));
     }
     public static boolean managed(EntityType<?> type){return catalog().managed.contains(type);}
     public static Set<EntityType<?>> ownedTypes(SpawnGroup group,Holder<Biome> biome,boolean positiveOnly){

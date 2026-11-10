@@ -23,23 +23,47 @@ public final class SpawnRulesB173 {
     /** Separate registry makes replacement/removal semantics independently testable. */
     static final class Registry {
         private final Map<Key,Integer> rules=new LinkedHashMap<>();
+        private final Map<Key,Integer> raw=new LinkedHashMap<>();
+        /** Initial provider lists are snapshotted after mod loading. Later public-list mutations require a new snapshot. */
+        synchronized void capture(Collection<Biome> biomes){
+            raw.clear();
+            for(var biome:biomes)if(biome.mcc$modernBiome()==null)for(var group:SpawnGroup.values())
+                for(var spawn:List.copyOf(biome.getSpawnableEntities(group)))if(spawn.clazz!=null&&spawn.amount>0)
+                    raw.merge(new Key(spawn.clazz,group,biome),spawn.amount,Math::max);
+        }
         synchronized void add(Class<?> type,int weight,SpawnGroup group,Biome[] biomes) {
             Objects.requireNonNull(type,"entityClass cannot be null");Objects.requireNonNull(group,"spawnList cannot be null");
             for(Biome biome:biomes==null?Biome.mcc$standardBiomes():Arrays.asList(biomes)) {
                 Objects.requireNonNull(biome,"biome cannot be null");
-                rules.put(new Key(type,group,biome),weight);
+                put(new Key(type,group,biome),weight);
             }
         }
         synchronized void remove(Class<?> type,SpawnGroup group,Biome[] biomes) {
             Objects.requireNonNull(type,"entityClass cannot be null");Objects.requireNonNull(group,"spawnList cannot be null");
-            for(Biome biome:biomes==null?Biome.mcc$standardBiomes():Arrays.asList(biomes)){Objects.requireNonNull(biome,"biome cannot be null");rules.put(new Key(type,group,biome),-1);}
+            for(Biome biome:biomes==null?Biome.mcc$standardBiomes():Arrays.asList(biomes)){Objects.requireNonNull(biome,"biome cannot be null");put(new Key(type,group,biome),-1);}
         }
-        synchronized List<Entry> entries(){return grouped(false);}
-        synchronized List<Entry> changes(){return grouped(true);}
-        private List<Entry> grouped(boolean removals) {
+        private void put(Key key,int weight){
+            rules.keySet().removeIf(existing->existing.biome!=key.biome&&existing.type==key.type&&existing.group==key.group&&sameBiome(existing.biome,key.biome));
+            rules.put(key,weight);
+        }
+        synchronized List<Entry> entries(){return grouped(effective(),false);}
+        synchronized List<Entry> changes(){return grouped(effective(),true);}
+        synchronized List<Entry> overrides(){return grouped(rules,true);}
+        private Map<Key,Integer> effective(){
+            var combined=new LinkedHashMap<>(raw);
+            rules.forEach((key,weight)->{
+                // Re-created provider biome objects retain the same persistent custom-biome identity.
+                combined.replaceAll((existing,old)->existing.type==key.type&&existing.group==key.group&&sameBiome(existing.biome,key.biome)?weight:old);
+                combined.put(key,weight);
+            });
+            return combined;
+        }
+        private static boolean sameBiome(Biome a,Biome b){return a==b||a.mcc$modernBiome()==null&&b.mcc$modernBiome()==null
+                &&a.getClass()==b.getClass()&&Objects.equals(a.name,b.name);}
+        private List<Entry> grouped(Map<Key,Integer> source,boolean removals) {
             record Group(Class<?> type,int weight,SpawnGroup group) {}
             Map<Group,List<Biome>> grouped=new LinkedHashMap<>();
-            rules.forEach((key,weight)->{if(removals||weight>=0)grouped.computeIfAbsent(new Group(key.type,weight,key.group),ignored->new ArrayList<>()).add(key.biome);});
+            source.forEach((key,weight)->{if(removals||weight>=0)grouped.computeIfAbsent(new Group(key.type,weight,key.group),ignored->new ArrayList<>()).add(key.biome);});
             return grouped.entrySet().stream().map(e->new Entry(e.getKey().type,e.getKey().weight,e.getKey().group,List.copyOf(e.getValue()))).toList();
         }
     }
@@ -49,6 +73,10 @@ public final class SpawnRulesB173 {
     static long revision(){return REVISION.get();}
     public static List<Entry> all(){return RULES.entries();}
     public static List<Entry> changes(){return RULES.changes();}
+    public static void prepareCustomBiomes(){
+        RULES.capture(org.kylepitcock.legacyconnector.vb1_7_3.dimension.DimensionRegistrationsB173.customBiomes());REVISION.incrementAndGet();
+    }
+    static List<String> biomeIds(Biome biome){return org.kylepitcock.legacyconnector.vb1_7_3.dimension.DimensionRegistrationsB173.biomeIds(biome);}
     /** Only exact game API classes, never a mod subclass with a similar name. */
     static EntityType<?> vanillaTypeNamed(String name){
         String relative=null;
@@ -80,25 +108,31 @@ public final class SpawnRulesB173 {
         for(var info:MobsB173.all())if(info.registration().type()==original)return info.type();
         return null;
     }
-    static EntityType<?> resolvedType(Class<?> original){EntityType<?> type=hostedType(original);return type!=null?type:vanillaType(original);}
+    public static EntityType<?> resolvedType(Class<?> original){EntityType<?> type=hostedType(original);return type!=null?type:vanillaType(original);}
     public static void contribute(Map<String,Supplier<byte[]>> out) {
-        contribute(out,changes(),original->{
+        // Raw lists already form the custom biome JSON. Only explicit API overlays generate biome modifiers.
+        contribute(out,RULES.overrides(),original->{
             EntityType<?> type=hostedType(original);if(type==null)type=vanillaType(original);
             if(type==null)return null;
             return BuiltInRegistries.ENTITY_TYPE.getKey(type);
         });
     }
     static void contribute(Map<String,Supplier<byte[]>> out,List<Entry> entries,Function<Class<?>,ResourceLocation> resolve) {
+        contribute(out,entries,resolve,SpawnRulesB173::biomeIds);
+    }
+    static void contribute(Map<String,Supplier<byte[]>> out,List<Entry> entries,Function<Class<?>,ResourceLocation> resolve,
+            Function<Biome,List<String>> biomeKeys) {
         int index=0;
         for(Entry entry:entries) {
             boolean vanilla=vanillaType(entry.type)!=null;
-            if(entry.weight==0&&!vanilla)continue;
+            boolean custom=entry.biomes.stream().anyMatch(biome->biome.mcc$modernBiome()==null);
+            if(entry.weight==0&&!vanilla&&!custom)continue;
             ResourceLocation id=resolve.apply(entry.type);if(id==null)continue;
             var ids=new LinkedHashSet<String>();boolean unsupported=false;
             for(Biome biome:entry.biomes) {
-                String modern=biome.mcc$modernBiome();
-                if(modern==null){warn("Unbridged Beta biome "+biome.getClass().getName()+" ("+biome.name+") for "+entry.type.getName());unsupported=true;break;}
-                ids.add(modern);
+                var modern=biomeKeys.apply(biome);
+                if(modern.isEmpty()){warn("Unbridged Beta biome "+biome.getClass().getName()+" ("+biome.name+") for "+entry.type.getName());unsupported=true;break;}
+                ids.addAll(modern);
             }
             if(unsupported||ids.isEmpty())continue;
             EntityType<?> host=hostedType(entry.type);
@@ -109,7 +143,7 @@ public final class SpawnRulesB173 {
             String biomes=entry.biomes.size()==Biome.mcc$standardBiomes().size()&&entry.biomes.containsAll(Biome.mcc$standardBiomes())
                     ?"#minecraft:is_overworld":LegacyEntitySpawns.biomeTag(out,"beta_spawn_"+suffix,ids);
             JsonObject modifier=new JsonObject();modifier.addProperty("biomes",biomes);
-            if(vanilla||entry.weight<0){
+            if(vanilla||custom||entry.weight<0){
                 modifier.addProperty("type","legacyconnector:beta_spawn_override");modifier.addProperty("entity",id.toString());
                 modifier.addProperty("category",entry.group.mcc$modern().getName());modifier.addProperty("weight",Math.max(0,entry.weight));
                 byte[] json=modifier.toString().getBytes(StandardCharsets.UTF_8);

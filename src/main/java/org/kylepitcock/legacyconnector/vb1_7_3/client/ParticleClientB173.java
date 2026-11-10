@@ -23,11 +23,26 @@ public final class ParticleClientB173 {
         String path=png.getPath();return ResourceLocation.fromNamespaceAndPath(png.getNamespace(),path.substring("textures/".length(),path.length()-4));
     }
     private static TextureAtlasSprite admittedSprite(legacyconnector.vb1_7_3.net.minecraft.client.particle.Particle original){
-        var texture=texture(original);if(texture==null){reject(original,"unsupported sheet/cell "+original.getGroup()+":"+original.textureId);return null;}
-        var sprite=Minecraft.getInstance().getTextureAtlas(original.getGroup()==0?TextureAtlas.LOCATION_PARTICLES:TextureAtlas.LOCATION_BLOCKS).apply(texture);
+        var texture=texture(original);if(texture==null){if(ParticlesB173.warnInvalidSprite(original))reject(original,"unsupported sheet/cell "+original.getGroup()+":"+original.textureId);return null;}
+        var minecraft=Minecraft.getInstance();
+        TextureAtlasSprite sprite;
+        if(original.getGroup()==0){
+            // ParticleEngine owns this atlas and registers it with TextureManager; ModelManager only owns block/model atlases.
+            var nativeTexture=minecraft.getTextureManager().getTexture(TextureAtlas.LOCATION_PARTICLES,null);
+            if(!(nativeTexture instanceof TextureAtlas atlas)){reject(original,"native particle atlas is unavailable");return null;}
+            sprite=atlas.getSprite(texture);
+        }else sprite=minecraft.getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(texture);
         if(sprite.contents().name().equals(MissingTextureAtlasSprite.getLocation())){reject(original,"sprite was not stitched: "+texture);return null;}return sprite;
     }
-    public static void install(){ParticlesB173.installClient(original->{var mc=Minecraft.getInstance();if(mc.level!=null&&admittedSprite(original)!=null)mc.particleEngine.add(new Host(mc.level,original));});}
+    public static void install(){
+        BlockBreakParticlesB173.installClient(request->{
+            var mc=Minecraft.getInstance();mc.execute(()->{
+                if(mc.level==null||!mc.level.dimension().location().equals(request.dimension())||request.state().isAir())return;
+                BlockBreakParticlesB173.samples(request.position(),sample->mc.particleEngine.add(new net.minecraft.client.particle.TerrainParticle(
+                        mc.level,sample.x(),sample.y(),sample.z(),sample.velocityX(),sample.velocityY(),sample.velocityZ(),request.state(),request.position())));
+            });
+        });
+        ParticlesB173.installClient(original->{var mc=Minecraft.getInstance();mc.execute(()->{if(mc.level!=null&&admittedSprite(original)!=null)mc.particleEngine.add(new Host(mc.level,original));});});}
     private static final ParticleRenderType BLOCKS=new SheetType(TextureAtlas.LOCATION_BLOCKS);
     private static final ParticleRenderType PARTICLES=new SheetType(TextureAtlas.LOCATION_PARTICLES);
     private record SheetType(ResourceLocation atlas) implements ParticleRenderType {

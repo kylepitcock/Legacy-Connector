@@ -26,11 +26,18 @@ public class Minecraft {
     private static final ThreadLocal<legacyconnector.vb1_7_3.net.minecraft.entity.player.ClientPlayerEntity> PLAYER_OVERRIDE=new ThreadLocal<>();
     public legacyconnector.vb1_7_3.net.minecraft.client.gui.hud.InGameHud inGameHud=new legacyconnector.vb1_7_3.net.minecraft.client.gui.hud.InGameHud();
     public legacyconnector.vb1_7_3.net.minecraft.client.option.GameOptions options=new legacyconnector.vb1_7_3.net.minecraft.client.option.GameOptions();
+    public InteractionManager interactionManager = new InteractionManager(this);
+    public boolean focused;
     public legacyconnector.vb1_7_3.net.minecraft.stat.PlayerStats stats=new legacyconnector.vb1_7_3.net.minecraft.stat.PlayerStats();
     public static final class ContextScope implements AutoCloseable {
         private final Context previous;private final legacyconnector.vb1_7_3.net.minecraft.entity.player.ClientPlayerEntity override;
         private final org.kylepitcock.legacyconnector.vb1_7_3.HookActorStateB173.Scope actor;
-        private ContextScope(World world,legacyconnector.vb1_7_3.net.minecraft.entity.Entity focus){previous=CONTEXT.get();override=PLAYER_OVERRIDE.get();actor=org.kylepitcock.legacyconnector.vb1_7_3.HookActorStateB173.forContext(world,focus);CONTEXT.set(new Context(world,focus));if(world!=null)mcc$instance().world=world;PLAYER_OVERRIDE.remove();}
+        private ContextScope(World world,legacyconnector.vb1_7_3.net.minecraft.entity.Entity focus){
+            previous=CONTEXT.get();override=PLAYER_OVERRIDE.get();World previousWorld=mcc$instance().world;
+            CONTEXT.set(new Context(world,focus));if(world!=null)mcc$instance().world=world;PLAYER_OVERRIDE.remove();
+            try{actor=org.kylepitcock.legacyconnector.vb1_7_3.HookActorStateB173.forContext(world,focus);}
+            catch(RuntimeException|Error error){mcc$instance().world=previousWorld;if(previous==null)CONTEXT.remove();else CONTEXT.set(previous);if(override==null)PLAYER_OVERRIDE.remove();else PLAYER_OVERRIDE.set(override);throw error;}
+        }
         @Override public void close(){try{actor.close();}finally{if(previous==null)CONTEXT.remove();else CONTEXT.set(previous);if(override==null)PLAYER_OVERRIDE.remove();else PLAYER_OVERRIDE.set(override);}}
     }
     public static ContextScope mcc$context(World world,legacyconnector.vb1_7_3.net.minecraft.entity.Entity focus){return new ContextScope(world,focus);}

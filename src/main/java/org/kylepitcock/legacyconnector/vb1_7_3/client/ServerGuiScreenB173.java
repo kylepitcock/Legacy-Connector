@@ -8,9 +8,10 @@ import org.kylepitcock.legacyconnector.vb1_7_3.*;
 
 /** Client terminal for an original screen executing on the initiating player's server thread. */
 public final class ServerGuiScreenB173 extends Screen {
-    private final int id;private CompoundTag frame;private int mouseX,mouseY,pendingKey=-1;private boolean serverClosed;
+    private final int id;private CompoundTag frame;private int mouseX,mouseY,pendingKey=-1;private boolean serverClosed,suspendRemoval;
     public ServerGuiScreenB173(CompoundTag frame){super(Component.empty());id=frame.getInt("id");this.frame=frame;}
     public int sessionId(){return id;}
+    public void suspendForNativeScreen(){suspendRemoval=true;}
     public void frame(CompoundTag frame){this.frame=frame;}
     public void closeFromServer(){serverClosed=true;if(minecraft!=null&&minecraft.screen==this)minecraft.setScreen(null);}
     private void send(String action,java.util.function.Consumer<CompoundTag> values){
@@ -33,6 +34,6 @@ public final class ServerGuiScreenB173 extends Screen {
     @Override public boolean keyPressed(int key,int scan,int modifiers){if(KeysB173.types(key,modifiers)){pendingKey=key;return true;}key(KeysB173.character(key,modifiers),KeysB173.lwjgl(key));return true;}
     @Override public boolean charTyped(char character,int modifiers){key(character,pendingKey<0?0:KeysB173.lwjgl(pendingKey));pendingKey=-1;return true;}
     private void key(char character,int key){send("key",tag->{tag.putInt("character",character);tag.putInt("key",key);if(character==22){String clipboard=minecraft.keyboardHandler.getClipboard();tag.putString("clipboard",clipboard.substring(0,Math.min(32767,clipboard.length())));}});}
-    @Override public void removed(){if(!serverClosed)send("close",tag->{});}
+    @Override public void removed(){if(suspendRemoval){suspendRemoval=false;return;}if(!serverClosed)send("close",tag->{});}
     @Override public boolean isPauseScreen(){return false;}
 }

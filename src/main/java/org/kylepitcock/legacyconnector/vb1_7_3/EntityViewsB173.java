@@ -105,7 +105,13 @@ public final class EntityViewsB173 {
     }
     public static final class ReadOnlyScope implements AutoCloseable {
         private final java.util.Map<net.minecraft.world.entity.Entity,Touched> previous;
-        private ReadOnlyScope(){previous=TOUCHED.get();TOUCHED.set(new java.util.IdentityHashMap<>());}
+        private ReadOnlyScope(){
+            previous=TOUCHED.get();
+            // Queries inside an original callback must see its pending canonical views. An empty
+            // map would refresh those views from native state and erase not-yet-committed writes.
+            // Query-only additions still disappear when this scope restores the original map.
+            TOUCHED.set(new java.util.IdentityHashMap<>(previous));
+        }
         @Override public void close(){TOUCHED.set(previous);}
     }
     /** Render-time relation queries cannot retain touched simulation views or write them back. */
@@ -178,8 +184,9 @@ public final class EntityViewsB173 {
         World world=World.mcc$wrap(modern.level());
         if(modern instanceof LegacyB173Cow cow && cow.legacy()!=null)return cow.legacy();
         if(modern instanceof net.minecraft.world.entity.player.Player p)return PlayerViewB173.of(p);
-        if(modern instanceof net.minecraft.world.entity.LightningBolt)
-            return new legacyconnector.vb1_7_3.net.minecraft.entity.LightningEntity(world,modern.getX(),modern.getY(),modern.getZ());
+        if(modern instanceof net.minecraft.world.entity.LightningBolt bolt){
+            var view=new legacyconnector.vb1_7_3.net.minecraft.entity.LightningEntity(world,modern.getX(),modern.getY(),modern.getZ());view.seed=bolt.seed;return view;
+        }
         if(modern instanceof net.minecraft.world.entity.item.ItemEntity item)
             return new legacyconnector.vb1_7_3.net.minecraft.entity.ItemEntity(world,modern.getX(),modern.getY(),modern.getZ(),StacksB173.toLegacy(item.getItem()));
         if(modern instanceof net.minecraft.world.entity.projectile.AbstractArrow)return new legacyconnector.vb1_7_3.net.minecraft.entity.projectile.ArrowEntity(world);
@@ -289,7 +296,7 @@ public final class EntityViewsB173 {
                 if(view.velocityX!=touched.vx||view.velocityY!=touched.vy||view.velocityZ!=touched.vz) {
                     modern.setDeltaMovement(view.velocityX,view.velocityY,view.velocityZ);modern.hurtMarked=true;
                 }
-                if(view.onGround!=touched.ground)modern.setOnGround(view.onGround);
+                if(view.onGround!=touched.ground)NativeGroundB173.commit(modern,view.onGround);
                 if(view instanceof PathAwareEntity p && p.target!=touched.target && modern instanceof net.minecraft.world.entity.Mob mob)
                     mob.setTarget(p.target!=null && p.target.mcc$modern instanceof net.minecraft.world.entity.LivingEntity target?target:null);
             }

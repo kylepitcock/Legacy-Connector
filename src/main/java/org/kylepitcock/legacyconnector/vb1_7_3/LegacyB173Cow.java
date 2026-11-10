@@ -46,7 +46,7 @@ public final class LegacyB173Cow extends Cow {
         legacy.despawnCounter=getNoActionTime();legacy.dead=isRemoved();
     }
     private void push(){
-        if(!Float.isFinite(legacy.width)||!Float.isFinite(legacy.height)||legacy.width<=0||legacy.height<=0)throw new IllegalStateException("Invalid legacy mob dimensions");
+        if(!Float.isFinite(legacy.width)||!Float.isFinite(legacy.height)||legacy.width<0||legacy.height<0)throw new IllegalStateException("Invalid legacy mob dimensions");
         setPos(legacy.x,legacy.y,legacy.z);setYRot(legacy.yaw);setXRot(legacy.pitch);
         setDeltaMovement(legacy.velocityX,legacy.velocityY,legacy.velocityZ);setHealth(legacy.health);setRemainingFireTicks(legacy.fireTicks);
         setNoActionTime(legacy.despawnCounter);

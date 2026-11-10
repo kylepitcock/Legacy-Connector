@@ -301,7 +301,9 @@ public class Block {
     public void neighborUpdate(legacyconnector.vb1_7_3.net.minecraft.world.World world, int x, int y, int z, int neighborId) {}
 
     /** MCP {@code updateTick}: scheduled and random ticks. */
-    public void onTick(legacyconnector.vb1_7_3.net.minecraft.world.World world, int x, int y, int z, Random random) {}
+    public void onTick(legacyconnector.vb1_7_3.net.minecraft.world.World world, int x, int y, int z, Random random) {
+        if(mcc$owner==null&&(id==8||id==10))world.mcc$scheduleVanillaFluidTick(x,y,z,id);
+    }
 
     /** MCP {@code randomDisplayTick}: client particles. */
     public void randomDisplayTick(legacyconnector.vb1_7_3.net.minecraft.world.World world, int x, int y, int z, Random random) {}

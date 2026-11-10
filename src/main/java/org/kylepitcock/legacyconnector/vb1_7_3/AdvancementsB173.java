@@ -102,6 +102,7 @@ public final class AdvancementsB173 {
             }
             return;
         }
+        if(StatisticsB173.increment(player,stat,amount))return;
         var persistent=player.getPersistentData();var counters=persistent.getCompound("legacyconnector_beta_stats");
         String key=stat.mcc$namespace+":"+stat.id;
         counters.putInt(key,(int)Math.min(Integer.MAX_VALUE,(long)counters.getInt(key)+amount));persistent.put("legacyconnector_beta_stats",counters);

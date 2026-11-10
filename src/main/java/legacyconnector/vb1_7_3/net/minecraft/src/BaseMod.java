@@ -16,6 +16,7 @@ public abstract class BaseMod {
 
     public void AddRenderer(java.util.Map<?, ?> renderers) {}
     public void RegisterAnimation(legacyconnector.vb1_7_3.net.minecraft.client.Minecraft minecraft){}
+    public void KeyboardEvent(legacyconnector.vb1_7_3.net.minecraft.client.option.KeyBinding key){}
     public boolean OnTickInGame(legacyconnector.vb1_7_3.net.minecraft.client.Minecraft minecraft){return false;}
     public boolean OnTickInGUI(legacyconnector.vb1_7_3.net.minecraft.client.Minecraft minecraft,
             legacyconnector.vb1_7_3.net.minecraft.client.gui.screen.Screen screen){return false;}

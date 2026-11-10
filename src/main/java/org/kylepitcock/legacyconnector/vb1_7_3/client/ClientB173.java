@@ -20,6 +20,16 @@ public final class ClientB173 implements MenusB173.Client {
     private ClientB173() {}
 
     public static void register(IEventBus modBus) {
+        WorldStorageClientB173.install();
+        PlayerPresentationClientB173.install();
+        PlayerRendererClientB173.install();
+        org.kylepitcock.legacyconnector.vb1_7_3.HudOverlayB173.installClient(text->{
+            var mc=Minecraft.getInstance();mc.execute(()->mc.gui.setOverlayMessage(net.minecraft.network.chat.Component.literal(text),true));
+        });
+        KeyClientB173.register(modBus);
+        legacyconnector.vb1_7_3.net.minecraft.client.option.GameOptions.mcc$graphics(Minecraft::useFancyGraphics);
+        modBus.addListener((net.neoforged.neoforge.client.event.RegisterDimensionSpecialEffectsEvent event) ->
+                event.register(org.kylepitcock.legacyconnector.vb1_7_3.DimensionsB173.EFFECTS, new DimensionEffectsB173()));
         legacyconnector.vb1_7_3.org.lwjgl.input.Keyboard.mcc$keys(code->{
             if(code==0)return false;
             for(var binding:Minecraft.getInstance().options.keyMappings)
@@ -92,7 +102,7 @@ public final class ClientB173 implements MenusB173.Client {
 
     @Override public net.minecraft.world.entity.player.Player localPlayer(){
         var mc=Minecraft.getInstance();
-        legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$instance().options.jumpKey.code=KeysB173.lwjgl(mc.options.keyJump.getKey().getValue());
+        legacyconnector.vb1_7_3.net.minecraft.client.option.KeyBinding.mcc$set$code(legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$instance().options.jumpKey,KeysB173.lwjgl(mc.options.keyJump.getKey().getValue()));
         return mc.player;
     }
     private static final class AdvancementAccess {
@@ -130,8 +140,14 @@ public final class ClientB173 implements MenusB173.Client {
                 if (mc.screen instanceof AbstractContainerScreen<?> && mc.player != null) mc.player.closeContainer();
                 else if(mc.screen instanceof LegacyB173PlainScreen plain)plain.onClose();
                 else mc.setScreen(null);
+            } else if(screen.getClass()==legacyconnector.vb1_7_3.net.minecraft.client.gui.screen.TitleScreen.class){
+                mc.setScreen(new net.minecraft.client.gui.screens.TitleScreen());
             } else if (screen.getClass() == legacyconnector.vb1_7_3.net.minecraft.client.gui.screen.ingame.InventoryScreen.class) {
                 if (mc.player != null) mc.setScreen(new net.minecraft.client.gui.screens.inventory.InventoryScreen(mc.player));
+            } else if(org.kylepitcock.legacyconnector.vb1_7_3.NativeScreenRoutesB173.route(screen)==org.kylepitcock.legacyconnector.vb1_7_3.NativeScreenRoutesB173.Route.ACHIEVEMENTS){
+                if(mc.getConnection()!=null)mc.setScreen(new net.minecraft.client.gui.screens.advancements.AdvancementsScreen(mc.getConnection().getAdvancements(),mc.screen));
+            } else if(org.kylepitcock.legacyconnector.vb1_7_3.NativeScreenRoutesB173.route(screen)==org.kylepitcock.legacyconnector.vb1_7_3.NativeScreenRoutesB173.Route.STATS){
+                if(mc.player!=null)mc.setScreen(new net.minecraft.client.gui.screens.achievement.StatsScreen(mc.screen,mc.player.getStats()));
             } else {
                 var parent=mc.screen instanceof LegacyB173PlainScreen plain?plain.returnScreen():
                         mc.screen instanceof net.minecraft.client.gui.screens.options.OptionsScreen?mc.screen:null;
@@ -142,6 +158,14 @@ public final class ClientB173 implements MenusB173.Client {
 
     @Override public void remoteFrame(net.minecraft.nbt.CompoundTag frame){
         Minecraft mc=Minecraft.getInstance();mc.execute(()->{
+            if(frame.contains("nativeScreen")){
+                Screen target=switch(frame.getString("nativeScreen")){
+                    case "ACHIEVEMENTS"->new legacyconnector.vb1_7_3.net.minecraft.client.gui.screen.AchievementsScreen(null);
+                    case "STATS"->new legacyconnector.vb1_7_3.net.minecraft.client.gui.screen.StatsScreen(null,null);
+                    default->null;
+                };
+                if(target!=null){if(mc.screen instanceof ServerGuiScreenB173 remote)remote.suspendForNativeScreen();setScreen(target);}return;
+            }
             if(frame.getBoolean("closed")){if(mc.screen instanceof ServerGuiScreenB173 remote&&(frame.getInt("id")==0||remote.sessionId()==frame.getInt("id")))remote.closeFromServer();return;}
             if(mc.screen instanceof ServerGuiScreenB173 remote&&remote.sessionId()==frame.getInt("id"))remote.frame(frame);
             else mc.setScreen(new ServerGuiScreenB173(frame));

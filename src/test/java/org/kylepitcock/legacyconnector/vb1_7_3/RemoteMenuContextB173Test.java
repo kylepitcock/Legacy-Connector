@@ -111,4 +111,41 @@ class RemoteMenuContextB173Test {
             assertNull(RemoteMenuContextB173.read(buffer));assertEquals(before,buffer.readerIndex(),"oversized context is rejected before NBT allocation");
         }finally{buffer.release();}
     }
+    public static class InterfaceGui extends HandledScreen {
+        final String title;
+        public InterfaceGui(Inventory upper,Inventory lower,int tier){
+            super(new Handler((PlayerInventory)upper,(Tile)lower));
+            title=switch(tier){case 17->"seventeen";case 42->"forty-two";default->"other";};
+        }
+        @Override public void drawBackground(float partial){}
+    }
+    public static class UnsupportedGui extends HandledScreen {
+        public UnsupportedGui(Inventory upper,Inventory lower,Object arbitrary){super(new Handler((PlayerInventory)upper,(Tile)lower));}
+        @Override public void drawBackground(float partial){}
+    }
+    @Test void recordedInventoryInterfacesAndComputedPrimitiveStateReconstructCanonicalInventories()throws Exception{
+        var player=inventory();var source=tile(3,47);var gui=new InterfaceGui(player,source,42);
+        MenuConstructorStateB173.record(gui,InterfaceGui.class,"(Llegacyconnector/vb1_7_3/net/minecraft/inventory/Inventory;Llegacyconnector/vb1_7_3/net/minecraft/inventory/Inventory;I)V",new Object[]{player,source,42});
+        var context=RemoteMenuContextB173.capture(gui);assertTrue(context.contains("constructor",Tag.TAG_COMPOUND));
+        assertEquals(42,context.getCompound("constructor").getList("arguments",Tag.TAG_COMPOUND).getCompound(2).getInt("value"));
+        var world=new ClientWorld();var canonical=tile(3,0);world.put(canonical);
+        var restored=(InterfaceGui)RemoteMenuContextB173.construct(InterfaceGui.class,context,player,world,layout());
+        assertNotNull(restored);assertEquals("forty-two",restored.title);assertSame(player,restored.container.slots.get(1).inventory);assertSame(canonical,restored.container.slots.getFirst().inventory);assertEquals(47,canonical.progress);
+        var bad=context.copy();bad.getCompound("constructor").putString("descriptor","(Ljava/lang/Object;)V");int reads=canonical.reads;
+        assertNull(RemoteMenuContextB173.construct(InterfaceGui.class,bad,player,world,layout()));assertEquals(reads,canonical.reads);
+        bad=context.copy();bad.getCompound("constructor").getList("arguments",Tag.TAG_COMPOUND).getCompound(2).putString("kind","java.lang.String");
+        assertNull(RemoteMenuContextB173.construct(InterfaceGui.class,bad,player,world,layout()));assertEquals(reads,canonical.reads);
+    }
+    @Test void unsupportedArgumentsAndMissingCaptureKeepFallbackWithoutGuessingMetadata()throws Exception{
+        var player=inventory();var source=tile(3,1);var world=new ClientWorld();world.put(tile(3,0));
+        var gui=new InterfaceGui(player,source,17);
+        assertFalse(RemoteMenuContextB173.capture(gui).contains("constructor"));
+        assertNull(RemoteMenuContextB173.construct(InterfaceGui.class,RemoteMenuContextB173.capture(gui),player,world,layout()));
+        var unsupported=new UnsupportedGui(player,source,new Object());
+        MenuConstructorStateB173.record(unsupported,UnsupportedGui.class,"(Llegacyconnector/vb1_7_3/net/minecraft/inventory/Inventory;Llegacyconnector/vb1_7_3/net/minecraft/inventory/Inventory;Ljava/lang/Object;)V",new Object[]{player,source,new Object()});
+        assertFalse(RemoteMenuContextB173.capture(unsupported).contains("constructor"));
+        assertNull(RemoteMenuContextB173.construct(UnsupportedGui.class,RemoteMenuContextB173.capture(unsupported),player,world,layout()));
+        var machine=new Gui(player,source);assertNotNull(RemoteMenuContextB173.construct(Gui.class,RemoteMenuContextB173.capture(machine),player,world,layout()));
+    }
+
 }

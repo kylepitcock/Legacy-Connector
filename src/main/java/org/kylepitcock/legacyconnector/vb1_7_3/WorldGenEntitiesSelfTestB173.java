@@ -14,7 +14,7 @@ import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.event.server.ServerStartedEvent;
 
-/** Opt-in proof that explicit Beta decoration spawns enter native proto-chunk entity NBT. */
+/** Opt-in proof that explicit Beta decoration spawns become committed immutable native entity NBT. */
 public final class WorldGenEntitiesSelfTestB173 {
     private static final org.slf4j.Logger LOG=org.slf4j.LoggerFactory.getLogger("LegacyConnector/B173WorldGenEntitiesTest");
     private WorldGenEntitiesSelfTestB173(){}
@@ -40,7 +40,7 @@ public final class WorldGenEntitiesSelfTestB173 {
         });
         var center=chunks.get(new ChunkPos(cx,cz));var region=new WorldGenRegion(level,cache,step,center);
         var world=World.mcc$wrap(level);
-        EntityViewsB173.flush();
+        EntityViewsB173.flush();var data=BetaDeferredGenData.of(level);var expected=new java.util.ArrayList<java.util.UUID>();
         try(var scope=World.mcc$generation(region)){
             // Cache membership is insufficient: a native early proto chunk contains no terrain yet.
             require(region.hasChunk(cx,cz),"fixture center is present in the native region cache");
@@ -48,7 +48,7 @@ public final class WorldGenEntitiesSelfTestB173 {
                 center.setPersistedStatus(status);
                 boolean rejected=false;
                 try{world.getBlockId(cx*16,80,cz*16);}
-                catch(World.SpawnRegionUnavailable expected){rejected=true;}
+                catch(World.SpawnRegionUnavailable unavailable){rejected=true;}
                 require(rejected,"cached terrain-unready "+status+" read rejects instead of reporting air");
             }
             center.setPersistedStatus(ChunkStatus.NOISE);
@@ -60,14 +60,25 @@ public final class WorldGenEntitiesSelfTestB173 {
             var arrow=new legacyconnector.vb1_7_3.net.minecraft.entity.projectile.ArrowEntity(world);
             arrow.setPosition(cx*16+1.5,80,cz*16+.5);
             require(world.spawnEntity(arrow),"original exact arrow API accepts generation spawn");
-            require(center.getEntities().size()==2,"both explicit spawns are serialized in the supplied proto chunk");
+            require(center.getEntities().isEmpty(),"generation entities bypass proto chunks and all live entity insertion");
+            item.stack.count=3; // A post-spawn mutation must be captured at population finish, not at spawn time.
             for(var original:java.util.List.of(item,arrow)){
                 var uuid=original.mcc$modern.getUUID();
-                require(center.getEntities().stream().anyMatch(tag->tag.hasUUID("UUID")&&tag.getUUID("UUID").equals(uuid)),"proto-chunk NBT retains spawned UUID");
+                expected.add(uuid);
+                require(data.entityEntries().stream().noneMatch(entry->entry.uuid().equals(uuid)),"native entity NBT is not published before population finish");
                 require(level.getEntity(uuid)==null,"generation spawn bypasses live server entity insertion");
             }
         }finally{EntityViewsB173.flush();}
         require(world.mcc$access()==level,"generation entity scope restores ordinary level");
-        LOG.info("B1.7.3 WORLDGEN ENTITY TEST: original item and arrow serialize into native proto chunks with UUIDs; ordinary backing level restored");
+        try{
+            for(var uuid:expected){
+                var entry=data.entityEntries().stream().filter(value->value.uuid().equals(uuid)).findFirst().orElseThrow();
+                require(data.entityReady(entry.sequence()),"completed population makes immutable entity NBT ready");
+                require(entry.nbt().getUUID("UUID").equals(uuid),"durable native entity NBT retains its UUID");
+                require(level.getEntity(uuid)==null,"unloaded generation target does not cause a live insertion or chunk load");
+                if(entry.nbt().getString("id").equals("minecraft:item"))require(entry.nbt().getCompound("Item").getInt("count")==3,"final post-spawn native item count survives snapshot");
+            }
+        }finally{for(var entry:data.entityEntries())if(expected.contains(entry.uuid()))data.acceptedEntity(entry.sequence());}
+        LOG.info("B1.7.3 WORLDGEN ENTITY TEST: original item and arrow stage until population finish, preserve UUID/final item state in committed native NBT, and never insert into proto/live chunks");
     }
 }

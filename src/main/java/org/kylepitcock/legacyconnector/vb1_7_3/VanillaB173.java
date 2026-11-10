@@ -55,7 +55,8 @@ public final class VanillaB173 {
             Map.entry("CHAIN_LEGGINGS", "chainmail_leggings"), Map.entry("CHAIN_BOOTS", "chainmail_boots"), Map.entry("RAW_PORKCHOP", "porkchop"),
             Map.entry("SIGN", "oak_sign"), Map.entry("WOODEN_DOOR", "oak_door"), Map.entry("BOAT", "oak_boat"), Map.entry("CLAY", "clay_ball"),
             Map.entry("RAW_FISH", "cod"), Map.entry("COOKED_FISH", "cooked_cod"), Map.entry("DYE", "ink_sac"), Map.entry("BED", "red_bed"),
-            Map.entry("MAP", "filled_map"), Map.entry("RECORD_THIRTEEN", "music_disc_13"), Map.entry("RECORD_CAT", "music_disc_cat"));
+            Map.entry("MAP", "filled_map"), Map.entry("SLIMEBALL", "slime_ball"),
+            Map.entry("RECORD_THIRTEEN", "music_disc_13"), Map.entry("RECORD_CAT", "music_disc_cat"));
 
     private static final String[] COLORS = {"white", "orange", "magenta", "light_blue", "yellow", "lime", "pink", "gray", "light_gray", "cyan",
             "purple", "blue", "brown", "green", "red", "black"};
@@ -166,13 +167,45 @@ public final class VanillaB173 {
     }
 
     private static Item itemView(Row row, Class<?> minimum) {
-        Object o = instantiate(row.type(), minimum);
+        Item complete=toolView(row);
+        if(complete==null)complete=armorView(row);
+        Object o = complete!=null?complete:instantiate(row.type(), minimum);
         if (!(o instanceof Item i)) return null;
+        if(!minimum.isInstance(i))return null;
         var modern = modernItem(row.id(), 0);
         i.mcc$initVanilla(row.id(), modern == null ? 64 : modern.getDefaultMaxStackSize(),
-                modern == null ? 0 : modern.getDefaultInstance().getMaxDamage(), "item." + camel(row.field()));
+                complete!=null?complete.getMaxDamage():modern == null ? 0 : modern.getDefaultInstance().getMaxDamage(), "item." + camel(row.field()));
         i.mcc$modern = modern;
         return i;
+    }
+    private static Item armorView(Row row){
+        if(!row.type().equals("net.minecraft.item.ArmorItem"))return null;
+        int separator=row.field().indexOf('_');
+        int texture=switch(row.field().substring(0,separator)){
+            case "LEATHER"->0;case "CHAIN"->1;case "IRON"->2;case "DIAMOND"->3;case "GOLDEN"->4;
+            default->throw new IllegalStateException("Unknown vanilla armor material "+row.field());
+        };
+        int slot=switch(row.field().substring(separator+1)){
+            case "HELMET"->0;case "CHESTPLATE"->1;case "LEGGINGS"->2;case "BOOTS"->3;
+            default->throw new IllegalStateException("Unknown vanilla armor slot "+row.field());
+        };
+        return legacyconnector.vb1_7_3.net.minecraft.item.ArmorItem.mcc$vanilla(row.id(),texture==4?1:texture,texture,slot);
+    }
+    private static Item toolView(Row row){
+        if(!row.type().equals("net.minecraft.item.PickaxeItem")&&!row.type().equals("net.minecraft.item.AxeItem")&&!row.type().equals("net.minecraft.item.ShovelItem"))return null;
+        var material=switch(row.field().substring(0,row.field().indexOf('_'))){
+            case "WOODEN"->legacyconnector.vb1_7_3.net.minecraft.item.ToolMaterial.WOOD;
+            case "STONE"->legacyconnector.vb1_7_3.net.minecraft.item.ToolMaterial.STONE;
+            case "IRON"->legacyconnector.vb1_7_3.net.minecraft.item.ToolMaterial.IRON;
+            case "DIAMOND"->legacyconnector.vb1_7_3.net.minecraft.item.ToolMaterial.DIAMOND;
+            case "GOLDEN"->legacyconnector.vb1_7_3.net.minecraft.item.ToolMaterial.GOLD;
+            default->throw new IllegalStateException("Unknown vanilla tool material "+row.field());
+        };
+        return switch(row.type()){
+            case "net.minecraft.item.PickaxeItem"->legacyconnector.vb1_7_3.net.minecraft.item.PickaxeItem.mcc$vanilla(row.id(),material);
+            case "net.minecraft.item.AxeItem"->legacyconnector.vb1_7_3.net.minecraft.item.AxeItem.mcc$vanilla(row.id(),material);
+            default->legacyconnector.vb1_7_3.net.minecraft.item.ShovelItem.mcc$vanilla(row.id(),material);
+        };
     }
 
     /** An instance of the legacy class (the synthesized one when it exists), else of {@code minimum}, without running a constructor. */

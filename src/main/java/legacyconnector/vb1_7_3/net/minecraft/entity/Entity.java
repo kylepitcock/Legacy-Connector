@@ -11,11 +11,24 @@ import legacyconnector.vb1_7_3.net.minecraft.world.World;
 public abstract class Entity {
     private static int nextId;
 
+    /** Typed Beta NBT helpers used by original entity save implementations. */
+    protected legacyconnector.vb1_7_3.net.minecraft.nbt.NbtList toNbtList(double... values){
+        var list=new legacyconnector.vb1_7_3.net.minecraft.nbt.NbtList();
+        for(double value:values)list.add(new legacyconnector.vb1_7_3.net.minecraft.nbt.NbtDouble(value));
+        return list;
+    }
+    protected legacyconnector.vb1_7_3.net.minecraft.nbt.NbtList toNbtList(float... values){
+        var list=new legacyconnector.vb1_7_3.net.minecraft.nbt.NbtList();
+        for(float value:values)list.add(new legacyconnector.vb1_7_3.net.minecraft.nbt.NbtFloat(value));
+        return list;
+    }
+
     public int id = nextId++;
     public double renderDistanceMultiplier = 1.0;
     public boolean blocksSameBlockSpawning;
     public Entity passenger;
     public Entity vehicle;
+    private double vehicleYawDelta,vehiclePitchDelta;
     public World world;
     public double prevX;
     public double prevY;
@@ -149,6 +162,28 @@ public abstract class Entity {
     public boolean isTouchingLava(){return mcc$modern!=null&&mcc$modern.isInLava();}
     public boolean isPushable(){return false;}
     public boolean hasVehicle(){return vehicle!=null;}
+    /** Original additive impulse hook; subclasses can reject pushes by overriding it. */
+    public void addVelocity(double x,double y,double z){velocityX+=x;velocityY+=y;velocityZ+=z;}
+    /** Passenger update owns its one virtual tick and the vehicle's original placement callback. */
+    public void tickRiding(){
+        if(vehicle==null)return;
+        if(vehicle.dead){vehicle=null;return;}
+        velocityX=velocityY=velocityZ=0;
+        tick();
+        if(vehicle==null)return;
+        vehicle.updatePassengerPosition();
+        vehicleYawDelta+=vehicle.yaw-vehicle.prevYaw;
+        vehiclePitchDelta+=vehicle.pitch-vehicle.prevPitch;
+        while(vehicleYawDelta>=180)vehicleYawDelta-=360;
+        while(vehicleYawDelta< -180)vehicleYawDelta+=360;
+        while(vehiclePitchDelta>=180)vehiclePitchDelta-=360;
+        while(vehiclePitchDelta< -180)vehiclePitchDelta+=360;
+        double yawStep=Math.max(-10,Math.min(10,vehicleYawDelta*.5));
+        double pitchStep=Math.max(-10,Math.min(10,vehiclePitchDelta*.5));
+        vehicleYawDelta-=yawStep;vehiclePitchDelta-=pitchStep;
+        yaw=(float)(yaw+yawStep);pitch=(float)(pitch+pitchStep);
+    }
+
     public boolean getEntitiesInside(double dx,double dy,double dz){
         if(world==null||boundingBox==null)return false;var box=boundingBox.offset(dx,dy,dz);
         return world.getEntityCollisions(this,box).isEmpty()&&!world.isBoxSubmergedInFluid(box);
@@ -157,7 +192,7 @@ public abstract class Entity {
         if(other==null||other==vehicle||other==passenger)return;
         double dx=other.x-x,dz=other.z-z,d=Math.max(Math.abs(dx),Math.abs(dz));if(d<.01)return;
         d=Math.sqrt(d);dx/=d;dz/=d;double factor=Math.min(1,1/d)*.05*(1-pushSpeedReduction);dx*=factor;dz*=factor;
-        velocityX-=dx;velocityZ-=dz;other.velocityX+=dx;other.velocityZ+=dz;velocityModified=other.velocityModified=true;
+        addVelocity(-dx,0,-dz);other.addVelocity(dx,0,dz);velocityModified=other.velocityModified=true;
     }
     public void lookAt(Entity other,float yawLimit,float pitchLimit){
         double dx=other.x-x,dz=other.z-z,dy=other.y+other.getEyeHeight()-(y+getEyeHeight());
@@ -185,6 +220,23 @@ public abstract class Entity {
     public final void mcc$environment(boolean inWater){submergedInWater=inWater;}
     public boolean checkWaterCollisions() { return mcc$modern != null && mcc$modern.isInWater(); }
     public boolean isSubmergedInWater() { return submergedInWater; }
+    /** Eye-fluid query, distinct from cached whole-body water contact and rain. */
+    public boolean isInFluid(legacyconnector.vb1_7_3.net.minecraft.block.material.Material material){
+        if(material==null||!material.isFluid())return false;
+        if(mcc$modern!=null){
+            if(material==legacyconnector.vb1_7_3.net.minecraft.block.material.Material.WATER)return mcc$modern.isEyeInFluid(net.minecraft.tags.FluidTags.WATER);
+            if(material==legacyconnector.vb1_7_3.net.minecraft.block.material.Material.LAVA)return mcc$modern.isEyeInFluid(net.minecraft.tags.FluidTags.LAVA);
+        }
+        if(world==null)return false;
+        double eye=y+getEyeHeight();int bx=(int)Math.floor(x),by=(int)Math.floor(eye),bz=(int)Math.floor(z);
+        if(world.getBlockId(bx,by,bz)==0||world.getMaterial(bx,by,bz)!=material)return false;
+        int metadata=world.getBlockMeta(bx,by,bz);if(metadata>=8)metadata=0;
+        float depth=(metadata+1)/9F-1F/9F;
+        return eye<(float)(by+1)-depth;
+    }
+    public boolean isWet(){
+        return submergedInWater||world!=null&&world.isRaining((int)Math.floor(x),(int)Math.floor(y),(int)Math.floor(z));
+    }
     public boolean damage(Entity attacker, int amount) {
         if (mcc$modern instanceof org.kylepitcock.legacyconnector.vb1_7_3.B173EntityHost host) return host.baseDamage(attacker, amount);
         if (mcc$modern == null) return false;
@@ -200,6 +252,29 @@ public abstract class Entity {
         return damaged;
     }
     public void onPlayerInteraction(legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity player) {}
+    /** Full original entity envelope; custom entity payload stays virtual through writeNbt/readNbt. */
+    public void write(legacyconnector.vb1_7_3.net.minecraft.nbt.NbtCompound tag){
+        tag.put("Pos",toNbtList(x,y+cameraOffset,z));
+        tag.put("Motion",toNbtList(velocityX,velocityY,velocityZ));
+        tag.put("Rotation",toNbtList(yaw,pitch));
+        tag.putFloat("FallDistance",fallDistance);tag.putShort("Fire",(short)fireTicks);
+        tag.putShort("Air",(short)air);tag.putBoolean("OnGround",onGround);
+        writeNbt(tag);
+    }
+    public void read(legacyconnector.vb1_7_3.net.minecraft.nbt.NbtCompound tag){
+        var position=tag.getList("Pos");var motion=tag.getList("Motion");var rotation=tag.getList("Rotation");
+        velocityX=((legacyconnector.vb1_7_3.net.minecraft.nbt.NbtDouble)motion.get(0)).value;
+        velocityY=((legacyconnector.vb1_7_3.net.minecraft.nbt.NbtDouble)motion.get(1)).value;
+        velocityZ=((legacyconnector.vb1_7_3.net.minecraft.nbt.NbtDouble)motion.get(2)).value;
+        if(Math.abs(velocityX)>10)velocityX=0;if(Math.abs(velocityY)>10)velocityY=0;if(Math.abs(velocityZ)>10)velocityZ=0;
+        prevX=lastTickX=x=((legacyconnector.vb1_7_3.net.minecraft.nbt.NbtDouble)position.get(0)).value;
+        prevY=lastTickY=y=((legacyconnector.vb1_7_3.net.minecraft.nbt.NbtDouble)position.get(1)).value;
+        prevZ=lastTickZ=z=((legacyconnector.vb1_7_3.net.minecraft.nbt.NbtDouble)position.get(2)).value;
+        prevYaw=yaw=((legacyconnector.vb1_7_3.net.minecraft.nbt.NbtFloat)rotation.get(0)).value;
+        prevPitch=pitch=((legacyconnector.vb1_7_3.net.minecraft.nbt.NbtFloat)rotation.get(1)).value;
+        fallDistance=tag.getFloat("FallDistance");fireTicks=tag.getShort("Fire");air=tag.getShort("Air");onGround=tag.getBoolean("OnGround");
+        setPosition(x,y,z);setRotation(yaw,pitch);readNbt(tag);
+    }
     public void writeNbt(legacyconnector.vb1_7_3.net.minecraft.nbt.NbtCompound tag) {
         tag.putFloat("FallDistance", fallDistance);tag.putShort("Fire", (short)fireTicks);
         tag.putShort("Air", (short)air);tag.putBoolean("OnGround", onGround);
@@ -272,12 +347,12 @@ public abstract class Entity {
     }
 
     public void setPositionAndAnglesKeepPrevAngles(double x, double y, double z, float yaw, float pitch) {
-        setPosition(x,y,z);
-        this.prevX = this.x = x;
-        this.prevY = this.y = y;
-        this.prevZ = this.z = z;
+        this.lastTickX = this.prevX = this.x = x;
+        this.lastTickY = this.prevY = this.y = y + (double) standingEyeHeight;
+        this.lastTickZ = this.prevZ = this.z = z;
         this.yaw = yaw;
         this.pitch = pitch;
+        setPosition(this.x,this.y,this.z);
     }
 
     public float getDistance(Entity other) {

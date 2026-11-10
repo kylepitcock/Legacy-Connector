@@ -6,6 +6,13 @@ import legacyconnector.vb1_7_3.net.minecraft.src.BaseMod;
 import org.junit.jupiter.api.Test;
 
 class ServerGameHooksB173Test {
+    @org.junit.jupiter.api.Test void nativeFocusSurvivesPresentationContextRoundtripWithoutScreenApproximation(){
+        var focused=new ServerGameHooksB173.Context(854,480,427,240,2,false,false,false,false,true,new int[256]);
+        var unfocused=new ServerGameHooksB173.Context(854,480,427,240,2,false,false,false,false,false,new int[256]);
+        assertTrue(GameHookNetworkB173.readContext(GameHookNetworkB173.writeContext(focused)).focused());
+        assertFalse(GameHookNetworkB173.readContext(GameHookNetworkB173.writeContext(unfocused)).focused());
+        var oldPeer=GameHookNetworkB173.writeContext(focused);oldPeer.remove("focused");assertFalse(GameHookNetworkB173.readContext(oldPeer).focused());
+    }
     static class Mod extends BaseMod {@Override public String Version(){return "fixture";}}
     @Test void schedulerDeduplicatesServerTicksPerActorAndResetsWorldClockOnDimensionChange(){
         var first=new ServerGameHooksB173.Clock();var second=new ServerGameHooksB173.Clock();Object overworld=new Object(),other=new Object();

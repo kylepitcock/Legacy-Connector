@@ -18,7 +18,6 @@ public final class PlayerApiB173 {
         private final Map<Class<?>,RuntimeException> failures=new LinkedHashMap<>();
         private final Set<String> reported=new HashSet<>();
         private boolean constructing;
-        private Path mirrorDirectory;
         private long callbackFailures;
     }
     private static final Set<Class<?>> REGISTERED=new LinkedHashSet<>();
@@ -34,6 +33,10 @@ public final class PlayerApiB173 {
     }
     private static synchronized List<Class<?>> registered(){return List.copyOf(REGISTERED);}
     public static synchronized boolean hasRegistered(){return !REGISTERED.isEmpty();}
+    public static synchronized boolean isRegistered(Class<?> type){return REGISTERED.contains(type);}
+    /** Presentation reads existing bases only; it must not initialize or tick an extension while publishing. */
+    public static List<PlayerBase> existingBases(ClientPlayerEntity player){return player.mcc$playerApi.bases.entrySet().stream()
+            .filter(entry->isRegistered(entry.getKey())).map(Map.Entry::getValue).toList();}
     public static long callbackFailures(ClientPlayerEntity player){return player.mcc$playerApi.callbackFailures;}
     public static ClientPlayerEntity currentPlayer(){return ACTOR.get();}
     public static <T> T withPlayer(ClientPlayerEntity player,Supplier<T> action){
@@ -93,23 +96,58 @@ public final class PlayerApiB173 {
     public static boolean read(ClientPlayerEntity player,NbtCompound tag){return dispatch(player,"readEntityFromNBT",base->base.readEntityFromNBT(tag));}
     public static boolean write(ClientPlayerEntity player,NbtCompound tag){return dispatch(player,"writeEntityToNBT",base->base.writeEntityToNBT(tag));}
     public static boolean death(ClientPlayerEntity player){return dispatch(player,"setEntityDead",PlayerBase::setEntityDead);}
+    private static final ClassValue<java.util.Set<String>> ABILITIES=new ClassValue<>(){
+        @Override protected java.util.Set<String> computeValue(Class<?> type){
+            var result=new java.util.HashSet<String>();
+            for(String name:java.util.List.of("heal","isInWater","getCurrentPlayerStrVsBlock","getDistanceSq"))try{
+                Class<?>[] parameters=switch(name){case "heal"->new Class<?>[]{int.class};case "isInWater"->new Class<?>[]{boolean.class};case "getDistanceSq"->new Class<?>[]{double.class,double.class,double.class,double.class};default->new Class<?>[]{legacyconnector.vb1_7_3.net.minecraft.block.Block.class,float.class};};
+                if(type.getMethod(name,parameters).getDeclaringClass()!=PlayerBase.class)result.add(name);
+            }catch(NoSuchMethodException ignored){}
+            return java.util.Set.copyOf(result);
+        }
+    };
+    public static boolean hasAbility(String name){for(var type:registered())if(ABILITIES.get(type).contains(name))return true;return false;}
+    public static boolean heal(ClientPlayerEntity player,int amount){
+        boolean replaced=false;for(var base:bases(player))if(ABILITIES.get(base.getClass()).contains("heal"))try{
+            replaced|=invoke(player,base.getClass(),"heal",()->base.heal(amount));
+        }catch(RuntimeException|LinkageError error){player.mcc$playerApi.callbackFailures++;}return replaced;
+    }
+    public static boolean waterPredicate(ClientPlayerEntity player,boolean baseline){
+        boolean result=baseline;for(var base:bases(player))if(ABILITIES.get(base.getClass()).contains("isInWater"))try{
+            boolean current=result;result=withPlayer(player,()->base.isInWater(current));
+        }catch(RuntimeException|LinkageError error){report(player,base.getClass(),"isInWater",error);player.mcc$playerApi.callbackFailures++;}return result;
+    }
+    public static float miningStrength(ClientPlayerEntity player,legacyconnector.vb1_7_3.net.minecraft.block.Block block,float baseline){
+        float result=baseline;for(var base:bases(player))if(ABILITIES.get(base.getClass()).contains("getCurrentPlayerStrVsBlock"))try{
+            float current=result,value=withPlayer(player,()->base.getCurrentPlayerStrVsBlock(block,current));
+            if(Float.isFinite(value))result=value;
+        }catch(RuntimeException|LinkageError error){report(player,base.getClass(),"getCurrentPlayerStrVsBlock",error);player.mcc$playerApi.callbackFailures++;}return result;
+    }
+    public static double squaredDistance(ClientPlayerEntity player,double x,double y,double z,double baseline){
+        return squaredDistance(player,bases(player),x,y,z,baseline);
+    }
+    static double existingSquaredDistance(ClientPlayerEntity player,double x,double y,double z,double baseline){
+        return squaredDistance(player,existingBases(player),x,y,z,baseline);
+    }
+    private static double squaredDistance(ClientPlayerEntity player,java.util.List<PlayerBase> bases,double x,double y,double z,double baseline){
+        double result=baseline;for(var base:bases)if(ABILITIES.get(base.getClass()).contains("getDistanceSq"))try{
+            double current=result,value=withPlayer(player,()->base.getDistanceSq(x,y,z,current));
+            if(Double.isFinite(value))result=value;
+        }catch(RuntimeException|LinkageError error){report(player,base.getClass(),"getDistanceSq",error);player.mcc$playerApi.callbackFailures++;}return result;
+    }
 
     /** SP-style files written from a PlayerAPI callback belong to that actor, not every player in the world. */
     public static File storageDirectory(World world){
+        if(world==null||world.mcc$level()==null)throw new IllegalStateException("No native world storage directory available");
         ClientPlayerEntity actor=currentPlayer();
         if(actor==null&&registeredCaller())actor=legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$currentPlayerContext();
         if(actor!=null&&actor.mcc$modern instanceof net.minecraft.world.entity.player.Player player){
             if(player instanceof net.minecraft.server.level.ServerPlayer serverPlayer){
                 return playerStorageDirectory(serverPlayer.server.getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT),player.getUUID());
             }
-            State state=actor.mcc$playerApi;
-            if(state.mirrorDirectory==null)try{state.mirrorDirectory=Files.createTempDirectory("legacy-b173-player-");}
-            catch(IOException error){throw new IllegalStateException("Cannot create client PlayerAPI mirror directory",error);}
-            return directory(state.mirrorDirectory);
+            return playerStorageDirectory(WorldStorageB173.root(player.level()),player.getUUID());
         }
-        if(world!=null&&world.mcc$level() instanceof net.minecraft.server.level.ServerLevel level)
-            return directory(level.getServer().getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT));
-        throw new IllegalStateException("No native world storage directory available");
+        return directory(WorldStorageB173.root(world==null?null:world.mcc$level()));
     }
     /** Helpers in the same original named module share the registered API extension's player storage ownership. */
     static boolean registeredCaller(){

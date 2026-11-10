@@ -5,7 +5,6 @@ import java.util.Map;
 import legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity;
 import legacyconnector.vb1_7_3.net.minecraft.item.ItemStack;
 import legacyconnector.vb1_7_3.net.minecraft.world.World;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 
 /**
@@ -25,6 +24,7 @@ public final class PlayerViewB173 extends legacyconnector.vb1_7_3.net.minecraft.
     private final ItemStack[] beforeArmor = new ItemStack[4];
     private int beforeHealth,beforeAir,beforeFire;
     private float beforeFallDistance;
+    private boolean beforeSleeping;
     private EntityViewsB173.Placement beforePlacement;
 
     private PlayerViewB173(Player player) {
@@ -50,10 +50,29 @@ public final class PlayerViewB173 extends legacyconnector.vb1_7_3.net.minecraft.
     }
 
     public static void release(Player player){synchronized(VIEWS){VIEWS.remove(player);}}
+    public static PlayerViewB173 peek(Player player){return VIEWS.get(player);}
+    /** Refresh unchanged health without syncing over pending original inventory/placement writes. */
+    public void mcc$prepareNativeHeal(){if(health==beforeHealth)beforeHealth=health=Math.round(player.getHealth());}
     public static void clear(){synchronized(VIEWS){VIEWS.clear();}}
 
+    /** Client render snapshot only; gameplay callbacks keep their existing placement/write-back boundary. */
+    public void mcc$prepareRenderView(){
+        prevX=player.xo;prevY=player.yo+standingEyeHeight;prevZ=player.zo;
+        prevYaw=player.yRotO;prevPitch=player.xRotO;
+        bodyYaw=player.yBodyRot;lastBodyYaw=player.yBodyRotO;
+        lastWalkAnimationSpeed=player.walkAnimation.speed(0);walkAnimationSpeed=player.walkAnimation.speed(1);
+        walkAnimationProgress=player.walkAnimation.position(1);
+        prevHorizontalSpeed=player.walkDistO;horizontalSpeed=player.walkDist;
+        prevStepBobbingAmount=player.oBob;stepBobbingAmount=player.bob;
+        capeX=player.xCloak;capeY=player.yCloak+standingEyeHeight;capeZ=player.zCloak;
+        prevCapeX=player.xCloakO;prevCapeY=player.yCloakO+standingEyeHeight;prevCapeZ=player.zCloakO;
+    }
+
     private void sync() {
+        mcc$syncSleeping(player.isSleeping());beforeSleeping=sleeping;sleepTimer=player.getSleepTimer();
+        sleepingPos=player.getSleepingPos().map(p->new legacyconnector.vb1_7_3.net.minecraft.util.math.Vec3i(p.getX(),p.getY(),p.getZ())).orElse(null);
         world = World.mcc$wrap(player.level());
+        dimensionId=DimensionsB173.worldId(player.level());
         age = player.tickCount;
         prevX = x = player.getX();
         y = player.getY() + standingEyeHeight;
@@ -62,7 +81,8 @@ public final class PlayerViewB173 extends legacyconnector.vb1_7_3.net.minecraft.
         yaw = prevYaw = player.getYRot();
         pitch = prevPitch = player.getXRot();
         onGround = player.onGround();
-        mcc$environment(player.isInWater());
+        handSwinging=player.swinging;
+        mcc$environment(PlayerAbilitiesB173.nativeWaterBaseline(player));
         var motion=player.getDeltaMovement();velocityX=motion.x;velocityY=motion.y;velocityZ=motion.z;
         mcc$movementInputs(player.xxa,player.zza,EntityFieldsB173.jumpInput(player));
         // Modern passengers do not integrate walking input into their own motion. Beta mounts read that rider motion.
@@ -87,11 +107,20 @@ public final class PlayerViewB173 extends legacyconnector.vb1_7_3.net.minecraft.
         beforePlacement=EntityViewsB173.Placement.of(this);
     }
 
+    /** A native world transfer keeps the original player and inventory; refresh only its placement boundary. */
+    public void mcc$afterTravel(){
+        world=World.mcc$wrap(player.level());dimensionId=DimensionsB173.worldId(player.level());
+        setPosition(player.getX(),player.getY()+standingEyeHeight,player.getZ());
+        prevX=x;prevY=y;prevZ=z;prevYaw=yaw=player.getYRot();prevPitch=pitch=player.getXRot();
+        onGround=player.onGround();beforePlacement=EntityViewsB173.Placement.of(this);
+    }
+
     /** Applies the mod's changes of the main inventory slots to the modern player. */
     public void writeBack() {
         if(beforePlacement!=null)beforePlacement.apply(this,player);
         beforePlacement=EntityViewsB173.Placement.of(this);
-        if(health!=beforeHealth){player.setHealth(health);beforeHealth=health;}
+        writeSleepBack();
+        if(health!=beforeHealth){PlayerHealthCapacityB173.commit(player,beforeHealth,health);player.setHealth(health);beforeHealth=health;}
         if(air!=beforeAir){player.setAirSupply(air);beforeAir=air;}
         if(fireTicks!=beforeFire){player.setRemainingFireTicks(fireTicks);beforeFire=fireTicks;}
         if(fallDistance!=beforeFallDistance){player.fallDistance=fallDistance;beforeFallDistance=fallDistance;}
@@ -109,6 +138,22 @@ public final class PlayerViewB173 extends legacyconnector.vb1_7_3.net.minecraft.
         }
     }
 
+    private void writeSleepBack(){
+        boolean changed=sleeping!=beforeSleeping;
+        if(!changed)return;
+        BedsB173.writeBack(this,player,beforeSleeping);beforeSleeping=player.isSleeping();
+        sleeping=beforeSleeping;
+        if(changed&&beforeSleeping){
+            setPosition(player.getX(),player.getY()+standingEyeHeight,player.getZ());
+            beforePlacement=EntityViewsB173.Placement.of(this);
+        }
+    }
+    /** Original direct-field sleepers call this before their block callback returns. */
+    public static void updateSleepingPlayers(net.minecraft.world.level.Level level){
+        for(var view:VIEWS.values())if(view.player.level()==level)view.writeSleepBack();
+        if(level instanceof net.minecraft.server.level.ServerLevel server)server.updateSleepingPlayerList();
+    }
+
     private static boolean same(ItemStack a, ItemStack b) {
         if (a == null || a.count <= 0) return b == null || b.count <= 0;
         return b != null && a.itemId == b.itemId && a.count == b.count && a.getDamage() == b.getDamage() && StacksB173.sameComponents(a,b);
@@ -119,8 +164,4 @@ public final class PlayerViewB173 extends legacyconnector.vb1_7_3.net.minecraft.
         return player.isShiftKeyDown();
     }
 
-    @Override
-    public void sendMessage(String message) {
-        if (!player.level().isClientSide) player.sendSystemMessage(Component.literal(message));
-    }
 }
