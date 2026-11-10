@@ -38,6 +38,11 @@ final class Mc1201Migration {
     private static final String CONTEXT = Mc1201Tables.HELPER_PACKAGE + "MigrateContext";
     private static final String PROVIDER = "net/minecraft/core/HolderLookup$Provider";
     private static final String HOLDER = "net/minecraft/core/Holder";
+    private static final String ABSTRACT_WIDGET = "net/minecraft/client/gui/components/AbstractWidget";
+    private static final String LEGACY_WIDGET_NARRATION = "updateNarration";
+    private static final String MODERN_WIDGET_NARRATION = "updateWidgetNarration";
+    private static final String WIDGET_NARRATION_DESC =
+            "(Lnet/minecraft/client/gui/narration/NarrationElementOutput;)V";
 
     /** What {@link #apply} did, per kind (for the report line). */
     static final class Counts {
@@ -47,9 +52,11 @@ final class Mc1201Migration {
         int bridges;
         int providerCalls;
         int selectionListPositionCalls;
+        int widgetNarrationOverrides;
 
         int total() {
-            return calls + constructors + fields + bridges + providerCalls + selectionListPositionCalls;
+            return calls + constructors + fields + bridges + providerCalls + selectionListPositionCalls
+                    + widgetNarrationOverrides;
         }
 
         void add(Counts o) {
@@ -59,12 +66,14 @@ final class Mc1201Migration {
             bridges += o.bridges;
             providerCalls += o.providerCalls;
             selectionListPositionCalls += o.selectionListPositionCalls;
+            widgetNarrationOverrides += o.widgetNarrationOverrides;
         }
 
         @Override
         public String toString() {
             return calls + " call(s) redirected to helpers, "
                     + selectionListPositionCalls + " selection-list position call(s) renamed to setX, "
+                    + widgetNarrationOverrides + " AbstractWidget narration override(s) renamed to updateWidgetNarration, "
                     + constructors + " constructor(s) made factory calls, "
                     + fields + " static field read(s) converted, "
                     + bridges + " bridge method(s) for changed overrides, "
@@ -80,6 +89,7 @@ final class Mc1201Migration {
 
     static Counts apply(ClassNode node, Mc1201Hierarchy h, Mc1201Tables t) {
         Counts c = new Counts();
+        renameWidgetNarrationOverride(node, h, c);
         renameOverrides(node, h, t, c);
         swapMobBucketSuper(node);
         renameBusConstant(node);
@@ -95,6 +105,28 @@ final class Mc1201Migration {
             addConditionCodec(node, c);
         }
         return c;
+    }
+
+    /**
+     * 1.20.1 widgets override NarratableEntry.updateNarration(output). In 1.21.1
+     * AbstractWidget makes updateNarration final and delegates to the new
+     * updateWidgetNarration hook. Preserve the mod's implementation under the
+     * new hook name instead of removing it or leaving an abstract-method gap.
+     */
+    private static void renameWidgetNarrationOverride(ClassNode node, Mc1201Hierarchy hierarchy, Counts counts) {
+        if (!hierarchy.isSubclassOf(node.name, ABSTRACT_WIDGET)) return;
+        MethodNode legacy = declared(node, LEGACY_WIDGET_NARRATION, WIDGET_NARRATION_DESC);
+        if (legacy == null) return;
+        if ((legacy.access & (Opcodes.ACC_STATIC | Opcodes.ACC_PRIVATE)) != 0) {
+            throw new IllegalStateException(
+                    "Minecraft widget narration override has unexpected access flags in " + node.name);
+        }
+        if (declared(node, MODERN_WIDGET_NARRATION, WIDGET_NARRATION_DESC) != null) {
+            throw new IllegalStateException(
+                    "Both legacy and modern widget narration hooks are declared in " + node.name);
+        }
+        legacy.name = MODERN_WIDGET_NARRATION;
+        counts.widgetNarrationOverrides++;
     }
 
     /** A recipe condition written for 1.20.1 ({@code getID()} and {@code test}) lacks the {@code codec()} of 1.21.1: the codec of the serializer registered under its id. */
