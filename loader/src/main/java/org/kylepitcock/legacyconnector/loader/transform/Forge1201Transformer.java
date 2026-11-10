@@ -425,7 +425,7 @@ public final class Forge1201Transformer {
                     + palladiumSuitStandChanges + " entity class(es)");
         }
         if (palladiumAccessoryScreenChanges > 0) {
-            result.notes.add("Palladium AccessoryScreen supplied the Minecraft 1.21.1 OptionsSubScreen.addOptions() hook: "
+            result.notes.add("Palladium AccessoryScreen supplies Minecraft 1.21.1 OptionsSubScreen.addOptions() and passes Minecraft.options to its superclass: "
                     + palladiumAccessoryScreenChanges + " screen class(es)");
         }
         if (palladiumTailoringScreenChanges > 0) {
