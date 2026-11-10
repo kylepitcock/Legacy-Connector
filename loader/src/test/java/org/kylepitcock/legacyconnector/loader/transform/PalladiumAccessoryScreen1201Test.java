@@ -19,6 +19,11 @@ class PalladiumAccessoryScreen1201Test implements Opcodes {
             "net/minecraft/client/gui/screens/options/OptionsSubScreen";
     private static final String COMPONENT = "net/minecraft/network/chat/Component";
     private static final String MUTABLE_COMPONENT = "net/minecraft/network/chat/MutableComponent";
+    private static final String GUI_GRAPHICS = "net/minecraft/client/gui/GuiGraphics";
+    private static final String ADD_TITLE = "addTitle";
+    private static final String ADD_FOOTER = "addFooter";
+    private static final String RENDER = "render";
+    private static final String RENDER_DESC = "(L" + GUI_GRAPHICS + ";IIF)V";
 
     @Test
     void accessoryScreenGetsConcreteHookAndCurrentMinecraftOptions() {
@@ -35,6 +40,18 @@ class PalladiumAccessoryScreen1201Test implements Opcodes {
         assertEquals(0, addOptions.maxStack);
         assertEquals(1, addOptions.maxLocals);
 
+        assertEmptyProtectedHook(node, ADD_TITLE);
+        assertEmptyProtectedHook(node, ADD_FOOTER);
+
+        MethodNode render = find(node, RENDER, RENDER_DESC);
+        assertNotNull(render);
+        assertTrue(hasCall(render, INVOKEVIRTUAL, SCREEN, "renderBackground",
+                "(L" + GUI_GRAPHICS + ";)V"),
+                "the modern screen background must remain");
+        assertFalse(hasCall(render, INVOKEVIRTUAL, PalladiumAccessoryScreen1201.ACCESSORY_SCREEN,
+                "renderDirtBackground", "(II)V"),
+                "the obsolete tiled dirt overlay must be removed");
+
         MethodNode constructor = find(node, "<init>", "(L" + SCREEN + ";)V");
         assertNotNull(constructor);
         assertTrue(hasCall(constructor, INVOKESTATIC, MINECRAFT, "getInstance",
@@ -48,6 +65,8 @@ class PalladiumAccessoryScreen1201Test implements Opcodes {
         assertEquals(0, PalladiumAccessoryScreen1201.apply(node),
                 "the adapter must be idempotent");
         assertEquals(1, count(node, "addOptions", "()V"));
+        assertEquals(1, count(node, ADD_TITLE, "()V"));
+        assertEquals(1, count(node, ADD_FOOTER, "()V"));
     }
 
     @Test
@@ -62,6 +81,23 @@ class PalladiumAccessoryScreen1201Test implements Opcodes {
         // The constructor still needs its null-Options migration.
         assertEquals(1, PalladiumAccessoryScreen1201.apply(node));
         assertEquals(existing, find(node, "addOptions", "()V"));
+    }
+
+    @Test
+    void unexpectedLegacyDirtBackgroundArgumentsAreRejected() {
+        ClassNode node = accessoryScreenNode();
+        MethodNode render = find(node, RENDER, RENDER_DESC);
+        boolean replaced = false;
+        for (AbstractInsnNode instruction : render.instructions) {
+            if (instruction instanceof IntInsnNode value
+                    && value.getOpcode() == SIPUSH && value.operand == 160) {
+                value.operand = 159;
+                replaced = true;
+                break;
+            }
+        }
+        assertTrue(replaced, "fixture must contain the legacy 160-pixel dirt-background height");
+        assertThrows(IllegalStateException.class, () -> PalladiumAccessoryScreen1201.apply(node));
     }
 
     @Test
@@ -111,7 +147,33 @@ class PalladiumAccessoryScreen1201Test implements Opcodes {
         constructor.maxStack = 3;
         constructor.maxLocals = 2;
         node.methods.add(constructor);
+
+        MethodNode render = new MethodNode(ACC_PUBLIC, RENDER, RENDER_DESC, null, null);
+        render.instructions.add(new VarInsnNode(ALOAD, 0));
+        render.instructions.add(new VarInsnNode(ALOAD, 1));
+        render.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, SCREEN, "renderBackground",
+                "(L" + GUI_GRAPHICS + ";)V", false));
+        render.instructions.add(new VarInsnNode(ALOAD, 0));
+        render.instructions.add(new InsnNode(ICONST_0));
+        render.instructions.add(new IntInsnNode(SIPUSH, 160));
+        render.instructions.add(new MethodInsnNode(INVOKEVIRTUAL,
+                PalladiumAccessoryScreen1201.ACCESSORY_SCREEN, "renderDirtBackground", "(II)V", false));
+        render.instructions.add(new InsnNode(RETURN));
+        render.maxStack = 3;
+        render.maxLocals = 5;
+        node.methods.add(render);
         return node;
+    }
+
+    private static void assertEmptyProtectedHook(ClassNode node, String name) {
+        MethodNode method = find(node, name, "()V");
+        assertNotNull(method, name + " hook must be supplied");
+        assertEquals(ACC_PROTECTED, method.access & (ACC_PUBLIC | ACC_PRIVATE | ACC_PROTECTED));
+        assertFalse((method.access & (ACC_ABSTRACT | ACC_STATIC)) != 0);
+        assertEquals(1, method.instructions.size());
+        assertEquals(RETURN, method.instructions.getFirst().getOpcode());
+        assertEquals(0, method.maxStack);
+        assertEquals(1, method.maxLocals);
     }
 
     private static AbstractInsnNode findOpcode(MethodNode method, int opcode) {

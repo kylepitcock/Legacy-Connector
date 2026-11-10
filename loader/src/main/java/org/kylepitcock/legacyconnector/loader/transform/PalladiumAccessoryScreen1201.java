@@ -35,6 +35,13 @@ final class PalladiumAccessoryScreen1201 implements Opcodes {
     private static final String MUTABLE_COMPONENT =
             "net/minecraft/network/chat/MutableComponent";
     private static final String ADD_OPTIONS = "addOptions";
+    private static final String ADD_TITLE = "addTitle";
+    private static final String ADD_FOOTER = "addFooter";
+    private static final String GUI_GRAPHICS = "net/minecraft/client/gui/GuiGraphics";
+    private static final String RENDER = "render";
+    private static final String RENDER_DESC = "(L" + GUI_GRAPHICS + ";IIF)V";
+    private static final String DIRT_BACKGROUND = "renderDirtBackground";
+    private static final String DIRT_BACKGROUND_DESC = "(II)V";
     private static final String DESCRIPTOR = "()V";
     private static final String SCREEN_CONSTRUCTOR = "(L" + SCREEN + ";)V";
     private static final String OPTIONS_SUB_SCREEN_CONSTRUCTOR =
@@ -62,6 +69,9 @@ final class PalladiumAccessoryScreen1201 implements Opcodes {
 
         boolean changed = supplyCurrentOptions(node);
         changed |= supplyAddOptions(node);
+        changed |= supplyEmptyChromeHook(node, ADD_TITLE);
+        changed |= supplyEmptyChromeHook(node, ADD_FOOTER);
+        changed |= removeLegacyDirtBackgroundCall(node);
         return changed ? 1 : 0;
     }
 
@@ -90,6 +100,92 @@ final class PalladiumAccessoryScreen1201 implements Opcodes {
         addOptions.maxStack = 0;
         addOptions.maxLocals = 1;
         node.methods.add(addOptions);
+        return true;
+    }
+
+    /**
+     * The legacy screen draws its own title and Done button. The 1.21.1
+     * OptionsSubScreen hooks would otherwise add a second title and footer
+     * button to the modern HeaderAndFooterLayout.
+     */
+    private static boolean supplyEmptyChromeHook(ClassNode node, String hookName) {
+        for (MethodNode method : node.methods) {
+            if (!hookName.equals(method.name) || !DESCRIPTOR.equals(method.desc)) {
+                continue;
+            }
+            int visibility = method.access & (ACC_PUBLIC | ACC_PRIVATE | ACC_PROTECTED);
+            if (visibility == ACC_PROTECTED
+                    && (method.access & (ACC_ABSTRACT | ACC_STATIC)) == 0
+                    && method.instructions != null
+                    && method.instructions.size() == 1
+                    && method.instructions.getFirst().getOpcode() == RETURN) {
+                return false; // Already adapted.
+            }
+            throw new IllegalStateException(
+                    "Palladium AccessoryScreen has an unexpected existing " + hookName + "() override");
+        }
+
+        MethodNode hook = new MethodNode(ACC_PROTECTED, hookName, DESCRIPTOR, null, null);
+        hook.instructions.add(new InsnNode(RETURN));
+        hook.maxStack = 0;
+        hook.maxLocals = 1;
+        node.methods.add(hook);
+        return true;
+    }
+
+    /**
+     * The legacy render method calls Screen.renderBackground() and then paints
+     * its own opaque tiled dirt background. 1.21.1's background already
+     * supplies the modern in-world blur/dimming, so remove only the verified
+     * legacy renderDirtBackground(0, 160) call.
+     */
+    private static boolean removeLegacyDirtBackgroundCall(ClassNode node) {
+        MethodNode render = null;
+        for (MethodNode method : node.methods) {
+            if (RENDER.equals(method.name) && RENDER_DESC.equals(method.desc)) {
+                if (render != null) {
+                    throw new IllegalStateException("Palladium AccessoryScreen has duplicate render methods");
+                }
+                render = method;
+            }
+        }
+        if (render == null) {
+            throw new IllegalStateException("Palladium AccessoryScreen is missing its 1.21.1 GuiGraphics render method");
+        }
+
+        MethodInsnNode dirtCall = null;
+        for (AbstractInsnNode instruction : render.instructions) {
+            if (!(instruction instanceof MethodInsnNode call)
+                    || !ACCESSORY_SCREEN.equals(call.owner)
+                    || !DIRT_BACKGROUND.equals(call.name)) {
+                continue;
+            }
+            if (!DIRT_BACKGROUND_DESC.equals(call.desc) || call.getOpcode() != INVOKEVIRTUAL) {
+                throw new IllegalStateException("Palladium AccessoryScreen dirt-background call has an unexpected signature");
+            }
+            if (dirtCall != null) {
+                throw new IllegalStateException("Palladium AccessoryScreen has multiple legacy dirt-background calls");
+            }
+            dirtCall = call;
+        }
+        if (dirtCall == null) {
+            return false; // Already removed.
+        }
+
+        AbstractInsnNode yArgument = previousReal(dirtCall);
+        AbstractInsnNode xArgument = previousReal(yArgument);
+        AbstractInsnNode receiver = previousReal(xArgument);
+        if (!(yArgument instanceof IntInsnNode y && y.getOpcode() == SIPUSH && y.operand == 160)
+                || !(xArgument instanceof InsnNode x && x.getOpcode() == ICONST_0)
+                || !(receiver instanceof VarInsnNode self && self.getOpcode() == ALOAD && self.var == 0)) {
+            throw new IllegalStateException(
+                    "Palladium AccessoryScreen dirt-background call no longer uses the verified (0, 160) arguments");
+        }
+
+        render.instructions.remove(receiver);
+        render.instructions.remove(xArgument);
+        render.instructions.remove(yArgument);
+        render.instructions.remove(dirtCall);
         return true;
     }
 

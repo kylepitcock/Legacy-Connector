@@ -428,7 +428,7 @@ public final class Forge1201Transformer {
                     + palladiumSuitStandChanges + " entity class(es)");
         }
         if (palladiumAccessoryScreenChanges > 0) {
-            result.notes.add("Palladium AccessoryScreen supplies Minecraft 1.21.1 OptionsSubScreen.addOptions() and passes Minecraft.options to its superclass: "
+            result.notes.add("Palladium AccessoryScreen keeps its legacy title/Done controls, passes Minecraft.options to OptionsSubScreen, and removes the obsolete dirt-background overlay: "
                     + palladiumAccessoryScreenChanges + " screen class(es)");
         }
         if (palladiumSelectionListNarrationChanges > 0) {
