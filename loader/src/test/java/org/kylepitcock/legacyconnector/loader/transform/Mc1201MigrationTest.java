@@ -164,6 +164,61 @@ class Mc1201MigrationTest implements Opcodes {
     }
 
     @Test
+    void legacySelectionListSetLeftPosCallsUseTheWidgetXSetter() {
+        String selectionList = "net/minecraft/client/gui/components/AbstractSelectionList";
+        ClassNode list = cls("test/MySelectionList", selectionList);
+        ClassNode caller = cls("test/Caller", "java/lang/Object");
+        MethodNode move = method(caller, ACC_PUBLIC | ACC_STATIC, "move", "(Ltest/MySelectionList;I)V");
+        move.instructions.add(new VarInsnNode(ALOAD, 0));
+        move.instructions.add(new VarInsnNode(ILOAD, 1));
+        move.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, "test/MySelectionList",
+                "setLeftPos", "(I)V", false));
+        move.instructions.add(new InsnNode(RETURN));
+
+        Mc1201Migration.Counts counts = apply(list, caller);
+        assertEquals(1, counts.selectionListPositionCalls);
+        assertNotNull(find(move, "test/MySelectionList", "setX"));
+        assertNull(find(move, "test/MySelectionList", "setLeftPos"));
+    }
+
+    @Test
+    void legacySelectionListPositionMigrationAlsoRecognizesObjectSelectionListSubclasses() {
+        String selectionList = "net/minecraft/client/gui/components/AbstractSelectionList";
+        String objectSelectionList = "net/minecraft/client/gui/components/ObjectSelectionList";
+        ClassNode list = cls("test/NeoForgeList", objectSelectionList);
+        ClassNode objectListBase = cls(objectSelectionList, selectionList);
+        ClassNode caller = cls("test/Caller", "java/lang/Object");
+        MethodNode move = method(caller, ACC_PUBLIC | ACC_STATIC, "move", "(Ltest/NeoForgeList;I)V");
+        move.instructions.add(new VarInsnNode(ALOAD, 0));
+        move.instructions.add(new VarInsnNode(ILOAD, 1));
+        move.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, "test/NeoForgeList",
+                "setLeftPos", "(I)V", false));
+        move.instructions.add(new InsnNode(RETURN));
+
+        Mc1201Migration.Counts counts = apply(objectListBase, list, caller);
+        assertEquals(1, counts.selectionListPositionCalls);
+        assertNotNull(find(move, "test/NeoForgeList", "setX"));
+        assertNull(find(move, "test/NeoForgeList", "setLeftPos"));
+    }
+
+    @Test
+    void unrelatedSetLeftPosMethodIsNotRenamed() {
+        ClassNode other = cls("test/Other", "java/lang/Object");
+        ClassNode caller = cls("test/Caller", "java/lang/Object");
+        MethodNode move = method(caller, ACC_PUBLIC | ACC_STATIC, "move", "(Ltest/Other;I)V");
+        move.instructions.add(new VarInsnNode(ALOAD, 0));
+        move.instructions.add(new VarInsnNode(ILOAD, 1));
+        move.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, "test/Other",
+                "setLeftPos", "(I)V", false));
+        move.instructions.add(new InsnNode(RETURN));
+
+        Mc1201Migration.Counts counts = apply(other, caller);
+        assertEquals(0, counts.selectionListPositionCalls);
+        assertNotNull(find(move, "test/Other", "setLeftPos"));
+        assertNull(find(move, "test/Other", "setX"));
+    }
+
+    @Test
     void directMinecraftCallsUseRenamedMemberTable() {
         String gameRenderer = "net/minecraft/client/renderer/GameRenderer";
         String shaderInstance = "net/minecraft/client/renderer/ShaderInstance";
