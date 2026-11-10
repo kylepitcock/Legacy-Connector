@@ -286,6 +286,7 @@ public final class Forge1201Transformer {
         int palladiumTailoringScreenChanges = 0;
         int palladiumSheepColorChanges = 0;
         int palladiumRenderLayerChanges = 0;
+        int palladiumPlayerSkinChanges = 0;
         for (ClassNode node : nodes) {
             if (PalladiumKubeJS1201.dropLegacyKubejsClass(node.name)) {
                 palladiumKubejsClassesDropped++;
@@ -315,6 +316,9 @@ public final class Forge1201Transformer {
             rewrites += viaCalls;
             Mc1201Migration.Counts changed = Mc1201Migration.apply(node, hierarchy);
             mc.add(changed);
+            // Keep PalladiumCore's original callback/try-catch; adapt only its player-skin lambda.
+            int palladiumPlayerSkinChange = PalladiumCorePlayerSkin1201.apply(node);
+            palladiumPlayerSkinChanges += palladiumPlayerSkinChange;
             // Runs after GuiGraphics.blitNineSliced has been redirected, but before SoftLink1201
             // would replace Palladium's now-missing inherited Button.WIDGETS_LOCATION with null.
             int palladiumWidgetButtonChange = PalladiumWidgetButtons1201.apply(node);
@@ -332,7 +336,7 @@ public final class Forge1201Transformer {
                     + palladiumWidgetButtonChange + palladiumMixinChange + palladiumLootChange
                     + palladiumAccessoryScreenChange + palladiumSelectionListNarrationChange + palladiumSuitStandChange
                     + palladiumTailoringScreenChange + palladiumSheepColorChange
-                    + palladiumRenderLayerChange);
+                    + palladiumRenderLayerChange + palladiumPlayerSkinChange);
         }
         if (palladiumKubejsChanges > 0 || palladiumKubejsClassesDropped > 0) {
             result.notes.add("Palladium KubeJS 6 integration adapted for KubeJS 7: "
@@ -450,6 +454,10 @@ public final class Forge1201Transformer {
         if (palladiumRenderLayerChanges > 0) {
             result.notes.add("Palladium SuitStand RenderLayer color-copy call migrated from nine float arguments to the 1.21.1 six-float plus packed ARGB color overload: "
                     + palladiumRenderLayerChanges + " call site(s)");
+        }
+        if (palladiumPlayerSkinChanges > 0) {
+            result.notes.add("PalladiumCore player-skin lambda migrated in place from String to NeoForge PlayerSkin.Model; the original AddLayers callback and per-entity exception handling are preserved: "
+                    + palladiumPlayerSkinChanges + " lambda(s)");
         }
         if (ownUnit) {
             String suffix = "_l" + VER.id().replaceAll("[^a-z0-9]", "");
