@@ -41,6 +41,8 @@ final class PalladiumAccessoryScreen1201 implements Opcodes {
     private static final String GUI_GRAPHICS = "net/minecraft/client/gui/GuiGraphics";
     private static final String RENDER = "render";
     private static final String RENDER_DESC = "(L" + GUI_GRAPHICS + ";IIF)V";
+    private static final String SCREEN_BACKGROUND = "renderBackground";
+    private static final String SCREEN_BACKGROUND_DESC = "(L" + GUI_GRAPHICS + ";)V";
     private static final String DIRT_BACKGROUND = "renderDirtBackground";
     private static final String DIRT_BACKGROUND_DESC = "(II)V";
     private static final String DESCRIPTOR = "()V";
@@ -73,6 +75,7 @@ final class PalladiumAccessoryScreen1201 implements Opcodes {
         changed |= supplyEmptyChromeHook(node, ADD_CONTENTS);
         changed |= supplyEmptyChromeHook(node, ADD_TITLE);
         changed |= supplyEmptyChromeHook(node, ADD_FOOTER);
+        changed |= removeLegacyScreenBackgroundCall(node);
         changed |= removeLegacyDirtBackgroundCall(node);
         return changed ? 1 : 0;
     }
@@ -136,12 +139,48 @@ final class PalladiumAccessoryScreen1201 implements Opcodes {
     }
 
     /**
-     * The legacy render method calls Screen.renderBackground() and then paints
-     * its own opaque tiled dirt background. 1.21.1's background already
-     * supplies the modern in-world blur/dimming, so remove only the verified
-     * legacy renderDirtBackground(0, 160) call.
+     * The legacy 1.20.1 screen background was not blurred. In 1.21.1 the
+     * inherited Screen.renderBackground call applies the in-world blur, so
+     * drop that one verified call and leave the game world unblurred behind
+     * Palladium's own controls.
      */
-    private static boolean removeLegacyDirtBackgroundCall(ClassNode node) {
+    private static boolean removeLegacyScreenBackgroundCall(ClassNode node) {
+        MethodNode render = findRenderMethod(node);
+        MethodInsnNode backgroundCall = null;
+        for (AbstractInsnNode instruction : render.instructions) {
+            if (!(instruction instanceof MethodInsnNode call)
+                    || !ACCESSORY_SCREEN.equals(call.owner)
+                    || !SCREEN_BACKGROUND.equals(call.name)) {
+                continue;
+            }
+            if (!SCREEN_BACKGROUND_DESC.equals(call.desc) || call.getOpcode() != INVOKEVIRTUAL) {
+                throw new IllegalStateException(
+                        "Palladium AccessoryScreen background call has an unexpected signature");
+            }
+            if (backgroundCall != null) {
+                throw new IllegalStateException(
+                        "Palladium AccessoryScreen has multiple modern screen-background calls");
+            }
+            backgroundCall = call;
+        }
+        if (backgroundCall == null) return false; // Already removed.
+
+        AbstractInsnNode graphicsArgument = previousReal(backgroundCall);
+        AbstractInsnNode receiver = previousReal(graphicsArgument);
+        if (!(graphicsArgument instanceof VarInsnNode graphics
+                    && graphics.getOpcode() == ALOAD && graphics.var == 1)
+                || !(receiver instanceof VarInsnNode self
+                    && self.getOpcode() == ALOAD && self.var == 0)) {
+            throw new IllegalStateException(
+                    "Palladium AccessoryScreen background call no longer uses (this, GuiGraphics argument)");
+        }
+        render.instructions.remove(receiver);
+        render.instructions.remove(graphicsArgument);
+        render.instructions.remove(backgroundCall);
+        return true;
+    }
+
+    private static MethodNode findRenderMethod(ClassNode node) {
         MethodNode render = null;
         for (MethodNode method : node.methods) {
             if (RENDER.equals(method.name) && RENDER_DESC.equals(method.desc)) {
@@ -152,8 +191,18 @@ final class PalladiumAccessoryScreen1201 implements Opcodes {
             }
         }
         if (render == null) {
-            throw new IllegalStateException("Palladium AccessoryScreen is missing its 1.21.1 GuiGraphics render method");
+            throw new IllegalStateException(
+                    "Palladium AccessoryScreen is missing its 1.21.1 GuiGraphics render method");
         }
+        return render;
+    }
+
+    /**
+     * The legacy screen also paints an opaque tiled dirt background after its
+     * inherited background call. Remove only the verified renderDirtBackground(0, 160).
+     */
+    private static boolean removeLegacyDirtBackgroundCall(ClassNode node) {
+        MethodNode render = findRenderMethod(node);
 
         MethodInsnNode dirtCall = null;
         for (AbstractInsnNode instruction : render.instructions) {

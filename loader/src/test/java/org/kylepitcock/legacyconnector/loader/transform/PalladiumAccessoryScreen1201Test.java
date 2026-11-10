@@ -47,9 +47,9 @@ class PalladiumAccessoryScreen1201Test implements Opcodes {
 
         MethodNode render = find(node, RENDER, RENDER_DESC);
         assertNotNull(render);
-        assertTrue(hasCall(render, INVOKEVIRTUAL, SCREEN, "renderBackground",
-                "(L" + GUI_GRAPHICS + ";)V"),
-                "the modern screen background must remain");
+        assertFalse(hasCall(render, INVOKEVIRTUAL, PalladiumAccessoryScreen1201.ACCESSORY_SCREEN,
+                "renderBackground", "(L" + GUI_GRAPHICS + ";)V"),
+                "the modern in-world blur background must be removed");
         assertFalse(hasCall(render, INVOKEVIRTUAL, PalladiumAccessoryScreen1201.ACCESSORY_SCREEN,
                 "renderDirtBackground", "(II)V"),
                 "the obsolete tiled dirt overlay must be removed");
@@ -99,6 +99,23 @@ class PalladiumAccessoryScreen1201Test implements Opcodes {
             }
         }
         assertTrue(replaced, "fixture must contain the legacy 160-pixel dirt-background height");
+        assertThrows(IllegalStateException.class, () -> PalladiumAccessoryScreen1201.apply(node));
+    }
+
+    @Test
+    void unexpectedLegacyScreenBackgroundArgumentsAreRejected() {
+        ClassNode node = accessoryScreenNode();
+        MethodNode render = find(node, RENDER, RENDER_DESC);
+        boolean replaced = false;
+        for (AbstractInsnNode instruction : render.instructions) {
+            if (instruction instanceof VarInsnNode value
+                    && value.getOpcode() == ALOAD && value.var == 1) {
+                value.var = 2;
+                replaced = true;
+                break;
+            }
+        }
+        assertTrue(replaced, "fixture must contain the GuiGraphics argument local");
         assertThrows(IllegalStateException.class, () -> PalladiumAccessoryScreen1201.apply(node));
     }
 
@@ -153,7 +170,8 @@ class PalladiumAccessoryScreen1201Test implements Opcodes {
         MethodNode render = new MethodNode(ACC_PUBLIC, RENDER, RENDER_DESC, null, null);
         render.instructions.add(new VarInsnNode(ALOAD, 0));
         render.instructions.add(new VarInsnNode(ALOAD, 1));
-        render.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, SCREEN, "renderBackground",
+        render.instructions.add(new MethodInsnNode(INVOKEVIRTUAL,
+                PalladiumAccessoryScreen1201.ACCESSORY_SCREEN, "renderBackground",
                 "(L" + GUI_GRAPHICS + ";)V", false));
         render.instructions.add(new VarInsnNode(ALOAD, 0));
         render.instructions.add(new InsnNode(ICONST_0));
