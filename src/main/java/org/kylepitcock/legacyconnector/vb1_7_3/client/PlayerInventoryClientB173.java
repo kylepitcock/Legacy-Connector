@@ -22,9 +22,9 @@ final class PlayerInventoryClientB173 {
     static void install() {
         InventoryPanelB173.install();
         PlayerInventoryNetworkB173.installClient(new PlayerInventoryNetworkB173.Client() {
-            @Override public void offer(long incomingEpoch,long incomingToken,String identity,String title,int[] slots) {
+            @Override public void offer(long incomingEpoch,long incomingToken,String identity,String title,int[] slots,int[][] layout) {
                 if(incomingEpoch!=epoch||!currentLifetime())return;
-                InventoryPanelB173.offer(incomingToken,identity,title,slots);
+                InventoryPanelB173.offer(incomingToken,identity,title,slots,layout);
             }
             @Override public void state(long incomingEpoch,long incomingRevision,CompoundTag snapshot) {
                 apply(incomingEpoch,incomingRevision,snapshot,null,0,0,-1);

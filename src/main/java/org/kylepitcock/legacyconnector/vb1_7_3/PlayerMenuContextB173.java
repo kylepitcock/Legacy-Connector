@@ -6,7 +6,7 @@ import legacyconnector.vb1_7_3.net.minecraft.entity.player.ClientPlayerEntity;
 import legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity;
 import legacyconnector.vb1_7_3.net.minecraft.screen.ScreenHandler;
 
-/** Original inventory GUI requests offered by a hook, retained for an explicit native tab action. */
+/** Original player-inventory screens selected by installed callbacks. */
 public final class PlayerMenuContextB173 {
     private PlayerMenuContextB173() {}
 
@@ -34,6 +34,15 @@ public final class PlayerMenuContextB173 {
     public static ScreenHandler container(PlayerEntity actor) {
         HandledScreen gui = candidate(actor);
         return gui == null ? null : gui.container;
+    }
+
+    /** Reuse the selected installed GUI, with its complete layout checked before applying it to native inventory controls. */
+    public static HandledScreen reconstructClient(ClientPlayerEntity actor,String identity,int[][] layout) {
+        if(actor==null||!(actor.mcc$modern instanceof net.minecraft.world.entity.player.Player player)
+                ||!player.level().isClientSide||identity==null||layout==null)return null;
+        var context=new net.minecraft.nbt.CompoundTag();context.putBoolean("player",true);
+        var gui=RemoteMenuContextB173.reconstruct(identity,context,player.getInventory(),layout);
+        return gui!=null&&offer(actor,gui)?gui:null;
     }
 
     static boolean isPlayerMenu(ScreenHandler handler) {

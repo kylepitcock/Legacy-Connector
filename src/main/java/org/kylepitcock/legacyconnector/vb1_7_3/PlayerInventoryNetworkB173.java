@@ -28,7 +28,7 @@ public final class PlayerInventoryNetworkB173 {
     }
     private record Discovery(PlayerViewB173 view,Session session) {}
     public interface Client {
-        void offer(long epoch,long token,String identity,String title,int[] slots);
+        void offer(long epoch,long token,String identity,String title,int[] slots,int[][] layout);
         void state(long epoch,long revision,CompoundTag snapshot);
         void transaction(long epoch,long token,long request,boolean accepted,long revision,int stateId,CompoundTag snapshot,CompoundTag carried);
     }
@@ -80,6 +80,13 @@ public final class PlayerInventoryNetworkB173 {
             catch(RuntimeException|LinkageError ignored){}
             var tag=new CompoundTag();tag.putLong("epoch",d.session().context.epoch());tag.putLong("token",d.session().context.token());tag.putString("identity",id);tag.putString("title",title.length()>80?title.substring(0,80):title);
             tag.putIntArray("slots",slots);
+            int[] layout=new int[gui.container.slots.size()*4];
+            for(int i=0;i<gui.container.slots.size();i++){
+                var slot=gui.container.slots.get(i);int at=i*4;
+                layout[at]=LegacyB173Menu.isPlayerSlot(slot)?0:1;layout[at+1]=slot.index;
+                layout[at+2]=slot.x;layout[at+3]=slot.y;
+            }
+            tag.putIntArray("layout",layout);
             send(d.session().player,OFFER,tag);
         }
         return true;
@@ -115,7 +122,11 @@ public final class PlayerInventoryNetworkB173 {
                 Client receiver=client;if(receiver==null)return;
                 if(payload.discriminator()==OFFER){
                     int[] slots=tag.getIntArray("slots");if(slots.length>PlayerInventoryStateB173.MAX_SLOTS)return;
-                    receiver.offer(epoch,tag.getLong("token"),tag.getString("identity"),tag.getString("title"),slots);
+                    int[] encoded=tag.getIntArray("layout");
+                    if(encoded.length==0||encoded.length%4!=0||encoded.length>PlayerInventoryStateB173.MAX_SLOTS*4)return;
+                    int[][] layout=new int[encoded.length/4][4];
+                    for(int i=0;i<layout.length;i++)System.arraycopy(encoded,i*4,layout[i],0,4);
+                    receiver.offer(epoch,tag.getLong("token"),tag.getString("identity"),tag.getString("title"),slots,layout);
                 }else if(payload.discriminator()==STATE)receiver.state(epoch,tag.getLong("revision"),tag.getCompound("snapshot"));
                 else if(payload.discriminator()==TRANSACTION)receiver.transaction(epoch,tag.getLong("token"),tag.getLong("request"),tag.getBoolean("accepted"),tag.getLong("revision"),tag.getInt("stateId"),tag.getCompound("snapshot"),tag.contains("carried",Tag.TAG_COMPOUND)?tag.getCompound("carried"):null);
                 return;

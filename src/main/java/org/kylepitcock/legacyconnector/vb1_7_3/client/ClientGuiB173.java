@@ -33,6 +33,10 @@ public final class ClientGuiB173 implements GuiDrawB173.Sink {
     private static GuiGraphics graphics;
     private static Texture bound;
     private static float red = 1.0F, green = 1.0F, blue = 1.0F, alpha = 1.0F;
+    public record Background(ResourceLocation texture,int u,int v,int width,int height) {}
+    private record BackgroundBounds(int x,int y,int width,int height) {}
+    private static BackgroundBounds backgroundBounds;
+    private static Background background;
 
     private static final class Texture {
         final int id;
@@ -51,11 +55,19 @@ public final class ClientGuiB173 implements GuiDrawB173.Sink {
     public static void begin(GuiGraphics g) {
         graphics = g;
         red = green = blue = alpha = 1.0F;
+        backgroundBounds=null;background=null;
     }
+
+    /** Observe the original full background blit so attached native controls share its artwork. */
+    public static void begin(GuiGraphics g,int x,int y,int width,int height) {
+        begin(g);backgroundBounds=new BackgroundBounds(x,y,width,height);
+    }
+    public static Background background(){return background;}
 
     public static void end() {
         if (graphics != null) graphics.setColor(1.0F, 1.0F, 1.0F, 1.0F);
         graphics = null;
+        backgroundBounds=null;
     }
 
     @Override
@@ -64,7 +76,12 @@ public final class ClientGuiB173 implements GuiDrawB173.Sink {
         Texture t = bound;
         if (g == null || t == null) return;
         ResourceLocation rl = upload(t);
-        if (rl != null) g.blit(rl, x, y, u, v, width, height);
+        if (rl != null) {
+            var bounds=backgroundBounds;
+            if(bounds!=null&&background==null&&x==bounds.x()&&y==bounds.y()&&width==bounds.width()&&height==bounds.height())
+                background=new Background(rl,u,v,width,height);
+            g.blit(rl, x, y, u, v, width, height);
+        }
     }
 
     @Override
@@ -192,8 +209,8 @@ public final class ClientGuiB173 implements GuiDrawB173.Sink {
                 living.yHeadRot=living.yHeadRotO=original.yaw;
                 if(original instanceof legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity legacy)living.yBodyRot=living.yBodyRotO=legacy.bodyYaw;
             }
-            // Beta's inventory model matrix and the native inventory renderer use opposite X/Z handedness.
-            g.pose().mulPose(new org.joml.Quaternionf().rotationY((float)Math.PI));
+            // Preserve the caller's model orientation: its mirrored scale and the native renderer's
+            // body-yaw rotation already produce the legacy preview's facing direction.
             com.mojang.blaze3d.platform.Lighting.setupForEntityInInventory();
             dispatcher.overrideCameraOrientation(new org.joml.Quaternionf());
             dispatcher.setRenderShadow(false);
