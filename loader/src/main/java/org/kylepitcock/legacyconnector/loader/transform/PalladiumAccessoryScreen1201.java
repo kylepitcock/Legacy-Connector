@@ -43,6 +43,7 @@ final class PalladiumAccessoryScreen1201 implements Opcodes {
     private static final String RENDER_DESC = "(L" + GUI_GRAPHICS + ";IIF)V";
     private static final String SCREEN_BACKGROUND = "renderBackground";
     private static final String SCREEN_BACKGROUND_DESC = "(L" + GUI_GRAPHICS + ";)V";
+    private static final String MODERN_SCREEN_BACKGROUND_DESC = "(L" + GUI_GRAPHICS + ";IIF)V";
     private static final String DIRT_BACKGROUND = "renderDirtBackground";
     private static final String DIRT_BACKGROUND_DESC = "(II)V";
     private static final String DESCRIPTOR = "()V";
@@ -75,6 +76,7 @@ final class PalladiumAccessoryScreen1201 implements Opcodes {
         changed |= supplyEmptyChromeHook(node, ADD_CONTENTS);
         changed |= supplyEmptyChromeHook(node, ADD_TITLE);
         changed |= supplyEmptyChromeHook(node, ADD_FOOTER);
+        changed |= supplyEmptyScreenBackgroundOverride(node);
         changed |= removeLegacyScreenBackgroundCall(node);
         changed |= removeLegacyDirtBackgroundCall(node);
         return changed ? 1 : 0;
@@ -139,10 +141,44 @@ final class PalladiumAccessoryScreen1201 implements Opcodes {
     }
 
     /**
-     * The legacy 1.20.1 screen background was not blurred. In 1.21.1 the
-     * inherited Screen.renderBackground call applies the in-world blur, so
-     * drop that one verified call and leave the game world unblurred behind
-     * Palladium's own controls.
+     * Palladium's render() ends by calling super.render() so the inherited
+     * Screen implementation can draw registered widgets such as the Done button.
+     * In 1.21.1 that base render path also invokes the modern
+     * renderBackground(GuiGraphics, int, int, float) hook, which applies the
+     * in-world blur. Override only that background hook with an empty body;
+     * keep super.render() intact so its widgets are still rendered.
+     */
+    private static boolean supplyEmptyScreenBackgroundOverride(ClassNode node) {
+        for (MethodNode method : node.methods) {
+            if (!SCREEN_BACKGROUND.equals(method.name)
+                    || !MODERN_SCREEN_BACKGROUND_DESC.equals(method.desc)) {
+                continue;
+            }
+            int visibility = method.access & (ACC_PUBLIC | ACC_PRIVATE | ACC_PROTECTED);
+            if (visibility == ACC_PUBLIC
+                    && (method.access & (ACC_ABSTRACT | ACC_STATIC)) == 0
+                    && method.instructions != null
+                    && method.instructions.size() == 1
+                    && method.instructions.getFirst().getOpcode() == RETURN) {
+                return false; // Already adapted.
+            }
+            throw new IllegalStateException(
+                    "Palladium AccessoryScreen has an unexpected modern renderBackground() override");
+        }
+
+        MethodNode background = new MethodNode(
+                ACC_PUBLIC, SCREEN_BACKGROUND, MODERN_SCREEN_BACKGROUND_DESC, null, null);
+        background.instructions.add(new InsnNode(RETURN));
+        background.maxStack = 0;
+        background.maxLocals = 5; // this, GuiGraphics, mouseX, mouseY, partialTick
+        node.methods.add(background);
+        return true;
+    }
+
+    /**
+     * The old one-argument background call is migrated separately. Remove it
+     * if it survives that migration; the modern overload above is what
+     * suppresses the blur invoked through Palladium's super.render() call.
      */
     private static boolean removeLegacyScreenBackgroundCall(ClassNode node) {
         MethodNode render = findRenderMethod(node);

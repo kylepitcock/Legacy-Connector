@@ -432,7 +432,7 @@ public final class Forge1201Transformer {
                     + palladiumSuitStandChanges + " entity class(es)");
         }
         if (palladiumAccessoryScreenChanges > 0) {
-            result.notes.add("Palladium AccessoryScreen uses only its legacy lists/title/Done controls, skips the unused OptionsSubScreen body, passes Minecraft.options, and removes the 1.21.1 blur and legacy dirt-background layers: "
+            result.notes.add("Palladium AccessoryScreen keeps its legacy lists/title/Done controls, skips the unused OptionsSubScreen body, passes Minecraft.options, suppresses the modern Screen background/blur hook while preserving super.render() widgets, and removes the legacy dirt-background layer: "
                     + palladiumAccessoryScreenChanges + " screen class(es)");
         }
         if (palladiumSelectionListNarrationChanges > 0) {

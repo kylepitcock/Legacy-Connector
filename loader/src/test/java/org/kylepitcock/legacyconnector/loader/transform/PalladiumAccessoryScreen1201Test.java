@@ -25,6 +25,7 @@ class PalladiumAccessoryScreen1201Test implements Opcodes {
     private static final String ADD_FOOTER = "addFooter";
     private static final String RENDER = "render";
     private static final String RENDER_DESC = "(L" + GUI_GRAPHICS + ";IIF)V";
+    private static final String MODERN_BACKGROUND_DESC = "(L" + GUI_GRAPHICS + ";IIF)V";
 
     @Test
     void accessoryScreenGetsConcreteHookAndCurrentMinecraftOptions() {
@@ -53,6 +54,17 @@ class PalladiumAccessoryScreen1201Test implements Opcodes {
         assertFalse(hasCall(render, INVOKEVIRTUAL, PalladiumAccessoryScreen1201.ACCESSORY_SCREEN,
                 "renderDirtBackground", "(II)V"),
                 "the obsolete tiled dirt overlay must be removed");
+        assertTrue(hasCall(render, INVOKESPECIAL, OPTIONS_SUB_SCREEN, "render", RENDER_DESC),
+                "super.render must remain so inherited widgets such as Done are rendered");
+
+        MethodNode background = find(node, "renderBackground", MODERN_BACKGROUND_DESC);
+        assertNotNull(background, "the modern background hook must be overridden");
+        assertEquals(ACC_PUBLIC, background.access & (ACC_PUBLIC | ACC_PRIVATE | ACC_PROTECTED));
+        assertFalse((background.access & (ACC_ABSTRACT | ACC_STATIC)) != 0);
+        assertEquals(1, background.instructions.size());
+        assertEquals(RETURN, background.instructions.getFirst().getOpcode());
+        assertEquals(0, background.maxStack);
+        assertEquals(5, background.maxLocals);
 
         MethodNode constructor = find(node, "<init>", "(L" + SCREEN + ";)V");
         assertNotNull(constructor);
@@ -178,8 +190,14 @@ class PalladiumAccessoryScreen1201Test implements Opcodes {
         render.instructions.add(new IntInsnNode(SIPUSH, 160));
         render.instructions.add(new MethodInsnNode(INVOKEVIRTUAL,
                 PalladiumAccessoryScreen1201.ACCESSORY_SCREEN, "renderDirtBackground", "(II)V", false));
+        render.instructions.add(new VarInsnNode(ALOAD, 0));
+        render.instructions.add(new VarInsnNode(ALOAD, 1));
+        render.instructions.add(new VarInsnNode(ILOAD, 2));
+        render.instructions.add(new VarInsnNode(ILOAD, 3));
+        render.instructions.add(new VarInsnNode(FLOAD, 4));
+        render.instructions.add(new MethodInsnNode(INVOKESPECIAL, OPTIONS_SUB_SCREEN, "render", RENDER_DESC, false));
         render.instructions.add(new InsnNode(RETURN));
-        render.maxStack = 3;
+        render.maxStack = 5;
         render.maxLocals = 5;
         node.methods.add(render);
         return node;
