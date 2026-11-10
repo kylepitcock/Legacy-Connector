@@ -2,6 +2,7 @@ package org.kylepitcock.legacyconnector.loader.transform;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
@@ -16,7 +17,7 @@ class PalladiumTailoringScreen1201Test implements Opcodes {
             "(Lnet/minecraft/client/gui/narration/NarrationElementOutput;)V";
 
     @Test
-    void removesOnlyTheEmptyLegacyNarrationOverride() {
+    void renamesOnlyTheEmptyLegacyNarrationOverrideToTheNewHook() {
         ClassNode node = legacyRecipeList();
         MethodNode method = new MethodNode(ACC_PUBLIC, "updateNarration", DESC, null, null);
         method.instructions.add(new InsnNode(RETURN));
@@ -25,7 +26,8 @@ class PalladiumTailoringScreen1201Test implements Opcodes {
         node.methods.add(method);
 
         assertEquals(1, PalladiumTailoringScreen1201.apply(node));
-        assertNull(find(node));
+        assertNull(find(node, "updateNarration"));
+        assertNotNull(find(node, "updateWidgetNarration"));
         assertEquals(0, PalladiumTailoringScreen1201.apply(node));
         org.junit.jupiter.api.Assertions.assertDoesNotThrow(() -> {
             ClassWriter writer = new ClassWriter(0);
@@ -43,7 +45,7 @@ class PalladiumTailoringScreen1201Test implements Opcodes {
         node.methods.add(method);
 
         assertEquals(0, PalladiumTailoringScreen1201.apply(node));
-        org.junit.jupiter.api.Assertions.assertSame(method, find(node));
+        org.junit.jupiter.api.Assertions.assertSame(method, find(node, "updateNarration"));
     }
 
     @Test
@@ -74,9 +76,9 @@ class PalladiumTailoringScreen1201Test implements Opcodes {
         return node;
     }
 
-    private static MethodNode find(ClassNode node) {
+    private static MethodNode find(ClassNode node, String name) {
         for (MethodNode method : node.methods) {
-            if ("updateNarration".equals(method.name) && DESC.equals(method.desc)) return method;
+            if (name.equals(method.name) && DESC.equals(method.desc)) return method;
         }
         return null;
     }
