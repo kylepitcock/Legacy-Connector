@@ -126,6 +126,43 @@ class PalladiumCorePlayerSkin1201Test implements Opcodes {
     }
 
     @Test
+    void genericMc1201MigrationRedirectsTheLegacySkinLookup() {
+        ClassNode node = legacyRegistry();
+        Mc1201Hierarchy hierarchy = new Mc1201Hierarchy();
+        hierarchy.add(node);
+
+        Mc1201Migration.Counts counts = Mc1201Migration.apply(node, hierarchy);
+
+        assertEquals(1, counts.calls,
+                "the generic migration table redirects the legacy String-based AddLayers.getSkin call");
+        MethodNode lambda = findMethod(node, "lambda$renderLayers$0", OLD_LAMBDA_DESC);
+        assertNotNull(lambda);
+        assertNotNull(findCall(lambda,
+                "org/kylepitcock/legacyconnector/v1_20_1/migrate/ClientCompat",
+                "getSkin",
+                "(L" + EVENT + ";Ljava/lang/String;)L" + LIVING_RENDERER + ";"));
+    }
+
+    @Test
+    void adaptedPlayerSkinLookupSurvivesTheGenericMc1201Migration() {
+        ClassNode node = legacyRegistry();
+        assertEquals(1, PalladiumCorePlayerSkin1201.apply(node));
+
+        Mc1201Hierarchy hierarchy = new Mc1201Hierarchy();
+        hierarchy.add(node);
+        Mc1201Migration.Counts counts = Mc1201Migration.apply(node, hierarchy);
+
+        assertEquals(0, counts.calls,
+                "the adapter must change the descriptor before the generic String-getter rewrite runs");
+        MethodNode lambda = findMethod(node, "lambda$renderLayers$0", NEW_LAMBDA_DESC);
+        assertNotNull(lambda);
+        assertNotNull(findCall(lambda, EVENT, "getSkin", NEW_GET_SKIN));
+        assertNull(findCall(lambda,
+                "org/kylepitcock/legacyconnector/v1_20_1/migrate/ClientCompat", "getSkin",
+                "(L" + EVENT + ";Ljava/lang/String;)L" + LIVING_RENDERER + ";"));
+    }
+
+    @Test
     void unrelatedClassesAreNotChanged() {
         ClassNode node = legacyRegistry();
         node.name = "example/OtherRendererRegistry";
