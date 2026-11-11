@@ -44,8 +44,19 @@ class PalladiumResourceCompat1201Test {
                 """;
         put(resources, PalladiumResourceCompat1201.ALIEN_EVO_SLOT_TRANSFORM, slotTransform);
         put(resources, PalladiumResourceCompat1201.ALIEN_EVO_QUICK_CHANGE, slotTransform);
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_TRANSFORM, """
+                function getRandomInt(min, max) {
+                    return 1;
+                }
+                palladium.setProperty(entity, omnitrixPropertyKey, newAlienUnlocked);
+                palladium.setProperty(entity, omnitrixPropertyKey, newAlienUnlocked);
+                palladium.setProperty(entity, omnitrixPropertyKey, selectedAlienNum);
+                palladium.setProperty(entity, omnitrixPropertyKey, selectedAlienNum);
+                palladium.setProperty(entity, omnitrixPropertyKey, alienNumber);
+                palladium.setProperty(entity, omnitrixPropertyKey, alien_num);
+                """);
 
-        assertEquals(3, PalladiumResourceCompat1201.apply(resources));
+        assertEquals(4, PalladiumResourceCompat1201.apply(resources));
 
         String storeArmor = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_STORE_ARMOR);
         assertTrue(storeArmor.contains(PalladiumResourceCompat1201.SAFE_STORE_ARMOR_CHECK));
@@ -61,6 +72,14 @@ class PalladiumResourceCompat1201Test {
             assertFalse(script.contains(PalladiumResourceCompat1201.LEGACY_ARMOR_ID_RETURN));
             assertFalse(script.contains(PalladiumResourceCompat1201.LEGACY_ARMOR_ID_CHECK));
         }
+
+        String transform = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_TRANSFORM);
+        assertTrue(transform.startsWith(PalladiumResourceCompat1201.OMNITRIX_INTEGER_HELPER));
+        assertEquals(6, transform.split("toOmnitrixInteger\\(", -1).length - 1);
+        assertFalse(transform.contains("palladium.setProperty(entity, omnitrixPropertyKey, selectedAlienNum);"));
+        assertFalse(transform.contains("palladium.setProperty(entity, omnitrixPropertyKey, alienNumber);"));
+        assertFalse(transform.contains("palladium.setProperty(entity, omnitrixPropertyKey, alien_num);"));
+        assertFalse(transform.contains("palladium.setProperty(entity, omnitrixPropertyKey, newAlienUnlocked);"));
 
         assertEquals(0, PalladiumResourceCompat1201.apply(resources));
     }
