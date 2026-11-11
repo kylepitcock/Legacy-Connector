@@ -122,10 +122,10 @@ public final class KubeJSKeybindCompat {
             return built;
         }
 
-        List<Object> merged = new ArrayList<>(built);
+        List<Object> pendingKeys = new ArrayList<>();
         for (Map.Entry<String, PendingMapping> entry : pending.entrySet()) {
             PendingMapping value = entry.getValue();
-            if (merged.contains(value.kubeKey())) {
+            if (built.contains(value.kubeKey())) {
                 try {
                     Object actualMapping = publicField(value.kubeKey(), "mapping").get(value.kubeKey());
                     if (actualMapping != value.keyMapping()) {
@@ -135,11 +135,10 @@ public final class KubeJSKeybindCompat {
                 } catch (ReflectiveOperationException error) {
                     throw compatibilityFailure("appendLegacyMappings", error);
                 }
-            } else {
-                merged.add(value.kubeKey());
             }
+            pendingKeys.add(value.kubeKey());
         }
-        return merged;
+        return mergeMappings(built, pendingKeys);
     }
 
     /**
@@ -167,7 +166,7 @@ public final class KubeJSKeybindCompat {
         }
 
         String oldLoop = """
-                global[keyName] = new $KeyMapping(
+                        global[keyName] = new $KeyMapping(
                           `key.alienevo.key${i}`,
                           $GLFWKey.GLFW_KEY_UNKNOWN,
                           "key.categories.alienevo"
@@ -175,7 +174,7 @@ public final class KubeJSKeybindCompat {
 
                         $KeyMappingRegistry.register(global[keyName]);""";
         String newLoop = """
-                global[keyName] = event.registerLegacyMapping(
+                        global[keyName] = event.registerLegacyMapping(
                           keyName,
                           `key.alienevo.key${i}`,
                           $GLFWKey.GLFW_KEY_UNKNOWN,
@@ -216,6 +215,15 @@ public final class KubeJSKeybindCompat {
         return rewritten.getBytes(java.nio.charset.StandardCharsets.UTF_8);
     }
 
+    static List<Object> mergeMappings(List<?> built, List<?> pending) {
+        List<Object> merged = new ArrayList<>(built);
+        for (Object key : pending) {
+            if (!merged.contains(key)) {
+                merged.add(key);
+            }
+        }
+        return merged;
+    }
     private static int count(String text, String needle) {
         int count = 0;
         int from = 0;
