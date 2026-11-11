@@ -162,12 +162,16 @@ class KubeJSScriptScopeCompatTest {
                     if (!global.usedPositions) {
                         global.usedPositions = new Set();
                     }
+                    global.usedPositions.has(0);
+                    global.usedPositions.clear();
                     global.usedPositions.add(1);
                 });
                 ItemEvents.rightClicked('alienevo:code_tablet_selfdestruct', event => {
                     if (!global.usedSelfDestructPositions) {
                         global.usedSelfDestructPositions = new Set();
                     }
+                    global.usedSelfDestructPositions.has(0);
+                    global.usedSelfDestructPositions.clear();
                     global.usedSelfDestructPositions.add(2);
                 });
                 """;
