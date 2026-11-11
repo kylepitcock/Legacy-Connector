@@ -63,7 +63,7 @@ public final class FunctionConverter1201 {
     /** Translate inspected particle option forms and item/entity NBT fields. */
     public static String convertCommand(String command) {
         if (command == null || command.isEmpty()) return command;
-        String result = command.replace("minecraft:grass", "minecraft:short_grass");
+        String result = command.replaceAll("(?<![a-zA-Z0-9_./-])minecraft:grass(?![a-zA-Z0-9_./-])", "minecraft:short_grass");
         result = convertParticle(result);
         result = convertItemStacks(result);
         result = convertEntityNbt(result);
@@ -88,11 +88,11 @@ public final class FunctionConverter1201 {
                     + "],scale:" + args[3] + "}";
             consumed = 4;
         } else if (kind.equals("block")) {
-            if (args.length < 10) throw new IllegalStateException("Incomplete legacy block particle command: " + command);
+            if (args.length < 9) throw new IllegalStateException("Incomplete legacy block particle command: " + command);
             modernType = "minecraft:block{block_state:\"" + resourceId(args[0]) + "\"}";
             consumed = 1;
         } else {
-            if (args.length < 10) throw new IllegalStateException("Incomplete legacy item particle command: " + command);
+            if (args.length < 9) throw new IllegalStateException("Incomplete legacy item particle command: " + command);
             modernType = "minecraft:item{item:" + itemStack(args[0]) + "}";
             consumed = 1;
         }
