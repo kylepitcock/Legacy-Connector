@@ -23,8 +23,6 @@ import java.util.WeakHashMap;
 public final class KubeJSKeybindCompat {
     private static final String KUBEJS_KEYBINDS =
             "dev.latvian.mods.kubejs.client.KubeJSKeybinds";
-    private static final String KEYBINDING_EVENT =
-            "dev.latvian.mods.kubejs.client.KeybindRegistryKubeEvent";
     private static final String KEY_MAPPING = "net.minecraft.client.KeyMapping";
     private static final String KEY_CONFLICT_CONTEXT =
             "net.neoforged.neoforge.client.settings.KeyConflictContext";
