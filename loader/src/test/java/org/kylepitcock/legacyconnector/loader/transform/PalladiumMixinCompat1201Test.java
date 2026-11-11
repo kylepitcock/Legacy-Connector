@@ -69,7 +69,9 @@ class PalladiumMixinCompat1201Test implements Opcodes {
                 + "Lnet/minecraft/world/item/TooltipFlag;" + CI + ")V";
         MethodNode handler = new MethodNode(ACC_PUBLIC, "appendHoverText", oldDesc, null, null);
         handler.instructions.add(new VarInsnNode(ALOAD, 2));
-        handler.instructions.add(new InsnNode(POP));
+        handler.instructions.add(new MethodInsnNode(INVOKEVIRTUAL,
+                "net/minecraft/server/network/ServerGamePacketListenerImpl", "send",
+                "(Lnet/minecraft/network/protocol/Packet;)V", false));
         handler.instructions.add(new InsnNode(RETURN));
         handler.maxLocals = 6;
         node.methods.add(handler);
@@ -154,6 +156,11 @@ class PalladiumMixinCompat1201Test implements Opcodes {
 
         String oldPacketDesc = "(L" + SERVER_SCOREBOARD
                 + "$Method;Ljava/lang/String;Ljava/lang/String;I)V";
+        // Mirror the real mixin: the packet listener receiver is already on
+        // the operand stack when the packet object and constructor arguments are built.
+        handler.instructions.add(new VarInsnNode(ALOAD, 2));
+        handler.instructions.add(new FieldInsnNode(GETFIELD, "net/minecraft/server/level/ServerPlayer",
+                "connection", "Lnet/minecraft/server/network/ServerGamePacketListenerImpl;"));
         handler.instructions.add(new TypeInsnNode(NEW, SET_SCORE_PACKET));
         handler.instructions.add(new InsnNode(DUP));
         handler.instructions.add(new FieldInsnNode(GETSTATIC, SERVER_SCOREBOARD + "$Method",
