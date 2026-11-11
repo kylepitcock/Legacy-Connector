@@ -23,6 +23,7 @@
     "PlacedFeatureOreGateMixin",
     "TargetingConditionsMixin",
     "CreativeTabDuplicateMixin",
+    "ItemStackLegacyNbtMixin",
     "JigsawStructureLegacyVillageMixin",
     "ServerLevelBlockFamilyMixin",
     "LevelChunkBlockFamilyMixin",
