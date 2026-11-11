@@ -374,6 +374,12 @@ public final class PalladiumKubeJSCompat {
         try (InputStream input = openInputStream(ioSupplier, loader)) {
             contents = input.readAllBytes();
         }
+        byte[] adaptedContents = KubeJSItemBuilderCompat.rewriteLegacyBuilderSource(contents);
+        if (adaptedContents != contents) {
+            LOGGER.log(System.Logger.Level.INFO,
+                    "Adapted legacy KubeJS 6 item-glow builder usage in Palladium addon script {0}", resourcePath);
+            contents = adaptedContents;
+        }
         if (!Files.exists(backingFile) || !java.util.Arrays.equals(contents, Files.readAllBytes(backingFile))) {
             Path temporary = backingFile.resolveSibling(backingFile.getFileName() + ".tmp");
             Files.write(temporary, contents);
