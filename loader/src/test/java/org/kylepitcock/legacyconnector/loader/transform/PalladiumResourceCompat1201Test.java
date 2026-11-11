@@ -19,6 +19,14 @@ class PalladiumResourceCompat1201Test {
         return new String(resources.get(path), StandardCharsets.UTF_8);
     }
 
+    private static int occurrences(String text, String needle) {
+        int count = 0;
+        for (int offset = 0; (offset = text.indexOf(needle, offset)) >= 0; offset += needle.length()) {
+            count++;
+        }
+        return count;
+    }
+
     @Test
     void migratesAlienEvoArmorTransformAndPowerUiPathsAndIsIdempotent() {
         Map<String, byte[]> resources = new HashMap<>();
@@ -92,8 +100,8 @@ class PalladiumResourceCompat1201Test {
         assertFalse(transform.contains("palladium.setProperty(entity, omnitrixPropertyKey, newAlienUnlocked);"));
 
         String powerUi = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_POWER_UI);
-        assertEquals(3, powerUi.split("currentTab.toString() === omnitrixTab", -1).length - 1);
-        assertEquals(5, powerUi.split("e.tab.toString() === omnitrixTab", -1).length - 1);
+        assertEquals(3, occurrences(powerUi, "currentTab.toString() === omnitrixTab"));
+        assertEquals(5, occurrences(powerUi, "e.tab.toString() === omnitrixTab"));
         assertFalse(powerUi.contains("currentTab === omnitrixTab"));
         assertFalse(powerUi.contains("e.tab === omnitrixTab"));
 
