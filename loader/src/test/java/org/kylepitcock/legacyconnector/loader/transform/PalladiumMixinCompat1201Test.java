@@ -229,6 +229,45 @@ class PalladiumMixinCompat1201Test implements Opcodes {
     }
 
     @Test
+    void bodyPartPassesPlayerScaleToUpdatedRendererInvoker() {
+        ClassNode node = new ClassNode();
+        node.name = "net/threetag/palladium/entity/BodyPart";
+        String owner = "net/threetag/palladium/mixin/client/PlayerRendererInvoker";
+        String oldDesc = "(Lnet/minecraft/client/player/AbstractClientPlayer;L" + POSE + ";FFF)V";
+        String newDesc = "(Lnet/minecraft/client/player/AbstractClientPlayer;L" + POSE + ";FFFF)V";
+        MethodNode method = new MethodNode(ACC_PRIVATE | ACC_STATIC, "getTransformationMatrix", "()V", null, null);
+        method.instructions.add(new VarInsnNode(ALOAD, 9)); // PlayerRendererInvoker receiver
+        method.instructions.add(new VarInsnNode(ALOAD, 4)); // AbstractClientPlayer
+        method.instructions.add(new VarInsnNode(ALOAD, 6)); // PoseStack
+        method.instructions.add(new InsnNode(FCONST_0)); // bob
+        method.instructions.add(new InsnNode(FCONST_0)); // body yaw
+        method.instructions.add(new InsnNode(FCONST_0)); // partial tick
+        MethodInsnNode call = new MethodInsnNode(INVOKEINTERFACE, owner, "invokeSetupRotations", oldDesc, true);
+        method.instructions.add(call);
+        method.instructions.add(new InsnNode(RETURN));
+        method.maxLocals = 10;
+        method.maxStack = 6;
+        node.methods.add(method);
+
+        assertEquals(1, PalladiumMixinCompat1201.apply(node));
+        assertEquals(newDesc, call.desc);
+        AbstractInsnNode scaleCallNode = previousReal(call);
+        assertTrue(scaleCallNode instanceof MethodInsnNode scaleCall
+                && scaleCall.getOpcode() == INVOKEVIRTUAL
+                && scaleCall.owner.equals("net/minecraft/world/entity/LivingEntity")
+                && scaleCall.name.equals("getScale")
+                && scaleCall.desc.equals("()F"));
+        AbstractInsnNode playerLoadNode = previousReal(scaleCallNode);
+        assertTrue(playerLoadNode instanceof VarInsnNode playerLoad
+                && playerLoad.getOpcode() == ALOAD
+                && playerLoad.var == 4);
+        assertEquals(7, method.maxStack);
+        assertEquals(0, PalladiumMixinCompat1201.apply(node),
+                "the already-migrated BodyPart call must be idempotent");
+        assertClassCanBeSerialized(node);
+    }
+
+    @Test
     void humanoidArmorPieceHandlerTargetsNeoForgeAnimationOverload() {
         ClassNode node = new ClassNode();
         node.name = "net/threetag/palladium/mixin/client/HumanoidArmorLayerMixin";
