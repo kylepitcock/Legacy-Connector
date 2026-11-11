@@ -70,6 +70,8 @@ class PalladiumResourceCompat1201Test {
         put(resources, "addon/alienevo/kubejs_scripts/codes.js", """
                 const prototypePower = new ResourceLocation('alienevo:prototype_omnitrix');
                 """);
+        put(resources, "data/alienevo/kubejs_scripts/slam.js",
+                "const gravityAttribute = \"forge:entity_gravity\";");
         put(resources, PalladiumResourceCompat1201.ALIEN_EVO_TRANSFORM, """
                 function getRandomInt(min, max) {
                     return 1;
@@ -87,7 +89,7 @@ class PalladiumResourceCompat1201Test {
                         `alienevo:${transformSound}_transform`, entity.getSoundSource(), 0.7, 1.0);
                 """);
 
-        assertEquals(7, PalladiumResourceCompat1201.apply(resources));
+        assertEquals(8, PalladiumResourceCompat1201.apply(resources));
 
         String storeArmor = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_STORE_ARMOR);
         assertTrue(storeArmor.contains(PalladiumResourceCompat1201.SAFE_STORE_ARMOR_CHECK));
@@ -136,6 +138,9 @@ class PalladiumResourceCompat1201Test {
         assertTrue(codes.contains("function ResourceLocation(namespaceOrLocation, path)"));
         assertTrue(codes.contains("var AlienEvoJavaResourceLocation = Java.loadClass"));
         assertFalse(codes.contains("const AlienEvoJavaResourceLocation ="));
+
+        assertEquals("const gravityAttribute = \"minecraft:gravity\";",
+                get(resources, "data/alienevo/kubejs_scripts/slam.js"));
 
         String powerUi = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_POWER_UI);
         assertTrue(powerUi.contains("function ResourceLocation(namespaceOrLocation, path)"));
