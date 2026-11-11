@@ -6,7 +6,9 @@
   "mixins": [
     "ArchitecturyEventImplMixin",
     "HbmTagStackDisplayMixin",
-    "KubeJSBlockBuilderLegacyAliasesMixin"
+    "KubeJSBlockBuilderLegacyAliasesMixin",
+    "KubeJSItemBuilderLegacyGlowMixin",
+    "KubeJSItemModificationLegacyBuilderMixin"
   ],
   "client": [
     "RocketnauticsStarPlasmaMixin",
