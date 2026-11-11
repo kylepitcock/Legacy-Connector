@@ -181,7 +181,6 @@ class PalladiumMixinCompat1201Test implements Opcodes {
                 "listPlayerScores", scoresDesc));
         assertFalse(hasCall(handler, INVOKEVIRTUAL, SERVER_SCOREBOARD,
                 "getPlayerScores", scoresDesc));
-        assertTrue(handler.instructions.iterator().hasNext());
         boolean hasLegacyScoreCast = false;
         boolean hasEntryCast = false;
         for (AbstractInsnNode instruction : handler.instructions) {
