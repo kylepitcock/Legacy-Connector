@@ -113,12 +113,12 @@ class PalladiumResourceCompat1201Test {
         assertFalse(transform.contains("palladium.setProperty(entity, omnitrixPropertyKey, newAlienUnlocked);"));
         assertTrue(transform.contains("function ResourceLocation(namespaceOrLocation, path)"));
         assertTrue(transform.contains("AlienEvoJavaResourceLocation.fromNamespaceAndPath"));
-        assertTrue(transform.contains("getAlienEvoSoundEvent(`alienevo:${transformSound}_transform`)"));
+        assertTrue(transform.contains("getAlienEvoSoundEvent('alienevo:' + String(transformSound) + '_transform')"));
         assertFalse(transform.contains("`alienevo:${transformSound}_transform`,"));
 
         String cycle = get(resources, "addon/alienevo/kubejs_scripts/omnitrix_cycle.js");
         assertTrue(cycle.contains("function getAlienEvoSoundEvent(soundId)"));
-        assertTrue(cycle.contains("getAlienEvoSoundEvent(`alienevo:${soundToPlay}`)"));
+        assertTrue(cycle.contains("getAlienEvoSoundEvent('alienevo:' + String(soundToPlay))"));
         assertFalse(cycle.contains("`alienevo:${soundToPlay}`,"));
 
         String codes = get(resources, "addon/alienevo/kubejs_scripts/codes.js");
