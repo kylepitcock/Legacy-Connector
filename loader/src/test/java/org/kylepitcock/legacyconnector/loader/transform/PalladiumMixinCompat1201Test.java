@@ -18,6 +18,10 @@ class PalladiumMixinCompat1201Test implements Opcodes {
     private static final String MODEL = "net/minecraft/client/model/HumanoidModel";
     private static final String SLOT = "net/minecraft/world/scores/DisplaySlot";
     private static final String OBJECTIVE = "net/minecraft/world/scores/Objective";
+    private static final String SERVER_SCOREBOARD = "net/minecraft/server/ServerScoreboard";
+    private static final String LEGACY_SCORE = "net/minecraft/world/scores/Score";
+    private static final String PLAYER_SCORE_ENTRY = "net/minecraft/world/scores/PlayerScoreEntry";
+    private static final String SET_SCORE_PACKET = "net/minecraft/network/protocol/game/ClientboundSetScorePacket";
 
     @Test
     void armorItemMixinUsesPlayerReceiverForLivingEntityEquipmentSlotLookup() {
@@ -127,6 +131,83 @@ class PalladiumMixinCompat1201Test implements Opcodes {
         assertTrue(hasCall(stop, INVOKESTATIC, SLOT, "values", "()[L" + SLOT + ";"));
         assertTrue(hasCall(stop, INVOKESPECIAL, "net/minecraft/network/protocol/game/ClientboundSetDisplayObjectivePacket",
                 "<init>", "(L" + SLOT + ";L" + OBJECTIVE + ";)V"));
+    }
+
+    @Test
+    void playerListScoreboardReplayUsesPlayerScoreEntriesAndTheNewScorePacket() {
+        ClassNode node = new ClassNode();
+        node.name = "net/threetag/palladium/mixin/PlayerListMixin";
+        String handlerDesc = "(L" + SERVER_SCOREBOARD
+                + ";Lnet/minecraft/server/level/ServerPlayer;" + CI + ")V";
+        MethodNode handler = new MethodNode(ACC_PROTECTED, "updateEntireScoreboard",
+                handlerDesc, null, null);
+
+        String scoresDesc = "(L" + OBJECTIVE + ";)Ljava/util/Collection;";
+        handler.instructions.add(new VarInsnNode(ALOAD, 1));
+        handler.instructions.add(new VarInsnNode(ALOAD, 6));
+        handler.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, SERVER_SCOREBOARD,
+                "getPlayerScores", scoresDesc, false));
+        handler.instructions.add(new VarInsnNode(ASTORE, 7));
+        handler.instructions.add(new VarInsnNode(ALOAD, 8));
+        handler.instructions.add(new TypeInsnNode(CHECKCAST, LEGACY_SCORE));
+        handler.instructions.add(new VarInsnNode(ASTORE, 8));
+
+        String oldPacketDesc = "(L" + SERVER_SCOREBOARD
+                + "$Method;Ljava/lang/String;Ljava/lang/String;I)V";
+        handler.instructions.add(new TypeInsnNode(NEW, SET_SCORE_PACKET));
+        handler.instructions.add(new InsnNode(DUP));
+        handler.instructions.add(new FieldInsnNode(GETSTATIC, SERVER_SCOREBOARD + "$Method",
+                "CHANGE", "L" + SERVER_SCOREBOARD + "$Method;"));
+        handler.instructions.add(new VarInsnNode(ALOAD, 6));
+        handler.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, OBJECTIVE,
+                "getName", "()Ljava/lang/String;", false));
+        handler.instructions.add(new VarInsnNode(ALOAD, 8));
+        handler.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, LEGACY_SCORE,
+                "getOwner", "()Ljava/lang/String;", false));
+        handler.instructions.add(new VarInsnNode(ALOAD, 8));
+        handler.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, LEGACY_SCORE,
+                "getScore", "()I", false));
+        handler.instructions.add(new MethodInsnNode(INVOKESPECIAL, SET_SCORE_PACKET,
+                "<init>", oldPacketDesc, false));
+        handler.instructions.add(new InsnNode(POP));
+        handler.instructions.add(new InsnNode(RETURN));
+        handler.maxLocals = 9;
+        handler.maxStack = 7;
+        node.methods.add(handler);
+
+        assertEquals(1, PalladiumMixinCompat1201.apply(node));
+
+        assertTrue(hasCall(handler, INVOKEVIRTUAL, "net/minecraft/world/scores/Scoreboard",
+                "listPlayerScores", scoresDesc));
+        assertFalse(hasCall(handler, INVOKEVIRTUAL, SERVER_SCOREBOARD,
+                "getPlayerScores", scoresDesc));
+        assertTrue(handler.instructions.iterator().hasNext());
+        boolean hasLegacyScoreCast = false;
+        boolean hasEntryCast = false;
+        for (AbstractInsnNode instruction : handler.instructions) {
+            if (instruction instanceof TypeInsnNode type && type.getOpcode() == CHECKCAST) {
+                hasLegacyScoreCast |= type.desc.equals(LEGACY_SCORE);
+                hasEntryCast |= type.desc.equals(PLAYER_SCORE_ENTRY);
+            }
+        }
+        assertFalse(hasLegacyScoreCast);
+        assertTrue(hasEntryCast);
+        assertTrue(hasCall(handler, INVOKEVIRTUAL, PLAYER_SCORE_ENTRY,
+                "owner", "()Ljava/lang/String;"));
+        assertTrue(hasCall(handler, INVOKEVIRTUAL, PLAYER_SCORE_ENTRY, "value", "()I"));
+        assertTrue(hasCall(handler, INVOKEVIRTUAL, PLAYER_SCORE_ENTRY,
+                "display", "()Lnet/minecraft/network/chat/Component;"));
+        assertTrue(hasCall(handler, INVOKEVIRTUAL, PLAYER_SCORE_ENTRY,
+                "numberFormatOverride", "()Lnet/minecraft/world/scores/NumberFormat;"));
+        assertTrue(hasCall(handler, INVOKESTATIC, "java/util/Optional",
+                "ofNullable", "(Ljava/lang/Object;)Ljava/util/Optional;"));
+        assertTrue(hasCall(handler, INVOKESPECIAL, SET_SCORE_PACKET, "<init>",
+                "(Ljava/lang/String;Ljava/lang/String;ILjava/util/Optional;Ljava/util/Optional;)V"));
+        assertFalse(hasCall(handler, INVOKEVIRTUAL, LEGACY_SCORE, "getOwner", "()Ljava/lang/String;"));
+        assertFalse(hasCall(handler, INVOKEVIRTUAL, LEGACY_SCORE, "getScore", "()I"));
+        assertEquals(0, PalladiumMixinCompat1201.apply(node),
+                "the already-migrated scoreboard replay must be idempotent");
+        assertClassCanBeSerialized(node);
     }
 
     @Test
