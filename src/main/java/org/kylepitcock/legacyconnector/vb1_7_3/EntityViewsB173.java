@@ -81,6 +81,9 @@ public final class EntityViewsB173 {
         if(touched!=null&&touched.view==view)TOUCHED.get().put(modern,new Touched(view,view.velocityX,view.velocityY,view.velocityZ,view.onGround,
                 touched.target,touched.hostState,touched.neutralState,touched.extra,touched.placement,touched.movementSpeed));
     }
+    static boolean liveOffThread(net.minecraft.world.entity.Entity modern){
+        return modern.level() instanceof net.minecraft.server.level.ServerLevel level&&modern.isAddedToLevel()&&!level.getServer().isSameThread();
+    }
     private static float movementSpeed(Entity view){return view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity living?living.mcc$movementSpeed():Float.NaN;}
     private static final java.util.Map<net.minecraft.world.entity.Entity,Entity> VIEWS =
             new com.google.common.collect.MapMaker().weakKeys().weakValues().makeMap();
@@ -289,6 +292,9 @@ public final class EntityViewsB173 {
         try {
             for(var entry:java.util.List.copyOf(touchedViews.entrySet())) {
                 var modern=entry.getKey();var touched=entry.getValue();Entity view=touched.view;
+                // Off-thread original code (chunk generation workers) may read live entities but never writes them back:
+                // native entity writes need the owning server thread, which may itself be waiting for this worker.
+                if(liveOffThread(modern))continue;
                 if(modern instanceof B173EntityHost host) {if(!host.callbackActive())flushHost(host,touched);continue;}
                 if(view instanceof PlayerViewB173 player)player.writeBack();
                 if(view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity living&&modern instanceof net.minecraft.world.entity.LivingEntity nativeLiving)
