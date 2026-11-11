@@ -175,6 +175,47 @@ class DataConverter1201Test {
     }
 
     @Test
+    void itemModifiersMigrateLegacyFunctionIdsAndSetLoreMode() {
+        JsonElement r = one("data/alienevo/item_modifiers/example.json", """
+                [
+                  {"function":"minecraft:set_nbt","tag":"{storedBasePrimaryScore:-1}"},
+                  {"function":"minecraft:set_lore","lore":[{"text":"a"}]},
+                  {"function":"minecraft:set_lore","replace":true,"lore":[{"text":"b"}]},
+                  {"function":"minecraft:set_lore","replace":false,"lore":[{"text":"c"}]}
+                ]
+                """, "data/alienevo/item_modifier/example.json");
+        String q = String.valueOf((char)34);
+        assertTrue(r.toString().contains("minecraft:set_custom_data"), r.toString());
+        assertTrue(r.toString().contains(q + "mode" + q + ":" + q + "append" + q), r.toString());
+        assertTrue(r.toString().contains(q + "mode" + q + ":" + q + "replace_all" + q), r.toString());
+        assertTrue(!r.toString().contains(q + "replace" + q + ":"), r.toString());
+    }
+
+    @Test
+    void palladiumAttributeIdsAreMigratedInPowerJson() {
+        JsonElement r = one("data/alienevo/palladium/powers/example.json", """
+                {"attribute":"forge:step_height_addition","other":{"attribute":"forge:entity_gravity"},
+                 "swim":{"attribute":"forge:swim_speed"},"legacy":"minecraft:grass"}
+                """, "data/alienevo/palladium/powers/example.json");
+        same("""
+                {"attribute":"minecraft:step_height","other":{"attribute":"minecraft:gravity"},
+                 "swim":{"attribute":"neoforge:swim_speed"},"legacy":"minecraft:short_grass"}
+                """, r);
+    }
+
+    @Test
+    void translatesOldParticleCommandsEmbeddedInPowerJson() {
+        JsonElement r = one("data/alienevo/palladium/powers/example.json", """
+                {"commands":["particle block stone ~ ~ ~ 1 0.5 1 0 30 normal",
+                             "execute at @s run particle minecraft:dust 0.7 1 18000000 2 ~ ~ ~ 1 1 1 0 10"]}
+                """, "data/alienevo/palladium/powers/example.json");
+        String s = r.toString();
+        String quote = String.valueOf((char)34);
+        assertTrue(s.contains("minecraft:block{block_state:" + quote + "minecraft:stone" + quote + "}"), s);
+        assertTrue(s.contains("minecraft:dust{color:[0.7,1,18000000],scale:2}"), s);
+    }
+
+    @Test
     void packMcmeta() {
         Map<String, byte[]> in = new LinkedHashMap<>();
         in.put("pack.mcmeta", "{\"pack\":{\"description\":\"d\",\"pack_format\":15,\"forge:data_pack_format\":12}}".getBytes(StandardCharsets.UTF_8));
