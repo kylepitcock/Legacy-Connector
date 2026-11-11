@@ -17,6 +17,7 @@ final class PalladiumMixinCompat1201 implements Opcodes {
     private static final String ARMOR_ITEM_MIXIN = "net/threetag/palladium/mixin/ArmorItemMixin";
     private static final String ARMOR_STAND_MIXIN = "net/threetag/palladium/mixin/ArmorStandMixin";
     private static final String SCOREBOARD_MIXIN = "net/threetag/palladium/mixin/ServerScoreboardMixin";
+    private static final String PLAYER_LIST_MIXIN = "net/threetag/palladium/mixin/PlayerListMixin";
     private static final String ENTITY_SELECTOR_PARSER_MIXIN = "net/threetag/palladium/mixin/EntitySelectorParserMixin";
     private static final String PLAYER_RENDERER_INVOKER = "net/threetag/palladium/mixin/client/PlayerRendererInvoker";
     private static final String MIXIN_SHADOW = "Lorg/spongepowered/asm/mixin/Shadow;";
@@ -32,6 +33,12 @@ final class PalladiumMixinCompat1201 implements Opcodes {
     private static final String DISPLAY_SLOT = "net/minecraft/world/scores/DisplaySlot";
     private static final String OBJECTIVE = "net/minecraft/world/scores/Objective";
     private static final String SCOREBOARD = "net/minecraft/world/scores/Scoreboard";
+    private static final String SERVER_SCOREBOARD = "net/minecraft/server/ServerScoreboard";
+    private static final String PLAYER_SCORE_ENTRY = "net/minecraft/world/scores/PlayerScoreEntry";
+    private static final String LEGACY_SCORE = "net/minecraft/world/scores/Score";
+    private static final String NUMBER_FORMAT = "net/minecraft/world/scores/NumberFormat";
+    private static final String COMPONENT = "net/minecraft/network/chat/Component";
+    private static final String SET_SCORE_PACKET = "net/minecraft/network/protocol/game/ClientboundSetScorePacket";
     private static final String SET_DISPLAY_PACKET = "net/minecraft/network/protocol/game/ClientboundSetDisplayObjectivePacket";
     private static final String GEO_QUAD = "software/bernie/geckolib/cache/object/GeoQuad";
     private static final String GEO_VERTEX = "software/bernie/geckolib/cache/object/GeoVertex";
@@ -48,6 +55,7 @@ final class PalladiumMixinCompat1201 implements Opcodes {
             case ARMOR_ITEM_MIXIN -> adaptArmorItemMixin(node) ? 1 : 0;
             case ARMOR_STAND_MIXIN -> adaptArmorStandMixin(node) ? 1 : 0;
             case SCOREBOARD_MIXIN -> adaptScoreboardMixin(node) ? 1 : 0;
+            case PLAYER_LIST_MIXIN -> adaptPlayerListMixin(node) ? 1 : 0;
             case ENTITY_SELECTOR_PARSER_MIXIN -> adaptEntitySelectorParserMixin(node) ? 1 : 0;
             case PLAYER_RENDERER_INVOKER -> adaptPlayerRendererInvoker(node) ? 1 : 0;
             case HUMANOID_ARMOR_MIXIN -> adaptHumanoidArmorMixin(node) ? 1 : 0;
@@ -279,6 +287,172 @@ final class PalladiumMixinCompat1201 implements Opcodes {
      * the unused stale shadow, and reject any bytecode that actually depends
      * on it rather than silently changing selector behavior.
      */
+    /**
+     * Palladium 4.5.x's PlayerList mixin replays tracked objectives to a
+     * joining player. Minecraft 1.21.1 replaced Scoreboard.getPlayerScores
+     * (Collection<Score>) with listPlayerScores (Collection<PlayerScoreEntry>)
+     * and changed ClientboundSetScorePacket from a four-argument mode packet
+     * to a record carrying optional display/number-format values.
+     *
+     * <p>Keep the feature: adapt its one targeted mixin method to consume the
+     * new score-entry record and forward its display metadata to the new packet.
+     * This is intentionally scoped to Palladium's exact PlayerListMixin shape.</p>
+     */
+    private static boolean adaptPlayerListMixin(ClassNode node) {
+        String objective = "L" + OBJECTIVE + ";";
+        String callback = CALLBACK;
+        String handlerDesc = "(L" + SERVER_SCOREBOARD + ";"
+                + "Lnet/minecraft/server/level/ServerPlayer;" + callback + ")V";
+        MethodNode handler = find(node, "updateEntireScoreboard", handlerDesc);
+        if (handler == null) {
+            return false;
+        }
+
+        String oldScoresDesc = "(" + objective + ")Ljava/util/Collection;";
+        String newPacketDesc = "(Ljava/lang/String;Ljava/lang/String;ILjava/util/Optional;Ljava/util/Optional;)V";
+        String oldPacketDesc = "(L" + SERVER_SCOREBOARD + "$Method;Ljava/lang/String;Ljava/lang/String;I)V";
+
+        MethodInsnNode listScores = null;
+        MethodInsnNode packetConstructor = null;
+        TypeInsnNode legacyScoreCast = null;
+        int oldListCalls = 0;
+        int newListCalls = 0;
+        int oldPacketCalls = 0;
+        int newPacketCalls = 0;
+        for (AbstractInsnNode instruction : handler.instructions.toArray()) {
+            if (instruction instanceof MethodInsnNode call) {
+                if (call.owner.equals(SERVER_SCOREBOARD)
+                        && call.name.equals("getPlayerScores")
+                        && call.desc.equals(oldScoresDesc)) {
+                    listScores = call;
+                    oldListCalls++;
+                } else if (call.owner.equals(SCOREBOARD)
+                        && call.name.equals("listPlayerScores")
+                        && call.desc.equals(oldScoresDesc)) {
+                    newListCalls++;
+                }
+                if (call.owner.equals(SET_SCORE_PACKET) && call.name.equals("<init>")) {
+                    if (call.desc.equals(oldPacketDesc)) {
+                        packetConstructor = call;
+                        oldPacketCalls++;
+                    } else if (call.desc.equals(newPacketDesc)) {
+                        newPacketCalls++;
+                    }
+                }
+            } else if (instruction instanceof TypeInsnNode type
+                    && type.getOpcode() == CHECKCAST
+                    && type.desc.equals(LEGACY_SCORE)) {
+                legacyScoreCast = type;
+            }
+        }
+
+        // An already-adapted class is a no-op. This also makes repeated
+        // transformation safe if the loader sees a cached translated artifact.
+        if (oldListCalls == 0 && newListCalls == 1
+                && oldPacketCalls == 0 && newPacketCalls == 1
+                && legacyScoreCast == null) {
+            return false;
+        }
+        if (oldListCalls != 1 || listScores == null
+                || oldPacketCalls != 1 || packetConstructor == null
+                || newListCalls != 0 || newPacketCalls != 0
+                || legacyScoreCast == null) {
+            throw new IllegalStateException("Palladium PlayerListMixin.updateEntireScoreboard no longer matches the inspected 1.20.1 scoreboard replay shape");
+        }
+
+        // The new method is declared on Scoreboard (the receiver remains a
+        // ServerScoreboard instance, which is a Scoreboard subclass).
+        listScores.owner = SCOREBOARD;
+        listScores.name = "listPlayerScores";
+        listScores.itf = false;
+        legacyScoreCast.desc = PLAYER_SCORE_ENTRY;
+
+        // Locate the exact old packet argument sequence immediately before
+        // ClientboundSetScorePacket.<init>:
+        //   CHANGE, objective name, score owner, score value.
+        AbstractInsnNode scoreValueCall = previousReal(packetConstructor);
+        AbstractInsnNode scoreValueReceiver = previousReal(scoreValueCall);
+        AbstractInsnNode scoreOwnerCall = previousReal(scoreValueReceiver);
+        AbstractInsnNode scoreOwnerReceiver = previousReal(scoreOwnerCall);
+        AbstractInsnNode objectiveNameCall = previousReal(scoreOwnerReceiver);
+        AbstractInsnNode objectiveReceiver = previousReal(objectiveNameCall);
+        AbstractInsnNode updateMode = previousReal(objectiveReceiver);
+        AbstractInsnNode duplicate = previousReal(updateMode);
+        AbstractInsnNode allocation = previousReal(duplicate);
+
+        if (!(scoreValueCall instanceof MethodInsnNode getScore)
+                || getScore.getOpcode() != INVOKEVIRTUAL
+                || !getScore.owner.equals(LEGACY_SCORE)
+                || !getScore.name.equals("getScore")
+                || !getScore.desc.equals("()I")
+                || !(scoreValueReceiver instanceof VarInsnNode scoreValueLoad)
+                || scoreValueLoad.getOpcode() != ALOAD || scoreValueLoad.var != 8
+                || !(scoreOwnerCall instanceof MethodInsnNode getOwner)
+                || getOwner.getOpcode() != INVOKEVIRTUAL
+                || !getOwner.owner.equals(LEGACY_SCORE)
+                || !getOwner.name.equals("getOwner")
+                || !getOwner.desc.equals("()Ljava/lang/String;")
+                || !(scoreOwnerReceiver instanceof VarInsnNode scoreOwnerLoad)
+                || scoreOwnerLoad.getOpcode() != ALOAD || scoreOwnerLoad.var != 8
+                || !(objectiveNameCall instanceof MethodInsnNode getObjectiveName)
+                || getObjectiveName.getOpcode() != INVOKEVIRTUAL
+                || !getObjectiveName.owner.equals(OBJECTIVE)
+                || !getObjectiveName.name.equals("getName")
+                || !getObjectiveName.desc.equals("()Ljava/lang/String;")
+                || !(objectiveReceiver instanceof VarInsnNode objectiveLoad)
+                || objectiveLoad.getOpcode() != ALOAD || objectiveLoad.var != 6
+                || !(updateMode instanceof FieldInsnNode mode)
+                || mode.getOpcode() != GETSTATIC
+                || !mode.owner.equals(SERVER_SCOREBOARD + "$Method")
+                || !mode.name.equals("CHANGE")
+                || !mode.desc.equals("L" + SERVER_SCOREBOARD + "$Method;")
+                || !(duplicate instanceof InsnNode dup) || dup.getOpcode() != DUP
+                || !(allocation instanceof TypeInsnNode packetNew)
+                || packetNew.getOpcode() != NEW || !packetNew.desc.equals(SET_SCORE_PACKET)
+                || !packetConstructor.owner.equals(SET_SCORE_PACKET)
+                || packetConstructor.getOpcode() != INVOKESPECIAL) {
+            throw new IllegalStateException("Palladium PlayerListMixin score packet argument sequence changed; refusing a partial scoreboard migration");
+        }
+
+        // Discard the old mode/objective/Score argument instructions. Keep NEW
+        // and DUP, then build the new packet from PlayerScoreEntry accessors.
+        for (AbstractInsnNode old : new AbstractInsnNode[] {
+                mode, objectiveLoad, getObjectiveName, scoreOwnerLoad, getOwner, scoreValueLoad, getScore
+        }) {
+            handler.instructions.remove(old);
+        }
+
+        InsnList packetArguments = new InsnList();
+        packetArguments.add(new VarInsnNode(ALOAD, 8));
+        packetArguments.add(new MethodInsnNode(INVOKEVIRTUAL, PLAYER_SCORE_ENTRY,
+                "owner", "()Ljava/lang/String;", false));
+
+        packetArguments.add(new VarInsnNode(ALOAD, 6));
+        packetArguments.add(new MethodInsnNode(INVOKEVIRTUAL, OBJECTIVE,
+                "getName", "()Ljava/lang/String;", false));
+
+        packetArguments.add(new VarInsnNode(ALOAD, 8));
+        packetArguments.add(new MethodInsnNode(INVOKEVIRTUAL, PLAYER_SCORE_ENTRY,
+                "value", "()I", false));
+
+        packetArguments.add(new VarInsnNode(ALOAD, 8));
+        packetArguments.add(new MethodInsnNode(INVOKEVIRTUAL, PLAYER_SCORE_ENTRY,
+                "display", "()L" + COMPONENT + ";", false));
+        packetArguments.add(new MethodInsnNode(INVOKESTATIC, "java/util/Optional",
+                "ofNullable", "(Ljava/lang/Object;)Ljava/util/Optional;", false));
+
+        packetArguments.add(new VarInsnNode(ALOAD, 8));
+        packetArguments.add(new MethodInsnNode(INVOKEVIRTUAL, PLAYER_SCORE_ENTRY,
+                "numberFormatOverride", "()L" + NUMBER_FORMAT + ";", false));
+        packetArguments.add(new MethodInsnNode(INVOKESTATIC, "java/util/Optional",
+                "ofNullable", "(Ljava/lang/Object;)Ljava/util/Optional;", false));
+
+        handler.instructions.insert(dup, packetArguments);
+        packetConstructor.desc = newPacketDesc;
+        handler.maxStack = Math.max(handler.maxStack, 7);
+        return true;
+    }
+
     private static boolean adaptEntitySelectorParserMixin(ClassNode node) {
         FieldNode obsolete = null;
         for (FieldNode field : node.fields) {
