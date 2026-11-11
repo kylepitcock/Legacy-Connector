@@ -85,7 +85,12 @@ public final class KubeJSBlockBuilderCompat {
         // KubeJS 7's CardinalBlockBuilder reads side/top/front/particle instead
         // of the six directional keys when generating its orientable model.
         if (cardinalBuilder) {
+            // CardinalBlockBuilder generates an orientable model from these keys,
+            // not from the six directional face entries above.
             textures.put("side", texture);
+            textures.put("front", texture);
+            textures.put("top", texture);
+            textures.put("bottom", texture);
         }
     }
 
