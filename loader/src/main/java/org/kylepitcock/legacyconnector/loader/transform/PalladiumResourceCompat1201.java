@@ -199,6 +199,12 @@ final class PalladiumResourceCompat1201 {
             String script = new String(entry.getValue(), StandardCharsets.UTF_8);
             String migrated = script;
 
+            if (migrated.contains("\"forge:entity_gravity\"")) {
+                migrated = replaceExactScriptOccurrence(
+                        path, migrated, "\"forge:entity_gravity\"",
+                        "\"minecraft:gravity\"");
+            }
+
             if (migrated.contains("new ResourceLocation(")
                     && !migrated.contains(RESOURCE_LOCATION_HELPER_MARKER)) {
                 migrated = insertAfterOmnitrixIntegerHelper(migrated, LEGACY_RESOURCE_LOCATION_HELPER);
