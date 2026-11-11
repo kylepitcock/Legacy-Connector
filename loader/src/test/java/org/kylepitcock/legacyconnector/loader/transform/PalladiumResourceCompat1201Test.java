@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
-/** Regression tests for empty armor ItemStacks in AlienEvo transformation callbacks. */
+/** Regression tests for AlienEvo armor, Omnitrix property, and customization UI rewrites. */
 class PalladiumResourceCompat1201Test {
     private static void put(Map<String, byte[]> resources, String path, String script) {
         resources.put(path, script.getBytes(StandardCharsets.UTF_8));
@@ -85,7 +85,7 @@ class PalladiumResourceCompat1201Test {
 
         String transform = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_TRANSFORM);
         assertTrue(transform.startsWith(PalladiumResourceCompat1201.OMNITRIX_INTEGER_HELPER));
-        assertEquals(6, transform.split("toOmnitrixInteger\\(", -1).length - 1);
+        assertEquals(6, transform.split("palladium\\.setProperty\\(entity, omnitrixPropertyKey, toOmnitrixInteger\\(", -1).length - 1);
         assertFalse(transform.contains("palladium.setProperty(entity, omnitrixPropertyKey, selectedAlienNum);"));
         assertFalse(transform.contains("palladium.setProperty(entity, omnitrixPropertyKey, alienNumber);"));
         assertFalse(transform.contains("palladium.setProperty(entity, omnitrixPropertyKey, alien_num);"));
