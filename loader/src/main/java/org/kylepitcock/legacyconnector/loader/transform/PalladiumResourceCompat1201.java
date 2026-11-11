@@ -30,7 +30,7 @@ final class PalladiumResourceCompat1201 {
                     + "    return JavaInteger.valueOf(Math.trunc(Number(value)));\n"
                     + "}\n\n";
     static final String LEGACY_RESOURCE_LOCATION_HELPER =
-            "const AlienEvoJavaResourceLocation = Java.loadClass('net.minecraft.resources.ResourceLocation');\n\n"
+            "var AlienEvoJavaResourceLocation = Java.loadClass('net.minecraft.resources.ResourceLocation');\n\n"
                     + "function ResourceLocation(namespaceOrLocation, path) {\n"
                     + "    if (arguments.length > 1) {\n"
                     + "        return AlienEvoJavaResourceLocation.fromNamespaceAndPath(String(namespaceOrLocation), String(path));\n"
@@ -39,8 +39,8 @@ final class PalladiumResourceCompat1201 {
                     + "}\n\n";
 
     static final String LEGACY_SOUND_EVENT_HELPER =
-            "const AlienEvoSoundRegistry = Java.loadClass('net.minecraft.core.registries.BuiltInRegistries').SOUND_EVENT;\n"
-                    + "const AlienEvoSoundResourceLocation = Java.loadClass('net.minecraft.resources.ResourceLocation');\n\n"
+            "var AlienEvoSoundRegistry = Java.loadClass('net.minecraft.core.registries.BuiltInRegistries').SOUND_EVENT;\n"
+                    + "var AlienEvoSoundResourceLocation = Java.loadClass('net.minecraft.resources.ResourceLocation');\n\n"
                     + "function getAlienEvoSoundEvent(soundId) {\n"
                     + "    const soundEvent = AlienEvoSoundRegistry.get(AlienEvoSoundResourceLocation.parse(String(soundId)));\n"
                     + "    if (soundEvent == null) {\n"
