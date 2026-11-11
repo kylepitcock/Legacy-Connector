@@ -112,20 +112,32 @@ class PalladiumResourceCompat1201Test {
         assertFalse(transform.contains("palladium.setProperty(entity, omnitrixPropertyKey, alien_num);"));
         assertFalse(transform.contains("palladium.setProperty(entity, omnitrixPropertyKey, newAlienUnlocked);"));
         assertTrue(transform.contains("function ResourceLocation(namespaceOrLocation, path)"));
+        assertTrue(transform.contains("var AlienEvoJavaResourceLocation = Java.loadClass"));
+        assertFalse(transform.contains("const AlienEvoJavaResourceLocation ="));
+        assertTrue(transform.contains("var AlienEvoSoundRegistry = Java.loadClass"));
+        assertTrue(transform.contains("var AlienEvoSoundResourceLocation = Java.loadClass"));
         assertTrue(transform.contains("AlienEvoJavaResourceLocation.fromNamespaceAndPath"));
         assertTrue(transform.contains("getAlienEvoSoundEvent('alienevo:' + String(transformSound) + '_transform')"));
         assertFalse(transform.contains("`alienevo:${transformSound}_transform`,"));
 
         String cycle = get(resources, "addon/alienevo/kubejs_scripts/omnitrix_cycle.js");
         assertTrue(cycle.contains("function getAlienEvoSoundEvent(soundId)"));
+        assertTrue(cycle.contains("var AlienEvoJavaResourceLocation = Java.loadClass"));
+        assertFalse(cycle.contains("const AlienEvoJavaResourceLocation ="));
+        assertTrue(cycle.contains("var AlienEvoSoundRegistry = Java.loadClass"));
+        assertTrue(cycle.contains("var AlienEvoSoundResourceLocation = Java.loadClass"));
         assertTrue(cycle.contains("getAlienEvoSoundEvent('alienevo:' + String(soundToPlay))"));
         assertFalse(cycle.contains("`alienevo:${soundToPlay}`,"));
 
         String codes = get(resources, "addon/alienevo/kubejs_scripts/codes.js");
         assertTrue(codes.contains("function ResourceLocation(namespaceOrLocation, path)"));
+        assertTrue(codes.contains("var AlienEvoJavaResourceLocation = Java.loadClass"));
+        assertFalse(codes.contains("const AlienEvoJavaResourceLocation ="));
 
         String powerUi = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_POWER_UI);
         assertTrue(powerUi.contains("function ResourceLocation(namespaceOrLocation, path)"));
+        assertTrue(powerUi.contains("var AlienEvoJavaResourceLocation = Java.loadClass"));
+        assertFalse(powerUi.contains("const AlienEvoJavaResourceLocation ="));
         assertEquals(3, occurrences(powerUi, "currentTab.toString() === omnitrixTab"));
         assertEquals(5, occurrences(powerUi, "e.tab.toString() === omnitrixTab"));
         assertFalse(powerUi.contains("currentTab === omnitrixTab"));
