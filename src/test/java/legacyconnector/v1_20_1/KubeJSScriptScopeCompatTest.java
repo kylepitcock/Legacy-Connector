@@ -1,12 +1,15 @@
 package legacyconnector.v1_20_1;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Test;
 
-/** Regression tests for known AlienEvo script-scope identifier collisions. */
+/** Regression tests for inspected AlienEvo script compatibility rewrites. */
 class KubeJSScriptScopeCompatTest {
     @Test
     void renamesOnlyTheAlienCodexComponentAliasAndItsReferences() {
@@ -19,13 +22,12 @@ class KubeJSScriptScopeCompatTest {
                 """;
         byte[] input = original.getBytes(StandardCharsets.UTF_8);
 
-        byte[] result = KubeJSScriptScopeCompat.rewriteKnownIdentifierCollisions(
-                "alienevo", "kubejs_scripts/alien_codex.js", input);
+        byte[] result = rewrite("kubejs_scripts/alien_codex.js", input);
         String rewritten = new String(result, StandardCharsets.UTF_8);
 
         assertEquals(2, count(rewritten, "AlienEvoComponent"));
-        org.junit.jupiter.api.Assertions.assertFalse(rewritten.contains("const Component"));
-        org.junit.jupiter.api.Assertions.assertTrue(rewritten.contains("AlienEvoComponent.translatable"));
+        assertFalse(rewritten.contains("const Component"));
+        assertTrue(rewritten.contains("AlienEvoComponent.translatable"));
     }
 
     @Test
@@ -38,13 +40,97 @@ class KubeJSScriptScopeCompatTest {
                 """;
         byte[] input = original.getBytes(StandardCharsets.UTF_8);
 
-        byte[] result = KubeJSScriptScopeCompat.rewriteKnownIdentifierCollisions(
-                "alienevo", "kubejs_scripts/display_player.js", input);
+        byte[] result = rewrite("kubejs_scripts/display_player.js", input);
         String rewritten = new String(result, StandardCharsets.UTF_8);
 
         assertEquals(2, count(rewritten, "AlienEvoQuaternionf"));
-        org.junit.jupiter.api.Assertions.assertFalse(rewritten.contains("const Quaternionf"));
-        org.junit.jupiter.api.Assertions.assertTrue(rewritten.contains("new AlienEvoQuaternionf"));
+        assertFalse(rewritten.contains("const Quaternionf"));
+        assertTrue(rewritten.contains("new AlienEvoQuaternionf"));
+    }
+
+    @Test
+    void movesFailsafeHelpersOutOfTheReadOnlyGlobalMap() {
+        String original = """
+                global.sound = (entity, soundId, volume, pitch, shift) => {
+                    entity.level.runCommandSilent(soundId);
+                };
+
+                global.applyKnockback = (entity, target, strength) => {
+                    target.knockback(strength, 0, 0);
+                };
+
+                global.applyKnockback(entity, target, 3);
+                global.sound(entity, 'example:sound', 1, 1, 0);
+                global.sound(entity, 'example:other', 1, 1, 0);
+                """;
+        byte[] result = rewrite("kubejs_scripts/failsafe.js", original.getBytes(StandardCharsets.UTF_8));
+        String rewritten = new String(result, StandardCharsets.UTF_8);
+
+        assertNotSame(original, rewritten);
+        assertTrue(rewritten.contains("function alienevoSound("));
+        assertTrue(rewritten.contains("function alienevoApplyKnockback("));
+        assertFalse(rewritten.contains("global.sound"));
+        assertFalse(rewritten.contains("global.applyKnockback"));
+    }
+
+    @Test
+    void keepsLevelCommandDisplayNameHelperLocalInsteadOfWritingGlobal() {
+        String original = """
+                if (!global[defaultNameKey]) {
+                  let defaultName = simpleName;
+                  global[defaultNameKey] = defaultName;
+                }
+
+                global.getAlienDisplayName = (player, alienNumber) => {
+                  return `Alien #${alienNumber}`;
+                };
+                """;
+        byte[] result = rewrite("kubejs_scripts/level_command.js", original.getBytes(StandardCharsets.UTF_8));
+        String rewritten = new String(result, StandardCharsets.UTF_8);
+
+        assertTrue(rewritten.contains("const getAlienDisplayName ="));
+        assertFalse(rewritten.contains("global[defaultNameKey] ="));
+        assertFalse(rewritten.contains("global.getAlienDisplayName ="));
+    }
+
+    @Test
+    void migratesTheLegacyHurtEventNameToBeforeHurt() {
+        String original = """
+                EntityEvents.hurt(event => event.cancel());
+                EntityEvents.hurt(event => event.cancel());
+                EntityEvents.hurt(event => event.cancel());
+                EntityEvents.hurt(event => event.cancel());
+                """;
+        byte[] result = rewrite("kubejs_scripts/fall.js", original.getBytes(StandardCharsets.UTF_8));
+        String rewritten = new String(result, StandardCharsets.UTF_8);
+
+        assertEquals(4, count(rewritten, "EntityEvents.beforeHurt("));
+        assertFalse(rewritten.contains("EntityEvents.hurt("));
+    }
+
+    @Test
+    void removesInvalidWildcardFromUnfilteredEntityInteractionRegistration() {
+        String original = "ItemEvents.entityInteracted('*', event => { /* body */ });";
+        byte[] result = rewrite("kubejs_scripts/workbench.js", original.getBytes(StandardCharsets.UTF_8));
+        String rewritten = new String(result, StandardCharsets.UTF_8);
+
+        assertEquals("ItemEvents.entityInteracted(event => { /* body */ });", rewritten);
+    }
+
+    @Test
+    void renamesOnlyTheConflictingVectorAlias() {
+        String original = """
+                const Vec3f = Java.loadClass('org.joml.Vector3f');
+                function vector() {
+                    return new Vec3f(1, 2, 3);
+                }
+                """;
+        byte[] result = rewrite("kubejs_scripts/slam.js", original.getBytes(StandardCharsets.UTF_8));
+        String rewritten = new String(result, StandardCharsets.UTF_8);
+
+        assertTrue(rewritten.contains("const AlienEvoVector3f"));
+        assertTrue(rewritten.contains("new AlienEvoVector3f"));
+        assertFalse(rewritten.contains("const Vec3f"));
     }
 
     @Test
@@ -60,13 +146,16 @@ class KubeJSScriptScopeCompatTest {
     @Test
     void leavesUnknownScriptRevisionsUnchanged() {
         byte[] input = """
-                const Component = Java.loadClass("net.minecraft.network.chat.Component");
-                const another = Component.translatable("example");
-                const extra = Component.literal("not in the inspected script shape");
+                global.sound = (entity, soundId, volume, pitch, shift) => {};
+                global.sound(entity, 'example:sound', 1, 1, 0);
+                global.sound(entity, 'example:sound', 1, 1, 0);
                 """.getBytes(StandardCharsets.UTF_8);
 
-        assertSame(input, KubeJSScriptScopeCompat.rewriteKnownIdentifierCollisions(
-                "alienevo", "kubejs_scripts/alien_codex.js", input));
+        assertSame(input, rewrite("kubejs_scripts/failsafe.js", input));
+    }
+
+    private static byte[] rewrite(String path, byte[] input) {
+        return KubeJSScriptScopeCompat.rewriteKnownIdentifierCollisions("alienevo", path, input);
     }
 
     private static int count(String text, String value) {
