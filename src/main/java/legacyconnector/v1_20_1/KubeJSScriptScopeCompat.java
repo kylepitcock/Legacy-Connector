@@ -44,8 +44,10 @@ public final class KubeJSScriptScopeCompat {
                     script,
                     CODEX_COMPONENT_BINDING,
                     "Component.translatable(",
+                    "Component",
                     "AlienEvoComponent",
-                    "AlienEvoComponent.translatable(");
+                    "AlienEvoComponent.translatable(",
+                    3);
         }
 
         if ("kubejs_scripts/display_player.js".equals(resourcePath)) {
@@ -54,8 +56,10 @@ public final class KubeJSScriptScopeCompat {
                     script,
                     DISPLAY_PLAYER_QUATERNION_BINDING,
                     "new Quaternionf(",
+                    "Quaternionf",
                     "AlienEvoQuaternionf",
-                    "new AlienEvoQuaternionf(");
+                    "new AlienEvoQuaternionf(",
+                    3);
         }
 
         return source;
@@ -66,14 +70,15 @@ public final class KubeJSScriptScopeCompat {
             String script,
             String expectedBinding,
             String expectedUse,
+            String oldName,
             String newName,
-            String replacementUse) {
-        if (countLines(script, expectedBinding) != 1 || count(script, expectedUse) != 1) {
+            String replacementUse,
+            int expectedNameOccurrences) {
+        if (countLines(script, expectedBinding) != 1
+                || count(script, expectedUse) != 1
+                || count(script, oldName) != expectedNameOccurrences) {
             return original;
         }
-
-        String oldName = expectedBinding.startsWith("const Component")
-                ? "Component" : "Quaternionf";
         String rewritten = script
                 .replace("const " + oldName + " =", "const " + newName + " =")
                 .replace(expectedUse, replacementUse);
