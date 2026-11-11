@@ -544,6 +544,11 @@ public final class Forge1201Transformer {
             if (ownUnit) result.notes.add("Side-by-side library: mod id(s) " + ownIds + " load as separate unit(s), packages relocated under " + SideBySide.prefix(VER));
             else result.notes.add("Side-by-side: references to isolated libraries " + plan.units().stream().filter(u -> u.version() == VER).map(SideBySide.Unit::modId).toList() + " link to their relocated copies");
         }
+        int alienEvoResourceChanges = PalladiumResourceCompat1201.apply(outResources);
+        if (alienEvoResourceChanges > 0) {
+            result.notes.add("AlienEvo store_armor KubeJS ability now ignores empty armor ItemStacks before NBT storage: "
+                    + alienEvoResourceChanges + " resource script(s)");
+        }
         if (PalladiumKubeJS1201.addPluginDiscoveryResource(outResources, outClasses.keySet())) {
             result.notes.add("Palladium KubeJS 7 plugin discovery entry added to kubejs.plugins.txt");
         }
