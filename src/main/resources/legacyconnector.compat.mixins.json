@@ -9,7 +9,8 @@
     "KubeJSBlockBuilderLegacyAliasesMixin",
     "KubeJSBlockEntityLegacyInventoryMixin",
     "KubeJSItemBuilderLegacyGlowMixin",
-    "KubeJSItemModificationLegacyBuilderMixin"
+    "KubeJSItemModificationLegacyBuilderMixin",
+    "KubeJSBlockEntityTickLegacyViewMixin"
   ],
   "client": [
     "RocketnauticsStarPlasmaMixin",
