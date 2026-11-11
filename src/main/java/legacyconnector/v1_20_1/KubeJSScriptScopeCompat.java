@@ -194,7 +194,7 @@ public final class KubeJSScriptScopeCompat {
         // These sets are used only by code_hints.js handlers. Keep their
         // lifetime at the script scope instead of writing to KubeJS 7's
         // immutable global map from a SERVER script.
-        return "let alienevoUsedPositions = new Set();\\n"
+        return "let alienevoUsedPositions = new Set();\n"
                 + "let alienevoUsedSelfDestructPositions = new Set();\\n"
                 + script.replace("global.usedPositions", "alienevoUsedPositions")
                         .replace("global.usedSelfDestructPositions", "alienevoUsedSelfDestructPositions");
