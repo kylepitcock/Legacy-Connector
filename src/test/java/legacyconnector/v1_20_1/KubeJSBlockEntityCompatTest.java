@@ -99,7 +99,7 @@ class KubeJSBlockEntityCompatTest {
         BlockEntityInfo info = new BlockEntityInfo();
         Context context = new ContextFactory().enter();
 
-        KubeJSBlockEntityCompat.serverTick(context, info, 20, 7, event -> null);
+        KubeJSBlockEntityCompat.serverTick(context, info, 20, 7, (IEventHandler) event -> null);
 
         assertTrue(info.serverTicking);
         assertEquals(20, info.tickFrequency);
@@ -111,7 +111,7 @@ class KubeJSBlockEntityCompatTest {
         BlockEntityInfo info = new BlockEntityInfo();
         Context context = new ContextFactory().enter();
 
-        KubeJSBlockEntityCompat.serverTick(context, info, 1, 9, event -> null);
+        KubeJSBlockEntityCompat.serverTick(context, info, 1, 9, (IEventHandler) event -> null);
 
         assertEquals(1, info.tickFrequency);
         assertEquals(0, info.tickOffset);
