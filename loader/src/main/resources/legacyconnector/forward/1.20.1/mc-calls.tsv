@@ -576,6 +576,8 @@ net/minecraft/world/entity/ai/attributes/AttributeSupplier	getBaseValue	(Lnet/mi
 net/minecraft/world/entity/ai/attributes/AttributeInstance	removePermanentModifier	(Ljava/util/UUID;)Z	MiddleCompat	removePermanentModifier
 net/minecraft/world/entity/ai/attributes/AttributeInstance	<init>	(Lnet/minecraft/world/entity/ai/attributes/Attribute;Ljava/util/function/Consumer;)V	=args	HolderCompat.holder@0,1	(Lnet/minecraft/core/Holder;Ljava/util/function/Consumer;)V
 net/minecraft/world/scores/Scoreboard	getOrCreatePlayerScore	(Ljava/lang/String;Lnet/minecraft/world/scores/Objective;)Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyScore;	MiddleCompat	playerScore
+net/minecraft/world/scores/Scoreboard	hasPlayerScore	(Ljava/lang/String;Lnet/minecraft/world/scores/Objective;)Z	MiddleCompat	hasPlayerScore
+net/minecraft/world/scores/Scoreboard	getPlayerScores	(Ljava/lang/String;)Ljava/util/Map;	MiddleCompat	playerScores
 net/minecraft/world/level/storage/loot/LootContext$Builder	create	(Lnet/minecraft/resources/ResourceLocation;)Lnet/minecraft/world/level/storage/loot/LootContext;	=args	MiddleCompat.optionalId@0	(Ljava/util/Optional;)Lnet/minecraft/world/level/storage/loot/LootContext;
 net/minecraft/world/level/storage/loot/LootContext	getLootingModifier	()I	MiddleCompat	getLootingModifier
 net/minecraft/world/level/storage/loot/entries/LootPoolSingletonContainer	<init>	(II[Lnet/minecraft/world/level/storage/loot/predicates/LootItemCondition;[Lnet/minecraft/world/level/storage/loot/functions/LootItemFunction;)V	=args	0,1,MiscCompat.conditions@2,MiddleCompat.functions@3	(IILjava/util/List;Ljava/util/List;)V
