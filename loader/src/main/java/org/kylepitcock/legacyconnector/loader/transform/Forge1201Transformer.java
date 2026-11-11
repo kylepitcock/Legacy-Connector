@@ -374,8 +374,8 @@ public final class Forge1201Transformer {
                     + palladiumWidgetButtonChanges + " button class(es)");
         }
         if (palladiumMixinChanges > 0) {
-            result.notes.add("Palladium 1.21.1 mixin compatibility adapters applied to "
-                    + palladiumMixinChanges + " mixin class(es); includes PlayerList scoreboard replay migration to PlayerScoreEntry and the 1.21.1 score packet; the obsolete Watcher render hook is omitted");
+            result.notes.add("Palladium 1.21.1 compatibility adapters applied to "
+                    + palladiumMixinChanges + " class(es); includes PlayerList scoreboard replay migration to PlayerScoreEntry and the 1.21.1 score packet; the obsolete Watcher render hook is omitted");
         }
         if (palladiumSuitStandChanges > 0) {
             result.notes.add("Palladium SuitStand migrated to the 1.21.1 SynchedEntityData builder lifecycle: "
