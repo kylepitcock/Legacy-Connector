@@ -69,9 +69,7 @@ class PalladiumMixinCompat1201Test implements Opcodes {
                 + "Lnet/minecraft/world/item/TooltipFlag;" + CI + ")V";
         MethodNode handler = new MethodNode(ACC_PUBLIC, "appendHoverText", oldDesc, null, null);
         handler.instructions.add(new VarInsnNode(ALOAD, 2));
-        handler.instructions.add(new MethodInsnNode(INVOKEVIRTUAL,
-                "net/minecraft/server/network/ServerGamePacketListenerImpl", "send",
-                "(Lnet/minecraft/network/protocol/Packet;)V", false));
+        handler.instructions.add(new InsnNode(POP));
         handler.instructions.add(new InsnNode(RETURN));
         handler.maxLocals = 6;
         node.methods.add(handler);
