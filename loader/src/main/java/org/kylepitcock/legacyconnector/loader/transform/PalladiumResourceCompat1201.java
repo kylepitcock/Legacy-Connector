@@ -17,6 +17,8 @@ final class PalladiumResourceCompat1201 {
             "data/alienevo/kubejs_scripts/quick_change.js";
     static final String ALIEN_EVO_TRANSFORM =
             "addon/alienevo/kubejs_scripts/transform.js";
+    static final String ALIEN_EVO_POWER_UI =
+            "assets/alienevo/kubejs_scripts/power_ui.js";
 
     static final String OMNITRIX_INTEGER_HELPER =
             "const JavaInteger = Java.loadClass('java.lang.Integer');\n\n"
@@ -40,6 +42,19 @@ final class PalladiumResourceCompat1201 {
             "if (armorItem && armorItem.id !== 'minecraft:air') {";
     static final String SAFE_ARMOR_ID_CHECK =
             "if (armorItem && !armorItem.isEmpty()) {";
+
+    private static final String[][] POWER_UI_TAB_COMPARISONS = {
+            {
+                    "currentTab === omnitrixTab",
+                    "currentTab.toString() === omnitrixTab",
+                    "3"
+            },
+            {
+                    "e.tab === omnitrixTab",
+                    "e.tab.toString() === omnitrixTab",
+                    "5"
+            }
+    };
 
     private static final String[][] OMNITRIX_INTEGER_WRITES = {
             {
@@ -98,6 +113,7 @@ final class PalladiumResourceCompat1201 {
                         {LEGACY_ARMOR_ID_CHECK, SAFE_ARMOR_ID_CHECK, "1"}
                 });
         changed += rewriteTransformScript(resources);
+        changed += rewrite(resources, ALIEN_EVO_POWER_UI, POWER_UI_TAB_COMPARISONS);
         return changed;
     }
 
