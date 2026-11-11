@@ -19,13 +19,13 @@ final class PalladiumResourceCompat1201 {
             "addon/alienevo/kubejs_scripts/transform.js";
 
     static final String OMNITRIX_INTEGER_HELPER =
-            "const JavaInteger = Java.loadClass('java.lang.Integer');\\n\\n"
-                    + "function toOmnitrixInteger(value) {\\n"
-                    + "    if (value != null && typeof value.getAsInt === 'function') {\\n"
-                    + "        return JavaInteger.valueOf(value.getAsInt());\\n"
-                    + "    }\\n"
-                    + "    return JavaInteger.valueOf(Math.trunc(Number(value)));\\n"
-                    + "}\\n\\n";
+            "const JavaInteger = Java.loadClass('java.lang.Integer');\n\n"
+                    + "function toOmnitrixInteger(value) {\n"
+                    + "    if (value != null && typeof value.getAsInt === 'function') {\n"
+                    + "        return JavaInteger.valueOf(value.getAsInt());\n"
+                    + "    }\n"
+                    + "    return JavaInteger.valueOf(Math.trunc(Number(value)));\n"
+                    + "}\n\n";
 
     static final String LEGACY_STORE_ARMOR_CHECK =
             "if (entity[slot + 'ArmorItem']) {";
@@ -68,7 +68,7 @@ final class PalladiumResourceCompat1201 {
 
     /**
      * Do not serialize ItemStack.EMPTY into persistent NBT. Apply only to the
-     * three inspected AlienEvo resources which store player armor during an
+     * three inspected armor-storage resources plus the Omnitrix transform script which store player armor during an
      * Omnitrix transformation or quick-change transition.
      *
      * Missing or already migrated resources are no-ops. Every expected legacy
