@@ -77,7 +77,7 @@ class KubeJSKeybindCompatTest {
         Object a = new Object();
         Object b = new Object();
 
-        List<?> result = KubeJSKeybindCompat.mergeMappingsForTest(List.of(a), List.of(b));
+        List<?> result = KubeJSKeybindCompat.mergeMappings(List.of(a), List.of(b));
 
         assertEquals(2, result.size());
         assertSame(a, result.get(0));
