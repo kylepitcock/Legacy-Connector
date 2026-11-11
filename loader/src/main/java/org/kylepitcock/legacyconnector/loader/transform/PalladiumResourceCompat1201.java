@@ -5,7 +5,8 @@ import java.util.Map;
 
 /**
  * Narrow resource-level compatibility rewrites for AlienEvo on Minecraft 1.21.1:
- * empty armor ItemStack guards, Omnitrix persistent-integer normalization, and
+ * empty armor ItemStack guards, Omnitrix persistent-integer normalization, the
+ * legacy ResourceLocation script constructor, typed SoundEvent playback, and
  * ResourceLocation/string normalization for the Omnitrix customization tab.
  */
 final class PalladiumResourceCompat1201 {
@@ -28,6 +29,32 @@ final class PalladiumResourceCompat1201 {
                     + "    }\n"
                     + "    return JavaInteger.valueOf(Math.trunc(Number(value)));\n"
                     + "}\n\n";
+    static final String LEGACY_RESOURCE_LOCATION_HELPER =
+            "const AlienEvoJavaResourceLocation = Java.loadClass('net.minecraft.resources.ResourceLocation');\n\n"
+                    + "function ResourceLocation(namespaceOrLocation, path) {\n"
+                    + "    if (arguments.length > 1) {\n"
+                    + "        return AlienEvoJavaResourceLocation.fromNamespaceAndPath(String(namespaceOrLocation), String(path));\n"
+                    + "    }\n"
+                    + "    return AlienEvoJavaResourceLocation.parse(String(namespaceOrLocation));\n"
+                    + "}\n\n";
+
+    static final String LEGACY_SOUND_EVENT_HELPER =
+            "const AlienEvoSoundRegistry = Java.loadClass('net.minecraft.core.registries.BuiltInRegistries').SOUND_EVENT;\n"
+                    + "const AlienEvoSoundResourceLocation = Java.loadClass('net.minecraft.resources.ResourceLocation');\n\n"
+                    + "function getAlienEvoSoundEvent(soundId) {\n"
+                    + "    const soundEvent = AlienEvoSoundRegistry.get(AlienEvoSoundResourceLocation.parse(String(soundId)));\n"
+                    + "    if (soundEvent == null) {\n"
+                    + "        throw new Error('AlienEvo sound event is not registered: ' + soundId);\n"
+                    + "    }\n"
+                    + "    return soundEvent;\n"
+                    + "}\n\n";
+
+    private static final String ALIEN_EVO_CYCLE = "addon/alienevo/kubejs_scripts/omnitrix_cycle.js";
+    private static final String RESOURCE_LOCATION_HELPER_MARKER =
+            "function ResourceLocation(namespaceOrLocation, path) {";
+    private static final String SOUND_EVENT_HELPER_MARKER =
+            "function getAlienEvoSoundEvent(soundId) {";
+
 
     static final String LEGACY_STORE_ARMOR_CHECK =
             "if (entity[slot + 'ArmorItem']) {";
@@ -112,6 +139,7 @@ final class PalladiumResourceCompat1201 {
                 });
         changed += rewriteTransformScript(resources);
         changed += rewrite(resources, ALIEN_EVO_POWER_UI, POWER_UI_TAB_COMPARISONS);
+        changed += rewriteLegacyScriptApis(resources);
         return changed;
     }
 
@@ -139,6 +167,87 @@ final class PalladiumResourceCompat1201 {
 
         int rewritten = rewrite(resources, ALIEN_EVO_TRANSFORM, OMNITRIX_INTEGER_WRITES);
         return helperAdded || rewritten > 0 ? 1 : 0;
+    }
+
+
+    /**
+     * Restore the legacy ResourceLocation constructor used by inspected
+     * AlienEvo addon/client/data scripts. Also resolve cycle and transformation
+     * sound IDs to registered SoundEvent instances before Java overload
+     * selection, avoiding KubeJS/Rhino ambiguity between SoundEvent and Holder.
+     *
+     * @return number of distinct AlienEvo script resources changed
+     */
+    private static int rewriteLegacyScriptApis(Map<String, byte[]> resources) {
+        int changed = 0;
+        for (Map.Entry<String, byte[]> entry : resources.entrySet()) {
+            String path = entry.getKey();
+            if (!isAlienEvoKubeJsScript(path)) continue;
+
+            String script = new String(entry.getValue(), StandardCharsets.UTF_8);
+            String migrated = script;
+
+            if (migrated.contains("new ResourceLocation(")
+                    && !migrated.contains(RESOURCE_LOCATION_HELPER_MARKER)) {
+                migrated = insertAfterOmnitrixIntegerHelper(migrated, LEGACY_RESOURCE_LOCATION_HELPER);
+            }
+
+            if (ALIEN_EVO_CYCLE.equals(path)) {
+                migrated = addSoundEventHelper(migrated);
+                migrated = replaceExactScriptOccurrence(
+                        path,
+                        migrated,
+                        "\`alienevo:\${soundToPlay}\`",
+                        "getAlienEvoSoundEvent(\`alienevo:\${soundToPlay}\`)");
+            } else if (ALIEN_EVO_TRANSFORM.equals(path)) {
+                migrated = addSoundEventHelper(migrated);
+                migrated = replaceExactScriptOccurrence(
+                        path,
+                        migrated,
+                        "\`alienevo:\${transformSound}_transform\`",
+                        "getAlienEvoSoundEvent(\`alienevo:\${transformSound}_transform\`)");
+            }
+
+            if (!migrated.equals(script)) {
+                entry.setValue(migrated.getBytes(StandardCharsets.UTF_8));
+                changed++;
+            }
+        }
+        return changed;
+    }
+
+    private static boolean isAlienEvoKubeJsScript(String path) {
+        return path.endsWith(".js")
+                && (path.startsWith("addon/alienevo/kubejs_scripts/")
+                        || path.startsWith("assets/alienevo/kubejs_scripts/")
+                        || path.startsWith("data/alienevo/kubejs_scripts/"));
+    }
+
+    private static String insertAfterOmnitrixIntegerHelper(String script, String helper) {
+        if (script.startsWith(OMNITRIX_INTEGER_HELPER)) {
+            return OMNITRIX_INTEGER_HELPER
+                    + helper
+                    + script.substring(OMNITRIX_INTEGER_HELPER.length());
+        }
+        return helper + script;
+    }
+
+    private static String addSoundEventHelper(String script) {
+        if (script.contains(SOUND_EVENT_HELPER_MARKER)) return script;
+        return insertAfterOmnitrixIntegerHelper(script, LEGACY_SOUND_EVENT_HELPER);
+    }
+
+    private static String replaceExactScriptOccurrence(
+            String path, String script, String legacy, String safe) {
+        int legacyCount = occurrences(script, legacy);
+        int safeCount = occurrences(script, safe);
+        if (legacyCount == 0 && safeCount == 1) return script;
+        if (legacyCount != 1 || safeCount != 0) {
+            throw new IllegalStateException(
+                    "AlienEvo resource " + path + " has an unexpected sound-event rewrite shape: expected "
+                            + "1 legacy occurrence, found " + legacyCount + " legacy and " + safeCount + " migrated");
+        }
+        return script.replace(legacy, safe);
     }
 
     private static int rewrite(Map<String, byte[]> resources, String path, String[][] replacements) {
