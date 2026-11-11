@@ -19,7 +19,7 @@ public final class AnimalRenderStateB173 {
                         int modifiers=field.getModifiers();
                         if(Modifier.isStatic(modifiers)||Modifier.isFinal(modifiers)||field.isSynthetic())continue;
                         Class<?> kind=field.getType();
-                        if(!kind.isPrimitive()&&kind!=String.class&&!(entityReference(kind)&&!api(c)))continue;
+                        if(!kind.isPrimitive()&&kind!=String.class&&!(entityReference(kind)&&!api(c))&&!(kind.isEnum()&&!api(kind)))continue;
                         if(!field.trySetAccessible())return new Schema(List.of(),"inaccessible render field "+c.getName()+"."+field.getName());
                         slots.add(new Slot(c.getName()+"#"+field.getName(),field));
                     }
@@ -140,6 +140,7 @@ public final class AnimalRenderStateB173 {
             if(value instanceof legacyconnector.vb1_7_3.net.minecraft.entity.Entity entity&&entity.mcc$modern!=null){tag.putInt("entityId",entity.mcc$modern.getId());tag.putUUID("entityUUID",entity.mcc$modern.getUUID());}
             return tag;
         }
+        if(type.isEnum())return value==null?new CompoundTag():StringTag.valueOf(((Enum<?>)value).name());
         if(type==String.class)return value==null?new CompoundTag():StringTag.valueOf((String)value);
         if(type==boolean.class)return ByteTag.valueOf((Boolean)value);
         if(type==byte.class)return ByteTag.valueOf((Byte)value);
@@ -156,6 +157,7 @@ public final class AnimalRenderStateB173 {
             if(compound.isEmpty())return null;
             if(compound.contains("entityId",Tag.TAG_INT)&&compound.hasUUID("entityUUID"))return new EntityReference(compound.getInt("entityId"),compound.getUUID("entityUUID"));
         }
+        if(type.isEnum()){if(value instanceof StringTag string){for(Object constant:type.getEnumConstants())if(((Enum<?>)constant).name().equals(string.getAsString()))return constant;}else if(value instanceof CompoundTag compound&&compound.isEmpty())return null;}
         if(type==String.class){if(value instanceof StringTag string)return string.getAsString();if(value instanceof CompoundTag compound&&compound.isEmpty())return null;}
         if(type==boolean.class&&value instanceof ByteTag number)return number.getAsByte()!=0;
         if(type==byte.class&&value instanceof ByteTag number)return number.getAsByte();
