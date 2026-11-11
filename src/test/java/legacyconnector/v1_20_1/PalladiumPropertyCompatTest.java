@@ -8,6 +8,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+import net.threetag.palladium.util.property.PalladiumPropertyLookup;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -41,6 +42,17 @@ class PalladiumPropertyCompatTest {
     @BeforeEach
     void resetRegistry() {
         FakeLookup.reset();
+    }
+
+    @Test
+    void runtimeEntryPointRegistersAliasAgainstPalladiumLookupClass() {
+        PalladiumPropertyLookup.reset();
+        PalladiumPropertyCompat.registerLegacyTypeAliases(getClass().getClassLoader());
+
+        PalladiumPropertyLookup.Property value =
+                (PalladiumPropertyLookup.Property) PalladiumPropertyLookup.get("int", "minimum_score");
+        assertEquals("integer", value.type());
+        assertEquals("minimum_score", value.key());
     }
 
     @Test
