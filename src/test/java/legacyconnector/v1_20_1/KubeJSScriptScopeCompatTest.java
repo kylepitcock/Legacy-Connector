@@ -28,6 +28,7 @@ class KubeJSScriptScopeCompatTest {
         assertEquals(2, count(rewritten, "AlienEvoComponent"));
         assertFalse(rewritten.contains("const Component"));
         assertTrue(rewritten.contains("AlienEvoComponent.translatable"));
+        assertTrue(rewritten.contains("global.getAlienDisplayName ="));
     }
 
     @Test
@@ -108,6 +109,26 @@ class KubeJSScriptScopeCompatTest {
         assertFalse(rewritten.contains("EntityEvents.hurt("));
     }
 
+
+    @Test
+    void migratesAllHitHandlersToBeforeHurt() {
+        String original = """
+                EntityEvents.hurt(event => {});
+                EntityEvents.hurt(event => {});
+                EntityEvents.hurt(event => {});
+                EntityEvents.hurt(event => {});
+                EntityEvents.hurt(event => {});
+                EntityEvents.hurt(event => {});
+                EntityEvents.hurt(event => {});
+                EntityEvents.hurt(event => {});
+                """;
+        byte[] result = rewrite("kubejs_scripts/hit.js", original.getBytes(StandardCharsets.UTF_8));
+        String rewritten = new String(result, StandardCharsets.UTF_8);
+
+        assertEquals(8, count(rewritten, "EntityEvents.beforeHurt("));
+        assertFalse(rewritten.contains("EntityEvents.hurt("));
+    }
+
     @Test
     void removesInvalidWildcardFromUnfilteredEntityInteractionRegistration() {
         String original = "ItemEvents.entityInteracted('*', event => { /* body */ });";
@@ -131,6 +152,34 @@ class KubeJSScriptScopeCompatTest {
         assertTrue(rewritten.contains("const AlienEvoVector3f"));
         assertTrue(rewritten.contains("new AlienEvoVector3f"));
         assertFalse(rewritten.contains("const Vec3f"));
+    }
+
+
+    @Test
+    void keepsCodeHintPositionSetsLocalToTheServerScript() {
+        String original = """
+                ItemEvents.rightClicked('alienevo:code_tablet', event => {
+                    if (!global.usedPositions) {
+                        global.usedPositions = new Set();
+                    }
+                    global.usedPositions.add(1);
+                });
+                ItemEvents.rightClicked('alienevo:code_tablet_selfdestruct', event => {
+                    if (!global.usedSelfDestructPositions) {
+                        global.usedSelfDestructPositions = new Set();
+                    }
+                    global.usedSelfDestructPositions.add(2);
+                });
+                """;
+        byte[] result = rewrite("kubejs_scripts/code_hints.js", original.getBytes(StandardCharsets.UTF_8));
+        String rewritten = new String(result, StandardCharsets.UTF_8);
+
+        assertTrue(rewritten.startsWith("let alienevoUsedPositions = new Set();"));
+        assertTrue(rewritten.contains("let alienevoUsedSelfDestructPositions = new Set();"));
+        assertFalse(rewritten.contains("global.usedPositions"));
+        assertFalse(rewritten.contains("global.usedSelfDestructPositions"));
+        assertTrue(rewritten.contains("alienevoUsedPositions.add(1)"));
+        assertTrue(rewritten.contains("alienevoUsedSelfDestructPositions.add(2)"));
     }
 
     @Test
