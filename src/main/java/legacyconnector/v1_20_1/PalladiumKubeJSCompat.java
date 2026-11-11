@@ -380,6 +380,18 @@ public final class PalladiumKubeJSCompat {
                     "Adapted legacy KubeJS 6 item-glow builder usage in Palladium addon script {0}", resourcePath);
             contents = adaptedContents;
         }
+        byte[] keybindAdapted = KubeJSKeybindCompat.rewriteLegacyQuickChangeSource(contents);
+        if (keybindAdapted != contents) {
+            LOGGER.log(System.Logger.Level.INFO,
+                    "Adapted legacy KubeJS 6 quick-change key registration in Palladium addon script {0}", resourcePath);
+            contents = keybindAdapted;
+        }
+        byte[] keyAccessAdapted = KubeJSKeybindCompat.rewriteLegacyKeyMappingFieldAccess(contents);
+        if (keyAccessAdapted != contents) {
+            LOGGER.log(System.Logger.Level.INFO,
+                    "Adapted legacy KeyMapping field access in Palladium addon script {0}", resourcePath);
+            contents = keyAccessAdapted;
+        }
         if (!Files.exists(backingFile) || !java.util.Arrays.equals(contents, Files.readAllBytes(backingFile))) {
             Path temporary = backingFile.resolveSibling(backingFile.getFileName() + ".tmp");
             Files.write(temporary, contents);
