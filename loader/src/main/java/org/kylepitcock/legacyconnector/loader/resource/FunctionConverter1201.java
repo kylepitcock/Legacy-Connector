@@ -18,7 +18,9 @@ public final class FunctionConverter1201 {
     private static final Pattern EMPTY_STACK =
             Pattern.compile("\\{id:[\\\"']?([a-zA-Z0-9_./:-]+)[\\\"']?,Count:0(?:b)?\\}");
     private static final Pattern STACK_WITH_CUSTOM_MODEL_DATA =
-            Pattern.compile("\\{id:[\\\"']?([a-zA-Z0-9_./:-]+)[\\\"']?,Count:(\\d+),tag:\\{CustomModelData:(\\d+)\\}\\}");
+            Pattern.compile("\\{id:[\\\"']?([a-zA-Z0-9_./:-]+)[\\\"']?,Count:(\\d+)(?:[bBsSlL])?,tag:\\{CustomModelData:(\\d+)(?:[bBsSlL])?\\}\\}");
+    private static final Pattern LEGACY_ITEM_STACK =
+            Pattern.compile("\\{id:[\\\"']?([a-zA-Z0-9_./:-]+)[\\\"']?,Count:(\\d+)(?:[bBsSlL])?\\}");
     private static final Pattern ATTRIBUTE_ENTRY =
             Pattern.compile("Attributes:\\[\\{Name:([^,]+),Base:([^}]+)\\}\\]");
     private static final Pattern ENCHANTED_ITEM =
@@ -145,6 +147,16 @@ public final class FunctionConverter1201 {
         out = new StringBuffer();
         while (empty.find()) empty.appendReplacement(out, Matcher.quoteReplacement("{}"));
         empty.appendTail(out);
+        source = out.toString();
+
+        Matcher legacyStack = LEGACY_ITEM_STACK.matcher(source);
+        out = new StringBuffer();
+        while (legacyStack.find()) {
+            String id = resourceId(legacyStack.group(1));
+            String value = "{id:\"" + id + "\",count:" + legacyStack.group(2) + "}";
+            legacyStack.appendReplacement(out, Matcher.quoteReplacement(value));
+        }
+        legacyStack.appendTail(out);
         source = out.toString();
 
         return source.replaceAll("tag:\\{CustomModelData:(\\d+)\\}",
