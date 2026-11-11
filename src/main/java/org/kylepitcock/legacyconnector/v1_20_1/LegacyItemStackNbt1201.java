@@ -1,18 +1,16 @@
 package org.kylepitcock.legacyconnector.v1_20_1;
 
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.CustomData;
+import org.kylepitcock.legacyconnector.v1_20_1.migrate.ItemStackNbt;
 
 /**
- * Restores the small ItemStack NBT surface used by Forge/KubeJS 1.20.1 mods.
+ * Restores the small 1.20.1 ItemStack NBT surface used by KubeJS 6 scripts.
  *
- * <p>Since 1.20.5, arbitrary per-stack NBT is represented by the
- * {@code minecraft:custom_data} data component. The legacy API exposed the
- * compound directly and allowed scripts to mutate it in place, so
- * {@link #getNbt(ItemStack)} intentionally uses CustomData#getUnsafe rather
- * than returning a detached copy.</p>
+ * <p>Delegate to the connector's full ItemStackNbt migration adapter so
+ * legacy vanilla keys such as Damage, display.Name, Enchantments and
+ * BlockEntityTag continue to map to their dedicated 1.21.1 data components.
+ * Arbitrary legacy values are backed by minecraft:custom_data.</p>
  */
 public final class LegacyItemStackNbt1201 {
     private LegacyItemStackNbt1201() {
@@ -20,28 +18,16 @@ public final class LegacyItemStackNbt1201 {
 
     /** Equivalent to the old ItemStack.hasTag()/KubeJS hasNBT() check. */
     public static boolean hasNBT(ItemStack stack) {
-        return stack.get(DataComponents.CUSTOM_DATA) != null;
+        return ItemStackNbt.hasTag(stack);
     }
 
-    /**
-     * Returns the live custom-data compound, or null when the stack has no
-     * custom data, matching the old ItemStack#getTag() behavior.
-     */
-    @SuppressWarnings("deprecation")
+    /** Returns the legacy view of the stack's NBT, or null when it has none. */
     public static CompoundTag getNbt(ItemStack stack) {
-        CustomData customData = stack.get(DataComponents.CUSTOM_DATA);
-        return customData == null ? null : customData.getUnsafe();
+        return ItemStackNbt.getTag(stack);
     }
 
-    /**
-     * Replaces the stack's custom data. A copy is stored so later mutations of
-     * the caller's input tag do not mutate the ItemStack unexpectedly.
-     */
+    /** Replaces the legacy view, converting vanilla keys to modern components. */
     public static void setNbt(ItemStack stack, CompoundTag nbt) {
-        if (nbt == null) {
-            stack.remove(DataComponents.CUSTOM_DATA);
-        } else {
-            stack.set(DataComponents.CUSTOM_DATA, CustomData.of(nbt.copy()));
-        }
+        ItemStackNbt.setTag(stack, nbt);
     }
 }
