@@ -59,14 +59,19 @@ class KubeJSBlockBuilderCompatTest {
     }
 
     @Test
-    void cardinalTextureAllAlsoSetsItsSideTextureAlias() {
+    void cardinalTextureAllSetsEveryOrientableModelTexture() {
         Map<String, String> textures = new HashMap<>();
 
         KubeJSBlockBuilderCompat.applyTextureAll(textures, "alienevo:block/galvan_pod", true);
 
-        assertEquals("alienevo:block/galvan_pod", textures.get("side"));
-        assertEquals("alienevo:block/galvan_pod", textures.get("particle"));
+        for (String key : new String[] {
+                "down", "up", "north", "south", "west", "east",
+                "side", "front", "top", "bottom", "particle"
+        }) {
+            assertEquals("alienevo:block/galvan_pod", textures.get(key), key + " texture");
+        }
         assertTrue(textures.keySet().containsAll(
-                java.util.Set.of("down", "up", "north", "south", "west", "east")));
+                java.util.Set.of("down", "up", "north", "south", "west", "east",
+                        "side", "front", "top", "bottom", "particle")));
     }
 }
