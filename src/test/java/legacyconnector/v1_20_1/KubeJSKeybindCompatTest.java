@@ -73,6 +73,28 @@ class KubeJSKeybindCompatTest {
     }
 
     @Test
+    void migratesLegacyKeyMappingFieldReadsToTheCurrentAccessor() {
+        String original = """
+                ClientEvents.tick(event => {
+                    const quickChangeKeys = ["QUICKCHANGE01"];
+                    quickChangeKeys.forEach(keyName => {
+                        let key = global[keyName];
+                        let bind = key.key.getValue();
+                    });
+                    let wheelKey = global["QUICKCHANGEWHEEL"];
+                    let wheelBind = wheelKey.key.getValue();
+                });
+                """;
+        byte[] input = original.getBytes(StandardCharsets.UTF_8);
+
+        byte[] result = KubeJSKeybindCompat.rewriteLegacyKeyMappingFieldAccess(input);
+        String rewritten = new String(result, StandardCharsets.UTF_8);
+
+        assertEquals(2, count(rewritten, ".getKey().getValue()"));
+        assertFalse(rewritten.contains(".key.getValue()"));
+    }
+
+    @Test
     void appendsPendingKubeKeysWithoutReplacingExistingBuiltMappings() {
         Object a = new Object();
         Object b = new Object();
