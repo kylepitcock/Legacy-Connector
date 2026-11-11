@@ -20,6 +20,7 @@ final class PalladiumMixinCompat1201 implements Opcodes {
     private static final String PLAYER_LIST_MIXIN = "net/threetag/palladium/mixin/PlayerListMixin";
     private static final String ENTITY_SELECTOR_PARSER_MIXIN = "net/threetag/palladium/mixin/EntitySelectorParserMixin";
     private static final String PLAYER_RENDERER_INVOKER = "net/threetag/palladium/mixin/client/PlayerRendererInvoker";
+    private static final String BODY_PART = "net/threetag/palladium/entity/BodyPart";
     private static final String MIXIN_SHADOW = "Lorg/spongepowered/asm/mixin/Shadow;";
     private static final String HUMANOID_ARMOR_MIXIN = "net/threetag/palladium/mixin/client/HumanoidArmorLayerMixin";
     private static final String GEO_RENDERER_MIXIN = "net/threetag/palladium/mixin/client/GeoRendererMixin";
@@ -59,6 +60,7 @@ final class PalladiumMixinCompat1201 implements Opcodes {
             case PLAYER_LIST_MIXIN -> adaptPlayerListMixin(node) ? 1 : 0;
             case ENTITY_SELECTOR_PARSER_MIXIN -> adaptEntitySelectorParserMixin(node) ? 1 : 0;
             case PLAYER_RENDERER_INVOKER -> adaptPlayerRendererInvoker(node) ? 1 : 0;
+            case BODY_PART -> adaptBodyPartRotationCall(node) ? 1 : 0;
             case HUMANOID_ARMOR_MIXIN -> adaptHumanoidArmorMixin(node) ? 1 : 0;
             case GEO_RENDERER_MIXIN -> adaptGeoRendererMixin(node) ? 1 : 0;
             case LEVEL_RENDERER_MIXIN -> adaptLevelRendererMixin(node) ? 1 : 0;
@@ -496,6 +498,86 @@ final class PalladiumMixinCompat1201 implements Opcodes {
         if (method == null) return false;
         method.desc = newDesc;
         method.signature = null;
+        return true;
+    }
+
+    /**
+     * Minecraft 1.21.1 added the entity scale as the final parameter to
+     * LivingEntityRenderer.setupRotations. Keep Palladium's BodyPart call in
+     * sync with the adapted PlayerRendererInvoker and pass the actual player
+     * scale instead of allowing it to resolve to a throwing soft link.
+     *
+     * BodyPart.getTransformationMatrix stores its AbstractClientPlayer in
+     * local 4; the call's three legacy float arguments are already on the
+     * operand stack, so appending player.getScale() supplies the fourth.
+     */
+    private static boolean adaptBodyPartRotationCall(ClassNode node) {
+        String oldDesc = "(Lnet/minecraft/client/player/AbstractClientPlayer;L" + POSE_STACK + ";FFF)V";
+        String newDesc = "(Lnet/minecraft/client/player/AbstractClientPlayer;L" + POSE_STACK + ";FFFF)V";
+        String livingEntity = "net/minecraft/world/entity/LivingEntity";
+        MethodInsnNode oldCall = null;
+        MethodInsnNode newCall = null;
+        int oldCount = 0;
+        int newCount = 0;
+
+        for (MethodNode method : node.methods) {
+            for (AbstractInsnNode instruction : method.instructions.toArray()) {
+                if (!(instruction instanceof MethodInsnNode call)
+                        || !call.owner.equals(PLAYER_RENDERER_INVOKER)
+                        || !call.name.equals("invokeSetupRotations")) continue;
+                if (call.getOpcode() != INVOKEINTERFACE || !call.itf) {
+                    throw new IllegalStateException("Palladium BodyPart PlayerRendererInvoker call is not INVOKEINTERFACE");
+                }
+                if (call.desc.equals(oldDesc)) {
+                    oldCall = call;
+                    oldCount++;
+                } else if (call.desc.equals(newDesc)) {
+                    newCall = call;
+                    newCount++;
+                }
+            }
+        }
+
+        if (oldCount == 0 && newCount == 1 && newCall != null) {
+            AbstractInsnNode scaleCallNode = previousReal(newCall);
+            AbstractInsnNode playerLoadNode = previousReal(scaleCallNode);
+            if (scaleCallNode instanceof MethodInsnNode scaleCall
+                    && scaleCall.getOpcode() == INVOKEVIRTUAL
+                    && scaleCall.owner.equals(livingEntity)
+                    && scaleCall.name.equals("getScale")
+                    && scaleCall.desc.equals("()F")
+                    && playerLoadNode instanceof VarInsnNode playerLoad
+                    && playerLoad.getOpcode() == ALOAD
+                    && playerLoad.var == 4) {
+                return false;
+            }
+            throw new IllegalStateException("Palladium BodyPart already-migrated rotation call is missing player.getScale()");
+        }
+        if (oldCount != 1 || newCount != 0 || oldCall == null) {
+            throw new IllegalStateException("Palladium BodyPart PlayerRendererInvoker call shape changed: expected one legacy call, found "
+                    + oldCount + " legacy and " + newCount + " migrated");
+        }
+
+        InsnList scaleArgument = new InsnList();
+        scaleArgument.add(new VarInsnNode(ALOAD, 4));
+        scaleArgument.add(new MethodInsnNode(INVOKEVIRTUAL, livingEntity, "getScale", "()F", false));
+        MethodNode containingMethod = null;
+        for (MethodNode method : node.methods) {
+            for (AbstractInsnNode instruction : method.instructions) {
+                if (instruction == oldCall) {
+                    containingMethod = method;
+                    break;
+                }
+            }
+            if (containingMethod != null) break;
+        }
+        if (containingMethod == null) {
+            throw new IllegalStateException("Palladium BodyPart rotation call is detached from its method");
+        }
+
+        containingMethod.instructions.insertBefore(oldCall, scaleArgument);
+        oldCall.desc = newDesc;
+        containingMethod.maxStack = Math.max(containingMethod.maxStack + 1, 7);
         return true;
     }
 
