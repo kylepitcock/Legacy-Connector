@@ -19,7 +19,7 @@ class PalladiumMixinCompat1201Test implements Opcodes {
     private static final String SLOT = "net/minecraft/world/scores/DisplaySlot";
     private static final String OBJECTIVE = "net/minecraft/world/scores/Objective";
     private static final String SERVER_SCOREBOARD = "net/minecraft/server/ServerScoreboard";
-    private static final String LEGACY_SCORE = "net/minecraft/world/scores/Score";
+    private static final String LEGACY_SCORE = "org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyScore";
     private static final String PLAYER_SCORE_ENTRY = "net/minecraft/world/scores/PlayerScoreEntry";
     private static final String SET_SCORE_PACKET = "net/minecraft/network/protocol/game/ClientboundSetScorePacket";
 
