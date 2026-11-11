@@ -24,7 +24,9 @@ public final class KubeJSKeybindCompat {
     private static final String KUBEJS_KEYBINDS =
             "dev.latvian.mods.kubejs.client.KubeJSKeybinds";
     private static final String KEY_MAPPING = "net.minecraft.client.KeyMapping";
-    private static final String KEY_CONFLICT_CONTEXT =
+    private static final String KEY_CONFLICT_CONTEXT_API =
+            "net.neoforged.neoforge.client.settings.IKeyConflictContext";
+    private static final String KEY_CONFLICT_CONTEXT_ENUM =
             "net.neoforged.neoforge.client.settings.KeyConflictContext";
     private static final String KEY_MODIFIER =
             "net.neoforged.neoforge.client.settings.KeyModifier";
@@ -63,21 +65,17 @@ public final class KubeJSKeybindCompat {
             Object kubeKey = getOrCreate.invoke(null, id);
 
             Class<?> mappingClass = Class.forName(KEY_MAPPING, true, loader);
-            Class<?> conflictContextClass = Class.forName(KEY_CONFLICT_CONTEXT, true, loader);
+            Class<?> conflictContextApiClass = Class.forName(KEY_CONFLICT_CONTEXT_API, true, loader);
+            Class<?> conflictContextEnumClass = Class.forName(KEY_CONFLICT_CONTEXT_ENUM, true, loader);
             Class<?> keyModifierClass = Class.forName(KEY_MODIFIER, true, loader);
             Class<?> inputTypeClass = Class.forName(INPUT_TYPE, true, loader);
 
-            Object universal = publicStaticField(conflictContextClass, "UNIVERSAL").get(null);
+            Object universal = publicStaticField(conflictContextEnumClass, "UNIVERSAL").get(null);
             Object noModifier = publicStaticField(keyModifierClass, "NONE").get(null);
             Object keysym = publicStaticField(inputTypeClass, "KEYSYM").get(null);
 
-            Constructor<?> constructor = mappingClass.getConstructor(
-                    String.class,
-                    conflictContextClass,
-                    keyModifierClass,
-                    inputTypeClass,
-                    int.class,
-                    String.class);
+            Constructor<?> constructor = findLegacyMappingConstructor(
+                    mappingClass, conflictContextApiClass, keyModifierClass, inputTypeClass);
             Object keyMapping = constructor.newInstance(
                     translationKey, universal, noModifier, keysym, defaultKey, category);
 
@@ -315,6 +313,20 @@ public final class KubeJSKeybindCompat {
 
     private static Field publicStaticField(Class<?> owner, String name) throws NoSuchFieldException {
         return owner.getField(name);
+    }
+
+    static Constructor<?> findLegacyMappingConstructor(
+            Class<?> mappingClass,
+            Class<?> conflictContextApiClass,
+            Class<?> keyModifierClass,
+            Class<?> inputTypeClass) throws NoSuchMethodException {
+        return mappingClass.getConstructor(
+                String.class,
+                conflictContextApiClass,
+                keyModifierClass,
+                inputTypeClass,
+                int.class,
+                String.class);
     }
 
     private static Field publicField(Object owner, String name) throws NoSuchFieldException {

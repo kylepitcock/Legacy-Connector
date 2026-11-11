@@ -1,5 +1,6 @@
 package legacyconnector.v1_20_1;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -47,6 +48,38 @@ class KubeJSItemBuilderCompatTest {
 
         assertEquals(true, builder.components.containsKey(GLINT_OVERRIDE));
         assertNull(builder.components.get(GLINT_OVERRIDE));
+    }
+
+    @Test
+    void setItemBuilderTreatsANullComponentMapAsNoOp() {
+        FakeItemBuilder builder = new FakeItemBuilder();
+        FakeItemModifications modifications = new FakeItemModifications();
+
+        assertDoesNotThrow(() -> KubeJSItemBuilderCompat.setItemBuilder(modifications, builder, GLINT_OVERRIDE));
+        assertNull(modifications.overriddenType);
+        assertNull(modifications.overriddenValue);
+    }
+
+    @Test
+    void setItemBuilderTreatsAnEmptyComponentMapAsNoOp() {
+        FakeItemBuilder builder = new FakeItemBuilder();
+        builder.components = new HashMap<>();
+        FakeItemModifications modifications = new FakeItemModifications();
+
+        assertDoesNotThrow(() -> KubeJSItemBuilderCompat.setItemBuilder(modifications, builder, GLINT_OVERRIDE));
+        assertNull(modifications.overriddenType);
+        assertNull(modifications.overriddenValue);
+    }
+
+    @Test
+    void setItemBuilderRejectsNonGlintComponentsWhenNoVerifiedOverrideExists() {
+        FakeItemBuilder builder = new FakeItemBuilder();
+        builder.components = new HashMap<>();
+        builder.components.put("unreviewed", Boolean.TRUE);
+
+        assertThrows(UnsupportedOperationException.class,
+                () -> KubeJSItemBuilderCompat.setItemBuilder(
+                        new FakeItemModifications(), builder, GLINT_OVERRIDE));
     }
 
     @Test

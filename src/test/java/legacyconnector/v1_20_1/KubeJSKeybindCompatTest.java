@@ -4,12 +4,38 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
+import java.lang.reflect.Constructor;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
 /** Regression tests for the KubeJS 6 client-init key mapping migration. */
 class KubeJSKeybindCompatTest {
+    private interface FakeKeyConflictContextApi {}
+    private enum FakeKeyConflictContext implements FakeKeyConflictContextApi { UNIVERSAL }
+    private enum FakeKeyModifier { NONE }
+    private enum FakeInputType { KEYSYM }
+
+    public static final class FakeKeyMapping {
+        public FakeKeyMapping(String name, FakeKeyConflictContext context, FakeKeyModifier modifier,
+                FakeInputType inputType, int code, String category) {}
+
+        public FakeKeyMapping(String name, FakeKeyConflictContextApi context, FakeKeyModifier modifier,
+                FakeInputType inputType, int code, String category) {}
+    }
+
+    @Test
+    void resolvesTheNeoForgeConstructorUsingTheConflictContextInterface() throws Exception {
+        Constructor<?> constructor = KubeJSKeybindCompat.findLegacyMappingConstructor(
+                FakeKeyMapping.class,
+                FakeKeyConflictContextApi.class,
+                FakeKeyModifier.class,
+                FakeInputType.class);
+
+        assertEquals(FakeKeyConflictContextApi.class, constructor.getParameterTypes()[1]);
+        assertEquals(FakeKeyMapping.class, constructor.getDeclaringClass());
+    }
+
     @Test
     void rewritesTheInspectedQuickChangeScriptToKubeJs7RegistryEvent() throws Exception {
         String original = """

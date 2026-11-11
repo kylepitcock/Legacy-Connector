@@ -85,9 +85,21 @@ public final class KubeJSItemBuilderCompat {
 
         try {
             Object raw = publicField(builder, "components").get(builder);
-            if (!(raw instanceof Map<?, ?> components) || !components.containsKey(glintOverride)) {
-                throw new IllegalStateException(
-                        "Legacy setItemBuilder requires an explicit glow(boolean) setting");
+            if (raw == null) {
+                // Ordinary KubeJS ItemBuilders can have no component map at all.
+                // This adapter only transfers the legacy glow override, so there
+                // is nothing to copy when the builder did not set one.
+                return;
+            }
+            if (!(raw instanceof Map<?, ?> components)) {
+                throw new IllegalStateException("KubeJS ItemBuilder.components is not a Map");
+            }
+            if (components.isEmpty()) {
+                return;
+            }
+            if (!components.containsKey(glintOverride)) {
+                throw new UnsupportedOperationException(
+                        "Legacy setItemBuilder only adapts the verified enchantment glint component; found " + components.keySet());
             }
             for (Object key : components.keySet()) {
                 if (!glintOverride.equals(key)) {
