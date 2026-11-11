@@ -195,7 +195,7 @@ public final class KubeJSScriptScopeCompat {
         // lifetime at the script scope instead of writing to KubeJS 7's
         // immutable global map from a SERVER script.
         return "let alienevoUsedPositions = new Set();\n"
-                + "let alienevoUsedSelfDestructPositions = new Set();\\n"
+                + "let alienevoUsedSelfDestructPositions = new Set();\n"
                 + script.replace("global.usedPositions", "alienevoUsedPositions")
                         .replace("global.usedSelfDestructPositions", "alienevoUsedSelfDestructPositions");
     }
