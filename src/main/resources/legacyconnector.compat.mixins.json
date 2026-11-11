@@ -7,6 +7,7 @@
     "ArchitecturyEventImplMixin",
     "HbmTagStackDisplayMixin",
     "KubeJSBlockBuilderLegacyAliasesMixin",
+    "KubeJSBlockEntityLegacyInventoryMixin",
     "KubeJSItemBuilderLegacyGlowMixin",
     "KubeJSItemModificationLegacyBuilderMixin"
   ],
