@@ -286,6 +286,7 @@ public final class Forge1201Transformer {
         int palladiumTailoringScreenChanges = 0;
         int palladiumSheepColorChanges = 0;
         int palladiumRenderLayerChanges = 0;
+        int palladiumGeckoAnimationChanges = 0;
         int palladiumPlayerSkinChanges = 0;
         for (ClassNode node : nodes) {
             if (PalladiumKubeJS1201.dropLegacyKubejsClass(node.name)) {
@@ -298,6 +299,9 @@ public final class Forge1201Transformer {
             }
             stringsMapped += mapSrgStrings(node);
             int viaCalls = CallRewrites1201.apply(node, compoundSubclasses);
+            int palladiumGeckoAnimationChange = PalladiumGeckoRenderLayer1201.apply(node);
+            palladiumGeckoAnimationChanges += palladiumGeckoAnimationChange;
+            viaCalls += palladiumGeckoAnimationChange;
             int palladiumSuitStandChange = PalladiumSuitStand1201.apply(node);
             palladiumSuitStandChanges += palladiumSuitStandChange;
             int palladiumTailoringScreenChange = PalladiumTailoringScreen1201.apply(node);
@@ -455,6 +459,10 @@ public final class Forge1201Transformer {
         if (palladiumRenderLayerChanges > 0) {
             result.notes.add("Palladium SuitStand RenderLayer color-copy call migrated from nine float arguments to the 1.21.1 six-float plus packed ARGB color overload: "
                     + palladiumRenderLayerChanges + " call site(s)");
+        }
+        if (palladiumGeckoAnimationChanges > 0) {
+            result.notes.add("Palladium first-person GeckoRenderLayer adapted to GeckoLib's handleAnimations partial-tick API: "
+                    + palladiumGeckoAnimationChanges + " call site(s)");
         }
         if (palladiumPlayerSkinChanges > 0) {
             result.notes.add("PalladiumCore player-skin lambda migrated in place from String to NeoForge PlayerSkin.Model; the original AddLayers callback and per-entity exception handling are preserved: "
