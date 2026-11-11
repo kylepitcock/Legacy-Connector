@@ -217,7 +217,7 @@ public final class KubeJSBlockEntityCompat {
     }
 
     public static Object eventPlacer(Object event) {
-        return invokeNoArgs(blockEntityFromTickEvent(event), "getPlacer");
+        return invoke(blockEntityFromTickEvent(event), "getPlacer", new Class<?>[0], new Object[0]);
     }
 
     public static Object eventPlacerId(Object event) {
