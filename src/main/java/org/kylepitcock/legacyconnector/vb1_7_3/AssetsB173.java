@@ -503,7 +503,9 @@ public final class AssetsB173 implements GeneratedPack.Contributor {
         }
         if (sheet.equals(TERRAIN)) {
             String vanilla = VANILLA_TERRAIN.get(index);
-            return vanilla == null ? null : "minecraft:block/" + vanilla;
+            if (vanilla != null) return "minecraft:block/" + vanilla;
+            var chest = ChestSpritesB173.sprite(index);
+            return chest == null ? null : write(null, "vanilla_chest_" + index, chest);
         }
         if (sheet.equals(ITEMS)) {
             String vanilla = VANILLA_ITEMS.get(index);
