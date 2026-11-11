@@ -25,7 +25,9 @@ public final class KubeJSBlockEntityCompat {
     private static final String BLOCK_EVENTS =
             "dev.latvian.mods.kubejs.plugin.builtin.event.BlockEvents";
     private static final String RHINO_CONTEXT = "dev.latvian.mods.rhino.Context";
-    private static final String RHINO_SCRIPTABLE = "dev.latvian.mods.rhino.Scriptable";
+    private static final String RHINO_TYPE_INFO = "dev.latvian.mods.rhino.type.TypeInfo";
+    private static final String KUBEJS_EVENT_HANDLER = "dev.latvian.mods.kubejs.event.IEventHandler";
+    private static final String KUBEJS_SCRIPT_TYPE = "dev.latvian.mods.kubejs.script.ScriptType";
     private static final String INVENTORY_KJS = "dev.latvian.mods.kubejs.core.InventoryKJS";
 
     private static final Map<Object, LegacyState> STATES =
@@ -142,7 +144,7 @@ public final class KubeJSBlockEntityCompat {
         Objects.requireNonNull(callback, "KubeJS block entity tick callback");
 
         try {
-            registerTargetedBlockEntityTick(context, info, callback);
+            registerTargetedBlockEntityTick(context, info, callback, server, client);
             if (server) {
                 invokeNoArgs(info, "serverTicking");
             }
@@ -162,12 +164,20 @@ public final class KubeJSBlockEntityCompat {
     }
 
     /**
-     * Register the legacy callback through KubeJS 7's own targeted event function.
-     * Calling EventHandler.call() is intentional: KubeJS converts the Rhino function
-     * to its IEventHandler type and records the current startup script type/source.
+     * Register the legacy callback through KubeJS 7's Java listener API.
+     *
+     * <p>BlockEntityInfo.serverTick/clientTick is called from StartupEvents.registry,
+     * which runs after KubeJS has finished loading scripts. EventHandler.call()
+     * therefore rejects registration because canListenEvents is already false.
+     * The targeted event is also COMMON (server/client), not STARTUP. Convert the
+     * Rhino function exactly as EventHandler.call() does, then use listenJava()
+     * for the actual logical side(s). This is the supported Java-side registration
+     * path and avoids reopening KubeJS's script-loading window.</p>
      */
-    private static void registerTargetedBlockEntityTick(Object context, Object info, Object callback)
+    private static void registerTargetedBlockEntityTick(
+            Object context, Object info, Object callback, boolean server, boolean client)
             throws ReflectiveOperationException {
+        Objects.requireNonNull(context, "Rhino script context");
         ClassLoader loader = info.getClass().getClassLoader();
         Object blockBuilder = publicField(info, "blockBuilder").get(info);
         Object blockId = publicField(blockBuilder, "id").get(blockBuilder);
@@ -177,16 +187,30 @@ public final class KubeJSBlockEntityCompat {
 
         Class<?> blockEvents = Class.forName(BLOCK_EVENTS, true, loader);
         Object eventHandler = blockEvents.getField("BLOCK_ENTITY_TICK").get(null);
-        Class<?> contextClass = Class.forName(RHINO_CONTEXT, true, loader);
-        Class<?> scriptableClass = Class.forName(RHINO_SCRIPTABLE, true, loader);
-        if (!contextClass.isInstance(context)) {
-            throw new IllegalStateException(
-                    "Rhino did not inject the active Context into the legacy block-entity tick callback alias");
+
+        // Match EventHandler.call(): cx.jsToJava(callback, TypeInfo.of(IEventHandler.class)).
+        Class<?> handlerInterface = Class.forName(KUBEJS_EVENT_HANDLER, true, loader);
+        Class<?> typeInfoClass = Class.forName(RHINO_TYPE_INFO, true, loader);
+        Object handlerTypeInfo = typeInfoClass.getMethod("of", Class.class).invoke(null, handlerInterface);
+        Method jsToJava = context.getClass().getMethod("jsToJava", Object.class, typeInfoClass);
+        Object typedCallback = jsToJava.invoke(context, callback, handlerTypeInfo);
+        if (!handlerInterface.isInstance(typedCallback)) {
+            throw new IllegalStateException("Rhino did not convert the legacy block-entity callback to KubeJS IEventHandler");
         }
 
-        Method call = eventHandler.getClass().getMethod(
-                "call", contextClass, scriptableClass, scriptableClass, Object[].class);
-        call.invoke(eventHandler, context, null, null, new Object[] {blockId, callback});
+        // BlockEvents.blockEntityTick is COMMON, so listeners must be registered
+        // independently for SERVER and CLIENT; STARTUP is explicitly not accepted.
+        Class<?> scriptTypeClass = Class.forName(KUBEJS_SCRIPT_TYPE, true, loader);
+        Object serverType = scriptTypeClass.getField("SERVER").get(null);
+        Object clientType = scriptTypeClass.getField("CLIENT").get(null);
+        Method listenJava = eventHandler.getClass().getMethod(
+                "listenJava", scriptTypeClass, Object.class, handlerInterface);
+        if (server) {
+            listenJava.invoke(eventHandler, serverType, blockId, typedCallback);
+        }
+        if (client) {
+            listenJava.invoke(eventHandler, clientType, blockId, typedCallback);
+        }
     }
 
     /** Legacy BlockEntityJS state forwarded by the KubeJS 7 tick-event mixin. */
