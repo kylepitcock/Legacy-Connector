@@ -288,6 +288,7 @@ public final class Forge1201Transformer {
         int palladiumRenderLayerChanges = 0;
         int palladiumGeckoAnimationChanges = 0;
         int palladiumGeckoModelAnimationChanges = 0;
+        int palladiumCommandFunctionChanges = 0;
         int palladiumPlayerSkinChanges = 0;
         for (ClassNode node : nodes) {
             if (PalladiumKubeJS1201.dropLegacyKubejsClass(node.name)) {
@@ -328,6 +329,11 @@ public final class Forge1201Transformer {
             palladiumPlayerSkinChanges += palladiumPlayerSkinChange;
             Mc1201Migration.Counts changed = Mc1201Migration.apply(node, hierarchy);
             mc.add(changed);
+            // The generic rule above should cover this call shape. Palladium 4.5.10's command abilities
+            // and energy-beam hit handlers are guarded explicitly as well, so a missed site cannot leave
+            // its input/action path silently calling the removed synchronous API.
+            int palladiumCommandFunctionChange = PalladiumCommandFunction1201.apply(node);
+            palladiumCommandFunctionChanges += palladiumCommandFunctionChange;
             // Runs after GuiGraphics.blitNineSliced has been redirected, but before SoftLink1201
             // would replace Palladium's now-missing inherited Button.WIDGETS_LOCATION with null.
             int palladiumWidgetButtonChange = PalladiumWidgetButtons1201.apply(node);
@@ -345,7 +351,7 @@ public final class Forge1201Transformer {
                     + palladiumWidgetButtonChange + palladiumMixinChange + palladiumLootChange
                     + palladiumAccessoryScreenChange + palladiumSelectionListNarrationChange + palladiumSuitStandChange
                     + palladiumTailoringScreenChange + palladiumSheepColorChange
-                    + palladiumRenderLayerChange + palladiumPlayerSkinChange);
+                    + palladiumRenderLayerChange + palladiumPlayerSkinChange + palladiumCommandFunctionChange);
         }
         if (palladiumKubejsChanges > 0 || palladiumKubejsClassesDropped > 0) {
             result.notes.add("Palladium KubeJS 6 integration adapted for KubeJS 7: "
@@ -471,6 +477,10 @@ public final class Forge1201Transformer {
         if (palladiumGeckoModelAnimationChanges > 0) {
             result.notes.add("Palladium GeckoRenderLayerModel inventory/player-entity preview adapted to GeckoLib's handleAnimations partial-tick API: "
                     + palladiumGeckoModelAnimationChanges + " call site(s)");
+        }
+        if (palladiumCommandFunctionChanges > 0) {
+            result.notes.add("Palladium CommandAbility and EnergyBeamAbility command-function execution migrated to the 1.21.1 queued API: "
+                    + palladiumCommandFunctionChanges + " call site(s)");
         }
         if (palladiumPlayerSkinChanges > 0) {
             result.notes.add("PalladiumCore player-skin lambda migrated in place from String to NeoForge PlayerSkin.Model; the original AddLayers callback and per-entity exception handling are preserved: "

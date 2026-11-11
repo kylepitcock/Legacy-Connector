@@ -632,3 +632,4 @@ net/minecraft/commands/functions/CommandFunction	fromLines	(Lnet/minecraft/resou
 # The 1.20.1 execute call returned an immediate command count; 1.21.1 queues execution and returns void.
 # Redirect only when the old result is discarded; call sites that consume the integer are intentionally left soft-linked.
 net/minecraft/server/ServerFunctionManager	execute	(Lnet/minecraft/commands/functions/CommandFunction;Lnet/minecraft/commands/CommandSourceStack;)I	CommandFunctionCompat	execute	(Lnet/minecraft/server/ServerFunctionManager;Lnet/minecraft/commands/functions/CommandFunction;Lnet/minecraft/commands/CommandSourceStack;)V
+net/minecraft/advancements/AdvancementType	getTexture	()I	PalladiumFrameTypeCompat	getTexture	(Lnet/minecraft/advancements/AdvancementType;)I
