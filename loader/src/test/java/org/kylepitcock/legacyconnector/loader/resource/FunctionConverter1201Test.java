@@ -26,6 +26,18 @@ class FunctionConverter1201Test {
     }
 
     @Test
+    void acceptsParticleCommandsWithoutOptionalForceModeAndDoesNotRewriteGrassBlocks() {
+        assertEquals("particle minecraft:block{block_state:" + quoted("minecraft:big_dripleaf") + "} ~ ~ ~ 0.3 0.5 0.3 1 50",
+                FunctionConverter1201.convertCommand("particle block minecraft:big_dripleaf ~ ~ ~ 0.3 0.5 0.3 1 50"));
+        assertEquals("particle minecraft:item{item:{id:" + quoted("minecraft:carrot_on_a_stick") + "}} ^ ^1 ^ 0 1.5 0 .1 20",
+                FunctionConverter1201.convertCommand("particle item carrot_on_a_stick ^ ^1 ^ 0 1.5 0 .1 20"));
+        assertEquals("setblock ~ ~ ~ minecraft:grass_block",
+                FunctionConverter1201.convertCommand("setblock ~ ~ ~ minecraft:grass_block"));
+        assertEquals("setblock ~ ~ ~ minecraft:short_grass",
+                FunctionConverter1201.convertCommand("setblock ~ ~ ~ minecraft:grass"));
+    }
+
+    @Test
     void migratesLegacyEntityAndStackNbtWithoutChangingTheArmorItemArray() {
         String source = "summon armor_stand ~ ~ ~ {ArmorItems:[{id:diamond_boots,Count:0},{id:diamond_leggings,Count:0},{id:iron_chestplate,Count:0},{id:\"carrot_on_a_stick\",Count:1,tag:{CustomModelData:1005}}],active:false}";
         String migrated = FunctionConverter1201.convertCommand(source);
@@ -33,7 +45,7 @@ class FunctionConverter1201Test {
                 + quoted("minecraft:custom_model_data") + ":1005}}";
         assertTrue(migrated.contains("ArmorItems:[{},{},{},"
                 + customStack + "]"), migrated);
-        assertEquals("attributes:[{id:" + quoted("minecraft:max_health") + ",base:20}",
+        assertEquals("attributes:[{id:" + quoted("minecraft:max_health") + ",base:20}]",
                 FunctionConverter1201.convertCommand("Attributes:[{Name:generic.max_health,Base:20}]"));
         assertEquals("active_effects:[{id:" + quoted("minecraft:invisibility")
                         + ",amplifier:0b,duration:20,show_particles:0b}]",
