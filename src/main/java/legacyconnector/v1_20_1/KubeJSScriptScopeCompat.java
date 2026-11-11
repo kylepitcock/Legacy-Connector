@@ -2,25 +2,18 @@ package legacyconnector.v1_20_1;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
-import java.util.regex.Pattern;
 
 /**
  * Narrow source-level fixes for Alien Evolution 1.1.x addon scripts whose
  * top-level const names collide with names already present in KubeJS 7's
  * shared script scope.
  *
- * <p>Each rewrite is gated by namespace, exact resource path, expected class
- * binding, and identifier occurrence count. Unknown script revisions are
- * left unchanged.</p>
+ * <p>Each rewrite is gated by namespace, exact resource path, and exact
+ * declaration/use counts. Unknown script revisions are left unchanged.</p>
  */
 public final class KubeJSScriptScopeCompat {
-    private static final Pattern COMPONENT_IDENTIFIER =
-            Pattern.compile("(?<![A-Za-z0-9_$])Component(?![A-Za-z0-9_$])");
-    private static final Pattern QUATERNIONF_IDENTIFIER =
-            Pattern.compile("(?<![A-Za-z0-9_$])Quaternionf(?![A-Za-z0-9_$])");
-
     private static final String CODEX_COMPONENT_BINDING =
-            "const Component = Java.loadClass(\"net.minecraft.network.chat.Component\");";
+            "const Component = Java.loadClass(\\\"net.minecraft.network.chat.Component\\\");";
     private static final String DISPLAY_PLAYER_QUATERNION_BINDING =
             "const Quaternionf = Java.loadClass('org.joml.Quaternionf');";
 
@@ -29,7 +22,8 @@ public final class KubeJSScriptScopeCompat {
 
     /**
      * Renames only the two known AlienEvo top-level Java aliases that collide
-     * with names in the KubeJS 7 shared script scope.
+     * with names already present in the KubeJS 7 shared script scope. The
+     * fully-qualified Java class name inside each string literal is preserved.
      */
     public static byte[] rewriteKnownIdentifierCollisions(
             String namespace,
@@ -45,52 +39,53 @@ public final class KubeJSScriptScopeCompat {
 
         String script = new String(source, StandardCharsets.UTF_8);
         if ("kubejs_scripts/alien_codex.js".equals(resourcePath)) {
-            return renameExactBinding(
+            return replaceKnownPair(
                     source,
                     script,
                     CODEX_COMPONENT_BINDING,
-                    COMPONENT_IDENTIFIER,
-                    "Component",
+                    "Component.translatable(",
                     "AlienEvoComponent",
-                    3);
+                    "AlienEvoComponent.translatable(");
         }
 
         if ("kubejs_scripts/display_player.js".equals(resourcePath)) {
-            return renameExactBinding(
+            return replaceKnownPair(
                     source,
                     script,
                     DISPLAY_PLAYER_QUATERNION_BINDING,
-                    QUATERNIONF_IDENTIFIER,
-                    "Quaternionf",
+                    "new Quaternionf(",
                     "AlienEvoQuaternionf",
-                    3);
+                    "new AlienEvoQuaternionf(");
         }
 
         return source;
     }
 
-    private static byte[] renameExactBinding(
+    private static byte[] replaceKnownPair(
             byte[] original,
             String script,
             String expectedBinding,
-            Pattern identifier,
-            String oldName,
+            String expectedUse,
             String newName,
-            int expectedOccurrences) {
-        if (count(script, identifier) != expectedOccurrences
-                || countLines(script, expectedBinding) != 1) {
+            String replacementUse) {
+        if (countLines(script, expectedBinding) != 1 || count(script, expectedUse) != 1) {
             return original;
         }
 
-        String rewritten = identifier.matcher(script).replaceAll(newName);
+        String oldName = expectedBinding.startsWith("const Component")
+                ? "Component" : "Quaternionf";
+        String rewritten = script
+                .replace("const " + oldName + " =", "const " + newName + " =")
+                .replace(expectedUse, replacementUse);
         return rewritten.equals(script) ? original : rewritten.getBytes(StandardCharsets.UTF_8);
     }
 
-    private static int count(String text, Pattern pattern) {
+    private static int count(String text, String needle) {
         int count = 0;
-        var matcher = pattern.matcher(text);
-        while (matcher.find()) {
+        int from = 0;
+        while ((from = text.indexOf(needle, from)) >= 0) {
             count++;
+            from += needle.length();
         }
         return count;
     }
