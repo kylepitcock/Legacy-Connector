@@ -15,6 +15,17 @@ final class PalladiumResourceCompat1201 {
             "addon/alienevo/kubejs_scripts/slot_transform.js";
     static final String ALIEN_EVO_QUICK_CHANGE =
             "data/alienevo/kubejs_scripts/quick_change.js";
+    static final String ALIEN_EVO_TRANSFORM =
+            "addon/alienevo/kubejs_scripts/transform.js";
+
+    static final String OMNITRIX_INTEGER_HELPER =
+            "const JavaInteger = Java.loadClass('java.lang.Integer');\\n\\n"
+                    + "function toOmnitrixInteger(value) {\\n"
+                    + "    if (value != null && typeof value.getAsInt === 'function') {\\n"
+                    + "        return JavaInteger.valueOf(value.getAsInt());\\n"
+                    + "    }\\n"
+                    + "    return JavaInteger.valueOf(Math.trunc(Number(value)));\\n"
+                    + "}\\n\\n";
 
     static final String LEGACY_STORE_ARMOR_CHECK =
             "if (entity[slot + 'ArmorItem']) {";
@@ -29,6 +40,29 @@ final class PalladiumResourceCompat1201 {
             "if (armorItem && armorItem.id !== 'minecraft:air') {";
     static final String SAFE_ARMOR_ID_CHECK =
             "if (armorItem && !armorItem.isEmpty()) {";
+
+    private static final String[][] OMNITRIX_INTEGER_WRITES = {
+            {
+                    "palladium.setProperty(entity, omnitrixPropertyKey, newAlienUnlocked);",
+                    "palladium.setProperty(entity, omnitrixPropertyKey, toOmnitrixInteger(newAlienUnlocked));",
+                    "2"
+            },
+            {
+                    "palladium.setProperty(entity, omnitrixPropertyKey, selectedAlienNum);",
+                    "palladium.setProperty(entity, omnitrixPropertyKey, toOmnitrixInteger(selectedAlienNum));",
+                    "2"
+            },
+            {
+                    "palladium.setProperty(entity, omnitrixPropertyKey, alienNumber);",
+                    "palladium.setProperty(entity, omnitrixPropertyKey, toOmnitrixInteger(alienNumber));",
+                    "1"
+            },
+            {
+                    "palladium.setProperty(entity, omnitrixPropertyKey, alien_num);",
+                    "palladium.setProperty(entity, omnitrixPropertyKey, toOmnitrixInteger(alien_num));",
+                    "1"
+            }
+    };
 
     private PalladiumResourceCompat1201() {}
 
@@ -63,7 +97,34 @@ final class PalladiumResourceCompat1201 {
                         {LEGACY_ARMOR_ID_RETURN, SAFE_ARMOR_ID_RETURN, "1"},
                         {LEGACY_ARMOR_ID_CHECK, SAFE_ARMOR_ID_CHECK, "1"}
                 });
+        changed += rewriteTransformScript(resources);
         return changed;
+    }
+
+    /**
+     * KubeJS 7 exposes numeric persistent-data entries as NBT tags. Palladium's
+     * IntegerProperty accepts Number values, not IntTag instances, so normalize
+     * the six Omnitrix-cycle writes to java.lang.Integer before calling it.
+     */
+    private static int rewriteTransformScript(Map<String, byte[]> resources) {
+        byte[] original = resources.get(ALIEN_EVO_TRANSFORM);
+        if (original == null) return 0;
+
+        String script = new String(original, StandardCharsets.UTF_8);
+        boolean helperAdded = false;
+        if (!script.startsWith(OMNITRIX_INTEGER_HELPER)) {
+            String anchor = "function getRandomInt(min, max) {";
+            if (!script.startsWith(anchor)) {
+                throw new IllegalStateException(
+                        "AlienEvo transform.js has an unexpected prologue; cannot add integer normalization safely");
+            }
+            script = OMNITRIX_INTEGER_HELPER + script;
+            resources.put(ALIEN_EVO_TRANSFORM, script.getBytes(StandardCharsets.UTF_8));
+            helperAdded = true;
+        }
+
+        int rewritten = rewrite(resources, ALIEN_EVO_TRANSFORM, OMNITRIX_INTEGER_WRITES);
+        return helperAdded || rewritten > 0 ? 1 : 0;
     }
 
     private static int rewrite(Map<String, byte[]> resources, String path, String[][] replacements) {
