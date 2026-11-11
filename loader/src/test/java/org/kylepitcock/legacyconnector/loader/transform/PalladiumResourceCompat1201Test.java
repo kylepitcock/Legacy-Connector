@@ -20,7 +20,7 @@ class PalladiumResourceCompat1201Test {
     }
 
     @Test
-    void migratesAllThreeArmorStoragePathsAndIsIdempotent() {
+    void migratesAlienEvoArmorTransformAndPowerUiPathsAndIsIdempotent() {
         Map<String, byte[]> resources = new HashMap<>();
         put(resources, PalladiumResourceCompat1201.ALIEN_EVO_STORE_ARMOR, """
                 armorSlots.forEach(slot => {
@@ -44,6 +44,16 @@ class PalladiumResourceCompat1201Test {
                 """;
         put(resources, PalladiumResourceCompat1201.ALIEN_EVO_SLOT_TRANSFORM, slotTransform);
         put(resources, PalladiumResourceCompat1201.ALIEN_EVO_QUICK_CHANGE, slotTransform);
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_POWER_UI, """
+                if (currentTab === omnitrixTab) {}
+                if (currentTab === omnitrixTab) {}
+                if (currentTab === omnitrixTab) {}
+                if (e.tab === omnitrixTab) {}
+                if (e.tab === omnitrixTab) {}
+                if (e.tab === omnitrixTab) {}
+                if (e.tab === omnitrixTab) {}
+                if (e.tab === omnitrixTab) {}
+                """);
         put(resources, PalladiumResourceCompat1201.ALIEN_EVO_TRANSFORM, """
                 function getRandomInt(min, max) {
                     return 1;
@@ -56,7 +66,7 @@ class PalladiumResourceCompat1201Test {
                 palladium.setProperty(entity, omnitrixPropertyKey, alien_num);
                 """);
 
-        assertEquals(4, PalladiumResourceCompat1201.apply(resources));
+        assertEquals(5, PalladiumResourceCompat1201.apply(resources));
 
         String storeArmor = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_STORE_ARMOR);
         assertTrue(storeArmor.contains(PalladiumResourceCompat1201.SAFE_STORE_ARMOR_CHECK));
@@ -80,6 +90,12 @@ class PalladiumResourceCompat1201Test {
         assertFalse(transform.contains("palladium.setProperty(entity, omnitrixPropertyKey, alienNumber);"));
         assertFalse(transform.contains("palladium.setProperty(entity, omnitrixPropertyKey, alien_num);"));
         assertFalse(transform.contains("palladium.setProperty(entity, omnitrixPropertyKey, newAlienUnlocked);"));
+
+        String powerUi = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_POWER_UI);
+        assertEquals(3, powerUi.split("currentTab.toString() === omnitrixTab", -1).length - 1);
+        assertEquals(5, powerUi.split("e.tab.toString() === omnitrixTab", -1).length - 1);
+        assertFalse(powerUi.contains("currentTab === omnitrixTab"));
+        assertFalse(powerUi.contains("e.tab === omnitrixTab"));
 
         assertEquals(0, PalladiumResourceCompat1201.apply(resources));
     }
