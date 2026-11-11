@@ -45,6 +45,9 @@ class FunctionConverter1201Test {
                 + quoted("minecraft:custom_model_data") + ":1005}}";
         assertTrue(migrated.contains("ArmorItems:[{},{},{},"
                 + customStack + "]"), migrated);
+        assertTrue(FunctionConverter1201.convertCommand(
+                "summon minecraft:item ~ ~ ~ {Item:{id:\"minecraft:rose_bush\",Count:1b}}")
+                .contains("Item:{id:\"minecraft:rose_bush\",count:1}"));
         assertEquals("attributes:[{id:" + quoted("minecraft:max_health") + ",base:20}]",
                 FunctionConverter1201.convertCommand("Attributes:[{Name:generic.max_health,Base:20}]"));
         assertEquals("active_effects:[{id:" + quoted("minecraft:invisibility")
