@@ -182,6 +182,15 @@ public final class PalladiumKubeJSCompat {
 
         try {
             ClassLoader loader = manager.getClass().getClassLoader();
+            try {
+                // Install legacy property type aliases before any addon ability script is evaluated.
+                // Keep unrelated addon scripts loadable if a future Palladium version changes this API.
+                PalladiumPropertyCompat.registerLegacyTypeAliases(loader);
+            } catch (RuntimeException aliasError) {
+                LOGGER.log(System.Logger.Level.ERROR,
+                        "Could not register legacy Palladium property type alias 'int' → 'integer'; affected properties will remain unsupported",
+                        unwrap(aliasError));
+            }
             Object scriptType = publicField(manager, "scriptType");
             String scriptTypeName = scriptType instanceof Enum<?> value ? value.name() : String.valueOf(scriptType);
             Object packType = packTypeFor(scriptTypeName, loader);
