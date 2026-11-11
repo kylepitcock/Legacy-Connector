@@ -9,32 +9,59 @@ import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
-/** Regression tests for empty armor ItemStacks in AlienEvo's store_armor ability. */
+/** Regression tests for empty armor ItemStacks in AlienEvo transformation callbacks. */
 class PalladiumResourceCompat1201Test {
+    private static void put(Map<String, byte[]> resources, String path, String script) {
+        resources.put(path, script.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private static String get(Map<String, byte[]> resources, String path) {
+        return new String(resources.get(path), StandardCharsets.UTF_8);
+    }
+
     @Test
-    void skipsEmptyArmorStacksBeforeStoringThemInPersistentNbt() {
+    void migratesAllThreeArmorStoragePathsAndIsIdempotent() {
         Map<String, byte[]> resources = new HashMap<>();
-        String script = """
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_STORE_ARMOR, """
                 armorSlots.forEach(slot => {
                     if (entity[slot + 'ArmorItem']) {
                         hasArmor = true;
                         entity.persistentData.put(slot + 'ArmorStore', entity[slot + 'ArmorItem']);
                     }
                 });
+                """);
+        String slotTransform = """
+                let hasAnyArmor = armorSlots.some(slot => {
+                    let armorItem = player[slot + 'ArmorItem'];
+                    return armorItem && armorItem.id !== 'minecraft:air';
+                });
+                armorSlots.forEach(slot => {
+                    let armorItem = player[slot + 'ArmorItem'];
+                    if (armorItem && armorItem.id !== 'minecraft:air') {
+                        player.persistentData.put(slot + 'ArmorStore', armorItem);
+                    }
+                });
                 """;
-        resources.put(
-                PalladiumResourceCompat1201.ALIEN_EVO_STORE_ARMOR,
-                script.getBytes(StandardCharsets.UTF_8));
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_SLOT_TRANSFORM, slotTransform);
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_QUICK_CHANGE, slotTransform);
 
-        assertEquals(1, PalladiumResourceCompat1201.apply(resources));
+        assertEquals(3, PalladiumResourceCompat1201.apply(resources));
 
-        String migrated = new String(
-                resources.get(PalladiumResourceCompat1201.ALIEN_EVO_STORE_ARMOR),
-                StandardCharsets.UTF_8);
-        assertTrue(migrated.contains(PalladiumResourceCompat1201.SAFE_EMPTY_ARMOR_CHECK));
-        assertFalse(migrated.contains(PalladiumResourceCompat1201.LEGACY_EMPTY_ARMOR_CHECK));
+        String storeArmor = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_STORE_ARMOR);
+        assertTrue(storeArmor.contains(PalladiumResourceCompat1201.SAFE_STORE_ARMOR_CHECK));
+        assertFalse(storeArmor.contains(PalladiumResourceCompat1201.LEGACY_STORE_ARMOR_CHECK));
 
-        // Re-running the resource pass must not change an already migrated script.
+        for (String path : new String[] {
+                PalladiumResourceCompat1201.ALIEN_EVO_SLOT_TRANSFORM,
+                PalladiumResourceCompat1201.ALIEN_EVO_QUICK_CHANGE
+        }) {
+            String script = get(resources, path);
+            assertTrue(script.contains(PalladiumResourceCompat1201.SAFE_ARMOR_ID_RETURN));
+            assertTrue(script.contains(PalladiumResourceCompat1201.SAFE_ARMOR_ID_CHECK));
+            assertFalse(script.contains(PalladiumResourceCompat1201.LEGACY_ARMOR_ID_RETURN));
+            assertFalse(script.contains(PalladiumResourceCompat1201.LEGACY_ARMOR_ID_CHECK));
+        }
+
         assertEquals(0, PalladiumResourceCompat1201.apply(resources));
     }
 
@@ -42,25 +69,25 @@ class PalladiumResourceCompat1201Test {
     void doesNotTouchOtherResourcesOrUnrelatedScripts() {
         Map<String, byte[]> resources = new HashMap<>();
         String unrelated = "if (entity[slot + 'ArmorItem']) { }";
-        resources.put("addon/example/kubejs_scripts/store_armor.js",
-                unrelated.getBytes(StandardCharsets.UTF_8));
+        put(resources, "addon/example/kubejs_scripts/store_armor.js", unrelated);
+        put(resources, "data/example/kubejs_scripts/quick_change.js",
+                "return armorItem && armorItem.id !== 'minecraft:air';");
 
         assertEquals(0, PalladiumResourceCompat1201.apply(resources));
-        assertEquals(unrelated, new String(
-                resources.get("addon/example/kubejs_scripts/store_armor.js"),
-                StandardCharsets.UTF_8));
+        assertEquals(unrelated, get(resources, "addon/example/kubejs_scripts/store_armor.js"));
+        assertEquals("return armorItem && armorItem.id !== 'minecraft:air';",
+                get(resources, "data/example/kubejs_scripts/quick_change.js"));
     }
 
     @Test
-    void toleratesAnAlienEvoScriptThatDoesNotUseTheLegacyEmptyCheck() {
+    void toleratesAlreadyUpdatedAndMissingAlienEvoScripts() {
         Map<String, byte[]> resources = new HashMap<>();
-        String updated = "if (armorItem && !armorItem.isEmpty()) { }";
-        resources.put(PalladiumResourceCompat1201.ALIEN_EVO_STORE_ARMOR,
-                updated.getBytes(StandardCharsets.UTF_8));
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_STORE_ARMOR,
+                "if (entity[slot + 'ArmorItem'] && !entity[slot + 'ArmorItem'].isEmpty()) { }");
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_SLOT_TRANSFORM,
+                "return armorItem && !armorItem.isEmpty(); if (armorItem && !armorItem.isEmpty()) { }");
 
         assertEquals(0, PalladiumResourceCompat1201.apply(resources));
-        assertEquals(updated, new String(
-                resources.get(PalladiumResourceCompat1201.ALIEN_EVO_STORE_ARMOR),
-                StandardCharsets.UTF_8));
+        assertFalse(resources.containsKey(PalladiumResourceCompat1201.ALIEN_EVO_QUICK_CHANGE));
     }
 }

@@ -546,7 +546,7 @@ public final class Forge1201Transformer {
         }
         int alienEvoResourceChanges = PalladiumResourceCompat1201.apply(outResources);
         if (alienEvoResourceChanges > 0) {
-            result.notes.add("AlienEvo store_armor KubeJS ability now ignores empty armor ItemStacks before NBT storage: "
+            result.notes.add("AlienEvo armor-storage scripts now reject empty ItemStacks before NBT storage: "
                     + alienEvoResourceChanges + " resource script(s)");
         }
         if (PalladiumKubeJS1201.addPluginDiscoveryResource(outResources, outClasses.keySet())) {
