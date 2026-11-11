@@ -176,7 +176,9 @@ class PalladiumMixinCompat1201Test implements Opcodes {
                 "getScore", "()I", false));
         handler.instructions.add(new MethodInsnNode(INVOKESPECIAL, SET_SCORE_PACKET,
                 "<init>", oldPacketDesc, false));
-        handler.instructions.add(new InsnNode(POP));
+        handler.instructions.add(new MethodInsnNode(INVOKEVIRTUAL,
+                "net/minecraft/server/network/ServerGamePacketListenerImpl", "send",
+                "(Lnet/minecraft/network/protocol/Packet;)V", false));
         handler.instructions.add(new InsnNode(RETURN));
         handler.maxLocals = 9;
         handler.maxStack = 7;
