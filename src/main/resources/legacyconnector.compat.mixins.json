@@ -5,7 +5,8 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "ArchitecturyEventImplMixin",
-    "HbmTagStackDisplayMixin"
+    "HbmTagStackDisplayMixin",
+    "KubeJSBlockBuilderLegacyAliasesMixin"
   ],
   "client": [
     "RocketnauticsStarPlasmaMixin",
