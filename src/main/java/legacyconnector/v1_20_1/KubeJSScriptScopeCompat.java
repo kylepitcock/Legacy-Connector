@@ -13,7 +13,7 @@ import java.util.Objects;
  */
 public final class KubeJSScriptScopeCompat {
     private static final String CODEX_COMPONENT_BINDING =
-            "const Component = Java.loadClass(\\\"net.minecraft.network.chat.Component\\\");";
+            "const Component = Java.loadClass(\"net.minecraft.network.chat.Component\");";
     private static final String DISPLAY_PLAYER_QUATERNION_BINDING =
             "const Quaternionf = Java.loadClass('org.joml.Quaternionf');";
 
