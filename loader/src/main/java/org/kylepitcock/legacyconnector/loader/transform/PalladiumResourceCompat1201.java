@@ -4,9 +4,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 /**
- * Narrow resource-level compatibility rewrites for AlienEvo's armor storage.
- * Empty ItemStacks are truthy Java objects in Rhino, but must not be encoded
- * as persistent NBT on Minecraft 1.21.1.
+ * Narrow resource-level compatibility rewrites for AlienEvo on Minecraft 1.21.1:
+ * empty armor ItemStack guards, Omnitrix persistent-integer normalization, and
+ * ResourceLocation/string normalization for the Omnitrix customization tab.
  */
 final class PalladiumResourceCompat1201 {
     static final String ALIEN_EVO_STORE_ARMOR =
@@ -82,13 +82,11 @@ final class PalladiumResourceCompat1201 {
     private PalladiumResourceCompat1201() {}
 
     /**
-     * Do not serialize ItemStack.EMPTY into persistent NBT. Apply only to the
-     * three inspected armor-storage resources plus the Omnitrix transform script which store player armor during an
-     * Omnitrix transformation or quick-change transition.
+     * Apply narrowly scoped rewrites to the inspected AlienEvo resources.
      *
      * Missing or already migrated resources are no-ops. Every expected legacy
-     * check is counted exactly; unknown script shapes fail loudly rather than
-     * leaving a partially or incorrectly rewritten callback.
+     * occurrence is counted exactly; unknown script shapes fail loudly rather
+     * than leaving a partially or incorrectly rewritten callback.
      *
      * @return number of resource scripts changed
      */
@@ -161,7 +159,7 @@ final class PalladiumResourceCompat1201 {
             if (legacyCount == 0 && safeCount == expected) continue;
             if (legacyCount != expected || safeCount != 0) {
                 throw new IllegalStateException(
-                        "AlienEvo resource " + path + " has an unexpected armor ItemStack guard: expected "
+                        "AlienEvo resource " + path + " has an unexpected compatibility-rewrite shape: expected "
                                 + expected + " legacy occurrence(s), found " + legacyCount
                                 + " legacy and " + safeCount + " migrated");
             }
