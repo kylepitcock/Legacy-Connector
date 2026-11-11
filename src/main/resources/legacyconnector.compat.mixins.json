@@ -8,12 +8,12 @@
     "HbmTagStackDisplayMixin",
     "KubeJSBlockBuilderLegacyAliasesMixin",
     "KubeJSItemBuilderLegacyGlowMixin",
-    "KubeJSItemModificationLegacyBuilderMixin",
-    "KubeJSKeybindLegacyMappingMixin"
+    "KubeJSItemModificationLegacyBuilderMixin"
   ],
   "client": [
     "RocketnauticsStarPlasmaMixin",
-    "AurorasIrisStateMixin"
+    "AurorasIrisStateMixin",
+    "KubeJSKeybindLegacyMappingMixin"
   ],
   "injectors": {
     "defaultRequire": 0
