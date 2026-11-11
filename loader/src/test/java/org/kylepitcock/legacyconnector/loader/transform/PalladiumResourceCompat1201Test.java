@@ -116,16 +116,19 @@ class PalladiumResourceCompat1201Test {
         assertFalse(transform.contains("const AlienEvoJavaResourceLocation ="));
         assertTrue(transform.contains("var AlienEvoSoundRegistry = Java.loadClass"));
         assertTrue(transform.contains("var AlienEvoSoundResourceLocation = Java.loadClass"));
+        assertFalse(transform.contains("const AlienEvoSoundRegistry ="));
+        assertFalse(transform.contains("const AlienEvoSoundResourceLocation ="));
         assertTrue(transform.contains("AlienEvoJavaResourceLocation.fromNamespaceAndPath"));
         assertTrue(transform.contains("getAlienEvoSoundEvent('alienevo:' + String(transformSound) + '_transform')"));
         assertFalse(transform.contains("`alienevo:${transformSound}_transform`,"));
 
         String cycle = get(resources, "addon/alienevo/kubejs_scripts/omnitrix_cycle.js");
         assertTrue(cycle.contains("function getAlienEvoSoundEvent(soundId)"));
-        assertTrue(cycle.contains("var AlienEvoJavaResourceLocation = Java.loadClass"));
         assertFalse(cycle.contains("const AlienEvoJavaResourceLocation ="));
         assertTrue(cycle.contains("var AlienEvoSoundRegistry = Java.loadClass"));
         assertTrue(cycle.contains("var AlienEvoSoundResourceLocation = Java.loadClass"));
+        assertFalse(cycle.contains("const AlienEvoSoundRegistry ="));
+        assertFalse(cycle.contains("const AlienEvoSoundResourceLocation ="));
         assertTrue(cycle.contains("getAlienEvoSoundEvent('alienevo:' + String(soundToPlay))"));
         assertFalse(cycle.contains("`alienevo:${soundToPlay}`,"));
 
