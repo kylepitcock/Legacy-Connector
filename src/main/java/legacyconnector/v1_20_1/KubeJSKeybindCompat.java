@@ -238,6 +238,25 @@ public final class KubeJSKeybindCompat {
         return rewritten.getBytes(java.nio.charset.StandardCharsets.UTF_8);
     }
 
+    /**
+     * Minecraft 1.21.1 exposes the current InputConstants.Key through
+     * KeyMapping.getKey(); the legacy protected .key field is not script-visible.
+     * Restrict this migration to the inspected AlienEvo quick-change client script.
+     */
+    public static byte[] rewriteLegacyKeyMappingFieldAccess(byte[] source) {
+        Objects.requireNonNull(source, "KubeJS client script source");
+        String script = new String(source, java.nio.charset.StandardCharsets.UTF_8);
+        if (!script.contains("QUICKCHANGE01")
+                || !script.contains("ClientEvents.tick")
+                || !script.contains(".key.getValue()")) {
+            return source;
+        }
+        String rewritten = script.replace(".key.getValue()", ".getKey().getValue()");
+        return rewritten.equals(script)
+                ? source
+                : rewritten.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+    }
+
     static List<Object> mergeMappings(List<?> built, List<?> pending) {
         List<Object> merged = new ArrayList<>(built);
         for (Object key : pending) {
