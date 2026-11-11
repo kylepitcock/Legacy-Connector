@@ -7,23 +7,24 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import net.minecraft.core.component.DataComponentType;
-import net.minecraft.core.component.DataComponents;
 
 /**
  * Narrow KubeJS 6 to KubeJS 7 adapter for the old BasicItemJS.Builder glow
  * configuration pattern used by addon-pack scripts.
  *
  * <p>KubeJS 7 represents the glow override as Minecraft's
- * ENCHANTMENT_GLINT_OVERRIDE item component. Reflection keeps KubeJS optional.</p>
+ * ENCHANTMENT_GLINT_OVERRIDE item component. The component is resolved lazily
+ * so merely loading this optional compatibility helper does not initialize
+ * Minecraft's component registry (for example, during source-rewrite tests).</p>
  */
 public final class KubeJSItemBuilderCompat {
     private static final String OLD_BASIC_ITEM_BUILDER =
             "dev.latvian.mods.kubejs.item.custom.BasicItemJS$Builder";
     private static final String KUBEJS7_ITEM_BUILDER =
             "dev.latvian.mods.kubejs.item.ItemBuilder";
-    private static final DataComponentType<Boolean> GLINT_OVERRIDE =
-            DataComponents.ENCHANTMENT_GLINT_OVERRIDE;
+    private static final String DATA_COMPONENTS =
+            "net.minecraft.core.component.DataComponents";
+    private static final String GLINT_OVERRIDE_FIELD = "ENCHANTMENT_GLINT_OVERRIDE";
 
     private KubeJSItemBuilderCompat() {
     }
@@ -31,6 +32,16 @@ public final class KubeJSItemBuilderCompat {
     /** Restores the old ItemBuilder.glow(boolean) script method. */
     public static Object glow(Object builder, boolean enabled) {
         Objects.requireNonNull(builder, "KubeJS item builder");
+        return glow(builder, enabled, glintOverrideComponent(builder.getClass().getClassLoader()));
+    }
+
+    /**
+     * Testable implementation that accepts the component key explicitly.
+     * Production callers use the public overload above.
+     */
+    static Object glow(Object builder, boolean enabled, Object glintOverride) {
+        Objects.requireNonNull(builder, "KubeJS item builder");
+        Objects.requireNonNull(glintOverride, "Minecraft enchantment glint override component");
         try {
             Field field = publicField(builder, "components");
             Object value = field.get(builder);
@@ -48,7 +59,7 @@ public final class KubeJSItemBuilderCompat {
 
             // null means clear the component, preserving vanilla enchantment
             // glint behavior when the old builder's glow flag is false.
-            components.put(GLINT_OVERRIDE, enabled ? Boolean.TRUE : null);
+            components.put(glintOverride, enabled ? Boolean.TRUE : null);
             return builder;
         } catch (ReflectiveOperationException error) {
             throw compatibilityFailure("glow(boolean)", error);
@@ -61,29 +72,64 @@ public final class KubeJSItemBuilderCompat {
      * closed until its KubeJS 7 behavior has been audited separately.
      */
     public static void setItemBuilder(Object modifications, Object builder) {
+        Objects.requireNonNull(builder, "KubeJS item builder");
+        setItemBuilder(modifications, builder,
+                glintOverrideComponent(builder.getClass().getClassLoader()));
+    }
+
+    /** Testable implementation that accepts the component key explicitly. */
+    static void setItemBuilder(Object modifications, Object builder, Object glintOverride) {
         Objects.requireNonNull(modifications, "KubeJS item modification event");
         Objects.requireNonNull(builder, "KubeJS item builder");
+        Objects.requireNonNull(glintOverride, "Minecraft enchantment glint override component");
 
         try {
             Object raw = publicField(builder, "components").get(builder);
-            if (!(raw instanceof Map<?, ?> components) || !components.containsKey(GLINT_OVERRIDE)) {
+            if (!(raw instanceof Map<?, ?> components) || !components.containsKey(glintOverride)) {
                 throw new IllegalStateException(
                         "Legacy setItemBuilder requires an explicit glow(boolean) setting");
             }
             for (Object key : components.keySet()) {
-                if (!GLINT_OVERRIDE.equals(key)) {
+                if (!glintOverride.equals(key)) {
                     throw new UnsupportedOperationException(
                             "Legacy setItemBuilder only adapts the verified enchantment glint component; found " + key);
                 }
             }
 
-            Object value = Boolean.TRUE.equals(components.get(GLINT_OVERRIDE)) ? Boolean.TRUE : null;
-            Method override = modifications.getClass().getMethod(
-                    "kjs$override", DataComponentType.class, Object.class);
-            override.invoke(modifications, GLINT_OVERRIDE, value);
+            Object value = Boolean.TRUE.equals(components.get(glintOverride)) ? Boolean.TRUE : null;
+            Method override = findComponentOverride(modifications.getClass(), glintOverride);
+            override.invoke(modifications, glintOverride, value);
         } catch (ReflectiveOperationException error) {
             throw compatibilityFailure("ItemModifications.setItemBuilder(builder)", error);
         }
+    }
+
+    private static Object glintOverrideComponent(ClassLoader loader) {
+        try {
+            Class<?> dataComponents = Class.forName(DATA_COMPONENTS, true, loader);
+            return dataComponents.getField(GLINT_OVERRIDE_FIELD).get(null);
+        } catch (ReflectiveOperationException | LinkageError error) {
+            throw compatibilityFailure("resolving DataComponents." + GLINT_OVERRIDE_FIELD, error);
+        }
+    }
+
+    /**
+     * Locate the mixin-added kjs$override method without eagerly linking this
+     * optional adapter to Minecraft's component classes.
+     */
+    private static Method findComponentOverride(Class<?> modificationsClass, Object component)
+            throws NoSuchMethodException {
+        for (Method method : modificationsClass.getMethods()) {
+            Class<?>[] parameters = method.getParameterTypes();
+            if (method.getName().equals("kjs$override")
+                    && parameters.length == 2
+                    && parameters[0].isInstance(component)
+                    && parameters[1] == Object.class) {
+                return method;
+            }
+        }
+        throw new NoSuchMethodException(
+                modificationsClass.getName() + ".kjs$override(" + component.getClass().getName() + ", Object)");
     }
 
     /**
