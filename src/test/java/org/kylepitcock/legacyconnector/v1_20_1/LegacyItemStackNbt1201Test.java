@@ -10,9 +10,21 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 class LegacyItemStackNbt1201Test {
+    @BeforeAll
+    static void bootstrapMinecraft() throws Exception {
+        var dist = net.neoforged.fml.loading.FMLLoader.class.getDeclaredField("dist");
+        dist.setAccessible(true);
+        dist.set(null, net.neoforged.api.distmarker.Dist.CLIENT);
+        net.neoforged.fml.loading.LoadingModList.of(
+                java.util.List.of(), java.util.List.of(), java.util.List.of(), java.util.List.of(), java.util.Map.of());
+        net.minecraft.SharedConstants.tryDetectVersion();
+        net.minecraft.server.Bootstrap.bootStrap();
+    }
+
     @Test
     void absentCustomDataMatchesLegacyNullTagBehavior() {
         ItemStack stack = new ItemStack(Items.STONE);
