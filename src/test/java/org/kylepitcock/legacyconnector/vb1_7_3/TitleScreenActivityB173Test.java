@@ -30,7 +30,9 @@ class TitleScreenActivityB173Test {
     @Test void joiningOrHostingAWorldIsNeverAMenu() {
         // Loading screens before the client has a level, while the integrated server runs or a connection exists.
         assertFalse(TitleScreen.mcc$menuActive(false,true,false,true));
-        assertFalse(TitleScreen.mcc$menuActive(false,true,true,true));
         assertTrue(TitleScreen.mcc$menuActive(false,true,true,false));
+        // A title screen over a running world (a menu that plays a world behind its buttons) is still a menu.
+        assertTrue(TitleScreen.mcc$menuActive(true,true,true,true));
+        assertTrue(TitleScreen.mcc$menuActive(false,true,true,true));
     }
 }

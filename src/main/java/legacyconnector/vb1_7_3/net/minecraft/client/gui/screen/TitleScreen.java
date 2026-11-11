@@ -11,10 +11,11 @@ public class TitleScreen extends Screen {
     /** Menus before a world remain active; ordinary in-world screens do not become title menus. */
     public static boolean mcc$menuActive(boolean hasLevel,boolean hasScreen,boolean titleScreen){return titleScreen||!hasLevel&&hasScreen;}
     /**
-     * While a world is starting or joined, the client shows loading screens before it has a level; those are not menus. Original code that
-     * freezes its player in menu mode would otherwise pin a real player to an unset position during the first server ticks.
+     * The title screen is always a menu, even over a running world (a main menu that plays a world behind its buttons). While a world is
+     * starting or joined, the loading screens before the client has a level are not menus: original code that freezes its player in menu
+     * mode would otherwise pin a real player to an unset position during the first server ticks.
      */
     public static boolean mcc$menuActive(boolean hasLevel,boolean hasScreen,boolean titleScreen,boolean connectedOrHosting){
-        return !connectedOrHosting&&mcc$menuActive(hasLevel,hasScreen,titleScreen);
+        return titleScreen||!connectedOrHosting&&mcc$menuActive(hasLevel,hasScreen,false);
     }
 }
