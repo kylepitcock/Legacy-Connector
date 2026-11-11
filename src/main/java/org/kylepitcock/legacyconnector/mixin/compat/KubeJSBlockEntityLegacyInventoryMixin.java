@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.mixin.compat;
 
+import dev.latvian.mods.rhino.Context;
 import legacyconnector.v1_20_1.KubeJSBlockEntityCompat;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
@@ -19,33 +20,35 @@ public abstract class KubeJSBlockEntityLegacyInventoryMixin {
         KubeJSBlockEntityCompat.rightClickOpensInventory(this);
     }
 
+    // Rhino recognizes a leading Context parameter, hides it from JavaScript arguments,
+    // and injects the active script context when this compatibility method is invoked.
     @Unique
-    public void serverTick(Object callback) {
-        KubeJSBlockEntityCompat.serverTick(this, callback);
+    public void serverTick(Context context, Object callback) {
+        KubeJSBlockEntityCompat.serverTick(context, this, callback);
     }
 
     @Unique
-    public void serverTick(int frequency, int offset, Object callback) {
-        KubeJSBlockEntityCompat.serverTick(this, frequency, offset, callback);
+    public void serverTick(Context context, int frequency, int offset, Object callback) {
+        KubeJSBlockEntityCompat.serverTick(context, this, frequency, offset, callback);
     }
 
     @Unique
-    public void clientTick(Object callback) {
-        KubeJSBlockEntityCompat.clientTick(this, callback);
+    public void clientTick(Context context, Object callback) {
+        KubeJSBlockEntityCompat.clientTick(context, this, callback);
     }
 
     @Unique
-    public void clientTick(int frequency, int offset, Object callback) {
-        KubeJSBlockEntityCompat.clientTick(this, frequency, offset, callback);
+    public void clientTick(Context context, int frequency, int offset, Object callback) {
+        KubeJSBlockEntityCompat.clientTick(context, this, frequency, offset, callback);
     }
 
     @Unique
-    public void tick(Object callback) {
-        KubeJSBlockEntityCompat.tick(this, callback);
+    public void tick(Context context, Object callback) {
+        KubeJSBlockEntityCompat.tick(context, this, callback);
     }
 
     @Unique
-    public void tick(int frequency, int offset, Object callback) {
-        KubeJSBlockEntityCompat.tick(this, frequency, offset, callback);
+    public void tick(Context context, int frequency, int offset, Object callback) {
+        KubeJSBlockEntityCompat.tick(context, this, frequency, offset, callback);
     }
 }
