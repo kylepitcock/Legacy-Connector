@@ -197,15 +197,15 @@ final class PalladiumResourceCompat1201 {
                 migrated = replaceExactScriptOccurrence(
                         path,
                         migrated,
-                        "\`alienevo:\${soundToPlay}\`",
-                        "getAlienEvoSoundEvent(\`alienevo:\${soundToPlay}\`)");
+                        "`alienevo:${soundToPlay}`",
+                        "getAlienEvoSoundEvent(`alienevo:${soundToPlay}`)");
             } else if (ALIEN_EVO_TRANSFORM.equals(path)) {
                 migrated = addSoundEventHelper(migrated);
                 migrated = replaceExactScriptOccurrence(
                         path,
                         migrated,
-                        "\`alienevo:\${transformSound}_transform\`",
-                        "getAlienEvoSoundEvent(\`alienevo:\${transformSound}_transform\`)");
+                        "`alienevo:${transformSound}_transform`",
+                        "getAlienEvoSoundEvent(`alienevo:${transformSound}_transform`)");
             }
 
             if (!migrated.equals(script)) {
