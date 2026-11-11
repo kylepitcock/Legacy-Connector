@@ -10,6 +10,8 @@ import dev.latvian.mods.kubejs.block.entity.BlockEntityInfo;
 import dev.latvian.mods.kubejs.block.entity.BlockEntityTickKubeEvent;
 import dev.latvian.mods.kubejs.block.entity.KubeBlockEntity;
 import dev.latvian.mods.kubejs.core.InventoryKJS;
+import dev.latvian.mods.rhino.Context;
+import dev.latvian.mods.rhino.ContextFactory;
 import dev.latvian.mods.kubejs.plugin.builtin.event.BlockEvents;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
@@ -74,14 +76,15 @@ class KubeJSBlockEntityCompatTest {
     void serverTickRegistersCallbackAgainstTheOwningBlockAndEnablesServerTicking() {
         BlockEntityInfo info = new BlockEntityInfo();
         Object callback = new Object();
+        Context context = new ContextFactory().enter();
 
-        KubeJSBlockEntityCompat.serverTick(info, callback);
+        KubeJSBlockEntityCompat.serverTick(context, info, callback);
 
         assertTrue(info.serverTicking);
         assertEquals(1, BlockEvents.BLOCK_ENTITY_TICK.calls);
         assertEquals("alienevo:crystal_block", BlockEvents.BLOCK_ENTITY_TICK.lastArguments[0]);
         assertSame(callback, BlockEvents.BLOCK_ENTITY_TICK.lastArguments[1]);
-        assertNotNull(BlockEvents.BLOCK_ENTITY_TICK.lastContext);
+        assertSame(context, BlockEvents.BLOCK_ENTITY_TICK.lastContext);
         assertEquals(1, info.tickFrequency);
         assertEquals(0, info.tickOffset);
     }
@@ -89,8 +92,9 @@ class KubeJSBlockEntityCompatTest {
     @Test
     void serverTickPreservesFrequencyAndOffset() {
         BlockEntityInfo info = new BlockEntityInfo();
+        Context context = new ContextFactory().enter();
 
-        KubeJSBlockEntityCompat.serverTick(info, 20, 7, new Object());
+        KubeJSBlockEntityCompat.serverTick(context, info, 20, 7, new Object());
 
         assertTrue(info.serverTicking);
         assertEquals(20, info.tickFrequency);
@@ -100,8 +104,9 @@ class KubeJSBlockEntityCompatTest {
     @Test
     void frequencyOnePreservesLegacyAlwaysTickBehaviorEvenWithAnOffset() {
         BlockEntityInfo info = new BlockEntityInfo();
+        Context context = new ContextFactory().enter();
 
-        KubeJSBlockEntityCompat.serverTick(info, 1, 9, new Object());
+        KubeJSBlockEntityCompat.serverTick(context, info, 1, 9, new Object());
 
         assertEquals(1, info.tickFrequency);
         assertEquals(0, info.tickOffset);
@@ -110,8 +115,9 @@ class KubeJSBlockEntityCompatTest {
     @Test
     void clientTickOnlyEnablesClientTicking() {
         BlockEntityInfo info = new BlockEntityInfo();
+        Context context = new ContextFactory().enter();
 
-        KubeJSBlockEntityCompat.clientTick(info, new Object());
+        KubeJSBlockEntityCompat.clientTick(context, info, new Object());
 
         assertTrue(info.clientTicking);
         assertEquals(false, info.serverTicking);
@@ -120,8 +126,9 @@ class KubeJSBlockEntityCompatTest {
     @Test
     void tickEnablesBothLogicalSides() {
         BlockEntityInfo info = new BlockEntityInfo();
+        Context context = new ContextFactory().enter();
 
-        KubeJSBlockEntityCompat.tick(info, new Object());
+        KubeJSBlockEntityCompat.tick(context, info, new Object());
 
         assertTrue(info.serverTicking);
         assertTrue(info.clientTicking);
