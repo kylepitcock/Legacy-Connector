@@ -69,6 +69,20 @@ public final class DataConverter1201 {
     /** Ids that were renamed between 1.20.1 and 1.21.1 and appear in data (JSON data is not run through the data fixers). */
     private static final Map<String, String> RENAMED_IDS = Map.of(
             "minecraft:grass", "minecraft:short_grass", "minecraft:sweeping", "minecraft:sweeping_edge", "minecraft:scute", "minecraft:turtle_scute");
+    /** Attribute ids whose identifiers changed after Forge 1.20.1 / Minecraft 1.20.1. */
+    private static final Map<String, String> ATTRIBUTE_IDS = Map.ofEntries(
+            Map.entry("forge:step_height_addition", "minecraft:step_height"),
+            Map.entry("forge:entity_gravity", "minecraft:gravity"),
+            Map.entry("forge:swim_speed", "neoforge:swim_speed"),
+            Map.entry("minecraft:generic.attack_damage", "minecraft:attack_damage"),
+            Map.entry("minecraft:generic.armor", "minecraft:armor"),
+            Map.entry("minecraft:generic.movement_speed", "minecraft:movement_speed"),
+            Map.entry("minecraft:generic.armor_toughness", "minecraft:armor_toughness"),
+            Map.entry("minecraft:generic.max_health", "minecraft:max_health"),
+            Map.entry("minecraft:generic.knockback_resistance", "minecraft:knockback_resistance"),
+            Map.entry("minecraft:generic.attack_speed", "minecraft:attack_speed"),
+            Map.entry("minecraft:generic.attack_knockback", "minecraft:attack_knockback"),
+            Map.entry("generic.movement_speed", "minecraft:movement_speed"));
     /** First segment of a Forge tag path to its convention-tag spelling in NeoForge 1.21.1 ({@code c:}); the rest of the path is kept. */
     private static final Map<String, String> TAG_SEGMENTS = Map.ofEntries(
             Map.entry("stone", "stones"), Map.entry("cobblestone", "cobblestones"), Map.entry("sand", "sands"),
@@ -203,6 +217,7 @@ public final class DataConverter1201 {
         } else if (dir.equals("advancement") && root.isJsonObject()) {
             outs.addAll(advancement(np, root.getAsJsonObject(), c));
         } else {
+            if (dir.equals("item_modifier")) itemModifier(root, c);
             if (dir.equals("loot_table") || dir.equals("loot_modifiers")) loot(root, c);
             if (dir.equals("dimension_type") && root.isJsonObject()) dimensionType(root.getAsJsonObject(), c);
             if (np.contains("/worldgen/structure_set/") && root.isJsonObject()) structureSet(root.getAsJsonObject(), c);
@@ -382,6 +397,10 @@ public final class DataConverter1201 {
             JsonObject o = e.getAsJsonObject();
             for (String k : new ArrayList<>(o.keySet())) {
                 JsonElement v = o.get(k);
+                if (k.toLowerCase(java.util.Locale.ROOT).contains("command")) {
+                    o.add(k, commandValues(v, c));
+                    continue;
+                }
                 if (v.isJsonPrimitive() && v.getAsJsonPrimitive().isString()) {
                     String s = v.getAsString();
                     String r = s;
@@ -394,6 +413,9 @@ public final class DataConverter1201 {
                     } else if (k.equals("tag") && (s.startsWith("forge:") || s.startsWith("#forge:"))) {
                         r = mapTag(s);
                         c.hit("forge_tags");
+                    } else if (k.equals("attribute") && ATTRIBUTE_IDS.containsKey(s)) {
+                        r = ATTRIBUTE_IDS.get(s);
+                        c.hit("attribute_ids");
                     } else if (!model) {
                         r = mapValue(s, c);
                     }
@@ -422,6 +444,57 @@ public final class DataConverter1201 {
                 }
             }
         }
+    }
+
+    /** Converts legacy function identifiers and fields inside item-modifier JSON resources. */
+    private static void itemModifier(JsonElement e, Ctx c) {
+        if (e.isJsonArray()) {
+            for (JsonElement child : e.getAsJsonArray()) itemModifier(child, c);
+            return;
+        }
+        if (!e.isJsonObject()) return;
+        JsonObject o = e.getAsJsonObject();
+        if (o.has("function") && o.get("function").isJsonPrimitive()) {
+            String function = o.get("function").getAsString();
+            if (function.equals("minecraft:set_nbt")) {
+                o.addProperty("function", "minecraft:set_custom_data");
+                c.hit("item_modifier");
+            } else if (function.equals("minecraft:set_lore")) {
+                JsonElement replace = o.remove("replace");
+                if (!o.has("mode")) {
+                    boolean replaceAll = replace != null && replace.isJsonPrimitive()
+                            && replace.getAsJsonPrimitive().isBoolean() && replace.getAsBoolean();
+                    o.addProperty("mode", replaceAll ? "replace_all" : "append");
+                }
+                c.hit("item_modifier");
+            }
+        }
+        for (Map.Entry<String, JsonElement> child : new ArrayList<>(o.entrySet())) {
+            itemModifier(child.getValue(), c);
+        }
+    }
+
+    /** Converts command strings embedded in Palladium power JSON with the same dialect migration as .mcfunction files. */
+    private static JsonElement commandValues(JsonElement value, Ctx c) {
+        if (value.isJsonPrimitive() && value.getAsJsonPrimitive().isString()) {
+            String source = value.getAsString();
+            String migrated = FunctionConverter1201.convertCommand(source);
+            if (!migrated.equals(source)) c.hit("command_payloads");
+            return new JsonPrimitive(migrated);
+        }
+        if (value.isJsonArray()) {
+            JsonArray converted = new JsonArray();
+            for (JsonElement child : value.getAsJsonArray()) converted.add(commandValues(child, c));
+            return converted;
+        }
+        if (value.isJsonObject()) {
+            JsonObject converted = new JsonObject();
+            for (Map.Entry<String, JsonElement> child : value.getAsJsonObject().entrySet()) {
+                converted.add(child.getKey(), commandValues(child.getValue(), c));
+            }
+            return converted;
+        }
+        return value;
     }
 
     private static String mapValue(String s, Ctx c) {
