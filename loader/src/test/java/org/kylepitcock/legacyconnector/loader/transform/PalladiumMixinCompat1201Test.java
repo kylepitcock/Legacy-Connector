@@ -204,7 +204,7 @@ class PalladiumMixinCompat1201Test implements Opcodes {
         assertTrue(hasCall(handler, INVOKEVIRTUAL, PLAYER_SCORE_ENTRY,
                 "display", "()Lnet/minecraft/network/chat/Component;"));
         assertTrue(hasCall(handler, INVOKEVIRTUAL, PLAYER_SCORE_ENTRY,
-                "numberFormatOverride", "()Lnet/minecraft/world/scores/NumberFormat;"));
+                "numberFormatOverride", "()Lnet/minecraft/network/chat/numbers/NumberFormat;"));
         assertTrue(hasCall(handler, INVOKESTATIC, "java/util/Optional",
                 "ofNullable", "(Ljava/lang/Object;)Ljava/util/Optional;"));
         assertTrue(hasCall(handler, INVOKESPECIAL, SET_SCORE_PACKET, "<init>",

@@ -37,7 +37,7 @@ final class PalladiumMixinCompat1201 implements Opcodes {
     private static final String PLAYER_SCORE_ENTRY = "net/minecraft/world/scores/PlayerScoreEntry";
     // Mc1201Tables maps the removed 1.20.1 Score class to this stand-in before Palladium mixin adaptation runs.
     private static final String LEGACY_SCORE = "org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyScore";
-    private static final String NUMBER_FORMAT = "net/minecraft/world/scores/NumberFormat";
+    private static final String NUMBER_FORMAT = "net/minecraft/network/chat/numbers/NumberFormat";
     private static final String COMPONENT = "net/minecraft/network/chat/Component";
     private static final String SET_SCORE_PACKET = "net/minecraft/network/protocol/game/ClientboundSetScorePacket";
     private static final String SET_DISPLAY_PACKET = "net/minecraft/network/protocol/game/ClientboundSetDisplayObjectivePacket";
