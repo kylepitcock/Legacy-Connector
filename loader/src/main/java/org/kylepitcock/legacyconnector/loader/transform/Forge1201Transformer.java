@@ -546,7 +546,7 @@ public final class Forge1201Transformer {
         }
         int alienEvoResourceChanges = PalladiumResourceCompat1201.apply(outResources);
         if (alienEvoResourceChanges > 0) {
-            result.notes.add("AlienEvo scripts normalize persistent NBT integers for Palladium IntegerProperty writes and reject empty armor ItemStacks: "
+            result.notes.add("AlienEvo scripts normalize persistent NBT integers, guard empty armor ItemStacks, and compare Omnitrix UI tab IDs as strings: "
                     + alienEvoResourceChanges + " resource script(s)");
         }
         if (PalladiumKubeJS1201.addPluginDiscoveryResource(outResources, outClasses.keySet())) {
