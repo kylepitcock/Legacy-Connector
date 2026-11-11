@@ -23,7 +23,23 @@ public final class PlayerViewB173 extends legacyconnector.vb1_7_3.net.minecraft.
     private final ItemStack[] before = new ItemStack[36];
     private final ItemStack[] beforeArmor = new ItemStack[4];
     private int beforeHealth,beforeAir,beforeFire;
-    private float beforeFallDistance;
+    private float beforeFallDistance,beforeStepHeight;
+    /** Beta's player step height; original code's changes apply as one modifier over the native player's own step height. */
+    static final float BETA_STEP_HEIGHT=.5F;
+    static final net.minecraft.resources.ResourceLocation STEP_MODIFIER=net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("legacyconnector","b173_step_height");
+    static float stepHeight(Player player){
+        var attribute=player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.STEP_HEIGHT);
+        var modifier=attribute==null?null:attribute.getModifier(STEP_MODIFIER);
+        return BETA_STEP_HEIGHT+(modifier==null?0F:(float)modifier.amount());
+    }
+    static void stepHeight(Player player,float value){
+        var attribute=player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.STEP_HEIGHT);
+        if(attribute==null||!Float.isFinite(value))return;
+        attribute.removeModifier(STEP_MODIFIER);
+        double delta=Math.max(0F,value)-BETA_STEP_HEIGHT;
+        if(delta!=0)attribute.addTransientModifier(new net.minecraft.world.entity.ai.attributes.AttributeModifier(STEP_MODIFIER,delta,
+                net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE));
+    }
     private boolean beforeSleeping;
     private EntityViewsB173.Placement beforePlacement;
 
@@ -50,7 +66,14 @@ public final class PlayerViewB173 extends legacyconnector.vb1_7_3.net.minecraft.
     }
 
     public static void release(Player player){synchronized(VIEWS){VIEWS.remove(player);}}
+    /** Client owner thread only. Server identities and live, untracked client players remain cached. */
+    public static void releaseDepartedClientViews(net.minecraft.world.level.Level currentLevel){
+        synchronized(VIEWS){VIEWS.keySet().removeIf(player->player.level().isClientSide
+                &&(player.isRemoved()||player.level()!=currentLevel));}
+    }
     public static PlayerViewB173 peek(Player player){return VIEWS.get(player);}
+    /** The existing original player object of a native player that died or left reads as dead, as Beta's did. */
+    static void markDead(Player player){var view=VIEWS.get(player);if(view!=null)view.dead=true;}
     /** Refresh unchanged health without syncing over pending original inventory/placement writes. */
     public void mcc$prepareNativeHeal(){if(health==beforeHealth)beforeHealth=health=Math.round(player.getHealth());}
     public static void clear(){synchronized(VIEWS){VIEWS.clear();}}
@@ -58,6 +81,7 @@ public final class PlayerViewB173 extends legacyconnector.vb1_7_3.net.minecraft.
     /** Client render snapshot only; gameplay callbacks keep their existing placement/write-back boundary. */
     public void mcc$prepareRenderView(){
         prevX=player.xo;prevY=player.yo+standingEyeHeight;prevZ=player.zo;
+        lastTickX=player.xo;lastTickY=player.yo+standingEyeHeight;lastTickZ=player.zo;
         prevYaw=player.yRotO;prevPitch=player.xRotO;
         bodyYaw=player.yBodyRot;lastBodyYaw=player.yBodyRotO;
         lastWalkAnimationSpeed=player.walkAnimation.speed(0);walkAnimationSpeed=player.walkAnimation.speed(1);
@@ -78,9 +102,12 @@ public final class PlayerViewB173 extends legacyconnector.vb1_7_3.net.minecraft.
         y = player.getY() + standingEyeHeight;
         prevY = y;
         prevZ = z = player.getZ();
+        // Beta's lastTick position is the previous tick's; original code pins players to it in menu mode.
+        lastTickX=player.xo;lastTickY=player.yo+standingEyeHeight;lastTickZ=player.zo;
         yaw = prevYaw = player.getYRot();
         pitch = prevPitch = player.getXRot();
         onGround = player.onGround();
+        EntityViewsB173.syncCollisions(this,player);
         handSwinging=player.swinging;
         mcc$environment(PlayerAbilitiesB173.nativeWaterBaseline(player));
         var motion=player.getDeltaMovement();velocityX=motion.x;velocityY=motion.y;velocityZ=motion.z;
@@ -92,6 +119,7 @@ public final class PlayerViewB173 extends legacyconnector.vb1_7_3.net.minecraft.
         health = Math.round(player.getHealth());
         beforeHealth=health;beforeAir=air=player.getAirSupply();beforeFire=fireTicks=player.getRemainingFireTicks();
         beforeFallDistance=fallDistance=player.fallDistance;
+        beforeStepHeight=stepHeight=stepHeight(player);
         name = player.getGameProfile().getName();
         dead = !player.isAlive();
         inventory.selectedSlot = player.getInventory().selected;
@@ -105,6 +133,7 @@ public final class PlayerViewB173 extends legacyconnector.vb1_7_3.net.minecraft.
             inventory.armor[i]=stack;beforeArmor[i]=stack==null?null:stack.copy();
         }
         beforePlacement=EntityViewsB173.Placement.of(this);
+        EntityViewsB173.rebaseMotion(player,this);
     }
 
     /** A native world transfer keeps the original player and inventory; refresh only its placement boundary. */
@@ -124,6 +153,7 @@ public final class PlayerViewB173 extends legacyconnector.vb1_7_3.net.minecraft.
         if(air!=beforeAir){player.setAirSupply(air);beforeAir=air;}
         if(fireTicks!=beforeFire){player.setRemainingFireTicks(fireTicks);beforeFire=fireTicks;}
         if(fallDistance!=beforeFallDistance){player.fallDistance=fallDistance;beforeFallDistance=fallDistance;}
+        if(stepHeight!=beforeStepHeight){stepHeight(player,stepHeight);beforeStepHeight=stepHeight;}
         for (int i = 0; i < 36; i++) {
             ItemStack now = inventory.main[i];
             ItemStack was = before[i];

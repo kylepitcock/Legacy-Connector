@@ -50,13 +50,20 @@ public class BlockRenderManager {
             }return true;
         }finally{b.minX=saved[0];b.minY=saved[1];b.minZ=saved[2];b.maxX=saved[3];b.maxY=saved[4];b.maxZ=saved[5];}
     }
+    private static final int[][] NEIGHBOURS={{0,-1,0},{0,1,0},{0,0,-1},{0,0,1},{-1,0,0},{1,0,0}};
+    /** Beta renderStandardBlock: each face is drawn only when the block's own isSideVisible accepts the neighbour position. */
     public boolean renderBlock(Block b,int x,int y,int z){
-        for(int side=0;side<6;side++)face(b,x,y,z,side,textureOverride>=0?textureOverride:b.getTextureId(blockView,x,y,z,side));return true;
+        for(int side=0;side<6;side++){
+            var d=NEIGHBOURS[side];
+            if(blockView!=null&&!renderAllSides&&!b.isSideVisible(blockView,x+d[0],y+d[1],z+d[2],side))continue;
+            face(b,x,y,z,side,textureOverride>=0?textureOverride:b.getTextureId(blockView,x,y,z,side));
+        }
+        return true;
     }
     public boolean renderFlat(Block b,int x,int y,int z,float r,float g,float blue){Tessellator.INSTANCE.color(r,g,blue);return renderBlock(b,x,y,z);}
     public boolean renderSmooth(Block b,int x,int y,int z,float r,float g,float blue){return renderFlat(b,x,y,z,r,g,blue);}
     public void renderWithTexture(Block b,int x,int y,int z,int tex){int old=textureOverride;try{textureOverride=tex;renderBlock(b,x,y,z);}finally{textureOverride=old;}}
-    public void renderWithoutCulling(Block b,int x,int y,int z){renderBlock(b,x,y,z);}
+    public void renderWithoutCulling(Block b,int x,int y,int z){boolean old=renderAllSides;renderAllSides=true;try{renderBlock(b,x,y,z);}finally{renderAllSides=old;}}
     public void renderBottomFace(Block b,double x,double y,double z,int tex){face(b,x,y,z,0,tex);}
     public void renderTopFace(Block b,double x,double y,double z,int tex){face(b,x,y,z,1,tex);}
     public void renderEastFace(Block b,double x,double y,double z,int tex){face(b,x,y,z,2,tex);}

@@ -7,6 +7,8 @@ import legacyconnector.vb1_7_3.net.minecraft.client.render.item.HeldItemRenderer
 public class EntityRenderDispatcher {
     public static final EntityRenderDispatcher INSTANCE = new EntityRenderDispatcher();
     public LivingEntity cameraEntity;
+    /** The world of the entity being drawn; renderers read it for light (original RenderManager.worldObj). */
+    public legacyconnector.vb1_7_3.net.minecraft.world.World world;
     public float yaw,pitch;
     public HeldItemRenderer heldItemRenderer=new HeldItemRenderer();
     public legacyconnector.vb1_7_3.net.minecraft.client.texture.TextureManager textureManager=legacyconnector.vb1_7_3.net.minecraft.client.texture.TextureManager.mcc$instance();

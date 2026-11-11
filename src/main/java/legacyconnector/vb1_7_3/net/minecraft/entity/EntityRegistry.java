@@ -11,6 +11,9 @@ public final class EntityRegistry {
             Map.entry("Item",ItemEntity.class),
             Map.entry("Painting",legacyconnector.vb1_7_3.net.minecraft.entity.decoration.painting.PaintingEntity.class),
             Map.entry("Creeper",legacyconnector.vb1_7_3.net.minecraft.entity.mob.CreeperEntity.class),
+            Map.entry("Zombie",legacyconnector.vb1_7_3.net.minecraft.entity.mob.ZombieEntity.class),
+            Map.entry("Skeleton",legacyconnector.vb1_7_3.net.minecraft.entity.mob.SkeletonEntity.class),
+            Map.entry("PigZombie",legacyconnector.vb1_7_3.net.minecraft.entity.mob.PigZombieEntity.class),
             Map.entry("Pig",legacyconnector.vb1_7_3.net.minecraft.entity.passive.PigEntity.class),
             Map.entry("Sheep",legacyconnector.vb1_7_3.net.minecraft.entity.passive.SheepEntity.class),
             Map.entry("Cow",legacyconnector.vb1_7_3.net.minecraft.entity.passive.CowEntity.class),
@@ -32,5 +35,13 @@ public final class EntityRegistry {
     };
     /** Original obfuscated and MCP field aliases used by ModLoader.getPrivateValue callers. */
     public static final Map<String,Class<?>> idToClass=stringToClassMapping,a=stringToClassMapping,field_1611_a=stringToClassMapping;
+    /** Original class-to-name query: exact registered class, original case, null for unknown classes. */
+    public static String getId(Entity entity){
+        Class<?> type=entity.getClass();
+        var registrations=ContentB173.entities();
+        for(int i=registrations.size()-1;i>=0;i--){var registration=registrations.get(i);if(registration.type()==type)return registration.name();}
+        for(var entry:VANILLA.entrySet())if(entry.getValue()==type)return entry.getKey();
+        return org.kylepitcock.legacyconnector.vb1_7_3.NativeEntityNamesB173.ordinary(entity);
+    }
     private EntityRegistry(){}
 }

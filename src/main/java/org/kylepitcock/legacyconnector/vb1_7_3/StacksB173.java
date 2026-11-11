@@ -13,6 +13,13 @@ public final class StacksB173 {
 
     public static ItemStack toModern(legacyconnector.vb1_7_3.net.minecraft.item.ItemStack legacy) {
         if (legacy == null) return ItemStack.EMPTY;
+        if (NativeStackItemB173.is(legacy.itemId)) {
+            ItemStack carried = legacy.mcc$nativeSnapshot();
+            ItemStack plain = toModern(legacy.itemId, legacy.count, legacy.getDamage());
+            // The snapshot is authoritative unless an original callback re-pointed the stack at another modern item.
+            if (carried == null || plain.isEmpty() || carried.getItem() != plain.getItem()) return plain;
+            return carried.copyWithCount(Math.min(legacy.count, 99));
+        }
         ItemStack result = toModern(legacy.itemId, legacy.count, legacy.getDamage());
         ItemStack snapshot = legacy.mcc$nativeSnapshot();
         if (result.isEmpty() || snapshot == null) return result;
@@ -77,7 +84,10 @@ public final class StacksB173 {
             ItemStack modern = ItemStack.parseOptional(registries(), saved.getCompound("stack"));
             if (modern.isEmpty()) return;
             var origin = toLegacy(modern);
-            if (origin != null && origin.itemId == stack.itemId) stack.mcc$nativeSnapshot(modern);
+            if (origin == null || origin.itemId != stack.itemId) return;
+            // Registry ids may differ between sessions; the saved modern identity decides the native stack's subtype.
+            if (NativeStackItemB173.is(stack.itemId)) stack.setDamage(origin.getDamage());
+            stack.mcc$nativeSnapshot(modern);
         } catch (java.io.IOException error) { throw new IllegalStateException("Cannot read native stack components", error); }
     }
 
@@ -86,6 +96,10 @@ public final class StacksB173 {
      * with metadata places that metadata ({@code block_state} component); a damageable item keeps its damage.
      */
     public static ItemStack toModern(int id, int count, int damage) {
+        if (NativeStackItemB173.is(id)) {
+            var item = net.minecraft.core.registries.BuiltInRegistries.ITEM.byId(damage);
+            return count <= 0 || item == net.minecraft.world.item.Items.AIR ? ItemStack.EMPTY : new ItemStack(item, Math.min(count, 99));
+        }
         net.minecraft.world.item.Item item = modernItem(id, damage);
         if (item == null || count <= 0) return ItemStack.EMPTY;
         ItemStack stack = new ItemStack(item, Math.min(count, 99));
@@ -111,16 +125,23 @@ public final class StacksB173 {
     private static volatile java.util.Map<net.minecraft.world.item.Item, int[]> reverse;
 
     /** Old item-entity queries require a real nonempty Beta stack, never a null payload. */
-    public static boolean canRepresent(ItemStack modern){return modern!=null&&!modern.isEmpty()&&reverse().containsKey(modern.getItem());}
+    public static boolean canRepresent(ItemStack modern){return modern!=null&&!modern.isEmpty()&&(reverse().containsKey(modern.getItem())||NativeStackItemB173.get()!=null);}
 
     /**
      * The legacy stack of a modern one: a mod's item or block item (metadata from its {@code block_state}), or the b1.7.3 id of a vanilla
-     * item (metadata variants such as wool and dye colours). Null for an empty stack or an item b1.7.3 did not have.
+     * item (metadata variants such as wool and dye colours). Null only for an empty stack; an item b1.7.3 did not have is carried by {@link NativeStackItemB173}.
      */
     public static legacyconnector.vb1_7_3.net.minecraft.item.ItemStack toLegacy(ItemStack modern) {
         if (modern == null || modern.isEmpty()) return null;
         int[] hit = reverse().get(modern.getItem());
-        if (hit == null) return null;
+        if (hit == null) {
+            // Items Beta never had keep their exact modern stack on a reserved Beta item instead of being lost.
+            if (NativeStackItemB173.get() == null) return null;
+            var carried = new legacyconnector.vb1_7_3.net.minecraft.item.ItemStack(NativeStackItemB173.ID, modern.getCount(),
+                    net.minecraft.core.registries.BuiltInRegistries.ITEM.getId(modern.getItem()));
+            carried.mcc$nativeSnapshot(modern);
+            return carried;
+        }
         int damage = hit[1];
         var state = modern.get(DataComponents.BLOCK_STATE);
         if (state != null && modern.getItem() instanceof net.minecraft.world.item.BlockItem bi && bi.getBlock() instanceof LegacyB173Block) {
@@ -179,6 +200,7 @@ public final class StacksB173 {
     /** The modern item of a legacy id with that damage/metadata, or null (unknown id, or a mod item not registered). */
     public static net.minecraft.world.item.Item modernItem(int id, int damage) {
         if (id < 0 || id >= Item.ITEMS.length) return null;
+        if (NativeStackItemB173.is(id)) { var item = net.minecraft.core.registries.BuiltInRegistries.ITEM.byId(damage); return item == net.minecraft.world.item.Items.AIR ? null : item; }
         Item legacy = Item.ITEMS[id];
         if (legacy != null && legacy.mcc$owner != null) return legacy.mcc$modern;
         if (id < 256) {

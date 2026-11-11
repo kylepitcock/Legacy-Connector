@@ -37,6 +37,12 @@ public final class ClientGuiB173 implements GuiDrawB173.Sink {
     private record BackgroundBounds(int x,int y,int width,int height) {}
     private static BackgroundBounds backgroundBounds;
     private static Background background;
+    /** Immediate-mode state of the legacy GUI being drawn: GL_TEXTURE_2D, the matrix mode, the orthographic mapping and the base pose. */
+    private static boolean texture2d = true, overlay;
+    private static java.util.Set<String> overlayStandard = java.util.Set.of();
+    private static int matrixMode = 5888;
+    private static double orthoSx = 1, orthoSy = 1, orthoTx, orthoTy;
+    private static org.joml.Matrix4f basePose;
 
     private static final class Texture {
         final int id;
@@ -56,6 +62,19 @@ public final class ClientGuiB173 implements GuiDrawB173.Sink {
         graphics = g;
         red = green = blue = alpha = 1.0F;
         backgroundBounds=null;background=null;
+        texture2d = true;matrixMode = 5888;orthoSx = orthoSy = 1;orthoTx = orthoTy = 0;overlay = false;overlayStandard = java.util.Set.of();
+        basePose = new org.joml.Matrix4f(g.pose().last().pose());
+    }
+
+    /**
+     * Draws the additions of a legacy GUI over a finished native screen (a mod's loading-screen text over the native loading screen): the
+     * legacy drawing's own backdrop and bars (quads) are skipped, and so are the standard {@code standardText} strings the native screen
+     * already shows. The legacy GL matrix's depth translation is ignored, so text lands at the screen's own depth.
+     */
+    public static void beginOverlay(GuiGraphics g, java.util.Set<String> standardText) {
+        begin(g);
+        overlay = true;
+        overlayStandard = standardText;
     }
 
     /** Observe the original full background blit so attached native controls share its artwork. */
@@ -100,10 +119,11 @@ public final class ClientGuiB173 implements GuiDrawB173.Sink {
     @Override
     public void text(String text, int x, int y, int color, boolean shadow) {
         GuiGraphics g = graphics;
-        if (g == null) return;
+        if (g == null || overlay && overlayStandard.contains(text)) return;
         boolean tinted = red != 1.0F || green != 1.0F || blue != 1.0F || alpha != 1.0F;
         if (tinted) g.setColor(1.0F, 1.0F, 1.0F, 1.0F);
-        g.drawString(Minecraft.getInstance().font, text, x, y, color, shadow);
+        // An orthographic mapping a legacy GUI set (its own scaled coordinates) applies to text positions as it does to quads.
+        g.drawString(Minecraft.getInstance().font, text, (int) Math.round(x * orthoSx + orthoTx), (int) Math.round(y * orthoSy + orthoTy), color, shadow);
         if (tinted) {
             g.flush();
             g.setColor(red, green, blue, alpha);
@@ -112,7 +132,8 @@ public final class ClientGuiB173 implements GuiDrawB173.Sink {
 
     @Override
     public int width(String text) {
-        return Minecraft.getInstance().font.width(text);
+        // In the legacy GUI's own scaled units when it set an orthographic mapping, so its centring arithmetic still centres.
+        return (int) Math.round(Minecraft.getInstance().font.width(text) / orthoSx);
     }
 
     @Override
@@ -161,7 +182,67 @@ public final class ClientGuiB173 implements GuiDrawB173.Sink {
     @Override
     public void translate(float x, float y, float z) {
         GuiGraphics g = graphics;
-        if (g != null) g.pose().translate(x, y, z);
+        if (g != null) g.pose().translate(x, y, overlay ? 0 : z);
+    }
+
+    @Override public boolean drawing() {return graphics != null;}
+    @Override public void texture2d(boolean enabled) {texture2d = enabled;}
+    @Override public void matrixMode(int mode) {matrixMode = mode;}
+
+    @Override public void loadIdentity() {
+        GuiGraphics g = graphics;
+        if (g == null) return;
+        if (matrixMode == 5889) {orthoSx = orthoSy = 1;orthoTx = orthoTy = 0;}
+        else if (matrixMode == 5888 && basePose != null) g.pose().last().pose().set(basePose);
+    }
+
+    /** The legacy coordinates (left to right, top to bottom) span the whole screen. */
+    @Override public void ortho(double left, double right, double bottom, double top) {
+        GuiGraphics g = graphics;
+        if (g == null || matrixMode != 5889) return;
+        double width = right - left, height = bottom - top;
+        if (width == 0 || height == 0) return;
+        orthoSx = g.guiWidth() / width;orthoSy = g.guiHeight() / height;
+        orthoTx = -left * orthoSx;orthoTy = -top * orthoSy;
+    }
+
+    /** One Tessellator quad: transformed by the current pose and orthographic mapping, textured with the bound image unless GL_TEXTURE_2D is off. */
+    @Override public void quad(double[] x, double[] y, double[] u, double[] v, int[] argb) {
+        GuiGraphics g = graphics;
+        if (g == null || x.length != 4 || overlay) return;
+        var pose = g.pose().last().pose();
+        float[] px = new float[4], py = new float[4];
+        var point = new org.joml.Vector3f();
+        for (int i = 0; i < 4; i++) {
+            pose.transformPosition((float) x[i], (float) y[i], 0, point);
+            px[i] = (float) (point.x * orthoSx + orthoTx);py[i] = (float) (point.y * orthoSy + orthoTy);
+        }
+        ResourceLocation rl = texture2d && bound != null ? upload(bound) : null;
+        g.flush();
+        com.mojang.blaze3d.systems.RenderSystem.enableBlend();
+        com.mojang.blaze3d.systems.RenderSystem.defaultBlendFunc();
+        com.mojang.blaze3d.systems.RenderSystem.disableCull();
+        com.mojang.blaze3d.vertex.BufferBuilder buffer;
+        if (rl != null) {
+            com.mojang.blaze3d.systems.RenderSystem.setShader(net.minecraft.client.renderer.GameRenderer::getPositionTexColorShader);
+            com.mojang.blaze3d.systems.RenderSystem.setShaderTexture(0, rl);
+            buffer = com.mojang.blaze3d.vertex.Tesselator.getInstance().begin(com.mojang.blaze3d.vertex.VertexFormat.Mode.QUADS,
+                    com.mojang.blaze3d.vertex.DefaultVertexFormat.POSITION_TEX_COLOR);
+        } else {
+            com.mojang.blaze3d.systems.RenderSystem.setShader(net.minecraft.client.renderer.GameRenderer::getPositionColorShader);
+            buffer = com.mojang.blaze3d.vertex.Tesselator.getInstance().begin(com.mojang.blaze3d.vertex.VertexFormat.Mode.QUADS,
+                    com.mojang.blaze3d.vertex.DefaultVertexFormat.POSITION_COLOR);
+        }
+        for (int i = 0; i < 4; i++) {
+            int c = argb[i];
+            int a = Math.round(((c >>> 24) & 255) * alpha), r = Math.round(((c >> 16) & 255) * red);
+            int gr = Math.round(((c >> 8) & 255) * green), b = Math.round((c & 255) * blue);
+            int tinted = (a << 24) | (r << 16) | (gr << 8) | b;
+            var vertex = buffer.addVertex(px[i], py[i], 0);
+            if (rl != null) vertex.setUv((float) u[i], (float) v[i]);
+            vertex.setColor(tinted);
+        }
+        com.mojang.blaze3d.vertex.BufferUploader.drawWithShader(buffer.buildOrThrow());
     }
 
     @Override
@@ -284,6 +365,7 @@ public final class ClientGuiB173 implements GuiDrawB173.Sink {
             case "/gui/trap.png" -> vanilla("textures/gui/container/dispenser.png");
             case "/gui/inventory.png" -> vanilla("textures/gui/container/inventory.png");
             case "/font/default.png" -> vanilla("textures/font/ascii.png");
+            case "/gui/background.png" -> vanilla("textures/block/dirt.png");
             default -> null;
         };
     }

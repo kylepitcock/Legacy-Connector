@@ -17,6 +17,24 @@ import org.kylepitcock.legacyconnector.vb1_7_3.client.AudioStreamsB173;
 class AudioB173Test {
     @TempDir Path temp;
 
+    @Test void betaSlimeFallbacksResolveRegisteredNativeEventsWithoutRenamingCatalogEntries()throws Exception {
+        NativeStackComponentsB173Test.bootstrap();
+        var squish=org.kylepitcock.legacyconnector.v1_7_10.bridge.SoundBridge.sound(AudioB173.fallbackSoundName("mob.slime"));
+        var attack=org.kylepitcock.legacyconnector.v1_7_10.bridge.SoundBridge.sound(AudioB173.fallbackSoundName("mob.slimeattack"));
+        assertEquals(net.minecraft.sounds.SoundEvents.SLIME_SQUISH.getLocation(),squish.getLocation());
+        assertEquals(net.minecraft.sounds.SoundEvents.SLIME_ATTACK.getLocation(),attack.getLocation());
+        assertSame(net.minecraft.sounds.SoundEvents.SLIME_SQUISH,net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.get(squish.getLocation()));
+        assertSame(net.minecraft.sounds.SoundEvents.SLIME_ATTACK,net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.get(attack.getLocation()));
+        assertTrue(net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.containsKey(squish.getLocation()));
+        assertTrue(net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.containsKey(attack.getLocation()));
+        assertEquals("unknown.sound",AudioB173.fallbackSoundName("unknown.sound"));
+        assertEquals("custom:mob.slime",AudioB173.fallbackSoundName("custom:mob.slime"));
+        var source=new Source(Kind.SOUND,"mob/slime1.ogg","mob.slime",temp.resolve("override.ogg"));
+        var catalog=new Catalog(List.of(source));
+        assertEquals(List.of(source),catalog.variants(Kind.SOUND,"mob.slime"));
+        assertTrue(catalog.variants(Kind.SOUND,"entity.slime.squish").isEmpty());
+    }
+
     @Test void betaNamesAndStreamingDigits() throws Exception {
         assertEquals("mob.bird.call",SoundEntry.key("mob/bird/call12.ogg",true));
         assertEquals("record13",SoundEntry.key("record13.ogg",false));

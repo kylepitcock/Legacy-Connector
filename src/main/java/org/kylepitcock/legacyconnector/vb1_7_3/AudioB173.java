@@ -41,6 +41,12 @@ public final class AudioB173 implements GeneratedPack.Contributor {
     });}
     public static void installClient(Client value){client=value;}
     public static Catalog catalog(){return catalog;}
+    /** Beta vanilla names, consulted only after the AudioMod catalog has no variants. */
+    public static String fallbackSoundName(String name){return switch(name){
+        case "mob.slime"->"entity.slime.squish";
+        case "mob.slimeattack"->"entity.slime.attack";
+        default->name;
+    };}
     public static void local(Request request){Client value=client;if(value!=null)value.play(request);}
     public static void stop(){Client value=client;if(value!=null)value.stop();}
     public static void tick(){Client value=client;if(value!=null)value.tick();}

@@ -56,6 +56,12 @@ public final class PlayerApiLifecycleB173 {
                 Data data=player.getData(DATA);run(data,"login",()->{var view=ready(data);view.writeBack();PlayerPresentationNetworkB173.guard("lifecycle",()->presentationSink.accept(player,view));snapshotSink.accept(player);});
             }
         });
+        // Original code may keep a player reference (a boss target); that player object reads as dead once the native player died or left.
+        bus.addListener(net.neoforged.bus.api.EventPriority.LOWEST,false,(net.neoforged.neoforge.event.entity.living.LivingDeathEvent event)->{
+            if(event.getEntity() instanceof ServerPlayer player){PlayerViewB173.markDead(player);PlayerDeathGraceB173.hold(player);}
+        });
+        bus.addListener(net.neoforged.bus.api.EventPriority.HIGHEST,(net.neoforged.neoforge.event.entity.player.PlayerEvent.Clone event)->PlayerViewB173.markDead(event.getOriginal()));
+        bus.addListener(net.neoforged.bus.api.EventPriority.HIGHEST,(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent event)->PlayerViewB173.markDead(event.getEntity()));
         bus.addListener(net.neoforged.bus.api.EventPriority.LOWEST,false,(net.neoforged.neoforge.event.entity.living.LivingDeathEvent event)->{
             if(event.getEntity() instanceof ServerPlayer player&&PlayerApiB173.hasRegistered()){
                 Data data=player.getData(DATA);run(data,"death",()->{PlayerViewB173 view=ready(data);try{PlayerApiB173.death(view);}finally{data.dead=true;view.writeBack();}PlayerPresentationNetworkB173.guard("lifecycle",()->presentationSink.accept(player,view));});

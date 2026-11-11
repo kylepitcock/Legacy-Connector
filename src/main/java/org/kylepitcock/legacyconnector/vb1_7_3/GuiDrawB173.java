@@ -42,6 +42,18 @@ public final class GuiDrawB173 {
 
         /** A button's click sound. */
         void click();
+
+        /** True while a legacy GUI is being drawn into a screen. */
+        default boolean drawing() {return false;}
+        /** One immediate-mode quad (Tessellator) in the current matrix and texture; colours are ARGB per vertex. */
+        default void quad(double[] x,double[] y,double[] u,double[] v,int[] argb) {}
+        /** glEnable/glDisable(GL_TEXTURE_2D). */
+        default void texture2d(boolean enabled) {}
+        /** glMatrixMode: 5888 modelview, 5889 projection. */
+        default void matrixMode(int mode) {}
+        default void loadIdentity() {}
+        /** glOrtho: the legacy coordinates that span the screen. */
+        default void ortho(double left,double right,double bottom,double top) {}
     }
 
     private static volatile Sink sink;
@@ -119,6 +131,13 @@ public final class GuiDrawB173 {
         Sink s = sink();
         if (s != null) s.scale(x, y, z);
     }
+
+    public static boolean drawing() {Sink s=sink();return s!=null&&s.drawing();}
+    public static void quad(double[] x,double[] y,double[] u,double[] v,int[] argb) {Sink s=sink();if(s!=null)s.quad(x,y,u,v,argb);}
+    public static void texture2d(boolean enabled) {Sink s=sink();if(s!=null)s.texture2d(enabled);}
+    public static void matrixMode(int mode) {Sink s=sink();if(s!=null)s.matrixMode(mode);}
+    public static void loadIdentity() {Sink s=sink();if(s!=null)s.loadIdentity();}
+    public static void ortho(double left,double right,double bottom,double top) {Sink s=sink();if(s!=null)s.ortho(left,right,bottom,top);}
 
     public static void click() {
         Sink s = sink();

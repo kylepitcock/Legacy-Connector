@@ -233,7 +233,7 @@ public final class AssetsB173 implements GeneratedPack.Contributor {
         Map<String, String> modelByJson = new LinkedHashMap<>();
         String[] metaModels = new String[16];
         Map<Integer,String> palette=new java.util.TreeMap<>();
-        if(usesWorldTextures(block) || BlockRenderB173.hasRenderer(renderType)) {
+        if(usesWorldTextures(block) || BlockRenderB173.capturesWorld(block)) {
             // Include faces only encountered beside neighbours or with a tile entity, before atlas stitching.
             var indices=new java.util.TreeSet<Integer>();for(int i=0;i<256;i++)indices.add(i);
             for(var o:ContentB173.textureOverrides())if(o.sheet().equals(sheet))indices.add(o.index());
@@ -503,7 +503,9 @@ public final class AssetsB173 implements GeneratedPack.Contributor {
         }
         if (sheet.equals(TERRAIN)) {
             String vanilla = VANILLA_TERRAIN.get(index);
-            return vanilla == null ? null : "minecraft:block/" + vanilla;
+            if (vanilla != null) return "minecraft:block/" + vanilla;
+            var chest = ChestSpritesB173.sprite(index);
+            return chest == null ? null : write(null, "vanilla_chest_" + index, chest);
         }
         if (sheet.equals(ITEMS)) {
             String vanilla = VANILLA_ITEMS.get(index);

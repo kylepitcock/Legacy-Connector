@@ -1436,3 +1436,14 @@ Real client check (superflat test area, performance mods on, mobs summoned and t
 Elemental Creepers and Mo' Creatures animals render with their own models and textures. Follow-up isolated More Creeps lineups
 and exact archive-byte checks found the expected textures, including intentionally bright BubbleScum artwork. The Portal Gun
 audio self-test skips when the mod's external sound files are not installed.
+
+
+## Combat targeting and tracked presentation
+
+Beta combat admission uses native Creative/Spectator eligibility at proven original AI sites. A bounded, per-concrete-class bytecode analysis identifies offensive player queries, retained combat targets, projectile aiming and autonomous capture. Player inventory extraction additionally requires a queried player's stack to be retained by the actor and removed from that player's inventory. Ambiguous ownership and compound count expressions remain unchanged with diagnostics. Manual interactions and neutral owner-following queries retain their original behavior; there is no mod-name targeting list. Unusual custom AI can require additional generic coverage, so this is not a guarantee for every original mod.
+
+Native checks use unchanged Aether 1.02, Mo' Creatures 2.12.2 and More Creeps 2.12 in isolated worlds. They cover genuine Survival acquisition, Creative target clearing, Spectator exclusion, Survival reacquisition and choosing a farther Survival peer over a nearer Creative player. More Creeps' separate item-theft query is included; native test inventories remain unchanged during Creative checks. Manual Aerbunny carrying and release remain usable in Creative. A native Zombie control retains ordinary behavior.
+
+Declared Beta DataTracker slots now accompany the existing server-owned presentation snapshot, with bounded schema/type validation before applying changes. Real Sheepuff dye and shearing interactions synchronize tracker flags to two clients and visibly change fleece color and geometry without running original client AI. The shared superclass block-harvest baseline supplies original virtual drops and one mining statistic; real Skyroot and Golden Oak leaf harvesting and shears verify those paths. Original GL current normals and explicit tessellator normals are preserved. EntityRegistry reverse names and typed native undead views support original item predicates without changing native mob AI.
+
+Vanilla Beta slime sound aliases resolve through the Beta audio fallback after custom AudioMod variants, preserving custom sound priority. Client player-view caches release removed players and departed levels while retaining live, untracked client players and separate server identities. Local original-artifact checks remain opt-in; the normal build does not require installed legacy mods.

@@ -48,7 +48,7 @@ public final class PlayerPresentationClientB173 {
             PENDING.put(identity.subject(),new Pending(tag.copy(),tick+MAX_WAIT));trim(PENDING,MAX_PENDING);
         });
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.client.event.ClientTickEvent.Post event)->PlayerPresentationNetworkB173.guard("client-tick",()->{
-            lifetime();tick++;if(level==null)return;
+            lifetime();PlayerViewB173.releaseDepartedClientViews(Minecraft.getInstance().level);tick++;if(level==null)return;
             var mc=Minecraft.getInstance();
             if(PlayerApiB173.hasRegistered()&&mc.player!=null&&(owner==null||owner.player()!=mc.player)&&ownerHello<OWNER_HELLO_TICKS&&mc.getConnection()!=null
                     &&mc.getConnection().hasChannel(org.kylepitcock.legacyconnector.core.network.LegacyPayload.TYPE)

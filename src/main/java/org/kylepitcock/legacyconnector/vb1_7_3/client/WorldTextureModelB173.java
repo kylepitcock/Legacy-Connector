@@ -31,7 +31,7 @@ final class WorldTextureModelB173 extends BakedModelWrapper<BakedModel> {
     private WorldTextureModelB173(BakedModel base,Block block){super(base);this.block=block;palette=AssetsB173.worldTextures(block);}
     static void wrap(Map<ModelResourceLocation,BakedModel> models){
         for(var block:ContentB173.blocks()){
-            if(!(block.mcc$modern instanceof LegacyB173Block) || (!AssetsB173.usesWorldTextures(block) && !BlockFacesB173.hasCallback(block) && !BlockRenderB173.hasRenderer(block.getRenderType())))continue;
+            if(!(block.mcc$modern instanceof LegacyB173Block) || (!AssetsB173.usesWorldTextures(block) && !BlockFacesB173.hasCallback(block) && !BlockRenderB173.capturesWorld(block)))continue;
             for(var state:block.mcc$modern.getStateDefinition().getPossibleStates()){
                 var key=BlockModelShaper.stateToModelLocation(state);var base=models.get(key);
                 if(base!=null)models.put(key,new WorldTextureModelB173(base,block));
@@ -41,7 +41,7 @@ final class WorldTextureModelB173 extends BakedModelWrapper<BakedModel> {
     @Override public ModelData getModelData(BlockAndTintGetter level,BlockPos pos,BlockState state,ModelData data){
         var result=originalModel.getModelData(level,pos,state,data).derive().with(FACES,AssetsB173.faceTextures(block,level,pos,state));
         if(BlockFacesB173.hasCallback(block))result.with(VISIBLE,BlockFacesB173.visibleFaces(block,new BlockQueryB173(level,pos,state),pos.getX(),pos.getY(),pos.getZ()));
-        if(BlockRenderB173.hasRenderer(block.getRenderType())){
+        if(BlockRenderB173.capturesWorld(block)){
             var captured=BlockRenderB173.capture(block,new BlockQueryB173(level,pos,state),pos.getX(),pos.getY(),pos.getZ());
             var quads=bake(captured,pos);if(!quads.isEmpty())result.with(CUSTOM,quads);
         }

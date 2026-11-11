@@ -9,10 +9,17 @@ public abstract class MonsterEntity extends PathAwareEntity implements Monster {
     public MonsterEntity(World world){super(world);health=20;}
     @Override public void tickMovement(){if(getBrightnessAtEyes(1)>.5F)despawnCounter+=2;super.tickMovement();}
     @Override public void tick(){super.tick();if(world!=null&&!world.isRemote&&world.mcc$level()!=null&&world.mcc$level().getDifficulty()==net.minecraft.world.Difficulty.PEACEFUL)markDead();}
-    @Override protected Entity getTargetInRange(){Entity player=world.getClosestPlayer(this,16);return player!=null&&canSee(player)?player:null;}
-    @Override public boolean damage(Entity attacker,int amount){if(!super.damage(attacker,amount))return false;if(attacker!=passenger&&attacker!=vehicle&&attacker!=this)target=attacker;return true;}
+    @Override protected Entity getTargetInRange(){Entity player=org.kylepitcock.legacyconnector.vb1_7_3.CombatTargetsB173.monsterClosest(this,16);return player!=null&&canSee(player)?player:null;}
+    @Override public boolean damage(Entity attacker,int amount){
+        if(!super.damage(attacker,amount))return false;
+        if(attacker!=passenger&&attacker!=vehicle&&attacker!=this){
+            Entity retaliation=org.kylepitcock.legacyconnector.vb1_7_3.CombatTargetsB173.retaliation(this,attacker);
+            if(attacker==null||retaliation!=null)target=retaliation;
+        }
+        return true;
+    }
     @Override protected void attack(Entity victim,float distance){
-        if(attackCooldown<=0&&distance<2&&victim.boundingBox.maxY>boundingBox.minY&&victim.boundingBox.minY<boundingBox.maxY){attackCooldown=20;victim.damage(this,attackDamage);}
+        if(org.kylepitcock.legacyconnector.vb1_7_3.CombatTargetsB173.allowed(this,victim)&&attackCooldown<=0&&distance<2&&victim.boundingBox.maxY>boundingBox.minY&&victim.boundingBox.minY<boundingBox.maxY){attackCooldown=20;victim.damage(this,attackDamage);}
     }
     @Override protected float getPathfindingFavor(int x,int y,int z){return .5F-world.getLightLevel(x,y,z)/15F;}
     @Override public boolean canSpawn(){

@@ -59,6 +59,7 @@ public final class EntityRenderingB173 {
             var routed=sheets(extras);
             synchronized(info.renderer()){
                 info.renderer().mcc$camera(new legacyconnector.vb1_7_3.net.minecraft.client.render.entity.EntityRenderer.LivingEntityCamera(extras.camera(),extras.yaw(),extras.pitch()));
+                info.renderer().mcc$world(view.world);
                 try(var scope=RendererContextB173.open(path->texture(info.mod(),path),sink,routed)){
                     info.renderer().render(view,0,view.standingEyeHeight,0,Mth.rotLerp(partial,entity.yRotO,entity.getYRot()),partial);
                 }

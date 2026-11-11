@@ -6,6 +6,12 @@ import legacyconnector.vb1_7_3.net.minecraft.world.World;
 
 /** Stable entity identities within callbacks, with weakly held ordinary views between callbacks. */
 public final class EntityViewsB173 {
+    /** Beta's combined collision flag is derived from the two native movement results. */
+    static void syncCollisions(Entity view,net.minecraft.world.entity.Entity modern){
+        view.horizontalCollision=modern.horizontalCollision;
+        view.verticalCollision=modern.verticalCollision;
+        view.hasCollided=view.horizontalCollision||view.verticalCollision;
+    }
     /** Value snapshot: original Box instances are mutable and independent of raw position fields. */
     private record Bounds(double minX,double minY,double minZ,double maxX,double maxY,double maxZ) {
         static Bounds of(Entity view){var b=view.boundingBox;return new Bounds(b.minX,b.minY,b.minZ,b.maxX,b.maxY,b.maxZ);}
@@ -15,6 +21,14 @@ public final class EntityViewsB173 {
             if(maxX!=before.maxX)b.maxX=maxX;if(maxY!=before.maxY)b.maxY=maxY;if(maxZ!=before.maxZ)b.maxZ=maxZ;
         }
     }
+    private static final org.slf4j.Logger LOG=org.slf4j.LoggerFactory.getLogger("LegacyConnector/B173Placement");
+    private static final java.util.concurrent.atomic.AtomicInteger MOVES=new java.util.concurrent.atomic.AtomicInteger();
+    /** The original class and method that last ran, for a log line explaining a move. */
+    private static String origin(){
+        for(var frame:Thread.currentThread().getStackTrace())
+            if(frame.getClassName().startsWith("legacyconnector_")||frame.getClassName().startsWith("legacyconnector.v"))return frame.getClassName()+"."+frame.getMethodName();
+        return "native";
+    }
     record Placement(double x,double y,double z,float yaw,float pitch) {
         static Placement of(Entity view){return new Placement(view.x,view.y,view.z,view.yaw,view.pitch);}
         void apply(Entity view,net.minecraft.world.entity.Entity modern){
@@ -23,8 +37,14 @@ public final class EntityViewsB173 {
             double nx=px?view.x:modern.getX(),ny=py?view.y-view.standingEyeHeight:modern.getY(),nz=pz?view.z:modern.getZ();
             float nextYaw=ry?view.yaw:modern.getYRot(),nextPitch=rp?view.pitch:modern.getXRot();
             if(nx==modern.getX()&&ny==modern.getY()&&nz==modern.getZ()&&nextYaw==modern.getYRot()&&nextPitch==modern.getXRot())return;
-            if(modern instanceof net.minecraft.server.level.ServerPlayer player&&!player.isPassenger()&&player.connection!=null)
+            if(modern instanceof net.minecraft.server.level.ServerPlayer player&&!player.isPassenger()&&player.connection!=null){
+                int count=MOVES.incrementAndGet();
+                if(count<=50)LOG.info("Original code moved {} from ({}, {}, {}) to ({}, {}, {}) in {} [{}] view {} was ({}, {}, {}) now ({}, {}, {})",player.getGameProfile().getName(),
+                        Math.round(modern.getX()*10)/10.0,Math.round(modern.getY()*10)/10.0,Math.round(modern.getZ()*10)/10.0,Math.round(nx*10)/10.0,Math.round(ny*10)/10.0,Math.round(nz*10)/10.0,
+                        player.level().dimension().location(),origin(),view.getClass().getSimpleName()+"@"+System.identityHashCode(view),x,y,z,view.x,view.y,view.z);
+                if(count<=3){var trace=new StringBuilder();int shown=0;for(var frame:Thread.currentThread().getStackTrace()){if(shown++>40)break;trace.append(System.lineSeparator()).append("    at ").append(frame);}LOG.info("Move call stack:{}",trace);}
                 player.connection.teleport(nx,ny,nz,nextYaw,nextPitch);
+            }
             else{modern.setPos(nx,ny,nz);modern.setYRot(nextYaw);modern.setXRot(nextPitch);}
         }
     }
@@ -69,6 +89,15 @@ public final class EntityViewsB173 {
         return null;
     }
     private record Touched(Entity view,double vx,double vy,double vz,boolean ground,Entity target,HostState hostState,NeutralState neutralState,Extra extra,Placement placement,float movementSpeed) {}
+    /** A native refresh of an already touched view is a new baseline, not an edit by original code. */
+    static void rebaseMotion(net.minecraft.world.entity.Entity modern,Entity view){
+        var touched=TOUCHED.get().get(modern);
+        if(touched!=null&&touched.view==view)TOUCHED.get().put(modern,new Touched(view,view.velocityX,view.velocityY,view.velocityZ,view.onGround,
+                touched.target,touched.hostState,touched.neutralState,touched.extra,touched.placement,touched.movementSpeed));
+    }
+    static boolean liveOffThread(net.minecraft.world.entity.Entity modern){
+        return modern.level() instanceof net.minecraft.server.level.ServerLevel level&&modern.isAddedToLevel()&&!level.getServer().isSameThread();
+    }
     private static float movementSpeed(Entity view){return view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity living?living.mcc$movementSpeed():Float.NaN;}
     private static final java.util.Map<net.minecraft.world.entity.Entity,Entity> VIEWS =
             new com.google.common.collect.MapMaker().weakKeys().weakValues().makeMap();
@@ -146,6 +175,7 @@ public final class EntityViewsB173 {
         if(!(modern instanceof net.minecraft.world.entity.player.Player)){
             view.velocityX=modern.getDeltaMovement().x;view.velocityY=modern.getDeltaMovement().y;view.velocityZ=modern.getDeltaMovement().z;
         }
+        syncCollisions(view,modern);
         view.onGround=modern.onGround();view.dead=modern.isRemoved();view.mcc$environment(modern.isInWater());
         view.blocksSameBlockSpawning=modern.blocksBuilding;
         view.yaw=modern.getYRot();view.pitch=modern.getXRot();
@@ -193,6 +223,9 @@ public final class EntityViewsB173 {
         if(modern instanceof net.minecraft.world.entity.item.PrimedTnt)return new legacyconnector.vb1_7_3.net.minecraft.entity.TntEntity(world);
         if(modern instanceof net.minecraft.world.entity.item.FallingBlockEntity)return new legacyconnector.vb1_7_3.net.minecraft.entity.FallingBlockEntity(world);
         if(modern instanceof net.minecraft.world.entity.monster.Creeper)return new legacyconnector.vb1_7_3.net.minecraft.entity.mob.CreeperEntity(world);
+        if(modern instanceof net.minecraft.world.entity.monster.ZombifiedPiglin)return new legacyconnector.vb1_7_3.net.minecraft.entity.mob.PigZombieEntity(world);
+        if(modern instanceof net.minecraft.world.entity.monster.Zombie)return new legacyconnector.vb1_7_3.net.minecraft.entity.mob.ZombieEntity(world);
+        if(modern instanceof net.minecraft.world.entity.monster.AbstractSkeleton)return new legacyconnector.vb1_7_3.net.minecraft.entity.mob.SkeletonEntity(world);
         if(modern instanceof net.minecraft.world.entity.monster.Monster)return new legacyconnector.vb1_7_3.net.minecraft.entity.mob.MonsterEntity(world) {};
         if(modern instanceof net.minecraft.world.entity.animal.Squid)return new legacyconnector.vb1_7_3.net.minecraft.entity.passive.SquidEntity(world);
         if(modern instanceof net.minecraft.world.entity.animal.Sheep)return new legacyconnector.vb1_7_3.net.minecraft.entity.passive.SheepEntity(world);
@@ -273,6 +306,9 @@ public final class EntityViewsB173 {
         try {
             for(var entry:java.util.List.copyOf(touchedViews.entrySet())) {
                 var modern=entry.getKey();var touched=entry.getValue();Entity view=touched.view;
+                // Off-thread original code (chunk generation workers) may read live entities but never writes them back:
+                // native entity writes need the owning server thread, which may itself be waiting for this worker.
+                if(liveOffThread(modern))continue;
                 if(modern instanceof B173EntityHost host) {if(!host.callbackActive())flushHost(host,touched);continue;}
                 if(view instanceof PlayerViewB173 player)player.writeBack();
                 if(view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity living&&modern instanceof net.minecraft.world.entity.LivingEntity nativeLiving)
@@ -294,7 +330,18 @@ public final class EntityViewsB173 {
                     if(view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.projectile.ArrowEntity arrow&&modern instanceof net.minecraft.world.entity.projectile.AbstractArrow nativeArrow&&arrow.owner!=before.owner)nativeArrow.setOwner(arrow.owner==null?null:arrow.owner.mcc$modern);
                 }
                 if(view.velocityX!=touched.vx||view.velocityY!=touched.vy||view.velocityZ!=touched.vz) {
-                    modern.setDeltaMovement(view.velocityX,view.velocityY,view.velocityZ);modern.hurtMarked=true;
+                    if(modern instanceof net.minecraft.world.entity.player.Player nativePlayer){
+                        // A player's own motion is authoritative: apply only components original code actually set to a new value.
+                        var current=nativePlayer.getDeltaMovement();
+                        int changed=PlayerMotionB173.mask(view.velocityX,view.velocityY,view.velocityZ,touched.vx,touched.vy,touched.vz)
+                                &PlayerMotionB173.mask(view.velocityX,view.velocityY,view.velocityZ,current.x,current.y,current.z);
+                        if(changed!=0&&!(nativePlayer instanceof net.minecraft.server.level.ServerPlayer server&&PlayerMotionB173.send(server,changed,view.velocityX,view.velocityY,view.velocityZ))){
+                            nativePlayer.setDeltaMovement(PlayerMotionB173.merge(current,changed,view.velocityX,view.velocityY,view.velocityZ));
+                            if(nativePlayer instanceof net.minecraft.server.level.ServerPlayer)nativePlayer.hurtMarked=true;
+                        }
+                    }else{
+                        modern.setDeltaMovement(view.velocityX,view.velocityY,view.velocityZ);modern.hurtMarked=true;
+                    }
                 }
                 if(view.onGround!=touched.ground)NativeGroundB173.commit(modern,view.onGround);
                 if(view instanceof PathAwareEntity p && p.target!=touched.target && modern instanceof net.minecraft.world.entity.Mob mob)

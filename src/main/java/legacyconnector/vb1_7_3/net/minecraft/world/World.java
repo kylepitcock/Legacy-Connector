@@ -601,6 +601,11 @@ public class World implements BlockView {
             return org.kylepitcock.legacyconnector.vb1_7_3.BetaDeferredGenEntities.stage(region.getLevel(),entity);
         return mcc$access().addFreshEntity(entity);
     }
+    /** MCP {@code sendTrackedEntityStatusUpdatePacket}: an entity status (hurt, death, a mod's own) for the clients tracking the entity. */
+    public void broadcastEntityEvent(legacyconnector.vb1_7_3.net.minecraft.entity.Entity entity, byte status) {
+        if (entity == null || entity.mcc$modern == null) return;
+        if (entity.mcc$modern.level() instanceof net.minecraft.server.level.ServerLevel level) level.broadcastEntityEvent(entity.mcc$modern, status);
+    }
     public boolean spawnEntity(legacyconnector.vb1_7_3.net.minecraft.entity.Entity entity) {
         if(entity instanceof legacyconnector.vb1_7_3.net.minecraft.entity.LightningEntity lightning)return mcc$spawnLightning(lightning);
         if(mcc$level==null||entity==null)return false;
