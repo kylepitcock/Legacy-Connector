@@ -477,7 +477,7 @@ final class Mc1201Migration {
             }
             // A method handle has no following POP instruction to discard a changed return value. Keep it legacy-shaped;
             // direct call sites can be adapted safely when the old return value is immediately discarded.
-            if (Type.getReturnType(desc).getSort() != Type.getReturnType(hd.getDesc()).getSort()) continue;
+            if (Type.getReturnType(hd.getDesc()).getSort() != Type.VOID && Type.getReturnType(desc).getSort() == Type.VOID) continue;
             d.bsmArgs[i] = new org.objectweb.asm.Handle(Opcodes.H_INVOKESTATIC, rule.helper(), rule.helperName(), desc, false);
             c.calls++;
         }
