@@ -392,6 +392,12 @@ public final class PalladiumKubeJSCompat {
                     "Adapted legacy KeyMapping field access in Palladium addon script {0}", resourcePath);
             contents = keyAccessAdapted;
         }
+        byte[] scopeAdapted = KubeJSScriptScopeCompat.rewriteKnownIdentifierCollisions(namespace, resourcePath, contents);
+        if (scopeAdapted != contents) {
+            LOGGER.log(System.Logger.Level.INFO,
+                    "Adapted a known Alien Evolution script-scope name collision in {0}:{1}", namespace, resourcePath);
+            contents = scopeAdapted;
+        }
         if (!Files.exists(backingFile) || !java.util.Arrays.equals(contents, Files.readAllBytes(backingFile))) {
             Path temporary = backingFile.resolveSibling(backingFile.getFileName() + ".tmp");
             Files.write(temporary, contents);
