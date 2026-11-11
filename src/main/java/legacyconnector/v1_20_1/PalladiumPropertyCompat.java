@@ -48,7 +48,7 @@ public final class PalladiumPropertyCompat {
      *
      * @return true when a new alias was installed, false when it already existed
      */
-    static boolean registerAlias(Class<?> lookupClass, String alias, String canonicalType)
+    static synchronized boolean registerAlias(Class<?> lookupClass, String alias, String canonicalType)
             throws ReflectiveOperationException {
         Objects.requireNonNull(lookupClass, "Palladium property lookup class");
         Objects.requireNonNull(alias, "property type alias");
