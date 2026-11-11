@@ -21,6 +21,14 @@ public final class EntityViewsB173 {
             if(maxX!=before.maxX)b.maxX=maxX;if(maxY!=before.maxY)b.maxY=maxY;if(maxZ!=before.maxZ)b.maxZ=maxZ;
         }
     }
+    private static final org.slf4j.Logger LOG=org.slf4j.LoggerFactory.getLogger("LegacyConnector/B173Placement");
+    private static final java.util.concurrent.atomic.AtomicInteger MOVES=new java.util.concurrent.atomic.AtomicInteger();
+    /** The original class and method that last ran, for a log line explaining a move. */
+    private static String origin(){
+        for(var frame:Thread.currentThread().getStackTrace())
+            if(frame.getClassName().startsWith("legacyconnector_")||frame.getClassName().startsWith("legacyconnector.v"))return frame.getClassName()+"."+frame.getMethodName();
+        return "native";
+    }
     record Placement(double x,double y,double z,float yaw,float pitch) {
         static Placement of(Entity view){return new Placement(view.x,view.y,view.z,view.yaw,view.pitch);}
         void apply(Entity view,net.minecraft.world.entity.Entity modern){
@@ -29,8 +37,14 @@ public final class EntityViewsB173 {
             double nx=px?view.x:modern.getX(),ny=py?view.y-view.standingEyeHeight:modern.getY(),nz=pz?view.z:modern.getZ();
             float nextYaw=ry?view.yaw:modern.getYRot(),nextPitch=rp?view.pitch:modern.getXRot();
             if(nx==modern.getX()&&ny==modern.getY()&&nz==modern.getZ()&&nextYaw==modern.getYRot()&&nextPitch==modern.getXRot())return;
-            if(modern instanceof net.minecraft.server.level.ServerPlayer player&&!player.isPassenger()&&player.connection!=null)
+            if(modern instanceof net.minecraft.server.level.ServerPlayer player&&!player.isPassenger()&&player.connection!=null){
+                int count=MOVES.incrementAndGet();
+                if(count<=50)LOG.info("Original code moved {} from ({}, {}, {}) to ({}, {}, {}) in {} [{}] view {} was ({}, {}, {}) now ({}, {}, {})",player.getGameProfile().getName(),
+                        Math.round(modern.getX()*10)/10.0,Math.round(modern.getY()*10)/10.0,Math.round(modern.getZ()*10)/10.0,Math.round(nx*10)/10.0,Math.round(ny*10)/10.0,Math.round(nz*10)/10.0,
+                        player.level().dimension().location(),origin(),view.getClass().getSimpleName()+"@"+System.identityHashCode(view),x,y,z,view.x,view.y,view.z);
+                if(count<=3){var trace=new StringBuilder();int shown=0;for(var frame:Thread.currentThread().getStackTrace()){if(shown++>40)break;trace.append(System.lineSeparator()).append("    at ").append(frame);}LOG.info("Move call stack:{}",trace);}
                 player.connection.teleport(nx,ny,nz,nextYaw,nextPitch);
+            }
             else{modern.setPos(nx,ny,nz);modern.setYRot(nextYaw);modern.setXRot(nextPitch);}
         }
     }
