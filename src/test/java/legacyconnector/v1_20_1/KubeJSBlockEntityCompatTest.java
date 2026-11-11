@@ -10,8 +10,10 @@ import dev.latvian.mods.kubejs.block.entity.BlockEntityInfo;
 import dev.latvian.mods.kubejs.block.entity.BlockEntityTickKubeEvent;
 import dev.latvian.mods.kubejs.block.entity.KubeBlockEntity;
 import dev.latvian.mods.kubejs.core.InventoryKJS;
+import dev.latvian.mods.kubejs.event.IEventHandler;
 import dev.latvian.mods.rhino.Context;
 import dev.latvian.mods.rhino.ContextFactory;
+import dev.latvian.mods.kubejs.script.ScriptType;
 import dev.latvian.mods.kubejs.plugin.builtin.event.BlockEvents;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
@@ -75,16 +77,19 @@ class KubeJSBlockEntityCompatTest {
     @Test
     void serverTickRegistersCallbackAgainstTheOwningBlockAndEnablesServerTicking() {
         BlockEntityInfo info = new BlockEntityInfo();
-        Object callback = new Object();
+        IEventHandler callback = event -> null;
         Context context = new ContextFactory().enter();
 
         KubeJSBlockEntityCompat.serverTick(context, info, callback);
 
         assertTrue(info.serverTicking);
-        assertEquals(1, BlockEvents.BLOCK_ENTITY_TICK.calls);
-        assertEquals("alienevo:crystal_block", BlockEvents.BLOCK_ENTITY_TICK.lastArguments[0]);
-        assertSame(callback, BlockEvents.BLOCK_ENTITY_TICK.lastArguments[1]);
-        assertSame(context, BlockEvents.BLOCK_ENTITY_TICK.lastContext);
+        assertSame(callback, BlockEvents.BLOCK_ENTITY_TICK.listener(
+                ScriptType.SERVER, "alienevo:crystal_block"));
+        assertNull(BlockEvents.BLOCK_ENTITY_TICK.listener(
+                ScriptType.CLIENT, "alienevo:crystal_block"));
+        assertEquals(1, BlockEvents.BLOCK_ENTITY_TICK.listenJavaCalls);
+        assertEquals(0, BlockEvents.BLOCK_ENTITY_TICK.callCalls);
+        assertEquals(1, BlockEvents.BLOCK_ENTITY_TICK.listenerCount());
         assertEquals(1, info.tickFrequency);
         assertEquals(0, info.tickOffset);
     }
@@ -94,7 +99,7 @@ class KubeJSBlockEntityCompatTest {
         BlockEntityInfo info = new BlockEntityInfo();
         Context context = new ContextFactory().enter();
 
-        KubeJSBlockEntityCompat.serverTick(context, info, 20, 7, new Object());
+        KubeJSBlockEntityCompat.serverTick(context, info, 20, 7, event -> null);
 
         assertTrue(info.serverTicking);
         assertEquals(20, info.tickFrequency);
@@ -106,7 +111,7 @@ class KubeJSBlockEntityCompatTest {
         BlockEntityInfo info = new BlockEntityInfo();
         Context context = new ContextFactory().enter();
 
-        KubeJSBlockEntityCompat.serverTick(context, info, 1, 9, new Object());
+        KubeJSBlockEntityCompat.serverTick(context, info, 1, 9, event -> null);
 
         assertEquals(1, info.tickFrequency);
         assertEquals(0, info.tickOffset);
@@ -117,10 +122,17 @@ class KubeJSBlockEntityCompatTest {
         BlockEntityInfo info = new BlockEntityInfo();
         Context context = new ContextFactory().enter();
 
-        KubeJSBlockEntityCompat.clientTick(context, info, new Object());
+        IEventHandler callback = event -> null;
+        KubeJSBlockEntityCompat.clientTick(context, info, callback);
 
         assertTrue(info.clientTicking);
         assertEquals(false, info.serverTicking);
+        assertSame(callback, BlockEvents.BLOCK_ENTITY_TICK.listener(
+                ScriptType.CLIENT, "alienevo:crystal_block"));
+        assertNull(BlockEvents.BLOCK_ENTITY_TICK.listener(
+                ScriptType.SERVER, "alienevo:crystal_block"));
+        assertEquals(1, BlockEvents.BLOCK_ENTITY_TICK.listenJavaCalls);
+        assertEquals(0, BlockEvents.BLOCK_ENTITY_TICK.callCalls);
     }
 
     @Test
@@ -128,10 +140,18 @@ class KubeJSBlockEntityCompatTest {
         BlockEntityInfo info = new BlockEntityInfo();
         Context context = new ContextFactory().enter();
 
-        KubeJSBlockEntityCompat.tick(context, info, new Object());
+        IEventHandler callback = event -> null;
+        KubeJSBlockEntityCompat.tick(context, info, callback);
 
         assertTrue(info.serverTicking);
         assertTrue(info.clientTicking);
+        assertSame(callback, BlockEvents.BLOCK_ENTITY_TICK.listener(
+                ScriptType.SERVER, "alienevo:crystal_block"));
+        assertSame(callback, BlockEvents.BLOCK_ENTITY_TICK.listener(
+                ScriptType.CLIENT, "alienevo:crystal_block"));
+        assertEquals(2, BlockEvents.BLOCK_ENTITY_TICK.listenJavaCalls);
+        assertEquals(0, BlockEvents.BLOCK_ENTITY_TICK.callCalls);
+        assertEquals(2, BlockEvents.BLOCK_ENTITY_TICK.listenerCount());
     }
 
     @Test
