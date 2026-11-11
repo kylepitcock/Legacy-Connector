@@ -475,6 +475,9 @@ final class Mc1201Migration {
                 if (ctor) desc = hd.getDesc().substring(0, hd.getDesc().length() - 1) + "L" + hd.getOwner() + ";";
                 else desc = tag == Opcodes.H_INVOKESTATIC ? hd.getDesc() : "(L" + rule.owner() + ";" + hd.getDesc().substring(1);
             }
+            // A method handle has no following POP instruction to discard a changed return value. Keep it legacy-shaped;
+            // direct call sites can be adapted safely when the old return value is immediately discarded.
+            if (Type.getReturnType(desc).getSort() != Type.getReturnType(hd.getDesc()).getSort()) continue;
             d.bsmArgs[i] = new org.objectweb.asm.Handle(Opcodes.H_INVOKESTATIC, rule.helper(), rule.helperName(), desc, false);
             c.calls++;
         }
@@ -499,6 +502,18 @@ final class Mc1201Migration {
             return true;
         }
         if (hd == null) hd = call.getOpcode() == Opcodes.INVOKESTATIC ? call.desc : "(L" + rule.owner() + ";" + call.desc.substring(1);
+        Type oldReturn = Type.getReturnType(call.desc);
+        Type helperReturn = Type.getReturnType(hd);
+        if (oldReturn.getSort() != Type.VOID && helperReturn.getSort() == Type.VOID) {
+            // A return-type change from value to void is safe only when the old value is immediately discarded.
+            // If the caller observes it, leave the call untouched so SoftLink1201 reports the unsupported behavior
+            // instead of fabricating a result with different semantics.
+            AbstractInsnNode discarded = call.getNext();
+            while (discarded != null && discarded.getOpcode() < 0) discarded = discarded.getNext();
+            int popOpcode = oldReturn.getSize() == 2 ? Opcodes.POP2 : Opcodes.POP;
+            if (discarded == null || discarded.getOpcode() != popOpcode) return false;
+            m.instructions.remove(discarded);
+        }
         m.instructions.set(call, new MethodInsnNode(Opcodes.INVOKESTATIC, rule.helper(), rule.helperName(), hd, false));
         return true;
     }

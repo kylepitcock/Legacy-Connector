@@ -88,6 +88,90 @@ class CommandFunction1201MigrationTest implements Opcodes {
         assertEquals(modernDesc, call.desc);
     }
 
+    @Test
+    void commandFunctionGenericErasureAndQueuedExecutionCallsUseCompatibilityHelpers() {
+        assertTrue(McMembers1201.hasClass(MODERN_FUNCTION));
+
+        String commandSourceStack = "net/minecraft/commands/CommandSourceStack";
+        String resourceLocation = "net/minecraft/resources/ResourceLocation";
+        String dispatcher = "com/mojang/brigadier/CommandDispatcher";
+        String manager = "net/minecraft/server/ServerFunctionManager";
+        String fromLinesDesc = "(L" + resourceLocation + ";L" + dispatcher + ";L" + commandSourceStack
+                + ";Ljava/util/List;)L" + MODERN_FUNCTION + ";";
+        String executeDesc = "(L" + MODERN_FUNCTION + ";L" + commandSourceStack + ";)I";
+        String fromLinesHelperDesc = fromLinesDesc;
+        String executeHelperDesc = "(L" + manager + ";L" + MODERN_FUNCTION + ";L" + commandSourceStack + ";)V";
+        String helperOwner = "org/kylepitcock/legacyconnector/v1_20_1/migrate/CommandFunctionCompat";
+
+        ClassNode parser = cls("example/LegacyFunctionParser");
+        MethodNode parse = new MethodNode(ACC_PUBLIC | ACC_STATIC, "parse", "()L" + MODERN_FUNCTION + ";", null, null);
+        parse.instructions.add(new InsnNode(ACONST_NULL));
+        parse.instructions.add(new InsnNode(ACONST_NULL));
+        parse.instructions.add(new InsnNode(ACONST_NULL));
+        parse.instructions.add(new InsnNode(ACONST_NULL));
+        parse.instructions.add(new MethodInsnNode(INVOKESTATIC, MODERN_FUNCTION, "fromLines", fromLinesDesc, false));
+        parse.instructions.add(new InsnNode(ARETURN));
+        parser.methods.add(parse);
+
+        ClassNode caller = cls("example/LegacyFunctionCaller");
+        MethodNode discardedResult = new MethodNode(ACC_PUBLIC | ACC_STATIC, "executeAndIgnoreCount", "()V", null, null);
+        discardedResult.instructions.add(new InsnNode(ACONST_NULL));
+        discardedResult.instructions.add(new InsnNode(ACONST_NULL));
+        discardedResult.instructions.add(new InsnNode(ACONST_NULL));
+        discardedResult.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, manager, "execute", executeDesc, false));
+        discardedResult.instructions.add(new InsnNode(POP));
+        discardedResult.instructions.add(new InsnNode(RETURN));
+        caller.methods.add(discardedResult);
+
+        MethodNode observedResult = new MethodNode(ACC_PUBLIC | ACC_STATIC, "executeAndObserveCount", "()I", null, null);
+        observedResult.instructions.add(new InsnNode(ACONST_NULL));
+        observedResult.instructions.add(new InsnNode(ACONST_NULL));
+        observedResult.instructions.add(new InsnNode(ACONST_NULL));
+        observedResult.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, manager, "execute", executeDesc, false));
+        observedResult.instructions.add(new InsnNode(IRETURN));
+        caller.methods.add(observedResult);
+
+        Mc1201Hierarchy hierarchy = new Mc1201Hierarchy();
+        hierarchy.add(parser);
+        hierarchy.add(caller);
+        Mc1201Migration.Counts counts = new Mc1201Migration.Counts();
+        counts.add(Mc1201Migration.apply(parser, hierarchy));
+        counts.add(Mc1201Migration.apply(caller, hierarchy));
+
+        assertEquals(2, counts.calls, "fromLines and the discarded execute result should be migrated");
+
+        MethodInsnNode fromLines = null;
+        for (AbstractInsnNode instruction : parse.instructions) {
+            if (instruction instanceof MethodInsnNode method) fromLines = method;
+        }
+        assertNotNull(fromLines);
+        assertEquals(Opcodes.INVOKESTATIC, fromLines.getOpcode());
+        assertEquals(helperOwner, fromLines.owner);
+        assertEquals("fromLines", fromLines.name);
+        assertEquals(fromLinesHelperDesc, fromLines.desc);
+
+        MethodInsnNode execute = null;
+        for (AbstractInsnNode instruction : discardedResult.instructions) {
+            if (instruction instanceof MethodInsnNode method) execute = method;
+            assertTrue(instruction.getOpcode() != Opcodes.POP, "the obsolete int-result POP must be removed");
+        }
+        assertNotNull(execute);
+        assertEquals(Opcodes.INVOKESTATIC, execute.getOpcode());
+        assertEquals(helperOwner, execute.owner);
+        assertEquals("execute", execute.name);
+        assertEquals(executeHelperDesc, execute.desc);
+
+        MethodInsnNode stillObserved = null;
+        for (AbstractInsnNode instruction : observedResult.instructions) {
+            if (instruction instanceof MethodInsnNode method) stillObserved = method;
+        }
+        assertNotNull(stillObserved);
+        assertEquals(manager, stillObserved.owner,
+                "a caller that observes the old synchronous command count must not receive a fabricated value");
+        assertEquals(executeDesc, stillObserved.desc);
+        assertEquals(Opcodes.IRETURN, stillObserved.getNext().getOpcode());
+    }
+
     private static MethodNode firstMethod(ClassNode node) {
         return node.methods.stream().filter(method -> method.name.equals("firstTick")).findFirst().orElseThrow();
     }

@@ -625,3 +625,8 @@ net/minecraft/advancements/critereon/MinMaxBounds$Doubles	fromJson	(Lcom/google/
 net/minecraft/advancements/critereon/MinMaxBounds$Ints	fromJson	(Lcom/google/gson/JsonElement;)Lnet/minecraft/advancements/critereon/MinMaxBounds$Ints;	RoundCompat	intsFromJson	-
 net/minecraft/commands/arguments/item/ItemParser	parseForItem	(Lnet/minecraft/core/HolderLookup;Lcom/mojang/brigadier/StringReader;)Lnet/minecraft/commands/arguments/item/ItemParser$ItemResult;	ItemStackNbt	parseForItem	-
 net/minecraft/commands/arguments/item/ItemParser$ItemResult	nbt	()Lnet/minecraft/nbt/CompoundTag;	ItemStackNbt	itemResultNbt	-
+# 1.20.1 command functions: generic source erasure changed to ExecutionCommandSource<T> in 1.21.1.
+net/minecraft/commands/functions/CommandFunction	fromLines	(Lnet/minecraft/resources/ResourceLocation;Lcom/mojang/brigadier/CommandDispatcher;Lnet/minecraft/commands/CommandSourceStack;Ljava/util/List;)Lnet/minecraft/commands/functions/CommandFunction;	CommandFunctionCompat	fromLines	(Lnet/minecraft/resources/ResourceLocation;Lcom/mojang/brigadier/CommandDispatcher;Lnet/minecraft/commands/CommandSourceStack;Ljava/util/List;)Lnet/minecraft/commands/functions/CommandFunction;
+# The 1.20.1 execute call returned an immediate command count; 1.21.1 queues execution and returns void.
+# Redirect only when the old result is discarded; call sites that consume the integer are intentionally left soft-linked.
+net/minecraft/server/ServerFunctionManager	execute	(Lnet/minecraft/commands/functions/CommandFunction;Lnet/minecraft/commands/CommandSourceStack;)I	CommandFunctionCompat	execute	(Lnet/minecraft/server/ServerFunctionManager;Lnet/minecraft/commands/functions/CommandFunction;Lnet/minecraft/commands/CommandSourceStack;)V
