@@ -118,29 +118,41 @@ final class PalladiumResourceCompat1201 {
      * @return number of resource scripts changed
      */
     static int apply(Map<String, byte[]> resources) {
-        int changed = 0;
-        changed += rewrite(
+        Map<String, byte[]> original = new java.util.HashMap<>();
+        resources.forEach((path, contents) -> original.put(path, contents.clone()));
+
+        rewrite(
                 resources,
                 ALIEN_EVO_STORE_ARMOR,
                 new String[][] {{LEGACY_STORE_ARMOR_CHECK, SAFE_STORE_ARMOR_CHECK, "1"}});
-        changed += rewrite(
+        rewrite(
                 resources,
                 ALIEN_EVO_SLOT_TRANSFORM,
                 new String[][] {
                         {LEGACY_ARMOR_ID_RETURN, SAFE_ARMOR_ID_RETURN, "1"},
                         {LEGACY_ARMOR_ID_CHECK, SAFE_ARMOR_ID_CHECK, "1"}
                 });
-        changed += rewrite(
+        rewrite(
                 resources,
                 ALIEN_EVO_QUICK_CHANGE,
                 new String[][] {
                         {LEGACY_ARMOR_ID_RETURN, SAFE_ARMOR_ID_RETURN, "1"},
                         {LEGACY_ARMOR_ID_CHECK, SAFE_ARMOR_ID_CHECK, "1"}
                 });
-        changed += rewriteTransformScript(resources);
-        changed += rewrite(resources, ALIEN_EVO_POWER_UI, POWER_UI_TAB_COMPARISONS);
-        changed += rewriteLegacyScriptApis(resources);
-        return changed;
+        rewriteTransformScript(resources);
+        rewrite(resources, ALIEN_EVO_POWER_UI, POWER_UI_TAB_COMPARISONS);
+        rewriteLegacyScriptApis(resources);
+
+        // A single resource can receive more than one independent rewrite.
+        // Report the number of distinct changed script files, not rewrite passes.
+        int changedResources = 0;
+        for (Map.Entry<String, byte[]> entry : resources.entrySet()) {
+            byte[] before = original.get(entry.getKey());
+            if (before == null || !java.util.Arrays.equals(before, entry.getValue())) {
+                changedResources++;
+            }
+        }
+        return changedResources;
     }
 
     /**
