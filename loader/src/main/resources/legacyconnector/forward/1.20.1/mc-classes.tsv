@@ -68,6 +68,8 @@ net/neoforged/neoforge/common/crafting/StrictNBTIngredient	net/minecraft/world/i
 net/neoforged/neoforge/common/crafting/PartialNBTIngredient	net/minecraft/world/item/crafting/Ingredient
 net/minecraft/server/packs/repository/Pack$ResourcesSupplier	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyResourcesSupplier
 net/minecraft/world/item/BowlFoodItem	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyBowlFoodItem
+# Command functions moved into the functions subpackage in 1.21.1.
+net/minecraft/commands/CommandFunction	net/minecraft/commands/functions/CommandFunction
 net/minecraft/commands/CommandRuntimeException	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyCommandRuntimeException
 net/minecraft/world/level/storage/loot/entries/LootTableReference	net/minecraft/world/level/storage/loot/entries/NestedLootTable
 net/minecraft/world/level/block/grower/AbstractMegaTreeGrower	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyMegaTreeGrower
