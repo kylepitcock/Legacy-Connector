@@ -86,8 +86,10 @@ public final class KeyClientB173 {
         }
     }
     private static boolean menuActive(net.minecraft.client.gui.screens.Screen screen){
+        var minecraft=Minecraft.getInstance();
         return legacyconnector.vb1_7_3.net.minecraft.client.gui.screen.TitleScreen.mcc$menuActive(
-                Minecraft.getInstance().level!=null,screen!=null,screen instanceof net.minecraft.client.gui.screens.TitleScreen);
+                minecraft.level!=null,screen!=null,screen instanceof net.minecraft.client.gui.screens.TitleScreen,
+                minecraft.getSingleplayerServer()!=null||minecraft.getConnection()!=null);
     }
     private static Object currentGui(){
         var minecraft=Minecraft.getInstance();var screen=minecraft.screen;

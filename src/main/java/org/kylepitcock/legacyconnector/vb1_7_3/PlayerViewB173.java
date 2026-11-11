@@ -81,6 +81,7 @@ public final class PlayerViewB173 extends legacyconnector.vb1_7_3.net.minecraft.
     /** Client render snapshot only; gameplay callbacks keep their existing placement/write-back boundary. */
     public void mcc$prepareRenderView(){
         prevX=player.xo;prevY=player.yo+standingEyeHeight;prevZ=player.zo;
+        lastTickX=player.xo;lastTickY=player.yo+standingEyeHeight;lastTickZ=player.zo;
         prevYaw=player.yRotO;prevPitch=player.xRotO;
         bodyYaw=player.yBodyRot;lastBodyYaw=player.yBodyRotO;
         lastWalkAnimationSpeed=player.walkAnimation.speed(0);walkAnimationSpeed=player.walkAnimation.speed(1);
@@ -101,6 +102,8 @@ public final class PlayerViewB173 extends legacyconnector.vb1_7_3.net.minecraft.
         y = player.getY() + standingEyeHeight;
         prevY = y;
         prevZ = z = player.getZ();
+        // Beta's lastTick position is the previous tick's; original code pins players to it in menu mode.
+        lastTickX=player.xo;lastTickY=player.yo+standingEyeHeight;lastTickZ=player.zo;
         yaw = prevYaw = player.getYRot();
         pitch = prevPitch = player.getXRot();
         onGround = player.onGround();
