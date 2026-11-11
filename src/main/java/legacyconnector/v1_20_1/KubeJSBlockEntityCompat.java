@@ -101,36 +101,37 @@ public final class KubeJSBlockEntityCompat {
     }
 
     /** Restores KubeJS 6 serverTick(callback). */
-    public static void serverTick(Object info, Object callback) {
-        registerTick(info, callback, true, false, 1, 0);
+    public static void serverTick(Object context, Object info, Object callback) {
+        registerTick(context, info, callback, true, false, 1, 0);
     }
 
     /** Restores KubeJS 6 serverTick(frequency, offset, callback). */
-    public static void serverTick(Object info, int frequency, int offset, Object callback) {
-        registerTick(info, callback, true, false, frequency, offset);
+    public static void serverTick(Object context, Object info, int frequency, int offset, Object callback) {
+        registerTick(context, info, callback, true, false, frequency, offset);
     }
 
     /** Restores KubeJS 6 clientTick(callback). */
-    public static void clientTick(Object info, Object callback) {
-        registerTick(info, callback, false, true, 1, 0);
+    public static void clientTick(Object context, Object info, Object callback) {
+        registerTick(context, info, callback, false, true, 1, 0);
     }
 
     /** Restores KubeJS 6 clientTick(frequency, offset, callback). */
-    public static void clientTick(Object info, int frequency, int offset, Object callback) {
-        registerTick(info, callback, false, true, frequency, offset);
+    public static void clientTick(Object context, Object info, int frequency, int offset, Object callback) {
+        registerTick(context, info, callback, false, true, frequency, offset);
     }
 
     /** Restores KubeJS 6 tick(callback), which ran on both logical sides. */
-    public static void tick(Object info, Object callback) {
-        registerTick(info, callback, true, true, 1, 0);
+    public static void tick(Object context, Object info, Object callback) {
+        registerTick(context, info, callback, true, true, 1, 0);
     }
 
     /** Restores KubeJS 6 tick(frequency, offset, callback). */
-    public static void tick(Object info, int frequency, int offset, Object callback) {
-        registerTick(info, callback, true, true, frequency, offset);
+    public static void tick(Object context, Object info, int frequency, int offset, Object callback) {
+        registerTick(context, info, callback, true, true, frequency, offset);
     }
 
     private static void registerTick(
+            Object context,
             Object info,
             Object callback,
             boolean server,
@@ -141,7 +142,7 @@ public final class KubeJSBlockEntityCompat {
         Objects.requireNonNull(callback, "KubeJS block entity tick callback");
 
         try {
-            registerTargetedBlockEntityTick(info, callback);
+            registerTargetedBlockEntityTick(context, info, callback);
             if (server) {
                 invokeNoArgs(info, "serverTicking");
             }
@@ -165,7 +166,7 @@ public final class KubeJSBlockEntityCompat {
      * Calling EventHandler.call() is intentional: KubeJS converts the Rhino function
      * to its IEventHandler type and records the current startup script type/source.
      */
-    private static void registerTargetedBlockEntityTick(Object info, Object callback)
+    private static void registerTargetedBlockEntityTick(Object context, Object info, Object callback)
             throws ReflectiveOperationException {
         ClassLoader loader = info.getClass().getClassLoader();
         Object blockBuilder = publicField(info, "blockBuilder").get(info);
@@ -178,9 +179,9 @@ public final class KubeJSBlockEntityCompat {
         Object eventHandler = blockEvents.getField("BLOCK_ENTITY_TICK").get(null);
         Class<?> contextClass = Class.forName(RHINO_CONTEXT, true, loader);
         Class<?> scriptableClass = Class.forName(RHINO_SCRIPTABLE, true, loader);
-        Object context = contextClass.getMethod("getCurrentContext").invoke(null);
-        if (context == null) {
-            throw new IllegalStateException("No active Rhino Context while registering a legacy block-entity tick callback");
+        if (!contextClass.isInstance(context)) {
+            throw new IllegalStateException(
+                    "Rhino did not inject the active Context into the legacy block-entity tick callback alias");
         }
 
         Method call = eventHandler.getClass().getMethod(
