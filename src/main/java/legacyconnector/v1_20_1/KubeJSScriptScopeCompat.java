@@ -49,6 +49,7 @@ public final class KubeJSScriptScopeCompat {
                     "AlienEvoComponent",
                     "AlienEvoComponent.translatable(",
                     3);
+            rewritten = addStartupDisplayNameHelper(rewritten);
         } else if ("kubejs_scripts/display_player.js".equals(resourcePath)) {
             rewritten = replaceKnownPair(
                     rewritten,
@@ -70,6 +71,8 @@ public final class KubeJSScriptScopeCompat {
             rewritten = rewriteUnfilteredEntityInteraction(rewritten);
         } else if ("kubejs_scripts/slam.js".equals(resourcePath)) {
             rewritten = rewriteVectorAlias(rewritten);
+        } else if ("kubejs_scripts/code_hints.js".equals(resourcePath)) {
+            rewritten = rewriteCodeHintsGlobals(rewritten);
         }
 
         return rewritten.equals(script) ? source : rewritten.getBytes(StandardCharsets.UTF_8);
@@ -91,6 +94,36 @@ public final class KubeJSScriptScopeCompat {
         return script
                 .replace("const " + oldName + " =", "const " + newName + " =")
                 .replace(expectedUse, replacementUse);
+    }
+
+ 
+    private static String addStartupDisplayNameHelper(String script) {
+        String anchor = "global.getAlienDescription = function(id) {";
+        if (count(script, anchor) != 1 || script.contains("global.getAlienDisplayName")) {
+            return script;
+        }
+
+        // The addon script is loaded during KubeJS STARTUP, where the global
+        // map is intentionally mutable. Publish the helper there so client
+        // and server scripts can safely read it from their read-only view.
+        return script + """
+
+                global.getAlienDisplayName = (player, alienNumber) => {
+                    if (player && player.persistentData.contains(`alienevo_${alienNumber}`)) {
+                        return player.persistentData.getString(`alienevo_${alienNumber}`);
+                    }
+
+                    const key = `alienevo_alien_${alienNumber}`;
+                    const alienInfo = global[key];
+                    if (alienInfo && alienInfo[0]) {
+                        const fullName = String(alienInfo[0]);
+                        const alienPath = fullName.includes(':') ? fullName.split(':')[1] : fullName;
+                        return alienPath.charAt(0).toUpperCase() + alienPath.slice(1);
+                    }
+
+                    return `Alien #${alienNumber}`;
+                };
+                """;
     }
 
     private static String rewriteFailsafeGlobals(String script) {
@@ -147,6 +180,24 @@ public final class KubeJSScriptScopeCompat {
         // KubeJS 7's targeted handler accepts one callback for all target IDs;
         // '*' is parsed as a literal ResourceLocation and is invalid.
         return script.replace(oldRegistration, "ItemEvents.entityInteracted(event => {");
+    }
+
+ 
+    private static String rewriteCodeHintsGlobals(String script) {
+        if (count(script, "global.usedPositions") != 5
+                || count(script, "global.usedSelfDestructPositions") != 5
+                || count(script, "if (!global.usedPositions)") != 1
+                || count(script, "if (!global.usedSelfDestructPositions)") != 1) {
+            return script;
+        }
+
+        // These sets are used only by code_hints.js handlers. Keep their
+        // lifetime at the script scope instead of writing to KubeJS 7's
+        // immutable global map from a SERVER script.
+        return "let alienevoUsedPositions = new Set();\\n"
+                + "let alienevoUsedSelfDestructPositions = new Set();\\n"
+                + script.replace("global.usedPositions", "alienevoUsedPositions")
+                        .replace("global.usedSelfDestructPositions", "alienevoUsedSelfDestructPositions");
     }
 
     private static String rewriteVectorAlias(String script) {
