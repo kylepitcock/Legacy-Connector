@@ -190,13 +190,12 @@ public final class KubeJSBlockEntityCompat {
 
     /** Legacy BlockEntityJS state forwarded by the KubeJS 7 tick-event mixin. */
     public static Object eventData(Object event) {
-        return publicField(blockEntityFromTickEvent(event), "data")
-                .get(blockEntityFromTickEvent(event));
+        return fieldValue(blockEntityFromTickEvent(event), "data", "BlockEntityTickKubeEvent.data");
     }
 
     public static int eventCoordinate(Object event, String coordinate) {
         Object entity = blockEntityFromTickEvent(event);
-        Object value = publicField(entity, coordinate).get(entity);
+        Object value = fieldValue(entity, coordinate, "BlockEntityTickKubeEvent." + coordinate);
         if (!(value instanceof Number number)) {
             throw new IllegalStateException("KubeJS block entity coordinate '" + coordinate + "' is not numeric");
         }
@@ -205,7 +204,7 @@ public final class KubeJSBlockEntityCompat {
 
     public static Object eventInventory(Object event) {
         Object entity = blockEntityFromTickEvent(event);
-        Object raw = publicField(entity, "attachments").get(entity);
+        Object raw = fieldValue(entity, "attachments", "KubeBlockEntity.attachments");
         if (!(raw instanceof Map<?, ?> attachments)) {
             throw new IllegalStateException("KubeJS KubeBlockEntity.attachments is not a Map");
         }
@@ -223,7 +222,7 @@ public final class KubeJSBlockEntityCompat {
 
     public static Object eventPlacerId(Object event) {
         Object entity = blockEntityFromTickEvent(event);
-        return publicField(entity, "placerId").get(entity);
+        return fieldValue(entity, "placerId", "KubeBlockEntity.placerId");
     }
 
     public static void eventSave(Object event) {
@@ -302,6 +301,14 @@ public final class KubeJSBlockEntityCompat {
             return method.invoke(owner, arguments);
         } catch (ReflectiveOperationException | LinkageError error) {
             throw compatibilityFailure(name, error);
+        }
+    }
+
+    private static Object fieldValue(Object owner, String name, String operation) {
+        try {
+            return publicField(owner, name).get(owner);
+        } catch (ReflectiveOperationException | LinkageError error) {
+            throw compatibilityFailure(operation, error);
         }
     }
 
