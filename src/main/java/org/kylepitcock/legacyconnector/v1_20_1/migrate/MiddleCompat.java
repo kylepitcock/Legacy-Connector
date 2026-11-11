@@ -788,6 +788,23 @@ public final class MiddleCompat {
         return new LegacyScore(scoreboard.getOrCreatePlayerScore(net.minecraft.world.scores.ScoreHolder.forNameOnly(name), objective), name);
     }
 
+    /** 1.20.1's name-based score check, without creating a score when none exists. */
+    public static boolean hasPlayerScore(net.minecraft.world.scores.Scoreboard scoreboard, String name,
+            net.minecraft.world.scores.Objective objective) {
+        return scoreboard.getPlayerScoreInfo(net.minecraft.world.scores.ScoreHolder.forNameOnly(name), objective) != null;
+    }
+
+    /** 1.20.1's map of a score holder's objective scores, backed by live 1.21.1 score accessors. */
+    public static java.util.Map<net.minecraft.world.scores.Objective, LegacyScore> playerScores(
+            net.minecraft.world.scores.Scoreboard scoreboard, String name) {
+        net.minecraft.world.scores.ScoreHolder holder = net.minecraft.world.scores.ScoreHolder.forNameOnly(name);
+        java.util.Map<net.minecraft.world.scores.Objective, LegacyScore> result = new java.util.LinkedHashMap<>();
+        for (net.minecraft.world.scores.Objective objective : scoreboard.listPlayerScores(holder).keySet()) {
+            result.put(objective, new LegacyScore(scoreboard.getOrCreatePlayerScore(holder, objective), name));
+        }
+        return result;
+    }
+
     /** The queried table id a 1.20.1 {@code LootContext.Builder.create(ResourceLocation)} passes. */
     public static java.util.Optional<net.minecraft.resources.ResourceLocation> optionalId(net.minecraft.resources.ResourceLocation id) {
         return java.util.Optional.ofNullable(id);
