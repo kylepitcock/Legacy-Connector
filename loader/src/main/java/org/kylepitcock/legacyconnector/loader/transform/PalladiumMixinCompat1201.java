@@ -791,6 +791,14 @@ final class PalladiumMixinCompat1201 implements Opcodes {
         method.maxLocals += amount;
     }
 
+    private static AbstractInsnNode previousReal(AbstractInsnNode instruction) {
+        AbstractInsnNode previous = instruction == null ? null : instruction.getPrevious();
+        while (previous != null && previous.getOpcode() < 0) {
+            previous = previous.getPrevious();
+        }
+        return previous;
+    }
+
     private static MethodNode find(ClassNode node, String name, String desc) {
         for (MethodNode method : node.methods) {
             if (method.name.equals(name) && method.desc.equals(desc)) return method;
