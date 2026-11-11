@@ -61,6 +61,14 @@ class PalladiumResourceCompat1201Test {
                 if (e.tab === omnitrixTab) {}
                 if (e.tab === omnitrixTab) {}
                 if (e.tab === omnitrixTab) {}
+                new ResourceLocation("alienevo:textures/gui/power_screen/power_interface.png");
+                """);
+        put(resources, "addon/alienevo/kubejs_scripts/omnitrix_cycle.js", """
+                entity.level.playSound(null, entity.x, entity.y, entity.z,
+                        `alienevo:${soundToPlay}`, entity.getSoundSource(), 0.7, pitch);
+                """);
+        put(resources, "addon/alienevo/kubejs_scripts/codes.js", """
+                const prototypePower = new ResourceLocation('alienevo:prototype_omnitrix');
                 """);
         put(resources, PalladiumResourceCompat1201.ALIEN_EVO_TRANSFORM, """
                 function getRandomInt(min, max) {
@@ -72,9 +80,14 @@ class PalladiumResourceCompat1201Test {
                 palladium.setProperty(entity, omnitrixPropertyKey, selectedAlienNum);
                 palladium.setProperty(entity, omnitrixPropertyKey, alienNumber);
                 palladium.setProperty(entity, omnitrixPropertyKey, alien_num);
+                let watchTypePowerId = new ResourceLocation(watchNamespace, `${watchName}_omnitrix`);
+                let alienPowerId = new ResourceLocation(alienNamespace, alienPath);
+                let bubblePowerId = new ResourceLocation(bubbleNamespace, 'transform_bubble');
+                entity.level.playSound(null, entity.x, entity.y, entity.z,
+                        `alienevo:${transformSound}_transform`, entity.getSoundSource(), 0.7, 1.0);
                 """);
 
-        assertEquals(5, PalladiumResourceCompat1201.apply(resources));
+        assertEquals(7, PalladiumResourceCompat1201.apply(resources));
 
         String storeArmor = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_STORE_ARMOR);
         assertTrue(storeArmor.contains(PalladiumResourceCompat1201.SAFE_STORE_ARMOR_CHECK));
@@ -98,8 +111,21 @@ class PalladiumResourceCompat1201Test {
         assertFalse(transform.contains("palladium.setProperty(entity, omnitrixPropertyKey, alienNumber);"));
         assertFalse(transform.contains("palladium.setProperty(entity, omnitrixPropertyKey, alien_num);"));
         assertFalse(transform.contains("palladium.setProperty(entity, omnitrixPropertyKey, newAlienUnlocked);"));
+        assertTrue(transform.contains("function ResourceLocation(namespaceOrLocation, path)"));
+        assertTrue(transform.contains("AlienEvoJavaResourceLocation.fromNamespaceAndPath"));
+        assertTrue(transform.contains("getAlienEvoSoundEvent(`alienevo:${transformSound}_transform`)"));
+        assertFalse(transform.contains("`alienevo:${transformSound}_transform`,"));
+
+        String cycle = get(resources, "addon/alienevo/kubejs_scripts/omnitrix_cycle.js");
+        assertTrue(cycle.contains("function getAlienEvoSoundEvent(soundId)"));
+        assertTrue(cycle.contains("getAlienEvoSoundEvent(`alienevo:${soundToPlay}`)"));
+        assertFalse(cycle.contains("`alienevo:${soundToPlay}`,"));
+
+        String codes = get(resources, "addon/alienevo/kubejs_scripts/codes.js");
+        assertTrue(codes.contains("function ResourceLocation(namespaceOrLocation, path)"));
 
         String powerUi = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_POWER_UI);
+        assertTrue(powerUi.contains("function ResourceLocation(namespaceOrLocation, path)"));
         assertEquals(3, occurrences(powerUi, "currentTab.toString() === omnitrixTab"));
         assertEquals(5, occurrences(powerUi, "e.tab.toString() === omnitrixTab"));
         assertFalse(powerUi.contains("currentTab === omnitrixTab"));
