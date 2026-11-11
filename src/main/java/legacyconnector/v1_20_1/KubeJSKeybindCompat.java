@@ -165,51 +165,74 @@ public final class KubeJSKeybindCompat {
             return source;
         }
 
-        String oldLoop = """
-                        global[keyName] = new $KeyMapping(
-                          `key.alienevo.key${i}`,
-                          $GLFWKey.GLFW_KEY_UNKNOWN,
-                          "key.categories.alienevo"
-                        );
+        List<String> lines = new ArrayList<>(java.util.Arrays.asList(script.split("\n", -1)));
+        int eventLine = uniqueLine(lines, line -> line.trim().equals("ClientEvents.init(event => {"));
+        int registryClassLine = uniqueLine(lines, line -> line.trim().equals(
+                "const $KeyMappingRegistry = Java.loadClass(\"dev.architectury.registry.client.keymappings.KeyMappingRegistry\");"));
+        int mappingClassLine = uniqueLine(lines, line -> line.trim().equals(
+                "const $KeyMapping = Java.loadClass(\"net.minecraft.client.KeyMapping\");"));
+        int loopStart = uniqueLine(lines, line -> line.trim().equals("global[keyName] = new $KeyMapping("));
+        int wheelStart = uniqueLine(lines, line -> line.trim().equals(
+                "global[\"QUICKCHANGEWHEEL\"] = new $KeyMapping("));
 
-                        $KeyMappingRegistry.register(global[keyName]);""";
-        String newLoop = """
-                        global[keyName] = event.registerLegacyMapping(
-                          keyName,
-                          `key.alienevo.key${i}`,
-                          $GLFWKey.GLFW_KEY_UNKNOWN,
-                          "key.categories.alienevo"
-                        );""";
-        String oldWheel = """
-                      global["QUICKCHANGEWHEEL"] = new $KeyMapping(
-                        "key.alienevo.wheel",
-                        $GLFWKey.GLFW_KEY_UNKNOWN,
-                        "key.categories.alienevo"
-                      );
-                      
-                      $KeyMappingRegistry.register(global["QUICKCHANGEWHEEL"]);""";
-        String newWheel = """
-                      global["QUICKCHANGEWHEEL"] = event.registerLegacyMapping(
-                        "QUICKCHANGEWHEEL",
-                        "key.alienevo.wheel",
-                        $GLFWKey.GLFW_KEY_UNKNOWN,
-                        "key.categories.alienevo"
-                      );""";
-
-        if (count(script, oldLoop) != 1 || count(script, oldWheel) != 1) {
+        if (eventLine < 0 || registryClassLine < 0 || mappingClassLine < 0
+                || loopStart < 0 || wheelStart < 0
+                || !matchesBlock(lines, loopStart, new String[] {
+                        "global[keyName] = new $KeyMapping(",
+                        String.valueOf((char) 96) + "key.alienevo.key" + "$" + "{i}" + (char) 96 + ",",
+                        "$GLFWKey.GLFW_KEY_UNKNOWN,",
+                        "\"key.categories.alienevo\"",
+                        ");",
+                        "",
+                        "$KeyMappingRegistry.register(global[keyName]);"
+                })
+                || !matchesBlock(lines, wheelStart, new String[] {
+                        "global[\"QUICKCHANGEWHEEL\"] = new $KeyMapping(",
+                        "\"key.alienevo.wheel\",",
+                        "$GLFWKey.GLFW_KEY_UNKNOWN,",
+                        "\"key.categories.alienevo\"",
+                        ");",
+                        "",
+                        "$KeyMappingRegistry.register(global[\"QUICKCHANGEWHEEL\"]);"
+                })) {
             return source;
         }
 
-        String rewritten = script
-                .replace("ClientEvents.init(event => {", "KeyBindEvents.registry(event => {")
-                .replace("      const $KeyMappingRegistry = Java.loadClass(\"dev.architectury.registry.client.keymappings.KeyMappingRegistry\");\n", "")
-                .replace("      const $KeyMapping = Java.loadClass(\"net.minecraft.client.KeyMapping\");\n", "")
-                .replace(oldLoop, newLoop)
-                .replace(oldWheel, newWheel);
+        List<String> rewrittenLines = new ArrayList<>();
+        for (int i = 0; i < lines.size(); i++) {
+            String line = lines.get(i);
+            if (i == eventLine) {
+                rewrittenLines.add(line.replace("ClientEvents.init", "KeyBindEvents.registry"));
+            } else if (i == registryClassLine || i == mappingClassLine) {
+                // KubeJS 7 provides the live key-mapping registry event. Do not
+                // load the old Architectury registry or the legacy constructor.
+            } else if (i == loopStart) {
+                String indent = leadingWhitespace(line);
+                rewrittenLines.add(indent + "global[keyName] = event.registerLegacyMapping(");
+                rewrittenLines.add(indent + "  keyName,");
+                rewrittenLines.add(indent + "  " + (char) 96 + "key.alienevo.key" + "$" + "{i}" + (char) 96 + ",");
+                rewrittenLines.add(indent + "  $GLFWKey.GLFW_KEY_UNKNOWN,");
+                rewrittenLines.add(indent + "  \"key.categories.alienevo\"");
+                rewrittenLines.add(indent + ");");
+                i += 6;
+            } else if (i == wheelStart) {
+                String indent = leadingWhitespace(line);
+                rewrittenLines.add(indent + "global[\"QUICKCHANGEWHEEL\"] = event.registerLegacyMapping(");
+                rewrittenLines.add(indent + "  \"QUICKCHANGEWHEEL\",");
+                rewrittenLines.add(indent + "  \"key.alienevo.wheel\",");
+                rewrittenLines.add(indent + "  $GLFWKey.GLFW_KEY_UNKNOWN,");
+                rewrittenLines.add(indent + "  \"key.categories.alienevo\"");
+                rewrittenLines.add(indent + ");");
+                i += 6;
+            } else {
+                rewrittenLines.add(line);
+            }
+        }
 
+        String rewritten = String.join("\n", rewrittenLines);
         if (rewritten.contains("ClientEvents.init")
                 || rewritten.contains("KeyMappingRegistry")
-                || !rewritten.contains("event.registerLegacyMapping(")) {
+                || count(rewritten, "event.registerLegacyMapping(") != 2) {
             return source;
         }
         return rewritten.getBytes(java.nio.charset.StandardCharsets.UTF_8);
@@ -224,6 +247,39 @@ public final class KubeJSKeybindCompat {
         }
         return merged;
     }
+    private static int uniqueLine(List<String> lines, java.util.function.Predicate<String> predicate) {
+        int found = -1;
+        for (int i = 0; i < lines.size(); i++) {
+            if (predicate.test(lines.get(i))) {
+                if (found >= 0) {
+                    return -1;
+                }
+                found = i;
+            }
+        }
+        return found;
+    }
+
+    private static boolean matchesBlock(List<String> lines, int start, String[] expectedTrimmedLines) {
+        if (start < 0 || start + expectedTrimmedLines.length > lines.size()) {
+            return false;
+        }
+        for (int i = 0; i < expectedTrimmedLines.length; i++) {
+            if (!lines.get(start + i).trim().equals(expectedTrimmedLines[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static String leadingWhitespace(String line) {
+        int end = 0;
+        while (end < line.length() && (line.charAt(end) == ' ' || line.charAt(end) == '\t')) {
+            end++;
+        }
+        return line.substring(0, end);
+    }
+
     private static int count(String text, String needle) {
         int count = 0;
         int from = 0;
