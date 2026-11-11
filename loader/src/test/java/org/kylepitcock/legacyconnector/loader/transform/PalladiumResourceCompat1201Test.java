@@ -141,11 +141,15 @@ class PalladiumResourceCompat1201Test {
         put(resources, "addon/example/kubejs_scripts/store_armor.js", unrelated);
         put(resources, "data/example/kubejs_scripts/quick_change.js",
                 "return armorItem && armorItem.id !== 'minecraft:air';");
+        String unrelatedResourceLocation = "new ResourceLocation('example:unrelated');";
+        put(resources, "addon/example/kubejs_scripts/ui.js", unrelatedResourceLocation);
 
         assertEquals(0, PalladiumResourceCompat1201.apply(resources));
         assertEquals(unrelated, get(resources, "addon/example/kubejs_scripts/store_armor.js"));
         assertEquals("return armorItem && armorItem.id !== 'minecraft:air';",
                 get(resources, "data/example/kubejs_scripts/quick_change.js"));
+        assertEquals(unrelatedResourceLocation,
+                get(resources, "addon/example/kubejs_scripts/ui.js"));
     }
 
     @Test
