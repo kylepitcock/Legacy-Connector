@@ -47,9 +47,9 @@ public final class GL11 {
         if(RendererContextB173.active())RendererContextB173.scale((float)x,(float)y,(float)z);else GuiDrawB173.scale((float) x, (float) y, (float) z);
     }
 
-    public static void glEnable(int cap) {if(RendererContextB173.active())RendererContextB173.enable(cap,true);}
+    public static void glEnable(int cap) {if(RendererContextB173.active())RendererContextB173.enable(cap,true);else if(cap==3553)GuiDrawB173.texture2d(true);}
 
-    public static void glDisable(int cap) {if(RendererContextB173.active())RendererContextB173.enable(cap,false);}
+    public static void glDisable(int cap) {if(RendererContextB173.active())RendererContextB173.enable(cap,false);else if(cap==3553)GuiDrawB173.texture2d(false);}
 
     public static void glBlendFunc(int src, int dst) {if(RendererContextB173.active())RendererContextB173.blendFunc(src,dst);}
 
@@ -57,8 +57,13 @@ public final class GL11 {
 
     public static void glDepthMask(boolean flag) {if(RendererContextB173.active())RendererContextB173.depthMask(flag);}
     public static void glDepthFunc(int func) {if(RendererContextB173.active())RendererContextB173.depthFunc(func);}
-    public static void glMatrixMode(int mode) {if(RendererContextB173.active())RendererContextB173.matrixMode(mode);}
-    public static void glLoadIdentity() {if(RendererContextB173.active())RendererContextB173.loadIdentity();}
+    public static void glMatrixMode(int mode) {if(RendererContextB173.active())RendererContextB173.matrixMode(mode);else GuiDrawB173.matrixMode(mode);}
+    public static void glLoadIdentity() {if(RendererContextB173.active())RendererContextB173.loadIdentity();else GuiDrawB173.loadIdentity();}
+
+    /** A GUI's orthographic projection maps its coordinates onto the screen; a model renderer's is ignored. */
+    public static void glOrtho(double left,double right,double bottom,double top,double near,double far) {if(!RendererContextB173.active())GuiDrawB173.ortho(left,right,bottom,top);}
+    public static void glClear(int mask) {}
+    public static void glViewport(int x,int y,int width,int height) {}
 
     public static void glShadeModel(int mode) {}
 

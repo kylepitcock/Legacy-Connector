@@ -27,6 +27,7 @@ public final class ClientB173 implements MenusB173.Client {
             var mc=Minecraft.getInstance();mc.execute(()->mc.gui.setOverlayMessage(net.minecraft.network.chat.Component.literal(text),true));
         });
         KeyClientB173.register(modBus);
+        LoadingProgressB173.register();
         legacyconnector.vb1_7_3.net.minecraft.client.option.GameOptions.mcc$graphics(Minecraft::useFancyGraphics);
         modBus.addListener((net.neoforged.neoforge.client.event.RegisterDimensionSpecialEffectsEvent event) ->
                 event.register(org.kylepitcock.legacyconnector.vb1_7_3.DimensionsB173.EFFECTS, new DimensionEffectsB173()));

@@ -1,6 +1,7 @@
 package legacyconnector.vb1_7_3.net.minecraft.client.render;
 
 import java.util.*;
+import org.kylepitcock.legacyconnector.vb1_7_3.GuiDrawB173;
 import org.kylepitcock.legacyconnector.vb1_7_3.RendererContextB173;
 
 /** Beta immediate-mode vertices captured per chunk worker, then baked into modern quads. */
@@ -18,7 +19,7 @@ public class Tessellator {
     public static void beginCapture(){CAPTURE.set(new Capture());}
     public static List<Vertex> endCapture(){var c=CAPTURE.get();CAPTURE.remove();return c==null?List.of():List.copyOf(c.vertices);}
     public void startQuads(){start(7);}
-    public void start(int mode){if(mode!=7&&mode!=5&&mode!=1&&mode!=2&&mode!=3)throw new UnsupportedOperationException("Beta tessellation mode "+mode);if(RendererContextB173.active()){var c=new Capture();c.mode=mode;CAPTURE.set(c);}}
+    public void start(int mode){if(mode!=7&&mode!=5&&mode!=1&&mode!=2&&mode!=3)throw new UnsupportedOperationException("Beta tessellation mode "+mode);if(RendererContextB173.active()||GuiDrawB173.drawing()){var c=new Capture();c.mode=mode;CAPTURE.set(c);}}
     private static RendererContextB173.Vertex vertex(Vertex v,RendererContextB173.Normal n){int color=v.color();int argb=(color&0xff00ff00)|((color&255)<<16)|((color>>16)&255);return new RendererContextB173.Vertex(v.x(),v.y(),v.z(),v.u(),v.v(),argb,n.x(),n.y(),n.z());}
     public void draw(){if(RendererContextB173.active()){
         var c=CAPTURE.get();CAPTURE.remove();if(c==null)return;
@@ -41,6 +42,14 @@ public class Tessellator {
         }
         if(c.vertices.size()%4!=0)throw new IllegalStateException("Incomplete Beta quad");
         for(int i=0;i<c.vertices.size();i+=4){var vertices=new ArrayList<RendererContextB173.Vertex>();for(var v:recorded.subList(i,i+4))vertices.add(v);RendererContextB173.quad(vertices);}
+    }else{
+        // A legacy GUI drawing with immediate-mode quads (a loading screen's dirt tiles and progress bar).
+        var c=CAPTURE.get();CAPTURE.remove();if(c==null||c.mode!=7||c.vertices.size()%4!=0)return;
+        for(int i=0;i<c.vertices.size();i+=4){
+            double[] x=new double[4],y=new double[4],u=new double[4],v=new double[4];int[] argb=new int[4];
+            for(int k=0;k<4;k++){var vx=c.vertices.get(i+k);x[k]=vx.x();y[k]=vx.y();u[k]=vx.u();v[k]=vx.v();int color=vx.color();argb[k]=(color&0xff00ff00)|((color&255)<<16)|((color>>16)&255);}
+            GuiDrawB173.quad(x,y,u,v,argb);
+        }
     }}
     public void texture(double u,double v){var c=CAPTURE.get();if(c!=null){c.u=u;c.v=v;}}
     public void vertex(double x,double y,double z,double u,double v){texture(u,v);vertex(x,y,z);}
