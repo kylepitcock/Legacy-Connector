@@ -8,21 +8,21 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
-import net.minecraft.core.component.DataComponentType;
-import net.minecraft.core.component.DataComponents;
 import org.junit.jupiter.api.Test;
 
 /** Regression tests for the narrowly supported KubeJS 6 item-glow builder pattern. */
 class KubeJSItemBuilderCompatTest {
+    private static final Object GLINT_OVERRIDE = new Object();
+
     public static final class FakeItemBuilder {
         public Map<Object, Object> components;
     }
 
     public static final class FakeItemModifications {
-        DataComponentType<?> overriddenType;
+        Object overriddenType;
         Object overriddenValue;
 
-        public FakeItemModifications kjs$override(DataComponentType<?> type, Object value) {
+        public FakeItemModifications kjs$override(Object type, Object value) {
             overriddenType = type;
             overriddenValue = value;
             return this;
@@ -33,9 +33,9 @@ class KubeJSItemBuilderCompatTest {
     void glowTrueAddsTheMinecraftGlintOverrideComponent() {
         FakeItemBuilder builder = new FakeItemBuilder();
 
-        assertSame(builder, KubeJSItemBuilderCompat.glow(builder, true));
+        assertSame(builder, KubeJSItemBuilderCompat.glow(builder, true, GLINT_OVERRIDE));
 
-        assertEquals(Boolean.TRUE, builder.components.get(DataComponents.ENCHANTMENT_GLINT_OVERRIDE));
+        assertEquals(Boolean.TRUE, builder.components.get(GLINT_OVERRIDE));
     }
 
     @Test
@@ -43,21 +43,21 @@ class KubeJSItemBuilderCompatTest {
         FakeItemBuilder builder = new FakeItemBuilder();
         builder.components = new HashMap<>();
 
-        KubeJSItemBuilderCompat.glow(builder, false);
+        KubeJSItemBuilderCompat.glow(builder, false, GLINT_OVERRIDE);
 
-        assertEquals(true, builder.components.containsKey(DataComponents.ENCHANTMENT_GLINT_OVERRIDE));
-        assertNull(builder.components.get(DataComponents.ENCHANTMENT_GLINT_OVERRIDE));
+        assertEquals(true, builder.components.containsKey(GLINT_OVERRIDE));
+        assertNull(builder.components.get(GLINT_OVERRIDE));
     }
 
     @Test
     void setItemBuilderCopiesOnlyTheVerifiedGlintComponent() {
         FakeItemBuilder builder = new FakeItemBuilder();
         FakeItemModifications modifications = new FakeItemModifications();
-        KubeJSItemBuilderCompat.glow(builder, true);
+        KubeJSItemBuilderCompat.glow(builder, true, GLINT_OVERRIDE);
 
-        KubeJSItemBuilderCompat.setItemBuilder(modifications, builder);
+        KubeJSItemBuilderCompat.setItemBuilder(modifications, builder, GLINT_OVERRIDE);
 
-        assertEquals(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, modifications.overriddenType);
+        assertSame(GLINT_OVERRIDE, modifications.overriddenType);
         assertEquals(Boolean.TRUE, modifications.overriddenValue);
     }
 
@@ -65,11 +65,11 @@ class KubeJSItemBuilderCompatTest {
     void setItemBuilderRejectsUnreviewedBuilderComponents() {
         FakeItemBuilder builder = new FakeItemBuilder();
         builder.components = new HashMap<>();
-        builder.components.put(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, Boolean.TRUE);
+        builder.components.put(GLINT_OVERRIDE, Boolean.TRUE);
         builder.components.put("unreviewed", Boolean.TRUE);
 
         assertThrows(UnsupportedOperationException.class,
-                () -> KubeJSItemBuilderCompat.setItemBuilder(new FakeItemModifications(), builder));
+                () -> KubeJSItemBuilderCompat.setItemBuilder(new FakeItemModifications(), builder, GLINT_OVERRIDE));
     }
 
     @Test
