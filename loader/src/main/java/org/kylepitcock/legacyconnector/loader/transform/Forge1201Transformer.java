@@ -281,6 +281,8 @@ public final class Forge1201Transformer {
         int palladiumMixinChanges = 0;
         int palladiumLootChanges = 0;
         int palladiumAccessoryScreenChanges = 0;
+        int palladiumAdvancementWidgetChanges = 0;
+        int palladiumPowersScreenChanges = 0;
         int palladiumSelectionListNarrationChanges = 0;
         int palladiumSuitStandChanges = 0;
         int palladiumTailoringScreenChanges = 0;
@@ -344,12 +346,17 @@ public final class Forge1201Transformer {
             palladiumLootChanges += palladiumLootChange;
             int palladiumAccessoryScreenChange = PalladiumAccessoryScreen1201.apply(node);
             palladiumAccessoryScreenChanges += palladiumAccessoryScreenChange;
+            int palladiumAdvancementWidgetChange = PalladiumAdvancementWidget1201.apply(node);
+            palladiumAdvancementWidgetChanges += palladiumAdvancementWidgetChange;
+            int palladiumPowersScreenChange = PalladiumPowersScreen1201.apply(node);
+            palladiumPowersScreenChanges += palladiumPowersScreenChange;
             int palladiumSelectionListNarrationChange = PalladiumSelectionLists1201.apply(node);
             palladiumSelectionListNarrationChanges += palladiumSelectionListNarrationChange;
             Mixin1201.apply(node, srg, hierarchy, Mc1201Tables.get(), mixinStats);
             migrated.put(node, viaCalls + changed.total() + palladiumChanges + palladiumAddonPackChange
                     + palladiumWidgetButtonChange + palladiumMixinChange + palladiumLootChange
-                    + palladiumAccessoryScreenChange + palladiumSelectionListNarrationChange + palladiumSuitStandChange
+                    + palladiumAccessoryScreenChange + palladiumAdvancementWidgetChange + palladiumPowersScreenChange
+                    + palladiumSelectionListNarrationChange + palladiumSuitStandChange
                     + palladiumTailoringScreenChange + palladiumSheepColorChange
                     + palladiumRenderLayerChange + palladiumPlayerSkinChange + palladiumCommandFunctionChange);
         }
@@ -454,6 +461,14 @@ public final class Forge1201Transformer {
             result.notes.add("Palladium AccessoryScreen keeps its legacy lists/title/Done controls, skips the unused OptionsSubScreen body, passes Minecraft.options, suppresses the modern Screen background/blur hook while preserving super.render() widgets, and removes the legacy dirt-background layer: "
                     + palladiumAccessoryScreenChanges + " screen class(es)");
         }
+        if (palladiumAdvancementWidgetChanges > 0) {
+            result.notes.add("Palladium TreeAbilityWidget tooltip frame lookup migrated from removed AdvancementWidgetType#getIndex() to the preserved 1.21.1 enum order: "
+                    + palladiumAdvancementWidgetChanges + " call site(s)");
+        }
+        if (palladiumPowersScreenChanges > 0) {
+            result.notes.add("Palladium PowersScreen suppresses the modern Screen background/blur hook while preserving its custom contents: "
+                    + palladiumPowersScreenChanges + " screen class(es)");
+        }
         if (palladiumSelectionListNarrationChanges > 0) {
             result.notes.add("Palladium 1.20.1 list widgets removed their empty updateNarration() overrides, which conflict with 1.21.1's final AbstractWidget implementation: "
                     + palladiumSelectionListNarrationChanges + " list class(es)");
@@ -546,7 +561,7 @@ public final class Forge1201Transformer {
         }
         int alienEvoResourceChanges = PalladiumResourceCompat1201.apply(outResources);
         if (alienEvoResourceChanges > 0) {
-            result.notes.add("AlienEvo scripts normalize persistent NBT integers, guard empty armor ItemStacks, and compare Omnitrix UI tab IDs as strings: "
+            result.notes.add("AlienEvo scripts restore the legacy ResourceLocation constructor, resolve Omnitrix cycle/transform sound IDs to SoundEvents, normalize persistent NBT integers, guard empty armor ItemStacks, and compare Omnitrix UI tab IDs as strings: "
                     + alienEvoResourceChanges + " resource script(s)");
         }
         if (PalladiumKubeJS1201.addPluginDiscoveryResource(outResources, outClasses.keySet())) {
