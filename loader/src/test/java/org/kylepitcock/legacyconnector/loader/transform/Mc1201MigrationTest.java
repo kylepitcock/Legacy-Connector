@@ -281,6 +281,43 @@ class Mc1201MigrationTest implements Opcodes {
     }
 
     @Test
+    void legacyScoreboardQueriesUseThe1_21_1ScoreHolderApi() {
+        String scoreboard = "net/minecraft/world/scores/Scoreboard";
+        String objective = "net/minecraft/world/scores/Objective";
+        ClassNode c = cls("test/ScoreboardCalls", "java/lang/Object");
+
+        MethodNode has = method(c, ACC_PUBLIC | ACC_STATIC, "hasScore",
+                "(L" + scoreboard + ";Ljava/lang/String;L" + objective + ";)Z");
+        has.instructions.add(new VarInsnNode(ALOAD, 0));
+        has.instructions.add(new VarInsnNode(ALOAD, 1));
+        has.instructions.add(new VarInsnNode(ALOAD, 2));
+        has.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, scoreboard, "hasPlayerScore",
+                "(Ljava/lang/String;L" + objective + ";)Z", false));
+        has.instructions.add(new InsnNode(IRETURN));
+
+        MethodNode scores = method(c, ACC_PUBLIC | ACC_STATIC, "scores",
+                "(L" + scoreboard + ";Ljava/lang/String;)Ljava/util/Map;");
+        scores.instructions.add(new VarInsnNode(ALOAD, 0));
+        scores.instructions.add(new VarInsnNode(ALOAD, 1));
+        scores.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, scoreboard, "getPlayerScores",
+                "(Ljava/lang/String;)Ljava/util/Map;", false));
+        scores.instructions.add(new InsnNode(ARETURN));
+
+        assertEquals(2, apply(c).calls);
+
+        MethodInsnNode hasHelper = find(has, MIGRATE + "MiddleCompat", "hasPlayerScore");
+        assertNotNull(hasHelper);
+        assertEquals(INVOKESTATIC, hasHelper.getOpcode());
+        assertEquals("(L" + scoreboard + ";Ljava/lang/String;L" + objective + ";)Z", hasHelper.desc);
+
+        MethodInsnNode scoresHelper = find(scores, MIGRATE + "MiddleCompat", "playerScores");
+        assertNotNull(scoresHelper);
+        assertEquals(INVOKESTATIC, scoresHelper.getOpcode());
+        assertEquals("(L" + scoreboard + ";Ljava/lang/String;)Ljava/util/Map;", scoresHelper.desc);
+        verify(c);
+    }
+
+    @Test
     void aMethodOfTheModKeepsItsSignature() {
         // the mod's own getTag() on its own class must not be sent to the ItemStack helper
         ClassNode holder = cls("test/MyStack", "java/lang/Object");
