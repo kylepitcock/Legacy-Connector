@@ -53,6 +53,11 @@ class FunctionConverter1201Test {
         assertEquals("active_effects:[{id:" + quoted("minecraft:invisibility")
                         + ",amplifier:0b,duration:20,show_particles:0b}]",
                 FunctionConverter1201.convertCommand("ActiveEffects:[{Id:14b,Amplifier:0b,Duration:20,ShowParticles:0b}]"));
+        assertEquals("active_effects:[{id:" + quoted("minecraft:invisibility")
+                        + ",amplifier:1,duration:20000000,show_particles:0b}]",
+                FunctionConverter1201.convertCommand("ActiveEffects:[{Id:14,Amplifier:1,Duration:20000000,ShowParticles:0b}]"));
+        assertEquals("ActiveEffects:[{Id:15,Amplifier:1,Duration:20}]",
+                FunctionConverter1201.convertCommand("ActiveEffects:[{Id:15,Amplifier:1,Duration:20}]"));
         String selected = "@a[nbt={SelectedItem:{id:" + quoted("minecraft:carrot_on_a_stick")
                 + ",components:{" + quoted("minecraft:custom_model_data") + ":2}}}]";
         assertEquals(selected, FunctionConverter1201.convertCommand("@a[nbt={SelectedItem:{id:"
