@@ -1,7 +1,6 @@
 package org.kylepitcock.legacyconnector.loader.transform;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.Opcodes;
