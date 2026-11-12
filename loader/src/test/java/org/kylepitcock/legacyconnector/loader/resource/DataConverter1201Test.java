@@ -228,6 +228,22 @@ class DataConverter1201Test {
     }
 
     @Test
+    void translatesLegacyEntityStatusEffectAndItemStackNbtInsidePowerCommands() {
+        JsonElement r = one("data/alienevo_aliens/palladium/powers/example.json", """
+                {"commands":[
+                  "summon wolf ~ ~1 ~2 {ActiveEffects:[{Id:14,Amplifier:1,Duration:20000000,ShowParticles:0b}]}",
+                  "summon piglin ~ ~1 ~2 {ArmorItems:[{},{},{},{id:oak_button,Count:1}]}"
+                ]}
+                """, "data/alienevo_aliens/palladium/powers/example.json");
+        String value = r.toString();
+        String quote = String.valueOf((char)34);
+        assertTrue(value.contains("active_effects:[{id:" + quote + "minecraft:invisibility" + quote
+                + ",amplifier:1,duration:20000000,show_particles:0b}]"), value);
+        assertTrue(value.contains("ArmorItems:[{},{},{},{id:" + quote + "minecraft:oak_button" + quote
+                + ",count:1}]"), value);
+    }
+
+    @Test
     void packMcmeta() {
         Map<String, byte[]> in = new LinkedHashMap<>();
         in.put("pack.mcmeta", "{\"pack\":{\"description\":\"d\",\"pack_format\":15,\"forge:data_pack_format\":12}}".getBytes(StandardCharsets.UTF_8));
