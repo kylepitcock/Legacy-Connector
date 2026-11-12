@@ -399,6 +399,7 @@ public final class DataConverter1201 {
     private static void generic(JsonElement e, Ctx c, boolean model) {
         if (e.isJsonObject()) {
             JsonObject o = e.getAsJsonObject();
+            neoforgeConditions(o, c);
             for (String k : new ArrayList<>(o.keySet())) {
                 JsonElement v = o.get(k);
                 if (k.toLowerCase(java.util.Locale.ROOT).contains("command")) {
@@ -471,6 +472,34 @@ public final class DataConverter1201 {
                     c.hit("palladium_component_arrays");
                 }
             }
+        }
+    }
+
+
+    /**
+     * Forge worldgen resources use a literal "forge:conditions" object key.
+     * NeoForge reads the same condition list from "neoforge:conditions".
+     * When both forms exist, retain every condition by appending the legacy
+     * entries to the modern array; preserve malformed/conflicting shapes.
+     */
+    private static void neoforgeConditions(JsonObject o, Ctx c) {
+        JsonElement legacy = o.remove("forge:conditions");
+        if (legacy == null) return;
+
+        JsonElement modern = o.get("neoforge:conditions");
+        if (modern == null) {
+            o.add("neoforge:conditions", legacy);
+            c.hit("forge_conditions");
+        } else if (legacy.isJsonArray() && modern.isJsonArray()) {
+            JsonArray merged = new JsonArray();
+            merged.addAll(modern.getAsJsonArray());
+            merged.addAll(legacy.getAsJsonArray());
+            o.add("neoforge:conditions", merged);
+            c.hit("forge_conditions_merged");
+        } else {
+            // Do not discard either representation when their shapes conflict.
+            o.add("forge:conditions", legacy);
+            c.hit("forge_conditions_conflict");
         }
     }
 
