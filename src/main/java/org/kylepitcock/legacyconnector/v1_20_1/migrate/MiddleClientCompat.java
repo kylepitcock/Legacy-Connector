@@ -309,11 +309,19 @@ public final class MiddleClientCompat {
 
     /** {@code new Checkbox(x, y, width, height, label, selected)}. */
     public static Checkbox newCheckbox(int x, int y, int width, int height, Component label, boolean selected) {
-        return Checkbox.builder(label, Minecraft.getInstance().font).pos(x, y).selected(selected).build();
+        return Checkbox.builder(label, Minecraft.getInstance().font)
+                .pos(x, y)
+                .maxWidth(Math.max(1, width))
+                .selected(selected)
+                .build();
     }
 
     public static Checkbox newCheckbox(int x, int y, int width, int height, Component label, boolean selected, boolean showLabel) {
-        return Checkbox.builder(showLabel ? label : Component.empty(), Minecraft.getInstance().font).pos(x, y).selected(selected).build();
+        return Checkbox.builder(showLabel ? label : Component.empty(), Minecraft.getInstance().font)
+                .pos(x, y)
+                .maxWidth(Math.max(1, width))
+                .selected(selected)
+                .build();
     }
 
     public static RenderType glintDirect() {
