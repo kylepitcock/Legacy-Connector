@@ -86,6 +86,47 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
     }
 
     /**
+     * Forge 1.20.1 Jar-in-Jar mods are translated by Forge1201Transformer,
+     * but they are not separate entries in the top-level legacy jar list.
+     * Include their mod IDs in the runtime facade event fan-out so nested
+     * mods (for example PalladiumCore) receive the old Forge registration
+     * events that their translated code subscribes to.
+     */
+    static Set<String> nestedForge1201ModIds(LegacyJar parent, Path scanDir) {
+        Set<String> ids = new java.util.LinkedHashSet<>();
+        try (ZipFile zip = new ZipFile(parent.existing().toFile())) {
+            var entries = zip.entries();
+            while (entries.hasMoreElements()) {
+                ZipEntry entry = entries.nextElement();
+                String name = entry.getName();
+                if (entry.isDirectory() || !name.endsWith(".jar")
+                        || !(name.startsWith("META-INF/jarjar/") || name.startsWith("META-INF/jars/"))) {
+                    continue;
+                }
+
+                Files.createDirectories(scanDir);
+                Path nestedPath = Files.createTempFile(scanDir, "legacyconnector-forge1201-modid-", ".jar");
+                try {
+                    try (InputStream in = zip.getInputStream(entry)) {
+                        Files.copy(in, nestedPath, StandardCopyOption.REPLACE_EXISTING);
+                    }
+                    LegacyJar nested = LegacyJarInspector.inspect(nestedPath);
+                    if (nested == null || nested.version != LegacyVersion.V1_20_1) continue;
+                    for (LegacyModDecl mod : nested.mods) {
+                        String id = mod.fmlId();
+                        if (id != null && !id.isBlank()) ids.add(id);
+                    }
+                } finally {
+                    Files.deleteIfExists(nestedPath);
+                }
+            }
+        } catch (IOException | RuntimeException e) {
+            LOG.debug("Legacy Connector: could not inspect nested Forge 1.20.1 mod IDs in {}", parent.fileName(), e);
+        }
+        return ids;
+    }
+
+    /**
      * Distribution archives of the 1.6 era carried the mod itself as an archive in a folder named "Put contents into the Mods Folder" next to a
      * server-jar patch (Goblins! Mod: the patch has the classes only, the textures and sounds are in the inner zip). Users unzipped them; this extracts
      * the inner archive and loads that instead of the wrapper. Null when the archive is not such a wrapper.
@@ -296,9 +337,25 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             // Legacy coremods' class transformers, loaded on the first cache miss (only then is anything translated).
             List<LegacyJar> loading = legacy.stream()
                     .filter(j -> skipReason(j) == null && LibraryBridges.replacing(j, bridges) == null && LibraryBridges.obsoleteReason(j) == null).toList();
-            // The runtime wires the Forge 1.20.1 facades (events, capabilities, networking) only for these mods.
-            System.setProperty("legacyconnector.forge1201.mods", loading.stream().filter(j -> j.version == LegacyVersion.V1_20_1)
-                    .flatMap(j -> j.mods.stream()).map(LegacyModDecl::fmlId).collect(java.util.stream.Collectors.joining(",")));
+            // The runtime wires the Forge 1.20.1 facades (events, capabilities, networking) for translated
+            // mods and translated Forge 1.20.1 mods nested in their Jar-in-Jar archives.
+            Set<String> forge1201Mods = new java.util.LinkedHashSet<>();
+            Set<String> nestedForge1201Mods = new java.util.LinkedHashSet<>();
+            Path nestedModScanDir = gameDir.resolve(".legacyconnector").resolve("nested-mod-scan");
+            for (LegacyJar jar : loading) {
+                if (jar.version != LegacyVersion.V1_20_1) continue;
+                for (LegacyModDecl mod : jar.mods) {
+                    String id = mod.fmlId();
+                    if (id != null && !id.isBlank()) forge1201Mods.add(id);
+                }
+                Set<String> nestedIds = nestedForge1201ModIds(jar, nestedModScanDir);
+                nestedForge1201Mods.addAll(nestedIds);
+            }
+            forge1201Mods.addAll(nestedForge1201Mods);
+            System.setProperty("legacyconnector.forge1201.mods", String.join(",", forge1201Mods));
+            if (!nestedForge1201Mods.isEmpty()) {
+                LOG.info("Legacy Connector: Forge 1.20.1 facade event routing includes nested mod IDs: {}", nestedForge1201Mods);
+            }
             // One coremod class loader per API flavour (1.7.10; 1.6.4 and 1.5.2), loaded on the first class of a jar that uses it.
             var coremods = new java.util.EnumMap<LegacyVersion, org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers>(LegacyVersion.class);
             transformer.patcher((jar, name, bytes) -> {
