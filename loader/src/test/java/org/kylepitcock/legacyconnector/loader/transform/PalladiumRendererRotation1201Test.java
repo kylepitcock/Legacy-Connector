@@ -38,8 +38,9 @@ class PalladiumRendererRotation1201Test implements Opcodes {
 
         MethodInsnNode forwarded = findCall(bridge, node.name, "setupRotations", NEW_TYPED_DESC);
         assertNotNull(forwarded);
-        assertTrue(previousReal(forwarded).getOpcode() == FCONST_1,
-                "the legacy bridge forwards the default scale");
+        assertTrue(previousReal(forwarded) instanceof VarInsnNode scale
+                        && scale.getOpcode() == FLOAD && scale.var == 6,
+                "the modern bridge forwards the scale supplied by 1.21.1");
         assertTrue(bridge.maxLocals >= 7);
         assertEquals(0, PalladiumRendererRotation1201.apply(node), "second application is idempotent");
         assertEmittable(node);
