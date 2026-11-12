@@ -164,6 +164,7 @@ final class PalladiumPlayerSkinFetcher1201 implements Opcodes {
         callback.instructions.clear();
         callback.tryCatchBlocks.clear();
         callback.localVariables = null;
+        callback.signature = null;
 
         LabelNode hasSkin = new LabelNode();
         LabelNode done = new LabelNode();
