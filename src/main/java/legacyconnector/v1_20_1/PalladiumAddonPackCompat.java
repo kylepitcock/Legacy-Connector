@@ -4,10 +4,10 @@ import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackLocationInfo;
 import net.minecraft.server.packs.PackSelectionConfig;
 import net.minecraft.server.packs.repository.Pack;
+import net.minecraft.server.packs.PackType;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.validation.DirectoryValidator;
 import net.neoforged.fml.loading.FMLPaths;
-import net.threetag.palladium.addonpack.AddonPackManager;
 
 /**
  * Palladium 4.5.10 addon-pack compatibility for Minecraft 1.21.1.
@@ -32,7 +32,7 @@ public final class PalladiumAddonPackCompat {
      * required-selection flag. The original pack remains the resource source;
      * each open obtains a fresh PackResources instance through original.open().
      */
-    public static Pack prefixAndRequireAddonPack(Pack original) {
+    public static Pack prefixAndRequireAddonPack(Pack original, PackType packType) {
         if (original == null) {
             throw new IllegalArgumentException("Palladium discovered a null addon pack");
         }
@@ -60,8 +60,7 @@ public final class PalladiumAddonPackCompat {
             }
         };
 
-        Pack migrated = Pack.readMetaAndCreate(
-                location, resources, AddonPackManager.getPackType(), selection);
+        Pack migrated = Pack.readMetaAndCreate(location, resources, packType, selection);
         if (migrated == null) {
             throw new IllegalStateException(
                     "Could not recreate Palladium addon pack after applying its legacy ID and required settings: "
