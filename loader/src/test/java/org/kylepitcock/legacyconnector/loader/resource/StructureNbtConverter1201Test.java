@@ -25,8 +25,8 @@ class StructureNbtConverter1201Test {
         assertFalse(converted.malformed());
         String nbt = new String(inflate(converted.data()), StandardCharsets.ISO_8859_1);
         assertEquals(1, occurrences(nbt, "forge:entity_gravity"), nbt);
-        // Three nested metadata values and one unrelated-list value must remain untouched.
-        assertEquals(4, occurrences(nbt, "forge:step_height_addition"), nbt);
+        // Four nested metadata values and the unrelated-list attribute ID must remain untouched.
+        assertEquals(5, occurrences(nbt, "forge:step_height_addition"), nbt);
         assertEquals(1, occurrences(nbt, "minecraft:generic.gravity"), nbt);
         assertEquals(1, occurrences(nbt, "minecraft:generic.step_height"), nbt);
         assertEquals(1, occurrences(nbt, "generic.movement_speed"), nbt);
