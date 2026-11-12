@@ -165,15 +165,18 @@ final class PalladiumPlayerSkinFetcher1201 implements Opcodes {
         callback.localVariables = null;
         callback.signature = null;
 
+        LabelNode failed = new LabelNode();
         LabelNode hasSkin = new LabelNode();
         LabelNode done = new LabelNode();
         callback.instructions.add(new VarInsnNode(ALOAD, 2));
-        callback.instructions.add(new JumpInsnNode(IFNONNULL, hasSkin));
+        callback.instructions.add(new JumpInsnNode(IFNONNULL, failed));
         callback.instructions.add(new VarInsnNode(ALOAD, 1));
-        callback.instructions.add(new JumpInsnNode(IFNONNULL, hasSkin));
+        callback.instructions.add(new JumpInsnNode(IFNULL, failed));
+        callback.instructions.add(new JumpInsnNode(GOTO, hasSkin));
 
         // An exceptional or empty future result -> the same cached failure
         // state used when a name cannot be resolved to a GameProfile.
+        callback.instructions.add(failed);
         callback.instructions.add(new FieldInsnNode(GETSTATIC, node.name, "CACHED_NAME_SKINS", "Ljava/util/Map;"));
         callback.instructions.add(new VarInsnNode(ALOAD, 0));
         callback.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, GAME_PROFILE, "getName", "()Ljava/lang/String;", false));
