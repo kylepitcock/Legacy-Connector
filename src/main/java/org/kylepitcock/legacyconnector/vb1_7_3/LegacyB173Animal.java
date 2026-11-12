@@ -393,8 +393,9 @@ public final class LegacyB173Animal extends PathfinderMob implements B173LivingH
             var carrier=EntityViewsB173.wrap(vehicle);
             // Native positionRider subtracts the passenger attachment from its native seat.
             // Reconstruct Beta's seat in legacy coordinates, then normalize its eye origin once.
-            var desired=new net.minecraft.world.phys.Vec3(carrier.x,
-                    carrier.y+carrier.getPassengerRidingHeight()+legacy.getStandingEyeHeight()-legacy.standingEyeHeight,carrier.z);
+            // The carrier's view holds the position it was synced with at the start of the tick; the seat follows the native position.
+            var desired=new net.minecraft.world.phys.Vec3(vehicle.getX(),
+                    vehicle.getY()+carrier.standingEyeHeight+carrier.getPassengerRidingHeight()+legacy.getStandingEyeHeight()-legacy.standingEyeHeight,vehicle.getZ());
             attachment[0]=vehicle.getPassengerRidingPosition(this).subtract(desired);
         });
         return attachment[0];
@@ -403,7 +404,11 @@ public final class LegacyB173Animal extends PathfinderMob implements B173LivingH
         if(legacy==null||passenger!=getFirstPassenger()||!hasPassenger(passenger)){super.positionRider(passenger,move);return;}
         callback(()->{
             if(!RiderPositionB173.attached(legacy,passenger))return;
-            legacy.updatePassengerPosition();
+            var carrier=legacy.vehicle;
+            // A player carrier's legacy position is last tick's by now: seat the rider at the player's current position or it trails when moving.
+            if(getVehicle() instanceof net.minecraft.world.entity.player.Player nativeCarrier&&carrier!=null)
+                legacy.setPosition(nativeCarrier.getX(),nativeCarrier.getY()+carrier.standingEyeHeight+carrier.getPassengerRidingHeight()+legacy.getStandingEyeHeight(),nativeCarrier.getZ());
+            else legacy.updatePassengerPosition();
             if(!RiderPositionB173.attached(legacy,passenger))return;
             var view=EntityViewsB173.wrap(passenger);
             move.accept(passenger,view.x,view.y-view.standingEyeHeight,view.z);
