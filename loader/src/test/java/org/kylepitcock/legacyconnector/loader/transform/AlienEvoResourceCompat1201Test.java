@@ -62,6 +62,31 @@ class AlienEvoResourceCompat1201Test {
     }
 
     @Test
+    void makesOnlyTheAdAstraDamageReferenceOptional() {
+        Map<String, byte[]> resources = new LinkedHashMap<>();
+        resources.put(AlienEvoResourceCompat1201.EVOASTRA_DAMAGE_TAG, """
+                {"replace":false,"values":["ad_astra:oxygen","minecraft:is_fall"]}
+                """.getBytes(StandardCharsets.UTF_8));
+        assertTrue(AlienEvoResourceCompat1201.makeAdAstraDamageTypeOptional(resources));
+        String migrated = new String(resources.get(AlienEvoResourceCompat1201.EVOASTRA_DAMAGE_TAG),
+                StandardCharsets.UTF_8);
+        assertTrue(migrated.contains("\\"id\\":\\"ad_astra:oxygen\\""), migrated);
+        assertTrue(migrated.contains("\\"required\\":false"), migrated);
+        assertTrue(migrated.contains("\\"minecraft:is_fall\\""), migrated);
+        assertFalse(AlienEvoResourceCompat1201.makeAdAstraDamageTypeOptional(resources));
+    }
+
+    @Test
+    void leavesAnUnrecognizedOrMissingAdAstraTagAlone() {
+        Map<String, byte[]> missing = new LinkedHashMap<>();
+        assertFalse(AlienEvoResourceCompat1201.makeAdAstraDamageTypeOptional(missing));
+        Map<String, byte[]> different = new LinkedHashMap<>();
+        different.put(AlienEvoResourceCompat1201.EVOASTRA_DAMAGE_TAG,
+                "{\\"values\\":[\\"example:other\\"]}".getBytes(StandardCharsets.UTF_8));
+        assertFalse(AlienEvoResourceCompat1201.makeAdAstraDamageTypeOptional(different));
+    }
+
+    @Test
     void preservesThePowerWhenAClassReferencesTheMissingType() {
         Map<String, byte[]> resources = resources(TEST_POWER);
         Map<String, byte[]> classes = Map.of(
