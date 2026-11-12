@@ -523,6 +523,15 @@ class PalladiumMixinCompat1201Test implements Opcodes {
         assertClassCanBeSerialized(node);
     }
 
+    @Test
+    void crossbowMixinRemainsOutsideCompatibilityScope() {
+        ClassNode node = new ClassNode();
+        node.name = "net/threetag/palladium/mixin/CrossbowItemMixin";
+
+        assertEquals(0, PalladiumMixinCompat1201.apply(node));
+        assertEquals(0, PalladiumMixinCompat1201.apply(node));
+    }
+
     @SuppressWarnings("unchecked")
     private static java.util.List<AnnotationNode>[] parameterAnnotations(int parameterCount, int annotatedParameter) {
         java.util.List<AnnotationNode>[] annotations =
