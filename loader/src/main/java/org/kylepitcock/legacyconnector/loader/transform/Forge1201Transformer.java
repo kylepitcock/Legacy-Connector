@@ -402,7 +402,7 @@ public final class Forge1201Transformer {
                     + palladiumFlightHandlerChanges + " field read(s)");
         }
         if (palladiumCoreOverlayChanges > 0) {
-            result.notes.add("PalladiumCore legacy GUI overlay registration migrated to NeoForge RegisterGuiLayersEvent/LayeredDraw.Layer: "
+            result.notes.add("PalladiumCore overlay registry verified against the Forge 1.20.1 RegisterGuiOverlaysEvent/ForgeGui shim, which forwards to NeoForge RegisterGuiLayersEvent/LayeredDraw.Layer: "
                     + palladiumCoreOverlayChanges + " overlay registry class(es)");
         }
         if (palladiumLootChanges > 0) {
