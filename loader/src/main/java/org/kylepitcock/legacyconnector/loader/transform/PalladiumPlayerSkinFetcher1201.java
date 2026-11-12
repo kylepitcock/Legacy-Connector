@@ -118,14 +118,18 @@ final class PalladiumPlayerSkinFetcher1201 implements Opcodes {
         // The old expression is:
         // skinManager.registerSkins(profile, (type, location, texture) -> ..., true)
         // The new expression is:
-        // skinManager.getOrLoad(profile).thenAccept(skin -> ...).
-        LabelNode unused = null;
-        AbstractInsnNode captureProfile = oldCallback.getPrevious();
-        while (captureProfile != null && captureProfile.getOpcode() < 0) captureProfile = captureProfile.getPrevious();
-        if (!(captureProfile instanceof VarInsnNode loadProfile)
-                || loadProfile.getOpcode() != ALOAD || loadProfile.var != 2) {
+        // skinManager.getOrLoad(profile).thenAccept(optionalSkin -> ...).
+        AbstractInsnNode captureProfile = previousReal(oldCallback);
+        if (!(captureProfile instanceof VarInsnNode capturedProfile)
+                || capturedProfile.getOpcode() != ALOAD || capturedProfile.var != 2) {
             throw new IllegalStateException(
                     "Palladium PlayerSkinFetcher no longer captures the expected GameProfile local");
+        }
+        AbstractInsnNode lookupProfile = previousReal(captureProfile);
+        if (!(lookupProfile instanceof VarInsnNode requestProfile)
+                || requestProfile.getOpcode() != ALOAD || requestProfile.var != 2) {
+            throw new IllegalStateException(
+                    "Palladium PlayerSkinFetcher no longer passes its GameProfile to SkinManager");
         }
 
         oldCallback.name = "accept";
@@ -136,24 +140,24 @@ final class PalladiumPlayerSkinFetcher1201 implements Opcodes {
                 Type.getMethodType("(L" + OPTIONAL + ";)V")
         };
 
-        registerSkins.name = "getOrLoad";
-        registerSkins.desc = GET_OR_LOAD_DESC;
-        registerSkins.itf = false;
+        // getOrLoad consumes the manager and the first profile operand. The
+        // second profile operand remains the captured value for thenAccept.
+        request.instructions.insert(lookupProfile, new MethodInsnNode(
+                INVOKEVIRTUAL, SKIN_MANAGER, "getOrLoad", GET_OR_LOAD_DESC, false));
 
-        // Remove the obsolete "true" registerSkins flag; the callback is now
-        // attached to the future returned by getOrLoad().
-        AbstractInsnNode flag = nextReal(registerSkins);
+        AbstractInsnNode flag = nextReal(oldCallback);
         if (flag == null || flag.getOpcode() != ICONST_1) {
             throw new IllegalStateException(
                     "Palladium PlayerSkinFetcher legacy registerSkins call no longer has its expected secure flag");
         }
         request.instructions.remove(flag);
-        request.instructions.insert(registerSkins, new MethodInsnNode(
-                INVOKEVIRTUAL, COMPLETABLE_FUTURE, "thenAccept", THEN_ACCEPT_DESC, false));
-        AbstractInsnNode afterThenAccept = nextReal(registerSkins.getNext());
-        if (afterThenAccept == null || afterThenAccept.getOpcode() != POP) {
-            request.instructions.insert(registerSkins.getNext(), new InsnNode(POP));
-        }
+
+        registerSkins.setOpcode(INVOKEVIRTUAL);
+        registerSkins.owner = COMPLETABLE_FUTURE;
+        registerSkins.name = "thenAccept";
+        registerSkins.desc = THEN_ACCEPT_DESC;
+        registerSkins.itf = false;
+        request.instructions.insert(registerSkins, new InsnNode(POP));
 
         // Rebuild only the small callback body. Preserve the same map,
         // cache-miss factory, PlayerSkinInfo.set(), and failure behavior.
@@ -247,6 +251,12 @@ final class PalladiumPlayerSkinFetcher1201 implements Opcodes {
         AbstractInsnNode next = instruction.getNext();
         while (next != null && next.getOpcode() < 0) next = next.getNext();
         return next;
+    }
+
+    private static AbstractInsnNode previousReal(AbstractInsnNode instruction) {
+        AbstractInsnNode previous = instruction.getPrevious();
+        while (previous != null && previous.getOpcode() < 0) previous = previous.getPrevious();
+        return previous;
     }
 
     private static MethodNode find(ClassNode node, String name, String desc) {
