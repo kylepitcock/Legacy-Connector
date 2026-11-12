@@ -104,15 +104,17 @@ class PalladiumSelectionLists1201Test implements Opcodes {
                 node.superName = "net/minecraft/client/gui/components/ObjectSelectionList";
             }
             MethodNode init = new MethodNode(ACC_PUBLIC, "configure", "()V", null, null);
+            String setterOwner = PalladiumSelectionLists1201.ADDON_LIST_WIDGET.equals(name)
+                    ? node.superName : name;
             init.instructions.add(new VarInsnNode(ALOAD, 0));
             init.instructions.add(new InsnNode(ICONST_0));
-            init.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, name, "setRenderBackground", "(Z)V", false));
+            init.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, setterOwner, "setRenderBackground", "(Z)V", false));
             init.instructions.add(new VarInsnNode(ALOAD, 0));
             init.instructions.add(new InsnNode(ICONST_0));
-            init.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, name, "setRenderTopAndBottom", "(Z)V", false));
+            init.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, setterOwner, "setRenderTopAndBottom", "(Z)V", false));
             init.instructions.add(new VarInsnNode(ALOAD, 0));
             init.instructions.add(new InsnNode(ICONST_1));
-            init.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, name, "setRenderSelection", "(Z)V", false));
+            init.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, setterOwner, "setRenderSelection", "(Z)V", false));
             init.instructions.add(new InsnNode(RETURN));
             init.maxStack = 2;
             init.maxLocals = 1;
