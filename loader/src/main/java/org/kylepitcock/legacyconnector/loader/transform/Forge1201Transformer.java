@@ -574,6 +574,9 @@ public final class Forge1201Transformer {
         if (AlienEvoResourceCompat1201.makeAdAstraDamageTypeOptional(outResources)) {
             result.notes.add("AlienEvo: made the Ad Astra oxygen damage-type tag optional; it is used when ad_astra:oxygen is registered and skipped when Ad Astra is absent");
         }
+        if (AlienEvoResourceCompat1201.ensureAddonResourceRootMarker(outResources)) {
+            result.notes.add("AlienEvo: added the 1.21.1 addon resource-root marker for its nonstandard addon/ asset tree");
+        }
         // the data and resource packs: 1.21 folder names, recipe/loot/advancement/tag/model formats, forge: ids, pack.mcmeta (DataConverter1201)
         DataConverter1201.Stats dataStats = new DataConverter1201.Stats();
         outResources = new LinkedHashMap<>(DataConverter1201.convertAll(outResources, dataStats));
