@@ -67,7 +67,8 @@ final class PalladiumSelectionLists1201 implements Opcodes {
 
     /**
      * Migrates legacy inherited {@code x0} references to the 1.21.1 widget
-     * position API and renames only verified empty narration overrides.
+     * position API, preserves the removed list-render flags through the modern
+ * rendering hooks, and renames only verified empty narration overrides.
      *
      * @return the number of bytecode sites changed
      */
