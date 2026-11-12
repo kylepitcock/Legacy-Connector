@@ -52,6 +52,11 @@ final class ModTicksClientB173 {
     private static void frame(GuiGraphics graphics){
         if(!ContentB173.hasClientHooks()){display=List.of();return;}
         var mc=Minecraft.getInstance();if(mc.level==null||mc.player==null){display=List.of();return;}
+        // Original code sizes its own overlays from the Minecraft singleton (new ScreenScaler(mc.options, mc.displayWidth, mc.displayHeight)):
+        // it must see the real window and GUI scale, not the defaults (auto scale picks a larger factor and the overlay comes out smaller).
+        var singleton=legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$instance();
+        singleton.displayWidth=mc.getWindow().getWidth();singleton.displayHeight=mc.getWindow().getHeight();
+        singleton.options.guiScale=mc.options.guiScale().get();
         if(previous!=mc.level){previous=mc.level;display=List.of();lastTick=Long.MIN_VALUE;}
         int[] metrics=new int[256];for(int i=0;i<metrics.length;i++)metrics[i]=mc.font.width(String.valueOf((char)i));
         var options=new Options(mc.getWindow().getWidth(),mc.getWindow().getHeight(),mc.getWindow().getGuiScaledWidth(),
