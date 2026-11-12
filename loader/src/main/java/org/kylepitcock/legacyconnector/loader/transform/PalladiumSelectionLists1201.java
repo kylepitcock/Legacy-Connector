@@ -136,6 +136,7 @@ final class PalladiumSelectionLists1201 implements Opcodes {
                 if (!(instruction instanceof MethodInsnNode call)
                         || !call.desc.equals(RENDER_FLAG_DESC)
                         || !(call.owner.equals(node.name)
+                        || call.owner.equals(node.superName)
                         || call.owner.equals("net/minecraft/client/gui/components/AbstractSelectionList"))) {
                     continue;
                 }
