@@ -25,7 +25,7 @@ repositories {
         url = 'https://api.modrinth.com/maven'
         content { includeGroup 'maven.modrinth' }
     }
-    maven { // TerraBlender (external required mod; legacy biomes are placed as a TerraBlender region)
+    maven { // TerraBlender (optional integration; compile-time API only)
         url = 'https://maven.minecraftforge.net/'
         content { includeGroup 'com.github.glitchfiend' }
     }
@@ -171,12 +171,11 @@ dependencies {
     compileOnly("com.simibubi.create:create-1.21.1:${create_version}") { transitive = false }
     compileOnly "dev.latvian.mods:rhino-neoforge:2006.2.4-build.17" // optional KubeJS 7 Rhino Context API; not bundled at runtime
 
-    // External mod dependencies are never jar-in-jar packaged. TerraBlender supplies the only legacy-biome placement path and is required
-    // by mods.toml. Pehkui is an optional size/render integration; EntitySizes1710 loads its typed API bridge only when Pehkui is present.
+    // Optional mod integrations are compile-only: neither is required or added to the connector's runtime classpath.
+    // TerraBlender is used only when already installed; otherwise BiomePlacement supplies a native multi-noise overlay.
+    // Pehkui is used only when present; its typed bridge is isolated behind a runtime presence check.
     compileOnly "com.github.glitchfiend:TerraBlender-neoforge:${terrablender_version}"
-    additionalRuntimeClasspath "com.github.glitchfiend:TerraBlender-neoforge:${terrablender_version}"
     compileOnly "maven.modrinth:pehkui:${pehkui_version}"
-    additionalRuntimeClasspath "maven.modrinth:pehkui:${pehkui_version}"
 
     // Libraries Minecraft 1.7.10 / 1.12.2 shipped and legacy mods use directly, absent from 1.21.1. NOT jar-in-jar: a jar-in-jar library
     // always enters the game module layer, and a modern mod that bundles the same packages (ScalableCatsForce ships Scala 2.13) then stops
