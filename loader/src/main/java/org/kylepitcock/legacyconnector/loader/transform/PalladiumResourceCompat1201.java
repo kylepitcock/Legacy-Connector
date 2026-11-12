@@ -20,6 +20,8 @@ final class PalladiumResourceCompat1201 {
             "addon/alienevo/kubejs_scripts/transform.js";
     static final String ALIEN_EVO_POWER_UI =
             "assets/alienevo/kubejs_scripts/power_ui.js";
+    static final String ALIEN_EVO_DIAMOND_CREATION =
+            "addon/alienevo/kubejs_scripts/diamond_creation.js";
 
     static final String OMNITRIX_INTEGER_HELPER =
             "function toOmnitrixInteger(value) {\n"
@@ -154,6 +156,7 @@ final class PalladiumResourceCompat1201 {
         rewriteTransformScript(resources);
         rewrite(resources, ALIEN_EVO_POWER_UI, POWER_UI_TAB_COMPARISONS);
         rewriteLegacyScriptApis(resources);
+        rewriteDiamondCreationSound(resources);
         rewriteScoreboardApi(resources);
         rewriteOptionalPehkuiApi(resources);
 
@@ -262,6 +265,161 @@ final class PalladiumResourceCompat1201 {
         return changed;
     }
 
+
+    /**
+     * AlienEvo 1.1.3's diamond-creation ability still passes its legacy string
+     * sound ID to Level.playSound. In 1.21.1 Rhino sees both the Holder and
+     * SoundEvent overloads and cannot choose one. Resolve the ID to the
+     * registered SoundEvent first, just as the other AlienEvo ability scripts
+     * do. This is scoped to the inspected diamond_creation.js resource.
+     */
+    private static int rewriteDiamondCreationSound(Map<String, byte[]> resources) {
+        byte[] original = resources.get(ALIEN_EVO_DIAMOND_CREATION);
+        if (original == null) return 0;
+
+        String script = new String(original, StandardCharsets.UTF_8);
+        List<ScriptArgument> soundArguments = new java.util.ArrayList<>();
+        int searchFrom = 0;
+        while (true) {
+            int call = script.indexOf(".playSound(", searchFrom);
+            if (call < 0) break;
+            int open = call + ".playSound".length();
+            int close = matchingCallParen(script, open);
+            if (close < 0) {
+                throw new IllegalStateException(
+                        "AlienEvo diamond_creation.js has an unterminated Level.playSound call");
+            }
+
+            List<ScriptArgument> arguments = splitScriptArguments(script, open + 1, close);
+            if (arguments.size() == 8
+                    && "null".equals(script.substring(arguments.get(0).start(), arguments.get(0).end()).trim())) {
+                ScriptArgument sound = arguments.get(4);
+                String expression = script.substring(sound.start(), sound.end()).trim();
+                if (!expression.startsWith("getAlienEvoSoundEvent(")) {
+                    soundArguments.add(sound);
+                }
+            }
+            searchFrom = close + 1;
+        }
+
+        if (soundArguments.isEmpty()) return 0;
+
+        String migrated = script;
+        for (int i = soundArguments.size() - 1; i >= 0; i--) {
+            ScriptArgument range = soundArguments.get(i);
+            String expression = migrated.substring(range.start(), range.end()).trim();
+            migrated = migrated.substring(0, range.start())
+                    + "getAlienEvoSoundEvent(" + expression + ")"
+                    + migrated.substring(range.end());
+        }
+        migrated = addSoundEventHelper(migrated);
+        resources.put(ALIEN_EVO_DIAMOND_CREATION, migrated.getBytes(StandardCharsets.UTF_8));
+        return 1;
+    }
+
+    private record ScriptArgument(int start, int end) {}
+
+    /** Finds the closing parenthesis of a JavaScript call while ignoring strings and comments. */
+    private static int matchingCallParen(String script, int open) {
+        int depth = 1;
+        char quote = 0;
+        boolean escaped = false;
+        boolean lineComment = false;
+        boolean blockComment = false;
+        for (int i = open + 1; i < script.length(); i++) {
+            char c = script.charAt(i);
+            char next = i + 1 < script.length() ? script.charAt(i + 1) : 0;
+            if (lineComment) {
+                if (c == '\n') lineComment = false;
+                continue;
+            }
+            if (blockComment) {
+                if (c == '*' && next == '/') {
+                    blockComment = false;
+                    i++;
+                }
+                continue;
+            }
+            if (quote != 0) {
+                if (escaped) escaped = false;
+                else if (c == '\\') escaped = true;
+                else if (c == quote) quote = 0;
+                continue;
+            }
+            if (c == '/' && next == '/') {
+                lineComment = true;
+                i++;
+            } else if (c == '/' && next == '*') {
+                blockComment = true;
+                i++;
+            } else if (c == '\'' || c == '"' || c == 96) {
+                quote = c;
+            } else if (c == '(') {
+                depth++;
+            } else if (c == ')' && --depth == 0) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /** Splits only commas at the top level of a call's argument list. */
+    private static List<ScriptArgument> splitScriptArguments(String script, int start, int end) {
+        List<ScriptArgument> out = new java.util.ArrayList<>();
+        int parens = 0, brackets = 0, braces = 0;
+        int argumentStart = start;
+        char quote = 0;
+        boolean escaped = false;
+        boolean lineComment = false;
+        boolean blockComment = false;
+        for (int i = start; i < end; i++) {
+            char c = script.charAt(i);
+            char next = i + 1 < end ? script.charAt(i + 1) : 0;
+            if (lineComment) {
+                if (c == '\n') lineComment = false;
+                continue;
+            }
+            if (blockComment) {
+                if (c == '*' && next == '/') {
+                    blockComment = false;
+                    i++;
+                }
+                continue;
+            }
+            if (quote != 0) {
+                if (escaped) escaped = false;
+                else if (c == '\\') escaped = true;
+                else if (c == quote) quote = 0;
+                continue;
+            }
+            if (c == '/' && next == '/') {
+                lineComment = true;
+                i++;
+            } else if (c == '/' && next == '*') {
+                blockComment = true;
+                i++;
+            } else if (c == '\'' || c == '"' || c == 96) {
+                quote = c;
+            } else if (c == '(') {
+                parens++;
+            } else if (c == ')') {
+                parens--;
+            } else if (c == '[') {
+                brackets++;
+            } else if (c == ']') {
+                brackets--;
+            } else if (c == '{') {
+                braces++;
+            } else if (c == '}') {
+                braces--;
+            } else if (c == ',' && parens == 0 && brackets == 0 && braces == 0) {
+                out.add(new ScriptArgument(argumentStart, i));
+                argumentStart = i + 1;
+            }
+        }
+        out.add(new ScriptArgument(argumentStart, end));
+        return out;
+    }
 
     /**
      * AlienEvo 1.1.3 uses the pre-1.21 Scoreboard and ScoreAccess APIs in
