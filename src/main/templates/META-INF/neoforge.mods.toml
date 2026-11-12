@@ -32,12 +32,13 @@ versionRange = "${minecraft_version_range}"
 ordering = "NONE"
 side = "BOTH"
 
-# Legacy biome placement uses the external TerraBlender mod; it is not embedded in Legacy Connector.
+# Optional integration: when TerraBlender is already installed, Legacy Connector registers its region with it.
+# Without TerraBlender, the connector-owned native multi-noise overlay places legacy biomes in the overworld.
 [[dependencies."${mod_id}"]]
 modId = "terrablender"
-type = "required"
+type = "optional"
 versionRange = "[4.0,)"
-ordering = "NONE"
+ordering = "AFTER"
 side = "BOTH"
 
 # Legacy Entity.setSize and eyeHeight calls use Pehkui when it is installed. Its API is isolated behind a runtime presence check.
