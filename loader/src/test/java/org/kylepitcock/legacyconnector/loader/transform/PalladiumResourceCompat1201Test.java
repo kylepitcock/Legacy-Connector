@@ -61,6 +61,7 @@ class PalladiumResourceCompat1201Test {
                 if (e.tab === omnitrixTab) {}
                 if (e.tab === omnitrixTab) {}
                 if (e.tab === omnitrixTab) {}
+                InventoryScreen.renderEntityInInventory(guiGraphics, 42, 65, 35, rotation, null, player);
                 new ResourceLocation("alienevo:textures/gui/power_screen/power_interface.png");
                 """);
         put(resources, "addon/alienevo/kubejs_scripts/decouple.js", """
@@ -159,6 +160,10 @@ class PalladiumResourceCompat1201Test {
         assertTrue(powerUi.contains("    const AlienEvoJavaResourceLocation = Java.loadClass"));
         assertEquals(3, occurrences(powerUi, "currentTab.toString() === omnitrixTab"));
         assertEquals(5, occurrences(powerUi, "e.tab.toString() === omnitrixTab"));
+        assertTrue(powerUi.contains(
+                "InventoryScreen.renderEntityInInventory(guiGraphics, 42, 65, 35, "
+                        + "new (Java.loadClass('org.joml.Vector3f'))(0.0, 0.0, 0.0), rotation, null, player);"));
+        assertFalse(powerUi.contains("35, rotation, null, player"));
         assertFalse(powerUi.contains("currentTab === omnitrixTab"));
         assertFalse(powerUi.contains("e.tab === omnitrixTab"));
 
