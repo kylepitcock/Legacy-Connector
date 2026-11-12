@@ -74,6 +74,22 @@ class Datagen1201Test implements Opcodes {
     }
 
     @Test
+    void helpersUsingLootDataIdAreEmptiedWithDatagenOnlyMethods() {
+        ClassNode mod = cls("m/PalladiumLootDataHelper", "java/lang/Object");
+        MethodNode helper = method(mod, ACC_PUBLIC | ACC_STATIC, "validateLoot",
+                "(Ljava/lang/Object;)V", "net/minecraft/world/level/storage/loot/LootDataId", "toString");
+        MethodNode normal = method(mod, ACC_PUBLIC | ACC_STATIC, "normal", "()V", "m/Foo", "bar");
+
+        Datagen1201.Stats stats = Datagen1201.apply(List.of(mod));
+
+        assertEquals(0, stats.classes);
+        assertEquals(1, stats.methods);
+        assertEquals(1, helper.instructions.size());
+        assertEquals(RETURN, helper.instructions.getFirst().getOpcode());
+        assertEquals(2, normal.instructions.size());
+    }
+
+    @Test
     void nestedClassesOfAShellAreShellsToo() {
         ClassNode outer = cls("m/gen/LootProvider", "net/minecraft/data/loot/LootTableProvider");
         ClassNode inner = cls("m/gen/LootProvider$Blocks", "java/lang/Object");
