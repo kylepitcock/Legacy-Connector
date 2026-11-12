@@ -167,6 +167,26 @@ class PalladiumResourceCompat1201Test {
 
 
     @Test
+    void resolvesDiamondCreationSoundStringBeforeLevelPlaySoundOverloadResolution() {
+        Map<String, byte[]> resources = new HashMap<>();
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_DIAMOND_CREATION, """
+                function tickDiamondCreation(entity, soundId) {
+                    entity.level.playSound(null, entity.getX(), entity.getY(), entity.getZ(),
+                            "alienevo:" + soundId, entity.getSoundSource(), 1.0, 1.0);
+                }
+                """);
+
+        assertEquals(1, PalladiumResourceCompat1201.apply(resources));
+        String migrated = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_DIAMOND_CREATION);
+        assertTrue(migrated.contains("function getAlienEvoSoundEvent(soundId)"));
+        assertTrue(migrated.contains("getAlienEvoSoundEvent(\"alienevo:\" + soundId)"));
+        assertFalse(migrated.contains("\"alienevo:\" + soundId, entity.getSoundSource()"));
+
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+        assertEquals(migrated, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_DIAMOND_CREATION));
+    }
+
+    @Test
     void adaptsAlienEvoScoreboardApiAcrossCommandsAndPowers() {
         Map<String, byte[]> resources = new HashMap<>();
         put(resources, "data/alienevo/kubejs_scripts/level_command.js", """
