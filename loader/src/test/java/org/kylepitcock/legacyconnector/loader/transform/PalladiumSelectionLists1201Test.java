@@ -63,11 +63,12 @@ class PalladiumSelectionLists1201Test implements Opcodes {
             }
             MethodNode method = new MethodNode(ACC_PUBLIC, "layout", "()V", null, null);
             method.instructions.add(new VarInsnNode(ALOAD, 0));
-            method.instructions.add(new org.objectweb.asm.tree.FieldInsnNode(GETFIELD, name, "x0", "I"));
+            // Original 1.20.1 SRG bytecode stores AbstractSelectionList.x0 as f_93393_.
+            method.instructions.add(new org.objectweb.asm.tree.FieldInsnNode(GETFIELD, name, "f_93393_", "I"));
             method.instructions.add(new InsnNode(POP));
             method.instructions.add(new VarInsnNode(ALOAD, 0));
             method.instructions.add(new InsnNode(ICONST_4));
-            method.instructions.add(new org.objectweb.asm.tree.FieldInsnNode(PUTFIELD, name, "x0", "I"));
+            method.instructions.add(new org.objectweb.asm.tree.FieldInsnNode(PUTFIELD, name, "f_93393_", "I"));
             method.instructions.add(new InsnNode(RETURN));
             node.methods.add(method);
 
@@ -81,7 +82,8 @@ class PalladiumSelectionLists1201Test implements Opcodes {
                     if (call.name.equals("setX") && call.desc.equals("(I)V")) writes++;
                 }
                 assertFalse(instruction instanceof org.objectweb.asm.tree.FieldInsnNode field
-                        && field.owner.equals(name) && field.name.equals("x0"), name);
+                        && field.owner.equals(name)
+                        && (field.name.equals("x0") || field.name.equals("f_93393_")), name);
             }
             assertEquals(1, reads, name);
             assertEquals(1, writes, name);
