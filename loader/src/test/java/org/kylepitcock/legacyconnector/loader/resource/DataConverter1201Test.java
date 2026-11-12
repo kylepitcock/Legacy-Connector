@@ -290,6 +290,21 @@ class DataConverter1201Test {
     }
 
     @Test
+    void templatePoolForgeConditionsMoveToNeoForge() {
+        JsonElement migrated = one("data/palladium/worldgen/template_pool/example.json", """
+                {
+                  "name":"palladium:example",
+                  "fallback":"minecraft:empty",
+                  "elements":[],
+                  "forge:conditions":[{"type":"palladium:feature_flag_enabled","feature_flag":"example"}]
+                }
+                """, "data/palladium/worldgen/template_pool/example.json");
+
+        assertTrue(migrated.getAsJsonObject().has("neoforge:conditions"), migrated.toString());
+        assertTrue(!migrated.getAsJsonObject().has("forge:conditions"), migrated.toString());
+    }
+
+    @Test
     void packMcmeta() {
         Map<String, byte[]> in = new LinkedHashMap<>();
         in.put("pack.mcmeta", "{\"pack\":{\"description\":\"d\",\"pack_format\":15,\"forge:data_pack_format\":12}}".getBytes(StandardCharsets.UTF_8));
