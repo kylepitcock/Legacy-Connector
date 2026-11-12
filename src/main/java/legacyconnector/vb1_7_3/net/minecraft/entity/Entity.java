@@ -114,6 +114,8 @@ public abstract class Entity {
         if (++fireTicks == 0) fireTicks = 300;
     }
 
+    /** Original: an entity below the world is removed. */
+    public void tickInVoid(){markDead();}
     public void markDead() {
         this.dead = true;
         if (mcc$modern instanceof org.kylepitcock.legacyconnector.vb1_7_3.B173EntityHost host) host.baseMarkDead();
@@ -129,6 +131,9 @@ public abstract class Entity {
     }
 
     public void tick() {if(mcc$modern instanceof org.kylepitcock.legacyconnector.vb1_7_3.B173EntityHost host)host.mcc$baseTick();}
+    /** Original base update (the part of tick every entity shares). */
+    public void baseTick(){if(mcc$modern instanceof org.kylepitcock.legacyconnector.vb1_7_3.B173EntityHost host)host.mcc$baseTick();}
+    public boolean isOnFire(){return fireTicks>0;}
     protected void damage(int amount){if(!fireImmune)damage(null,amount);}
     protected void setOnFire(){if(!fireImmune){damage(null,4);fireTicks=600;}}
     protected void scheduleVelocityUpdate(){velocityModified=true;if(mcc$modern!=null)mcc$modern.hurtMarked=true;}

@@ -5,6 +5,8 @@ import legacyconnector.vb1_7_3.net.minecraft.world.World;
 
 /** Beta 1.7.3 {@code EntityLiving}: health and movement input. */
 public abstract class LivingEntity extends Entity {
+    /** Original: a living entity below the world takes void damage. */
+    @Override public void tickInVoid(){damage(null,4);}
     public int maxHealth = 20;
     public float bodyYaw;
     public float lastBodyYaw;
@@ -32,6 +34,7 @@ public abstract class LivingEntity extends Entity {
         super(world);stepHeight=.5F;
     }
 
+    @Override public void baseTick(){if(mcc$modern instanceof org.kylepitcock.legacyconnector.vb1_7_3.B173LivingHost host)host.mcc$baseTick();else super.baseTick();}
     @Override public void tick() {
         if(mcc$modern instanceof org.kylepitcock.legacyconnector.vb1_7_3.B173LivingHost host)host.mcc$baseTick();
         else super.tick();
