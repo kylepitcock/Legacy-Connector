@@ -104,11 +104,11 @@ public final class FunctionConverter1201 {
                     + "],scale:" + args[3] + "}";
             consumed = 4;
         } else if (kind.equals("block")) {
-            if (args.length < 8) throw new IllegalStateException("Incomplete legacy block particle command: " + command);
+            if (args.length < 9) throw new IllegalStateException("Incomplete legacy block particle command: " + command);
             modernType = "minecraft:block{block_state:\"" + resourceId(args[0]) + "\"}";
             consumed = 1;
         } else {
-            if (args.length < 8) throw new IllegalStateException("Incomplete legacy item particle command: " + command);
+            if (args.length < 9) throw new IllegalStateException("Incomplete legacy item particle command: " + command);
             modernType = "minecraft:item{item:" + itemStack(args[0]) + "}";
             consumed = 1;
         }
@@ -188,7 +188,7 @@ public final class FunctionConverter1201 {
         StringBuffer out = new StringBuffer();
         while (attributes.find()) {
             String name = attributes.group(1).trim();
-            String id = name.startsWith("generic.") ? "minecraft:" + name.substring("generic.".length())
+            String id = name.startsWith("generic.") ? "minecraft:" + name
                     : resourceId(name);
             String value = "attributes:[{id:\"" + id + "\",base:" + attributes.group(2) + "}]";
             attributes.appendReplacement(out, Matcher.quoteReplacement(value));
