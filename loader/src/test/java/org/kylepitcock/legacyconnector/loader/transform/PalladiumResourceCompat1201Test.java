@@ -176,6 +176,8 @@ class PalladiumResourceCompat1201Test {
         put(resources, "addon/alienevo/kubejs_scripts/detransform.js", """
                 let score = scoreboardManager.getOrCreatePlayerScore(playerUsername, timerObjective);
                 let current = score.getScore();
+                entity.level.playSound(null, entity.x, entity.y, entity.z,
+                        `alienevo:${watchType}_detransform`, entity.getSoundSource(), 1.0, 1.0);
                 """);
         put(resources, "addon/alienevo/kubejs_scripts/charge_leap.js", """
                 let score = scoreboard.getOrCreatePlayerScore(username, scoreboardObj);
