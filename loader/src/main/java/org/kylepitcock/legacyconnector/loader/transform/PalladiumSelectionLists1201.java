@@ -107,7 +107,7 @@ final class PalladiumSelectionLists1201 implements Opcodes {
             for (AbstractInsnNode instruction : method.instructions.toArray()) {
                 if (!(instruction instanceof FieldInsnNode field)
                         || !field.owner.equals(node.name)
-                        || !field.name.equals("x0")
+                        || !(field.name.equals("x0") || field.name.equals("f_93393_"))
                         || !field.desc.equals("I")) {
                     continue;
                 }
