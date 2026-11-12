@@ -63,6 +63,11 @@ class PalladiumResourceCompat1201Test {
                 if (e.tab === omnitrixTab) {}
                 new ResourceLocation("alienevo:textures/gui/power_screen/power_interface.png");
                 """);
+        put(resources, "addon/alienevo/kubejs_scripts/decouple.js", """
+                function getDecoupleSoundId(prefix){ return 'alienevo:' + prefix + '_decouple'; }
+                entity.level.playSound(null, entity.x, entity.y, entity.z,
+                        getDecoupleSoundId(watchPrefix), entity.getSoundSource(), 1.0, 1.0);
+                """);
         put(resources, "addon/alienevo/kubejs_scripts/detransform.js", """
                 entity.level.playSound(null, entity.x, entity.y, entity.z,
                         `alienevo:${watchType}_detransform`, entity.getSoundSource(), 1.0, 1.0);
@@ -93,7 +98,7 @@ class PalladiumResourceCompat1201Test {
                         `alienevo:${transformSound}_transform`, entity.getSoundSource(), 0.7, 1.0);
                 """);
 
-        assertEquals(9, PalladiumResourceCompat1201.apply(resources));
+        assertEquals(10, PalladiumResourceCompat1201.apply(resources));
 
         String storeArmor = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_STORE_ARMOR);
         assertTrue(storeArmor.contains(PalladiumResourceCompat1201.SAFE_STORE_ARMOR_CHECK));
@@ -124,6 +129,11 @@ class PalladiumResourceCompat1201Test {
         assertTrue(transform.contains("AlienEvoJavaResourceLocation.fromNamespaceAndPath"));
         assertTrue(transform.contains("getAlienEvoSoundEvent('alienevo:' + String(transformSound) + '_transform')"));
         assertFalse(transform.contains("`alienevo:${transformSound}_transform`,"));
+
+        String decouple = get(resources, "addon/alienevo/kubejs_scripts/decouple.js");
+        assertTrue(decouple.contains("function getAlienEvoSoundEvent(soundId)"));
+        assertTrue(decouple.contains("getAlienEvoSoundEvent(getDecoupleSoundId(watchPrefix))"));
+        assertFalse(decouple.contains("getDecoupleSoundId(watchPrefix),"));
 
         String detransform = get(resources, "addon/alienevo/kubejs_scripts/detransform.js");
         assertTrue(detransform.contains("function getAlienEvoSoundEvent(soundId)"));

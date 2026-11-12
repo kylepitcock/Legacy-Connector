@@ -49,6 +49,7 @@ final class PalladiumResourceCompat1201 {
                     + "}\n\n";
     private static final String ALIEN_EVO_CYCLE = "addon/alienevo/kubejs_scripts/omnitrix_cycle.js";
     private static final String ALIEN_EVO_DETRANSFORM = "addon/alienevo/kubejs_scripts/detransform.js";
+    private static final String ALIEN_EVO_DECOUPLE = "addon/alienevo/kubejs_scripts/decouple.js";
     private static final String RESOURCE_LOCATION_HELPER_MARKER =
             "function ResourceLocation(namespaceOrLocation, path) {";
     private static final String SOUND_EVENT_HELPER_MARKER =
@@ -231,6 +232,13 @@ final class PalladiumResourceCompat1201 {
                         migrated,
                         "`alienevo:${watchType}_detransform`",
                         "getAlienEvoSoundEvent('alienevo:' + String(watchType) + '_detransform')");
+            } else if (ALIEN_EVO_DECOUPLE.equals(path)) {
+                migrated = addSoundEventHelper(migrated);
+                migrated = replaceExactScriptOccurrence(
+                        path,
+                        migrated,
+                        "getDecoupleSoundId(watchPrefix),",
+                        "getAlienEvoSoundEvent(getDecoupleSoundId(watchPrefix)),");
             }
 
             if (!migrated.equals(script)) {
