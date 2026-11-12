@@ -192,6 +192,18 @@ class DataConverter1201Test {
     }
 
     @Test
+    void singleObjectItemModifierIsWrappedAsOneFunctionAndMigrated() {
+        JsonElement r = one("data/alienevo/item_modifiers/prototype_omnitrix.json", """
+                {"function":"minecraft:set_nbt","tag":"{storedBasePrimaryScore:-1}"}
+                """, "data/alienevo/item_modifier/prototype_omnitrix.json");
+        String quote = String.valueOf((char)34);
+        assertTrue(r.isJsonArray(), r.toString());
+        assertEquals(1, r.getAsJsonArray().size());
+        assertTrue(r.toString().contains("minecraft:set_custom_data"), r.toString());
+        assertTrue(r.toString().contains(quote + "function" + quote), r.toString());
+    }
+
+    @Test
     void palladiumAttributeIdsAreMigratedInPowerJson() {
         JsonElement r = one("data/alienevo/palladium/powers/example.json", """
                 {"attribute":"forge:step_height_addition","other":{"attribute":"forge:entity_gravity"},
