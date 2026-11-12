@@ -64,7 +64,7 @@ class PalladiumPlayerSkinFetcher1201Test implements Opcodes {
 
         InvokeDynamicInsnNode consumer = findIndy(request, "accept");
         assertNotNull(consumer);
-        assertEquals("(L" + GAME_PROFILE + ";)Ljava/util/function/Consumer;", consumer.desc);
+        assertEquals("(L" + GAME_PROFILE + ";)Ljava/util/function/BiConsumer;", consumer.desc);
         Handle target = (Handle) consumer.bsmArgs[1];
         assertEquals(NEW_CALLBACK_IMPL_DESC, target.getDesc());
         assertEquals("(L" + PLAYER_SKIN + ";Ljava/lang/Throwable;)V",
@@ -76,6 +76,10 @@ class PalladiumPlayerSkinFetcher1201Test implements Opcodes {
         assertNotNull(findCall(callback, PLAYER_SKIN_MODEL, "id", "()Ljava/lang/String;"));
         assertNotNull(findCall(callback, PLAYER_SKIN, "texture", "()L" + RESOURCE_LOCATION + ";"));
         assertNotNull(findCall(callback, SKIN_INFO, "setFailed", "()V"));
+        assertEquals(1, countJumpOpcode(callback, IFNONNULL),
+                "a failed future is routed to the cached failure path");
+        assertEquals(1, countJumpOpcode(callback, IFNULL),
+                "an unexpectedly null skin is routed to the cached failure path");
         assertNotNull(findCall(callback, SKIN_INFO, "set",
                 "(Ljava/lang/String;L" + RESOURCE_LOCATION + ";)V"));
 
@@ -162,6 +166,14 @@ class PalladiumPlayerSkinFetcher1201Test implements Opcodes {
 
     private static Handle metafactory() {
         return new Handle(H_INVOKESTATIC, "java/lang/invoke/LambdaMetafactory", "metafactory", LMF_DESC, false);
+    }
+
+    private static int countJumpOpcode(MethodNode method, int opcode) {
+        int count = 0;
+        for (AbstractInsnNode instruction : method.instructions) {
+            if (instruction instanceof JumpInsnNode jump && jump.getOpcode() == opcode) count++;
+        }
+        return count;
     }
 
     private static InvokeDynamicInsnNode findIndy(MethodNode method, String name) {
