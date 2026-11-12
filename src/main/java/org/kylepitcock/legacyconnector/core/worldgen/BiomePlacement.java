@@ -1,10 +1,6 @@
 package org.kylepitcock.legacyconnector.core.worldgen;
 
 import com.mojang.datafixers.util.Pair;
-import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.server.MinecraftServer;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -13,6 +9,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import net.minecraft.core.Holder;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Climate;
@@ -29,8 +29,8 @@ import org.slf4j.LoggerFactory;
  * Each legacy biome is modelled on a vanilla land biome (its "analog", chosen by the legacy family from the
  * legacy climate and type tags) and takes a share of that biome's parameter points, split along the humidity axis in
  * proportion to its legacy weight.
- * The region ({@code compat.terrablender.LegacyRegion}) is the vanilla layout with each analog's points shared among the legacy
- * biomes modelled on it, weighted like the other regions of the pack.
+ * When TerraBlender is already installed, its optional region integration uses the same weighting algorithm; without it,
+ * the current overworld multi-noise parameter list is transformed in place by the connector-owned runtime hook.
  */
 public final class BiomePlacement {
     private static final Logger LOG = LoggerFactory.getLogger("LegacyConnector/Biomes");
