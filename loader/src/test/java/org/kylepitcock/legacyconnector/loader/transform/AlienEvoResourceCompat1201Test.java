@@ -75,9 +75,10 @@ class AlienEvoResourceCompat1201Test {
         assertTrue(AlienEvoResourceCompat1201.makeAdAstraDamageTypeOptional(resources));
         String migrated = new String(resources.get(AlienEvoResourceCompat1201.EVOASTRA_DAMAGE_TAG),
                 StandardCharsets.UTF_8);
-        assertTrue(migrated.contains("\\"id\\":\\"ad_astra:oxygen\\""), migrated);
-        assertTrue(migrated.contains("\\"required\\":false"), migrated);
-        assertTrue(migrated.contains("\\"minecraft:is_fall\\""), migrated);
+        String quote = String.valueOf((char)34);
+        assertTrue(migrated.contains(quote + "id" + quote + ":" + quote + "ad_astra:oxygen" + quote), migrated);
+        assertTrue(migrated.contains(quote + "required" + quote + ":false"), migrated);
+        assertTrue(migrated.contains(quote + "minecraft:is_fall" + quote), migrated);
         assertFalse(AlienEvoResourceCompat1201.makeAdAstraDamageTypeOptional(resources));
     }
 
@@ -87,7 +88,7 @@ class AlienEvoResourceCompat1201Test {
         resources.put("addon/alienevo/textures/example.png", new byte[] {1});
         assertTrue(AlienEvoResourceCompat1201.ensureAddonResourceRootMarker(resources));
         assertTrue(resources.containsKey(AlienEvoResourceCompat1201.ADDON_RESOURCE_ROOT_MARKER));
-        assertTrue(AlienEvoResourceCompat1201.ensureAddonResourceRootMarker(resources) == false);
+        assertFalse(AlienEvoResourceCompat1201.ensureAddonResourceRootMarker(resources));
     }
 
     @Test
@@ -103,8 +104,10 @@ class AlienEvoResourceCompat1201Test {
         Map<String, byte[]> missing = new LinkedHashMap<>();
         assertFalse(AlienEvoResourceCompat1201.makeAdAstraDamageTypeOptional(missing));
         Map<String, byte[]> different = new LinkedHashMap<>();
+        String quote = String.valueOf((char)34);
         different.put(AlienEvoResourceCompat1201.EVOASTRA_DAMAGE_TAG,
-                "{\\"values\\":[\\"example:other\\"]}".getBytes(StandardCharsets.UTF_8));
+                ("{" + quote + "values" + quote + ":[" + quote + "example:other" + quote + "]}")
+                        .getBytes(StandardCharsets.UTF_8));
         assertFalse(AlienEvoResourceCompat1201.makeAdAstraDamageTypeOptional(different));
     }
 
