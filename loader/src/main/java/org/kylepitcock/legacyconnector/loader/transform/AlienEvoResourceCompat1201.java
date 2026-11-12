@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.loader.transform;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -8,14 +9,17 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 /**
- * Evidence-based cleanup for AlienEvo's hidden, unreferenced code-system test
- * power. The shipping code system is implemented by the registered
- * alienevo:display_code ability; this hidden test resource names two ability
- * types that are not registered anywhere in the JAR.
+ * Evidence-based resource repairs for AlienEvo: cleanup of its hidden,
+ * unreferenced code-system test power, and marking its Ad Astra damage-type
+ * tag entry optional so the JAR remains loadable when that integration mod
+ * is absent. The shipping code system uses the registered
+ * alienevo:display_code ability.
  */
 final class AlienEvoResourceCompat1201 {
     static final String ORPHAN_CODE_POWER =
             "data/alienevo/palladium/powers/code_power_test.json";
+    static final String EVOASTRA_DAMAGE_TAG =
+            "data/alienevo/tags/damage_type/evoastra.json";
 
     private AlienEvoResourceCompat1201() {}
 
@@ -60,6 +64,38 @@ final class AlienEvoResourceCompat1201 {
 
         resources.remove(ORPHAN_CODE_POWER);
         return true;
+    }
+
+    /**
+     * The tag provides an optional cross-mod damage type, not a mandatory
+     * AlienEvo dependency. Preserve the entry when Ad Astra is installed, but
+     * let NeoForge skip it cleanly when the registry entry is unavailable.
+     */
+    static boolean makeAdAstraDamageTypeOptional(Map<String, byte[]> resources) {
+        byte[] original = resources.get(EVOASTRA_DAMAGE_TAG);
+        if (original == null) return false;
+        try {
+            JsonElement parsed = JsonParser.parseString(new String(original, StandardCharsets.UTF_8));
+            if (!parsed.isJsonObject()) return false;
+            JsonObject root = parsed.getAsJsonObject();
+            if (!root.has("values") || !root.get("values").isJsonArray()) return false;
+            JsonArray values = root.getAsJsonArray("values");
+            boolean changed = false;
+            for (int i = 0; i < values.size(); i++) {
+                JsonElement value = values.get(i);
+                if (value.isJsonPrimitive() && value.getAsString().equals("ad_astra:oxygen")) {
+                    JsonObject optional = new JsonObject();
+                    optional.addProperty("id", "ad_astra:oxygen");
+                    optional.addProperty("required", false);
+                    values.set(i, optional);
+                    changed = true;
+                }
+            }
+            if (changed) resources.put(EVOASTRA_DAMAGE_TAG, root.toString().getBytes(StandardCharsets.UTF_8));
+            return changed;
+        } catch (RuntimeException ignored) {
+            return false;
+        }
     }
 
     private static String abilityType(JsonObject abilities, String id) {
