@@ -1,27 +1,31 @@
 package org.kylepitcock.legacyconnector.loader.transform;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
+import org.objectweb.asm.tree.AbstractInsnNode;
+import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.FieldInsnNode;
-import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.InvokeDynamicInsnNode;
-import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
-import org.objectweb.asm.tree.VarInsnNode;
 
 /**
- * PalladiumCore 1.0.1 registers Palladium's ability bar, wheel, and power
- * overlays through Forge's RegisterGuiOverlaysEvent/IGuiOverlay API. NeoForge
- * 1.21.1 replaced that API with RegisterGuiLayersEvent/LayeredDraw.Layer.
+ * Verifies PalladiumCore 1.0.1's Forge overlay registry against Legacy Connector's
+ * existing Forge 1.20.1 overlay shims.
  *
- * <p>This rewrites only PalladiumCore's OverlayRegistryImpl. The bridge keeps
- * the original IngameOverlay callback contract, supplying the current
- * Minecraft GUI, render partial tick, and scaled GUI dimensions.</p>
+ * <p>The normal 1.20.1 remapper intentionally maps {@code RegisterGuiOverlaysEvent},
+ * {@code ForgeGui}, and {@code IGuiOverlay} to the compatibility shim classes (the
+ * shim takes precedence over the direct Forge-to-NeoForge class rename). The runtime
+ * shim posts the old event to each legacy mod's mod bus from NeoForge's
+ * {@code RegisterGuiLayersEvent}, and its registration methods create
+ * {@code LayeredDraw.Layer} callbacks. Rebuilding PalladiumCore's lambdas here would
+ * bypass that established event-bus path and duplicate the bridge.</p>
+ *
+ * <p>This pass therefore validates the exact remapped callback contract and leaves
+ * PalladiumCore's original map iteration and render callback intact.</p>
  */
 final class PalladiumCoreOverlay1201 implements Opcodes {
     static final String OVERLAY_REGISTRY =
@@ -30,184 +34,122 @@ final class PalladiumCoreOverlay1201 implements Opcodes {
             "net/threetag/palladiumcore/registry/client/OverlayRegistry$IngameOverlay";
 
     static final String REGISTER_EVENT =
-            "net/neoforged/neoforge/client/event/RegisterGuiLayersEvent";
-    static final String LAYER =
-            "net/minecraft/client/gui/LayeredDraw$Layer";
-    static final String GUI_GRAPHICS =
-            "net/minecraft/client/gui/GuiGraphics";
-    static final String DELTA_TRACKER =
-            "net/minecraft/client/DeltaTracker";
-    static final String MINECRAFT =
-            "net/minecraft/client/Minecraft";
-    static final String GUI =
-            "net/minecraft/client/gui/Gui";
-    static final String RESOURCE_LOCATION =
-            "net/minecraft/resources/ResourceLocation";
+            "legacyconnector/v1_20_1/net/minecraftforge/client/event/RegisterGuiOverlaysEvent";
+    static final String FORGE_GUI =
+            "legacyconnector/v1_20_1/net/minecraftforge/client/gui/overlay/ForgeGui";
+    static final String FORGE_OVERLAY =
+            "legacyconnector/v1_20_1/net/minecraftforge/client/gui/overlay/IGuiOverlay";
+    static final String MINECRAFT = "net/minecraft/client/Minecraft";
+    static final String GUI = "net/minecraft/client/gui/Gui";
+    static final String GUI_GRAPHICS = "net/minecraft/client/gui/GuiGraphics";
 
-    private static final String EVENT_DESC = "(L" + REGISTER_EVENT + ";)V";
-    private static final String REGISTER_LAMBDA_DESC =
+    static final String EVENT_DESC = "(L" + REGISTER_EVENT + ";)V";
+    static final String REGISTER_LAMBDA_DESC =
             "(L" + REGISTER_EVENT + ";Ljava/lang/String;L" + INGAME_OVERLAY + ";)V";
-    private static final String RENDER_LAMBDA_DESC =
-            "(L" + INGAME_OVERLAY + ";L" + GUI_GRAPHICS + ";L" + DELTA_TRACKER + ";)V";
-    static final String LAYER_FACTORY_DESC =
-            "(L" + INGAME_OVERLAY + ";)L" + LAYER + ";";
-    private static final String LAYER_RENDER_DESC =
-            "(L" + GUI_GRAPHICS + ";L" + DELTA_TRACKER + ";)V";
+    static final String RENDER_LAMBDA_DESC =
+            "(L" + INGAME_OVERLAY + ";L" + FORGE_GUI + ";L" + GUI_GRAPHICS + ";FII)V";
+    static final String REGISTER_METHOD_DESC =
+            "(Ljava/lang/String;L" + FORGE_OVERLAY + ";)V";
+    static final String RENDER_METHOD_DESC =
+            "(L" + MINECRAFT + ";L" + GUI + ";L" + GUI_GRAPHICS + ";FII)V";
+    static final String OVERLAY_FACTORY_DESC =
+            "(L" + INGAME_OVERLAY + ";)L" + FORGE_OVERLAY + ";";
+    static final String ACCEPT_FACTORY_DESC =
+            "(L" + REGISTER_EVENT + ";)Ljava/util/function/BiConsumer;";
 
-    private static final Handle LAMBDA_METAFACTORY = new Handle(
-            H_INVOKESTATIC,
-            "java/lang/invoke/LambdaMetafactory",
-            "metafactory",
-            "(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;"
-                    + "Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)"
-                    + "Ljava/lang/invoke/CallSite;",
-            false);
+    private static final String SUBSCRIBE_EVENT =
+            "Lnet/neoforged/bus/api/SubscribeEvent;";
+    private static final String MAP_FOR_EACH_DESC =
+            "(Ljava/util/function/BiConsumer;)V";
 
     private PalladiumCoreOverlay1201() {
     }
 
-    /**
-     * @return one when PalladiumCore's registry class was migrated, otherwise zero
-     */
+    /** @return one when PalladiumCore's original callback is correctly routed through the existing shim */
     static int apply(ClassNode node) {
         if (!OVERLAY_REGISTRY.equals(node.name)) {
             return 0;
         }
 
-        MethodNode original = null;
-        boolean hasRegisterLambda = false;
-        boolean hasRenderLambda = false;
-        boolean hasModernHandler = false;
+        MethodNode handler = find(node, "onRegisterGuiOverlays", EVENT_DESC);
+        MethodNode registration = find(node, "lambda$onRegisterGuiOverlays$1", REGISTER_LAMBDA_DESC);
+        MethodNode render = find(node, "lambda$onRegisterGuiOverlays$0", RENDER_LAMBDA_DESC);
+
+        boolean hasSubscriber = hasAnnotation(handler, SUBSCRIBE_EVENT);
+        boolean hasMapIteration = hasCall(handler, INVOKEINTERFACE,
+                "java/util/Map", "forEach", MAP_FOR_EACH_DESC);
+        boolean hasAcceptLambda = hasLambda(handler, "accept", ACCEPT_FACTORY_DESC,
+                "lambda$onRegisterGuiOverlays$1", REGISTER_LAMBDA_DESC);
+        boolean hasOverlayFactory = hasLambda(registration, "render", OVERLAY_FACTORY_DESC,
+                "lambda$onRegisterGuiOverlays$0", RENDER_LAMBDA_DESC);
+        boolean hasShimRegistration = hasCall(registration, INVOKEVIRTUAL,
+                REGISTER_EVENT, "registerAboveAll", REGISTER_METHOD_DESC);
+        boolean hasLegacyRenderCallback = hasCall(render, INVOKEINTERFACE,
+                INGAME_OVERLAY, "render", RENDER_METHOD_DESC);
+
+        if (handler != null && registration != null && render != null
+                && hasSubscriber && hasMapIteration && hasAcceptLambda
+                && hasOverlayFactory && hasShimRegistration && hasLegacyRenderCallback) {
+            return 1;
+        }
+
+        List<String> handlerCandidates = node.methods.stream()
+                .filter(method -> "onRegisterGuiOverlays".equals(method.name))
+                .map(method -> method.name + method.desc)
+                .toList();
+        throw new IllegalStateException(
+                "PalladiumCore OverlayRegistryImpl does not match Legacy Connector's "
+                        + "Forge 1.20.1 GUI overlay shim contract. Expected "
+                        + "onRegisterGuiOverlays" + EVENT_DESC
+                        + ", its two original shim-backed lambda methods, the mod-bus "
+                        + "@SubscribeEvent annotation, and calls to RegisterGuiOverlaysEvent.registerAboveAll "
+                        + "and IngameOverlay.render. Found handlers: " + handlerCandidates
+                        + ". Check the Forge event class remapping and overlay shim before changing this adapter.");
+    }
+
+    private static MethodNode find(ClassNode node, String name, String descriptor) {
         for (MethodNode method : node.methods) {
-            if ("onRegisterGuiOverlays".equals(method.name)
-                    && EVENT_DESC.equals(method.desc)) {
-                original = method;
-                hasModernHandler = Arrays.stream(method.instructions.toArray())
-                        .anyMatch(instruction -> instruction instanceof InvokeDynamicInsnNode dynamic
-                                && dynamic.desc.equals("(L" + REGISTER_EVENT + ";)Ljava/util/function/BiConsumer;"));
-            } else if ("lambda$onRegisterGuiOverlays$1".equals(method.name)
-                    && REGISTER_LAMBDA_DESC.equals(method.desc)) {
-                hasRegisterLambda = true;
-            } else if ("lambda$onRegisterGuiOverlays$0".equals(method.name)
-                    && RENDER_LAMBDA_DESC.equals(method.desc)) {
-                hasRenderLambda = true;
+            if (name.equals(method.name) && descriptor.equals(method.desc)) {
+                return method;
             }
         }
-        if (original != null && hasModernHandler && hasRegisterLambda && hasRenderLambda) {
-            return 0; // The complete modern bridge is already present.
-        }
-        if (original == null) {
-            throw new IllegalStateException(
-                    "PalladiumCore OverlayRegistryImpl no longer contains the expected "
-                            + "RegisterGuiLayersEvent callback; its GUI overlay integration needs review");
-        }
-
-        // The old callback and its two Forge-specific lambda targets are not
-        // usable on 1.21.1. Keep the method annotation and rebuild all three.
-        node.methods.removeIf(method ->
-                "onRegisterGuiOverlays".equals(method.name)
-                        || "lambda$onRegisterGuiOverlays$0".equals(method.name)
-                        || "lambda$onRegisterGuiOverlays$1".equals(method.name));
-
-        MethodNode handler = new MethodNode(
-                original.access,
-                "onRegisterGuiOverlays",
-                EVENT_DESC,
-                original.signature,
-                original.exceptions == null ? null : original.exceptions.toArray(String[]::new));
-        handler.visibleAnnotations = original.visibleAnnotations;
-        handler.invisibleAnnotations = original.invisibleAnnotations;
-        handler.visibleTypeAnnotations = original.visibleTypeAnnotations;
-        handler.invisibleTypeAnnotations = original.invisibleTypeAnnotations;
-        handler.instructions.add(new FieldInsnNode(
-                GETSTATIC, OVERLAY_REGISTRY, "OVERLAYS", "Ljava/util/Map;"));
-        handler.instructions.add(new VarInsnNode(ALOAD, 0));
-        handler.instructions.add(new InvokeDynamicInsnNode(
-                "accept",
-                "(L" + REGISTER_EVENT + ";)Ljava/util/function/BiConsumer;",
-                LAMBDA_METAFACTORY,
-                Type.getMethodType("(Ljava/lang/Object;Ljava/lang/Object;)V"),
-                new Handle(H_INVOKESTATIC, OVERLAY_REGISTRY,
-                        "lambda$onRegisterGuiOverlays$1", REGISTER_LAMBDA_DESC, false),
-                Type.getMethodType("(Ljava/lang/Object;Ljava/lang/Object;)V")));
-        handler.instructions.add(new MethodInsnNode(
-                INVOKEINTERFACE, "java/util/Map", "forEach",
-                "(Ljava/util/function/BiConsumer;)V", true));
-        handler.instructions.add(new InsnNode(RETURN));
-        handler.maxStack = 2;
-        handler.maxLocals = 1;
-        node.methods.add(handler);
-
-        node.methods.add(createRegisterLambda());
-        node.methods.add(createRenderLambda());
-        return 1;
+        return null;
     }
 
-    private static MethodNode createRegisterLambda() {
-        MethodNode method = new MethodNode(
-                ACC_PRIVATE | ACC_STATIC | ACC_SYNTHETIC,
-                "lambda$onRegisterGuiOverlays$1",
-                REGISTER_LAMBDA_DESC,
-                null,
-                null);
-        method.instructions.add(new VarInsnNode(ALOAD, 0));
-        method.instructions.add(new LdcInsnNode("palladiumcore"));
-        method.instructions.add(new VarInsnNode(ALOAD, 1));
-        method.instructions.add(new MethodInsnNode(
-                INVOKESTATIC, RESOURCE_LOCATION, "fromNamespaceAndPath",
-                "(Ljava/lang/String;Ljava/lang/String;)L" + RESOURCE_LOCATION + ";", false));
-        method.instructions.add(new VarInsnNode(ALOAD, 2));
-        method.instructions.add(new InvokeDynamicInsnNode(
-                "render",
-                LAYER_FACTORY_DESC,
-                LAMBDA_METAFACTORY,
-                Type.getMethodType(LAYER_RENDER_DESC),
-                new Handle(H_INVOKESTATIC, OVERLAY_REGISTRY,
-                        "lambda$onRegisterGuiOverlays$0", RENDER_LAMBDA_DESC, false),
-                Type.getMethodType(LAYER_RENDER_DESC)));
-        method.instructions.add(new MethodInsnNode(
-                INVOKEVIRTUAL, REGISTER_EVENT, "registerAboveAll",
-                "(L" + RESOURCE_LOCATION + ";L" + LAYER + ";)V", false));
-        method.instructions.add(new InsnNode(RETURN));
-        method.maxStack = 3;
-        method.maxLocals = 3;
-        return method;
+    private static boolean hasAnnotation(MethodNode method, String descriptor) {
+        return method != null && (hasAnnotation(method.visibleAnnotations, descriptor)
+                || hasAnnotation(method.invisibleAnnotations, descriptor));
     }
 
-    private static MethodNode createRenderLambda() {
-        MethodNode method = new MethodNode(
-                ACC_PRIVATE | ACC_STATIC | ACC_SYNTHETIC,
-                "lambda$onRegisterGuiOverlays$0",
-                RENDER_LAMBDA_DESC,
-                null,
-                null);
-        method.instructions.add(new MethodInsnNode(
-                INVOKESTATIC, MINECRAFT, "getInstance",
-                "()L" + MINECRAFT + ";", false));
-        method.instructions.add(new VarInsnNode(ASTORE, 3));
-        method.instructions.add(new VarInsnNode(ALOAD, 0));
-        method.instructions.add(new VarInsnNode(ALOAD, 3));
-        method.instructions.add(new VarInsnNode(ALOAD, 3));
-        method.instructions.add(new FieldInsnNode(
-                GETFIELD, MINECRAFT, "gui", "L" + GUI + ";"));
-        method.instructions.add(new VarInsnNode(ALOAD, 1));
-        method.instructions.add(new VarInsnNode(ALOAD, 2));
-        method.instructions.add(new InsnNode(ICONST_0));
-        method.instructions.add(new MethodInsnNode(
-                INVOKEINTERFACE, DELTA_TRACKER, "getGameTimeDeltaPartialTick",
-                "(Z)F", true));
-        method.instructions.add(new VarInsnNode(ALOAD, 1));
-        method.instructions.add(new MethodInsnNode(
-                INVOKEVIRTUAL, GUI_GRAPHICS, "guiWidth", "()I", false));
-        method.instructions.add(new VarInsnNode(ALOAD, 1));
-        method.instructions.add(new MethodInsnNode(
-                INVOKEVIRTUAL, GUI_GRAPHICS, "guiHeight", "()I", false));
-        method.instructions.add(new MethodInsnNode(
-                INVOKEINTERFACE, INGAME_OVERLAY, "render",
-                "(L" + MINECRAFT + ";L" + GUI + ";L" + GUI_GRAPHICS + ";FII)V", true));
-        method.instructions.add(new InsnNode(RETURN));
-        method.maxStack = 8;
-        method.maxLocals = 4;
-        return method;
+    private static boolean hasAnnotation(List<AnnotationNode> annotations, String descriptor) {
+        return annotations != null && annotations.stream().anyMatch(annotation -> descriptor.equals(annotation.desc));
+    }
+
+    private static boolean hasCall(
+            MethodNode method, int opcode, String owner, String name, String descriptor) {
+        return method != null && Arrays.stream(method.instructions.toArray())
+                .anyMatch(instruction -> instruction instanceof MethodInsnNode call
+                        && call.getOpcode() == opcode
+                        && owner.equals(call.owner)
+                        && name.equals(call.name)
+                        && descriptor.equals(call.desc));
+    }
+
+    private static boolean hasLambda(
+            MethodNode method, String name, String factoryDescriptor,
+            String implementationName, String implementationDescriptor) {
+        if (method == null) {
+            return false;
+        }
+        return Arrays.stream(method.instructions.toArray())
+                .anyMatch(instruction -> instruction instanceof InvokeDynamicInsnNode dynamic
+                        && name.equals(dynamic.name)
+                        && factoryDescriptor.equals(dynamic.desc)
+                        && Arrays.stream(dynamic.bsmArgs).anyMatch(argument ->
+                                argument instanceof Handle handle
+                                        && H_INVOKESTATIC == handle.getTag()
+                                        && OVERLAY_REGISTRY.equals(handle.getOwner())
+                                        && implementationName.equals(handle.getName())
+                                        && implementationDescriptor.equals(handle.getDesc())));
     }
 }
