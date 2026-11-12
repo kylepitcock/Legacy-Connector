@@ -94,7 +94,7 @@ class PalladiumPlayerSkinFetcher1201Test implements Opcodes {
         node.name = "example/OtherClass";
         MethodNode request = find(node, "lambda$getPlayerSkinInfo$4", "(Ljava/lang/String;Ljava/lang/String;)V");
         assertEquals(0, PalladiumPlayerSkinFetcher1201.apply(node));
-        assertNotNull(findCall(request, SKIN_MANAGER, "registerSkins", OLD_CALLBACK_DESC));
+        assertNotNull(findCall(request, SKIN_MANAGER, "m_118817_", OLD_CALLBACK_DESC));
     }
 
     private static ClassNode fixture() {
