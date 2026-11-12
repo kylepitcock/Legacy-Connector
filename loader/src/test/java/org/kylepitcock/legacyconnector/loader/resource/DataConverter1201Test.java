@@ -210,7 +210,7 @@ class DataConverter1201Test {
                  "swim":{"attribute":"forge:swim_speed"},"legacy":"minecraft:grass"}
                 """, "data/alienevo/palladium/powers/example.json");
         same("""
-                {"attribute":"minecraft:step_height","other":{"attribute":"minecraft:gravity"},
+                {"attribute":"minecraft:generic.step_height","other":{"attribute":"minecraft:generic.gravity"},
                  "swim":{"attribute":"neoforge:swim_speed"},"legacy":"minecraft:short_grass"}
                 """, r);
     }
