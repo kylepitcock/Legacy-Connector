@@ -372,7 +372,7 @@ public final class Forge1201Transformer {
                     + palladiumKubejsClassesDropped + " obsolete KubeJS 6 class(es) removed");
         }
         if (palladiumAddonPackChanges > 0) {
-            result.notes.add("Palladium addon-pack FolderRepositorySource constructor adapted with Minecraft's symlink validator: "
+            result.notes.add("Palladium addon-pack repository adapted: FolderRepositorySource uses Minecraft's symlink validator; discovered packs retain the legacy addonpack: ID prefix and required-selection setting: "
                     + palladiumAddonPackChanges + " constructor call(s)");
         }
         if (palladiumWidgetButtonChanges > 0) {
