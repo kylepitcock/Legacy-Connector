@@ -82,16 +82,17 @@ final class PalladiumRendererRotation1201 implements Opcodes {
             throw new IllegalStateException("Palladium SuitStandRenderer erased bridge no longer forwards to its typed override");
         }
 
-        bridgeOld.instructions.insertBefore(forward, new InsnNode(FCONST_1));
+        // The bridge is now invoked by 1.21.1 with a real scale argument
+        // in local 6. Forward that value to the typed override; only the
+        // separate legacy TrailSegment call below needs the 1.0F fallback.
+        bridgeOld.instructions.insertBefore(forward, new org.objectweb.asm.tree.VarInsnNode(FLOAD, 6));
         forward.desc = NEW_TYPED_DESC;
         typedOld.desc = NEW_TYPED_DESC;
         bridgeOld.desc = NEW_BASE_DESC;
 
-        // The fourth float occupies local 6 in both instance methods. The old
-        // implementation deliberately ignores it; the bridge forwards 1.0F.
         typedOld.maxLocals = Math.max(typedOld.maxLocals, 7);
         bridgeOld.maxLocals = Math.max(bridgeOld.maxLocals, 7);
-        bridgeOld.maxStack = Math.max(bridgeOld.maxStack + 1, 7);
+        bridgeOld.maxStack = Math.max(bridgeOld.maxStack, 7);
         return 3;
     }
 
