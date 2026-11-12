@@ -215,7 +215,13 @@ final class PalladiumResourceCompat1201 {
                     throw new IllegalStateException(
                             "AlienEvo power_ui.js has an unexpected seven-argument entity preview call");
                 }
-                insertions.add(arguments.get(4).start());
+                // Keep the original comma-following whitespace before the inserted argument.
+                int insertion = arguments.get(4).start();
+                int argumentEnd = arguments.get(4).end();
+                while (insertion < argumentEnd && Character.isWhitespace(script.charAt(insertion))) {
+                    insertion++;
+                }
+                insertions.add(insertion);
             } else {
                 throw new IllegalStateException(
                         "AlienEvo power_ui.js entity preview call has " + arguments.size()
