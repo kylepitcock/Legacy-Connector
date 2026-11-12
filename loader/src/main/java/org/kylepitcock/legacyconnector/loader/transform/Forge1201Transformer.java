@@ -286,6 +286,7 @@ public final class Forge1201Transformer {
         int palladiumPowersScreenChanges = 0;
         int palladiumSelectionListChanges = 0;
         int palladiumSuitStandChanges = 0;
+        int palladiumRendererRotationChanges = 0;
         int palladiumTailoringScreenChanges = 0;
         int palladiumSheepColorChanges = 0;
         int palladiumRenderLayerChanges = 0;
@@ -313,6 +314,8 @@ public final class Forge1201Transformer {
             viaCalls += palladiumGeckoModelAnimationChange;
             int palladiumSuitStandChange = PalladiumSuitStand1201.apply(node);
             palladiumSuitStandChanges += palladiumSuitStandChange;
+            int palladiumRendererRotationChange = PalladiumRendererRotation1201.apply(node);
+            palladiumRendererRotationChanges += palladiumRendererRotationChange;
             int palladiumTailoringScreenChange = PalladiumTailoringScreen1201.apply(node);
             palladiumTailoringScreenChanges += palladiumTailoringScreenChange;
             int palladiumSheepColorChange = PalladiumColor1201.apply(node);
@@ -363,7 +366,7 @@ public final class Forge1201Transformer {
                     + palladiumAccessoryScreenChange + palladiumAdvancementWidgetChange + palladiumPowersScreenChange
                     + palladiumSelectionListChange + palladiumSuitStandChange
                     + palladiumTailoringScreenChange + palladiumSheepColorChange
-                    + palladiumRenderLayerChange + palladiumPlayerSkinChange
+                    + palladiumRendererRotationChange + palladiumRenderLayerChange + palladiumPlayerSkinChange
                     + palladiumPlayerSkinFetcherChange + palladiumCommandFunctionChange);
         }
         if (palladiumKubejsChanges > 0 || palladiumKubejsClassesDropped > 0) {
@@ -462,6 +465,10 @@ public final class Forge1201Transformer {
         if (palladiumSuitStandChanges > 0) {
             result.notes.add("Palladium SuitStand migrated to the 1.21.1 SynchedEntityData.Builder lifecycle; DATA_CLIENT_FLAGS setup deferred until after the ArmorStand constructor: "
                     + palladiumSuitStandChanges + " entity class(es)");
+        }
+        if (palladiumRendererRotationChanges > 0) {
+            result.notes.add("Palladium SuitStand/TrailSegment renderer setupRotations overrides and calls migrated to the 1.21.1 four-float signature with the legacy default scale: "
+                    + palladiumRendererRotationChanges + " method/call site(s)");
         }
         if (palladiumAccessoryScreenChanges > 0) {
             result.notes.add("Palladium AccessoryScreen keeps its legacy lists/title/Done controls, skips the unused OptionsSubScreen body, passes Minecraft.options, suppresses the modern Screen background/blur hook while preserving super.render() widgets, and removes the legacy dirt-background layer: "
