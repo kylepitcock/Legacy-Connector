@@ -216,6 +216,21 @@ class DataConverter1201Test {
     }
 
     @Test
+    void unwrapsSingleComponentArraysOnlyForPalladiumNameChangeAbilities() {
+        JsonElement migrated = one("data/alienevo_aliens/palladium/powers/example.json", """
+                {"abilities":{
+                  "name_change":{"type":"palladium:name_change","name":[{"nbt":"KubeJSPersistentData.alienevo_34","entity":"@s"}]},
+                  "ordinary":{"type":"palladium:command","name":[{"text":"leave array alone"}]},
+                  "multi":{"type":"palladium:name_change","name":[{"text":"A"},{"text":"B"}]}
+                }}
+                """, "data/alienevo_aliens/palladium/powers/example.json");
+        JsonObject abilities = migrated.getAsJsonObject().getAsJsonObject("abilities");
+        assertTrue(abilities.getAsJsonObject("name_change").get("name").isJsonObject(), migrated.toString());
+        assertTrue(abilities.getAsJsonObject("ordinary").get("name").isJsonArray(), migrated.toString());
+        assertEquals(2, abilities.getAsJsonObject("multi").getAsJsonObject().get("name").getAsJsonArray().size());
+    }
+
+    @Test
     void translatesOldParticleCommandsEmbeddedInPowerJson() {
         JsonElement r = one("data/alienevo/palladium/powers/example.json", """
                 {"commands":["particle block stone ~ ~ ~ 1 0.5 1 0 30 normal",
