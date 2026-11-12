@@ -20,6 +20,7 @@ final class AlienEvoResourceCompat1201 {
             "data/alienevo/palladium/powers/code_power_test.json";
     static final String EVOASTRA_DAMAGE_TAG =
             "data/alienevo/tags/damage_type/evoastra.json";
+    static final String ADDON_RESOURCE_ROOT_MARKER = "addon/.mcassetsroot";
 
     private AlienEvoResourceCompat1201() {}
 
@@ -96,6 +97,19 @@ final class AlienEvoResourceCompat1201 {
         } catch (RuntimeException ignored) {
             return false;
         }
+    }
+
+    /**
+     * AlienEvo stores most client assets under a nonstandard {@code addon/}
+     * root. Vanilla's 1.21.1 pack loader expects a marker at that root when
+     * discovering it as a resource namespace.
+     */
+    static boolean ensureAddonResourceRootMarker(Map<String, byte[]> resources) {
+        boolean hasAddonRoot = resources.keySet().stream()
+                .anyMatch(path -> path.startsWith("addon/") && !path.equals(ADDON_RESOURCE_ROOT_MARKER));
+        if (!hasAddonRoot || resources.containsKey(ADDON_RESOURCE_ROOT_MARKER)) return false;
+        resources.put(ADDON_RESOURCE_ROOT_MARKER, new byte[0]);
+        return true;
     }
 
     private static String abilityType(JsonObject abilities, String id) {
