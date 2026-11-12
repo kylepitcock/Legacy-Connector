@@ -37,7 +37,6 @@ final class PalladiumResourceCompat1201 {
                     + "    }\\n"
                     + "    return AlienEvoJavaResourceLocation.parse(String(namespaceOrLocation));\\n"
                     + "}\\n\\n";
-
     static final String LEGACY_SOUND_EVENT_HELPER =
             "function getAlienEvoSoundEvent(soundId) {\\n"
                     + "    const AlienEvoSoundRegistry = Java.loadClass('net.minecraft.core.registries.BuiltInRegistries').SOUND_EVENT;\\n"
@@ -48,7 +47,6 @@ final class PalladiumResourceCompat1201 {
                     + "    }\\n"
                     + "    return soundEvent;\\n"
                     + "}\\n\\n";
-
     private static final String ALIEN_EVO_CYCLE = "addon/alienevo/kubejs_scripts/omnitrix_cycle.js";
     private static final String RESOURCE_LOCATION_HELPER_MARKER =
             "function ResourceLocation(namespaceOrLocation, path) {";
@@ -142,6 +140,7 @@ final class PalladiumResourceCompat1201 {
         rewriteTransformScript(resources);
         rewrite(resources, ALIEN_EVO_POWER_UI, POWER_UI_TAB_COMPARISONS);
         rewriteLegacyScriptApis(resources);
+        rewriteScoreboardApi(resources);
         rewriteScoreboardApi(resources);
 
         // A single resource can receive more than one independent rewrite.
@@ -265,6 +264,46 @@ final class PalladiumResourceCompat1201 {
             }
             migrated = migrated.replace(".getScore()", ".get()");
             migrated = migrated.replace(".setScore(", ".set(");
+            if (!migrated.equals(script)) {
+                resources.put(path, migrated.getBytes(StandardCharsets.UTF_8));
+                changed++;
+            }
+        }
+        return changed;
+    }
+
+
+    /**
+     * AlienEvo 1.1.3 uses the pre-1.21 Scoreboard and ScoreAccess APIs in
+     * command and ability scripts. In 1.21.1 player score lookup requires a
+     * ScoreHolder and ScoreAccess exposes get()/set(). Scope these edits to
+     * the exact scripts inspected in the original AlienEvo archive.
+     */
+    private static int rewriteScoreboardApi(Map<String, byte[]> resources) {
+        String[] paths = {
+                "addon/alienevo/kubejs_scripts/charge_leap.js",
+                "addon/alienevo/kubejs_scripts/detransform.js",
+                "addon/alienevo/kubejs_scripts/rolling_mechanics.js",
+                "addon/alienevo/kubejs_scripts/stat_ability.js",
+                "data/alienevo/kubejs_scripts/level_command.js",
+                "data/alienevo/kubejs_scripts/xp.js"
+        };
+        int changed = 0;
+        for (String path : paths) {
+            byte[] original = resources.get(path);
+            if (original == null) continue;
+
+            String script = new String(original, StandardCharsets.UTF_8);
+            String migrated = script;
+            for (String playerName : new String[] {"username", "playerName", "playerUsername"}) {
+                String legacy = "getOrCreatePlayerScore(" + playerName + ",";
+                String modern = "getOrCreatePlayerScore(Java.loadClass('net.minecraft.world.scores.ScoreHolder').forNameOnly(String("
+                        + playerName + ")),";
+                migrated = migrated.replace(legacy, modern);
+            }
+            migrated = migrated.replace(".getScore()", ".get()");
+            migrated = migrated.replace(".setScore(", ".set(");
+
             if (!migrated.equals(script)) {
                 resources.put(path, migrated.getBytes(StandardCharsets.UTF_8));
                 changed++;
