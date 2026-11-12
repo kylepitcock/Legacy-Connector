@@ -217,7 +217,16 @@ public final class DataConverter1201 {
         } else if (dir.equals("advancement") && root.isJsonObject()) {
             outs.addAll(advancement(np, root.getAsJsonObject(), c));
         } else {
-            if (dir.equals("item_modifier")) itemModifier(root, c);
+            if (dir.equals("item_modifier")) {
+                // Forge 1.20.1 accepted a single item-modifier object; 1.21.1 dispatches a list of functions.
+                if (root.isJsonObject()) {
+                    JsonArray functions = new JsonArray();
+                    functions.add(root);
+                    root = functions;
+                    c.hit("item_modifier_array");
+                }
+                itemModifier(root, c);
+            }
             if (dir.equals("loot_table") || dir.equals("loot_modifiers")) loot(root, c);
             if (dir.equals("dimension_type") && root.isJsonObject()) dimensionType(root.getAsJsonObject(), c);
             if (np.contains("/worldgen/structure_set/") && root.isJsonObject()) structureSet(root.getAsJsonObject(), c);
