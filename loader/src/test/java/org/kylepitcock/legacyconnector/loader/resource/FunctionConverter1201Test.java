@@ -63,9 +63,9 @@ class FunctionConverter1201Test {
     void commentsOnlyTheKnownOrphanedEarthSpikesSelector() {
         Map<String, byte[]> resources = new LinkedHashMap<>();
         String path = "data/afomni/function/aliens/vax/earth_spikes.mcfunction";
-        resources.put(path, ("say before\\n"
-                + "execute as @e[type=armor_stand, tag=earth_spike, scores={afomni.EarthSpikes=..90}] \\n"
-                + "say after\\n").getBytes(StandardCharsets.UTF_8));
+        resources.put(path, ("say before\n"
+                + "execute as @e[type=armor_stand, tag=earth_spike, scores={afomni.EarthSpikes=..90}]\n"
+                + "say after\n").getBytes(StandardCharsets.UTF_8));
         FunctionConverter1201.Stats stats = new FunctionConverter1201.Stats();
         String converted = new String(FunctionConverter1201.convertAll(resources, stats).get(path), StandardCharsets.UTF_8);
         assertTrue(converted.contains("# Legacy Connector: omitted an incomplete, actionless EarthSpikes execute selector."), converted);
