@@ -81,6 +81,7 @@ net/minecraft/world/item/crafting/Ingredient	toNetwork	(Lnet/minecraft/network/F
 net/minecraft/world/item/crafting/Recipe	matches	(Lnet/minecraft/world/Container;Lnet/minecraft/world/level/Level;)Z	RecipeCompat	matches	-
 net/minecraft/world/item/crafting/Recipe	assemble	(Lnet/minecraft/world/Container;Lnet/minecraft/core/RegistryAccess;)Lnet/minecraft/world/item/ItemStack;	RecipeCompat	assemble	-
 net/minecraft/world/item/crafting/Recipe	getResultItem	(Lnet/minecraft/core/RegistryAccess;)Lnet/minecraft/world/item/ItemStack;	RecipeCompat	getResultItem	-
+net/minecraft/stats/ServerRecipeBook	contains	(Lnet/minecraft/world/item/crafting/Recipe;)Z	RecipeCompat	contains	-
 net/minecraft/world/item/crafting/RecipeManager	getRecipeFor	(Lnet/minecraft/world/item/crafting/RecipeType;Lnet/minecraft/world/Container;Lnet/minecraft/world/level/Level;)Ljava/util/Optional;	RecipeCompat	getRecipeFor	-
 net/minecraft/world/item/crafting/RecipeManager	getRecipesFor	(Lnet/minecraft/world/item/crafting/RecipeType;Lnet/minecraft/world/Container;Lnet/minecraft/world/level/Level;)Ljava/util/List;	RecipeCompat	getRecipesFor	-
 com/mojang/blaze3d/vertex/VertexConsumer	vertex	(DDD)Lcom/mojang/blaze3d/vertex/VertexConsumer;	VertexCompat	vertex	-
