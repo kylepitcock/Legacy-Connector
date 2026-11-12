@@ -7,6 +7,7 @@ import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.validation.DirectoryValidator;
+import java.util.Optional;
 import net.neoforged.fml.loading.FMLPaths;
 
 /**
@@ -42,7 +43,7 @@ public final class PalladiumAddonPackCompat {
                 "addonpack:" + original.getId(),
                 previousLocation.title(),
                 previousLocation.source(),
-                previousLocation.knownPackInfo());
+                Optional.empty());
 
         PackSelectionConfig previousSelection = original.selectionConfig();
         PackSelectionConfig selection = new PackSelectionConfig(
