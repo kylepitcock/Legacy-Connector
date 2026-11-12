@@ -568,6 +568,9 @@ public final class Forge1201Transformer {
         if (PalladiumKubeJS1201.addPluginDiscoveryResource(outResources, outClasses.keySet())) {
             result.notes.add("Palladium KubeJS 7 plugin discovery entry added to kubejs.plugins.txt");
         }
+        if (AlienEvoResourceCompat1201.removeUnreferencedHiddenCodePower(outResources, outClasses)) {
+            result.notes.add("AlienEvo: removed the unreferenced hidden code_power_test resource; its generate_random/check_code types are not registered, while the real code system is handled by display_code");
+        }
         // the data and resource packs: 1.21 folder names, recipe/loot/advancement/tag/model formats, forge: ids, pack.mcmeta (DataConverter1201)
         DataConverter1201.Stats dataStats = new DataConverter1201.Stats();
         outResources = new LinkedHashMap<>(DataConverter1201.convertAll(outResources, dataStats));
@@ -575,8 +578,12 @@ public final class Forge1201Transformer {
         FunctionConverter1201.Stats functionStats = new FunctionConverter1201.Stats();
         outResources = new LinkedHashMap<>(FunctionConverter1201.convertAll(outResources, functionStats));
         if (functionStats.changedFiles > 0) {
-            result.notes.add("Legacy 1.20.1 command functions migrated: " + functionStats.changedFiles
-                    + " function file(s), " + functionStats.rewrittenCommands + " command line(s): " + functionStats.categories);
+            String functionNote = "Legacy 1.20.1 command functions migrated: " + functionStats.changedFiles
+                    + " function file(s), " + functionStats.rewrittenCommands + " command line(s)";
+            if (functionStats.droppedIncompleteCommands > 0) {
+                functionNote += "; " + functionStats.droppedIncompleteCommands + " incomplete actionless command line(s) replaced with explanatory comments";
+            }
+            result.notes.add(functionNote + ": " + functionStats.categories);
         }
 
         Manifest outManifest = LegacyJarTransformer.cleanManifest(manifest, jar);
