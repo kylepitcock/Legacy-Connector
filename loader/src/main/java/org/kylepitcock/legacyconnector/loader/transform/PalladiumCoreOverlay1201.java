@@ -50,7 +50,7 @@ final class PalladiumCoreOverlay1201 implements Opcodes {
             "(L" + REGISTER_EVENT + ";Ljava/lang/String;L" + INGAME_OVERLAY + ";)V";
     private static final String RENDER_LAMBDA_DESC =
             "(L" + INGAME_OVERLAY + ";L" + GUI_GRAPHICS + ";L" + DELTA_TRACKER + ";)V";
-    private static final String LAYER_FACTORY_DESC =
+    static final String LAYER_FACTORY_DESC =
             "(L" + INGAME_OVERLAY + ";)L" + LAYER + ";";
     private static final String LAYER_RENDER_DESC =
             "(L" + GUI_GRAPHICS + ";L" + DELTA_TRACKER + ";)V";
@@ -76,21 +76,28 @@ final class PalladiumCoreOverlay1201 implements Opcodes {
         }
 
         MethodNode original = null;
+        boolean hasRegisterLambda = false;
+        boolean hasRenderLambda = false;
+        boolean hasModernHandler = false;
         for (MethodNode method : node.methods) {
             if ("onRegisterGuiOverlays".equals(method.name)
                     && EVENT_DESC.equals(method.desc)) {
                 original = method;
-                break;
+                hasModernHandler = Arrays.stream(method.instructions.toArray())
+                        .anyMatch(instruction -> instruction instanceof InvokeDynamicInsnNode dynamic
+                                && dynamic.desc.equals("(L" + REGISTER_EVENT + ";)Ljava/util/function/BiConsumer;"));
+            } else if ("lambda$onRegisterGuiOverlays$1".equals(method.name)
+                    && REGISTER_LAMBDA_DESC.equals(method.desc)) {
+                hasRegisterLambda = true;
+            } else if ("lambda$onRegisterGuiOverlays$0".equals(method.name)
+                    && RENDER_LAMBDA_DESC.equals(method.desc)) {
+                hasRenderLambda = true;
             }
         }
+        if (original != null && hasModernHandler && hasRegisterLambda && hasRenderLambda) {
+            return 0; // The complete modern bridge is already present.
+        }
         if (original == null) {
-            boolean alreadyMigrated = node.methods.stream().anyMatch(method ->
-                    "onRegisterGuiOverlays".equals(method.name)
-                            && EVENT_DESC.equals(method.desc)
-                            && node.methods.stream().anyMatch(candidate ->
-                                    "lambda$onRegisterGuiOverlays$0".equals(candidate.name)
-                                            && RENDER_LAMBDA_DESC.equals(candidate.desc)));
-            if (alreadyMigrated) return 0;
             throw new IllegalStateException(
                     "PalladiumCore OverlayRegistryImpl no longer contains the expected "
                             + "RegisterGuiLayersEvent callback; its GUI overlay integration needs review");
