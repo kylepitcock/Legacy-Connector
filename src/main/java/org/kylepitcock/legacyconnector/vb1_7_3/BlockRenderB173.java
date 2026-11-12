@@ -12,6 +12,9 @@ public final class BlockRenderB173 {
     private static final Map<Integer,BaseMod> RENDERERS=new java.util.concurrent.ConcurrentHashMap<>();
     private static final Set<Class<?>> REPORTED=java.util.concurrent.ConcurrentHashMap.newKeySet();
     public static final java.util.concurrent.atomic.AtomicInteger FAILURES=new java.util.concurrent.atomic.AtomicInteger();
+    private static final ThreadLocal<Boolean> CAPTURING=new ThreadLocal<>();
+    /** True while a Beta block renderer runs: Beta drew on the game thread, so renderers could write blocks; here geometry is built on worker threads, where world writes are dropped. */
+    public static boolean capturing(){return CAPTURING.get()!=null;}
     public static void register(int id,BaseMod mod){RENDERERS.put(id,mod);}
     private static final Map<Class<?>,Boolean> POSITIONED=new java.util.concurrent.ConcurrentHashMap<>();
     public static boolean hasRenderer(int id){return id==11 || RENDERERS.containsKey(id);}
@@ -29,7 +32,7 @@ public final class BlockRenderB173 {
         // Legacy renderers mutate block bounds, and may keep mutable renderer state on the mod instance.
         synchronized(mod==null?BlockRenderB173.class:mod){synchronized(block){
             double[] bounds={block.minX,block.minY,block.minZ,block.maxX,block.maxY,block.maxZ};
-            Tessellator.beginCapture();
+            Tessellator.beginCapture();CAPTURING.set(Boolean.TRUE);
             try{
                 block.updateBoundingBox(world,x,y,z);
                 var renderer=new BlockRenderManager(world);
@@ -39,7 +42,7 @@ public final class BlockRenderB173 {
             }catch(RuntimeException|LinkageError e){
                 FAILURES.incrementAndGet();if(REPORTED.add(block.getClass()))org.slf4j.LoggerFactory.getLogger("LegacyConnector/b1.7.3").warn("Beta block renderer failed for {}",block.getClass().getName(),e);
                 return List.of();
-            }finally{Tessellator.endCapture();block.minX=bounds[0];block.minY=bounds[1];block.minZ=bounds[2];block.maxX=bounds[3];block.maxY=bounds[4];block.maxZ=bounds[5];}
+            }finally{CAPTURING.remove();Tessellator.endCapture();block.minX=bounds[0];block.minY=bounds[1];block.minZ=bounds[2];block.maxX=bounds[3];block.maxY=bounds[4];block.maxZ=bounds[5];}
         }}
     }
 }

@@ -29,6 +29,8 @@ public class World implements BlockView {
 
     public List<Object> entities = new ArrayList<>();
     public List<Object> players = new ArrayList<>();
+    /** Beta's {@code loadedTileEntityList}. */
+    public List<BlockEntity> blockEntities = new ArrayList<>();
     public boolean pauseTicking;
     public int lightningTicksLeft;
     private long mcc$flashWrittenAt;
@@ -58,6 +60,11 @@ public class World implements BlockView {
         this.isRemote = level.isClientSide;
         this.entities = liveEntities(false);
         this.players = liveEntities(true);
+        this.blockEntities = new java.util.AbstractList<>() {
+            @Override public int size(){return org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173BlockEntity.loaded(level).size();}
+            @Override public BlockEntity get(int index){return org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173BlockEntity.loaded(level).get(index);}
+            @Override public java.util.Iterator<BlockEntity> iterator(){return org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173BlockEntity.loaded(level).iterator();}
+        };
         dimension.evaporatesWater = level.dimensionType().ultraWarm();
         dimension.hasNoSky = !level.dimensionType().hasSkyLight();
         dimension.id = level.dimension() == Level.NETHER ? -1 : level.dimension() == Level.END ? 1 : 0;
@@ -306,7 +313,7 @@ public class World implements BlockView {
                 |net.minecraft.world.level.block.Block.UPDATE_KNOWN_SHAPE:flags;
     }
     private boolean set(int x, int y, int z, int id, int meta, int flags, boolean inferDoorHalf) {
-        if (mcc$level == null || clientRendererWrite()) return false;
+        if (mcc$level == null || clientRendererWrite() || org.kylepitcock.legacyconnector.vb1_7_3.BlockRenderB173.capturing()) return false;
         if(mcc$access() instanceof net.minecraft.server.level.WorldGenRegion)
             id=org.kylepitcock.legacyconnector.vb1_7_3.BlockInterceptionB173.intercept(this,
                     new legacyconnector.vb1_7_3.net.minecraft.src.Loc(x,y,z),id);
@@ -398,6 +405,7 @@ public class World implements BlockView {
         return next != s && (next.getBlock() == s.getBlock()||torchVariant||BlocksB173.legacyId(next)==BlocksB173.legacyId(s)) && writeMeta(p,next,flags);
     }
     private boolean writeMeta(BlockPos pos,BlockState next,int flags){
+        if(org.kylepitcock.legacyconnector.vb1_7_3.BlockRenderB173.capturing())return false;
         boolean chest=next.is(net.minecraft.world.level.block.Blocks.CHEST);
         if(chest)next=org.kylepitcock.legacyconnector.vb1_7_3.VanillaChestPlacementB173.metadata(pos,state(pos.getX(),pos.getY(),pos.getZ()),next,
                 p->state(p.getX(),p.getY(),p.getZ()),this::writeChestState);

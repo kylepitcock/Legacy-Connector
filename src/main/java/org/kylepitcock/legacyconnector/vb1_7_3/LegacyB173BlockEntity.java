@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 public class LegacyB173BlockEntity extends net.minecraft.world.level.block.entity.BlockEntity {
     private static final Logger LOG = LoggerFactory.getLogger("LegacyConnector/b1.7.3");
     private static final Map<Class<?>, Boolean> TICKS = new ConcurrentHashMap<>();
+    private static final Map<Level, java.util.Set<LegacyB173BlockEntity>> LOADED = java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>());
 
     private BlockEntity legacy;
     private CompoundTag pending;
@@ -78,7 +79,21 @@ public class LegacyB173BlockEntity extends net.minecraft.world.level.block.entit
     @Override
     public void setLevel(Level level) {
         super.setLevel(level);
+        if (level != null) LOADED.computeIfAbsent(level, k -> ConcurrentHashMap.newKeySet()).add(this);
         attach();
+    }
+
+    /** Beta's {@code World.loadedTileEntityList}: the legacy tile entities of the loaded chunks of a level. */
+    public static java.util.List<BlockEntity> loaded(Level level) {
+        var hosts = LOADED.get(level);
+        var result = new java.util.ArrayList<BlockEntity>();
+        if (hosts == null) return result;
+        for (var host : hosts) {
+            if (host.isRemoved()) continue;
+            BlockEntity te = host.legacy();
+            if (te != null) result.add(te);
+        }
+        return result;
     }
 
     public void tickServer() {
@@ -161,6 +176,7 @@ public class LegacyB173BlockEntity extends net.minecraft.world.level.block.entit
     @Override
     public void setRemoved() {
         super.setRemoved();
+        if (level != null) { var hosts = LOADED.get(level); if (hosts != null) hosts.remove(this); }
         if (legacy != null) legacy.markRemoved();
     }
 

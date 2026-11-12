@@ -35,7 +35,11 @@ public final class ClientB173 implements MenusB173.Client {
             if(code==0)return false;
             for(var binding:Minecraft.getInstance().options.keyMappings)
                 if(KeysB173.lwjgl(binding.getKey().getValue())==code&&binding.isDown())return true;
-            return false;
+            // LWJGL2 polled any key, bound or not (mods read their own keys from a properties file); only while no screen takes the input.
+            var mc=Minecraft.getInstance();
+            if(mc.screen!=null||mc.getWindow()==null)return false;
+            int glfw=KeysB173.glfw(code);
+            return glfw>0&&com.mojang.blaze3d.platform.InputConstants.isKeyDown(mc.getWindow().getWindow(),glfw);
         });
         AnimatedTexturesB173.register(modBus);
         BlockColorsB173.register(modBus);
@@ -104,6 +108,15 @@ public final class ClientB173 implements MenusB173.Client {
     @Override public net.minecraft.world.entity.player.Player localPlayer(){
         var mc=Minecraft.getInstance();
         legacyconnector.vb1_7_3.net.minecraft.client.option.KeyBinding.mcc$set$code(legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$instance().options.jumpKey,KeysB173.lwjgl(mc.options.keyJump.getKey().getValue()));
+        var legacyOptions=legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$instance().options;
+        var set=(java.util.function.BiConsumer<legacyconnector.vb1_7_3.net.minecraft.client.option.KeyBinding,net.minecraft.client.KeyMapping>)(legacy,nativeKey)->
+                legacyconnector.vb1_7_3.net.minecraft.client.option.KeyBinding.mcc$set$code(legacy,KeysB173.lwjgl(nativeKey.getKey().getValue()));
+        set.accept(legacyOptions.forwardKey,mc.options.keyUp);set.accept(legacyOptions.leftKey,mc.options.keyLeft);
+        set.accept(legacyOptions.backKey,mc.options.keyDown);set.accept(legacyOptions.rightKey,mc.options.keyRight);
+        legacyconnector.vb1_7_3.net.minecraft.entity.player.ClientPlayerEntity.mcc$keyUpdate=(code,pressed)->{
+            for(var key:new net.minecraft.client.KeyMapping[]{mc.options.keyUp,mc.options.keyLeft,mc.options.keyDown,mc.options.keyRight,mc.options.keyJump})
+                if(KeysB173.lwjgl(key.getKey().getValue())==code)key.setDown(pressed);
+        };
         return mc.player;
     }
     private static final class AdvancementAccess {

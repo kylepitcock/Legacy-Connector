@@ -39,6 +39,7 @@ public final class LegacyB173Animal extends PathfinderMob implements B173LivingH
     private int travels,moves;
     public int baseTravelCount(){return travels;}
     public int baseMoveCount(){return moves;}
+    private float syncedHeadYaw=Float.NaN,syncedBodyYaw=Float.NaN;
     private boolean syncingView;
     private float appliedMovementSpeed=Float.NaN;
     private DamageSource damageSource;
@@ -167,7 +168,12 @@ public final class LegacyB173Animal extends PathfinderMob implements B173LivingH
         if(!Float.isFinite(legacy.width)||!Float.isFinite(legacy.height)||legacy.width<0||legacy.height<0)throw new IllegalStateException("Invalid Beta animal dimensions");
         var bounds=legacy.boundingBox.mcc$box();
         double rawX=legacy.x,rawY=legacy.y-legacy.standingEyeHeight,rawZ=legacy.z;
-        setPos(legacy.x,legacy.y-legacy.standingEyeHeight,legacy.z);setYRot(legacy.yaw);setXRot(legacy.pitch);setDeltaMovement(legacy.velocityX,legacy.velocityY,legacy.velocityZ);
+        setPos(legacy.x,legacy.y-legacy.standingEyeHeight,legacy.z);setYRot(legacy.yaw);setXRot(legacy.pitch);
+        // The original code owns head (yaw) and body (bodyYaw) facing; the native rotations are what clients and the renderer read, so a
+        // change made by Beta code (a placement orientation, an aim) must reach them. Unchanged values leave native turning alone.
+        if(Float.compare(syncedHeadYaw,legacy.yaw)!=0){syncedHeadYaw=legacy.yaw;setYHeadRot(legacy.yaw);}
+        if(Float.compare(syncedBodyYaw,legacy.bodyYaw)!=0){syncedBodyYaw=legacy.bodyYaw;yBodyRot=legacy.bodyYaw;}
+        setDeltaMovement(legacy.velocityX,legacy.velocityY,legacy.velocityZ);
         if(legacy.health>getMaxHealth())getAttribute(Attributes.MAX_HEALTH).setBaseValue(legacy.health);
         noPhysics=legacy.noClip;fallDistance=legacy.mcc$fallDistance();
         var step=getAttribute(Attributes.STEP_HEIGHT);if(step!=null&&Float.isFinite(legacy.stepHeight))step.setBaseValue(Math.max(0,legacy.stepHeight));

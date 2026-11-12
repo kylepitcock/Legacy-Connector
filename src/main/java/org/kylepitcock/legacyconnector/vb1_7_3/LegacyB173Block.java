@@ -52,6 +52,8 @@ public class LegacyB173Block extends net.minecraft.world.level.block.Block imple
     private static VoxelShape shapeOf(Block legacy) {
         double x0 = legacy.minX, y0 = legacy.minY, z0 = legacy.minZ, x1 = legacy.maxX, y1 = legacy.maxY, z1 = legacy.maxZ;
         if (x0 <= 0 && y0 <= 0 && z0 <= 0 && x1 >= 1 && y1 >= 1 && z1 >= 1) return Shapes.block();
+        // A box with no extent on any axis has no outline and cannot be targeted in Beta (a mod sets it to hide a block such as a portal).
+        if (x1 <= x0 && y1 <= y0 && z1 <= z0) return Shapes.empty();
         if (x1 <= x0 || y1 <= y0 || z1 <= z0) return Shapes.block();
         return Shapes.box(Math.max(0, x0), Math.max(0, y0), Math.max(0, z0), Math.min(1, x1), Math.min(1, y1), Math.min(1, z1));
     }
@@ -121,7 +123,13 @@ public class LegacyB173Block extends net.minecraft.world.level.block.Block imple
                         default -> Shapes.box(0.4,0,0.4,0.6,0.6,0.6);
                     };
                 }
-                if(!collision && !(legacy instanceof legacyconnector.vb1_7_3.net.minecraft.block.StairsBlock))return shapeOf(legacy);
+                if(!collision && !(legacy instanceof legacyconnector.vb1_7_3.net.minecraft.block.StairsBlock)) {
+                    VoxelShape outline=shapeOf(legacy);
+                    // Beta outlines and targets a block by getBoundingBox (getSelectedBoundingBoxFromPool): none, or a box with no extent, hides it.
+                    var selected=legacy.getBoundingBox(world,pos.getX(),pos.getY(),pos.getZ());
+                    if(selected==null||selected.maxX<=selected.minX&&selected.maxY<=selected.minY&&selected.maxZ<=selected.minZ)return Shapes.empty();
+                    return outline;
+                }
                 var boxes=new ArrayList<legacyconnector.vb1_7_3.net.minecraft.util.math.Box>();
                 legacy.addIntersectingBoundingBox(world,pos.getX(),pos.getY(),pos.getZ(),
                         legacyconnector.vb1_7_3.net.minecraft.util.math.Box.create(pos.getX()-2,pos.getY()-2,pos.getZ()-2,pos.getX()+3,pos.getY()+3,pos.getZ()+3),boxes);
