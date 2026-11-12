@@ -60,6 +60,20 @@ class FunctionConverter1201Test {
     }
 
     @Test
+    void commentsOnlyTheKnownOrphanedEarthSpikesSelector() {
+        Map<String, byte[]> resources = new LinkedHashMap<>();
+        String path = "data/afomni/function/aliens/vax/earth_spikes.mcfunction";
+        resources.put(path, ("say before\\n"
+                + "execute as @e[type=armor_stand, tag=earth_spike, scores={afomni.EarthSpikes=..90}] \\n"
+                + "say after\\n").getBytes(StandardCharsets.UTF_8));
+        FunctionConverter1201.Stats stats = new FunctionConverter1201.Stats();
+        String converted = new String(FunctionConverter1201.convertAll(resources, stats).get(path), StandardCharsets.UTF_8);
+        assertTrue(converted.contains("# Legacy Connector: omitted an incomplete, actionless EarthSpikes execute selector."), converted);
+        assertEquals(1, stats.droppedIncompleteCommands);
+        assertEquals(1, stats.changedFiles);
+    }
+
+    @Test
     void convertsEnchantmentItemArgumentAndPreservesOtherCommands() {
         String expected = "loot replace entity @s container.0 mine ~ ~ ~ minecraft:diamond_pickaxe"
                 + "[minecraft:enchantments={levels:{" + quoted("minecraft:silk_touch") + ":1}}]";
