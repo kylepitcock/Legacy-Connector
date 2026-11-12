@@ -179,7 +179,7 @@ public final class FunctionConverter1201 {
 
     private static String convertEntityNbt(String source) {
         source = source.replace("ActiveEffects:", "active_effects:")
-                .replace("Id:14b", "id:\"minecraft:invisibility\"")
+                .replaceAll("\\bId:14(?:[bBsSlL])?\\b", "id:\"minecraft:invisibility\"")
                 .replace("Amplifier:", "amplifier:")
                 .replace("Duration:", "duration:")
                 .replace("ShowParticles:", "show_particles:");
