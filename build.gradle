@@ -25,7 +25,7 @@ repositories {
         url = 'https://api.modrinth.com/maven'
         content { includeGroup 'maven.modrinth' }
     }
-    maven { // TerraBlender (embedded; legacy biomes are placed as a TerraBlender region)
+    maven { // TerraBlender (external required mod; legacy biomes are placed as a TerraBlender region)
         url = 'https://maven.minecraftforge.net/'
         content { includeGroup 'com.github.glitchfiend' }
     }
@@ -171,19 +171,12 @@ dependencies {
     compileOnly("com.simibubi.create:create-1.21.1:${create_version}") { transitive = false }
     compileOnly "dev.latvian.mods:rhino-neoforge:2006.2.4-build.17" // optional KubeJS 7 Rhino Context API; not bundled at runtime
 
-    // TerraBlender (LGPL-3.0): the only biome placement path for legacy mod biomes (a region of its overworld layout, which Terralith, Tectonic,
-    // Biomes O' Plenty... also use). Embedded (jar-in-jar) with an open-ended range so a separately installed TerraBlender wins.
-    jarJar(implementation("com.github.glitchfiend:TerraBlender-neoforge:${terrablender_version}")) {
-        transitive = false
-        version { strictly "[${terrablender_version},)"; prefer terrablender_version }
-    }
-
-    // Pehkui (MIT, Modrinth): entity size scaling (hitbox, eye height, model). Legacy Entity.setSize / eyeHeight and Fisk's Heroes' size
-    // manipulation go through its ScaleTypes API instead of our own dimension mixin. Embedded (jar-in-jar); a separately installed newer Pehkui wins.
-    jarJar(implementation("maven.modrinth:pehkui:${pehkui_version}")) {
-        // an exact version: Modrinth's maven answers 404 to the HEAD request Gradle makes to list versions for a range
-        version { strictly pehkui_version }
-    }
+    // External mod dependencies are never jar-in-jar packaged. TerraBlender supplies the only legacy-biome placement path and is required
+    // by mods.toml. Pehkui is an optional size/render integration; EntitySizes1710 loads its typed API bridge only when Pehkui is present.
+    compileOnly "com.github.glitchfiend:TerraBlender-neoforge:${terrablender_version}"
+    additionalRuntimeClasspath "com.github.glitchfiend:TerraBlender-neoforge:${terrablender_version}"
+    compileOnly "maven.modrinth:pehkui:${pehkui_version}"
+    additionalRuntimeClasspath "maven.modrinth:pehkui:${pehkui_version}"
 
     // Libraries Minecraft 1.7.10 / 1.12.2 shipped and legacy mods use directly, absent from 1.21.1. NOT jar-in-jar: a jar-in-jar library
     // always enters the game module layer, and a modern mod that bundles the same packages (ScalableCatsForce ships Scala 2.13) then stops

@@ -25,7 +25,7 @@ NeoForge loads such jars from `mods/` as launcher plugins before they can be tra
 > mod set.
 
 Legacy content enters the game through the same hooks a modern mod uses: mod biomes through the pack's biome placement
-(a TerraBlender region; TerraBlender is bundled), world generators as placed features in biome modifiers, village buildings
+(a TerraBlender region; install TerraBlender as a required dependency), world generators as placed features in biome modifiers, village buildings
 in the vanilla village pools, structure chest loot through loot tables, and items and machines as capabilities. So it works together
 with the pack's other mods instead of being painted over them, and data packs can tune it like any modern content.
 

@@ -49,11 +49,23 @@ final class PalladiumResourceCompat1201 {
                     + "}\n\n";
     private static final String ALIEN_EVO_CYCLE = "addon/alienevo/kubejs_scripts/omnitrix_cycle.js";
     private static final String ALIEN_EVO_DETRANSFORM = "addon/alienevo/kubejs_scripts/detransform.js";
+    private static final String ALIEN_EVO_FLATTEN = "addon/alienevo/kubejs_scripts/flatten.js";
     private static final String ALIEN_EVO_DECOUPLE = "addon/alienevo/kubejs_scripts/decouple.js";
     private static final String RESOURCE_LOCATION_HELPER_MARKER =
             "function ResourceLocation(namespaceOrLocation, path) {";
     private static final String SOUND_EVENT_HELPER_MARKER =
             "function getAlienEvoSoundEvent(soundId) {";
+    private static final String LEGACY_PEHKUI_SCALE_TYPES_BINDING =
+            "const SCALE_TYPES = Java.loadClass(\"virtuoel.pehkui.api.ScaleTypes\");";
+    private static final String OPTIONAL_PEHKUI_SCALE_TYPES_BINDING = """
+            const SCALE_TYPES = (() => {
+                try {
+                    return Java.loadClass("virtuoel.pehkui.api.ScaleTypes");
+                } catch (ignored) {
+                    const noScale = { getScaleData: entity => ({ setScale: value => {} }) };
+                    return { HEIGHT: noScale, WIDTH: noScale, STEP_HEIGHT: noScale, JUMP_HEIGHT: noScale };
+                }
+            })();""";
 
 
     static final String LEGACY_STORE_ARMOR_CHECK =
@@ -143,6 +155,7 @@ final class PalladiumResourceCompat1201 {
         rewrite(resources, ALIEN_EVO_POWER_UI, POWER_UI_TAB_COMPARISONS);
         rewriteLegacyScriptApis(resources);
         rewriteScoreboardApi(resources);
+        rewriteOptionalPehkuiApi(resources);
 
         // A single resource can receive more than one independent rewrite.
         // Report the number of distinct changed script files, not rewrite passes.
@@ -280,6 +293,9 @@ final class PalladiumResourceCompat1201 {
             }
             migrated = migrated.replace(".getScore()", ".get()");
             migrated = migrated.replace(".setScore(", ".set(");
+            if ("addon/alienevo/kubejs_scripts/detransform.js".equals(path)) {
+                migrated = guardDetransformTimerObjective(migrated);
+            }
 
             if (!migrated.equals(script)) {
                 resources.put(path, migrated.getBytes(StandardCharsets.UTF_8));
@@ -287,6 +303,52 @@ final class PalladiumResourceCompat1201 {
             }
         }
         return changed;
+    }
+
+    /** AlienEvo's flatten ability uses one optional Pehkui class at script load time; keep the script group loadable without Pehkui. */
+    private static int rewriteOptionalPehkuiApi(Map<String, byte[]> resources) {
+        byte[] original = resources.get(ALIEN_EVO_FLATTEN);
+        if (original == null) return 0;
+        String script = new String(original, StandardCharsets.UTF_8);
+        if (!script.contains(LEGACY_PEHKUI_SCALE_TYPES_BINDING)) return 0;
+        String lineEnding = script.contains("\r\n") ? "\r\n" : "\n";
+        String migrated = replaceExactScriptOccurrence(
+                ALIEN_EVO_FLATTEN, script, LEGACY_PEHKUI_SCALE_TYPES_BINDING,
+                OPTIONAL_PEHKUI_SCALE_TYPES_BINDING.replace("\n", lineEnding));
+        resources.put(ALIEN_EVO_FLATTEN, migrated.getBytes(StandardCharsets.UTF_8));
+        return 1;
+    }
+
+    /** A missing timer objective must not abort reversion before the Omnitrix and transformation state are restored. */
+    private static String guardDetransformTimerObjective(String script) {
+        String declaration = "let timerObjective = scoreboardManager.getObjective('AlienEvo.Timer');";
+        int declarationIndex = script.indexOf(declaration);
+        if (declarationIndex < 0) return script;
+        if (occurrences(script, declaration) != 1) {
+            throw new IllegalStateException("AlienEvo detransform.js has multiple timer objective declarations");
+        }
+        int lineStart = script.lastIndexOf('\n', declarationIndex) + 1;
+        int declarationEnd = script.indexOf('\n', declarationIndex);
+        if (declarationEnd < 0) declarationEnd = script.length();
+        else declarationEnd++;
+        String indent = script.substring(lineStart, declarationIndex);
+        String lineEnding = declarationEnd > 0 && script.charAt(declarationEnd - 2) == '\r' ? "\r\n" : "\n";
+        String guard = indent + "if (timerObjective != null) {";
+        if (script.startsWith(guard, declarationEnd)) return script;
+
+        String timerWrite = "entity.server.runCommandSilent(`execute as ${playerUsername} at @s run scoreboard players set @s AlienEvo.Timer ${Math.floor(currentTimerValue / 2)}`);";
+        int timerWriteIndex = script.indexOf(timerWrite, declarationEnd);
+        if (timerWriteIndex < 0 || occurrences(script, timerWrite) != 1) {
+            throw new IllegalStateException("AlienEvo detransform.js has an unexpected timer write shape");
+        }
+        int timerWriteEnd = script.indexOf('\n', timerWriteIndex);
+        if (timerWriteEnd < 0) timerWriteEnd = script.length();
+        else timerWriteEnd++;
+        return script.substring(0, declarationEnd)
+                + guard + lineEnding
+                + script.substring(declarationEnd, timerWriteEnd)
+                + indent + "}" + lineEnding
+                + script.substring(timerWriteEnd);
     }
 
     private static boolean isAlienEvoKubeJsScript(String path) {

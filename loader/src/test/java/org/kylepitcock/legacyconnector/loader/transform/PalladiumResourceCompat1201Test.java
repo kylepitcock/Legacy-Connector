@@ -172,10 +172,32 @@ class PalladiumResourceCompat1201Test {
         put(resources, "data/alienevo/kubejs_scripts/level_command.js", """
                 scoreboard.getOrCreatePlayerScore(playerName, levelObj).setScore(10);
                 let current = scoreboard.getOrCreatePlayerScore(playerName, xpObj).getScore();
+                ServerEvents.commandRegistry(event => {
+                    let { commands: Commands, arguments: Arguments } = event;
+                    event.register(Commands.literal("maxaliens")
+                        .requires(src => src.hasPermission(2))
+                        .then(Commands.argument('player', Arguments.PLAYER.create(event))
+                            .executes(ctx => {
+                                let target = Arguments.PLAYER.getResult(ctx, 'player');
+                                return maxAllAliens(target.getGameProfile().getName());
+                            })));
+                    event.register(Commands.literal("mastercontrol")
+                        .requires(src => src.hasPermission(2))
+                        .then(Commands.argument('player', Arguments.PLAYER.create(event))
+                            .executes(ctx => giveAlienControl(
+                                Arguments.PLAYER.getResult(ctx, 'player').getGameProfile().getName()))));
+                });
                 """);
         put(resources, "addon/alienevo/kubejs_scripts/detransform.js", """
-                let score = scoreboardManager.getOrCreatePlayerScore(playerUsername, timerObjective);
-                let current = score.getScore();
+                entity.server.runCommandSilent(`execute as ${playerUsername} at @s run superpower remove ${currentNamespace}:${currentPath}`);
+                superpowerUtil.addSuperpower(entity, new ResourceLocation(`${watchNamespace}:${watchType}_omnitrix`));
+                entity.tags.remove("AlienEvo.Transformation");
+                let scoreboardManager = Utils.server.scoreboard;
+                let timerObjective = scoreboardManager.getObjective('AlienEvo.Timer');
+                let playerTimerScore = scoreboardManager.getOrCreatePlayerScore(playerUsername, timerObjective);
+                let currentTimerValue = playerTimerScore.getScore();
+                entity.server.runCommandSilent(`execute as ${playerUsername} at @s run scoreboard players set @s AlienEvo.Timer ${Math.floor(currentTimerValue / 2)}`);
+                palladium.setProperty(entity, 'quick_change_wheel', "disabled");
                 entity.level.playSound(null, entity.x, entity.y, entity.z,
                         `alienevo:${watchType}_detransform`, entity.getSoundSource(), 1.0, 1.0);
                 """);
@@ -206,10 +228,26 @@ class PalladiumResourceCompat1201Test {
         assertFalse(level.contains("getOrCreatePlayerScore(playerName,"));
         assertFalse(level.contains(".getScore()"));
         assertFalse(level.contains(".setScore("));
+        assertTrue(level.contains("Commands.literal(\"maxaliens\")"));
+        assertTrue(level.contains("Commands.literal(\"mastercontrol\")"));
+        assertEquals(2, occurrences(level, ".requires(src => src.hasPermission(2))"));
+        assertEquals(2, occurrences(level, "Arguments.PLAYER.create(event)"));
+        assertFalse(level.contains("Arguments.ENTITY.create(event)"));
 
         String detransform = get(resources, "addon/alienevo/kubejs_scripts/detransform.js");
         assertTrue(detransform.contains("forNameOnly(String(playerUsername))"));
-        assertTrue(detransform.contains("score.get()"));
+        assertTrue(detransform.contains("playerTimerScore.get()"));
+        assertTrue(detransform.contains("if (timerObjective != null) {"));
+        assertTrue(detransform.contains("Math.floor(currentTimerValue / 2)"));
+        assertTrue(detransform.indexOf("if (timerObjective != null) {")
+                < detransform.indexOf("playerTimerScore = scoreboardManager.getOrCreatePlayerScore"));
+        assertTrue(detransform.indexOf("playerTimerScore = scoreboardManager.getOrCreatePlayerScore")
+                < detransform.indexOf("Math.floor(currentTimerValue / 2)"));
+        assertTrue(detransform.indexOf("superpower remove ${currentNamespace}:${currentPath}")
+                < detransform.indexOf("new ResourceLocation(`${watchNamespace}:${watchType}_omnitrix`)") );
+        assertTrue(detransform.indexOf("new ResourceLocation(`${watchNamespace}:${watchType}_omnitrix`)")
+                < detransform.indexOf("entity.tags.remove(\"AlienEvo.Transformation\")"));
+        assertTrue(detransform.contains("palladium.setProperty(entity, 'quick_change_wheel', \"disabled\")"));
 
         String chargeLeap = get(resources, "addon/alienevo/kubejs_scripts/charge_leap.js");
         assertTrue(chargeLeap.contains("forNameOnly(String(username))"));
@@ -229,6 +267,34 @@ class PalladiumResourceCompat1201Test {
         assertTrue(xp.contains("score.get()"));
         assertTrue(xp.contains("score.set("));
         assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+    }
+
+    @Test
+    void keepsAlienEvoFlattenAbilityScriptsLoadableWithoutOptionalPehkui() {
+        Map<String, byte[]> resources = new HashMap<>();
+        put(resources, "addon/alienevo/kubejs_scripts/flatten.js", """
+                const SCALE_TYPES = Java.loadClass("virtuoel.pehkui.api.ScaleTypes");
+                StartupEvents.registry('palladium:abilities', event => {
+                    event.create('alienevo:flatten')
+                        .tick((entity, entry, holder, enabled) => {
+                            if (enabled) SCALE_TYPES.HEIGHT.getScaleData(entity).setScale(0.3);
+                        })
+                        .lastTick((entity, entry, holder, enabled) => {
+                            SCALE_TYPES.HEIGHT.getScaleData(entity).setScale(1.0);
+                        });
+                });
+                """);
+
+        assertEquals(1, PalladiumResourceCompat1201.apply(resources));
+        String flatten = get(resources, "addon/alienevo/kubejs_scripts/flatten.js");
+        assertFalse(flatten.contains("const SCALE_TYPES = Java.loadClass("));
+        assertTrue(flatten.contains("try {\n        return Java.loadClass(\"virtuoel.pehkui.api.ScaleTypes\");"), flatten);
+        assertTrue(flatten.contains("const noScale = { getScaleData: entity => ({ setScale: value => {} }) };"), flatten);
+        assertTrue(flatten.contains("HEIGHT: noScale, WIDTH: noScale, STEP_HEIGHT: noScale, JUMP_HEIGHT: noScale"), flatten);
+        assertTrue(flatten.contains("SCALE_TYPES.HEIGHT.getScaleData(entity).setScale(0.3)"), flatten);
+
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+        assertEquals(flatten, get(resources, "addon/alienevo/kubejs_scripts/flatten.js"));
     }
 
 

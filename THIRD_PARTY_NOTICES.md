@@ -35,4 +35,8 @@ Minecraft assets are never included.
 
 [TerraBlender](https://github.com/Glitchfiend/TerraBlender) 1.21.1-4.1.0.8, GNU Lesser General Public License v3.0, Copyright (c) Glitchfiend.
 
-Bundled unmodified as a jar-in-jar (`META-INF/jarjar/`) and used through its public API (`terrablender.api.Regions`) to place legacy mod biomes in the overworld. A separately installed TerraBlender takes precedence. Source and license text: the project page above.
+Required external runtime dependency, not redistributed by Legacy Connector. Used through its public API (`terrablender.api.Regions`) to place legacy mod biomes in the overworld. Source and license text: the project page above.
+
+## Pehkui
+
+[Pehkui](https://modrinth.com/mod/pehkui) `3.8.3+1.21-neoforge`, MIT License. Optional external runtime integration, not redistributed by Legacy Connector. When installed, its scale API backs legacy `Entity.setSize` and player eye-height requests; without it, those requests are skipped with a warning.

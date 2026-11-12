@@ -3,13 +3,13 @@
 Policy: where a maintained NeoForge 1.21.1 library already solves something the layer re-implements, depend on the library (like
 Baubles -> Curios, Waila -> Jade, NEI -> JEI; see [Bridges](Bridges.md)). This page is a survey (Modrinth API, filter `versions:1.21.1` +
 `categories:neoforge`, 2026-10-31) of the layer's use cases and what could replace the hand-rolled code. Downloads and dates come from Modrinth.
-Check a licence and the nesting rules before bundling anything; "bundle" means jar-in-jar like Pehkui and the Scala libraries in `build.gradle`.
+Check a licence and the nesting rules before adding a dependency. External mods are declared in `neoforge.mods.toml` and are not bundled; legacy support libraries under `META-INF/legacyconnector/libs` follow a separate loader-managed path.
 
 ## Adopted
 
 | Use case | Hand-rolled before | Library | Decision |
 | --- | --- | --- | --- |
-| Entity and player size (`Entity.setSize`, `eyeHeight`, Fisk's Heroes shrink/grow) | `EntitySizes1710` side table + `LivingEntityDimensionsMixin` + client pose-stack scale hook | [Pehkui](https://modrinth.com/mod/pehkui) `3.8.3+1.21-neoforge`, MIT, 10.8 M downloads, last build 2024-06 | Adopted, bundled jar-in-jar (no install step; a separately installed newer Pehkui wins). `EntitySizes1710` maps sizes to `HITBOX_WIDTH/HEIGHT`, `MODEL_WIDTH/HEIGHT`, `EYE_HEIGHT`; poses (sneak, swim) stay proportional. Risk: no release since 2024, but it still works on NeoForge 21.1.258 |
+| Entity and player size (`Entity.setSize`, `eyeHeight`, Fisk's Heroes shrink/grow) | `EntitySizes1710` reflection-only entry point + `PehkuiEntitySizes1710` typed bridge | [Pehkui](https://modrinth.com/mod/pehkui) `3.8.3+1.21-neoforge`, MIT | Optional external dependency, not bundled. When present, maps sizes to `HITBOX_WIDTH/HEIGHT`, `MODEL_WIDTH/HEIGHT`, `EYE_HEIGHT`; without it, requests are skipped with one warning. Target runtime validation is pending. |
 
 ## Candidates per use case
 
@@ -37,7 +37,7 @@ Check a licence and the nesting rules before bundling anything; "bundle" means j
 ## How to add one
 
 1. Gradle: Modrinth maven is already declared with the `maven.modrinth` content filter; add the version to `gradle.properties`.
-2. Required and tiny (MIT/Apache, a few hundred KB): bundle with `jarJar(implementation(...))`, as for Pehkui.
-3. Optional and big: `compileOnly`, soft-load through the bridge pattern in `LibraryBridges.java` (class presence check, no direct references in
+2. Required external mod dependency: declare it as `required` in `neoforge.mods.toml`; do not package it as jar-in-jar.
+3. Optional integration: `compileOnly`, soft-load through the bridge pattern in `LibraryBridges.java` (mod-presence check, no direct references in
    always-loaded classes) and say so in the README config table.
 4. Never commit jars; list the licence in the PR.

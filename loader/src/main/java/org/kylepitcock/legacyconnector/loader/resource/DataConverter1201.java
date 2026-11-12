@@ -169,15 +169,26 @@ public final class DataConverter1201 {
         };
     }
 
+    /** Attribute id migration shared by JSON data and binary structure entity NBT. */
+    static String mapAttributeId(String id) {
+        return ATTRIBUTE_IDS.getOrDefault(id, id);
+    }
+
     // ---- entry point ------------------------------------------------------------------------------------------------------------
 
-    /** Converts one resource entry. Entries that are not data/assets JSON come back unchanged (under their mapped path). */
+    /** Converts one resource entry. Apart from binary structure NBT, entries other than data/assets JSON keep their bytes and mapped path. */
     public static List<Out> convert(String path, byte[] data, Stats stats) {
         String np = mapPath(path);
         boolean dataJson = path.startsWith("data/") && path.endsWith(".json");
         boolean model = path.startsWith("assets/") && path.endsWith(".json") && path.contains("/models/");
         if (!dataJson && !model) {
             if (!np.equals(path)) stats.add(pathCategory(path));
+            if (path.startsWith("data/") && path.endsWith(".nbt") && np.contains("/structure/")) {
+                StructureNbtConverter1201.Result converted = StructureNbtConverter1201.convert(data);
+                if (converted.changed()) stats.add("structure_nbt_attribute_ids");
+                if (converted.malformed()) stats.add("structure_nbt_unparsable");
+                return List.of(new Out(np, converted.data()));
+            }
             return List.of(new Out(np, data));
         }
         Ctx c = new Ctx();
@@ -418,8 +429,8 @@ public final class DataConverter1201 {
                     } else if (k.equals("tag") && (s.startsWith("forge:") || s.startsWith("#forge:"))) {
                         r = mapTag(s);
                         c.hit("forge_tags");
-                    } else if (k.equals("attribute") && ATTRIBUTE_IDS.containsKey(s)) {
-                        r = ATTRIBUTE_IDS.get(s);
+                    } else if (k.equals("attribute") && !mapAttributeId(s).equals(s)) {
+                        r = mapAttributeId(s);
                         c.hit("attribute_ids");
                     } else if (!model) {
                         r = mapValue(s, c);

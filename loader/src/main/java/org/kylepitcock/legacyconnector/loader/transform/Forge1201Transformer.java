@@ -297,6 +297,7 @@ public final class Forge1201Transformer {
         int palladiumPlayerSkinFetcherChanges = 0;
         int palladiumFlightHandlerChanges = 0;
         int palladiumCoreOverlayChanges = 0;
+        int palladiumCoreLightningMixinChanges = 0;
         for (ClassNode node : nodes) {
             if (PalladiumKubeJS1201.dropLegacyKubejsClass(node.name)) {
                 palladiumKubejsClassesDropped++;
@@ -345,6 +346,8 @@ public final class Forge1201Transformer {
             palladiumFlightHandlerChanges += palladiumFlightHandlerChange;
             int palladiumCoreOverlayChange = PalladiumCoreOverlay1201.apply(node);
             palladiumCoreOverlayChanges += palladiumCoreOverlayChange;
+            int palladiumCoreLightningMixinChange = PalladiumCoreLightningBoltMixin1201.apply(node);
+            palladiumCoreLightningMixinChanges += palladiumCoreLightningMixinChange;
             // The generic rule above should cover this call shape. Palladium 4.5.10's command abilities
             // and energy-beam hit handlers are guarded explicitly as well, so a missed site cannot leave
             // its input/action path silently calling the removed synchronous API.
@@ -374,7 +377,7 @@ public final class Forge1201Transformer {
                     + palladiumTailoringScreenChange + palladiumSheepColorChange
                     + palladiumRendererRotationChange + palladiumRenderLayerChange + palladiumPlayerSkinChange
                     + palladiumPlayerSkinFetcherChange + palladiumCommandFunctionChange
-                    + palladiumFlightHandlerChange + palladiumCoreOverlayChange);
+                    + palladiumFlightHandlerChange + palladiumCoreOverlayChange + palladiumCoreLightningMixinChange);
         }
         if (palladiumKubejsChanges > 0 || palladiumKubejsClassesDropped > 0) {
             result.notes.add("Palladium KubeJS 6 integration adapted for KubeJS 7: "
@@ -404,6 +407,10 @@ public final class Forge1201Transformer {
         if (palladiumCoreOverlayChanges > 0) {
             result.notes.add("PalladiumCore overlay registry verified against the Forge 1.20.1 RegisterGuiOverlaysEvent/ForgeGui shim, which forwards to NeoForge RegisterGuiLayersEvent/LayeredDraw.Layer: "
                     + palladiumCoreOverlayChanges + " overlay registry class(es)");
+        }
+        if (palladiumCoreLightningMixinChanges > 0) {
+            result.notes.add("PalladiumCore LightningBoltMixin declares maxShiftBy=1 for its verified one-instruction "
+                    + "INVOKE_ASSIGN shift after the second Level.getEntities call");
         }
         if (palladiumLootChanges > 0) {
             result.notes.add("Palladium loot-pool Gson deserialization migrated to NeoForge 1.21.1 loot codecs: "
