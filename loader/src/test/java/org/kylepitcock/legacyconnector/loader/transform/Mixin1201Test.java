@@ -88,12 +88,14 @@ class Mixin1201Test implements Opcodes {
 
     @Test
     void configIsNotRequiredAndDropsTheMissingMixins() {
-        String json = "{\"required\":true,\"package\":\"m\",\"refmap\":\"x.refmap.json\",\"mixins\":[\"GoneMixin\",\"ThereMixin\"],\"client\":[\"sub.ClientMixin\"],\"injectors\":{\"defaultRequire\":1}}";
+        String json = "{\"required\":true,\"package\":\"m\",\"plugin\":\"example.MixinPlugin\",\"refmap\":\"x.refmap.json\",\"compatibilityLevel\":\"JAVA_17\",\"mixins\":[\"GoneMixin\",\"ThereMixin\"],\"client\":[\"sub.ClientMixin\"],\"injectors\":{\"defaultRequire\":1}}";
         List<String> notes = new ArrayList<>();
         String out = Mixin1201.config(json, Set.of("m/GoneMixin"), notes);
         JsonObject o = JsonParser.parseString(out).getAsJsonObject();
         assertFalse(o.get("required").getAsBoolean());
         assertFalse(o.has("refmap"));
+        assertEquals("example.MixinPlugin", o.get("plugin").getAsString(), "conditional optional-integration gates must survive config normalization");
+        assertEquals("JAVA_17", o.get("compatibilityLevel").getAsString());
         assertEquals(0, o.getAsJsonObject("injectors").get("defaultRequire").getAsInt());
         assertEquals(1, o.getAsJsonArray("mixins").size());
         assertEquals("ThereMixin", o.getAsJsonArray("mixins").get(0).getAsString());
