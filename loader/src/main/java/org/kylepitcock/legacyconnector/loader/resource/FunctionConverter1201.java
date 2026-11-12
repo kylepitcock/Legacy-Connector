@@ -104,11 +104,11 @@ public final class FunctionConverter1201 {
                     + "],scale:" + args[3] + "}";
             consumed = 4;
         } else if (kind.equals("block")) {
-            if (args.length < 9) throw new IllegalStateException("Incomplete legacy block particle command: " + command);
+            if (args.length < 8) throw new IllegalStateException("Incomplete legacy block particle command: " + command);
             modernType = "minecraft:block{block_state:\"" + resourceId(args[0]) + "\"}";
             consumed = 1;
         } else {
-            if (args.length < 9) throw new IllegalStateException("Incomplete legacy item particle command: " + command);
+            if (args.length < 8) throw new IllegalStateException("Incomplete legacy item particle command: " + command);
             modernType = "minecraft:item{item:" + itemStack(args[0]) + "}";
             consumed = 1;
         }
