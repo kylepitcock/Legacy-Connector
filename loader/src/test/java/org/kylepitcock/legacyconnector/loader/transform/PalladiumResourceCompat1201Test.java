@@ -63,6 +63,10 @@ class PalladiumResourceCompat1201Test {
                 if (e.tab === omnitrixTab) {}
                 new ResourceLocation("alienevo:textures/gui/power_screen/power_interface.png");
                 """);
+        put(resources, "addon/alienevo/kubejs_scripts/detransform.js", """
+                entity.level.playSound(null, entity.x, entity.y, entity.z,
+                        `alienevo:${watchType}_detransform`, entity.getSoundSource(), 1.0, 1.0);
+                """);
         put(resources, "addon/alienevo/kubejs_scripts/omnitrix_cycle.js", """
                 entity.level.playSound(null, entity.x, entity.y, entity.z,
                         `alienevo:${soundToPlay}`, entity.getSoundSource(), 0.7, pitch);
@@ -89,7 +93,7 @@ class PalladiumResourceCompat1201Test {
                         `alienevo:${transformSound}_transform`, entity.getSoundSource(), 0.7, 1.0);
                 """);
 
-        assertEquals(8, PalladiumResourceCompat1201.apply(resources));
+        assertEquals(9, PalladiumResourceCompat1201.apply(resources));
 
         String storeArmor = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_STORE_ARMOR);
         assertTrue(storeArmor.contains(PalladiumResourceCompat1201.SAFE_STORE_ARMOR_CHECK));
@@ -120,6 +124,11 @@ class PalladiumResourceCompat1201Test {
         assertTrue(transform.contains("AlienEvoJavaResourceLocation.fromNamespaceAndPath"));
         assertTrue(transform.contains("getAlienEvoSoundEvent('alienevo:' + String(transformSound) + '_transform')"));
         assertFalse(transform.contains("`alienevo:${transformSound}_transform`,"));
+
+        String detransform = get(resources, "addon/alienevo/kubejs_scripts/detransform.js");
+        assertTrue(detransform.contains("function getAlienEvoSoundEvent(soundId)"));
+        assertTrue(detransform.contains("getAlienEvoSoundEvent('alienevo:' + String(watchType) + '_detransform')"));
+        assertFalse(detransform.contains("`alienevo:${watchType}_detransform`"));
 
         String cycle = get(resources, "addon/alienevo/kubejs_scripts/omnitrix_cycle.js");
         assertTrue(cycle.contains("function getAlienEvoSoundEvent(soundId)"));
