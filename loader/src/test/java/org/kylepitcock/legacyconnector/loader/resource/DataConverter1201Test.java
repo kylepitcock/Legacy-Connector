@@ -259,6 +259,36 @@ class DataConverter1201Test {
     }
 
     @Test
+    void worldgenForgeConditionsMoveToNeoForgeAndMergeWithoutLoss() {
+        JsonElement migrated = one("data/palladium/worldgen/structure/example.json", """
+                {
+                  "type":"minecraft:jigsaw",
+                  "forge:conditions":[{"type":"palladium:feature_flag_enabled","feature_flag":"example/legacy"}],
+                  "neoforge:conditions":[{"type":"neoforge:mod_loaded","modid":"example"}]
+                }
+                """, "data/palladium/worldgen/structure/example.json");
+
+        JsonArray conditions = migrated.getAsJsonObject().getAsJsonArray("neoforge:conditions");
+        assertEquals(2, conditions.size());
+        assertEquals("neoforge:mod_loaded", conditions.get(0).getAsJsonObject().get("type").getAsString());
+        assertEquals("palladium:feature_flag_enabled", conditions.get(1).getAsJsonObject().get("type").getAsString());
+        assertTrue(!migrated.toString().contains("forge:conditions"), migrated.toString());
+    }
+
+    @Test
+    void worldgenForgeConditionsMoveWhenNoModernKeyExists() {
+        JsonElement migrated = one("data/palladium/worldgen/structure/example.json", """
+                {
+                  "type":"minecraft:jigsaw",
+                  "forge:conditions":[{"type":"palladium:feature_flag_enabled","feature_flag":"example"}]
+                }
+                """, "data/palladium/worldgen/structure/example.json");
+
+        assertTrue(migrated.getAsJsonObject().has("neoforge:conditions"), migrated.toString());
+        assertTrue(!migrated.getAsJsonObject().has("forge:conditions"), migrated.toString());
+    }
+
+    @Test
     void packMcmeta() {
         Map<String, byte[]> in = new LinkedHashMap<>();
         in.put("pack.mcmeta", "{\"pack\":{\"description\":\"d\",\"pack_format\":15,\"forge:data_pack_format\":12}}".getBytes(StandardCharsets.UTF_8));
