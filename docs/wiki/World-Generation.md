@@ -25,14 +25,21 @@ of the multi-noise biome source (`core/worldgen/BiomePlacement`, data from `v1_7
   `GenLayerBiome` drew from on 1.7.10. Mod biomes in no list never generated in a 1.7.10 default overworld (they belong to
   the mod's own dimension or world type), so they are not placed here. The log lists both groups once
   ("Legacy biome climate placement ...").
-- **TerraBlender is the only placement path.** The legacy biomes form a TerraBlender overworld region
-  (`compat/terrablender/LegacyRegion`). TerraBlender (LGPL-3.0, see `THIRD_PARTY_NOTICES.md`) is a required dependency, embedded as
-  jar-in-jar with an open-ended version range, so nothing extra needs installing and a separately installed (newer) TerraBlender
-  wins. The region holds the vanilla layout with each analog's points shared among the legacy biomes modelled on it. Its weight is
-  the total legacy weight / 3, clamped to 1-12 (TerraBlender's vanilla region has weight 10), and TerraBlender mixes it with the
-  vanilla region and other mods' regions (Terralith, Tectonic, Biomes O' Plenty...). Inside the region the analog keeps weight 20 of each point and the legacy biomes alternate with it along the humidity axis (analog, legacy, analog, legacy...); there is no rule keeping legacy biomes apart or on different analogs, they sit where their climate puts them. `legacyBiomeFrequency` (config, default 1.0) scales both the region weight and the shares. Biomes in no `BiomeManager` list (Thaumcraft's Eerie and Eldritch) never generated in the 1.7.10 overworld and are not placed. There is no fallback that edits the
-  `minecraft:overworld` parameter list: worldgen mods such as Tectonic and Terralith reshape that climate space, and points added
-  there landed in thin river-shaped bands (issue #175).
+- **Placement without a required third-party mod.** TerraBlender is optional, not a prerequisite. When it is already installed,
+  the connector loads `compat/terrablender/LegacyRegion` as an optional region (TerraBlender is LGPL-3.0; see
+  `THIRD_PARTY_NOTICES.md`). Its weight is the total legacy weight / 3, clamped to 1-12 (TerraBlender's vanilla region has weight
+  10), and TerraBlender mixes it with its vanilla region and other mods' regions. The analog keeps weight 20 of each point and
+  legacy biomes alternate with it along the humidity axis (analog, legacy, analog, legacy...). `legacyBiomeFrequency` (config,
+  default 1.0) scales the shares.
+- **Connector-owned fallback.** When TerraBlender is absent, the connector overlays the active overworld
+  `MultiNoiseBiomeSource` parameter list through a narrowly scoped mixin. The current source's parameter points are the base, so
+  the implementation does not substitute a hard-coded vanilla-only climate layout. This is intended to preserve points added by
+  world-generation mods such as Tectonic and Terralith while sharing each analog's humidity intervals with legacy biomes.
+  The native path applies only to a standard multi-noise overworld source; a different custom biome-source type is left unchanged
+  and logged rather than guessed at. This source implementation has not yet passed the next consolidated build/runtime gate.
+- The two placement paths use the same legacy biome weights and humidity-splitting algorithm. Biomes in no
+  `BiomeManager` list (Thaumcraft's Eerie and Eldritch) never generated in the 1.7.10 default overworld and are not placed.
+  TerraBlender and Pehkui are optional integrations; neither is required to install or use Legacy Connector.
 
 Biome registry ids are unchanged (`thaumcraft:magical_forest`, ...), so existing worlds keep their already generated biomes.
 New chunks of worlds made with older versions use the new placement, so biome borders can show where old and new chunks meet.
@@ -43,7 +50,7 @@ New chunks of worlds made with older versions use the new placement, so biome bo
 A world type a mod registers (BoP's "BIOMESOP") appears on the Create World screen's world type button; on a
 dedicated server use `level-type=<modid>:<type>` (e.g. `biomesoplenty:biomesop`). Its world preset brings its own biome
 source, `legacyconnector:legacy_layers` (`LegacyLayeredBiomeSource`, a multi-noise source of the vanilla parameter list, so
-TerraBlender regions and terrain-tied biomes still apply). On top of that source, the world type's own 1.7.10 biome layer chain
+optional TerraBlender regions and terrain-tied biomes still apply when TerraBlender is installed). On top of that source, the world type's own 1.7.10 biome layer chain
 (`GenLayer`, `WorldType.getChunkManager`, re-implemented in the shim and run unmodified) chooses the land biomes. Modern
 terrain, oceans, rivers, beaches, peaks and caves are kept, and where the legacy layout has a vanilla biome the multi-noise
 biome stays. Worlds created with a legacy world type before this source existed load as plain multi-noise worlds and get the
