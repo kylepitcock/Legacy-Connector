@@ -92,6 +92,70 @@ class PalladiumSelectionLists1201Test implements Opcodes {
     }
 
     @Test
+    void preservesLegacyListBackgroundSeparatorsAndSelectionFlags() {
+        String[] targets = {
+                PalladiumSelectionLists1201.TAILORING_RECIPE_LIST,
+                PalladiumSelectionLists1201.ADDON_LIST_WIDGET,
+                PalladiumSelectionLists1201.POWER_ABILITY_LIST
+        };
+        for (String name : targets) {
+            ClassNode node = listNode(name);
+            if (PalladiumSelectionLists1201.ADDON_LIST_WIDGET.equals(name)) {
+                node.superName = "net/minecraft/client/gui/components/ObjectSelectionList";
+            }
+            MethodNode init = new MethodNode(ACC_PUBLIC, "configure", "()V", null, null);
+            init.instructions.add(new VarInsnNode(ALOAD, 0));
+            init.instructions.add(new InsnNode(ICONST_0));
+            init.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, name, "setRenderBackground", "(Z)V", false));
+            init.instructions.add(new VarInsnNode(ALOAD, 0));
+            init.instructions.add(new InsnNode(ICONST_0));
+            init.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, name, "setRenderTopAndBottom", "(Z)V", false));
+            init.instructions.add(new VarInsnNode(ALOAD, 0));
+            init.instructions.add(new InsnNode(ICONST_1));
+            init.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, name, "setRenderSelection", "(Z)V", false));
+            init.instructions.add(new InsnNode(RETURN));
+            init.maxStack = 2;
+            init.maxLocals = 1;
+            node.methods.add(init);
+
+            assertEquals(6, PalladiumSelectionLists1201.apply(node), name);
+            assertTrue(hasStaticCall(init, "setRenderBackground"));
+            assertTrue(hasStaticCall(init, "setRenderTopAndBottom"));
+            assertTrue(hasStaticCall(init, "setRenderSelection"));
+            assertNotNull(findMethod(node, "renderListBackground",
+                    "(Lnet/minecraft/client/gui/GuiGraphics;)V"));
+            assertNotNull(findMethod(node, "renderListSeparators",
+                    "(Lnet/minecraft/client/gui/GuiGraphics;)V"));
+            assertNotNull(findMethod(node, "renderSelection",
+                    "(Lnet/minecraft/client/gui/GuiGraphics;IIIII)V"));
+            assertEquals(0, PalladiumSelectionLists1201.apply(node), "second application is idempotent: " + name);
+            org.junit.jupiter.api.Assertions.assertDoesNotThrow(() -> {
+                ClassWriter writer = new ClassWriter(0);
+                node.accept(writer);
+                writer.toByteArray();
+            });
+        }
+    }
+
+    private static boolean hasStaticCall(MethodNode method, String name) {
+        for (var instruction : method.instructions.toArray()) {
+            if (instruction instanceof MethodInsnNode call
+                    && call.getOpcode() == INVOKESTATIC
+                    && call.owner.equals("legacyconnector/v1_20_1/PalladiumSelectionListCompat")
+                    && call.name.equals(name)
+                    && call.desc.equals("(Ljava/lang/Object;Z)V")) return true;
+        }
+        return false;
+    }
+
+    private static MethodNode findMethod(ClassNode node, String name, String descriptor) {
+        for (MethodNode method : node.methods) {
+            if (name.equals(method.name) && descriptor.equals(method.desc)) return method;
+        }
+        return null;
+    }
+
+    @Test
     void unrelatedClassesAreNotChanged() {
         ClassNode node = listNode(PalladiumSelectionLists1201.ACCESSORY_LIST);
         node.name = "example/OtherList";
