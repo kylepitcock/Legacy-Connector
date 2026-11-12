@@ -508,7 +508,7 @@ public final class Forge1201Transformer {
                     + palladiumPlayerSkinChanges + " lambda(s)");
         }
         if (palladiumPlayerSkinFetcherChanges > 0) {
-            result.notes.add("Palladium PlayerSkinFetcher migrated from the removed SkinTextureCallback to SkinManager.getOrLoad / CompletableFuture.thenAccept: "
+            result.notes.add("Palladium PlayerSkinFetcher migrated from the removed SkinTextureCallback to SkinManager.getOrLoad / CompletableFuture.whenComplete: "
                     + palladiumPlayerSkinFetcherChanges + " fetcher class(es)");
         }
         if (ownUnit) {
