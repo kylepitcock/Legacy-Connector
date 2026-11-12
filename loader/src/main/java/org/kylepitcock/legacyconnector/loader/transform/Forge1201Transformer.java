@@ -295,6 +295,7 @@ public final class Forge1201Transformer {
         int palladiumCommandFunctionChanges = 0;
         int palladiumPlayerSkinChanges = 0;
         int palladiumPlayerSkinFetcherChanges = 0;
+        int palladiumFlightHandlerChanges = 0;
         for (ClassNode node : nodes) {
             if (PalladiumKubeJS1201.dropLegacyKubejsClass(node.name)) {
                 palladiumKubejsClassesDropped++;
@@ -339,6 +340,8 @@ public final class Forge1201Transformer {
             palladiumPlayerSkinChanges += palladiumPlayerSkinChange;
             Mc1201Migration.Counts changed = Mc1201Migration.apply(node, hierarchy);
             mc.add(changed);
+            int palladiumFlightHandlerChange = PalladiumFlightHandler1201.apply(node);
+            palladiumFlightHandlerChanges += palladiumFlightHandlerChange;
             // The generic rule above should cover this call shape. Palladium 4.5.10's command abilities
             // and energy-beam hit handlers are guarded explicitly as well, so a missed site cannot leave
             // its input/action path silently calling the removed synchronous API.
@@ -367,7 +370,8 @@ public final class Forge1201Transformer {
                     + palladiumSelectionListChange + palladiumSuitStandChange
                     + palladiumTailoringScreenChange + palladiumSheepColorChange
                     + palladiumRendererRotationChange + palladiumRenderLayerChange + palladiumPlayerSkinChange
-                    + palladiumPlayerSkinFetcherChange + palladiumCommandFunctionChange);
+                    + palladiumPlayerSkinFetcherChange + palladiumCommandFunctionChange
+                    + palladiumFlightHandlerChange);
         }
         if (palladiumKubejsChanges > 0 || palladiumKubejsClassesDropped > 0) {
             result.notes.add("Palladium KubeJS 6 integration adapted for KubeJS 7: "
@@ -389,6 +393,10 @@ public final class Forge1201Transformer {
         if (palladiumSuitStandChanges > 0) {
             result.notes.add("Palladium SuitStand migrated to the 1.21.1 SynchedEntityData builder lifecycle: "
                     + palladiumSuitStandChanges + " entity class(es)");
+        }
+        if (palladiumFlightHandlerChanges > 0) {
+            result.notes.add("Palladium FlightHandler EntityDimensions.height field access migrated to the public 1.21.1 record accessor: "
+                    + palladiumFlightHandlerChanges + " field read(s)");
         }
         if (palladiumLootChanges > 0) {
             result.notes.add("Palladium loot-pool Gson deserialization migrated to NeoForge 1.21.1 loot codecs: "
