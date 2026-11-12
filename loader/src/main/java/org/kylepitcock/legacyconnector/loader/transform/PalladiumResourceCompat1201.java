@@ -202,7 +202,7 @@ final class PalladiumResourceCompat1201 {
             if (migrated.contains("\"forge:entity_gravity\"")) {
                 migrated = replaceExactScriptOccurrence(
                         path, migrated, "\"forge:entity_gravity\"",
-                        "\"minecraft:gravity\"");
+                        "\"minecraft:generic.gravity\"");
             }
 
             if (migrated.contains("new ResourceLocation(")
