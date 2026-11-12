@@ -11,14 +11,16 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.InsnNode;
+import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
+import org.objectweb.asm.tree.VarInsnNode;
 
 class PalladiumSelectionLists1201Test implements Opcodes {
     private static final String DESC =
             "(Lnet/minecraft/client/gui/narration/NarrationElementOutput;)V";
     private static final String SUPER =
             "net/minecraft/client/gui/components/AbstractSelectionList";
-    private static final String[] TARGETS = {
+    private static final String[] NARRATION_TARGETS = {
             PalladiumSelectionLists1201.ACCESSORY_SLOT_LIST,
             PalladiumSelectionLists1201.ACCESSORY_LIST,
             PalladiumSelectionLists1201.ADDON_PACK_DEV_LOG_LIST,
@@ -27,7 +29,7 @@ class PalladiumSelectionLists1201Test implements Opcodes {
 
     @Test
     void renamesOnlyTheEmptyNarrationOverrideToTheNewHookForEveryAffectedPalladiumList() {
-        for (String name : TARGETS) {
+        for (String name : NARRATION_TARGETS) {
             ClassNode node = listNode(name);
             MethodNode method = new MethodNode(ACC_PUBLIC, "updateNarration", DESC, null, null);
             method.instructions.add(new InsnNode(RETURN));
@@ -44,6 +46,45 @@ class PalladiumSelectionLists1201Test implements Opcodes {
                 node.accept(writer);
                 writer.toByteArray();
             });
+        }
+    }
+
+    @Test
+    void rewritesLegacyX0ReadsAndWritesToModernWidgetPositionAccessors() {
+        String[] targets = {
+                PalladiumSelectionLists1201.TAILORING_RECIPE_LIST,
+                PalladiumSelectionLists1201.ADDON_LIST_WIDGET,
+                PalladiumSelectionLists1201.POWER_ABILITY_LIST
+        };
+        for (String name : targets) {
+            ClassNode node = listNode(name);
+            if (PalladiumSelectionLists1201.ADDON_LIST_WIDGET.equals(name)) {
+                node.superName = "net/minecraft/client/gui/components/ObjectSelectionList";
+            }
+            MethodNode method = new MethodNode(ACC_PUBLIC, "layout", "()V", null, null);
+            method.instructions.add(new VarInsnNode(ALOAD, 0));
+            method.instructions.add(new org.objectweb.asm.tree.FieldInsnNode(GETFIELD, name, "x0", "I"));
+            method.instructions.add(new InsnNode(POP));
+            method.instructions.add(new VarInsnNode(ALOAD, 0));
+            method.instructions.add(new InsnNode(ICONST_4));
+            method.instructions.add(new org.objectweb.asm.tree.FieldInsnNode(PUTFIELD, name, "x0", "I"));
+            method.instructions.add(new InsnNode(RETURN));
+            node.methods.add(method);
+
+            assertEquals(2, PalladiumSelectionLists1201.apply(node), name);
+            int reads = 0;
+            int writes = 0;
+            for (var instruction : method.instructions.toArray()) {
+                if (instruction instanceof MethodInsnNode call
+                        && call.owner.equals("net/minecraft/client/gui/components/AbstractWidget")) {
+                    if (call.name.equals("getX") && call.desc.equals("()I")) reads++;
+                    if (call.name.equals("setX") && call.desc.equals("(I)V")) writes++;
+                }
+                assertFalse(instruction instanceof org.objectweb.asm.tree.FieldInsnNode field
+                        && field.owner.equals(name) && field.name.equals("x0"), name);
+            }
+            assertEquals(1, reads, name);
+            assertEquals(1, writes, name);
         }
     }
 
