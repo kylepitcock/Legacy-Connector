@@ -22,32 +22,32 @@ final class PalladiumResourceCompat1201 {
             "assets/alienevo/kubejs_scripts/power_ui.js";
 
     static final String OMNITRIX_INTEGER_HELPER =
-            "const JavaInteger = Java.loadClass('java.lang.Integer');\n\n"
-                    + "function toOmnitrixInteger(value) {\n"
-                    + "    if (value != null && typeof value.getAsInt === 'function') {\n"
-                    + "        return JavaInteger.valueOf(value.getAsInt());\n"
-                    + "    }\n"
-                    + "    return JavaInteger.valueOf(Math.trunc(Number(value)));\n"
-                    + "}\n\n";
+            "function toOmnitrixInteger(value) {\\n"
+                    + "    const JavaInteger = Java.loadClass('java.lang.Integer');\\n"
+                    + "    if (value != null && typeof value.getAsInt === 'function') {\\n"
+                    + "        return JavaInteger.valueOf(value.getAsInt());\\n"
+                    + "    }\\n"
+                    + "    return JavaInteger.valueOf(Math.trunc(Number(value)));\\n"
+                    + "}\\n\\n";
     static final String LEGACY_RESOURCE_LOCATION_HELPER =
-            "var AlienEvoJavaResourceLocation = Java.loadClass('net.minecraft.resources.ResourceLocation');\n\n"
-                    + "function ResourceLocation(namespaceOrLocation, path) {\n"
-                    + "    if (arguments.length > 1) {\n"
-                    + "        return AlienEvoJavaResourceLocation.fromNamespaceAndPath(String(namespaceOrLocation), String(path));\n"
-                    + "    }\n"
-                    + "    return AlienEvoJavaResourceLocation.parse(String(namespaceOrLocation));\n"
-                    + "}\n\n";
+            "function ResourceLocation(namespaceOrLocation, path) {\\n"
+                    + "    const AlienEvoJavaResourceLocation = Java.loadClass('net.minecraft.resources.ResourceLocation');\\n"
+                    + "    if (arguments.length > 1) {\\n"
+                    + "        return AlienEvoJavaResourceLocation.fromNamespaceAndPath(String(namespaceOrLocation), String(path));\\n"
+                    + "    }\\n"
+                    + "    return AlienEvoJavaResourceLocation.parse(String(namespaceOrLocation));\\n"
+                    + "}\\n\\n";
 
     static final String LEGACY_SOUND_EVENT_HELPER =
-            "var AlienEvoSoundRegistry = Java.loadClass('net.minecraft.core.registries.BuiltInRegistries').SOUND_EVENT;\n"
-                    + "var AlienEvoSoundResourceLocation = Java.loadClass('net.minecraft.resources.ResourceLocation');\n\n"
-                    + "function getAlienEvoSoundEvent(soundId) {\n"
-                    + "    const soundEvent = AlienEvoSoundRegistry.get(AlienEvoSoundResourceLocation.parse(String(soundId)));\n"
-                    + "    if (soundEvent == null) {\n"
-                    + "        throw new Error('AlienEvo sound event is not registered: ' + soundId);\n"
-                    + "    }\n"
-                    + "    return soundEvent;\n"
-                    + "}\n\n";
+            "function getAlienEvoSoundEvent(soundId) {\\n"
+                    + "    const AlienEvoSoundRegistry = Java.loadClass('net.minecraft.core.registries.BuiltInRegistries').SOUND_EVENT;\\n"
+                    + "    const AlienEvoSoundResourceLocation = Java.loadClass('net.minecraft.resources.ResourceLocation');\\n"
+                    + "    const soundEvent = AlienEvoSoundRegistry.get(AlienEvoSoundResourceLocation.parse(String(soundId)));\\n"
+                    + "    if (soundEvent == null) {\\n"
+                    + "        throw new Error('AlienEvo sound event is not registered: ' + soundId);\\n"
+                    + "    }\\n"
+                    + "    return soundEvent;\\n"
+                    + "}\\n\\n";
 
     private static final String ALIEN_EVO_CYCLE = "addon/alienevo/kubejs_scripts/omnitrix_cycle.js";
     private static final String RESOURCE_LOCATION_HELPER_MARKER =
@@ -142,6 +142,7 @@ final class PalladiumResourceCompat1201 {
         rewriteTransformScript(resources);
         rewrite(resources, ALIEN_EVO_POWER_UI, POWER_UI_TAB_COMPARISONS);
         rewriteLegacyScriptApis(resources);
+        rewriteScoreboardApi(resources);
 
         // A single resource can receive more than one independent rewrite.
         // Report the number of distinct changed script files, not rewrite passes.
@@ -228,6 +229,44 @@ final class PalladiumResourceCompat1201 {
 
             if (!migrated.equals(script)) {
                 entry.setValue(migrated.getBytes(StandardCharsets.UTF_8));
+                changed++;
+            }
+        }
+        return changed;
+    }
+
+
+    /**
+     * AlienEvo 1.1.3 uses the pre-1.21 scoreboard API in its command and
+     * ability scripts. 1.21.1 requires ScoreHolder instead of a player-name
+     * String and exposes mutable score values through ScoreAccess.get()/set().
+     * Keep the rewrite restricted to the six inspected AlienEvo scripts.
+     */
+    private static int rewriteScoreboardApi(Map<String, byte[]> resources) {
+        String[] paths = {
+                "addon/alienevo/kubejs_scripts/charge_leap.js",
+                "addon/alienevo/kubejs_scripts/detransform.js",
+                "addon/alienevo/kubejs_scripts/rolling_mechanics.js",
+                "addon/alienevo/kubejs_scripts/stat_ability.js",
+                "data/alienevo/kubejs_scripts/level_command.js",
+                "data/alienevo/kubejs_scripts/xp.js"
+        };
+        int changed = 0;
+        for (String path : paths) {
+            byte[] original = resources.get(path);
+            if (original == null) continue;
+            String script = new String(original, StandardCharsets.UTF_8);
+            String migrated = script;
+            for (String playerName : new String[] {"username", "playerName", "playerUsername"}) {
+                String legacy = "getOrCreatePlayerScore(" + playerName + ",";
+                String safe = "getOrCreatePlayerScore(Java.loadClass('net.minecraft.world.scores.ScoreHolder').forNameOnly(String("
+                        + playerName + ")),";
+                migrated = migrated.replace(legacy, safe);
+            }
+            migrated = migrated.replace(".getScore()", ".get()");
+            migrated = migrated.replace(".setScore(", ".set(");
+            if (!migrated.equals(script)) {
+                resources.put(path, migrated.getBytes(StandardCharsets.UTF_8));
                 changed++;
             }
         }

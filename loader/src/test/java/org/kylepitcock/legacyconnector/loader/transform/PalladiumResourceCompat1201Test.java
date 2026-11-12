@@ -114,43 +114,99 @@ class PalladiumResourceCompat1201Test {
         assertFalse(transform.contains("palladium.setProperty(entity, omnitrixPropertyKey, alien_num);"));
         assertFalse(transform.contains("palladium.setProperty(entity, omnitrixPropertyKey, newAlienUnlocked);"));
         assertTrue(transform.contains("function ResourceLocation(namespaceOrLocation, path)"));
-        assertTrue(transform.contains("var AlienEvoJavaResourceLocation = Java.loadClass"));
-        assertFalse(transform.contains("const AlienEvoJavaResourceLocation ="));
-        assertTrue(transform.contains("var AlienEvoSoundRegistry = Java.loadClass"));
-        assertTrue(transform.contains("var AlienEvoSoundResourceLocation = Java.loadClass"));
-        assertFalse(transform.contains("const AlienEvoSoundRegistry ="));
-        assertFalse(transform.contains("const AlienEvoSoundResourceLocation ="));
+        assertTrue(transform.contains("    const AlienEvoJavaResourceLocation = Java.loadClass"));
+        assertTrue(transform.contains("    const AlienEvoSoundRegistry = Java.loadClass"));
+        assertTrue(transform.contains("    const AlienEvoSoundResourceLocation = Java.loadClass"));
         assertTrue(transform.contains("AlienEvoJavaResourceLocation.fromNamespaceAndPath"));
         assertTrue(transform.contains("getAlienEvoSoundEvent('alienevo:' + String(transformSound) + '_transform')"));
         assertFalse(transform.contains("`alienevo:${transformSound}_transform`,"));
 
         String cycle = get(resources, "addon/alienevo/kubejs_scripts/omnitrix_cycle.js");
         assertTrue(cycle.contains("function getAlienEvoSoundEvent(soundId)"));
-        assertFalse(cycle.contains("const AlienEvoJavaResourceLocation ="));
-        assertTrue(cycle.contains("var AlienEvoSoundRegistry = Java.loadClass"));
-        assertTrue(cycle.contains("var AlienEvoSoundResourceLocation = Java.loadClass"));
-        assertFalse(cycle.contains("const AlienEvoSoundRegistry ="));
-        assertFalse(cycle.contains("const AlienEvoSoundResourceLocation ="));
+        assertTrue(cycle.contains("    const AlienEvoSoundRegistry = Java.loadClass"));
+        assertTrue(cycle.contains("    const AlienEvoSoundResourceLocation = Java.loadClass"));
         assertTrue(cycle.contains("getAlienEvoSoundEvent('alienevo:' + String(soundToPlay))"));
         assertFalse(cycle.contains("`alienevo:${soundToPlay}`,"));
 
         String codes = get(resources, "addon/alienevo/kubejs_scripts/codes.js");
         assertTrue(codes.contains("function ResourceLocation(namespaceOrLocation, path)"));
-        assertTrue(codes.contains("var AlienEvoJavaResourceLocation = Java.loadClass"));
-        assertFalse(codes.contains("const AlienEvoJavaResourceLocation ="));
+        assertTrue(codes.contains("    const AlienEvoJavaResourceLocation = Java.loadClass"));
 
         assertEquals("const gravityAttribute = \"minecraft:generic.gravity\";",
                 get(resources, "data/alienevo/kubejs_scripts/slam.js"));
 
         String powerUi = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_POWER_UI);
         assertTrue(powerUi.contains("function ResourceLocation(namespaceOrLocation, path)"));
-        assertTrue(powerUi.contains("var AlienEvoJavaResourceLocation = Java.loadClass"));
-        assertFalse(powerUi.contains("const AlienEvoJavaResourceLocation ="));
+        assertTrue(powerUi.contains("    const AlienEvoJavaResourceLocation = Java.loadClass"));
         assertEquals(3, occurrences(powerUi, "currentTab.toString() === omnitrixTab"));
         assertEquals(5, occurrences(powerUi, "e.tab.toString() === omnitrixTab"));
         assertFalse(powerUi.contains("currentTab === omnitrixTab"));
         assertFalse(powerUi.contains("e.tab === omnitrixTab"));
 
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+    }
+
+
+    @Test
+    void adaptsAlienEvoScoreboardApiAcrossCommandsAndPowers() {
+        Map<String, byte[]> resources = new HashMap<>();
+        put(resources, "data/alienevo/kubejs_scripts/level_command.js", """
+                scoreboard.getOrCreatePlayerScore(playerName, levelObj).setScore(10);
+                let current = scoreboard.getOrCreatePlayerScore(playerName, xpObj).getScore();
+                """);
+        put(resources, "addon/alienevo/kubejs_scripts/detransform.js", """
+                let score = scoreboardManager.getOrCreatePlayerScore(playerUsername, timerObjective);
+                let current = score.getScore();
+                """);
+        put(resources, "addon/alienevo/kubejs_scripts/charge_leap.js", """
+                let score = scoreboard.getOrCreatePlayerScore(username, scoreboardObj);
+                score.setScore(score.getScore() + 1);
+                """);
+        put(resources, "addon/alienevo/kubejs_scripts/rolling_mechanics.js", """
+                let score = scoreboard.getOrCreatePlayerScore(username, scoreboardObj);
+                let current = score.getScore();
+                """);
+        put(resources, "addon/alienevo/kubejs_scripts/stat_ability.js", """
+                let score = scoreboard.getOrCreatePlayerScore(username, scoreboard_obj);
+                let current = score.getScore();
+                """);
+        put(resources, "data/alienevo/kubejs_scripts/xp.js", """
+                let score = scoreboard.getOrCreatePlayerScore(username, xpObj);
+                let current = score.getScore();
+                score.setScore(current + 1);
+                """);
+
+        assertEquals(6, PalladiumResourceCompat1201.apply(resources));
+
+        String level = get(resources, "data/alienevo/kubejs_scripts/level_command.js");
+        assertTrue(level.contains("forNameOnly(String(playerName))"));
+        assertTrue(level.contains(".set(10)"));
+        assertTrue(level.contains(".get()"));
+        assertFalse(level.contains("getOrCreatePlayerScore(playerName,"));
+        assertFalse(level.contains(".getScore()"));
+        assertFalse(level.contains(".setScore("));
+
+        String detransform = get(resources, "addon/alienevo/kubejs_scripts/detransform.js");
+        assertTrue(detransform.contains("forNameOnly(String(playerUsername))"));
+        assertTrue(detransform.contains("score.get()"));
+
+        String chargeLeap = get(resources, "addon/alienevo/kubejs_scripts/charge_leap.js");
+        assertTrue(chargeLeap.contains("forNameOnly(String(username))"));
+        assertTrue(chargeLeap.contains("score.get()"));
+        assertTrue(chargeLeap.contains("score.set("));
+
+        String rolling = get(resources, "addon/alienevo/kubejs_scripts/rolling_mechanics.js");
+        assertTrue(rolling.contains("forNameOnly(String(username))"));
+        assertTrue(rolling.contains("score.get()"));
+
+        String stat = get(resources, "addon/alienevo/kubejs_scripts/stat_ability.js");
+        assertTrue(stat.contains("forNameOnly(String(username))"));
+        assertTrue(stat.contains("score.get()"));
+
+        String xp = get(resources, "data/alienevo/kubejs_scripts/xp.js");
+        assertTrue(xp.contains("forNameOnly(String(username))"));
+        assertTrue(xp.contains("score.get()"));
+        assertTrue(xp.contains("score.set("));
         assertEquals(0, PalladiumResourceCompat1201.apply(resources));
     }
 
