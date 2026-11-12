@@ -133,7 +133,7 @@ class PalladiumCoreOverlay1201Test implements Opcodes {
         assertTrue(node.methods.stream()
                 .anyMatch(method -> method.name.equals("lambda$onRegisterGuiOverlays$0")
                         && method.desc.equals(PalladiumCoreOverlay1201.RENDER_LAMBDA_DESC)));
-        assertFalse(node.methods.stream().anyMatch(method -> method.desc.contains("net/minecraftforge/")));
+        assertFalse(node.methods.stream().anyMatch(method -> method.desc.contains("Lnet/minecraftforge/")), "direct Forge API descriptors must be remapped; the legacyconnector/.../net/minecraftforge shim descriptors are intentional");
         assertEquals(1, PalladiumCoreOverlay1201.apply(node), "recognition must be idempotent");
     }
 
