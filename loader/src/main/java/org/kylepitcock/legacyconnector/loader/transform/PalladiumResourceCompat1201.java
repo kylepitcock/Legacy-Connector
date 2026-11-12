@@ -235,44 +235,6 @@ final class PalladiumResourceCompat1201 {
 
 
     /**
-     * AlienEvo 1.1.3 uses the pre-1.21 scoreboard API in its command and
-     * ability scripts. 1.21.1 requires ScoreHolder instead of a player-name
-     * String and exposes mutable score values through ScoreAccess.get()/set().
-     * Keep the rewrite restricted to the six inspected AlienEvo scripts.
-     */
-    private static int rewriteScoreboardApi(Map<String, byte[]> resources) {
-        String[] paths = {
-                "addon/alienevo/kubejs_scripts/charge_leap.js",
-                "addon/alienevo/kubejs_scripts/detransform.js",
-                "addon/alienevo/kubejs_scripts/rolling_mechanics.js",
-                "addon/alienevo/kubejs_scripts/stat_ability.js",
-                "data/alienevo/kubejs_scripts/level_command.js",
-                "data/alienevo/kubejs_scripts/xp.js"
-        };
-        int changed = 0;
-        for (String path : paths) {
-            byte[] original = resources.get(path);
-            if (original == null) continue;
-            String script = new String(original, StandardCharsets.UTF_8);
-            String migrated = script;
-            for (String playerName : new String[] {"username", "playerName", "playerUsername"}) {
-                String legacy = "getOrCreatePlayerScore(" + playerName + ",";
-                String safe = "getOrCreatePlayerScore(Java.loadClass('net.minecraft.world.scores.ScoreHolder').forNameOnly(String("
-                        + playerName + ")),";
-                migrated = migrated.replace(legacy, safe);
-            }
-            migrated = migrated.replace(".getScore()", ".get()");
-            migrated = migrated.replace(".setScore(", ".set(");
-            if (!migrated.equals(script)) {
-                resources.put(path, migrated.getBytes(StandardCharsets.UTF_8));
-                changed++;
-            }
-        }
-        return changed;
-    }
-
-
-    /**
      * AlienEvo 1.1.3 uses the pre-1.21 Scoreboard and ScoreAccess APIs in
      * command and ability scripts. In 1.21.1 player score lookup requires a
      * ScoreHolder and ScoreAccess exposes get()/set(). Scope these edits to
