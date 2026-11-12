@@ -214,6 +214,7 @@ final class PalladiumPlayerSkinFetcher1201 implements Opcodes {
 
         callback.instructions.add(done);
         callback.instructions.add(new InsnNode(RETURN));
+        callback.desc = NEW_CALLBACK_IMPL_DESC;
         callback.maxStack = 5;
         callback.maxLocals = 3;
 
