@@ -571,6 +571,9 @@ public final class Forge1201Transformer {
         if (AlienEvoResourceCompat1201.removeUnreferencedHiddenCodePower(outResources, outClasses)) {
             result.notes.add("AlienEvo: removed the unreferenced hidden code_power_test resource; its generate_random/check_code types are not registered, while the real code system is handled by display_code");
         }
+        if (AlienEvoResourceCompat1201.makeAdAstraDamageTypeOptional(outResources)) {
+            result.notes.add("AlienEvo: made the Ad Astra oxygen damage-type tag optional; it is used when ad_astra:oxygen is registered and skipped when Ad Astra is absent");
+        }
         // the data and resource packs: 1.21 folder names, recipe/loot/advancement/tag/model formats, forge: ids, pack.mcmeta (DataConverter1201)
         DataConverter1201.Stats dataStats = new DataConverter1201.Stats();
         outResources = new LinkedHashMap<>(DataConverter1201.convertAll(outResources, dataStats));
