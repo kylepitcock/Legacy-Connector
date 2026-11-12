@@ -122,7 +122,8 @@ final class AlienEvoResourceCompat1201 {
     private static boolean containsOutside(Map<String, byte[]> values, String excludedPath, String token) {
         byte[] needle = token.getBytes(StandardCharsets.UTF_8);
         for (Map.Entry<String, byte[]> entry : values.entrySet()) {
-            if (!entry.getKey().equals(excludedPath) && contains(entry.getValue(), needle)) return true;
+            if (!entry.getKey().equals(excludedPath)
+                    && (entry.getKey().contains(token) || contains(entry.getValue(), needle))) return true;
         }
         return false;
     }
