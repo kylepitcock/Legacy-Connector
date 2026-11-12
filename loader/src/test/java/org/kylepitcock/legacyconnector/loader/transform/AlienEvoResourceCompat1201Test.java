@@ -47,6 +47,11 @@ class AlienEvoResourceCompat1201Test {
         abilityReference.put("addon/alienevo/kubejs_scripts/other.js",
                 "event.create('alienevo:generate_random');".getBytes(StandardCharsets.UTF_8));
         assertFalse(AlienEvoResourceCompat1201.removeUnreferencedHiddenCodePower(abilityReference, Map.of()));
+
+        Map<String, byte[]> pathReference = resources(TEST_POWER);
+        pathReference.put("data/alienevo/palladium/powers/code_power_test_extension.json",
+                "{}".getBytes(StandardCharsets.UTF_8));
+        assertFalse(AlienEvoResourceCompat1201.removeUnreferencedHiddenCodePower(pathReference, Map.of()));
     }
 
     @Test
