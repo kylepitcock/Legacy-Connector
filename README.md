@@ -24,10 +24,12 @@ NeoForge loads such jars from `mods/` as launcher plugins before they can be tra
 > features are still missing (see [Known compatibility issues](docs/wiki/Compatibility-and-Status.md#known-compatibility-issues)); back up your worlds before trying a new
 > mod set.
 
-Legacy content enters the game through the same hooks a modern mod uses: mod biomes through the pack's biome placement
-(a TerraBlender region; install TerraBlender as a required dependency), world generators as placed features in biome modifiers, village buildings
-in the vanilla village pools, structure chest loot through loot tables, and items and machines as capabilities. So it works together
-with the pack's other mods instead of being painted over them, and data packs can tune it like any modern content.
+Legacy content enters the game through the same hooks a modern mod uses: mod biomes through the connector-owned multi-noise
+climate overlay (or the optional TerraBlender region integration when TerraBlender is already installed), world generators as placed
+features in biome modifiers, village buildings in the vanilla village pools, structure chest loot through loot tables, and items and
+machines as capabilities. TerraBlender and Pehkui are optional integrations, not mods players must install to use Legacy Connector.
+So legacy content works together with the pack's other mods instead of being painted over them, and data packs can tune it like any
+modern content.
 
 **Compatibility list and reports: https://kylepitcock.github.io/Legacy-Connector/** (check a mod, or report how it worked for you).
 
