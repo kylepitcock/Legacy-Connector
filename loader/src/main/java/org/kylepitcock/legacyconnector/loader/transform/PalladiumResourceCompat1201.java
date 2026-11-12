@@ -22,31 +22,31 @@ final class PalladiumResourceCompat1201 {
             "assets/alienevo/kubejs_scripts/power_ui.js";
 
     static final String OMNITRIX_INTEGER_HELPER =
-            "function toOmnitrixInteger(value) {\\n"
-                    + "    const JavaInteger = Java.loadClass('java.lang.Integer');\\n"
-                    + "    if (value != null && typeof value.getAsInt === 'function') {\\n"
-                    + "        return JavaInteger.valueOf(value.getAsInt());\\n"
-                    + "    }\\n"
-                    + "    return JavaInteger.valueOf(Math.trunc(Number(value)));\\n"
-                    + "}\\n\\n";
+            "function toOmnitrixInteger(value) {\n"
+                    + "    const JavaInteger = Java.loadClass('java.lang.Integer');\n"
+                    + "    if (value != null && typeof value.getAsInt === 'function') {\n"
+                    + "        return JavaInteger.valueOf(value.getAsInt());\n"
+                    + "    }\n"
+                    + "    return JavaInteger.valueOf(Math.trunc(Number(value)));\n"
+                    + "}\n\n";
     static final String LEGACY_RESOURCE_LOCATION_HELPER =
-            "function ResourceLocation(namespaceOrLocation, path) {\\n"
-                    + "    const AlienEvoJavaResourceLocation = Java.loadClass('net.minecraft.resources.ResourceLocation');\\n"
-                    + "    if (arguments.length > 1) {\\n"
-                    + "        return AlienEvoJavaResourceLocation.fromNamespaceAndPath(String(namespaceOrLocation), String(path));\\n"
-                    + "    }\\n"
-                    + "    return AlienEvoJavaResourceLocation.parse(String(namespaceOrLocation));\\n"
-                    + "}\\n\\n";
+            "function ResourceLocation(namespaceOrLocation, path) {\n"
+                    + "    const AlienEvoJavaResourceLocation = Java.loadClass('net.minecraft.resources.ResourceLocation');\n"
+                    + "    if (arguments.length > 1) {\n"
+                    + "        return AlienEvoJavaResourceLocation.fromNamespaceAndPath(String(namespaceOrLocation), String(path));\n"
+                    + "    }\n"
+                    + "    return AlienEvoJavaResourceLocation.parse(String(namespaceOrLocation));\n"
+                    + "}\n\n";
     static final String LEGACY_SOUND_EVENT_HELPER =
-            "function getAlienEvoSoundEvent(soundId) {\\n"
-                    + "    const AlienEvoSoundRegistry = Java.loadClass('net.minecraft.core.registries.BuiltInRegistries').SOUND_EVENT;\\n"
-                    + "    const AlienEvoSoundResourceLocation = Java.loadClass('net.minecraft.resources.ResourceLocation');\\n"
-                    + "    const soundEvent = AlienEvoSoundRegistry.get(AlienEvoSoundResourceLocation.parse(String(soundId)));\\n"
-                    + "    if (soundEvent == null) {\\n"
-                    + "        throw new Error('AlienEvo sound event is not registered: ' + soundId);\\n"
-                    + "    }\\n"
-                    + "    return soundEvent;\\n"
-                    + "}\\n\\n";
+            "function getAlienEvoSoundEvent(soundId) {\n"
+                    + "    const AlienEvoSoundRegistry = Java.loadClass('net.minecraft.core.registries.BuiltInRegistries').SOUND_EVENT;\n"
+                    + "    const AlienEvoSoundResourceLocation = Java.loadClass('net.minecraft.resources.ResourceLocation');\n"
+                    + "    const soundEvent = AlienEvoSoundRegistry.get(AlienEvoSoundResourceLocation.parse(String(soundId)));\n"
+                    + "    if (soundEvent == null) {\n"
+                    + "        throw new Error('AlienEvo sound event is not registered: ' + soundId);\n"
+                    + "    }\n"
+                    + "    return soundEvent;\n"
+                    + "}\n\n";
     private static final String ALIEN_EVO_CYCLE = "addon/alienevo/kubejs_scripts/omnitrix_cycle.js";
     private static final String RESOURCE_LOCATION_HELPER_MARKER =
             "function ResourceLocation(namespaceOrLocation, path) {";
@@ -140,7 +140,6 @@ final class PalladiumResourceCompat1201 {
         rewriteTransformScript(resources);
         rewrite(resources, ALIEN_EVO_POWER_UI, POWER_UI_TAB_COMPARISONS);
         rewriteLegacyScriptApis(resources);
-        rewriteScoreboardApi(resources);
         rewriteScoreboardApi(resources);
 
         // A single resource can receive more than one independent rewrite.
