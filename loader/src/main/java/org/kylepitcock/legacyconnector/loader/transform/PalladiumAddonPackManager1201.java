@@ -38,7 +38,9 @@ final class PalladiumAddonPackManager1201 implements Opcodes {
             "legacyconnector/v1_20_1/PalladiumAddonPackCompat";
     private static final String PACK_HELPER = "legacyconnector/v1_20_1/PalladiumAddonPackCompat";
     private static final String PACK_HELPER_NAME = "prefixAndRequireAddonPack";
-    private static final String PACK_HELPER_DESC = "(L" + PACK + ";)L" + PACK + ";";
+    private static final String PACK_TYPE = "net/minecraft/server/packs/PackType";
+    private static final String PACK_HELPER_DESC =
+            "(L" + PACK + ";L" + PACK_TYPE + ";)L" + PACK + ";";
 
     // CallRewrites1201 runs immediately before this adapter and may already
     // replace the old FolderRepositorySource constructor with Compat1201.
@@ -147,6 +149,8 @@ final class PalladiumAddonPackManager1201 implements Opcodes {
         method.invisibleLocalVariableAnnotations = null;
         method.signature = null;
         method.instructions.add(new VarInsnNode(ALOAD, 1));
+        method.instructions.add(new MethodInsnNode(
+                INVOKESTATIC, ADDON_PACK_MANAGER, "getPackType", "()L" + PACK_TYPE + ";", false));
         method.instructions.add(new MethodInsnNode(
                 INVOKESTATIC, PACK_HELPER, PACK_HELPER_NAME, PACK_HELPER_DESC, false));
         method.instructions.add(new VarInsnNode(ASTORE, 1));
