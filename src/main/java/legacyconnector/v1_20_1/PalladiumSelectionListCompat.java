@@ -27,32 +27,32 @@ public final class PalladiumSelectionListCompat {
         if (list != null) FLAGS.put(list, flags);
     }
 
-    public static void setRenderBackground(Object list, boolean enabled) {
+    public static synchronized void setRenderBackground(Object list, boolean enabled) {
         Flags old = flags(list);
         update(list, new Flags(enabled, old.topAndBottom(), old.selection()));
     }
 
-    public static void setRenderTopAndBottom(Object list, boolean enabled) {
+    public static synchronized void setRenderTopAndBottom(Object list, boolean enabled) {
         Flags old = flags(list);
         update(list, new Flags(old.background(), enabled, old.selection()));
     }
 
-    public static void setRenderSelection(Object list, boolean enabled) {
+    public static synchronized void setRenderSelection(Object list, boolean enabled) {
         Flags old = flags(list);
         update(list, new Flags(old.background(), old.topAndBottom(), enabled));
     }
 
-    public static boolean renderBackground(Object list) {
+    public static synchronized boolean renderBackground(Object list) {
         Boolean enabled = flags(list).background();
         return enabled == null || enabled;
     }
 
-    public static boolean renderTopAndBottom(Object list) {
+    public static synchronized boolean renderTopAndBottom(Object list) {
         Boolean enabled = flags(list).topAndBottom();
         return enabled == null || enabled;
     }
 
-    public static boolean renderSelection(Object list) {
+    public static synchronized boolean renderSelection(Object list) {
         Boolean enabled = flags(list).selection();
         return enabled == null || enabled;
     }
