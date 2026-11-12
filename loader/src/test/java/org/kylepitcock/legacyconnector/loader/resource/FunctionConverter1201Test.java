@@ -70,6 +70,20 @@ class FunctionConverter1201Test {
     }
 
     @Test
+    void translatedParticleCommandsAreIdempotent() {
+        String[] legacy = {
+                "particle block stone ~ ~ ~ 1 1 1 0 30 normal",
+                "particle block minecraft:big_dripleaf ~ ~ ~ 0.3 0.5 0.3 1 50",
+                "particle item carrot_on_a_stick{CustomModelData:1005} ^ ^1 ^ 0 1.5 0 .1 20",
+                "particle minecraft:dust 0.7 1 18000000 2 ~ ~ ~ 1 1 1 0 10"
+        };
+        for (String command : legacy) {
+            String once = FunctionConverter1201.convertCommand(command);
+            assertEquals(once, FunctionConverter1201.convertCommand(once), command);
+        }
+    }
+
+    @Test
     void convertsAllFunctionResourcesAndReportsChanges() {
         Map<String, byte[]> resources = new LinkedHashMap<>();
         resources.put("data/example/functions/test.mcfunction",
