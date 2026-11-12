@@ -238,10 +238,12 @@ class DataConverter1201Test {
                 {"commands":["particle block stone ~ ~ ~ 1 0.5 1 0 30 normal",
                              "execute at @s run particle minecraft:dust 0.7 1 18000000 2 ~ ~ ~ 1 1 1 0 10"]}
                 """, "data/alienevo/palladium/powers/example.json");
-        String s = r.toString();
+        JsonArray commands = r.getAsJsonObject().getAsJsonArray("commands");
+        String blockCommand = commands.get(0).getAsString();
+        String dustCommand = commands.get(1).getAsString();
         String quote = String.valueOf((char)34);
-        assertTrue(s.contains("minecraft:block{block_state:" + quote + "minecraft:stone" + quote + "}"), s);
-        assertTrue(s.contains("minecraft:dust{color:[0.7,1,18000000],scale:2}"), s);
+        assertTrue(blockCommand.contains("minecraft:block{block_state:" + quote + "minecraft:stone" + quote + "}"), blockCommand);
+        assertTrue(dustCommand.contains("minecraft:dust{color:[0.7,1,18000000],scale:2}"), dustCommand);
     }
 
     @Test
@@ -252,12 +254,14 @@ class DataConverter1201Test {
                   "summon piglin ~ ~1 ~2 {ArmorItems:[{},{},{},{id:oak_button,Count:1}]}"
                 ]}
                 """, "data/alienevo_aliens/palladium/powers/example.json");
-        String value = r.toString();
+        JsonArray commands = r.getAsJsonObject().getAsJsonArray("commands");
+        String effectsCommand = commands.get(0).getAsString();
+        String armorCommand = commands.get(1).getAsString();
         String quote = String.valueOf((char)34);
-        assertTrue(value.contains("active_effects:[{id:" + quote + "minecraft:invisibility" + quote
-                + ",amplifier:1,duration:20000000,show_particles:0b}]"), value);
-        assertTrue(value.contains("ArmorItems:[{},{},{},{id:" + quote + "minecraft:oak_button" + quote
-                + ",count:1}]"), value);
+        assertTrue(effectsCommand.contains("active_effects:[{id:" + quote + "minecraft:invisibility" + quote
+                + ",amplifier:1,duration:20000000,show_particles:0b}]"), effectsCommand);
+        assertTrue(armorCommand.contains("ArmorItems:[{},{},{},{id:" + quote + "minecraft:oak_button" + quote
+                + ",count:1}]"), armorCommand);
     }
 
     @Test
@@ -274,7 +278,7 @@ class DataConverter1201Test {
         assertEquals(2, conditions.size());
         assertEquals("neoforge:mod_loaded", conditions.get(0).getAsJsonObject().get("type").getAsString());
         assertEquals("palladium:feature_flag_enabled", conditions.get(1).getAsJsonObject().get("type").getAsString());
-        assertTrue(!migrated.toString().contains("forge:conditions"), migrated.toString());
+        assertTrue(!migrated.getAsJsonObject().has("forge:conditions"), migrated.toString());
     }
 
     @Test
