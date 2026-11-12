@@ -139,7 +139,7 @@ class PalladiumResourceCompat1201Test {
         assertTrue(codes.contains("var AlienEvoJavaResourceLocation = Java.loadClass"));
         assertFalse(codes.contains("const AlienEvoJavaResourceLocation ="));
 
-        assertEquals("const gravityAttribute = \"minecraft:gravity\";",
+        assertEquals("const gravityAttribute = \"minecraft:generic.gravity\";",
                 get(resources, "data/alienevo/kubejs_scripts/slam.js"));
 
         String powerUi = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_POWER_UI);
