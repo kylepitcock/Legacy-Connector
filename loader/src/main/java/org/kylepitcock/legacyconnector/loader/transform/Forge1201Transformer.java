@@ -471,8 +471,8 @@ public final class Forge1201Transformer {
                     + palladiumPowersScreenChanges + " screen class(es)");
         }
         if (palladiumSelectionListNarrationChanges > 0) {
-            result.notes.add("Palladium 1.20.1 list widgets removed their empty updateNarration() overrides, which conflict with 1.21.1's final AbstractWidget implementation: "
-                    + palladiumSelectionListNarrationChanges + " list class(es)");
+            result.notes.add("Palladium list widgets: " + palladiumSelectionListNarrationChanges
+                    + " bytecode site(s) migrated (legacy x0 position fields to getX/setX and verified no-op narration overrides)");
         }
         if (palladiumTailoringScreenChanges > 0) {
             result.notes.add("Palladium TailoringScreen removed its obsolete empty updateNarration() override, which conflicts with 1.21.1's final AbstractWidget implementation: "
