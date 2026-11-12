@@ -219,6 +219,9 @@ public final class DataConverter1201 {
                 }
                 itemModifier(root, c);
             }
+            if (np.contains("/palladium/powers/") && root.isJsonObject()) {
+                palladiumPower(root.getAsJsonObject(), c);
+            }
             if (dir.equals("loot_table") || dir.equals("loot_modifiers")) loot(root, c);
             if (dir.equals("dimension_type") && root.isJsonObject()) dimensionType(root.getAsJsonObject(), c);
             if (np.contains("/worldgen/structure_set/") && root.isJsonObject()) structureSet(root.getAsJsonObject(), c);
@@ -442,6 +445,30 @@ public final class DataConverter1201 {
                     }
                 } else {
                     generic(v, c, model);
+                }
+            }
+        }
+    }
+
+    /**
+     * A single component inside an array is semantically identical to the
+     * component object itself. Normalize this legacy form in Palladium's
+     * name_change abilities so the 1.21.1 component codec receives the same
+     * value without constructing an unnecessary array-backed sibling chain.
+     */
+    private static void palladiumPower(JsonObject power, Ctx c) {
+        if (!power.has("abilities") || !power.get("abilities").isJsonObject()) return;
+        JsonObject abilities = power.getAsJsonObject("abilities");
+        for (Map.Entry<String, JsonElement> entry : new ArrayList<>(abilities.entrySet())) {
+            if (!entry.getValue().isJsonObject()) continue;
+            JsonObject ability = entry.getValue().getAsJsonObject();
+            if (!ability.has("type") || !ability.get("type").isJsonPrimitive()
+                    || !ability.get("type").getAsString().equals("palladium:name_change")) continue;
+            for (String property : List.of("name", "name_cached")) {
+                JsonElement value = ability.get(property);
+                if (value != null && value.isJsonArray() && value.getAsJsonArray().size() == 1) {
+                    ability.add(property, value.getAsJsonArray().get(0));
+                    c.hit("palladium_component_arrays");
                 }
             }
         }
