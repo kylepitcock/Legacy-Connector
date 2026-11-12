@@ -186,7 +186,7 @@ final class PalladiumResourceCompat1201 {
 
         String script = new String(original, StandardCharsets.UTF_8);
         String callMarker = "InventoryScreen.renderEntityInInventory(";
-        List<Integer> insertions = new java.util.ArrayList<>();
+        List<PreviewInsertion> insertions = new java.util.ArrayList<>();
         int searchFrom = 0;
 
         while (true) {
@@ -215,13 +215,15 @@ final class PalladiumResourceCompat1201 {
                     throw new IllegalStateException(
                             "AlienEvo power_ui.js has an unexpected seven-argument entity preview call");
                 }
-                // Keep the original comma-following whitespace before the inserted argument.
-                int insertion = arguments.get(4).start();
+                // Repeat the original separator around the inserted argument to preserve formatting.
+                int argumentStart = arguments.get(4).start();
+                int insertion = argumentStart;
                 int argumentEnd = arguments.get(4).end();
                 while (insertion < argumentEnd && Character.isWhitespace(script.charAt(insertion))) {
                     insertion++;
                 }
-                insertions.add(insertion);
+                String followingSeparator = script.substring(argumentStart, insertion);
+                insertions.add(new PreviewInsertion(insertion, followingSeparator));
             } else {
                 throw new IllegalStateException(
                         "AlienEvo power_ui.js entity preview call has " + arguments.size()
@@ -235,10 +237,11 @@ final class PalladiumResourceCompat1201 {
 
         String migrated = script;
         for (int i = insertions.size() - 1; i >= 0; i--) {
-            int insertion = insertions.get(i);
-            migrated = migrated.substring(0, insertion)
+            PreviewInsertion insertion = insertions.get(i);
+            migrated = migrated.substring(0, insertion.offset())
                     + "new (Java.loadClass('org.joml.Vector3f'))(0.0, 0.0, 0.0),"
-                    + migrated.substring(insertion);
+                    + insertion.followingSeparator()
+                    + migrated.substring(insertion.offset());
         }
 
         resources.put(ALIEN_EVO_POWER_UI, migrated.getBytes(StandardCharsets.UTF_8));
@@ -391,6 +394,8 @@ final class PalladiumResourceCompat1201 {
     }
 
     private record ScriptArgument(int start, int end) {}
+
+    private record PreviewInsertion(int offset, String followingSeparator) {}
 
     /** Finds the closing parenthesis of a JavaScript call while ignoring strings and comments. */
     private static int matchingCallParen(String script, int open) {
