@@ -21,7 +21,7 @@ import org.objectweb.asm.tree.VarInsnNode;
  *
  * The existing cache and PlayerSkinInfo result type remain unchanged. A
  * successful result stores the modern PlayerSkin model id and texture
- * ResourceLocation; an empty result marks the cached lookup failed.
+ * ResourceLocation; an exceptional or empty result marks the cached lookup failed.
  */
 final class PalladiumPlayerSkinFetcher1201 implements Opcodes {
     static final String TARGET =
@@ -192,7 +192,6 @@ final class PalladiumPlayerSkinFetcher1201 implements Opcodes {
 
         // Successful PlayerSkin -> retain Palladium's "slim"/"default"
         // model label and texture location.
-        callback.instructions.add(new JumpInsnNode(GOTO, done));
         callback.instructions.add(hasSkin);
         callback.instructions.add(new FieldInsnNode(GETSTATIC, node.name, "CACHED_NAME_SKINS", "Ljava/util/Map;"));
         callback.instructions.add(new VarInsnNode(ALOAD, 0));
