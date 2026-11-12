@@ -48,6 +48,12 @@ public final class RecipeCompat {
         return found.stream().map(RecipeHolder::value).toList();
     }
 
+    public static boolean contains(net.minecraft.stats.ServerRecipeBook book, Recipe recipe) {
+        if (book == null || recipe == null) return false;
+        net.minecraft.resources.ResourceLocation id = getId(recipe);
+        return id != null && book.contains(id);
+    }
+
     /** {@code Recipe.getId()}: recipes do not know their id in 1.21.1; it is found through the server's recipe manager (null for a recipe it does not hold). */
     public static net.minecraft.resources.ResourceLocation getId(net.minecraft.world.item.crafting.Recipe<?> recipe) {
         net.minecraft.server.MinecraftServer server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
