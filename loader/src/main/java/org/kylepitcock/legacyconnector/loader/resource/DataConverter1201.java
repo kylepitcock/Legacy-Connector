@@ -70,19 +70,11 @@ public final class DataConverter1201 {
     private static final Map<String, String> RENAMED_IDS = Map.of(
             "minecraft:grass", "minecraft:short_grass", "minecraft:sweeping", "minecraft:sweeping_edge", "minecraft:scute", "minecraft:turtle_scute");
     /** Attribute ids whose identifiers changed after Forge 1.20.1 / Minecraft 1.20.1. */
-    private static final Map<String, String> ATTRIBUTE_IDS = Map.ofEntries(
-            Map.entry("forge:step_height_addition", "minecraft:step_height"),
-            Map.entry("forge:entity_gravity", "minecraft:gravity"),
-            Map.entry("forge:swim_speed", "neoforge:swim_speed"),
-            Map.entry("minecraft:generic.attack_damage", "minecraft:attack_damage"),
-            Map.entry("minecraft:generic.armor", "minecraft:armor"),
-            Map.entry("minecraft:generic.movement_speed", "minecraft:movement_speed"),
-            Map.entry("minecraft:generic.armor_toughness", "minecraft:armor_toughness"),
-            Map.entry("minecraft:generic.max_health", "minecraft:max_health"),
-            Map.entry("minecraft:generic.knockback_resistance", "minecraft:knockback_resistance"),
-            Map.entry("minecraft:generic.attack_speed", "minecraft:attack_speed"),
-            Map.entry("minecraft:generic.attack_knockback", "minecraft:attack_knockback"),
-            Map.entry("generic.movement_speed", "minecraft:movement_speed"));
+    private static final Map<String, String> ATTRIBUTE_IDS = Map.of(
+            "forge:step_height_addition", "minecraft:generic.step_height",
+            "forge:entity_gravity", "minecraft:generic.gravity",
+            "forge:swim_speed", "neoforge:swim_speed",
+            "generic.movement_speed", "minecraft:generic.movement_speed");
     /** First segment of a Forge tag path to its convention-tag spelling in NeoForge 1.21.1 ({@code c:}); the rest of the path is kept. */
     private static final Map<String, String> TAG_SEGMENTS = Map.ofEntries(
             Map.entry("stone", "stones"), Map.entry("cobblestone", "cobblestones"), Map.entry("sand", "sands"),
