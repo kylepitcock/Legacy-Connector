@@ -36,9 +36,8 @@ final class PalladiumPlayerSkinFetcher1201 implements Opcodes {
     private static final String SKIN_INFO =
             "net/threetag/palladium/client/renderer/entity/PlayerSkinInfo";
     private static final String MAP = "java/util/Map";
-    private static final String OPTIONAL = "java/util/Optional";
+    private static final String THROWABLE = "java/lang/Throwable";
     private static final String COMPLETABLE_FUTURE = "java/util/concurrent/CompletableFuture";
-    private static final String CONSUMER = "java/util/function/Consumer";
     private static final String FUNCTION = "java/util/function/Function";
 
     private static final String OLD_CALLBACK_DESC =
@@ -51,13 +50,13 @@ final class PalladiumPlayerSkinFetcher1201 implements Opcodes {
                     + "Lnet/minecraft/resources/ResourceLocation;"
                     + "Lcom/mojang/authlib/minecraft/MinecraftProfileTexture;)V";
     private static final String NEW_CALLBACK_IMPL_DESC =
-            "(L" + GAME_PROFILE + ";L" + OPTIONAL + ";)V";
+            "(L" + GAME_PROFILE + ";L" + PLAYER_SKIN + ";L" + THROWABLE + ";)V";
     private static final String GET_OR_LOAD_DESC =
             "(L" + GAME_PROFILE + ";)Ljava/util/concurrent/CompletableFuture;";
-    private static final String THEN_ACCEPT_DESC =
-            "(Ljava/util/function/Consumer;)Ljava/util/concurrent/CompletableFuture;";
+    private static final String WHEN_COMPLETE_DESC =
+            "(Ljava/util/function/BiConsumer;)Ljava/util/concurrent/CompletableFuture;";
     private static final String NEW_CALLBACK_INDY_DESC =
-            "(L" + GAME_PROFILE + ";)Ljava/util/function/Consumer;";
+            "(L" + GAME_PROFILE + ";)Ljava/util/function/BiConsumer;";
 
     private PalladiumPlayerSkinFetcher1201() {
     }
@@ -75,7 +74,7 @@ final class PalladiumPlayerSkinFetcher1201 implements Opcodes {
             MethodNode alreadyCallback = find(node, "lambda$getPlayerSkinInfo$2", NEW_CALLBACK_IMPL_DESC);
             if (alreadyRequest != null && alreadyCallback != null
                     && hasMethodCall(alreadyRequest, SKIN_MANAGER, "getOrLoad", GET_OR_LOAD_DESC)
-                    && hasMethodCall(alreadyRequest, COMPLETABLE_FUTURE, "thenAccept", THEN_ACCEPT_DESC)) {
+                    && hasMethodCall(alreadyRequest, COMPLETABLE_FUTURE, "whenComplete", WHEN_COMPLETE_DESC)) {
                 return 0;
             }
             throw new IllegalStateException(
@@ -118,7 +117,7 @@ final class PalladiumPlayerSkinFetcher1201 implements Opcodes {
         // The old expression is:
         // skinManager.registerSkins(profile, (type, location, texture) -> ..., true)
         // The new expression is:
-        // skinManager.getOrLoad(profile).thenAccept(optionalSkin -> ...).
+        // skinManager.getOrLoad(profile).whenComplete((skin, error) -> ...).
         AbstractInsnNode captureProfile = previousReal(oldCallback);
         if (!(captureProfile instanceof VarInsnNode capturedProfile)
                 || capturedProfile.getOpcode() != ALOAD || capturedProfile.var != 2) {
@@ -135,13 +134,13 @@ final class PalladiumPlayerSkinFetcher1201 implements Opcodes {
         oldCallback.name = "accept";
         oldCallback.desc = NEW_CALLBACK_INDY_DESC;
         oldCallback.bsmArgs = new Object[] {
-                Type.getMethodType("(Ljava/lang/Object;)V"),
+                Type.getMethodType("(Ljava/lang/Object;Ljava/lang/Object;)V"),
                 new Handle(H_INVOKESTATIC, node.name, callback.name, NEW_CALLBACK_IMPL_DESC, false),
-                Type.getMethodType("(L" + OPTIONAL + ";)V")
+                Type.getMethodType("(L" + PLAYER_SKIN + ";L" + THROWABLE + ";)V")
         };
 
         // getOrLoad consumes the manager and the first profile operand. The
-        // second profile operand remains the captured value for thenAccept.
+        // second profile operand remains the captured value for whenComplete.
         request.instructions.insert(lookupProfile, new MethodInsnNode(
                 INVOKEVIRTUAL, SKIN_MANAGER, "getOrLoad", GET_OR_LOAD_DESC, false));
 
@@ -154,8 +153,8 @@ final class PalladiumPlayerSkinFetcher1201 implements Opcodes {
 
         registerSkins.setOpcode(INVOKEVIRTUAL);
         registerSkins.owner = COMPLETABLE_FUTURE;
-        registerSkins.name = "thenAccept";
-        registerSkins.desc = THEN_ACCEPT_DESC;
+        registerSkins.name = "whenComplete";
+        registerSkins.desc = WHEN_COMPLETE_DESC;
         registerSkins.itf = false;
         request.instructions.insert(registerSkins, new InsnNode(POP));
 
@@ -168,12 +167,13 @@ final class PalladiumPlayerSkinFetcher1201 implements Opcodes {
 
         LabelNode hasSkin = new LabelNode();
         LabelNode done = new LabelNode();
+        callback.instructions.add(new VarInsnNode(ALOAD, 2));
+        callback.instructions.add(new JumpInsnNode(IFNONNULL, hasSkin));
         callback.instructions.add(new VarInsnNode(ALOAD, 1));
-        callback.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, OPTIONAL, "isPresent", "()Z", false));
-        callback.instructions.add(new JumpInsnNode(IFNE, hasSkin));
+        callback.instructions.add(new JumpInsnNode(IFNONNULL, hasSkin));
 
-        // Empty Optional -> the same cached failure state used when a name
-        // cannot be resolved to a GameProfile.
+        // An exceptional or empty future result -> the same cached failure
+        // state used when a name cannot be resolved to a GameProfile.
         callback.instructions.add(new FieldInsnNode(GETSTATIC, node.name, "CACHED_NAME_SKINS", "Ljava/util/Map;"));
         callback.instructions.add(new VarInsnNode(ALOAD, 0));
         callback.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, GAME_PROFILE, "getName", "()Ljava/lang/String;", false));
@@ -187,14 +187,10 @@ final class PalladiumPlayerSkinFetcher1201 implements Opcodes {
         callback.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, SKIN_INFO, "setFailed", "()V", false));
         callback.instructions.add(new JumpInsnNode(GOTO, done));
 
-        // Successful Optional<PlayerSkin> -> retain Palladium's "slim"/"default"
+        // Successful PlayerSkin -> retain Palladium's "slim"/"default"
         // model label and texture location.
+        callback.instructions.add(new JumpInsnNode(GOTO, done));
         callback.instructions.add(hasSkin);
-        callback.instructions.add(new VarInsnNode(ALOAD, 1));
-        callback.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, OPTIONAL, "get", "()Ljava/lang/Object;", false));
-        callback.instructions.add(new TypeInsnNode(CHECKCAST, PLAYER_SKIN));
-        callback.instructions.add(new VarInsnNode(ASTORE, 2));
-
         callback.instructions.add(new FieldInsnNode(GETSTATIC, node.name, "CACHED_NAME_SKINS", "Ljava/util/Map;"));
         callback.instructions.add(new VarInsnNode(ALOAD, 0));
         callback.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, GAME_PROFILE, "getName", "()Ljava/lang/String;", false));
@@ -205,13 +201,14 @@ final class PalladiumPlayerSkinFetcher1201 implements Opcodes {
         callback.instructions.add(new MethodInsnNode(INVOKEINTERFACE, MAP, "computeIfAbsent",
                 "(Ljava/lang/Object;Ljava/util/function/Function;)Ljava/lang/Object;", true));
         callback.instructions.add(new TypeInsnNode(CHECKCAST, SKIN_INFO));
-        callback.instructions.add(new VarInsnNode(ALOAD, 2));
+        callback.instructions.add(new VarInsnNode(ALOAD, 1));
         callback.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, PLAYER_SKIN, "model", "()L" + PLAYER_SKIN_MODEL + ";", false));
         callback.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, PLAYER_SKIN_MODEL, "id", "()Ljava/lang/String;", false));
-        callback.instructions.add(new VarInsnNode(ALOAD, 2));
+        callback.instructions.add(new VarInsnNode(ALOAD, 1));
         callback.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, PLAYER_SKIN, "texture", "()Lnet/minecraft/resources/ResourceLocation;", false));
         callback.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, SKIN_INFO, "set",
                 "(Ljava/lang/String;Lnet/minecraft/resources/ResourceLocation;)V", false));
+        callback.instructions.add(new JumpInsnNode(GOTO, done));
 
         callback.instructions.add(done);
         callback.instructions.add(new InsnNode(RETURN));
