@@ -2,7 +2,6 @@ package org.kylepitcock.legacyconnector.loader.transform;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -72,6 +71,13 @@ class PalladiumCoreOverlay1201Test implements Opcodes {
                 .findFirst().orElse(null);
         assertNotNull(handler);
         assertEquals(EVENT_DESC, handler.desc);
+        assertTrue(Arrays.stream(handler.instructions.toArray())
+                .anyMatch(instruction -> instruction instanceof InvokeDynamicInsnNode dynamic
+                        && dynamic.desc.equals("(L" + PalladiumCoreOverlay1201.REGISTER_EVENT
+                                + ";)Ljava/util/function/BiConsumer;")));
+        assertTrue(Arrays.stream(handler.instructions.toArray())
+                .anyMatch(instruction -> instruction instanceof MethodInsnNode call
+                        && call.owner.equals("java/util/Map") && call.name.equals("forEach")));
         assertTrue(handler.visibleAnnotations.stream()
                 .anyMatch(annotation -> "Lnet/neoforged/bus/api/SubscribeEvent;".equals(annotation.desc)));
 
@@ -105,6 +111,9 @@ class PalladiumCoreOverlay1201Test implements Opcodes {
                 .anyMatch(instruction -> instruction instanceof MethodInsnNode call
                         && call.owner.equals(PalladiumCoreOverlay1201.INGAME_OVERLAY)
                         && call.name.equals("render")));
+        assertFalse(node.methods.stream()
+                .anyMatch(method -> method.desc.contains("ForgeGui")
+                        || method.desc.contains("IGuiOverlay")));
         assertEquals(0, PalladiumCoreOverlay1201.apply(node));
     }
 

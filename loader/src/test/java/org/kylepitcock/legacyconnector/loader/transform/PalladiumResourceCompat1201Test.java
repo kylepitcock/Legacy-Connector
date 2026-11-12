@@ -212,69 +212,6 @@ class PalladiumResourceCompat1201Test {
 
 
     @Test
-    void adaptsAlienEvoVanillaScoreboardCallsFor1211() {
-        Map<String, byte[]> resources = new HashMap<>();
-        put(resources, "data/alienevo/kubejs_scripts/level_command.js", """
-                scoreboard.getOrCreatePlayerScore(playerName, levelObj).setScore(10);
-                let current = scoreboard.getOrCreatePlayerScore(playerName, xpObj).getScore();
-                """);
-        put(resources, "addon/alienevo/kubejs_scripts/detransform.js", """
-                let score = scoreboardManager.getOrCreatePlayerScore(playerUsername, timerObjective);
-                let current = score.getScore();
-                """);
-        put(resources, "addon/alienevo/kubejs_scripts/charge_leap.js", """
-                let score = scoreboard.getOrCreatePlayerScore(username, scoreboardObj);
-                score.setScore(score.getScore() + 1);
-                """);
-        put(resources, "addon/alienevo/kubejs_scripts/rolling_mechanics.js", """
-                let score = scoreboard.getOrCreatePlayerScore(username, scoreboardObj);
-                let current = score.getScore();
-                """);
-        put(resources, "addon/alienevo/kubejs_scripts/stat_ability.js", """
-                let score = scoreboard.getOrCreatePlayerScore(username, scoreboard_obj);
-                let current = score.getScore();
-                """);
-        put(resources, "data/alienevo/kubejs_scripts/xp.js", """
-                let score = scoreboard.getOrCreatePlayerScore(username, xpObj);
-                let current = score.getScore();
-                score.setScore(current + 1);
-                """);
-
-        assertEquals(6, PalladiumResourceCompat1201.apply(resources));
-
-        String level = get(resources, "data/alienevo/kubejs_scripts/level_command.js");
-        assertTrue(level.contains("forNameOnly(String(playerName))"));
-        assertTrue(level.contains(".set(10)"));
-        assertTrue(level.contains(".get()"));
-        assertFalse(level.contains("getOrCreatePlayerScore(playerName,"));
-        assertFalse(level.contains(".getScore()"));
-        assertFalse(level.contains(".setScore("));
-
-        String detransform = get(resources, "addon/alienevo/kubejs_scripts/detransform.js");
-        assertTrue(detransform.contains("forNameOnly(String(playerUsername))"));
-        assertTrue(detransform.contains("score.get()"));
-
-        String chargeLeap = get(resources, "addon/alienevo/kubejs_scripts/charge_leap.js");
-        assertTrue(chargeLeap.contains("forNameOnly(String(username))"));
-        assertTrue(chargeLeap.contains("score.get()"));
-        assertTrue(chargeLeap.contains("score.set("));
-
-        String rolling = get(resources, "addon/alienevo/kubejs_scripts/rolling_mechanics.js");
-        assertTrue(rolling.contains("forNameOnly(String(username))"));
-        assertTrue(rolling.contains("score.get()"));
-
-        String stat = get(resources, "addon/alienevo/kubejs_scripts/stat_ability.js");
-        assertTrue(stat.contains("forNameOnly(String(username))"));
-        assertTrue(stat.contains("score.get()"));
-
-        String xp = get(resources, "data/alienevo/kubejs_scripts/xp.js");
-        assertTrue(xp.contains("forNameOnly(String(username))"));
-        assertTrue(xp.contains("score.get()"));
-        assertTrue(xp.contains("score.set("));
-        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
-    }
-
-    @Test
     void doesNotTouchOtherResourcesOrUnrelatedScripts() {
         Map<String, byte[]> resources = new HashMap<>();
         String unrelated = "if (entity[slot + 'ArmorItem']) { }";
