@@ -156,6 +156,7 @@ final class PalladiumResourceCompat1201 {
                 });
         rewriteTransformScript(resources);
         rewrite(resources, ALIEN_EVO_POWER_UI, POWER_UI_TAB_COMPARISONS);
+        rewritePowerUiEntityPreview(resources);
         rewriteLegacyScriptApis(resources);
         rewriteDiamondCreationSound(resources);
         rewriteScoreboardApi(resources);
@@ -171,6 +172,71 @@ final class PalladiumResourceCompat1201 {
             }
         }
         return changedResources;
+    }
+
+    /**
+     * AlienEvo 1.1.3's PowersScreen script calls the old seven-argument
+     * InventoryScreen.renderEntityInInventory overload. Minecraft 1.21.1 adds
+     * a Vector3f translation argument before the two quaternions. Supply a
+     * zero translation to preserve the old preview placement.
+     */
+    private static int rewritePowerUiEntityPreview(Map<String, byte[]> resources) {
+        byte[] original = resources.get(ALIEN_EVO_POWER_UI);
+        if (original == null) return 0;
+
+        String script = new String(original, StandardCharsets.UTF_8);
+        String callMarker = "InventoryScreen.renderEntityInInventory(";
+        List<Integer> insertions = new java.util.ArrayList<>();
+        int searchFrom = 0;
+
+        while (true) {
+            int call = script.indexOf(callMarker, searchFrom);
+            if (call < 0) break;
+
+            int open = call + "InventoryScreen.renderEntityInInventory".length();
+            int close = matchingCallParen(script, open);
+            if (close < 0) {
+                throw new IllegalStateException(
+                        "AlienEvo power_ui.js has an unterminated InventoryScreen.renderEntityInInventory call");
+            }
+
+            List<ScriptArgument> arguments = splitScriptArguments(script, open + 1, close);
+            if (arguments.size() == 8) {
+                String translation = script.substring(
+                        arguments.get(4).start(), arguments.get(4).end()).trim();
+                if (!translation.contains("Vector3f")) {
+                    throw new IllegalStateException(
+                            "AlienEvo power_ui.js has an unexpected eight-argument entity preview call");
+                }
+            } else if (arguments.size() == 7) {
+                String cameraOrientation = script.substring(
+                        arguments.get(5).start(), arguments.get(5).end()).trim();
+                if (!"null".equals(cameraOrientation)) {
+                    throw new IllegalStateException(
+                            "AlienEvo power_ui.js has an unexpected seven-argument entity preview call");
+                }
+                insertions.add(arguments.get(4).start());
+            } else {
+                throw new IllegalStateException(
+                        "AlienEvo power_ui.js entity preview call has " + arguments.size()
+                                + " arguments; expected the inspected 7-argument legacy or 8-argument migrated form");
+            }
+
+            searchFrom = close + 1;
+        }
+
+        if (insertions.isEmpty()) return 0;
+
+        String migrated = script;
+        for (int i = insertions.size() - 1; i >= 0; i--) {
+            int insertion = insertions.get(i);
+            migrated = migrated.substring(0, insertion)
+                    + "new (Java.loadClass('org.joml.Vector3f'))(0.0, 0.0, 0.0),"
+                    + migrated.substring(insertion);
+        }
+
+        resources.put(ALIEN_EVO_POWER_UI, migrated.getBytes(StandardCharsets.UTF_8));
+        return 1;
     }
 
     /**
