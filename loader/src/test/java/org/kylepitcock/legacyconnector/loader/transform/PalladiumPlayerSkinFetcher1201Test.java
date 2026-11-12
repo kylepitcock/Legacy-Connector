@@ -43,7 +43,7 @@ class PalladiumPlayerSkinFetcher1201Test implements Opcodes {
             "(L" + GAME_PROFILE + ";L" + PROFILE_TEXTURE_TYPE + ";L" + RESOURCE_LOCATION
                     + ";L" + PROFILE_TEXTURE + ";)V";
     private static final String NEW_CALLBACK_IMPL_DESC =
-            "(L" + GAME_PROFILE + ";Ljava/util/Optional;)V";
+            "(L" + GAME_PROFILE + ";L" + PLAYER_SKIN + ";Ljava/lang/Throwable;)V";
     private static final String LMF_DESC =
             "(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;"
                     + "Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodHandle;"
@@ -58,8 +58,8 @@ class PalladiumPlayerSkinFetcher1201Test implements Opcodes {
 
         assertNotNull(findCall(request, SKIN_MANAGER, "getOrLoad",
                 "(L" + GAME_PROFILE + ";)Ljava/util/concurrent/CompletableFuture;"));
-        assertNotNull(findCall(request, "java/util/concurrent/CompletableFuture", "thenAccept",
-                "(Ljava/util/function/Consumer;)Ljava/util/concurrent/CompletableFuture;"));
+        assertNotNull(findCall(request, "java/util/concurrent/CompletableFuture", "whenComplete",
+                "(Ljava/util/function/BiConsumer;)Ljava/util/concurrent/CompletableFuture;"));
         assertNull(findCall(request, SKIN_MANAGER, "registerSkins", OLD_CALLBACK_DESC));
 
         InvokeDynamicInsnNode consumer = findIndy(request, "accept");
@@ -67,12 +67,11 @@ class PalladiumPlayerSkinFetcher1201Test implements Opcodes {
         assertEquals("(L" + GAME_PROFILE + ";)Ljava/util/function/Consumer;", consumer.desc);
         Handle target = (Handle) consumer.bsmArgs[1];
         assertEquals(NEW_CALLBACK_IMPL_DESC, target.getDesc());
-        assertEquals("(Ljava/util/Optional;)V", ((Type) consumer.bsmArgs[2]).getDescriptor());
+        assertEquals("(L" + PLAYER_SKIN + ";Ljava/lang/Throwable;)V",
+                ((Type) consumer.bsmArgs[2]).getDescriptor());
 
         MethodNode callback = find(node, "lambda$getPlayerSkinInfo$2", NEW_CALLBACK_IMPL_DESC);
         assertNotNull(callback);
-        assertNotNull(findCall(callback, "java/util/Optional", "isPresent", "()Z"));
-        assertNotNull(findCall(callback, "java/util/Optional", "get", "()Ljava/lang/Object;"));
         assertNotNull(findCall(callback, PLAYER_SKIN, "model", "()L" + PLAYER_SKIN_MODEL + ";"));
         assertNotNull(findCall(callback, PLAYER_SKIN_MODEL, "id", "()Ljava/lang/String;"));
         assertNotNull(findCall(callback, PLAYER_SKIN, "texture", "()L" + RESOURCE_LOCATION + ";"));
