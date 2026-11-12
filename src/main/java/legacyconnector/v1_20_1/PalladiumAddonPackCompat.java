@@ -4,7 +4,7 @@ import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackLocationInfo;
 import net.minecraft.server.packs.PackSelectionConfig;
 import net.minecraft.server.packs.repository.Pack;
-import net.minecraft.server.packs.resources.LevelStorageSource;
+import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.validation.DirectoryValidator;
 import net.neoforged.fml.loading.FMLPaths;
 import net.threetag.palladium.addonpack.AddonPackManager;
