@@ -44,12 +44,13 @@ were written against:
   most-used gaps can be implemented properly.
 
 Legacy content enters the game through the **native extension points** a 1.21.1 mod would use, and the layer only translates
-the legacy API into them: biomes through the pack's biome placement, world generators as placed features in biome modifiers,
-village buildings as extra pieces of the vanilla village structure (vanilla's layout untouched), structure chests through loot tables (and global loot modifiers),
-spawns through biome modifiers, recipes and tags as a data pack, containers as capabilities. Post-generation decorators,
-mixins that override a vanilla result, or filling things directly are avoided where a native hook exists: they ignore the pack's
-other mods (legacy village pieces overlapped houses, legacy chests skipped the pack's loot, a biome override was bypassed by
-TerraBlender).
+the legacy API into them: biomes through the active multi-noise climate parameter list (with an optional TerraBlender region
+integration when that mod is already installed), world generators as placed features in biome modifiers, village buildings as
+extra pieces of the vanilla village structure (vanilla's layout untouched), structure chests through loot tables (and global loot
+modifiers), spawns through biome modifiers, recipes and tags as a data pack, containers as capabilities. Post-generation
+decorators, mixins that replace a vanilla result, or filling things directly are avoided where a native hook exists: they ignore
+the pack's other mods (legacy village pieces overlapped houses, legacy chests skipped the pack's loot, and a hard-coded biome
+layout would discard climate points supplied by the pack's world-generation mods).
 
 Mod-specific code is the exception: it is used only when no generic fix works, only for popular mods, and it is kept small
 and isolated (today: the DragonAPI crafting/smelting hooks in `CoremodHooks`).
