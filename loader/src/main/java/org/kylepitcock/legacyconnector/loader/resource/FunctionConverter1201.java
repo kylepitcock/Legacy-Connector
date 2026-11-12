@@ -31,6 +31,7 @@ public final class FunctionConverter1201 {
     public static final class Stats {
         public int changedFiles;
         public int rewrittenCommands;
+        public int droppedIncompleteCommands;
         public final Map<String, Integer> categories = new LinkedHashMap<>();
         void hit(String category) { categories.merge(category, 1, Integer::sum); }
     }
@@ -46,7 +47,14 @@ public final class FunctionConverter1201 {
             StringBuilder migrated = new StringBuilder(source.length() + 128);
             int rewritten = 0;
             for (int i = 0; i < lines.length; i++) {
-                String next = convertCommand(lines[i]);
+                String next;
+                if (isOrphanedEarthSpikesSelector(entry.getKey(), lines[i])) {
+                    next = "# Legacy Connector: omitted an incomplete, actionless EarthSpikes execute selector.";
+                    stats.droppedIncompleteCommands++;
+                    stats.hit("incomplete_command_dropped");
+                } else {
+                    next = convertCommand(lines[i]);
+                }
                 if (!next.equals(lines[i])) rewritten++;
                 migrated.append(next);
                 if (i + 1 < lines.length) migrated.append(separator);
@@ -63,6 +71,12 @@ public final class FunctionConverter1201 {
     }
 
     /** Translate inspected particle option forms and item/entity NBT fields. */
+    private static boolean isOrphanedEarthSpikesSelector(String path, String line) {
+        return path.endsWith("afomni/function/aliens/vax/earth_spikes.mcfunction")
+                && line.trim().equals(
+                        "execute as @e[type=armor_stand, tag=earth_spike, scores={afomni.EarthSpikes=..90}]");
+    }
+
     public static String convertCommand(String command) {
         if (command == null || command.isEmpty()) return command;
         String result = command.replaceAll("(?<![a-zA-Z0-9_./-])minecraft:grass(?![a-zA-Z0-9_./-])", "minecraft:short_grass");
