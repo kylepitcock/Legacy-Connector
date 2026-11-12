@@ -284,7 +284,7 @@ public final class Forge1201Transformer {
         int palladiumAccessoryScreenChanges = 0;
         int palladiumAdvancementWidgetChanges = 0;
         int palladiumPowersScreenChanges = 0;
-        int palladiumSelectionListNarrationChanges = 0;
+        int palladiumSelectionListChanges = 0;
         int palladiumSuitStandChanges = 0;
         int palladiumTailoringScreenChanges = 0;
         int palladiumSheepColorChanges = 0;
@@ -355,13 +355,13 @@ public final class Forge1201Transformer {
             palladiumAdvancementWidgetChanges += palladiumAdvancementWidgetChange;
             int palladiumPowersScreenChange = PalladiumPowersScreen1201.apply(node);
             palladiumPowersScreenChanges += palladiumPowersScreenChange;
-            int palladiumSelectionListNarrationChange = PalladiumSelectionLists1201.apply(node);
-            palladiumSelectionListNarrationChanges += palladiumSelectionListNarrationChange;
+            int palladiumSelectionListChange = PalladiumSelectionLists1201.apply(node);
+            palladiumSelectionListChanges += palladiumSelectionListChange;
             Mixin1201.apply(node, srg, hierarchy, Mc1201Tables.get(), mixinStats);
             migrated.put(node, viaCalls + changed.total() + palladiumChanges + palladiumAddonPackChange
                     + palladiumWidgetButtonChange + palladiumMixinChange + palladiumLootChange
                     + palladiumAccessoryScreenChange + palladiumAdvancementWidgetChange + palladiumPowersScreenChange
-                    + palladiumSelectionListNarrationChange + palladiumSuitStandChange
+                    + palladiumSelectionListChange + palladiumSuitStandChange
                     + palladiumTailoringScreenChange + palladiumSheepColorChange
                     + palladiumRenderLayerChange + palladiumPlayerSkinChange
                     + palladiumPlayerSkinFetcherChange + palladiumCommandFunctionChange);
@@ -475,8 +475,8 @@ public final class Forge1201Transformer {
             result.notes.add("Palladium PowersScreen suppresses the modern Screen background/blur hook while preserving its custom contents: "
                     + palladiumPowersScreenChanges + " screen class(es)");
         }
-        if (palladiumSelectionListNarrationChanges > 0) {
-            result.notes.add("Palladium list widgets: " + palladiumSelectionListNarrationChanges
+        if (palladiumSelectionListChanges > 0) {
+            result.notes.add("Palladium list widgets: " + palladiumSelectionListChanges
                     + " bytecode site(s) migrated (legacy x0 position fields to getX/setX, three legacy render preferences to 1.21.1 hooks, and verified no-op narration overrides)");
         }
         if (palladiumTailoringScreenChanges > 0) {
