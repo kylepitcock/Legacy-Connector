@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 import org.objectweb.asm.ClassWriter;
@@ -112,24 +113,27 @@ class PalladiumSelectionLists1201Test implements Opcodes {
             init.instructions.add(new VarInsnNode(ALOAD, 0));
             init.instructions.add(new InsnNode(ICONST_0));
             init.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, setterOwner, "setRenderTopAndBottom", "(Z)V", false));
-            init.instructions.add(new VarInsnNode(ALOAD, 0));
-            init.instructions.add(new InsnNode(ICONST_1));
-            init.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, setterOwner, "setRenderSelection", "(Z)V", false));
+            boolean abilityList = PalladiumSelectionLists1201.POWER_ABILITY_LIST.equals(name);
+            if (abilityList) {
+                init.instructions.add(new VarInsnNode(ALOAD, 0));
+                init.instructions.add(new InsnNode(ICONST_0));
+                init.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, setterOwner, "setRenderSelection", "(Z)V", false));
+            }
             init.instructions.add(new InsnNode(RETURN));
             init.maxStack = 2;
             init.maxLocals = 1;
             node.methods.add(init);
 
-            assertEquals(6, PalladiumSelectionLists1201.apply(node), name);
+            assertEquals(abilityList ? 6 : 4, PalladiumSelectionLists1201.apply(node), name);
             assertTrue(hasStaticCall(init, "setRenderBackground"));
             assertTrue(hasStaticCall(init, "setRenderTopAndBottom"));
-            assertTrue(hasStaticCall(init, "setRenderSelection"));
+            assertEquals(abilityList, hasStaticCall(init, "setRenderSelection"), name);
             assertNotNull(findMethod(node, "renderListBackground",
                     "(Lnet/minecraft/client/gui/GuiGraphics;)V"));
             assertNotNull(findMethod(node, "renderListSeparators",
                     "(Lnet/minecraft/client/gui/GuiGraphics;)V"));
-            assertNotNull(findMethod(node, "renderSelection",
-                    "(Lnet/minecraft/client/gui/GuiGraphics;IIIII)V"));
+            assertEquals(abilityList, findMethod(node, "renderSelection",
+                    "(Lnet/minecraft/client/gui/GuiGraphics;IIIII)V") != null, name);
             assertEquals(0, PalladiumSelectionLists1201.apply(node), "second application is idempotent: " + name);
             org.junit.jupiter.api.Assertions.assertDoesNotThrow(() -> {
                 ClassWriter writer = new ClassWriter(0);
