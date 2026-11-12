@@ -600,7 +600,7 @@ public final class Forge1201Transformer {
         }
         int alienEvoResourceChanges = PalladiumResourceCompat1201.apply(outResources);
         if (alienEvoResourceChanges > 0) {
-            result.notes.add("AlienEvo scripts restore the legacy ResourceLocation constructor, resolve Omnitrix cycle/transform sound IDs to SoundEvents, normalize persistent NBT integers, guard empty armor ItemStacks, and compare Omnitrix UI tab IDs as strings: "
+            result.notes.add("AlienEvo scripts restore the legacy ResourceLocation constructor, resolve string sound IDs to SoundEvents (including Omnitrix cycle/transform/detransform/decouple and diamond creation), normalize persistent NBT integers, guard empty armor ItemStacks, and compare Omnitrix UI tab IDs as strings: "
                     + alienEvoResourceChanges + " resource script(s)");
         }
         if (PalladiumKubeJS1201.addPluginDiscoveryResource(outResources, outClasses.keySet())) {
