@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
  */
 public final class FunctionConverter1201 {
     private static final Pattern LEGACY_PARTICLE =
-            Pattern.compile("\\bparticle\\s+(minecraft:dust|dust|block|item)\\b");
+            Pattern.compile("\\bparticle\\s+(minecraft:dust|dust|block|item)(?=\\s)");
     private static final Pattern EMPTY_STACK =
             Pattern.compile("\\{id:[\\\"']?([a-zA-Z0-9_./:-]+)[\\\"']?,Count:0(?:b)?\\}");
     private static final Pattern STACK_WITH_CUSTOM_MODEL_DATA =
@@ -90,11 +90,11 @@ public final class FunctionConverter1201 {
                     + "],scale:" + args[3] + "}";
             consumed = 4;
         } else if (kind.equals("block")) {
-            if (args.length < 9) throw new IllegalStateException("Incomplete legacy block particle command: " + command);
+            if (args.length < 8) throw new IllegalStateException("Incomplete legacy block particle command: " + command);
             modernType = "minecraft:block{block_state:\"" + resourceId(args[0]) + "\"}";
             consumed = 1;
         } else {
-            if (args.length < 9) throw new IllegalStateException("Incomplete legacy item particle command: " + command);
+            if (args.length < 8) throw new IllegalStateException("Incomplete legacy item particle command: " + command);
             modernType = "minecraft:item{item:" + itemStack(args[0]) + "}";
             consumed = 1;
         }
