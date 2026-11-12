@@ -2,6 +2,7 @@ package org.kylepitcock.legacyconnector.loader.transform;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
@@ -33,7 +34,9 @@ class PalladiumAddonPackManager1201Test implements Opcodes {
                     + "Lnet/minecraft/server/packs/repository/FolderRepositorySource;";
     private static final String PACK = "net/minecraft/server/packs/repository/Pack";
     private static final String PACK_HELPER = "legacyconnector/v1_20_1/PalladiumAddonPackCompat";
-    private static final String PACK_HELPER_DESC = "(L" + PACK + ";)L" + PACK + ";";
+    private static final String PACK_TYPE = "net/minecraft/server/packs/PackType";
+    private static final String PACK_HELPER_DESC =
+            "(L" + PACK + ";L" + PACK_TYPE + ";)L" + PACK + ";";
     private static final String PACK_CALLBACK_DESC =
             "(Ljava/util/function/Consumer;L" + PACK + ";)V";
 
@@ -46,6 +49,8 @@ class PalladiumAddonPackManager1201Test implements Opcodes {
         MethodNode constructor = findConstructor(node);
         MethodNode packCallback = find(node, "lambda$getWrappedPackFinder$0", PACK_CALLBACK_DESC);
         assertNotNull(packCallback);
+        assertTrue(hasCall(packCallback, INVOKESTATIC, PalladiumAddonPackManager1201.ADDON_PACK_MANAGER,
+                "getPackType", "()L" + PACK_TYPE + ";"));
         assertTrue(hasCall(packCallback, INVOKESTATIC, PACK_HELPER,
                 "prefixAndRequireAddonPack", PACK_HELPER_DESC));
         assertTrue(hasCall(packCallback, INVOKEINTERFACE, "java/util/function/Consumer",
@@ -166,6 +171,9 @@ class PalladiumAddonPackManager1201Test implements Opcodes {
                 "lambda$getWrappedPackFinder$0", PACK_CALLBACK_DESC, null, null);
         if (alreadyAdapted) {
             method.instructions.add(new VarInsnNode(ALOAD, 1));
+            method.instructions.add(new MethodInsnNode(INVOKESTATIC,
+                    PalladiumAddonPackManager1201.ADDON_PACK_MANAGER,
+                    "getPackType", "()L" + PACK_TYPE + ";", false));
             method.instructions.add(new MethodInsnNode(INVOKESTATIC, PACK_HELPER,
                     "prefixAndRequireAddonPack", PACK_HELPER_DESC, false));
             method.instructions.add(new VarInsnNode(ASTORE, 1));
