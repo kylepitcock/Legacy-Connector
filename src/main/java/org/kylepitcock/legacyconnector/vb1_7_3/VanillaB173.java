@@ -176,6 +176,11 @@ public final class VanillaB173 {
         i.mcc$initVanilla(row.id(), modern == null ? 64 : modern.getDefaultMaxStackSize(),
                 complete!=null?complete.getMaxDamage():modern == null ? 0 : modern.getDefaultInstance().getMaxDamage(), "item." + camel(row.field()));
         i.mcc$modern = modern;
+        // Original renderers draw a vanilla item from its gui/items.png sprite (Item.SNOWBALL.getTextureId(0)); without the index they get cell 0.
+        if (modern != null && i.getTextureId(0) == 0) {
+            int sprite = AssetsB173.vanillaItemSprite(net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(modern).getPath());
+            if (sprite > 0) i.setTextureId(sprite);
+        }
         return i;
     }
     private static Item armorView(Row row){

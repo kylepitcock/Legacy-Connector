@@ -94,6 +94,12 @@ public final class AssetsB173 implements GeneratedPack.Contributor {
     /** b1.7.3 gui/items.png sprite index -> modern item texture, for the icons mods reuse. */
     private static final Map<Integer, String> VANILLA_ITEMS = new HashMap<>();
 
+    /** The gui/items.png sprite index of a vanilla item by its modern name (damage 0), or -1 when the sheet has none for it. */
+    static int vanillaItemSprite(String modernName){
+        for(var entry:VANILLA_ITEMS.entrySet())if(entry.getValue().equals(modernName))return entry.getKey();
+        return -1;
+    }
+
     static {
         String[] armor = {"leather", "chainmail", "iron", "diamond", "golden"};
         String[] pieces = {"helmet", "chestplate", "leggings", "boots"};
