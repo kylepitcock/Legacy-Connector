@@ -293,6 +293,7 @@ public final class Forge1201Transformer {
         int palladiumGeckoModelAnimationChanges = 0;
         int palladiumCommandFunctionChanges = 0;
         int palladiumPlayerSkinChanges = 0;
+        int palladiumPlayerSkinFetcherChanges = 0;
         for (ClassNode node : nodes) {
             if (PalladiumKubeJS1201.dropLegacyKubejsClass(node.name)) {
                 palladiumKubejsClassesDropped++;
@@ -326,8 +327,11 @@ public final class Forge1201Transformer {
             viaCalls += AttachGuards1201.apply(node, jarClasses);
             if (ForgeApiRewrites1201.markProviders(node)) viaCalls++;
             rewrites += viaCalls;
+            // Replace the removed SkinTextureCallback API before the generic soft-link pass.
+            int palladiumPlayerSkinFetcherChange = PalladiumPlayerSkinFetcher1201.apply(node);
+            palladiumPlayerSkinFetcherChanges += palladiumPlayerSkinFetcherChange;
             // Adapt before Mc1201Migration redirects AddLayers.getSkin(String) to ClientCompat.getSkin.
-            // The Palladium adapter must see and retarget the original lookup before that generic pass.
+            // The PalladiumCore adapter must see and retarget the original lookup before that generic pass.
             int palladiumPlayerSkinChange = PalladiumCorePlayerSkin1201.apply(node);
             palladiumPlayerSkinChanges += palladiumPlayerSkinChange;
             Mc1201Migration.Counts changed = Mc1201Migration.apply(node, hierarchy);
@@ -359,7 +363,8 @@ public final class Forge1201Transformer {
                     + palladiumAccessoryScreenChange + palladiumAdvancementWidgetChange + palladiumPowersScreenChange
                     + palladiumSelectionListNarrationChange + palladiumSuitStandChange
                     + palladiumTailoringScreenChange + palladiumSheepColorChange
-                    + palladiumRenderLayerChange + palladiumPlayerSkinChange + palladiumCommandFunctionChange);
+                    + palladiumRenderLayerChange + palladiumPlayerSkinChange
+                    + palladiumPlayerSkinFetcherChange + palladiumCommandFunctionChange);
         }
         if (palladiumKubejsChanges > 0 || palladiumKubejsClassesDropped > 0) {
             result.notes.add("Palladium KubeJS 6 integration adapted for KubeJS 7: "
@@ -501,6 +506,10 @@ public final class Forge1201Transformer {
         if (palladiumPlayerSkinChanges > 0) {
             result.notes.add("PalladiumCore player-skin lambda migrated in place from String to NeoForge PlayerSkin.Model; the original AddLayers callback and per-entity exception handling are preserved: "
                     + palladiumPlayerSkinChanges + " lambda(s)");
+        }
+        if (palladiumPlayerSkinFetcherChanges > 0) {
+            result.notes.add("Palladium PlayerSkinFetcher migrated from the removed SkinTextureCallback to SkinManager.getOrLoad / CompletableFuture.thenAccept: "
+                    + palladiumPlayerSkinFetcherChanges + " fetcher class(es)");
         }
         if (ownUnit) {
             String suffix = "_l" + VER.id().replaceAll("[^a-z0-9]", "");
