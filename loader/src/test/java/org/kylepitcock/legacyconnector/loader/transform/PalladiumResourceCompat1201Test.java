@@ -557,6 +557,20 @@ class PalladiumResourceCompat1201Test {
 
 
     @Test
+    void addsMissingMachineScrollItemTagWithoutOverwritingExistingTags() {
+        Map<String, byte[]> resources = new HashMap<>();
+        assertEquals(1, PalladiumResourceCompat1201.apply(resources));
+        String tagPath = "data/alienevo/tags/item/machine_scroll.json";
+        assertTrue(get(resources, tagPath).contains("\\"alienevo:machine_scroll\\""));
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+
+        Map<String, byte[]> existing = new HashMap<>();
+        put(existing, tagPath, "{\\"replace\\":true,\\"values\\":[\\"example:other\\"]}");
+        assertEquals(0, PalladiumResourceCompat1201.apply(existing));
+        assertTrue(get(existing, tagPath).contains("example:other"));
+    }
+
+    @Test
     void repairsAlienEvoGeckoLibAnimationFileNamesAndIsIdempotent() {
         Map<String, byte[]> resources = new HashMap<>();
         byte[] humongousaurAnimation = "{\\"animations\\":{\\"animation.humungousaur.tail\\":{}}}"
