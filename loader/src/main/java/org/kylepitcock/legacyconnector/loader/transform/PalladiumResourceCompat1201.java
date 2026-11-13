@@ -27,6 +27,8 @@ final class PalladiumResourceCompat1201 {
             "addon/alienevo/kubejs_scripts/stat_ability.js";
     static final String ALIEN_EVO_FAILSAFE =
             "data/alienevo/kubejs_scripts/failsafe.js";
+    static final String ALIEN_EVO_SERVER_STUFF =
+            "data/alienevo/kubejs_scripts/server_stuff.js";
 
     static final String OMNITRIX_INTEGER_HELPER =
             "function toOmnitrixInteger(value) {\n"
@@ -165,6 +167,7 @@ final class PalladiumResourceCompat1201 {
         rewriteDiamondCreationSound(resources);
         rewriteScoreboardApi(resources);
         rewriteServerApiAccess(resources);
+        rewriteOmnitrixPacketPlayerAccess(resources);
         // Both ScriptableAbility callbacks receive the active entity; KubeJS 7 no longer exposes Utils.server.
         rewrite(resources, ALIEN_EVO_STAT_ABILITY, new String[][] {
                 {"Utils.server.scoreboard", "entity.server.scoreboard", "2"}
@@ -589,6 +592,18 @@ final class PalladiumResourceCompat1201 {
                 {"  let server = Utils.server;", "  // Legacy Connector: KubeJS 7 server is passed by the command target.", "2"},
                 {"let aliensMaxed = maxAllAliens(username);", "let aliensMaxed = maxAllAliens(username, target.server);", "1"},
                 {"return giveAlienControl(username);", "return giveAlienControl(username, target.server);", "1"}
+        });
+    }
+
+    /**
+     * KubeJS 7 dataReceived packets expose their sender as event.player.
+     * AlienEvo already uses that property in its saveBeamColorData and
+     * saveEnergyColorData handlers, but the palette and nickname handlers
+     * still read event.entity. Migrate only those two known handlers.
+     */
+    private static int rewriteOmnitrixPacketPlayerAccess(Map<String, byte[]> resources) {
+        return rewrite(resources, ALIEN_EVO_SERVER_STUFF, new String[][] {
+                {"let player = event.entity;", "let player = event.player;", "2"}
         });
     }
 
