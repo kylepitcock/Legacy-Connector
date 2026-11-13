@@ -70,6 +70,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
     private final boolean walk;
     private final boolean fallen;
     private final boolean landed;
+    private final boolean underwater;
     private final boolean soundType;
     private final boolean sideRendered;
     private final boolean event;
@@ -122,6 +123,9 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
         this.walk = overrides(legacy, "onEntityWalk", W, P, legacyconnector.v1_12_2.net.minecraft.entity.Entity.class);
         this.fallen = overrides(legacy, "onFallenUpon", W, P, legacyconnector.v1_12_2.net.minecraft.entity.Entity.class, float.class);
         this.landed = overrides(legacy, "onLanded", W, legacyconnector.v1_12_2.net.minecraft.entity.Entity.class);
+        this.underwater = legacy.getMaterialLegacy() == legacyconnector.v1_12_2.net.minecraft.block.material.Material.WATER
+                && !(legacy instanceof legacyconnector.v1_12_2.net.minecraftforge.fluids.IFluidBlock)
+                && !(legacy instanceof legacyconnector.v1_12_2.net.minecraft.block.BlockLiquid);
         this.soundType = overrides(legacy, "getSoundType", S, W, P, legacyconnector.v1_12_2.net.minecraft.entity.Entity.class);
         this.sideRendered = overrides(legacy, "shouldSideBeRendered", S, legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess.class, P, EnumFacing.class);
         this.event = overrides(legacy, "eventReceived", S, W, P, int.class, int.class);
@@ -441,6 +445,16 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
             failure("onFallenUpon", e);
             super.fallOn(level, state, pos, entity, distance);
         }
+    }
+
+    /**
+     * A block of the water material that is no fluid block (underwater plants, corals): 1.12 counted it as water (entities swam in it, it
+     * stood in the sea it was placed in); here it holds a water source, as a waterlogged block does, so water is drawn around it, entities
+     * swim in it, and breaking it leaves the water behind instead of a hole the neighbouring plants fall into.
+     */
+    @Override
+    protected net.minecraft.world.level.material.FluidState getFluidState(BlockState state) {
+        return underwater ? net.minecraft.world.level.material.Fluids.WATER.getSource(false) : super.getFluidState(state);
     }
 
     /** Forge's per-state {@code getSoundType(state, world, pos, entity)} (blocks whose sounds depend on their variant). */
