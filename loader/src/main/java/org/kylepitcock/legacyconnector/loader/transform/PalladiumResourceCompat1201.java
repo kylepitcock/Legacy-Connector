@@ -64,6 +64,18 @@ final class PalladiumResourceCompat1201 {
             "function ResourceLocation(namespaceOrLocation, path) {";
     private static final String SOUND_EVENT_HELPER_MARKER =
             "function getAlienEvoSoundEvent(soundId) {";
+
+    private static final String ALIEN_EVO_PACKET_STRING_HELPER_MARKER =
+            "function legacyConnectorAlienEvoPacketString(value) {";
+    private static final String ALIEN_EVO_PACKET_STRING_HELPER = """
+            function legacyConnectorAlienEvoPacketString(value) {
+                if (value != null && typeof value.getAsString === 'function') {
+                    return String(value.getAsString());
+                }
+                return value;
+            }
+
+            """;
     private static final String LEGACY_PEHKUI_SCALE_TYPES_BINDING =
             "const SCALE_TYPES = Java.loadClass(\"virtuoel.pehkui.api.ScaleTypes\");";
     private static final String OPTIONAL_PEHKUI_SCALE_TYPES_BINDING = """
@@ -168,6 +180,8 @@ final class PalladiumResourceCompat1201 {
         rewriteScoreboardApi(resources);
         rewriteServerApiAccess(resources);
         rewriteOmnitrixPacketPlayerAccess(resources);
+        rewriteOmnitrixPacketStringValues(resources);
+        rewriteAlienEvoXpDeathPlayerAccess(resources);
         // Both ScriptableAbility callbacks receive the active entity; KubeJS 7 no longer exposes Utils.server.
         rewrite(resources, ALIEN_EVO_STAT_ABILITY, new String[][] {
                 {"Utils.server.scoreboard", "entity.server.scoreboard", "2"}
@@ -625,6 +639,59 @@ final class PalladiumResourceCompat1201 {
         resources.put(ALIEN_EVO_SERVER_STUFF,
                 script.replace(legacy, modern).getBytes(StandardCharsets.UTF_8));
         return 1;
+    }
+    /**
+     * KubeJS 7 delivers client packet compound values as NBT tags. AlienEvo's
+     * string properties expect Java String values, not StringTag instances;
+     * StringProperty.toNBT otherwise throws while the property synchronizes
+     * or the entity is saved. Normalize only the four inspected string-payload
+     * handlers, preserving non-tag values unchanged.
+     */
+    private static int rewriteOmnitrixPacketStringValues(Map<String, byte[]> resources) {
+        byte[] original = resources.get(ALIEN_EVO_SERVER_STUFF);
+        if (original == null) return 0;
+
+        String script = new String(original, StandardCharsets.UTF_8);
+        String[][] replacements = {
+                {"let colorValue = data.value;",
+                        "let colorValue = legacyConnectorAlienEvoPacketString(data.value);", "1"},
+                {"let energyColor = data.value;",
+                        "let energyColor = legacyConnectorAlienEvoPacketString(data.value);", "1"},
+                {"palladium.setProperty(player, propertyName, propertiesToSave[propertyName]);",
+                        "palladium.setProperty(player, propertyName, legacyConnectorAlienEvoPacketString(propertiesToSave[propertyName]));", "1"},
+                {"let inputText = event.data.nickname;",
+                        "let inputText = legacyConnectorAlienEvoPacketString(event.data.nickname);", "1"}
+        };
+
+        boolean relevant = false;
+        for (String[] replacement : replacements) {
+            if (script.contains(replacement[0]) || script.contains(replacement[1])) {
+                relevant = true;
+                break;
+            }
+        }
+        if (!relevant) return 0;
+
+        if (!script.contains(ALIEN_EVO_PACKET_STRING_HELPER_MARKER)) {
+            String lineEnding = script.contains("\r\n") ? "\r\n" : "\n";
+            script = ALIEN_EVO_PACKET_STRING_HELPER.replace("\n", lineEnding) + script;
+            resources.put(ALIEN_EVO_SERVER_STUFF, script.getBytes(StandardCharsets.UTF_8));
+        }
+
+        return rewrite(resources, ALIEN_EVO_SERVER_STUFF, replacements);
+    }
+
+    /**
+     * KubeJS 7's EntityEvents.death exposes event.source as the vanilla
+     * DamageSource. The attacker is source.getEntity(); DamageSource has no
+     * KubeJS 6-style .player field. Without this migration the old guard
+     * silently skips player-kill XP rewards.
+     */
+    private static int rewriteAlienEvoXpDeathPlayerAccess(Map<String, byte[]> resources) {
+        return rewrite(resources, "data/alienevo/kubejs_scripts/xp.js", new String[][] {
+                {"if (source && source.player) {\n        let player = source.player;",
+                        "let player = source ? source.getEntity() : null;\n    if (player && player.type === 'minecraft:player') {", "1"}
+        });
     }
     /** AlienEvo's flatten ability uses one optional Pehkui class at script load time; keep the script group loadable without Pehkui. */
     private static int rewriteOptionalPehkuiApi(Map<String, byte[]> resources) {
