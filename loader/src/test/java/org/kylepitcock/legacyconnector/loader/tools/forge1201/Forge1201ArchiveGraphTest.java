@@ -207,6 +207,29 @@ final class Forge1201ArchiveGraphTest {
     }
 
     @Test
+    void reportsNestedArchiveCountLimit() throws IOException {
+        byte[] library = zip(Map.of("META-INF/NOTICE.txt", bytes("library")));
+        Map<String, byte[]> nested = new LinkedHashMap<>();
+        for (int index = 0; index < Forge1201ArchiveGraph.MAX_NESTED_ARCHIVES + 1; index++) {
+            nested.put("META-INF/jarjar/archive-" + index + ".jar", library);
+        }
+        Path source = writeSourceJar("archive-count-limit.jar",
+                forgeModJar("alpha", "1.0.0", List.of(
+                        dep("minecraft", "[1.20.1,)", true), dep("forge", "[47,)", true))),
+                nested);
+        Forge1201JarInfo info = Forge1201JarInspector.inspectForge1201(source);
+        assertNotNull(info);
+
+        Forge1201ArchiveGraph.Result graph = Forge1201ArchiveGraph.analyze(
+                source, info, List.of(), "1.21.1");
+
+        assertTrue(graph.archives().stream().anyMatch(archive ->
+                archive.kind() == Forge1201ArchiveGraph.ArchiveKind.ARCHIVE_COUNT_LIMIT));
+        assertTrue(graph.warnings().stream().anyMatch(value ->
+                value.contains("Maximum nested archive count")));
+    }
+
+    @Test
     void evaluatesNumericMavenStyleRangesConservatively() {
         assertEquals(Forge1201ArchiveGraph.VersionRangeStatus.MATCH,
                 Forge1201ArchiveGraph.evaluateVersionRange("[4.0,)", "4.9.3"));
