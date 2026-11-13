@@ -88,6 +88,7 @@ public final class ForgeRegistries {
         public static final net.minecraft.resources.ResourceKey<net.minecraft.core.Registry<VillagerProfession>> VILLAGER_PROFESSIONS = Registries.VILLAGER_PROFESSION;
         public static final net.minecraft.resources.ResourceKey<net.minecraft.core.Registry<PoiType>> POI_TYPES = Registries.POINT_OF_INTEREST_TYPE;
         public static final net.minecraft.resources.ResourceKey<net.minecraft.core.Registry<Biome>> BIOMES = Registries.BIOME;
+        public static final net.minecraft.resources.ResourceKey<net.minecraft.core.Registry<net.minecraft.commands.synchronization.ArgumentTypeInfo<?, ?>>> COMMAND_ARGUMENT_TYPES = Registries.COMMAND_ARGUMENT_TYPE;
         public static final net.minecraft.resources.ResourceKey<net.minecraft.core.Registry<net.minecraft.world.level.levelgen.feature.Feature<?>>> FEATURES = Registries.FEATURE;
         public static final net.minecraft.resources.ResourceKey<net.minecraft.core.Registry<net.neoforged.neoforge.fluids.FluidType>> FLUID_TYPES = NeoForgeRegistries.Keys.FLUID_TYPES;
         public static final net.minecraft.resources.ResourceKey<net.minecraft.core.Registry<net.minecraft.network.syncher.EntityDataSerializer<?>>> ENTITY_DATA_SERIALIZERS = NeoForgeRegistries.Keys.ENTITY_DATA_SERIALIZERS;

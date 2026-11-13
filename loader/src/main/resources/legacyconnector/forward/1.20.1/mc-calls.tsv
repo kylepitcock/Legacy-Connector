@@ -655,3 +655,12 @@ net/minecraft/world/level/block/Block	getExpDrop	(Lnet/minecraft/world/level/blo
 net/minecraft/world/damagesource/DamageSource	isIndirect	()Z	GapCompat	isIndirect
 net/minecraft/world/SimpleContainer	createTag	()Lnet/minecraft/nbt/ListTag;	GapCompat	containerCreateTag
 net/minecraft/world/SimpleContainer	fromTag	(Lnet/minecraft/nbt/ListTag;)V	GapCompat	containerFromTag
+# 2026-11-13 ATM 9 gap round 3: CropBlock.getGrowthSpeed takes the state (the block's default state stands in)
+net/minecraft/world/level/block/CropBlock	getGrowthSpeed	(Lnet/minecraft/world/level/block/Block;Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;)F	=args	GapCompat.defaultState@0,1,2	(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;)F
+# 2026-11-13 ATM 9 gap round 3: EnchantmentHelper.getRandomItemWith(enchantment, entity[, filter]) is component based now
+net/minecraft/world/item/enchantment/EnchantmentHelper	getRandomItemWith	(Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyEnchantment;Lnet/minecraft/world/entity/LivingEntity;)Ljava/util/Map$Entry;	GapCompat	randomItemWith
+net/minecraft/world/item/enchantment/EnchantmentHelper	getRandomItemWith	(Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyEnchantment;Lnet/minecraft/world/entity/LivingEntity;Ljava/util/function/Predicate;)Ljava/util/Map$Entry;	GapCompat	randomItemWith
+# 2026-11-13 ATM 9 gap round 3: container custom names and area effect cloud potions
+net/minecraft/world/level/block/entity/BaseContainerBlockEntity	setCustomName	(Lnet/minecraft/network/chat/Component;)V	GapCompat	setCustomName
+net/minecraft/world/entity/AreaEffectCloud	setPotion	(Lnet/minecraft/world/item/alchemy/Potion;)V	GapCompat	cloudSetPotion
+net/minecraft/world/entity/AreaEffectCloud	getPotion	()Lnet/minecraft/world/item/alchemy/Potion;	GapCompat	cloudGetPotion
