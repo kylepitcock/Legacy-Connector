@@ -44,6 +44,12 @@ final class Forge1201ArchiveGraphTest {
         Forge1201ArchiveGraph.Result graph = Forge1201ArchiveGraph.analyze(
                 source, sourceInfo, List.of(), "1.21.1");
 
+        var sourceArchive = graph.archives().stream()
+                .filter(archive -> archive.origin() == Forge1201ArchiveGraph.ArchiveOrigin.SOURCE_ROOT)
+                .findFirst().orElseThrow();
+        assertEquals(0, sourceArchive.depth());
+        assertTrue(sourceArchive.sha256().matches("[0-9a-f]{64}"));
+
         var nestedMod = graph.archives().stream()
                 .filter(archive -> archive.archivePath().endsWith("embedded-mod.jar")).findFirst().orElseThrow();
         assertEquals(Forge1201ArchiveGraph.ArchiveKind.FORGE_1201_MOD, nestedMod.kind());
@@ -121,6 +127,10 @@ final class Forge1201ArchiveGraphTest {
         assertTrue(graph.providers().stream().anyMatch(provider ->
                 provider.modId().equals("geckolib")
                         && provider.providerKind() == Forge1201ArchiveGraph.ProviderKind.INSTALLED_TOP_LEVEL_NEOFORGE));
+        assertTrue(graph.archives().stream().anyMatch(archive ->
+                archive.archivePath().endsWith("geckolib.jar")
+                        && archive.origin() == Forge1201ArchiveGraph.ArchiveOrigin.INSTALLED_TOP_LEVEL
+                        && archive.sha256().matches("[0-9a-f]{64}")));
         assertTrue(graph.providers().stream().anyMatch(provider ->
                 provider.modId().equals("nesteddep")
                         && provider.providerKind() == Forge1201ArchiveGraph.ProviderKind.INSTALLED_NESTED_NEOFORGE));
