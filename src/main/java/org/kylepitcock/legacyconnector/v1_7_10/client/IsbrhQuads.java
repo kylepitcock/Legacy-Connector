@@ -141,6 +141,9 @@ final class IsbrhQuads {
     private static int emissive(RenderContext.Capture capture, int q, int i) {
         if (capture.get(q, i, 8) == 0.0D) return 0;
         int light = (int) capture.get(q, i, 6);
+        // the world's own light passed through (getMixedBrightnessForBlock beside a torch) is no glow: the modern pipeline lights the
+        // face itself, smoothly; baked, it flattened the faces of blocks near light into patches
+        if (org.kylepitcock.legacyconnector.v1_7_10.bridge.BlockAccessView.mcc$isWorldLight(light)) return 0;
         if ((light & 0xFFFF) >= 0xF0) return light;
         // a glow short of full (Thaumcraft's ore shards: setBrightness(max(world, 160))): its block light only, never the sky's (the time of day is the world's)
         return (light & 0xFFFF) >= 0xA0 ? light & 0xFFFF : 0;

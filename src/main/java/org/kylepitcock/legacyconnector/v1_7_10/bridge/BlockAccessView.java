@@ -96,9 +96,52 @@ public final class BlockAccessView implements IBlockAccess {
         return be instanceof LegacyBlockEntity l ? l.legacy() : null;
     }
 
+    /**
+     * The world's packed light at a position, as 1.7.10 gave it to block renderers: sky and block light of the cell (0 inside an opaque
+     * block), the block light raised to {@code min}. A render region (vanilla's or Sodium's) holds the light engine's values; the view
+     * used to answer full sky light and no block light everywhere, so a renderer's {@code max(world, 160)} glow (Thaumcraft's infused
+     * stone overlays) came out as plain sky light and never glowed in the dark. Getters without light keep that answer.
+     */
     @Override
     public int getLightBrightnessForSkyBlocks(int x, int y, int z, int min) {
-        return 15 << 20 | Math.max(min, 0) << 4;
+        if (!(getter instanceof net.minecraft.world.level.BlockAndTintGetter lit)) return 15 << 20 | Math.max(min, 0) << 4;
+        int sky, block;
+        try {
+            BlockPos p = at(x, y, z);
+            sky = lit.getBrightness(net.minecraft.world.level.LightLayer.SKY, p);
+            block = lit.getBrightness(net.minecraft.world.level.LightLayer.BLOCK, p);
+        } catch (RuntimeException e) {
+            return 15 << 20 | Math.max(min, 0) << 4;
+        }
+        int packed = sky << 20 | Math.max(min, block) << 4;
+        if (block > min) noteWorldLight(packed);
+        return packed;
+    }
+
+    /**
+     * Brightness values this thread got from the world's light (not from a block's own emission) since {@link #mcc$clearWorldLights}: a
+     * block renderer that passes one of them to {@code Tessellator.setBrightness} lights its faces as the world does, which the modern
+     * pipeline does itself (with smooth lighting); only brightness a renderer raised above the world's is a glow to bake into its quads.
+     */
+    private static final ThreadLocal<int[]> WORLD_LIGHTS = ThreadLocal.withInitial(() -> new int[17]);
+
+    private static void noteWorldLight(int packed) {
+        int[] seen = WORLD_LIGHTS.get();
+        int n = seen[0];
+        for (int i = 1; i <= Math.min(n, 16); i++) if (seen[i] == packed) return;
+        seen[1 + n % 16] = packed;
+        seen[0] = n + 1;
+    }
+
+    public static void mcc$clearWorldLights() {
+        WORLD_LIGHTS.get()[0] = 0;
+    }
+
+    /** Whether {@code packed} is a world light value this thread was given since the last {@link #mcc$clearWorldLights}. */
+    public static boolean mcc$isWorldLight(int packed) {
+        int[] seen = WORLD_LIGHTS.get();
+        for (int i = 1; i <= Math.min(seen[0], 16); i++) if (seen[i] == packed) return true;
+        return false;
     }
 
     @Override
