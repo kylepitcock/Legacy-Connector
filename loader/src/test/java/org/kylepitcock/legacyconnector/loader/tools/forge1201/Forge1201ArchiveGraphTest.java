@@ -23,7 +23,8 @@ final class Forge1201ArchiveGraphTest {
 
     @Test
     void recursivelyInventoriesNestedModsAndLibrariesAndBuildsTargetRangeFinding() throws IOException {
-        byte[] embeddedMod = forgeModJar("embedded", "2.1.0", List.of());
+        byte[] embeddedMod = forgeModJar("embedded", "2.1.0", List.of(
+                dep("minecraft", "[1.20.1,)", true), dep("forge", "[47,)", true)));
         byte[] library = zip(Map.of("META-INF/NOTICE.txt", bytes("library")));
         String metadata = jarJarMetadata(
                 "META-INF/jarjar/embedded-mod.jar", "com.example", "embedded-mod", "[2.0,3.0)", "2.1.0",
