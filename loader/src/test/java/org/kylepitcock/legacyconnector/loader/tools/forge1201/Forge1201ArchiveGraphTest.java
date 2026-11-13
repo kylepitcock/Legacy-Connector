@@ -127,6 +127,50 @@ final class Forge1201ArchiveGraphTest {
     }
 
     @Test
+    void distinguishesAmbiguousProvidersAndVersionMismatchesAcrossLoaderKinds() throws IOException {
+        Path mods = Files.createDirectories(tempDir.resolve("mixed-mods"));
+        Files.write(mods.resolve("duplicate-one.jar"), zip(Map.of("META-INF/neoforge.mods.toml",
+                bytes(neoForgeModToml("dupeprovider", "1.2.0")))));
+        Files.write(mods.resolve("duplicate-two.jar"), zip(Map.of("META-INF/neoforge.mods.toml",
+                bytes(neoForgeModToml("dupeprovider", "1.3.0")))));
+        Files.write(mods.resolve("legacy-provider.jar"), forgeModJar("legacyprovider", "2.7.0", List.of(
+                dep("minecraft", "[1.20.1,)", true), dep("forge", "[47,)", true))));
+        Files.write(mods.resolve("too-old.jar"), zip(Map.of("META-INF/neoforge.mods.toml",
+                bytes(neoForgeModToml("versioned", "1.5.0")))));
+
+        Path source = writeSourceJar("provider-ambiguity.jar",
+                forgeModJar("alpha", "1.0.0", List.of(
+                        dep("minecraft", "[1.20.1,)", true),
+                        dep("forge", "[47,)", true),
+                        dep("dupeprovider", "[1.0,2.0)", true),
+                        dep("legacyprovider", "[2.0,3.0)", true),
+                        dep("versioned", "[3.0,4.0)", true))),
+                Map.of());
+        Forge1201JarInfo info = Forge1201JarInspector.inspectForge1201(source);
+        assertNotNull(info);
+
+        Forge1201ArchiveGraph.Result graph = Forge1201ArchiveGraph.analyze(
+                source, info, List.of(mods), "1.21.1");
+
+        var ambiguous = edge(graph, "dupeprovider");
+        assertEquals(Forge1201ArchiveGraph.DependencyStatus.PROVIDER_AMBIGUOUS, ambiguous.status());
+        assertEquals(List.of("1.2.0", "1.3.0"), ambiguous.providerVersions());
+        assertEquals(2, ambiguous.providerArchivePaths().size());
+
+        var legacy = edge(graph, "legacyprovider");
+        assertEquals(Forge1201ArchiveGraph.DependencyStatus.PROVIDER_PRESENT, legacy.status());
+        assertTrue(graph.providers().stream().anyMatch(provider ->
+                provider.modId().equals("legacyprovider")
+                        && provider.providerKind()
+                        == Forge1201ArchiveGraph.ProviderKind.INSTALLED_TOP_LEVEL_FORGE_1201));
+
+        var mismatch = edge(graph, "versioned");
+        assertEquals(Forge1201ArchiveGraph.DependencyStatus.PROVIDER_VERSION_MISMATCH, mismatch.status());
+        assertEquals(Forge1201ArchiveGraph.VersionRangeStatus.OUTSIDE_RANGE, mismatch.providerRangeStatus());
+        assertEquals(List.of("1.5.0"), mismatch.providerVersions());
+    }
+
+    @Test
     void reportsMissingCorruptTraversalDuplicateAndDepthLimitedArchives() throws IOException {
         byte[] repeated = zip(Map.of("META-INF/NOTICE.txt", bytes("same bytes")));
         byte[] corrupt = new byte[] {0x01, 0x02, 0x03, 0x04};
