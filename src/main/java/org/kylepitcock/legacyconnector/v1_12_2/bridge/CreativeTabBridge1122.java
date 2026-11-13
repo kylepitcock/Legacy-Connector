@@ -101,6 +101,18 @@ public final class CreativeTabBridge1122 {
     }
 
     public static void onBuildContents(BuildCreativeModeTabContentsEvent event) {
+        // the buckets of 1.12.2 fluids (Forge listed its universal bucket's fluids in the misc tab; modern buckets are tools)
+        if (event.getTabKey().equals(CreativeModeTabs.TOOLS_AND_UTILITIES)) {
+            for (var bucket : FluidBridge1122.generatedBuckets().keySet()) {
+                var stack = new net.minecraft.world.item.ItemStack(bucket);
+                if (event.getParentEntries().contains(stack)) continue;
+                try {
+                    event.accept(stack);
+                } catch (IllegalArgumentException | IllegalStateException duplicate) {
+                    // already in the tab
+                }
+            }
+        }
         for (Item item : ItemBridge1122.modItems()) {
             CreativeTabs tab;
             try {

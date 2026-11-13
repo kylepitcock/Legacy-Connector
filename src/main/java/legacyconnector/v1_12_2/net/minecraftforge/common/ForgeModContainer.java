@@ -36,7 +36,11 @@ public class ForgeModContainer extends legacyconnector.v1_12_2.net.minecraftforg
      * stacks' items against it. It is not a registered item here.
      */
     public static synchronized legacyconnector.v1_12_2.net.minecraftforge.fluids.UniversalBucket mcc$get$universalBucket(ForgeModContainer container) {
-        if (mcc$universalBucket == null) mcc$universalBucket = new legacyconnector.v1_12_2.net.minecraftforge.fluids.UniversalBucket();
+        if (mcc$universalBucket == null) {
+            // Forge's name for it; it stays unregistered: its stacks become the modern bucket of the fluid in their tag (FluidBridge1122)
+            mcc$universalBucket = new legacyconnector.v1_12_2.net.minecraftforge.fluids.UniversalBucket();
+            mcc$universalBucket.setRegistryName(new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation("forge", "bucketfilled"));
+        }
         return mcc$universalBucket;
     }
 

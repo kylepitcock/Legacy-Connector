@@ -35,6 +35,7 @@ public class FluidBucketWrapper implements IFluidHandlerItem, ICapabilityProvide
     /** The fluid in the bucket (null for an empty bucket). */
     public FluidStack getFluid() {
         if (container == null || container.isEmpty()) return null;
+        if (container.getItem() instanceof legacyconnector.v1_12_2.net.minecraftforge.fluids.UniversalBucket universal) return universal.getFluid(container);
         var modern = org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122.toModern(container);
         if (modern.getItem() instanceof net.minecraft.world.item.BucketItem bucket) {
             Fluid fluid = BlockWrapper.mcc$legacy(bucket.content);
@@ -44,6 +45,9 @@ public class FluidBucketWrapper implements IFluidHandlerItem, ICapabilityProvide
             Fluid milk = FluidRegistry.getFluid("milk");
             if (milk != null) return new FluidStack(milk, Fluid.BUCKET_VOLUME);
         }
+        // a mod's own filled bucket of its fluid
+        Fluid own = org.kylepitcock.legacyconnector.v1_12_2.bridge.FluidBridge1122.fluidOfBucket(modern.getItem());
+        if (own != null) return new FluidStack(own, Fluid.BUCKET_VOLUME);
         return null;
     }
 
