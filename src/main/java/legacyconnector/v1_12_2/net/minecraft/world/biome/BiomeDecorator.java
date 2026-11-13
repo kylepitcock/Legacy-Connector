@@ -151,10 +151,7 @@ public class BiomeDecorator {
     public BiomeDecorator() {
     }
 
-    /**
-     * Decorates a chunk. Vanilla's ores, trees and plants are the modern game's features, so the base pass only records the chunk
-     * (mod decorators extending this class add their own features in {@code genDecorations}).
-     */
+    /** Decorates a chunk (called by a legacy chunk generator's populate): {@link #genDecorations} with the chunk recorded. */
     public void decorate(legacyconnector.v1_12_2.net.minecraft.world.World worldIn, java.util.Random random, Biome biome,
             legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
         if (decorating) return;
@@ -168,6 +165,187 @@ public class BiomeDecorator {
         }
     }
 
+    /**
+     * 1.12's decoration pass, run where a legacy chunk generator decorates (mod dimensions): ores, sand, clay and gravel patches, the
+     * biome's trees ({@code getRandomTreeFeature}), big mushrooms, flowers, the biome's grass ({@code getRandomWorldGenForGrass}), dead
+     * bushes, lily pads, mushrooms, reeds, pumpkins, cacti and springs, each behind Forge's decorate event (mod biomes in their own
+     * dimension got no trees or plants while this was empty). Mod decorators override it and usually call it.
+     */
     protected void genDecorations(Biome biomeIn, legacyconnector.v1_12_2.net.minecraft.world.World worldIn, java.util.Random random) {
+        if (chunkPos == null || worldIn == null || biomeIn == null) return;
+        var pos = chunkPos;
+        var cp = new legacyconnector.v1_12_2.net.minecraft.util.math.ChunkPos(pos);
+        legacyconnector.v1_12_2.net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(
+                new legacyconnector.v1_12_2.net.minecraftforge.event.terraingen.DecorateBiomeEvent.Pre(worldIn, random, cp));
+        mcc$step("ores", () -> generateOres(worldIn, random));
+        mcc$patches(worldIn, random, cp, sandGen, sandPatchesPerChunk, "SAND");
+        mcc$patches(worldIn, random, cp, clayGen, clayPerChunk, "CLAY");
+        mcc$patches(worldIn, random, cp, gravelGen, gravelPatchesPerChunk, "SAND_PASS2");
+        int trees = treesPerChunk;
+        if (random.nextFloat() < extraTreeChance) ++trees;
+        if (mcc$decorate(worldIn, random, cp, "TREE")) {
+            for (int i = 0; i < trees; ++i) {
+                int x = random.nextInt(16) + 8;
+                int z = random.nextInt(16) + 8;
+                mcc$step("trees", () -> {
+                    var tree = biomeIn.getRandomTreeFeature(random);
+                    if (tree == null) return;
+                    tree.setDecorationDefaults();
+                    var at = worldIn.getHeight(pos.add(x, 0, z));
+                    if (tree.generate(worldIn, random, at)) tree.generateSaplings(worldIn, random, at);
+                });
+            }
+        }
+        if (mcc$decorate(worldIn, random, cp, "BIG_SHROOM")) {
+            for (int i = 0; i < bigMushroomsPerChunk; ++i) {
+                int x = random.nextInt(16) + 8;
+                int z = random.nextInt(16) + 8;
+                mcc$step("big mushrooms", () -> bigMushroomGen.generate(worldIn, random, worldIn.getHeight(pos.add(x, 0, z))));
+            }
+        }
+        if (mcc$decorate(worldIn, random, cp, "FLOWERS")) {
+            for (int i = 0; i < flowersPerChunk; ++i) {
+                int x = random.nextInt(16) + 8;
+                int z = random.nextInt(16) + 8;
+                int top = worldIn.getHeight(pos.add(x, 0, z)).getY() + 32;
+                if (top <= 0) continue;
+                int y = random.nextInt(top);
+                mcc$step("flowers", () -> {
+                    var at = pos.add(x, y, z);
+                    var type = biomeIn.pickRandomFlower(random, at);
+                    if (type == null || type.getBlockType() == null) return;
+                    var flower = type.getBlockType().getBlock();
+                    if (flower == null) return;
+                    flowerGen.setGeneratedBlock(flower, type);
+                    flowerGen.generate(worldIn, random, at);
+                });
+            }
+        }
+        if (mcc$decorate(worldIn, random, cp, "GRASS")) {
+            for (int i = 0; i < grassPerChunk; ++i) {
+                int x = random.nextInt(16) + 8;
+                int z = random.nextInt(16) + 8;
+                int top = worldIn.getHeight(pos.add(x, 0, z)).getY() * 2;
+                if (top <= 0) continue;
+                int y = random.nextInt(top);
+                mcc$step("grass", () -> {
+                    var gen = biomeIn.getRandomWorldGenForGrass(random);
+                    if (gen != null) gen.generate(worldIn, random, pos.add(x, y, z));
+                });
+            }
+        }
+        if (mcc$decorate(worldIn, random, cp, "DEAD_BUSH")) {
+            for (int i = 0; i < deadBushPerChunk; ++i) {
+                int x = random.nextInt(16) + 8;
+                int z = random.nextInt(16) + 8;
+                int top = worldIn.getHeight(pos.add(x, 0, z)).getY() * 2;
+                if (top <= 0) continue;
+                int y = random.nextInt(top);
+                mcc$step("dead bushes", () -> new legacyconnector.v1_12_2.net.minecraft.world.gen.feature.WorldGenDeadBush().generate(worldIn, random, pos.add(x, y, z)));
+            }
+        }
+        if (mcc$decorate(worldIn, random, cp, "LILYPAD")) {
+            for (int i = 0; i < waterlilyPerChunk; ++i) {
+                int x = random.nextInt(16) + 8;
+                int z = random.nextInt(16) + 8;
+                int top = worldIn.getHeight(pos.add(x, 0, z)).getY() * 2;
+                if (top <= 0) continue;
+                int y = random.nextInt(top);
+                mcc$step("lily pads", () -> {
+                    var at = pos.add(x, y, z);
+                    while (at.getY() > 0 && worldIn.isAirBlock(at.down())) at = at.down();
+                    waterlilyGen.generate(worldIn, random, at);
+                });
+            }
+        }
+        if (mcc$decorate(worldIn, random, cp, "SHROOM")) {
+            for (int i = 0; i < mushroomsPerChunk; ++i) {
+                if (random.nextInt(4) == 0) mcc$plant(worldIn, random, pos, mushroomBrownGen, 0);
+                if (random.nextInt(8) == 0) mcc$plant(worldIn, random, pos, mushroomRedGen, 0);
+            }
+            if (random.nextInt(4) == 0) mcc$plant(worldIn, random, pos, mushroomBrownGen, 2);
+            if (random.nextInt(8) == 0) mcc$plant(worldIn, random, pos, mushroomRedGen, 2);
+        }
+        if (mcc$decorate(worldIn, random, cp, "REED")) {
+            for (int i = 0; i < reedsPerChunk + 10; ++i) mcc$plant(worldIn, random, pos, reedGen, 2);
+        }
+        if (random.nextInt(32) == 0 && mcc$decorate(worldIn, random, cp, "PUMPKIN")) {
+            mcc$plant(worldIn, random, pos, new legacyconnector.v1_12_2.net.minecraft.world.gen.feature.WorldGenPumpkin(), 2);
+        }
+        if (mcc$decorate(worldIn, random, cp, "CACTUS")) {
+            for (int i = 0; i < cactiPerChunk; ++i) mcc$plant(worldIn, random, pos, cactusGen, 2);
+        }
+        if (generateFalls) {
+            if (mcc$decorate(worldIn, random, cp, "LAKE_WATER")) {
+                var water = new legacyconnector.v1_12_2.net.minecraft.world.gen.feature.WorldGenLiquids(legacyconnector.v1_12_2.net.minecraft.init.Blocks.FLOWING_WATER);
+                for (int i = 0; i < 50; ++i) {
+                    int x = random.nextInt(16) + 8;
+                    int z = random.nextInt(16) + 8;
+                    int y = random.nextInt(random.nextInt(248) + 8);
+                    if (y > 0) mcc$step("springs", () -> water.generate(worldIn, random, pos.add(x, y, z)));
+                }
+            }
+            if (mcc$decorate(worldIn, random, cp, "LAKE_LAVA")) {
+                var lava = new legacyconnector.v1_12_2.net.minecraft.world.gen.feature.WorldGenLiquids(legacyconnector.v1_12_2.net.minecraft.init.Blocks.FLOWING_LAVA);
+                for (int i = 0; i < 20; ++i) {
+                    int x = random.nextInt(16) + 8;
+                    int z = random.nextInt(16) + 8;
+                    int y = random.nextInt(random.nextInt(random.nextInt(240) + 8) + 8);
+                    mcc$step("springs", () -> lava.generate(worldIn, random, pos.add(x, y, z)));
+                }
+            }
+        }
+        legacyconnector.v1_12_2.net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(
+                new legacyconnector.v1_12_2.net.minecraftforge.event.terraingen.DecorateBiomeEvent.Post(worldIn, random, cp));
+    }
+
+    /** A plant generator at a random column of the chunk, at a random height up to twice the surface ({@code factor} 2) or on it (0). */
+    private void mcc$plant(legacyconnector.v1_12_2.net.minecraft.world.World world, java.util.Random random, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
+            legacyconnector.v1_12_2.net.minecraft.world.gen.feature.WorldGenerator gen, int factor) {
+        if (gen == null) return;
+        int x = random.nextInt(16) + 8;
+        int z = random.nextInt(16) + 8;
+        if (factor == 0) {
+            mcc$step("plants", () -> gen.generate(world, random, world.getHeight(pos.add(x, 0, z))));
+            return;
+        }
+        int top = world.getHeight(pos.add(x, 0, z)).getY() * factor;
+        if (top <= 0) return;
+        int y = random.nextInt(top);
+        mcc$step("plants", () -> gen.generate(world, random, pos.add(x, y, z)));
+    }
+
+    private void mcc$patches(legacyconnector.v1_12_2.net.minecraft.world.World world, java.util.Random random, legacyconnector.v1_12_2.net.minecraft.util.math.ChunkPos cp,
+            legacyconnector.v1_12_2.net.minecraft.world.gen.feature.WorldGenerator gen, int count, String type) {
+        if (gen == null || count <= 0 || !mcc$decorate(world, random, cp, type)) return;
+        for (int i = 0; i < count; ++i) {
+            int x = random.nextInt(16) + 8;
+            int z = random.nextInt(16) + 8;
+            mcc$step("patches", () -> gen.generate(world, random, world.getTopSolidOrLiquidBlock(chunkPos.add(x, 0, z))));
+        }
+    }
+
+    private static boolean mcc$decorate(legacyconnector.v1_12_2.net.minecraft.world.World world, java.util.Random random,
+            legacyconnector.v1_12_2.net.minecraft.util.math.ChunkPos cp, String type) {
+        try {
+            return legacyconnector.v1_12_2.net.minecraftforge.event.terraingen.TerrainGen.decorate(world, random, cp,
+                    legacyconnector.v1_12_2.net.minecraftforge.event.terraingen.DecorateBiomeEvent.Decorate.EventType.valueOf(type));
+        } catch (RuntimeException | LinkageError e) {
+            return true;
+        }
+    }
+
+    private static final java.util.concurrent.atomic.AtomicInteger MCC_FAILURES = new java.util.concurrent.atomic.AtomicInteger();
+
+    /** One generator call; generation must never throw (a failure is logged a few times and skipped). */
+    private static void mcc$step(String what, Runnable step) {
+        try {
+            step.run();
+        } catch (RuntimeException | LinkageError e) {
+            int n = MCC_FAILURES.incrementAndGet();
+            if (n <= 3 || n % 1000 == 0) {
+                org.slf4j.LoggerFactory.getLogger("LegacyConnector/Decorator1122").warn("1.12.2 biome decoration ({}) failed ({} failures so far): {}", what, n, e.toString());
+            }
+        }
     }
 }
