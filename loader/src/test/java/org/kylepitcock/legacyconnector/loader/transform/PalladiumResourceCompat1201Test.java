@@ -584,7 +584,7 @@ class PalladiumResourceCompat1201Test {
         put(resources, "assets/alienevo/palladium/render_layers/aliens/alien_4/kineceleran.json",
                 "{\\"animation_file\\":\\"alienevo:animations/xlr8.json\\"}");
 
-        assertEquals(4, PalladiumResourceCompat1201.apply(resources));
+        assertEquals(5, PalladiumResourceCompat1201.apply(resources));
         assertTrue(java.util.Arrays.equals(humongousaurAnimation,
                 resources.get("assets/afomni/animations/model.humongousaur.animation.json")));
         assertTrue(java.util.Arrays.equals(xlr8Animation,
