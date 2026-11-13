@@ -250,9 +250,9 @@ final class PalladiumResourceCompat1201 {
                 },
                 {
                         "let cleanedHexString = rawTextboxValue.replace(/[^0-9A-Fa-f]/g, \"\").slice(0, 6);",
-                        "let cleanedHexString = rawTextboxValue.replaceAll(\"[^0-9A-Fa-f]\", \"\");\\n"
-                                + "            if (cleanedHexString.length() > 6) {\\n"
-                                + "                cleanedHexString = cleanedHexString.substring(0, 6);\\n"
+                        "let cleanedHexString = rawTextboxValue.replaceAll(\"[^0-9A-Fa-f]\", \"\");\n"
+                                + "            if (cleanedHexString.length() > 6) {\n"
+                                + "                cleanedHexString = cleanedHexString.substring(0, 6);\n"
                                 + "            }",
                         "1"
                 }
@@ -888,7 +888,7 @@ final class PalladiumResourceCompat1201 {
         if (original == null) return 0;
 
         String script = new String(original, StandardCharsets.UTF_8);
-        String lineEnding = script.contains("\\r\\n") ? "\\r\\n" : "\\n";
+        String lineEnding = script.contains("\r\n") ? "\r\n" : "\n";
         String legacy = "if (source && source.player) {" + lineEnding
                 + "        let player = source.player;";
         String migrated = "let player = source ? source.getEntity() : null;" + lineEnding
