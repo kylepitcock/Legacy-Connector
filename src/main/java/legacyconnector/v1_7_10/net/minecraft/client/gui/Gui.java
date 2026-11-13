@@ -60,7 +60,48 @@ public class Gui {
             gui.fill(x, y, x + width, y + height, RenderContext.argb());
             return;
         }
+        if (mcc$blitVanillaSheet(gui, x, y, u, v, width, height)) return;
         gui.blit(RenderContext.texture(), x, y, u, v, width, height);
+    }
+
+    /**
+     * Forge 1.4.7: a screen binds {@code /terrain.png} or {@code /gui/items.png} and draws a tile of it by pixel position (a tank gauge
+     * tiles the liquid's block texture, {@code index % 16 * 16, index / 16 * 16}; Thermal Expansion, BuildCraft, Forestry). Those sheets do
+     * not exist any more: each 16x16 cell is the sprite the sheet tables name ({@code SpriteSheets147}), so the rectangle is drawn cell by
+     * cell from the block atlas, partial cells included. False when another texture is bound.
+     */
+    private static boolean mcc$blitVanillaSheet(net.minecraft.client.gui.GuiGraphics gui, int x, int y, int u, int v, int width, int height) {
+        String sheet = RenderContext.sheet();
+        if (sheet == null) return false;
+        String norm = org.kylepitcock.legacyconnector.v1_6_4.bridge.SpriteSheets147.normalize(sheet);
+        boolean terrain = norm.equals(org.kylepitcock.legacyconnector.v1_6_4.bridge.SpriteSheets147.TERRAIN);
+        if (!terrain && !norm.equals(org.kylepitcock.legacyconnector.v1_6_4.bridge.SpriteSheets147.ITEMS)) return false;
+        if (u < 0 || v < 0 || width <= 0 || height <= 0) return true;
+        var atlas = net.minecraft.client.Minecraft.getInstance().getTextureAtlas(net.minecraft.world.inventory.InventoryMenu.BLOCK_ATLAS);
+        for (int py = v; py < v + height; ) {
+            int cellV = py >> 4, offV = py & 15, h = Math.min(16 - offV, v + height - py);
+            for (int px = u; px < u + width; ) {
+                int cellU = px >> 4, offU = px & 15, w = Math.min(16 - offU, u + width - px);
+                int index = cellV * 16 + cellU;
+                if (index < 256) {
+                    IIcon icon = org.kylepitcock.legacyconnector.v1_6_4.bridge.SpriteSheets147.icon(sheet, index, terrain);
+                    if (icon != null) {
+                        var sprite = atlas.apply(net.minecraft.resources.ResourceLocation.parse(icon.mcc$modernName()));
+                        int sw = sprite.contents().width(), sh = sprite.contents().height();
+                        float du = sprite.getU1() - sprite.getU0(), dv = sprite.getV1() - sprite.getV0();
+                        if (du > 0 && dv > 0) {
+                            int atlasW = Math.round(sw / du), atlasH = Math.round(sh / dv);
+                            gui.blit(sprite.atlasLocation(), x + px - u, y + py - v, w, h,
+                                    sprite.getU0() * atlasW + offU * sw / 16.0F, sprite.getV0() * atlasH + offV * sh / 16.0F,
+                                    Math.max(1, w * sw / 16), Math.max(1, h * sh / 16), atlasW, atlasH);
+                        }
+                    }
+                }
+                px += w;
+            }
+            py += h;
+        }
+        return true;
     }
 
     public void drawTexturedModelRectFromIcon(int x, int y, IIcon icon, int width, int height) {
