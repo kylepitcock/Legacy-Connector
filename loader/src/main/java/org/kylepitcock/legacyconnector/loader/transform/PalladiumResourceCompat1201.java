@@ -587,7 +587,7 @@ final class PalladiumResourceCompat1201 {
                 {"function maxAllAliens(playerName) {", "function maxAllAliens(playerName, server) {", "1"},
                 {"function giveAlienControl(playerName) {", "function giveAlienControl(playerName, server) {", "1"},
                 {"  let server = Utils.server;", "  // Legacy Connector: KubeJS 7 server is passed by the command target.", "2"},
-                {"maxAllAliens(username);", "maxAllAliens(username, target.server);", "1"},
+                {"let aliensMaxed = maxAllAliens(username);", "let aliensMaxed = maxAllAliens(username, target.server);", "1"},
                 {"return giveAlienControl(username);", "return giveAlienControl(username, target.server);", "1"}
         });
     }
