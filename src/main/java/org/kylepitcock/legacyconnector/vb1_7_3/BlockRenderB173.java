@@ -28,7 +28,11 @@ public final class BlockRenderB173 {
         });
     }
     public static List<Tessellator.Vertex> capture(Block block,BlockView world,int x,int y,int z){
-        BaseMod mod=RENDERERS.get(block.getRenderType());if(!capturesWorld(block))return List.of();
+        var vertices=captureOrNull(block,world,x,y,z);return vertices==null?List.of():vertices;
+    }
+    /** As {@link #capture}, but null when the original did not render the block at all: a mod's callback that returns true and draws nothing (a block its tile entity draws) leaves it invisible. */
+    public static List<Tessellator.Vertex> captureOrNull(Block block,BlockView world,int x,int y,int z){
+        BaseMod mod=RENDERERS.get(block.getRenderType());if(!capturesWorld(block))return null;
         // Legacy renderers mutate block bounds, and may keep mutable renderer state on the mod instance.
         synchronized(mod==null?BlockRenderB173.class:mod){synchronized(block){
             double[] bounds={block.minX,block.minY,block.minZ,block.maxX,block.maxY,block.maxZ};
@@ -38,10 +42,10 @@ public final class BlockRenderB173 {
                 var renderer=new BlockRenderManager(world);
                 boolean rendered=mod!=null?mod.RenderWorldBlock(renderer,world,x,y,z,block,block.getRenderType())
                         :block.getRenderType()==11?renderer.renderFence(block,x,y,z):renderer.renderBlock(block,x,y,z);
-                var vertices=Tessellator.endCapture();return rendered?vertices:List.of();
+                var vertices=Tessellator.endCapture();return rendered?vertices:null;
             }catch(RuntimeException|LinkageError e){
                 FAILURES.incrementAndGet();if(REPORTED.add(block.getClass()))org.slf4j.LoggerFactory.getLogger("LegacyConnector/b1.7.3").warn("Beta block renderer failed for {}",block.getClass().getName(),e);
-                return List.of();
+                return null;
             }finally{CAPTURING.remove();Tessellator.endCapture();block.minX=bounds[0];block.minY=bounds[1];block.minZ=bounds[2];block.maxX=bounds[3];block.maxY=bounds[4];block.maxZ=bounds[5];}
         }}
     }

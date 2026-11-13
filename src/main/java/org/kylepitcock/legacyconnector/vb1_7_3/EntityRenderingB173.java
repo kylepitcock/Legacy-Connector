@@ -26,7 +26,7 @@ public final class EntityRenderingB173 {
         final int x=column,y=row;
         return new Quad(vertices.stream().map(v->new RendererContextB173.Vertex(v.x(),v.y(),v.z(),v.u()*16-x,v.v()*16-y,v.argb(),v.nx(),v.ny(),v.nz())).toList(),sprite);
     }
-    static ResourceLocation texture(org.kylepitcock.legacyconnector.core.LegacyModRecord mod,String path){
+    public static ResourceLocation texture(org.kylepitcock.legacyconnector.core.LegacyModRecord mod,String path){
         return switch(path){case "/gui/items.png","gui/items.png"->ITEMS;case "/terrain.png","terrain.png"->TERRAIN;default->MobTexturesB173.resolve(mod,path);};
     }
     /** Both living and nonliving original renderers may emit immediate quads from old sheets. */

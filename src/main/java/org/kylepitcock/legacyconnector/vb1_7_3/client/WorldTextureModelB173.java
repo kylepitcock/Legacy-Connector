@@ -42,8 +42,8 @@ final class WorldTextureModelB173 extends BakedModelWrapper<BakedModel> {
         var result=originalModel.getModelData(level,pos,state,data).derive().with(FACES,AssetsB173.faceTextures(block,level,pos,state));
         if(BlockFacesB173.hasCallback(block))result.with(VISIBLE,BlockFacesB173.visibleFaces(block,new BlockQueryB173(level,pos,state),pos.getX(),pos.getY(),pos.getZ()));
         if(BlockRenderB173.capturesWorld(block)){
-            var captured=BlockRenderB173.capture(block,new BlockQueryB173(level,pos,state),pos.getX(),pos.getY(),pos.getZ());
-            var quads=bake(captured,pos);if(!quads.isEmpty())result.with(CUSTOM,quads);
+            var captured=BlockRenderB173.captureOrNull(block,new BlockQueryB173(level,pos,state),pos.getX(),pos.getY(),pos.getZ());
+            if(captured!=null)result.with(CUSTOM,bake(captured,pos));
         }
         return result.build();
     }

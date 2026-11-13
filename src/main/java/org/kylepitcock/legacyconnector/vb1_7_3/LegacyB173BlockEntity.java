@@ -110,6 +110,7 @@ public class LegacyB173BlockEntity extends net.minecraft.world.level.block.entit
                     te.tick();
                 }
             },()->level.blockEntityChanged(worldPosition));
+            syncToClients(te);
         } catch (RuntimeException | LinkageError e) {
             tickFailed = true;
             LOG.error("b1.7.3 tile entity {} at {} failed while ticking; it stops ticking", te.getClass().getName(), worldPosition, e);
@@ -120,6 +121,26 @@ public class LegacyB173BlockEntity extends net.minecraft.world.level.block.entit
 
     /** Commit only completed callbacks, including their view flush, without comparator/neighbor notifications.
      * Original ticking tiles can change inventory/timers without calling markDirty themselves. */
+    private static final Map<Class<?>, Boolean> SYNCS = new ConcurrentHashMap<>();
+    private net.minecraft.nbt.CompoundTag lastSent;
+
+    /** A tile entity that builds its own description packet (BuildCraft's engines and pipes) is the one Beta sent to the players near it. */
+    private static boolean syncs(Class<?> type) {
+        return SYNCS.computeIfAbsent(type, t -> {
+            try { return t.getMethod("getDescriptionPacket").getDeclaringClass() != BlockEntity.class; }
+            catch (ReflectiveOperationException e) { return false; }
+        });
+    }
+
+    /** In Beta single player the client drew the very tile entity the server ticked; here the client has its own copy, so a changed state is sent. */
+    private void syncToClients(BlockEntity te) {
+        if (level == null || level.isClientSide || !syncs(te.getClass()) || level.getGameTime() % 4 != 0) return;
+        var tag = saveWithoutMetadata(level.registryAccess());
+        if (tag.equals(lastSent)) return;
+        lastSent = tag;
+        level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+    }
+
     static void tickAndCommit(Runnable callback,Runnable storageDirty){
         callback.run();
         storageDirty.run();
