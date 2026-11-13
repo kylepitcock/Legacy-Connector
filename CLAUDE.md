@@ -116,10 +116,13 @@ Two channels (since 2026-11-13):
   replaces the rolling GitHub pre-release `nightly` (version `<mod_version>-nightly.<run>.<sha>`, never sent to Modrinth/CurseForge). So a
   fix reaches players by pushing to master; point reporters to the nightly when their problem is fixed there. Do not cut a release for a
   single fix.
-- **Stable** (manual, less frequent, bigger): only when the maintainer asks or a batch of verified work has accumulated. Pre-1.0
-  versioning: bump the PATCH per release; bump the MINOR only for a milestone (a new legacy version supported); 1.0.0 is reserved for
-  when the project is ready. Steps: set `mod_version` in `gradle.properties` BEFORE building and committing, `./gradlew bundleJar`, copy
-  `build/dist/legacyconnector-<ver>*.jar` to `legacyconnector-<ver>.jar`, `gh release create v<ver> <jar>` with release notes
-  (`publish.yml` then uploads it to Modrinth and CurseForge; it skips pre-releases).
+- **Stable** (less frequent, bigger): only when the maintainer asks or a batch of verified work has accumulated. Pre-1.0 versioning: bump
+  the PATCH per release; bump the MINOR only for a milestone (a new legacy version supported); 1.0.0 is reserved for when the project is
+  ready. Cut it from GitHub: Actions > **Release** > Run workflow (`.github/workflows/release.yml`; or
+  `gh workflow run release.yml -f version=0.5.0 -f notes="..."`; empty version = next patch). It sets `mod_version` in `gradle.properties`
+  and commits it, builds `bundleJar`, creates tag `v<ver>` and the GitHub release (notes + commit list since the last release) and starts
+  `publish.yml` (Modrinth, CurseForge; skips pre-releases) and `probe.yml`. Pull master afterwards (the workflow pushed the version commit).
+  By hand, if ever needed: set `mod_version` BEFORE building and committing, `./gradlew bundleJar`, copy
+  `build/dist/legacyconnector-<ver>*.jar` to `legacyconnector-<ver>.jar`, `gh release create v<ver> <jar>`.
 
 License: MIT.
