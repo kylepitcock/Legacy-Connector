@@ -591,16 +591,16 @@ class PalladiumResourceCompat1201Test {
     void addsMissingMachineScrollItemTagWithoutOverwritingExistingTags() {
         Map<String, byte[]> resources = new HashMap<>();
         put(resources, "data/alienevo/advancements/obtain_scroll.json",
-                "{\\"criteria\\":{\\"machine_scroll\\":{\\"conditions\\":{\\"items\\":[{\\"tag\\": \\"alienevo:machine_scroll\\"}]}}}}");
+                "{\"criteria\":{\"machine_scroll\":{\"conditions\":{\"items\":[{\"tag\": \"alienevo:machine_scroll\"}]}}}}");
         assertEquals(1, PalladiumResourceCompat1201.apply(resources));
         String tagPath = "data/alienevo/tags/item/machine_scroll.json";
-        assertTrue(get(resources, tagPath).contains("\\"alienevo:machine_scroll\\""));
+        assertTrue(get(resources, tagPath).contains("\"alienevo:machine_scroll\""));
         assertEquals(0, PalladiumResourceCompat1201.apply(resources));
 
         Map<String, byte[]> existing = new HashMap<>();
         put(existing, "data/alienevo/advancements/obtain_scroll.json",
-                "{\\"criteria\\":{\\"machine_scroll\\":{\\"conditions\\":{\\"items\\":[{\\"tag\\": \\"alienevo:machine_scroll\\"}]}}}}");
-        put(existing, tagPath, "{\\"replace\\":true,\\"values\\":[\\"example:other\\"]}");
+                "{\"criteria\":{\"machine_scroll\":{\"conditions\":{\"items\":[{\"tag\": \"alienevo:machine_scroll\"}]}}}}");
+        put(existing, tagPath, "{\"replace\":true,\"values\":[\"example:other\"]}");
         assertEquals(0, PalladiumResourceCompat1201.apply(existing));
         assertTrue(get(existing, tagPath).contains("example:other"));
     }
@@ -608,20 +608,20 @@ class PalladiumResourceCompat1201Test {
     @Test
     void repairsAlienEvoGeckoLibAnimationFileNamesAndIsIdempotent() {
         Map<String, byte[]> resources = new HashMap<>();
-        byte[] humongousaurAnimation = "{\\"animations\\":{\\"animation.humungousaur.tail\\":{}}}"
+        byte[] humongousaurAnimation = "{\"animations\":{\"animation.humungousaur.tail\":{}}}"
                 .getBytes(StandardCharsets.UTF_8);
-        byte[] xlr8Animation = "{\\"animations\\":{\\"animation.xlr8.tail\\":{}}}"
+        byte[] xlr8Animation = "{\"animations\":{\"animation.xlr8.tail\":{}}}"
                 .getBytes(StandardCharsets.UTF_8);
         resources.put("assets/afomni/animations/model.humongousaur.anim.json", humongousaurAnimation);
         resources.put("assets/alienevo/animations/xlr8.json", xlr8Animation);
-        byte[] crystalsapienAnimation = "{\\"animations\\":{\\"animation.Chromastone.arms\\":{}}}"
+        byte[] crystalsapienAnimation = "{\"animations\":{\"animation.Chromastone.arms\":{}}}"
                 .getBytes(StandardCharsets.UTF_8);
         resources.put("assets/afomni/animations/crystalsapien.animation.json", crystalsapienAnimation);
         resources.put("assets/afomni/animations/crystalsapien.animation_copy.json", crystalsapienAnimation.clone());
         put(resources, "assets/afomni/palladium/render_layers/vaxasaurian.json",
-                "{\\"animation_file\\":\\"afomni:animations/model.humongousaur.anim.json\\"}");
+                "{\"animation_file\":\"afomni:animations/model.humongousaur.anim.json\"}");
         put(resources, "assets/alienevo/palladium/render_layers/aliens/alien_4/kineceleran.json",
-                "{\\"animation_file\\":\\"alienevo:animations/xlr8.json\\"}");
+                "{\"animation_file\":\"alienevo:animations/xlr8.json\"}");
 
         assertEquals(7, PalladiumResourceCompat1201.apply(resources));
         assertTrue(java.util.Arrays.equals(humongousaurAnimation,
