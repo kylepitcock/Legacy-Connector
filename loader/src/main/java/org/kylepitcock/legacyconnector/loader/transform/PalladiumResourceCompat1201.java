@@ -538,13 +538,13 @@ final class PalladiumResourceCompat1201 {
                         path,
                         migrated,
                         "var watchItem = Item.of(itemId, 1, nbtData);",
-                        "var watchItem = Item.of(itemId, 1);\\n  watchItem.setNbt(nbtData);");
+                        "var watchItem = Item.of(itemId, 1);\n  watchItem.setNbt(nbtData);");
             } else if (ALIEN_EVO_CORE_REMOVAL.equals(path)) {
                 migrated = replaceExactScriptOccurrence(
                         path,
                         migrated,
                         "var coreItem = Item.of('alienevo:prototype_core', 1, nbtData);",
-                        "var coreItem = Item.of('alienevo:prototype_core', 1);\\n  coreItem.setNbt(nbtData);");
+                        "var coreItem = Item.of('alienevo:prototype_core', 1);\n  coreItem.setNbt(nbtData);");
             }
 
             if (!migrated.equals(script)) {
