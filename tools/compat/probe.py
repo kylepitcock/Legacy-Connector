@@ -155,6 +155,8 @@ def run_gap1201(jar_dir, out, keep_detail=None):
            f"-PgapJars={pathlib.Path(jar_dir).resolve()}", f"-PgapReport={report}", "-Pgap.translate=true"]
     if os.environ.get("GAP1201_ASSUME_NATIVE"):   # e.g. mcjty/theoneprobe/api/,dev/emi/emi/api/,me/shedaniel/rei/ : API packages of libraries the pack gets as native 1.21.1 builds
         cmd.append("-Pgap.assumeNative=" + os.environ["GAP1201_ASSUME_NATIVE"])   # the report is of the jars AFTER the layer (facades, library bridges, renames)
+    if os.environ.get("GAP1201_TRANSLATED_DIR"):   # keep the translated jars (what the layer leaves) for javap
+        cmd.append("-Pgap.translated.dir=" + os.environ["GAP1201_TRANSLATED_DIR"])
     print(f"gap report for {len(jars)} Forge 1.20.1 jar(s) ...", flush=True)
     r = subprocess.run(cmd, cwd=ROOT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
     detail = pathlib.Path(str(report) + ".detail.tsv")

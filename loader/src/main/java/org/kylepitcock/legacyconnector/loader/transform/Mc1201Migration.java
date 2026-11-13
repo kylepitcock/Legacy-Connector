@@ -724,6 +724,10 @@ final class Mc1201Migration {
             if (oldRet.getSort() != Type.VOID) il.add(new InsnNode(oldRet.getSize() == 2 ? Opcodes.POP2 : Opcodes.POP));
             int i = Integer.parseInt(b.ret().substring(4));
             il.add(new VarInsnNode(newArgs[i].getOpcode(Opcodes.ILOAD), slots[i]));
+        } else if (b.ret() != null && (b.ret().equals("const:true") || b.ret().equals("const:false"))) {
+            // the 1.21.1 method returns a boolean the old (void or other) method had no answer for: the constant, after the old result is dropped
+            if (oldRet.getSort() != Type.VOID) il.add(new InsnNode(oldRet.getSize() == 2 ? Opcodes.POP2 : Opcodes.POP));
+            il.add(new InsnNode(b.ret().equals("const:true") ? Opcodes.ICONST_1 : Opcodes.ICONST_0));
         } else if (b.ret() != null) {
             int dot = b.ret().lastIndexOf('.');
             String cls = b.ret().substring(0, dot);

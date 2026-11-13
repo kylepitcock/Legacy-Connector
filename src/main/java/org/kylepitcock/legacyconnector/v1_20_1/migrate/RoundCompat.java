@@ -63,6 +63,11 @@ public final class RoundCompat {
         return net.minecraft.world.item.crafting.CraftingInput.of(n, 1, items);
     }
 
+    /** Same, for a call whose argument is typed {@code CraftingContainer} (the descriptor of the rewritten call names that type). */
+    public static net.minecraft.world.item.crafting.CraftingInput craftInput(net.minecraft.world.inventory.CraftingContainer container) {
+        return craftInput((net.minecraft.world.Container) container);
+    }
+
     /** The {@code CraftingContainer} a 1.20.1 recipe override expects, from the 1.21.1 grid. */
     public static net.minecraft.world.inventory.CraftingContainer craftingContainer(net.minecraft.world.item.crafting.CraftingInput input) {
         return (net.minecraft.world.inventory.CraftingContainer) BridgeHelpers.container(input);

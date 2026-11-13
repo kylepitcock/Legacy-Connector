@@ -84,3 +84,6 @@ net/minecraft/world/level/block/StemGrownBlock	org/kylepitcock/legacyconnector/v
 net/minecraft/world/scores/Score	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyScore
 net/minecraft/world/item/crafting/SimpleCookingSerializer$CookieBaker	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyCookieBaker
 net/minecraft/world/item/crafting/SimpleCraftingRecipeSerializer$Factory	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyCraftingFactory
+# 2026-11-13 ATM 9 gap round: PositionImpl is a Vec3 (a Position) and BlockSourceImpl a BlockSource record now
+net/minecraft/core/PositionImpl	net/minecraft/world/phys/Vec3
+net/minecraft/core/BlockSourceImpl	net/minecraft/core/dispenser/BlockSource

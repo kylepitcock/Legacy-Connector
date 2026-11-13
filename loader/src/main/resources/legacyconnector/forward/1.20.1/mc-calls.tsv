@@ -635,3 +635,14 @@ net/minecraft/commands/functions/CommandFunction	fromLines	(Lnet/minecraft/resou
 # Redirect only when the old result is discarded; call sites that consume the integer are intentionally left soft-linked.
 net/minecraft/server/ServerFunctionManager	execute	(Lnet/minecraft/commands/functions/CommandFunction;Lnet/minecraft/commands/CommandSourceStack;)I	CommandFunctionCompat	execute	(Lnet/minecraft/server/ServerFunctionManager;Lnet/minecraft/commands/functions/CommandFunction;Lnet/minecraft/commands/CommandSourceStack;)V
 net/minecraft/advancements/AdvancementType	getTexture	()I	PalladiumFrameTypeCompat	getTexture	(Lnet/minecraft/advancements/AdvancementType;)I
+# 2026-11-13 ATM 9 gap round: small signature changes (GapCompat)
+net/minecraft/world/effect/MobEffect	applyEffectTick	(Lnet/minecraft/world/entity/LivingEntity;I)V	=ret	-	(Lnet/minecraft/world/entity/LivingEntity;I)Z
+net/minecraft/core/dispenser/BlockSource	<init>	(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/core/BlockPos;)V	GapCompat	newBlockSource
+net/minecraft/world/level/StructureManager	getStructureWithPieceAt	(Lnet/minecraft/core/BlockPos;Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/world/level/levelgen/structure/StructureStart;	GapCompat	structureWithPieceAt
+net/minecraft/world/level/block/entity/BrushableBlockEntity	setLootTable	(Lnet/minecraft/resources/ResourceLocation;J)V	GapCompat	setLootTable
+net/minecraft/world/entity/vehicle/AbstractMinecartContainer	setLootTable	(Lnet/minecraft/resources/ResourceLocation;J)V	GapCompat	setLootTable
+net/minecraft/world/level/SpawnData	<init>	(Lnet/minecraft/nbt/CompoundTag;Ljava/util/Optional;)V	GapCompat	newSpawnData
+net/minecraft/world/level/levelgen/structure/PoolElementStructurePiece	<init>	(Lnet/minecraft/world/level/levelgen/structure/templatesystem/StructureTemplateManager;Lnet/minecraft/world/level/levelgen/structure/pools/StructurePoolElement;Lnet/minecraft/core/BlockPos;ILnet/minecraft/world/level/block/Rotation;Lnet/minecraft/world/level/levelgen/structure/BoundingBox;)V	GapCompat	newPoolPiece
+net/minecraft/world/entity/player/Player	triggerRecipeCrafted	(Lnet/minecraft/world/item/crafting/Recipe;Ljava/util/List;)V	GapCompat	triggerRecipeCrafted
+net/minecraft/network/protocol/game/ClientboundForgetLevelChunkPacket	getX	()I	GapCompat	forgetX
+net/minecraft/network/protocol/game/ClientboundForgetLevelChunkPacket	getZ	()I	GapCompat	forgetZ
