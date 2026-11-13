@@ -15,6 +15,12 @@ import org.kylepitcock.legacyconnector.v1_7_10.bridge.DimensionBridge;
 
 /** View over the running modern server. */
 public class MinecraftServer implements ICommandSender, Runnable {
+    /**
+     * Vanilla's {@code field_147145_h}, its FIRST declared field. Mods borrowed the game's log4j logger by walking
+     * {@code MinecraftServer.class.getDeclaredFields()} and reading each with {@code get(null)} until one is a Logger; reading an
+     * instance field that way throws, so the logger must come before every instance field or the mod's logger stays null (#245).
+     */
+    public static final org.apache.logging.log4j.Logger logger = org.apache.logging.log4j.LogManager.getLogger("Minecraft");
     public static final java.io.File USER_CACHE_FILE = new java.io.File("usercache.json");
     public final legacyconnector.v1_7_10.net.minecraft.profiler.Profiler theProfiler = legacyconnector.v1_7_10.net.minecraft.profiler.Profiler.INSTANCE;
     private static final Map<net.minecraft.server.MinecraftServer, MinecraftServer> VIEWS = new WeakHashMap<>();

@@ -1,7 +1,7 @@
 package legacyconnector.v1_7_10.net.minecraft.client.renderer;
 
 /** 1.7.10's world renderer object: mods set a couple of its debug fields; rendering itself is the modern game's. */
-public class EntityRenderer {
+public class EntityRenderer implements legacyconnector.v1_7_10.net.minecraft.client.resources.IResourceManagerReloadListener {
     /** 3D anaglyph mode (gone from the modern game: always off). */
     public static boolean anaglyphEnable;
     public final ItemRenderer itemRenderer;
@@ -88,5 +88,13 @@ public class EntityRenderer {
     }
 
     public void setupOverlayRendering() {
+    }
+
+    /**
+     * 1.7.10's EntityRenderer is a resource reload listener (it reloaded its post shaders); mods that replace it register their
+     * subclass with the resource manager, so the interface must be there. The modern game reloads its own shaders.
+     */
+    @Override
+    public void onResourceManagerReload(legacyconnector.v1_7_10.net.minecraft.client.resources.IResourceManager manager) {
     }
 }
