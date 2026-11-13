@@ -344,15 +344,19 @@ public final class Forge1201ArchiveGraph {
     private static Snapshot snapshotFromZipFile(ZipFile zip, Budget budget) throws IOException {
         Set<String> names = new TreeSet<>();
         var enumeration = zip.entries();
-        boolean entryLimitReached = false;
+        int scannedEntryCount = 0;
         while (enumeration.hasMoreElements()) {
             String name = enumeration.nextElement().getName();
+            scannedEntryCount++;
             if (names.size() < MAX_ROOT_ARCHIVE_ENTRIES) {
                 names.add(name);
-            } else if (!entryLimitReached) {
-                budget.warnings.add("Archive entry inventory reached the configured "
-                        + MAX_ROOT_ARCHIVE_ENTRIES + " entry limit; additional entry names were not inventoried.");
-                entryLimitReached = true;
+            }
+            if (scannedEntryCount >= MAX_ROOT_ARCHIVE_ENTRIES) {
+                if (enumeration.hasMoreElements()) {
+                    budget.warnings.add("Archive entry inventory reached the configured "
+                            + MAX_ROOT_ARCHIVE_ENTRIES + " entry limit; remaining entries were not inspected.");
+                }
+                break;
             }
         }
 
