@@ -625,8 +625,17 @@ class PalladiumResourceCompat1201Test {
         resources.put("assets/afomni/animations/crystalsapien.animation_copy.json", crystalsapienAnimation.clone());
         put(resources, "assets/afomni/palladium/render_layers/vaxasaurian.json",
                 "{\"animation_file\":\"afomni:animations/model.humongousaur.anim.json\"}");
-        put(resources, "assets/alienevo/palladium/render_layers/aliens/alien_4/kineceleran.json",
-                "{\"animation_file\":\"alienevo:animations/xlr8.json\"}");
+        put(resources, "assets/alienevo/palladium/render_layers/aliens/alien_4/kineceleran.json", """
+                {
+                  "layers": [
+                    {"animation_file":"alienevo:animations/xlr8.json"},
+                    {"animation_file":"alienevo:animations/xlr8.json"},
+                    {"animation_file":"alienevo:animations/xlr8.json"},
+                    {"type":"geckolib:default"},
+                    {"type":"geckolib:default"}
+                  ]
+                }
+                """);
 
         assertEquals(7, PalladiumResourceCompat1201.apply(resources));
         assertTrue(java.util.Arrays.equals(humongousaurAnimation,
@@ -639,8 +648,10 @@ class PalladiumResourceCompat1201Test {
         assertFalse(resources.containsKey("assets/afomni/animations/crystalsapien.animation_copy.json"));
         assertTrue(get(resources, "assets/afomni/palladium/render_layers/vaxasaurian.json")
                 .contains("afomni:animations/model.humongousaur.animation.json"));
-        assertTrue(get(resources, "assets/alienevo/palladium/render_layers/aliens/alien_4/kineceleran.json")
-                .contains("alienevo:animations/xlr8.animation.json"));
+        String kineceleranLayer = get(
+                resources, "assets/alienevo/palladium/render_layers/aliens/alien_4/kineceleran.json");
+        assertEquals(3, occurrences(kineceleranLayer, "alienevo:animations/xlr8.animation.json"));
+        assertEquals(0, occurrences(kineceleranLayer, "alienevo:animations/xlr8.json"));
 
         assertEquals(0, PalladiumResourceCompat1201.apply(resources));
     }
