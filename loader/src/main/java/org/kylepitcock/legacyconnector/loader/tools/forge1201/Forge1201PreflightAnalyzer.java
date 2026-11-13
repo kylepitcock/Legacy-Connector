@@ -325,75 +325,75 @@ public final class Forge1201PreflightAnalyzer {
 
     public static String toText(PreflightResult result) {
         StringBuilder out = new StringBuilder();
-        out.append("Legacy Connector Forge 1.20.1 Preflight\\n")
+        out.append("Legacy Connector Forge 1.20.1 Preflight\n")
                 .append("Schema: ").append(result.schemaVersion())
-                .append(" | Analyzer: ").append(result.analyzerVersion()).append('\\n')
-                .append("Source: ").append(result.sourceJar()).append('\\n')
-                .append("Size: ").append(result.sourceSizeBytes()).append(" bytes\\n")
-                .append("SHA-256: ").append(result.sourceSha256()).append('\\n')
+                .append(" | Analyzer: ").append(result.analyzerVersion()).append('\n')
+                .append("Source: ").append(result.sourceJar()).append('\n')
+                .append("Size: ").append(result.sourceSizeBytes()).append(" bytes\n")
+                .append("SHA-256: ").append(result.sourceSha256()).append('\n')
                 .append("Target: Minecraft ").append(result.targetMinecraftVersion())
-                .append(" / NeoForge ").append(result.targetNeoForgeVersion()).append('\\n')
-                .append("Metadata: ").append(result.metadataStatus()).append('\\n');
+                .append(" / NeoForge ").append(result.targetNeoForgeVersion()).append('\n')
+                .append("Metadata: ").append(result.metadataStatus()).append('\n');
         if (result.forgeMetadata() != null) {
             out.append("Forge loader: ").append(result.forgeMetadata().modLoader())
-                    .append(' ').append(result.forgeMetadata().loaderVersion()).append('\\n')
-                    .append("Declared Minecraft range: ").append(result.forgeMetadata().minecraftVersionRange()).append('\\n')
-                    .append("Declared Forge range: ").append(result.forgeMetadata().forgeVersionRange()).append('\\n');
+                    .append(' ').append(result.forgeMetadata().loaderVersion()).append('\n')
+                    .append("Declared Minecraft range: ").append(result.forgeMetadata().minecraftVersionRange()).append('\n')
+                    .append("Declared Forge range: ").append(result.forgeMetadata().forgeVersionRange()).append('\n');
         }
-        out.append("Bytecode inventory: ").append(result.analysisStatus()).append('\\n');
-        out.append("\\nMods (").append(result.mods().size()).append("):\\n");
-        if (result.mods().isEmpty()) out.append("  none recognized\\n");
+        out.append("Bytecode inventory: ").append(result.analysisStatus()).append('\n');
+        out.append("\nMods (").append(result.mods().size()).append("):\n");
+        if (result.mods().isEmpty()) out.append("  none recognized\n");
         for (ModMetadata mod : result.mods()) {
             out.append("  ").append(mod.modId()).append(' ').append(mod.version())
-                    .append(" — ").append(mod.displayName()).append('\\n');
+                    .append(" — ").append(mod.displayName()).append('\n');
         }
         if (!result.duplicateModIds().isEmpty()) {
-            out.append("Duplicate mod IDs: ").append(String.join(", ", result.duplicateModIds())).append('\\n');
+            out.append("Duplicate mod IDs: ").append(String.join(", ", result.duplicateModIds())).append('\n');
         }
-        out.append("\\nDependencies (").append(result.dependencies().size()).append("):\\n");
-        if (result.dependencies().isEmpty()) out.append("  none parsed\\n");
+        out.append("\nDependencies (").append(result.dependencies().size()).append("):\n");
+        if (result.dependencies().isEmpty()) out.append("  none parsed\n");
         for (DependencyFinding dep : result.dependencies()) {
             out.append("  ").append(dep.declaringModId()).append(" -> ").append(dep.modId()).append(' ')
                     .append(dep.versionRange()).append(dep.mandatory() ? " [required" : " [optional")
                     .append(", ").append(dep.ordering()).append(", ").append(dep.side())
-                    .append("]: ").append(dep.status()).append('\\n');
+                    .append("]: ").append(dep.status()).append('\n');
         }
-        out.append("\\nArchive: ").append(result.archiveEntryCount()).append(" entries\\n")
+        out.append("\nArchive: ").append(result.archiveEntryCount()).append(" entries\n")
                 .append("Resource namespaces: ")
                 .append(result.resourceNamespaces().isEmpty() ? "none" : String.join(", ", result.resourceNamespaces()))
-                .append('\\n')
-                .append("Manifest attributes: ").append(result.manifestAttributes()).append('\\n')
-                .append("Coremod class: ").append(result.coreModClass() == null ? "none" : result.coreModClass()).append('\\n')
-                .append("Mixin config candidates: ").append(result.mixinConfigCandidates().size()).append('\\n');
+                .append('\n')
+                .append("Manifest attributes: ").append(result.manifestAttributes()).append('\n')
+                .append("Coremod class: ").append(result.coreModClass() == null ? "none" : result.coreModClass()).append('\n')
+                .append("Mixin config candidates: ").append(result.mixinConfigCandidates().size()).append('\n');
         for (MixinConfigCandidate candidate : result.mixinConfigCandidates()) {
-            out.append("  ").append(candidate.path()).append(" (").append(candidate.discoveredBy()).append(")\\n");
+            out.append("  ").append(candidate.path()).append(" (").append(candidate.discoveredBy()).append(")\n");
         }
         out.append("Jar-in-Jar archive paths: ")
-                .append(result.jarInJarPaths().isEmpty() ? "none" : String.join(", ", result.jarInJarPaths())).append('\\n')
-                .append("\\nBytecode: ").append(result.classCount()).append(" classes scanned\\n")
+                .append(result.jarInJarPaths().isEmpty() ? "none" : String.join(", ", result.jarInJarPaths())).append('\n')
+                .append("\nBytecode: ").append(result.classCount()).append(" classes scanned\n")
                 .append("Mod entrypoints: ")
                 .append(result.modEntrypoints().isEmpty() ? "none detected" : String.join(", ", result.modEntrypoints()))
-                .append('\\n')
-                .append("Referenced API packages: ").append(result.packageReferences()).append('\\n')
-                .append("Referenced API types: ").append(result.apiTypes().size()).append('\\n');
+                .append('\n')
+                .append("Referenced API packages: ").append(result.packageReferences()).append('\n')
+                .append("Referenced API types: ").append(result.apiTypes().size()).append('\n');
         for (ApiTypeFinding type : result.apiTypes()) {
             out.append("  ").append(type.sourceInternalName()).append(" -> ").append(type.classification());
             if (type.candidateTargetInternalName() != null) {
                 out.append(" (candidate ").append(type.candidateTargetInternalName()).append(')');
             }
-            out.append(": ").append(type.explanation()).append('\\n');
+            out.append(": ").append(type.explanation()).append('\n');
         }
         out.append("Method references: ").append(result.methodReferences().size())
-                .append(" | field references: ").append(result.fieldReferences().size()).append('\\n')
+                .append(" | field references: ").append(result.fieldReferences().size()).append('\n')
                 .append("Method call sites: ").append(result.methodCallSites().size())
-                .append(" | field call sites: ").append(result.fieldCallSites().size()).append('\\n');
+                .append(" | field call sites: ").append(result.fieldCallSites().size()).append('\n');
         if (!result.metadataWarnings().isEmpty()) {
-            out.append("\\nMetadata warnings:\\n");
-            result.metadataWarnings().forEach(warning -> out.append("  - ").append(warning).append('\\n'));
+            out.append("\nMetadata warnings:\n");
+            result.metadataWarnings().forEach(warning -> out.append("  - ").append(warning).append('\n'));
         }
-        out.append("\\nLimitations:\\n");
-        result.limitations().forEach(value -> out.append("  - ").append(value).append('\\n'));
-        return out.append("\\nConclusion: this report is not a compatibility approval. Runtime validation is still required.\\n")
+        out.append("\nLimitations:\n");
+        result.limitations().forEach(value -> out.append("  - ").append(value).append('\n'));
+        return out.append("\nConclusion: this report is not a compatibility approval. Runtime validation is still required.\n")
                 .toString();
     }
 
@@ -456,17 +456,23 @@ public final class Forge1201PreflightAnalyzer {
         if (entry.getSize() > MAX_MIXIN_JSON_BYTES) return false;
         try (InputStream in = zip.getInputStream(entry)) {
             String json = new String(in.readNBytes(MAX_MIXIN_JSON_BYTES), StandardCharsets.UTF_8);
-            return json.contains("\\"mixins\\"")
-                    && (json.contains("\\"package\\"") || json.contains("\\"plugin\\"")
-                            || json.contains("\\"client\\"") || json.contains("\\"server\\""));
+            return hasJsonKey(json, "mixins")
+                    && (hasJsonKey(json, "package") || hasJsonKey(json, "plugin")
+                            || hasJsonKey(json, "client") || hasJsonKey(json, "server"));
         } catch (IOException ignored) {
             return false;
         }
     }
 
+    private static boolean hasJsonKey(String json, String key) {
+        String quote = String.valueOf('"');
+        return json.contains(quote + key + quote);
+    }
+
     private static List<String> inspectUnsupportedTomlConstructs(String toml) {
         List<String> warnings = new ArrayList<>();
-        String[] lines = toml.split("\\\\R", -1);
+        String[] lines = toml.split("\\R", -1);
+        String tripleDoubleQuote = String.valueOf('"').repeat(3);
         for (int i = 0; i < lines.length; i++) {
             String line = stripTomlComment(lines[i]).trim();
             int equals = findUnquotedEquals(line);
@@ -476,7 +482,7 @@ public final class Forge1201PreflightAnalyzer {
                 warnings.add("mods.toml line " + (i + 1)
                         + " uses an array or inline table; the scalar metadata inspector may not interpret it.");
             }
-            if (value.startsWith("\\"\\"\\"") || value.startsWith("'''")) {
+            if (value.startsWith(tripleDoubleQuote) || value.startsWith("'''")) {
                 warnings.add("mods.toml line " + (i + 1)
                         + " starts a multiline string; the scalar metadata inspector does not parse multiline values.");
             }
