@@ -188,8 +188,10 @@ final class PalladiumResourceCompat1201 {
         // Both ScriptableAbility callbacks receive the active entity; KubeJS 7 no longer exposes Utils.server.
         rewrite(resources, ALIEN_EVO_STAT_ABILITY, new String[][] {
                 {"Utils.server.scoreboard", "entity.server.scoreboard", "2"},
-                {"entity.removeAttribute(attribute, UUID)", "entity.removeAttribute(attribute, uuid)", "1"},
-                {"entity.modifyAttribute(attribute, UUID,", "entity.modifyAttribute(attribute, uuid,", "1"}
+                {"entity.removeAttribute(attribute, UUID)",
+                        "entity.removeAttribute(attribute, 'alienevo:stat_ability/' + String(uuid).toLowerCase().replace(/[^a-z0-9/._-]/g, '_'))", "1"},
+                {"entity.modifyAttribute(attribute, UUID,",
+                        "entity.modifyAttribute(attribute, 'alienevo:stat_ability/' + String(uuid).toLowerCase().replace(/[^a-z0-9/._-]/g, '_')),", "1"}
         });
         rewriteOptionalPehkuiApi(resources);
 
