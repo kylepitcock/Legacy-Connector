@@ -219,11 +219,63 @@ public final class Vanilla1122 {
     public static legacyconnector.v1_12_2.net.minecraft.util.SoundEvent sound(String field) {
         String[] words = field.toLowerCase(java.util.Locale.ROOT).split("_");
         String id = joinSound(words, 1, words[0]);
+        if (id == null) id = renamedSound(words);
         var name = new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation("minecraft", id == null ? field.toLowerCase(java.util.Locale.ROOT).replace('_', '.') : id);
         var sound = new legacyconnector.v1_12_2.net.minecraft.util.SoundEvent(name);
         sound.setRegistryName(name);
         if (id != null) sound.mcc$modern = BuiltInRegistries.SOUND_EVENT.get(ResourceLocation.withDefaultNamespace(id));
         return sound;
+    }
+
+    /** 1.12 sound names (prefix) that 1.13 and later renamed, with their modern prefix; the first rule that gives an existing sound wins. */
+    private static final String[][] SOUND_RENAMES = {
+        {"block.cloth.", "block.wool."}, {"block.slime.", "block.slime_block."}, {"block.enderchest.", "block.ender_chest."},
+        {"block.metal.pressplate.", "block.metal_pressure_plate."}, {"block.stone.pressplate.", "block.stone_pressure_plate."},
+        {"block.wood.pressplate.", "block.wooden_pressure_plate."}, {"block.wood.button.", "block.wooden_button."},
+        {"block.note.", "block.note_block."}, {"block.waterlily.", "block.lily_pad."},
+        {"entity.armorstand.", "entity.armor_stand."}, {"entity.bobber.", "entity.fishing_bobber."},
+        {"entity.enderdragon.fireball.epld", "entity.dragon_fireball.explode"}, {"entity.enderdragon.", "entity.ender_dragon."},
+        {"entity.endermen.", "entity.enderman."}, {"entity.endereye.", "entity.ender_eye."}, {"entity.enderpearl.", "entity.ender_pearl."},
+        {"entity.firework.", "entity.firework_rocket."}, {"entity.irongolem.", "entity.iron_golem."}, {"entity.itemframe.", "entity.item_frame."},
+        {"entity.leashknot.", "entity.leash_knot."}, {"entity.lingeringpotion.", "entity.lingering_potion."},
+        {"entity.magmacube.", "entity.magma_cube."}, {"entity.small_magmacube.", "entity.magma_cube."}, {"entity.small_slime.", "entity.slime."},
+        {"entity.snowman.", "entity.snow_golem."}, {"entity.zombie.attack.door_wood", "entity.zombie.attack_wooden_door"},
+        {"entity.zombie.break.door_wood", "entity.zombie.break_wooden_door"}, {"entity.zombie_pig.", "entity.zombified_piglin."},
+        {"entity.lightning.", "entity.lightning_bolt."}, {"entity.polar_bear.baby.ambient", "entity.polar_bear.ambient_baby"},
+        {"entity.villager.trading", "entity.villager.trade"}, {"entity.evocation_illager.", "entity.evoker."},
+        {"entity.illusion_illager.", "entity.illusioner."}, {"entity.vindication_illager.", "entity.vindicator."},
+        {"entity.elderguardian.ambientland", "entity.elder_guardian.ambient_land"}, {"entity.elderguardian.", "entity.elder_guardian."},
+        {"evocation.fangs.attack", "entity.evoker_fangs.attack"}, {"evocation.illager.cast.spell", "entity.evoker.cast_spell"},
+        {"evocation.illager.death", "entity.evoker.death"}, {"evocation.illager.prepare.attack", "entity.evoker.prepare_attack"},
+        {"evocation.illager.prepare.summon", "entity.evoker.prepare_summon"}, {"evocation.illager.prepare.wololo", "entity.evoker.prepare_wololo"},
+        {"vindication.illager.", "entity.vindicator."}, {"entity.illager.cast", "entity.evoker.cast"}, {"entity.illager.mirror", "entity.illusioner.mirror"},
+        {"entity.illager.prepare", "entity.illusioner.prepare"}, {"item.armor.eqiip.elytra", "item.armor.equip_elytra"},
+        {"music.nether", "music.nether.nether_wastes"}, {"record.", "music_disc."},
+        {"e.parrot.im.enderdragon", "entity.parrot.imitate.ender_dragon"}, {"e.parrot.im.evocation.illager", "entity.parrot.imitate.evoker"},
+        {"e.parrot.im.illusion.illager", "entity.parrot.imitate.illusioner"}, {"e.parrot.im.vindication.illager", "entity.parrot.imitate.vindicator"},
+        {"e.parrot.im.magmacube", "entity.parrot.imitate.magma_cube"}, {"e.parrot.im.zombie.pigman", "entity.parrot.imitate.zombified_piglin"},
+        {"e.parrot.im.", "entity.parrot.imitate."},
+    };
+
+    /** The modern sound a renamed 1.12 sound is (block.cloth.* became block.wool.*, block.slime.* block.slime_block.*), or null. */
+    private static String renamedSound(String[] words) {
+        java.util.List<String> candidates = new java.util.ArrayList<>(java.util.List.of(words[0]));
+        for (int i = 1; i < words.length; i++) {
+            java.util.List<String> next = new java.util.ArrayList<>();
+            for (String c : candidates) {
+                next.add(c + "." + words[i]);
+                next.add(c + "_" + words[i]);
+            }
+            candidates = next;
+        }
+        for (String c : candidates) {
+            for (String[] rule : SOUND_RENAMES) {
+                if (!c.startsWith(rule[0])) continue;
+                String id = rule[1] + c.substring(rule[0].length());
+                if (BuiltInRegistries.SOUND_EVENT.containsKey(ResourceLocation.withDefaultNamespace(id))) return id;
+            }
+        }
+        return null;
     }
 
     /** Tries "." and "_" between the remaining words until the result is a sound that exists. */

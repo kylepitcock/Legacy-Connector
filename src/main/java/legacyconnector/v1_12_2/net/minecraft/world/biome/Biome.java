@@ -82,6 +82,24 @@ public class Biome extends IForgeRegistryEntry.Impl<Biome> {
         spawnLists.put(EnumCreatureType.CREATURE, spawnableCreatureList);
         spawnLists.put(EnumCreatureType.WATER_CREATURE, spawnableWaterCreatureList);
         spawnLists.put(EnumCreatureType.AMBIENT, spawnableCaveCreatureList);
+        // 1.12's Biome constructor gave every biome the vanilla mob lists; a mod biome keeps the monsters (and whatever it does not clear or replace)
+        // from there. The vanilla biomes (classes of this shim) take their lists from the modern biomes instead (Spawns1122.ensureVanilla).
+        if (!getClass().getName().startsWith("legacyconnector.v1_12_2.")) {
+            spawnableMonsterList.add(new SpawnListEntry(legacyconnector.v1_12_2.net.minecraft.entity.monster.EntitySpider.class, 100, 4, 4));
+            spawnableMonsterList.add(new SpawnListEntry(legacyconnector.v1_12_2.net.minecraft.entity.monster.EntityZombie.class, 100, 4, 4));
+            spawnableMonsterList.add(new SpawnListEntry(legacyconnector.v1_12_2.net.minecraft.entity.monster.EntityZombieVillager.class, 5, 1, 1));
+            spawnableMonsterList.add(new SpawnListEntry(legacyconnector.v1_12_2.net.minecraft.entity.monster.EntitySkeleton.class, 100, 4, 4));
+            spawnableMonsterList.add(new SpawnListEntry(legacyconnector.v1_12_2.net.minecraft.entity.monster.EntityCreeper.class, 100, 4, 4));
+            spawnableMonsterList.add(new SpawnListEntry(legacyconnector.v1_12_2.net.minecraft.entity.monster.EntitySlime.class, 100, 4, 4));
+            spawnableMonsterList.add(new SpawnListEntry(legacyconnector.v1_12_2.net.minecraft.entity.monster.EntityEnderman.class, 10, 1, 4));
+            spawnableMonsterList.add(new SpawnListEntry(legacyconnector.v1_12_2.net.minecraft.entity.monster.EntityWitch.class, 5, 1, 1));
+            spawnableCreatureList.add(new SpawnListEntry(legacyconnector.v1_12_2.net.minecraft.entity.passive.EntitySheep.class, 12, 4, 4));
+            spawnableCreatureList.add(new SpawnListEntry(legacyconnector.v1_12_2.net.minecraft.entity.passive.EntityPig.class, 10, 4, 4));
+            spawnableCreatureList.add(new SpawnListEntry(legacyconnector.v1_12_2.net.minecraft.entity.passive.EntityChicken.class, 10, 4, 4));
+            spawnableCreatureList.add(new SpawnListEntry(legacyconnector.v1_12_2.net.minecraft.entity.passive.EntityCow.class, 8, 4, 4));
+            spawnableCaveCreatureList.add(new SpawnListEntry(legacyconnector.v1_12_2.net.minecraft.entity.passive.EntityBat.class, 10, 8, 8));
+            spawnableWaterCreatureList.add(new SpawnListEntry(legacyconnector.v1_12_2.net.minecraft.entity.passive.EntitySquid.class, 10, 4, 4));
+        }
     }
 
     public BiomeDecorator createBiomeDecorator() {

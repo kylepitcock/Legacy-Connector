@@ -47,6 +47,8 @@ public final class BlockBridge1122 {
         }
         if (!opaque) p.noOcclusion();
         if (m != null && !m.blocksMovement()) p.noCollission();
+        // 1.12: rock, iron and the like drop nothing without the right tool (Forge's canHarvestBlock; the tags of ToolTags1122 say which tool)
+        if (m != null && !m.isToolNotRequired()) p.requiresCorrectToolForDrops();
         if (m != null) {
             p.pushReaction(m.mcc$pushReaction());
             if (m.getCanBurn()) p.ignitedByLava();
@@ -78,6 +80,13 @@ public final class BlockBridge1122 {
         block.mcc$modern = modern;
         synchronized (MODERN) {
             MODERN.put(block, modern);
+        }
+    }
+
+    /** The legacy blocks registered so far (mods', not vanilla's). */
+    public static java.util.List<Block> modBlocks() {
+        synchronized (MODERN) {
+            return new java.util.ArrayList<>(MODERN.keySet());
         }
     }
 

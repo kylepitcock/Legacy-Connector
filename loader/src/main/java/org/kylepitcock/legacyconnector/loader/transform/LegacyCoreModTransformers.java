@@ -59,6 +59,14 @@ public final class LegacyCoreModTransformers {
         return transformers.isEmpty();
     }
 
+    /**
+     * Bundled libraries (BundledLibraries) the coremod plugins' own classes use: argo (CodeChickenCore's DepLoader), trove (CoFH Core's ASMCore builds its
+     * method tables with gnu.trove maps in a static initializer; without it the whole CoFH class transformer was skipped and none of its hooks ran).
+     */
+    static boolean isCoremodLibrary(String fileName) {
+        return fileName.startsWith("argo-") || fileName.startsWith("trove4j-");
+    }
+
     /** The coremod API flavour a version's plugins link against: 1.7.10's, or Forge 1.6.4's (java.util.logging, getLibraryRequestClass; also 1.5.2). */
     public static LegacyVersion apiFor(LegacyVersion version) {
         return version.numericIds() ? LegacyVersion.V1_6_4 : LegacyVersion.V1_7_10;
@@ -96,11 +104,11 @@ public final class LegacyCoreModTransformers {
             ClassLoader fml = runtimeClasses == null ? apiLoader : new ShimLoader(runtimeClasses, apiLoader, api);
             List<URL> urls = new ArrayList<>();
             for (LegacyJar j : legacy) urls.add(j.path.toUri().toURL());
-            // Libraries the old launcher put on the class path that coremod plugins use (argo: CodeChickenCore's DepLoader), extracted by BundledLibraries
+            // Libraries the old launcher put on the class path that coremod plugins use (argo: CodeChickenCore's DepLoader; trove: CoFH Core's ASMCore), extracted by BundledLibraries
             try (var dirs = Files.list(cacheDir)) {
                 for (Path dir : dirs.filter(d -> Files.isDirectory(d) && d.getFileName().toString().startsWith("libs-")).toList()) {
                     try (var libs = Files.list(dir)) {
-                        for (Path lib : libs.filter(f -> f.getFileName().toString().startsWith("argo-") && f.toString().endsWith(".jar")).toList()) urls.add(lib.toUri().toURL());
+                        for (Path lib : libs.filter(f -> isCoremodLibrary(f.getFileName().toString()) && f.toString().endsWith(".jar")).toList()) urls.add(lib.toUri().toURL());
                     }
                 }
             }

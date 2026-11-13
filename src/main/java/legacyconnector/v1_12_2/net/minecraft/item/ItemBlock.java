@@ -108,6 +108,13 @@ public class ItemBlock extends Item {
         return own != null ? own : block.getCreativeTabToDisplayOn();
     }
 
+    /** 1.12: a block item lists what its block lists (Block.getSubBlocks: one stack per subtype of a block like Candy World's gummy blocks). */
+    @Override
+    public void getSubItems(legacyconnector.v1_12_2.net.minecraft.creativetab.CreativeTabs tab,
+            legacyconnector.v1_12_2.net.minecraft.util.NonNullList<ItemStack> items) {
+        if (isInCreativeTab(tab)) block.getSubBlocks(tab, items);
+    }
+
     /** A block item's tooltip is its block's. */
     @Override
     public void addInformation(ItemStack stack, legacyconnector.v1_12_2.net.minecraft.world.World worldIn, java.util.List<String> tooltip,

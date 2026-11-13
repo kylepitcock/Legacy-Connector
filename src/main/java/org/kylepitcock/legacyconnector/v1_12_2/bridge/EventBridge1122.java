@@ -353,6 +353,8 @@ public final class EventBridge1122 {
                 e.setCancellationResult(result(event.getCancellationResult()));
             }
         });
+        // shears on IShearable blocks (leaves, bushes): 1.12's ItemShears.onBlockStartBreak
+        bus.addListener(net.neoforged.bus.api.EventPriority.LOW, Shears1122::onBreak);
         bus.addListener((net.neoforged.neoforge.event.level.BlockEvent.BreakEvent e) -> {
             if (!wants(legacyconnector.v1_12_2.net.minecraftforge.event.world.BlockEvent.BreakEvent.class)) return;
             if (!(e.getLevel() instanceof net.minecraft.world.level.Level level)) return;
