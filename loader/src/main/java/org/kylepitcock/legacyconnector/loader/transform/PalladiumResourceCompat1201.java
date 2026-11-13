@@ -60,6 +60,7 @@ final class PalladiumResourceCompat1201 {
     private static final String ALIEN_EVO_DETRANSFORM = "addon/alienevo/kubejs_scripts/detransform.js";
     private static final String ALIEN_EVO_FLATTEN = "addon/alienevo/kubejs_scripts/flatten.js";
     private static final String ALIEN_EVO_DECOUPLE = "addon/alienevo/kubejs_scripts/decouple.js";
+    static final String ALIEN_EVO_CORE_REMOVAL = "addon/alienevo/kubejs_scripts/core_removal.js";
     private static final String RESOURCE_LOCATION_HELPER_MARKER =
             "function ResourceLocation(namespaceOrLocation, path) {";
     private static final String SOUND_EVENT_HELPER_MARKER =
@@ -533,6 +534,17 @@ final class PalladiumResourceCompat1201 {
                         migrated,
                         "getDecoupleSoundId(watchPrefix),",
                         "getAlienEvoSoundEvent(getDecoupleSoundId(watchPrefix)),");
+                migrated = replaceExactScriptOccurrence(
+                        path,
+                        migrated,
+                        "var watchItem = Item.of(itemId, 1, nbtData);",
+                        "var watchItem = Item.of(itemId, 1);\\n  watchItem.setNbt(nbtData);");
+            } else if (ALIEN_EVO_CORE_REMOVAL.equals(path)) {
+                migrated = replaceExactScriptOccurrence(
+                        path,
+                        migrated,
+                        "var coreItem = Item.of('alienevo:prototype_core', 1, nbtData);",
+                        "var coreItem = Item.of('alienevo:prototype_core', 1);\\n  coreItem.setNbt(nbtData);");
             }
 
             if (!migrated.equals(script)) {
@@ -943,7 +955,7 @@ final class PalladiumResourceCompat1201 {
         if (legacyCount == 0 && safeCount == 1) return script;
         if (legacyCount != 1 || safeCount != 0) {
             throw new IllegalStateException(
-                    "AlienEvo resource " + path + " has an unexpected sound-event rewrite shape: expected "
+                    "AlienEvo resource " + path + " has an unexpected compatibility rewrite shape: expected "
                             + "1 legacy occurrence, found " + legacyCount + " legacy and " + safeCount + " migrated");
         }
         return script.replace(legacy, safe);
