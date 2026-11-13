@@ -5620,6 +5620,24 @@
    "notes": "Automated check: translates offline and everything it uses exists (291 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "CoFHNetwork",
+   "version": "1.5.2.1",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (149 classes). But 21 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "CoFHWorld",
+   "version": "1.5.2.1",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (149 classes). But 21 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "Collective",
    "version": "2.25",
    "mc": "1.12.2",
@@ -7164,6 +7182,15 @@
    "date": "2026-11-13",
    "status": "fails",
    "notes": "Automated check 0.4.14: needs Minecraft or Forge features the layer does not have yet: net.minecraft.world.level.block.entity.BaseContainerBlockEntity.setCustomName, net.darkhax.bookshelf.api.Services, net.darkhax.bookshelf.api.block.IBindRenderLayer, net.darkhax.bookshelf.api.block.ILightningConductive, net.darkhax.bookshelf.api.entity.merchant.trade.VillagerSells (+20 more)."
+  },
+  {
+   "name": "DartCraft",
+   "version": "Beta 0.1.18",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (696 classes). But 18 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Dawn Of Time : Builder Edition",
@@ -9024,6 +9051,15 @@
    "date": "2026-11-13",
    "status": "loads",
    "notes": "Automated check 0.4.14: translates offline and everything it uses exists (97 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "Equivalent Exchange 3",
+   "version": "pre1h (build 16)",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (143 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Erebus",
@@ -11950,6 +11986,15 @@
    "date": "2026-11-13",
    "status": "loads",
    "notes": "Automated check 0.4.14: translates offline and everything it uses exists (665 classes). 8 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "GuiAPI",
+   "version": "0.15.6",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (666 classes). 8 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Guide-API",
@@ -14988,6 +15033,15 @@
    "notes": "Automated check 0.4.14: translates offline and everything it uses exists (552 classes). 9 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "Logistics Pipes",
+   "version": "0.7.3.7",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "fails",
+   "notes": "Automated check 0.4.14: needs code from another mod or API that is not available or does not match: buildcraft.core.TileBuffer.<init>()V, buildcraft.core.TileBuffer.initialize(Llegacyconnector.v1_7_10.net.minecraft.world.World;III)V."
+  },
+  {
    "name": "Logprot",
    "version": "1.4",
    "mc": "1.20.1",
@@ -16238,6 +16292,15 @@
    "notes": "Automated check 0.4.14: translates offline and everything it uses exists (335 classes). 7 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "Mekanism",
+   "version": "5.5.6",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (456 classes). 9 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "Mekanism Community Edition",
    "version": "9.10.51",
    "mc": "1.7.10",
@@ -16328,6 +16391,15 @@
    "notes": "Automated check 0.4.14: translates offline and everything it uses exists (36 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "MekanismGenerators",
+   "version": "5.5.6",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (41 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "MekanismTools",
    "version": "9.1.1",
    "mc": "1.7.10",
@@ -16340,6 +16412,15 @@
    "name": "MekanismTools",
    "version": "5.3.0",
    "mc": "1.4.7",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (9 classes). The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "MekanismTools",
+   "version": "5.5.6",
+   "mc": "1.5.2",
    "source": "probe",
    "date": "2026-11-13",
    "status": "loads",
@@ -16409,6 +16490,51 @@
    "notes": "Automated client survey: 5 items, 5 blocks, 2 entity types; placed 5/5 sampled blocks; spawned 2/2 entity types"
   },
   {
+   "name": "MFR Compat: Applied Energistics",
+   "version": "1.5.1R2.6.2",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (464 classes). 4 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "MFR Compat: Atum",
+   "version": "1.5.1R2.6.2",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (464 classes). 4 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "MFR Compat: BackTools",
+   "version": "1.5.1R2.6.2",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (464 classes). 4 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "MFR Compat: Biomes O' Plenty",
+   "version": "1.5.1R2.6.2",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (464 classes). 4 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "MFR Compat: Chococraft",
+   "version": "1.5.1R2.6.2",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (464 classes). 4 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "MFR Compat: ExtraBiomes",
    "version": "1.4.6R2.1.3",
    "mc": "1.4.7",
@@ -16416,6 +16542,15 @@
    "date": "2026-11-13",
    "status": "loads",
    "notes": "Automated check 0.4.14: translates offline and everything it uses exists (270 classes). 7 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "MFR Compat: ExtraBiomes",
+   "version": "1.5.1R2.6.2",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (464 classes). 4 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "MFR Compat: Forestry",
@@ -16427,6 +16562,24 @@
    "notes": "Automated check 0.4.14: translates offline and everything it uses exists (270 classes). 7 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "MFR Compat: Forestry",
+   "version": "1.5.1R2.6.2",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (464 classes). 4 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "MFR Compat: Forestry (2)",
+   "version": "1.5.1R2.6.2",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (464 classes). 4 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "MFR Compat: IC2",
    "version": "1.4.6R2.1.3",
    "mc": "1.4.7",
@@ -16434,6 +16587,33 @@
    "date": "2026-11-13",
    "status": "loads",
    "notes": "Automated check 0.4.14: translates offline and everything it uses exists (270 classes). 7 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "MFR Compat: IC2",
+   "version": "1.5.1R2.6.2",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (464 classes). 4 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "MFR Compat: Magical Crops",
+   "version": "1.5.1R2.6.2",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (464 classes). 4 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "MFR Compat: Mystcraft",
+   "version": "1.5.1R2.6.2",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (464 classes). 4 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "MFR Compat: Pam's Mods",
@@ -16445,6 +16625,15 @@
    "notes": "Automated check 0.4.14: translates offline and everything it uses exists (270 classes). 7 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "MFR Compat: Pam's Mods",
+   "version": "1.5.1R2.6.2",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (464 classes). 4 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "MFR Compat: RP2",
    "version": "1.4.6R2.1.3",
    "mc": "1.4.7",
@@ -16452,6 +16641,15 @@
    "date": "2026-11-13",
    "status": "loads",
    "notes": "Automated check 0.4.14: translates offline and everything it uses exists (270 classes). 7 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "MFR Compat: RP2",
+   "version": "1.5.1R2.6.2",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (464 classes). 4 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "MFR Compat: Soul Shards",
@@ -16463,6 +16661,24 @@
    "notes": "Automated check 0.4.14: translates offline and everything it uses exists (270 classes). 7 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "MFR Compat: SoulShards",
+   "version": "1.5.1R2.6.2",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (464 classes). 4 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "MFR Compat: Sufficient Biomes",
+   "version": "1.5.1R2.6.2",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (464 classes). 4 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "MFR Compat: Thaumcraft",
    "version": "1.4.6R2.1.3",
    "mc": "1.4.7",
@@ -16470,6 +16686,33 @@
    "date": "2026-11-13",
    "status": "loads",
    "notes": "Automated check 0.4.14: translates offline and everything it uses exists (270 classes). 7 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "MFR Compat: Thaumcraft",
+   "version": "1.5.1R2.6.2",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (464 classes). 4 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "MFR Compat: Thermal Expansion",
+   "version": "1.5.1R2.6.2",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (464 classes). 4 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "MFR Compat: TwilightForest",
+   "version": "1.5.1R2.6.2",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (464 classes). 4 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "MFR Compat: Vanilla",
@@ -16488,6 +16731,24 @@
    "date": "2026-10-28",
    "status": "loads",
    "notes": "Loads in a 130-jar server self test without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "MFR Compat: Vanilla",
+   "version": "1.5.1R2.6.2",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (464 classes). 4 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "MFR Compat: XyCraft",
+   "version": "1.5.1R2.6.2",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (464 classes). 4 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "MiddleEarth Tweaks",
@@ -16721,6 +16982,15 @@
    "date": "2026-11-13",
    "status": "loads",
    "notes": "Automated check 0.4.14: translates offline and everything it uses exists (270 classes). 7 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "MineFactory Reloaded",
+   "version": "1.5.1R2.6.2",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (464 classes). 4 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "MinefactoryReloaded Client",
@@ -17207,6 +17477,15 @@
    "date": "2026-11-07",
    "status": "loads",
    "notes": "Loads now. A 1.5.x ModLoader mod that names net.minecraft.src.BlockComparator (a class 1.4.7 did not have) and Block.redstoneComparatorIdle; both resolve now. Its Waila-style overlay is not tried."
+  },
+  {
+   "name": "mod_BlockHelper",
+   "version": "0.0.0-legacy",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (12 classes). The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "mod_bspkrsCore",
@@ -25780,6 +26059,15 @@
    "date": "2026-11-07",
    "status": "fails",
    "notes": "Automated client survey: 0 items, 0 blocks, 0 entity types; load failure during preInit: java.lang.RuntimeException: java.lang.VerifyError: Bad return type; 2 error log lines"
+  },
+  {
+   "name": "Thermal Expansion",
+   "version": "2.4.2.0",
+   "mc": "1.5.2",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (281 classes). 8 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Thermal Extra",

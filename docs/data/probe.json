@@ -53197,16 +53197,16 @@
    "date": "2026-11-13",
    "version": "0.4.14",
    "counts": {
-    "links": 26,
-    "stubs": 0,
+    "links": 33,
+    "stubs": 2,
     "gap_shim": 0,
-    "gap_mod": 1,
+    "gap_mod": 3,
     "gap_lib": 0,
     "obsolete": 0
    },
    "env": {
     "layer": "0.4.14",
-    "jars": 31,
+    "jars": 43,
     "minecraft": "1.21.1",
     "neoforge": "21.1.258",
     "shim": "f5afb5c7f826"
@@ -53245,14 +53245,26 @@
     [
      "Binnie Core",
      "1.7.3b",
-     "links",
-     ""
+     "gap_mod",
+     "forestry.api.apiculture.EnumBeeType.LARVAE:Lforestry.api.apiculture.EnumBeeType;"
     ],
     [
      "ChickenChunks",
      "1.3.2.14",
      "links",
      ""
+    ],
+    [
+     "CoFHNetwork",
+     "1.5.2.1",
+     "stubs",
+     "21 synthesized stub(s)"
+    ],
+    [
+     "DartCraft",
+     "Beta 0.1.18",
+     "stubs",
+     "18 synthesized stub(s)"
     ],
     [
      "Dimensional Anchors",
@@ -53285,6 +53297,12 @@
      ""
     ],
     [
+     "Equivalent Exchange 3",
+     "pre1h (build 16)",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
      "Forestry for Minecraft",
      "2.2.8.4",
      "links",
@@ -53295,6 +53313,12 @@
      "1.0.0.149",
      "gap_mod",
      "scala.reflect.api.Trees$ClassDefExtractor.apply(Lscala.reflect.api.Trees$ModifiersApi;Lscala.reflect.api.Names$NameApi;Lscala.collection.immutable.List;Lscala.reflect.api.Trees$TreeApi;)Lscala.reflect.api.Trees$TreeApi;"
+    ],
+    [
+     "GuiAPI",
+     "0.15.6",
+     "links",
+     "8 synthesized stub(s)"
     ],
     [
      "Immibis Core",
@@ -53327,10 +53351,46 @@
      ""
     ],
     [
+     "Logistics Pipes",
+     "0.7.3.7",
+     "gap_mod",
+     "buildcraft.core.TileBuffer.<init>()V"
+    ],
+    [
+     "Mekanism",
+     "5.5.6",
+     "links",
+     "9 synthesized stub(s)"
+    ],
+    [
+     "MekanismGenerators",
+     "5.5.6",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "MekanismTools",
+     "5.5.6",
+     "links",
+     ""
+    ],
+    [
+     "MineFactory Reloaded",
+     "1.5.1R2.6.2",
+     "links",
+     "4 synthesized stub(s)"
+    ],
+    [
      "MiscPeripherals",
      "3.3",
      "links",
-     "3 synthesized stub(s)"
+     "4 synthesized stub(s)"
+    ],
+    [
+     "mod_BlockHelper",
+     "0.0.0-legacy",
+     "links",
+     ""
     ],
     [
      "More Swords Mod",
@@ -53357,6 +53417,12 @@
      "6 synthesized stub(s)"
     ],
     [
+     "Thermal Expansion",
+     "2.4.2.0",
+     "links",
+     "8 synthesized stub(s)"
+    ],
+    [
      "Translocator",
      "1.1.0.5",
      "links",
@@ -53376,7 +53442,7 @@
     ]
    ],
    "assets": {
-    "checked": 27,
+    "checked": 38,
     "modsWithLayerProblems": 0,
     "layerRefs": 0,
     "modsWithOwnProblems": 0,
@@ -53385,9 +53451,15 @@
    "vs": {
     "date": "2026-11-08",
     "version": "",
-    "regressed": [],
+    "regressed": [
+     [
+      "Binnie Core",
+      "links",
+      "gap_mod"
+     ]
+    ],
     "fixed": [],
-    "regressedCount": 0,
+    "regressedCount": 1,
     "fixedCount": 0
    }
   },
