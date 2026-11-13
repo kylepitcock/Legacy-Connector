@@ -39,7 +39,7 @@ public final class LegacyB173BlockEntityRendererB173 implements BlockEntityRende
                     RenderContext.color(((color >> 16) & 255) / 255F, ((color >> 8) & 255) / 255F, (color & 255) / 255F, ((color >>> 24) & 255) / 255F);
                     RenderContext.bindTexture(texture);
                     ModelPartsB173.draw(part);
-                }, NativeRendererExtrasB173.create(host.getLevel(), host.getBlockPos().hashCode(), pose, buffers))) {
+                }, EntityRenderingB173.sheets(NativeRendererExtrasB173.create(host.getLevel(), host.getBlockPos().hashCode(), pose, buffers)))) {
                     renderer.render(tile, 0, 0, 0, partial);
                 }
             }

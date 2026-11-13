@@ -17,6 +17,12 @@ public final class BlockRenderB173 {
     public static boolean capturing(){return CAPTURING.get()!=null;}
     public static void register(int id,BaseMod mod){RENDERERS.put(id,mod);}
     private static final Map<Class<?>,Boolean> POSITIONED=new java.util.concurrent.ConcurrentHashMap<>();
+    /** The mod that draws blocks of this render type as items, when it implements {@code RenderInvBlock}. */
+    public static BaseMod inventoryRenderer(Block block){
+        BaseMod mod=RENDERERS.get(block.getRenderType());if(mod==null)return null;
+        try{return mod.getClass().getMethod("RenderInvBlock",BlockRenderManager.class,Block.class,int.class,int.class).getDeclaringClass()!=BaseMod.class?mod:null;}
+        catch(ReflectiveOperationException e){return null;}
+    }
     public static boolean hasRenderer(int id){return id==11 || RENDERERS.containsKey(id);}
     /** Beta sets bounds per position before every standard render, so untinted standard blocks with their own bounds are captured per position. */
     public static boolean capturesWorld(Block block){

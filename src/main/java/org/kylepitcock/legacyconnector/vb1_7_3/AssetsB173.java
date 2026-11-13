@@ -320,6 +320,19 @@ public final class AssetsB173 implements GeneratedPack.Contributor {
                 put("assets/" + itemId.getNamespace() + "/models/item/b173/" + itemId.getPath() + "_m" + meta + ".json", flatModel);
             }
         }
+        if (item instanceof LegacyB173BlockItem && !flat && BlockRenderB173.inventoryRenderer(block) != null) {
+            // The mod draws this block as an item itself (RenderInvBlock): a custom item renderer, with a block's display transforms.
+            JsonObject entity = new JsonObject();
+            entity.addProperty("parent", "minecraft:builtin/entity");
+            entity.add("display", GSON.fromJson("{\"gui\":{\"rotation\":[30,225,0],\"translation\":[0,0,0],\"scale\":[0.625,0.625,0.625]},"
+                    + "\"ground\":{\"rotation\":[0,0,0],\"translation\":[0,3,0],\"scale\":[0.25,0.25,0.25]},"
+                    + "\"fixed\":{\"rotation\":[0,0,0],\"translation\":[0,0,0],\"scale\":[0.5,0.5,0.5]},"
+                    + "\"thirdperson_righthand\":{\"rotation\":[75,45,0],\"translation\":[0,2.5,0],\"scale\":[0.375,0.375,0.375]},"
+                    + "\"firstperson_righthand\":{\"rotation\":[0,45,0],\"translation\":[0,0,0],\"scale\":[0.4,0.4,0.4]},"
+                    + "\"firstperson_lefthand\":{\"rotation\":[0,225,0],\"translation\":[0,0,0],\"scale\":[0.4,0.4,0.4]}}", JsonObject.class));
+            put("assets/" + itemId.getNamespace() + "/models/item/" + itemId.getPath() + ".json", entity);
+            return;
+        }
         JsonObject itemModel;
         if (flat) {
             itemModel = GSON.fromJson(models[0], JsonObject.class);

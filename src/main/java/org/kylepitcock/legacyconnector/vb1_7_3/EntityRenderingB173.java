@@ -30,7 +30,7 @@ public final class EntityRenderingB173 {
         return switch(path){case "/gui/items.png","gui/items.png"->ITEMS;case "/terrain.png","terrain.png"->TERRAIN;default->MobTexturesB173.resolve(mod,path);};
     }
     /** Both living and nonliving original renderers may emit immediate quads from old sheets. */
-    static RendererContextB173.Extras sheets(RendererContextB173.Extras extras){
+    public static RendererContextB173.Extras sheets(RendererContextB173.Extras extras){
         return new RendererContextB173.Extras(){
             @Override public void quad(List<RendererContextB173.Vertex> vertices,Matrix4f transform,ResourceLocation texture,RendererContextB173.Style style){var q=resolveQuad(vertices,texture);extras.quad(q.vertices(),transform,q.texture(),style);}
             @Override public void line(RendererContextB173.Vertex start,RendererContextB173.Vertex end,Matrix4f transform,RendererContextB173.Style style){extras.line(start,end,transform,style);}

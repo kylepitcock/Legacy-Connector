@@ -37,6 +37,9 @@ public class LegacyB173BlockEntity extends net.minecraft.world.level.block.entit
         super(TileEntitiesB173.type(), pos, state);
     }
 
+    /** The legacy tile entity if one already exists (no creation). */
+    public BlockEntity legacyIfPresent() { return legacy; }
+
     /** The legacy tile entity, made or loaded on first use; null if the block makes none. */
     public BlockEntity legacy() {
         if (legacy == null) {
@@ -44,6 +47,7 @@ public class LegacyB173BlockEntity extends net.minecraft.world.level.block.entit
                 if (pending != null) {
                     legacy = BlockEntity.createFromNbt(NbtB173.fromModern(pending));
                     pending = null;
+                    settleOnClient();
                 }
                 if (legacy == null && getBlockState().getBlock() instanceof LegacyB173Block host && host.legacy() instanceof BlockWithEntity bwe) {
                     legacy = bwe.createBlockEntity();
@@ -54,6 +58,18 @@ public class LegacyB173BlockEntity extends net.minecraft.world.level.block.entit
             attach();
         }
         return legacy;
+    }
+
+    /** Beta's client ticked its tile entities, which finished what {@code readFromNBT} deferred (a pipe's items wait in a load list for the next tick). */
+    private void settleOnClient() {
+        if (legacy == null || level == null || !level.isClientSide || ContentB173.tileEntityRenderer(legacy.getClass()) == null || !ticks(legacy.getClass())) return;
+        try {
+            legacy.world = World.mcc$wrap(level);
+            legacy.x = worldPosition.getX(); legacy.y = worldPosition.getY(); legacy.z = worldPosition.getZ();
+            legacy.tick();
+        } catch (RuntimeException | LinkageError e) {
+            LOG.debug("b1.7.3 client settle of {} failed: {}", legacy.getClass().getName(), e.toString());
+        }
     }
 
     /** {@code World.setBlockTileEntity}: another legacy tile entity (or none) at this place. */
@@ -127,6 +143,8 @@ public class LegacyB173BlockEntity extends net.minecraft.world.level.block.entit
     /** A tile entity that builds its own description packet (BuildCraft's engines and pipes) is the one Beta sent to the players near it. */
     private static boolean syncs(Class<?> type) {
         return SYNCS.computeIfAbsent(type, t -> {
+            // a tile entity with its own special renderer is drawn by the client from its live state (BuildCraft's pipes draw their items)
+            if (ContentB173.tileEntityRenderer(t) != null) return true;
             try { return t.getMethod("getDescriptionPacket").getDeclaringClass() != BlockEntity.class; }
             catch (ReflectiveOperationException e) { return false; }
         });
@@ -180,14 +198,16 @@ public class LegacyB173BlockEntity extends net.minecraft.world.level.block.entit
         if (!tag.contains("legacy")) return;
         CompoundTag nbt = tag.getCompound("legacy");
         BlockEntity te = legacy;
-        if (te != null && nbt.getString("id").equals(BlockEntity.mcc$idOf(te.getClass()))) {
+        // a tile entity drawn by its own renderer is made again from each update: loading in place would keep what has left it (items in a pipe)
+        boolean redrawn = te != null && level != null && level.isClientSide && ContentB173.tileEntityRenderer(te.getClass()) != null;
+        if (!redrawn && te != null && nbt.getString("id").equals(BlockEntity.mcc$idOf(te.getClass()))) {
             // a client update for the tile entity it already has: read into it, so screens keep their object
             try {
                 te.readNbt(NbtB173.fromModern(nbt));
                 attach();
                 return;
             } catch (RuntimeException | LinkageError e) {
-                // made again below
+                LOG.warn("b1.7.3 client update of {} at {} could not be read in place: {}", te.getClass().getName(), worldPosition, e.toString());
             }
         }
         legacy = null;

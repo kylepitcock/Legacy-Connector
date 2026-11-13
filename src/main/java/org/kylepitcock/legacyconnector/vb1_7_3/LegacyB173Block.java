@@ -196,7 +196,13 @@ public class LegacyB173Block extends net.minecraft.world.level.block.Block imple
     protected void onPlace(BlockState state, net.minecraft.world.level.Level level, BlockPos pos, BlockState oldState, boolean moved) {
         super.onPlace(state, level, pos, oldState, moved);
         if (level.isClientSide || oldState.is(this)) return;
+        // NeoForge runs onPlace after the item's setPlacedBy (CommonHooks.onPlaceItemIntoWorld), where Beta ran onBlockAdded first: the
+        // tile entity onBlockPlaced already configured (BuildCraft's engine orientation) must survive onBlockAdded making a fresh one.
+        var host = level.getBlockEntity(pos) instanceof LegacyB173BlockEntity h ? h : null;
+        var existing = host == null ? null : host.legacyIfPresent();
         call("onBlockAdded", () -> legacy.onPlaced(view(level), pos.getX(), pos.getY(), pos.getZ()));
+        if (existing != null && host.legacyIfPresent() != existing && host.legacyIfPresent() != null
+                && host.legacyIfPresent().getClass() == existing.getClass()) host.setLegacy(existing);
     }
 
     @Override

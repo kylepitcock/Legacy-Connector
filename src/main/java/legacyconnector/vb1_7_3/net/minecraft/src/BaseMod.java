@@ -24,6 +24,10 @@ public abstract class BaseMod {
             legacyconnector.vb1_7_3.net.minecraft.world.BlockView world,int x,int y,int z,
             legacyconnector.vb1_7_3.net.minecraft.block.Block block,int model){return false;}
 
+    /** Draws a block of a mod's own render type as an item (inventory, hand, ground); the original draws around the origin. */
+    public void RenderInvBlock(legacyconnector.vb1_7_3.net.minecraft.client.render.block.BlockRenderManager renderer,
+            legacyconnector.vb1_7_3.net.minecraft.block.Block block,int metadata,int model){}
+
     public void ModsLoaded() {}
     public void TakenFromCrafting(legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity player,
             legacyconnector.vb1_7_3.net.minecraft.item.ItemStack stack){}

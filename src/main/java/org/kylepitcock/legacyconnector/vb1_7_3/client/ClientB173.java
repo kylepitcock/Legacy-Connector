@@ -69,6 +69,22 @@ public final class ClientB173 implements MenusB173.Client {
             org.slf4j.LoggerFactory.getLogger("LegacyConnector/b1.7.3").info("b1.7.3 menu screen registered for {}",
                     net.minecraft.core.registries.BuiltInRegistries.MENU.getKey(type));
         });
+        // a mod that draws its own block as an item (RenderInvBlock) gets a custom item renderer for those items
+        modBus.addListener((net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent e) -> {
+            LegacyB173InventoryBlockRendererB173[] renderer = new LegacyB173InventoryBlockRendererB173[1];
+            for (var item : net.minecraft.core.registries.BuiltInRegistries.ITEM) {
+                if (item instanceof org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173BlockItem bi
+                        && bi.getBlock() instanceof org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Block hosted
+                        && org.kylepitcock.legacyconnector.vb1_7_3.BlockRenderB173.inventoryRenderer(hosted.legacy()) != null) {
+                    e.registerItem(new net.neoforged.neoforge.client.extensions.common.IClientItemExtensions() {
+                        @Override public net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer getCustomRenderer() {
+                            if (renderer[0] == null) renderer[0] = new LegacyB173InventoryBlockRendererB173();
+                            return renderer[0];
+                        }
+                    }, item);
+                }
+            }
+        });
         // block items with subtypes pick their model per metadata (Minefactory's machines are one block item)
         modBus.addListener((net.neoforged.fml.event.lifecycle.FMLClientSetupEvent e) -> e.enqueueWork(() -> {
             for (var item : net.minecraft.core.registries.BuiltInRegistries.ITEM) {
