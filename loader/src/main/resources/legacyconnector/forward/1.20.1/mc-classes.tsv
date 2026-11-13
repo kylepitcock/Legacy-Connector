@@ -87,3 +87,13 @@ net/minecraft/world/item/crafting/SimpleCraftingRecipeSerializer$Factory	org/kyl
 # 2026-11-13 ATM 9 gap round: PositionImpl is a Vec3 (a Position) and BlockSourceImpl a BlockSource record now
 net/minecraft/core/PositionImpl	net/minecraft/world/phys/Vec3
 net/minecraft/core/BlockSourceImpl	net/minecraft/core/dispenser/BlockSource
+# 2026-11-13 ATM 9 gap round 2: packets that moved to the common package (1.20.2) or got the Packet suffix
+net/minecraft/network/protocol/game/ServerboundCustomPayloadPacket	net/minecraft/network/protocol/common/ServerboundCustomPayloadPacket
+net/minecraft/network/protocol/game/ClientboundCustomPayloadPacket	net/minecraft/network/protocol/common/ClientboundCustomPayloadPacket
+net/minecraft/network/protocol/game/ServerboundKeepAlivePacket	net/minecraft/network/protocol/common/ServerboundKeepAlivePacket
+net/minecraft/network/protocol/game/ClientboundKeepAlivePacket	net/minecraft/network/protocol/common/ClientboundKeepAlivePacket
+net/minecraft/network/protocol/game/ServerboundPongPacket	net/minecraft/network/protocol/common/ServerboundPongPacket
+net/minecraft/network/protocol/game/ServerboundClientInformationPacket	net/minecraft/network/protocol/common/ServerboundClientInformationPacket
+net/minecraft/network/protocol/game/ServerboundResourcePackPacket	net/minecraft/network/protocol/common/ServerboundResourcePackPacket
+net/minecraft/network/protocol/game/ServerboundBlockEntityTagQuery	net/minecraft/network/protocol/game/ServerboundBlockEntityTagQueryPacket
+net/minecraft/network/protocol/game/ServerboundEntityTagQuery	net/minecraft/network/protocol/game/ServerboundEntityTagQueryPacket

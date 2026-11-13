@@ -84,4 +84,68 @@ public final class GapCompat {
     public static int forgetZ(net.minecraft.network.protocol.game.ClientboundForgetLevelChunkPacket packet) {
         return packet.pos().z;
     }
+
+    // ---- round 2: arrows, spawn rules, experience drops, simple containers
+
+    /** The 1.20.1 parameter of {@code ArrowItem.isInfinite} was a Player; the shooter in 1.21.1 may be any living entity (null for a mob). */
+    public static net.minecraft.world.entity.player.Player asPlayer(net.minecraft.world.entity.LivingEntity entity) {
+        return entity instanceof net.minecraft.world.entity.player.Player p ? p : null;
+    }
+
+    /** {@code BlockState.isValidSpawn(level, pos, placementType, entityType)}: the placement type decides in 1.21.1 (the block rule is part of it). */
+    public static boolean stateIsValidSpawn(net.minecraft.world.level.block.state.BlockState state, net.minecraft.world.level.LevelReader level, BlockPos pos,
+            net.minecraft.world.entity.SpawnPlacementType type, net.minecraft.world.entity.EntityType<?> entityType) {
+        return type.isSpawnPositionOk(level, pos, entityType);
+    }
+
+    /** {@code Block.isValidSpawn(state, level, pos, type, entityType)} (a super call): the block's own spawn predicate, vanilla's default for a plain block. */
+    public static boolean blockIsValidSpawn(net.minecraft.world.level.block.Block block, net.minecraft.world.level.block.state.BlockState state,
+            net.minecraft.world.level.BlockGetter level, BlockPos pos, net.minecraft.world.entity.SpawnPlacementType type, net.minecraft.world.entity.EntityType<?> entityType) {
+        return state.isValidSpawn(level, pos, entityType);
+    }
+
+    /** {@code BlockState.getExpDrop(level, random, pos, fortune, silkTouch)}: asks the block without a breaker or tool. */
+    public static int stateExpDrop(net.minecraft.world.level.block.state.BlockState state, net.minecraft.world.level.LevelReader level,
+            net.minecraft.util.RandomSource random, BlockPos pos, int fortune, int silkTouch) {
+        return level instanceof net.minecraft.world.level.LevelAccessor la ? state.getExpDrop(la, pos, null, null, net.minecraft.world.item.ItemStack.EMPTY) : 0;
+    }
+
+    /** {@code Block.getExpDrop(state, level, random, pos, fortune, silkTouch)} (a super call): blocks drop no experience unless they override it. */
+    public static int blockExpDrop(net.minecraft.world.level.block.Block block, net.minecraft.world.level.block.state.BlockState state,
+            net.minecraft.world.level.LevelReader level, net.minecraft.util.RandomSource random, BlockPos pos, int fortune, int silkTouch) {
+        return 0;
+    }
+
+    /** The random source of the level (the 1.20.1 {@code getExpDrop} got one). */
+    public static net.minecraft.util.RandomSource randomOf(net.minecraft.world.level.LevelAccessor level) {
+        return level.getRandom();
+    }
+
+    /** The fortune level of the tool a block was broken with (the 1.20.1 {@code getExpDrop} got the level as an argument). */
+    public static int fortune(net.minecraft.world.item.ItemStack tool) {
+        return enchantLevel(tool, net.minecraft.world.item.enchantment.Enchantments.FORTUNE);
+    }
+
+    public static int silkTouch(net.minecraft.world.item.ItemStack tool) {
+        return enchantLevel(tool, net.minecraft.world.item.enchantment.Enchantments.SILK_TOUCH);
+    }
+
+    private static int enchantLevel(net.minecraft.world.item.ItemStack tool, ResourceKey<net.minecraft.world.item.enchantment.Enchantment> key) {
+        if (tool == null || tool.isEmpty()) return 0;
+        return tool.getEnchantmentLevel(MigrateContext.provider().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(key));
+    }
+
+    /** {@code DamageSource.isIndirect()}: the direct entity is not the one that caused the damage (the negation of 1.21.1's {@code isDirect}). */
+    public static boolean isIndirect(net.minecraft.world.damagesource.DamageSource source) {
+        return !source.isDirect();
+    }
+
+    /** {@code SimpleContainer.createTag()}: the registry provider is an argument now. */
+    public static net.minecraft.nbt.ListTag containerCreateTag(net.minecraft.world.SimpleContainer container) {
+        return container.createTag(MigrateContext.provider());
+    }
+
+    public static void containerFromTag(net.minecraft.world.SimpleContainer container, net.minecraft.nbt.ListTag tag) {
+        container.fromTag(tag, MigrateContext.provider());
+    }
 }

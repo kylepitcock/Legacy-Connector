@@ -646,3 +646,12 @@ net/minecraft/world/level/levelgen/structure/PoolElementStructurePiece	<init>	(L
 net/minecraft/world/entity/player/Player	triggerRecipeCrafted	(Lnet/minecraft/world/item/crafting/Recipe;Ljava/util/List;)V	GapCompat	triggerRecipeCrafted
 net/minecraft/network/protocol/game/ClientboundForgetLevelChunkPacket	getX	()I	GapCompat	forgetX
 net/minecraft/network/protocol/game/ClientboundForgetLevelChunkPacket	getZ	()I	GapCompat	forgetZ
+# 2026-11-13 ATM 9 gap round 2: arrows, spawn rules, experience drops, containers (GapCompat)
+net/minecraft/world/item/ArrowItem	isInfinite	(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/player/Player;)Z	=	-	(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/LivingEntity;)Z
+net/minecraft/world/level/block/state/BlockState	isValidSpawn	(Lnet/minecraft/world/level/LevelReader;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/SpawnPlacementType;Lnet/minecraft/world/entity/EntityType;)Z	GapCompat	stateIsValidSpawn
+net/minecraft/world/level/block/Block	isValidSpawn	(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/SpawnPlacementType;Lnet/minecraft/world/entity/EntityType;)Z	GapCompat	blockIsValidSpawn
+net/minecraft/world/level/block/state/BlockState	getExpDrop	(Lnet/minecraft/world/level/LevelReader;Lnet/minecraft/util/RandomSource;Lnet/minecraft/core/BlockPos;II)I	GapCompat	stateExpDrop
+net/minecraft/world/level/block/Block	getExpDrop	(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/LevelReader;Lnet/minecraft/util/RandomSource;Lnet/minecraft/core/BlockPos;II)I	GapCompat	blockExpDrop
+net/minecraft/world/damagesource/DamageSource	isIndirect	()Z	GapCompat	isIndirect
+net/minecraft/world/SimpleContainer	createTag	()Lnet/minecraft/nbt/ListTag;	GapCompat	containerCreateTag
+net/minecraft/world/SimpleContainer	fromTag	(Lnet/minecraft/nbt/ListTag;)V	GapCompat	containerFromTag

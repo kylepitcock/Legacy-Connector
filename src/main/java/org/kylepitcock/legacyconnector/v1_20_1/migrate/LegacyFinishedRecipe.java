@@ -11,4 +11,21 @@ public interface LegacyFinishedRecipe {
     default net.minecraft.resources.ResourceLocation id() {
         return null;
     }
+
+    /** The members of the 1.20.1 interface a data generator reads; the recipe is not generated at run time, so the defaults only keep callers linking. */
+    default net.minecraft.resources.ResourceLocation getId() {
+        return id();
+    }
+
+    default net.minecraft.world.item.crafting.RecipeSerializer<?> getType() {
+        return null;
+    }
+
+    default com.google.gson.JsonObject serializeAdvancement() {
+        return null;
+    }
+
+    default net.minecraft.resources.ResourceLocation getAdvancementId() {
+        return null;
+    }
 }
