@@ -440,6 +440,32 @@ class PalladiumResourceCompat1201Test {
     }
 
     @Test
+    void migratesOmnitrixPaletteAndNicknamePacketSendersToKubeJs7Player() {
+        Map<String, byte[]> resources = new HashMap<>();
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_SERVER_STUFF, """
+                NetworkEvents.dataReceived('saveBeamColorData', event => {
+                    let player = event.player;
+                });
+                NetworkEvents.dataReceived('saveEnergyColorData', event => {
+                    let player = event.player;
+                });
+                NetworkEvents.dataReceived('savePaletteData', event => {
+                    let player = event.entity;
+                });
+                NetworkEvents.dataReceived('alienevo_nickname', event => {
+                    let player = event.entity;
+                });
+                """);
+
+        assertEquals(1, PalladiumResourceCompat1201.apply(resources));
+        String migrated = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_SERVER_STUFF);
+        assertEquals(4, occurrences(migrated, "let player = event.player;"));
+        assertFalse(migrated.contains("let player = event.entity;"));
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+        assertEquals(migrated, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_SERVER_STUFF));
+    }
+
+    @Test
     void migratesAlienEvoFailsafeSoundEventAndIsIdempotent() {
         Map<String, byte[]> resources = new HashMap<>();
         put(resources, PalladiumResourceCompat1201.ALIEN_EVO_FAILSAFE, """
