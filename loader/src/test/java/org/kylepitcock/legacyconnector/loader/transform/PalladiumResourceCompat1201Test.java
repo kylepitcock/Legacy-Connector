@@ -444,9 +444,9 @@ class PalladiumResourceCompat1201Test {
         String xp = get(resources, "data/alienevo/kubejs_scripts/xp.js");
         assertEquals(1, occurrences(xp, "player.server.scoreboard"));
         assertFalse(xp.contains("Utils.server"));
-        assertTrue(xp.contains("let player = source ? source.getPlayer() : null;"));
-        assertTrue(xp.contains("if (player) {"));
-        assertFalse(xp.contains("source.getEntity()"));
+        assertTrue(xp.contains("let player = source ? source.getEntity() : null;"));
+        assertTrue(xp.contains("if (player && player.isPlayer()) {"));
+        assertFalse(xp.contains("source.getPlayer()"));
         assertFalse(xp.contains("source.player"));
 
         String level = get(resources, "data/alienevo/kubejs_scripts/level_command.js");
@@ -564,6 +564,22 @@ class PalladiumResourceCompat1201Test {
     }
 
     @Test
+    void migratesAlienEvoCycleSoundsOnTheActualResourcePathAndIsIdempotent() {
+        Map<String, byte[]> resources = new HashMap<>();
+        put(resources, "addon/alienevo/kubejs_scripts/cycle_sounds.js", """
+                entity.level.playSound(null, entity.x, entity.y, entity.z,
+                        `alienevo:${soundToPlay}`, entity.getSoundSource(), soundVolume, soundPitch);
+                """);
+
+        assertEquals(1, PalladiumResourceCompat1201.apply(resources));
+        String migrated = get(resources, "addon/alienevo/kubejs_scripts/cycle_sounds.js");
+        assertTrue(migrated.contains("function getAlienEvoSoundEvent(soundId)"));
+        assertTrue(migrated.contains("getAlienEvoSoundEvent('alienevo:' + String(soundToPlay))"));
+        assertFalse(migrated.contains("`alienevo:${soundToPlay}`"));
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+        assertEquals(migrated, get(resources, "addon/alienevo/kubejs_scripts/cycle_sounds.js"));
+    }
+    @Test
     void keepsAlienEvoFlattenAbilityScriptsLoadableWithoutOptionalPehkui() {
         Map<String, byte[]> resources = new HashMap<>();
         put(resources, "addon/alienevo/kubejs_scripts/flatten.js", """
@@ -657,7 +673,7 @@ class PalladiumResourceCompat1201Test {
     }
 
     @Test
-    void removesObsoleteEditBoxTickCallFromAlienEvoPowerUi() {
+    void removesObsoleteEditBoxTickCallAndFixesHexFilteringForAlienEvoPowerUi() {
         Map<String, byte[]> resources = new HashMap<>();
         put(resources, PalladiumResourceCompat1201.ALIEN_EVO_POWER_UI, """
                 hexTextBox.render(e.guiGraphics, mouseX, mouseY, e.partialTick);
@@ -666,6 +682,8 @@ class PalladiumResourceCompat1201Test {
                     hexTextBox.tick();
                     lastTickTime = currentTime;
                 }
+                let rawTextboxValue = hexTextBox.getValue() || "";
+                let cleanedHexString = rawTextboxValue.replace(/[^0-9A-Fa-f]/g, "").slice(0, 6);
                 drawSaveButton();
                 """);
 
@@ -674,6 +692,9 @@ class PalladiumResourceCompat1201Test {
         assertTrue(migrated.contains("hexTextBox.render(e.guiGraphics, mouseX, mouseY, e.partialTick);"));
         assertTrue(migrated.contains("EditBox input is ticked by the 1.21.1 screen; no manual tick() call."));
         assertFalse(migrated.contains("hexTextBox.tick()"));
+        assertTrue(migrated.contains("rawTextboxValue.replaceAll(\"[^0-9A-Fa-f]\", \"\")"));
+        assertTrue(migrated.contains("cleanedHexString.substring(0, 6)"));
+        assertFalse(migrated.contains("rawTextboxValue.replace(/[^0-9A-Fa-f]/g"));
         assertEquals(0, PalladiumResourceCompat1201.apply(resources));
         assertEquals(migrated, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_POWER_UI));
     }
