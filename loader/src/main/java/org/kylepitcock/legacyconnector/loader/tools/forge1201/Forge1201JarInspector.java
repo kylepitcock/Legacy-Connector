@@ -54,40 +54,61 @@ public final class Forge1201JarInspector {
                 toml = new String(in.readAllBytes(), StandardCharsets.UTF_8);
             }
 
-            List<TomlSection> sections = parseTomlSections(toml);
-            Map<String, String> root = sections.stream()
-                    .filter(section -> section.name().isEmpty())
-                    .map(TomlSection::values)
-                    .findFirst()
-                    .orElse(Map.of());
-            String modLoader = root.get("modLoader");
-            String loaderVersion = root.get("loaderVersion");
-            if (!"javafml".equalsIgnoreCase(modLoader) || !hasMajorRangeLowerBound(loaderVersion, "47")) {
-                return null;
-            }
-
-            String minecraftRange = dependencyRange(sections, "minecraft");
-            String forgeRange = dependencyRange(sections, "forge");
-            if (!hasRangeLowerBound(minecraftRange, "1.20.1")
-                    || !hasMajorRangeLowerBound(forgeRange, "47")) {
-                return null;
-            }
-
-            List<Forge1201JarInfo.Mod> mods = new ArrayList<>();
-            for (TomlSection section : sections) {
-                if (!section.name().equals("mods")) continue;
-                String modId = section.values().get("modId");
-                if (modId == null || !modId.matches("[a-z][a-z0-9_]{1,63}")) continue;
-                mods.add(new Forge1201JarInfo.Mod(
-                        modId,
-                        section.values().getOrDefault("version", "unspecified"),
-                        section.values().getOrDefault("displayName", modId),
-                        dependenciesForMod(sections, modId)));
-            }
-            if (mods.isEmpty()) return null;
-
-            return new Forge1201JarInfo(path, modLoader, loaderVersion, minecraftRange, forgeRange, mods);
+            return inspectForge1201Metadata(path, toml);
         }
+    }
+
+    /**
+     * Parses a Forge metadata document already read from an archive. The caller is responsible for
+     * checking loader-marker files (for example neoforge.mods.toml) before using this Forge-specific
+     * recognizer. This overload allows bounded in-memory inspection of Jar-in-Jar archives.
+     */
+    public static Forge1201JarInfo inspectForge1201Metadata(Path path, String toml) {
+        List<TomlSection> sections = parseTomlSections(toml);
+        Map<String, String> root = sections.stream()
+                .filter(section -> section.name().isEmpty())
+                .map(TomlSection::values)
+                .findFirst()
+                .orElse(Map.of());
+        String modLoader = root.get("modLoader");
+        String loaderVersion = root.get("loaderVersion");
+        if (!"javafml".equalsIgnoreCase(modLoader) || !hasMajorRangeLowerBound(loaderVersion, "47")) {
+            return null;
+        }
+
+        String minecraftRange = dependencyRange(sections, "minecraft");
+        String forgeRange = dependencyRange(sections, "forge");
+        if (!hasRangeLowerBound(minecraftRange, "1.20.1")
+                || !hasMajorRangeLowerBound(forgeRange, "47")) {
+            return null;
+        }
+
+        List<Forge1201JarInfo.Mod> mods = readModMetadata(sections);
+        if (mods.isEmpty()) return null;
+        return new Forge1201JarInfo(path, modLoader, loaderVersion, minecraftRange, forgeRange, mods);
+    }
+
+    /**
+     * Reads scalar mod declarations from either Forge or NeoForge mods.toml text.
+     * Unsupported TOML constructs remain the caller's responsibility to disclose.
+     */
+    public static List<Forge1201JarInfo.Mod> readModMetadata(String toml) {
+        return readModMetadata(parseTomlSections(toml));
+    }
+
+    private static List<Forge1201JarInfo.Mod> readModMetadata(List<TomlSection> sections) {
+        List<Forge1201JarInfo.Mod> mods = new ArrayList<>();
+        for (TomlSection section : sections) {
+            if (!section.name().equals("mods")) continue;
+            String modId = section.values().get("modId");
+            if (modId == null || !modId.matches("[a-z][a-z0-9_]{1,63}")) continue;
+            mods.add(new Forge1201JarInfo.Mod(
+                    modId,
+                    section.values().getOrDefault("version", "unspecified"),
+                    section.values().getOrDefault("displayName", modId),
+                    dependenciesForMod(sections, modId)));
+        }
+        return List.copyOf(mods);
     }
 
     private static List<Forge1201JarInfo.Dependency> dependenciesForMod(
