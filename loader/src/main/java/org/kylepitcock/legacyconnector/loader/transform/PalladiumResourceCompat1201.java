@@ -56,7 +56,7 @@ final class PalladiumResourceCompat1201 {
                     + "    }\n"
                     + "    return soundEvent;\n"
                     + "}\n\n";
-    private static final String ALIEN_EVO_CYCLE = "addon/alienevo/kubejs_scripts/omnitrix_cycle.js";
+    private static final String ALIEN_EVO_CYCLE = "addon/alienevo/kubejs_scripts/cycle_sounds.js";
     private static final String ALIEN_EVO_DETRANSFORM = "addon/alienevo/kubejs_scripts/detransform.js";
     private static final String ALIEN_EVO_FLATTEN = "addon/alienevo/kubejs_scripts/flatten.js";
     private static final String ALIEN_EVO_DECOUPLE = "addon/alienevo/kubejs_scripts/decouple.js";
@@ -242,11 +242,21 @@ final class PalladiumResourceCompat1201 {
      * method from renderPowerScreen throws on every rendered frame.
      */
     private static int rewritePowerUiEditBoxTick(Map<String, byte[]> resources) {
-        return rewrite(resources, ALIEN_EVO_POWER_UI, new String[][] {{
-                "hexTextBox.tick();",
-                "/* EditBox input is ticked by the 1.21.1 screen; no manual tick() call. */",
-                "1"
-        }});
+        return rewrite(resources, ALIEN_EVO_POWER_UI, new String[][] {
+                {
+                        "hexTextBox.tick();",
+                        "/* EditBox input is ticked by the 1.21.1 screen; no manual tick() call. */",
+                        "1"
+                },
+                {
+                        "let cleanedHexString = rawTextboxValue.replace(/[^0-9A-Fa-f]/g, \"\").slice(0, 6);",
+                        "let cleanedHexString = rawTextboxValue.replaceAll(\"[^0-9A-Fa-f]\", \"\");\\n"
+                                + "            if (cleanedHexString.length() > 6) {\\n"
+                                + "                cleanedHexString = cleanedHexString.substring(0, 6);\\n"
+                                + "            }",
+                        "1"
+                }
+        });
     }
 
     /** Fix AlienEvo's item model reference to the existing vanilla diamond-spike texture. */
@@ -867,10 +877,10 @@ final class PalladiumResourceCompat1201 {
     }
 
     /**
-     * KubeJS 7's EntityEvents.death exposes event.source as the vanilla
-     * DamageSource. KubeJS 7 exposes the causing player through getPlayer();
-     * DamageSource has no KubeJS 6-style .player field. Without this migration
-     * the old guard silently skips player-kill XP rewards.
+     * KubeJS 7's EntityEvents.death exposes event.source as a DamageSource.
+     * Its getEntity() returns the causing entity, and EntityKJS.isPlayer()
+     * identifies player attackers. DamageSource itself has no getPlayer()
+     * method; using it silently breaks AlienEvo's player-kill XP progression.
      */
     private static int rewriteAlienEvoXpDeathPlayerAccess(Map<String, byte[]> resources) {
         String path = "data/alienevo/kubejs_scripts/xp.js";
@@ -878,13 +888,14 @@ final class PalladiumResourceCompat1201 {
         if (original == null) return 0;
 
         String script = new String(original, StandardCharsets.UTF_8);
-        String lineEnding = script.contains("\r\n") ? "\r\n" : "\n";
+        String lineEnding = script.contains("\\r\\n") ? "\\r\\n" : "\\n";
         String legacy = "if (source && source.player) {" + lineEnding
                 + "        let player = source.player;";
-        String migrated = "let player = source ? source.getPlayer() : null;" + lineEnding
-                + "    if (player) {";
+        String migrated = "let player = source ? source.getEntity() : null;" + lineEnding
+                + "    if (player && player.isPlayer()) {";
         return rewrite(resources, path, new String[][] {{legacy, migrated, "1"}});
     }
+
     /** AlienEvo's flatten ability uses one optional Pehkui class at script load time; keep the script group loadable without Pehkui. */
     private static int rewriteOptionalPehkuiApi(Map<String, byte[]> resources) {
         byte[] original = resources.get(ALIEN_EVO_FLATTEN);
