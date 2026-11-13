@@ -241,7 +241,11 @@ public abstract class EntityPlayer extends EntityLivingBase implements legacycon
 
     public void setItemInUse(ItemStack stack, int duration) {
         mcc$itemInUse = stack;
-        mcc$player().startUsingItem(net.minecraft.world.InteractionHand.MAIN_HAND);
+        var p = mcc$player();
+        // the hand that holds this stack (1.7.10 had only one); the main hand when it is in neither
+        var modern = stack == null ? null : stack.mcc$modern();
+        boolean off = modern != null && !modern.isEmpty() && p.getMainHandItem() != modern && p.getOffhandItem() == modern;
+        p.startUsingItem(off ? net.minecraft.world.InteractionHand.OFF_HAND : net.minecraft.world.InteractionHand.MAIN_HAND);
     }
 
     public ItemStack getItemInUse() {
