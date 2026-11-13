@@ -93,6 +93,60 @@ class Mc1201MigrationTest implements Opcodes {
     }
 
     @Test
+    void mobBucketConstructorBecomesLegacyFactoryCall() {
+        String mobBucket = "net/minecraft/world/item/MobBucketItem";
+        String supplier = "java/util/function/Supplier";
+        String properties = "net/minecraft/world/item/Item$Properties";
+        String oldDesc = "(L" + supplier + ";L" + supplier + ";L" + supplier + ";L" + properties + ";)V";
+        String factoryDesc = "(L" + supplier + ";L" + supplier + ";L" + supplier + ";L" + properties + ";)L" + mobBucket + ";";
+
+        ClassNode c = cls("test/Mod", "java/lang/Object");
+        MethodNode m = method(c, ACC_PUBLIC | ACC_STATIC, "make", factoryDesc);
+        m.instructions.add(new TypeInsnNode(NEW, mobBucket));
+        m.instructions.add(new InsnNode(DUP));
+        for (int i = 0; i < 4; i++) m.instructions.add(new VarInsnNode(ALOAD, i));
+        m.instructions.add(new MethodInsnNode(INVOKESPECIAL, mobBucket, "<init>", oldDesc, false));
+        m.instructions.add(new InsnNode(ARETURN));
+        m.maxLocals = 4;
+        m.maxStack = 6;
+
+        assertEquals(1, apply(c).constructors);
+        MethodInsnNode factory = find(m, MIGRATE + "LegacyMobBucketItem", "create");
+        assertNotNull(factory);
+        assertEquals(INVOKESTATIC, factory.getOpcode());
+        assertEquals(factoryDesc, factory.desc);
+        for (AbstractInsnNode in : m.instructions) {
+            assertFalse(in instanceof TypeInsnNode, "the original NEW must be replaced by the factory");
+            assertFalse(in.getOpcode() == DUP, "the constructor's DUP must be removed with NEW");
+        }
+    }
+
+    @Test
+    void mobBucketSubclassUsesLegacyStandInForItsSupplierSuperConstructor() {
+        String mobBucket = "net/minecraft/world/item/MobBucketItem";
+        String standIn = MIGRATE + "LegacyMobBucketItem";
+        String supplier = "java/util/function/Supplier";
+        String properties = "net/minecraft/world/item/Item$Properties";
+        String desc = "(L" + supplier + ";L" + supplier + ";L" + supplier + ";L" + properties + ";)V";
+
+        ClassNode c = cls("test/FishBucket", mobBucket);
+        MethodNode init = method(c, ACC_PUBLIC, "<init>", desc);
+        init.instructions.add(new VarInsnNode(ALOAD, 0));
+        for (int i = 1; i <= 4; i++) init.instructions.add(new VarInsnNode(ALOAD, i));
+        init.instructions.add(new MethodInsnNode(INVOKESPECIAL, mobBucket, "<init>", desc, false));
+        init.instructions.add(new InsnNode(RETURN));
+        init.maxLocals = 5;
+        init.maxStack = 5;
+
+        assertEquals(0, apply(c).constructors, "the supplier super call stays a constructor call on the stand-in");
+        assertEquals(standIn, c.superName);
+        MethodInsnNode superCall = find(init, standIn, "<init>");
+        assertNotNull(superCall);
+        assertEquals(INVOKESPECIAL, superCall.getOpcode());
+        assertEquals(desc, superCall.desc);
+    }
+
+    @Test
     void holderFieldIsUnwrapped() {
         ClassNode c = cls("test/Mod", "java/lang/Object");
         MethodNode m = method(c, ACC_PUBLIC | ACC_STATIC, "poison", "()L" + ME + ";");
