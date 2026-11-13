@@ -1,6 +1,6 @@
 # Forge 1.20.1 Preflight Compatibility Analyzer
 
-**Status:** Slice 1 implemented; loader tests and consolidated build passed; real-JAR smoke test pending  
+**Status:** Slice 1 implemented; loader tests and consolidated build passed; initial real-JAR task invocation exposed a Gradle script-parsing error, now patched; real report smoke test pending  
 **Working branch:** `feat/forge1201-preflight-analyzer`  
 **Baseline:** `dde40275b9b3bd48ff811afa4c863e475e8a0cdf`  
 **Target:** Forge 1.20.1-only mod JARs on NeoForge 1.21.1 / 21.1.x  
@@ -49,7 +49,7 @@ The existing root Gradle tasks are `gap1201`, `verify1201`, and `checkLegacyMod`
 6. **The mixin triage tool is isolated and heuristic.** `Mixin1201Triage` is a CLI with static process-wide indexes, uses a heuristic to identify mixin JSON files, checks many target/member names, and notes plugin presence. It does not yet form a reusable result model with complete handler-descriptor, slice, dynamic-plugin, and injection-semantics coverage. A missing Forge target must be explicitly classified as unverified/unsupported, not treated as a harmless warning.
 7. **`Gap1201` already indexes nested `META-INF/jarjar/*.jar` classes for target/peer hierarchy lookup, but its per-mod reference report scans only top-level classes.** Its first pass should be extended carefully; do not assume nested library behavior is fully covered. It currently emits text plus TSV rather than a stable preflight JSON document.
 
-These observations describe the initial source audit at the baseline above. Slice 1 has since been implemented on the working branch; its code is committed but has not yet been built or tested locally.
+These observations describe the initial source audit at the baseline above. Slice 1 has since been implemented and user-validated with loader tests and a consolidated build at the source checkpoint recorded below. The first real-JAR task invocation exposed a build-script configuration error before the analyzer could run; that expression has now been patched, but the corrected task invocation still needs user-side verification.
 
 ## Result model and reporting rules
 
@@ -160,20 +160,25 @@ Synthetic tests cover multiple mod declarations, duplicate IDs, array/multiline 
 
 **Not implemented in Slice 1:** recursive nested JAR analysis, provider JAR/version provenance, full bytecode reference coverage, target API member verification, semantic mixin validation, shim/no-op coverage joining, and pack-level graph analysis. These remain later slices.
 
-**Local validation state:** no Gradle compile, JUnit run, consolidated build, or Minecraft runtime test has been confirmed for this commit.
+**Local validation state:** user-confirmed loader tests and the consolidated clean build passed at source HEAD `9e1a1e14b597dd8ae690e9ae8c350809567dd1fc` on 2026-11-14. The first `preflight1201` invocation against Symbiote failed while configuring the root project at `build.gradle:346`, before the analyzer ran: the classpath expression placed `+` at the start of a new line and Groovy attempted `FilteredFileCollection.positive()`. The expression has been corrected in source commit `9f608a53d655f3c938a4a909da066f905f66e41e`; the user has not yet pulled or tested that fix. No real-JAR report or Minecraft runtime compatibility is confirmed.
 
-### Exact next action
+### Exact next action — rerun the corrected real-JAR smoke test
 
-1. Locate the known independent Symbiote 1.1.3 Forge 1.20.1 source JAR, if still available:
+The user located two copies of Symbiote 1.1.3. Use the primary source input, not the backup:
+`C:\Users\Administrator\legacy-connector-testbench\symbiote-1.1.3.jar`.
+
+1. From the source checkout, pull the patch and verify the exact source HEAD:
    ```powershell
-   Get-ChildItem "C:\Users\Administrator\legacy-connector-testbench" -Filter "symbiote-1.1.3.jar" -Recurse | Select-Object -ExpandProperty FullName
+   git pull --ff-only
+   git rev-parse HEAD
    ```
-2. Run the smoke test from the source checkout, using the full path returned above:
+   Expected HEAD: `9f608a53d655f3c938a4a909da066f905f66e41e`.
+2. Run from `F:\Program\intellij-idea-portable\Legacy-Connector-1.20.1`:
    ```powershell
-   .\gradlew.bat preflight1201 "-PpreflightJar=FULL_PATH_RETURNED_ABOVE" "-PpreflightModsDirs=E:\Games\PolyMC\instances\Neoforge tester\.minecraft\mods" --no-daemon --console=plain
+   .\gradlew.bat preflight1201 "-PpreflightJar=C:\Users\Administrator\legacy-connector-testbench\symbiote-1.1.3.jar" "-PpreflightModsDirs=E:\Games\PolyMC\instances\Neoforge tester\.minecraft\mods" --no-daemon --console=plain
    ```
-   `-PpreflightModsDirs` is optional; omit it if that mods directory is unavailable or irrelevant. Use another independent Forge 1.20.1 JAR if Symbiote is no longer available. Expected outputs: `build/reports/preflight1201/<jar-name>.json` and `.txt`.
-3. Share the Gradle output and both generated reports. Review metadata warnings, declared dependencies, API references/classifications, resource namespaces, mixin candidates, Jar-in-Jar paths, SHA-256, and stated limitations. Do not start Slice 2 until the real report is reviewed.
+   The fix moves the classpath `+` onto the preceding line so Groovy parses it as binary addition. The mods directory is optional; omit its property if unavailable. Expected outputs are `build/reports/preflight1201/symbiote-1.1.3.jar.json` and `build/reports/preflight1201/symbiote-1.1.3.jar.txt`.
+3. Share the complete Gradle output and both reports. Review the real report before starting Slice 2. The previous failure happened during Gradle configuration; it did not scan the JAR and produced no compatibility findings.
 
 ## Validation boundary
 
