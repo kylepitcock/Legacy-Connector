@@ -337,6 +337,48 @@ tasks.register('gap1201', JavaExec) {
     } as CommandLineArgumentProvider)
 }
 
+// Deterministic single-JAR preflight report: ./gradlew preflight1201 -PpreflightJar=path/to/mod.jar [-PpreflightModsDirs=mods,other-mods]
+tasks.register('preflight1201', JavaExec) {
+    group = 'verification'
+    description = 'Writes a deterministic JSON and text preflight report for one Forge 1.20.1 JAR.'
+    dependsOn ':loader:classes'
+    classpath = project(':loader').sourceSets.main.runtimeClasspath
+            + project(':loader').sourceSets.main.compileClasspath.filter {
+                it.name.startsWith('gson') || it.name.startsWith('slf4j')
+            }
+    mainClass = 'org.kylepitcock.legacyconnector.loader.tools.forge1201.Forge1201PreflightAnalyzer'
+    maxHeapSize = '2g'
+    argumentProviders.add({
+        def jarValue = project.findProperty('preflightJar')
+        if (!jarValue) {
+            throw new GradleException("Missing -PpreflightJar=<path to Forge 1.20.1 JAR>")
+        }
+        def sourceJar = file(jarValue.toString())
+        if (!sourceJar.isFile()) {
+            throw new GradleException("Preflight JAR does not exist: ${sourceJar}")
+        }
+        def reportDir = file(project.findProperty('preflightReportDir')
+                ?: layout.buildDirectory.dir('reports/preflight1201').get().asFile)
+        def jsonFile = project.findProperty('preflightJson')
+                ? file(project.property('preflightJson').toString())
+                : new File(reportDir, sourceJar.name + '.json')
+        def textFile = project.findProperty('preflightText')
+                ? file(project.property('preflightText').toString())
+                : new File(reportDir, sourceJar.name + '.txt')
+        def args = [sourceJar.absolutePath]
+        def dirsValue = (project.findProperty('preflightModsDirs') ?: '').toString()
+        dirsValue.split(',').collect { it.trim() }.findAll { it }.each { dir ->
+            args.add('--mods-dir')
+            args.add(file(dir).absolutePath)
+        }
+        args.add('--json')
+        args.add(jsonFile.absolutePath)
+        args.add('--text')
+        args.add(textFile.absolutePath)
+        args
+    } as CommandLineArgumentProvider)
+}
+
 // 1.20.1: link translated jars with the JVM verifier on the game class path (invalid bytecode of the migration shows up as VerifyError):
 // ./gradlew gap1201 -Pgap.translate=true -Pgap.translated.dir=build/translated1201 ..., then ./gradlew verify1201 -PverifyDir=build/translated1201
 // API difference of a library between its 1.20.1 and 1.21.1 build: ./gradlew libApiDiff -Pold=a.jar -Pnew=b.jar -Ppkgs=dev/architectury/,... [-Preport=file]
