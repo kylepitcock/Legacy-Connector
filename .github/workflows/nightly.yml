@@ -1,7 +1,8 @@
 name: Nightly build
 
 # Builds the distributable jar after every push to master and publishes it as the rolling "nightly" pre-release on GitHub
-# (one release, replaced each time; never uploaded to Modrinth or CurseForge). Stable releases (tags v<version>) stay manual and less
+# (one release titled "Nightly release": the previous one is deleted first, so the releases page never fills up; the jar name carries the
+# version; never uploaded to Modrinth or CurseForge). Stable releases (tags v<version>) stay manual and less
 # frequent; this is the cutting-edge build for people who want a fix before the next release.
 # Version of a nightly jar: <mod_version of gradle.properties>-nightly.<run number>.<short commit>.
 on:
@@ -82,5 +83,5 @@ jobs:
             -R "${{ github.repository }}" \
             --target "${{ github.sha }}" \
             --prerelease --latest=false \
-            --title "Nightly ${{ steps.ver.outputs.version }}" \
+            --title "Nightly release" \
             --notes-file notes.md
