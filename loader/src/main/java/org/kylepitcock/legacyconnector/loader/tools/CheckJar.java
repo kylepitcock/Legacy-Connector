@@ -61,7 +61,20 @@ public final class CheckJar {
         }
         for (String jarArg : jarArgs) {
             Path jarPath = Path.of(jarArg);
-            LegacyJar jar = LegacyJarInspector.inspect(jarPath);
+            LegacyJar jar;
+            try {
+                jar = LegacyJarInspector.inspect(jarPath);
+            } catch (IOException | RuntimeException e) {
+                // a truncated or corrupt archive (ZipException: zip END header not found) must not stop the check of the other jars
+                String reason = "unreadable archive, skipped: " + e;
+                System.out.println(jarPath.getFileName() + ": " + reason);
+                JsonObject r = new JsonObject();
+                r.addProperty("jar", jarPath.getFileName().toString());
+                r.addProperty("result", "skipped");
+                r.addProperty("reason", reason);
+                records.add(r);
+                continue;
+            }
             if (jar == null) {
                 System.out.println(jarPath.getFileName() + ": not a legacy Forge mod");
                 JsonObject r = new JsonObject();
@@ -92,11 +105,12 @@ public final class CheckJar {
             }
         }
         transformer.presentMods(jars.stream().flatMap(j -> j.mods.stream()).map(m -> m.legacyId).toList());
-        Map<LegacyVersion, Map<String, ClassInfo>> peers = new EnumMap<>(LegacyVersion.class);
+        Map<LegacyVersion, org.kylepitcock.legacyconnector.loader.transform.PeerClasses> peerSets = new EnumMap<>(LegacyVersion.class);
         for (LegacyJar jar : jars) {
-            Map<String, ClassInfo> p = peers.computeIfAbsent(jar.version, v -> new HashMap<>());
-            for (ClassInfo c : transformer.scan(jar)) p.putIfAbsent(c.name, c);
+            peerSets.computeIfAbsent(jar.version, v -> new org.kylepitcock.legacyconnector.loader.transform.PeerClasses()).add(transformer.scan(jar));
         }
+        Map<LegacyVersion, Map<String, ClassInfo>> peers = new EnumMap<>(LegacyVersion.class);
+        peerSets.forEach((v, set) -> peers.put(v, set.classes()));
         Map<LegacyVersion, SynthDemand> demand = new EnumMap<>(LegacyVersion.class);
         Map<Path, JsonObject> recordsByOutJar = new java.util.LinkedHashMap<>();
         List<Path> originals = new ArrayList<>();

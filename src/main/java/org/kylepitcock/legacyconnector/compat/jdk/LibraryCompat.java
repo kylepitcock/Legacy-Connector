@@ -136,6 +136,30 @@ public final class LibraryCompat {
         return list.remove(o);
     }
 
+    /** ASM 5's {@code RemappingMethodAdapter(access, desc, mv, remapper)}: ASM 9's {@code MethodRemapper} takes just the visitor and the remapper. */
+    public static org.objectweb.asm.commons.MethodRemapper methodRemapper(int access, String desc, org.objectweb.asm.MethodVisitor mv,
+            org.objectweb.asm.commons.Remapper remapper) {
+        return new org.objectweb.asm.commons.MethodRemapper(mv, remapper);
+    }
+
+    /** The same with an explicit ASM api level first (5-argument form). */
+    public static org.objectweb.asm.commons.MethodRemapper methodRemapper(int api, int access, String desc, org.objectweb.asm.MethodVisitor mv,
+            org.objectweb.asm.commons.Remapper remapper) {
+        return new org.objectweb.asm.commons.MethodRemapper(mv, remapper);
+    }
+
+    /** jopt-simple 4's {@code internal.Strings.join(List, String)} (5 takes an Iterable). */
+    public static String joinStrings(java.util.List<String> pieces, String separator) {
+        return String.join(separator, pieces);
+    }
+
+    /** Netty 4.0's {@code ChannelPromiseAggregator.add(ChannelPromise...)}, which returned the aggregator (4.1 inherits the generic one and returns the base type). */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static io.netty.channel.ChannelPromiseAggregator add(io.netty.channel.ChannelPromiseAggregator aggregator, io.netty.channel.ChannelPromise[] promises) {
+        aggregator.add((io.netty.util.concurrent.Promise[]) promises);
+        return aggregator;
+    }
+
     /** jopt-simple 4's {@code acceptsAll(Collection, String)} (5 takes a List). */
     public static joptsimple.OptionSpecBuilder acceptsAll(joptsimple.OptionParser parser, java.util.Collection<String> names, String description) {
         return parser.acceptsAll(new java.util.ArrayList<>(names), description);

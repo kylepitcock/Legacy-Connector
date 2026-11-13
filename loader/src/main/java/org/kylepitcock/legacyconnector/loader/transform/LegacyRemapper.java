@@ -29,6 +29,9 @@ public final class LegacyRemapper extends Remapper {
             Map.entry("sun/misc/BASE64Encoder", "org/kylepitcock/legacyconnector/compat/jdk/BASE64Encoder"),
             Map.entry("sun/misc/BASE64Decoder", "org/kylepitcock/legacyconnector/compat/jdk/BASE64Decoder"),
             Map.entry("sun/reflect/Reflection", "org/kylepitcock/legacyconnector/compat/jdk/Reflection"),
+            // JDK 9+: only the serialization constructors are left; mods built enum constants through newConstructorAccessor (Constructor.newInstance rejects enums)
+            Map.entry("sun/reflect/ReflectionFactory", "org/kylepitcock/legacyconnector/compat/jdk/ReflectionFactory"),
+            Map.entry("sun/reflect/ConstructorAccessor", "org/kylepitcock/legacyconnector/compat/jdk/ConstructorAccessor"),
             Map.entry("java/lang/Compiler", "org/kylepitcock/legacyconnector/compat/jdk/Compiler"),
             // Not exported since Java 9; mods constructed it instead of asking ImageIO.
             Map.entry("com/sun/imageio/plugins/png/PNGImageReader", "org/kylepitcock/legacyconnector/compat/jdk/PNGImageReader"),
