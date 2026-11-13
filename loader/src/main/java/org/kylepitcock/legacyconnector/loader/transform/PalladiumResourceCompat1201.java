@@ -175,6 +175,9 @@ final class PalladiumResourceCompat1201 {
         rewriteTransformScript(resources);
         rewrite(resources, ALIEN_EVO_POWER_UI, POWER_UI_TAB_COMPARISONS);
         rewritePowerUiEntityPreview(resources);
+        rewritePowerUiEditBoxTick(resources);
+        rewriteDiamondShardTexture(resources);
+        rewriteAfOmniParticleTextureReferences(resources);
         rewriteLegacyScriptApis(resources);
         rewriteDiamondCreationSound(resources);
         rewriteScoreboardApi(resources);
@@ -184,7 +187,9 @@ final class PalladiumResourceCompat1201 {
         rewriteAlienEvoXpDeathPlayerAccess(resources);
         // Both ScriptableAbility callbacks receive the active entity; KubeJS 7 no longer exposes Utils.server.
         rewrite(resources, ALIEN_EVO_STAT_ABILITY, new String[][] {
-                {"Utils.server.scoreboard", "entity.server.scoreboard", "2"}
+                {"Utils.server.scoreboard", "entity.server.scoreboard", "2"},
+                {"entity.removeAttribute(attribute, UUID)", "entity.removeAttribute(attribute, uuid)", "1"},
+                {"entity.modifyAttribute(attribute, UUID,", "entity.modifyAttribute(attribute, uuid,", "1"}
         });
         rewriteOptionalPehkuiApi(resources);
 
@@ -198,6 +203,67 @@ final class PalladiumResourceCompat1201 {
             }
         }
         return changedResources;
+    }
+
+    /**
+     * The legacy AlienEvo color editor calls EditBox.tick(), removed in 1.21.1.
+     * Screen input processing already ticks the widget; calling this obsolete
+     * method from renderPowerScreen throws on every rendered frame.
+     */
+    private static int rewritePowerUiEditBoxTick(Map<String, byte[]> resources) {
+        String path = ALIEN_EVO_POWER_UI;
+        byte[] original = resources.get(path);
+        if (original == null) return 0;
+
+        String script = new String(original, StandardCharsets.UTF_8);
+        String lineEnding = script.contains("\r\n") ? "\r\n" : "\n";
+        String legacy = "            let currentTime = Date.now();" + lineEnding
+                + "            if (currentTime - lastTickTime >= TICK_INTERVAL) {" + lineEnding
+                + "                hexTextBox.tick();" + lineEnding
+                + "                lastTickTime = currentTime;" + lineEnding
+                + "            }";
+        String safe = "            // The 1.21.1 screen manages EditBox input ticks.";
+        return rewrite(resources, path, new String[][] {{legacy, safe, "1"}});
+    }
+
+    /** Fix AlienEvo's item model reference to the existing vanilla diamond-spike texture. */
+    private static int rewriteDiamondShardTexture(Map<String, byte[]> resources) {
+        String path = "assets/alienevo/models/item/diamond_shard.json";
+        return rewrite(resources, path, new String[][] {{
+                "\"diamond/spike\"", "\"minecraft:diamond_spike/spike\"", "2"
+        }});
+    }
+
+    /**
+     * AFOMNI's swamp particle JSONs refer to unshipped afomni:flames_00..13
+     * sprites. The corresponding frames are supplied by AlienEvo instead.
+     * Keep the AFOMNI-specific 00b..04b sprites untouched.
+     */
+    private static int rewriteAfOmniParticleTextureReferences(Map<String, byte[]> resources) {
+        int changed = 0;
+        for (Map.Entry<String, byte[]> entry : resources.entrySet()) {
+            String path = entry.getKey();
+            if (!path.startsWith("assets/afomni/particles/") || !path.endsWith(".json")) continue;
+
+            String script = new String(entry.getValue(), StandardCharsets.UTF_8);
+            String migrated = script;
+            for (int frame = 0; frame <= 13; frame++) {
+                String suffix = frame < 10 ? "0" + frame : Integer.toString(frame);
+                String texturePath = "assets/alienevo/textures/particle/flames_" + suffix + ".png";
+                String legacyId = "\"afomni:flames_" + suffix + "\"";
+                String safeId = "\"alienevo:flames_" + suffix + "\"";
+                if (!resources.containsKey("assets/afomni/textures/particle/flames_" + suffix + ".png")
+                        && resources.containsKey(texturePath)) {
+                    migrated = migrated.replace(legacyId, safeId);
+                }
+            }
+
+            if (!migrated.equals(script)) {
+                entry.setValue(migrated.getBytes(StandardCharsets.UTF_8));
+                changed++;
+            }
+        }
+        return changed;
     }
 
     /**
@@ -683,9 +749,9 @@ final class PalladiumResourceCompat1201 {
 
     /**
      * KubeJS 7's EntityEvents.death exposes event.source as the vanilla
-     * DamageSource. The attacker is source.getEntity(); DamageSource has no
-     * KubeJS 6-style .player field. Without this migration the old guard
-     * silently skips player-kill XP rewards.
+     * DamageSource. KubeJS 7 exposes the causing player through getPlayer();
+     * DamageSource has no KubeJS 6-style .player field. Without this migration
+     * the old guard silently skips player-kill XP rewards.
      */
     private static int rewriteAlienEvoXpDeathPlayerAccess(Map<String, byte[]> resources) {
         String path = "data/alienevo/kubejs_scripts/xp.js";
@@ -696,8 +762,8 @@ final class PalladiumResourceCompat1201 {
         String lineEnding = script.contains("\r\n") ? "\r\n" : "\n";
         String legacy = "if (source && source.player) {" + lineEnding
                 + "        let player = source.player;";
-        String migrated = "let player = source ? source.getEntity() : null;" + lineEnding
-                + "    if (player && player.type === 'minecraft:player') {";
+        String migrated = "let player = source ? source.getPlayer() : null;" + lineEnding
+                + "    if (player) {";
         return rewrite(resources, path, new String[][] {{legacy, migrated, "1"}});
     }
     /** AlienEvo's flatten ability uses one optional Pehkui class at script load time; keep the script group loadable without Pehkui. */
