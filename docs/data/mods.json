@@ -11,6 +11,33 @@
    "notes": "Fails during preInit: java.lang.NoClassDefFoundError: p455w0rdslib.LibGlobals$Mods"
   },
   {
+   "name": "1.7.3  Somnia",
+   "version": "0.0.0-legacy",
+   "mc": "b1.7.3",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (6 classes). But 20 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "1.7.3 PortalGun",
+   "version": "0.0.0-legacy",
+   "mc": "b1.7.3",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (62 classes). But 486 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "1.7.3 ReiMinimap",
+   "version": "0.0.0-legacy",
+   "mc": "b1.7.3",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (26 classes). But 20 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "3dSkinLayers",
    "version": "1.2.0",
    "mc": "1.12.2",
@@ -591,8 +618,8 @@
    "mc": "b1.7.3",
    "source": "probe",
    "date": "2026-11-13",
-   "status": "loads",
-   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (187 classes). But 190 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+   "status": "fails",
+   "notes": "Automated check 0.4.14: needs code from another mod or API that is not available or does not match: legacyconnector_b173.sapi.SAPI.reachAdd(Llegacyconnector.vb1_7_3.net.minecraft.src.IReach;)V."
   },
   {
    "name": "Aether: Lost Content",
@@ -879,6 +906,15 @@
    "date": "2026-11-13",
    "status": "loads",
    "notes": "Automated check 0.4.14: translates offline and everything it uses exists (18 classes). The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "allocator patch",
+   "version": "0.0.0-legacy",
+   "mc": "b1.7.3",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (7 classes). But 23 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Allow Offline Players (LAN)",
@@ -1681,6 +1717,15 @@
    "notes": "Automated check: translates offline and everything it uses exists (43 classes). The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "Armour",
+   "version": "0.0.0-legacy",
+   "mc": "b1.7.3",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "fails",
+   "notes": "Automated check 0.4.14: needs code from another mod or API that is not available or does not match: argo.jdom.JsonNumberNode.<init>(ILlegacyconnector.vb1_7_3.net.minecraft.class_277$1;)V, argo.jdom.JsonNumberNode.a(Ljava.lang.String;)Llegacyconnector_synth.vb1_7_3.net.minecraft.network.packet.s2c.play.EntityMoveRelativeS2CPacket;, argo.saj.InvalidSyntaxException.a()V, argo.saj.InvalidSyntaxException.a(DDD)V, argo.saj.InvalidSyntaxException.a(FFFF)V (+2 more)."
+  },
+  {
    "name": "Aroma1997's Dimensional World",
    "version": "0.0.0-legacy",
    "mc": "1.7.10",
@@ -2174,6 +2219,15 @@
    "notes": "Automated check 0.4.14: translates offline and everything it uses exists (30 classes). The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "BabyAnimals",
+   "version": "0.0.0-legacy",
+   "mc": "b1.7.3",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (46 classes). But 43 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "Back To New",
    "version": "r1.0.0",
    "mc": "1.7.10",
@@ -2199,6 +2253,15 @@
    "date": "2026-10-28",
    "status": "loads",
    "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "backpack 1-4 into mods folder.png",
+   "version": "0.0.0-legacy",
+   "mc": "b1.7.3",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (5 classes). But 10 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Backpack Edited for ModdedNetwork",
@@ -2406,6 +2469,15 @@
    "date": "2026-11-07",
    "status": "partial",
    "notes": "Automated client survey: 0 items, 0 blocks, 2 entity types; spawned 2/2 entity types; spawned entities left no visible pixels (invisible?)"
+  },
+  {
+   "name": "BattleTowers",
+   "version": "0.0.0-legacy",
+   "mc": "b1.7.3",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (4 classes). But 32 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Baubles",
@@ -3620,6 +3692,15 @@
    "notes": "Automated check 0.4.14: translates offline and everything it uses exists (11 classes). The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "BlockHelper-1.0.0-b1.7.3-server",
+   "version": "0.0.0-legacy",
+   "mc": "b1.7.3",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (19 classes). 8 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "BlockLimiter. Restrict your Blocks",
    "version": "0.7.0",
    "mc": "1.7.10",
@@ -3663,6 +3744,15 @@
    "date": "2026-10-28",
    "status": "loads",
    "notes": "Loads in a GT New Horizons client session without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "BlockScanner",
+   "version": "0.0.0-legacy",
+   "mc": "b1.7.3",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (3 classes). 9 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Blood Arsenal",
@@ -4165,6 +4255,15 @@
    "date": "2026-11-07",
    "status": "loads",
    "notes": "Loads in server self test, 1.5.2 set without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "BucketCraft 1-1 1-7-3 into-mods-folder",
+   "version": "0.0.0-legacy",
+   "mc": "b1.7.3",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (6 classes). 9 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Budding Polar",
@@ -5314,6 +5413,15 @@
    "notes": "Automated check 0.4.14: translates offline and everything it uses exists (7 classes). The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "ClayMan",
+   "version": "0.0.0-legacy",
+   "mc": "b1.7.3",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (9 classes). But 13 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "Clean Swing Through Grass",
    "version": "1.8",
    "mc": "1.20.1",
@@ -6159,6 +6267,15 @@
    "notes": "Automated check 0.4.14: translates offline and everything it uses exists (1 classes). The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "CraftableMobSpawners",
+   "version": "0.0.0-legacy",
+   "mc": "b1.7.3",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (3 classes). But 16 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "Craftify",
    "version": "1.16.0",
    "mc": "1.12.2",
@@ -6867,6 +6984,15 @@
    "date": "2026-11-13",
    "status": "loads",
    "notes": "Automated check 0.4.14: translates offline and everything it uses exists (17 classes). The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "CustomRecipes",
+   "version": "0.0.0-legacy",
+   "mc": "b1.7.3",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (1 classes). The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "CustomSaveDirs",
@@ -8017,6 +8143,15 @@
    "date": "2026-11-08",
    "status": "partial",
    "notes": "Archive.org copy of the original download (SOURCES recorded, not redistributed). Fresh server run: all 9 creeper species host as native mobs with their original renderers (needed a real DataTracker, CreeperEntityModel, LightType and a few no-op legacy callbacks, added generically; the earlier 'base mob family' rejection message was misleading). Real graphical client check (with Sodium, Iris, C2ME): fire, water, ice, earth, electric, cookie and magma creepers render with their own textures and the creeper model. Their fuse white-flash overlay (getOverlayColor) is not drawn yet; explosion effects not checked."
+  },
+  {
+   "name": "ElementalCreepers v1.3 client",
+   "version": "0.0.0-legacy",
+   "mc": "b1.7.3",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (16 classes). But 17 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Elements of Alchemy",
@@ -9915,6 +10050,15 @@
    "notes": "Loads in 1.20.1 server batch 3 without errors (no blocks, items or entities of its own)."
   },
   {
+   "name": "flipflop 1-1 1-7-3 into mods folder",
+   "version": "0.0.0-legacy",
+   "mc": "b1.7.3",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (2 classes). 3 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "Floocraft",
    "version": "1.7.10-1.7",
    "mc": "1.7.10",
@@ -10066,6 +10210,15 @@
    "date": "2026-10-28",
    "status": "works",
    "notes": "Self-tested in the GT New Horizons server test: 37 items, 10 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "ForceField 1-0 1-7-3 into mods folder",
+   "version": "0.0.0-legacy",
+   "mc": "b1.7.3",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (3 classes). 3 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Forestry",
@@ -11214,6 +11367,15 @@
    "notes": "Automated check 0.4.14: translates offline and everything it uses exists (44 classes). The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "glowstone seeds 1-0 1-7-3 into mods folder",
+   "version": "0.0.0-legacy",
+   "mc": "b1.7.3",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (3 classes). 4 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "Gnetum",
    "version": "1.4.3",
    "mc": "1.12.2",
@@ -11239,6 +11401,15 @@
    "date": "2026-11-07",
    "status": "works",
    "notes": "Real client, survival, shaders: the goblin mobs (soldier, mage, chief, ranger, dire wolf) render with their skins and boss bars, and a goblin soldier killed the player. The village spawner block builds its village on a superflat world without a freeze; the earlier server freeze did not repeat and its cause is still unknown. The download is a wrapper zip with the real mod in an inner archive ('Put contents into the Mods Folder'); the textures were missing until the layer started unpacking it."
+  },
+  {
+   "name": "Gol",
+   "version": "0.0.0-legacy",
+   "mc": "b1.7.3",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (3 classes). But 34 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Golden Glitter",
@@ -12337,6 +12508,15 @@
    "notes": "Automated check 0.4.14: translates offline and everything it uses exists (3 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "IC2",
+   "version": "0.0.0-legacy",
+   "mc": "b1.7.3",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (179 classes). But 112 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "IC2 Additions",
    "version": "0.9.0",
    "mc": "1.7.10",
@@ -12388,7 +12568,7 @@
    "source": "probe",
    "date": "2026-11-13",
    "status": "loads",
-   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (9 classes). But 44 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (9 classes). But 18 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "IC2C UU-Matter",
@@ -12560,6 +12740,15 @@
    "date": "2026-11-13",
    "status": "loads",
    "notes": "Automated check 0.4.14: translates offline and everything it uses exists (82 classes). The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "Ikaros",
+   "version": "0.0.0-legacy",
+   "mc": "b1.7.3",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (1 classes). 4 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Illagers+",
@@ -12912,6 +13101,15 @@
    "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
   },
   {
+   "name": "IncredibleFungus 1-2 1-7-3 into minecraft-jar",
+   "version": "0.0.0-legacy",
+   "mc": "b1.7.3",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (4 classes). 4 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "Industrial Foregoing",
    "version": "1.12.2-1.12.2",
    "mc": "1.12.2",
@@ -12964,6 +13162,15 @@
    "date": "2026-10-28",
    "status": "works",
    "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 332 items, 56 blocks, 9 entity types; every block placed and used, every item used, every entity spawned without errors. 16 blocks did not stay placed."
+  },
+  {
+   "name": "IndustrialCraft",
+   "version": "0.0.0-legacy",
+   "mc": "b1.7.3",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "fails",
+   "notes": "Automated check 0.4.14: needs code from another mod or API that is not available or does not match: legacyconnector.vb1_7_3.net.minecraft.client.resource.language.TranslationStorage.<init>(Llegacyconnector_synth.vb1_7_3.net.minecraft.client.gui.screen.MultiplayerScreen;)V, legacyconnector.vb1_7_3.net.minecraft.entity.decoration.painting.PaintingVariants.<init>()V, legacyconnector.vb1_7_3.net.minecraft.world.chunk.ChunkSource.<init>()V, legacyconnector.vb1_7_3.net.minecraft.world.explosion.Explosion.<init>(Llegacyconnector.vb1_7_3.net.minecraft.world.World;Llegacyconnector.vb1_7_3.net.minecraft.entity.Entity;DDDF)V, legacyconnector_b173.industrialcraft.BlockAdvFurnace.a_(I)I (+280 more)."
   },
   {
    "name": "IndustrialCraft 2",
@@ -13523,6 +13730,15 @@
    "notes": "Automated check 0.4.14: translates offline and everything it uses exists (3 classes). The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "InvTweaks",
+   "version": "0.0.0-legacy",
+   "mc": "b1.7.3",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (29 classes). But 20 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "Iron Apples",
    "version": "1.0.0",
    "mc": "1.12.2",
@@ -13682,6 +13898,15 @@
    "date": "2026-11-13",
    "status": "fails",
    "notes": "Automated check 0.4.14: needs Minecraft or Forge features the layer does not have yet: com.mojang.datafixers.DataFixerBuilder.buildUnoptimized, net.minecraft.Util.isBlank, net.minecraft.core.RegistrySetBuilder.buildPatch, net.minecraft.core.particles.DustParticleOptionsBase, net.minecraft.network.protocol.game.ClientboundAddEntityPacket.<init> (+120 more)."
+  },
+  {
+   "name": "IronFence 1-1",
+   "version": "0.0.0-legacy",
+   "mc": "b1.7.3",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (3 classes). 3 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "IronMan",
@@ -14250,6 +14475,15 @@
    "notes": "Automated check 0.4.14: needs Minecraft or Forge features the layer does not have yet: net.minecraft.CrashReport.getFriendlyReport, net.minecraft.advancements.AdvancementHolder.addChild, net.minecraft.advancements.AdvancementHolder.getChatComponent, net.minecraft.advancements.AdvancementHolder.getChildren, net.minecraft.advancements.AdvancementHolder.getDisplay (+257 more)."
   },
   {
+   "name": "labyrinths",
+   "version": "0.0.0-legacy",
+   "mc": "b1.7.3",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "fails",
+   "notes": "Automated check 0.4.14: needs code from another mod or API that is not available or does not match: legacyconnector_b173.nether.ItemCustomTool.<init>(IIIIFI[Llegacyconnector.vb1_7_3.net.minecraft.block.Block;)V."
+  },
+  {
    "name": "Lachryvisions",
    "version": "1.2.1",
    "mc": "1.7.10",
@@ -14500,6 +14734,15 @@
    "date": "2026-11-13",
    "status": "fails",
    "notes": "Automated check 0.4.14: needs Minecraft or Forge features the layer does not have yet: net.minecraft.Util$OS.openUrl, net.minecraft.client.gui.components.Checkbox.<init>, net.minecraft.client.renderer.RenderBuffers.<init>, net.minecraft.util.KeyDispatchDataCodec.of, net.minecraft.world.inventory.MenuType.create (+20 more)."
+  },
+  {
+   "name": "LifeIngot",
+   "version": "0.0.0-legacy",
+   "mc": "b1.7.3",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "fails",
+   "notes": "Automated check 0.4.14: needs code from another mod or API that is not available or does not match: argo.jdom.JsonNumberNode.<init>(ILlegacyconnector.vb1_7_3.net.minecraft.class_277$1;)V, argo.jdom.JsonNumberNode.a(Ljava.lang.String;)Llegacyconnector_synth.vb1_7_3.net.minecraft.network.packet.s2c.play.EntityMoveRelativeS2CPacket;, argo.saj.InvalidSyntaxException.a()V, argo.saj.InvalidSyntaxException.a(DDD)V, argo.saj.InvalidSyntaxException.a(FFFF)V (+2 more)."
   },
   {
    "name": "LightAura",
@@ -15456,6 +15699,15 @@
    "notes": "Automated check: translates offline and everything it uses exists (268 classes). The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "MagicWands",
+   "version": "0.0.0-legacy",
+   "mc": "b1.7.3",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (2 classes). But 12 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "Mahou Tsukai",
    "version": "1.12.2-v1.19.54",
    "mc": "1.12.2",
@@ -15616,6 +15868,15 @@
    "date": "2026-11-13",
    "status": "loads",
    "notes": "Automated check 0.4.14: translates offline and everything it uses exists (2 classes). The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "Marbles",
+   "version": "0.0.0-legacy",
+   "mc": "b1.7.3",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (2 classes). 7 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Mars",
@@ -16029,6 +16290,15 @@
    "date": "2026-11-13",
    "status": "loads",
    "notes": "Automated check 0.4.14: translates offline and everything it uses exists (9 classes). The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "melaphyre 1-4 1-7-3 into minecraft jar",
+   "version": "0.0.0-legacy",
+   "mc": "b1.7.3",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (6 classes). 8 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Menu Mobs",
@@ -16732,6 +17002,15 @@
    "notes": "Automated check 0.4.14: translates offline and everything it uses exists (4 classes). The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "mod Fossil",
+   "version": "0.0.0-legacy",
+   "mc": "b1.7.3",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (47 classes). But 71 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "Mod Tweaker",
    "version": "2 0.12.0",
    "mc": "1.7.10",
@@ -16775,6 +17054,15 @@
    "date": "2026-11-13",
    "status": "fails",
    "notes": "Automated check 0.4.14: needs code from another mod or API that is not available or does not match: mekanism.common.recipe.RecipeHandler$Recipe.SOLAR_EVAPORATION_PLANT:Lmekanism.common.recipe.RecipeHandler$Recipe;."
+  },
+  {
+   "name": "mod Zeppelin-client",
+   "version": "0.0.0-legacy",
+   "mc": "b1.7.3",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (21 classes). But 70 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "mod_BlockHelper",
@@ -18242,6 +18530,15 @@
    "notes": "Archive.org copy of the original download (SOURCES recorded, not redistributed). Fresh server run: translates, constructs, 35 blocks and 110 items registered, 0 failed block callbacks (4 right clicks), 3 tile entities saved and loaded back. Real graphical client check (with Sodium, Iris and C2ME): its ore, wood, glass and shroom blocks render with their own textures. Mobs, world generation and the Nether-style dimension were not exercised. The ScotTools variant of the zip needs ScotTools."
   },
   {
+   "name": "NetherCraftv1.9b - Client-Side",
+   "version": "0.0.0-legacy",
+   "mc": "b1.7.3",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (95 classes). But 53 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "Netherite 1.7.10",
    "version": "1.2",
    "mc": "1.7.10",
@@ -19473,6 +19770,15 @@
    "notes": "Automated check: translates offline and everything it uses exists (45 classes). The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "palmLeaves",
+   "version": "0.0.0-legacy",
+   "mc": "b1.7.3",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (28 classes). But 18 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "Pam's Cookables",
    "version": "1.1",
    "mc": "1.12.2",
@@ -19680,6 +19986,15 @@
    "notes": "Automated check 0.4.14: translates offline and everything it uses exists (46 classes). The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "pigmen",
+   "version": "0.0.0-legacy",
+   "mc": "b1.7.3",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (5 classes). 6 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "PigPen",
    "version": "15.0.2",
    "mc": "1.20.1",
@@ -19813,6 +20128,15 @@
    "date": "2026-11-13",
    "status": "loads",
    "notes": "Automated check 0.4.14: translates offline and everything it uses exists (12 classes). The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "PlasticCraft  v2.1.3",
+   "version": "0.0.0-legacy",
+   "mc": "b1.7.3",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (39 classes). But 120 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Platform",
@@ -20128,6 +20452,15 @@
    "date": "2026-10-28",
    "status": "loads",
    "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "potatoes 1-0 1-7-3 modloader",
+   "version": "0.0.0-legacy",
+   "mc": "b1.7.3",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (6 classes). 7 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Potion Core",
@@ -21280,6 +21613,15 @@
    "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
+   "name": "RedstoneLogicGates",
+   "version": "0.0.0-legacy",
+   "mc": "b1.7.3",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (4 classes). 5 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "Refined Polymorphism",
    "version": "0.1.1-1.20.1",
    "mc": "1.20.1",
@@ -22087,6 +22429,15 @@
    "notes": "Automated check 0.4.14: translates offline and everything it uses exists (32 classes). 7 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "SandCastles 1-0 for 1-7-3  by MightyPork  into minecraft-jar",
+   "version": "0.0.0-legacy",
+   "mc": "b1.7.3",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (2 classes). 2 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "Santa's Decor",
    "version": "1.0.1",
    "mc": "1.7.10",
@@ -22103,6 +22454,15 @@
    "date": "2026-11-13",
    "status": "loads",
    "notes": "Automated check 0.4.14: translates offline and everything it uses exists (22 classes). The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "SAPI",
+   "version": "0.0.0-legacy",
+   "mc": "b1.7.3",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "fails",
+   "notes": "Automated check 0.4.14: needs code from another mod or API that is not available or does not match: legacyconnector.vb1_7_3.net.minecraft.world.explosion.Explosion.<init>(Llegacyconnector.vb1_7_3.net.minecraft.world.World;Llegacyconnector.vb1_7_3.net.minecraft.entity.Entity;DDDF)V."
   },
   {
    "name": "Saplanting",
@@ -23031,6 +23391,15 @@
    "notes": "Automated check 0.4.14: needs Minecraft or Forge features the layer does not have yet: net.minecraft.world.entity.ai.behavior.BehaviorUtils.lockGazeAndWalkToEachOther, net.neoforged.neoforge.common.util.BrainBuilder, legacyconnector.v1_20_1.net.minecraftforge.registries.ForgeRegistries$Keys.MEMORY_MODULE_TYPES, legacyconnector.v1_20_1.net.minecraftforge.registries.ForgeRegistries$Keys.SENSOR_TYPES."
   },
   {
+   "name": "SmokingChimney",
+   "version": "0.0.0-legacy",
+   "mc": "b1.7.3",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "fails",
+   "notes": "Automated check 0.4.14: needs code from another mod or API that is not available or does not match: argo.saj.InvalidSyntaxException.<init>(Llegacyconnector_synth.vb1_7_3.net.minecraft.block.ObsidianBlock;DDDDDDF)V."
+  },
+  {
    "name": "Smooth Third Person Camera (STPC)",
    "version": "2.0.0",
    "mc": "1.7.10",
@@ -23119,6 +23488,51 @@
    "date": "2026-11-13",
    "status": "loads",
    "notes": "Automated check 0.4.14: translates offline and everything it uses exists (111 classes). The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "Somnia_GuiBed",
+   "version": "0.0.0-legacy",
+   "mc": "b1.7.3",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (6 classes). But 20 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "Somnia_GuiBedInfo",
+   "version": "0.0.0-legacy",
+   "mc": "b1.7.3",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (6 classes). But 20 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "Somnia_GuiCheckbox",
+   "version": "0.0.0-legacy",
+   "mc": "b1.7.3",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (6 classes). But 20 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "Somnia_GuiToggleButton",
+   "version": "0.0.0-legacy",
+   "mc": "b1.7.3",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (6 classes). But 20 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "Somnia_SleepingScreenRenderer",
+   "version": "0.0.0-legacy",
+   "mc": "b1.7.3",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (6 classes). But 20 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "SonarCore",
@@ -23335,6 +23749,15 @@
    "date": "2026-10-28",
    "status": "works",
    "notes": "Self-tested in a 130-jar server self test: 3 items, 3 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "SpringBoots 1-2 1-7-3 into fods folder",
+   "version": "0.0.0-legacy",
+   "mc": "b1.7.3",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (1 classes). 5 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Sprint on CTRL",
@@ -25359,6 +25782,15 @@
    "notes": "Automated check 0.4.14: translates offline and everything it uses exists (56 classes). The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "Timber r",
+   "version": "0.0.0-legacy",
+   "mc": "b1.7.3",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (2 classes). 3 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "TimberReplant",
    "version": "5.0.0",
    "mc": "1.12.2",
@@ -25753,6 +26185,15 @@
    "notes": "Loads in 1.20.1 server batch 3 without errors (no blocks, items or entities of its own)."
   },
   {
+   "name": "Tools",
+   "version": "0.0.0-legacy",
+   "mc": "b1.7.3",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "fails",
+   "notes": "Automated check 0.4.14: needs code from another mod or API that is not available or does not match: argo.jdom.JsonNumberNode.<init>(ILlegacyconnector.vb1_7_3.net.minecraft.class_277$1;)V, argo.jdom.JsonNumberNode.a(Ljava.lang.String;)Llegacyconnector_synth.vb1_7_3.net.minecraft.network.packet.s2c.play.EntityMoveRelativeS2CPacket;, argo.saj.InvalidSyntaxException.a()V, argo.saj.InvalidSyntaxException.a(DDD)V, argo.saj.InvalidSyntaxException.a(FFFF)V (+2 more)."
+  },
+  {
    "name": "ToolStats",
    "version": "16.0.10",
    "mc": "1.20.1",
@@ -26145,8 +26586,8 @@
    "mc": "b1.7.3",
    "source": "probe",
    "date": "2026-11-13",
-   "status": "loads",
-   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (187 classes). But 190 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+   "status": "fails",
+   "notes": "Automated check 0.4.14: needs code from another mod or API that is not available or does not match: legacyconnector_b173.sapi.SAPI.reachAdd(Llegacyconnector.vb1_7_3.net.minecraft.src.IReach;)V."
   },
   {
    "name": "Tropicraft",

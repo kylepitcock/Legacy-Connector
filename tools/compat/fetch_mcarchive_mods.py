@@ -109,6 +109,10 @@ def main():
                 print(f"  {name}: SHA-256 mismatch, skipped", file=sys.stderr)
                 failed += 1
                 continue
+            if data[:2] != b"PK":  # a .zip name on a RAR/7z/HTML payload: the probe reads zip archives only
+                print(f"  {name}: not a zip archive, skipped", file=sys.stderr)
+                failed += 1
+                continue
             target.write_bytes(data)
             done += 1
             print(f"{name}  ({info.get('name')}, {pick.get('name')})", flush=True)

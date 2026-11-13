@@ -89813,6 +89813,300 @@
     "regressedCount": 0,
     "fixedCount": 0
    }
+  },
+  {
+   "mc": "b1.7.3",
+   "date": "2026-11-13",
+   "version": "0.4.14",
+   "counts": {
+    "links": 18,
+    "stubs": 20,
+    "gap_shim": 0,
+    "gap_mod": 6,
+    "gap_lib": 0,
+    "obsolete": 0
+   },
+   "env": {
+    "layer": "0.4.14",
+    "jars": 85,
+    "minecraft": "1.21.1",
+    "neoforge": "21.1.258",
+    "shim": "f5afb5c7f826"
+   },
+   "mods": [
+    [
+     "1.7.3 PortalGun",
+     "0.0.0-legacy",
+     "stubs",
+     "486 synthesized stub(s)"
+    ],
+    [
+     "1.7.3 ReiMinimap",
+     "0.0.0-legacy",
+     "stubs",
+     "20 synthesized stub(s)"
+    ],
+    [
+     "Aether",
+     "0.0.0-legacy",
+     "gap_mod",
+     "legacyconnector_b173.sapi.SAPI.reachAdd(Llegacyconnector.vb1_7_3.net.minecraft.src.IReach;)V"
+    ],
+    [
+     "allocator patch",
+     "0.0.0-legacy",
+     "stubs",
+     "23 synthesized stub(s)"
+    ],
+    [
+     "Armour",
+     "0.0.0-legacy",
+     "gap_mod",
+     "argo.jdom.JsonNumberNode.<init>(ILlegacyconnector.vb1_7_3.net.minecraft.class_277$1;)V"
+    ],
+    [
+     "BabyAnimals",
+     "0.0.0-legacy",
+     "stubs",
+     "43 synthesized stub(s)"
+    ],
+    [
+     "backpack 1-4 into mods folder.png",
+     "0.0.0-legacy",
+     "stubs",
+     "10 synthesized stub(s)"
+    ],
+    [
+     "BattleTowers",
+     "0.0.0-legacy",
+     "stubs",
+     "32 synthesized stub(s)"
+    ],
+    [
+     "BlockHelper-1.0.0-b1.7.3-server",
+     "0.0.0-legacy",
+     "links",
+     "8 synthesized stub(s)"
+    ],
+    [
+     "BlockScanner",
+     "0.0.0-legacy",
+     "links",
+     "9 synthesized stub(s)"
+    ],
+    [
+     "BucketCraft 1-1 1-7-3 into-mods-folder",
+     "0.0.0-legacy",
+     "links",
+     "9 synthesized stub(s)"
+    ],
+    [
+     "ClayMan",
+     "0.0.0-legacy",
+     "stubs",
+     "13 synthesized stub(s)"
+    ],
+    [
+     "CraftableMobSpawners",
+     "0.0.0-legacy",
+     "stubs",
+     "16 synthesized stub(s)"
+    ],
+    [
+     "CustomRecipes",
+     "0.0.0-legacy",
+     "links",
+     ""
+    ],
+    [
+     "ElementalCreepers v1.3 client",
+     "0.0.0-legacy",
+     "stubs",
+     "17 synthesized stub(s)"
+    ],
+    [
+     "flipflop 1-1 1-7-3 into mods folder",
+     "0.0.0-legacy",
+     "links",
+     "3 synthesized stub(s)"
+    ],
+    [
+     "ForceField 1-0 1-7-3 into mods folder",
+     "0.0.0-legacy",
+     "links",
+     "3 synthesized stub(s)"
+    ],
+    [
+     "glowstone seeds 1-0 1-7-3 into mods folder",
+     "0.0.0-legacy",
+     "links",
+     "4 synthesized stub(s)"
+    ],
+    [
+     "Gol",
+     "0.0.0-legacy",
+     "stubs",
+     "34 synthesized stub(s)"
+    ],
+    [
+     "IC2",
+     "0.0.0-legacy",
+     "stubs",
+     "112 synthesized stub(s)"
+    ],
+    [
+     "IC2_AdvMachine",
+     "0.0.0-legacy",
+     "stubs",
+     "18 synthesized stub(s)"
+    ],
+    [
+     "Ikaros",
+     "0.0.0-legacy",
+     "links",
+     "4 synthesized stub(s)"
+    ],
+    [
+     "IncredibleFungus 1-2 1-7-3 into minecraft-jar",
+     "0.0.0-legacy",
+     "links",
+     "4 synthesized stub(s)"
+    ],
+    [
+     "IndustrialCraft",
+     "0.0.0-legacy",
+     "gap_mod",
+     "legacyconnector.vb1_7_3.net.minecraft.client.resource.language.TranslationStorage.<init>(Llegacyconnector_synth.vb1_7_3.net.minecraft.client.gui.screen.MultiplayerScreen;)V"
+    ],
+    [
+     "InvTweaks",
+     "0.0.0-legacy",
+     "stubs",
+     "20 synthesized stub(s)"
+    ],
+    [
+     "IronFence 1-1",
+     "0.0.0-legacy",
+     "links",
+     "3 synthesized stub(s)"
+    ],
+    [
+     "labyrinths",
+     "0.0.0-legacy",
+     "gap_mod",
+     "legacyconnector_b173.nether.ItemCustomTool.<init>(IIIIFI[Llegacyconnector.vb1_7_3.net.minecraft.block.Block;)V"
+    ],
+    [
+     "MagicWands",
+     "0.0.0-legacy",
+     "stubs",
+     "12 synthesized stub(s)"
+    ],
+    [
+     "Marbles",
+     "0.0.0-legacy",
+     "links",
+     "7 synthesized stub(s)"
+    ],
+    [
+     "melaphyre 1-4 1-7-3 into minecraft jar",
+     "0.0.0-legacy",
+     "links",
+     "8 synthesized stub(s)"
+    ],
+    [
+     "mod Fossil",
+     "0.0.0-legacy",
+     "stubs",
+     "71 synthesized stub(s)"
+    ],
+    [
+     "mod Zeppelin-client",
+     "0.0.0-legacy",
+     "stubs",
+     "70 synthesized stub(s)"
+    ],
+    [
+     "NetherCraftv1.9b - Client-Side",
+     "0.0.0-legacy",
+     "stubs",
+     "53 synthesized stub(s)"
+    ],
+    [
+     "palmLeaves",
+     "0.0.0-legacy",
+     "stubs",
+     "18 synthesized stub(s)"
+    ],
+    [
+     "pigmen",
+     "0.0.0-legacy",
+     "links",
+     "6 synthesized stub(s)"
+    ],
+    [
+     "PlasticCraft  v2.1.3",
+     "0.0.0-legacy",
+     "stubs",
+     "120 synthesized stub(s)"
+    ],
+    [
+     "potatoes 1-0 1-7-3 modloader",
+     "0.0.0-legacy",
+     "links",
+     "7 synthesized stub(s)"
+    ],
+    [
+     "RedstoneLogicGates",
+     "0.0.0-legacy",
+     "links",
+     "5 synthesized stub(s)"
+    ],
+    [
+     "SandCastles 1-0 for 1-7-3  by MightyPork  into minecraft-jar",
+     "0.0.0-legacy",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "SAPI",
+     "0.0.0-legacy",
+     "gap_mod",
+     "legacyconnector.vb1_7_3.net.minecraft.world.explosion.Explosion.<init>(Llegacyconnector.vb1_7_3.net.minecraft.world.World;Llegacyconnector.vb1_7_3.net.minecraft.entity.Entity;DDDF)V"
+    ],
+    [
+     "SmokingChimney",
+     "0.0.0-legacy",
+     "gap_mod",
+     "argo.saj.InvalidSyntaxException.<init>(Llegacyconnector_synth.vb1_7_3.net.minecraft.block.ObsidianBlock;DDDDDDF)V"
+    ],
+    [
+     "Somnia_SleepingScreenRenderer",
+     "0.0.0-legacy",
+     "stubs",
+     "20 synthesized stub(s)"
+    ],
+    [
+     "SpringBoots 1-2 1-7-3 into fods folder",
+     "0.0.0-legacy",
+     "links",
+     "5 synthesized stub(s)"
+    ],
+    [
+     "Timber r",
+     "0.0.0-legacy",
+     "links",
+     "3 synthesized stub(s)"
+    ]
+   ],
+   "assets": {
+    "checked": 44,
+    "modsWithLayerProblems": 0,
+    "layerRefs": 0,
+    "modsWithOwnProblems": 0,
+    "ownRefs": 0
+   },
+   "source": "mcarchive"
   }
  ]
 }
