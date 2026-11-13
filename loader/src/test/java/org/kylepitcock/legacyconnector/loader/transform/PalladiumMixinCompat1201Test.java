@@ -506,6 +506,55 @@ class PalladiumMixinCompat1201Test implements Opcodes {
     }
 
     @Test
+    void vibrationListenerUnwrapsHolderBeforeComparingGameEvents() {
+        ClassNode node = new ClassNode();
+        node.name = "net/threetag/palladium/mixin/VibrationListenerMixin";
+        String gameEvent = "net/minecraft/world/level/gameevent/GameEvent";
+        String holder = "net/minecraft/core/Holder";
+        String oldDesc = "(Lnet/minecraft/server/level/ServerLevel;L" + gameEvent
+                + ";L" + gameEvent + "$Context;Lnet/minecraft/world/phys/Vec3;" + CIR + ")V";
+        String newDesc = "(Lnet/minecraft/server/level/ServerLevel;L" + holder
+                + ";L" + gameEvent + "$Context;Lnet/minecraft/world/phys/Vec3;" + CIR + ")V";
+        MethodNode handler = new MethodNode(ACC_PUBLIC, "handleGameEvent", oldDesc, null, null);
+        LabelNode firstMatched = new LabelNode();
+        LabelNode done = new LabelNode();
+        handler.instructions.add(new VarInsnNode(ALOAD, 2));
+        handler.instructions.add(new FieldInsnNode(GETSTATIC, gameEvent, "STEP", "L" + gameEvent + ";"));
+        handler.instructions.add(new JumpInsnNode(IF_ACMPEQ, firstMatched));
+        handler.instructions.add(new VarInsnNode(ALOAD, 2));
+        handler.instructions.add(new FieldInsnNode(GETSTATIC, gameEvent, "BLOCK_DESTROY", "L" + gameEvent + ";"));
+        handler.instructions.add(new JumpInsnNode(IF_ACMPNE, done));
+        handler.instructions.add(firstMatched);
+        handler.instructions.add(new InsnNode(RETURN));
+        handler.instructions.add(done);
+        handler.instructions.add(new InsnNode(RETURN));
+        handler.maxLocals = 6;
+        handler.maxStack = 2;
+        node.methods.add(handler);
+
+        assertEquals(1, PalladiumMixinCompat1201.apply(node));
+        assertEquals(newDesc, handler.desc);
+        int unwraps = 0;
+        for (AbstractInsnNode instruction : handler.instructions) {
+            if (instruction instanceof MethodInsnNode call
+                    && call.getOpcode() == INVOKEINTERFACE
+                    && call.owner.equals(holder)
+                    && call.name.equals("value")
+                    && call.desc.equals("()Ljava/lang/Object;")) {
+                unwraps++;
+                AbstractInsnNode cast = call.getNext();
+                assertTrue(cast instanceof TypeInsnNode type
+                        && type.getOpcode() == CHECKCAST
+                        && type.desc.equals(gameEvent));
+            }
+        }
+        assertEquals(2, unwraps);
+        assertEquals(0, PalladiumMixinCompat1201.apply(node),
+                "the already migrated vibration handler must be idempotent");
+        assertClassCanBeSerialized(node);
+    }
+
+    @Test
     void modelPartInvokerUsesTheNewPackedColorCompileSignature() {
         ClassNode node = new ClassNode();
         node.name = "net/threetag/palladium/mixin/client/ModelPartInvoker";
