@@ -51,6 +51,7 @@ public final class Forge1201ArchiveGraph {
     private Forge1201ArchiveGraph() {}
 
     public enum ArchiveOrigin {
+        SOURCE_ROOT,
         INPUT_NESTED,
         INSTALLED_TOP_LEVEL,
         INSTALLED_NESTED
@@ -206,9 +207,14 @@ public final class Forge1201ArchiveGraph {
             String targetMinecraftVersion) throws IOException {
         Budget budget = new Budget();
         String sourcePath = "source/" + sourceJar.getFileName();
+        String sourceDigest = sha256(sourceJar);
         if (sourceInfo != null) {
+            List<Forge1201PreflightAnalyzer.ModMetadata> sourceMods = toReportMods(sourceInfo.mods());
+            budget.archives.add(new ArchiveFinding(sourcePath, null, 0, ArchiveOrigin.SOURCE_ROOT,
+                    Files.size(sourceJar), sourceDigest, ArchiveKind.FORGE_1201_MOD,
+                    null, null, null, null, sourceMods, List.of()));
             addProvidersAndDeclarations(sourcePath, sourceInfo.mods(), ProviderKind.SOURCE_ROOT,
-                    "FORGE_1201", null, null, null, null, null, budget);
+                    "FORGE_1201", sourceDigest, null, null, null, null, budget);
         }
 
         scanNestedFromZipFile(sourceJar, sourcePath, 1, ArchiveOrigin.INPUT_NESTED, budget);
@@ -241,6 +247,11 @@ public final class Forge1201ArchiveGraph {
                                 ? ProviderKind.INSTALLED_TOP_LEVEL_NEOFORGE
                                 : ProviderKind.INSTALLED_TOP_LEVEL_FORGE_1201;
                         String digest = sha256(jar);
+                        ArchiveKind archiveKind = root.loaderKind().equals("NEOFORGE")
+                                ? ArchiveKind.NEOFORGE_MOD : ArchiveKind.FORGE_1201_MOD;
+                        budget.archives.add(new ArchiveFinding(displayPath, null, 0,
+                                ArchiveOrigin.INSTALLED_TOP_LEVEL, Files.size(jar), digest, archiveKind,
+                                null, null, null, null, toReportMods(root.mods()), List.of()));
                         addProvidersAndDeclarations(displayPath, root.mods(), providerKind, root.loaderKind(),
                                 digest, null, null, null, null, budget);
                     }
@@ -266,6 +277,14 @@ public final class Forge1201ArchiveGraph {
                 .thenComparing(TargetRangeFinding::dependencyModId)).toList();
         return new Result(budget.archives, budget.providers, edges, targetRanges,
                 budget.warnings.stream().distinct().sorted().toList());
+    }
+
+    private static List<Forge1201PreflightAnalyzer.ModMetadata> toReportMods(
+            List<Forge1201JarInfo.Mod> mods) {
+        return mods.stream()
+                .map(mod -> new Forge1201PreflightAnalyzer.ModMetadata(mod.modId(), mod.version(), mod.displayName()))
+                .sorted(Comparator.comparing(Forge1201PreflightAnalyzer.ModMetadata::modId)
+                        .thenComparing(Forge1201PreflightAnalyzer.ModMetadata::version)).toList();
     }
 
     private record InstalledRoot(String loaderKind, List<Forge1201JarInfo.Mod> mods) {}
@@ -681,17 +700,19 @@ public final class Forge1201ArchiveGraph {
                 List<ProviderFinding> chosen;
                 DependencyStatus status;
                 VersionRangeStatus rangeStatus;
-                if (matches.size() == 1) {
+                if (candidates.size() > 1) {
+                    // Duplicate provider IDs are a pack conflict even if only one candidate happens to satisfy the range.
+                    chosen = candidates;
+                    status = DependencyStatus.PROVIDER_AMBIGUOUS;
+                    rangeStatus = !matches.isEmpty() ? VersionRangeStatus.MATCH
+                            : !unknown.isEmpty() ? VersionRangeStatus.UNPARSEABLE : VersionRangeStatus.OUTSIDE_RANGE;
+                } else if (matches.size() == 1) {
                     chosen = matches;
                     status = DependencyStatus.PROVIDER_PRESENT;
                     rangeStatus = VersionRangeStatus.MATCH;
-                } else if (matches.size() > 1) {
-                    chosen = matches;
-                    status = DependencyStatus.PROVIDER_AMBIGUOUS;
-                    rangeStatus = VersionRangeStatus.MATCH;
                 } else if (!unknown.isEmpty()) {
                     chosen = unknown;
-                    status = unknown.size() > 1 ? DependencyStatus.PROVIDER_AMBIGUOUS : DependencyStatus.PROVIDER_PRESENT;
+                    status = DependencyStatus.PROVIDER_PRESENT;
                     rangeStatus = VersionRangeStatus.UNPARSEABLE;
                 } else {
                     chosen = candidates;
