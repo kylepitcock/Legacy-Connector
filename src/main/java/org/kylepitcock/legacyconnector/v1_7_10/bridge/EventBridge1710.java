@@ -84,6 +84,23 @@ public final class EventBridge1710 {
         }
     }
 
+    /**
+     * 1.7.10's ItemBow.onPlayerStoppedUsing posted ArrowLooseEvent before it looked for arrows, so handlers fire with mod ammo only
+     * (Thaumcraft's elemental arrows); the modern ArrowLooseEvent fires only when the bow has vanilla ammo. Called from
+     * {@code BowItemLegacyLooseMixin} at the start of the vanilla release: true when a legacy handler cancelled it. The (possibly
+     * changed) charge is handed to the modern ArrowLooseEvent that follows when there is vanilla ammo.
+     */
+    public static boolean mcc$arrowLoose(net.minecraft.world.item.ItemStack bow, net.minecraft.world.entity.player.Player p, int charge) {
+        LOOSE_CHARGE.remove();
+        if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.ArrowLooseEvent.class)) return false;
+        var legacy = new legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.ArrowLooseEvent(player(p), ItemStack.mcc$wrap(bow), charge);
+        if (forge().post(legacy)) return true;
+        if (legacy.charge != charge) LOOSE_CHARGE.set(legacy.charge);
+        return false;
+    }
+
+    private static final ThreadLocal<Integer> LOOSE_CHARGE = new ThreadLocal<>();
+
     private static EventBus forge() {
         return MinecraftForge.EVENT_BUS;
     }
@@ -376,11 +393,23 @@ public final class EventBridge1710 {
             if (forge().post(legacy)) e.setCanceled(true);
             else e.setNewSpeed(legacy.newSpeed);
         });
-        gameBus.addListener((net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent.Start e) -> {
-            if (!(e.getEntity() instanceof net.minecraft.world.entity.player.Player p) || !(e.getItem().getItem() instanceof net.minecraft.world.item.BowItem)
-                    || !wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.ArrowNockEvent.class)) return;
-            var stack = ItemStack.mcc$wrap(e.getItem());
-            if (forge().post(new legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.ArrowNockEvent(player(p), stack))) e.setCanceled(true);
+        // 1.7.10's ItemBow.onItemRightClick posted ArrowNockEvent before it looked for arrows; the modern counterpart is NeoForge's
+        // ArrowNockEvent from BowItem.use (also before the ammo check). Not the item-use Start event: a handler that draws the bow itself
+        // calls setItemInUse, which starts the use again and would re-post the legacy event forever (#225).
+        gameBus.addListener((net.neoforged.neoforge.event.entity.player.ArrowNockEvent e) -> {
+            if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.ArrowNockEvent.class)) return;
+            var p = e.getEntity();
+            var legacy = new legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.ArrowNockEvent(player(p), ItemStack.mcc$wrap(e.getBow()));
+            if (!forge().post(legacy)) return;
+            var out = legacy.result == null ? net.minecraft.world.item.ItemStack.EMPTY : legacy.result.mcc$modern();
+            if (out == null) out = net.minecraft.world.item.ItemStack.EMPTY;
+            e.setAction(p.isUsingItem() ? net.minecraft.world.InteractionResultHolder.consume(out) : net.minecraft.world.InteractionResultHolder.fail(out));
+        });
+        gameBus.addListener((net.neoforged.neoforge.event.entity.player.ArrowLooseEvent e) -> {
+            Integer charge = LOOSE_CHARGE.get();
+            if (charge == null) return;
+            LOOSE_CHARGE.remove();
+            e.setCharge(charge);
         });
         gameBus.addListener((net.neoforged.neoforge.event.level.BlockEvent.BlockToolModificationEvent e) -> {
             if (e.getItemAbility() != net.neoforged.neoforge.common.ItemAbilities.HOE_TILL || e.isSimulated() || e.getPlayer() == null

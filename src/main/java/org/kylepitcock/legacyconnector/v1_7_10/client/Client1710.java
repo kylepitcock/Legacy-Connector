@@ -72,22 +72,21 @@ public final class Client1710 {
     /** Legacy armor is drawn by its own layer on players and humanoid mobs. */
     @SuppressWarnings({"unchecked", "rawtypes"})
     private static void onAddLayers(EntityRenderersEvent.AddLayers event) {
+        // nothing to add when no 1.7.10-family mod is installed: the renderers stay exactly as vanilla and other mods built them
+        if (!org.kylepitcock.legacyconnector.core.LegacyMods.hasFamily("1.7.10")) return;
         for (var skin : event.getSkins()) {
             var renderer = event.getSkin(skin);
             if (renderer instanceof net.minecraft.client.renderer.entity.player.PlayerRenderer player) {
                 player.addLayer(new LegacyArmorLayer(player));
-                LegacyArmorLayer.hideFromHeadLayer(player);
             }
         }
         for (var type : event.getEntityTypes()) {
             var renderer = event.getRenderer((net.minecraft.world.entity.EntityType) type);
             if (renderer instanceof net.minecraft.client.renderer.entity.HumanoidMobRenderer humanoid) {
                 humanoid.addLayer(new LegacyArmorLayer(humanoid));
-                LegacyArmorLayer.hideFromHeadLayer(humanoid);
             } else if (renderer instanceof net.minecraft.client.renderer.entity.ArmorStandRenderer stand) {
                 // armor stands show legacy armor too (1.7.10 had none, but players put legacy suits and armor on them)
                 stand.addLayer(new LegacyArmorLayer(stand));
-                LegacyArmorLayer.hideFromHeadLayer(stand);
             }
         }
     }

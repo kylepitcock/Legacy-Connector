@@ -40,7 +40,8 @@
     "perf.LevelSlotMixin",
     "perf.EntitySlotMixin",
     "perf.ItemSlotMixin",
-    "perf.LevelChunkStaticTickerMixin"
+    "perf.LevelChunkStaticTickerMixin",
+    "BowItemLegacyLooseMixin"
   ],
   "client": [
     "InventoryScreenLegacyLayoutMixin",
@@ -53,7 +54,8 @@
     "MinecraftAttackMixin",
     "MultiPlayerGameModeMixin",
     "OptionsScreenLegacySettingsMixin",
-    "ClientLanguageLegacyKeysMixin"
+    "ClientLanguageLegacyKeysMixin",
+    "CustomHeadLayerLegacyArmorMixin"
   ],
   "injectors": {
     "defaultRequire": 1

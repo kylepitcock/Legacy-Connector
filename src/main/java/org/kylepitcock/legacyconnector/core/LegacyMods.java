@@ -138,6 +138,13 @@ public final class LegacyMods {
         return other;
     }
 
+    /** True when at least one loaded legacy mod runs on the platform family of {@code version} (see {@link #family}). */
+    public static synchronized boolean hasFamily(String version) {
+        String wanted = family(version);
+        for (LegacyModRecord mod : MODS) if (family(mod.version).equals(wanted)) return true;
+        return false;
+    }
+
     public static synchronized boolean isEmpty() {
         return MODS.isEmpty();
     }

@@ -105,39 +105,11 @@ public class LegacyArmorLayer<T extends LivingEntity, M extends HumanoidModel<T>
     }
 
     /**
-     * The vanilla head layer draws any non-armor item in the head slot as a floating 3D item; legacy armor is drawn by this layer instead,
-     * so the head layer is replaced by one that skips it.
+     * True when the entity wears legacy armor on its head: {@code CustomHeadLayerLegacyArmorMixin} then skips the vanilla head layer, which
+     * would draw the non-armor item as a floating 3D item on top of the armor this layer draws.
      */
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    public static void hideFromHeadLayer(LivingEntityRenderer<?, ?> renderer) {
-        try {
-            var field = LivingEntityRenderer.class.getDeclaredField("layers");
-            field.setAccessible(true);
-            java.util.List<RenderLayer<?, ?>> layers = (java.util.List<RenderLayer<?, ?>>) field.get(renderer);
-            for (int i = 0; i < layers.size(); i++) {
-                if (layers.get(i) instanceof net.minecraft.client.renderer.entity.layers.CustomHeadLayer head) {
-                    layers.set(i, new SkippingHeadLayer(head, (RenderLayerParent) renderer));
-                }
-            }
-        } catch (ReflectiveOperationException | RuntimeException e) {
-            LoggerFactory.getLogger("LegacyConnector/Render").warn("Could not adjust the head layer of {}: {}", renderer.getClass().getName(), e.toString());
-        }
-    }
-
-    private static final class SkippingHeadLayer<T extends LivingEntity, M extends net.minecraft.client.model.EntityModel<T>> extends RenderLayer<T, M> {
-        private final RenderLayer<T, M> inner;
-
-        SkippingHeadLayer(RenderLayer<T, M> inner, RenderLayerParent<T, M> parent) {
-            super(parent);
-            this.inner = inner;
-        }
-
-        @Override
-        public void render(PoseStack pose, MultiBufferSource buffers, int light, T entity, float limbSwing, float limbSwingAmount, float partialTick, float ageInTicks,
-                float netHeadYaw, float headPitch) {
-            if (entity.getItemBySlot(EquipmentSlot.HEAD).getItem() instanceof LegacyItemAdapter a && a.legacyItem() instanceof ItemArmor) return;
-            inner.render(pose, buffers, light, entity, limbSwing, limbSwingAmount, partialTick, ageInTicks, netHeadYaw, headPitch);
-        }
+    public static boolean drawsHead(LivingEntity entity) {
+        return entity.getItemBySlot(EquipmentSlot.HEAD).getItem() instanceof LegacyItemAdapter a && a.legacyItem() instanceof ItemArmor;
     }
 
     private static ResourceLocation defaultTexture(ItemArmor armor, int slot) {
