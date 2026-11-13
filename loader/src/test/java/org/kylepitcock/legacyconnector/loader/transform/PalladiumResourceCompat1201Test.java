@@ -482,7 +482,7 @@ class PalladiumResourceCompat1201Test {
         String migrated = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_SERVER_STUFF);
         assertEquals(4, occurrences(migrated, "let player = event.player;"));
         assertFalse(migrated.contains("let player = event.entity;"));
-        assertTrue(migrated.startsWith(PalladiumResourceCompat1201.ALIEN_EVO_PACKET_STRING_HELPER));
+        assertTrue(migrated.startsWith("function legacyConnectorAlienEvoPacketString(value) {"));
         assertTrue(migrated.contains("legacyConnectorAlienEvoPacketString(data.value)"));
         assertTrue(migrated.contains("legacyConnectorAlienEvoPacketString(propertiesToSave[propertyName])"));
         assertTrue(migrated.contains("legacyConnectorAlienEvoPacketString(event.data.nickname)"));
