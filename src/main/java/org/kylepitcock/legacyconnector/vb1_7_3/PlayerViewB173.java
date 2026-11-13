@@ -111,7 +111,9 @@ public final class PlayerViewB173 extends legacyconnector.vb1_7_3.net.minecraft.
         handSwinging=player.swinging;
         mcc$environment(PlayerAbilitiesB173.nativeWaterBaseline(player));
         var motion=player.getDeltaMovement();velocityX=motion.x;velocityY=motion.y;velocityZ=motion.z;
-        mcc$movementInputs(player.xxa,player.zza,EntityFieldsB173.jumpInput(player));
+        // A server player never receives the jump key from the native client; the layer's key report carries it
+        boolean jump=EntityFieldsB173.jumpInput(player)||player instanceof net.minecraft.server.level.ServerPlayer server&&KeyBindingsB173.jumpHeld(server);
+        mcc$movementInputs(player.xxa,player.zza,jump);
         // Modern passengers do not integrate walking input into their own motion. Beta mounts read that rider motion.
         // Preserve real motion (knockback, swimming, other integrations); supply only the missing horizontal intent.
         if(player.getVehicle() instanceof B173EntityHost&&velocityX==0&&velocityZ==0)

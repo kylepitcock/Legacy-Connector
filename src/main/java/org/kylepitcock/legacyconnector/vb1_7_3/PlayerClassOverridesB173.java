@@ -28,6 +28,7 @@ public final class PlayerClassOverridesB173 {
     private static final Map<UUID, ClientPlayerEntity> DONORS = new ConcurrentHashMap<>();
     private static final java.util.Set<String> REPORTED = ConcurrentHashMap.newKeySet();
     private static boolean installed;
+    private static final String FAMILY = "b1.7.3-player-class";
 
     private PlayerClassOverridesB173() {}
 
@@ -45,7 +46,9 @@ public final class PlayerClassOverridesB173 {
             DONORS.put(actor.getUUID(), donor);
             donor.inventory = PlayerViewB173.of(actor).inventory;
             LOG.info("Original player class {} now drives {}", donor.getClass().getName(), actor.getGameProfile().getName());
-        } else DONORS.remove(actor.getUUID());
+            sendClass(actor, donor.getClass().getName());
+            sendOverrides(actor);
+        } else if (DONORS.remove(actor.getUUID()) != null) sendClass(actor, "");
     }
 
     /** What the mod's own code sees as the player: its subclass while one is handed over. */
@@ -116,9 +119,72 @@ public final class PlayerClassOverridesB173 {
         return ran[0];
     }
 
+    // A remote client simulates its own movement in its own process, which has the mod's classes too: it is told which class drives it and builds
+    // its own instance. A single player's client shares this process (and this map), so it is told nothing.
+    private static boolean remote(Player player) {
+        return player instanceof ServerPlayer sp && sp.connection != null && !sp.server.isSingleplayerOwner(sp.getGameProfile())
+                && sp.connection.hasChannel(org.kylepitcock.legacyconnector.core.network.LegacyPayload.TYPE);
+    }
+
+    private static void send(Player player, int kind, java.util.function.Consumer<net.minecraft.network.FriendlyByteBuf> body) {
+        if (!remote(player)) return;
+        var buf = new net.minecraft.network.FriendlyByteBuf(io.netty.buffer.Unpooled.buffer());
+        try {
+            body.accept(buf);
+            byte[] bytes = new byte[buf.readableBytes()];
+            buf.readBytes(bytes);
+            net.neoforged.neoforge.network.PacketDistributor.sendToPlayer((ServerPlayer) player, new org.kylepitcock.legacyconnector.core.network.LegacyPayload(FAMILY, "state", kind, bytes));
+        } finally { buf.release(); }
+    }
+
+    private static void sendClass(Player player, String className) { send(player, 0, buf -> buf.writeUtf(className, 512)); }
+
+    /** A client that arrives (or is handed a player class) learns the texture overrides already in force. */
+    private static void sendOverrides(Player player) {
+        legacyconnector.vb1_7_3.net.minecraft.client.texture.TextureManager.overrides()
+                .forEach((key, path) -> send(player, 1, buf -> { buf.writeUtf(key, 256); buf.writeUtf(path, 512); }));
+    }
+
+    /** Client: the server's player class becomes this player's own instance of that class. */
+    private static void receiveClass(Player local, String className) {
+        if (className.isEmpty()) { DONORS.remove(local.getUUID()); return; }
+        for (var mod : ContentB173.loadedMods()) {
+            try {
+                Class<?> type = Class.forName(className, true, mod.getClass().getClassLoader());
+                var ctor = type.getConstructor(legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.class, World.class,
+                        legacyconnector.vb1_7_3.net.minecraft.client.util.Session.class, int.class);
+                var donor = (ClientPlayerEntity) ctor.newInstance(legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$instance(), World.mcc$wrap(local.level()), null, 0);
+                DONORS.put(local.getUUID(), donor);
+                return;
+            } catch (ClassNotFoundException ignored) {
+            } catch (ReflectiveOperationException | RuntimeException | LinkageError error) {
+                LOG.warn("Original player class {} could not be made on this client: {}", className, error.toString());
+                return;
+            }
+        }
+    }
+
     public static synchronized void install() {
         if (installed) return;
         installed = true;
+        org.kylepitcock.legacyconnector.core.network.LegacyNetwork.registerReceiver(FAMILY, (payload, context) -> {
+            if (!context.flow().isClientbound() || payload.data().length > 4096) return;
+            var buf = new net.minecraft.network.FriendlyByteBuf(io.netty.buffer.Unpooled.wrappedBuffer(payload.data()));
+            try {
+                if (payload.discriminator() == 0) {
+                    String name = buf.readUtf(512);
+                    context.enqueueWork(() -> receiveClass(context.player(), name));
+                } else if (payload.discriminator() == 1) {
+                    String key = buf.readUtf(256), path = buf.readUtf(512);
+                    context.enqueueWork(() -> legacyconnector.vb1_7_3.net.minecraft.client.texture.TextureManager.mcc$remoteOverride(key, path));
+                }
+            } catch (RuntimeException ignored) { } finally { buf.release(); }
+        });
+        // a texture override the mod makes while its callback runs for a remote player belongs to that player's sky
+        legacyconnector.vb1_7_3.net.minecraft.client.texture.TextureManager.LISTENER = (key, path) -> {
+            Player actor = MenusB173.currentActor();
+            if (actor != null) send(actor, 1, buf -> { buf.writeUtf(key, 256); buf.writeUtf(path == null ? "" : path, 512); });
+        };
         var bus = net.neoforged.neoforge.common.NeoForge.EVENT_BUS;
         bus.addListener((net.neoforged.neoforge.event.entity.living.LivingEvent.LivingJumpEvent event) -> {
             if (event.getEntity() instanceof Player player && player.level().isClientSide && active(player))
@@ -133,6 +199,7 @@ public final class PlayerClassOverridesB173 {
         bus.addListener((net.neoforged.neoforge.event.tick.PlayerTickEvent.Post event) -> {
             if (event.getEntity() instanceof ServerPlayer player && active(player)) run(player, "livingUpdate", donor -> donor.tickMovement(), false, true);
         });
+        bus.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent event) -> sendOverrides(event.getEntity()));
         bus.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent event) -> DONORS.remove(event.getEntity().getUUID()));
         bus.addListener((net.neoforged.neoforge.event.server.ServerStoppedEvent event) -> DONORS.clear());
     }

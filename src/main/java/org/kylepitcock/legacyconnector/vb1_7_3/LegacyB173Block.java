@@ -196,6 +196,8 @@ public class LegacyB173Block extends net.minecraft.world.level.block.Block imple
     protected void onPlace(BlockState state, net.minecraft.world.level.Level level, BlockPos pos, BlockState oldState, boolean moved) {
         super.onPlace(state, level, pos, oldState, moved);
         if (level.isClientSide || oldState.is(this)) return;
+        if (addedEarly(level, pos)) return; // setPlacedBy already ran onBlockAdded, in Beta's order
+        ADDED_BY_PLACE.put(level.dimension().location() + "@" + pos.asLong(), level.getGameTime());
         // NeoForge runs onPlace after the item's setPlacedBy (CommonHooks.onPlaceItemIntoWorld), where Beta ran onBlockAdded first: the
         // tile entity onBlockPlaced already configured (BuildCraft's engine orientation) must survive onBlockAdded making a fresh one.
         var host = level.getBlockEntity(pos) instanceof LegacyB173BlockEntity h ? h : null;
@@ -306,6 +308,15 @@ public class LegacyB173Block extends net.minecraft.world.level.block.Block imple
         return state;
     }
 
+    private static final java.util.Map<String, Long> ADDED_BY_PLACE = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final java.util.Map<String, Long> ADDED_EARLY = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** True once, for the onPlace that follows a setPlacedBy of the same position within the same tick or the next. */
+    private static boolean addedEarly(net.minecraft.world.level.Level level, BlockPos pos) {
+        Long at = ADDED_EARLY.remove(level.dimension().location() + "@" + pos.asLong());
+        return at != null && level.getGameTime() - at <= 1;
+    }
+
     @Override
     public void setPlacedBy(net.minecraft.world.level.Level level, BlockPos pos, BlockState state, net.minecraft.world.entity.LivingEntity placer,
             ItemStack stack) {
@@ -314,6 +325,12 @@ public class LegacyB173Block extends net.minecraft.world.level.block.Block imple
         PLACED_SIDE.remove();
         if (level.isClientSide) return;
         World w = view(level);
+        // Beta ran onBlockAdded (which makes the tile entity of many blocks) before onBlockPlaced and onBlockPlacedBy; NeoForge runs onPlace after setPlacedBy
+        Long placed = ADDED_BY_PLACE.remove(level.dimension().location() + "@" + pos.asLong());
+        if ((placed == null || level.getGameTime() - placed > 1) && level.getBlockState(pos).is(this)) {
+            ADDED_EARLY.put(level.dimension().location() + "@" + pos.asLong(), level.getGameTime());
+            call("onBlockAdded", () -> legacy.onPlaced(view(level), pos.getX(), pos.getY(), pos.getZ()));
+        }
         if (side != null) call("onBlockPlaced", () -> legacy.onPlaced(w, pos.getX(), pos.getY(), pos.getZ(), side[0]));
         if (placer instanceof net.minecraft.world.entity.player.Player player) {
             PlayerViewB173 view = PlayerViewB173.of(player);

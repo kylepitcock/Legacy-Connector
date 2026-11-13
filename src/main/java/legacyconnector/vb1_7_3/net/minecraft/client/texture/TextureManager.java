@@ -31,13 +31,23 @@ public class TextureManager {
         }
         @Override public Integer put(String key,Integer id){
             String path=id==null?null:RECENT.get(id);
+            String before=OVERRIDES.get(key);
             if(path==null||path.equals(key))OVERRIDES.remove(key);else OVERRIDES.put(key,path);
+            String after=OVERRIDES.get(key);
+            var listener=LISTENER;if(listener!=null&&!java.util.Objects.equals(before,after))listener.accept(key,after);
             return super.put(key,id);
         }
     };
 
+    /** Told when an override appears, changes or goes (key, path or null): a server passes it on to its remote players. */
+    public static volatile java.util.function.BiConsumer<String,String> LISTENER;
+    /** An override a remote server reported: set without the listener. */
+    public static void mcc$remoteOverride(String key,String path){if(path==null||path.isEmpty())OVERRIDES.remove(key);else OVERRIDES.put(key,path);}
+
     /** The path of the texture standing in for {@code key} (a mod wrote another id under it), or null. */
     public static String override(String key){return OVERRIDES.get(key);}
+    /** The overrides in force (key to path). */
+    public static java.util.Map<String,String> overrides(){return java.util.Map.copyOf(OVERRIDES);}
 
     private static final TextureManager INSTANCE = new TextureManager();
 
