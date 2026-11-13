@@ -53,10 +53,40 @@ public class LanguageMap {
         instance.lastUpdateTimeInMilliseconds = System.currentTimeMillis();
     }
 
+    /** Prefix of 1.12's firework colour names (item.fireworksCharge.red ...), which the modern language file dropped for the colour names. */
+    private static final String FIREWORK_COLOUR = "item.fireworksCharge.";
+
+    /**
+     * The modern language key standing in for a 1.12 vanilla key the modern language file no longer has, or the key itself. Mods label
+     * dye colours with {@code item.fireworksCharge.<colour>} (BuildCraft's "Red Pipe Wire"); 1.21 names them {@code color.minecraft.<colour>}.
+     */
+    public static String modernKey(String key) {
+        if (key == null || !key.startsWith(FIREWORK_COLOUR)) return key;
+        String colour = key.substring(FIREWORK_COLOUR.length());
+        if (colour.equals("silver")) colour = "light_gray";
+        else colour = colour.replaceAll("([a-z])([A-Z])", "$1_$2").toLowerCase(java.util.Locale.ROOT);
+        return "color.minecraft." + colour;
+    }
+
+    /** The game's translation of a key, with the 1.12 vanilla key aliases resolved. */
+    public static String gameTranslation(String key) {
+        var language = net.minecraft.locale.Language.getInstance();
+        if (!language.has(key)) {
+            String alias = modernKey(key);
+            if (!alias.equals(key) && language.has(alias)) return language.getOrDefault(alias);
+        }
+        return language.getOrDefault(key);
+    }
+
+    public static boolean gameHasKey(String key) {
+        var language = net.minecraft.locale.Language.getInstance();
+        return language.has(key) || language.has(modernKey(key));
+    }
+
     public synchronized String translateKey(String key) {
         String own = languageList.get(key);
         if (own != null) return own;
-        return net.minecraft.locale.Language.getInstance().getOrDefault(key);
+        return gameTranslation(key);
     }
 
     public synchronized String translateKeyFormat(String key, Object... format) {
@@ -69,7 +99,7 @@ public class LanguageMap {
     }
 
     public synchronized boolean isKeyTranslated(String key) {
-        return languageList.containsKey(key) || net.minecraft.locale.Language.getInstance().has(key);
+        return languageList.containsKey(key) || gameHasKey(key);
     }
 
     public long getLastUpdateTimeInMilliseconds() {

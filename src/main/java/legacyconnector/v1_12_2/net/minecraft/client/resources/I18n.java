@@ -13,7 +13,7 @@ public class I18n {
     }
 
     public static String format(String key, Object... parameters) {
-        String pattern = net.minecraft.locale.Language.getInstance().getOrDefault(key);
+        String pattern = legacyconnector.v1_12_2.net.minecraft.util.text.translation.LanguageMap.gameTranslation(key);
         if (parameters == null || parameters.length == 0) return pattern;
         try {
             return String.format(pattern, parameters);
@@ -23,6 +23,6 @@ public class I18n {
     }
 
     public static boolean hasKey(String key) {
-        return net.minecraft.locale.Language.getInstance().has(key);
+        return legacyconnector.v1_12_2.net.minecraft.util.text.translation.LanguageMap.gameHasKey(key);
     }
 }
