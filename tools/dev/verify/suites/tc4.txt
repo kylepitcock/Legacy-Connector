@@ -1,0 +1,5 @@
+# Thaumcraft 4 with its libraries
+1.7.10 Thaumcraft-1.7.10-4.2.3.5
+1.7.10 Baubles
+1.7.10 CodeChickenCore-1.7.10
+1.7.10 CodeChickenLib-1.7.10

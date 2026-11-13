@@ -116,6 +116,29 @@ python3 tools/extract_legacy_hierarchy.py 1.7.10
   (items, fluids, RF), persistence across a restart (`persist`, run twice) and the handbook data. Jars go in `run-subtest/mods/1.7.10`.
 - Legacy mod jars are supplied by the developer and never committed (`test-mods/` is gitignored).
 
+## Regression suites
+
+`tools/dev/verify.sh [--update] [suite ...]` runs the headless server self test unattended over named jar sets and compares the result with a
+committed baseline (no argument runs every suite; about 2 to 5 minutes per suite, 15 minutes at most).
+
+- **Suites** are `tools/dev/verify/suites/<name>.txt`, one `<version-folder> <jar-name-fragment>` per line (`1.7.10`, `1.12.2`, `1.6.4`, `1.5.2`,
+  `1.4.7`, `1.20.1`, `b1.7.3`; the fragment is matched case-insensitively against jar file names; `#` starts a comment). Use a version in the
+  fragment when other versions ship the same mod name (`CodeChickenCore-1.7.10`).
+- **Jars** are never downloaded or committed. They are looked up (first match wins) in the gitignored folders of the main checkout
+  (`JAR_ROOT`, default `Y:/Programming/Minecraft/Retrofit`: `test-mods*`, `run-subtest/mods`, `run-screenshots/mods`, ...; the list is `SEARCH` in the
+  script). A suite with a missing jar is reported as SKIP with the missing fragment, not as a failure.
+- **Run:** each suite gets a fresh game directory `run-verify/<suite>` (mods copied into `mods/<version>/`, eula and `server.properties` taken from the
+  main checkout's `run-subtest` with a free port, no world, no translation cache) and runs `./gradlew runServerSubTest -PsubTestDir=... -PautostopTicks=700`
+  (`AUTOSTOP`, `SUITE_TIMEOUT` override). Only the server of this checkout is killed on a timeout (`verify/kill-server.ps1`).
+- **Metrics** are parsed from `logs/latest.log` by `tools/dev/verify/verify.py` (`python verify.py parse <log> <crash-dir>`; unit tests:
+  `python -m unittest discover -s tools/dev/verify`): failed mods, block self test (placed, still there, with problems), entity self test, silent
+  failure checks, 1.12.2 item placement, legacy content counts, crash reports, `VerifyError` count and whether the block self test was reached.
+- **Baseline:** `tools/dev/verify/baseline.json`. A suite FAILS when a "bad" metric (failed mods, problems, failed or unspawned entities, silent
+  failures, crash reports, VerifyErrors) is higher than the baseline, when a "good" metric (blocks still there, entities alive, placed items, content
+  counts) is more than 2 percent lower (10 percent for entities alive, which varies between identical runs), or when the self test was not reached. A suite without a baseline entry is NEW. After an intended change run
+  `tools/dev/verify.sh --update [suite]` and commit `baseline.json`. The table is also written to `build/devtools/verify-report.txt`; the exit code is
+  non-zero when a suite failed.
+
 ## Silent-failure checks
 
 The server self test (`-Dlegacyconnector.entitySelfTest=true`, on in `runServerSubTest`) also runs `core/SilentFailureChecks` once at server start. They are read-only and target bugs that crash nothing and log nothing, which link and translation checks cannot see (Sinytra Connector's "attribute registration bypassed, SWIM_SPEED stayed 0, nobody can swim" class). Output: `SILENT FAILURE CHECKS: N passed, M failed`, then one `SILENT FAILURE CHECK FAILED: <check>: <offenders by registry name>` line at ERROR level per failing check (`tools/dev/run-subset.sh` prints them). Add `-Dlegacyconnector.selfTestFailFast=true` to halt the JVM with exit code 3 on any failure.
