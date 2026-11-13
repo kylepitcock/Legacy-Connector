@@ -105,6 +105,15 @@ public final class LegacyResourceConverter {
                 data = renameForgeModelLoader(data);
                 addVineModels(data);
             }
+            collectModelRefs(data);
+        }
+        if (modern.matches("assets/minecraft/textures/(blocks|items)/.+\\.png(\\.mcmeta)?")) {
+            // a mod's own texture in the minecraft namespace (ConquestReforged's blocks/rebellion/..., Epic Knights' items/...): models name it by
+            // the 1.21 folder and name (block/..., see vanillaTexture), so it is also written there; the original stays for code that binds the old path
+            String rest = modern.substring("assets/minecraft/textures/".length());
+            String ext = rest.endsWith(".mcmeta") ? ".png.mcmeta" : ".png";
+            String moved = VanillaTextureRenames.modern(rest.substring(0, rest.length() - ext.length())) + ext;
+            if (!moved.equals(rest)) output.putIfAbsent("assets/minecraft/textures/" + moved, data);
         }
         ctm.offer(modern, data);
         output.putIfAbsent(modern, data);
@@ -136,8 +145,34 @@ public final class LegacyResourceConverter {
         }
     }
 
+    /** Names of the models a blockstate variant or a model's parent/override use, for {@link VanillaModelShims}. */
+    private final java.util.Set<String> modelRefs = new java.util.HashSet<>();
+    private static final java.util.regex.Pattern MODEL_REF = java.util.regex.Pattern.compile("\"(?:model|parent)\"\\s*:\\s*\"([^\"]+)\"");
+
+    private void collectModelRefs(byte[] data) {
+        java.util.regex.Matcher m = MODEL_REF.matcher(new String(data, StandardCharsets.UTF_8));
+        while (m.find()) modelRefs.add(m.group(1));
+    }
+
+    /**
+     * Writes the 1.12 vanilla models this jar names that 1.21.1 no longer has (see {@link VanillaModelShims}): a blockstate names them
+     * relative to {@code models/block/}, a parent by path; the minecraft namespace is vanilla's, anything else is the mod's.
+     */
+    private void addVanillaModelShims() {
+        for (String ref : modelRefs) {
+            int colon = ref.indexOf(':');
+            if (colon >= 0 && !ref.startsWith("minecraft:")) continue;
+            String path = colon < 0 ? ref : ref.substring(colon + 1);
+            for (String candidate : new String[] {path, "block/" + path}) {
+                byte[] json = VanillaModelShims.json(candidate);
+                if (json != null) output.putIfAbsent("assets/minecraft/models/" + candidate + ".json", json);
+            }
+        }
+    }
+
     /** Called once all entries are seen; returns every resource to write into the transformed jar. */
     public Map<String, byte[]> finish() {
+        addVanillaModelShims();
         for (var lang : langs.entrySet()) {
             // A real .json lang shipped next to the .lang wins.
             if (output.containsKey(lang.getKey())) continue;

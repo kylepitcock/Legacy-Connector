@@ -254,6 +254,39 @@ public final class JavaCompatRedirects {
         staticToStatic("org/lwjgl/opengl/ARBVertexArrayObject", "glBindVertexArray", "(I)V", gl, "glBindVertexArrayARB");
         staticToStatic("org/lwjgl/opengl/ARBOcclusionQuery", "glGenQueriesARB", "(Ljava/nio/IntBuffer;)V", gl, "glGenQueriesARB");
         staticToStatic("org/lwjgl/opengl/ARBOcclusionQuery", "glDeleteQueriesARB", "(Ljava/nio/IntBuffer;)V", gl, "glDeleteQueriesARB");
+        // LWJGL 2 reads of shader state and the float-buffer attribute pointer (virtual shaders: see GlCompat); glClearBuffer is the real glClearBufferfv
+        staticToStatic(gl20, "glGetActiveUniformSize", "(II)I", gl, "glGetActiveUniformSize");
+        staticToStatic(gl20, "glGetActiveUniformType", "(II)I", gl, "glGetActiveUniformType");
+        staticToStatic(gl20, "glGetUniform", "(IILjava/nio/FloatBuffer;)V", gl, "glGetUniformf");
+        staticToStatic(gl20, "glGetUniform", "(IILjava/nio/IntBuffer;)V", gl, "glGetUniformi");
+        staticToStatic(gl20, "glGetVertexAttrib", "(IILjava/nio/FloatBuffer;)V", gl, "glGetVertexAttribf");
+        staticToStatic(gl20, "glGetVertexAttrib", "(IILjava/nio/IntBuffer;)V", gl, "glGetVertexAttribi");
+        staticToStatic(gl20, "glVertexAttribPointer", "(IIZILjava/nio/FloatBuffer;)V", gl, "glVertexAttribPointerBuffer");
+        INVOKES.put("org/lwjgl/opengl/GL30.glClearBuffer(IILjava/nio/FloatBuffer;)V",
+                new MethodInsnNode(Opcodes.INVOKESTATIC, "org/lwjgl/opengl/GL30", "glClearBufferfv", "(IILjava/nio/FloatBuffer;)V", false));
+        // OpenAL: LWJGL 2's typed-buffer overloads got explicit suffixes in LWJGL 3 (alListener(int, FloatBuffer) -> alListenerfv)
+        String al = "org/lwjgl/openal/AL10";
+        staticToStatic(al, "alGetListener", "(ILjava/nio/FloatBuffer;)V", al, "alGetListenerfv");
+        staticToStatic(al, "alListener", "(ILjava/nio/FloatBuffer;)V", al, "alListenerfv");
+        staticToStatic(al, "alSource", "(IILjava/nio/FloatBuffer;)V", al, "alSourcefv");
+        INVOKES.put(al + ".alIsExtensionPresent(Ljava/lang/String;)Z",
+                new MethodInsnNode(Opcodes.INVOKESTATIC, al, "alIsExtensionPresent", "(Ljava/lang/CharSequence;)Z", false));
+        // javac widens a byte or short argument to int; Kotlin and some bytecode generators name the narrow overload, which does not exist
+        INVOKES.put("java/lang/StringBuilder.append(B)Ljava/lang/StringBuilder;",
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "java/lang/StringBuilder", "append", "(I)Ljava/lang/StringBuilder;", false));
+        INVOKES.put("java/lang/StringBuilder.append(S)Ljava/lang/StringBuilder;",
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "java/lang/StringBuilder", "append", "(I)Ljava/lang/StringBuilder;", false));
+        // fastutil 8: ObjectCollection.rem(Object) is gone (remove(Object) has the same meaning on an object list)
+        rename("it/unimi/dsi/fastutil/objects/ObjectArrayList", "rem", "(Ljava/lang/Object;)Z", "remove");
+        // authlib 6: joinServer takes the profile id, hasJoinedServer the profile name (both threw the same AuthenticationException)
+        virtualToStatic("com/mojang/authlib/minecraft/MinecraftSessionService", "joinServer",
+                "(Lcom/mojang/authlib/GameProfile;Ljava/lang/String;Ljava/lang/String;)V", COMPAT + "LibraryCompat");
+        INVOKES.put("com/mojang/authlib/yggdrasil/YggdrasilMinecraftSessionService.joinServer(Lcom/mojang/authlib/GameProfile;Ljava/lang/String;Ljava/lang/String;)V",
+                new MethodInsnNode(Opcodes.INVOKESTATIC, COMPAT + "LibraryCompat", "joinServer",
+                        "(Lcom/mojang/authlib/minecraft/MinecraftSessionService;Lcom/mojang/authlib/GameProfile;Ljava/lang/String;Ljava/lang/String;)V", false));
+        INVOKES.put("com/mojang/authlib/yggdrasil/YggdrasilMinecraftSessionService.hasJoinedServer(Lcom/mojang/authlib/GameProfile;Ljava/lang/String;Ljava/net/InetAddress;)Lcom/mojang/authlib/GameProfile;",
+                new MethodInsnNode(Opcodes.INVOKESTATIC, COMPAT + "LibraryCompat", "hasJoinedServer",
+                        "(Lcom/mojang/authlib/minecraft/MinecraftSessionService;Lcom/mojang/authlib/GameProfile;Ljava/lang/String;Ljava/net/InetAddress;)Lcom/mojang/authlib/GameProfile;", false));
         // Guava 17 -> 32: TypeToken.isAssignableFrom was renamed isSupertypeOf.
         rename("com/google/common/reflect/TypeToken", "isAssignableFrom", "(Lcom/google/common/reflect/TypeToken;)Z", "isSupertypeOf");
         rename("com/google/common/reflect/TypeToken", "isAssignableFrom", "(Ljava/lang/reflect/Type;)Z", "isSupertypeOf");

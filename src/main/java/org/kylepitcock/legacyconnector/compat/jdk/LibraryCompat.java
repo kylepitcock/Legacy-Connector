@@ -27,6 +27,20 @@ public final class LibraryCompat {
         return profile;
     }
 
+    /**
+     * authlib 1.5's {@code joinServer(profile, accessToken, serverId)}: authlib 6 takes the profile id. The checked
+     * {@code AuthenticationException} of both versions is the same type, so it propagates as it did.
+     */
+    public static void joinServer(MinecraftSessionService service, GameProfile profile, String authenticationToken, String serverId) throws Exception {
+        service.joinServer(profile.getId(), authenticationToken, serverId);
+    }
+
+    /** authlib 1.5's {@code hasJoinedServer(user, serverId, address)}: authlib 6 takes the name and returns a result record (null when not joined). */
+    public static GameProfile hasJoinedServer(MinecraftSessionService service, GameProfile user, String serverId, java.net.InetAddress address) throws Exception {
+        var result = service.hasJoinedServer(user.getName(), serverId, address);
+        return result == null ? null : result.profile();
+    }
+
     // ASM 5 never validated descriptors (anything unknown parsed as a method type); ASM 9 throws. Legacy mods that
     // pass class names or field descriptors to these keep working with the old leniency.
     public static org.objectweb.asm.Type asmGetType(String descriptor) {

@@ -434,3 +434,8 @@ block	door_oak_upper	oak_door_top
 block	sapling_big_oak	dark_oak_sapling
 block	door_big_oak_lower	dark_oak_door_bottom
 block	door_big_oak_upper	dark_oak_door_top
+block	observer_back_lit	observer_back_on
+block	melon_stem_disconnected	melon_stem
+block	pumpkin_stem_disconnected	pumpkin_stem
+block	melon_stem_connected	attached_melon_stem
+block	pumpkin_stem_connected	attached_pumpkin_stem
