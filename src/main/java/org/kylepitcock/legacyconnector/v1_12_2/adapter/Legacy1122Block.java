@@ -70,6 +70,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
     private final boolean walk;
     private final boolean fallen;
     private final boolean landed;
+    private final boolean soundType;
     private final boolean sideRendered;
     private final boolean event;
     private final boolean harvest;
@@ -121,6 +122,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
         this.walk = overrides(legacy, "onEntityWalk", W, P, legacyconnector.v1_12_2.net.minecraft.entity.Entity.class);
         this.fallen = overrides(legacy, "onFallenUpon", W, P, legacyconnector.v1_12_2.net.minecraft.entity.Entity.class, float.class);
         this.landed = overrides(legacy, "onLanded", W, legacyconnector.v1_12_2.net.minecraft.entity.Entity.class);
+        this.soundType = overrides(legacy, "getSoundType", S, W, P, legacyconnector.v1_12_2.net.minecraft.entity.Entity.class);
         this.sideRendered = overrides(legacy, "shouldSideBeRendered", S, legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess.class, P, EnumFacing.class);
         this.event = overrides(legacy, "eventReceived", S, W, P, int.class, int.class);
         this.harvest = overrides(legacy, "harvestBlock", W, EntityPlayer.class, P, S, legacyconnector.v1_12_2.net.minecraft.tileentity.TileEntity.class,
@@ -439,6 +441,19 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
             failure("onFallenUpon", e);
             super.fallOn(level, state, pos, entity, distance);
         }
+    }
+
+    /** Forge's per-state {@code getSoundType(state, world, pos, entity)} (blocks whose sounds depend on their variant). */
+    @Override
+    public net.minecraft.world.level.block.SoundType getSoundType(BlockState state, LevelReader level, BlockPos pos, Entity entity) {
+        if (!soundType || !(level instanceof Level l)) return super.getSoundType(state, level, pos, entity);
+        try {
+            var legacySound = legacy.getSoundType(state(state), world(l), pos(pos), entity == null ? null : entity(entity));
+            if (legacySound != null) return legacySound.mcc$toModern();
+        } catch (RuntimeException | LinkageError e) {
+            failure("getSoundType", e);
+        }
+        return super.getSoundType(state, level, pos, entity);
     }
 
     /** {@code Block.onLanded}: what an entity's vertical motion becomes when it lands on the block (slime-like bouncing blocks). */
