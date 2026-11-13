@@ -52219,16 +52219,16 @@
    "date": "2026-11-13",
    "version": "0.4.14",
    "counts": {
-    "links": 37,
+    "links": 42,
     "stubs": 3,
     "gap_shim": 0,
-    "gap_mod": 2,
+    "gap_mod": 4,
     "gap_lib": 0,
     "obsolete": 0
    },
    "env": {
     "layer": "0.4.14",
-    "jars": 74,
+    "jars": 53,
     "minecraft": "1.21.1",
     "neoforge": "21.1.258",
     "shim": "f5afb5c7f826"
@@ -52261,12 +52261,6 @@
     [
      "BufferFix",
      "1.0",
-     "links",
-     ""
-    ],
-    [
-     "CC: Tweaked",
-     "1.105.0",
      "links",
      ""
     ],
@@ -52307,10 +52301,10 @@
      ""
     ],
     [
-     "DonutAntiESP",
-     "2.0.0",
-     "links",
-     ""
+     "DivineRPG",
+     "1.3.0.1",
+     "gap_mod",
+     "xolova.blued00r.divinerpg.DivineRPG.tripleDanger:Llegacyconnector.v1_7_10.net.minecraft.stats.Achievement;"
     ],
     [
      "Dragon Mounts Forge (WIP)",
@@ -52337,6 +52331,12 @@
      ""
     ],
     [
+     "Equivalent Exchange 3",
+     "pre1f",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
      "Factorization Miscellaneous Nonsense",
      "0.7.21",
      "stubs",
@@ -52347,6 +52347,12 @@
      "2.0.0.11",
      "links",
      "1 synthesized stub(s)"
+    ],
+    [
+     "GuiAPI",
+     "0.15.2",
+     "links",
+     "8 synthesized stub(s)"
     ],
     [
      "Immibis Core",
@@ -52391,10 +52397,46 @@
      "1 synthesized stub(s)"
     ],
     [
-     "MiscPeripherals",
-     "3.1",
+     "Logistics Pipes",
+     "0.7.0.98",
+     "links",
+     "9 synthesized stub(s)"
+    ],
+    [
+     "Mekanism",
+     "5.3.0",
      "links",
      "7 synthesized stub(s)"
+    ],
+    [
+     "MekanismGenerators",
+     "5.3.0",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "MekanismTools",
+     "5.3.0",
+     "links",
+     ""
+    ],
+    [
+     "Minefactory Reloaded",
+     "1.4.6R2.1.3",
+     "links",
+     "7 synthesized stub(s)"
+    ],
+    [
+     "MiscPeripherals",
+     "3.1",
+     "gap_mod",
+     "dan200.turtle.api.ITurtleAccess.getVisualPosition(F)Llegacyconnector.v1_7_10.net.minecraft.util.Vec3;"
+    ],
+    [
+     "mod_BlockHelper",
+     "0.0.0-legacy",
+     "links",
+     ""
     ],
     [
      "mod_SprintKey",
@@ -52488,7 +52530,7 @@
     ]
    ],
    "assets": {
-    "checked": 42,
+    "checked": 49,
     "modsWithLayerProblems": 0,
     "layerRefs": 0,
     "modsWithOwnProblems": 0,
@@ -52497,9 +52539,15 @@
    "vs": {
     "date": "2026-11-08",
     "version": "",
-    "regressed": [],
+    "regressed": [
+     [
+      "MiscPeripherals",
+      "links",
+      "gap_mod"
+     ]
+    ],
     "fixed": [],
-    "regressedCount": 0,
+    "regressedCount": 1,
     "fixedCount": 0
    }
   },

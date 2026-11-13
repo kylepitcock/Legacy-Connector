@@ -7517,6 +7517,15 @@
    "notes": "Automated check 0.4.14: translates offline and everything it uses exists (964 classes). 3 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "DivineRPG",
+   "version": "1.3.0.1",
+   "mc": "1.4.7",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "fails",
+   "notes": "Automated check 0.4.14: needs code from another mod or API that is not available or does not match: xolova.blued00r.divinerpg.DivineRPG.tripleDanger:Llegacyconnector.v1_7_10.net.minecraft.stats.Achievement;."
+  },
+  {
    "name": "Doggy Talents",
    "version": "1.15.1.6",
    "mc": "1.12.2",
@@ -9006,6 +9015,15 @@
    "date": "2026-11-08",
    "status": "partial",
    "notes": "Archive.org copy of the original download (SOURCES recorded, not redistributed). Fresh server run: 11 blocks and 42 items, 0 failed callbacks (8 right clicks), 8 tile entities saved and loaded back. Real graphical client check: dark matter block, furnace, chests, nova catalyst and torches render with their textures. Transmutation and GUIs not exercised."
+  },
+  {
+   "name": "Equivalent Exchange 3",
+   "version": "pre1f",
+   "mc": "1.4.7",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (97 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Erebus",
@@ -11923,6 +11941,15 @@
    "date": "2026-11-07",
    "status": "loads",
    "notes": "Automated check: translates offline and everything it uses exists (45 classes). The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "GuiAPI",
+   "version": "0.15.2",
+   "mc": "1.4.7",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (665 classes). 8 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Guide-API",
@@ -14952,6 +14979,15 @@
    "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 116 items, 2 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
+   "name": "Logistics Pipes",
+   "version": "0.7.0.98",
+   "mc": "1.4.7",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (552 classes). 9 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "Logprot",
    "version": "1.4",
    "mc": "1.20.1",
@@ -16193,6 +16229,15 @@
    "notes": "Automated check 0.4.14: needs Minecraft or Forge features the layer does not have yet: net.minecraft.advancements.critereon.ItemPredicate.<init>, net.minecraft.advancements.critereon.ItemPredicate.register, net.minecraft.advancements.critereon.PlayerTrigger.<init>, net.minecraft.client.gui.screens.inventory.InventoryScreen.renderEntityInInventoryFollowsAngle, net.minecraft.client.particle.TerrainParticle.updateSprite (+251 more)."
   },
   {
+   "name": "Mekanism",
+   "version": "5.3.0",
+   "mc": "1.4.7",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (335 classes). 7 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "Mekanism Community Edition",
    "version": "9.10.51",
    "mc": "1.7.10",
@@ -16274,6 +16319,15 @@
    "notes": "Automated check 0.4.14: translates offline and everything it uses exists (124 classes). The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "MekanismGenerators",
+   "version": "5.3.0",
+   "mc": "1.4.7",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (36 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "MekanismTools",
    "version": "9.1.1",
    "mc": "1.7.10",
@@ -16281,6 +16335,15 @@
    "date": "2026-11-13",
    "status": "loads",
    "notes": "Automated check 0.4.14: translates offline and everything it uses exists (17 classes). The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "MekanismTools",
+   "version": "5.3.0",
+   "mc": "1.4.7",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (9 classes). The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "MekanismTweaks",
@@ -16344,6 +16407,69 @@
    "date": "2026-11-07",
    "status": "works",
    "notes": "Automated client survey: 5 items, 5 blocks, 2 entity types; placed 5/5 sampled blocks; spawned 2/2 entity types"
+  },
+  {
+   "name": "MFR Compat: ExtraBiomes",
+   "version": "1.4.6R2.1.3",
+   "mc": "1.4.7",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (270 classes). 7 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "MFR Compat: Forestry",
+   "version": "1.4.6R2.1.3",
+   "mc": "1.4.7",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (270 classes). 7 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "MFR Compat: IC2",
+   "version": "1.4.6R2.1.3",
+   "mc": "1.4.7",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (270 classes). 7 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "MFR Compat: Pam's Mods",
+   "version": "1.4.6R2.1.3",
+   "mc": "1.4.7",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (270 classes). 7 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "MFR Compat: RP2",
+   "version": "1.4.6R2.1.3",
+   "mc": "1.4.7",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (270 classes). 7 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "MFR Compat: Soul Shards",
+   "version": "1.4.6R2.1.3",
+   "mc": "1.4.7",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (270 classes). 7 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "MFR Compat: Thaumcraft",
+   "version": "1.4.6R2.1.3",
+   "mc": "1.4.7",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (270 classes). 7 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "MFR Compat: Vanilla",
@@ -16586,6 +16712,15 @@
    "date": "2026-11-08",
    "status": "partial",
    "notes": "Archive.org copy of the original download (SOURCES recorded, not redistributed). Fresh server run: 4 blocks and 6 items register, 4 right clicks and 3 tile entities saved and loaded back with 0 failed callbacks. Its IndustrialCraft compat mod fails in postInit without IndustrialCraft installed (missing dependency, not a layer defect). Not tested in a client."
+  },
+  {
+   "name": "Minefactory Reloaded",
+   "version": "1.4.6R2.1.3",
+   "mc": "1.4.7",
+   "source": "probe",
+   "date": "2026-11-13",
+   "status": "loads",
+   "notes": "Automated check 0.4.14: translates offline and everything it uses exists (270 classes). 7 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "MinefactoryReloaded Client",
