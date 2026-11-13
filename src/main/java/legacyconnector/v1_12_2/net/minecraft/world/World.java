@@ -583,6 +583,8 @@ public class World implements IBlockAccess {
     }
 
     public BlockPos getTopSolidOrLiquidBlock(BlockPos pos) {
+        // 1.12 loaded (or generated) the chunk it asked: a teleporter placing a player in another dimension reads the surface of a chunk nobody has loaded yet
+        if (REGIONS.get() == 0 && access instanceof ServerLevel sl && sl.getServer().isSameThread()) sl.getChunk(pos.getX() >> 4, pos.getZ() >> 4);
         return new BlockPos(pos.getX(), surface(pos.getX(), pos.getZ(), Heightmap.Types.MOTION_BLOCKING_NO_LEAVES), pos.getZ());
     }
 
