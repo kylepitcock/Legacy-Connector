@@ -142,7 +142,7 @@ Then validate the report against synthetic fixtures and at least one real 1.20.1
 
 ## Slice 1 implementation checkpoint
 
-Implemented on `feat/forge1201-preflight-analyzer` at source HEAD `c9abafc94708ae1bc97e6840cd3feb46628f5051`.
+Implemented on `feat/forge1201-preflight-analyzer`; code checkpoint: `c9abafc94708ae1bc97e6840cd3feb46628f5051`. The current branch also contains a follow-up documentation-only checkpoint; use the branch tip after `git pull --ff-only`.
 
 Files:
 - `loader/src/main/java/org/kylepitcock/legacyconnector/loader/tools/forge1201/Forge1201PreflightAnalyzer.java`
@@ -164,18 +164,18 @@ Synthetic tests cover multiple mod declarations, duplicate IDs, array/multiline 
 
 ### Exact next action
 
-1. Pull and verify HEAD `c9abafc94708ae1bc97e6840cd3feb46628f5051`.
+1. Switch to `feat/forge1201-preflight-analyzer`, run `git pull --ff-only`, then `git rev-parse HEAD` to confirm the updated branch tip.
 2. Run the focused loader test suite:
    ```powershell
-   .\\gradlew.bat :loader:clean :loader:test --no-daemon --console=plain
+   .\gradlew.bat :loader:clean :loader:test --no-daemon --console=plain
    ```
 3. Only after it succeeds, run the consolidated clean build:
    ```powershell
-   .\\gradlew.bat :clean :loader:clean :testmods:clean :build :loader:build :testmods:assemble --no-daemon --console=plain
+   .\gradlew.bat :clean :loader:clean :testmods:clean :build :loader:build :testmods:assemble --no-daemon --console=plain
    ```
 4. Once built, smoke-test the new task against a small independent Forge 1.20.1 JAR (not the paused Palladium/Alien Evolution pair):
    ```powershell
-   .\\gradlew.bat preflight1201 "-PpreflightJar=F:\\path\\to\\candidate.jar" "-PpreflightModsDirs=E:\\path\\to\\mods" --no-daemon --console=plain
+   .\gradlew.bat preflight1201 "-PpreflightJar=F:\path\to\candidate.jar" "-PpreflightModsDirs=E:\path\to\mods" --no-daemon --console=plain
    ```
    Expected outputs by default: `build/reports/preflight1201/<jar-name>.json` and `.txt`. Inspect both before advancing.
 
