@@ -98,6 +98,8 @@ class PalladiumResourceCompat1201Test {
                 """);
         put(resources, "addon/alienevo/kubejs_scripts/decouple.js", """
                 function getDecoupleSoundId(prefix){ return 'alienevo:' + prefix + '_decouple'; }
+                var watchItem = Item.of(itemId, 1, nbtData);
+                entity.give(watchItem);
                 entity.level.playSound(null, entity.x, entity.y, entity.z,
                         getDecoupleSoundId(watchPrefix), entity.getSoundSource(), 1.0, 1.0);
                 """);
@@ -167,6 +169,9 @@ class PalladiumResourceCompat1201Test {
         assertTrue(decouple.contains("function getAlienEvoSoundEvent(soundId)"));
         assertTrue(decouple.contains("getAlienEvoSoundEvent(getDecoupleSoundId(watchPrefix))"));
         assertFalse(decouple.contains("getDecoupleSoundId(watchPrefix),"));
+        assertTrue(decouple.contains("var watchItem = Item.of(itemId, 1);"));
+        assertTrue(decouple.contains("watchItem.setNbt(nbtData);"));
+        assertFalse(decouple.contains("Item.of(itemId, 1, nbtData)"));
 
         String detransform = get(resources, "addon/alienevo/kubejs_scripts/detransform.js");
         assertTrue(detransform.contains("function getAlienEvoSoundEvent(soundId)"));
