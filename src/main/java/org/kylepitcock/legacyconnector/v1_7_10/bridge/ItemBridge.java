@@ -822,11 +822,29 @@ public final class ItemBridge {
         } else if (modern instanceof net.minecraft.world.item.ArmorItem) {
             // modern armor (netherite, other mods' suits) is an ItemArmor to legacy code: `instanceof ItemArmor` checks (HBM's armor table) pass
             wrapper = new legacyconnector.v1_7_10.net.minecraft.item.ItemArmor(new VanillaInfo(name, -1, modern));
+        } else if (modernTool(modern, name) instanceof Item tool) {
+            wrapper = tool;
         } else {
             wrapper = new Item(new VanillaInfo(name, -1, modern));
         }
         index(name, -1, wrapper);
         return wrapper;
+    }
+
+    /**
+     * A modern tool 1.7.10 did not have (netherite tools, other mods' tools) as the legacy tool class of its kind, as the vanilla
+     * tools are: legacy code tells tools apart with {@code instanceof ItemPickaxe} and the like (Thaumcraft's arcane bore only takes
+     * an ItemPickaxe, so a netherite pickaxe was refused). Null for anything else.
+     */
+    private static Item modernTool(net.minecraft.world.item.Item modern, String name) {
+        VanillaInfo info = new VanillaInfo(name, -1, modern);
+        if (modern instanceof net.minecraft.world.item.PickaxeItem) return new legacyconnector.v1_7_10.net.minecraft.item.ItemPickaxe(info);
+        if (modern instanceof net.minecraft.world.item.AxeItem) return new legacyconnector.v1_7_10.net.minecraft.item.ItemAxe(info);
+        if (modern instanceof net.minecraft.world.item.ShovelItem) return new legacyconnector.v1_7_10.net.minecraft.item.ItemSpade(info);
+        if (modern instanceof net.minecraft.world.item.HoeItem) return new legacyconnector.v1_7_10.net.minecraft.item.ItemHoe(info);
+        if (modern instanceof net.minecraft.world.item.SwordItem) return new legacyconnector.v1_7_10.net.minecraft.item.ItemSword(info);
+        if (modern instanceof net.minecraft.world.item.ShearsItem) return new legacyconnector.v1_7_10.net.minecraft.item.ItemShears(info);
+        return null;
     }
 
     /** modern vanilla item -> {legacy wrapper, meta}; built from every vanilla legacy name at metadata 0-15. */

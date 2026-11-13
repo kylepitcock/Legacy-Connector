@@ -34,11 +34,32 @@ public class ItemTool extends Item {
     }
 
     public static Item.ToolMaterial mcc$materialOf(org.kylepitcock.legacyconnector.v1_7_10.bridge.VanillaInfo info) {
+        // a modern tool 1.7.10 did not have (netherite, other mods' tiers): the legacy material closest to its tier
+        if (info.modern() instanceof net.minecraft.world.item.TieredItem tiered) return mcc$closestMaterial(tiered.getTier());
         String n = info.legacyName();
         if (n.contains("diamond")) return Item.ToolMaterial.EMERALD;
         if (n.contains("golden")) return Item.ToolMaterial.GOLD;
         if (n.contains("iron")) return Item.ToolMaterial.IRON;
         if (n.contains("stone")) return Item.ToolMaterial.STONE;
+        return Item.ToolMaterial.WOOD;
+    }
+
+    /** The 1.7.10 material for a modern tier: the vanilla tiers by name (netherite counts as diamond), others by durability and speed. */
+    public static Item.ToolMaterial mcc$closestMaterial(net.minecraft.world.item.Tier tier) {
+        if (tier instanceof net.minecraft.world.item.Tiers t) {
+            return switch (t) {
+                case WOOD -> Item.ToolMaterial.WOOD;
+                case STONE -> Item.ToolMaterial.STONE;
+                case IRON -> Item.ToolMaterial.IRON;
+                case GOLD -> Item.ToolMaterial.GOLD;
+                case DIAMOND, NETHERITE -> Item.ToolMaterial.EMERALD;
+            };
+        }
+        int uses = tier.getUses();
+        if (uses >= 1561) return Item.ToolMaterial.EMERALD;
+        if (uses >= 250) return Item.ToolMaterial.IRON;
+        if (tier.getSpeed() >= 12.0F) return Item.ToolMaterial.GOLD;
+        if (uses >= 131) return Item.ToolMaterial.STONE;
         return Item.ToolMaterial.WOOD;
     }
 
