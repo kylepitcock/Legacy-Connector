@@ -193,6 +193,7 @@ public final class Forge1201ArchiveGraph {
         private final List<ProviderFinding> providers = new ArrayList<>();
         private final List<DeclaringMod> declaringMods = new ArrayList<>();
         private final List<String> warnings = new ArrayList<>();
+        private boolean archiveCountWarningAdded;
     }
 
     /** Analyze nested archives in the source JAR and providers in supplied installed-mod directories. */
@@ -322,12 +323,15 @@ public final class Forge1201ArchiveGraph {
     private static Snapshot snapshotFromZipFile(ZipFile zip, Budget budget) throws IOException {
         Set<String> names = new TreeSet<>();
         var enumeration = zip.entries();
+        boolean entryLimitReached = false;
         while (enumeration.hasMoreElements()) {
-            names.add(enumeration.nextElement().getName());
-            if (names.size() >= MAX_ROOT_ARCHIVE_ENTRIES) {
+            String name = enumeration.nextElement().getName();
+            if (names.size() < MAX_ROOT_ARCHIVE_ENTRIES) {
+                names.add(name);
+            } else if (!entryLimitReached) {
                 budget.warnings.add("Archive entry inventory reached the configured "
-                        + MAX_ROOT_ARCHIVE_ENTRIES + " entry limit; remaining entry names were not inspected.");
-                break;
+                        + MAX_ROOT_ARCHIVE_ENTRIES + " entry limit; additional entry names were not inventoried.");
+                entryLimitReached = true;
             }
         }
 
@@ -432,10 +436,10 @@ public final class Forge1201ArchiveGraph {
         String artifactVersion = coordinate == null ? null : coordinate.artifactVersion();
 
         if (budget.archiveCount >= MAX_NESTED_ARCHIVES) {
-            if (budget.warnings.stream().noneMatch(warning -> warning.startsWith(
-                    "Maximum nested archive count (" + MAX_NESTED_ARCHIVES + ")"))) {
+            if (!budget.archiveCountWarningAdded) {
                 budget.warnings.add("Maximum nested archive count (" + MAX_NESTED_ARCHIVES
                         + ") reached; additional nested archives were not inspected.");
+                budget.archiveCountWarningAdded = true;
             }
             return;
         }
@@ -461,10 +465,6 @@ public final class Forge1201ArchiveGraph {
             budget.archives.add(new ArchiveFinding(displayPath, parentPath, depth, origin, bytes.length, digest,
                     ArchiveKind.DEPTH_LIMIT, group, artifact, range, artifactVersion, List.of(),
                     List.of("Maximum nested archive depth exceeded.")));
-            return;
-        }
-        if (budget.archiveCount >= MAX_NESTED_ARCHIVES) {
-            budget.warnings.add("Maximum nested archive count (" + MAX_NESTED_ARCHIVES + ") reached; remaining archives were not inspected.");
             return;
         }
         if (!budget.seenDigests.add(digest)) {
