@@ -408,6 +408,9 @@ class PalladiumResourceCompat1201Test {
         String xp = get(resources, "data/alienevo/kubejs_scripts/xp.js");
         assertEquals(1, occurrences(xp, "player.server.scoreboard"));
         assertFalse(xp.contains("Utils.server"));
+        assertTrue(xp.contains("let player = source ? source.getEntity() : null;"));
+        assertTrue(xp.contains("if (player && player.type === 'minecraft:player') {"));
+        assertFalse(xp.contains("source.player"));
 
         String level = get(resources, "data/alienevo/kubejs_scripts/level_command.js");
         assertFalse(level.contains("Utils.server"));
@@ -450,15 +453,28 @@ class PalladiumResourceCompat1201Test {
         put(resources, PalladiumResourceCompat1201.ALIEN_EVO_SERVER_STUFF, """
                 NetworkEvents.dataReceived('saveBeamColorData', event => {
                     let player = event.player;
+                    let data = event.data;
+                    let colorValue = data.value;
+                    palladium.setProperty(player, 'galvanic_mechamorph_beam_color', colorValue);
                 });
                 NetworkEvents.dataReceived('saveEnergyColorData', event => {
                     let player = event.player;
+                    let data = event.data;
+                    let energyColor = data.value;
+                    palladium.setProperty(player, 'alien_energy_color', energyColor);
                 });
                 NetworkEvents.dataReceived('savePaletteData', event => {
                     let player = event.entity;
+                    let propertiesToSave = event.data;
+                    for (let propertyName in propertiesToSave) {
+                        palladium.setProperty(player, propertyName, propertiesToSave[propertyName]);
+                    }
                 });
                 NetworkEvents.dataReceived('alienevo_nickname', event => {
                     let player = event.entity;
+                    let inputText = event.data.nickname;
+                    player.persistentData.putString('nickname', inputText);
+                    palladium.setProperty(player, 'current_alien_nickname', inputText);
                 });
                 """);
 
@@ -466,6 +482,13 @@ class PalladiumResourceCompat1201Test {
         String migrated = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_SERVER_STUFF);
         assertEquals(4, occurrences(migrated, "let player = event.player;"));
         assertFalse(migrated.contains("let player = event.entity;"));
+        assertTrue(migrated.startsWith(PalladiumResourceCompat1201.ALIEN_EVO_PACKET_STRING_HELPER));
+        assertTrue(migrated.contains("legacyConnectorAlienEvoPacketString(data.value)"));
+        assertTrue(migrated.contains("legacyConnectorAlienEvoPacketString(propertiesToSave[propertyName])"));
+        assertTrue(migrated.contains("legacyConnectorAlienEvoPacketString(event.data.nickname)"));
+        assertFalse(migrated.contains("let colorValue = data.value;"));
+        assertFalse(migrated.contains("let energyColor = data.value;"));
+        assertFalse(migrated.contains("let inputText = event.data.nickname;"));
         assertEquals(0, PalladiumResourceCompat1201.apply(resources));
         assertEquals(migrated, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_SERVER_STUFF));
     }
