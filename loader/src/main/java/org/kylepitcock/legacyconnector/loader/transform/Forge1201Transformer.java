@@ -609,7 +609,7 @@ public final class Forge1201Transformer {
         int alienEvoResourceChanges = PalladiumResourceCompat1201.apply(outResources);
         if (alienEvoResourceChanges > 0) {
             result.notes.add("AlienEvo resources migrate legacy ResourceLocation and SoundEvent script APIs, persistent NBT integer/string values, armor guards, Omnitrix tab comparisons and KubeJS 7 server/player access; normalize stat-ability modifier IDs, remove the obsolete EditBox.tick call, and repair inspected Diamond Shard/AFOMNI particle texture IDs: "
-                    + alienEvoResourceChanges + " resource script(s)");
+                    + alienEvoResourceChanges + " resource file(s)");
         }
         if (PalladiumKubeJS1201.addPluginDiscoveryResource(outResources, outClasses.keySet())) {
             result.notes.add("Palladium KubeJS 7 plugin discovery entry added to kubejs.plugins.txt");
