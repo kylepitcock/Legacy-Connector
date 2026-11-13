@@ -32,7 +32,9 @@ public class Biome {
     public legacyconnector.vb1_7_3.net.minecraft.world.gen.feature.Feature getRandomTreeFeature(java.util.Random random){return new legacyconnector.vb1_7_3.net.minecraft.world.gen.feature.TreeFeature();}
     protected Biome enableSnow(){snow=true;return this;}
     public boolean canSnow(){return snow;}
-    public boolean canRain(){return !snow&&this!=HELL&&this!=DESERT&&this!=ICE_DESERT;}
+    /** Beta's {@code enableRain} flag (obf {@code w}): a mod clears it, through reflection, for a biome where it never rains. */
+    public boolean hasRain=true;
+    public boolean canRain(){return hasRain&&!snow&&this!=HELL&&this!=DESERT&&this!=ICE_DESERT;}
     public int getSkyColor(float temperature){float t=Math.max(-1,Math.min(1,temperature/3));return java.awt.Color.HSBtoRGB(.62222224F-t*.05F,.5F+t*.1F,1F);}
     public static Biome locateBiome(float temperature,float downfall){return getBiome(temperature,downfall);}
     public static Biome getBiome(double temperature,double downfall){

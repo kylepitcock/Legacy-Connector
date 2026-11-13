@@ -83,7 +83,13 @@ public final class PlayerClassOverridesB173 {
         donor.air = modern.getAirSupply();
         donor.fireTicks = modern.getRemainingFireTicks();
         donor.dead = !modern.isAlive();
-        if (view != null) donor.inventory = view.inventory;
+        if (view != null) {
+            // what the player's GUIs are built from: the very inventory, screen handlers and open screen of the native player's view
+            donor.inventory = view.inventory;
+            donor.playerScreenHandler = view.playerScreenHandler;
+            donor.currentScreenHandler = view.currentScreenHandler;
+            donor.mcc$inventoryScreen = view.mcc$inventoryScreen;
+        }
     }
 
     private static void run(Player modern, String hook, java.util.function.Consumer<ClientPlayerEntity> action, boolean writeBackMotion, boolean writeBackState) {
