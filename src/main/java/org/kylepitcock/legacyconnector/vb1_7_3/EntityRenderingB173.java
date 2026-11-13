@@ -10,10 +10,11 @@ import org.joml.Matrix4f;
 public final class EntityRenderingB173 {
     private static final ResourceLocation ITEMS=ResourceLocation.fromNamespaceAndPath("legacyconnector","b173/sheets/items");
     private static final ResourceLocation TERRAIN=ResourceLocation.fromNamespaceAndPath("legacyconnector","b173/sheets/terrain");
+    private static final ResourceLocation NATIVE=ResourceLocation.fromNamespaceAndPath("legacyconnector","b173/sheets/native");
     private EntityRenderingB173(){}
     public record Quad(List<RendererContextB173.Vertex> vertices,ResourceLocation texture){}
     public static Quad resolveQuad(List<RendererContextB173.Vertex> vertices,ResourceLocation texture){
-        int group=ITEMS.equals(texture)?2:TERRAIN.equals(texture)?1:0;
+        int group=ITEMS.equals(texture)?2:TERRAIN.equals(texture)?1:NATIVE.equals(texture)?3:0;
         if(group==0)return new Quad(vertices,texture);
         if(vertices.size()!=4)throw new IllegalArgumentException("Legacy sheet requires quads");
         double minU=Double.POSITIVE_INFINITY,minV=minU,maxU=Double.NEGATIVE_INFINITY,maxV=maxU;
@@ -21,13 +22,13 @@ public final class EntityRenderingB173 {
         int column=(int)Math.floor(minU*16+1E-6),row=(int)Math.floor(minV*16+1E-6);
         if(!Double.isFinite(minU+minV+maxU+maxV)||column<0||row<0||column>15||row>15||maxU*16>column+1+1E-6||maxV*16>row+1+1E-6)
             throw new IllegalArgumentException("Legacy sheet quad spans unsupported atlas cells");
-        ResourceLocation sprite=AssetsB173.particleSprite(group,row*16+column);
+        ResourceLocation sprite=group==3?org.kylepitcock.legacyconnector.vb1_7_3.client.NativeIconsClientB173.sprite(row*16+column):AssetsB173.particleSprite(group,row*16+column);
         if(sprite==null)throw new IllegalArgumentException("Unknown legacy sheet cell "+group+":"+(row*16+column));
         final int x=column,y=row;
         return new Quad(vertices.stream().map(v->new RendererContextB173.Vertex(v.x(),v.y(),v.z(),v.u()*16-x,v.v()*16-y,v.argb(),v.nx(),v.ny(),v.nz())).toList(),sprite);
     }
     public static ResourceLocation texture(org.kylepitcock.legacyconnector.core.LegacyModRecord mod,String path){
-        return switch(path){case "/gui/items.png","gui/items.png"->ITEMS;case "/terrain.png","terrain.png"->TERRAIN;default->MobTexturesB173.resolve(mod,path);};
+        return switch(path){case "/gui/items.png","gui/items.png"->ITEMS;case "/terrain.png","terrain.png"->TERRAIN;case NativeStackItemB173.SHEET->NATIVE;default->MobTexturesB173.resolve(mod,path);};
     }
     /** Both living and nonliving original renderers may emit immediate quads from old sheets. */
     public static RendererContextB173.Extras sheets(RendererContextB173.Extras extras){
