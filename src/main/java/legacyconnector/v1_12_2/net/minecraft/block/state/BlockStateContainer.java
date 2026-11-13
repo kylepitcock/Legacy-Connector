@@ -33,6 +33,21 @@ public class BlockStateContainer {
         this.validStates = ImmutableList.copyOf(states);
     }
 
+    private static final java.util.regex.Pattern NAME_PATTERN = java.util.regex.Pattern.compile("^[a-z0-9_]+$");
+
+    /**
+     * Vanilla's property check (mods' own containers call it while building states): the property's name. Invalid names are logged,
+     * not thrown as in 1.12, since the states are only stored as one {@code meta} property here and loading the block matters more.
+     */
+    public static String validateProperty(Block block, IProperty<?> property) {
+        String name = property.getName();
+        if (!NAME_PATTERN.matcher(name).matches()) {
+            org.slf4j.LoggerFactory.getLogger("LegacyConnector/BlockState").debug("Block {} has an invalidly named property: {}",
+                    block == null ? null : block.getClass().getName(), name);
+        }
+        return name;
+    }
+
     /** Forge's {@code ExtendedBlockState} super call: listed properties plus unlisted ones (unlisted values live in the states' extended part). */
     public BlockStateContainer(Block block, IProperty<?>[] properties,
             ImmutableMap<legacyconnector.v1_12_2.net.minecraftforge.common.property.IUnlistedProperty<?>, com.google.common.base.Optional<?>> unlistedProperties) {
@@ -125,6 +140,13 @@ public class BlockStateContainer {
         protected StateImplementation(Block block, ImmutableMap<IProperty<?>, Comparable<?>> values) {
             this.block = block;
             this.values = values;
+        }
+
+        /** Forge: a state with its neighbour table already built (mods' own state containers copy states this way). */
+        protected StateImplementation(Block block, ImmutableMap<IProperty<?>, Comparable<?>> values,
+                com.google.common.collect.ImmutableTable<IProperty<?>, Comparable<?>, IBlockState> propertyValueTable) {
+            this(block, values);
+            this.propertyValueTable = propertyValueTable;
         }
 
         /** The state for each other value of each property (vanilla's neighbour table; mods' state classes read it). */
