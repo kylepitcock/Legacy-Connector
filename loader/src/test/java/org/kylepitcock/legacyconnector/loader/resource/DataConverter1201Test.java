@@ -132,7 +132,7 @@ class DataConverter1201Test {
                  "criteria":{"c":{"trigger":"minecraft:inventory_changed","conditions":{"items":[{"tag":"forge:ingots/iron"},{"items":["m:x"],"nbt":"{A:1}"}]}}},
                  "conditions":[{"type":"forge:mod_loaded","modid":"x"}]}""", "data/m/advancement/a.json");
         same("""
-                {"display":{"icon":{"id":"m:x"},"title":"t"},
+                {"display":{"icon":{"id":"m:x","components":{"minecraft:custom_data":"{Foo:1}"}},"title":"t"},
                  "criteria":{"c":{"trigger":"minecraft:inventory_changed","conditions":{"items":[{"items":"#c:ingots/iron"},{"items":["m:x"],"predicates":{"minecraft:custom_data":"{A:1}"}}]}}},
                  "neoforge:conditions":[{"type":"neoforge:mod_loaded","modid":"x"}]}""", r);
     }
@@ -367,5 +367,222 @@ class DataConverter1201Test {
         String s = new String(out.get("pack.mcmeta"), StandardCharsets.UTF_8);
         assertTrue(s.contains("\"pack_format\":48") && s.contains("supported_formats") && !s.contains("forge:"), s);
         assertTrue(out.containsKey("data/m/recipe/a.json"));
+    }
+
+    // ---- structured item NBT to data components (ItemComponents1201), entity targets, convention tags --------------------------------
+
+    @Test
+    void recipeResultNbtBecomesEveryComponentMinecraftOwns() {
+        JsonElement r = one("data/m/recipes/x.json", """
+                {"type":"minecraft:crafting_shapeless","ingredients":[{"item":"minecraft:stick"}],
+                 "result":{"item":"minecraft:diamond_sword","count":1,"nbt":"{Damage:5,RepairCost:2,Unbreakable:1b,CustomModelData:7,HideFlags:3,display:{Name:'{\\"text\\":\\"Blade\\"}',Lore:['{\\"text\\":\\"a\\"}','plain'],color:255},Enchantments:[{id:\\"minecraft:sharpness\\",lvl:3s}],mymod:{level:4b}}"}}""",
+                "data/m/recipe/x.json");
+        JsonObject comps = r.getAsJsonObject().getAsJsonObject("result").getAsJsonObject("components");
+        assertEquals(5, comps.get("minecraft:damage").getAsInt());
+        assertEquals(2, comps.get("minecraft:repair_cost").getAsInt());
+        assertEquals(7, comps.get("minecraft:custom_model_data").getAsInt());
+        // HideFlags 3: enchantments (1) and attribute modifiers (2) hidden; there are no attribute modifiers to hide
+        same("{\"levels\":{\"minecraft:sharpness\":3},\"show_in_tooltip\":false}", comps.get("minecraft:enchantments"));
+        same("{\"text\":\"Blade\"}", comps.get("minecraft:custom_name"));
+        same("[{\"text\":\"a\"},\"plain\"]", comps.get("minecraft:lore"));
+        same("{\"rgb\":255}", comps.get("minecraft:dyed_color"));
+        same("{}", comps.get("minecraft:unbreakable"));
+        assertEquals("{mymod:{level:4b}}", comps.get("minecraft:custom_data").getAsString());
+    }
+
+    @Test
+    void attributeModifiersBannerPatternsStoredEnchantmentsAndHiddenFlags() {
+        JsonElement r = one("data/m/recipes/y.json", """
+                {"type":"minecraft:crafting_shapeless","ingredients":[{"item":"minecraft:stick"}],
+                 "result":{"item":"minecraft:white_banner","nbt":"{BlockEntityTag:{Patterns:[{Pattern:\\"bs\\",Color:14}]},HideFlags:32,AttributeModifiers:[{AttributeName:\\"generic.attackDamage\\",Name:\\"n\\",Amount:2.5d,Operation:0,UUID:[I;1,2,3,4],Slot:\\"mainhand\\"}]}"}}""",
+                "data/m/recipe/y.json");
+        JsonObject comps = r.getAsJsonObject().getAsJsonObject("result").getAsJsonObject("components");
+        same("[{\"color\":\"red\",\"pattern\":\"minecraft:stripe_bottom\"}]", comps.get("minecraft:banner_patterns"));
+        same("{}", comps.get("minecraft:hide_additional_tooltip"));
+        JsonObject modifier = comps.getAsJsonArray("minecraft:attribute_modifiers").get(0).getAsJsonObject();
+        assertEquals("minecraft:generic.attack_damage", modifier.get("type").getAsString());
+        assertEquals("add_value", modifier.get("operation").getAsString());
+        assertEquals("mainhand", modifier.get("slot").getAsString());
+        assertEquals(2.5, modifier.get("amount").getAsDouble());
+        assertEquals("legacy:00000001-0000-0002-0000-000300000004", modifier.get("id").getAsString());
+
+        JsonElement book = one("data/m/recipes/z.json", """
+                {"type":"minecraft:crafting_shapeless","ingredients":[{"item":"minecraft:stick"}],
+                 "result":{"item":"minecraft:enchanted_book","nbt":"{StoredEnchantments:[{id:\\"minecraft:mending\\",lvl:1s}]}"}}""", "data/m/recipe/z.json");
+        same("{\"minecraft:stored_enchantments\":{\"levels\":{\"minecraft:mending\":1}}}",
+                book.getAsJsonObject().getAsJsonObject("result").get("components"));
+    }
+
+    @Test
+    void nbtThatCannotBeCarriedOverStaysInTheCustomData() {
+        // Trim has no exact form here, a bad Name type is refused: both stay readable in custom_data instead of vanishing
+        JsonElement r = one("data/m/recipes/w.json", """
+                {"type":"minecraft:crafting_shapeless","ingredients":[{"item":"minecraft:stick"}],
+                 "result":{"item":"minecraft:iron_chestplate","nbt":"{Trim:{material:\\"minecraft:gold\\"},Damage:2}"}}""", "data/m/recipe/w.json");
+        JsonObject comps = r.getAsJsonObject().getAsJsonObject("result").getAsJsonObject("components");
+        assertEquals(2, comps.get("minecraft:damage").getAsInt());
+        assertEquals("{Trim:{material:\"minecraft:gold\"}}", comps.get("minecraft:custom_data").getAsString());
+    }
+
+    @Test
+    void nbtIngredientsKeepTheirComponentsAndOnlyStrictOnesTheCustomData() {
+        JsonElement r = one("data/m/recipes/i.json", """
+                {"type":"minecraft:crafting_shapeless","ingredients":[
+                  {"type":"forge:nbt","item":"minecraft:potion","nbt":"{Potion:\\"minecraft:healing\\",extra:1}"},
+                  {"type":"forge:strict_nbt","item":"m:x","nbt":"{Damage:3,extra:1}"}],
+                 "result":{"item":"minecraft:stick"}}""", "data/m/recipe/i.json");
+        JsonArray ing = r.getAsJsonObject().getAsJsonArray("ingredients");
+        same("{\"type\":\"neoforge:components\",\"items\":\"minecraft:potion\",\"components\":{\"minecraft:potion_contents\":{\"potion\":\"minecraft:healing\"}},\"strict\":false}", ing.get(0));
+        same("{\"type\":\"neoforge:components\",\"items\":\"m:x\",\"components\":{\"minecraft:damage\":3,\"minecraft:custom_data\":\"{extra:1}\"},\"strict\":true}", ing.get(1));
+    }
+
+    @Test
+    void setNbtSplitsIntoComponentsAndCustomDataByTheItemInScope() {
+        JsonElement r = one("data/m/loot_tables/blocks/b.json", """
+                {"type":"minecraft:block","pools":[{"rolls":1,"entries":[{"type":"minecraft:item","name":"minecraft:diamond_pickaxe",
+                  "functions":[{"function":"minecraft:set_nbt","tag":"{Damage:7,Enchantments:[{id:\\"minecraft:efficiency\\",lvl:2s}],Owner:\\"x\\"}"}]}]}]}""",
+                "data/m/loot_table/blocks/b.json");
+        JsonArray fns = r.getAsJsonObject().getAsJsonArray("pools").get(0).getAsJsonObject().getAsJsonArray("entries").get(0).getAsJsonObject().getAsJsonArray("functions");
+        assertEquals(2, fns.size(), fns.toString());
+        assertEquals("minecraft:set_components", fns.get(0).getAsJsonObject().get("function").getAsString());
+        same("{\"minecraft:damage\":7,\"minecraft:enchantments\":{\"levels\":{\"minecraft:efficiency\":2}}}", fns.get(0).getAsJsonObject().get("components"));
+        assertEquals("minecraft:set_custom_data", fns.get(1).getAsJsonObject().get("function").getAsString());
+        assertEquals("{Owner:\"x\"}", fns.get(1).getAsJsonObject().get("tag").getAsString());
+    }
+
+    @Test
+    void setNbtWithConditionsKeepsOneFunctionAndAPotionOnAnUnknownItemStaysCustomData() {
+        JsonElement r = one("data/m/loot_tables/blocks/c.json", """
+                {"type":"minecraft:block","pools":[{"rolls":1,"entries":[{"type":"minecraft:item","name":"m:thing",
+                  "functions":[{"function":"minecraft:set_nbt","tag":"{display:{Name:'\\"X\\"'},mod:1}","conditions":[{"condition":"minecraft:survives_explosion"}]},
+                               {"function":"minecraft:set_nbt","tag":"{Potion:\\"minecraft:water\\",mod:2}"}]}]}]}""", "data/m/loot_table/blocks/c.json");
+        JsonArray fns = r.getAsJsonObject().getAsJsonArray("pools").get(0).getAsJsonObject().getAsJsonArray("entries").get(0).getAsJsonObject().getAsJsonArray("functions");
+        assertEquals(2, fns.size(), fns.toString());
+        JsonObject first = fns.get(0).getAsJsonObject();
+        assertEquals("minecraft:set_components", first.get("function").getAsString());
+        assertEquals("{mod:1}", first.getAsJsonObject("components").get("minecraft:custom_data").getAsString());
+        assertEquals("minecraft:survives_explosion", first.getAsJsonArray("conditions").get(0).getAsJsonObject().get("condition").getAsString());
+        // m:thing is not Minecraft's: Potion is the mod's own key there
+        assertEquals("minecraft:set_custom_data", fns.get(1).getAsJsonObject().get("function").getAsString());
+    }
+
+    @Test
+    void itemModifierSetNbtIsSplitInsideTheFunctionList() {
+        JsonElement r = one("data/m/item_modifiers/s.json", """
+                [{"function":"minecraft:set_nbt","tag":"{CustomModelData:3,k:1}"},{"function":"minecraft:set_count","count":2}]""", "data/m/item_modifier/s.json");
+        JsonArray a = r.getAsJsonArray();
+        assertEquals(3, a.size(), a.toString());
+        assertEquals("minecraft:set_components", a.get(0).getAsJsonObject().get("function").getAsString());
+        assertEquals(3, a.get(0).getAsJsonObject().getAsJsonObject("components").get("minecraft:custom_model_data").getAsInt());
+        assertEquals("minecraft:set_custom_data", a.get(1).getAsJsonObject().get("function").getAsString());
+        assertEquals("minecraft:set_count", a.get(2).getAsJsonObject().get("function").getAsString());
+    }
+
+    @Test
+    void advancementIconKeepsItsModelNumberAndCustomData() {
+        JsonElement r = one("data/m/advancements/i.json", """
+                {"display":{"icon":{"item":"m:x","nbt":"{CustomModelData:2,Foo:1}"},"title":"t"},"criteria":{}}""", "data/m/advancement/i.json");
+        JsonObject icon = r.getAsJsonObject().getAsJsonObject("display").getAsJsonObject("icon");
+        assertEquals("m:x", icon.get("id").getAsString());
+        assertEquals(2, icon.getAsJsonObject("components").get("minecraft:custom_model_data").getAsInt());
+        assertEquals("{Foo:1}", icon.getAsJsonObject("components").get("minecraft:custom_data").getAsString());
+    }
+
+    @Test
+    void itemPredicateNbtOfPotionEnchantmentsAndDamageBecomesSubPredicates() {
+        JsonElement r = one("data/m/advancements/p.json", """
+                {"criteria":{"c":{"trigger":"minecraft:inventory_changed","conditions":{"items":[
+                  {"items":["minecraft:potion"],"nbt":"{Potion:\\"minecraft:healing\\"}"},
+                  {"items":["minecraft:diamond_sword"],"nbt":"{Damage:0,Enchantments:[{id:\\"minecraft:sharpness\\",lvl:5s}],mod:1}"},
+                  {"items":["minecraft:stick"],"nbt":"{display:{Name:'\\"X\\"'}}"}]}}}}""", "data/m/advancement/p.json");
+        JsonArray items = r.getAsJsonObject().getAsJsonObject("criteria").getAsJsonObject("c").getAsJsonObject("conditions").getAsJsonArray("items");
+        same("{\"items\":[\"minecraft:potion\"],\"predicates\":{\"minecraft:potion_contents\":\"minecraft:healing\"}}", items.get(0));
+        same("{\"items\":[\"minecraft:diamond_sword\"],\"predicates\":{\"minecraft:enchantments\":[{\"enchantments\":\"minecraft:sharpness\",\"levels\":{\"min\":5,\"max\":5}}],\"minecraft:custom_data\":\"{mod:1}\"}}", items.get(1));
+        // a name has no sub-predicate: the old behaviour (a custom data test of the NBT) stays
+        assertTrue(items.get(2).getAsJsonObject().getAsJsonObject("predicates").has("minecraft:custom_data"));
+    }
+
+    @Test
+    void killerTargetsAreRenamedInLootConditionsFunctionsAndPredicates() {
+        JsonElement r = one("data/m/loot_tables/entities/e.json", """
+                {"type":"minecraft:entity","pools":[{"rolls":1,"conditions":[{"condition":"minecraft:entity_properties","entity":"killer","predicate":{}},
+                  {"condition":"minecraft:entity_properties","entity":"direct_killer","predicate":{}},{"condition":"minecraft:entity_properties","entity":"killer_player","predicate":{}},
+                  {"condition":"minecraft:entity_scores","entity":"this","scores":{}}],
+                  "entries":[{"type":"minecraft:item","name":"minecraft:bone","functions":[{"function":"minecraft:set_name","entity":"killer","name":"x"}]}]}]}""",
+                "data/m/loot_table/entities/e.json");
+        JsonObject pool = r.getAsJsonObject().getAsJsonArray("pools").get(0).getAsJsonObject();
+        assertEquals("attacker", pool.getAsJsonArray("conditions").get(0).getAsJsonObject().get("entity").getAsString());
+        assertEquals("direct_attacker", pool.getAsJsonArray("conditions").get(1).getAsJsonObject().get("entity").getAsString());
+        assertEquals("attacking_player", pool.getAsJsonArray("conditions").get(2).getAsJsonObject().get("entity").getAsString());
+        assertEquals("this", pool.getAsJsonArray("conditions").get(3).getAsJsonObject().get("entity").getAsString());
+        assertEquals("attacker", pool.getAsJsonArray("entries").get(0).getAsJsonObject().getAsJsonArray("functions").get(0).getAsJsonObject().get("entity").getAsString());
+
+        JsonElement predicate = one("data/m/predicates/k.json", "{\"condition\":\"minecraft:entity_properties\",\"entity\":\"killer_player\",\"predicate\":{}}", "data/m/predicate/k.json");
+        assertEquals("attacking_player", predicate.getAsJsonObject().get("entity").getAsString());
+    }
+
+    @Test
+    void conventionTagPairsComeFromNeoForgesOwnTagDefinitions() {
+        assertEquals("c:bricks/normal", DataConverter1201.mapTag("forge:ingots/brick"));
+        assertEquals("#c:bricks/nether", DataConverter1201.mapTag("#forge:ingots/nether_brick"));
+        assertEquals("c:glass_blocks/cheap", DataConverter1201.mapTag("forge:glass_silica"));
+        assertEquals("c:glass_blocks/colorless", DataConverter1201.mapTag("forge:glass_colorless"));
+        assertEquals("c:sandstone/blocks", DataConverter1201.mapTag("forge:sandstone"));
+        assertEquals("c:relocation_not_supported", DataConverter1201.mapTag("forge:immovable"));
+        assertEquals("c:tools/brush", DataConverter1201.mapTag("forge:tools/brushes"));
+        assertEquals("c:is_dense_vegetation/overworld", DataConverter1201.mapTag("forge:is_dense/overworld"));
+        assertEquals("c:is_aquatic", DataConverter1201.mapTag("forge:is_water"));
+        // the segment rules still apply to the rest, and the pairs agree with them where both know a tag
+        assertEquals("c:stones", DataConverter1201.mapTag("forge:stone"));
+        assertEquals("c:cobblestones/mossy", DataConverter1201.mapTag("forge:cobblestone/mossy"));
+        assertEquals("c:ingots/iron", DataConverter1201.mapTag("forge:ingots/iron"));
+        assertEquals("data/c/tags/item/bricks/normal.json", DataConverter1201.mapPath("data/forge/tags/items/ingots/brick.json"));
+        assertEquals("data/c/tags/worldgen/biome/is_dense_vegetation.json", DataConverter1201.mapPath("data/forge/tags/worldgen/biome/is_dense.json"));
+        assertEquals("data/c/tags/worldgen/biome/is_cold.json", DataConverter1201.mapPath("data/forge/tags/worldgen/biome/is_cold.json"));
+    }
+
+    @Test
+    void everyPairTargetIsAConventionTagNeoForgeShips() throws Exception {
+        java.util.Set<String> known = new java.util.HashSet<>();
+        try (var in = DataConverter1201Test.class.getResourceAsStream("/legacyconnector/forward/1.20.1/c-tags.txt")) {
+            for (String l : new String(in.readAllBytes(), StandardCharsets.UTF_8).split("\\R")) if (!l.isBlank()) known.add(l.trim());
+        }
+        int rows = 0;
+        try (var in = DataConverter1201Test.class.getResourceAsStream("/legacyconnector/forward/1.20.1/forge-c-tag-pairs.tsv")) {
+            for (String l : new String(in.readAllBytes(), StandardCharsets.UTF_8).split("\\R")) {
+                if (l.isBlank() || l.startsWith("#")) continue;
+                String[] a = l.split("\t");
+                assertEquals(2, a.length, l);
+                rows++;
+                boolean found = false;
+                for (String registry : List.of("item", "block", "fluid", "worldgen/biome")) found |= known.contains(registry + "/" + a[1]);
+                assertTrue(found, "no c: tag " + a[1]);
+            }
+        }
+        assertTrue(rows >= 40, "rows: " + rows);
+    }
+
+    @Test
+    void camelCaseAndHorseAttributeIdsAreMigrated() {
+        JsonElement r = one("data/m/loot_tables/blocks/a.json", """
+                {"type":"minecraft:block","pools":[{"rolls":1,"entries":[{"type":"minecraft:item","name":"minecraft:stick","functions":[
+                  {"function":"minecraft:set_attributes","modifiers":[{"attribute":"generic.maxHealth","amount":1,"operation":"addition","name":"a","slot":"mainhand"},
+                                                                       {"attribute":"horse.jump_strength","amount":1,"operation":"addition","name":"b","slot":"mainhand"}]}]}]}]}""",
+                "data/m/loot_table/blocks/a.json");
+        JsonArray mods = r.getAsJsonObject().getAsJsonArray("pools").get(0).getAsJsonObject().getAsJsonArray("entries").get(0).getAsJsonObject()
+                .getAsJsonArray("functions").get(0).getAsJsonObject().getAsJsonArray("modifiers");
+        assertEquals("minecraft:generic.max_health", mods.get(0).getAsJsonObject().get("attribute").getAsString());
+        assertEquals("minecraft:generic.jump_strength", mods.get(1).getAsJsonObject().get("attribute").getAsString());
+    }
+
+    @Test
+    void snbtRoundTripKeepsTypes() {
+        Snbt1201.Compound c = Snbt1201.parseCompound("{a:1b,b:2s,c:3,d:4L,e:1.5f,f:2.5d,g:\"x\\\"y\",h:[1,2],i:[I;1,2],j:{k:true},'q r':1}");
+        assertEquals("{a:1b,b:2s,c:3,d:4L,e:1.5f,f:2.5d,g:\"x\\\"y\",h:[1,2],i:[I;1,2],j:{k:1b},\"q r\":1}", Snbt1201.write(c));
+        assertEquals(null, Snbt1201.parseCompound("{a:1"));
+        assertEquals(null, Snbt1201.parseCompound("[1,2]"));
+        // a JSON object is SNBT too (Forge accepted it as the nbt of a result)
+        Snbt1201.Compound json = Snbt1201.parseField(JsonParser.parseString("{\"Damage\":3,\"display\":{\"Name\":\"\\\"n\\\"\"}}"));
+        assertEquals(3L, ((Snbt1201.Num) json.get("Damage")).asLong());
     }
 }

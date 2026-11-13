@@ -27,8 +27,13 @@ import java.util.regex.Pattern;
  * {@code neoforge:}, Forge's tags are the convention tags {@code c:}...). Everything here is a pure function of one file (path and bytes), so a
  * jar translation can run it over every resource entry; the legacy formats it understands are documented per method.
  *
- * <p>What cannot be converted exactly (item NBT other than potions and enchantments, which becomes data components in 1.21) is dropped and
- * counted ({@code nbt_dropped}) rather than left in a form 1.21.1 would reject and discard the whole recipe or table for.
+ * <p>Item NBT is migrated structurally ({@link ItemComponents1201}, {@link Snbt1201}): the keys Minecraft owns become data components, the rest goes
+ * to {@code minecraft:custom_data}. What cannot be converted exactly (unparsable NBT, a key only some items read on an item we cannot name) is dropped
+ * and counted ({@code nbt_dropped}) rather than left in a form 1.21.1 would reject and discard the whole recipe or table for.
+ *
+ * <p>Portions adapted from Retromod (https://github.com/Bownlux/Retromod), MIT License, Copyright (c) 2026 Bownlux: the loot entry item scope of
+ * {@code set_nbt}, the killer to attacker entity target renames and the item predicate rules ({@code resources/ItemStackDataMigrator.java}); the
+ * convention tag pairs are read from NeoForge's own tag definitions ({@code tools/dev/gen_c_tag_pairs.py}), with Retromod's table as a cross-check only.
  */
 public final class DataConverter1201 {
     private DataConverter1201() {
@@ -70,11 +75,19 @@ public final class DataConverter1201 {
     private static final Map<String, String> RENAMED_IDS = Map.of(
             "minecraft:grass", "minecraft:short_grass", "minecraft:sweeping", "minecraft:sweeping_edge", "minecraft:scute", "minecraft:turtle_scute");
     /** Attribute ids whose identifiers changed after Forge 1.20.1 / Minecraft 1.20.1. */
-    private static final Map<String, String> ATTRIBUTE_IDS = Map.of(
-            "forge:step_height_addition", "minecraft:generic.step_height",
-            "forge:entity_gravity", "minecraft:generic.gravity",
-            "forge:swim_speed", "neoforge:swim_speed",
-            "generic.movement_speed", "minecraft:generic.movement_speed");
+    private static final Map<String, String> ATTRIBUTE_IDS = Map.ofEntries(
+            Map.entry("forge:step_height_addition", "minecraft:generic.step_height"),
+            Map.entry("forge:entity_gravity", "minecraft:generic.gravity"),
+            Map.entry("forge:swim_speed", "neoforge:swim_speed"),
+            Map.entry("generic.movement_speed", "minecraft:generic.movement_speed"),
+            // 1.16 renamed the camel case names (mods kept writing them: Forge 1.20.1 read them through the data fixer, 1.21.1 does not); 1.20.5 renamed the horse one
+            Map.entry("generic.maxHealth", "minecraft:generic.max_health"), Map.entry("generic.followRange", "minecraft:generic.follow_range"),
+            Map.entry("generic.knockbackResistance", "minecraft:generic.knockback_resistance"), Map.entry("generic.movementSpeed", "minecraft:generic.movement_speed"),
+            Map.entry("generic.flyingSpeed", "minecraft:generic.flying_speed"), Map.entry("generic.attackDamage", "minecraft:generic.attack_damage"),
+            Map.entry("generic.attackKnockback", "minecraft:generic.attack_knockback"), Map.entry("generic.attackSpeed", "minecraft:generic.attack_speed"),
+            Map.entry("generic.armorToughness", "minecraft:generic.armor_toughness"), Map.entry("horse.jumpStrength", "minecraft:generic.jump_strength"),
+            Map.entry("horse.jump_strength", "minecraft:generic.jump_strength"), Map.entry("minecraft:horse.jump_strength", "minecraft:generic.jump_strength"),
+            Map.entry("zombie.spawnReinforcements", "minecraft:zombie.spawn_reinforcements"));
     /** First segment of a Forge tag path to its convention-tag spelling in NeoForge 1.21.1 ({@code c:}); the rest of the path is kept. */
     private static final Map<String, String> TAG_SEGMENTS = Map.ofEntries(
             Map.entry("stone", "stones"), Map.entry("cobblestone", "cobblestones"), Map.entry("sand", "sands"),
@@ -108,7 +121,10 @@ public final class DataConverter1201 {
             String type = rest.substring(0, slash);
             type = PLURAL_TAGS.getOrDefault(type, type);
             String tail = rest.substring(slash + 1);
-            if (type.equals("worldgen")) return "data/c/tags/worldgen/" + tail;
+            if (type.equals("worldgen")) {
+                if (tail.startsWith("biome/")) return "data/c/tags/worldgen/biome/" + tagPairs().getOrDefault(tail.substring(6, tail.length() - (tail.endsWith(".json") ? 5 : 0)), tail.substring(6, tail.length() - (tail.endsWith(".json") ? 5 : 0))) + (tail.endsWith(".json") ? ".json" : "");
+                return "data/c/tags/worldgen/" + tail;
+            }
             return "data/c/tags/" + type + "/" + conventionTagPath(tail);
         }
         if (dir.equals("forge")) return "data/" + ns + "/neoforge/" + rest;
@@ -131,6 +147,31 @@ public final class DataConverter1201 {
         return "plural_dir";
     }
 
+    private static volatile Map<String, String> tagPairs;
+
+    /**
+     * {@code forge-c-tag-pairs.tsv}: the Forge tag paths NeoForge's own convention tags replace under another name, read from the {@code #forge:}
+     * entries of its {@code data/c/tags} by {@code tools/dev/gen_c_tag_pairs.py}. Wins over the segment rules below.
+     */
+    private static Map<String, String> tagPairs() {
+        Map<String, String> r = tagPairs;
+        if (r != null) return r;
+        r = new java.util.HashMap<>();
+        try (var in = DataConverter1201.class.getResourceAsStream("/legacyconnector/forward/1.20.1/forge-c-tag-pairs.tsv")) {
+            if (in != null) {
+                for (String line : new String(in.readAllBytes(), StandardCharsets.UTF_8).split("\\R")) {
+                    if (line.isBlank() || line.startsWith("#")) continue;
+                    String[] a = line.strip().split("\t");
+                    if (a.length == 2) r.put(a[0], a[1]);
+                }
+            }
+        } catch (java.io.IOException e) {
+            // no table: the segment rules alone
+        }
+        tagPairs = r;
+        return r;
+    }
+
     /** A tag path (without namespace, possibly with a {@code .json} suffix) of the {@code forge:} tags in the {@code c:} spelling. */
     static String conventionTagPath(String path) {
         String suffix = "";
@@ -138,6 +179,8 @@ public final class DataConverter1201 {
             suffix = ".json";
             path = path.substring(0, path.length() - 5);
         }
+        String paired = tagPairs().get(path);
+        if (paired != null) return paired + suffix;
         int slash = path.indexOf('/');
         String first = slash < 0 ? path : path.substring(0, slash);
         if (first.equals("is_coniferous")) first = "is_tree/coniferous"; // biome tags: forge:is_coniferous
@@ -233,7 +276,7 @@ public final class DataConverter1201 {
             if (np.contains("/palladium/powers/") && root.isJsonObject()) {
                 palladiumPower(root.getAsJsonObject(), c);
             }
-            if (dir.equals("loot_table") || dir.equals("loot_modifiers")) loot(root, c);
+            if (dir.equals("loot_table") || dir.equals("loot_modifiers") || dir.equals("predicate")) loot(root, c);
             if (dir.equals("dimension_type") && root.isJsonObject()) dimensionType(root.getAsJsonObject(), c);
             if (np.contains("/worldgen/structure_set/") && root.isJsonObject()) structureSet(root.getAsJsonObject(), c);
             if (np.contains("/worldgen/") || dir.equals("dimension_type")) worldgenShapes(root, c);
@@ -390,6 +433,8 @@ public final class DataConverter1201 {
 
     private static final class Ctx {
         final Set<String> categories = new LinkedHashSet<>();
+        /** The item of the loot entry being walked (its functions say whose NBT they set), or null when it is not one item. */
+        String entryItem;
 
         void hit(String category) {
             categories.add(category);
@@ -517,6 +562,7 @@ public final class DataConverter1201 {
     /** Converts legacy function identifiers and fields inside item-modifier JSON resources. */
     private static void itemModifier(JsonElement e, Ctx c) {
         if (e.isJsonArray()) {
+            splitSetNbt(e.getAsJsonArray(), c);
             for (JsonElement child : e.getAsJsonArray()) itemModifier(child, c);
             return;
         }
@@ -524,6 +570,7 @@ public final class DataConverter1201 {
         JsonObject o = e.getAsJsonObject();
         if (o.has("function") && o.get("function").isJsonPrimitive()) {
             String function = o.get("function").getAsString();
+            renameEntityTarget(o, ENTITY_TARGET_FUNCTIONS.get(id(function)), c);
             if (function.equals("minecraft:set_nbt")) {
                 o.addProperty("function", "minecraft:set_custom_data");
                 c.hit("item_modifier");
@@ -661,7 +708,7 @@ public final class DataConverter1201 {
             switch (en.getKey()) {
                 case "item" -> out.add("id", en.getValue());
                 case "nbt" -> {
-                    JsonObject comps = components(en.getValue(), c);
+                    JsonObject comps = components(en.getValue(), c, o.has("item") && o.get("item").isJsonPrimitive() ? o.get("item").getAsString() : null, true);
                     if (comps.size() > 0) out.add("components", comps);
                     c.hit("recipe_nbt");
                 }
@@ -681,7 +728,7 @@ public final class DataConverter1201 {
         JsonObject o = e.getAsJsonObject();
         String type = o.has("type") && o.get("type").isJsonPrimitive() ? o.get("type").getAsString() : "";
         if (type.equals("forge:nbt") || type.equals("forge:partial_nbt") || type.equals("forge:strict_nbt")) {
-            JsonObject comps = o.has("nbt") ? components(o.get("nbt"), c) : new JsonObject();
+            JsonObject comps = o.has("nbt") ? components(o.get("nbt"), c, o.has("item") && o.get("item").isJsonPrimitive() ? o.get("item").getAsString() : o.has("items") && o.get("items").isJsonPrimitive() ? o.get("items").getAsString() : null, type.equals("forge:strict_nbt")) : new JsonObject();
             c.hit("recipe_nbt");
             JsonElement item = o.has("item") ? o.get("item") : o.get("items");
             if (item == null) item = JsonNull();
@@ -711,37 +758,28 @@ public final class DataConverter1201 {
         return com.google.gson.JsonNull.INSTANCE;
     }
 
-    /** The parts of a legacy item NBT that have a data component form here: potions and enchantments; everything else is dropped. */
-    private static JsonObject components(JsonElement nbt, Ctx c) {
-        JsonObject comps = new JsonObject();
-        String s = nbt.isJsonPrimitive() ? nbt.getAsString() : nbt.toString();
-        Matcher m = POTION.matcher(s);
-        if (m.find()) {
-            JsonObject pc = new JsonObject();
-            pc.addProperty("potion", m.group(1));
-            comps.add("minecraft:potion_contents", pc);
+    /**
+     * A legacy item NBT as the 1.21.1 data components of a stack of {@code itemId} (null when not known): the keys Minecraft owns become components
+     * ({@link ItemComponents1201}), the mod's own keys and the Minecraft keys that cannot be carried over go to {@code minecraft:custom_data} when
+     * {@code keepCustomData} (a partial NBT ingredient matches by the components it names, so the custom data of the NBT stays out of it).
+     */
+    private static JsonObject components(JsonElement nbt, Ctx c, String itemId, boolean keepCustomData) {
+        Snbt1201.Compound tag = Snbt1201.parseField(nbt);
+        ItemComponents1201.Split split = tag == null ? null : ItemComponents1201.split(itemId, tag);
+        if (split == null) {
+            // unparsable NBT, or a key that only some of Minecraft's items read on an item we cannot name: the NBT does not carry over
+            c.hit("nbt_dropped");
+            return new JsonObject();
         }
-        int ench = Math.max(s.indexOf("StoredEnchantments"), -1);
-        boolean stored = ench >= 0;
-        int at = stored ? ench : s.indexOf("Enchantments");
-        if (at >= 0) {
-            JsonObject levels = new JsonObject();
-            Matcher em = ENCHANT_ENTRY.matcher(s.substring(at));
-            while (em.find()) {
-                String id = em.group(1) != null ? em.group(1) : em.group(4);
-                String lvl = em.group(2) != null ? em.group(2) : em.group(3);
-                levels.addProperty(id, Integer.parseInt(lvl));
-            }
-            if (levels.size() > 0) {
-                JsonObject holder = new JsonObject();
-                holder.add("levels", levels);
-                comps.add(stored ? "minecraft:stored_enchantments" : "minecraft:enchantments", holder);
-            }
+        JsonObject comps = split.components();
+        if (comps.size() > 0) c.hit("nbt_components");
+        if (keepCustomData && !split.customData().entries().isEmpty()) {
+            comps.addProperty("minecraft:custom_data", Snbt1201.write(split.customData()));
+            c.hit("nbt_custom_data");
         }
         if (comps.size() == 0) c.hit("nbt_dropped");
         return comps;
     }
-
     // ---- advancements --------------------------------------------------------------------------------------------------------------
 
     private static List<Out> advancement(String path, JsonObject o, Ctx c) {
@@ -843,7 +881,8 @@ public final class DataConverter1201 {
             changed = true;
         }
         if (o.has("nbt")) {
-            preds.add("minecraft:custom_data", o.remove("nbt"));
+            JsonElement nbt = o.remove("nbt");
+            if (!nbtPredicate(nbt, predicateItem(o), preds)) preds.add("minecraft:custom_data", nbt);
             changed = true;
         }
         if (o.has("enchantments") && o.get("enchantments").isJsonArray()) {
@@ -870,6 +909,64 @@ public final class DataConverter1201 {
         }
     }
 
+    /** The one item a legacy item predicate names, or null (a tag, a list, none). */
+    private static String predicateItem(JsonObject o) {
+        JsonElement items = o.has("items") ? o.get("items") : o.get("item");
+        if (items == null) return null;
+        if (items.isJsonPrimitive() && !items.getAsString().startsWith("#")) return id(items.getAsString());
+        if (items.isJsonArray() && items.getAsJsonArray().size() == 1 && items.getAsJsonArray().get(0).isJsonPrimitive()) return id(items.getAsJsonArray().get(0).getAsString());
+        return null;
+    }
+
+    /**
+     * A legacy predicate NBT whose Minecraft keys now are components, which {@code custom_data} never matches: the potion, the enchantments and the damage
+     * have a sub-predicate that tests what the NBT test tested. Anything else of Minecraft's (a name, a model number) has none, and the NBT stays a
+     * custom data test as before. The mod's own keys stay a custom data test.
+     *
+     * @return false when nothing was converted (the caller keeps the NBT as custom data)
+     */
+    private static boolean nbtPredicate(JsonElement nbt, String item, JsonObject preds) {
+        Snbt1201.Compound tag = Snbt1201.parseField(nbt);
+        if (tag == null) return false;
+        ItemComponents1201.Split split = ItemComponents1201.split(item, tag);
+        if (split == null || !split.unmapped().isEmpty() || split.components().size() == 0) return false;
+        JsonObject staged = new JsonObject();
+        for (var en : split.components().entrySet()) {
+            JsonElement v = en.getValue();
+            switch (en.getKey()) {
+                case "minecraft:potion_contents" -> {
+                    if (!v.isJsonObject() || v.getAsJsonObject().size() != 1 || !v.getAsJsonObject().has("potion")) return false;
+                    staged.add(en.getKey(), v.getAsJsonObject().get("potion"));
+                }
+                case "minecraft:enchantments", "minecraft:stored_enchantments" -> {
+                    JsonArray list = new JsonArray();
+                    for (var lv : v.getAsJsonObject().getAsJsonObject("levels").entrySet()) {
+                        JsonObject exact = new JsonObject();
+                        exact.add("min", lv.getValue());
+                        exact.add("max", lv.getValue());
+                        JsonObject entry = new JsonObject();
+                        entry.addProperty("enchantments", lv.getKey());
+                        entry.add("levels", exact);
+                        list.add(entry);
+                    }
+                    staged.add(en.getKey(), list);
+                }
+                case "minecraft:damage" -> {
+                    JsonObject dmg = new JsonObject();
+                    dmg.add("damage", v);
+                    staged.add(en.getKey(), dmg);
+                }
+                default -> {
+                    return false;
+                }
+            }
+        }
+        for (var en : staged.entrySet()) if (preds.has(en.getKey())) return false;
+        staged.entrySet().forEach(en -> preds.add(en.getKey(), en.getValue()));
+        if (!split.customData().entries().isEmpty()) preds.addProperty("minecraft:custom_data", Snbt1201.write(split.customData()));
+        return true;
+    }
+
     private static JsonArray enchantList(JsonArray old) {
         JsonArray out = new JsonArray();
         for (JsonElement x : old) {
@@ -891,11 +988,22 @@ public final class DataConverter1201 {
 
     private static void loot(JsonElement e, Ctx c) {
         if (e.isJsonArray()) {
+            splitSetNbt(e.getAsJsonArray(), c);
             for (JsonElement x : e.getAsJsonArray()) loot(x, c);
             return;
         }
         if (!e.isJsonObject()) return;
         JsonObject o = e.getAsJsonObject();
+        String enclosingItem = c.entryItem;
+        c.entryItem = scopeItem(o, enclosingItem);
+        try {
+            lootObject(o, c);
+        } finally {
+            c.entryItem = enclosingItem;
+        }
+    }
+
+    private static void lootObject(JsonObject o, Ctx c) {
         // block state predicates: 1.20.1 accepted a boolean or a number for a property value, 1.21 wants the string ("ropelogged": false)
         if (o.has("properties") && o.get("properties").isJsonObject() && o.has("block")) {
             JsonObject props = o.getAsJsonObject("properties");
@@ -907,8 +1015,15 @@ public final class DataConverter1201 {
                 }
             }
         }
-        if (o.has("function") && o.get("function").isJsonPrimitive()) lootFunction(o, c);
-        if (o.has("condition") && o.get("condition").isJsonPrimitive()) lootCondition(o, c);
+        if (o.has("function") && o.get("function").isJsonPrimitive()) {
+            renameEntityTarget(o, ENTITY_TARGET_FUNCTIONS.get(id(o.get("function").getAsString())), c);
+            lootFunction(o, c);
+        }
+        if (o.has("condition") && o.get("condition").isJsonPrimitive()) {
+            String condition = id(o.get("condition").getAsString());
+            if (condition.equals("minecraft:entity_properties") || condition.equals("minecraft:entity_scores")) renameEntityTarget(o, "entity", c);
+            lootCondition(o, c);
+        }
         if (o.has("type") && o.get("type").isJsonPrimitive() && id(o.get("type").getAsString()).equals("minecraft:loot_table") && o.has("name")) {
             o.add("value", o.remove("name"));
             c.hit("loot_function");
@@ -921,6 +1036,101 @@ public final class DataConverter1201 {
         if (o.has("condition") && o.get("condition").isJsonPrimitive() && id(o.get("condition").getAsString()).equals("minecraft:entity_properties") && o.has("predicate")) {
             itemPredicates(o.get("predicate"), c);
         }
+    }
+
+    /** Loot functions that name an entity target, by the field that holds it. */
+    private static final Map<String, String> ENTITY_TARGET_FUNCTIONS = Map.of(
+            "minecraft:copy_name", "source", "minecraft:copy_nbt", "source", "minecraft:set_name", "entity",
+            "minecraft:set_lore", "entity", "minecraft:fill_player_head", "entity");
+    /** The loot context targets 1.21 renamed (read from LootContext$EntityTarget): the old names are rejected, not ignored. */
+    private static final Map<String, String> RENAMED_ENTITY_TARGETS = Map.of(
+            "killer", "attacker", "direct_killer", "direct_attacker", "killer_player", "attacking_player");
+
+    private static void renameEntityTarget(JsonObject o, String field, Ctx c) {
+        if (field == null || !o.has(field) || !o.get(field).isJsonPrimitive()) return;
+        String renamed = RENAMED_ENTITY_TARGETS.get(o.get(field).getAsString());
+        if (renamed == null) return;
+        o.addProperty(field, renamed);
+        c.hit("loot_entity_target");
+    }
+
+    /** The one item a loot entry, composite entry, pool or table can produce, or null (several items, a tag or another table). */
+    private static String scopeItem(JsonObject o, String enclosing) {
+        String type = o.has("type") && o.get("type").isJsonPrimitive() ? id(o.get("type").getAsString()) : null;
+        if ("minecraft:item".equals(type) && o.has("name") && o.get("name").isJsonPrimitive()) return id(o.get("name").getAsString());
+        if (o.has("entries")) return commonItem(o.get("entries"));
+        if (o.has("children")) return commonItem(o.get("children"));
+        if (o.has("pools") && o.get("pools").isJsonArray()) {
+            String common = null;
+            for (JsonElement pool : o.getAsJsonArray("pools")) {
+                String item = pool.isJsonObject() ? commonItem(pool.getAsJsonObject().get("entries")) : null;
+                if (item == null || common != null && !common.equals(item)) return null;
+                common = item;
+            }
+            return common;
+        }
+        return enclosing;
+    }
+
+    private static String commonItem(JsonElement entries) {
+        if (entries == null || !entries.isJsonArray()) return null;
+        String common = null;
+        for (JsonElement el : entries.getAsJsonArray()) {
+            if (!el.isJsonObject()) return null;
+            JsonObject entry = el.getAsJsonObject();
+            String type = entry.has("type") && entry.get("type").isJsonPrimitive() ? id(entry.get("type").getAsString()) : null;
+            if ("minecraft:empty".equals(type)) continue;
+            String item = "minecraft:item".equals(type) && entry.has("name") && entry.get("name").isJsonPrimitive() ? id(entry.get("name").getAsString())
+                    : Set.of("minecraft:alternatives", "minecraft:group", "minecraft:sequence").contains(type) ? commonItem(entry.get("children")) : null;
+            if (item == null || common != null && !common.equals(item)) return null;
+            common = item;
+        }
+        return common;
+    }
+
+    /**
+     * Replaces each {@code set_nbt} of a function list by the functions that set what its NBT means in 1.21.1: {@code set_components} for the keys
+     * Minecraft owns and {@code set_custom_data} (which merges, as {@code set_nbt} did) for the mod's own keys and what could not be carried over. A
+     * {@code set_nbt} that cannot be split (a key only some items read, on an item we cannot name) is left for {@link #lootFunction}.
+     */
+    private static void splitSetNbt(JsonArray functions, Ctx c) {
+        for (int i = 0; i < functions.size(); i++) {
+            JsonElement el = functions.get(i);
+            if (!el.isJsonObject()) continue;
+            JsonObject f = el.getAsJsonObject();
+            if (f.has("type") || !f.has("function") || !f.get("function").isJsonPrimitive() || !id(f.get("function").getAsString()).equals("minecraft:set_nbt")) continue;
+            Snbt1201.Compound tag = f.has("tag") ? Snbt1201.parseField(f.get("tag")) : null;
+            if (tag == null) continue;
+            // a pure potion keeps its short form (set_potion), as before
+            if (tag.entries().size() == 1 && tag.string("Potion") != null) continue;
+            ItemComponents1201.Split split = ItemComponents1201.split(c.entryItem, tag);
+            if (split == null || split.components().size() == 0) continue; // nothing of Minecraft's: lootFunction turns it into set_custom_data
+            JsonObject rest = f.deepCopy();
+            rest.remove("function");
+            rest.remove("tag");
+            List<JsonObject> out = new ArrayList<>();
+            JsonObject components = split.components();
+            boolean custom = !split.customData().entries().isEmpty();
+            if (custom && (rest.has("conditions") || rest.has("condition"))) {
+                // two functions would each roll the conditions on their own: the custom data joins the components (set_nbt merged, this replaces)
+                components.addProperty("minecraft:custom_data", Snbt1201.write(split.customData()));
+                custom = false;
+            }
+            out.add(withFields("minecraft:set_components", "components", components, rest));
+            if (custom) out.add(withFields("minecraft:set_custom_data", "tag", new JsonPrimitive(Snbt1201.write(split.customData())), rest));
+            functions.remove(i);
+            for (int k = 0; k < out.size(); k++) functions.asList().add(i + k, out.get(k));
+            i += out.size() - 1;
+            c.hit("loot_set_components");
+        }
+    }
+
+    private static JsonObject withFields(String function, String key, JsonElement value, JsonObject rest) {
+        JsonObject out = new JsonObject();
+        out.addProperty("function", function);
+        out.add(key, value);
+        for (var en : rest.entrySet()) out.add(en.getKey(), en.getValue().deepCopy());
+        return out;
     }
 
     private static void lootFunction(JsonObject o, Ctx c) {
