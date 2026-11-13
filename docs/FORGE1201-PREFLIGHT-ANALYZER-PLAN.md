@@ -172,7 +172,7 @@ The user located two copies of Symbiote 1.1.3. Use the primary source input, not
    git pull --ff-only
    git rev-parse HEAD
    ```
-   Expected HEAD: `9f608a53d655f3c938a4a909da066f905f66e41e`.
+   Confirm the pulled branch history contains fix commit `9f608a53d655f3c938a4a909da066f905f66e41e`; the branch tip may be a later documentation-only commit.
 2. Run from `F:\Program\intellij-idea-portable\Legacy-Connector-1.20.1`:
    ```powershell
    .\gradlew.bat preflight1201 "-PpreflightJar=C:\Users\Administrator\legacy-connector-testbench\symbiote-1.1.3.jar" "-PpreflightModsDirs=E:\Games\PolyMC\instances\Neoforge tester\.minecraft\mods" --no-daemon --console=plain
