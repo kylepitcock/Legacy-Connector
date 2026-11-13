@@ -92,11 +92,12 @@ public final class CheckJar {
             }
         }
         transformer.presentMods(jars.stream().flatMap(j -> j.mods.stream()).map(m -> m.legacyId).toList());
-        Map<LegacyVersion, Map<String, ClassInfo>> peers = new EnumMap<>(LegacyVersion.class);
+        Map<LegacyVersion, org.kylepitcock.legacyconnector.loader.transform.PeerClasses> peerSets = new EnumMap<>(LegacyVersion.class);
         for (LegacyJar jar : jars) {
-            Map<String, ClassInfo> p = peers.computeIfAbsent(jar.version, v -> new HashMap<>());
-            for (ClassInfo c : transformer.scan(jar)) p.putIfAbsent(c.name, c);
+            peerSets.computeIfAbsent(jar.version, v -> new org.kylepitcock.legacyconnector.loader.transform.PeerClasses()).add(transformer.scan(jar));
         }
+        Map<LegacyVersion, Map<String, ClassInfo>> peers = new EnumMap<>(LegacyVersion.class);
+        peerSets.forEach((v, set) -> peers.put(v, set.classes()));
         Map<LegacyVersion, SynthDemand> demand = new EnumMap<>(LegacyVersion.class);
         Map<Path, JsonObject> recordsByOutJar = new java.util.LinkedHashMap<>();
         List<Path> originals = new ArrayList<>();

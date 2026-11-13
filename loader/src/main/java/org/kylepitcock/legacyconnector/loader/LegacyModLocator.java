@@ -569,17 +569,17 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
     }
 
     private static Map<String, ClassInfo> scanPeers(LegacyJarTransformer transformer, List<LegacyJar> legacy, LegacyVersion version) {
-        Map<String, ClassInfo> out = new HashMap<>();
+        org.kylepitcock.legacyconnector.loader.transform.PeerClasses out = new org.kylepitcock.legacyconnector.loader.transform.PeerClasses();
         for (LegacyJar jar : legacy) {
             if (jar.version != version || skipReason(jar) != null) continue;
             TranslationPool.heartbeat();
             try {
-                for (ClassInfo c : transformer.scan(jar)) out.putIfAbsent(c.name, c);
+                out.add(transformer.scan(jar));
             } catch (IOException | RuntimeException e) {
                 LOG.debug("Legacy Connector: could not scan {}", jar.fileName(), e);
             }
         }
-        return out;
+        return out.classes();
     }
 
     private static final java.util.regex.Pattern TOML_MOD_ID = java.util.regex.Pattern.compile("(?m)^\s*modId\s*=\s*\"([^\"]+)\"");
