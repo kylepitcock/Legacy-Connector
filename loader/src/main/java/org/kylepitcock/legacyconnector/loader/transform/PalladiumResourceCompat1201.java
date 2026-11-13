@@ -23,6 +23,10 @@ final class PalladiumResourceCompat1201 {
             "assets/alienevo/kubejs_scripts/power_ui.js";
     static final String ALIEN_EVO_DIAMOND_CREATION =
             "addon/alienevo/kubejs_scripts/diamond_creation.js";
+    static final String ALIEN_EVO_STAT_ABILITY =
+            "addon/alienevo/kubejs_scripts/stat_ability.js";
+    static final String ALIEN_EVO_FAILSAFE =
+            "data/alienevo/kubejs_scripts/failsafe.js";
 
     static final String OMNITRIX_INTEGER_HELPER =
             "function toOmnitrixInteger(value) {\n"
@@ -160,6 +164,10 @@ final class PalladiumResourceCompat1201 {
         rewriteLegacyScriptApis(resources);
         rewriteDiamondCreationSound(resources);
         rewriteScoreboardApi(resources);
+        // Both ScriptableAbility callbacks receive the active entity; KubeJS 7 no longer exposes Utils.server.
+        rewrite(resources, ALIEN_EVO_STAT_ABILITY, new String[][] {
+                {"Utils.server.scoreboard", "entity.server.scoreboard", "2"}
+        });
         rewriteOptionalPehkuiApi(resources);
 
         // A single resource can receive more than one independent rewrite.
@@ -318,6 +326,13 @@ final class PalladiumResourceCompat1201 {
                         "`alienevo:${transformSound}_transform`",
                         "getAlienEvoSoundEvent('alienevo:' + String(transformSound) + '_transform')");
             } else if (ALIEN_EVO_DETRANSFORM.equals(path)) {
+                migrated = addSoundEventHelper(migrated);
+                migrated = replaceExactScriptOccurrence(
+                        path,
+                        migrated,
+                        "`alienevo:${watchType}_detransform`",
+                        "getAlienEvoSoundEvent('alienevo:' + String(watchType) + '_detransform')");
+            } else if (ALIEN_EVO_FAILSAFE.equals(path)) {
                 migrated = addSoundEventHelper(migrated);
                 migrated = replaceExactScriptOccurrence(
                         path,
