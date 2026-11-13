@@ -29,6 +29,37 @@ class PalladiumResourceCompat1201Test {
     }
 
     @Test
+    void migratesLegacyItemOfNbtOverloadToTheLegacySetNbtBridge() {
+        Map<String, byte[]> resources = new HashMap<>();
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_CORE_REMOVAL, """
+                var coreItem = Item.of('alienevo:prototype_core', 1, nbtData);
+                entity.give(coreItem);
+                """);
+        put(resources, "addon/alienevo/kubejs_scripts/decouple.js", """
+                function getDecoupleSoundId(prefix) { return 'alienevo:' + prefix + '_decouple'; }
+                var watchItem = Item.of(itemId, 1, nbtData);
+                entity.give(watchItem);
+                entity.level.playSound(null, entity.x, entity.y, entity.z,
+                        getDecoupleSoundId(watchPrefix), entity.getSoundSource(), 1.0, 1.0);
+                """);
+
+        assertEquals(2, PalladiumResourceCompat1201.apply(resources));
+
+        String core = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_CORE_REMOVAL);
+        assertTrue(core.contains("var coreItem = Item.of('alienevo:prototype_core', 1);"));
+        assertTrue(core.contains("coreItem.setNbt(nbtData);"));
+        assertFalse(core.contains("Item.of('alienevo:prototype_core', 1, nbtData)"));
+
+        String decouple = get(resources, "addon/alienevo/kubejs_scripts/decouple.js");
+        assertTrue(decouple.contains("var watchItem = Item.of(itemId, 1);"));
+        assertTrue(decouple.contains("watchItem.setNbt(nbtData);"));
+        assertTrue(decouple.contains("getAlienEvoSoundEvent(getDecoupleSoundId(watchPrefix))"));
+        assertFalse(decouple.contains("Item.of(itemId, 1, nbtData)"));
+
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+    }
+
+    @Test
     void migratesAlienEvoArmorTransformAndPowerUiPathsAndIsIdempotent() {
         Map<String, byte[]> resources = new HashMap<>();
         put(resources, PalladiumResourceCompat1201.ALIEN_EVO_STORE_ARMOR, """
