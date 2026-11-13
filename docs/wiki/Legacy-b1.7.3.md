@@ -716,8 +716,8 @@ player logs in or is handed the class. A single player's client shares the proce
 
 The few b1.7.3 `terrain.png` tiles that have no modern block texture to point at (the chest top, side and front, and the animated water and lava
 cells that mods borrow) are PNG files in `src/main/resources/legacyconnector/b173/vanilla_sprites`, loaded by `VanillaSpritesB173`; nothing else of
-Beta's art is kept. `tools/dev/extract_b173_sprites.py <terrain.png>` refills the folder from your own terrain.png (the water and lava tiles that
-ship are stand-ins until it is run).
+Beta's art is kept. `tools/dev/extract_b173_sprites.py <terrain.png>` refills the folder from a b1.7.3 terrain.png (the one in a
+minecraft.jar); the water and lava cells are the static first frame Beta's own animation then overwrote each tick.
 
 ## GuiAPI settings and TWL models
 
