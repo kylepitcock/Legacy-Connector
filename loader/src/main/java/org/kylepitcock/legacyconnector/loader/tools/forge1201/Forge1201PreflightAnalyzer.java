@@ -374,7 +374,7 @@ public final class Forge1201PreflightAnalyzer {
             out.append("  ").append(candidate.path()).append(" (").append(candidate.discoveredBy()).append(")\n");
         }
         out.append("Jar-in-Jar archive paths: ")
-                .append(result.jarInJarPaths().isEmpty() ? "none" : String.join(", ", result.jarInJarPaths())).append('\n')
+                .append(result.jarInJarPaths().isEmpty() ? "none" : String.join(", ", result.jarInJarPaths())).append('\n');
         Forge1201ArchiveGraph.Result graph = result.archiveGraph();
         out.append("\nNested / embedded archives (").append(graph.archives().size()).append("):\n");
         if (graph.archives().isEmpty()) out.append("  none discovered\n");
@@ -426,7 +426,7 @@ public final class Forge1201PreflightAnalyzer {
             out.append("\nArchive graph warnings:\n");
             graph.warnings().forEach(warning -> out.append("  - ").append(warning).append('\n'));
         }
-                .append("\nBytecode: ").append(result.classCount()).append(" classes scanned\n")
+        out.append("\nBytecode: ").append(result.classCount()).append(" classes scanned\n")
                 .append("Mod entrypoints: ")
                 .append(result.modEntrypoints().isEmpty() ? "none detected" : String.join(", ", result.modEntrypoints()))
                 .append('\n')
