@@ -135,3 +135,9 @@ net/neoforged/bus/api/IEventBus.addListener(Lnet/neoforged/bus/api/EventPriority
 java/lang/reflect/Field.get(Ljava/lang/Object;)Ljava/lang/Object;	fieldGet
 java/lang/reflect/Field.set(Ljava/lang/Object;Ljava/lang/Object;)V	fieldSet
 net/neoforged/fml/config/IConfigSpec.self()Lnet/neoforged/fml/config/IConfigSpec;	configSelf
+# 2026-11-13 ATM 9 gap round: Forge's ForgeEventFactory item pickup, sleeping and sapling growth hooks
+net/neoforged/neoforge/event/EventHooks.onItemPickup(Lnet/minecraft/world/entity/item/ItemEntity;Lnet/minecraft/world/entity/player/Player;)I	Tail.onItemPickup
+net/neoforged/neoforge/event/EventHooks.firePlayerItemPickupEvent(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/entity/item/ItemEntity;Lnet/minecraft/world/item/ItemStack;)V	Tail.firePlayerItemPickupEvent
+net/neoforged/neoforge/event/EventHooks.fireSleepingTimeCheck(Lnet/minecraft/world/entity/player/Player;Ljava/util/Optional;)Z	Tail.fireSleepingTimeCheck
+net/neoforged/neoforge/event/EventHooks.onPlayerSleepInBed(Lnet/minecraft/world/entity/player/Player;Ljava/util/Optional;)Lnet/minecraft/world/entity/player/Player$BedSleepingProblem;	Tail.onPlayerSleepInBed
+net/neoforged/neoforge/event/EventHooks.fireBlockGrowFeature(Lnet/minecraft/world/level/LevelAccessor;Lnet/minecraft/util/RandomSource;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Holder;)Llegacyconnector/v1_20_1/net/minecraftforge/event/level/SaplingGrowTreeEvent;	Tail.fireBlockGrowFeature

@@ -75,3 +75,6 @@ net/minecraft/core/registries/Registries	DECORATED_POT_PATTERNS	:*	DECORATED_POT
 net/minecraft/core/registries/BuiltInRegistries	DECORATED_POT_PATTERNS	:*	DECORATED_POT_PATTERN
 # --- Minecraft 1.21.1 renamed shader getter (used by Palladium TexturedIcon)
 net/minecraft/client/renderer/GameRenderer	getPositionColorTexShader	()Lnet/minecraft/client/renderer/ShaderInstance;	getPositionTexColorShader
+# 2026-11-13 ATM 9 gap round 2: BlockState.neighborChanged is handleNeighborChanged (same parameters)
+net/minecraft/world/level/block/state/BlockState	neighborChanged	*	handleNeighborChanged
+net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase	neighborChanged	*	handleNeighborChanged

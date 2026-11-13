@@ -44,10 +44,19 @@ final class ForgeApiRewrites1201 {
 
     /** Rewrites the calls of one class; returns how many. */
     static int apply(ClassNode node) {
-        return apply(node, table());
+        return apply(node, table(), null);
+    }
+
+    /** {@code modEvents}: classes (of the jar) that extend NeoForge's Event: calls on them reach the cancel/result rules like calls on NeoForge's own events. */
+    static int apply(ClassNode node, java.util.function.Predicate<String> modEvents) {
+        return apply(node, table(), modEvents);
     }
 
     static int apply(ClassNode node, Map<String, String> rules) {
+        return apply(node, rules, null);
+    }
+
+    static int apply(ClassNode node, Map<String, String> rules, java.util.function.Predicate<String> modEvents) {
         if (rules.isEmpty()) return 0;
         int n = 0;
         for (MethodNode m : node.methods) {
@@ -62,8 +71,9 @@ final class ForgeApiRewrites1201 {
                     helper = rules.get("*." + call.name + call.desc);
                     anyReceiver = helper != null;
                 }
-                if (helper == null && call.getOpcode() == Opcodes.INVOKEVIRTUAL && call.owner.startsWith("net/neoforged/")
-                        && !call.owner.equals("net/neoforged/bus/api/ICancellableEvent")) {
+                if (helper == null && call.getOpcode() == Opcodes.INVOKEVIRTUAL && !call.owner.equals("net/neoforged/bus/api/ICancellableEvent")
+                        && (call.owner.startsWith("net/neoforged/") || call.owner.startsWith(FACADE_EVENTS) && call.owner.contains("Event")
+                                || modEvents != null && modEvents.test(call.owner))) {
                     // NeoForge's events are only cancellable when they say so (ICancellableEvent): Forge's Event had the methods itself
                     helper = rules.get("@event." + call.name + call.desc);
                     anyReceiver = helper != null;
@@ -95,6 +105,26 @@ final class ForgeApiRewrites1201 {
             }
         }
         return n;
+    }
+
+    static final String FACADE_EVENTS = "legacyconnector/v1_20_1/net/minecraftforge/";
+    static final String CANCELABLE = "Lnet/minecraftforge/eventbus/api/Cancelable;";
+    static final String CANCELLABLE_EVENT = "net/neoforged/bus/api/ICancellableEvent";
+
+    /**
+     * A mod event annotated {@code @Cancelable} (Forge) gets NeoForge's {@code ICancellableEvent}: the bus then honours {@code setCanceled}, which Forge's Event
+     * had itself. Subclasses inherit the interface.
+     */
+    static boolean markCancelable(ClassNode node) {
+        if (node.invisibleAnnotations == null && node.visibleAnnotations == null) return false;
+        boolean annotated = false;
+        for (var list : java.util.List.of(node.visibleAnnotations == null ? java.util.List.<org.objectweb.asm.tree.AnnotationNode>of() : node.visibleAnnotations,
+                node.invisibleAnnotations == null ? java.util.List.<org.objectweb.asm.tree.AnnotationNode>of() : node.invisibleAnnotations)) {
+            for (var a : list) if (CANCELABLE.equals(a.desc)) annotated = true;
+        }
+        if (!annotated || node.interfaces.contains(CANCELLABLE_EVENT)) return false;
+        node.interfaces.add(CANCELLABLE_EVENT);
+        return true;
     }
 
     /** Capability helpers live in their own class. */

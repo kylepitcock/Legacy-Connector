@@ -238,4 +238,46 @@ public final class ForgeApiTail1201 {
     public static java.util.List brewGetRecipes() {
         return new java.util.ArrayList<>();
     }
+
+    // ---- item pickup, sleeping and sapling growth hooks of Forge's ForgeEventFactory
+
+    /** Forge's result of the pickup event: -1 denied, 1 forced, 0 the vanilla rule. */
+    public static int onItemPickup(net.minecraft.world.entity.item.ItemEntity item, net.minecraft.world.entity.player.Player player) {
+        var pre = net.neoforged.neoforge.event.EventHooks.fireItemPickupPre(item, player);
+        return switch (pre.canPickup()) {
+            case TRUE -> 1;
+            case FALSE -> -1;
+            default -> 0;
+        };
+    }
+
+    public static void firePlayerItemPickupEvent(net.minecraft.world.entity.player.Player player, net.minecraft.world.entity.item.ItemEntity item,
+            net.minecraft.world.item.ItemStack copy) {
+        net.neoforged.neoforge.event.EventHooks.fireItemPickupPost(item, player, copy);
+    }
+
+    /** Forge's sleeping time check: an event could allow or deny; without one sleeping is possible at night. 1.21.1 has no such event, so the vanilla rule decides. */
+    public static boolean fireSleepingTimeCheck(net.minecraft.world.entity.player.Player player, java.util.Optional<net.minecraft.core.BlockPos> sleepingLocation) {
+        return !player.level().isDay();
+    }
+
+    /** Forge's sleep-in-bed event: a problem that stops the sleep, or null. NeoForge's {@code CanPlayerSleepEvent} answers it. */
+    public static net.minecraft.world.entity.player.Player.BedSleepingProblem onPlayerSleepInBed(net.minecraft.world.entity.player.Player player,
+            java.util.Optional<net.minecraft.core.BlockPos> pos) {
+        if (player instanceof net.minecraft.server.level.ServerPlayer sp && pos.isPresent()) {
+            return net.neoforged.neoforge.event.EventHooks.canPlayerStartSleeping(sp, pos.get(),
+                    com.mojang.datafixers.util.Either.right(net.minecraft.util.Unit.INSTANCE)).left().orElse(null);
+        }
+        return null;
+    }
+
+    /** Forge's sapling growth event, fired through NeoForge's block grow feature event; a cancellation shows as the DENY result the old API had. */
+    public static legacyconnector.v1_20_1.net.minecraftforge.event.level.SaplingGrowTreeEvent fireBlockGrowFeature(net.minecraft.world.level.LevelAccessor level,
+            net.minecraft.util.RandomSource random, net.minecraft.core.BlockPos pos, net.minecraft.core.Holder<?> feature) {
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        var real = net.neoforged.neoforge.event.EventHooks.fireBlockGrowFeature(level, random, pos, (net.minecraft.core.Holder) feature);
+        var event = new legacyconnector.v1_20_1.net.minecraftforge.event.level.SaplingGrowTreeEvent(level, random, pos);
+        if (real.isCanceled()) ForgeApi1201.eventSetResult(event, legacyconnector.v1_20_1.net.minecraftforge.eventbus.api.Event$Result.DENY);
+        return event;
+    }
 }

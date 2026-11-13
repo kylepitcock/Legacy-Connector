@@ -635,3 +635,32 @@ net/minecraft/commands/functions/CommandFunction	fromLines	(Lnet/minecraft/resou
 # Redirect only when the old result is discarded; call sites that consume the integer are intentionally left soft-linked.
 net/minecraft/server/ServerFunctionManager	execute	(Lnet/minecraft/commands/functions/CommandFunction;Lnet/minecraft/commands/CommandSourceStack;)I	CommandFunctionCompat	execute	(Lnet/minecraft/server/ServerFunctionManager;Lnet/minecraft/commands/functions/CommandFunction;Lnet/minecraft/commands/CommandSourceStack;)V
 net/minecraft/advancements/AdvancementType	getTexture	()I	PalladiumFrameTypeCompat	getTexture	(Lnet/minecraft/advancements/AdvancementType;)I
+# 2026-11-13 ATM 9 gap round: small signature changes (GapCompat)
+net/minecraft/world/effect/MobEffect	applyEffectTick	(Lnet/minecraft/world/entity/LivingEntity;I)V	=ret	-	(Lnet/minecraft/world/entity/LivingEntity;I)Z
+net/minecraft/core/dispenser/BlockSource	<init>	(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/core/BlockPos;)V	GapCompat	newBlockSource
+net/minecraft/world/level/StructureManager	getStructureWithPieceAt	(Lnet/minecraft/core/BlockPos;Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/world/level/levelgen/structure/StructureStart;	GapCompat	structureWithPieceAt
+net/minecraft/world/level/block/entity/BrushableBlockEntity	setLootTable	(Lnet/minecraft/resources/ResourceLocation;J)V	GapCompat	setLootTable
+net/minecraft/world/entity/vehicle/AbstractMinecartContainer	setLootTable	(Lnet/minecraft/resources/ResourceLocation;J)V	GapCompat	setLootTable
+net/minecraft/world/level/SpawnData	<init>	(Lnet/minecraft/nbt/CompoundTag;Ljava/util/Optional;)V	GapCompat	newSpawnData
+net/minecraft/world/level/levelgen/structure/PoolElementStructurePiece	<init>	(Lnet/minecraft/world/level/levelgen/structure/templatesystem/StructureTemplateManager;Lnet/minecraft/world/level/levelgen/structure/pools/StructurePoolElement;Lnet/minecraft/core/BlockPos;ILnet/minecraft/world/level/block/Rotation;Lnet/minecraft/world/level/levelgen/structure/BoundingBox;)V	GapCompat	newPoolPiece
+net/minecraft/world/entity/player/Player	triggerRecipeCrafted	(Lnet/minecraft/world/item/crafting/Recipe;Ljava/util/List;)V	GapCompat	triggerRecipeCrafted
+net/minecraft/network/protocol/game/ClientboundForgetLevelChunkPacket	getX	()I	GapCompat	forgetX
+net/minecraft/network/protocol/game/ClientboundForgetLevelChunkPacket	getZ	()I	GapCompat	forgetZ
+# 2026-11-13 ATM 9 gap round 2: arrows, spawn rules, experience drops, containers (GapCompat)
+net/minecraft/world/item/ArrowItem	isInfinite	(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/player/Player;)Z	=	-	(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/LivingEntity;)Z
+net/minecraft/world/level/block/state/BlockState	isValidSpawn	(Lnet/minecraft/world/level/LevelReader;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/SpawnPlacementType;Lnet/minecraft/world/entity/EntityType;)Z	GapCompat	stateIsValidSpawn
+net/minecraft/world/level/block/Block	isValidSpawn	(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/SpawnPlacementType;Lnet/minecraft/world/entity/EntityType;)Z	GapCompat	blockIsValidSpawn
+net/minecraft/world/level/block/state/BlockState	getExpDrop	(Lnet/minecraft/world/level/LevelReader;Lnet/minecraft/util/RandomSource;Lnet/minecraft/core/BlockPos;II)I	GapCompat	stateExpDrop
+net/minecraft/world/level/block/Block	getExpDrop	(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/LevelReader;Lnet/minecraft/util/RandomSource;Lnet/minecraft/core/BlockPos;II)I	GapCompat	blockExpDrop
+net/minecraft/world/damagesource/DamageSource	isIndirect	()Z	GapCompat	isIndirect
+net/minecraft/world/SimpleContainer	createTag	()Lnet/minecraft/nbt/ListTag;	GapCompat	containerCreateTag
+net/minecraft/world/SimpleContainer	fromTag	(Lnet/minecraft/nbt/ListTag;)V	GapCompat	containerFromTag
+# 2026-11-13 ATM 9 gap round 3: CropBlock.getGrowthSpeed takes the state (the block's default state stands in)
+net/minecraft/world/level/block/CropBlock	getGrowthSpeed	(Lnet/minecraft/world/level/block/Block;Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;)F	=args	GapCompat.defaultState@0,1,2	(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;)F
+# 2026-11-13 ATM 9 gap round 3: EnchantmentHelper.getRandomItemWith(enchantment, entity[, filter]) is component based now
+net/minecraft/world/item/enchantment/EnchantmentHelper	getRandomItemWith	(Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyEnchantment;Lnet/minecraft/world/entity/LivingEntity;)Ljava/util/Map$Entry;	GapCompat	randomItemWith
+net/minecraft/world/item/enchantment/EnchantmentHelper	getRandomItemWith	(Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyEnchantment;Lnet/minecraft/world/entity/LivingEntity;Ljava/util/function/Predicate;)Ljava/util/Map$Entry;	GapCompat	randomItemWith
+# 2026-11-13 ATM 9 gap round 3: container custom names and area effect cloud potions
+net/minecraft/world/level/block/entity/BaseContainerBlockEntity	setCustomName	(Lnet/minecraft/network/chat/Component;)V	GapCompat	setCustomName
+net/minecraft/world/entity/AreaEffectCloud	setPotion	(Lnet/minecraft/world/item/alchemy/Potion;)V	GapCompat	cloudSetPotion
+net/minecraft/world/entity/AreaEffectCloud	getPotion	()Lnet/minecraft/world/item/alchemy/Potion;	GapCompat	cloudGetPotion

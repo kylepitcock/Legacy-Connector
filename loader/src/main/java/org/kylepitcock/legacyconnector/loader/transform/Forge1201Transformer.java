@@ -273,6 +273,7 @@ public final class Forge1201Transformer {
             jarClasses.add(node.name);
             if (CallRewrites1201.COMPOUND.equals(node.superName)) compoundSubclasses.add(node.name);
         }
+        java.util.function.Predicate<String> modEvents = n -> jarClasses.contains(n) && hierarchy.isSubclassOf(n, "net/neoforged/bus/api/Event");
         Map<ClassNode, Integer> migrated = new java.util.IdentityHashMap<>();
         SoftLink1201 soft = softLinkEnabled() ? new SoftLink1201(nodes, hierarchy) : null;
         int palladiumKubejsChanges = 0;
@@ -330,7 +331,8 @@ public final class Forge1201Transformer {
             palladiumKubejsChanges += palladiumChanges;
             int palladiumAddonPackChange = PalladiumAddonPackManager1201.apply(node);
             palladiumAddonPackChanges += palladiumAddonPackChange;
-            viaCalls += ForgeApiRewrites1201.apply(node);
+            viaCalls += ForgeApiRewrites1201.apply(node, modEvents);
+            if (modEvents.test(node.name) && ForgeApiRewrites1201.markCancelable(node)) viaCalls++;
             viaCalls += AttachGuards1201.apply(node, jarClasses);
             if (ForgeApiRewrites1201.markProviders(node)) viaCalls++;
             rewrites += viaCalls;
