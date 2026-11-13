@@ -688,10 +688,17 @@ final class PalladiumResourceCompat1201 {
      * silently skips player-kill XP rewards.
      */
     private static int rewriteAlienEvoXpDeathPlayerAccess(Map<String, byte[]> resources) {
-        return rewrite(resources, "data/alienevo/kubejs_scripts/xp.js", new String[][] {
-                {"if (source && source.player) {\n        let player = source.player;",
-                        "let player = source ? source.getEntity() : null;\n    if (player && player.type === 'minecraft:player') {", "1"}
-        });
+        String path = "data/alienevo/kubejs_scripts/xp.js";
+        byte[] original = resources.get(path);
+        if (original == null) return 0;
+
+        String script = new String(original, StandardCharsets.UTF_8);
+        String lineEnding = script.contains("\r\n") ? "\r\n" : "\n";
+        String legacy = "if (source && source.player) {" + lineEnding
+                + "        let player = source.player;";
+        String migrated = "let player = source ? source.getEntity() : null;" + lineEnding
+                + "    if (player && player.type === 'minecraft:player') {";
+        return rewrite(resources, path, new String[][] {{legacy, migrated, "1"}});
     }
     /** AlienEvo's flatten ability uses one optional Pehkui class at script load time; keep the script group loadable without Pehkui. */
     private static int rewriteOptionalPehkuiApi(Map<String, byte[]> resources) {
