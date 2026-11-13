@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.kylepitcock.legacyconnector.loader.transform.mixin1201.InjectionRepair;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
@@ -44,10 +45,16 @@ final class Mixin1201 {
         final List<String> dropped = new ArrayList<>();
         /** internal names of mixin classes dropped from their configs */
         final Set<String> droppedClasses = new HashSet<>();
+        /** the target proof and handler re-signing of {@link InjectionRepair} */
+        final InjectionRepair.Counts repair = new InjectionRepair.Counts();
+        /** member renames applied from the tables (the "renamed" class of the proof) */
+        int membersRenamed;
+        /** old descriptors from the jar's refmaps (mixin class to annotation string to descriptor), set by the transformer before the classes are processed */
+        Map<String, Map<String, String>> refmaps = Map.of();
 
         String summary() {
             return mixinClasses + " mixin class(es), " + stringsMoved + " annotation name(s) moved to 1.21.1, " + requireRemoved + " injector requirement(s) relaxed, " + localsRelaxed + " local capture(s) set to FAILSOFT (a vanilla method whose locals changed skips that injection with a Mixin warning naming the mod's mixin), " + dropped.size()
-                    + " mixin(s) dropped (target missing in 1.21.1)";
+                    + " mixin(s) dropped (target missing in 1.21.1); target proof: " + repair.summary() + ", " + membersRenamed + " member name(s) renamed";
         }
     }
 
@@ -63,13 +70,15 @@ final class Mixin1201 {
     }
 
     /** Fixes the annotations of one class (already renamed to Mojang class names); records it in {@code st} when it must be dropped from its config. */
-    static void apply(ClassNode node, Map<String, String> srg, Mc1201Hierarchy h, Mc1201Tables t, Stats st) {
+    static int apply(ClassNode node, Map<String, String> srg, Mc1201Hierarchy h, Mc1201Tables t, Stats st) {
         AnnotationNode mixin = find(node.invisibleAnnotations, MIXIN);
         if (mixin == null) mixin = find(node.visibleAnnotations, MIXIN);
-        if (mixin == null) return;
+        if (mixin == null) return 0;
         st.mixinClasses++;
         List<String> targets = targets(mixin);
         Ctx ctx = new Ctx(srg, t, targets, st);
+        // the refmap's 1.20.1 descriptors of the selectors, read before the strings are rewritten
+        java.util.Map<AnnotationNode, List<String>> hints = InjectionRepair.refmapHints(node, st.refmaps.get(node.name), d -> mapDescriptor(d, t));
         // class level: string targets
         fixAnnotation(mixin, ctx);
         targets = targets(mixin);
@@ -86,7 +95,7 @@ final class Mixin1201 {
         if (shadow != null) {
             st.dropped.add(node.name + " (@Shadow " + shadow + " does not exist in " + targets.get(0) + ")");
             st.droppedClasses.add(node.name);
-            return;
+            return 0;
         }
         // a mixin whose targets are all gone from 1.21.1 cannot apply
         if (!targets.isEmpty()) {
@@ -99,8 +108,13 @@ final class Mixin1201 {
             if (!anyPresent && missing != null) {
                 st.dropped.add(node.name + " (target " + missing + ")");
                 st.droppedClasses.add(node.name);
+                return 0;
             }
         }
+        // target proof: every injector against the 1.21.1 classes; added parameters re-signed, gone or unrepairable injections removed one by one
+        int before = st.repair.handlersChanged;
+        InjectionRepair.run(node, targets, new McHostIndex1201(h), hints, st.repair);
+        return st.repair.handlersChanged - before;
     }
 
     private static final String SHADOW = "Lorg/spongepowered/asm/mixin/Shadow;";
@@ -214,8 +228,10 @@ final class Mixin1201 {
             if (!"method".equals(inject.values.get(i)) || !(inject.values.get(i + 1) instanceof List<?> l)) continue;
             @SuppressWarnings("unchecked") List<Object> list = (List<Object>) l;
             for (int k = 0; k < list.size(); k++) {
-                if (list.get(k) instanceof String s && (s.equals("defineSynchedData()V") || s.equals("defineSynchedData"))) {
-                    list.set(k, "defineSynchedData(" + BUILDER + ")V");
+                if (list.get(k) instanceof String s && s.matches("(L[^;]+;)?defineSynchedData(\\(\\)V)?")) {
+                    // an owner-qualified selector keeps its owner
+                    int semi = s.indexOf(';');
+                    list.set(k, (semi >= 0 ? s.substring(0, semi + 1) : "") + "defineSynchedData(" + BUILDER + ")V");
                     changed = true;
                 }
             }
@@ -366,7 +382,10 @@ final class Mixin1201 {
                 if (renamed != null) break;
             }
         }
-        if (renamed != null) name = renamed;
+        if (renamed != null) {
+            name = renamed;
+            ctx.st.membersRenamed++;
+        }
         String newOwner = owner;
         if (owner != null) {
             String c = ctx.t.classes.get(owner);

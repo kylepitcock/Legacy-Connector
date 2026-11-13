@@ -267,6 +267,7 @@ public final class Forge1201Transformer {
         if (datagen.classes + datagen.methods > 0) result.notes.add("Data generation code dropped (dead in a running game): " + datagen);
         Mc1201Migration.Counts mc = new Mc1201Migration.Counts();
         Mixin1201.Stats mixinStats = new Mixin1201.Stats();
+        mixinStats.refmaps = org.kylepitcock.legacyconnector.loader.transform.mixin1201.Refmaps.parse(other);
         Set<String> jarClasses = new HashSet<>();
         Set<String> compoundSubclasses = new HashSet<>();
         for (ClassNode node : nodes) {
@@ -372,8 +373,8 @@ public final class Forge1201Transformer {
             palladiumPowersScreenChanges += palladiumPowersScreenChange;
             int palladiumSelectionListChange = PalladiumSelectionLists1201.apply(node);
             palladiumSelectionListChanges += palladiumSelectionListChange;
-            Mixin1201.apply(node, srg, hierarchy, Mc1201Tables.get(), mixinStats);
-            migrated.put(node, viaCalls + changed.total() + palladiumChanges + palladiumAddonPackChange
+            int mixinResigned = Mixin1201.apply(node, srg, hierarchy, Mc1201Tables.get(), mixinStats);
+            migrated.put(node, mixinResigned + viaCalls + changed.total() + palladiumChanges + palladiumAddonPackChange
                     + palladiumWidgetButtonChange + palladiumMixinChange + palladiumLootChange
                     + palladiumAccessoryScreenChange + palladiumAdvancementWidgetChange + palladiumPowersScreenChange
                     + palladiumSelectionListChange + palladiumSuitStandChange
@@ -487,6 +488,7 @@ public final class Forge1201Transformer {
         }
         if (mixinStats.mixinClasses > 0) result.notes.add("Mixins: " + mixinStats.summary());
         for (String d : mixinStats.dropped) result.notes.add("Mixin dropped, its target no longer exists in Minecraft 1.21.1: " + d);
+        result.notes.addAll(mixinStats.repair.notes);
         if (rewrites > 0) result.notes.add(rewrites + " call site(s) rewritten for changed 1.21.1 signatures (ResourceLocation factories, event bus post, PalladiumCore renderer lookup, inventory entity preview)");
         if (stringsMapped > 0) result.notes.add(stringsMapped + " reflection string(s) with SRG names now use Mojang names");
 
