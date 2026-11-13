@@ -164,6 +164,7 @@ final class PalladiumResourceCompat1201 {
         rewriteLegacyScriptApis(resources);
         rewriteDiamondCreationSound(resources);
         rewriteScoreboardApi(resources);
+        rewriteServerApiAccess(resources);
         // Both ScriptableAbility callbacks receive the active entity; KubeJS 7 no longer exposes Utils.server.
         rewrite(resources, ALIEN_EVO_STAT_ABILITY, new String[][] {
                 {"Utils.server.scoreboard", "entity.server.scoreboard", "2"}
@@ -554,6 +555,41 @@ final class PalladiumResourceCompat1201 {
             }
         }
         return changed;
+    }
+
+    /**
+     * KubeJS 7 no longer exposes Utils.server. Resolve the server from the
+     * active ability entity/player, or pass it from the command target into
+     * the helper functions. These rewrites are scoped to the inspected
+     * AlienEvo callbacks; do not replace Utils.server globally.
+     */
+    private static int rewriteServerApiAccess(Map<String, byte[]> resources) {
+        int changed = 0;
+        changed += rewrite(resources, "addon/alienevo/kubejs_scripts/charge_leap.js", new String[][] {
+                {"Utils.server.scoreboard", "entity.server.scoreboard", "2"}
+        });
+        changed += rewrite(resources, "addon/alienevo/kubejs_scripts/detransform.js", new String[][] {
+                {"Utils.server.scoreboard", "entity.server.scoreboard", "1"}
+        });
+        changed += rewrite(resources, "addon/alienevo/kubejs_scripts/rolling_mechanics.js", new String[][] {
+                {"Utils.server.scoreboard", "entity.server.scoreboard", "1"}
+        });
+        changed += rewrite(resources, "data/alienevo/kubejs_scripts/xp.js", new String[][] {
+                {"Utils.server.scoreboard", "player.server.scoreboard", "1"}
+        });
+        changed += rewriteLevelCommandServerAccess(resources);
+        return changed;
+    }
+
+    /** The command callbacks provide a ServerPlayer, so pass its server into each helper explicitly. */
+    private static int rewriteLevelCommandServerAccess(Map<String, byte[]> resources) {
+        return rewrite(resources, "data/alienevo/kubejs_scripts/level_command.js", new String[][] {
+                {"function maxAllAliens(playerName) {", "function maxAllAliens(playerName, server) {", "1"},
+                {"function giveAlienControl(playerName) {", "function giveAlienControl(playerName, server) {", "1"},
+                {"  let server = Utils.server;", "  // Legacy Connector: KubeJS 7 server is passed by the command target.", "2"},
+                {"maxAllAliens(username);", "maxAllAliens(username, target.server);", "1"},
+                {"return giveAlienControl(username);", "return giveAlienControl(username, target.server);", "1"}
+        });
     }
 
     /** AlienEvo's flatten ability uses one optional Pehkui class at script load time; keep the script group loadable without Pehkui. */
