@@ -95,6 +95,13 @@ public abstract class FluidRegistry {
         return block != null && block.getRegistryName() != null ? block.getRegistryName().getNamespace() : null;
     }
 
+    /** The highest numeric fluid id handed out so far (mods size per-fluid arrays with it). */
+    public static synchronized int getMaxID() {
+        int max = 0;
+        for (Integer id : IDS.values()) if (id != null && id > max) max = id;
+        return max;
+    }
+
     public static synchronized int getFluidID(Fluid fluid) {
         Integer id = IDS.get(fluid);
         return id == null ? -1 : id;

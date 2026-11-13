@@ -38,6 +38,11 @@ final class Mc1201Migration {
     private static final String CONTEXT = Mc1201Tables.HELPER_PACKAGE + "MigrateContext";
     private static final String PROVIDER = "net/minecraft/core/HolderLookup$Provider";
     private static final String HOLDER = "net/minecraft/core/Holder";
+    private static final String ABSTRACT_WIDGET = "net/minecraft/client/gui/components/AbstractWidget";
+    private static final String LEGACY_WIDGET_NARRATION = "updateNarration";
+    private static final String MODERN_WIDGET_NARRATION = "updateWidgetNarration";
+    private static final String WIDGET_NARRATION_DESC =
+            "(Lnet/minecraft/client/gui/narration/NarrationElementOutput;)V";
 
     /** What {@link #apply} did, per kind (for the report line). */
     static final class Counts {
@@ -46,9 +51,12 @@ final class Mc1201Migration {
         int fields;
         int bridges;
         int providerCalls;
+        int selectionListPositionCalls;
+        int widgetNarrationOverrides;
 
         int total() {
-            return calls + constructors + fields + bridges + providerCalls;
+            return calls + constructors + fields + bridges + providerCalls + selectionListPositionCalls
+                    + widgetNarrationOverrides;
         }
 
         void add(Counts o) {
@@ -57,12 +65,19 @@ final class Mc1201Migration {
             fields += o.fields;
             bridges += o.bridges;
             providerCalls += o.providerCalls;
+            selectionListPositionCalls += o.selectionListPositionCalls;
+            widgetNarrationOverrides += o.widgetNarrationOverrides;
         }
 
         @Override
         public String toString() {
-            return calls + " call(s) redirected to helpers, " + constructors + " constructor(s) made factory calls, " + fields + " static field read(s) converted, "
-                    + bridges + " bridge method(s) for changed overrides, " + providerCalls + " call(s) given the registry provider";
+            return calls + " call(s) redirected to helpers, "
+                    + selectionListPositionCalls + " selection-list position call(s) renamed to setX, "
+                    + widgetNarrationOverrides + " AbstractWidget narration override(s) renamed to updateWidgetNarration, "
+                    + constructors + " constructor(s) made factory calls, "
+                    + fields + " static field read(s) converted, "
+                    + bridges + " bridge method(s) for changed overrides, "
+                    + providerCalls + " call(s) given the registry provider";
         }
     }
 
@@ -74,6 +89,7 @@ final class Mc1201Migration {
 
     static Counts apply(ClassNode node, Mc1201Hierarchy h, Mc1201Tables t) {
         Counts c = new Counts();
+        renameWidgetNarrationOverride(node, h, c);
         renameOverrides(node, h, t, c);
         swapMobBucketSuper(node);
         renameBusConstant(node);
@@ -89,6 +105,28 @@ final class Mc1201Migration {
             addConditionCodec(node, c);
         }
         return c;
+    }
+
+    /**
+     * 1.20.1 widgets override NarratableEntry.updateNarration(output). In 1.21.1
+     * AbstractWidget makes updateNarration final and delegates to the new
+     * updateWidgetNarration hook. Preserve the mod's implementation under the
+     * new hook name instead of removing it or leaving an abstract-method gap.
+     */
+    private static void renameWidgetNarrationOverride(ClassNode node, Mc1201Hierarchy hierarchy, Counts counts) {
+        if (!hierarchy.isSubclassOf(node.name, ABSTRACT_WIDGET)) return;
+        MethodNode legacy = declared(node, LEGACY_WIDGET_NARRATION, WIDGET_NARRATION_DESC);
+        if (legacy == null) return;
+        if ((legacy.access & (Opcodes.ACC_STATIC | Opcodes.ACC_PRIVATE)) != 0) {
+            throw new IllegalStateException(
+                    "Minecraft widget narration override has unexpected access flags in " + node.name);
+        }
+        if (declared(node, MODERN_WIDGET_NARRATION, WIDGET_NARRATION_DESC) != null) {
+            throw new IllegalStateException(
+                    "Both legacy and modern widget narration hooks are declared in " + node.name);
+        }
+        legacy.name = MODERN_WIDGET_NARRATION;
+        counts.widgetNarrationOverrides++;
     }
 
     /** A recipe condition written for 1.20.1 ({@code getID()} and {@code test}) lacks the {@code codec()} of 1.21.1: the codec of the serializer registered under its id. */
@@ -275,6 +313,31 @@ final class Mc1201Migration {
 
     // ------------------------------------------------------------------ calls and fields
 
+    private static final String ABSTRACT_SELECTION_LIST =
+            "net/minecraft/client/gui/components/AbstractSelectionList";
+    private static final String OBJECT_SELECTION_LIST =
+            "net/minecraft/client/gui/components/ObjectSelectionList";
+
+    /**
+     * Minecraft 1.20.1's AbstractSelectionList.setLeftPos(int) only moved the
+     * widget's left edge. In 1.21.1 the list inherits AbstractWidget.setX(int),
+     * with width and row bounds derived from the widget geometry. Redirect
+     * calls on any known selection-list subclass to that equivalent setter.
+     */
+    private static boolean rewriteSelectionListPosition(MethodInsnNode call, Mc1201Hierarchy hierarchy) {
+        if ((call.getOpcode() != Opcodes.INVOKEVIRTUAL && call.getOpcode() != Opcodes.INVOKEINTERFACE)
+                || !"setLeftPos".equals(call.name)
+                || !"(I)V".equals(call.desc)) {
+            return false;
+        }
+        if (!hierarchy.isSubclassOf(call.owner, ABSTRACT_SELECTION_LIST)
+                && !hierarchy.isSubclassOf(call.owner, OBJECT_SELECTION_LIST)) {
+            return false;
+        }
+        call.name = "setX";
+        return true;
+    }
+
     private static void rewriteBody(MethodNode m, Mc1201Hierarchy h, Mc1201Tables t, Counts c) {
         Deque<TypeInsnNode> news = new ArrayDeque<>();
         AbstractInsnNode next;
@@ -283,8 +346,14 @@ final class Mc1201Migration {
             if (in instanceof TypeInsnNode ti && ti.getOpcode() == Opcodes.NEW) {
                 news.push(ti);
             } else if (in instanceof MethodInsnNode call) {
-                if (!call.name.equals("<init>") && h.isMod(call.owner) && h.declaredIn(call.owner, call.name, call.desc) != Origin.MOD) {
-                    // a renamed Minecraft member called through a class of the mod (the remapper only saw the mod class as the receiver)
+                if (rewriteSelectionListPosition(call, h)) {
+                    c.selectionListPositionCalls++;
+                }
+                if (!call.name.equals("<init>")
+                        && (h.isMinecraft(call.owner)
+                                || (h.isMod(call.owner) && h.declaredIn(call.owner, call.name, call.desc) != Origin.MOD))) {
+                    // Renamed Minecraft members can be called directly on Minecraft classes or inherited through a mod-owned subclass.
+                    // A method declared by the mod itself must keep its own name.
                     for (String ancestor : h.minecraftAncestors(call.owner)) {
                         String renamed = t.renamedMember(ancestor, call.name, call.desc);
                         if (!renamed.equals(call.name)) {
@@ -406,6 +475,9 @@ final class Mc1201Migration {
                 if (ctor) desc = hd.getDesc().substring(0, hd.getDesc().length() - 1) + "L" + hd.getOwner() + ";";
                 else desc = tag == Opcodes.H_INVOKESTATIC ? hd.getDesc() : "(L" + rule.owner() + ";" + hd.getDesc().substring(1);
             }
+            // A method handle has no following POP instruction to discard a changed return value. Keep it legacy-shaped;
+            // direct call sites can be adapted safely when the old return value is immediately discarded.
+            if (Type.getReturnType(hd.getDesc()).getSort() != Type.VOID && Type.getReturnType(desc).getSort() == Type.VOID) continue;
             d.bsmArgs[i] = new org.objectweb.asm.Handle(Opcodes.H_INVOKESTATIC, rule.helper(), rule.helperName(), desc, false);
             c.calls++;
         }
@@ -430,6 +502,18 @@ final class Mc1201Migration {
             return true;
         }
         if (hd == null) hd = call.getOpcode() == Opcodes.INVOKESTATIC ? call.desc : "(L" + rule.owner() + ";" + call.desc.substring(1);
+        Type oldReturn = Type.getReturnType(call.desc);
+        Type helperReturn = Type.getReturnType(hd);
+        if (oldReturn.getSort() != Type.VOID && helperReturn.getSort() == Type.VOID) {
+            // A return-type change from value to void is safe only when the old value is immediately discarded.
+            // If the caller observes it, leave the call untouched so SoftLink1201 reports the unsupported behavior
+            // instead of fabricating a result with different semantics.
+            AbstractInsnNode discarded = call.getNext();
+            while (discarded != null && discarded.getOpcode() < 0) discarded = discarded.getNext();
+            int popOpcode = oldReturn.getSize() == 2 ? Opcodes.POP2 : Opcodes.POP;
+            if (discarded == null || discarded.getOpcode() != popOpcode) return false;
+            m.instructions.remove(discarded);
+        }
         m.instructions.set(call, new MethodInsnNode(Opcodes.INVOKESTATIC, rule.helper(), rule.helperName(), hd, false));
         return true;
     }

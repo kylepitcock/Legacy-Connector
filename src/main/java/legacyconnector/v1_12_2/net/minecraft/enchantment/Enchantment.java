@@ -40,6 +40,11 @@ public abstract class Enchantment extends IForgeRegistryEntry.Impl<Enchantment> 
         this.applicableEquipmentTypes = slots;
     }
 
+    /** The equipment slots the enchantment acts in (for the modern enchantment definition). */
+    public EntityEquipmentSlot[] mcc$slots() {
+        return applicableEquipmentTypes == null ? new EntityEquipmentSlot[0] : applicableEquipmentTypes.clone();
+    }
+
     public Rarity getRarity() {
         return rarity;
     }

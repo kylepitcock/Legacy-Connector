@@ -45,8 +45,9 @@ public class EntityVillager extends EntityAgeable implements INpc, IMerchant {
 
     public EntityVillager(World world, int professionId) {
         super(world);
-        // a view of a villager already in the world keeps its profession
-        if (mcc$villager() == null || !mcc$entity.isAddedToLevel()) setProfession(professionId);
+        // a view of an existing villager keeps its profession: views are also made before the villager is added to the level (a
+        // legacy EntityJoinWorldEvent handler sees villagers loaded from disk or just spawned), so "not added yet" does not mean new
+        if (!mcc$existingNativeView()) setProfession(professionId);
         setSize(0.6F, 1.95F);
     }
 

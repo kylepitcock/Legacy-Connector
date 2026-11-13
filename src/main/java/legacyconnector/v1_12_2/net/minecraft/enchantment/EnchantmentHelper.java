@@ -64,20 +64,29 @@ public class EnchantmentHelper {
     private static final Map<String, String> RENAMED = Map.of("sweeping", "sweeping_edge");
 
     /**
-     * The level of a vanilla enchantment on the modern stack a view stands for (modern stacks keep enchantments in a component, not
-     * the {@code ench} tag); 0 for mod enchantments and plain stacks.
+     * The level of an enchantment on the modern stack a view stands for (modern stacks keep enchantments in a component, not the
+     * {@code ench} tag; mod enchantments are data-driven ones of their modern id, see Enchantments1122); 0 for plain stacks.
      */
     private static int mcc$modernLevel(Enchantment enchantment, ItemStack stack) {
         var backing = stack.mcc$backing();
         var name = enchantment.getRegistryName();
-        if (backing == null || name == null || !"minecraft".equals(name.getNamespace())) return 0;
-        String path = RENAMED.getOrDefault(name.getPath(), name.getPath());
+        if (backing == null || name == null) return 0;
+        String namespace = "minecraft";
+        String path;
+        if ("minecraft".equals(name.getNamespace())) {
+            path = RENAMED.getOrDefault(name.getPath(), name.getPath());
+        } else {
+            var id = org.kylepitcock.legacyconnector.v1_12_2.bridge.Enchantments1122.modernId(name);
+            if (id == null) return 0;
+            namespace = id.getNamespace();
+            path = id.getPath();
+        }
         var enchants = backing.getItem() == net.minecraft.world.item.Items.ENCHANTED_BOOK
                 ? backing.getOrDefault(net.minecraft.core.component.DataComponents.STORED_ENCHANTMENTS, net.minecraft.world.item.enchantment.ItemEnchantments.EMPTY)
                 : backing.getEnchantments();
         for (var e : enchants.entrySet()) {
             var key = e.getKey().unwrapKey();
-            if (key.isPresent() && key.get().location().getNamespace().equals("minecraft") && key.get().location().getPath().equals(path)) return e.getIntValue();
+            if (key.isPresent() && key.get().location().getNamespace().equals(namespace) && key.get().location().getPath().equals(path)) return e.getIntValue();
         }
         return 0;
     }

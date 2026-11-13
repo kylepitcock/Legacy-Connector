@@ -88,7 +88,12 @@ public abstract class EntityAnimal extends EntityAgeable implements IAnimals {
         if (mcc$entity == null) return true;
         var level = mcc$worldOverride != null ? mcc$worldOverride : mcc$entity.level();
         var pos = mcc$entity.blockPosition();
-        return level.getBlockState(pos.below()).is(net.minecraft.world.level.block.Blocks.GRASS_BLOCK) && level.getRawBrightness(pos, 0) > 8;
+        // 1.12: the block under the animal is its spawnableBlock (grass unless the mod set another: animals of mod dimensions spawn on their soil)
+        var below = level.getBlockState(pos.below());
+        boolean ground = spawnableBlock != null && spawnableBlock.mcc$modern instanceof net.minecraft.world.level.block.Block modern
+                && modern != net.minecraft.world.level.block.Blocks.GRASS_BLOCK
+                ? below.is(modern) : below.is(net.minecraft.world.level.block.Blocks.GRASS_BLOCK);
+        return ground && level.getRawBrightness(pos, 0) > 8;
     }
 
     @Override

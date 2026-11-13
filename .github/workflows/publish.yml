@@ -17,6 +17,8 @@ permissions:
 
 jobs:
   publish:
+    # the rolling "nightly" pre-release (nightly.yml) never goes to the stores
+    if: ${{ github.event_name != 'release' || (!github.event.release.prerelease && github.event.release.tag_name != 'nightly') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

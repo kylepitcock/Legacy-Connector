@@ -122,14 +122,36 @@ public final class PalladiumKubeJSCompat {
                     throw new UnsupportedOperationException("Unexpected Palladium builder factory method: " + method);
                 });
 
+        Class<?> builderTypeCallbackClass = Class.forName(
+                "dev.latvian.mods.kubejs.registry.BuilderTypeRegistry$Callback", true, loader);
         java.util.function.Consumer<Object> registerBasicType = callback -> {
             try {
-                invoke(callback, new String[] {"add"}, "basic", builderClass, factory);
+                registerBasicBuilderType(callback, builderTypeCallbackClass, builderClass, builderFactoryClass, factory);
             } catch (ReflectiveOperationException error) {
                 throw new IllegalStateException("Could not register KubeJS builder type for " + contentClassName, unwrap(error));
             }
         };
         invoke(registry, new String[] {"of"}, registryKey, registerBasicType);
+    }
+
+    /**
+     * Preserve Palladium's "basic" named type, but also register it as the
+     * default builder. KubeJS 7 uses defaultType() for event.create(id), while
+     * add(String, ...) only populates the named-type map.
+     *
+     * Invoke through the public Callback interface rather than the concrete
+     * callback implementation, which may be a non-public nested class.
+     */
+    static void registerBasicBuilderType(
+            Object callback,
+            Class<?> callbackApi,
+            Class<?> builderClass,
+            Class<?> builderFactoryClass,
+            Object factory) throws ReflectiveOperationException {
+        callbackApi.getMethod("addDefault", Class.class, builderFactoryClass)
+                .invoke(callback, builderClass, factory);
+        callbackApi.getMethod("add", String.class, Class.class, builderFactoryClass)
+                .invoke(callback, "basic", builderClass, factory);
     }
 
     /**
@@ -160,6 +182,15 @@ public final class PalladiumKubeJSCompat {
 
         try {
             ClassLoader loader = manager.getClass().getClassLoader();
+            try {
+                // Install legacy property type aliases before any addon ability script is evaluated.
+                // Keep unrelated addon scripts loadable if a future Palladium version changes this API.
+                PalladiumPropertyCompat.registerLegacyTypeAliases(loader);
+            } catch (RuntimeException aliasError) {
+                LOGGER.log(System.Logger.Level.ERROR,
+                        "Could not register legacy Palladium property type alias 'int' → 'integer'; affected properties will remain unsupported",
+                        unwrap(aliasError));
+            }
             Object scriptType = publicField(manager, "scriptType");
             String scriptTypeName = scriptType instanceof Enum<?> value ? value.name() : String.valueOf(scriptType);
             Object packType = packTypeFor(scriptTypeName, loader);
@@ -351,6 +382,30 @@ public final class PalladiumKubeJSCompat {
         byte[] contents;
         try (InputStream input = openInputStream(ioSupplier, loader)) {
             contents = input.readAllBytes();
+        }
+        byte[] adaptedContents = KubeJSItemBuilderCompat.rewriteLegacyBuilderSource(contents);
+        if (adaptedContents != contents) {
+            LOGGER.log(System.Logger.Level.INFO,
+                    "Adapted legacy KubeJS 6 item-glow builder usage in Palladium addon script {0}", resourcePath);
+            contents = adaptedContents;
+        }
+        byte[] keybindAdapted = KubeJSKeybindCompat.rewriteLegacyQuickChangeSource(contents);
+        if (keybindAdapted != contents) {
+            LOGGER.log(System.Logger.Level.INFO,
+                    "Adapted legacy KubeJS 6 quick-change key registration in Palladium addon script {0}", resourcePath);
+            contents = keybindAdapted;
+        }
+        byte[] keyAccessAdapted = KubeJSKeybindCompat.rewriteLegacyKeyMappingFieldAccess(contents);
+        if (keyAccessAdapted != contents) {
+            LOGGER.log(System.Logger.Level.INFO,
+                    "Adapted legacy KeyMapping field access in Palladium addon script {0}", resourcePath);
+            contents = keyAccessAdapted;
+        }
+        byte[] scopeAdapted = KubeJSScriptScopeCompat.rewriteKnownIdentifierCollisions(namespace, resourcePath, contents);
+        if (scopeAdapted != contents) {
+            LOGGER.log(System.Logger.Level.INFO,
+                    "Adapted a known Alien Evolution script-scope name collision in {0}:{1}", namespace, resourcePath);
+            contents = scopeAdapted;
         }
         if (!Files.exists(backingFile) || !java.util.Arrays.equals(contents, Files.readAllBytes(backingFile))) {
             Path temporary = backingFile.resolveSibling(backingFile.getFileName() + ".tmp");

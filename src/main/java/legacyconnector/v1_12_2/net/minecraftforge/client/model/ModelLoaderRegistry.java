@@ -182,6 +182,40 @@ public class ModelLoaderRegistry {
             return com.google.common.collect.ImmutableList.copyOf(out);
         }
 
+        /**
+         * The models a json model depends on, as Forge's wrapper of a vanilla model listed them: the models of its item overrides, then its
+         * parent (not builtin/ ones). Mods walk these to find every texture an item can show (The Betweenlands registers its generated
+         * corrosion sprites for the textures of the override models).
+         */
+        @Override
+        public java.util.Collection<ResourceLocation> getDependencies() {
+            if (location == null || location instanceof ModelResourceLocation) return com.google.common.collect.ImmutableList.of();
+            String path = location.getPath();
+            if (!path.startsWith("models/")) path = "models/" + path;
+            java.util.Set<ResourceLocation> out = new java.util.LinkedHashSet<>();
+            try {
+                var resource = legacyconnector.v1_12_2.net.minecraft.client.Minecraft.getMinecraft().getResourceManager()
+                        .getResource(new ResourceLocation(location.getNamespace(), path.endsWith(".json") ? path : path + ".json"));
+                try (java.io.Reader reader = new java.io.InputStreamReader(resource.getInputStream(), java.nio.charset.StandardCharsets.UTF_8)) {
+                    var json = com.google.gson.JsonParser.parseReader(reader).getAsJsonObject();
+                    if (json.has("overrides") && json.get("overrides").isJsonArray()) {
+                        for (var o : json.getAsJsonArray("overrides")) {
+                            if (!o.isJsonObject() || !o.getAsJsonObject().has("model") || !o.getAsJsonObject().get("model").isJsonPrimitive()) continue;
+                            ResourceLocation dep = new ResourceLocation(o.getAsJsonObject().get("model").getAsString());
+                            if (!dep.equals(location)) out.add(dep);
+                        }
+                    }
+                    if (json.has("parent") && json.get("parent").isJsonPrimitive()) {
+                        String parent = json.get("parent").getAsString();
+                        if (!parent.startsWith("builtin/") && !parent.startsWith("minecraft:builtin/")) out.add(new ResourceLocation(parent));
+                    }
+                }
+            } catch (java.io.IOException | RuntimeException e) {
+                // a missing or unreadable model has no dependencies
+            }
+            return com.google.common.collect.ImmutableList.copyOf(out);
+        }
+
         private static void readTextures(String namespace, String path, java.util.Set<ResourceLocation> out, int depth) {
             if (depth > 12) return;
             try {

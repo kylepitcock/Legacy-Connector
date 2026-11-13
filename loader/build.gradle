@@ -66,6 +66,12 @@ dependencies {
     testRuntimeOnly "org.slf4j:slf4j-simple:2.0.9"
 }
 
+// The loader implementation is linked against FML's service-layer SPI via compileOnly.
+// Tests that reference LegacyModLocator (including its inherited interfaces) need those
+// same compile-time APIs available both to javac and to the test JVM.
+sourceSets.test.compileClasspath += sourceSets.main.compileClasspath
+sourceSets.test.runtimeClasspath += sourceSets.main.compileClasspath
+
 repositories {
     maven {
         url = 'https://maven.glass-launcher.net/babric'

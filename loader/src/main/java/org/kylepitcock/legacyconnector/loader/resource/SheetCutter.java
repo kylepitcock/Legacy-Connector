@@ -13,6 +13,7 @@ import javax.imageio.ImageIO;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
@@ -39,6 +40,7 @@ public final class SheetCutter {
 
     /** Looks for sheet and override paths in the (already remapped) classes. */
     public void scan(Iterable<ClassNode> nodes) {
+        Map<String, Set<String>> pngFields = pngStaticFields(nodes);
         for (ClassNode node : nodes) {
             if (node.superName != null && node.superName.endsWith("TextureFX")) animated = true;
             for (MethodNode method : node.methods) {
@@ -46,32 +48,67 @@ public final class SheetCutter {
                 boolean getter = method.name.equals("getTextureFile");
                 String[] recent = new String[6];
                 int seen = 0;
+                // the paths of the last png-holding static field read, when that read is more recent than the last png literal
+                Set<String> lastField = null;
                 for (AbstractInsnNode insn = method.instructions.getFirst(); insn != null; insn = insn.getNext()) {
                     if (insn instanceof LdcInsnNode ldc && ldc.cst instanceof String s) {
                         if (s.toLowerCase(Locale.ROOT).endsWith(".png")) {
                             if (getter) sheets.add(normalize(s));
                             recent[seen++ % recent.length] = s;
+                            lastField = null;
                         }
-                    } else if (insn instanceof MethodInsnNode call && call.getOpcode() != Opcodes.INVOKEDYNAMIC && SHEET_CALLS.contains(call.name) && seen > 0) {
+                    } else if (insn instanceof FieldInsnNode field && field.getOpcode() == Opcodes.GETSTATIC
+                            && pngFields.containsKey(field.owner + "." + field.name)) {
+                        lastField = pngFields.get(field.owner + "." + field.name);
+                        if (getter) for (String v : lastField) sheets.add(normalize(v));
+                    } else if (insn instanceof MethodInsnNode call && call.getOpcode() != Opcodes.INVOKEDYNAMIC && SHEET_CALLS.contains(call.name)
+                            && (seen > 0 || lastField != null)) {
                         int count = Math.min(seen, recent.length);
-                        // addOverride(sheet, file): the file (the last string) is one tile, the first string is the sheet it joins
-                        if (call.name.equals("addOverride") && count >= 2 && call.desc.startsWith("(Ljava/lang/String;Ljava/lang/String;")) {
+                        boolean renderer = node.name.contains("Render") && !node.name.contains("Gui") && !node.name.contains("GUI");
+                        if (lastField != null) {
+                            // setTextureFile(Props.blockSheet): every path the field is ever given (a mod's colour-blind sheet too)
+                            boolean bind = call.name.equals("bindTexture") || call.name.equals("loadTexture");
+                            if (!call.name.equals("addOverride") && (!bind || renderer)) for (String v : lastField) sheets.add(normalize(v));
+                        } else if (call.name.equals("addOverride") && count >= 2 && call.desc.startsWith("(Ljava/lang/String;Ljava/lang/String;")) {
+                            // addOverride(sheet, file): the file (the last string) is one tile, the first string is the sheet it joins
                             singles.add(normalize(recent[(seen - 1) % recent.length]));
                         } else if (call.name.equals("bindTexture") || call.name.equals("loadTexture")) {
                             // bound whole images are not sheets unless named by one of the sheet calls, except in a block/tile renderer: those draw
                             // tile-position UVs of what they bind (RedPower's wires bind /eloraam/wiring/redpower1.png and draw tessellator quads)
-                            if (node.name.contains("Render") && !node.name.contains("Gui") && !node.name.contains("GUI")) {
-                                sheets.add(normalize(recent[(seen - 1) % recent.length]));
-                            }
+                            if (renderer) sheets.add(normalize(recent[(seen - 1) % recent.length]));
                         } else {
                             sheets.add(normalize(recent[(seen - 1) % recent.length]));
                         }
                         seen = 0;
+                        lastField = null;
                     }
                 }
             }
         }
         for (String v : VANILLA) sheets.remove(normalize(v));
+    }
+
+    /**
+     * Static String fields that are assigned a png literal anywhere in the jar ({@code Props.blockSheet = "/mod/gfx/blocks.png"},
+     * switched to a colour-blind sheet by a config option): owner.name to every path assigned. Mods keep their sheet path in such a field and
+     * pass the field to {@code setTextureFile}/{@code preloadTexture}, so the call sites have no literal (#248: none of the mod's blocks had tiles).
+     */
+    private static Map<String, Set<String>> pngStaticFields(Iterable<ClassNode> nodes) {
+        Map<String, Set<String>> out = new java.util.HashMap<>();
+        for (ClassNode node : nodes) {
+            for (MethodNode method : node.methods) {
+                if (method.instructions == null) continue;
+                for (AbstractInsnNode insn = method.instructions.getFirst(); insn != null; insn = insn.getNext()) {
+                    if (!(insn instanceof FieldInsnNode put) || put.getOpcode() != Opcodes.PUTSTATIC || !put.desc.equals("Ljava/lang/String;")) continue;
+                    AbstractInsnNode prev = put.getPrevious();
+                    while (prev != null && prev.getOpcode() < 0) prev = prev.getPrevious();
+                    if (prev instanceof LdcInsnNode ldc && ldc.cst instanceof String s && s.toLowerCase(Locale.ROOT).endsWith(".png")) {
+                        out.computeIfAbsent(put.owner + "." + put.name, k -> new TreeSet<>()).add(s);
+                    }
+                }
+            }
+        }
+        return out;
     }
 
     public boolean found() {

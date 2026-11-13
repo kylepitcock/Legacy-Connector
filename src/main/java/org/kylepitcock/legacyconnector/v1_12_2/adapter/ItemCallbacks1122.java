@@ -308,6 +308,22 @@ final class ItemCallbacks1122 {
         }
     }
 
+    /**
+     * Whether the item harvests the block (gets its drops), as Forge 1.12's ForgeHooks.canHarvestBlock decided: the item's own
+     * canHarvestBlock (vanilla pickaxes, mods' overrides), else a declared tool class that mines the block at a high enough level.
+     */
+    boolean correctTool(net.minecraft.world.item.ItemStack stack, net.minecraft.world.level.block.state.BlockState state) {
+        IBlockState legacyState = StatesBridge1122.toLegacy(state);
+        if (legacyState == null) return false;
+        try {
+            var view = Stacks1122.view(stack);
+            return legacy.canHarvestBlock(legacyState, view)
+                    || legacyconnector.v1_12_2.net.minecraft.item.ItemTool.mcc$canHarvest(legacy, view, legacyState);
+        } catch (RuntimeException | LinkageError e) {
+            return false;
+        }
+    }
+
     InteractionResult interact(net.minecraft.world.item.ItemStack stack, Player player, LivingEntity target, InteractionHand hand) {
         EntityPlayer p = player(player);
         EntityLivingBase t = living(target);

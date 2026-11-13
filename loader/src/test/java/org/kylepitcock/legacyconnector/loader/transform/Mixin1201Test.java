@@ -88,17 +88,60 @@ class Mixin1201Test implements Opcodes {
 
     @Test
     void configIsNotRequiredAndDropsTheMissingMixins() {
-        String json = "{\"required\":true,\"package\":\"m\",\"refmap\":\"x.refmap.json\",\"mixins\":[\"GoneMixin\",\"ThereMixin\"],\"client\":[\"sub.ClientMixin\"],\"injectors\":{\"defaultRequire\":1}}";
+        String json = "{\"required\":true,\"package\":\"m\",\"plugin\":\"example.MixinPlugin\",\"refmap\":\"x.refmap.json\",\"compatibilityLevel\":\"JAVA_17\",\"mixins\":[\"GoneMixin\",\"ThereMixin\"],\"client\":[\"sub.ClientMixin\"],\"injectors\":{\"defaultRequire\":1}}";
         List<String> notes = new ArrayList<>();
         String out = Mixin1201.config(json, Set.of("m/GoneMixin"), notes);
         JsonObject o = JsonParser.parseString(out).getAsJsonObject();
         assertFalse(o.get("required").getAsBoolean());
         assertFalse(o.has("refmap"));
+        assertEquals("example.MixinPlugin", o.get("plugin").getAsString(), "conditional optional-integration gates must survive config normalization");
+        assertEquals("JAVA_17", o.get("compatibilityLevel").getAsString());
         assertEquals(0, o.getAsJsonObject("injectors").get("defaultRequire").getAsInt());
         assertEquals(1, o.getAsJsonArray("mixins").size());
         assertEquals("ThereMixin", o.getAsJsonArray("mixins").get(0).getAsString());
         assertEquals(1, o.getAsJsonArray("client").size());
         assertEquals(1, notes.size());
+    }
+
+    @Test
+    void invokerAndAccessorSelectorsAreRemappedInsideMethodAnnotations() {
+        ClassNode n = mixin("m/InvokerMixin", "net/minecraft/world/entity/Entity");
+        MethodNode invoker = new MethodNode(ACC_PUBLIC, "invokeTick", "()V", null, null);
+        AnnotationNode invokerAnnotation = new AnnotationNode("Lorg/spongepowered/asm/mixin/gen/Invoker;");
+        invokerAnnotation.values = new ArrayList<>(List.of("value", "m_6075_"));
+        invoker.invisibleAnnotations = new ArrayList<>(List.of(invokerAnnotation));
+        MethodNode accessor = new MethodNode(ACC_PUBLIC, "getLegacyField", "()I", null, null);
+        AnnotationNode accessorAnnotation = new AnnotationNode("Lorg/spongepowered/asm/mixin/gen/Accessor;");
+        accessorAnnotation.values = new ArrayList<>(List.of("value", "f_12345_"));
+        accessor.invisibleAnnotations = new ArrayList<>(List.of(accessorAnnotation));
+        n.methods.add(invoker);
+        n.methods.add(accessor);
+
+        Mixin1201.apply(n, Map.of("m_6075_", "tick", "f_12345_", "tickCount"),
+                new Mc1201Hierarchy(), Mc1201Tables.get(), new Mixin1201.Stats());
+
+        assertEquals("tick", invokerAnnotation.values.get(1));
+        assertEquals("tickCount", accessorAnnotation.values.get(1));
+    }
+
+    @Test
+    void mixinExtrasWrapOperationTargetIsRemappedAndRequirementRelaxed() {
+        ClassNode n = mixin("m/WrapMixin", "net/minecraft/world/entity/Entity");
+        MethodNode handler = new MethodNode(ACC_PRIVATE, "wrapTick", "()V", null, null);
+        AnnotationNode at = new AnnotationNode("Lorg/spongepowered/asm/mixin/injection/At;");
+        at.values = new ArrayList<>(List.of("value", "INVOKE", "target", "Lnet/minecraft/world/entity/Entity;m_6075_()V"));
+        AnnotationNode wrap = new AnnotationNode("Lcom/llamalad7/mixinextras/injector/wrapoperation/WrapOperation;");
+        wrap.values = new ArrayList<>(List.of("method", new ArrayList<Object>(List.of("m_6075_")), "at", new ArrayList<Object>(List.of(at)), "require", 1));
+        handler.invisibleAnnotations = new ArrayList<>(List.of(wrap));
+        n.methods.add(handler);
+
+        Mixin1201.Stats stats = new Mixin1201.Stats();
+        Mixin1201.apply(n, Map.of("m_6075_", "tick"), new Mc1201Hierarchy(), Mc1201Tables.get(), stats);
+
+        assertEquals("tick", ((List<?>) wrap.values.get(1)).get(0));
+        assertEquals(0, wrap.values.get(5));
+        assertEquals("Lnet/minecraft/world/entity/Entity;tick()V", at.values.get(3));
+        assertEquals(1, stats.requireRemoved);
     }
 
     @Test

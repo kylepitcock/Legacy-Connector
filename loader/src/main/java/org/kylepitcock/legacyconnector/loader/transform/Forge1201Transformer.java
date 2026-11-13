@@ -31,6 +31,7 @@ import org.kylepitcock.legacyconnector.loader.SideBySide;
 import org.kylepitcock.legacyconnector.loader.mapping.SrgMojangTable;
 import org.kylepitcock.legacyconnector.loader.shim.ShimIndex;
 import org.kylepitcock.legacyconnector.loader.resource.DataConverter1201;
+import org.kylepitcock.legacyconnector.loader.resource.FunctionConverter1201;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Type;
@@ -277,6 +278,27 @@ public final class Forge1201Transformer {
         int palladiumKubejsChanges = 0;
         int palladiumKubejsClassesDropped = 0;
         int palladiumAddonPackChanges = 0;
+        int palladiumWidgetButtonChanges = 0;
+        int palladiumMixinChanges = 0;
+        int palladiumLootChanges = 0;
+        int palladiumAccessoryScreenChanges = 0;
+        int palladiumAdvancementWidgetChanges = 0;
+        int palladiumPowersScreenChanges = 0;
+        int palladiumSelectionListChanges = 0;
+        int palladiumSuitStandChanges = 0;
+        int palladiumRendererRotationChanges = 0;
+        int palladiumTailoringScreenChanges = 0;
+        int palladiumSheepColorChanges = 0;
+        int palladiumRenderLayerChanges = 0;
+        int palladiumGeckoAnimationChanges = 0;
+        int palladiumGeckoModelAnimationChanges = 0;
+        int palladiumCommandFunctionChanges = 0;
+        int palladiumPlayerSkinChanges = 0;
+        int palladiumPlayerSkinFetcherChanges = 0;
+        int palladiumFlightHandlerChanges = 0;
+        int palladiumCustomProjectileChanges = 0;
+        int palladiumCoreOverlayChanges = 0;
+        int palladiumCoreLightningMixinChanges = 0;
         for (ClassNode node : nodes) {
             if (PalladiumKubeJS1201.dropLegacyKubejsClass(node.name)) {
                 palladiumKubejsClassesDropped++;
@@ -288,6 +310,22 @@ public final class Forge1201Transformer {
             }
             stringsMapped += mapSrgStrings(node);
             int viaCalls = CallRewrites1201.apply(node, compoundSubclasses);
+            int palladiumGeckoAnimationChange = PalladiumGeckoRenderLayer1201.apply(node);
+            palladiumGeckoAnimationChanges += palladiumGeckoAnimationChange;
+            viaCalls += palladiumGeckoAnimationChange;
+            int palladiumGeckoModelAnimationChange = PalladiumGeckoRenderLayerModel1201.apply(node);
+            palladiumGeckoModelAnimationChanges += palladiumGeckoModelAnimationChange;
+            viaCalls += palladiumGeckoModelAnimationChange;
+            int palladiumSuitStandChange = PalladiumSuitStand1201.apply(node);
+            palladiumSuitStandChanges += palladiumSuitStandChange;
+            int palladiumRendererRotationChange = PalladiumRendererRotation1201.apply(node);
+            palladiumRendererRotationChanges += palladiumRendererRotationChange;
+            int palladiumTailoringScreenChange = PalladiumTailoringScreen1201.apply(node);
+            palladiumTailoringScreenChanges += palladiumTailoringScreenChange;
+            int palladiumSheepColorChange = PalladiumColor1201.apply(node);
+            palladiumSheepColorChanges += palladiumSheepColorChange;
+            int palladiumRenderLayerChange = PalladiumRenderLayer1201.apply(node);
+            palladiumRenderLayerChanges += palladiumRenderLayerChange;
             int palladiumChanges = PalladiumKubeJS1201.apply(node);
             palladiumKubejsChanges += palladiumChanges;
             int palladiumAddonPackChange = PalladiumAddonPackManager1201.apply(node);
@@ -296,10 +334,54 @@ public final class Forge1201Transformer {
             viaCalls += AttachGuards1201.apply(node, jarClasses);
             if (ForgeApiRewrites1201.markProviders(node)) viaCalls++;
             rewrites += viaCalls;
+            // Replace the removed SkinTextureCallback API before the generic soft-link pass.
+            int palladiumPlayerSkinFetcherChange = PalladiumPlayerSkinFetcher1201.apply(node);
+            palladiumPlayerSkinFetcherChanges += palladiumPlayerSkinFetcherChange;
+            // Adapt before Mc1201Migration redirects AddLayers.getSkin(String) to ClientCompat.getSkin.
+            // The PalladiumCore adapter must see and retarget the original lookup before that generic pass.
+            int palladiumPlayerSkinChange = PalladiumCorePlayerSkin1201.apply(node);
+            palladiumPlayerSkinChanges += palladiumPlayerSkinChange;
             Mc1201Migration.Counts changed = Mc1201Migration.apply(node, hierarchy);
             mc.add(changed);
+            int palladiumFlightHandlerChange = PalladiumFlightHandler1201.apply(node);
+            palladiumFlightHandlerChanges += palladiumFlightHandlerChange;
+            int palladiumCustomProjectileChange = PalladiumCustomProjectile1201.apply(node);
+            palladiumCustomProjectileChanges += palladiumCustomProjectileChange;
+            int palladiumCoreOverlayChange = PalladiumCoreOverlay1201.apply(node);
+            palladiumCoreOverlayChanges += palladiumCoreOverlayChange;
+            int palladiumCoreLightningMixinChange = PalladiumCoreLightningBoltMixin1201.apply(node);
+            palladiumCoreLightningMixinChanges += palladiumCoreLightningMixinChange;
+            // The generic rule above should cover this call shape. Palladium 4.5.10's command abilities
+            // and energy-beam hit handlers are guarded explicitly as well, so a missed site cannot leave
+            // its input/action path silently calling the removed synchronous API.
+            int palladiumCommandFunctionChange = PalladiumCommandFunction1201.apply(node);
+            palladiumCommandFunctionChanges += palladiumCommandFunctionChange;
+            // Runs after GuiGraphics.blitNineSliced has been redirected, but before SoftLink1201
+            // would replace Palladium's now-missing inherited Button.WIDGETS_LOCATION with null.
+            int palladiumWidgetButtonChange = PalladiumWidgetButtons1201.apply(node);
+            palladiumWidgetButtonChanges += palladiumWidgetButtonChange;
+            int palladiumMixinChange = PalladiumMixinCompat1201.apply(node);
+            palladiumMixinChanges += palladiumMixinChange;
+            int palladiumLootChange = PalladiumLootCompat1201.apply(node);
+            palladiumLootChanges += palladiumLootChange;
+            int palladiumAccessoryScreenChange = PalladiumAccessoryScreen1201.apply(node);
+            palladiumAccessoryScreenChanges += palladiumAccessoryScreenChange;
+            int palladiumAdvancementWidgetChange = PalladiumAdvancementWidget1201.apply(node);
+            palladiumAdvancementWidgetChanges += palladiumAdvancementWidgetChange;
+            int palladiumPowersScreenChange = PalladiumPowersScreen1201.apply(node);
+            palladiumPowersScreenChanges += palladiumPowersScreenChange;
+            int palladiumSelectionListChange = PalladiumSelectionLists1201.apply(node);
+            palladiumSelectionListChanges += palladiumSelectionListChange;
             Mixin1201.apply(node, srg, hierarchy, Mc1201Tables.get(), mixinStats);
-            migrated.put(node, viaCalls + changed.total() + palladiumChanges + palladiumAddonPackChange);
+            migrated.put(node, viaCalls + changed.total() + palladiumChanges + palladiumAddonPackChange
+                    + palladiumWidgetButtonChange + palladiumMixinChange + palladiumLootChange
+                    + palladiumAccessoryScreenChange + palladiumAdvancementWidgetChange + palladiumPowersScreenChange
+                    + palladiumSelectionListChange + palladiumSuitStandChange
+                    + palladiumTailoringScreenChange + palladiumSheepColorChange
+                    + palladiumRendererRotationChange + palladiumRenderLayerChange + palladiumPlayerSkinChange
+                    + palladiumPlayerSkinFetcherChange + palladiumCommandFunctionChange
+                    + palladiumFlightHandlerChange + palladiumCustomProjectileChange
+                    + palladiumCoreOverlayChange + palladiumCoreLightningMixinChange);
         }
         if (palladiumKubejsChanges > 0 || palladiumKubejsClassesDropped > 0) {
             result.notes.add("Palladium KubeJS 6 integration adapted for KubeJS 7: "
@@ -307,8 +389,40 @@ public final class Forge1201Transformer {
                     + palladiumKubejsClassesDropped + " obsolete KubeJS 6 class(es) removed");
         }
         if (palladiumAddonPackChanges > 0) {
-            result.notes.add("Palladium addon-pack FolderRepositorySource constructor adapted with Minecraft's symlink validator: "
+            result.notes.add("Palladium addon-pack repository adapted: FolderRepositorySource uses Minecraft's symlink validator; the discovery callback rebuilds immutable 1.21.1 PackLocationInfo/PackSelectionConfig with the legacy addonpack: ID prefix and required-selection setting: "
                     + palladiumAddonPackChanges + " constructor call(s)");
+        }
+        if (palladiumWidgetButtonChanges > 0) {
+            result.notes.add("Palladium default button backgrounds migrated to 1.21.1 GUI sprites: "
+                    + palladiumWidgetButtonChanges + " button class(es)");
+        }
+        if (palladiumMixinChanges > 0) {
+            result.notes.add("Palladium 1.21.1 compatibility adapters applied to "
+                    + palladiumMixinChanges + " class(es); includes PlayerList scoreboard replay migration to PlayerScoreEntry and the 1.21.1 score packet, plus VibrationListener GameEvent Holder unwrapping; the obsolete Watcher render hook is omitted");
+        }
+        if (palladiumSuitStandChanges > 0) {
+            result.notes.add("Palladium SuitStand migrated to the 1.21.1 SynchedEntityData builder lifecycle: "
+                    + palladiumSuitStandChanges + " entity class(es)");
+        }
+        if (palladiumFlightHandlerChanges > 0) {
+            result.notes.add("Palladium FlightHandler EntityDimensions.height field access migrated to the public 1.21.1 record accessor: "
+                    + palladiumFlightHandlerChanges + " field read(s)");
+        }
+        if (palladiumCustomProjectileChanges > 0) {
+            result.notes.add("Palladium CustomProjectile EntityDimensions.width field access migrated to the public 1.21.1 record accessor: "
+                    + palladiumCustomProjectileChanges + " field read(s)");
+        }
+        if (palladiumCoreOverlayChanges > 0) {
+            result.notes.add("PalladiumCore overlay registry verified against the Forge 1.20.1 RegisterGuiOverlaysEvent/ForgeGui shim, which forwards to NeoForge RegisterGuiLayersEvent/LayeredDraw.Layer: "
+                    + palladiumCoreOverlayChanges + " overlay registry class(es)");
+        }
+        if (palladiumCoreLightningMixinChanges > 0) {
+            result.notes.add("PalladiumCore LightningBoltMixin declares maxShiftBy=1 for its verified one-instruction "
+                    + "INVOKE_ASSIGN shift after the second Level.getEntities call");
+        }
+        if (palladiumLootChanges > 0) {
+            result.notes.add("Palladium loot-pool Gson deserialization migrated to NeoForge 1.21.1 loot codecs: "
+                    + palladiumLootChanges + " manager class(es)");
         }
         if (ownUnit) {
             // an isolated library next to its native build registers the same ids as the native one: its deferred registers are not attached to the bus
@@ -367,13 +481,73 @@ public final class Forge1201Transformer {
         }
         if (soft != null) for (String u : soft.unfixable) result.notes.add("Soft link: class " + u.replace('/', '.') + " does not exist in 1.21.1; a mod class extending it cannot be stood in for and will not load");
         if (mc.total() > 0) result.notes.add("Minecraft 1.20.1 to 1.21.1 migration: " + mc);
+        if (mc.widgetNarrationOverrides > 0) {
+            result.notes.add("Minecraft 1.20.1 AbstractWidget.updateNarration() overrides migrated to the 1.21.1 updateWidgetNarration() hook: "
+                    + mc.widgetNarrationOverrides + " widget class(es)");
+        }
         if (mixinStats.mixinClasses > 0) result.notes.add("Mixins: " + mixinStats.summary());
         for (String d : mixinStats.dropped) result.notes.add("Mixin dropped, its target no longer exists in Minecraft 1.21.1: " + d);
-        if (rewrites > 0) result.notes.add(rewrites + " call site(s) rewritten for changed 1.21.1 signatures (ResourceLocation factories, event bus post, PalladiumCore renderer lookup)");
+        if (rewrites > 0) result.notes.add(rewrites + " call site(s) rewritten for changed 1.21.1 signatures (ResourceLocation factories, event bus post, PalladiumCore renderer lookup, inventory entity preview)");
         if (stringsMapped > 0) result.notes.add(stringsMapped + " reflection string(s) with SRG names now use Mojang names");
 
         Map<String, byte[]> outResources = new LinkedHashMap<>();
         Map<String, String> cfgRename = new HashMap<>();
+        if (palladiumSuitStandChanges > 0) {
+            result.notes.add("Palladium SuitStand migrated to the 1.21.1 SynchedEntityData.Builder lifecycle; DATA_CLIENT_FLAGS setup deferred until after the ArmorStand constructor: "
+                    + palladiumSuitStandChanges + " entity class(es)");
+        }
+        if (palladiumRendererRotationChanges > 0) {
+            result.notes.add("Palladium SuitStand/TrailSegment renderer setupRotations overrides and calls migrated to the 1.21.1 four-float signature with the legacy default scale: "
+                    + palladiumRendererRotationChanges + " method/call site(s)");
+        }
+        if (palladiumAccessoryScreenChanges > 0) {
+            result.notes.add("Palladium AccessoryScreen keeps its legacy lists/title/Done controls, skips the unused OptionsSubScreen body, passes Minecraft.options, suppresses the modern Screen background/blur hook while preserving super.render() widgets, and removes the legacy dirt-background layer: "
+                    + palladiumAccessoryScreenChanges + " screen class(es)");
+        }
+        if (palladiumAdvancementWidgetChanges > 0) {
+            result.notes.add("Palladium TreeAbilityWidget tooltip frame lookup migrated from removed AdvancementWidgetType#getIndex() to the preserved 1.21.1 enum order: "
+                    + palladiumAdvancementWidgetChanges + " call site(s)");
+        }
+        if (palladiumPowersScreenChanges > 0) {
+            result.notes.add("Palladium PowersScreen suppresses the modern Screen background/blur hook while preserving its custom contents: "
+                    + palladiumPowersScreenChanges + " screen class(es)");
+        }
+        if (palladiumSelectionListChanges > 0) {
+            result.notes.add("Palladium list widgets: " + palladiumSelectionListChanges
+                    + " bytecode site(s) migrated (legacy x0 position fields to getX/setX, three legacy render preferences to 1.21.1 hooks, and verified no-op narration overrides)");
+        }
+        if (palladiumTailoringScreenChanges > 0) {
+            result.notes.add("Palladium TailoringScreen removed its obsolete empty updateNarration() override, which conflicts with 1.21.1's final AbstractWidget implementation: "
+                    + palladiumTailoringScreenChanges + " recipe-list class(es)");
+        }
+        if (palladiumSheepColorChanges > 0) {
+            result.notes.add("Palladium SuitStand sheep-color calls migrated to 1.21.1 Sheep.getColor(DyeColor), preserving normalized RGB float arrays: "
+                    + palladiumSheepColorChanges + " call site(s)");
+        }
+        if (palladiumRenderLayerChanges > 0) {
+            result.notes.add("Palladium SuitStand RenderLayer color-copy call migrated from nine float arguments to the 1.21.1 six-float plus packed ARGB color overload: "
+                    + palladiumRenderLayerChanges + " call site(s)");
+        }
+        if (palladiumGeckoAnimationChanges > 0) {
+            result.notes.add("Palladium first-person GeckoRenderLayer adapted to GeckoLib's handleAnimations partial-tick API: "
+                    + palladiumGeckoAnimationChanges + " call site(s)");
+        }
+        if (palladiumGeckoModelAnimationChanges > 0) {
+            result.notes.add("Palladium GeckoRenderLayerModel inventory/player-entity preview adapted to GeckoLib's handleAnimations partial-tick API: "
+                    + palladiumGeckoModelAnimationChanges + " call site(s)");
+        }
+        if (palladiumCommandFunctionChanges > 0) {
+            result.notes.add("Palladium CommandAbility and EnergyBeamAbility command-function execution migrated to the 1.21.1 queued API: "
+                    + palladiumCommandFunctionChanges + " call site(s)");
+        }
+        if (palladiumPlayerSkinChanges > 0) {
+            result.notes.add("PalladiumCore player-skin lambda migrated in place from String to NeoForge PlayerSkin.Model; the original AddLayers callback and per-entity exception handling are preserved: "
+                    + palladiumPlayerSkinChanges + " lambda(s)");
+        }
+        if (palladiumPlayerSkinFetcherChanges > 0) {
+            result.notes.add("Palladium PlayerSkinFetcher migrated from the removed SkinTextureCallback to SkinManager.getOrLoad / CompletableFuture.whenComplete: "
+                    + palladiumPlayerSkinFetcherChanges + " fetcher class(es)");
+        }
         if (ownUnit) {
             String suffix = "_l" + VER.id().replaceAll("[^a-z0-9]", "");
             for (var e : other.entrySet()) {
@@ -432,13 +606,37 @@ public final class Forge1201Transformer {
             if (ownUnit) result.notes.add("Side-by-side library: mod id(s) " + ownIds + " load as separate unit(s), packages relocated under " + SideBySide.prefix(VER));
             else result.notes.add("Side-by-side: references to isolated libraries " + plan.units().stream().filter(u -> u.version() == VER).map(SideBySide.Unit::modId).toList() + " link to their relocated copies");
         }
+        int alienEvoResourceChanges = PalladiumResourceCompat1201.apply(outResources);
+        if (alienEvoResourceChanges > 0) {
+            result.notes.add("AlienEvo resources migrate legacy ResourceLocation and SoundEvent script APIs, persistent NBT integer/string values, armor guards, Omnitrix tab comparisons and KubeJS 7 server/player access; normalize stat-ability modifier IDs, remove the obsolete EditBox.tick call, and repair inspected Diamond Shard/AFOMNI particle texture IDs: "
+                    + alienEvoResourceChanges + " resource file(s)");
+        }
         if (PalladiumKubeJS1201.addPluginDiscoveryResource(outResources, outClasses.keySet())) {
             result.notes.add("Palladium KubeJS 7 plugin discovery entry added to kubejs.plugins.txt");
+        }
+        if (AlienEvoResourceCompat1201.removeUnreferencedHiddenCodePower(outResources, outClasses)) {
+            result.notes.add("AlienEvo: removed the unreferenced hidden code_power_test resource; its generate_random/check_code types are not registered, while the real code system is handled by display_code");
+        }
+        if (AlienEvoResourceCompat1201.makeAdAstraDamageTypeOptional(outResources)) {
+            result.notes.add("AlienEvo: made the Ad Astra oxygen damage-type tag optional; it is used when ad_astra:oxygen is registered and skipped when Ad Astra is absent");
+        }
+        if (AlienEvoResourceCompat1201.ensureAddonResourceRootMarker(outResources)) {
+            result.notes.add("AlienEvo: added the 1.21.1 addon resource-root marker for its nonstandard addon/ asset tree");
         }
         // the data and resource packs: 1.21 folder names, recipe/loot/advancement/tag/model formats, forge: ids, pack.mcmeta (DataConverter1201)
         DataConverter1201.Stats dataStats = new DataConverter1201.Stats();
         outResources = new LinkedHashMap<>(DataConverter1201.convertAll(outResources, dataStats));
         if (dataStats.total() > 0) result.notes.add("Data and resources converted to the 1.21.1 formats: " + dataStats);
+        FunctionConverter1201.Stats functionStats = new FunctionConverter1201.Stats();
+        outResources = new LinkedHashMap<>(FunctionConverter1201.convertAll(outResources, functionStats));
+        if (functionStats.changedFiles > 0) {
+            String functionNote = "Legacy 1.20.1 command functions migrated: " + functionStats.changedFiles
+                    + " function file(s), " + functionStats.rewrittenCommands + " command line(s)";
+            if (functionStats.droppedIncompleteCommands > 0) {
+                functionNote += "; " + functionStats.droppedIncompleteCommands + " incomplete actionless command line(s) replaced with explanatory comments";
+            }
+            result.notes.add(functionNote + ": " + functionStats.categories);
+        }
 
         Manifest outManifest = LegacyJarTransformer.cleanManifest(manifest, jar);
         String originalSha = Provenance.sha256Hex(jar.existing());
@@ -663,6 +861,8 @@ public final class Forge1201Transformer {
     }
 
     static String modsToml(String text, List<String> mixinConfigs) {
+        // Repair dependency table owners for single-mod Forge jars that mistakenly name the owner "examplemod".
+        String soleDeclaredModId = soleDeclaredModId(text);
         StringBuilder out = new StringBuilder("# Generated by Legacy Connector from the Forge 1.20.1 mods.toml\n");
         List<String> block = new ArrayList<>();
         boolean inDependency = false;
@@ -680,8 +880,15 @@ public final class Forge1201Transformer {
                 flushDependency(out, block, inDependency);
                 block.clear();
                 inDependency = t.startsWith("[[dependencies.");
-                out.append(inDependency ? "" : line).append(inDependency ? "" : "\n");
-                if (inDependency) block.add(line);
+                String header = line;
+                if (inDependency && soleDeclaredModId != null) {
+                    Matcher dependencyHeader = Pattern.compile("^(\\s*)\\[\\[dependencies\\.[^\\]]+\\]\\](\\s*(?:#.*)?)$").matcher(line);
+                    if (dependencyHeader.matches()) {
+                        header = dependencyHeader.group(1) + "[[dependencies." + soleDeclaredModId + "]]" + dependencyHeader.group(2);
+                    }
+                }
+                out.append(inDependency ? "" : header).append(inDependency ? "" : "\n");
+                if (inDependency) block.add(header);
                 continue;
             }
             if (inDependency) {
@@ -699,6 +906,29 @@ public final class Forge1201Transformer {
         flushDependency(out, block, inDependency);
         for (String config : mixinConfigs) out.append("\n[[mixins]]\nconfig=\"").append(config).append("\"\n");
         return out.toString();
+    }
+
+    private static String soleDeclaredModId(String text) {
+        List<String> ids = new ArrayList<>();
+        boolean inMod = false;
+        boolean multi = false;
+        for (String line : text.split("\\R", -1)) {
+            boolean wasMulti = multi;
+            if ((count(line, "'''") + count(line, "\"\"\"")) % 2 == 1) multi = !multi;
+            if (wasMulti) continue;
+            String t = line.strip();
+            if (t.startsWith("[")) {
+                inMod = t.equals("[[mods]]");
+                continue;
+            }
+            if (!inMod) continue;
+            Matcher m = KEY_LINE.matcher(line);
+            if (m.matches() && m.group(2).equals("modId")) {
+                String id = m.group(4).trim().replaceAll("^[\\\"']|[\\\"']\\s*(#.*)?$", "");
+                if (!id.isBlank()) ids.add(id);
+            }
+        }
+        return ids.size() == 1 ? ids.get(0) : null;
     }
 
     private static int count(String s, String what) {

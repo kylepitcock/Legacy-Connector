@@ -69,6 +69,12 @@ public final class DataConverter1201 {
     /** Ids that were renamed between 1.20.1 and 1.21.1 and appear in data (JSON data is not run through the data fixers). */
     private static final Map<String, String> RENAMED_IDS = Map.of(
             "minecraft:grass", "minecraft:short_grass", "minecraft:sweeping", "minecraft:sweeping_edge", "minecraft:scute", "minecraft:turtle_scute");
+    /** Attribute ids whose identifiers changed after Forge 1.20.1 / Minecraft 1.20.1. */
+    private static final Map<String, String> ATTRIBUTE_IDS = Map.of(
+            "forge:step_height_addition", "minecraft:generic.step_height",
+            "forge:entity_gravity", "minecraft:generic.gravity",
+            "forge:swim_speed", "neoforge:swim_speed",
+            "generic.movement_speed", "minecraft:generic.movement_speed");
     /** First segment of a Forge tag path to its convention-tag spelling in NeoForge 1.21.1 ({@code c:}); the rest of the path is kept. */
     private static final Map<String, String> TAG_SEGMENTS = Map.ofEntries(
             Map.entry("stone", "stones"), Map.entry("cobblestone", "cobblestones"), Map.entry("sand", "sands"),
@@ -163,15 +169,26 @@ public final class DataConverter1201 {
         };
     }
 
+    /** Attribute id migration shared by JSON data and binary structure entity NBT. */
+    static String mapAttributeId(String id) {
+        return ATTRIBUTE_IDS.getOrDefault(id, id);
+    }
+
     // ---- entry point ------------------------------------------------------------------------------------------------------------
 
-    /** Converts one resource entry. Entries that are not data/assets JSON come back unchanged (under their mapped path). */
+    /** Converts one resource entry. Apart from binary structure NBT, entries other than data/assets JSON keep their bytes and mapped path. */
     public static List<Out> convert(String path, byte[] data, Stats stats) {
         String np = mapPath(path);
         boolean dataJson = path.startsWith("data/") && path.endsWith(".json");
         boolean model = path.startsWith("assets/") && path.endsWith(".json") && path.contains("/models/");
         if (!dataJson && !model) {
             if (!np.equals(path)) stats.add(pathCategory(path));
+            if (path.startsWith("data/") && path.endsWith(".nbt") && np.contains("/structure/")) {
+                StructureNbtConverter1201.Result converted = StructureNbtConverter1201.convert(data);
+                if (converted.changed()) stats.add("structure_nbt_attribute_ids");
+                if (converted.malformed()) stats.add("structure_nbt_unparsable");
+                return List.of(new Out(np, converted.data()));
+            }
             return List.of(new Out(np, data));
         }
         Ctx c = new Ctx();
@@ -203,6 +220,19 @@ public final class DataConverter1201 {
         } else if (dir.equals("advancement") && root.isJsonObject()) {
             outs.addAll(advancement(np, root.getAsJsonObject(), c));
         } else {
+            if (dir.equals("item_modifier")) {
+                // Forge 1.20.1 accepted a single item-modifier object; 1.21.1 dispatches a list of functions.
+                if (root.isJsonObject()) {
+                    JsonArray functions = new JsonArray();
+                    functions.add(root);
+                    root = functions;
+                    c.hit("item_modifier_array");
+                }
+                itemModifier(root, c);
+            }
+            if (np.contains("/palladium/powers/") && root.isJsonObject()) {
+                palladiumPower(root.getAsJsonObject(), c);
+            }
             if (dir.equals("loot_table") || dir.equals("loot_modifiers")) loot(root, c);
             if (dir.equals("dimension_type") && root.isJsonObject()) dimensionType(root.getAsJsonObject(), c);
             if (np.contains("/worldgen/structure_set/") && root.isJsonObject()) structureSet(root.getAsJsonObject(), c);
@@ -380,8 +410,13 @@ public final class DataConverter1201 {
     private static void generic(JsonElement e, Ctx c, boolean model) {
         if (e.isJsonObject()) {
             JsonObject o = e.getAsJsonObject();
+            neoforgeConditions(o, c);
             for (String k : new ArrayList<>(o.keySet())) {
                 JsonElement v = o.get(k);
+                if (k.toLowerCase(java.util.Locale.ROOT).contains("command")) {
+                    o.add(k, commandValues(v, c));
+                    continue;
+                }
                 if (v.isJsonPrimitive() && v.getAsJsonPrimitive().isString()) {
                     String s = v.getAsString();
                     String r = s;
@@ -394,6 +429,9 @@ public final class DataConverter1201 {
                     } else if (k.equals("tag") && (s.startsWith("forge:") || s.startsWith("#forge:"))) {
                         r = mapTag(s);
                         c.hit("forge_tags");
+                    } else if (k.equals("attribute") && !mapAttributeId(s).equals(s)) {
+                        r = mapAttributeId(s);
+                        c.hit("attribute_ids");
                     } else if (!model) {
                         r = mapValue(s, c);
                     }
@@ -422,6 +460,109 @@ public final class DataConverter1201 {
                 }
             }
         }
+    }
+
+    /**
+     * A single component inside an array is semantically identical to the
+     * component object itself. Normalize this legacy form in Palladium's
+     * name_change abilities so the 1.21.1 component codec receives the same
+     * value without constructing an unnecessary array-backed sibling chain.
+     */
+    private static void palladiumPower(JsonObject power, Ctx c) {
+        if (!power.has("abilities") || !power.get("abilities").isJsonObject()) return;
+        JsonObject abilities = power.getAsJsonObject("abilities");
+        for (Map.Entry<String, JsonElement> entry : new ArrayList<>(abilities.entrySet())) {
+            if (!entry.getValue().isJsonObject()) continue;
+            JsonObject ability = entry.getValue().getAsJsonObject();
+            if (!ability.has("type") || !ability.get("type").isJsonPrimitive()
+                    || !ability.get("type").getAsString().equals("palladium:name_change")) continue;
+            for (String property : List.of("name", "name_cached")) {
+                JsonElement value = ability.get(property);
+                if (value != null && value.isJsonArray() && value.getAsJsonArray().size() == 1) {
+                    ability.add(property, value.getAsJsonArray().get(0));
+                    c.hit("palladium_component_arrays");
+                }
+            }
+        }
+    }
+
+
+    /**
+     * Forge worldgen resources use a literal "forge:conditions" object key.
+     * NeoForge reads the same condition list from "neoforge:conditions".
+     * When both forms exist, retain every condition by appending the legacy
+     * entries to the modern array; preserve malformed/conflicting shapes.
+     */
+    private static void neoforgeConditions(JsonObject o, Ctx c) {
+        JsonElement legacy = o.remove("forge:conditions");
+        if (legacy == null) return;
+
+        JsonElement modern = o.get("neoforge:conditions");
+        if (modern == null) {
+            o.add("neoforge:conditions", legacy);
+            c.hit("forge_conditions");
+        } else if (legacy.isJsonArray() && modern.isJsonArray()) {
+            JsonArray merged = new JsonArray();
+            merged.addAll(modern.getAsJsonArray());
+            merged.addAll(legacy.getAsJsonArray());
+            o.add("neoforge:conditions", merged);
+            c.hit("forge_conditions_merged");
+        } else {
+            // Do not discard either representation when their shapes conflict.
+            o.add("forge:conditions", legacy);
+            c.hit("forge_conditions_conflict");
+        }
+    }
+
+    /** Converts legacy function identifiers and fields inside item-modifier JSON resources. */
+    private static void itemModifier(JsonElement e, Ctx c) {
+        if (e.isJsonArray()) {
+            for (JsonElement child : e.getAsJsonArray()) itemModifier(child, c);
+            return;
+        }
+        if (!e.isJsonObject()) return;
+        JsonObject o = e.getAsJsonObject();
+        if (o.has("function") && o.get("function").isJsonPrimitive()) {
+            String function = o.get("function").getAsString();
+            if (function.equals("minecraft:set_nbt")) {
+                o.addProperty("function", "minecraft:set_custom_data");
+                c.hit("item_modifier");
+            } else if (function.equals("minecraft:set_lore")) {
+                JsonElement replace = o.remove("replace");
+                if (!o.has("mode")) {
+                    boolean replaceAll = replace != null && replace.isJsonPrimitive()
+                            && replace.getAsJsonPrimitive().isBoolean() && replace.getAsBoolean();
+                    o.addProperty("mode", replaceAll ? "replace_all" : "append");
+                }
+                c.hit("item_modifier");
+            }
+        }
+        for (Map.Entry<String, JsonElement> child : new ArrayList<>(o.entrySet())) {
+            itemModifier(child.getValue(), c);
+        }
+    }
+
+    /** Converts command strings embedded in Palladium power JSON with the same dialect migration as .mcfunction files. */
+    private static JsonElement commandValues(JsonElement value, Ctx c) {
+        if (value.isJsonPrimitive() && value.getAsJsonPrimitive().isString()) {
+            String source = value.getAsString();
+            String migrated = FunctionConverter1201.convertCommand(source);
+            if (!migrated.equals(source)) c.hit("command_payloads");
+            return new JsonPrimitive(migrated);
+        }
+        if (value.isJsonArray()) {
+            JsonArray converted = new JsonArray();
+            for (JsonElement child : value.getAsJsonArray()) converted.add(commandValues(child, c));
+            return converted;
+        }
+        if (value.isJsonObject()) {
+            JsonObject converted = new JsonObject();
+            for (Map.Entry<String, JsonElement> child : value.getAsJsonObject().entrySet()) {
+                converted.add(child.getKey(), commandValues(child.getValue(), c));
+            }
+            return converted;
+        }
+        return value;
     }
 
     private static String mapValue(String s, Ctx c) {
@@ -641,6 +782,35 @@ public final class DataConverter1201 {
             }
         }
         itemPredicates(o, c);
+        if (o.has("criteria")) advancementLocationPredicates(o.get("criteria"), c);
+    }
+
+    /**
+     * Minecraft 1.21.1's LocationPredicate codec calls the structure holder set
+     * "structures". Some legacy mod advancements use the singular "structure"
+     * key; leaving that unknown key behind silently drops the location filter
+     * and can award every structure-discovery advancement immediately.
+     */
+    private static void advancementLocationPredicates(JsonElement element, Ctx c) {
+        if (element.isJsonArray()) {
+            for (JsonElement child : element.getAsJsonArray()) advancementLocationPredicates(child, c);
+            return;
+        }
+        if (!element.isJsonObject()) return;
+        JsonObject object = element.getAsJsonObject();
+        for (Map.Entry<String, JsonElement> entry : new ArrayList<>(object.entrySet())) {
+            JsonElement value = entry.getValue();
+            if ("location".equals(entry.getKey()) && value.isJsonObject()) {
+                JsonObject location = value.getAsJsonObject();
+                if (location.has("structure") && !location.has("structures")
+                        && location.get("structure").isJsonPrimitive()
+                        && location.get("structure").getAsJsonPrimitive().isString()) {
+                    location.add("structures", location.remove("structure"));
+                    c.hit("advancement_location_structures");
+                }
+            }
+            advancementLocationPredicates(value, c);
+        }
     }
 
     // ---- item predicates -----------------------------------------------------------------------------------------------------------

@@ -545,11 +545,21 @@ public final class RenderContext {
     public static void mcc$flushGui(GuiGraphics gui) {
         State s = STATE.get();
         gui.flush();
+        if (!s.frames.isEmpty()) {
+            s.gl.save(LegacyGlState.DEPTH_TEST);
+            s.gl.save(LegacyGlState.DEPTH_MASK);
+            s.gl.save(LegacyGlState.DEPTH_FUNC);
+        }
         if (!s.legacyDepthTest) {
-            if (!s.frames.isEmpty()) s.gl.save(LegacyGlState.DEPTH_TEST);
             com.mojang.blaze3d.systems.RenderSystem.disableDepthTest();
             org.lwjgl.opengl.GL11.glDisable(org.lwjgl.opengl.GL11.GL_DEPTH_TEST);
+        } else {
+            com.mojang.blaze3d.systems.RenderSystem.enableDepthTest();
         }
+        // the render types just drawn put the depth function and writes back to theirs: the immediate draw that follows (a blit)
+        // runs with the legacy ones (the Thaumonomicon draws its map tiles with GL_GEQUAL; with LEQUAL they failed against the backdrop)
+        com.mojang.blaze3d.systems.RenderSystem.depthFunc(s.depthFunc);
+        com.mojang.blaze3d.systems.RenderSystem.depthMask(s.depthWrite);
         if (s.blend) {
             if (!s.frames.isEmpty()) {
                 s.gl.save(LegacyGlState.BLEND);
@@ -562,6 +572,26 @@ public final class RenderContext {
 
     public static boolean depthTest() {
         return STATE.get().depthTest;
+    }
+
+    /**
+     * The depth state a legacy screen starts with, as 1.7.10's EntityRenderer handed it to drawScreen: a cleared depth buffer (the held
+     * item's depth must not keep the backdrop off it) and the depth test on with GL_LEQUAL and depth writes. Screens rely on it: the
+     * achievement-style maps (vanilla's, the Thaumonomicon's) draw the backdrop at z=0, their map tiles behind it at z=-200 with GL_GEQUAL
+     * (so tiles write depth only inside the map), then the connection lines and nodes with GL_LEQUAL, which clips them to the map; with
+     * the test off nothing wrote depth and the lines ran out of the book frame over the whole screen.
+     */
+    public static void mcc$beginScreenDepth() {
+        State s = STATE.get();
+        com.mojang.blaze3d.systems.RenderSystem.clear(org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT, net.minecraft.client.Minecraft.ON_OSX);
+        s.legacyDepthTest = true;
+        s.depthTest = true;
+        s.depthFunc = 515; // GL_LEQUAL
+        s.depthWrite = true;
+        com.mojang.blaze3d.systems.RenderSystem.enableDepthTest();
+        org.lwjgl.opengl.GL11.glEnable(org.lwjgl.opengl.GL11.GL_DEPTH_TEST); // the state cache can be out of step with GL
+        com.mojang.blaze3d.systems.RenderSystem.depthFunc(515);
+        com.mojang.blaze3d.systems.RenderSystem.depthMask(true);
     }
 
     /**

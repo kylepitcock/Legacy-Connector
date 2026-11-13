@@ -20,7 +20,7 @@ import terrablender.api.Regions;
  * on (shared by weight when several legacy biomes have the same analog). TerraBlender picks between this region, the vanilla
  * one and other mods' regions by the region weights.
  *
- * <p>TerraBlender is a required dependency (embedded as jar-in-jar, a standalone install wins).
+ * <p>This bridge is loaded reflectively only when TerraBlender is already installed. The connector-owned multi-noise overlay is the default fallback.
  */
 public final class LegacyRegion extends Region {
     public static final ResourceLocation NAME = ResourceLocation.fromNamespaceAndPath("legacyconnector", "legacy_overworld");

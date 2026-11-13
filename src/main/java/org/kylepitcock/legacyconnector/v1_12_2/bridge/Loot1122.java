@@ -184,7 +184,7 @@ public final class Loot1122 {
                     legacyconnector.v1_12_2.net.minecraft.world.storage.loot.LootTableManager.mcc$of(net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer()));
             try {
                 if (bus.post(event)) {
-                    e.setTable(net.minecraft.world.level.storage.loot.LootTable.EMPTY);
+                    e.setTable(LootTables1122.named(null, e.getName()));
                     return;
                 }
             } catch (RuntimeException | LinkageError ex) {
@@ -192,7 +192,7 @@ public final class Loot1122 {
                 return;
             }
             if (event.getTable() != view) {
-                e.setTable(event.getTable() == null ? net.minecraft.world.level.storage.loot.LootTable.EMPTY : event.getTable().mcc$modern());
+                e.setTable(LootTables1122.named(event.getTable() == null ? null : event.getTable().mcc$modern(), e.getName()));
             }
         });
     }

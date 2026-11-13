@@ -216,6 +216,7 @@ public class IsbrhBlockModel extends BakedModelWrapper<BakedModel> {
             tessellator.setTranslation(0, 0, 0);
             // Called right before drawing, as the chunk renderer did: some blocks note the pass here (BuildCraft pipes).
             block.canRenderInPass(pass);
+            BlockAccessView.mcc$clearWorldLights(); // see IsbrhQuads.emissive
             legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess access = BlockAccessView.of(level);
             // Far out (a Sable / Create Aeronautics ship's plot, ~20 million blocks away) the handler runs at coordinates moved
             // near the origin, over a view shifted back to the real blocks: its own float math (ChromatiCraft's crystals,

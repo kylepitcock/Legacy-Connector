@@ -13,6 +13,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.MultiNoiseBiomeSource;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.dimension.LevelStem;
 import net.neoforged.bus.api.EventPriority;
@@ -27,9 +28,9 @@ import org.slf4j.LoggerFactory;
 /**
  * Legacy mod biomes in the overworld.
  * <ul>
- * <li>Default world: the biomes enter the overworld through the native biome placement ({@link BiomePlacement}): a TerraBlender
- * region (TerraBlender is a required dependency).
- * Climate and weight come from the legacy data ({@link LegacyBiomeClimate}).</li>
+ * <li>Default world: the biomes enter the overworld through the connector-owned multi-noise overlay ({@link BiomePlacement}).
+ * TerraBlender is used only as an optional integration when already installed. Climate and weight come from the legacy data
+ * ({@link LegacyBiomeClimate}).</li>
  * <li>World created with a legacy mod's world type preset (BoP's "BIOMESOP"): its biome source is a {@link LegacyLayeredBiomeSource},
  * whose land biomes come from that world type's 1.7.10 biome layers (this class holds the layer state of one such source).</li>
  * </ul>
@@ -92,7 +93,6 @@ public final class LegacyBiomeLayers {
         if (registered) return;
         registered = true;
         BiomePlacement.setEntries(LegacyBiomeClimate::entries);
-        BiomePlacement.registerTerraBlender();
         NeoForge.EVENT_BUS.addListener( LegacyBiomeLayers::onServerAboutToStart);
         NeoForge.EVENT_BUS.addListener((ServerStoppedEvent e) -> unbind());
         NeoForge.EVENT_BUS.addListener((ServerStartedEvent e) -> {
@@ -107,6 +107,7 @@ public final class LegacyBiomeLayers {
         bound = null;
         if (s != null) s.mcc$bind(null);
         mode = "none";
+        BiomePlacement.clearNative();
     }
 
     private static void onServerAboutToStart(ServerAboutToStartEvent event) {
@@ -114,10 +115,27 @@ public final class LegacyBiomeLayers {
         MinecraftServer server = event.getServer();
         legacyconnector.v1_7_10.net.minecraft.world.storage.WorldInfo.mcc$overworldType = WorldType.DEFAULT;
         try {
-            mode = "TerraBlender region";
+            mode = "none";
             LevelStem stem = server.registryAccess().registryOrThrow(Registries.LEVEL_STEM).get(LevelStem.OVERWORLD);
-            if (stem != null && stem.generator().getBiomeSource() instanceof LegacyLayeredBiomeSource layered) bindLayers(server, layered);
-            else if (stem != null) warnOldLayeredWorld(stem);
+            if (stem != null) {
+                var source = stem.generator().getBiomeSource();
+                if (source instanceof LegacyLayeredBiomeSource layered) {
+                    bindLayers(server, layered);
+                } else if (source instanceof MultiNoiseBiomeSource multiNoise) {
+                    if (BiomePlacement.hasTerraBlenderRegion()) {
+                        mode = "TerraBlender region";
+                    } else if (BiomePlacement.bindNative(server, multiNoise)) {
+                        mode = "native multi-noise overlay";
+                    } else {
+                        mode = "original multi-noise source";
+                    }
+                } else {
+                    mode = "custom biome source (native overlay not applicable)";
+                    warnOldLayeredWorld(stem);
+                    LOG.warn("Overworld biome source {} is not multi-noise; the connector leaves it unchanged and legacy default-world biome placement is unavailable",
+                            source.getClass().getName());
+                }
+            }
         } catch (RuntimeException | LinkageError e) {
             LOG.error("Legacy biome placement could not be set up; legacy biomes may not generate", e);
         }
@@ -154,7 +172,7 @@ public final class LegacyBiomeLayers {
         legacyconnector.v1_7_10.net.minecraft.world.storage.WorldInfo.mcc$overworldType = type;
         source.mcc$bind(new LegacyBiomeLayers(server, type, seed, map));
         bound = source;
-        mode = type.getWorldTypeName() + " biome layers + " + mode;
+        mode = type.getWorldTypeName() + " biome layers";
         LOG.info("World type {}: its biome layers choose the overworld land biomes ({} legacy biome(s))", type.getWorldTypeName(), modCount);
     }
 

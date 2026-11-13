@@ -28,6 +28,13 @@ class CallRewrites1201Test {
             "(IILnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V";
     private static final String AMETHYST_CLUSTER_CONSTRUCTOR_1211 =
             "(FFLnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V";
+    private static final String INVENTORY_SCREEN = "net/minecraft/client/gui/screens/inventory/InventoryScreen";
+    private static final String RENDER_ENTITY_IN_INVENTORY_1201_DESC =
+            "(Lnet/minecraft/client/gui/GuiGraphics;IIILorg/joml/Quaternionf;Lorg/joml/Quaternionf;"
+                    + "Lnet/minecraft/world/entity/LivingEntity;)V";
+    private static final String RENDER_ENTITY_IN_INVENTORY_1211_DESC =
+            "(Lnet/minecraft/client/gui/GuiGraphics;FFFLorg/joml/Vector3f;Lorg/joml/Quaternionf;"
+                    + "Lorg/joml/Quaternionf;Lnet/minecraft/world/entity/LivingEntity;)V";
     private static final String PALLADIUM_CORE_ENTITY_RENDERER_REGISTRY =
             "net/threetag/palladiumcore/registry/client/forge/EntityRendererRegistryImpl";
     private static final String ADD_LAYERS_EVENT =
@@ -99,6 +106,75 @@ class CallRewrites1201Test {
         assertTrue(method.instructions.contains(oldConstructor));
         assertEquals(Opcodes.RETURN, instructions[11].getOpcode());
         assertEquals(3, method.maxLocals);
+    }
+
+    @Test
+    void inventoryEntityPreviewUsesFloatCoordinatesAndZeroTranslation() {
+        String oldMethodDesc = "(Lnet/minecraft/client/gui/GuiGraphics;IIILorg/joml/Quaternionf;"
+                + "Lorg/joml/Quaternionf;Lnet/minecraft/world/entity/LivingEntity;)V";
+        MethodNode method = new MethodNode(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC,
+                "renderPreview", oldMethodDesc, null, null);
+        method.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+        method.instructions.add(new VarInsnNode(Opcodes.ILOAD, 1));
+        method.instructions.add(new VarInsnNode(Opcodes.ILOAD, 2));
+        method.instructions.add(new VarInsnNode(Opcodes.ILOAD, 3));
+        method.instructions.add(new VarInsnNode(Opcodes.ALOAD, 4));
+        method.instructions.add(new VarInsnNode(Opcodes.ALOAD, 5));
+        method.instructions.add(new VarInsnNode(Opcodes.ALOAD, 6));
+        MethodInsnNode oldCall = new MethodInsnNode(Opcodes.INVOKESTATIC, INVENTORY_SCREEN,
+                "renderEntityInInventory", RENDER_ENTITY_IN_INVENTORY_1201_DESC, false);
+        method.instructions.add(oldCall);
+        method.instructions.add(new InsnNode(Opcodes.RETURN));
+        method.maxLocals = 7;
+        method.maxStack = 7;
+        ClassNode node = node("example/TailoringPreview", method);
+
+        assertEquals(1, CallRewrites1201.apply(node));
+
+        assertEquals(RENDER_ENTITY_IN_INVENTORY_1211_DESC, oldCall.desc);
+        assertEquals(Opcodes.INVOKESTATIC, oldCall.getOpcode());
+        assertEquals(INVENTORY_SCREEN, oldCall.owner);
+        assertTrue(method.instructions.contains(oldCall));
+        assertEquals(14, method.maxLocals);
+
+        AbstractInsnNode[] instructions = method.instructions.toArray();
+        // The original argument producers remain in place. The seven values are
+        // spilled immediately before the old call, in reverse stack order.
+        int[] originalLoadOpcodes = {
+                Opcodes.ALOAD, Opcodes.ILOAD, Opcodes.ILOAD, Opcodes.ILOAD,
+                Opcodes.ALOAD, Opcodes.ALOAD, Opcodes.ALOAD
+        };
+        for (int i = 0; i < originalLoadOpcodes.length; i++) {
+            assertEquals(originalLoadOpcodes[i], instructions[i].getOpcode());
+        }
+
+        int[] expectedSpillOpcodes = {
+                Opcodes.ASTORE, Opcodes.ASTORE, Opcodes.ASTORE,
+                Opcodes.ISTORE, Opcodes.ISTORE, Opcodes.ISTORE, Opcodes.ASTORE
+        };
+        int[] expectedSpillLocals = {7, 8, 9, 10, 11, 12, 13};
+        for (int i = 0; i < expectedSpillOpcodes.length; i++) {
+            AbstractInsnNode spill = instructions[7 + i];
+            assertEquals(expectedSpillOpcodes[i], spill.getOpcode());
+            assertEquals(expectedSpillLocals[i], ((VarInsnNode) spill).var);
+        }
+
+        int[] expectedReloadOpcodes = {
+                Opcodes.ALOAD, Opcodes.ILOAD, Opcodes.I2F, Opcodes.ILOAD, Opcodes.I2F,
+                Opcodes.ILOAD, Opcodes.I2F, Opcodes.NEW, Opcodes.DUP, Opcodes.INVOKESPECIAL,
+                Opcodes.ALOAD, Opcodes.ALOAD, Opcodes.ALOAD
+        };
+        int cursor = 14;
+        for (int opcode : expectedReloadOpcodes) {
+            assertEquals(opcode, instructions[cursor++].getOpcode());
+        }
+        MethodInsnNode vectorCtor = (MethodInsnNode) instructions[23];
+        assertEquals("org/joml/Vector3f", vectorCtor.owner);
+        assertEquals("<init>", vectorCtor.name);
+        assertEquals("()V", vectorCtor.desc);
+        assertEquals(oldCall, instructions[27]);
+        assertEquals(Opcodes.RETURN, instructions[28].getOpcode());
+        assertTrue(method.maxStack >= 10);
     }
 
     @Test

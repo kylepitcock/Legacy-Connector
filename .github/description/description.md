@@ -41,6 +41,8 @@ Old mods' content joins the game the way a modern mod's does: their biomes throu
 
 ---
 
+**Nightly builds:** every change is built automatically and published as the [Nightly release on GitHub](https://github.com/kylepitcock/Legacy-Connector/releases/tag/nightly) (one pre-release, replaced each time; the version is in the jar name). It has the newest fixes but is untested, so back up your world and name the nightly version when you report a problem; the releases here come less often and collect more changes.
+
 ## Screenshots
 
 All taken in a real game client on NeoForge 1.21.1, with unmodified 1.7.10 mods that have no modern version running next to modern content.

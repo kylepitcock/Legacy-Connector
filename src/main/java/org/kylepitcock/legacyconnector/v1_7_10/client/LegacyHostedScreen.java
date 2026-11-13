@@ -54,10 +54,7 @@ public class LegacyHostedScreen extends AbstractContainerScreen<LegacyMenu> {
         }
         GuiScreen.mcc$beginFrame();
         RenderContext.beginGui(graphics);
-        com.mojang.blaze3d.systems.RenderSystem.disableDepthTest();
-        org.lwjgl.opengl.GL11.glDisable(org.lwjgl.opengl.GL11.GL_DEPTH_TEST);
-        RenderContext.mcc$setLegacyDepthTest(false);
-        com.mojang.blaze3d.systems.RenderSystem.clear(org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT, net.minecraft.client.Minecraft.ON_OSX);
+        RenderContext.mcc$beginScreenDepth(); // 1.7.10's screen depth state: cleared depth, depth test on
         try {
             failed = !ScreenGuard.run(this, () -> legacy.drawScreen(mouseX, mouseY, partialTick));
         } finally {

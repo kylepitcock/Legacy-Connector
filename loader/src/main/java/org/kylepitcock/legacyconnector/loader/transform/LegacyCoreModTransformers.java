@@ -112,6 +112,7 @@ public final class LegacyCoreModTransformers {
             openJavaLang(lcl);
             Class<?> launch = apiLoader.loadClass("net.minecraft.launchwrapper.Launch");
             launch.getField("classLoader").set(null, lcl);
+            apiLoader.loadClass("cpw.mods.fml.relauncher.FMLLaunchHandler").getMethod("mcc$setClassLoader", Object.class).invoke(null, lcl);
             apiLoader.loadClass("cpw.mods.fml.relauncher.FMLInjectionData").getField("mcVersion").set(null, coremods.get(0).version.id());
             launch.getField("minecraftHome").set(null, gameDir.toFile());
             @SuppressWarnings("unchecked")

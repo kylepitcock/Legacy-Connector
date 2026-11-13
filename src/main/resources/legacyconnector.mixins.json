@@ -28,17 +28,21 @@
     "PlacedFeatureOreGateMixin",
     "TargetingConditionsMixin",
     "CreativeTabDuplicateMixin",
+    "ItemStackLegacyNbtMixin",
     "JigsawStructureLegacyVillageMixin",
     "ServerLevelBlockFamilyMixin",
     "LevelChunkBlockFamilyMixin",
     "LevelBlockInterceptionB173Mixin",
     "LevelTimeAccessB173Mixin",
+    "MultiNoiseBiomeSourceAccessor",
+    "MultiNoiseBiomeSourceLegacyBiomeMixin",
     "perf.BlockSlotMixin",
     "perf.BlockStateSlotMixin",
     "perf.LevelSlotMixin",
     "perf.EntitySlotMixin",
     "perf.ItemSlotMixin",
-    "perf.LevelChunkStaticTickerMixin"
+    "perf.LevelChunkStaticTickerMixin",
+    "BowItemLegacyLooseMixin"
   ],
   "client": [
     "InventoryScreenLegacyLayoutMixin",
@@ -51,7 +55,8 @@
     "MinecraftAttackMixin",
     "MultiPlayerGameModeMixin",
     "OptionsScreenLegacySettingsMixin",
-    "ClientLanguageLegacyKeysMixin"
+    "ClientLanguageLegacyKeysMixin",
+    "CustomHeadLayerLegacyArmorMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -5,11 +5,17 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "ArchitecturyEventImplMixin",
-    "HbmTagStackDisplayMixin"
+    "HbmTagStackDisplayMixin",
+    "KubeJSBlockBuilderLegacyAliasesMixin",
+    "KubeJSBlockEntityLegacyInventoryMixin",
+    "KubeJSItemBuilderLegacyGlowMixin",
+    "KubeJSItemModificationLegacyBuilderMixin",
+    "KubeJSBlockEntityTickLegacyViewMixin"
   ],
   "client": [
     "RocketnauticsStarPlasmaMixin",
-    "AurorasIrisStateMixin"
+    "AurorasIrisStateMixin",
+    "KubeJSKeybindLegacyMappingMixin"
   ],
   "injectors": {
     "defaultRequire": 0
