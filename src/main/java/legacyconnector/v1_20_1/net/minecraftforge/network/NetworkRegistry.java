@@ -57,5 +57,10 @@ public class NetworkRegistry {
         public SimpleChannel simpleChannel() {
             return new SimpleChannel(name, version, v -> true, v -> true);
         }
+
+        /** {@code ...eventNetworkChannel()}: the raw channel (CoFH Core's packet handler); it never delivers a packet, see {@link legacyconnector.v1_20_1.net.minecraftforge.network.event.EventNetworkChannel}. */
+        public legacyconnector.v1_20_1.net.minecraftforge.network.event.EventNetworkChannel eventNetworkChannel() {
+            return new legacyconnector.v1_20_1.net.minecraftforge.network.event.EventNetworkChannel(name);
+        }
     }
 }
