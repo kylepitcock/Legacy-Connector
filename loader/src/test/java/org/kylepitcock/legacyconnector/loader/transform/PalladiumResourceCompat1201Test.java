@@ -196,8 +196,12 @@ class PalladiumResourceCompat1201Test {
     void adaptsAlienEvoScoreboardApiAcrossCommandsAndPowers() {
         Map<String, byte[]> resources = new HashMap<>();
         put(resources, "data/alienevo/kubejs_scripts/level_command.js", """
-                scoreboard.getOrCreatePlayerScore(playerName, levelObj).setScore(10);
-                let current = scoreboard.getOrCreatePlayerScore(playerName, xpObj).getScore();
+                function maxAllAliens(playerName) {
+                  let server = Utils.server;
+                  let scoreboard = server.scoreboard;
+                  scoreboard.getOrCreatePlayerScore(playerName, levelObj).setScore(10);
+                  let current = scoreboard.getOrCreatePlayerScore(playerName, xpObj).getScore();
+                }
                 ServerEvents.commandRegistry(event => {
                     let { commands: Commands, arguments: Arguments } = event;
                     event.register(Commands.literal("maxaliens")
@@ -205,13 +209,26 @@ class PalladiumResourceCompat1201Test {
                         .then(Commands.argument('player', Arguments.PLAYER.create(event))
                             .executes(ctx => {
                                 let target = Arguments.PLAYER.getResult(ctx, 'player');
-                                return maxAllAliens(target.getGameProfile().getName());
+                                let username = target.getGameProfile().getName();
+                                let aliensMaxed = maxAllAliens(username);
+                                return 1;
                             })));
+                });
+                function giveAlienControl(playerName) {
+                  let server = Utils.server;
+                  let scoreboard = server.scoreboard;
+                  let current = scoreboard.getOrCreatePlayerScore(playerName, xpObj).getScore();
+                }
+                ServerEvents.commandRegistry(event => {
+                    let { commands: Commands, arguments: Arguments } = event;
                     event.register(Commands.literal("mastercontrol")
                         .requires(src => src.hasPermission(2))
                         .then(Commands.argument('player', Arguments.PLAYER.create(event))
-                            .executes(ctx => giveAlienControl(
-                                Arguments.PLAYER.getResult(ctx, 'player').getGameProfile().getName()))));
+                            .executes(ctx => {
+                                let target = Arguments.PLAYER.getResult(ctx, 'player');
+                                let username = target.getGameProfile().getName();
+                                return giveAlienControl(username);
+                            })));
                 });
                 """);
         put(resources, "addon/alienevo/kubejs_scripts/detransform.js", """
@@ -265,6 +282,11 @@ class PalladiumResourceCompat1201Test {
         assertEquals(2, occurrences(level, ".requires(src => src.hasPermission(2))"));
         assertEquals(2, occurrences(level, "Arguments.PLAYER.create(event)"));
         assertFalse(level.contains("Arguments.ENTITY.create(event)"));
+        assertFalse(level.contains("Utils.server"));
+        assertTrue(level.contains("function maxAllAliens(playerName, server)"));
+        assertTrue(level.contains("function giveAlienControl(playerName, server)"));
+        assertTrue(level.contains("maxAllAliens(username, target.server)"));
+        assertTrue(level.contains("giveAlienControl(username, target.server)"));
 
         String detransform = get(resources, "addon/alienevo/kubejs_scripts/detransform.js");
         assertTrue(detransform.contains("forNameOnly(String(playerUsername))"));
