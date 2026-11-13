@@ -853,13 +853,21 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
         }
     }
 
-    /** EnumBlockRenderType.INVISIBLE: the block's model is not drawn (invisible helper blocks, blocks drawn by their tile entity renderer). */
+    /**
+     * EnumBlockRenderType.INVISIBLE: the block's model is not drawn (invisible helper blocks, blocks drawn by their tile entity renderer).
+     * ENTITYBLOCK_ANIMATED: 1.12's chunk renderer skipped it too, only the tile entity renderer draws it (animated plants drew their
+     * static block model inside the moving one).
+     */
     @Override
     protected net.minecraft.world.level.block.RenderShape getRenderShape(BlockState state) {
         if (!renderType) return super.getRenderShape(state);
         try {
-            if (legacy.getRenderType(state(state)) == legacyconnector.v1_12_2.net.minecraft.util.EnumBlockRenderType.INVISIBLE) {
+            var type = legacy.getRenderType(state(state));
+            if (type == legacyconnector.v1_12_2.net.minecraft.util.EnumBlockRenderType.INVISIBLE) {
                 return net.minecraft.world.level.block.RenderShape.INVISIBLE;
+            }
+            if (type == legacyconnector.v1_12_2.net.minecraft.util.EnumBlockRenderType.ENTITYBLOCK_ANIMATED) {
+                return net.minecraft.world.level.block.RenderShape.ENTITYBLOCK_ANIMATED;
             }
         } catch (RuntimeException | LinkageError e) {
             failure("getRenderType", e);
