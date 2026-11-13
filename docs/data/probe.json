@@ -54412,44 +54412,44 @@
    "date": "2026-11-13",
    "version": "0.4.14",
    "counts": {
-    "links": 42,
-    "stubs": 1,
-    "gap_shim": 1,
-    "gap_mod": 2,
+    "links": 32,
+    "stubs": 3,
+    "gap_shim": 0,
+    "gap_mod": 8,
     "gap_lib": 2,
     "obsolete": 0
    },
    "env": {
     "layer": "0.4.14",
-    "jars": 52,
+    "jars": 51,
     "minecraft": "1.21.1",
     "neoforge": "21.1.258",
     "shim": "f5afb5c7f826"
    },
    "mods": [
     [
-     "Ancient Warfare Structures Module",
-     "1.1.047-beta-MC164",
+     "Advanced Genetics",
+     "v1.9 BETA",
      "links",
      "1 synthesized stub(s)"
     ],
     [
-     "Applied Energistics",
-     "rv14.finale3",
-     "links",
-     "2 synthesized stub(s)"
-    ],
-    [
-     "Archani Commutatio",
-     "0.3.1",
-     "links",
-     ""
+     "Aether II",
+     "Alpha 1.6.4-4.0",
+     "stubs",
+     "33 synthesized stub(s)"
     ],
     [
      "Backpacks!",
      "3.0.1",
      "links",
      ""
+    ],
+    [
+     "BC Builders",
+     "4.2.2",
+     "links",
+     "1 synthesized stub(s)"
     ],
     [
      "BD Lib",
@@ -54460,8 +54460,8 @@
     [
      "Binnie Core",
      "1.8.0",
-     "links",
-     "1 synthesized stub(s)"
+     "gap_mod",
+     "forestry.api.arboriculture.IAlleleTreeSpecies.getLogStacks()[Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;"
     ],
     [
      "Carpenter's Blocks",
@@ -54476,14 +54476,26 @@
      ""
     ],
     [
-     "Crafting Dead",
-     "1.3.5",
-     "stubs",
-     "15 synthesized stub(s)"
+     "CoFH Core",
+     "2.0.0.b7",
+     "links",
+     "6 synthesized stub(s)"
     ],
     [
-     "ElectroCraft",
-     "1.0",
+     "ComputerCraft",
+     "1.631pr9",
+     "links",
+     "4 synthesized stub(s)"
+    ],
+    [
+     "DartCraft",
+     "Beta 0.2.07",
+     "gap_mod",
+     "buildcraft.core.utils.Utils.getPipeFloorOf(Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;)F"
+    ],
+    [
+     "DartPatch",
+     "2.3",
      "links",
      ""
     ],
@@ -54500,8 +54512,8 @@
      ""
     ],
     [
-     "Equivalency",
-     "1.6.4",
+     "Equivalent Exchange 3",
+     "0.1",
      "links",
      ""
     ],
@@ -54520,20 +54532,8 @@
     [
      "GenDustry",
      "1.1.3.fix1",
-     "links",
-     "1 synthesized stub(s)"
-    ],
-    [
-     "genesebosses",
-     "6.0",
-     "links",
-     ""
-    ],
-    [
-     "HerobrineMod",
-     "3.5",
-     "links",
-     ""
+     "gap_mod",
+     "cofh.api.transport.IItemConduit.insertItem(Llegacyconnector.v1_7_10.net.minecraftforge.common.util.ForgeDirection;Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;)Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;"
     ],
     [
      "ICBM",
@@ -54548,10 +54548,10 @@
      "2 synthesized stub(s)"
     ],
     [
-     "Infusion Craft",
-     "0.2_BETA",
-     "gap_shim",
-     "legacyconnector.v1_7_10.cpw.mods.fml.common.asm.transformers.AccessTransformer$Modifier.<init>(Llegacyconnector.v1_7_10.cpw.mods.fml.common.asm.transformers.AccessTransformer;Llegacyconnector_extra.infusionmod.cpw.mods.fml.common.asm.transformers.AccessTransformer$1;)V"
+     "Inventory Tweaks",
+     "1.56",
+     "links",
+     "2 synthesized stub(s)"
     ],
     [
      "JourneyMap",
@@ -54560,10 +54560,10 @@
      "1 synthesized stub(s)"
     ],
     [
-     "LomLib",
-     "1.2.0",
-     "links",
-     "2 synthesized stub(s)"
+     "Logistics Pipes",
+     "0.7.4.dev.294",
+     "gap_mod",
+     "thermalexpansion.part.conduit.item.TravelingItem.routedLPInfo:Llogisticspipes.routing.ItemRoutingInformation;"
     ],
     [
      "Lycanites Mobs",
@@ -54572,14 +54572,32 @@
      ""
     ],
     [
-     "Mad Science",
-     "1.00.165",
-     "links",
-     "1 synthesized stub(s)"
-    ],
-    [
      "Magic Bees",
      "2.1.13",
+     "gap_mod",
+     "forestry.api.core.EnumHumidity.getFromValue(F)Lforestry.api.core.EnumHumidity;"
+    ],
+    [
+     "Magic Clover",
+     "0.3.1",
+     "links",
+     ""
+    ],
+    [
+     "Mekanism",
+     "6.0.3",
+     "links",
+     "3 synthesized stub(s)"
+    ],
+    [
+     "MekanismGenerators",
+     "6.0.3",
+     "links",
+     ""
+    ],
+    [
+     "MekanismTools",
+     "6.0.3",
      "links",
      ""
     ],
@@ -54590,10 +54608,10 @@
      "com.google.common.hash.HashFunction.hashString(Ljava.lang.CharSequence;)Lcom.google.common.hash.HashCode;"
     ],
     [
-     "mod_RottenFleshtoLeather",
-     "0.0.0-legacy",
-     "links",
-     ""
+     "MineFactory Reloaded",
+     "1.6.2R2.7.0",
+     "stubs",
+     "31 synthesized stub(s)"
     ],
     [
      "NEI Addons",
@@ -54620,34 +54638,10 @@
      "1 synthesized stub(s)"
     ],
     [
-     "Power Converters",
-     "1.5.1R2.3.2B1",
-     "links",
-     ""
-    ],
-    [
-     "Raycraft",
-     "1.0.0",
-     "links",
-     ""
-    ],
-    [
      "ResonantEngine",
      "@MAJOR@.@MINOR@.@REVIS@",
      "gap_lib",
      "com.google.common.hash.HashFunction.hashString(Ljava.lang.CharSequence;)Lcom.google.common.hash.HashCode;"
-    ],
-    [
-     "Rhodium Tools",
-     "0.0.3 Beta",
-     "links",
-     ""
-    ],
-    [
-     "Sherlock Holmes Mod",
-     "1.1",
-     "links",
-     ""
     ],
     [
      "Simply Jetpacks",
@@ -54656,16 +54650,10 @@
      ""
     ],
     [
-     "Solar Apocalypse",
-     "4T2",
-     "links",
-     "2 synthesized stub(s)"
-    ],
-    [
-     "Thaumcraft Extras",
-     "1.1.2",
-     "links",
-     "1 synthesized stub(s)"
+     "StarMiner",
+     "0.9.7",
+     "stubs",
+     "22 synthesized stub(s)"
     ],
     [
      "Thaumic Tinkerer",
@@ -54674,28 +54662,22 @@
      ""
     ],
     [
-     "The Lion King Mod",
-     "v1.13 for Minecraft 1.6.4",
-     "links",
-     "1 synthesized stub(s)"
-    ],
-    [
      "The Twilight Forest",
      "1.20.3",
      "links",
      "3 synthesized stub(s)"
     ],
     [
-     "Tinkers' Construct",
-     "1.5.13EX",
-     "links",
-     "4 synthesized stub(s)"
+     "Thermal Expansion",
+     "3.0.0.2",
+     "gap_mod",
+     "cofh.util.StringHelper.displayShiftForDetail:Z"
     ],
     [
-     "Tinkers' Steelworks",
-     "1.6.4-0.0.4.2-fix2",
+     "Tinkers' Construct",
+     "1.5.13EX",
      "gap_mod",
-     "tconstruct.library.crafting.FluidType.Aluminum:Ltconstruct.library.crafting.FluidType;"
+     "powercrystals.minefactoryreloaded.api.FactoryRegistry.registerLiquidDrinkHandler(Ljava.lang.String;Lpowercrystals.minefactoryreloaded.api.ILiquidDrinkHandler;)V"
     ],
     [
      "Treecapitator",
@@ -54704,20 +54686,20 @@
      ""
     ],
     [
-     "TuxWeapons",
-     "1.1d",
-     "links",
-     "1 synthesized stub(s)"
-    ],
-    [
      "Universal Electricity",
      "3.0.0",
      "links",
      ""
+    ],
+    [
+     "§6MrCrayfish's Furniture Mod",
+     "3.3.2",
+     "links",
+     "1 synthesized stub(s)"
     ]
    ],
    "assets": {
-    "checked": 48,
+    "checked": 45,
     "modsWithLayerProblems": 0,
     "layerRefs": 0,
     "modsWithOwnProblems": 0,
@@ -54726,9 +54708,30 @@
    "vs": {
     "date": "2026-11-08",
     "version": "",
-    "regressed": [],
+    "regressed": [
+     [
+      "Binnie Core",
+      "links",
+      "gap_mod"
+     ],
+     [
+      "GenDustry",
+      "links",
+      "gap_mod"
+     ],
+     [
+      "Magic Bees",
+      "links",
+      "gap_mod"
+     ],
+     [
+      "Tinkers' Construct",
+      "links",
+      "gap_mod"
+     ]
+    ],
     "fixed": [],
-    "regressedCount": 0,
+    "regressedCount": 4,
     "fixedCount": 0
    }
   },
