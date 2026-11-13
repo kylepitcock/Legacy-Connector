@@ -264,7 +264,7 @@ final class PalladiumResourceCompat1201 {
         if (advancementBytes == null || resources.containsKey(ALIEN_EVO_MACHINE_SCROLL_TAG)) return 0;
 
         String advancement = new String(advancementBytes, StandardCharsets.UTF_8);
-        if (!advancement.contains("\\"tag\\": \\"alienevo:machine_scroll\\"")) return 0;
+        if (!advancement.contains("\"tag\": \"alienevo:machine_scroll\"")) return 0;
 
         String tag = """
                 {
