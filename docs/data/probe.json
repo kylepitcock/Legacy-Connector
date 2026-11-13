@@ -48097,6 +48097,427 @@
    }
   },
   {
+   "mc": "1.20.1",
+   "date": "2026-11-13",
+   "version": "0.4.14",
+   "counts": {
+    "links": 6,
+    "stubs": 0,
+    "gap_shim": 36,
+    "gap_mod": 16,
+    "gap_lib": 0,
+    "obsolete": 2
+   },
+   "env": {
+    "layer": "0.4.14",
+    "jars": 60,
+    "minecraft": "1.21.1",
+    "neoforge": "21.1.258",
+    "shim": "f5afb5c7f826"
+   },
+   "mods": [
+    [
+     "Amendments",
+     "1.20-2.2.6",
+     "gap_shim",
+     "net.minecraft.client.gui.components.TextAndImageButton"
+    ],
+    [
+     "Another Furniture",
+     "1.20.1-3.0.4",
+     "gap_mod",
+     "com.simibubi.create.api.behaviour.interaction.MovingInteractionBehaviour"
+    ],
+    [
+     "AppleSkin",
+     "2.5.1+mc1.20.1",
+     "gap_mod",
+     "squeek.appleskin.api.event.HUDOverlayEvent$Exhaustion.isCanceled"
+    ],
+    [
+     "AttributeFix",
+     "21.0.5",
+     "links",
+     ""
+    ],
+    [
+     "Biomes O' Plenty",
+     "19.0.0.96",
+     "gap_shim",
+     "net.minecraft.server.level.WorldGenRegion.writeRadiusCutoff"
+    ],
+    [
+     "Carry On",
+     "2.1.2.7",
+     "gap_shim",
+     "net.minecraft.client.renderer.MultiBufferSource.immediateWithBuffers"
+    ],
+    [
+     "cataclysm",
+     "3.31",
+     "gap_shim",
+     "net.minecraft.client.Camera.getMaxZoom"
+    ],
+    [
+     "Chipped",
+     "3.0.7",
+     "gap_shim",
+     "net.minecraft.Util.isBlank"
+    ],
+    [
+     "Clumps",
+     "12.0.0.4",
+     "links",
+     ""
+    ],
+    [
+     "Cobblemon",
+     "1.5.2+1.20.1",
+     "gap_shim",
+     "com.mojang.serialization.codecs.ListCodec.<init>"
+    ],
+    [
+     "Comforts",
+     "6.4.0+1.20.1",
+     "gap_mod",
+     "net.neoforged.neoforge.event.EventHooks.fireSleepingTimeCheck"
+    ],
+    [
+     "Create",
+     "6.0.8",
+     "obsolete",
+     ""
+    ],
+    [
+     "Deeper and Darker",
+     "1.3.3",
+     "gap_shim",
+     "net.minecraft.Util.isBlank"
+    ],
+    [
+     "Dungeons and Taverns",
+     "3.0.3.f",
+     "links",
+     ""
+    ],
+    [
+     "e4mc",
+     "6.2.3",
+     "gap_mod",
+     "folk.sisby.kaleido.api.ReflectiveConfig"
+    ],
+    [
+     "Easy Anvils",
+     "8.0.2",
+     "gap_mod",
+     "fuzs.puzzleslib.api.client.core.v1.ClientModConstructor"
+    ],
+    [
+     "EnchantmentDescriptions",
+     "17.1.21",
+     "gap_shim",
+     "net.minecraft.network.chat.Style.FORMATTING_CODEC"
+    ],
+    [
+     "EnhancedVisuals",
+     "1.8.34",
+     "gap_shim",
+     "net.minecraft.client.renderer.PostChain.<init>"
+    ],
+    [
+     "FancyMenu",
+     "3.9.14",
+     "gap_shim",
+     "com.mojang.authlib.minecraft.MinecraftSessionService.fillProfileProperties"
+    ],
+    [
+     "Farmer's Delight",
+     "1.20.1-1.3.4",
+     "gap_shim",
+     "net.minecraft.advancements.AdvancementHolder$Builder"
+    ],
+    [
+     "Global Packs",
+     "19.3.7",
+     "gap_shim",
+     "net.minecraft.server.packs.FilePackResources.<init>"
+    ],
+    [
+     "Handcrafted",
+     "3.0.6",
+     "gap_shim",
+     "net.minecraft.core.registries.BuiltInRegistries.PAINTING_VARIANT"
+    ],
+    [
+     "Lootr",
+     "0.7.35.94",
+     "gap_shim",
+     "net.minecraft.advancements.critereon.LootTableTrigger.trigger"
+    ],
+    [
+     "Nature's Compass",
+     "1.20.1-1.12.0-forge",
+     "gap_shim",
+     "net.minecraft.world.level.storage.ServerLevelData.getAllowCommands"
+    ],
+    [
+     "NetherPortalFix",
+     "13.0.1",
+     "gap_shim",
+     "net.minecraft.world.level.portal.PortalForcer.findPortalAround"
+    ],
+    [
+     "No Chat Reports",
+     "1.20.1-v2.2.3",
+     "gap_shim",
+     "net.minecraft.client.gui.components.Button.setTooltipDelay"
+    ],
+    [
+     "Not Enough Crashes",
+     "4.4.9+1.20.1",
+     "gap_shim",
+     "net.minecraft.CrashReport.getFriendlyReport"
+    ],
+    [
+     "Particle Rain",
+     "4.0.3",
+     "gap_shim",
+     "net.minecraft.client.renderer.texture.SpriteContents.<init>"
+    ],
+    [
+     "Pick Up Notifier",
+     "8.0.0",
+     "gap_mod",
+     "net.neoforged.neoforge.event.entity.player.ItemEntityPickupEvent$Post.getEntity"
+    ],
+    [
+     "Polymorph",
+     "0.49.11+1.20.1",
+     "gap_shim",
+     "net.minecraft.world.item.crafting.Recipe.getId"
+    ],
+    [
+     "Quark",
+     "4.0-462",
+     "gap_shim",
+     "net.minecraft.client.gui.MapRenderer.render"
+    ],
+    [
+     "Roughly Enough Items (REI)",
+     "12.1.785",
+     "obsolete",
+     ""
+    ],
+    [
+     "ShulkerBoxTooltip",
+     "4.0.4+1.20.1",
+     "gap_shim",
+     "net.minecraft.client.gui.screens.inventory.tooltip.ClientBundleTooltip$Texture.BORDER_CORNER_BOTTOM"
+    ],
+    [
+     "Simple Voice Chat",
+     "1.20.1-2.6.27",
+     "gap_shim",
+     "net.minecraft.client.User.getGameProfile"
+    ],
+    [
+     "Sophisticated Backpacks",
+     "3.26.19.2239",
+     "gap_shim",
+     "net.minecraft.commands.CommandBuildContext.holderLookup"
+    ],
+    [
+     "Sound Physics Remastered",
+     "1.20.1-1.5.1",
+     "gap_mod",
+     "me.shedaniel.clothconfig2.api.AbstractConfigListEntry"
+    ],
+    [
+     "spark",
+     "1.10.53",
+     "gap_shim",
+     "net.minecraft.server.level.ServerPlayer.latency"
+    ],
+    [
+     "Supplementaries",
+     "1.20-3.1.44",
+     "gap_shim",
+     "com.mojang.authlib.GameProfile.isComplete"
+    ],
+    [
+     "Tectonic",
+     "3.0.17",
+     "gap_mod",
+     "dev.worldgen.lithostitched.mixin.common.RandomStateAccessor"
+    ],
+    [
+     "Terralith",
+     "2.5.4",
+     "links",
+     ""
+    ],
+    [
+     "Timeless & Classics Guns: Zero",
+     "1.2.0",
+     "gap_shim",
+     "net.minecraft.advancements.critereon.MinMaxBounds$Doubles.serializeToJson"
+    ],
+    [
+     "Tom's Simple Storage Mod",
+     "1.7.1",
+     "gap_shim",
+     "net.minecraft.recipebook.ServerPlaceRecipe.recipeClicked"
+    ],
+    [
+     "Towns and Towers",
+     "1.10.2",
+     "links",
+     ""
+    ],
+    [
+     "Traveler's Backpack",
+     "9.1.58",
+     "gap_shim",
+     "net.minecraft.world.entity.player.Player.doEnchantDamageEffects"
+    ],
+    [
+     "Veinminer",
+     "1.1.0",
+     "links",
+     ""
+    ],
+    [
+     "Visual Workbench",
+     "8.0.1",
+     "gap_mod",
+     "fuzs.puzzleslib.api.client.core.v1.ClientModConstructor"
+    ],
+    [
+     "Waystones",
+     "14.1.21",
+     "gap_shim",
+     "net.neoforged.neoforge.registries.DeferredRegister.createOptional"
+    ],
+    [
+     "Xaero's Minimap",
+     "26.6.0",
+     "gap_shim",
+     "com.mojang.realmsclient.dto.RealmsServer.ownerUUID"
+    ],
+    [
+     "Xaero's World Map",
+     "1.47.0",
+     "gap_shim",
+     "com.mojang.realmsclient.dto.RealmsServer.ownerUUID"
+    ],
+    [
+     "Yes Steve Model",
+     "2.6.5-forge+mc1.20.1",
+     "gap_shim",
+     "com.mojang.blaze3d.audio.OggAudioStream"
+    ],
+    [
+     "YUNG's Better Desert Temples",
+     "1.20-Forge-3.0.3",
+     "gap_mod",
+     "com.yungnickyoung.minecraft.betterdeserttemples.world.processor.PurpurPillarProcessor.setBlockStateSafe"
+    ],
+    [
+     "YUNG's Better Dungeons",
+     "1.20-Forge-4.0.4",
+     "gap_shim",
+     "net.minecraft.world.level.SpawnData.<init>"
+    ],
+    [
+     "YUNG's Better End Island",
+     "1.20-Forge-2.0.6",
+     "gap_mod",
+     "com.yungnickyoung.minecraft.yungsapi.api.YungAutoRegister"
+    ],
+    [
+     "YUNG's Better Jungle Temples",
+     "1.20-Forge-2.0.5",
+     "gap_mod",
+     "com.yungnickyoung.minecraft.yungsapi.api.YungAutoRegister"
+    ],
+    [
+     "YUNG's Better Mineshafts",
+     "1.20-Forge-4.0.4",
+     "gap_shim",
+     "net.minecraft.world.entity.vehicle.MinecartChest.setLootTable"
+    ],
+    [
+     "YUNG's Better Nether Fortresses",
+     "1.20-Forge-2.0.6",
+     "gap_mod",
+     "com.yungnickyoung.minecraft.yungsapi.api.YungAutoRegister"
+    ],
+    [
+     "YUNG's Better Ocean Monuments",
+     "1.20-Forge-3.0.4",
+     "gap_shim",
+     "net.minecraft.world.level.StructureManager.getStructureWithPieceAt"
+    ],
+    [
+     "YUNG's Better Strongholds",
+     "1.20-Forge-4.0.3",
+     "gap_mod",
+     "com.yungnickyoung.minecraft.betterstrongholds.world.processor.AirProcessor.isBlockStateAirSafe"
+    ],
+    [
+     "YUNG's Better Witch Huts",
+     "1.20-Forge-3.0.3",
+     "gap_mod",
+     "com.yungnickyoung.minecraft.yungsapi.api.YungAutoRegister"
+    ],
+    [
+     "YUNG's Bridges",
+     "1.20-Forge-4.0.3",
+     "gap_mod",
+     "com.yungnickyoung.minecraft.yungsapi.api.YungAutoRegister"
+    ]
+   ],
+   "vs": {
+    "date": "2026-11-08",
+    "version": "",
+    "regressed": [
+     [
+      "YUNG's Better Desert Temples",
+      "links",
+      "gap_mod"
+     ],
+     [
+      "YUNG's Better End Island",
+      "links",
+      "gap_mod"
+     ],
+     [
+      "YUNG's Better Jungle Temples",
+      "links",
+      "gap_mod"
+     ],
+     [
+      "YUNG's Better Nether Fortresses",
+      "links",
+      "gap_mod"
+     ],
+     [
+      "YUNG's Better Strongholds",
+      "links",
+      "gap_mod"
+     ],
+     [
+      "YUNG's Better Witch Huts",
+      "links",
+      "gap_mod"
+     ]
+    ],
+    "fixed": [],
+    "regressedCount": 6,
+    "fixedCount": 0
+   }
+  },
+  {
    "mc": "1.4.7",
    "date": "2026-11-07",
    "version": "",
@@ -48680,6 +49101,295 @@
     ],
     "regressedCount": 0,
     "fixedCount": 3
+   }
+  },
+  {
+   "mc": "1.4.7",
+   "date": "2026-11-13",
+   "version": "0.4.14",
+   "counts": {
+    "links": 37,
+    "stubs": 3,
+    "gap_shim": 0,
+    "gap_mod": 2,
+    "gap_lib": 0,
+    "obsolete": 0
+   },
+   "env": {
+    "layer": "0.4.14",
+    "jars": 74,
+    "minecraft": "1.21.1",
+    "neoforge": "21.1.258",
+    "shim": "f5afb5c7f826"
+   },
+   "mods": [
+    [
+     "Advanced Repulsion Systems",
+     "52.0.6",
+     "links",
+     ""
+    ],
+    [
+     "Auto Third Person",
+     "2.0.3",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "BC Builders",
+     "3.4.6.19",
+     "links",
+     ""
+    ],
+    [
+     "Block Helper",
+     "2.0.0-pre14",
+     "stubs",
+     "23 synthesized stub(s)"
+    ],
+    [
+     "BufferFix",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "CC: Tweaked",
+     "1.105.0",
+     "links",
+     ""
+    ],
+    [
+     "CCTV",
+     "1.0",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "ChickenChunks",
+     "1.3.1.2",
+     "links",
+     ""
+    ],
+    [
+     "CraftPresence",
+     "2.7.1",
+     "gap_mod",
+     "me.hypherionmc.moonconfig.core.CommentedConfig$jvmdg$StaticDefaults.concurrentCopy(Lme.hypherionmc.moonconfig.core.CommentedConfig;Lme.hypherionmc.moonconfig.core.UnmodifiableCommentedConfig;)Lme.hypherionmc.moonconfig.core.CommentedConfig;"
+    ],
+    [
+     "Customizable Player Models",
+     "0.6.27a",
+     "links",
+     "3 synthesized stub(s)"
+    ],
+    [
+     "Dimensional Anchors",
+     "52.2.0",
+     "links",
+     ""
+    ],
+    [
+     "Dirt Tools and Armor",
+     "24.07.19",
+     "links",
+     ""
+    ],
+    [
+     "DonutAntiESP",
+     "2.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Dragon Mounts Forge (WIP)",
+     "0.93",
+     "links",
+     "3 synthesized stub(s)"
+    ],
+    [
+     "Drogtor",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "EnderStorage",
+     "1.4.1.5",
+     "links",
+     ""
+    ],
+    [
+     "Entity Detector",
+     "1.1",
+     "links",
+     ""
+    ],
+    [
+     "Factorization Miscellaneous Nonsense",
+     "0.7.21",
+     "stubs",
+     "21 synthesized stub(s)"
+    ],
+    [
+     "Forestry for Minecraft",
+     "2.0.0.11",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Immibis Core",
+     "52.4.6",
+     "links",
+     ""
+    ],
+    [
+     "Immibis's Microblocks (Check for incorrect installation)",
+     "52.1.2",
+     "links",
+     "5 synthesized stub(s)"
+    ],
+    [
+     "Immibis's Peripherals",
+     "52.1.2",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "InfiniTubes",
+     "52.0.2",
+     "links",
+     ""
+    ],
+    [
+     "Legacy Custom Publish",
+     "1.0",
+     "stubs",
+     "10 synthesized stub(s)"
+    ],
+    [
+     "Legendary Item",
+     "24.10.09",
+     "links",
+     ""
+    ],
+    [
+     "Liquid XP",
+     "52.0.7",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "MiscPeripherals",
+     "3.1",
+     "links",
+     "7 synthesized stub(s)"
+    ],
+    [
+     "mod_SprintKey",
+     "0.0.0-legacy",
+     "links",
+     ""
+    ],
+    [
+     "MoreSwordMod",
+     "2.4.0",
+     "links",
+     ""
+    ],
+    [
+     "OVM",
+     "0.6.1",
+     "links",
+     ""
+    ],
+    [
+     "PonySocks",
+     "0.3",
+     "links",
+     ""
+    ],
+    [
+     "RawInput Mod",
+     "1.0",
+     "links",
+     "3 synthesized stub(s)"
+    ],
+    [
+     "rpcDrive",
+     "0.1.0",
+     "links",
+     ""
+    ],
+    [
+     "Sprintable",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Sprinting Key",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "The Rings of Power",
+     "24.07.19",
+     "links",
+     ""
+    ],
+    [
+     "The Twilight Forest",
+     "1.15.4",
+     "links",
+     "8 synthesized stub(s)"
+    ],
+    [
+     "TreeCapitator",
+     "Forge 1.4.6.r07",
+     "links",
+     ""
+    ],
+    [
+     "Tubestuff",
+     "52.3.2",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "UniLib",
+     "1.2.1",
+     "gap_mod",
+     "unilib.external.com.twelvemonkeys.util.DuplicateHandler$jvmdg$StaticDefaults.<clinit>(Lunilib.external.com.twelvemonkeys.util.DuplicateHandler;)V"
+    ],
+    [
+     "xCraft",
+     "2.1.0",
+     "links",
+     ""
+    ],
+    [
+     "XInput Mod",
+     "1.0",
+     "links",
+     "3 synthesized stub(s)"
+    ]
+   ],
+   "assets": {
+    "checked": 42,
+    "modsWithLayerProblems": 0,
+    "layerRefs": 0,
+    "modsWithOwnProblems": 0,
+    "ownRefs": 0
+   },
+   "vs": {
+    "date": "2026-11-08",
+    "version": "",
+    "regressed": [],
+    "fixed": [],
+    "regressedCount": 0,
+    "fixedCount": 0
    }
   },
   {
@@ -49321,6 +50031,205 @@
     ],
     "regressedCount": 0,
     "fixedCount": 1
+   }
+  },
+  {
+   "mc": "1.5.2",
+   "date": "2026-11-13",
+   "version": "0.4.14",
+   "counts": {
+    "links": 26,
+    "stubs": 0,
+    "gap_shim": 0,
+    "gap_mod": 1,
+    "gap_lib": 0,
+    "obsolete": 0
+   },
+   "env": {
+    "layer": "0.4.14",
+    "jars": 31,
+    "minecraft": "1.21.1",
+    "neoforge": "21.1.258",
+    "shim": "f5afb5c7f826"
+   },
+   "mods": [
+    [
+     "Advanced Machines",
+     "55.0.3",
+     "links",
+     ""
+    ],
+    [
+     "Advanced Repulsion Systems",
+     "55.1.4",
+     "links",
+     ""
+    ],
+    [
+     "Backpacks!",
+     "1.5.2 - 1.2.0",
+     "links",
+     ""
+    ],
+    [
+     "BC Builders",
+     "3.7.4.1",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "BCMod (Brad16840.Common mod)",
+     "1.5.2 - 1.2.0",
+     "links",
+     ""
+    ],
+    [
+     "Binnie Core",
+     "1.7.3b",
+     "links",
+     ""
+    ],
+    [
+     "ChickenChunks",
+     "1.3.2.14",
+     "links",
+     ""
+    ],
+    [
+     "Dimensional Anchors",
+     "55.0.3",
+     "links",
+     ""
+    ],
+    [
+     "Dirt Tools and Armor",
+     "24.07.19",
+     "links",
+     ""
+    ],
+    [
+     "Dragon Mounts Forge (WIP)",
+     "0.99.2",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "Enchanting Plus",
+     "1.15.6",
+     "links",
+     "7 synthesized stub(s)"
+    ],
+    [
+     "EnderStorage",
+     "1.4.2.16",
+     "links",
+     ""
+    ],
+    [
+     "Forestry for Minecraft",
+     "2.2.8.4",
+     "links",
+     "4 synthesized stub(s)"
+    ],
+    [
+     "Forge Microblocks",
+     "1.0.0.149",
+     "gap_mod",
+     "scala.reflect.api.Trees$ClassDefExtractor.apply(Lscala.reflect.api.Trees$ModifiersApi;Lscala.reflect.api.Names$NameApi;Lscala.collection.immutable.List;Lscala.reflect.api.Trees$TreeApi;)Lscala.reflect.api.Trees$TreeApi;"
+    ],
+    [
+     "Immibis Core",
+     "55.1.6",
+     "links",
+     "7 synthesized stub(s)"
+    ],
+    [
+     "Immibis's Microblocks (Checks for incorrect installation, ignore this)",
+     "55.0.7",
+     "links",
+     ""
+    ],
+    [
+     "Immibis's Peripherals",
+     "55.0.4",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "InfiniTubes",
+     "55.0.6",
+     "links",
+     ""
+    ],
+    [
+     "Liquid XP",
+     "55.1.6",
+     "links",
+     ""
+    ],
+    [
+     "MiscPeripherals",
+     "3.3",
+     "links",
+     "3 synthesized stub(s)"
+    ],
+    [
+     "More Swords Mod",
+     "2.4.2",
+     "links",
+     ""
+    ],
+    [
+     "RedLogic",
+     "55.4.1",
+     "links",
+     ""
+    ],
+    [
+     "Sprintable",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "The Twilight Forest",
+     "1.18.2",
+     "links",
+     "6 synthesized stub(s)"
+    ],
+    [
+     "Translocator",
+     "1.1.0.5",
+     "links",
+     ""
+    ],
+    [
+     "TreeCapitator",
+     "Forge 1.5.2.r14",
+     "links",
+     ""
+    ],
+    [
+     "Tubestuff",
+     "55.0.5",
+     "links",
+     "2 synthesized stub(s)"
+    ]
+   ],
+   "assets": {
+    "checked": 27,
+    "modsWithLayerProblems": 0,
+    "layerRefs": 0,
+    "modsWithOwnProblems": 0,
+    "ownRefs": 0
+   },
+   "vs": {
+    "date": "2026-11-08",
+    "version": "",
+    "regressed": [],
+    "fixed": [],
+    "regressedCount": 0,
+    "fixedCount": 0
    }
   },
   {
@@ -50265,6 +51174,331 @@
     ],
     "regressedCount": 0,
     "fixedCount": 4
+   }
+  },
+  {
+   "mc": "1.6.4",
+   "date": "2026-11-13",
+   "version": "0.4.14",
+   "counts": {
+    "links": 42,
+    "stubs": 1,
+    "gap_shim": 1,
+    "gap_mod": 2,
+    "gap_lib": 2,
+    "obsolete": 0
+   },
+   "env": {
+    "layer": "0.4.14",
+    "jars": 52,
+    "minecraft": "1.21.1",
+    "neoforge": "21.1.258",
+    "shim": "f5afb5c7f826"
+   },
+   "mods": [
+    [
+     "Ancient Warfare Structures Module",
+     "1.1.047-beta-MC164",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Applied Energistics",
+     "rv14.finale3",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "Archani Commutatio",
+     "0.3.1",
+     "links",
+     ""
+    ],
+    [
+     "Backpacks!",
+     "3.0.1",
+     "links",
+     ""
+    ],
+    [
+     "BD Lib",
+     "1.2.3.48",
+     "gap_mod",
+     "scala.collection.TraversableOnce$class.aggregate(Lscala.collection.TraversableOnce;Ljava.lang.Object;Lscala.Function2;Lscala.Function2;)Ljava.lang.Object;"
+    ],
+    [
+     "Binnie Core",
+     "1.8.0",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Carpenter's Blocks",
+     "3.2.8.6",
+     "links",
+     ""
+    ],
+    [
+     "ChickenChunks",
+     "1.3.3.4",
+     "links",
+     ""
+    ],
+    [
+     "Crafting Dead",
+     "1.3.5",
+     "stubs",
+     "15 synthesized stub(s)"
+    ],
+    [
+     "ElectroCraft",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "Ender IO",
+     "1.0.6",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "EnderStorage",
+     "1.4.3.6",
+     "links",
+     ""
+    ],
+    [
+     "Equivalency",
+     "1.6.4",
+     "links",
+     ""
+    ],
+    [
+     "ExtrabiomesXL",
+     "3.15.8",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "Forestry for Minecraft",
+     "2.3.1.1",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "GenDustry",
+     "1.1.3.fix1",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "genesebosses",
+     "6.0",
+     "links",
+     ""
+    ],
+    [
+     "HerobrineMod",
+     "3.5",
+     "links",
+     ""
+    ],
+    [
+     "ICBM",
+     "1.4.2",
+     "links",
+     "3 synthesized stub(s)"
+    ],
+    [
+     "IndustrialCraft 2",
+     "2.0.397-experimental",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "Infusion Craft",
+     "0.2_BETA",
+     "gap_shim",
+     "legacyconnector.v1_7_10.cpw.mods.fml.common.asm.transformers.AccessTransformer$Modifier.<init>(Llegacyconnector.v1_7_10.cpw.mods.fml.common.asm.transformers.AccessTransformer;Llegacyconnector_extra.infusionmod.cpw.mods.fml.common.asm.transformers.AccessTransformer$1;)V"
+    ],
+    [
+     "JourneyMap",
+     "4.0.3",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "LomLib",
+     "1.2.0",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "Lycanites Mobs",
+     "1.5.1h - MC 1.6.4",
+     "links",
+     ""
+    ],
+    [
+     "Mad Science",
+     "1.00.165",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Magic Bees",
+     "2.1.13",
+     "links",
+     ""
+    ],
+    [
+     "MineChem",
+     "5.05.101",
+     "gap_lib",
+     "com.google.common.hash.HashFunction.hashString(Ljava.lang.CharSequence;)Lcom.google.common.hash.HashCode;"
+    ],
+    [
+     "mod_RottenFleshtoLeather",
+     "0.0.0-legacy",
+     "links",
+     ""
+    ],
+    [
+     "NEI Addons",
+     "1.10.5.70",
+     "links",
+     "8 synthesized stub(s)"
+    ],
+    [
+     "OpenBlocks",
+     "1.2.9",
+     "links",
+     "4 synthesized stub(s)"
+    ],
+    [
+     "OpenMods",
+     "0.5.1",
+     "links",
+     ""
+    ],
+    [
+     "OpenPeripheralCore",
+     "0.4.1",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Power Converters",
+     "1.5.1R2.3.2B1",
+     "links",
+     ""
+    ],
+    [
+     "Raycraft",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "ResonantEngine",
+     "@MAJOR@.@MINOR@.@REVIS@",
+     "gap_lib",
+     "com.google.common.hash.HashFunction.hashString(Ljava.lang.CharSequence;)Lcom.google.common.hash.HashCode;"
+    ],
+    [
+     "Rhodium Tools",
+     "0.0.3 Beta",
+     "links",
+     ""
+    ],
+    [
+     "Sherlock Holmes Mod",
+     "1.1",
+     "links",
+     ""
+    ],
+    [
+     "Simply Jetpacks",
+     "0.3.1.1",
+     "links",
+     ""
+    ],
+    [
+     "Solar Apocalypse",
+     "4T2",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "Thaumcraft Extras",
+     "1.1.2",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Thaumic Tinkerer",
+     "2.3-141",
+     "links",
+     ""
+    ],
+    [
+     "The Lion King Mod",
+     "v1.13 for Minecraft 1.6.4",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "The Twilight Forest",
+     "1.20.3",
+     "links",
+     "3 synthesized stub(s)"
+    ],
+    [
+     "Tinkers' Construct",
+     "1.5.13EX",
+     "links",
+     "4 synthesized stub(s)"
+    ],
+    [
+     "Tinkers' Steelworks",
+     "1.6.4-0.0.4.2-fix2",
+     "gap_mod",
+     "tconstruct.library.crafting.FluidType.Aluminum:Ltconstruct.library.crafting.FluidType;"
+    ],
+    [
+     "Treecapitator",
+     "Forge 1.6.4.r06",
+     "links",
+     ""
+    ],
+    [
+     "TuxWeapons",
+     "1.1d",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Universal Electricity",
+     "3.0.0",
+     "links",
+     ""
+    ]
+   ],
+   "assets": {
+    "checked": 48,
+    "modsWithLayerProblems": 0,
+    "layerRefs": 0,
+    "modsWithOwnProblems": 0,
+    "ownRefs": 0
+   },
+   "vs": {
+    "date": "2026-11-08",
+    "version": "",
+    "regressed": [],
+    "fixed": [],
+    "regressedCount": 0,
+    "fixedCount": 0
    }
   },
   {
@@ -84907,6 +86141,145 @@
     "layerRefs": 0,
     "modsWithOwnProblems": 0,
     "ownRefs": 0
+   }
+  },
+  {
+   "mc": "b1.7.3",
+   "date": "2026-11-13",
+   "version": "0.4.14",
+   "counts": {
+    "links": 3,
+    "stubs": 14,
+    "gap_shim": 0,
+    "gap_mod": 0,
+    "gap_lib": 0,
+    "obsolete": 0
+   },
+   "env": {
+    "layer": "0.4.14",
+    "jars": 26,
+    "minecraft": "1.21.1",
+    "neoforge": "21.1.258",
+    "shim": "f5afb5c7f826"
+   },
+   "mods": [
+    [
+     "Aether",
+     "0.0.0-legacy",
+     "stubs",
+     "190 synthesized stub(s)"
+    ],
+    [
+     "BetterWood",
+     "0.0.0-legacy",
+     "stubs",
+     "116 synthesized stub(s)"
+    ],
+    [
+     "Dragon Mod",
+     "0.0.0-legacy",
+     "stubs",
+     "57 synthesized stub(s)"
+    ],
+    [
+     "EE",
+     "0.0.0-legacy",
+     "stubs",
+     "187 synthesized stub(s)"
+    ],
+    [
+     "ElementalCreepers",
+     "0.0.0-legacy",
+     "stubs",
+     "10 synthesized stub(s)"
+    ],
+    [
+     "IC2_AdvMachine",
+     "0.0.0-legacy",
+     "stubs",
+     "44 synthesized stub(s)"
+    ],
+    [
+     "marsmod",
+     "0.0.0-legacy",
+     "stubs",
+     "37 synthesized stub(s)"
+    ],
+    [
+     "MinefactoryReloaded Client",
+     "0.0.0-legacy",
+     "stubs",
+     "28 synthesized stub(s)"
+    ],
+    [
+     "NetherCraft",
+     "0.0.0-legacy",
+     "stubs",
+     "43 synthesized stub(s)"
+    ],
+    [
+     "PortalGun",
+     "0.0.0-legacy",
+     "stubs",
+     "486 synthesized stub(s)"
+    ],
+    [
+     "RedPowerArray",
+     "0.0.0-legacy",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "RedPowerCore",
+     "0.0.0-legacy",
+     "stubs",
+     "28 synthesized stub(s)"
+    ],
+    [
+     "RedPowerLighting",
+     "0.0.0-legacy",
+     "links",
+     "4 synthesized stub(s)"
+    ],
+    [
+     "RedPowerLogic",
+     "0.0.0-legacy",
+     "stubs",
+     "15 synthesized stub(s)"
+    ],
+    [
+     "RedPowerWiring",
+     "0.0.0-legacy",
+     "stubs",
+     "29 synthesized stub(s)"
+    ],
+    [
+     "ReiMinimap",
+     "0.0.0-legacy",
+     "stubs",
+     "20 synthesized stub(s)"
+    ],
+    [
+     "TooManyItems",
+     "0.0.0-legacy",
+     "links",
+     "3 synthesized stub(s)"
+    ]
+   ],
+   "assets": {
+    "checked": 17,
+    "modsWithLayerProblems": 0,
+    "layerRefs": 0,
+    "modsWithOwnProblems": 0,
+    "ownRefs": 0
+   },
+   "vs": {
+    "date": "2026-11-08",
+    "version": "",
+    "regressed": [],
+    "fixed": [],
+    "regressedCount": 0,
+    "fixedCount": 0
    }
   }
  ]
