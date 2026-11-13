@@ -221,7 +221,7 @@ final class PalladiumResourceCompat1201 {
         rewriteOptionalPehkuiApi(resources);
 
         // A single resource can receive more than one independent rewrite.
-        // Report the number of distinct changed script files, not rewrite passes.
+        // Report distinct changed resource paths, including resources removed by a migration.
         int changedResources = 0;
         java.util.Set<String> changedPaths = new java.util.HashSet<>(original.keySet());
         changedPaths.addAll(resources.keySet());
