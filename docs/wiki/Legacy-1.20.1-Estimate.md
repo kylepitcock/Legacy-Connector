@@ -621,3 +621,21 @@ Batch of 13 content mods (no native Architectury): the server now loads past reg
 - Sapling growers are asked for their feature key when a tree grows (TreeGrowerLegacyMixin), not at registration (Deeper and Darker read unbound holders in a static initializer).
 - A mod mixin config may apply to a class of its own jar (Polymorph sets its API services through a mixin on its own class); IConfigSpec.self(), ItemParser.parseForItem/ItemResult.nbt added.
 - Batch of 12 mods (Deeper and Darker, Dungeons and Taverns, Polymorph, Tom storage, Traveler backpack, another furniture, Terralith, AttributeFix, Natures Compass, Carry On, global packs, Veinminer): Done, 6 of 6 checks, rows recorded. Open: Traveler backpack RecipeUtils static init (45 recipes), capability registration of two mods, two Deeper and Darker mixins. Tectonic, Towns and Towers and Cataclysm need libraries not in the test folder.
+
+## 21. Status 2026-11-13: mixin target proof, handler re-signing, per-injection degradation
+
+`Mixin1201` used to rename strings and drop `require`; an injection whose 1.21.1 target gained a parameter then failed with "Invalid descriptor ... Expected (...)"
+(issue #250: `ItemStack.getTooltipLines` gained `Item.TooltipContext`), and one whose target is gone cost the whole mixin. The new package
+`loader/.../transform/mixin1201/` (algorithm after Retromod's `AutomaticMixinTranslator`, MIT, see `THIRD_PARTY_NOTICES.md`) proves every injector against the
+member index the gap report uses (`mc-members.index.gz` + `mc-hierarchy.tsv.gz`, plus `mc-static.index.gz` for static methods; `McMembers1201Tool` writes all three):
+
+- **Exact**: the method exists as written, or (name only) the handler's captured parameters are a prefix of one overload. Untouched.
+- **Signature changed, parameters added**: the old parameters (the selector's descriptor, else the refmap's, else the handler's captured list) reappear in order in
+  exactly one overload, same return type, at most three added. The selector gets the new descriptor, the `@Inject` handler gets the added parameters (ignored,
+  `HandlerResigner`: descriptor, local slots, parameter annotations, `@Local(index)`), `@At(target)` of a call that gained parameters follows. A handler whose `@Local`
+  capture is of the added type, a static target of an instance handler, ambiguous alignments, changed return types and removed or retyped parameters are not repaired.
+- **Gone** (method or class missing, proven by a complete indexed class chain) or **not repairable**: only that injection is removed (the selector from its annotation,
+  the annotation from its handler, the handler from the class) with one report line `Mixin <class>.<handler>: injection into <selector> dropped: <reason>`; the mixin
+  class and the mod stay. SRG/intermediary names no table moved and lambdas are never judged.
+
+`./gradlew` offline measurement: `Mixin1201Survey <report> <jars>` (class `transform/Mixin1201Survey`, no game).

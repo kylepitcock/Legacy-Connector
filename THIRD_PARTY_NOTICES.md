@@ -13,6 +13,33 @@ Minecraft assets are never included.
 | `LegacyResourceConverter.MODEL_RENAMES` (glazed terracotta, redstone dust, fire and wall torch parents) | `model-parent-renames.tsv` | Targets re-checked against the 1.21.1 client jar |
 | `OreDictBridge.SPECIAL` (vanilla ore dictionary names such as `chest`, `fenceWood`, `dye`, `gravel`) | `forge-ore-dictionary.tsv` | Only names that map to a tag; every `c:` tag re-checked in NeoForge 21.1 and every `minecraft:` tag in vanilla 1.21.1 |
 | `loader/src/main/resources/legacyconnector/resource/vanilla-texture-paths.tsv` (read by `TextureLocations`) | `LegacyTexturePathMappings.java` and `texture-migrations.tsv` | Only rows that apply up to 1.21.1; every row re-checked against the 1.21.1 client jar |
+| `loader/.../transform/mixin1201/ParamAlignment.java`, `HandlerResigner.java`, `InjectionRepair.java` (mixin target proof and handler re-signing of the Forge 1.20.1 translation) | `src/main/java/com/retromod/mixin/AutomaticMixinTranslator.java`, `MixinHandlerResignature.java`, `MixinLocalSlotRepair.java` | Algorithms ported, not pasted: unique ordered-subsequence parameter addition, same-name unique target, handler slot and parameter-annotation shifting, `@Local` survival rules. Re-written against our member index (`mc-members.index.gz`, class tree `mc-hierarchy.tsv.gz`) instead of theirs; none of their mapping or selector-rename tables is used; per-injection removal, report lines, refmap hints and static/instance checks are our own |
+
+The Retromod licence text (it applies to the rows above):
+
+```
+MIT License
+
+Copyright (c) 2026 Bownlux
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
 
 ## Sinytra Connector
 
