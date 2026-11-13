@@ -19,7 +19,6 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -42,6 +41,7 @@ public final class Forge1201ArchiveGraph {
     public static final int MAX_NESTED_DEPTH = 4;
     public static final int MAX_NESTED_ARCHIVES = 128;
     public static final int MAX_ROOT_ARCHIVE_ENTRIES = 100_000;
+    public static final int MAX_NESTED_ARCHIVE_ENTRIES = 100_000;
     public static final long MAX_NESTED_ARCHIVE_BYTES = 32L * 1024 * 1024;
     public static final long MAX_ARCHIVE_INFLATED_BYTES = 64L * 1024 * 1024;
     public static final long MAX_TOTAL_INFLATED_BYTES = 256L * 1024 * 1024;
@@ -66,6 +66,7 @@ public final class Forge1201ArchiveGraph {
         SIZE_LIMIT,
         DEPTH_LIMIT,
         ARCHIVE_COUNT_LIMIT,
+        ENTRY_COUNT_LIMIT,
         DUPLICATE_CONTENT_SKIPPED
     }
 
@@ -177,7 +178,8 @@ public final class Forge1201ArchiveGraph {
             String neoForgeModsToml,
             Map<String, Candidate> nestedJars,
             List<String> warnings,
-            boolean incomplete) {}
+            ArchiveKind incompleteKind,
+            String incompleteReason) {}
     private record DeclaringMod(String archivePath, Forge1201JarInfo.Mod mod) {}
     private record ParsedArchive(
             ArchiveKind kind, String loaderKind, List<Forge1201JarInfo.Mod> mods, List<String> warnings) {}
@@ -361,25 +363,24 @@ public final class Forge1201ArchiveGraph {
                 candidates.put(path, new Candidate(path, null, coordinate, ArchiveKind.MISSING_DECLARED_ARCHIVE));
                 continue;
             }
-            if (entry.getSize() > MAX_NESTED_ARCHIVE_BYTES) {
+            long remainingBudget = MAX_TOTAL_INFLATED_BYTES - budget.inflatedBytes;
+            if (entry.getSize() > MAX_NESTED_ARCHIVE_BYTES || remainingBudget <= 0
+                    || (entry.getSize() >= 0 && entry.getSize() > remainingBudget)) {
                 candidates.put(path, new Candidate(path, null, coordinate, ArchiveKind.SIZE_LIMIT));
+                warnings.add(path + " skipped because a nested archive size or total byte budget was reached.");
                 continue;
             }
             try (InputStream in = zip.getInputStream(entry)) {
-                byte[] bytes = readBounded(in, MAX_NESTED_ARCHIVE_BYTES);
-                if (budget.inflatedBytes + bytes.length > MAX_TOTAL_INFLATED_BYTES) {
-                    candidates.put(path, new Candidate(path, null, coordinate, ArchiveKind.SIZE_LIMIT));
-                    warnings.add(path + " skipped because the total nested archive byte budget was reached.");
-                } else {
-                    budget.inflatedBytes += bytes.length;
-                    candidates.put(path, new Candidate(path, bytes, coordinate, null));
-                }
+                long readLimit = Math.min(MAX_NESTED_ARCHIVE_BYTES, remainingBudget);
+                byte[] bytes = readBounded(in, readLimit);
+                budget.inflatedBytes += bytes.length;
+                candidates.put(path, new Candidate(path, bytes, coordinate, null));
             } catch (EntryTooLargeException exception) {
                 candidates.put(path, new Candidate(path, null, coordinate, ArchiveKind.SIZE_LIMIT));
             }
         }
         warnings.addAll(parsed.warnings());
-        return new Snapshot(modsToml, neoToml, candidates, warnings, false);
+        return new Snapshot(modsToml, neoToml, candidates, warnings, null, null);
     }
 
     private record ParsedJarJarMetadata(Map<String, JarJarCoordinate> coordinates, List<String> warnings) {}
@@ -437,8 +438,12 @@ public final class Forge1201ArchiveGraph {
 
         if (budget.archiveCount >= MAX_NESTED_ARCHIVES) {
             if (!budget.archiveCountWarningAdded) {
-                budget.warnings.add("Maximum nested archive count (" + MAX_NESTED_ARCHIVES
-                        + ") reached; additional nested archives were not inspected.");
+                String warning = "Maximum nested archive count (" + MAX_NESTED_ARCHIVES
+                        + ") reached; additional nested archives were not inspected.";
+                budget.warnings.add(warning);
+                budget.archives.add(new ArchiveFinding(displayPath, parentPath, depth, origin, -1, null,
+                        ArchiveKind.ARCHIVE_COUNT_LIMIT, group, artifact, range, artifactVersion, List.of(),
+                        List.of(warning)));
                 budget.archiveCountWarningAdded = true;
             }
             return;
@@ -485,10 +490,10 @@ public final class Forge1201ArchiveGraph {
             return;
         }
         budget.warnings.addAll(snapshot.warnings());
-        if (snapshot.incomplete()) {
+        if (snapshot.incompleteKind() != null) {
             budget.archives.add(new ArchiveFinding(displayPath, parentPath, depth, origin, bytes.length, digest,
-                    ArchiveKind.SIZE_LIMIT, group, artifact, range, artifactVersion, List.of(),
-                    List.of("Nested archive analysis stopped when an inflated-byte safety budget was reached.")));
+                    snapshot.incompleteKind(), group, artifact, range, artifactVersion, List.of(),
+                    List.of(snapshot.incompleteReason())));
             return;
         }
         ParsedArchive parsed = classifyArchive(displayPath, snapshot);
@@ -515,11 +520,15 @@ public final class Forge1201ArchiveGraph {
         List<String> warnings = new ArrayList<>();
         long archiveInflated = 0;
         int entryCount = 0;
-        boolean incomplete = false;
+        ArchiveKind incompleteKind = null;
+        String incompleteReason = null;
         try (ZipInputStream zip = new ZipInputStream(new ByteArrayInputStream(bytes))) {
             ZipEntry entry;
             while ((entry = zip.getNextEntry()) != null) {
                 entryCount++;
+                if (entryCount > MAX_NESTED_ARCHIVE_ENTRIES) {
+                    throw new BudgetLimitException("nested archive entry-count limit exceeded");
+                }
                 String name = entry.getName();
                 String lower = name.toLowerCase(Locale.ROOT);
                 boolean metadata = lower.equals("meta-inf/mods.toml")
@@ -563,7 +572,9 @@ public final class Forge1201ArchiveGraph {
             throw exception;
         } catch (BudgetLimitException exception) {
             warnings.add(exception.getMessage());
-            incomplete = true;
+            incompleteKind = exception.getMessage().contains("entry-count")
+                    ? ArchiveKind.ENTRY_COUNT_LIMIT : ArchiveKind.SIZE_LIMIT;
+            incompleteReason = exception.getMessage();
         }
         if (entryCount == 0 && !hasZipSignature(bytes)) {
             throw new ZipException("nested entry is not a readable ZIP archive");
@@ -593,7 +604,7 @@ public final class Forge1201ArchiveGraph {
                 candidates.put(path, new Candidate(path, selected.get(path), coordinate, null));
             }
         }
-        return new Snapshot(modsToml, neoToml, candidates, warnings, incomplete);
+        return new Snapshot(modsToml, neoToml, candidates, warnings, incompleteKind, incompleteReason);
     }
 
     private static boolean hasZipSignature(byte[] bytes) {
@@ -617,6 +628,7 @@ public final class Forge1201ArchiveGraph {
             List<Forge1201JarInfo.Mod> mods = Forge1201JarInspector.readModMetadata(snapshot.neoForgeModsToml());
             if (!mods.isEmpty()) return new ParsedArchive(ArchiveKind.NEOFORGE_MOD, "NEOFORGE", mods, warnings);
             warnings.add("NeoForge metadata exists but no scalar mod declarations were recognized.");
+            return new ParsedArchive(ArchiveKind.LIBRARY_OR_UNRECOGNIZED, "NEOFORGE_UNRECOGNIZED", List.of(), warnings);
         }
         if (snapshot.modsToml() != null) {
             Forge1201JarInfo info = Forge1201JarInspector.inspectForge1201Metadata(Path.of(displayPath), snapshot.modsToml());
