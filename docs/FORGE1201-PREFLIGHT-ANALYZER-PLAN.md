@@ -1,6 +1,6 @@
 # Forge 1.20.1 Preflight Compatibility Analyzer
 
-**Status:** Slice 1 implemented; loader tests and consolidated build passed; initial real-JAR task invocation exposed a Gradle script-parsing error, now patched; real report smoke test pending  
+**Status:** Slice 1 implemented; loader tests and consolidated build passed; corrected real-JAR smoke report generated and reviewed against Symbiote 1.1.3; Slice 2 is next  
 **Working branch:** `feat/forge1201-preflight-analyzer`  
 **Baseline:** `dde40275b9b3bd48ff811afa4c863e475e8a0cdf`  
 **Target:** Forge 1.20.1-only mod JARs on NeoForge 1.21.1 / 21.1.x  
@@ -49,7 +49,7 @@ The existing root Gradle tasks are `gap1201`, `verify1201`, and `checkLegacyMod`
 6. **The mixin triage tool is isolated and heuristic.** `Mixin1201Triage` is a CLI with static process-wide indexes, uses a heuristic to identify mixin JSON files, checks many target/member names, and notes plugin presence. It does not yet form a reusable result model with complete handler-descriptor, slice, dynamic-plugin, and injection-semantics coverage. A missing Forge target must be explicitly classified as unverified/unsupported, not treated as a harmless warning.
 7. **`Gap1201` already indexes nested `META-INF/jarjar/*.jar` classes for target/peer hierarchy lookup, but its per-mod reference report scans only top-level classes.** Its first pass should be extended carefully; do not assume nested library behavior is fully covered. It currently emits text plus TSV rather than a stable preflight JSON document.
 
-These observations describe the initial source audit at the baseline above. Slice 1 has since been implemented and user-validated with loader tests and a consolidated build at the source checkpoint recorded below. The first real-JAR task invocation exposed a build-script configuration error before the analyzer could run; that expression has now been patched, but the corrected task invocation still needs user-side verification.
+These observations describe the initial source audit at the baseline above. Slice 1 has since been implemented, passed user-confirmed loader tests and a consolidated build at the source checkpoint recorded below, and produced a real-JAR JSON/text report for Symbiote 1.1.3. The first task invocation exposed a Groovy classpath-expression parsing bug (`FilteredFileCollection.positive()`); the expression was corrected in source commit `9f608a53d655f3c938a4a909da066f905f66e41e`. The resulting report is uploaded to the testbench and its JSON was parsed and reviewed.
 
 ## Result model and reporting rules
 
@@ -160,25 +160,47 @@ Synthetic tests cover multiple mod declarations, duplicate IDs, array/multiline 
 
 **Not implemented in Slice 1:** recursive nested JAR analysis, provider JAR/version provenance, full bytecode reference coverage, target API member verification, semantic mixin validation, shim/no-op coverage joining, and pack-level graph analysis. These remain later slices.
 
-**Local validation state:** user-confirmed loader tests and the consolidated clean build passed at source HEAD `9e1a1e14b597dd8ae690e9ae8c350809567dd1fc` on 2026-11-14. The first `preflight1201` invocation against Symbiote failed while configuring the root project at `build.gradle:346`, before the analyzer ran: the classpath expression placed `+` at the start of a new line and Groovy attempted `FilteredFileCollection.positive()`. The expression has been corrected in source commit `9f608a53d655f3c938a4a909da066f905f66e41e`; the user has not yet pulled or tested that fix. No real-JAR report or Minecraft runtime compatibility is confirmed.
+**Local validation state:** user-confirmed loader tests and the consolidated clean build passed at source HEAD `9e1a1e14b597dd8ae690e9ae8c350809567dd1fc` on 2026-11-14. The first `preflight1201` invocation failed during Gradle configuration at `build.gradle:346` because Groovy treated a leading-newline `+` as unary plus and attempted `FilteredFileCollection.positive()`. Fixed in source commit `9f608a53d655f3c938a4a909da066f905f66e41e`.
 
-### Exact next action — rerun the corrected real-JAR smoke test
+**Real-JAR report review:** the testbench contains `symbiote-1.1.3.jar.txt` and `symbiote-1.1.3.jar.json`, uploaded in testbench commit `73930aaf3ab76017ca0c9232c557856bf7e39dac`. The JSON parsed successfully. Its SHA-256 `e40f48a8a9bf1f39ea173a7c163285df199b7d2cf1dfcbf3efa721fe7f2f942c` matches the original Symbiote 1.1.3 input. The report targets Minecraft 1.21.1 / NeoForge 21.1.258 and identifies `symbiote` 1.1.3, one mod declaration, no duplicate IDs, two declared host dependencies (`forge`, `minecraft`), 515 archive entries, 278 outer-JAR classes, namespace `symbiote`, no Jar-in-Jar paths, no discovered mixin config candidates, and no coremod class.
 
-The user located two copies of Symbiote 1.1.3. Use the primary source input, not the backup:
-`C:\Users\Administrator\legacy-connector-testbench\symbiote-1.1.3.jar`.
+The JSON records 442 referenced types: 322 outside Forge API, 77 package-relocation candidates, 28 manual-adapter-required types, and 15 explicit type replacements. It also records 1,110 distinct method references, 352 field references, 5,369 grouped method-call-site records, and 1,196 grouped field-call-site records. Among Forge-targeting bytecode calls, 403 grouped method call sites represent 693 instructions and 88 grouped field call sites represent 109 instructions.
 
-1. From the source checkout, pull the patch and verify the exact source HEAD:
-   ```powershell
-   git pull --ff-only
-   git rev-parse HEAD
-   ```
-   Confirm the pulled branch history contains fix commit `9f608a53d655f3c938a4a909da066f905f66e41e`; the branch tip may be a later documentation-only commit.
-2. Run from `F:\Program\intellij-idea-portable\Legacy-Connector-1.20.1`:
-   ```powershell
-   .\gradlew.bat preflight1201 "-PpreflightJar=C:\Users\Administrator\legacy-connector-testbench\symbiote-1.1.3.jar" "-PpreflightModsDirs=E:\Games\PolyMC\instances\Neoforge tester\.minecraft\mods" --no-daemon --console=plain
-   ```
-   The fix moves the classpath `+` onto the preceding line so Groovy parses it as binary addition. The mods directory is optional; omit its property if unavailable. Expected outputs are `build/reports/preflight1201/symbiote-1.1.3.jar.json` and `build/reports/preflight1201/symbiote-1.1.3.jar.txt`.
-3. Share the complete Gradle output and both reports. Review the real report before starting Slice 2. The previous failure happened during Gradle configuration; it did not scan the JAR and produced no compatibility findings.
+Important concrete hotspots include 13 `SimpleChannel.messageBuilder` registrations, `sendToServer` and `send` usage, 118 `RegistryObject.get()` occurrences, `DeferredRegister` registration, legacy tick/damage/player events, GUI overlay and config-screen extension points, `ModLoadingContext` / `FMLJavaModLoadingContext`, and `DistExecutor`. The type classifier correctly leaves 77 package moves as candidates rather than claiming member or behavioral equivalence.
+
+The report shows 850 distinct SRG-style Minecraft method references and 258 SRG-style field references (aggregate occurrence counts 7,392 and 1,364). Treat this as evidence that the SRG → 1.20.1 Mojang-name normalization stage must remain explicit before 1.20.1 → 1.21.1 migration. The report's 7 installed native IDs (`architectury`, `azurelib`, `geckolib`, `kubejs`, `pehkui`, `playeranimator`, `rhino`) are observed provider candidates only; Symbiote does not declare them as required dependencies.
+
+Metadata warning: `mods.toml` line 10 starts a multiline string that the scalar parser skips. The declared Minecraft range is `[1.20.1,1.21)`, which does not include the target 1.21.1; the current report prints the range but does not yet produce an explicit target-range mismatch finding. Add that check early in Slice 2. The five Mixin API references belong to `com/scout/symbiote/util/ForeignHooks.scan`, which inspects globally registered Mixin configs; their presence does not by itself mean Symbiote ships its own mixin config. No `MixinConfigs` or mixin resource candidate was found.
+
+Both report files are present and internally consistent; however, the Gradle console transcript was not uploaded, so do not record the final console line as `BUILD SUCCESSFUL`. Report generation and JSON validity are confirmed by the uploaded artifacts. No runtime or gameplay compatibility is established.
+
+### Exact next action — Slice 2: nested archives and dependency graph
+
+
+
+The real-JAR smoke gate is complete: both report files were reviewed in testbench commit `73930aaf3ab76017ca0c9232c557856bf7e39dac`. Do not rerun the same smoke test unless the report implementation changes.
+
+
+
+Implement Slice 2 in this order:
+
+1. Add bounded recursive inspection of `META-INF/jarjar/*.jar` and nested archives with maximum depth/size, cycle detection, safe entry handling, SHA-256, archive path/provenance, and per-nested-archive metadata.
+
+2. Build parent/nested dependency edges. Extend provider discovery to report actual top-level and nested provider JAR paths/versions/ranges, while retaining the strict distinction between an observed mod ID and a verified API provider.
+
+3. Add explicit target-version range evaluation. For this Symbiote report, `[1.20.1,1.21)` excludes the target `1.21.1`; show this as a metadata-range translation requirement rather than treating it as a connector-imposed dependency or an unconditional load failure.
+
+4. Keep native installed mod IDs that are not declared dependencies as observed candidates only; do not convert them into required dependencies. Preserve optional/side/order/range semantics.
+
+5. Add synthetic tests for nested mod/library discovery, nested provider resolution, missing/corrupt archives, path traversal, duplicate IDs, cycles, excessive depth/size, and target-range mismatch.
+
+
+
+Later slices must use this report's evidence: Slice 3 should surface/normalize SRG member names and complete bytecode reference kinds; Slice 4 should continue Mixin analysis without mistaking Symbiote's `ForeignHooks.scan` inspection of global Mixin configs for an owned config; Slice 5 should join type/member findings to actual adapter/shim implementation and target verification.
+
+
+
+Do not claim compatibility from this report. Keep Palladium + Alien Evolution paused.
 
 ## Validation boundary
 
@@ -188,4 +210,4 @@ User-confirmed validation on 2026-11-14 at source HEAD `9e1a1e14b597dd8ae690e9ae
 - `:clean :loader:clean :testmods:clean :build :loader:build :testmods:assemble --no-daemon --console=plain` — BUILD SUCCESSFUL; 33 actionable tasks, 5m 32s.
 - Deprecation/removal warnings and Gradle 9.0 compatibility warnings were present but non-fatal.
 
-The analyzer code is now compile/test/build validated at that exact source commit. The real-JAR `preflight1201` task output has not yet been smoke-tested, and no Minecraft runtime compatibility is established. Next validation action: execute `preflight1201` against one independent Forge 1.20.1 JAR and review its generated JSON and text reports. Do not claim runtime success from this static report.
+The analyzer code is compile/test/build validated at that exact source commit. The corrected real-JAR smoke artifacts are present and reviewed as described above; the final Gradle console result was not uploaded. This is static preflight evidence only and establishes no Minecraft runtime compatibility.
