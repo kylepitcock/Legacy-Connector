@@ -26,7 +26,7 @@ jobs:
   probe:
     if: ${{ github.event_name != 'release' || !github.event.release.prerelease }}
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 240
     steps:
       - uses: actions/checkout@v4
         with:
@@ -47,8 +47,15 @@ jobs:
           VERSION=$(grep '^mod_version=' gradle.properties | cut -d= -f2)
           # a mod that got worse than in the previous run fails the job, but only after the results are committed (next step)
           REGRESSED=0
-          for MC in 1.7.10 1.12.2; do
-            python3 tools/compat/fetch_probe_mods.py "$MC" "$RUNNER_TEMP/jars-$MC" --limit "$LIMIT"
+          # every supported legacy version; 1.20.1 is a gap report against the NeoForge artifacts of a build (content mods only, fewer jars)
+          ./gradlew compileJava -q
+          for MC in 1.7.10 1.12.2 1.6.4 1.5.2 1.4.7 b1.7.3 1.20.1; do
+            if [ "$MC" = "1.20.1" ]; then
+              python3 tools/compat/fetch_probe_mods.py "$MC" "$RUNNER_TEMP/jars-$MC" --limit 400 --content || true
+            else
+              python3 tools/compat/fetch_probe_mods.py "$MC" "$RUNNER_TEMP/jars-$MC" --limit "$LIMIT" || true
+            fi
+            if [ -z "$(ls "$RUNNER_TEMP/jars-$MC" 2>/dev/null)" ]; then echo "no jars for $MC"; continue; fi
             python3 tools/compat/probe.py "$RUNNER_TEMP/jars-$MC" --mc "$MC" --version "$VERSION" --source modrinth --fail-on-regression || REGRESSED=1
           done
           echo "REGRESSED=$REGRESSED" >> "$GITHUB_ENV"
