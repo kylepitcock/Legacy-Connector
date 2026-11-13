@@ -13,7 +13,7 @@ class FunctionConverter1201Test {
 
     @Test
     void convertsLegacyParticleOptionsAndKeepsParticleArguments() {
-        assertEquals("particle minecraft:dust{color:[0.7,1,18000000],scale:2} ~ ~ ~ 1 1 1 0 10",
+        assertEquals("particle minecraft:dust{color:[0.7,1.0,18000000.0],scale:2.0} ~ ~ ~ 1 1 1 0 10",
                 FunctionConverter1201.convertCommand(
                         "particle minecraft:dust 0.7 1 18000000 2 ~ ~ ~ 1 1 1 0 10"));
         assertEquals("particle minecraft:block{block_state:" + quoted("minecraft:stone") + "} ~ ~ ~ 1 0.5 1 0 30 normal",
@@ -23,6 +23,31 @@ class FunctionConverter1201Test {
                 + quoted("minecraft:custom_model_data") + ":1005}}} ^ ^1 ^ 0 1.5 0 .1 20";
         assertEquals(expectedItemParticle, FunctionConverter1201.convertCommand(
                 "execute at @s run particle item carrot_on_a_stick{CustomModelData:1005} ^ ^1 ^ 0 1.5 0 .1 20"));
+    }
+
+    @Test
+    void normalizesLegacyDustColorComponentsToHomogeneousDoubles() {
+        String[][] cases = {
+                {
+                        "execute align xyz run particle minecraft:dust 0.7 1 18000000 2 ~0.5 ~0.5 ~0.5 0.4 0.4 0.4 0 10",
+                        "execute align xyz run particle minecraft:dust{color:[0.7,1.0,18000000.0],scale:2.0} ~0.5 ~0.5 ~0.5 0.4 0.4 0.4 0 10"
+                },
+                {
+                        "particle minecraft:dust 0.7 1 18000000 2 ~ ~ ~ 0.2 0.3 0.2 0.2 5",
+                        "particle minecraft:dust{color:[0.7,1.0,18000000.0],scale:2.0} ~ ~ ~ 0.2 0.3 0.2 0.2 5"
+                },
+                {
+                        "particle minecraft:dust 0.7 1 18000000 2 ~ ~ ~ 1 1 1 0 10",
+                        "particle minecraft:dust{color:[0.7,1.0,18000000.0],scale:2.0} ~ ~ ~ 1 1 1 0 10"
+                },
+                {
+                        "execute align xyz run particle minecraft:dust 0.7 1 18000000 2 ~0.5 ~0.5 ~0.5 0.4 0.2 0.4 0 1",
+                        "execute align xyz run particle minecraft:dust{color:[0.7,1.0,18000000.0],scale:2.0} ~0.5 ~0.5 ~0.5 0.4 0.2 0.4 0 1"
+                }
+        };
+        for (String[] pair : cases) {
+            assertEquals(pair[1], FunctionConverter1201.convertCommand(pair[0]));
+        }
     }
 
     @Test
