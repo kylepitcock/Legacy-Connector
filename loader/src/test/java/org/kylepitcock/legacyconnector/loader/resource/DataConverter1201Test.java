@@ -292,7 +292,7 @@ class DataConverter1201Test {
         String dustCommand = commands.get(1).getAsString();
         String quote = String.valueOf((char)34);
         assertTrue(blockCommand.contains("minecraft:block{block_state:" + quote + "minecraft:stone" + quote + "}"), blockCommand);
-        assertTrue(dustCommand.contains("minecraft:dust{color:[0.7,1,18000000],scale:2}"), dustCommand);
+        assertTrue(dustCommand.contains("minecraft:dust{color:[0.7,1.0,18000000.0],scale:2.0}"), dustCommand);
     }
 
     @Test
