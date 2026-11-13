@@ -4,7 +4,7 @@ name: Nightly build
 # (one release titled "Nightly release": the previous one is deleted first, so the releases page never fills up; the jar name carries the
 # version; never uploaded to Modrinth or CurseForge). Stable releases (tags v<version>) stay manual and less
 # frequent; this is the cutting-edge build for people who want a fix before the next release.
-# Version of a nightly jar: <mod_version of gradle.properties>-nightly.<run number>.<short commit>.
+# Version of a nightly jar: <latest release version>-nightly.<run number>.<short commit>.
 on:
   push:
     branches: [master]
@@ -41,9 +41,11 @@ jobs:
       - name: Work out the version
         id: ver
         run: |
-          BASE=$(grep -E '^mod_version=' gradle.properties | cut -d= -f2 | tr -d '[:space:]')
           SHORT=$(git rev-parse --short=7 HEAD)
           LAST=$(git describe --tags --abbrev=0 --match 'v[0-9]*' 2>/dev/null || true)
+          # the latest release tag is the base (releases are cut by release.yml without a version commit)
+          BASE="${LAST#v}"
+          [ -z "$BASE" ] && BASE=$(grep -E '^mod_version=' gradle.properties | cut -d= -f2 | tr -d '[:space:]')
           echo "version=${BASE}-nightly.${{ github.run_number }}.${SHORT}" >> "$GITHUB_OUTPUT"
           echo "short=${SHORT}" >> "$GITHUB_OUTPUT"
           echo "last=${LAST}" >> "$GITHUB_OUTPUT"

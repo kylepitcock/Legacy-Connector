@@ -1,14 +1,14 @@
 name: Release
 
-# Cuts a stable release from GitHub (Actions tab > Release > Run workflow): sets mod_version in gradle.properties, commits it to master,
-# builds the distributable jar, creates the tag and the GitHub release (notes: the text given, followed by the commits since the last
+# Cuts a stable release from GitHub (Actions tab > Release > Run workflow): builds the distributable jar of master with the given version
+# (passed to Gradle; nothing is committed, master is a protected branch), creates the tag and the GitHub release (notes: the text given, followed by the commits since the last
 # release), then starts publish.yml (Modrinth and CurseForge) and probe.yml for the new tag.
 # A release created by a workflow does not fire the "release published" event for other workflows, hence the explicit starts.
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Version (e.g. 0.5.0). Empty = next patch of mod_version in gradle.properties"
+        description: "Version (e.g. 0.5.0). Empty = next patch after the latest release tag"
         required: false
         default: ""
       notes:
@@ -42,17 +42,18 @@ jobs:
         env:
           INPUT_VERSION: ${{ inputs.version }}
         run: |
-          CUR=$(grep -E '^mod_version=' gradle.properties | cut -d= -f2 | tr -d '[:space:]')
+          LAST=$(git describe --tags --abbrev=0 --match 'v[0-9]*' 2>/dev/null || true)
+          CUR="${LAST#v}"
+          [ -z "$CUR" ] && CUR=$(grep -E '^mod_version=' gradle.properties | cut -d= -f2 | tr -d '[:space:]')
           VER=$(echo "$INPUT_VERSION" | tr -d '[:space:]'); VER="${VER#v}"
           if [ -z "$VER" ]; then
             VER=$(echo "$CUR" | awk -F. '{printf "%d.%d.%d", $1, $2, $3 + 1}')
           fi
           if ! echo "$VER" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then echo "::error::'$VER' is not a version like 0.5.0"; exit 1; fi
           if git rev-parse -q --verify "refs/tags/v$VER" >/dev/null; then echo "::error::tag v$VER already exists"; exit 1; fi
-          LAST=$(git describe --tags --abbrev=0 --match 'v[0-9]*' 2>/dev/null || true)
           echo "version=$VER" >> "$GITHUB_OUTPUT"
           echo "last=$LAST" >> "$GITHUB_OUTPUT"
-          echo "Releasing $VER (gradle.properties had $CUR, last release ${LAST:-none})"
+          echo "Releasing $VER (last release ${LAST:-none})"
 
       - uses: actions/setup-java@v4
         with:
@@ -61,15 +62,10 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
-      - name: Set mod_version
-        run: |
-          sed -i -E "s/^mod_version=.*/mod_version=${{ steps.ver.outputs.version }}/" gradle.properties
-          grep -E '^mod_version=' gradle.properties
-
       - name: Build
         run: |
           chmod +x gradlew
-          ./gradlew bundleJar
+          ./gradlew bundleJar -Pmod_version=${{ steps.ver.outputs.version }}
           mkdir -p out
           cp build/dist/legacyconnector-${{ steps.ver.outputs.version }}*.jar "out/legacyconnector-${{ steps.ver.outputs.version }}.jar"
           ls -la out
@@ -87,15 +83,6 @@ jobs:
             fi
           } > notes.md
           head -c 100000 notes.md > notes.cut && mv notes.cut notes.md
-
-      - name: Commit the version
-        run: |
-          if git diff --quiet -- gradle.properties; then echo "mod_version already ${{ steps.ver.outputs.version }}"; exit 0; fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add gradle.properties
-          git commit -m "Release ${{ steps.ver.outputs.version }}"
-          git push origin HEAD:master
 
       - name: Create the release
         env:
