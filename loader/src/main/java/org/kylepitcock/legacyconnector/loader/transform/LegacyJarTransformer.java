@@ -258,7 +258,7 @@ public final class LegacyJarTransformer {
                 for (LegacyModDecl mod : jar.mods) if (name.equals(mod.mainClass)) mod.mainClass = privateRoot + "root/" + name;
                 continue;
             }
-            if (!LegacyVersion.isRelocatedRoot(name)) continue;
+            if (!LegacyVersion.isRelocatedRoot(name) && !remapper.relocatedForVersion(name)) continue;
             String forwarded = org.kylepitcock.legacyconnector.loader.mapping.ForwardRenames.map(jar.version, name);
             if (shim.contains(jar.version.linkPrefix() + forwarded)
                     || (jar.version.forward() != null && shim.contains(jar.version.shimPrefix() + forwarded))) {
