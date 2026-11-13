@@ -679,6 +679,20 @@ order. PlayerAPI lifecycle uses player/tick/clone events and attachments; invent
 | Spawn provenance and generation fauna | Finalize-spawn events expose no provenance setter without initialization; `PotentialSpawns` does not cover the generation-fauna list lookup. |
 | Generation prerequisites | Feature events do not expose chunk-stage dependency radii. |
 | Hosted mob AI and shadow placement | Entity tick cancellation affects the whole tick; living render events do not surround dispatcher shadow drawing. |
+| Player subclass travel | NeoForge has no event or hook that replaces a living entity's `travel`; the jump, fall and living tick of the same subclass use `LivingJumpEvent`, `LivingFallEvent` and `PlayerTickEvent`. |
+
+### Mod-owned player classes and sky textures
+
+A mod that makes the player an instance of its own subclass of the client player (`class EntityPlayerMoon extends EntityPlayerSP`, handed over
+through `Minecraft.changeWorld(world, message, player)`) keeps the native player. `PlayerClassOverridesB173` stores the subclass instance per
+player UUID and runs its overridden callbacks where Beta ran them, on the native player's state, writing back what they change: `moveEntityWithHeading`
+for the local player's travel (one mixin on `LivingEntity.travel`), `jump` on `LivingJumpEvent`, `fall` on `LivingFallEvent` (server), and
+`onLivingUpdate` every server tick. The mod's own reads of `mc.thePlayer` see the subclass (its `instanceof` checks), and a plain player object
+puts the native behaviour back. Original `setEntityDead` on a native player and `loadedEntityList.remove(player)` never discard it.
+`Entity.setInPortal` and `EntityPlayerSP.portal` feed the shared portal contact path.
+
+`RenderEngine`'s private name-to-id table (`textures`) is a lazy map; a mod that writes another texture's id under `/terrain/sun.png` or
+`/terrain/moon.png` (a different moon) has that image placed on the native sun and moon-phase textures until the default id is written back.
 
 ## GuiAPI settings and TWL models
 

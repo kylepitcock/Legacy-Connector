@@ -119,7 +119,8 @@ public abstract class Entity {
     public void markDead() {
         this.dead = true;
         if (mcc$modern instanceof org.kylepitcock.legacyconnector.vb1_7_3.B173EntityHost host) host.baseMarkDead();
-        else if(mcc$modern!=null)mcc$modern.discard();
+        // a native player is not discarded: a mod that replaces its client player with an object of its own class calls this on the old one
+        else if(mcc$modern!=null&&!(mcc$modern instanceof net.minecraft.world.entity.player.Player))mcc$modern.discard();
     }
 
     public void setPosition(double x, double y, double z) {
@@ -142,12 +143,26 @@ public abstract class Entity {
         if(landed){if(fallDistance>0){onLanding(fallDistance);fallDistance=0;}}else if(deltaY<0)fallDistance-=deltaY;
     }
     public final void mcc$fall(double deltaY,boolean landed){fall(deltaY,landed);}
+    /** Beta's {@code setInPortal}: a portal block's collision marks the entity as standing in a portal; for a player it leads to the dimension in {@code portal}. */
+    public void tickPortalCooldown(){
+        if(this instanceof legacyconnector.vb1_7_3.net.minecraft.entity.player.ClientPlayerEntity player&&!hasVehicle()&&passenger==null)org.kylepitcock.legacyconnector.vb1_7_3.DimensionsB173.portalContact(world,this,player.portal);
+    }
     public final float mcc$fallDistance(){return fallDistance;}
     public final void mcc$fallDistance(float distance){fallDistance=distance;}
     public double getSquaredDistance(Entity entity){return getSquaredDistance(entity.x,entity.y,entity.z);}
     public void move(double dx,double dy,double dz){
         if(mcc$modern instanceof org.kylepitcock.legacyconnector.vb1_7_3.B173EntityHost host)host.baseMove(dx,dy,dz);
-        else if(mcc$modern!=null){mcc$modern.move(net.minecraft.world.entity.MoverType.SELF,new net.minecraft.world.phys.Vec3(dx,dy,dz));setPosition(mcc$modern.getX(),mcc$modern.getY()+standingEyeHeight,mcc$modern.getZ());}
+        else if(mcc$modern!=null){
+            double fromX=mcc$modern.getX(),fromY=mcc$modern.getY(),fromZ=mcc$modern.getZ();
+            mcc$modern.move(net.minecraft.world.entity.MoverType.SELF,new net.minecraft.world.phys.Vec3(dx,dy,dz));
+            setPosition(mcc$modern.getX(),mcc$modern.getY()+standingEyeHeight,mcc$modern.getZ());
+            // Beta's moveEntity zeroed the motion on an axis the move was blocked on; a player subclass of a mod keeps its own motion fields
+            if(this instanceof legacyconnector.vb1_7_3.net.minecraft.entity.player.ClientPlayerEntity player&&org.kylepitcock.legacyconnector.vb1_7_3.PlayerClassOverridesB173.drives(player)){
+                if(Math.abs(mcc$modern.getX()-fromX-dx)>1.0E-7)velocityX=0;
+                if(Math.abs(mcc$modern.getY()-fromY-dy)>1.0E-7)velocityY=0;
+                if(Math.abs(mcc$modern.getZ()-fromZ-dz)>1.0E-7)velocityZ=0;
+            }
+        }
         else setPosition(x+dx,y+dy,z+dz);
     }
     public void moveNonSolid(float sideways,float forward,float speed){

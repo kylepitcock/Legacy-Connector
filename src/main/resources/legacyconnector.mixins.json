@@ -24,6 +24,7 @@
     "PlayerDistancePredicateB173Mixin",
     "FoodDataHealRateMixin",
     "LivingEntityTravelMixin",
+    "PlayerClassTravelB173Mixin",
     "PlacedFeatureOreGateMixin",
     "TargetingConditionsMixin",
     "CreativeTabDuplicateMixin",

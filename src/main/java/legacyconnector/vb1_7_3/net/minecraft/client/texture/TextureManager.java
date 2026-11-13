@@ -14,6 +14,31 @@ public class TextureManager {
 
     protected TextureManager() {}
 
+    /** The path each id was last handed out for: ids are per sink (a HUD capture numbers its own), so a mod's {@code textures.put(path, id)} is read back as a path. */
+    private static final java.util.Map<Integer,String> RECENT=new java.util.concurrent.ConcurrentHashMap<>();
+    private static final java.util.Map<String,String> OVERRIDES=new java.util.concurrent.ConcurrentHashMap<>();
+
+    /**
+     * Beta's private name-to-id table of the render engine (MCP {@code textureMap}), which mods read and write through reflection to swap a
+     * texture (a texture-pack-like override of {@code /terrain/moon.png}). Reads give the default id of a path; a write of another path's
+     * id makes that path stand in for the key, which {@link #override} reports to the renderers the layer owns.
+     */
+    public final java.util.HashMap<String,Integer> textures=new java.util.HashMap<>(){
+        @Override public Integer get(Object key){
+            Integer value=super.get(key);
+            if(value==null&&key instanceof String path){value=TextureManager.this.getTextureId(path);super.put(path,value);}
+            return value;
+        }
+        @Override public Integer put(String key,Integer id){
+            String path=id==null?null:RECENT.get(id);
+            if(path==null||path.equals(key))OVERRIDES.remove(key);else OVERRIDES.put(key,path);
+            return super.put(key,id);
+        }
+    };
+
+    /** The path of the texture standing in for {@code key} (a mod wrote another id under it), or null. */
+    public static String override(String key){return OVERRIDES.get(key);}
+
     private static final TextureManager INSTANCE = new TextureManager();
 
     public static TextureManager mcc$instance() {
@@ -22,6 +47,12 @@ public class TextureManager {
 
     /** MCP {@code getTexture}. */
     public int getTextureId(String path) {
+        int id=resolve(path);
+        RECENT.put(id,path);
+        return id;
+    }
+
+    private int resolve(String path) {
         if(org.kylepitcock.legacyconnector.vb1_7_3.RendererContextB173.active())return org.kylepitcock.legacyconnector.vb1_7_3.RendererContextB173.textureId(path);
         Integer captured=org.kylepitcock.legacyconnector.vb1_7_3.AnimationsB173.textureId(path);
         if(captured!=null)return captured;

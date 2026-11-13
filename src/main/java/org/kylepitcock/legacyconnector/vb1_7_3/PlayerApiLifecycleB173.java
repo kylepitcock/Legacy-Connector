@@ -45,6 +45,7 @@ public final class PlayerApiLifecycleB173 {
         PlayerPresentationNetworkB173.install();
         PlayerAbilitiesB173.install();
         PlayerHealthCapacityB173.install();
+        PlayerClassOverridesB173.install();
         var bus=net.neoforged.neoforge.common.NeoForge.EVENT_BUS;
         bus.addListener((net.neoforged.neoforge.event.tick.PlayerTickEvent.Post event)->{
             if(!(event.getEntity() instanceof ServerPlayer player)||!PlayerApiB173.hasRegistered())return;
