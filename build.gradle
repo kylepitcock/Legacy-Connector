@@ -342,8 +342,8 @@ tasks.register('preflight1201', JavaExec) {
     group = 'verification'
     description = 'Writes a deterministic JSON and text preflight report for one Forge 1.20.1 JAR.'
     dependsOn ':loader:classes'
-    classpath = project(':loader').sourceSets.main.runtimeClasspath
-            + project(':loader').sourceSets.main.compileClasspath.filter {
+    classpath = project(':loader').sourceSets.main.runtimeClasspath +
+            project(':loader').sourceSets.main.compileClasspath.filter {
                 it.name.startsWith('gson') || it.name.startsWith('slf4j')
             }
     mainClass = 'org.kylepitcock.legacyconnector.loader.tools.forge1201.Forge1201PreflightAnalyzer'
