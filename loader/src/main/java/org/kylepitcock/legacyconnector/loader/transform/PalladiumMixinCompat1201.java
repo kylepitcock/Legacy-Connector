@@ -26,6 +26,10 @@ final class PalladiumMixinCompat1201 implements Opcodes {
     private static final String GEO_RENDERER_MIXIN = "net/threetag/palladium/mixin/client/GeoRendererMixin";
     private static final String LEVEL_RENDERER_MIXIN = "net/threetag/palladium/mixin/client/LevelRendererMixin";
     private static final String MODEL_PART_INVOKER = "net/threetag/palladium/mixin/client/ModelPartInvoker";
+    private static final String VIBRATION_LISTENER_MIXIN =
+            "net/threetag/palladium/mixin/VibrationListenerMixin";
+    private static final String HOLDER = "net/minecraft/core/Holder";
+    private static final String GAME_EVENT = "net/minecraft/world/level/gameevent/GameEvent";
 
     private static final String POSE_STACK = "com/mojang/blaze3d/vertex/PoseStack";
     private static final String VERTEX_CONSUMER = "com/mojang/blaze3d/vertex/VertexConsumer";
@@ -65,6 +69,7 @@ final class PalladiumMixinCompat1201 implements Opcodes {
             case GEO_RENDERER_MIXIN -> adaptGeoRendererMixin(node) ? 1 : 0;
             case LEVEL_RENDERER_MIXIN -> adaptLevelRendererMixin(node) ? 1 : 0;
             case MODEL_PART_INVOKER -> adaptModelPartInvoker(node) ? 1 : 0;
+            case VIBRATION_LISTENER_MIXIN -> adaptVibrationListenerMixin(node) ? 1 : 0;
             default -> 0;
         };
     }
@@ -835,6 +840,44 @@ final class PalladiumMixinCompat1201 implements Opcodes {
             changed = true;
         }
         return changed;
+    }
+
+    /**
+     * Minecraft 1.21.1 passes a Holder<GameEvent> to vibration listeners.
+     * Palladium's handler compares the incoming event by identity with two
+     * GameEvent constants, so unwrap Holder.value() before those comparisons.
+     */
+    private static boolean adaptVibrationListenerMixin(ClassNode node) {
+        String oldDesc = "(Lnet/minecraft/server/level/ServerLevel;L" + GAME_EVENT
+                + ";L" + GAME_EVENT + "$Context;Lnet/minecraft/world/phys/Vec3;"
+                + CALLBACK_RETURN + ")V";
+        String newDesc = "(Lnet/minecraft/server/level/ServerLevel;L" + HOLDER
+                + ";L" + GAME_EVENT + "$Context;Lnet/minecraft/world/phys/Vec3;"
+                + CALLBACK_RETURN + ")V";
+        MethodNode handler = find(node, "handleGameEvent", oldDesc);
+        if (handler == null) return false;
+
+        int unwraps = 0;
+        for (AbstractInsnNode instruction : handler.instructions.toArray()) {
+            if (instruction instanceof VarInsnNode load
+                    && load.getOpcode() == ALOAD
+                    && load.var == 2) {
+                InsnList unbox = new InsnList();
+                unbox.add(new MethodInsnNode(INVOKEINTERFACE, HOLDER,
+                        "value", "()Ljava/lang/Object;", true));
+                unbox.add(new TypeInsnNode(CHECKCAST, GAME_EVENT));
+                handler.instructions.insert(load, unbox);
+                unwraps++;
+            }
+        }
+        if (unwraps != 2) {
+            throw new IllegalStateException(
+                    "Palladium VibrationListenerMixin.handleGameEvent expected two Holder.value() unwraps, found "
+                            + unwraps);
+        }
+        handler.desc = newDesc;
+        handler.signature = null;
+        return true;
     }
 
     private static boolean adaptModelPartInvoker(ClassNode node) {
