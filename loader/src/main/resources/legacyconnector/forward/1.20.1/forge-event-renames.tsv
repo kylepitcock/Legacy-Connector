@@ -309,3 +309,4 @@ net/minecraftforge/event/village/VillagerTradesEvent	net/neoforged/neoforge/even
 net/minecraftforge/event/village/WandererTradesEvent	net/neoforged/neoforge/event/village/WandererTradesEvent
 net/minecraftforge/event/level/SaplingGrowTreeEvent	net/neoforged/neoforge/event/level/BlockGrowFeatureEvent
 net/minecraftforge/event/entity/player/PlayerEvent$ItemPickupEvent	net/neoforged/neoforge/event/entity/player/ItemEntityPickupEvent$Post
+net/minecraftforge/client/event/RegisterGuiOverlaysEvent	net/neoforged/neoforge/client/event/RegisterGuiLayersEvent

@@ -51,6 +51,19 @@ class Mc1201MigrationTest implements Opcodes {
         return null;
     }
 
+    private static MethodNode findDeclared(ClassNode node, String name, String descriptor) {
+        for (MethodNode method : node.methods) {
+            if (name.equals(method.name) && descriptor.equals(method.desc)) return method;
+        }
+        return null;
+    }
+
+    private static Mc1201Hierarchy hierarchy(ClassNode... nodes) {
+        Mc1201Hierarchy h = new Mc1201Hierarchy();
+        for (ClassNode n : nodes) h.add(n);
+        return h;
+    }
+
     private static Mc1201Migration.Counts apply(ClassNode... nodes) {
         Mc1201Hierarchy h = new Mc1201Hierarchy();
         for (ClassNode n : nodes) h.add(n);
@@ -161,6 +174,147 @@ class Mc1201MigrationTest implements Opcodes {
         MethodInsnNode call = find(m, MIGRATE + "HolderCompat", "hasEffect");
         assertNotNull(call);
         assertEquals("(Lnet/minecraft/world/entity/LivingEntity;L" + ME + ";)Z", call.desc);
+    }
+
+    @Test
+    void legacyAbstractWidgetNarrationOverridesUseTheNewWidgetHook() {
+        String selectionList = "net/minecraft/client/gui/components/AbstractSelectionList";
+        ClassNode list = cls("test/LegacyList", selectionList);
+        String descriptor = "(Lnet/minecraft/client/gui/narration/NarrationElementOutput;)V";
+        MethodNode legacy = method(list, ACC_PUBLIC, "updateNarration", descriptor);
+        legacy.instructions.add(new InsnNode(RETURN));
+        legacy.maxStack = 0;
+        legacy.maxLocals = 2;
+
+        Mc1201Migration.Counts counts = apply(list);
+        assertEquals(1, counts.widgetNarrationOverrides);
+        assertNull(findDeclared(list, "updateNarration", descriptor));
+        MethodNode modern = findDeclared(list, "updateWidgetNarration", descriptor);
+        assertNotNull(modern);
+        assertEquals(ACC_PUBLIC, modern.access & (ACC_PUBLIC | ACC_PROTECTED | ACC_PRIVATE));
+        assertEquals(0, Mc1201Migration.apply(list, hierarchy(list)).widgetNarrationOverrides,
+                "the widget narration migration must be idempotent");
+    }
+
+    @Test
+    void unrelatedNonWidgetNarrationMethodsAreNotRenamed() {
+        ClassNode other = cls("test/OtherNarratable", "java/lang/Object");
+        String descriptor = "(Lnet/minecraft/client/gui/narration/NarrationElementOutput;)V";
+        MethodNode legacy = method(other, ACC_PUBLIC, "updateNarration", descriptor);
+        legacy.instructions.add(new InsnNode(RETURN));
+
+        Mc1201Migration.Counts counts = apply(other);
+        assertEquals(0, counts.widgetNarrationOverrides);
+        assertNotNull(findDeclared(other, "updateNarration", descriptor));
+        assertNull(findDeclared(other, "updateWidgetNarration", descriptor));
+    }
+
+    @Test
+    void legacySelectionListSetLeftPosCallsUseTheWidgetXSetter() {
+        String selectionList = "net/minecraft/client/gui/components/AbstractSelectionList";
+        ClassNode list = cls("test/MySelectionList", selectionList);
+        ClassNode caller = cls("test/Caller", "java/lang/Object");
+        MethodNode move = method(caller, ACC_PUBLIC | ACC_STATIC, "move", "(Ltest/MySelectionList;I)V");
+        move.instructions.add(new VarInsnNode(ALOAD, 0));
+        move.instructions.add(new VarInsnNode(ILOAD, 1));
+        move.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, "test/MySelectionList",
+                "setLeftPos", "(I)V", false));
+        move.instructions.add(new InsnNode(RETURN));
+
+        Mc1201Migration.Counts counts = apply(list, caller);
+        assertEquals(1, counts.selectionListPositionCalls);
+        assertNotNull(find(move, "test/MySelectionList", "setX"));
+        assertNull(find(move, "test/MySelectionList", "setLeftPos"));
+    }
+
+    @Test
+    void legacySelectionListPositionMigrationAlsoRecognizesObjectSelectionListSubclasses() {
+        String selectionList = "net/minecraft/client/gui/components/AbstractSelectionList";
+        String objectSelectionList = "net/minecraft/client/gui/components/ObjectSelectionList";
+        ClassNode list = cls("test/NeoForgeList", objectSelectionList);
+        ClassNode objectListBase = cls(objectSelectionList, selectionList);
+        ClassNode caller = cls("test/Caller", "java/lang/Object");
+        MethodNode move = method(caller, ACC_PUBLIC | ACC_STATIC, "move", "(Ltest/NeoForgeList;I)V");
+        move.instructions.add(new VarInsnNode(ALOAD, 0));
+        move.instructions.add(new VarInsnNode(ILOAD, 1));
+        move.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, "test/NeoForgeList",
+                "setLeftPos", "(I)V", false));
+        move.instructions.add(new InsnNode(RETURN));
+
+        Mc1201Migration.Counts counts = apply(objectListBase, list, caller);
+        assertEquals(1, counts.selectionListPositionCalls);
+        assertNotNull(find(move, "test/NeoForgeList", "setX"));
+        assertNull(find(move, "test/NeoForgeList", "setLeftPos"));
+    }
+
+    @Test
+    void unrelatedSetLeftPosMethodIsNotRenamed() {
+        ClassNode other = cls("test/Other", "java/lang/Object");
+        ClassNode caller = cls("test/Caller", "java/lang/Object");
+        MethodNode move = method(caller, ACC_PUBLIC | ACC_STATIC, "move", "(Ltest/Other;I)V");
+        move.instructions.add(new VarInsnNode(ALOAD, 0));
+        move.instructions.add(new VarInsnNode(ILOAD, 1));
+        move.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, "test/Other",
+                "setLeftPos", "(I)V", false));
+        move.instructions.add(new InsnNode(RETURN));
+
+        Mc1201Migration.Counts counts = apply(other, caller);
+        assertEquals(0, counts.selectionListPositionCalls);
+        assertNotNull(find(move, "test/Other", "setLeftPos"));
+        assertNull(find(move, "test/Other", "setX"));
+    }
+
+    @Test
+    void directMinecraftCallsUseRenamedMemberTable() {
+        String gameRenderer = "net/minecraft/client/renderer/GameRenderer";
+        String shaderInstance = "net/minecraft/client/renderer/ShaderInstance";
+        String desc = "()L" + shaderInstance + ";";
+        ClassNode c = cls("test/PalladiumIcon", "java/lang/Object");
+        MethodNode m = method(c, ACC_PUBLIC | ACC_STATIC, "shader", desc);
+        m.instructions.add(new MethodInsnNode(INVOKESTATIC, gameRenderer, "getPositionColorTexShader", desc, false));
+        m.instructions.add(new InsnNode(ARETURN));
+
+        assertEquals(1, apply(c).calls);
+        assertNotNull(find(m, gameRenderer, "getPositionTexColorShader"),
+                "the 1.20.1 shader getter must be renamed to its 1.21.1 equivalent");
+        verify(c);
+    }
+
+    @Test
+    void legacyScoreboardQueriesUseThe1_21_1ScoreHolderApi() {
+        String scoreboard = "net/minecraft/world/scores/Scoreboard";
+        String objective = "net/minecraft/world/scores/Objective";
+        ClassNode c = cls("test/ScoreboardCalls", "java/lang/Object");
+
+        MethodNode has = method(c, ACC_PUBLIC | ACC_STATIC, "hasScore",
+                "(L" + scoreboard + ";Ljava/lang/String;L" + objective + ";)Z");
+        has.instructions.add(new VarInsnNode(ALOAD, 0));
+        has.instructions.add(new VarInsnNode(ALOAD, 1));
+        has.instructions.add(new VarInsnNode(ALOAD, 2));
+        has.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, scoreboard, "hasPlayerScore",
+                "(Ljava/lang/String;L" + objective + ";)Z", false));
+        has.instructions.add(new InsnNode(IRETURN));
+
+        MethodNode scores = method(c, ACC_PUBLIC | ACC_STATIC, "scores",
+                "(L" + scoreboard + ";Ljava/lang/String;)Ljava/util/Map;");
+        scores.instructions.add(new VarInsnNode(ALOAD, 0));
+        scores.instructions.add(new VarInsnNode(ALOAD, 1));
+        scores.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, scoreboard, "getPlayerScores",
+                "(Ljava/lang/String;)Ljava/util/Map;", false));
+        scores.instructions.add(new InsnNode(ARETURN));
+
+        assertEquals(2, apply(c).calls);
+
+        MethodInsnNode hasHelper = find(has, MIGRATE + "MiddleCompat", "hasPlayerScore");
+        assertNotNull(hasHelper);
+        assertEquals(INVOKESTATIC, hasHelper.getOpcode());
+        assertEquals("(L" + scoreboard + ";Ljava/lang/String;L" + objective + ";)Z", hasHelper.desc);
+
+        MethodInsnNode scoresHelper = find(scores, MIGRATE + "MiddleCompat", "playerScores");
+        assertNotNull(scoresHelper);
+        assertEquals(INVOKESTATIC, scoresHelper.getOpcode());
+        assertEquals("(L" + scoreboard + ";Ljava/lang/String;)Ljava/util/Map;", scoresHelper.desc);
+        verify(c);
     }
 
     @Test

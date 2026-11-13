@@ -1,0 +1,641 @@
+package org.kylepitcock.legacyconnector.loader.transform;
+
+import org.junit.jupiter.api.Test;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.tree.*;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+class PalladiumMixinCompat1201Test implements Opcodes {
+
+    private static final String CI = "Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfo;";
+    private static final String CIR = "Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfoReturnable;";
+    private static final String POSE = "com/mojang/blaze3d/vertex/PoseStack";
+    private static final String MATRIX = "org/joml/Matrix4f";
+    private static final String QUAD = "software/bernie/geckolib/cache/object/GeoQuad";
+    private static final String VERTEX = "com/mojang/blaze3d/vertex/VertexConsumer";
+    private static final String MODEL = "net/minecraft/client/model/HumanoidModel";
+    private static final String SLOT = "net/minecraft/world/scores/DisplaySlot";
+    private static final String OBJECTIVE = "net/minecraft/world/scores/Objective";
+    private static final String SERVER_SCOREBOARD = "net/minecraft/server/ServerScoreboard";
+    private static final String LEGACY_SCORE = "org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyScore";
+    private static final String PLAYER_SCORE_ENTRY = "net/minecraft/world/scores/PlayerScoreEntry";
+    private static final String SET_SCORE_PACKET = "net/minecraft/network/protocol/game/ClientboundSetScorePacket";
+
+    @Test
+    void armorItemMixinUsesPlayerReceiverForLivingEntityEquipmentSlotLookup() {
+        ClassNode node = new ClassNode();
+        node.name = "net/threetag/palladium/mixin/ArmorItemMixin";
+        String handlerDesc = "(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/player/Player;"
+                + "Lnet/minecraft/world/InteractionHand;" + CIR + ")V";
+        String itemStack = "Lnet/minecraft/world/item/ItemStack;";
+        String equipmentSlot = "Lnet/minecraft/world/entity/EquipmentSlot;";
+        MethodNode handler = new MethodNode(ACC_PUBLIC, "use", handlerDesc, null, null);
+        handler.instructions.add(new VarInsnNode(ALOAD, 5));
+        handler.instructions.add(new MethodInsnNode(INVOKESTATIC, "net/minecraft/world/entity/Mob",
+                "getEquipmentSlotForItem", "(" + itemStack + ")" + equipmentSlot, false));
+        handler.instructions.add(new VarInsnNode(ASTORE, 6));
+        handler.instructions.add(new InsnNode(RETURN));
+        handler.maxLocals = 7;
+        handler.maxStack = 1;
+        node.methods.add(handler);
+
+        assertEquals(1, PalladiumMixinCompat1201.apply(node));
+        MethodInsnNode lookup = findCall(handler, "getEquipmentSlotForItem");
+        assertNotNull(lookup);
+        assertEquals(INVOKEVIRTUAL, lookup.getOpcode());
+        assertEquals("net/minecraft/world/entity/LivingEntity", lookup.owner);
+        assertFalse(lookup.itf);
+
+        AbstractInsnNode before = previousReal(lookup);
+        assertTrue(before instanceof InsnNode && before.getOpcode() == SWAP);
+        before = previousReal(before);
+        assertTrue(before instanceof VarInsnNode receiver && receiver.getOpcode() == ALOAD && receiver.var == 2);
+
+        assertEquals(0, PalladiumMixinCompat1201.apply(node),
+                "an already-adapted instance call must not receive a second receiver");
+        assertClassCanBeSerialized(node);
+    }
+
+
+    @Test
+    void itemTooltipHandlerExtractsLevelFromTooltipContext() {
+        ClassNode node = new ClassNode();
+        node.name = "net/threetag/palladium/mixin/ItemMixin";
+        String oldDesc = "(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/level/Level;Ljava/util/List;"
+                + "Lnet/minecraft/world/item/TooltipFlag;" + CI + ")V";
+        String newDesc = "(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/Item$TooltipContext;Ljava/util/List;"
+                + "Lnet/minecraft/world/item/TooltipFlag;" + CI + ")V";
+        MethodNode handler = new MethodNode(ACC_PUBLIC, "appendHoverText", oldDesc, null, null);
+        handler.instructions.add(new VarInsnNode(ALOAD, 2));
+        handler.instructions.add(new InsnNode(POP));
+        handler.instructions.add(new InsnNode(RETURN));
+        handler.maxLocals = 6;
+        node.methods.add(handler);
+
+        assertEquals(1, PalladiumMixinCompat1201.apply(node));
+        assertEquals(newDesc, handler.desc);
+        assertTrue(hasCall(handler, INVOKEINTERFACE, "net/minecraft/world/item/Item$TooltipContext",
+                "level", "()Lnet/minecraft/world/level/Level;"));
+        assertTrue(hasVar(handler, ALOAD, 6));
+    }
+
+    @Test
+    void armorStandBrokenByPlayerHandlerReceivesServerLevelAndShiftsLocals() {
+        ClassNode node = new ClassNode();
+        node.name = "net/threetag/palladium/mixin/ArmorStandMixin";
+        String oldDesc = "(Lnet/minecraft/world/damagesource/DamageSource;" + CI + ")V";
+        String newDesc = "(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/damagesource/DamageSource;" + CI + ")V";
+        MethodNode handler = new MethodNode(ACC_PRIVATE, "brokenByPlayer", oldDesc, null, null);
+        handler.instructions.add(new VarInsnNode(ALOAD, 1));
+        handler.instructions.add(new InsnNode(POP));
+        handler.instructions.add(new VarInsnNode(ALOAD, 2));
+        handler.instructions.add(new InsnNode(POP));
+        handler.instructions.add(new InsnNode(RETURN));
+        handler.maxLocals = 3;
+        node.methods.add(handler);
+
+        assertEquals(1, PalladiumMixinCompat1201.apply(node));
+        assertEquals(newDesc, handler.desc);
+        assertTrue(hasVar(handler, ALOAD, 2));
+        assertTrue(hasVar(handler, ALOAD, 3));
+        assertEquals(4, handler.maxLocals);
+    }
+
+    @Test
+    void scoreboardHandlersUseDisplaySlotEnumAndEnumPacketConstructor() {
+        ClassNode node = new ClassNode();
+        node.name = "net/threetag/palladium/mixin/ServerScoreboardMixin";
+        String oldSet = "(IL" + OBJECTIVE + ";" + CI + ")V";
+        String newSet = "(L" + SLOT + ";L" + OBJECTIVE + ";" + CI + ")V";
+        MethodNode setDisplay = new MethodNode(ACC_PUBLIC, "setDisplayObjective", oldSet, null, null);
+        setDisplay.instructions.add(new VarInsnNode(ILOAD, 1));
+        setDisplay.instructions.add(new MethodInsnNode(INVOKEVIRTUAL,
+                "net/minecraft/world/scores/Scoreboard", "getDisplayObjective",
+                "(I)L" + OBJECTIVE + ";", false));
+        setDisplay.instructions.add(new InsnNode(POP));
+        setDisplay.instructions.add(new InsnNode(RETURN));
+        node.methods.add(setDisplay);
+
+        String stopDesc = "(L" + OBJECTIVE + ";" + CIR + ")V";
+        MethodNode stop = new MethodNode(ACC_PUBLIC, "getStopTrackingPackets", stopDesc, null, null);
+        stop.instructions.add(new InsnNode(RETURN));
+        node.methods.add(stop);
+
+        assertEquals(1, PalladiumMixinCompat1201.apply(node));
+        assertEquals(newSet, setDisplay.desc);
+        assertTrue(hasVar(setDisplay, ALOAD, 1));
+        assertTrue(hasCall(setDisplay, INVOKEVIRTUAL, "net/minecraft/world/scores/Scoreboard",
+                "getDisplayObjective", "(L" + SLOT + ";)L" + OBJECTIVE + ";"));
+        assertTrue(hasCall(stop, INVOKESTATIC, SLOT, "values", "()[L" + SLOT + ";"));
+        assertTrue(hasCall(stop, INVOKESPECIAL, "net/minecraft/network/protocol/game/ClientboundSetDisplayObjectivePacket",
+                "<init>", "(L" + SLOT + ";L" + OBJECTIVE + ";)V"));
+    }
+
+    @Test
+    void playerListScoreboardReplayUsesPlayerScoreEntriesAndTheNewScorePacket() {
+        ClassNode node = new ClassNode();
+        node.name = "net/threetag/palladium/mixin/PlayerListMixin";
+        String handlerDesc = "(L" + SERVER_SCOREBOARD
+                + ";Lnet/minecraft/server/level/ServerPlayer;" + CI + ")V";
+        MethodNode handler = new MethodNode(ACC_PROTECTED, "updateEntireScoreboard",
+                handlerDesc, null, null);
+
+        String scoresDesc = "(L" + OBJECTIVE + ";)Ljava/util/Collection;";
+        handler.instructions.add(new VarInsnNode(ALOAD, 1));
+        handler.instructions.add(new VarInsnNode(ALOAD, 6));
+        handler.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, SERVER_SCOREBOARD,
+                "getPlayerScores", scoresDesc, false));
+        handler.instructions.add(new VarInsnNode(ASTORE, 7));
+        handler.instructions.add(new VarInsnNode(ALOAD, 8));
+        handler.instructions.add(new TypeInsnNode(CHECKCAST, LEGACY_SCORE));
+        handler.instructions.add(new VarInsnNode(ASTORE, 8));
+
+        String oldPacketDesc = "(L" + SERVER_SCOREBOARD
+                + "$Method;Ljava/lang/String;Ljava/lang/String;I)V";
+        // Mirror the real mixin: the packet listener receiver is already on
+        // the operand stack when the packet object and constructor arguments are built.
+        handler.instructions.add(new VarInsnNode(ALOAD, 2));
+        handler.instructions.add(new FieldInsnNode(GETFIELD, "net/minecraft/server/level/ServerPlayer",
+                "connection", "Lnet/minecraft/server/network/ServerGamePacketListenerImpl;"));
+        handler.instructions.add(new TypeInsnNode(NEW, SET_SCORE_PACKET));
+        handler.instructions.add(new InsnNode(DUP));
+        handler.instructions.add(new FieldInsnNode(GETSTATIC, SERVER_SCOREBOARD + "$Method",
+                "CHANGE", "L" + SERVER_SCOREBOARD + "$Method;"));
+        handler.instructions.add(new VarInsnNode(ALOAD, 6));
+        handler.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, OBJECTIVE,
+                "getName", "()Ljava/lang/String;", false));
+        handler.instructions.add(new VarInsnNode(ALOAD, 8));
+        handler.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, LEGACY_SCORE,
+                "getOwner", "()Ljava/lang/String;", false));
+        handler.instructions.add(new VarInsnNode(ALOAD, 8));
+        handler.instructions.add(new MethodInsnNode(INVOKEVIRTUAL, LEGACY_SCORE,
+                "getScore", "()I", false));
+        handler.instructions.add(new MethodInsnNode(INVOKESPECIAL, SET_SCORE_PACKET,
+                "<init>", oldPacketDesc, false));
+        handler.instructions.add(new MethodInsnNode(INVOKEVIRTUAL,
+                "net/minecraft/server/network/ServerGamePacketListenerImpl", "send",
+                "(Lnet/minecraft/network/protocol/Packet;)V", false));
+        handler.instructions.add(new InsnNode(RETURN));
+        handler.maxLocals = 9;
+        handler.maxStack = 7;
+        node.methods.add(handler);
+
+        assertEquals(1, PalladiumMixinCompat1201.apply(node));
+
+        assertTrue(hasCall(handler, INVOKEVIRTUAL, "net/minecraft/world/scores/Scoreboard",
+                "listPlayerScores", scoresDesc));
+        assertFalse(hasCall(handler, INVOKEVIRTUAL, SERVER_SCOREBOARD,
+                "getPlayerScores", scoresDesc));
+        boolean hasLegacyScoreCast = false;
+        boolean hasEntryCast = false;
+        for (AbstractInsnNode instruction : handler.instructions) {
+            if (instruction instanceof TypeInsnNode type && type.getOpcode() == CHECKCAST) {
+                hasLegacyScoreCast |= type.desc.equals(LEGACY_SCORE);
+                hasEntryCast |= type.desc.equals(PLAYER_SCORE_ENTRY);
+            }
+        }
+        assertFalse(hasLegacyScoreCast);
+        assertTrue(hasEntryCast);
+        assertTrue(hasCall(handler, INVOKEVIRTUAL, PLAYER_SCORE_ENTRY,
+                "owner", "()Ljava/lang/String;"));
+        assertTrue(hasCall(handler, INVOKEVIRTUAL, PLAYER_SCORE_ENTRY, "value", "()I"));
+        assertTrue(hasCall(handler, INVOKEVIRTUAL, PLAYER_SCORE_ENTRY,
+                "display", "()Lnet/minecraft/network/chat/Component;"));
+        assertTrue(hasCall(handler, INVOKEVIRTUAL, PLAYER_SCORE_ENTRY,
+                "numberFormatOverride", "()Lnet/minecraft/network/chat/numbers/NumberFormat;"));
+        assertTrue(hasCall(handler, INVOKESTATIC, "java/util/Optional",
+                "ofNullable", "(Ljava/lang/Object;)Ljava/util/Optional;"));
+        assertTrue(hasCall(handler, INVOKESPECIAL, SET_SCORE_PACKET, "<init>",
+                "(Ljava/lang/String;Ljava/lang/String;ILjava/util/Optional;Ljava/util/Optional;)V"));
+        assertFalse(hasCall(handler, INVOKEVIRTUAL, LEGACY_SCORE, "getOwner", "()Ljava/lang/String;"));
+        assertFalse(hasCall(handler, INVOKEVIRTUAL, LEGACY_SCORE, "getScore", "()I"));
+        assertEquals(0, PalladiumMixinCompat1201.apply(node),
+                "the already-migrated scoreboard replay must be idempotent");
+        assertClassCanBeSerialized(node);
+    }
+
+    @Test
+    void playerRendererInvokerAddsTheFourthRotationFloat() {
+        ClassNode node = new ClassNode();
+        node.name = "net/threetag/palladium/mixin/client/PlayerRendererInvoker";
+        String oldDesc = "(Lnet/minecraft/client/player/AbstractClientPlayer;L" + POSE + ";FFF)V";
+        String newDesc = "(Lnet/minecraft/client/player/AbstractClientPlayer;L" + POSE + ";FFFF)V";
+        node.methods.add(new MethodNode(ACC_PUBLIC, "invokeSetupRotations", oldDesc, null, null));
+
+        assertEquals(1, PalladiumMixinCompat1201.apply(node));
+        assertTrue(find(node, "invokeSetupRotations", newDesc) != null);
+    }
+
+    @Test
+    void bodyPartPassesPlayerScaleToUpdatedRendererInvoker() {
+        ClassNode node = new ClassNode();
+        node.name = "net/threetag/palladium/entity/BodyPart";
+        String owner = "net/threetag/palladium/mixin/client/PlayerRendererInvoker";
+        String oldDesc = "(Lnet/minecraft/client/player/AbstractClientPlayer;L" + POSE + ";FFF)V";
+        String newDesc = "(Lnet/minecraft/client/player/AbstractClientPlayer;L" + POSE + ";FFFF)V";
+        MethodNode method = new MethodNode(ACC_PRIVATE | ACC_STATIC, "getTransformationMatrix", "()V", null, null);
+        method.instructions.add(new VarInsnNode(ALOAD, 9)); // PlayerRendererInvoker receiver
+        method.instructions.add(new VarInsnNode(ALOAD, 4)); // AbstractClientPlayer
+        method.instructions.add(new VarInsnNode(ALOAD, 6)); // PoseStack
+        method.instructions.add(new InsnNode(FCONST_0)); // bob
+        method.instructions.add(new InsnNode(FCONST_0)); // body yaw
+        method.instructions.add(new InsnNode(FCONST_0)); // partial tick
+        MethodInsnNode call = new MethodInsnNode(INVOKEINTERFACE, owner, "invokeSetupRotations", oldDesc, true);
+        method.instructions.add(call);
+        method.instructions.add(new InsnNode(RETURN));
+        method.maxLocals = 10;
+        method.maxStack = 6;
+        node.methods.add(method);
+
+        assertEquals(1, PalladiumMixinCompat1201.apply(node));
+        assertEquals(newDesc, call.desc);
+        AbstractInsnNode scaleCallNode = previousReal(call);
+        assertTrue(scaleCallNode instanceof MethodInsnNode scaleCall
+                && scaleCall.getOpcode() == INVOKEVIRTUAL
+                && scaleCall.owner.equals("net/minecraft/world/entity/LivingEntity")
+                && scaleCall.name.equals("getScale")
+                && scaleCall.desc.equals("()F"));
+        AbstractInsnNode playerLoadNode = previousReal(scaleCallNode);
+        assertTrue(playerLoadNode instanceof VarInsnNode playerLoad
+                && playerLoad.getOpcode() == ALOAD
+                && playerLoad.var == 4);
+        assertEquals(7, method.maxStack);
+        assertEquals(0, PalladiumMixinCompat1201.apply(node),
+                "the already-migrated BodyPart call must be idempotent");
+        assertClassCanBeSerialized(node);
+    }
+
+    @Test
+    void humanoidArmorPieceHandlerTargetsNeoForgeAnimationOverload() {
+        ClassNode node = new ClassNode();
+        node.name = "net/threetag/palladium/mixin/client/HumanoidArmorLayerMixin";
+        String oldDesc = "(L" + POSE + ";Lnet/minecraft/client/renderer/MultiBufferSource;"
+                + "Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/EquipmentSlot;I"
+                + "L" + MODEL + ";" + CI + ")V";
+        String newDesc = "(L" + POSE + ";Lnet/minecraft/client/renderer/MultiBufferSource;"
+                + "Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/EquipmentSlot;I"
+                + "L" + MODEL + ";FFFFFF" + CI + ")V";
+        MethodNode handler = new MethodNode(ACC_PRIVATE, "renderArmorPiece", oldDesc, null, null);
+        handler.parameters = new java.util.ArrayList<>();
+        for (int i = 0; i < 7; i++) handler.parameters.add(new ParameterNode("p" + i, 0));
+        handler.visibleAnnotations = new java.util.ArrayList<>();
+        AnnotationNode inject = new AnnotationNode("Lorg/spongepowered/asm/mixin/injection/Inject;");
+        inject.values = new java.util.ArrayList<>();
+        inject.values.add("method");
+        inject.values.add(new java.util.ArrayList<>(List.of("renderArmorPiece")));
+        handler.visibleAnnotations.add(inject);
+        handler.instructions.add(new VarInsnNode(ALOAD, 7)); // CallbackInfo
+        handler.instructions.add(new InsnNode(POP));
+        handler.instructions.add(new VarInsnNode(ALOAD, 8)); // first temporary
+        handler.instructions.add(new InsnNode(POP));
+        handler.instructions.add(new InsnNode(RETURN));
+        handler.maxLocals = 9;
+        handler.maxStack = 1;
+        node.methods.add(handler);
+
+        assertEquals(1, PalladiumMixinCompat1201.apply(node));
+        assertEquals(newDesc, handler.desc);
+        String targetDesc = "(L" + POSE + ";Lnet/minecraft/client/renderer/MultiBufferSource;"
+                + "Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/entity/EquipmentSlot;I"
+                + "L" + MODEL + ";FFFFFF)V";
+        assertEquals(List.of("renderArmorPiece" + targetDesc), annotationValue(inject, "method"));
+        assertEquals(Boolean.FALSE, annotationValue(inject, "remap"),
+                "the stale 1.20.1 refmap must not redirect the exact 1.21.1 selector");
+        assertTrue(hasVar(handler, ALOAD, 13), "CallbackInfo must move behind the six new float arguments");
+        assertTrue(hasVar(handler, ALOAD, 14), "existing locals must move behind the inserted arguments");
+        assertFalse(hasVar(handler, ALOAD, 7));
+        assertFalse(hasVar(handler, ALOAD, 8));
+        assertEquals(15, handler.maxLocals);
+        assertNull(handler.parameters, "stale MethodParameters metadata must not describe the old argument list");
+        assertNotNull(handler.visibleAnnotations);
+        assertEquals("Lorg/spongepowered/asm/mixin/injection/Inject;", handler.visibleAnnotations.get(0).desc);
+        assertClassCanBeSerialized(node);
+        assertEquals(0, PalladiumMixinCompat1201.apply(node), "the descriptor adaptation must be idempotent");
+    }
+
+    @Test
+    void humanoidArmorMixinUsesTheCurrentRenderModelSignature() {
+        ClassNode node = new ClassNode();
+        node.name = "net/threetag/palladium/mixin/client/HumanoidArmorLayerMixin";
+        String oldDesc = "(L" + POSE + ";Lnet/minecraft/client/renderer/MultiBufferSource;I"
+                + "Lnet/minecraft/world/item/ArmorItem;L" + MODEL + ";ZFFF"
+                + "Ljava/lang/String;" + CI + ")V";
+        String newDesc = "(L" + POSE + ";Lnet/minecraft/client/renderer/MultiBufferSource;I"
+                + "L" + MODEL + ";ILnet/minecraft/resources/ResourceLocation;" + CI + ")V";
+        MethodNode handler = new MethodNode(ACC_PRIVATE, "renderModel", oldDesc, null, null);
+        handler.visibleParameterAnnotations = parameterAnnotations(11, 9);
+        handler.visibleAnnotableParameterCount = 11;
+        handler.invisibleParameterAnnotations = parameterAnnotations(11, 10);
+        handler.invisibleAnnotableParameterCount = 11;
+        handler.instructions.add(new InsnNode(RETURN));
+        node.methods.add(handler);
+
+        assertEquals(1, PalladiumMixinCompat1201.apply(node));
+        assertEquals(newDesc, handler.desc);
+        assertNull(handler.visibleParameterAnnotations);
+        assertNull(handler.invisibleParameterAnnotations);
+        assertEquals(0, handler.visibleAnnotableParameterCount);
+        assertEquals(0, handler.invisibleAnnotableParameterCount);
+        assertTrue(hasCall(handler, INVOKEVIRTUAL, MODEL, "renderToBuffer",
+                "(L" + POSE + ";L" + VERTEX + ";III)V"));
+        assertClassCanBeSerialized(node);
+    }
+
+    @Test
+    void geckoRendererOverwriteUsesPackedColorAndCurrentVertexApi() {
+        ClassNode node = new ClassNode();
+        node.name = "net/threetag/palladium/mixin/client/GeoRendererMixin";
+        String oldDesc = "(L" + QUAD + ";L" + MATRIX + ";Lorg/joml/Vector3f;L" + VERTEX + ";IIFFFF)V";
+        String newDesc = "(L" + QUAD + ";L" + MATRIX + ";Lorg/joml/Vector3f;L" + VERTEX + ";III)V";
+        MethodNode method = new MethodNode(ACC_PUBLIC, "createVerticesOfQuad", oldDesc, null, null);
+        method.visibleParameterAnnotations = parameterAnnotations(10, 9);
+        method.visibleAnnotableParameterCount = 10;
+        method.instructions.add(new InsnNode(RETURN));
+        node.methods.add(method);
+
+        assertEquals(1, PalladiumMixinCompat1201.apply(node));
+        assertEquals(newDesc, method.desc);
+        assertNull(method.visibleParameterAnnotations);
+        assertEquals(0, method.visibleAnnotableParameterCount);
+        assertTrue(hasCall(method, INVOKEINTERFACE, VERTEX, "addVertex", "(FFFIFFIIFFF)V"));
+        assertTrue(hasCall(method, INVOKESTATIC, "net/minecraft/util/Mth", "clamp", "(III)I"));
+        assertClassCanBeSerialized(node);
+    }
+
+    @Test
+    void entitySelectorParserMixinDropsOnlyItsUnusedLegacyPredicateShadow() {
+        ClassNode node = new ClassNode();
+        node.version = V21;
+        node.access = ACC_PUBLIC | ACC_ABSTRACT;
+        node.name = "net/threetag/palladium/mixin/EntitySelectorParserMixin";
+        node.superName = "java/lang/Object";
+
+        FieldNode obsoletePredicate = new FieldNode(
+                ACC_PRIVATE,
+                "f_121170_",
+                "Ljava/util/function/Predicate;",
+                "Ljava/util/function/Predicate<Lnet/minecraft/world/entity/Entity;>;",
+                null);
+        obsoletePredicate.visibleAnnotations = new java.util.ArrayList<>();
+        obsoletePredicate.visibleAnnotations.add(new AnnotationNode(
+                "Lorg/spongepowered/asm/mixin/Shadow;"));
+        node.fields.add(obsoletePredicate);
+
+        FieldNode powerId = new FieldNode(
+                ACC_PUBLIC,
+                "palladium$powerId",
+                "Lnet/minecraft/resources/ResourceLocation;",
+                null,
+                null);
+        powerId.visibleAnnotations = new java.util.ArrayList<>();
+        powerId.visibleAnnotations.add(new AnnotationNode(
+                "Lorg/spongepowered/asm/mixin/Unique;"));
+        node.fields.add(powerId);
+
+        MethodNode isLimited = new MethodNode(ACC_PUBLIC | ACC_ABSTRACT, "m_121330_", "()Z", null, null);
+        isLimited.visibleAnnotations = new java.util.ArrayList<>();
+        isLimited.visibleAnnotations.add(new AnnotationNode("Lorg/spongepowered/asm/mixin/Shadow;"));
+        node.methods.add(isLimited);
+
+        MethodNode getter = new MethodNode(
+                ACC_PUBLIC,
+                "palladium$getPower",
+                "()Lnet/minecraft/resources/ResourceLocation;",
+                null,
+                null);
+        getter.instructions.add(new VarInsnNode(ALOAD, 0));
+        getter.instructions.add(new FieldInsnNode(
+                GETFIELD,
+                node.name,
+                "palladium$powerId",
+                "Lnet/minecraft/resources/ResourceLocation;"));
+        getter.instructions.add(new InsnNode(ARETURN));
+        node.methods.add(getter);
+
+        MethodNode setter = new MethodNode(
+                ACC_PUBLIC,
+                "palladium$setPower",
+                "(Lnet/minecraft/resources/ResourceLocation;)V",
+                null,
+                null);
+        setter.instructions.add(new VarInsnNode(ALOAD, 0));
+        setter.instructions.add(new VarInsnNode(ALOAD, 1));
+        setter.instructions.add(new FieldInsnNode(
+                PUTFIELD,
+                node.name,
+                "palladium$powerId",
+                "Lnet/minecraft/resources/ResourceLocation;"));
+        setter.instructions.add(new InsnNode(RETURN));
+        node.methods.add(setter);
+
+        assertEquals(1, PalladiumMixinCompat1201.apply(node));
+        assertFalse(node.fields.contains(obsoletePredicate));
+        assertTrue(node.fields.contains(powerId));
+        assertNotNull(find(node, "m_121330_", "()Z"),
+                "the still-valid parser method shadow must be retained");
+        assertNotNull(find(node, "palladium$getPower", "()Lnet/minecraft/resources/ResourceLocation;"));
+        assertNotNull(find(node, "palladium$setPower", "(Lnet/minecraft/resources/ResourceLocation;)V"));
+        assertEquals(0, PalladiumMixinCompat1201.apply(node), "adaptation must be idempotent");
+        assertClassCanBeSerialized(node);
+    }
+
+    @Test
+    void entitySelectorParserMixinRejectsPredicateShadowWhenItsCodeUsesIt() {
+        ClassNode node = new ClassNode();
+        node.version = V21;
+        node.access = ACC_PUBLIC | ACC_ABSTRACT;
+        node.name = "net/threetag/palladium/mixin/EntitySelectorParserMixin";
+        node.superName = "java/lang/Object";
+
+        FieldNode obsoletePredicate = new FieldNode(ACC_PRIVATE, "f_121170_",
+                "Ljava/util/function/Predicate;", null, null);
+        obsoletePredicate.visibleAnnotations = new java.util.ArrayList<>();
+        obsoletePredicate.visibleAnnotations.add(new AnnotationNode(
+                "Lorg/spongepowered/asm/mixin/Shadow;"));
+        node.fields.add(obsoletePredicate);
+
+        MethodNode method = new MethodNode(ACC_PUBLIC, "usesPredicate", "()Ljava/util/function/Predicate;", null, null);
+        method.instructions.add(new VarInsnNode(ALOAD, 0));
+        method.instructions.add(new FieldInsnNode(
+                GETFIELD,
+                node.name,
+                obsoletePredicate.name,
+                obsoletePredicate.desc));
+        method.instructions.add(new InsnNode(ARETURN));
+        node.methods.add(method);
+
+        assertThrows(IllegalStateException.class, () -> PalladiumMixinCompat1201.apply(node));
+        assertTrue(node.fields.contains(obsoletePredicate), "unexpected usage must be rejected before mutation");
+    }
+
+    @Test
+    void entitySelectorParserAdapterDoesNotTouchUnrelatedClasses() {
+        ClassNode node = new ClassNode();
+        node.version = V21;
+        node.access = ACC_PUBLIC;
+        node.name = "example/OtherMixin";
+        node.superName = "java/lang/Object";
+        FieldNode shadow = new FieldNode(ACC_PRIVATE, "predicate",
+                "Ljava/util/function/Predicate;", null, null);
+        shadow.visibleAnnotations = new java.util.ArrayList<>();
+        shadow.visibleAnnotations.add(new AnnotationNode("Lorg/spongepowered/asm/mixin/Shadow;"));
+        node.fields.add(shadow);
+
+        assertEquals(0, PalladiumMixinCompat1201.apply(node));
+        assertTrue(node.fields.contains(shadow));
+    }
+
+    @Test
+    void levelRendererKeepsPhasingHookButDropsObsoleteWatcherPoseStackHook() {
+        ClassNode node = new ClassNode();
+        node.name = "net/threetag/palladium/mixin/client/LevelRendererMixin";
+        String oldDesc = "(L" + POSE + ";L" + MATRIX + ";FLnet/minecraft/client/Camera;ZLjava/lang/Runnable;" + CI + ")V";
+        String newDesc = "(L" + MATRIX + ";L" + MATRIX + ";FLnet/minecraft/client/Camera;ZLjava/lang/Runnable;" + CI + ")V";
+        MethodNode skip = new MethodNode(ACC_PRIVATE, "skipSkyRenderingForPhasingBlindness", oldDesc, null, null);
+        skip.instructions.add(new InsnNode(RETURN));
+        MethodNode watcher = new MethodNode(ACC_PRIVATE, "renderWatcher", oldDesc, null, null);
+        watcher.instructions.add(new InsnNode(RETURN));
+        node.methods.add(skip);
+        node.methods.add(watcher);
+
+        assertEquals(1, PalladiumMixinCompat1201.apply(node));
+        assertEquals(newDesc, skip.desc);
+        assertNull(find(node, "renderWatcher", oldDesc));
+    }
+
+    @Test
+    void vibrationListenerUnwrapsHolderBeforeComparingGameEvents() {
+        ClassNode node = new ClassNode();
+        node.name = "net/threetag/palladium/mixin/VibrationListenerMixin";
+        String gameEvent = "net/minecraft/world/level/gameevent/GameEvent";
+        String holder = "net/minecraft/core/Holder";
+        String oldDesc = "(Lnet/minecraft/server/level/ServerLevel;L" + gameEvent
+                + ";L" + gameEvent + "$Context;Lnet/minecraft/world/phys/Vec3;" + CIR + ")V";
+        String newDesc = "(Lnet/minecraft/server/level/ServerLevel;L" + holder
+                + ";L" + gameEvent + "$Context;Lnet/minecraft/world/phys/Vec3;" + CIR + ")V";
+        MethodNode handler = new MethodNode(ACC_PUBLIC, "handleGameEvent", oldDesc, null, null);
+        LabelNode firstMatched = new LabelNode();
+        LabelNode done = new LabelNode();
+        handler.instructions.add(new VarInsnNode(ALOAD, 2));
+        handler.instructions.add(new FieldInsnNode(GETSTATIC, gameEvent, "STEP", "L" + gameEvent + ";"));
+        handler.instructions.add(new JumpInsnNode(IF_ACMPEQ, firstMatched));
+        handler.instructions.add(new VarInsnNode(ALOAD, 2));
+        handler.instructions.add(new FieldInsnNode(GETSTATIC, gameEvent, "BLOCK_DESTROY", "L" + gameEvent + ";"));
+        handler.instructions.add(new JumpInsnNode(IF_ACMPNE, done));
+        handler.instructions.add(firstMatched);
+        handler.instructions.add(new InsnNode(RETURN));
+        handler.instructions.add(done);
+        handler.instructions.add(new InsnNode(RETURN));
+        handler.maxLocals = 6;
+        handler.maxStack = 2;
+        node.methods.add(handler);
+
+        assertEquals(1, PalladiumMixinCompat1201.apply(node));
+        assertEquals(newDesc, handler.desc);
+        int unwraps = 0;
+        for (AbstractInsnNode instruction : handler.instructions) {
+            if (instruction instanceof MethodInsnNode call
+                    && call.getOpcode() == INVOKEINTERFACE
+                    && call.owner.equals(holder)
+                    && call.name.equals("value")
+                    && call.desc.equals("()Ljava/lang/Object;")) {
+                unwraps++;
+                AbstractInsnNode cast = call.getNext();
+                assertTrue(cast instanceof TypeInsnNode type
+                        && type.getOpcode() == CHECKCAST
+                        && type.desc.equals(gameEvent));
+            }
+        }
+        assertEquals(2, unwraps);
+        assertEquals(0, PalladiumMixinCompat1201.apply(node),
+                "the already migrated vibration handler must be idempotent");
+        assertClassCanBeSerialized(node);
+    }
+
+    @Test
+    void modelPartInvokerUsesTheNewPackedColorCompileSignature() {
+        ClassNode node = new ClassNode();
+        node.name = "net/threetag/palladium/mixin/client/ModelPartInvoker";
+        String oldDesc = "(L" + POSE + "$Pose;L" + VERTEX + ";IIFFFF)V";
+        String newDesc = "(L" + POSE + "$Pose;L" + VERTEX + ";III)V";
+        MethodNode method = new MethodNode(ACC_PUBLIC, "invokeCompile", oldDesc, null, null);
+        method.invisibleParameterAnnotations = parameterAnnotations(8, 7);
+        method.invisibleAnnotableParameterCount = 8;
+        node.methods.add(method);
+
+        assertEquals(1, PalladiumMixinCompat1201.apply(node));
+        assertTrue(find(node, "invokeCompile", newDesc) != null);
+        assertNull(method.invisibleParameterAnnotations);
+        assertEquals(0, method.invisibleAnnotableParameterCount);
+        assertClassCanBeSerialized(node);
+    }
+
+    @Test
+    void crossbowMixinRemainsOutsideCompatibilityScope() {
+        ClassNode node = new ClassNode();
+        node.name = "net/threetag/palladium/mixin/CrossbowItemMixin";
+
+        assertEquals(0, PalladiumMixinCompat1201.apply(node));
+        assertEquals(0, PalladiumMixinCompat1201.apply(node));
+    }
+
+    @SuppressWarnings("unchecked")
+    private static java.util.List<AnnotationNode>[] parameterAnnotations(int parameterCount, int annotatedParameter) {
+        java.util.List<AnnotationNode>[] annotations =
+                (java.util.List<AnnotationNode>[]) new java.util.List<?>[parameterCount];
+        annotations[annotatedParameter] = new java.util.ArrayList<>();
+        annotations[annotatedParameter].add(new AnnotationNode("Ltest/ParameterMarker;"));
+        return annotations;
+    }
+
+    private static Object annotationValue(AnnotationNode annotation, String name) {
+        if (annotation.values == null) return null;
+        for (int i = 0; i + 1 < annotation.values.size(); i += 2) {
+            if (name.equals(annotation.values.get(i))) return annotation.values.get(i + 1);
+        }
+        return null;
+    }
+
+    private static void assertClassCanBeSerialized(ClassNode node) {
+        assertDoesNotThrow(() -> {
+            org.objectweb.asm.ClassWriter writer = new org.objectweb.asm.ClassWriter(0);
+            node.accept(writer);
+            writer.toByteArray();
+        });
+    }
+
+    private static MethodNode find(ClassNode node, String name, String desc) {
+        for (MethodNode method : node.methods) if (method.name.equals(name) && method.desc.equals(desc)) return method;
+        return null;
+    }
+
+    private static MethodInsnNode findCall(MethodNode method, String name) {
+        for (AbstractInsnNode instruction : method.instructions) {
+            if (instruction instanceof MethodInsnNode call && call.name.equals(name)) return call;
+        }
+        return null;
+    }
+
+    private static AbstractInsnNode previousReal(AbstractInsnNode instruction) {
+        AbstractInsnNode previous = instruction == null ? null : instruction.getPrevious();
+        while (previous != null && previous.getOpcode() < 0) previous = previous.getPrevious();
+        return previous;
+    }
+
+    private static boolean hasVar(MethodNode method, int opcode, int slot) {
+        for (AbstractInsnNode instruction : method.instructions) {
+            if (instruction instanceof VarInsnNode var && var.getOpcode() == opcode && var.var == slot) return true;
+        }
+        return false;
+    }
+
+    private static boolean hasCall(MethodNode method, int opcode, String owner, String name, String desc) {
+        for (AbstractInsnNode instruction : method.instructions) {
+            if (instruction instanceof MethodInsnNode call && call.getOpcode() == opcode
+                    && call.owner.equals(owner) && call.name.equals(name) && call.desc.equals(desc)) return true;
+        }
+        return false;
+    }
+}

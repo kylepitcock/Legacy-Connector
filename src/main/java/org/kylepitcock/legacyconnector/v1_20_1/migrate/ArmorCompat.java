@@ -10,6 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ArmorMaterial;
+import net.minecraft.world.item.Equipable;
 import net.minecraft.world.item.Item;
 
 /**
@@ -58,6 +59,11 @@ public final class ArmorCompat {
     /** {@code ArmorItem.getEquipSound()}. */
     public static SoundEvent getEquipSound(ArmorItem item) {
         return item.getEquipSound().value();
+    }
+
+    /** The legacy Equipable.getEquipSound() contract, unwrapped from the 1.21.1 holder. */
+    public static SoundEvent getEquipSound(Equipable equipable) {
+        return equipable.getEquipSound().value();
     }
 
     /** A 1.21.1 material seen through the 1.20.1 interface. */

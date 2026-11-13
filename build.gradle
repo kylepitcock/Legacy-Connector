@@ -15,6 +15,10 @@ group = mod_group_id
 repositories {
     mavenLocal()
     mavenCentral()
+    maven { // Rhino is an optional KubeJS integration; compile-only for its Context-injection method signature
+        url = 'https://maven.latvian.dev/releases'
+        content { includeGroup 'dev.latvian.mods' }
+    }
     maven { url = 'https://maven.theillusivec4.top/' } // Curios (Baubles bridge)
     maven { url = 'https://maven.blamejared.com/' } // JEI (NEI bridge)
     maven { // Jade (Waila bridge)
@@ -165,6 +169,7 @@ dependencies {
     compileOnly "mezz.jei:jei-1.21.1-neoforge-api:${jei_version}"
     compileOnly "vazkii.patchouli:Patchouli:${patchouli_version}:api" // Patchouli bridge (1.12.2 books and API); blamejared maven
     compileOnly("com.simibubi.create:create-1.21.1:${create_version}") { transitive = false }
+    compileOnly "dev.latvian.mods:rhino-neoforge:2006.2.4-build.17" // optional KubeJS 7 Rhino Context API; not bundled at runtime
 
     // TerraBlender (LGPL-3.0): the only biome placement path for legacy mod biomes (a region of its overworld layout, which Terralith, Tectonic,
     // Biomes O' Plenty... also use). Embedded (jar-in-jar) with an open-ended range so a separately installed TerraBlender wins.

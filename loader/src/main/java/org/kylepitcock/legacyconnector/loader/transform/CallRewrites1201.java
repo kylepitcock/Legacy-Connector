@@ -4,6 +4,7 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Map;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldInsnNode;
@@ -50,6 +51,14 @@ final class CallRewrites1201 {
             "(IILnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V";
     private static final String AMETHYST_CLUSTER_CONSTRUCTOR_1211 =
             "(FFLnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V";
+
+    private static final String INVENTORY_SCREEN = "net/minecraft/client/gui/screens/inventory/InventoryScreen";
+    private static final String RENDER_ENTITY_IN_INVENTORY_1201_DESC =
+            "(Lnet/minecraft/client/gui/GuiGraphics;IIILorg/joml/Quaternionf;Lorg/joml/Quaternionf;"
+                    + "Lnet/minecraft/world/entity/LivingEntity;)V";
+    private static final String RENDER_ENTITY_IN_INVENTORY_1211_DESC =
+            "(Lnet/minecraft/client/gui/GuiGraphics;FFFLorg/joml/Vector3f;Lorg/joml/Quaternionf;"
+                    + "Lorg/joml/Quaternionf;Lnet/minecraft/world/entity/LivingEntity;)V";
     private static final String PALLADIUM_CORE_ENTITY_RENDERER_REGISTRY =
             "net/threetag/palladiumcore/registry/client/forge/EntityRendererRegistryImpl";
     private static final String ENTITY_RENDERERS_ADD_LAYERS =
@@ -78,6 +87,62 @@ final class CallRewrites1201 {
 
     private CallRewrites1201() {}
 
+
+    /**
+     * Minecraft 1.21.1's InventoryScreen preview method widened its three pixel
+     * coordinates to floats and added an explicit translation vector. The legacy
+     * overload used the zero translation internally, so construct a zero Vector3f
+     * and preserve the three original coordinates after widening them.
+     */
+    private static int rewriteInventoryEntityPreview(ClassNode node) {
+        int rewritten = 0;
+        for (MethodNode method : node.methods) {
+            if (method.instructions == null || method.instructions.size() == 0) continue;
+            for (AbstractInsnNode instruction = method.instructions.getFirst();
+                    instruction != null;
+                    instruction = instruction.getNext()) {
+                if (!(instruction instanceof MethodInsnNode call)
+                        || call.getOpcode() != Opcodes.INVOKESTATIC
+                        || !INVENTORY_SCREEN.equals(call.owner)
+                        || !"renderEntityInInventory".equals(call.name)
+                        || !RENDER_ENTITY_IN_INVENTORY_1201_DESC.equals(call.desc)) {
+                    continue;
+                }
+
+                Type[] arguments = Type.getArgumentTypes(call.desc);
+                int[] slots = new int[arguments.length];
+                int nextLocal = method.maxLocals;
+                InsnList rewrite = new InsnList();
+
+                // Spill the legacy arguments in reverse stack order. This leaves
+                // any unrelated expression values below the call's arguments intact.
+                for (int i = arguments.length - 1; i >= 0; i--) {
+                    slots[i] = nextLocal;
+                    rewrite.add(new VarInsnNode(arguments[i].getOpcode(Opcodes.ISTORE), nextLocal));
+                    nextLocal += arguments[i].getSize();
+                }
+
+                for (int i = 0; i < arguments.length; i++) {
+                    rewrite.add(new VarInsnNode(arguments[i].getOpcode(Opcodes.ILOAD), slots[i]));
+                    if (i >= 1 && i <= 3) {
+                        rewrite.add(new InsnNode(Opcodes.I2F));
+                    }
+                    if (i == 3) {
+                        rewrite.add(new TypeInsnNode(Opcodes.NEW, "org/joml/Vector3f"));
+                        rewrite.add(new InsnNode(Opcodes.DUP));
+                        rewrite.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, "org/joml/Vector3f", "<init>", "()V", false));
+                    }
+                }
+
+                method.instructions.insertBefore(call, rewrite);
+                method.maxLocals = nextLocal;
+                method.maxStack = Math.max(method.maxStack + 2, 10);
+                call.desc = RENDER_ENTITY_IN_INVENTORY_1211_DESC;
+                rewritten++;
+            }
+        }
+        return rewritten;
+    }
 
     /**
      * Palladium synthesizes pack.mcmeta for mod resource packs that do not ship one. Its
@@ -251,7 +316,8 @@ final class CallRewrites1201 {
     static int apply(ClassNode node, java.util.Set<String> compoundSubclasses) {
         int n = rewritePalladiumPackMetadata(node)
                 + rewriteAmethystClusterConstructors(node)
-                + rewritePalladiumCoreRendererLookup(node);
+                + rewritePalladiumCoreRendererLookup(node)
+                + rewriteInventoryEntityPreview(node);
         for (MethodNode m : node.methods) {
             if (m.instructions == null || m.instructions.size() == 0) continue;
             Deque<TypeInsnNode> news = new ArrayDeque<>();

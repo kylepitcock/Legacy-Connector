@@ -214,15 +214,27 @@ public final class MiscCompat {
 
     // ------------------------------------------------------------------ text and network
 
+    /**
+     * Preserve 1.20.1 Gson semantics for an absent component. Gson encoded a
+     * null Component as the JSON literal {@code null}; the 1.21.1 Component
+     * codec rejects a Java null before it can encode anything.
+     *
+     * <p>Palladium's NameChangeAbility intentionally synchronizes a null
+     * cached name during initialization and teardown, so this is a normal
+     * value, not an invalid caller.</p>
+     */
     public static String toJson(Component c) {
+        if (c == null) return "null";
         return Component.Serializer.toJson(c, MigrateContext.provider());
     }
 
     public static MutableComponent fromJson(String json) {
+        if (json == null || "null".equals(json.trim())) return null;
         return Component.Serializer.fromJson(json, MigrateContext.provider());
     }
 
     public static MutableComponent fromJson(JsonElement json) {
+        if (json == null || json.isJsonNull()) return null;
         return Component.Serializer.fromJson(json, MigrateContext.provider());
     }
 

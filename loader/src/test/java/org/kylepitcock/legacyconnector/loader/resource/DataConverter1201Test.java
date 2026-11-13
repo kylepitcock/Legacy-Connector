@@ -1,6 +1,8 @@
 package org.kylepitcock.legacyconnector.loader.resource;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.junit.jupiter.api.Test;
 
@@ -136,6 +138,55 @@ class DataConverter1201Test {
     }
 
     @Test
+    void advancementLocationStructurePredicateIsPluralizedFor1211() {
+        String source = """
+                {
+                  "criteria": {
+                    "find_crash_site": {
+                      "trigger": "minecraft:location",
+                      "conditions": {
+                        "player": [
+                          {
+                            "condition": "minecraft:entity_properties",
+                            "entity": "this",
+                            "predicate": {
+                              "location": {
+                                "structure": "alienevo:crash_site"
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "requirements": [["find_crash_site"]]
+                }
+                """;
+        JsonElement converted = one(
+                "data/alienevo/advancements/discover_ship.json",
+                source,
+                "data/alienevo/advancement/discover_ship.json");
+        JsonObject location = converted.getAsJsonObject()
+                .getAsJsonObject("criteria")
+                .getAsJsonObject("find_crash_site")
+                .getAsJsonObject("conditions")
+                .getAsJsonArray("player")
+                .get(0).getAsJsonObject()
+                .getAsJsonObject("predicate")
+                .getAsJsonObject("location");
+        assertEquals("alienevo:crash_site", location.get("structures").getAsString());
+        assertTrue(!location.has("structure"), converted.toString());
+
+        List<DataConverter1201.Out> secondPass = DataConverter1201.convert(
+                "data/alienevo/advancement/discover_ship.json",
+                converted.toString().getBytes(StandardCharsets.UTF_8),
+                new DataConverter1201.Stats());
+        assertEquals(1, secondPass.size());
+        assertEquals(converted, JsonParser.parseString(
+                new String(secondPass.get(0).data(), StandardCharsets.UTF_8)));
+    }
+
+    @Test
     void tagsAndRenamedIds() {
         JsonElement r = one("data/forge/tags/blocks/glass.json", "{\"replace\":false,\"values\":[\"minecraft:glass\",\"#forge:glass/colorless\",\"minecraft:grass\"]}", "data/c/tags/block/glass_blocks.json");
         same("{\"replace\":false,\"values\":[\"minecraft:glass\",\"#c:glass_blocks/colorless\",\"minecraft:short_grass\"]}", r);
@@ -172,6 +223,139 @@ class DataConverter1201Test {
         byte[] junk = "{not json".getBytes(StandardCharsets.UTF_8);
         List<DataConverter1201.Out> outs = DataConverter1201.convert("data/m/recipes/j.json", junk, new DataConverter1201.Stats());
         assertEquals("data/m/recipe/j.json", outs.get(0).path());
+    }
+
+    @Test
+    void itemModifiersMigrateLegacyFunctionIdsAndSetLoreMode() {
+        JsonElement r = one("data/alienevo/item_modifiers/example.json", """
+                [
+                  {"function":"minecraft:set_nbt","tag":"{storedBasePrimaryScore:-1}"},
+                  {"function":"minecraft:set_lore","lore":[{"text":"a"}]},
+                  {"function":"minecraft:set_lore","replace":true,"lore":[{"text":"b"}]},
+                  {"function":"minecraft:set_lore","replace":false,"lore":[{"text":"c"}]}
+                ]
+                """, "data/alienevo/item_modifier/example.json");
+        String q = String.valueOf((char)34);
+        assertTrue(r.toString().contains("minecraft:set_custom_data"), r.toString());
+        assertTrue(r.toString().contains(q + "mode" + q + ":" + q + "append" + q), r.toString());
+        assertTrue(r.toString().contains(q + "mode" + q + ":" + q + "replace_all" + q), r.toString());
+        assertTrue(!r.toString().contains(q + "replace" + q + ":"), r.toString());
+    }
+
+    @Test
+    void singleObjectItemModifierIsWrappedAsOneFunctionAndMigrated() {
+        JsonElement r = one("data/alienevo/item_modifiers/prototype_omnitrix.json", """
+                {"function":"minecraft:set_nbt","tag":"{storedBasePrimaryScore:-1}"}
+                """, "data/alienevo/item_modifier/prototype_omnitrix.json");
+        String quote = String.valueOf((char)34);
+        assertTrue(r.isJsonArray(), r.toString());
+        assertEquals(1, r.getAsJsonArray().size());
+        assertTrue(r.toString().contains("minecraft:set_custom_data"), r.toString());
+        assertTrue(r.toString().contains(quote + "function" + quote), r.toString());
+    }
+
+    @Test
+    void palladiumAttributeIdsAreMigratedInPowerJson() {
+        JsonElement r = one("data/alienevo/palladium/powers/example.json", """
+                {"attribute":"forge:step_height_addition","other":{"attribute":"forge:entity_gravity"},
+                 "swim":{"attribute":"forge:swim_speed"},"legacy":"minecraft:grass"}
+                """, "data/alienevo/palladium/powers/example.json");
+        same("""
+                {"attribute":"minecraft:generic.step_height","other":{"attribute":"minecraft:generic.gravity"},
+                 "swim":{"attribute":"neoforge:swim_speed"},"legacy":"minecraft:short_grass"}
+                """, r);
+    }
+
+    @Test
+    void unwrapsSingleComponentArraysOnlyForPalladiumNameChangeAbilities() {
+        JsonElement migrated = one("data/alienevo_aliens/palladium/powers/example.json", """
+                {"abilities":{
+                  "name_change":{"type":"palladium:name_change","name":[{"nbt":"KubeJSPersistentData.alienevo_34","entity":"@s"}]},
+                  "ordinary":{"type":"palladium:command","name":[{"text":"leave array alone"}]},
+                  "multi":{"type":"palladium:name_change","name":[{"text":"A"},{"text":"B"}]}
+                }}
+                """, "data/alienevo_aliens/palladium/powers/example.json");
+        JsonObject abilities = migrated.getAsJsonObject().getAsJsonObject("abilities");
+        assertTrue(abilities.getAsJsonObject("name_change").get("name").isJsonObject(), migrated.toString());
+        assertTrue(abilities.getAsJsonObject("ordinary").get("name").isJsonArray(), migrated.toString());
+        assertEquals(2, abilities.getAsJsonObject("multi").getAsJsonObject().get("name").getAsJsonArray().size());
+    }
+
+    @Test
+    void translatesOldParticleCommandsEmbeddedInPowerJson() {
+        JsonElement r = one("data/alienevo/palladium/powers/example.json", """
+                {"commands":["particle block stone ~ ~ ~ 1 0.5 1 0 30 normal",
+                             "execute at @s run particle minecraft:dust 0.7 1 18000000 2 ~ ~ ~ 1 1 1 0 10"]}
+                """, "data/alienevo/palladium/powers/example.json");
+        JsonArray commands = r.getAsJsonObject().getAsJsonArray("commands");
+        String blockCommand = commands.get(0).getAsString();
+        String dustCommand = commands.get(1).getAsString();
+        String quote = String.valueOf((char)34);
+        assertTrue(blockCommand.contains("minecraft:block{block_state:" + quote + "minecraft:stone" + quote + "}"), blockCommand);
+        assertTrue(dustCommand.contains("minecraft:dust{color:[0.7,1.0,18000000.0],scale:2.0}"), dustCommand);
+    }
+
+    @Test
+    void translatesLegacyEntityStatusEffectAndItemStackNbtInsidePowerCommands() {
+        JsonElement r = one("data/alienevo_aliens/palladium/powers/example.json", """
+                {"commands":[
+                  "summon wolf ~ ~1 ~2 {ActiveEffects:[{Id:14,Amplifier:1,Duration:20000000,ShowParticles:0b}]}",
+                  "summon piglin ~ ~1 ~2 {ArmorItems:[{},{},{},{id:oak_button,Count:1}]}"
+                ]}
+                """, "data/alienevo_aliens/palladium/powers/example.json");
+        JsonArray commands = r.getAsJsonObject().getAsJsonArray("commands");
+        String effectsCommand = commands.get(0).getAsString();
+        String armorCommand = commands.get(1).getAsString();
+        String quote = String.valueOf((char)34);
+        assertTrue(effectsCommand.contains("active_effects:[{id:" + quote + "minecraft:invisibility" + quote
+                + ",amplifier:1,duration:20000000,show_particles:0b}]"), effectsCommand);
+        assertTrue(armorCommand.contains("ArmorItems:[{},{},{},{id:" + quote + "minecraft:oak_button" + quote
+                + ",count:1}]"), armorCommand);
+    }
+
+    @Test
+    void worldgenForgeConditionsMoveToNeoForgeAndMergeWithoutLoss() {
+        JsonElement migrated = one("data/palladium/worldgen/structure/example.json", """
+                {
+                  "type":"minecraft:jigsaw",
+                  "forge:conditions":[{"type":"palladium:feature_flag_enabled","feature_flag":"example/legacy"}],
+                  "neoforge:conditions":[{"type":"neoforge:mod_loaded","modid":"example"}]
+                }
+                """, "data/palladium/worldgen/structure/example.json");
+
+        JsonArray conditions = migrated.getAsJsonObject().getAsJsonArray("neoforge:conditions");
+        assertEquals(2, conditions.size());
+        assertEquals("neoforge:mod_loaded", conditions.get(0).getAsJsonObject().get("type").getAsString());
+        assertEquals("palladium:feature_flag_enabled", conditions.get(1).getAsJsonObject().get("type").getAsString());
+        assertTrue(!migrated.getAsJsonObject().has("forge:conditions"), migrated.toString());
+    }
+
+    @Test
+    void worldgenForgeConditionsMoveWhenNoModernKeyExists() {
+        JsonElement migrated = one("data/palladium/worldgen/structure/example.json", """
+                {
+                  "type":"minecraft:jigsaw",
+                  "forge:conditions":[{"type":"palladium:feature_flag_enabled","feature_flag":"example"}]
+                }
+                """, "data/palladium/worldgen/structure/example.json");
+
+        assertTrue(migrated.getAsJsonObject().has("neoforge:conditions"), migrated.toString());
+        assertTrue(!migrated.getAsJsonObject().has("forge:conditions"), migrated.toString());
+    }
+
+    @Test
+    void templatePoolForgeConditionsMoveToNeoForge() {
+        JsonElement migrated = one("data/palladium/worldgen/template_pool/example.json", """
+                {
+                  "name":"palladium:example",
+                  "fallback":"minecraft:empty",
+                  "elements":[],
+                  "forge:conditions":[{"type":"palladium:feature_flag_enabled","feature_flag":"example"}]
+                }
+                """, "data/palladium/worldgen/template_pool/example.json");
+
+        assertTrue(migrated.getAsJsonObject().has("neoforge:conditions"), migrated.toString());
+        assertTrue(!migrated.getAsJsonObject().has("forge:conditions"), migrated.toString());
     }
 
     @Test

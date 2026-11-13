@@ -64,6 +64,26 @@ class PalladiumKubeJS1201Test implements Opcodes {
         return node;
     }
 
+    private static ClassNode builderNode(String name) {
+        ClassNode node = new ClassNode();
+        node.version = V21;
+        node.access = ACC_PUBLIC;
+        node.name = name;
+        node.superName = "dev/latvian/mods/kubejs/registry/BuilderBase";
+        return node;
+    }
+
+    private static MethodNode returningReferenceMethod(int access, String name, String descriptor) {
+        MethodNode method = new MethodNode(access, name, descriptor, null, null);
+        method.instructions.add(new org.objectweb.asm.tree.InsnNode(ACONST_NULL));
+        method.instructions.add(new org.objectweb.asm.tree.InsnNode(ARETURN));
+        return method;
+    }
+
+    private static boolean hasMethod(ClassNode node, String name, String descriptor) {
+        return node.methods.stream().anyMatch(method -> method.name.equals(name) && method.desc.equals(descriptor));
+    }
+
     private static MethodNode returningMethod(int access, String name, String descriptor) {
         MethodNode method = new MethodNode(access, name, descriptor, null, null);
         method.instructions.add(new org.objectweb.asm.tree.InsnNode(RETURN));
@@ -119,6 +139,50 @@ class PalladiumKubeJS1201Test implements Opcodes {
         ClassWriter writer = new ClassWriter(0);
         node.accept(writer);
         assertTrue(writer.toByteArray().length > 0, "rewritten plugin should serialize as a class file");
+    }
+
+    @Test
+    void obsoleteKubeJs6RegistryInfoOverridesAreRemovedFromAbilityAndConditionBuilders() {
+        String registryInfo = "()Ldev/latvian/mods/kubejs/registry/RegistryInfo;";
+
+        String abilityName = "net/threetag/palladium/compat/kubejs/ability/AbilityBuilder";
+        String abilityType = "L" + abilityName + ";";
+        ClassNode ability = builderNode(abilityName);
+        ability.methods.add(returningReferenceMethod(ACC_PUBLIC, "getRegistryType", registryInfo));
+        ability.methods.add(returningReferenceMethod(ACC_PUBLIC, "icon",
+                "(Lnet/threetag/palladium/util/icon/IIcon;)" + abilityType));
+        ability.methods.add(returningReferenceMethod(ACC_PUBLIC, "addProperty",
+                "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;Ljava/lang/String;)" + abilityType));
+        ability.methods.add(returningReferenceMethod(ACC_PUBLIC, "firstTick",
+                "(L" + abilityName + "$TickFunction;)" + abilityType));
+        ability.methods.add(returningReferenceMethod(ACC_PUBLIC, "documentationDescription",
+                "(Ljava/lang/String;)" + abilityType));
+
+        assertEquals(1, PalladiumKubeJS1201.apply(ability));
+        assertFalse(hasMethod(ability, "getRegistryType", registryInfo));
+        assertTrue(hasMethod(ability, "icon", "(Lnet/threetag/palladium/util/icon/IIcon;)" + abilityType));
+        assertTrue(hasMethod(ability, "addProperty",
+                "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;Ljava/lang/String;)" + abilityType));
+        assertTrue(hasMethod(ability, "firstTick", "(L" + abilityName + "$TickFunction;)" + abilityType));
+        assertTrue(hasMethod(ability, "documentationDescription", "(Ljava/lang/String;)" + abilityType));
+
+        String conditionName = "net/threetag/palladium/compat/kubejs/condition/ConditionBuilder";
+        String conditionType = "L" + conditionName + ";";
+        ClassNode condition = builderNode(conditionName);
+        condition.methods.add(returningReferenceMethod(ACC_PUBLIC, "getRegistryType", registryInfo));
+        condition.methods.add(returningReferenceMethod(ACC_PUBLIC, "test",
+                "(L" + conditionName + "$TestFunction;)" + conditionType));
+        condition.methods.add(returningReferenceMethod(ACC_PUBLIC, "addProperty",
+                "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;Ljava/lang/String;)" + conditionType));
+        condition.methods.add(returningReferenceMethod(ACC_PUBLIC, "documentationDescription",
+                "(Ljava/lang/String;)" + conditionType));
+
+        assertEquals(1, PalladiumKubeJS1201.apply(condition));
+        assertFalse(hasMethod(condition, "getRegistryType", registryInfo));
+        assertTrue(hasMethod(condition, "test", "(L" + conditionName + "$TestFunction;)" + conditionType));
+        assertTrue(hasMethod(condition, "addProperty",
+                "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;Ljava/lang/String;)" + conditionType));
+        assertTrue(hasMethod(condition, "documentationDescription", "(Ljava/lang/String;)" + conditionType));
     }
 
     @Test
@@ -178,15 +242,15 @@ class PalladiumKubeJS1201Test implements Opcodes {
         constructor.instructions.add(new org.objectweb.asm.tree.InsnNode(RETURN));
         node.methods.add(constructor);
 
-        MethodNode cancel = new MethodNode(ACC_PUBLIC, "cancelFromScript",
+        MethodNode cancelMethod = new MethodNode(ACC_PUBLIC, "cancelFromScript",
                 "(Ldev/latvian/mods/rhino/Context;)Ljava/lang/Object;", null, null);
-        cancel.instructions.add(new VarInsnNode(ALOAD, 0));
-        cancel.instructions.add(new VarInsnNode(ALOAD, 1));
-        cancel.instructions.add(new MethodInsnNode(INVOKEVIRTUAL,
+        cancelMethod.instructions.add(new VarInsnNode(ALOAD, 0));
+        cancelMethod.instructions.add(new VarInsnNode(ALOAD, 1));
+        cancelMethod.instructions.add(new MethodInsnNode(INVOKEVIRTUAL,
                 "dev/latvian/mods/kubejs/event/EventJS", "cancel",
                 "(Ldev/latvian/mods/rhino/Context;)Ljava/lang/Object;", false));
-        cancel.instructions.add(new org.objectweb.asm.tree.InsnNode(ARETURN));
-        node.methods.add(cancel);
+        cancelMethod.instructions.add(new org.objectweb.asm.tree.InsnNode(ARETURN));
+        node.methods.add(cancelMethod);
 
         MethodNode post = new MethodNode(ACC_PUBLIC | ACC_STATIC, "post", "()V", null, null);
         post.instructions.add(new FieldInsnNode(GETSTATIC,
@@ -294,4 +358,38 @@ class PalladiumKubeJS1201Test implements Opcodes {
         }
         return count;
     }
+
+    @Test
+    void kubeJs6LevelEventSubclassBecomesKubeJs7LevelEventInterface() {
+        String oldLevelEvent = "dev/latvian/mods/kubejs/level/LevelEventJS";
+        String newLevelEvent = "dev/latvian/mods/kubejs/level/KubeLevelEvent";
+        ClassNode node = new ClassNode();
+        node.version = V21;
+        node.access = ACC_PUBLIC;
+        node.name = "net/threetag/palladium/compat/kubejs/RegisterPalladiumPropertyEventJS";
+        node.superName = oldLevelEvent;
+
+        MethodNode constructor = new MethodNode(ACC_PUBLIC, "<init>", "()V", null, null);
+        constructor.instructions.add(new VarInsnNode(ALOAD, 0));
+        constructor.instructions.add(new MethodInsnNode(INVOKESPECIAL, oldLevelEvent, "<init>", "()V", false));
+        constructor.instructions.add(new org.objectweb.asm.tree.InsnNode(RETURN));
+        node.methods.add(constructor);
+
+        MethodNode getLevel = new MethodNode(ACC_PUBLIC, "getLevel",
+                "()Lnet/minecraft/world/level/Level;", null, null);
+        getLevel.instructions.add(new org.objectweb.asm.tree.InsnNode(ACONST_NULL));
+        getLevel.instructions.add(new org.objectweb.asm.tree.InsnNode(ARETURN));
+        node.methods.add(getLevel);
+
+        assertEquals(1, PalladiumKubeJS1201.apply(node));
+        assertEquals("java/lang/Object", node.superName);
+        assertTrue(node.interfaces.contains(newLevelEvent),
+                "the migrated wrapper must implement KubeJS 7's level-event contract");
+        assertTrue(hasCall(find(node, "<init>", "()V"), INVOKESPECIAL,
+                "java/lang/Object", "<init>", "()V"));
+        assertFalse(hasCall(find(node, "<init>", "()V"), INVOKESPECIAL,
+                oldLevelEvent, "<init>", "()V"));
+        assertTrue(hasMethod(node, "getLevel", "()Lnet/minecraft/world/level/Level;"));
+    }
+
 }

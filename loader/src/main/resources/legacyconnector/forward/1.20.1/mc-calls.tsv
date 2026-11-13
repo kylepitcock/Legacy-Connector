@@ -81,6 +81,7 @@ net/minecraft/world/item/crafting/Ingredient	toNetwork	(Lnet/minecraft/network/F
 net/minecraft/world/item/crafting/Recipe	matches	(Lnet/minecraft/world/Container;Lnet/minecraft/world/level/Level;)Z	RecipeCompat	matches	-
 net/minecraft/world/item/crafting/Recipe	assemble	(Lnet/minecraft/world/Container;Lnet/minecraft/core/RegistryAccess;)Lnet/minecraft/world/item/ItemStack;	RecipeCompat	assemble	-
 net/minecraft/world/item/crafting/Recipe	getResultItem	(Lnet/minecraft/core/RegistryAccess;)Lnet/minecraft/world/item/ItemStack;	RecipeCompat	getResultItem	-
+net/minecraft/stats/ServerRecipeBook	contains	(Lnet/minecraft/world/item/crafting/Recipe;)Z	RecipeCompat	contains	-
 net/minecraft/world/item/crafting/RecipeManager	getRecipeFor	(Lnet/minecraft/world/item/crafting/RecipeType;Lnet/minecraft/world/Container;Lnet/minecraft/world/level/Level;)Ljava/util/Optional;	RecipeCompat	getRecipeFor	-
 net/minecraft/world/item/crafting/RecipeManager	getRecipesFor	(Lnet/minecraft/world/item/crafting/RecipeType;Lnet/minecraft/world/Container;Lnet/minecraft/world/level/Level;)Ljava/util/List;	RecipeCompat	getRecipesFor	-
 com/mojang/blaze3d/vertex/VertexConsumer	vertex	(DDD)Lcom/mojang/blaze3d/vertex/VertexConsumer;	VertexCompat	vertex	-
@@ -146,6 +147,7 @@ net/minecraft/core/Registry	register	(Lnet/minecraft/core/Registry;Lnet/minecraf
 net/minecraft/core/Registry	register	(Lnet/minecraft/core/Registry;Ljava/lang/String;Ljava/lang/Object;)Ljava/lang/Object;	MiscCompat	registerLate	-
 net/minecraft/world/item/ArmorItem	<init>	(Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyArmorMaterial;Lnet/minecraft/world/item/ArmorItem$Type;Lnet/minecraft/world/item/Item$Properties;)V	=args	ArmorCompat.holder@0,1,ArmorCompat.properties@0+1+2	(Lnet/minecraft/core/Holder;Lnet/minecraft/world/item/ArmorItem$Type;Lnet/minecraft/world/item/Item$Properties;)V
 net/minecraft/world/item/ArmorItem	getMaterial	()Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyArmorMaterial;	ArmorCompat	getMaterial	-
+net/minecraft/world/item/Equipable	getEquipSound	()Lnet/minecraft/sounds/SoundEvent;	ArmorCompat	getEquipSound	-
 net/minecraft/world/item/ArmorItem	getEquipSound	()Lnet/minecraft/sounds/SoundEvent;	ArmorCompat	getEquipSound	-
 net/minecraft/world/item/crafting/ShapelessRecipe	<init>	(Lnet/minecraft/resources/ResourceLocation;Ljava/lang/String;Lnet/minecraft/world/item/crafting/CraftingBookCategory;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/core/NonNullList;)V	=args	1,2,3,4	(Ljava/lang/String;Lnet/minecraft/world/item/crafting/CraftingBookCategory;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/core/NonNullList;)V
 net/minecraft/world/item/crafting/ShapedRecipe	<init>	(Lnet/minecraft/resources/ResourceLocation;Ljava/lang/String;Lnet/minecraft/world/item/crafting/CraftingBookCategory;IILnet/minecraft/core/NonNullList;Lnet/minecraft/world/item/ItemStack;)V	=args	1,2,MiscCompat.pattern@3+4+5,6	(Ljava/lang/String;Lnet/minecraft/world/item/crafting/CraftingBookCategory;Lnet/minecraft/world/item/crafting/ShapedRecipePattern;Lnet/minecraft/world/item/ItemStack;)V
@@ -576,6 +578,8 @@ net/minecraft/world/entity/ai/attributes/AttributeSupplier	getBaseValue	(Lnet/mi
 net/minecraft/world/entity/ai/attributes/AttributeInstance	removePermanentModifier	(Ljava/util/UUID;)Z	MiddleCompat	removePermanentModifier
 net/minecraft/world/entity/ai/attributes/AttributeInstance	<init>	(Lnet/minecraft/world/entity/ai/attributes/Attribute;Ljava/util/function/Consumer;)V	=args	HolderCompat.holder@0,1	(Lnet/minecraft/core/Holder;Ljava/util/function/Consumer;)V
 net/minecraft/world/scores/Scoreboard	getOrCreatePlayerScore	(Ljava/lang/String;Lnet/minecraft/world/scores/Objective;)Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyScore;	MiddleCompat	playerScore
+net/minecraft/world/scores/Scoreboard	hasPlayerScore	(Ljava/lang/String;Lnet/minecraft/world/scores/Objective;)Z	MiddleCompat	hasPlayerScore
+net/minecraft/world/scores/Scoreboard	getPlayerScores	(Ljava/lang/String;)Ljava/util/Map;	MiddleCompat	playerScores
 net/minecraft/world/level/storage/loot/LootContext$Builder	create	(Lnet/minecraft/resources/ResourceLocation;)Lnet/minecraft/world/level/storage/loot/LootContext;	=args	MiddleCompat.optionalId@0	(Ljava/util/Optional;)Lnet/minecraft/world/level/storage/loot/LootContext;
 net/minecraft/world/level/storage/loot/LootContext	getLootingModifier	()I	MiddleCompat	getLootingModifier
 net/minecraft/world/level/storage/loot/entries/LootPoolSingletonContainer	<init>	(II[Lnet/minecraft/world/level/storage/loot/predicates/LootItemCondition;[Lnet/minecraft/world/level/storage/loot/functions/LootItemFunction;)V	=args	0,1,MiscCompat.conditions@2,MiddleCompat.functions@3	(IILjava/util/List;Ljava/util/List;)V
@@ -625,3 +629,9 @@ net/minecraft/advancements/critereon/MinMaxBounds$Doubles	fromJson	(Lcom/google/
 net/minecraft/advancements/critereon/MinMaxBounds$Ints	fromJson	(Lcom/google/gson/JsonElement;)Lnet/minecraft/advancements/critereon/MinMaxBounds$Ints;	RoundCompat	intsFromJson	-
 net/minecraft/commands/arguments/item/ItemParser	parseForItem	(Lnet/minecraft/core/HolderLookup;Lcom/mojang/brigadier/StringReader;)Lnet/minecraft/commands/arguments/item/ItemParser$ItemResult;	ItemStackNbt	parseForItem	-
 net/minecraft/commands/arguments/item/ItemParser$ItemResult	nbt	()Lnet/minecraft/nbt/CompoundTag;	ItemStackNbt	itemResultNbt	-
+# 1.20.1 command functions: generic source erasure changed to ExecutionCommandSource<T> in 1.21.1.
+net/minecraft/commands/functions/CommandFunction	fromLines	(Lnet/minecraft/resources/ResourceLocation;Lcom/mojang/brigadier/CommandDispatcher;Lnet/minecraft/commands/CommandSourceStack;Ljava/util/List;)Lnet/minecraft/commands/functions/CommandFunction;	CommandFunctionCompat	fromLines	(Lnet/minecraft/resources/ResourceLocation;Lcom/mojang/brigadier/CommandDispatcher;Lnet/minecraft/commands/CommandSourceStack;Ljava/util/List;)Lnet/minecraft/commands/functions/CommandFunction;
+# The 1.20.1 execute call returned an immediate command count; 1.21.1 queues execution and returns void.
+# Redirect only when the old result is discarded; call sites that consume the integer are intentionally left soft-linked.
+net/minecraft/server/ServerFunctionManager	execute	(Lnet/minecraft/commands/functions/CommandFunction;Lnet/minecraft/commands/CommandSourceStack;)I	CommandFunctionCompat	execute	(Lnet/minecraft/server/ServerFunctionManager;Lnet/minecraft/commands/functions/CommandFunction;Lnet/minecraft/commands/CommandSourceStack;)V
+net/minecraft/advancements/AdvancementType	getTexture	()I	PalladiumFrameTypeCompat	getTexture	(Lnet/minecraft/advancements/AdvancementType;)I

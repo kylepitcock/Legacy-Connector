@@ -73,3 +73,5 @@ net/minecraft/util/random/WeightedEntry$Wrapper	getData	*	data
 net/minecraft/world/level/Explosion	getPosition	*	center
 net/minecraft/core/registries/Registries	DECORATED_POT_PATTERNS	:*	DECORATED_POT_PATTERN
 net/minecraft/core/registries/BuiltInRegistries	DECORATED_POT_PATTERNS	:*	DECORATED_POT_PATTERN
+# --- Minecraft 1.21.1 renamed shader getter (used by Palladium TexturedIcon)
+net/minecraft/client/renderer/GameRenderer	getPositionColorTexShader	()Lnet/minecraft/client/renderer/ShaderInstance;	getPositionTexColorShader
