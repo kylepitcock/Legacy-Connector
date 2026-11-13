@@ -238,5 +238,103 @@ public class ModelLoader extends legacyconnector.v1_12_2.net.minecraft.client.re
         public java.util.Optional<legacyconnector.v1_12_2.net.minecraft.client.renderer.block.model.ModelBlock> asVanillaModel() {
             return java.util.Optional.ofNullable(model);
         }
+
+        /** Reads the parents of the model (up the chain) from the resources and links them; a parent that cannot be read ends the chain. */
+        private void resolveParents() {
+            var cur = model;
+            for (int depth = 0; cur != null && cur.getParentLocation() != null && depth < 24; depth++) {
+                ResourceLocation parentLocation = cur.getParentLocation();
+                var parent = readModel(parentLocation);
+                if (parent == null) break;
+                cur.getParentFromMap(java.util.Map.of(parentLocation, parent));
+                cur = parent;
+            }
+        }
+
+        private static legacyconnector.v1_12_2.net.minecraft.client.renderer.block.model.ModelBlock readModel(ResourceLocation location) {
+            String path = location.getPath();
+            if (path.startsWith("builtin/")) return null;
+            try {
+                var resource = legacyconnector.v1_12_2.net.minecraft.client.Minecraft.getMinecraft().getResourceManager()
+                        .getResource(new ResourceLocation(location.getNamespace(), (path.startsWith("models/") ? path : "models/" + path) + ".json"));
+                try (java.io.Reader reader = new java.io.InputStreamReader(resource.getInputStream(), java.nio.charset.StandardCharsets.UTF_8)) {
+                    var parent = legacyconnector.v1_12_2.net.minecraft.client.renderer.block.model.ModelBlock.deserialize(reader);
+                    parent.name = location.toString();
+                    return parent;
+                }
+            } catch (java.io.IOException | RuntimeException e) {
+                return null;
+            }
+        }
+
+        @Override
+        public java.util.Collection<ResourceLocation> getDependencies() {
+            ResourceLocation parent = model == null ? null : model.getParentLocation();
+            return parent == null || parent.getPath().startsWith("builtin/") ? com.google.common.collect.ImmutableList.of()
+                    : com.google.common.collect.ImmutableList.of(parent);
+        }
+
+        @Override
+        public java.util.Collection<ResourceLocation> getTextures() {
+            resolveParents();
+            java.util.Set<ResourceLocation> out = new java.util.LinkedHashSet<>();
+            for (var part : model.getElements()) {
+                for (var face : part.mapFaces.values()) {
+                    String name = model.resolveTextureName(face.texture);
+                    if (!"missingno".equals(name)) out.add(new ResourceLocation(name));
+                }
+            }
+            String particle = model.resolveTextureName("particle");
+            if (!"missingno".equals(particle)) out.add(new ResourceLocation(particle));
+            for (int i = 0; i < 5; i++) {
+                String layer = model.resolveTextureName("layer" + i);
+                if (!"missingno".equals(layer)) out.add(new ResourceLocation(layer));
+            }
+            return com.google.common.collect.ImmutableList.copyOf(out);
+        }
+
+        @Override
+        public IModel retexture(com.google.common.collect.ImmutableMap<String, String> textures) {
+            if (textures.isEmpty()) return this;
+            return new VanillaModelWrapper(location, model.mcc$retextured(textures), uvlock, animation);
+        }
+
+        @Override
+        public IModel uvlock(boolean value) {
+            return value == uvlock ? this : new VanillaModelWrapper(location, model, value, animation);
+        }
+
+        @Override
+        public legacyconnector.v1_12_2.net.minecraft.client.renderer.block.model.IBakedModel bake(
+                legacyconnector.v1_12_2.net.minecraftforge.common.model.IModelState state,
+                legacyconnector.v1_12_2.net.minecraft.client.renderer.vertex.VertexFormat format,
+                java.util.function.Function<ResourceLocation, legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.TextureAtlasSprite> getter) {
+            resolveParents();
+            if (model.getElements().isEmpty()) {
+                // a generated item model: the layers' textures
+                return new ItemLayerModel(model).bake(state, format, getter);
+            }
+            var transformation = state.apply(java.util.Optional.empty()).orElse(
+                    legacyconnector.v1_12_2.net.minecraftforge.common.model.TRSRTransformation.identity());
+            boolean integer = legacyconnector.v1_12_2.net.minecraftforge.common.model.TRSRTransformation.isInteger(transformation.getMatrix());
+            var particle = getter.apply(new ResourceLocation(model.resolveTextureName("particle")));
+            var builder = new legacyconnector.v1_12_2.net.minecraft.client.renderer.block.model.SimpleBakedModel.Builder(model, model.createOverrides())
+                    .setTexture(particle);
+            for (var part : model.getElements()) {
+                for (var face : part.mapFaces.entrySet()) {
+                    var sprite = getter.apply(new ResourceLocation(model.resolveTextureName(face.getValue().texture)));
+                    var quad = faceBakery.makeBakedQuad(part.positionFrom, part.positionTo, face.getValue(), sprite, face.getKey(), transformation,
+                            part.partRotation, uvlock, part.shade);
+                    if (face.getValue().cullFace == null || !integer) builder.addGeneralQuad(quad);
+                    else builder.addFaceQuad(transformation.rotate(face.getValue().cullFace), quad);
+                }
+            }
+            java.util.Map<legacyconnector.v1_12_2.net.minecraft.client.renderer.block.model.ItemCameraTransforms.TransformType,
+                    legacyconnector.v1_12_2.net.minecraftforge.common.model.TRSRTransformation> transforms = new java.util.EnumMap<>(
+                            legacyconnector.v1_12_2.net.minecraft.client.renderer.block.model.ItemCameraTransforms.TransformType.class);
+            transforms.putAll(PerspectiveMapWrapper.getTransforms(model.getAllTransforms()));
+            transforms.putAll(PerspectiveMapWrapper.getTransforms(state));
+            return new PerspectiveMapWrapper(builder.makeBakedModel(), com.google.common.collect.ImmutableMap.copyOf(transforms));
+        }
     }
 }

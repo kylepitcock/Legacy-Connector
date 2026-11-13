@@ -15,6 +15,8 @@ public class ModelBakery {
     public static final ModelBlock MODEL_GENERATED = mcc$marker("generation marker");
     /** The marker parent of models drawn by a tile entity item renderer (builtin/entity). */
     public static final ModelBlock MODEL_ENTITY = mcc$marker("block entity marker");
+    /** The face bakery json models are baked with (mods replace it by reflection to add data to the quads: AE2's light maps). */
+    protected FaceBakery faceBakery = new FaceBakery();
     /** The baked models by location; the game's own model manager holds the real ones (see ModelManager.getModel). */
     protected final legacyconnector.v1_12_2.net.minecraft.util.registry.RegistrySimple<ModelResourceLocation, IBakedModel> bakedRegistry =
             new legacyconnector.v1_12_2.net.minecraft.util.registry.RegistrySimple<>();

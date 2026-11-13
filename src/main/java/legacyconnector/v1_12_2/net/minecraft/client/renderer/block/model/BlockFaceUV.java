@@ -10,6 +10,14 @@ public class BlockFaceUV {
         this.rotation = rotationIn;
     }
 
+    /** Gson adapter of a face's texture coordinates. */
+    public static class Deserializer implements com.google.gson.JsonDeserializer<BlockFaceUV> {
+        @Override
+        public BlockFaceUV deserialize(com.google.gson.JsonElement json, java.lang.reflect.Type type, com.google.gson.JsonDeserializationContext context) {
+            return ModelBlock.faceUv(json.getAsJsonObject());
+        }
+    }
+
     public float getVertexU(int index) {
         if (uvs == null) throw new NullPointerException("uvs");
         int i = getVertexRotated(index);
