@@ -26,6 +26,7 @@ public final class ShimAccessWidener {
 
     public static void main(String[] args) throws IOException {
         int changed = 0;
+        int events = 0;
         for (String dir : args) {
             Path root = Path.of(dir).resolve("legacyconnector");
             if (!Files.isDirectory(root)) continue;
@@ -44,6 +45,9 @@ public final class ShimAccessWidener {
                 int n = addStaticArrays(node);
                 n += addLegacyFields(node, legacyFields, classes);
                 added += n;
+                int ctor = addEventConstructor(node, classes);
+                events += ctor;
+                n += ctor;
                 if (!widen(node) && n == 0) continue;
                 ClassWriter cw = new ClassWriter(0);
                 node.accept(cw);
@@ -52,10 +56,85 @@ public final class ShimAccessWidener {
             }
             if (added > 0) System.out.println("Declared " + added + " missing legacy fields on hand-written shim classes");
         }
+        if (events > 0) System.out.println("Gave " + events + " shim event classes Forge's public no-arg constructor");
         System.out.println("Widened access in " + changed + " shim classes");
     }
 
     private static final String PREFIX = "legacyconnector/v1_7_10/";
+
+    /** Root of the legacy Forge event hierarchy in each shim version ({@code legacyconnector/<version>/...}). */
+    private static final String EVENT_ROOT_SUFFIX = "/fml/common/eventhandler/Event";
+
+    /** Per class: super name, whether it declares a no-arg constructor, whether that one is private; null when not a shim class file. */
+    private record CtorInfo(String superName, boolean noArg, boolean noArgPrivate) {}
+
+    private static final java.util.Map<String, CtorInfo> CTOR_INFO = new java.util.HashMap<>();
+
+    private static CtorInfo ctorInfo(String name, Path classes) {
+        if (name == null || !name.startsWith("legacyconnector/")) return null;
+        if (CTOR_INFO.containsKey(name)) return CTOR_INFO.get(name);
+        CtorInfo info = null;
+        Path file = classes.resolve(name + ".class");
+        if (Files.isRegularFile(file)) {
+            try {
+                ClassNode n = new ClassNode();
+                new ClassReader(Files.readAllBytes(file)).accept(n, ClassReader.SKIP_CODE);
+                boolean noArg = false, priv = false;
+                for (MethodNode m : n.methods) {
+                    if (m.name.equals("<init>") && m.desc.equals("()V")) {
+                        noArg = true;
+                        priv = (m.access & Opcodes.ACC_PRIVATE) != 0;
+                    }
+                }
+                info = new CtorInfo(n.superName, noArg, priv);
+            } catch (IOException | RuntimeException e) {
+                info = null;
+            }
+        }
+        CTOR_INFO.put(name, info);
+        return info;
+    }
+
+    private static boolean isEvent(String name, Path classes) {
+        for (int depth = 0; name != null && depth < 32; depth++) {
+            if (name.startsWith("legacyconnector/") && name.endsWith(EVENT_ROOT_SUFFIX)) return true;
+            CtorInfo info = ctorInfo(name, classes);
+            if (info == null) return false;
+            name = info.superName();
+        }
+        return false;
+    }
+
+    /** True if subclasses can call {@code super()}: a non-private declared no-arg constructor, or one this step generates. */
+    private static boolean providesNoArg(String name, Path classes) {
+        CtorInfo info = ctorInfo(name, classes);
+        if (info == null) return false;
+        if (info.noArg()) return !info.noArgPrivate();
+        return isEvent(name, classes);
+    }
+
+    /**
+     * Forge 1.7.10/1.12.2 events all have a public no-arg constructor: Forge's EventBus made one instance per event class to find its
+     * listener list, and mods that register listeners themselves do the same ({@code SomeEvent.class.getConstructor().newInstance()}).
+     * Shim events without one get a constructor that only calls {@code super()}; fields keep their defaults, which is all such an
+     * instance is used for. Inner (non-static) classes are left alone.
+     */
+    static int addEventConstructor(ClassNode node, Path classes) {
+        if ((node.access & (Opcodes.ACC_INTERFACE | Opcodes.ACC_ENUM | Opcodes.ACC_ANNOTATION)) != 0) return 0;
+        if (node.name.endsWith(EVENT_ROOT_SUFFIX) || !isEvent(node.superName, classes)) return 0;
+        for (MethodNode m : node.methods) if (m.name.equals("<init>") && m.desc.equals("()V")) return 0;
+        for (FieldNode f : node.fields) if (f.name.startsWith("this$")) return 0;
+        if (!providesNoArg(node.superName, classes)) return 0;
+        MethodNode init = new MethodNode(Opcodes.ACC_PUBLIC, "<init>", "()V", null, null);
+        init.instructions.add(new org.objectweb.asm.tree.VarInsnNode(Opcodes.ALOAD, 0));
+        init.instructions.add(new org.objectweb.asm.tree.MethodInsnNode(Opcodes.INVOKESPECIAL, node.superName, "<init>", "()V", false));
+        init.instructions.add(new org.objectweb.asm.tree.InsnNode(Opcodes.RETURN));
+        init.maxStack = 1;
+        init.maxLocals = 1;
+        node.methods.add(init);
+        CTOR_INFO.put(node.name, new CtorInfo(node.superName, true, false));
+        return 1;
+    }
 
     /**
      * Declares the 1.7.10 fields a hand-written shim class does not have (mods find them by reflection, e.g. through

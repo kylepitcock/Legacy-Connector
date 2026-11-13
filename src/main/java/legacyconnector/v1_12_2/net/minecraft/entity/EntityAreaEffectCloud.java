@@ -22,7 +22,7 @@ public class EntityAreaEffectCloud extends Entity {
         mcc$set$noClip(this, true);
         mcc$set$isImmuneToFire(this, true);
         // a view of a cloud already in the world keeps its radius
-        if (mcc$cloud() == null || !mcc$entity.isAddedToLevel()) setRadius(3.0F);
+        if (!mcc$existingNativeView()) setRadius(3.0F);
     }
 
     public EntityAreaEffectCloud(World world, double x, double y, double z) {
