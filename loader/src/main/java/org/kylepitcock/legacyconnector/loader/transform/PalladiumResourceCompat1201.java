@@ -163,7 +163,7 @@ final class PalladiumResourceCompat1201 {
      * occurrence is counted exactly; unknown script shapes fail loudly rather
      * than leaving a partially or incorrectly rewritten callback.
      *
-     * @return number of resource scripts changed
+     * @return number of resource entries changed
      */
     static int apply(Map<String, byte[]> resources) {
         Map<String, byte[]> original = new java.util.HashMap<>();
