@@ -102,7 +102,35 @@ public final class Hosts1122 {
         BY_CLASS.put(cls, info);
         BY_TYPE.put(type, info);
         LegacyRegistrar.register(BuiltInRegistries.ENTITY_TYPE, id, type);
+        registerSpawnEgg(entry, id, type, kind);
         return info;
+    }
+
+    private static final Set<ResourceLocation> EGG_ITEMS = ConcurrentHashMap.newKeySet();
+
+    /** The ids of the spawn egg items made for entries that registered egg colours (their models are generated). */
+    public static Set<ResourceLocation> spawnEggIds() {
+        return Set.copyOf(EGG_ITEMS);
+    }
+
+    /**
+     * An entry registered with egg colours ({@code registerModEntity(..., eggPrimary, eggSecondary)}, {@code EntityEntryBuilder.egg}) has a spawn egg:
+     * the modern spawn egg item of its type, so creative mode lists it and pick-block on the entity gives it.
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static void registerSpawnEgg(EntityEntry entry, ResourceLocation id, EntityType<?> type, Kind kind) {
+        var egg = entry.getEgg();
+        if (egg == null || kind == Kind.ENTITY) return;
+        try {
+            ResourceLocation eggId = ResourceLocation.fromNamespaceAndPath(id.getNamespace(), id.getPath() + "_spawn_egg");
+            if (BuiltInRegistries.ITEM.containsKey(eggId)) return;
+            var item = new net.neoforged.neoforge.common.DeferredSpawnEggItem(() -> (EntityType) type, egg.primaryColor, egg.secondaryColor,
+                    new net.minecraft.world.item.Item.Properties());
+            LegacyRegistrar.register(BuiltInRegistries.ITEM, eggId, item);
+            EGG_ITEMS.add(eggId);
+        } catch (RuntimeException | LinkageError e) {
+            LOG.warn("Could not make the spawn egg of {}: {}", id, e.toString());
+        }
     }
 
     private static boolean isFireImmune(Class<?> cls) {

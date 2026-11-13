@@ -1755,6 +1755,15 @@ public final class Assets1122 implements GeneratedPack.Contributor {
      */
     private static void itemFallbackModels(Map<String, Supplier<byte[]>> out) {
         int made = 0;
+        // spawn eggs of mod entities (EntityRegistry egg colours): vanilla's tinted egg model
+        for (ResourceLocation eggId : org.kylepitcock.legacyconnector.v1_12_2.entity.Hosts1122.spawnEggIds()) {
+            String file = "assets/" + eggId.getNamespace() + "/models/item/" + eggId.getPath() + ".json";
+            if (out.containsKey(file) || modelExists(eggId.getNamespace(), "item/" + eggId.getPath())) continue;
+            String json = "{\"parent\":\"minecraft:item/template_spawn_egg\"}";
+            byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
+            out.put(file, () -> bytes);
+            if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) org.kylepitcock.legacyconnector.v1_7_10.client.SharedItemModels.note(eggId, json);
+        }
         for (legacyconnector.v1_12_2.net.minecraft.item.Item item : org.kylepitcock.legacyconnector.v1_12_2.bridge.ItemBridge1122.modItems()) {
             if (item.getRegistryName() == null) continue;
             for (int meta : org.kylepitcock.legacyconnector.v1_12_2.bridge.ItemBridge1122.variants(item).keySet()) {
