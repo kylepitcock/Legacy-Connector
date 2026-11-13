@@ -52,6 +52,9 @@ public class BlockWrapper implements IFluidHandler {
         if (modern == null) return null;
         if (modern.isSame(net.minecraft.world.level.material.Fluids.WATER)) return FluidRegistry.WATER;
         if (modern.isSame(net.minecraft.world.level.material.Fluids.LAVA)) return FluidRegistry.LAVA;
+        // a 1.12.2 fluid's source or flowing form
+        Fluid bridged = org.kylepitcock.legacyconnector.v1_12_2.bridge.FluidBridge1122.legacyOf(modern);
+        if (bridged != null) return bridged;
         var key = net.minecraft.core.registries.BuiltInRegistries.FLUID.getKey(modern);
         return key == null ? null : FluidRegistry.getFluid(key.getPath());
     }

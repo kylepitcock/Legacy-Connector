@@ -25,13 +25,31 @@ public class UniversalBucket extends Item {
         setHasSubtypes(true);
     }
 
-    /** A bucket filled with the fluid (vanilla's for water and lava, else empty: there is no universal bucket item to fill). */
+    /**
+     * A bucket filled with the fluid: Forge's universal bucket gives {@link FluidUtil#getFilledBucket} (vanilla's buckets for water and lava,
+     * the fluid's modern bucket otherwise); a mod's own universal bucket keeps the fluid in its tag, as Forge did.
+     */
     public static ItemStack getFilledBucket(UniversalBucket item, Fluid fluid) {
-        return FluidUtil.getFilledBucket(new FluidStack(fluid, item == null ? Fluid.BUCKET_VOLUME : item.getCapacity()));
+        if (item == null || item == legacyconnector.v1_12_2.net.minecraftforge.common.ForgeModContainer.mcc$get$universalBucket(null) || fluid == null
+                || fluid == FluidRegistry.WATER || fluid == FluidRegistry.LAVA) {
+            return FluidUtil.getFilledBucket(new FluidStack(fluid, item == null ? Fluid.BUCKET_VOLUME : item.getCapacity()));
+        }
+        ItemStack bucket = new ItemStack(item);
+        var tag = new legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound();
+        new FluidStack(fluid, item.getCapacity()).writeToNBT(tag);
+        bucket.setTagCompound(tag);
+        return bucket;
     }
 
+    /** The fluid in the bucket's tag (Forge's format), or null. */
     public FluidStack getFluid(ItemStack container) {
-        return FluidUtil.getFluidContained(container);
+        return container == null ? null : FluidStack.loadFluidStackFromNBT(container.getTagCompound());
+    }
+
+    @Override
+    public legacyconnector.v1_12_2.net.minecraftforge.common.capabilities.ICapabilityProvider initCapabilities(ItemStack stack,
+            legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound nbt) {
+        return new legacyconnector.v1_12_2.net.minecraftforge.fluids.capability.wrappers.FluidBucketWrapper(stack);
     }
 
     public int getCapacity() {

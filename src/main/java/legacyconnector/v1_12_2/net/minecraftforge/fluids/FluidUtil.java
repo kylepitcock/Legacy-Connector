@@ -22,6 +22,11 @@ public class FluidUtil {
             if (handler != null) return handler;
         }
         if (copy.getItem() == Items.BUCKET || copy.getItem() == Items.WATER_BUCKET || copy.getItem() == Items.LAVA_BUCKET) return new VanillaBucket(copy);
+        // a mod's own filled bucket of its fluid block (ItemBucket subclasses had no fluid capability in 1.12) and the generated buckets
+        if (copy.getItem() instanceof UniversalBucket
+                || org.kylepitcock.legacyconnector.v1_12_2.bridge.FluidBridge1122.fluidOfBucket(org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122.toModern(copy).getItem()) != null) {
+            return new legacyconnector.v1_12_2.net.minecraftforge.fluids.capability.wrappers.FluidBucketWrapper(copy);
+        }
         return null;
     }
 
@@ -188,13 +193,16 @@ public class FluidUtil {
         return handler == null ? null : handler.drain(Integer.MAX_VALUE, false);
     }
 
-    /** A bucket of the fluid: vanilla's water and lava buckets; other fluids have no bucket item here. */
+    /**
+     * A bucket of the fluid: vanilla's water and lava buckets; a mod fluid's own bucket item, else Forge's universal bucket holding it (the
+     * modern bucket of the fluid once converted); empty for a fluid with neither a block nor a universal bucket.
+     */
     public static ItemStack getFilledBucket(FluidStack fluidStack) {
         if (fluidStack == null || fluidStack.getFluid() == null) return ItemStack.EMPTY;
         Fluid fluid = fluidStack.getFluid();
         if (fluid == FluidRegistry.WATER || "water".equals(fluid.getName())) return new ItemStack(Items.WATER_BUCKET);
         if (fluid == FluidRegistry.LAVA || "lava".equals(fluid.getName())) return new ItemStack(Items.LAVA_BUCKET);
-        return ItemStack.EMPTY;
+        return org.kylepitcock.legacyconnector.v1_12_2.bridge.FluidBridge1122.legacyFilledBucket(fluid);
     }
 
     /** Forge's FluidBucketWrapper for the vanilla buckets: empty, water or lava, a bucket (1000 mB) at a time. */

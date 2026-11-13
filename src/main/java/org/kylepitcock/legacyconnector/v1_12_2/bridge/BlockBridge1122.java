@@ -60,8 +60,14 @@ public final class BlockBridge1122 {
         } catch (RuntimeException | LinkageError e) {
             // a block that cannot answer before it has a world has no tile entity
         }
+        // a fluid block (Forge's BlockFluidBase or a mod's BlockLiquid): a liquid the modern fluid of its Forge fluid is bound to later (FluidBridge1122)
+        boolean fluid = !entity && (block instanceof legacyconnector.v1_12_2.net.minecraftforge.fluids.BlockFluidBase
+                || block instanceof legacyconnector.v1_12_2.net.minecraft.block.BlockLiquid);
+        if (fluid) p.liquid().noCollission().replaceable().pushReaction(net.minecraft.world.level.material.PushReaction.DESTROY);
         Legacy1122Block modern;
-        if (entity) {
+        if (fluid) {
+            modern = new org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122FluidBlock(block, p);
+        } else if (entity) {
             var eb = new org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122EntityBlock(block, p);
             TileEntityBridge1122.addBlock(eb);
             modern = eb;

@@ -78,7 +78,7 @@ above); *engine bridges* map a legacy system onto the 1.21 one it corresponds to
 | Items and ItemStacks | `Item`, `ItemStack` damage/NBT | one item per metadata subtype, `CUSTOM_DATA` NBT |
 | Recipes and smelting | `GameRegistry` / `CraftingManager` / `OreDictionary`, custom `IRecipe` classes (IC2, AE2, Blood Magic, Witchery ...) | data-pack recipes, tags; a custom recipe is a `legacyconnector:legacy_recipe` that matches and crafts through the legacy object |
 | Entities | `Entity`, spawn/save/load, mob AI | entity types, spawns, saving |
-| Fluids | Forge `Fluid` / containers | fluid types |
+| Fluids | Forge `Fluid` / containers, fluid blocks, buckets | fluid types; 1.12.2: source/flowing fluids held by the fluid blocks and buckets ([details](#1122-fluids)) |
 | Villagers | `VillagerRegistry` ids, skins, trade handlers, village creation handlers | `minecraft:villager_<id>` professions (a vanilla villager with another job, so Jade names its mod "Minecraft"; named after the mod's skin file, e.g. "Wizard"), trades, clothes layer; some new unemployed villagers take a legacy profession; legacy village buildings are elements of the vanilla village house pools with their 1.7.10 share (see [World generation](World-Generation.md)) |
 | GUIs and containers | `GuiHandler`, `Container` | menus and screens |
 | Networking | FML `SimpleNetworkWrapper` / channels | NeoForge payloads |
@@ -148,6 +148,27 @@ With the modern Patchouli (NeoForge 1.21.1) installed, 1.12.2 mods' Patchouli bo
   1.14 to 1.20 the files are already in `data/` with the modern structure, and the converter has to turn `mod:item{nbt}` stacks into
   `mod:item[components]`, move the contents to the resource pack (`use_resource_pack`), and map renamed fields (`extend`, multiblock `pattern`
   keys, `advancement`/`flag`). No converter is registered for them yet because those layers do not exist.
+
+## 1.12.2 fluids
+
+`FluidBridge1122` registers every Forge 1.12.2 `Fluid` the way a 1.21.1 mod adds a fluid. Each one gets a `FluidType` (density, viscosity
+as swim speed, temperature, luminosity, gaseous fluids are not swimmable, fill/empty sounds, the legacy name; on the client
+`client/Fluids1122` gives it the legacy still/flowing/overlay textures, added to the block atlas, and its colour). A fluid whose block is a
+fluid block (`BlockFluidClassic`, `BlockFluidFinite`, any `BlockFluidBase`, or a mod's `BlockLiquid`) gets a source and a flowing
+`BaseFlowingFluid` (`<mod>:<fluid>`, `<mod>:flowing_<fluid>`), and its block (`Legacy1122FluidBlock`) holds their states: level 0 is the
+source, other levels are flowing states with the level scaled to 1-8 (`quantaPerBlock`; finite fluids by their quanta). So the fluid renderer
+draws it in the block's legacy render layer (the block model is not drawn), entities swim and are pushed through vanilla code, and worldgen
+lakes placed with the fluid block are fluids too. The legacy block still flows by its own `updateTick` (the modern fluid never ticks or
+spreads), so `canDisplace`, `displaceIfPossible`, `onEntityCollision` effects, mixing in `neighborChanged` and `drain`/`place` keep running.
+A fluid with a block or a universal bucket (`FluidRegistry.addBucketForFluid`) gets a bucket: the mod's own `ItemBucket(fluidBlock)` when
+it has one, else a generated `BucketItem` `<mod>:<fluid>_bucket` (NeoForge's fluid container model: the vanilla bucket with the fluid's
+texture and colour; in the Tools tab). The empty vanilla bucket picks a source up through the legacy `drain` (`BucketPickup`); a filled bucket
+places the legacy block at level 0. Legacy code sees the generated bucket as Forge's universal bucket with the fluid in its tag (Forge's
+format), so `FluidUtil.getFilledBucket`, `UniversalBucket.getFilledBucket(ForgeModContainer.getInstance().universalBucket, fluid)` and
+`FluidBucketWrapper` work even in preInit, before the modern bucket exists, and recipes using that stack get the modern bucket. The buckets
+have NeoForge's fluid item capability (tanks and pipes fill and empty them). Not mapped: a fluid block that is neither `BlockFluidBase` nor
+`BlockLiquid` (a bare `IFluidBlock`) and a `BlockLiquid` of no registered Forge fluid stay plain legacy blocks; gases render like liquids
+(the modern fluid renderer has no upward fluids).
 
 ## 1.12.2 advancements
 

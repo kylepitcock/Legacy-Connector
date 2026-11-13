@@ -16,6 +16,8 @@ public final class Stacks1122 {
         if (stack == null || stack.isEmpty()) return net.minecraft.world.item.ItemStack.EMPTY;
         Item item = stack.getItem();
         net.minecraft.world.item.Item modern = ItemBridge1122.modern(item, stack.getMetadata());
+        // Forge's universal bucket (not a registered item): the modern bucket of the fluid in its tag
+        if (modern == null && item instanceof legacyconnector.v1_12_2.net.minecraftforge.fluids.UniversalBucket) return FluidBridge1122.modernUniversalBucket(stack);
         if (modern == null) return net.minecraft.world.item.ItemStack.EMPTY;
         var out = new net.minecraft.world.item.ItemStack(modern, stack.getCount());
         if ((item.isDamageable() || item.mcc$vanillaModern != null && modern.components().has(DataComponents.MAX_DAMAGE)) && stack.getMetadata() > 0) {
@@ -245,7 +247,11 @@ public final class Stacks1122 {
         } else {
             Object[] variant = Vanilla1122.legacyVariant(stack.getItem());
             legacy = variant != null ? (Item) variant[0] : Vanilla1122.legacyOf(stack.getItem());
-            if (legacy == null) return ItemStack.EMPTY;
+            if (legacy == null) {
+                // a generated bucket of a 1.12.2 fluid: Forge's universal bucket holding it
+                ItemStack bucket = FluidBridge1122.legacyBucketStack(stack);
+                return bucket != null ? bucket : ItemStack.EMPTY;
+            }
             meta = variant != null ? (Integer) variant[1] : 0;
         }
         if (legacy.isDamageable() || stack.isDamageableItem()) meta = stack.getDamageValue();

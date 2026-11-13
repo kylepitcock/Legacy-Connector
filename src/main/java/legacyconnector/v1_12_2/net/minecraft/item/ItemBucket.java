@@ -30,6 +30,11 @@ public class ItemBucket extends Item {
         setCreativeTab(legacyconnector.v1_12_2.net.minecraft.creativetab.CreativeTabs.MISC);
     }
 
+    /** The block the bucket places (air for the empty bucket): a mod's own filled bucket of its fluid block. */
+    public Block mcc$containedBlock() {
+        return containedBlock;
+    }
+
     @Override
     public ActionResult<ItemStack> onItemRightClick(World worldIn, EntityPlayer playerIn, EnumHand handIn) {
         boolean empty = containedBlock == Blocks.AIR;
