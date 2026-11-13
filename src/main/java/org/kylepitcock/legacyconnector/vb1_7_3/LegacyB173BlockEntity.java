@@ -152,7 +152,7 @@ public class LegacyB173BlockEntity extends net.minecraft.world.level.block.entit
 
     /** In Beta single player the client drew the very tile entity the server ticked; here the client has its own copy, so a changed state is sent. */
     private void syncToClients(BlockEntity te) {
-        if (level == null || level.isClientSide || !syncs(te.getClass()) || level.getGameTime() % 4 != 0) return;
+        if (level == null || level.isClientSide || !syncs(te.getClass())) return; // every tick: the client does not tick its copy, and Beta drew a state that changed 20 times a second
         var tag = saveWithoutMetadata(level.registryAccess());
         if (tag.equals(lastSent)) return;
         lastSent = tag;
