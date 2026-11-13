@@ -1,6 +1,6 @@
 # Forge 1.20.1 Preflight Compatibility Analyzer
 
-**Status:** Phase 2 planning/audit complete; implementation not started  
+**Status:** Slice 1 implementation committed; local Gradle validation pending  
 **Working branch:** `feat/forge1201-preflight-analyzer`  
 **Baseline:** `dde40275b9b3bd48ff811afa4c863e475e8a0cdf`  
 **Target:** Forge 1.20.1-only mod JARs on NeoForge 1.21.1 / 21.1.x  
@@ -49,7 +49,7 @@ The existing root Gradle tasks are `gap1201`, `verify1201`, and `checkLegacyMod`
 6. **The mixin triage tool is isolated and heuristic.** `Mixin1201Triage` is a CLI with static process-wide indexes, uses a heuristic to identify mixin JSON files, checks many target/member names, and notes plugin presence. It does not yet form a reusable result model with complete handler-descriptor, slice, dynamic-plugin, and injection-semantics coverage. A missing Forge target must be explicitly classified as unverified/unsupported, not treated as a harmless warning.
 7. **`Gap1201` already indexes nested `META-INF/jarjar/*.jar` classes for target/peer hierarchy lookup, but its per-mod reference report scans only top-level classes.** Its first pass should be extended carefully; do not assume nested library behavior is fully covered. It currently emits text plus TSV rather than a stable preflight JSON document.
 
-These observations are from source inspection at the baseline above. No source implementation or build/test run has been performed on the new working branch yet.
+These observations describe the initial source audit at the baseline above. Slice 1 has since been implemented on the working branch; its code is committed but has not yet been built or tested locally.
 
 ## Result model and reporting rules
 
@@ -140,9 +140,44 @@ A single candidate Forge 1.20.1 JAR must produce a repeatable text + JSON prefli
 
 Then validate the report against synthetic fixtures and at least one real 1.20.1-exclusive mod that is not Palladium or Alien Evolution. Do not expand to another named mod chain until this milestone is complete.
 
-## Exact next coding action
+## Slice 1 implementation checkpoint
 
-Implement **Slice 1 only** on `feat/forge1201-preflight-analyzer`: add the immutable preflight result/report contract and a first single-JAR orchestrator around the existing metadata, API inventory, dependency-resolution, and mapping-catalog code. Add focused tests and the `preflight1201` Gradle task. Keep nested archive recursion, advanced mixin validation, and broader pack graph work as explicitly separate follow-up slices so the first implementation remains testable.
+Implemented on `feat/forge1201-preflight-analyzer` at source HEAD `c9abafc94708ae1bc97e6840cd3feb46628f5051`.
+
+Files:
+- `loader/src/main/java/org/kylepitcock/legacyconnector/loader/tools/forge1201/Forge1201PreflightAnalyzer.java`
+- `loader/src/test/java/org/kylepitcock/legacyconnector/loader/tools/forge1201/Forge1201PreflightAnalyzerTest.java`
+- Root `build.gradle`: new `preflight1201` JavaExec task.
+
+Slice 1 currently provides:
+- Immutable result records, schema/analyzer versions, deterministic JSON (LF output) and human-readable text.
+- Input JAR SHA-256, size, normalized archive entry inventory, source resource namespaces, manifest attributes, FMLCorePlugin and MixinConfigs values, mixin JSON path/content candidates, and Jar-in-Jar paths.
+- Reuse of `Forge1201JarInspector`, `Forge1201ApiUsageAnalyzer`, `Forge1201DependencyResolver`, and `Forge1201MappingCatalog`.
+- Parsed mod declarations, duplicate IDs, dependency required/optional/side/order/range data, host-bridge/native-ID-present/missing statuses, and Forge API type classifications plus bytecode member/call-site inventory.
+- Explicit analysis limitations and conservative wording. A native mod ID match is not provider version/API verification; the scan runs only against the recognized outer JAR.
+
+Synthetic tests cover multiple mod declarations, duplicate IDs, array/multiline TOML warnings, required and optional missing dependencies, host bridge and native ID candidate statuses, API classification/call sites, manifest and heuristic mixin candidates, resource namespaces, Jar-in-Jar path inventory, missing metadata, SHA-256 presence, and stable JSON/text output.
+
+**Not implemented in Slice 1:** recursive nested JAR analysis, provider JAR/version provenance, full bytecode reference coverage, target API member verification, semantic mixin validation, shim/no-op coverage joining, and pack-level graph analysis. These remain later slices.
+
+**Local validation state:** no Gradle compile, JUnit run, consolidated build, or Minecraft runtime test has been confirmed for this commit.
+
+### Exact next action
+
+1. Pull and verify HEAD `c9abafc94708ae1bc97e6840cd3feb46628f5051`.
+2. Run the focused loader test suite:
+   ```powershell
+   .\\gradlew.bat :loader:clean :loader:test --no-daemon --console=plain
+   ```
+3. Only after it succeeds, run the consolidated clean build:
+   ```powershell
+   .\\gradlew.bat :clean :loader:clean :testmods:clean :build :loader:build :testmods:assemble --no-daemon --console=plain
+   ```
+4. Once built, smoke-test the new task against a small independent Forge 1.20.1 JAR (not the paused Palladium/Alien Evolution pair):
+   ```powershell
+   .\\gradlew.bat preflight1201 "-PpreflightJar=F:\\path\\to\\candidate.jar" "-PpreflightModsDirs=E:\\path\\to\\mods" --no-daemon --console=plain
+   ```
+   Expected outputs by default: `build/reports/preflight1201/<jar-name>.json` and `.txt`. Inspect both before advancing.
 
 ## Validation boundary
 
