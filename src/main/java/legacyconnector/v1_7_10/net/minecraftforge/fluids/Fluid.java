@@ -168,11 +168,21 @@ public class Fluid {
     }
 
     public IIcon getStillIcon() {
-        return stillIcon;
+        return stillIcon != null ? stillIcon : vanillaIcon("_still");
     }
 
     public IIcon getFlowingIcon() {
-        return flowingIcon;
+        return flowingIcon != null ? flowingIcon : vanillaIcon("_flow");
+    }
+
+    /** Forge set the icons of water and lava itself when the block atlas was stitched (machine tanks and gauges draw them through the fluid). */
+    private IIcon vanillaIcon(String kind) {
+        if (!fluidName.equals("water") && !fluidName.equals("lava")) return null;
+        try {
+            return legacyconnector.v1_7_10.net.minecraft.block.BlockLiquid.getLiquidIcon(fluidName + kind);
+        } catch (RuntimeException | LinkageError e) {
+            return null;
+        }
     }
 
     public int getLuminosity(FluidStack stack) { return getLuminosity(); }
