@@ -344,6 +344,8 @@ class PalladiumResourceCompat1201Test {
                     let scoreboardManager = Utils.server.scoreboard;
                     entity.server.runCommandSilent("say reverting");
                 });
+                entity.level.playSound(null, entity.x, entity.y, entity.z,
+                        `alienevo:${watchType}_detransform`, entity.getSoundSource(), 1.0, 1.0);
                 """);
         put(resources, "addon/alienevo/kubejs_scripts/rolling_mechanics.js", """
                 .tick((entity, entry, holder, enabled) => {
@@ -395,6 +397,9 @@ class PalladiumResourceCompat1201Test {
         String detransform = get(resources, "addon/alienevo/kubejs_scripts/detransform.js");
         assertEquals(1, occurrences(detransform, "entity.server.scoreboard"));
         assertFalse(detransform.contains("Utils.server"));
+        assertTrue(detransform.contains(
+                "getAlienEvoSoundEvent('alienevo:' + String(watchType) + '_detransform')"));
+        assertFalse(detransform.contains("`alienevo:${watchType}_detransform`"));
 
         String rolling = get(resources, "addon/alienevo/kubejs_scripts/rolling_mechanics.js");
         assertEquals(1, occurrences(rolling, "entity.server.scoreboard"));
