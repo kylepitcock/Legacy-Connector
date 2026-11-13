@@ -138,6 +138,55 @@ class DataConverter1201Test {
     }
 
     @Test
+    void advancementLocationStructurePredicateIsPluralizedFor1211() {
+        String source = """
+                {
+                  "criteria": {
+                    "find_crash_site": {
+                      "trigger": "minecraft:location",
+                      "conditions": {
+                        "player": [
+                          {
+                            "condition": "minecraft:entity_properties",
+                            "entity": "this",
+                            "predicate": {
+                              "location": {
+                                "structure": "alienevo:crash_site"
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "requirements": [["find_crash_site"]]
+                }
+                """;
+        JsonElement converted = one(
+                "data/alienevo/advancements/discover_ship.json",
+                source,
+                "data/alienevo/advancement/discover_ship.json");
+        JsonObject location = converted.getAsJsonObject()
+                .getAsJsonObject("criteria")
+                .getAsJsonObject("find_crash_site")
+                .getAsJsonObject("conditions")
+                .getAsJsonArray("player")
+                .get(0).getAsJsonObject()
+                .getAsJsonObject("predicate")
+                .getAsJsonObject("location");
+        assertEquals("alienevo:crash_site", location.get("structures").getAsString());
+        assertTrue(!location.has("structure"), converted.toString());
+
+        List<DataConverter1201.Out> secondPass = DataConverter1201.convert(
+                "data/alienevo/advancement/discover_ship.json",
+                converted.toString().getBytes(StandardCharsets.UTF_8),
+                new DataConverter1201.Stats());
+        assertEquals(1, secondPass.size());
+        assertEquals(converted, JsonParser.parseString(
+                new String(secondPass.get(0).data(), StandardCharsets.UTF_8)));
+    }
+
+    @Test
     void tagsAndRenamedIds() {
         JsonElement r = one("data/forge/tags/blocks/glass.json", "{\"replace\":false,\"values\":[\"minecraft:glass\",\"#forge:glass/colorless\",\"minecraft:grass\"]}", "data/c/tags/block/glass_blocks.json");
         same("{\"replace\":false,\"values\":[\"minecraft:glass\",\"#c:glass_blocks/colorless\",\"minecraft:short_grass\"]}", r);
