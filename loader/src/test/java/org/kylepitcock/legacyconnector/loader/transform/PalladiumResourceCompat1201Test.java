@@ -408,8 +408,9 @@ class PalladiumResourceCompat1201Test {
         String xp = get(resources, "data/alienevo/kubejs_scripts/xp.js");
         assertEquals(1, occurrences(xp, "player.server.scoreboard"));
         assertFalse(xp.contains("Utils.server"));
-        assertTrue(xp.contains("let player = source ? source.getEntity() : null;"));
-        assertTrue(xp.contains("if (player && player.type === 'minecraft:player') {"));
+        assertTrue(xp.contains("let player = source ? source.getPlayer() : null;"));
+        assertTrue(xp.contains("if (player) {"));
+        assertFalse(xp.contains("source.getEntity()"));
         assertFalse(xp.contains("source.player"));
 
         String level = get(resources, "data/alienevo/kubejs_scripts/level_command.js");
@@ -428,9 +429,13 @@ class PalladiumResourceCompat1201Test {
         put(resources, PalladiumResourceCompat1201.ALIEN_EVO_STAT_ABILITY, """
                 .lastTick((entity, entry, holder, enabled) => {
                     const scoreboard = Utils.server.scoreboard;
+                    const uuid = entry.getPropertyByName('UUID');
+                    entity.removeAttribute(attribute, UUID);
                 });
                 .tick((entity, entry, holder, enabled) => {
                     const scoreboard = Utils.server.scoreboard;
+                    const uuid = entry.getPropertyByName('UUID');
+                    entity.modifyAttribute(attribute, UUID, (value / division), attribute_mod);
                 });
                 """);
 
@@ -438,6 +443,10 @@ class PalladiumResourceCompat1201Test {
         String migrated = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_STAT_ABILITY);
         assertEquals(2, occurrences(migrated, "entity.server.scoreboard"));
         assertFalse(migrated.contains("Utils.server.scoreboard"));
+        assertTrue(migrated.contains("entity.removeAttribute(attribute, uuid)"));
+        assertTrue(migrated.contains("entity.modifyAttribute(attribute, uuid,"));
+        assertFalse(migrated.contains("entity.removeAttribute(attribute, UUID)"));
+        assertFalse(migrated.contains("entity.modifyAttribute(attribute, UUID,"));
         assertEquals(0, PalladiumResourceCompat1201.apply(resources));
         assertEquals(migrated, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_STAT_ABILITY));
 
@@ -543,6 +552,61 @@ class PalladiumResourceCompat1201Test {
         assertEquals(flatten, get(resources, "addon/alienevo/kubejs_scripts/flatten.js"));
     }
 
+
+    @Test
+    void removesObsoleteEditBoxTickCallFromAlienEvoPowerUi() {
+        Map<String, byte[]> resources = new HashMap<>();
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_POWER_UI, """
+                hexTextBox.render(e.guiGraphics, mouseX, mouseY, e.partialTick);
+                let currentTime = Date.now();
+                if (currentTime - lastTickTime >= TICK_INTERVAL) {
+                    hexTextBox.tick();
+                    lastTickTime = currentTime;
+                }
+                drawSaveButton();
+                """);
+
+        assertEquals(1, PalladiumResourceCompat1201.apply(resources));
+        String migrated = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_POWER_UI);
+        assertTrue(migrated.contains("hexTextBox.render(e.guiGraphics, mouseX, mouseY, e.partialTick);"));
+        assertTrue(migrated.contains("The 1.21.1 screen manages EditBox input ticks."));
+        assertFalse(migrated.contains("hexTextBox.tick()"));
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+        assertEquals(migrated, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_POWER_UI));
+    }
+
+    @Test
+    void repairsKnownDiamondShardAndAfOmniParticleTextureReferences() {
+        Map<String, byte[]> resources = new HashMap<>();
+        put(resources, "assets/alienevo/models/item/diamond_shard.json", """
+                {"textures":{"0":"diamond/spike","particle":"diamond/spike"}}
+                """);
+        put(resources, "assets/afomni/particles/swamp_beam.json", """
+                {"textures":["afomni:flames_00","afomni:flames_13"]}
+                """);
+        put(resources, "assets/afomni/particles/swamp_flame_fly.json", """
+                {"textures":["afomni:flames_00b","afomni:flames_05"]}
+                """);
+        resources.put("assets/alienevo/textures/particle/flames_00.png", new byte[] {1});
+        resources.put("assets/alienevo/textures/particle/flames_05.png", new byte[] {1});
+        resources.put("assets/alienevo/textures/particle/flames_13.png", new byte[] {1});
+        resources.put("assets/afomni/textures/particle/flames_00b.png", new byte[] {1});
+
+        assertEquals(3, PalladiumResourceCompat1201.apply(resources));
+        String shard = get(resources, "assets/alienevo/models/item/diamond_shard.json");
+        assertEquals(2, occurrences(shard, "minecraft:diamond_spike/spike"));
+        assertFalse(shard.contains("diamond/spike"));
+
+        String beam = get(resources, "assets/afomni/particles/swamp_beam.json");
+        assertTrue(beam.contains("alienevo:flames_00"));
+        assertTrue(beam.contains("alienevo:flames_13"));
+        assertFalse(beam.contains("afomni:flames_00\""));
+
+        String fly = get(resources, "assets/afomni/particles/swamp_flame_fly.json");
+        assertTrue(fly.contains("afomni:flames_00b"));
+        assertTrue(fly.contains("alienevo:flames_05"));
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+    }
 
     @Test
     void doesNotTouchOtherResourcesOrUnrelatedScripts() {
