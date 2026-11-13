@@ -679,6 +679,38 @@ order. PlayerAPI lifecycle uses player/tick/clone events and attachments; invent
 | Spawn provenance and generation fauna | Finalize-spawn events expose no provenance setter without initialization; `PotentialSpawns` does not cover the generation-fauna list lookup. |
 | Generation prerequisites | Feature events do not expose chunk-stage dependency radii. |
 | Hosted mob AI and shadow placement | Entity tick cancellation affects the whole tick; living render events do not surround dispatcher shadow drawing. |
+| Player subclass travel | NeoForge has no event or hook that replaces a living entity's `travel`; the jump, fall and living tick of the same subclass use `LivingJumpEvent`, `LivingFallEvent` and `PlayerTickEvent`. |
+
+### Mod-owned player classes and sky textures
+
+A mod that makes the player an instance of its own subclass of the client player (`class EntityPlayerMoon extends EntityPlayerSP`, handed over
+through `Minecraft.changeWorld(world, message, player)`) keeps the native player. `PlayerClassOverridesB173` stores the subclass instance per
+player UUID and runs its overridden callbacks where Beta ran them, on the native player's state, writing back what they change: `moveEntityWithHeading`
+for the local player's travel (one mixin on `LivingEntity.travel`), `jump` on `LivingJumpEvent`, `fall` on `LivingFallEvent` (server), and
+`onLivingUpdate` every server tick. The mod's own reads of `mc.thePlayer` see the subclass (its `instanceof` checks), and a plain player object
+puts the native behaviour back. Original `setEntityDead` on a native player and `loadedEntityList.remove(player)` never discard it.
+`Entity.setInPortal` and `EntityPlayerSP.portal` feed the shared portal contact path.
+
+`RenderEngine`'s private name-to-id table (`textures`) is a lazy map; a mod that writes another texture's id under `/terrain/sun.png` or
+`/terrain/moon.png` (a different moon) has that image placed on the native sun and moon-phase textures until the default id is written back.
+
+On a dedicated server the mod's callbacks run in the server's process while a remote client simulates its own movement and draws its own sky.
+`PlayerClassOverridesB173` therefore tells a remote client which player class is active (the client builds its own instance of that class from the
+mod's classes it has too, and runs its travel and jump), and forwards the render engine's texture overrides, which are also resent when a
+player logs in or is handed the class. A single player's client shares the process and is told nothing.
+
+### Install roots, world-dependent faces, ores and the jump key
+
+- **Install root.** Beta archives keep the files that were copied into minecraft.jar under one folder (`jar/mod_X.class`, `jar/moon/earth.png`).
+  The loader reads that root from where each class sits against its own package and moves the other entries below it to the jar root, so
+  `/moon/earth.png` resolves. Jars whose classes already sit at their package path are untouched.
+- **Placement order.** Beta ran `onBlockAdded` (which makes the tile entity of many blocks) before `onBlockPlaced`/`onBlockPlacedBy`; for an item
+  placement NeoForge runs `onPlace` after `setPlacedBy`. `setPlacedBy` therefore runs `onBlockAdded` first and the following `onPlace` skips it.
+- **World-dependent faces.** A block that chooses its face textures from the world (a machine's front, lit while running) has its tile entity sent to
+  clients whenever the chosen faces change, and the client re-meshes when the update arrives.
+- **Ores.** `WorldGenMinable` is the shim's `OreFeature` (Beta's ellipsoid vein algorithm), used by mods' `GenerateSurface`.
+- **Jump key.** Beta's `isJumping` is not known to a server. The client reports the jump key through the key-input payload (a single player's server
+  directly, a remote one by packet) and the server's player view reads it, so jetpacks work on a dedicated server.
 
 ## GuiAPI settings and TWL models
 

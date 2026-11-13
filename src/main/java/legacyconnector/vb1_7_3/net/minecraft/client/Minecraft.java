@@ -51,6 +51,9 @@ public class Minecraft {
     }
     /** Phantom field accessor: cached Minecraft references resolve the actor of this callback, rather than another world's player. */
     public static legacyconnector.vb1_7_3.net.minecraft.entity.player.ClientPlayerEntity mcc$get$player(Minecraft minecraft){
+        return org.kylepitcock.legacyconnector.vb1_7_3.PlayerClassOverridesB173.present(mcc$basePlayer(minecraft));
+    }
+    private static legacyconnector.vb1_7_3.net.minecraft.entity.player.ClientPlayerEntity mcc$basePlayer(Minecraft minecraft){
         Minecraft active=SCOPED.get()==null?minecraft:SCOPED.get();
         if(active.explicitPlayer!=null)return active.explicitPlayer;
         var overridden=PLAYER_OVERRIDE.get();if(overridden!=null)return overridden;
@@ -95,6 +98,15 @@ public class Minecraft {
     public Screen currentScreen;
 
     protected Minecraft() {}
+
+    /**
+     * Beta's {@code Minecraft.changeWorld(World, String, EntityPlayer)}: a mod that makes the player an instance of its own subclass of the
+     * client player (a different gravity, a suit) hands it over here. The subclass's overrides then run for the player of this callback; a
+     * plain client player puts the native behaviour back.
+     */
+    public void setWorld(World world,String message,legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity player){
+        org.kylepitcock.legacyconnector.vb1_7_3.PlayerClassOverridesB173.hand(player);
+    }
 
     public static Minecraft mcc$instance() {
         Minecraft scoped=SCOPED.get();return scoped==null?INSTANCE:scoped;

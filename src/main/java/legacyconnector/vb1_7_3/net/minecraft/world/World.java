@@ -400,6 +400,10 @@ public class World implements BlockView {
         }
         BlockState next = org.kylepitcock.legacyconnector.vb1_7_3.VanillaBlockStatesB173.modernState(BlocksB173.legacyId(s), meta, s);
         if (next == null) next = BlocksB173.modernState(BlocksB173.legacyId(s), meta);
+        // Beta metadata writes validated nothing: a builder that writes the same metadata to both door halves and fixes each half afterwards
+        // passes through a state the native door would repair by removing its partner. Without neighbour notification the shape is left alone.
+        if (s.getBlock() instanceof net.minecraft.world.level.block.DoorBlock && (flags & net.minecraft.world.level.block.Block.UPDATE_NEIGHBORS) == 0)
+            flags |= net.minecraft.world.level.block.Block.UPDATE_KNOWN_SHAPE;
         boolean torchVariant=org.kylepitcock.legacyconnector.vb1_7_3.VanillaBlockStatesB173.isTorch(BlocksB173.legacyId(s),s)
                 &&org.kylepitcock.legacyconnector.vb1_7_3.VanillaBlockStatesB173.isTorch(BlocksB173.legacyId(s),next);
         return next != s && (next.getBlock() == s.getBlock()||torchVariant||BlocksB173.legacyId(next)==BlocksB173.legacyId(s)) && writeMeta(p,next,flags);
@@ -759,6 +763,20 @@ public class World implements BlockView {
             }
             @Override public int size(){return snapshot().size();}
             @Override public Object get(int index){return org.kylepitcock.legacyconnector.vb1_7_3.EntityViewsB173.wrap(snapshot().get(index));}
+            /** Beta's {@code loadedEntityList.remove}: the entity leaves the world. A native player is never removed this way (a mod that replaces its player object does it). */
+            @Override public Object remove(int index){
+                var entity=snapshot().get(index);var view=org.kylepitcock.legacyconnector.vb1_7_3.EntityViewsB173.wrap(entity);
+                if(!(entity instanceof net.minecraft.world.entity.player.Player)&&!entity.isRemoved())entity.discard();
+                return view;
+            }
+            @Override public boolean remove(Object object){
+                var all=snapshot();
+                for(int i=0;i<all.size();i++){
+                    var view=org.kylepitcock.legacyconnector.vb1_7_3.EntityViewsB173.wrap(all.get(i));
+                    if(view==object||view!=null&&view.equals(object)){remove(i);return true;}
+                }
+                return false;
+            }
             @Override public java.util.Iterator<Object> iterator(){
                 return snapshot().stream().map(e -> (Object)org.kylepitcock.legacyconnector.vb1_7_3.EntityViewsB173.wrap(e)).iterator();
             }

@@ -71,11 +71,20 @@ public final class KeyBindingsB173 {
                 }
             }
         });
-        bus.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent event)->HELD.remove(event.getEntity().getUUID()));
-        bus.addListener((net.neoforged.neoforge.event.server.ServerStoppedEvent event)->HELD.clear());
+        bus.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent event)->{HELD.remove(event.getEntity().getUUID());JUMP.remove(event.getEntity().getUUID());});
+        bus.addListener((net.neoforged.neoforge.event.server.ServerStoppedEvent event)->{HELD.clear();JUMP.clear();});
     }
     /** Only pre-registered identifiers can select a callback; identity is always the receiving connection's player. */
+    /** The player's jump key, which Beta code reads as {@code isJumping}; a server never receives it from the native client. */
+    public static final String JUMP_ID="mcc$jump";
+    private static final Map<UUID,long[]> JUMP=new java.util.concurrent.ConcurrentHashMap<>();
+    /** True while the client reports the jump key held (reports repeat every ten ticks; one older than forty ticks is dropped). */
+    public static boolean jumpHeld(ServerPlayer player){
+        var state=JUMP.get(player.getUUID());
+        return state!=null&&state[0]==1&&player.server.getTickCount()-state[1]<=40;
+    }
     public static void input(ServerPlayer player,String id,boolean down,boolean screen){
+        if(JUMP_ID.equals(id)){JUMP.put(player.getUUID(),new long[]{down?1:0,player.server.getTickCount()});return;}
         synchronized(KeyBindingsB173.class){if(!KEYS.containsKey(id))return;}
         var state=HELD.computeIfAbsent(player.getUUID(),ignored->new HashMap<>()).computeIfAbsent(id,ignored->new Held());
         state.down=down;state.screen=screen;state.inputTick=player.server.getTickCount();

@@ -313,7 +313,7 @@ public final class EntityViewsB173 {
                 if(view instanceof PlayerViewB173 player)player.writeBack();
                 if(view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity living&&modern instanceof net.minecraft.world.entity.LivingEntity nativeLiving)
                     NativeMovementSpeedB173.commit(nativeLiving,touched.movementSpeed,living.mcc$movementSpeed());
-                if(view.dead&&!modern.isRemoved()){modern.discard();continue;}
+                if(view.dead&&!modern.isRemoved()&&!(modern instanceof net.minecraft.world.entity.player.Player)){modern.discard();continue;} // a native player is never discarded for an original setEntityDead (a mod replacing its player object calls it)
                 if(touched.placement!=null)touched.placement.apply(view,modern);
                 if(view.fireTicks>modern.getRemainingFireTicks())modern.setRemainingFireTicks(view.fireTicks);
                 Extra before=touched.extra;

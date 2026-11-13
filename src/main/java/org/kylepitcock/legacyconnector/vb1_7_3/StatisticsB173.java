@@ -41,11 +41,11 @@ public final class StatisticsB173 {
             if(family==0x1000000){
                 var blocks=legacyconnector.vb1_7_3.net.minecraft.block.Block.BLOCKS;
                 var block=id>=0&&id<blocks.length&&blocks[id]!=null?blocks[id].mcc$modern:null;
-                return block==null?null:net.minecraft.stats.Stats.BLOCK_MINED.get(block);
+                return block==null||!net.minecraft.core.registries.BuiltInRegistries.BLOCK.containsValue(block)?null:net.minecraft.stats.Stats.BLOCK_MINED.get(block);
             }
             var items=legacyconnector.vb1_7_3.net.minecraft.item.Item.ITEMS;
             var nativeItem=id>=0&&id<items.length&&items[id]!=null?items[id].mcc$modern:null;
-            if(nativeItem==null)return null;
+            if(nativeItem==null||!net.minecraft.core.registries.BuiltInRegistries.ITEM.containsValue(nativeItem))return null; // a stat of a legacy item that is no registered native item has no native counterpart
             return switch(family){case 0x1010000->net.minecraft.stats.Stats.ITEM_CRAFTED.get(nativeItem);case 0x1020000->net.minecraft.stats.Stats.ITEM_USED.get(nativeItem);case 0x1030000->net.minecraft.stats.Stats.ITEM_BROKEN.get(nativeItem);default->null;};
         }
         if(!"minecraft".equals(stat.mcc$namespace)||legacyconnector.vb1_7_3.net.minecraft.stat.Stats.getStatById(stat.id)!=stat)return null;
@@ -55,7 +55,9 @@ public final class StatisticsB173 {
         return net.minecraft.core.registries.BuiltInRegistries.CUSTOM_STAT.containsKey(id)?net.minecraft.stats.Stats.CUSTOM.get(id):null;
     }
     public static boolean increment(ServerPlayer player,Stat stat,int amount){
-        var nativeStat=nativeStat(stat);if(nativeStat==null)return false;
+        net.minecraft.stats.Stat<?> nativeStat;
+        try{nativeStat=nativeStat(stat);}catch(RuntimeException error){return false;} // a legacy stat with no native counterpart is not counted
+        if(nativeStat==null)return false;
         if(amount<=0)return true;
         if(nativeOwns(player,nativeStat)){var owned=OWNED.get();int credit=Math.min(owned.credit,amount);amount-=credit;owned.credit-=credit;}
         if(amount>0)player.awardStat(nativeStat,amount);return true;

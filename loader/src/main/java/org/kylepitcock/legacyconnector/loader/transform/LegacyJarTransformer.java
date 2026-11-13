@@ -173,7 +173,33 @@ public final class LegacyJarTransformer {
                 }
             }
         }
+        if (jar.version == LegacyVersion.VB1_7_3) stripInstallRoot(classes, other);
         return new Contents(classes, other, manifest, new ArrayList<>());
+    }
+
+    /**
+     * Beta mod archives keep the files that were copied into minecraft.jar under one folder ({@code jar/mod_X.class}, {@code jar/moon/earth.png}).
+     * The folder is the install root, read from where each class sits against its own package name; the mod asks for its resources
+     * ({@code /moon/earth.png}) as if the root were the jar's root, so the files below it move there.
+     */
+    private static void stripInstallRoot(Map<String, byte[]> classes, Map<String, byte[]> other) {
+        String root = null;
+        for (var c : classes.entrySet()) {
+            String internal;
+            try { internal = new org.objectweb.asm.ClassReader(c.getValue()).getClassName(); }
+            catch (RuntimeException e) { return; }
+            String key = c.getKey();
+            if (key.equals(internal)) return; // a class at its package's own path: the jar root is the install root
+            if (!key.endsWith("/" + internal)) return;
+            String found = key.substring(0, key.length() - internal.length());
+            if (root == null) root = found; else if (!root.equals(found)) return;
+        }
+        if (root == null || root.isEmpty()) return;
+        for (var entry : List.copyOf(other.entrySet())) {
+            if (!entry.getKey().startsWith(root)) continue;
+            other.remove(entry.getKey());
+            other.putIfAbsent(entry.getKey().substring(root.length()), entry.getValue());
+        }
     }
 
     /**

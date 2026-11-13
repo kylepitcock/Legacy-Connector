@@ -84,6 +84,13 @@ public final class KeyClientB173 {
             if(server!=null){var uuid=minecraft.player.getUUID();server.execute(()->{var actor=server.getPlayerList().getPlayer(uuid);if(actor!=null)KeyBindingsB173.input(actor,registration.id(),pressed,screen);});}
             else if(current.hasChannel(LegacyPayload.TYPE))net.neoforged.neoforge.network.PacketDistributor.sendToServer(KeyBindingsB173.packet(registration.id(),pressed,screen));
         }
+        // the jump key (Beta's isJumping) is reported the same way, to a single player's server or a remote one
+        boolean jump=minecraft.options.keyJump.isDown()&&!screen;Boolean oldJump=SENT.put(KeyBindingsB173.JUMP_ID,jump);
+        if(oldJump==null||oldJump!=jump||heartbeat){
+            var server=minecraft.getSingleplayerServer();
+            if(server!=null){var uuid=minecraft.player.getUUID();server.execute(()->{var actor=server.getPlayerList().getPlayer(uuid);if(actor!=null)KeyBindingsB173.input(actor,KeyBindingsB173.JUMP_ID,jump,false);});}
+            else if(current.hasChannel(LegacyPayload.TYPE))net.neoforged.neoforge.network.PacketDistributor.sendToServer(KeyBindingsB173.packet(KeyBindingsB173.JUMP_ID,jump,false));
+        }
     }
     private static boolean menuActive(net.minecraft.client.gui.screens.Screen screen){
         var minecraft=Minecraft.getInstance();

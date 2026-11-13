@@ -139,6 +139,15 @@ public class LegacyB173BlockEntity extends net.minecraft.world.level.block.entit
      * Original ticking tiles can change inventory/timers without calling markDirty themselves. */
     private static final Map<Class<?>, Boolean> SYNCS = new ConcurrentHashMap<>();
     private net.minecraft.nbt.CompoundTag lastSent;
+    private int[] lastFaces;
+    private static final Map<Class<?>, Boolean> WORLD_TEXTURED = new ConcurrentHashMap<>();
+
+    /** The legacy block of this tile entity when it chooses its face textures from the world, else null. */
+    private legacyconnector.vb1_7_3.net.minecraft.block.Block worldTextured() {
+        if (!(getBlockState().getBlock() instanceof LegacyB173Block hosted)) return null;
+        var block = hosted.legacy();
+        return WORLD_TEXTURED.computeIfAbsent(block.getClass(), c -> AssetsB173.usesWorldTextures(block)) ? block : null;
+    }
 
     /** A tile entity that builds its own description packet (BuildCraft's engines and pipes) is the one Beta sent to the players near it. */
     private static boolean syncs(Class<?> type) {
@@ -152,7 +161,14 @@ public class LegacyB173BlockEntity extends net.minecraft.world.level.block.entit
 
     /** In Beta single player the client drew the very tile entity the server ticked; here the client has its own copy, so a changed state is sent. */
     private void syncToClients(BlockEntity te) {
-        if (level == null || level.isClientSide || !syncs(te.getClass())) return; // every tick: the client does not tick its copy, and Beta drew a state that changed 20 times a second
+        if (level == null || level.isClientSide) return;
+        // a block that picks its face textures from the world (a machine's front, lit while it runs) is sent when what it picks changes
+        var host = worldTextured();
+        if (host != null) {
+            int[] faces = AssetsB173.faceTextures(host, level, worldPosition, getBlockState());
+            if (!java.util.Arrays.equals(faces, lastFaces)) { lastFaces = faces; level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3); }
+        }
+        if (!syncs(te.getClass())) return; // every tick: the client does not tick its copy, and Beta drew a state that changed 20 times a second
         var tag = saveWithoutMetadata(level.registryAccess());
         if (tag.equals(lastSent)) return;
         lastSent = tag;
@@ -205,6 +221,7 @@ public class LegacyB173BlockEntity extends net.minecraft.world.level.block.entit
             try {
                 te.readNbt(NbtB173.fromModern(nbt));
                 attach();
+                if (level != null && level.isClientSide && worldTextured() != null) level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 8);
                 return;
             } catch (RuntimeException | LinkageError e) {
                 LOG.warn("b1.7.3 client update of {} at {} could not be read in place: {}", te.getClass().getName(), worldPosition, e.toString());

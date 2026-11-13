@@ -26,7 +26,7 @@ final class ModTicksClientB173 {
             boolean screen,boolean paused,boolean focused,int[] metrics){}
     static void install(){
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.client.event.RenderGuiEvent.Post event)->frame(event.getGuiGraphics()));
-        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.client.event.ClientTickEvent.Post event)->remoteTick());
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.client.event.ClientTickEvent.Post event)->{remoteTick();SkyTexturesB173.tick();});
         GameHookNetworkB173.installClient(new GameHookNetworkB173.Client(){
             public void ready(int session){var mc=Minecraft.getInstance();if(remoteConnection!=null&&remoteLevel!=null&&session==remoteSession&&remoteConnection==mc.getConnection()&&remoteLevel==mc.level){remoteReady=true;remoteFrame=null;}}
             public void frame(int session,CompoundTag frame){if(session==remoteSession&&remoteReady)remoteFrame=frame.copy();}
