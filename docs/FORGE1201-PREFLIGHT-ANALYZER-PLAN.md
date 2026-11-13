@@ -4,7 +4,7 @@
 **Working branch:** `feat/forge1201-preflight-analyzer`  
 **Baseline:** `dde40275b9b3bd48ff811afa4c863e475e8a0cdf`  
 **Target:** Forge 1.20.1-only mod JARs on NeoForge 1.21.1 / 21.1.x  
-**Boundary:** Palladium + Alien Evolution remain paused. Do not resume their adapter work as part of this milestone.
+**Boundary:** Palladium + Alien Evolution are handled in a separately authorized parallel workstream on `fix/forge1201-palladium-runtime-adapters`. Do not edit, merge, or cherry-pick that work from this analyzer branch.
 
 ## Purpose
 
