@@ -303,6 +303,96 @@ class PalladiumResourceCompat1201Test {
     }
 
     @Test
+    void migratesRemainingAlienEvoServerAccessThroughCallbackContextAndIsIdempotent() {
+        Map<String, byte[]> resources = new HashMap<>();
+        put(resources, "addon/alienevo/kubejs_scripts/charge_leap.js", """
+                .tick((entity, entry, holder, enabled) => {
+                    let username = entity.getGameProfile().getName();
+                    let scoreboard = Utils.server.scoreboard;
+                    let score = scoreboard.getOrCreatePlayerScore(username, scoreboardObj);
+                });
+                .lastTick((entity, entry, holder, enabled) => {
+                    let username = entity.getGameProfile().getName();
+                    let scoreboard = Utils.server.scoreboard;
+                    let score = scoreboard.getOrCreatePlayerScore(username, scoreboardObj);
+                });
+                """);
+        put(resources, "addon/alienevo/kubejs_scripts/detransform.js", """
+                .lastTick((entity, entry, holder, enabled) => {
+                    let scoreboardManager = Utils.server.scoreboard;
+                    entity.server.runCommandSilent("say reverting");
+                });
+                """);
+        put(resources, "addon/alienevo/kubejs_scripts/rolling_mechanics.js", """
+                .tick((entity, entry, holder, enabled) => {
+                    let scoreboard = Utils.server.scoreboard;
+                });
+                """);
+        put(resources, "data/alienevo/kubejs_scripts/xp.js", """
+                EntityEvents.death(event => {
+                    let source = event.source;
+                    if (source && source.player) {
+                        let player = source.player;
+                        let scoreboard = Utils.server.scoreboard;
+                    }
+                });
+                """);
+        put(resources, "data/alienevo/kubejs_scripts/level_command.js", """
+                function maxAllAliens(playerName) {
+                  let server = Utils.server;
+                  let scoreboard = server.scoreboard;
+                  let score = scoreboard.getOrCreatePlayerScore(playerName, levelObj);
+                }
+                ServerEvents.commandRegistry(event => {
+                  event.register(Commands.literal("maxaliens").executes(ctx => {
+                    let target = Arguments.PLAYER.getResult(ctx, 'player');
+                    let username = target.getGameProfile().getName();
+                    let aliensMaxed = maxAllAliens(username);
+                    return 1;
+                  }));
+                });
+                function giveAlienControl(playerName) {
+                  let server = Utils.server;
+                  let scoreboard = server.scoreboard;
+                }
+                ServerEvents.commandRegistry(event => {
+                  event.register(Commands.literal("mastercontrol").executes(ctx => {
+                    let target = Arguments.PLAYER.getResult(ctx, 'player');
+                    let username = target.getGameProfile().getName();
+                    return giveAlienControl(username);
+                  }));
+                });
+                """);
+
+        assertEquals(5, PalladiumResourceCompat1201.apply(resources));
+
+        String chargeLeap = get(resources, "addon/alienevo/kubejs_scripts/charge_leap.js");
+        assertEquals(2, occurrences(chargeLeap, "entity.server.scoreboard"));
+        assertFalse(chargeLeap.contains("Utils.server"));
+
+        String detransform = get(resources, "addon/alienevo/kubejs_scripts/detransform.js");
+        assertEquals(1, occurrences(detransform, "entity.server.scoreboard"));
+        assertFalse(detransform.contains("Utils.server"));
+
+        String rolling = get(resources, "addon/alienevo/kubejs_scripts/rolling_mechanics.js");
+        assertEquals(1, occurrences(rolling, "entity.server.scoreboard"));
+        assertFalse(rolling.contains("Utils.server"));
+
+        String xp = get(resources, "data/alienevo/kubejs_scripts/xp.js");
+        assertEquals(1, occurrences(xp, "player.server.scoreboard"));
+        assertFalse(xp.contains("Utils.server"));
+
+        String level = get(resources, "data/alienevo/kubejs_scripts/level_command.js");
+        assertFalse(level.contains("Utils.server"));
+        assertTrue(level.contains("function maxAllAliens(playerName, server)"));
+        assertTrue(level.contains("function giveAlienControl(playerName, server)"));
+        assertTrue(level.contains("maxAllAliens(username, target.server)"));
+        assertTrue(level.contains("return giveAlienControl(username, target.server)"));
+
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+    }
+
+    @Test
     void migratesAlienEvoStatAbilityServerAccessAndIsIdempotent() {
         Map<String, byte[]> resources = new HashMap<>();
         put(resources, PalladiumResourceCompat1201.ALIEN_EVO_STAT_ABILITY, """
