@@ -260,6 +260,13 @@ public final class JavaCompatRedirects {
         staticToStatic(gl20, "glVertexAttribPointer", "(IIZILjava/nio/FloatBuffer;)V", gl, "glVertexAttribPointerBuffer");
         INVOKES.put("org/lwjgl/opengl/GL30.glClearBuffer(IILjava/nio/FloatBuffer;)V",
                 new MethodInsnNode(Opcodes.INVOKESTATIC, "org/lwjgl/opengl/GL30", "glClearBufferfv", "(IILjava/nio/FloatBuffer;)V", false));
+        // OpenAL: LWJGL 2's typed-buffer overloads got explicit suffixes in LWJGL 3 (alListener(int, FloatBuffer) -> alListenerfv)
+        String al = "org/lwjgl/openal/AL10";
+        staticToStatic(al, "alGetListener", "(ILjava/nio/FloatBuffer;)V", al, "alGetListenerfv");
+        staticToStatic(al, "alListener", "(ILjava/nio/FloatBuffer;)V", al, "alListenerfv");
+        staticToStatic(al, "alSource", "(IILjava/nio/FloatBuffer;)V", al, "alSourcefv");
+        INVOKES.put(al + ".alIsExtensionPresent(Ljava/lang/String;)Z",
+                new MethodInsnNode(Opcodes.INVOKESTATIC, al, "alIsExtensionPresent", "(Ljava/lang/CharSequence;)Z", false));
         // javac widens a byte or short argument to int; Kotlin and some bytecode generators name the narrow overload, which does not exist
         INVOKES.put("java/lang/StringBuilder.append(B)Ljava/lang/StringBuilder;",
                 new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "java/lang/StringBuilder", "append", "(I)Ljava/lang/StringBuilder;", false));
