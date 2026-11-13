@@ -53,6 +53,7 @@ holding the hand-written shim under `src/main/java/legacyconnector/v1_7_10`, bri
   count of `src/main/java/**/*.java` with the classes under `build/classes` (Gradle can silently drop moved classes).
 - `./gradlew build` for everything, `./gradlew checkLegacyMod -PlegacyJar=a.jar,b.jar` for an offline link check of
   jars (generates and verifies the synthesized API).
+- Regression suites: `tools/dev/verify.sh [--update] [suite ...]` runs named jar sets (`tools/dev/verify/suites/*.txt`) through the headless server self test and compares the metrics with `tools/dev/verify/baseline.json` (wiki Development, "Regression suites"); run it before merging shim/loader changes.
 - Server tests: `tools/dev/run-subset.sh <jar-name-fragments>` (a few mods, 1-2 min, prints the block/item/entity
   self tests), `tools/dev/run-corpus.sh [dir]` (a whole directory of jars). Test mods are user-supplied and
   gitignored (`test-mods/`, `test-mods2/`); never commit or redistribute mod jars. Run only one server at a time and never

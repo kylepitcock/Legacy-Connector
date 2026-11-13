@@ -1,0 +1,4 @@
+1.4.7 RedPowerCore-2.0pr6
+1.4.7 RedPowerDigital-2.0pr6
+1.4.7 RedPowerMechanical-2.0pr6
+1.4.7 RedPowerCompat-2.0pr6
