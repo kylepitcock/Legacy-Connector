@@ -31,6 +31,8 @@ with the pack's other mods instead of being painted over them, and data packs ca
 
 **Compatibility list and reports: https://kylepitcock.github.io/Legacy-Connector/** (check a mod, or report how it worked for you).
 
+**Nightly builds:** every push to `master` is built automatically and published as the [nightly pre-release](https://github.com/kylepitcock/Legacy-Connector/releases/tag/nightly). Use it to get a fix before the next release; it is untested, so back up your world. Releases on Modrinth, CurseForge and GitHub come less often and are the tested builds.
+
 Screenshots of legacy mods running on 1.21.1 are at the [end of this page](#screenshots).
 
 ## Status

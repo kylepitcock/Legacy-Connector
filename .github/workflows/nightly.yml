@@ -1,0 +1,86 @@
+name: Nightly build
+
+# Builds the distributable jar after every push to master and publishes it as the rolling "nightly" pre-release on GitHub
+# (one release, replaced each time; never uploaded to Modrinth or CurseForge). Stable releases (tags v<version>) stay manual and less
+# frequent; this is the cutting-edge build for people who want a fix before the next release.
+# Version of a nightly jar: <mod_version of gradle.properties>-nightly.<run number>.<short commit>.
+on:
+  push:
+    branches: [master]
+    paths-ignore:
+      - "docs/**"
+      - "**.md"
+      - ".github/description/**"
+      - ".github/ISSUE_TEMPLATE/**"
+      - "tools/compat/**"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nightly
+  cancel-in-progress: true
+
+jobs:
+  nightly:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Work out the version
+        id: ver
+        run: |
+          BASE=$(grep -E '^mod_version=' gradle.properties | cut -d= -f2 | tr -d '[:space:]')
+          SHORT=$(git rev-parse --short=7 HEAD)
+          LAST=$(git describe --tags --abbrev=0 --match 'v[0-9]*' 2>/dev/null || true)
+          echo "version=${BASE}-nightly.${{ github.run_number }}.${SHORT}" >> "$GITHUB_OUTPUT"
+          echo "short=${SHORT}" >> "$GITHUB_OUTPUT"
+          echo "last=${LAST}" >> "$GITHUB_OUTPUT"
+
+      - name: Build
+        run: |
+          chmod +x gradlew
+          ./gradlew bundleJar -Pmod_version=${{ steps.ver.outputs.version }}
+          ls -la build/dist
+
+      - name: Release notes
+        run: |
+          {
+            echo "Automatic build of \`master\` at ${{ github.sha }} ($(date -u +'%Y-%m-%d %H:%M UTC'))."
+            echo
+            echo "This is the newest code, built after every push. It has passed compilation only: it is not tested like a release and may break worlds. **Back up your world first.** For normal play use the [latest release](https://github.com/${{ github.repository }}/releases/latest) (also on Modrinth and CurseForge)."
+            echo
+            echo "When you report a problem found with a nightly, give the version shown in the jar name (\`${{ steps.ver.outputs.version }}\`)."
+            echo
+            if [ -n "${{ steps.ver.outputs.last }}" ]; then
+              echo "## Changes since ${{ steps.ver.outputs.last }}"
+              echo
+              git log --no-merges --pretty='- %s (%h)' "${{ steps.ver.outputs.last }}..HEAD" | head -n 200
+            fi
+          } > notes.md
+          # GitHub limits a release body to 125,000 characters
+          head -c 100000 notes.md > notes.cut && mv notes.cut notes.md
+
+      - name: Replace the nightly release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete nightly --cleanup-tag --yes -R "${{ github.repository }}" 2>/dev/null || true
+          # the tag may outlive a release that was removed by hand
+          git push origin :refs/tags/nightly 2>/dev/null || true
+          gh release create nightly build/dist/legacyconnector-*.jar \
+            -R "${{ github.repository }}" \
+            --target "${{ github.sha }}" \
+            --prerelease --latest=false \
+            --title "Nightly ${{ steps.ver.outputs.version }}" \
+            --notes-file notes.md

@@ -110,7 +110,16 @@ holding the hand-written shim under `src/main/java/legacyconnector/v1_7_10`, bri
 
 ## Releases
 
-Pre-1.0 versioning: bump the PATCH for every release (0.0.1, 0.0.2, ...); bump the MINOR only for a milestone (a new legacy
-version supported); 1.0.0 is reserved for when the project is ready. Steps: set `mod_version` in `gradle.properties`
-BEFORE building and committing, `./gradlew bundleJar`, copy `build/dist/legacyconnector-<ver>*.jar` to
-`legacyconnector-<ver>.jar`, `gh release create v<ver> <jar>` with release notes. License: MIT.
+Two channels (since 2026-11-13):
+
+- **Nightly** (automatic): `.github/workflows/nightly.yml` builds `bundleJar` after every push to master (docs-only pushes are skipped) and
+  replaces the rolling GitHub pre-release `nightly` (version `<mod_version>-nightly.<run>.<sha>`, never sent to Modrinth/CurseForge). So a
+  fix reaches players by pushing to master; point reporters to the nightly when their problem is fixed there. Do not cut a release for a
+  single fix.
+- **Stable** (manual, less frequent, bigger): only when the maintainer asks or a batch of verified work has accumulated. Pre-1.0
+  versioning: bump the PATCH per release; bump the MINOR only for a milestone (a new legacy version supported); 1.0.0 is reserved for
+  when the project is ready. Steps: set `mod_version` in `gradle.properties` BEFORE building and committing, `./gradlew bundleJar`, copy
+  `build/dist/legacyconnector-<ver>*.jar` to `legacyconnector-<ver>.jar`, `gh release create v<ver> <jar>` with release notes
+  (`publish.yml` then uploads it to Modrinth and CurseForge; it skips pre-releases).
+
+License: MIT.

@@ -24,6 +24,7 @@ concurrency:
 
 jobs:
   probe:
+    if: ${{ github.event_name != 'release' || !github.event.release.prerelease }}
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
