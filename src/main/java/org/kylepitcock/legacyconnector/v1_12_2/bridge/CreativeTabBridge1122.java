@@ -82,9 +82,14 @@ public final class CreativeTabBridge1122 {
         }
         for (var s : raw) {
             var modern = Stacks1122.toModern(s);
-            if (!modern.isEmpty()) out.add(modern);
+            if (!modern.isEmpty() && registered(modern)) out.add(modern);
         }
         return new ArrayList<>(out);
+    }
+
+    /** A stack of an item that was never registered (a dropped duplicate) must stay out of the tabs: the search trees read each item's registry key. */
+    private static boolean registered(net.minecraft.world.item.ItemStack stack) {
+        return stack.getItem().builtInRegistryHolder().isBound();
     }
 
     private static ResourceKey<CreativeModeTab> vanillaKey(String label) {
@@ -129,7 +134,7 @@ public final class CreativeTabBridge1122 {
             }
             for (var s : list) {
                 var modern = Stacks1122.toModern(s);
-                if (modern.isEmpty() || event.getParentEntries().contains(modern) || event.getSearchEntries().contains(modern)) continue;
+                if (modern.isEmpty() || !registered(modern) || event.getParentEntries().contains(modern) || event.getSearchEntries().contains(modern)) continue;
                 try {
                     event.accept(modern);
                 } catch (IllegalArgumentException | IllegalStateException duplicate) {

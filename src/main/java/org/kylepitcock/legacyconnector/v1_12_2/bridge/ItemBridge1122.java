@@ -64,10 +64,13 @@ public final class ItemBridge1122 {
         if (item instanceof ItemBlock ib && ib.getBlock() != null && BlockBridge1122.modern(ib.getBlock()) != null) {
             var block = BlockBridge1122.modern(ib.getBlock());
             ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(block);
+            // an ItemBlock registered under its own name keeps it (BuildCraft's pipes: one pipe_holder block, an item per pipe type);
+            // under the block's id they all collided and every one but the first was dropped, leaving unregistered items in the tabs
+            ResourceLocation itemId = base != null && !base.equals(blockId) ? base : blockId;
             var modern = new Legacy1122BlockItem(item, block, properties(item));
-            LegacyRegistrar.register(BuiltInRegistries.ITEM, blockId, modern);
+            LegacyRegistrar.register(BuiltInRegistries.ITEM, itemId, modern);
             item.mcc$modern = modern;
-            BLOCK_ITEMS.put(ib.getBlock(), item);
+            if (itemId.equals(blockId) || !BLOCK_ITEMS.containsKey(ib.getBlock())) BLOCK_ITEMS.put(ib.getBlock(), item);
             Map<Integer, net.minecraft.world.item.Item> v = new LinkedHashMap<>();
             v.put(0, modern);
             VARIANTS.put(item, v);

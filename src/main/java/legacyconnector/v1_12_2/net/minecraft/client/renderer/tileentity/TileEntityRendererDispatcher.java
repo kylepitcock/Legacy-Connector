@@ -17,6 +17,8 @@ public class TileEntityRendererDispatcher {
     public static double staticPlayerX;
     public static double staticPlayerY;
     public static double staticPlayerZ;
+    /** Forge's batch buffer of the 1.12.2 dispatcher (mods read it by reflection, e.g. BuildCraft's RenderUtil); the shared tessellator here. */
+    public legacyconnector.v1_12_2.net.minecraft.client.renderer.Tessellator batchBuffer = legacyconnector.v1_12_2.net.minecraft.client.renderer.Tessellator.getInstance();
     public TextureManager renderEngine;
     public World world;
     public Entity entity;

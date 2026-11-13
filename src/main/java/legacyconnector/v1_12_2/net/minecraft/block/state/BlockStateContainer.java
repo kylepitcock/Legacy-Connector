@@ -172,6 +172,18 @@ public class BlockStateContainer {
             this.propertyValueTable = com.google.common.collect.ImmutableTable.copyOf(table);
         }
 
+        /** Neighbour table key: the value's serialized name (an enum's own text may be shared: quartz lines_x, lines_y and lines_z all print "lines"). */
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        private static String neighbourKey(IProperty<?> property, Object value) {
+            String name;
+            try {
+                name = ((IProperty) property).getName((Comparable) value);
+            } catch (RuntimeException e) {
+                name = String.valueOf(value);
+            }
+            return property.getName() + "=" + name;
+        }
+
         void link(List<StateImplementation> all) {
             for (StateImplementation other : all) {
                 if (other == this) continue;
@@ -184,7 +196,7 @@ public class BlockStateContainer {
                         diffs++;
                     }
                 }
-                if (diffs == 1) neighbours.put(differing.getName() + "=" + other.values.get(differing), other);
+                if (diffs == 1) neighbours.put(neighbourKey(differing, other.values.get(differing)), other);
             }
         }
 
@@ -210,7 +222,7 @@ public class BlockStateContainer {
             Comparable<?> current = property == null ? null : values.get(property);
             if (current == null) return this; // vanilla blocks carry no properties here: the state stays as it is
             if (current.equals(value)) return this;
-            StateImplementation next = neighbours.get(property.getName() + "=" + value);
+            StateImplementation next = neighbours.get(neighbourKey(property, value));
             return next != null ? next : this;
         }
 
