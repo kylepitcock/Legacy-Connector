@@ -65,6 +65,8 @@ final class PalladiumResourceCompat1201 {
     private static final String SOUND_EVENT_HELPER_MARKER =
             "function getAlienEvoSoundEvent(soundId) {";
 
+    private static final String ALIEN_EVO_OBTAIN_SCROLL_ADVANCEMENT =
+            "data/alienevo/advancements/obtain_scroll.json";
     private static final String ALIEN_EVO_MACHINE_SCROLL_TAG =
             "data/alienevo/tags/item/machine_scroll.json";
     private static final String AFOMNI_HUMONGOSAUR_ANIMATION_SOURCE =
@@ -252,7 +254,12 @@ final class PalladiumResourceCompat1201 {
      * or other item membership.
      */
     private static int addMissingAlienEvoMachineScrollTag(Map<String, byte[]> resources) {
-        if (resources.containsKey(ALIEN_EVO_MACHINE_SCROLL_TAG)) return 0;
+        byte[] advancementBytes = resources.get(ALIEN_EVO_OBTAIN_SCROLL_ADVANCEMENT);
+        if (advancementBytes == null || resources.containsKey(ALIEN_EVO_MACHINE_SCROLL_TAG)) return 0;
+
+        String advancement = new String(advancementBytes, StandardCharsets.UTF_8);
+        if (!advancement.contains("\\"tag\\": \\"alienevo:machine_scroll\\"")) return 0;
+
         String tag = """
                 {
                   "replace": false,
