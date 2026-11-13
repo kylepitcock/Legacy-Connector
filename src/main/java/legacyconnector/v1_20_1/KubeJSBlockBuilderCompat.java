@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 /**
  * Restores KubeJS 6 BlockBuilder methods used by Forge 1.20.1 addon-pack scripts
@@ -27,9 +28,16 @@ public final class KubeJSBlockBuilderCompat {
     }
 
     /**
-     * KubeJS 6 BlockBuilder.model(String) selected the block model and its item
-     * representation. KubeJS 7 stores the block model in ModelledBuilderBase's
-     * parentModel ResourceLocation and keeps the item builder separately.
+     * KubeJS 6 BlockBuilder.model(String) selected the supplied block model.
+     * KubeJS 7's normal block-model path adds a generated full-cube element
+     * whenever tint callbacks are present, even when a custom parent model was
+     * selected. That element overrides the parent model's own geometry and
+     * refers to directional texture keys that legacy custom models need not
+     * define. Use modelGenerator to emit only the requested parent and texture
+     * overrides; the block tint callbacks remain registered on the builder.
+     *
+     * <p>The item builder keeps its own parentModel because it has a separate
+     * asset-generation path.</p>
      */
     public static Object model(Object builder, String model) {
         Objects.requireNonNull(builder, "KubeJS block builder");
@@ -37,6 +45,29 @@ public final class KubeJSBlockBuilderCompat {
         try {
             Object parent = parseModelLocation(builder, model);
             publicField(builder, "parentModel").set(builder, parent);
+
+            Field modelGeneratorField = publicField(builder, "modelGenerator");
+            if (parent == null) {
+                modelGeneratorField.set(builder, null);
+            } else {
+                Consumer<Object> customModel = generatedModel -> {
+                    try {
+                        Method parentSetter = generatedModel.getClass()
+                                .getMethod("parent", parent.getClass());
+                        parentSetter.invoke(generatedModel, parent);
+
+                        Object rawTextures = publicField(builder, "textures").get(builder);
+                        if (!(rawTextures instanceof Map<?, ?> textures)) {
+                            throw new IllegalStateException("KubeJS BlockBuilder.textures is not a Map");
+                        }
+                        Method textureSetter = generatedModel.getClass().getMethod("textures", Map.class);
+                        textureSetter.invoke(generatedModel, textures);
+                    } catch (ReflectiveOperationException error) {
+                        throw compatibilityFailure("model(String) model generator", error);
+                    }
+                };
+                modelGeneratorField.set(builder, customModel);
+            }
 
             Object itemBuilder = publicField(builder, "itemBuilder").get(builder);
             if (itemBuilder != null) {
