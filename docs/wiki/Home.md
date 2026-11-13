@@ -28,6 +28,7 @@ technical documentation; the [README](../../README.md) has installation and the 
 | [Legacy 1.20.1 fork porting notes](Legacy-1.20.1-Fork-Porting-Notes.md) | A contributor's (kentvillamor08) independent 1.20.1 pipeline notes: scoped adapters, verifiers, pilot results |
 | [Legacy 1.20.1 corpus](Legacy-1.20.1-Corpus.md) | Measured gap report of 140 real Forge 1.20.1 jars (72 abandoned content mods): ranked unresolved symbols, mixins, cheap/medium/heavy, order of work |
 | [Version roadmap](Version-Roadmap.md) | Which versions come when, and why |
+| [Work plan](Work-Plan.md) | How the work is organised: defect classes, automated verification, generic features, who does what |
 | [Legacy 1.6.4 estimate](Legacy-1.6.4-Estimate.md) | Effort and approach for a 1.6.4 layer on top of the 1.7.10 shim |
 | [Legacy 1.6.4 corpus](Legacy-1.6.4-Corpus.md) | Measured API usage of 43 real 1.6.4 mods (numeric ids, old packets, renamed classes) |
 | [Legacy b1.7.3](Legacy-b1.7.3.md) | Beta 1.7.3 ModLoader / Forge 1.0 mods: status, how jars are deobfuscated and linked, plan |
