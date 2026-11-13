@@ -2,6 +2,7 @@ package org.kylepitcock.legacyconnector.loader.transform;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.charset.StandardCharsets;
@@ -292,6 +293,53 @@ class PalladiumResourceCompat1201Test {
         assertTrue(xp.contains("score.get()"));
         assertTrue(xp.contains("score.set("));
         assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+    }
+
+    @Test
+    void migratesAlienEvoStatAbilityServerAccessAndIsIdempotent() {
+        Map<String, byte[]> resources = new HashMap<>();
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_STAT_ABILITY, """
+                .lastTick((entity, entry, holder, enabled) => {
+                    const scoreboard = Utils.server.scoreboard;
+                });
+                .tick((entity, entry, holder, enabled) => {
+                    const scoreboard = Utils.server.scoreboard;
+                });
+                """);
+
+        assertEquals(1, PalladiumResourceCompat1201.apply(resources));
+        String migrated = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_STAT_ABILITY);
+        assertEquals(2, occurrences(migrated, "entity.server.scoreboard"));
+        assertFalse(migrated.contains("Utils.server.scoreboard"));
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+        assertEquals(migrated, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_STAT_ABILITY));
+
+        Map<String, byte[]> unknownShape = new HashMap<>();
+        put(unknownShape, PalladiumResourceCompat1201.ALIEN_EVO_STAT_ABILITY,
+                "const scoreboard = Utils.server.scoreboard;");
+        assertThrows(IllegalStateException.class, () -> PalladiumResourceCompat1201.apply(unknownShape));
+    }
+
+    @Test
+    void migratesAlienEvoFailsafeSoundEventAndIsIdempotent() {
+        Map<String, byte[]> resources = new HashMap<>();
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_FAILSAFE, """
+                entity.level.playSound(null, entity.x, entity.y, entity.z,
+                        `alienevo:${watchType}_detransform`, entity.getSoundSource(), 1.0, 1.0);
+                """);
+
+        assertEquals(1, PalladiumResourceCompat1201.apply(resources));
+        String migrated = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_FAILSAFE);
+        assertTrue(migrated.contains("function getAlienEvoSoundEvent(soundId)"));
+        assertTrue(migrated.contains("getAlienEvoSoundEvent('alienevo:' + String(watchType) + '_detransform')"));
+        assertFalse(migrated.contains("`alienevo:${watchType}_detransform`"));
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+        assertEquals(migrated, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_FAILSAFE));
+
+        Map<String, byte[]> unknownShape = new HashMap<>();
+        put(unknownShape, PalladiumResourceCompat1201.ALIEN_EVO_FAILSAFE,
+                "entity.level.playSound(null, x, y, z, 'alienevo:unexpected', source, 1.0, 1.0);");
+        assertThrows(IllegalStateException.class, () -> PalladiumResourceCompat1201.apply(unknownShape));
     }
 
     @Test
