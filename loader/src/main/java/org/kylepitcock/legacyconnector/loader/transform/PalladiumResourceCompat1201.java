@@ -301,7 +301,7 @@ final class PalladiumResourceCompat1201 {
         }});
         changed += rewrite(resources, ALIEN_EVO_KINECELERAN_LAYER, new String[][] {{
                 "alienevo:animations/xlr8.json",
-                "alienevo:animations/xlr8.animation.json", "1"
+                "alienevo:animations/xlr8.animation.json", "3"
         }});
         return changed;
     }
