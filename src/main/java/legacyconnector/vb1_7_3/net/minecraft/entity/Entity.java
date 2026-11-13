@@ -88,7 +88,7 @@ public abstract class Entity {
 
     /** The modern entity this one is a view of, or null for a mod's own entity. */
     public net.minecraft.world.entity.Entity mcc$modern;
-    public legacyconnector.vb1_7_3.net.minecraft.util.math.Box boundingBox;
+    public legacyconnector.vb1_7_3.net.minecraft.util.math.Box boundingBox = legacyconnector.vb1_7_3.net.minecraft.util.math.Box.create(0, 0, 0, 0, 0, 0);
 
     /** The entity's data slots, created before {@link #initDataTracker()} runs. */
     public legacyconnector.vb1_7_3.net.minecraft.entity.data.DataTracker dataTracker = new legacyconnector.vb1_7_3.net.minecraft.entity.data.DataTracker();

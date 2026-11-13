@@ -16,10 +16,13 @@ public final class BlockRenderB173 {
     /** True while a Beta block renderer runs: Beta drew on the game thread, so renderers could write blocks; here geometry is built on worker threads, where world writes are dropped. */
     public static boolean capturing(){return CAPTURING.get()!=null;}
     public static void register(int id,BaseMod mod){RENDERERS.put(id,mod);}
+    /** ModLoader's {@code getUniqueBlockModelID(mod, full3DItem)}: only a full 3D model id is drawn as an item by {@code RenderInvBlock}; any other is a flat icon. */
+    private static final Map<Integer,Boolean> FULL_3D=new java.util.concurrent.ConcurrentHashMap<>();
+    public static void register(int id,BaseMod mod,boolean full3DItem){RENDERERS.put(id,mod);FULL_3D.put(id,full3DItem);}
     private static final Map<Class<?>,Boolean> POSITIONED=new java.util.concurrent.ConcurrentHashMap<>();
     /** The mod that draws blocks of this render type as items, when it implements {@code RenderInvBlock}. */
     public static BaseMod inventoryRenderer(Block block){
-        BaseMod mod=RENDERERS.get(block.getRenderType());if(mod==null)return null;
+        BaseMod mod=RENDERERS.get(block.getRenderType());if(mod==null||!FULL_3D.getOrDefault(block.getRenderType(),true))return null;
         try{return mod.getClass().getMethod("RenderInvBlock",BlockRenderManager.class,Block.class,int.class,int.class).getDeclaringClass()!=BaseMod.class?mod:null;}
         catch(ReflectiveOperationException e){return null;}
     }
