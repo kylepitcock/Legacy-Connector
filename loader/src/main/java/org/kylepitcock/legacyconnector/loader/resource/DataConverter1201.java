@@ -782,6 +782,35 @@ public final class DataConverter1201 {
             }
         }
         itemPredicates(o, c);
+        if (o.has("criteria")) advancementLocationPredicates(o.get("criteria"), c);
+    }
+
+    /**
+     * Minecraft 1.21.1's LocationPredicate codec calls the structure holder set
+     * "structures". Some legacy mod advancements use the singular "structure"
+     * key; leaving that unknown key behind silently drops the location filter
+     * and can award every structure-discovery advancement immediately.
+     */
+    private static void advancementLocationPredicates(JsonElement element, Ctx c) {
+        if (element.isJsonArray()) {
+            for (JsonElement child : element.getAsJsonArray()) advancementLocationPredicates(child, c);
+            return;
+        }
+        if (!element.isJsonObject()) return;
+        JsonObject object = element.getAsJsonObject();
+        for (Map.Entry<String, JsonElement> entry : new ArrayList<>(object.entrySet())) {
+            JsonElement value = entry.getValue();
+            if ("location".equals(entry.getKey()) && value.isJsonObject()) {
+                JsonObject location = value.getAsJsonObject();
+                if (location.has("structure") && !location.has("structures")
+                        && location.get("structure").isJsonPrimitive()
+                        && location.get("structure").getAsJsonPrimitive().isString()) {
+                    location.add("structures", location.remove("structure"));
+                    c.hit("advancement_location_structures");
+                }
+            }
+            advancementLocationPredicates(value, c);
+        }
     }
 
     // ---- item predicates -----------------------------------------------------------------------------------------------------------
