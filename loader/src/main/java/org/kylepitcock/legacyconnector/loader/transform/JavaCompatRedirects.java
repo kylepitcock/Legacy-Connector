@@ -149,6 +149,10 @@ public final class JavaCompatRedirects {
                 "(Lcom/mojang/authlib/GameProfile;Z)Ljava/util/Map;", COMPAT + "LibraryCompat");
         // jopt-simple 5: acceptsAll takes a List.
         virtualToStatic("joptsimple/OptionParser", "acceptsAll", "(Ljava/util/Collection;Ljava/lang/String;)Ljoptsimple/OptionSpecBuilder;", COMPAT + "LibraryCompat");
+        // jopt-simple 5: internal.Strings.join takes an Iterable (4: a List).
+        staticToStatic("joptsimple/internal/Strings", "join", "(Ljava/util/List;Ljava/lang/String;)Ljava/lang/String;", COMPAT + "LibraryCompat", "joinStrings");
+        // Netty 4.1: ChannelPromiseAggregator.add(ChannelPromise...) is inherited from PromiseAggregator.add(Promise...) and returns that type.
+        virtualToStatic("io/netty/channel/ChannelPromiseAggregator", "add", "([Lio/netty/channel/ChannelPromise;)Lio/netty/channel/ChannelPromiseAggregator;", COMPAT + "LibraryCompat");
         // LWJGL 2 -> 3: typed-buffer overloads got explicit suffixes (glUniform1(int, FloatBuffer) -> glUniform1fv).
         String gl20 = "org/lwjgl/opengl/GL20";
         staticToStatic(gl20, "glGetShader", "(IILjava/nio/IntBuffer;)V", COMPAT + "GlCompat", "glGetShaderiv");
@@ -339,6 +343,16 @@ public final class JavaCompatRedirects {
                             && call.desc.equals("(Ljava/net/Proxy;Ljava/lang/String;)V")) {
                         // new YggdrasilAuthenticationService(proxy, clientToken) -> new YggdrasilAuthenticationService(proxy)
                         AbstractInsnNode replaced = rewriteConstructor(insns, call, "yggdrasilService", COMPAT + "LibraryCompat");
+                        if (replaced != null) {
+                            insn = replaced;
+                            count++;
+                        }
+                    } else if (call.getOpcode() == Opcodes.INVOKESPECIAL && call.name.equals("<init>")
+                            && call.owner.equals("org/objectweb/asm/commons/MethodRemapper") && !node.name.equals(call.owner)
+                            && (call.desc.equals("(ILjava/lang/String;Lorg/objectweb/asm/MethodVisitor;Lorg/objectweb/asm/commons/Remapper;)V")
+                            || call.desc.equals("(IILjava/lang/String;Lorg/objectweb/asm/MethodVisitor;Lorg/objectweb/asm/commons/Remapper;)V"))) {
+                        // ASM 5's RemappingMethodAdapter(access, desc, mv, remapper) became MethodRemapper(mv, remapper)
+                        AbstractInsnNode replaced = rewriteConstructor(insns, call, "methodRemapper", COMPAT + "LibraryCompat");
                         if (replaced != null) {
                             insn = replaced;
                             count++;
