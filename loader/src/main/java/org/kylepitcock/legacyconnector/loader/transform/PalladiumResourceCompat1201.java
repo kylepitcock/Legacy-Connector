@@ -65,6 +65,8 @@ final class PalladiumResourceCompat1201 {
     private static final String SOUND_EVENT_HELPER_MARKER =
             "function getAlienEvoSoundEvent(soundId) {";
 
+    private static final String ALIEN_EVO_MACHINE_SCROLL_TAG =
+            "data/alienevo/tags/item/machine_scroll.json";
     private static final String AFOMNI_HUMONGOSAUR_ANIMATION_SOURCE =
             "assets/afomni/animations/model.humongousaur.anim.json";
     private static final String AFOMNI_HUMONGOSAUR_ANIMATION_TARGET =
@@ -192,6 +194,7 @@ final class PalladiumResourceCompat1201 {
         rewriteDiamondShardTexture(resources);
         rewriteAfOmniParticleTextureReferences(resources);
         rewriteGeckoLibAnimationFileNames(resources);
+        addMissingAlienEvoMachineScrollTag(resources);
         rewriteLegacyScriptApis(resources);
         rewriteDiamondCreationSound(resources);
         rewriteScoreboardApi(resources);
@@ -240,6 +243,26 @@ final class PalladiumResourceCompat1201 {
         return rewrite(resources, path, new String[][] {{
                 "\"diamond/spike\"", "\"minecraft:diamond_spike/spike\"", "2"
         }});
+    }
+
+    /**
+     * AlienEvo's obtain_scroll advancement checks the alienevo:machine_scroll
+     * item tag, but the source JAR does not ship that tag. Register the one
+     * intended item so the advancement can trigger without changing recipes
+     * or other item membership.
+     */
+    private static int addMissingAlienEvoMachineScrollTag(Map<String, byte[]> resources) {
+        if (resources.containsKey(ALIEN_EVO_MACHINE_SCROLL_TAG)) return 0;
+        String tag = """
+                {
+                  "replace": false,
+                  "values": [
+                    "alienevo:machine_scroll"
+                  ]
+                }
+                """;
+        resources.put(ALIEN_EVO_MACHINE_SCROLL_TAG, tag.getBytes(StandardCharsets.UTF_8));
+        return 1;
     }
 
     /**
