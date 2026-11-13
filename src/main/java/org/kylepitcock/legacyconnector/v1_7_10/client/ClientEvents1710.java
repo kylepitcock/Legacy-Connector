@@ -43,6 +43,9 @@ public final class ClientEvents1710 {
         bus.addListener(ClientEvents1710::onBlockOverlay);
         bus.addListener((net.neoforged.neoforge.client.event.RenderFrameEvent.Pre e) -> frame++);
         bus.addListener(ClientEvents1710::onHand);
+        bus.addListener((net.neoforged.neoforge.client.event.ClientTickEvent.Post e) -> {
+            if (net.minecraft.client.Minecraft.getInstance().player != null && org.kylepitcock.legacyconnector.core.LegacyMods.hasFamily("1.7.10")) syncEquipped();
+        });
         bus.addListener(ClientEvents1710::onItemInFrame);
         bus.addListener(ClientEvents1710::onChat);
         bus.addListener(org.kylepitcock.legacyconnector.v1_7_10.compat.am2.Am2Camera::onCameraAngles);
@@ -131,12 +134,20 @@ public final class ClientEvents1710 {
     private static long handFrame = -1;
     private static boolean handCanceled;
 
+    /** 1.7.10's ItemRenderer.updateEquippedItem, run every client tick: the equipped stack follows the held item (#236). */
+    private static void syncEquipped() {
+        var renderer = legacyconnector.v1_7_10.net.minecraft.client.Minecraft.getMinecraft().entityRenderer;
+        if (renderer != null && renderer.itemRenderer != null) renderer.itemRenderer.mcc$syncEquipped();
+    }
+
     /** 1.7.10 drew one hand: the legacy event fires with the first hand of each frame, and its answer holds for both. */
     private static void onHand(net.neoforged.neoforge.client.event.RenderHandEvent e) {
         if (handFrame != frame) {
             handFrame = frame;
             handCanceled = false;
             if (!wants(RenderHandEvent.class)) return;
+            // 1.7.10 replaced ItemRenderer.itemToRender with the held item every tick before the hand was drawn; handlers decide by it (#236)
+            syncEquipped();
             RenderContext.beginWorld(e.getPoseStack(), e.getMultiBufferSource(), e.getPackedLight(), OverlayTexture.NO_OVERLAY);
             try {
                 handCanceled = MinecraftForge.EVENT_BUS.post(new RenderHandEvent(legacyconnector.v1_7_10.net.minecraft.client.Minecraft.getMinecraft().renderGlobal,

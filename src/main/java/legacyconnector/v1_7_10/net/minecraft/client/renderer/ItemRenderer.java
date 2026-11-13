@@ -38,8 +38,31 @@ public class ItemRenderer {
         resetEquippedProgress();
     }
 
-    /** The modern hand renderer ticks the equip animation itself. */
+    /**
+     * The stack drawn in first person and the hotbar slot it came from. 1.7.10's updateEquippedItem replaced them with the held item
+     * every tick; mods read the field to decide whether they draw the hand themselves and write it to skip the re-equip animation
+     * (HBM's guns: a gun written here stayed drawn after it was dropped or the slot changed, as nothing replaced it, #236).
+     */
+    public ItemStack itemToRender;
+    public int equippedItemSlot = -1;
+
+    /** The modern hand renderer ticks the equip animation itself; the equipped stack still follows the held item. */
     public void updateEquippedItem() {
+        mcc$syncEquipped();
+    }
+
+    /** {@link #itemToRender} and {@link #equippedItemSlot} from the local player's main hand (null for an empty hand). */
+    public void mcc$syncEquipped() {
+        var player = Minecraft.getInstance().player;
+        if (player == null) {
+            itemToRender = null;
+            equippedItemSlot = -1;
+            return;
+        }
+        net.minecraft.world.item.ItemStack held = player.getMainHandItem();
+        if (held.isEmpty()) itemToRender = null;
+        else if (itemToRender == null || itemToRender.mcc$modern() != held) itemToRender = ItemStack.mcc$wrap(held);
+        equippedItemSlot = player.getInventory().selected;
     }
 
     /**
