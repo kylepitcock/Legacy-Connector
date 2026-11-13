@@ -236,8 +236,14 @@ class PalladiumResourceCompat1201Test {
                 let current = score.getScore();
                 """);
         put(resources, "addon/alienevo/kubejs_scripts/stat_ability.js", """
-                let score = scoreboard.getOrCreatePlayerScore(username, scoreboard_obj);
-                let current = score.getScore();
+                .tick((entity, entry, holder, enabled) => {
+                    const scoreboard = Utils.server.scoreboard;
+                    let score = scoreboard.getOrCreatePlayerScore(username, scoreboard_obj);
+                    let current = score.getScore();
+                });
+                .lastTick((entity, entry, holder, enabled) => {
+                    const scoreboard = Utils.server.scoreboard;
+                });
                 """);
         put(resources, "data/alienevo/kubejs_scripts/xp.js", """
                 let score = scoreboard.getOrCreatePlayerScore(username, xpObj);
@@ -287,6 +293,8 @@ class PalladiumResourceCompat1201Test {
         String stat = get(resources, "addon/alienevo/kubejs_scripts/stat_ability.js");
         assertTrue(stat.contains("forNameOnly(String(username))"));
         assertTrue(stat.contains("score.get()"));
+        assertEquals(2, occurrences(stat, "entity.server.scoreboard"));
+        assertFalse(stat.contains("Utils.server.scoreboard"));
 
         String xp = get(resources, "data/alienevo/kubejs_scripts/xp.js");
         assertTrue(xp.contains("forNameOnly(String(username))"));
