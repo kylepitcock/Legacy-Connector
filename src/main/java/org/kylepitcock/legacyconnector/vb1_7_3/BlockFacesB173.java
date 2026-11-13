@@ -19,7 +19,13 @@ public final class BlockFacesB173 {
                 int visible=0;
                 for(int side=0;side<6;side++) {
                     int[] d=OFFSETS[side];
-                    if(block.isSideVisible(view,x+d[0],y+d[1],z+d[2],side))visible|=1<<side;
+                    int nx=x+d[0],ny=y+d[1],nz=z+d[2];
+                    if(!block.isSideVisible(view,nx,ny,nz,side))continue;
+                    // Stacked translucent faces of one block read as a grid of cells (a 65% alpha cloud); like Beta's glass and ice,
+                    // a translucent block draws no face against the same block, whatever its own callback answers.
+                    if(block.getRenderLayer()==1&&!block.isOpaque()&&view.getBlockId(nx,ny,nz)==block.id
+                            &&view.getBlockMeta(nx,ny,nz)==view.getBlockMeta(x,y,z))continue;
+                    visible|=1<<side;
                 }
                 return visible;
             } finally {

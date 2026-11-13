@@ -20,7 +20,51 @@ public final class GL11 {
     }
 
     public static void glBindTexture(int target, int texture) {
+        // A texture effect that binds its own sheet through GL (BuildCraft's oil) names the sheet it draws into.
+        if(org.kylepitcock.legacyconnector.vb1_7_3.AnimationsB173.bindId(texture))return;
         if(RendererContextB173.active())RendererContextB173.bind(texture);else GuiDrawB173.bind(texture);
+    }
+
+    // ---------------------------------------------------------------------------------------------------- display lists
+    // A list holds the geometry a mod's code drew between glNewList and glEndList (BuildCraft builds its pipe item cubes this way); a call
+    // draws it again through the Tessellator, in whatever transform and texture are current.
+    private static final java.util.Map<Integer, java.util.List<legacyconnector.vb1_7_3.net.minecraft.client.render.Tessellator.Vertex>> LISTS
+            = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final java.util.concurrent.atomic.AtomicInteger NEXT_LIST = new java.util.concurrent.atomic.AtomicInteger(1);
+    private static final ThreadLocal<Integer> COMPILING = new ThreadLocal<>();
+
+    public static int glGenLists(int range) { return NEXT_LIST.getAndAdd(Math.max(1, range)); }
+
+    public static void glNewList(int list, int mode) {
+        COMPILING.set(list);
+        legacyconnector.vb1_7_3.net.minecraft.client.render.Tessellator.beginCapture();
+    }
+
+    public static void glEndList() {
+        Integer list = COMPILING.get();
+        COMPILING.remove();
+        var vertices = legacyconnector.vb1_7_3.net.minecraft.client.render.Tessellator.endCapture();
+        if (list != null) LISTS.put(list, vertices);
+    }
+
+    public static void glCallList(int list) {
+        var vertices = LISTS.get(list);
+        if (vertices == null) return;
+        var tessellator = legacyconnector.vb1_7_3.net.minecraft.client.render.Tessellator.INSTANCE;
+        for (int q = 0; q + 3 < vertices.size(); q += 4) {
+            tessellator.startQuads();
+            for (int i = 0; i < 4; i++) {
+                var v = vertices.get(q + i);
+                int c = v.color();
+                tessellator.color(c & 255, (c >> 8) & 255, (c >> 16) & 255, (c >>> 24) & 255);
+                tessellator.vertex(v.x(), v.y(), v.z(), v.u(), v.v());
+            }
+            tessellator.draw();
+        }
+    }
+
+    public static void glDeleteLists(int list, int range) {
+        for (int i = 0; i < range; i++) LISTS.remove(list + i);
     }
 
     public static void glPushMatrix() {

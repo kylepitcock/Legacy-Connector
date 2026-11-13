@@ -20,6 +20,7 @@ public class Minecraft {
     public static void mcc$scope(Minecraft minecraft,Runnable callback){Minecraft previous=SCOPED.get();SCOPED.set(minecraft);try{callback.run();}finally{if(previous==null)SCOPED.remove();else SCOPED.set(previous);}}
 
     public World world;
+    public legacyconnector.vb1_7_3.net.minecraft.client.util.Session session=legacyconnector.vb1_7_3.net.minecraft.client.util.Session.mcc$current();
     private legacyconnector.vb1_7_3.net.minecraft.entity.player.ClientPlayerEntity explicitPlayer;
     private record Context(World world,legacyconnector.vb1_7_3.net.minecraft.entity.Entity focus){}
     private static final ThreadLocal<Context> CONTEXT=new ThreadLocal<>();

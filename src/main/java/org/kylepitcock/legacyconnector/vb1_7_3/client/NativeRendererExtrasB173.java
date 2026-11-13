@@ -12,6 +12,9 @@ import org.kylepitcock.legacyconnector.vb1_7_3.*;
 final class NativeRendererExtrasB173 {
     private NativeRendererExtrasB173(){}
     static RendererContextB173.Extras create(net.minecraft.world.entity.Entity entity,PoseStack pose,MultiBufferSource buffers){
+        return create(entity.level(),entity.getId(),pose,buffers);
+    }
+    static RendererContextB173.Extras create(net.minecraft.world.level.Level level,int id,PoseStack pose,MultiBufferSource buffers){
         return new RendererContextB173.Extras(){
                 @Override public void item(legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity living,
                         legacyconnector.vb1_7_3.net.minecraft.item.ItemStack stack,Matrix4f transform,RendererContextB173.Style style){
@@ -21,7 +24,7 @@ final class NativeRendererExtrasB173 {
                         pose.mulPose(transform);
                         var nativeLiving=living!=null&&living.mcc$modern instanceof net.minecraft.world.entity.LivingEntity l?l:null;
                         Minecraft.getInstance().getItemRenderer().renderStatic(nativeLiving,modern,ItemDisplayContext.NONE,
-                                false,pose,buffers,entity.level(),RenderContext.vertexLight(),RenderContext.overlay(),entity.getId());
+                                false,pose,buffers,level,RenderContext.vertexLight(),RenderContext.overlay(),id);
                     }finally{pose.popPose();}
                 }
                 @Override public void text(String text,float x,float y,int argb,boolean shadow,Matrix4f transform,RendererContextB173.Style style){

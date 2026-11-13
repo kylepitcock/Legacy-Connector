@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 public class LegacyB173BlockEntity extends net.minecraft.world.level.block.entity.BlockEntity {
     private static final Logger LOG = LoggerFactory.getLogger("LegacyConnector/b1.7.3");
     private static final Map<Class<?>, Boolean> TICKS = new ConcurrentHashMap<>();
+    private static final Map<Level, java.util.Set<LegacyB173BlockEntity>> LOADED = java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>());
 
     private BlockEntity legacy;
     private CompoundTag pending;
@@ -36,6 +37,9 @@ public class LegacyB173BlockEntity extends net.minecraft.world.level.block.entit
         super(TileEntitiesB173.type(), pos, state);
     }
 
+    /** The legacy tile entity if one already exists (no creation). */
+    public BlockEntity legacyIfPresent() { return legacy; }
+
     /** The legacy tile entity, made or loaded on first use; null if the block makes none. */
     public BlockEntity legacy() {
         if (legacy == null) {
@@ -43,6 +47,7 @@ public class LegacyB173BlockEntity extends net.minecraft.world.level.block.entit
                 if (pending != null) {
                     legacy = BlockEntity.createFromNbt(NbtB173.fromModern(pending));
                     pending = null;
+                    settleOnClient();
                 }
                 if (legacy == null && getBlockState().getBlock() instanceof LegacyB173Block host && host.legacy() instanceof BlockWithEntity bwe) {
                     legacy = bwe.createBlockEntity();
@@ -53,6 +58,18 @@ public class LegacyB173BlockEntity extends net.minecraft.world.level.block.entit
             attach();
         }
         return legacy;
+    }
+
+    /** Beta's client ticked its tile entities, which finished what {@code readFromNBT} deferred (a pipe's items wait in a load list for the next tick). */
+    private void settleOnClient() {
+        if (legacy == null || level == null || !level.isClientSide || ContentB173.tileEntityRenderer(legacy.getClass()) == null || !ticks(legacy.getClass())) return;
+        try {
+            legacy.world = World.mcc$wrap(level);
+            legacy.x = worldPosition.getX(); legacy.y = worldPosition.getY(); legacy.z = worldPosition.getZ();
+            legacy.tick();
+        } catch (RuntimeException | LinkageError e) {
+            LOG.debug("b1.7.3 client settle of {} failed: {}", legacy.getClass().getName(), e.toString());
+        }
     }
 
     /** {@code World.setBlockTileEntity}: another legacy tile entity (or none) at this place. */
@@ -78,7 +95,21 @@ public class LegacyB173BlockEntity extends net.minecraft.world.level.block.entit
     @Override
     public void setLevel(Level level) {
         super.setLevel(level);
+        if (level != null) LOADED.computeIfAbsent(level, k -> ConcurrentHashMap.newKeySet()).add(this);
         attach();
+    }
+
+    /** Beta's {@code World.loadedTileEntityList}: the legacy tile entities of the loaded chunks of a level. */
+    public static java.util.List<BlockEntity> loaded(Level level) {
+        var hosts = LOADED.get(level);
+        var result = new java.util.ArrayList<BlockEntity>();
+        if (hosts == null) return result;
+        for (var host : hosts) {
+            if (host.isRemoved()) continue;
+            BlockEntity te = host.legacy();
+            if (te != null) result.add(te);
+        }
+        return result;
     }
 
     public void tickServer() {
@@ -95,6 +126,7 @@ public class LegacyB173BlockEntity extends net.minecraft.world.level.block.entit
                     te.tick();
                 }
             },()->level.blockEntityChanged(worldPosition));
+            syncToClients(te);
         } catch (RuntimeException | LinkageError e) {
             tickFailed = true;
             LOG.error("b1.7.3 tile entity {} at {} failed while ticking; it stops ticking", te.getClass().getName(), worldPosition, e);
@@ -105,6 +137,28 @@ public class LegacyB173BlockEntity extends net.minecraft.world.level.block.entit
 
     /** Commit only completed callbacks, including their view flush, without comparator/neighbor notifications.
      * Original ticking tiles can change inventory/timers without calling markDirty themselves. */
+    private static final Map<Class<?>, Boolean> SYNCS = new ConcurrentHashMap<>();
+    private net.minecraft.nbt.CompoundTag lastSent;
+
+    /** A tile entity that builds its own description packet (BuildCraft's engines and pipes) is the one Beta sent to the players near it. */
+    private static boolean syncs(Class<?> type) {
+        return SYNCS.computeIfAbsent(type, t -> {
+            // a tile entity with its own special renderer is drawn by the client from its live state (BuildCraft's pipes draw their items)
+            if (ContentB173.tileEntityRenderer(t) != null) return true;
+            try { return t.getMethod("getDescriptionPacket").getDeclaringClass() != BlockEntity.class; }
+            catch (ReflectiveOperationException e) { return false; }
+        });
+    }
+
+    /** In Beta single player the client drew the very tile entity the server ticked; here the client has its own copy, so a changed state is sent. */
+    private void syncToClients(BlockEntity te) {
+        if (level == null || level.isClientSide || !syncs(te.getClass())) return; // every tick: the client does not tick its copy, and Beta drew a state that changed 20 times a second
+        var tag = saveWithoutMetadata(level.registryAccess());
+        if (tag.equals(lastSent)) return;
+        lastSent = tag;
+        level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+    }
+
     static void tickAndCommit(Runnable callback,Runnable storageDirty){
         callback.run();
         storageDirty.run();
@@ -144,14 +198,16 @@ public class LegacyB173BlockEntity extends net.minecraft.world.level.block.entit
         if (!tag.contains("legacy")) return;
         CompoundTag nbt = tag.getCompound("legacy");
         BlockEntity te = legacy;
-        if (te != null && nbt.getString("id").equals(BlockEntity.mcc$idOf(te.getClass()))) {
+        // a tile entity drawn by its own renderer is made again from each update: loading in place would keep what has left it (items in a pipe)
+        boolean redrawn = te != null && level != null && level.isClientSide && ContentB173.tileEntityRenderer(te.getClass()) != null;
+        if (!redrawn && te != null && nbt.getString("id").equals(BlockEntity.mcc$idOf(te.getClass()))) {
             // a client update for the tile entity it already has: read into it, so screens keep their object
             try {
                 te.readNbt(NbtB173.fromModern(nbt));
                 attach();
                 return;
             } catch (RuntimeException | LinkageError e) {
-                // made again below
+                LOG.warn("b1.7.3 client update of {} at {} could not be read in place: {}", te.getClass().getName(), worldPosition, e.toString());
             }
         }
         legacy = null;
@@ -161,6 +217,7 @@ public class LegacyB173BlockEntity extends net.minecraft.world.level.block.entit
     @Override
     public void setRemoved() {
         super.setRemoved();
+        if (level != null) { var hosts = LOADED.get(level); if (hosts != null) hosts.remove(this); }
         if (legacy != null) legacy.markRemoved();
     }
 

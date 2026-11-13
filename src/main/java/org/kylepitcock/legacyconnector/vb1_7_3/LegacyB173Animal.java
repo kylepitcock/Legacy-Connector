@@ -39,6 +39,7 @@ public final class LegacyB173Animal extends PathfinderMob implements B173LivingH
     private int travels,moves;
     public int baseTravelCount(){return travels;}
     public int baseMoveCount(){return moves;}
+    private float syncedHeadYaw=Float.NaN,syncedBodyYaw=Float.NaN;
     private boolean syncingView;
     private float appliedMovementSpeed=Float.NaN;
     private DamageSource damageSource;
@@ -167,7 +168,12 @@ public final class LegacyB173Animal extends PathfinderMob implements B173LivingH
         if(!Float.isFinite(legacy.width)||!Float.isFinite(legacy.height)||legacy.width<0||legacy.height<0)throw new IllegalStateException("Invalid Beta animal dimensions");
         var bounds=legacy.boundingBox.mcc$box();
         double rawX=legacy.x,rawY=legacy.y-legacy.standingEyeHeight,rawZ=legacy.z;
-        setPos(legacy.x,legacy.y-legacy.standingEyeHeight,legacy.z);setYRot(legacy.yaw);setXRot(legacy.pitch);setDeltaMovement(legacy.velocityX,legacy.velocityY,legacy.velocityZ);
+        setPos(legacy.x,legacy.y-legacy.standingEyeHeight,legacy.z);setYRot(legacy.yaw);setXRot(legacy.pitch);
+        // The original code owns head (yaw) and body (bodyYaw) facing; the native rotations are what clients and the renderer read, so a
+        // change made by Beta code (a placement orientation, an aim) must reach them. Unchanged values leave native turning alone.
+        if(Float.compare(syncedHeadYaw,legacy.yaw)!=0){syncedHeadYaw=legacy.yaw;setYHeadRot(legacy.yaw);}
+        if(Float.compare(syncedBodyYaw,legacy.bodyYaw)!=0){syncedBodyYaw=legacy.bodyYaw;yBodyRot=legacy.bodyYaw;}
+        setDeltaMovement(legacy.velocityX,legacy.velocityY,legacy.velocityZ);
         if(legacy.health>getMaxHealth())getAttribute(Attributes.MAX_HEALTH).setBaseValue(legacy.health);
         noPhysics=legacy.noClip;fallDistance=legacy.mcc$fallDistance();
         var step=getAttribute(Attributes.STEP_HEIGHT);if(step!=null&&Float.isFinite(legacy.stepHeight))step.setBaseValue(Math.max(0,legacy.stepHeight));
@@ -387,8 +393,9 @@ public final class LegacyB173Animal extends PathfinderMob implements B173LivingH
             var carrier=EntityViewsB173.wrap(vehicle);
             // Native positionRider subtracts the passenger attachment from its native seat.
             // Reconstruct Beta's seat in legacy coordinates, then normalize its eye origin once.
-            var desired=new net.minecraft.world.phys.Vec3(carrier.x,
-                    carrier.y+carrier.getPassengerRidingHeight()+legacy.getStandingEyeHeight()-legacy.standingEyeHeight,carrier.z);
+            // The carrier's view holds the position it was synced with at the start of the tick; the seat follows the native position.
+            var desired=new net.minecraft.world.phys.Vec3(vehicle.getX(),
+                    vehicle.getY()+carrier.standingEyeHeight+carrier.getPassengerRidingHeight()+legacy.getStandingEyeHeight()-legacy.standingEyeHeight,vehicle.getZ());
             attachment[0]=vehicle.getPassengerRidingPosition(this).subtract(desired);
         });
         return attachment[0];
@@ -397,7 +404,11 @@ public final class LegacyB173Animal extends PathfinderMob implements B173LivingH
         if(legacy==null||passenger!=getFirstPassenger()||!hasPassenger(passenger)){super.positionRider(passenger,move);return;}
         callback(()->{
             if(!RiderPositionB173.attached(legacy,passenger))return;
-            legacy.updatePassengerPosition();
+            var carrier=legacy.vehicle;
+            // A player carrier's legacy position is last tick's by now: seat the rider at the player's current position or it trails when moving.
+            if(getVehicle() instanceof net.minecraft.world.entity.player.Player nativeCarrier&&carrier!=null)
+                legacy.setPosition(nativeCarrier.getX(),nativeCarrier.getY()+carrier.standingEyeHeight+carrier.getPassengerRidingHeight()+legacy.getStandingEyeHeight(),nativeCarrier.getZ());
+            else legacy.updatePassengerPosition();
             if(!RiderPositionB173.attached(legacy,passenger))return;
             var view=EntityViewsB173.wrap(passenger);
             move.accept(passenger,view.x,view.y-view.standingEyeHeight,view.z);

@@ -46,6 +46,7 @@
     "Am2MouseMixin",
     "Am2PlayerModelMixin",
     "ClientLevelSkyColorMixin",
+    "ClientLevelHorizonB173Mixin",
     "MinecraftAttackMixin",
     "MultiPlayerGameModeMixin",
     "OptionsScreenLegacySettingsMixin",

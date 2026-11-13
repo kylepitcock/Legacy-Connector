@@ -84,6 +84,8 @@ public final class ContentB173 {
      * The mod whose jar defines the class (RedPower Array's ModsLoaded initialises RedPower Logic and Wiring, whose blocks are theirs);
      * for classes of the shim or the synthesizer ({@code new Block(...)} itself) the mod running.
      */
+    public static LegacyModRecord ownerOf(Class<?> type) { return owner(type); }
+
     private static LegacyModRecord owner(Class<?> type) {
         String n = type.getName();
         if (n.startsWith("legacyconnector.") || n.startsWith("legacyconnector_synth.")) return current;
@@ -205,6 +207,11 @@ public final class ContentB173 {
 
     public static synchronized void registerTileEntityRenderer(Class<?> type, Object renderer) {
         if (renderer != null) TILE_RENDERERS.put(type, renderer);
+    }
+
+    public static synchronized Object tileEntityRenderer(Class<?> type) {
+        for (Class<?> c = type; c != null; c = c.getSuperclass()) { Object r = TILE_RENDERERS.get(c); if (r != null) return r; }
+        return null;
     }
 
     public static synchronized Map<Class<?>, Object> tileEntityRenderers() {

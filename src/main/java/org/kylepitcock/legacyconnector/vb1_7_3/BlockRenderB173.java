@@ -12,8 +12,20 @@ public final class BlockRenderB173 {
     private static final Map<Integer,BaseMod> RENDERERS=new java.util.concurrent.ConcurrentHashMap<>();
     private static final Set<Class<?>> REPORTED=java.util.concurrent.ConcurrentHashMap.newKeySet();
     public static final java.util.concurrent.atomic.AtomicInteger FAILURES=new java.util.concurrent.atomic.AtomicInteger();
+    private static final ThreadLocal<Boolean> CAPTURING=new ThreadLocal<>();
+    /** True while a Beta block renderer runs: Beta drew on the game thread, so renderers could write blocks; here geometry is built on worker threads, where world writes are dropped. */
+    public static boolean capturing(){return CAPTURING.get()!=null;}
     public static void register(int id,BaseMod mod){RENDERERS.put(id,mod);}
+    /** ModLoader's {@code getUniqueBlockModelID(mod, full3DItem)}: only a full 3D model id is drawn as an item by {@code RenderInvBlock}; any other is a flat icon. */
+    private static final Map<Integer,Boolean> FULL_3D=new java.util.concurrent.ConcurrentHashMap<>();
+    public static void register(int id,BaseMod mod,boolean full3DItem){RENDERERS.put(id,mod);FULL_3D.put(id,full3DItem);}
     private static final Map<Class<?>,Boolean> POSITIONED=new java.util.concurrent.ConcurrentHashMap<>();
+    /** The mod that draws blocks of this render type as items, when it implements {@code RenderInvBlock}. */
+    public static BaseMod inventoryRenderer(Block block){
+        BaseMod mod=RENDERERS.get(block.getRenderType());if(mod==null||!FULL_3D.getOrDefault(block.getRenderType(),true))return null;
+        try{return mod.getClass().getMethod("RenderInvBlock",BlockRenderManager.class,Block.class,int.class,int.class).getDeclaringClass()!=BaseMod.class?mod:null;}
+        catch(ReflectiveOperationException e){return null;}
+    }
     public static boolean hasRenderer(int id){return id==11 || RENDERERS.containsKey(id);}
     /** Beta sets bounds per position before every standard render, so untinted standard blocks with their own bounds are captured per position. */
     public static boolean capturesWorld(Block block){
@@ -25,21 +37,25 @@ public final class BlockRenderB173 {
         });
     }
     public static List<Tessellator.Vertex> capture(Block block,BlockView world,int x,int y,int z){
-        BaseMod mod=RENDERERS.get(block.getRenderType());if(!capturesWorld(block))return List.of();
+        var vertices=captureOrNull(block,world,x,y,z);return vertices==null?List.of():vertices;
+    }
+    /** As {@link #capture}, but null when the original did not render the block at all: a mod's callback that returns true and draws nothing (a block its tile entity draws) leaves it invisible. */
+    public static List<Tessellator.Vertex> captureOrNull(Block block,BlockView world,int x,int y,int z){
+        BaseMod mod=RENDERERS.get(block.getRenderType());if(!capturesWorld(block))return null;
         // Legacy renderers mutate block bounds, and may keep mutable renderer state on the mod instance.
         synchronized(mod==null?BlockRenderB173.class:mod){synchronized(block){
             double[] bounds={block.minX,block.minY,block.minZ,block.maxX,block.maxY,block.maxZ};
-            Tessellator.beginCapture();
+            Tessellator.beginCapture();CAPTURING.set(Boolean.TRUE);
             try{
                 block.updateBoundingBox(world,x,y,z);
                 var renderer=new BlockRenderManager(world);
                 boolean rendered=mod!=null?mod.RenderWorldBlock(renderer,world,x,y,z,block,block.getRenderType())
                         :block.getRenderType()==11?renderer.renderFence(block,x,y,z):renderer.renderBlock(block,x,y,z);
-                var vertices=Tessellator.endCapture();return rendered?vertices:List.of();
+                var vertices=Tessellator.endCapture();return rendered?vertices:null;
             }catch(RuntimeException|LinkageError e){
                 FAILURES.incrementAndGet();if(REPORTED.add(block.getClass()))org.slf4j.LoggerFactory.getLogger("LegacyConnector/b1.7.3").warn("Beta block renderer failed for {}",block.getClass().getName(),e);
-                return List.of();
-            }finally{Tessellator.endCapture();block.minX=bounds[0];block.minY=bounds[1];block.minZ=bounds[2];block.maxX=bounds[3];block.maxY=bounds[4];block.maxZ=bounds[5];}
+                return null;
+            }finally{CAPTURING.remove();Tessellator.endCapture();block.minX=bounds[0];block.minY=bounds[1];block.minZ=bounds[2];block.maxX=bounds[3];block.maxY=bounds[4];block.maxZ=bounds[5];}
         }}
     }
 }

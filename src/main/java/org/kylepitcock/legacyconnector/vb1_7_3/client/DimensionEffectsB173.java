@@ -45,6 +45,23 @@ public final class DimensionEffectsB173 extends DimensionSpecialEffects {
         catch (RuntimeException | LinkageError error) { fail(dimension, "ground", error); return super.hasGround(); }
     }
 
+    /** A sky realm (no ground below its islands, or no sky at all) has no weather: the overworld's rain is not drawn or heard there. */
+    private boolean rainless() {
+        var dimension = provider();
+        if (dimension == null) return false;
+        try { return dimension.hasNoSky || !dimension.hasGround(); }
+        catch (RuntimeException | LinkageError error) { fail(dimension, "weather", error); return false; }
+    }
+
+    @Override public boolean renderSnowAndRain(net.minecraft.client.multiplayer.ClientLevel level, int ticks, float partialTick,
+            net.minecraft.client.renderer.LightTexture light, double x, double y, double z) {
+        return rainless();
+    }
+
+    @Override public boolean tickRain(net.minecraft.client.multiplayer.ClientLevel level, int ticks, net.minecraft.client.Camera camera) {
+        return rainless();
+    }
+
     @Override public float getCloudHeight() {
         var dimension = provider();
         if (dimension == null) return super.getCloudHeight();

@@ -23,6 +23,7 @@ public final class NeutralEntitiesB173 {
             return closure==null?"":closure;
         }
     };
+    private static final java.util.Set<Class<?>> REFUSED=java.util.concurrent.ConcurrentHashMap.newKeySet();
     public static String unsupportedReason(Class<?> type){String reason=REJECTION.get(type);return reason.isEmpty()?null:reason;}
     public static boolean supports(Class<?> type){return unsupportedReason(type)==null;}
     public static Class<? extends Entity> savedType(String name){
@@ -35,7 +36,7 @@ public final class NeutralEntitiesB173 {
     private static java.lang.reflect.Constructor<? extends Entity> restoreConstructor(Class<?> type)throws NoSuchMethodException{
         var entity=type.asSubclass(Entity.class);
         try{return entity.getConstructor(World.class);}
-        catch(NoSuchMethodException missing){if(legacyconnector.vb1_7_3.net.minecraft.entity.LightningEntity.class.isAssignableFrom(type))return entity.getConstructor(World.class,double.class,double.class,double.class);throw missing;}
+        catch(NoSuchMethodException missing){return entity.getConstructor(World.class,double.class,double.class,double.class);}
     }
     public static Entity restore(String name,net.minecraft.world.level.Level level){
         Class<? extends Entity> type=savedType(name);if(type==null)return null;
@@ -43,7 +44,11 @@ public final class NeutralEntitiesB173 {
         catch(ReflectiveOperationException|LinkageError e){throw new IllegalStateException("Cannot restore admitted original entity "+name,e);}
     }
     public static boolean spawn(net.minecraft.world.level.Level level,Entity original){
-        if(level.isClientSide||original.mcc$modern!=null||!supports(original.getClass()))return false;
+        if(level.isClientSide||original.mcc$modern!=null)return false;
+        if(!supports(original.getClass())){
+            if(REFUSED.add(original.getClass()))org.slf4j.LoggerFactory.getLogger("LegacyConnector/b1.7.3").warn("Beta entity {} is not hosted: {}",original.getClass().getName(),unsupportedReason(original.getClass()));
+            return false;
+        }
         net.minecraft.world.entity.Entity nativeHost=null;boolean added=false;
         try{
             if(original instanceof legacyconnector.vb1_7_3.net.minecraft.entity.ItemEntity){

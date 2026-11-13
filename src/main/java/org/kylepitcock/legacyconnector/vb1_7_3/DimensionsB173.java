@@ -49,6 +49,7 @@ public final class DimensionsB173 {
 
     public static synchronized void install(){
         if(installed)return;installed=true;
+        DimensionWeatherB173.install();
         var bus=net.neoforged.neoforge.common.NeoForge.EVENT_BUS;
         bus.addListener((net.neoforged.neoforge.event.tick.ServerTickEvent.Post event)->{
             long tick=event.getServer().getTickCount();

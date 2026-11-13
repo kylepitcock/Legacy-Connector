@@ -34,6 +34,7 @@ public class LegacyB173Block extends net.minecraft.world.level.block.Block imple
         super(nativeProperties(legacy,properties));
         this.legacy = legacy;
         if(legacy.getRenderType()==14)BedsB173.install();
+        if(legacy instanceof legacyconnector.vb1_7_3.net.minecraft.block.LiquidBlock&&legacy.material==legacyconnector.vb1_7_3.net.minecraft.block.material.Material.WATER)LegacyWaterB173.install();
         this.shape = shapeOf(legacy);
         this.ownHarvest = overrides(legacy, "afterBreak", World.class, legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity.class,
                 int.class, int.class, int.class, int.class);
@@ -52,6 +53,8 @@ public class LegacyB173Block extends net.minecraft.world.level.block.Block imple
     private static VoxelShape shapeOf(Block legacy) {
         double x0 = legacy.minX, y0 = legacy.minY, z0 = legacy.minZ, x1 = legacy.maxX, y1 = legacy.maxY, z1 = legacy.maxZ;
         if (x0 <= 0 && y0 <= 0 && z0 <= 0 && x1 >= 1 && y1 >= 1 && z1 >= 1) return Shapes.block();
+        // A box with no extent on any axis has no outline and cannot be targeted in Beta (a mod sets it to hide a block such as a portal).
+        if (x1 <= x0 && y1 <= y0 && z1 <= z0) return Shapes.empty();
         if (x1 <= x0 || y1 <= y0 || z1 <= z0) return Shapes.block();
         return Shapes.box(Math.max(0, x0), Math.max(0, y0), Math.max(0, z0), Math.min(1, x1), Math.min(1, y1), Math.min(1, z1));
     }
@@ -121,7 +124,15 @@ public class LegacyB173Block extends net.minecraft.world.level.block.Block imple
                         default -> Shapes.box(0.4,0,0.4,0.6,0.6,0.6);
                     };
                 }
-                if(!collision && !(legacy instanceof legacyconnector.vb1_7_3.net.minecraft.block.StairsBlock))return shapeOf(legacy);
+                // Beta targets (and so lets a player break) a block only when canCollideCheck(meta, false) holds: fluids and the like are not selectable.
+                if(!collision && !legacy.hasCollision(state.getValue(META),false))return Shapes.empty();
+                if(!collision && !(legacy instanceof legacyconnector.vb1_7_3.net.minecraft.block.StairsBlock)) {
+                    VoxelShape outline=shapeOf(legacy);
+                    // Beta outlines and targets a block by getBoundingBox (getSelectedBoundingBoxFromPool): none, or a box with no extent, hides it.
+                    var selected=legacy.getBoundingBox(world,pos.getX(),pos.getY(),pos.getZ());
+                    if(selected==null||selected.maxX<=selected.minX&&selected.maxY<=selected.minY&&selected.maxZ<=selected.minZ)return Shapes.empty();
+                    return outline;
+                }
                 var boxes=new ArrayList<legacyconnector.vb1_7_3.net.minecraft.util.math.Box>();
                 legacy.addIntersectingBoundingBox(world,pos.getX(),pos.getY(),pos.getZ(),
                         legacyconnector.vb1_7_3.net.minecraft.util.math.Box.create(pos.getX()-2,pos.getY()-2,pos.getZ()-2,pos.getX()+3,pos.getY()+3,pos.getZ()+3),boxes);
@@ -185,7 +196,13 @@ public class LegacyB173Block extends net.minecraft.world.level.block.Block imple
     protected void onPlace(BlockState state, net.minecraft.world.level.Level level, BlockPos pos, BlockState oldState, boolean moved) {
         super.onPlace(state, level, pos, oldState, moved);
         if (level.isClientSide || oldState.is(this)) return;
+        // NeoForge runs onPlace after the item's setPlacedBy (CommonHooks.onPlaceItemIntoWorld), where Beta ran onBlockAdded first: the
+        // tile entity onBlockPlaced already configured (BuildCraft's engine orientation) must survive onBlockAdded making a fresh one.
+        var host = level.getBlockEntity(pos) instanceof LegacyB173BlockEntity h ? h : null;
+        var existing = host == null ? null : host.legacyIfPresent();
         call("onBlockAdded", () -> legacy.onPlaced(view(level), pos.getX(), pos.getY(), pos.getZ()));
+        if (existing != null && host.legacyIfPresent() != existing && host.legacyIfPresent() != null
+                && host.legacyIfPresent().getClass() == existing.getClass()) host.setLegacy(existing);
     }
 
     @Override
@@ -240,8 +257,13 @@ public class LegacyB173Block extends net.minecraft.world.level.block.Block imple
         PlayerViewB173 view = PlayerViewB173.of(player);
         boolean[] used = new boolean[1];
         // The clicking player is the legacy client's player for this callback (mods read mc.thePlayer), even when not in the level's list yet.
-        call("blockActivated", () -> { World w = view(level); try (var ctx = legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$context(w, view)) {
-            used[0] = legacy.onUse(w, pos.getX(), pos.getY(), pos.getZ(), view); } });
+        // A GUI the block opens (displayGuiScreen) must reach the server's menu path, as it does for an item use.
+        Runnable activate = () -> { World w = view(level); try (var ctx = legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$context(w, view)) {
+            used[0] = legacy.onUse(w, pos.getX(), pos.getY(), pos.getZ(), view); } };
+        call("blockActivated", () -> {
+            if (!level.isClientSide && player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) MenusB173.withActor(serverPlayer, activate);
+            else activate.run();
+        });
         if (legacy instanceof legacyconnector.vb1_7_3.net.minecraft.block.BlockWithEntity) {
             MenusB173.trace("right click on {} ({}) on the {} side: {}", legacy.getClass().getName(), state.getValue(META),
                     level.isClientSide ? "client" : "server", used[0] ? "used" : "not used");

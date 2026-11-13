@@ -216,7 +216,7 @@ public final class ModLoader {
 
     public static synchronized int getUniqueBlockModelID(BaseMod mod, boolean full3DItem) {
         int id=nextBlockModelID++;
-        org.kylepitcock.legacyconnector.vb1_7_3.BlockRenderB173.register(id,mod);
+        org.kylepitcock.legacyconnector.vb1_7_3.BlockRenderB173.register(id,mod,full3DItem);
         return id;
     }
     public static void addAnimation(legacyconnector.vb1_7_3.net.minecraft.client.render.texture.DynamicTexture effect){org.kylepitcock.legacyconnector.vb1_7_3.AnimationsB173.add(effect);}

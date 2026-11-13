@@ -79,6 +79,9 @@ final class ItemCallbacksB173 {
         if (held == null) return InteractionResult.PASS;
         var pos = context.getClickedPos();
         World world = World.mcc$wrap(context.getLevel());
+        // NeoForge snapshots the blocks an item places and runs their onPlace afterwards; Beta ran onBlockAdded inside the write, and items
+        // set up the tile entity that call makes right after placing it, so the legacy callback must see the writes at once.
+        var level=context.getLevel();boolean capturing=level.captureBlockSnapshots;level.captureBlockSnapshots=false;
         try (var views=EntityViewsB173.callbackScope();var minecraft=actorScope(world,view)) {
             boolean used = legacy.useOnBlock(held, view, world, pos.getX(), pos.getY(), pos.getZ(), context.getClickedFace().get3DDataValue());
             if (!context.getLevel().isClientSide) view.writeBack();
@@ -86,7 +89,7 @@ final class ItemCallbacksB173 {
         } catch (RuntimeException | LinkageError e) {
             failed("useOnBlock", e);
             return InteractionResult.FAIL;
-        } finally {EntityViewsB173.flush();BlockEntityViewsB173.flush();}
+        } finally {level.captureBlockSnapshots=capturing;EntityViewsB173.flush();BlockEntityViewsB173.flush();}
     }
 
 
