@@ -304,7 +304,7 @@ public final class LegacyResourceConverter {
         Map<String, String> extra = new java.util.LinkedHashMap<>();
         for (var e : out.entrySet()) {
             String k = e.getKey();
-            if (!k.startsWith("entity.") || !k.endsWith(".name")) continue;
+            if (k.length() < 13 || !k.startsWith("entity.") || !k.endsWith(".name")) continue; // "entity.name" itself has no id
             String mid = k.substring(7, k.length() - 5); // <modid>.<name>
             int dot = mid.indexOf('.');
             if (dot <= 0 || dot == mid.length() - 1 || mid.indexOf('.', dot + 1) >= 0) continue;
