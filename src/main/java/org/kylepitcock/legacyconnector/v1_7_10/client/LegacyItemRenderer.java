@@ -97,7 +97,11 @@ public class LegacyItemRenderer extends BlockEntityWithoutLevelRenderer {
                     data = new Object[] {renderBlocks, Minecraft.getInstance().player == null ? null : EntityBridge.wrap(Minecraft.getInstance().player)};
                 }
             }
-            renderer.renderItem(type, view, data);
+            // a renderer that is also a block handler (CodeChickenLib models keep their draw state in statics: Thermal Dynamics' ducts) is not
+            // run by the render thread while a mesh thread captures its blocks: ISBRH capture locks the handler (IsbrhBlockModel.capture)
+            synchronized (renderer) {
+                renderer.renderItem(type, view, data);
+            }
         } catch (RuntimeException | LinkageError e) {
             // a broken legacy renderer must not take the inventory down
             logOnce(renderer.getClass().getName(), e);
