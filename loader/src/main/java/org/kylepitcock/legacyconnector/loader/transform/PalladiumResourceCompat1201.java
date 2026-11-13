@@ -281,8 +281,8 @@ final class PalladiumResourceCompat1201 {
      * GeckoLib 4 discovers animation JSON assets by the .animation.json suffix.
      * AlienEvo 1.1.3 contains two animation files with older/nonstandard names
      * and its render-layer JSON points directly at those names. Keep the source
-     * assets intact, add correctly named aliases, and update only the two
-     * inspected animation_file references.
+     * assets under the expected names, update the two inspected render-layer
+     * references, and remove only the obsolete source filenames after migration.
      */
     private static int rewriteGeckoLibAnimationFileNames(Map<String, byte[]> resources) {
         int changed = 0;
