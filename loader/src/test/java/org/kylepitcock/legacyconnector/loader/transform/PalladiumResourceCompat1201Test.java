@@ -178,7 +178,7 @@ class PalladiumResourceCompat1201Test {
         assertTrue(detransform.contains("getAlienEvoSoundEvent('alienevo:' + String(watchType) + '_detransform')"));
         assertFalse(detransform.contains("`alienevo:${watchType}_detransform`"));
 
-        String cycle = get(resources, "addon/alienevo/kubejs_scripts/omnitrix_cycle.js");
+        String cycle = get(resources, "addon/alienevo/kubejs_scripts/cycle_sounds.js");
         assertTrue(cycle.contains("function getAlienEvoSoundEvent(soundId)"));
         assertTrue(cycle.contains("    const AlienEvoSoundRegistry = Java.loadClass"));
         assertTrue(cycle.contains("    const AlienEvoSoundResourceLocation = Java.loadClass"));
