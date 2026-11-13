@@ -296,6 +296,7 @@ public final class Forge1201Transformer {
         int palladiumPlayerSkinChanges = 0;
         int palladiumPlayerSkinFetcherChanges = 0;
         int palladiumFlightHandlerChanges = 0;
+        int palladiumCustomProjectileChanges = 0;
         int palladiumCoreOverlayChanges = 0;
         int palladiumCoreLightningMixinChanges = 0;
         for (ClassNode node : nodes) {
@@ -344,6 +345,8 @@ public final class Forge1201Transformer {
             mc.add(changed);
             int palladiumFlightHandlerChange = PalladiumFlightHandler1201.apply(node);
             palladiumFlightHandlerChanges += palladiumFlightHandlerChange;
+            int palladiumCustomProjectileChange = PalladiumCustomProjectile1201.apply(node);
+            palladiumCustomProjectileChanges += palladiumCustomProjectileChange;
             int palladiumCoreOverlayChange = PalladiumCoreOverlay1201.apply(node);
             palladiumCoreOverlayChanges += palladiumCoreOverlayChange;
             int palladiumCoreLightningMixinChange = PalladiumCoreLightningBoltMixin1201.apply(node);
@@ -377,7 +380,8 @@ public final class Forge1201Transformer {
                     + palladiumTailoringScreenChange + palladiumSheepColorChange
                     + palladiumRendererRotationChange + palladiumRenderLayerChange + palladiumPlayerSkinChange
                     + palladiumPlayerSkinFetcherChange + palladiumCommandFunctionChange
-                    + palladiumFlightHandlerChange + palladiumCoreOverlayChange + palladiumCoreLightningMixinChange);
+                    + palladiumFlightHandlerChange + palladiumCustomProjectileChange
+                    + palladiumCoreOverlayChange + palladiumCoreLightningMixinChange);
         }
         if (palladiumKubejsChanges > 0 || palladiumKubejsClassesDropped > 0) {
             result.notes.add("Palladium KubeJS 6 integration adapted for KubeJS 7: "
@@ -403,6 +407,10 @@ public final class Forge1201Transformer {
         if (palladiumFlightHandlerChanges > 0) {
             result.notes.add("Palladium FlightHandler EntityDimensions.height field access migrated to the public 1.21.1 record accessor: "
                     + palladiumFlightHandlerChanges + " field read(s)");
+        }
+        if (palladiumCustomProjectileChanges > 0) {
+            result.notes.add("Palladium CustomProjectile EntityDimensions.width field access migrated to the public 1.21.1 record accessor: "
+                    + palladiumCustomProjectileChanges + " field read(s)");
         }
         if (palladiumCoreOverlayChanges > 0) {
             result.notes.add("PalladiumCore overlay registry verified against the Forge 1.20.1 RegisterGuiOverlaysEvent/ForgeGui shim, which forwards to NeoForge RegisterGuiLayersEvent/LayeredDraw.Layer: "
