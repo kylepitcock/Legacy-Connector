@@ -268,7 +268,7 @@ public final class Models1122 {
      */
     public static IBakedModel stateModel(IBlockState state) {
         if (locations == null) locations = buildLocations();
-        var target = stateLocations.get(state);
+        var target = stateLocations.get(StatesBridge1122.canonical(state));
         if (target == null) return null;
         var manager = Minecraft.getInstance().getModelManager();
         BakedModel model = manager.getModel(target);
