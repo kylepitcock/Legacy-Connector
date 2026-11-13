@@ -216,16 +216,20 @@ final class PalladiumResourceCompat1201 {
                 {"entity.removeAttribute(attribute, UUID)",
                         "entity.removeAttribute(attribute, 'alienevo:stat_ability/' + String(uuid).toLowerCase().replace(/[^a-z0-9/._-]/g, '_'))", "1"},
                 {"entity.modifyAttribute(attribute, UUID,",
-                        "entity.modifyAttribute(attribute, 'alienevo:stat_ability/' + String(uuid).toLowerCase().replace(/[^a-z0-9/._-]/g, '_')),", "1"}
+                        "entity.modifyAttribute(attribute, 'alienevo:stat_ability/' + String(uuid).toLowerCase().replace(/[^a-z0-9/._-]/g, '_'),", "1"}
         });
         rewriteOptionalPehkuiApi(resources);
 
         // A single resource can receive more than one independent rewrite.
         // Report the number of distinct changed script files, not rewrite passes.
         int changedResources = 0;
-        for (Map.Entry<String, byte[]> entry : resources.entrySet()) {
-            byte[] before = original.get(entry.getKey());
-            if (before == null || !java.util.Arrays.equals(before, entry.getValue())) {
+        java.util.Set<String> changedPaths = new java.util.HashSet<>(original.keySet());
+        changedPaths.addAll(resources.keySet());
+        for (String path : changedPaths) {
+            byte[] before = original.get(path);
+            byte[] after = resources.get(path);
+            // Count additions, in-place edits, and removals exactly once per resource path.
+            if (!java.util.Arrays.equals(before, after)) {
                 changedResources++;
             }
         }
