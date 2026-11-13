@@ -26,10 +26,18 @@ public final class MobTexturesB173 implements GeneratedPack.Contributor {
         if(mod!=null&&Files.isRegularFile(mod.container.getModInfo().getOwningFile().getFile().findResource(p.split("/"))))return id(mod,p);
         for(var other:LegacyMods.all())if(PlatformB173.VERSION.equals(other.version)&&Files.isRegularFile(other.container.getModInfo().getOwningFile().getFile().findResource(p.split("/"))))return id(other,p);
         String vanilla=VANILLA.get(p);if(vanilla!=null)return ResourceLocation.withDefaultNamespace(vanilla);
+        if(GUI_SHEETS.contains(p))return ResourceLocation.fromNamespaceAndPath("legacyconnector","textures/b173/gui/"+p.substring("gui/".length()));
         return ResourceLocation.withDefaultNamespace("missingno");
     }
+    /** Vanilla GUI sheets a renderer may bind by their b1.7.3 path (the HUD of a mod's frame callback); the pack carries them. */
+    private static final java.util.Set<String> GUI_SHEETS=java.util.Set.of("gui/icons.png","gui/gui.png","gui/container.png","gui/crafting.png","gui/trap.png","gui/inventory.png","gui/furnace.png");
     @Override public void contribute(PackType type,Map<String,Supplier<byte[]>> out){
         if(type!=PackType.CLIENT_RESOURCES)return;
+        for(var sheet:org.kylepitcock.legacyconnector.vb1_7_3.client.ClientGuiB173.guiSheets().entrySet()){
+            var bytes=new java.io.ByteArrayOutputStream();
+            try{javax.imageio.ImageIO.write(sheet.getValue(),"png",bytes);}catch(java.io.IOException e){throw new java.io.UncheckedIOException(e);}
+            byte[] data=bytes.toByteArray();out.put("assets/legacyconnector/textures/b173/gui/"+sheet.getKey(),()->data);
+        }
         for(var mod:LegacyMods.all())if(PlatformB173.VERSION.equals(mod.version)){
             var root=mod.container.getModInfo().getOwningFile().getFile().getSecureJar().getRootPath();
             try(var files=Files.walk(root)){

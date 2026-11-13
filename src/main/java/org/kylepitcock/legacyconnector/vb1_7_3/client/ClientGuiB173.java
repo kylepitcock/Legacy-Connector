@@ -360,6 +360,20 @@ public final class ClientGuiB173 implements GuiDrawB173.Sink {
                 paste(sheet, vanilla("textures/gui/sprites/widget/button_highlighted.png"), 0, 86);
                 yield sheet;
             }
+            case "/gui/icons.png" -> {
+                // Beta's HUD sheet, cut from the modern HUD sprites at the cells original code reads
+                BufferedImage sheet = sheet(null);
+                paste(sheet, vanilla("textures/gui/sprites/hud/crosshair.png"), 0, 0);
+                paste(sheet, vanilla("textures/gui/sprites/hud/heart/container.png"), 16, 0);
+                paste(sheet, vanilla("textures/gui/sprites/hud/heart/full.png"), 52, 0);
+                paste(sheet, vanilla("textures/gui/sprites/hud/heart/half.png"), 61, 0);
+                paste(sheet, vanilla("textures/gui/sprites/hud/armor_empty.png"), 16, 9);
+                paste(sheet, vanilla("textures/gui/sprites/hud/armor_half.png"), 25, 9);
+                paste(sheet, vanilla("textures/gui/sprites/hud/armor_full.png"), 34, 9);
+                paste(sheet, vanilla("textures/gui/sprites/hud/air.png"), 16, 18);
+                paste(sheet, vanilla("textures/gui/sprites/hud/air_bursting.png"), 25, 18);
+                yield sheet;
+            }
             case "/gui/container.png" -> vanilla("textures/gui/container/generic_54.png");
             case "/gui/crafting.png" -> vanilla("textures/gui/container/crafting_table.png");
             case "/gui/trap.png" -> vanilla("textures/gui/container/dispenser.png");
@@ -370,11 +384,26 @@ public final class ClientGuiB173 implements GuiDrawB173.Sink {
         };
     }
 
+    /** The vanilla GUI sheets as 256-wide images by their b1.7.3 path, for the generated pack (quad replay binds them like any texture). */
+    public static java.util.Map<String, BufferedImage> guiSheets() {
+        var sheets = new java.util.LinkedHashMap<String, BufferedImage>();
+        for (String path : new String[] {"/gui/icons.png", "/gui/gui.png", "/gui/container.png", "/gui/crafting.png", "/gui/trap.png", "/gui/inventory.png", "/gui/furnace.png"}) {
+            BufferedImage image = vanillaSheet(path);
+            if (image != null) sheets.put(path.substring("/gui/".length()), image);
+        }
+        return sheets;
+    }
+
     private static BufferedImage vanilla(String location) {
         try (InputStream in = Minecraft.getInstance().getResourceManager().open(ResourceLocation.withDefaultNamespace(location))) {
             return ImageIO.read(in);
         } catch (IOException | RuntimeException e) {
-            return null;
+            // while the pack is being built the game's resource manager is not there (yet): the client jar's own assets
+            try (InputStream in = Minecraft.class.getResourceAsStream("/assets/minecraft/" + location)) {
+                return in == null ? null : ImageIO.read(in);
+            } catch (IOException | RuntimeException again) {
+                return null;
+            }
         }
     }
 
