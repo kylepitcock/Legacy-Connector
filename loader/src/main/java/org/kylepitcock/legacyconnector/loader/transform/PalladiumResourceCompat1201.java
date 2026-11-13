@@ -65,6 +65,19 @@ final class PalladiumResourceCompat1201 {
     private static final String SOUND_EVENT_HELPER_MARKER =
             "function getAlienEvoSoundEvent(soundId) {";
 
+    private static final String AFOMNI_HUMONGOSAUR_ANIMATION_SOURCE =
+            "assets/afomni/animations/model.humongousaur.anim.json";
+    private static final String AFOMNI_HUMONGOSAUR_ANIMATION_TARGET =
+            "assets/afomni/animations/model.humongousaur.animation.json";
+    private static final String AFOMNI_VAXASAURIAN_LAYER =
+            "assets/afomni/palladium/render_layers/vaxasaurian.json";
+    private static final String ALIEN_EVO_XLR8_ANIMATION_SOURCE =
+            "assets/alienevo/animations/xlr8.json";
+    private static final String ALIEN_EVO_XLR8_ANIMATION_TARGET =
+            "assets/alienevo/animations/xlr8.animation.json";
+    private static final String ALIEN_EVO_KINECELERAN_LAYER =
+            "assets/alienevo/palladium/render_layers/aliens/alien_4/kineceleran.json";
+
     private static final String ALIEN_EVO_PACKET_STRING_HELPER_MARKER =
             "function legacyConnectorAlienEvoPacketString(value) {";
     private static final String ALIEN_EVO_PACKET_STRING_HELPER = """
@@ -178,6 +191,7 @@ final class PalladiumResourceCompat1201 {
         rewritePowerUiEditBoxTick(resources);
         rewriteDiamondShardTexture(resources);
         rewriteAfOmniParticleTextureReferences(resources);
+        rewriteGeckoLibAnimationFileNames(resources);
         rewriteLegacyScriptApis(resources);
         rewriteDiamondCreationSound(resources);
         rewriteScoreboardApi(resources);
@@ -226,6 +240,48 @@ final class PalladiumResourceCompat1201 {
         return rewrite(resources, path, new String[][] {{
                 "\"diamond/spike\"", "\"minecraft:diamond_spike/spike\"", "2"
         }});
+    }
+
+    /**
+     * GeckoLib 4 discovers animation JSON assets by the .animation.json suffix.
+     * AlienEvo 1.1.3 contains two animation files with older/nonstandard names
+     * and its render-layer JSON points directly at those names. Keep the source
+     * assets intact, add correctly named aliases, and update only the two
+     * inspected animation_file references.
+     */
+    private static int rewriteGeckoLibAnimationFileNames(Map<String, byte[]> resources) {
+        int changed = 0;
+        changed += addAnimationAlias(
+                resources, AFOMNI_HUMONGOSAUR_ANIMATION_SOURCE, AFOMNI_HUMONGOSAUR_ANIMATION_TARGET);
+        changed += addAnimationAlias(
+                resources, ALIEN_EVO_XLR8_ANIMATION_SOURCE, ALIEN_EVO_XLR8_ANIMATION_TARGET);
+        changed += rewrite(resources, AFOMNI_VAXASAURIAN_LAYER, new String[][] {{
+                "afomni:animations/model.humongousaur.anim.json",
+                "afomni:animations/model.humongousaur.animation.json", "1"
+        }});
+        changed += rewrite(resources, ALIEN_EVO_KINECELERAN_LAYER, new String[][] {{
+                "alienevo:animations/xlr8.json",
+                "alienevo:animations/xlr8.animation.json", "1"
+        }});
+        return changed;
+    }
+
+    private static int addAnimationAlias(
+            Map<String, byte[]> resources, String sourcePath, String targetPath) {
+        byte[] source = resources.get(sourcePath);
+        if (source == null) return 0;
+
+        byte[] existing = resources.get(targetPath);
+        if (existing != null) {
+            if (!java.util.Arrays.equals(source, existing)) {
+                throw new IllegalStateException(
+                        "AlienEvo animation alias " + targetPath + " already exists with different content");
+            }
+            return 0;
+        }
+
+        resources.put(targetPath, source.clone());
+        return 1;
     }
 
     /**
