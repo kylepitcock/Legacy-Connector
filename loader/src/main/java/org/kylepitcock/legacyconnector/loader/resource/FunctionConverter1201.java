@@ -100,8 +100,12 @@ public final class FunctionConverter1201 {
         int consumed;
         if (kind.equals("minecraft:dust") || kind.equals("dust")) {
             if (args.length < 12) throw new IllegalStateException("Incomplete legacy dust particle command: " + command);
-            modernType = "minecraft:dust{color:[" + args[0] + "," + args[1] + "," + args[2]
-                    + "],scale:" + args[3] + "}";
+            // 1.21's particle option is SNBT with a homogeneous numeric list. Legacy
+            // Brigadier float arguments may be written as integers (for example "1"),
+            // but SNBT would decode those as TAG_Int beside TAG_Double color components.
+            modernType = "minecraft:dust{color:[" + particleDouble(args[0]) + ","
+                    + particleDouble(args[1]) + "," + particleDouble(args[2])
+                    + "],scale:" + particleDouble(args[3]) + "}";
             consumed = 4;
         } else if (kind.equals("block")) {
             if (args.length < 8) throw new IllegalStateException("Incomplete legacy block particle command: " + command);
@@ -120,6 +124,17 @@ public final class FunctionConverter1201 {
         }
         return command.substring(0, match.start()) + "particle " + modernType
                 + (suffix.length() == 0 ? "" : " " + suffix);
+    }
+
+    /** Render a legacy Brigadier float as a decimal SNBT number (TAG_Double). */
+    private static String particleDouble(String source) {
+        if (source == null || !source.matches("[+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:[eE][+-]?\\d+)?")) {
+            throw new IllegalStateException("Unrecognized legacy dust particle float: " + source);
+        }
+        if (source.indexOf('.') >= 0 || source.indexOf('e') >= 0 || source.indexOf('E') >= 0) {
+            return source;
+        }
+        return source + ".0";
     }
 
     private static String itemStack(String source) {
