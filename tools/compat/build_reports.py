@@ -38,7 +38,7 @@ def clip(s, n):
 def main():
     raw = subprocess.run(
         ["gh", "api", "--paginate", f"repos/{REPO}/issues?labels=compatibility&state=all&per_page=100"],
-        check=True, capture_output=True, text=True).stdout
+        check=True, capture_output=True, text=True, encoding="utf-8", errors="replace").stdout
     # --paginate concatenates JSON arrays: "][" -> ","
     issues = json.loads(re.sub(r"\]\s*\[", ",", raw)) if raw.strip() else []
     reports = []

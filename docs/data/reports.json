@@ -118,7 +118,7 @@
    "neoforge": "21.1.265",
    "link": "https://www.curseforge.com/minecraft/mc-mods/better-dungeons/files/2227053",
    "date": "2026-10-31",
-   "open": true
+   "open": false
   },
   {
    "issue": 112,
@@ -178,7 +178,7 @@
    "neoforge": "21.1.257",
    "link": "https://www.curseforge.com/minecraft/mc-mods/scape-and-spartan-parasites",
    "date": "2026-10-31",
-   "open": true
+   "open": false
   },
   {
    "issue": 124,
@@ -466,7 +466,7 @@
    "neoforge": "21.1.265",
    "link": "https://www.curseforge.com/minecraft/mc-mods/lycanites-mobs/files/5750564",
    "date": "2026-11-08",
-   "open": true
+   "open": false
   },
   {
    "issue": 217,
@@ -502,6 +502,210 @@
    "neoforge": "21.1.265",
    "link": "https://www.curseforge.com/minecraft/mc-mods/sorceryfight",
    "date": "2026-11-08",
+   "open": true
+  },
+  {
+   "issue": 222,
+   "mod": "Mo-Pickaxes-Mod-Forge-1.12.2",
+   "mc": "1.12.2",
+   "status": "partial",
+   "details": "- Items show up with textures - Creative tab loads - Almost all Unique abilities work - TNT Pickaxe Unique does not work - Pickaxes are not registered as tools or pickaxes - Pickaxes have no mining speed or level",
+   "lc": "0.4.12",
+   "neoforge": "21.1.265",
+   "link": "",
+   "date": "2026-11-08",
+   "open": false
+  },
+  {
+   "issue": 226,
+   "mod": "Tinker's Construct 2.13.0.183",
+   "mc": "1.12.2",
+   "status": "crashes",
+   "details": "-Cannot load world",
+   "lc": "0.4.12",
+   "neoforge": "21.1.265",
+   "link": "",
+   "date": "2026-11-08",
+   "open": false
+  },
+  {
+   "issue": 229,
+   "mod": "Ancient Warfare 2 1.12.2-2.9.20 (ancientwarfare-1.12.2-2.9.20.jar) + CodeChicke…",
+   "mc": "1.12.2",
+   "status": "partial",
+   "details": "Core, Structure and Vehicle modules load. Two modules fail; the same happens on LC 0.3.13 and 0.3.23. **1. ancientwarfareautomation fails during preInit: VerifyError** ``` Legacy mod ancientwarfareautomation ... failed during preInit: java.lang.RuntimeException: java.lang.VerifyError: Bad type on operand stack Location: net/shadowmage/ancientwarfare/core/render/BaseBakery.bakeQuads(EnumFacing, IE…",
+   "lc": "0.3.23",
+   "neoforge": "21.1.265",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/ancient-warfare-2",
+   "date": "2026-11-08",
+   "open": false
+  },
+  {
+   "issue": 233,
+   "mod": "IC2Classic 1.12.2-1.5.15",
+   "mc": "1.12.2",
+   "status": "fails",
+   "details": "Mod doesn't load, game starts",
+   "lc": "0.3.10",
+   "neoforge": "21.1.265",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/ic2-classic/files/8153677",
+   "date": "2026-11-09",
+   "open": false
+  },
+  {
+   "issue": 236,
+   "mod": "HBM-NTM-.1.0.27_X5852_H261",
+   "mc": "1.7.10",
+   "status": "partial",
+   "details": "Weapons models are still held in hands even despite the fact that they were thrown away and no longer in the inventory and there are another item. This happens both in original HBM and Space fork. <img width=\"850\" height=\"471\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/1f27d965-4d3f-4b8f-95dd-fcc1cda97175\" />",
+   "lc": "0.4.13 HOTFIX",
+   "neoforge": "NeoForge 21.1.265",
+   "link": "https://github.com/JameH2/Hbm-s-Nuclear-Tech-GIT/releases/tag/X5852",
+   "date": "2026-11-09",
+   "open": false
+  },
+  {
+   "issue": 244,
+   "mod": "Traincraft 4.4.1",
+   "mc": "1.7.10",
+   "status": "fails",
+   "details": "No items show up in creative menu.",
+   "lc": "0.4.13",
+   "neoforge": "21.1.251",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/traincraft",
+   "date": "2026-11-10",
+   "open": false
+  },
+  {
+   "issue": 245,
+   "mod": "LOTRMod v36.15",
+   "mc": "1.7.10",
+   "status": "fails",
+   "details": "Does not load",
+   "lc": "0.3.10",
+   "neoforge": "21.1.265",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/the-lord-of-the-rings-mod-legacy",
+   "date": "2026-11-10",
+   "open": true
+  },
+  {
+   "issue": 246,
+   "mod": "Roundabout-forge-1.20.1-3.6.6",
+   "mc": "1.20.1 (Forge)",
+   "status": "crashes",
+   "details": "it does not launch....",
+   "lc": "0.4.13",
+   "neoforge": "21.1265",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/roundabout-the-jojo-mod",
+   "date": "2026-11-11",
+   "open": false
+  },
+  {
+   "issue": 247,
+   "mod": "prehistoric nature (lepidodendron)",
+   "mc": "1.12.2",
+   "status": "partial",
+   "details": "<img width=\"1919\" height=\"981\" alt=\"Screenshot 2026-11-11 131831\" src=\"https://github.com/user-attachments/assets/10d98f1b-5249-424b-845b-654fa42f9e89\" /> <img width=\"1919\" height=\"1063\" alt=\"Screenshot 2026-11-11 132429\" src=\"https://github.com/user-attachments/assets/a2834396-2306-4bd9-9a37-49875a2d05f9\" /> Underwater plant blocks don't get waterlogged, Moving plants have a duplicate model insi…",
+   "lc": "legacyconnector-0.4.13",
+   "neoforge": "21.1.265",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/prehistoric-nature-precambrian-dimension",
+   "date": "2026-11-11",
+   "open": true
+  },
+  {
+   "issue": 248,
+   "mod": "thermal",
+   "mc": "1.4.7 (planned)",
+   "status": "partial",
+   "details": "Thermal Expansion \"version\": \"2.2.2.2\", for minecraft 1.4.7 Some block and item textures are broken and or missing. Power bars don't change but MJ power is produced and used. <img width=\"1920\" height=\"1009\" alt=\"2026-11-11_15 39 13\" src=\"https://github.com/user-attachments/assets/14255c72-dedd-40ec-8d71-2f4c4c0c7e1c\" /> Example 1) Magmatic engine produces MJ does not show fluid level in GUI <img …",
+   "lc": "0.4.13",
+   "neoforge": "21.1.265",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/thermal-expansion/files/all?page=1&pageSize=20&showAlphaFiles=show",
+   "date": "2026-11-11",
+   "open": true
+  },
+  {
+   "issue": 249,
+   "mod": "witchery-1.7.10-0.24.1",
+   "mc": "1.7.10",
+   "status": "crashes",
+   "details": "Villagers will crash the game, whether you spawn in a vanilla villager or go to a village, the second they render they crash the game.",
+   "lc": "0.3.10",
+   "neoforge": "21.1.265",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/witchery/files/2234410",
+   "date": "2026-11-11",
+   "open": false
+  },
+  {
+   "issue": 250,
+   "mod": "epic-core-api-1.1.9-fix_cf.jar",
+   "mc": "1.20.1 (Forge)",
+   "status": "crashes",
+   "details": "N/A, crashes on startup",
+   "lc": "0.4.13",
+   "neoforge": "21.1.265",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/epic-core-api/files/9205518",
+   "date": "2026-11-11",
+   "open": true
+  },
+  {
+   "issue": 252,
+   "mod": "TheBetweenlands-3.9.6-universal.jar",
+   "mc": "1.12.2",
+   "status": "partial",
+   "details": "loaded the game successfully but when checking the mod content in the creative tab the following happens: - Some items have a broken texture - Some items are missing a texture and are represented with a pink and black square - Some items are not shown at all despite the game registering them as an item in the tab",
+   "lc": "0.4.0",
+   "neoforge": "21.1.265",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/angry-pixel-the-betweenlands-mod/files/all?page=1&pageSize=20&showAlphaFiles=hide",
+   "date": "2026-11-11",
+   "open": true
+  },
+  {
+   "issue": 253,
+   "mod": "candyworld-1.1.5",
+   "mc": "1.12.2",
+   "status": "partial",
+   "details": "block sounds broken gummy blocks not bouncy mobs not spawning in dimension liquid candy and chocolate are broken they custom crafting tables not working the gui appears but they cant craft (they are supposed to work like normal crafting tables) trees and shrubbery not generating transparent gummy blocks can see the sides inside 40 block variants are missing all plant-like 2d plants/flowers and sa…",
+   "lc": "0.4.13",
+   "neoforge": "21.1.265",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/candy-world",
+   "date": "2026-11-11",
+   "open": true
+  },
+  {
+   "issue": 255,
+   "mod": "SRP v 1.10.9",
+   "mc": "1.12.2",
+   "status": "partial",
+   "details": "<img width=\"2560\" height=\"1440\" alt=\"2026-11-12_13 15 53\" src=\"https://github.com/user-attachments/assets/3e9cec4e-ecac-4fb9-a399-81167aa29331\" /> <img width=\"2560\" height=\"1440\" alt=\"2026-11-12_13 15 59\" src=\"https://github.com/user-attachments/assets/ee203bb8-1678-4c0d-b515-7456542a01b4\" /> - Villagers initially spawn in as farmers before reverting to unemployed. - Villagers change profession t…",
+   "lc": "0.4.13",
+   "neoforge": "21.1.265",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/scape-and-run-parasites/files/8787918",
+   "date": "2026-11-12",
+   "open": false
+  },
+  {
+   "issue": 256,
+   "mod": "ChromatiCraft 1.7.10 V33a",
+   "mc": "1.7.10",
+   "status": "fails",
+   "details": "Mod fails to load",
+   "lc": "0.4.13",
+   "neoforge": "21.1.265",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/chromaticraft",
+   "date": "2026-11-12",
+   "open": false
+  },
+  {
+   "issue": 259,
+   "mod": "buildcraft-all-8.0.0",
+   "mc": "1.12.2",
+   "status": "partial",
+   "details": "-BC Silicon & BC Transport failed to load completely -All pipes seem to not be working as they have no texture and disappear when placed. -Pipe wires have broken names (for example, Red Pipe Wire is called item.fireworkscharge.red Pipe Wire) -Crashed when I tried to search in the creative menu -Crashed when I placed a quarry",
+   "lc": "0.4.14",
+   "neoforge": "21.1.266",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/buildcraft/download/6376391",
+   "date": "2026-11-13",
    "open": true
   }
  ]
