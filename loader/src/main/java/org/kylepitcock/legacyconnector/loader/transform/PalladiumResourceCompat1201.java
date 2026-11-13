@@ -602,11 +602,30 @@ final class PalladiumResourceCompat1201 {
      * still read event.entity. Migrate only those two known handlers.
      */
     private static int rewriteOmnitrixPacketPlayerAccess(Map<String, byte[]> resources) {
-        return rewrite(resources, ALIEN_EVO_SERVER_STUFF, new String[][] {
-                {"let player = event.entity;", "let player = event.player;", "2"}
-        });
-    }
+        byte[] original = resources.get(ALIEN_EVO_SERVER_STUFF);
+        if (original == null) return 0;
 
+        String script = new String(original, StandardCharsets.UTF_8);
+        String legacy = "let player = event.entity;";
+        String modern = "let player = event.player;";
+        int legacyCount = occurrences(script, legacy);
+        int modernCount = occurrences(script, modern);
+
+        // The inspected file already has two modern event.player handlers
+        // (beam and energy colors). Only palette and nickname are legacy;
+        // after migration all four handlers use event.player.
+        if (legacyCount == 0 && modernCount == 4) return 0;
+        if (legacyCount != 2 || modernCount != 2) {
+            throw new IllegalStateException(
+                    "AlienEvo server_stuff.js has an unexpected packet-player rewrite shape: expected "
+                            + "2 legacy and 2 existing modern handlers, found "
+                            + legacyCount + " legacy and " + modernCount + " modern");
+        }
+
+        resources.put(ALIEN_EVO_SERVER_STUFF,
+                script.replace(legacy, modern).getBytes(StandardCharsets.UTF_8));
+        return 1;
+    }
     /** AlienEvo's flatten ability uses one optional Pehkui class at script load time; keep the script group loadable without Pehkui. */
     private static int rewriteOptionalPehkuiApi(Map<String, byte[]> resources) {
         byte[] original = resources.get(ALIEN_EVO_FLATTEN);
@@ -702,6 +721,11 @@ final class PalladiumResourceCompat1201 {
             int legacyCount = occurrences(migrated, legacy);
             int safeCount = occurrences(migrated, safe);
 
+            // Focused tests may include only the portion of a known script
+            // relevant to a different adapter. No legacy or migrated token
+            // means this particular rewrite is absent from that resource slice;
+            // partial or mixed migrations still fail below.
+            if (legacyCount == 0 && safeCount == 0) continue;
             if (legacyCount == 0 && safeCount == expected) continue;
             if (legacyCount != expected || safeCount != 0) {
                 throw new IllegalStateException(
