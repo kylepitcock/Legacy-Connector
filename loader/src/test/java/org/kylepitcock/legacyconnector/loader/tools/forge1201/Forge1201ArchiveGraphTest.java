@@ -129,10 +129,7 @@ final class Forge1201ArchiveGraphTest {
     void reportsMissingCorruptTraversalDuplicateAndDepthLimitedArchives() throws IOException {
         byte[] repeated = zip(Map.of("META-INF/NOTICE.txt", bytes("same bytes")));
         byte[] corrupt = new byte[] {0x01, 0x02, 0x03, 0x04};
-        byte[] deep = zip(Map.of("META-INF/jarjar/level2.jar", zip(Map.of(
-                "META-INF/jarjar/level3.jar", zip(Map.of(
-                        "META-INF/jarjar/level4.jar", zip(Map.of(
-                                "META-INF/jarjar/level5.jar", zip(Map.of("META-INF/NOTICE.txt", bytes("deep")))))))))));
+        byte[] deep = nestedJarChain(4);
         byte[] oversized = new byte[(int) Forge1201ArchiveGraph.MAX_NESTED_ARCHIVE_BYTES + 1];
         Map<String, byte[]> entries = new LinkedHashMap<>();
         entries.put("META-INF/jarjar/metadata.json", bytes(jarJarMetadata(
@@ -214,6 +211,11 @@ final class Forge1201ArchiveGraphTest {
             }
         }
         throw new IOException("Fixture root JAR has no mods.toml");
+    }
+
+    private static byte[] nestedJarChain(int nestedChildren) throws IOException {
+        if (nestedChildren <= 0) return zip(Map.of("META-INF/NOTICE.txt", bytes("deep")));
+        return zip(Map.of("META-INF/jarjar/child.jar", nestedJarChain(nestedChildren - 1)));
     }
 
     private static byte[] forgeModJar(String modId, String version, List<Dep> dependencies) throws IOException {
