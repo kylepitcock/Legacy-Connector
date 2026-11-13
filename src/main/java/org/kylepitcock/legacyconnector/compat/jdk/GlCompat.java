@@ -200,6 +200,31 @@ public final class GlCompat {
     public static void glDeleteQueriesARB(java.nio.IntBuffer ids) {
     }
 
+    // Reads of shader state (LibrarianLib, bbs, fluxloading): the shaders are virtual, so the buffers keep what the caller put in them
+    // (zeros from a fresh buffer) and a virtual program has no active uniform of a size or type.
+    public static int glGetActiveUniformSize(int program, int index) {
+        return 1;
+    }
+
+    public static int glGetActiveUniformType(int program, int index) {
+        return 0x1406; // GL_FLOAT
+    }
+
+    public static void glGetUniformf(int program, int location, java.nio.FloatBuffer out) {
+    }
+
+    public static void glGetUniformi(int program, int location, java.nio.IntBuffer out) {
+    }
+
+    public static void glGetVertexAttribf(int index, int pname, java.nio.FloatBuffer out) {
+    }
+
+    public static void glGetVertexAttribi(int index, int pname, java.nio.IntBuffer out) {
+    }
+
+    public static void glVertexAttribPointerBuffer(int index, int size, boolean normalized, int stride, java.nio.FloatBuffer data) {
+    }
+
     // Uniform uploads: shaders are virtual, so there is nothing to set them on.
     public static void glUniform1fARB(int a0, float a1) {
     }
