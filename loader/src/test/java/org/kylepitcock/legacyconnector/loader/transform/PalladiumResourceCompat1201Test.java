@@ -557,6 +557,33 @@ class PalladiumResourceCompat1201Test {
 
 
     @Test
+    void repairsAlienEvoGeckoLibAnimationFileNamesAndIsIdempotent() {
+        Map<String, byte[]> resources = new HashMap<>();
+        byte[] humongousaurAnimation = "{\\"animations\\":{\\"animation.humungousaur.tail\\":{}}}"
+                .getBytes(StandardCharsets.UTF_8);
+        byte[] xlr8Animation = "{\\"animations\\":{\\"animation.xlr8.tail\\":{}}}"
+                .getBytes(StandardCharsets.UTF_8);
+        resources.put("assets/afomni/animations/model.humongousaur.anim.json", humongousaurAnimation);
+        resources.put("assets/alienevo/animations/xlr8.json", xlr8Animation);
+        put(resources, "assets/afomni/palladium/render_layers/vaxasaurian.json",
+                "{\\"animation_file\\":\\"afomni:animations/model.humongousaur.anim.json\\"}");
+        put(resources, "assets/alienevo/palladium/render_layers/aliens/alien_4/kineceleran.json",
+                "{\\"animation_file\\":\\"alienevo:animations/xlr8.json\\"}");
+
+        assertEquals(4, PalladiumResourceCompat1201.apply(resources));
+        assertTrue(java.util.Arrays.equals(humongousaurAnimation,
+                resources.get("assets/afomni/animations/model.humongousaur.animation.json")));
+        assertTrue(java.util.Arrays.equals(xlr8Animation,
+                resources.get("assets/alienevo/animations/xlr8.animation.json")));
+        assertTrue(get(resources, "assets/afomni/palladium/render_layers/vaxasaurian.json")
+                .contains("afomni:animations/model.humongousaur.animation.json"));
+        assertTrue(get(resources, "assets/alienevo/palladium/render_layers/aliens/alien_4/kineceleran.json")
+                .contains("alienevo:animations/xlr8.animation.json"));
+
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+    }
+
+    @Test
     void removesObsoleteEditBoxTickCallFromAlienEvoPowerUi() {
         Map<String, byte[]> resources = new HashMap<>();
         put(resources, PalladiumResourceCompat1201.ALIEN_EVO_POWER_UI, """
