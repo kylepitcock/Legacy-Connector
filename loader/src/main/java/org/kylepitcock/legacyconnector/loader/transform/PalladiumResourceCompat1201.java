@@ -211,19 +211,11 @@ final class PalladiumResourceCompat1201 {
      * method from renderPowerScreen throws on every rendered frame.
      */
     private static int rewritePowerUiEditBoxTick(Map<String, byte[]> resources) {
-        String path = ALIEN_EVO_POWER_UI;
-        byte[] original = resources.get(path);
-        if (original == null) return 0;
-
-        String script = new String(original, StandardCharsets.UTF_8);
-        String lineEnding = script.contains("\r\n") ? "\r\n" : "\n";
-        String legacy = "            let currentTime = Date.now();" + lineEnding
-                + "            if (currentTime - lastTickTime >= TICK_INTERVAL) {" + lineEnding
-                + "                hexTextBox.tick();" + lineEnding
-                + "                lastTickTime = currentTime;" + lineEnding
-                + "            }";
-        String safe = "            // The 1.21.1 screen manages EditBox input ticks.";
-        return rewrite(resources, path, new String[][] {{legacy, safe, "1"}});
+        return rewrite(resources, ALIEN_EVO_POWER_UI, new String[][] {{
+                "hexTextBox.tick();",
+                "/* EditBox input is ticked by the 1.21.1 screen; no manual tick() call. */",
+                "1"
+        }});
     }
 
     /** Fix AlienEvo's item model reference to the existing vanilla diamond-spike texture. */
