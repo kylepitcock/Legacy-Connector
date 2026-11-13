@@ -304,7 +304,7 @@ public final class Forge1201ArchiveGraph {
         Snapshot snapshot;
         try (ZipFile zip = new ZipFile(parentJar.toFile())) {
             snapshot = snapshotFromZipFile(zip, budget);
-        } catch (ZipException exception) {
+        } catch (IOException | RuntimeException exception) {
             budget.warnings.add(parentDisplayPath + ": cannot inspect nested archive entries: "
                     + conciseMessage(exception));
             return;
@@ -320,10 +320,13 @@ public final class Forge1201ArchiveGraph {
         var enumeration = zip.entries();
         while (enumeration.hasMoreElements()) names.add(enumeration.nextElement().getName());
 
-        String modsToml = readOptionalZipText(zip, findEntry(zip, "META-INF/mods.toml"), MAX_METADATA_BYTES);
-        String neoToml = readOptionalZipText(zip, findEntry(zip, "META-INF/neoforge.mods.toml"), MAX_METADATA_BYTES);
+        List<String> warnings = new ArrayList<>();
+        String modsToml = safeReadOptionalZipText(zip, findEntry(zip, "META-INF/mods.toml"),
+                MAX_METADATA_BYTES, "META-INF/mods.toml", warnings);
+        String neoToml = safeReadOptionalZipText(zip, findEntry(zip, "META-INF/neoforge.mods.toml"),
+                MAX_METADATA_BYTES, "META-INF/neoforge.mods.toml", warnings);
         ZipEntry metadataEntry = findEntry(zip, JARJAR_METADATA);
-        String metadataText = readOptionalZipText(zip, metadataEntry, MAX_METADATA_BYTES);
+        String metadataText = safeReadOptionalZipText(zip, metadataEntry, MAX_METADATA_BYTES, JARJAR_METADATA, warnings);
         ParsedJarJarMetadata parsed = parseJarJarMetadata(metadataText);
 
         Map<String, Candidate> candidates = new TreeMap<>();
@@ -349,16 +352,18 @@ public final class Forge1201ArchiveGraph {
             }
             try (InputStream in = zip.getInputStream(entry)) {
                 byte[] bytes = readBounded(in, MAX_NESTED_ARCHIVE_BYTES);
-                budget.inflatedBytes += bytes.length;
-                if (budget.inflatedBytes > MAX_TOTAL_INFLATED_BYTES) {
-                    throw new BudgetLimitException("total nested archive byte budget exceeded");
+                if (budget.inflatedBytes + bytes.length > MAX_TOTAL_INFLATED_BYTES) {
+                    candidates.put(path, new Candidate(path, null, coordinate, ArchiveKind.SIZE_LIMIT));
+                    warnings.add(path + " skipped because the total nested archive byte budget was reached.");
+                } else {
+                    budget.inflatedBytes += bytes.length;
+                    candidates.put(path, new Candidate(path, bytes, coordinate, null));
                 }
-                candidates.put(path, new Candidate(path, bytes, coordinate, null));
             } catch (EntryTooLargeException exception) {
                 candidates.put(path, new Candidate(path, null, coordinate, ArchiveKind.SIZE_LIMIT));
             }
         }
-        List<String> warnings = new ArrayList<>(parsed.warnings());
+        warnings.addAll(parsed.warnings());
         return new Snapshot(modsToml, neoToml, candidates, warnings);
     }
 
@@ -789,6 +794,17 @@ public final class Forge1201ArchiveGraph {
             if (entry.getName().equalsIgnoreCase(name)) return entry;
         }
         return null;
+    }
+
+    private static String safeReadOptionalZipText(
+            ZipFile zip, ZipEntry entry, int limit, String label, List<String> warnings) throws IOException {
+        if (entry == null) return null;
+        try {
+            return readZipEntry(zip, entry, limit);
+        } catch (EntryTooLargeException exception) {
+            warnings.add(label + " exceeds the metadata read limit and was not parsed.");
+            return null;
+        }
     }
 
     private static String readOptionalZipText(ZipFile zip, ZipEntry entry, int limit) throws IOException {
