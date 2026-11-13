@@ -34,6 +34,7 @@ public class LegacyB173Block extends net.minecraft.world.level.block.Block imple
         super(nativeProperties(legacy,properties));
         this.legacy = legacy;
         if(legacy.getRenderType()==14)BedsB173.install();
+        if(legacy instanceof legacyconnector.vb1_7_3.net.minecraft.block.LiquidBlock&&legacy.material==legacyconnector.vb1_7_3.net.minecraft.block.material.Material.WATER)LegacyWaterB173.install();
         this.shape = shapeOf(legacy);
         this.ownHarvest = overrides(legacy, "afterBreak", World.class, legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity.class,
                 int.class, int.class, int.class, int.class);
@@ -123,6 +124,8 @@ public class LegacyB173Block extends net.minecraft.world.level.block.Block imple
                         default -> Shapes.box(0.4,0,0.4,0.6,0.6,0.6);
                     };
                 }
+                // Beta targets (and so lets a player break) a block only when canCollideCheck(meta, false) holds: fluids and the like are not selectable.
+                if(!collision && !legacy.hasCollision(state.getValue(META),false))return Shapes.empty();
                 if(!collision && !(legacy instanceof legacyconnector.vb1_7_3.net.minecraft.block.StairsBlock)) {
                     VoxelShape outline=shapeOf(legacy);
                     // Beta outlines and targets a block by getBoundingBox (getSelectedBoundingBoxFromPool): none, or a box with no extent, hides it.
@@ -248,8 +251,13 @@ public class LegacyB173Block extends net.minecraft.world.level.block.Block imple
         PlayerViewB173 view = PlayerViewB173.of(player);
         boolean[] used = new boolean[1];
         // The clicking player is the legacy client's player for this callback (mods read mc.thePlayer), even when not in the level's list yet.
-        call("blockActivated", () -> { World w = view(level); try (var ctx = legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$context(w, view)) {
-            used[0] = legacy.onUse(w, pos.getX(), pos.getY(), pos.getZ(), view); } });
+        // A GUI the block opens (displayGuiScreen) must reach the server's menu path, as it does for an item use.
+        Runnable activate = () -> { World w = view(level); try (var ctx = legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$context(w, view)) {
+            used[0] = legacy.onUse(w, pos.getX(), pos.getY(), pos.getZ(), view); } };
+        call("blockActivated", () -> {
+            if (!level.isClientSide && player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) MenusB173.withActor(serverPlayer, activate);
+            else activate.run();
+        });
         if (legacy instanceof legacyconnector.vb1_7_3.net.minecraft.block.BlockWithEntity) {
             MenusB173.trace("right click on {} ({}) on the {} side: {}", legacy.getClass().getName(), state.getValue(META),
                     level.isClientSide ? "client" : "server", used[0] ? "used" : "not used");

@@ -20,6 +20,8 @@ public final class GL11 {
     }
 
     public static void glBindTexture(int target, int texture) {
+        // A texture effect that binds its own sheet through GL (BuildCraft's oil) names the sheet it draws into.
+        if(org.kylepitcock.legacyconnector.vb1_7_3.AnimationsB173.bindId(texture))return;
         if(RendererContextB173.active())RendererContextB173.bind(texture);else GuiDrawB173.bind(texture);
     }
 

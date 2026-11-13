@@ -50,6 +50,73 @@ public class BlockRenderManager {
             }return true;
         }finally{b.minX=saved[0];b.minY=saved[1];b.minZ=saved[2];b.maxX=saved[3];b.maxY=saved[4];b.maxZ=saved[5];}
     }
+    /** Beta {@code getFluidHeight}: the surface height at a block, averaged over the four corners it touches. */
+    private float fluidHeight(Block b,int x,int y,int z){
+        float total=0;int count=0;
+        for(int i=0;i<4;i++){
+            int cx=x-(i&1),cz=z-(i>>1&1);
+            if(blockView.getMaterial(cx,y+1,cz)==b.material)return 1.0F;
+            var m=blockView.getMaterial(cx,y,cz);
+            if(m==b.material){
+                int meta=blockView.getBlockMeta(cx,y,cz);
+                if(meta>=8||meta==0){total+=legacyconnector.vb1_7_3.net.minecraft.block.LiquidBlock.getFluidHeightFromMeta(meta)*10F;count+=10;}
+                total+=legacyconnector.vb1_7_3.net.minecraft.block.LiquidBlock.getFluidHeightFromMeta(meta);count++;
+            }else if(!m.blocksMovement()){total++;count++;}
+        }
+        return 1.0F-total/count;
+    }
+    private static void fluidVertex(double x,double y,double z,double u,double v){Tessellator.INSTANCE.vertex(x,y,z,u/256.0,v/256.0);}
+    /** Beta {@code renderBlockFluids}: a fluid block with a sloped surface and flowing-texture rotation; hidden faces are skipped. */
+    public boolean renderFluid(Block b,int x,int y,int z){
+        int tint=b.getColorMultiplier(blockView,x,y,z);
+        float cr=((tint>>16)&255)/255F,cg=((tint>>8)&255)/255F,cb=(tint&255)/255F;
+        boolean top=renderAllSides||b.isSideVisible(blockView,x,y+1,z,1),bottom=renderAllSides||b.isSideVisible(blockView,x,y-1,z,0);
+        boolean[] side={renderAllSides||b.isSideVisible(blockView,x,y,z-1,2),renderAllSides||b.isSideVisible(blockView,x,y,z+1,3),
+                renderAllSides||b.isSideVisible(blockView,x-1,y,z,4),renderAllSides||b.isSideVisible(blockView,x+1,y,z,5)};
+        if(!top&&!bottom&&!side[0]&&!side[1]&&!side[2]&&!side[3])return false;
+        boolean drawn=false;
+        int meta=blockView.getBlockMeta(x,y,z);
+        float h00=fluidHeight(b,x,y,z),h01=fluidHeight(b,x,y,z+1),h11=fluidHeight(b,x+1,y,z+1),h10=fluidHeight(b,x+1,y,z);
+        if(top){
+            drawn=true;
+            int tex=b.getTexture(1,meta);
+            float angle=(float)legacyconnector.vb1_7_3.net.minecraft.block.LiquidBlock.getFlowingAngle(blockView,x,y,z,b.material);
+            if(angle>-999F)tex=b.getTexture(2,meta);
+            int u0=(tex&15)<<4,v0=tex&0xF0;
+            double cu=u0+8D,cv=v0+8D;
+            if(angle<-999F)angle=0;else{cu=u0+16D;cv=v0+16D;}
+            float sa=net.minecraft.util.Mth.sin(angle)*8F,ca=net.minecraft.util.Mth.cos(angle)*8F;
+            Tessellator.INSTANCE.color(cr,cg,cb);
+            fluidVertex(x,y+h00,z,cu-ca-sa,cv-ca+sa);
+            fluidVertex(x,y+h01,z+1,cu-ca+sa,cv+ca+sa);
+            fluidVertex(x+1,y+h11,z+1,cu+ca+sa,cv+ca-sa);
+            fluidVertex(x+1,y+h10,z,cu+ca-sa,cv-ca-sa);
+        }
+        if(bottom){
+            Tessellator.INSTANCE.color(cr*.5F,cg*.5F,cb*.5F);
+            face(b,x,y,z,0,b.getTexture(0,meta));
+            drawn=true;
+        }
+        for(int i=0;i<4;i++){
+            if(!side[i])continue;
+            int tex=b.getTexture(i+2,meta);
+            int u0=(tex&15)<<4,v0=tex&0xF0;
+            float ha,hb;double xa,xb,za,zb;
+            if(i==0){ha=h00;hb=h10;xa=x;xb=x+1;za=z;zb=z;}
+            else if(i==1){ha=h11;hb=h01;xa=x+1;xb=x;za=z+1;zb=z+1;}
+            else if(i==2){ha=h01;hb=h00;xa=x;xb=x;za=z+1;zb=z;}
+            else{ha=h10;hb=h11;xa=x+1;xb=x+1;za=z;zb=z+1;}
+            double ua=u0,ub=u0+16-0.01,va=v0+(1F-ha)*16F,vb=v0+(1F-hb)*16F,vBottom=v0+16-0.01;
+            float shade=i<2?0.8F:0.6F;
+            Tessellator.INSTANCE.color(cr*shade,cg*shade,cb*shade);
+            fluidVertex(xa,y+ha,za,ua,va);
+            fluidVertex(xb,y+hb,zb,ub,vb);
+            fluidVertex(xb,y,zb,ub,vBottom);
+            fluidVertex(xa,y,za,ua,vBottom);
+            drawn=true;
+        }
+        return drawn;
+    }
     private static final int[][] NEIGHBOURS={{0,-1,0},{0,1,0},{0,0,-1},{0,0,1},{-1,0,0},{1,0,0}};
     /** Beta renderStandardBlock: each face is drawn only when the block's own isSideVisible accepts the neighbour position. */
     public boolean renderBlock(Block b,int x,int y,int z){
