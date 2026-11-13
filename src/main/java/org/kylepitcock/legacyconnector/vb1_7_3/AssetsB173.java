@@ -65,6 +65,7 @@ public final class AssetsB173 implements GeneratedPack.Contributor {
                 "clay", "sugar_cane", "note_block", "jukebox_top", null, null, null, null,
                 "torch", null, null, "ladder", null, null, "farmland_moist", "farmland"};
         for (int i = 0; i < row.length; i++) if (row[i] != null) VANILLA_TERRAIN.put(i, row[i]);
+        VANILLA_TERRAIN.put(14, "nether_portal");
         VANILLA_TERRAIN.put(31, "fire_0");
         VANILLA_TERRAIN.put(47, "fire_1");
         for (int s = 0; s < 8; s++) VANILLA_TERRAIN.put(88 + s, "wheat_stage" + s);
@@ -127,7 +128,7 @@ public final class AssetsB173 implements GeneratedPack.Contributor {
      * Vanilla textures with transparent pixels, for mod blocks that reuse them. b1.7.3 drew all terrain with an alpha test, so a block
      * whose sprites have holes showed them even as an "opaque" block: such models are cutout ({@link #hasAlpha}).
      */
-    private static final java.util.Set<String> VANILLA_SEE_THROUGH = java.util.Set.of("glass", "oak_leaves", "cobweb", "poppy", "dandelion",
+    private static final java.util.Set<String> VANILLA_SEE_THROUGH = java.util.Set.of("glass", "nether_portal", "oak_leaves", "cobweb", "poppy", "dandelion",
             "oak_sapling", "red_mushroom", "brown_mushroom", "dead_bush", "torch", "ladder", "sugar_cane", "spawner", "rail", "rail_corner",
             "lever", "redstone_torch", "redstone_torch_off", "cactus_side", "cactus_top", "cactus_bottom");
 
@@ -523,6 +524,8 @@ public final class AssetsB173 implements GeneratedPack.Contributor {
         if (sheet.equals(TERRAIN)) {
             String vanilla = VANILLA_TERRAIN.get(index);
             if (vanilla != null) return "minecraft:block/" + vanilla;
+            var fluid = FluidSpritesB173.sprite(index);
+            if (fluid != null) return write(null, "vanilla_fluid_" + index, fluid);
             var chest = ChestSpritesB173.sprite(index);
             return chest == null ? null : write(null, "vanilla_chest_" + index, chest);
         }
