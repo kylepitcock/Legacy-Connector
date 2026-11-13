@@ -53,6 +53,10 @@ public final class LoadingProgressB173 {
             // Only what the renderer adds to the standard title and stage is drawn, over the native screen.
             ClientGuiB173.beginOverlay(graphics, java.util.Set.of(TITLE, STAGE));
             try {
+                // Beta redrew the loading screen only a few times a second and the picture stayed on screen between draws; the native screen
+                // is redrawn every frame, so the renderer's own rate limit (it skips a draw within 20 ms of the last) would leave some frames
+                // without its additions, which shows as flicker on a fast display.
+                resetRateLimit(renderer);
                 renderer.getClass().getMethod("progressStagePercentage", int.class).invoke(renderer, percent(screen));
             } finally {
                 ClientGuiB173.end();
@@ -61,6 +65,16 @@ public final class LoadingProgressB173 {
             failed = true;
             LoggerFactory.getLogger("LegacyConnector/b1.7.3").error("b1.7.3 loading screen {} failed; the native loading screens stay",
                     renderer.getClass().getName(), error);
+        }
+    }
+
+    /** The renderer's last-update timestamp(s): its {@code long} fields, which Beta's progress renderer used for nothing but that limit. */
+    private static void resetRateLimit(Object renderer) {
+        for (Class<?> type = renderer.getClass(); type != null && type != Object.class; type = type.getSuperclass()) {
+            for (var field : type.getDeclaredFields()) {
+                if (field.getType() != long.class || java.lang.reflect.Modifier.isStatic(field.getModifiers())) continue;
+                try { field.setAccessible(true); field.setLong(renderer, 0L); } catch (ReflectiveOperationException | RuntimeException ignored) { }
+            }
         }
     }
 
