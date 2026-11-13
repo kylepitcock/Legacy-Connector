@@ -41,6 +41,7 @@ import java.util.zip.ZipInputStream;
 public final class Forge1201ArchiveGraph {
     public static final int MAX_NESTED_DEPTH = 4;
     public static final int MAX_NESTED_ARCHIVES = 128;
+    public static final int MAX_ROOT_ARCHIVE_ENTRIES = 100_000;
     public static final long MAX_NESTED_ARCHIVE_BYTES = 32L * 1024 * 1024;
     public static final long MAX_ARCHIVE_INFLATED_BYTES = 64L * 1024 * 1024;
     public static final long MAX_TOTAL_INFLATED_BYTES = 256L * 1024 * 1024;
@@ -64,6 +65,7 @@ public final class Forge1201ArchiveGraph {
         MISSING_DECLARED_ARCHIVE,
         SIZE_LIMIT,
         DEPTH_LIMIT,
+        ARCHIVE_COUNT_LIMIT,
         DUPLICATE_CONTENT_SKIPPED
     }
 
@@ -174,7 +176,8 @@ public final class Forge1201ArchiveGraph {
             String modsToml,
             String neoForgeModsToml,
             Map<String, Candidate> nestedJars,
-            List<String> warnings) {}
+            List<String> warnings,
+            boolean incomplete) {}
     private record DeclaringMod(String archivePath, Forge1201JarInfo.Mod mod) {}
     private record ParsedArchive(
             ArchiveKind kind, String loaderKind, List<Forge1201JarInfo.Mod> mods, List<String> warnings) {}
@@ -319,7 +322,14 @@ public final class Forge1201ArchiveGraph {
     private static Snapshot snapshotFromZipFile(ZipFile zip, Budget budget) throws IOException {
         Set<String> names = new TreeSet<>();
         var enumeration = zip.entries();
-        while (enumeration.hasMoreElements()) names.add(enumeration.nextElement().getName());
+        while (enumeration.hasMoreElements()) {
+            names.add(enumeration.nextElement().getName());
+            if (names.size() >= MAX_ROOT_ARCHIVE_ENTRIES) {
+                budget.warnings.add("Archive entry inventory reached the configured "
+                        + MAX_ROOT_ARCHIVE_ENTRIES + " entry limit; remaining entry names were not inspected.");
+                break;
+            }
+        }
 
         List<String> warnings = new ArrayList<>();
         String modsToml = safeReadOptionalZipText(zip, findEntry(zip, "META-INF/mods.toml"),
@@ -365,7 +375,7 @@ public final class Forge1201ArchiveGraph {
             }
         }
         warnings.addAll(parsed.warnings());
-        return new Snapshot(modsToml, neoToml, candidates, warnings);
+        return new Snapshot(modsToml, neoToml, candidates, warnings, false);
     }
 
     private record ParsedJarJarMetadata(Map<String, JarJarCoordinate> coordinates, List<String> warnings) {}
@@ -421,6 +431,16 @@ public final class Forge1201ArchiveGraph {
         String range = coordinate == null ? null : coordinate.versionRange();
         String artifactVersion = coordinate == null ? null : coordinate.artifactVersion();
 
+        if (budget.archiveCount >= MAX_NESTED_ARCHIVES) {
+            if (budget.warnings.stream().noneMatch(warning -> warning.startsWith(
+                    "Maximum nested archive count (" + MAX_NESTED_ARCHIVES + ")"))) {
+                budget.warnings.add("Maximum nested archive count (" + MAX_NESTED_ARCHIVES
+                        + ") reached; additional nested archives were not inspected.");
+            }
+            return;
+        }
+        budget.archiveCount++;
+
         if (candidate.failure() != null) {
             budget.archives.add(new ArchiveFinding(displayPath, parentPath, depth, origin,
                     candidate.bytes() == null ? -1 : candidate.bytes().length, null, candidate.failure(),
@@ -447,7 +467,6 @@ public final class Forge1201ArchiveGraph {
             budget.warnings.add("Maximum nested archive count (" + MAX_NESTED_ARCHIVES + ") reached; remaining archives were not inspected.");
             return;
         }
-        budget.archiveCount++;
         if (!budget.seenDigests.add(digest)) {
             budget.archives.add(new ArchiveFinding(displayPath, parentPath, depth, origin, bytes.length, digest,
                     ArchiveKind.DUPLICATE_CONTENT_SKIPPED, group, artifact, range, artifactVersion, List.of(),
@@ -466,6 +485,12 @@ public final class Forge1201ArchiveGraph {
             return;
         }
         budget.warnings.addAll(snapshot.warnings());
+        if (snapshot.incomplete()) {
+            budget.archives.add(new ArchiveFinding(displayPath, parentPath, depth, origin, bytes.length, digest,
+                    ArchiveKind.SIZE_LIMIT, group, artifact, range, artifactVersion, List.of(),
+                    List.of("Nested archive analysis stopped when an inflated-byte safety budget was reached.")));
+            return;
+        }
         ParsedArchive parsed = classifyArchive(displayPath, snapshot);
         List<Forge1201PreflightAnalyzer.ModMetadata> reportMods = parsed.mods().stream()
                 .map(mod -> new Forge1201PreflightAnalyzer.ModMetadata(mod.modId(), mod.version(), mod.displayName()))
@@ -490,6 +515,7 @@ public final class Forge1201ArchiveGraph {
         List<String> warnings = new ArrayList<>();
         long archiveInflated = 0;
         int entryCount = 0;
+        boolean incomplete = false;
         try (ZipInputStream zip = new ZipInputStream(new ByteArrayInputStream(bytes))) {
             ZipEntry entry;
             while ((entry = zip.getNextEntry()) != null) {
@@ -537,6 +563,7 @@ public final class Forge1201ArchiveGraph {
             throw exception;
         } catch (BudgetLimitException exception) {
             warnings.add(exception.getMessage());
+            incomplete = true;
         }
         if (entryCount == 0 && !hasZipSignature(bytes)) {
             throw new ZipException("nested entry is not a readable ZIP archive");
@@ -566,7 +593,7 @@ public final class Forge1201ArchiveGraph {
                 candidates.put(path, new Candidate(path, selected.get(path), coordinate, null));
             }
         }
-        return new Snapshot(modsToml, neoToml, candidates, warnings);
+        return new Snapshot(modsToml, neoToml, candidates, warnings, incomplete);
     }
 
     private static boolean hasZipSignature(byte[] bytes) {
