@@ -488,9 +488,11 @@ public final class Forge1201ArchiveGraph {
         Set<String> oversizedJars = new TreeSet<>();
         List<String> warnings = new ArrayList<>();
         long archiveInflated = 0;
+        int entryCount = 0;
         try (ZipInputStream zip = new ZipInputStream(new ByteArrayInputStream(bytes))) {
             ZipEntry entry;
             while ((entry = zip.getNextEntry()) != null) {
+                entryCount++;
                 String name = entry.getName();
                 String lower = name.toLowerCase(Locale.ROOT);
                 boolean metadata = lower.equals("meta-inf/mods.toml")
@@ -535,6 +537,9 @@ public final class Forge1201ArchiveGraph {
         } catch (BudgetLimitException exception) {
             warnings.add(exception.getMessage());
         }
+        if (entryCount == 0 && !hasZipSignature(bytes)) {
+            throw new ZipException("nested entry is not a readable ZIP archive");
+        }
 
         String modsToml = findText(selected, "META-INF/mods.toml");
         String neoToml = findText(selected, "META-INF/neoforge.mods.toml");
@@ -561,6 +566,15 @@ public final class Forge1201ArchiveGraph {
             }
         }
         return new Snapshot(modsToml, neoToml, candidates, warnings);
+    }
+
+    private static boolean hasZipSignature(byte[] bytes) {
+        if (bytes.length < 4 || bytes[0] != 'P' || bytes[1] != 'K') return false;
+        int third = bytes[2] & 0xff;
+        int fourth = bytes[3] & 0xff;
+        return (third == 0x03 && fourth == 0x04)
+                || (third == 0x05 && fourth == 0x06)
+                || (third == 0x07 && fourth == 0x08);
     }
 
     private static String findText(Map<String, byte[]> selected, String name) {
