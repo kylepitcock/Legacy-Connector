@@ -35,17 +35,26 @@ final class Subscribers1201 {
         return null;
     }
 
-    /** Events NeoForge refuses to listen to directly (abstract); Forge delivered every subclass. */
-    private static final java.util.Set<String> ABSTRACT_EVENTS = java.util.Set.of(
-            "net/neoforged/neoforge/event/level/ExplosionEvent", "net/neoforged/neoforge/event/entity/player/AdvancementEvent",
-            "net/neoforged/neoforge/event/entity/player/PlayerEvent", "net/neoforged/neoforge/event/entity/living/LivingEvent",
-            "net/neoforged/neoforge/event/entity/EntityEvent", "net/neoforged/neoforge/event/level/LevelEvent",
-            "net/neoforged/neoforge/event/level/BlockEvent", "net/neoforged/neoforge/event/entity/player/PlayerInteractEvent",
-            "net/neoforged/neoforge/event/entity/living/LivingEntityUseItemEvent", "net/neoforged/neoforge/event/entity/item/ItemEvent",
-            "net/neoforged/neoforge/event/level/ChunkEvent", "net/neoforged/neoforge/event/level/ChunkWatchEvent",
-            "net/neoforged/neoforge/event/entity/living/MobEffectEvent", "net/neoforged/neoforge/event/entity/living/LivingChangeTargetEvent",
-            "net/neoforged/neoforge/event/entity/ProjectileImpactEvent", "net/neoforged/neoforge/event/entity/player/AnvilRepairEvent");
+    /**
+     * Events NeoForge refuses to listen to directly (abstract); Forge delivered every subclass. Read from {@code neoforge-abstract-events.tsv}, which
+     * {@code loader/tools/EventTables1201Tool} generates from the NeoForge 21.1 jars (the idea of generating the list is Retromod's).
+     */
+    static final java.util.Set<String> ABSTRACT_EVENTS = loadAbstractEvents();
 
+    private static java.util.Set<String> loadAbstractEvents() {
+        java.util.Set<String> out = new java.util.HashSet<>();
+        try (java.io.InputStream in = Subscribers1201.class.getClassLoader().getResourceAsStream("legacyconnector/forward/1.20.1/neoforge-abstract-events.tsv")) {
+            if (in != null) {
+                for (String l : new String(in.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8).split("\\R")) {
+                    if (l.isBlank() || l.startsWith("#")) continue;
+                    out.add(l.split("\t")[0]);
+                }
+            }
+        } catch (java.io.IOException e) {
+            throw new IllegalStateException(e);
+        }
+        return java.util.Collections.unmodifiableSet(out);
+    }
     private static boolean hasInstanceSubscriber(ClassNode node, Map<String, ClassNode> byName) {
         for (ClassNode c = node; c != null; c = c.superName == null ? null : byName.get(c.superName)) {
             for (MethodNode m : c.methods) {

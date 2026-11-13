@@ -227,7 +227,7 @@ public final class ForgeApi1201 {
                         var entries = zip.entries();
                         while (entries.hasMoreElements()) {
                             String n = entries.nextElement().getName();
-                            if (!n.endsWith(".class") || !n.startsWith("net/neoforged/neoforge/event/")) continue;
+                            if (!n.endsWith(".class") || !n.startsWith("net/neoforged/neoforge/event/") && !n.startsWith("net/neoforged/neoforge/client/event/")) continue;
                             String cn = n.substring(0, n.length() - 6).replace('/', '.');
                             try {
                                 Class<?> c = Class.forName(cn, false, base.getClassLoader());

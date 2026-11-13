@@ -348,6 +348,19 @@ tasks.register('gap1201', JavaExec) {
     } as CommandLineArgumentProvider)
 }
 
+// Event tables of the 1.20.1 pipeline from the real jars (abstract NeoForge events, Forge events without a counterpart):
+// ./gradlew eventTables1201 -PeventJars=<neoforge merged>,<bus>,<fml loader> -PforgeJar=<forge-1.20.1-universal.jar> [-PeventOut=loader/src/main/resources/legacyconnector/forward/1.20.1/neoforge-abstract-events.tsv]
+tasks.register('eventTables1201', JavaExec) {
+    dependsOn ':loader:classes'
+    classpath = project(':loader').sourceSets.main.runtimeClasspath
+    mainClass = 'org.kylepitcock.legacyconnector.loader.tools.EventTables1201Tool'
+    argumentProviders.add({
+        def a = ['--neoforge', project.findProperty('eventJars').toString(), '--facades', 'src/main/java/legacyconnector/v1_20_1']
+        if (project.findProperty('forgeJar')) a += ['--forge', project.findProperty('forgeJar').toString()]
+        if (project.findProperty('eventOut')) a += ['--out', project.findProperty('eventOut').toString()]
+        a
+    } as CommandLineArgumentProvider)
+}
 // Deterministic single-JAR preflight report: ./gradlew preflight1201 -PpreflightJar=path/to/mod.jar [-PpreflightModsDirs=mods,other-mods]
 tasks.register('preflight1201', JavaExec) {
     group = 'verification'
