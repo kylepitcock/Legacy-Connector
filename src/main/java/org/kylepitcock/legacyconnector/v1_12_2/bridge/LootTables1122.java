@@ -71,9 +71,27 @@ public final class LootTables1122 {
         try {
             var legacy = legacyconnector.v1_12_2.net.minecraft.world.storage.loot.LootTableManager.GSON_INSTANCE.fromJson(json,
                     legacyconnector.v1_12_2.net.minecraft.world.storage.loot.LootTable.class);
-            if (legacy != null) e.setTable(legacy.mcc$modern());
+            if (legacy != null) e.setTable(named(legacy.mcc$modern(), e.getName()));
         } catch (RuntimeException | LinkageError ex) {
             LOG.warn("Cannot parse the 1.12.2 loot table {}: {}", e.getName(), ex.toString());
         }
+    }
+
+    /**
+     * A replacement table for the load event, carrying the id of the table it replaces. NeoForge sets the id only on the table it parsed;
+     * a table handed to {@code setTable} without one makes other mods fail when they copy it ({@code setLootTableId(null)}, issue #226).
+     * The shared {@code LootTable.EMPTY} is never given an id: an empty table of its own stands in for it.
+     */
+    public static net.minecraft.world.level.storage.loot.LootTable named(net.minecraft.world.level.storage.loot.LootTable table,
+            net.minecraft.resources.ResourceLocation id) {
+        if (table == null || table == net.minecraft.world.level.storage.loot.LootTable.EMPTY) {
+            table = net.minecraft.world.level.storage.loot.LootTable.lootTable().build();
+        }
+        try {
+            if (id != null && table.getLootTableId() == null) table.setLootTableId(id);
+        } catch (RuntimeException ex) {
+            // already named by someone else
+        }
+        return table;
     }
 }
