@@ -69,6 +69,10 @@ final class PalladiumResourceCompat1201 {
             "data/alienevo/advancements/obtain_scroll.json";
     private static final String ALIEN_EVO_MACHINE_SCROLL_TAG =
             "data/alienevo/tags/item/machine_scroll.json";
+    private static final String AFOMNI_CRYSTALSAPIEN_ANIMATION_COPY =
+            "assets/afomni/animations/crystalsapien.animation_copy.json";
+    private static final String AFOMNI_CRYSTALSAPIEN_ANIMATION =
+            "assets/afomni/animations/crystalsapien.animation.json";
     private static final String AFOMNI_HUMONGOSAUR_ANIMATION_SOURCE =
             "assets/afomni/animations/model.humongousaur.anim.json";
     private static final String AFOMNI_HUMONGOSAUR_ANIMATION_TARGET =
@@ -196,6 +200,7 @@ final class PalladiumResourceCompat1201 {
         rewriteDiamondShardTexture(resources);
         rewriteAfOmniParticleTextureReferences(resources);
         rewriteGeckoLibAnimationFileNames(resources);
+        removeDuplicateMalformedGeckoLibAnimation(resources);
         addMissingAlienEvoMachineScrollTag(resources);
         rewriteLegacyScriptApis(resources);
         rewriteDiamondCreationSound(resources);
@@ -302,15 +307,33 @@ final class PalladiumResourceCompat1201 {
         if (source == null) return 0;
 
         byte[] existing = resources.get(targetPath);
-        if (existing != null) {
-            if (!java.util.Arrays.equals(source, existing)) {
-                throw new IllegalStateException(
-                        "AlienEvo animation alias " + targetPath + " already exists with different content");
-            }
-            return 0;
+        if (existing != null && !java.util.Arrays.equals(source, existing)) {
+            throw new IllegalStateException(
+                    "AlienEvo animation alias " + targetPath + " already exists with different content");
         }
 
-        resources.put(targetPath, source.clone());
+        if (existing == null) {
+            resources.put(targetPath, source.clone());
+        }
+        // The associated render-layer reference is migrated below, so keeping
+        // the old malformed filename would only trigger another GeckoLib warning.
+        resources.remove(sourcePath);
+        return 1;
+    }
+
+    /**
+     * The source JAR contains an unreferenced copy of crystalsapien.animation.json
+     * named animation_copy.json. It is byte-identical to the valid file and has
+     * no resource references; remove only that exact duplicate so GeckoLib does
+     * not try to interpret the malformed name as an animation asset.
+     */
+    private static int removeDuplicateMalformedGeckoLibAnimation(Map<String, byte[]> resources) {
+        byte[] duplicate = resources.get(AFOMNI_CRYSTALSAPIEN_ANIMATION_COPY);
+        byte[] canonical = resources.get(AFOMNI_CRYSTALSAPIEN_ANIMATION);
+        if (duplicate == null || canonical == null || !java.util.Arrays.equals(duplicate, canonical)) {
+            return 0;
+        }
+        resources.remove(AFOMNI_CRYSTALSAPIEN_ANIMATION_COPY);
         return 1;
     }
 
