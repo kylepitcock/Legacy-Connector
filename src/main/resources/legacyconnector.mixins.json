@@ -50,7 +50,8 @@
     "MinecraftAttackMixin",
     "MultiPlayerGameModeMixin",
     "OptionsScreenLegacySettingsMixin",
-    "ClientLanguageLegacyKeysMixin"
+    "ClientLanguageLegacyKeysMixin",
+    "CustomHeadLayerLegacyArmorMixin"
   ],
   "injectors": {
     "defaultRequire": 1
