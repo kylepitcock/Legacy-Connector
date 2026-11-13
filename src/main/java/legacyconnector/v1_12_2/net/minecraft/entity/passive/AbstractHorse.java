@@ -40,7 +40,8 @@ public abstract class AbstractHorse extends EntityAnimal implements legacyconnec
     public AbstractHorse(World world) {
         super(world);
         setSize(1.3964844F, 1.6F);
-        mcc$set$stepHeight(this, 1.0F);
+        // a view of a horse keeps its own step height attribute
+        if (!mcc$existingNativeView()) mcc$set$stepHeight(this, 1.0F);
         try {
             initHorseChest();
         } catch (RuntimeException | LinkageError e) {
