@@ -443,10 +443,13 @@ class PalladiumResourceCompat1201Test {
         String migrated = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_STAT_ABILITY);
         assertEquals(2, occurrences(migrated, "entity.server.scoreboard"));
         assertFalse(migrated.contains("Utils.server.scoreboard"));
-        assertTrue(migrated.contains("entity.removeAttribute(attribute, uuid)"));
-        assertTrue(migrated.contains("entity.modifyAttribute(attribute, uuid,"));
+        String modifierId = "'alienevo:stat_ability/' + String(uuid).toLowerCase().replace(/[^a-z0-9/._-]/g, '_')";
+        assertTrue(migrated.contains("entity.removeAttribute(attribute, " + modifierId + ")"));
+        assertTrue(migrated.contains("entity.modifyAttribute(attribute, " + modifierId + ","));
         assertFalse(migrated.contains("entity.removeAttribute(attribute, UUID)"));
         assertFalse(migrated.contains("entity.modifyAttribute(attribute, UUID,"));
+        assertFalse(migrated.contains("entity.removeAttribute(attribute, uuid)"));
+        assertFalse(migrated.contains("entity.modifyAttribute(attribute, uuid,"));
         assertEquals(0, PalladiumResourceCompat1201.apply(resources));
         assertEquals(migrated, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_STAT_ABILITY));
 
