@@ -306,7 +306,7 @@ public final class JavaCompatRedirects {
         for (MethodNode method : node.methods) {
             InsnList insns = method.instructions;
             for (AbstractInsnNode insn = insns.getFirst(); insn != null; insn = insn.getNext()) {
-                if (insn instanceof MethodInsnNode call && typedToArray(insns, call)) {
+                if (insn instanceof MethodInsnNode call && typedToArray(method, call)) {
                     count++;
                     continue;
                 }
@@ -394,9 +394,11 @@ public final class JavaCompatRedirects {
      * Up to Java 8, {@code Arrays.asList(...).toArray()} returned the backing array with its own type, and code cast it straight to
      * that type ({@code (Integer[]) list.toArray()}: RedPower's power search). Since Java 9 it is always an {@code Object[]} and the cast
      * fails. A {@code java.util} collection's {@code toArray()} followed by a cast to a typed array becomes {@code toArray(new T[0])},
-     * which gives that type for every collection.
+     * which gives that type for every collection. The added array argument needs one more operand stack slot (the classes are written
+     * without recomputing maxs: a getter {@code return (T[]) list.toArray();} with max stack 1 failed verification, #244).
      */
-    private static boolean typedToArray(InsnList insns, MethodInsnNode call) {
+    private static boolean typedToArray(MethodNode method, MethodInsnNode call) {
+        InsnList insns = method.instructions;
         if (!call.name.equals("toArray") || !call.desc.equals("()[Ljava/lang/Object;") || !call.owner.startsWith("java/util/")) return false;
         AbstractInsnNode next = call.getNext();
         while (next != null && next.getOpcode() < 0) next = next.getNext();
@@ -410,6 +412,7 @@ public final class JavaCompatRedirects {
         fix.add(new org.objectweb.asm.tree.TypeInsnNode(Opcodes.ANEWARRAY, element));
         insns.insertBefore(call, fix);
         call.desc = "([Ljava/lang/Object;)[Ljava/lang/Object;";
+        method.maxStack += 1;
         return true;
     }
 

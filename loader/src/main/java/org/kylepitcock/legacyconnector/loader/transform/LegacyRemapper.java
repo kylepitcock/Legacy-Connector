@@ -303,15 +303,7 @@ public final class LegacyRemapper extends Remapper {
         for (var e : JDK_PACKAGE_RELOCATIONS.entrySet()) {
             if (internalName.startsWith(e.getKey())) return e.getValue() + internalName.substring(e.getKey().length());
         }
-        if (LegacyVersion.isRelocatedRoot(internalName)) return relocate(internalName);
-        // Beta GuiAPI uses TWL model/widget types; preserve their hierarchy through the versioned shims.
-        if (version == LegacyVersion.VB1_7_3 && internalName.startsWith("de/matthiasmann/twl/")) return relocate(internalName);
-        // b1.7.3 mods call LWJGL's OpenAL directly while they load (IndustrialCraft 2's audio): the real AL classes initialised on the
-        // mod-loading thread, before the sound engine made a context, fail for good and the client's resource reload then never ends.
-        // Their OpenAL goes to the synthesized API (silent) until the layer emulates it.
-        if (version == LegacyVersion.VB1_7_3 && internalName.startsWith("org/lwjgl/openal/")) return relocate(internalName);
-        // LWJGL 2's BufferUtils (direct NIO buffers): the shim's works without LWJGL, so client builds of mods load on a dedicated server
-        if (version == LegacyVersion.VB1_7_3 && internalName.equals("org/lwjgl/BufferUtils")) return relocate(internalName);
+        if (LegacyVersion.isRelocatedRoot(internalName) || relocatedForVersion(internalName)) return relocate(internalName);
         String moved = crossVersion.map(version, internalName);
         if (moved != null) return moved;
         // String literals keep keyword segments: "class.insecta" (Forestry) is an id, not a package.
@@ -354,6 +346,24 @@ public final class LegacyRemapper extends Remapper {
             start = slash + 1;
         }
         return out == null ? internalName : out.append(internalName, end + 1, internalName.length()).toString();
+    }
+
+    /**
+     * Names relocated into the shim (or the synthesized API) for this version only, on top of {@link LegacyVersion#isRelocatedRoot}.
+     * A jar that bundles such a class itself (a Beta library shipping TWL) keeps its copy under its private root unless the shim has
+     * the class (see {@code LegacyJarTransformer.relocateBundled}); otherwise the jar and the synthesized-API jar would both export the
+     * package and the module layer refuses to boot (#220).
+     */
+    boolean relocatedForVersion(String internalName) {
+        if (version != LegacyVersion.VB1_7_3) return false;
+        // Beta GuiAPI uses TWL model/widget types; preserve their hierarchy through the versioned shims.
+        if (internalName.startsWith("de/matthiasmann/twl/")) return true;
+        // b1.7.3 mods call LWJGL's OpenAL directly while they load (IndustrialCraft 2's audio): the real AL classes initialised on the
+        // mod-loading thread, before the sound engine made a context, fail for good and the client's resource reload then never ends.
+        // Their OpenAL goes to the synthesized API (silent) until the layer emulates it.
+        if (internalName.startsWith("org/lwjgl/openal/")) return true;
+        // LWJGL 2's BufferUtils (direct NIO buffers): the shim's works without LWJGL, so client builds of mods load on a dedicated server
+        return internalName.equals("org/lwjgl/BufferUtils");
     }
 
     private String relocate(String legacyName) {

@@ -26,6 +26,16 @@ public enum EnumCreatureType {
         this.modern = modern;
     }
 
+    /**
+     * Vanilla's own constructor {@code (Class, int, Material, boolean, boolean)}: mods add spawn categories with
+     * {@code EnumHelper.addEnum(paramTable, EnumCreatureType.class, name, creatureClass, max, material, peaceful, animal)} and the
+     * table names exactly these parameter types (#245). Peaceful types spawn under the modern creature category, others as monsters.
+     */
+    EnumCreatureType(Class<?> creatureClass, int max, legacyconnector.v1_7_10.net.minecraft.block.material.Material material,
+            boolean peaceful, boolean animal) {
+        this(max, peaceful, animal, peaceful ? MobCategory.CREATURE : MobCategory.MONSTER, creatureClass, material);
+    }
+
     public Class<?> getCreatureClass() {
         return creatureClass;
     }
