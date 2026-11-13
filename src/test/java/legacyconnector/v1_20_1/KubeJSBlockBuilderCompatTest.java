@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 import net.minecraft.resources.ResourceLocation;
 import org.junit.jupiter.api.Test;
 
@@ -15,10 +16,24 @@ class KubeJSBlockBuilderCompatTest {
         public Object parentModel;
     }
 
+    public static final class FakeModelGenerator {
+        public ResourceLocation parent;
+        public final Map<String, String> textures = new HashMap<>();
+
+        public void parent(ResourceLocation value) {
+            parent = value;
+        }
+
+        public void textures(Map<String, String> values) {
+            textures.putAll(values);
+        }
+    }
+
     public static final class FakeBlockBuilder {
         public Object parentModel;
         public final Map<String, String> textures = new HashMap<>();
         public final FakeItemBuilder itemBuilder = new FakeItemBuilder();
+        public Consumer<FakeModelGenerator> modelGenerator;
     }
 
     @Test
@@ -31,6 +46,14 @@ class KubeJSBlockBuilderCompatTest {
         assertSame(builder, returned, "the legacy method remains chainable");
         assertEquals(expected, builder.parentModel);
         assertEquals(expected, builder.itemBuilder.parentModel);
+        assertTrue(builder.modelGenerator != null,
+                "custom block models must bypass KubeJS 7's extra tinted cube element");
+
+        builder.textures.put("side", "alienevo:block/custom_side");
+        FakeModelGenerator generated = new FakeModelGenerator();
+        builder.modelGenerator.accept(generated);
+        assertEquals(expected, generated.parent);
+        assertEquals(Map.of("side", "alienevo:block/custom_side"), generated.textures);
     }
 
     @Test
@@ -43,6 +66,7 @@ class KubeJSBlockBuilderCompatTest {
 
         org.junit.jupiter.api.Assertions.assertNull(builder.parentModel);
         org.junit.jupiter.api.Assertions.assertNull(builder.itemBuilder.parentModel);
+        org.junit.jupiter.api.Assertions.assertNull(builder.modelGenerator);
     }
 
     @Test
