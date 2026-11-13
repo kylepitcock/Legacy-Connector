@@ -1,6 +1,6 @@
 # Forge 1.20.1 Preflight Compatibility Analyzer
 
-**Status:** Slice 1 implementation committed; local Gradle validation pending  
+**Status:** Slice 1 implemented; loader tests and consolidated build passed; real-JAR smoke test pending  
 **Working branch:** `feat/forge1201-preflight-analyzer`  
 **Baseline:** `dde40275b9b3bd48ff811afa4c863e475e8a0cdf`  
 **Target:** Forge 1.20.1-only mod JARs on NeoForge 1.21.1 / 21.1.x  
@@ -164,21 +164,23 @@ Synthetic tests cover multiple mod declarations, duplicate IDs, array/multiline 
 
 ### Exact next action
 
-1. Switch to `feat/forge1201-preflight-analyzer`, run `git pull --ff-only`, then `git rev-parse HEAD` to confirm the updated branch tip.
-2. Run the focused loader test suite:
+1. Locate the known independent Symbiote 1.1.3 Forge 1.20.1 source JAR, if still available:
    ```powershell
-   .\gradlew.bat :loader:clean :loader:test --no-daemon --console=plain
+   Get-ChildItem "C:\Users\Administrator\legacy-connector-testbench" -Filter "symbiote-1.1.3.jar" -Recurse | Select-Object -ExpandProperty FullName
    ```
-3. Only after it succeeds, run the consolidated clean build:
+2. Run the smoke test from the source checkout, using the full path returned above:
    ```powershell
-   .\gradlew.bat :clean :loader:clean :testmods:clean :build :loader:build :testmods:assemble --no-daemon --console=plain
+   .\gradlew.bat preflight1201 "-PpreflightJar=FULL_PATH_RETURNED_ABOVE" "-PpreflightModsDirs=E:\Games\PolyMC\instances\Neoforge tester\.minecraft\mods" --no-daemon --console=plain
    ```
-4. Once built, smoke-test the new task against a small independent Forge 1.20.1 JAR (not the paused Palladium/Alien Evolution pair):
-   ```powershell
-   .\gradlew.bat preflight1201 "-PpreflightJar=F:\path\to\candidate.jar" "-PpreflightModsDirs=E:\path\to\mods" --no-daemon --console=plain
-   ```
-   Expected outputs by default: `build/reports/preflight1201/<jar-name>.json` and `.txt`. Inspect both before advancing.
+   `-PpreflightModsDirs` is optional; omit it if that mods directory is unavailable or irrelevant. Use another independent Forge 1.20.1 JAR if Symbiote is no longer available. Expected outputs: `build/reports/preflight1201/<jar-name>.json` and `.txt`.
+3. Share the Gradle output and both generated reports. Review metadata warnings, declared dependencies, API references/classifications, resource namespaces, mixin candidates, Jar-in-Jar paths, SHA-256, and stated limitations. Do not start Slice 2 until the real report is reviewed.
 
 ## Validation boundary
 
-The source branch baseline is the user's last successful Palladium/AliEvo loader-test and consolidated-build checkpoint. That validation does not validate any new analyzer code. After implementation, run the loader test suite and consolidated build before asking for any Minecraft runtime test. No build result may be claimed until the user or CI supplies it.
+User-confirmed validation on 2026-11-14 at source HEAD `9e1a1e14b597dd8ae690e9ae8c350809567dd1fc`:
+
+- `:loader:clean :loader:test --no-daemon --console=plain` — BUILD SUCCESSFUL; 12 actionable tasks, 1m 30s.
+- `:clean :loader:clean :testmods:clean :build :loader:build :testmods:assemble --no-daemon --console=plain` — BUILD SUCCESSFUL; 33 actionable tasks, 5m 32s.
+- Deprecation/removal warnings and Gradle 9.0 compatibility warnings were present but non-fatal.
+
+The analyzer code is now compile/test/build validated at that exact source commit. The real-JAR `preflight1201` task output has not yet been smoke-tested, and no Minecraft runtime compatibility is established. Next validation action: execute `preflight1201` against one independent Forge 1.20.1 JAR and review its generated JSON and text reports. Do not claim runtime success from this static report.
