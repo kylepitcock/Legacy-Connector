@@ -130,11 +130,36 @@ public final class PlayerGuis1122 {
         if (sp == null || object == null) return;
         String id = object.getGuiID() == null ? "" : object.getGuiID();
         Component title = object.getDisplayName() != null ? object.getDisplayName().mcc$modern() : title(object.getName(), object.hasCustomName());
+        // The vanilla menus run their crafting, repair and enchanting, and hand the grid back when closed, only through a real level access
+        // (ContainerLevelAccess.NULL never runs them: results never showed and the grid's items were lost on close). Their own validity check
+        // wants the vanilla block at the position, so a mod's table (its own block, legacy ContainerWorkbench subclass) is checked as 1.12 did:
+        // by the legacy container's canInteractWith.
         net.minecraft.world.inventory.MenuConstructor menu = switch (id) {
-            case "minecraft:crafting_table" -> (w, inv, p) -> new net.minecraft.world.inventory.CraftingMenu(w, inv, ContainerLevelAccess.NULL);
-            case "minecraft:anvil" -> (w, inv, p) -> new net.minecraft.world.inventory.AnvilMenu(w, inv, ContainerLevelAccess.NULL);
-            case "minecraft:enchanting_table" -> (w, inv, p) -> new net.minecraft.world.inventory.EnchantmentMenu(w, inv,
-                    ContainerLevelAccess.create(sp.level(), sp.blockPosition()));
+            case "minecraft:crafting_table", "minecraft:anvil", "minecraft:enchanting_table" -> {
+                var access = ContainerLevelAccess.create(sp.level(), interactionPos(object, sp));
+                var validity = legacyContainer(object, player);
+                EntityPlayer legacyPlayer = player;
+                yield switch (id) {
+                    case "minecraft:crafting_table" -> (w, inv, p) -> new net.minecraft.world.inventory.CraftingMenu(w, inv, access) {
+                        @Override
+                        public boolean stillValid(net.minecraft.world.entity.player.Player who) {
+                            return stillValidLegacy(validity, legacyPlayer);
+                        }
+                    };
+                    case "minecraft:anvil" -> (w, inv, p) -> new net.minecraft.world.inventory.AnvilMenu(w, inv, access) {
+                        @Override
+                        public boolean stillValid(net.minecraft.world.entity.player.Player who) {
+                            return stillValidLegacy(validity, legacyPlayer);
+                        }
+                    };
+                    default -> (w, inv, p) -> new net.minecraft.world.inventory.EnchantmentMenu(w, inv, access) {
+                        @Override
+                        public boolean stillValid(net.minecraft.world.entity.player.Player who) {
+                            return stillValidLegacy(validity, legacyPlayer);
+                        }
+                    };
+                };
+            }
             default -> null;
         };
         if (menu != null) {
@@ -150,6 +175,31 @@ public final class PlayerGuis1122 {
         }
         if (WARNED.add(id)) LOG.warn("displayGui with the GUI id {} ({}) has no modern counterpart; mods open their own GUIs with openGui", id,
                 object.getClass().getName());
+    }
+
+    /** Where an interaction object is (a tile entity's position; a block's interface object keeps it private: the player's position). */
+    private static net.minecraft.core.BlockPos interactionPos(IInteractionObject object, ServerPlayer sp) {
+        if (object instanceof legacyconnector.v1_12_2.net.minecraft.tileentity.TileEntity te && te.getPos() != null) return te.getPos().mcc$modern();
+        return sp.blockPosition();
+    }
+
+    /** The legacy container the object would have opened in 1.12, kept for its {@code canInteractWith}; null when it cannot be made. */
+    private static legacyconnector.v1_12_2.net.minecraft.inventory.Container legacyContainer(IInteractionObject object, EntityPlayer player) {
+        try {
+            return object.createContainer(EntityPlayer.mcc$get$inventory(player), player);
+        } catch (RuntimeException | LinkageError e) {
+            LOG.debug("The container of {} could not be made for its validity check: {}", object.getClass().getName(), e.toString());
+            return null;
+        }
+    }
+
+    private static boolean stillValidLegacy(legacyconnector.v1_12_2.net.minecraft.inventory.Container container, EntityPlayer player) {
+        if (container == null) return true;
+        try {
+            return container.canInteractWith(player);
+        } catch (RuntimeException | LinkageError e) {
+            return true;
+        }
     }
 
     private static void displayGUIChestPlain(ServerPlayer sp, IInventory inventory, net.minecraft.world.Container modern, Component title) {

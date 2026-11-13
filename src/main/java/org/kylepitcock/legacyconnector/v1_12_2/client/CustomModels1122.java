@@ -137,6 +137,33 @@ public final class CustomModels1122 {
         }
     }
 
+    /**
+     * The original parent of a plain json model (the loader keeps a parent no valid id can hold under {@code legacyconnector:legacy_parent}) when
+     * a custom loader accepts it, or null.
+     */
+    private static ResourceLocation loaderParent(ResourceLocation location) {
+        if (location instanceof ModelResourceLocation) return null;
+        String path = location.getPath();
+        if (!path.startsWith("models/")) return null;
+        try {
+            var resource = legacyconnector.v1_12_2.net.minecraft.client.Minecraft.getMinecraft().getResourceManager()
+                    .getResource(new ResourceLocation(location.getNamespace(), path.endsWith(".json") ? path : path + ".json"));
+            String raw;
+            try (java.io.Reader reader = new java.io.InputStreamReader(resource.getInputStream(), java.nio.charset.StandardCharsets.UTF_8)) {
+                var json = com.google.gson.JsonParser.parseReader(reader).getAsJsonObject();
+                var value = json.get("legacyconnector:legacy_parent");
+                if (value == null || !value.isJsonPrimitive()) return null;
+                raw = value.getAsString();
+            }
+            ResourceLocation parent = new ResourceLocation(raw);
+            String parentPath = parent.getPath();
+            ResourceLocation actual = parentPath.startsWith("models/") ? parent : new ResourceLocation(parent.getNamespace(), "models/" + parentPath);
+            return ModelLoaderRegistry.mcc$loaderFor(actual) != null ? parent : null;
+        } catch (java.io.IOException | RuntimeException | LinkageError e) {
+            return null;
+        }
+    }
+
     /** The loader model of a legacy location string ({@code domain:path#variant}), or null when no loader takes it. */
     private static IModel load(String key) {
         ResourceLocation location;
@@ -153,8 +180,11 @@ public final class CustomModels1122 {
             return null;
         }
         if (ModelLoaderRegistry.mcc$loaderFor(location) == null) {
-            // 1.12 asked the loaders for the model file a variant points at as well (domain:block/name, domain:item/name)
-            return null;
+            // a json model whose parent a loader makes ("parent": "mod:item/internal/x$from_item(mod:x)"): Forge loaded parents through the
+            // loaders too, so the item draws the loader's model (the modern bakery cannot, the name is no valid id)
+            ResourceLocation parent = loaderParent(location);
+            if (parent == null) return null;
+            location = parent;
         }
         try {
             return ModelLoaderRegistry.getModel(location);

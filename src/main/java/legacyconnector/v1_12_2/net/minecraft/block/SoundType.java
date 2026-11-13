@@ -57,6 +57,34 @@ public class SoundType {
         return t;
     }
 
+    private volatile net.minecraft.world.level.block.SoundType mcc$converted;
+
+    /**
+     * The modern sound type: the vanilla one, or for a mod-made sound type one of its own volume, pitch and events (looked up when first
+     * played, so mod sounds registered after the block are found; a mod sound no registry has plays by name from the mod's sounds.json).
+     */
+    public net.minecraft.world.level.block.SoundType mcc$toModern() {
+        if (mcc$modern != null) return mcc$modern;
+        var converted = mcc$converted;
+        if (converted == null) {
+            converted = new net.neoforged.neoforge.common.util.DeferredSoundType(volume, pitch, () -> mcc$event(breakSound, net.minecraft.sounds.SoundEvents.STONE_BREAK),
+                    () -> mcc$event(stepSound, net.minecraft.sounds.SoundEvents.STONE_STEP), () -> mcc$event(placeSound, net.minecraft.sounds.SoundEvents.STONE_PLACE),
+                    () -> mcc$event(hitSound, net.minecraft.sounds.SoundEvents.STONE_HIT), () -> mcc$event(fallSound, net.minecraft.sounds.SoundEvents.STONE_FALL));
+            mcc$converted = converted;
+        }
+        return converted;
+    }
+
+    private static net.minecraft.sounds.SoundEvent mcc$event(SoundEvent legacy, net.minecraft.sounds.SoundEvent fallback) {
+        net.minecraft.sounds.SoundEvent event = null;
+        try {
+            if (legacy != null) event = legacy.mcc$event();
+        } catch (RuntimeException | LinkageError e) {
+            // the fallback
+        }
+        return event != null ? event : fallback;
+    }
+
     public float getVolume() {
         return volume;
     }

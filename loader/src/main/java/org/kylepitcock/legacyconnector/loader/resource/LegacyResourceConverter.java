@@ -503,6 +503,9 @@ public final class LegacyResourceConverter {
         return out.toString();
     }
 
+    /** Key of a converted model json that keeps a parent name no valid id can hold (read by the 1.12.2 runtime's custom model loading). */
+    public static final String LEGACY_PARENT = "legacyconnector:legacy_parent";
+
     private static void fixRefs(JsonElement element, String key) {
         if (element instanceof JsonObject obj) {
             // item override predicates name properties ("bodyModel"): modern ids take lower case only (the runtime registers them lower-cased)
@@ -514,9 +517,13 @@ public final class LegacyResourceConverter {
                     obj.add("predicate", fixed);
                 }
             }
+            String legacyParent = null;
             for (var e : obj.entrySet()) {
                 if (e.getValue() instanceof JsonPrimitive p && p.isString() && isRefKey(e.getKey(), key)) {
                     String fixed = normalizeRef(p.getAsString());
+                    // a parent that is no valid id names a model of the mod's own model loader (The Betweenlands'
+                    // "item/internal/x$from_item(mod:x)"): the original name is kept for the runtime, which asks the loaders for it
+                    if (e.getKey().equals("parent") && !fixed.equals(p.getAsString().toLowerCase(Locale.ROOT))) legacyParent = p.getAsString();
                     if ("textures".equals(key)) fixed = vanillaTexture(fixed);
                     else if (e.getKey().equals("parent")) fixed = vanillaModel(fixed);
                     e.setValue(new JsonPrimitive(fixed));
@@ -524,6 +531,7 @@ public final class LegacyResourceConverter {
                     fixRefs(e.getValue(), e.getKey());
                 }
             }
+            if (legacyParent != null) obj.addProperty(LEGACY_PARENT, legacyParent);
         } else if (element instanceof JsonArray arr) {
             for (JsonElement e : arr) fixRefs(e, key);
         }

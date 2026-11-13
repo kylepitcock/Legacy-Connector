@@ -46,5 +46,9 @@ public class ChunkWatchEvent extends Event {
         public UnWatch(ChunkPos chunk, EntityPlayerMP player) {
             super(chunk, player);
         }
+
+        public UnWatch(legacyconnector.v1_12_2.net.minecraft.world.chunk.Chunk chunk, EntityPlayerMP player) {
+            super(chunk.getPos(), player, chunk);
+        }
     }
 }

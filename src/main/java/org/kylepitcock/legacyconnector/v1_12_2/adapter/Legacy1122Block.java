@@ -69,6 +69,10 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
     private final boolean collision;
     private final boolean walk;
     private final boolean fallen;
+    private final boolean landed;
+    private final boolean underwater;
+    private final boolean soundType;
+    private final boolean sideRendered;
     private final boolean event;
     private final boolean harvest;
     private final boolean removed;
@@ -118,6 +122,12 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
         this.collision = overrides(legacy, "onEntityCollision", W, P, S, legacyconnector.v1_12_2.net.minecraft.entity.Entity.class);
         this.walk = overrides(legacy, "onEntityWalk", W, P, legacyconnector.v1_12_2.net.minecraft.entity.Entity.class);
         this.fallen = overrides(legacy, "onFallenUpon", W, P, legacyconnector.v1_12_2.net.minecraft.entity.Entity.class, float.class);
+        this.landed = overrides(legacy, "onLanded", W, legacyconnector.v1_12_2.net.minecraft.entity.Entity.class);
+        this.underwater = legacy.getMaterialLegacy() == legacyconnector.v1_12_2.net.minecraft.block.material.Material.WATER
+                && !(legacy instanceof legacyconnector.v1_12_2.net.minecraftforge.fluids.IFluidBlock)
+                && !(legacy instanceof legacyconnector.v1_12_2.net.minecraft.block.BlockLiquid);
+        this.soundType = overrides(legacy, "getSoundType", S, W, P, legacyconnector.v1_12_2.net.minecraft.entity.Entity.class);
+        this.sideRendered = overrides(legacy, "shouldSideBeRendered", S, legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess.class, P, EnumFacing.class);
         this.event = overrides(legacy, "eventReceived", S, W, P, int.class, int.class);
         this.harvest = overrides(legacy, "harvestBlock", W, EntityPlayer.class, P, S, legacyconnector.v1_12_2.net.minecraft.tileentity.TileEntity.class,
                 legacyconnector.v1_12_2.net.minecraft.item.ItemStack.class);
@@ -437,6 +447,44 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
         }
     }
 
+    /**
+     * A block of the water material that is no fluid block (underwater plants, corals): 1.12 counted it as water (entities swam in it, it
+     * stood in the sea it was placed in); here it holds a water source, as a waterlogged block does, so water is drawn around it, entities
+     * swim in it, and breaking it leaves the water behind instead of a hole the neighbouring plants fall into.
+     */
+    @Override
+    protected net.minecraft.world.level.material.FluidState getFluidState(BlockState state) {
+        return underwater ? net.minecraft.world.level.material.Fluids.WATER.getSource(false) : super.getFluidState(state);
+    }
+
+    /** Forge's per-state {@code getSoundType(state, world, pos, entity)} (blocks whose sounds depend on their variant). */
+    @Override
+    public net.minecraft.world.level.block.SoundType getSoundType(BlockState state, LevelReader level, BlockPos pos, Entity entity) {
+        if (!soundType || !(level instanceof Level l)) return super.getSoundType(state, level, pos, entity);
+        try {
+            var legacySound = legacy.getSoundType(state(state), world(l), pos(pos), entity == null ? null : entity(entity));
+            if (legacySound != null) return legacySound.mcc$toModern();
+        } catch (RuntimeException | LinkageError e) {
+            failure("getSoundType", e);
+        }
+        return super.getSoundType(state, level, pos, entity);
+    }
+
+    /** {@code Block.onLanded}: what an entity's vertical motion becomes when it lands on the block (slime-like bouncing blocks). */
+    @Override
+    public void updateEntityAfterFallOn(net.minecraft.world.level.BlockGetter getter, Entity entity) {
+        if (!landed) {
+            super.updateEntityAfterFallOn(getter, entity);
+            return;
+        }
+        try {
+            legacy.onLanded(world(entity.level()), entity(entity));
+        } catch (RuntimeException | LinkageError e) {
+            failure("onLanded", e);
+            super.updateEntityAfterFallOn(getter, entity);
+        }
+    }
+
     // ------------------------------------------------------------------ vanilla base class rules: glass, ladders, bone meal
 
     /** BlockBreakable (glass, ice): the faces between two of the same block in the same state are not drawn. */
@@ -446,7 +494,54 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
                 && adjacent.getValue(META).equals(state.getValue(META))) {
             return true;
         }
+        if (sideRendered && !legacySideRendered(state, adjacent, direction)) return true;
         return super.skipRendering(state, adjacent, direction);
+    }
+
+    /**
+     * The block's own {@code shouldSideBeRendered} for a face (translucent blocks that hide the faces between two of themselves: Candy World's
+     * gummy blocks). The modern rule sees only the two states, so the legacy code is shown a view of just these two blocks; it can hide a face,
+     * never draw one the modern occlusion culls.
+     */
+    private boolean legacySideRendered(BlockState state, BlockState adjacent, net.minecraft.core.Direction direction) {
+        try {
+            var getter = new TwoBlocks(state, adjacent, BlockPos.ZERO.relative(direction));
+            return legacy.shouldSideBeRendered(state(state), org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldBridge1122.access(getter), pos(BlockPos.ZERO),
+                    EnumFacing.byIndex(direction.get3DDataValue()));
+        } catch (RuntimeException | LinkageError e) {
+            failure("shouldSideBeRendered", e);
+            return true;
+        }
+    }
+
+    /** A block view of one block at the origin and one neighbour; air everywhere else. */
+    private record TwoBlocks(BlockState self, BlockState neighbour, BlockPos neighbourPos) implements net.minecraft.world.level.BlockGetter {
+        @Override
+        public net.minecraft.world.level.block.entity.BlockEntity getBlockEntity(BlockPos pos) {
+            return null;
+        }
+
+        @Override
+        public BlockState getBlockState(BlockPos pos) {
+            if (pos.equals(BlockPos.ZERO)) return self;
+            if (pos.equals(neighbourPos)) return neighbour;
+            return net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();
+        }
+
+        @Override
+        public net.minecraft.world.level.material.FluidState getFluidState(BlockPos pos) {
+            return getBlockState(pos).getFluidState();
+        }
+
+        @Override
+        public int getHeight() {
+            return 384;
+        }
+
+        @Override
+        public int getMinBuildHeight() {
+            return -64;
+        }
     }
 
     @Override
@@ -758,13 +853,21 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
         }
     }
 
-    /** EnumBlockRenderType.INVISIBLE: the block's model is not drawn (invisible helper blocks, blocks drawn by their tile entity renderer). */
+    /**
+     * EnumBlockRenderType.INVISIBLE: the block's model is not drawn (invisible helper blocks, blocks drawn by their tile entity renderer).
+     * ENTITYBLOCK_ANIMATED: 1.12's chunk renderer skipped it too, only the tile entity renderer draws it (animated plants drew their
+     * static block model inside the moving one).
+     */
     @Override
     protected net.minecraft.world.level.block.RenderShape getRenderShape(BlockState state) {
         if (!renderType) return super.getRenderShape(state);
         try {
-            if (legacy.getRenderType(state(state)) == legacyconnector.v1_12_2.net.minecraft.util.EnumBlockRenderType.INVISIBLE) {
+            var type = legacy.getRenderType(state(state));
+            if (type == legacyconnector.v1_12_2.net.minecraft.util.EnumBlockRenderType.INVISIBLE) {
                 return net.minecraft.world.level.block.RenderShape.INVISIBLE;
+            }
+            if (type == legacyconnector.v1_12_2.net.minecraft.util.EnumBlockRenderType.ENTITYBLOCK_ANIMATED) {
+                return net.minecraft.world.level.block.RenderShape.ENTITYBLOCK_ANIMATED;
             }
         } catch (RuntimeException | LinkageError e) {
             failure("getRenderType", e);

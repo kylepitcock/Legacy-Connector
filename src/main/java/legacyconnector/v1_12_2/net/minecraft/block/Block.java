@@ -535,7 +535,9 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
     public void onFallenUpon(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.entity.Entity entity, float fallDistance) {
     }
 
+    /** 1.12: an entity landing on the block stops falling (blocks that bounce override this and call it when they do not). */
     public void onLanded(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.entity.Entity entity) {
+        legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$set$motionY(entity, 0.0D);
     }
 
     public boolean eventReceived(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, int id, int param) {

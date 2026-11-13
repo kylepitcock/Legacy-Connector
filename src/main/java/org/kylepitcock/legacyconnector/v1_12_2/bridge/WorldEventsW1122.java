@@ -56,7 +56,12 @@ public final class WorldEventsW1122 {
         bus.addListener((net.neoforged.neoforge.event.level.ChunkWatchEvent.UnWatch e) -> {
             if (!listens(ChunkWatchEvent.UnWatch.class)) return;
             var p = player(e.getPlayer());
-            if (p != null) post(new ChunkWatchEvent.UnWatch(legacyconnector.v1_12_2.net.minecraft.util.math.ChunkPos.mcc$of(e.getPos()), p));
+            if (p == null) return;
+            // Forge 1.12 gave the chunk being unwatched (mods read its world): the chunk is still loaded when the player stops watching it
+            var chunk = e.getLevel().getChunkSource().getChunkNow(e.getPos().x, e.getPos().z);
+            post(chunk != null
+                    ? new ChunkWatchEvent.UnWatch(legacyconnector.v1_12_2.net.minecraft.world.chunk.Chunk.mcc$of(WorldBridge1122.wrap(e.getLevel()), chunk), p)
+                    : new ChunkWatchEvent.UnWatch(legacyconnector.v1_12_2.net.minecraft.util.math.ChunkPos.mcc$of(e.getPos()), p));
         });
         bus.addListener((net.neoforged.neoforge.event.level.NoteBlockEvent.Play e) -> {
             if (!listens(NoteBlockEvent.Play.class) || !(e.getLevel() instanceof net.minecraft.world.level.Level level)) return;
