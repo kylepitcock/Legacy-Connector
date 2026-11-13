@@ -583,16 +583,24 @@ class PalladiumResourceCompat1201Test {
                 .getBytes(StandardCharsets.UTF_8);
         resources.put("assets/afomni/animations/model.humongousaur.anim.json", humongousaurAnimation);
         resources.put("assets/alienevo/animations/xlr8.json", xlr8Animation);
+        byte[] crystalsapienAnimation = "{\\"animations\\":{\\"animation.Chromastone.arms\\":{}}}"
+                .getBytes(StandardCharsets.UTF_8);
+        resources.put("assets/afomni/animations/crystalsapien.animation.json", crystalsapienAnimation);
+        resources.put("assets/afomni/animations/crystalsapien.animation_copy.json", crystalsapienAnimation.clone());
         put(resources, "assets/afomni/palladium/render_layers/vaxasaurian.json",
                 "{\\"animation_file\\":\\"afomni:animations/model.humongousaur.anim.json\\"}");
         put(resources, "assets/alienevo/palladium/render_layers/aliens/alien_4/kineceleran.json",
                 "{\\"animation_file\\":\\"alienevo:animations/xlr8.json\\"}");
 
-        assertEquals(4, PalladiumResourceCompat1201.apply(resources));
+        assertEquals(7, PalladiumResourceCompat1201.apply(resources));
         assertTrue(java.util.Arrays.equals(humongousaurAnimation,
                 resources.get("assets/afomni/animations/model.humongousaur.animation.json")));
         assertTrue(java.util.Arrays.equals(xlr8Animation,
                 resources.get("assets/alienevo/animations/xlr8.animation.json")));
+        assertFalse(resources.containsKey("assets/afomni/animations/model.humongousaur.anim.json"));
+        assertFalse(resources.containsKey("assets/alienevo/animations/xlr8.json"));
+        assertTrue(resources.containsKey("assets/afomni/animations/crystalsapien.animation.json"));
+        assertFalse(resources.containsKey("assets/afomni/animations/crystalsapien.animation_copy.json"));
         assertTrue(get(resources, "assets/afomni/palladium/render_layers/vaxasaurian.json")
                 .contains("afomni:animations/model.humongousaur.animation.json"));
         assertTrue(get(resources, "assets/alienevo/palladium/render_layers/aliens/alien_4/kineceleran.json")
