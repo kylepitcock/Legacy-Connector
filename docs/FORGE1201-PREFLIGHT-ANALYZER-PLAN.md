@@ -176,7 +176,7 @@ Both report files are present and internally consistent; however, the Gradle con
 
 ### Slice 2 implementation checkpoint — committed; local validation pending
 
-**Current source branch tip:** `fdb4e111fab45b0f41c7f15cad26cefbbcf92f13`  
+**Last code-bearing Slice 2 checkpoint:** `fdb4e111fab45b0f41c7f15cad26cefbbcf92f13` (the later branch commits in this checkpoint are documentation-only boundary/continuation updates).  
 **Working branch:** `feat/forge1201-preflight-analyzer`  
 **Implementation scope:** bounded nested archive inspection, provider provenance, dependency graph, target-range evaluation.  
 **Validation status:** code and regression fixtures are committed, but no local Gradle test/build has yet been run for Slice 2. Do not call Slice 2 validated until the user runs the focused test suite and real-JAR smoke test.
