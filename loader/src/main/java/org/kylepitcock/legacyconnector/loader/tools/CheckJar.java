@@ -61,7 +61,20 @@ public final class CheckJar {
         }
         for (String jarArg : jarArgs) {
             Path jarPath = Path.of(jarArg);
-            LegacyJar jar = LegacyJarInspector.inspect(jarPath);
+            LegacyJar jar;
+            try {
+                jar = LegacyJarInspector.inspect(jarPath);
+            } catch (IOException | RuntimeException e) {
+                // a truncated or corrupt archive (ZipException: zip END header not found) must not stop the check of the other jars
+                String reason = "unreadable archive, skipped: " + e;
+                System.out.println(jarPath.getFileName() + ": " + reason);
+                JsonObject r = new JsonObject();
+                r.addProperty("jar", jarPath.getFileName().toString());
+                r.addProperty("result", "skipped");
+                r.addProperty("reason", reason);
+                records.add(r);
+                continue;
+            }
             if (jar == null) {
                 System.out.println(jarPath.getFileName() + ": not a legacy Forge mod");
                 JsonObject r = new JsonObject();

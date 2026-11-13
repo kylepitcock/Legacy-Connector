@@ -225,6 +225,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             ShimIndex index = loadShimIndex(runtimeJar);
             LOG.info("Legacy Connector: shim index has {} legacy API classes", index.size());
 
+            unreadableNotes.clear();
             List<LegacyJar> legacy = new ArrayList<>();
             java.util.Set<String> seenNames = new java.util.HashSet<>();
             // FML also loaded mods/<minecraft version>/ (where dependency downloaders such as CodeChickenCore's put
@@ -268,7 +269,8 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                             if (jar != null) legacy.add(jar);
                             addContainedDeps(p, gameDir.resolve(".legacyconnector").resolve("nested"), legacy, seenNames);
                         } catch (IOException | RuntimeException e) {
-                            LOG.debug("Legacy Connector: could not inspect {}", p, e);
+                            // a truncated or corrupt archive: skipped with a warning and a report line, the other mods are translated as usual
+                            noteUnreadable(p, e);
                         }
                     }
                 }
@@ -822,6 +824,21 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
     private static volatile List<String> libraryNotes = List.of();
     private static volatile List<String> liteNotes = List.of();
 
+    /** Archives in the mod folders that could not be opened (truncated download, not a zip): listed in the report, never fatal. */
+    private static final List<String> unreadableNotes = new java.util.concurrent.CopyOnWriteArrayList<>();
+
+    static List<String> unreadableNotes() {
+        return unreadableNotes;
+    }
+
+    static void noteUnreadable(Path archive, Exception e) {
+        String reason = e.getClass().getSimpleName() + ": " + e.getMessage();
+        LOG.warn("Legacy Connector: skipped {}: it could not be read as an archive ({}). Download the file again; the other mods are not affected.",
+                archive.getFileName(), reason);
+        LOG.debug("Legacy Connector: unreadable archive {}", archive, e);
+        unreadableNotes.add(archive.getFileName() + ": skipped, unreadable archive (" + reason + ")");
+    }
+
     /** Forge loaded .zip mods too (1.6.4 and older distributed most mods as zips); the inspector rejects the zips that are not mods. */
     private static boolean isModArchive(String lowerCaseName) {
         return lowerCaseName.endsWith(".jar") || lowerCaseName.endsWith(".zip");
@@ -1100,6 +1117,11 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                     String outcome = e.getValue();
                     w.write(outcome.startsWith("  ") ? outcome : "  " + outcome + "\n");
                     w.write("\n");
+                }
+                if (!unreadableNotes.isEmpty()) {
+                    w.write("Archives that could not be read (skipped):" + System.lineSeparator());
+                    for (String n : unreadableNotes) w.write("  " + n + System.lineSeparator());
+                    w.write(System.lineSeparator());
                 }
                 if (!liteNotes.isEmpty()) {
                     w.write("Files that are not Forge mods:" + System.lineSeparator());
