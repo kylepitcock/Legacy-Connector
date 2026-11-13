@@ -66,6 +66,9 @@ public final class LegacyResourceConverter {
             String jsonPath = modern.substring(0, modern.length() - ".lang".length()) + ".json";
             Map<String, String> entries = langs.computeIfAbsent(jsonPath, k -> new LinkedHashMap<>());
             parseLang(new String(data, StandardCharsets.UTF_8), entries);
+            // CoFH's mods keep their language files in assets/<ns>/language/ and read them themselves (BaseMod.LangManager through the resource
+            // manager): the original stays where the mod looks for it
+            if (!modern.contains("/lang/")) output.putIfAbsent(path, data);
             return true;
         }
         if (modern.matches("assets/[^/]+/recipes/.+\\.json")) {
