@@ -187,8 +187,11 @@ public final class LibraryBridges {
         String forced = System.getProperty("legacyconnector.bridges", "").toLowerCase(Locale.ROOT);
         List<Bridge> out = new ArrayList<>();
         boolean realBaubles = hasJarNamed(modsDir, "baubles");
-        // only a 1.7.10 CodeChickenLib counts: packs like ATM10 ship the modern one (CodeChickenLib-1.21.1-...), which legacy code cannot use
+        // only a legacy CodeChickenLib counts: packs like ATM10 ship the modern one (CodeChickenLib-1.21.1-...), which legacy code cannot
+        // use. A 1.12.2 one counts too (CodeChickenLib-1.12.2-3.2.3.358-universal.jar): without it, mods built on the real library
+        // (a BakingVertexBuffer passed where a BufferBuilder is expected) linked against the synthesized stand-in and failed to verify
         boolean realCcl = hasLegacyJarNamed(modsDir, "codechickenlib") || hasJarNamed(modsDir.resolve("1.7.10"), "codechickenlib")
+                || hasJarNamed(modsDir.resolve("1.12.2"), "codechickenlib")
                 // 1.6.4 / 1.5.2: CodeChickenCore's DepLoader downloaded CodeChickenLib into mods/<minecraft version>/
                 || hasJarNamed(modsDir.resolve("1.6.4"), "codechickenlib") || hasJarNamed(modsDir.resolve("1.5.2"), "codechickenlib");
         for (Bridge b : KNOWN) {
@@ -206,12 +209,13 @@ public final class LibraryBridges {
         return out;
     }
 
-    /** True if a jar in the mods folder starts with {@code prefix} and names 1.7.10 (case-insensitive). */
+    /** True if a jar in the mods folder starts with {@code prefix} and names a legacy Minecraft version (case-insensitive). */
     private static boolean hasLegacyJarNamed(Path modsDir, String prefix) {
         if (!Files.isDirectory(modsDir)) return false;
         try (Stream<Path> files = Files.list(modsDir)) {
             return files.map(f -> f.getFileName().toString().toLowerCase(Locale.ROOT))
-                    .anyMatch(n -> n.startsWith(prefix) && n.contains("1.7.10") && n.endsWith(".jar"));
+                    .anyMatch(n -> n.startsWith(prefix) && (n.contains("1.7.10") || n.contains("1.12.2") || n.contains("1.6.4")
+                            || n.contains("1.5.2") || n.contains("1.4.7")) && n.endsWith(".jar"));
         } catch (IOException e) {
             return false;
         }
