@@ -295,7 +295,6 @@ class PalladiumResourceCompat1201Test {
         assertTrue(stat.contains("score.get()"));
         assertEquals(2, occurrences(stat, "entity.server.scoreboard"));
         assertFalse(stat.contains("Utils.server.scoreboard"));
-
         String xp = get(resources, "data/alienevo/kubejs_scripts/xp.js");
         assertTrue(xp.contains("forNameOnly(String(username))"));
         assertTrue(xp.contains("score.get()"));
