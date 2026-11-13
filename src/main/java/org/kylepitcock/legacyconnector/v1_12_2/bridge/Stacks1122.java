@@ -243,7 +243,7 @@ public final class Stacks1122 {
             meta = i.meta();
         } else if (stack.getItem() instanceof Legacy1122BlockItem b) {
             legacy = b.legacy();
-            meta = 0;
+            meta = b.meta();
         } else {
             Object[] variant = Vanilla1122.legacyVariant(stack.getItem());
             legacy = variant != null ? (Item) variant[0] : Vanilla1122.legacyOf(stack.getItem());

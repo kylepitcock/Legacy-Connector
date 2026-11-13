@@ -67,12 +67,20 @@ public final class ItemBridge1122 {
             // an ItemBlock registered under its own name keeps it (BuildCraft's pipes: one pipe_holder block, an item per pipe type);
             // under the block's id they all collided and every one but the first was dropped, leaving unregistered items in the tabs
             ResourceLocation itemId = base != null && !base.equals(blockId) ? base : blockId;
-            var modern = new Legacy1122BlockItem(item, block, properties(item));
-            LegacyRegistrar.register(BuiltInRegistries.ITEM, itemId, modern);
+            // an ItemBlock with subtypes (Candy World's gummy, chocolate and candy cane blocks) is one modern item per metadata, as other items are
+            Map<Integer, net.minecraft.world.item.Item> v = new LinkedHashMap<>();
+            List<Integer> metas = item.getHasSubtypes() ? metas(item) : List.of(0);
+            for (int meta : metas) {
+                var variant = new Legacy1122BlockItem(item, meta, block, properties(item));
+                ResourceLocation id = v.isEmpty() ? itemId : ResourceLocation.fromNamespaceAndPath(itemId.getNamespace(), itemId.getPath() + "_" + meta);
+                LegacyRegistrar.register(BuiltInRegistries.ITEM, id, variant);
+                v.put(meta, variant);
+            }
+            var modern = v.values().iterator().next();
+            // the block's own item is its first subtype (the last one registered won Item.byBlock)
+            net.minecraft.world.item.Item.BY_BLOCK.put(block, modern);
             item.mcc$modern = modern;
             if (itemId.equals(blockId) || !BLOCK_ITEMS.containsKey(ib.getBlock())) BLOCK_ITEMS.put(ib.getBlock(), item);
-            Map<Integer, net.minecraft.world.item.Item> v = new LinkedHashMap<>();
-            v.put(0, modern);
             VARIANTS.put(item, v);
             MOD_ITEMS.add(item);
             Dispensers1122.onItemRegistered(item);
@@ -99,15 +107,25 @@ public final class ItemBridge1122 {
     public static synchronized void completeSubtypes() {
         int added = 0;
         for (Item item : new ArrayList<>(MOD_ITEMS)) {
-            if (item instanceof ItemBlock || !item.getHasSubtypes()) continue;
+            if (!item.getHasSubtypes()) continue;
             Map<Integer, net.minecraft.world.item.Item> variants = VARIANTS.get(item);
             if (variants == null || item.getRegistryName() == null) continue;
             ResourceLocation base = BlockBridge1122.modernId(item.getRegistryName());
             var listed = metas(item);
             for (int meta : listed) {
                 if (variants.containsKey(meta)) continue;
-                var modern = new Legacy1122Item(item, meta, properties(item));
-                ResourceLocation id = meta == 0 ? base : ResourceLocation.fromNamespaceAndPath(base.getNamespace(), base.getPath() + "_" + meta);
+                net.minecraft.world.item.Item modern;
+                ResourceLocation id;
+                if (item instanceof ItemBlock) {
+                    var first = variants.values().iterator().next();
+                    if (!(first instanceof Legacy1122BlockItem firstItem)) continue;
+                    ResourceLocation firstId = BuiltInRegistries.ITEM.getKey(first);
+                    modern = new Legacy1122BlockItem(item, meta, firstItem.getBlock(), properties(item));
+                    id = ResourceLocation.fromNamespaceAndPath(firstId.getNamespace(), firstId.getPath() + "_" + meta);
+                } else {
+                    modern = new Legacy1122Item(item, meta, properties(item));
+                    id = meta == 0 ? base : ResourceLocation.fromNamespaceAndPath(base.getNamespace(), base.getPath() + "_" + meta);
+                }
                 LegacyRegistrar.register(BuiltInRegistries.ITEM, id, modern);
                 variants.put(meta, modern);
                 added++;

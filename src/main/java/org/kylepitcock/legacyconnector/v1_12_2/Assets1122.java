@@ -1796,8 +1796,10 @@ public final class Assets1122 implements GeneratedPack.Contributor {
     private static void blockItemModels(Block block, ResourceLocation blockId, Map<Integer, String> models, Map<String, Supplier<byte[]>> out) {
         var item = org.kylepitcock.legacyconnector.v1_12_2.bridge.ItemBridge1122.itemOf(block);
         if (item == null || item.getRegistryName() == null) return;
+        var variants = org.kylepitcock.legacyconnector.v1_12_2.bridge.ItemBridge1122.variants(item);
         for (int meta = 0; meta < 16; meta++) {
-            var modern = org.kylepitcock.legacyconnector.v1_12_2.bridge.ItemBridge1122.modern(item, meta);
+            // an ItemBlock with subtypes has an item (and so a model) per metadata; one without has one item, which any metadata's model may stand for
+            var modern = variants.size() > 1 ? variants.get(meta) : org.kylepitcock.legacyconnector.v1_12_2.bridge.ItemBridge1122.modern(item, meta);
             if (modern == null) continue;
             ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(modern);
             if (!itemId.getNamespace().equals(blockId.getNamespace()) || modelExists(itemId.getNamespace(), "item/" + itemId.getPath())) continue;

@@ -816,6 +816,19 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
         }
     }
 
+    private Boolean subtypeItems;
+
+    /** The block's item has several subtypes: the pick-block key gives the one of the clicked state (getItem: damageDropped), not the first. */
+    private boolean hasSubtypeItems() {
+        Boolean b = subtypeItems;
+        if (b == null) {
+            var item = org.kylepitcock.legacyconnector.v1_12_2.bridge.ItemBridge1122.itemOf(legacy);
+            if (item == null) return false;
+            subtypeItems = b = org.kylepitcock.legacyconnector.v1_12_2.bridge.ItemBridge1122.variants(item).size() > 1;
+        }
+        return b;
+    }
+
     @Override
     public net.minecraft.world.item.ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state) {
         if (pickBlock && level instanceof Level l) {
@@ -829,7 +842,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
                 failure("getPickBlock", e);
             }
         }
-        if (pickItem && level instanceof Level l) {
+        if ((pickItem || hasSubtypeItems()) && level instanceof Level l) {
             try {
                 var s = legacy.getItem(world(l), pos(pos), state(state));
                 if (s != null && !s.isEmpty()) return Stacks1122.toModern(s);

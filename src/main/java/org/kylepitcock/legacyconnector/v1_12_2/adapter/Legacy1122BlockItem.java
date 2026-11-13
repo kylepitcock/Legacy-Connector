@@ -7,10 +7,21 @@ import net.minecraft.world.level.block.Block;
 /** The modern item of a 1.12.2 ItemBlock: places its modern block. */
 public class Legacy1122BlockItem extends net.minecraft.world.item.BlockItem {
     private final Item legacy;
+    private final int meta;
 
     public Legacy1122BlockItem(Item legacy, Block block, Properties properties) {
+        this(legacy, 0, block, properties);
+    }
+
+    /** One subtype (stack metadata) of a 1.12.2 ItemBlock: an ItemBlock with subtypes is one modern item per metadata, as other items are. */
+    public Legacy1122BlockItem(Item legacy, int meta, Block block, Properties properties) {
         super(block, properties);
         this.legacy = legacy;
+        this.meta = meta;
+    }
+
+    public int meta() {
+        return meta;
     }
 
     public Item legacy() {
@@ -19,7 +30,7 @@ public class Legacy1122BlockItem extends net.minecraft.world.item.BlockItem {
 
     @Override
     public net.minecraft.network.chat.Component getName(ItemStack stack) {
-        net.minecraft.network.chat.Component name = ItemNames1122.name(legacy, stack, 0);
+        net.minecraft.network.chat.Component name = ItemNames1122.name(legacy, stack, meta);
         return name != null ? name : super.getName(stack);
     }
 
