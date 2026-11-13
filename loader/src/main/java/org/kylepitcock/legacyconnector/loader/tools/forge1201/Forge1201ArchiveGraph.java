@@ -202,7 +202,7 @@ public final class Forge1201ArchiveGraph {
         String sourcePath = "source/" + sourceJar.getFileName();
         if (sourceInfo != null) {
             addProvidersAndDeclarations(sourcePath, sourceInfo.mods(), ProviderKind.SOURCE_ROOT,
-                    "FORGE_1201", null, null, null, null, budget);
+                    "FORGE_1201", null, null, null, null, null, budget);
         }
 
         scanNestedFromZipFile(sourceJar, sourcePath, 1, ArchiveOrigin.INPUT_NESTED, budget);
@@ -236,7 +236,7 @@ public final class Forge1201ArchiveGraph {
                                 : ProviderKind.INSTALLED_TOP_LEVEL_FORGE_1201;
                         String digest = sha256(jar);
                         addProvidersAndDeclarations(displayPath, root.mods(), providerKind, root.loaderKind(),
-                                digest, null, null, null, budget);
+                                digest, null, null, null, null, budget);
                     }
                     scanNestedFromZipFile(jar, displayPath, 1, ArchiveOrigin.INSTALLED_NESTED, budget);
                 } catch (IOException | RuntimeException exception) {
@@ -291,10 +291,11 @@ public final class Forge1201ArchiveGraph {
             String group,
             String artifact,
             String versionRange,
+            String artifactVersion,
             Budget budget) {
         for (Forge1201JarInfo.Mod mod : mods) {
             budget.providers.add(new ProviderFinding(mod.modId(), mod.version(), archivePath, providerKind,
-                    loaderKind, digest, group, artifact, versionRange, null));
+                    loaderKind, digest, group, artifact, versionRange, artifactVersion));
             budget.declaringMods.add(new DeclaringMod(archivePath, mod));
         }
     }
@@ -476,7 +477,7 @@ public final class Forge1201ArchiveGraph {
         if (parsed.kind() == ArchiveKind.FORGE_1201_MOD || parsed.kind() == ArchiveKind.NEOFORGE_MOD) {
             ProviderKind providerKind = providerKind(origin, parsed.loaderKind());
             addProvidersAndDeclarations(displayPath, parsed.mods(), providerKind, parsed.loaderKind(),
-                    digest, group, artifact, range, budget);
+                    digest, group, artifact, range, artifactVersion, budget);
         }
         for (Candidate child : snapshot.nestedJars().values()) {
             processCandidate(child, displayPath, depth + 1, origin, budget);
