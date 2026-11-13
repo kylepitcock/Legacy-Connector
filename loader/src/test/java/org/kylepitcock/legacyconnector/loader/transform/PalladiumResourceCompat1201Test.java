@@ -107,7 +107,7 @@ class PalladiumResourceCompat1201Test {
                 entity.level.playSound(null, entity.x, entity.y, entity.z,
                         `alienevo:${watchType}_detransform`, entity.getSoundSource(), 1.0, 1.0);
                 """);
-        put(resources, "addon/alienevo/kubejs_scripts/omnitrix_cycle.js", """
+        put(resources, "addon/alienevo/kubejs_scripts/cycle_sounds.js", """
                 entity.level.playSound(null, entity.x, entity.y, entity.z,
                         `alienevo:${soundToPlay}`, entity.getSoundSource(), 0.7, pitch);
                 """);
