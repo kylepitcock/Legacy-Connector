@@ -559,12 +559,16 @@ class PalladiumResourceCompat1201Test {
     @Test
     void addsMissingMachineScrollItemTagWithoutOverwritingExistingTags() {
         Map<String, byte[]> resources = new HashMap<>();
+        put(resources, "data/alienevo/advancements/obtain_scroll.json",
+                "{\\"criteria\\":{\\"machine_scroll\\":{\\"conditions\\":{\\"items\\":[{\\"tag\\": \\"alienevo:machine_scroll\\"}]}}}}");
         assertEquals(1, PalladiumResourceCompat1201.apply(resources));
         String tagPath = "data/alienevo/tags/item/machine_scroll.json";
         assertTrue(get(resources, tagPath).contains("\\"alienevo:machine_scroll\\""));
         assertEquals(0, PalladiumResourceCompat1201.apply(resources));
 
         Map<String, byte[]> existing = new HashMap<>();
+        put(existing, "data/alienevo/advancements/obtain_scroll.json",
+                "{\\"criteria\\":{\\"machine_scroll\\":{\\"conditions\\":{\\"items\\":[{\\"tag\\": \\"alienevo:machine_scroll\\"}]}}}}");
         put(existing, tagPath, "{\\"replace\\":true,\\"values\\":[\\"example:other\\"]}");
         assertEquals(0, PalladiumResourceCompat1201.apply(existing));
         assertTrue(get(existing, tagPath).contains("example:other"));
@@ -584,7 +588,7 @@ class PalladiumResourceCompat1201Test {
         put(resources, "assets/alienevo/palladium/render_layers/aliens/alien_4/kineceleran.json",
                 "{\\"animation_file\\":\\"alienevo:animations/xlr8.json\\"}");
 
-        assertEquals(5, PalladiumResourceCompat1201.apply(resources));
+        assertEquals(4, PalladiumResourceCompat1201.apply(resources));
         assertTrue(java.util.Arrays.equals(humongousaurAnimation,
                 resources.get("assets/afomni/animations/model.humongousaur.animation.json")));
         assertTrue(java.util.Arrays.equals(xlr8Animation,
