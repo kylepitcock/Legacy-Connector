@@ -11,8 +11,8 @@ public class StairsBlock extends Block {
     @Override public boolean isOpaque(){return false;}
     @Override public boolean isFullCube(){return false;}
     @Override public int getRenderType(){return 10;}
-    @Override public int getTexture(int side,int meta){return base.getTexture(side,meta);}
-    @Override public int getTexture(int side){return base.getTexture(side);}
+    @Override public int getTexture(int side,int meta){return base==null?super.getTexture(side,meta):base.getTexture(side,meta);}
+    @Override public int getTexture(int side){return base==null?super.getTexture(side):base.getTexture(side);}
     @Override public void updateBoundingBox(BlockView world,int x,int y,int z){setBoundingBox(0,0,0,1,1,1);}
     @Override public void onPlaced(World world,int x,int y,int z,LivingEntity placer) {
         int direction=((int)Math.floor(placer.yaw*4/360+0.5))&3;
