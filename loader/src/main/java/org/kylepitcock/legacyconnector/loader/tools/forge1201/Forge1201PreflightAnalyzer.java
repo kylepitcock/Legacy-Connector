@@ -46,7 +46,7 @@ public final class Forge1201PreflightAnalyzer {
     }
 
     public enum AnalysisStatus {
-        BYTECODE_INVENTORY_COMPLETE_FOR_RECOGNIZED_JAR,
+        BYTECODE_INVENTORY_RAN_FOR_RECOGNIZED_OUTER_JAR,
         BYTECODE_INVENTORY_SKIPPED_METADATA_NOT_RECOGNIZED
     }
 
@@ -281,7 +281,7 @@ public final class Forge1201PreflightAnalyzer {
                             .thenComparing(ApiFieldCallSite::targetName)
                             .thenComparing(ApiFieldCallSite::targetDescriptor)
                             .thenComparingInt(ApiFieldCallSite::opcode)).toList());
-            analysisStatus = AnalysisStatus.BYTECODE_INVENTORY_COMPLETE_FOR_RECOGNIZED_JAR;
+            analysisStatus = AnalysisStatus.BYTECODE_INVENTORY_RAN_FOR_RECOGNIZED_OUTER_JAR;
         }
 
         Map<String, String> mixinSources = new TreeMap<>();
@@ -305,13 +305,14 @@ public final class Forge1201PreflightAnalyzer {
                 "Slice 1 scans bytecode in the outer JAR only. Jar-in-Jar paths are inventoried but their contents are not recursively analyzed.",
                 "Mixin discovery uses manifest declarations and resource path/content heuristics. Injection targets, handler descriptors, slices, refmaps, and dynamic plugins are not validated in Slice 1.",
                 "The current bytecode inventory is not exhaustive for every reflection, method-handle, invokedynamic, or constant-dynamic reference.",
-                "A native NeoForge dependency ID match is only a provider candidate; installed version ranges and API compatibility are not verified.",
+                "Installed-mod discovery in Slice 1 scans only top-level .jar files in the supplied directories; nested provider discovery is deferred to Slice 2.",
+                "The existing dependency resolver records matching native mod IDs, not provider JAR/version provenance. A native ID match is only a provider candidate; installed version ranges and API compatibility are not verified.",
                 "Target class/member verification, shim behavior checks, translated-resource comparison, and runtime feedback are later analyzer slices."
         );
 
         return new PreflightResult(
                 SCHEMA_VERSION, ANALYZER_VERSION, jar.getFileName().toString(), Files.size(jar), sha256(jar),
-                "1.21.1", "21.1.x", forgeMetadata, metadataStatus, analysisStatus,
+                "1.21.1", "21.1.258", forgeMetadata, metadataStatus, analysisStatus,
                 metadataWarnings.stream().distinct().sorted().toList(), mods, duplicateModIds, dependencies,
                 archiveEntries.size(), archiveEntries, resourceNamespaces.stream().toList(), manifest,
                 mixinCandidates, coreModClass, jarInJarPaths.stream().toList(), classCount, entrypoints,
@@ -320,7 +321,7 @@ public final class Forge1201PreflightAnalyzer {
     }
 
     public static String toJson(PreflightResult result) {
-        return GSON.toJson(result) + System.lineSeparator();
+        return GSON.toJson(result) + "\n";
     }
 
     public static String toText(PreflightResult result) {

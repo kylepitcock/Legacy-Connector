@@ -35,7 +35,7 @@ final class Forge1201PreflightAnalyzerTest {
         var second = Forge1201PreflightAnalyzer.analyze(sourceJar, List.of(modsDirectory));
 
         assertEquals(Forge1201PreflightAnalyzer.MetadataStatus.RECOGNIZED_FORGE_1201, first.metadataStatus());
-        assertEquals(Forge1201PreflightAnalyzer.AnalysisStatus.BYTECODE_INVENTORY_COMPLETE_FOR_RECOGNIZED_JAR,
+        assertEquals(Forge1201PreflightAnalyzer.AnalysisStatus.BYTECODE_INVENTORY_RAN_FOR_RECOGNIZED_OUTER_JAR,
                 first.analysisStatus());
         assertEquals("[1.20.1,1.20.2)", first.forgeMetadata().minecraftVersionRange());
         assertEquals(List.of("alpha", "beta"), first.mods().stream()
