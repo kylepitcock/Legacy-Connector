@@ -159,10 +159,13 @@ public class LegacyB173Screen extends AbstractContainerScreen<LegacyB173Menu> {
     }
 
     private void legacyKey(char c, int code) {
+        legacyconnector.vb1_7_3.org.lwjgl.input.Keyboard.mcc$setEvent(code, true, c);
         try {
             gui.mcc$keyPressed(c, code);
         } catch (RuntimeException | LinkageError e) {
             fail("keyTyped", e);
+        } finally {
+            legacyconnector.vb1_7_3.org.lwjgl.input.Keyboard.mcc$setEvent(0, false, '\u0000');
         }
     }
 

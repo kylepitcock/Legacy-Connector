@@ -121,6 +121,8 @@ public class Minecraft {
     }
 
     /** MCP {@code displayGuiScreen}: shows a legacy screen on the client (null closes it). */
+    /** Beta's {@code isMultiplayerWorld}: the loaded world is a client view of a remote server. */
+    public boolean isWorldRemote(){return world!=null&&world.isRemote;}
     public void setScreen(Screen screen) {
         MenusB173.setScreen(screen);
     }
