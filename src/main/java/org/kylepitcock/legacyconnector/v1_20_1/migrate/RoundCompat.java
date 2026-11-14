@@ -557,6 +557,11 @@ public final class RoundCompat {
         return parent != null ? parent : net.minecraft.world.item.ItemDisplayContext.NONE;
     }
 
+    /** The (empty) feature flag varargs of a constructor 1.21.1 gave one (the constructor call keeps its other arguments). */
+    public static net.minecraft.world.flag.FeatureFlag[] noFlagsOf(net.minecraft.network.chat.Component ignored) {
+        return new net.minecraft.world.flag.FeatureFlag[0];
+    }
+
     /** The (empty) feature flag varargs 1.21.1 added to {@code SmithingTemplateItem.createArmorTrimTemplate}. */
     public static net.minecraft.world.flag.FeatureFlag[] noFlags(ResourceLocation ignored) {
         return new net.minecraft.world.flag.FeatureFlag[0];

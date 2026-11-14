@@ -9,6 +9,7 @@
     "Varint21LengthFieldPrependerMixin",
     "EntityGravityMixin",
     "SynchedEntityDataBuilderMixin",
+    "MappedRegistryIntrusiveHolderMixin",
     "SynchedEntityDataDefineIdMixin",
     "TreeGrowerLegacyMixin",
     "BetaAnimalAiStepMixin",
