@@ -32,7 +32,7 @@ public class DynamicTexture implements ITextureObject {
 
     /** The modern texture, created on first use (needs the render thread). */
     public synchronized net.minecraft.client.renderer.texture.DynamicTexture mcc$modern() {
-        if (modern == null) modern = new net.minecraft.client.renderer.texture.DynamicTexture(new NativeImage(width, height, true));
+        if (modern == null) modern = new Modern(new NativeImage(width, height, true));
         return modern;
     }
 
@@ -56,5 +56,19 @@ public class DynamicTexture implements ITextureObject {
     @Override
     public int getGlTextureId() {
         return mcc$modern().getId();
+    }
+
+    /** The modern texture: keeps a linear magnification filter the legacy code set, which the modern renderer's draws reset. */
+    public static final class Modern extends net.minecraft.client.renderer.texture.DynamicTexture {
+        public volatile boolean mcc$linear;
+
+        Modern(NativeImage image) {
+            super(image);
+        }
+
+        @Override
+        public void setFilter(boolean blur, boolean mipmap) {
+            super.setFilter(blur || mcc$linear, mipmap);
+        }
     }
 }

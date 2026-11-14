@@ -28,6 +28,8 @@ public abstract class LivingEntity extends Entity {
     protected float forwardSpeed;
     protected boolean jumping;
     protected float movementSpeed = 0.7F;
+    /** Beta's {@code defaultPitch}: the pitch a mob's head returns to, 0 unless a mod sets it. */
+    public float defaultPitch;
     protected String texture = "/mob/char.png";
 
     public LivingEntity(World world) {

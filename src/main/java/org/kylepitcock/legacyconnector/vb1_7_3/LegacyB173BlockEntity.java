@@ -165,8 +165,8 @@ public class LegacyB173BlockEntity extends net.minecraft.world.level.block.entit
         // a block that picks its face textures from the world (a machine's front, lit while it runs) is sent when what it picks changes
         var host = worldTextured();
         if (host != null) {
-            int[] faces = AssetsB173.faceTextures(host, level, worldPosition, getBlockState());
-            if (!java.util.Arrays.equals(faces, lastFaces)) { lastFaces = faces; level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3); }
+            int[] faces = AssetsB173.tryFaceTextures(host, level, worldPosition, getBlockState());
+            if (faces != null && !java.util.Arrays.equals(faces, lastFaces)) { lastFaces = faces; level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3); }
         }
         if (!syncs(te.getClass())) return; // every tick: the client does not tick its copy, and Beta drew a state that changed 20 times a second
         var tag = saveWithoutMetadata(level.registryAccess());
