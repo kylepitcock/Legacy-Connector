@@ -90,13 +90,13 @@ final class Forge1201MappingProfileValidatorTest {
     @Test
     void blocksUnmodeledRuntimeRemappingAndDisabledProfileLicenseReview() throws Exception {
         String runtimeEnabled = validProfile().replace(
-                "\\"status\\":\\"UNMODELED_UNLESS_EXPLICITLY_SUPPLIED\\"",
-                "\\"status\\":\\"ENABLED\\"");
+                "\"status\":\"UNMODELED_UNLESS_EXPLICITLY_SUPPLIED\""
+                "\"status\":\"ENABLED\"");
         var runtimeFinding = Forge1201MappingProfileValidator.inspect(writeProfile(runtimeEnabled));
         assertEquals(Forge1201MappingProfileValidator.ProfileStatus.PROFILE_INCOMPLETE,
                 runtimeFinding.status());
 
-        String licenseSkipped = validProfile().replace("\\"required\\":true", "\\"required\\":false");
+        String licenseSkipped = validProfile().replace("\"required\":true", "\"required\":false");
         var licenseFinding = Forge1201MappingProfileValidator.inspect(writeProfile(licenseSkipped));
         assertEquals(Forge1201MappingProfileValidator.ProfileStatus.PROFILE_INCOMPLETE,
                 licenseFinding.status());
@@ -274,8 +274,8 @@ final class Forge1201MappingProfileValidatorTest {
                     "status":"VERIFIED",
                     "reviewEvidence":["reviewed source-to-target evidence"]
                   }%s],
-                  "runtimeRemapping":{"status":"UNMODELED_UNLESS_EXPLICITLY_SUPPLIED"},
-                  "licenseReview":{
+                "\"status\":\"UNMODELED_UNLESS_EXPLICITLY_SUPPLIED\""
+                "\"status\":\"ENABLED\"");
                     "required":true,
                     "evidence":["fixture profile-level license review"]
                   }
