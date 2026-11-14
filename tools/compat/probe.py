@@ -35,9 +35,14 @@ def norm(s):
     return re.sub(r"[^a-z0-9]+", "", s.lower())
 
 
+def old_zip_era(mc):
+    """Forge 1.6.4 and older (and Beta) mods were mostly distributed as .zip files (ComputerCraft, BuildCraft, RedPower, ...): they are part of the set."""
+    return mc.startswith("b") or mc.split(".")[:2] in (["1", "2"], ["1", "3"], ["1", "4"], ["1", "5"], ["1", "6"])
+
+
 def run_probe(jar_dir, out, zips=False):
     jars = sorted(pathlib.Path(jar_dir).rglob("*.jar"))
-    if zips:   # Beta mods came as .zip files (ModLoader mods)
+    if zips:   # Beta and 1.2.5-1.6.4 mods came as .zip files (ModLoader and early Forge mods)
         jars = sorted(jars + list(pathlib.Path(jar_dir).rglob("*.zip")))
     if not jars:
         sys.exit(f"no jars in {jar_dir}")
@@ -446,7 +451,7 @@ def main():
         path = a.from_json
     elif a.jar_dir:
         path = a.json or tempfile.mktemp(suffix=".json")
-        run_gap1201(a.jar_dir, path, a.detail) if a.mc == "1.20.1" else run_probe(a.jar_dir, path, zips=a.mc.startswith("b"))
+        run_gap1201(a.jar_dir, path, a.detail) if a.mc == "1.20.1" else run_probe(a.jar_dir, path, zips=old_zip_era(a.mc))
     else:
         ap.error("jar directory or --from-json required")
     records = json.loads(pathlib.Path(path).read_text(encoding="utf-8"))
