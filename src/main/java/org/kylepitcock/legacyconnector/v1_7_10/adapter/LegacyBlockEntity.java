@@ -88,7 +88,7 @@ public class LegacyBlockEntity extends BlockEntity implements org.kylepitcock.le
             refresh = false;
         }
         if (!refresh) return;
-        legacy.invalidate();
+        invalidateLegacy(legacy);
         legacy = null;
         pending = null;
         createFailed = false;
@@ -121,7 +121,7 @@ public class LegacyBlockEntity extends BlockEntity implements org.kylepitcock.le
     }
 
     public void replaceLegacy(TileEntity te) {
-        if (legacy != null) legacy.invalidate();
+        if (legacy != null) invalidateLegacy(legacy);
         legacy = te;
         if (te != null) attach(te);
         setChanged();
@@ -148,6 +148,25 @@ public class LegacyBlockEntity extends BlockEntity implements org.kylepitcock.le
             // e.g. multiblock registration using an API this world view lacks: the tile entity still exists and ticks.
             if (CREATE_FAILURES.add("validate:" + te.getClass().getName())) {
                 LoggerFactory.getLogger("LegacyConnector/TileEntity").error("Legacy tile entity {} failed in validate()", te.getClass().getName(), e);
+            }
+        }
+        try {
+            te.cofh_validate();
+        } catch (RuntimeException | LinkageError e) {
+            if (CREATE_FAILURES.add("cofh_validate:" + te.getClass().getName())) {
+                LoggerFactory.getLogger("LegacyConnector/TileEntity").error("Legacy tile entity {} failed in cofh_validate()", te.getClass().getName(), e);
+            }
+        }
+    }
+
+    /** {@code invalidate()}, then the hook CoFH Core's patched world called when a tile entity left its list. */
+    private static void invalidateLegacy(TileEntity te) {
+        te.invalidate();
+        try {
+            te.cofh_invalidate();
+        } catch (RuntimeException | LinkageError e) {
+            if (CREATE_FAILURES.add("cofh_invalidate:" + te.getClass().getName())) {
+                LoggerFactory.getLogger("LegacyConnector/TileEntity").error("Legacy tile entity {} failed in cofh_invalidate()", te.getClass().getName(), e);
             }
         }
     }
@@ -271,7 +290,7 @@ public class LegacyBlockEntity extends BlockEntity implements org.kylepitcock.le
 
     @Override
     public void setRemoved() {
-        if (legacy != null) legacy.invalidate();
+        if (legacy != null) invalidateLegacy(legacy);
         super.setRemoved();
     }
 
