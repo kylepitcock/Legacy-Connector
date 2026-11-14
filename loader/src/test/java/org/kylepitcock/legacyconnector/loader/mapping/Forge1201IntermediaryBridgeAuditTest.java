@@ -190,6 +190,10 @@ final class Forge1201IntermediaryBridgeAuditTest {
 
         JsonObject json = JsonParser.parseString(Files.readString(report, StandardCharsets.UTF_8)).getAsJsonObject();
         assertEquals("PARTIAL", json.get("status").getAsString());
+        assertEquals("minecraft:official-obfuscated@1.20.1", json.get("sourceNamespace").getAsString());
+        assertEquals("minecraft:forge-srg@1.20.1", json.get("sourceSrgMetadataNamespace").getAsString());
+        assertEquals("minecraft:official-obfuscated@1.21.1", json.get("targetNamespace").getAsString());
+        assertFalse(json.get("completeForgeSrgSelectorPath").getAsBoolean());
         assertFalse(json.get("selectorTransformationPerformed").getAsBoolean());
         assertFalse(json.get("runtimeMappingTableProduced").getAsBoolean());
         assertTrue(json.getAsJsonObject("coverage").getAsJsonObject("methods")
