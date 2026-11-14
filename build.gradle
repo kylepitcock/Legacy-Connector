@@ -467,6 +467,22 @@ tasks.register('checkLegacyMod', JavaExec) {
     argumentProviders.add({ [shimIndexFile.get().asFile.absolutePath] + (project.findProperty('legacyJar') ?: '').toString().split(',').findAll { it } } as CommandLineArgumentProvider)
 }
 
+// What legacy coremods do to Minecraft's own classes: ./gradlew probeCoremodHooks -PlegacyJar=a.jar,b.jar [-PvanillaJar=client-1.7.10.jar] [-PsrgZip=srg.zip]
+// (defaults: build/devtools/mcp/client1710.jar and srg1710.zip, fetched by tools/fetch_devtools.sh)
+tasks.register('probeCoremodHooks', JavaExec) {
+    dependsOn tasks.named('classes')
+    classpath = project(':loader').sourceSets.main.runtimeClasspath + sourceSets.main.runtimeClasspath
+    mainClass = 'org.kylepitcock.legacyconnector.loader.tools.CoremodHookProbe'
+    systemProperty 'legacyconnector.runtimeClasses', sourceSets.main.java.classesDirectory.get().asFile.absolutePath
+    // -Psites=true: one line per hook site instead of the instruction diff
+    if (project.findProperty('sites')) systemProperty 'legacyconnector.probe.sites', project.findProperty('sites').toString()
+    argumentProviders.add({
+        def mcp = rootProject.file('build/devtools/mcp')
+        [(project.findProperty('vanillaJar') ?: new File(mcp, 'client1710.jar')).toString(), (project.findProperty('srgZip') ?: new File(mcp, 'srg1710.zip')).toString(),
+         layout.buildDirectory.dir('coremod-probe').get().asFile.absolutePath] + (project.findProperty('legacyJar') ?: '').toString().split(',').findAll { it }
+    } as CommandLineArgumentProvider)
+}
+
 // Offline report of the texture modernizer: ./gradlew textureReport -PlegacyJar=a.jar,b.jar [-PmodernClient=1.21.1.jar] [-PsampleDir=dir]
 // prints which textures of each jar are old vanilla copies or backgrounds and writes before/after samples.
 tasks.register('textureReport', JavaExec) {
