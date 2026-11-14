@@ -87,6 +87,11 @@ public final class ModLoader {
         return legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$instance();
     }
 
+    /** ModLoaderMP's server handle: usable from static initialisers (the layer has one logical server for every mod). */
+    public static legacyconnector.vb1_7_3.net.minecraft.server.MinecraftServer getMinecraftServerInstance() {
+        return legacyconnector.vb1_7_3.net.minecraft.server.MinecraftServer.mcc$instance();
+    }
+
     public static boolean isModLoaded(String name) {
         return ContentB173.isModLoaded(name);
     }

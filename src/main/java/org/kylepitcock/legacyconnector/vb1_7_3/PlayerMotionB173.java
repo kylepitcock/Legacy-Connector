@@ -36,10 +36,19 @@ public final class PlayerMotionB173 {
 
     /** True when the changed components were delivered to the player's client, which applies them to its own velocity. */
     public static boolean send(ServerPlayer player, int mask, double vx, double vy, double vz) {
-        if (mask == 0 || player.connection == null || !player.connection.hasChannel(LegacyPayload.TYPE)) return false;
+        if (mask == 0 || player.connection == null || !hasLegacyChannel(player)) return false;
         player.setDeltaMovement(merge(player.getDeltaMovement(), mask, vx, vy, vz));
         PacketDistributor.sendToPlayer(player, new LegacyPayload(FAMILY, CHANNEL, 0, encode(mask, vx, vy, vz)));
         return true;
+    }
+
+    /** A fake or not yet connected player (tests, bots) has a connection object without a channel: no client to tell. */
+    private static boolean hasLegacyChannel(ServerPlayer player) {
+        try {
+            return player.connection.hasChannel(LegacyPayload.TYPE);
+        } catch (NullPointerException noChannel) {
+            return false;
+        }
     }
 
     private static void receive(LegacyPayload payload, IPayloadContext context) {

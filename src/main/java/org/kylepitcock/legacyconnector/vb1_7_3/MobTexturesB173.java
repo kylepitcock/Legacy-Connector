@@ -33,7 +33,8 @@ public final class MobTexturesB173 implements GeneratedPack.Contributor {
     private static final java.util.Set<String> GUI_SHEETS=java.util.Set.of("gui/icons.png","gui/gui.png","gui/container.png","gui/crafting.png","gui/trap.png","gui/inventory.png","gui/furnace.png");
     @Override public void contribute(PackType type,Map<String,Supplier<byte[]>> out){
         if(type!=PackType.CLIENT_RESOURCES)return;
-        for(var sheet:org.kylepitcock.legacyconnector.vb1_7_3.client.ClientGuiB173.guiSheets().entrySet()){
+        // the vanilla sheets come from the client's resource manager; a dedicated server (the self test) must not load client classes
+        if(net.neoforged.fml.loading.FMLEnvironment.dist.isClient())for(var sheet:org.kylepitcock.legacyconnector.vb1_7_3.client.ClientGuiB173.guiSheets().entrySet()){
             var bytes=new java.io.ByteArrayOutputStream();
             try{javax.imageio.ImageIO.write(sheet.getValue(),"png",bytes);}catch(java.io.IOException e){throw new java.io.UncheckedIOException(e);}
             byte[] data=bytes.toByteArray();out.put("assets/legacyconnector/textures/b173/gui/"+sheet.getKey(),()->data);
