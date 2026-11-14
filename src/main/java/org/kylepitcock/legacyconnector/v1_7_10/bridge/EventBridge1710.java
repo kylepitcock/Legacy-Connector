@@ -707,6 +707,7 @@ public final class EventBridge1710 {
         gameBus.addListener((ServerStoppedEvent e) -> Platform1710.dispatchAll(m -> new FMLServerStoppedEvent()));
         // DragonAPI's own events, which its coremod posted from patched vanilla code (mod-specific, removable)
         org.kylepitcock.legacyconnector.v1_7_10.compat.dragonapi.DragonApiEvents.register(gameBus);
+        CoremodSites.register(gameBus); // hooks of legacy coremods in Minecraft's own classes, replayed generically
         org.kylepitcock.legacyconnector.v1_7_10.compat.fiskheroes.FiskHeroesHooks.register(gameBus);
     }
 

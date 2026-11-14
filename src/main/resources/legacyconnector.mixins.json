@@ -24,6 +24,7 @@
     "PlayerWaterTravelB173Mixin",
     "PlayerDistancePredicateB173Mixin",
     "FoodDataHealRateMixin",
+    "PlayerAttackHookMixin",
     "LivingEntityTravelMixin",
     "PlayerClassTravelB173Mixin",
     "PlacedFeatureOreGateMixin",
