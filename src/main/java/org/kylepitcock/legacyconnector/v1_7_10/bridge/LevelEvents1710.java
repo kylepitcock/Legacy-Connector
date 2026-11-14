@@ -10,13 +10,18 @@ public final class LevelEvents1710 {
 
     /** {type, data} of the modern event, or null when the legacy effect has no modern counterpart. */
     public static int[] toModern(int type, int data) {
+        return toModern(null, type, data);
+    }
+
+    /** As {@link #toModern(int, int)}; {@code level} (may be null) resolves the song of a record, a registry id since 1.21. */
+    public static int[] toModern(net.minecraft.world.level.LevelAccessor level, int type, int data) {
         return switch (type) {
             case 1000 -> new int[] {1000, data};
             case 1001 -> new int[] {1001, data};
             case 1002 -> new int[] {1002, data};
             case 1003 -> new int[] {1006, data};
             case 1004 -> new int[] {1009, data};
-            case 1005 -> record(data);
+            case 1005 -> record(level, data);
             case 1007 -> new int[] {1015, data};
             case 1008 -> new int[] {1016, data};
             case 1009 -> new int[] {1018, data};
@@ -41,16 +46,11 @@ public final class LevelEvents1710 {
         };
     }
 
-    private static int[] record(int legacyItemId) {
+    /** 1005: a legacy record's item id (0 = stop) becomes the modern "play jukebox song" event, whose data is the song's registry id. */
+    private static int[] record(net.minecraft.world.level.LevelAccessor level, int legacyItemId) {
         if (legacyItemId == 0) return new int[] {1011, 0};
-        try {
-            var item = ItemBridge.byId(legacyItemId);
-            if (item == null) return null;
-            var modern = ItemBridge.toModern(item, 1, 0);
-            return new int[] {1010, net.minecraft.core.registries.BuiltInRegistries.ITEM.getId(modern.getItem())};
-        } catch (RuntimeException | LinkageError e) {
-            return null;
-        }
+        int song = Records1710.songId(level, legacyItemId);
+        return song < 0 ? null : new int[] {1010, song};
     }
 
     private static int[] blockBreak(int data) {

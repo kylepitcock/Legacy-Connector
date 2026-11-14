@@ -37,6 +37,11 @@ public class ItemRecord extends Item {
         return records.get(name);
     }
 
+    /** Every disc registered so far, by song name. */
+    public static java.util.Collection<ItemRecord> mcc$all() {
+        return java.util.List.copyOf(records.values());
+    }
+
     /** The translated song title ({@code item.record.<name>.desc}). */
     public String getRecordNameLocal() {
         return StatCollector.translateToLocal("item.record." + recordName + ".desc");

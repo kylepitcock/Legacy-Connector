@@ -71,7 +71,7 @@ public class S28PacketEffect extends Packet {
 
     @Override
     public void mcc$send(net.minecraft.server.level.ServerPlayer player) {
-        int[] modern = org.kylepitcock.legacyconnector.v1_7_10.bridge.LevelEvents1710.toModern(soundType, soundData);
+        int[] modern = org.kylepitcock.legacyconnector.v1_7_10.bridge.LevelEvents1710.toModern(player.serverLevel(), soundType, soundData);
         if (modern == null) return;
         player.connection.send(new net.minecraft.network.protocol.game.ClientboundLevelEventPacket(modern[0],
                 new net.minecraft.core.BlockPos(xPos, yPos, zPos), modern[1], serverWide));
