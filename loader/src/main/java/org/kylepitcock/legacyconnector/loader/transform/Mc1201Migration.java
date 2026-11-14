@@ -469,7 +469,17 @@ final class Mc1201Migration {
                 rule = t.calls.get(owner + "." + hd.getName() + hd.getDesc());
                 if (rule != null) break;
             }
-            if (rule == null || rule.helper().startsWith("=")) continue;
+            if (rule == null) continue;
+            if (rule.helper().equals("=")) {
+                // an in-place rename of a method that kept its descriptor (Holder::get is Holder::value now): the handle follows, unless the mod declares the method
+                if (rule.helperDesc() == null && !rule.helperName().equals("-") && !ctor && tag != Opcodes.H_INVOKESTATIC
+                        && h.declaredIn(hd.getOwner(), hd.getName(), hd.getDesc()) != Origin.MOD) {
+                    d.bsmArgs[i] = new org.objectweb.asm.Handle(tag, hd.getOwner(), rule.helperName(), hd.getDesc(), hd.isInterface());
+                    c.calls++;
+                }
+                continue;
+            }
+            if (rule.helper().startsWith("=")) continue;
             if (!ctor && tag != Opcodes.H_INVOKESTATIC && h.declaredIn(hd.getOwner(), hd.getName(), hd.getDesc()) == Origin.MOD) continue;
             String desc = rule.helperDesc();
             if (desc == null) {

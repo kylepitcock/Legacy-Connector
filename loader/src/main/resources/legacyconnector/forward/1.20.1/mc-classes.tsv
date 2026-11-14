@@ -103,3 +103,5 @@ net/minecraft/world/item/DyeableHorseArmorItem	org/kylepitcock/legacyconnector/v
 net/minecraft/advancements/Advancement$Builder	net/minecraft/advancements/Advancement$Builder
 net/minecraft/advancements/AdvancementList	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyAdvancementList
 net/minecraft/advancements/AdvancementList$Listener	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyAdvancementList$Listener
+net/neoforged/neoforge/client/model/pipeline/QuadBakingVertexConsumer	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyQuadBakingVertexConsumer
+net/neoforged/neoforge/client/model/pipeline/QuadBakingVertexConsumer$Buffered	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyQuadBakingVertexConsumer$Buffered

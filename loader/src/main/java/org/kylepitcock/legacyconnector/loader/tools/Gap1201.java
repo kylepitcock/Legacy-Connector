@@ -134,7 +134,8 @@ public final class Gap1201 {
                 if (nestedJar) {
                     byte[] nestedBytes = zip.getInputStream(e).readAllBytes();
                     // a library with a native 1.21.1 build that a mod carries as jar-in-jar (Ars Nouveau's GeckoLib 4.4.4): the game takes the native, newer one
-                    if (!Boolean.getBoolean("gap.keepNativeLibs") && nestedIsNativeLibrary(nestedBytes)) continue;
+                    // (the 1.21.1 target jars keep theirs: Create 6 carries Ponder and Catnip, which is the native build)
+                    if (nestedMode == 0 && !Boolean.getBoolean("gap.keepNativeLibs") && nestedIsNativeLibrary(nestedBytes)) continue;
                     try (java.util.zip.ZipInputStream nested = new java.util.zip.ZipInputStream(new java.io.ByteArrayInputStream(nestedBytes))) {
                         for (ZipEntry ne; (ne = nested.getNextEntry()) != null; ) {
                             if (!ne.getName().endsWith(".class") || ne.getName().startsWith("META-INF/versions/")) continue;
