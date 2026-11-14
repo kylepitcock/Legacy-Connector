@@ -222,9 +222,12 @@ public final class Forge1201MappingProfileValidator {
                     List.of("Mapping profile exceeds the " + MAX_PROFILE_BYTES + "-byte limit."));
         }
 
-        byte[] bytes = Files.readAllBytes(absolute);
+        byte[] bytes;
+        try (InputStream input = Files.newInputStream(absolute)) {
+            bytes = input.readNBytes(MAX_PROFILE_BYTES + 1);
+        }
         if (bytes.length > MAX_PROFILE_BYTES) {
-            return new Finding(absolute.toString(), bytes.length, null, null, null, null,
+            return new Finding(absolute.toString(), size, null, null, null, null,
                     ProfileStatus.PROFILE_FILE_LIMIT_EXCEEDED, null, null, null, null, null, null, null,
                     List.of(), List.of(), List.of(), List.of(), List.of(),
                     List.of("Mapping profile grew beyond the " + MAX_PROFILE_BYTES + "-byte limit while reading."));
@@ -346,6 +349,9 @@ public final class Forge1201MappingProfileValidator {
         List<ContextPathFinding> contextPaths = evaluateContextPaths(bindings, targetNamespace, edges);
         boolean sourceMismatch = sourceVersion != null && !"1.20.1".equals(sourceVersion);
         boolean targetMismatch = targetVersion != null && !"1.21.1".equals(targetVersion);
+        boolean sourceLoaderMismatch = sourceLoaderId != null && !"forge".equalsIgnoreCase(sourceLoaderId);
+        boolean targetLoaderMismatch = targetLoaderId != null && !"neoforge".equalsIgnoreCase(targetLoaderId);
+        boolean targetLoaderVersionMismatch = targetLoaderVersion != null && !"21.1.258".equals(targetLoaderVersion);
         boolean unsupportedSchema = schemaVersion != null && schemaVersion != 1;
         boolean badDigest = artifacts.stream().anyMatch(value ->
                 value.status() == ArtifactStatus.DIGEST_MISMATCH);
@@ -380,7 +386,8 @@ public final class Forge1201MappingProfileValidator {
         if (bindings.stream().noneMatch(ContextBindingFinding::baseTable)) {
             warnings.add("Base refmap mappings table has no explicit namespace binding; it remains unresolved.");
         }
-        if (warnings.stream().anyMatch(value -> value.contains("must be") || value.contains("differs from"))) {
+        if (sourceLoaderMismatch || targetLoaderMismatch || targetLoaderVersionMismatch
+                || warnings.stream().anyMatch(value -> value.contains("must be") || value.contains("differs from"))) {
             if (status == ProfileStatus.PROFILE_VALIDATED) status = ProfileStatus.PROFILE_INCOMPLETE;
         }
         if (!errors.isEmpty() && status == ProfileStatus.PROFILE_VALIDATED) {
@@ -559,6 +566,14 @@ public final class Forge1201MappingProfileValidator {
         Path resolved = base.resolve(supplied).normalize();
         if (!resolved.startsWith(base.normalize())) {
             throw new IllegalArgumentException("Artifact path escapes the profile directory.");
+        }
+        if (Files.exists(resolved)) {
+            Path realBase = base.toRealPath();
+            Path realArtifact = resolved.toRealPath();
+            if (!realArtifact.startsWith(realBase)) {
+                throw new IllegalArgumentException("Artifact path resolves through a symlink outside the profile directory.");
+            }
+            return realArtifact;
         }
         return resolved;
     }
@@ -859,7 +874,14 @@ public final class Forge1201MappingProfileValidator {
             try (InputStream input = Files.newInputStream(path)) {
                 byte[] buffer = new byte[64 * 1024];
                 int read;
-                while ((read = input.read(buffer)) >= 0) digest.update(buffer, 0, read);
+                long total = 0;
+                while ((read = input.read(buffer)) >= 0) {
+                    total += read;
+                    if (total > MAX_ARTIFACT_BYTES) {
+                        throw new IOException("Mapping artifact exceeds " + MAX_ARTIFACT_BYTES + " bytes.");
+                    }
+                    digest.update(buffer, 0, read);
+                }
             }
             return HexFormat.of().formatHex(digest.digest());
         } catch (NoSuchAlgorithmException exception) {
