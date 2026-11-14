@@ -710,10 +710,39 @@ Suites with baseline: `cofh1201` (1 mod), `sm642-1201` (3), `atm9-1201-stable` (
 - **Botarium** left `libraries.tsv`: no 1.21 build exists, so the entry promised a native replacement that cannot be installed. The 1.20.1 jar is indexed again like any mod, and its dependents stay translated against it (five jars drift on its API).
 - **Verification.** `tools/dev/gate.sh` passes (compile, shim index, check; `Round4Libs1201Test` covers the call rows, the class renames, the `ItemPredicate` swap and the generated class). `verify.sh`: `atm9-1201-stable` and `sm642-1201` PASS with the baseline numbers; `cofh1201` FAILS in this checkout with and without these changes (`AccessDeniedException` moving `cofh_core-common.new.tmp.toml` onto `cofh_core-common.toml`, a Windows file lock during config loading, checked by stashing the changes and re-running), so it is not a regression of this round.
 - **Left, by value:** `BalmBlockEntity` super calls (3 jars), `CodecPacketHandler`/`ByteCodec` (Chipped, and the bytecodecs users), `SyncConfigMessage`, the Jade 15 UI styles, `Advancement$Builder.addCriterion`, `IFriendlyByteBufExtension.writeFluidStack`, Create `ProcessingRecipeBuilder`, `Recipe.getId` on native library classes, `ModConfig` (Ars Nouveau, final like `ItemPredicate`; the same generated-base approach applies).
-## 50. Status 2026-11-14: batch 5/6 failures (`textComponent`, `HEALTH_FUNCTION_FOR_TYPE`)
+## 51. Status 2026-11-14: batch 5/6 failures (`textComponent`, `HEALTH_FUNCTION_FOR_TYPE`)
 
 - **`ComponentArgument.textComponent()`** (Cristel Lib and its dependent t_and_t): 1.21.1 takes a registry lookup. Call row in `mc-calls.tsv` to `CommandArgCompat.textComponent` (a vanilla registry lookup in a `CommandBuildContext`, cached).
 - **`ArmorMaterials.HEALTH_FUNCTION_FOR_TYPE`** (CodeChickenLib `SimpleArmorMaterial.Builder.durabilityFactor`, used by ProjectRed Exploration): the private table of the 1.20.1 enum is now a public field of the `LegacyArmorMaterials` stand-in (also the source of `getDurabilityForType`). Second defect of the same path: the mod sizes `new int[4]` and loops `ArmorItem.Type.values()`, which has the new `BODY` slot in 1.21.1 (`ArrayIndexOutOfBounds`). `ArmorItem$Type.values()` in 1.20.1 jars is a call row to `ArmorCompat.typeValues` (the four 1.20.1 slots). `TRANSFORMER_VERSION` 52.
 - **Measurement** (`measure_1201.py`): batch 6 before 19 mods / 17 started / 2 failed (Cristel Lib + dependent), now 19 / 19 / 0. Batch 5 before 25 mods / 18 started / 7 failed, now 25 / 18 / 7 but the causes moved: ProjectRed Exploration itself now constructs; it only fails as a dependent of ProjectRed Core (`net.neoforged.fml.OptionalMod` is gone in FML 4), next to `rftoolsbase` (`Lazy` is a class) and `mcjtylib` (config read before load). Fixing `OptionalMod` would take the five ProjectRed mods to started.
 - **OptionalMod** (transformer 53): `net.neoforged.fml.OptionalMod` (Forge `fml.OptionalMod`, gone in FML 4) maps to the stand-in `LegacyOptionalMod` (`of(modId)`, `of(modId, supplier)`, isPresent/get/ifPresent/map/flatMap/filter/orElse*, backed by `ModList`). Batch 5: 25 mods, 18 -> 23 started; the remaining two are `rftoolsbase` (`Lazy`) and `mcjtylib` (config read before load), the other workers' causes. ProjectRed core, illumination, integration, transmission and exploration all start.
 - Suites `atm9-1201-stable`, `cofh1201`, `sm642-1201` pass (a first run with other agents' servers active failed on a Windows config write; a rerun was clean).
+
+## 52. Status 2026-11-14: run-time measurement, batches 1, 2 and 4 on TRANSFORMER_VERSION 50, three more causes
+
+Re-run of `tools/dev/measure_1201.py atm9-1201-1 atm9-1201-2 atm9-1201-4` (caches cleared; a concurrent second run of the script in one worktree breaks the Gradle build of the first, run one at a time). Before (v50): batch 1 25 mods, 11 started, 14 failed; batch 2 18 / 14 / 4; batch 4 25 / 17 / 8 (42 of 68 started, 26 failed including dependents). After (v54): 13 / 14 / 17 started = 44 of 68, 24 failed. Suites `atm9-1201-stable`, `cofh1201`, `sm642-1201` still PASS.
+
+Failures after the fixes, own causes first (mods blocked = itself + dependents):
+
+| cause | mods blocked |
+|---|---|
+| AE2: the next blocker after the three fixes below is `AEConfig.instance()` read in an item constructor run from a static initializer (config object not yet created at that point) | ae2 (+3: ae2things, aeinfinitybooster, appflux) |
+| `ItemPredicate` final (other worker) | mekanism (+1) |
+| `ModConfig` final, mod subclasses it with its own `ConfigFileTypeHandler` (Ars Nouveau `ANModConfig`) | ars_nouveau (+1) |
+| client class (`LocalPlayer`) loaded in a bootstrap lambda on the server | irons_spellbooks (+1) |
+| Bookshelf API drift (`RegistryDataProvider`) | botanypots (+1) |
+| Curios 1.21 lacks `ICurioItem` | cataclysm (+1) |
+| `VerifyError: Bad access to protected data` (after the duplicate-bridge fix) | mowziesmobs (+1 mowzies_cataclysm) |
+| `DataVersion` check of Structurize | structurize (+1) |
+| config value read before load | addonslib (+1) |
+| protected `getSoundType` access from a library class | absentbydesign |
+| duplicate sound key / `Block.defaultBlockState` null / blockstate property missing / menu registry frozen | copperagebackport, cabletiers, mcwlights, ae2insertexportcard |
+
+Fixed in this round (all generic, `TRANSFORMER_VERSION` 54):
+
+- **Intrusive holders while the registry is frozen** (`MappedRegistryIntrusiveHolderMixin`): a 1.20.1 mod that constructs items in a static initializer during mod construction (AE2 `AEItems`) failed with "Registry is already frozen" in `Item.<init>`; the frozen check of `createIntrusiveHolder` is skipped only when a frame of the stack belongs to a translated legacy jar (`@WrapOperation`, stack inspected on the frozen path only; the holder map still exists; the later registration takes the holder out of it).
+- **`KeyDispatchDataCodec.of(Codec)`** (1.21.1 takes a `MapCodec`): call row to `MiddleCompat.keyDispatchOf`. Unblocks Lithostitched and CTOV.
+- **Duplicate bridge methods** after a renamed return type (`CoreGeoBone getParent()` and `GeoBone getParent()` both become `GeoBone getParent()`; `ClassFormatError: Duplicate method name`): `Forge1201Transformer.dropDuplicateBridges` removes the synthetic duplicate. Mowzies' Mobs gets past the class format error.
+- **`SmithingTemplateItem` super constructor** (`=args` row adding the empty `FeatureFlag...`; the former static factory row could not serve `super(...)` calls of subclasses).
+
+Not done: `ModConfig` stand-in (a subclass needs `ConfigFileTypeHandler`); AE2 config order; the rest of the table. Site data (`from_client.py`) was not updated: it rates mods from the final run's report and log, which lacks the failed mods this measurement is about.
