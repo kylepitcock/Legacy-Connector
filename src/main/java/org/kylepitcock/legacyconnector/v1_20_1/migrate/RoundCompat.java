@@ -317,6 +317,18 @@ public final class RoundCompat {
         return com.mojang.serialization.MapCodec.assumeMapUnsafe(codec);
     }
 
+    /** {@code Codec.dispatch*}'s subtype codec function: 1.20.1 returned a {@code Codec}, 1.21.1 wants the {@code MapCodec} (same erased descriptor). */
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static java.util.function.Function mapCodecs(java.util.function.Function codecs) {
+        return k -> {
+            Object c = codecs.apply(k);
+            if (c instanceof com.mojang.serialization.MapCodec) return c;
+            if (c instanceof com.mojang.serialization.MapCodec.MapCodecCodec<?> m) return m.codec();
+            if (c instanceof com.mojang.serialization.Codec cc) return com.mojang.serialization.MapCodec.assumeMapUnsafe(cc);
+            return c;
+        };
+    }
+
     /** {@code new SmithingTemplateItem(5 components, 2 icon lists)}: 1.21.1 only adds the (empty) feature flag varargs. */
     public static net.minecraft.world.item.SmithingTemplateItem newSmithingTemplate(net.minecraft.network.chat.Component a, net.minecraft.network.chat.Component b,
             net.minecraft.network.chat.Component c, net.minecraft.network.chat.Component d, net.minecraft.network.chat.Component e,

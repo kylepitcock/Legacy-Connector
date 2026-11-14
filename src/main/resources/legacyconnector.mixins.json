@@ -29,6 +29,8 @@
     "TargetingConditionsMixin",
     "CreativeTabDuplicateMixin",
     "ItemStackLegacyNbtMixin",
+    "BlockLootSupplierMixin",
+    "ConfigValueUnloadedMixin",
     "JigsawStructureLegacyVillageMixin",
     "ServerLevelBlockFamilyMixin",
     "LevelChunkBlockFamilyMixin",
