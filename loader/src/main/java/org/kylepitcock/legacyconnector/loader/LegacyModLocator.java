@@ -413,12 +413,12 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             }
             // The hooks legacy coremods put into Minecraft's own classes, one list per Minecraft version (CoremodHookScan; read by the run time's CoremodSites)
             Map<String, Path> coremodHooks = new LinkedHashMap<>();
-            for (String mc : List.of("1.7.10", "1.6.4", "1.5.2", "1.4.7")) coremodHooks.put(mc, cacheDir.resolve("coremod-hooks-" + mc + ".txt"));
+            for (String mc : List.of("1.7.10", "1.6.4", "1.5.2", "1.4.7", "1.12.2")) coremodHooks.put(mc, cacheDir.resolve("coremod-hooks-" + mc + ".txt"));
             System.setProperty("legacyconnector.coremodHooks", coremodHooks.values().stream().map(Path::toString).collect(java.util.stream.Collectors.joining(java.io.File.pathSeparator)));
-            // One coremod class loader per API flavour (1.7.10; 1.6.4 and 1.5.2), loaded on the first class of a jar that uses it.
+            // One coremod class loader per API flavour (1.7.10; 1.6.4 and 1.5.2; 1.12.2), loaded on the first class of a jar that uses it.
             var coremods = new java.util.EnumMap<LegacyVersion, org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers>(LegacyVersion.class);
             transformer.patcher((jar, name, bytes) -> {
-                if (jar.version.family() != LegacyVersion.V1_7_10) return bytes;
+                if (!org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers.supports(jar.version)) return bytes;
                 LegacyVersion api = org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers.apiFor(jar.version);
                 // Legacy coremod transformers keep their own state and were written for one thread: one class at a time.
                 synchronized (coremods) {
@@ -430,7 +430,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                         if (!transformers.isEmpty()) {
                             Set<String> versions = new java.util.TreeSet<>();
                             for (LegacyJar j : loading) {
-                                if (j.coreModClass != null && !j.coreModClass.isBlank() && j.version.family() == LegacyVersion.V1_7_10
+                                if (j.coreModClass != null && !j.coreModClass.isBlank() && org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers.supports(j.version)
                                         && org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers.apiFor(j.version) == api) versions.add(j.version.id());
                             }
                             for (String mc : versions) {
@@ -455,7 +455,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             Set<Path> keep = new HashSet<>(libraryKeep);
             if (runtimeJar != null) keep.add(runtimeJar);
             keep.addAll(coremodHooks.values());
-            for (LegacyVersion api : List.of(LegacyVersion.V1_7_10, LegacyVersion.V1_6_4)) {
+            for (LegacyVersion api : List.of(LegacyVersion.V1_7_10, LegacyVersion.V1_6_4, LegacyVersion.V1_12_2)) {
                 keep.add(cacheDir.resolve(org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers.apiJarName(api)));
             }
             // Mods link against each other (RotaryCraft extends DragonAPI classes), so a jar's translation depends on
