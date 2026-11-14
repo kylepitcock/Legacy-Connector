@@ -522,3 +522,11 @@ The test-only correction is committed at `e03c55daa6fd01e0855774e53a4255beedbad1
 - `duplicateSrgIds=15353` means repeated SRG-ID row occurrences beyond the first. All were accepted only because their mapped names agreed; the generator would have failed on conflicting names. The count is not the number of distinct repeated IDs.
 - Packaging/license gate: `licensing.reviewStatus` is `NOT_REVIEWED_BY_THIS_BUILD_TASK`. The loader JAR task includes the generated TSV. Its distribution status therefore remains unresolved and must be reviewed before release; the JSON's build-local status is not a legal determination.
 - To harden the repeated-ID contract, commit `9347a08fad3844f494c5635b28871afe062929c2` adds tests for identical SRG IDs reused across owners with equal names (accepted/coalesced) and differing names (rejected). That incremental test gate is pending.
+
+### Mojang mapping redistribution note — inspected 2026-11-15
+
+The exact Mojang 1.20.1 client mapping input begins with the Microsoft 2020 notice permitting copying/use for development purposes while prohibiting redistribution of the mappings complete and unmodified, and directing use/modification to the Minecraft EULA. This language is not treated as blanket permission to redistribute modified extracts or derived subsets. The current Minecraft EULA and Usage Guidelines also contain broader restrictions around distribution of Mojang/Microsoft material and mods containing substantial copyrightable material.
+
+Because the generated `srg-mojang.tsv` is packaged into the loader JAR, its distribution permission is unresolved. The generator's partial/member-name-only output and absence of the original `client.txt` do not themselves establish a license grant. Do not release the packaged table until the project has written permission or qualified legal review. This is a release/licensing gate, not a technical test failure or a legal conclusion that the table is forbidden.
+
+Official references: [Minecraft EULA](https://www.minecraft.net/en-us/eula), [Minecraft Usage Guidelines](https://www.minecraft.net/en-us/usage-guidelines).
