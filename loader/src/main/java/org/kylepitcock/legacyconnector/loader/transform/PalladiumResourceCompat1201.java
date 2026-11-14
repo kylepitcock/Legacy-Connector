@@ -308,7 +308,7 @@ final class PalladiumResourceCompat1201 {
         if (original == null) return 0;
 
         String script = new String(original, StandardCharsets.UTF_8);
-        String lineEnding = script.contains("\\r\\n") ? "\\r\\n" : "\\n";
+        String lineEnding = script.contains("\r\n") ? "\r\n" : "\n";
         String serverScript = "// Legacy Connector: Diamondhead temporary crystal expiry (SERVER script)" + lineEnding
                 + "BlockEvents.blockEntityTick('alienevo:crystal_block', event => {" + lineEnding
                 + "    event.level.destroyBlock(event.block.pos, false);" + lineEnding
@@ -346,9 +346,9 @@ final class PalladiumResourceCompat1201 {
         }
 
         java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(
-                "(?m)^([\\\\t ]*)blockEntity\\\\.serverTick\\\\(2500, 250, entity => \\\\{\\\\R"
-                        + "[\\\\t ]*entity\\\\.level\\\\.destroyBlock\\\\(entity\\\\.blockPos, false\\\\)\\\\R"
-                        + "[\\\\t ]*\\\\}\\\\)");
+                "(?m)^([\\t ]*)blockEntity\\.serverTick\\(2500, 250, entity => \\{\\R"
+                        + "[\\t ]*entity\\.level\\.destroyBlock\\(entity\\.blockPos, false\\)\\R"
+                        + "[\\t ]*\\}\\)");
         java.util.regex.Matcher matcher = pattern.matcher(script);
         StringBuffer migrated = new StringBuffer();
         int replacements = 0;
