@@ -106,3 +106,4 @@ net/minecraft/advancements/AdvancementList$Listener	org/kylepitcock/legacyconnec
 net/neoforged/neoforge/client/model/pipeline/QuadBakingVertexConsumer	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyQuadBakingVertexConsumer
 net/neoforged/neoforge/client/model/pipeline/QuadBakingVertexConsumer$Buffered	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyQuadBakingVertexConsumer$Buffered
 net/minecraft/world/entity/ai/goal/MeleeAttackGoal	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyMeleeAttackGoal
+net/neoforged/fml/OptionalMod	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyOptionalMod
