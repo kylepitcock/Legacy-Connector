@@ -123,6 +123,7 @@ public final class Forge1201MappingProfileValidator {
             String format,
             String identity,
             String expectedSha256,
+            String upstreamChecksum,
             String actualSha256,
             String localPath,
             String licenseId,
@@ -500,6 +501,11 @@ public final class Forge1201MappingProfileValidator {
             if (expectedSha != null && !expectedSha.matches("(?i)[0-9a-f]{64}")) {
                 errors.add(label + ".sha256 must be exactly 64 hexadecimal characters.");
             }
+            String upstreamChecksum = optionalString(item, "upstreamChecksum", label, warnings);
+            if (upstreamChecksum != null
+                    && !upstreamChecksum.matches("(?i)(sha1:[0-9a-f]{40}|sha256:[0-9a-f]{64})")) {
+                errors.add(label + ".upstreamChecksum must use sha1:<40 hex> or sha256:<64 hex>.");
+            }
             String localPath = optionalString(item, "localPath", label, warnings);
             JsonObject license = objectValue(item.get("license"));
             String licenseId = null;
@@ -552,8 +558,8 @@ public final class Forge1201MappingProfileValidator {
                     }
                 }
             }
-            result.add(new ArtifactFinding(id, provider, version, format, identity, expectedSha, actualSha,
-                    localPath, licenseId, licenseStatus, status, evidence, List.of()));
+            result.add(new ArtifactFinding(id, provider, version, format, identity, expectedSha,
+                    upstreamChecksum, actualSha, localPath, licenseId, licenseStatus, status, evidence, List.of()));
         }
         result.sort(Comparator.comparing(value -> value.artifactId() == null ? "" : value.artifactId()));
         return result;
@@ -624,6 +630,9 @@ public final class Forge1201MappingProfileValidator {
                 if (identityEvidence.isEmpty()) {
                     status = EdgeStatus.IDENTITY_UNVERIFIED;
                     edgeWarnings.add("Identity edge has no explicit identityEvidence; no implicit identity is accepted.");
+                } else if (!scope.containsAll(REQUIRED_SELECTOR_SCOPE)) {
+                    status = EdgeStatus.PARTIAL;
+                    edgeWarnings.add("Explicit identity declaration does not cover every selector symbol kind.");
                 } else {
                     status = EdgeStatus.IDENTITY_EXPLICIT_NOT_APPLIED;
                     edgeWarnings.add("Explicit identity declaration recorded; this stage records it but does not transform selectors.");
@@ -674,7 +683,8 @@ public final class Forge1201MappingProfileValidator {
             List<EdgeFinding> edges) {
         if (targetNamespace == null) return List.of();
         List<EdgeFinding> usable = edges.stream()
-                .filter(edge -> edge.status() == EdgeStatus.VERIFIED)
+                .filter(edge -> edge.status() == EdgeStatus.VERIFIED
+                        || edge.status() == EdgeStatus.IDENTITY_EXPLICIT_NOT_APPLIED)
                 .sorted(Comparator.comparing(edge -> edge.edgeId() == null ? "" : edge.edgeId()))
                 .toList();
         List<ContextPathFinding> findings = new ArrayList<>();
@@ -700,9 +710,21 @@ public final class Forge1201MappingProfileValidator {
             List<String> edgePath,
             List<List<String>> results) {
         if (results.size() >= 2) return;
+        if (current.equals(target)) {
+            for (EdgeFinding edge : edges) {
+                if (current.equals(edge.fromNamespace()) && current.equals(edge.toNamespace())
+                        && edge.status() == EdgeStatus.IDENTITY_EXPLICIT_NOT_APPLIED) {
+                    edgePath.add(edge.edgeId());
+                    results.add(List.copyOf(edgePath));
+                    edgePath.removeLast();
+                    if (results.size() >= 2) return;
+                }
+            }
+            return;
+        }
         for (EdgeFinding edge : edges) {
             if (!current.equals(edge.fromNamespace()) || edge.toNamespace() == null
-                    || visited.contains(edge.toNamespace())) continue;
+                    || current.equals(edge.toNamespace()) || visited.contains(edge.toNamespace())) continue;
             edgePath.add(edge.edgeId());
             if (target.equals(edge.toNamespace())) {
                 results.add(List.copyOf(edgePath));
@@ -728,6 +750,7 @@ public final class Forge1201MappingProfileValidator {
             if (augmentation == null) warnings.add("target.mappingAugmentations[" + i + "] is not an object.");
             else if (augmentation.has("renamesClassesOrMembers")
                     && augmentation.get("renamesClassesOrMembers").isJsonPrimitive()
+                    && augmentation.get("renamesClassesOrMembers").getAsJsonPrimitive().isBoolean()
                     && augmentation.get("renamesClassesOrMembers").getAsBoolean()) {
                 warnings.add("Target mapping augmentation " + i
                         + " claims class/member renames; it must be modeled as a directed mapping edge.");
