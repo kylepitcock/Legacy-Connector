@@ -796,6 +796,14 @@ public class World implements BlockView {
             legacyconnector.vb1_7_3.net.minecraft.entity.Entity entity,double range) {
         return getClosestPlayer(entity.x,entity.y,entity.z,range);
     }
+    /** Beta's {@code getPlayerEntityByName}: the live player with this name (case-insensitive), or null. */
+    public legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity getPlayer(String name){
+        if(name==null)return null;
+        for(Object object:players)if(object instanceof legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity player&&name.equalsIgnoreCase(player.name))return player;
+        return null;
+    }
+    /** Beta's {@code markBlocksDirty}: render invalidation of a block range; the modern chunk renderer re-meshes on block updates, so there is nothing to queue. */
+    public void setBlocksDirty(int x0,int y0,int z0,int x1,int y1,int z1){}
     public legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity getClosestPlayer(double x,double y,double z,double range) {
         legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity closest=null;
         double best=range<0?Double.POSITIVE_INFINITY:range*range;
