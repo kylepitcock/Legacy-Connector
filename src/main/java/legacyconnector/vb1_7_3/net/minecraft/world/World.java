@@ -344,9 +344,30 @@ public class World implements BlockView {
         var access=mcc$access();if(!org.kylepitcock.legacyconnector.core.worldgen.InPlaceStructureGuard.allowWrite(access,p,next))return false;
         boolean changed=access.setBlock(p,next,writeFlags(access instanceof net.minecraft.server.level.WorldGenRegion?2:flags));
         if(changed&&chestChange)chestChanged(p);
+        if(changed&&(next.getBlock() instanceof net.minecraft.world.level.block.CrossCollisionBlock||previous.getBlock() instanceof net.minecraft.world.level.block.CrossCollisionBlock))connectBars(p);
         // Original onBlockAdded drops an unsupported torch. Native destruction owns loot and neighbor updates.
         if(changed&&unsupportedTorch&&state(x,y,z)==next)access.destroyBlock(p,true);
         return changed;
+    }
+
+    /** Beta fences and panes joined their neighbours when drawn; batched writes (no neighbour notification) leave the native connection flags stale. */
+    private void connectBars(BlockPos pos){
+        var access=mcc$access();
+        if(access==null)return;
+        var around=new java.util.ArrayList<BlockPos>();around.add(pos);
+        for(var side:net.minecraft.core.Direction.Plane.HORIZONTAL)around.add(pos.relative(side));
+        for(var at:around){
+            if(!access.hasChunkAt(at))continue;
+            BlockState current=access.getBlockState(at);
+            if(!(current.getBlock() instanceof net.minecraft.world.level.block.CrossCollisionBlock))continue;
+            BlockState updated=current;
+            for(var side:net.minecraft.core.Direction.Plane.HORIZONTAL){
+                var neighbour=at.relative(side);
+                if(access.hasChunkAt(neighbour))updated=updated.updateShape(side,access.getBlockState(neighbour),access,at,neighbour);
+            }
+            if(updated!=current&&org.kylepitcock.legacyconnector.core.worldgen.InPlaceStructureGuard.allowWrite(access,at,updated))
+                access.setBlock(at,updated,net.minecraft.world.level.block.Block.UPDATE_CLIENTS|net.minecraft.world.level.block.Block.UPDATE_KNOWN_SHAPE);
+        }
     }
 
     private void chestChanged(BlockPos pos){

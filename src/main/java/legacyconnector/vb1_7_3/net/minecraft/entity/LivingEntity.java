@@ -158,6 +158,8 @@ public abstract class LivingEntity extends Entity {
     /** The original skin path, also used by the native mob fallback renderer. */
     /** The texture to draw: the original {@code getTexture()} when it answers, else the synced field (a client-side copy of a mob whose own getTexture needs state only the server has). */
     public String mcc$texture(){
+        // a client-side copy lacks the server's state: the synced skin is the one the server chose, whatever the mod's getTexture reads from shared state
+        if(mcc$modern!=null&&mcc$modern.level().isClientSide&&texture!=null&&!"/mob/char.png".equals(texture))return texture;
         try{String t=getTexture();if(t!=null)return t;}catch(RuntimeException ignored){}
         return texture;
     }
