@@ -379,6 +379,12 @@ public final class Forge1201MappingProfileValidator {
                 value.status() == ArtifactStatus.MISSING || value.status() == ArtifactStatus.NOT_MATERIALIZED);
         boolean licenseReviewRequired = artifacts.stream().anyMatch(value ->
                 value.status() == ArtifactStatus.LICENSE_REVIEW_REQUIRED);
+        boolean invalidArtifact = artifacts.stream().anyMatch(value ->
+                value.status() == ArtifactStatus.INVALID_DECLARATION);
+        boolean invalidEdge = edges.stream().anyMatch(value ->
+                value.status() == EdgeStatus.INVALID_DECLARATION
+                        || value.status() == EdgeStatus.DIRECTION_UNSUPPORTED
+                        || value.status() == EdgeStatus.EDGE_VERSION_MISMATCH);
         boolean contextUnbound = bindings.isEmpty();
         boolean ambiguous = contextPaths.stream().anyMatch(value -> value.completePathCount() > 1);
         boolean pathSearchLimited = contextPaths.stream()
@@ -399,7 +405,7 @@ public final class Forge1201MappingProfileValidator {
         else if (ambiguous) status = ProfileStatus.PROFILE_AMBIGUOUS_PATH;
         else if (pathSearchLimited) status = ProfileStatus.PROFILE_PATH_SEARCH_LIMIT_EXCEEDED;
         else if (noPath || incompletePath) status = ProfileStatus.PROFILE_NO_COMPLETE_PATH;
-        else if (!errors.isEmpty()) status = ProfileStatus.PROFILE_INCOMPLETE;
+        else if (invalidArtifact || invalidEdge || !errors.isEmpty()) status = ProfileStatus.PROFILE_INCOMPLETE;
         else status = ProfileStatus.PROFILE_VALIDATED;
 
         if (sourceNamespace == null || targetNamespace == null) {
@@ -446,6 +452,7 @@ public final class Forge1201MappingProfileValidator {
                 }
             }
             case "ENABLED" -> {
+                errors.add("Runtime remapping is not supported by Schema 1.10A validation; keep it UNMODELED unless a separate runtime-stage validator is implemented.");
                 String digest = requiredString(object, "remappingFileSha256", "runtimeRemapping", errors);
                 if (digest != null && !digest.matches("(?i)[0-9a-f]{64}")) {
                     errors.add("runtimeRemapping.remappingFileSha256 must be 64 hexadecimal characters.");
