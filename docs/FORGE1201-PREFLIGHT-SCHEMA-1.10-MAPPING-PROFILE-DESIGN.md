@@ -1,6 +1,6 @@
 # Schema 1.10 — Explicit Mapping-Profile Contract Design
 
-**Status:** Schema 1.10A parser, validator, preflight-report integration, Gradle input, and synthetic tests are user-validated green at `cc651af52b192fb534d49f3ad494b42e3d15d6f0`. Schema 1.10B source-edge implementation and its corrected forced loader test gate are user-validated green at `493cae748f89f88308a7e1b98ea583d2e58871af` (`BUILD SUCCESSFUL in 50s; 17/17 actionable tasks`). The build-local provenance JSON was generated and remains to be reviewed. No selector transformation is implemented.
+**Status:** Schema 1.10A is user-validated green at `cc651af52b192fb534d49f3ad494b42e3d15d6f0`. Schema 1.10B's corrected forced loader gate is user-validated green at `493cae748f89f88308a7e1b98ea583d2e58871af` (`BUILD SUCCESSFUL in 50s; 17/17 tasks`), and its provenance JSON has been reviewed. A follow-up test for same-name duplicate SRG IDs across owners is committed at `9347a08fad3844f494c5635b28871afe062929c2` and awaits the next forced gate. The generated TSV is included in the loader JAR, while the report says licensing is `NOT_REVIEWED_BY_THIS_BUILD_TASK`; distribution review remains open. No selector transformation is implemented.
 **Design baseline:** Universal analyzer branch `feat/forge1201-preflight-analyzer`; current implementation status and exact tested/untested boundary are recorded in the analyzer plan and continuation handoff.  
 **Input feature:** Schema 1.9A/1.9B Mixin 0.8.5 refmap inventory and exact owner-scoped lookup.  
 **Target:** Minecraft 1.21.1 / NeoForge 21.1.258.  
@@ -477,7 +477,7 @@ Schema 1.10 profile support is acceptable only when:
 
 The validator still performs structural profile checks only. It does not load/apply the generated mapping table, validate the semantic contents of mappings, rewrite selectors, or prove runtime compatibility.
 
-### Schema 1.10B source-edge validation — implementation in progress
+### Schema 1.10B source-edge validation — implementation and initial gate green; follow-up coverage pending
 
 Current source branch work (not yet user-tested):
 - `SrgMojangTable` now exposes exact join coverage counts for Mojang class/method/field rows and MCPConfig class/method/field rows, matched/unmatched method and field rows, duplicate mapping keys, duplicate SRG identifiers, and total output rows.
@@ -512,3 +512,13 @@ The test-only correction is committed at `e03c55daa6fd01e0855774e53a4255beedbad1
 - The preceding two failures were caused by spaces in the synthetic TSRG2 fixtures; the fixtures were corrected to use real tab indentation in `e03c55daa6fd01e0855774e53a4255beedbad1fb`, without production parser changes or weakened assertions.
 - The successful build generated `loader/build/reports/mappings/1.20.1/srg-mojang-provenance.json`; review its contents before closing the Schema 1.10B source-edge audit.
 - The table remains a partial same-version source normalization edge, `minecraft:forge-srg@1.20.1` → `minecraft:official-mojang@1.20.1`, with method-name and field-name output only. It is not a class/descriptor mapping and is not the cross-version 1.20.1 → 1.21.1 edge. No selector rewriting.
+
+### Schema 1.10B provenance JSON review — 2026-11-14
+
+- The full build-local JSON from the user-successful run was checked against the console fingerprints and generator output. All reported artifact digests and sizes are consistent with the report's declarations and the logged verification.
+- The source edge is explicitly `PARTIAL`: `minecraft:forge-srg@1.20.1` → `minecraft:official-mojang@1.20.1`, method-name and field-name output only.
+- Source counts: Mojang 7,436 classes / 63,477 methods / 33,135 fields; joined TSRG 7,436 classes / 48,575 methods / 31,003 fields. All joined methods and fields matched; no unmatched joined rows. Class mappings are used internally for owner/descriptor joins but omitted from the output table.
+- Generated TSV is 1,607,917 bytes, SHA-256 `6353b8354260dc711b09e7540542ff5f2498635e021e4110870dd33ff466e175`, 64,225 rows. `outputRows` equals the generated `rowCount`.
+- `duplicateSrgIds=15353` means repeated SRG-ID row occurrences beyond the first. All were accepted only because their mapped names agreed; the generator would have failed on conflicting names. The count is not the number of distinct repeated IDs.
+- Packaging/license gate: `licensing.reviewStatus` is `NOT_REVIEWED_BY_THIS_BUILD_TASK`. The loader JAR task includes the generated TSV. Its distribution status therefore remains unresolved and must be reviewed before release; the JSON's build-local status is not a legal determination.
+- To harden the repeated-ID contract, commit `9347a08fad3844f494c5635b28871afe062929c2` adds tests for identical SRG IDs reused across owners with equal names (accepted/coalesced) and differing names (rejected). That incremental test gate is pending.
