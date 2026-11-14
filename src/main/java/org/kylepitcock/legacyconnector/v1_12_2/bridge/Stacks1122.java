@@ -30,6 +30,8 @@ public final class Stacks1122 {
             var data = tag.mcc$modern().copy();
             if (isPotionItem(modern)) potionToModern(data, out);
             displayToModern(data, out);
+            if (item.mcc$vanillaModern != null) restoreComponents(data, out);
+            else if (data.contains(COMPONENTS)) data.remove(COMPONENTS);
             if (!data.isEmpty()) out.set(DataComponents.CUSTOM_DATA, CustomData.of(data));
         }
         for (Hook hook : HOOKS) out = hook.toModern(stack, out);
@@ -238,6 +240,7 @@ public final class Stacks1122 {
         if (stack == null || stack.isEmpty()) return ItemStack.EMPTY;
         Item legacy;
         int meta;
+        boolean standIn = false;
         if (stack.getItem() instanceof Legacy1122Item i) {
             legacy = i.legacy();
             meta = i.meta();
@@ -250,7 +253,10 @@ public final class Stacks1122 {
             if (legacy == null) {
                 // a generated bucket of a 1.12.2 fluid: Forge's universal bucket holding it
                 ItemStack bucket = FluidBridge1122.legacyBucketStack(stack);
-                return bucket != null ? bucket : ItemStack.EMPTY;
+                if (bucket != null) return bucket;
+                // an item 1.12.2 never had (a post-1.12 vanilla item, a modern mod's): its legacy stand-in, so legacy code can hold, move and hand it back
+                standIn = true;
+                legacy = Vanilla1122.standIn(stack.getItem());
             }
             meta = variant != null ? (Integer) variant[1] : 0;
         }
@@ -262,7 +268,43 @@ public final class Stacks1122 {
         if (data != null) out.setTagCompound(new NBTTagCompound(data.copyTag()));
         var potion = stack.get(DataComponents.POTION_CONTENTS);
         if (potion != null && isPotionItem(stack.getItem())) potionFromModern(potion, out);
+        if (standIn) keepComponents(stack, out);
         for (Hook hook : HOOKS) hook.fromModern(stack, out);
         return out;
+    }
+
+    private static final String COMPONENTS = "mcc$components";
+
+    /** A stand-in's stack keeps the modern stack's component changes (enchantments, contents, names...) in its tag, so they come back unchanged. */
+    private static void keepComponents(net.minecraft.world.item.ItemStack stack, ItemStack out) {
+        var patch = stack.getComponentsPatch();
+        if (patch.isEmpty()) return;
+        try {
+            var server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
+            if (server == null) return;
+            var ops = net.minecraft.resources.RegistryOps.create(net.minecraft.nbt.NbtOps.INSTANCE, server.registryAccess());
+            var encoded = net.minecraft.core.component.DataComponentPatch.CODEC.encodeStart(ops, patch).result();
+            if (encoded.isEmpty()) return;
+            NBTTagCompound tag = out.hasTagCompound() ? out.getTagCompound() : new NBTTagCompound();
+            tag.mcc$modern().put(COMPONENTS, encoded.get());
+            out.setTagCompound(tag);
+        } catch (RuntimeException | LinkageError e) {
+            // the stack still travels with its item and count
+        }
+    }
+
+    /** Applies the component changes {@link #keepComponents} stored, and takes them out of the custom data. */
+    private static void restoreComponents(net.minecraft.nbt.CompoundTag data, net.minecraft.world.item.ItemStack out) {
+        var saved = data.get(COMPONENTS);
+        if (saved == null) return;
+        data.remove(COMPONENTS);
+        try {
+            var server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
+            if (server == null) return;
+            var ops = net.minecraft.resources.RegistryOps.create(net.minecraft.nbt.NbtOps.INSTANCE, server.registryAccess());
+            net.minecraft.core.component.DataComponentPatch.CODEC.parse(ops, saved).result().ifPresent(out::applyComponents);
+        } catch (RuntimeException | LinkageError e) {
+            // the item and count stay
+        }
     }
 }
