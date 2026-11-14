@@ -90,6 +90,19 @@ final class LegacyMixinConfigs {
         return notes;
     }
 
+    private static boolean isShimMixin(ClassNode mixin, Hierarchy hierarchy) {
+        if (mixin.invisibleAnnotations == null) return false;
+        for (AnnotationNode a : mixin.invisibleAnnotations) {
+            if (!MIXIN_DESC.equals(a.desc) || a.values == null) continue;
+            for (int i = 0; i + 1 < a.values.size(); i += 2) {
+                if (a.values.get(i + 1) instanceof List<?> list) {
+                    for (Object o : list) if (o instanceof Type t && hierarchy.isShim(t.getInternalName())) return true;
+                }
+            }
+        }
+        return false;
+    }
+
     private static boolean targetsLegacy(ClassNode mixin, Map<String, ClassNode> nodes, Hierarchy hierarchy) {
         List<AnnotationNode> annotations = mixin.invisibleAnnotations;
         if (annotations == null) return false;
@@ -101,9 +114,133 @@ final class LegacyMixinConfigs {
                 if (!(value instanceof List<?> list)) continue;
                 for (Object o : list) {
                     String target = o instanceof Type t ? t.getInternalName() : key.equals("targets") ? String.valueOf(o).replace('.', '/') : null;
-                    if (target != null && (nodes.containsKey(target) || hierarchy.isLocal(target) || hierarchy.isPeer(target))) return true;
+                    if (target == null) continue;
+                    if (nodes.containsKey(target) || hierarchy.isLocal(target) || hierarchy.isPeer(target)) return true;
+                    // a mixin on a vanilla class the shim has (EntityWolf: Wolf Armor and Storage makes it implement its IArmoredWolf):
+                    // the shim class is what the mod sees at run time, so the mixin applies there when its @Shadow/@Accessor members exist
+                    if (hierarchy.isShim(target) && shadowsExist(mixin, target, hierarchy) && injectorsResolve(mixin, target, hierarchy)) return true;
                 }
             }
+        }
+        return false;
+    }
+
+    private static final String SHADOW_DESC = "Lorg/spongepowered/asm/mixin/Shadow;";
+    private static final String ACCESSOR_DESC = "Lorg/spongepowered/asm/mixin/gen/Accessor;";
+    private static final String INVOKER_DESC = "Lorg/spongepowered/asm/mixin/gen/Invoker;";
+
+    /** True when every @Shadow, @Accessor and @Invoker of the mixin names a member the shim class (or a shim supertype) has. */
+    static boolean shadowsExist(ClassNode mixin, String target, Hierarchy hierarchy) {
+        for (var f : mixin.fields) {
+            if (hasAnnotation(f.invisibleAnnotations, SHADOW_DESC) && !hasField(target, f.name, hierarchy)) return false;
+        }
+        for (var m : mixin.methods) {
+            if (hasAnnotation(m.invisibleAnnotations, SHADOW_DESC)) {
+                if (!hasMethod(target, m.name, hierarchy)) return false;
+            } else if (hasAnnotation(m.invisibleAnnotations, ACCESSOR_DESC) || hasAnnotation(m.invisibleAnnotations, INVOKER_DESC)) {
+                String name = annotationValue(m.invisibleAnnotations);
+                if (name == null) {
+                    String n = m.name;
+                    for (String prefix : new String[] {"get", "set", "is", "call", "invoke"}) {
+                        if (n.startsWith(prefix) && n.length() > prefix.length()) {
+                            name = Character.toLowerCase(n.charAt(prefix.length())) + n.substring(prefix.length() + 1);
+                            break;
+                        }
+                    }
+                    if (name == null) return false;
+                }
+                boolean invoker = hasAnnotation(m.invisibleAnnotations, INVOKER_DESC);
+                if (invoker ? !hasMethod(target, name, hierarchy) : !hasField(target, name, hierarchy)) return false;
+            }
+        }
+        return true;
+    }
+
+    private static final String OVERWRITE_DESC = "Lorg/spongepowered/asm/mixin/Overwrite;";
+
+    /**
+     * True when every injector of the mixin (Mixin's own, and MixinExtras') names methods the shim class declares itself, and every
+     * {@code @Overwrite} overwrites one: Mixin only injects into methods the target class declares, not inherited ones. The names in
+     * the annotations are the mod's deobfuscated (MCP) ones, as the shim uses them. A mixin that fails this stays dropped.
+     */
+    static boolean injectorsResolve(ClassNode mixin, String target, Hierarchy hierarchy) {
+        var info = hierarchy.find(target);
+        if (info == null) return false;
+        for (var m : mixin.methods) {
+            if (m.invisibleAnnotations == null) continue;
+            for (AnnotationNode a : m.invisibleAnnotations) {
+                if (OVERWRITE_DESC.equals(a.desc)) {
+                    if (!declares(info, m.name)) return false;
+                    continue;
+                }
+                if (!a.desc.startsWith("Lorg/spongepowered/asm/mixin/injection/") && !a.desc.startsWith("Lcom/llamalad7/mixinextras/injector/")) continue;
+                if (a.values == null) continue;
+                for (int i = 0; i + 1 < a.values.size(); i += 2) {
+                    if (!"method".equals(a.values.get(i))) continue;
+                    Object v = a.values.get(i + 1);
+                    if (!(v instanceof List<?> list) || list.isEmpty()) return false;
+                    for (Object o : list) {
+                        String name = methodName(String.valueOf(o));
+                        if (name.isEmpty() || !declares(info, name)) return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    private static boolean declares(org.kylepitcock.legacyconnector.loader.shim.ClassInfo info, String name) {
+        for (String k : info.methods.keySet()) if (k.startsWith(name + "(")) return true;
+        return false;
+    }
+
+    /** The bare method name of a Mixin selector: {@code Lowner;name(desc)ret}, {@code name(desc)ret}, {@code name}. */
+    private static String methodName(String selector) {
+        String s = selector.trim();
+        if (s.startsWith("L")) {
+            int semi = s.indexOf(';');
+            if (semi > 0 && semi < s.length() - 1) s = s.substring(semi + 1);
+        }
+        int paren = s.indexOf('(');
+        if (paren >= 0) s = s.substring(0, paren);
+        return s;
+    }
+
+    private static boolean hasAnnotation(List<AnnotationNode> list, String desc) {
+        if (list == null) return false;
+        for (AnnotationNode a : list) if (desc.equals(a.desc)) return true;
+        return false;
+    }
+
+    private static String annotationValue(List<AnnotationNode> list) {
+        if (list == null) return null;
+        for (AnnotationNode a : list) {
+            if (!ACCESSOR_DESC.equals(a.desc) && !INVOKER_DESC.equals(a.desc)) continue;
+            if (a.values == null) return null;
+            for (int i = 0; i + 1 < a.values.size(); i += 2) {
+                if ("value".equals(a.values.get(i)) && a.values.get(i + 1) instanceof String s) return s;
+            }
+        }
+        return null;
+    }
+
+    private static boolean hasField(String owner, String name, Hierarchy hierarchy) {
+        for (String c = owner; c != null && c.startsWith("legacyconnector/"); ) {
+            var info = hierarchy.find(c);
+            if (info == null) return false;
+            if (info.hasFieldNamed(name)) return true;
+            if (hierarchy.shim().contains(c) && info.methods.keySet().stream().anyMatch(k -> k.startsWith("mcc$get$" + name + "("))) return true;
+            c = info.superName;
+        }
+        return false;
+    }
+
+    private static boolean hasMethod(String owner, String name, Hierarchy hierarchy) {
+        for (String c = owner; c != null && c.startsWith("legacyconnector/"); ) {
+            var info = hierarchy.find(c);
+            if (info == null) return false;
+            for (String k : info.methods.keySet()) if (k.startsWith(name + "(")) return true;
+            c = info.superName;
         }
         return false;
     }
