@@ -38,7 +38,7 @@ import org.objectweb.asm.tree.ClassNode;
  */
 public final class LegacyJarTransformer {
     /** Bump whenever the output of this class changes, to invalidate caches. */
-    public static final int TRANSFORMER_VERSION = 48;
+    public static final int TRANSFORMER_VERSION = 49;
     /** Names the legacy coremod plugin class of a translated jar. */
     public static final String COREMOD_RESOURCE = "META-INF/legacyconnector-coremod.txt";
 
@@ -254,8 +254,10 @@ public final class LegacyJarTransformer {
         }
     }
 
-    private int relocateBundled(LegacyJar jar, Map<String, byte[]> classes, LegacyRemapper remapper) {
+    int relocateBundled(LegacyJar jar, Map<String, byte[]> classes, LegacyRemapper remapper) {
         String privateRoot = "legacyconnector_extra/" + (jar.hasMods() ? jar.mods.get(0).modernId() : LegacyModDecl.toModernId(stripJar(jar.fileName()))) + "/";
+        boolean bundlesBetaTwl = jar.version == LegacyVersion.VB1_7_3
+                && classes.keySet().stream().anyMatch(name -> name.startsWith("de/matthiasmann/twl/"));
         int dropped = 0;
         // Forge 1.12.2 shipped typesafe config and akka; the runtime bundles them. A mod that overrides a class or two of them (OpenComputers
         // patches one in com.typesafe.config.impl) would split the package with that module: its few classes go, a full shaded copy stays.
@@ -276,6 +278,15 @@ public final class LegacyJarTransformer {
             if (PROVIDED_LIBRARIES.stream().anyMatch(name::startsWith) && !isOptionalNativeClass(name)) {
                 classes.remove(name);
                 dropped++;
+                continue;
+            }
+            if (bundlesBetaTwl && name.startsWith("de/matthiasmann/twl/")) {
+                // Beta GuiAPI routes TWL references to the shared synth namespace. Keep that same name for
+                // bundled definitions, but mark their packages as supplied by this translated jar so the
+                // shared synth jar does not export a second copy of those JPMS packages.
+                String synthName = jar.version.synthPrefix()
+                        + org.kylepitcock.legacyconnector.loader.mapping.ForwardRenames.flat(jar.version, name);
+                remapper.provideSynthClass(name, synthName);
                 continue;
             }
             if (name.indexOf('/') < 0) {
