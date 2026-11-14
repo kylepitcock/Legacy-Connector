@@ -189,9 +189,72 @@ public final class ApiCompat {
         return options instanceof net.minecraft.core.particles.SimpleParticleType s ? s : net.minecraft.core.particles.ParticleTypes.FLAME;
     }
 
-    /** {@code ParticleType.getDeserializer()}: nothing reads it any more. */
-    public static LegacyParticleDeserializer<?> noDeserializer(net.minecraft.core.particles.ParticleType<?> type) {
-        return null;
+    /**
+     * Replaces the removed 1.20.1 ParticleOptions.Deserializer with the
+     * 1.21.1 particle codec APIs. Palladium's ParticleAbility still calls
+     * getDeserializer().fromCommand() every client tick, so this cannot be a
+     * null stand-in even though Minecraft itself no longer stores a
+     * deserializer on ParticleType.
+     */
+    @SuppressWarnings("unchecked")
+    public static <T extends net.minecraft.core.particles.ParticleOptions>
+            LegacyParticleDeserializer<T> noDeserializer(net.minecraft.core.particles.ParticleType<T> type) {
+        return new LegacyParticleDeserializer<>() {
+            @Override
+            public T fromCommand(net.minecraft.core.particles.ParticleType<T> ignored,
+                    com.mojang.brigadier.StringReader reader)
+                    throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+                // SimpleParticleType's legacy deserializer returned the type
+                // unchanged and consumed no extra options.
+                if (type instanceof net.minecraft.core.particles.SimpleParticleType simple) {
+                    return (T) simple;
+                }
+
+                // The 1.21.1 ParticleArgument parser uses the particle registry
+                // plus each ParticleType's codec, replacing the removed
+                // ParticleOptions.Deserializer#fromCommand implementation.
+                net.minecraft.resources.ResourceLocation id =
+                        net.minecraft.core.registries.BuiltInRegistries.PARTICLE_TYPE.getKey(type);
+                if (id == null) {
+                    throw net.minecraft.commands.arguments.ParticleArgument.ERROR_UNKNOWN_PARTICLE
+                            .createWithContext(reader, type);
+                }
+
+                String options = reader.getRemaining();
+                String command = id.toString();
+                if (options != null && !options.isBlank()) {
+                    command += " " + options.trim();
+                }
+                net.minecraft.core.particles.ParticleOptions parsed =
+                        net.minecraft.commands.arguments.ParticleArgument.readParticle(
+                                new com.mojang.brigadier.StringReader(command), MigrateContext.provider());
+                if (parsed.getType() != type) {
+                    throw net.minecraft.commands.arguments.ParticleArgument.ERROR_UNKNOWN_PARTICLE
+                            .createWithContext(reader, id);
+                }
+                return (T) parsed;
+            }
+
+            @Override
+            public T fromNetwork(net.minecraft.core.particles.ParticleType<T> ignored,
+                    net.minecraft.network.FriendlyByteBuf buffer) {
+                // SimpleParticleType has no payload in the legacy protocol.
+                if (type instanceof net.minecraft.core.particles.SimpleParticleType simple) {
+                    return (T) simple;
+                }
+
+                // Registry-aware particle codecs require the context carried
+                // by the 1.21.1 RegistryFriendlyByteBuf.
+                net.minecraft.network.RegistryFriendlyByteBuf registryBuffer =
+                        buffer instanceof net.minecraft.network.RegistryFriendlyByteBuf existing
+                                ? existing
+                                : new net.minecraft.network.RegistryFriendlyByteBuf(
+                                        buffer,
+                                        MigrateContext.registries(),
+                                        net.neoforged.neoforge.network.connection.ConnectionType.NEOFORGE);
+                return type.streamCodec().decode(registryBuffer);
+            }
+        };
     }
 
     /** A {@code ParticleType.codec()} of the old shape (a plain codec) as the registry-aware stream codec the type needs on the wire. */
