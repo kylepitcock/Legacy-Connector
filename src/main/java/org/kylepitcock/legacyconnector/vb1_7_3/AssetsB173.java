@@ -156,9 +156,25 @@ public final class AssetsB173 implements GeneratedPack.Contributor {
         try { return block.getClass().getMethod("getTextureId",legacyconnector.vb1_7_3.net.minecraft.world.BlockView.class,int.class,int.class,int.class,int.class).getDeclaringClass()!=Block.class; }
         catch(ReflectiveOperationException e){return false;}
     }
+    private static final Map<Block,java.util.concurrent.locks.ReentrantLock> FACE_LOCKS = new java.util.concurrent.ConcurrentHashMap<>();
+    /**
+     * A block's face callback runs one thread at a time. A mod's callback may read a tile entity's own (server) world, which from a mesher
+     * thread waits for the server thread; so the server thread never waits for the lock (it returns null and asks again next tick),
+     * or the two would wait for each other.
+     */
+    public static int[] tryFaceTextures(Block block,net.minecraft.world.level.BlockGetter level,net.minecraft.core.BlockPos pos,net.minecraft.world.level.block.state.BlockState state) {
+        var lock = FACE_LOCKS.computeIfAbsent(block, b -> new java.util.concurrent.locks.ReentrantLock());
+        if (!lock.tryLock()) return null;
+        try { return faceTexturesLocked(block, level, pos, state); } finally { lock.unlock(); }
+    }
     public static int[] faceTextures(Block block,net.minecraft.world.level.BlockGetter level,net.minecraft.core.BlockPos pos,net.minecraft.world.level.block.state.BlockState state) {
+        var lock = FACE_LOCKS.computeIfAbsent(block, b -> new java.util.concurrent.locks.ReentrantLock());
+        lock.lock();
+        try { return faceTexturesLocked(block, level, pos, state); } finally { lock.unlock(); }
+    }
+    private static int[] faceTexturesLocked(Block block,net.minecraft.world.level.BlockGetter level,net.minecraft.core.BlockPos pos,net.minecraft.world.level.block.state.BlockState state) {
         var view=new BlockQueryB173(level,pos,state);int[] faces=new int[6];
-        synchronized(block) { for(int side=0;side<6;side++){final int s=side;faces[side]=safe(()->block.getTextureId(view,pos.getX(),pos.getY(),pos.getZ(),s),block.textureId);} }
+        for(int side=0;side<6;side++){final int s=side;faces[side]=safe(()->block.getTextureId(view,pos.getX(),pos.getY(),pos.getZ(),s),block.textureId);}
         return faces;
     }
 
