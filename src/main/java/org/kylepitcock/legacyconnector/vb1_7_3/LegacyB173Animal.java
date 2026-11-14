@@ -250,6 +250,8 @@ public final class LegacyB173Animal extends PathfinderMob implements B173LivingH
             flushView();
             legacyconnector.vb1_7_3.net.minecraft.entity.Entity aimingTarget=null;
             if(legacy instanceof MobEntity creature){
+                // Beta's creature followed its pathToEntity field each tick; a mod may write that field directly (by reflection) instead of calling setPath
+                var written=creature.mcc$path();if(written!=handedPath)baseSetPath(written);
                 creature.mcc$setMovementBlocked(creature.mcc$isMovementBlocked());
                 boolean acquired=false;
                 if(creature.target==null){creature.target=creature.mcc$targetInRange();acquired=creature.target!=null;}
@@ -352,8 +354,9 @@ public final class LegacyB173Animal extends PathfinderMob implements B173LivingH
         var bounds=getBoundingBox().move(x-getX(),y-getY(),z-getZ());
         setPosRaw(x,y,z);setBoundingBox(bounds);
     }
+    private Object handedPath;
     public void baseSetPath(legacyconnector.vb1_7_3.net.minecraft.entity.ai.pathing.Path path){
-        flushView();if(path==null)getNavigation().stop();else if(path.mcc$modern()!=null)getNavigation().moveTo(path.mcc$modern(),Math.max(0,legacy.mcc$movementSpeed()));
+        handedPath=path;flushView();if(path==null)getNavigation().stop();else if(path.mcc$modern()!=null)getNavigation().moveTo(path.mcc$modern(),Math.max(0,legacy.mcc$movementSpeed()));
     }
     @Override public float getWalkTargetValue(BlockPos pos,LevelReader level){return legacy instanceof MobEntity c?c.mcc$pathFavor(pos.getX(),pos.getY(),pos.getZ()):0;}
     @Override public void thunderHit(net.minecraft.server.level.ServerLevel level,net.minecraft.world.entity.LightningBolt bolt){
