@@ -217,6 +217,9 @@ public final class Forge1201IntermediaryBridgeAudit {
 
                 if (line.startsWith("\t")) {
                     String[] parts = line.trim().split("\\s+");
+                    if (currentOwner == null) {
+                        throw new IOException("TSRG2 member row appears before a class row at " + path + ":" + lineNumber);
+                    }
                     if (parts.length == 3 && SRG_FIELD.matcher(parts[1]).matches()) {
                         fields.add(new TsrgMember(currentOwner, parts[0], null, parts[1]));
                     } else if (parts.length == 4 && SRG_METHOD.matcher(parts[2]).matches()) {
@@ -339,6 +342,8 @@ public final class Forge1201IntermediaryBridgeAudit {
             if (id == null) continue;
             sourceMapped++;
             sourceClassIds.add(id);
+        }
+        for (String id : sourceClassIds) {
             if (target.intermediaryToOfficial.containsKey(id)) targetShared++;
         }
         int targetOnly = 0;
