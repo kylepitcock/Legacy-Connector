@@ -106,16 +106,16 @@ final class Forge1201MappingProfileValidatorTest {
     @Test
     void rejectsEdgesWithWrongVersionContinuityOrUnsupportedDirection() throws Exception {
         String wrongVersion = validProfile().replace(
-                "\\"targetMinecraftVersion\\":\\"1.21.1\\"",
-                "\\"targetMinecraftVersion\\":\\"1.20.1\\"");
+                "\"targetMinecraftVersion\":\"1.21.1\"",
+                "\"targetMinecraftVersion\":\"1.20.1\"");
         var versionFinding = Forge1201MappingProfileValidator.inspect(writeProfile(wrongVersion));
         assertEquals(Forge1201MappingProfileValidator.ProfileStatus.PROFILE_NO_COMPLETE_PATH,
                 versionFinding.status());
         assertTrue(versionFinding.contextPaths().stream().allMatch(path -> path.completePathCount() == 0));
 
         String reverse = validProfile().replace(
-                "\\"direction\\":\\"FORWARD\\"",
-                "\\"direction\\":\\"REVERSE\\"");
+                "\"direction\":\"FORWARD\"",
+                "\"direction\":\"REVERSE\"");
         var directionFinding = Forge1201MappingProfileValidator.inspect(writeProfile(reverse));
         assertEquals(Forge1201MappingProfileValidator.ProfileStatus.PROFILE_NO_COMPLETE_PATH,
                 directionFinding.status());
