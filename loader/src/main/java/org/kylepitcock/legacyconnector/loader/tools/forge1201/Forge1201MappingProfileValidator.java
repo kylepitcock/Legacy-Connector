@@ -244,7 +244,7 @@ public final class Forge1201MappingProfileValidator {
         }
         if (bytes.length > MAX_PROFILE_BYTES) {
             return new Finding(absolute.toString(), size, null, null, null, null,
-                    ProfileStatus.PROFILE_FILE_LIMIT_EXCEEDED, null, null, null, null, null, null, null,
+                    ProfileStatus.PROFILE_FILE_LIMIT_EXCEEDED, null, null, null, null, null, null, null, null,
                     List.of(), List.of(), List.of(), List.of(), List.of(),
                     List.of("Mapping profile grew beyond the " + MAX_PROFILE_BYTES + "-byte limit while reading."));
         }
