@@ -90,7 +90,7 @@ and isolated (today: the DragonAPI crafting/smelting hooks in `CoremodHooks`).
   mods fixing other mods' API mismatches.
 - Coremod hooks in Minecraft's own classes (1.7.10; 1.6.4, 1.5.2, 1.4.7 and 1.12.2 are scanned the same way into their own list; the 1.12.2 list is written but not yet replayed at run time: there is no `CoremodSites1122`): those classes do not exist at run time, so on a cache-miss translation the loader shows the
   transformers the original 1.7.10 client classes (`VanillaJar` finds the jar in a launcher folder, `coremods.vanillaJar`, or downloads it from Mojang
-  with `coremods.downloadVanilla=true`; only the exact official file is accepted and it is never shipped), first obfuscated and then in SRG names
+  with `coremods.downloadVanilla=true`; only the exact official file is accepted and it is never shipped), first obfuscated and then in SRG names; a transformer whose plugin has a sorting index above 1000 ran after FML's deobfuscation and is shown the SRG form only
   (`CoremodHookScan`). `CoremodHookDiscovery` diffs each method and records every added static call with a site key
   (`<class>.<method><desc>#head-cancel | tail | const:<v> | replace:<call> | after:<insn> | cancel-after:<insn>`) in
   `.legacyconnector/cache/coremod-hooks-1.7.10.txt`. At run time `CoremodSites` maps site keys to modern places (mixins and shim methods that are no-ops
