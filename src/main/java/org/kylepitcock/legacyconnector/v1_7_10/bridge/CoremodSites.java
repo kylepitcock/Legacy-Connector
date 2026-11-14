@@ -52,6 +52,7 @@ public final class CoremodSites {
     private static final Class<?> ENTITY = legacyconnector.v1_7_10.net.minecraft.entity.Entity.class;
     private static final Class<?> LIVING = legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase.class;
     private static final Class<?> PLAYER = legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer.class;
+    private static final Class<?> WORLD = legacyconnector.v1_7_10.net.minecraft.world.World.class;
 
     /** EntityLivingBase.moveEntityWithHeading, first thing: true cancels the vanilla movement. Values: entity, strafe, forward. */
     public static final Site TRAVEL = site("living entity movement", new Class<?>[] {LIVING, float.class, float.class},
@@ -143,6 +144,56 @@ public final class CoremodSites {
     public static final Site BLOCK_EXPLODED = site("block destroyed by an explosion",
             new Class<?>[] {legacyconnector.v1_7_10.net.minecraft.block.Block.class, legacyconnector.v1_7_10.net.minecraft.world.World.class, int.class, int.class, int.class},
             "net/minecraft/block/Block.func_149723_a(Lnet/minecraft/world/World;IIILnet/minecraft/world/Explosion;)V#tail");
+
+    /** EntityXPOrb.onUpdate, last thing. Values: the orb. */
+    public static final Site XP_ORB_TICK = site("experience orb tick", new Class<?>[] {legacyconnector.v1_7_10.net.minecraft.entity.item.EntityXPOrb.class},
+            "net/minecraft/entity/item/EntityXPOrb.func_70071_h_()V#tail");
+
+    /** BlockFarmland.onFallenUpon: a hook that stands in for turning the farmland to dirt (it does that itself). Values: world, x, y, z, entity, fall distance. */
+    public static final Site FARMLAND_TRAMPLE = site("farmland trampled",
+            new Class<?>[] {WORLD, int.class, int.class, int.class, ENTITY, float.class},
+            "net/minecraft/block/BlockFarmland.func_149746_a(Lnet/minecraft/world/World;IIILnet/minecraft/entity/Entity;F)V#replace:func_147449_b(IIILnet/minecraft/block/Block;)Z");
+
+    /** EntityLiving.canDespawn: a hook that answers instead of the base "yes". Values: the mob. */
+    public static final Site FAR_DESPAWN = site("mob despawns far from players", new Class<?>[] {legacyconnector.v1_7_10.net.minecraft.entity.EntityLiving.class},
+            "net/minecraft/entity/EntityLiving.func_70692_ba()Z#const:1").returns(boolean.class);
+
+    /** ItemStack.updateAnimation (the inventory tick of a stack), last thing. Values: stack, entity, slot, held. */
+    public static final Site ITEM_TICK = site("item stack inventory tick",
+            new Class<?>[] {legacyconnector.v1_7_10.net.minecraft.item.ItemStack.class, ENTITY, int.class, boolean.class},
+            "net/minecraft/item/ItemStack.func_77945_a(Lnet/minecraft/world/World;Lnet/minecraft/entity/Entity;IZ)V#tail");
+
+    /** ItemStack.tryPlaceItemIntoWorld, after a use that counted. Values: stack, player, world, x, y, z, side, hit x, hit y, hit z. */
+    public static final Site ITEM_USED = site("item used on a block",
+            new Class<?>[] {legacyconnector.v1_7_10.net.minecraft.item.ItemStack.class, PLAYER, WORLD, int.class, int.class, int.class, int.class,
+                    float.class, float.class, float.class},
+            "net/minecraft/item/ItemStack.func_77943_a(Lnet/minecraft/entity/player/EntityPlayer;Lnet/minecraft/world/World;IIIIFFF)Z"
+                    + "#after:invokevirtual net/minecraft/entity/player/EntityPlayer.func_71064_a(Lnet/minecraft/stats/StatBase;I)V");
+
+    /** The server's entity action packet, after it started the player's sprint. Values: player. */
+    public static final Site SPRINT_STARTED = site("player started sprinting (server)", new Class<?>[] {PLAYER},
+            "net/minecraft/network/NetHandlerPlayServer.func_147357_a(Lnet/minecraft/network/play/client/C0BPacketEntityAction;)V"
+                    + "#after:invokevirtual net/minecraft/entity/player/EntityPlayerMP.func_70031_b(Z)V");
+
+    /** The 40 levels above which the anvil refuses (container and screen). Values: none. */
+    public static final Site ANVIL_MAX_COST = site("anvil maximum cost", new Class<?>[0],
+            "net/minecraft/inventory/ContainerRepair.func_82848_d()V#const:40", "net/minecraft/client/gui/GuiRepair.func_146979_b(II)V#const:40").returns(int.class);
+
+    /** TileEntity.validate and invalidate, first thing (tile entities that keep or call the base method). Values: the tile entity. */
+    public static final Site TILE_VALIDATE = site("tile entity validated", new Class<?>[] {legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntity.class},
+            "net/minecraft/tileentity/TileEntity.func_145829_t()V#after:aload 0");
+    public static final Site TILE_INVALIDATE = site("tile entity invalidated", new Class<?>[] {legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntity.class},
+            "net/minecraft/tileentity/TileEntity.func_145843_s()V#after:aload 0");
+
+    /** World.notifyBlocksOfNeighborChange, around the six updates. Values: world, x, y, z of the block that changed. */
+    public static final Site NEIGHBORS_START = site("neighbour updates (start)", new Class<?>[] {WORLD, int.class, int.class, int.class},
+            "net/minecraft/world/World.func_147459_d(IIILnet/minecraft/block/Block;)V#after:iload 1", "net/minecraft/world/World.func_147459_d(IIILnet/minecraft/block/Block;)V#head");
+    public static final Site NEIGHBORS_STOP = site("neighbour updates (end)", new Class<?>[] {WORLD, int.class, int.class, int.class},
+            "net/minecraft/world/World.func_147459_d(IIILnet/minecraft/block/Block;)V#tail");
+
+    /** World.notifyBlockOfNeighborChange, first thing. Values: world, x, y, z of the block that is told. */
+    public static final Site NEIGHBOR_NOTIFIED = site("neighbour update of one block", new Class<?>[] {WORLD, int.class, int.class, int.class},
+            "net/minecraft/world/World.func_147460_e(IIILnet/minecraft/block/Block;)V#after:aload 0", "net/minecraft/world/World.func_147460_e(IIILnet/minecraft/block/Block;)V#head");
 
     /** The model sites: client classes, so apart from the rest. Values: model, entity, the six animation numbers. */
     public static final class Client {
@@ -328,6 +379,31 @@ public final class CoremodSites {
     public static float stepDistance(net.minecraft.world.entity.Entity entity, float next) {
         if (!STEP_DISTANCE.active()) return next;
         return next - 1.0F + ((Number) STEP_DISTANCE.modify(1, EntityBridge.wrap(entity), 1)).floatValue();
+    }
+
+    public static void itemTick(net.minecraft.world.item.ItemStack stack, net.minecraft.world.entity.Entity entity, int slot, boolean held) {
+        if (ITEM_TICK.active()) ITEM_TICK.fire(legacyconnector.v1_7_10.net.minecraft.item.ItemStack.mcc$wrap(stack), EntityBridge.wrap(entity), slot, held);
+    }
+
+    public static void itemUsed(net.minecraft.world.item.ItemStack stack, net.minecraft.world.item.context.UseOnContext context) {
+        if (context.getPlayer() == null || !ITEM_USED.active()) return;
+        net.minecraft.core.BlockPos pos = context.getClickedPos();
+        net.minecraft.world.phys.Vec3 hit = context.getClickLocation();
+        ITEM_USED.fire(legacyconnector.v1_7_10.net.minecraft.item.ItemStack.mcc$wrap(stack), EntityBridge.wrap(context.getPlayer()),
+                legacyconnector.v1_7_10.net.minecraft.world.World.mcc$wrap(context.getLevel()), pos.getX(), pos.getY(), pos.getZ(),
+                context.getClickedFace().get3DDataValue(), (float) (hit.x - pos.getX()), (float) (hit.y - pos.getY()), (float) (hit.z - pos.getZ()));
+    }
+
+    public static void sprintStarted(net.minecraft.world.entity.player.Player player) {
+        if (SPRINT_STARTED.active()) SPRINT_STARTED.fire(EntityBridge.wrap(player));
+    }
+
+    public static int anvilMaxCost(int cost) {
+        return ANVIL_MAX_COST.active() ? ((Number) ANVIL_MAX_COST.modify(0, cost)).intValue() : cost;
+    }
+
+    public static void neighbors(Site site, net.minecraft.world.level.Level level, net.minecraft.core.BlockPos pos) {
+        if (site.active()) site.fire(legacyconnector.v1_7_10.net.minecraft.world.World.mcc$wrap(level), pos.getX(), pos.getY(), pos.getZ());
     }
 
     private static final ThreadLocal<Boolean> IN_RAIN = new ThreadLocal<>();
@@ -536,6 +612,29 @@ public final class CoremodSites {
                 float amount = e.getAmount();
                 float changed = ((Number) PLAYER_DAMAGE.modify(2, EntityBridge.wrap(player), EventBridge1710.legacySource(e.getSource()), amount)).floatValue();
                 if (changed != amount) e.setAmount(changed);
+            });
+        }
+        if (XP_ORB_TICK.listed()) {
+            gameBus.addListener((net.neoforged.neoforge.event.tick.EntityTickEvent.Post e) -> {
+                if (e.getEntity() instanceof net.minecraft.world.entity.ExperienceOrb orb && XP_ORB_TICK.active()) XP_ORB_TICK.fire(EntityBridge.wrap(orb));
+            });
+        }
+        if (FARMLAND_TRAMPLE.listed()) {
+            gameBus.addListener((net.neoforged.neoforge.event.level.BlockEvent.FarmlandTrampleEvent e) -> {
+                if (!(e.getLevel() instanceof net.minecraft.world.level.Level level) || !FARMLAND_TRAMPLE.active()) return;
+                // the hook decides and turns the farmland to dirt itself, as the call it replaced did
+                e.setCanceled(true);
+                net.minecraft.core.BlockPos pos = e.getPos();
+                FARMLAND_TRAMPLE.fire(legacyconnector.v1_7_10.net.minecraft.world.World.mcc$wrap(level), pos.getX(), pos.getY(), pos.getZ(),
+                        EntityBridge.wrap(e.getEntity()), e.getFallDistance());
+            });
+        }
+        if (FAR_DESPAWN.listed()) {
+            gameBus.addListener((net.neoforged.neoforge.event.entity.living.MobDespawnEvent e) -> {
+                if (!FAR_DESPAWN.active()) return;
+                if (Boolean.FALSE.equals(FAR_DESPAWN.replace(Boolean.TRUE, EntityBridge.wrap(e.getEntity())))) {
+                    e.setResult(net.neoforged.neoforge.event.entity.living.MobDespawnEvent.Result.DENY);
+                }
             });
         }
         if (IN_BED.listed()) {

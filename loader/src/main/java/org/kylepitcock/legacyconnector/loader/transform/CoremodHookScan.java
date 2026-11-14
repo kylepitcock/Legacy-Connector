@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 /**
  * The hooks the coremods of a mod set put into the own classes of their Minecraft version (1.7.10; 1.6.4, 1.5.2 and 1.4.7 the same way). Those classes do not exist at run time, so the transformers are shown the
  * original ones (that version's client jar, {@link VanillaJar}) once, when the mod set is translated: first under the obfuscated name, as LaunchWrapper did
- * before FML's deobfuscation; when a transformer leaves that alone, in SRG names, as a transformer sorted after the deobfuscation saw it. What they add is
+ * before FML's deobfuscation, and when a transformer leaves that alone, in SRG names; a transformer whose plugin sorts after the deobfuscation is shown the SRG form only. What they add is
  * read off by {@link CoremodHookDiscovery} and written to a list the run time replays on the modern game ({@code CoremodSites}).
  *
  * <p>Known limit: Forge's own patches of the 1.7.10 classes are not applied first, so a transformer that looks for an instruction Forge added finds nothing.
@@ -88,12 +88,20 @@ public final class CoremodHookScan {
             byte[] original = e.getValue();
             byte[] originalSrg = remap(original, srg);
             Map<String, Boolean> seen = new HashMap<>();
-            transformers.applyToVanilla(obf.replace('/', '.'), deobf.replace('/', '.'), original, (name, result) -> {
+            transformers.applyToVanilla(obf.replace('/', '.'), deobf.replace('/', '.'), original, false, (name, result) -> {
                 seen.put(name, true);
                 out.add(new Change(name, deobf, true, node(originalSrg), node(remap(result, srg))));
             });
-            transformers.applyToVanilla(deobf.replace('/', '.'), deobf.replace('/', '.'), originalSrg, (name, result) -> {
-                if (!seen.containsKey(name)) out.add(new Change(name, deobf, false, node(originalSrg), node(result)));
+            transformers.applyToVanilla(deobf.replace('/', '.'), deobf.replace('/', '.'), originalSrg, false, (name, result) -> {
+                if (seen.put(name, true) == null) out.add(new Change(name, deobf, false, node(originalSrg), node(result)));
+            });
+            // a plugin without a sorting index whose transformer still expects the deobfuscated class under its obfuscated name
+            if (!obf.equals(deobf)) transformers.applyToVanilla(obf.replace('/', '.'), deobf.replace('/', '.'), originalSrg, false, (name, result) -> {
+                if (seen.put(name, true) == null) out.add(new Change(name, deobf, false, node(originalSrg), node(result)));
+            });
+            // sorted after the deobfuscation: once, the class in SRG names under the name it has in the jar (some run only once per class)
+            transformers.applyToVanilla(obf.replace('/', '.'), deobf.replace('/', '.'), originalSrg, true, (name, result) -> {
+                out.add(new Change(name, deobf, false, node(originalSrg), node(result)));
             });
         }
         return out;

@@ -26,6 +26,10 @@ public class LaunchClassLoader extends URLClassLoader {
     private final Set<String> classLoaderExceptions = new HashSet<>();
     private final Set<String> transformerExceptions = new HashSet<>();
     private final Map<String, Class<?>> cachedClasses = new HashMap<>();
+    /** LaunchWrapper's private caches: coremods reach them by reflection (LogisticsPipes clears {@code invalidClasses}). */
+    private final Set<String> invalidClasses = new HashSet<>();
+    private final Set<String> negativeResourceCache = new HashSet<>();
+    private final Map<String, byte[]> resourceCache = new HashMap<>();
 
     /** The class cache; FML 1.5.2's RelaunchClassLoader declared its own {@code cachedClasses} (CodeChickenCore reaches it by reflection). */
     protected Map<String, Class<?>> mcc$cache() {

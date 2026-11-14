@@ -28,6 +28,8 @@ public class FMLCommonHandler {
     }
 
     public Side getSide() {
+        // No game side yet in the offline coremod probe: the side the coremod phase was started for
+        if (FMLEnvironment.dist == null) return "SERVER".equals(System.getProperty("legacyconnector.side")) ? Side.SERVER : Side.CLIENT;
         return FMLEnvironment.dist.isClient() ? Side.CLIENT : Side.SERVER;
     }
 
