@@ -141,26 +141,59 @@ final class Forge1201IntermediaryBridgeAuditTest {
     }
 
     @Test
-    void reportsAStableMemberIdWithUnresolvedDescriptorTypesWithoutCallingItExact() throws Exception {
+    void preservesPackageQualifiedExternalDescriptorTypesAsNonExactCandidates() throws Exception {
+        Path tsrg = write("joined-external.tsrg", """
+                tsrg2 obf srg id
+                a net/minecraft/C_1_ 1
+                \tb (Ljava/lang/String;Ljava/util/List;)V m_1_ 2
+                """);
+        Path source = write("source-external.tiny", """
+                v1\tofficial\tintermediary
+                CLASS\ta\tnet/minecraft/class_1
+                METHOD\ta\t(Ljava/lang/String;Ljava/util/List;)V\tb\tmethod_1
+                """);
+        Path target = write("target-external.tiny", """
+                v1\tofficial\tintermediary
+                CLASS\tz\tnet/minecraft/class_1
+                METHOD\tz\t(Ljava/lang/String;Ljava/util/List;)V\tp\tmethod_1
+                """);
+
+        var methods = Forge1201IntermediaryBridgeAudit.analyze(tsrg, source, target).methods();
+
+        assertEquals(1, methods.sourceIntermediaryMappedRows());
+        assertEquals(0, methods.sourceDescriptorUnresolvedRows());
+        assertEquals(1, methods.sourceDescriptorExternalTypeRows());
+        assertEquals(2, methods.sourceDescriptorExternalTypeOccurrences());
+        assertEquals(1, methods.targetDescriptorExternalTypeRows());
+        assertEquals(4, methods.targetDescriptorExternalTypeOccurrences());
+        assertEquals(1, methods.targetSameOwnerMemberDescriptorExternalPassthroughRows());
+        assertEquals(0, methods.targetExactOwnerMemberDescriptorRows());
+        assertEquals(0, methods.targetSameOwnerMemberDescriptorUnresolvedRows());
+    }
+
+    @Test
+    void reportsKnownMinecraftDescriptorTypesMissingFromIntermediaryAsUnresolved() throws Exception {
         Path tsrg = write("joined-unresolved.tsrg", """
                 tsrg2 obf srg id
                 a net/minecraft/C_1_ 1
-                \tb (Lmissing/Type;)V m_1_ 2
+                x net/minecraft/C_2_ 2
+                \tb (Lx;)V m_1_ 3
                 """);
         Path source = write("source-unresolved.tiny", """
                 v1\tofficial\tintermediary
                 CLASS\ta\tnet/minecraft/class_1
-                METHOD\ta\t(Lmissing/Type;)V\tb\tmethod_1
+                METHOD\ta\t(Lx;)V\tb\tmethod_1
                 """);
         Path target = write("target-unresolved.tiny", """
                 v1\tofficial\tintermediary
                 CLASS\tz\tnet/minecraft/class_1
-                METHOD\tz\t(Lmissing/Type;)V\tp\tmethod_1
+                METHOD\tz\t(Ly;)V\tp\tmethod_1
                 """);
 
         var methods = Forge1201IntermediaryBridgeAudit.analyze(tsrg, source, target).methods();
 
         assertEquals(1, methods.sourceDescriptorUnresolvedRows());
+        assertEquals(0, methods.sourceDescriptorExternalTypeRows());
         assertEquals(1, methods.targetSameOwnerMemberDescriptorUnresolvedRows());
         assertEquals(0, methods.targetExactOwnerMemberDescriptorRows());
     }
