@@ -190,6 +190,19 @@ final class SoftLink1201 implements Opcodes {
                 changes++;
             }
         }
+        // An event handler whose event class 1.21.1 lacks (Forge's PotionColorCalculationEvent): the event is never posted, and the
+        // method's descriptor alone makes getDeclaredMethods (the automatic subscriber, the event bus) throw NoClassDefFoundError for the whole class.
+        for (Iterator<MethodNode> it = node.methods.iterator(); it.hasNext(); ) {
+            MethodNode m = it.next();
+            if (m.visibleAnnotations == null || m.visibleAnnotations.stream().noneMatch(a -> "Lnet/neoforged/bus/api/SubscribeEvent;".equals(a.desc))) continue;
+            String bad = null;
+            for (Type t : Type.getArgumentTypes(m.desc)) if (missingType(t)) bad = element(t);
+            if (bad == null) continue;
+            stats.missingClasses.add(bad);
+            stats.sites++;
+            it.remove();
+            changes++;
+        }
         for (MethodNode m : node.methods) {
             if (m.instructions == null || m.instructions.size() == 0) continue;
             int c = method(m);

@@ -43,7 +43,7 @@ Back to [Home](Home.md); see also [Entities](Entities.md).
   captures a block renderer gets a Tessellator of its own, the render thread keeps the shared one. `ForgeHooksClient.worldRenderPass` is per thread too.
   The render thread never waits for chunk meshing; captures still run one at a time among themselves, as block renderers were written for 1.7.10's
   single chunk thread. `-Dlegacyconnector.renderLock=true` makes the render thread take that lock as well (a mod whose block renderer shares static
-  scratch state with its tile or item renderer).
+  scratch state with its tile or item renderer); the loader sets it by itself when a 1.4 to 1.7 jar holds a `CCRenderState` (CodeChickenLib, or a repackaged copy such as CoFH Core's), whose static pipeline raced between a chunk thread and the render thread (RedNet cables, Thermal Expansion cells flickered or threw NullPointerExceptions).
 - **Tile entity culling:** a legacy tile entity renderer draws while the camera is closer than its `getMaxRenderDistanceSquared()` (64 blocks by
   default; renderers of big structures return more) and while its `getRenderBoundingBox()` is in the view (infinite boxes always), as 1.7.10 culled
   (1.12.2: the box joined with the block and its neighbours).

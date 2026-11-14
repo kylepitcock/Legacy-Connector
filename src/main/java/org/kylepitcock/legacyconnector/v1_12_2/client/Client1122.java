@@ -186,6 +186,11 @@ public final class Client1122 {
         } catch (RuntimeException | LinkageError e) {
             RenderErrors1122.report("choosing models by actual state", e);
         }
+        try {
+            CustomRenderTypeModels1122.wrap(event.getModels());
+        } catch (RuntimeException | LinkageError e) {
+            RenderErrors1122.report("wrapping the models of custom render types", e);
+        }
         if (registry.replaced > 0) org.slf4j.LoggerFactory.getLogger("LegacyConnector/Models").info("1.12.2 mods replaced {} baked model(s)", registry.replaced);
     }
 

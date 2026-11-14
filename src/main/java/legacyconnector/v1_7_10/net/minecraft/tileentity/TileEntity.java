@@ -160,6 +160,18 @@ public class TileEntity {
     }
 
     /**
+     * Hooks that CoFH Core's class transformer adds to {@code net.minecraft.tileentity.TileEntity} and its patched world calls when a tile entity
+     * enters the world's list ({@code cofh_validate}) and leaves it ({@code cofh_invalidate}); mods built on CoFH Core override them to set up
+     * and tear down (a MineFactory Reloaded machine creates its random generator there). The transformer targets Minecraft's class by name and
+     * finds nothing here, so the host calls them: after {@link #validate()}, and after {@link #invalidate()}.
+     */
+    public void cofh_validate() {
+    }
+
+    public void cofh_invalidate() {
+    }
+
+    /**
      * Forge 1.7.10: whether the tile entity is recreated when its block or metadata is replaced (Chunk.setBlock). True by default
      * there; mods override it to keep their tile entity across metadata changes (a furnace's facing). Thaumcraft relies on the
      * default when a table becomes a research table.

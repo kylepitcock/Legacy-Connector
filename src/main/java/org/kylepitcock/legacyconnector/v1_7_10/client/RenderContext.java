@@ -162,12 +162,13 @@ public final class RenderContext {
      * Captures (chunk-meshing threads, and the render thread's own synchronous rebuilds) run one at a time, as legacy block renderers
      * did on 1.7.10's single chunk thread. Reentrant for nested frames on one thread.
      */
-    private static final java.util.concurrent.locks.ReentrantLock CAPTURE_LOCK = new java.util.concurrent.locks.ReentrantLock();
+    private static final boolean RENDER_LOCK = Boolean.getBoolean("legacyconnector.renderLock");
+    /** Fair when the render thread takes it too: chunk threads re-taking it back to back must not starve the frame. */
+    private static final java.util.concurrent.locks.ReentrantLock CAPTURE_LOCK = new java.util.concurrent.locks.ReentrantLock(RENDER_LOCK);
     /**
      * {@code -Dlegacyconnector.renderLock=true}: the render thread takes {@link #CAPTURE_LOCK} for every legacy render too, as
      * before the state was made per thread (a mod whose block renderer and tile/item renderer share static scratch state).
      */
-    private static final boolean RENDER_LOCK = Boolean.getBoolean("legacyconnector.renderLock");
 
     /** Geometry drawn while capturing: quads of {x, y, z, u, v, argb, light, own colour, own light} corners (flat) and their face normals. */
     public static final class Capture {
