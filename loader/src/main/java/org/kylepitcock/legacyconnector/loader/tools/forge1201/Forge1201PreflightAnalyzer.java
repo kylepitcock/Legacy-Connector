@@ -754,13 +754,21 @@ public final class Forge1201PreflightAnalyzer {
             out.append("  Profile SHA-256: ").append(profile.profileSha256())
                     .append(" (").append(profile.profileSizeBytes()).append(" bytes)\n");
         }
-        out.append("  Source namespace: ").append(profile.sourceCompileNamespaceId())
-                .append(" (Minecraft ").append(profile.sourceMinecraftVersion()).append(")\n")
-                .append("  Target namespace: ").append(profile.targetCompileNamespaceId())
-                .append(" (Minecraft ").append(profile.targetMinecraftVersion()).append(")\n")
-                .append("  Context bindings: ").append(profile.contextBindings().size())
-                .append(" | artifacts: ").append(profile.artifacts().size())
-                .append(" | edges: ").append(profile.edges().size()).append('\n');
+        if (profile.status() == Forge1201MappingProfileValidator.ProfileStatus.PROFILE_NOT_SUPPLIED) {
+            out.append("  No mapping profile supplied; no namespace mapping is selected or inferred.\n");
+        } else {
+            if (profile.sourceCompileNamespaceId() != null) {
+                out.append("  Source namespace: ").append(profile.sourceCompileNamespaceId())
+                        .append(" (Minecraft ").append(profile.sourceMinecraftVersion()).append(")\n");
+            }
+            if (profile.targetCompileNamespaceId() != null) {
+                out.append("  Target namespace: ").append(profile.targetCompileNamespaceId())
+                        .append(" (Minecraft ").append(profile.targetMinecraftVersion()).append(")\n");
+            }
+            out.append("  Context bindings: ").append(profile.contextBindings().size())
+                    .append(" | artifacts: ").append(profile.artifacts().size())
+                    .append(" | edges: ").append(profile.edges().size()).append('\n');
+        }
         for (Forge1201MappingProfileValidator.ArtifactFinding artifact : profile.artifacts()) {
             out.append("  Artifact ").append(artifact.artifactId()).append(" [").append(artifact.status())
                     .append("] provider=").append(artifact.provider()).append('@').append(artifact.version())
