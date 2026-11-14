@@ -24,6 +24,33 @@ public class EntityXPOrb extends Entity {
         return level == null ? null : new ExperienceOrb(net.minecraft.world.entity.EntityType.EXPERIENCE_ORB, level);
     }
 
+    /** Phantom field: the experience the orb is worth (machines drain it into tanks by writing it down). */
+    @Deprecated
+    public int xpValue;
+
+    private static final java.lang.reflect.Field VALUE = find();
+
+    private static java.lang.reflect.Field find() {
+        try {
+            return net.neoforged.fml.util.ObfuscationReflectionHelper.findField(ExperienceOrb.class, "value");
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
+    public static int mcc$get$xpValue(EntityXPOrb e) {
+        return e.mcc$entity instanceof ExperienceOrb o ? o.getValue() : 0;
+    }
+
+    public static void mcc$set$xpValue(EntityXPOrb e, int v) {
+        if (!(e.mcc$entity instanceof ExperienceOrb o) || VALUE == null) return;
+        try {
+            VALUE.setInt(o, v);
+        } catch (IllegalAccessException ex) {
+            // value stays
+        }
+    }
+
     public int getXpValue() {
         return ((ExperienceOrb) mcc$entity).getValue();
     }

@@ -1,0 +1,32 @@
+# MineFactory Reloaded 2.8.1 (1.7.10, #268): machines that are driven by game state report whether they work (probe files in %TEMP%/mfr-<machine>.txt)
+mods: 1.7.10 MineFactoryReloaded-[1.7.10]
+mods: 1.7.10 CoFHCore-[1.7.10]
+mods: 1.7.10 CoFHLib-[1.7.10]
+mods: 1.7.10 CodeChickenCore-1.7.10
+cmd /fill -12 148 -12 12 148 12 minecraft:stone
+cmd /fill -12 149 -12 12 160 12 minecraft:air
+cmd /tp @s 0.5 150 8.5
+cmd /weather rain 100000
+wait 40
+cmd /setblock 0 149 0 minefactoryreloaded:machine.0_13
+cmd /setblock 6 149 0 minefactoryreloaded:machine.0_8
+cmd /setblock 10 149 0 minefactoryreloaded:machine.1_7
+cmd /summon minecraft:cow 2.5 149 0.5 {NoAI:1b}
+cmd /summon minecraft:cow -1.5 149 0.5 {NoAI:1b}
+cmd /summon minecraft:cow 0.5 149 2.5 {NoAI:1b}
+cmd /summon minecraft:cow 0.5 149 -1.5 {NoAI:1b}
+wait 20
+expect ok :: (function(){var r="";server.executeBlocking(function(){r=Java.type("org.kylepitcock.legacyconnector.v1_7_10.entity.TileProbe1710").describe(server.overworld(),new (Java.type("net.minecraft.core.BlockPos"))(0,149,0),true);});Java.type("java.nio.file.Files").writeString(Java.type("java.nio.file.Path").of("C:/Users/Kyleb/AppData/Local/Temp/mfr-grinder0.txt"),r);return "ok";})()
+expect ok :: (function(){var r="";server.executeBlocking(function(){r=Java.type("org.kylepitcock.legacyconnector.v1_7_10.entity.TileProbe1710").describe(server.overworld(),new (Java.type("net.minecraft.core.BlockPos"))(6,149,0),true);});Java.type("java.nio.file.Files").writeString(Java.type("java.nio.file.Path").of("C:/Users/Kyleb/AppData/Local/Temp/mfr-weather0.txt"),r);return "ok";})()
+expect ok :: (function(){var r="";server.executeBlocking(function(){r=Java.type("org.kylepitcock.legacyconnector.v1_7_10.entity.TileProbe1710").describe(server.overworld(),new (Java.type("net.minecraft.core.BlockPos"))(10,149,0),true);});Java.type("java.nio.file.Files").writeString(Java.type("java.nio.file.Path").of("C:/Users/Kyleb/AppData/Local/Temp/mfr-jukebox0.txt"),r);return "ok";})()
+expect ok :: (function(){var r="";server.executeBlocking(function(){r=Java.type("org.kylepitcock.legacyconnector.v1_7_10.entity.TileProbe1710").jukebox(server.overworld(),new (Java.type("net.minecraft.core.BlockPos"))(10,149,0));});Java.type("java.nio.file.Files").writeString(Java.type("java.nio.file.Path").of("C:/Users/Kyleb/AppData/Local/Temp/mfr-jukebox2.txt"),r);return "ok";})()
+cmd /setblock 10 149 1 minecraft:redstone_block
+wait 100
+expect ok :: (function(){var r="";server.executeBlocking(function(){r=Java.type("org.kylepitcock.legacyconnector.v1_7_10.entity.TileProbe1710").jukebox(server.overworld(),new (Java.type("net.minecraft.core.BlockPos"))(10,149,0));});Java.type("java.nio.file.Files").writeString(Java.type("java.nio.file.Path").of("C:/Users/Kyleb/AppData/Local/Temp/mfr-jukebox3.txt"),r);return "ok";})()
+wait 300
+expect ok :: (function(){var r="";server.executeBlocking(function(){r=Java.type("org.kylepitcock.legacyconnector.v1_7_10.entity.TileProbe1710").describe(server.overworld(),new (Java.type("net.minecraft.core.BlockPos"))(0,149,0),true);});Java.type("java.nio.file.Files").writeString(Java.type("java.nio.file.Path").of("C:/Users/Kyleb/AppData/Local/Temp/mfr-grinder1.txt"),r);return "ok";})()
+expect ok :: (function(){var r="";server.executeBlocking(function(){r=Java.type("org.kylepitcock.legacyconnector.v1_7_10.entity.TileProbe1710").describe(server.overworld(),new (Java.type("net.minecraft.core.BlockPos"))(6,149,0),true);});Java.type("java.nio.file.Files").writeString(Java.type("java.nio.file.Path").of("C:/Users/Kyleb/AppData/Local/Temp/mfr-weather1.txt"),r);return "ok";})()
+expect ok :: (function(){var r="";server.executeBlocking(function(){r=Java.type("org.kylepitcock.legacyconnector.v1_7_10.entity.TileProbe1710").describe(server.overworld(),new (Java.type("net.minecraft.core.BlockPos"))(10,149,0),true);});Java.type("java.nio.file.Files").writeString(Java.type("java.nio.file.Path").of("C:/Users/Kyleb/AppData/Local/Temp/mfr-jukebox1.txt"),r);return "ok";})()
+expect ok :: (function(){var r="";server.executeBlocking(function(){r=Java.type("org.kylepitcock.legacyconnector.v1_7_10.entity.TileProbe1710").worldDiag(server.overworld(),new (Java.type("net.minecraft.core.BlockPos"))(6,149,0));});Java.type("java.nio.file.Files").writeString(Java.type("java.nio.file.Path").of("C:/Users/Kyleb/AppData/Local/Temp/mfr-world.txt"),r);return "ok";})()
+expect cow :: (function(){var n=0;server.overworld().getAllEntities().forEach(function(e){if(String(e.getType()).indexOf("cow")>=0)n++;});Java.type("java.nio.file.Files").writeString(Java.type("java.nio.file.Path").of("C:/Users/Kyleb/AppData/Local/Temp/mfr-cows.txt"),"cows="+n+" raining="+server.overworld().isRaining());return "cow";})()
+shot mfr-machines

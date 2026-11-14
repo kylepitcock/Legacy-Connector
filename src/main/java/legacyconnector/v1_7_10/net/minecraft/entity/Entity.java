@@ -841,7 +841,27 @@ public abstract class Entity implements ICommandSender {
      */
     public net.minecraft.world.level.LevelAccessor mcc$worldOverride;
 
+    /**
+     * A world object a mod assigned to {@code worldObj} that is not the entity's own world: a proxy world (MineFactory's grinder moves the mob
+     * into its own WorldServer subclass so the drops and experience of its death arrive at the machine). Reads answer it, entity drops
+     * go through it ({@link #entityDropItem}) and the modern death drops and experience of the entity are handed to it
+     * ({@code EventBridge1710}).
+     */
+    public World mcc$worldProxy;
+
+    public static void mcc$set$worldObj(Entity e, World w) {
+        var m = e.mcc$entity;
+        if (w == null || m == null) {
+            e.mcc$worldProxy = null;
+            return;
+        }
+        // the entity's own world (any view of its level) is no proxy
+        World natural = World.mcc$wrap(m.level());
+        e.mcc$worldProxy = natural != null && natural.getClass() == w.getClass() ? null : w;
+    }
+
     public static World mcc$get$worldObj(Entity e) {
+        if (e.mcc$worldProxy != null) return e.mcc$worldProxy;
         var override = e.mcc$worldOverride;
         if (override != null) return World.mcc$wrap(override);
         var m = e.mcc$entity;
