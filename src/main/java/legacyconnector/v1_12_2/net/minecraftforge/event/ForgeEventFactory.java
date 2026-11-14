@@ -312,7 +312,7 @@ public class ForgeEventFactory {
         var level = world == null ? null : world.mcc$level();
         if (mob == null || !(level instanceof net.minecraft.world.level.ServerLevelAccessor accessor)) return false;
         var event = new net.neoforged.neoforge.event.entity.living.FinalizeSpawnEvent(mob, accessor, x, y, z,
-                accessor.getCurrentDifficultyAt(mob.blockPosition()), net.minecraft.world.entity.MobSpawnType.NATURAL, null, null);
+                mcc$difficulty(accessor, mob.blockPosition()), net.minecraft.world.entity.MobSpawnType.NATURAL, null, null);
         return net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(event).isCanceled();
     }
 
@@ -400,6 +400,19 @@ public class ForgeEventFactory {
         return canEntitySpawnSpawner(entity, world, x, y, z);
     }
 
+    /**
+     * Local difficulty for a spawn event. Off the server thread (a world generator populating a chunk on a worker thread, whose legacy
+     * World wraps the real level) the chunk lookup of {@code getCurrentDifficultyAt} waits for the very chunk being generated and
+     * deadlocks it, so the chunk-independent values are used there.
+     */
+    private static net.minecraft.world.DifficultyInstance mcc$difficulty(net.minecraft.world.level.ServerLevelAccessor accessor,
+            net.minecraft.core.BlockPos pos) {
+        var server = accessor.getServer();
+        if (server == null || server.isSameThread()) return accessor.getCurrentDifficultyAt(pos);
+        var level = accessor.getLevel();
+        return new net.minecraft.world.DifficultyInstance(level.getDifficulty(), level.getDayTime(), 0L, level.getMoonBrightness());
+    }
+
     /** The spawn finalization of a mob a spawner made: true when a mod took over. */
     public static boolean doSpecialSpawn(legacyconnector.v1_12_2.net.minecraft.entity.EntityLiving entity, World world, float x, float y, float z,
             legacyconnector.v1_12_2.net.minecraft.tileentity.MobSpawnerBaseLogic spawner) {
@@ -407,7 +420,7 @@ public class ForgeEventFactory {
         var level = world == null ? null : world.mcc$level();
         if (mob == null || !(level instanceof net.minecraft.world.level.ServerLevelAccessor accessor)) return false;
         var event = new net.neoforged.neoforge.event.entity.living.FinalizeSpawnEvent(mob, accessor, x, y, z,
-                accessor.getCurrentDifficultyAt(mob.blockPosition()),
+                mcc$difficulty(accessor, mob.blockPosition()),
                 spawner != null ? net.minecraft.world.entity.MobSpawnType.SPAWNER : net.minecraft.world.entity.MobSpawnType.NATURAL, null, null);
         return net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(event).isCanceled();
     }
