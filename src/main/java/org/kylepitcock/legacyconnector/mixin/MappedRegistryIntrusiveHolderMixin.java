@@ -3,10 +3,8 @@ package org.kylepitcock.legacyconnector.mixin;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import java.net.URI;
-import java.nio.file.Path;
 import java.util.Optional;
 import net.minecraft.core.MappedRegistry;
-import org.kylepitcock.legacyconnector.core.pack.ModernizedTextures;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
@@ -33,7 +31,13 @@ public abstract class MappedRegistryIntrusiveHolderMixin {
             Module m = c.getModule();
             if (!m.isNamed() || m.getLayer() == null) return false;
             Optional<URI> loc = m.getLayer().configuration().findModule(m.getName()).flatMap(r -> r.reference().location());
-            return loc.isPresent() && "file".equals(loc.get().getScheme()) && ModernizedTextures.isTranslated(Path.of(loc.get()));
+            if (loc.isEmpty()) return false;
+            // FML's union file system: union:/<path>/.legacyconnector/cache/<translated jar>.jar%23<n>!/
+            String u = loc.get().toString();
+            int k = u.indexOf("/.legacyconnector/cache/");
+            if (k < 0) return false;
+            String name = u.substring(k + "/.legacyconnector/cache/".length());
+            return name.contains(".jar") && !name.startsWith("legacyconnector-");
         } catch (RuntimeException e) {
             return false;
         }
