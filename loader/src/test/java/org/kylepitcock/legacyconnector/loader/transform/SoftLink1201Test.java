@@ -33,10 +33,11 @@ class SoftLink1201Test implements Opcodes {
     static void index() {
         Mc1201Hierarchy.setMinecraftForTests(Map.of(
                 BASE, new String[] {"java/lang/Object"},
-                SUB, new String[] {BASE}));
+                SUB, new String[] {BASE},
+                "net/minecraft/world/Wide", new String[] {"java/lang/Object"}));
         McMembers1201.setForTests(Map.of(
                 BASE, new McMembers1201.Members(Set.of("<init>()V", "present()I", "tick()V"), Set.of("count:I")),
-                SUB, new McMembers1201.Members(Set.of("<init>()V"), Set.of())));
+                SUB, new McMembers1201.Members(Set.of("<init>()V", "take(L" + BASE + ";)V"), Set.of())));
     }
 
     @AfterAll
@@ -84,6 +85,22 @@ class SoftLink1201Test implements Opcodes {
         assertEquals(1, s.apply(c));
         assertTrue(c.methods.isEmpty());
         assertTrue(s.stats.missingClasses.contains(GONE));
+    }
+
+    @Test
+    void parameterWidenedToASupertypeStillLinks() {
+        ClassNode c = cls("mod/W", "java/lang/Object");
+        MethodNode m = method(c);
+        m.visitVarInsn(ALOAD, 0);
+        m.visitVarInsn(ALOAD, 0);
+        m.visitMethodInsn(INVOKEVIRTUAL, SUB, "take", "(L" + SUB + ";)V", false);
+        m.visitInsn(RETURN);
+        SoftLink1201 s = link(c);
+        s.apply(c);
+        MethodInsnNode call = null;
+        for (AbstractInsnNode in : m.instructions) if (in instanceof MethodInsnNode mi && mi.name.equals("take")) call = mi;
+        assertEquals("(L" + BASE + ";)V", call.desc);
+        assertTrue(s.stats.missingMethods.isEmpty());
     }
 
     @Test
