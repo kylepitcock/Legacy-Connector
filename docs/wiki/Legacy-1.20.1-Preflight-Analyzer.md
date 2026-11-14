@@ -1,10 +1,10 @@
 # Forge 1.20.1 Preflight Compatibility Analyzer
 
-**Status:** Slice 1 implemented; loader tests and consolidated build passed; corrected real-JAR smoke report generated and reviewed against Symbiote 1.1.3; Slice 2 is next  
+**Status:** Slice 1 implemented and reviewed; Slice 2 implementation committed on the working branch and awaiting local test/build validation  
 **Working branch:** `feat/forge1201-preflight-analyzer`  
 **Baseline:** `dde40275b9b3bd48ff811afa4c863e475e8a0cdf`  
 **Target:** Forge 1.20.1-only mod JARs on NeoForge 1.21.1 / 21.1.x  
-**Boundary:** Palladium + Alien Evolution remain paused. Do not resume their adapter work as part of this milestone.
+**Boundary:** Palladium + Alien Evolution are handled in a separately authorized parallel workstream on `fix/forge1201-palladium-runtime-adapters`. Do not edit, merge, or cherry-pick that work from this analyzer branch.
 
 ## Purpose
 
@@ -174,33 +174,80 @@ Metadata warning: `mods.toml` line 10 starts a multiline string that the scalar 
 
 Both report files are present and internally consistent; however, the Gradle console transcript was not uploaded, so do not record the final console line as `BUILD SUCCESSFUL`. Report generation and JSON validity are confirmed by the uploaded artifacts. No runtime or gameplay compatibility is established.
 
-### Exact next action — Slice 2: nested archives and dependency graph
+### Slice 2 implementation checkpoint — committed; local validation pending
 
+**Last code-bearing Slice 2 checkpoint:** `fdb4e111fab45b0f41c7f15cad26cefbbcf92f13` (the later branch commits in this checkpoint are documentation-only boundary/continuation updates).  
+**Working branch:** `feat/forge1201-preflight-analyzer`  
+**Implementation scope:** bounded nested archive inspection, provider provenance, dependency graph, target-range evaluation.  
+**Validation status:** code and regression fixtures are committed, but no local Gradle test/build has yet been run for Slice 2. Do not call Slice 2 validated until the user runs the focused test suite and real-JAR smoke test.
 
+Files changed:
+- `loader/src/main/java/org/kylepitcock/legacyconnector/loader/tools/forge1201/Forge1201ArchiveGraph.java` — new bounded archive graph analyzer.
+- `loader/src/main/java/org/kylepitcock/legacyconnector/loader/tools/forge1201/Forge1201JarInspector.java` — added in-memory metadata parsing helpers for embedded Forge 1.20.1 and NeoForge metadata.
+- `loader/src/main/java/org/kylepitcock/legacyconnector/loader/tools/forge1201/Forge1201PreflightAnalyzer.java` — schema/analyzer version bumped to 1.1 / 1.1.0; graph added to JSON/text result.
+- `loader/src/test/java/org/kylepitcock/legacyconnector/loader/tools/forge1201/Forge1201ArchiveGraphTest.java` — new synthetic nested/provider/range/safety test suite.
 
-The real-JAR smoke gate is complete: both report files were reviewed in testbench commit `73930aaf3ab76017ca0c9232c557856bf7e39dac`. Do not rerun the same smoke test unless the report implementation changes.
+Implemented behavior:
+1. Reads real nested JAR entries in memory (no extraction to persistent folders) using both Jar-in-Jar metadata paths and actual `META-INF/jarjar/` / `META-INF/jars/` archive entries.
+2. Records source-root, installed top-level, source-nested, and installed-nested archive provenance, parent path, depth, size, SHA-256, Jar-in-Jar group/artifact/version range/artifact version where declared, detected loader family, archive classification, and contained mod IDs/versions.
+3. Distinguishes Forge 1.20.1 mods, NeoForge mods, library/unrecognized archives, corrupt ZIPs, unsafe paths, missing declared archive files, byte/entry/depth/archive-count limits, and duplicate content skipped by SHA-256 cycle protection.
+4. Discovers installed top-level NeoForge and Forge 1.20.1 providers and nested providers. A provider record links mod ID and declared version to the actual archive path and hash. The report still does not claim that ID/version equality proves API or behavioral compatibility.
+5. Builds dependency edges for source and nested/installed mods while preserving declaring mod/archive, dependency ID, range, required/optional flag, side, and ordering. It distinguishes host bridges, present providers, provider version mismatches, duplicate/ambiguous providers, required missing providers, and optional missing providers.
+6. Evaluates numeric dotted Maven-style ranges conservatively. Unsupported/qualified version strings remain `UNPARSEABLE`; they are never silently treated as matching.
+7. Adds explicit target Minecraft range findings. For Symbiote, `[1.20.1,1.21)` is correctly expected to exclude target `1.21.1`; the explanation calls this a possible metadata-range translation requirement, not an invented dependency or unconditional load-failure verdict.
+8. Preserves deterministic ordering and exposes the archive graph in both JSON and text reports. Nested bytecode remains out of scope until Slice 3.
 
+Safety limits currently encoded:
+- Maximum nested depth: 4.
+- Maximum nested archive candidates inspected: 128.
+- Maximum individual nested JAR payload: 32 MiB.
+- Maximum inflated content per nested archive: 64 MiB.
+- Maximum aggregate nested inflated bytes: 256 MiB.
+- Maximum metadata document read: 1 MiB.
+- Maximum archive entry names considered: 100,000 at the root and 100,000 within a nested archive.
+- No filesystem extraction; absolute, drive-qualified, backslash, empty, dot, and parent-traversal entry paths are rejected.
 
+Synthetic coverage added:
+- Nested Forge mod vs ordinary library classification and Jar-in-Jar coordinate/hash provenance.
+- Installed top-level NeoForge and Forge 1.20.1 provider discovery plus installed nested NeoForge provider discovery.
+- Provider version match, out-of-range mismatch, duplicate/ambiguous mod IDs, required/optional missing dependencies.
+- Minecraft target mismatch, exact/numeric/union ranges, and unparseable qualified versions.
+- Missing declared JAR, corrupt archive, traversal path, duplicate archive content, maximum depth, per-archive size, and archive-count limits.
 
-Implement Slice 2 in this order:
+The test suite is not yet confirmed. Potential test or implementation defects must be corrected from the actual Gradle output; do not treat a successful GitHub write or source inspection as a passing compile.
 
-1. Add bounded recursive inspection of `META-INF/jarjar/*.jar` and nested archives with maximum depth/size, cycle detection, safe entry handling, SHA-256, archive path/provenance, and per-nested-archive metadata.
+### Exact next action — validate Slice 2 in the Universal worktree
 
-2. Build parent/nested dependency edges. Extend provider discovery to report actual top-level and nested provider JAR paths/versions/ranges, while retaining the strict distinction between an observed mod ID and a verified API provider.
+First synchronize only the Universal worktree, after verifying it is clean and on the expected branch:
 
-3. Add explicit target-version range evaluation. For this Symbiote report, `[1.20.1,1.21)` excludes the target `1.21.1`; show this as a metadata-range translation requirement rather than treating it as a connector-imposed dependency or an unconditional load failure.
+```powershell
+$repo = 'F:\\Program\\intellij-idea-portable\\Legacy-Connector-1.20.1'
+$branch = 'feat/forge1201-preflight-analyzer'
+$actual = (git -C $repo branch --show-current).Trim()
+if ($actual -ne $branch) { throw "Wrong branch: expected $branch, found $actual" }
+$dirty = @(git -C $repo status --porcelain)
+if ($dirty.Count -gt 0) { throw "Universal worktree is dirty. Inspect local changes before syncing." }
+git -C $repo fetch origin "$branch"
+if ($LASTEXITCODE -ne 0) { throw "Fetch failed." }
+git -C $repo pull --ff-only origin "$branch"
+if ($LASTEXITCODE -ne 0) { throw "Pull failed." }
+git -C $repo rev-parse HEAD
+```
 
-4. Keep native installed mod IDs that are not declared dependencies as observed candidates only; do not convert them into required dependencies. Preserve optional/side/order/range semantics.
+Expected source HEAD: `fdb4e111fab45b0f41c7f15cad26cefbbcf92f13`.
 
-5. Add synthetic tests for nested mod/library discovery, nested provider resolution, missing/corrupt archives, path traversal, duplicate IDs, cycles, excessive depth/size, and target-range mismatch.
+Then, still in that exact Universal checkout, run:
 
+```powershell
+.\\gradlew.bat :loader:clean :loader:test --no-daemon --console=plain
+```
 
+If the focused loader tests pass, run the `preflight1201` task against the original Symbiote 1.1.3 Forge JAR and the same installed NeoForge mods directory used for the previous report. Save both JSON and text reports, then inspect the JSON for archive graph provenance, dependency resolution, and the `[1.20.1,1.21)` target-range result. Keep the original JAR SHA-256 `e40f48a8a9bf1f39ea173a7c163285df199b7d2cf1dfcbf3efa721fe7f2f942c` as the input identity check. If the report is correct, rerun the consolidated clean build before marking Slice 2 validated.
 
-Later slices must use this report's evidence: Slice 3 should surface/normalize SRG member names and complete bytecode reference kinds; Slice 4 should continue Mixin analysis without mistaking Symbiote's `ForeignHooks.scan` inspection of global Mixin configs for an owned config; Slice 5 should join type/member findings to actual adapter/shim implementation and target verification.
+Do not change the Palladium worktree or branch. Do not merge anything into `master`. Do not claim runtime compatibility from preflight output.
 
+Later slices remain unchanged: Slice 3 nested and complete bytecode references; Slice 4 first-class mixin validation; Slice 5 migration/bridge/shim coverage; Slice 6 pack-level graph and runtime feedback. Keep the SRG → 1.20.1 Mojang-name normalization stage separate from 1.20.1 → 1.21.1 migration.
 
-
-Do not claim compatibility from this report. Keep Palladium + Alien Evolution paused.
 
 ## Validation boundary
 

@@ -32,8 +32,8 @@ import java.util.zip.ZipFile;
  * inspect them, validate mixin injection semantics, or prove runtime compatibility.</p>
  */
 public final class Forge1201PreflightAnalyzer {
-    public static final String SCHEMA_VERSION = "1.0";
-    public static final String ANALYZER_VERSION = "1.0.0";
+    public static final String SCHEMA_VERSION = "1.1";
+    public static final String ANALYZER_VERSION = "1.1.0";
     private static final int MAX_MIXIN_JSON_BYTES = 1024 * 1024;
     private static final Gson GSON = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
 
@@ -116,7 +116,8 @@ public final class Forge1201PreflightAnalyzer {
             List<ApiMethodCallSite> methodCallSites,
             List<ApiFieldCallSite> fieldCallSites,
             List<String> observedNativeModIds,
-            List<String> limitations) {
+            List<String> limitations,
+            Forge1201ArchiveGraph.Result archiveGraph) {
         public PreflightResult {
             metadataWarnings = List.copyOf(metadataWarnings);
             mods = List.copyOf(mods);
@@ -207,6 +208,8 @@ public final class Forge1201PreflightAnalyzer {
         ForgeMetadata forgeMetadata = null;
 
         Set<String> nativeIds = Forge1201DependencyResolver.findNativeModIds(modDirectories);
+        Forge1201ArchiveGraph.Result archiveGraph = Forge1201ArchiveGraph.analyze(
+                jar, jarInfo, modDirectories, "1.21.1");
         if (jarInfo != null) {
             forgeMetadata = new ForgeMetadata(
                     jarInfo.modLoader(), jarInfo.loaderVersion(),
@@ -302,11 +305,12 @@ public final class Forge1201PreflightAnalyzer {
         List<String> observedNativeIds = nativeIds.stream().sorted().toList();
         List<String> limitations = List.of(
                 "This is static preflight evidence only; it does not prove initialization, gameplay, client rendering, synchronization, or stability.",
-                "Slice 1 scans bytecode in the outer JAR only. Jar-in-Jar paths are inventoried but their contents are not recursively analyzed.",
-                "Mixin discovery uses manifest declarations and resource path/content heuristics. Injection targets, handler descriptors, slices, refmaps, and dynamic plugins are not validated in Slice 1.",
+                "Slice 2 recursively inventories bounded nested archives and metadata, but bytecode references are still scanned in the outer JAR only; nested bytecode analysis is deferred to Slice 3.",
+                "Nested archive traversal is bounded by depth, archive count, per-archive size, and total inflated-byte limits. Archives skipped by a limit or rejected as unsafe/corrupt remain explicit findings.",
+                "Mixin discovery uses manifest declarations and resource path/content heuristics. Injection targets, handler descriptors, slices, refmaps, and dynamic plugins are not validated in Slice 2.",
                 "The current bytecode inventory is not exhaustive for every reflection, method-handle, invokedynamic, or constant-dynamic reference.",
-                "Installed-mod discovery in Slice 1 scans only top-level .jar files in the supplied directories; nested provider discovery is deferred to Slice 2.",
-                "The existing dependency resolver records matching native mod IDs, not provider JAR/version provenance. A native ID match is only a provider candidate; installed version ranges and API compatibility are not verified.",
+                "Installed provider discovery records top-level and nested archive paths, mod IDs, and declared versions. A provider ID/version match does not establish API or behavioral compatibility; installed version ranges and API compatibility are not verified.",
+                "Maven-style version ranges with numeric dotted versions are evaluated conservatively. Qualified or otherwise unsupported version strings remain explicitly unverified.",
                 "Target class/member verification, shim behavior checks, translated-resource comparison, and runtime feedback are later analyzer slices."
         );
 
@@ -317,7 +321,7 @@ public final class Forge1201PreflightAnalyzer {
                 archiveEntries.size(), archiveEntries, resourceNamespaces.stream().toList(), manifest,
                 mixinCandidates, coreModClass, jarInJarPaths.stream().toList(), classCount, entrypoints,
                 packageReferences, apiTypes, methodReferences, fieldReferences, methodCallSites, fieldCallSites,
-                observedNativeIds, limitations);
+                observedNativeIds, limitations, archiveGraph);
     }
 
     public static String toJson(PreflightResult result) {
@@ -370,8 +374,59 @@ public final class Forge1201PreflightAnalyzer {
             out.append("  ").append(candidate.path()).append(" (").append(candidate.discoveredBy()).append(")\n");
         }
         out.append("Jar-in-Jar archive paths: ")
-                .append(result.jarInJarPaths().isEmpty() ? "none" : String.join(", ", result.jarInJarPaths())).append('\n')
-                .append("\nBytecode: ").append(result.classCount()).append(" classes scanned\n")
+                .append(result.jarInJarPaths().isEmpty() ? "none" : String.join(", ", result.jarInJarPaths())).append('\n');
+        Forge1201ArchiveGraph.Result graph = result.archiveGraph();
+        out.append("\nNested / embedded archives (").append(graph.archives().size()).append("):\n");
+        if (graph.archives().isEmpty()) out.append("  none discovered\n");
+        for (Forge1201ArchiveGraph.ArchiveFinding archive : graph.archives()) {
+            out.append("  ").append(archive.archivePath()).append(" [").append(archive.kind()).append("]")
+                    .append(" depth=").append(archive.depth())
+                    .append(" size=").append(archive.sizeBytes());
+            if (archive.sha256() != null) out.append(" sha256=").append(archive.sha256());
+            if (!archive.mods().isEmpty()) {
+                out.append(" mods=").append(archive.mods().stream()
+                        .map(mod -> mod.modId() + "@" + mod.version()).toList());
+            }
+            out.append('\n');
+            archive.warnings().forEach(warning -> out.append("    warning: ").append(warning).append('\n'));
+        }
+        out.append("\nInstalled / embedded providers (").append(graph.providers().size()).append("):\n");
+        if (graph.providers().isEmpty()) out.append("  none discovered\n");
+        for (Forge1201ArchiveGraph.ProviderFinding provider : graph.providers()) {
+            out.append("  ").append(provider.modId()).append(" ").append(provider.version())
+                    .append(" [").append(provider.providerKind()).append(", ").append(provider.loaderKind())
+                    .append("] at ").append(provider.archivePath()).append('\n');
+        }
+        out.append("\nDependency graph edges (").append(graph.dependencyEdges().size()).append("):\n");
+        if (graph.dependencyEdges().isEmpty()) out.append("  none parsed\n");
+        for (Forge1201ArchiveGraph.DependencyEdge edge : graph.dependencyEdges()) {
+            out.append("  ").append(edge.declaringArchivePath()).append(" :: ")
+                    .append(edge.declaringModId()).append(" -> ").append(edge.dependencyModId())
+                    .append(" ").append(edge.versionRange())
+                    .append(edge.mandatory() ? " [required" : " [optional")
+                    .append(", ").append(edge.ordering()).append(", ").append(edge.side())
+                    .append("] ").append(edge.status())
+                    .append(" provider-range=").append(edge.providerRangeStatus());
+            if (!edge.providerArchivePaths().isEmpty()) {
+                out.append(" providers=").append(edge.providerArchivePaths())
+                        .append(" versions=").append(edge.providerVersions());
+            }
+            out.append('\n');
+        }
+        out.append("\nTarget Minecraft range checks (").append(graph.targetRangeFindings().size()).append("):\n");
+        if (graph.targetRangeFindings().isEmpty()) out.append("  no Minecraft dependency ranges parsed\n");
+        for (Forge1201ArchiveGraph.TargetRangeFinding finding : graph.targetRangeFindings()) {
+            out.append("  ").append(finding.declaringArchivePath()).append(" :: ")
+                    .append(finding.declaringModId()).append(" declares ")
+                    .append(finding.declaredRange()).append(" for ").append(finding.dependencyModId())
+                    .append("; target ").append(finding.targetVersion()).append(": ")
+                    .append(finding.status()).append(" — ").append(finding.explanation()).append('\n');
+        }
+        if (!graph.warnings().isEmpty()) {
+            out.append("\nArchive graph warnings:\n");
+            graph.warnings().forEach(warning -> out.append("  - ").append(warning).append('\n'));
+        }
+        out.append("\nBytecode: ").append(result.classCount()).append(" classes scanned\n")
                 .append("Mod entrypoints: ")
                 .append(result.modEntrypoints().isEmpty() ? "none detected" : String.join(", ", result.modEntrypoints()))
                 .append('\n')
