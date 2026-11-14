@@ -411,6 +411,8 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             if (!nestedForge1201Mods.isEmpty()) {
                 LOG.info("Legacy Connector: Forge 1.20.1 facade event routing includes nested mod IDs: {}", nestedForge1201Mods);
             }
+            Path coremodHooks = cacheDir.resolve("coremod-hooks-1.7.10.txt");
+            System.setProperty("legacyconnector.coremodHooks", coremodHooks.toString());
             // One coremod class loader per API flavour (1.7.10; 1.6.4 and 1.5.2), loaded on the first class of a jar that uses it.
             var coremods = new java.util.EnumMap<LegacyVersion, org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers>(LegacyVersion.class);
             transformer.patcher((jar, name, bytes) -> {
@@ -422,6 +424,11 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                     if (transformers == null) {
                         transformers = org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers.load(loading, cacheDir, gameDir, side, runtimeJar, api);
                         coremods.put(api, transformers);
+                        // Coremods' hooks in Minecraft's own classes: listed once per translation for the run time (CoremodSites)
+                        if (api == LegacyVersion.V1_7_10 && !transformers.isEmpty()) {
+                            Path vanilla = org.kylepitcock.legacyconnector.loader.transform.VanillaJar1710.find(gameDir, LibraryBridges.readConfig(modsDir));
+                            if (vanilla != null) org.kylepitcock.legacyconnector.loader.transform.CoremodHookScan.write(transformers, vanilla, coremodHooks);
+                        }
                     }
                     return transformers.apply(name, bytes);
                 }
@@ -436,6 +443,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             java.util.Set<Path> ownerKeeping = new java.util.HashSet<>(); // 1.4.7 jars: Forestry (and Binnie's mods) look their own jar up by file
             Set<Path> keep = new HashSet<>(libraryKeep);
             if (runtimeJar != null) keep.add(runtimeJar);
+            keep.add(coremodHooks);
             for (LegacyVersion api : List.of(LegacyVersion.V1_7_10, LegacyVersion.V1_6_4)) {
                 keep.add(cacheDir.resolve(org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers.apiJarName(api)));
             }
