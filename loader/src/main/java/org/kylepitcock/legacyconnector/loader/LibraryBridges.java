@@ -133,6 +133,13 @@ public final class LibraryBridges {
         return !"false".equalsIgnoreCase(readConfig(modsDir).getProperty("experimental.forge1201.softlink", "true").trim());
     }
 
+    private static volatile Set<String> lastModern = Set.of();
+
+    /** Modern mod ids of the mods folder seen by the last {@link #active} call, whatever the 1.20.1 setting. */
+    public static Set<String> seenModernIds() {
+        return lastModern;
+    }
+
     /** Modern mod ids of the mods folder seen by the last {@link #active} call. */
     public static Set<String> installedModernIds() {
         return installedModern;
@@ -162,6 +169,11 @@ public final class LibraryBridges {
         return other != null ? other : legacyId;
     }
 
+    /** Lower-case ids of the engine-only mods that are never loaded: a dependency on one of them counts as satisfied. */
+    public static Set<String> obsoleteIds() {
+        return OBSOLETE.keySet();
+    }
+
     /** Why a legacy jar is obsolete on 1.21.1 (all its mods are on the list) or switched off by the pack maker, or null. */
     public static String obsoleteReason(LegacyJar jar) {
         if (!jar.hasMods()) return null;
@@ -189,6 +201,7 @@ public final class LibraryBridges {
     public static List<Bridge> active(Path modsDir) {
         Set<String> modern = modernModIds(modsDir);
         installedModern = forge1201On(modsDir) ? modern : Set.of();
+        lastModern = modern;
         Properties config = readConfig(modsDir);
         applyUserConfig(config);
         String forced = System.getProperty("legacyconnector.bridges", "").toLowerCase(Locale.ROOT);

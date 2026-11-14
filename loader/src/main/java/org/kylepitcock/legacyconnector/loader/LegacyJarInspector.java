@@ -758,7 +758,7 @@ public final class LegacyJarInspector {
                 if (list == null || !list.isJsonArray()) continue;
                 for (JsonElement id : list.getAsJsonArray()) {
                     if (!id.isJsonPrimitive()) continue;
-                    extra.append(key.equals("dependants") ? ";before:" : ";after:").append(id.getAsString());
+                    extra.append(key.equals("dependants") ? ";before:" : key.equals("requiredMods") ? ";required-after:" : ";after:").append(id.getAsString());
                 }
             }
             if (!extra.isEmpty()) decl.dependencies = (decl.dependencies == null ? "" : decl.dependencies) + extra;
