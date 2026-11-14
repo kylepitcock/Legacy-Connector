@@ -23,6 +23,18 @@ public abstract class LivingEntityTravelMixin {
                 : org.kylepitcock.legacyconnector.v1_7_10.compat.fiskheroes.FiskHeroesHooks.moveEntityWithHeading(self, travel)) ci.cancel();
     }
 
+    /**
+     * Coremod hook site (generic, {@code CoremodSites.Client.SPRINT}): 1.7.10 coremods cancelled {@code EntityPlayerSP.setSprinting(true)} (no sprinting
+     * while a weapon is out). Only the local player on a client; the dist check keeps the client classes off a server.
+     */
+    @Inject(method = "setSprinting", at = @At("HEAD"), cancellable = true, require = 0)
+    private void legacyconnector$coremodSprint(boolean sprinting, CallbackInfo ci) {
+        if (sprinting && net.neoforged.fml.loading.FMLEnvironment.dist.isClient() && org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites.Client.SPRINT.listed()
+                && org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites.Client.sprintCancelled((LivingEntity) (Object) this, true)) {
+            ci.cancel();
+        }
+    }
+
     /** Coremod hook site (generic, {@code CoremodSites.SWING_TICKS}): the result of 1.7.10's {@code getArmSwingAnimationEnd}. */
     @Inject(method = "getCurrentSwingDuration", at = @At("RETURN"), cancellable = true, require = 0)
     private void legacyconnector$coremodSwingTicks(org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable<Integer> cir) {

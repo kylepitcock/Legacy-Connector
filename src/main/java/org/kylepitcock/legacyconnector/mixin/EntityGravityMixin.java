@@ -20,7 +20,18 @@ public abstract class EntityGravityMixin {
         Entity self = (Entity) (Object) this;
         double scaled = org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites.GRAVITY.listed() ? org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites.gravity(self, result)
                 : org.kylepitcock.legacyconnector.v1_7_10.compat.fiskheroes.FiskHeroesHooks.gravity(self, result);
+        // the constants themselves (hooks that stand in for 0.08, 0.04, 0.05)
+        if (org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites.gravityConstantListed()) scaled = org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites.gravityConstant(self, scaled);
         if (scaled != result) cir.setReturnValue(scaled);
+    }
+
+    /** Coremod hook site (generic, {@code CoremodSites.STEP_DISTANCE}): the length of a footstep (the 1 of {@code distance + 1} in 1.7.10's {@code moveEntity}). */
+    @Inject(method = "nextStep", at = @At("RETURN"), cancellable = true, require = 0)
+    private void legacyconnector$coremodStepDistance(CallbackInfoReturnable<Float> cir) {
+        if (!org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites.STEP_DISTANCE.listed()) return;
+        float next = cir.getReturnValueF();
+        float changed = org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites.stepDistance((Entity) (Object) this, next);
+        if (changed != next) cir.setReturnValue(changed);
     }
 
     /** Coremod hook site (generic, {@code CoremodSites.SPRINT_PARTICLES}): 1.7.10 coremods changed the sprint check of the particles in {@code onEntityUpdate}. */

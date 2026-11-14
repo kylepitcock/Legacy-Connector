@@ -40,7 +40,11 @@ public final class CoremodHookProbe {
         Path work = Path.of(args[2]);
         Files.createDirectories(work);
         List<LegacyJar> jars = new ArrayList<>();
-        for (int i = 3; i < args.length; i++) jars.add(LegacyJarInspector.inspect(Path.of(args[i])));
+        for (int i = 3; i < args.length; i++) {
+            LegacyJar jar = LegacyJarInspector.inspect(Path.of(args[i]));
+            if (jar != null) jars.add(jar);
+            else System.err.println("not a legacy mod jar, skipped: " + args[i]);
+        }
         LegacyCoreModTransformers transformers = LegacyCoreModTransformers.load(jars, work, work, "CLIENT", null, LegacyCoreModTransformers.apiFor(jars.get(0).version));
         if (transformers.isEmpty()) {
             System.out.println("no coremod class transformers in these jars");
