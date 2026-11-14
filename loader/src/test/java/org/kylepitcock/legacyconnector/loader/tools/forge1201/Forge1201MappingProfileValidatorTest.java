@@ -274,8 +274,10 @@ final class Forge1201MappingProfileValidatorTest {
                     "status":"VERIFIED",
                     "reviewEvidence":["reviewed source-to-target evidence"]
                   }%s],
-                "\"status\":\"UNMODELED_UNLESS_EXPLICITLY_SUPPLIED\""
-                "\"status\":\"ENABLED\"");
+                  "runtimeRemapping":{
+                    "status":"UNMODELED_UNLESS_EXPLICITLY_SUPPLIED"
+                  },
+                  "licenseReview":{
                     "required":true,
                     "evidence":["fixture profile-level license review"]
                   }
