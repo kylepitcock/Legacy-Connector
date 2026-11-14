@@ -78,8 +78,8 @@ final class Forge1201MappingProfileValidatorTest {
         assertFalse(checksumFinding.artifacts().getFirst().actualUpstreamChecksum()
                 .equalsIgnoreCase(checksumFinding.artifacts().getFirst().upstreamChecksum().substring(5)));
 
-        String pendingLicense = validProfile().replace("\\"reviewStatus\\":\\"REVIEWED\\"",
-                "\\"reviewStatus\\":\\"PENDING\\"");
+        String pendingLicense = validProfile().replace("\"reviewStatus\":\"REVIEWED\"",
+                "\"reviewStatus\":\"PENDING\"");
         var licenseFinding = Forge1201MappingProfileValidator.inspect(writeProfile(pendingLicense));
         assertEquals(Forge1201MappingProfileValidator.ProfileStatus.PROFILE_LICENSE_REVIEW_REQUIRED,
                 licenseFinding.status());
