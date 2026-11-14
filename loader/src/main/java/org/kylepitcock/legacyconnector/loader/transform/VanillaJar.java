@@ -19,28 +19,47 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Finds the original Minecraft 1.7.10 client jar, which {@link CoremodHookScan} shows to legacy coremods. Legacy Connector does not ship Minecraft's code:
- * the jar is taken from where a launcher keeps it, from {@code .legacyconnector/vanilla/client-1.7.10.jar}, from the path in {@code coremods.vanillaJar},
- * or (only with {@code coremods.downloadVanilla=true}) downloaded once from Mojang's own server. Only the exact official file is accepted (SHA-1).
+ * Finds the original Minecraft client jar of a legacy version, which {@link CoremodHookScan} shows to legacy coremods. Legacy Connector does not ship
+ * Minecraft's code: the jar is taken from where a launcher keeps it, from {@code .legacyconnector/vanilla/client-<version>.jar}, from the path in
+ * {@code coremods.vanillaJar} (a jar, or a folder of {@code client-<version>.jar} / {@code <version>.jar} files), or (only with
+ * {@code coremods.downloadVanilla=true}) downloaded once from Mojang's own server. Only the exact official file is accepted (SHA-1).
  */
-public final class VanillaJar1710 {
+public final class VanillaJar {
     private static final Logger LOG = LoggerFactory.getLogger("Legacy Connector");
-    private static final String SHA1 = "e80d9b3bf5085002218d4be59e668bac718abbc6";
-    private static final String URL = "https://piston-data.mojang.com/v1/objects/" + SHA1 + "/client.jar";
+    /** The official client jars (Mojang's version manifest). */
+    private static final java.util.Map<String, String> SHA1S = java.util.Map.of(
+            "1.12.2", "0f275bc1547d01fa5f56ba34bdc87d981ee12daf",
+            "1.7.10", "e80d9b3bf5085002218d4be59e668bac718abbc6",
+            "1.6.4", "1703704407101cf72bd88e68579e3696ce733ecd",
+            "1.5.2", "465378c9dc2f779ae1d6e8046ebc46fb53a57968",
+            "1.4.7", "53ed4b9d5c358ecfff2d8b846b4427b888287028");
 
-    private VanillaJar1710() {}
+    private VanillaJar() {}
 
-    /** The jar, or null (after one log line saying how to provide it). */
-    public static Path find(Path gameDir, Properties config) {
-        Path own = gameDir.resolve(".legacyconnector").resolve("vanilla").resolve("client-1.7.10.jar");
+    /** Whether the client jar of this Minecraft version is known. */
+    public static boolean knows(String mc) {
+        return SHA1S.containsKey(mc);
+    }
+
+    /** The jar of Minecraft {@code mc}, or null (after one log line saying how to provide it). */
+    public static Path find(Path gameDir, Properties config, String mc) {
+        final String SHA1 = SHA1S.get(mc);
+        if (SHA1 == null) return null;
+        final String URL = "https://piston-data.mojang.com/v1/objects/" + SHA1 + "/client.jar";
+        Path own = gameDir.resolve(".legacyconnector").resolve("vanilla").resolve("client-" + mc + ".jar");
         List<Path> candidates = new ArrayList<>();
-        String configured = System.getProperty("legacyconnector.vanilla1710", config.getProperty("coremods.vanillaJar", "")).trim();
-        if (!configured.isEmpty()) candidates.add(Path.of(configured));
+        String configured = System.getProperty("legacyconnector.vanilla" + mc.replace(".", ""), config.getProperty("coremods.vanillaJar", "")).trim();
+        if (!configured.isEmpty()) {
+            Path given = Path.of(configured);
+            candidates.add(given);
+            candidates.add(given.resolve("client-" + mc + ".jar"));
+            candidates.add(given.resolve(mc + ".jar"));
+        }
         candidates.add(own);
         String home = System.getProperty("user.home", "");
         String appData = System.getenv("APPDATA");
-        String version = "versions/1.7.10/1.7.10.jar";
-        String library = "libraries/com/mojang/minecraft/1.7.10/minecraft-1.7.10-client.jar";
+        String version = "versions/" + mc + "/" + mc + ".jar";
+        String library = "libraries/com/mojang/minecraft/" + mc + "/minecraft-" + mc + "-client.jar";
         if (appData != null) {
             candidates.add(Path.of(appData, ".minecraft", version));
             candidates.add(Path.of(appData, "PrismLauncher", library));
@@ -58,7 +77,7 @@ public final class VanillaJar1710 {
         for (int i = 0; i < 3 && root != null; i++) root = root.getParent();
         if (root != null) candidates.add(root.resolve(library));
         Path parent = gameDir.toAbsolutePath().normalize().getParent();
-        if (parent != null) candidates.add(parent.resolve("build/devtools/mcp/client1710.jar")); // a development run
+        if (parent != null) candidates.add(parent.resolve("build/devtools/mcp/client" + mc.replace(".", "") + ".jar")); // a development run
         for (Path p : candidates) {
             try {
                 if (Files.isRegularFile(p) && SHA1.equals(sha1(p))) return p;
@@ -75,19 +94,19 @@ public final class VanillaJar1710 {
                         HttpResponse.BodyHandlers.ofFile(part));
                 if (response.statusCode() == 200 && SHA1.equals(sha1(part))) {
                     Files.move(part, own, StandardCopyOption.REPLACE_EXISTING);
-                    LOG.info("Legacy Connector: downloaded the Minecraft 1.7.10 client jar from Mojang to {} (coremods.downloadVanilla)", own);
+                    LOG.info("Legacy Connector: downloaded the Minecraft {} client jar from Mojang to {} (coremods.downloadVanilla)", mc, own);
                     return own;
                 }
                 Files.deleteIfExists(part);
-                LOG.warn("Legacy Connector: the Minecraft 1.7.10 client jar could not be downloaded (HTTP {} or a wrong checksum)", response.statusCode());
+                LOG.warn("Legacy Connector: the Minecraft {} client jar could not be downloaded (HTTP {} or a wrong checksum)", mc, response.statusCode());
             } catch (IOException | RuntimeException e) {
-                LOG.warn("Legacy Connector: the Minecraft 1.7.10 client jar could not be downloaded: {}", e.toString());
+                LOG.warn("Legacy Connector: the Minecraft {} client jar could not be downloaded: {}", mc, e.toString());
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
         }
-        LOG.info("Legacy Connector: legacy coremods that patch Minecraft's own classes are present, but the original Minecraft 1.7.10 client jar was not found, so "
-                + "their hooks in Minecraft's code are not replayed. Install 1.7.10 once in your launcher, copy its jar to {}, or set coremods.downloadVanilla=true.", own);
+        LOG.info("Legacy Connector: legacy coremods that patch Minecraft's own classes are present, but the original Minecraft {} client jar was not found, so "
+                + "their hooks in Minecraft's code are not replayed. Install {} once in your launcher, copy its jar to {}, or set coremods.downloadVanilla=true.", mc, mc, own);
         return null;
     }
 

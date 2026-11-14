@@ -23,8 +23,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The hooks the coremods of a mod set put into Minecraft 1.7.10's own classes. Those classes do not exist at run time, so the transformers are shown the
- * original ones (the 1.7.10 client jar, {@link VanillaJar1710}) once, when the mod set is translated: first under the obfuscated name, as LaunchWrapper did
+ * The hooks the coremods of a mod set put into the own classes of their Minecraft version (1.7.10; 1.6.4, 1.5.2 and 1.4.7 the same way). Those classes do not exist at run time, so the transformers are shown the
+ * original ones (that version's client jar, {@link VanillaJar}) once, when the mod set is translated: first under the obfuscated name, as LaunchWrapper did
  * before FML's deobfuscation; when a transformer leaves that alone, in SRG names, as a transformer sorted after the deobfuscation saw it. What they add is
  * read off by {@link CoremodHookDiscovery} and written to a list the run time replays on the modern game ({@code CoremodSites}).
  *
@@ -39,8 +39,8 @@ public final class CoremodHookScan {
     public record Change(String transformer, String className, boolean obfuscated, ClassNode before, ClassNode after) {}
 
     /** Every change the transformers make to the classes of {@code vanillaJar}. */
-    public static List<Change> changes(LegacyCoreModTransformers transformers, Path vanillaJar) throws IOException {
-        NotchNames notch = NotchNames.get("1.7.10");
+    public static List<Change> changes(LegacyCoreModTransformers transformers, Path vanillaJar, String mc) throws IOException {
+        NotchNames notch = NotchNames.get(mc);
         Map<String, byte[]> vanilla = new TreeMap<>();
         Map<String, String[]> supers = new HashMap<>();
         try (ZipFile zip = new ZipFile(vanillaJar.toFile())) {
@@ -116,10 +116,10 @@ public final class CoremodHookScan {
      * Scans and writes the hook list ({@code site TAB owner TAB name TAB descriptor} per line); an empty list removes the file. Never throws: without the list
      * the mods load as before, without their hooks in Minecraft's classes.
      */
-    public static void write(LegacyCoreModTransformers transformers, Path vanillaJar, Path file) {
+    public static void write(LegacyCoreModTransformers transformers, Path vanillaJar, Path file, String mc) {
         try {
             long start = System.nanoTime();
-            List<Change> changes = changes(transformers, vanillaJar);
+            List<Change> changes = changes(transformers, vanillaJar, mc);
             List<CoremodHookDiscovery.Hook> hooks = hooks(changes);
             if (hooks.isEmpty()) {
                 Files.deleteIfExists(file);
@@ -131,8 +131,8 @@ public final class CoremodHookScan {
             }
             Files.createDirectories(file.getParent());
             Files.writeString(file, text, StandardCharsets.UTF_8);
-            LOG.info("Legacy Connector: legacy coremods put {} hook call(s) into {} of Minecraft 1.7.10's classes ({} ms); the run time replays the ones it has a place for",
-                    hooks.size(), changes.stream().map(Change::className).distinct().count(), (System.nanoTime() - start) / 1_000_000);
+            LOG.info("Legacy Connector: legacy coremods put {} hook call(s) into {} of Minecraft {}'s classes ({} ms); the run time replays the ones it has a place for",
+                    hooks.size(), changes.stream().map(Change::className).distinct().count(), mc, (System.nanoTime() - start) / 1_000_000);
         } catch (IOException | RuntimeException | LinkageError e) {
             LOG.warn("Legacy Connector: the hooks legacy coremods put into Minecraft's classes could not be listed: {}", e.toString());
             LOG.debug("Legacy Connector: coremod hook scan failure", e);
