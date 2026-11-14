@@ -1,6 +1,6 @@
 # BuildCraft 8.0.0 (1.12.2): every engine is an item; legacy code sees a barrel and a modern chest as item handlers and keeps modern items; a wooden pipe driven by a redstone engine moves items from a barrel into a chest
 mods: 1.12.2 buildcraft-all-8.0.0
-cmd /fill -6 148 -6 6 148 6 minecraft:stone
+cmd /fill -6 148 -6 14 148 6 minecraft:stone
 cmd /setblock 0 149 0 minecraft:barrel
 cmd /setblock 2 149 0 minecraft:chest
 cmd /tp @s 1.5 150.6 2.5
@@ -32,7 +32,17 @@ useat 1 149 1
 wait 40
 expect server facing=south :: (function(){var r="";server.executeBlocking(function(){var BP=Java.type("net.minecraft.core.BlockPos");var t=server.overworld().getBlockEntity(new BP(1,149,1)).legacy();r="server facing="+t.getCurrentFacing();});return r;})()
 expect client facing=south :: (function(){var BP=Java.type("net.minecraft.core.BlockPos");var be=mc.level.getBlockEntity(new BP(1,149,1));return "client facing="+(be==null||!be.legacy?"none":be.legacy().getCurrentFacing());})()
+# the wrench on the wooden pipe turns its extraction direction (the pipe finds the clicked part with its own ray trace: aim at it)
+cmd /tp @s 1.5 150.2 3.5
+look 180 38
+expect before=.* :: (function(){var r="";server.executeBlocking(function(){var BP=Java.type("net.minecraft.core.BlockPos");var pp=server.overworld().getBlockEntity(new BP(1,149,0)).legacy().getPipe();r="before="+pp.behaviour.writeToNbt();});Java.type("java.lang.System").setProperty("pipe0",r);return r;})()
+slot 2
+useat 1 149 0
+wait 20
+expect changed :: (function(){var r="";server.executeBlocking(function(){var BP=Java.type("net.minecraft.core.BlockPos");var pp=server.overworld().getBlockEntity(new BP(1,149,0)).legacy().getPipe();var now="before="+pp.behaviour.writeToNbt();r=(now==Java.type("java.lang.System").getProperty("pipe0")?"same ":"changed ")+now;});return r;})()
 # every engine type next to each other (the types the reporter saw mixed up): redstone (engine), stone, iron, creative
+# stand within reach of all four (the server refuses clicks beyond 5.5 blocks)
+cmd /tp @s 5.5 150.2 3.0
 cmd /give @s buildcraftcore:engine_1
 cmd /give @s buildcraftcore:engine_2
 cmd /give @s buildcraftcore:engine_3
@@ -50,3 +60,38 @@ wait 60
 shot bc8-engine-types
 logabsent Failed to load model buildcraft
 shot bc8-engines
+# (#259) the four engine types stand where they were put, each with its own tile class (client side too)
+expect t4=\w*Redstone\w* t5=\w*Stone\w* t6=\w*Iron\w* t7=\w*Creative\w* :: (function(){var BP=Java.type("net.minecraft.core.BlockPos");var o=[];for(var x=4;x<=7;x++){var be=mc.level.getBlockState(new BP(x,149,0)).getBlock()+"";var t=mc.level.getBlockEntity(new BP(x,149,0));o.push("t"+x+"="+(t==null||!t.legacy?"none:"+be:t.legacy().getClass().getSimpleName()));}return o.join(" ");})()
+cmd /clear @s
+cmd /give @s buildcraftcore:engine
+cmd /give @s buildcraftcore:engine_1
+cmd /give @s buildcraftcore:engine_2
+cmd /give @s buildcraftcore:engine_3
+slot 0
+wait 10
+shot bc8-item-wood
+slot 3
+wait 10
+shot bc8-item-creative
+slot 2
+wait 10
+shot bc8-item-iron
+# (#259) the item model of each engine type: the textures its quads use must be the engine's own (wood/stone/iron/creative/rf)
+expect engine=.*wood.*engine_1=.*stone.*engine_2=.*iron.*engine_3=.*creative :: (function(){var R=Java.type("net.minecraft.core.registries.BuiltInRegistries");var RL=Java.type("net.minecraft.resources.ResourceLocation");var RS=Java.type("net.minecraft.util.RandomSource");var IS=Java.type("net.minecraft.world.item.ItemStack");var o=[];["engine","engine_1","engine_2","engine_3"].forEach(function(n){var it=R.ITEM.get(RL.parse("buildcraftcore:"+n));var m=mc.getItemRenderer().getModel(new IS(it),null,null,0);var seen={};var qs=m.getQuads(null,null,RS.create(0));for(var i=0;i<qs.size();i++){seen[String(qs.get(i).getSprite().contents().name())]=1;}var s=[];for(var k in seen)s.push(k);o.push(n+"="+s.join(","));});return o.join(" ");})()
+# (#259) the wrench turns a vanilla block without a GUI (BuildCraft's rotation handler for stairs; hoppers and dispensers open their GUI first, as in 1.12)
+cmd /give @s buildcraftcore:wrench
+cmd /setblock 9 149 0 minecraft:oak_stairs[facing=east]
+slot 4
+useat 9 149 0
+wait 20
+expect stairs=(?!east)\w+ :: (function(){var BP=Java.type("net.minecraft.core.BlockPos");var s=mc.level.getBlockState(new BP(9,149,0));return "stairs="+s.getValue(s.getBlock().getStateDefinition().getProperty("facing"));})()
+# (#259) the quarry's mining box: BuildCraft clamps the bottom to y=0 itself when mining depth reaches below the world, so a depth that stays inside the modern world (-64) must give a bottom below 0
+cmd /clear @s
+cmd /give @s buildcraftbuilders:quarry
+cmd /tp @s 0.5 150.2 2.5
+look 180 30
+slot 0
+useat -1 148 4
+wait 20
+expect quarry_default=0 .*deep=-\d+ :: (function(){var S=Java.type("java.lang.System");var prev=S.getProperty("qres");if(prev!=null)return prev;var r="";server.executeBlocking(function(){try{var BP=Java.type("net.minecraft.core.BlockPos");var Cl=Java.type("java.lang.Class");var cl=Java.type("java.lang.Thread").currentThread().getContextClassLoader();var cfg=Cl.forName("buildcraft.core.BCCoreConfig",true,cl);var f=cfg.getField("miningMaxDepth");var l=server.overworld();function bottom(pos){var t=l.getBlockEntity(pos).legacy();var mf=t.getClass().getDeclaredField("miningBox");mf.setAccessible(true);return mf.get(t).min().getY();}var def=f.getInt(null);var q1=bottom(new BP(-1,149,4));l.removeBlockEntity(new BP(-1,149,4));l.setBlockAndUpdate(new BP(-1,149,4),Java.type("net.minecraft.world.level.block.Blocks").AIR.defaultBlockState());f.setInt(null,200);var p=server.getPlayerList().getPlayers().get(0);var st=p.getInventory().getItem(0).copy();var pos=new BP(-1,148,4);var BHR=Java.type("net.minecraft.world.phys.BlockHitResult");var V3=Java.type("net.minecraft.world.phys.Vec3");var Dir=Java.type("net.minecraft.core.Direction");var UOC=Java.type("net.minecraft.world.item.context.UseOnContext");var Hand=Java.type("net.minecraft.world.InteractionHand");st.getItem().useOn(new UOC(l,p,Hand.MAIN_HAND,st,new BHR(V3.atCenterOf(pos),Dir.UP,pos,false)));var q2=bottom(new BP(-1,149,4));f.setInt(null,def);r="quarry_default="+q1+" (depth "+def+") deep="+q2+" (depth 200)";}catch(e){r="error "+e;}});S.setProperty("qres",r);return r;})()
+shot bc8-quarry
