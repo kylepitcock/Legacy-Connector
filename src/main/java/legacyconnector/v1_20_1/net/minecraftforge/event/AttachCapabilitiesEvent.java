@@ -19,6 +19,18 @@ public class AttachCapabilitiesEvent<T> extends Event {
         this.object = object;
     }
 
+    private Class<?> type;
+
+    /** Forge's constructor: the generic type (what the event is for) and the object; mods fire the event themselves for their own objects. */
+    public AttachCapabilitiesEvent(Class<?> type, T object) {
+        this(object);
+        this.type = type;
+    }
+
+    public Class<?> getGenericType() {
+        return type != null ? type : object == null ? Object.class : object.getClass();
+    }
+
     public T getObject() {
         return object;
     }

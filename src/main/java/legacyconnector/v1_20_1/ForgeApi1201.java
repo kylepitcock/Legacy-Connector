@@ -155,6 +155,11 @@ public final class ForgeApi1201 {
                 registerEachMethod(bus, target);
                 return;
             }
+            // Forge also registered the @SubscribeEvent methods a superclass declares (Cyclops Core mods extend ModBase); NeoForge refuses the object
+            if (message != null && message.contains("however its supertype")) {
+                registerEachMethod(bus, target);
+                return;
+            }
             if (e.getMessage() == null || !e.getMessage().contains("no @SubscribeEvent methods")) throw e;
             if (e.getMessage() == null) throw e;
             if (e.getMessage().contains("no @SubscribeEvent methods")) return;
@@ -190,7 +195,9 @@ public final class ForgeApi1201 {
     private static void registerEachMethod(net.neoforged.bus.api.IEventBus bus, Object target) {
         boolean isClass = target instanceof Class<?>;
         Class<?> type = isClass ? (Class<?>) target : target.getClass();
-        for (java.lang.reflect.Method m : type.getMethods()) {
+        java.util.List<java.lang.reflect.Method> all = new java.util.ArrayList<>();
+        for (Class<?> c = type; c != null && c != Object.class; c = c.getSuperclass()) all.addAll(java.util.Arrays.asList(c.getDeclaredMethods()));
+        for (java.lang.reflect.Method m : all) {
             net.neoforged.bus.api.SubscribeEvent sub = m.getAnnotation(net.neoforged.bus.api.SubscribeEvent.class);
             if (sub == null || m.getParameterCount() != 1 || java.lang.reflect.Modifier.isStatic(m.getModifiers()) == isClass == false && isClass) continue;
             if (!net.neoforged.bus.api.Event.class.isAssignableFrom(m.getParameterTypes()[0])) continue;

@@ -56,6 +56,23 @@ public final class RoundCompat {
         return defaultedView(() -> registry, registry.key(), registry.key().location().getPath().equals("painting_variant") ? "kebab" : "empty");
     }
 
+    /**
+     * {@code IEnvironment.Keys.NAMING} (a supplier of the launcher key that names the mappings, "srg" or "mcp"): gone in the newer ModLauncher. A key nobody ever
+     * sets is handed out, so a lookup finds no value (the mod then takes its non-development path), which is what a production game gives.
+     */
+    public static java.util.function.Supplier<?> launcherNamingKey() {
+        return () -> {
+            try {
+                Class<?> launcher = Class.forName("cpw.mods.modlauncher.Launcher");
+                Object board = launcher.getMethod("blackboard").invoke(launcher.getField("INSTANCE").get(null));
+                Class<?> map = Class.forName("cpw.mods.modlauncher.api.TypesafeMap");
+                return Class.forName("cpw.mods.modlauncher.api.TypesafeMap$Key").getMethod("getOrCreate", map, String.class, Class.class).invoke(null, board, "legacyconnector.naming", String.class);
+            } catch (ReflectiveOperationException e) {
+                throw new IllegalStateException(e);
+            }
+        };
+    }
+
     /** {@code BuiltInRegistries.PAINTING_VARIANT}: a data registry in 1.21.1 (no static field); read before a world exists, the view asks the registry on each call. */
     public static net.minecraft.core.DefaultedRegistry<?> paintingVariants() {
         return defaultedView(() -> MigrateContext.registries().registryOrThrow(net.minecraft.core.registries.Registries.PAINTING_VARIANT),

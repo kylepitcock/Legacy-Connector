@@ -372,3 +372,4 @@ net/minecraft/world/entity/animal/Parrot	TAME_FOOD	Ljava/util/Set;	-	none	RoundC
 net/minecraft/advancements/critereon/NbtPredicate	ANY	Lnet/minecraft/advancements/critereon/NbtPredicate;	-	none	PredicateCompat.nbtAny
 net/minecraft/advancements/critereon/StatePropertiesPredicate	ANY	Lnet/minecraft/advancements/critereon/StatePropertiesPredicate;	-	none	PredicateCompat.stateAny
 net/minecraft/advancements/critereon/EnchantmentPredicate	NONE	[Lnet/minecraft/advancements/critereon/EnchantmentPredicate;	-	none	PredicateCompat.enchantmentNone
+cpw/mods/modlauncher/api/IEnvironment$Keys	NAMING	Ljava/util/function/Supplier;	-	none	RoundCompat.launcherNamingKey
