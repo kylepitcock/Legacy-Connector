@@ -209,7 +209,7 @@ class PalladiumResourceCompat1201Test {
 
 
     @Test
-    void resolvesDiamondCreationSoundStringBeforeLevelPlaySoundOverloadResolution() {
+    void resolvesDiamondCreationSoundAndPreservesNativeSoundSourceBeforeLevelPlaySoundOverloadResolution() {
         Map<String, byte[]> resources = new HashMap<>();
         put(resources, PalladiumResourceCompat1201.ALIEN_EVO_DIAMOND_CREATION, """
                 function tickDiamondCreation(entity, soundId) {
@@ -221,11 +221,71 @@ class PalladiumResourceCompat1201Test {
         assertEquals(1, PalladiumResourceCompat1201.apply(resources));
         String migrated = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_DIAMOND_CREATION);
         assertTrue(migrated.contains("function getAlienEvoSoundEvent(soundId)"));
-        assertTrue(migrated.contains("getAlienEvoSoundEvent(\"alienevo:\" + soundId)"));
+        assertFalse(migrated.contains("function getAlienEvoSoundSource(soundSource)"));
+        assertTrue(migrated.contains(
+                "getAlienEvoSoundEvent(\"alienevo:\" + soundId), entity.getSoundSource()"));
         assertFalse(migrated.contains("\"alienevo:\" + soundId, entity.getSoundSource()"));
 
         assertEquals(0, PalladiumResourceCompat1201.apply(resources));
         assertEquals(migrated, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_DIAMOND_CREATION));
+    }
+
+    @Test
+    void fixesTheExactOmnitrixCycleCrashPathAndIsIdempotent() {
+        Map<String, byte[]> resources = new HashMap<>();
+        String path = "addon/alienevo/kubejs_scripts/omnitrix_cycle.js";
+        put(resources, path, """
+                function playCycleSound(entity, soundToPlay, pitch) {
+                    entity.level.playSound(
+                        null,
+                        entity.x,
+                        entity.y,
+                        entity.z,
+                        `alienevo:${soundToPlay}`,
+                        entity.getSoundSource(),
+                        0.7,
+                        pitch
+                    );
+                }
+                """);
+
+        assertEquals(1, PalladiumResourceCompat1201.apply(resources));
+        String migrated = get(resources, path);
+        assertTrue(migrated.contains("getAlienEvoSoundEvent(`alienevo:${soundToPlay}`)"));
+        assertTrue(migrated.contains("entity.getSoundSource()"));
+        assertFalse(migrated.contains("`alienevo:${soundToPlay}`, entity.getSoundSource()"));
+
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+        assertEquals(migrated, get(resources, path));
+    }
+
+    @Test
+    void adaptsStringSoundCategoriesAcrossAlienEvoServerScriptsButLeavesUiPlayerSoundsAlone() {
+        Map<String, byte[]> resources = new HashMap<>();
+        String fireAbsorbPath = "addon/alienevo/kubejs_scripts/fire_absorb.js";
+        put(resources, fireAbsorbPath, """
+                entity.level.playSound(null, x + 0.5, y + 0.5, z + 0.5,
+                        extinguishSound, "blocks", extinguishSoundVolume, extinguishSoundPitch);
+                """);
+        String hitPath = "data/alienevo/kubejs_scripts/hit.js";
+        put(resources, hitPath, """
+                event.level.playSound(null, entity.x, entity.y, entity.z,
+                        "minecraft:entity.frog.hurt", "ambient", 1, 1.5);
+                """);
+        String uiPath = "assets/alienevo/kubejs_scripts/power_ui.js";
+        put(resources, uiPath, "player.playSound('minecraft:ui.button.click', 0.33, 1.0);");
+
+        assertEquals(2, PalladiumResourceCompat1201.apply(resources));
+
+        String fireAbsorb = get(resources, fireAbsorbPath);
+        assertTrue(fireAbsorb.contains("getAlienEvoSoundEvent(extinguishSound)"));
+        assertTrue(fireAbsorb.contains("getAlienEvoSoundSource(\"blocks\")"));
+        String hit = get(resources, hitPath);
+        assertTrue(hit.contains("getAlienEvoSoundEvent(\"minecraft:entity.frog.hurt\")"));
+        assertTrue(hit.contains("getAlienEvoSoundSource(\"ambient\")"));
+        assertEquals("player.playSound('minecraft:ui.button.click', 0.33, 1.0);", get(resources, uiPath));
+
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
     }
 
     @Test
@@ -323,6 +383,12 @@ class PalladiumResourceCompat1201Test {
         assertTrue(level.contains("function giveAlienControl(playerName, server)"));
         assertTrue(level.contains("maxAllAliens(username, target.server)"));
         assertTrue(level.contains("giveAlienControl(username, target.server)"));
+
+        // This fixture intentionally contains only the scoreboard portion of stat_ability.js.
+        // The Attribute_Mod enum migration must leave unrelated partial script fixtures alone.
+        String statAbility = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_STAT_ABILITY);
+        assertEquals(2, occurrences(statAbility, "entity.server.scoreboard"));
+        assertFalse(statAbility.contains("legacyConnectorAttributeOperation"));
 
         String detransform = get(resources, "addon/alienevo/kubejs_scripts/detransform.js");
         assertTrue(detransform.contains("forNameOnly(String(playerUsername))"));
@@ -444,7 +510,7 @@ class PalladiumResourceCompat1201Test {
         String xp = get(resources, "data/alienevo/kubejs_scripts/xp.js");
         assertEquals(1, occurrences(xp, "player.server.scoreboard"));
         assertFalse(xp.contains("Utils.server"));
-        assertTrue(xp.contains("let player = source ? source.getEntity() : null;"));
+        assertTrue(xp.contains("let player = source ? source.getActual() : null;"));
         assertTrue(xp.contains("if (player && player.isPlayer()) {"));
         assertFalse(xp.contains("source.getPlayer()"));
         assertFalse(xp.contains("source.player"));
@@ -459,18 +525,81 @@ class PalladiumResourceCompat1201Test {
         assertEquals(0, PalladiumResourceCompat1201.apply(resources));
     }
 
+
+
+    @Test
+    void detransformRestoresWatchStateWhenNoCooldownRemainsAndIsIdempotent() {
+        Map<String, byte[]> resources = new HashMap<>();
+        put(resources, "addon/alienevo/kubejs_scripts/detransform.js", """
+                if (!hasMasterControl) {
+                    palladium.setProperty(entity, 'watch_state', "timeout");
+                }
+                if (!hasMasterControl) {
+                    let scoreboardManager = entity.server.scoreboard;
+                    let timerObjective = scoreboardManager.getObjective('AlienEvo.Timer');
+                    let playerTimerScore = scoreboardManager.getOrCreatePlayerScore(playerUsername, timerObjective);
+                    let currentTimerValue = playerTimerScore.getScore();
+                    entity.server.runCommandSilent(`execute as ${playerUsername} at @s run scoreboard players set @s AlienEvo.Timer ${Math.floor(currentTimerValue / 2)}`);
+                    entity.level.playSound(null, entity.x, entity.y, entity.z,
+                            `alienevo:${watchType}_detransform`, entity.getSoundSource(), 1.0, 1.0);
+                }
+                """);
+
+        assertEquals(1, PalladiumResourceCompat1201.apply(resources));
+        String detransform = get(resources, "addon/alienevo/kubejs_scripts/detransform.js");
+        assertTrue(detransform.contains("if (timerObjective != null) {"));
+        assertTrue(detransform.contains("if (currentTimerValue <= 1) {"));
+        assertTrue(detransform.contains(
+                "palladium.setProperty(entity, 'watch_state', \"default\");"));
+        assertTrue(detransform.contains("} else {"));
+        assertEquals(2, occurrences(detransform,
+                "palladium.setProperty(entity, 'watch_state', \"default\");"));
+        assertTrue(detransform.contains(
+                "Math.floor(currentTimerValue / 2)"));
+        assertFalse(detransform.contains("getScore()"));
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+    }
+
+    @Test
+    void rechargeClearsTheFinalOneTickCooldownAndIsIdempotent() {
+        Map<String, byte[]> resources = new HashMap<>();
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_RECHARGE, """
+                let currentTime = palladium.scoreboard.getScore(entity, TIMER_OBJECTIVE, 0);
+                if (currentTime > 1) {
+                    palladium.scoreboard.subtractScore(entity, TIMER_OBJECTIVE, RECHARGE_RATE);
+                    let newTime = palladium.scoreboard.getScore(entity, TIMER_OBJECTIVE, 0);
+                    if (newTime <= 1) {
+                        palladium.scoreboard.setScore(entity, TIMER_OBJECTIVE, 0);
+                        palladium.setProperty(entity, 'watch_state', "default");
+                    }
+                }
+                """);
+
+        assertEquals(1, PalladiumResourceCompat1201.apply(resources));
+        String recharge = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_RECHARGE);
+        assertTrue(recharge.contains("if (currentTime > 0) {"));
+        assertFalse(recharge.contains("if (currentTime > 1) {"));
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+    }
+
     @Test
     void migratesAlienEvoStatAbilityServerAccessAndIsIdempotent() {
         Map<String, byte[]> resources = new HashMap<>();
         put(resources, PalladiumResourceCompat1201.ALIEN_EVO_STAT_ABILITY, """
+                StartupEvents.registry('palladium:abilities', event => {
+                    event.create('alienevo:stat_ability')
+                        .addProperty("Attribute_Mod", "string", "addition", "addition , multiply_total , multiply_base");
+                });
                 .lastTick((entity, entry, holder, enabled) => {
                     const scoreboard = Utils.server.scoreboard;
                     const uuid = entry.getPropertyByName('UUID');
+                    const attribute_mod = entry.getPropertyByName('Attribute_Mod');
                     entity.removeAttribute(attribute, UUID);
                 });
                 .tick((entity, entry, holder, enabled) => {
                     const scoreboard = Utils.server.scoreboard;
                     const uuid = entry.getPropertyByName('UUID');
+                    const attribute_mod = entry.getPropertyByName('Attribute_Mod');
                     entity.modifyAttribute(attribute, UUID, (value / division), attribute_mod);
                 });
                 """);
@@ -486,6 +615,15 @@ class PalladiumResourceCompat1201Test {
         assertFalse(migrated.contains("entity.modifyAttribute(attribute, UUID,"));
         assertFalse(migrated.contains("entity.removeAttribute(attribute, uuid)"));
         assertFalse(migrated.contains("entity.modifyAttribute(attribute, uuid,"));
+        assertTrue(migrated.contains("function legacyConnectorAttributeOperation(operation)"));
+        assertTrue(migrated.contains("case \"addition\": return \"add_value\";"));
+        assertTrue(migrated.contains("case \"multiply_base\": return \"add_multiplied_base\";"));
+        assertTrue(migrated.contains("case \"multiply_total\": return \"add_multiplied_total\";"));
+        assertEquals(2, occurrences(migrated,
+                "const attribute_mod = legacyConnectorAttributeOperation(entry.getPropertyByName('Attribute_Mod'));"));
+        assertTrue(migrated.contains(
+                ".addProperty(\"Attribute_Mod\", \"string\", \"add_value\", \"add_value , add_multiplied_total , add_multiplied_base\")"));
+        assertFalse(migrated.contains("case \"addition\": return \"addition\";"));
         assertEquals(0, PalladiumResourceCompat1201.apply(resources));
         assertEquals(migrated, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_STAT_ABILITY));
 
@@ -676,6 +814,8 @@ class PalladiumResourceCompat1201Test {
     void removesObsoleteEditBoxTickCallAndFixesHexFilteringForAlienEvoPowerUi() {
         Map<String, byte[]> resources = new HashMap<>();
         put(resources, PalladiumResourceCompat1201.ALIEN_EVO_POWER_UI, """
+                nickTextBox.render(e.guiGraphics, mouseX, mouseY, e.partialTick);
+                nickTextBox.tick();
                 hexTextBox.render(e.guiGraphics, mouseX, mouseY, e.partialTick);
                 let currentTime = Date.now();
                 if (currentTime - lastTickTime >= TICK_INTERVAL) {
@@ -690,13 +830,102 @@ class PalladiumResourceCompat1201Test {
         assertEquals(1, PalladiumResourceCompat1201.apply(resources));
         String migrated = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_POWER_UI);
         assertTrue(migrated.contains("hexTextBox.render(e.guiGraphics, mouseX, mouseY, e.partialTick);"));
-        assertTrue(migrated.contains("EditBox input is ticked by the 1.21.1 screen; no manual tick() call."));
+        assertTrue(migrated.contains(
+                "Nickname EditBox input is ticked by the 1.21.1 screen; no manual tick() call."));
+        assertTrue(migrated.contains(
+                "HEX EditBox input is ticked by the 1.21.1 screen; no manual tick() call."));
+        assertEquals(1, occurrences(migrated,
+                "Nickname EditBox input is ticked by the 1.21.1 screen; no manual tick() call."));
+        assertEquals(1, occurrences(migrated,
+                "HEX EditBox input is ticked by the 1.21.1 screen; no manual tick() call."));
         assertFalse(migrated.contains("hexTextBox.tick()"));
+        assertFalse(migrated.contains("nickTextBox.tick()"));
         assertTrue(migrated.contains("rawTextboxValue.replaceAll(\"[^0-9A-Fa-f]\", \"\")"));
         assertTrue(migrated.contains("cleanedHexString.substring(0, 6)"));
         assertFalse(migrated.contains("rawTextboxValue.replace(/[^0-9A-Fa-f]/g"));
         assertEquals(0, PalladiumResourceCompat1201.apply(resources));
         assertEquals(migrated, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_POWER_UI));
+    }
+
+    @Test
+    void movesTemporaryCrystalBlockEventHandlersIntoKubeJsServerDataScripts() {
+        Map<String, byte[]> resources = new HashMap<>();
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_BLOCKS, """
+                event.create('alienevo:crystal_block')
+                    .blockEntity(blockEntity => {
+                        blockEntity.enableSync();
+                        blockEntity.serverTick(2500, 250, entity => {
+                            entity.level.destroyBlock(entity.blockPos, false)
+                        })
+                    });
+                event.create('alienevo:smooth_crystal_block')
+                    .blockEntity(blockEntity => {
+                        blockEntity.enableSync();
+                        blockEntity.serverTick(2500, 250, entity => {
+                            entity.level.destroyBlock(entity.blockPos, false)
+                        })
+                    });
+                """);
+
+        assertEquals(2, PalladiumResourceCompat1201.apply(resources));
+
+        String startupScript = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_BLOCKS);
+        assertEquals(2, occurrences(startupScript, "blockEntity.serverTicking();"));
+        assertEquals(2, occurrences(startupScript, "blockEntity.tickFrequency(2500);"));
+        assertEquals(2, occurrences(startupScript, "blockEntity.tickOffset(250);"));
+        assertFalse(startupScript.contains("blockEntity.serverTick("));
+        assertFalse(startupScript.contains("BlockEvents.blockEntityTick"));
+
+        String serverScript = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_SERVER_CRYSTAL_TICKS);
+        assertTrue(serverScript.startsWith(
+                "// Legacy Connector: Diamondhead temporary crystal expiry (SERVER script)"));
+        assertTrue(serverScript.contains(
+                "BlockEvents.blockEntityTick('alienevo:crystal_block', event => {"));
+        assertTrue(serverScript.contains(
+                "BlockEvents.blockEntityTick('alienevo:smooth_crystal_block', event => {"));
+        assertEquals(2, occurrences(serverScript, "event.level.destroyBlock(event.block.pos, false);"));
+
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+        assertEquals(startupScript, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_BLOCKS));
+        assertEquals(serverScript, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_SERVER_CRYSTAL_TICKS));
+    }
+
+
+    @Test
+    void guardsAfOmniAoeFireAgainstPalladiumMarkersAndNonLivingEntities() {
+        Map<String, byte[]> resources = new HashMap<>();
+        put(resources, PalladiumResourceCompat1201.AFOMNI_AOE_DAMAGE, """
+                StartupEvents.registry('palladium:abilities', (event) => {
+                    event.create('afomni:aoe_damage')
+                        .tick((entity, entry, holder, enabled) => {
+                            if (enabled) {
+                                for (let j = 0; j < targets.length; j++) {
+                                    if (targets[j] !== entity
+                                            && targets[j].type !== "minecraft:armor_stand"
+                                            && targets[j].type !== "palladium:suit_stand") {
+                                        entity.server.runCommandSilent("damage @s 3 minecraft:player_attack");
+                                        targets[j].setSecondsOnFire(firetick);
+                                    }
+                                }
+                            }
+                        });
+                });
+                """);
+
+        assertEquals(1, PalladiumResourceCompat1201.apply(resources));
+
+        String migrated = get(resources, PalladiumResourceCompat1201.AFOMNI_AOE_DAMAGE);
+        assertTrue(migrated.contains(
+                "const LivingEntity = Java.loadClass('net.minecraft.world.entity.LivingEntity');"));
+        assertTrue(migrated.contains(
+                "targets[j].type !== \"palladium:suit_stand\" && targets[j].type !== \"minecraft:marker\""));
+        assertTrue(migrated.contains(
+                "if (firetick > 0 && targets[j] instanceof LivingEntity) {"));
+        assertEquals(1, occurrences(migrated, "targets[j].setSecondsOnFire(firetick);"));
+        assertTrue(migrated.indexOf("if (firetick > 0 && targets[j] instanceof LivingEntity) {")
+                < migrated.indexOf("targets[j].setSecondsOnFire(firetick);"));
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+        assertEquals(migrated, get(resources, PalladiumResourceCompat1201.AFOMNI_AOE_DAMAGE));
     }
 
     @Test

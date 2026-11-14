@@ -21,10 +21,28 @@ final class PalladiumResourceCompat1201 {
             "addon/alienevo/kubejs_scripts/transform.js";
     static final String ALIEN_EVO_POWER_UI =
             "assets/alienevo/kubejs_scripts/power_ui.js";
+    static final String ALIEN_EVO_BLOCKS =
+            "addon/alienevo/kubejs_scripts/blocks.js";
+    static final String ALIEN_EVO_SERVER_CRYSTAL_TICKS =
+            "data/alienevo/kubejs_scripts/legacyconnector/crystal_block_expiry.js";
+    static final String AFOMNI_AOE_DAMAGE =
+            "addon/afomni/kubejs_scripts/aoe_damage.js";
     static final String ALIEN_EVO_DIAMOND_CREATION =
             "addon/alienevo/kubejs_scripts/diamond_creation.js";
     static final String ALIEN_EVO_STAT_ABILITY =
             "addon/alienevo/kubejs_scripts/stat_ability.js";
+    private static final String LEGACY_ATTRIBUTE_OPERATION_HELPER = """
+            function legacyConnectorAttributeOperation(operation) {
+                const key = String(operation);
+                switch (key) {
+                    case "addition": return "add_value";
+                    case "multiply_base": return "add_multiplied_base";
+                    case "multiply_total": return "add_multiplied_total";
+                    default: return key;
+                }
+            }
+
+            """;
     static final String ALIEN_EVO_FAILSAFE =
             "data/alienevo/kubejs_scripts/failsafe.js";
     static final String ALIEN_EVO_SERVER_STUFF =
@@ -56,8 +74,14 @@ final class PalladiumResourceCompat1201 {
                     + "    }\n"
                     + "    return soundEvent;\n"
                     + "}\n\n";
+    static final String LEGACY_SOUND_SOURCE_HELPER =
+            "function getAlienEvoSoundSource(soundSource) {\n"
+                    + "    const AlienEvoSoundSource = Java.loadClass('net.minecraft.sounds.SoundSource');\n"
+                    + "    return AlienEvoSoundSource.valueOf(String(soundSource).toUpperCase());\n"
+                    + "}\n\n";
     private static final String ALIEN_EVO_CYCLE = "addon/alienevo/kubejs_scripts/cycle_sounds.js";
     private static final String ALIEN_EVO_DETRANSFORM = "addon/alienevo/kubejs_scripts/detransform.js";
+    static final String ALIEN_EVO_RECHARGE = "addon/alienevo/kubejs_scripts/recharge.js";
     private static final String ALIEN_EVO_FLATTEN = "addon/alienevo/kubejs_scripts/flatten.js";
     private static final String ALIEN_EVO_DECOUPLE = "addon/alienevo/kubejs_scripts/decouple.js";
     static final String ALIEN_EVO_CORE_REMOVAL = "addon/alienevo/kubejs_scripts/core_removal.js";
@@ -65,6 +89,8 @@ final class PalladiumResourceCompat1201 {
             "function ResourceLocation(namespaceOrLocation, path) {";
     private static final String SOUND_EVENT_HELPER_MARKER =
             "function getAlienEvoSoundEvent(soundId) {";
+    private static final String SOUND_SOURCE_HELPER_MARKER =
+            "function getAlienEvoSoundSource(soundSource) {";
 
     private static final String ALIEN_EVO_OBTAIN_SCROLL_ADVANCEMENT =
             "data/alienevo/advancements/obtain_scroll.json";
@@ -198,18 +224,22 @@ final class PalladiumResourceCompat1201 {
         rewrite(resources, ALIEN_EVO_POWER_UI, POWER_UI_TAB_COMPARISONS);
         rewritePowerUiEntityPreview(resources);
         rewritePowerUiEditBoxTick(resources);
+        rewriteAlienEvoTemporaryCrystalBlockTicks(resources);
+        rewriteAfOmniAoeDamageMarkerGuard(resources);
         rewriteDiamondShardTexture(resources);
         rewriteAfOmniParticleTextureReferences(resources);
         rewriteGeckoLibAnimationFileNames(resources);
         removeDuplicateMalformedGeckoLibAnimation(resources);
         addMissingAlienEvoMachineScrollTag(resources);
         rewriteLegacyScriptApis(resources);
-        rewriteDiamondCreationSound(resources);
+        rewriteAlienEvoLevelPlaySoundCalls(resources);
         rewriteScoreboardApi(resources);
         rewriteServerApiAccess(resources);
         rewriteOmnitrixPacketPlayerAccess(resources);
         rewriteOmnitrixPacketStringValues(resources);
         rewriteAlienEvoXpDeathPlayerAccess(resources);
+        rewriteAlienEvoRechargeCooldown(resources);
+        rewriteAlienEvoStatAbilityOperation(resources);
         // Both ScriptableAbility callbacks receive the active entity; KubeJS 7 no longer exposes Utils.server.
         rewrite(resources, ALIEN_EVO_STAT_ABILITY, new String[][] {
                 {"Utils.server.scoreboard", "entity.server.scoreboard", "2"},
@@ -244,8 +274,13 @@ final class PalladiumResourceCompat1201 {
     private static int rewritePowerUiEditBoxTick(Map<String, byte[]> resources) {
         return rewrite(resources, ALIEN_EVO_POWER_UI, new String[][] {
                 {
+                        "nickTextBox.tick();",
+                        "/* Nickname EditBox input is ticked by the 1.21.1 screen; no manual tick() call. */",
+                        "1"
+                },
+                {
                         "hexTextBox.tick();",
-                        "/* EditBox input is ticked by the 1.21.1 screen; no manual tick() call. */",
+                        "/* HEX EditBox input is ticked by the 1.21.1 screen; no manual tick() call. */",
                         "1"
                 },
                 {
@@ -257,6 +292,161 @@ final class PalladiumResourceCompat1201 {
                         "1"
                 }
         });
+    }
+
+    /**
+     * KubeJS 1.20.1 allowed the server ticker callback to be attached while
+     * registering the block during STARTUP. KubeJS 7 separates ticker setup
+     * from the BlockEvents listener: the block builder remains in the addon
+     * STARTUP resource, while the event listener must be loaded as a SERVER
+     * script from data/<namespace>/kubejs_scripts.
+     *
+     * Preserve the original 2500/250 cadence and no-drop destruction behavior.
+     */
+    private static int rewriteAlienEvoTemporaryCrystalBlockTicks(Map<String, byte[]> resources) {
+        byte[] original = resources.get(ALIEN_EVO_BLOCKS);
+        if (original == null) return 0;
+
+        String script = new String(original, StandardCharsets.UTF_8);
+        String lineEnding = script.contains("\r\n") ? "\r\n" : "\n";
+        String serverScript = "// Legacy Connector: Diamondhead temporary crystal expiry (SERVER script)" + lineEnding
+                + "BlockEvents.blockEntityTick('alienevo:crystal_block', event => {" + lineEnding
+                + "    event.level.destroyBlock(event.block.pos, false);" + lineEnding
+                + "});" + lineEnding
+                + "BlockEvents.blockEntityTick('alienevo:smooth_crystal_block', event => {" + lineEnding
+                + "    event.level.destroyBlock(event.block.pos, false);" + lineEnding
+                + "});" + lineEnding;
+        byte[] serverBytes = serverScript.getBytes(StandardCharsets.UTF_8);
+        byte[] existingServerScript = resources.get(ALIEN_EVO_SERVER_CRYSTAL_TICKS);
+        if (existingServerScript != null && !java.util.Arrays.equals(existingServerScript, serverBytes)) {
+            throw new IllegalStateException(
+                    "AlienEvo already contains an unexpected server crystal-expiry script at "
+                            + ALIEN_EVO_SERVER_CRYSTAL_TICKS);
+        }
+
+        String legacyStart = "blockEntity.serverTick(2500, 250, entity => {";
+        String migratedOffset = "blockEntity.tickOffset(250);";
+        int legacyCount = occurrences(script, legacyStart);
+        int migratedCount = occurrences(script, migratedOffset);
+
+        if (legacyCount == 0 && migratedCount == 2) {
+            if (existingServerScript == null) {
+                resources.put(ALIEN_EVO_SERVER_CRYSTAL_TICKS, serverBytes);
+                return 1;
+            }
+            return 0;
+        }
+        if (legacyCount != 2 || migratedCount != 0
+                || script.contains("BlockEvents.blockEntityTick('alienevo:crystal_block'")
+                || script.contains("BlockEvents.blockEntityTick('alienevo:smooth_crystal_block'")) {
+            throw new IllegalStateException(
+                    "AlienEvo blocks.js has an unexpected temporary crystal tick migration shape: expected "
+                            + "two legacy serverTick calls, found " + legacyCount + " legacy and "
+                            + migratedCount + " migrated");
+        }
+
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(
+                "(?m)^([\\t ]*)blockEntity\\.serverTick\\(2500, 250, entity => \\{\\R"
+                        + "[\\t ]*entity\\.level\\.destroyBlock\\(entity\\.blockPos, false\\)\\R"
+                        + "[\\t ]*\\}\\)");
+        java.util.regex.Matcher matcher = pattern.matcher(script);
+        StringBuffer migrated = new StringBuffer();
+        int replacements = 0;
+        while (matcher.find()) {
+            String indent = matcher.group(1);
+            String replacement = indent + "blockEntity.serverTicking();" + lineEnding
+                    + indent + "blockEntity.tickFrequency(2500);" + lineEnding
+                    + indent + "blockEntity.tickOffset(250);";
+            matcher.appendReplacement(migrated, java.util.regex.Matcher.quoteReplacement(replacement));
+            replacements++;
+        }
+        matcher.appendTail(migrated);
+        if (replacements != 2) {
+            throw new IllegalStateException(
+                    "AlienEvo blocks.js expected two complete legacy temporary crystal callbacks, found "
+                            + replacements);
+        }
+
+        resources.put(ALIEN_EVO_BLOCKS, migrated.toString().getBytes(StandardCharsets.UTF_8));
+        if (existingServerScript == null) {
+            resources.put(ALIEN_EVO_SERVER_CRYSTAL_TICKS, serverBytes);
+            return 2;
+        }
+        return 1;
+    }
+
+    /**
+     * AFOMNI's shared AOE ability may include Palladium Marker entities in its
+     * target AABB. Markers are not LivingEntity instances and cannot receive
+     * setSecondsOnFire. Keep normal damage handling for the other supported
+     * targets, exclude internal marker entities, and apply fire only to living
+     * targets with a positive configured fire duration.
+     */
+    private static int rewriteAfOmniAoeDamageMarkerGuard(Map<String, byte[]> resources) {
+        byte[] original = resources.get(AFOMNI_AOE_DAMAGE);
+        if (original == null) return 0;
+
+        String script = new String(original, StandardCharsets.UTF_8);
+        String lineEnding = script.contains("\r\n") ? "\r\n" : "\n";
+        String header = "StartupEvents.registry('palladium:abilities', (event) => {";
+        String declaration = "    const LivingEntity = Java.loadClass('net.minecraft.world.entity.LivingEntity');";
+        String legacyFilter = "targets[j].type !== \"palladium:suit_stand\") {";
+        String migratedFilter =
+                "targets[j].type !== \"palladium:suit_stand\" && targets[j].type !== \"minecraft:marker\") {";
+        String fireGuard = "if (firetick > 0 && targets[j] instanceof LivingEntity) {";
+
+        int headerCount = occurrences(script, header);
+        int declarationCount = occurrences(script, declaration);
+        int legacyFilterCount = occurrences(script, legacyFilter);
+        int migratedFilterCount = occurrences(script, migratedFilter);
+        int fireCallCount = occurrences(script, "targets[j].setSecondsOnFire(firetick);");
+        int fireGuardCount = occurrences(script, fireGuard);
+
+        boolean alreadyMigrated = headerCount == 1 && declarationCount == 1
+                && legacyFilterCount == 0 && migratedFilterCount == 1
+                && fireCallCount == 1 && fireGuardCount == 1;
+        if (alreadyMigrated) return 0;
+
+        boolean legacyShape = headerCount == 1 && declarationCount == 0
+                && legacyFilterCount == 1 && migratedFilterCount == 0
+                && fireCallCount == 1 && fireGuardCount == 0;
+        if (!legacyShape) {
+            throw new IllegalStateException(
+                    "AFOMNI aoe_damage.js has an unexpected Marker/fire migration shape: "
+                            + "header=" + headerCount + ", LivingEntity declaration=" + declarationCount
+                            + ", legacy filter=" + legacyFilterCount + ", migrated filter=" + migratedFilterCount
+                            + ", setSecondsOnFire calls=" + fireCallCount + ", fire guards=" + fireGuardCount);
+        }
+
+        String migrated = script;
+        if (declarationCount == 0) {
+            migrated = migrated.replace(header, header + lineEnding + declaration);
+        }
+        migrated = migrated.replace(legacyFilter, migratedFilter);
+
+        java.util.regex.Pattern fireCallPattern = java.util.regex.Pattern.compile(
+                "(?m)^([\t ]*)targets\\[j\\]\\.setSecondsOnFire\\(firetick\\);\\R?");
+        java.util.regex.Matcher fireCallMatcher = fireCallPattern.matcher(migrated);
+        StringBuffer fireRewritten = new StringBuffer();
+        int fireCallReplacements = 0;
+        while (fireCallMatcher.find()) {
+            String indent = fireCallMatcher.group(1);
+            String replacement = indent + fireGuard + lineEnding
+                    + indent + "    targets[j].setSecondsOnFire(firetick);" + lineEnding
+                    + indent + "}" + lineEnding;
+            fireCallMatcher.appendReplacement(
+                    fireRewritten, java.util.regex.Matcher.quoteReplacement(replacement));
+            fireCallReplacements++;
+        }
+        fireCallMatcher.appendTail(fireRewritten);
+        if (fireCallReplacements != 1) {
+            throw new IllegalStateException(
+                    "AFOMNI aoe_damage.js expected one unguarded setSecondsOnFire call, found "
+                            + fireCallReplacements);
+        }
+
+        resources.put(AFOMNI_AOE_DAMAGE, fireRewritten.toString().getBytes(StandardCharsets.UTF_8));
+        return 1;
     }
 
     /** Fix AlienEvo's item model reference to the existing vanilla diamond-spike texture. */
@@ -571,57 +761,82 @@ final class PalladiumResourceCompat1201 {
 
 
     /**
-     * AlienEvo 1.1.3's diamond-creation ability still passes its legacy string
-     * sound ID to Level.playSound. In 1.21.1 Rhino sees both the Holder and
-     * SoundEvent overloads and cannot choose one. Resolve the ID to the
-     * registered SoundEvent first, just as the other AlienEvo ability scripts
-     * do. This is scoped to the inspected diamond_creation.js resource.
+     * AlienEvo 1.1.3 has 43 direct eight-argument Level.playSound calls in its
+     * server-side KubeJS scripts. In 1.21.1 Rhino sees both the Holder and
+     * SoundEvent overloads when the sound is passed as a JS string. Some scripts
+     * also pass the sound category as a string. Resolve both arguments to their
+     * exact Java enum/event types before overload selection. Keep the 3-argument
+     * client player.playSound helper calls untouched.
+     *
+     * @return number of distinct AlienEvo script resources changed
      */
-    private static int rewriteDiamondCreationSound(Map<String, byte[]> resources) {
-        byte[] original = resources.get(ALIEN_EVO_DIAMOND_CREATION);
-        if (original == null) return 0;
+    private static int rewriteAlienEvoLevelPlaySoundCalls(Map<String, byte[]> resources) {
+        int changed = 0;
+        for (Map.Entry<String, byte[]> entry : resources.entrySet()) {
+            if (!isAlienEvoKubeJsScript(entry.getKey())) continue;
 
-        String script = new String(original, StandardCharsets.UTF_8);
-        List<ScriptArgument> soundArguments = new java.util.ArrayList<>();
-        int searchFrom = 0;
-        while (true) {
-            int call = script.indexOf(".playSound(", searchFrom);
-            if (call < 0) break;
-            int open = call + ".playSound".length();
-            int close = matchingCallParen(script, open);
-            if (close < 0) {
-                throw new IllegalStateException(
-                        "AlienEvo diamond_creation.js has an unterminated Level.playSound call");
-            }
-
-            List<ScriptArgument> arguments = splitScriptArguments(script, open + 1, close);
-            if (arguments.size() == 8
-                    && "null".equals(script.substring(arguments.get(0).start(), arguments.get(0).end()).trim())) {
-                ScriptArgument sound = arguments.get(4);
-                String expression = script.substring(sound.start(), sound.end()).trim();
-                if (!expression.startsWith("getAlienEvoSoundEvent(")) {
-                    soundArguments.add(sound);
+            String path = entry.getKey();
+            String script = new String(entry.getValue(), StandardCharsets.UTF_8);
+            List<ScriptRewrite> rewrites = new java.util.ArrayList<>();
+            boolean needsSoundEventHelper = false;
+            boolean needsSoundSourceHelper = false;
+            int searchFrom = 0;
+            while (true) {
+                int call = script.indexOf(".playSound(", searchFrom);
+                if (call < 0) break;
+                int open = call + ".playSound".length();
+                int close = matchingCallParen(script, open);
+                if (close < 0) {
+                    throw new IllegalStateException(
+                            "AlienEvo resource " + path + " has an unterminated playSound call");
                 }
+
+                List<ScriptArgument> arguments = splitScriptArguments(script, open + 1, close);
+                if (arguments.size() == 8
+                        && "null".equals(script.substring(arguments.get(0).start(), arguments.get(0).end()).trim())) {
+                    ScriptArgument sound = arguments.get(4);
+                    String soundExpression = script.substring(sound.start(), sound.end()).trim();
+                    if (!soundExpression.startsWith("getAlienEvoSoundEvent(")) {
+                        rewrites.add(new ScriptRewrite(sound.start(), sound.end(), "getAlienEvoSoundEvent"));
+                        needsSoundEventHelper = true;
+                    }
+
+                    ScriptArgument source = arguments.get(5);
+                    String sourceExpression = script.substring(source.start(), source.end()).trim();
+                    boolean stringSoundSource = sourceExpression.startsWith("'")
+                            || sourceExpression.startsWith("\"")
+                            || (!sourceExpression.isEmpty() && sourceExpression.charAt(0) == 96);
+                    if (stringSoundSource && !sourceExpression.startsWith("getAlienEvoSoundSource(")) {
+                        rewrites.add(new ScriptRewrite(source.start(), source.end(), "getAlienEvoSoundSource"));
+                        needsSoundSourceHelper = true;
+                    }
+                }
+                searchFrom = close + 1;
             }
-            searchFrom = close + 1;
-        }
 
-        if (soundArguments.isEmpty()) return 0;
+            if (rewrites.isEmpty()) continue;
 
-        String migrated = script;
-        for (int i = soundArguments.size() - 1; i >= 0; i--) {
-            ScriptArgument range = soundArguments.get(i);
-            String expression = migrated.substring(range.start(), range.end()).trim();
-            migrated = migrated.substring(0, range.start())
-                    + "getAlienEvoSoundEvent(" + expression + ")"
-                    + migrated.substring(range.end());
+            // Apply argument replacements from right to left so original offsets remain valid.
+            rewrites.sort((left, right) -> Integer.compare(right.start(), left.start()));
+            String migrated = script;
+            for (ScriptRewrite rewrite : rewrites) {
+                String expression = migrated.substring(rewrite.start(), rewrite.end()).trim();
+                migrated = migrated.substring(0, rewrite.start())
+                        + rewrite.helperName() + "(" + expression + ")"
+                        + migrated.substring(rewrite.end());
+            }
+            if (needsSoundEventHelper) migrated = addSoundEventHelper(migrated);
+            if (needsSoundSourceHelper) migrated = addSoundSourceHelper(migrated);
+            if (!migrated.equals(script)) {
+                entry.setValue(migrated.getBytes(StandardCharsets.UTF_8));
+                changed++;
+            }
         }
-        migrated = addSoundEventHelper(migrated);
-        resources.put(ALIEN_EVO_DIAMOND_CREATION, migrated.getBytes(StandardCharsets.UTF_8));
-        return 1;
+        return changed;
     }
 
     private record ScriptArgument(int start, int end) {}
+    private record ScriptRewrite(int start, int end, String helperName) {}
 
     private record PreviewInsertion(int offset, String followingSeparator) {}
 
@@ -877,9 +1092,9 @@ final class PalladiumResourceCompat1201 {
     }
 
     /**
-     * KubeJS 7's EntityEvents.death exposes event.source as a DamageSource.
-     * Its getEntity() returns the causing entity, and EntityKJS.isPlayer()
-     * identifies player attackers. DamageSource itself has no getPlayer()
+     * KubeJS 7 remaps DamageSource.getEntity() to the Rhino-visible getActual()
+     * method. Read the causing entity through that alias, then keep the player
+     * attribution guard so environmental deaths do not award attacker XP.
      * method; using it silently breaks AlienEvo's player-kill XP progression.
      */
     private static int rewriteAlienEvoXpDeathPlayerAccess(Map<String, byte[]> resources) {
@@ -891,9 +1106,79 @@ final class PalladiumResourceCompat1201 {
         String lineEnding = script.contains("\r\n") ? "\r\n" : "\n";
         String legacy = "if (source && source.player) {" + lineEnding
                 + "        let player = source.player;";
-        String migrated = "let player = source ? source.getEntity() : null;" + lineEnding
+        String migrated = "let player = source ? source.getActual() : null;" + lineEnding
                 + "    if (player && player.isPlayer()) {";
         return rewrite(resources, path, new String[][] {{legacy, migrated, "1"}});
+    }
+
+    /**
+     * AlienEvo's recharge callback skipped the final cooldown tick when the
+     * scoreboard reached exactly 1. The transform ability remains locked while
+     * AlienEvo.Timer is 1..3000, so that off-by-one leaves the Omnitrix disabled
+     * indefinitely. Permit the final decrement to clear a one-tick cooldown.
+     */
+    private static int rewriteAlienEvoRechargeCooldown(Map<String, byte[]> resources) {
+        return rewrite(resources, ALIEN_EVO_RECHARGE, new String[][] {{
+                "if (currentTime > 1) {", "if (currentTime > 0) {", "1"
+        }});
+    }
+
+    /**
+     * 1.20.1 AlienEvo stores AttributeModifier.Operation values using the old
+     * labels addition/multiply_base/multiply_total. Minecraft 1.21.1 renamed
+     * those enum constants to add_value/add_multiplied_base/add_multiplied_total.
+     * Normalize the property before passing it to KubeJS' Entity.modifyAttribute,
+     * otherwise Rhino rejects the old string while ticking a stat ability.
+     */
+    private static int rewriteAlienEvoStatAbilityOperation(Map<String, byte[]> resources) {
+        byte[] original = resources.get(ALIEN_EVO_STAT_ABILITY);
+        if (original == null) return 0;
+
+        String script = new String(original, StandardCharsets.UTF_8);
+        String legacyRead = "const attribute_mod = entry.getPropertyByName('Attribute_Mod');";
+        String migratedRead =
+                "const attribute_mod = legacyConnectorAttributeOperation(entry.getPropertyByName('Attribute_Mod'));";
+        int legacyReads = occurrences(script, legacyRead);
+        int migratedReads = occurrences(script, migratedRead);
+
+        String legacyDefault =
+                ".addProperty(\"Attribute_Mod\", \"string\", \"addition\", \"addition , multiply_total , multiply_base\")";
+        String migratedDefault =
+                ".addProperty(\"Attribute_Mod\", \"string\", \"add_value\", "
+                        + "\"add_value , add_multiplied_total , add_multiplied_base\")";
+        int legacyDefaults = occurrences(script, legacyDefault);
+        int migratedDefaults = occurrences(script, migratedDefault);
+        boolean helperPresent = script.contains("function legacyConnectorAttributeOperation(operation) {");
+
+        // Focused compatibility tests may include only the scoreboard portion of
+        // stat_ability.js. If this script excerpt has no Attribute_Mod operation
+        // markers at all, the operation migration is not relevant to this resource.
+        if (legacyReads == 0 && migratedReads == 0
+                && legacyDefaults == 0 && migratedDefaults == 0 && !helperPresent) {
+            return 0;
+        }
+        if (legacyReads == 0 && migratedReads == 2
+                && legacyDefaults == 0 && migratedDefaults == 1 && helperPresent) {
+            return 0;
+        }
+        if (legacyReads != 2 || migratedReads != 0
+                || legacyDefaults > 1 || migratedDefaults > 1
+                || (legacyDefaults == 0 && migratedDefaults != 0)
+                || (legacyDefaults == 1 && migratedDefaults != 0)) {
+            throw new IllegalStateException(
+                    "AlienEvo stat_ability.js has an unexpected Attribute_Mod operation migration shape: "
+                            + legacyReads + " legacy reads, " + migratedReads + " migrated reads, "
+                            + legacyDefaults + " legacy defaults, " + migratedDefaults + " migrated defaults");
+        }
+
+        String lineEnding = script.contains("\r\n") ? "\r\n" : "\n";
+        String migrated = script.replace(legacyRead, migratedRead);
+        if (legacyDefaults == 1) migrated = migrated.replace(legacyDefault, migratedDefault);
+        if (!helperPresent) {
+            migrated = LEGACY_ATTRIBUTE_OPERATION_HELPER.replace("\n", lineEnding) + migrated;
+        }
+        resources.put(ALIEN_EVO_STAT_ABILITY, migrated.getBytes(StandardCharsets.UTF_8));
+        return 1;
     }
 
     /** AlienEvo's flatten ability uses one optional Pehkui class at script load time; keep the script group loadable without Pehkui. */
@@ -925,7 +1210,10 @@ final class PalladiumResourceCompat1201 {
         String indent = script.substring(lineStart, declarationIndex);
         String lineEnding = declarationEnd > 0 && script.charAt(declarationEnd - 2) == '\r' ? "\r\n" : "\n";
         String guard = indent + "if (timerObjective != null) {";
-        if (script.startsWith(guard, declarationEnd)) return script;
+        String noCooldownMarker = indent + "    if (currentTimerValue <= 1) {";
+        String noObjectiveMarker = indent + "} else {" + lineEnding
+                + indent + "    palladium.setProperty(entity, 'watch_state', \"default\");";
+        if (script.contains(noCooldownMarker) && script.contains(noObjectiveMarker)) return script;
 
         String timerWrite = "entity.server.runCommandSilent(`execute as ${playerUsername} at @s run scoreboard players set @s AlienEvo.Timer ${Math.floor(currentTimerValue / 2)}`);";
         int timerWriteIndex = script.indexOf(timerWrite, declarationEnd);
@@ -935,11 +1223,43 @@ final class PalladiumResourceCompat1201 {
         int timerWriteEnd = script.indexOf('\n', timerWriteIndex);
         if (timerWriteEnd < 0) timerWriteEnd = script.length();
         else timerWriteEnd++;
+
+        String timerStatements = script.substring(declarationEnd, timerWriteEnd);
+        String indentedStatements = indentScriptBlock(timerStatements, indent, "    ");
+        String resetDefault = indent + "    palladium.setProperty(entity, 'watch_state', \"default\");";
+        String migratedBlock = guard + lineEnding
+                + indentedStatements
+                + indent + "    if (currentTimerValue <= 1) {" + lineEnding
+                + resetDefault + lineEnding
+                + indent + "    }" + lineEnding
+                + indent + "} else {" + lineEnding
+                + resetDefault + lineEnding
+                + indent + "}" + lineEnding;
+
         return script.substring(0, declarationEnd)
-                + guard + lineEnding
-                + script.substring(declarationEnd, timerWriteEnd)
-                + indent + "}" + lineEnding
+                + migratedBlock
                 + script.substring(timerWriteEnd);
+    }
+
+    /** Adds one indentation level to each nonblank line in a script block. */
+    private static String indentScriptBlock(String block, String baseIndent, String additionalIndent) {
+        StringBuilder indented = new StringBuilder(block.length() + 32);
+        int start = 0;
+        while (start < block.length()) {
+            int newline = block.indexOf('\n', start);
+            int end = newline < 0 ? block.length() : newline + 1;
+            String line = block.substring(start, end);
+            if (!line.isBlank() && line.startsWith(baseIndent)) {
+                indented.append(baseIndent).append(additionalIndent)
+                        .append(line.substring(baseIndent.length()));
+            } else if (!line.isBlank()) {
+                indented.append(additionalIndent).append(line);
+            } else {
+                indented.append(line);
+            }
+            start = end;
+        }
+        return indented.toString();
     }
 
     private static boolean isAlienEvoKubeJsScript(String path) {
@@ -961,6 +1281,11 @@ final class PalladiumResourceCompat1201 {
     private static String addSoundEventHelper(String script) {
         if (script.contains(SOUND_EVENT_HELPER_MARKER)) return script;
         return insertAfterOmnitrixIntegerHelper(script, LEGACY_SOUND_EVENT_HELPER);
+    }
+
+    private static String addSoundSourceHelper(String script) {
+        if (script.contains(SOUND_SOURCE_HELPER_MARKER)) return script;
+        return insertAfterOmnitrixIntegerHelper(script, LEGACY_SOUND_SOURCE_HELPER);
     }
 
     private static String replaceExactScriptOccurrence(
