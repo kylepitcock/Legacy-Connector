@@ -65,6 +65,9 @@ public final class Forge1201MappingProfileValidator {
             Set.of("artifactId", "provider", "version", "format", "coordinate", "url",
                     "sha256", "upstreamChecksum", "localPath", "license");
     private static final Set<String> LICENSE_FIELDS = Set.of("id", "reviewStatus", "evidence");
+    private static final Set<String> RUNTIME_REMAP_FIELDS =
+            Set.of("status", "remappingFileSha256", "sourceEnvironment", "targetEnvironment", "evidence");
+    private static final Set<String> PROFILE_LICENSE_FIELDS = Set.of("required", "evidence");
 
     private Forge1201MappingProfileValidator() {}
 
@@ -319,6 +322,8 @@ public final class Forge1201MappingProfileValidator {
             validateAugmentations(target, warnings);
         }
 
+        validateRuntimeRemapping(object.get("runtimeRemapping"), errors, warnings);
+        validateProfileLicenseReview(object.get("licenseReview"), errors, warnings);
         List<ArtifactFinding> artifacts = parseArtifacts(
                 object.get("artifacts"), absolute.getParent(), errors, warnings);
         Map<String, ArtifactFinding> artifactsById = new HashMap<>();
@@ -418,6 +423,68 @@ public final class Forge1201MappingProfileValidator {
     private static Finding empty(ProfileStatus status, String warning) {
         return new Finding(null, 0, null, null, null, null, status, null, null, null, null,
                 null, null, null, null, List.of(), List.of(), List.of(), List.of(), List.of(), List.of(warning));
+    }
+
+    private static void validateRuntimeRemapping(
+            JsonElement element, List<String> errors, List<String> warnings) {
+        JsonObject object = objectValue(element);
+        if (object == null) {
+            errors.add("Required object 'runtimeRemapping' is missing or invalid.");
+            return;
+        }
+        collectUnknownFields(object, RUNTIME_REMAP_FIELDS, "runtimeRemapping", warnings);
+        String status = requiredString(object, "status", "runtimeRemapping", errors);
+        if (status == null) return;
+        switch (status) {
+            case "UNMODELED_UNLESS_EXPLICITLY_SUPPLIED", "DISABLED" -> {
+                if (object.has("remappingFileSha256") || object.has("sourceEnvironment")
+                        || object.has("targetEnvironment")) {
+                    warnings.add("runtimeRemapping declares unused details while status is " + status + ".");
+                }
+            }
+            case "ENABLED" -> {
+                String digest = requiredString(object, "remappingFileSha256", "runtimeRemapping", errors);
+                if (digest != null && !digest.matches("(?i)[0-9a-f]{64}")) {
+                    errors.add("runtimeRemapping.remappingFileSha256 must be 64 hexadecimal characters.");
+                }
+                requiredString(object, "sourceEnvironment", "runtimeRemapping", errors);
+                requiredString(object, "targetEnvironment", "runtimeRemapping", errors);
+                List<String> evidence = stringArray(object.get("evidence"),
+                        "runtimeRemapping.evidence", errors, 128);
+                if (evidence.isEmpty()) errors.add("Enabled runtime remapping has no evidence.");
+                warnings.add("Runtime remapping is declared enabled but its behavior is not executed or simulated by preflight.");
+            }
+            default -> errors.add("Unsupported runtimeRemapping.status '" + status + "'.");
+        }
+    }
+
+    private static void validateProfileLicenseReview(
+            JsonElement element, List<String> errors, List<String> warnings) {
+        JsonObject object = objectValue(element);
+        if (object == null) {
+            errors.add("Required object 'licenseReview' is missing or invalid.");
+            return;
+        }
+        collectUnknownFields(object, PROFILE_LICENSE_FIELDS, "licenseReview", warnings);
+        JsonElement required = object.get("required");
+        if (required == null || !required.isJsonPrimitive()
+                || !required.getAsJsonPrimitive().isBoolean()) {
+            errors.add("licenseReview.required must be a boolean.");
+        } else if (!required.getAsBoolean()) {
+            warnings.add("Profile-level license review is marked not required; individual artifact license declarations are still mandatory.");
+        }
+        if (object.has("evidence")) {
+            List<String> evidence = stringArray(object.get("evidence"),
+                    "licenseReview.evidence", errors, 128);
+            if (Boolean.TRUE.equals(required != null && required.isJsonPrimitive()
+                    && required.getAsJsonPrimitive().isBoolean() ? required.getAsBoolean() : null)
+                    && evidence.isEmpty()) {
+                errors.add("Required profile-level license review has no evidence.");
+            }
+        } else if (Boolean.TRUE.equals(required != null && required.isJsonPrimitive()
+                && required.getAsJsonPrimitive().isBoolean() ? required.getAsBoolean() : null)) {
+            errors.add("licenseReview.evidence is required when profile-level review is required.");
+        }
     }
 
     private static void parseBindings(
