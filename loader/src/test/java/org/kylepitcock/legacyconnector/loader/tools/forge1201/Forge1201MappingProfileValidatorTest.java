@@ -117,12 +117,8 @@ final class Forge1201MappingProfileValidatorTest {
 
     @Test
     void keepsUnboundBaseTableVisibleAndDoesNotInventItsNamespace() throws Exception {
-        String profileJson = validProfile().replace("""
-                  "baseRefmapBinding":{
-                    "namespaceId":"minecraft:forge-srg@1.20.1",
-                    "evidence":["fixture source refmap build metadata"]
-                  },
-                """, "");
+        String profileJson = validProfile().replaceAll(
+                "(?s)\\s*\\"baseRefmapBinding\\"\\s*:\\s*\\{.*?\\},\\s*(?=\\})", "");
         Path profile = writeProfile(profileJson);
 
         var finding = Forge1201MappingProfileValidator.inspect(profile);
