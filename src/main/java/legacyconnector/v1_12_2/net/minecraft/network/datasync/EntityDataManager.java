@@ -60,13 +60,32 @@ public class EntityDataManager {
         return n;
     }
 
+    @SuppressWarnings("unchecked")
     public synchronized <T> void register(DataParameter<T> key, T value) {
         if (key instanceof org.kylepitcock.legacyconnector.v1_12_2.entity.VanillaDataKey1122<T> v && v.handles(entity)) return;
         int id = key.getId();
         if (id > 254) throw new IllegalArgumentException("Data value id is too big with " + id + "! (Max is 254)");
-        if (entries.containsKey(id)) throw new IllegalArgumentException("Duplicate id value for " + id + "!");
+        DataEntry<?> existing = entries.get(id);
+        // an entry made by an early read or write of a key not registered yet (a mod's own virtual method called from a superclass's
+        // entityInit): the registration that follows supplies its default, vanilla's order of registration is not reproduced exactly
+        if (existing != null && !existing.placeholder) throw new IllegalArgumentException("Duplicate id value for " + id + "!");
+        if (existing != null && existing.getValue() != null) value = (T) existing.getValue();
         entries.put(id, new DataEntry<>(key, value));
         empty = false;
+    }
+
+    /** The zero value of a serializer's type, null for types without an obvious one. */
+    @SuppressWarnings("unchecked")
+    private static <T> T defaultValue(DataSerializer<T> s) {
+        Object v = null;
+        if (s == DataSerializers.BYTE) v = (byte) 0;
+        else if (s == DataSerializers.VARINT) v = 0;
+        else if (s == DataSerializers.FLOAT) v = 0f;
+        else if (s == DataSerializers.STRING) v = "";
+        else if (s == DataSerializers.BOOLEAN) v = false;
+        else if (s == DataSerializers.ITEM_STACK) v = legacyconnector.v1_12_2.net.minecraft.item.ItemStack.EMPTY;
+        else if (s == DataSerializers.OPTIONAL_BLOCK_POS || s == DataSerializers.OPTIONAL_UNIQUE_ID || s == DataSerializers.OPTIONAL_BLOCK_STATE) v = java.util.Optional.empty();
+        return (T) v;
     }
 
     @SuppressWarnings("unchecked")
@@ -74,7 +93,10 @@ public class EntityDataManager {
         DataEntry<?> e = entries.get(key.getId());
         if (e == null) {
             // vanilla threw for unregistered keys; a mod reading a vanilla key the layer never registered gets a fresh entry
-            e = new DataEntry<>(key, null);
+            // read before the key's registration (a mod's superclass entityInit calling an overridable method that reads a subclass's key, as
+            // happens when it sizes the entity from its type): answer the type's default, the registration that follows replaces the entry
+            e = new DataEntry<>(key, defaultValue(key.getSerializer()));
+            e.placeholder = true;
             entries.put(key.getId(), e);
         }
         return (DataEntry<T>) e;
@@ -196,6 +218,8 @@ public class EntityDataManager {
         private final DataParameter<T> key;
         private T value;
         private boolean dirty;
+        /** Made by a read or write of a key that was not registered yet. */
+        boolean placeholder;
 
         public DataEntry(DataParameter<T> key, T value) {
             this.key = key;
