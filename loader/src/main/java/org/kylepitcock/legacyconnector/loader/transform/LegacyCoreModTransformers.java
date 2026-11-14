@@ -394,6 +394,29 @@ public final class LegacyCoreModTransformers {
         return current;
     }
 
+    /** What one transformer made of a Minecraft class it was shown. */
+    public interface VanillaResult {
+        void accept(String transformer, byte[] transformed);
+    }
+
+    /**
+     * Shows one of Minecraft's own classes to every transformer separately, as LaunchWrapper did ({@code name} is the name in the jar, {@code transformedName}
+     * the deobfuscated one), and reports each transformer that changed it. Nothing is kept: the game's classes are not present at run time, so this only tells
+     * which hooks a coremod puts where (see {@code CoremodHookDiscovery}).
+     */
+    public synchronized void applyToVanilla(String name, String transformedName, byte[] bytes, VanillaResult out) {
+        for (Transformer t : transformers) {
+            try {
+                byte[] next = (byte[]) transform.invoke(t.instance, name, transformedName, bytes.clone());
+                if (next != null && !java.util.Arrays.equals(next, bytes)) out.accept(t.name, next);
+            } catch (Throwable e) {
+                Throwable cause = cause(e);
+                int n = failures.merge(t.name + "#vanilla", 1, Integer::sum);
+                if (n <= 3) LOG.debug("Legacy Connector: class transformer {} failed on Minecraft's {}: {}", t.name, transformedName, cause.toString());
+            }
+        }
+    }
+
     /**
      * Legacy FML/Forge classes beyond the launch API, served from Legacy Connector's own shim with the relocation undone
      * ({@code legacyconnector/v1_7_10/cpw/mods/fml/common/DummyModContainer} as {@code cpw/mods/fml/common/DummyModContainer}).

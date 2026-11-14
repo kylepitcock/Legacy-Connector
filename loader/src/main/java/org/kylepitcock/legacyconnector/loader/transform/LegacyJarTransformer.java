@@ -370,6 +370,7 @@ public final class LegacyJarTransformer {
      * version whose SourceFile is the vanilla class's simple name.
      */
     static int dropBundledVanilla(Map<String, byte[]> classes, LegacyVersion version) {
+        if (!version.numericIds()) return 0; // 1.7.10 has a notch table too (CoremodHookScan), but its mods are in SRG names
         org.kylepitcock.legacyconnector.loader.mapping.NotchNames notch = org.kylepitcock.legacyconnector.loader.mapping.NotchNames.get(version.id());
         if (notch == null || notch.isEmpty()) return 0;
         int dropped = 0;

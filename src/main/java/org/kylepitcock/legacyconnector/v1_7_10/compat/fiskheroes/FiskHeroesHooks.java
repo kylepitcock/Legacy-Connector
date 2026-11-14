@@ -50,6 +50,7 @@ public final class FiskHeroesHooks {
      */
     private static void serverTick(net.minecraft.server.MinecraftServer server) {
         if (resolved && absent) return;
+        if (org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites.TICK_MILLIS.listed()) return; // replayed generically
         if (!ready() || tickrateMspt == null) return;
         try {
             long mspt = tickrateMspt.getLong(null);

@@ -65,7 +65,14 @@ public class ModelBiped extends ModelBase {
 
     @Override
     public void render(Entity entity, float limbSwing, float limbSwingAmount, float age, float headYaw, float headPitch, float scale) {
+        // 1.7.10 coremods hooked the start and the end of this method (CoremodSites)
+        if (org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites.Client.RENDER_PRE.active()) org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites.Client.RENDER_PRE.fire(this, entity, limbSwing, limbSwingAmount, age, headYaw, headPitch, scale);
         setRotationAngles(limbSwing, limbSwingAmount, age, headYaw, headPitch, scale, entity);
+        mcc$renderParts(scale);
+        if (org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites.Client.RENDER_POST.active()) org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites.Client.RENDER_POST.fire(this, entity, limbSwing, limbSwingAmount, age, headYaw, headPitch, scale);
+    }
+
+    private void mcc$renderParts(float scale) {
         if (isChild) {
             RenderContext.push();
             RenderContext.scale(0.75F, 0.75F, 0.75F);
@@ -95,7 +102,14 @@ public class ModelBiped extends ModelBase {
 
     @Override
     public void setRotationAngles(float limbSwing, float limbSwingAmount, float age, float headYaw, float headPitch, float scale, Entity entity) {
-        // Fisk's Heroes patched this method (its coremod cannot run here): hero poses are applied before and after the vanilla ones
+        // 1.7.10 coremods hooked the start and the end of this method (CoremodSites): poses applied before and after the vanilla ones
+        if (org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites.Client.ANGLES_PRE.listed() || org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites.Client.ANGLES_POST.listed()) {
+            if (org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites.Client.ANGLES_PRE.active()) org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites.Client.ANGLES_PRE.fire(this, entity, limbSwing, limbSwingAmount, age, headYaw, headPitch, scale);
+            mcc$vanillaAngles(limbSwing, limbSwingAmount, age, headYaw, headPitch, scale, entity);
+            if (org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites.Client.ANGLES_POST.active()) org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites.Client.ANGLES_POST.fire(this, entity, limbSwing, limbSwingAmount, age, headYaw, headPitch, scale);
+            return;
+        }
+        // without the hook list (no 1.7.10 client jar to read the coremods against), Fisk's Heroes' pose hooks are called directly
         final boolean heroPoses = org.kylepitcock.legacyconnector.v1_7_10.compat.fiskheroes.FiskHeroesHooks.poseHooks();
         if (heroPoses) org.kylepitcock.legacyconnector.v1_7_10.compat.fiskheroes.FiskHeroesHooks.setRotationAnglesPre(this, limbSwing, limbSwingAmount, age, headYaw, headPitch, scale, entity);
         mcc$vanillaAngles(limbSwing, limbSwingAmount, age, headYaw, headPitch, scale, entity);

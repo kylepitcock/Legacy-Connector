@@ -134,7 +134,7 @@ Per version, some items differ; the notes in brackets say where.
 - **Coremods that patch other mods** (CoFH, AE2, OpenMods and more) and **Scala mods** (1.7.10)
 - **Mod-specific libraries:** `@Config` classes are filled from their config files, `@ObjectHolder`, `@SidedProxy` and `@EventBusSubscriber` work (1.12.2)
 
-**Not supported:** coremods and tweakers that patch *Minecraft's own* classes. They're reported in the log, and the rest of the mod still loads. When a coremod only changes engine behaviour that has a modern equivalent, like Galacticraft's gravity, Legacy Connector recreates that behaviour instead. Engine and launcher patches (FastCraft, Hodgepodge, NEID and other ID extenders, FoamFix, BetterFPS, VanillaFix) are skipped on purpose, since they only make sense on the old engine.
+**Experimental:** coremods that patch *Minecraft's own* 1.7.10 classes (Fisk's Superheroes, Legends). Legacy Connector reads the hooks they insert into the original 1.7.10 classes and calls them from the matching places of the modern game (movement, gravity, healing, attacks, weather, player model poses and more); hooks without a modern counterpart yet do nothing, and the log says how many are replayed. This needs the original Minecraft 1.7.10 client jar, which is not shipped: it is found when 1.7.10 is installed in your launcher, or set `coremods.vanillaJar` / `coremods.downloadVanilla`. Without it the mods still load, without those hooks. Mods that replace Minecraft's classes wholesale (Better Than Wolves) cannot work. Engine and launcher patches (FastCraft, Hodgepodge, NEID and other ID extenders, FoamFix, BetterFPS, VanillaFix) are skipped on purpose, since they only make sense on the old engine.
 
 ### Modern replacements for outdated libraries
 
@@ -188,6 +188,8 @@ Settings are in `config/legacyconnector.properties`, which is created with comme
 | `villages.legacyBuildings` | `true` | Legacy mods' village buildings join the vanilla village pools; `false` leaves villages vanilla |
 | `legacyBiomeFrequency` | `1.0` | Scales how much land legacy mod biomes take in the overworld |
 | `events.skip` | empty | Legacy event handlers to switch off (`full.ClassName#method`), for tracking down one that misbehaves |
+| `coremods.vanillaJar` | empty | Path of the original Minecraft 1.7.10 client jar, when it is not where a launcher keeps it (used to replay legacy coremods' hooks in Minecraft's code) |
+| `coremods.downloadVanilla` | `false` | Download that jar once from Mojang when it is not found locally |
 
 All keys are on the [Configuration page](https://github.com/kylepitcock/Legacy-Connector/blob/master/docs/wiki/Configuration.md).
 
@@ -202,7 +204,7 @@ All keys are on the [Configuration page](https://github.com/kylepitcock/Legacy-C
 
 **Where do I put the mods?** Each legacy version has its own folder, see Installation above.
 
-**Will mod X work?** Check the compatibility site. After a launch, `logs/legacyconnector-report.txt` lists each legacy jar, what was detected, and any references that could not be translated or are only stubbed. Mods that only patch the old engine are skipped on purpose, and coremods that patch Minecraft's own classes are not supported.
+**Will mod X work?** Check the compatibility site. After a launch, `logs/legacyconnector-report.txt` lists each legacy jar, what was detected, and any references that could not be translated or are only stubbed. Mods that only patch the old engine are skipped on purpose, and coremods that patch Minecraft's own classes are only partly supported (see above).
 
 **Does it work on a dedicated server?** Yes. Legacy mods run on a dedicated server too; client-only mods are skipped there.
 
