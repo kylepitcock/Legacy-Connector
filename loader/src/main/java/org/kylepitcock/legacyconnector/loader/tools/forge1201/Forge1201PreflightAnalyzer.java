@@ -410,7 +410,7 @@ public final class Forge1201PreflightAnalyzer {
                 "Nested archive traversal is bounded by depth, archive count, per-archive size, and total inflated-byte limits. Class capture is bounded to 8 MiB per class, 16 MiB per nested archive, 128 MiB aggregate nested class bytes submitted, and 64 MiB aggregate outer class bytes. Archives/classes skipped by a limit or rejected as unsafe/corrupt remain explicit findings.",
                 "Mixin configs discovered by the manifest and outer-archive resource heuristics are parsed in the current preflight schema. Target-class presence is checked only when the root project's resolved target compile classpath is supplied; no 1.20.1-to-1.21.1 Minecraft class identity mapping is assumed.",
                 "Mixin analysis covers outer-archive configs, mixin class entries and internal owner names, static @Mixin targets, member annotations, six core Mixin 0.8.5 injector annotations, @Slice boundaries, bounded refmap tables, and owner-scoped exact correlation candidates for AP-emitted string references. A caller may explicitly supply a refmap context; otherwise base/context candidates are inventoried without selection. Plugins and custom wrappers remain inert and may make effective resource selection dynamic. No source/target namespace conversion, target selector/member/instruction resolution, slice ordering, handler stack validation, or runtime injection success is claimed. Source-nested JAR config/class provenance remains a future increment.",
-                "Schema 1.10 mapping profiles are parsed and structurally validated only when explicitly supplied. Profile validation checks declarations, context bindings, mapping-edge coverage/connectivity, artifact SHA-256, and license evidence; it never applies a mapping or rewrites selectors. A structurally validated profile is not proof of semantic mapping correctness or runtime compatibility.",
+                "Schema 1.10 mapping profiles are parsed and structurally validated only when explicitly supplied. Profile validation checks declarations, explicit context/base bindings, directed per-edge Minecraft-version continuity, complete selector symbol scope, bounded graph ambiguity, artifact SHA-256 and optional upstream checksums, and license evidence; it never loads mapping tables, applies a mapping, or rewrites selectors. A structurally validated profile is not proof of semantic mapping correctness or runtime compatibility.",
                 "Reflection/resource string candidates remain heuristic and are not treated as confirmed bytecode references.",
                 "Installed provider discovery records top-level and nested archive paths, mod IDs, and declared versions. A provider ID/version match does not establish API or behavioral compatibility; installed version ranges and API compatibility are not verified.",
                 "Maven-style version ranges with numeric dotted versions are evaluated conservatively. Qualified or otherwise unsupported version strings remain explicitly unverified.",
@@ -750,6 +750,10 @@ public final class Forge1201PreflightAnalyzer {
         if (profile.profileId() != null) out.append(" id=").append(profile.profileId());
         if (profile.profilePath() != null) out.append(" file=").append(profile.profilePath());
         out.append('\n');
+        if (profile.profileSha256() != null) {
+            out.append("  Profile SHA-256: ").append(profile.profileSha256())
+                    .append(" (").append(profile.profileSizeBytes()).append(" bytes)\n");
+        }
         out.append("  Source namespace: ").append(profile.sourceCompileNamespaceId())
                 .append(" (Minecraft ").append(profile.sourceMinecraftVersion()).append(")\n")
                 .append("  Target namespace: ").append(profile.targetCompileNamespaceId())
@@ -757,9 +761,33 @@ public final class Forge1201PreflightAnalyzer {
                 .append("  Context bindings: ").append(profile.contextBindings().size())
                 .append(" | artifacts: ").append(profile.artifacts().size())
                 .append(" | edges: ").append(profile.edges().size()).append('\n');
+        for (Forge1201MappingProfileValidator.ArtifactFinding artifact : profile.artifacts()) {
+            out.append("  Artifact ").append(artifact.artifactId()).append(" [").append(artifact.status())
+                    .append("] provider=").append(artifact.provider()).append('@').append(artifact.version())
+                    .append(" format=").append(artifact.format())
+                    .append(" sha256=").append(artifact.expectedSha256())
+                    .append(" actual=").append(artifact.actualSha256())
+                    .append(" upstream=").append(artifact.upstreamChecksum())
+                    .append(" upstreamActual=").append(artifact.actualUpstreamChecksum())
+                    .append(" license=").append(artifact.licenseId()).append('/')
+                    .append(artifact.licenseReviewStatus()).append('\n');
+            artifact.warnings().forEach(warning -> out.append("    warning: ").append(warning).append('\n'));
+        }
+        for (Forge1201MappingProfileValidator.EdgeFinding edge : profile.edges()) {
+            out.append("  Edge ").append(edge.edgeId()).append(" [").append(edge.status()).append("] ")
+                    .append(edge.fromNamespace()).append('@').append(edge.sourceMinecraftVersion())
+                    .append(" -> ").append(edge.toNamespace()).append('@').append(edge.targetMinecraftVersion())
+                    .append(" direction=").append(edge.direction())
+                    .append(" scope=").append(edge.scope())
+                    .append(" artifacts=").append(edge.artifactIds()).append('\n');
+            edge.warnings().forEach(warning -> out.append("    warning: ").append(warning).append('\n'));
+        }
         for (Forge1201MappingProfileValidator.ContextPathFinding path : profile.contextPaths()) {
             out.append("  Context ").append(path.contextKey()).append(": ")
-                    .append(path.status()).append(" (paths=").append(path.completePathCount()).append(")\n");
+                    .append(path.sourceNamespace()).append('@').append(path.sourceMinecraftVersion())
+                    .append(" -> ").append(path.targetNamespace()).append('@').append(path.targetMinecraftVersion())
+                    .append(" [").append(path.status()).append(", paths=").append(path.completePathCount())
+                    .append("]\n");
         }
         profile.validationErrors().forEach(value -> out.append("  error: ").append(value).append('\n'));
         profile.warnings().forEach(value -> out.append("  warning: ").append(value).append('\n'));
