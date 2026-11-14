@@ -489,7 +489,7 @@ public final class Forge1201IntermediaryBridgeAudit {
         json.append("\n    }\n");
         json.append("  },\n");
         json.append("  \"tinyRowCounts\": {\n");
-        field(json, "sourceClasses", Integer.toString(result.sourceTinyClassRows()), false);
+        field(json, "sourceClasses", Integer.toString(result.sourceTinyClassRows()), true);
         field(json, "sourceMethods", Integer.toString(result.sourceTinyMethodRows()), true);
         field(json, "sourceFields", Integer.toString(result.sourceTinyFieldRows()), true);
         field(json, "targetClasses", Integer.toString(result.targetTinyClassRows()), true);
@@ -499,7 +499,7 @@ public final class Forge1201IntermediaryBridgeAudit {
         json.append("  \"interpretation\": {\n");
         field(json, "sourceJoin",
                 quote("Methods join by obfuscated owner + obfuscated name + full JVM descriptor; fields join by obfuscated owner + obfuscated name."),
-                false);
+                true);
         field(json, "identity",
                 quote("A shared intermediary ID is a candidate identity link. Only unchanged owner + member ID + fully mapped descriptor is counted as structurally exact."),
                 true);
@@ -521,7 +521,7 @@ public final class Forge1201IntermediaryBridgeAudit {
             StringBuilder json, String artifactId, String provider, String version, String entry, Path path)
             throws IOException {
         json.append("    {\n");
-        field(json, "artifactId", quote(artifactId), false);
+        field(json, "artifactId", quote(artifactId), true);
         field(json, "provider", quote(provider), true);
         field(json, "version", quote(version), true);
         field(json, "entry", quote(entry), true);
@@ -532,7 +532,7 @@ public final class Forge1201IntermediaryBridgeAudit {
     }
 
     private static void appendClassCoverage(StringBuilder json, ClassCoverage coverage) {
-        field(json, "joinedRows", Integer.toString(coverage.joinedRows()), false);
+        field(json, "joinedRows", Integer.toString(coverage.joinedRows()), true);
         field(json, "sourceIntermediaryMappedRows", Integer.toString(coverage.sourceIntermediaryMappedRows()), true);
         field(json, "sourceUnmappedRows", Integer.toString(coverage.sourceUnmappedRows()), true);
         field(json, "targetSharedClassIds", Integer.toString(coverage.targetSharedClassIds()), true);
@@ -541,7 +541,7 @@ public final class Forge1201IntermediaryBridgeAudit {
     }
 
     private static void appendMemberCoverage(StringBuilder json, MemberCoverage coverage) {
-        field(json, "joinedRows", Integer.toString(coverage.joinedRows()), false);
+        field(json, "joinedRows", Integer.toString(coverage.joinedRows()), true);
         field(json, "sourceIntermediaryMappedRows", Integer.toString(coverage.sourceIntermediaryMappedRows()), true);
         field(json, "sourceUnmappedRows", Integer.toString(coverage.sourceUnmappedRows()), true);
         field(json, "ambiguousSourceRows", Integer.toString(coverage.ambiguousSourceRows()), true);
