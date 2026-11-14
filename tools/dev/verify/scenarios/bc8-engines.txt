@@ -1,4 +1,4 @@
-# BuildCraft 8.0.0 (1.12.2): every engine is an item; legacy code sees a barrel and a modern chest as item handlers and keeps modern items
+# BuildCraft 8.0.0 (1.12.2): every engine is an item; legacy code sees a barrel and a modern chest as item handlers and keeps modern items; a wooden pipe driven by a redstone engine moves items from a barrel into a chest
 mods: 1.12.2 buildcraft-all-8.0.0
 cmd /fill -6 148 -6 6 148 6 minecraft:stone
 cmd /setblock 0 149 0 minecraft:barrel
@@ -10,4 +10,43 @@ wait 40
 expect engine_3 :: (function(){var R=Java.type("net.minecraft.core.registries.BuiltInRegistries");var o=[];R.ITEM.keySet().forEach(function(k){var s=String(k);if(s.indexOf("engine")>=0)o.push(s);});return o.join(" ");})()
 expect slots=27.*slots=27 :: (function(){var r="";server.executeBlocking(function(){r=(function(){var BP=Java.type("net.minecraft.core.BlockPos");var V=Java.type("org.kylepitcock.legacyconnector.v1_12_2.bridge.TileViews1122");var W=Java.type("org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldBridge1122");var C=Java.type("legacyconnector.v1_12_2.net.minecraftforge.items.CapabilityItemHandler");var lvl=server.overworld();var o=[];[new BP(0,149,0),new BP(2,149,0)].forEach(function(p){var v=V.view(W.wrap(lvl),lvl.getBlockEntity(p));var h=v==null?null:v.getCapability(C.ITEM_HANDLER_CAPABILITY,null);o.push("slots="+(h==null?"none":h.getSlots())+" view="+v+" be="+lvl.getBlockEntity(p)+" st="+lvl.getBlockState(p));});return o.join(" ");})();});return r;})()
 expect legacy=minecraft:copper_ingot n=5 :: (function(){var S=Java.type("org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122");var I=Java.type("net.minecraft.world.item.Items");var s=new (Java.type("net.minecraft.world.item.ItemStack"))(I.COPPER_INGOT,5);var l=S.fromModern(s);var b=S.toModern(l);return "legacy="+l.getItem().getRegistryName()+" n="+l.getCount()+" back="+b;})()
+cmd /item replace block 0 149 0 container.0 with minecraft:cobblestone 32
+cmd /give @s buildcrafttransport:pipe_wood_item
+cmd /give @s buildcraftcore:engine
+cmd /give @s buildcraftcore:wrench
+slot 0
+useat 1 148 0
+slot 1
+useat 1 148 1
+cmd /setblock 2 149 1 minecraft:redstone_block
+wait 200
+expect pipe=TilePipeHolder.*conn W=true E=true|conn W=true E=true :: (function(){var r="";server.executeBlocking(function(){var BP=Java.type("net.minecraft.core.BlockPos");var l=server.overworld();var EF=Java.type("legacyconnector.v1_12_2.net.minecraft.util.EnumFacing");var pp=l.getBlockEntity(new BP(1,149,0)).legacy().getPipe();r="pipe=TilePipeHolder conn W="+pp.isConnected(EF.WEST)+" E="+pp.isConnected(EF.EAST);});return r;})()
+expect chest=[1-9] :: (function(){var r="";server.executeBlocking(function(){var BP=Java.type("net.minecraft.core.BlockPos");var l=server.overworld();var c=0;var be=l.getBlockEntity(new BP(2,149,0));for(var i=0;i<be.getContainerSize();i++)c+=be.getItem(i).getCount();r="chest="+c;});return r;})()
+# the wrench turns the engine to the next receiver (a second pipe on the other side): server and client agree
+cmd /give @s buildcrafttransport:pipe_wood_item
+slot 0
+useat 1 148 2
+wait 20
+slot 2
+useat 1 149 1
+wait 40
+expect server facing=south :: (function(){var r="";server.executeBlocking(function(){var BP=Java.type("net.minecraft.core.BlockPos");var t=server.overworld().getBlockEntity(new BP(1,149,1)).legacy();r="server facing="+t.getCurrentFacing();});return r;})()
+expect client facing=south :: (function(){var BP=Java.type("net.minecraft.core.BlockPos");var be=mc.level.getBlockEntity(new BP(1,149,1));return "client facing="+(be==null||!be.legacy?"none":be.legacy().getCurrentFacing());})()
+# every engine type next to each other (the types the reporter saw mixed up): redstone (engine), stone, iron, creative
+cmd /give @s buildcraftcore:engine_1
+cmd /give @s buildcraftcore:engine_2
+cmd /give @s buildcraftcore:engine_3
+slot 1
+useat 4 148 0
+slot 3
+useat 5 148 0
+slot 4
+useat 6 148 0
+slot 5
+useat 7 148 0
+cmd /tp @s 5.5 150.2 3.0
+look 180 35
+wait 60
+shot bc8-engine-types
+logabsent Failed to load model buildcraft
 shot bc8-engines

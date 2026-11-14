@@ -90,7 +90,7 @@ public final class TileViews1122 {
             }
             if (be instanceof net.minecraft.world.Container c) return new InventoryView(c);
             // a modern chest or machine that is no Container but offers an item handler: the view answers the item handler capability
-            if (ModernItems1122.offers(be)) return new ItemsTile(be);
+            if (ModernItems1122.offers(be) || ModernFluids1122.offers(be)) return new ItemsTile(be);
             // a modern machine without an inventory but with the energy capability: legacy generators and cables push into it
             if (ModernEnergy1122.offers(be)) return new ModernEnergy1122.EnergyTile(be);
         } catch (RuntimeException | LinkageError e) {
@@ -119,6 +119,7 @@ public final class TileViews1122 {
                 legacyconnector.v1_12_2.net.minecraft.util.EnumFacing facing) {
             if (capability == legacyconnector.v1_12_2.net.minecraftforge.items.CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) return ModernItems1122.modern(modern, facing) != null;
             if (capability == legacyconnector.v1_12_2.net.minecraftforge.energy.CapabilityEnergy.ENERGY) return ModernEnergy1122.modern(modern, facing) != null;
+            if (capability == legacyconnector.v1_12_2.net.minecraftforge.fluids.capability.CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY) return ModernFluids1122.modern(modern, facing) != null;
             return super.hasCapability(capability, facing);
         }
 
@@ -127,6 +128,8 @@ public final class TileViews1122 {
                 legacyconnector.v1_12_2.net.minecraft.util.EnumFacing facing) {
             T items = ModernItems1122.capability(modern, capability, facing);
             if (items != null) return items;
+            T fluids = ModernFluids1122.capability(modern, capability, facing);
+            if (fluids != null) return fluids;
             T energy = ModernEnergy1122.capability(modern, capability, facing);
             return energy != null ? energy : super.getCapability(capability, facing);
         }
@@ -185,6 +188,9 @@ public final class TileViews1122 {
                 if (capability == legacyconnector.v1_12_2.net.minecraftforge.items.CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
                     return ModernItems1122.modern(be, facing) != null || super.hasCapability(capability, facing);
                 }
+                if (capability == legacyconnector.v1_12_2.net.minecraftforge.fluids.capability.CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY) {
+                    return ModernFluids1122.modern(be, facing) != null;
+                }
             }
             return super.hasCapability(capability, facing);
         }
@@ -199,6 +205,8 @@ public final class TileViews1122 {
                 // the block entity's own handler of the side (a barrel, a modern mod's chest), else the whole inventory
                 T items = ModernItems1122.capability(be, capability, facing);
                 if (items != null) return items;
+                T fluids = ModernFluids1122.capability(be, capability, facing);
+                if (fluids != null) return fluids;
             }
             return super.getCapability(capability, facing);
         }

@@ -27,7 +27,9 @@ public final class StatesBridge1122 {
     public static Block legacyBlock(BlockState state) {
         if (state.getBlock() instanceof Legacy1122Block b) return b.legacy();
         IBlockState legacy = vanillaToLegacy(state);
-        return legacy != null ? legacy.getBlock() : Vanilla1122.legacyBlockOf(state.getBlock());
+        if (legacy != null) return legacy.getBlock();
+        Block vanilla = Vanilla1122.legacyBlockOf(state.getBlock());
+        return vanilla != null || state.isAir() ? vanilla : Vanilla1122.standInBlock(state.getBlock());
     }
 
     public static IBlockState toLegacy(BlockState state) {
@@ -41,6 +43,8 @@ public final class StatesBridge1122 {
         IBlockState legacy = vanillaToLegacy(state);
         if (legacy != null) return legacy;
         Block vanilla = Vanilla1122.legacyBlockOf(state.getBlock());
+        // a block 1.12.2 never had (a barrel, a modern mod's machine): its own stand-in, so legacy code does not see air where it stands
+        if (vanilla == null && !state.isAir()) vanilla = Vanilla1122.standInBlock(state.getBlock());
         return vanilla == null ? null : vanilla.getDefaultState();
     }
 

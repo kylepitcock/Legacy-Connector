@@ -215,6 +215,23 @@ public final class Vanilla1122 {
         return b;
     }
 
+    private static final Map<net.minecraft.world.level.block.Block, Block> STAND_IN_BLOCKS = new IdentityHashMap<>();
+
+    /**
+     * An unregistered legacy block standing for a modern block 1.12.2 never had (a barrel, a modern mod's block), mapping back to it: legacy code
+     * reads a solid block there instead of air. Never enters the legacy registries.
+     */
+    public static synchronized Block standInBlock(net.minecraft.world.level.block.Block modern) {
+        Block existing = STAND_IN_BLOCKS.get(modern);
+        if (existing != null) return existing;
+        ResourceLocation id = BuiltInRegistries.BLOCK.getKey(modern);
+        Block b = new VanillaBlock(Material.ROCK);
+        b.setRegistryName(id.getNamespace(), id.getPath());
+        b.mcc$modern = modern;
+        STAND_IN_BLOCKS.put(modern, b);
+        return b;
+    }
+
     /** A vanilla sound: the field name (BLOCK_STONE_BREAK) is the sound id with dots (block.stone.break), or underscores inside a word. */
     public static legacyconnector.v1_12_2.net.minecraft.util.SoundEvent sound(String field) {
         String[] words = field.toLowerCase(java.util.Locale.ROOT).split("_");
