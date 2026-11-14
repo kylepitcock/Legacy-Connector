@@ -18,15 +18,21 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
- * Build-local, read-only audit of a possible Forge 1.20.1 -> NeoForge 1.21.1
- * symbol-identity path through Fabric Intermediary.
+ * Build-local, read-only audit of vanilla symbol continuity from the MCPConfig
+ * 1.20.1 obfuscated namespace through Fabric Intermediary to 1.21.1 obfuscated names.
  *
  * <p>This class does not create a runtime remapping table and never rewrites a
- * selector. It joins MCPConfig's obfuscated source rows to the 1.20.1
- * official -> intermediary Tiny v1 file, then checks whether the resulting
- * intermediary class/member identities exist in 1.21.1 with the same owner
- * and descriptor. Any missing, moved, ambiguous, or descriptor-changed symbol
- * is reported separately.</p>
+ * selector. It joins the {@code obf} owner/member/descriptor columns in
+ * MCPConfig's TSRG2 file to the 1.20.1 Tiny v1 {@code official} namespace,
+ * then checks whether the resulting intermediary class/member identities exist
+ * in 1.21.1 with the same owner and descriptor. Missing, moved, ambiguous, or
+ * descriptor-changed symbols are reported separately.</p>
+ *
+ * <p>The TSRG2 {@code srg} column and SRG member identifiers are retained only
+ * as diagnostic metadata. This audit does not perform the Forge SRG selector
+ * -> official-obfuscated conversion needed by an actual legacy mod selector.
+ * It therefore measures candidate vanilla symbol continuity, not a complete
+ * Mixin selector migration path.</p>
  *
  * <p>SRG member names are not treated as globally unique symbol identities.
  * The join always includes the obfuscated owner and, for methods, the full
@@ -165,7 +171,7 @@ public final class Forge1201IntermediaryBridgeAudit {
         }
 
         System.out.printf(
-                "MCPConfig -> Fabric Intermediary 1.20.1: classes %d/%d, methods %d/%d, fields %d/%d%n",
+                "MCPConfig obfuscated -> Fabric Intermediary 1.20.1: classes %d/%d, methods %d/%d, fields %d/%d%n",
                 result.classes().sourceIntermediaryMappedRows(), result.classes().joinedRows(),
                 result.methods().sourceIntermediaryMappedRows(), result.methods().joinedRows(),
                 result.fields().sourceIntermediaryMappedRows(), result.fields().joinedRows());
@@ -466,9 +472,11 @@ public final class Forge1201IntermediaryBridgeAudit {
         field(json, "schemaVersion", "1", true);
         field(json, "sourceMinecraftVersion", quote("1.20.1"), true);
         field(json, "targetMinecraftVersion", quote("1.21.1"), true);
-        field(json, "sourceNamespace", quote("minecraft:forge-srg@1.20.1"), true);
+        field(json, "sourceNamespace", quote("minecraft:official-obfuscated@1.20.1"), true);
+        field(json, "sourceSrgMetadataNamespace", quote("minecraft:forge-srg@1.20.1"), true);
         field(json, "identityNamespace", quote("minecraft:fabric-intermediary"), true);
-        field(json, "targetIntermediateNamespace", quote("minecraft:official-obfuscated@1.21.1"), true);
+        field(json, "targetNamespace", quote("minecraft:official-obfuscated@1.21.1"), true);
+        field(json, "completeForgeSrgSelectorPath", "false", true);
         field(json, "status", quote("PARTIAL"), true);
         field(json, "selectorTransformationPerformed", "false", true);
         field(json, "runtimeMappingTableProduced", "false", true);
@@ -503,7 +511,13 @@ public final class Forge1201IntermediaryBridgeAudit {
         json.append("\n  },\n");
         json.append("  \"interpretation\": {\n");
         field(json, "sourceJoin",
-                quote("Methods join by obfuscated owner + obfuscated name + full JVM descriptor; fields join by obfuscated owner + obfuscated name."),
+                quote("Methods join by the MCPConfig obfuscated owner + obfuscated member name + full JVM descriptor; fields join by obfuscated owner + obfuscated member name."),
+                true);
+        field(json, "tsrgNamespaces",
+                quote("MCPConfig joined.tsrg header is obf/srg/id. This audit consumes its obf columns and uses SRG names/IDs only as diagnostic metadata."),
+                true);
+        field(json, "selectorPath",
+                quote("Forge SRG owner/member/descriptor selectors are not converted to the obfuscated input namespace by this audit. A complete SRG selector edge is still required."),
                 true);
         field(json, "identity",
                 quote("A shared intermediary ID is a candidate identity link. Only unchanged owner + member ID + fully mapped descriptor is counted as structurally exact."),
@@ -515,7 +529,7 @@ public final class Forge1201IntermediaryBridgeAudit {
                 quote("Descriptors containing any class absent from the version-specific intermediary class table are unresolved and are not counted as exact."),
                 true);
         field(json, "limits",
-                quote("This report ends at the target official-obfuscated namespace. Converting that namespace to NeoForge's Mojang-named runtime is a separate stage. Stable identity does not prove binary or gameplay compatibility."),
+                quote("This report ends at the target official-obfuscated namespace. Converting target names to NeoForge's Mojang-named runtime is a separate stage. Stable identity does not prove binary or gameplay compatibility."),
                 false);
         json.append("\n  }\n");
         json.append("}\n");
