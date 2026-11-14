@@ -205,6 +205,45 @@ public class GL11 extends GL11Guard {
     public static void glClipPlane(int plane, java.nio.DoubleBuffer equation) {
     }
 
+    /** Copies the framebuffer into the texture the mod bound (bindings live in the render context, not in GL: see RenderContext.bindCurrentTextureToGl). */
+    public static void glCopyTexSubImage2D(int target, int level, int xoffset, int yoffset, int x, int y, int width, int height) {
+        if (DisplayLists.recording() && DisplayLists.record(() -> glCopyTexSubImage2D(target, level, xoffset, yoffset, x, y, width, height))) return;
+        if (!RenderSystem.isOnRenderThread()) return;
+        if (target == org.lwjgl.opengl.GL11.GL_TEXTURE_2D) RenderContext.bindCurrentTextureToGl();
+        GL11Guard.glCopyTexSubImage2D(target, level, xoffset, yoffset, x, y, width, height);
+    }
+
+    /**
+     * Texture parameters (the filter of a panorama's blur texture) go to the texture the mod bound, not to whatever GL has bound.
+     * The modern renderer resets a texture's filter to nearest whenever it draws with it (TextureStateShard), so a mod texture
+     * remembers a linear magnification filter the legacy code asked for and keeps it through those resets.
+     */
+    public static void glTexParameteri(int target, int pname, int param) {
+        if (DisplayLists.recording() && DisplayLists.record(() -> glTexParameteri(target, pname, param))) return;
+        if (!RenderSystem.isOnRenderThread()) return;
+        if (target == org.lwjgl.opengl.GL11.GL_TEXTURE_2D) {
+            var tex = RenderContext.bindCurrentTextureToGl();
+            if (pname == org.lwjgl.opengl.GL11.GL_TEXTURE_MAG_FILTER && tex instanceof legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.DynamicTexture.Modern m) {
+                m.mcc$linear = param == org.lwjgl.opengl.GL11.GL_LINEAR;
+            }
+        }
+        GL11Guard.glTexParameteri(target, pname, param);
+    }
+
+    public static void glTexParameterf(int target, int pname, float param) {
+        if (DisplayLists.recording() && DisplayLists.record(() -> glTexParameterf(target, pname, param))) return;
+        if (!RenderSystem.isOnRenderThread()) return;
+        if (target == org.lwjgl.opengl.GL11.GL_TEXTURE_2D) RenderContext.bindCurrentTextureToGl();
+        GL11Guard.glTexParameterf(target, pname, param);
+    }
+
+    public static void glCopyTexImage2D(int target, int level, int internalFormat, int x, int y, int width, int height, int border) {
+        if (DisplayLists.recording() && DisplayLists.record(() -> glCopyTexImage2D(target, level, internalFormat, x, y, width, height, border))) return;
+        if (!RenderSystem.isOnRenderThread()) return;
+        if (target == org.lwjgl.opengl.GL11.GL_TEXTURE_2D) RenderContext.bindCurrentTextureToGl();
+        GL11Guard.glCopyTexImage2D(target, level, internalFormat, x, y, width, height, border);
+    }
+
     /** Binds a GL texture the mod created itself, and makes the emulated renderer draw with it. */
     public static void glBindTexture(int target, int texture) {
         if (DisplayLists.recording() && DisplayLists.record(() -> glBindTexture(target, texture))) return;

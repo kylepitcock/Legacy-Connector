@@ -435,6 +435,21 @@ public final class RenderContext {
         RenderSystem.setShaderTexture(0, rl);
     }
 
+    /**
+     * Makes the texture legacy code bound (a binding that only lives in this context, see {@link #bindTexture}) the real GL
+     * 2D binding, for GL calls that change the bound texture itself: glCopyTexSubImage2D (a legacy title screen that blurs its panorama
+     * through one) acts on whatever GL has bound, which is otherwise texture 0 or a texture the modern renderer used last.
+     */
+    public static net.minecraft.client.renderer.texture.AbstractTexture bindCurrentTextureToGl() {
+        State st = STATE.get();
+        if (st.texture == null || st.texture == UNKNOWN_TEXTURE) return null;
+        var manager = Minecraft.getInstance().getTextureManager();
+        if (manager == null) return null;
+        var tex = manager.getTexture(st.texture);
+        if (tex != null) com.mojang.blaze3d.platform.GlStateManager._bindTexture(tex.getId());
+        return tex;
+    }
+
     /** Minecraft 1.4.7: the sprite sheet path ({@code /eloraam/base/base1.png}) just bound, whose tiles the pack cut into the atlas (see IsbrhQuads). */
     /** Whether this thread is capturing a block's geometry into a model. */
     public static boolean capturing() {
@@ -1251,8 +1266,10 @@ public final class RenderContext {
         RenderSystem.setProjectionMatrix(s.savedProjection, s.savedSorting);
         RenderSystem.getModelViewStack().popMatrix();
         RenderSystem.applyModelViewMatrix();
-        PoseStack p = pose(s);
-        if (p != null && p.last() == s.foldedPose) s.foldedPose.pose().mulLocal(new org.joml.Matrix4f(s.savedModelView).invert());
+        // The folded base pose is un-folded wherever it sits in the stack: legacy code may pop its projection BEFORE its
+        // model-view (a panorama menu pushes both and pops GL_PROJECTION first), so the base
+        // is not the top pose yet; leaving it folded shifts everything the screen draws afterwards out of view.
+        if (s.foldedPose != null) s.foldedPose.pose().mulLocal(new org.joml.Matrix4f(s.savedModelView).invert());
         s.projection = null;
         s.projectionStack.clear();
         s.foldedPose = null;
