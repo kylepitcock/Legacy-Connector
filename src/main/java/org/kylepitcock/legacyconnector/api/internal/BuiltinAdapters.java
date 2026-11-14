@@ -37,6 +37,14 @@ public final class BuiltinAdapters {
         return tile instanceof legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntity t ? EnergyBridge.forTile(t, side) : null;
     }
 
+    // ------------------------------------------------------------------ Beta 1.7.3
+
+    /** A Beta {@code IInventory} tile as an item handler (Beta has no sided inventories: the side is ignored). */
+    public static IItemHandler inventoryB173(Object tile, Direction side, BlockEntity host) {
+        if (!(tile instanceof legacyconnector.vb1_7_3.net.minecraft.inventory.Inventory inv)) return null;
+        return new InvWrapper(org.kylepitcock.legacyconnector.vb1_7_3.LegacyInventoryB173.of(inv));
+    }
+
     // ------------------------------------------------------------------ 1.12.2
 
     public static IItemHandler items1122(Object tile, Direction side, BlockEntity host) {

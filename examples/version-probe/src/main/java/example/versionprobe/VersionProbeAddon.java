@@ -16,6 +16,7 @@ import org.kylepitcock.legacyconnector.api.LegacyContentHooks;
 import org.kylepitcock.legacyconnector.api.LegacyItems;
 import org.kylepitcock.legacyconnector.api.LegacyMod;
 import org.kylepitcock.legacyconnector.api.LegacyPhase;
+import org.kylepitcock.legacyconnector.api.LegacySupport;
 import org.kylepitcock.legacyconnector.api.LegacyVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +42,18 @@ public final class VersionProbeAddon implements LegacyAddon {
         for (LegacyVersion v : LegacyVersion.values()) {
             LOG.info("PROBE count mc={} mods={}", v.id(), LegacyApi.mods(v).size());
         }
+        // the support matrix as data: one line per version
+        for (LegacyVersion v : LegacySupport.versions()) {
+            StringBuilder sb = new StringBuilder();
+            for (LegacySupport.Feature f : LegacySupport.Feature.values()) sb.append(f.name()).append('=').append(LegacySupport.of(f, v).level()).append(' ');
+            LOG.info("PROBE support mc={} {}", v.id(), sb.toString().trim());
+        }
+    }
+
+    @Override
+    public void onLegacyModFailed(LegacyMod mod, String phase) {
+        LOG.info("PROBE failed mod={} mc={} phase={} failedPhase={} missingDependencies={}", mod.id(), mod.minecraftVersion().id(), phase,
+                mod.failedPhase().orElse("-"), mod.missingDependencies());
     }
 
     @Override
@@ -78,7 +91,7 @@ public final class VersionProbeAddon implements LegacyAddon {
                 LOG.info("PROBE roundtrip mc={} copper_ingot x3 -> {} x{} {}", v.id(), BuiltInRegistries.ITEM.getKey(back.getItem()), back.getCount(), ok ? "ok" : "BAD");
                 count(v, ok);
             }
-            if (v.usesNumericIds()) {
+            if (v.usesNumericIds() || v.isBeta()) {
                 var id = key.flatMap(k -> LegacyContentHooks.numericItemId(k.legacyItem(), v).stream().boxed().findFirst());
                 LOG.info("PROBE numericId mc={} copper_ingot={} back={}", v.id(), id.orElse(-1),
                         id.flatMap(i -> LegacyContentHooks.legacyItemById(i, v)).map(o -> o == key.get().legacyItem() ? "same" : "OTHER").orElse("-"));
@@ -102,8 +115,9 @@ public final class VersionProbeAddon implements LegacyAddon {
                 var key = LegacyContentHooks.itemKey(id, v);
                 Object legacy = LegacyItems.toLegacy(new ItemStack(item, 2), v);
                 ItemStack back = LegacyItems.fromLegacy(legacy);
-                boolean ok = key.isPresent() && legacy != null && back.getItem() == item && back.getCount() == 2;
-                String nid = v.usesNumericIds() && legacy != null ? String.valueOf(LegacyContentHooks.numericItemId(legacy, v).orElse(-1)) : "-";
+                boolean versionOk = LegacyApi.versionOf(new ItemStack(item)).map(x -> x == v).orElse(false);
+                boolean ok = key.isPresent() && legacy != null && back.getItem() == item && back.getCount() == 2 && versionOk;
+                String nid = (v.usesNumericIds() || v.isBeta()) && legacy != null ? String.valueOf(LegacyContentHooks.numericItemId(legacy, v).orElse(-1)) : "-";
                 LOG.info("PROBE item mod={} mc={} {} key={}:{} numeric={} -> {} {}", mod.id(), v.id(), id, key.map(k -> k.legacyName()).orElse("-"),
                         key.map(k -> k.damage()).orElse(-1), nid, BuiltInRegistries.ITEM.getKey(back.getItem()), ok ? "ok" : "BAD");
                 count(v, ok);
@@ -123,8 +137,8 @@ public final class VersionProbeAddon implements LegacyAddon {
                 Object legacy = LegacyBlocks.legacyBlock(state, v).orElse(null);
                 var meta = LegacyBlocks.legacyMeta(state, v);
                 var back = legacy == null ? java.util.Optional.<net.minecraft.world.level.block.state.BlockState>empty() : LegacyBlocks.fromLegacy(legacy, meta.orElse(0));
-                boolean ok = owner.isPresent() && owner.get() == v && legacy != null && back.isPresent() && back.get().getBlock() == block;
-                String nid = v.usesNumericIds() && legacy != null ? String.valueOf(LegacyContentHooks.numericBlockId(legacy, v).orElse(-1)) : "-";
+                boolean ok = owner.isPresent() && owner.get() == v && LegacyApi.versionOf(state).map(x -> x == v).orElse(false) && legacy != null && back.isPresent() && back.get().getBlock() == block;
+                String nid = (v.usesNumericIds() || v.isBeta()) && legacy != null ? String.valueOf(LegacyContentHooks.numericBlockId(legacy, v).orElse(-1)) : "-";
                 LOG.info("PROBE block mod={} mc={} {} versionOf={} meta={} numeric={} -> {} {}", mod.id(), v.id(), id, owner.map(LegacyVersion::id).orElse("-"),
                         meta.isPresent() ? meta.getAsInt() : "-", nid, back.map(s -> BuiltInRegistries.BLOCK.getKey(s.getBlock()).toString()).orElse("-"), ok ? "ok" : "BAD");
                 count(v, ok);

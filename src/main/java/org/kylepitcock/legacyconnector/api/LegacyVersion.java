@@ -13,7 +13,12 @@ public enum LegacyVersion {
     /** Added in API 0.2: see {@link #V1_4_7}. */
     V1_6_4("1.6.4"),
     /** Added in API 0.2: Forge 1.20.1 mods remapped in place; their blocks, items, stacks and tiles ARE the modern objects. */
-    V1_20_1("1.20.1");
+    V1_20_1("1.20.1"),
+    /**
+     * Added in API 0.3: Beta 1.7.3 mods (ModLoader / Forge 1.0). Own platform and shim (numeric block and item ids 0-255 / 256+, one id
+     * space, mods keep their ids); there is no Forge API, no capabilities of their own and no energy or fluid containers.
+     */
+    VB1_7_3("b1.7.3");
 
     private final String id;
 
@@ -51,5 +56,10 @@ public enum LegacyVersion {
      */
     public boolean isInPlace() {
         return this == V1_20_1;
+    }
+
+    /** True for Beta 1.7.3 (its own platform and shim, never the 1.7.10 one). Added in API 0.3. */
+    public boolean isBeta() {
+        return this == VB1_7_3;
     }
 }

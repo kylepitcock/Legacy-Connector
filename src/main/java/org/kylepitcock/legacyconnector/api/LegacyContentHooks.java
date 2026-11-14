@@ -66,25 +66,29 @@ public final class LegacyContentHooks {
     // ------------------------------------------------------------------ numeric ids (added in API 0.2)
 
     /**
-     * The numeric block id a 1.4.7, 1.5.2 or 1.6.4 mod sees for a legacy block object (each version has its own id space; a block nobody
+     * The numeric block id a Beta 1.7.3 mod sees (its fixed id 0-255; Beta mods keep the ids they claimed, from API 0.3), or a 1.4.7, 1.5.2 or 1.6.4 mod sees for a legacy block object (each version has its own id space; a block nobody
      * claimed gets the next free id). Empty for other versions or objects.
      */
     public static java.util.OptionalInt numericBlockId(Object legacyBlock, LegacyVersion version) {
+        if (version.isBeta()) return Convert.numericBlockId(legacyBlock, version);
         return version.usesNumericIds() ? Convert.numericBlockId(legacyBlock, version) : java.util.OptionalInt.empty();
     }
 
     /** As {@link #numericBlockId} for a legacy {@code Item} or {@code ItemStack} (an ItemBlock has its block's id). */
     public static java.util.OptionalInt numericItemId(Object legacyItemOrStack, LegacyVersion version) {
+        if (version.isBeta()) return Convert.numericItemId(legacyItemOrStack, version);
         return version.usesNumericIds() ? Convert.numericItemId(legacyItemOrStack, version) : java.util.OptionalInt.empty();
     }
 
     /** {@code Block.blocksList[id]} of a numeric-id version; empty for an unused id or another version. */
     public static Optional<Object> legacyBlockById(int id, LegacyVersion version) {
+        if (version.isBeta()) return Convert.legacyBlockById(id, version);
         return version.usesNumericIds() ? Convert.legacyBlockById(id, version) : Optional.empty();
     }
 
     /** {@code Item.itemsList[id]} of a numeric-id version; empty for an unused id or another version. */
     public static Optional<Object> legacyItemById(int id, LegacyVersion version) {
+        if (version.isBeta()) return Convert.legacyItemById(id, version);
         return version.usesNumericIds() ? Convert.legacyItemById(id, version) : Optional.empty();
     }
 }

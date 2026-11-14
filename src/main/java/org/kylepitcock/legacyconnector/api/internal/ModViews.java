@@ -141,6 +141,17 @@ public final class ModViews {
         }
 
         @Override
+        public List<String> missingDependencies() {
+            return LegacyLifecycle.missingDependencies(mod.legacyId);
+        }
+
+        @Override
+        public Optional<String> failedPhase() {
+            Throwable t = LegacyLifecycle.failures().get(mod);
+            return t instanceof org.kylepitcock.legacyconnector.core.LegacyModException e ? Optional.ofNullable(e.phase()) : Optional.empty();
+        }
+
+        @Override
         public ClassLoader classLoader() {
             return mod.mainClass != null ? mod.mainClass.getClassLoader() : ModViews.class.getClassLoader();
         }

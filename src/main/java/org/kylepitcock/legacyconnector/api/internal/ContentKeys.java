@@ -26,6 +26,13 @@ public final class ContentKeys {
                 String name = ItemBridge.nameOf(item);
                 return Optional.of(new LegacyItemKey(version, name, ItemBridge.legacyDamage(item, stack), item));
             }
+            case VB1_7_3: {
+                var legacy = org.kylepitcock.legacyconnector.vb1_7_3.StacksB173.toLegacy(stack);
+                if (legacy == null) return Optional.empty();
+                var item = legacyconnector.vb1_7_3.net.minecraft.item.Item.ITEMS[legacy.itemId];
+                // a stack Beta cannot represent is carried by one reserved item; its key is still the modern id
+                return Optional.of(new LegacyItemKey(version, net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem()).toString(), legacy.getDamage(), item));
+            }
             case V1_12_2:
             default: {
                 var legacy = Convert.standIn1122(stack);

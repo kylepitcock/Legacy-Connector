@@ -31,6 +31,7 @@ public final class Convert {
             case V1_7_10, V1_4_7, V1_5_2, V1_6_4 -> modern == null ? null : legacyconnector.v1_7_10.net.minecraft.item.ItemStack.mcc$wrap(modern);
             case V1_12_2 -> standIn1122(modern == null ? ItemStack.EMPTY : modern);
             case V1_20_1 -> modern == null ? ItemStack.EMPTY : modern; // the legacy stack IS the modern one
+            case VB1_7_3 -> modern == null ? null : org.kylepitcock.legacyconnector.vb1_7_3.StacksB173.toLegacy(modern); // null for empty, like Beta
         };
     }
 
@@ -49,6 +50,7 @@ public final class Convert {
         if (legacy == null) return ItemStack.EMPTY;
         if (legacy instanceof legacyconnector.v1_7_10.net.minecraft.item.ItemStack s) return legacyconnector.v1_7_10.net.minecraft.item.ItemStack.mcc$toModern(s);
         if (legacy instanceof legacyconnector.v1_12_2.net.minecraft.item.ItemStack s) return Stacks1122.toModern(s);
+        if (legacy instanceof legacyconnector.vb1_7_3.net.minecraft.item.ItemStack s) return org.kylepitcock.legacyconnector.vb1_7_3.StacksB173.toModern(s);
         if (legacy instanceof ItemStack s) return s; // 1.20.1: already modern
         throw new IllegalArgumentException("Not a legacy ItemStack: " + legacy.getClass().getName());
     }
@@ -62,6 +64,7 @@ public final class Convert {
         if (byMod.isPresent()) return byMod;
         if (state.getBlock() instanceof LegacyBlockAdapter) return Optional.of(LegacyVersion.V1_7_10);
         if (state.getBlock() instanceof Legacy1122Block) return Optional.of(LegacyVersion.V1_12_2);
+        if (state.getBlock() instanceof org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Block) return Optional.of(LegacyVersion.VB1_7_3);
         return Optional.empty();
     }
 
@@ -70,6 +73,7 @@ public final class Convert {
             case V1_7_10, V1_4_7, V1_5_2, V1_6_4 -> BlockBridge.legacyBlock(state);
             case V1_12_2 -> StatesBridge1122.legacyBlock(state);
             case V1_20_1 -> state.getBlock(); // the legacy block IS the modern one
+            case VB1_7_3 -> legacyconnector.vb1_7_3.net.minecraft.block.Block.BLOCKS[Math.max(0, Math.min(255, org.kylepitcock.legacyconnector.vb1_7_3.BlocksB173.legacyId(state)))];
         });
     }
 
@@ -82,6 +86,8 @@ public final class Convert {
                 return OptionalInt.of(BlockBridge.legacyMeta(state));
             case V1_20_1:
                 return OptionalInt.empty(); // no metadata after the flattening
+            case VB1_7_3:
+                return OptionalInt.of(org.kylepitcock.legacyconnector.vb1_7_3.BlocksB173.legacyMeta(state));
             case V1_12_2:
             default:
                 IBlockState legacy = StatesBridge1122.toLegacy(state);
@@ -96,6 +102,7 @@ public final class Convert {
 
     public static Optional<BlockState> blockFromLegacy(Object legacyBlock, int meta) {
         if (legacyBlock instanceof legacyconnector.v1_7_10.net.minecraft.block.Block b) return Optional.ofNullable(BlockBridge.toModern(b, meta));
+        if (legacyBlock instanceof legacyconnector.vb1_7_3.net.minecraft.block.Block b) return Optional.ofNullable(org.kylepitcock.legacyconnector.vb1_7_3.BlocksB173.modernState(b.id, meta));
         if (legacyBlock instanceof legacyconnector.v1_12_2.net.minecraft.block.Block b) {
             return Optional.ofNullable(StatesBridge1122.toModern(b.getStateFromMeta(meta)));
         }
@@ -114,6 +121,7 @@ public final class Convert {
     public static Optional<Object> tileOf(BlockEntity be) {
         if (be instanceof LegacyBlockEntity l) return Optional.ofNullable(l.legacy());
         if (be instanceof Legacy1122BlockEntity l) return Optional.ofNullable(l.legacy());
+        if (be instanceof org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173BlockEntity l) return Optional.ofNullable(l.legacy());
         if (isInPlace(be)) return Optional.of(be); // 1.20.1: the mod's own block entity
         return Optional.empty();
     }
@@ -126,6 +134,7 @@ public final class Convert {
             return Optional.of(byMod.isPresent() ? byMod.get() : LegacyVersion.V1_7_10);
         }
         if (be instanceof Legacy1122BlockEntity) return Optional.of(LegacyVersion.V1_12_2);
+        if (be instanceof org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173BlockEntity) return Optional.of(LegacyVersion.VB1_7_3);
         if (isInPlace(be)) return Optional.of(LegacyVersion.V1_20_1);
         return Optional.empty();
     }
@@ -135,12 +144,14 @@ public final class Convert {
             case V1_7_10, V1_4_7, V1_5_2, V1_6_4 -> legacyconnector.v1_7_10.net.minecraft.world.World.mcc$wrap(level);
             case V1_12_2 -> WorldBridge1122.wrap(level);
             case V1_20_1 -> level; // the legacy level IS the modern one
+            case VB1_7_3 -> legacyconnector.vb1_7_3.net.minecraft.world.World.mcc$wrap(level);
         };
     }
 
     /** True for a block entity of a translated Forge 1.20.1 mod (its type is registered under the mod's namespace). */
     public static boolean isInPlace(BlockEntity be) {
-        if (be == null || be instanceof LegacyBlockEntity || be instanceof Legacy1122BlockEntity) return false;
+        if (be == null || be instanceof LegacyBlockEntity || be instanceof Legacy1122BlockEntity
+                || be instanceof org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173BlockEntity) return false;
         var key = net.minecraft.core.registries.BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(be.getType());
         return key != null && InPlaceMods.isInPlaceNamespace(key.getNamespace());
     }
@@ -159,12 +170,21 @@ public final class Convert {
     }
 
     public static OptionalInt numericBlockId(Object legacyBlock, LegacyVersion version) {
+        if (version.isBeta()) {
+            return legacyBlock instanceof legacyconnector.vb1_7_3.net.minecraft.block.Block b && b.id > 0 ? OptionalInt.of(b.id) : OptionalInt.empty();
+        }
         if (!(legacyBlock instanceof legacyconnector.v1_7_10.net.minecraft.block.Block b)) return OptionalInt.empty();
         int id = inIdSpace(version, () -> legacyconnector.v1_6_4.net.minecraft.util.Ids.blockId(b));
         return id > 0 ? OptionalInt.of(id) : OptionalInt.empty();
     }
 
     public static OptionalInt numericItemId(Object legacyItemOrStack, LegacyVersion version) {
+        if (version.isBeta()) {
+            Object o = legacyItemOrStack instanceof legacyconnector.vb1_7_3.net.minecraft.item.ItemStack s
+                    ? (s.itemId >= 0 && s.itemId < legacyconnector.vb1_7_3.net.minecraft.item.Item.ITEMS.length ? legacyconnector.vb1_7_3.net.minecraft.item.Item.ITEMS[s.itemId] : null)
+                    : legacyItemOrStack;
+            return o instanceof legacyconnector.vb1_7_3.net.minecraft.item.Item i && i.id > 0 ? OptionalInt.of(i.id) : OptionalInt.empty();
+        }
         Object o = legacyItemOrStack instanceof legacyconnector.v1_7_10.net.minecraft.item.ItemStack s ? s.getItem() : legacyItemOrStack;
         if (!(o instanceof legacyconnector.v1_7_10.net.minecraft.item.Item item)) return OptionalInt.empty();
         int id = inIdSpace(version, () -> legacyconnector.v1_6_4.net.minecraft.util.Ids.itemId(item));
@@ -172,10 +192,18 @@ public final class Convert {
     }
 
     public static Optional<Object> legacyBlockById(int id, LegacyVersion version) {
+        if (version.isBeta()) {
+            var blocks = legacyconnector.vb1_7_3.net.minecraft.block.Block.BLOCKS;
+            return id > 0 && id < blocks.length ? Optional.ofNullable(blocks[id]) : Optional.empty();
+        }
         return Optional.ofNullable(inIdSpace(version, () -> (Object) legacyconnector.v1_6_4.net.minecraft.util.Ids.block(id)));
     }
 
     public static Optional<Object> legacyItemById(int id, LegacyVersion version) {
+        if (version.isBeta()) {
+            var items = legacyconnector.vb1_7_3.net.minecraft.item.Item.ITEMS;
+            return id > 0 && id < items.length ? Optional.ofNullable(items[id]) : Optional.empty();
+        }
         return Optional.ofNullable(inIdSpace(version, () -> (Object) legacyconnector.v1_6_4.net.minecraft.util.Ids.item(id)));
     }
 }

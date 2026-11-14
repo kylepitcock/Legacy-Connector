@@ -18,7 +18,7 @@ import org.kylepitcock.legacyconnector.v1_12_2.bridge.TileEntityBridge1122;
 import org.kylepitcock.legacyconnector.v1_7_10.bridge.TileEntityBridge;
 
 /**
- * The addons' capability rules, registered on the host block entity types of both legacy versions while NeoForge fires
+ * The addons' capability rules, registered on the host block entity types of every hosted legacy version (1.7.10 family, 1.12.2, Beta 1.7.3) while NeoForge fires
  * {@code RegisterCapabilitiesEvent}.
  */
 public final class CapabilityRules implements LegacyCapabilities {
@@ -60,6 +60,7 @@ public final class CapabilityRules implements LegacyCapabilities {
     /** Collects the addons' rules and registers them, plus the 1.12.2 built-ins, on the host types that exist. */
     public static void apply(RegisterCapabilitiesEvent event) {
         CapabilityRules registrar = new CapabilityRules();
+        registrar.forAnyTile(Capabilities.ItemHandler.BLOCK, LegacyCapabilities.INVENTORY_ITEMS_B173);
         registrar.forAnyTile(Capabilities.ItemHandler.BLOCK, LegacyCapabilities.FORGE_ITEMS_1122);
         registrar.forAnyTile(Capabilities.FluidHandler.BLOCK, LegacyCapabilities.FORGE_FLUIDS_1122);
         registrar.forAnyTile(Capabilities.EnergyStorage.BLOCK, LegacyCapabilities.FORGE_ENERGY_1122);
@@ -91,6 +92,8 @@ public final class CapabilityRules implements LegacyCapabilities {
         BlockEntityType<?> t1122 = TileEntityBridge1122.type();
         if (t1710 != null) event.registerBlockEntity(cap, t1710, provider);
         if (t1122 != null) event.registerBlockEntity(cap, t1122, provider);
+        BlockEntityType<?> tB173 = org.kylepitcock.legacyconnector.vb1_7_3.TileEntitiesB173.type();
+        if (tB173 != null) event.registerBlockEntity(cap, tB173, provider);
     }
 
     /**

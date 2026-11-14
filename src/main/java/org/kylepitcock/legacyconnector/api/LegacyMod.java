@@ -24,6 +24,20 @@ public interface LegacyMod {
     /** The reason the mod was disabled, when it {@link #failed()}. */
     Optional<String> failureMessage();
 
+    /**
+     * The required dependencies of this mod that are not installed, one line each ("X requires Y (range), which is not installed"), empty
+     * when none (and for Forge 1.20.1 mods, whose dependencies FML checks itself). The mod still loads and usually fails later; see
+     * {@link #failed()}. Added in API 0.3.
+     */
+    default java.util.List<String> missingDependencies() {
+        return java.util.List.of();
+    }
+
+    /** The lifecycle phase the mod failed in, when it {@link #failed()} (added in API 0.3). */
+    default Optional<String> failedPhase() {
+        return Optional.empty();
+    }
+
     /** The class loader the mod's classes are loaded by (the mod's main class loader once constructed). */
     ClassLoader classLoader();
 
