@@ -234,8 +234,12 @@ public final class Models1122 {
             }
         }
         for (var item : ItemBridge1122.modItems()) {
+            var subtypes = ItemBridge1122.variants(item);
             for (int meta = 0; meta < 16; meta++) {
-                var modern = ItemBridge1122.modern(item, meta);
+                // a model registered for a subtype belongs to that subtype's modern item; an item with several subtypes has no stand-in for the
+                // ones it does not list (the base subtype's item would take the model of every unlisted metadata: BuildCraft's engines showed
+                // the model put last, whichever type it was meant for)
+                var modern = subtypes.size() > 1 ? subtypes.get(meta) : ItemBridge1122.modern(item, meta);
                 if (modern == null) continue;
                 var mrl = legacyconnector.v1_12_2.net.minecraftforge.client.model.ModelLoader.mcc$model(item, meta);
                 String key = mrl != null ? mrl.toString() : item.getRegistryName() == null ? null : item.getRegistryName() + "#inventory";

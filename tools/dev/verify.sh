@@ -79,10 +79,10 @@ for s in "${names[@]}"; do
   done
   [ -f "$JAR_ROOT/run-subtest/eula.txt" ] && cp -f "$JAR_ROOT/run-subtest/eula.txt" "$D/eula.txt" || echo "eula=true" > "$D/eula.txt"
   if [ -f "$JAR_ROOT/run-subtest/server.properties" ]; then
-    sed -e "s/^server-port=.*/server-port=$((25570+idx))/" -e "s/^query.port=.*/query.port=$((25570+idx))/" -e "s/^rcon.port=.*/rcon.port=$((25670+idx))/" \
+    sed -e "s/^server-port=.*/server-port=$((${VERIFY_PORT_BASE:-25570}+idx))/" -e "s/^query.port=.*/query.port=$((${VERIFY_PORT_BASE:-25570}+idx))/" -e "s/^rcon.port=.*/rcon.port=$((${VERIFY_PORT_BASE:-25570}+100+idx))/" \
         -e "s/^level-seed=.*/level-seed=1710/" "$JAR_ROOT/run-subtest/server.properties" > "$D/server.properties"
   else
-    printf 'server-port=%s\nlevel-seed=1710\nonline-mode=false\n' $((25570+idx)) > "$D/server.properties"
+    printf 'server-port=%s\nlevel-seed=1710\nonline-mode=false\n' $((${VERIFY_PORT_BASE:-25570}+idx)) > "$D/server.properties"
   fi
 
   glog="build/devtools/verify-$s-gradle.log"
