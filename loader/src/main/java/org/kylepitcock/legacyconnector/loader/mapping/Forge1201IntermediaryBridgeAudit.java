@@ -473,10 +473,9 @@ public final class Forge1201IntermediaryBridgeAudit {
             TinyMember targetMember = sameOwnerRows.get(0);
             boolean hasExternalDescriptorTypes = sourceMember.descriptorExternalTypeCount() > 0
                     || targetMember.descriptorExternalTypeCount() > 0;
-            if (hasExternalDescriptorTypes) {
+            if (targetMember.descriptorExternalTypeCount() > 0) {
                 targetDescriptorExternalTypeRows++;
-                targetDescriptorExternalTypeOccurrences += sourceMember.descriptorExternalTypeCount()
-                        + targetMember.descriptorExternalTypeCount();
+                targetDescriptorExternalTypeOccurrences += targetMember.descriptorExternalTypeCount();
             }
             if (sourceMember.descriptorIntermediary() == null
                     || targetMember.descriptorIntermediary() == null) {
