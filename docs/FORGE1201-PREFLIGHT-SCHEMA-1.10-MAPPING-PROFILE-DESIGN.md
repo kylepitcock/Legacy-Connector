@@ -539,3 +539,9 @@ Official references: [Minecraft EULA](https://www.minecraft.net/en-us/eula), [Mi
 - The same-name cross-owner duplicate coalescing test and different-name cross-owner conflict test are now user-validated green.
 - The only failure was the stale PowerShell precondition. It did not represent a failed fast-forward or build. No second test run is needed solely to address that message.
 - Technical source-edge test gate is green; mapping redistribution review remains separate and unresolved. The actual 1.20.1 → 1.21.1 edge is still missing; no selector rewriting.
+
+### Follow-on bridge research — Fabric Intermediary (2026-11-15)
+
+A separate read-only feasibility audit has been added in [`FORGE1201-PREFLIGHT-INTERMEDIARY-BRIDGE-AUDIT-DESIGN.md`](FORGE1201-PREFLIGHT-INTERMEDIARY-BRIDGE-AUDIT-DESIGN.md). It examines the MCPConfig TSRG2 `obf` columns against versioned Fabric Tiny v1 `official -> intermediary` mappings, then compares candidate identities in the 1.21.1 Tiny file. This does not complete the Forge SRG selector input edge: the audit retains SRG names/IDs only as diagnostics and explicitly records that `completeForgeSrgSelectorPath=false`. Nor does it complete the target official-obfuscated → NeoForge Mojang-named edge. The audit is read-only, emits a build-local report, and is pending the user's next forced loader test gate.
+
+The Schema 1.10B source normalization and its licensing boundary remain unchanged. Do not merge the distinct namespace stages or enable selector transformation.
