@@ -7,6 +7,8 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.List;
 import java.util.Map;
 
@@ -42,6 +44,25 @@ final class Mc1201Tables {
     final List<Bridge> bridges = new ArrayList<>();
     /** Overrides of methods that became final in 1.21.1: owner, name, descriptor, new name ({@code -}: no replacement, the override is disabled). */
     final List<String[]> overrides = new ArrayList<>();
+
+    private Set<String> watched;
+
+    /** Names of methods the tables mention (calls, overrides and bridges): what another jar's class must say about itself so subclasses can be judged. */
+    synchronized Set<String> watchedMethodNames() {
+        if (watched != null) return watched;
+        Set<String> out = new HashSet<>();
+        for (String k : calls.keySet()) {
+            int dot = k.indexOf('.');
+            int paren = k.indexOf('(');
+            if (dot > 0 && paren > dot) out.add(k.substring(dot + 1, paren));
+        }
+        for (Bridge b : bridges) {
+            out.add(b.oldName());
+            out.add(b.newName());
+        }
+        for (String[] o : overrides) out.add(o[1]);
+        return watched = out;
+    }
 
     private static volatile Mc1201Tables instance;
 
