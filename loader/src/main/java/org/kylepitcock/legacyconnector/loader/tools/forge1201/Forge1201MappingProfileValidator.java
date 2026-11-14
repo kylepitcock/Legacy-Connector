@@ -41,6 +41,7 @@ public final class Forge1201MappingProfileValidator {
     public static final int MAX_EDGES = 256;
     public static final int MAX_ARTIFACTS = 512;
     public static final long MAX_ARTIFACT_BYTES = 512L * 1024 * 1024;
+    public static final int MAX_PATH_SEARCH_STEPS = 100_000;
 
     private static final Set<String> REQUIRED_SELECTOR_SCOPE =
             Set.of("class-names", "method-names", "field-names", "descriptors");
@@ -77,6 +78,7 @@ public final class Forge1201MappingProfileValidator {
         PROFILE_SOURCE_VERSION_MISMATCH,
         PROFILE_TARGET_VERSION_MISMATCH,
         PROFILE_CONTEXT_NAMESPACE_UNBOUND,
+        PROFILE_PATH_SEARCH_LIMIT_EXCEEDED,
         PROFILE_NO_COMPLETE_PATH,
         PROFILE_AMBIGUOUS_PATH,
         PROFILE_ARTIFACT_MISSING,
@@ -371,6 +373,8 @@ public final class Forge1201MappingProfileValidator {
                 value.status() == ArtifactStatus.LICENSE_REVIEW_REQUIRED);
         boolean contextUnbound = bindings.isEmpty();
         boolean ambiguous = contextPaths.stream().anyMatch(value -> value.completePathCount() > 1);
+        boolean pathSearchLimited = contextPaths.stream()
+                .anyMatch(value -> "PATH_SEARCH_LIMIT_EXCEEDED".equals(value.status()));
         boolean noPath = !contextPaths.isEmpty()
                 && contextPaths.stream().anyMatch(value -> value.completePathCount() == 0);
         boolean incompletePath = !contextPaths.isEmpty()
@@ -385,6 +389,7 @@ public final class Forge1201MappingProfileValidator {
         else if (licenseReviewRequired) status = ProfileStatus.PROFILE_LICENSE_REVIEW_REQUIRED;
         else if (contextUnbound) status = ProfileStatus.PROFILE_CONTEXT_NAMESPACE_UNBOUND;
         else if (ambiguous) status = ProfileStatus.PROFILE_AMBIGUOUS_PATH;
+        else if (pathSearchLimited) status = ProfileStatus.PROFILE_PATH_SEARCH_LIMIT_EXCEEDED;
         else if (noPath || incompletePath) status = ProfileStatus.PROFILE_NO_COMPLETE_PATH;
         else if (!errors.isEmpty()) status = ProfileStatus.PROFILE_INCOMPLETE;
         else status = ProfileStatus.PROFILE_VALIDATED;
@@ -723,11 +728,15 @@ public final class Forge1201MappingProfileValidator {
         for (ContextBindingFinding binding : bindings) {
             List<List<String>> paths = new ArrayList<>();
             Set<String> visited = new LinkedHashSet<>();
+            int[] searchSteps = {0};
+            boolean[] searchLimitExceeded = {false};
             visited.add(pathNode(binding.namespaceId(), sourceMinecraftVersion));
             enumeratePaths(binding.namespaceId(), sourceMinecraftVersion, targetNamespace,
-                    targetMinecraftVersion, usable, visited, new ArrayList<>(), paths);
+                    targetMinecraftVersion, usable, visited, new ArrayList<>(), paths,
+                    searchSteps, searchLimitExceeded);
             int count = Math.min(paths.size(), 2);
-            String status = count == 0 ? "NO_COMPLETE_PATH"
+            String status = searchLimitExceeded[0] ? "PATH_SEARCH_LIMIT_EXCEEDED"
+                    : count == 0 ? "NO_COMPLETE_PATH"
                     : count > 1 ? "AMBIGUOUS_PATH" : "COMPLETE_UNAMBIGUOUS_PATH";
             findings.add(new ContextPathFinding(binding.contextKey(), binding.namespaceId(),
                     targetNamespace, sourceMinecraftVersion, targetMinecraftVersion,
@@ -745,8 +754,10 @@ public final class Forge1201MappingProfileValidator {
             List<EdgeFinding> edges,
             Set<String> visited,
             List<String> edgePath,
-            List<List<String>> results) {
-        if (results.size() >= 2) return;
+            List<List<String>> results,
+            int[] searchSteps,
+            boolean[] searchLimitExceeded) {
+        if (results.size() >= 2 || searchLimitExceeded[0]) return;
         if (currentNamespace.equals(targetNamespace)) {
             if (!currentVersion.equals(targetVersion)) return;
             for (EdgeFinding edge : edges) {
@@ -764,6 +775,10 @@ public final class Forge1201MappingProfileValidator {
             return;
         }
         for (EdgeFinding edge : edges) {
+            if (++searchSteps[0] > MAX_PATH_SEARCH_STEPS) {
+                searchLimitExceeded[0] = true;
+                return;
+            }
             if (!currentNamespace.equals(edge.fromNamespace())
                     || !currentVersion.equals(edge.sourceMinecraftVersion())
                     || edge.toNamespace() == null
@@ -777,7 +792,7 @@ public final class Forge1201MappingProfileValidator {
             } else {
                 visited.add(nextNode);
                 enumeratePaths(edge.toNamespace(), nextVersion, targetNamespace, targetVersion,
-                        edges, visited, edgePath, results);
+                        edges, visited, edgePath, results, searchSteps, searchLimitExceeded);
                 visited.remove(nextNode);
             }
             edgePath.removeLast();
