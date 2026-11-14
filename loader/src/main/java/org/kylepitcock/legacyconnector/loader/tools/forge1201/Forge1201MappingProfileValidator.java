@@ -102,6 +102,7 @@ public final class Forge1201MappingProfileValidator {
         INVALID_DECLARATION,
         ARTIFACT_UNVERIFIED,
         REVIEW_EVIDENCE_MISSING,
+        IDENTITY_EXPLICIT_NOT_APPLIED,
         IDENTITY_UNVERIFIED
     }
 
@@ -340,21 +341,6 @@ public final class Forge1201MappingProfileValidator {
         }
         if (targetLoaderVersion != null && !"21.1.258".equals(targetLoaderVersion)) {
             warnings.add("Target NeoForge version differs from the analyzer's pinned 21.1.258 target.");
-        }
-
-        Set<String> knownNamespaces = new HashSet<>();
-        addIfPresent(knownNamespaces, sourceNamespace);
-        addIfPresent(knownNamespaces, targetNamespace);
-        bindings.forEach(binding -> addIfPresent(knownNamespaces, binding.namespaceId()));
-        edges.forEach(edge -> {
-            addIfPresent(knownNamespaces, edge.fromNamespace());
-            addIfPresent(knownNamespaces, edge.toNamespace());
-        });
-        for (EdgeFinding edge : edges) {
-            if (edge.fromNamespace() != null && !knownNamespaces.contains(edge.fromNamespace())
-                    || edge.toNamespace() != null && !knownNamespaces.contains(edge.toNamespace())) {
-                errors.add("Edge '" + edge.edgeId() + "' references an undeclared namespace.");
-            }
         }
 
         List<ContextPathFinding> contextPaths = evaluateContextPaths(bindings, targetNamespace, edges);
@@ -624,7 +610,8 @@ public final class Forge1201MappingProfileValidator {
                     status = EdgeStatus.IDENTITY_UNVERIFIED;
                     edgeWarnings.add("Identity edge has no explicit identityEvidence; no implicit identity is accepted.");
                 } else {
-                    edgeWarnings.add("Explicit identity declaration recorded; no selector transformation is performed.");
+                    status = EdgeStatus.IDENTITY_EXPLICIT_NOT_APPLIED;
+                    edgeWarnings.add("Explicit identity declaration recorded; this stage records it but does not transform selectors.");
                 }
             } else if ("MISSING".equalsIgnoreCase(declaredStatus)) {
                 status = EdgeStatus.MISSING;
@@ -635,7 +622,7 @@ public final class Forge1201MappingProfileValidator {
                 status = EdgeStatus.PARTIAL;
             } else if (!"VERIFIED".equalsIgnoreCase(declaredStatus)) {
                 edgeWarnings.add("Declared edge status must be VERIFIED, PARTIAL, MISSING, or UNSUPPORTED.");
-            } else if (!scope.containsAll(SUPPORTED_SCOPE) && !scope.containsAll(REQUIRED_SELECTOR_SCOPE)) {
+            } else if (!scope.containsAll(REQUIRED_SELECTOR_SCOPE)) {
                 status = EdgeStatus.PARTIAL;
                 edgeWarnings.add("Edge does not declare the full class/member/descriptor scope required for selectors.");
             } else if (reviewEvidence.isEmpty()) {
