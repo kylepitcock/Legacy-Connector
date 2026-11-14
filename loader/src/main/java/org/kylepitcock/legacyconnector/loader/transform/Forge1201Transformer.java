@@ -610,7 +610,10 @@ public final class Forge1201Transformer {
                 }
             }
             if (name.equals("META-INF/mods.toml")) {
-                String toml = modsToml(new String(data, StandardCharsets.UTF_8), mixinConfigs(manifest));
+                // a manifest may list a config that lives in ANOTHER jar (Cataclysm lists the Lionfish API one): registering it here would register it twice
+                List<String> ownConfigs = new ArrayList<>(mixinConfigs(manifest));
+                ownConfigs.removeIf(c -> !other.containsKey(c));
+                String toml = modsToml(new String(data, StandardCharsets.UTF_8), ownConfigs);
                 if (!plan.isEmpty()) {
                     for (var c : cfgRename.entrySet()) toml = toml.replace("\"" + c.getKey() + "\"", "\"" + c.getValue() + "\"");
                     // a dependent that lists the library's mixin config in its manifest (Alex's Caves: MixinConfigs=citadel.mixins.json,...) must not register it

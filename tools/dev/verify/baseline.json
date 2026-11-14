@@ -97,6 +97,14 @@
   "silent_failed": 0,
   "verify_errors": 0
  },
+ "sm642-1201": {
+  "crash_reports": 0,
+  "mods_failed_1201": 0,
+  "mods_loaded_1201": 3,
+  "reached_selftest": 1,
+  "silent_failed": 0,
+  "verify_errors": 0
+ },
  "srp": {
   "blocks_ok": 575,
   "blocks_placed": 586,

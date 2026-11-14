@@ -25,6 +25,9 @@ import org.kylepitcock.legacyconnector.v1_20_1.migrate.ItemStackNbt;
 public final class CraftingHelper {
     private static final Map<ResourceLocation, IIngredientSerializer<?>> INGREDIENTS = new ConcurrentHashMap<>();
     private static final Map<ResourceLocation, IConditionSerializer<?>> CONDITIONS = new ConcurrentHashMap<>();
+    // Forge's field names: libraries read the maps reflectively (SuperMartijn642's Core Lib asks for "conditions"); the same map objects
+    private static final Map<ResourceLocation, IIngredientSerializer<?>> ingredients = INGREDIENTS;
+    private static final Map<ResourceLocation, IConditionSerializer<?>> conditions = CONDITIONS;
 
     private CraftingHelper() {
     }

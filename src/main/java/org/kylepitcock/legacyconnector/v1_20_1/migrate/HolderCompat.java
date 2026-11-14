@@ -211,7 +211,33 @@ public final class HolderCompat {
 
     /** {@code BuiltInRegistries.ENCHANTMENT} is a dynamic registry in 1.21.1. */
     public static net.minecraft.core.Registry<Enchantment> enchantmentRegistry() {
-        return MigrateContext.registries().registryOrThrow(Registries.ENCHANTMENT);
+        try {
+            return MigrateContext.registries().registryOrThrow(Registries.ENCHANTMENT);
+        } catch (IllegalStateException notThereYet) {
+            // 1.20.1 had the registry as a static from the start: libraries keep it in a static field while the mod is constructed (SuperMartijn642's Core Lib).
+            // The reference is a view that asks the real registry on every call; it works once a world's registries exist.
+            return lazyEnchantmentRegistry();
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static net.minecraft.core.Registry<Enchantment> lazyEnchantmentRegistry() {
+        return (net.minecraft.core.Registry<Enchantment>) java.lang.reflect.Proxy.newProxyInstance(net.minecraft.core.Registry.class.getClassLoader(),
+                new Class<?>[] {net.minecraft.core.Registry.class}, (proxy, method, args) -> {
+                    if (method.getName().equals("key") && method.getParameterCount() == 0) return Registries.ENCHANTMENT;
+                    if (method.getDeclaringClass() == Object.class) {
+                        return switch (method.getName()) {
+                            case "hashCode" -> System.identityHashCode(proxy);
+                            case "equals" -> proxy == args[0];
+                            default -> "lazy enchantment registry";
+                        };
+                    }
+                    try {
+                        return method.invoke(MigrateContext.registries().registryOrThrow(Registries.ENCHANTMENT), args);
+                    } catch (java.lang.reflect.InvocationTargetException e) {
+                        throw e.getCause();
+                    }
+                });
     }
 
     // ------------------------------------------------------------------ game events
