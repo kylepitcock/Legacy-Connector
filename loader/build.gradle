@@ -447,7 +447,7 @@ def extractFabricIntermediary1211 = tasks.register('extractFabricIntermediary121
 def intermediaryBridgeAuditReport = layout.buildDirectory.file('reports/mappings/1.20.1-1.21.1/intermediary-bridge-audit.json')
 def auditIntermediaryBridge1201To1211 = tasks.register('auditIntermediaryBridge1201To1211', JavaExec) {
     group = 'verification'
-    description = 'Audits a read-only Forge 1.20.1 -> Fabric Intermediary -> Minecraft 1.21.1 symbol-identity candidate path.'
+    description = 'Audits read-only obfuscated vanilla symbol continuity from Minecraft 1.20.1 through Fabric Intermediary to 1.21.1; does not map Forge SRG selectors.'
     dependsOn extractMcpConfigJoinedTsrg1201, extractFabricIntermediary1201, extractFabricIntermediary1211, tasks.named('classes')
     inputs.file(joinedTsrg1201)
     inputs.file(fabricIntermediary1201Tiny)
