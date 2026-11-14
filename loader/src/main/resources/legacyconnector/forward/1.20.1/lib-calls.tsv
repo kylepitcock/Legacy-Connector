@@ -186,3 +186,4 @@ com/simibubi/create/content/kinetics/base/KineticBlockEntity	write	(Lnet/minecra
 com/simibubi/create/content/kinetics/base/GeneratingKineticBlockEntity	read	(Lnet/minecraft/nbt/CompoundTag;Z)V	=args	0,BridgeHelpers.providerFor@0,1	(Lnet/minecraft/nbt/CompoundTag;Lnet/minecraft/core/HolderLookup$Provider;Z)V
 com/simibubi/create/content/kinetics/base/GeneratingKineticBlockEntity	write	(Lnet/minecraft/nbt/CompoundTag;Z)V	=args	0,BridgeHelpers.providerFor@0,1	(Lnet/minecraft/nbt/CompoundTag;Lnet/minecraft/core/HolderLookup$Provider;Z)V
 # END Create 6 block entity NBT calls
+top/theillusivec4/curios/api/SlotContext	getWearer	()Lnet/minecraft/world/entity/LivingEntity;	=	entity

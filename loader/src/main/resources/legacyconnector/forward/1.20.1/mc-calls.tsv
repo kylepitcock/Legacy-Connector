@@ -403,8 +403,6 @@ net/minecraft/client/gui/components/MultiLineLabel	create	(Lnet/minecraft/client
 net/minecraft/client/gui/components/MultiLineLabel	renderCentered	(Lnet/minecraft/client/gui/GuiGraphics;II)I	MiddleClientCompat	renderCentered
 net/minecraft/client/gui/components/MultiLineLabel	renderCentered	(Lnet/minecraft/client/gui/GuiGraphics;IIII)I	MiddleClientCompat	renderCentered
 net/minecraft/client/gui/components/MultiLineLabel	renderLeftAligned	(Lnet/minecraft/client/gui/GuiGraphics;IIII)I	MiddleClientCompat	renderLeftAligned
-net/minecraft/client/gui/components/Checkbox	<init>	(IIIILnet/minecraft/network/chat/Component;Z)V	MiddleClientCompat	newCheckbox
-net/minecraft/client/gui/components/Checkbox	<init>	(IIIILnet/minecraft/network/chat/Component;ZZ)V	MiddleClientCompat	newCheckbox
 net/minecraft/client/renderer/RenderType	glintDirect	()Lnet/minecraft/client/renderer/RenderType;	MiddleClientCompat	glintDirect
 net/minecraft/client/renderer/RenderType	armorGlint	()Lnet/minecraft/client/renderer/RenderType;	MiddleClientCompat	armorGlint
 # --- middle/tail batch 3
@@ -664,3 +662,18 @@ net/minecraft/world/item/enchantment/EnchantmentHelper	getRandomItemWith	(Lorg/k
 net/minecraft/world/level/block/entity/BaseContainerBlockEntity	setCustomName	(Lnet/minecraft/network/chat/Component;)V	GapCompat	setCustomName
 net/minecraft/world/entity/AreaEffectCloud	setPotion	(Lnet/minecraft/world/item/alchemy/Potion;)V	GapCompat	cloudSetPotion
 net/minecraft/world/entity/AreaEffectCloud	getPotion	()Lnet/minecraft/world/item/alchemy/Potion;	GapCompat	cloudGetPotion
+# --- second ATM 9 round (2026-11-13)
+net/minecraft/world/entity/player/Player	findRespawnPositionAndUseSpawnBlock	(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/core/BlockPos;FZZ)Ljava/util/Optional;	Round2Compat	findRespawnPosition
+com/mojang/util/UUIDTypeAdapter	fromUUID	(Ljava/util/UUID;)Ljava/lang/String;	Round2Compat	uuidToString
+com/mojang/util/UUIDTypeAdapter	fromString	(Ljava/lang/String;)Ljava/util/UUID;	Round2Compat	uuidFromString
+net/minecraft/client/gui/components/AbstractWidget	setTooltipDelay	(I)V	Round2Compat	setTooltipDelay
+net/minecraft/SharedConstants	filterText	(Ljava/lang/String;)Ljava/lang/String;	Round2Compat	filterText
+net/minecraft/client/gui/screens/Screen	renderDirtBackground	(Lnet/minecraft/client/gui/GuiGraphics;)V	Round2Compat	renderDirtBackground
+net/minecraft/client/multiplayer/ClientAdvancements	getAdvancements	()Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyAdvancementList;	AdvancementCompat	clientList
+net/minecraft/advancements/AdvancementHolder	getDisplay	()Lnet/minecraft/advancements/DisplayInfo;	AdvancementCompat	getDisplay
+net/minecraft/advancements/AdvancementHolder	getParent	()Lnet/minecraft/advancements/AdvancementHolder;	AdvancementCompat	getParent
+net/minecraft/advancements/AdvancementHolder	getCriteria	()Ljava/util/Map;	AdvancementCompat	getCriteria
+net/minecraft/advancements/AdvancementHolder	getChatComponent	()Lnet/minecraft/network/chat/Component;	AdvancementCompat	getChatComponent
+net/minecraft/advancements/AdvancementHolder	getRoot	()Lnet/minecraft/advancements/AdvancementHolder;	AdvancementCompat	getRoot
+net/minecraft/advancements/critereon/ItemPredicate	<init>	()V	CritCompat	anyItem
+net/minecraft/advancements/critereon/ItemPredicate	<init>	(Lnet/minecraft/tags/TagKey;Ljava/util/Set;Lnet/minecraft/advancements/critereon/MinMaxBounds$Ints;Lnet/minecraft/advancements/critereon/MinMaxBounds$Ints;[Lnet/minecraft/advancements/critereon/EnchantmentPredicate;[Lnet/minecraft/advancements/critereon/EnchantmentPredicate;Lnet/minecraft/world/item/alchemy/Potion;Lnet/minecraft/advancements/critereon/NbtPredicate;)V	PredicateCompat	newItemPredicate

@@ -7,6 +7,8 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.List;
 import java.util.Map;
 
@@ -42,6 +44,44 @@ final class Mc1201Tables {
     final List<Bridge> bridges = new ArrayList<>();
     /** Overrides of methods that became final in 1.21.1: owner, name, descriptor, new name ({@code -}: no replacement, the override is disabled). */
     final List<String[]> overrides = new ArrayList<>();
+
+    private Map<String, Call> specialByDesc;
+
+    /** The {@code @special} (super call) rule for a method name and descriptor whatever its owner, if exactly one owner has one; else null. */
+    synchronized Call specialRuleFor(String name, String desc) {
+        if (specialByDesc == null) {
+            Map<String, Call> m = new HashMap<>();
+            Set<String> ambiguous = new HashSet<>();
+            for (Map.Entry<String, Call> e : calls.entrySet()) {
+                String k = e.getKey();
+                if (!k.endsWith("@special") || e.getValue().helper().startsWith("=")) continue;
+                String key = k.substring(k.indexOf('.') + 1, k.length() - "@special".length());
+                if (m.putIfAbsent(key, e.getValue()) != null) ambiguous.add(key);
+            }
+            for (String a : ambiguous) m.remove(a);
+            specialByDesc = m;
+        }
+        return specialByDesc.get(name + desc);
+    }
+
+    private Set<String> watched;
+
+    /** Names of methods the tables mention (calls, overrides and bridges): what another jar's class must say about itself so subclasses can be judged. */
+    synchronized Set<String> watchedMethodNames() {
+        if (watched != null) return watched;
+        Set<String> out = new HashSet<>();
+        for (String k : calls.keySet()) {
+            int dot = k.indexOf('.');
+            int paren = k.indexOf('(');
+            if (dot > 0 && paren > dot) out.add(k.substring(dot + 1, paren));
+        }
+        for (Bridge b : bridges) {
+            out.add(b.oldName());
+            out.add(b.newName());
+        }
+        for (String[] o : overrides) out.add(o[1]);
+        return watched = out;
+    }
 
     private static volatile Mc1201Tables instance;
 

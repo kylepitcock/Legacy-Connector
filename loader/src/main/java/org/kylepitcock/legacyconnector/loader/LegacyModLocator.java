@@ -476,7 +476,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                     if (skipReason(jar) != null || LibraryBridges.replacing(jar, bridges) != null || LibraryBridges.obsoleteReason(jar) != null) continue;
                     Path out = cacheDir.resolve(cacheName(jar, modSet.get(jar.version)));
                     if (Files.exists(out) && Files.exists(out.resolveSibling(out.getFileName() + ".synth.txt"))) continue;
-                    Map<String, ClassInfo> jarPeers = peers.computeIfAbsent(jar.version, v -> scanPeers(transformer, legacy, v));
+                    Map<String, ClassInfo> jarPeers = peers.computeIfAbsent(jar.version, v -> scanPeers(transformer, legacy, v, bridges));
                     pool.submit(jar, out, jarPeers);
                 }
             }
@@ -503,7 +503,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                     if (!Files.exists(out) || !Files.exists(demandFile)) {
                         translating = true;
                         if (!peers.containsKey(jar.version)) progress.step("reading all legacy jars");
-                        Map<String, ClassInfo> jarPeers = peers.computeIfAbsent(jar.version, v -> scanPeers(transformer, legacy, v));
+                        Map<String, ClassInfo> jarPeers = peers.computeIfAbsent(jar.version, v -> scanPeers(transformer, legacy, v, bridges));
                         progress.starting(jar.fileName());
                         long start = System.nanoTime();
                         LegacyJarTransformer.Result result = pool.take(jar, out, jarPeers);
@@ -623,10 +623,12 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
         }
     }
 
-    private static Map<String, ClassInfo> scanPeers(LegacyJarTransformer transformer, List<LegacyJar> legacy, LegacyVersion version) {
+    private static Map<String, ClassInfo> scanPeers(LegacyJarTransformer transformer, List<LegacyJar> legacy, LegacyVersion version, List<LibraryBridges.Bridge> bridges) {
         org.kylepitcock.legacyconnector.loader.transform.PeerClasses out = new org.kylepitcock.legacyconnector.loader.transform.PeerClasses();
         for (LegacyJar jar : legacy) {
             if (jar.version != version || skipReason(jar) != null) continue;
+            // a library replaced by its native build, or one that is not loaded at all, is not a class another jar will extend at run time
+            if (version == LegacyVersion.V1_20_1 && (LibraryBridges.replacing(jar, bridges) != null || LibraryBridges.obsoleteReason(jar) != null)) continue;
             TranslationPool.heartbeat();
             try {
                 out.add(transformer.scan(jar));

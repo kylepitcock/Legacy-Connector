@@ -369,3 +369,6 @@ net/minecraft/world/entity/animal/horse/AbstractHorse	FOOD_ITEMS	Lnet/minecraft/
 net/minecraft/world/entity/monster/Strider	FOOD_ITEMS	Lnet/minecraft/world/item/crafting/Ingredient;	-	none	RoundCompat.striderFood
 net/minecraft/world/entity/monster/Strider	TEMPT_ITEMS	Lnet/minecraft/world/item/crafting/Ingredient;	-	none	RoundCompat.striderTempt
 net/minecraft/world/entity/animal/Parrot	TAME_FOOD	Ljava/util/Set;	-	none	RoundCompat.parrotTameFood
+net/minecraft/advancements/critereon/NbtPredicate	ANY	Lnet/minecraft/advancements/critereon/NbtPredicate;	-	none	PredicateCompat.nbtAny
+net/minecraft/advancements/critereon/StatePropertiesPredicate	ANY	Lnet/minecraft/advancements/critereon/StatePropertiesPredicate;	-	none	PredicateCompat.stateAny
+net/minecraft/advancements/critereon/EnchantmentPredicate	NONE	[Lnet/minecraft/advancements/critereon/EnchantmentPredicate;	-	none	PredicateCompat.enchantmentNone

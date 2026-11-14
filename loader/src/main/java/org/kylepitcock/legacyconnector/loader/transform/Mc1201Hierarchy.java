@@ -31,6 +31,17 @@ public final class Mc1201Hierarchy {
     private static volatile Map<String, McClass> mc;
 
     private final Map<String, ClassNode> mod = new HashMap<>();
+    /**
+     * Classes of the other 1.20.1 jars of the mod set (names after the Forge renames; only the methods the migration tables name are kept, see
+     * {@code Forge1201Transformer.scan}). A mod class often extends a library class of another jar ({@code BaseItem}, {@code ItemBlockNBT}): without it the
+     * chain above such a class ends in "unknown" and calls through it ({@code super.appendHoverText(...)}) never reach the rules of Minecraft's classes.
+     */
+    private Map<String, org.kylepitcock.legacyconnector.loader.shim.ClassInfo> peers = Map.of();
+
+    public Mc1201Hierarchy peers(Map<String, org.kylepitcock.legacyconnector.loader.shim.ClassInfo> peers) {
+        this.peers = peers == null ? Map.of() : peers;
+        return this;
+    }
 
     /** Adds the classes of the jar being translated. */
     public Mc1201Hierarchy add(ClassNode node) {
@@ -88,6 +99,12 @@ public final class Mc1201Hierarchy {
         if (c != null) {
             if (c.superName() != null) out.add(c.superName());
             out.addAll(List.of(c.interfaces()));
+            return out;
+        }
+        var p = peers.get(name);
+        if (p != null) {
+            if (p.superName != null) out.add(p.superName);
+            out.addAll(p.interfaces);
         }
         return out;
     }
@@ -107,7 +124,7 @@ public final class Mc1201Hierarchy {
         if (name == null || !seen.add(name)) return 0;
         if (name.equals(ancestor)) return 1;
         if (name.equals("java/lang/Object")) return 0;
-        if (!mod.containsKey(name) && !mc().containsKey(name)) return name.startsWith("java/") ? 0 : 2;
+        if (!mod.containsKey(name) && !mc().containsKey(name) && !peers.containsKey(name)) return name.startsWith("java/") ? 0 : 2;
         int unknown = 0;
         for (String s : supers(name)) {
             int r = walk(s, ancestor, seen);
@@ -129,6 +146,17 @@ public final class Mc1201Hierarchy {
     private Origin declaredIn(String owner, String name, String desc, Set<String> seen) {
         if (owner == null || !seen.add(owner)) return Origin.MINECRAFT;
         ClassNode n = mod.get(owner);
+        if (n == null && peers.containsKey(owner) && !mc().containsKey(owner)) {
+            // a class of another jar of the set: its own translation keeps the methods it declares as written, so a declaration counts like the mod's own
+            if (peers.get(owner).methods.containsKey(name + desc)) return Origin.MOD;
+            Origin result = Origin.MINECRAFT;
+            for (String s : supers(owner)) {
+                Origin o = declaredIn(s, name, desc, seen);
+                if (o == Origin.MOD) return Origin.MOD;
+                if (o == Origin.UNKNOWN) result = Origin.UNKNOWN;
+            }
+            return result;
+        }
         if (n == null) return mc().containsKey(owner) ? Origin.MINECRAFT : (owner.startsWith("java/") ? Origin.MINECRAFT : Origin.UNKNOWN);
         for (MethodNode m : n.methods) if (m.name.equals(name) && m.desc.equals(desc) && (m.access & Opcodes.ACC_ABSTRACT) == 0) return Origin.MOD;
         Origin result = Origin.MINECRAFT;
@@ -185,7 +213,7 @@ public final class Mc1201Hierarchy {
 
     private void collect(String name, List<String> out, Set<String> seen) {
         if (name == null || !seen.add(name)) return;
-        if (!mod.containsKey(name)) out.add(name);
+        if (!mod.containsKey(name) && !peers.containsKey(name)) out.add(name);
         for (String s : supers(name)) collect(s, out, seen);
     }
 }

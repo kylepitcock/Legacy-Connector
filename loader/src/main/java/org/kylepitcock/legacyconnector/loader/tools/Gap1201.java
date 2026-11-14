@@ -132,7 +132,10 @@ public final class Gap1201 {
                 if (nestedMode == 1 && nestedJar) continue;
                 if (nestedMode == 2 && !nestedJar) continue;
                 if (nestedJar) {
-                    try (java.util.zip.ZipInputStream nested = new java.util.zip.ZipInputStream(zip.getInputStream(e))) {
+                    byte[] nestedBytes = zip.getInputStream(e).readAllBytes();
+                    // a library with a native 1.21.1 build that a mod carries as jar-in-jar (Ars Nouveau's GeckoLib 4.4.4): the game takes the native, newer one
+                    if (!Boolean.getBoolean("gap.keepNativeLibs") && nestedIsNativeLibrary(nestedBytes)) continue;
+                    try (java.util.zip.ZipInputStream nested = new java.util.zip.ZipInputStream(new java.io.ByteArrayInputStream(nestedBytes))) {
                         for (ZipEntry ne; (ne = nested.getNextEntry()) != null; ) {
                             if (!ne.getName().endsWith(".class") || ne.getName().startsWith("META-INF/versions/")) continue;
                             try {
@@ -270,6 +273,26 @@ public final class Gap1201 {
 
     private static final java.util.regex.Pattern MOD_ID = java.util.regex.Pattern.compile("modId\\s*=\\s*\"([^\"]+)\"");
 
+    private static boolean nestedIsNativeLibrary(byte[] jar) {
+        try (java.util.zip.ZipInputStream in = new java.util.zip.ZipInputStream(new java.io.ByteArrayInputStream(jar))) {
+            for (ZipEntry e; (e = in.getNextEntry()) != null; ) {
+                if (!e.getName().equals("META-INF/mods.toml") && !e.getName().equals("META-INF/neoforge.mods.toml")) continue;
+                java.util.regex.Matcher m = MOD_ID.matcher(new String(in.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8));
+                boolean any = false;
+                while (m.find()) {
+                    String id = m.group(1);
+                    if (id.equals("forge") || id.equals("minecraft") || id.equals("neoforge")) continue;
+                    any = true;
+                    if (!org.kylepitcock.legacyconnector.loader.NativeLibraries1201.table().containsKey(id.toLowerCase(java.util.Locale.ROOT))) return false;
+                }
+                return any;
+            }
+        } catch (IOException | RuntimeException ignored) {
+            // unreadable: a normal library
+        }
+        return false;
+    }
+
     private static boolean isNativeLibrary(Path jar) {
         try (ZipFile zip = new ZipFile(jar.toFile())) {
             for (String name : new String[] {"META-INF/mods.toml", "META-INF/neoforge.mods.toml"}) {
@@ -399,12 +422,25 @@ public final class Gap1201 {
         Path dir = keep != null ? Files.createDirectories(Path.of(keep)) : Files.createTempDirectory("gap1201-");
         var transformer = new org.kylepitcock.legacyconnector.loader.transform.Forge1201Transformer(shimIndex());
         List<Path> out = new ArrayList<>();
+        // the classes of all the jars: a mod class that extends a library class of another jar is judged with that class's supertypes and methods
+        var peerSet = new org.kylepitcock.legacyconnector.loader.transform.PeerClasses();
+        for (Path m : mods) {
+            if (!Boolean.getBoolean("gap.keepNativeLibs") && isNativeLibrary(m)) continue;   // replaced by the native build at run time: nobody extends its 1.20.1 classes
+            try {
+                var lj = new org.kylepitcock.legacyconnector.loader.LegacyJar(m);
+                lj.version = org.kylepitcock.legacyconnector.loader.LegacyVersion.V1_20_1;
+                peerSet.add(transformer.scan(lj));
+            } catch (RuntimeException | IOException e) {
+                System.out.println("scan failed for " + m.getFileName() + ": " + e);
+            }
+        }
+        var peers = peerSet.classes();
         for (Path m : mods) {
             Path t = dir.resolve(m.getFileName());
             try {
                 var lj = new org.kylepitcock.legacyconnector.loader.LegacyJar(m);
                 lj.version = org.kylepitcock.legacyconnector.loader.LegacyVersion.V1_20_1;
-                var res = transformer.transform(lj, t);
+                var res = transformer.transform(lj, t, peers);
                 if (res.softLinked > 0) SOFT.computeIfAbsent(m.getFileName().toString(), k -> new TreeSet<>()).addAll(res.softSymbols);
                 if (res.softLinked > 0) System.out.println("soft-linked " + res.softLinked + " symbol(s) in " + m.getFileName());
                 if (res.softLinked > 0 && Boolean.getBoolean("gap.softlist")) res.notes.stream().filter(n -> n.startsWith("Soft link: ") && n.length() > 40).forEach(n -> System.out.println("  " + m.getFileName() + " " + n));

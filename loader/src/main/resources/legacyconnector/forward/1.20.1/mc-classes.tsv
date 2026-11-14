@@ -97,3 +97,9 @@ net/minecraft/network/protocol/game/ServerboundClientInformationPacket	net/minec
 net/minecraft/network/protocol/game/ServerboundResourcePackPacket	net/minecraft/network/protocol/common/ServerboundResourcePackPacket
 net/minecraft/network/protocol/game/ServerboundBlockEntityTagQuery	net/minecraft/network/protocol/game/ServerboundBlockEntityTagQueryPacket
 net/minecraft/network/protocol/game/ServerboundEntityTagQuery	net/minecraft/network/protocol/game/ServerboundEntityTagQueryPacket
+net/minecraft/client/gui/components/Checkbox	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyCheckbox
+net/minecraft/world/item/HorseArmorItem	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyHorseArmorItem
+net/minecraft/world/item/DyeableHorseArmorItem	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyDyeableHorseArmorItem
+net/minecraft/advancements/Advancement$Builder	net/minecraft/advancements/Advancement$Builder
+net/minecraft/advancements/AdvancementList	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyAdvancementList
+net/minecraft/advancements/AdvancementList$Listener	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyAdvancementList$Listener

@@ -461,7 +461,8 @@ final class Mc1201Migration {
         for (int i = 0; i < d.bsmArgs.length; i++) {
             if (!(d.bsmArgs[i] instanceof org.objectweb.asm.Handle hd)) continue;
             int tag = hd.getTag();
-            if (tag < Opcodes.H_INVOKEVIRTUAL || tag > Opcodes.H_NEWINVOKESPECIAL || hd.getOwner().startsWith("[")) continue;
+            // H_INVOKEINTERFACE (9) counts too: Recipe::getId, ItemStack-like interface references are handles of an interface method
+            if (tag < Opcodes.H_INVOKEVIRTUAL || tag > Opcodes.H_INVOKEINTERFACE || hd.getOwner().startsWith("[")) continue;
             boolean ctor = tag == Opcodes.H_NEWINVOKESPECIAL;
             Call rule = null;
             for (String owner : h.minecraftAncestors(hd.getOwner())) {
@@ -492,6 +493,11 @@ final class Mc1201Migration {
             else rule = t.calls.get(owner + "." + call.name + call.desc + "@virtual");   // rows that must not touch super calls
             if (rule == null) rule = t.calls.get(owner + "." + call.name + call.desc);
             if (rule != null) break;
+        }
+        if (rule == null && special && h.reachesUnknown(call.owner)) {
+            // super.appendHoverText(...) through a class of a library that is not in the set (its native 1.21.1 build replaces the 1.20.1 copy): the class is not
+            // known, and the old signature does not exist in it either way, so the rule of the Minecraft method with that name and descriptor applies
+            rule = t.specialRuleFor(call.name, call.desc);
         }
         if (rule == null) return false;
         if (call.getOpcode() != Opcodes.INVOKESTATIC && !special && h.declaredIn(call.owner, call.name, call.desc) == Origin.MOD) return false;

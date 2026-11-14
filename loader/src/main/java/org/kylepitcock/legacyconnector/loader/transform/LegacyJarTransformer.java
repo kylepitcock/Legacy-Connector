@@ -316,6 +316,7 @@ public final class LegacyJarTransformer {
      * into it. Cheap: method bodies are skipped.
      */
     public List<ClassInfo> scan(LegacyJar jar) throws IOException {
+        if (jar.version == LegacyVersion.V1_20_1) return new Forge1201Transformer(shim).scan(jar);
         Contents c = readPatched(jar);
         LegacyRemapper remapper = remapperFor(jar.version, null);
         notchLocals(c.classes, remapper);
@@ -410,7 +411,7 @@ public final class LegacyJarTransformer {
 
     /** @param peers classes of the other legacy jars of the same version (see {@link #scan}), by name */
     public Result transform(LegacyJar jar, Path output, Map<String, ClassInfo> peers) throws IOException {
-        if (jar.version == LegacyVersion.V1_20_1) return new Forge1201Transformer(shim).transform(jar, output);
+        if (jar.version == LegacyVersion.V1_20_1) return new Forge1201Transformer(shim).transform(jar, output, peers);
         Result result = new Result();
         LegacyVersion version = jar.version;
         LegacyRemapper remapper = remapperFor(version, result.demand);

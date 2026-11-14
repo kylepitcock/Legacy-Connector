@@ -30,4 +30,14 @@ public enum NetworkDirection {
     public static NetworkDirection valueOf(int ordinal) {
         return values()[ordinal];
     }
+
+    /**
+     * Wraps data a mod encoded itself into the vanilla packet of a channel ({@code PLAY_TO_CLIENT.buildPacket(Pair.of(buffer, index), channelName).getThis()});
+     * see {@link RawChannels}.
+     */
+    @SuppressWarnings("unchecked")
+    public <T extends ICustomPacket<?>> T buildPacket(org.apache.commons.lang3.tuple.Pair<net.minecraft.network.FriendlyByteBuf, Integer> packetData,
+            net.minecraft.resources.ResourceLocation channelName) {
+        return (T) RawChannels.build(this, packetData.getLeft(), packetData.getRight() == null ? 0 : packetData.getRight(), channelName);
+    }
 }
