@@ -716,9 +716,9 @@ public final class Forge1201MappingProfileValidator {
             List<String> artifactIds = stringArray(item.get("artifactIds"), label + ".artifactIds", errors, 64);
             String declaredStatus = requiredString(item, "status", label, errors);
             List<String> evidenceErrors = new ArrayList<>();
-            List<String> reviewEvidence = stringArray(item.get("reviewEvidence"),
+            List<String> reviewEvidence = optionalStringArray(item.get("reviewEvidence"),
                     label + ".reviewEvidence", evidenceErrors, 128);
-            List<String> identityEvidence = stringArray(item.get("identityEvidence"),
+            List<String> identityEvidence = optionalStringArray(item.get("identityEvidence"),
                     label + ".identityEvidence", evidenceErrors, 128);
             evidenceErrors.forEach(message -> warnings.add("Invalid " + label + " evidence: " + message));
 
@@ -939,6 +939,12 @@ public final class Forge1201MappingProfileValidator {
             return null;
         }
         return value;
+    }
+
+    private static List<String> optionalStringArray(
+            JsonElement element, String location, List<String> warnings, int maximum) {
+        if (element == null || element.isJsonNull()) return List.of();
+        return stringArray(element, location, warnings, maximum);
     }
 
     private static List<String> stringArray(
