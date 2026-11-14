@@ -221,6 +221,17 @@ def verifySrgMojangInputs1201 = tasks.register('verifySrgMojangInputs1201') {
                         fromNamespace: 'minecraft:forge-srg@1.20.1',
                         toNamespace: 'minecraft:official-mojang@1.20.1'
                 ],
+                sourceEdge: [
+                        edgeId: 'forge-srg-to-official-mojang-members-1201',
+                        from: 'minecraft:forge-srg@1.20.1',
+                        to: 'minecraft:official-mojang@1.20.1',
+                        direction: 'FORWARD',
+                        sourceMinecraftVersion: '1.20.1',
+                        targetMinecraftVersion: '1.20.1',
+                        symbolScope: ['method-names', 'field-names'],
+                        status: 'PARTIAL',
+                        reason: 'The output omits class-name and descriptor-type mappings; this is not a complete selector mapping edge.'
+                ],
                 artifacts: [
                         [
                                 artifactId: 'mcpconfig-1201',
