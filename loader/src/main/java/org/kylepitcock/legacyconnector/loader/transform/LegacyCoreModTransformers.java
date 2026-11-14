@@ -69,12 +69,22 @@ public final class LegacyCoreModTransformers {
 
     /** The coremod API flavour a version's plugins link against: 1.7.10's, or Forge 1.6.4's (java.util.logging, getLibraryRequestClass; also 1.5.2). */
     public static LegacyVersion apiFor(LegacyVersion version) {
-        return version.numericIds() ? LegacyVersion.V1_6_4 : LegacyVersion.V1_7_10;
+        return version.numericIds() ? LegacyVersion.V1_6_4 : version == LegacyVersion.V1_12_2 ? LegacyVersion.V1_12_2 : LegacyVersion.V1_7_10;
+    }
+
+    /** Versions whose coremods run: the 1.7.10 family (1.4.7 to 1.7.10) and 1.12.2. */
+    public static boolean supports(LegacyVersion version) {
+        return version.family() == LegacyVersion.V1_7_10 || version == LegacyVersion.V1_12_2;
+    }
+
+    /** The FML package of an API flavour: {@code cpw.mods.fml} (to 1.7.10) or {@code net.minecraftforge.fml} (1.12.2). */
+    private static String fmlPackage(LegacyVersion api) {
+        return api == LegacyVersion.V1_12_2 ? "net.minecraftforge.fml" : "cpw.mods.fml";
     }
 
     /** The cache file name of an API flavour's nested jar. */
     public static String apiJarName(LegacyVersion api) {
-        return api == LegacyVersion.V1_6_4 ? "coremod-api-1.6.4.jar" : "coremod-api.jar";
+        return api == LegacyVersion.V1_6_4 ? "coremod-api-1.6.4.jar" : api == LegacyVersion.V1_12_2 ? "coremod-api-1.12.2.jar" : "coremod-api.jar";
     }
 
     /**
@@ -82,7 +92,7 @@ public final class LegacyCoreModTransformers {
      * there are none or loading failed. Each flavour has its own isolated class loader.
      */
     public static LegacyCoreModTransformers load(List<LegacyJar> jars, Path cacheDir, Path gameDir, String side, Path runtimeJar, LegacyVersion api) {
-        List<LegacyJar> legacy = jars.stream().filter(j -> j.version.family() == LegacyVersion.V1_7_10 && apiFor(j.version) == api).toList();
+        List<LegacyJar> legacy = jars.stream().filter(j -> supports(j.version) && apiFor(j.version) == api).toList();
         List<LegacyJar> coremods = legacy.stream().filter(j -> j.coreModClass != null && !j.coreModClass.isBlank()).toList();
         if (coremods.isEmpty()) return empty();
         try {
@@ -117,11 +127,14 @@ public final class LegacyCoreModTransformers {
             Class<?> lclImpl = api == LegacyVersion.V1_6_4 ? apiLoader.loadClass("cpw.mods.fml.relauncher.RelaunchClassLoader") : lclClass;
             URLClassLoader lcl = (URLClassLoader) lclImpl.getConstructor(URL[].class, ClassLoader.class)
                     .newInstance(urls.toArray(URL[]::new), fml);
+            // Forge 1.12 plugins bootstrap SpongePowered Mixin (MixinBooter and mixin-only coremods): their copy lives in the isolated loader, the game's own is not theirs to drive
+            if (api == LegacyVersion.V1_12_2) lclClass.getMethod("mcc$isolate", String.class).invoke(lcl, "org.spongepowered.");
             openJavaLang(lcl);
             Class<?> launch = apiLoader.loadClass("net.minecraft.launchwrapper.Launch");
             launch.getField("classLoader").set(null, lcl);
-            apiLoader.loadClass("cpw.mods.fml.relauncher.FMLLaunchHandler").getMethod("mcc$setClassLoader", Object.class).invoke(null, lcl);
-            apiLoader.loadClass("cpw.mods.fml.relauncher.FMLInjectionData").getField("mcVersion").set(null, coremods.get(0).version.id());
+            String fmlPkg = fmlPackage(api);
+            apiLoader.loadClass(fmlPkg + ".relauncher.FMLLaunchHandler").getMethod("mcc$setClassLoader", Object.class).invoke(null, lcl);
+            apiLoader.loadClass(fmlPkg + ".relauncher.FMLInjectionData").getField("mcVersion").set(null, coremods.get(0).version.id());
             launch.getField("minecraftHome").set(null, gameDir.toFile());
             @SuppressWarnings("unchecked")
             Map<String, Object> blackboard = (Map<String, Object>) launch.getField("blackboard").get(null);
@@ -131,9 +144,9 @@ public final class LegacyCoreModTransformers {
             blackboard.putIfAbsent("Tweaks", new java.util.ArrayList<Object>());
             blackboard.putIfAbsent("ArgumentList", new java.util.ArrayList<String>());
 
-            Class<?> pluginType = apiLoader.loadClass("cpw.mods.fml.relauncher.IFMLLoadingPlugin");
-            Class<? extends java.lang.annotation.Annotation> sortingIndex = annotation(apiLoader, "SortingIndex");
-            Class<? extends java.lang.annotation.Annotation> exclusionsAnn = annotation(apiLoader, "TransformerExclusions");
+            Class<?> pluginType = apiLoader.loadClass(fmlPkg + ".relauncher.IFMLLoadingPlugin");
+            Class<? extends java.lang.annotation.Annotation> sortingIndex = annotation(apiLoader, fmlPkg, "SortingIndex");
+            Class<? extends java.lang.annotation.Annotation> exclusionsAnn = annotation(apiLoader, fmlPkg, "TransformerExclusions");
             @SuppressWarnings("unchecked")
             Set<String> exclusions = (Set<String>) lclClass.getMethod("mcc$transformerExclusions").invoke(lcl);
             Method addExclusion = lclClass.getMethod("addTransformerExclusion", String.class);
@@ -367,8 +380,8 @@ public final class LegacyCoreModTransformers {
     }
 
     @SuppressWarnings("unchecked")
-    private static Class<? extends java.lang.annotation.Annotation> annotation(ClassLoader loader, String name) throws ClassNotFoundException {
-        return (Class<? extends java.lang.annotation.Annotation>) loader.loadClass("cpw.mods.fml.relauncher.IFMLLoadingPlugin$" + name);
+    private static Class<? extends java.lang.annotation.Annotation> annotation(ClassLoader loader, String fmlPkg, String name) throws ClassNotFoundException {
+        return (Class<? extends java.lang.annotation.Annotation>) loader.loadClass(fmlPkg + ".relauncher.IFMLLoadingPlugin$" + name);
     }
 
     /** Runs every transformer over one legacy class (internal name), in plugin order; failures leave the input. */
@@ -429,6 +442,7 @@ public final class LegacyCoreModTransformers {
      */
     private static final class ShimLoader extends ClassLoader {
         private static final String PREFIX = LegacyVersion.V1_7_10.shimPrefix();
+        private final LegacyVersion hierarchy;
         /** Shim roots tried in order: the 1.6.4 API (ITickHandler, TickType...) lives in its own root over the 1.7.10 one. */
         private final List<String> prefixes;
         private final java.util.zip.ZipFile jar;
@@ -437,7 +451,9 @@ public final class LegacyCoreModTransformers {
         /** @param runtime the runtime jar, or (development) its classes directory */
         ShimLoader(Path runtime, ClassLoader parent, LegacyVersion api) throws java.io.IOException {
             super("legacyconnector-coremod-shim", parent);
-            this.prefixes = api == LegacyVersion.V1_6_4 ? List.of(LegacyVersion.V1_6_4.shimPrefix(), PREFIX) : List.of(PREFIX);
+            this.prefixes = api == LegacyVersion.V1_6_4 ? List.of(LegacyVersion.V1_6_4.shimPrefix(), PREFIX)
+                    : api == LegacyVersion.V1_12_2 ? List.of(LegacyVersion.V1_12_2.shimPrefix()) : List.of(PREFIX);
+            this.hierarchy = api == LegacyVersion.V1_12_2 ? LegacyVersion.V1_12_2 : LegacyVersion.V1_7_10;
             this.dir = Files.isDirectory(runtime) ? runtime : null;
             this.jar = dir == null ? new java.util.zip.ZipFile(runtime.toFile()) : null;
         }
@@ -473,7 +489,7 @@ public final class LegacyCoreModTransformers {
             if (bytes == null) {
                 // A vanilla class the shim has no hand-written version of: coremods still name it (ClassWriter's
                 // frame computation asks for common superclasses), so serve an empty class with its real supertypes.
-                var entryData = org.kylepitcock.legacyconnector.loader.synth.LegacyHierarchyData.forVersion(LegacyVersion.V1_7_10).get(internal);
+                var entryData = org.kylepitcock.legacyconnector.loader.synth.LegacyHierarchyData.forVersion(hierarchy).get(internal);
                 if (entryData == null) {
                     // A Minecraft class of the mod's own version (1.5.2 names such as net.minecraft.network.packet.Packet are not in the 1.7.10
                     // data): mod classes whose static initialisers install transformers (Immibis Core) only name it in signatures, and the verifier

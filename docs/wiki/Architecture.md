@@ -88,7 +88,7 @@ and isolated (today: the DragonAPI crafting/smelting hooks in `CoremodHooks`).
   the legacy mod classes before translation, in a stand-in LaunchWrapper class loader with the legacy FML API, so
   coremods that patch *mod* classes work: CoFH `@Strippable`, AE2 `@Integration`, OpenMods, Steve's Addons, patcher
   mods fixing other mods' API mismatches.
-- Coremod hooks in Minecraft's own classes (1.7.10; 1.6.4, 1.5.2 and 1.4.7 are scanned the same way into their own list, 1.12.2 not yet): those classes do not exist at run time, so on a cache-miss translation the loader shows the
+- Coremod hooks in Minecraft's own classes (1.7.10; 1.6.4, 1.5.2, 1.4.7 and 1.12.2 are scanned the same way into their own list; the 1.12.2 list is written but not yet replayed at run time: there is no `CoremodSites1122`): those classes do not exist at run time, so on a cache-miss translation the loader shows the
   transformers the original 1.7.10 client classes (`VanillaJar` finds the jar in a launcher folder, `coremods.vanillaJar`, or downloads it from Mojang
   with `coremods.downloadVanilla=true`; only the exact official file is accepted and it is never shipped), first obfuscated and then in SRG names
   (`CoremodHookScan`). `CoremodHookDiscovery` diffs each method and records every added static call with a site key
@@ -99,6 +99,12 @@ and isolated (today: the DragonAPI crafting/smelting hooks in `CoremodHooks`).
   Minecraft method, never by mod. One start-up log line gives hooks found, replayed and without a place (`-Dlegacyconnector.coremodHooks.report=full`
   lists them). Limits: Forge's binary patches are not applied before the transformers, so a transformer looking for a Forge-added instruction finds
   nothing; whole-class replacements are not handled.
+- 1.12.2 coremods: the `FMLCorePlugin` plugins of 1.12.2 jars run in the same isolated loader as the 1.7.10 ones, over their own API flavour (`loader/src/coremodApi1122`:
+  `net.minecraftforge.fml.relauncher.*`, `FMLLog`, AT/deobfuscation stand-ins and `CoreModManager`, packed as `legacy/1.12.2/coremod-api.jar` next to the shared
+  LaunchWrapper classes; the shim is served with the `legacyconnector/v1_12_2/` prefix undone). Their class transformers run over the 1.12.2 mod classes before
+  translation and are shown the original 1.12.2 client classes (`legacy/1.12.2/notch.txt`, from `tools/extract_legacy_signatures.py 1.12.2`). A plugin's own
+  SpongePowered Mixin copy (MixinBooter, mixin-only coremods) is isolated in that loader (`LaunchClassLoader.mcc$isolate`) so it never drives the game's Mixin;
+  such plugins fail to bootstrap there and are skipped with one log line.
 - LaunchWrapper's `Launch.blackboard` / `Launch.classLoader`.
 - Resource URLs: mod jars are served from NeoForge's `union:` file system; mods that list their own jar's files
   (checking for `jar:`/`file:` URLs) get the equivalent `jar:file:` URL.

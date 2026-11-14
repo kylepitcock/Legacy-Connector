@@ -144,7 +144,7 @@ with zipfile.ZipFile(os.path.join(ROOT, "mojang", "client-%s.jar" % ver)) as jar
             out.append("M %s %s %d %s" % (names.get(srg, srg), remap(md), ma, srg))
 dst = os.path.join(ROOT, "legacy-%s.sig" % ver)
 open(dst, "w").write("\n".join(out) + "\n")
-if ver in ("1.4.7", "1.5.2", "1.6.4", "1.7.10"):
+if ver in ("1.4.7", "1.5.2", "1.6.4", "1.7.10", "1.12.2"):
     nd = os.path.join(ROOT, "..", "..", "loader", "src", "main", "resources", "legacyconnector", "legacy", ver)
     open(os.path.join(nd, "notch.txt"), "w").write("\n".join(notch) + "\n")
 print("wrote", dst, sum(1 for l in out if l.startswith("C ")), "classes")
