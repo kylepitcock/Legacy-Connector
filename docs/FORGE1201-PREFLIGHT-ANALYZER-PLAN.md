@@ -1,4 +1,4 @@
-**Current checkpoint — 2026-11-14:** Schema 1.9A/1.9B passed the user's forced loader gate at `242744d1baf94dc1c523b3a873a6463017184081` (`BUILD SUCCESSFUL in 45s; 14/14 actionable tasks executed`). The cleanup and documentation-only branch updates are committed through `a73cf0198ef7309cbd5d1eecf634a4d4bfbbd7f4`. Schema 1.10 explicit mapping-profile contract design is now documented; it adds no source code and does not yet provide the missing 1.20.1 → 1.21.1 cross-version mapping edge. Next: implement Schema 1.10A profile/provenance parsing and validation only, with no selector rewriting. Static tests remain separate from runtime Mixin/modpack validation.
+**Current checkpoint — 2026-11-14:** Schema 1.9A/1.9B passed the user's forced loader gate at `242744d1baf94dc1c523b3a873a6463017184081` (`BUILD SUCCESSFUL in 45s; 14/14 actionable tasks executed`). Schema 1.10 mapping-profile design is complete, and Schema 1.10A parser/validator, unified preflight integration, Gradle profile input, and synthetic tests are now committed. **Schema 1.10A user forced loader gate is pending**; do not mark it green before the user's `:loader:clean :loader:test --no-daemon --console=plain --rerun-tasks` run. No mapping is applied and no Mixin selector is rewritten. The actual 1.20.1 → 1.21.1 cross-version mapping edge remains missing. Static profile validation is not runtime Mixin/modpack validation.
 
 ---
 
@@ -1176,3 +1176,58 @@ Implement profile schema parsing and validation only:
 - Synthetic valid/invalid profile tests.
 
 **Do not yet apply mappings to selector strings.** Schema 1.10B may validate the pinned source edge and its actual coverage. Cross-version mapping and target selector checks remain later gates.
+
+
+---
+
+## 2026-11-14 — Schema 1.10A mapping-profile validator implemented; user test gate pending
+
+### Scope and implementation
+
+Design: `docs/FORGE1201-PREFLIGHT-SCHEMA-1.10-MAPPING-PROFILE-DESIGN.md`.
+
+New source:
+- `loader/src/main/java/org/kylepitcock/legacyconnector/loader/tools/forge1201/Forge1201MappingProfileValidator.java`
+
+New synthetic tests:
+- `loader/src/test/java/org/kylepitcock/legacyconnector/loader/tools/forge1201/Forge1201MappingProfileValidatorTest.java`
+
+Unified preflight:
+- `Forge1201PreflightAnalyzer` advances report schema/analyzer to `1.10 / 1.10.0`.
+- `PreflightResult.mappingProfile` carries immutable profile, artifact, edge, and context-path findings into JSON.
+- Human-readable output prints profile status, exact profile digest, namespaces/versions, artifact SHA-256/upstream checksum/license states, directed/versioned edges, context candidate paths, and warnings/errors.
+- Optional CLI: `--mapping-profile <path>`.
+- Optional Gradle property: `-PpreflightMappingProfile=<path>`. The root `build.gradle` change was inserted while preserving the file's original CRCRLF line endings; its commit patch contains seven additions and no deletions.
+
+### Validation implemented
+
+- Strict UTF-8 and strict JSON parsing, duplicate object member rejection, 1 MiB profile cap, 64 JSON nesting levels.
+- Bounds: 64 refmap context bindings, 256 edges, 512 artifacts, 512 MiB per materialized artifact, and 100,000 edge examinations per context graph search.
+- Explicit context and separate base-table namespace bindings, each requiring evidence.
+- Directed `FORWARD` edges with per-edge source/target Minecraft versions and namespace endpoints; paths must be version-contiguous from the source profile version to the target profile version.
+- Complete selector scope requires class names, method names, field names, and descriptors.
+- Unique edge/artifact IDs, exact artifact coordinate-or-URL declaration, SHA-256 matching, optional upstream SHA-1/SHA-256 matching, profile-relative forward-slash artifact paths, and symlink escape protection.
+- Artifact and profile-level license metadata/evidence; license review must be required and artifact state must be reviewed.
+- Explicit identity edges require evidence, full selector scope, and unchanged Minecraft version. They are recorded only; the validator never applies them.
+- Enabled runtime refmap remapping is blocking because Schema 1.10A does not execute or model that runtime stage.
+- Path search reports no path, ambiguous path, or explicit search-budget exhaustion. No zero-hop or same-name identity is inferred.
+
+### Synthetic regression cases
+
+Tests cover a complete declared path, partial/missing path, multiple complete paths, per-edge Minecraft-version discontinuity, unsupported reverse direction, mapping artifact SHA-256 mismatch, upstream SHA-1 mismatch, pending license review, enabled-but-unmodeled runtime remapping, profile-level license-review opt-out, unsupported profile schema, duplicate JSON object members, unbound base table, absent profile, missing profile file, and unified JSON/text preflight integration.
+
+### Validation truth
+
+**Implementation and synthetic tests have been added, but have not been compiled or executed by the user.** The last confirmed green code gate remains Schema 1.9A/1.9B at `242744d1baf94dc1c523b3a873a6463017184081` (`BUILD SUCCESSFUL in 45s; 14/14 tasks executed`). Schema 1.10A remains pending until the user runs the forced loader gate at the exact latest branch tip.
+
+**Scope boundary:** Schema 1.10A does not parse or apply mapping table contents, rewrite selectors, resolve target members, inspect injection-point instructions, execute plugins/wrappers, or prove semantic mapping correctness. The complete Forge/Minecraft 1.20.1 → 1.21.1 symbol mapping edge is still missing.
+
+### Exact next user action
+
+Guarded fast-forward from the user's last confirmed local HEAD `eb7caf2674253cd0cb759c2eb5a64fd4a724b5b1` to the latest remote branch tip in the continuation handoff, then run:
+
+```powershell
+.\gradlew.bat :loader:clean :loader:test --no-daemon --console=plain --rerun-tasks
+```
+
+Review the first concrete compile/test failure if any. Do not proceed to Schema 1.10B until this forced gate passes.
