@@ -470,22 +470,23 @@ public final class Forge1201MappingProfileValidator {
         }
         collectUnknownFields(object, PROFILE_LICENSE_FIELDS, "licenseReview", warnings);
         JsonElement required = object.get("required");
+        Boolean requiredValue = null;
         if (required == null || !required.isJsonPrimitive()
                 || !required.getAsJsonPrimitive().isBoolean()) {
             errors.add("licenseReview.required must be a boolean.");
-        } else if (!required.getAsBoolean()) {
-            warnings.add("Profile-level license review is marked not required; individual artifact license declarations are still mandatory.");
+        } else {
+            requiredValue = required.getAsBoolean();
+            if (!requiredValue) {
+                warnings.add("Profile-level license review is marked not required; individual artifact license declarations are still mandatory.");
+            }
         }
         if (object.has("evidence")) {
             List<String> evidence = stringArray(object.get("evidence"),
                     "licenseReview.evidence", errors, 128);
-            if (Boolean.TRUE.equals(required != null && required.isJsonPrimitive()
-                    && required.getAsJsonPrimitive().isBoolean() ? required.getAsBoolean() : null)
-                    && evidence.isEmpty()) {
+            if (Boolean.TRUE.equals(requiredValue) && evidence.isEmpty()) {
                 errors.add("Required profile-level license review has no evidence.");
             }
-        } else if (Boolean.TRUE.equals(required != null && required.isJsonPrimitive()
-                && required.getAsJsonPrimitive().isBoolean() ? required.getAsBoolean() : null)) {
+        } else if (Boolean.TRUE.equals(requiredValue)) {
             errors.add("licenseReview.evidence is required when profile-level review is required.");
         }
     }
