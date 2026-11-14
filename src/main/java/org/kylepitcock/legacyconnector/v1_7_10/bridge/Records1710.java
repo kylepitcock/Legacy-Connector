@@ -24,6 +24,12 @@ public final class Records1710 {
         return ResourceLocation.fromNamespaceAndPath("legacyconnector", "records/" + Ids.normalizePath(disc.recordName));
     }
 
+    /** The song key of a mod disc, for the item's {@code jukebox_playable} component (null for vanilla discs, which have their own). */
+    public static net.minecraft.resources.ResourceKey<JukeboxSong> songKey(Object item) {
+        if (!(item instanceof ItemRecord disc) || disc.mcc$vanilla != null) return null;
+        return net.minecraft.resources.ResourceKey.create(Registries.JUKEBOX_SONG, key(disc));
+    }
+
     /** The registry id of the song of a legacy disc item id, or -1 when the item is no disc or the level does not know its song. */
     public static int songId(LevelAccessor level, int legacyItemId) {
         if (level == null) return -1;

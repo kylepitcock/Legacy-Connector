@@ -976,7 +976,11 @@ public final class RenderContext {
         if (entity) {
             vc.setOverlay(overlay);
             vc.setLight(s.lightmap ? (int) x[6] : LightTexture.FULL_BRIGHT); // lightmap unit off: its brightness was not applied
-            vc.setNormal(last, nx, ny, nz);
+            // GL lighting off (RenderHelper.disableStandardItemLighting, glDisable(GL_LIGHTING)): 1.7.10 drew the colour as is. The modern
+            // entity shader always shades by the normal (sides and undersides 20-40% darker, a TESR-drawn model darker than the same model
+            // in the chunk mesh); straight up is the one direction the level lighting leaves at full brightness.
+            if (!s.lighting && gui(s) == null) vc.setNormal(0F, 1F, 0F);
+            else vc.setNormal(last, nx, ny, nz);
         }
     }
 
