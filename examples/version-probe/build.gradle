@@ -19,7 +19,7 @@ neoForge {
 dependencies {
     // The addon API only: `./gradlew apiJar` in the repository root builds it. compileOnly: at runtime it is inside the Legacy Connector jar.
     // Pass -PlegacyApiJar=<path> if the version differs.
-    compileOnly files(project.findProperty('legacyApiJar') ?: '../../build/dist/legacyconnector-api-0.4.7.jar')
+    compileOnly project.findProperty('legacyApiJar') ? files(project.findProperty('legacyApiJar')) : fileTree(dir: '../../build/dist', include: 'legacyconnector-api-*.jar', exclude: '*-sources.jar')
 }
 
 tasks.named('processResources') {
