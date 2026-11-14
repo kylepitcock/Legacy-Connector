@@ -1,4 +1,4 @@
-**Current checkpoint — 2026-11-14:** Schema 1.9A refmap resource/table inventory and Schema 1.9B owner-scoped exact lookup correlation both passed the user's forced `:loader:clean :loader:test --no-daemon --console=plain --rerun-tasks` gate at `242744d1baf94dc1c523b3a873a6463017184081` (`BUILD SUCCESSFUL in 45s; 14/14 actionable tasks executed`). Follow-up commit `af12df84f62850c49a5a111515e16e76561d8e6c` restores the exact tested-parent `build.gradle` blob to remove line-ending-only churn; no post-cleanup Gradle rerun is recorded yet. Schema 1.9 validation is static/synthetic only: it does not prove runtime Mixin application or mod compatibility.
+**Current checkpoint — 2026-11-14:** Schema 1.9A/1.9B passed the user's forced loader gate at `242744d1baf94dc1c523b3a873a6463017184081` (`BUILD SUCCESSFUL in 45s; 14/14 actionable tasks executed`). The cleanup and documentation-only branch updates are committed through `a73cf0198ef7309cbd5d1eecf634a4d4bfbbd7f4`. Schema 1.10 explicit mapping-profile contract design is now documented; it adds no source code and does not yet provide the missing 1.20.1 → 1.21.1 cross-version mapping edge. Next: implement Schema 1.10A profile/provenance parsing and validation only, with no selector rewriting. Static tests remain separate from runtime Mixin/modpack validation.
 
 ---
 
@@ -1129,3 +1129,50 @@ The next implementation must remain blocked until the design establishes a fully
 Keep the project goal as reusable, evidence-driven, modpack-ready compatibility infrastructure for Forge 1.20.1-exclusive mods on NeoForge 1.21.1—not a one-off adapter. Static analyzer success is a prerequisite, not a mod compatibility verdict.
 
 Palladium + Alien Evolution remain paused and isolated in their own workstream. Legends core followed by Legends: Superheroes remains a later dependency-ordered candidate pair. Do not mix either into the Universal analyzer branch.
+
+
+---
+
+## 2026-11-14 — Schema 1.10 mapping-profile contract designed
+
+### Design document and source checkpoint
+
+- Design: `docs/FORGE1201-PREFLIGHT-SCHEMA-1.10-MAPPING-PROFILE-DESIGN.md`
+- Design commit: `a73cf0198ef7309cbd5d1eecf634a4d4bfbbd7f4`
+- Branch: `feat/forge1201-preflight-analyzer`
+- Schema 1.9A/1.9B user-run green code checkpoint: `242744d1baf94dc1c523b3a873a6463017184081` (`BUILD SUCCESSFUL in 45s; 14/14 forced loader tasks executed).
+
+### Verified repository audit
+
+The design audits the current `Forge1201MappingCatalog`, `Forge1201SrgNameMappings`, generated `SrgMojangTable`, loader mapping-generation task, and `Forge1201TargetApiVerifier.TargetIndex`.
+
+The source mapping inputs currently declared by the build are MCPConfig `1.20.1-20230612.114412` / `config/joined.tsrg`, combined with Mojang's content-addressed 1.20.1 client mappings file. The user's last successful test log generated 64,225 SRG → Mojang member-name rows. The generated table is useful source-version member-name normalization, but is not the missing 1.20.1 → 1.21.1 mapping edge and is not an owner/descriptor-complete cross-version selector map.
+
+The target build pins Minecraft 1.21.1, NeoForge 21.1.258, ModDevGradle 2.0.148, and Parchment 2024.11.17. NeoForge's 1.21.1 MDK uses Mojang's official method/field names by default; Parchment adds parameter names and Javadocs. The exact resolved target classpath must still be captured for each static verification.
+
+### Core design decisions
+
+- Keep Schema 1.9 refmap lookup separate from namespace mapping.
+- Treat context keys such as `searge` as opaque until a versioned profile explicitly binds them to a namespace with evidence.
+- Represent mapping as a directed graph of version-bound edges with direction, namespace IDs, symbol coverage, parser/provider versions, exact artifact identity, SHA-256, licensing, and provenance.
+- Transform selectors as typed structures, not blanket text replacements. Owner classes, member names, descriptor object types, and arrays need declared coverage.
+- Keep Minecraft, Forge API, NeoForge API, connector shim, and mod-owned symbols in separate domains.
+- Do not infer cross-version identity from same-name strings.
+- Reuse `Forge1201TargetApiVerifier.TargetIndex` after a complete target selector candidate exists; do not create a second hierarchy cache.
+- Keep Mixin runtime remapping, plugins, and custom wrappers separate and unexecuted unless exact runtime inputs are supplied.
+
+### Important gap and boundary
+
+There is **no complete, reviewed Minecraft 1.20.1 official-Mojang → 1.21.1 official-Mojang symbol edge** in the current repository. The Forge API package/adapter catalog is a different migration domain. Selector rewriting must remain blocked until that cross-version edge (or a bounded, versioned subset of it) has artifact-level evidence.
+
+### Next bounded implementation — Schema 1.10A
+
+Implement profile schema parsing and validation only:
+- Explicit source/target versions and namespace IDs.
+- Explicit refmap context-to-namespace bindings.
+- Directed edge graph, connectivity, direction, coverage, and ambiguity checks.
+- Artifact identity, checksum, and license/provenance records.
+- Deterministic incomplete/missing/mismatched states.
+- Synthetic valid/invalid profile tests.
+
+**Do not yet apply mappings to selector strings.** Schema 1.10B may validate the pinned source edge and its actual coverage. Cross-version mapping and target selector checks remain later gates.
