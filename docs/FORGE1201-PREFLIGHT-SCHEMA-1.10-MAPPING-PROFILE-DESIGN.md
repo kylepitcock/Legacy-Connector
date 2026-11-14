@@ -1,6 +1,6 @@
 # Schema 1.10 — Explicit Mapping-Profile Contract Design
 
-**Status:** Schema 1.10A is user-validated green at `cc651af52b192fb534d49f3ad494b42e3d15d6f0`. Schema 1.10B's corrected forced loader gate is user-validated green at `493cae748f89f88308a7e1b98ea583d2e58871af` (`BUILD SUCCESSFUL in 50s; 17/17 tasks`), and its provenance JSON has been reviewed. A follow-up test for same-name duplicate SRG IDs across owners is committed at `9347a08fad3844f494c5635b28871afe062929c2` and awaits the next forced gate. The generated TSV is included in the loader JAR, while the report says licensing is `NOT_REVIEWED_BY_THIS_BUILD_TASK`; distribution review remains open. No selector transformation is implemented.
+**Status:** Schema 1.10A is user-validated green at `cc651af52b192fb534d49f3ad494b42e3d15d6f0`. Schema 1.10B and its follow-up repeated-SRG-ID regression test are user-validated green at `755281d3b91a6cb1b818f5a927728cc412a6ec71` (`BUILD SUCCESSFUL in 50s; 17/17 tasks`). The provenance JSON has been reviewed. The generated TSV is included in the loader JAR while redistribution review remains unresolved. No selector transformation is implemented.
 **Design baseline:** Universal analyzer branch `feat/forge1201-preflight-analyzer`; current implementation status and exact tested/untested boundary are recorded in the analyzer plan and continuation handoff.  
 **Input feature:** Schema 1.9A/1.9B Mixin 0.8.5 refmap inventory and exact owner-scoped lookup.  
 **Target:** Minecraft 1.21.1 / NeoForge 21.1.258.  
@@ -477,7 +477,7 @@ Schema 1.10 profile support is acceptable only when:
 
 The validator still performs structural profile checks only. It does not load/apply the generated mapping table, validate the semantic contents of mappings, rewrite selectors, or prove runtime compatibility.
 
-### Schema 1.10B source-edge validation — implementation and initial gate green; follow-up coverage pending
+### Schema 1.10B source-edge validation — implementation and repeated-ID regression gate green
 
 Current source branch work (not yet user-tested):
 - `SrgMojangTable` now exposes exact join coverage counts for Mojang class/method/field rows and MCPConfig class/method/field rows, matched/unmatched method and field rows, duplicate mapping keys, duplicate SRG identifiers, and total output rows.
@@ -521,7 +521,7 @@ The test-only correction is committed at `e03c55daa6fd01e0855774e53a4255beedbad1
 - Generated TSV is 1,607,917 bytes, SHA-256 `6353b8354260dc711b09e7540542ff5f2498635e021e4110870dd33ff466e175`, 64,225 rows. `outputRows` equals the generated `rowCount`.
 - `duplicateSrgIds=15353` means repeated SRG-ID row occurrences beyond the first. All were accepted only because their mapped names agreed; the generator would have failed on conflicting names. The count is not the number of distinct repeated IDs.
 - Packaging/license gate: `licensing.reviewStatus` is `NOT_REVIEWED_BY_THIS_BUILD_TASK`. The loader JAR task includes the generated TSV. Its distribution status therefore remains unresolved and must be reviewed before release; the JSON's build-local status is not a legal determination.
-- To harden the repeated-ID contract, commit `9347a08fad3844f494c5635b28871afe062929c2` adds tests for identical SRG IDs reused across owners with equal names (accepted/coalesced) and differing names (rejected). That incremental test gate is pending.
+- To harden the repeated-ID contract, commit `9347a08fad3844f494c5635b28871afe062929c2` adds tests for identical SRG IDs reused across owners with equal names (accepted/coalesced) and differing names (rejected). Both passed in the forced loader gate at `755281d3b91a6cb1b818f5a927728cc412a6ec71` (`BUILD SUCCESSFUL in 50s; 17/17 actionable tasks`).
 
 ### Mojang mapping redistribution note — inspected 2026-11-15
 
@@ -530,3 +530,12 @@ The exact Mojang 1.20.1 client mapping input begins with the Microsoft 2020 noti
 Because the generated `srg-mojang.tsv` is packaged into the loader JAR, its distribution permission is unresolved. The generator's partial/member-name-only output and absence of the original `client.txt` do not themselves establish a license grant. Do not release the packaged table until the project has written permission or qualified legal review. This is a release/licensing gate, not a technical test failure or a legal conclusion that the table is forbidden.
 
 Official references: [Minecraft EULA](https://www.minecraft.net/en-us/eula), [Minecraft Usage Guidelines](https://www.minecraft.net/en-us/usage-guidelines).
+
+### Repeated SRG-ID regression gate — user-validated green (2026-11-15)
+
+- Tested source code includes `9347a08fad3844f494c5635b28871afe062929c2` and is reachable from branch tip `755281d3b91a6cb1b818f5a927728cc412a6ec71`.
+- User transcript initially displayed `Unexpected HEAD` because the guard expected `493cae...`, but the actual local HEAD was already `ee0196...`. The later fast-forward `ee0196f3..755281d3` succeeded; the regression commit was already in the ancestor, so the run included the new tests.
+- Forced run: `:loader:clean :loader:test --no-daemon --console=plain --rerun-tasks`; **BUILD SUCCESSFUL in 50s; 17/17 actionable tasks**.
+- The same-name cross-owner duplicate coalescing test and different-name cross-owner conflict test are now user-validated green.
+- The only failure was the stale PowerShell precondition. It did not represent a failed fast-forward or build. No second test run is needed solely to address that message.
+- Technical source-edge test gate is green; mapping redistribution review remains separate and unresolved. The actual 1.20.1 → 1.21.1 edge is still missing; no selector rewriting.
