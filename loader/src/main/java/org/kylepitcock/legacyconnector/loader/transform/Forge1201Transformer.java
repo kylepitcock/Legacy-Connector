@@ -500,6 +500,7 @@ public final class Forge1201Transformer {
         // the soft link runs when every class of the jar has been migrated: references to the mod's own members are judged by their final declarations
         for (ClassNode node : nodes) {
             if (PalladiumKubeJS1201.dropLegacyKubejsClass(node.name)) continue;
+            dropDuplicateBridges(node, result);
             int softened = soft == null ? 0 : soft.apply(node);
             byte[] bytes;
             if (migrated.get(node) > 0 || softened == 2) {
@@ -524,6 +525,9 @@ public final class Forge1201Transformer {
             if (node.name.startsWith(Mc1201Tables.HELPER_PACKAGE.substring(0, Mc1201Tables.HELPER_PACKAGE.lastIndexOf("migrate/"))) && !ownClasses.contains(node.name)) continue;
             outClasses.put(node.name + ".class", bytes);
             result.classes++;
+        }
+        for (String standIn : mc.itemPredicateStandIns) {
+            if (outClasses.putIfAbsent(standIn + ".class", ItemPredicateStandIn1201.generate(standIn)) == null) result.classes++;
         }
         if (soft != null && soft.stats.symbols() > 0) {
             result.notes.add("Soft link: " + soft.stats.summary() + " that 1.21.1 lacks were replaced by stand-ins (the mod loads, only the features using them fail; experimental.forge1201.softlink=false turns this off)");
@@ -708,6 +712,30 @@ public final class Forge1201Transformer {
     private static final String SUBSCRIBER_DESC = "Lnet/neoforged/fml/common/Mod$EventBusSubscriber;";
 
     /** Relocates string constants and annotation values that name isolated classes, and swaps the mod id of an isolated library's own annotations. */
+    /**
+     * Two classes of the old API that 1.21.1 merged (or a renamed return type) turn covariant bridge methods of a mod class into duplicates
+     * ({@code CoreGeoBone getParent()} and {@code GeoBone getParent()} both became {@code GeoBone getParent()}): the JVM rejects the class
+     * ("Duplicate method name ... with signature"). A synthetic/bridge duplicate is dropped, the declared method stays.
+     */
+    private static void dropDuplicateBridges(ClassNode node, LegacyJarTransformer.Result result) {
+        int flags = org.objectweb.asm.Opcodes.ACC_BRIDGE | org.objectweb.asm.Opcodes.ACC_SYNTHETIC;
+        java.util.Map<String, MethodNode> seen = new java.util.HashMap<>();
+        java.util.List<MethodNode> drop = new java.util.ArrayList<>();
+        for (MethodNode m : node.methods) {
+            MethodNode first = seen.putIfAbsent(m.name + m.desc, m);
+            if (first == null) continue;
+            if ((m.access & flags) != 0 || (first.access & flags) == 0) {
+                drop.add(m);
+            } else {
+                drop.add(first);
+                seen.put(m.name + m.desc, m);
+            }
+        }
+        if (drop.isEmpty()) return;
+        node.methods.removeAll(drop);
+        result.notes.add("Class " + node.name.replace('/', '.') + ": " + drop.size() + " duplicate bridge method(s) left by a renamed return type were dropped");
+    }
+
     private void isolate(ClassNode node) {
         for (MethodNode m : node.methods) {
             if (m.instructions != null) {

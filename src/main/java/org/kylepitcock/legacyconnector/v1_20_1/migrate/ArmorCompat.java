@@ -42,6 +42,11 @@ public final class ArmorCompat {
     }
 
     /** The item properties of an armor piece: 1.20.1 derived the durability from the material and type. */
+    /** 1.20.1 {@code ArmorItem.Type.values()}: the four wearable slots (1.21.1 added BODY; mods size arrays by the length). */
+    public static ArmorItem.Type[] typeValues() {
+        return new ArmorItem.Type[] {ArmorItem.Type.HELMET, ArmorItem.Type.CHESTPLATE, ArmorItem.Type.LEGGINGS, ArmorItem.Type.BOOTS};
+    }
+
     public static Item.Properties properties(LegacyArmorMaterial material, ArmorItem.Type type, Item.Properties props) {
         return props.durability(material.getDurabilityForType(type));
     }

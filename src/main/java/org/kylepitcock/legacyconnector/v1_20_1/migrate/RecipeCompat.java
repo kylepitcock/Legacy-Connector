@@ -48,6 +48,12 @@ public final class RecipeCompat {
         return found.stream().map(RecipeHolder::value).toList();
     }
 
+    /** {@code getAllRecipesFor(type)}: 1.21.1 lists {@code RecipeHolder}s, 1.20.1 listed the recipes (the erased list type is the same: a cast failed in the mod). */
+    public static List getAllRecipesFor(RecipeManager manager, RecipeType type) {
+        List<RecipeHolder> found = manager.getAllRecipesFor(type);
+        return found.stream().map(RecipeHolder::value).toList();
+    }
+
     public static boolean contains(net.minecraft.stats.ServerRecipeBook book, Recipe recipe) {
         if (book == null || recipe == null) return false;
         net.minecraft.resources.ResourceLocation id = getId(recipe);

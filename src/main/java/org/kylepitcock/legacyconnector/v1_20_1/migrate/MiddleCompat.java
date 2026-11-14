@@ -452,6 +452,13 @@ public final class MiddleCompat {
         return k.codec().codec();
     }
 
+    /** {@code KeyDispatchDataCodec.of(Codec)}: 1.21.1 takes a {@code MapCodec}. */
+    public static <A> net.minecraft.util.KeyDispatchDataCodec<A> keyDispatchOf(com.mojang.serialization.Codec<A> codec) {
+        com.mojang.serialization.MapCodec<A> map = codec instanceof com.mojang.serialization.MapCodec.MapCodecCodec<A> m
+                ? m.codec() : com.mojang.serialization.MapCodec.assumeMapUnsafe(codec);
+        return net.minecraft.util.KeyDispatchDataCodec.of(map);
+    }
+
     /** {@code ExtraCodecs.lazyInitializedCodec(Supplier)}. */
     public static <A> com.mojang.serialization.Codec<A> lazyInitializedCodec(java.util.function.Supplier<com.mojang.serialization.Codec<A>> supplier) {
         return com.mojang.serialization.Codec.lazyInitialized(supplier);
