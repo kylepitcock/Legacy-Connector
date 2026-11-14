@@ -102,6 +102,29 @@ public class LegacyB173Screen extends AbstractContainerScreen<LegacyB173Menu> {
         if(!backgroundPrepared)super.renderBackground(g,mouseX,mouseY,partialTick);
     }
 
+    /**
+     * A screen handed over from the integrated server edits the server player's legacy view on this thread (a trade takes coins and gives
+     * goods through {@code player.inventory}). Beta had one player object; here the view's changes are written to the native player on the
+     * server thread, bounded so a stalled server cannot hang the screen.
+     */
+    private static void commitPlayer() {
+        var minecraft = net.minecraft.client.Minecraft.getInstance();
+        var server = minecraft.getSingleplayerServer();
+        if (server == null || minecraft.player == null) return;
+        var id = minecraft.player.getUUID();
+        try {
+            server.submit(() -> {
+                var player = server.getPlayerList().getPlayer(id);
+                var view = player == null ? null : org.kylepitcock.legacyconnector.vb1_7_3.PlayerViewB173.existing(player);
+                if (view != null) view.writeBack();
+            }).get(2, java.util.concurrent.TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } catch (java.util.concurrent.ExecutionException | java.util.concurrent.TimeoutException e) {
+            org.slf4j.LoggerFactory.getLogger("LegacyConnector/b1.7.3").warn("b1.7.3 screen changes to the player could not be written back: {}", e.toString());
+        }
+    }
+
     @Override
     protected void containerTick() {
         if (!live()) return;
@@ -117,6 +140,7 @@ public class LegacyB173Screen extends AbstractContainerScreen<LegacyB173Menu> {
         if (live()) {
             try {
                 gui.mcc$mouseClicked((int) mouseX, (int) mouseY, button);
+                commitPlayer();
             } catch (RuntimeException | LinkageError e) {
                 fail("mouseClicked", e);
             }
@@ -129,6 +153,7 @@ public class LegacyB173Screen extends AbstractContainerScreen<LegacyB173Menu> {
         if (live()) {
             try {
                 gui.mcc$mouseReleased((int) mouseX, (int) mouseY, button);
+                commitPlayer();
             } catch (RuntimeException | LinkageError e) {
                 fail("mouseMovedOrUp", e);
             }
@@ -161,6 +186,7 @@ public class LegacyB173Screen extends AbstractContainerScreen<LegacyB173Menu> {
     private void legacyKey(char c, int code) {
         try {
             gui.mcc$keyPressed(c, code);
+            commitPlayer();
         } catch (RuntimeException | LinkageError e) {
             fail("keyTyped", e);
         }

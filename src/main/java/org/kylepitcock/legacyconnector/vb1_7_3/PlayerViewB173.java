@@ -49,6 +49,9 @@ public final class PlayerViewB173 extends legacyconnector.vb1_7_3.net.minecraft.
         this.mcc$modern = player;
     }
 
+    /** The view a callback already holds for this player, without re-reading the native player into it (which would drop its pending changes). */
+    public static PlayerViewB173 existing(Player player){synchronized(VIEWS){return VIEWS.get(player);}}
+
     public static PlayerViewB173 of(Player player) {
         PlayerViewB173 view;
         synchronized (VIEWS) {
