@@ -149,7 +149,10 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
 
     /** Forge: whether the state has a tile entity (BlockContainer says yes). */
     public boolean hasTileEntity(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
-        return hasTileEntity(); // Forge: an ITileEntityProvider (mcjtylib's GenericBlock is one without being a BlockContainer) has one
+        if (hasTileEntity()) return true; // Forge: an ITileEntityProvider (mcjtylib's GenericBlock is one without being a BlockContainer) has one
+        // a game block or a modern mod's block with a block entity (a barrel, a chest): legacy code asks before it looks for the tile entity
+        return mcc$modern instanceof net.minecraft.world.level.block.EntityBlock
+                && !(mcc$modern instanceof org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122Block);
     }
 
     public legacyconnector.v1_12_2.net.minecraft.tileentity.TileEntity createTileEntity(legacyconnector.v1_12_2.net.minecraft.world.World world,
