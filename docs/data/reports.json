@@ -137,7 +137,7 @@
    "mod": "Kindred Legacy pre-1.3_1",
    "mc": "1.8 - 1.12.2",
    "status": "partial",
-   "details": "- Most base mob AI seems to work fine - Both Vastaya Ninetales and Foxfire Zorua are unable to attack - their projectile entities fail to spawn - Immortal Arcanine lacks some animations and the ability to jump while being ridden - Both Immortal Arcanine and Firecracker Litten lack firework particles when using their attacks - Natural mob spawning doesn't seem to work, though I suspect it probably…",
+   "details": "- Most base mob AI seems to work fine - Vastaya Ninetales is unable to summon fireballs below y=0 - Foxfire Zorua is unable to summon foxfires when not exposed to skylight - Immortal Arcanine lacks some animations and the ability to jump while being ridden - Both Immortal Arcanine and Firecracker Litten lack firework particles when using their attacks - Natural mob spawning doesn't seem to work, …",
    "lc": "0.3.6",
    "neoforge": "21.1.265",
    "link": "https://www.curseforge.com/minecraft/mc-mods/kindred-legacy",
