@@ -50,6 +50,38 @@ final class SrgMojangTableTest {
         assertEquals(3, generated.coverage().outputRows());
     }
 
+
+    @Test
+    void coalescesRepeatedSrgIdsWhenDifferentOwnersResolveToTheSameMojangName() throws Exception {
+        Path mojang = write("client-duplicates.txt", """
+                test.First -> a:
+                    void update() -> b
+                    int value -> c
+                test.Second -> d:
+                    void update() -> e
+                    int value -> f
+                """);
+        Path tsrg = write("joined-duplicates.tsrg", """
+                tsrg2 obf srg id
+                a
+                \tb ()V m_1_ 1
+                \tc f_2_ 2
+                d
+                \te ()V m_1_ 1
+                \tf f_2_ 2
+                """);
+
+        var generated = SrgMojangTable.generateDetailed(tsrg, mojang);
+
+        assertEquals("update", generated.table().get("m_1_"));
+        assertEquals("value", generated.table().get("f_2_"));
+        assertEquals(2, generated.table().size());
+        assertEquals(2, generated.coverage().matchedMethods());
+        assertEquals(2, generated.coverage().matchedFields());
+        assertEquals(2, generated.coverage().duplicateSrgIds());
+        assertEquals(2, generated.coverage().outputRows());
+    }
+
     @Test
     void refusesToMatchMethodsWhenTheirFullDescriptorDiffers() throws Exception {
         Path mojang = write("client.txt", """
@@ -89,17 +121,19 @@ final class SrgMojangTableTest {
     }
 
     @Test
-    void rejectsConflictingNamesForOneGloballyUniqueSrgId() throws Exception {
-        Path mojang = write("client.txt", """
-                test.Type -> a:
+    void rejectsConflictingNamesWhenSrgIdIsReusedAcrossOwners() throws Exception {
+        Path mojang = write("client-conflict.txt", """
+                test.First -> a:
                     void first() -> b
-                    void second() -> c
+                test.Second -> c:
+                    void second() -> d
                 """);
-        Path tsrg = write("joined.tsrg", """
+        Path tsrg = write("joined-conflict.tsrg", """
                 tsrg2 obf srg id
                 a
                 \tb ()V m_1_ 1
-                \tc ()V m_1_ 1
+                c
+                \td ()V m_1_ 1
                 """);
 
         assertThrows(IOException.class, () -> SrgMojangTable.generateDetailed(tsrg, mojang));
