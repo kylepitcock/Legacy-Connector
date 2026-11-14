@@ -137,7 +137,7 @@
    "mod": "Kindred Legacy pre-1.3_1",
    "mc": "1.8 - 1.12.2",
    "status": "partial",
-   "details": "- Most base mob AI seems to work fine - Immortal Arcanine lacks some animations and the ability to jump while being ridden - Both Immortal Arcanine and Firecracker Litten lack firework particles when using their attacks - Natural mob spawning doesn't seem to work, though I suspect it probably would if I set up a proper datapack to manually do it - Tameable mob items function as they should, retai…",
+   "details": "- Most base mob AI seems to work fine - Both Vastaya Ninetales and Foxfire Zorua are unable to attack - their projectile entities fail to spawn - Immortal Arcanine lacks some animations and the ability to jump while being ridden - Both Immortal Arcanine and Firecracker Litten lack firework particles when using their attacks - Natural mob spawning doesn't seem to work, though I suspect it probably…",
    "lc": "0.3.6",
    "neoforge": "21.1.265",
    "link": "https://www.curseforge.com/minecraft/mc-mods/kindred-legacy",
@@ -454,7 +454,7 @@
    "neoforge": "21.1.265",
    "link": "https://www.curseforge.com/minecraft/mc-mods/management-wanted-more-decor",
    "date": "2026-11-08",
-   "open": true
+   "open": false
   },
   {
    "issue": 215,
@@ -706,6 +706,138 @@
    "neoforge": "21.1.266",
    "link": "https://www.curseforge.com/minecraft/mc-mods/buildcraft/download/6376391",
    "date": "2026-11-13",
+   "open": true
+  },
+  {
+   "issue": 266,
+   "mod": "T.O Magic Extras",
+   "mc": "1.20.1 (Forge)",
+   "status": "crashes",
+   "details": "Crash on startup mod Traveloptics - T.O Magic Extras",
+   "lc": "0.4.14",
+   "neoforge": "21.1.250",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/to-tweaks-irons-spells",
+   "date": "2026-11-13",
+   "open": true
+  },
+  {
+   "issue": 267,
+   "mod": "candyworld-1.1.5",
+   "mc": "1.12.2",
+   "status": "partial",
+   "details": "Leaves can be walked through breaking cotton candy leaves is missing sound walking on cotton candy grass is missing sound middle clicking gummy block gives only the red variants middle clicking any chocolate mushroom type only gives milk chocolate version middle clicking chocolate leaves of any type only give milk chocolate variant gummy bear and gummy mouse dont spawn in the gummy swamp cannot m…",
+   "lc": "legacyconnector-0.4.14-nightly.9.e7ed17c",
+   "neoforge": "21.1.266",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/candy-world",
+   "date": "2026-11-13",
+   "open": false
+  },
+  {
+   "issue": 268,
+   "mod": "MineFactoryReloaded-[1.7.10]2.8.1-174",
+   "mc": "1.7.10",
+   "status": "partial",
+   "details": "- All items have broken names (for example, Plastic Sheet is called \"item.mfr.plastic.sheet.name\") - Liquid textures inside machines are broken, water shows as lava - Deep Storage Unit seems to just consume the item stored in it and doesn't save the item - Portaspawner will successfully pick up a mob spawner, but cannot be placed back down - Stained glass blocks have z-fighting and looks odd when…",
+   "lc": "0.4.14",
+   "neoforge": "21.1.266",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/minefactory-reloaded/download/2277485, Link for CoFH Core (required dependency): https://www.curseforge.com/minecraft/mc-mods/cofh-core/download/2388750",
+   "date": "2026-11-13",
+   "open": true
+  },
+  {
+   "issue": 270,
+   "mod": "candyworld-1.1.5",
+   "mc": "1.12.2",
+   "status": "partial",
+   "details": "shears dont work on chocolate leaves or cotton candy leaves shears dont work on chocolate mushrooms chocolate blocks should require a pickaxe shears dont work on cotton candy bushes cotton candy bushes are missing their break sound cotton candy plant block is missing its sounds crystalized sugar should require a wooden pickaxe at the weakest milk chocolate block, dark chocolate block, and white c…",
+   "lc": "legacyconnector-0.4.14-nightly.9.e7ed17c",
+   "neoforge": "21.1.266",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/candy-world",
+   "date": "2026-11-13",
+   "open": true
+  },
+  {
+   "issue": 271,
+   "mod": "COFH Core 1.20.1-11.0.2.56",
+   "mc": "1.20.1 (Forge)",
+   "status": "crashes",
+   "details": "Game crashes on load",
+   "lc": "0.4.14-nightly.13.ea09a52",
+   "neoforge": "21.1.266",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/cofh-core/download/5374122",
+   "date": "2026-11-13",
+   "open": true
+  },
+  {
+   "issue": 272,
+   "mod": "ThermalDynamics-1.12.2-2.5.6.1-universal, ThermalExpansion-1.12.2-5.5.7.1-unive…",
+   "mc": "1.12.2",
+   "status": "fails",
+   "details": "- Thermal Expansion & Dynamics do not load, but the rest of the Thermal mods did load and appear to work. - The creative tabs for the rest of the Thermal series have broken names",
+   "lc": "0.4.14-nightly",
+   "neoforge": "21.1.266",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/thermal-expansion/files/all?page=1&pageSize=20&version=1.12.2&showAlphaFiles=hide, https://www.curseforge.com/minecraft/mc-mods/thermal-dynamics/files/all?page=1&pageSize=20&version=1.12.2&showAlphaFiles=hide",
+   "date": "2026-11-13",
+   "open": true
+  },
+  {
+   "issue": 273,
+   "mod": "HBM's NTM 1.0.27_X5863",
+   "mc": "1.7.10",
+   "status": "crashes",
+   "details": "Title explains it, but I have no legacyconnector-report.txt to give you. Only latest.log and debug.log are in my logs folder. Here's the log from the prism launcher as the latest.log seems useless. https://mclo.gs/EqWyXxJ",
+   "lc": "0.4.14",
+   "neoforge": "21.1.266",
+   "link": "https://github.com/HbmMods/Hbm-s-Nuclear-Tech-GIT/releases/download/1.0.27_X5863/HBM-NTM-.1.0.27_X5863.jar",
+   "date": "2026-11-14",
+   "open": false
+  },
+  {
+   "issue": 277,
+   "mod": "OpenBlocks-1.7.1",
+   "mc": "1.7.10",
+   "status": "partial",
+   "details": "The startup screen is telling me to install OpenModsCore, which is a mod that doesn't seem to exist so I'm not sure what it wants. <img width=\"855\" height=\"482\" alt=\"Screenshot_2026-11-13_21-11-57\" src=\"https://github.com/user-attachments/assets/48efe836-8564-4da8-af70-0ac8bbff9dcb\" />",
+   "lc": "legacyconnector-0.4.14-nightly.18.e9aeb…",
+   "neoforge": "21.1.265",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/openblocks/download/2386733",
+   "date": "2026-11-14",
+   "open": true
+  },
+  {
+   "issue": 278,
+   "mod": "[1.7.10]FiveNightsAtFreddies-1.1.7",
+   "mc": "1.7.10",
+   "status": "partial",
+   "details": "- Animatronic Models Do Not Exist in 1.21.1 <img width=\"492\" height=\"370\" alt=\"image\" src=\"https://github.com/user-attachments/assets/3ea771ac-1e96-4d3d-973d-c1ea0c00033b\" /> <img width=\"682\" height=\"455\" alt=\"image\" src=\"https://github.com/user-attachments/assets/556c57f9-fbb6-4b33-a2af-c229b72de255\" /> <img width=\"657\" height=\"469\" alt=\"image\" src=\"https://github.com/user-attachments/assets/c5a…",
+   "lc": "legacyconnector-0.4.14-nightly.22.845ec…",
+   "neoforge": "21.1.266",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/five-nights-at-freddys-classic",
+   "date": "2026-11-14",
+   "open": true
+  },
+  {
+   "issue": 279,
+   "mod": "OpenComputers-MC1.12.2-1.8.10+258943363",
+   "mc": "1.12.2",
+   "status": "partial",
+   "details": "- Attempting to Open Opencomputers Manual will briefly show UI and immediately cease to function as Intended",
+   "lc": "legacyconnector-0.4.14-nightly.22.845ec…",
+   "neoforge": "21.1.266",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/opencomputers",
+   "date": "2026-11-14",
+   "open": true
+  },
+  {
+   "issue": 280,
+   "mod": "Colored Redstone-1.3.2",
+   "mc": "1.12.2",
+   "status": "partial",
+   "details": "- Pickblocking a Colored Redstone Component will give a Normal Redstone Component - Placing a Custom Redstone Dust Color Will Crash The World Sending you to the Menu - Redstone Torches do not give a Signal - Redstone Torches Have No Block Texture/Model? - Repeater has No Texture when Powered - Comparator Has No Texture - If Itemstack of Comparator, Redstone Torch or Repeater is One When Placed in…",
+   "lc": "legacyconnector-0.4.14-nightly.22.845ec…",
+   "neoforge": "21.1.266",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/colored-redstone",
+   "date": "2026-11-14",
    "open": true
   }
  ]
