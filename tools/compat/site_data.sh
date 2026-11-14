@@ -36,6 +36,10 @@ case "$1" in
     mkdir -p "$d/docs/data"
     for f in $FILES; do [ -f "docs/data/$f" ] && cp "docs/data/$f" "$d/docs/data/$f"; done
     git -C "$d" add docs/data
+    # rendered store pages of a description run (out/*.md): kept on this branch too, so the newest ones have a stable place
+    if [ -f out/curseforge.md ] && [ -f out/modrinth.md ]; then
+      mkdir -p "$d/description"; cp out/curseforge.md out/modrinth.md "$d/description/"; git -C "$d" add description
+    fi
     if git -C "$d" diff --cached --quiet; then
       echo "site-data: no change"
     else

@@ -116,8 +116,11 @@ master requires a reviewed pull request, so workflows cannot push to it. Jobs th
 write `docs/data/{mods,probe,reports,resources}.json` to the unprotected branch `site-data` through `tools/compat/site_data.sh`
 (`pull` takes the newer copy before a job runs, `push` commits there). The site (`docs/assets/site.js`) reads that branch first and
 falls back to master. `site-data-sync.yml` copies the files to `site-data` whenever they change on master, so results committed by a
-maintainer win. To fold bot results back into master: `bash tools/compat/site_data.sh pull`, then commit. `sync-description.yml` no
-longer commits the rendered store pages (they are a run artifact). Do not weaken the branch protection to make a job pass.
+maintainer win. To fold bot results back into master: `bash tools/compat/site_data.sh pull`, then commit. `sync-description.yml` cannot commit the
+rendered store pages to master: it publishes them to `site-data` (`description/curseforge.md`, `modrinth.md`) and as a run artifact.
+**Whenever `description.md` changes, render and commit the copies on master yourself**:
+`py -3 tools/release/render_description.py curseforge .github/description/curseforge.md` (same for `modrinth`); the CurseForge page is
+pasted by hand from that file. Do not weaken the branch protection to make a job pass.
 
 ## Releases
 
