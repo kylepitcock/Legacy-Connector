@@ -49,7 +49,7 @@ The user's green Schema 1.9B test log generated **64,225** SRG → Mojang member
 
 The compact `SrgMojangTable` output is intentionally a global SRG identifier → readable member name table. Its generator uses owner and descriptor information while matching intermediate names, but those dimensions are not retained as a complete output graph. The current class therefore must not be advertised as a generic owner-aware selector mapping engine.
 
-The task downloads the Mojang client mapping file from a hash-addressed URL but the current task body does not independently validate the downloaded bytes against that URL's SHA-1 or record a SHA-256. The MCPConfig dependency is pinned by Maven coordinate/version, but the current mapping build does not create a profile manifest containing the resolved archive's SHA-256. Future provenance work must close those gaps.
+At the original Schema 1.10 design checkpoint, the task downloaded Mojang's client mapping file from a hash-addressed URL without independently validating the downloaded bytes against that URL's SHA-1 or recording SHA-256. The MCPConfig dependency was pinned by Maven coordinate/version, but the build did not record the resolved archive's SHA-256 or the extracted `joined.tsrg` digest. Schema 1.10B implementation work now adds those checks and a build-local provenance report; user validation of that new code is pending.
 
 ### 2.2 Target 1.21.1 mapping environment
 
@@ -468,12 +468,24 @@ Schema 1.10 profile support is acceptable only when:
 
 **Design conclusion:** Schema 1.10A now provides the first profile declaration/provenance validator, but the actual 1.20.1 → 1.21.1 cross-version symbol edge remains missing. Selector rewriting is still blocked. Treat that missing edge as an engineering task to solve with evidence, not something to hide behind a generic “Mojang mappings” label.
 
-### Schema 1.10A implementation checkpoint — validation pending
+### Schema 1.10A implementation checkpoint — user-validated green
 
-Committed on `feat/forge1201-preflight-analyzer`:
-- `Forge1201MappingProfileValidator` with bounded strict JSON parsing, artifact SHA-256/upstream-checksum verification, profile-relative path safety, license evidence, explicit source/base context binding, directed and versioned edge validation, path ambiguity and search-budget reporting.
-- Unified preflight Schema/Analyzer advances to `1.10 / 1.10.0`; JSON and text reports include mapping-profile findings.
-- Optional CLI `--mapping-profile <path>` and Gradle `-PpreflightMappingProfile=<path>`.
-- Synthetic tests cover complete and missing paths, ambiguous paths, edge version/direction errors, artifact SHA-256/upstream checksum mismatch, pending license review, unsupported runtime remapping, duplicate JSON member names, unsupported schema, unbound base table, and absent/missing profile.
+- Tested source commit: `cc651af52b192fb534d49f3ad494b42e3d15d6f0` on `feat/forge1201-preflight-analyzer`.
+- User ran `.\gradlew.bat :loader:clean :loader:test --no-daemon --console=plain --rerun-tasks`.
+- Result: **BUILD SUCCESSFUL in 53s; 14 actionable tasks, all 14 executed.**
+- The earlier 494-test run reported 10 failures caused by malformed JSON in the synthetic `validProfile()` fixture. The fixture was repaired without weakening assertions; the subsequent full loader test task passed.
 
-**User validation is still pending.** Do not call Schema 1.10A green until `:loader:clean :loader:test --no-daemon --console=plain --rerun-tasks` passes on the exact source commit recorded in the continuation handoff. No mapping table is loaded or applied, no selector is rewritten, and no runtime compatibility is claimed.
+The validator still performs structural profile checks only. It does not load/apply the generated mapping table, validate the semantic contents of mappings, rewrite selectors, or prove runtime compatibility.
+
+### Schema 1.10B source-edge validation — implementation in progress
+
+Current source branch work (not yet user-tested):
+- `SrgMojangTable` now exposes exact join coverage counts for Mojang class/method/field rows and MCPConfig class/method/field rows, matched/unmatched method and field rows, duplicate mapping keys, duplicate SRG identifiers, and total output rows.
+- The source join explicitly matches obfuscated owner + member name + full JVM descriptor for methods, and obfuscated owner + member name for fields.
+- Conflicting Mojang class/member keys or conflicting names for a globally unique SRG ID now fail closed instead of silently overwriting an earlier entry.
+- The generated TSV remains only `SRG member ID -> Mojang member name`; it does not emit class-name or descriptor-type mappings.
+- New synthetic tests cover owner+descriptor matching, descriptor mismatch, wrong owner, and conflicting SRG IDs.
+- Loader build tasks now extract the pinned MCPConfig `config/joined.tsrg` as a declared task output, verify Mojang `client.txt` against the SHA-1 object identifier embedded in its pinned URL, compute SHA-256 for the MCPConfig ZIP, extracted TSRG2 file, and Mojang client mapping, then record the generated TSV SHA-256 and row-coverage counters in a build-local JSON provenance report under `loader/build/reports/mappings/1.20.1/`.
+- Raw mapping source files and the generated report remain build-local; no full Mojang mapping file is added to source control.
+
+The branch has not yet been run by the user after these Schema 1.10B changes. The next user gate must run the forced loader tests on the exact new commit recorded in the continuation handoff. The 1.20.1 → 1.21.1 symbol edge remains missing; no selector rewriting is permitted.
