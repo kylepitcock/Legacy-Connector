@@ -351,6 +351,8 @@ tasks.register('preflight1201', JavaExec) {
     // without defining or initializing target classes.
     def targetCompileClasspath = sourceSets.main.compileClasspath
     inputs.files(targetCompileClasspath)
+    def mappingProfileValue = project.findProperty('preflightMappingProfile')
+    if (mappingProfileValue) inputs.file(file(mappingProfileValue.toString()))
     mainClass = 'org.kylepitcock.legacyconnector.loader.tools.forge1201.Forge1201PreflightAnalyzer'
     maxHeapSize = '2g'
     argumentProviders.add({
@@ -380,6 +382,11 @@ tasks.register('preflight1201', JavaExec) {
         if (refmapContext != null) {
             args.add('--refmap-context')
             args.add(refmapContext.toString())
+        }
+        def mappingProfile = project.findProperty('preflightMappingProfile')
+        if (mappingProfile != null) {
+            args.add('--mapping-profile')
+            args.add(file(mappingProfile.toString()).absolutePath)
         }
         def targetClasspathFile = new File(reportDir, 'target-classpath.txt')
         def targetClasspathEntries = targetCompileClasspath.files.collect { it.absolutePath }
