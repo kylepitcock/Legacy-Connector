@@ -29,6 +29,7 @@ final class Forge1201MappingProfileValidatorTest {
         assertEquals(1, finding.artifacts().size());
         assertEquals(Forge1201MappingProfileValidator.ArtifactStatus.VERIFIED,
                 finding.artifacts().getFirst().status());
+        assertEquals(40, finding.artifacts().getFirst().actualUpstreamChecksum().length());
         assertEquals(1, finding.edges().size());
         assertEquals(Forge1201MappingProfileValidator.EdgeStatus.VERIFIED,
                 finding.edges().getFirst().status());
@@ -163,9 +164,10 @@ final class Forge1201MappingProfileValidatorTest {
     private Path writeProfile(String json) throws Exception {
         Path artifact = tempDir.resolve("mapping.bin");
         Files.write(artifact, "synthetic pinned mapping bytes".getBytes(StandardCharsets.UTF_8));
-        String hash = HexFormat.of().formatHex(
-                MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(artifact)));
-        String replaced = json.replace("HASH_TOKEN", hash);
+        byte[] artifactBytes = Files.readAllBytes(artifact);
+        String hash = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(artifactBytes));
+        String upstream = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-1").digest(artifactBytes));
+        String replaced = json.replace("HASH_TOKEN", hash).replace("UPSTREAM_SHA1_TOKEN", upstream);
         Path profile = tempDir.resolve("mapping-profile.json");
         Files.writeString(profile, replaced, StandardCharsets.UTF_8);
         return profile;
@@ -225,6 +227,7 @@ final class Forge1201MappingProfileValidatorTest {
                     "format":"tiny-v2",
                     "coordinate":"org.example:mapping:1.0.0",
                     "sha256":"HASH_TOKEN",
+                    "upstreamChecksum":"sha1:UPSTREAM_SHA1_TOKEN",
                     "localPath":"mapping.bin",
                     "license":{
                       "id":"MIT",
