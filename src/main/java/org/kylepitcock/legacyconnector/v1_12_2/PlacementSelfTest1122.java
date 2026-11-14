@@ -111,6 +111,9 @@ public final class PlacementSelfTest1122 {
             total++;
             String result;
             try {
+                // what an earlier item left behind (a hive block's wasps, dropped stacks) would obstruct the placement of the next ones
+                var around = new net.minecraft.world.phys.AABB(ground).inflate(8);
+                for (var leftover : level.getEntities((net.minecraft.world.entity.Entity) null, around, e -> !(e instanceof net.minecraft.world.entity.player.Player))) leftover.discard();
                 for (int dx = -2; dx <= 2; dx++) for (int dy = 0; dy <= 4; dy++) for (int dz = -2; dz <= 2; dz++) {
                     level.setBlock(ground.offset(dx, dy, dz), dy == 0 ? Blocks.STONE.defaultBlockState() : Blocks.AIR.defaultBlockState(), 2);
                 }
