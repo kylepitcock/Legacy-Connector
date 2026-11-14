@@ -108,7 +108,7 @@ holding the hand-written shim under `src/main/java/legacyconnector/v1_7_10`, bri
 ## Addon API
 
 - Public API for other mods: `src/main/java/org/kylepitcock/legacyconnector/api` (+ `api.event`); implementation and the only code touching shim types: `api/internal` (`Convert`, `ContentKeys`, `BuiltinAdapters`). Docs `docs/wiki/Addon-API.md`, example `examples/thaumcraft-modern-aspects` (standalone build, `./gradlew apiJar` first).
-- Rule: API signatures never contain shim types (legacy objects are `Object`, reached through `LegacyAccess`); keep the API stable (PATCH-compatible), hook calls live in `LegacyLifecycle` (`AddonHost.enter`) and `LegacyConnector.registerCapabilities` (`CapabilityRules.apply`). Update the doc when adding API.
+- Rule: API signatures never contain shim types (legacy objects are `Object`, reached through `LegacyAccess`); keep the API stable (PATCH-compatible), hook calls live in `LegacyLifecycle` (`AddonHost.enter`) and `LegacyConnector.registerCapabilities` (`CapabilityRules.apply`). Update the doc when adding API. Covers every supported version (API 0.3: Beta 1.7.3, `versionOf`, failure event, fluids, tabs); `LegacySupport` is the per-version matrix and `LegacySupportTest` keeps the doc table in sync (`API_DOCS_UPDATE=1` rewrites it), `ApiSignatureTest` rejects shim types in signatures.
 
 ## Releases
 
