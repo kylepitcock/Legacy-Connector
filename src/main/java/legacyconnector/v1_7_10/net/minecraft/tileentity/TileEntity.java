@@ -140,10 +140,14 @@ public class TileEntity {
     }
 
     public void invalidate() {
+        var site = org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites.TILE_INVALIDATE; // coremod hook site (no-op unless listed)
+        if (site.listed() && site.active()) site.fire(this);
         tileEntityInvalid = true;
     }
 
     public void validate() {
+        var site = org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites.TILE_VALIDATE; // coremod hook site (no-op unless listed)
+        if (site.listed() && site.active()) site.fire(this);
         tileEntityInvalid = false;
     }
 

@@ -28,6 +28,7 @@
     "SignalGetterHookMixin",
     "TrackedEntityRangeHookMixin",
     "ServerLevelWeatherHookMixin",
+    "ServerLevelNeighborHookMixin",
     "ItemStackHookMixin",
     "AnvilMenuCostHookMixin",
     "ServerSprintHookMixin",

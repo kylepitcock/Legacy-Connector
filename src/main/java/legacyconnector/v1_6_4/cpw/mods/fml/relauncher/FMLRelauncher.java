@@ -8,10 +8,12 @@ public final class FMLRelauncher {
     private FMLRelauncher() {}
 
     public static String side() {
-        return net.neoforged.fml.loading.FMLEnvironment.dist.isClient() ? "CLIENT" : "SERVER";
+        return isClient() ? "CLIENT" : "SERVER";
     }
 
     public static boolean isClient() {
-        return net.neoforged.fml.loading.FMLEnvironment.dist.isClient();
+        // No game side yet in the offline coremod probe: the side the coremod phase was started for
+        var dist = net.neoforged.fml.loading.FMLEnvironment.dist;
+        return dist != null ? dist.isClient() : !"SERVER".equals(System.getProperty("legacyconnector.side"));
     }
 }

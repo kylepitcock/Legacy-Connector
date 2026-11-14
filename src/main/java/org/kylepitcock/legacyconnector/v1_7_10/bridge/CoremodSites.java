@@ -179,6 +179,22 @@ public final class CoremodSites {
     public static final Site ANVIL_MAX_COST = site("anvil maximum cost", new Class<?>[0],
             "net/minecraft/inventory/ContainerRepair.func_82848_d()V#const:40", "net/minecraft/client/gui/GuiRepair.func_146979_b(II)V#const:40").returns(int.class);
 
+    /** TileEntity.validate and invalidate, first thing (tile entities that keep or call the base method). Values: the tile entity. */
+    public static final Site TILE_VALIDATE = site("tile entity validated", new Class<?>[] {legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntity.class},
+            "net/minecraft/tileentity/TileEntity.func_145829_t()V#after:aload 0");
+    public static final Site TILE_INVALIDATE = site("tile entity invalidated", new Class<?>[] {legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntity.class},
+            "net/minecraft/tileentity/TileEntity.func_145843_s()V#after:aload 0");
+
+    /** World.notifyBlocksOfNeighborChange, around the six updates. Values: world, x, y, z of the block that changed. */
+    public static final Site NEIGHBORS_START = site("neighbour updates (start)", new Class<?>[] {WORLD, int.class, int.class, int.class},
+            "net/minecraft/world/World.func_147459_d(IIILnet/minecraft/block/Block;)V#after:iload 1", "net/minecraft/world/World.func_147459_d(IIILnet/minecraft/block/Block;)V#head");
+    public static final Site NEIGHBORS_STOP = site("neighbour updates (end)", new Class<?>[] {WORLD, int.class, int.class, int.class},
+            "net/minecraft/world/World.func_147459_d(IIILnet/minecraft/block/Block;)V#tail");
+
+    /** World.notifyBlockOfNeighborChange, first thing. Values: world, x, y, z of the block that is told. */
+    public static final Site NEIGHBOR_NOTIFIED = site("neighbour update of one block", new Class<?>[] {WORLD, int.class, int.class, int.class},
+            "net/minecraft/world/World.func_147460_e(IIILnet/minecraft/block/Block;)V#after:aload 0", "net/minecraft/world/World.func_147460_e(IIILnet/minecraft/block/Block;)V#head");
+
     /** The model sites: client classes, so apart from the rest. Values: model, entity, the six animation numbers. */
     public static final class Client {
         private static final Class<?>[] MODEL = {legacyconnector.v1_7_10.net.minecraft.client.model.ModelBiped.class, ENTITY, float.class, float.class, float.class,
@@ -384,6 +400,10 @@ public final class CoremodSites {
 
     public static int anvilMaxCost(int cost) {
         return ANVIL_MAX_COST.active() ? ((Number) ANVIL_MAX_COST.modify(0, cost)).intValue() : cost;
+    }
+
+    public static void neighbors(Site site, net.minecraft.world.level.Level level, net.minecraft.core.BlockPos pos) {
+        if (site.active()) site.fire(legacyconnector.v1_7_10.net.minecraft.world.World.mcc$wrap(level), pos.getX(), pos.getY(), pos.getZ());
     }
 
     private static final ThreadLocal<Boolean> IN_RAIN = new ThreadLocal<>();
