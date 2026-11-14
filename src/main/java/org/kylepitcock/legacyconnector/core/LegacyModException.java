@@ -3,8 +3,15 @@ package org.kylepitcock.legacyconnector.core;
 /** Wraps a failure inside legacy code so crash reports name the legacy mod and lifecycle phase. */
 public final class LegacyModException extends RuntimeException {
     public LegacyModException(LegacyModRecord mod, String phase, Throwable cause) {
-        super("Legacy mod " + mod.legacyId + " (" + mod.version + ", from " + safeFile(mod) + ") failed during " + phase
+        super(missing(mod) + "Legacy mod " + mod.legacyId + " (" + mod.version + ", from " + safeFile(mod) + ") failed during " + phase
                 + ": " + rootMessage(cause), cause);
+    }
+
+    /** "X requires Y (range), which is not installed. " for each required dependency the loader found missing: the likely cause of the failure. */
+    private static String missing(LegacyModRecord mod) {
+        StringBuilder sb = new StringBuilder();
+        for (String m : LegacyLifecycle.missingDependencies(mod.legacyId)) sb.append(m).append(". ");
+        return sb.toString();
     }
 
     private static String safeFile(LegacyModRecord mod) {

@@ -12,6 +12,7 @@ All jars are translated as ONE mod set so mods that extend each other link. Per 
   gap_shim    missing old Minecraft/Forge functionality (our shim)   -> status "fails"
   gap_mod     missing another mod's API (NEI, Thaumcraft, AE2, ...)  -> status "fails"
   gap_lib     missing removed Java/library code                      -> status "fails"
+  gap_dep     a required dependency mod is not in the set            -> "fails", or "loads" when the jar links apart from that
   obsolete    engine patch with nothing to do on 1.21.1 -> not listed
 --mc 1.20.1 (Forge 1.20.1 jars, remapped in place onto NeoForge 1.21.1) has no shim to link against: it runs ./gradlew gap1201 (loader tools Gap1201: SRG to
 Mojang and Forge to NeoForge renames, then every reference is resolved against Minecraft 1.21.1 + NeoForge + the other jars) and turns the unresolved symbols into the
@@ -217,6 +218,8 @@ def kind(rec):
     """The category a record counts as: links, stubs (links but largely placeholders), gap_shim / gap_mod / gap_lib, obsolete."""
     if rec["result"] == "links":
         return "stubs" if rec.get("synthesizedMembers", 0) >= STUB_LIMIT else "links"
+    if rec["result"] == "missing-dependency":
+        return "gap_dep"
     if rec["result"] == "unresolved":
         return cause(rec.get("missing") or [])
     return rec["result"]
@@ -226,6 +229,7 @@ GAP_TEXT = {
     "gap_shim": "needs Minecraft or Forge features the layer does not have yet",
     "gap_mod": "needs code from another mod or API that is not available or does not match",
     "gap_lib": "uses old Java or library code that no longer exists",
+    "gap_dep": "needs another mod that was not installed",
 }
 
 
@@ -253,6 +257,11 @@ def note_links(rec, layer):
         elif stubs:
             text += f" {stubs} minor feature(s) it uses are empty placeholders."
         return text + " The game was not started: this only shows the jar translates, not that it works."
+    if k == "gap_dep":
+        if rec.get("linksWithoutDependency"):
+            ids = ", ".join(sorted({m.split(" requires ", 1)[-1].split(",", 1)[0].split(" (", 1)[0] for m in rec.get("missingDependencies", [])}))
+            return f"{base}declares a mod that was not installed: {ids}. Everything else it uses links; the mod may still work without it."
+        return f"{base}{'; '.join(rec.get('missingDependencies', [])[:3])}."
     miss = ", ".join(rec.get("missing", [])[:5])
     more = f" (+{rec['unresolved'] - 5} more)" if rec.get("unresolved", 0) > 5 else ""
     return f"{base}{GAP_TEXT.get(k, 'has missing pieces')}: {miss}{more}."
@@ -267,9 +276,9 @@ def merge(records, mc, date, layer):
     hidden = {norm(h) for h in data.get("hidden", [])} | {norm(h) for h in data.get("hidden_by_mc", {}).get(mc, [])}
     added = refreshed = skipped = 0
     for rec in records:
-        if rec["result"] not in ("links", "unresolved") or rec.get("mc") != mc:
+        if rec["result"] not in ("links", "unresolved", "missing-dependency") or rec.get("mc") != mc:
             continue
-        status = "loads" if rec["result"] == "links" else "fails"
+        status = "loads" if rec["result"] == "links" or rec.get("linksWithoutDependency") else "fails"
         for m in rec["mods"]:
             name = (m.get("name") or m["id"]).strip()
             key = norm(name)
@@ -293,7 +302,7 @@ def merge(records, mc, date, layer):
     return data, added, refreshed, skipped
 
 
-RANK = {"links": 0, "stubs": 1, "gap_shim": 2, "gap_mod": 2, "gap_lib": 2, "unresolved": 2}   # worse is higher; "obsolete" is not compared
+RANK = {"links": 0, "stubs": 1, "gap_shim": 2, "gap_mod": 2, "gap_lib": 2, "gap_dep": 2, "unresolved": 2}   # worse is higher; "obsolete" is not compared
 MAX_CHANGES = 100
 
 
