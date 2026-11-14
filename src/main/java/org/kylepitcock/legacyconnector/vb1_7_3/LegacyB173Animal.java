@@ -196,10 +196,16 @@ public final class LegacyB173Animal extends PathfinderMob implements B173LivingH
     private void physical(Runnable action){callback(false,true,action);}
     private void callback(boolean autonomous,Runnable action){callback(autonomous,false,action);}
     private void callback(boolean autonomous,boolean physical,Runnable action){try(var minecraftContext=legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$context(World.mcc$wrap(level()),legacy);var combat=physical?CombatTargetsB173.continuation(legacy):CombatTargetsB173.enter(autonomous?legacy:null);var views=EntityViewsB173.callbackScope()){boolean outer=callbacks==0;boolean referenced=false;if(outer){referenced=EntityViewsB173.prepareHostCallback(this);syncView();if(autonomous)CombatTargetsB173.beforeAI(legacy);}callbacks++;try{action.run();flushView();if(outer)publishRenderState();}finally{callbacks--;if(outer)EntityViewsB173.resumeHostCallback(this,referenced);}}}
-    @Override public void tick(){if(legacy==null||level().isClientSide){super.tick();if(legacy!=null)syncView();return;}autonomous(()->{
-        legacy.tick();
-        if(!isRemoved()&&RendererBlockEffectsB173.hasBlockEffects(this))RendererBlockEffectsB173.render(this);
-    });}
+    private static final java.util.Set<Class<?>> TICK_FAILURES=java.util.concurrent.ConcurrentHashMap.newKeySet();
+    /** A mod's own bug in one of its mobs' ticks (an array overrun in its pathfinder) costs that tick, not the whole world. */
+    @Override public void tick(){if(legacy==null||level().isClientSide){super.tick();if(legacy!=null)syncView();return;}
+        try{autonomous(()->{
+            legacy.tick();
+            if(!isRemoved()&&RendererBlockEffectsB173.hasBlockEffects(this))RendererBlockEffectsB173.render(this);
+        });}catch(RuntimeException|LinkageError error){
+            var log=org.slf4j.LoggerFactory.getLogger("LegacyConnector/b1.7.3/Animals");
+            if(TICK_FAILURES.add(legacy.getClass()))log.error("b1.7.3 mob {} threw while ticking; that tick is skipped (further failures of this class are not logged)",legacy.getClass().getName(),error);
+        }}
     @Override public void rideTick(){
         if(legacy==null||level().isClientSide){super.rideTick();return;}
         autonomous(legacy::tickRiding);
