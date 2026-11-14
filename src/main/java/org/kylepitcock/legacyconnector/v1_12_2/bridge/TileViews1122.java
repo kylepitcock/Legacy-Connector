@@ -89,6 +89,8 @@ public final class TileViews1122 {
                 return new legacyconnector.v1_12_2.net.minecraft.tileentity.TileEntityFurnace(furnace);
             }
             if (be instanceof net.minecraft.world.Container c) return new InventoryView(c);
+            // a modern chest or machine that is no Container but offers an item handler: the view answers the item handler capability
+            if (ModernItems1122.offers(be)) return new ItemsTile(be);
             // a modern machine without an inventory but with the energy capability: legacy generators and cables push into it
             if (ModernEnergy1122.offers(be)) return new ModernEnergy1122.EnergyTile(be);
         } catch (RuntimeException | LinkageError e) {
@@ -102,6 +104,32 @@ public final class TileViews1122 {
 
     public static void addFactory(java.util.function.Function<BlockEntity, TileEntity> factory) {
         FACTORIES.add(factory);
+    }
+
+    /** A modern block entity with an item handler capability and no container, as a legacy tile entity answering the item handler capability. */
+    public static final class ItemsTile extends TileEntity {
+        private final BlockEntity modern;
+
+        ItemsTile(BlockEntity modern) {
+            this.modern = modern;
+        }
+
+        @Override
+        public boolean hasCapability(legacyconnector.v1_12_2.net.minecraftforge.common.capabilities.Capability<?> capability,
+                legacyconnector.v1_12_2.net.minecraft.util.EnumFacing facing) {
+            if (capability == legacyconnector.v1_12_2.net.minecraftforge.items.CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) return ModernItems1122.modern(modern, facing) != null;
+            if (capability == legacyconnector.v1_12_2.net.minecraftforge.energy.CapabilityEnergy.ENERGY) return ModernEnergy1122.modern(modern, facing) != null;
+            return super.hasCapability(capability, facing);
+        }
+
+        @Override
+        public <T> T getCapability(legacyconnector.v1_12_2.net.minecraftforge.common.capabilities.Capability<T> capability,
+                legacyconnector.v1_12_2.net.minecraft.util.EnumFacing facing) {
+            T items = ModernItems1122.capability(modern, capability, facing);
+            if (items != null) return items;
+            T energy = ModernEnergy1122.capability(modern, capability, facing);
+            return energy != null ? energy : super.getCapability(capability, facing);
+        }
     }
 
     /** A game block entity with an inventory (a barrel, a brewing stand, a mod's modern container) as a legacy inventory tile entity. */
@@ -152,15 +180,27 @@ public final class TileViews1122 {
         @Override
         public boolean hasCapability(legacyconnector.v1_12_2.net.minecraftforge.common.capabilities.Capability<?> capability,
                 legacyconnector.v1_12_2.net.minecraft.util.EnumFacing facing) {
-            return modern instanceof BlockEntity be && capability == legacyconnector.v1_12_2.net.minecraftforge.energy.CapabilityEnergy.ENERGY
-                    && ModernEnergy1122.modern(be, facing) != null;
+            if (modern instanceof BlockEntity be) {
+                if (capability == legacyconnector.v1_12_2.net.minecraftforge.energy.CapabilityEnergy.ENERGY) return ModernEnergy1122.modern(be, facing) != null;
+                if (capability == legacyconnector.v1_12_2.net.minecraftforge.items.CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
+                    return ModernItems1122.modern(be, facing) != null || super.hasCapability(capability, facing);
+                }
+            }
+            return super.hasCapability(capability, facing);
         }
 
         /** A modern machine with an inventory and the energy capability answers Forge Energy. */
         @Override
         public <T> T getCapability(legacyconnector.v1_12_2.net.minecraftforge.common.capabilities.Capability<T> capability,
                 legacyconnector.v1_12_2.net.minecraft.util.EnumFacing facing) {
-            return modern instanceof BlockEntity be ? ModernEnergy1122.capability(be, capability, facing) : null;
+            if (modern instanceof BlockEntity be) {
+                T energy = ModernEnergy1122.capability(be, capability, facing);
+                if (energy != null) return energy;
+                // the block entity's own handler of the side (a barrel, a modern mod's chest), else the whole inventory
+                T items = ModernItems1122.capability(be, capability, facing);
+                if (items != null) return items;
+            }
+            return super.getCapability(capability, facing);
         }
 
         @Override

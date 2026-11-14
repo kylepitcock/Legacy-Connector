@@ -1,0 +1,13 @@
+# BuildCraft 8.0.0 (1.12.2): every engine is an item; legacy code sees a barrel and a modern chest as item handlers and keeps modern items
+mods: 1.12.2 buildcraft-all-8.0.0
+cmd /fill -6 148 -6 6 148 6 minecraft:stone
+cmd /setblock 0 149 0 minecraft:barrel
+cmd /setblock 2 149 0 minecraft:chest
+cmd /tp @s 1.5 150.6 2.5
+wait 40
+look 180 50
+wait 40
+expect engine_3 :: (function(){var R=Java.type("net.minecraft.core.registries.BuiltInRegistries");var o=[];R.ITEM.keySet().forEach(function(k){var s=String(k);if(s.indexOf("engine")>=0)o.push(s);});return o.join(" ");})()
+expect slots=27.*slots=27 :: (function(){var r="";server.executeBlocking(function(){r=(function(){var BP=Java.type("net.minecraft.core.BlockPos");var V=Java.type("org.kylepitcock.legacyconnector.v1_12_2.bridge.TileViews1122");var W=Java.type("org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldBridge1122");var C=Java.type("legacyconnector.v1_12_2.net.minecraftforge.items.CapabilityItemHandler");var lvl=server.overworld();var o=[];[new BP(0,149,0),new BP(2,149,0)].forEach(function(p){var v=V.view(W.wrap(lvl),lvl.getBlockEntity(p));var h=v==null?null:v.getCapability(C.ITEM_HANDLER_CAPABILITY,null);o.push("slots="+(h==null?"none":h.getSlots())+" view="+v+" be="+lvl.getBlockEntity(p)+" st="+lvl.getBlockState(p));});return o.join(" ");})();});return r;})()
+expect legacy=minecraft:copper_ingot n=5 :: (function(){var S=Java.type("org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122");var I=Java.type("net.minecraft.world.item.Items");var s=new (Java.type("net.minecraft.world.item.ItemStack"))(I.COPPER_INGOT,5);var l=S.fromModern(s);var b=S.toModern(l);return "legacy="+l.getItem().getRegistryName()+" n="+l.getCount()+" back="+b;})()
+shot bc8-engines
