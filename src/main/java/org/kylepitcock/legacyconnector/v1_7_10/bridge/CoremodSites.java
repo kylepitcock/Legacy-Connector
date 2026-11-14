@@ -26,6 +26,10 @@ import org.slf4j.LoggerFactory;
  * or the shim class itself) hands the values over. Nothing here knows a mod: any coremod that hooked a site is called, with the arguments its hook method
  * declares.
  *
+ * <p>A hook that changes a value without receiving it (1.7.10 coremods then combined the two with a helper of their own next to the hook, e.g.
+ * {@code ASMHelper.multiply(float, float)} or {@code and(boolean, boolean)}) has its result combined with the value through that helper; without one its
+ * result replaces the value.
+ *
  * <p>Arguments are bound by type: each parameter of a hook takes the first value the site offers that fits and is not taken yet (1.7.10 hooks receive the
  * receiver, the method's arguments and the value being changed in an order of the author's choosing, e.g. {@code getHealRate(EntityPlayer, int)} and
  * {@code getEntityGravity(double, Entity)}). A hook that asks for something a site does not offer is left out and reported, as are hooks at places not offered
@@ -71,6 +75,22 @@ public final class CoremodSites {
     public static final Site TICK_MILLIS = site("server tick length", new Class<?>[] {long.class},
             "net/minecraft/server/MinecraftServer.run()V#const:50");
 
+    /** World.updateWeather, first thing: true skips the weather step. Value: world. */
+    public static final Site WEATHER = site("weather step", new Class<?>[] {legacyconnector.v1_7_10.net.minecraft.world.World.class},
+            "net/minecraft/world/World.func_72835_b()V#head-cancel");
+
+    /** EntityLivingBase.getArmSwingAnimationEnd: the ticks of an arm swing. Values: ticks, entity. */
+    public static final Site SWING_TICKS = site("arm swing length", new Class<?>[] {int.class, LIVING},
+            "net/minecraft/entity/EntityLivingBase.func_82166_i()I#tail");
+
+    /** Entity.onEntityUpdate: whether a sprinting entity kicks up particles. Values: sprinting, entity. */
+    public static final Site SPRINT_PARTICLES = site("sprint particles", new Class<?>[] {boolean.class, ENTITY},
+            "net/minecraft/entity/Entity.func_70030_z()V#after:invokevirtual net/minecraft/entity/Entity.func_70051_ag()Z");
+
+    /** World.removeEntity, last thing. Values: world, entity. */
+    public static final Site ENTITY_REMOVED = site("entity removed from the world", new Class<?>[] {legacyconnector.v1_7_10.net.minecraft.world.World.class, ENTITY},
+            "net/minecraft/world/World.func_72900_e(Lnet/minecraft/entity/Entity;)V#tail");
+
     /** EntityPlayer.attackTargetEntityWithCurrentItem: stands in for {@code target.attackEntityFrom(source, amount)}. Values: target, source, amount, attacker. */
     public static final Site PLAYER_ATTACK = site("player attack damage",
             new Class<?>[] {ENTITY, legacyconnector.v1_7_10.net.minecraft.util.DamageSource.class, float.class, PLAYER},
@@ -110,6 +130,23 @@ public final class CoremodSites {
     public static int healRate(net.minecraft.world.entity.player.Player player, int ticks) {
         if (player.level().isClientSide || !HEAL_RATE.active()) return ticks;
         return ((Number) HEAL_RATE.modify(1, EntityBridge.wrap(player), ticks)).intValue();
+    }
+
+    /** {@link #WEATHER}: whether a hook skips this weather step. */
+    public static boolean skipsWeather(net.minecraft.world.level.Level level) {
+        return WEATHER.active() && WEATHER.cancels(legacyconnector.v1_7_10.net.minecraft.world.World.mcc$wrap(level));
+    }
+
+    /** {@link #SWING_TICKS}. */
+    public static int swingTicks(net.minecraft.world.entity.LivingEntity entity, int ticks) {
+        if (!SWING_TICKS.active()) return ticks;
+        return ((Number) SWING_TICKS.modify(0, ticks, EntityBridge.wrap(entity))).intValue();
+    }
+
+    /** {@link #SPRINT_PARTICLES}. */
+    public static boolean sprintParticles(net.minecraft.world.entity.Entity entity, boolean sprinting) {
+        if (!SPRINT_PARTICLES.active()) return sprinting;
+        return Boolean.TRUE.equals(SPRINT_PARTICLES.modify(0, sprinting, EntityBridge.wrap(entity)));
     }
 
     /** {@link #PLAYER_ATTACK}: the hook's answer, or null when there is none (the game then damages the target itself). */
@@ -159,31 +196,42 @@ public final class CoremodSites {
         public boolean cancels(Object... values) {
             boolean cancel = false;
             for (Bound b : bound()) {
-                if (Boolean.TRUE.equals(call(b, values))) cancel = true;
+                if (!b.combiner && Boolean.TRUE.equals(call(b, values))) cancel = true;
             }
             return cancel;
         }
 
         /** Calls every hook, ignoring results. */
         public void fire(Object... values) {
-            for (Bound b : bound()) call(b, values);
+            for (Bound b : bound()) if (!b.combiner) call(b, values);
         }
 
         /** Passes {@code values[index]} through every hook (each result replaces it) and returns it. */
         public Object modify(int index, Object... values) {
-            for (Bound b : bound()) {
+            Bound[] all = bound();
+            for (Bound b : all) {
+                if (b.combiner) continue;
                 Object r = call(b, values);
-                if (r != null) values[index] = r;
+                if (r == null) continue;
+                Bound combine = takes(b, index) ? null : combiner(all, b);
+                if (combine != null) {
+                    Object joined = call(combine, new Object[] {values[index], r});
+                    if (joined != null) values[index] = joined;
+                } else {
+                    values[index] = r;
+                }
             }
             return values[index];
         }
 
         /** The result of the first hook (one that stands in for a call), or {@code fallback} when it failed. */
         public Object replace(Object fallback, Object... values) {
-            Bound[] h = bound();
-            if (h.length == 0) return fallback;
-            Object r = call(h[0], values);
-            return r != null ? r : fallback;
+            for (Bound b : bound()) {
+                if (b.combiner) continue;
+                Object r = call(b, values);
+                return r != null ? r : fallback;
+            }
+            return fallback;
         }
 
         private Bound[] bound() {
@@ -210,14 +258,38 @@ public final class CoremodSites {
             if (hooks != null) return hooks;
             List<Bound> out = new ArrayList<>();
             for (Listed l : listed) {
-                Bound b = bind(l, offered);
+                Class<?> joins = combines(l.desc);
+                Bound b = joins != null ? bind(l, new Class<?>[] {joins, joins}, true) : bind(l, offered, false);
                 if (b != null) out.add(b);
             }
             return hooks = out.toArray(NONE);
         }
     }
 
-    private record Bound(String name, MethodHandle handle, int[] from, Class<?>[] narrowed) {}
+    private record Bound(String name, MethodHandle handle, int[] from, Class<?>[] narrowed, boolean combiner, ClassLoader mod) {}
+
+    private static boolean takes(Bound b, int index) {
+        for (int from : b.from) if (from == index) return true;
+        return false;
+    }
+
+    /** The helper of the same mod that joins a value with a hook's result. */
+    private static Bound combiner(Bound[] all, Bound hook) {
+        for (Bound b : all) if (b.combiner && b.mod == hook.mod) return b;
+        return null;
+    }
+
+    /** The type a helper like {@code multiply(FF)F} joins, or null when the descriptor is not of that form. */
+    private static Class<?> combines(String desc) {
+        return switch (desc) {
+            case "(ZZ)Z" -> boolean.class;
+            case "(II)I" -> int.class;
+            case "(FF)F" -> float.class;
+            case "(DD)D" -> double.class;
+            case "(JJ)J" -> long.class;
+            default -> null;
+        };
+    }
 
     private static final Bound[] NONE = new Bound[0];
 
@@ -236,6 +308,15 @@ public final class CoremodSites {
     public static void register(net.neoforged.bus.api.IEventBus gameBus) {
         if (LISTED.isEmpty()) return;
         gameBus.addListener((net.neoforged.neoforge.event.server.ServerStartingEvent e) -> report());
+        if (ENTITY_REMOVED.listed()) {
+            gameBus.addListener((net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent e) -> {
+                net.minecraft.world.entity.Entity entity = e.getEntity();
+                // 1.7.10 removed entities that died, were discarded or logged out through this method; a chunk unload went another way
+                net.minecraft.world.entity.Entity.RemovalReason reason = entity.getRemovalReason();
+                if (reason == null || !(reason.shouldDestroy() || entity instanceof net.minecraft.world.entity.player.Player)) return;
+                if (ENTITY_REMOVED.active()) ENTITY_REMOVED.fire(legacyconnector.v1_7_10.net.minecraft.world.World.mcc$wrap(e.getLevel()), EntityBridge.wrap(entity));
+            });
+        }
         if (TICK_MILLIS.listed()) {
             float[] last = {20.0F};
             gameBus.addListener((net.neoforged.neoforge.event.tick.ServerTickEvent.Post e) -> {
@@ -293,7 +374,7 @@ public final class CoremodSites {
         return ready = any;
     }
 
-    private static Bound bind(Listed l, Class<?>[] offered) {
+    private static Bound bind(Listed l, Class<?>[] offered, boolean combiner) {
         String className = l.owner.replace('/', '.');
         try {
             Class<?> owner = null;
@@ -349,7 +430,7 @@ public final class CoremodSites {
             MethodHandle handle = MethodHandles.lookup().unreflect(method);
             handle = handle.asType(handle.type().generic().changeReturnType(Object.class)).asSpreader(Object[].class, types.length)
                     .asType(MethodType.methodType(Object.class, Object[].class));
-            return new Bound(className + "." + l.name + l.desc, handle, from, narrowed);
+            return new Bound(className + "." + l.name + l.desc, handle, from, narrowed, combiner, owner.getClassLoader());
         } catch (ReflectiveOperationException | LinkageError | RuntimeException e) {
             LOG.warn("Coremod hook {}.{} is not available: {}", className, l.name, e.toString());
             return null;

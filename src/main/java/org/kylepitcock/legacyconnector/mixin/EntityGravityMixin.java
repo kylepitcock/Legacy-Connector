@@ -22,4 +22,13 @@ public abstract class EntityGravityMixin {
                 : org.kylepitcock.legacyconnector.v1_7_10.compat.fiskheroes.FiskHeroesHooks.gravity(self, result);
         if (scaled != result) cir.setReturnValue(scaled);
     }
+
+    /** Coremod hook site (generic, {@code CoremodSites.SPRINT_PARTICLES}): 1.7.10 coremods changed the sprint check of the particles in {@code onEntityUpdate}. */
+    @Inject(method = "canSpawnSprintParticle", at = @At("RETURN"), cancellable = true, require = 0)
+    private void legacyconnector$coremodSprintParticles(CallbackInfoReturnable<Boolean> cir) {
+        if (!org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites.SPRINT_PARTICLES.listed()) return;
+        boolean sprinting = cir.getReturnValueZ();
+        boolean changed = org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites.sprintParticles((Entity) (Object) this, sprinting);
+        if (changed != sprinting) cir.setReturnValue(changed);
+    }
 }

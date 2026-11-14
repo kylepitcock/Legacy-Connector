@@ -25,6 +25,7 @@
     "PlayerDistancePredicateB173Mixin",
     "FoodDataHealRateMixin",
     "PlayerAttackHookMixin",
+    "ServerLevelWeatherHookMixin",
     "LivingEntityTravelMixin",
     "PlayerClassTravelB173Mixin",
     "PlacedFeatureOreGateMixin",

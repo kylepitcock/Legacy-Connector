@@ -22,4 +22,13 @@ public abstract class LivingEntityTravelMixin {
         if (org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites.TRAVEL.listed() ? org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites.travel(self, travel)
                 : org.kylepitcock.legacyconnector.v1_7_10.compat.fiskheroes.FiskHeroesHooks.moveEntityWithHeading(self, travel)) ci.cancel();
     }
+
+    /** Coremod hook site (generic, {@code CoremodSites.SWING_TICKS}): the result of 1.7.10's {@code getArmSwingAnimationEnd}. */
+    @Inject(method = "getCurrentSwingDuration", at = @At("RETURN"), cancellable = true, require = 0)
+    private void legacyconnector$coremodSwingTicks(org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable<Integer> cir) {
+        if (!org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites.SWING_TICKS.listed()) return;
+        int ticks = cir.getReturnValueI();
+        int changed = org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites.swingTicks((LivingEntity) (Object) this, ticks);
+        if (changed != ticks) cir.setReturnValue(changed);
+    }
 }
