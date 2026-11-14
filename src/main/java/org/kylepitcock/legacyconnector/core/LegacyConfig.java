@@ -118,6 +118,9 @@ public final class LegacyConfig {
             perf.sweepDeadViews = true
             # 1.12.2 item stack views without capabilities are held weakly (off: a tag kept without its stack could lose changes).
             perf.weakStackViews1122 = false
+            # 1.12.2 mods can read and change blocks below y=0 (down to the modern world bottom): a quarry mines the deepslate layers. Off: 1.12's world floor at y=0
+            # (a mod that indexes chunk sections with y>>4 then never sees a negative y).
+            legacy.deepWorld1122 = true
             # The loader drops its translation tables after mod discovery (read by the loader at startup).
             perf.releaseLoaderData = true
             # One loading warning listing translated mods with unresolved references or heavy stub use, shown once per set of mods.
@@ -238,6 +241,11 @@ public final class LegacyConfig {
     private static String string(String key, String fallback) {
         String v = values().getProperty(key);
         return v == null || v.isBlank() ? fallback : v.trim();
+    }
+
+    /** {@code legacy.deepWorld1122} (on): 1.12.2 code can access blocks below y=0 (see World.isOutsideBuildHeight). */
+    public static boolean deepWorld1122() {
+        return bool("legacy.deepWorld1122", true);
     }
 
     private static boolean bool(String key, boolean fallback) {

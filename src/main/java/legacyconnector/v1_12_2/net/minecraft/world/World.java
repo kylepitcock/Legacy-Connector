@@ -377,7 +377,7 @@ public class World implements IBlockAccess {
 
     @Override
     public IBlockState getBlockState(BlockPos pos) {
-        if (pos.getY() < 0) return org.kylepitcock.legacyconnector.v1_12_2.bridge.Vanilla1122.airState();
+        if (pos.getY() < 0 && !org.kylepitcock.legacyconnector.core.LegacyConfig.deepWorld1122()) return org.kylepitcock.legacyconnector.v1_12_2.bridge.Vanilla1122.airState();
         IBlockState state = StatesBridge1122.toLegacy(mcc$state(modern(pos)));
         if (state == null) state = org.kylepitcock.legacyconnector.v1_12_2.bridge.Vanilla1122.airState();
         return state;
@@ -505,7 +505,8 @@ public class World implements IBlockAccess {
 
     public boolean isOutsideBuildHeight(BlockPos pos) {
         // 1.12's world started at y=0: the modern overworld goes down to -64, but mods index chunk section arrays with y>>4 (AbyssalCraft's explosions threw on -2)
-        return pos.getY() < 0 || (acc() == null ? pos.getY() >= 256 : acc().isOutsideBuildHeight(pos.getY()));
+        // (legacy.deepWorld1122, on by default: machines such as quarries reach the deepslate layers; off keeps 1.12's floor at y=0)
+        return (pos.getY() < 0 && !org.kylepitcock.legacyconnector.core.LegacyConfig.deepWorld1122()) || (acc() == null ? pos.getY() >= 256 : acc().isOutsideBuildHeight(pos.getY()));
     }
 
     public boolean isValid(BlockPos pos) {
