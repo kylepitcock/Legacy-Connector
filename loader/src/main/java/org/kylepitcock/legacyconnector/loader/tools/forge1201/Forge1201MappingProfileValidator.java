@@ -209,7 +209,7 @@ public final class Forge1201MappingProfileValidator {
         Path absolute = profilePath.toAbsolutePath().normalize();
         if (!Files.isRegularFile(absolute)) {
             return new Finding(absolute.toString(), 0, null, null, null, null,
-                    ProfileStatus.PROFILE_FILE_MISSING, null, null, null, null, null, null, null,
+                    ProfileStatus.PROFILE_FILE_MISSING, null, null, null, null, null, null, null, null,
                     List.of(), List.of(), List.of(), List.of(), List.of(),
                     List.of("Mapping profile file does not exist or is not a regular file."));
         }
@@ -217,7 +217,7 @@ public final class Forge1201MappingProfileValidator {
         long size = Files.size(absolute);
         if (size > MAX_PROFILE_BYTES) {
             return new Finding(absolute.toString(), size, null, null, null, null,
-                    ProfileStatus.PROFILE_FILE_LIMIT_EXCEEDED, null, null, null, null, null, null, null,
+                    ProfileStatus.PROFILE_FILE_LIMIT_EXCEEDED, null, null, null, null, null, null, null, null,
                     List.of(), List.of(), List.of(), List.of(), List.of(),
                     List.of("Mapping profile exceeds the " + MAX_PROFILE_BYTES + "-byte limit."));
         }
@@ -244,14 +244,14 @@ public final class Forge1201MappingProfileValidator {
             root = JsonParser.parseString(json);
         } catch (IOException | RuntimeException exception) {
             return new Finding(absolute.toString(), bytes.length, digest, null, null, null,
-                    ProfileStatus.PROFILE_INVALID_JSON, null, null, null, null, null, null, null,
+                    ProfileStatus.PROFILE_INVALID_JSON, null, null, null, null, null, null, null, null,
                     List.of(), List.of(), List.of(), List.of(), List.of(),
                     List.of("Mapping profile is not strict UTF-8 JSON or contains duplicate object keys: "
                             + conciseMessage(exception)));
         }
         if (!root.isJsonObject()) {
             return new Finding(absolute.toString(), bytes.length, digest, null, null, null,
-                    ProfileStatus.PROFILE_UNSUPPORTED_SHAPE, null, null, null, null, null, null, null,
+                    ProfileStatus.PROFILE_UNSUPPORTED_SHAPE, null, null, null, null, null, null, null, null,
                     List.of(), List.of(), List.of(), List.of(), List.of(),
                     List.of("Mapping profile root must be a JSON object."));
         }
@@ -402,7 +402,7 @@ public final class Forge1201MappingProfileValidator {
 
     private static Finding empty(ProfileStatus status, String warning) {
         return new Finding(null, 0, null, null, null, null, status, null, null, null, null,
-                null, null, null, List.of(), List.of(), List.of(), List.of(), List.of(), List.of(warning));
+                null, null, null, null, List.of(), List.of(), List.of(), List.of(), List.of(), List.of(warning));
     }
 
     private static void parseBindings(
