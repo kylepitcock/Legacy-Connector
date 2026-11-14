@@ -8,11 +8,11 @@ import java.util.Map;
 import java.util.Set;
 import legacyconnector.v1_12_2.net.minecraft.client.renderer.block.model.IBakedModel;
 import legacyconnector.v1_12_2.net.minecraft.client.renderer.block.model.ModelResourceLocation;
-import legacyconnector.v1_12_2.net.minecraft.util.registry.IRegistry;
 import net.minecraft.client.resources.model.BakedModel;
 
 /** The modern baked model map as ModelBakeEvent's registry: keyed by legacy locations (see {@link Models1122#modernLocations}). */
-public final class BakedRegistry1122 implements IRegistry<ModelResourceLocation, IBakedModel> {
+public final class BakedRegistry1122 extends legacyconnector.v1_12_2.net.minecraft.util.registry.RegistrySimple<ModelResourceLocation, IBakedModel> {
+    // a RegistrySimple: mods cast ModelBakeEvent.getModelRegistry() to it (OpenComputers' ModelInitialization)
     private final Map<net.minecraft.client.resources.model.ModelResourceLocation, BakedModel> models;
     int replaced;
 
@@ -52,6 +52,11 @@ public final class BakedRegistry1122 implements IRegistry<ModelResourceLocation,
         Set<ModelResourceLocation> keys = new LinkedHashSet<>();
         for (String k : Models1122.allLocations().keySet()) keys.add(new ModelResourceLocation(k));
         return keys;
+    }
+
+    @Override
+    public boolean containsKey(ModelResourceLocation key) {
+        return getObject(key) != null;
     }
 
     @Override

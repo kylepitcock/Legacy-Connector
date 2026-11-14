@@ -135,6 +135,13 @@ public final class StatesBridge1122 {
             TO_MODERN.put(state, out);
             return out;
         }
+        // a legacy block without a registered modern block (a duplicate name, a failed registration) can not be stored in a chunk or sent to a client
+        if (legacy.mcc$modern == null && UNREGISTERED_REPORTED.add(legacy.getClass().getName())) {
+            org.slf4j.LoggerFactory.getLogger("LegacyConnector/Blocks").warn("{} ({}) has no registered modern block; placing it places air instead",
+                    legacy.getClass().getName(), legacy.getRegistryName());
+        }
         return net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();
     }
+
+    private static final java.util.Set<String> UNREGISTERED_REPORTED = java.util.concurrent.ConcurrentHashMap.newKeySet();
 }

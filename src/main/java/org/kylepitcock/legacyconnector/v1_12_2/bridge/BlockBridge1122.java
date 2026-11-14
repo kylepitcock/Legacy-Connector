@@ -24,6 +24,13 @@ public final class BlockBridge1122 {
 
     static void register(Block block) {
         var id = modernId(block.getRegistryName());
+        if ("minecraft".equals(id.getNamespace()) && BuiltInRegistries.BLOCK.containsKey(id)) {
+            // a mod that replaces a vanilla block (Colored Redstone's dust is "minecraft:redstone_wire"): 1.12 let the registry hand out its object
+            // under the vanilla name; the modern vanilla block stays, and the mod's block lives next to it under an id of the layer's own
+            var alias = ResourceLocation.fromNamespaceAndPath("legacyconnector", "minecraft_" + id.getPath());
+            org.slf4j.LoggerFactory.getLogger("LegacyConnector/Blocks").info("{} replaces the vanilla block {}: registered as {}", block.getClass().getName(), id, alias);
+            id = alias;
+        }
         var legacySound = block.getSoundType();
         // a mod-made sound type (its own events, volume and pitch) keeps them; the material's sounds only stand in when the block has none
         BlockBehaviour.Properties p = BlockBehaviour.Properties.of().sound(legacySound != null ? legacySound.mcc$toModern() : sound(block.getMaterialLegacy()));
@@ -70,13 +77,16 @@ public final class BlockBridge1122 {
         if (fluid) {
             modern = new org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122FluidBlock(block, p);
         } else if (entity) {
-            var eb = new org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122EntityBlock(block, p);
-            TileEntityBridge1122.addBlock(eb);
-            modern = eb;
+            modern = new org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122EntityBlock(block, p);
         } else {
             modern = new Legacy1122Block(block, p);
         }
-        LegacyRegistrar.register(BuiltInRegistries.BLOCK, id, modern);
+        if (LegacyRegistrar.register(BuiltInRegistries.BLOCK, id, modern) != modern) {
+            // a duplicate name: the block never became a modern block, so its states must never be placed (StatesBridge1122.toModern answers air)
+            block.mcc$modern = null;
+            return;
+        }
+        if (modern instanceof org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122EntityBlock eb) TileEntityBridge1122.addBlock(eb);
         block.mcc$modern = modern;
         synchronized (MODERN) {
             MODERN.put(block, modern);

@@ -66,6 +66,7 @@ final class BundledLibraries {
             // The 1.12.2 shim itself is written against vecmath.
             new Group("vecmath", "vecmath", List.of("vecmath-"), List.of("javax/vecmath/"), true, true),
             new Group("activation", "javax.activation", List.of("jakarta.activation-"), List.of("javax/activation/"), false, true),
+            new Group("lzma", "lzma (LZMA.LzmaInputStream, a Forge 1.7.10 library)", List.of("lzma-"), List.of("LZMA/"), false, true),
             new Group("argo", "argo JSON parser (a Minecraft 1.6.4 launcher library)", List.of("argo-"), List.of("argo/"), false, true));
 
     /** What was decided, for the log and the report. */

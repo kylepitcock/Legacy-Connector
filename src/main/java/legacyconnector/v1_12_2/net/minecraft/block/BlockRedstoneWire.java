@@ -96,25 +96,131 @@ public class BlockRedstoneWire extends Block {
                 || Block.mcc$named(below.getBlock(), "glowstone");
     }
 
+    /** Positions to notify once the power of a wire has been recalculated (1.12 collected them while it ran). */
+    private final java.util.Set<BlockPos> blocksNeedingUpdate = new java.util.HashSet<>();
+    /** False while the wire asks what powers it, so that it does not read its own signal back. */
+    private boolean canProvidePower = true;
+
+    private IBlockState updateSurroundingRedstone(World worldIn, BlockPos pos, IBlockState state) {
+        state = calculateCurrentChanges(worldIn, pos, pos, state);
+        java.util.List<BlockPos> list = new java.util.ArrayList<>(blocksNeedingUpdate);
+        blocksNeedingUpdate.clear();
+        for (BlockPos blockpos : list) worldIn.notifyNeighborsOfStateChange(blockpos, this, false);
+        return state;
+    }
+
+    private IBlockState calculateCurrentChanges(World worldIn, BlockPos pos1, BlockPos pos2, IBlockState state) {
+        IBlockState iblockstate = state;
+        int i = state.getValue(POWER);
+        canProvidePower = false;
+        int j = worldIn.isBlockIndirectlyGettingPowered(pos1);
+        canProvidePower = true;
+        if (j > 0 && j > i - 1) i = j;
+        int k = 0;
+        for (EnumFacing enumfacing : EnumFacing.Plane.HORIZONTAL) {
+            BlockPos blockpos = pos1.offset(enumfacing);
+            boolean flag = blockpos.getX() != pos2.getX() || blockpos.getZ() != pos2.getZ();
+            if (flag) k = getMaxCurrentStrength(worldIn, blockpos, k);
+            if (worldIn.getBlockState(blockpos).isNormalCube() && !worldIn.getBlockState(pos1.up()).isNormalCube()) {
+                if (flag && pos1.getY() >= pos2.getY()) k = getMaxCurrentStrength(worldIn, blockpos.up(), k);
+            } else if (!worldIn.getBlockState(blockpos).isNormalCube() && flag && pos1.getY() <= pos2.getY()) {
+                k = getMaxCurrentStrength(worldIn, blockpos.down(), k);
+            }
+        }
+        if (k > i) i = k - 1;
+        else if (i > 0) --i;
+        else i = 0;
+        if (j > i - 1) i = j;
+        if (state.getValue(POWER) != i) {
+            state = state.withProperty(POWER, i);
+            if (worldIn.getBlockState(pos1) == iblockstate) worldIn.setBlockState(pos1, state, 2);
+            blocksNeedingUpdate.add(pos1);
+            for (EnumFacing enumfacing1 : EnumFacing.values()) blocksNeedingUpdate.add(pos1.offset(enumfacing1));
+        }
+        return state;
+    }
+
+    private void notifyWireNeighborsOfStateChange(World worldIn, BlockPos pos) {
+        if (worldIn.getBlockState(pos).getBlock() == this) {
+            worldIn.notifyNeighborsOfStateChange(pos, this, false);
+            for (EnumFacing enumfacing : EnumFacing.values()) worldIn.notifyNeighborsOfStateChange(pos.offset(enumfacing), this, false);
+        }
+    }
+
+    private void notifyWireNeighbors(World worldIn, BlockPos pos) {
+        for (EnumFacing enumfacing : EnumFacing.Plane.HORIZONTAL) notifyWireNeighborsOfStateChange(worldIn, pos.offset(enumfacing));
+        for (EnumFacing enumfacing : EnumFacing.Plane.HORIZONTAL) {
+            BlockPos blockpos = pos.offset(enumfacing);
+            if (worldIn.getBlockState(blockpos).isNormalCube()) notifyWireNeighborsOfStateChange(worldIn, blockpos.up());
+            else notifyWireNeighborsOfStateChange(worldIn, blockpos.down());
+        }
+    }
+
+    @Override
+    public void onBlockAdded(World worldIn, BlockPos pos, IBlockState state) {
+        if (!worldIn.isRemote) {
+            updateSurroundingRedstone(worldIn, pos, state);
+            for (EnumFacing enumfacing : EnumFacing.Plane.VERTICAL) worldIn.notifyNeighborsOfStateChange(pos.offset(enumfacing), this, false);
+            notifyWireNeighbors(worldIn, pos);
+        }
+    }
+
+    @Override
+    public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
+        super.breakBlock(worldIn, pos, state);
+        if (!worldIn.isRemote) {
+            for (EnumFacing enumfacing : EnumFacing.values()) worldIn.notifyNeighborsOfStateChange(pos.offset(enumfacing), this, false);
+            updateSurroundingRedstone(worldIn, pos, state);
+            notifyWireNeighbors(worldIn, pos);
+        }
+    }
+
+    private int getMaxCurrentStrength(World worldIn, BlockPos pos, int strength) {
+        if (worldIn.getBlockState(pos).getBlock() != this) return strength;
+        int i = worldIn.getBlockState(pos).getValue(POWER);
+        return Math.max(i, strength);
+    }
+
+    @Override
+    public void neighborChanged(IBlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos) {
+        if (!worldIn.isRemote) {
+            if (canPlaceBlockAt(worldIn, pos)) {
+                updateSurroundingRedstone(worldIn, pos, state);
+            } else {
+                dropBlockAsItem(worldIn, pos, state, 0);
+                worldIn.setBlockToAir(pos);
+            }
+        }
+    }
+
     @Override
     public int getStrongPower(IBlockState blockState, IBlockAccess blockAccess, BlockPos pos, EnumFacing side) {
-        return blockState.getWeakPower(blockAccess, pos, side);
+        return !canProvidePower ? 0 : blockState.getWeakPower(blockAccess, pos, side);
     }
 
     @Override
     public int getWeakPower(IBlockState blockState, IBlockAccess blockAccess, BlockPos pos, EnumFacing side) {
-        int power = blockState.getValue(POWER);
-        if (power == 0 || side == EnumFacing.DOWN) return 0;
-        if (side == EnumFacing.UP) return power;
-        IBlockState actual = getActualState(blockState, blockAccess, pos);
-        EnumFacing toward = side.getOpposite();
-        PropertyEnum<EnumAttachPosition> prop = toward == EnumFacing.NORTH ? NORTH : toward == EnumFacing.SOUTH ? SOUTH : toward == EnumFacing.EAST ? EAST : WEST;
-        if (actual.getValue(prop) != EnumAttachPosition.NONE) return power;
-        boolean anyOther = false;
-        for (PropertyEnum<EnumAttachPosition> p : java.util.List.of(NORTH, SOUTH, EAST, WEST)) {
-            if (p != prop && actual.getValue(p) != EnumAttachPosition.NONE) anyOther = true;
-        }
-        return anyOther ? 0 : power;
+        if (!canProvidePower) return 0;
+        int i = blockState.getValue(POWER);
+        if (i == 0) return 0;
+        if (side == EnumFacing.UP) return i;
+        java.util.EnumSet<EnumFacing> set = java.util.EnumSet.noneOf(EnumFacing.class);
+        for (EnumFacing enumfacing : EnumFacing.Plane.HORIZONTAL) if (isPowerSourceAt(blockAccess, pos, enumfacing)) set.add(enumfacing);
+        if (side.getAxis().isHorizontal() && set.isEmpty()) return i;
+        if (set.contains(side) && !set.contains(side.rotateYCCW()) && !set.contains(side.rotateY())) return i;
+        return 0;
+    }
+
+    private boolean isPowerSourceAt(IBlockAccess worldIn, BlockPos pos, EnumFacing side) {
+        BlockPos blockpos = pos.offset(side);
+        IBlockState iblockstate = worldIn.getBlockState(blockpos);
+        boolean flag = iblockstate.isNormalCube();
+        boolean flag1 = worldIn.getBlockState(pos.up()).isNormalCube();
+        if (!flag1 && flag && canConnectUpwardsTo(worldIn, blockpos.up())) return true;
+        if (canConnectTo(iblockstate, side, worldIn, pos)) return true;
+        if (BlockRedstoneDiode.isDiode(iblockstate) && iblockstate.getPropertyKeys().contains(BlockHorizontal.FACING)
+                && iblockstate.getValue(BlockHorizontal.FACING) == side && Block.mcc$named(iblockstate.getBlock(), "powered_repeater")) return true;
+        return !flag && canConnectUpwardsTo(worldIn, blockpos.down());
     }
 
     @Override

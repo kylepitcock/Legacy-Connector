@@ -54,6 +54,12 @@ public class TextureManager implements ITickable, IResourceManagerReloadListener
         if (org.kylepitcock.legacyconnector.core.pack.GeneratedPack.building()) return; // see RenderContext#bindTexture
         flush();
         var modern = mcc$modern(resource);
+        // 1.12 registered a SimpleTexture for a location bound for the first time; mods ask getTexture(location).getGlTextureId() right after binding
+        synchronized (this) {
+            if (!mapTextureObjects.containsKey(resource) && !(resource.getPath().equals("textures/atlas/blocks.png") || ATLAS_ALIASES.contains(resource))) {
+                mapTextureObjects.put(resource, new BoundTexture(modern));
+            }
+        }
         // 1.12's HUD sheet (hearts, armor, food) is gone since 1.20.2: composed from the modern sprites the first time it is bound
         // (Tinkers' Mantle cancels the vanilla hearts and draws its own from it; nothing showed)
         if (modern.equals(org.kylepitcock.legacyconnector.v1_7_10.client.LegacyIcons.LOCATION)) org.kylepitcock.legacyconnector.v1_7_10.client.LegacyIcons.ensure();
@@ -126,6 +132,27 @@ public class TextureManager implements ITickable, IResourceManagerReloadListener
     }
 
     /** The block atlas, or a texture object registered under the location. */
+    /** A texture the modern texture manager loads by location (bound by a mod without registering one): its GL id is the modern texture's. */
+    private static final class BoundTexture extends AbstractTexture {
+        private final net.minecraft.resources.ResourceLocation modern;
+
+        BoundTexture(net.minecraft.resources.ResourceLocation modern) {
+            this.modern = modern;
+        }
+
+        @Override
+        public int getGlTextureId() {
+            try {
+                return net.minecraft.client.Minecraft.getInstance().getTextureManager().getTexture(modern).getId();
+            } catch (RuntimeException e) {
+                return 0;
+            }
+        }
+
+        @Override
+        public void loadTexture(legacyconnector.v1_12_2.net.minecraft.client.resources.IResourceManager resourceManager) {}
+    }
+
     public ITextureObject getTexture(ResourceLocation textureLocation) {
         if (textureLocation == null) return null;
         if (textureLocation.getPath().equals("textures/atlas/blocks.png")) return TextureMap.mcc$blocks();
