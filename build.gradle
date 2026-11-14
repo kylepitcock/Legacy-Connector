@@ -29,6 +29,10 @@ repositories {
         url = 'https://maven.minecraftforge.net/'
         content { includeGroup 'com.github.glitchfiend' }
     }
+    maven { // Forge 1.7.10's lzma library (LZMA.LzmaInputStream), served by Mojang's library host
+        url = 'https://libraries.minecraft.net/'
+        content { includeGroup 'lzma' }
+    }
     maven { // Create (contraption movement checks for legacy blocks)
         url = 'https://maven.createmod.net'
         content { includeGroup 'com.simibubi.create' }
@@ -199,7 +203,9 @@ dependencies {
                  // Java 8 had javax.activation (removed from the JDK in 11); 1.12.2 mods use it for MIME types (Silent Lib, Scaling Health).
                  'com.sun.activation:jakarta.activation:1.2.2',
                  // Minecraft 1.6.4's launcher libraries included argo (JSON; 3.x keeps the 2.x argo.jdom API, whose 2.25 pom Gradle cannot parse); CodeChickenCore's DepLoader reads its dependency list with it.
-                 'net.sourceforge.argo:argo:3.5']) {
+                 'net.sourceforge.argo:argo:3.5',
+                 // Forge 1.7.10 / 1.6.4 shipped lzma:lzma:0.0.1 (LZMA.LzmaInputStream); mods use it to read compressed model data.
+                 'lzma:lzma:0.0.1']) {
         legacyLibs(lib)
         if (project.hasProperty('embeddedLibs')) {
             // test mode: the libraries are NOT on the run class path; the loader reads them from build/legacy-libs like the production jar's resources
