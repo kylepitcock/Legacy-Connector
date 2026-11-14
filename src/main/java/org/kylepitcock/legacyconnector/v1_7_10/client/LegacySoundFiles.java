@@ -139,6 +139,62 @@ public final class LegacySoundFiles {
         return new LegacyFile(ResourceLocation.fromNamespaceAndPath("legacyconnector", id.toString()), size > STREAM_BYTES, data);
     }
 
+    /** By file URL: the files 1.4-1.6 mods put into the sound pools. */
+    private static final Map<String, Optional<LegacyFile>> POOL_FILES = new ConcurrentHashMap<>();
+
+    /**
+     * 1.4-1.6 mods played sounds by name that they had put into the sound pool as files at a URL
+     * ({@code soundPoolSounds.addSound("mob/tf/hydra/hurt2.ogg", url)}), with no sounds.json. The modern engine only knows events it
+     * listed at its last reload, so after every sound engine (re)load each pool event the registry lacks is added to it as a
+     * weighed event over the pool's files (read from their URLs through the sound manager's file cache), as a sounds.json would have.
+     *
+     * @return how many events were added
+     */
+    @SuppressWarnings("unchecked")
+    public static int registerPoolEvents(SoundManager manager, Map<String, ? extends java.util.List<URL>> events) {
+        if (events.isEmpty()) return 0;
+        Map<ResourceLocation, WeighedSoundEvents> registry;
+        try {
+            Field f = SoundManager.class.getDeclaredField("registry");
+            f.setAccessible(true);
+            registry = (Map<ResourceLocation, WeighedSoundEvents>) f.get(manager);
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            LOG.warn("Legacy sound pools cannot be played: the sound manager's registry is out of reach ({})", e.toString());
+            return 0;
+        }
+        int added = 0;
+        for (var event : events.entrySet()) {
+            var modern = org.kylepitcock.legacyconnector.v1_7_10.bridge.SoundBridge.sound(event.getKey());
+            if (modern == null || registry.containsKey(modern.getLocation())) continue;
+            WeighedSoundEvents weighed = new WeighedSoundEvents(modern.getLocation(), null);
+            Map<ResourceLocation, Resource> cache = soundCache(manager);
+            if (cache == null) return added;
+            for (URL url : event.getValue()) {
+                LegacyFile file = POOL_FILES.computeIfAbsent(url.toString(), k -> Optional.ofNullable(poolFile(url))).orElse(null);
+                if (file == null) continue;
+                cache.putIfAbsent(file.sound().getPath(), new Resource(null, url::openStream));
+                weighed.addSound(file.sound());
+            }
+            registry.put(modern.getLocation(), weighed);
+            added++;
+        }
+        return added;
+    }
+
+    private static LegacyFile poolFile(URL url) {
+        IoSupplier<InputStream> data = url::openStream;
+        long size;
+        try (InputStream in = data.get()) {
+            size = in.transferTo(java.io.OutputStream.nullOutputStream());
+        } catch (IOException | RuntimeException e) {
+            LOG.warn("Legacy sound file {} cannot be read: {}", url, e.toString());
+            return null;
+        }
+        StringBuilder id = new StringBuilder("legacy_pool/");
+        for (char c : url.getPath().toLowerCase(Locale.ROOT).replaceAll("\\.ogg$", "").toCharArray()) id.append(ResourceLocation.validPathChar(c) ? c : '_');
+        return new LegacyFile(ResourceLocation.fromNamespaceAndPath("legacyconnector", id.toString()), size > STREAM_BYTES, data);
+    }
+
     private static InputStream stream(IResource resource) throws IOException {
         InputStream in = resource == null ? null : resource.getInputStream();
         if (in == null) throw new java.io.FileNotFoundException();
