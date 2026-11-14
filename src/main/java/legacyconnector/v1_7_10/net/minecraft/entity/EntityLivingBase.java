@@ -29,6 +29,9 @@ public abstract class EntityLivingBase extends Entity {
     public float renderYawOffset;
     @Deprecated
     public int hurtTime;
+    /** Phantom field: ticks since a player (or a machine that says so) last hit it; 0 means no experience and rare drops. */
+    @Deprecated
+    public int recentlyHit;
     @Deprecated
     public int deathTime;
     @Deprecated
@@ -160,6 +163,14 @@ public abstract class EntityLivingBase extends Entity {
 
     public static void mcc$set$renderYawOffset(EntityLivingBase e, float v) {
         if (e.mcc$entity != null) e.mcc$living().yBodyRot = v;
+    }
+
+    public static int mcc$get$recentlyHit(EntityLivingBase e) {
+        return e.mcc$entity == null ? 0 : org.kylepitcock.legacyconnector.v1_12_2.entity.ModernAccess1122.lastHurtByPlayerTime(e.mcc$living());
+    }
+
+    public static void mcc$set$recentlyHit(EntityLivingBase e, int v) {
+        if (e.mcc$entity != null) org.kylepitcock.legacyconnector.v1_12_2.entity.ModernAccess1122.setLastHurtByPlayerTime(e.mcc$living(), v);
     }
 
     public static int mcc$get$hurtTime(EntityLivingBase e) {

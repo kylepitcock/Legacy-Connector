@@ -552,6 +552,24 @@ public final class EventBridge1710 {
             if (!wants(forge(), LivingDeathEvent.class)) return;
             if (forge().post(new LivingDeathEvent((EntityLivingBase) EntityBridge.wrap(e.getEntity()), legacySource(e.getSource())))) e.setCanceled(true);
         });
+        // a mob a mod moved into a proxy world (worldObj = its own WorldServer subclass, MineFactory's grinder) drops its loot and experience
+        // there: the proxy's spawnEntityInWorld receives them, as the 1.7.10 death code spawned them through the entity's worldObj
+        gameBus.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, (net.neoforged.neoforge.event.entity.living.LivingDropsEvent e) -> {
+            var view = EntityBridge.knownView(e.getEntity());
+            if (view == null || view.mcc$worldProxy == null) return;
+            var proxy = view.mcc$worldProxy;
+            for (var item : new ArrayList<>(e.getDrops())) {
+                if (EntityBridge.wrap(item) instanceof EntityItem legacyItem) proxy.spawnEntityInWorld(legacyItem);
+            }
+            e.setCanceled(true);
+        });
+        gameBus.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, (net.neoforged.neoforge.event.entity.living.LivingExperienceDropEvent e) -> {
+            var view = EntityBridge.knownView(e.getEntity());
+            if (view == null || view.mcc$worldProxy == null || e.getDroppedExperience() <= 0) return;
+            var m = e.getEntity();
+            view.mcc$worldProxy.spawnEntityInWorld(new legacyconnector.v1_7_10.net.minecraft.entity.item.EntityXPOrb(view.mcc$worldProxy, m.getX(), m.getY(), m.getZ(), e.getDroppedExperience()));
+            e.setDroppedExperience(0);
+        });
         gameBus.addListener((net.neoforged.neoforge.event.entity.living.LivingDropsEvent e) -> {
             if (!wants(forge(), LivingDropsEvent.class)) return;
             ArrayList<EntityItem> drops = new ArrayList<>();

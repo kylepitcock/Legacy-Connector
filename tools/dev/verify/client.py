@@ -22,7 +22,7 @@ ROOT = os.path.abspath(os.path.join(HERE, "..", "..", ".."))
 JAR_ROOT = os.environ.get("JAR_ROOT", "Y:/Programming/Minecraft/Retrofit")
 SEARCH = ("test-mods test-mods2 test-mods3 test-mods-1122 test-mods-147 test-mods-152 test-mods-164 test-mods-1710-extra test-mods-1201-a "
           "test-mods-1201-terramity test-mods-b173 run-subtest/mods run-subtest/mods.aside-20261113 run-screenshots/mods "
-          "run-screenshots/mods.aside-20261113").split()
+          "run-screenshots/mods.aside-20261113 run-subtest/mods-user").split()
 EXT = (".jar", ".zip", ".litemod")
 # Iris Veil Compat crashes the mixin phase without the Veil library, which a real pack gets through Create Aeronautics/Sable
 PERF_SKIP = ("irisveil",)

@@ -1098,6 +1098,22 @@ public class Block {
     }
 
     public AxisAlignedBB getCollisionBoundingBoxFromPool(World world, int x, int y, int z) {
+        if (mcc$plainVanilla() && world != null) {
+            // a vanilla block seen as a plain Block (air, torches, flowers, rails, water...): its box is the modern block's collision shape at the
+            // position, as 1.7.10's own classes answered (air and liquids: none; MFR's weather collector found the sky blocked by a full box of air)
+            try {
+                var access = world.mcc$level();
+                if (access != null) {
+                    var pos = new net.minecraft.core.BlockPos(x, y, z);
+                    var shape = access.getBlockState(pos).getCollisionShape(access instanceof net.minecraft.world.level.BlockGetter g ? g : net.minecraft.world.level.EmptyBlockGetter.INSTANCE, pos);
+                    if (shape.isEmpty()) return null;
+                    var box = shape.bounds();
+                    return AxisAlignedBB.getBoundingBox(x + box.minX, y + box.minY, z + box.minZ, x + box.maxX, y + box.maxY, z + box.maxZ);
+                }
+            } catch (RuntimeException e) {
+                // fall back to the block bounds
+            }
+        }
         return AxisAlignedBB.getBoundingBox(x + minX, y + minY, z + minZ, x + maxX, y + maxY, z + maxZ);
     }
 
