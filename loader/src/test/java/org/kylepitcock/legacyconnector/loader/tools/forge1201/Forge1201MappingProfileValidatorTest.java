@@ -50,7 +50,7 @@ final class Forge1201MappingProfileValidatorTest {
         assertTrue(finding.contextPaths().stream().allMatch(path -> path.completePathCount() == 0));
         assertTrue(finding.edges().stream().allMatch(edge ->
                 edge.status() != Forge1201MappingProfileValidator.EdgeStatus.VERIFIED));
-        assertFalse(finding.warnings().isEmpty());
+        assertTrue(finding.contextPaths().stream().allMatch(path -> "NO_COMPLETE_PATH".equals(path.status())));
     }
 
     @Test
