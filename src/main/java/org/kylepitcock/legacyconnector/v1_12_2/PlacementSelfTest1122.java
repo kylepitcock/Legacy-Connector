@@ -29,6 +29,9 @@ public final class PlacementSelfTest1122 {
     private static final Logger LOG = LoggerFactory.getLogger("LegacyConnector/PlacementTest");
     private static int ticks = -1;
 
+    /** What plants and reeds are placed on after the stone floor refused them (water is set beside the position for reeds). */
+    private static final net.minecraft.world.level.block.Block[] SOILS = {Blocks.GRASS_BLOCK, Blocks.SAND, Blocks.MYCELIUM, Blocks.SOUL_SAND, Blocks.FARMLAND};
+
     private PlacementSelfTest1122() {}
 
     public static void register() {
@@ -105,6 +108,7 @@ public final class PlacementSelfTest1122 {
         int placed = 0, total = 0;
         List<String> failing = new ArrayList<>();
         List<String> sneaking = new ArrayList<>();
+        List<String> onSoil = new ArrayList<>();
         for (var item : BuiltInRegistries.ITEM) {
             if (!(item instanceof Legacy1122BlockItem)) continue;
             var id = BuiltInRegistries.ITEM.getKey(item);
@@ -134,6 +138,23 @@ public final class PlacementSelfTest1122 {
                     player.setShiftKeyDown(false);
                     if (there) sneaking.add(id.toString());
                 }
+                if (!there) {
+                    // plants, mushrooms and reeds are placed on what they accept (their canPlaceBlockAt/canBlockStay), not on the stone test floor
+                    for (var soil : SOILS) {
+                        level.removeBlockEntity(ground.above());
+                        level.setBlock(ground, soil.defaultBlockState(), 2);
+                        level.setBlock(ground.north(), Blocks.WATER.defaultBlockState(), 2);
+                        stack = new ItemStack(item);
+                        player.setItemInHand(InteractionHand.MAIN_HAND, stack);
+                        r = item.useOn(new UseOnContext(level, player, InteractionHand.MAIN_HAND, stack, hit));
+                        there = !level.getBlockState(ground.above()).isAir();
+                        level.setBlock(ground.north(), Blocks.STONE.defaultBlockState(), 2);
+                        if (there) {
+                            onSoil.add(id.toString());
+                            break;
+                        }
+                    }
+                }
                 result = there ? null : "result " + r + why(item, level, player, stack, hit);
                 if (there) placed++;
                 level.removeBlockEntity(ground.above());
@@ -143,6 +164,7 @@ public final class PlacementSelfTest1122 {
             }
             if (result != null) failing.add(id + " (" + result + ")");
         }
-        LOG.info("1.12.2 item placement: {} of {} placed ({} only while sneaking: {}), failing: {}", placed, total, sneaking.size(), sneaking, failing);
+        LOG.info("1.12.2 item placement: {} of {} placed ({} only while sneaking: {}; {} only on soil or beside water: {}), failing: {}", placed, total, sneaking.size(), sneaking,
+                onSoil.size(), onSoil, failing);
     }
 }
