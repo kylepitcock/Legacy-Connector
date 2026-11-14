@@ -1,4 +1,4 @@
-**Current checkpoint — 2026-11-14:** Schema 1.10A passed the user's forced loader gate at `cc651af52b192fb534d49f3ad494b42e3d15d6f0` (`BUILD SUCCESSFUL in 53s; 14/14 actionable tasks`). Schema 1.10B's first forced run completed clean, compilation, source mapping verification/generation and provenance reporting, then ran 498 tests with 2 failures caused by invalid synthetic TSRG2 fixtures using spaces instead of required leading tabs. All four test fixtures were corrected, test-only, in `e03c55daa6fd01e0855774e53a4255beedbad1fb`; the corrected test suite is awaiting the next user forced run. The source SRG → 1.20.1 Mojang table remains member-name-only and `PARTIAL`; no 1.20.1 → 1.21.1 edge or selector rewriting is authorized.
+**Current checkpoint — 2026-11-14:** Schema 1.10A is user-validated green at `cc651af52b192fb534d49f3ad494b42e3d15d6f0` (`BUILD SUCCESSFUL in 53s; 14/14 tasks`). Schema 1.10B's corrected forced loader gate is now user-validated green at `493cae748f89f88308a7e1b98ea583d2e58871af`: `BUILD SUCCESSFUL in 50s; 17 actionable tasks, all 17 executed`. The earlier two TSRG2 fixture failures were fixed test-only by `e03c55daa6fd01e0855774e53a4255beedbad1fb`. The mapping provenance report was generated successfully and still requires content review. The generated source SRG → official Mojang 1.20.1 edge remains `PARTIAL`, member-name-only; no 1.20.1 → 1.21.1 edge or selector rewriting is authorized.
 
 ---
 
@@ -1276,7 +1276,7 @@ The next branch revision is still being audited for correctness. After final cod
 .\gradlew.bat :loader:clean :loader:test --no-daemon --console=plain --rerun-tasks
 ```
 
-Do not begin selector rewriting. Do not mark Schema 1.10B green until the user-run test gate passes and the resulting provenance report has been reviewed.
+Do not begin selector rewriting. The corrected user forced loader test gate has passed at `493cae748f89f88308a7e1b98ea583d2e58871af`; record that test gate as green. The generated provenance JSON still needs content review before closing the Schema 1.10B source-edge audit.
 
 
 ## 2026-11-14 — Schema 1.10B first forced run: test fixture correction pending validation
@@ -1294,5 +1294,16 @@ Do not begin selector rewriting. Do not mark Schema 1.10B green until the user-r
 - JUnit result: 498 tests completed, 2 failed, both in the first two `SrgMojangTableTest` cases. The failures were `IOException` thrown by `generateDetailed()`.
 - Root cause: production TSRG2 parser correctly uses a leading tab to distinguish member rows from class rows. All four new synthetic fixtures used spaces for member indentation. Therefore positive fixtures were parsed as class rows and produced no mapping matches; negative tests passed for the wrong reason.
 - Test-only fix committed at `e03c55daa6fd01e0855774e53a4255beedbad1fb`: all four fixtures now include Java `\\t` escape sequences to generate real leading tab characters. No production logic or assertions were loosened.
-- Schema 1.10B is **not yet green**. The user must fast-forward to the current branch tip and rerun `.\gradlew.bat :loader:clean :loader:test --no-daemon --console=plain --rerun-tasks`.
+- Schema 1.10B's corrected forced loader test gate subsequently passed at `493cae748f89f88308a7e1b98ea583d2e58871af`; see the latest checkpoint below. The report review remains pending.
 - If the rerun succeeds, inspect the exact build-local provenance JSON from that run before completing the source-edge coverage review.
+
+## 2026-11-14 — Schema 1.10B corrected forced loader gate GREEN
+
+- User fast-forwarded cleanly from `36db185a734ce387fe46f065e9658d8112df4b87` to `493cae748f89f88308a7e1b98ea583d2e58871af`. The fetched tip, published tip, final HEAD, clean worktree, and `git diff --check` guards passed.
+- Forced command: `.\gradlew.bat :loader:clean :loader:test --no-daemon --console=plain --rerun-tasks`.
+- Result: **BUILD SUCCESSFUL in 50s; 17 actionable tasks, all 17 executed.** Clean, production compilation, test compilation, mapping extraction, mapping generation, provenance recording, and the full loader test task succeeded.
+- The corrected `SrgMojangTableTest` fixtures now pass. The two initial failures were caused by spaces in synthetic TSRG2 member indentation; the test-only tab correction was committed as `e03c55daa6fd01e0855774e53a4255beedbad1fb`. No production parser change was needed.
+- The successful rerun reproduced the previously reported fingerprints and coverage: Mojang SHA-1 verified as `6c48521eed01fe2e8ecdadbd5ae348415f3c47da`; MCPConfig ZIP SHA-256 `f46d1050d8bed9046886b90a0d2fb80b4c6b5120fc35d32e5d37498dbe0a6d2a`; extracted joined.tsrg SHA-256 `19ae000175bfb58e5b26406c31a0e501bfb40000b078fee2f00ea60a8c7ed453`; Mojang client.txt SHA-256 `67bfc33ef0c7103f002d6ac134f8eddd3d67e2ce45d266e83816d1a2e2c9b01d`; generated TSV SHA-256 `6353b8354260dc711b09e7540542ff5f2498635e021e4110870dd33ff466e175`.
+- Coverage output: 64,225 member-name rows; methods 48,575/48,575; fields 31,003/31,003; zero duplicate member keys. This does not mean class or descriptor mappings were emitted.
+- Provenance JSON path: `loader/build/reports/mappings/1.20.1/srg-mojang-provenance.json`. It was generated in the successful run, but its contents have not yet been inspected in this conversation. The exact next action is to obtain and review this JSON.
+- Validation boundary: Schema 1.10B's forced loader test gate is **green**. Keep the source-edge/provenance audit open until the report is reviewed. Source mapping remains method/field member-name-only and explicitly `PARTIAL`; the Minecraft 1.20.1 → 1.21.1 edge remains missing. No selector rewriting or runtime-compatibility claims.
