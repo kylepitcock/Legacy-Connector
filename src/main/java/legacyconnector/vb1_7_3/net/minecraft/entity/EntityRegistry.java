@@ -35,6 +35,13 @@ public final class EntityRegistry {
     };
     /** Original obfuscated and MCP field aliases used by ModLoader.getPrivateValue callers. */
     public static final Map<String,Class<?>> idToClass=stringToClassMapping,a=stringToClassMapping,field_1611_a=stringToClassMapping;
+    /** Beta's {@code EntityList.createEntityByName}: a new entity of the class registered under the name, or null. */
+    public static Entity create(String name,legacyconnector.vb1_7_3.net.minecraft.world.World world){
+        Class<?> type=stringToClassMapping.get(name);
+        if(type==null)return null;
+        try{return (Entity)type.getConstructor(legacyconnector.vb1_7_3.net.minecraft.world.World.class).newInstance(world);}
+        catch(ReflectiveOperationException|RuntimeException error){return null;}
+    }
     /** Original class-to-name query: exact registered class, original case, null for unknown classes. */
     public static String getId(Entity entity){
         Class<?> type=entity.getClass();
