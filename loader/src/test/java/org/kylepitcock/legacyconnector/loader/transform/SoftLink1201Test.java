@@ -74,6 +74,19 @@ class SoftLink1201Test implements Opcodes {
     }
 
     @Test
+    void handlerOfAMissingEventIsDropped() {
+        ClassNode c = cls("mod/H", "java/lang/Object");
+        MethodNode h = new MethodNode(ACC_PUBLIC | ACC_STATIC, "onColor", "(L" + GONE + ";)V", null, null);
+        h.visitAnnotation("Lnet/neoforged/bus/api/SubscribeEvent;", true);
+        h.visitInsn(RETURN);
+        c.methods.add(h);
+        SoftLink1201 s = link(c);
+        assertEquals(1, s.apply(c));
+        assertTrue(c.methods.isEmpty());
+        assertTrue(s.stats.missingClasses.contains(GONE));
+    }
+
+    @Test
     void resolvableSymbolsAreNotTouched() {
         ClassNode c = cls("mod/A", "java/lang/Object");
         MethodNode m = method(c);
