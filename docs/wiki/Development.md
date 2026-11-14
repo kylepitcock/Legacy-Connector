@@ -139,6 +139,32 @@ committed baseline (no argument runs every suite; about 2 to 5 minutes per suite
   `tools/dev/verify.sh --update [suite]` and commit `baseline.json`. The table is also written to `build/devtools/verify-report.txt`; the exit code is
   non-zero when a suite failed.
 
+## Client scenarios
+
+`tools/dev/verify-client.sh [scenario ...]` runs scripted checks in a real client (a game window opens for a few minutes per scenario; one client at a
+time; no argument runs every scenario). Scenarios are `tools/dev/verify/scenarios/<name>.txt`:
+
+```
+mods: 1.7.10 Thaumcraft-1.7.10        one line per jar: <version-folder> <jar fragment>, looked up like the server suites (SEARCH in verify/client.py)
+world: minecraft:flat                 optional (default flat)
+cmd /give @s thaumcraft:itemthaumonomicon   any RemoteControl verb as is (cmd, wait n, slot n, look yaw pitch, use, useitem, holduse n, ...)
+expect LegacyScreen :: mc.screen == null ? "none" : mc.screen.getClass().getName()
+shot tc4-book                         screenshot
+logabsent StackOverflowError          fails when logs/latest.log contains the pattern
+```
+
+`expect <regex> :: <JavaScript>` evaluates the JavaScript in the game (`js` verb, bindings `mc`, `server`, `log`, Nashorn: numbers come back as `15.0`)
+and passes when `re.search(regex, answer)` matches; it is retried for 15 s. A step whose answer starts with `error:`, `unknown command` or
+`use: no block` fails too. A missing jar gives SKIP; the first failing step gives `FAIL step line N '<step>': <answer>` and a `failure.png`.
+
+The runner (`tools/dev/verify/client.py`, unit tests `python -m unittest discover -s tools/dev/verify`) prepares `run-verify-client/<scenario>`
+(gitignored: jars in `mods/<version>/`, the jars of the main checkout's `run-perfmods/` except Iris Veil Compat, which needs the Veil library; `NOPERF=1`
+leaves them out; no translation cache, no world), starts `tools/dev/quick-shots.sh` with `SCENARIO=control`, polls until the player is in the world
+(8 minutes), runs the steps through `control/in/*.cmd`, then quits the game and kills only the java process of this checkout and game directory
+(`verify/kill-client.ps1`). Results: `build/devtools/verify-client/<scenario>/` (screenshots, `latest.log`, `gradle.log`, and `report.txt` one level up);
+exit code non-zero when a scenario failed. Shipped: `tc4-book`, `tc4-bow`, `villager-professions`, `fluid-bucket`, `te147-gauge`. The player spawns in
+the air at y=150: scenarios that need ground fill a stone floor at y=148 and `tp @s 0.5 150 0.5` first.
+
 ## Silent-failure checks
 
 The server self test (`-Dlegacyconnector.entitySelfTest=true`, on in `runServerSubTest`) also runs `core/SilentFailureChecks` once at server start. They are read-only and target bugs that crash nothing and log nothing, which link and translation checks cannot see (Sinytra Connector's "attribute registration bypassed, SWIM_SPEED stayed 0, nobody can swim" class). Output: `SILENT FAILURE CHECKS: N passed, M failed`, then one `SILENT FAILURE CHECK FAILED: <check>: <offenders by registry name>` line at ERROR level per failing check (`tools/dev/run-subset.sh` prints them). Add `-Dlegacyconnector.selfTestFailFast=true` to halt the JVM with exit code 3 on any failure.

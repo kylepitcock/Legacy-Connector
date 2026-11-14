@@ -1,0 +1,10 @@
+# Thaumcraft 4: the Thaumonomicon opens as a legacy screen (checked by hand 2026-11-13)
+mods: 1.7.10 Thaumcraft-1.7.10
+mods: 1.7.10 Baubles-1.7.10
+cmd /give @s thaumcraft:itemthaumonomicon
+cmd /tc research all
+slot 0
+useitem
+wait 20
+expect LegacyScreen :: mc.screen == null ? "none" : mc.screen.getClass().getName()
+shot tc4-book

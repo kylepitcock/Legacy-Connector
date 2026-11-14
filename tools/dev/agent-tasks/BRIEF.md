@@ -67,6 +67,7 @@ hand-written shim of the old API plus bridges that turn legacy registrations int
 - `tools/dev/gate.sh` (compile --rerun, generateShimIndex, check; one line per step, errors only). Use it, not raw Gradle. Gradle only with `-q`.
 - `./gradlew checkLegacyMod -q -PlegacyJar=a.jar,b.jar`: offline link + bytecode + resource check of local jars.
 - `tools/dev/verify.sh` if present (planned verification suites); `python -m unittest` in `tools/dev` for the Python tools.
+- `tools/dev/verify-client.sh [scenario ...]` runs scripted checks in a real client (scenarios in `tools/dev/verify/scenarios/`; opens a game window, one client at a time, only the lead-assigned worker may start it; see wiki Development, "Client scenarios").
 - JDK 21: `export JAVA_HOME="C:/Program Files/Java/jdk-21"` (default JDK fails with class file major 70).
 - Start every issue with `python tools/dev/issue_digest.py <n>` (about 150 lines instead of the raw logs; files land in a temp dir); grep the downloaded logs only for what the digest names.
 - Local jars (gitignored, never commit): `test-mods`, `test-mods2`, `test-mods-1122`, `test-mods-164`, `test-mods-152`, `test-mods-147`, `test-mods-1201`, `test-mods-b173`, `run-subtest/mods/<version>`.

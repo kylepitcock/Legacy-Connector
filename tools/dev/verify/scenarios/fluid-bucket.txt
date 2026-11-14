@@ -1,0 +1,13 @@
+# AbyssalCraft (1.12.2): a modded fluid bucket places its fluid
+mods: 1.12.2 AbyssalCraft-1.12.2
+cmd /fill -3 148 -3 3 148 3 minecraft:stone
+cmd /tp @s 0.5 150 0.5
+wait 30
+cmd /give @s abyssalcraft:liquidcoralium_bucket
+slot 0
+look 0 60
+wait 10
+useitem
+wait 20
+expect abyssalcraft:liquidcoralium :: (function(){var BP=Java.type("net.minecraft.core.BlockPos");var R=Java.type("net.minecraft.core.registries.BuiltInRegistries");var o=[];for(var x=-1;x<=1;x++)for(var y=148;y<=152;y++)for(var z=0;z<=5;z++){var f=server.overworld().getFluidState(new BP(x,y,z));if(!f.isEmpty())o.push(String(R.FLUID.getKey(f.getType())));}return o.join(" ");})()
+shot fluid-bucket

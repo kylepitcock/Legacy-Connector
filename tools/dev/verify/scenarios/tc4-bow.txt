@@ -1,0 +1,18 @@
+# Thaumcraft 4: the bow shoots a primal arrow, one arrow is used, no StackOverflowError
+mods: 1.7.10 Thaumcraft-1.7.10
+mods: 1.7.10 Baubles-1.7.10
+cmd /fill -3 148 -3 3 148 3 minecraft:stone
+cmd /tp @s 0.5 150 0.5
+wait 30
+cmd /gamemode survival
+cmd /clear @s
+cmd /give @s minecraft:bow
+cmd /give @s thaumcraft:primalarrow 16
+slot 0
+look 0 -10
+holduse 30
+wait 20
+expect ^true$ :: (function(){var R=Java.type("net.minecraft.core.registries.BuiltInRegistries");var found=false;for each(var l in server.getAllLevels()){var it=l.getAllEntities().iterator();while(it.hasNext()){if(String(R.ENTITY_TYPE.getKey(it.next().getType())).indexOf("primalarrow")>=0)found=true;}}return found;})()
+expect ^15(.0)?$ :: (function(){var R=Java.type("net.minecraft.core.registries.BuiltInRegistries");var inv=mc.player.getInventory();var n=0;for(var i=0;i<inv.getContainerSize();i++){var s=inv.getItem(i);if(String(R.ITEM.getKey(s.getItem())).indexOf("primalarrow")>=0)n+=s.getCount();}return n;})()
+shot tc4-bow
+logabsent StackOverflowError

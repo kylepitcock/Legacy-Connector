@@ -60,6 +60,7 @@ holding the hand-written shim under `src/main/java/legacyconnector/v1_7_10`, bri
   compile while one runs; kill stale ones with `pkill -9 -f "serverSubTestRunProgramArg[s]"` (the `[s]` stops the pattern matching itself).
 - Translation results are cached per jar and mod set (`run-*/.legacyconnector/cache`). After changing the loader,
   linker, stubber or shim, delete the cache or the old translation is reused.
+- Scripted client scenarios (real window, unattended): `tools/dev/verify-client.sh [scenario ...]`, scenarios in `tools/dev/verify/scenarios/*.txt` (verbs, `expect <regex> :: <JavaScript>`, `shot`, `logabsent`); results and screenshots in `build/devtools/verify-client/`; see wiki Development, "Client scenarios".
 - Client/graphical tests must not open a window on the developer's desktop: use `tools/dev/docker-headless.sh`
   (Colima + Docker, Xvfb + Mesa). `tools/dev/session.sh start <jar fragments>` boots one long-lived headless client you
   drive with `session.sh send cmd "<slash command>"|info|wait n|mouse x y|click x y`, `session.sh shot <name>`

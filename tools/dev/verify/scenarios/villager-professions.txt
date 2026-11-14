@@ -1,0 +1,6 @@
+# Scape and Run Parasites (1.12.2) must not reset villager professions
+mods: 1.12.2 SRParasites-1.10.9
+cmd /summon minecraft:villager ~ ~ ~ {VillagerData:{profession:"minecraft:librarian",level:2,type:"minecraft:plains"},NoAI:1b}
+wait 60
+expect librarian :: (function(){var R=Java.type("net.minecraft.core.registries.BuiltInRegistries");var r="no villager";for each(var l in server.getAllLevels()){var it=l.getAllEntities().iterator();while(it.hasNext()){var e=it.next();if(String(R.ENTITY_TYPE.getKey(e.getType()))=="minecraft:villager")r=String(e.getVillagerData().getProfession());}}return r;})()
+shot villager
