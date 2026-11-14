@@ -45,6 +45,25 @@ final class Mc1201Tables {
     /** Overrides of methods that became final in 1.21.1: owner, name, descriptor, new name ({@code -}: no replacement, the override is disabled). */
     final List<String[]> overrides = new ArrayList<>();
 
+    private Map<String, Call> specialByDesc;
+
+    /** The {@code @special} (super call) rule for a method name and descriptor whatever its owner, if exactly one owner has one; else null. */
+    synchronized Call specialRuleFor(String name, String desc) {
+        if (specialByDesc == null) {
+            Map<String, Call> m = new HashMap<>();
+            Set<String> ambiguous = new HashSet<>();
+            for (Map.Entry<String, Call> e : calls.entrySet()) {
+                String k = e.getKey();
+                if (!k.endsWith("@special") || e.getValue().helper().startsWith("=")) continue;
+                String key = k.substring(k.indexOf('.') + 1, k.length() - "@special".length());
+                if (m.putIfAbsent(key, e.getValue()) != null) ambiguous.add(key);
+            }
+            for (String a : ambiguous) m.remove(a);
+            specialByDesc = m;
+        }
+        return specialByDesc.get(name + desc);
+    }
+
     private Set<String> watched;
 
     /** Names of methods the tables mention (calls, overrides and bridges): what another jar's class must say about itself so subclasses can be judged. */
