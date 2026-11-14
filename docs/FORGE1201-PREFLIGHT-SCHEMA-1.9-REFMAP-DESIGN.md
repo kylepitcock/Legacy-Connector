@@ -337,13 +337,11 @@ Tests must use generated fixtures and must not instantiate or execute Mixin runt
 
 **Validation boundary:** this gate confirms compilation and synthetic loader tests for owner-scoped exact lookup correlation. It does not validate refmap namespace conversion, target-member or target-instruction resolution, runtime Mixin application, real mod behavior, or modpack compatibility. The follow-up `af12df84f62850c49a5a111515e16e76561d8e6c` changes only `build.gradle` line endings back to the exact tested parent blob; no Gradle rerun has been recorded at that cleanup tip.
 
-### Next stage — mapping-profile contract design
+### Next stage — Schema 1.10 mapping-profile design
 
-Schema 1.9A/1.9B are now validated. The next bounded task is a design/research increment for explicit, versioned mapping profiles; do not jump straight to selector rewriting.
+The Schema 1.10 contract is now documented in [`FORGE1201-PREFLIGHT-SCHEMA-1.10-MAPPING-PROFILE-DESIGN.md`](FORGE1201-PREFLIGHT-SCHEMA-1.10-MAPPING-PROFILE-DESIGN.md). It audits the current source/target mapping inputs, distinguishes context keys from namespace IDs, defines versioned directed edges and artifact provenance, and records that the 1.20.1 → 1.21.1 cross-version symbol edge is currently missing.
 
-The design must distinguish an opaque Mixin refmap context key (for example `searge`) from a source namespace ID, and distinguish source-version name normalization from cross-version Forge 1.20.1 -> NeoForge 1.21.1 compatibility. A profile must identify its exact inputs, direction, Minecraft versions, source/target namespaces, mapping formats/providers/versions, artifact coordinates or URLs, SHA-256 digests, and every intermediate stage. It must state whether class names, member names, and descriptors are covered. Missing, ambiguous, unsupported, or partial mappings must remain explicit.
-
-Audit the existing `Forge1201MappingCatalog`, `Forge1201SrgNameMappings`, generated `SrgMojangTable`, mapping build tasks, and `Forge1201TargetApiVerifier.TargetIndex` before proposing integration. The current SRG-to-Mojang member-name normalization is not, by itself, a complete cross-version selector mapping chain. Reuse shared mapping and target-index infrastructure; do not create a second remapper or hierarchy cache. No same-name identity assumption, target-resolution claim, plugin execution, or namespace conversion may be introduced without the reviewed profile and exact artifacts.
+The next bounded implementation is Schema 1.10A profile parsing and validation only. Do not yet rewrite selectors. Require explicit source/target namespaces, context bindings, artifact digests, symbol-kind coverage, and deterministic missing/ambiguous/partial states. Reuse `Forge1201TargetApiVerifier.TargetIndex`; do not create a second remapper or hierarchy cache.
 
 ## 10. Acceptance gate
 
