@@ -664,8 +664,18 @@ public final class RenderContext {
         return geometryBuffer(STATE.get());
     }
 
+    /**
+     * Geometry a screen draws into the depth buffer only (colour writes off, depth writes on): a clip frame as OpenComputers' manual
+     * and JourneyMap's minimap draw. Legacy GL sampled whatever texture was bound with alpha test usually off, so the quad always wrote
+     * depth; the textured GUI types discard transparent texels, which left holes in the mask. It is drawn untextured instead.
+     */
+    private static boolean depthOnlyMask(State s) {
+        return s.colorWrite == 0 && s.depthWrite && s.depthTest && gui(s) != null;
+    }
+
     private static VertexConsumer geometryBuffer(State s) {
         boolean gui = gui(s) != null;
+        if (depthOnlyMask(s)) return buffers(s).getBuffer(stated(s, RenderType.debugQuads()));
         ResourceLocation texture = s.texture;
         MultiBufferSource buffers = buffers(s);
         if (!gui && IrisState.compatPack()) {
@@ -805,7 +815,8 @@ public final class RenderContext {
 
     /** Whether the current geometry buffer takes the full entity vertex format (uv, overlay, light, normal). */
     public static boolean geometryHasEntityFormat() {
-        return STATE.get().texture2d;
+        State s = STATE.get();
+        return s.texture2d && !depthOnlyMask(s);
     }
 
     /** Quads handed to quad() on this thread so far (diagnostics: did a legacy renderer draw anything). */
@@ -895,7 +906,7 @@ public final class RenderContext {
             if (s.inDraw) s.drawBuffer = buffer;
         }
         PoseStack.Pose last = p.last();
-        boolean entity = s.texture2d;
+        boolean entity = s.texture2d && !depthOnlyMask(s);
         int overlay = s.frames.peek().overlay;
         emitCorner(s, buffer, last, entity, overlay, v0, nx, ny, nz);
         emitCorner(s, buffer, last, entity, overlay, v1, nx, ny, nz);
@@ -961,7 +972,7 @@ public final class RenderContext {
     private static void emitCorner(State s, VertexConsumer buffer, PoseStack.Pose last, boolean entity, int overlay, double[] x, float nx, float ny, float nz) {
         int argb = (int) color(s, x);
         var vc = buffer.addVertex(last, (float) x[0], (float) x[1], (float) x[2]).setColor(argb);
-        if (s.texture2d) vc.setUv((float) x[3], (float) x[4]);
+        if (s.texture2d && !depthOnlyMask(s)) vc.setUv((float) x[3], (float) x[4]);
         if (entity) {
             vc.setOverlay(overlay);
             vc.setLight(s.lightmap ? (int) x[6] : LightTexture.FULL_BRIGHT); // lightmap unit off: its brightness was not applied

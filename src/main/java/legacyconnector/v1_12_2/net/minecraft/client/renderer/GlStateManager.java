@@ -118,9 +118,9 @@ public class GlStateManager {
 
     public static void depthFunc(int depthFunc) {
         depthState.depthFunc = depthFunc;
-        if (!RenderSystem.isOnRenderThread()) return;
-        org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.mcc$beforeGlChange(0x0B74); // GL_DEPTH_FUNC
-        RenderSystem.depthFunc(depthFunc);
+        // through the shared emulation: a screen's batched geometry carries the legacy depth function (RenderContext.stated), so
+        // depth-buffer clipping (OpenComputers' manual draws a depth-only frame around its text) works as in 1.12.2
+        GL11.glDepthFunc(depthFunc);
     }
 
     public static void depthMask(boolean flagIn) {
@@ -377,9 +377,7 @@ public class GlStateManager {
         colorMaskState.green = green;
         colorMaskState.blue = blue;
         colorMaskState.alpha = alpha;
-        if (!RenderSystem.isOnRenderThread()) return;
-        org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.mcc$beforeGlChange(0x0C23); // GL_COLOR_WRITEMASK
-        RenderSystem.colorMask(red, green, blue, alpha);
+        GL11.glColorMask(red, green, blue, alpha); // see depthFunc: the batch must know the mask
     }
 
     public static void clearDepth(double depth) {
