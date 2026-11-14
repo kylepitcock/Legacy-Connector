@@ -370,12 +370,24 @@ public final class ItemBridge {
     }
 
     private static void ensureVanilla() {
+        if (vanillaReady) return;
         try {
             Class.forName("legacyconnector.v1_7_10.net.minecraft.init.Items", true, ItemBridge.class.getClassLoader());
         } catch (ClassNotFoundException e) {
             throw new IllegalStateException(e);
         }
+        // Class.forName cost half of the render thread's time with a minimap mod reading every block of every section (Crafting Dead, #188).
+        // Ready once the generated class's last constant is assigned (a call during its own static initializer returns early, before that).
+        try {
+            var c = Class.forName("legacyconnector.v1_7_10.net.minecraft.init.Items", false, ItemBridge.class.getClassLoader());
+            var fields = c.getDeclaredFields();
+            if (fields.length > 0 && fields[fields.length - 1].get(null) != null) vanillaReady = true;
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            // stays on the slow path
+        }
     }
+
+    private static volatile boolean vanillaReady;
 
     // ------------------------------------------------------------------ mod registration
 
