@@ -8,7 +8,7 @@ import legacyconnector.v1_12_2.net.minecraft.util.SoundEvent;
 public class EnumHelper {
     public static ItemArmor.ArmorMaterial addArmorMaterial(String name, String textureName, int durability, int[] reductionAmounts, int enchantability,
             SoundEvent soundOnEquip, float toughness) {
-        return new ItemArmor.ArmorMaterial(name, durability, reductionAmounts, enchantability, soundOnEquip, toughness);
+        return new ItemArmor.ArmorMaterial(name, textureName, durability, reductionAmounts, enchantability, soundOnEquip, toughness);
     }
 
     public static Item.ToolMaterial addToolMaterial(String name, int harvestLevel, int maxUses, float efficiency, float damage, int enchantability) {
