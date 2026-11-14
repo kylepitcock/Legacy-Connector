@@ -403,6 +403,14 @@ public final class CoremodSites {
                 }
             }
             if (method == null) {
+                // older versions: a parameter class the forward layer renamed; the only static method of that name and size is the hook
+                int n = 0;
+                for (Method m : owner.getDeclaredMethods()) {
+                    if (Modifier.isStatic(m.getModifiers()) && m.getName().equals(l.name) && m.getParameterCount() == params.length && n++ == 0) method = m;
+                }
+                if (n != 1) method = null;
+            }
+            if (method == null) {
                 LOG.debug("Coremod hook {}.{}{} was not found in the translated mod", className, l.name, l.desc);
                 return null;
             }
@@ -444,6 +452,7 @@ public final class CoremodSites {
         String name = type.getName();
         if (name.startsWith(SHIM)) name = name.substring(SHIM.length());
         else if (name.startsWith(SYNTH)) name = name.substring(SYNTH.length());
+        else if (name.startsWith("legacyconnector.v") || name.startsWith("legacyconnector_synth.v")) name = name.substring(name.indexOf('.', name.indexOf('.') + 1) + 1); // 1.6.4 and older
         return name.replace('.', '/');
     }
 
@@ -466,11 +475,12 @@ public final class CoremodSites {
 
     private static Map<String, List<Listed>> load() {
         Map<String, List<Listed>> out = new HashMap<>();
-        String file = System.getProperty("legacyconnector.coremodHooks");
-        if (file == null) return out;
-        try {
+        String files = System.getProperty("legacyconnector.coremodHooks");
+        if (files == null) return out;
+        // one list per legacy Minecraft version
+        for (String file : files.split(java.util.regex.Pattern.quote(java.io.File.pathSeparator))) try {
             Path path = Path.of(file);
-            if (!Files.isRegularFile(path)) return out;
+            if (!Files.isRegularFile(path)) continue;
             for (String line : Files.readAllLines(path, StandardCharsets.UTF_8)) {
                 String[] p = line.split("\t");
                 if (p.length < 4) continue;

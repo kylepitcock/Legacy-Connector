@@ -33,7 +33,7 @@ public final class CoremodHookProbe {
 
     public static void main(String[] args) throws Exception {
         if (args.length < 4) {
-            System.err.println("usage: CoremodHookProbe <client-1.7.10.jar> <mcp-1.7.10-srg.zip> <work dir> <mod.jar>...");
+            System.err.println("usage: CoremodHookProbe <client.jar> <unused> <work dir> <mod.jar>... (the Minecraft version is the first jar's)");
             System.exit(2);
         }
         Path client = Path.of(args[0]); // args[1] (joined.srg) is no longer read: the names come from legacy/1.7.10/notch.txt, as at run time
@@ -41,13 +41,13 @@ public final class CoremodHookProbe {
         Files.createDirectories(work);
         List<LegacyJar> jars = new ArrayList<>();
         for (int i = 3; i < args.length; i++) jars.add(LegacyJarInspector.inspect(Path.of(args[i])));
-        LegacyCoreModTransformers transformers = LegacyCoreModTransformers.load(jars, work, work, "CLIENT", null, LegacyVersion.V1_7_10);
+        LegacyCoreModTransformers transformers = LegacyCoreModTransformers.load(jars, work, work, "CLIENT", null, LegacyCoreModTransformers.apiFor(jars.get(0).version));
         if (transformers.isEmpty()) {
             System.out.println("no coremod class transformers in these jars");
             return;
         }
         Map<String, List<String>> report = new LinkedHashMap<>();
-        List<CoremodHookScan.Change> changes = CoremodHookScan.changes(transformers, client);
+        List<CoremodHookScan.Change> changes = CoremodHookScan.changes(transformers, client, jars.get(0).version.id());
         for (CoremodHookScan.Change c : changes) {
             describe(report, c.transformer(), c.className(), c.obfuscated() ? "obfuscated names" : "SRG names", c.before(), c.after());
         }
