@@ -165,7 +165,7 @@ final class Forge1201IntermediaryBridgeAuditTest {
         assertEquals(1, methods.sourceDescriptorExternalTypeRows());
         assertEquals(2, methods.sourceDescriptorExternalTypeOccurrences());
         assertEquals(1, methods.targetDescriptorExternalTypeRows());
-        assertEquals(4, methods.targetDescriptorExternalTypeOccurrences());
+        assertEquals(2, methods.targetDescriptorExternalTypeOccurrences());
         assertEquals(1, methods.targetSameOwnerMemberDescriptorExternalPassthroughRows());
         assertEquals(0, methods.targetExactOwnerMemberDescriptorRows());
         assertEquals(0, methods.targetSameOwnerMemberDescriptorUnresolvedRows());
