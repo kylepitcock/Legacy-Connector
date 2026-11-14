@@ -65,8 +65,8 @@ dependencies {
     mcpconfig1201 "de.oceanlabs.mcp:mcp_config:1.20.1-20230612.114412@zip"
     // Versioned Fabric Intermediary maps provide stable candidate class/member IDs across Minecraft releases.
     // The bridge audit consumes only the Tiny mappings locally; it does not emit or package runtime mappings.
-    intermediary1201 "net.fabricmc:intermediary:1.20.1" { transitive = false }
-    intermediary1211 "net.fabricmc:intermediary:1.21.1" { transitive = false }
+    intermediary1201("net.fabricmc:intermediary:1.20.1") { transitive = false }
+    intermediary1211("net.fabricmc:intermediary:1.21.1") { transitive = false }
     // Beta 1.7.3 mods use the obfuscated names: Babric intermediary (official client/server -> intermediary) chained with
     // biny (intermediary -> named), both CC0, into one table at build time (BetaMappings; never committed)
     betaIntermediary "babric:intermediary:${beta_intermediary}:v2@jar"
