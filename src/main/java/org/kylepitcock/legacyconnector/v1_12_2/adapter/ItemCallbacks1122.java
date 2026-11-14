@@ -182,6 +182,9 @@ final class ItemCallbacks1122 {
         if (p == null) return InteractionResult.PASS;
         var pos = context.getClickedPos();
         var hit = context.getClickLocation();
+        var heldBefore = context.getPlayer().getItemInHand(context.getHand());
+        int countBefore = heldBefore.getCount();
+        var snapshot = heldBefore.copy();
         try {
             return result(call.call(p, world(level), BlockPos.mcc$of(pos), hand(context.getHand()), EnumFacing.mcc$of(context.getClickedFace()),
                     (float) (hit.x - pos.getX()), (float) (hit.y - pos.getY()), (float) (hit.z - pos.getZ())), level);
@@ -193,6 +196,15 @@ final class ItemCallbacks1122 {
             // the held stack the legacy code shrank or replaced goes back to its slot now: left until the end of the tick, it was applied to
             // whatever stack the slot held by then (two placements in one tick lost the second one's held item)
             org.kylepitcock.legacyconnector.v1_12_2.entity.LiveStacks1122.flushAll();
+            // 1.12's PlayerInteractionManager gave a creative player's stack its old size back after the item's onItemUse (ItemBlock shrinks it itself)
+            var player = context.getPlayer();
+            if (player != null && player.isCreative()) {
+                var now = player.getItemInHand(context.getHand());
+                if (!snapshot.isEmpty() && now.getCount() < countBefore) {
+                    if (now.getItem() == snapshot.getItem()) now.setCount(countBefore);
+                    else if (now.isEmpty()) player.setItemInHand(context.getHand(), snapshot);
+                }
+            }
         }
     }
 
