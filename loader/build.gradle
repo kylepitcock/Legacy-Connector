@@ -379,7 +379,7 @@ tasks.withType(JavaCompile).configureEach {
 
 test {
     useJUnitPlatform()
-    dependsOn genBetaMappings, genSrgMojang
+    dependsOn genBetaMappings, recordSrgMojangProvenance1201
     classpath += files(betaMappingsDir, srgMojangDir)
 }
 
