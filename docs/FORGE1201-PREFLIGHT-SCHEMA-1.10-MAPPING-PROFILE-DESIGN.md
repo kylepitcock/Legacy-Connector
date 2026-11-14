@@ -1,6 +1,6 @@
 # Schema 1.10 — Explicit Mapping-Profile Contract Design
 
-**Status:** Schema 1.10A parser, validator, preflight-report integration, Gradle input, and synthetic regression tests are committed; the user's forced loader gate is pending. No selector transformation is implemented.  
+**Status:** Schema 1.10A parser, validator, preflight-report integration, Gradle input, and synthetic regression tests are user-validated green at `cc651af52b192fb534d49f3ad494b42e3d15d6f0`. Schema 1.10B source-edge verification is implemented. Its first forced test run reached 498 tests but exposed two invalid synthetic TSRG2 fixtures (spaces instead of required leading tabs); all four fixtures were corrected in `e03c55daa6fd01e0855774e53a4255beedbad1fb` and await the user's rerun. No selector transformation is implemented.  
 **Design baseline:** Universal analyzer branch `feat/forge1201-preflight-analyzer`; current implementation status and exact tested/untested boundary are recorded in the analyzer plan and continuation handoff.  
 **Input feature:** Schema 1.9A/1.9B Mixin 0.8.5 refmap inventory and exact owner-scoped lookup.  
 **Target:** Minecraft 1.21.1 / NeoForge 21.1.258.  
@@ -489,3 +489,16 @@ Current source branch work (not yet user-tested):
 - Raw mapping source files and the generated report remain build-local; no full Mojang mapping file is added to source control.
 
 The branch has not yet been run by the user after these Schema 1.10B changes. The next user gate must run the forced loader tests on the exact new commit recorded in the continuation handoff. The 1.20.1 → 1.21.1 symbol edge remains missing; no selector rewriting is permitted.
+
+
+### Schema 1.10B first forced test run — TSRG2 fixture issue corrected
+
+The first user run after the Schema 1.10B implementation successfully completed `:loader:clean`, production compilation, test compilation, mapping extraction, Mojang checksum verification, table generation, and build-local provenance recording. It reported 498 tests with two failures in:
+- `joinsMemberNamesByObfuscatedOwnerAndFullMethodDescriptor()`
+- `refusesToMatchMethodsWhenTheirFullDescriptorDiffers()`
+
+Both failures occurred during `generateDetailed()` with `IOException`. Source inspection established that the production parser correctly recognizes TSRG2 member rows by a leading tab, while all four synthetic `joined.tsrg` fixtures had used spaces. The malformed fixtures caused member rows to be interpreted as class rows; the two positive cases therefore produced no matches, and the two negative cases passed for the wrong reason.
+
+The test-only correction is committed at `e03c55daa6fd01e0855774e53a4255beedbad1fb`: every synthetic TSRG2 member row now uses the Java text-block escape `\\t`, which produces an actual tab at runtime. Parser behavior and assertions were not weakened, and production source was not changed for this fixture issue.
+
+**Validation remains pending** until the user fast-forwards to the current branch tip and reruns `.\gradlew.bat :loader:clean :loader:test --no-daemon --console=plain --rerun-tasks`. If green, review `loader/build/reports/mappings/1.20.1/srg-mojang-provenance.json` from that exact run. The 1.20.1 → 1.21.1 symbol edge remains missing; no selector rewriting is permitted.
