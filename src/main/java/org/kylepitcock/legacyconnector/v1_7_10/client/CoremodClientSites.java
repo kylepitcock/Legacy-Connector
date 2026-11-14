@@ -1,10 +1,12 @@
 package org.kylepitcock.legacyconnector.v1_7_10.client;
 
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.player.LocalPlayer;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.InputEvent;
 import net.neoforged.neoforge.client.event.MovementInputUpdateEvent;
+import net.neoforged.neoforge.client.event.ScreenEvent;
 import org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites;
 import org.kylepitcock.legacyconnector.v1_7_10.bridge.EntityBridge;
 
@@ -34,6 +36,14 @@ public final class CoremodClientSites {
                 if (started || !CoremodSites.Client.GAME_STARTED.active()) return;
                 started = true;
                 CoremodSites.Client.GAME_STARTED.fire();
+            });
+        }
+        if (CoremodSites.Client.CONTAINER_KEY.listed()) {
+            gameBus.addListener((ScreenEvent.KeyPressed.Post e) -> {
+                // 1.7.10's keyTyped took the character and the key in one call; a key press has no character yet
+                if (e.getScreen() instanceof AbstractContainerScreen<?> && CoremodSites.Client.CONTAINER_KEY.active()) {
+                    CoremodSites.Client.CONTAINER_KEY.fire((char) 0, KeyCodes.fromGlfw(e.getKeyCode()));
+                }
             });
         }
     }
