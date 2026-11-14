@@ -10,6 +10,15 @@ base.archivesName = 'legacyconnector-loader'
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
+// Loader helper processes and test workers must use the same Java 21 toolchain as the compiled classes,
+// even when IntelliJ starts the Gradle daemon on Java 17.
+tasks.withType(JavaExec).configureEach {
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(21) }
+}
+tasks.withType(Test).configureEach {
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(21) }
+}
+
 repositories {
     mavenCentral()
     maven { url = 'https://maven.neoforged.net/releases' }
