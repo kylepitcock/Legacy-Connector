@@ -156,20 +156,30 @@ public abstract class LivingEntity extends Entity {
     }
 
     /**
-     * The texture to draw: the original {@code getTexture()} when a mod overrides it, else the field. A method of the same name that is not
-     * public is the mod's own helper (Millenaire's villager picks a random skin from it each call), never an override of this public one,
-     * and a client-side copy lacks the server's state: its synced skin is the one the server chose.
+     * The texture to draw: the original {@code getTexture()} when a mod overrides it and it answers the same each time, else the field. A method
+     * of that name that answers differently on each call is the mod's own helper that merely shares the name (Millenaire's villager picks a
+     * random skin from it each call, and sets the field once), never an override of this one. A client-side copy lacks the server's state:
+     * its synced skin is the one the server chose.
      */
     private static final java.util.Map<Class<?>,Boolean> TEXTURE_OVERRIDES=new java.util.concurrent.ConcurrentHashMap<>();
-    private static boolean overridesTexture(Class<?> type){
-        return TEXTURE_OVERRIDES.computeIfAbsent(type,t->{
-            for(Class<?> c=t;c!=null&&c!=LivingEntity.class;c=c.getSuperclass())try{return java.lang.reflect.Modifier.isPublic(c.getDeclaredMethod("getTexture").getModifiers());}catch(NoSuchMethodException ignored){}
-            return false;
-        });
+    private boolean overridesTexture(){
+        Boolean known=TEXTURE_OVERRIDES.get(getClass());
+        if(known!=null)return known;
+        boolean declared=false;
+        for(Class<?> c=getClass();c!=null&&c!=LivingEntity.class;c=c.getSuperclass())try{c.getDeclaredMethod("getTexture");declared=true;break;}catch(NoSuchMethodException ignored){}
+        if(!declared){TEXTURE_OVERRIDES.put(getClass(),false);return false;}
+        try{
+            String first=getTexture();
+            if(first==null)return true; // no answer yet (state not set up): decide on a later call
+            boolean stable=true;
+            for(int i=0;i<8&&stable;i++)stable=first.equals(getTexture());
+            TEXTURE_OVERRIDES.put(getClass(),stable);
+            return stable;
+        }catch(RuntimeException e){return true;}
     }
     public String mcc$texture(){
         if(mcc$modern!=null&&mcc$modern.level().isClientSide&&texture!=null&&!"/mob/char.png".equals(texture))return texture;
-        if(overridesTexture(getClass()))try{String t=getTexture();if(t!=null)return t;}catch(RuntimeException ignored){}
+        if(overridesTexture())try{String t=getTexture();if(t!=null)return t;}catch(RuntimeException ignored){}
         return texture;
     }
     /** Original renderers may compare texture paths with class literals by identity. */
