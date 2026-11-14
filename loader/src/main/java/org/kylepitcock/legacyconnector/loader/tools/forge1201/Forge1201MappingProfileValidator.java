@@ -133,6 +133,7 @@ public final class Forge1201MappingProfileValidator {
             String expectedSha256,
             String upstreamChecksum,
             String actualSha256,
+            String actualUpstreamChecksum,
             String localPath,
             String licenseId,
             String licenseReviewStatus,
@@ -604,6 +605,7 @@ public final class Forge1201MappingProfileValidator {
             List<String> evidence = licenseEvidence;
             ArtifactStatus status = ArtifactStatus.INVALID_DECLARATION;
             String actualSha = null;
+            String actualUpstream = null;
             if (id != null && !ids.add(id)) errors.add("Duplicate artifactId '" + id + "'.");
             boolean declarationValid = id != null && provider != null && version != null && format != null
                     && identity != null && expectedSha != null && expectedSha.matches("(?i)[0-9a-f]{64}")
@@ -623,9 +625,19 @@ public final class Forge1201MappingProfileValidator {
                             warnings.add(label + " local artifact exceeds " + MAX_ARTIFACT_BYTES + " bytes.");
                         } else {
                             actualSha = sha256(resolved);
+                            if (upstreamChecksum != null) {
+                                actualUpstream = checksum(resolved,
+                                        upstreamChecksum.startsWith("sha1:") || upstreamChecksum.startsWith("SHA1:")
+                                                ? "SHA-1" : "SHA-256");
+                            }
                             if (!actualSha.equalsIgnoreCase(expectedSha)) {
                                 status = ArtifactStatus.DIGEST_MISMATCH;
                                 warnings.add(label + " SHA-256 does not match the declared digest.");
+                            } else if (upstreamChecksum != null
+                                    && !upstreamChecksum.substring(upstreamChecksum.indexOf(':') + 1)
+                                            .equalsIgnoreCase(actualUpstream)) {
+                                status = ArtifactStatus.DIGEST_MISMATCH;
+                                warnings.add(label + " upstream checksum does not match the materialized artifact bytes.");
                             } else if (!"REVIEWED".equalsIgnoreCase(licenseStatus)) {
                                 status = ArtifactStatus.LICENSE_REVIEW_REQUIRED;
                                 warnings.add(label + " license review status is not REVIEWED.");
@@ -640,7 +652,8 @@ public final class Forge1201MappingProfileValidator {
                 }
             }
             result.add(new ArtifactFinding(id, provider, version, format, identity, expectedSha,
-                    upstreamChecksum, actualSha, localPath, licenseId, licenseStatus, status, evidence, List.of()));
+                    upstreamChecksum, actualSha, actualUpstream, localPath, licenseId, licenseStatus,
+                    status, evidence, List.of()));
         }
         result.sort(Comparator.comparing(value -> value.artifactId() == null ? "" : value.artifactId()));
         return result;
@@ -1042,6 +1055,27 @@ public final class Forge1201MappingProfileValidator {
             return HexFormat.of().formatHex(digest.digest());
         } catch (NoSuchAlgorithmException exception) {
             throw new IllegalStateException("SHA-256 is unavailable.", exception);
+        }
+    }
+
+    private static String checksum(Path path, String algorithm) throws IOException {
+        try {
+            MessageDigest digest = MessageDigest.getInstance(algorithm);
+            try (InputStream input = Files.newInputStream(path)) {
+                byte[] buffer = new byte[64 * 1024];
+                int read;
+                long total = 0;
+                while ((read = input.read(buffer)) >= 0) {
+                    total += read;
+                    if (total > MAX_ARTIFACT_BYTES) {
+                        throw new IOException("Mapping artifact exceeds " + MAX_ARTIFACT_BYTES + " bytes.");
+                    }
+                    digest.update(buffer, 0, read);
+                }
+            }
+            return HexFormat.of().formatHex(digest.digest());
+        } catch (NoSuchAlgorithmException exception) {
+            throw new IllegalStateException(algorithm + " is unavailable.", exception);
         }
     }
 
