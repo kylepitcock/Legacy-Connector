@@ -67,6 +67,9 @@ public final class ItemBridge1122 {
             // an ItemBlock registered under its own name keeps it (BuildCraft's pipes: one pipe_holder block, an item per pipe type);
             // under the block's id they all collided and every one but the first was dropped, leaving unregistered items in the tabs
             ResourceLocation itemId = base != null && !base.equals(blockId) ? base : blockId;
+            // known before the subtypes are listed: a block's getSubBlocks builds stacks of the block (new ItemStack(block, 1, meta)), which resolve to
+            // this item only through here (BuildCraft's engines listed nothing but the first)
+            if (itemId.equals(blockId) || !BLOCK_ITEMS.containsKey(ib.getBlock())) BLOCK_ITEMS.put(ib.getBlock(), item);
             // an ItemBlock with subtypes (Candy World's gummy, chocolate and candy cane blocks) is one modern item per metadata, as other items are
             Map<Integer, net.minecraft.world.item.Item> v = new LinkedHashMap<>();
             List<Integer> metas = item.getHasSubtypes() ? metas(item) : List.of(0);
@@ -80,7 +83,6 @@ public final class ItemBridge1122 {
             // the block's own item is its first subtype (the last one registered won Item.byBlock)
             net.minecraft.world.item.Item.BY_BLOCK.put(block, modern);
             item.mcc$modern = modern;
-            if (itemId.equals(blockId) || !BLOCK_ITEMS.containsKey(ib.getBlock())) BLOCK_ITEMS.put(ib.getBlock(), item);
             VARIANTS.put(item, v);
             MOD_ITEMS.add(item);
             Dispensers1122.onItemRegistered(item);
