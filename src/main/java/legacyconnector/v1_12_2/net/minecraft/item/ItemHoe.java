@@ -45,4 +45,16 @@ public class ItemHoe extends Item {
     public boolean isFull3D() {
         return true;
     }
+
+    /** 1.12's hoe: no damage bonus, attack speed by material (wood -3.0 ... diamond 0.0). */
+    @Override
+    public com.google.common.collect.Multimap<String, legacyconnector.v1_12_2.net.minecraft.entity.ai.attributes.AttributeModifier> getItemAttributeModifiers(
+            legacyconnector.v1_12_2.net.minecraft.inventory.EntityEquipmentSlot equipmentSlot) {
+        com.google.common.collect.Multimap<String, legacyconnector.v1_12_2.net.minecraft.entity.ai.attributes.AttributeModifier> multimap = super.getItemAttributeModifiers(equipmentSlot);
+        if (equipmentSlot == legacyconnector.v1_12_2.net.minecraft.inventory.EntityEquipmentSlot.MAINHAND) {
+            multimap.put("generic.attackDamage", new legacyconnector.v1_12_2.net.minecraft.entity.ai.attributes.AttributeModifier(ATTACK_DAMAGE_MODIFIER, "Weapon modifier", 0.0D, 0));
+            multimap.put("generic.attackSpeed", new legacyconnector.v1_12_2.net.minecraft.entity.ai.attributes.AttributeModifier(ATTACK_SPEED_MODIFIER, "Weapon modifier", (double) (toolMaterial.getAttackDamage() - 3.0F), 0));
+        }
+        return multimap;
+    }
 }

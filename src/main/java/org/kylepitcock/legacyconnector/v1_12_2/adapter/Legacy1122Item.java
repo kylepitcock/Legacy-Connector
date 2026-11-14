@@ -218,6 +218,16 @@ public class Legacy1122Item extends net.minecraft.world.item.Item {
         }
     }
 
+    /** The enchanting table's enchantability: the legacy getItemEnchantability (tool and armor materials, mods' overrides), 0 without it. */
+    @Override
+    public int getEnchantmentValue(ItemStack stack) {
+        try {
+            return Math.max(0, legacy.getItemEnchantability(org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122.fromModern(stack)));
+        } catch (RuntimeException | LinkageError e) {
+            return super.getEnchantmentValue(stack);
+        }
+    }
+
     @Override
     public boolean hurtEnemy(ItemStack stack, net.minecraft.world.entity.LivingEntity target, net.minecraft.world.entity.LivingEntity attacker) {
         return cb().hit ? cb().hit(stack, target, attacker) : super.hurtEnemy(stack, target, attacker);

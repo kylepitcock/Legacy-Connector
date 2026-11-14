@@ -107,4 +107,33 @@ public class ItemTool extends Item {
     public int getItemEnchantability() {
         return toolMaterial.getEnchantability();
     }
+
+    /** 1.12's weapon/tool modifiers: attack damage and attack speed in the main hand. */
+    @Override
+    public com.google.common.collect.Multimap<String, legacyconnector.v1_12_2.net.minecraft.entity.ai.attributes.AttributeModifier> getItemAttributeModifiers(
+            legacyconnector.v1_12_2.net.minecraft.inventory.EntityEquipmentSlot equipmentSlot) {
+        com.google.common.collect.Multimap<String, legacyconnector.v1_12_2.net.minecraft.entity.ai.attributes.AttributeModifier> multimap = super.getItemAttributeModifiers(equipmentSlot);
+        if (equipmentSlot == legacyconnector.v1_12_2.net.minecraft.inventory.EntityEquipmentSlot.MAINHAND) {
+            multimap.put("generic.attackDamage", new legacyconnector.v1_12_2.net.minecraft.entity.ai.attributes.AttributeModifier(ATTACK_DAMAGE_MODIFIER, "Weapon modifier", (double) attackDamage, 0));
+            multimap.put("generic.attackSpeed", new legacyconnector.v1_12_2.net.minecraft.entity.ai.attributes.AttributeModifier(ATTACK_SPEED_MODIFIER, "Weapon modifier", (double) attackSpeed, 0));
+        }
+        return multimap;
+    }
+
+    /** Hitting wears the item (2 points), as 1.12's did. */
+    @Override
+    public boolean hitEntity(ItemStack stack, legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase target,
+            legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase attacker) {
+        stack.damageItem(2, attacker);
+        return true;
+    }
+
+    /** Breaking a block that takes time wears the item (1 points). */
+    @Override
+    public boolean onBlockDestroyed(ItemStack stack, legacyconnector.v1_12_2.net.minecraft.world.World world,
+            legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
+            legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase entity) {
+        if ((double) state.getBlockHardness(world, pos) != 0.0D) stack.damageItem(1, entity);
+        return true;
+    }
 }
