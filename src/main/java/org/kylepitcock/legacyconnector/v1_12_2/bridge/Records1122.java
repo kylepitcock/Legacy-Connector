@@ -16,10 +16,11 @@ public final class Records1122 {
 
     private static ResourceLocation key(ItemRecord disc) {
         var sound = disc.getSound();
-        if (sound == null || sound.mcc$modern != null) return null; // a vanilla disc has its song
+        if (sound == null) return null;
         var event = sound.mcc$event();
         if (event == null) return null;
         var loc = event.getLocation();
+        if (loc.getNamespace().equals("minecraft")) return null; // a vanilla disc has its song
         return ResourceLocation.fromNamespaceAndPath("legacyconnector", "records1122/" + loc.getNamespace() + "/" + loc.getPath());
     }
 
