@@ -53,6 +53,8 @@ final class Mc1201Migration {
         int providerCalls;
         int selectionListPositionCalls;
         int widgetNarrationOverrides;
+        /** Classes (names in this jar) generated as the 1.20.1-shaped {@code ItemPredicate} base of the jar's subclasses of it. */
+        final java.util.Set<String> itemPredicateStandIns = new java.util.TreeSet<>();
 
         int total() {
             return calls + constructors + fields + bridges + providerCalls + selectionListPositionCalls
@@ -67,6 +69,7 @@ final class Mc1201Migration {
             providerCalls += o.providerCalls;
             selectionListPositionCalls += o.selectionListPositionCalls;
             widgetNarrationOverrides += o.widgetNarrationOverrides;
+            itemPredicateStandIns.addAll(o.itemPredicateStandIns);
         }
 
         @Override
@@ -92,6 +95,7 @@ final class Mc1201Migration {
         renameWidgetNarrationOverride(node, h, c);
         renameOverrides(node, h, t, c);
         swapMobBucketSuper(node);
+        swapItemPredicateSuper(node, c);
         renameBusConstant(node);
         dropEmptySubscriber(node);
         for (MethodNode m : node.methods) {
@@ -218,6 +222,29 @@ final class Mc1201Migration {
         after.add(new org.objectweb.asm.tree.TypeInsnNode(Opcodes.CHECKCAST, made.getInternalName()));
         m.instructions.insert(d, after);
         return true;
+    }
+
+    /**
+     * A class extending {@code ItemPredicate} (a final record in 1.21.1; Mekanism's {@code CustomItemPredicate}, Apotheosis, Forbidden Arcanus): it extends the
+     * stand-in {@code LegacyItemPredicate} instead, whose constructors are the 1.20.1 ones ({@code ()} and the eight parts) and whose {@code test} asks the
+     * mod's {@code matches}. The superclass constructor calls follow.
+     */
+    private static void swapItemPredicateSuper(ClassNode node, Counts counts) {
+        final String pred = "net/minecraft/advancements/critereon/ItemPredicate";
+        if (!pred.equals(node.superName)) return;
+        // the stand-in cannot be compiled into the layer (javac refuses to extend the record): it is generated into the jar, in the package of the first subclass
+        int slash = node.name.lastIndexOf('/');
+        String standIn = (slash < 0 ? "" : node.name.substring(0, slash + 1)) + "$LegacyItemPredicate";
+        for (MethodNode m : node.methods) {
+            if (!m.name.equals("<init>")) continue;
+            for (AbstractInsnNode in : m.instructions.toArray()) {
+                if (in instanceof MethodInsnNode call && call.getOpcode() == Opcodes.INVOKESPECIAL && call.owner.equals(pred) && call.name.equals("<init>")) {
+                    call.owner = standIn;
+                }
+            }
+        }
+        node.superName = standIn;
+        counts.itemPredicateStandIns.add(standIn);
     }
 
     /**
