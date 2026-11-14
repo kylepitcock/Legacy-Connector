@@ -1184,8 +1184,9 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                         w.write("  mod " + mod.legacyId + " -> " + mod.modernId() + "  (" + mod.name + " " + mod.version + ")\n");
                     }
                     if (jar.coreModClass != null) {
-                        w.write("  WARNING: ships a coremod (" + jar.coreModClass + "): its plugin runs, its bytecode transformers do NOT. Features that\n"
-                                + "           depend on patching Minecraft code will be missing.\n");
+                        w.write("  WARNING: ships a coremod (" + jar.coreModClass + "): its plugin runs and its bytecode transformers are applied to mod\n"
+                                + "           classes. Hooks it puts into Minecraft's own classes are replayed only at the places the layer offers (see the\n"
+                                + "           coremod hook line in the log); features behind other patches of Minecraft code are missing.\n");
                     }
                     if (jar.mixinConfigs != null) {
                         w.write("  " + LegacyModReportNotes.mixinStatus(jar.version, jar.mixinConfigs) + "\n");

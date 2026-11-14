@@ -135,6 +135,15 @@ public final class CoremodSites {
     public static final Site STEP_DISTANCE = site("footstep distance", new Class<?>[] {ENTITY, int.class},
             "net/minecraft/entity/Entity.func_70091_d(DDD)V#const:1").returns(float.class);
 
+    /** World.getRainStrength: a hook that stands in for the whole answer (dimensions without rain). Values: world, partial tick. */
+    public static final Site RAIN_STRENGTH = site("rain strength", new Class<?>[] {legacyconnector.v1_7_10.net.minecraft.world.World.class, float.class},
+            "net/minecraft/world/World.func_72867_j(F)F#after:aload 0").returns(float.class);
+
+    /** Block.onBlockDestroyedByExplosion, last thing (blocks that keep the base method). Values: block, world, x, y, z. */
+    public static final Site BLOCK_EXPLODED = site("block destroyed by an explosion",
+            new Class<?>[] {legacyconnector.v1_7_10.net.minecraft.block.Block.class, legacyconnector.v1_7_10.net.minecraft.world.World.class, int.class, int.class, int.class},
+            "net/minecraft/block/Block.func_149723_a(Lnet/minecraft/world/World;IIILnet/minecraft/world/Explosion;)V#tail");
+
     /** The model sites: client classes, so apart from the rest. Values: model, entity, the six animation numbers. */
     public static final class Client {
         private static final Class<?>[] MODEL = {legacyconnector.v1_7_10.net.minecraft.client.model.ModelBiped.class, ENTITY, float.class, float.class, float.class,
@@ -182,6 +191,13 @@ public final class CoremodSites {
         public static final Site NIGHT_VISION_AMOUNT = site("night vision amount", new Class<?>[] {float.class, PLAYER, float.class},
                 "net/minecraft/client/renderer/EntityRenderer.func_82830_a(Lnet/minecraft/entity/player/EntityPlayer;F)F#after:aload 1",
                 "net/minecraft/client/renderer/EntityRenderer.func_82830_a(Lnet/minecraft/entity/player/EntityPlayer;F)F#tail").returns(float.class);
+
+        /** GuiSleepMP.wakeFromSleep (the "Leave Bed" button), last thing. */
+        public static final Site SLEEP_CANCELLED = site("leave bed button", new Class<?>[0], "net/minecraft/client/gui/GuiSleepMP.func_146418_g()V#tail");
+
+        /** GuiContainer.keyTyped, last thing. Values: character, 1.7.10 key code. */
+        public static final Site CONTAINER_KEY = site("key typed in a container screen", new Class<?>[] {char.class, int.class},
+                "net/minecraft/client/gui/inventory/GuiContainer.func_73869_a(CI)V#tail");
 
         /** {@link #LEFT_CLICK}. */
         public static boolean leftClick() {
@@ -312,6 +328,25 @@ public final class CoremodSites {
     public static float stepDistance(net.minecraft.world.entity.Entity entity, float next) {
         if (!STEP_DISTANCE.active()) return next;
         return next - 1.0F + ((Number) STEP_DISTANCE.modify(1, EntityBridge.wrap(entity), 1)).floatValue();
+    }
+
+    private static final ThreadLocal<Boolean> IN_RAIN = new ThreadLocal<>();
+
+    /** {@link #RAIN_STRENGTH}. */
+    public static float rainStrength(net.minecraft.world.level.Level level, float strength, float partialTick) {
+        if (!RAIN_STRENGTH.active() || IN_RAIN.get() != null) return strength;
+        IN_RAIN.set(Boolean.TRUE); // a hook that asks the world itself gets the game's answer
+        try {
+            return RAIN_STRENGTH.replace(strength, legacyconnector.v1_7_10.net.minecraft.world.World.mcc$wrap(level), partialTick) instanceof Number n ? n.floatValue() : strength;
+        } finally {
+            IN_RAIN.remove();
+        }
+    }
+
+    /** {@link #BLOCK_EXPLODED}. */
+    public static void blockExploded(net.minecraft.world.level.block.Block block, net.minecraft.world.level.Level level, net.minecraft.core.BlockPos pos) {
+        if (!BLOCK_EXPLODED.active()) return;
+        BLOCK_EXPLODED.fire(BlockBridge.legacyBlock(block.defaultBlockState()), legacyconnector.v1_7_10.net.minecraft.world.World.mcc$wrap(level), pos.getX(), pos.getY(), pos.getZ());
     }
 
     private CoremodSites() {}
