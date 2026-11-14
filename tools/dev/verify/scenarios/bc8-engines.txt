@@ -32,4 +32,21 @@ useat 1 149 1
 wait 40
 expect server facing=south :: (function(){var r="";server.executeBlocking(function(){var BP=Java.type("net.minecraft.core.BlockPos");var t=server.overworld().getBlockEntity(new BP(1,149,1)).legacy();r="server facing="+t.getCurrentFacing();});return r;})()
 expect client facing=south :: (function(){var BP=Java.type("net.minecraft.core.BlockPos");var be=mc.level.getBlockEntity(new BP(1,149,1));return "client facing="+(be==null||!be.legacy?"none":be.legacy().getCurrentFacing());})()
+# every engine type next to each other (the types the reporter saw mixed up): redstone (engine), stone, iron, creative
+cmd /give @s buildcraftcore:engine_1
+cmd /give @s buildcraftcore:engine_2
+cmd /give @s buildcraftcore:engine_3
+slot 1
+useat 4 148 0
+slot 3
+useat 5 148 0
+slot 4
+useat 6 148 0
+slot 5
+useat 7 148 0
+cmd /tp @s 5.5 150.2 3.0
+look 180 35
+wait 60
+shot bc8-engine-types
+logabsent Failed to load model buildcraft
 shot bc8-engines

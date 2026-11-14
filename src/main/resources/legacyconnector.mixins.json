@@ -56,7 +56,8 @@
     "MultiPlayerGameModeMixin",
     "OptionsScreenLegacySettingsMixin",
     "ClientLanguageLegacyKeysMixin",
-    "CustomHeadLayerLegacyArmorMixin"
+    "CustomHeadLayerLegacyArmorMixin",
+    "BlockExpressionModelMixin"
   ],
   "injectors": {
     "defaultRequire": 1
