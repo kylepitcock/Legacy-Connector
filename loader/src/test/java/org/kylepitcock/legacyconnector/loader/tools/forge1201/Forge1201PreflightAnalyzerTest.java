@@ -27,6 +27,24 @@ final class Forge1201PreflightAnalyzerTest {
     Path tempDir;
 
     @Test
+    void includesExplicitMappingProfileFindingInUnifiedJsonAndTextReports() throws IOException {
+        Path sourceJar = createForgeModJar("mapping-profile-report.jar", false);
+        Path missingProfile = tempDir.resolve("missing-mapping-profile.json");
+
+        var result = Forge1201PreflightAnalyzer.analyze(
+                sourceJar, List.of(), List.of(), null, missingProfile);
+
+        assertEquals(Forge1201MappingProfileValidator.ProfileStatus.PROFILE_FILE_MISSING,
+                result.mappingProfile().status());
+        String json = Forge1201PreflightAnalyzer.toJson(result);
+        String text = Forge1201PreflightAnalyzer.toText(result);
+        assertTrue(json.contains("\\"mappingProfile\\""));
+        assertTrue(json.contains("PROFILE_FILE_MISSING"));
+        assertTrue(text.contains("Mapping profile: PROFILE_FILE_MISSING"));
+        assertTrue(text.contains("does not transform selectors"));
+    }
+
+    @Test
     void buildsDeterministicInventoryAndPreservesDependencyEvidence() throws IOException {
         Path modsDirectory = Files.createDirectories(tempDir.resolve("installed-mods"));
         createNativeMod(modsDirectory.resolve("geckolib.jar"), "geckolib");
@@ -48,10 +66,12 @@ final class Forge1201PreflightAnalyzerTest {
                         && candidate.discoveredBy().contains("manifest")));
         assertTrue(first.mixinConfigCandidates().stream().anyMatch(candidate ->
                 candidate.path().equals("config/feature.json")));
-        assertEquals("1.9", first.schemaVersion());
-        assertEquals("1.9.0", first.analyzerVersion());
+        assertEquals("1.10", first.schemaVersion());
+        assertEquals("1.10.0", first.analyzerVersion());
         assertEquals(Forge1201MixinAnalyzer.TargetIndexStatus.UNAVAILABLE_NO_TARGET_CLASSPATH,
                 first.mixinAnalysis().targetIndexStatus());
+        assertEquals(Forge1201MappingProfileValidator.ProfileStatus.PROFILE_NOT_SUPPLIED,
+                first.mappingProfile().status());
         assertTrue(first.mixinAnalysis().memberAnnotations().isEmpty());
         assertTrue(first.mixinAnalysis().injectors().isEmpty());
         var manifestConfig = first.mixinAnalysis().configs().stream()
