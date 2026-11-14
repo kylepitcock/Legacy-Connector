@@ -118,7 +118,7 @@ final class Forge1201MappingProfileValidatorTest {
     @Test
     void keepsUnboundBaseTableVisibleAndDoesNotInventItsNamespace() throws Exception {
         String profileJson = validProfile().replaceAll(
-                "(?s)\\s*\\x22baseRefmapBinding\\x22\\s*:\\s*\\{.*?\\},\\s*(?=\\})", "");
+                "(?s),\\s*\\x22baseRefmapBinding\\x22\\s*:\\s*\\{.*?\\}(?=\\s*\\})", "");
         Path profile = writeProfile(profileJson);
 
         var finding = Forge1201MappingProfileValidator.inspect(profile);
