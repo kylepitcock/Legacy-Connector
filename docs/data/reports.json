@@ -851,6 +851,18 @@
    "link": "https://www.curseforge.com/minecraft/mc-mods/wolf-armor-and-storage",
    "date": "2026-11-14",
    "open": true
+  },
+  {
+   "issue": 284,
+   "mod": "Colored Redstone-1.3.2",
+   "mc": "1.12.2",
+   "status": "partial",
+   "details": "- Colored Redstone Dust is a Full Gray Block Instead of Having its Block Model & Texture (Unclear what color Dust is Placed at this time), Otherwise Works as Expected - Placing any Colored Redstone Lamp Results in Placing a Red Redstone LampPlacing Any Colored Redstone Torch Results in a Black Redstone Torch - All Colored Redstone Torch Items Use Torchwall Texture With Exception of One (Purple) -…",
+   "lc": "legacyconnector-0.4.14-nightly.30.3b999…",
+   "neoforge": "21.1.266",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/colored-redstone",
+   "date": "2026-11-14",
+   "open": true
   }
  ]
 }
