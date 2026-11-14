@@ -124,8 +124,15 @@ public final class Hosts1122 {
         try {
             ResourceLocation eggId = ResourceLocation.fromNamespaceAndPath(id.getNamespace(), id.getPath() + "_spawn_egg");
             if (BuiltInRegistries.ITEM.containsKey(eggId)) return;
+            // named as 1.12's one spawn egg item was: "Spawn <entity name>" (the mod's own translation of the entity), not an item key no lang file has
             var item = new net.neoforged.neoforge.common.DeferredSpawnEggItem(() -> (EntityType) type, egg.primaryColor, egg.secondaryColor,
-                    new net.minecraft.world.item.Item.Properties());
+                    new net.minecraft.world.item.Item.Properties()) {
+                @Override
+                public net.minecraft.network.chat.Component getName(net.minecraft.world.item.ItemStack stack) {
+                    var entity = displayName(type);
+                    return net.minecraft.network.chat.Component.translatable("legacyconnector.spawn_egg", entity != null ? entity : type.getDescription());
+                }
+            };
             LegacyRegistrar.register(BuiltInRegistries.ITEM, eggId, item);
             EGG_ITEMS.add(eggId);
         } catch (RuntimeException | LinkageError e) {

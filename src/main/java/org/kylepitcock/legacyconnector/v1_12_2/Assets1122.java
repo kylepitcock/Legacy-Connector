@@ -1853,12 +1853,54 @@ public final class Assets1122 implements GeneratedPack.Contributor {
             String m = models.get(meta);
             if (m == null) continue;
             JsonObject model = new JsonObject();
-            model.addProperty("parent", m);
+            String flat = crossTexture(m, out);
+            if (flat != null) {
+                // plants (saplings, bushes, mushrooms) drawn as crossed quads in the world are flat sprites in the inventory, as 1.12's ItemBlock of a plant was
+                model.addProperty("parent", "minecraft:item/generated");
+                JsonObject textures = new JsonObject();
+                textures.addProperty("layer0", flat);
+                model.add("textures", textures);
+            } else {
+                model.addProperty("parent", m);
+            }
             String json = GSON.toJson(model);
             byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
             out.put("assets/" + itemId.getNamespace() + "/models/item/" + itemId.getPath() + ".json", () -> bytes);
             if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) org.kylepitcock.legacyconnector.v1_7_10.client.SharedItemModels.note(itemId, json);
         }
+    }
+
+    /**
+     * The sprite of a model that is a plain crossed-quads plant ({@code block/cross}, {@code block/tinted_cross} or a mod model whose parent chain ends there),
+     * as "namespace:path", or null for any other model.
+     */
+    private static String crossTexture(String model, Map<String, Supplier<byte[]>> out) {
+        Map<String, String> textures = new java.util.HashMap<>();
+        String current = model;
+        for (int depth = 0; depth < 8 && current != null; depth++) {
+            String c = current.toLowerCase(java.util.Locale.ROOT);
+            String bare = c.startsWith("minecraft:") ? c.substring("minecraft:".length()) : c;
+            if (bare.equals("block/cross") || bare.equals("block/tinted_cross")) {
+                String t = textures.get("cross");
+                for (int hops = 0; t != null && t.startsWith("#") && hops < 6; hops++) t = textures.get(t.substring(1));
+                return t == null || t.startsWith("#") ? null : (t.indexOf(':') < 0 ? "minecraft:" + t : t);
+            }
+            JsonObject json = modelJson(current, out);
+            if (json == null) return null;
+            if (json.has("elements")) return null;
+            if (json.has("textures") && json.get("textures").isJsonObject()) {
+                for (var e : json.getAsJsonObject("textures").entrySet()) {
+                    if (e.getValue().isJsonPrimitive()) textures.putIfAbsent(e.getKey(), e.getValue().getAsString());
+                }
+            }
+            if (!json.has("parent") || !json.get("parent").isJsonPrimitive()) return null;
+            String parent = json.get("parent").getAsString();
+            // a parent without a namespace is looked up in the model's own namespace first
+            int colon = current.indexOf(':');
+            if (parent.indexOf(':') < 0 && colon >= 0 && modelExists(current.substring(0, colon), parent)) parent = current.substring(0, colon) + ":" + parent;
+            current = parent;
+        }
+        return null;
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})

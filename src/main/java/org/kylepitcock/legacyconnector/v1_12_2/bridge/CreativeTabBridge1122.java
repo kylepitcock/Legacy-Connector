@@ -70,7 +70,9 @@ public final class CreativeTabBridge1122 {
 
     private static net.minecraft.world.item.ItemStack icon(CreativeTabs tab) {
         try {
-            var s = Stacks1122.toModern(tab.getTabIconItem());
+            // what 1.12's tab button asked: getIconItemStack (mods may override it instead of getTabIconItem), which defaults to getTabIconItem
+            var s = Stacks1122.toModern(tab.getIconItemStack());
+            if (s.isEmpty()) s = Stacks1122.toModern(tab.getTabIconItem());
             if (!s.isEmpty()) return s;
         } catch (RuntimeException | LinkageError e) {
             // fall through to the first item

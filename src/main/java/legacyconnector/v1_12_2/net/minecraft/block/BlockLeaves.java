@@ -17,7 +17,7 @@ import legacyconnector.v1_12_2.net.minecraft.world.World;
  * 1.12.2 leaves: decay when no log ({@code canSustainLeaves}) is within four blocks (checked when a nearby log breaks), drop saplings
  * (1 in 20, better with fortune) and, through {@link #dropApple}, apples for oak.
  */
-public abstract class BlockLeaves extends Block {
+public abstract class BlockLeaves extends Block implements legacyconnector.v1_12_2.net.minecraftforge.common.IShearable {
     public static final PropertyBool DECAYABLE = PropertyBool.create("decayable");
     public static final PropertyBool CHECK_DECAY = PropertyBool.create("check_decay");
     protected boolean leavesFancy = true;
@@ -164,7 +164,15 @@ public abstract class BlockLeaves extends Block {
         return true;
     }
 
+    @Override
     public boolean isShearable(ItemStack item, IBlockAccess world, BlockPos pos) {
         return true;
+    }
+
+    /** Forge: shears take the leaf block itself (the subtype the block drops as, so a variant stays the variant). */
+    @Override
+    public java.util.List<ItemStack> onSheared(ItemStack item, IBlockAccess world, BlockPos pos, int fortune) {
+        IBlockState state = world.getBlockState(pos);
+        return java.util.List.of(new ItemStack(Item.getItemFromBlock(this), 1, damageDropped(state)));
     }
 }
