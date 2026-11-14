@@ -135,7 +135,12 @@ public final class SheetCutter {
                 if (single) {
                     out.put("assets/legacy147/textures/blocks/override/" + slug(key) + ".png", e.getValue());
                 }
-                if (sheet) cutSheet(image, slug(key), out, animated);
+                if (sheet) {
+                    cutSheet(image, slug(key), out, animated);
+                    // a non-square image is a model texture (a ModelBase's 128x64 skin, drawn by a block renderer): its UVs name regions of any size,
+                    // not 16x16 tiles, so the image also goes to the atlas whole (IsbrhQuads maps such a sheet's UVs onto it; #248, TE's energy cell)
+                    if (image.getWidth() != image.getHeight()) out.put("assets/legacy147/textures/blocks/whole/" + slug(key) + ".png", e.getValue());
+                }
             } catch (IOException | RuntimeException ex) {
                 // an unreadable image stays a whole texture
             }
