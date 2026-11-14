@@ -1,7 +1,7 @@
 # Schema 1.10 — Explicit Mapping-Profile Contract Design
 
-**Status:** Design/research complete; no source implementation or selector transformation is included in this document.  
-**Design baseline:** Universal analyzer branch `feat/forge1201-preflight-analyzer`, source HEAD `412ed1aa4f1220a4d2d02ed7f077ce4b06ca805c`.  
+**Status:** Schema 1.10A parser, validator, preflight-report integration, Gradle input, and synthetic regression tests are committed; the user's forced loader gate is pending. No selector transformation is implemented.  
+**Design baseline:** Universal analyzer branch `feat/forge1201-preflight-analyzer`; current implementation status and exact tested/untested boundary are recorded in the analyzer plan and continuation handoff.  
 **Input feature:** Schema 1.9A/1.9B Mixin 0.8.5 refmap inventory and exact owner-scoped lookup.  
 **Target:** Minecraft 1.21.1 / NeoForge 21.1.258.  
 **Rule:** A refmap context key is not a namespace declaration. No name equality, package similarity, or target class presence may be used to invent a mapping.
@@ -366,7 +366,27 @@ Specific repository follow-ups for the eventual implementation:
 4. Preserve generator inputs and versions so a generated mapping table can be reproduced and audited.
 5. Do not commit downloaded Mojang mapping files or redistribute complete, unmodified mapping datasets. The current repository already notes Mojang mapping redistribution restrictions; any generated/derived table distribution requires a separate license review.
 
-## 8. Runtime remapping and wrappers remain separate
+## 8. Schema 1.10A parser guardrails and validation semantics
+
+The first implementation enforces these bounded, deterministic limits:
+
+- Profile JSON: 1 MiB maximum, strict UTF-8, duplicate object keys rejected, JSON nesting limited to 64.
+- Context/base bindings: at most 64 context-key bindings.
+- Mapping edges: at most 256.
+- Mapping artifacts: at most 512.
+- Each materialized mapping artifact: at most 512 MiB while hashing.
+- Directed graph search: at most 100,000 edge examinations per context binding; the search reports an explicit limit state rather than treating an incomplete search as a complete route.
+- Artifact paths must be relative, use forward slashes, remain under the profile directory after normalization and symlink resolution, and may not use drive prefixes or backslashes.
+
+Only `FORWARD` directed edges are accepted in this increment. Every edge must identify its source/target Minecraft versions and namespace IDs. A route is complete only when both namespace and version endpoints connect at every hop. Reverse mapping is never inferred.
+
+The profile requires explicit source-context bindings, a distinct optional base-table binding, target namespace/version, a runtime-remapping declaration, and profile-level license-review evidence. Artifacts declare exactly one coordinate or URL, SHA-256, optional upstream SHA-1/SHA-256, provider/version/format, local materialization path for byte verification, and license review data.
+
+A verified edge must declare complete class/member/descriptor selector scope, reviewed evidence, and materialized artifacts whose actual hashes match their declarations. An explicit identity edge requires its own evidence and must remain within one Minecraft version; the validator records it but never applies it. Declaring runtime refmap remapping as enabled is deliberately blocking in Schema 1.10A because that runtime stage is not yet independently modeled or executed.
+
+`PROFILE_VALIDATED` therefore means only that the supplied declarations, artifact bytes, license evidence, and directed/version-contiguous graph passed this structural validator. It does not validate mapping table contents, prove that a claimed edge is semantically correct, or authorize a selector rewrite.
+
+## 9. Runtime remapping and wrappers remain separate
 
 The optional Mixin `RemappingReferenceMapper` can apply an SRG replacement stage under runtime settings. This operation must be represented independently from the JSON context table and must not be assumed to run.
 
@@ -380,7 +400,7 @@ The profile may model that stage only when the following are supplied and matche
 
 Mixin plugins, custom `refmapWrapper` classes, and dynamically supplied reference mappers remain unexecuted. If they can affect the effective reference or resource, the result remains dynamic/unresolved.
 
-## 9. Integration with existing target verification
+## 10. Integration with existing target verification
 
 Do not introduce a second class hierarchy cache.
 
@@ -394,7 +414,7 @@ Once a complete mapping path yields a specific target owner, member name, and de
 
 A `FOUND` result is structural existence only. A later stage must inspect target method instructions to assess `@At` targets, ordinals, shifts, slices, and injection point behavior. No mapping profile can prove these semantics on its own.
 
-## 10. Proposed implementation sequence
+## 11. Proposed implementation sequence
 
 ### Schema 1.10A — profile schema and provenance inventory
 
@@ -419,7 +439,7 @@ Only after the profile schema is green:
 
 This stage remains blocked until a reviewed 1.20.1 → 1.21.1 edge exists for the relevant symbol domains. It may require a connector-maintained, versioned migration catalog with exact per-symbol evidence, rather than a general-purpose third-party mapping file. Once implemented, use the existing target index and keep bytecode injection-point verification as a separate gate.
 
-## 11. Acceptance gate
+## 12. Acceptance gate
 
 Schema 1.10 profile support is acceptable only when:
 
@@ -434,7 +454,7 @@ Schema 1.10 profile support is acceptable only when:
 9. Synthetic tests cover all profile/edge failure states before any selector conversion is enabled.
 10. Mapping and target lookup success is never described as Mixin/runtime/modpack compatibility.
 
-## 12. Reviewed external contracts
+## 13. Reviewed external contracts
 
 - [Mixin 0.8.5 release](https://github.com/SpongePowered/Mixin/releases/tag/0.8.5)
 - [Mixin refmap / soft-reference model](https://github.com/SpongePowered/Mixin/wiki/Introduction-to-Mixins---Obfuscation-and-Mixins)
@@ -446,4 +466,14 @@ Schema 1.10 profile support is acceptable only when:
 - [NeoForged Parchment documentation](https://docs.neoforged.net/toolchain/docs/parchment/)
 - [NeoForged ModDevGradle documentation](https://docs.neoforged.net/toolchain/docs/plugins/mdg/)
 
-**Design conclusion:** mapping-profile infrastructure is the next safe increment. The actual 1.20.1 → 1.21.1 cross-version symbol edge remains missing, so a complete Mixin selector rewrite is still blocked. Treat that missing edge as an engineering task to solve with evidence, not something to hide behind a generic “Mojang mappings” label.
+**Design conclusion:** Schema 1.10A now provides the first profile declaration/provenance validator, but the actual 1.20.1 → 1.21.1 cross-version symbol edge remains missing. Selector rewriting is still blocked. Treat that missing edge as an engineering task to solve with evidence, not something to hide behind a generic “Mojang mappings” label.
+
+### Schema 1.10A implementation checkpoint — validation pending
+
+Committed on `feat/forge1201-preflight-analyzer`:
+- `Forge1201MappingProfileValidator` with bounded strict JSON parsing, artifact SHA-256/upstream-checksum verification, profile-relative path safety, license evidence, explicit source/base context binding, directed and versioned edge validation, path ambiguity and search-budget reporting.
+- Unified preflight Schema/Analyzer advances to `1.10 / 1.10.0`; JSON and text reports include mapping-profile findings.
+- Optional CLI `--mapping-profile <path>` and Gradle `-PpreflightMappingProfile=<path>`.
+- Synthetic tests cover complete and missing paths, ambiguous paths, edge version/direction errors, artifact SHA-256/upstream checksum mismatch, pending license review, unsupported runtime remapping, duplicate JSON member names, unsupported schema, unbound base table, and absent/missing profile.
+
+**User validation is still pending.** Do not call Schema 1.10A green until `:loader:clean :loader:test --no-daemon --console=plain --rerun-tasks` passes on the exact source commit recorded in the continuation handoff. No mapping table is loaded or applied, no selector is rewritten, and no runtime compatibility is claimed.
