@@ -90,6 +90,19 @@ final class LegacyMixinConfigs {
         return notes;
     }
 
+    private static boolean isShimMixin(ClassNode mixin, Hierarchy hierarchy) {
+        if (mixin.invisibleAnnotations == null) return false;
+        for (AnnotationNode a : mixin.invisibleAnnotations) {
+            if (!MIXIN_DESC.equals(a.desc) || a.values == null) continue;
+            for (int i = 0; i + 1 < a.values.size(); i += 2) {
+                if (a.values.get(i + 1) instanceof List<?> list) {
+                    for (Object o : list) if (o instanceof Type t && hierarchy.isShim(t.getInternalName())) return true;
+                }
+            }
+        }
+        return false;
+    }
+
     private static boolean targetsLegacy(ClassNode mixin, Map<String, ClassNode> nodes, Hierarchy hierarchy) {
         List<AnnotationNode> annotations = mixin.invisibleAnnotations;
         if (annotations == null) return false;
@@ -105,7 +118,7 @@ final class LegacyMixinConfigs {
                     if (nodes.containsKey(target) || hierarchy.isLocal(target) || hierarchy.isPeer(target)) return true;
                     // a mixin on a vanilla class the shim has (EntityWolf: Wolf Armor and Storage makes it implement its IArmoredWolf):
                     // the shim class is what the mod sees at run time, so the mixin applies there when its @Shadow/@Accessor members exist
-                    if (hierarchy.isShim(target) && shadowsExist(mixin, target, hierarchy)) return true;
+                    if (hierarchy.isShim(target) && shadowsExist(mixin, target, hierarchy) && injectorsResolve(mixin, target, hierarchy)) return true;
                 }
             }
         }
@@ -141,6 +154,56 @@ final class LegacyMixinConfigs {
             }
         }
         return true;
+    }
+
+    private static final String OVERWRITE_DESC = "Lorg/spongepowered/asm/mixin/Overwrite;";
+
+    /**
+     * True when every injector of the mixin (Mixin's own, and MixinExtras') names methods the shim class declares itself, and every
+     * {@code @Overwrite} overwrites one: Mixin only injects into methods the target class declares, not inherited ones. The names in
+     * the annotations are the mod's deobfuscated (MCP) ones, as the shim uses them. A mixin that fails this stays dropped.
+     */
+    static boolean injectorsResolve(ClassNode mixin, String target, Hierarchy hierarchy) {
+        var info = hierarchy.find(target);
+        if (info == null) return false;
+        for (var m : mixin.methods) {
+            if (m.invisibleAnnotations == null) continue;
+            for (AnnotationNode a : m.invisibleAnnotations) {
+                if (OVERWRITE_DESC.equals(a.desc)) {
+                    if (!declares(info, m.name)) return false;
+                    continue;
+                }
+                if (!a.desc.startsWith("Lorg/spongepowered/asm/mixin/injection/") && !a.desc.startsWith("Lcom/llamalad7/mixinextras/injector/")) continue;
+                if (a.values == null) continue;
+                for (int i = 0; i + 1 < a.values.size(); i += 2) {
+                    if (!"method".equals(a.values.get(i))) continue;
+                    Object v = a.values.get(i + 1);
+                    if (!(v instanceof List<?> list) || list.isEmpty()) return false;
+                    for (Object o : list) {
+                        String name = methodName(String.valueOf(o));
+                        if (name.isEmpty() || !declares(info, name)) return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    private static boolean declares(org.kylepitcock.legacyconnector.loader.shim.ClassInfo info, String name) {
+        for (String k : info.methods.keySet()) if (k.startsWith(name + "(")) return true;
+        return false;
+    }
+
+    /** The bare method name of a Mixin selector: {@code Lowner;name(desc)ret}, {@code name(desc)ret}, {@code name}. */
+    private static String methodName(String selector) {
+        String s = selector.trim();
+        if (s.startsWith("L")) {
+            int semi = s.indexOf(';');
+            if (semi > 0 && semi < s.length() - 1) s = s.substring(semi + 1);
+        }
+        int paren = s.indexOf('(');
+        if (paren >= 0) s = s.substring(0, paren);
+        return s;
     }
 
     private static boolean hasAnnotation(List<AnnotationNode> list, String desc) {
