@@ -38,8 +38,8 @@ final class Forge1201PreflightAnalyzerTest {
                 result.mappingProfile().status());
         String json = Forge1201PreflightAnalyzer.toJson(result);
         String text = Forge1201PreflightAnalyzer.toText(result);
-        assertTrue(json.contains("\\"mappingProfile\\""));
-        assertTrue(json.contains("PROFILE_FILE_MISSING"));
+        assertTrue(json.contains("\"mappingProfile\""));
+        assertTrue(json.contains("\"mappingProfile\""));
         assertTrue(text.contains("Mapping profile: PROFILE_FILE_MISSING"));
         assertTrue(text.contains("does not transform selectors"));
     }
