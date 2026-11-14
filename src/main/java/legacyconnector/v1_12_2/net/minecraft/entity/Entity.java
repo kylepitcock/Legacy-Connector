@@ -206,6 +206,8 @@ public abstract class Entity implements legacyconnector.v1_12_2.net.minecraft.co
      */
     public net.minecraft.world.level.LevelAccessor mcc$worldOverride;
 
+    private static final java.util.concurrent.atomic.AtomicInteger MCC_INIT_FAILS = new java.util.concurrent.atomic.AtomicInteger();
+
     protected legacyconnector.v1_12_2.net.minecraft.network.datasync.EntityDataManager dataManager;
 
     public Entity(World world) {
@@ -242,7 +244,7 @@ public abstract class Entity implements legacyconnector.v1_12_2.net.minecraft.co
             entityInit();
         } catch (RuntimeException | LinkageError e) {
             // a mod's data registration reaching an API the layer lacks must not stop the entity from being made
-            org.slf4j.LoggerFactory.getLogger("LegacyConnector/Entity").debug("entityInit of {} failed: {}", getClass().getName(), e.toString());
+            if (MCC_INIT_FAILS.incrementAndGet() <= 5) org.slf4j.LoggerFactory.getLogger("LegacyConnector/Entity").warn("entityInit of {} failed", getClass().getName(), e);
         }
         mcc$fireConstructing();
     }
