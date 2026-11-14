@@ -86,6 +86,9 @@ final class Forge1201MappingProfileValidatorTest {
                   "edgeId":"second-path",
                   "from":"minecraft:forge-srg@1.20.1",
                   "to":"minecraft:official-mojang@1.21.1",
+                  "direction":"FORWARD",
+                  "sourceMinecraftVersion":"1.20.1",
+                  "targetMinecraftVersion":"1.21.1",
                   "scope":["class-names","method-names","field-names","descriptors"],
                   "artifactIds":["mapping-artifact"],
                   "status":"VERIFIED",
@@ -98,6 +101,26 @@ final class Forge1201MappingProfileValidatorTest {
 
         assertEquals(Forge1201MappingProfileValidator.ProfileStatus.PROFILE_AMBIGUOUS_PATH, finding.status());
         assertTrue(finding.contextPaths().stream().allMatch(path -> path.completePathCount() == 2));
+    }
+
+    @Test
+    void rejectsEdgesWithWrongVersionContinuityOrUnsupportedDirection() throws Exception {
+        String wrongVersion = validProfile().replace(
+                "\\"targetMinecraftVersion\\":\\"1.21.1\\"",
+                "\\"targetMinecraftVersion\\":\\"1.20.1\\"");
+        var versionFinding = Forge1201MappingProfileValidator.inspect(writeProfile(wrongVersion));
+        assertEquals(Forge1201MappingProfileValidator.ProfileStatus.PROFILE_NO_COMPLETE_PATH,
+                versionFinding.status());
+        assertTrue(versionFinding.contextPaths().stream().allMatch(path -> path.completePathCount() == 0));
+
+        String reverse = validProfile().replace(
+                "\\"direction\\":\\"FORWARD\\"",
+                "\\"direction\\":\\"REVERSE\\"");
+        var directionFinding = Forge1201MappingProfileValidator.inspect(writeProfile(reverse));
+        assertEquals(Forge1201MappingProfileValidator.ProfileStatus.PROFILE_NO_COMPLETE_PATH,
+                directionFinding.status());
+        assertTrue(directionFinding.edges().stream().anyMatch(
+                edge -> edge.status() == Forge1201MappingProfileValidator.EdgeStatus.DIRECTION_UNSUPPORTED));
     }
 
     @Test
@@ -213,6 +236,9 @@ final class Forge1201MappingProfileValidatorTest {
                     "edgeId":"source-to-target",
                     "from":"minecraft:forge-srg@1.20.1",
                     "to":"minecraft:official-mojang@1.21.1",
+                    "direction":"FORWARD",
+                    "sourceMinecraftVersion":"1.20.1",
+                    "targetMinecraftVersion":"1.21.1",
                     "scope":["class-names","method-names","field-names","descriptors"],
                     "artifactIds":["mapping-artifact"],
                     "status":"VERIFIED",
