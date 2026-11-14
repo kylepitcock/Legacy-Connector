@@ -1231,3 +1231,49 @@ Guarded fast-forward from the user's last confirmed local HEAD `eb7caf2674253cd0
 ```
 
 Review the first concrete compile/test failure if any. Do not proceed to Schema 1.10B until this forced gate passes.
+
+
+---
+
+## 2026-11-14 — Schema 1.10A green; Schema 1.10B source-edge verification started
+
+### Schema 1.10A validation status — GREEN
+
+The earlier “Schema 1.10A mapping-profile validator implemented; user test gate pending” section above is historical and is superseded by this validated checkpoint.
+
+- Tested commit: `cc651af52b192fb534d49f3ad494b42e3d15d6f0`
+- User forced `:loader:clean :loader:test --no-daemon --console=plain --rerun-tasks`.
+- Result: **BUILD SUCCESSFUL in 53s; 14 actionable tasks, all 14 executed.**
+- The failed 494-test attempt was traced to malformed JSON in the shared synthetic `validProfile()` fixture. The fixture was corrected in commit `cc651af52b192fb534d49f3ad494b42e3d15d6f0`; no validator assertions or guardrails were weakened.
+- This validates Schema 1.10A's structural profile parser, path graph checks, artifact digest declarations, and preflight integration. It does not validate semantic contents of mapping tables or authorize selector rewriting.
+
+### Schema 1.10B implementation — source-edge provenance and coverage
+
+Current implementation work is on `feat/forge1201-preflight-analyzer` after the green base above. It has **not** yet been user-compiled or test-run.
+
+Changes made:
+- `SrgMojangTable` exposes a deterministic generation result with counts for Mojang class/method/field rows, joined TSRG class/method/field rows, matched/unmatched methods and fields, duplicate intermediate member keys, duplicate SRG IDs, and generated output rows.
+- Exact join keys are explicit: methods use obfuscated owner + obfuscated member name + full JVM descriptor; fields use obfuscated owner + obfuscated member name.
+- Conflicting Mojang class/member mappings and conflicting values for a globally unique SRG ID now fail closed rather than silently overwriting.
+- The generated resource remains a member-name table only: `SRG member ID -> Mojang member name`. It does not emit class-name mappings or descriptor-type mappings.
+- Synthetic generator tests cover a complete owner/descriptor join, method descriptor mismatch, owner mismatch, and conflicting SRG IDs.
+- Loader Gradle tasks now explicitly extract MCPConfig `config/joined.tsrg`; verify the downloaded Mojang 1.20.1 client mapping file's SHA-1 against the object identifier embedded in its URL; fingerprint the resolved MCPConfig ZIP, extracted TSRG2 input, and Mojang client mapping using SHA-256; and record the generated TSV digest and measured coverage in a build-local provenance JSON report.
+- The generated report is under `loader/build/reports/mappings/1.20.1/`; it is not packaged into the distributable jar, and raw Mojang mapping source files remain build-local and uncommitted.
+
+### Scope and open questions
+
+This is still the source-version SRG → Mojang 1.20.1 member-name normalization edge. The MCPConfig and Mojang inputs are joined for member-name lookup; this is not a reviewed Minecraft 1.20.1 → 1.21.1 symbol edge.
+
+The source table does not itself map class owners or descriptor object types. The actual source refmap context's owner/descriptor namespace still needs evidence. Do not infer those dimensions from the context key or from same-name strings.
+
+The Forge API migration catalog remains a separate domain from vanilla Minecraft mappings. Reuse `Forge1201TargetApiVerifier.TargetIndex` for any future target lookup; do not add another hierarchy cache.
+
+### Next user gate
+
+The next branch revision is still being audited for correctness. After final code review, use the exact tested-base `cc651af52b192fb534d49f3ad494b42e3d15d6f0` and exact new remote commit recorded in the continuation handoff for a guarded fast-forward, then rerun:
+
+```powershell
+.\gradlew.bat :loader:clean :loader:test --no-daemon --console=plain --rerun-tasks
+```
+
+Do not begin selector rewriting. Do not mark Schema 1.10B green until the user-run test gate passes and the resulting provenance report has been reviewed.
