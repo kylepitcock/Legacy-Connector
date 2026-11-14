@@ -1,4 +1,4 @@
-**Current checkpoint — 2026-11-14:** Schema 1.10A is user-validated green at `cc651af52b192fb534d49f3ad494b42e3d15d6f0` (`BUILD SUCCESSFUL in 53s; 14/14 tasks`). Schema 1.10B's corrected forced loader gate is now user-validated green at `493cae748f89f88308a7e1b98ea583d2e58871af`: `BUILD SUCCESSFUL in 50s; 17 actionable tasks, all 17 executed`. The earlier two TSRG2 fixture failures were fixed test-only by `e03c55daa6fd01e0855774e53a4255beedbad1fb`. The mapping provenance report was generated successfully and still requires content review. The generated source SRG → official Mojang 1.20.1 edge remains `PARTIAL`, member-name-only; no 1.20.1 → 1.21.1 edge or selector rewriting is authorized.
+**Current checkpoint — 2026-11-14:** Schema 1.10A is user-validated green at `cc651af52b192fb534d49f3ad494b42e3d15d6f0` (`BUILD SUCCESSFUL in 53s; 14/14 tasks`). Schema 1.10B's corrected forced loader gate is user-validated green at `493cae748f89f88308a7e1b98ea583d2e58871af` (`BUILD SUCCESSFUL in 50s; 17/17 tasks`). The generated provenance JSON has now been reviewed: all input/output fingerprints and row counts match the console, all joined member rows matched, and 15,353 repeated SRG-ID row occurrences were coalesced without name conflicts. A follow-up regression test for same-name duplicate IDs across different owners is committed at `9347a08fad3844f494c5635b28871afe062929c2` and awaits the next user gate. The generated TSV is included in the loader JAR, but its licensing field is explicitly NOT_REVIEWED; release/distribution review remains open. The source edge remains member-name-only and `PARTIAL`; no 1.20.1 → 1.21.1 edge or selector rewriting is authorized.
 
 ---
 
@@ -1249,16 +1249,16 @@ The earlier “Schema 1.10A mapping-profile validator implemented; user test gat
 
 ### Schema 1.10B implementation — source-edge provenance and coverage
 
-Current implementation work is on `feat/forge1201-preflight-analyzer` after the green base above. It has **not** yet been user-compiled or test-run.
+The initial Schema 1.10B implementation and source-side generation were user-tested at `493cae748f89f88308a7e1b98ea583d2e58871af`. The provenance report from that run has been reviewed. A follow-up test-only hardening increment is now on the branch at `9347a08fad3844f494c5635b28871afe062929c2` and is awaiting its forced gate.
 
 Changes made:
 - `SrgMojangTable` exposes a deterministic generation result with counts for Mojang class/method/field rows, joined TSRG class/method/field rows, matched/unmatched methods and fields, duplicate intermediate member keys, duplicate SRG IDs, and generated output rows.
 - Exact join keys are explicit: methods use obfuscated owner + obfuscated member name + full JVM descriptor; fields use obfuscated owner + obfuscated member name.
 - Conflicting Mojang class/member mappings and conflicting values for a globally unique SRG ID now fail closed rather than silently overwriting.
 - The generated resource remains a member-name table only: `SRG member ID -> Mojang member name`. It does not emit class-name mappings or descriptor-type mappings.
-- Synthetic generator tests cover a complete owner/descriptor join, method descriptor mismatch, owner mismatch, and conflicting SRG IDs.
+- Synthetic generator tests cover a complete owner/descriptor join, method descriptor mismatch, owner mismatch, and conflicting SRG IDs. Follow-up test `coalescesRepeatedSrgIdsWhenDifferentOwnersResolveToTheSameMojangName` asserts the same-name deduplication behavior observed in the real report; the conflict test now exercises reuse across distinct owners.
 - Loader Gradle tasks now explicitly extract MCPConfig `config/joined.tsrg`; verify the downloaded Mojang 1.20.1 client mapping file's SHA-1 against the object identifier embedded in its URL; fingerprint the resolved MCPConfig ZIP, extracted TSRG2 input, and Mojang client mapping using SHA-256; and record the generated TSV digest and measured coverage in a build-local provenance JSON report.
-- The generated report is under `loader/build/reports/mappings/1.20.1/`; it is not packaged into the distributable jar, and raw Mojang mapping source files remain build-local and uncommitted.
+- The provenance report is under `loader/build/reports/mappings/1.20.1/` and is not packaged. Raw Mojang mapping source files remain build-local and uncommitted. The generated mapping TSV itself is explicitly added to the loader JAR by `tasks.named('jar') { dependsOn genSrgMojang; from(srgMojangDir) }`; its redistribution/license status is not cleared by the report and must be reviewed before releasing the JAR.
 
 ### Scope and open questions
 
@@ -1270,13 +1270,13 @@ The Forge API migration catalog remains a separate domain from vanilla Minecraft
 
 ### Next user gate
 
-The next branch revision is still being audited for correctness. After final code review, use the exact tested-base `cc651af52b192fb534d49f3ad494b42e3d15d6f0` and exact new remote commit recorded in the continuation handoff for a guarded fast-forward, then rerun:
+The initial Schema 1.10B code gate has passed and its report has been reviewed. The latest branch adds a test-only regression for same-name duplicate SRG IDs across different owners. Fast-forward from the user's tested code checkpoint to the exact remote tip recorded in the continuation handoff, then rerun:
 
 ```powershell
 .\gradlew.bat :loader:clean :loader:test --no-daemon --console=plain --rerun-tasks
 ```
 
-Do not begin selector rewriting. The corrected user forced loader test gate has passed at `493cae748f89f88308a7e1b98ea583d2e58871af`; record that test gate as green. The generated provenance JSON still needs content review before closing the Schema 1.10B source-edge audit.
+Do not begin selector rewriting. The initial corrected forced loader gate and provenance report review are complete at `493cae748f89f88308a7e1b98ea583d2e58871af`. The follow-up duplicate-ID regression test is pending execution. Keep the independent mapping redistribution/license review open before packaging/release.
 
 
 ## 2026-11-14 — Schema 1.10B first forced run: test fixture correction pending validation
@@ -1294,8 +1294,8 @@ Do not begin selector rewriting. The corrected user forced loader test gate has 
 - JUnit result: 498 tests completed, 2 failed, both in the first two `SrgMojangTableTest` cases. The failures were `IOException` thrown by `generateDetailed()`.
 - Root cause: production TSRG2 parser correctly uses a leading tab to distinguish member rows from class rows. All four new synthetic fixtures used spaces for member indentation. Therefore positive fixtures were parsed as class rows and produced no mapping matches; negative tests passed for the wrong reason.
 - Test-only fix committed at `e03c55daa6fd01e0855774e53a4255beedbad1fb`: all four fixtures now include Java `\\t` escape sequences to generate real leading tab characters. No production logic or assertions were loosened.
-- Schema 1.10B's corrected forced loader test gate subsequently passed at `493cae748f89f88308a7e1b98ea583d2e58871af`; see the latest checkpoint below. The report review remains pending.
-- If the rerun succeeds, inspect the exact build-local provenance JSON from that run before completing the source-edge coverage review.
+- Schema 1.10B's corrected forced loader test gate subsequently passed at `493cae748f89f88308a7e1b98ea583d2e58871af`; the provenance JSON was reviewed as recorded in the later checkpoint below.
+- The later corrected run succeeded and its provenance JSON was reviewed. A follow-up test-only regression was added to lock duplicate-ID coalescing; run the latest pending gate before continuing.
 
 ## 2026-11-14 — Schema 1.10B corrected forced loader gate GREEN
 
@@ -1305,5 +1305,22 @@ Do not begin selector rewriting. The corrected user forced loader test gate has 
 - The corrected `SrgMojangTableTest` fixtures now pass. The two initial failures were caused by spaces in synthetic TSRG2 member indentation; the test-only tab correction was committed as `e03c55daa6fd01e0855774e53a4255beedbad1fb`. No production parser change was needed.
 - The successful rerun reproduced the previously reported fingerprints and coverage: Mojang SHA-1 verified as `6c48521eed01fe2e8ecdadbd5ae348415f3c47da`; MCPConfig ZIP SHA-256 `f46d1050d8bed9046886b90a0d2fb80b4c6b5120fc35d32e5d37498dbe0a6d2a`; extracted joined.tsrg SHA-256 `19ae000175bfb58e5b26406c31a0e501bfb40000b078fee2f00ea60a8c7ed453`; Mojang client.txt SHA-256 `67bfc33ef0c7103f002d6ac134f8eddd3d67e2ce45d266e83816d1a2e2c9b01d`; generated TSV SHA-256 `6353b8354260dc711b09e7540542ff5f2498635e021e4110870dd33ff466e175`.
 - Coverage output: 64,225 member-name rows; methods 48,575/48,575; fields 31,003/31,003; zero duplicate member keys. This does not mean class or descriptor mappings were emitted.
-- Provenance JSON path: `loader/build/reports/mappings/1.20.1/srg-mojang-provenance.json`. It was generated in the successful run, but its contents have not yet been inspected in this conversation. The exact next action is to obtain and review this JSON.
-- Validation boundary: Schema 1.10B's forced loader test gate is **green**. Keep the source-edge/provenance audit open until the report is reviewed. Source mapping remains method/field member-name-only and explicitly `PARTIAL`; the Minecraft 1.20.1 → 1.21.1 edge remains missing. No selector rewriting or runtime-compatibility claims.
+- Provenance JSON path: `loader/build/reports/mappings/1.20.1/srg-mojang-provenance.json`. The user provided the full JSON and it was reviewed: its hashes, declared namespaces, generated table hash, size, and row count agree with the console output.
+- Validation boundary: Schema 1.10B's forced loader test gate is **green** at `493cae...`, and the provenance report review is complete. The latest follow-up same-name duplicate-ID regression is not yet user-tested. Source mapping remains method/field member-name-only and explicitly `PARTIAL`; the Minecraft 1.20.1 → 1.21.1 edge remains missing. No selector rewriting or runtime-compatibility claims.
+
+## 2026-11-14 — Schema 1.10B provenance report reviewed; duplicate-ID regression hardened
+
+### Provenance report review
+- User provided the complete `loader/build/reports/mappings/1.20.1/srg-mojang-provenance.json` produced by the successful 50-second run at `493cae748f89f88308a7e1b98ea583d2e58871af`.
+- Report `schemaVersion` is 1. It declares `minecraft:forge-srg@1.20.1` → `minecraft:official-mojang@1.20.1`, direction `FORWARD`, status `PARTIAL`, scope `method-names` and `field-names` only.
+- All three source artifact fingerprints match the successful Gradle console. MCPConfig ZIP: 1,740,711 bytes, SHA-256 `f46d1050d8bed9046886b90a0d2fb80b4c6b5120fc35d32e5d37498dbe0a6d2a`; extracted `config/joined.tsrg`: 5,653,149 bytes, SHA-256 `19ae000175bfb58e5b26406c31a0e501bfb40000b078fee2f00ea60a8c7ed453`; Mojang 1.20.1 client mappings: 8,001,795 bytes, SHA-1 matches the pinned URL object ID `6c48521eed01fe2e8ecdadbd5ae348415f3c47da`, and SHA-256 `67bfc33ef0c7103f002d6ac134f8eddd3d67e2ce45d266e83816d1a2e2c9b01d`.
+- Generated TSV: 1,607,917 bytes, SHA-256 `6353b8354260dc711b09e7540542ff5f2498635e021e4110870dd33ff466e175`, 64,225 rows. Gradle compares its line count with `coverage.outputRows`; both are 64,225.
+- Mojang source has 7,436 class rows, 63,477 method rows and 33,135 field rows. Joined TSRG has 7,436 class rows, 48,575 method rows and 31,003 field rows. All joined methods and fields matched (zero unmatched joined rows); the additional Mojang rows are outside the joined TSRG member-row denominator. Class rows are used internally for owner/descriptor joining, but are not written into the generated output.
+- `duplicateMemberKeys=0` refers to duplicate intermediate Mojang lookup keys. `duplicateSrgIds=15,353` counts repeated SRG-ID row occurrences after the first, not 15,353 distinct IDs or conflicting names. The generator retains the first output name, permits a repeated ID only when its name is identical, and throws on a different name. The successful generation therefore had 15,353 same-name repeated occurrences and no conflicting SRG values.
+- Arithmetic: `48,575 + 31,003 - 15,353 = 64,225`. The `outputRows`, generated table `rowCount`, and physical TSV line count agree.
+- The report's licensing entry is `NOT_REVIEWED_BY_THIS_BUILD_TASK`. Inspection of `loader/build.gradle` confirms the generated TSV is included in the loader JAR (`tasks.named('jar') { dependsOn genSrgMojang; from(srgMojangDir) }`). The provenance JSON is not packaged, and the raw mapping inputs remain build-local. The license status of the derived packaged TSV is **not cleared**; a separate redistribution review must occur before release. Do not infer that a partial/modified subset is automatically permitted.
+
+### Regression-test hardening prompted by the real report
+- The 15,353 repeated SRG-ID occurrences make same-name cross-owner coalescing a material production path. The existing tests covered conflicting reuse but did not explicitly cover successful same-name reuse across owners.
+- Commit `9347a08fad3844f494c5635b28871afe062929c2` adds a test with two distinct owners reusing the same method and field SRG IDs with the same Mojang names. It asserts two duplicate occurrences and two unique output rows. The conflicting-name test now also reuses an ID across distinct owners.
+- This is test-only hardening. The previous Schema 1.10B test gate remains green at `493cae...`; the new test must pass on the next forced run before this extra coverage increment is called green.
