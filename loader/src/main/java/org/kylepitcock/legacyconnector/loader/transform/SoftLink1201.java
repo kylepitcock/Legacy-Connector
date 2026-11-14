@@ -1,6 +1,9 @@
 package org.kylepitcock.legacyconnector.loader.transform;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
+import java.util.LinkedHashSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -157,6 +160,45 @@ final class SoftLink1201 implements Opcodes {
         return resolve(owner, name + desc, true, new HashSet<>()) == Res.MISSING;
     }
 
+    /**
+     * The descriptor of the one same-named method (or constructor) of a host class that takes, where the mod's call passes a subtype, a supertype
+     * of it (the other parameters and the return type unchanged); null when there is none or more than one.
+     */
+    private String widenedDesc(MethodInsnNode mi) {
+        if (!hostName(mi.owner) || mod.containsKey(mi.owner)) return null;
+        Type[] want = Type.getArgumentTypes(mi.desc);
+        Type ret = Type.getReturnType(mi.desc);
+        Set<String> owners = new LinkedHashSet<>();
+        Deque<String> todo = new ArrayDeque<>(List.of(mi.owner));
+        while (!todo.isEmpty() && owners.size() < 32) {
+            String o = todo.poll();
+            if (o == null || !owners.add(o)) continue;
+            if (!mi.name.equals("<init>")) todo.addAll(hierarchy.supers(o));
+        }
+        String found = null;
+        for (String o : owners) {
+            McMembers1201.Members mm = McMembers1201.get(o);
+            if (mm == null) continue;
+            for (String key : mm.methods()) {
+                if (!key.startsWith(mi.name + "(")) continue;
+                String d = key.substring(mi.name.length());
+                if (d.equals(mi.desc) || !Type.getReturnType(d).equals(ret)) continue;
+                Type[] have = Type.getArgumentTypes(d);
+                if (have.length != want.length) continue;
+                boolean ok = true;
+                for (int i = 0; i < want.length && ok; i++) {
+                    if (have[i].equals(want[i])) continue;
+                    ok = want[i].getSort() == Type.OBJECT && have[i].getSort() == Type.OBJECT
+                            && hierarchy.isSubclassOf(want[i].getInternalName(), have[i].getInternalName());
+                }
+                if (!ok) continue;
+                if (found != null && !found.equals(d)) return null;
+                found = d;
+            }
+        }
+        return found;
+    }
+
     private boolean fieldMissing(String owner, String name, String desc) {
         if (owner.startsWith("[")) return false;
         return resolve(owner, name + ":" + desc, false, new HashSet<>()) == Res.MISSING;
@@ -238,8 +280,16 @@ final class SoftLink1201 implements Opcodes {
                     stats.missingClasses.add(bad);
                     gone = true;
                 } else if (hostOrMod(mi.owner) && methodMissing(mi.owner, mi.name, mi.desc)) {
-                    stats.missingMethods.add(sym);
-                    gone = true;
+                    String widened = widenedDesc(mi);
+                    if (widened != null) {
+                        // 1.21.1 declares a supertype where 1.20.1 had the subtype (ResourceManager -> ResourceProvider): the same call links
+                        mi.desc = widened;
+                        stats.sites++;
+                        changes++;
+                    } else {
+                        stats.missingMethods.add(sym);
+                        gone = true;
+                    }
                 }
                 if (gone) {
                     // a constructor of a class that exists: the new object stays uninitialized unless its NEW goes too (a null takes its place)
