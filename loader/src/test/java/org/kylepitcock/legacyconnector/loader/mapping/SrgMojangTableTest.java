@@ -26,9 +26,9 @@ final class SrgMojangTableTest {
         Path tsrg = write("joined.tsrg", """
                 tsrg2 obf srg id
                 a
-                    b ()V m_1_ 1
-                    c (Ljava/lang/String;)I m_2_ 2
-                    d f_3_ 3
+                \tb ()V m_1_ 1
+                \tc (Ljava/lang/String;)I m_2_ 2
+                \td f_3_ 3
                 """);
 
         var generated = SrgMojangTable.generateDetailed(tsrg, mojang);
@@ -60,8 +60,8 @@ final class SrgMojangTableTest {
         Path tsrg = write("joined.tsrg", """
                 tsrg2 obf srg id
                 a
-                    b ()V m_1_ 1
-                    c (I)I m_2_ 2
+                \tb ()V m_1_ 1
+                \tc (I)I m_2_ 2
                 """);
 
         var generated = SrgMojangTable.generateDetailed(tsrg, mojang);
@@ -82,7 +82,7 @@ final class SrgMojangTableTest {
         Path tsrg = write("joined.tsrg", """
                 tsrg2 obf srg id
                 other/Type
-                    b ()V m_1_ 1
+                \tb ()V m_1_ 1
                 """);
 
         assertThrows(IOException.class, () -> SrgMojangTable.generateDetailed(tsrg, mojang));
@@ -98,8 +98,8 @@ final class SrgMojangTableTest {
         Path tsrg = write("joined.tsrg", """
                 tsrg2 obf srg id
                 a
-                    b ()V m_1_ 1
-                    c ()V m_1_ 1
+                \tb ()V m_1_ 1
+                \tc ()V m_1_ 1
                 """);
 
         assertThrows(IOException.class, () -> SrgMojangTable.generateDetailed(tsrg, mojang));
