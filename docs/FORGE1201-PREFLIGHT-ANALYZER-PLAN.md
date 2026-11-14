@@ -1,4 +1,4 @@
-**Current checkpoint — 2026-11-14:** Schema 1.9A resource/table inventory passed the user's forced `:loader:clean :loader:test --no-daemon --console=plain --rerun-tasks` gate at `a59fdac24ab848e31152901b9a4f4f3a5db5413d` (`BUILD SUCCESSFUL in 50s; 14/14 actionable tasks executed`). Schema 1.9B owner-scoped exact lookup correlation and synthetic regression tests have now been authored but are **not yet compiled or test-run by the user**. No namespace conversion, target-member verification, runtime Mixin application, or modpack compatibility is implied by the 1.9A green gate.
+**Current checkpoint — 2026-11-14:** Schema 1.9A refmap resource/table inventory and Schema 1.9B owner-scoped exact lookup correlation both passed the user's forced `:loader:clean :loader:test --no-daemon --console=plain --rerun-tasks` gate at `242744d1baf94dc1c523b3a873a6463017184081` (`BUILD SUCCESSFUL in 45s; 14/14 actionable tasks executed`). Follow-up commit `af12df84f62850c49a5a111515e16e76561d8e6c` restores the exact tested-parent `build.gradle` blob to remove line-ending-only churn; no post-cleanup Gradle rerun is recorded yet. Schema 1.9 validation is static/synthetic only: it does not prove runtime Mixin application or mod compatibility.
 
 ---
 
@@ -1080,3 +1080,52 @@ Do not mark Schema 1.9A green or begin 1.9B until this full forced loader test g
 
 ### Validation state
 **Schema 1.9B has not yet passed a user-run Gradle gate.** Do not begin namespace integration until the updated source branch passes the forced loader test command. Real mod/client/server and modpack testing remain separate later gates.
+
+
+---
+
+## 2026-11-14 — Schema 1.9B owner-scoped exact refmap correlation passed
+
+### User-confirmed forced loader gate
+
+The user fast-forwarded `feat/forge1201-preflight-analyzer` from `6cf92e0017568a0ecb85808c537a102a06b0f9c5` to `242744d1baf94dc1c523b3a873a6463017184081` after branch, exact-HEAD, clean-worktree, fetched-tip, published-tip, and fast-forward guards passed.
+
+The user then ran:
+
+```powershell
+.\gradlew.bat :loader:clean :loader:test --no-daemon --console=plain --rerun-tasks
+```
+
+Result: **BUILD SUCCESSFUL in 45s; 14 actionable tasks, all 14 executed.** Main sources and test sources compiled; the forced loader test task completed. This is the user-confirmed Schema 1.9B green gate.
+
+### Failure and correction history
+
+The first Schema 1.9B attempt at `6cf92e0017568a0ecb85808c537a102a06b0f9c5` failed in `:loader:compileJava` with `reached end of file while parsing`. The generated source insertion duplicated the `ConfigDeclaration` record declaration, leaving the analyzer's braces unbalanced. Commit `242744d1baf94dc1c523b3a873a6463017184081` removed that duplicate; the user's successful compile/test output confirms the correction.
+
+The same corrective commit accidentally rewrote every line ending in `build.gradle`, creating a misleading 587-addition/587-deletion diff. Follow-up commit `af12df84f62850c49a5a111515e16e76561d8e6c` restores `build.gradle` to the exact blob from the already-tested parent `6cf92e0017568a0ecb85808c537a102a06b0f9c5`. A comparison from that parent to `af12df84f62850c49a5a111515e16e76561d8e6c` contains no `build.gradle` delta; the only code delta is the two-line analyzer declaration correction. The cleanup changes file bytes/line endings only and preserves the logical `preflightRefmapContext` property. The user's Gradle run was at `242744...`; no separate run at the cleanup commit is recorded.
+
+### Scope and validation boundary
+
+Schema 1.9A resource/table inventory and Schema 1.9B exact owner-scoped lookup correlation are now implemented and user-tested. Coverage includes Mixin 0.8.5 annotation-processor string-key paths, exact mixin internal owner matching, AP whitespace normalization, explicit identity versus missing-entry pass-through, explicit context handling, absent-context base fallback, present-context per-key pass-through, and inherited/overridden `@At.remap`.
+
+This does **not** establish:
+- source/target namespace identity or cross-version mapping;
+- target selector/member/descriptor/instruction existence;
+- Mixin plugin or custom wrapper behavior;
+- runtime Mixin application, real mod launch, gameplay, or modpack compatibility.
+
+The PSReadLine 2.0.0 startup warning in the user's PowerShell output is unrelated to the Gradle result.
+
+### Next bounded engineering task — Schema 1.10 mapping-profile design
+
+Do not begin selector rewriting. First produce a design/research contract for explicit mapping profiles that can connect a Mixin refmap output to the NeoForge 1.21.1 target environment without guessing.
+
+Audit the existing source-version SRG-to-Mojang normalization, mapping catalog, generated mapping artifact, and target class/member index. Define exact provenance for each edge in a mapping chain: profile ID, direction, source/target MC versions, source/target namespaces, mapping provider and format, exact artifact identity/digest, and class/member/descriptor coverage. Keep opaque Mixin context keys distinct from namespace IDs. Establish deterministic states for missing, partial, ambiguous, unsupported, or version-mismatched mapping inputs. Reuse the existing target index; no second remapper or hierarchy cache.
+
+The next implementation must remain blocked until the design establishes a fully evidenced and pinned chain. Never infer cross-version identity from a familiar name or from a context label.
+
+### Universal vision and workstream boundaries
+
+Keep the project goal as reusable, evidence-driven, modpack-ready compatibility infrastructure for Forge 1.20.1-exclusive mods on NeoForge 1.21.1—not a one-off adapter. Static analyzer success is a prerequisite, not a mod compatibility verdict.
+
+Palladium + Alien Evolution remain paused and isolated in their own workstream. Legends core followed by Legends: Superheroes remains a later dependency-ordered candidate pair. Do not mix either into the Universal analyzer branch.
