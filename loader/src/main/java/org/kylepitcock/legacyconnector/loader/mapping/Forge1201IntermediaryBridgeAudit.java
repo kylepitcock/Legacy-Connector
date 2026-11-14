@@ -62,11 +62,16 @@ public final class Forge1201IntermediaryBridgeAudit {
             int ambiguousSourceRows,
             int sourceOwnerUnmappedRows,
             int sourceDescriptorUnresolvedRows,
+            int sourceDescriptorExternalTypeRows,
+            int sourceDescriptorExternalTypeOccurrences,
             int distinctSourceSrgIds,
             int sourceSrgIdsWithMultipleIntermediarySymbols,
             int targetExactOwnerMemberDescriptorRows,
+            int targetSameOwnerMemberDescriptorExternalPassthroughRows,
             int targetSameOwnerMemberDescriptorChangedRows,
             int targetSameOwnerMemberDescriptorUnresolvedRows,
+            int targetDescriptorExternalTypeRows,
+            int targetDescriptorExternalTypeOccurrences,
             int targetOwnerChangedRows,
             int targetMemberIdMissingRows,
             int ambiguousTargetRows) {}
@@ -106,8 +111,11 @@ public final class Forge1201IntermediaryBridgeAudit {
             String ownerIntermediary,
             String descriptorOfficial,
             String descriptorIntermediary,
+            int descriptorExternalTypeCount,
             String officialName,
             String intermediaryId) {}
+
+    private record DescriptorNormalization(String descriptor, int externalTypeCount) {}
 
     private static final class TinyMappings {
         final Map<String, String> officialToIntermediary = new HashMap<>();
@@ -129,8 +137,10 @@ public final class Forge1201IntermediaryBridgeAudit {
         requireInput(targetTiny, "Fabric Intermediary 1.21.1 Tiny mapping");
 
         TsrgData tsrg = readTsrg(joinedTsrg);
-        TinyMappings source = readTiny(sourceTiny);
-        TinyMappings target = readTiny(targetTiny);
+        Set<String> sourceMinecraftClasses = new HashSet<>();
+        for (TsrgClass row : tsrg.classes()) sourceMinecraftClasses.add(row.obfuscatedName());
+        TinyMappings source = readTiny(sourceTiny, sourceMinecraftClasses);
+        TinyMappings target = readTiny(targetTiny, Set.of());
 
         ClassCoverage classCoverage = auditClasses(tsrg.classes(), source, target);
         MemberCoverage methodCoverage = auditMembers(tsrg.methods(), true, source, target);
@@ -248,7 +258,7 @@ public final class Forge1201IntermediaryBridgeAudit {
         return new TsrgData(List.copyOf(classes), List.copyOf(methods), List.copyOf(fields));
     }
 
-    private static TinyMappings readTiny(Path path) throws IOException {
+    private static TinyMappings readTiny(Path path, Set<String> knownMinecraftClasses) throws IOException {
         TinyMappings mappings = new TinyMappings();
         List<String[]> rawMembers = new ArrayList<>();
         int lineNumber = 0;
@@ -292,9 +302,11 @@ public final class Forge1201IntermediaryBridgeAudit {
         // Resolve descriptor class names only after the complete class table is known.
         for (String[] parts : rawMembers) {
             String ownerIntermediary = mappings.officialToIntermediary.get(parts[1]);
-            String normalizedDescriptor = normalizeDescriptor(parts[2], mappings.officialToIntermediary);
+            DescriptorNormalization normalizedDescriptor =
+                    normalizeDescriptor(parts[2], mappings.officialToIntermediary, knownMinecraftClasses);
             TinyMember member = new TinyMember(
-                    parts[1], ownerIntermediary, parts[2], normalizedDescriptor, parts[3], parts[4]);
+                    parts[1], ownerIntermediary, parts[2], normalizedDescriptor.descriptor(),
+                    normalizedDescriptor.externalTypeCount(), parts[3], parts[4]);
             if (parts[0].equals("METHOD")) {
                 add(mappings.methodsByOfficialKey,
                         new MemberKey(parts[1], parts[3], parts[2]), member);
@@ -313,8 +325,12 @@ public final class Forge1201IntermediaryBridgeAudit {
         return mappings;
     }
 
-    private static String normalizeDescriptor(String descriptor, Map<String, String> officialToIntermediary) throws IOException {
+    private static DescriptorNormalization normalizeDescriptor(
+            String descriptor,
+            Map<String, String> officialToIntermediary,
+            Set<String> knownMinecraftClasses) throws IOException {
         StringBuilder normalized = new StringBuilder(descriptor.length());
+        int externalTypeCount = 0;
         for (int index = 0; index < descriptor.length();) {
             char current = descriptor.charAt(index);
             if (current != 'L') {
@@ -327,11 +343,22 @@ public final class Forge1201IntermediaryBridgeAudit {
             if (end < 0) throw new IOException("Malformed JVM descriptor in intermediary mapping: " + descriptor);
             String officialType = descriptor.substring(index + 1, end);
             String intermediaryType = officialToIntermediary.get(officialType);
-            if (intermediaryType == null) return null;
-            normalized.append('L').append(intermediaryType).append(';');
+            if (intermediaryType != null) {
+                normalized.append('L').append(intermediaryType).append(';');
+            } else if (knownMinecraftClasses.contains(officialType) || officialType.indexOf('/') < 0) {
+                // A known source Minecraft class without a Tiny identity, or an unqualified
+                // unmapped obfuscated name, is unresolved. Never pass it through as external.
+                return new DescriptorNormalization(null, externalTypeCount);
+            } else {
+                // Package-qualified types absent from Minecraft's mapping inventory are kept
+                // unchanged as external candidates. Their target classpath presence is not
+                // proven here, so rows using them receive a separate non-exact classification.
+                normalized.append('L').append(officialType).append(';');
+                externalTypeCount++;
+            }
             index = end + 1;
         }
-        return normalized.toString();
+        return new DescriptorNormalization(normalized.toString(), externalTypeCount);
     }
 
     private static <K, V> void add(Map<K, List<V>> map, K key, V value) {
@@ -375,9 +402,14 @@ public final class Forge1201IntermediaryBridgeAudit {
         int ambiguousSource = 0;
         int sourceOwnerUnmapped = 0;
         int sourceDescriptorUnresolved = 0;
+        int sourceDescriptorExternalTypeRows = 0;
+        int sourceDescriptorExternalTypeOccurrences = 0;
         int targetExact = 0;
+        int targetExternalPassthrough = 0;
         int targetDescriptorChanged = 0;
         int targetDescriptorUnresolved = 0;
+        int targetDescriptorExternalTypeRows = 0;
+        int targetDescriptorExternalTypeOccurrences = 0;
         int targetOwnerChanged = 0;
         int targetIdMissing = 0;
         int ambiguousTarget = 0;
@@ -411,7 +443,12 @@ public final class Forge1201IntermediaryBridgeAudit {
                 sourceOwnerUnmapped++;
                 continue;
             }
-            if (sourceMember.descriptorIntermediary() == null) sourceDescriptorUnresolved++;
+            if (sourceMember.descriptorIntermediary() == null) {
+                sourceDescriptorUnresolved++;
+            } else if (sourceMember.descriptorExternalTypeCount() > 0) {
+                sourceDescriptorExternalTypeRows++;
+                sourceDescriptorExternalTypeOccurrences += sourceMember.descriptorExternalTypeCount();
+            }
 
             Map<String, List<TinyMember>> targetById = method ? target.methodsById : target.fieldsById;
             Map<OwnerAndId, List<TinyMember>> targetByOwnerAndId =
@@ -434,11 +471,19 @@ public final class Forge1201IntermediaryBridgeAudit {
             }
 
             TinyMember targetMember = sameOwnerRows.get(0);
+            boolean hasExternalDescriptorTypes = sourceMember.descriptorExternalTypeCount() > 0
+                    || targetMember.descriptorExternalTypeCount() > 0;
+            if (hasExternalDescriptorTypes) {
+                targetDescriptorExternalTypeRows++;
+                targetDescriptorExternalTypeOccurrences += sourceMember.descriptorExternalTypeCount()
+                        + targetMember.descriptorExternalTypeCount();
+            }
             if (sourceMember.descriptorIntermediary() == null
                     || targetMember.descriptorIntermediary() == null) {
                 targetDescriptorUnresolved++;
             } else if (sourceMember.descriptorIntermediary().equals(targetMember.descriptorIntermediary())) {
-                targetExact++;
+                if (hasExternalDescriptorTypes) targetExternalPassthrough++;
+                else targetExact++;
             } else {
                 targetDescriptorChanged++;
             }
@@ -456,11 +501,16 @@ public final class Forge1201IntermediaryBridgeAudit {
                 ambiguousSource,
                 sourceOwnerUnmapped,
                 sourceDescriptorUnresolved,
+                sourceDescriptorExternalTypeRows,
+                sourceDescriptorExternalTypeOccurrences,
                 intermediaryIdsBySrgId.size(),
                 multiSymbolSrgIds,
                 targetExact,
+                targetExternalPassthrough,
                 targetDescriptorChanged,
                 targetDescriptorUnresolved,
+                targetDescriptorExternalTypeRows,
+                targetDescriptorExternalTypeOccurrences,
                 targetOwnerChanged,
                 targetIdMissing,
                 ambiguousTarget);
@@ -526,7 +576,7 @@ public final class Forge1201IntermediaryBridgeAudit {
                 quote("SRG identifiers are diagnostic member names, not global semantic symbol keys; the report counts IDs reused across distinct intermediary symbols."),
                 true);
         field(json, "descriptorCoverage",
-                quote("Descriptors containing any class absent from the version-specific intermediary class table are unresolved and are not counted as exact."),
+                quote("Minecraft classes are translated through the version-specific Intermediary class table. Package-qualified descriptor types absent from that inventory are preserved as external candidates and counted separately; their target classpath presence is not verified here. Known source Minecraft classes missing a Tiny identity, and unqualified unmapped obfuscated types, remain unresolved. External-pass-through matches are not counted as fully mapped exact rows."),
                 true);
         field(json, "limits",
                 quote("This report ends at the target official-obfuscated namespace. Converting target names to NeoForge's Mojang-named runtime is a separate stage. Stable identity does not prove binary or gameplay compatibility."),
@@ -566,15 +616,24 @@ public final class Forge1201IntermediaryBridgeAudit {
         field(json, "ambiguousSourceRows", Integer.toString(coverage.ambiguousSourceRows()), true);
         field(json, "sourceOwnerUnmappedRows", Integer.toString(coverage.sourceOwnerUnmappedRows()), true);
         field(json, "sourceDescriptorUnresolvedRows", Integer.toString(coverage.sourceDescriptorUnresolvedRows()), true);
+        field(json, "sourceDescriptorExternalTypeRows", Integer.toString(coverage.sourceDescriptorExternalTypeRows()), true);
+        field(json, "sourceDescriptorExternalTypeOccurrences",
+                Integer.toString(coverage.sourceDescriptorExternalTypeOccurrences()), true);
         field(json, "distinctSourceSrgIds", Integer.toString(coverage.distinctSourceSrgIds()), true);
         field(json, "sourceSrgIdsWithMultipleIntermediarySymbols",
                 Integer.toString(coverage.sourceSrgIdsWithMultipleIntermediarySymbols()), true);
         field(json, "targetExactOwnerMemberDescriptorRows",
                 Integer.toString(coverage.targetExactOwnerMemberDescriptorRows()), true);
+        field(json, "targetSameOwnerMemberDescriptorExternalPassthroughRows",
+                Integer.toString(coverage.targetSameOwnerMemberDescriptorExternalPassthroughRows()), true);
         field(json, "targetSameOwnerMemberDescriptorChangedRows",
                 Integer.toString(coverage.targetSameOwnerMemberDescriptorChangedRows()), true);
         field(json, "targetSameOwnerMemberDescriptorUnresolvedRows",
                 Integer.toString(coverage.targetSameOwnerMemberDescriptorUnresolvedRows()), true);
+        field(json, "targetDescriptorExternalTypeRows",
+                Integer.toString(coverage.targetDescriptorExternalTypeRows()), true);
+        field(json, "targetDescriptorExternalTypeOccurrences",
+                Integer.toString(coverage.targetDescriptorExternalTypeOccurrences()), true);
         field(json, "targetOwnerChangedRows", Integer.toString(coverage.targetOwnerChangedRows()), true);
         field(json, "targetMemberIdMissingRows", Integer.toString(coverage.targetMemberIdMissingRows()), true);
         field(json, "ambiguousTargetRows", Integer.toString(coverage.ambiguousTargetRows()), false);
