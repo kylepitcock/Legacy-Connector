@@ -623,7 +623,7 @@ public final class Forge1201Transformer {
         }
         int alienEvoResourceChanges = PalladiumResourceCompat1201.apply(outResources);
         if (alienEvoResourceChanges > 0) {
-            result.notes.add("AlienEvo resources migrate legacy ResourceLocation and typed SoundEvent/SoundSource arguments for 8-argument Level.playSound calls, persistent NBT integer/string values, armor guards, Omnitrix tab comparisons and KubeJS 7 server/player access; normalize stat-ability modifier IDs and legacy Attribute_Mod operation names, remove the obsolete EditBox.tick call, and repair inspected Diamond Shard/AFOMNI particle texture IDs: "
+            result.notes.add("AlienEvo resources migrate legacy ResourceLocation and typed SoundEvent/SoundSource arguments for 8-argument Level.playSound calls, persistent NBT integer/string values, armor guards, Omnitrix tab comparisons and KubeJS 7 server/player access; normalize stat-ability modifier IDs and legacy Attribute_Mod operation names, remove the obsolete EditBox.tick call, route Diamondhead crystal-block tick listeners into a SERVER data script while keeping ticker setup in STARTUP, and repair inspected Diamond Shard/AFOMNI particle texture IDs: "
                     + alienEvoResourceChanges + " resource file(s)");
         }
         if (PalladiumKubeJS1201.addPluginDiscoveryResource(outResources, outClasses.keySet())) {
