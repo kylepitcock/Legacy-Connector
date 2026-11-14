@@ -55,7 +55,7 @@ final class Forge1201MappingProfileValidatorTest {
 
     @Test
     void rejectsArtifactDigestMismatch() throws Exception {
-        String profileJson = validProfile().replace(artifactSha(), "0".repeat(64));
+        String profileJson = validProfile().replace("HASH_TOKEN", "0".repeat(64));
         Path profile = writeProfile(profileJson);
 
         var finding = Forge1201MappingProfileValidator.inspect(profile);
@@ -66,6 +66,25 @@ final class Forge1201MappingProfileValidatorTest {
                 finding.artifacts().getFirst().status());
         assertFalse(finding.artifacts().getFirst().expectedSha256()
                 .equalsIgnoreCase(finding.artifacts().getFirst().actualSha256()));
+    }
+
+    @Test
+    void rejectsUpstreamChecksumMismatchAndPendingLicenseReview() throws Exception {
+        String badUpstream = validProfile().replace("UPSTREAM_SHA1_TOKEN", "0".repeat(40));
+        var checksumFinding = Forge1201MappingProfileValidator.inspect(writeProfile(badUpstream));
+        assertEquals(Forge1201MappingProfileValidator.ProfileStatus.PROFILE_ARTIFACT_DIGEST_MISMATCH,
+                checksumFinding.status());
+        assertNotNull(checksumFinding.artifacts().getFirst().actualUpstreamChecksum());
+        assertFalse(checksumFinding.artifacts().getFirst().actualUpstreamChecksum()
+                .equalsIgnoreCase(checksumFinding.artifacts().getFirst().upstreamChecksum().substring(5)));
+
+        String pendingLicense = validProfile().replace("\\"reviewStatus\\":\\"REVIEWED\\"",
+                "\\"reviewStatus\\":\\"PENDING\\"");
+        var licenseFinding = Forge1201MappingProfileValidator.inspect(writeProfile(pendingLicense));
+        assertEquals(Forge1201MappingProfileValidator.ProfileStatus.PROFILE_LICENSE_REVIEW_REQUIRED,
+                licenseFinding.status());
+        assertEquals(Forge1201MappingProfileValidator.ArtifactStatus.LICENSE_REVIEW_REQUIRED,
+                licenseFinding.artifacts().getFirst().status());
     }
 
     @Test
@@ -171,15 +190,6 @@ final class Forge1201MappingProfileValidatorTest {
         Path profile = tempDir.resolve("mapping-profile.json");
         Files.writeString(profile, replaced, StandardCharsets.UTF_8);
         return profile;
-    }
-
-    private String artifactSha() {
-        try {
-            return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
-                    .digest("synthetic pinned mapping bytes".getBytes(StandardCharsets.UTF_8)));
-        } catch (Exception exception) {
-            throw new IllegalStateException(exception);
-        }
     }
 
     private static String validProfile() {
