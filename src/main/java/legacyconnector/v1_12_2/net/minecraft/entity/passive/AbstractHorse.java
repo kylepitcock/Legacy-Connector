@@ -19,7 +19,8 @@ import net.minecraft.sounds.SoundEvents;
  * temper, rearing, eating and mouth animations, jump strength); a mod's subclass keeps the 1.12 state in its data and NBT. (Riding and
  * the horse inventory of mods' own horses are not modelled; the modern horses ride as usual.)
  */
-public abstract class AbstractHorse extends EntityAnimal implements legacyconnector.v1_12_2.net.minecraft.inventory.IInventoryChangedListener {
+public abstract class AbstractHorse extends EntityAnimal implements legacyconnector.v1_12_2.net.minecraft.inventory.IInventoryChangedListener,
+        legacyconnector.v1_12_2.net.minecraft.entity.IJumpingMount {
     private static final DataParameter<Byte> STATUS = EntityDataManager.createKey(AbstractHorse.class, DataSerializers.BYTE);
     private static final DataParameter<com.google.common.base.Optional<java.util.UUID>> OWNER_UNIQUE_ID = EntityDataManager.createKey(AbstractHorse.class,
             DataSerializers.OPTIONAL_UNIQUE_ID);
@@ -435,6 +436,16 @@ public abstract class AbstractHorse extends EntityAnimal implements legacyconnec
 
     public void setJumpPower(int power) {
         jumpPower = power >= 90 ? 1.0F : 0.4F + 0.4F * power / 90.0F;
+    }
+
+    public boolean canJump() {
+        return canBeSteered();
+    }
+
+    public void handleStartJump(int power) {
+    }
+
+    public void handleStopJump() {
     }
 
     public boolean canBeSaddled() {

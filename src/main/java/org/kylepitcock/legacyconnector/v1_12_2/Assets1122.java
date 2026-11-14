@@ -219,13 +219,17 @@ public final class Assets1122 implements GeneratedPack.Contributor {
     private static void itemModels(Map<String, Supplier<byte[]>> out) {
         meshIds = meshItemIds();
         for (legacyconnector.v1_12_2.net.minecraft.item.Item item : org.kylepitcock.legacyconnector.v1_12_2.bridge.ItemBridge1122.modItems()) {
-            if (item.getRegistryName() == null || item instanceof legacyconnector.v1_12_2.net.minecraft.item.ItemBlock) continue;
+            if (item.getRegistryName() == null) continue;
+            // an ItemBlock draws its block's model of the same metadata unless the mod registered models for it (blockItemModels): torches, lamps and
+            // repeaters of Colored Redstone have the colour as the stack's damage, which is not the block's metadata (a facing)
+            boolean blockItem = item instanceof legacyconnector.v1_12_2.net.minecraft.item.ItemBlock;
             // every subtype the item registered (metadata goes beyond 15: AbyssalCraft's crystal shards run to 26 and more)
             for (int meta : org.kylepitcock.legacyconnector.v1_12_2.bridge.ItemBridge1122.variants(item).keySet()) {
                 var modern = org.kylepitcock.legacyconnector.v1_12_2.bridge.ItemBridge1122.modern(item, meta);
                 if (modern == null) continue;
                 var mrl = legacyconnector.v1_12_2.net.minecraftforge.client.model.ModelLoader.mcc$model(item, meta);
                 // a subtype the mod gave no model of its own shows the base subtype's (instead of the missing-model cube)
+                if (mrl == null && blockItem) continue;
                 if (mrl == null && meta != 0) mrl = legacyconnector.v1_12_2.net.minecraftforge.client.model.ModelLoader.mcc$model(item, 0);
                 ResourceLocation id = BuiltInRegistries.ITEM.getKey(modern);
                 if (meshModel(item, mrl, id, out)) continue;
@@ -391,9 +395,19 @@ public final class Assets1122 implements GeneratedPack.Contributor {
      */
     private static final ThreadLocal<Boolean> FORGE_MARKER = ThreadLocal.withInitial(() -> Boolean.TRUE);
 
+    /** The name the mod's own files carry for a block: its 1.12 registry name when the modern block lives under the layer's alias for a replaced vanilla block. */
+    private static ResourceLocation legacyFileId(Block block, ResourceLocation id) {
+        if (!"legacyconnector".equals(id.getNamespace()) || !id.getPath().startsWith("minecraft_") || block.getRegistryName() == null) return id;
+        var name = block.getRegistryName();
+        ResourceLocation own = ResourceLocation.fromNamespaceAndPath(Ids.namespace(name.getNamespace()), Ids.normalizePath(name.getPath()));
+        return "minecraft".equals(own.getNamespace()) ? own : id;
+    }
+
     private static void translate(Block block, ResourceLocation id, Map<String, Supplier<byte[]>> out, Stats stats) {
         boolean debug = System.getProperty("legacyconnector.debugAssets") != null && id.getPath().equals(System.getProperty("legacyconnector.debugAssets"));
-        JsonObject original = readOriginal(id);
+        // a block that replaces a vanilla block is registered under an id of the layer's own (BlockBridge1122) but its mod's blockstate file is
+        // named for the 1.12 registry name ("minecraft:redstone_wire")
+        JsonObject original = readOriginal(legacyFileId(block, id));
         FORGE_MARKER.set(original != null && original.has("forge_marker"));
         boolean multipart = original != null && original.has("multipart") && original.get("multipart").isJsonArray() && !original.has("variants");
         IBlockState def = null;
@@ -1834,7 +1848,8 @@ public final class Assets1122 implements GeneratedPack.Contributor {
             var modern = variants.size() > 1 ? variants.get(meta) : org.kylepitcock.legacyconnector.v1_12_2.bridge.ItemBridge1122.modern(item, meta);
             if (modern == null) continue;
             ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(modern);
-            if (!itemId.getNamespace().equals(blockId.getNamespace()) || modelExists(itemId.getNamespace(), "item/" + itemId.getPath())) continue;
+            if (!itemId.getNamespace().equals(blockId.getNamespace()) || modelExists(itemId.getNamespace(), "item/" + itemId.getPath())
+                    || out.containsKey("assets/" + itemId.getNamespace() + "/models/item/" + itemId.getPath() + ".json")) continue;
             String m = models.get(meta);
             if (m == null) continue;
             JsonObject model = new JsonObject();
