@@ -132,6 +132,14 @@ public abstract class Entity implements ICommandSender {
     @Deprecated
     public boolean noClip;
     private boolean mcc$local_noClip;
+    /**
+     * Phantom field: accesses are redirected to {@code mcc$get$ignoreFrustumCheck}. The modern equivalent is {@code noCulling}, which
+     * Sodium and Entity Culling read too (Entity Culling stops ticking a culled entity, so a mod's client-side effect entity that
+     * is drawn around the player froze after a few ticks).
+     */
+    @Deprecated
+    public boolean ignoreFrustumCheck;
+    private boolean mcc$local_ignoreFrustumCheck;
     /** Phantom field: accesses are redirected to {@code mcc$get$width}. */
     @Deprecated
     public float width;
@@ -730,6 +738,20 @@ public abstract class Entity implements ICommandSender {
             m.noPhysics = v;
         } else {
             e.mcc$local_noClip = v;
+        }
+    }
+
+    public static boolean mcc$get$ignoreFrustumCheck(Entity e) {
+        var m = e.mcc$entity;
+        return m != null ? m.noCulling : e.mcc$local_ignoreFrustumCheck;
+    }
+
+    public static void mcc$set$ignoreFrustumCheck(Entity e, boolean v) {
+        var m = e.mcc$entity;
+        if (m != null) {
+            m.noCulling = v;
+        } else {
+            e.mcc$local_ignoreFrustumCheck = v;
         }
     }
 
