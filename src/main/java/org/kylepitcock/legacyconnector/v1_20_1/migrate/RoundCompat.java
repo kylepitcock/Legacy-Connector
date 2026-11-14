@@ -50,7 +50,56 @@ public final class RoundCompat {
 
     /** {@code BuiltInRegistries.POTION} / {@code PAINTING_VARIANT} were typed {@code DefaultedRegistry}; 1.21.1 types them {@code Registry} (the object still is one). */
     public static net.minecraft.core.DefaultedRegistry<?> defaulted(net.minecraft.core.Registry<?> registry) {
-        return (net.minecraft.core.DefaultedRegistry<?>) registry;
+        if (registry instanceof net.minecraft.core.DefaultedRegistry<?> d) return d;
+        // 1.21.1's potion and painting variant registries are plain registries (not "the object still is one"): the old defaulted type is a view that
+        // delegates to the registry and knows the old default key
+        return defaultedView(() -> registry, registry.key(), registry.key().location().getPath().equals("painting_variant") ? "kebab" : "empty");
+    }
+
+    /**
+     * {@code IEnvironment.Keys.NAMING} (a supplier of the launcher key that names the mappings, "srg" or "mcp"): gone in the newer ModLauncher. A key nobody ever
+     * sets is handed out, so a lookup finds no value (the mod then takes its non-development path), which is what a production game gives.
+     */
+    public static java.util.function.Supplier<?> launcherNamingKey() {
+        return () -> {
+            try {
+                Class<?> launcher = Class.forName("cpw.mods.modlauncher.Launcher");
+                Object board = launcher.getMethod("blackboard").invoke(launcher.getField("INSTANCE").get(null));
+                Class<?> map = Class.forName("cpw.mods.modlauncher.api.TypesafeMap");
+                return Class.forName("cpw.mods.modlauncher.api.TypesafeMap$Key").getMethod("getOrCreate", map, String.class, Class.class).invoke(null, board, "legacyconnector.naming", String.class);
+            } catch (ReflectiveOperationException e) {
+                throw new IllegalStateException(e);
+            }
+        };
+    }
+
+    /** {@code BuiltInRegistries.PAINTING_VARIANT}: a data registry in 1.21.1 (no static field); read before a world exists, the view asks the registry on each call. */
+    public static net.minecraft.core.DefaultedRegistry<?> paintingVariants() {
+        return defaultedView(() -> MigrateContext.registries().registryOrThrow(net.minecraft.core.registries.Registries.PAINTING_VARIANT),
+                net.minecraft.core.registries.Registries.PAINTING_VARIANT, "kebab");
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static net.minecraft.core.DefaultedRegistry<?> defaultedView(java.util.function.Supplier<net.minecraft.core.Registry<?>> registry,
+            net.minecraft.resources.ResourceKey<?> key, String defaultName) {
+        net.minecraft.resources.ResourceLocation def = net.minecraft.resources.ResourceLocation.withDefaultNamespace(defaultName);
+        return (net.minecraft.core.DefaultedRegistry<?>) java.lang.reflect.Proxy.newProxyInstance(net.minecraft.core.DefaultedRegistry.class.getClassLoader(),
+                new Class<?>[] {net.minecraft.core.DefaultedRegistry.class}, (proxy, method, args) -> {
+                    if (method.getName().equals("getDefaultKey") && method.getParameterCount() == 0) return def;
+                    if (method.getName().equals("key") && method.getParameterCount() == 0) return key;
+                    if (method.getDeclaringClass() == Object.class) {
+                        return switch (method.getName()) {
+                            case "hashCode" -> System.identityHashCode(proxy);
+                            case "equals" -> proxy == args[0];
+                            default -> "registry view " + key.location();
+                        };
+                    }
+                    try {
+                        return method.invoke(registry.get(), args);
+                    } catch (java.lang.reflect.InvocationTargetException e) {
+                        throw e.getCause();
+                    }
+                });
     }
 
     /** A crafting grid in the 1.21.1 shape ({@code CraftingInput}) for the methods of {@code ShapedRecipe}/{@code ShapelessRecipe} that take one. */

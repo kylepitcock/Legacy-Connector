@@ -329,7 +329,7 @@ net/minecraft/world/level/storage/loot/BuiltInLootTables	SHEEP_WHITE	Lnet/minecr
 net/minecraft/world/level/storage/loot/BuiltInLootTables	SHEEP_YELLOW	Lnet/minecraft/resources/ResourceLocation;	-	Lnet/minecraft/resources/ResourceKey;	location
 net/minecraft/world/level/storage/loot/BuiltInLootTables	JUNGLE_TEMPLE_DISPENSER	Lnet/minecraft/resources/ResourceLocation;	-	Lnet/minecraft/resources/ResourceKey;	location
 net/minecraft/core/registries/BuiltInRegistries	POTION	Lnet/minecraft/core/DefaultedRegistry;	-	Lnet/minecraft/core/Registry;	RoundCompat.defaulted
-net/minecraft/core/registries/BuiltInRegistries	PAINTING_VARIANT	Lnet/minecraft/core/DefaultedRegistry;	-	Lnet/minecraft/core/Registry;	RoundCompat.defaulted
+net/minecraft/core/registries/BuiltInRegistries	PAINTING_VARIANT	Lnet/minecraft/core/DefaultedRegistry;	-	none	RoundCompat.paintingVariants
 # --- round 3 batch 8 (client)
 net/minecraft/client/resources/model/ModelBakery	MISSING_MODEL_LOCATION	Lnet/minecraft/client/resources/model/ModelResourceLocation;	MISSING_MODEL_VARIANT	-	-
 net/minecraft/client/gui/screens/Screen	BACKGROUND_LOCATION	Lnet/minecraft/resources/ResourceLocation;	MENU_BACKGROUND	-	-
@@ -372,3 +372,4 @@ net/minecraft/world/entity/animal/Parrot	TAME_FOOD	Ljava/util/Set;	-	none	RoundC
 net/minecraft/advancements/critereon/NbtPredicate	ANY	Lnet/minecraft/advancements/critereon/NbtPredicate;	-	none	PredicateCompat.nbtAny
 net/minecraft/advancements/critereon/StatePropertiesPredicate	ANY	Lnet/minecraft/advancements/critereon/StatePropertiesPredicate;	-	none	PredicateCompat.stateAny
 net/minecraft/advancements/critereon/EnchantmentPredicate	NONE	[Lnet/minecraft/advancements/critereon/EnchantmentPredicate;	-	none	PredicateCompat.enchantmentNone
+cpw/mods/modlauncher/api/IEnvironment$Keys	NAMING	Ljava/util/function/Supplier;	-	none	RoundCompat.launcherNamingKey

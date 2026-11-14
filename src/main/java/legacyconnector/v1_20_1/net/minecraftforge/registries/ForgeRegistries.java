@@ -62,7 +62,9 @@ public final class ForgeRegistries {
     /** A supplier in Forge 1.20.1 (the registry is created late). */
     public static final java.util.function.Supplier<IForgeRegistry<net.neoforged.neoforge.fluids.FluidType>> FLUID_TYPES = () -> new ForgeRegistryWrapper<>(NeoForgeRegistries.FLUID_TYPES);
     public static final IForgeRegistry<net.minecraft.network.syncher.EntityDataSerializer<?>> ENTITY_DATA_SERIALIZERS = new ForgeRegistryWrapper(NeoForgeRegistries.ENTITY_DATA_SERIALIZERS);
-    public static final IForgeRegistry<com.mojang.serialization.MapCodec<? extends net.neoforged.neoforge.common.loot.IGlobalLootModifier>> GLOBAL_LOOT_MODIFIER_SERIALIZERS = new ForgeRegistryWrapper(NeoForgeRegistries.GLOBAL_LOOT_MODIFIER_SERIALIZERS);
+    // a Supplier in Forge 1.20.1 (like FLUID_TYPES): mods read it as one
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static final java.util.function.Supplier<IForgeRegistry<com.mojang.serialization.MapCodec<? extends net.neoforged.neoforge.common.loot.IGlobalLootModifier>>> GLOBAL_LOOT_MODIFIER_SERIALIZERS = () -> new ForgeRegistryWrapper(NeoForgeRegistries.GLOBAL_LOOT_MODIFIER_SERIALIZERS);
     public static final IForgeRegistry<net.neoforged.neoforge.common.world.BiomeModifier> BIOME_MODIFIERS = new ForgeRegistryWrapper(NeoForgeRegistries.Keys.BIOME_MODIFIERS);
     public static final IForgeRegistry<net.neoforged.neoforge.registries.holdersets.HolderSetType> HOLDER_SET_TYPES = new ForgeRegistryWrapper<>(NeoForgeRegistries.HOLDER_SET_TYPES);
 

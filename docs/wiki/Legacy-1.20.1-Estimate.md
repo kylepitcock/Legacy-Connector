@@ -673,3 +673,24 @@ member index the gap report uses (`mc-members.index.gz` + `mc-hierarchy.tsv.gz`,
 - **Architectury 13.** `NetworkManager.sendToPlayer/sendToPlayers/sendToServer/toPacket` take a `RegistryFriendlyByteBuf` (call rows convert); `FluidStack.setTag/write(CompoundTag)`.
 - **Library field diffs.** `libApiDiff` for Create 6.0.6 to 6.0.10, Balm 7 to 21 and Resourceful Lib 2 to 3: no static field needs a `Holder`/`Supplier` row (the four Create registry fields are `DeferredHolder` already). The drift is API: Balm networking (payload types), Resourceful Lib `networking` (new packet API), Create recipe builders.
 - **Not done, next by value:** Balm networking and `initialize`; Resourceful Lib packet API; Jade 15 UI styles; `MeleeAttackGoal.getAttackReachSqr/checkAndPerformAttack` (stand-in goal calling the legacy overrides); `ItemPredicate` subclasses (final record now; Apotheosis, Mekanism, Forbidden Arcanus); `Advancement$Builder.addCriterion`; `IFriendlyByteBufExtension.writeFluidStack`; Create `ProcessingRecipeBuilder` factory/params; `Recipe.getId` on native library classes (Farmer's Delight).
+
+## 49. Status 2026-11-14: run-time measurement of the linking ATM 9 mods (server), first fixes
+
+Tooling: `tools/dev/verify.sh` searches the read-only ATM 9 folder for `1.20.1` lines and takes `lib <jar>` lines from the ATM 10 folder (native 1.21.1 libraries); `tools/dev/gen_suites_1201.py` writes the batches `atm9-1201-<n>` from `docs/data/probe.json` (96 content mods of the 155 that link, dependencies added); `tools/dev/measure_1201.py <suite>...` runs a batch, reads the mods FML names in "Loading errors encountered", removes them and their dependents, and repeats until the server starts (`build/devtools/m1201/<suite>.json`). `verify.py` reads the failures (`mods_failed_1201`, `failed_mods_1201`) and the new runtime line `Legacy 1.20.1 mods: N loaded, K failed` (`mods_loaded_1201`).
+
+Result of the last full run (96 mods; batches 2, 3, 1 start; 4 to 7 stop at the first unfixed cause): 44 registered content, 31 constructed without content, 27 failed on their own, 20 failed only because a dependency failed. Failures by cause (first frame), most frequent first:
+
+| cause | mods |
+|---|---|
+| mixin `@Accessor` on `CriteriaTriggers.CRITERIA` does not apply, call sites then fail (`getValues$..$md$`) | YUNG's API (+7 dependents), Potion Blender |
+| final vanilla class extended: `ItemPredicate` (Mekanism `CustomItemPredicate`), `ModConfig` (Ars Nouveau) | Mekanism (+3), Ars Nouveau (+1) |
+| `Lazy` is a class in NeoForge (a mod lambda targets it) | RFTools Base, mcjtylib (+3) |
+| common setup: `BlockState` null (`Block.defaultBlockState` order) | Cable Tiers, Extra Disks (Refined Storage addons) |
+| config value read before load | addonslib, mcjtylib |
+| blockstate property missing in `registerDefaultState` | Macaw Bridges, Macaw Lights |
+| Cyclops Core: ingredient components not initialized after construction (ObjectHolder-like injection) | Common Capabilities (+5) |
+| `KeyDispatchDataCodec.of`, protected `getSoundType`, `DeferredHolder.lazyMap`, Curios `ICurioItem`, `DataVersion`, `ComponentArgument.textComponent`, `OptionalMod`, `HEALTH_FUNCTION_FOR_TYPE`, client class in a lambda, duplicate sound key, `ClassFormatError` duplicate bridge method | one each |
+
+Fixed in this round (all generic): duplicate `[[mixins]]` (a table already in mods.toml, or a manifest config that lives in another jar) crashed the whole start; a hand-built `FileConfig` given to `spec.setConfig` collided with FML's own write of the same file (CoFH Core, #271); config unload handlers that read values; SuperMartijn642 Core Lib (defaulted registry views for potion and painting variants, lazy enchantment registry, `CraftingHelper` field names, `ModAnnotation.EnumHolder`); Cyclops Core (subscriber methods of superclasses, `IEnvironment.Keys.NAMING`, loot modifier registry as supplier, `AttachCapabilitiesEvent(Class, T)`, method references to `forge-call-rewrites` helpers, `CriterionTriggerInstance` no longer a datagen class, which emptied trigger instances). Counts: batch 3 went from 7 to 6 own failures plus cascades; the SuperMartijn642 mods (4) and CoFH Core load cleanly.
+
+Suites with baseline: `cofh1201` (1 mod), `sm642-1201` (3), `atm9-1201-stable` (14 mods of batch 2 that load). Next: the `CriteriaTriggers` accessor, `Lazy` stand-in, `ItemPredicate` stand-in, then re-run all batches.

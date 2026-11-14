@@ -10,21 +10,22 @@ import os
 import re
 import sys
 
-BAD = ["mods_failed", "blocks_problems", "entities_failed", "entities_not_spawned", "silent_failed", "crash_reports", "verify_errors"]
-GOOD = ["blocks_ok", "entities_alive", "placement_placed", "content_items", "content_blocks", "content_entities", "reached_selftest"]
+BAD = ["mods_failed", "mods_failed_1201", "blocks_problems", "entities_failed", "entities_not_spawned", "silent_failed", "crash_reports", "verify_errors"]
+GOOD = ["mods_loaded_1201", "blocks_ok", "entities_alive", "placement_placed", "content_items", "content_blocks", "content_entities", "reached_selftest"]
 TOLERANCE = 0.02
 # alive/removed after the entity self test is not deterministic (random despawns; Traincraft varies 308 to 319 between identical runs)
 TOLERANCES = {"entities_alive": 0.10}
-COLUMNS = ["mods_failed", "blocks_placed", "blocks_ok", "blocks_problems", "entities_alive", "entities_failed", "entities_not_spawned",
+COLUMNS = ["mods_failed", "mods_failed_1201", "mods_loaded_1201", "blocks_placed", "blocks_ok", "blocks_problems", "entities_alive", "entities_failed", "entities_not_spawned",
            "silent_failed", "placement_placed", "placement_total", "content_items", "content_blocks", "content_entities",
            "crash_reports", "verify_errors", "reached_selftest"]
-SHORT = {"mods_failed": "modF", "blocks_placed": "blkP", "blocks_ok": "blkOk", "blocks_problems": "blkBad", "entities_alive": "entOk",
+SHORT = {"mods_failed": "modF", "mods_failed_1201": "modF21", "mods_loaded_1201": "mod21", "blocks_placed": "blkP", "blocks_ok": "blkOk", "blocks_problems": "blkBad", "entities_alive": "entOk",
          "entities_failed": "entF", "entities_not_spawned": "entNS", "silent_failed": "silF", "placement_placed": "plcP",
          "placement_total": "plcT", "content_items": "items", "content_blocks": "blocks", "content_entities": "ents",
          "crash_reports": "crash", "verify_errors": "verr", "reached_selftest": "test"}
 
 # (regex, [(metric, group)])
 PATTERNS = [
+    (r"Legacy 1\.20\.1 mods: (\d+) loaded, (\d+) failed", [("mods_loaded_1201", 1), ("mods_failed_1201", 2)]),
     (r"Legacy mods loaded in \d+ ms \((\d+) failed\)", [("mods_failed", 1)]),
     (r"BLOCK SELF TEST: (\d+) placed, (\d+) still there after 60 ticks, (\d+) activated, (\d+) with problems",
      [("blocks_placed", 1), ("blocks_ok", 2), ("blocks_problems", 4)]),
@@ -46,12 +47,43 @@ def parse_log(text, crash_dir=None):
                 for name, idx in groups:
                     m[name] = int(hit.group(idx))  # the last occurrence wins
     m["verify_errors"] = text.count("VerifyError")
-    m["reached_selftest"] = 1 if "BLOCK SELF TEST" in text else 0
+    m["reached_selftest"] = 1 if ("BLOCK SELF TEST" in text or "SILENT FAILURE CHECKS" in text) else 0
+    failed = failed_mods_1201(text)
+    if failed:
+        # FML aborts the start at the first phase with errors: the mods it names are the failed ones (id -> first line of the cause)
+        m["mods_failed_1201"] = len(failed)
+        m["failed_mods_1201"] = failed
     n = 0
     if crash_dir and os.path.isdir(crash_dir):
         n = len([f for f in os.listdir(crash_dir) if os.path.isfile(os.path.join(crash_dir, f))])
     m["crash_reports"] = n
     return m
+
+
+def failed_mods_1201(text):
+    """The "Loading errors encountered:" block FML logs when mod loading fails: {mod id or name: first line of the cause}."""
+    out = {}
+    lines = text.splitlines()
+    for i, line in enumerate(lines):
+        if "Loading errors encountered:" not in line:
+            continue
+        for j in range(i + 1, len(lines)):
+            hit = re.match(r"^	- (.*)$", lines[j])
+            if not hit:
+                if lines[j].strip() == "" or lines[j].startswith("	at "):
+                    break
+                continue
+            msg = hit.group(1)
+            ident = re.search(r"\(([\w.\-]+)\) has failed to load correctly", msg)
+            ident = ident or re.search(r"\(([\w.\-]+)\) encountered an error", msg)
+            mod = re.match(r"Mod (\S+) requires", msg)
+            key = ident.group(1) if ident else (mod.group(1) if mod else msg[:60])
+            cause = msg
+            if ident and j + 1 < len(lines) and lines[j + 1].startswith("	  "):
+                cause = lines[j + 1].strip()
+            out.setdefault(key, cause[:300])
+        break
+    return out
 
 
 def compare(baseline, metrics):

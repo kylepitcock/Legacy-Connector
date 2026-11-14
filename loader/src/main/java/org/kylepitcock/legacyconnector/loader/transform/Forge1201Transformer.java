@@ -610,7 +610,10 @@ public final class Forge1201Transformer {
                 }
             }
             if (name.equals("META-INF/mods.toml")) {
-                String toml = modsToml(new String(data, StandardCharsets.UTF_8), mixinConfigs(manifest));
+                // a manifest may list a config that lives in ANOTHER jar (Cataclysm lists the Lionfish API one): registering it here would register it twice
+                List<String> ownConfigs = new ArrayList<>(mixinConfigs(manifest));
+                ownConfigs.removeIf(c -> !other.containsKey(c));
+                String toml = modsToml(new String(data, StandardCharsets.UTF_8), ownConfigs);
                 if (!plan.isEmpty()) {
                     for (var c : cfgRename.entrySet()) toml = toml.replace("\"" + c.getKey() + "\"", "\"" + c.getValue() + "\"");
                     // a dependent that lists the library's mixin config in its manifest (Alex's Caves: MixinConfigs=citadel.mixins.json,...) must not register it
@@ -941,7 +944,13 @@ public final class Forge1201Transformer {
             out.append(line).append('\n');
         }
         flushDependency(out, block, inDependency);
-        for (String config : mixinConfigs) out.append("\n[[mixins]]\nconfig=\"").append(config).append("\"\n");
+        // a Forge mods.toml may already declare its [[mixins]] (NeoForge reads the table too): a second entry fails with "Decoration with key 'fabric-modId' already exists"
+        Set<String> declared = new HashSet<>();
+        Matcher declaredMixins = Pattern.compile("\\[\\[mixins\\]\\][^\\[]*?config\\s*=\\s*[\"']([^\"']+)[\"']", Pattern.DOTALL).matcher(text);
+        while (declaredMixins.find()) declared.add(declaredMixins.group(1));
+        for (String config : mixinConfigs) {
+            if (!declared.contains(config)) out.append("\n[[mixins]]\nconfig=\"").append(config).append("\"\n");
+        }
         return out.toString();
     }
 

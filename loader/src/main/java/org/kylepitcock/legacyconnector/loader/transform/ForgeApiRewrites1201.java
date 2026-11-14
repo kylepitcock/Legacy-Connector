@@ -64,7 +64,28 @@ final class ForgeApiRewrites1201 {
             AbstractInsnNode next;
             for (AbstractInsnNode in = m.instructions.getFirst(); in != null; in = next) {
                 next = in.getNext();
+                if (in instanceof org.objectweb.asm.tree.InvokeDynamicInsnNode indy && indy.bsmArgs != null) {
+                    // a method reference (FluidStack::getTag) is a handle, not a call: an exact rule redirects it to the same helper (receiver first, as for an unbound reference)
+                    for (int i = 0; i < indy.bsmArgs.length; i++) {
+                        if (!(indy.bsmArgs[i] instanceof org.objectweb.asm.Handle hd)) continue;
+                        if (hd.getTag() != Opcodes.H_INVOKEVIRTUAL && hd.getTag() != Opcodes.H_INVOKEINTERFACE && hd.getTag() != Opcodes.H_INVOKESTATIC) continue;
+                        String hr = rules.get(hd.getOwner() + "." + hd.getName() + hd.getDesc());
+                        if (hr == null || hr.startsWith("TailClient.") || hr.startsWith("@")) continue;
+                        String hOwner = hr.startsWith("Tail.") ? TAIL : helperClass(hr);
+                        if (hr.startsWith("Tail.")) hr = hr.substring(5);
+                        String hDesc = hd.getTag() == Opcodes.H_INVOKESTATIC ? hd.getDesc() : "(L" + hd.getOwner() + ";" + hd.getDesc().substring(1);
+                        indy.bsmArgs[i] = new org.objectweb.asm.Handle(Opcodes.H_INVOKESTATIC, hOwner, hr, hDesc, false);
+                        n++;
+                    }
+                    continue;
+                }
                 if (!(in instanceof MethodInsnNode call)) continue;
+                // Forge's Lazy is an interface, NeoForge's a class: the call must name a Methodref, not an InterfaceMethodref
+                if (call.itf && call.owner.equals("net/neoforged/neoforge/common/util/Lazy")) {
+                    call.itf = false;
+                    if (call.getOpcode() == Opcodes.INVOKEINTERFACE) call.setOpcode(Opcodes.INVOKEVIRTUAL);
+                    n++;
+                }
                 String helper = rules.get(call.owner + "." + call.name + call.desc);
                 boolean anyReceiver = false;
                 if (helper == null) {

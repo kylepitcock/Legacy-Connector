@@ -51,7 +51,7 @@ final class Datagen1201 {
     private static final Set<String> DATAGEN_CLASSES = Set.of(
             "net/minecraft/data/DataProvider", "net/minecraft/data/DataGenerator", "net/minecraft/data/CachedOutput", "net/minecraft/data/HashCache",
             "net/minecraft/data/PackOutput", "net/minecraft/data/PackOutput$Target", "net/minecraft/data/BlockFamilies", "net/minecraft/data/BlockFamily",
-            "net/minecraft/data/BlockFamily$Variant", "net/minecraft/advancements/Advancement$Builder", "net/minecraft/advancements/AdvancementHolder$Builder", "net/minecraft/advancements/CriterionTriggerInstance", "net/minecraft/data/worldgen/BootstapContext",
+            "net/minecraft/data/BlockFamily$Variant", "net/minecraft/advancements/Advancement$Builder", "net/minecraft/advancements/AdvancementHolder$Builder", "net/minecraft/data/worldgen/BootstapContext",
             "net/minecraft/data/worldgen/BootstrapContext", "net/minecraft/world/level/storage/loot/LootDataId");
 
     /** Other mods' data generation classes by name (library providers, a package called datagen, record builders). */

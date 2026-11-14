@@ -144,3 +144,5 @@ net/minecraftforge/common/extensions/IForgeServerGamePacketListener	net/neoforge
 net/minecraftforge/common/extensions/IForgeTagAppender	net/neoforged/neoforge/common/extensions/ITagAppenderExtension
 net/minecraftforge/common/extensions/IForgeTagBuilder	net/neoforged/neoforge/common/extensions/ITagBuilderExtension
 net/minecraftforge/common/extensions/IForgeTransformation	net/neoforged/neoforge/common/extensions/ITransformationExtension
+net/minecraftforge/fml/loading/moddiscovery/ModAnnotation	net/neoforged/fml/loading/modscan/ModAnnotation
+net/minecraftforge/fml/loading/moddiscovery/ModAnnotation$EnumHolder	net/neoforged/fml/loading/modscan/ModAnnotation$EnumHolder
