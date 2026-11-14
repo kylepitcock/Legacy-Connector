@@ -1,9 +1,10 @@
 # Schema 1.9 — Mixin Refmap Inventory and Interpretation Design
 
-**Status:** Schema 1.9A resource/table inventory and synthetic regression coverage are implemented in the current branch change set; the user's forced loader test gate is still required. Schema 1.9B exact owner-scoped selector correlation has not started.  
+**Status:** Schema 1.9A resource/table inventory and Schema 1.9B owner-scoped exact lookup correlation are implemented with synthetic regression coverage. The user's forced loader gate passed at `242744d1baf94dc1c523b3a873a6463017184081` (`BUILD SUCCESSFUL in 45s; 14/14 actionable tasks executed`). Follow-up commit `af12df84f62850c49a5a111515e16e76561d8e6c` restores the exact previously tested `build.gradle` blob to remove line-ending-only churn; the cleanup commit has not itself been rerun locally.
 **Upstream contract pinned:** SpongePowered Mixin tag 0.8.5.  
 **Universal target:** Forge 1.20.1 source mods analyzed for NeoForge 1.21.1 / 21.1.x.  
-**Latest confirmed green checkpoint:** Schema 1.8 at Universal commit 4b4f9ce437671f08eafd3f9cf4a18e34a3d24284 (loader tests: BUILD SUCCESSFUL in 33s; 14/14 actionable tasks executed). Schema 1.9A code is not yet locally compiled or user-validated.
+**Latest user-confirmed green checkpoint:** Schema 1.9A/1.9B at `242744d1baf94dc1c523b3a873a6463017184081` (forced loader tests: `BUILD SUCCESSFUL in 45s; 14/14 actionable tasks executed`).
+
 
 This document defines the next bounded Mixin-analysis increment. It does not implement selector rewriting, invent source/target namespace identities, load Mixin plugins, or claim that a refmap entry resolves a target member.
 
@@ -322,7 +323,7 @@ Tests must use generated fixtures and must not instantiate or execute Mixin runt
 
 ### Schema 1.9B — explicit-context exact lookup correlation
 
-**Implementation status: code and synthetic regression tests added; forced loader gate pending.**
+**Implementation and forced loader test gate: PASSED on 2026-11-14** at `242744d1baf94dc1c523b3a873a6463017184081` (`:loader:clean :loader:test --no-daemon --console=plain --rerun-tasks`; `BUILD SUCCESSFUL in 45s; 14/14 actionable tasks executed`).
 
 - Preserve mixin classfile internal owners beside display names and use exact owners for lookup.
 - Correlate only Mixin 0.8.5 AP string-reference paths: injector `method[]`, fully-qualified `@At.target`, `@At("NEW")` constructor target, and separate `args[class]` constructor-selector path. `@Desc` paths remain non-string-ref evidence; no synthetic key is invented.
@@ -334,11 +335,15 @@ Tests must use generated fixtures and must not instantiate or execute Mixin runt
 - Plugins and wrappers remain inert/dynamic. No namespace conversion, target-member verification, selector rewriting, or runtime compatibility claim is added.
 - Synthetic tests cover owner isolation, source whitespace normalization, present-context/missing-key, absent-context fallback, no-context divergent candidates, identity versus absence, inherited/overridden `@At.remap`, and both NEW mapping paths.
 
-**Not yet validated:** the implementation still requires the user's forced `:loader:clean :loader:test --no-daemon --console=plain --rerun-tasks` gate.
+**Validation boundary:** this gate confirms compilation and synthetic loader tests for owner-scoped exact lookup correlation. It does not validate refmap namespace conversion, target-member or target-instruction resolution, runtime Mixin application, real mod behavior, or modpack compatibility. The follow-up `af12df84f62850c49a5a111515e16e76561d8e6c` changes only `build.gradle` line endings back to the exact tested parent blob; no Gradle rerun has been recorded at that cleanup tip.
 
-### Later mapping integration
+### Next stage — mapping-profile contract design
 
-Only after 1.9A/1.9B are validated should the connector define explicit mapping profiles and map refmap output through a pinned source/target mapping chain. That stage must reuse shared mapping infrastructure and Forge1201TargetApiVerifier.TargetIndex; it must not build a second remapper or hierarchy cache.
+Schema 1.9A/1.9B are now validated. The next bounded task is a design/research increment for explicit, versioned mapping profiles; do not jump straight to selector rewriting.
+
+The design must distinguish an opaque Mixin refmap context key (for example `searge`) from a source namespace ID, and distinguish source-version name normalization from cross-version Forge 1.20.1 -> NeoForge 1.21.1 compatibility. A profile must identify its exact inputs, direction, Minecraft versions, source/target namespaces, mapping formats/providers/versions, artifact coordinates or URLs, SHA-256 digests, and every intermediate stage. It must state whether class names, member names, and descriptors are covered. Missing, ambiguous, unsupported, or partial mappings must remain explicit.
+
+Audit the existing `Forge1201MappingCatalog`, `Forge1201SrgNameMappings`, generated `SrgMojangTable`, mapping build tasks, and `Forge1201TargetApiVerifier.TargetIndex` before proposing integration. The current SRG-to-Mojang member-name normalization is not, by itself, a complete cross-version selector mapping chain. Reuse shared mapping and target-index infrastructure; do not create a second remapper or hierarchy cache. No same-name identity assumption, target-resolution claim, plugin execution, or namespace conversion may be introduced without the reviewed profile and exact artifacts.
 
 ## 10. Acceptance gate
 
