@@ -188,7 +188,7 @@ Settings are in `config/legacyconnector.properties`, which is created with comme
 | `villages.legacyBuildings` | `true` | Legacy mods' village buildings join the vanilla village pools; `false` leaves villages vanilla |
 | `legacyBiomeFrequency` | `1.0` | Scales how much land legacy mod biomes take in the overworld |
 | `events.skip` | empty | Legacy event handlers to switch off (`full.ClassName#method`), for tracking down one that misbehaves |
-| `coremods.vanillaJar` | empty | Path of the original Minecraft 1.7.10 client jar, when it is not where a launcher keeps it (used to replay legacy coremods' hooks in Minecraft's code) |
+| `coremods.vanillaJar` | empty | Path of the original Minecraft client jar of the legacy version (a jar, or a folder of `client-<version>.jar` files), when it is not where a launcher keeps it (used to replay legacy coremods' hooks in Minecraft's code) |
 | `coremods.downloadVanilla` | `false` | Download that jar once from Mojang when it is not found locally |
 
 All keys are on the [Configuration page](https://github.com/kylepitcock/Legacy-Connector/blob/master/docs/wiki/Configuration.md).
