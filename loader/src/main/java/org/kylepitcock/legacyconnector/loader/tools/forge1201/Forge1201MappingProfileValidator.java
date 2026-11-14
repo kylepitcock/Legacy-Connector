@@ -627,8 +627,8 @@ public final class Forge1201MappingProfileValidator {
                             actualSha = sha256(resolved);
                             if (upstreamChecksum != null) {
                                 actualUpstream = checksum(resolved,
-                                        upstreamChecksum.startsWith("sha1:") || upstreamChecksum.startsWith("SHA1:")
-                                                ? "SHA-1" : "SHA-256");
+                                        upstreamChecksum.substring(0, upstreamChecksum.indexOf(':'))
+                                                .equalsIgnoreCase("sha1") ? "SHA-1" : "SHA-256");
                             }
                             if (!actualSha.equalsIgnoreCase(expectedSha)) {
                                 status = ArtifactStatus.DIGEST_MISMATCH;
