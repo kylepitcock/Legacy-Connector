@@ -512,6 +512,37 @@ public final class MiscCompat {
         return (net.minecraft.advancements.CriterionTrigger) registerLate(registry, ResourceLocation.parse(name), trigger);
     }
 
+    /**
+     * {@code CriteriaTriggers.CRITERIA} (a mixin accessor of YUNG's API and others): the id-to-trigger map is the {@code TRIGGER_TYPES} registry in 1.21.1. A view
+     * over it; {@code put} registers late (the registry may be frozen), the rest reads the registry.
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static java.util.Map<ResourceLocation, net.minecraft.advancements.CriterionTrigger<?>> criteriaTriggerMap() {
+        net.minecraft.core.Registry<net.minecraft.advancements.CriterionTrigger<?>> registry = BuiltInRegistries.TRIGGER_TYPES;
+        return new java.util.AbstractMap<>() {
+            @Override public net.minecraft.advancements.CriterionTrigger<?> put(ResourceLocation key, net.minecraft.advancements.CriterionTrigger<?> value) {
+                net.minecraft.advancements.CriterionTrigger<?> old = registry.get(key);
+                if (old == null) registerLate((net.minecraft.core.Registry) registry, key, value);
+                return old;
+            }
+            @Override public net.minecraft.advancements.CriterionTrigger<?> get(Object key) {
+                return key instanceof ResourceLocation id ? registry.get(id) : null;
+            }
+            @Override public boolean containsKey(Object key) {
+                return key instanceof ResourceLocation id && registry.containsKey(id);
+            }
+            @Override public int size() {
+                return registry.size();
+            }
+            @Override public java.util.Set<java.util.Map.Entry<ResourceLocation, net.minecraft.advancements.CriterionTrigger<?>>> entrySet() {
+                java.util.Set<java.util.Map.Entry<ResourceLocation, net.minecraft.advancements.CriterionTrigger<?>>> out = new java.util.LinkedHashSet<>();
+                for (java.util.Map.Entry<net.minecraft.resources.ResourceKey<net.minecraft.advancements.CriterionTrigger<?>>, net.minecraft.advancements.CriterionTrigger<?>> e : registry.entrySet())
+                    out.add(new java.util.AbstractMap.SimpleImmutableEntry<>(e.getKey().location(), e.getValue()));
+                return java.util.Collections.unmodifiableSet(out);
+            }
+        };
+    }
+
     // ---- cauldron interaction maps (CauldronInteraction.WATER... were Map<Item, CauldronInteraction>, are InteractionMap records now)
 
     public static java.util.Map<Item, net.minecraft.core.cauldron.CauldronInteraction> cauldronMap(net.minecraft.core.cauldron.CauldronInteraction.InteractionMap map) {

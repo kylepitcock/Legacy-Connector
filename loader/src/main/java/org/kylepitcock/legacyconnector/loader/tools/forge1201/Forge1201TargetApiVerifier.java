@@ -8,7 +8,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.LinkedHashSet;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
@@ -72,6 +74,94 @@ public final class Forge1201TargetApiVerifier {
             methodIssues = List.copyOf(methodIssues);
             fieldIssues = List.copyOf(fieldIssues);
         }
+    }
+
+    /** Exact name+descriptor identity for a target-side JVM member. */
+    public record MemberSignature(String name, String descriptor) {}
+
+    /** Read-only target class metadata exposed to independent static analyzers. */
+    public record TargetClassInfo(
+            String name,
+            String superName,
+            List<String> interfaces,
+            Set<MemberSignature> methods,
+            Set<MemberSignature> fields) {
+        public TargetClassInfo {
+            interfaces = List.copyOf(interfaces);
+            methods = Set.copyOf(methods);
+            fields = Set.copyOf(fields);
+        }
+    }
+
+    public enum LookupStatus {
+        FOUND,
+        MISSING,
+        INCOMPLETE_HIERARCHY
+    }
+
+    /** Structural result only; FOUND does not prove runtime or semantic compatibility. */
+    public record MemberLookup(LookupStatus status, List<String> hierarchyVisited) {
+        public MemberLookup {
+            hierarchyVisited = List.copyOf(hierarchyVisited);
+        }
+    }
+
+    /**
+     * Per-analysis, read-only view over target class bytes. It shares the verifier's exact
+     * descriptor and inherited-member logic instead of requiring analyzers to build a second
+     * class hierarchy index. Instances intentionally own their own caches.
+     */
+    public static final class TargetIndex {
+        private final Forge1201TargetApiVerifier verifier;
+
+        private TargetIndex(ClassBytesProvider classBytes) {
+            this.verifier = new Forge1201TargetApiVerifier(classBytes);
+        }
+
+        /** Returns empty only when the requested target class is absent. */
+        public Optional<TargetClassInfo> classInfo(String internalName) throws IOException {
+            TargetClass target = verifier.readClass(internalName);
+            if (target == null) return Optional.empty();
+            return Optional.of(new TargetClassInfo(
+                    target.name(),
+                    target.superName(),
+                    target.interfaces(),
+                    signatures(target.methods()),
+                    signatures(target.fields())));
+        }
+
+        public MemberLookup lookupMethod(String owner, String name, String descriptor) throws IOException {
+            Set<String> visited = new LinkedHashSet<>();
+            Lookup lookup = verifier.findMethod(owner, new MemberKey(name, descriptor), visited);
+            return toPublicLookup(lookup, visited);
+        }
+
+        public MemberLookup lookupField(String owner, String name, String descriptor) throws IOException {
+            Set<String> visited = new LinkedHashSet<>();
+            Lookup lookup = verifier.findField(owner, new MemberKey(name, descriptor), visited);
+            return toPublicLookup(lookup, visited);
+        }
+
+        private static MemberLookup toPublicLookup(Lookup lookup, Set<String> visited) {
+            LookupStatus status = lookup.found()
+                    ? LookupStatus.FOUND
+                    : lookup.complete() ? LookupStatus.MISSING : LookupStatus.INCOMPLETE_HIERARCHY;
+            return new MemberLookup(status, new ArrayList<>(visited));
+        }
+
+        private static Set<MemberSignature> signatures(Set<MemberKey> members) {
+            Set<MemberSignature> result = new HashSet<>();
+            for (MemberKey member : members) {
+                result.add(new MemberSignature(member.name(), member.descriptor()));
+            }
+            return Set.copyOf(result);
+        }
+    }
+
+    /** Creates a fresh target index whose metadata cache is isolated to this analysis. */
+    public static TargetIndex createIndex(ClassBytesProvider classBytes) {
+        if (classBytes == null) throw new IllegalArgumentException("Target class byte provider is required");
+        return new TargetIndex(classBytes);
     }
 
     private record MemberKey(String name, String descriptor) {}

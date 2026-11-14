@@ -17,7 +17,15 @@ public final class LegacyArmorMaterials implements LegacyArmorMaterial {
     public static final LegacyArmorMaterials TURTLE = new LegacyArmorMaterials("turtle", ArmorMaterials.TURTLE);
     public static final LegacyArmorMaterials NETHERITE = new LegacyArmorMaterials("netherite", ArmorMaterials.NETHERITE);
 
-    private static final int[] BASE_DURABILITY = {11, 16, 16, 13};
+    /** The private table of the 1.20.1 enum (base durability per slot), which mods read through an access transformer. */
+    public static final java.util.EnumMap<ArmorItem.Type, Integer> HEALTH_FUNCTION_FOR_TYPE = new java.util.EnumMap<>(ArmorItem.Type.class);
+
+    static {
+        HEALTH_FUNCTION_FOR_TYPE.put(ArmorItem.Type.BOOTS, 13);
+        HEALTH_FUNCTION_FOR_TYPE.put(ArmorItem.Type.LEGGINGS, 15);
+        HEALTH_FUNCTION_FOR_TYPE.put(ArmorItem.Type.CHESTPLATE, 16);
+        HEALTH_FUNCTION_FOR_TYPE.put(ArmorItem.Type.HELMET, 11);
+    }
 
     final String name;
     final Holder<ArmorMaterial> holder;
@@ -42,7 +50,7 @@ public final class LegacyArmorMaterials implements LegacyArmorMaterial {
 
     @Override
     public int getDurabilityForType(ArmorItem.Type type) {
-        return BASE_DURABILITY[Math.min(3, type.ordinal())] * multiplier();
+        return HEALTH_FUNCTION_FOR_TYPE.getOrDefault(type, 13) * multiplier();
     }
 
     @Override

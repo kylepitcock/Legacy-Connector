@@ -117,7 +117,8 @@ public final class Mc1201Hierarchy {
      */
     private static final Map<String, String> STAND_IN_SUPERS = Map.of(
             "org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyQuadBakingVertexConsumer", "com/mojang/blaze3d/vertex/VertexConsumer",
-            "org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyQuadBakingVertexConsumer$Buffered", "org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyQuadBakingVertexConsumer");
+            "org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyQuadBakingVertexConsumer$Buffered", "org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyQuadBakingVertexConsumer",
+            "org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyMeleeAttackGoal", "net/minecraft/world/entity/ai/goal/MeleeAttackGoal");
 
     /** True when {@code name} is {@code ancestor} or inherits from it through any mix of mod and Minecraft classes. */
     public boolean isSubclassOf(String name, String ancestor) {

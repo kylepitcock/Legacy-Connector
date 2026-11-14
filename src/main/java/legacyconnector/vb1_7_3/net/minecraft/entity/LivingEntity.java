@@ -156,7 +156,11 @@ public abstract class LivingEntity extends Entity {
     }
 
     /** The original skin path, also used by the native mob fallback renderer. */
-    public String mcc$texture(){return getTexture();}
+    /** The texture to draw: the original {@code getTexture()} when it answers, else the synced field (a client-side copy of a mob whose own getTexture needs state only the server has). */
+    public String mcc$texture(){
+        try{String t=getTexture();if(t!=null)return t;}catch(RuntimeException ignored){}
+        return texture;
+    }
     /** Original renderers may compare texture paths with class literals by identity. */
     public void mcc$setTexture(String texture){this.texture=texture==null?null:texture.intern();}
     public float getHandSwingProgress(float partial){

@@ -376,6 +376,13 @@ tasks.register('preflight1201', JavaExec) {
             project(':loader').sourceSets.main.compileClasspath.filter {
                 it.name.startsWith('gson') || it.name.startsWith('slf4j')
             }
+    // ModDevGradle adds the pinned Minecraft / NeoForge development artifacts to the root main
+    // compile classpath. Pass those resource roots separately; the analyzer reads .class resources
+    // without defining or initializing target classes.
+    def targetCompileClasspath = sourceSets.main.compileClasspath
+    inputs.files(targetCompileClasspath)
+    def mappingProfileValue = project.findProperty('preflightMappingProfile')
+    if (mappingProfileValue) inputs.file(file(mappingProfileValue.toString()))
     mainClass = 'org.kylepitcock.legacyconnector.loader.tools.forge1201.Forge1201PreflightAnalyzer'
     maxHeapSize = '2g'
     argumentProviders.add({
@@ -401,6 +408,23 @@ tasks.register('preflight1201', JavaExec) {
             args.add('--mods-dir')
             args.add(file(dir).absolutePath)
         }
+        def refmapContext = project.findProperty('preflightRefmapContext')
+        if (refmapContext != null) {
+            args.add('--refmap-context')
+            args.add(refmapContext.toString())
+        }
+        def mappingProfile = project.findProperty('preflightMappingProfile')
+        if (mappingProfile != null) {
+            args.add('--mapping-profile')
+            args.add(file(mappingProfile.toString()).absolutePath)
+        }
+        def targetClasspathFile = new File(reportDir, 'target-classpath.txt')
+        def targetClasspathEntries = targetCompileClasspath.files.collect { it.absolutePath }
+        targetClasspathFile.parentFile.mkdirs()
+        targetClasspathFile.setText(targetClasspathEntries.join(System.lineSeparator())
+                + System.lineSeparator(), 'UTF-8')
+        args.add('--target-classpath-file')
+        args.add(targetClasspathFile.absolutePath)
         args.add('--json')
         args.add(jsonFile.absolutePath)
         args.add('--text')

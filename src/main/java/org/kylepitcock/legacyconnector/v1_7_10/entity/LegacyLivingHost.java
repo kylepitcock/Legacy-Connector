@@ -16,6 +16,9 @@ public interface LegacyLivingHost extends LegacyHost {
     /** Vanilla damage application after armour and absorption (LivingEntity.actuallyHurt). */
     void mcc$superActuallyHurt(DamageSource source, float amount);
 
+    /** The armour attribute value (LivingEntity.getArmorValue), what the legacy base getTotalArmorValue reads. */
+    int mcc$superArmorValue();
+
     /** Vanilla movement for one tick (LivingEntity.travel). */
     void mcc$superTravel(float strafe, float forward);
 

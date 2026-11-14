@@ -474,6 +474,16 @@ public abstract class Entity implements ICommandSender {
         }
     }
 
+    /**
+     * A legacy write to an entity's motion fields: other entities are re-synced to their trackers, as 1.7.10 code expects of what it
+     * moves. A player's own motion is not sent: 1.7.10 never synced it (only velocityChanged, set explicitly, did), the client runs the
+     * same block and item code itself, and the server's copy is not the player's real velocity (a cloud block slowing a fall
+     * wrote the server's near-zero motion to the client every tick, which cancelled every jump).
+     */
+    private static void mcc$velocityChanged(net.minecraft.world.entity.Entity m) {
+        if (!(m instanceof net.minecraft.server.level.ServerPlayer)) m.hurtMarked = true;
+    }
+
     public static double mcc$get$motionX(Entity e) {
         var m = e.mcc$entity;
         return m != null ? m.getDeltaMovement().x : e.mcc$local_motionX;
@@ -482,7 +492,7 @@ public abstract class Entity implements ICommandSender {
     public static void mcc$set$motionX(Entity e, double v) {
         var m = e.mcc$entity;
         if (m != null) {
-            m.setDeltaMovement(v, m.getDeltaMovement().y, m.getDeltaMovement().z); m.hurtMarked = true;
+            m.setDeltaMovement(v, m.getDeltaMovement().y, m.getDeltaMovement().z); mcc$velocityChanged(m);
         } else {
             e.mcc$local_motionX = v;
         }
@@ -496,7 +506,7 @@ public abstract class Entity implements ICommandSender {
     public static void mcc$set$motionY(Entity e, double v) {
         var m = e.mcc$entity;
         if (m != null) {
-            m.setDeltaMovement(m.getDeltaMovement().x, v, m.getDeltaMovement().z); m.hurtMarked = true;
+            m.setDeltaMovement(m.getDeltaMovement().x, v, m.getDeltaMovement().z); mcc$velocityChanged(m);
         } else {
             e.mcc$local_motionY = v;
         }
@@ -510,7 +520,7 @@ public abstract class Entity implements ICommandSender {
     public static void mcc$set$motionZ(Entity e, double v) {
         var m = e.mcc$entity;
         if (m != null) {
-            m.setDeltaMovement(m.getDeltaMovement().x, m.getDeltaMovement().y, v); m.hurtMarked = true;
+            m.setDeltaMovement(m.getDeltaMovement().x, m.getDeltaMovement().y, v); mcc$velocityChanged(m);
         } else {
             e.mcc$local_motionZ = v;
         }

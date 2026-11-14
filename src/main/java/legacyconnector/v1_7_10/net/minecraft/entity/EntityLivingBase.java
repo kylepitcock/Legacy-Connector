@@ -276,7 +276,9 @@ public abstract class EntityLivingBase extends Entity {
     }
 
     public int getTotalArmorValue() {
-        return mcc$entity == null ? 0 : mcc$living().getArmorValue();
+        if (mcc$entity == null) return 0;
+        if (mcc$host() instanceof org.kylepitcock.legacyconnector.v1_7_10.entity.LegacyLivingHost h) return h.mcc$superArmorValue();
+        return mcc$living().getArmorValue();
     }
 
     /** Ray from the eyes along the look direction, against blocks (null on a miss). */

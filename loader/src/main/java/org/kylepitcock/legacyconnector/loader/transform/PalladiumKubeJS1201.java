@@ -35,8 +35,10 @@ final class PalladiumKubeJS1201 {
     private static final String KUBEJS6_PLUGIN = "dev/latvian/mods/kubejs/KubeJSPlugin";
     private static final String KUBEJS6_EVENT_JS = "dev/latvian/mods/kubejs/event/EventJS";
     private static final String KUBEJS6_LEVEL_EVENT_JS = "dev/latvian/mods/kubejs/level/LevelEventJS";
+    private static final String KUBEJS6_ENTITY_EVENT_JS = "dev/latvian/mods/kubejs/entity/EntityEventJS";
     private static final String KUBEJS7_EVENT = "dev/latvian/mods/kubejs/event/KubeEvent";
     private static final String KUBEJS7_LEVEL_EVENT = "dev/latvian/mods/kubejs/level/KubeLevelEvent";
+    private static final String KUBEJS7_ENTITY_EVENT = "dev/latvian/mods/kubejs/entity/KubeEntityEvent";
     private static final String KUBEJS7_EVENT_RESULT = "dev/latvian/mods/kubejs/event/EventResult";
     private static final String KUBEJS7_EVENT_HANDLER = "dev/latvian/mods/kubejs/event/EventHandler";
     private static final String KUBEJS7_EVENT_GROUP = "dev/latvian/mods/kubejs/event/EventGroup";
@@ -116,10 +118,12 @@ final class PalladiumKubeJS1201 {
 
         boolean wasEventSubclass = KUBEJS6_EVENT_JS.equals(node.superName);
         boolean wasLevelEventSubclass = KUBEJS6_LEVEL_EVENT_JS.equals(node.superName);
+        boolean wasEntityEventSubclass = KUBEJS6_ENTITY_EVENT_JS.equals(node.superName);
         ClassNode migrated = new ClassNode();
         node.accept(new ClassRemapper(migrated, new SimpleRemapper(Map.of(
                 KUBEJS6_EVENT_JS, KUBEJS7_EVENT,
-                KUBEJS6_LEVEL_EVENT_JS, KUBEJS7_LEVEL_EVENT))));
+                KUBEJS6_LEVEL_EVENT_JS, KUBEJS7_LEVEL_EVENT,
+                KUBEJS6_ENTITY_EVENT_JS, KUBEJS7_ENTITY_EVENT))));
         copyClassNode(migrated, node);
 
         if (wasEventSubclass) {
@@ -138,9 +142,18 @@ final class PalladiumKubeJS1201 {
                 node.interfaces.add(KUBEJS7_LEVEL_EVENT);
             }
         }
+        if (wasEntityEventSubclass) {
+            // EntityEventJS was replaced by KubeEntityEvent, which is an interface
+            // extending KubeLevelEvent/KubeEvent. ProjectileTickEventJS already
+            // supplies getEntity(), so only its superclass and constructor change.
+            node.superName = "java/lang/Object";
+            if (!node.interfaces.contains(KUBEJS7_ENTITY_EVENT)) {
+                node.interfaces.add(KUBEJS7_ENTITY_EVENT);
+            }
+        }
 
         // ClassRemapper updates descriptors and owners, but it cannot infer that
-        // the old EventJS/LevelEventJS classes became interfaces. Normalize
+        // the old EventJS/LevelEventJS/EntityEventJS classes became interfaces. Normalize
         // invocation opcodes as well as constructor calls to Object.<init>().
         for (MethodNode method : node.methods) {
             if (method.instructions == null) continue;
@@ -148,8 +161,10 @@ final class PalladiumKubeJS1201 {
                 if (!(instruction instanceof MethodInsnNode call)) continue;
                 boolean kubeEventOwner = call.owner.equals(KUBEJS7_EVENT);
                 boolean kubeLevelEventOwner = call.owner.equals(KUBEJS7_LEVEL_EVENT);
-                if (!kubeEventOwner && !kubeLevelEventOwner) continue;
-                if (call.name.equals("<init>") && (wasEventSubclass || wasLevelEventSubclass)) {
+                boolean kubeEntityEventOwner = call.owner.equals(KUBEJS7_ENTITY_EVENT);
+                if (!kubeEventOwner && !kubeLevelEventOwner && !kubeEntityEventOwner) continue;
+                if (call.name.equals("<init>")
+                        && (wasEventSubclass || wasLevelEventSubclass || wasEntityEventSubclass)) {
                     call.owner = "java/lang/Object";
                     call.itf = false;
                 } else if (call.getOpcode() == Opcodes.INVOKEVIRTUAL) {
@@ -197,11 +212,15 @@ final class PalladiumKubeJS1201 {
     }
 
     private static boolean isLegacyEventType(String name) {
-        return KUBEJS6_EVENT_JS.equals(name) || KUBEJS6_LEVEL_EVENT_JS.equals(name);
+        return KUBEJS6_EVENT_JS.equals(name)
+                || KUBEJS6_LEVEL_EVENT_JS.equals(name)
+                || KUBEJS6_ENTITY_EVENT_JS.equals(name);
     }
 
     private static boolean containsLegacyEventType(String value) {
-        return value != null && (value.contains(KUBEJS6_EVENT_JS) || value.contains(KUBEJS6_LEVEL_EVENT_JS));
+        return value != null && (value.contains(KUBEJS6_EVENT_JS)
+                || value.contains(KUBEJS6_LEVEL_EVENT_JS)
+                || value.contains(KUBEJS6_ENTITY_EVENT_JS));
     }
 
     private static void copyClassNode(ClassNode source, ClassNode target) {

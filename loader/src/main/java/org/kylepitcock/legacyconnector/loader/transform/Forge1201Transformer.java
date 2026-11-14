@@ -332,6 +332,8 @@ public final class Forge1201Transformer {
         int palladiumPlayerSkinFetcherChanges = 0;
         int palladiumFlightHandlerChanges = 0;
         int palladiumCustomProjectileChanges = 0;
+        int palladiumProjectileExplosionChanges = 0;
+        int palladiumCustomProjectileRendererChanges = 0;
         int palladiumCoreOverlayChanges = 0;
         int palladiumCoreLightningMixinChanges = 0;
         for (ClassNode node : nodes) {
@@ -383,6 +385,10 @@ public final class Forge1201Transformer {
             palladiumFlightHandlerChanges += palladiumFlightHandlerChange;
             int palladiumCustomProjectileChange = PalladiumCustomProjectile1201.apply(node);
             palladiumCustomProjectileChanges += palladiumCustomProjectileChange;
+            int palladiumProjectileExplosionChange = PalladiumProjectileExplosion1201.apply(node);
+            palladiumProjectileExplosionChanges += palladiumProjectileExplosionChange;
+            int palladiumCustomProjectileRendererChange = PalladiumCustomProjectileRenderer1201.apply(node);
+            palladiumCustomProjectileRendererChanges += palladiumCustomProjectileRendererChange;
             int palladiumCoreOverlayChange = PalladiumCoreOverlay1201.apply(node);
             palladiumCoreOverlayChanges += palladiumCoreOverlayChange;
             int palladiumCoreLightningMixinChange = PalladiumCoreLightningBoltMixin1201.apply(node);
@@ -417,6 +423,7 @@ public final class Forge1201Transformer {
                     + palladiumRendererRotationChange + palladiumRenderLayerChange + palladiumPlayerSkinChange
                     + palladiumPlayerSkinFetcherChange + palladiumCommandFunctionChange
                     + palladiumFlightHandlerChange + palladiumCustomProjectileChange
+                    + palladiumProjectileExplosionChange + palladiumCustomProjectileRendererChange
                     + palladiumCoreOverlayChange + palladiumCoreLightningMixinChange);
         }
         if (palladiumKubejsChanges > 0 || palladiumKubejsClassesDropped > 0) {
@@ -447,6 +454,14 @@ public final class Forge1201Transformer {
         if (palladiumCustomProjectileChanges > 0) {
             result.notes.add("Palladium CustomProjectile EntityDimensions.width field access migrated to the public 1.21.1 record accessor: "
                     + palladiumCustomProjectileChanges + " field read(s)");
+        }
+        if (palladiumProjectileExplosionChanges > 0) {
+            result.notes.add("Palladium CustomProjectile explosion packet migrated to the 1.21.1 constructor using the originating Explosion's block interaction, particles and sound: "
+                    + palladiumProjectileExplosionChanges + " constructor call(s)");
+        }
+        if (palladiumCustomProjectileRendererChanges > 0) {
+            result.notes.add("Palladium CustomProjectileRenderer EntityDimensions.height field reads migrated to the public 1.21.1 record accessor: "
+                    + palladiumCustomProjectileRendererChanges + " field read(s)");
         }
         if (palladiumCoreOverlayChanges > 0) {
             result.notes.add("PalladiumCore overlay registry verified against the Forge 1.20.1 RegisterGuiOverlaysEvent/ForgeGui shim, which forwards to NeoForge RegisterGuiLayersEvent/LayeredDraw.Layer: "
@@ -479,6 +494,7 @@ public final class Forge1201Transformer {
         if (modCtors > 0) result.notes.add("@Mod constructor taking FMLJavaModLoadingContext: a (IEventBus, ModContainer) constructor was generated for NeoForge");
         int subscribersMoved = Subscribers1201.apply(nodes);
         if (subscribersMoved > 0) result.notes.add("Event subscriber classes with instance handlers: " + subscribersMoved + " registered by the main class for their static handlers (Forge ignored the instance ones)");
+        Mixin1201.redirectStandIns(nodes, mixinStats);
         if (!plan.isEmpty()) for (ClassNode node : nodes) isolate(node);
         if (ownUnit) for (ClassNode node : nodes) renameInjectorHandlers(node, VER.id().replaceAll("[^a-z0-9]", ""));
         // the soft link runs when every class of the jar has been migrated: references to the mod's own members are judged by their final declarations
@@ -508,6 +524,9 @@ public final class Forge1201Transformer {
             if (node.name.startsWith(Mc1201Tables.HELPER_PACKAGE.substring(0, Mc1201Tables.HELPER_PACKAGE.lastIndexOf("migrate/"))) && !ownClasses.contains(node.name)) continue;
             outClasses.put(node.name + ".class", bytes);
             result.classes++;
+        }
+        for (String standIn : mc.itemPredicateStandIns) {
+            if (outClasses.putIfAbsent(standIn + ".class", ItemPredicateStandIn1201.generate(standIn)) == null) result.classes++;
         }
         if (soft != null && soft.stats.symbols() > 0) {
             result.notes.add("Soft link: " + soft.stats.summary() + " that 1.21.1 lacks were replaced by stand-ins (the mod loads, only the features using them fail; experimental.forge1201.softlink=false turns this off)");
@@ -648,7 +667,7 @@ public final class Forge1201Transformer {
         }
         int alienEvoResourceChanges = PalladiumResourceCompat1201.apply(outResources);
         if (alienEvoResourceChanges > 0) {
-            result.notes.add("AlienEvo resources migrate legacy ResourceLocation and SoundEvent script APIs, persistent NBT integer/string values, armor guards, Omnitrix tab comparisons and KubeJS 7 server/player access; normalize stat-ability modifier IDs, remove the obsolete EditBox.tick call, and repair inspected Diamond Shard/AFOMNI particle texture IDs: "
+            result.notes.add("AlienEvo resources migrate legacy ResourceLocation and typed SoundEvent/SoundSource arguments for 8-argument Level.playSound calls, persistent NBT integer/string values, armor guards, Omnitrix tab comparisons and KubeJS 7 server/player access; normalize stat-ability modifier IDs and legacy Attribute_Mod operation names, remove the obsolete EditBox.tick call, route Diamondhead crystal-block tick listeners into a SERVER data script while keeping ticker setup in STARTUP, and repair inspected Diamond Shard/AFOMNI particle texture IDs: "
                     + alienEvoResourceChanges + " resource file(s)");
         }
         if (PalladiumKubeJS1201.addPluginDiscoveryResource(outResources, outClasses.keySet())) {

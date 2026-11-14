@@ -62,11 +62,17 @@ public final class SynthDemand {
     public final Set<String> classes = new TreeSet<>();
     /** Synthesized classes that must be interfaces (implemented, or called through invokeinterface). */
     public final Set<String> interfaces = new TreeSet<>();
+    /** Classes supplied by translated legacy jars under their synthesized name; their packages must not be split. */
+    public final Set<String> providedClasses = new TreeSet<>();
     /** Owner (synthesized class, or hand-written shim class for helpers) -> members. */
     public final Map<String, Set<Member>> members = new TreeMap<>();
 
     public void addClass(String name) {
         classes.add(name);
+    }
+
+    public void provideClass(String name) {
+        providedClasses.add(name);
     }
 
     public void add(String owner, Kind kind, String name, String desc) {
@@ -86,6 +92,7 @@ public final class SynthDemand {
     public void merge(SynthDemand other) {
         classes.addAll(other.classes);
         interfaces.addAll(other.interfaces);
+        providedClasses.addAll(other.providedClasses);
         other.members.forEach((owner, set) -> members.computeIfAbsent(owner, k -> new TreeSet<>()).addAll(set));
     }
 
@@ -93,6 +100,7 @@ public final class SynthDemand {
         StringBuilder sb = new StringBuilder();
         for (String c : classes) sb.append("C ").append(c).append('\n');
         for (String c : interfaces) sb.append("I ").append(c).append('\n');
+        for (String c : providedClasses) sb.append("P ").append(c).append('\n');
         members.forEach((owner, set) -> {
             for (Member m : set) sb.append(m.kind.code).append(' ').append(owner).append(' ').append(m.name).append(' ').append(m.desc).append('\n');
         });
@@ -107,6 +115,7 @@ public final class SynthDemand {
             switch (p[0]) {
                 case "C" -> d.classes.add(p[1]);
                 case "I" -> d.interfaces.add(p[1]);
+                case "P" -> d.providedClasses.add(p[1]);
                 default -> d.add(p[1], Kind.of(p[0]), p[2], p[3]);
             }
         }

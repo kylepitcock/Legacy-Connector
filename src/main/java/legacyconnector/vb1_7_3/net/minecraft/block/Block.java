@@ -263,7 +263,11 @@ public class Block {
     }
 
     public String getTranslatedName() {
-        return ContentB173.translate(getTranslationKey() + ".name");
+        String key = getTranslationKey();
+        String name = key == null ? null : ContentB173.translate(key + ".name");
+        // a base-game view has no Beta language entry here: the native name is the one the player sees
+        if ((name == null || name.equals(key + ".name")) && mcc$modern != null) return mcc$modern.getName().getString();
+        return name == null ? "" : name;
     }
 
     public String getTranslationKey() {

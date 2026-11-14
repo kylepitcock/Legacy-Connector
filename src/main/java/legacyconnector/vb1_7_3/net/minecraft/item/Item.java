@@ -180,7 +180,11 @@ public class Item {
             legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity player) {}
 
     public String getTranslatedName() {
-        return ContentB173.translate(getTranslationKey() + ".name");
+        String key = getTranslationKey();
+        String name = key == null ? null : ContentB173.translate(key + ".name");
+        // a base-game view has no Beta language entry here: the native name is the one the player sees
+        if ((name == null || name.equals(key + ".name")) && mcc$modern != null) return mcc$modern.getDescription().getString();
+        return name == null ? "" : name;
     }
 
     public int getColorMultiplier(int meta) {
