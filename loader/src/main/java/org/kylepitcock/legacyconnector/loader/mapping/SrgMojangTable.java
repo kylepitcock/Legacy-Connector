@@ -121,10 +121,11 @@ public final class SrgMojangTable {
         table = null;
     }
 
-    /** Build step: {@code <joined.tsrg> <client.txt> <out.tsv>}. */
+    /** Build step: {@code <joined.tsrg> <client.txt> <out.tsv> [coverage.properties]}. */
     public static void main(String[] args) throws IOException {
-        if (args.length != 3) {
-            throw new IllegalArgumentException("Usage: SrgMojangTable <joined.tsrg> <client.txt> <out.tsv>");
+        if (args.length != 3 && args.length != 4) {
+            throw new IllegalArgumentException(
+                    "Usage: SrgMojangTable <joined.tsrg> <client.txt> <out.tsv> [coverage.properties]");
         }
         GenerationResult result = generateDetailed(Path.of(args[0]), Path.of(args[1]));
         Path output = Path.of(args[2]);
@@ -134,6 +135,24 @@ public final class SrgMojangTable {
             if (writer.checkError()) throw new IOException("Could not write generated mapping table: " + output);
         }
         Coverage coverage = result.coverage();
+        if (args.length == 4) {
+            Path report = Path.of(args[3]);
+            Files.createDirectories(report.toAbsolutePath().getParent());
+            String reportText = "mojangClassRows=" + coverage.mojangClassRows() + "\n"
+                    + "mojangMethodRows=" + coverage.mojangMethodRows() + "\n"
+                    + "mojangFieldRows=" + coverage.mojangFieldRows() + "\n"
+                    + "joinedClassRows=" + coverage.joinedClassRows() + "\n"
+                    + "joinedMethodRows=" + coverage.joinedMethodRows() + "\n"
+                    + "joinedFieldRows=" + coverage.joinedFieldRows() + "\n"
+                    + "matchedMethods=" + coverage.matchedMethods() + "\n"
+                    + "matchedFields=" + coverage.matchedFields() + "\n"
+                    + "unmatchedMethods=" + coverage.unmatchedMethods() + "\n"
+                    + "unmatchedFields=" + coverage.unmatchedFields() + "\n"
+                    + "duplicateMemberKeys=" + coverage.duplicateMemberKeys() + "\n"
+                    + "duplicateSrgIds=" + coverage.duplicateSrgIds() + "\n"
+                    + "outputRows=" + coverage.outputRows() + "\n";
+            Files.writeString(report, reportText, StandardCharsets.UTF_8);
+        }
         System.out.printf(
                 "SRG -> Mojang 1.20.1: %d member rows (methods %d/%d, fields %d/%d; %d duplicate member keys)%n",
                 result.table().size(), coverage.matchedMethods(), coverage.joinedMethodRows(),
