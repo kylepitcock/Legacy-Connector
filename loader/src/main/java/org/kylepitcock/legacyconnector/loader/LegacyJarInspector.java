@@ -175,8 +175,55 @@ public final class LegacyJarInspector {
             }
 
             if (unique.isEmpty() && jar.coreModClass != null && !jar.coreModClass.isBlank()) jar.containerModIds.addAll(infoById.keySet());
+            if (jar.coreModClass != null && !jar.coreModClass.isBlank()) addCoreModContainerIds(zip, jar);
             jar.version = chooseVersion(zip, jar, infoById, refs17, refs112, markers, !modLoaderMods.isEmpty());
             return jar.version == null ? null : jar;
+        }
+    }
+
+    /**
+     * A coremod jar may ship a {@code DummyModContainer} that FML registers as a mod of its own (OpenModsLib's {@code OpenModsCore}); other
+     * mods then depend on it with {@code required-after}. Its id is the string stored into {@code ModMetadata.modId} by the container's
+     * constructor, and counts as installed since the container lives in this jar.
+     */
+    private static void addCoreModContainerIds(ZipFile zip, LegacyJar jar) {
+        try {
+            Enumeration<? extends ZipEntry> entries = zip.entries();
+            while (entries.hasMoreElements()) {
+                ZipEntry e = entries.nextElement();
+                if (!e.getName().endsWith(".class") || e.getName().indexOf('$') >= 0) continue;
+                byte[] bytes;
+                try (InputStream in = zip.getInputStream(e)) {
+                    bytes = in.readAllBytes();
+                }
+                ClassReader cr = new ClassReader(bytes);
+                String sup = cr.getSuperName();
+                if (sup == null || !sup.endsWith("/DummyModContainer")) continue;
+                cr.accept(new ClassVisitor(Opcodes.ASM9) {
+                    @Override
+                    public org.objectweb.asm.MethodVisitor visitMethod(int access, String name, String desc, String sig, String[] ex) {
+                        if (!name.equals("<init>")) return null;
+                        return new org.objectweb.asm.MethodVisitor(Opcodes.ASM9) {
+                            String lastString;
+
+                            @Override
+                            public void visitLdcInsn(Object value) {
+                                lastString = value instanceof String str ? str : null;
+                            }
+
+                            @Override
+                            public void visitFieldInsn(int opcode, String owner, String fname, String fdesc) {
+                                if (opcode == Opcodes.PUTFIELD && fname.equals("modId") && lastString != null && !jar.containerModIds.contains(lastString)) {
+                                    jar.containerModIds.add(lastString);
+                                }
+                                lastString = null;
+                            }
+                        };
+                    }
+                }, ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
+            }
+        } catch (IOException | RuntimeException ignored) {
+            // best effort: the dependency check only loses an id
         }
     }
 
