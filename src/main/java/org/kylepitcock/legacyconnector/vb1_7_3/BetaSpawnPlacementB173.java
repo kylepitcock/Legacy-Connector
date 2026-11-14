@@ -42,7 +42,8 @@ public final class BetaSpawnPlacementB173 {
         if(access==null)return false;
         var state=access.getBlockState(pos);
         if(state.getBlock() instanceof LegacyB173Block hosted)
-            return hosted.legacy().material.suffocates()&&hosted.legacy().isFullCube();
+            // a block that never set a material (as BlockHeightmapsB173 also allows) is not something a mob stands in or on
+            return hosted.legacy().material!=null&&hosted.legacy().material.suffocates()&&hosted.legacy().isFullCube();
         // Original render-normal flags differ from modern collision shapes (soul sand, pistons).
         if(BlocksB173.hasVanillaId(state)){
             Boolean full=VanillaB173.fullCube(BlocksB173.legacyId(state));

@@ -15,7 +15,11 @@ import org.kylepitcock.legacyconnector.core.pack.GeneratedPack;
 public final class MobTexturesB173 implements GeneratedPack.Contributor {
     /** Vanilla Beta's powered-creeper layer, renamed when entity textures were reorganized. */
     private static final Map<String,String> VANILLA=Map.of("armor/power.png","textures/entity/creeper/creeper_armor.png",
-            "mob/saddle.png","textures/entity/pig/pig_saddle.png");
+            "mob/saddle.png","textures/entity/pig/pig_saddle.png",
+            // base-game animal sheets a mod's subclass keeps (same UV layout as the modern models)
+            "mob/cow.png","textures/entity/cow/cow.png","mob/pig.png","textures/entity/pig/pig.png",
+            "mob/chicken.png","textures/entity/chicken.png","mob/sheep.png","textures/entity/sheep/sheep.png",
+            "mob/sheep_fur.png","textures/entity/sheep/sheep_fur.png");
     private static String path(String name){
         if(name==null)return null;String p=name.replace('\\','/');while(p.startsWith("/"))p=p.substring(1);
         if(p.isEmpty()||p.contains(":")||java.util.Arrays.asList(p.split("/")).contains(".."))return null;return p;
