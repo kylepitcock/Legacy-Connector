@@ -1,4 +1,12 @@
 {
+ "atm9-1201-stable": {
+  "crash_reports": 0,
+  "mods_failed_1201": 0,
+  "mods_loaded_1201": 14,
+  "reached_selftest": 1,
+  "silent_failed": 0,
+  "verify_errors": 0
+ },
  "bop1122": {
   "blocks_ok": 246,
   "blocks_placed": 256,

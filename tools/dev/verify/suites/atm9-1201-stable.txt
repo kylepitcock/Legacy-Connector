@@ -1,0 +1,18 @@
+# the mods of atm9-1201-2 that construct, register and survive a server start (measured 2026-11-14)
+1.20.1 baubley-heart-canisters-1.20.1-1.1.1.jar
+1.20.1 blueflame-1.20.0-1.0.3.jar
+lib bookshelf-neoforge-1.21.1-21.1.81.jar
+1.20.1 refinedstorage-1.12.4.jar
+1.20.1 CasinoCraft_1.20.1_v25(1).jar
+1.20.1 Lucky77_1.20.1_v04(1).jar
+1.20.1 charginggadgets-1.11.0.jar
+1.20.1 charmofundying-forge-6.5.0+1.20.1.jar
+lib curios-neoforge-9.5.1+1.21.1.jar
+1.20.1 chemlib-1.20.1-2.0.19.jar
+1.20.1 Chimes-v2.0.1-1.20.1.jar
+1.20.1 comforts-forge-6.4.0+1.20.1.jar
+1.20.1 constructionwand-1.20.1-2.11.jar
+1.20.1 createbb-1.20.1-3.2.2.jar
+lib create-1.21.1-6.0.10.jar
+1.20.1 crystalix-1.3.5_forge_1.20.1.jar
+1.20.1 DungeonsArise-1.20.x-2.1.58-release.jar
