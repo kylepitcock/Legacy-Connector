@@ -23,6 +23,8 @@ configurations {
     mcp1710
     mcp1122
     mcpconfig1201
+    intermediary1201
+    intermediary1211
     betaIntermediary
     betaBiny
 }
@@ -52,6 +54,10 @@ dependencies {
     mcp1122 "de.oceanlabs.mcp:mcp_stable:${mcp_1_12_2}@zip"
     // Forge 1.20.1 mods are SRG-named; the SRG -> Mojang table is chained from MCPConfig and Mojang's mappings at build time (never committed)
     mcpconfig1201 "de.oceanlabs.mcp:mcp_config:1.20.1-20230612.114412@zip"
+    // Versioned Fabric Intermediary maps provide stable candidate class/member IDs across Minecraft releases.
+    // The bridge audit consumes only the Tiny mappings locally; it does not emit or package runtime mappings.
+    intermediary1201 "net.fabricmc:intermediary:1.20.1"
+    intermediary1211 "net.fabricmc:intermediary:1.21.1"
     // Beta 1.7.3 mods use the obfuscated names: Babric intermediary (official client/server -> intermediary) chained with
     // biny (intermediary -> named), both CC0, into one table at build time (BetaMappings; never committed)
     betaIntermediary "babric:intermediary:${beta_intermediary}:v2@jar"
@@ -73,6 +79,11 @@ sourceSets.test.compileClasspath += sourceSets.main.compileClasspath
 sourceSets.test.runtimeClasspath += sourceSets.main.compileClasspath
 
 repositories {
+    maven {
+        url = 'https://maven.fabricmc.net/'
+        metadataSources { mavenPom(); artifact() }
+        content { includeModule 'net.fabricmc', 'intermediary' }
+    }
     maven {
         url = 'https://maven.glass-launcher.net/babric'
         metadataSources { mavenPom(); artifact() }
@@ -360,6 +371,100 @@ tasks.named('jar') { dependsOn genSrgMojang; from(srgMojangDir) }
 // offline tools (checkLegacyMod, gap1201) run from the class directories: give them the generated table too
 sourceSets.main.runtimeClasspath += files(srgMojangDir).builtBy(genSrgMojang)
 
+// Fabric Intermediary bridge audit for Minecraft 1.20.1 -> 1.21.1.
+// The input jars and extracted Tiny mappings stay in build/tmp and are never added to the loader jar.
+def fabricIntermediary1201Tiny = layout.buildDirectory.file('tmp/fabric-intermediary/1.20.1/mappings.tiny')
+def fabricIntermediary1211Tiny = layout.buildDirectory.file('tmp/fabric-intermediary/1.21.1/mappings.tiny')
+
+def extractFabricIntermediary1201 = tasks.register('extractFabricIntermediary1201') {
+    inputs.files(configurations.intermediary1201)
+    outputs.file(fabricIntermediary1201Tiny)
+    doLast {
+        def archiveFile = configurations.intermediary1201.singleFile
+        def outputFile = fabricIntermediary1201Tiny.get().asFile
+        outputFile.parentFile.mkdirs()
+        def maximumBytes = 32L * 1024 * 1024
+        new java.util.zip.ZipFile(archiveFile).withCloseable { archive ->
+            def entry = archive.getEntry('mappings/mappings.tiny')
+            if (entry == null || entry.directory) {
+                throw new GradleException('Fabric Intermediary 1.20.1 archive does not contain mappings/mappings.tiny.')
+            }
+            if (entry.size > maximumBytes) {
+                throw new GradleException('Fabric Intermediary 1.20.1 Tiny mapping exceeds the 32 MiB extraction limit.')
+            }
+            archive.getInputStream(entry).withCloseable { input ->
+                outputFile.withOutputStream { output ->
+                    byte[] buffer = new byte[64 * 1024]
+                    long totalBytes = 0L
+                    int count
+                    while ((count = input.read(buffer)) != -1) {
+                        totalBytes += count
+                        if (totalBytes > maximumBytes) {
+                            throw new GradleException('Fabric Intermediary 1.20.1 Tiny mapping exceeded the 32 MiB extraction limit while reading.')
+                        }
+                        output.write(buffer, 0, count)
+                    }
+                }
+            }
+        }
+    }
+}
+
+def extractFabricIntermediary1211 = tasks.register('extractFabricIntermediary1211') {
+    inputs.files(configurations.intermediary1211)
+    outputs.file(fabricIntermediary1211Tiny)
+    doLast {
+        def archiveFile = configurations.intermediary1211.singleFile
+        def outputFile = fabricIntermediary1211Tiny.get().asFile
+        outputFile.parentFile.mkdirs()
+        def maximumBytes = 32L * 1024 * 1024
+        new java.util.zip.ZipFile(archiveFile).withCloseable { archive ->
+            def entry = archive.getEntry('mappings/mappings.tiny')
+            if (entry == null || entry.directory) {
+                throw new GradleException('Fabric Intermediary 1.21.1 archive does not contain mappings/mappings.tiny.')
+            }
+            if (entry.size > maximumBytes) {
+                throw new GradleException('Fabric Intermediary 1.21.1 Tiny mapping exceeds the 32 MiB extraction limit.')
+            }
+            archive.getInputStream(entry).withCloseable { input ->
+                outputFile.withOutputStream { output ->
+                    byte[] buffer = new byte[64 * 1024]
+                    long totalBytes = 0L
+                    int count
+                    while ((count = input.read(buffer)) != -1) {
+                        totalBytes += count
+                        if (totalBytes > maximumBytes) {
+                            throw new GradleException('Fabric Intermediary 1.21.1 Tiny mapping exceeded the 32 MiB extraction limit while reading.')
+                        }
+                        output.write(buffer, 0, count)
+                    }
+                }
+            }
+        }
+    }
+}
+
+def intermediaryBridgeAuditReport = layout.buildDirectory.file('reports/mappings/1.20.1-1.21.1/intermediary-bridge-audit.json')
+def auditIntermediaryBridge1201To1211 = tasks.register('auditIntermediaryBridge1201To1211', JavaExec) {
+    group = 'verification'
+    description = 'Audits a read-only Forge 1.20.1 -> Fabric Intermediary -> Minecraft 1.21.1 symbol-identity candidate path.'
+    dependsOn extractMcpConfigJoinedTsrg1201, extractFabricIntermediary1201, extractFabricIntermediary1211, tasks.named('classes')
+    inputs.file(joinedTsrg1201)
+    inputs.file(fabricIntermediary1201Tiny)
+    inputs.file(fabricIntermediary1211Tiny)
+    outputs.file(intermediaryBridgeAuditReport)
+    classpath = sourceSets.main.output
+    mainClass = 'org.kylepitcock.legacyconnector.loader.mapping.Forge1201IntermediaryBridgeAudit'
+    argumentProviders.add({
+        [
+                joinedTsrg1201.get().asFile.absolutePath,
+                fabricIntermediary1201Tiny.get().asFile.absolutePath,
+                fabricIntermediary1211Tiny.get().asFile.absolutePath,
+                intermediaryBridgeAuditReport.get().asFile.absolutePath
+        ]
+    } as CommandLineArgumentProvider)
+}
+
 // Beta 1.7.3 official -> named table (BetaMappings): Babric intermediary + biny
 def betaMappingsDir = layout.buildDirectory.dir('generated/beta-mappings')
 def genBetaMappings = tasks.register('genBetaMappings', JavaExec) {
@@ -391,7 +496,7 @@ tasks.withType(JavaCompile).configureEach {
 
 test {
     useJUnitPlatform()
-    dependsOn genBetaMappings, recordSrgMojangProvenance1201
+    dependsOn genBetaMappings, recordSrgMojangProvenance1201, auditIntermediaryBridge1201To1211
     classpath += files(betaMappingsDir, srgMojangDir)
 }
 
