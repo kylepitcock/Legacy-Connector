@@ -439,10 +439,11 @@ public abstract class AbstractHorse extends EntityAnimal implements legacyconnec
     }
 
     public boolean canJump() {
-        return canBeSteered();
+        return isHorseSaddled();
     }
 
     public void handleStartJump(int power) {
+        setRearing(true);
     }
 
     public void handleStopJump() {
@@ -450,6 +451,13 @@ public abstract class AbstractHorse extends EntityAnimal implements legacyconnec
 
     public boolean canBeSaddled() {
         return true;
+    }
+
+    /** 1.12: the first passenger steers (the host asks this for every AbstractHorse, mod subclasses included). */
+    @Override
+    public legacyconnector.v1_12_2.net.minecraft.entity.Entity getControllingPassenger() {
+        var passengers = getPassengers();
+        return passengers.isEmpty() ? null : passengers.get(0);
     }
 
     public boolean wearsArmor() {

@@ -371,7 +371,8 @@ public class MobHost1122 extends PathfinderMob implements LivingHost1122, IEntit
     /** 1.12 mounts name their steering rider through {@code getControllingPassenger} (horses: the first passenger; mods: any); modern steering follows it. */
     @Override
     public LivingEntity getControllingPassenger() {
-        if (legacy != null && Hosts1122.overrides(legacy.getClass(), "getControllingPassenger")) {
+        if (legacy != null && (legacy instanceof legacyconnector.v1_12_2.net.minecraft.entity.passive.AbstractHorse
+                || Hosts1122.overrides(legacy.getClass(), "getControllingPassenger"))) {
             Entity rider = legacy.getControllingPassenger();
             if (rider != null && rider.mcc$entity instanceof LivingEntity living) return living;
             return null;
