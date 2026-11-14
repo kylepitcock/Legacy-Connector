@@ -20,6 +20,8 @@ public abstract class EntityGravityMixin {
         Entity self = (Entity) (Object) this;
         double scaled = org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites.GRAVITY.listed() ? org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites.gravity(self, result)
                 : org.kylepitcock.legacyconnector.v1_7_10.compat.fiskheroes.FiskHeroesHooks.gravity(self, result);
+        // the constants themselves (hooks that stand in for 0.08, 0.04, 0.05)
+        if (org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites.gravityConstantListed()) scaled = org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites.gravityConstant(self, scaled);
         if (scaled != result) cir.setReturnValue(scaled);
     }
 

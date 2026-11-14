@@ -79,7 +79,7 @@ jobs:
             if [ -n "${{ steps.ver.outputs.last }}" ]; then
               echo "## Changes since ${{ steps.ver.outputs.last }}"
               echo
-              git log --no-merges --pretty='- %s (%h)' "${{ steps.ver.outputs.last }}..HEAD" | head -n 400
+              git log --no-merges --pretty='- %s (%h)' "${{ steps.ver.outputs.last }}..HEAD" | head -n 400 | sed -E 's/(^|[^`A-Za-z0-9_])@([A-Za-z0-9_-]+)/\1`@\2`/g' 
             fi
           } > notes.md
           head -c 100000 notes.md > notes.cut && mv notes.cut notes.md

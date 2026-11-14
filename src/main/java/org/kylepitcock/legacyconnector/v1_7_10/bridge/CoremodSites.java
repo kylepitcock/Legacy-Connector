@@ -96,6 +96,26 @@ public final class CoremodSites {
             new Class<?>[] {ENTITY, legacyconnector.v1_7_10.net.minecraft.util.DamageSource.class, float.class, PLAYER},
             "net/minecraft/entity/player/EntityPlayer.func_71059_n(Lnet/minecraft/entity/Entity;)V#replace:func_70097_a(Lnet/minecraft/util/DamageSource;F)Z");
 
+    /**
+     * The gravity constants themselves, where a hook stands in for the number (0.08 living, 0.04 item, 0.05 arrow): the modern gravity is scaled by
+     * the hook's answer over that number, so attributes and other mods' changes stay. Value: entity.
+     */
+    public static final Site GRAVITY_LIVING = site("living entity gravity constant", new Class<?>[] {ENTITY},
+            "net/minecraft/entity/EntityLivingBase.func_70612_e(FF)V#const:0.08");
+    public static final Site GRAVITY_ITEM = site("item gravity constant", new Class<?>[] {ENTITY},
+            "net/minecraft/entity/item/EntityItem.func_70071_h_()V#const:0.03999999910593033");
+    public static final Site GRAVITY_ARROW = site("arrow gravity constant", new Class<?>[] {ENTITY},
+            "net/minecraft/entity/projectile/EntityArrow.func_70071_h_()V#const:0.05");
+
+    /** EntityPlayer.damageEntity: the amount before armour. Values: player, source, amount. */
+    public static final Site PLAYER_DAMAGE = site("player damage amount",
+            new Class<?>[] {PLAYER, legacyconnector.v1_7_10.net.minecraft.util.DamageSource.class, float.class},
+            "net/minecraft/entity/player/EntityPlayer.func_70665_d(Lnet/minecraft/util/DamageSource;F)V#after:fload 2");
+
+    /** EntityPlayer.isInBed (the check that wakes a sleeper whose bed is gone), first thing: true keeps the player asleep. Value: player. */
+    public static final Site IN_BED = site("sleeping without a bed", new Class<?>[] {PLAYER},
+            "net/minecraft/entity/player/EntityPlayer.func_71065_l()Z#after:aload 0");
+
     /** The model sites: client classes, so apart from the rest. Values: model, entity, the six animation numbers. */
     public static final class Client {
         private static final Class<?>[] MODEL = {legacyconnector.v1_7_10.net.minecraft.client.model.ModelBiped.class, ENTITY, float.class, float.class, float.class,
@@ -109,6 +129,15 @@ public final class CoremodSites {
         public static final Site ANGLES_PRE = site("biped model pose (start)", MODEL, BIPED + "func_78087_a(FFFFFFLnet/minecraft/entity/Entity;)V#after:aload 0",
                 BIPED + "func_78087_a(FFFFFFLnet/minecraft/entity/Entity;)V#head");
         public static final Site ANGLES_POST = site("biped model pose (end)", MODEL, BIPED + "func_78087_a(FFFFFFLnet/minecraft/entity/Entity;)V#tail");
+
+        /** EntityPlayerSP.onLivingUpdate, after the keyboard was read. Values: player, its movement input. */
+        public static final Site MOVEMENT_INPUT = site("movement input",
+                new Class<?>[] {legacyconnector.v1_7_10.net.minecraft.client.entity.EntityPlayerSP.class, legacyconnector.v1_7_10.net.minecraft.util.MovementInput.class},
+                "net/minecraft/client/entity/EntityPlayerSP.func_70636_d()V#after:aload 0");
+        /** Minecraft.rightClickMouse, first thing: true drops the click. */
+        public static final Site USE_CLICK = site("right click", new Class<?>[0], "net/minecraft/client/Minecraft.func_147121_ag()V#head-cancel");
+        /** Minecraft.startGame, last thing. */
+        public static final Site GAME_STARTED = site("game started", new Class<?>[0], "net/minecraft/client/Minecraft.func_71384_a()V#tail");
 
         private Client() {}
     }
@@ -154,6 +183,26 @@ public final class CoremodSites {
             net.minecraft.world.damagesource.DamageSource source, float amount) {
         if (!PLAYER_ATTACK.active()) return null;
         return PLAYER_ATTACK.replace(null, EntityBridge.wrap(target), EventBridge1710.legacySource(source), amount, EntityBridge.wrap(attacker)) instanceof Boolean b ? b : null;
+    }
+
+    /** {@link #GRAVITY_LIVING}, {@link #GRAVITY_ITEM}, {@link #GRAVITY_ARROW}. */
+    public static double gravityConstant(net.minecraft.world.entity.Entity entity, double gravity) {
+        if (gravity == 0.0) return gravity;
+        Site site = entity instanceof net.minecraft.world.entity.LivingEntity ? GRAVITY_LIVING
+                : entity instanceof net.minecraft.world.entity.item.ItemEntity ? GRAVITY_ITEM
+                : entity instanceof net.minecraft.world.entity.projectile.AbstractArrow ? GRAVITY_ARROW : null;
+        if (site == null || !site.active()) return gravity;
+        double constant = site == GRAVITY_LIVING ? 0.08 : site == GRAVITY_ITEM ? 0.03999999910593033 : 0.05;
+        Object[] values = {EntityBridge.wrap(entity)};
+        for (Bound b : site.bound()) {
+            if (!b.combiner && site.call(b, values) instanceof Number n) gravity *= n.doubleValue() / constant;
+        }
+        return gravity;
+    }
+
+    /** Whether one of the gravity constant sites has a hook (known from the start). */
+    public static boolean gravityConstantListed() {
+        return GRAVITY_LIVING.listed() || GRAVITY_ITEM.listed() || GRAVITY_ARROW.listed();
     }
 
     private CoremodSites() {}
@@ -328,6 +377,20 @@ public final class CoremodSites {
                     last[0] = rate;
                     e.getServer().tickRateManager().setTickRate(rate);
                 }
+            });
+        }
+        if (PLAYER_DAMAGE.listed()) {
+            gameBus.addListener((net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent e) -> {
+                if (!(e.getEntity() instanceof net.minecraft.world.entity.player.Player player) || !PLAYER_DAMAGE.active()) return;
+                float amount = e.getAmount();
+                float changed = ((Number) PLAYER_DAMAGE.modify(2, EntityBridge.wrap(player), EventBridge1710.legacySource(e.getSource()), amount)).floatValue();
+                if (changed != amount) e.setAmount(changed);
+            });
+        }
+        if (IN_BED.listed()) {
+            gameBus.addListener((net.neoforged.neoforge.event.entity.player.CanContinueSleepingEvent e) -> {
+                if (e.mayContinueSleeping() || !(e.getEntity() instanceof net.minecraft.world.entity.player.Player player) || !IN_BED.active()) return;
+                if (IN_BED.cancels(EntityBridge.wrap(player))) e.setContinueSleeping(true);
             });
         }
     }

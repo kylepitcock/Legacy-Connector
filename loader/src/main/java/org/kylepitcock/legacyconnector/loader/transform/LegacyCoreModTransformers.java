@@ -126,6 +126,10 @@ public final class LegacyCoreModTransformers {
             @SuppressWarnings("unchecked")
             Map<String, Object> blackboard = (Map<String, Object>) launch.getField("blackboard").get(null);
             blackboard.put("fml.deobfuscatedEnvironment", Boolean.FALSE);
+            // LaunchWrapper's own entries: plugins read (and add to) the tweaker lists without a null check
+            blackboard.putIfAbsent("TweakClasses", new java.util.ArrayList<String>());
+            blackboard.putIfAbsent("Tweaks", new java.util.ArrayList<Object>());
+            blackboard.putIfAbsent("ArgumentList", new java.util.ArrayList<String>());
 
             Class<?> pluginType = apiLoader.loadClass("cpw.mods.fml.relauncher.IFMLLoadingPlugin");
             Class<? extends java.lang.annotation.Annotation> sortingIndex = annotation(apiLoader, "SortingIndex");
