@@ -80,6 +80,12 @@ final class ForgeApiRewrites1201 {
                     continue;
                 }
                 if (!(in instanceof MethodInsnNode call)) continue;
+                // Forge's Lazy is an interface, NeoForge's a class: the call must name a Methodref, not an InterfaceMethodref
+                if (call.itf && call.owner.equals("net/neoforged/neoforge/common/util/Lazy")) {
+                    call.itf = false;
+                    if (call.getOpcode() == Opcodes.INVOKEINTERFACE) call.setOpcode(Opcodes.INVOKEVIRTUAL);
+                    n++;
+                }
                 String helper = rules.get(call.owner + "." + call.name + call.desc);
                 boolean anyReceiver = false;
                 if (helper == null) {
