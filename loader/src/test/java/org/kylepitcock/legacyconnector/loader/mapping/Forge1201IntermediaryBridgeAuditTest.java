@@ -176,8 +176,8 @@ final class Forge1201IntermediaryBridgeAuditTest {
         Path tsrg = write("joined-unresolved.tsrg", """
                 tsrg2 obf srg id
                 a net/minecraft/C_1_ 1
-                x net/minecraft/C_2_ 2
                 \tb (Lx;)V m_1_ 3
+                x net/minecraft/C_2_ 2
                 """);
         Path source = write("source-unresolved.tiny", """
                 v1\tofficial\tintermediary
