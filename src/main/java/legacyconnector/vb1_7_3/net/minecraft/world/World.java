@@ -225,9 +225,23 @@ public class World implements BlockView {
         if (mcc$level == null) return null;
         if(org.kylepitcock.legacyconnector.vb1_7_3.WorldGenWritesB173.outside(this,pos(x,y,z)))return org.kylepitcock.legacyconnector.vb1_7_3.WorldGenWritesB173.tile(this,pos(x,y,z));
         var access=mcc$access();requireRegionChunk(x>>4,z>>4);
-        var nativeBlockEntity=access.getBlockEntity(pos(x,y,z));
+        var nativeBlockEntity=nativeBlockEntity(access,pos(x,y,z));
         if(nativeBlockEntity instanceof org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173BlockEntity host)return host.legacy();
         var view=org.kylepitcock.legacyconnector.vb1_7_3.BlockEntityViewsB173.wrap(nativeBlockEntity);if(view!=null)view.world=this;return view;
+    }
+
+    /**
+     * The native block entity at a place. A screen handed from the server to the client in one process (Beta single player had one world)
+     * reads the server's world from the render thread, where {@code Level.getBlockEntity} answers null by design: the server thread is asked.
+     */
+    private static net.minecraft.world.level.block.entity.BlockEntity nativeBlockEntity(net.minecraft.world.level.LevelAccessor access,BlockPos pos){
+        if(access instanceof net.minecraft.server.level.ServerLevel server&&!server.getServer().isSameThread()){
+            // asked on the server thread (which answers its queue even while the game is paused), bounded so a stalled server cannot hang the screen
+            try{return server.getServer().submit(()->server.getBlockEntity(pos)).get(2,java.util.concurrent.TimeUnit.SECONDS);}
+            catch(InterruptedException e){Thread.currentThread().interrupt();return null;}
+            catch(java.util.concurrent.ExecutionException|java.util.concurrent.TimeoutException e){return null;}
+        }
+        return access.getBlockEntity(pos);
     }
 
     /** MCP {@code setBlockTileEntity}: only a block with a tile entity can hold one. */

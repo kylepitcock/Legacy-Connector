@@ -90,10 +90,10 @@ public class LegacyB173Block extends net.minecraft.world.level.block.Block imple
         builder.add(META);
     }
 
-    /** Render types -1 and 22 are drawn by the tile entity renderer (signs, chests), not as a block model. */
+    /** Render type -1 is drawn by the tile entity renderer (signs), not as a block model. */
     @Override public net.minecraft.world.level.block.RenderShape getRenderShape(BlockState state){
         int type=legacy.getRenderType();
-        return type==-1||type==22?net.minecraft.world.level.block.RenderShape.INVISIBLE:super.getRenderShape(state);
+        return type==-1?net.minecraft.world.level.block.RenderShape.INVISIBLE:super.getRenderShape(state);
     }
 
     @Override

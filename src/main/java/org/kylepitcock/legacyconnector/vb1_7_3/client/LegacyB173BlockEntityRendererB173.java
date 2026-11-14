@@ -20,34 +20,19 @@ import org.kylepitcock.legacyconnector.vb1_7_3.RendererContextB173;
 public final class LegacyB173BlockEntityRendererB173 implements BlockEntityRenderer<LegacyB173BlockEntity> {
     private static final java.util.Set<Class<?>> REPORTED = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
-    private final net.minecraft.client.renderer.blockentity.ChestRenderer<net.minecraft.world.level.block.entity.ChestBlockEntity> chests;
     private final net.minecraft.client.renderer.blockentity.SignRenderer signs;
+    private final java.util.Map<net.minecraft.world.level.block.entity.BlockEntity,String> signKeys=new java.util.WeakHashMap<>();
     private final java.util.Map<LegacyB173BlockEntity,net.minecraft.world.level.block.entity.BlockEntity> stand=new java.util.WeakHashMap<>();
 
     public LegacyB173BlockEntityRendererB173(BlockEntityRendererProvider.Context context) {
-        chests=new net.minecraft.client.renderer.blockentity.ChestRenderer<>(context);
         signs=new net.minecraft.client.renderer.blockentity.SignRenderer(context);
     }
 
-    /** A chest or sign tile entity without a renderer of its own is drawn the way Beta's base renderers drew it: with the native model for its state. */
+    /** A sign tile entity without a renderer of its own is drawn the way Beta's sign renderer drew it: with the native sign model for its state. (Beta chests are cubes, not tile entity models.) */
     private boolean renderBase(LegacyB173BlockEntity host, legacyconnector.vb1_7_3.net.minecraft.block.entity.BlockEntity tile, float partial, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
         int meta = host.getBlockState().getValue(org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Block.META);
         var pos = host.getBlockPos();
         var level = host.getLevel();
-        if (tile instanceof legacyconnector.vb1_7_3.net.minecraft.block.entity.ChestBlockEntity) {
-            var facing = switch (meta) { case 3 -> net.minecraft.core.Direction.SOUTH; case 4 -> net.minecraft.core.Direction.WEST; case 5 -> net.minecraft.core.Direction.EAST; default -> net.minecraft.core.Direction.NORTH; };
-            var state = net.minecraft.world.level.block.Blocks.CHEST.defaultBlockState().setValue(net.minecraft.world.level.block.ChestBlock.FACING, facing);
-            // Beta drew two adjacent chests of one block as one large chest
-            var own = host.getBlockState().getBlock();
-            var left = level.getBlockState(pos.relative(facing.getClockWise())).getBlock() == own;
-            var right = level.getBlockState(pos.relative(facing.getCounterClockWise())).getBlock() == own;
-            if (left != right) state = state.setValue(net.minecraft.world.level.block.ChestBlock.TYPE, left ? net.minecraft.world.level.block.state.properties.ChestType.LEFT : net.minecraft.world.level.block.state.properties.ChestType.RIGHT);
-            var chestState = state;
-            var dummy = (net.minecraft.world.level.block.entity.ChestBlockEntity) stand.compute(host, (k, old) -> old instanceof net.minecraft.world.level.block.entity.ChestBlockEntity c && c.getBlockState() == chestState ? c : new net.minecraft.world.level.block.entity.ChestBlockEntity(pos, chestState));
-            dummy.setLevel(level);
-            chests.render(dummy, partial, pose, buffers, light, overlay);
-            return true;
-        }
         if (tile instanceof legacyconnector.vb1_7_3.net.minecraft.block.entity.SignBlockEntity sign && host.getBlockState().getBlock() instanceof org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Block hosted
                 && hosted.legacy() instanceof legacyconnector.vb1_7_3.net.minecraft.block.SignBlock signBlock) {
             net.minecraft.world.level.block.state.BlockState state;
@@ -59,9 +44,17 @@ public final class LegacyB173BlockEntityRendererB173 implements BlockEntityRende
             var finalState = state;
             var dummy = (net.minecraft.world.level.block.entity.SignBlockEntity) stand.compute(host, (k, old) -> old instanceof net.minecraft.world.level.block.entity.SignBlockEntity s && s.getBlockState() == finalState ? s : new net.minecraft.world.level.block.entity.SignBlockEntity(pos, finalState));
             dummy.setLevel(level);
-            var text = dummy.getFrontText();
-            for (int i = 0; i < 4; i++) text = text.setMessage(i, net.minecraft.network.chat.Component.literal(sign.texts[i] == null ? "" : sign.texts[i]));
-            dummy.setText(text, true);
+            // loaded from a tag, only when the lines change: setText would mark the real client level changed every frame (a chunk rebuild each time)
+            String key = String.join("\u0000", sign.texts) + "|" + finalState;
+            if (!key.equals(signKeys.get(dummy))) {
+                var messages = new net.minecraft.network.chat.Component[4];
+                for (int i = 0; i < 4; i++) messages[i] = net.minecraft.network.chat.Component.literal(sign.texts[i] == null ? "" : sign.texts[i]);
+                var text = new net.minecraft.world.level.block.entity.SignText(messages, messages, net.minecraft.world.item.DyeColor.BLACK, false);
+                var tag = new net.minecraft.nbt.CompoundTag();
+                net.minecraft.world.level.block.entity.SignText.DIRECT_CODEC.encodeStart(net.minecraft.nbt.NbtOps.INSTANCE, text).result().ifPresent(t -> tag.put("front_text", t));
+                dummy.loadCustomOnly(tag, level.registryAccess());
+                signKeys.put(dummy, key);
+            }
             signs.render(dummy, partial, pose, buffers, light, overlay);
             return true;
         }
