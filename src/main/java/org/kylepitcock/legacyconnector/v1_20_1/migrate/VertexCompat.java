@@ -61,8 +61,10 @@ public final class VertexCompat {
         return c.setNormal(v.x(), v.y(), v.z());
     }
 
-    /** A vertex is complete once the next one starts: nothing to do. */
-    public static void endVertex(VertexConsumer c) {}
+    /** A vertex is complete once the next one starts: nothing to do, except for the quad baker that emits a quad after its fourth. */
+    public static void endVertex(VertexConsumer c) {
+        if (c instanceof LegacyQuadBakingVertexConsumer q) q.endLegacyVertex();
+    }
 
     /** {@code VertexConsumer.vertex(x, y, z, r, g, b, a, u, v, overlay, light, nx, ny, nz)} (a whole vertex in one call): {@code addVertex} with a packed colour. */
     public static void vertex(VertexConsumer c, float x, float y, float z, float r, float g, float b, float a, float u, float v, int overlay, int light, float nx, float ny, float nz) {

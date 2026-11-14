@@ -106,8 +106,18 @@ public final class Mc1201Hierarchy {
             if (p.superName != null) out.add(p.superName);
             out.addAll(p.interfaces);
         }
+        String standIn = STAND_IN_SUPERS.get(name);
+        if (standIn != null) out.add(standIn);
         return out;
     }
+
+    /**
+     * Stand-in classes of the migrate package that replace a Minecraft/NeoForge class under a new name, with the type whose call rules still apply to them
+     * (the quad baking consumer is a {@code VertexConsumer}: {@code vertex(...)}, {@code uv(...)}, {@code endVertex()} are rewritten through it).
+     */
+    private static final Map<String, String> STAND_IN_SUPERS = Map.of(
+            "org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyQuadBakingVertexConsumer", "com/mojang/blaze3d/vertex/VertexConsumer",
+            "org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyQuadBakingVertexConsumer$Buffered", "org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyQuadBakingVertexConsumer");
 
     /** True when {@code name} is {@code ancestor} or inherits from it through any mix of mod and Minecraft classes. */
     public boolean isSubclassOf(String name, String ancestor) {
