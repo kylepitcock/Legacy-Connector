@@ -154,6 +154,8 @@ public class LegacyB173BlockEntity extends net.minecraft.world.level.block.entit
         return SYNCS.computeIfAbsent(type, t -> {
             // a tile entity with its own special renderer is drawn by the client from its live state (BuildCraft's pipes draw their items)
             if (ContentB173.tileEntityRenderer(t) != null) return true;
+            // a sign's lines are set by the server (a mod's panels write their text from its building tick) and the client copy draws them
+            if (legacyconnector.vb1_7_3.net.minecraft.block.entity.SignBlockEntity.class.isAssignableFrom(t)) return true;
             try { return t.getMethod("getDescriptionPacket").getDeclaringClass() != BlockEntity.class; }
             catch (ReflectiveOperationException e) { return false; }
         });
@@ -183,6 +185,8 @@ public class LegacyB173BlockEntity extends net.minecraft.world.level.block.entit
     /** b1.7.3 ticked every tile entity; only those whose class has its own {@code updateEntity} need it. */
     private static boolean ticks(Class<?> type) {
         return TICKS.computeIfAbsent(type, t -> {
+            // a sign's text can change on the server at any time: it is visited each tick so syncToClients sends the change
+            if (legacyconnector.vb1_7_3.net.minecraft.block.entity.SignBlockEntity.class.isAssignableFrom(t)) return true;
             try {
                 return t.getMethod("tick").getDeclaringClass() != BlockEntity.class;
             } catch (NoSuchMethodException | RuntimeException | LinkageError e) {

@@ -37,7 +37,13 @@ public final class LegacyB173BlockEntityRendererB173 implements BlockEntityRende
         if (tile instanceof legacyconnector.vb1_7_3.net.minecraft.block.entity.ChestBlockEntity) {
             var facing = switch (meta) { case 3 -> net.minecraft.core.Direction.SOUTH; case 4 -> net.minecraft.core.Direction.WEST; case 5 -> net.minecraft.core.Direction.EAST; default -> net.minecraft.core.Direction.NORTH; };
             var state = net.minecraft.world.level.block.Blocks.CHEST.defaultBlockState().setValue(net.minecraft.world.level.block.ChestBlock.FACING, facing);
-            var dummy = (net.minecraft.world.level.block.entity.ChestBlockEntity) stand.compute(host, (k, old) -> old instanceof net.minecraft.world.level.block.entity.ChestBlockEntity c && c.getBlockState() == state ? c : new net.minecraft.world.level.block.entity.ChestBlockEntity(pos, state));
+            // Beta drew two adjacent chests of one block as one large chest
+            var own = host.getBlockState().getBlock();
+            var left = level.getBlockState(pos.relative(facing.getClockWise())).getBlock() == own;
+            var right = level.getBlockState(pos.relative(facing.getCounterClockWise())).getBlock() == own;
+            if (left != right) state = state.setValue(net.minecraft.world.level.block.ChestBlock.TYPE, left ? net.minecraft.world.level.block.state.properties.ChestType.LEFT : net.minecraft.world.level.block.state.properties.ChestType.RIGHT);
+            var chestState = state;
+            var dummy = (net.minecraft.world.level.block.entity.ChestBlockEntity) stand.compute(host, (k, old) -> old instanceof net.minecraft.world.level.block.entity.ChestBlockEntity c && c.getBlockState() == chestState ? c : new net.minecraft.world.level.block.entity.ChestBlockEntity(pos, chestState));
             dummy.setLevel(level);
             chests.render(dummy, partial, pose, buffers, light, overlay);
             return true;

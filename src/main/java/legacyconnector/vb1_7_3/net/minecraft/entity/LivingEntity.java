@@ -155,12 +155,21 @@ public abstract class LivingEntity extends Entity {
         hurtTime=tag.getShort("HurtTime");deathTime=tag.getShort("DeathTime");attackCooldown=tag.getShort("AttackTime");
     }
 
-    /** The original skin path, also used by the native mob fallback renderer. */
-    /** The texture to draw: the original {@code getTexture()} when it answers, else the synced field (a client-side copy of a mob whose own getTexture needs state only the server has). */
+    /**
+     * The texture to draw: the original {@code getTexture()} when a mod overrides it, else the field. A method of the same name that is not
+     * public is the mod's own helper (Millenaire's villager picks a random skin from it each call), never an override of this public one,
+     * and a client-side copy lacks the server's state: its synced skin is the one the server chose.
+     */
+    private static final java.util.Map<Class<?>,Boolean> TEXTURE_OVERRIDES=new java.util.concurrent.ConcurrentHashMap<>();
+    private static boolean overridesTexture(Class<?> type){
+        return TEXTURE_OVERRIDES.computeIfAbsent(type,t->{
+            for(Class<?> c=t;c!=null&&c!=LivingEntity.class;c=c.getSuperclass())try{return java.lang.reflect.Modifier.isPublic(c.getDeclaredMethod("getTexture").getModifiers());}catch(NoSuchMethodException ignored){}
+            return false;
+        });
+    }
     public String mcc$texture(){
-        // a client-side copy lacks the server's state: the synced skin is the one the server chose, whatever the mod's getTexture reads from shared state
         if(mcc$modern!=null&&mcc$modern.level().isClientSide&&texture!=null&&!"/mob/char.png".equals(texture))return texture;
-        try{String t=getTexture();if(t!=null)return t;}catch(RuntimeException ignored){}
+        if(overridesTexture(getClass()))try{String t=getTexture();if(t!=null)return t;}catch(RuntimeException ignored){}
         return texture;
     }
     /** Original renderers may compare texture paths with class literals by identity. */
