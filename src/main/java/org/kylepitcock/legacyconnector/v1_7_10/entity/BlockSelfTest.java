@@ -144,11 +144,16 @@ public final class BlockSelfTest {
 
     private static final List<Object[]> FLUIDS = new ArrayList<>();
 
-    /** A stone floor with a source block of each flowing legacy fluid on it: the fluid must spread by scheduled ticks. */
+    /**
+     * A stone floor and ceiling with a full source of each flowing legacy fluid on the surface it settles on (the floor; the ceiling for
+     * gases, which have negative density and rise): the fluid must spread by its own block ticks. The source is a full one (classic
+     * fluids: metadata 0; finite fluids: all their quanta, a single quantum cannot spread by definition) and sits on the surface because a
+     * mod's own {@code canDisplace} may stop it falling through air (Traincraft's fluids only displace liquids, as in Forge 1.7.10).
+     */
     private static void startFluids(ServerLevel level, int baseX, int z, int y) {
         int k = 0;
         for (Block legacy : BlockBridge.modBlocks()) {
-            if (!(legacy instanceof legacyconnector.v1_7_10.net.minecraftforge.fluids.BlockFluidBase) || legacy.mcc$modern == null) continue;
+            if (!(legacy instanceof legacyconnector.v1_7_10.net.minecraftforge.fluids.BlockFluidBase fluid) || legacy.mcc$modern == null) continue;
             if (k >= 6) break;
             int x = baseX + 4 + k * 12;
             k++;
@@ -156,13 +161,17 @@ public final class BlockSelfTest {
             try {
                 for (int dx = -4; dx <= 4; dx++) for (int dz = -4; dz <= 4; dz++) {
                     level.setBlock(new BlockPos(x + dx, y - 1, z + dz), net.minecraft.world.level.block.Blocks.STONE.defaultBlockState(), 2);
+                    level.setBlock(new BlockPos(x + dx, y + 6, z + dz), net.minecraft.world.level.block.Blocks.STONE.defaultBlockState(), 2);
                     for (int dy = 0; dy < 6; dy++) {
                         level.setBlock(new BlockPos(x + dx, y + dy, z + dz), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 2);
                     }
                 }
-                BlockPos pos = new BlockPos(x, y + 3, z);
-                level.setBlock(pos, legacy.mcc$modern.defaultBlockState(), 3);
-                FLUIDS.add(new Object[] {BuiltInRegistries.BLOCK.getKey(legacy.mcc$modern).toString(), legacy.mcc$modern, x, y, z});
+                boolean rises = fluid.getDensity() < 0;
+                int surface = rises ? y + 5 : y;
+                int meta = fluid instanceof legacyconnector.v1_7_10.net.minecraftforge.fluids.BlockFluidFinite ? Math.max(0, fluid.getQuantaPerBlock() - 1) : 0;
+                BlockPos pos = new BlockPos(x, surface, z);
+                level.setBlock(pos, BlockBridge.toModern(legacy, meta), 3);
+                FLUIDS.add(new Object[] {BuiltInRegistries.BLOCK.getKey(legacy.mcc$modern).toString(), legacy.mcc$modern, x, y, z, surface, fluid.getQuantaPerBlock()});
             } catch (RuntimeException | LinkageError ex) {
                 PROBLEMS.putIfAbsent("fluid " + legacy, "placement threw " + describe(ex));
             }
@@ -171,8 +180,10 @@ public final class BlockSelfTest {
 
     private static void checkFluids(ServerLevel level) {
         for (Object[] f : FLUIDS) {
-            net.minecraft.world.level.block.Block block = (net.minecraft.world.level.block.Block) f[1];
-            int x = (Integer) f[2], y = (Integer) f[3], z = (Integer) f[4], count = 0, floor = 0;
+            Object modern = f[1];
+            net.minecraft.world.level.block.Block block = (net.minecraft.world.level.block.Block) modern;
+            int x = (Integer) f[2], y = (Integer) f[3], z = (Integer) f[4], surface = (Integer) f[5], quanta = (Integer) f[6];
+            int count = 0, floor = 0, bestFloor = 0;
             // (no player is near, so the world's own scheduled ticks do not run: tick the fluid blocks directly)
             try {
                 for (int round = 0; round < 40; round++) {
@@ -181,16 +192,24 @@ public final class BlockSelfTest {
                         BlockState st = level.getBlockState(p);
                         if (st.is(block)) st.tick(level, p, level.random);
                     }
+                    // a fluid that removes itself at random (Witchery's disease) is judged by the most it covered at any time
+                    int now = 0;
+                    for (int dx = -4; dx <= 4; dx++) for (int dz = -4; dz <= 4; dz++) {
+                        if (level.getBlockState(new BlockPos(x + dx, surface, z + dz)).is(block)) now++;
+                    }
+                    bestFloor = Math.max(bestFloor, now);
                 }
             } catch (RuntimeException | LinkageError ex) {
                 PROBLEMS.putIfAbsent("fluid " + f[0], "tick threw " + describe(ex));
             }
             for (int dx = -4; dx <= 4; dx++) for (int dz = -4; dz <= 4; dz++) {
-                if (level.getBlockState(new BlockPos(x + dx, y, z + dz)).is(block)) floor++;
+                if (level.getBlockState(new BlockPos(x + dx, surface, z + dz)).is(block)) floor++;
                 for (int dy = 0; dy < 6; dy++) if (level.getBlockState(new BlockPos(x + dx, y + dy, z + dz)).is(block)) count++;
             }
-            if (floor < 4) PROBLEMS.putIfAbsent("fluid " + f[0], "did not flow: " + count + " blocks, " + floor + " on the floor after 60 ticks");
-            else LOG.info("Fluid {} flowed over {} floor blocks ({} blocks)", f[0], floor, count);
+            floor = Math.max(floor, bestFloor);
+            if (quanta < 2) LOG.info("Fluid {} has {} quantum per block and cannot spread ({} blocks)", f[0], quanta, count);
+            else if (floor < 4) PROBLEMS.putIfAbsent("fluid " + f[0], "did not flow: " + count + " blocks, " + floor + " on its surface after 60 ticks");
+            else LOG.info("Fluid {} flowed over {} surface blocks ({} blocks)", f[0], floor, count);
         }
     }
 
