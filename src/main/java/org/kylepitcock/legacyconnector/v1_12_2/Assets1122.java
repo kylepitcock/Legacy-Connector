@@ -135,6 +135,7 @@ public final class Assets1122 implements GeneratedPack.Contributor {
         JSON_FILES.clear();
         STATE_MODELS_BUILDING.clear();
         clientProxies();
+        vanillaModelAliases(out);
         itemModels(out);
         long itemsMs = (System.nanoTime() - t0) / 1_000_000;
         Stats stats = new Stats();
@@ -162,6 +163,28 @@ public final class Assets1122 implements GeneratedPack.Contributor {
         LOG.info("1.12.2 blockstates: {} translated, {} fell back to a plain model{}", stats.translated, stats.fellBack,
                 stats.fallbacks.isEmpty() ? "" : " (" + String.join("; ", stats.fallbacks.subList(0, Math.min(60, stats.fallbacks.size())))
                         + (stats.fallbacks.size() > 60 ? "; ... " + (stats.fallbacks.size() - 60) + " more" : "") + ")");
+    }
+
+    /** Vanilla block models the 1.13 flattening renamed (1.12.2 name to 1.21.1 name): mods' models and blockstates still name the old ones as parents. */
+    private static final String[][] VANILLA_MODEL_ALIASES = {
+            {"lit_redstone_torch", "redstone_torch"}, {"lit_redstone_torch_wall", "redstone_wall_torch"},
+            {"unlit_redstone_torch", "redstone_torch_off"}, {"unlit_redstone_torch_wall", "redstone_wall_torch_off"},
+            {"comparator_unlit", "comparator"}, {"comparator_unlit_subtract", "comparator_subtract"},
+            {"comparator_lit", "comparator_on"}, {"comparator_lit_subtract", "comparator_on_subtract"},
+    };
+
+    /** Writes a model file of the old name that only names the renamed vanilla model as its parent. */
+    private static void vanillaModelAliases(Map<String, Supplier<byte[]>> out) {
+        java.util.List<String[]> renames = new java.util.ArrayList<>();
+        for (String[] r : VANILLA_MODEL_ALIASES) renames.add(r);
+        for (int ticks = 1; ticks <= 4; ticks++) {
+            renames.add(new String[] {"repeater_on_" + ticks + "tick", "repeater_" + ticks + "tick_on"});
+            renames.add(new String[] {"repeater_on_" + ticks + "tick_locked", "repeater_" + ticks + "tick_on_locked"});
+        }
+        for (String[] r : renames) {
+            byte[] bytes = ("{\"parent\":\"minecraft:block/" + r[1] + "\"}").getBytes(java.nio.charset.StandardCharsets.UTF_8);
+            out.putIfAbsent("assets/minecraft/models/block/" + r[0] + ".json", () -> bytes);
+        }
     }
 
     /**
