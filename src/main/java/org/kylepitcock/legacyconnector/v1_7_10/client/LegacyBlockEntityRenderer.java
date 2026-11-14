@@ -43,6 +43,7 @@ public class LegacyBlockEntityRenderer implements BlockEntityRenderer<LegacyBloc
         }
         Vec3 cam = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
         dispatcher.mcc$setCamera(cam.x, cam.y, cam.z);
+        if (be.getLevel() != null && te.worldObj == null) te.worldObj = World.mcc$wrap(be.getLevel());
         if (be.getLevel() != null) dispatcher.worldObj = World.mcc$wrap(be.getLevel());
         refreshEnvironment(dispatcher, Minecraft.getInstance());
         double x = be.getBlockPos().getX() - cam.x, y = be.getBlockPos().getY() - cam.y, z = be.getBlockPos().getZ() - cam.z;
@@ -90,6 +91,10 @@ public class LegacyBlockEntityRenderer implements BlockEntityRenderer<LegacyBloc
      */
     private static void renderPasses(TileEntity te, TileEntitySpecialRenderer renderer, double x, double y, double z, float partialTick) {
         int previous = legacyconnector.v1_7_10.net.minecraftforge.client.ForgeHooksClient.renderPass;
+        // 1.7.10 renderers often read the raw blockType / blockMetadata fields (not the getters): the fields are filled lazily by the
+        // getters, so fill them first (a toy block's renderer cast blockType and dereferenced null)
+        te.getBlockType();
+        te.getBlockMetadata();
         try {
             for (int pass = 0; pass < 2; pass++) {
                 if (!te.shouldRenderInPass(pass)) continue;
