@@ -12,7 +12,7 @@ All jars are translated as ONE mod set so mods that extend each other link. Per 
   gap_shim    missing old Minecraft/Forge functionality (our shim)   -> status "fails"
   gap_mod     missing another mod's API (NEI, Thaumcraft, AE2, ...)  -> status "fails"
   gap_lib     missing removed Java/library code                      -> status "fails"
-  gap_dep     a required dependency mod is not in the set            -> status "fails" (not a defect of the layer)
+  gap_dep     a required dependency mod is not in the set            -> "fails", or "loads" when the jar links apart from that
   obsolete    engine patch with nothing to do on 1.21.1 -> not listed
 --mc 1.20.1 (Forge 1.20.1 jars, remapped in place onto NeoForge 1.21.1) has no shim to link against: it runs ./gradlew gap1201 (loader tools Gap1201: SRG to
 Mojang and Forge to NeoForge renames, then every reference is resolved against Minecraft 1.21.1 + NeoForge + the other jars) and turns the unresolved symbols into the
@@ -253,6 +253,9 @@ def note_links(rec, layer):
             text += f" {stubs} minor feature(s) it uses are empty placeholders."
         return text + " The game was not started: this only shows the jar translates, not that it works."
     if k == "gap_dep":
+        if rec.get("linksWithoutDependency"):
+            ids = ", ".join(sorted({m.split(" requires ", 1)[-1].split(",", 1)[0].split(" (", 1)[0] for m in rec.get("missingDependencies", [])}))
+            return f"{base}declares a mod that was not installed: {ids}. Everything else it uses links; the mod may still work without it."
         return f"{base}{'; '.join(rec.get('missingDependencies', [])[:3])}."
     miss = ", ".join(rec.get("missing", [])[:5])
     more = f" (+{rec['unresolved'] - 5} more)" if rec.get("unresolved", 0) > 5 else ""
@@ -270,7 +273,7 @@ def merge(records, mc, date, layer):
     for rec in records:
         if rec["result"] not in ("links", "unresolved", "missing-dependency") or rec.get("mc") != mc:
             continue
-        status = "loads" if rec["result"] == "links" else "fails"
+        status = "loads" if rec["result"] == "links" or rec.get("linksWithoutDependency") else "fails"
         for m in rec["mods"]:
             name = (m.get("name") or m["id"]).strip()
             key = norm(name)

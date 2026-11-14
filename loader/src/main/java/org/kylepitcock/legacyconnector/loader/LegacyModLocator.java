@@ -345,8 +345,8 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                     LegacyJar owner = checked.stream().filter(j -> j.mods.contains(p.mod())).findFirst().orElse(null);
                     if (p.fatal()) {
                         boolean client = "CLIENT".equals(side());
-                        LOG.error("Legacy Connector: {}; {} is not loaded", p.message(), p.mod().legacyId);
-                        // A warning, not an error: FML shows its loading-warnings screen with a Proceed button; only this mod stays disabled.
+                        LOG.warn("Legacy Connector: {} (the mod is still loaded)", p.message());
+                        // A warning, not an error: FML shows its loading-warnings screen with a Proceed button; the mod is still loaded (it may work without the dependency).
                         // A dedicated server has no screen: the log line and the report section are what it gets.
                         if (client && owner != null) {
                             pipeline.addIssue(ModLoadingIssue.warning(LegacyDependencies.issueKey(p),
@@ -1132,7 +1132,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                 for (var e : outcomes.entrySet()) {
                     LegacyJar jar = e.getKey();
                     w.write(jar.fileName() + "  [" + jar.version.id() + ", " + jar.versionEvidence + "]\n");
-                    for (String missing : MISSING_DEPENDENCIES.getOrDefault(jar, List.of())) w.write("  MISSING DEPENDENCY: " + missing + "; the mod is not loaded\n");
+                    for (String missing : MISSING_DEPENDENCIES.getOrDefault(jar, List.of())) w.write("  MISSING DEPENDENCY: " + missing + "\n");
                     for (LegacyModDecl mod : jar.mods) {
                         w.write("  mod " + mod.legacyId + " -> " + mod.modernId() + "  (" + mod.name + " " + mod.version + ")\n");
                     }

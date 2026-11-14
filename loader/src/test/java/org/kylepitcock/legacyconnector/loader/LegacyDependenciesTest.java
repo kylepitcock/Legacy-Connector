@@ -88,8 +88,8 @@ class LegacyDependenciesTest {
         var problems = LegacyDependencies.check(List.of(te), LegacyDependencies.presentIds(List.of(te), List.of(), Set.of(), List.of()), List.of(), true);
         assertEquals(2, problems.size());
         String plain = java.text.MessageFormat.format(LegacyDependencies.issueKey(problems.get(0)), LegacyDependencies.issueArgs(problems.get(0), "1.12.2"));
-        assertEquals("Thermal Expansion (1.12.2) requires codechickenlib [3.2.3,), which is not installed. Put its jar for Minecraft 1.12.2 into mods/1.12.2/. Thermal Expansion was not loaded.", plain);
+        assertEquals("Thermal Expansion (1.12.2) requires codechickenlib [3.2.3,), which is not installed. Put its jar for Minecraft 1.12.2 into mods/1.12.2/. Thermal Expansion may fail to load or miss features without it.", plain);
         String bridged = java.text.MessageFormat.format(LegacyDependencies.issueKey(problems.get(1)), LegacyDependencies.issueArgs(problems.get(1), "1.12.2"));
-        assertEquals("Thermal Expansion (1.12.2) requires Baubles (provided on 1.21.1 by curios): install curios. Thermal Expansion was not loaded.", bridged);
+        assertEquals("Thermal Expansion (1.12.2) requires Baubles (provided on 1.21.1 by curios): install curios. Thermal Expansion may fail to load or miss features without it.", bridged);
     }
 }

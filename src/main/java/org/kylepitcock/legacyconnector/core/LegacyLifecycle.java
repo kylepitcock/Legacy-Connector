@@ -83,7 +83,6 @@ public final class LegacyLifecycle {
         long start = System.currentTimeMillis();
 
         org.kylepitcock.legacyconnector.api.internal.AddonHost.enter(org.kylepitcock.legacyconnector.api.LegacyPhase.DISCOVERED);
-        failMissingDependencies(mods);
         phase(mods, "construction", m -> LegacyMods.platform(m.version).construct(m));
         for (LegacyPlatform p : LegacyMods.platforms()) p.beforePreInit();
         for (LegacyPlatform p : LegacyMods.platforms()) p.coreModPhase("preInit");
@@ -106,21 +105,19 @@ public final class LegacyLifecycle {
         LOG.info("Legacy mods loaded in {} ms ({} failed)", System.currentTimeMillis() - start, FAILED.size() - CLIENT_ONLY.size());
     }
 
-    /** A mod whose required dependency is not installed does not run (the loader found it missing; its report line says which). */
-    private static void failMissingDependencies(List<LegacyModRecord> mods) {
+    /**
+     * The required dependencies of this legacy mod that the loader found not installed ("X requires Y (range), which is not installed"), empty
+     * when none. The mod still loads; if it fails, {@link LegacyModException} starts its message with these.
+     */
+    public static List<String> missingDependencies(String legacyId) {
         String lines = System.getProperty("legacyconnector.missingDependencies", "");
-        if (lines.isBlank()) return;
+        List<String> out = new ArrayList<>();
+        if (lines.isBlank() || legacyId == null) return out;
         for (String line : lines.split("\n")) {
             int tab = line.indexOf('\t');
-            if (tab <= 0) continue;
-            String id = line.substring(0, tab);
-            for (LegacyModRecord mod : mods) {
-                if (!mod.legacyId.equalsIgnoreCase(id) || FAILED.containsKey(mod)) continue;
-                String message = line.substring(tab + 1);
-                LOG.error("{}: not loaded", message);
-                FAILED.put(mod, new IllegalStateException(message));
-            }
+            if (tab > 0 && line.substring(0, tab).equalsIgnoreCase(legacyId)) out.add(line.substring(tab + 1));
         }
+        return out;
     }
 
     public static void onCommonSetup(FMLCommonSetupEvent event) {

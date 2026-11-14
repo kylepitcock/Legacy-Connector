@@ -143,6 +143,8 @@ public final class CheckJar {
             JsonObject rec = record(jar, result.links.errorCount() == 0 ? "links" : "unresolved", null, result.links, result.classes);
             if (missingDeps.containsKey(jar)) {
                 // not a defect of the layer: the pack lacks a library the mod declares as required
+                // the mod still loads in the game (FML would not have started it); true when everything else it uses links
+                if (result.links.errorCount() == 0) rec.addProperty("linksWithoutDependency", true);
                 rec.addProperty("result", "missing-dependency");
                 JsonArray deps = new JsonArray();
                 missingDeps.get(jar).forEach(deps::add);

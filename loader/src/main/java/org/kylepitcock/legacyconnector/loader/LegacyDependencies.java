@@ -132,8 +132,8 @@ public final class LegacyDependencies {
      */
     public static String issueKey(Problem p) {
         return p.modernMod() == null
-                ? "{0} ({1}) requires {2}{3}, which is not installed. Put its jar for Minecraft {1} into mods/{1}/. {0} was not loaded."
-                : "{0} ({1}) requires {2}{3} (provided on 1.21.1 by {4}): install {4}. {0} was not loaded.";
+                ? "{0} ({1}) requires {2}{3}, which is not installed. Put its jar for Minecraft {1} into mods/{1}/. {0} may fail to load or miss features without it."
+                : "{0} ({1}) requires {2}{3} (provided on 1.21.1 by {4}): install {4}. {0} may fail to load or miss features without it.";
     }
 
     /** Arguments of {@link #issueKey}: mod name, Minecraft version, dependency, " <version range>" or empty, modern mod. */
