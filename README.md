@@ -104,6 +104,8 @@ Mods, Legacy Connector, Config). The important ones:
 | `villages.legacyBuildings` | `true` | Legacy mods' village buildings join the vanilla village pools; `false` leaves villages vanilla |
 | `legacyBiomeFrequency` | `1.0` | Scales how much land legacy mod biomes take in the overworld (`0` none in new chunks) |
 | `events.skip` | empty | Legacy event handlers to leave unregistered (`full.ClassName#method`), for tracking down a handler that misbehaves |
+| `coremods.vanillaJar` | empty | Path of the original Minecraft 1.7.10 client jar, when it is not where a launcher keeps it (used to replay legacy coremods' hooks in Minecraft's code) |
+| `coremods.downloadVanilla` | `false` | Download that jar once from Mojang when it is not found locally |
 
 All keys (energy conversion rates, `perf.*` switches, ...) are on the [Configuration](docs/wiki/Configuration.md) page.
 
@@ -123,7 +125,9 @@ All keys (energy conversion rates, `perf.*` switches, ...) are on the [Configura
 - [Retrofit](https://github.com/Astryxx/Retrofit) (Astryxx) is an interoperability mod: it lets 1.7.10 and 1.20.1 mods work together (energy systems such as RF and IC2, ore dictionary, and tags). It does not load old mods onto a modern game.
 - Legacy Connector is for NeoForge 1.21.1 only. For each old version it provides the old game's API itself (the engine, ids, world generation, packets, and rendering of the old blocks and items), so mods that use the game's internals can run: Thaumcraft, BuildCraft, Thermal Expansion, RedPower, and many more. It bridges outdated libraries to modern equivalents and exposes legacy containers as NeoForge capabilities.
 
-**Will mod X work?** Check the compatibility site, then `logs/legacyconnector-report.txt` after a launch. Mods that only patch the old engine (performance patches, id extenders) are skipped on purpose, and coremods that patch Minecraft's own classes are not supported (Better Than Wolves and other patched-`minecraft.jar` mods cannot work).
+**Will mod X work?** Check the compatibility site, then `logs/legacyconnector-report.txt` after a launch. Mods that only patch the old engine (performance patches, id extenders) are skipped on purpose, and mods that replace Minecraft's classes wholesale (Better Than Wolves and other patched-`minecraft.jar` mods) cannot work.
+
+**Coremods.** Coremods that patch other mods run as they did. Coremods that patch *Minecraft's own* 1.7.10 classes (Fisk's Superheroes, Legends and the like) are partly supported, experimental: Legacy Connector shows their transformers the original 1.7.10 classes once, notes the hooks they insert, and calls those hooks from the matching places of the modern game (movement, gravity, natural healing, tick length, player attacks, weather, arm swing, sprint particles, entity removal, player model render and pose). Hooks in places with no modern counterpart yet do nothing; the log says how many are replayed. This needs the original Minecraft 1.7.10 client jar, which Legacy Connector does not ship: it is found when 1.7.10 is installed in your launcher (see `coremods.vanillaJar` and `coremods.downloadVanilla`). Without it the mods still load, without their hooks. Other legacy versions are not covered yet.
 
 **Does it work on a dedicated server?** Yes. Legacy mods run on a dedicated server too; client-only mods are skipped there.
 
