@@ -443,9 +443,8 @@ public final class Forge1201IntermediaryBridgeAudit {
                 sourceOwnerUnmapped++;
                 continue;
             }
-            if (sourceMember.descriptorIntermediary() == null) {
-                sourceDescriptorUnresolved++;
-            } else if (sourceMember.descriptorExternalTypeCount() > 0) {
+            if (sourceMember.descriptorIntermediary() == null) sourceDescriptorUnresolved++;
+            if (sourceMember.descriptorExternalTypeCount() > 0) {
                 sourceDescriptorExternalTypeRows++;
                 sourceDescriptorExternalTypeOccurrences += sourceMember.descriptorExternalTypeCount();
             }
