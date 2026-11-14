@@ -260,6 +260,7 @@ public final class EventBridge1122 {
             var entity = living(e.getEntity());
             if (entity != null) post(new legacyconnector.v1_12_2.net.minecraftforge.event.entity.living.LivingEvent.LivingJumpEvent(entity));
         });
+        CoremodSites1122.register(bus); // hooks of 1.12.2 coremods in Minecraft's own classes, replayed generically
         bus.addListener((net.neoforged.neoforge.event.tick.EntityTickEvent.Pre e) -> {
             if (!(e.getEntity() instanceof net.minecraft.world.entity.LivingEntity)
                     || !wants(legacyconnector.v1_12_2.net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent.class)) return;

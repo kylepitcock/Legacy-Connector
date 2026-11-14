@@ -224,23 +224,28 @@ public class Item extends IForgeRegistryEntry.Impl<Item> {
         }
 
         public int getMaxUses() {
-            return maxUses;
+            return org.kylepitcock.legacyconnector.v1_12_2.bridge.CoremodSites1122.material( // coremod hook site (no-op unless listed)
+                    org.kylepitcock.legacyconnector.v1_12_2.bridge.CoremodSites1122.MATERIAL_MAX_USES, this, maxUses);
         }
 
         public float getEfficiency() {
-            return efficiency;
+            return org.kylepitcock.legacyconnector.v1_12_2.bridge.CoremodSites1122.material(
+                    org.kylepitcock.legacyconnector.v1_12_2.bridge.CoremodSites1122.MATERIAL_EFFICIENCY, this, efficiency);
         }
 
         public float getAttackDamage() {
-            return attackDamage;
+            return org.kylepitcock.legacyconnector.v1_12_2.bridge.CoremodSites1122.material(
+                    org.kylepitcock.legacyconnector.v1_12_2.bridge.CoremodSites1122.MATERIAL_ATTACK_DAMAGE, this, attackDamage);
         }
 
         public int getHarvestLevel() {
-            return harvestLevel;
+            return org.kylepitcock.legacyconnector.v1_12_2.bridge.CoremodSites1122.material(
+                    org.kylepitcock.legacyconnector.v1_12_2.bridge.CoremodSites1122.MATERIAL_HARVEST_LEVEL, this, harvestLevel);
         }
 
         public int getEnchantability() {
-            return enchantability;
+            return org.kylepitcock.legacyconnector.v1_12_2.bridge.CoremodSites1122.material(
+                    org.kylepitcock.legacyconnector.v1_12_2.bridge.CoremodSites1122.MATERIAL_ENCHANTABILITY, this, enchantability);
         }
 
         public ToolMaterial setRepairItem(ItemStack stack) {
