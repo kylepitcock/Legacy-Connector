@@ -280,4 +280,20 @@ public final class ForgeApiTail1201 {
         if (real.isCanceled()) ForgeApi1201.eventSetResult(event, legacyconnector.v1_20_1.net.minecraftforge.eventbus.api.Event$Result.DENY);
         return event;
     }
+
+    // ---- mod list
+
+    /** {@code ModList.getModContainerByObject(mod)} (removed in NeoForge): the container whose jar holds the class of the mod instance. */
+    public static java.util.Optional<? extends net.neoforged.fml.ModContainer> modContainerByObject(net.neoforged.fml.ModList list, Object mod) {
+        if (mod == null) return java.util.Optional.empty();
+        String name = mod.getClass().getName();
+        for (net.neoforged.fml.ModContainer c : list.getSortedMods()) {
+            var scan = c.getModInfo().getOwningFile().getFile().getScanResult();
+            if (scan == null) continue;
+            for (var data : scan.getClasses()) {
+                if (data.clazz().getClassName().equals(name)) return java.util.Optional.of(c);
+            }
+        }
+        return java.util.Optional.empty();
+    }
 }

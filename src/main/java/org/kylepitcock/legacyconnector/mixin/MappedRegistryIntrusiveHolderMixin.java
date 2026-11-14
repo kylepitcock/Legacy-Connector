@@ -2,8 +2,6 @@ package org.kylepitcock.legacyconnector.mixin;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import java.net.URI;
-import java.util.Optional;
 import net.minecraft.core.MappedRegistry;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -19,27 +17,9 @@ import org.spongepowered.asm.mixin.injection.At;
 public abstract class MappedRegistryIntrusiveHolderMixin {
     @WrapOperation(method = "createIntrusiveHolder", at = @At(value = "INVOKE", target = "Lnet/minecraft/core/MappedRegistry;validateWrite()V"), require = 0)
     private void legacyconnector$validateUnlessLegacyConstruction(MappedRegistry<?> self, Operation<Void> original) {
-        if (self.frozen && StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
-                .walk(s -> s.map(StackWalker.StackFrame::getDeclaringClass).anyMatch(MappedRegistryIntrusiveHolderMixin::fromTranslatedJar))) {
+        if (self.frozen && org.kylepitcock.legacyconnector.util.LegacyCallers.calledFromTranslatedJar()) {
             return;
         }
         original.call(self);
-    }
-
-    private static boolean fromTranslatedJar(Class<?> c) {
-        try {
-            Module m = c.getModule();
-            if (!m.isNamed() || m.getLayer() == null) return false;
-            Optional<URI> loc = m.getLayer().configuration().findModule(m.getName()).flatMap(r -> r.reference().location());
-            if (loc.isEmpty()) return false;
-            // FML's union file system: union:/<path>/.legacyconnector/cache/<translated jar>.jar%23<n>!/
-            String u = loc.get().toString();
-            int k = u.indexOf("/.legacyconnector/cache/");
-            if (k < 0) return false;
-            String name = u.substring(k + "/.legacyconnector/cache/".length());
-            return name.contains(".jar") && !name.startsWith("legacyconnector-");
-        } catch (RuntimeException e) {
-            return false;
-        }
     }
 }

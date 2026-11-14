@@ -746,3 +746,21 @@ Fixed in this round (all generic, `TRANSFORMER_VERSION` 54):
 - **`SmithingTemplateItem` super constructor** (`=args` row adding the empty `FeatureFlag...`; the former static factory row could not serve `super(...)` calls of subclasses).
 
 Not done: `ModConfig` stand-in (a subclass needs `ConfigFileTypeHandler`); AE2 config order; the rest of the table. Site data (`from_client.py`) was not updated: it rates mods from the final run's report and log, which lacks the failed mods this measurement is about.
+
+## 53. Status 2026-11-14: McJty family, Common Capabilities, the "silent" batch 3 (run-time round 2)
+
+Measurement (`measure_1201.py`, one server at a time, `VERIFY_PORT_BASE` picks free ports now): batch 5 25 mods, 20 start before the merge (ProjectRed was the rest), rftoolsbase and mcjtylib load; batch 3 28 mods, 22 start, reaches Done (before: no Done, "no start, no error found"). Suites `atm9-1201-stable`, `cofh1201`, `sm642-1201` pass (cofh1201 failed once with a config write race, passed on rerun). `TRANSFORMER_VERSION` 58 (after merging master). After the merge batch 5 (with ProjectRed fixed on master and the Paraglider row below) starts all 25 mods and prints Done; batch 3 stays at 22 of 28.
+
+| cause | fix |
+|---|---|
+| `Lazy` is a final class in NeoForge; a lambda targets it (RFTools Base) | facade interface `net.minecraftforge.common.util.Lazy` (`of`, `concurrentOf`; lambdas are non-caching suppliers as in Forge); facades win over the NeoForge rename |
+| `@ObjectHolder` did nothing (no annotation in NeoForge; Common Capabilities' ingredient components stayed null: "ingredient component is not initialized") | facade annotation + `ObjectHolders1201` (class and field level, registry by name or field type, mods' own registries); injected after every `RegisterEvent` and at load complete; log line "1.20.1 object holders: N filled, M without an entry" |
+| mcjtylib "Cannot get config value before config is loaded" (a `ModConfigEvent.Loading` handler reads the client spec while the server config loads) | mixin `ConfigValueUnloadedMixin`: an unloaded `ConfigValue.get()` answers the default as Forge did, only when a translated legacy jar is on the stack (`util/LegacyCallers`, verdict kept per value, stack walked only on the unloaded path); native mods keep NeoForge's exception |
+| batch 3 "silent no start": `uncaught parallel processing error` (a `ClassCastException` in the registry freeze; FML prints no stack, the crash report has it) | mods set `BlockBehaviour(.Properties).lootTableSupplier` (a `Supplier<ResourceLocation>`) through their own mixin accessor or reflection (SuperMartijn642 Core Lib, Integrated Dynamics): mixin `BlockLootSupplierMixin` wraps the location into the loot table key |
+| LionFish API data registry `ClassCastException MapCodecCodec -> MapCodec` | `Codec.dispatch/dispatchStable/dispatchMap` call rows adapt the subtype codec function (`RoundCompat.mapCodecs`) |
+| Paraglider `ParagliderUtils.checkBargainRecipes` `ClassCastException` (`RecipeHolder` in the list `getAllRecipesFor` returns; batch 5 never printed Done) | call row to `RecipeCompat.getAllRecipesFor` (unwraps the holders) |
+| Integrated Dynamics `ModList.getModContainerByObject` | rewrite to `ForgeApiTail1201.modContainerByObject` |
+
+Tooling: `measure_1201.py` says why a run without a failed mod did not start (port bind, failed Gradle task, mods loaded but no Done) and prints the crash report's first frames for an anonymous parallel error; `verify.sh` honours `VERIFY_PORT_BASE`.
+
+Still open: Mekanism `ItemPredicate` final (other worker), Macaw Bridges blockstate property order, Mystical Agriculture `DeferredHolder.lazyMap`, Extra Disks (`BlockState` null in common setup), a Refined Storage recipe with a null `LegacyEnchantment`.
