@@ -95,7 +95,7 @@ public final class SrgMojangTable {
             if (in != null) {
                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
                     for (String line; (line = reader.readLine()) != null;) {
-                        int tab = line.indexOf('\\t');
+                        int tab = line.indexOf('\t');
                         if (tab <= 0 || tab == line.length() - 1) {
                             throw new IOException("Malformed mapping row in " + RESOURCE);
                         }
@@ -130,7 +130,7 @@ public final class SrgMojangTable {
         Path output = Path.of(args[2]);
         Files.createDirectories(output.toAbsolutePath().getParent());
         try (PrintWriter writer = new PrintWriter(Files.newBufferedWriter(output, StandardCharsets.UTF_8))) {
-            result.table().forEach((key, value) -> writer.println(key + "\\t" + value));
+            result.table().forEach((key, value) -> writer.println(key + "\t" + value));
             if (writer.checkError()) throw new IOException("Could not write generated mapping table: " + output);
         }
         Coverage coverage = result.coverage();
