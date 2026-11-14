@@ -609,6 +609,8 @@ public final class ItemBridge {
                             net.minecraft.world.entity.EquipmentSlotGroup.MAINHAND)
                     .build());
         }
+        var songKey = Records1710.songKey(item);
+        if (songKey != null) p.jukeboxPlayable(songKey);
         if (item.hasContainerItem() && item.getContainerItem() != null && item.getContainerItem().mcc$variants.containsKey(0)) {
             p.craftRemainder(item.getContainerItem().mcc$variants.get(0));
         }

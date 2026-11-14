@@ -23,6 +23,16 @@ public class ItemRecord extends Item {
         }
     }
 
+    public static java.util.List<ItemRecord> mcc$all() {
+        synchronized (RECORDS) {
+            return new java.util.ArrayList<>(RECORDS.values());
+        }
+    }
+
+    public String mcc$descriptionKey() {
+        return displayName;
+    }
+
     public String getRecordNameLocal() {
         return legacyconnector.v1_12_2.net.minecraft.util.text.translation.I18n.translateToLocal(displayName);
     }
