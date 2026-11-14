@@ -1,0 +1,2 @@
+# CoFH Core 1.20.1 alone (library of the Thermal series; issue 271)
+1.20.1 cofh_core-1.20.1

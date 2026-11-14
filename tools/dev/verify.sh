@@ -13,6 +13,9 @@ BASELINE=tools/dev/verify/baseline.json
 TIMEOUT="${SUITE_TIMEOUT:-900}"
 AUTOSTOP="${AUTOSTOP:-700}"
 SEARCH="test-mods test-mods2 test-mods3 test-mods-1122 test-mods-147 test-mods-152 test-mods-164 test-mods-1710-extra test-mods-1201-a test-mods-1201-terramity test-mods-b173 run-subtest/mods run-subtest/mods.aside-20261113 run-screenshots/mods run-screenshots/mods.aside-20261113"
+# read-only jar folders outside the checkout (absolute): ATM 9 holds the 1.20.1 mods, ATM 10 the native 1.21.1 libraries a 1.20.1 mod needs (suite lines `lib <fragment>`)
+ATM9_MODS="${ATM9_MODS:-X:/Modded games/Prism Launcher/instances/ATM 9 20026/minecraft/mods}"
+ATM10_MODS="${ATM10_MODS:-X:/Modded games/Prism Launcher/instances/ATM10 2026/minecraft/mods}"
 
 update=""; names=()
 for a in "$@"; do if [ "$a" = "--update" ]; then update="--update"; else names+=("$a"); fi; done
@@ -25,10 +28,16 @@ first=1
 
 # find_jar <fragment>: first file (jar/zip/litemod) whose name contains the fragment, case-insensitively, searching the folders in order
 find_jar() {
-  local frag="$1" r f
-  for r in $SEARCH; do
-    [ -d "$JAR_ROOT/$r" ] || continue
-    f=$(find "$JAR_ROOT/$r" -type f \( -iname "*.jar" -o -iname "*.zip" -o -iname "*.litemod" \) -iname "*$frag*" 2>/dev/null | sort | head -1)
+  local frag="$1" dir="${2:-}" r f
+  frag="${frag//\[/?}"; frag="${frag//\]/?}"   # glob brackets in a jar name match any character
+  for r in ${dir:+__dir__} $SEARCH __atm9__; do
+    case "$r" in
+      __dir__) r="$dir";;
+      __atm9__) r="$ATM9_MODS";;
+      *) r="$JAR_ROOT/$r";;
+    esac
+    [ -d "$r" ] || continue
+    f=$(find "$r" -type f \( -iname "*.jar" -o -iname "*.zip" -o -iname "*.litemod" \) -iname "*$frag*" 2>/dev/null | sort | head -1)
     if [ -n "$f" ]; then echo "$f"; return 0; fi
   done
   return 1
@@ -55,7 +64,8 @@ for s in "${names[@]}"; do
   while read -r ver frag _; do
     frag="${frag%$'\r'}"; ver="${ver%$'\r'}"
     case "$ver" in ""|\#*) continue;; esac
-    j=$(find_jar "$frag") || { missing="$missing $frag"; continue; }
+    if [ "$ver" = "lib" ]; then j=$(find_jar "$frag" "$ATM10_MODS") || { missing="$missing $frag"; continue; }
+    else j=$(find_jar "$frag") || { missing="$missing $frag"; continue; }; fi
     jars+=("$ver|$j")
   done < "$file"
   if [ -n "$missing" ]; then echo "  skipped, missing:$missing" >&2; emit "{\"suite\":\"$s\",\"skipped\":\"${missing# }\"}"; continue; fi
@@ -65,7 +75,7 @@ for s in "${names[@]}"; do
   mkdir -p "$D/mods" "$D/logs"
   for e in "${jars[@]}"; do
     ver="${e%%|*}"; j="${e#*|}"
-    mkdir -p "$D/mods/$ver"; cp -f "$j" "$D/mods/$ver/"
+    if [ "$ver" = "lib" ]; then cp -f "$j" "$D/mods/"; else mkdir -p "$D/mods/$ver"; cp -f "$j" "$D/mods/$ver/"; fi
   done
   [ -f "$JAR_ROOT/run-subtest/eula.txt" ] && cp -f "$JAR_ROOT/run-subtest/eula.txt" "$D/eula.txt" || echo "eula=true" > "$D/eula.txt"
   if [ -f "$JAR_ROOT/run-subtest/server.properties" ]; then

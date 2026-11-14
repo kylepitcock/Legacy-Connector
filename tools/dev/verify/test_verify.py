@@ -63,6 +63,14 @@ class CompareTest(unittest.TestCase):
     def test_new(self):
         self.assertEqual(verify.compare(None, {"reached_selftest": 1})[0], "NEW")
 
+    def test_failed_mods_1201(self):
+        log = "[x] Loading errors encountered:" + chr(10) + chr(9) + "- Mekanism (mekanism) has failed to load correctly" + chr(10) + chr(9) + "  java.lang.IncompatibleClassChangeError: boom" + chr(10) + chr(9) + "- Mod foo requires bar 0 or above" + chr(10) * 2 + chr(9) + "at x.y(Z.java)" + chr(10)
+        m = verify.parse_log(log)
+        self.assertEqual(m["mods_failed_1201"], 2)
+        self.assertEqual(m["failed_mods_1201"]["mekanism"], "java.lang.IncompatibleClassChangeError: boom")
+        self.assertIn("foo", m["failed_mods_1201"])
+        self.assertEqual(verify.parse_log("Legacy 1.20.1 mods: 3 loaded, 0 failed")["mods_loaded_1201"], 3)
+
 
 if __name__ == "__main__":
     unittest.main()
