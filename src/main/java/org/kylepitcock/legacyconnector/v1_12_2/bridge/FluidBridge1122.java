@@ -167,13 +167,36 @@ public final class FluidBridge1122 {
     public static synchronized FluidStack toModern(legacyconnector.v1_12_2.net.minecraftforge.fluids.FluidStack stack) {
         if (stack == null || stack.amount <= 0 || stack.getFluid() == null) return FluidStack.EMPTY;
         Fluid fluid = MODERN.get(stack.getFluid().getName());
+        if (fluid == null) fluid = STAND_IN_FLUIDS.get(stack.getFluid().getName());
         return fluid == null ? FluidStack.EMPTY : new FluidStack(fluid, stack.amount);
     }
 
     public static synchronized legacyconnector.v1_12_2.net.minecraftforge.fluids.FluidStack fromModern(FluidStack stack) {
         if (stack == null || stack.isEmpty()) return null;
         var legacy = legacyOf(stack.getFluid());
+        if (legacy == null) legacy = standIn(stack.getFluid());
         return legacy == null ? null : new legacyconnector.v1_12_2.net.minecraftforge.fluids.FluidStack(legacy, stack.getAmount());
+    }
+
+    private static final Map<String, Fluid> STAND_IN_FLUIDS = new HashMap<>();
+    private static final Map<Fluid, legacyconnector.v1_12_2.net.minecraftforge.fluids.Fluid> STAND_INS = new IdentityHashMap<>();
+
+    /**
+     * A legacy fluid for a modern fluid 1.12.2 never had (a modern mod's, a post-1.12 vanilla one): named by its registry id, never registered
+     * with {@code FluidRegistry}, so legacy code can hold, move and hand it back.
+     */
+    private static legacyconnector.v1_12_2.net.minecraftforge.fluids.Fluid standIn(Fluid modern) {
+        if (modern == null || modern == net.minecraft.world.level.material.Fluids.EMPTY) return null;
+        var source = modern instanceof net.minecraft.world.level.material.FlowingFluid f ? f.getSource() : modern;
+        var existing = STAND_INS.get(source);
+        if (existing != null) return existing;
+        var id = net.minecraft.core.registries.BuiltInRegistries.FLUID.getKey(source);
+        var legacy = new legacyconnector.v1_12_2.net.minecraftforge.fluids.Fluid(id.toString(),
+                new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation(id.getNamespace(), "blocks/" + id.getPath() + "_still"),
+                new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation(id.getNamespace(), "blocks/" + id.getPath() + "_flow"));
+        STAND_INS.put(source, legacy);
+        STAND_IN_FLUIDS.put(legacy.getName(), source);
+        return legacy;
     }
 
     /** The legacy fluid of a modern one (its source or flowing form), or null. */
