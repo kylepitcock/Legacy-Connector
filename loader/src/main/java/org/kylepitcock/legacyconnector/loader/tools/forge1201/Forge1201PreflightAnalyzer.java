@@ -34,8 +34,8 @@ import java.util.zip.ZipFile;
  * inspect them, validate mixin injection semantics, or prove runtime compatibility.</p>
  */
 public final class Forge1201PreflightAnalyzer {
-    public static final String SCHEMA_VERSION = "1.9";
-    public static final String ANALYZER_VERSION = "1.9.0";
+    public static final String SCHEMA_VERSION = "1.10";
+    public static final String ANALYZER_VERSION = "1.10.0";
     public static final String TARGET_MINECRAFT_VERSION = "1.21.1";
     public static final String TARGET_NEOFORGE_VERSION = "21.1.258";
     private static final int MAX_MIXIN_JSON_BYTES = 1024 * 1024;
@@ -112,6 +112,7 @@ public final class Forge1201PreflightAnalyzer {
             Map<String, String> manifestAttributes,
             List<MixinConfigCandidate> mixinConfigCandidates,
             Forge1201MixinAnalyzer.Result mixinAnalysis,
+            Forge1201MappingProfileValidator.Finding mappingProfile,
             String coreModClass,
             List<String> jarInJarPaths,
             int classCount,
@@ -178,6 +179,19 @@ public final class Forge1201PreflightAnalyzer {
             Collection<Path> installedModDirectories,
             Collection<Path> targetClasspath,
             String requestedRefmapContextKey) throws IOException {
+        return analyze(jarPath, installedModDirectories, targetClasspath, requestedRefmapContextKey, null);
+    }
+
+    /**
+     * Inspects one source archive and optionally validates a caller-supplied mapping profile.
+     * Profile validation is read-only and never applies mappings to source selectors.
+     */
+    public static PreflightResult analyze(
+            Path jarPath,
+            Collection<Path> installedModDirectories,
+            Collection<Path> targetClasspath,
+            String requestedRefmapContextKey,
+            Path mappingProfilePath) throws IOException {
         if (jarPath == null || !Files.isRegularFile(jarPath)) {
             throw new IllegalArgumentException("Preflight input must be an existing JAR file: " + jarPath);
         }
@@ -385,6 +399,9 @@ public final class Forge1201PreflightAnalyzer {
                     jar, mixinDeclarations, targetIndex, Map.of(), "not-supplied", requestedRefmapContextKey);
         }
 
+        Forge1201MappingProfileValidator.Finding mappingProfile =
+                Forge1201MappingProfileValidator.inspect(mappingProfilePath);
+
         List<String> observedNativeIds = nativeIds.stream().sorted().toList();
         List<String> limitations = List.of(
                 "This is static preflight evidence only; it does not prove initialization, gameplay, client rendering, synchronization, or stability.",
@@ -393,6 +410,7 @@ public final class Forge1201PreflightAnalyzer {
                 "Nested archive traversal is bounded by depth, archive count, per-archive size, and total inflated-byte limits. Class capture is bounded to 8 MiB per class, 16 MiB per nested archive, 128 MiB aggregate nested class bytes submitted, and 64 MiB aggregate outer class bytes. Archives/classes skipped by a limit or rejected as unsafe/corrupt remain explicit findings.",
                 "Mixin configs discovered by the manifest and outer-archive resource heuristics are parsed in the current preflight schema. Target-class presence is checked only when the root project's resolved target compile classpath is supplied; no 1.20.1-to-1.21.1 Minecraft class identity mapping is assumed.",
                 "Mixin analysis covers outer-archive configs, mixin class entries and internal owner names, static @Mixin targets, member annotations, six core Mixin 0.8.5 injector annotations, @Slice boundaries, bounded refmap tables, and owner-scoped exact correlation candidates for AP-emitted string references. A caller may explicitly supply a refmap context; otherwise base/context candidates are inventoried without selection. Plugins and custom wrappers remain inert and may make effective resource selection dynamic. No source/target namespace conversion, target selector/member/instruction resolution, slice ordering, handler stack validation, or runtime injection success is claimed. Source-nested JAR config/class provenance remains a future increment.",
+                "Schema 1.10 mapping profiles are parsed and structurally validated only when explicitly supplied. Profile validation checks declarations, context bindings, mapping-edge coverage/connectivity, artifact SHA-256, and license evidence; it never applies a mapping or rewrites selectors. A structurally validated profile is not proof of semantic mapping correctness or runtime compatibility.",
                 "Reflection/resource string candidates remain heuristic and are not treated as confirmed bytecode references.",
                 "Installed provider discovery records top-level and nested archive paths, mod IDs, and declared versions. A provider ID/version match does not establish API or behavioral compatibility; installed version ranges and API compatibility are not verified.",
                 "Maven-style version ranges with numeric dotted versions are evaluated conservatively. Qualified or otherwise unsupported version strings remain explicitly unverified.",
@@ -404,7 +422,7 @@ public final class Forge1201PreflightAnalyzer {
                 TARGET_MINECRAFT_VERSION, TARGET_NEOFORGE_VERSION, forgeMetadata, metadataStatus, analysisStatus,
                 metadataWarnings.stream().distinct().sorted().toList(), mods, duplicateModIds, dependencies,
                 archiveEntries.size(), archiveEntries, resourceNamespaces.stream().toList(), manifest,
-                mixinCandidates, mixinAnalysis, coreModClass, jarInJarPaths.stream().toList(), classCount,
+                mixinCandidates, mixinAnalysis, mappingProfile, coreModClass, jarInJarPaths.stream().toList(), classCount,
                 outerClassScannedCount, entrypoints, packageReferences, apiTypes, methodReferences,
                 fieldReferences, methodCallSites, fieldCallSites, dynamicReferences, nestedClassCount,
                 nestedClassScannedCount, normalizedMemberReferences, classScanWarnings,
@@ -727,6 +745,25 @@ public final class Forge1201PreflightAnalyzer {
             out.append("\nMetadata warnings:\n");
             result.metadataWarnings().forEach(warning -> out.append("  - ").append(warning).append('\n'));
         }
+        Forge1201MappingProfileValidator.Finding profile = result.mappingProfile();
+        out.append("\nMapping profile: ").append(profile.status());
+        if (profile.profileId() != null) out.append(" id=").append(profile.profileId());
+        if (profile.profilePath() != null) out.append(" file=").append(profile.profilePath());
+        out.append('\n');
+        out.append("  Source namespace: ").append(profile.sourceCompileNamespaceId())
+                .append(" (Minecraft ").append(profile.sourceMinecraftVersion()).append(")\n")
+                .append("  Target namespace: ").append(profile.targetCompileNamespaceId())
+                .append(" (Minecraft ").append(profile.targetMinecraftVersion()).append(")\n")
+                .append("  Context bindings: ").append(profile.contextBindings().size())
+                .append(" | artifacts: ").append(profile.artifacts().size())
+                .append(" | edges: ").append(profile.edges().size()).append('\n');
+        for (Forge1201MappingProfileValidator.ContextPathFinding path : profile.contextPaths()) {
+            out.append("  Context ").append(path.contextKey()).append(": ")
+                    .append(path.status()).append(" (paths=").append(path.completePathCount()).append(")\n");
+        }
+        profile.validationErrors().forEach(value -> out.append("  error: ").append(value).append('\n'));
+        profile.warnings().forEach(value -> out.append("  warning: ").append(value).append('\n'));
+        out.append("  Note: profile validation does not transform selectors or prove mapping semantics.\n");
         out.append("\nLimitations:\n");
         result.limitations().forEach(value -> out.append("  - ").append(value).append('\n'));
         return out.append("\nConclusion: this report is not a compatibility approval. Runtime validation is still required.\n")
@@ -915,11 +952,12 @@ public final class Forge1201PreflightAnalyzer {
         Files.writeString(absolute, content, StandardCharsets.UTF_8);
     }
 
-    /** CLI: <jar> [--mods-dir <directory>]... [--target-classpath-file <path>] [--refmap-context <key>] [--json <path>] [--text <path>] */
+    /** CLI: <jar> [--mods-dir <directory>]... [--target-classpath-file <path>] [--refmap-context <key>] [--mapping-profile <path>] [--json <path>] [--text <path>] */
     public static void main(String[] args) throws IOException {
         if (args.length < 1) {
             throw new IllegalArgumentException("Usage: <jar> [--mods-dir <directory>]... "
-                    + "[--target-classpath-file <path>] [--refmap-context <key>] [--json <path>] [--text <path>]");
+                    + "[--target-classpath-file <path>] [--refmap-context <key>] "
+                    + "[--mapping-profile <path>] [--json <path>] [--text <path>]");
         }
         Path jar = Path.of(args[0]);
         List<Path> modDirectories = new ArrayList<>();
@@ -927,11 +965,16 @@ public final class Forge1201PreflightAnalyzer {
         Path json = null;
         Path text = null;
         String requestedRefmapContextKey = null;
+        Path mappingProfile = null;
         for (int i = 1; i < args.length; i++) {
             String option = args[i];
             if (++i >= args.length) throw new IllegalArgumentException("Missing value after " + option);
             if ("--refmap-context".equals(option)) {
                 requestedRefmapContextKey = args[i];
+                continue;
+            }
+            if ("--mapping-profile".equals(option)) {
+                mappingProfile = Path.of(args[i]);
                 continue;
             }
             Path value = Path.of(args[i]);
@@ -943,7 +986,9 @@ public final class Forge1201PreflightAnalyzer {
                 default -> throw new IllegalArgumentException("Unknown preflight option: " + option);
             }
         }
-        PreflightResult result = analyze(jar, modDirectories, readTargetClasspathFile(targetClasspathFile), requestedRefmapContextKey);
+        PreflightResult result = analyze(
+                jar, modDirectories, readTargetClasspathFile(targetClasspathFile),
+                requestedRefmapContextKey, mappingProfile);
         if (json != null) write(json, toJson(result));
         if (text != null) write(text, toText(result));
         if (json == null && text == null) {
