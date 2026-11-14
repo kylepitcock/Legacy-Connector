@@ -81,7 +81,9 @@ public final class SrgMojangTable {
 
     public record GenerationResult(Map<String, String> table, Coverage coverage) {
         public GenerationResult {
-            table = Collections.unmodifiableMap(new TreeMap<>(table));
+            TreeMap<String, String> ordered = new TreeMap<>(SRG_ORDER);
+            ordered.putAll(table);
+            table = Collections.unmodifiableMap(ordered);
         }
     }
 
@@ -268,7 +270,8 @@ public final class SrgMojangTable {
                                 + " for " + srg + ": " + previous + " vs " + readableName);
                     }
                     duplicateSrgIds++;
-                } else if (method) {
+                }
+                if (method) {
                     matchedMethods++;
                 } else {
                     matchedFields++;
