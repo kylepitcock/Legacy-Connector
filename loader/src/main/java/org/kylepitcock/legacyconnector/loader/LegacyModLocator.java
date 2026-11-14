@@ -334,6 +334,33 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             System.setProperty("legacyconnector.bridgedMods", String.join(",", bridges.stream().map(LibraryBridges.Bridge::legacyModId)
                     .filter(java.util.Objects::nonNull).toList()));
             if (!bridges.isEmpty()) LOG.info("Legacy Connector: bridging {} to their modern replacements", bridges);
+            // Mods whose required dependency is not installed do not run: FML would not have started them either.
+            MISSING_DEPENDENCIES.clear();
+            {
+                List<LegacyJar> checked = legacy.stream().filter(j -> skipReason(j) == null && LibraryBridges.replacing(j, bridges) == null
+                        && LibraryBridges.obsoleteReason(j) == null).toList();
+                Set<String> have = LegacyDependencies.presentIds(legacy, bridges, LibraryBridges.seenModernIds(), apis.keySet());
+                StringBuilder lines = new StringBuilder();
+                for (LegacyDependencies.Problem p : LegacyDependencies.check(checked, have, bridges, "CLIENT".equals(side()))) {
+                    LegacyJar owner = checked.stream().filter(j -> j.mods.contains(p.mod())).findFirst().orElse(null);
+                    if (p.fatal()) {
+                        boolean client = "CLIENT".equals(side());
+                        LOG.error("Legacy Connector: {}; {} is not loaded", p.message(), p.mod().legacyId);
+                        // A warning, not an error: FML shows its loading-warnings screen with a Proceed button; only this mod stays disabled.
+                        // A dedicated server has no screen: the log line and the report section are what it gets.
+                        if (client && owner != null) {
+                            pipeline.addIssue(ModLoadingIssue.warning(LegacyDependencies.issueKey(p),
+                                    LegacyDependencies.issueArgs(p, owner.version.id())).withAffectedPath(owner.path));
+                        }
+                        MISSING_DEPENDENCIES.computeIfAbsent(owner, k -> new ArrayList<>()).add(p.message());
+                        lines.append(p.mod().legacyId).append("\t").append(p.message()).append("\n");
+                    } else {
+                        LOG.warn("Legacy Connector: {}", p.message());
+                        if (owner != null) owner.notes.add(p.message());
+                    }
+                }
+                System.setProperty("legacyconnector.missingDependencies", lines.toString());
+            }
             String side = side();
             LegacyJarTransformer transformer = new LegacyJarTransformer(index, LegacyModLocator.class.getClassLoader()).presentMods(present).side(side);
             // Legacy coremods' class transformers, loaded on the first cache miss (only then is anything translated).
@@ -1092,6 +1119,9 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
         return ShimIndex.read(new java.io.ByteArrayInputStream(data));
     }
 
+    /** Jars with a mod whose required dependency is missing, and the plain-words messages (first lines of their report entry). */
+    private static final Map<LegacyJar, List<String>> MISSING_DEPENDENCIES = new java.util.LinkedHashMap<>();
+
     private static void writeReport(Path gameDir, Map<LegacyJar, String> outcomes, SplitPackageResolver.Outcome split) {
         Path report = gameDir.resolve("logs").resolve("legacyconnector-report.txt");
         try {
@@ -1102,6 +1132,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                 for (var e : outcomes.entrySet()) {
                     LegacyJar jar = e.getKey();
                     w.write(jar.fileName() + "  [" + jar.version.id() + ", " + jar.versionEvidence + "]\n");
+                    for (String missing : MISSING_DEPENDENCIES.getOrDefault(jar, List.of())) w.write("  MISSING DEPENDENCY: " + missing + "; the mod is not loaded\n");
                     for (LegacyModDecl mod : jar.mods) {
                         w.write("  mod " + mod.legacyId + " -> " + mod.modernId() + "  (" + mod.name + " " + mod.version + ")\n");
                     }

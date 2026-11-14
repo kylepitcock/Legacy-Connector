@@ -83,6 +83,7 @@ public final class LegacyLifecycle {
         long start = System.currentTimeMillis();
 
         org.kylepitcock.legacyconnector.api.internal.AddonHost.enter(org.kylepitcock.legacyconnector.api.LegacyPhase.DISCOVERED);
+        failMissingDependencies(mods);
         phase(mods, "construction", m -> LegacyMods.platform(m.version).construct(m));
         for (LegacyPlatform p : LegacyMods.platforms()) p.beforePreInit();
         for (LegacyPlatform p : LegacyMods.platforms()) p.coreModPhase("preInit");
@@ -103,6 +104,23 @@ public final class LegacyLifecycle {
         org.kylepitcock.legacyconnector.api.internal.AddonHost.enter(org.kylepitcock.legacyconnector.api.LegacyPhase.REGISTERED);
         org.kylepitcock.legacyconnector.core.flatten.VanillaFlattening.saveFixedItems();
         LOG.info("Legacy mods loaded in {} ms ({} failed)", System.currentTimeMillis() - start, FAILED.size() - CLIENT_ONLY.size());
+    }
+
+    /** A mod whose required dependency is not installed does not run (the loader found it missing; its report line says which). */
+    private static void failMissingDependencies(List<LegacyModRecord> mods) {
+        String lines = System.getProperty("legacyconnector.missingDependencies", "");
+        if (lines.isBlank()) return;
+        for (String line : lines.split("\n")) {
+            int tab = line.indexOf('\t');
+            if (tab <= 0) continue;
+            String id = line.substring(0, tab);
+            for (LegacyModRecord mod : mods) {
+                if (!mod.legacyId.equalsIgnoreCase(id) || FAILED.containsKey(mod)) continue;
+                String message = line.substring(tab + 1);
+                LOG.error("{}: not loaded", message);
+                FAILED.put(mod, new IllegalStateException(message));
+            }
+        }
     }
 
     public static void onCommonSetup(FMLCommonSetupEvent event) {
