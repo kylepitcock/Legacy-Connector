@@ -287,6 +287,7 @@ def genSrgMojang = tasks.register('genSrgMojang1201', JavaExec) {
     inputs.file(joinedTsrg1201)
     inputs.file(mojang1201)
     outputs.dir(srgMojangDir)
+    outputs.file(srgMojangCoverage)
     classpath = sourceSets.main.output
     mainClass = 'org.kylepitcock.legacyconnector.loader.mapping.SrgMojangTable'
     argumentProviders.add({
