@@ -79,6 +79,13 @@ def main():
             if not new:
                 result["stuck"] = "no jar to remove for " + ", ".join(sorted(failed))
                 break
+            # mods that need a dropped mod would only fail with "requires": drop them in the same step (recorded as cascade)
+            gone = {i for n in dropped | new for i in (atm9.get(n) or {"ids": []})["ids"]}
+            for n in wanted:
+                if n not in dropped | new and atm9.get(n) and atm9[n]["deps"] & gone:
+                    new.add(n)
+                    for i in atm9[n]["ids"]:
+                        result["mods"].setdefault(i, {"status": "failed", "phase": "dependency", "cause": "needs " + ", ".join(sorted(atm9[n]["deps"] & gone)), "jar": n, "iteration": it + 1, "cascade": True})
             dropped |= new
         else:
             result["stuck"] = "max iterations"

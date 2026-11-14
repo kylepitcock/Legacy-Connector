@@ -75,6 +75,7 @@ def failed_mods_1201(text):
                 continue
             msg = hit.group(1)
             ident = re.search(r"\(([\w.\-]+)\) has failed to load correctly", msg)
+            ident = ident or re.search(r"\(([\w.\-]+)\) encountered an error", msg)
             mod = re.match(r"Mod (\S+) requires", msg)
             key = ident.group(1) if ident else (mod.group(1) if mod else msg[:60])
             cause = msg
