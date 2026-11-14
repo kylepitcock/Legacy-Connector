@@ -546,8 +546,15 @@ sourceSets {
     coremodApi164 {
         compileClasspath += sourceSets.coremodApi.output
     }
+    // Forge 1.12.2: net.minecraftforge.fml.* instead of cpw.mods.fml.*, over the same LaunchWrapper classes
+    coremodApi1122 {
+        compileClasspath += sourceSets.coremodApi.output
+    }
 }
 dependencies {
+    coremodApi1122CompileOnly "org.ow2.asm:asm-commons:${asm_version}"
+    coremodApi1122CompileOnly "org.apache.logging.log4j:log4j-api:2.22.1"
+    coremodApi1122CompileOnly "com.google.guava:guava:33.0.0-jre"
     coremodApiCompileOnly "org.ow2.asm:asm-commons:${asm_version}"
     coremodApiCompileOnly "org.apache.logging.log4j:log4j-api:2.22.1"
     coremodApiCompileOnly "com.google.guava:guava:33.0.0-jre"
@@ -564,4 +571,10 @@ def coremodApi164Jar = tasks.register('coremodApi164Jar', Jar) {
     archiveFileName = 'coremod-api.jar'
     destinationDirectory = layout.buildDirectory.dir('generated/coremodApi/legacyconnector/legacy/1.6.4')
 }
-sourceSets.main.resources.srcDir(files(layout.buildDirectory.dir('generated/coremodApi')).builtBy(coremodApiJar, coremodApi164Jar))
+def coremodApi1122Jar = tasks.register('coremodApi1122Jar', Jar) {
+    from sourceSets.coremodApi1122.output
+    from(sourceSets.coremodApi.output) { exclude 'cpw/**' } // the LaunchWrapper classes; the cpw.mods.fml flavour is not in this one
+    archiveFileName = 'coremod-api.jar'
+    destinationDirectory = layout.buildDirectory.dir('generated/coremodApi/legacyconnector/legacy/1.12.2')
+}
+sourceSets.main.resources.srcDir(files(layout.buildDirectory.dir('generated/coremodApi')).builtBy(coremodApiJar, coremodApi164Jar, coremodApi1122Jar))
