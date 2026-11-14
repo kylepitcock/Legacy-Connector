@@ -56,6 +56,22 @@ public final class TileProbe1710 {
         }
     }
 
+    /** Puts a vanilla record into slot 0 of a legacy inventory tile and reports what redstone and the machine's own record checks say. */
+    public static String jukebox(Level level, BlockPos pos) {
+        try {
+            if (!(level.getBlockEntity(pos) instanceof LegacyBlockEntity host)) return "NOBE";
+            var t = host.legacy();
+            var w = legacyconnector.v1_7_10.net.minecraft.world.World.mcc$wrap(level);
+            var inv = (legacyconnector.v1_7_10.net.minecraft.inventory.IInventory) t;
+            inv.setInventorySlotContents(0, new legacyconnector.v1_7_10.net.minecraft.item.ItemStack(legacyconnector.v1_7_10.net.minecraft.init.Items.record_13, 1));
+            MethodHandles.Lookup lk = MethodHandles.lookup();
+            boolean canPlay = (boolean) lk.findVirtual(t.getClass(), "getCanPlay", MethodType.methodType(boolean.class)).invoke(t);
+            return "slot0=" + inv.getStackInSlot(0) + " canPlay=" + canPlay + " powered=" + w.isBlockIndirectlyGettingPowered(pos.getX(), pos.getY(), pos.getZ());
+        } catch (Throwable e) {
+            return "ERR " + e;
+        }
+    }
+
     /** What 1.7.10 world queries answer at a position: rain, biome flags, the top segment and what is in the column above. */
     public static String worldDiag(Level level, BlockPos pos) {
         try {
