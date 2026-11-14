@@ -2,6 +2,7 @@ package org.kylepitcock.legacyconnector.loader.tools.forge1201;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Read-only identification of a Forge 1.20.1 mod jar.
@@ -41,13 +42,36 @@ public record Forge1201JarInfo(
 
         public String dependencySummary() {
             return dependencies.stream()
-                    .map(dependency -> (dependency.mandatory() ? "" : "optional ")
+                    .map(dependency -> (dependency.type() == DependencyType.REQUIRED ? ""
+                            : dependency.type().name().toLowerCase(Locale.ROOT) + " ")
                             + dependency.modId() + " " + dependency.versionRange())
                     .reduce((a, b) -> a + ", " + b)
                     .orElse("none declared");
         }
     }
 
+    public enum DependencyType {
+        REQUIRED,
+        OPTIONAL,
+        INCOMPATIBLE,
+        DISCOURAGED,
+        UNKNOWN
+    }
+
     /** One dependency entry copied from a [[dependencies.<modid>]] section in mods.toml. */
-    public record Dependency(String modId, String versionRange, boolean mandatory, String ordering, String side) {}
+    public record Dependency(
+            String modId, String versionRange, DependencyType type, String ordering, String side) {
+        public Dependency {
+            type = type == null ? DependencyType.UNKNOWN : type;
+        }
+
+        /** Backwards-compatible constructor for the legacy Forge mandatory flag. */
+        public Dependency(String modId, String versionRange, boolean mandatory, String ordering, String side) {
+            this(modId, versionRange, mandatory ? DependencyType.REQUIRED : DependencyType.OPTIONAL, ordering, side);
+        }
+
+        public boolean mandatory() {
+            return type == DependencyType.REQUIRED;
+        }
+    }
 }
