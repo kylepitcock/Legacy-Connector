@@ -57,7 +57,8 @@ public final class Forge1201MappingProfileValidator {
     private static final Set<String> LOADER_FIELDS = Set.of("id", "version", "versionRange");
     private static final Set<String> BINDING_FIELDS = Set.of("namespaceId", "evidence");
     private static final Set<String> EDGE_FIELDS =
-            Set.of("edgeId", "from", "to", "scope", "artifactIds", "status", "reviewEvidence",
+            Set.of("edgeId", "from", "to", "direction", "sourceMinecraftVersion",
+                    "targetMinecraftVersion", "scope", "artifactIds", "status", "reviewEvidence",
                     "identityEvidence");
     private static final Set<String> ARTIFACT_FIELDS =
             Set.of("artifactId", "provider", "version", "format", "coordinate", "url",
@@ -102,6 +103,8 @@ public final class Forge1201MappingProfileValidator {
         INVALID_DECLARATION,
         ARTIFACT_UNVERIFIED,
         REVIEW_EVIDENCE_MISSING,
+        DIRECTION_UNSUPPORTED,
+        EDGE_VERSION_MISMATCH,
         IDENTITY_EXPLICIT_NOT_APPLIED,
         IDENTITY_UNVERIFIED
     }
@@ -141,6 +144,9 @@ public final class Forge1201MappingProfileValidator {
             String edgeId,
             String fromNamespace,
             String toNamespace,
+            String direction,
+            String sourceMinecraftVersion,
+            String targetMinecraftVersion,
             List<String> scope,
             List<String> artifactIds,
             String declaredStatus,
@@ -161,6 +167,8 @@ public final class Forge1201MappingProfileValidator {
             String contextKey,
             String sourceNamespace,
             String targetNamespace,
+            String sourceMinecraftVersion,
+            String targetMinecraftVersion,
             int completePathCount,
             List<List<String>> candidateEdgePaths,
             String status) {
@@ -347,7 +355,8 @@ public final class Forge1201MappingProfileValidator {
             warnings.add("Target NeoForge version differs from the analyzer's pinned 21.1.258 target.");
         }
 
-        List<ContextPathFinding> contextPaths = evaluateContextPaths(bindings, targetNamespace, edges);
+        List<ContextPathFinding> contextPaths = evaluateContextPaths(
+                bindings, sourceVersion, targetVersion, targetNamespace, edges);
         boolean sourceMismatch = sourceVersion != null && !"1.20.1".equals(sourceVersion);
         boolean targetMismatch = targetVersion != null && !"1.21.1".equals(targetVersion);
         boolean sourceLoaderMismatch = sourceLoaderId != null && !"forge".equalsIgnoreCase(sourceLoaderId);
@@ -615,22 +624,36 @@ public final class Forge1201MappingProfileValidator {
             String id = requiredString(item, "edgeId", label, errors);
             String from = requiredString(item, "from", label, errors);
             String to = requiredString(item, "to", label, errors);
+            String direction = requiredString(item, "direction", label, errors);
+            String edgeSourceVersion = requiredString(item, "sourceMinecraftVersion", label, errors);
+            String edgeTargetVersion = requiredString(item, "targetMinecraftVersion", label, errors);
             List<String> scope = stringArray(item.get("scope"), label + ".scope", errors, 16);
             List<String> artifactIds = stringArray(item.get("artifactIds"), label + ".artifactIds", errors, 64);
             String declaredStatus = requiredString(item, "status", label, errors);
+            List<String> evidenceErrors = new ArrayList<>();
             List<String> reviewEvidence = stringArray(item.get("reviewEvidence"),
-                    label + ".reviewEvidence", new ArrayList<>(), 128);
+                    label + ".reviewEvidence", evidenceErrors, 128);
             List<String> identityEvidence = stringArray(item.get("identityEvidence"),
-                    label + ".identityEvidence", new ArrayList<>(), 128);
+                    label + ".identityEvidence", evidenceErrors, 128);
+            evidenceErrors.forEach(message -> warnings.add("Invalid " + label + " evidence: " + message));
 
             List<String> edgeWarnings = new ArrayList<>();
             EdgeStatus status = EdgeStatus.INVALID_DECLARATION;
             if (id != null && !ids.add(id)) errors.add("Duplicate edgeId '" + id + "'.");
-            if (from != null && from.equals(to)) {
+            if (!"FORWARD".equalsIgnoreCase(direction)) {
+                status = EdgeStatus.DIRECTION_UNSUPPORTED;
+                edgeWarnings.add("Only explicit FORWARD edges are currently supported; reverse use requires a separate edge.");
+            } else if (edgeSourceVersion == null || edgeTargetVersion == null) {
+                status = EdgeStatus.INVALID_DECLARATION;
+                edgeWarnings.add("Each edge must explicitly declare its source and target Minecraft versions.");
+            } else if (from != null && from.equals(to)) {
                 if (!"VERIFIED".equalsIgnoreCase(declaredStatus)) {
                     status = "MISSING".equalsIgnoreCase(declaredStatus)
                             ? EdgeStatus.MISSING : EdgeStatus.INVALID_DECLARATION;
                     edgeWarnings.add("An explicit identity edge must declare status VERIFIED.");
+                } else if (!edgeSourceVersion.equals(edgeTargetVersion)) {
+                    status = EdgeStatus.EDGE_VERSION_MISMATCH;
+                    edgeWarnings.add("An identity edge cannot change Minecraft versions.");
                 } else if (identityEvidence.isEmpty()) {
                     status = EdgeStatus.IDENTITY_UNVERIFIED;
                     edgeWarnings.add("Identity edge has no explicit identityEvidence; no implicit identity is accepted.");
@@ -674,8 +697,8 @@ public final class Forge1201MappingProfileValidator {
                 edgeWarnings.add("Edge contains an unsupported symbol scope.");
                 if (status == EdgeStatus.VERIFIED) status = EdgeStatus.PARTIAL;
             }
-            result.add(new EdgeFinding(id, from, to, scope, artifactIds, declaredStatus,
-                    status, reviewEvidence, identityEvidence, edgeWarnings));
+            result.add(new EdgeFinding(id, from, to, direction, edgeSourceVersion, edgeTargetVersion,
+                    scope, artifactIds, declaredStatus, status, reviewEvidence, identityEvidence, edgeWarnings));
         }
         result.sort(Comparator.comparing(value -> value.edgeId() == null ? "" : value.edgeId()));
         return result;
@@ -683,40 +706,54 @@ public final class Forge1201MappingProfileValidator {
 
     private static List<ContextPathFinding> evaluateContextPaths(
             List<ContextBindingFinding> bindings,
+            String sourceMinecraftVersion,
+            String targetMinecraftVersion,
             String targetNamespace,
             List<EdgeFinding> edges) {
-        if (targetNamespace == null) return List.of();
+        if (targetNamespace == null || sourceMinecraftVersion == null || targetMinecraftVersion == null) {
+            return List.of();
+        }
         List<EdgeFinding> usable = edges.stream()
                 .filter(edge -> edge.status() == EdgeStatus.VERIFIED
                         || edge.status() == EdgeStatus.IDENTITY_EXPLICIT_NOT_APPLIED)
+                .filter(edge -> "FORWARD".equalsIgnoreCase(edge.direction()))
                 .sorted(Comparator.comparing(edge -> edge.edgeId() == null ? "" : edge.edgeId()))
                 .toList();
         List<ContextPathFinding> findings = new ArrayList<>();
         for (ContextBindingFinding binding : bindings) {
             List<List<String>> paths = new ArrayList<>();
-            enumeratePaths(binding.namespaceId(), targetNamespace, usable,
-                    new LinkedHashSet<>(Set.of(binding.namespaceId())), new ArrayList<>(), paths);
+            Set<String> visited = new LinkedHashSet<>();
+            visited.add(pathNode(binding.namespaceId(), sourceMinecraftVersion));
+            enumeratePaths(binding.namespaceId(), sourceMinecraftVersion, targetNamespace,
+                    targetMinecraftVersion, usable, visited, new ArrayList<>(), paths);
             int count = Math.min(paths.size(), 2);
             String status = count == 0 ? "NO_COMPLETE_PATH"
                     : count > 1 ? "AMBIGUOUS_PATH" : "COMPLETE_UNAMBIGUOUS_PATH";
             findings.add(new ContextPathFinding(binding.contextKey(), binding.namespaceId(),
-                    targetNamespace, count, paths.subList(0, count), status));
+                    targetNamespace, sourceMinecraftVersion, targetMinecraftVersion,
+                    count, paths.subList(0, count), status));
         }
         findings.sort(Comparator.comparing(ContextPathFinding::contextKey));
         return findings;
     }
 
     private static void enumeratePaths(
-            String current,
-            String target,
+            String currentNamespace,
+            String currentVersion,
+            String targetNamespace,
+            String targetVersion,
             List<EdgeFinding> edges,
             Set<String> visited,
             List<String> edgePath,
             List<List<String>> results) {
         if (results.size() >= 2) return;
-        if (current.equals(target)) {
+        if (currentNamespace.equals(targetNamespace)) {
+            if (!currentVersion.equals(targetVersion)) return;
             for (EdgeFinding edge : edges) {
-                if (current.equals(edge.fromNamespace()) && current.equals(edge.toNamespace())
+                if (currentNamespace.equals(edge.fromNamespace())
+                        && currentNamespace.equals(edge.toNamespace())
+                        && currentVersion.equals(edge.sourceMinecraftVersion())
+                        && currentVersion.equals(edge.targetMinecraftVersion())
                         && edge.status() == EdgeStatus.IDENTITY_EXPLICIT_NOT_APPLIED) {
                     edgePath.add(edge.edgeId());
                     results.add(List.copyOf(edgePath));
@@ -727,19 +764,29 @@ public final class Forge1201MappingProfileValidator {
             return;
         }
         for (EdgeFinding edge : edges) {
-            if (!current.equals(edge.fromNamespace()) || edge.toNamespace() == null
-                    || current.equals(edge.toNamespace()) || visited.contains(edge.toNamespace())) continue;
+            if (!currentNamespace.equals(edge.fromNamespace())
+                    || !currentVersion.equals(edge.sourceMinecraftVersion())
+                    || edge.toNamespace() == null
+                    || currentNamespace.equals(edge.toNamespace())) continue;
+            String nextVersion = edge.targetMinecraftVersion();
+            String nextNode = pathNode(edge.toNamespace(), nextVersion);
+            if (visited.contains(nextNode)) continue;
             edgePath.add(edge.edgeId());
-            if (target.equals(edge.toNamespace())) {
-                results.add(List.copyOf(edgePath));
+            if (targetNamespace.equals(edge.toNamespace())) {
+                if (targetVersion.equals(nextVersion)) results.add(List.copyOf(edgePath));
             } else {
-                visited.add(edge.toNamespace());
-                enumeratePaths(edge.toNamespace(), target, edges, visited, edgePath, results);
-                visited.remove(edge.toNamespace());
+                visited.add(nextNode);
+                enumeratePaths(edge.toNamespace(), nextVersion, targetNamespace, targetVersion,
+                        edges, visited, edgePath, results);
+                visited.remove(nextNode);
             }
             edgePath.removeLast();
             if (results.size() >= 2) return;
         }
+    }
+
+    private static String pathNode(String namespace, String minecraftVersion) {
+        return namespace + "@" + minecraftVersion;
     }
 
     private static void validateAugmentations(JsonObject target, List<String> warnings) {
