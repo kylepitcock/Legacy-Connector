@@ -863,6 +863,18 @@
    "link": "https://www.curseforge.com/minecraft/mc-mods/colored-redstone",
    "date": "2026-11-14",
    "open": true
+  },
+  {
+   "issue": 289,
+   "mod": "candyworld-1.1.5",
+   "mc": "1.12.2",
+   "status": "partial",
+   "details": "gummy bear and gummy mouse dont spawn in the gummy swamp they should spawn on gummy blocks ill send pictures of the original spawning them based on testing i suspect the clear gummy block layer that spawns on the surface of this biome that isn't obtainable without silk touch i suspect it may be considered the spawning block cookie ore doesn't spawn in the overworld liquid candy acts like water in…",
+   "lc": "legacyconnector-0.4.14-nightly.33.d21f5…",
+   "neoforge": "21.1.266",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/candy-world",
+   "date": "2026-11-14",
+   "open": true
   }
  ]
 }
