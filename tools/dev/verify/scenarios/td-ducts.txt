@@ -1,0 +1,19 @@
+# Thermal Dynamics (1.12.2) with CodeChickenLib: ducts are drawn by the mod's own block renderer
+mods: 1.12.2 CoFHCore-1.12.2
+mods: 1.12.2 CoFHWorld-1.12.2
+mods: 1.12.2 ThermalFoundation-1.12.2
+mods: 1.12.2 ThermalExpansion-1.12.2
+mods: 1.12.2 ThermalDynamics-1.12.2
+mods: 1.12.2 CodeChickenLib-1.12.2
+cmd /fill -6 148 -6 6 148 6 minecraft:stone
+cmd /setblock 0 149 0 thermaldynamics:duct_0
+cmd /setblock 1 149 0 thermaldynamics:duct_0
+cmd /setblock 2 149 0 thermaldynamics:duct_16
+cmd /setblock 3 149 0 thermaldynamics:duct_32
+cmd /setblock 4 149 0 thermaldynamics:duct_48
+cmd /tp @s 2.5 150.6 2.5
+look 180 50
+wait 60
+shot td-ducts
+logabsent with its mod's block renderer
+logabsent ConfigException

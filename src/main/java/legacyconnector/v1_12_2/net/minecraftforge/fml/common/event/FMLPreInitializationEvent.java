@@ -22,6 +22,15 @@ public class FMLPreInitializationEvent extends FMLStateEvent {
         if (data != null && data.length > 1 && data[1] instanceof File dir) this.mcc$configDir = dir;
     }
 
+    /** The directory this mod's configuration files go to instead of the shared one (see Platform1122.preInit). */
+    public void mcc$useConfigDir(File dir) {
+        this.mcc$configDir = dir;
+    }
+
+    public boolean mcc$hasConfigDir() {
+        return mcc$configDir != null;
+    }
+
     @Override
     public legacyconnector.v1_12_2.net.minecraftforge.fml.common.LoaderState.ModState getModState() {
         return legacyconnector.v1_12_2.net.minecraftforge.fml.common.LoaderState.ModState.PREINITIALIZED;

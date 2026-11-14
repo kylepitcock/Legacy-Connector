@@ -339,7 +339,43 @@ public final class Platform1122 implements LegacyPlatform {
     public void preInit(LegacyModRecord mod) throws Exception {
         Loader.mcc$setState(LoaderState.PREINITIALIZATION);
         legacyconnector.v1_12_2.net.minecraftforge.common.config.ConfigManager.sync(mod.legacyId, legacyconnector.v1_12_2.net.minecraftforge.common.config.Config.Type.INSTANCE);
-        dispatch(mod, new FMLPreInitializationEvent(mod));
+        var event = new FMLPreInitializationEvent(mod);
+        java.io.File own = new java.io.File(new java.io.File(Loader.instance().getConfigDir(), "1.12.2"), mod.legacyId);
+        // a mod that once found the shared file unreadable keeps its own folder, so its settings are never overwritten or lost
+        if (new java.io.File(own, ".legacyconnector-own-config").isFile()) event.mcc$useConfigDir(own);
+        try {
+            dispatch(mod, event);
+        } catch (Exception e) {
+            if (event.mcc$hasConfigDir() || !configParseFailure(e)) throw e;
+            // The config folder is shared by every legacy version: a file of the same name that a mod of another Minecraft version wrote
+            // (CodeChickenLib 1.7.10's codechickenlib.cfg for the 1.12.2 library) cannot be read by this one. The file stays as it is; this
+            // mod gets config/1.12.2/<id>/ from now on.
+            LOG.warn("{}: a configuration file in the shared config folder could not be read ({}); using {} for this mod from now on", mod.legacyId, rootMessage(e), own);
+            own.mkdirs();
+            try {
+                java.nio.file.Files.writeString(new java.io.File(own, ".legacyconnector-own-config").toPath(), "config folder of " + mod.legacyId + " (1.12.2)\n");
+            } catch (java.io.IOException io) {
+                LOG.warn("{}: cannot mark {}: {}", mod.legacyId, own, io.toString());
+            }
+            var retry = new FMLPreInitializationEvent(mod);
+            retry.mcc$useConfigDir(own);
+            dispatch(mod, retry);
+        }
+    }
+
+    private static boolean configParseFailure(Throwable e) {
+        for (Throwable t = e; t != null; t = t.getCause()) {
+            String n = t.getClass().getName().toLowerCase(java.util.Locale.ROOT), m = String.valueOf(t.getMessage()).toLowerCase(java.util.Locale.ROOT);
+            if (n.contains("config") && (n.contains("exception") || n.contains("error")) && (m.contains("pars") || n.contains("pars") || m.contains("invalid"))) return true;
+            if (t.getCause() == t) break;
+        }
+        return false;
+    }
+
+    private static String rootMessage(Throwable e) {
+        Throwable t = e;
+        while (t.getCause() != null && t.getCause() != t) t = t.getCause();
+        return t.toString();
     }
 
     @Override
