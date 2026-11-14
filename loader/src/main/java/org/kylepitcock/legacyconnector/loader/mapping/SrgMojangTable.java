@@ -253,7 +253,7 @@ public final class SrgMojangTable {
             for (String line; (line = reader.readLine()) != null;) {
                 lineNumber++;
                 if (line.isBlank() || line.startsWith("tsrg2")) continue;
-                if (!line.startsWith("\\t")) {
+                if (!line.startsWith("\t")) {
                     String[] classParts = line.trim().split("\\s+");
                     if (classParts.length == 0 || classParts[0].isBlank()) {
                         throw new IOException("Malformed TSRG2 class row at " + tsrg + ":" + lineNumber);
