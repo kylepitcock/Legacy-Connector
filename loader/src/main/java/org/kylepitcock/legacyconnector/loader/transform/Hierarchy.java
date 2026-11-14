@@ -50,7 +50,7 @@ public final class Hierarchy {
     private static final String[] RUNTIME_LIBRARIES = {"java/", "javax/", "jdk/", "sun/", "com/google/", "io/netty/", "org/apache/",
             "com/mojang/", "org/lwjgl/", "gnu/trove/", "it/unimi/", "org/slf4j/", "com/typesafe/", "org/objectweb/", "net/minecraft/",
             "net/neoforged/", "org/joml/", "paulscode/", "com/ibm/icu/", "org/openjdk/nashorn/", "oshi/", "org/kylepitcock/",
-            "scala/", "javax/vecmath/"};
+            "scala/", "akka/", "javax/vecmath/", "LZMA/", "argo/"};
 
     /**
      * True only for a class that cannot exist at runtime: not in any legacy jar, the shim, the synthesized API or a

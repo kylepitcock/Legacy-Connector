@@ -526,6 +526,9 @@ public final class Forge1201Transformer {
             outClasses.put(node.name + ".class", bytes);
             result.classes++;
         }
+        for (String standIn : mc.itemPredicateStandIns) {
+            if (outClasses.putIfAbsent(standIn + ".class", ItemPredicateStandIn1201.generate(standIn)) == null) result.classes++;
+        }
         if (soft != null && soft.stats.symbols() > 0) {
             result.notes.add("Soft link: " + soft.stats.summary() + " that 1.21.1 lacks were replaced by stand-ins (the mod loads, only the features using them fail; experimental.forge1201.softlink=false turns this off)");
             result.notes.addAll(soft.stats.lines());

@@ -103,7 +103,20 @@ public final class CritCompat {
         return LocationPredicate.Builder.location().build();
     }
 
+    /** 1.20.1's {@code ItemPredicate.register(id, factory)}: custom predicate types, read from a {@code "type"} key of the JSON before the vanilla fields. */
+    private static final java.util.Map<net.minecraft.resources.ResourceLocation, java.util.function.Function<com.google.gson.JsonObject, ItemPredicate>> CUSTOM_ITEM_PREDICATES =
+            new java.util.concurrent.ConcurrentHashMap<>();
+
+    public static void registerItemPredicate(net.minecraft.resources.ResourceLocation id, java.util.function.Function<com.google.gson.JsonObject, ItemPredicate> factory) {
+        CUSTOM_ITEM_PREDICATES.put(id, factory);
+    }
+
     public static ItemPredicate itemFromJson(JsonElement json) {
+        if (json != null && json.isJsonObject() && json.getAsJsonObject().has("type") && json.getAsJsonObject().get("type").isJsonPrimitive()) {
+            net.minecraft.resources.ResourceLocation type = net.minecraft.resources.ResourceLocation.tryParse(json.getAsJsonObject().get("type").getAsString());
+            var factory = type == null ? null : CUSTOM_ITEM_PREDICATES.get(type);
+            if (factory != null) return factory.apply(json.getAsJsonObject());
+        }
         ItemPredicate p = decode(ItemPredicate.CODEC, json);
         return p == null ? anyItem() : p;
     }
