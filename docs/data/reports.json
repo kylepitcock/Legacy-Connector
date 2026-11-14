@@ -839,6 +839,18 @@
    "link": "https://www.curseforge.com/minecraft/mc-mods/colored-redstone",
    "date": "2026-11-14",
    "open": true
+  },
+  {
+   "issue": 282,
+   "mod": "WolfArmorAndStorage-3.8.1+1.12.2.alpha.1-SNAPSHOT-signed",
+   "mc": "1.12.2",
+   "status": "partial",
+   "details": "items appear in creative and items are craftable thats all that works modded wolf armor cant be used on wolves",
+   "lc": "legacyconnector-0.4.14-nightly.21.a1319…",
+   "neoforge": "21.1.266",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/wolf-armor-and-storage",
+   "date": "2026-11-14",
+   "open": true
   }
  ]
 }
