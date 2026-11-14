@@ -243,7 +243,12 @@ final class Forge1201MappingProfileValidatorTest {
                     "artifactIds":["mapping-artifact"],
                     "status":"VERIFIED",
                     "reviewEvidence":["reviewed source-to-target evidence"]
-                  }%s]
+                  }%s],
+                  "runtimeRemapping":{"status":"UNMODELED_UNLESS_EXPLICITLY_SUPPLIED"},
+                  "licenseReview":{
+                    "required":true,
+                    "evidence":["fixture profile-level license review"]
+                  }
                 }
                 """.formatted(edgeAddition);
     }
