@@ -627,7 +627,11 @@ public final class Forge1201MappingProfileValidator {
             EdgeStatus status = EdgeStatus.INVALID_DECLARATION;
             if (id != null && !ids.add(id)) errors.add("Duplicate edgeId '" + id + "'.");
             if (from != null && from.equals(to)) {
-                if (identityEvidence.isEmpty()) {
+                if (!"VERIFIED".equalsIgnoreCase(declaredStatus)) {
+                    status = "MISSING".equalsIgnoreCase(declaredStatus)
+                            ? EdgeStatus.MISSING : EdgeStatus.INVALID_DECLARATION;
+                    edgeWarnings.add("An explicit identity edge must declare status VERIFIED.");
+                } else if (identityEvidence.isEmpty()) {
                     status = EdgeStatus.IDENTITY_UNVERIFIED;
                     edgeWarnings.add("Identity edge has no explicit identityEvidence; no implicit identity is accepted.");
                 } else if (!scope.containsAll(REQUIRED_SELECTOR_SCOPE)) {
