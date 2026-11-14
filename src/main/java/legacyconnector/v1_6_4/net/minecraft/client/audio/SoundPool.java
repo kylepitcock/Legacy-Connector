@@ -69,6 +69,17 @@ public class SoundPool {
         return all.isEmpty() ? null : all.get(random.nextInt(all.size()));
     }
 
+    /** Event name ("mob.tf.hydra.hurt") -> the URLs of the files added for it; entries without a location are left out. */
+    public synchronized Map<String, List<java.net.URL>> mcc$urlsByEvent() {
+        Map<String, List<java.net.URL>> out = new LinkedHashMap<>();
+        for (Map.Entry<String, List<SoundPoolEntry>> e : byEvent.entrySet()) {
+            for (SoundPoolEntry entry : e.getValue()) {
+                if (entry.getSoundUrl() != null) out.computeIfAbsent(e.getKey(), k -> new ArrayList<>()).add(entry.getSoundUrl());
+            }
+        }
+        return out;
+    }
+
     /** The names added so far (tests and diagnostics). */
     public synchronized List<String> names() {
         List<String> out = new ArrayList<>();
