@@ -458,7 +458,7 @@ public final class Forge1201IntermediaryBridgeAudit {
     private static String toJson(AuditResult result, Path tsrg, Path sourceTiny, Path targetTiny) throws IOException {
         StringBuilder json = new StringBuilder(4096);
         json.append("{\n");
-        field(json, "schemaVersion", "1", false);
+        field(json, "schemaVersion", "1", true);
         field(json, "sourceMinecraftVersion", quote("1.20.1"), true);
         field(json, "targetMinecraftVersion", quote("1.21.1"), true);
         field(json, "sourceNamespace", quote("minecraft:forge-srg@1.20.1"), true);
@@ -494,7 +494,7 @@ public final class Forge1201IntermediaryBridgeAudit {
         field(json, "sourceFields", Integer.toString(result.sourceTinyFieldRows()), true);
         field(json, "targetClasses", Integer.toString(result.targetTinyClassRows()), true);
         field(json, "targetMethods", Integer.toString(result.targetTinyMethodRows()), true);
-        field(json, "targetFields", Integer.toString(result.targetTinyFieldRows()), true);
+        field(json, "targetFields", Integer.toString(result.targetTinyFieldRows()), false);
         json.append("\n  },\n");
         json.append("  \"interpretation\": {\n");
         field(json, "sourceJoin",
@@ -511,7 +511,7 @@ public final class Forge1201IntermediaryBridgeAudit {
                 true);
         field(json, "limits",
                 quote("This report ends at the target official-obfuscated namespace. Converting that namespace to NeoForge's Mojang-named runtime is a separate stage. Stable identity does not prove binary or gameplay compatibility."),
-                true);
+                false);
         json.append("\n  }\n");
         json.append("}\n");
         return json.toString();
@@ -527,7 +527,7 @@ public final class Forge1201IntermediaryBridgeAudit {
         field(json, "entry", quote(entry), true);
         field(json, "fileName", quote(path.getFileName().toString()), true);
         field(json, "sizeBytes", Long.toString(Files.size(path)), true);
-        field(json, "sha256", quote(sha256(path)), true);
+        field(json, "sha256", quote(sha256(path)), false);
         json.append("    }");
     }
 
@@ -537,7 +537,7 @@ public final class Forge1201IntermediaryBridgeAudit {
         field(json, "sourceUnmappedRows", Integer.toString(coverage.sourceUnmappedRows()), true);
         field(json, "targetSharedClassIds", Integer.toString(coverage.targetSharedClassIds()), true);
         field(json, "sourceClassIdsAbsentFromTarget", Integer.toString(coverage.sourceClassIdsAbsentFromTarget()), true);
-        field(json, "targetOnlyClassIds", Integer.toString(coverage.targetOnlyClassIds()), true);
+        field(json, "targetOnlyClassIds", Integer.toString(coverage.targetOnlyClassIds()), false);
     }
 
     private static void appendMemberCoverage(StringBuilder json, MemberCoverage coverage) {
@@ -558,7 +558,7 @@ public final class Forge1201IntermediaryBridgeAudit {
                 Integer.toString(coverage.targetSameOwnerMemberDescriptorUnresolvedRows()), true);
         field(json, "targetOwnerChangedRows", Integer.toString(coverage.targetOwnerChangedRows()), true);
         field(json, "targetMemberIdMissingRows", Integer.toString(coverage.targetMemberIdMissingRows()), true);
-        field(json, "ambiguousTargetRows", Integer.toString(coverage.ambiguousTargetRows()), true);
+        field(json, "ambiguousTargetRows", Integer.toString(coverage.ambiguousTargetRows()), false);
     }
 
     private static void field(StringBuilder json, String name, String value, boolean comma) {
