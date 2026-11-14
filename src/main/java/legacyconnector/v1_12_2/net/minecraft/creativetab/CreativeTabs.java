@@ -59,7 +59,7 @@ public class CreativeTabs {
     }
 
     public String getTranslatedTabLabel() {
-        return "itemGroup." + tabLabel;
+        return "itemGroup." + getTabLabel();
     }
 
     /** Icon item: mods override one of these. */
