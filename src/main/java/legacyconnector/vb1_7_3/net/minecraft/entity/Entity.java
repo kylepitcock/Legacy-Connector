@@ -399,6 +399,11 @@ public abstract class Entity {
     }
 
     /** MCP {@code getLookVec}: none for a plain entity. */
+    /** Beta's {@code Entity.getPosition(partial)}: the position between the last tick's and this tick's. */
+    public legacyconnector.vb1_7_3.net.minecraft.util.math.Vec3d getPosition(float partial) {
+        if (partial == 1.0F) return legacyconnector.vb1_7_3.net.minecraft.util.math.Vec3d.create(x, y, z);
+        return legacyconnector.vb1_7_3.net.minecraft.util.math.Vec3d.create(prevX + (x - prevX) * partial, prevY + (y - prevY) * partial, prevZ + (z - prevZ) * partial);
+    }
     public legacyconnector.vb1_7_3.net.minecraft.util.math.Vec3d getLookVector() {
         return null;
     }

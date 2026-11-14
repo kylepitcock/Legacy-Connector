@@ -88,6 +88,32 @@ public final class WorldScreenshotTest {
         mc.options.tutorialStep = net.minecraft.client.tutorial.TutorialSteps.NONE;
         mc.options.cloudStatus().set(net.minecraft.client.CloudStatus.OFF);
         mc.options.renderDistance().set(intProp("legacyconnector.shotRenderDistance", 16));
+        if (System.getProperty("legacyconnector.shotScenario", "").startsWith("title")) {
+            // stays on the title screen (whatever a mod's menu made of it), shoots it and quits
+            int[] quiet = {0};
+            if (System.getProperty("legacyconnector.shotScenario").equals("titlecontrol")) {
+                var control = new RemoteControl(new File(dir.getParentFile(), "control"));
+                add(m -> (quiet[0] = m.getOverlay() == null ? quiet[0] + 1 : 0) > 100, m -> {
+                    control.tick(m);
+                    return false;
+                });
+                return;
+            }
+            add(m -> (quiet[0] = m.getOverlay() == null ? quiet[0] + 1 : 0) > 100, run(m -> {
+                LOG.info("Title screen is {}", m.screen == null ? "null" : m.screen.getClass().getName());
+                java.nio.ByteBuffer cm = org.lwjgl.BufferUtils.createByteBuffer(16);
+                org.lwjgl.opengl.GL11.glGetBooleanv(org.lwjgl.opengl.GL11.GL_COLOR_WRITEMASK, cm);
+                int[] vp = new int[4];
+                org.lwjgl.opengl.GL11.glGetIntegerv(org.lwjgl.opengl.GL11.GL_VIEWPORT, vp);
+                LOG.info("GL state: colorMask={}{}{}{} viewport={} scissor={} drawFbo={} mainFbo={} window={}x{} fb={}x{} overlay={}", cm.get(0), cm.get(1), cm.get(2), cm.get(3),
+                        java.util.Arrays.toString(vp), org.lwjgl.opengl.GL11.glIsEnabled(org.lwjgl.opengl.GL11.GL_SCISSOR_TEST), org.lwjgl.opengl.GL11.glGetInteger(org.lwjgl.opengl.GL30.GL_DRAW_FRAMEBUFFER_BINDING),
+                        m.getMainRenderTarget().frameBufferId, m.getWindow().getWidth(), m.getWindow().getHeight(), m.getMainRenderTarget().width, m.getMainRenderTarget().height, m.getOverlay());
+            }), shot("title"), run(m -> {
+                LOG.info("Screenshot test finished");
+                m.stop();
+            }));
+            return;
+        }
         String remote = System.getProperty("legacyconnector.shotServer", "");
         if (!remote.isEmpty()) {
             LOG.info("Connecting the screenshot client to '{}', shots go to {}", remote, dir);

@@ -5,4 +5,7 @@ public final class WorldProperties {
     private final World world;
     public WorldProperties(World world){this.world=java.util.Objects.requireNonNull(world);}
     public long getTime(){return world.getTime();}
+    /** Beta's {@code WorldInfo.getRaining()/getThundering()}: the live weather of the owning world. */
+    public boolean getRaining(){return world.isRaining();}
+    public boolean getThundering(){return world.isThundering();}
 }
