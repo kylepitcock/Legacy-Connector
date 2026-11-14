@@ -1,3 +1,34 @@
+## User report review and descriptor-classification correction — 2026-11-15
+
+The user supplied the generated build-local JSON report from the audit at the prior implementation. The report confirms that the audit task executed and emitted a report. The complete Gradle console was not supplied, so the overall forced test-suite result is not independently recorded as green.
+
+### Observed artifact fingerprints
+
+| Input | SHA-256 | Size |
+|---|---|---:|
+| MCPConfig 1.20.1 joined.tsrg | `19ae000175bfb58e5b26406c31a0e501bfb40000b078fee2f00ea60a8c7ed453` | 5,653,149 bytes |
+| Fabric Intermediary 1.20.1 Tiny v1 | `5a808bd1ebc4a9ee7d1c5900dbd2bf391586b536c3d86fbf2f972047faa2d165` | 3,110,223 bytes |
+| Fabric Intermediary 1.21.1 Tiny v1 | `83071b5b17866658463255f5f21430ade2a49ce2dd089dc3c14de1e93b99211c` | 3,614,213 bytes |
+
+### Observed source/cross-version counts from the supplied report
+
+- Classes: 7,436 MCPConfig class rows; 7,413 source Intermediary class joins; 7,011 of those source class IDs also occur in target Intermediary; 402 source IDs are absent from target; 1,234 target-only class IDs.
+- Methods: 48,575 source SRG rows; 34,390 source obfuscated-owner/name/descriptor joins; 188 SRG IDs are reused across distinct Intermediary symbols; no source or target ambiguities were reported. Of the source-joined method rows, 20,131 were counted exact, 877 descriptor-changed, 108 owner-changed and 2,977 target-ID-missing. There were 10,076 target descriptor-unresolved rows.
+- Fields: 31,003 source rows and 31,003 source owner/name joins; no source or target ambiguities were reported. Of the source-joined field rows, 22,813 were counted exact, 416 descriptor-changed, 110 owner-changed and 2,316 target-ID-missing. There were 5,262 target descriptor-unresolved rows.
+- The 11,330 method and 5,722 field source descriptor-unresolved counts must **not** be interpreted as confirmed missing Minecraft classes.
+
+### Parser issue found during report review
+
+The Tiny v1 specification's own example includes descriptors such as `(Ljava/lang/String;)I`. The old `normalizeDescriptor` implementation required every object type in a descriptor to exist in the Intermediary class map and returned unresolved for any absent type. That conflates unmapped external types (JDK and libraries) with Minecraft types whose mapping is actually missing. It likely inflated the unresolved descriptor counts in the supplied report.
+
+### Corrective implementation now committed; validation pending
+
+- Commit `2b6f64feee1d557647ea11b2275d237514761b64` changes descriptor normalization to receive the source MCPConfig class inventory. A package-qualified descriptor type absent from the relevant Minecraft mapping inventory is preserved as an external candidate. A type known to be a source Minecraft class but missing an Intermediary identity remains unresolved. Unqualified unknown official-obfuscated names remain unresolved.
+- External descriptor candidates are deliberately **not** counted as fully mapped exact rows. New counters distinguish source external descriptor rows/occurrences, target external descriptor rows/occurrences, and owner/member/descriptor matches that require external-name pass-through.
+- Target package-qualified external-candidate classpath existence is not proven by this audit; such rows are kept separate from fully mapped exact evidence. Do not treat external pass-through as runtime compatibility.
+- Regression tests added: Java/library types `java/lang/String` and `java/util/List` pass through and are classified separately; a source class known to MCPConfig but absent from Tiny remains unresolved. Test changes are in commits `a0eaa30b64d244d8aa07239f3bd0a9e7f1d13548` and `43e02d86b4290e5325faa0b487ad975cf2b7c5eb`; a following source-only counter refinement is `0d65007b9dd73c8d3069dd691fc028c257c56766`.
+- **Do not use the original JSON's descriptor-unresolved counts as final coverage.** The immediate next step is to run the forced loader test gate on the latest branch, regenerate the audit report, and compare the new external/unresolved classifications.
+
 # Forge 1.20.1 → NeoForge 1.21.1 — Intermediary Bridge Feasibility Audit
 
 **Status:** Initial read-only implementation, Gradle wiring, and synthetic regression tests are committed on `feat/forge1201-preflight-analyzer`; the user has not yet run the new gate.  
