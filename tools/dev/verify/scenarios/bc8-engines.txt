@@ -18,8 +18,18 @@ slot 0
 useat 1 148 0
 slot 1
 useat 1 148 1
-cmd /setblock 1 149 2 minecraft:redstone_block
+cmd /setblock 2 149 1 minecraft:redstone_block
 wait 200
 expect pipe=TilePipeHolder.*conn W=true E=true|conn W=true E=true :: (function(){var r="";server.executeBlocking(function(){var BP=Java.type("net.minecraft.core.BlockPos");var l=server.overworld();var EF=Java.type("legacyconnector.v1_12_2.net.minecraft.util.EnumFacing");var pp=l.getBlockEntity(new BP(1,149,0)).legacy().getPipe();r="pipe=TilePipeHolder conn W="+pp.isConnected(EF.WEST)+" E="+pp.isConnected(EF.EAST);});return r;})()
 expect chest=[1-9] :: (function(){var r="";server.executeBlocking(function(){var BP=Java.type("net.minecraft.core.BlockPos");var l=server.overworld();var c=0;var be=l.getBlockEntity(new BP(2,149,0));for(var i=0;i<be.getContainerSize();i++)c+=be.getItem(i).getCount();r="chest="+c;});return r;})()
+# the wrench turns the engine to the next receiver (a second pipe on the other side): server and client agree
+cmd /give @s buildcrafttransport:pipe_wood_item
+slot 0
+useat 1 148 2
+wait 20
+slot 2
+useat 1 149 1
+wait 40
+expect server facing=south :: (function(){var r="";server.executeBlocking(function(){var BP=Java.type("net.minecraft.core.BlockPos");var t=server.overworld().getBlockEntity(new BP(1,149,1)).legacy();r="server facing="+t.getCurrentFacing();});return r;})()
+expect client facing=south :: (function(){var BP=Java.type("net.minecraft.core.BlockPos");var be=mc.level.getBlockEntity(new BP(1,149,1));return "client facing="+(be==null||!be.legacy?"none":be.legacy().getCurrentFacing());})()
 shot bc8-engines
