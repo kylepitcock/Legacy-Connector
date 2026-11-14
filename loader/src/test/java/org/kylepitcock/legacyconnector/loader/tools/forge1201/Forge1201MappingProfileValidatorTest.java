@@ -88,6 +88,23 @@ final class Forge1201MappingProfileValidatorTest {
     }
 
     @Test
+    void blocksUnmodeledRuntimeRemappingAndDisabledProfileLicenseReview() throws Exception {
+        String runtimeEnabled = validProfile().replace(
+                "\\"status\\":\\"UNMODELED_UNLESS_EXPLICITLY_SUPPLIED\\"",
+                "\\"status\\":\\"ENABLED\\"");
+        var runtimeFinding = Forge1201MappingProfileValidator.inspect(writeProfile(runtimeEnabled));
+        assertEquals(Forge1201MappingProfileValidator.ProfileStatus.PROFILE_INCOMPLETE,
+                runtimeFinding.status());
+
+        String licenseSkipped = validProfile().replace("\\"required\\":true", "\\"required\\":false");
+        var licenseFinding = Forge1201MappingProfileValidator.inspect(writeProfile(licenseSkipped));
+        assertEquals(Forge1201MappingProfileValidator.ProfileStatus.PROFILE_INCOMPLETE,
+                licenseFinding.status());
+        assertTrue(licenseFinding.validationErrors().stream().anyMatch(
+                value -> value.contains("must require profile-level license review")));
+    }
+
+    @Test
     void reportsSourceAndTargetVersionMismatchExplicitly() throws Exception {
         Path profile = writeProfile(validProfile().replace("\"minecraftVersion\":\"1.21.1\"",
                 "\"minecraftVersion\":\"1.21.2\""));
