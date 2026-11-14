@@ -1,6 +1,7 @@
 package org.kylepitcock.legacyconnector.loader.mapping;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
@@ -66,7 +67,7 @@ final class SrgMojangTableTest {
         var generated = SrgMojangTable.generateDetailed(tsrg, mojang);
 
         assertEquals("noArg", generated.table().get("m_1_"));
-        assertEquals(null, generated.table().get("m_2_"));
+        assertNull(generated.table().get("m_2_"));
         assertEquals(2, generated.coverage().joinedMethodRows());
         assertEquals(1, generated.coverage().matchedMethods());
         assertEquals(1, generated.coverage().unmatchedMethods());
