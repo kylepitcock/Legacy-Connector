@@ -1,0 +1,18 @@
+# Thermal Expansion 2.2.2.2 for 1.4.7: an engine takes a lava bucket and opens its legacy GUI (with the gauge)
+mods: 1.4.7 thermalexpansion.zip
+mods: 1.4.7 CoFHCore.zip
+cmd /fill -3 148 -3 3 148 3 minecraft:stone
+cmd /tp @s 0.5 150 0.5
+wait 30
+cmd /fill 0 148 1 0 148 4 thermalexpansion_energy:block.energy.engine_1
+cmd /give @s minecraft:lava_bucket
+slot 0
+look 0 60
+wait 10
+use
+cmd /clear @s
+wait 10
+use
+wait 20
+expect LegacyContainerScreen :: mc.screen == null ? "none" : mc.screen.getClass().getName()
+shot te147-gauge
