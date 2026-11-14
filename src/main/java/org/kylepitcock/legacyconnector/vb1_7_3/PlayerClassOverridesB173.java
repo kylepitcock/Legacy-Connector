@@ -29,6 +29,8 @@ public final class PlayerClassOverridesB173 {
     private static final java.util.Set<String> REPORTED = ConcurrentHashMap.newKeySet();
     private static boolean installed;
     private static final String FAMILY = "b1.7.3-player-class";
+    private record Sync(Player modern, int tick) {}
+    private static final Map<ClientPlayerEntity, Sync> LAST_SYNC = new com.google.common.collect.MapMaker().weakKeys().makeMap();
 
     private PlayerClassOverridesB173() {}
 
@@ -56,7 +58,20 @@ public final class PlayerClassOverridesB173 {
         if (DONORS.isEmpty() || !(player instanceof PlayerViewB173) || !(player.mcc$modern instanceof Player modern)) return player;
         var donor = DONORS.get(modern.getUUID());
         if (donor == null) return player;
-        synchronized (donor) { bind(donor, modern, (PlayerViewB173) player); }
+        synchronized (donor) {
+            // Once per tick and player: GUI and HUD code reads mc.thePlayer many times in a row and sets the facing it draws with between the
+            // reads; syncing on every read would put the world's facing back over it
+            var last = LAST_SYNC.get(donor);
+            if (last == null || last.modern != modern || last.tick != modern.tickCount) {
+                bind(donor, modern, (PlayerViewB173) player);
+                LAST_SYNC.put(donor, new Sync(modern, modern.tickCount));
+            }
+            var view = (PlayerViewB173) player; // what the GUIs are built from follows the view on every read
+            donor.inventory = view.inventory;
+            donor.playerScreenHandler = view.playerScreenHandler;
+            donor.currentScreenHandler = view.currentScreenHandler;
+            donor.mcc$inventoryScreen = view.mcc$inventoryScreen;
+        }
         return donor;
     }
 
@@ -83,7 +98,13 @@ public final class PlayerClassOverridesB173 {
         donor.air = modern.getAirSupply();
         donor.fireTicks = modern.getRemainingFireTicks();
         donor.dead = !modern.isAlive();
-        if (view != null) donor.inventory = view.inventory;
+        if (view != null) {
+            // what the player's GUIs are built from: the very inventory, screen handlers and open screen of the native player's view
+            donor.inventory = view.inventory;
+            donor.playerScreenHandler = view.playerScreenHandler;
+            donor.currentScreenHandler = view.currentScreenHandler;
+            donor.mcc$inventoryScreen = view.mcc$inventoryScreen;
+        }
     }
 
     private static void run(Player modern, String hook, java.util.function.Consumer<ClientPlayerEntity> action, boolean writeBackMotion, boolean writeBackState) {

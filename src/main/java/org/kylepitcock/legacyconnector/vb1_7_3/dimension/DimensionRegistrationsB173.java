@@ -38,6 +38,10 @@ public final class DimensionRegistrationsB173 {
     public static synchronized void register(DimensionBase original){
         REGISTRATIONS.putIfAbsent(original.number,new Registration(original,ContentB173.current()));
     }
+    /** A mod that failed while it loaded (an occupied block slot) keeps no dimension: its provider may rely on what the failure left unset. */
+    public static synchronized void removeOwner(LegacyModRecord mod){
+        REGISTRATIONS.values().removeIf(registration->registration.owner==mod);
+    }
     public static synchronized ResourceKey<Level> levelKey(int id){
         if(id==0)return Level.OVERWORLD;if(id==-1)return Level.NETHER;
         var entry=REGISTRATIONS.get(id);return entry==null?null:entry.key;

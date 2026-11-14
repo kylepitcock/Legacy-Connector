@@ -712,6 +712,13 @@ player logs in or is handed the class. A single player's client shares the proce
 - **Jump key.** Beta's `isJumping` is not known to a server. The client reports the jump key through the key-input payload (a single player's server
   directly, a remote one by packet) and the server's player view reads it, so jetpacks work on a dedicated server.
 
+### Vanilla tiles kept as files
+
+The few b1.7.3 `terrain.png` tiles that have no modern block texture to point at (the chest top, side and front, and the animated water and lava
+cells that mods borrow) are PNG files in `src/main/resources/legacyconnector/b173/vanilla_sprites`, loaded by `VanillaSpritesB173`; nothing else of
+Beta's art is kept. `tools/dev/extract_b173_sprites.py <terrain.png>` refills the folder from a b1.7.3 terrain.png (the one in a
+minecraft.jar); the water and lava cells are the static first frame Beta's own animation then overwrote each tick.
+
 ## GuiAPI settings and TWL models
 
 The shared Beta GuiAPI bridge implements typed Boolean/Integer/Float/Multi settings, context values, original step rounding,

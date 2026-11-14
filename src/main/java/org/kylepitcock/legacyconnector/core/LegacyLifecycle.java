@@ -164,6 +164,7 @@ public final class LegacyLifecycle {
                 }
                 LOG.error("{}", wrapped.getMessage(), t);
                 FAILED.put(mod, wrapped);
+                if ("b1.7.3".equals(mod.version)) org.kylepitcock.legacyconnector.vb1_7_3.dimension.DimensionRegistrationsB173.removeOwner(mod);
             } finally {
                 if (numericIds) legacyconnector.v1_6_4.net.minecraft.util.Ids.leave(previousIds);
                 thread.setContextClassLoader(previous);
