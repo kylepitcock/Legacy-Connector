@@ -90,7 +90,7 @@ final class Forge1201MappingProfileValidatorTest {
     @Test
     void blocksUnmodeledRuntimeRemappingAndDisabledProfileLicenseReview() throws Exception {
         String runtimeEnabled = validProfile().replace(
-                "\"status\":\"UNMODELED_UNLESS_EXPLICITLY_SUPPLIED\""
+                "\"status\":\"UNMODELED_UNLESS_EXPLICITLY_SUPPLIED\"",
                 "\"status\":\"ENABLED\"");
         var runtimeFinding = Forge1201MappingProfileValidator.inspect(writeProfile(runtimeEnabled));
         assertEquals(Forge1201MappingProfileValidator.ProfileStatus.PROFILE_INCOMPLETE,
