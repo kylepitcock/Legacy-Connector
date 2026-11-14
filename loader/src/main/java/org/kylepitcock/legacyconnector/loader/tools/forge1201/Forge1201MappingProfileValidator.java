@@ -68,6 +68,8 @@ public final class Forge1201MappingProfileValidator {
     private static final Set<String> RUNTIME_REMAP_FIELDS =
             Set.of("status", "remappingFileSha256", "sourceEnvironment", "targetEnvironment", "evidence");
     private static final Set<String> PROFILE_LICENSE_FIELDS = Set.of("required", "evidence");
+    private static final Set<String> AUGMENTATION_FIELDS =
+            Set.of("provider", "minecraftVersion", "version", "scope", "renamesClassesOrMembers");
 
     private Forge1201MappingProfileValidator() {}
 
@@ -320,7 +322,7 @@ public final class Forge1201MappingProfileValidator {
                 targetLoaderVersion = requiredString(loader, "version", "target.loader", errors);
             }
             targetNamespace = requiredString(target, "compileNamespaceId", "target", errors);
-            validateAugmentations(target, warnings);
+            validateAugmentations(target, targetVersion, errors, warnings);
         }
 
         validateRuntimeRemapping(object.get("runtimeRemapping"), errors, warnings);
@@ -660,6 +662,10 @@ public final class Forge1201MappingProfileValidator {
     }
 
     private static Path resolveArtifactPath(Path profileDirectory, String localPath) throws IOException {
+        if (localPath.indexOf('\0') >= 0 || localPath.contains("\\")
+                || localPath.matches("(?i)^[a-z]:.*")) {
+            throw new IllegalArgumentException("Artifact paths must use relative forward-slash paths without drive prefixes.");
+        }
         Path supplied = Path.of(localPath);
         if (supplied.isAbsolute()) throw new IllegalArgumentException("Absolute artifact paths are not allowed.");
         Path base = profileDirectory == null ? Path.of(".").toAbsolutePath().normalize() : profileDirectory;
@@ -884,22 +890,42 @@ public final class Forge1201MappingProfileValidator {
         return namespace + "@" + minecraftVersion;
     }
 
-    private static void validateAugmentations(JsonObject target, List<String> warnings) {
+    private static void validateAugmentations(
+            JsonObject target,
+            String targetMinecraftVersion,
+            List<String> errors,
+            List<String> warnings) {
         JsonElement element = target.get("mappingAugmentations");
         if (element == null || element.isJsonNull()) return;
         if (!element.isJsonArray()) {
-            warnings.add("target.mappingAugmentations is not an array and was ignored.");
+            errors.add("target.mappingAugmentations must be an array.");
             return;
         }
         for (int i = 0; i < element.getAsJsonArray().size(); i++) {
+            String label = "target.mappingAugmentations[" + i + "]";
             JsonObject augmentation = objectValue(element.getAsJsonArray().get(i));
-            if (augmentation == null) warnings.add("target.mappingAugmentations[" + i + "] is not an object.");
-            else if (augmentation.has("renamesClassesOrMembers")
-                    && augmentation.get("renamesClassesOrMembers").isJsonPrimitive()
-                    && augmentation.get("renamesClassesOrMembers").getAsJsonPrimitive().isBoolean()
-                    && augmentation.get("renamesClassesOrMembers").getAsBoolean()) {
-                warnings.add("Target mapping augmentation " + i
-                        + " claims class/member renames; it must be modeled as a directed mapping edge.");
+            if (augmentation == null) {
+                errors.add(label + " must be an object.");
+                continue;
+            }
+            collectUnknownFields(augmentation, AUGMENTATION_FIELDS, label, warnings);
+            requiredString(augmentation, "provider", label, errors);
+            String version = requiredString(augmentation, "minecraftVersion", label, errors);
+            requiredString(augmentation, "version", label, errors);
+            List<String> scope = stringArray(augmentation.get("scope"), label + ".scope", errors, 32);
+            JsonElement renameElement = augmentation.get("renamesClassesOrMembers");
+            if (renameElement == null || !renameElement.isJsonPrimitive()
+                    || !renameElement.getAsJsonPrimitive().isBoolean()) {
+                errors.add(label + ".renamesClassesOrMembers must be a boolean.");
+            } else if (renameElement.getAsBoolean()) {
+                warnings.add(label + " claims class/member renames; it must be modeled as a directed mapping edge.");
+            }
+            if (version != null && targetMinecraftVersion != null
+                    && !targetMinecraftVersion.equals(version)) {
+                warnings.add(label + " Minecraft version must match target.minecraftVersion.");
+            }
+            if (scope.isEmpty()) {
+                warnings.add(label + " declares no mapping augmentation scope.");
             }
         }
     }
