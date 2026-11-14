@@ -683,7 +683,7 @@ public final class RenderContext {
             return buffers.getBuffer(stated(s, s.blend ? LegacyRenderTypes.translucentNoDepth(texture) : LegacyRenderTypes.cutoutNoDepth(texture)));
         }
         if (!s.texture2d) return buffers.getBuffer(stated(s, s.additive ? RenderType.lightning() : RenderType.debugQuads()));
-        if (s.additive) return buffers.getBuffer(stated(s, RenderType.eyes(texture)));
+        if (s.additive) return buffers.getBuffer(stated(s, LegacyRenderTypes.additiveCutout(texture)));
         return buffers.getBuffer(stated(s, s.blend ? RenderType.entityTranslucent(texture) : RenderType.entityCutoutNoCull(texture)));
     }
 
@@ -1081,7 +1081,7 @@ public final class RenderContext {
                 return buffers.getBuffer(stated(s, LegacyRenderTypes.glow(s.texture, s.additiveAlpha, !s.additiveAlpha || s.depthTest)));
             }
             if (s.additiveAlpha) return buffers.getBuffer(stated(s, LegacyRenderTypes.additiveAlpha(s.texture, s.depthTest)));
-            if (s.additive) return buffers.getBuffer(stated(s, RenderType.eyes(s.texture)));
+            if (s.additive) return buffers.getBuffer(stated(s, LegacyRenderTypes.additiveCutout(s.texture)));
             if (IrisState.compatPack() && binaryAlphaOverlay(s)) {
                 // a lamp layer of a few texels drawn as plain alpha shows nothing in vanilla rendering (Doctor Octopus's claw lights:
                 // the eye cube sits inside the claw), but a shader pack's entity pass showed it as a solid red cube on every claw

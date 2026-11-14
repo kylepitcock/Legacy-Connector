@@ -59,7 +59,8 @@ public final class BlocksB173 {
         Block legacy = Block.BLOCKS[id];
         if (legacy != null && legacy.mcc$modern instanceof LegacyB173Block modern) return modern.defaultBlockState().setValue(LegacyB173Block.META, meta & 15);
         if (legacy != null && legacy.mcc$owner != null && legacy.mcc$modern != null) return legacy.mcc$modern.defaultBlockState();
-        net.minecraft.world.item.Item variant = VanillaB173.modernItem(id, meta);
+        // Beta stored block metadata in a nibble: a mod's -1 ("unchanged") is 15 there
+        net.minecraft.world.item.Item variant = VanillaB173.modernItem(id, meta & 15);
         if (variant instanceof net.minecraft.world.item.BlockItem bi && (id == 35 || id == 17 || id == 18 || id == 6 || id == 44 || id == 43)) {
             var state=bi.getBlock().defaultBlockState();
             return id==43&&state.hasProperty(net.minecraft.world.level.block.SlabBlock.TYPE)

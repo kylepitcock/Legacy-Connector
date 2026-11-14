@@ -15,7 +15,7 @@ public final class RenderersB173 {
     private static final org.slf4j.Logger LOG=org.slf4j.LoggerFactory.getLogger("LegacyConnector/b1.7.3/Renderers");
     public record Info(LegacyModRecord mod,Class<?> entityType,EntityRenderer renderer){}
     private static final Map<Class<?>,Info> REGISTERED=new LinkedHashMap<>();
-    private static final Set<String> SUPPORTED=Set.of("render","renderHand","animateModel","setAngles","applyTranslation","applyHandSwingRotation","getHandSwingProgress","getHeadBob","renderMore","bindDecorationTexture","bindTexture","getDeathYaw","applyScale","getOverlayColor");
+    private static final Set<String> SUPPORTED=Set.of("render","renderCape","renderEars","renderHand","animateModel","setAngles","applyTranslation","applyHandSwingRotation","getHandSwingProgress","getHeadBob","renderMore","bindDecorationTexture","bindTexture","getDeathYaw","applyScale","getOverlayColor");
     private static final Set<String> MODEL_GL=Set.of("glPushMatrix","glPopMatrix","glTranslatef","glTranslated","glScalef","glScaled","glRotatef","glColor3f","glColor4f","glBindTexture","glEnable","glDisable","glBlendFunc","glDepthMask","glDepthFunc","glMatrixMode","glLoadIdentity","glNormal3f");
     private static boolean discovered;
     private RenderersB173(){}
@@ -97,7 +97,24 @@ public final class RenderersB173 {
         reason=closure(renderer.mcc$model().getClass());if(reason!=null)return reason;
         EntityModel decoration=renderer.mcc$decorationModel();return decoration==null?null:closure(decoration.getClass());
     }
-    public static Info info(Class<?> type){for(Class<?> c=type;c!=null;c=c.getSuperclass()){var info=REGISTERED.get(c);if(info!=null)return info;}return null;}
+    public static Info info(Class<?> type){
+        for(Class<?> c=type;c!=null;c=c.getSuperclass()){var info=REGISTERED.get(c);if(info!=null)return info;}
+        return inherited(type);
+    }
+    private static final Map<Class<?>,Info> INHERITED=new java.util.concurrent.ConcurrentHashMap<>();
+    /** A subclass of a base-game animal the mod gave no renderer of its own is drawn as Beta's renderer manager did: by the nearest base-game ancestor's renderer. */
+    private static Info inherited(Class<?> type){
+        Info cached=INHERITED.get(type);if(cached!=null)return cached;
+        EntityRenderer renderer=null;Class<?> base=null;
+        for(Class<?> c=type;c!=null&&renderer==null;c=c.getSuperclass()){
+            if(c==legacyconnector.vb1_7_3.net.minecraft.entity.passive.PigEntity.class){base=c;renderer=new legacyconnector.vb1_7_3.net.minecraft.client.render.entity.PigEntityRenderer(new legacyconnector.vb1_7_3.net.minecraft.client.render.entity.model.PigEntityModel(),new legacyconnector.vb1_7_3.net.minecraft.client.render.entity.model.PigEntityModel(.5F),.7F);}
+            else if(c==legacyconnector.vb1_7_3.net.minecraft.entity.passive.ChickenEntity.class){base=c;renderer=new legacyconnector.vb1_7_3.net.minecraft.client.render.entity.ChickenEntityRenderer(new legacyconnector.vb1_7_3.net.minecraft.client.render.entity.model.ChickenEntityModel(),.3F);}
+            else if(c==legacyconnector.vb1_7_3.net.minecraft.entity.passive.SheepEntity.class){base=c;renderer=new legacyconnector.vb1_7_3.net.minecraft.client.render.entity.SheepEntityRenderer(new legacyconnector.vb1_7_3.net.minecraft.client.render.entity.model.SheepEntityModel(),new legacyconnector.vb1_7_3.net.minecraft.client.render.entity.model.SheepWoolEntityModel(),.7F);}
+        }
+        if(renderer==null)return null;
+        LegacyModRecord owner=ContentB173.ownerOf(type);if(owner==null)return null;
+        Info info=new Info(owner,type,renderer);INHERITED.put(type,info);return info;
+    }
     public static boolean supports(Class<?> type){return info(type)!=null;}
     public static List<Info> all(){return List.copyOf(REGISTERED.values());}
     public static byte[] textureBytes(Info info,String name){

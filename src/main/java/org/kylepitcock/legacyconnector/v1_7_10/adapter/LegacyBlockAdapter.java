@@ -118,7 +118,10 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
         this.familyBase = spec == null ? this : spec.base();
         this.metaProperty = spec == null ? META : spec.property();
         this.keyMeta = spec == null ? 0 : spec.key();
-        this.dynamicBounds = overrides(legacy, "setBlockBoundsBasedOnState", legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess.class, int.class, int.class, int.class);
+        // a mod's portal block inherits the shim BlockPortal's thin slab (overrides() does not look into shim classes): without its
+        // bounds-by-state the portal was a full cube
+        this.dynamicBounds = overrides(legacy, "setBlockBoundsBasedOnState", legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess.class, int.class, int.class, int.class)
+                || legacy instanceof legacyconnector.v1_7_10.net.minecraft.block.BlockPortal;
         this.customHardness = overrides(legacy, "getPlayerRelativeBlockHardness", EntityPlayer.class, World.class, int.class, int.class, int.class)
                 || overrides(legacy, "getBlockHardness", World.class, int.class, int.class, int.class);
         this.collisionList = overrides(legacy, "addCollisionBoxesToList", World.class, int.class, int.class, int.class, AxisAlignedBB.class,

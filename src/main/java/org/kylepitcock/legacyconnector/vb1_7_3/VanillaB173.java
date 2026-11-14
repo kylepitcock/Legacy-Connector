@@ -323,9 +323,9 @@ public final class VanillaB173 {
         String path = switch (id) {
             case 35 -> COLORS[damage & 15] + "_wool";
             case 351 -> DYES[damage & 15];
-            case 17 -> WOODS[damage % 3] + "_log";
-            case 18 -> WOODS[damage % 3] + "_leaves";
-            case 6 -> WOODS[damage % 3] + "_sapling";
+            case 17 -> WOODS[Math.floorMod(damage, 3)] + "_log";
+            case 18 -> WOODS[Math.floorMod(damage, 3)] + "_leaves";
+            case 6 -> WOODS[Math.floorMod(damage, 3)] + "_sapling";
             case 44 -> SLABS[damage & 3];
             case 43 -> damage == 0 ? "smooth_stone" : SLABS[damage & 3];
             case 31 -> damage == 2 ? "fern" : damage == 0 ? "dead_bush" : "short_grass";

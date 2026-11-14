@@ -584,6 +584,15 @@ public class World implements BlockView {
         return new legacyconnector.vb1_7_3.net.minecraft.world.chunk.Chunk(this, chunkX, chunkZ);
     }
 
+    /** Beta's {@code getTopSolidOrLiquidBlock}: the y above the highest solid or liquid block of the column, -1 for none. */
+    public int getTopSolidBlockY(int x, int z) {
+        for (int y = Math.min(255, Math.max(0, getTopY(x, z))); y >= 0; y--) {
+            var material = getMaterial(x, y, z);
+            if (material != null && (material.isSolid() || material.isFluid())) return y + 1;
+        }
+        return -1;
+    }
+
     public int getTopY(int x, int z) {
         if(missingTerrain(x,z)!=null){for(int y=127;y>=0;y--)if(Block.BLOCKS_LIGHT_OPACITY[BlocksB173.legacyId(state(x,y,z))]>0)return y+1;return 0;}
         requireRegionChunk(x>>4,z>>4);return mcc$level == null ? 64 : mcc$access().getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);

@@ -7,5 +7,6 @@ public final class WorldProperties {
     public long getTime(){return world.getTime();}
     /** Beta's {@code WorldInfo.getRaining()/getThundering()}: the live weather of the owning world. */
     public boolean getRaining(){return world.isRaining();}
+    public long getSeed(){return world.getSeed();}
     public boolean getThundering(){return world.isThundering();}
 }
