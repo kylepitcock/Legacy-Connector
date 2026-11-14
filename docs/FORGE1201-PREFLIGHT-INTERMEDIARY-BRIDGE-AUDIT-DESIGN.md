@@ -31,7 +31,7 @@ The Tiny v1 specification's own example includes descriptors such as `(Ljava/lan
 
 # Forge 1.20.1 → NeoForge 1.21.1 — Intermediary Bridge Feasibility Audit
 
-**Status:** Initial read-only implementation, Gradle wiring, and synthetic regression tests are committed on `feat/forge1201-preflight-analyzer`; the user has not yet run the new gate.  
+**Status:** Initial read-only implementation has generated a user-supplied report. Review exposed overly strict descriptor normalization for external/JDK types; a corrective classifier and synthetic tests are committed, but the corrected forced loader gate is pending user validation. The complete Gradle console for the first report was not supplied.  
 **Scope:** Audit a candidate version-to-version identity path through Fabric Intermediary. Do not create a runtime table, rewrite selectors, or claim compatibility.  
 **Target:** Minecraft 1.20.1 / Forge SRG-side source data → Minecraft 1.21.1 / NeoForge 21.1.258.  
 **Architectural boundary:** this audit consumes the `obf` columns of MCPConfig's TSRG2 file. It does not convert a Forge SRG selector into that `obf` namespace; SRG values are diagnostic metadata only.
@@ -83,7 +83,11 @@ The target is still `minecraft:official-obfuscated@1.21.1`, not NeoForge's Mojan
 - Classes: MCPConfig obfuscated class owner → Tiny v1 `official` class name.
 - Methods: obfuscated owner + obfuscated member name + complete JVM descriptor.
 - Fields: obfuscated owner + obfuscated member name. TSRG2 field rows do not carry a descriptor, so any Tiny lookup with more than one candidate is marked ambiguous and is not accepted.
-- Every Tiny descriptor object type must resolve through that version's class table before the descriptor is used as exact evidence. A missing class type makes the descriptor unresolved; a coincidentally identical string is not sufficient evidence.
+- Object types found in the version's Tiny class table are converted to Intermediary IDs.
+- On the source side, the parser also receives MCPConfig's source obfuscated class inventory. A descriptor type known to be a source Minecraft class but missing from Tiny remains unresolved.
+- Package-qualified descriptor types absent from the relevant Minecraft class inventory are preserved as external candidates and counted separately. On the target side, unknown unqualified official-obfuscated names remain unresolved; package-qualified unknowns are treated only as external candidates.
+- External pass-through does not prove that the class is present on the target runtime classpath. Rows using it are not counted as fully mapped exact; they receive a separate external-pass-through classification.
+- The classification is intentionally conservative and must be revisited if the target official namespace's class naming rules or the completeness of a pinned Tiny dataset change.
 - Repeated SRG IDs are counted diagnostically, but are never used as the join key.
 
 ### Target Tiny comparison
@@ -127,10 +131,11 @@ The audit utility class is part of loader main classes because Gradle executes i
 - separate descriptor changes from owner changes;
 - repeated SRG IDs across different owners resolving to different Intermediary IDs;
 - unmatched methods and ambiguous descriptorless field joins;
-- unresolved descriptor types not being counted as exact;
+- known source Minecraft descriptor types missing from Tiny remaining unresolved;
+- package-qualified JDK/library descriptor types being preserved as non-exact external candidates;
 - JSON report validity and explicit false values for selector transformation, complete Forge SRG selector path, and runtime table production.
 
-The user-run loader test gate is still pending for this new increment. Do not mark this design green before the new forced Gradle run succeeds.
+The original audit report has been generated, but its external-type descriptor counts were over-classified as unresolved. The descriptor-classification correction and new synthetic cases are not yet user-tested. Do not mark this design green before the new forced Gradle run succeeds and the regenerated report is reviewed.
 
 ## 6. Preliminary repository inspection — not the build result
 
@@ -150,4 +155,4 @@ It does **not**:
 - load a mod, launch Minecraft, or prove runtime/gameplay compatibility;
 - resolve the Mojang-derived mapping table's unresolved redistribution/licensing question.
 
-**Decision:** retain this as a bounded, read-only feasibility audit. Use its measured output to design the next exact SRG-owner-member-descriptor conversion and target name edge. Do not proceed to selector transformation until the whole selector path is explicit, complete for the symbol, pinned, licensed, and independently validated.
+**Decision:** retain this as a bounded, read-only feasibility audit. First validate the corrected descriptor classification and regenerate its measurements. Then use the reviewed output to design the next owner/member/descriptor-qualified SRG conversion and target name edge. Do not proceed to selector transformation until the whole selector path is explicit, complete for the symbol, version-pinned, and independently validated.
