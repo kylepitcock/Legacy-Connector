@@ -1,6 +1,6 @@
 # Legacy Connector documentation
 
-Legacy Connector runs unmodified legacy Forge mods (1.7.10, 1.12.2) on NeoForge 1.21.1 by translating them at load time. This is the
+Legacy Connector runs unmodified legacy Forge mods (1.4.7, 1.5.2, 1.6.4, 1.7.10, 1.12.2, 1.20.1 and Beta 1.7.3) on NeoForge 1.21.1 by translating them at load time. This is the
 technical documentation; the [README](../../README.md) has installation and the status overview, and the
 [compatibility site](https://kylepitcock.github.io/Legacy-Connector/) lists how each mod works.
 
@@ -20,7 +20,7 @@ technical documentation; the [README](../../README.md) has installation and the 
 | [Recipes](Recipes.md) | Changing legacy recipes with data packs, KubeJS and MineTweaker |
 | [Configuration](Configuration.md) | `config/legacyconnector.properties` |
 | [Performance](Performance.md) | Measured memory, frame rate and startup cost |
-| [Troubleshooting](Troubleshooting.md) | Join failures such as "length wider than 21-bit", measuring join payload sizes |
+| [Troubleshooting](Troubleshooting.md) | Start-up failures (Mixin modules, file names, missing dependencies), join failures such as "length wider than 21-bit", measuring join payload sizes |
 | [Compatibility and status](Compatibility-and-Status.md) | Status per legacy version, known issues, reading the report |
 | [Development](Development.md) | Building, testing, project layout |
 | [Addon API](Addon-API.md) | Writing addons for legacy mods |

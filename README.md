@@ -4,114 +4,150 @@
 
 [![Discord](https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/vC6x4Kwwdq) [![CurseForge](https://img.shields.io/badge/CurseForge-F16436?style=for-the-badge&logo=curseforge&logoColor=white)](https://www.curseforge.com/minecraft/mc-mods/legacy-connector) [![Modrinth](https://img.shields.io/badge/Modrinth-00AF5C?style=for-the-badge&logo=modrinth&logoColor=white)](https://modrinth.com/mod/legacyconnector) [![Ko-fi](https://img.shields.io/badge/Ko--fi-FF5E5B?style=for-the-badge&logo=kofi&logoColor=white)](https://ko-fi.com/kylepitcock)
 
-Run **unmodified legacy Forge mods on NeoForge 1.21.1**. Drop 1.7.10, 1.12.2, 1.6.4, 1.5.2, 1.4.7, Forge 1.20.1, or (alpha) Beta 1.7.3 mod jars into your `mods` folder next to
-this mod; it is translated at load time, the same way [Sinytra Connector](https://github.com/Sinytra/Connector)
-runs Fabric mods on NeoForge. The original jar is never modified. Legacy jars live in the folder of their Minecraft version (`mods/1.7.10/`, `mods/1.12.2/`,
-`mods/1.6.4/`, `mods/1.5.2/`, `mods/1.4.7/`, `mods/1.20.1/`, `mods/b1.7.3/`): ones you drop into `mods/` itself are moved there for you on launch
-(`legacy.autoSortMods=false` turns that off). It matters for mods that bundle their own Mixin (common in 1.12.2: Spartan Weaponry, MixinBooter mods):
-NeoForge loads such jars from `mods/` as launcher plugins before they can be translated, and the game stops with
-"Module ... contains package org.spongepowered..." (move them to the folder before the first launch).
-
-> **Status: beta (0.4.x).** The point is mods that **only exist on these old versions** and never got a 1.21.1 port.
-> 1.7.10 is in beta: Thaumcraft 4, Witchery, HBM's Nuclear Tech, the Reika mods (RotaryCraft, ReactorCraft, ChromatiCraft),
-> OreSpawn, Fisk's Superheroes, Morph, and Galacticraft with its addons (per-planet gravity, silent space) run with their blocks, items,
-> entities, recipes, GUIs, world generation, and dimensions, and large tech packs like GT New Horizons load most of their mods.
-> 1.12.2 is in beta: Atum 2, The Midnight, The Betweenlands, Scape and Run: Parasites, and Abyssalcraft load and play in a real
-> client with their own models, GUIs, mobs, dimensions, and world generation.
-> 1.20.1 (Forge) is in alpha: mods are remapped in place onto NeoForge 1.21.1. Terramity (with its GeckoLib bosses) runs in a real client and Another Furniture registers its content; Palladium and its addon packs (Alien Evolution) have their own adapters, including KubeJS 7 script compatibility; most other 1.20.1 mods still have unresolved references. It is on by default and does nothing unless a Forge 1.20.1 jar is installed.
-> 1.6.4 is in beta (2026-11-08); 1.5.2 and 1.4.7 are new in 0.4 and in alpha: RedPower 2, BuildCraft, ComputerCraft, and Applied Energistics (1.4.7), Twilight Forest and
-> Applied Energistics 1 (1.5.2), Tinkers' Construct, Mo' Creatures, and Goblins! (1.6.4), and many more run in a real client. Some
-> features are still missing (see [Known compatibility issues](docs/wiki/Compatibility-and-Status.md#known-compatibility-issues)); back up your worlds before trying a new
-> mod set.
-
-Legacy content enters the game through the same hooks a modern mod uses: mod biomes through the pack's biome placement
-(a TerraBlender region; TerraBlender is bundled), world generators as placed features in biome modifiers, village buildings
-in the vanilla village pools, structure chest loot through loot tables, and items and machines as capabilities. So it works together
-with the pack's other mods instead of being painted over them, and data packs can tune it like any modern content.
+Run **unmodified legacy Forge mods on NeoForge 1.21.1**. Drop mods built for Minecraft 1.7.10, 1.12.2, 1.6.4, 1.5.2, 1.4.7, Forge 1.20.1 or
+Beta 1.7.3 into the folder of their version next to this mod. They are translated when the game loads and run as normal NeoForge mods, the
+same way [Sinytra Connector](https://github.com/Sinytra/Connector) runs Fabric mods on NeoForge. The original jars are never modified. The
+point is mods that **only exist on these old versions** and never got a 1.21.1 port. Legacy content enters the game through the hooks a
+modern mod uses (biomes, placed features, loot tables, village pools, capabilities, data packs), so it works with the pack's other mods and
+data packs can tune it. Maturity differs per version, see the table below; back up your worlds before trying a new mod set.
 
 **Compatibility list and reports: https://kylepitcock.github.io/Legacy-Connector/** (check a mod, or report how it worked for you).
-
-**Downloads:** tested releases are on [Modrinth](https://modrinth.com/mod/legacyconnector), [CurseForge](https://www.curseforge.com/minecraft/mc-mods/legacy-connector) and [GitHub](https://github.com/kylepitcock/Legacy-Connector/releases/latest); they come less often and collect more changes. Every push to `master` is also built automatically and published as the [Nightly release](https://github.com/kylepitcock/Legacy-Connector/releases/tag/nightly) (one pre-release, replaced each time; the version is in the jar name). Use it to get a fix before the next release; it is untested, so back up your world, and name the nightly version when you report a problem.
-
 Screenshots of legacy mods running on 1.21.1 are at the [end of this page](#screenshots).
 
 ## Status
 
-| Legacy version | Status |
-|---|---|
-| 1.7.10 | **Beta.** Mods with no modern version are the focus: Thaumcraft 4, Witchery, HBM's Nuclear Tech, OreSpawn, Fisk's Superheroes, Morph, the Reika mods (DragonAPI, RotaryCraft, ReactorCraft, ElectriCraft, ChromatiCraft) and Galacticraft with its addons run, with their mod biomes, dimensions and entities. The Betweenlands 1.0.6 loads and its dimension generates (its mob spawns are still being worked on). In-game self tests of the GT New Horizons pack and a 130-jar list rate 166 mods as working and 57 as partly working; 20 fail during loading. |
-| 1.12.2 | **Beta (since 2026-11-07; issue #64).** Old-only mods are the focus: Atum 2, The Midnight, The Betweenlands, Scape and Run: Parasites, and Abyssalcraft load and play in a real client with their own models, GUIs, mobs and world generation, and mod dimensions (Atum, the Midnight, the Betweenlands) can be entered. Botania, Chisel, Thermal Foundation and Expansion, Tinkers' Construct, Immersive Engineering, Mekanism, Astral Sorcery, Actually Additions, Electroblob's Wizardry and Recurrent Complex now render and load (2026-11-06 sweeps); Applied Energistics 2, EnderIO, Industrial Foregoing and Extra Utilities 2 still have rendering defects. Mod advancements, Patchouli books through the modern Patchouli, and containers that move their slots at runtime work. |
-| 1.6.4 | **Beta (2026-11-08).** A thin layer over the 1.7.10 support: numeric block/item ids, `Icon`, the old packet API, old tick handlers, `ModLoader` mods. Of 106 mods rated so far, 44 have working basics, 1 is mostly playable (Tinkers' Construct, smeltery included), 17 partly work, 33 start but are untested (libraries and add-ons) and 11 fail. Played in a real client in survival, with shaders: Tinkers' Construct, Mo' Creatures, Lycanites Mobs, OpenBlocks, Minechem, IndustrialCraft 2, Forestry, Witchery, Twilight Forest, ExtrabiomesXL, Ancient Warfare, MythicalCraft, Galaxy Warfare, TragicMC, Sorcery, Kitchens, Mad Science, The Lion King and others ([screenshots](docs/screenshots/old-versions/README.md), [estimate](docs/wiki/Legacy-1.6.4-Estimate.md)). Missing: Thaumcraft 4 and some mod-specific defects. |
-| 1.5.2 | **Alpha (2026-11-07).** A small delta over 1.6.4 (same numeric ids and packet API; no `EntityLivingBase`, string texture paths). Of 54 mods rated so far, 19 have working basics, 14 partly work, 18 start but are untested (libraries and add-ons with nothing to play) and 3 fail. Grimoire of Gaia, Twilight Forest, Applied Energistics 1, Resource Engineering, BuildCraft, BiblioCraft, Mystcraft, Forestry (apiary screen), ComputerCraft, RedLogic, Liquid XP, MiscPeripherals, Backpacks, Ender Storage, Chicken Chunks, Dimensional Anchors and InfiniTubes run in a real client, with recipes crafted in the 3x3 grid. ForgeMultipart and Block Helper load; client-only mods are skipped quietly on a server. Better Than Wolves and other patched-`minecraft.jar` mods cannot work (they replace vanilla classes; reported as "not supported: patched-game jar mod") ([screenshots](docs/screenshots/old-versions/README.md), [estimate](docs/wiki/Legacy-1.5.2-Estimate.md)). |
-| 1.4.7 | **Alpha (2026-11-07).** After 1.5.2: the same numeric ids and old packet API, with obfuscated class names, sprite-sheet textures (cut into tiles), texture animations and `ModLoader`/`BaseMod` mods. Of 85 mods rated, 47 have working basics (30 load, 5 partly work, 3 fail with a plain reason): RedPower 2, BuildCraft and Twilight Forest render and run in a real client; ComputerCraft (computers and turtles with a working terminal) and Applied Energistics (a powered ME network stores and lists items) work. Better Than Wolves cannot work ([screenshots](docs/screenshots/old-versions/README.md), [estimate](docs/wiki/Legacy-1.4.7-Estimate.md)). Survival checks since: RedPower 2 wires, gates, transposer, tubes, project table and ore generation, BuildCraft pipes and engines, AE terminal and drive screens; the 65-file corpus loads (Better Than Wolves and two JInput mods excepted); RedPower rubber trees generate in jungles. |
-| 1.20.1 | **Alpha (2026-11-08; on by default, `experimental.forge1201=false` turns it off).** Forge 1.20.1 mods are remapped in place onto NeoForge 1.21.1 (SRG to Mojang names, Forge to NeoForge): the renames, the Minecraft 1.20.1 to 1.21.1 migration, Forge API facades, data conversion, datagen stubs and library bridges (Architectury, Curios, Patchouli use the native 1.21.1 builds). Palladium with its addon packs (Alien Evolution: powers screen, accessories, suit stand, KubeJS 7 scripts, command functions and structure data converted; contributed by kentvillamor08) and Terramity (a large content mod with GeckoLib bosses) runs in a real client and registers 207 blocks, 754 items and 81 entity types on a server; Another Furniture registers its content too. Most other mods still have unresolved references: on the 506 mods of an ATM 9 pack about 80 link, and most of the rest have a native 1.21.1 version anyway. The [compatibility site](https://kylepitcock.github.io/Legacy-Connector/#/automated/1.20.1) has a 1.20.1 tab with the automated link check (see the [estimate](docs/wiki/Legacy-1.20.1-Estimate.md)). |
-| 1.19.2, 1.18.2 | Planned (after 1.20.1; renames and diffs over the same pipeline). |
-| 1.16.5 | Planned (after 1.18.2). |
-| 1.2.5 | Planned (after 1.16.5; needs `ModLoader`/`BaseMod` emulation). |
-| b1.7.3 | **Alpha (client and server tested).** Beta 1.7.3 ModLoader / Forge 1.0 mods in `mods/b1.7.3/` (jars or zips) are translated and their blocks, items and recipes load with their own textures, the blocks' own behaviour (placing, ticks, clicks, redstone), their tile entities and their GUIs (machines, furnaces, crafting tables as modern menus), one creative tab per mod (IndustrialCraft 2, NetherCraft, Portal Gun, RedPower, Minefactory Renewed). Fluid buckets, tool/sword durability and arrows with constant custom textures are bridged. Supported living-mob families run their original callbacks and models, with native spawning, sound and GuiAPI settings; broader entity, dimension and world-generation support remains under active validation. Actual Mo' Creatures, MoreCreeps, PlasticCraft and Aether builds are exercised in native clients and dedicated servers; compatibility is incomplete. ([details](docs/wiki/Legacy-b1.7.3.md)). |
+"Probe" is the offline link check of release 0.4.14 (2026-11-13): jars whose references all resolve, out of the jars probed. It is not the
+same as "works in play"; per-mod results are on the compatibility site. Details and the figures of the nightly build:
+[Compatibility and status](docs/wiki/Compatibility-and-Status.md).
 
-Order and reasons: [Version roadmap](docs/wiki/Version-Roadmap.md). Not planned: 1.8 to 1.11.2 and the Alpha/early-Beta jar-mod era; Beta 1.7.3 ModLoader mods were added at a contributor's request (row above).
+| Legacy version | Folder | Maturity | What is known to work | Probe |
+|---|---|---|---|---|
+| 1.7.10 | `mods/1.7.10/` | **Beta** (the most complete) | Thaumcraft 4, Witchery, HBM's Nuclear Tech, the Reika mods, OreSpawn, Fisk's Superheroes, Morph and Galacticraft with its addons run with blocks, items, entities, GUIs, world generation and dimensions; GT New Horizons loads most of its mods | 528 of 611 |
+| 1.12.2 | `mods/1.12.2/` | **Beta** (since 2026-11-07) | Atum 2, The Midnight, The Betweenlands, Scape and Run: Parasites and Abyssalcraft load and play in a real client; mod fluids are real fluids with buckets | 578 of 645 |
+| 1.6.4 | `mods/1.6.4/` | **Beta** (since 2026-11-08) | A layer over the 1.7.10 one; Tinkers' Construct (smeltery included), Mo' Creatures, Twilight Forest and Forestry were played in survival | 35 of 45 |
+| 1.5.2 | `mods/1.5.2/` | Alpha | Twilight Forest, Applied Energistics 1, BuildCraft, ComputerCraft and Forestry run in a real client | 35 of 38 |
+| 1.4.7 | `mods/1.4.7/` | Alpha | RedPower 2, BuildCraft, ComputerCraft and Applied Energistics run in a real client | 45 of 49 |
+| Forge 1.20.1 | `mods/1.20.1/` | Alpha (on by default, `experimental.forge1201=false` turns it off) | Remapped in place onto 1.21.1; Terramity, Palladium with its addon packs (contributed by kentvillamor08) and Another Furniture run, most other mods still have unresolved references | 99 of 494 (nightly: 152) |
+| Beta 1.7.3 | `mods/b1.7.3/` (jars or zips) | Alpha | ModLoader and Forge 1.0 era mods (contributed by Zekken01): blocks, items, recipes, tile entities, GUIs and supported mob families; entities and world generation are still incomplete | 38 of 44, 20 of them through placeholder APIs |
+| 1.19.2, 1.18.2, 1.16.5 | | Planned | A chain of stages on top of the 1.20.1 pipeline ([plan](docs/wiki/Legacy-1.16-1.19-Plan.md)); 1.2.5 comes later | |
 
-Legacy tile entities and items are NeoForge item, fluid and energy capabilities by default (RF and Forge Energy, IC2 EU, BuildCraft MJ, Forge fluids, inventories), so hoppers, Create, and modern cables work with them ([details](docs/wiki/Addon-API.md#capabilities)). Outdated libraries are bridged to their modern equivalents instead of being loaded: Baubles to Curios, Waila to Jade, NEI to JEI, Patchouli books to Patchouli, and CoFH RF / Redstone Flux to NeoForge energy ([Bridges](docs/wiki/Bridges.md)).
+Not planned: 1.8 to 1.11.2 and the Alpha/early-Beta jar-mod era. Order and reasons: [Version roadmap](docs/wiki/Version-Roadmap.md); how the
+work is organised: [Work plan](docs/wiki/Work-Plan.md). Missing features and known problems: [Compatibility and status](docs/wiki/Compatibility-and-Status.md#known-compatibility-issues).
 
-Per-mod results, known issues, and what is not supported: [Compatibility and status](docs/wiki/Compatibility-and-Status.md). After
-launching, read `logs/legacyconnector-report.txt`: for every legacy jar it lists the detected version and mod ids, references that
-could not be linked, and which legacy APIs were synthesized.
+Recent changes: on 1.12.2, modern containers and items are visible to old mods (pipes of an old mod can use a modern barrel), legacy
+containers are capabilities for modern mods, and blocks drawn by a mod's own renderer through CodeChickenLib work (Thermal Dynamics ducts).
+On 1.20.1, mixins whose targets changed are repaired or dropped one by one instead of failing the mod, raw network channels deliver, item
+NBT in recipes and loot becomes data components, and a missing required dependency is shown on NeoForge's warnings screen. The
+[addon API](docs/wiki/Addon-API.md) 0.3 covers every supported version.
+
+## Install
+
+1. Install NeoForge 21.1.x for Minecraft 1.21.1 (Java 21) and put Legacy Connector into `mods/`.
+2. Put the legacy mods and the libraries they need (CodeChickenLib, CoFH Core, ...) for the same Minecraft version into the folder of that version:
+
+   ```
+   mods/
+     legacyconnector-<version>.jar
+     1.7.10/   1.12.2/   1.6.4/   1.5.2/   1.4.7/   1.20.1/   b1.7.3/
+   ```
+
+   Jars you drop into `mods/` itself are moved there on launch (`legacy.autoSortMods=false` turns that off).
+3. Start the game. The first launch translates each legacy jar (progress bar on the loading screen) and caches the result, so later launches are fast.
+4. Read `logs/legacyconnector-report.txt`: for every jar it lists what was detected, which references could not be linked and which APIs were synthesized.
+
+Two caveats ([Troubleshooting](docs/wiki/Troubleshooting.md)):
+
+- Jars that bundle their own Mixin (common in 1.12.2: Spartan Weaponry, MixinBooter mods) must be in their version folder before the first launch. In `mods/` NeoForge loads them as launcher plugins before they can be translated, and the game stops with "Module ... contains package org.spongepowered...".
+- NeoForge rejects some file names before any mod runs, so such a jar is not sorted for you: a version part that starts with a dot, for example `HBM-NTM-.1.0.27_X5863.jar`. Put it into its version folder by hand or rename it.
+
+A dedicated server works the same way; client-only mods are skipped there. If a legacy mod needs a library that is not installed, NeoForge's
+"Warnings while loading mods" screen names the mod, the dependency and the folder to put it in; the mod is still loaded.
+
+## Downloads
+
+Tested releases are on [Modrinth](https://modrinth.com/mod/legacyconnector), [CurseForge](https://www.curseforge.com/minecraft/mc-mods/legacy-connector)
+and [GitHub](https://github.com/kylepitcock/Legacy-Connector/releases/latest); they come less often and collect more changes. Every push to
+`master` is also built automatically and published as the [Nightly release](https://github.com/kylepitcock/Legacy-Connector/releases/tag/nightly)
+(one pre-release, replaced each time; the version is in the jar name). Use it to get a fix before the next release. It is untested: back up
+your world, and name the nightly version when you report a problem.
+
+## Libraries and dependencies
+
+TerraBlender (legacy biomes are a TerraBlender region) and Pehkui (entity size) are embedded in the jar; a separately installed newer one wins.
+Outdated libraries are bridged to modern equivalents instead of being loaded: Baubles to Curios, Waila to Jade, NEI to JEI, Patchouli books
+to Patchouli, and CoFH RF / Redstone Flux to NeoForge energy; each bridge can be switched off (`bridges.<name>.enabled`). Legacy tile entities
+and items are NeoForge item, fluid and energy capabilities by default (RF and Forge Energy, IC2 EU, BuildCraft MJ), so hoppers, Create and
+modern cables work with them. Mods that only patch the old engine (performance patches, ID extenders) are skipped on purpose. Details:
+[Bridges](docs/wiki/Bridges.md), [capabilities](docs/wiki/Addon-API.md#capabilities).
 
 ## Configuration
 
-Settings live in `config/legacyconnector.properties`, written with defaults and comments on first start.
+Settings live in `config/legacyconnector.properties`, written with defaults and comments on first start (also editable in game under
+Mods, Legacy Connector, Config). The important ones:
 
 | Key | Default | Effect |
 | --- | --- | --- |
+| `legacy.autoSortMods` | `true` | Move legacy jars dropped into `mods/` into the folder of their Minecraft version on launch |
+| `mods.skip` | empty | Comma separated legacy mod ids to leave out entirely (read at startup) |
+| `bridges.<name>.enabled` | `true` | `baubles`, `waila`, `nei`, `cofhEnergy`, `patchouli`: `false` loads the legacy library instead of its modern replacement |
+| `experimental.forge1201` | `true` | Load Forge 1.20.1 mods (remapped in place); `false` leaves such jars alone |
+| `experimental.forge1201.softlink` | `true` | A reference to a 1.21.1 class or member that no longer exists becomes a stand-in that throws only when it runs, instead of keeping the mod from loading |
+| `legacy.deepWorld1122` | `true` | 1.12.2 mods can read and change blocks below y=0 down to the modern world bottom; `false` restores the 1.12 floor at y=0 for a mod that fails on negative y |
+| `warnings.riskyMods` | `true` | Show one loading warning for translated mods that may not work fully ([details](docs/wiki/Troubleshooting.md)) |
 | `oreBackgrounds.enabled` | `true` | Replace the old stone/netherrack/end stone behind legacy ore textures |
 | `oreBackgrounds.stone`, `.netherrack`, `.endStone` | `stone`, `netherrack`, `end_stone` | Vanilla block texture used instead (e.g. `deepslate`, `tuff`), or `legacy` to keep the old rock |
-| `modernizeTextures` | `true` | Replace old vanilla art inside legacy mod textures with the modern vanilla textures: exact copies of old block, item and GUI textures, and old backgrounds (smooth stone, cobblestone, planks, bricks, ...) mods painted their art on (recognised from fingerprints, the mod's own art stays) |
+| `modernizeTextures` | `true` | Replace old vanilla art inside legacy mod textures with the modern vanilla textures (exact copies of old block, item and GUI textures, and old backgrounds mods painted their art on; the mod's own art stays) |
 | `textures.modernLeaves` | `true` | Rebuild legacy leaf textures that recolour the old vanilla leaves in the modern leaf pattern, in the mod's colours |
 | `deepLayer.enabled` | `true` | Spread legacy ores down to the bottom of the world (below y=0) without adding any: the total per chunk stays the original mod's |
 | `deepLayer.excludeGenerators` | empty | Comma separated generator class prefixes that must not run below y=0 |
 | `blocks.flattenSubtypes` | `true` | Each legacy block subtype that has its own item becomes its own block (`mod:name_3`), as in the 1.13 flattening |
+| `villages.legacyBuildings` | `true` | Legacy mods' village buildings join the vanilla village pools; `false` leaves villages vanilla |
+| `legacyBiomeFrequency` | `1.0` | Scales how much land legacy mod biomes take in the overworld (`0` none in new chunks) |
 | `events.skip` | empty | Legacy event handlers to leave unregistered (`full.ClassName#method`), for tracking down a handler that misbehaves |
 
-All keys and the deepslate ore twins are described on the [Configuration](docs/wiki/Configuration.md) page.
+All keys (energy conversion rates, `perf.*` switches, ...) are on the [Configuration](docs/wiki/Configuration.md) page.
+
+## Troubleshooting
+
+- Read `logs/legacyconnector-report.txt` after a launch: per jar, what was detected, unresolved references and synthesized APIs.
+- NeoForge's "Warnings while loading mods" screen lists missing dependencies of legacy mods and, once per mod set, the translated mods that may not work fully.
+- Start-up errors about Mixin modules or rejected file names, and join failures: [Troubleshooting](docs/wiki/Troubleshooting.md).
+- To report a problem, open a [GitHub issue](https://github.com/kylepitcock/Legacy-Connector/issues) and attach `logs/latest.log` and `logs/legacyconnector-report.txt` as files (and the crash report if there is one). Say the Legacy Connector version (for a nightly, the full version), the mod and its Minecraft version, and what you did. Crash reports of a translated mod belong here, not with the mod's author. There is also a [Discord](https://discord.gg/vC6x4Kwwdq).
 
 ## FAQ
 
-**What does it do?** It runs mods that were built for older Minecraft versions (Forge 1.4.7, 1.5.2, 1.6.4, 1.7.10, 1.12.2, and 1.20.1 (alpha)) on NeoForge 1.21.1, next to modern mods. Legacy jars are translated when the game loads; the original file is never modified.
+**What does it do?** It runs mods that were built for older Minecraft versions (Forge 1.4.7, 1.5.2, 1.6.4, 1.7.10, 1.12.2, 1.20.1, and ModLoader-era Beta 1.7.3) on NeoForge 1.21.1, next to modern mods. Legacy jars are translated when the game loads; the original file is never modified.
 
 **How is it different from Retromod and Retrofit?** They are different tools. These summaries come from their own project pages, so check those for the details.
-- [Retromod](https://modrinth.com/mod/retromod) also rewrites old mods' bytecode when the game loads. It targets newer Minecraft versions across Fabric, Forge, and NeoForge, and its pages recommend it for content, quality-of-life, and library mods, not for mods that hook deep into the game (Create, Tinkers, Applied Energistics, and similar).
+- [Retromod](https://modrinth.com/mod/retromod) (MIT) also rewrites old mods' bytecode when the game loads. It supports Forge, NeoForge, Fabric and Quilt, and its pages recommend it for content, quality-of-life, and library mods, not for mods that hook deep into the game (Create, Tinkers, Applied Energistics, and similar). Some MIT-licensed portions of Retromod are adapted in this project (see [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)).
 - [Retrofit](https://github.com/Astryxx/Retrofit) (Astryxx) is an interoperability mod: it lets 1.7.10 and 1.20.1 mods work together (energy systems such as RF and IC2, ore dictionary, and tags). It does not load old mods onto a modern game.
-- Legacy Connector is for NeoForge 1.21.1 only. For each old version it provides the old game's API itself (the engine, ids, world generation, packets, and rendering of the old blocks and items), so mods that use the game's internals can run: Thaumcraft, BuildCraft, Thermal Expansion, RedPower, and many more. It bridges outdated libraries to modern equivalents (Baubles to Curios, Waila to Jade, NEI to JEI, and RF to NeoForge energy) and exposes legacy containers as NeoForge capabilities.
+- Legacy Connector is for NeoForge 1.21.1 only. For each old version it provides the old game's API itself (the engine, ids, world generation, packets, and rendering of the old blocks and items), so mods that use the game's internals can run: Thaumcraft, BuildCraft, Thermal Expansion, RedPower, and many more. It bridges outdated libraries to modern equivalents and exposes legacy containers as NeoForge capabilities.
 
-**Where do I put the mods?** Each legacy version has its own folder: `mods/1.7.10/`, `mods/1.12.2/`, `mods/1.6.4/`, `mods/1.5.2/`, `mods/1.4.7/`, `mods/1.20.1/`, `mods/b1.7.3/`. Legacy jars and zips you drop into `mods/` itself are moved there for you on launch (`legacy.autoSortMods=false` turns that off).
-
-**Which versions work, and how well?** 1.7.10, 1.12.2, and 1.6.4 are in beta; 1.5.2, 1.4.7, 1.20.1, and Beta 1.7.3 are in alpha. The [Status table](#status) has the details, and the [compatibility site](https://kylepitcock.github.io/Legacy-Connector/) lists results per mod.
-
-**Will mod X work?** Check the compatibility site. After a launch, `logs/legacyconnector-report.txt` lists each legacy jar, what was detected, and any references that could not be translated or are only stubbed. Mods that only patch the old engine (performance patches, id extenders) are skipped on purpose, and coremods that patch Minecraft's own classes are not supported.
+**Will mod X work?** Check the compatibility site, then `logs/legacyconnector-report.txt` after a launch. Mods that only patch the old engine (performance patches, id extenders) are skipped on purpose, and coremods that patch Minecraft's own classes are not supported (Better Than Wolves and other patched-`minecraft.jar` mods cannot work).
 
 **Does it work on a dedicated server?** Yes. Legacy mods run on a dedicated server too; client-only mods are skipped there.
 
 **Does it work on Fabric or Forge?** No. It is a NeoForge 1.21.1 mod. (Fabric mods on NeoForge are what Sinytra Connector does; Legacy Connector is the equivalent for old Forge versions.)
 
-**Why does the game stop with "Module ... contains package org.spongepowered..."?** A 1.12.2 jar bundles its own Mixin. Put it in `mods/1.12.2/` before the first launch.
-
-**Something broke. How do I report it?** Open a [GitHub issue](https://github.com/kylepitcock/Legacy-Connector/issues) and attach `logs/latest.log` and `logs/legacyconnector-report.txt` (and the crash report if there is one). Please say the Legacy Connector version, the mod and its Minecraft version, and what you did. Crash reports of a translated mod belong here, not with the mod's author.
-
 ## Documentation
 
 Technical documentation is in [`docs/wiki`](docs/wiki/Home.md) (start at [Home](docs/wiki/Home.md)):
-[Architecture](docs/wiki/Architecture.md), [Bridges](docs/wiki/Bridges.md), [World generation](docs/wiki/World-Generation.md),
+[Architecture](docs/wiki/Architecture.md), [Cache and redistribution](docs/wiki/Cache-and-Redistribution.md), [Bridges](docs/wiki/Bridges.md),
+[Library candidates](docs/wiki/Library-Candidates.md), [World generation](docs/wiki/World-Generation.md),
 [Mod dimensions](docs/wiki/Mod-Dimensions.md), [Entities](docs/wiki/Entities.md), [Rendering](docs/wiki/Rendering.md),
 [Create and Sable](docs/wiki/Create-and-Sable.md), [Changing legacy recipes](docs/wiki/Recipes.md),
-[Performance](docs/wiki/Performance.md), [Compatibility and status](docs/wiki/Compatibility-and-Status.md) and
-[Development](docs/wiki/Development.md). Per-mod results are on the
+[Configuration](docs/wiki/Configuration.md), [Performance](docs/wiki/Performance.md), [Troubleshooting](docs/wiki/Troubleshooting.md),
+[Compatibility and status](docs/wiki/Compatibility-and-Status.md), [Gameplay test log](docs/wiki/Gameplay-Test-Log.md),
+[Development](docs/wiki/Development.md), [Version roadmap](docs/wiki/Version-Roadmap.md), [Work plan](docs/wiki/Work-Plan.md) and
+[Plan for 1.19.2, 1.18.2 and 1.16.5](docs/wiki/Legacy-1.16-1.19-Plan.md). Per version: the estimate and corpus pages
+([1.4.7](docs/wiki/Legacy-1.4.7-Estimate.md), [1.5.2](docs/wiki/Legacy-1.5.2-Estimate.md), [1.6.4](docs/wiki/Legacy-1.6.4-Estimate.md),
+[1.20.1](docs/wiki/Legacy-1.20.1-Estimate.md), [Beta 1.7.3](docs/wiki/Legacy-b1.7.3.md)). Per-mod results are on the
 [compatibility site](https://kylepitcock.github.io/Legacy-Connector/).
 
 ## Writing addons for legacy mods
 
-Addons for legacy mods (a mod that registers content for, or hooks into, a translated legacy mod of any supported version: 1.4.7, 1.5.2, 1.6.4, 1.7.10, 1.12.2, or 1.20.1) are described in
-[Addon API](docs/wiki/Addon-API.md).
+Addons for legacy mods (a mod that registers content for, or hooks into, a translated legacy mod of any supported version) are described in
+[Addon API](docs/wiki/Addon-API.md): API 0.3, with a support matrix per version.
 
 ## Screenshots
 
@@ -202,4 +238,5 @@ Legacy Connector is released under the [MIT License](LICENSE).
 Legacy Connector only; the legacy mods you put next to it keep their own licenses.
 
 This project contains no Minecraft, Forge, or third-party mod code. Do not commit or redistribute legacy mod jars;
-users supply their own.
+users supply their own. Third-party libraries and the MIT-licensed portions adapted from Retromod are listed in
+[`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
