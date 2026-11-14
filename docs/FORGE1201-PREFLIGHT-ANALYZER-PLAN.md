@@ -1,4 +1,4 @@
-**Current checkpoint — 2026-11-14:** Schema 1.10A is user-validated green at `cc651af52b192fb534d49f3ad494b42e3d15d6f0` (`BUILD SUCCESSFUL in 53s; 14/14 tasks`). Schema 1.10B's corrected forced loader gate is user-validated green at `493cae748f89f88308a7e1b98ea583d2e58871af` (`BUILD SUCCESSFUL in 50s; 17/17 tasks`). The generated provenance JSON has now been reviewed: all input/output fingerprints and row counts match the console, all joined member rows matched, and 15,353 repeated SRG-ID row occurrences were coalesced without name conflicts. A follow-up regression test for same-name duplicate IDs across different owners is committed at `9347a08fad3844f494c5635b28871afe062929c2` and awaits the next user gate. The generated TSV is included in the loader JAR, but its licensing field is explicitly NOT_REVIEWED; release/distribution review remains open. The source edge remains member-name-only and `PARTIAL`; no 1.20.1 → 1.21.1 edge or selector rewriting is authorized.
+**Current checkpoint — 2026-11-15:** Schema 1.10A is user-validated green at `cc651af52b192fb534d49f3ad494b42e3d15d6f0` (`BUILD SUCCESSFUL in 53s; 14/14 tasks`). Schema 1.10B and its follow-up repeated-SRG-ID regression are now user-validated green at `755281d3b91a6cb1b818f5a927728cc412a6ec71`: the forced `:loader:clean :loader:test --no-daemon --console=plain --rerun-tasks` run returned `BUILD SUCCESSFUL in 50s; 17/17 actionable tasks`. The full provenance JSON is reviewed; all fingerprints/counts reconcile. The generated TSV remains packaged in the loader JAR with redistribution review unresolved. The source edge remains method/field-name-only and `PARTIAL`; no 1.20.1 → 1.21.1 edge or selector rewriting is authorized.
 
 ---
 
@@ -1249,7 +1249,7 @@ The earlier “Schema 1.10A mapping-profile validator implemented; user test gat
 
 ### Schema 1.10B implementation — source-edge provenance and coverage
 
-The initial Schema 1.10B implementation and source-side generation were user-tested at `493cae748f89f88308a7e1b98ea583d2e58871af`. The provenance report from that run has been reviewed. A follow-up test-only hardening increment is now on the branch at `9347a08fad3844f494c5635b28871afe062929c2` and is awaiting its forced gate.
+The initial Schema 1.10B implementation and source-side generation were user-tested at `493cae748f89f88308a7e1b98ea583d2e58871af`. The provenance report from that run has been reviewed. The follow-up test-only hardening increment at `9347a08fad3844f494c5635b28871afe062929c2` is now included in the user's successful forced gate at `755281d3b91a6cb1b818f5a927728cc412a6ec71`.
 
 Changes made:
 - `SrgMojangTable` exposes a deterministic generation result with counts for Mojang class/method/field rows, joined TSRG class/method/field rows, matched/unmatched methods and fields, duplicate intermediate member keys, duplicate SRG IDs, and generated output rows.
@@ -1276,7 +1276,7 @@ The initial Schema 1.10B code gate has passed and its report has been reviewed. 
 .\gradlew.bat :loader:clean :loader:test --no-daemon --console=plain --rerun-tasks
 ```
 
-Do not begin selector rewriting. The initial corrected forced loader gate and provenance report review are complete at `493cae748f89f88308a7e1b98ea583d2e58871af`. The follow-up duplicate-ID regression test is pending execution. Keep the independent mapping redistribution/license review open before packaging/release.
+Do not begin selector rewriting. The initial corrected forced loader gate and provenance report review are complete at `493cae748f89f88308a7e1b98ea583d2e58871af`. The follow-up duplicate-ID regression test is also green at `755281d3b91a6cb1b818f5a927728cc412a6ec71`. Keep the independent mapping redistribution/license review open before packaging/release.
 
 
 ## 2026-11-14 — Schema 1.10B first forced run: test fixture correction pending validation
@@ -1334,3 +1334,13 @@ Do not begin selector rewriting. The initial corrected forced loader gate and pr
 - Engineering status: `loader/build.gradle` currently packages `srg-mojang.tsv` in the loader JAR. Its packaging/redistribution status is **NOT CLEARED**. Do not publish a release containing that generated table until written permission or an appropriate legal review confirms the distribution model. This is not a finding that the current artifact is necessarily infringing; it is an unresolved permission question.
 - Candidate paths for later research, not decisions: (1) obtain explicit written permission for distributing the derived table; (2) determine whether a user-local generation/use model can satisfy both the mapping notice and runtime needs; or (3) identify a suitably licensed alternative mapping chain. Do not silently switch to a different namespace or claim equivalent coverage.
 - Keep the license issue separate from technical validation: the Schema 1.10B code test gate passed at `493cae748f89f88308a7e1b98ea583d2e58871af`; the additional duplicate-ID regression test at `9347a08fad3844f494c5635b28871afe062929c2` is still pending its own forced run.
+
+## 2026-11-15 — Follow-up duplicate-ID regression gate GREEN
+
+- The user supplied a PowerShell transcript where the first local-HEAD precondition failed with `Unexpected HEAD.` because the command expected `493cae748f89f88308a7e1b98ea583d2e58871af`, but the local branch was already at `ee0196f3d0576e8013582d24173b2218fdba7ae0`.
+- Because the commands were entered interactively, the failed `throw` did not terminate the PowerShell session. The user then fetched the expected remote tip, confirmed fetched/published tip `755281d3b91a6cb1b818f5a927728cc412a6ec71`, and successfully fast-forwarded. Git reported `Updating ee0196f3..755281d3` and updated only the two documentation files from that intermediate HEAD.
+- The follow-up regression test commit `9347a08fad3844f494c5635b28871afe062929c2` was already in the local ancestor at `ee0196...`; therefore the forced Gradle run after the fast-forward included it.
+- `git diff --check` completed without reported errors. User then ran `:loader:clean :loader:test --no-daemon --console=plain --rerun-tasks`: **BUILD SUCCESSFUL in 50s; 17 actionable tasks, all 17 executed.** This validates the same-name cross-owner coalescing test and conflicting-name-across-owners test along with the loader suite.
+- GitHub comparison confirms the remote branch tip is exactly `755281d3b91a6cb1b818f5a927728cc412a6ec71` (0 ahead / 0 behind). The branch contains the repeated-owner regression test; compare evidence shows test plus documentation files were the only changes since the earlier `493cae...` green code gate.
+- The `Unexpected HEAD` message was a stale guard expectation, not a Git or Gradle failure. The subsequent fast-forward and test succeeded. Do not rerun solely because of that guard message. A post-merge `git rev-parse HEAD` / `git status --short` can be used as a final housekeeping confirmation if desired.
+- Technical validation state: the Schema 1.10B forced loader suite including the duplicate-ID regression is **GREEN** at `755281d...`. The source edge remains `PARTIAL`, outputting member names only. The license/redistribution gate remains unresolved because the generated TSV is packaged into the loader JAR.
