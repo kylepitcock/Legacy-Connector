@@ -26,7 +26,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * Strict, read-only parser and structural validator for versioned mapping profiles.
@@ -1026,10 +1025,6 @@ public final class Forge1201MappingProfileValidator {
 
     private static JsonObject objectValue(JsonElement element) {
         return element != null && element.isJsonObject() ? element.getAsJsonObject() : null;
-    }
-
-    private static void addIfPresent(Set<String> target, String value) {
-        if (value != null && !value.isBlank()) target.add(value);
     }
 
     private static void validateJsonWithoutDuplicateMembers(String json) throws IOException {
