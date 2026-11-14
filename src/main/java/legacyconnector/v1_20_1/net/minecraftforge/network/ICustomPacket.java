@@ -6,7 +6,8 @@ import net.minecraft.resources.ResourceLocation;
 
 /**
  * Forge 1.20.1's marker of a vanilla custom payload packet that carries a channel name, an index and its data (mods mix into it or read it for their own
- * network code). NeoForge 1.21.1 has typed payloads instead; the interface exists so those classes link, and answers "no data" unless a mod implements it.
+ * network code). NeoForge 1.21.1 has typed payloads instead: {@code NetworkDirection.buildPacket} returns an implementation that holds the real packet
+ * ({@link #getThis}); the defaults answer "no data" for classes a mod implements itself.
  */
 public interface ICustomPacket<T extends Packet<?>> {
     default FriendlyByteBuf getInternalData() {
@@ -19,5 +20,11 @@ public interface ICustomPacket<T extends Packet<?>> {
 
     default ResourceLocation getName() {
         return null;
+    }
+
+    /** The vanilla packet to send (Forge: the packet itself). */
+    @SuppressWarnings("unchecked")
+    default T getThis() {
+        return (T) this;
     }
 }

@@ -9,29 +9,44 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 /** Forge 1.20.1's packet event; only its {@link Context} is used by mods (it is what a message consumer receives). */
 public class NetworkEvent extends Event {
     private final Context context;
+    private final net.minecraft.network.FriendlyByteBuf payload;
 
     public NetworkEvent(Context context) {
+        this(null, context);
+    }
+
+    public NetworkEvent(net.minecraft.network.FriendlyByteBuf payload, Context context) {
         this.context = context;
+        this.payload = payload;
     }
 
     public net.minecraft.network.FriendlyByteBuf getPayload() {
-        return null;
+        return payload;
     }
 
     public Supplier<Context> getSource() {
         return () -> context;
     }
 
-    /** Forge's event for a custom payload that reached the client (mods subscribe to read raw payloads of other channels); never posted here. */
+    /** Forge's event for a custom payload that reached the client: posted to the listeners of an {@code EventNetworkChannel} with the raw bytes. */
     public static class ClientCustomPayloadEvent extends NetworkEvent {
         public ClientCustomPayloadEvent(Context context) {
             super(context);
         }
+
+        public ClientCustomPayloadEvent(net.minecraft.network.FriendlyByteBuf payload, Context context) {
+            super(payload, context);
+        }
     }
 
+    /** A custom payload that reached the server (see {@link ClientCustomPayloadEvent}). */
     public static class ServerCustomPayloadEvent extends NetworkEvent {
         public ServerCustomPayloadEvent(Context context) {
             super(context);
+        }
+
+        public ServerCustomPayloadEvent(net.minecraft.network.FriendlyByteBuf payload, Context context) {
+            super(payload, context);
         }
     }
 
