@@ -139,10 +139,11 @@ This is a conceptual graph, not a claim that every edge currently exists. In par
 
 Every edge must declare:
 
-- Stable edge ID and version.
-- Direction; inverse use is forbidden unless explicitly declared and proven bijective for the requested symbol kind.
-- Source and target Minecraft versions.
+- Stable edge ID.
+- Explicit direction (`FORWARD`); reverse use is a separate edge, never an implicit inverse.
+- Source and target Minecraft versions for that individual edge, including intermediate-version hops.
 - Source and target namespace IDs, with their mapping-set versions.
+
 - Symbol domains covered: classes, methods, fields, descriptors, packages, or a smaller declared subset.
 - Mapping format and parser version.
 - Provider/tool identity and exact version.
@@ -187,7 +188,7 @@ The existing `Forge1201MappingCatalog` is a Forge API migration audit. Its `PACK
 
 ## 5. Proposed profile document shape
 
-The profile is a human-reviewable, version-controlled declaration. The runtime analyzer must validate it strictly before use. This example intentionally has an incomplete cross-version edge:
+The profile is a human-reviewable, version-controlled declaration. The runtime analyzer validates it strictly before use. This example intentionally has an incomplete cross-version edge and unmaterialized source artifacts:
 
 ```json
 {
@@ -198,14 +199,23 @@ The profile is a human-reviewable, version-controlled declaration. The runtime a
     "minecraftVersion": "1.20.1",
     "loader": {
       "id": "forge",
-      "versionRange": "47.x"
+      "versionRange": "[47,48)"
     },
     "compileNamespaceId": "minecraft:official-mojang@1.20.1",
     "refmapContextBindings": {
       "searge": {
         "namespaceId": "minecraft:forge-srg@1.20.1",
-        "evidence": []
+        "evidence": [
+          "reviewed source-mod build/refmap provenance",
+          "pinned Mixin 0.8.5 annotation-processor contract"
+        ]
       }
+    },
+    "baseRefmapBinding": {
+      "namespaceId": "minecraft:forge-srg@1.20.1",
+      "evidence": [
+        "reviewed source-mod build/refmap provenance"
+      ]
     }
   },
   "target": {
@@ -225,19 +235,60 @@ The profile is a human-reviewable, version-controlled declaration. The runtime a
       }
     ]
   },
+  "artifacts": [
+    {
+      "artifactId": "mcpconfig-1201",
+      "provider": "MCPConfig",
+      "version": "1.20.1-20230612.114412",
+      "format": "tsrg2",
+      "coordinate": "de.oceanlabs.mcp:mcp_config:1.20.1-20230612.114412",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "localPath": "artifacts/mcp_config-1.20.1-20230612.114412.zip",
+      "license": {
+        "id": "REVIEW_REQUIRED",
+        "reviewStatus": "PENDING",
+        "evidence": ["license review required before enabling this artifact"]
+      }
+    },
+    {
+      "artifactId": "mojang-client-mappings-1201",
+      "provider": "Mojang",
+      "version": "1.20.1",
+      "format": "proguard",
+      "url": "https://piston-data.mojang.com/v1/objects/6c48521eed01fe2e8ecdadbd5ae348415f3c47da/client.txt",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "upstreamChecksum": "sha1:0000000000000000000000000000000000000000",
+      "localPath": "artifacts/1.20.1-client.txt",
+      "license": {
+        "id": "REVIEW_REQUIRED",
+        "reviewStatus": "PENDING",
+        "evidence": ["license review required before distributing a derived mapping table"]
+      }
+    }
+  ],
   "edges": [
     {
       "edgeId": "source-srg-to-source-mojang-1201",
       "from": "minecraft:forge-srg@1.20.1",
       "to": "minecraft:official-mojang@1.20.1",
+      "direction": "FORWARD",
+      "sourceMinecraftVersion": "1.20.1",
+      "targetMinecraftVersion": "1.20.1",
       "scope": ["method-names", "field-names"],
       "artifactIds": ["mcpconfig-1201", "mojang-client-mappings-1201"],
-      "status": "PARTIAL_UNTIL_COVERAGE_AUDIT"
+      "status": "PARTIAL",
+      "reviewEvidence": [
+        "pinned MCPConfig and Mojang 1.20.1 inputs",
+        "coverage audit remains pending"
+      ]
     },
     {
       "edgeId": "minecraft-1201-to-1211",
       "from": "minecraft:official-mojang@1.20.1",
       "to": "minecraft:official-mojang@1.21.1",
+      "direction": "FORWARD",
+      "sourceMinecraftVersion": "1.20.1",
+      "targetMinecraftVersion": "1.21.1",
       "scope": [],
       "artifactIds": [],
       "status": "MISSING"
@@ -247,12 +298,17 @@ The profile is a human-reviewable, version-controlled declaration. The runtime a
     "status": "UNMODELED_UNLESS_EXPLICITLY_SUPPLIED"
   },
   "licenseReview": {
-    "required": true
+    "required": true,
+    "evidence": [
+      "profile-level license review must be completed before enabling a mapping profile"
+    ]
   }
 }
 ```
 
-This is a schema illustration, not an executable profile. Empty evidence arrays and the `MISSING` cross-version edge must block selector conversion. The `searge` namespace binding shown here is a candidate declaration shape only; it must be supported by source-mod/refmap provenance before becoming an accepted profile.
+This is an illustrative schema fixture, not a usable or accepted mapping profile. The all-zero digests are deliberately invalid placeholders; local artifacts are unverified, license reviews are pending, the source edge is partial, and the required cross-version edge is missing. It must not pass validation or authorize selector transformation. The `searge` namespace binding is only an example declaration shape; each actual mod's build/refmap provenance must justify it. The base table has a separate binding because Mixin's base `mappings` table is distinct from `data[context]`.
+
+Schema 1.10A requires one explicit `direction` and per-edge `sourceMinecraftVersion` / `targetMinecraftVersion`. A multi-edge route is complete only when both namespace and Minecraft-version endpoints connect at every hop. This prevents a superficially connected graph from silently jumping across game versions.
 
 ## 6. Deterministic profile and edge states
 
