@@ -41,6 +41,13 @@ public interface LegacyAddon {
     default void onLegacyLoadComplete() {}
 
     /**
+     * A legacy mod failed in a lifecycle phase and was disabled (added in API 0.3). Called right after the failure, between the other
+     * phase callbacks, for every failure (also of mods this addon does not use: check {@code mod.id()}). {@code phase} is
+     * {@code construction}, {@code preInit}, {@code init}, {@code imc}, {@code postInit} or {@code loadComplete}.
+     */
+    default void onLegacyModFailed(LegacyMod mod, String phase) {}
+
+    /**
      * Called while NeoForge's {@code RegisterCapabilitiesEvent} is fired: declare which legacy tile entities provide which
      * NeoForge capabilities. Legacy mods are fully loaded then.
      */

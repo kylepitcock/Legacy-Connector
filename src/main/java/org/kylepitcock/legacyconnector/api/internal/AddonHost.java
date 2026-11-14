@@ -16,6 +16,7 @@ import org.kylepitcock.legacyconnector.api.LegacyCapabilities;
 import org.kylepitcock.legacyconnector.api.LegacyMod;
 import org.kylepitcock.legacyconnector.api.LegacyPhase;
 import org.kylepitcock.legacyconnector.api.event.LegacyLoadCompleteEvent;
+import org.kylepitcock.legacyconnector.api.event.LegacyModFailedEvent;
 import org.kylepitcock.legacyconnector.api.event.LegacyModsDiscoveredEvent;
 import org.kylepitcock.legacyconnector.api.event.LegacyRegistrationFinishedEvent;
 import org.slf4j.Logger;
@@ -80,6 +81,18 @@ public final class AddonHost {
             });
         }
         for (Runnable r : due) run(r, "runWhen");
+    }
+
+    /** A legacy mod failed in {@code phaseName}: tells every active addon and posts {@code LegacyModFailedEvent}. Never throws. */
+    public static void modFailed(org.kylepitcock.legacyconnector.core.LegacyModRecord record, String phaseName) {
+        try {
+            LegacyMod mod = LegacyApi.mod(record.modernId).orElse(null);
+            if (mod == null || !mod.failed()) return; // a client-only skip on a server is not a failure
+            for (Loaded l : active()) run(() -> l.addon.onLegacyModFailed(mod, phaseName), l.className);
+            post(new LegacyModFailedEvent(mod, phaseName, mod.failureMessage().orElse(""), mod.missingDependencies()));
+        } catch (Throwable t) {
+            LOG.error("Reporting the failure of {} to the addons failed", record.legacyId, t);
+        }
     }
 
     /** Lets the active addons declare their capability adapters (called while NeoForge fires RegisterCapabilitiesEvent). */

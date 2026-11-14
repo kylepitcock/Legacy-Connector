@@ -2,9 +2,17 @@ package org.kylepitcock.legacyconnector.core;
 
 /** Wraps a failure inside legacy code so crash reports name the legacy mod and lifecycle phase. */
 public final class LegacyModException extends RuntimeException {
+    private final String phase;
+
+    /** The lifecycle phase the mod failed in (construction, preInit, init, imc, postInit, loadComplete). */
+    public String phase() {
+        return phase;
+    }
+
     public LegacyModException(LegacyModRecord mod, String phase, Throwable cause) {
         super(missing(mod) + "Legacy mod " + mod.legacyId + " (" + mod.version + ", from " + safeFile(mod) + ") failed during " + phase
                 + ": " + rootMessage(cause), cause);
+        this.phase = phase;
     }
 
     /** "X requires Y (range), which is not installed. " for each required dependency the loader found missing: the likely cause of the failure. */
