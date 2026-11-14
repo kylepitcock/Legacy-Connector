@@ -58,3 +58,10 @@ software/bernie/geckolib/util/RenderUtils	software/bernie/geckolib/util/RenderUt
 mezz/jei/api/forge/ForgeTypes	mezz/jei/api/neoforge/NeoForgeTypes
 # Jade 15: the identifier constants interface was renamed
 snownee/jade/api/Identifiers	snownee/jade/api/JadeIds
+# Resourceful Lib 2 (1.20.1) packets: the `networking` package is gone in 3 (`network` with packet types); the old API lives in LegacyRlNetwork over LegacyLibChannel
+com/teamresourceful/resourcefullib/common/networking/base/Packet	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyRlNetwork$LegacyRlPacket
+com/teamresourceful/resourcefullib/common/networking/base/PacketHandler	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyRlNetwork$LegacyRlPacketHandler
+com/teamresourceful/resourcefullib/common/networking/base/PacketContext	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyRlNetwork$LegacyRlPacketContext
+com/teamresourceful/resourcefullib/common/networking/base/DatalessPacketHandler	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyRlNetwork$LegacyRlDatalessPacketHandler
+com/teamresourceful/resourcefullib/common/networking/base/NetworkDirection	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyRlNetwork$LegacyRlDirection
+com/teamresourceful/resourcefullib/common/networking/NetworkChannel	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyRlNetwork$LegacyRlChannel
