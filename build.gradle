@@ -1,587 +1,587 @@
-plugins {
-    id 'java-library'
-    id 'idea'
-    id 'net.neoforged.moddev' version '2.0.148'
-}
-
-// The root project is the *runtime* half of MC Compatibility: a normal NeoForge mod that contains the
-// re-implemented legacy APIs (the "shim", packages legacyconnector.v1_7_10 / legacyconnector.v1_12_2) and the bridges
-// that connect them to NeoForge. The :loader project is the service-layer half that translates jars.
-evaluationDependsOn(':loader')
-
-version = mod_version
-group = mod_group_id
-
-repositories {
-    mavenLocal()
-    mavenCentral()
-    maven { // Rhino is an optional KubeJS integration; compile-only for its Context-injection method signature
-        url = 'https://maven.latvian.dev/releases'
-        content { includeGroup 'dev.latvian.mods' }
-    }
-    maven { url = 'https://maven.theillusivec4.top/' } // Curios (Baubles bridge)
-    maven { url = 'https://maven.blamejared.com/' } // JEI (NEI bridge)
-    maven { // Jade (Waila bridge)
-        url = 'https://api.modrinth.com/maven'
-        content { includeGroup 'maven.modrinth' }
-    }
-    maven { // TerraBlender (optional integration; compile-time API only)
-        url = 'https://maven.minecraftforge.net/'
-        content { includeGroup 'com.github.glitchfiend' }
-    }
-    maven { // Create (contraption movement checks for legacy blocks)
-        url = 'https://maven.createmod.net'
-        content { includeGroup 'com.simibubi.create' }
-    }
-}
-
-base {
-    archivesName = mod_id
-}
-
-java.toolchain.languageVersion = JavaLanguageVersion.of(21)
-// Helper tools read class files built for 21: run them on a 21 JVM even when the IDE starts Gradle on an older JDK.
-tasks.withType(JavaExec).configureEach {
-    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(21) }
-}
-
-def shimIndexFile = layout.buildDirectory.file('generated/shimIndex/legacyconnector/shim-index.txt')
-
-neoForge {
-    version = project.neo_version
-
-    parchment {
-        mappingsVersion = project.parchment_mappings_version
-        minecraftVersion = project.parchment_minecraft_version
-    }
-
-    runs {
-        client {
-            client()
-            jvmArgument '-Xmx6G'
-        }
-
-        server {
-            server()
-            programArgument '--nogui'
-            // The fixture mod stops the server after its self test when this is set (CI-style smoke test).
-            systemProperty 'legacytest.autostop', System.getProperty('legacytest.autostop', 'false')
-        }
-
-        // Automated smoke test in its own directory: boots a dedicated server with the mods in run-servertest/mods,
-        // lets the fixture mod run its self test, then stops.
-        serverTest {
-            server()
-            gameDirectory = project.file('run-servertest')
-            programArgument '--nogui'
-            systemProperty 'legacytest.autostop', 'true'
-            systemProperty 'legacyconnector.entitySelfTest', 'true'
-        }
-
-        // Server test over a hand-picked subset of mods (see build/devtools/run-subset.sh): run-subtest/mods holds links.
-        serverSubTest {
-            server()
-            // Separate game/config/world/cache directories allow one-mod regression runs.
-            gameDirectory = project.file(project.findProperty('subTestDir') ?: 'run-subtest')
-            programArgument '--nogui'
-            systemProperty 'legacytest.autostop', 'true'
-            systemProperty 'legacyconnector.autostopTicks', project.findProperty('autostopTicks') ?: '700'
-            // runs the client blockstate translation on the server too (logs "1.12.2 blockstates: N translated, M fell back"); -PassetsDump=<dir> writes it
-            systemProperty 'legacyconnector.assetsSelfTest', project.findProperty('assetsDump') ?: 'true'
-            // -PclientProxies=mekanism.client.ClientProxy,...: runs those mods' client registrations (state mappers) for the translation too
-            if (project.hasProperty('clientProxies')) systemProperty 'legacyconnector.assetsClientProxies', project.property('clientProxies')
-            systemProperty 'legacyconnector.entitySelfTest', project.findProperty('selfTests') ?: 'true'
-            // Opt-in observation of real player/chunk natural-spawn cycles; not part of normal build checks.
-            if (project.hasProperty('naturalSpawnTickSelfTest')) {
-                systemProperty 'legacyconnector.naturalSpawnTickSelfTest', project.property('naturalSpawnTickSelfTest')
-                systemProperty 'legacyconnector.naturalSpawnTickTestTicks', project.findProperty('naturalSpawnTickTestTicks') ?: '2400'
-            }
-            // -PserverTickScript=<file.js>: runs that JavaScript on every server tick (see core/ServerTickScript; -PserverTickScriptFrom=<tick>)
-            if (project.hasProperty('serverTickScript')) {
-                systemProperty 'legacyconnector.serverTickScript', project.property('serverTickScript')
-                systemProperty 'legacyconnector.serverTickScriptFrom', project.findProperty('serverTickScriptFrom') ?: '200'
-            }
-            // -PserverDevScript=<dir>: evaluates dir/*.js once on the server thread (core/ServerDevScript)
-            if (project.hasProperty('serverDevScript')) systemProperty 'legacyconnector.serverDevScript', project.property('serverDevScript')
-            // -PserverScript=<dir>: long-lived script console, runs the *.js files dropped into the directory (core/ServerScript); -PserverScriptMod=<legacy mod id>
-            if (project.hasProperty('serverScript')) systemProperty 'legacyconnector.serverScript', project.property('serverScript')
-            if (project.hasProperty('serverScriptMod')) systemProperty 'legacyconnector.serverScriptMod', project.property('serverScriptMod')
-            // -PgenTiming: per-generator timing of the legacy world generators (a log line every 20 s and at shutdown)
-            if (project.hasProperty('genTiming')) systemProperty 'legacyconnector.genTiming', 'true'
-        }
-
-        // Client smoke test: boots the client in run-clienttest (mods: run-clienttest/mods), reports texture and
-        // model problems per mod once the title screen shows, then quits.
-        clientTest {
-            client()
-            gameDirectory = project.file('run-clienttest')
-            systemProperty 'legacyconnector.clientSelfTest', 'true'
-        }
-
-        // Graphical test: creates a world, builds showcases of legacy blocks/items and writes screenshots to
-        // run-screenshots/shots (see tools/dev/run-screenshot-test.sh).
-        screenshotTest {
-            client()
-            gameDirectory = project.file(project.findProperty('shotDir') ?: 'run-screenshots') // -PshotDir=run-atm10: a copy of a real pack
-            if (project.hasProperty('shotDir')) jvmArguments.addAll('-Xmx12G')
-            systemProperty 'legacyconnector.screenshotTest', 'true'
-            ['shotWorldType', 'shotMods', 'shotBlocksPerMod', 'shotItemsPerMod', 'shotTour', 'shotSeed', 'shotScenario', 'shotRenderDistance', 'shotBlocks', 'shotItems', 'shotEntities', 'shotMetas', 'shotCommands', 'debugIcons', 'debugAssets', 'debugAsm'].each { p ->
-                if (project.hasProperty(p)) systemProperty 'legacyconnector.' + p, project.property(p)
-            }
-            if (project.hasProperty('shotWidth') && project.hasProperty('shotHeight')) {
-                programArgument '--width'
-                programArgument project.property('shotWidth').toString()
-                programArgument '--height'
-                programArgument project.property('shotHeight').toString()
-            }
-        }
-
-        configureEach {
-            if (project.hasProperty('embeddedLibs')) systemProperty 'legacyconnector.libsDir', layout.buildDirectory.dir('legacy-libs').get().asFile.absolutePath
-            systemProperty 'forge.logging.markers', 'REGISTRIES'
-            // In production the loader reads the index from the embedded runtime jar.
-            systemProperty 'legacyconnector.shimIndex', shimIndexFile.get().asFile.absolutePath
-            // ... and legacy coremods' FML classes from the runtime jar; in development, from its compiled classes.
-            systemProperty 'legacyconnector.runtimeClasses', sourceSets.main.java.classesDirectory.get().asFile.absolutePath
-            logLevel = org.slf4j.event.Level.INFO
-        }
-    }
-
-    mods {
-        "${mod_id}" {
-            sourceSet(sourceSets.main)
-        }
-    }
-}
-
-configurations {
-    // The legacy-era libraries embedded as resources of the distributable jar (see the comment at their declaration).
-    legacyLibs { transitive = false }
-}
-
-dependencies {
-    // The loader must sit on the boot/service layer in development, exactly like in production.
-    additionalRuntimeClasspath project(':loader')
-
-    // Optional integrations: only used when the mod is installed (legacy library bridges).
-    compileOnly "top.theillusivec4.curios:curios-neoforge:${curios_version}:api"
-    compileOnly "maven.modrinth:jade:${jade_version}"
-    compileOnly "mezz.jei:jei-1.21.1-neoforge-api:${jei_version}"
-    compileOnly "vazkii.patchouli:Patchouli:${patchouli_version}:api" // Patchouli bridge (1.12.2 books and API); blamejared maven
-    compileOnly("com.simibubi.create:create-1.21.1:${create_version}") { transitive = false }
-    compileOnly "dev.latvian.mods:rhino-neoforge:2006.2.4-build.17" // optional KubeJS 7 Rhino Context API; not bundled at runtime
-
-    // Optional mod integrations are compile-only: neither is required or added to the connector's runtime classpath.
-    // TerraBlender is used only when already installed; otherwise BiomePlacement supplies a native multi-noise overlay.
-    // Pehkui is used only when present; its typed bridge is isolated behind a runtime presence check.
-    compileOnly "com.github.glitchfiend:TerraBlender-neoforge:${terrablender_version}"
-    compileOnly "maven.modrinth:pehkui:${pehkui_version}"
-
-    // Libraries Minecraft 1.7.10 / 1.12.2 shipped and legacy mods use directly, absent from 1.21.1. NOT jar-in-jar: a jar-in-jar library
-    // always enters the game module layer, and a modern mod that bundles the same packages (ScalableCatsForce ships Scala 2.13) then stops
-    // the launch with "Modules X and Y export package scala.annotation". They are plain resources of the distributable jar
-    // (META-INF/legacyconnector/libs); the loader's BundledLibraries hands each one to FML only when a legacy mod uses it and the
-    // rest of the pack does not already provide it. In development they stay on the class path.
-    for (lib in ['net.sf.trove4j:trove4j:3.0.3', 'javax.vecmath:vecmath:1.5.2',
-                 // Forge 1.7.10 shipped Scala 2.11 for Scala mods (ProjectRed, ForgeMultipart, ...).
-                 'org.scala-lang:scala-library:2.11.1', 'org.scala-lang:scala-reflect:2.11.1',
-                 'org.scala-lang.modules:scala-parser-combinators_2.11:1.0.1', 'org.scala-lang.modules:scala-xml_2.11:1.0.2',
-                 // Forge 1.12.2 put typesafe config and akka on the game classpath too (OpenComputers' Scala code uses both; Apache 2.0, ~3 MB).
-                 'com.typesafe:config:1.2.1', 'com.typesafe.akka:akka-actor_2.11:2.3.3',
-                 // Java 8 had javax.activation (removed from the JDK in 11); 1.12.2 mods use it for MIME types (Silent Lib, Scaling Health).
-                 'com.sun.activation:jakarta.activation:1.2.2',
-                 // Minecraft 1.6.4's launcher libraries included argo (JSON; 3.x keeps the 2.x argo.jdom API, whose 2.25 pom Gradle cannot parse); CodeChickenCore's DepLoader reads its dependency list with it.
-                 'net.sourceforge.argo:argo:3.5']) {
-        legacyLibs(lib)
-        if (project.hasProperty('embeddedLibs')) {
-            // test mode: the libraries are NOT on the run class path; the loader reads them from build/legacy-libs like the production jar's resources
-            compileOnly lib
-        } else {
-            implementation lib
-            additionalRuntimeClasspath lib
-        }
-    }
-    // Java 8 shipped Nashorn (legacy mods script with jdk.nashorn, relocated to the standalone engine; the dev remote control
-    // evaluates JavaScript with it too). NeoForge ships the same engine for its coremods, so it is not embedded: a second
-    // copy in the game layer stops the game from starting ("Module scala.reflect reads more than one module named
-    // org.openjdk.nashorn").
-    implementation 'org.openjdk.nashorn:nashorn-core:15.4'
-
-    // Unit tests of the pure logic of the addon API (api.internal.AddonOrder).
-    testImplementation platform('org.junit:junit-bom:5.10.2')
-    testImplementation 'org.junit.jupiter:junit-jupiter'
-    testImplementation 'com.google.code.gson:gson:2.10.1' // book json conversion tests (Gson is not on the test class path otherwise)
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    // Match the launcher's parser; Nashorn otherwise pulls ASM 7 into standalone tests (cannot read Java 21 fixtures).
-    testRuntimeOnly "org.ow2.asm:asm:${asm_version}"
-}
-// Game classes (netty, vanilla packets) for the tests of shim classes that mention them in their signatures; nothing is bootstrapped.
-sourceSets.test.compileClasspath += sourceSets.main.compileClasspath
-sourceSets.test.runtimeClasspath += sourceSets.main.compileClasspath
-// CPU vertex captures use LWJGL's native memory allocator, with the same platform natives as the game launch.
-sourceSets.test.runtimeClasspath += sourceSets.main.runtimeClasspath.filter { it.name.startsWith('lwjgl-') && it.name.contains('-natives-') }
-// Audio instance tests bootstrap vanilla registries; their translations/version live in the generated resource artifact.
-sourceSets.test.runtimeClasspath += files(layout.buildDirectory.file("moddev/artifacts/neoforge-${neo_version}-client-extra-aka-minecraft-resources.jar"))
-// ... and the tests of the energy bridges name NeoForge's IEnergyStorage / Direction directly
-sourceSets.test.compileClasspath += sourceSets.main.compileClasspath
-tasks.withType(Test).configureEach { useJUnitPlatform() }
-tasks.named('test', Test) {
-    useJUnitPlatform { excludeTags 'actual-mod' }
-}
-
-// Local original jars are developer-supplied fixtures, never a dependency of check/build or release packaging.
-tasks.register('actualModTest', Test) {
-    group = 'verification'
-    description = 'Runs opt-in tests against locally supplied original mods and the Beta reference client.'
-    testClassesDirs = sourceSets.test.output.classesDirs
-    classpath = sourceSets.test.runtimeClasspath
-    useJUnitPlatform { includeTags 'actual-mod' }
-    shouldRunAfter tasks.named('test')
-    // These tests discover local archives/caches dynamically; their results must not be reused across fixture sets.
-    outputs.upToDateWhen { false }
-    outputs.doNotCacheIf('uses locally supplied original jars') { true }
-    testLogging { events 'skipped' }
-}
-
-// The addon API alone (classes + sources), the compile-time dependency of addons: build/dist/legacyconnector-api-<version>.jar.
-// Not a mod: at runtime the API is part of the Legacy Connector jar.
-tasks.register('apiJar', Jar) {
-    group = 'build'
-    description = 'Builds the jar addons compile against (only org.kylepitcock.legacyconnector.api, without api.internal).'
-    dependsOn tasks.named('classes')
-    archiveBaseName = 'legacyconnector-api'
-    archiveVersion = project.version
-    destinationDirectory = layout.buildDirectory.dir('dist')
-    from(sourceSets.main.output.classesDirs) {
-        include 'org/kylepitcock/legacyconnector/api/**'
-    }
-    from(sourceSets.main.java.srcDirs) {
-        include 'org/kylepitcock/legacyconnector/api/**'
-        exclude 'org/kylepitcock/legacyconnector/api/internal/**'
-    }
-}
-
-// The run configurations reference the loader's jar by path; without this they would launch a stale loader.
-tasks.matching { it.name.startsWith('run') || (it.name.startsWith('prepare') && it.name.endsWith('Run')) }.configureEach {
-    dependsOn ':loader:jar'
-}
-
-// ---------------------------------------------------------------------------------------------------------
-// Shim index: every legacy API class/member the runtime provides. The loader uses it to drop duplicate
-// copies of Forge classes from legacy jars and to report APIs a legacy mod needs that are not implemented.
-// ---------------------------------------------------------------------------------------------------------
-def generateShimIndex = tasks.register('generateShimIndex', JavaExec) {
-    dependsOn tasks.named('compileJava')
-    classpath = project(':loader').sourceSets.main.runtimeClasspath
-    mainClass = 'org.kylepitcock.legacyconnector.loader.shim.ShimIndexGenerator'
-    def classDirs = sourceSets.main.output.classesDirs
-    inputs.files classDirs
-    outputs.file shimIndexFile
-    argumentProviders.add({ [shimIndexFile.get().asFile.absolutePath] + classDirs.files.collect { it.absolutePath } } as CommandLineArgumentProvider)
-}
-sourceSets.main.resources.srcDir(layout.buildDirectory.dir('generated/shimIndex'))
-tasks.named('processResources') {
-    dependsOn generateShimIndex
-    // single source of truth for the 1.12 -> 1.21.1 vanilla texture renames: the loader owns the table, the runtime reads a copy
-    from(project(':loader').layout.projectDirectory.dir('src/main/resources/legacyconnector/resource')) { into 'legacyconnector/resource' }
-}
-
-// Compile-only "legacy API" jars that look like the original Forge/Minecraft API to a Java 8 compiler.
-['1_7_10', '1_12_2'].each { ver ->
-    tasks.register("legacyApiStubs${ver}", JavaExec) {
-        dependsOn tasks.named('compileJava')
-        classpath = project(':loader').sourceSets.main.runtimeClasspath
-        mainClass = 'org.kylepitcock.legacyconnector.loader.shim.LegacyApiStubGenerator'
-        def classDir = sourceSets.main.java.classesDirectory
-        def out = layout.buildDirectory.file("legacy-api/legacy-api-${ver}.jar")
-        inputs.dir classDir
-        outputs.file out
-        argumentProviders.add({ [classDir.get().asFile.absolutePath, "legacyconnector/v${ver}/".toString(), out.get().asFile.absolutePath] } as CommandLineArgumentProvider)
-    }
-}
-
-// 1.20.1 gap report (milestone 0): ./gradlew gap1201 -PsrgTable=srg.tsv -PtargetJars=a.jar,b.jar -PgapJars=dir [-PgapReport=file]
-// SRG table: built by :loader:genSrgMojang1201 (default); targets: Minecraft 1.21.1 (Mojang names) + NeoForge, e.g. build/moddev/artifacts/neoforge-*-merged.jar
-// -PtargetJars=@list: a list file (longer than the Windows command line); the shim classes are appended in a copy
-def gapTargets(String targetJars, String classDirs) {
-    if (!targetJars.startsWith('@')) return targetJars + ',' + classDirs
-    def merged = new File(buildDir, 'gap1201-targets.txt')
-    merged.parentFile.mkdirs()
-    merged.text = new File(targetJars.substring(1)).readLines().join(',') + ',' + classDirs
-    return '@' + merged.absolutePath
-}
-tasks.register('gap1201', JavaExec) {
-    dependsOn ':loader:genSrgMojang1201', 'classes', generateShimIndex // the Forge facades (legacyconnector/v1_20_1) count as present
-    // gson (the provenance watermark of the transformer) and the fancy mod loader's annotations are compileOnly in the loader
-    classpath = project(':loader').sourceSets.main.runtimeClasspath + project(':loader').sourceSets.main.compileClasspath.filter { it.name.startsWith('gson') || it.name.startsWith('slf4j') }
-    mainClass = 'org.kylepitcock.legacyconnector.loader.tools.Gap1201'
-    // -Pgap.translate=true runs the jars through Forge1201Transformer first (the report then shows what the layer leaves); -Pgap.limit=N rows per list
-    if (project.findProperty('gap.translate')) systemProperty 'gap.translate', project.findProperty('gap.translate').toString()
-    systemProperty 'gap.shimIndex', shimIndexFile.get().asFile.absolutePath // -Pgap.translate: the translator sees the facades like the game
-    if (project.findProperty('gap.softlist')) systemProperty 'gap.softlist', project.findProperty('gap.softlist').toString()
-    if (project.findProperty('gap.assumeNative')) systemProperty 'gap.assumeNative', project.findProperty('gap.assumeNative').toString()
-    if (project.findProperty('gap.limit')) systemProperty 'gap.limit', project.findProperty('gap.limit').toString()
-    if (project.findProperty('gap.translated.dir')) systemProperty 'gap.translated.dir', project.findProperty('gap.translated.dir').toString()
-    maxHeapSize = '3g'
-    argumentProviders.add({
-        def renames = fileTree(dir: 'loader/src/main/resources/legacyconnector/forward/1.20.1', include: ['forge-*.tsv', 'mc-classes.tsv']).files.join(',')
-        def jars = fileTree(dir: project.findProperty('gapJars') ?: 'test-mods4', include: '*.jar').files.collect { it.absolutePath }.sort()
-        if (jars.join(' ').length() > 6000) { // a pack of hundreds of jars: the Windows command line is limited, hand over "@file" (one path per line)
-            def jarList = new File(buildDir, 'gap1201-jars.txt')
-            jarList.parentFile.mkdirs()
-            jarList.text = jars.join(System.lineSeparator())
-            jars = ['@' + jarList.absolutePath]
-        }
-        [(project.findProperty('srgTable') ?: project(':loader').layout.buildDirectory.file('generated/srg-mojang/legacyconnector/mappings/1.20.1/srg-mojang.tsv').get().asFile.absolutePath).toString(), renames, gapTargets(project.findProperty('targetJars').toString(), sourceSets.main.output.classesDirs.files.collect { it.absolutePath }.join(',')),
-         (project.findProperty('gapReport') ?: layout.buildDirectory.file('reports/gap1201.txt').get().asFile.absolutePath).toString()] + jars
-    } as CommandLineArgumentProvider)
-}
-
-// Deterministic single-JAR preflight report: ./gradlew preflight1201 -PpreflightJar=path/to/mod.jar [-PpreflightModsDirs=mods,other-mods]
-tasks.register('preflight1201', JavaExec) {
-    group = 'verification'
-    description = 'Writes a deterministic JSON and text preflight report for one Forge 1.20.1 JAR.'
-    dependsOn ':loader:classes'
-    classpath = project(':loader').sourceSets.main.runtimeClasspath +
-            project(':loader').sourceSets.main.compileClasspath.filter {
-                it.name.startsWith('gson') || it.name.startsWith('slf4j')
-            }
-    // ModDevGradle adds the pinned Minecraft / NeoForge development artifacts to the root main
-    // compile classpath. Pass those resource roots separately; the analyzer reads .class resources
-    // without defining or initializing target classes.
-    def targetCompileClasspath = sourceSets.main.compileClasspath
-    inputs.files(targetCompileClasspath)
-    mainClass = 'org.kylepitcock.legacyconnector.loader.tools.forge1201.Forge1201PreflightAnalyzer'
-    maxHeapSize = '2g'
-    argumentProviders.add({
-        def jarValue = project.findProperty('preflightJar')
-        if (!jarValue) {
-            throw new GradleException("Missing -PpreflightJar=<path to Forge 1.20.1 JAR>")
-        }
-        def sourceJar = file(jarValue.toString())
-        if (!sourceJar.isFile()) {
-            throw new GradleException("Preflight JAR does not exist: ${sourceJar}")
-        }
-        def reportDir = file(project.findProperty('preflightReportDir')
-                ?: layout.buildDirectory.dir('reports/preflight1201').get().asFile)
-        def jsonFile = project.findProperty('preflightJson')
-                ? file(project.property('preflightJson').toString())
-                : new File(reportDir, sourceJar.name + '.json')
-        def textFile = project.findProperty('preflightText')
-                ? file(project.property('preflightText').toString())
-                : new File(reportDir, sourceJar.name + '.txt')
-        def args = [sourceJar.absolutePath]
-        def dirsValue = (project.findProperty('preflightModsDirs') ?: '').toString()
-        dirsValue.split(',').collect { it.trim() }.findAll { it }.each { dir ->
-            args.add('--mods-dir')
-            args.add(file(dir).absolutePath)
-        }
-        def refmapContext = project.findProperty('preflightRefmapContext')
-        if (refmapContext != null) {
-            args.add('--refmap-context')
-            args.add(refmapContext.toString())
-        }
-        def targetClasspathFile = new File(reportDir, 'target-classpath.txt')
-        def targetClasspathEntries = targetCompileClasspath.files.collect { it.absolutePath }
-        targetClasspathFile.parentFile.mkdirs()
-        targetClasspathFile.setText(targetClasspathEntries.join(System.lineSeparator())
-                + System.lineSeparator(), 'UTF-8')
-        args.add('--target-classpath-file')
-        args.add(targetClasspathFile.absolutePath)
-        args.add('--json')
-        args.add(jsonFile.absolutePath)
-        args.add('--text')
-        args.add(textFile.absolutePath)
-        args
-    } as CommandLineArgumentProvider)
-}
-
-// 1.20.1: link translated jars with the JVM verifier on the game class path (invalid bytecode of the migration shows up as VerifyError):
-// ./gradlew gap1201 -Pgap.translate=true -Pgap.translated.dir=build/translated1201 ..., then ./gradlew verify1201 -PverifyDir=build/translated1201
-// API difference of a library between its 1.20.1 and 1.21.1 build: ./gradlew libApiDiff -Pold=a.jar -Pnew=b.jar -Ppkgs=dev/architectury/,... [-Preport=file]
-tasks.register('libApiDiff', JavaExec) {
-    dependsOn ':loader:classes'
-    classpath = project(':loader').sourceSets.main.runtimeClasspath
-    mainClass = 'org.kylepitcock.legacyconnector.loader.tools.LibApiDiff'
-    argumentProviders.add({ [project.findProperty('old').toString(), project.findProperty('new').toString(), project.findProperty('pkgs').toString()] +
-            (project.findProperty('report') || project.findProperty('renames') ? [(project.findProperty('report') ?: '').toString()] : []) +
-            (project.findProperty('renames') ? [project.findProperty('renames').toString()] : []) } as CommandLineArgumentProvider)
-}
-
-tasks.register('verify1201', JavaExec) {
-    dependsOn tasks.named('classes')
-    classpath = sourceSets.main.runtimeClasspath + project(':loader').sourceSets.main.runtimeClasspath
-    mainClass = 'org.kylepitcock.legacyconnector.loader.tools.Verify1201'
-    maxHeapSize = '3g'
-    argumentProviders.add({ [project.findProperty('verifyDir').toString(), (project.findProperty('verifyMax') ?: '40').toString()] } as CommandLineArgumentProvider)
-}
-
-// Offline compatibility check: ./gradlew checkLegacyMod -PlegacyJar=/path/to/mod.jar
-tasks.register('checkLegacyMod', JavaExec) {
-    dependsOn generateShimIndex
-    classpath = project(':loader').sourceSets.main.runtimeClasspath + sourceSets.main.runtimeClasspath
-    mainClass = 'org.kylepitcock.legacyconnector.loader.tools.CheckJar'
-    // -PcheckJson=<file> also writes a JSON record per jar (tools/compat/probe.py)
-    if (project.findProperty('checkJson')) systemProperty 'legacyconnector.check.json', project.findProperty('checkJson').toString()
-    // -PkeepDir=<dir> keeps the translated jars there (input of textureReport)
-    if (project.findProperty('keepDir')) systemProperty 'legacyconnector.check.keep', project.findProperty('keepDir').toString()
-    // -Pbridges=false: check Waila/NEI/Baubles... jars as ordinary mods instead of relocating their API into the shim
-    if (project.findProperty('bridges')) systemProperty 'legacyconnector.check.bridges', project.findProperty('bridges').toString()
-    argumentProviders.add({ [shimIndexFile.get().asFile.absolutePath] + (project.findProperty('legacyJar') ?: '').toString().split(',').findAll { it } } as CommandLineArgumentProvider)
-}
-
-// Offline report of the texture modernizer: ./gradlew textureReport -PlegacyJar=a.jar,b.jar [-PmodernClient=1.21.1.jar] [-PsampleDir=dir]
-// prints which textures of each jar are old vanilla copies or backgrounds and writes before/after samples.
-tasks.register('textureReport', JavaExec) {
-    dependsOn tasks.named('classes')
-    classpath = sourceSets.main.runtimeClasspath
-    mainClass = 'org.kylepitcock.legacyconnector.core.pack.TextureModernizer'
-    argumentProviders.add({
-        def client = project.findProperty('modernClient') ?: "${System.getenv('APPDATA') ?: System.getProperty('user.home')}/.minecraft/versions/1.21.1/1.21.1.jar"
-        def samples = project.findProperty('sampleDir') ?: layout.buildDirectory.dir('texture-samples').get().asFile.absolutePath
-        [client.toString(), samples.toString()] + (project.findProperty('legacyJar') ?: '').toString().split(',').findAll { it }
-    } as CommandLineArgumentProvider)
-}
-
-// Offline checks that run shim code against vanilla registries only (no game, no mods loaded): src/devcheck.
-sourceSets {
-    devcheck {
-        compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
-        runtimeClasspath += sourceSets.main.output + sourceSets.main.runtimeClasspath
-    }
-}
-// Thaumcraft 4's vanilla aspect keys vs the modern -> legacy item/block round trip, plus legacy numeric ids of all vanilla
-// content: ./gradlew checkVanillaAspects -PlegacyJar=/path/to/Thaumcraft-1.7.10-4.2.3.5.jar
-tasks.register('checkVanillaAspects', JavaExec) {
-    dependsOn tasks.named('devcheckClasses'), ':loader:extractMappings'
-    classpath = sourceSets.devcheck.runtimeClasspath
-    mainClass = 'org.kylepitcock.legacyconnector.devcheck.CheckVanillaAspects'
-    def fields = project(':loader').layout.buildDirectory.file('generated/mappings/legacyconnector/mappings/1.7.10/fields.csv')
-    argumentProviders.add({ [fields.get().asFile.absolutePath, (project.findProperty('legacyJar') ?: '').toString()] } as CommandLineArgumentProvider)
-}
-
-// Copies the fixture legacy mods into run/mods so `runServer` / `runClient` exercise the full pipeline.
-tasks.register('installTestMods', Copy) {
-    dependsOn ':testmods:assemble'
-    from project(':testmods').layout.buildDirectory.dir('libs')
-    include 'LegacyTest-*.jar'
-    into layout.projectDirectory.dir('run/mods')
-}
-
-// Include resources generated by data generators.
-sourceSets.main.resources { srcDir 'src/generated/resources' }
-
-var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
-    var replaceProperties = [minecraft_version      : minecraft_version,
-                             minecraft_version_range: minecraft_version_range,
-                             neo_version            : neo_version,
-                             neo_version_range      : neo_version_range,
-                             loader_version_range   : loader_version_range,
-                             mod_id                 : mod_id,
-                             mod_name               : mod_name,
-                             mod_license            : mod_license,
-                             mod_version            : mod_version,
-                             mod_authors            : mod_authors,
-                             mod_description        : mod_description]
-    inputs.properties replaceProperties
-    expand replaceProperties
-    from "src/main/templates"
-    into "build/generated/sources/modMetadata"
-}
-sourceSets.main.resources.srcDir generateModMetadata
-neoForge.ideSyncTask generateModMetadata
-
-tasks.withType(JavaCompile).configureEach {
-    options.encoding = 'UTF-8'
-}
-
-// The bundled legacy-era libraries plus an index.txt listing them: embedded in the distributable jar under META-INF/legacyconnector/libs
-// and read from here with -PembeddedLibs (the loader's -Dlegacyconnector.libsDir).
-def syncLegacyLibs = tasks.register('syncLegacyLibs', Sync) {
-    from(configurations.legacyLibs)
-    into layout.buildDirectory.dir('legacy-libs')
-    doLast {
-        def names = destinationDir.listFiles().findAll { it.name.endsWith('.jar') }*.name.sort()
-        new File(destinationDir, 'index.txt').text = names.join('\n') + '\n'
-    }
-}
-tasks.matching { it.name.startsWith('run') || (it.name.startsWith('prepare') && it.name.endsWith('Run')) }.configureEach {
-    if (project.hasProperty('embeddedLibs')) dependsOn syncLegacyLibs
-}
-
-// ---------------------------------------------------------------------------------------------------------
-// Distribution: ONE jar for players. It is the loader (an FML service, picked up from the mods folder) with
-// the runtime mod embedded; the loader extracts and registers the runtime mod at discovery time.
-// ---------------------------------------------------------------------------------------------------------
-// The plain runtime jar is only an input of the bundle: dropped into a mods folder alone it has no loader, so NeoForge rejects every
-// legacy mod as built for an old Minecraft. A distinct classifier keeps it from being mistaken for the distributable.
-tasks.named('jar') { archiveClassifier = 'runtime-only' }
-
-tasks.register('bundleJar', Jar) {
-    group = 'build'
-    description = 'Builds the single distributable jar (loader service + embedded runtime mod).'
-    archiveBaseName = 'legacyconnector'
-    archiveVersion = project.version
-    archiveClassifier = ''
-    destinationDirectory = layout.buildDirectory.dir('dist')
-    def loaderJar = project(':loader').tasks.named('jar')
-    def runtimeJar = tasks.named('jar')
-    dependsOn loaderJar, runtimeJar, syncLegacyLibs
-    from(layout.buildDirectory.dir('legacy-libs')) {
-        into 'META-INF/legacyconnector/libs'
-    }
-    from({ zipTree(loaderJar.get().archiveFile) }) {
-        exclude 'META-INF/MANIFEST.MF'
-    }
-    from(runtimeJar) {
-        into 'META-INF/legacyconnector'
-        rename { 'legacyconnector-runtime.jar' }
-    }
-    manifest {
-        attributes(
-                'Automatic-Module-Name': 'legacyconnector.loader',
-                'Implementation-Title': 'MC Compatibility',
-                'Implementation-Version': project.version
-        )
-    }
-}
-tasks.named('assemble') { dependsOn 'bundleJar' }
-
-// ./gradlew installBundle -PmodsDir=<instance>/mods : builds the distributable jar and replaces any older Legacy Connector jar in that folder.
-tasks.register('installBundle', Copy) {
-    group = 'build'
-    description = 'Builds the bundled jar and copies it into the mods folder given by -PmodsDir.'
-    dependsOn 'bundleJar'
-    from(tasks.named('bundleJar'))
-    doFirst {
-        def dir = findProperty('modsDir')
-        if (!dir) throw new GradleException('Pass the target mods folder: -PmodsDir=/path/to/instance/mods')
-        fileTree(dir: dir, include: 'legacyconnector-*.jar').each { it.delete() }
-        destinationDir = file(dir)
-    }
-    destinationDir = layout.buildDirectory.dir('installBundle-unset').get().asFile
-}
-
-idea {
-    module {
-        downloadSources = true
-        downloadJavadoc = true
-    }
-}
-
-// Legacy mods were compiled with FML access transformers applied to Minecraft; the shim mirrors that by making its
-// classes and members public and non-final after compilation (see ShimAccessWidener).
-tasks.named('compileJava', JavaCompile) {
-    dependsOn ':loader:classes'
-    // The widener rewrites the compiled classes in place; an incremental compile would read them back (widened) as sources' dependencies.
-    options.incremental = false
-    def loaderClasspath = project(':loader').sourceSets.main.runtimeClasspath
-    doLast {
-        project.javaexec {
-            executable = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(21) }.get().executablePath.asFile.absolutePath
-            classpath = loaderClasspath
-            mainClass = 'org.kylepitcock.legacyconnector.loader.shim.ShimAccessWidener'
-            args destinationDirectory.get().asFile.absolutePath
-        }
-    }
-}
+plugins {
+    id 'java-library'
+    id 'idea'
+    id 'net.neoforged.moddev' version '2.0.148'
+}
+
+// The root project is the *runtime* half of MC Compatibility: a normal NeoForge mod that contains the
+// re-implemented legacy APIs (the "shim", packages legacyconnector.v1_7_10 / legacyconnector.v1_12_2) and the bridges
+// that connect them to NeoForge. The :loader project is the service-layer half that translates jars.
+evaluationDependsOn(':loader')
+
+version = mod_version
+group = mod_group_id
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    maven { // Rhino is an optional KubeJS integration; compile-only for its Context-injection method signature
+        url = 'https://maven.latvian.dev/releases'
+        content { includeGroup 'dev.latvian.mods' }
+    }
+    maven { url = 'https://maven.theillusivec4.top/' } // Curios (Baubles bridge)
+    maven { url = 'https://maven.blamejared.com/' } // JEI (NEI bridge)
+    maven { // Jade (Waila bridge)
+        url = 'https://api.modrinth.com/maven'
+        content { includeGroup 'maven.modrinth' }
+    }
+    maven { // TerraBlender (optional integration; compile-time API only)
+        url = 'https://maven.minecraftforge.net/'
+        content { includeGroup 'com.github.glitchfiend' }
+    }
+    maven { // Create (contraption movement checks for legacy blocks)
+        url = 'https://maven.createmod.net'
+        content { includeGroup 'com.simibubi.create' }
+    }
+}
+
+base {
+    archivesName = mod_id
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+// Helper tools read class files built for 21: run them on a 21 JVM even when the IDE starts Gradle on an older JDK.
+tasks.withType(JavaExec).configureEach {
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(21) }
+}
+
+def shimIndexFile = layout.buildDirectory.file('generated/shimIndex/legacyconnector/shim-index.txt')
+
+neoForge {
+    version = project.neo_version
+
+    parchment {
+        mappingsVersion = project.parchment_mappings_version
+        minecraftVersion = project.parchment_minecraft_version
+    }
+
+    runs {
+        client {
+            client()
+            jvmArgument '-Xmx6G'
+        }
+
+        server {
+            server()
+            programArgument '--nogui'
+            // The fixture mod stops the server after its self test when this is set (CI-style smoke test).
+            systemProperty 'legacytest.autostop', System.getProperty('legacytest.autostop', 'false')
+        }
+
+        // Automated smoke test in its own directory: boots a dedicated server with the mods in run-servertest/mods,
+        // lets the fixture mod run its self test, then stops.
+        serverTest {
+            server()
+            gameDirectory = project.file('run-servertest')
+            programArgument '--nogui'
+            systemProperty 'legacytest.autostop', 'true'
+            systemProperty 'legacyconnector.entitySelfTest', 'true'
+        }
+
+        // Server test over a hand-picked subset of mods (see build/devtools/run-subset.sh): run-subtest/mods holds links.
+        serverSubTest {
+            server()
+            // Separate game/config/world/cache directories allow one-mod regression runs.
+            gameDirectory = project.file(project.findProperty('subTestDir') ?: 'run-subtest')
+            programArgument '--nogui'
+            systemProperty 'legacytest.autostop', 'true'
+            systemProperty 'legacyconnector.autostopTicks', project.findProperty('autostopTicks') ?: '700'
+            // runs the client blockstate translation on the server too (logs "1.12.2 blockstates: N translated, M fell back"); -PassetsDump=<dir> writes it
+            systemProperty 'legacyconnector.assetsSelfTest', project.findProperty('assetsDump') ?: 'true'
+            // -PclientProxies=mekanism.client.ClientProxy,...: runs those mods' client registrations (state mappers) for the translation too
+            if (project.hasProperty('clientProxies')) systemProperty 'legacyconnector.assetsClientProxies', project.property('clientProxies')
+            systemProperty 'legacyconnector.entitySelfTest', project.findProperty('selfTests') ?: 'true'
+            // Opt-in observation of real player/chunk natural-spawn cycles; not part of normal build checks.
+            if (project.hasProperty('naturalSpawnTickSelfTest')) {
+                systemProperty 'legacyconnector.naturalSpawnTickSelfTest', project.property('naturalSpawnTickSelfTest')
+                systemProperty 'legacyconnector.naturalSpawnTickTestTicks', project.findProperty('naturalSpawnTickTestTicks') ?: '2400'
+            }
+            // -PserverTickScript=<file.js>: runs that JavaScript on every server tick (see core/ServerTickScript; -PserverTickScriptFrom=<tick>)
+            if (project.hasProperty('serverTickScript')) {
+                systemProperty 'legacyconnector.serverTickScript', project.property('serverTickScript')
+                systemProperty 'legacyconnector.serverTickScriptFrom', project.findProperty('serverTickScriptFrom') ?: '200'
+            }
+            // -PserverDevScript=<dir>: evaluates dir/*.js once on the server thread (core/ServerDevScript)
+            if (project.hasProperty('serverDevScript')) systemProperty 'legacyconnector.serverDevScript', project.property('serverDevScript')
+            // -PserverScript=<dir>: long-lived script console, runs the *.js files dropped into the directory (core/ServerScript); -PserverScriptMod=<legacy mod id>
+            if (project.hasProperty('serverScript')) systemProperty 'legacyconnector.serverScript', project.property('serverScript')
+            if (project.hasProperty('serverScriptMod')) systemProperty 'legacyconnector.serverScriptMod', project.property('serverScriptMod')
+            // -PgenTiming: per-generator timing of the legacy world generators (a log line every 20 s and at shutdown)
+            if (project.hasProperty('genTiming')) systemProperty 'legacyconnector.genTiming', 'true'
+        }
+
+        // Client smoke test: boots the client in run-clienttest (mods: run-clienttest/mods), reports texture and
+        // model problems per mod once the title screen shows, then quits.
+        clientTest {
+            client()
+            gameDirectory = project.file('run-clienttest')
+            systemProperty 'legacyconnector.clientSelfTest', 'true'
+        }
+
+        // Graphical test: creates a world, builds showcases of legacy blocks/items and writes screenshots to
+        // run-screenshots/shots (see tools/dev/run-screenshot-test.sh).
+        screenshotTest {
+            client()
+            gameDirectory = project.file(project.findProperty('shotDir') ?: 'run-screenshots') // -PshotDir=run-atm10: a copy of a real pack
+            if (project.hasProperty('shotDir')) jvmArguments.addAll('-Xmx12G')
+            systemProperty 'legacyconnector.screenshotTest', 'true'
+            ['shotWorldType', 'shotMods', 'shotBlocksPerMod', 'shotItemsPerMod', 'shotTour', 'shotSeed', 'shotScenario', 'shotRenderDistance', 'shotBlocks', 'shotItems', 'shotEntities', 'shotMetas', 'shotCommands', 'debugIcons', 'debugAssets', 'debugAsm'].each { p ->
+                if (project.hasProperty(p)) systemProperty 'legacyconnector.' + p, project.property(p)
+            }
+            if (project.hasProperty('shotWidth') && project.hasProperty('shotHeight')) {
+                programArgument '--width'
+                programArgument project.property('shotWidth').toString()
+                programArgument '--height'
+                programArgument project.property('shotHeight').toString()
+            }
+        }
+
+        configureEach {
+            if (project.hasProperty('embeddedLibs')) systemProperty 'legacyconnector.libsDir', layout.buildDirectory.dir('legacy-libs').get().asFile.absolutePath
+            systemProperty 'forge.logging.markers', 'REGISTRIES'
+            // In production the loader reads the index from the embedded runtime jar.
+            systemProperty 'legacyconnector.shimIndex', shimIndexFile.get().asFile.absolutePath
+            // ... and legacy coremods' FML classes from the runtime jar; in development, from its compiled classes.
+            systemProperty 'legacyconnector.runtimeClasses', sourceSets.main.java.classesDirectory.get().asFile.absolutePath
+            logLevel = org.slf4j.event.Level.INFO
+        }
+    }
+
+    mods {
+        "${mod_id}" {
+            sourceSet(sourceSets.main)
+        }
+    }
+}
+
+configurations {
+    // The legacy-era libraries embedded as resources of the distributable jar (see the comment at their declaration).
+    legacyLibs { transitive = false }
+}
+
+dependencies {
+    // The loader must sit on the boot/service layer in development, exactly like in production.
+    additionalRuntimeClasspath project(':loader')
+
+    // Optional integrations: only used when the mod is installed (legacy library bridges).
+    compileOnly "top.theillusivec4.curios:curios-neoforge:${curios_version}:api"
+    compileOnly "maven.modrinth:jade:${jade_version}"
+    compileOnly "mezz.jei:jei-1.21.1-neoforge-api:${jei_version}"
+    compileOnly "vazkii.patchouli:Patchouli:${patchouli_version}:api" // Patchouli bridge (1.12.2 books and API); blamejared maven
+    compileOnly("com.simibubi.create:create-1.21.1:${create_version}") { transitive = false }
+    compileOnly "dev.latvian.mods:rhino-neoforge:2006.2.4-build.17" // optional KubeJS 7 Rhino Context API; not bundled at runtime
+
+    // Optional mod integrations are compile-only: neither is required or added to the connector's runtime classpath.
+    // TerraBlender is used only when already installed; otherwise BiomePlacement supplies a native multi-noise overlay.
+    // Pehkui is used only when present; its typed bridge is isolated behind a runtime presence check.
+    compileOnly "com.github.glitchfiend:TerraBlender-neoforge:${terrablender_version}"
+    compileOnly "maven.modrinth:pehkui:${pehkui_version}"
+
+    // Libraries Minecraft 1.7.10 / 1.12.2 shipped and legacy mods use directly, absent from 1.21.1. NOT jar-in-jar: a jar-in-jar library
+    // always enters the game module layer, and a modern mod that bundles the same packages (ScalableCatsForce ships Scala 2.13) then stops
+    // the launch with "Modules X and Y export package scala.annotation". They are plain resources of the distributable jar
+    // (META-INF/legacyconnector/libs); the loader's BundledLibraries hands each one to FML only when a legacy mod uses it and the
+    // rest of the pack does not already provide it. In development they stay on the class path.
+    for (lib in ['net.sf.trove4j:trove4j:3.0.3', 'javax.vecmath:vecmath:1.5.2',
+                 // Forge 1.7.10 shipped Scala 2.11 for Scala mods (ProjectRed, ForgeMultipart, ...).
+                 'org.scala-lang:scala-library:2.11.1', 'org.scala-lang:scala-reflect:2.11.1',
+                 'org.scala-lang.modules:scala-parser-combinators_2.11:1.0.1', 'org.scala-lang.modules:scala-xml_2.11:1.0.2',
+                 // Forge 1.12.2 put typesafe config and akka on the game classpath too (OpenComputers' Scala code uses both; Apache 2.0, ~3 MB).
+                 'com.typesafe:config:1.2.1', 'com.typesafe.akka:akka-actor_2.11:2.3.3',
+                 // Java 8 had javax.activation (removed from the JDK in 11); 1.12.2 mods use it for MIME types (Silent Lib, Scaling Health).
+                 'com.sun.activation:jakarta.activation:1.2.2',
+                 // Minecraft 1.6.4's launcher libraries included argo (JSON; 3.x keeps the 2.x argo.jdom API, whose 2.25 pom Gradle cannot parse); CodeChickenCore's DepLoader reads its dependency list with it.
+                 'net.sourceforge.argo:argo:3.5']) {
+        legacyLibs(lib)
+        if (project.hasProperty('embeddedLibs')) {
+            // test mode: the libraries are NOT on the run class path; the loader reads them from build/legacy-libs like the production jar's resources
+            compileOnly lib
+        } else {
+            implementation lib
+            additionalRuntimeClasspath lib
+        }
+    }
+    // Java 8 shipped Nashorn (legacy mods script with jdk.nashorn, relocated to the standalone engine; the dev remote control
+    // evaluates JavaScript with it too). NeoForge ships the same engine for its coremods, so it is not embedded: a second
+    // copy in the game layer stops the game from starting ("Module scala.reflect reads more than one module named
+    // org.openjdk.nashorn").
+    implementation 'org.openjdk.nashorn:nashorn-core:15.4'
+
+    // Unit tests of the pure logic of the addon API (api.internal.AddonOrder).
+    testImplementation platform('org.junit:junit-bom:5.10.2')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'com.google.code.gson:gson:2.10.1' // book json conversion tests (Gson is not on the test class path otherwise)
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    // Match the launcher's parser; Nashorn otherwise pulls ASM 7 into standalone tests (cannot read Java 21 fixtures).
+    testRuntimeOnly "org.ow2.asm:asm:${asm_version}"
+}
+// Game classes (netty, vanilla packets) for the tests of shim classes that mention them in their signatures; nothing is bootstrapped.
+sourceSets.test.compileClasspath += sourceSets.main.compileClasspath
+sourceSets.test.runtimeClasspath += sourceSets.main.compileClasspath
+// CPU vertex captures use LWJGL's native memory allocator, with the same platform natives as the game launch.
+sourceSets.test.runtimeClasspath += sourceSets.main.runtimeClasspath.filter { it.name.startsWith('lwjgl-') && it.name.contains('-natives-') }
+// Audio instance tests bootstrap vanilla registries; their translations/version live in the generated resource artifact.
+sourceSets.test.runtimeClasspath += files(layout.buildDirectory.file("moddev/artifacts/neoforge-${neo_version}-client-extra-aka-minecraft-resources.jar"))
+// ... and the tests of the energy bridges name NeoForge's IEnergyStorage / Direction directly
+sourceSets.test.compileClasspath += sourceSets.main.compileClasspath
+tasks.withType(Test).configureEach { useJUnitPlatform() }
+tasks.named('test', Test) {
+    useJUnitPlatform { excludeTags 'actual-mod' }
+}
+
+// Local original jars are developer-supplied fixtures, never a dependency of check/build or release packaging.
+tasks.register('actualModTest', Test) {
+    group = 'verification'
+    description = 'Runs opt-in tests against locally supplied original mods and the Beta reference client.'
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    useJUnitPlatform { includeTags 'actual-mod' }
+    shouldRunAfter tasks.named('test')
+    // These tests discover local archives/caches dynamically; their results must not be reused across fixture sets.
+    outputs.upToDateWhen { false }
+    outputs.doNotCacheIf('uses locally supplied original jars') { true }
+    testLogging { events 'skipped' }
+}
+
+// The addon API alone (classes + sources), the compile-time dependency of addons: build/dist/legacyconnector-api-<version>.jar.
+// Not a mod: at runtime the API is part of the Legacy Connector jar.
+tasks.register('apiJar', Jar) {
+    group = 'build'
+    description = 'Builds the jar addons compile against (only org.kylepitcock.legacyconnector.api, without api.internal).'
+    dependsOn tasks.named('classes')
+    archiveBaseName = 'legacyconnector-api'
+    archiveVersion = project.version
+    destinationDirectory = layout.buildDirectory.dir('dist')
+    from(sourceSets.main.output.classesDirs) {
+        include 'org/kylepitcock/legacyconnector/api/**'
+    }
+    from(sourceSets.main.java.srcDirs) {
+        include 'org/kylepitcock/legacyconnector/api/**'
+        exclude 'org/kylepitcock/legacyconnector/api/internal/**'
+    }
+}
+
+// The run configurations reference the loader's jar by path; without this they would launch a stale loader.
+tasks.matching { it.name.startsWith('run') || (it.name.startsWith('prepare') && it.name.endsWith('Run')) }.configureEach {
+    dependsOn ':loader:jar'
+}
+
+// ---------------------------------------------------------------------------------------------------------
+// Shim index: every legacy API class/member the runtime provides. The loader uses it to drop duplicate
+// copies of Forge classes from legacy jars and to report APIs a legacy mod needs that are not implemented.
+// ---------------------------------------------------------------------------------------------------------
+def generateShimIndex = tasks.register('generateShimIndex', JavaExec) {
+    dependsOn tasks.named('compileJava')
+    classpath = project(':loader').sourceSets.main.runtimeClasspath
+    mainClass = 'org.kylepitcock.legacyconnector.loader.shim.ShimIndexGenerator'
+    def classDirs = sourceSets.main.output.classesDirs
+    inputs.files classDirs
+    outputs.file shimIndexFile
+    argumentProviders.add({ [shimIndexFile.get().asFile.absolutePath] + classDirs.files.collect { it.absolutePath } } as CommandLineArgumentProvider)
+}
+sourceSets.main.resources.srcDir(layout.buildDirectory.dir('generated/shimIndex'))
+tasks.named('processResources') {
+    dependsOn generateShimIndex
+    // single source of truth for the 1.12 -> 1.21.1 vanilla texture renames: the loader owns the table, the runtime reads a copy
+    from(project(':loader').layout.projectDirectory.dir('src/main/resources/legacyconnector/resource')) { into 'legacyconnector/resource' }
+}
+
+// Compile-only "legacy API" jars that look like the original Forge/Minecraft API to a Java 8 compiler.
+['1_7_10', '1_12_2'].each { ver ->
+    tasks.register("legacyApiStubs${ver}", JavaExec) {
+        dependsOn tasks.named('compileJava')
+        classpath = project(':loader').sourceSets.main.runtimeClasspath
+        mainClass = 'org.kylepitcock.legacyconnector.loader.shim.LegacyApiStubGenerator'
+        def classDir = sourceSets.main.java.classesDirectory
+        def out = layout.buildDirectory.file("legacy-api/legacy-api-${ver}.jar")
+        inputs.dir classDir
+        outputs.file out
+        argumentProviders.add({ [classDir.get().asFile.absolutePath, "legacyconnector/v${ver}/".toString(), out.get().asFile.absolutePath] } as CommandLineArgumentProvider)
+    }
+}
+
+// 1.20.1 gap report (milestone 0): ./gradlew gap1201 -PsrgTable=srg.tsv -PtargetJars=a.jar,b.jar -PgapJars=dir [-PgapReport=file]
+// SRG table: built by :loader:genSrgMojang1201 (default); targets: Minecraft 1.21.1 (Mojang names) + NeoForge, e.g. build/moddev/artifacts/neoforge-*-merged.jar
+// -PtargetJars=@list: a list file (longer than the Windows command line); the shim classes are appended in a copy
+def gapTargets(String targetJars, String classDirs) {
+    if (!targetJars.startsWith('@')) return targetJars + ',' + classDirs
+    def merged = new File(buildDir, 'gap1201-targets.txt')
+    merged.parentFile.mkdirs()
+    merged.text = new File(targetJars.substring(1)).readLines().join(',') + ',' + classDirs
+    return '@' + merged.absolutePath
+}
+tasks.register('gap1201', JavaExec) {
+    dependsOn ':loader:genSrgMojang1201', 'classes', generateShimIndex // the Forge facades (legacyconnector/v1_20_1) count as present
+    // gson (the provenance watermark of the transformer) and the fancy mod loader's annotations are compileOnly in the loader
+    classpath = project(':loader').sourceSets.main.runtimeClasspath + project(':loader').sourceSets.main.compileClasspath.filter { it.name.startsWith('gson') || it.name.startsWith('slf4j') }
+    mainClass = 'org.kylepitcock.legacyconnector.loader.tools.Gap1201'
+    // -Pgap.translate=true runs the jars through Forge1201Transformer first (the report then shows what the layer leaves); -Pgap.limit=N rows per list
+    if (project.findProperty('gap.translate')) systemProperty 'gap.translate', project.findProperty('gap.translate').toString()
+    systemProperty 'gap.shimIndex', shimIndexFile.get().asFile.absolutePath // -Pgap.translate: the translator sees the facades like the game
+    if (project.findProperty('gap.softlist')) systemProperty 'gap.softlist', project.findProperty('gap.softlist').toString()
+    if (project.findProperty('gap.assumeNative')) systemProperty 'gap.assumeNative', project.findProperty('gap.assumeNative').toString()
+    if (project.findProperty('gap.limit')) systemProperty 'gap.limit', project.findProperty('gap.limit').toString()
+    if (project.findProperty('gap.translated.dir')) systemProperty 'gap.translated.dir', project.findProperty('gap.translated.dir').toString()
+    maxHeapSize = '3g'
+    argumentProviders.add({
+        def renames = fileTree(dir: 'loader/src/main/resources/legacyconnector/forward/1.20.1', include: ['forge-*.tsv', 'mc-classes.tsv']).files.join(',')
+        def jars = fileTree(dir: project.findProperty('gapJars') ?: 'test-mods4', include: '*.jar').files.collect { it.absolutePath }.sort()
+        if (jars.join(' ').length() > 6000) { // a pack of hundreds of jars: the Windows command line is limited, hand over "@file" (one path per line)
+            def jarList = new File(buildDir, 'gap1201-jars.txt')
+            jarList.parentFile.mkdirs()
+            jarList.text = jars.join(System.lineSeparator())
+            jars = ['@' + jarList.absolutePath]
+        }
+        [(project.findProperty('srgTable') ?: project(':loader').layout.buildDirectory.file('generated/srg-mojang/legacyconnector/mappings/1.20.1/srg-mojang.tsv').get().asFile.absolutePath).toString(), renames, gapTargets(project.findProperty('targetJars').toString(), sourceSets.main.output.classesDirs.files.collect { it.absolutePath }.join(',')),
+         (project.findProperty('gapReport') ?: layout.buildDirectory.file('reports/gap1201.txt').get().asFile.absolutePath).toString()] + jars
+    } as CommandLineArgumentProvider)
+}
+
+// Deterministic single-JAR preflight report: ./gradlew preflight1201 -PpreflightJar=path/to/mod.jar [-PpreflightModsDirs=mods,other-mods]
+tasks.register('preflight1201', JavaExec) {
+    group = 'verification'
+    description = 'Writes a deterministic JSON and text preflight report for one Forge 1.20.1 JAR.'
+    dependsOn ':loader:classes'
+    classpath = project(':loader').sourceSets.main.runtimeClasspath +
+            project(':loader').sourceSets.main.compileClasspath.filter {
+                it.name.startsWith('gson') || it.name.startsWith('slf4j')
+            }
+    // ModDevGradle adds the pinned Minecraft / NeoForge development artifacts to the root main
+    // compile classpath. Pass those resource roots separately; the analyzer reads .class resources
+    // without defining or initializing target classes.
+    def targetCompileClasspath = sourceSets.main.compileClasspath
+    inputs.files(targetCompileClasspath)
+    mainClass = 'org.kylepitcock.legacyconnector.loader.tools.forge1201.Forge1201PreflightAnalyzer'
+    maxHeapSize = '2g'
+    argumentProviders.add({
+        def jarValue = project.findProperty('preflightJar')
+        if (!jarValue) {
+            throw new GradleException("Missing -PpreflightJar=<path to Forge 1.20.1 JAR>")
+        }
+        def sourceJar = file(jarValue.toString())
+        if (!sourceJar.isFile()) {
+            throw new GradleException("Preflight JAR does not exist: ${sourceJar}")
+        }
+        def reportDir = file(project.findProperty('preflightReportDir')
+                ?: layout.buildDirectory.dir('reports/preflight1201').get().asFile)
+        def jsonFile = project.findProperty('preflightJson')
+                ? file(project.property('preflightJson').toString())
+                : new File(reportDir, sourceJar.name + '.json')
+        def textFile = project.findProperty('preflightText')
+                ? file(project.property('preflightText').toString())
+                : new File(reportDir, sourceJar.name + '.txt')
+        def args = [sourceJar.absolutePath]
+        def dirsValue = (project.findProperty('preflightModsDirs') ?: '').toString()
+        dirsValue.split(',').collect { it.trim() }.findAll { it }.each { dir ->
+            args.add('--mods-dir')
+            args.add(file(dir).absolutePath)
+        }
+        def refmapContext = project.findProperty('preflightRefmapContext')
+        if (refmapContext != null) {
+            args.add('--refmap-context')
+            args.add(refmapContext.toString())
+        }
+        def targetClasspathFile = new File(reportDir, 'target-classpath.txt')
+        def targetClasspathEntries = targetCompileClasspath.files.collect { it.absolutePath }
+        targetClasspathFile.parentFile.mkdirs()
+        targetClasspathFile.setText(targetClasspathEntries.join(System.lineSeparator())
+                + System.lineSeparator(), 'UTF-8')
+        args.add('--target-classpath-file')
+        args.add(targetClasspathFile.absolutePath)
+        args.add('--json')
+        args.add(jsonFile.absolutePath)
+        args.add('--text')
+        args.add(textFile.absolutePath)
+        args
+    } as CommandLineArgumentProvider)
+}
+
+// 1.20.1: link translated jars with the JVM verifier on the game class path (invalid bytecode of the migration shows up as VerifyError):
+// ./gradlew gap1201 -Pgap.translate=true -Pgap.translated.dir=build/translated1201 ..., then ./gradlew verify1201 -PverifyDir=build/translated1201
+// API difference of a library between its 1.20.1 and 1.21.1 build: ./gradlew libApiDiff -Pold=a.jar -Pnew=b.jar -Ppkgs=dev/architectury/,... [-Preport=file]
+tasks.register('libApiDiff', JavaExec) {
+    dependsOn ':loader:classes'
+    classpath = project(':loader').sourceSets.main.runtimeClasspath
+    mainClass = 'org.kylepitcock.legacyconnector.loader.tools.LibApiDiff'
+    argumentProviders.add({ [project.findProperty('old').toString(), project.findProperty('new').toString(), project.findProperty('pkgs').toString()] +
+            (project.findProperty('report') || project.findProperty('renames') ? [(project.findProperty('report') ?: '').toString()] : []) +
+            (project.findProperty('renames') ? [project.findProperty('renames').toString()] : []) } as CommandLineArgumentProvider)
+}
+
+tasks.register('verify1201', JavaExec) {
+    dependsOn tasks.named('classes')
+    classpath = sourceSets.main.runtimeClasspath + project(':loader').sourceSets.main.runtimeClasspath
+    mainClass = 'org.kylepitcock.legacyconnector.loader.tools.Verify1201'
+    maxHeapSize = '3g'
+    argumentProviders.add({ [project.findProperty('verifyDir').toString(), (project.findProperty('verifyMax') ?: '40').toString()] } as CommandLineArgumentProvider)
+}
+
+// Offline compatibility check: ./gradlew checkLegacyMod -PlegacyJar=/path/to/mod.jar
+tasks.register('checkLegacyMod', JavaExec) {
+    dependsOn generateShimIndex
+    classpath = project(':loader').sourceSets.main.runtimeClasspath + sourceSets.main.runtimeClasspath
+    mainClass = 'org.kylepitcock.legacyconnector.loader.tools.CheckJar'
+    // -PcheckJson=<file> also writes a JSON record per jar (tools/compat/probe.py)
+    if (project.findProperty('checkJson')) systemProperty 'legacyconnector.check.json', project.findProperty('checkJson').toString()
+    // -PkeepDir=<dir> keeps the translated jars there (input of textureReport)
+    if (project.findProperty('keepDir')) systemProperty 'legacyconnector.check.keep', project.findProperty('keepDir').toString()
+    // -Pbridges=false: check Waila/NEI/Baubles... jars as ordinary mods instead of relocating their API into the shim
+    if (project.findProperty('bridges')) systemProperty 'legacyconnector.check.bridges', project.findProperty('bridges').toString()
+    argumentProviders.add({ [shimIndexFile.get().asFile.absolutePath] + (project.findProperty('legacyJar') ?: '').toString().split(',').findAll { it } } as CommandLineArgumentProvider)
+}
+
+// Offline report of the texture modernizer: ./gradlew textureReport -PlegacyJar=a.jar,b.jar [-PmodernClient=1.21.1.jar] [-PsampleDir=dir]
+// prints which textures of each jar are old vanilla copies or backgrounds and writes before/after samples.
+tasks.register('textureReport', JavaExec) {
+    dependsOn tasks.named('classes')
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'org.kylepitcock.legacyconnector.core.pack.TextureModernizer'
+    argumentProviders.add({
+        def client = project.findProperty('modernClient') ?: "${System.getenv('APPDATA') ?: System.getProperty('user.home')}/.minecraft/versions/1.21.1/1.21.1.jar"
+        def samples = project.findProperty('sampleDir') ?: layout.buildDirectory.dir('texture-samples').get().asFile.absolutePath
+        [client.toString(), samples.toString()] + (project.findProperty('legacyJar') ?: '').toString().split(',').findAll { it }
+    } as CommandLineArgumentProvider)
+}
+
+// Offline checks that run shim code against vanilla registries only (no game, no mods loaded): src/devcheck.
+sourceSets {
+    devcheck {
+        compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.output + sourceSets.main.runtimeClasspath
+    }
+}
+// Thaumcraft 4's vanilla aspect keys vs the modern -> legacy item/block round trip, plus legacy numeric ids of all vanilla
+// content: ./gradlew checkVanillaAspects -PlegacyJar=/path/to/Thaumcraft-1.7.10-4.2.3.5.jar
+tasks.register('checkVanillaAspects', JavaExec) {
+    dependsOn tasks.named('devcheckClasses'), ':loader:extractMappings'
+    classpath = sourceSets.devcheck.runtimeClasspath
+    mainClass = 'org.kylepitcock.legacyconnector.devcheck.CheckVanillaAspects'
+    def fields = project(':loader').layout.buildDirectory.file('generated/mappings/legacyconnector/mappings/1.7.10/fields.csv')
+    argumentProviders.add({ [fields.get().asFile.absolutePath, (project.findProperty('legacyJar') ?: '').toString()] } as CommandLineArgumentProvider)
+}
+
+// Copies the fixture legacy mods into run/mods so `runServer` / `runClient` exercise the full pipeline.
+tasks.register('installTestMods', Copy) {
+    dependsOn ':testmods:assemble'
+    from project(':testmods').layout.buildDirectory.dir('libs')
+    include 'LegacyTest-*.jar'
+    into layout.projectDirectory.dir('run/mods')
+}
+
+// Include resources generated by data generators.
+sourceSets.main.resources { srcDir 'src/generated/resources' }
+
+var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
+    var replaceProperties = [minecraft_version      : minecraft_version,
+                             minecraft_version_range: minecraft_version_range,
+                             neo_version            : neo_version,
+                             neo_version_range      : neo_version_range,
+                             loader_version_range   : loader_version_range,
+                             mod_id                 : mod_id,
+                             mod_name               : mod_name,
+                             mod_license            : mod_license,
+                             mod_version            : mod_version,
+                             mod_authors            : mod_authors,
+                             mod_description        : mod_description]
+    inputs.properties replaceProperties
+    expand replaceProperties
+    from "src/main/templates"
+    into "build/generated/sources/modMetadata"
+}
+sourceSets.main.resources.srcDir generateModMetadata
+neoForge.ideSyncTask generateModMetadata
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+// The bundled legacy-era libraries plus an index.txt listing them: embedded in the distributable jar under META-INF/legacyconnector/libs
+// and read from here with -PembeddedLibs (the loader's -Dlegacyconnector.libsDir).
+def syncLegacyLibs = tasks.register('syncLegacyLibs', Sync) {
+    from(configurations.legacyLibs)
+    into layout.buildDirectory.dir('legacy-libs')
+    doLast {
+        def names = destinationDir.listFiles().findAll { it.name.endsWith('.jar') }*.name.sort()
+        new File(destinationDir, 'index.txt').text = names.join('\n') + '\n'
+    }
+}
+tasks.matching { it.name.startsWith('run') || (it.name.startsWith('prepare') && it.name.endsWith('Run')) }.configureEach {
+    if (project.hasProperty('embeddedLibs')) dependsOn syncLegacyLibs
+}
+
+// ---------------------------------------------------------------------------------------------------------
+// Distribution: ONE jar for players. It is the loader (an FML service, picked up from the mods folder) with
+// the runtime mod embedded; the loader extracts and registers the runtime mod at discovery time.
+// ---------------------------------------------------------------------------------------------------------
+// The plain runtime jar is only an input of the bundle: dropped into a mods folder alone it has no loader, so NeoForge rejects every
+// legacy mod as built for an old Minecraft. A distinct classifier keeps it from being mistaken for the distributable.
+tasks.named('jar') { archiveClassifier = 'runtime-only' }
+
+tasks.register('bundleJar', Jar) {
+    group = 'build'
+    description = 'Builds the single distributable jar (loader service + embedded runtime mod).'
+    archiveBaseName = 'legacyconnector'
+    archiveVersion = project.version
+    archiveClassifier = ''
+    destinationDirectory = layout.buildDirectory.dir('dist')
+    def loaderJar = project(':loader').tasks.named('jar')
+    def runtimeJar = tasks.named('jar')
+    dependsOn loaderJar, runtimeJar, syncLegacyLibs
+    from(layout.buildDirectory.dir('legacy-libs')) {
+        into 'META-INF/legacyconnector/libs'
+    }
+    from({ zipTree(loaderJar.get().archiveFile) }) {
+        exclude 'META-INF/MANIFEST.MF'
+    }
+    from(runtimeJar) {
+        into 'META-INF/legacyconnector'
+        rename { 'legacyconnector-runtime.jar' }
+    }
+    manifest {
+        attributes(
+                'Automatic-Module-Name': 'legacyconnector.loader',
+                'Implementation-Title': 'MC Compatibility',
+                'Implementation-Version': project.version
+        )
+    }
+}
+tasks.named('assemble') { dependsOn 'bundleJar' }
+
+// ./gradlew installBundle -PmodsDir=<instance>/mods : builds the distributable jar and replaces any older Legacy Connector jar in that folder.
+tasks.register('installBundle', Copy) {
+    group = 'build'
+    description = 'Builds the bundled jar and copies it into the mods folder given by -PmodsDir.'
+    dependsOn 'bundleJar'
+    from(tasks.named('bundleJar'))
+    doFirst {
+        def dir = findProperty('modsDir')
+        if (!dir) throw new GradleException('Pass the target mods folder: -PmodsDir=/path/to/instance/mods')
+        fileTree(dir: dir, include: 'legacyconnector-*.jar').each { it.delete() }
+        destinationDir = file(dir)
+    }
+    destinationDir = layout.buildDirectory.dir('installBundle-unset').get().asFile
+}
+
+idea {
+    module {
+        downloadSources = true
+        downloadJavadoc = true
+    }
+}
+
+// Legacy mods were compiled with FML access transformers applied to Minecraft; the shim mirrors that by making its
+// classes and members public and non-final after compilation (see ShimAccessWidener).
+tasks.named('compileJava', JavaCompile) {
+    dependsOn ':loader:classes'
+    // The widener rewrites the compiled classes in place; an incremental compile would read them back (widened) as sources' dependencies.
+    options.incremental = false
+    def loaderClasspath = project(':loader').sourceSets.main.runtimeClasspath
+    doLast {
+        project.javaexec {
+            executable = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(21) }.get().executablePath.asFile.absolutePath
+            classpath = loaderClasspath
+            mainClass = 'org.kylepitcock.legacyconnector.loader.shim.ShimAccessWidener'
+            args destinationDirectory.get().asFile.absolutePath
+        }
+    }
+}
