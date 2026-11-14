@@ -190,8 +190,11 @@ public final class LegacySoundFiles {
             LOG.warn("Legacy sound file {} cannot be read: {}", url, e.toString());
             return null;
         }
-        StringBuilder id = new StringBuilder("legacy_pool/");
-        for (char c : url.getPath().toLowerCase(Locale.ROOT).replaceAll("\\.ogg$", "").toCharArray()) id.append(ResourceLocation.validPathChar(c) ? c : '_');
+        // the jar's location is long and differs per machine: a hash of the URL keeps ids unique, the tail of the path keeps them readable
+        String full = url.getPath().toLowerCase(Locale.ROOT).replaceAll("\\.ogg$", "");
+        String tail = full.substring(Math.max(0, full.length() - 40));
+        StringBuilder id = new StringBuilder("legacy_pool/" + Integer.toHexString(url.toString().hashCode()) + "_");
+        for (char c : tail.toCharArray()) id.append(ResourceLocation.validPathChar(c) && c != '/' ? c : '_');
         return new LegacyFile(ResourceLocation.fromNamespaceAndPath("legacyconnector", id.toString()), size > STREAM_BYTES, data);
     }
 
