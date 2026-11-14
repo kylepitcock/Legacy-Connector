@@ -28,6 +28,7 @@ import org.kylepitcock.legacyconnector.api.internal.BuiltinAdapters;
  *   <li>1.7.10 {@code IInventory}/{@code ISidedInventory} as {@code Capabilities.ItemHandler.BLOCK};</li>
  *   <li>1.7.10 Forge {@code IFluidHandler} as {@code Capabilities.FluidHandler.BLOCK};</li>
  *   <li>1.7.10 CoFH {@code IEnergyReceiver}/{@code IEnergyProvider} as {@code Capabilities.EnergyStorage.BLOCK} (1 RF = 1 FE);</li>
+ *   <li>Beta 1.7.3 {@code IInventory} tiles as {@code Capabilities.ItemHandler.BLOCK} (no fluids or energy exist in Beta);</li>
  *   <li>1.12.2 tiles answering {@code CapabilityItemHandler.ITEM_HANDLER_CAPABILITY} / {@code CapabilityEnergy.ENERGY} as
  *       the item handler / fluid handler / energy capabilities;</li>
  *   <li>1.12.2 Redstone Flux {@code IEnergyReceiver}/{@code IEnergyProvider} tiles and {@code IEnergyContainerItem} items as energy storage (1 RF = 1 FE).</li>
@@ -64,6 +65,8 @@ public interface LegacyCapabilities {
     TileAdapter<IFluidHandler> FLUIDS_1710 = BuiltinAdapters::fluids1710;
     /** 1.7.10 CoFH RF tiles as energy storage. */
     TileAdapter<IEnergyStorage> RF_ENERGY = BuiltinAdapters::rf1710;
+    /** Beta 1.7.3 {@code IInventory} tiles as an item handler (added in API 0.3; no side distinction in Beta). */
+    TileAdapter<IItemHandler> INVENTORY_ITEMS_B173 = BuiltinAdapters::inventoryB173;
     /** 1.12.2 tiles that answer the Forge item handler capability. */
     TileAdapter<IItemHandler> FORGE_ITEMS_1122 = BuiltinAdapters::items1122;
     /** 1.12.2 tiles that answer the Forge fluid handler capability. */
