@@ -689,6 +689,31 @@ public final class ForgeApi1201 {
     }
 
     /**
+     * NightConfig's {@code FileNotFoundAction.CREATE_EMPTY} (the default of every file config builder) creates a missing file through
+     * {@code ConfigFormat.initEmptyFile(f)}, which opens a {@code BufferedWriter} and never closes it. On Windows the leaked handle stays until the
+     * garbage collector reaps it, and until then FML's own atomic write of the same file (REPLACE_ATOMIC move, run when the registered config needs
+     * correcting) is denied: a first start without the config file crashed CoFH Core ("Failed to atomically write the config", issue 271). Probes the
+     * file with a replace and collects garbage until it is free.
+     */
+    static void releaseLeakedConfigFile(java.nio.file.Path file) {
+        if (file == null) return;
+        java.nio.file.Path probe = file.resolveSibling(file.getFileName() + ".lc-probe");
+        for (int i = 0; i < 40; i++) {
+            try {
+                if (!java.nio.file.Files.exists(file)) return;
+                // an open handle (shared for delete) still lets the file be renamed, but not replaced: probe with a replace of the same content
+                java.nio.file.Files.write(probe, java.nio.file.Files.readAllBytes(file));
+                java.nio.file.Files.move(probe, file, java.nio.file.StandardCopyOption.ATOMIC_MOVE, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                return;
+            } catch (java.io.IOException | RuntimeException e) {
+                System.gc();
+                try { Thread.sleep(25); } catch (InterruptedException ie) { Thread.currentThread().interrupt(); return; }
+            }
+        }
+        try { java.nio.file.Files.deleteIfExists(probe); } catch (java.io.IOException ignored) { }
+    }
+
+    /**
      * {@code spec.setConfig(config)}: a mod loading its own config file by hand; NeoForge hands the spec a loaded config instead. {@code LoadedConfig} is a
      * package-private record of FML (the interface is sealed), built reflectively with a detached ModConfig and no path, so saving through it is not supported.
      */
@@ -706,6 +731,7 @@ public final class ForgeApi1201 {
             // ModConfig: the two writers collide (REPLACE_ATOMIC move denied on Windows, CoFH Core, issue 271). The spec reads a detached copy; FML's own
             // load of the registered config replaces it.
             com.electronwill.nightconfig.core.CommentedConfig used = config instanceof com.electronwill.nightconfig.core.file.FileConfig ? com.electronwill.nightconfig.core.CommentedConfig.copy(config) : config;
+            if (config instanceof com.electronwill.nightconfig.core.file.FileConfig fc) releaseLeakedConfigFile(fc.getNioPath());
             spec.acceptConfig((net.neoforged.fml.config.IConfigSpec.ILoadedConfig) ctor.newInstance(used, null, modConfig));
         } catch (ReflectiveOperationException e) {
             throw new IllegalStateException("Could not hand a config to " + spec, e);

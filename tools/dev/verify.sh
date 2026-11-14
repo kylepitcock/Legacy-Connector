@@ -71,7 +71,7 @@ for s in "${names[@]}"; do
   if [ -n "$missing" ]; then echo "  skipped, missing:$missing" >&2; emit "{\"suite\":\"$s\",\"skipped\":\"${missing# }\"}"; continue; fi
 
   D="run-verify/$s"
-  rm -rf "$D/mods" "$D/world" "$D/crash-reports" "$D/logs" "$D/.legacyconnector/cache"
+  rm -rf "$D/mods" "$D/world" "$D/config" "$D/crash-reports" "$D/logs" "$D/.legacyconnector/cache"
   mkdir -p "$D/mods" "$D/logs"
   for e in "${jars[@]}"; do
     ver="${e%%|*}"; j="${e#*|}"
