@@ -138,6 +138,37 @@ public final class FluidBridge1122 {
         LOG.info("Registered {} 1.12.2 fluid(s) as modern fluids ({} placed in the world as fluids, {} with buckets)", MODERN.size(), flowing, buckets);
     }
 
+    /** Whether the legacy fluid is lava in 1.12 terms: its block's material is {@code Material.LAVA} (what burns, slows and lights entities there). */
+    static boolean isLavaLike(legacyconnector.v1_12_2.net.minecraftforge.fluids.Fluid legacy) {
+        try {
+            var block = legacy.getBlock();
+            return block != null && block.getMaterialLegacy() == legacyconnector.v1_12_2.net.minecraft.block.material.Material.LAVA;
+        } catch (RuntimeException | LinkageError e) {
+            return false;
+        }
+    }
+
+    /**
+     * The fluid tags: a fluid whose block has the lava material joins {@code minecraft:lava}, which is what the modern game asks to burn entities in it,
+     * give lava's swimming and vision, and fill obsidian-making rules (1.12 asked the block's material, so the same fluids behaved as lava there).
+     */
+    public static synchronized void contributeTags(Map<String, java.util.function.Supplier<byte[]>> out) {
+        var values = new com.google.gson.JsonArray();
+        for (var e : MODERN.entrySet()) {
+            var legacy = FluidRegistry.getFluid(e.getKey());
+            if (legacy == null || e.getKey().equals("lava") || e.getKey().equals("water") || !isLavaLike(legacy)) continue;
+            Fluid[] pair = FLOWING.get(e.getKey());
+            if (pair != null) for (Fluid f : pair) values.add(BuiltInRegistries.FLUID.getKey(f).toString());
+            else values.add(BuiltInRegistries.FLUID.getKey(e.getValue()).toString());
+        }
+        if (values.isEmpty()) return;
+        var json = new com.google.gson.JsonObject();
+        json.addProperty("replace", false);
+        json.add("values", values);
+        byte[] bytes = json.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        out.put("data/minecraft/tags/fluid/lava.json", () -> bytes);
+    }
+
     private static boolean registerBucket(String name, legacyconnector.v1_12_2.net.minecraftforge.fluids.Fluid legacy, Fluid modern, ResourceLocation fluidId) {
         if (legacy.getBlock() == null && !FluidRegistry.hasBucket(legacy)) return false;
         var own = ownBucket(legacy);
@@ -537,7 +568,7 @@ public final class FluidBridge1122 {
                     // water moves entities at 0.014 with viscosity 1000; lava (6000) at a sixth of it
                     .motionScale(0.014D * Math.min(1.0D, Math.max(0.1D, 1000.0D / viscosity)))
                     .canSwim(!gas).canDrown(!gas).canPushEntity(!gas).fallDistanceModifier(gas ? 1.0F : 0.0F)
-                    .canExtinguish(!gas && legacy.getTemperature() < 373).canHydrate(false).canConvertToSource(false).supportsBoating(false);
+                    .canExtinguish(!gas && legacy.getTemperature() < 373 && !isLavaLike(legacy)).canHydrate(false).canConvertToSource(false).supportsBoating(false);
         }
 
         private legacyconnector.v1_12_2.net.minecraftforge.fluids.Fluid legacy() {
