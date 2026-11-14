@@ -1,6 +1,6 @@
 # Schema 1.10 — Explicit Mapping-Profile Contract Design
 
-**Status:** Schema 1.10A parser, validator, preflight-report integration, Gradle input, and synthetic regression tests are user-validated green at `cc651af52b192fb534d49f3ad494b42e3d15d6f0`. Schema 1.10B source-edge verification is implemented. Its first forced test run reached 498 tests but exposed two invalid synthetic TSRG2 fixtures (spaces instead of required leading tabs); all four fixtures were corrected in `e03c55daa6fd01e0855774e53a4255beedbad1fb` and await the user's rerun. No selector transformation is implemented.  
+**Status:** Schema 1.10A parser, validator, preflight-report integration, Gradle input, and synthetic tests are user-validated green at `cc651af52b192fb534d49f3ad494b42e3d15d6f0`. Schema 1.10B source-edge implementation and its corrected forced loader test gate are user-validated green at `493cae748f89f88308a7e1b98ea583d2e58871af` (`BUILD SUCCESSFUL in 50s; 17/17 actionable tasks`). The build-local provenance JSON was generated and remains to be reviewed. No selector transformation is implemented.
 **Design baseline:** Universal analyzer branch `feat/forge1201-preflight-analyzer`; current implementation status and exact tested/untested boundary are recorded in the analyzer plan and continuation handoff.  
 **Input feature:** Schema 1.9A/1.9B Mixin 0.8.5 refmap inventory and exact owner-scoped lookup.  
 **Target:** Minecraft 1.21.1 / NeoForge 21.1.258.  
@@ -488,7 +488,7 @@ Current source branch work (not yet user-tested):
 - Loader build tasks now extract the pinned MCPConfig `config/joined.tsrg` as a declared task output, verify Mojang `client.txt` against the SHA-1 object identifier embedded in its pinned URL, compute SHA-256 for the MCPConfig ZIP, extracted TSRG2 file, and Mojang client mapping, then record the generated TSV SHA-256 and row-coverage counters in a build-local JSON provenance report under `loader/build/reports/mappings/1.20.1/`.
 - Raw mapping source files and the generated report remain build-local; no full Mojang mapping file is added to source control.
 
-The branch has not yet been run by the user after these Schema 1.10B changes. The next user gate must run the forced loader tests on the exact new commit recorded in the continuation handoff. The 1.20.1 → 1.21.1 symbol edge remains missing; no selector rewriting is permitted.
+The user forced loader gate has passed after the test-only TSRG2 fixture correction: `BUILD SUCCESSFUL in 50s; 17/17 actionable tasks` at `493cae748f89f88308a7e1b98ea583d2e58871af`. The build-local provenance JSON has been generated and must now be reviewed. The 1.20.1 → 1.21.1 symbol edge remains missing; no selector rewriting is permitted.
 
 
 ### Schema 1.10B first forced test run — TSRG2 fixture issue corrected
@@ -501,4 +501,14 @@ Both failures occurred during `generateDetailed()` with `IOException`. Source in
 
 The test-only correction is committed at `e03c55daa6fd01e0855774e53a4255beedbad1fb`: every synthetic TSRG2 member row now uses the Java text-block escape `\\t`, which produces an actual tab at runtime. Parser behavior and assertions were not weakened, and production source was not changed for this fixture issue.
 
-**Validation remains pending** until the user fast-forwards to the current branch tip and reruns `.\gradlew.bat :loader:clean :loader:test --no-daemon --console=plain --rerun-tasks`. If green, review `loader/build/reports/mappings/1.20.1/srg-mojang-provenance.json` from that exact run. The 1.20.1 → 1.21.1 symbol edge remains missing; no selector rewriting is permitted.
+**Corrected forced loader gate: GREEN.** The user ran `.\gradlew.bat :loader:clean :loader:test --no-daemon --console=plain --rerun-tasks` at `493cae748f89f88308a7e1b98ea583d2e58871af`: `BUILD SUCCESSFUL in 50s; 17/17 actionable tasks executed`. The next step is to inspect `loader/build/reports/mappings/1.20.1/srg-mojang-provenance.json` from that run. The 1.20.1 → 1.21.1 symbol edge remains missing; no selector rewriting is permitted.
+
+### Schema 1.10B corrected forced loader gate — user-validated green
+
+- Tested code checkpoint: `493cae748f89f88308a7e1b98ea583d2e58871af` on `feat/forge1201-preflight-analyzer`.
+- Command: `.\gradlew.bat :loader:clean :loader:test --no-daemon --console=plain --rerun-tasks`.
+- Result: **BUILD SUCCESSFUL in 50s; 17 actionable tasks, all 17 executed.**
+- Production/test compilation, clean, MCPConfig extraction, Mojang SHA-1 verification, mapping generation, provenance recording, and the full loader test task all passed.
+- The preceding two failures were caused by spaces in the synthetic TSRG2 fixtures; the fixtures were corrected to use real tab indentation in `e03c55daa6fd01e0855774e53a4255beedbad1fb`, without production parser changes or weakened assertions.
+- The successful build generated `loader/build/reports/mappings/1.20.1/srg-mojang-provenance.json`; review its contents before closing the Schema 1.10B source-edge audit.
+- The table remains a partial same-version source normalization edge, `minecraft:forge-srg@1.20.1` → `minecraft:official-mojang@1.20.1`, with method-name and field-name output only. It is not a class/descriptor mapping and is not the cross-version 1.20.1 → 1.21.1 edge. No selector rewriting.
