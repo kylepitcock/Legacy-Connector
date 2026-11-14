@@ -25,6 +25,15 @@ public abstract class EntityGravityMixin {
         if (scaled != result) cir.setReturnValue(scaled);
     }
 
+    /** Coremod hook site (generic, {@code CoremodSites.STEP_DISTANCE}): the length of a footstep (the 1 of {@code distance + 1} in 1.7.10's {@code moveEntity}). */
+    @Inject(method = "nextStep", at = @At("RETURN"), cancellable = true, require = 0)
+    private void legacyconnector$coremodStepDistance(CallbackInfoReturnable<Float> cir) {
+        if (!org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites.STEP_DISTANCE.listed()) return;
+        float next = cir.getReturnValueF();
+        float changed = org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites.stepDistance((Entity) (Object) this, next);
+        if (changed != next) cir.setReturnValue(changed);
+    }
+
     /** Coremod hook site (generic, {@code CoremodSites.SPRINT_PARTICLES}): 1.7.10 coremods changed the sprint check of the particles in {@code onEntityUpdate}. */
     @Inject(method = "canSpawnSprintParticle", at = @At("RETURN"), cancellable = true, require = 0)
     private void legacyconnector$coremodSprintParticles(CallbackInfoReturnable<Boolean> cir) {

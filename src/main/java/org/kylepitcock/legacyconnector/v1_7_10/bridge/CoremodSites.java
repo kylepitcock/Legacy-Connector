@@ -116,6 +116,25 @@ public final class CoremodSites {
     public static final Site IN_BED = site("sleeping without a bed", new Class<?>[] {PLAYER},
             "net/minecraft/entity/player/EntityPlayer.func_71065_l()Z#after:aload 0");
 
+    /** World.isBlockIndirectlyGettingPowered, last thing. Values: powered, world, x, y, z. */
+    public static final Site NEIGHBOR_POWERED = site("redstone: block powered by its neighbours",
+            new Class<?>[] {boolean.class, legacyconnector.v1_7_10.net.minecraft.world.World.class, int.class, int.class, int.class},
+            "net/minecraft/world/World.func_72864_z(III)Z#tail").returns(boolean.class);
+
+    /** World.getIndirectPowerLevelTo, last thing. Values: power, world, block at the position, x, y, z, direction. */
+    public static final Site POWER_LEVEL = site("redstone: power level at a side",
+            new Class<?>[] {int.class, legacyconnector.v1_7_10.net.minecraft.world.World.class, legacyconnector.v1_7_10.net.minecraft.block.Block.class, int.class, int.class,
+                    int.class, int.class},
+            "net/minecraft/world/World.func_72878_l(IIII)I#tail").returns(int.class);
+
+    /** EntityTracker.addEntityToTracker: the range (blocks) an entity is tracked at. Values: range, entity, update frequency. */
+    public static final Site TRACKING_RANGE = site("entity tracking range", new Class<?>[] {int.class, ENTITY, int.class},
+            "net/minecraft/entity/EntityTracker.func_72785_a(Lnet/minecraft/entity/Entity;IIZ)V#after:iload 2").returns(int.class);
+
+    /** Entity.moveEntity: the distance one footstep counts (1). Values: entity, step. The hook answers the new step length. */
+    public static final Site STEP_DISTANCE = site("footstep distance", new Class<?>[] {ENTITY, int.class},
+            "net/minecraft/entity/Entity.func_70091_d(DDD)V#const:1").returns(float.class);
+
     /** The model sites: client classes, so apart from the rest. Values: model, entity, the six animation numbers. */
     public static final class Client {
         private static final Class<?>[] MODEL = {legacyconnector.v1_7_10.net.minecraft.client.model.ModelBiped.class, ENTITY, float.class, float.class, float.class,
@@ -138,6 +157,70 @@ public final class CoremodSites {
         public static final Site USE_CLICK = site("right click", new Class<?>[0], "net/minecraft/client/Minecraft.func_147121_ag()V#head-cancel");
         /** Minecraft.startGame, last thing. */
         public static final Site GAME_STARTED = site("game started", new Class<?>[0], "net/minecraft/client/Minecraft.func_71384_a()V#tail");
+
+        private static final Class<?> PLAYER_SP = legacyconnector.v1_7_10.net.minecraft.client.entity.EntityPlayerSP.class;
+        private static final String MC = "net/minecraft/client/Minecraft.";
+
+        /** Minecraft.clickMouse and sendClickBlockToController, first thing: true skips the left click (attack, block breaking). */
+        public static final Site LEFT_CLICK = site("left click", new Class<?>[0], MC + "func_147116_af()V#head-cancel", MC + "func_147115_a(Z)V#head-cancel");
+        /** Minecraft.rightClickMouse: the ticks before the next right click (4). */
+        public static final Site RIGHT_CLICK_DELAY = site("right click delay", new Class<?>[] {int.class}, MC + "func_147121_ag()V#const:4").returns(int.class);
+        /** PlayerControllerMP.onPlayerDestroyBlock, first thing: true leaves the block. */
+        public static final Site BLOCK_DESTRUCTION = site("block destruction", new Class<?>[0], "net/minecraft/client/multiplayer/PlayerControllerMP.func_78751_a(IIII)Z#head");
+        /** EntityPlayerSP.setSprinting: true keeps the player from sprinting. Values: player, sprinting. */
+        public static final Site SPRINT = site("sprinting", new Class<?>[] {PLAYER_SP, boolean.class},
+                "net/minecraft/client/entity/EntityPlayerSP.func_70031_b(Z)V#cancel-after:iload 1");
+        /** EntityPlayerSP.getFOVMultiplier: stands in for {@code capabilities.getWalkSpeed()}. Values: capabilities, player. */
+        public static final Site FOV_WALK_SPEED = site("field of view walk speed",
+                new Class<?>[] {legacyconnector.v1_7_10.net.minecraft.entity.player.PlayerCapabilities.class, PLAYER_SP},
+                "net/minecraft/client/entity/EntityPlayerSP.func_71151_f()F#replace:func_75094_b()F");
+        /** EntityRenderer.updateLightmap: whether the player has night vision. Value: has it. */
+        public static final Site NIGHT_VISION_ACTIVE = site("night vision (light map)", new Class<?>[] {boolean.class},
+                "net/minecraft/client/renderer/EntityRenderer.func_78472_g(F)V#after:invokevirtual net/minecraft/client/entity/EntityClientPlayerMP.func_70644_a(Lnet/minecraft/potion/Potion;)Z")
+                .returns(boolean.class);
+        /** EntityRenderer.getNightVisionBrightness. Values: amount, player, partial tick. */
+        public static final Site NIGHT_VISION_AMOUNT = site("night vision amount", new Class<?>[] {float.class, PLAYER, float.class},
+                "net/minecraft/client/renderer/EntityRenderer.func_82830_a(Lnet/minecraft/entity/player/EntityPlayer;F)F#after:aload 1",
+                "net/minecraft/client/renderer/EntityRenderer.func_82830_a(Lnet/minecraft/entity/player/EntityPlayer;F)F#tail").returns(float.class);
+
+        /** {@link #LEFT_CLICK}. */
+        public static boolean leftClick() {
+            return LEFT_CLICK.active() && LEFT_CLICK.cancels();
+        }
+
+        /** {@link #RIGHT_CLICK_DELAY}. */
+        public static int rightClickDelay(int ticks) {
+            return RIGHT_CLICK_DELAY.active() ? ((Number) RIGHT_CLICK_DELAY.modify(0, ticks)).intValue() : ticks;
+        }
+
+        /** {@link #BLOCK_DESTRUCTION}. */
+        public static boolean blockDestruction() {
+            return BLOCK_DESTRUCTION.active() && BLOCK_DESTRUCTION.cancels();
+        }
+
+        /** {@link #SPRINT}: whether a hook keeps this entity from sprinting (only the local player is a client player). */
+        public static boolean sprintCancelled(net.minecraft.world.entity.LivingEntity entity, boolean sprinting) {
+            if (!sprinting || !SPRINT.active() || !(entity instanceof net.minecraft.client.player.LocalPlayer)) return false;
+            return SPRINT.cancels(EntityBridge.wrap(entity), true);
+        }
+
+        /** {@link #FOV_WALK_SPEED}. */
+        public static float fovWalkSpeed(net.minecraft.client.player.AbstractClientPlayer player, float walkSpeed) {
+            if (!FOV_WALK_SPEED.active() || !(player instanceof net.minecraft.client.player.LocalPlayer)
+                    || !(EntityBridge.wrap(player) instanceof legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer view)) return walkSpeed;
+            return FOV_WALK_SPEED.replace(walkSpeed, view.capabilities, view) instanceof Number n ? n.floatValue() : walkSpeed;
+        }
+
+        /** {@link #NIGHT_VISION_ACTIVE}. */
+        public static boolean nightVisionActive(boolean active) {
+            return NIGHT_VISION_ACTIVE.active() ? Boolean.TRUE.equals(NIGHT_VISION_ACTIVE.modify(0, active)) : active;
+        }
+
+        /** {@link #NIGHT_VISION_AMOUNT}. */
+        public static float nightVisionAmount(net.minecraft.world.entity.LivingEntity entity, float amount, float partialTick) {
+            if (!NIGHT_VISION_AMOUNT.active() || !(EntityBridge.wrap(entity) instanceof legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer view)) return amount;
+            return ((Number) NIGHT_VISION_AMOUNT.modify(0, amount, view, partialTick)).floatValue();
+        }
 
         private Client() {}
     }
@@ -205,6 +288,32 @@ public final class CoremodSites {
         return GRAVITY_LIVING.listed() || GRAVITY_ITEM.listed() || GRAVITY_ARROW.listed();
     }
 
+    /** {@link #NEIGHBOR_POWERED}. */
+    public static boolean neighborPowered(net.minecraft.world.level.Level level, net.minecraft.core.BlockPos pos, boolean powered) {
+        if (!NEIGHBOR_POWERED.active()) return powered;
+        return Boolean.TRUE.equals(NEIGHBOR_POWERED.modify(0, powered, legacyconnector.v1_7_10.net.minecraft.world.World.mcc$wrap(level), pos.getX(), pos.getY(), pos.getZ()));
+    }
+
+    /** {@link #POWER_LEVEL}. */
+    public static int powerLevel(net.minecraft.world.level.Level level, net.minecraft.core.BlockPos pos, net.minecraft.core.Direction side, int power) {
+        if (!POWER_LEVEL.active()) return power;
+        legacyconnector.v1_7_10.net.minecraft.world.World world = legacyconnector.v1_7_10.net.minecraft.world.World.mcc$wrap(level);
+        return ((Number) POWER_LEVEL.modify(0, power, world, world.getBlock(pos.getX(), pos.getY(), pos.getZ()), pos.getX(), pos.getY(), pos.getZ(), side.get3DDataValue()))
+                .intValue();
+    }
+
+    /** {@link #TRACKING_RANGE}: the range in blocks. */
+    public static int trackingRange(net.minecraft.world.entity.Entity entity, int range) {
+        if (!TRACKING_RANGE.active()) return range;
+        return ((Number) TRACKING_RANGE.modify(0, range, EntityBridge.wrap(entity), 3)).intValue();
+    }
+
+    /** {@link #STEP_DISTANCE}: Entity.nextStep returns (int) distance + 1; the hook replaces that 1. */
+    public static float stepDistance(net.minecraft.world.entity.Entity entity, float next) {
+        if (!STEP_DISTANCE.active()) return next;
+        return next - 1.0F + ((Number) STEP_DISTANCE.modify(1, EntityBridge.wrap(entity), 1)).floatValue();
+    }
+
     private CoremodSites() {}
 
     /** One place of 1.7.10's code on the modern game. */
@@ -214,6 +323,7 @@ public final class CoremodSites {
         private final List<Listed> listed = new ArrayList<>();
         private volatile Bound[] hooks;
         private int failures;
+        private Class<?> result;
 
         private Site(String label, Class<?>[] offered, String[] keys) {
             this.label = label;
@@ -223,6 +333,12 @@ public final class CoremodSites {
                 for (Listed l : LISTED.getOrDefault(key, List.of())) once.putIfAbsent(l.owner + "." + l.name + l.desc, l);
             }
             listed.addAll(once.values());
+        }
+
+        /** Only hooks returning this type answer here (a place can be listed by hooks of other shapes, which stand for other changes). */
+        Site returns(Class<?> type) {
+            this.result = type;
+            return this;
         }
 
         /** Whether the loader listed a hook here (known from the start; the hooks may not be callable yet). */
@@ -308,7 +424,7 @@ public final class CoremodSites {
             List<Bound> out = new ArrayList<>();
             for (Listed l : listed) {
                 Class<?> joins = combines(l.desc);
-                Bound b = joins != null ? bind(l, new Class<?>[] {joins, joins}, true) : bind(l, offered, false);
+                Bound b = joins != null ? bind(l, new Class<?>[] {joins, joins}, true, null) : bind(l, offered, false, result);
                 if (b != null) out.add(b);
             }
             return hooks = out.toArray(NONE);
@@ -398,6 +514,7 @@ public final class CoremodSites {
     /** One line: how many of the listed hooks have a place here. */
     private static void report() {
         if (!ready()) return;
+        if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) Client.RENDER_PRE.listed(); // registers the client places too (their class initialises on first use)
         Map<String, Boolean> replayed = new HashMap<>();
         int sites = 0;
         for (Site s : SITES) {
@@ -437,7 +554,7 @@ public final class CoremodSites {
         return ready = any;
     }
 
-    private static Bound bind(Listed l, Class<?>[] offered, boolean combiner) {
+    private static Bound bind(Listed l, Class<?>[] offered, boolean combiner, Class<?> result) {
         String className = l.owner.replace('/', '.');
         try {
             Class<?> owner = null;
@@ -475,6 +592,10 @@ public final class CoremodSites {
             }
             if (method == null) {
                 LOG.debug("Coremod hook {}.{}{} was not found in the translated mod", className, l.name, l.desc);
+                return null;
+            }
+            if (result != null && method.getReturnType() != result) {
+                LOG.debug("Coremod hook {}.{}{} returns {}, this place wants {}", className, l.name, l.desc, method.getReturnType(), result);
                 return null;
             }
             Class<?>[] types = method.getParameterTypes();
