@@ -484,7 +484,7 @@ public final class Forge1201MappingProfileValidator {
         } else {
             requiredValue = required.getAsBoolean();
             if (!requiredValue) {
-                warnings.add("Profile-level license review is marked not required; individual artifact license declarations are still mandatory.");
+                errors.add("Mapping profiles must require profile-level license review.");
             }
         }
         if (object.has("evidence")) {
