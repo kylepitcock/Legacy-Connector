@@ -24,6 +24,13 @@ public final class CreativeTabBridge1122 {
     private CreativeTabBridge1122() {}
 
     /** Registers a modern tab for every mod-created legacy tab; runs at the end of legacy loading. */
+    private static final java.util.Map<CreativeTabs, ResourceLocation> TAB_IDS = new java.util.IdentityHashMap<>();
+
+    /** The id of the modern creative tab of a legacy custom tab, or null for vanilla tabs and tabs not registered (yet). */
+    public static synchronized ResourceLocation modernTabId(CreativeTabs tab) {
+        return TAB_IDS.get(tab);
+    }
+
     public static void registerTabs() {
         List<CreativeTabs> tabs;
         synchronized (CreativeTabs.mcc$TABS) {
@@ -33,6 +40,9 @@ public final class CreativeTabBridge1122 {
             if (tab.getTabIndex() < VANILLA_TABS) continue;
             String label = tab.getTabLabel() != null ? tab.getTabLabel() : "tab" + tab.getTabIndex();
             ResourceLocation id = ResourceLocation.fromNamespaceAndPath("legacyconnector", "legacy12_" + Ids.normalizePath(label).replace('/', '_').replace('.', '_'));
+            synchronized (CreativeTabBridge1122.class) {
+                TAB_IDS.put(tab, id);
+            }
             if (BuiltInRegistries.CREATIVE_MODE_TAB.containsKey(id)) continue;
             CreativeModeTab modern = CreativeModeTab.builder()
                     .title(title(tab, label))

@@ -103,7 +103,13 @@ public final class FluidBridge {
         return null;
     }
 
-    private static legacyconnector.v1_7_10.net.minecraftforge.fluids.Fluid legacyOf(Fluid modern) {
+    /** The modern fluid of a legacy one, or null. */
+    public static synchronized Fluid modernOf(legacyconnector.v1_7_10.net.minecraftforge.fluids.Fluid legacy) {
+        return legacy == null ? null : MODERN.get(legacy.getName());
+    }
+
+    /** The legacy fluid of a modern one, or null. */
+    public static synchronized legacyconnector.v1_7_10.net.minecraftforge.fluids.Fluid legacyOf(Fluid modern) {
         for (var e : MODERN.entrySet()) if (e.getValue() == modern) return FluidRegistry.getFluid(e.getKey());
         return null;
     }

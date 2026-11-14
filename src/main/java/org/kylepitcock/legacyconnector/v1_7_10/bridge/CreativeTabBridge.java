@@ -22,7 +22,22 @@ public final class CreativeTabBridge {
     /** Modern id of the legacy mod that created each tab. */
     private static final java.util.Map<CreativeTabs, String> OWNER = new java.util.IdentityHashMap<>();
 
+    /** The modern tab id of each legacy custom tab (filled by {@link #registerTabs}; a label two tabs share maps to the first tab's id). */
+    private static final java.util.Map<CreativeTabs, ResourceLocation> TAB_IDS = new java.util.IdentityHashMap<>();
+
     private CreativeTabBridge() {}
+
+    /** The id of the modern creative tab of a legacy custom tab, or null for vanilla tabs and tabs not registered (yet). */
+    public static synchronized ResourceLocation modernTabId(CreativeTabs tab) {
+        return TAB_IDS.get(tab);
+    }
+
+    /** The ids of the modern tabs created for the tabs the mod with this modern id made. */
+    public static synchronized java.util.List<ResourceLocation> modernTabIdsOf(String modernModId) {
+        java.util.List<ResourceLocation> out = new ArrayList<>();
+        for (var e : TAB_IDS.entrySet()) if (modernModId.equals(OWNER.get(e.getKey())) && !out.contains(e.getValue())) out.add(e.getValue());
+        return out;
+    }
 
     public static synchronized void onTabCreated(CreativeTabs tab) {
         CUSTOM.add(tab);
@@ -36,6 +51,7 @@ public final class CreativeTabBridge {
             // A mod that failed to load would crash the creative screen through its tab's callbacks.
             if (org.kylepitcock.legacyconnector.core.LegacyLifecycle.isFailed(OWNER.get(tab))) continue;
             ResourceLocation id = ResourceLocation.fromNamespaceAndPath("legacyconnector", "legacy_" + Ids.normalizePath(tab.getTabLabel()).replace('/', '_').replace('.', '_'));
+            TAB_IDS.put(tab, id);
             if (BuiltInRegistries.CREATIVE_MODE_TAB.containsKey(id)) continue;
             CreativeModeTab modern = CreativeModeTab.builder()
                     .title(tabTitle(tab))

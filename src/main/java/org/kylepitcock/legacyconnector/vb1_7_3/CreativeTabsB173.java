@@ -26,6 +26,14 @@ import org.kylepitcock.legacyconnector.core.registry.LegacyRegistrar;
 public final class CreativeTabsB173 {
     private CreativeTabsB173() {}
 
+    /** The modern tab id of every Beta mod that has one (modern id of the mod -> tab id). */
+    private static final Map<String, ResourceLocation> TABS = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** The id of the creative tab made for the mod with this modern id (Beta has no tab objects: one tab per mod), or null. */
+    public static ResourceLocation tabOfMod(String modernModId) {
+        return TABS.get(modernModId);
+    }
+
     public static void register() {
         Map<LegacyModRecord, List<Object>> byMod = new LinkedHashMap<>();
         for (Block b : ContentB173.blocks()) {
@@ -43,6 +51,7 @@ public final class CreativeTabsB173 {
             LegacyModRecord mod = e.getKey();
             List<Object> content = e.getValue();
             ResourceLocation id = ResourceLocation.fromNamespaceAndPath("legacyconnector", mod.modernId.startsWith("b173_") ? mod.modernId : "b173_" + mod.modernId);
+            TABS.put(mod.modernId, id);
             if (BuiltInRegistries.CREATIVE_MODE_TAB.containsKey(id)) continue;
             CreativeModeTab tab = CreativeModeTab.builder()
                     .title(Component.literal(mod.legacyId))
