@@ -133,6 +133,7 @@ public final class RenderContext {
         final float[][] texGenObjPlane = {{1, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}};
         final float[][] texGenEyePlane = {{1, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}};
         int texGenMask;
+        boolean texGenSub;
         /** The legacy projection while legacy code has replaced the modern one; null while it has not. */
         org.joml.Matrix4f projection;
         final Deque<org.joml.Matrix4f> projectionStack = new ArrayDeque<>();
@@ -848,6 +849,22 @@ public final class RenderContext {
 
     static void quad(State s, double[] v0, double[] v1, double[] v2, double[] v3, float nx, float ny, float nz) {
         s.quadCount++;
+        if (s.texture2d && s.texGenMask != 0 && s.texGenOn[3] && !s.texGenSub) {
+            // GL divides the generated coordinates per pixel; here it happens per vertex, so a big quad is cut into a grid first
+            s.texGenSub = true;
+            try {
+                int n = TEXGEN_GRID;
+                for (int i = 0; i < n; i++) {
+                    for (int j = 0; j < n; j++) {
+                        quad(s, lerp4(v0, v1, v2, v3, i / (double) n, j / (double) n), lerp4(v0, v1, v2, v3, (i + 1) / (double) n, j / (double) n),
+                                lerp4(v0, v1, v2, v3, (i + 1) / (double) n, (j + 1) / (double) n), lerp4(v0, v1, v2, v3, i / (double) n, (j + 1) / (double) n), nx, ny, nz);
+                    }
+                }
+            } finally {
+                s.texGenSub = false;
+            }
+            return;
+        }
         if (s.texture2d && s.texGenMask != 0) {
             v0 = texGenerated(s, v0, 0);
             v1 = texGenerated(s, v1, 1);
@@ -1335,6 +1352,17 @@ public final class RenderContext {
      * emulated texture matrix with the perspective divide: the end-portal style effect of Thaumcraft's eldritch obelisk panel and other legacy
      * renderers.
      */
+    private static final int TEXGEN_GRID = 8;
+
+    /** Bilinear point of a corner quad: position and texture coordinates interpolated (indices 0 to 4), colour and light taken from the first corner. */
+    private static double[] lerp4(double[] v0, double[] v1, double[] v2, double[] v3, double u, double w) {
+        double[] r = v0.clone();
+        for (int k = 0; k < Math.min(5, v0.length); k++) {
+            r[k] = (1 - u) * (1 - w) * v0[k] + u * (1 - w) * v1[k] + u * w * v2[k] + (1 - u) * w * v3[k];
+        }
+        return r;
+    }
+
     private static double[] texGenerated(State s, double[] v, int slot) {
         double[] out = s.uvScratch[slot];
         if (out.length < v.length) out = s.uvScratch[slot] = new double[v.length];
