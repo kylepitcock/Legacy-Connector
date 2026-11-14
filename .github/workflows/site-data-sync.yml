@@ -1,0 +1,29 @@
+name: Site data sync
+
+# The compatibility site reads its data from the branch "site-data" (scheduled jobs write there because master is protected).
+# When the data files change on master (results committed by a maintainer), they are copied to that branch so the site shows them.
+on:
+  push:
+    branches: [master]
+    paths:
+      - "docs/data/mods.json"
+      - "docs/data/probe.json"
+      - "docs/data/reports.json"
+      - "docs/data/resources.json"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: site-data
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: bash tools/compat/site_data.sh push "Site data from master ${{ github.sha }}"

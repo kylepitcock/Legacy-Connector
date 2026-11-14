@@ -31,15 +31,7 @@ jobs:
           python3 tools/release/render_description.py modrinth out/modrinth.md
           python3 tools/release/render_description.py curseforge out/curseforge.md
 
-      - name: Commit rendered pages
-        if: github.ref == 'refs/heads/master'
-        run: |
-          cp out/curseforge.md out/modrinth.md .github/description/
-          git add .github/description/curseforge.md .github/description/modrinth.md
-          if ! git diff --cached --quiet; then
-            git -c user.name=github-actions -c user.email=github-actions@users.noreply.github.com commit -m "Render description pages"
-            git push
-          fi
+      # master is protected, so the rendered pages are not committed any more: they are the artifact uploaded at the end of the run
 
       - name: Update Modrinth
         env:

@@ -110,6 +110,15 @@ holding the hand-written shim under `src/main/java/legacyconnector/v1_7_10`, bri
 - Public API for other mods: `src/main/java/org/kylepitcock/legacyconnector/api` (+ `api.event`); implementation and the only code touching shim types: `api/internal` (`Convert`, `ContentKeys`, `BuiltinAdapters`). Docs `docs/wiki/Addon-API.md`, example `examples/thaumcraft-modern-aspects` (standalone build, `./gradlew apiJar` first).
 - Rule: API signatures never contain shim types (legacy objects are `Object`, reached through `LegacyAccess`); keep the API stable (PATCH-compatible), hook calls live in `LegacyLifecycle` (`AddonHost.enter`) and `LegacyConnector.registerCapabilities` (`CapabilityRules.apply`). Update the doc when adding API. Covers every supported version (API 0.3: Beta 1.7.3, `versionOf`, failure event, fluids, tabs); `LegacySupport` is the per-version matrix and `LegacySupportTest` keeps the doc table in sync (`API_DOCS_UPDATE=1` rewrites it), `ApiSignatureTest` rejects shim types in signatures.
 
+## Generated site data and the protected branch
+
+master requires a reviewed pull request, so workflows cannot push to it. Jobs that generate site data (`compat-data.yml`, `probe.yml`)
+write `docs/data/{mods,probe,reports,resources}.json` to the unprotected branch `site-data` through `tools/compat/site_data.sh`
+(`pull` takes the newer copy before a job runs, `push` commits there). The site (`docs/assets/site.js`) reads that branch first and
+falls back to master. `site-data-sync.yml` copies the files to `site-data` whenever they change on master, so results committed by a
+maintainer win. To fold bot results back into master: `bash tools/compat/site_data.sh pull`, then commit. `sync-description.yml` no
+longer commits the rendered store pages (they are a run artifact). Do not weaken the branch protection to make a job pass.
+
 ## Releases
 
 Two channels (since 2026-11-13):

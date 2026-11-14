@@ -30,7 +30,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: master   # a release event checks out the tag (detached HEAD): the results must be committed to master
+          ref: master   # a release event checks out the tag (detached HEAD): the probe runs on master
+          fetch-depth: 0
+
+      - name: Newest data
+        run: bash tools/compat/site_data.sh pull
 
       - uses: actions/setup-java@v4
         with:
@@ -60,15 +64,8 @@ jobs:
           done
           echo "REGRESSED=$REGRESSED" >> "$GITHUB_ENV"
 
-      - name: Commit results
-        run: |
-          if git diff --quiet -- docs/data; then echo "no change"; exit 0; fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs/data/mods.json docs/data/probe.json
-          git commit -m "Update automated compatibility results"
-          git pull --rebase
-          git push
+      - name: Publish to the site-data branch
+        run: bash tools/compat/site_data.sh push "Update automated compatibility results"
 
       - name: Fail on regressions
         if: env.REGRESSED == '1'

@@ -857,8 +857,14 @@
   }
 
   // ---------- boot ----------
+  // Scheduled jobs cannot push to the protected master branch: they write the data files to the branch "site-data", which is read
+  // first; the copy next to this page (master) is the fallback.
+  var DATA_BRANCH = "https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/site-data/docs/";
   function load(path) {
-    return fetch(path, { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; });
+    function local() {
+      return fetch(path, { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; });
+    }
+    return fetch(DATA_BRANCH + path, { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : local(); }).catch(local);
   }
 
   function init() {
