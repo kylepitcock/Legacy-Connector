@@ -10,21 +10,22 @@ import os
 import re
 import sys
 
-BAD = ["mods_failed", "mods_failed_1201", "blocks_problems", "entities_failed", "entities_not_spawned", "silent_failed", "crash_reports", "verify_errors"]
-GOOD = ["mods_loaded_1201", "blocks_ok", "entities_alive", "placement_placed", "content_items", "content_blocks", "content_entities", "reached_selftest"]
+BAD = ["b173_callbacks_failed", "b173_tests_failed", "mods_failed", "mods_failed_1201", "blocks_problems", "entities_failed", "entities_not_spawned", "silent_failed", "crash_reports", "verify_errors"]
+GOOD = ["b173_mods_constructed", "b173_blocks", "mods_loaded_1201", "blocks_ok", "entities_alive", "placement_placed", "content_items", "content_blocks", "content_entities", "reached_selftest"]
 TOLERANCE = 0.02
 # alive/removed after the entity self test is not deterministic (random despawns; Traincraft varies 308 to 319 between identical runs)
 TOLERANCES = {"entities_alive": 0.10}
-COLUMNS = ["mods_failed", "mods_failed_1201", "mods_loaded_1201", "blocks_placed", "blocks_ok", "blocks_problems", "entities_alive", "entities_failed", "entities_not_spawned",
+COLUMNS = ["b173_mods_constructed", "b173_blocks", "b173_callbacks_failed", "b173_tests_failed", "mods_failed", "mods_failed_1201", "mods_loaded_1201", "blocks_placed", "blocks_ok", "blocks_problems", "entities_alive", "entities_failed", "entities_not_spawned",
            "silent_failed", "placement_placed", "placement_total", "content_items", "content_blocks", "content_entities",
            "crash_reports", "verify_errors", "reached_selftest"]
-SHORT = {"mods_failed": "modF", "mods_failed_1201": "modF21", "mods_loaded_1201": "mod21", "blocks_placed": "blkP", "blocks_ok": "blkOk", "blocks_problems": "blkBad", "entities_alive": "entOk",
+SHORT = {"b173_mods_constructed": "b173Mod", "b173_blocks": "b173Blk", "b173_callbacks_failed": "b173CbF", "b173_tests_failed": "b173TstF", "mods_failed": "modF", "mods_failed_1201": "modF21", "mods_loaded_1201": "mod21", "blocks_placed": "blkP", "blocks_ok": "blkOk", "blocks_problems": "blkBad", "entities_alive": "entOk",
          "entities_failed": "entF", "entities_not_spawned": "entNS", "silent_failed": "silF", "placement_placed": "plcP",
          "placement_total": "plcT", "content_items": "items", "content_blocks": "blocks", "content_entities": "ents",
          "crash_reports": "crash", "verify_errors": "verr", "reached_selftest": "test"}
 
 # (regex, [(metric, group)])
 PATTERNS = [
+    (r"B1\.7\.3 BEHAVIOUR TEST: (\d+) blocks; (\d+) legacy callbacks failed", [("b173_blocks", 1), ("b173_callbacks_failed", 2)]),
     (r"Legacy 1\.20\.1 mods: (\d+) loaded, (\d+) failed", [("mods_loaded_1201", 1), ("mods_failed_1201", 2)]),
     (r"Legacy mods loaded in \d+ ms \((\d+) failed\)", [("mods_failed", 1)]),
     (r"BLOCK SELF TEST: (\d+) placed, (\d+) still there after 60 ticks, (\d+) activated, (\d+) with problems",
@@ -47,6 +48,11 @@ def parse_log(text, crash_dir=None):
                 for name, idx in groups:
                     m[name] = int(hit.group(idx))  # the last occurrence wins
     m["verify_errors"] = text.count("VerifyError")
+    # Beta 1.7.3: mods constructed, and the server self tests that logged their own failure (the test names are the logger names)
+    constructed = len(re.findall(r"b1\.7\.3 mod \S+ .*constructed", text))
+    if constructed or "B1.7.3 BEHAVIOUR TEST" in text:
+        m["b173_mods_constructed"] = constructed
+        m["b173_tests_failed"] = len(re.findall(r"\[LegacyConnector/B173\w+/\]: B1\.7\.3 .*TEST failed", text))
     m["reached_selftest"] = 1 if ("BLOCK SELF TEST" in text or "SILENT FAILURE CHECKS" in text) else 0
     failed = failed_mods_1201(text)
     if failed:
