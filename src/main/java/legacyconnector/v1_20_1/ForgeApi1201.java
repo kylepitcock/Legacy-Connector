@@ -135,6 +135,14 @@ public final class ForgeApi1201 {
 
     /** Forge accepted {@code bus.register(obj)} for an object without subscriber methods (a mod registering its main class "just in case"); NeoForge throws. */
     public static void busRegister(net.neoforged.bus.api.IEventBus bus, Object target) {
+        // a config event handler goes through the per-method wrapper (it tolerates the config read at the unload, see registerEachMethod)
+        for (java.lang.reflect.Method m : target.getClass().getMethods()) {
+            if (m.getParameterCount() == 1 && m.getAnnotation(net.neoforged.bus.api.SubscribeEvent.class) != null
+                    && m.getParameterTypes()[0] == net.neoforged.fml.event.config.ModConfigEvent.class) {
+                registerEachMethod(bus, target);
+                return;
+            }
+        }
         try {
             bus.register(target);
         } catch (IllegalArgumentException e) {
@@ -196,6 +204,9 @@ public final class ForgeApi1201 {
                         try {
                             m.invoke(java.lang.reflect.Modifier.isStatic(m.getModifiers()) ? null : target, event);
                         } catch (java.lang.reflect.InvocationTargetException ex) {
+                            // Forge 1.20.1 kept the spec's values readable after the unload (CoFH Core refreshes its settings from the Unloading event at server stop);
+                            // NeoForge clears the loaded config first, so a ConfigValue read fails with "Cannot get config value before config is loaded"
+                            if (event instanceof net.neoforged.fml.event.config.ModConfigEvent.Unloading && ex.getCause() instanceof IllegalStateException) return;
                             throw ex.getCause() instanceof RuntimeException r ? r : new RuntimeException(ex.getCause());
                         } catch (IllegalAccessException ex) {
                             throw new IllegalStateException(ex);
@@ -684,7 +695,11 @@ public final class ForgeApi1201 {
             org.kylepitcock.legacyconnector.compat.jdk.ReflectionCompat.setAccessible(modConfigCtor, true);
             Object modConfig = modConfigCtor.newInstance(net.neoforged.fml.config.ModConfig.Type.COMMON, spec, net.neoforged.fml.ModLoadingContext.get().getActiveContainer(),
                     "legacy-" + System.identityHashCode(spec) + ".toml", new java.util.concurrent.locks.ReentrantLock());
-            spec.acceptConfig((net.neoforged.fml.config.IConfigSpec.ILoadedConfig) ctor.newInstance(config, null, modConfig));
+            // a file config the mod built itself (autosave on) would write the corrected values to the same file FML writes for the registered
+            // ModConfig: the two writers collide (REPLACE_ATOMIC move denied on Windows, CoFH Core, issue 271). The spec reads a detached copy; FML's own
+            // load of the registered config replaces it.
+            com.electronwill.nightconfig.core.CommentedConfig used = config instanceof com.electronwill.nightconfig.core.file.FileConfig ? com.electronwill.nightconfig.core.CommentedConfig.copy(config) : config;
+            spec.acceptConfig((net.neoforged.fml.config.IConfigSpec.ILoadedConfig) ctor.newInstance(used, null, modConfig));
         } catch (ReflectiveOperationException e) {
             throw new IllegalStateException("Could not hand a config to " + spec, e);
         }

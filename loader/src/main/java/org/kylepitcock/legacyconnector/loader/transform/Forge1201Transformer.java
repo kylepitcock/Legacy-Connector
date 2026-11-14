@@ -941,7 +941,13 @@ public final class Forge1201Transformer {
             out.append(line).append('\n');
         }
         flushDependency(out, block, inDependency);
-        for (String config : mixinConfigs) out.append("\n[[mixins]]\nconfig=\"").append(config).append("\"\n");
+        // a Forge mods.toml may already declare its [[mixins]] (NeoForge reads the table too): a second entry fails with "Decoration with key 'fabric-modId' already exists"
+        Set<String> declared = new HashSet<>();
+        Matcher declaredMixins = Pattern.compile("\\[\\[mixins\\]\\][^\\[]*?config\\s*=\\s*[\"']([^\"']+)[\"']", Pattern.DOTALL).matcher(text);
+        while (declaredMixins.find()) declared.add(declaredMixins.group(1));
+        for (String config : mixinConfigs) {
+            if (!declared.contains(config)) out.append("\n[[mixins]]\nconfig=\"").append(config).append("\"\n");
+        }
         return out.toString();
     }
 

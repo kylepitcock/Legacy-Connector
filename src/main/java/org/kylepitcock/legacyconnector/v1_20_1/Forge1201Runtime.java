@@ -91,6 +91,9 @@ public final class Forge1201Runtime {
             blockEntities += t;
             sb.append("\n  ").append(id).append(": ").append(b).append(" blocks, ").append(i).append(" items, ").append(e).append(" entities, ").append(t).append(" block entity types");
         }
+        // FML stops the start at the first phase in which a mod fails (the failed mods are in the "Loading errors encountered" block of the log): reaching load
+        // complete means every translated mod constructed and registered; tools/dev/verify/verify.py reads this line as mods_loaded_1201 / mods_failed_1201
+        LOG.info("Legacy 1.20.1 mods: {} loaded, {} failed", modIds.size(), 0);
         LOG.info("1.20.1 content registered: {} blocks, {} items, {} entity types, {} block entity types in {} mod(s){}", blocks, items, entities, blockEntities, modIds.size(), sb);
     }
 
