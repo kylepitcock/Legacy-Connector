@@ -42,3 +42,21 @@ This workspace exports a classpath; it does not yet classify source members or m
 A patch-file scan may supplement the classfile evidence, but absence of a patch file is not proof that a member exists, and presence of a class patch is not proof that a particular member was removed. The patched compiled classpath is the authority for member existence.
 
 No selector transformation, runtime mapping table, or loader packaging change is performed here.
+
+## Java toolchain requirement
+
+ForgeGradle's Minecraft 1.20.1 MCP processing invokes a Java 17 compiler toolchain even when the Gradle daemon itself runs on Java 21. The machine must have a JDK 17 installation that Gradle can discover.
+
+To list the custom JDK folders on the development machine:
+
+```powershell
+Get-ChildItem 'F:\\Program\\intellij-idea-portable\\java' -Directory | Select-Object -ExpandProperty FullName
+```
+
+When JDK 17 is installed outside the normal Gradle discovery locations, add its exact installation directory to user-level `%USERPROFILE%\\.gradle\\gradle.properties`:
+
+```properties
+org.gradle.java.installations.paths=F:/absolute/path/to/jdk-17
+```
+
+Use the JDK home (the directory containing `bin\\java.exe`), not the `bin` directory itself. This does not require changing the Gradle daemon from Java 21. Do not commit a machine-specific JDK path into this repository.
