@@ -60,3 +60,23 @@ org.gradle.java.installations.paths=F:/absolute/path/to/jdk-17
 ```
 
 Use the JDK home (the directory containing `bin\\java.exe`), not the `bin` directory itself. This does not require changing the Gradle daemon from Java 21. Do not commit a machine-specific JDK path into this repository.
+
+## Inspect a source-side member
+
+The main loader now has a read-only SRG → Mojang-official source mapping index and a classfile verifier for this exported classpath. The verifier consumes the exported ordered list and manifest; it refuses a different Minecraft/Forge/ForgeGradle/mapping profile, reordered classpath, changed entry fingerprint, or missing/duplicate source probe. It reads class bytes as data and does not define, initialize, or execute Minecraft classes.
+
+After exporting the classpath above, run one selector check from the main repository root. The selector owner, member name, and full descriptor must use Mojang-official 1.20.1 names:
+
+```powershell
+.\gradlew.bat :loader:auditForge1201SourceRuntimeMember1201 -Pforge1201SourceMemberKind=method -Pforge1201SourceMemberOwner=net/minecraft/world/level/block/piston/PistonStructureResolver -Pforge1201SourceMemberName=isSticky '-Pforge1201SourceMemberDescriptor=(Lnet/minecraft/world/level/block/state/BlockState;)Z' --console=plain
+```
+
+The JSON report is written under `loader/build/reports/source-runtime/`. Repeat the task with the exact owner/name/descriptor for another method or field. For the piston investigation, the other three useful checks are:
+
+```powershell
+.\gradlew.bat :loader:auditForge1201SourceRuntimeMember1201 -Pforge1201SourceMemberKind=method -Pforge1201SourceMemberOwner=net/minecraft/world/level/block/piston/PistonStructureResolver -Pforge1201SourceMemberName=canStickToEachOther '-Pforge1201SourceMemberDescriptor=(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/state/BlockState;)Z' --console=plain
+.\gradlew.bat :loader:auditForge1201SourceRuntimeMember1201 -Pforge1201SourceMemberKind=method -Pforge1201SourceMemberOwner=net/minecraft/world/level/block/state/BlockState -Pforge1201SourceMemberName=isStickyBlock -Pforge1201SourceMemberDescriptor=()Z --console=plain
+.\gradlew.bat :loader:auditForge1201SourceRuntimeMember1201 -Pforge1201SourceMemberKind=method -Pforge1201SourceMemberOwner=net/minecraft/world/level/block/state/BlockState -Pforge1201SourceMemberName=canStickTo '-Pforge1201SourceMemberDescriptor=(Lnet/minecraft/world/level/block/state/BlockState;)Z' --console=plain
+```
+
+The mapping step may return an explicit missing/ambiguous/descriptor-unresolved status; the verifier does not guess a name or descriptor. A source class/member is only reported absent when the required class hierarchy is complete. No selector rewriting, runtime mapping table, or loader packaging change is performed.
