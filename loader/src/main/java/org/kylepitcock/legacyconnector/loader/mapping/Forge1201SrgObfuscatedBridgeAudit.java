@@ -161,6 +161,11 @@ public final class Forge1201SrgObfuscatedBridgeAudit {
         public List<MethodSelector> methodSelectors() { return methodSelectors; }
         public List<FieldSelector> fieldSelectors() { return fieldSelectors; }
 
+        /** Returns whether a name is a class in the pinned source obfuscated namespace. */
+        public boolean knowsObfuscatedClass(String internalName) {
+            return knownObfuscatedClasses.contains(internalName);
+        }
+
         public ClassResolution resolveClass(String srgOwner) {
             List<String> candidates = srgToObfuscatedClasses.getOrDefault(srgOwner, List.of());
             if (candidates.isEmpty()) return new ClassResolution(Status.MISSING, List.of());
