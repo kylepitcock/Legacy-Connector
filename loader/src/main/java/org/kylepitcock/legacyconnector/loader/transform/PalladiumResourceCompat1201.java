@@ -308,6 +308,11 @@ final class PalladiumResourceCompat1201 {
                                 + "                cleanedHexString = cleanedHexString.substring(0, 6);\n"
                                 + "            }",
                         "1"
+                },
+                {
+                        "    hex = hex.replace(/^#/, '');",
+                        "    hex = hex.startsWith(\"#\") ? hex.substring(1) : hex;",
+                        "1"
                 }
         });
     }
