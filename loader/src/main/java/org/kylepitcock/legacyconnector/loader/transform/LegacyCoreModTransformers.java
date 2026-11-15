@@ -157,7 +157,6 @@ public final class LegacyCoreModTransformers {
             Method transform = transformerType.getMethod("transform", String.class, String.class, byte[].class);
             // As FML: every plugin is constructed first (in discovery order); then, by sorting index, each one's
             // transformers are created and its injectData runs (plugins check each other's state there).
-            record Plugin(LegacyJar jar, int index, Object instance) {}
             List<Plugin> plugins = new ArrayList<>();
             for (LegacyJar jar : coremods) {
                 String pluginClass = jar.coreModClass.trim();
@@ -172,6 +171,8 @@ public final class LegacyCoreModTransformers {
                     return new Plugin(jar, index, cls.getDeclaredConstructor().newInstance());
                 });
                 if (p != null) plugins.add(p);
+                // A plugin may add other plugins to FML's CoreModManager.loadPlugins while it is constructed (CodeChickenCore's deobfuscation plugin): they join the set
+                if (p != null) drainInjectedPlugins(apiLoader, fmlPkg, jar, plugins, pluginType);
             }
             plugins.sort(Comparator.comparingInt(Plugin::index));
             record Loaded(String jar, List<Transformer> transformers) {}
@@ -259,6 +260,38 @@ public final class LegacyCoreModTransformers {
         } catch (Throwable e) {
             LOG.warn("Legacy Connector: legacy coremod transformers are not applied", e);
             return empty();
+        }
+    }
+
+    private record Plugin(LegacyJar jar, int index, Object instance) {}
+
+    /** Moves the wrappers plugins added to {@code CoreModManager.loadPlugins} into the plugin list (each counts as belonging to the jar that added it). */
+    private static void drainInjectedPlugins(ClassLoader apiLoader, String fmlPkg, LegacyJar jar, List<Plugin> plugins, Class<?> pluginType) {
+        try {
+            Class<?> manager = apiLoader.loadClass(fmlPkg + ".relauncher.CoreModManager");
+            java.lang.reflect.Field field = manager.getDeclaredField("loadPlugins");
+            field.setAccessible(true);
+            List<?> list = (List<?>) field.get(null);
+            if (list == null || list.isEmpty()) return;
+            for (Object wrapper : new ArrayList<>(list)) {
+                Class<?> wc = wrapper.getClass();
+                Object instance = wc.getField("coreModInstance").get(wrapper);
+                int index = wc.getField("sortIndex").getInt(wrapper);
+                if (instance != null && instance.getClass().getClassLoader() != apiLoader && pluginType.isInstance(instance) && plugins.stream().noneMatch(o -> o.instance() == instance)) {
+                    plugins.add(new Plugin(jar, index, instance));
+                }
+            }
+            list.removeIf(w -> {
+                try {
+                    return w.getClass().getField("coreModInstance").get(w).getClass().getClassLoader() != apiLoader;
+                } catch (ReflectiveOperationException e) {
+                    return false;
+                }
+            });
+        } catch (ClassNotFoundException | NoSuchFieldException e) {
+            // this API flavour has no plugin list
+        } catch (Throwable e) {
+            LOG.warn("Legacy Connector: plugins added by {} to the coremod manager could not be taken over: {}", jar.fileName(), rootChain(e));
         }
     }
 
