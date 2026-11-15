@@ -371,7 +371,8 @@ public final class Forge1201SourceRuntimeMemberVerifier {
                         fileSystem = FileSystems.getFileSystem(jrtUri);
                     }
                 }
-            } catch (RuntimeException unavailable) {
+            } catch (IOException | RuntimeException unavailable) {
+                // Without readable JRT bytes, platform hierarchy nodes remain explicitly incomplete.
                 fileSystem = null;
             }
             this.jrt = fileSystem;
