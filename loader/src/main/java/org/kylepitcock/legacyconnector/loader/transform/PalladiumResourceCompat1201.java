@@ -265,6 +265,7 @@ final class PalladiumResourceCompat1201 {
         rewriteAlienEvoNetworkDataPlayerAccess(resources);
         rewriteAlienEvoPrototypeCoreLayoutScores(resources);
         rewriteAlienEvoItemStackCustomData(resources);
+        rewriteAlienEvoWorkbenchItemCustomData(resources);
         // Normalize the legacy modifier operation before the landing-state rewrite
         // replaces the original tick block containing both modifier call sites.
         rewriteAlienEvoSlamAttributeOperations(resources);
@@ -1750,6 +1751,84 @@ PlayerEvents.tick(e => {
                 {"nbt.storedAlienGlowProps", "nbt.getString('storedAlienGlowProps')", "1"}
         });
         return changed;
+    }
+
+    /**
+     * The Omnitrix Workbench also reads custom data from the held ItemStack and
+     * ejects the customized watch with the removed legacy tag field. Adapt both
+     * paths to the 1.21.1 custom_data component so solid layout scores, DNA and
+     * saved glow properties survive moving the watch through the workbench.
+     */
+    private static int rewriteAlienEvoWorkbenchItemCustomData(Map<String, byte[]> resources) {
+        String path = "data/alienevo/kubejs_scripts/workbench.js";
+        return rewrite(resources, path, new String[][] {
+                {"Count:1b,tag:", "count:1,components:{\\"minecraft:custom_data\\":", "1"},
+                {"JSON.stringify(nbtData)}},PickupDelay:10",
+                        "JSON.stringify(nbtData)}}},PickupDelay:10", "1"},
+                {"var nbt = mainHandItem.nbt;", "var nbt = mainHandItem.getCustomData();", "1"},
+                {"if (nbt && nbt.display && nbt.display.Name) {",
+                        "if (!nbt.isEmpty() && !nbt.getCompound('display').getString('Name').isEmpty()) {", "1"},
+                {"nbt.display.Name", "nbt.getCompound('display').getString('Name')", "1"},
+                {"var storedDNA = nbt && nbt.storedAllDNA ? nbt.storedAllDNA : '';",
+                        "var storedDNA = nbt.getString('storedAllDNA');", "1"},
+                {"let storedCode = nbt && nbt.storedCode ? nbt.storedCode : '000000';",
+                        "let storedCode = nbt.getString('storedCode') || '000000';", "1"},
+                {"if (nbt && nbt.storedCode)          palladium.setProperty(armorStand, 'code', nbt.storedCode);",
+                        "if (nbt.contains('storedCode')) palladium.setProperty(armorStand, 'code', nbt.getString('storedCode'));", "1"},
+                {"let storedPosition = nbt && nbt.storedPosition ? nbt.storedPosition : '0';",
+                        "let storedPosition = nbt.getString('storedPosition') || '0';", "1"},
+                {"if (nbt && nbt.storedPosition && !isNaN(parseInt(nbt.storedPosition))) positionValue = parseInt(nbt.storedPosition);",
+                        "if (nbt.contains('storedPosition') && !isNaN(parseInt(nbt.getString('storedPosition')))) positionValue = parseInt(nbt.getString('storedPosition'));", "1"},
+                {"let storedMasterTargetCode = nbt && nbt.storedMasterTargetCode ? nbt.storedMasterTargetCode : '';",
+                        "let storedMasterTargetCode = nbt.getString('storedMasterTargetCode');", "1"},
+                {"let storedSelfDestructTargetCode = nbt && nbt.storedSelfDestructTargetCode ? nbt.storedSelfDestructTargetCode : '';",
+                        "let storedSelfDestructTargetCode = nbt.getString('storedSelfDestructTargetCode');", "1"},
+                {"if (nbt && nbt.storedAlienNamespaces) {",
+                        "if (nbt.contains('storedAlienNamespaces')) {", "1"},
+                {"event.target.persistentData.putString('storedAlienNamespaces', nbt.storedAlienNamespaces);",
+                        "event.target.persistentData.putString('storedAlienNamespaces', nbt.getString('storedAlienNamespaces'));", "1"},
+                {"let storedCurrentPlaylist = nbt && nbt.storedCurrentPlaylist ? nbt.storedCurrentPlaylist : 1;",
+                        "let storedCurrentPlaylist = nbt.getInt('storedCurrentPlaylist') || 1;", "1"},
+                {"let storedCurrentAlienSlot = nbt && nbt.storedCurrentAlienSlot ? nbt.storedCurrentAlienSlot : 1;",
+                        "let storedCurrentAlienSlot = nbt.getInt('storedCurrentAlienSlot') || 1;", "1"},
+                {"if (nbt && nbt.storedOmnitrixCycle) palladium.setProperty(armorStand, 'omnitrix_cycle', nbt.storedOmnitrixCycle);",
+                        "if (nbt.contains('storedOmnitrixCycle')) palladium.setProperty(armorStand, 'omnitrix_cycle', nbt.getInt('storedOmnitrixCycle'));", "1"},
+                {"if (nbt && nbt.storedOmnitrixCycle) event.target.persistentData.putInt('storedOmnitrixCycle', nbt.storedOmnitrixCycle);",
+                        "if (nbt.contains('storedOmnitrixCycle')) event.target.persistentData.putInt('storedOmnitrixCycle', nbt.getInt('storedOmnitrixCycle'));", "1"},
+                {"if (typeof nbt?.storedUniformGlowColorBase === 'string')", "if (nbt.contains('storedUniformGlowColorBase'))", "2"},
+                {"nbt.storedUniformGlowColorBase", "nbt.getString('storedUniformGlowColorBase')", "2"},
+                {"if (typeof nbt?.storedUniformGlowColor1 === 'string')", "if (nbt.contains('storedUniformGlowColor1'))", "2"},
+                {"nbt.storedUniformGlowColor1", "nbt.getString('storedUniformGlowColor1')", "2"},
+                {"if (typeof nbt?.storedUniformGlowColor2 === 'string')", "if (nbt.contains('storedUniformGlowColor2'))", "2"},
+                {"nbt.storedUniformGlowColor2", "nbt.getString('storedUniformGlowColor2')", "2"},
+                {"if (typeof nbt?.storedUniformGlowColor3 === 'string')", "if (nbt.contains('storedUniformGlowColor3'))", "2"},
+                {"nbt.storedUniformGlowColor3", "nbt.getString('storedUniformGlowColor3')", "2"},
+                {"if (typeof nbt?.storedUniformGlowColor4 === 'string')", "if (nbt.contains('storedUniformGlowColor4'))", "2"},
+                {"nbt.storedUniformGlowColor4", "nbt.getString('storedUniformGlowColor4')", "2"},
+                {"if (typeof nbt?.storedUniformGlowColor5 === 'string')", "if (nbt.contains('storedUniformGlowColor5'))", "2"},
+                {"nbt.storedUniformGlowColor5", "nbt.getString('storedUniformGlowColor5')", "2"},
+                {"if (typeof nbt?.storedGlowColorBase === 'string')", "if (nbt.contains('storedGlowColorBase'))", "2"},
+                {"nbt.storedGlowColorBase", "nbt.getString('storedGlowColorBase')", "2"},
+                {"if (typeof nbt?.storedGlowColor1 === 'string')", "if (nbt.contains('storedGlowColor1'))", "2"},
+                {"nbt.storedGlowColor1", "nbt.getString('storedGlowColor1')", "2"},
+                {"if (typeof nbt?.storedGlowColor2 === 'string')", "if (nbt.contains('storedGlowColor2'))", "2"},
+                {"nbt.storedGlowColor2", "nbt.getString('storedGlowColor2')", "2"},
+                {"if (typeof nbt?.storedGlowColor3 === 'string')", "if (nbt.contains('storedGlowColor3'))", "2"},
+                {"nbt.storedGlowColor3", "nbt.getString('storedGlowColor3')", "2"},
+                {"if (typeof nbt?.storedGlowColor4 === 'string')", "if (nbt.contains('storedGlowColor4'))", "2"},
+                {"nbt.storedGlowColor4", "nbt.getString('storedGlowColor4')", "2"},
+                {"if (typeof nbt?.storedGlowColor5 === 'string')", "if (nbt.contains('storedGlowColor5'))", "2"},
+                {"nbt.storedGlowColor5", "nbt.getString('storedGlowColor5')", "2"},
+                {"if (typeof nbt?.storedAlienGlowProps === 'string' && nbt.storedAlienGlowProps.length)",
+                        "if (nbt.contains('storedAlienGlowProps') && !nbt.getString('storedAlienGlowProps').isEmpty())", "1"},
+                {"if (typeof nbt?.storedAlienGlowProps === 'string')",
+                        "if (nbt.contains('storedAlienGlowProps'))", "1"},
+                {"nbt.storedAlienGlowProps", "nbt.getString('storedAlienGlowProps')", "3"},
+                {"if (!nbt && mainHandItem.id.includes('_10k'))",
+                        "if (nbt.isEmpty() && mainHandItem.id.includes('_10k'))", "1"},
+                {"if (nbt && nbt.storedMastercontrol) {",
+                        "if (nbt.getBoolean('storedMastercontrol')) {", "1"}
+        });
     }
 
     /**
