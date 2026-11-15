@@ -1791,7 +1791,7 @@ public final class Assets1122 implements GeneratedPack.Contributor {
      * item gets a flat model of its texture ({@code textures/items/<name>.png} or {@code item/<name>.png}), or its block's model for an ItemBlock.
      */
     private static void itemFallbackModels(Map<String, Supplier<byte[]>> out) {
-        int made = 0;
+        int made = 0, codeDrawn = 0;
         // spawn eggs of mod entities (EntityRegistry egg colours): vanilla's tinted egg model
         for (ResourceLocation eggId : org.kylepitcock.legacyconnector.v1_12_2.entity.Hosts1122.spawnEggIds()) {
             String file = "assets/" + eggId.getNamespace() + "/models/item/" + eggId.getPath() + ".json";
@@ -1826,15 +1826,21 @@ public final class Assets1122 implements GeneratedPack.Contributor {
                 } else if (item instanceof legacyconnector.v1_12_2.net.minecraft.item.ItemBlock && modelExists(ns, "block/" + base)) {
                     model.addProperty("parent", ns + ":block/" + base);
                 } else {
-                    continue;
+                    // no file and no texture: the item is drawn by code (a model a mod replaces in ModelBakeEvent, a TEISR, a TESR bound with
+                    // registerTESRItemStack); a built-in model keeps the game from logging "Unable to load model" per item, and draws nothing
+                    // by itself (LegacyItemStackRenderer1122 draws it when the item has a renderer)
+                    model.addProperty("parent", "minecraft:builtin/entity");
+                    codeDrawn++;
                 }
                 String json = GSON.toJson(model);
                 byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
                 out.put(file, () -> bytes);
+                if (!model.has("textures") && model.get("parent").getAsString().equals("minecraft:builtin/entity")) continue;
                 if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) org.kylepitcock.legacyconnector.v1_7_10.client.SharedItemModels.note(id, json);
                 made++;
             }
         }
+        if (codeDrawn > 0) LOG.info("1.12.2 item models: {} item(s) without a model file or texture got a built-in model (drawn by code)", codeDrawn);
         if (made > 0) LOG.info("1.12.2 item models: {} item(s) without a model file got a flat model of their texture", made);
     }
 
