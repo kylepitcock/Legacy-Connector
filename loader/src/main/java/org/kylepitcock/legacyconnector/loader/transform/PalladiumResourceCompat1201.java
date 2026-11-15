@@ -1828,7 +1828,7 @@ PlayerEvents.tick(e => {
                 {"if (!nbt && mainHandItem.id.includes('_10k'))",
                         "if (nbt.isEmpty() && mainHandItem.id.includes('_10k'))", "1"},
                 {"if (nbt && nbt.storedMastercontrol) {",
-                        "if (nbt.getBoolean('storedMastercontrol')) {", "1"}
+                        "if (nbt.getInt('storedMastercontrol') !== 0) {", "1"}
         });
     }
 
