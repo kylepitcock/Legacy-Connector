@@ -21,6 +21,8 @@ public class OreDictionary {
     private static final List<String> idToName = new ArrayList<>();
     private static final Map<String, Integer> nameToId = new HashMap<>();
     private static final List<ArrayList<ItemStack>> idToStack = new ArrayList<>();
+    /** Forge's item-key to ore-ids map; mods that replace vanilla blocks read it by reflection. Key: item id | (damage + 1) << 16. */
+    private static final Map<Integer, List<Integer>> stackToId = new HashMap<>();
 
     static {
         OreDictBridge.registerVanillaDefaults();
@@ -152,6 +154,10 @@ public class OreDictionary {
         int id = getOreID(name);
         ItemStack copy = ore.copy();
         idToStack.get(id).add(copy);
+        int key = Item.getIdFromItem(copy.getItem());
+        if (copy.getItemDamage() != WILDCARD_VALUE) key |= (copy.getItemDamage() + 1) << 16;
+        List<Integer> ids = stackToId.computeIfAbsent(key, k -> new ArrayList<>());
+        if (!ids.contains(id)) ids.add(id);
         OreDictBridge.onRegister(name, copy);
         MinecraftForge.EVENT_BUS.post(new OreRegisterEvent(name, copy));
     }
