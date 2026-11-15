@@ -34,6 +34,9 @@ public final class JavaCompatRedirects {
         virtualToStatic("java/lang/Class", "getField", "(Ljava/lang/String;)Ljava/lang/reflect/Field;", COMPAT + "ReflectionCompat");
         virtualToStatic("java/lang/Class", "getFields", "()[Ljava/lang/reflect/Field;", COMPAT + "ReflectionCompat");
         virtualToStatic("java/lang/Class", "getMethod", "(Ljava/lang/String;[Ljava/lang/Class;)Ljava/lang/reflect/Method;", COMPAT + "ReflectionCompat");
+        // Class names put together at run time are still the legacy ones (literals were relocated): looked up in the legacy API when absent.
+        staticToStatic("java/lang/Class", "forName", "(Ljava/lang/String;)Ljava/lang/Class;", COMPAT + "ReflectionCompat", "forName");
+        staticToStatic("java/lang/Class", "forName", "(Ljava/lang/String;ZLjava/lang/ClassLoader;)Ljava/lang/Class;", COMPAT + "ReflectionCompat", "forName");
         virtualToStatic("java/lang/reflect/Field", "setInt", "(Ljava/lang/Object;I)V", COMPAT + "ReflectionCompat");
         virtualToStatic("java/lang/reflect/Field", "set", "(Ljava/lang/Object;Ljava/lang/Object;)V", COMPAT + "ReflectionCompat");
         virtualToStatic("java/lang/reflect/Field", "setBoolean", "(Ljava/lang/Object;Z)V", COMPAT + "ReflectionCompat");

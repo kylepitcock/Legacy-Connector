@@ -60,7 +60,9 @@ public final class WorldScreenshotTest {
         if (System.getProperty("legacyconnector.screenshotTest") == null) return;
         NeoForge.EVENT_BUS.addListener((ScreenEvent.Opening e) -> {
             // A fresh game directory opens the narrator/accessibility onboarding first and waits for a click: skip it.
-            if (e.getNewScreen() instanceof net.minecraft.client.gui.screens.AccessibilityOnboardingScreen) {
+            // So do the loading warnings (a legacy mod's missing dependency): the test goes on to the title screen.
+            if (e.getNewScreen() instanceof net.minecraft.client.gui.screens.AccessibilityOnboardingScreen
+                    || e.getNewScreen() instanceof net.neoforged.neoforge.client.gui.LoadingErrorScreen) {
                 Minecraft.getInstance().options.onboardAccessibility = false;
                 e.setNewScreen(new TitleScreen());
             }
