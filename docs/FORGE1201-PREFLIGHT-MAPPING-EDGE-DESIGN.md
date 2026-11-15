@@ -367,3 +367,21 @@ The audit task now adds the same narrowly filtered compile-classpath entries (`g
 Source correction commit: `9f50f0af1c79a24e02d59ba3a983eb3581655317`.
 
 **Validation status:** awaiting a repeat invocation of `:loader:auditSrgTargetApiBridge1201To1211`. The focused `Forge1201TargetOfficialBridgeAuditTest` had already passed at parent `37bc531f8b629402b2ae0a6382e30554f7f08484` before this Gradle-only classpath correction. The previous audit attempt did not enter the composed audit or produce `srg-target-api-bridge-audit.json`; inspect the report only after the corrected task succeeds.
+
+
+### 19.2 User validation — target API audit task executes end to end (2026-11-15)
+
+After the JavaExec tool-classpath correction at `9f50f0af1c79a24e02d59ba3a983eb3581655317`, the user reran `:loader:auditSrgTargetApiBridge1201To1211` at source HEAD `9f8afd12e1383fc7c00cc1db951695e0b21dc4de`.
+
+**Observed result:** `BUILD SUCCESSFUL in 27s; 18 actionable tasks (8 executed, 10 up-to-date)`.
+
+The audit printed:
+- classes: 7,436
+- methods: 48,575
+- fields: 31,003
+- report: `loader/build/reports/mappings/1.20.1-1.21.1/srg-target-api-bridge-audit.json`
+- explicit boundary: read-only audit; no selector transformation or runtime mapping table was produced.
+
+The prerequisite target API inventory was up-to-date in this run; in the prior run it had completed with `INVENTORY_STATUS=COMPLETE` (7,942 unique classes resolved, no unresolved metadata, 71,727 methods, 36,227 fields, 4,201 referenced Minecraft types, zero missing referenced types). The focused new audit test had also passed at parent `37bc531f8b629402b2ae0a6382e30554f7f08484`.
+
+**Interpretation:** the final audit pipeline now executes through report generation. The headline class/method/field numbers are inventory row counts, not exact-match totals. The JSON `coverage.*.byStatus` histograms and candidate-level fields (`upstreamExternalDescriptorTypeCount`, `targetExternalDescriptorTypeCount`, `targetOfficialMappingStatus`, `targetApiStatus`, and `hierarchyVisited`) must be inspected before drawing conclusions about coverage. Preserve ambiguous candidates and external descriptor classifications. Do not enable selector rewriting, runtime mapping production, or claim binary/gameplay compatibility from task success.
