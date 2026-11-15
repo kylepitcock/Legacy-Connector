@@ -6,6 +6,7 @@ import legacyconnector.v1_7_10.cpw.mods.fml.common.eventhandler.Event;
 import legacyconnector.v1_7_10.net.minecraft.init.Items;
 import legacyconnector.v1_7_10.net.minecraft.item.ItemStack;
 import legacyconnector.v1_7_10.net.minecraftforge.common.MinecraftForge;
+import org.kylepitcock.legacyconnector.v1_7_10.bridge.FluidBridge;
 
 /** Forge 1.7.10 registry of filled/empty fluid container items (buckets, bottles, cells, ...). */
 public abstract class FluidContainerRegistry {
@@ -21,6 +22,15 @@ public abstract class FluidContainerRegistry {
     }
 
     private FluidContainerRegistry() {}
+
+    /** The answer of the modern containers (items with a NeoForge fluid handler); null when there is none or the modern side is not up. */
+    private static <T> T modern(java.util.function.Supplier<T> query) {
+        try {
+            return query.get();
+        } catch (RuntimeException | LinkageError e) {
+            return null;
+        }
+    }
 
     public static boolean registerFluidContainer(FluidStack stack, ItemStack filledContainer, ItemStack emptyContainer) {
         return registerFluidContainer(new FluidContainerData(stack, filledContainer, emptyContainer));
@@ -50,7 +60,7 @@ public abstract class FluidContainerRegistry {
         for (FluidContainerData d : DATA) {
             if (d.filledContainer.isItemEqual(container)) return d.fluid.copy();
         }
-        return null;
+        return modern(() -> FluidBridge.containerFluid(container));
     }
 
     public static synchronized ItemStack fillFluidContainer(FluidStack fluid, ItemStack container) {
@@ -58,7 +68,7 @@ public abstract class FluidContainerRegistry {
         for (FluidContainerData d : DATA) {
             if (d.emptyContainer != null && d.emptyContainer.isItemEqual(container) && fluid.containsFluid(d.fluid)) return d.filledContainer.copy();
         }
-        return null;
+        return modern(() -> FluidBridge.fillContainer(fluid, container));
     }
 
     public static synchronized ItemStack drainFluidContainer(ItemStack container) {
@@ -66,7 +76,7 @@ public abstract class FluidContainerRegistry {
         for (FluidContainerData d : DATA) {
             if (d.filledContainer.isItemEqual(container)) return d.emptyContainer == null ? null : d.emptyContainer.copy();
         }
-        return null;
+        return modern(() -> FluidBridge.drainContainer(container));
     }
 
     public static int getContainerCapacity(ItemStack container) {
@@ -79,7 +89,8 @@ public abstract class FluidContainerRegistry {
             boolean matches = d.filledContainer.isItemEqual(container) || d.emptyContainer != null && d.emptyContainer.isItemEqual(container);
             if (matches && (fluid == null || fluid.isFluidEqual(d.fluid))) return d.fluid.amount;
         }
-        return 0;
+        Integer capacity = modern(() -> FluidBridge.containerCapacity(container));
+        return capacity == null ? 0 : capacity;
     }
 
     public static boolean containsFluid(ItemStack container, FluidStack fluid) {
@@ -98,7 +109,8 @@ public abstract class FluidContainerRegistry {
     public static synchronized boolean isEmptyContainer(ItemStack container) {
         if (container == null) return false;
         for (FluidContainerData d : DATA) if (d.emptyContainer != null && d.emptyContainer.isItemEqual(container)) return true;
-        return false;
+        Boolean empty = modern(() -> FluidBridge.isModernEmptyContainer(container));
+        return empty != null && empty;
     }
 
     public static boolean isFilledContainer(ItemStack container) {
