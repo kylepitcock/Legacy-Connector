@@ -67,8 +67,10 @@ public final class Forge1201SourceRuntimeMemberVerifier {
 
     public record SelectorVerification(
             Forge1201SourceOfficialMappingIndex.Status mappingStatus,
+            List<Forge1201SourceOfficialMappingIndex.SelectorCandidate> mappedSelectors,
             List<MemberResult> members) {
         public SelectorVerification {
+            mappedSelectors = List.copyOf(mappedSelectors);
             members = List.copyOf(members);
         }
     }
@@ -117,14 +119,14 @@ public final class Forge1201SourceRuntimeMemberVerifier {
                     mappings.resolveMethod(srgOwner, srgName, srgDescriptor);
             if (resolution.status() != Forge1201SourceOfficialMappingIndex.Status.MAPPED_EXACT
                     && resolution.status() != Forge1201SourceOfficialMappingIndex.Status.MAPPED_WITH_EXTERNAL_TYPES) {
-                return new SelectorVerification(resolution.status(), List.of());
+                return new SelectorVerification(resolution.status(), List.of(), List.of());
             }
             List<MemberResult> results = new ArrayList<>();
             for (Forge1201SourceOfficialMappingIndex.SelectorCandidate candidate : resolution.candidates()) {
                 results.add(inspectMethod(
                         candidate.officialOwner(), candidate.officialName(), candidate.officialDescriptor()));
             }
-            return new SelectorVerification(resolution.status(), results);
+            return new SelectorVerification(resolution.status(), resolution.candidates(), results);
         }
 
         /** Maps an SRG field selector, then verifies its exact Mojang-named source identity. */
@@ -144,6 +146,46 @@ public final class Forge1201SourceRuntimeMemberVerifier {
                         candidate.officialOwner(), candidate.officialName(), candidate.officialDescriptor()));
             }
             return new SelectorVerification(resolution.status(), results);
+        }
+
+        /** Resolves a Mojang-named method back to its SRG identity, then checks the source classfile. */
+        public SelectorVerification verifyOfficialMethod(
+                Forge1201SourceOfficialMappingIndex mappings,
+                String officialOwner,
+                String officialName,
+                String officialDescriptor) throws IOException {
+            Forge1201SourceOfficialMappingIndex.SelectorResolution resolution =
+                    mappings.findMethodsByOfficialIdentity(officialOwner, officialName, officialDescriptor);
+            if (resolution.status() != Forge1201SourceOfficialMappingIndex.Status.MAPPED_EXACT
+                    && resolution.status() != Forge1201SourceOfficialMappingIndex.Status.MAPPED_WITH_EXTERNAL_TYPES) {
+                return new SelectorVerification(resolution.status(), resolution.candidates(), List.of());
+            }
+            List<MemberResult> results = new ArrayList<>();
+            for (Forge1201SourceOfficialMappingIndex.SelectorCandidate candidate : resolution.candidates()) {
+                results.add(inspectMethod(
+                        candidate.officialOwner(), candidate.officialName(), candidate.officialDescriptor()));
+            }
+            return new SelectorVerification(resolution.status(), resolution.candidates(), results);
+        }
+
+        /** Resolves a Mojang-named field back to its SRG identity, then checks the source classfile. */
+        public SelectorVerification verifyOfficialField(
+                Forge1201SourceOfficialMappingIndex mappings,
+                String officialOwner,
+                String officialName,
+                String officialDescriptor) throws IOException {
+            Forge1201SourceOfficialMappingIndex.SelectorResolution resolution =
+                    mappings.findFieldsByOfficialIdentity(officialOwner, officialName, officialDescriptor);
+            if (resolution.status() != Forge1201SourceOfficialMappingIndex.Status.MAPPED_EXACT
+                    && resolution.status() != Forge1201SourceOfficialMappingIndex.Status.MAPPED_WITH_EXTERNAL_TYPES) {
+                return new SelectorVerification(resolution.status(), resolution.candidates(), List.of());
+            }
+            List<MemberResult> results = new ArrayList<>();
+            for (Forge1201SourceOfficialMappingIndex.SelectorCandidate candidate : resolution.candidates()) {
+                results.add(inspectField(
+                        candidate.officialOwner(), candidate.officialName(), candidate.officialDescriptor()));
+            }
+            return new SelectorVerification(resolution.status(), resolution.candidates(), results);
         }
 
         private MemberResult inspect(String owner, String name, String descriptor, boolean method)
@@ -396,4 +438,145 @@ public final class Forge1201SourceRuntimeMemberVerifier {
             throw new IllegalStateException("SHA-256 is unavailable", exception);
         }
     }
+
+    /**
+     * CLI:
+     * <pre>
+     *   <classpath.txt> <joined.tsrg> <source.tiny> <client.txt>
+     *   <method|field> <official-owner> <official-name> <official-descriptor> <report.json>
+     * </pre>
+     * The selector is expressed in Mojang official 1.20.1 names. The report contains both the
+     * reverse-resolved SRG identity and the exact Forge source classfile result.
+     */
+    public static void main(String[] args) throws IOException {
+        if (args.length != 9) {
+            throw new IllegalArgumentException(
+                    "Usage: Forge1201SourceRuntimeMemberVerifier <classpath.txt> <joined.tsrg> "
+                            + "<source.tiny> <client.txt> <method|field> <official-owner> "
+                            + "<official-name> <official-descriptor> <report.json>");
+        }
+
+        Path classpathFile = Path.of(args[0]);
+        Forge1201SourceOfficialMappingIndex mappings =
+                Forge1201SourceOfficialMappingIndex.read(
+                        Path.of(args[1]), Path.of(args[2]), Path.of(args[3]));
+        Index sourceRuntime = readClasspath(classpathFile);
+
+        String kind = args[4];
+        String owner = args[5];
+        String name = args[6];
+        String descriptor = args[7];
+        SelectorVerification verification;
+        if (kind.equals("method")) {
+            verification = sourceRuntime.verifyOfficialMethod(mappings, owner, name, descriptor);
+        } else if (kind.equals("field")) {
+            verification = sourceRuntime.verifyOfficialField(mappings, owner, name, descriptor);
+        } else {
+            throw new IllegalArgumentException("Selector kind must be 'method' or 'field', got: " + kind);
+        }
+
+        String json = toJson(kind, owner, name, descriptor, mappings.summary(),
+                sourceRuntime.classpathSummary(), verification);
+        Path report = Path.of(args[8]).toAbsolutePath().normalize();
+        if (report.getParent() != null) Files.createDirectories(report.getParent());
+        Files.writeString(report, json, StandardCharsets.UTF_8);
+
+        System.out.println("Forge 1.20.1 source runtime member check: mapping="
+                + verification.mappingStatus() + ", checked=" + verification.members().size());
+        for (MemberResult member : verification.members()) {
+            System.out.println("  " + member.display());
+            for (String observed : member.observedSameNameMembers()) {
+                System.out.println("    observed: " + observed);
+            }
+        }
+        System.out.println("Report: " + report);
+        System.out.println("Selector transformation performed: false");
+        System.out.println("Runtime mapping table produced: false");
+    }
+
+    private static String toJson(
+            String kind,
+            String owner,
+            String name,
+            String descriptor,
+            Forge1201SourceOfficialMappingIndex.Summary mappingSummary,
+            ClasspathSummary classpathSummary,
+            SelectorVerification verification) {
+        StringBuilder json = new StringBuilder(4096);
+        json.append("{\n")
+                .append("  \"schemaVersion\": 1,\n")
+                .append("  \"status\": \"READ_ONLY_SOURCE_RUNTIME_MEMBER_CHECK\",\n")
+                .append("  \"query\": {\"kind\": \"").append(escape(kind)).append("\", \"owner\": \"")
+                .append(escape(owner)).append("\", \"name\": \"").append(escape(name))
+                .append("\", \"descriptor\": \"").append(escape(descriptor)).append("\"},\n")
+                .append("  \"mapping\": {\n")
+                .append("    \"status\": \"").append(verification.mappingStatus()).append("\",\n")
+                .append("    \"mcpconfigJoinedTsrgSha256\": \"")
+                .append(mappingSummary.srgToObfuscated().tsrgSha256()).append("\",\n")
+                .append("    \"fabricIntermediary1201TinySha256\": \"")
+                .append(mappingSummary.srgToObfuscated().sourceTinySha256()).append("\",\n")
+                .append("    \"mojangClientMappingSha256\": \"").append(mappingSummary.mojangMappingSha256()).append("\",\n")
+                .append("    \"selectors\": [\n");
+        for (int i = 0; i < verification.mappedSelectors().size(); i++) {
+            Forge1201SourceOfficialMappingIndex.SelectorCandidate selector =
+                    verification.mappedSelectors().get(i);
+            json.append("      {\"srgOwner\": \"").append(escape(selector.srgOwner()))
+                    .append("\", \"srgName\": \"").append(escape(selector.srgName()))
+                    .append("\", \"srgDescriptor\": \"").append(escape(selector.srgDescriptor()))
+                    .append("\", \"obfuscatedOwner\": \"").append(escape(selector.obfuscatedOwner()))
+                    .append("\", \"obfuscatedName\": \"").append(escape(selector.obfuscatedName()))
+                    .append("\", \"obfuscatedDescriptor\": \"").append(escape(selector.obfuscatedDescriptor()))
+                    .append("\", \"officialOwner\": \"").append(escape(selector.officialOwner()))
+                    .append("\", \"officialName\": \"").append(escape(selector.officialName()))
+                    .append("\", \"officialDescriptor\": \"").append(escape(selector.officialDescriptor()))
+                    .append("\", \"externalDescriptorTypeCount\": ")
+                    .append(selector.externalDescriptorTypeCount()).append("}");
+            json.append(i + 1 == verification.mappedSelectors().size() ? "\n" : ",\n");
+        }
+        json.append("    ]\n")
+                .append("  },\n")
+                .append("  \"sourceRuntimeClasspath\": {\n")
+                .append("    \"listSha256\": \"").append(classpathSummary.classpathListSha256()).append("\",\n")
+                .append("    \"entryCount\": ").append(classpathSummary.classpathEntryCount()).append(",\n")
+                .append("    \"indexedClassCount\": ").append(classpathSummary.indexedClassCount()).append(",\n")
+                .append("    \"duplicateClassNames\": ").append(classpathSummary.duplicateClassNames()).append("\n")
+                .append("  },\n")
+                .append("  \"members\": [\n");
+        for (int i = 0; i < verification.members().size(); i++) {
+            MemberResult member = verification.members().get(i);
+            json.append("    {\"owner\": \"").append(escape(member.owner()))
+                    .append("\", \"name\": \"").append(escape(member.name()))
+                    .append("\", \"descriptor\": \"").append(escape(member.descriptor()))
+                    .append("\", \"status\": \"").append(member.status()).append("\", \"declaringOwner\": ")
+                    .append(member.declaringOwner() == null ? "null" : "\"" + escape(member.declaringOwner()) + "\"")
+                    .append(", \"hierarchyVisited\": ").append(stringArray(member.hierarchyVisited()))
+                    .append(", \"observedSameNameMembers\": ").append(stringArray(member.observedSameNameMembers()))
+                    .append("}");
+            json.append(i + 1 == verification.members().size() ? "\n" : ",\n");
+        }
+        json.append("  ],\n")
+                .append("  \"selectorTransformationPerformed\": false,\n")
+                .append("  \"runtimeMappingTableProduced\": false\n")
+                .append("}\n");
+        return json.toString();
+    }
+
+    private static String stringArray(List<String> values) {
+        StringBuilder json = new StringBuilder("[");
+        for (int i = 0; i < values.size(); i++) {
+            if (i > 0) json.append(", ");
+            json.append("\"").append(escape(values.get(i))).append("\"");
+        }
+        return json.append("]").toString();
+    }
+
+    private static String escape(String value) {
+        if (value == null) return "";
+        return value.replace("\\\\", "\\\\\\\\")
+                .replace("\"", "\\\\\"")
+                .replace("\n", "\\\\n")
+                .replace("\r", "\\\\r")
+                .replace("\t", "\\\\t");
+    }
+
 }
