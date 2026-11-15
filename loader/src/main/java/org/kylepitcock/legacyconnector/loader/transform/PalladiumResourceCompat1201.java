@@ -412,8 +412,20 @@ final class PalladiumResourceCompat1201 {
         int declarationCount = occurrences(script, declaration);
         int legacyFilterCount = occurrences(script, legacyFilter);
         int migratedFilterCount = occurrences(script, migratedFilter);
-        int fireCallCount = occurrences(script, "targets[j].setSecondsOnFire(firetick);");
+        String legacyFireCall = "targets[j].setSecondsOnFire(firetick);";
+        String migratedFireCall = "targets[j].igniteForSeconds(firetick);";
+        int legacyFireCallCount = occurrences(script, legacyFireCall);
+        int migratedFireCallCount = occurrences(script, migratedFireCall);
+        int fireCallCount = legacyFireCallCount + migratedFireCallCount;
         int fireGuardCount = occurrences(script, fireGuard);
+
+        // Unit tests may provide only the fire-call slice of this resource so the
+        // independent 1.21.1 method migration can be tested in isolation.
+        // The Marker guard applies only to the complete AFOMNI ability script.
+        if (headerCount == 0 && declarationCount == 0 && legacyFilterCount == 0
+                && migratedFilterCount == 0 && fireGuardCount == 0) {
+            return 0;
+        }
 
         boolean alreadyMigrated = headerCount == 1 && declarationCount == 1
                 && legacyFilterCount == 0 && migratedFilterCount == 1
@@ -428,7 +440,9 @@ final class PalladiumResourceCompat1201 {
                     "AFOMNI aoe_damage.js has an unexpected Marker/fire migration shape: "
                             + "header=" + headerCount + ", LivingEntity declaration=" + declarationCount
                             + ", legacy filter=" + legacyFilterCount + ", migrated filter=" + migratedFilterCount
-                            + ", setSecondsOnFire calls=" + fireCallCount + ", fire guards=" + fireGuardCount);
+                            + ", setSecondsOnFire calls=" + legacyFireCallCount
+                            + ", igniteForSeconds calls=" + migratedFireCallCount
+                            + ", fire guards=" + fireGuardCount);
         }
 
         String migrated = script;
@@ -438,7 +452,7 @@ final class PalladiumResourceCompat1201 {
         migrated = migrated.replace(legacyFilter, migratedFilter);
 
         java.util.regex.Pattern fireCallPattern = java.util.regex.Pattern.compile(
-                "(?m)^([\t ]*)targets\\[j\\]\\.setSecondsOnFire\\(firetick\\);\\R?");
+                "(?m)^([\\t ]*)targets\\\\[j\\\\]\\\\.(?:setSecondsOnFire|igniteForSeconds)\\\\(firetick\\\\);\\\\R?");
         java.util.regex.Matcher fireCallMatcher = fireCallPattern.matcher(migrated);
         StringBuffer fireRewritten = new StringBuffer();
         int fireCallReplacements = 0;
