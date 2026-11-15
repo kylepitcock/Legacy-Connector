@@ -12,6 +12,7 @@
     "MappedRegistryIntrusiveHolderMixin",
     "SynchedEntityDataDefineIdMixin",
     "BlockEntityNullStateMixin",
+    "StateHolderPropertyEqualsMixin",
     "RecipeManagerContextMixin",
     "TreeGrowerLegacyMixin",
     "BetaAnimalAiStepMixin",
