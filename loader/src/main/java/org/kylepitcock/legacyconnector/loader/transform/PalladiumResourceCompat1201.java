@@ -1560,7 +1560,7 @@ PlayerEvents.tick(e => {
             // The landing-state replacement already emits the current add_value
             // operation and has replaced both legacy modifier call sites.
             String legacyOperation =
-                    "p.modifyAttribute(gravityAttribute, \\"gravity_slam\\", 6, \\"addition\\")";
+                    "p.modifyAttribute(gravityAttribute, \"gravity_slam\", 6, \"addition\")";
             if (script.contains(legacyOperation)) {
                 throw new IllegalStateException(
                         "AlienEvo slam.js contains a legacy modifier operation after landing-state migration");
@@ -1569,8 +1569,8 @@ PlayerEvents.tick(e => {
         }
 
         return rewrite(resources, ALIEN_EVO_SLAM, new String[][] {{
-                "p.modifyAttribute(gravityAttribute, \\"gravity_slam\\", 6, \\"addition\\")",
-                "p.modifyAttribute(gravityAttribute, \\"gravity_slam\\", 6, \\"add_value\\")",
+                "p.modifyAttribute(gravityAttribute, \"gravity_slam\", 6, \"addition\")",
+                "p.modifyAttribute(gravityAttribute, \"gravity_slam\", 6, \"add_value\")",
                 "2"
         }});
     }
