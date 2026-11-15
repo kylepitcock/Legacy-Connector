@@ -43,6 +43,22 @@ public class TextureMap implements IIconRegister, ITickableTextureObject {
      */
     private static final Map<Integer, TextureMap> MOD_MAPS = new java.util.concurrent.ConcurrentHashMap<>();
 
+    /**
+     * The texture folders (below {@code textures/}, without a trailing slash) of the mods' own atlases that are neither the block nor the item
+     * folders: the generated pack adds each to the modern block atlas as a directory source, so the icons a mod registers there later find their sprite.
+     */
+    public static java.util.Set<String> mcc$extraFolders() {
+        java.util.Set<String> out = new java.util.TreeSet<>();
+        for (TextureMap map : MOD_MAPS.values()) {
+            String base = map.basePath == null ? "" : map.basePath;
+            if (base.startsWith("textures/")) base = base.substring("textures/".length());
+            while (base.endsWith("/")) base = base.substring(0, base.length() - 1);
+            if (base.isEmpty() || base.equals("items") || base.equals("blocks") || base.startsWith("items/") || base.startsWith("blocks/")) continue;
+            out.add(base);
+        }
+        return out;
+    }
+
     /** The atlas of a sprite number: a mod's own, or the item atlas as 1.7.10 used for any type but blocks. */
     public static TextureMap mcc$forSpriteNumber(int spriteNumber, TextureMap blocks, TextureMap items) {
         if (spriteNumber == 0) return blocks;
@@ -53,6 +69,14 @@ public class TextureMap implements IIconRegister, ITickableTextureObject {
     private String id(String name) {
         if ((textureType == 0 || textureType == 1) && name != null) name = mcc$derivedName(name, textureType == 0 ? "blocks/" : "items/");
         String sub = basePath == null ? "" : basePath.startsWith("textures/") ? basePath.substring("textures/".length()) : basePath;
+        if (textureType != 0 && textureType != 1 && name != null && !sub.isEmpty() && !(sub.startsWith("items/") || sub.startsWith("blocks/")
+                || sub.equals("items") || sub.equals("blocks"))) {
+            // a mod's atlas over a folder of its own (Fisk's Heroes' effect icons in textures/icons): the pack's block atlas gets that folder
+            // as a source (see mcc$extraFolders), so the sprite is named after it
+            int colon = name.indexOf(':');
+            String domain = colon < 0 ? "minecraft" : org.kylepitcock.legacyconnector.core.Ids.namespace(name.substring(0, colon));
+            return domain + ":" + sub + "/" + org.kylepitcock.legacyconnector.core.Ids.normalizePath(colon < 0 ? name : name.substring(colon + 1));
+        }
         if (textureType == 0 || textureType == 1 || name == null || !(sub.startsWith("items/") || sub.startsWith("blocks/"))) {
             return Assets1710.texture(name, textureType == 0);
         }

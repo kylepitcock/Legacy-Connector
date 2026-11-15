@@ -147,6 +147,7 @@ public final class Assets1710 implements GeneratedPack.Contributor {
         bakeSprites(blocks, true, out);
         bakeSprites(items, false, out);
         if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) {
+            contributeModAtlasFolders(out);
             try {
                 org.kylepitcock.legacyconnector.v1_7_10.client.ModernLeaves.contribute(out);
             } catch (RuntimeException | LinkageError e) {
@@ -160,6 +161,29 @@ public final class Assets1710 implements GeneratedPack.Contributor {
             org.kylepitcock.legacyconnector.v1_7_10.client.LegacyWater.contribute(out);
             org.kylepitcock.legacyconnector.v1_7_10.client.LegacyGuiTextures.contribute(out);
         }
+    }
+
+    /**
+     * Mods' own atlases over a folder that is neither textures/blocks nor textures/items (Fisk's Heroes' booster icons in textures/icons)
+     * name their sprites after the folder ({@code TextureMap.id}); the folder joins the modern block atlas as a directory source. Atlas
+     * configurations of all packs are merged, so this adds to the converted jars' own.
+     */
+    private static void contributeModAtlasFolders(Map<String, Supplier<byte[]>> out) {
+        java.util.Set<String> folders = legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureMap.mcc$extraFolders();
+        if (folders.isEmpty()) return;
+        com.google.gson.JsonArray sources = new com.google.gson.JsonArray();
+        for (String folder : folders) {
+            com.google.gson.JsonObject dir = new com.google.gson.JsonObject();
+            dir.addProperty("type", "directory");
+            dir.addProperty("source", folder);
+            dir.addProperty("prefix", folder + "/");
+            sources.add(dir);
+        }
+        com.google.gson.JsonObject atlas = new com.google.gson.JsonObject();
+        atlas.add("sources", sources);
+        byte[] bytes = atlas.toString().getBytes(StandardCharsets.UTF_8);
+        out.putIfAbsent("assets/minecraft/atlases/blocks.json", () -> bytes);
+        LOG.info("Mod atlas folders added to the block atlas: {}", folders);
     }
 
     /**
