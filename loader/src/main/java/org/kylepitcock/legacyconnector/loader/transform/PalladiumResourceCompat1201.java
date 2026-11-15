@@ -33,6 +33,14 @@ final class PalladiumResourceCompat1201 {
             "addon/alienevo/kubejs_scripts/diamond_creation.js";
     static final String ALIEN_EVO_STAT_ABILITY =
             "addon/alienevo/kubejs_scripts/stat_ability.js";
+    static final String ALIEN_EVO_DIRECTIONAL_DAMAGE =
+            "addon/alienevo/kubejs_scripts/directional_damage.js";
+    static final String ALIEN_EVO_ENTITY_DAMAGE =
+            "addon/alienevo/kubejs_scripts/entity_damage.js";
+    static final String ALIEN_EVO_INFINITY =
+            "addon/alienevo/kubejs_scripts/infinity.js";
+    static final String ALIEN_EVO_ROLLING_MECHANICS =
+            "addon/alienevo/kubejs_scripts/rolling_mechanics.js";
     private static final String LEGACY_ATTRIBUTE_OPERATION_HELPER = """
             function legacyConnectorAttributeOperation(operation) {
                 const key = String(operation);
@@ -253,6 +261,7 @@ final class PalladiumResourceCompat1201 {
         rewriteOptionalPehkuiApi(resources);
         rewriteAlienEvoBlockParticleOptions(resources);
         rewriteAlienEvoSlotPersistentDataIntegers(resources);
+        rewriteAlienEvoSetSecondsOnFire(resources);
 
         // A single resource can receive more than one independent rewrite.
         // Report distinct changed resource paths, including resources removed by a migration.
@@ -1163,6 +1172,42 @@ final class PalladiumResourceCompat1201 {
         resources.put(ALIEN_EVO_BLOCK_PARTICLES,
                 rewritten.replace("\n", lineEnding).getBytes(StandardCharsets.UTF_8));
         return 1;
+    }
+
+    /**
+     * Minecraft 1.21.1 renamed Entity#setSecondsOnFire(int) to
+     * Entity#igniteForSeconds(float). Migrate every inspected AlienEvo/AFOMNI
+     * script call so rolling, directional, targeted, and area damage do not
+     * crash when the affected entity is a Sheep or another LivingEntity.
+     */
+    private static int rewriteAlienEvoSetSecondsOnFire(Map<String, byte[]> resources) {
+        int changed = 0;
+        changed += rewrite(resources, AFOMNI_AOE_DAMAGE, new String[][] {{
+                "targets[j].setSecondsOnFire(firetick);",
+                "targets[j].igniteForSeconds(firetick);",
+                "1"
+        }});
+        changed += rewrite(resources, ALIEN_EVO_DIRECTIONAL_DAMAGE, new String[][] {{
+                "targets[j].setSecondsOnFire(firetick);",
+                "targets[j].igniteForSeconds(firetick);",
+                "1"
+        }});
+        changed += rewrite(resources, ALIEN_EVO_ENTITY_DAMAGE, new String[][] {{
+                "target.setSecondsOnFire(fire_seconds)",
+                "target.igniteForSeconds(fire_seconds)",
+                "2"
+        }});
+        changed += rewrite(resources, ALIEN_EVO_INFINITY, new String[][] {{
+                "entities[i].setSecondsOnFire(fireSeconds);",
+                "entities[i].igniteForSeconds(fireSeconds);",
+                "1"
+        }});
+        changed += rewrite(resources, ALIEN_EVO_ROLLING_MECHANICS, new String[][] {{
+                "targets[j].setSecondsOnFire(firetick);",
+                "targets[j].igniteForSeconds(firetick);",
+                "1"
+        }});
+        return changed;
     }
 
     /**

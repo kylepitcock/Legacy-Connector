@@ -323,6 +323,51 @@ class PalladiumResourceCompat1201Test {
         }
     }
     @Test
+    void migratesLegacySetSecondsOnFireCallsAcrossAlienEvoAndAfOmniScripts() {
+        Map<String, byte[]> resources = new HashMap<>();
+        put(resources, PalladiumResourceCompat1201.AFOMNI_AOE_DAMAGE,
+                "targets[j].setSecondsOnFire(firetick);\\r\\n");
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_DIRECTIONAL_DAMAGE,
+                "targets[j].setSecondsOnFire(firetick);\\r\\n");
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_ENTITY_DAMAGE,
+                String.join("\\r\\n",
+                        "target.setSecondsOnFire(fire_seconds)",
+                        "target.setSecondsOnFire(fire_seconds)",
+                        ""));
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_INFINITY,
+                "entities[i].setSecondsOnFire(fireSeconds);\\r\\n");
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_ROLLING_MECHANICS,
+                "targets[j].setSecondsOnFire(firetick);\\r\\n");
+
+        assertEquals(5, PalladiumResourceCompat1201.apply(resources));
+
+        String aoe = get(resources, PalladiumResourceCompat1201.AFOMNI_AOE_DAMAGE);
+        String directional = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_DIRECTIONAL_DAMAGE);
+        String targeted = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_ENTITY_DAMAGE);
+        String infinity = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_INFINITY);
+        String rolling = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_ROLLING_MECHANICS);
+
+        assertTrue(aoe.contains("targets[j].igniteForSeconds(firetick);"));
+        assertTrue(directional.contains("targets[j].igniteForSeconds(firetick);"));
+        assertEquals(2, occurrences(targeted, "target.igniteForSeconds(fire_seconds)"));
+        assertTrue(infinity.contains("entities[i].igniteForSeconds(fireSeconds);"));
+        assertTrue(rolling.contains("targets[j].igniteForSeconds(firetick);"));
+
+        for (String migrated : new String[] {aoe, directional, targeted, infinity, rolling}) {
+            assertFalse(migrated.contains("setSecondsOnFire"));
+            assertFalse(migrated.replace("\\r\\n", "").contains("\\n"),
+                    "the CRLF source layout should be preserved");
+        }
+
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+        assertEquals(aoe, get(resources, PalladiumResourceCompat1201.AFOMNI_AOE_DAMAGE));
+        assertEquals(directional, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_DIRECTIONAL_DAMAGE));
+        assertEquals(targeted, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_ENTITY_DAMAGE));
+        assertEquals(infinity, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_INFINITY));
+        assertEquals(rolling, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_ROLLING_MECHANICS));
+    }
+
+    @Test
     void normalizesQuickChangePlaylistAndSlotNbtToExplicitIntegerMethods() {
         Map<String, byte[]> resources = new HashMap<>();
         put(resources, PalladiumResourceCompat1201.ALIEN_EVO_SLOT_TRANSFORM, String.join("\n",
