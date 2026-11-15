@@ -572,11 +572,10 @@ public final class Forge1201SourceRuntimeMemberVerifier {
 
     private static String escape(String value) {
         if (value == null) return "";
-        return value.replace("\\\\", "\\\\\\\\")
-                .replace("\"", "\\\\\"")
-                .replace("\n", "\\\\n")
-                .replace("\r", "\\\\r")
-                .replace("\t", "\\\\t");
+        return value.replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\n", "\\n")
+                .replace("\r", "\\r")
+                .replace("\t", "\\t");
     }
-
 }
