@@ -455,6 +455,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             Set<Path> keep = new HashSet<>(libraryKeep);
             if (runtimeJar != null) keep.add(runtimeJar);
             keep.addAll(coremodHooks.values());
+            for (Path list : coremodHooks.values()) keep.add(list.resolveSibling(list.getFileName().toString().replace("coremod-hooks-", "coremod-structure-")));
             for (LegacyVersion api : List.of(LegacyVersion.V1_7_10, LegacyVersion.V1_6_4, LegacyVersion.V1_12_2)) {
                 keep.add(cacheDir.resolve(org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers.apiJarName(api)));
             }

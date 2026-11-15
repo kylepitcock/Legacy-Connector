@@ -116,6 +116,17 @@ public final class ReflectionCompat {
     }
 
     private static Class<?> forName(String name, boolean initialize, ClassLoader loader, Class<?> caller) throws ClassNotFoundException {
+        // A legacy name built at run time (an access transformer line, a config) means the legacy class: where the host has a class of the same name
+        // (net.minecraft.client.Minecraft) the plain lookup would hand out the modern one, which lacks the legacy members.
+        if (name != null && isLegacyRoot(name) && !name.startsWith("legacyconnector")) {
+            for (String prefix : legacyApiOf(caller)) {
+                try {
+                    return Class.forName(prefix + name, initialize, ReflectionCompat.class.getClassLoader());
+                } catch (ClassNotFoundException | LinkageError ignored) {
+                    // not in the shim: the plain lookup below
+                }
+            }
+        }
         try {
             return Class.forName(name, initialize, loader);
         } catch (ClassNotFoundException e) {

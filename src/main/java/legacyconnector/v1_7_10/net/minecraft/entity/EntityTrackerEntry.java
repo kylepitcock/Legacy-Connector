@@ -46,6 +46,11 @@ public class EntityTrackerEntry {
         if (myEntity instanceof EntityPlayerMP self) EntityTracker.mcc$send(self, packet);
     }
 
+    /** The packet that spawns the entity on a client (1.7.10 {@code func_151260_c}); the modern tracker builds it, so there is none to hand out. */
+    public Packet func_151260_c() {
+        return null;
+    }
+
     public void sendPacketToAllTrackingPlayers(Packet packet) {
         func_151259_a(packet);
     }

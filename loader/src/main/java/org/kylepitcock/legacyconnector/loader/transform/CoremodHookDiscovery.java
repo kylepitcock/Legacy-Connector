@@ -50,6 +50,30 @@ public final class CoremodHookDiscovery {
     /** One edit of a method: the instructions removed and added between two instructions the transformer kept. */
     public record Run(int index, String previous, String next, List<String> removed, List<String> added) {}
 
+    /**
+     * One structural addition a transformer made to a Minecraft class: {@code kind} is {@code interface}, {@code field} or {@code method}; {@code desc}
+     * is empty for an interface; {@code access} is the member's access flags.
+     */
+    public record Addition(String className, String kind, String name, String desc, int access) {
+        @Override
+        public String toString() {
+            return kind + "\t" + className + "\t" + name + "\t" + desc + "\t" + access;
+        }
+    }
+
+    /** The interfaces, fields and methods {@code after} has and {@code before} lacks (a coremod that extends a game class, e.g. adds state to {@code Chunk}); SRG names. */
+    public static List<Addition> additions(ClassNode before, ClassNode after) {
+        List<Addition> out = new ArrayList<>();
+        for (String i : after.interfaces) if (!before.interfaces.contains(i)) out.add(new Addition(before.name, "interface", i, "", 0));
+        java.util.Set<String> fields = new java.util.HashSet<>();
+        for (var f : before.fields) fields.add(f.name + ":" + f.desc);
+        for (var f : after.fields) if (!fields.contains(f.name + ":" + f.desc)) out.add(new Addition(before.name, "field", f.name, f.desc, f.access));
+        java.util.Set<String> methods = new java.util.HashSet<>();
+        for (MethodNode m : before.methods) methods.add(m.name + m.desc);
+        for (MethodNode m : after.methods) if (!methods.contains(m.name + m.desc)) out.add(new Addition(before.name, "method", m.name, m.desc, m.access));
+        return out;
+    }
+
     /** The hooks {@code after} has and {@code before} lacks; both in SRG names. */
     public static List<Hook> hooks(ClassNode before, ClassNode after) {
         List<Hook> out = new ArrayList<>();
