@@ -38,8 +38,11 @@ public final class CoreModPlugins1122 {
             while (urls.hasMoreElements()) {
                 URL url = urls.nextElement();
                 try (InputStream in = url.openStream()) {
-                    String name = new String(in.readAllBytes(), StandardCharsets.UTF_8).trim();
-                    if (!name.isEmpty()) {
+                    // first line: the plugin class; optional second line: the Minecraft version of its jar (other versions' plugins are not ours)
+                    String[] lines = new String(in.readAllBytes(), StandardCharsets.UTF_8).trim().split("\\R");
+                    String name = lines[0].trim();
+                    boolean other = lines.length > 1 && !lines[1].isBlank() && !"1.12.2".equals(lines[1].trim());
+                    if (!name.isEmpty() && !other) {
                         classes.add(name);
                         where.putIfAbsent(name, url);
                     }
