@@ -507,6 +507,55 @@ def auditSrgObfuscatedBridge1201 = tasks.register('auditSrgObfuscatedBridge1201'
     } as CommandLineArgumentProvider)
 }
 
+// Read-only verification of an individual Mojang-named symbol against the pinned Forge 1.20.1 source runtime.
+def defaultForge1201SourceClasspath = new File(rootProject.projectDir,
+        'tools/forge1201-source-runtime/build/reports/source-runtime/forge1201-classpath.txt')
+def forge1201SourceClasspath = file(project.findProperty('forge1201SourceClasspath')
+        ?: defaultForge1201SourceClasspath.absolutePath)
+def forge1201SourceMemberReport = layout.buildDirectory.file(
+        'reports/source-runtime/forge1201-source-member-check.json')
+def auditForge1201SourceRuntimeMember1201 = tasks.register(
+        'auditForge1201SourceRuntimeMember1201', JavaExec) {
+    group = 'verification'
+    description = 'Maps one Mojang-named 1.20.1 source selector back to Forge SRG and checks the exact Forge source classpath.'
+    def memberKind = project.findProperty('forge1201SourceMemberKind')?.toString()
+    def memberOwner = project.findProperty('forge1201SourceMemberOwner')?.toString()
+    def memberName = project.findProperty('forge1201SourceMemberName')?.toString()
+    def memberDescriptor = project.findProperty('forge1201SourceMemberDescriptor')?.toString()
+
+    dependsOn verifySrgMojangInputs1201, extractFabricIntermediary1201, tasks.named('classes')
+    inputs.file(forge1201SourceClasspath)
+    inputs.file(joinedTsrg1201)
+    inputs.file(fabricIntermediary1201Tiny)
+    inputs.file(mojang1201)
+    inputs.property('sourceMemberKind', memberKind ?: '<unset>')
+    inputs.property('sourceMemberOwner', memberOwner ?: '<unset>')
+    inputs.property('sourceMemberName', memberName ?: '<unset>')
+    inputs.property('sourceMemberDescriptor', memberDescriptor ?: '<unset>')
+    outputs.file(forge1201SourceMemberReport)
+    classpath = sourceSets.main.output + configurations.runtimeClasspath
+    mainClass = 'org.kylepitcock.legacyconnector.loader.tools.forge1201.Forge1201SourceRuntimeMemberVerifier'
+    doFirst {
+        if (!(memberKind in ['method', 'field'])) {
+            throw new GradleException('Set -Pforge1201SourceMemberKind=method or field.')
+        }
+        if (!memberOwner || !memberName || !memberDescriptor) {
+            throw new GradleException('Set -Pforge1201SourceMemberOwner, -Pforge1201SourceMemberName, and -Pforge1201SourceMemberDescriptor.')
+        }
+        setArgs([
+                forge1201SourceClasspath.absolutePath,
+                joinedTsrg1201.get().asFile.absolutePath,
+                fabricIntermediary1201Tiny.get().asFile.absolutePath,
+                mojang1201.get().asFile.absolutePath,
+                memberKind,
+                memberOwner,
+                memberName,
+                memberDescriptor,
+                forge1201SourceMemberReport.get().asFile.absolutePath
+        ])
+    }
+}
+
 // Final read-only edge: target official-obfuscated 1.21.1 -> the Mojang-official names
 // exposed by the exact resolved root ModDevGradle compile classpath. The mapping file
 // stays in the user's Gradle cache and is fingerprint-pinned; it is never copied into the project.
