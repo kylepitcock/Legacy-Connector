@@ -385,3 +385,57 @@ The audit printed:
 The prerequisite target API inventory was up-to-date in this run; in the prior run it had completed with `INVENTORY_STATUS=COMPLETE` (7,942 unique classes resolved, no unresolved metadata, 71,727 methods, 36,227 fields, 4,201 referenced Minecraft types, zero missing referenced types). The focused new audit test had also passed at parent `37bc531f8b629402b2ae0a6382e30554f7f08484`.
 
 **Interpretation:** the final audit pipeline now executes through report generation. The headline class/method/field numbers are inventory row counts, not exact-match totals. The JSON `coverage.*.byStatus` histograms and candidate-level fields (`upstreamExternalDescriptorTypeCount`, `targetExternalDescriptorTypeCount`, `targetOfficialMappingStatus`, `targetApiStatus`, and `hierarchyVisited`) must be inspected before drawing conclusions about coverage. Preserve ambiguous candidates and external descriptor classifications. Do not enable selector rewriting, runtime mapping production, or claim binary/gameplay compatibility from task success.
+
+
+### 19.3 User report inspection — first end-to-end coverage histograms (2026-11-15)
+
+The user loaded `loader/build/reports/mappings/1.20.1-1.21.1/srg-target-api-bridge-audit.json` in Windows PowerShell at the successful audit checkpoint. The report metadata confirms:
+- `status=READ_ONLY_STRUCTURAL_AUDIT`
+- `selectorTransformationPerformed=false`
+- `runtimeMappingTableProduced=false`
+- `targetClassesDefinedOrInitialized=false`
+
+Observed class selector statuses (7,436 total):
+- `TARGET_COMPILE_CLASS_FOUND`: 7,009 (94.26%)
+- `TARGET_COMPILE_CLASS_MISSING`: 2 (0.03%)
+- `SOURCE_INTERMEDIARY_CLASS_MISSING`: 23 (0.31%)
+- `TARGET_INTERMEDIARY_CLASS_MISSING`: 402 (5.41%)
+
+Observed method selector statuses (48,575 total):
+- `TARGET_API_MEMBER_FOUND_EXACT`: 19,770 (40.70%)
+- `TARGET_API_MEMBER_FOUND_WITH_EXTERNAL_TYPES`: 8,988 (18.50%)
+- `TARGET_API_MEMBER_MISSING`: 604 (1.24%)
+- `TARGET_COMPILE_CLASS_MISSING`: 1
+- `INTERMEDIARY_SOURCE_MISSING`: 14,185 (29.20%)
+- `INTERMEDIARY_SOURCE_OWNER_UNMAPPED`: 221
+- `INTERMEDIARY_SOURCE_DESCRIPTOR_UNRESOLVED`: 36
+- `INTERMEDIARY_TARGET_AMBIGUOUS`: 1
+- `INTERMEDIARY_TARGET_DESCRIPTOR_CHANGED`: 1,686 (3.47%)
+- `INTERMEDIARY_TARGET_ID_MISSING`: 2,976 (6.13%)
+- `INTERMEDIARY_TARGET_OWNER_CHANGED`: 107
+
+Observed field selector statuses (31,003 total):
+- `TARGET_API_MEMBER_FOUND_EXACT`: 22,711 (73.25%)
+- `TARGET_API_MEMBER_FOUND_WITH_EXTERNAL_TYPES`: 4,788 (15.44%)
+- `TARGET_API_MEMBER_MISSING`: 176 (0.57%)
+- `TARGET_COMPILE_CLASS_MISSING`: 4
+- `INTERMEDIARY_SOURCE_OWNER_UNMAPPED`: 86
+- `INTERMEDIARY_SOURCE_DESCRIPTOR_UNRESOLVED`: 22
+- `INTERMEDIARY_TARGET_DESCRIPTOR_CHANGED`: 791 (2.55%)
+- `INTERMEDIARY_TARGET_ID_MISSING`: 2,315 (7.47%)
+- `INTERMEDIARY_TARGET_OWNER_CHANGED`: 110
+
+**Preliminary interpretation, with limits:**
+- For symbols with a candidate path all the way through the target namespace, the target hierarchy-aware API lookup reports 19,770 exact method matches and 22,711 exact field matches. Another 8,988 methods and 4,788 fields were found but remain non-exact because descriptor types are external. These are structural lookups, not semantic or runtime compatibility claims.
+- The 604 method and 176 field `TARGET_API_MEMBER_MISSING` results are reached only after a unique upstream candidate and target official mapping; they are meaningful potential API/member incompatibilities to inspect individually.
+- No `TARGET_API_HIERARCHY_INCOMPLETE` status appeared in the reported histograms. No `TARGET_OFFICIAL_MAPPING_*` terminal status appeared either. The only cross-version target ambiguity reported is one method selector, preserved as `INTERMEDIARY_TARGET_AMBIGUOUS`.
+- `INTERMEDIARY_SOURCE_MISSING` means the exact (owner, official-obfuscated name, full descriptor) key was absent from the source Tiny method index. The resolver code returns this before attempting a target lookup. It is a missing bridge row, **not proof the Minecraft method was deleted**.
+- `INTERMEDIARY_TARGET_ID_MISSING` means a source Intermediary ID has no row in the target Tiny ID index. This can indicate removal or mapping coverage gaps; it is not by itself proof of semantic deletion.
+- `INTERMEDIARY_TARGET_OWNER_CHANGED` means that ID exists once in the target but under a different owner. The current fail-closed policy does not accept it as a move without stronger identity evidence.
+- `INTERMEDIARY_TARGET_DESCRIPTOR_CHANGED` means the shared Intermediary ID exists under the same owner, but the source and target Intermediary descriptors differ. It is correctly left unresolved rather than silently accepting a changed signature.
+- The user's helper counted 10,081 methods and 5,283 fields with *any candidate* carrying external descriptor-type counts. This is broader than the terminal `TARGET_API_MEMBER_FOUND_WITH_EXTERNAL_TYPES` totals (8,988 and 4,788), because candidate data may be retained even when the complete selector path does not finish. Do not conflate these two metrics.
+- Windows PowerShell 5.1/PSReadLine 2.0.0 repeatedly crashed while the user was entering the long diagnostic loop; the loop eventually executed and printed samples. This is a console line-editor issue, not an audit/report failure. Prefer short one-line PowerShell diagnostics.
+
+**Next diagnostic before changing resolver behavior:** obtain compact upstream-status histograms for methods and fields, then inspect a small representative sample of `TARGET_API_MEMBER_MISSING`, `INTERMEDIARY_TARGET_DESCRIPTOR_CHANGED`, and `INTERMEDIARY_TARGET_OWNER_CHANGED` entries with their candidate namespace owner/name/descriptors. Group the 14,185 `INTERMEDIARY_SOURCE_MISSING` methods by SRG owner to identify whether the gap is concentrated in special/client/data classes or broadly distributed. Do not add guessed fallback mapping rules from names alone.
+
+No selector transformation, runtime mapping table, or licensing conclusion is authorized by these audit results.
