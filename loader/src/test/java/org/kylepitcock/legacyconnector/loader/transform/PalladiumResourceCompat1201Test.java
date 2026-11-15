@@ -480,7 +480,7 @@ class PalladiumResourceCompat1201Test {
     @Test
     void readsOmnitrixPalettePacketAsCompoundTagEntries() {
         Map<String, byte[]> resources = new HashMap<>();
-        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_SERVER_STUFF, String.join("\n",
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_SERVER_STUFF, String.join("\r\n",
                 "NetworkEvents.dataReceived('saveBeamColorData', event => {",
                 "    let player = event.player;",
                 "    let data = event.data;",
@@ -514,6 +514,8 @@ class PalladiumResourceCompat1201Test {
                 "palladium.setProperty(player, propertyName, legacyConnectorAlienEvoPacketString(propertiesToSave.get(propertyName)));"));
         assertFalse(migrated.contains("for (let propertyName in propertiesToSave)"));
         assertFalse(migrated.contains("propertiesToSave[propertyName]"));
+        assertTrue(migrated.contains("\\r\\n"));
+        assertFalse(migrated.replace("\\r\\n", "").contains("\\n"));
         assertEquals(0, PalladiumResourceCompat1201.apply(resources));
         assertEquals(migrated, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_SERVER_STUFF));
     }
