@@ -414,7 +414,10 @@ public final class ItemStack {
     }
 
     public static ItemStack loadItemStackFromNBT(NBTTagCompound nbt) {
-        return ItemBridge.readLegacyNBT(nbt);
+        ItemStack read = ItemBridge.readLegacyNBT(nbt);
+        var site = org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites.STACK_READ; // coremod hook site (no-op unless listed)
+        if (read != null && site.listed() && site.active()) site.fire(read, nbt);
+        return read;
     }
 
     // ------------------------------------------------------------------ names, display

@@ -179,6 +179,28 @@ public final class CoremodSites {
     public static final Site ANVIL_MAX_COST = site("anvil maximum cost", new Class<?>[0],
             "net/minecraft/inventory/ContainerRepair.func_82848_d()V#const:40", "net/minecraft/client/gui/GuiRepair.func_146979_b(II)V#const:40").returns(int.class);
 
+    /** EntityArrow.onUpdate, first thing. Values: the arrow (as an entity: a hook for arrows is only called with the legacy arrow class). */
+    public static final Site ARROW_TICK = site("arrow tick", new Class<?>[] {ENTITY},
+            "net/minecraft/entity/projectile/EntityArrow.func_70071_h_()V#after:aload 0", "net/minecraft/entity/projectile/EntityArrow.func_70071_h_()V#head");
+
+    /** EntityLiving.updateAITasks, first thing: a hook that answers true runs instead of the mob's AI. Values: the mob. */
+    public static final Site AI_TASKS = site("mob AI tasks", new Class<?>[] {LIVING},
+            "net/minecraft/entity/EntityLiving.func_70619_bc()V#head-cancel");
+
+    /** EnchantmentHelper.calcItemStackEnchantability, the enchantability of the item. Values: stack, enchantability. */
+    public static final Site ENCHANTABILITY = site("item enchantability", new Class<?>[] {legacyconnector.v1_7_10.net.minecraft.item.ItemStack.class, int.class},
+            "net/minecraft/enchantment/EnchantmentHelper.func_77514_a(Ljava/util/Random;IILnet/minecraft/item/ItemStack;)I#after:iload 5").returns(int.class);
+
+    /** InventoryPlayer.getCurrentItem, last thing: the hook answers the stack. Values: the stack, the inventory. */
+    public static final Site CURRENT_ITEM = site("held item of a player inventory",
+            new Class<?>[] {legacyconnector.v1_7_10.net.minecraft.item.ItemStack.class, legacyconnector.v1_7_10.net.minecraft.entity.player.InventoryPlayer.class},
+            "net/minecraft/entity/player/InventoryPlayer.func_70448_g()Lnet/minecraft/item/ItemStack;#tail").returns(legacyconnector.v1_7_10.net.minecraft.item.ItemStack.class);
+
+    /** ItemStack.readFromNBT, last thing. Values: the stack, the tag it was read from. */
+    public static final Site STACK_READ = site("item stack read from NBT",
+            new Class<?>[] {legacyconnector.v1_7_10.net.minecraft.item.ItemStack.class, legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound.class},
+            "net/minecraft/item/ItemStack.func_77963_c(Lnet/minecraft/nbt/NBTTagCompound;)V#tail");
+
     /** TileEntity.validate and invalidate, first thing (tile entities that keep or call the base method). Values: the tile entity. */
     public static final Site TILE_VALIDATE = site("tile entity validated", new Class<?>[] {legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntity.class},
             "net/minecraft/tileentity/TileEntity.func_145829_t()V#after:aload 0");
@@ -402,6 +424,15 @@ public final class CoremodSites {
         return ANVIL_MAX_COST.active() ? ((Number) ANVIL_MAX_COST.modify(0, cost)).intValue() : cost;
     }
 
+    public static boolean aiTasks(net.minecraft.world.entity.Mob mob) {
+        return AI_TASKS.active() && AI_TASKS.cancels(EntityBridge.wrap(mob));
+    }
+
+    public static int enchantability(net.minecraft.world.item.ItemStack stack, int value) {
+        if (!ENCHANTABILITY.active()) return value;
+        return ((Number) ENCHANTABILITY.modify(1, legacyconnector.v1_7_10.net.minecraft.item.ItemStack.mcc$wrap(stack), value)).intValue();
+    }
+
     public static void neighbors(Site site, net.minecraft.world.level.Level level, net.minecraft.core.BlockPos pos) {
         if (site.active()) site.fire(legacyconnector.v1_7_10.net.minecraft.world.World.mcc$wrap(level), pos.getX(), pos.getY(), pos.getZ());
     }
@@ -594,6 +625,9 @@ public final class CoremodSites {
                 if (ENTITY_REMOVED.active()) ENTITY_REMOVED.fire(legacyconnector.v1_7_10.net.minecraft.world.World.mcc$wrap(e.getLevel()), EntityBridge.wrap(entity));
             });
         }
+        if (ARROW_TICK.listed()) gameBus.addListener((net.neoforged.neoforge.event.tick.EntityTickEvent.Pre e) -> {
+            if (e.getEntity() instanceof net.minecraft.world.entity.projectile.AbstractArrow && ARROW_TICK.active()) ARROW_TICK.fire(EntityBridge.wrap(e.getEntity()));
+        });
         if (TICK_MILLIS.listed()) {
             float[] last = {20.0F};
             gameBus.addListener((net.neoforged.neoforge.event.tick.ServerTickEvent.Post e) -> {
