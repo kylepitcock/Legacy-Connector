@@ -115,3 +115,7 @@ net/minecraft/world/level/storage/loot/functions/CopyNbtFunction$Builder	net/min
 net/minecraft/world/item/enchantment/FrostWalkerEnchantment	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyFrostWalker
 net/minecraft/world/item/ItemStack$TooltipPart	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyTooltipPart
 net/minecraft/world/level/block/entity/BannerPattern$Builder	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyBannerPatternBuilder
+net/minecraft/world/level/storage/loot/functions/CopyNbtFunction	net/minecraft/world/level/storage/loot/functions/CopyCustomDataFunction
+net/minecraft/world/level/storage/loot/functions/CopyNbtFunction$Builder	net/minecraft/world/level/storage/loot/functions/CopyCustomDataFunction$Builder
+net/minecraft/world/level/storage/loot/functions/CopyNbtFunction$CopyOperation	net/minecraft/world/level/storage/loot/functions/CopyCustomDataFunction$CopyOperation
+net/minecraft/world/level/storage/loot/functions/CopyNbtFunction$MergeStrategy	net/minecraft/world/level/storage/loot/functions/CopyCustomDataFunction$MergeStrategy

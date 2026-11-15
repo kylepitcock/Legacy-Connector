@@ -151,6 +151,11 @@ public final class ForgeApi1201 {
                 registerSplit(bus, target);
                 return;
             }
+            // Forge called a static @SubscribeEvent method of an object registered as an instance; NeoForge insists on register(Class) for it
+            if (message != null && message.contains("to NOT be static")) {
+                registerEachMethod(bus, target);
+                return;
+            }
             if (message != null && message.contains("Cannot register listeners for abstract class")) {
                 registerEachMethod(bus, target);
                 return;
@@ -395,6 +400,12 @@ public final class ForgeApi1201 {
     public static DeferredRegister createDeferred(IForgeRegistry registry, String modid) {
         // the key is enough for DeferredRegister (data driven registries have no object before a world loads)
         return DeferredRegister.create((net.minecraft.resources.ResourceKey) registry.getRegistryKey(), modid);
+    }
+
+    /** {@code DeferredRegister.createOptional(registryKey, modid)}: a register for a registry that may not exist; FML never fires its event when it does not. */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static DeferredRegister createDeferredOptional(net.minecraft.resources.ResourceKey key, String modid) {
+        return DeferredRegister.create(key, modid);
     }
 
     /** {@code RegistryObject.create(name, registry)}. */

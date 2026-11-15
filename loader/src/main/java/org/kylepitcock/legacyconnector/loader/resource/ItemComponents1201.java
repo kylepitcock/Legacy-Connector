@@ -290,12 +290,13 @@ final class ItemComponents1201 {
         if (!trimmed.isEmpty() && "{[\"".indexOf(trimmed.charAt(0)) >= 0) {
             try {
                 JsonElement parsed = JsonParser.parseString(trimmed);
-                if (parsed.isJsonObject() || parsed.isJsonArray() || parsed.isJsonPrimitive() && parsed.getAsJsonPrimitive().isString()) return parsed;
+                // 1.21.1 stores custom_name, item_name and lore lines with the flat codec: a STRING holding the component's JSON (an object fails with "Not a string")
+                if (parsed.isJsonObject() || parsed.isJsonArray() || parsed.isJsonPrimitive() && parsed.getAsJsonPrimitive().isString()) return new JsonPrimitive(parsed.toString());
             } catch (RuntimeException plain) {
                 // literal text
             }
         }
-        return new JsonPrimitive(raw);
+        return new JsonPrimitive(new JsonPrimitive(raw).toString());
     }
 
     /** {@code [{id, lvl}]} as an id to level map; levels outside 1 to 255 are clamped, a numeric id (1.12) cannot be carried over. */

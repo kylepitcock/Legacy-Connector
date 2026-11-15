@@ -233,6 +233,12 @@ public class Legacy1122Item extends net.minecraft.world.item.Item {
         return cb().hit ? cb().hit(stack, target, attacker) : super.hurtEnemy(stack, target, attacker);
     }
 
+    /** Forge's Item.onEntitySwing: NeoForge's swing hook calls it with the swinging entity; true cancels the swing. */
+    @Override
+    public boolean onEntitySwing(ItemStack stack, net.minecraft.world.entity.LivingEntity entity, net.minecraft.world.InteractionHand hand) {
+        return cb().swing && cb().entitySwing(stack, entity);
+    }
+
     @Override
     public boolean mineBlock(ItemStack stack, net.minecraft.world.level.Level level, net.minecraft.world.level.block.state.BlockState state,
             net.minecraft.core.BlockPos pos, net.minecraft.world.entity.LivingEntity entity) {

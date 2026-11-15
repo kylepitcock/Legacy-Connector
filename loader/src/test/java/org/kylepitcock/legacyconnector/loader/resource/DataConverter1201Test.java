@@ -383,8 +383,9 @@ class DataConverter1201Test {
         assertEquals(7, comps.get("minecraft:custom_model_data").getAsInt());
         // HideFlags 3: enchantments (1) and attribute modifiers (2) hidden; there are no attribute modifiers to hide
         same("{\"levels\":{\"minecraft:sharpness\":3},\"show_in_tooltip\":false}", comps.get("minecraft:enchantments"));
-        same("{\"text\":\"Blade\"}", comps.get("minecraft:custom_name"));
-        same("[{\"text\":\"a\"},\"plain\"]", comps.get("minecraft:lore"));
+        // the flat component codec of 1.21.1: strings holding the component's JSON
+        same("\"{\\\"text\\\":\\\"Blade\\\"}\"", comps.get("minecraft:custom_name"));
+        same("[\"{\\\"text\\\":\\\"a\\\"}\",\"\\\"plain\\\"\"]", comps.get("minecraft:lore"));
         same("{\"rgb\":255}", comps.get("minecraft:dyed_color"));
         same("{}", comps.get("minecraft:unbreakable"));
         assertEquals("{mymod:{level:4b}}", comps.get("minecraft:custom_data").getAsString());

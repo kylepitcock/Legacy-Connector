@@ -92,7 +92,14 @@ public final class ForgeRegistryWrapper<V> extends ForgeRegistry<V> {
     @Override
     public V getValue(ResourceLocation k) {
         Registry<V> r = registryOrNull();
-        return r == null ? null : r.get(k);
+        V v = r == null ? null : r.get(k);
+        if (v == null && ((Object) key) == org.kylepitcock.legacyconnector.v1_20_1.migrate.LegacyEnchantments.KEY) {
+            // a vanilla or native enchantment: data-driven in 1.21.1, read from the registries of the running reload (recipes parse before any server exists)
+            @SuppressWarnings("unchecked")
+            V found = (V) org.kylepitcock.legacyconnector.v1_20_1.migrate.LegacyEnchantments.lookupLegacy(k);
+            return found;
+        }
+        return v;
     }
 
     @Override

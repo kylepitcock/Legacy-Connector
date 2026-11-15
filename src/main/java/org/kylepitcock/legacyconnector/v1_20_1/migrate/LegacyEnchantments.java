@@ -158,6 +158,18 @@ public final class LegacyEnchantments {
 
     // ------------------------------------------------------------------ conversions used by the migrated code
 
+    /** The entry of the enchantment registry (vanilla or another mod's) with that id as the legacy type, or null; reads the registries of the running reload or server. */
+    public static LegacyEnchantment lookupLegacy(ResourceLocation id) {
+        try {
+            net.minecraft.core.HolderLookup.Provider p = MigrateContext.provider();
+            return p.lookup(net.minecraft.core.registries.Registries.ENCHANTMENT)
+                    .flatMap(l -> l.get(ResourceKey.create(net.minecraft.core.registries.Registries.ENCHANTMENT, id)))
+                    .map(LegacyEnchantments::legacy).orElse(null);
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
     /** A vanilla entry as the legacy type. */
     public static LegacyEnchantment legacy(net.minecraft.core.Holder<net.minecraft.world.item.enchantment.Enchantment> holder) {
         return holder.unwrapKey().map(k -> {
