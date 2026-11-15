@@ -255,7 +255,7 @@ public class TileEntityFurnace extends TileEntityLockable implements ITickable, 
     @Override
     public boolean isItemValidForSlot(int index, ItemStack stack) {
         if (index == 2) return false;
-        if (index != 1) return true;
+        if (index != 1) return index != 0 || org.kylepitcock.legacyconnector.v1_12_2.bridge.CoremodSites1122.furnaceInput(stack, true);
         Item item = stack.getItem();
         return isItemFuel(stack) || item == legacyconnector.v1_12_2.net.minecraft.init.Items.BUCKET
                 && furnaceItemStacks.get(1).getItem() != legacyconnector.v1_12_2.net.minecraft.init.Items.BUCKET;

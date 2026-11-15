@@ -54,13 +54,13 @@ public class ContainerWorkbench extends Container {
             itemstack = itemstack1.copy();
             if (index == 0) {
                 itemstack1.getItem().onCreated(itemstack1, world, playerIn);
-                if (!mergeItemStack(itemstack1, 10, 46, true)) return ItemStack.EMPTY;
+                if (!boundedMerge(itemstack1, 10, 46, true)) return ItemStack.EMPTY;
                 slot.onSlotChange(itemstack1, itemstack);
             } else if (index >= 10 && index < 37) {
-                if (!mergeItemStack(itemstack1, 37, 46, false)) return ItemStack.EMPTY;
+                if (!boundedMerge(itemstack1, 37, 46, false)) return ItemStack.EMPTY;
             } else if (index >= 37 && index < 46) {
-                if (!mergeItemStack(itemstack1, 10, 37, false)) return ItemStack.EMPTY;
-            } else if (!mergeItemStack(itemstack1, 10, 46, false)) {
+                if (!boundedMerge(itemstack1, 10, 37, false)) return ItemStack.EMPTY;
+            } else if (!boundedMerge(itemstack1, 10, 46, false)) {
                 return ItemStack.EMPTY;
             }
             if (itemstack1.isEmpty()) slot.putStack(ItemStack.EMPTY);
@@ -70,6 +70,14 @@ public class ContainerWorkbench extends Container {
             if (index == 0) org.kylepitcock.legacyconnector.v1_12_2.bridge.Inventories1122.dropFromPlayer(playerIn, itemstack2);
         }
         return itemstack;
+    }
+
+    /** mergeItemStack with the slot range the coremod hooks of this container's shift-click may change. */
+    private boolean boundedMerge(ItemStack stack, int start, int end, boolean reverse) {
+        int[] range = org.kylepitcock.legacyconnector.v1_12_2.bridge.CoremodSites1122.mergeRange(
+                org.kylepitcock.legacyconnector.v1_12_2.bridge.CoremodSites1122.WORKBENCH_MERGE_START,
+                org.kylepitcock.legacyconnector.v1_12_2.bridge.CoremodSites1122.WORKBENCH_MERGE_END, start, end);
+        return mergeItemStack(stack, range[0], range[1], reverse);
     }
 
     @Override

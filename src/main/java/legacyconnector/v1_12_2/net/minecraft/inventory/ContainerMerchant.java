@@ -53,15 +53,15 @@ public class ContainerMerchant extends Container {
             ItemStack itemstack1 = slot.getStack();
             itemstack = itemstack1.copy();
             if (index == 2) {
-                if (!mergeItemStack(itemstack1, 3, 39, true)) return ItemStack.EMPTY;
+                if (!boundedMerge(itemstack1, 3, 39, true)) return ItemStack.EMPTY;
                 slot.onSlotChange(itemstack1, itemstack);
             } else if (index != 0 && index != 1) {
                 if (index >= 3 && index < 30) {
-                    if (!mergeItemStack(itemstack1, 30, 39, false)) return ItemStack.EMPTY;
-                } else if (index >= 30 && index < 39 && !mergeItemStack(itemstack1, 3, 30, false)) {
+                    if (!boundedMerge(itemstack1, 30, 39, false)) return ItemStack.EMPTY;
+                } else if (index >= 30 && index < 39 && !boundedMerge(itemstack1, 3, 30, false)) {
                     return ItemStack.EMPTY;
                 }
-            } else if (!mergeItemStack(itemstack1, 3, 39, false)) {
+            } else if (!boundedMerge(itemstack1, 3, 39, false)) {
                 return ItemStack.EMPTY;
             }
             if (itemstack1.isEmpty()) slot.putStack(ItemStack.EMPTY);
@@ -73,6 +73,14 @@ public class ContainerMerchant extends Container {
     }
 
     /** Closing ends the trade and gives the payment back. */
+    /** mergeItemStack with the slot range the coremod hooks of this container's shift-click may change. */
+    private boolean boundedMerge(ItemStack stack, int start, int end, boolean reverse) {
+        int[] range = org.kylepitcock.legacyconnector.v1_12_2.bridge.CoremodSites1122.mergeRange(
+                org.kylepitcock.legacyconnector.v1_12_2.bridge.CoremodSites1122.MERCHANT_MERGE_START,
+                org.kylepitcock.legacyconnector.v1_12_2.bridge.CoremodSites1122.MERCHANT_MERGE_END, start, end);
+        return mergeItemStack(stack, range[0], range[1], reverse);
+    }
+
     @Override
     public void onContainerClosed(EntityPlayer playerIn) {
         super.onContainerClosed(playerIn);

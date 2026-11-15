@@ -12,6 +12,7 @@ public class SlotShulkerBox extends Slot {
     public boolean isItemValid(ItemStack stack) {
         if (stack == null || stack.isEmpty()) return true;
         var modern = org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122.toModern(stack);
-        return !(modern.getItem() instanceof net.minecraft.world.item.BlockItem b && b.getBlock() instanceof net.minecraft.world.level.block.ShulkerBoxBlock);
+        return org.kylepitcock.legacyconnector.v1_12_2.bridge.CoremodSites1122.shulkerAllows(modern,
+                !(modern.getItem() instanceof net.minecraft.world.item.BlockItem b && b.getBlock() instanceof net.minecraft.world.level.block.ShulkerBoxBlock));
     }
 }
