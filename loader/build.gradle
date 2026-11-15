@@ -570,6 +570,41 @@ def auditForge1201SourceRuntimeMember1201 = tasks.register(
         if (listedSourceEntries.isEmpty() || listedSourceEntries != manifestEntries) {
             throw new GradleException('Source runtime classpath list does not match the exact ordered entries recorded in its manifest.')
         }
+
+        sourceManifest.classpathEntries.eachWithIndex { record, index ->
+            def entry = new File(record.path.toString())
+            if (!entry.exists()) {
+                throw new GradleException('Source runtime classpath entry disappeared after export: ' + entry)
+            }
+            def actualSha256
+            if (entry.isDirectory()) {
+                def digest = java.security.MessageDigest.getInstance('SHA-256')
+                def files = fileTree(entry).files.sort { left, right ->
+                    entry.toPath().relativize(left.toPath()).toString()
+                            <=> entry.toPath().relativize(right.toPath()).toString()
+                }
+                files.each { child ->
+                    def relative = entry.toPath().relativize(child.toPath()).toString()
+                            .replace(File.separatorChar, '/' as char)
+                    digest.update(relative.getBytes(java.nio.charset.StandardCharsets.UTF_8))
+                    digest.update((byte) 0)
+                    child.withInputStream { input ->
+                        byte[] buffer = new byte[64 * 1024]
+                        int count
+                        while ((count = input.read(buffer)) != -1) digest.update(buffer, 0, count)
+                    }
+                    digest.update((byte) 0xff)
+                }
+                actualSha256 = digest.digest().collect { String.format('%02x', it & 0xff) }.join()
+            } else {
+                actualSha256 = mappingFileSha(entry, 'SHA-256')
+            }
+            if (!record.sha256?.toString()?.equalsIgnoreCase(actualSha256)) {
+                throw new GradleException('Source runtime classpath entry SHA-256 no longer matches its export manifest at index '
+                        + index + ': ' + entry)
+            }
+        }
+
         if (sourceManifest.classpathFile == null
                 || new File(sourceManifest.classpathFile.toString()).absoluteFile.toPath().normalize()
                         != forge1201SourceClasspath.absoluteFile.toPath().normalize()) {
@@ -585,7 +620,9 @@ def auditForge1201SourceRuntimeMember1201 = tasks.register(
             def result = sourceManifest.classProbes?.get(probe)
             if (result == null || result.matchCount != 1
                     || result.firstMatch?.classpathIndex != 0
-                    || result.firstMatch?.path == null) {
+                    || result.firstMatch?.path == null
+                    || new File(result.firstMatch.path.toString()).absoluteFile.toPath().normalize()
+                            != new File(manifestEntries[0]).absoluteFile.toPath().normalize()) {
                 throw new GradleException('Source runtime manifest has no unique effective classpath[0] probe for ' + probe)
             }
         }
