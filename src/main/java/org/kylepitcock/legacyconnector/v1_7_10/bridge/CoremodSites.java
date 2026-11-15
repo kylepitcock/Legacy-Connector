@@ -447,7 +447,7 @@ public final class CoremodSites {
         }
 
         /** Only hooks returning this type answer here (a place can be listed by hooks of other shapes, which stand for other changes). */
-        Site returns(Class<?> type) {
+        public Site returns(Class<?> type) {
             this.result = type;
             return this;
         }
@@ -569,7 +569,8 @@ public final class CoremodSites {
 
     private static final Bound[] NONE = new Bound[0];
 
-    private static Site site(String label, Class<?>[] offered, String... keys) {
+    /** A place; other legacy versions declare theirs with their own types ({@code CoremodSites1122}), the lists and the binding are shared. */
+    public static Site site(String label, Class<?>[] offered, String... keys) {
         Site s = new Site(label, offered, keys);
         SITES.add(s);
         return s;
@@ -583,7 +584,7 @@ public final class CoremodSites {
     /** Server side wiring of the sites that are not a place in code: the tick length goes to the game's tick rate manager (which tells the clients too). */
     public static void register(net.neoforged.bus.api.IEventBus gameBus) {
         if (LISTED.isEmpty()) return;
-        gameBus.addListener((net.neoforged.neoforge.event.server.ServerStartingEvent e) -> report());
+        reportOnStart(gameBus);
         if (ENTITY_REMOVED.listed()) {
             gameBus.addListener((net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent e) -> {
                 net.minecraft.world.entity.Entity entity = e.getEntity();
@@ -645,6 +646,15 @@ public final class CoremodSites {
         }
     }
 
+    private static boolean reporting;
+
+    /** Asks for the report line when the server starts (once, whichever version's bridge comes first). */
+    public static synchronized void reportOnStart(net.neoforged.bus.api.IEventBus gameBus) {
+        if (reporting || LISTED.isEmpty()) return;
+        reporting = true;
+        gameBus.addListener((net.neoforged.neoforge.event.server.ServerStartingEvent e) -> report());
+    }
+
     /** One line: how many of the listed hooks have a place here. */
     private static void report() {
         if (!ready()) return;
@@ -667,7 +677,7 @@ public final class CoremodSites {
                 if (!replayed.containsKey(name)) missing.merge(l.site, 1, Integer::sum);
             }
         }
-        LOG.info("Legacy coremods put {} hook(s) into Minecraft 1.7.10's classes; {} hook method(s) are replayed at {} place(s) of the modern game, {} place(s) have no "
+        LOG.info("Legacy coremods put {} hook(s) into their Minecraft's classes; {} hook method(s) are replayed at {} place(s) of the modern game, {} place(s) have no "
                 + "equivalent yet (features of those mods that depend on them do nothing)", total, replayed.size(), sites, missing.size());
         if ("full".equals(System.getProperty("legacyconnector.coremodHooks.report"))) {
             missing.forEach((site, n) -> LOG.info("  no place yet: {} ({} hook(s): {})", site, n, LISTED.get(site).stream().map(l -> l.owner + "." + l.name).distinct().toList()));
@@ -676,12 +686,13 @@ public final class CoremodSites {
         }
     }
 
-    /** Hooks are mod classes: callable once every 1.7.10 mod has been constructed (their classes must not be initialised earlier). */
+    /** Hooks are mod classes: callable once every mod of the versions with coremods has been constructed (their classes must not be initialised earlier). */
     private static boolean ready() {
         if (ready) return true;
         boolean any = false;
         for (LegacyModRecord rec : LegacyMods.all()) {
-            if (!"1.7.10".equals(LegacyMods.family(rec.version))) continue;
+            String family = LegacyMods.family(rec.version);
+            if (!"1.7.10".equals(family) && !"1.12.2".equals(family)) continue;
             if (rec.mainClass == null) return false;
             any = true;
         }
