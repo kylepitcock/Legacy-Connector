@@ -11,6 +11,8 @@
     "SynchedEntityDataBuilderMixin",
     "MappedRegistryIntrusiveHolderMixin",
     "SynchedEntityDataDefineIdMixin",
+    "BlockEntityNullStateMixin",
+    "RecipeManagerContextMixin",
     "TreeGrowerLegacyMixin",
     "BetaAnimalAiStepMixin",
     "BetaSpawnSchedulingMixin",
