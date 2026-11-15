@@ -20,6 +20,7 @@ public final class LegacyB173Item extends net.minecraft.world.item.Item {
     @Override public boolean isCorrectToolForDrops(ItemStack stack,net.minecraft.world.level.block.state.BlockState state){return callbacks.isCorrectToolForDrops(stack,state);}
     @Override public boolean canPerformAction(ItemStack stack,net.neoforged.neoforge.common.ItemAbility ability){return callbacks.canPerformAction(ability)||super.canPerformAction(stack,ability);}
     @Override public InteractionResult useOn(UseOnContext context){return callbacks.useOn(context);}
+    @Override public InteractionResult onItemUseFirst(ItemStack stack,UseOnContext context){return callbacks.useFirst(context);}
     @Override public InteractionResultHolder<ItemStack> use(Level level,Player player,InteractionHand hand){return callbacks.use(level,player,hand);}
     @Override public float getAttackDamageBonus(net.minecraft.world.entity.Entity target,float damage,net.minecraft.world.damagesource.DamageSource source){return callbacks.getAttackDamageBonus(target,damage,source);}
     @Override public InteractionResult interactLivingEntity(ItemStack stack,Player player,net.minecraft.world.entity.LivingEntity target,InteractionHand hand){return callbacks.interactLivingEntity(stack,player,target,hand);}

@@ -50,7 +50,8 @@ public class LegacyB173BlockEntity extends net.minecraft.world.level.block.entit
                     settleOnClient();
                 }
                 if (legacy == null && getBlockState().getBlock() instanceof LegacyB173Block host && host.legacy() instanceof BlockWithEntity bwe) {
-                    legacy = bwe.createBlockEntity();
+                    // Beta's chunk made a missing tile entity from the block (Forge: for the metadata there), on either side
+                    legacy = bwe.mcc$createBlockEntity(getBlockState().getValue(LegacyB173Block.META));
                 }
             } catch (RuntimeException | LinkageError e) {
                 LOG.warn("Tile entity at {} could not be made: {}", worldPosition, e.toString());
@@ -225,7 +226,7 @@ public class LegacyB173BlockEntity extends net.minecraft.world.level.block.entit
             try {
                 te.readNbt(NbtB173.fromModern(nbt));
                 attach();
-                if (level != null && level.isClientSide && worldTextured() != null) level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 8);
+                if (level != null && level.isClientSide && (worldTextured() != null || meshedFromTile())) level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 8);
                 return;
             } catch (RuntimeException | LinkageError e) {
                 LOG.warn("b1.7.3 client update of {} at {} could not be read in place: {}", te.getClass().getName(), worldPosition, e.toString());
@@ -233,6 +234,13 @@ public class LegacyB173BlockEntity extends net.minecraft.world.level.block.entit
         }
         legacy = null;
         pending = nbt;
+        // the section may have been meshed before this data came (a block drawn by its mod's renderer from its tile entity's state)
+        if (level != null && level.isClientSide && meshedFromTile()) level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 8);
+    }
+
+    /** A block whose world model the mod's own renderer draws (RedPower's wires read their tile entity), so new tile data changes its mesh. */
+    private boolean meshedFromTile() {
+        return getBlockState().getBlock() instanceof LegacyB173Block hosted && BlockRenderB173.hasRenderer(hosted.legacy().getRenderType());
     }
 
     @Override

@@ -44,6 +44,8 @@ public class World implements BlockView {
     public Random random = new Random();
     public boolean isRemote;
     public WorldProperties properties = new WorldProperties(this);
+    /** Beta's {@code getWorldInfo}: the world's properties (name, seed, spawn, time, weather). */
+    public WorldProperties getProperties() { return properties; }
     public int saveInterval = 40;
     public legacyconnector.vb1_7_3.net.minecraft.world.storage.WorldStorage storage = new legacyconnector.vb1_7_3.net.minecraft.world.storage.AlphaWorldStorage(this);
     public legacyconnector.vb1_7_3.net.minecraft.world.dimension.Dimension dimension = new legacyconnector.vb1_7_3.net.minecraft.world.dimension.Dimension();
@@ -333,6 +335,11 @@ public class World implements BlockView {
                     new legacyconnector.vb1_7_3.net.minecraft.src.Loc(x,y,z),id);
         BlockPos p = pos(x, y, z);
         BlockState previous=state(x,y,z);
+        // Forge's Chunk.setBlockID: a block that overrides replacement may refuse the write, which then reports its getReplacedSuccess
+        if(previous.getBlock() instanceof org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Block hosted
+                &&hosted.legacy() instanceof legacyconnector.vb1_7_3.net.minecraft.src.forge.IOverrideReplace override
+                &&(BlocksB173.legacyId(previous)!=id||BlocksB173.legacyMeta(previous)!=meta)
+                &&!override.canReplaceBlock(this,x,y,z,id))return override.getReplacedSuccess();
         if(inferDoorHalf&&BlocksB173.legacyId(previous)==id
                 &&org.kylepitcock.legacyconnector.vb1_7_3.VanillaBlockStatesB173.isTorch(id,previous))return false;
         BlockState next = BlocksB173.modernState(id, meta);

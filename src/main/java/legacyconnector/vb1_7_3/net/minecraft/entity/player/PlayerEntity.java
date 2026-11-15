@@ -55,6 +55,27 @@ public abstract class PlayerEntity extends LivingEntity {
         return inventory.getSelectedItem();
     }
 
+    /** Beta's mining speed against a block: the held item's strength, slowed in water and in the air (the native player's speed, which adds enchantments and effects). */
+    public float getBlockBreakingSpeed(legacyconnector.vb1_7_3.net.minecraft.block.Block block){return getCurrentPlayerStrVsBlock(block,0);}
+    /** Forge 1.0: the metadata-aware mining speed. */
+    public float getCurrentPlayerStrVsBlock(legacyconnector.vb1_7_3.net.minecraft.block.Block block,int meta){
+        if(mcc$modern instanceof net.minecraft.world.entity.player.Player player){
+            var state=org.kylepitcock.legacyconnector.vb1_7_3.BlocksB173.modernState(block.id,meta);
+            if(state!=null)return player.getDestroySpeed(state);
+        }
+        var stack=getHand();
+        float speed=stack==null||stack.getItem()==null?1.0F:stack.getItem().getStrVsBlock(stack,block,meta);
+        if(isSubmergedInWater())speed/=5.0F;
+        if(!onGround)speed/=5.0F;
+        return speed;
+    }
+    /** Beta: whether the held item (or bare hands, for a hand-harvestable material) harvests the block. */
+    public boolean canHarvest(legacyconnector.vb1_7_3.net.minecraft.block.Block block){
+        if(block.material==null||block.material.handHarvestable)return true;
+        var stack=getHand();
+        return stack!=null&&stack.isSuitableFor(block);
+    }
+
     public void clearStackInHand(){inventory.setStack(inventory.selectedSlot,null);}
     public void sendMessage(String message) {org.kylepitcock.legacyconnector.vb1_7_3.PlayerMessagesB173.send(this,message);}
     @Override public double getSquaredDistance(double x,double y,double z){

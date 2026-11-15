@@ -25,7 +25,7 @@ final class BlockColorsB173 {
         bus.addListener((RegisterColorHandlersEvent.Item event)->{
             for(var block:ContentB173.blocks())if(block.mcc$modern instanceof LegacyB173Block&&BlockTintB173.hasColor(block)
                     &&block.mcc$modern.asItem() instanceof LegacyB173BlockItem item)
-                event.register((stack,tint)->BlockTintB173.inventoryColor(block,LegacyB173BlockItem.meta(stack)),item);
+                event.register((stack,tint)->BlockTintB173.inventoryColor(block,LegacyB173BlockItem.damage(stack)),item);
             // Beta items tint their sprite through getColorMultiplier (dyed or metal-coloured armor, rings); the colour comes from the original item.
             for(var legacy:ContentB173.items())if(legacy.mcc$owner!=null&&legacy.mcc$modern!=null&&tintsSprite(legacy))
                 event.register((stack,tint)->{

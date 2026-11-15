@@ -122,6 +122,19 @@ public class Minecraft {
         if(world!=null){mcc$instance().world=world;CONTEXT.set(new Context(world,focus));}
     }
 
+    /**
+     * Beta's smooth-lighting switch. A mod's world renderer is captured into the native chunk mesh, which applies the player's smooth
+     * lighting and ambient occlusion itself; baking the mod's own on top would darken twice, so mods draw flat-lit as they did with it off.
+     */
+    public static boolean isAmbientOcclusionEnabled() {
+        return false;
+    }
+
+    /** Beta's {@code getSendQueue}: the client's connection to the server, which carries a mod's registered packets. */
+    public legacyconnector.vb1_7_3.net.minecraft.client.network.ClientNetworkHandler getNetworkHandler() {
+        return legacyconnector.vb1_7_3.net.minecraft.client.network.ClientNetworkHandler.mcc$instance();
+    }
+
     /** MCP {@code displayGuiScreen}: shows a legacy screen on the client (null closes it). */
     /** Beta's {@code isMultiplayerWorld}: the loaded world is a client view of a remote server. */
     public void setScreen(Screen screen) {

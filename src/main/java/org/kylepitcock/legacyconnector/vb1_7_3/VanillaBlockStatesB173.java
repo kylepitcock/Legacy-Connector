@@ -42,6 +42,32 @@ public final class VanillaBlockStatesB173 {
             return base.setValue(DoorBlock.HALF,(meta&8)==0?DoubleBlockHalf.LOWER:DoubleBlockHalf.UPPER)
                     .setValue(DoorBlock.FACING,facing).setValue(DoorBlock.OPEN,(meta&4)!=0);
         }
+        if((id==29||id==33)&&(base.is(Blocks.PISTON)||base.is(Blocks.STICKY_PISTON)))
+            return base.setValue(net.minecraft.world.level.block.DirectionalBlock.FACING,Direction.from3DDataValue(Math.min(meta&7,5)))
+                    .setValue(net.minecraft.world.level.block.piston.PistonBaseBlock.EXTENDED,(meta&8)!=0);
+        if(id==34&&base.is(Blocks.PISTON_HEAD))
+            return base.setValue(net.minecraft.world.level.block.DirectionalBlock.FACING,Direction.from3DDataValue(Math.min(meta&7,5)))
+                    .setValue(net.minecraft.world.level.block.piston.PistonHeadBlock.TYPE,(meta&8)!=0
+                            ?net.minecraft.world.level.block.state.properties.PistonType.STICKY:net.minecraft.world.level.block.state.properties.PistonType.DEFAULT);
+        if(id==23&&base.is(Blocks.DISPENSER))
+            return base.setValue(net.minecraft.world.level.block.DispenserBlock.FACING,Direction.from3DDataValue(Math.min(Math.max(meta&7,2),5)));
+        if(id==69&&base.is(Blocks.LEVER)){
+            // Beta had no metadata 0 lever (later ceiling levers): a write of 0 keeps the placed state
+            if((meta&7)==0)return base.setValue(net.minecraft.world.level.block.LeverBlock.POWERED,(meta&8)!=0);
+            var face=switch(meta&7){case 5,6->net.minecraft.world.level.block.state.properties.AttachFace.FLOOR;
+                case 0,7->net.minecraft.world.level.block.state.properties.AttachFace.CEILING;default->net.minecraft.world.level.block.state.properties.AttachFace.WALL;};
+            Direction facing=switch(meta&7){case 1->Direction.EAST;case 2->Direction.WEST;case 3->Direction.SOUTH;case 4,5,7->Direction.NORTH;default->Direction.EAST;};
+            return base.setValue(net.minecraft.world.level.block.LeverBlock.FACE,face).setValue(net.minecraft.world.level.block.LeverBlock.FACING,facing)
+                    .setValue(net.minecraft.world.level.block.LeverBlock.POWERED,(meta&8)!=0);
+        }
+        if(id==77&&base.is(Blocks.STONE_BUTTON)){
+            if((meta&7)==0)return base.setValue(net.minecraft.world.level.block.ButtonBlock.POWERED,(meta&8)!=0);
+            var face=switch(meta&7){case 5->net.minecraft.world.level.block.state.properties.AttachFace.FLOOR;
+                case 0->net.minecraft.world.level.block.state.properties.AttachFace.CEILING;default->net.minecraft.world.level.block.state.properties.AttachFace.WALL;};
+            Direction facing=switch(meta&7){case 1->Direction.EAST;case 2->Direction.WEST;case 3->Direction.SOUTH;default->Direction.NORTH;};
+            return base.setValue(net.minecraft.world.level.block.ButtonBlock.FACE,face).setValue(net.minecraft.world.level.block.ButtonBlock.FACING,facing)
+                    .setValue(net.minecraft.world.level.block.ButtonBlock.POWERED,(meta&8)!=0);
+        }
         return null;
     }
 
@@ -67,6 +93,30 @@ public final class VanillaBlockStatesB173 {
         if(state.is(Blocks.OAK_DOOR)||state.is(Blocks.IRON_DOOR)){
             int facing=switch(state.getValue(DoorBlock.FACING)){case EAST->0;case SOUTH->1;case WEST->2;case NORTH->3;default->throw new IllegalStateException("Nonhorizontal door facing");};
             return facing|(state.getValue(DoorBlock.OPEN)?4:0)|(state.getValue(DoorBlock.HALF)==DoubleBlockHalf.UPPER?8:0);
+        }
+        // Beta's metadata of the redstone parts mods read to see which side connects (RedPower's wires beside a lever or piston)
+        if(state.is(Blocks.PISTON)||state.is(Blocks.STICKY_PISTON))
+            return state.getValue(net.minecraft.world.level.block.DirectionalBlock.FACING).get3DDataValue()|(state.getValue(net.minecraft.world.level.block.piston.PistonBaseBlock.EXTENDED)?8:0);
+        if(state.is(Blocks.PISTON_HEAD))
+            return state.getValue(net.minecraft.world.level.block.DirectionalBlock.FACING).get3DDataValue()
+                    |(state.getValue(net.minecraft.world.level.block.piston.PistonHeadBlock.TYPE)==net.minecraft.world.level.block.state.properties.PistonType.STICKY?8:0);
+        if(state.is(Blocks.DISPENSER))return state.getValue(net.minecraft.world.level.block.DispenserBlock.FACING).get3DDataValue();
+        if(state.is(Blocks.LEVER)){
+            var facing=state.getValue(net.minecraft.world.level.block.LeverBlock.FACING);
+            int meta=switch(state.getValue(net.minecraft.world.level.block.LeverBlock.FACE)){
+                case WALL->switch(facing){case EAST->1;case WEST->2;case SOUTH->3;default->4;};
+                case FLOOR->facing.getAxis()==net.minecraft.core.Direction.Axis.Z?5:6;
+                case CEILING->facing.getAxis()==net.minecraft.core.Direction.Axis.Z?7:0;
+            };
+            return meta|(state.getValue(net.minecraft.world.level.block.LeverBlock.POWERED)?8:0);
+        }
+        if(state.is(Blocks.STONE_BUTTON)){
+            var facing=state.getValue(net.minecraft.world.level.block.ButtonBlock.FACING);
+            int meta=switch(state.getValue(net.minecraft.world.level.block.ButtonBlock.FACE)){
+                case WALL->switch(facing){case EAST->1;case WEST->2;case SOUTH->3;default->4;};
+                case FLOOR->5;case CEILING->0;
+            };
+            return meta|(state.getValue(net.minecraft.world.level.block.ButtonBlock.POWERED)?8:0);
         }
         return null;
     }

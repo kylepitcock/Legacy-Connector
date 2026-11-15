@@ -35,6 +35,7 @@ public final class BridgeB173 {
 
     public static synchronized void registerAll() {
         ItemEventsB173.install();
+        PacketsB173.install();
         ArmorMaterialsB173.install();
         int replaced = 0;
         for (Block block : ContentB173.blocks()) {
@@ -155,6 +156,7 @@ public final class BridgeB173 {
             id = BuiltInRegistries.BLOCK.getKey(block.mcc$modern);
             LegacyB173BlockItem blockItem = new LegacyB173BlockItem(block.mcc$modern, new net.minecraft.world.item.Item.Properties());
             if (item.hasSubtypes()) blockItem.setNames(subtypeNames(item, id));
+            blockItem.setLegacy(item);
             modern = blockItem;
         } else {
             id = ResourceLocation.fromNamespaceAndPath(mod.modernId, unique(mod.modernId, name(item.getTranslationKey(), "item.", "item_" + item.id)));

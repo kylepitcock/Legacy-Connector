@@ -72,6 +72,21 @@ final class ItemCallbacksB173 {
 
 
     public InteractionResult useOn(UseOnContext context) {
+        return onBlock(context, "useOnBlock", (held, view, world, x, y, z, side) -> legacy.useOnBlock(held, view, world, x, y, z, side));
+    }
+
+    /** Forge 1.0's {@code IUseItemFirst}: asked before the clicked block's {@code blockActivated}; true ends the click (NeoForge's onItemUseFirst). */
+    public InteractionResult useFirst(UseOnContext context) {
+        if (!(legacy instanceof legacyconnector.vb1_7_3.net.minecraft.src.forge.IUseItemFirst first)) return InteractionResult.PASS;
+        return onBlock(context, "onItemUseFirst", first::onItemUseFirst);
+    }
+
+    @FunctionalInterface interface BlockCallback {
+        boolean run(legacyconnector.vb1_7_3.net.minecraft.item.ItemStack held, legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity player,
+                World world, int x, int y, int z, int side);
+    }
+
+    private InteractionResult onBlock(UseOnContext context, String name, BlockCallback callback) {
         Player player = context.getPlayer();
         if (player == null || context.getHand() != InteractionHand.MAIN_HAND) return InteractionResult.PASS;
         PlayerViewB173 view = (PlayerViewB173)EntityViewsB173.wrap(player);
@@ -83,11 +98,11 @@ final class ItemCallbacksB173 {
         // set up the tile entity that call makes right after placing it, so the legacy callback must see the writes at once.
         var level=context.getLevel();boolean capturing=level.captureBlockSnapshots;level.captureBlockSnapshots=false;
         try (var views=EntityViewsB173.callbackScope();var minecraft=actorScope(world,view)) {
-            boolean used = legacy.useOnBlock(held, view, world, pos.getX(), pos.getY(), pos.getZ(), context.getClickedFace().get3DDataValue());
+            boolean used = callback.run(held, view, world, pos.getX(), pos.getY(), pos.getZ(), context.getClickedFace().get3DDataValue());
             if (!context.getLevel().isClientSide) view.writeBack();
             return used ? InteractionResult.sidedSuccess(context.getLevel().isClientSide) : InteractionResult.PASS;
         } catch (RuntimeException | LinkageError e) {
-            failed("useOnBlock", e);
+            failed(name, e);
             return InteractionResult.FAIL;
         } finally {level.captureBlockSnapshots=capturing;EntityViewsB173.flush();BlockEntityViewsB173.flush();}
     }

@@ -42,7 +42,10 @@ public final class LegacyB173BlockEntityRendererB173 implements BlockEntityRende
                 state = net.minecraft.world.level.block.Blocks.OAK_WALL_SIGN.defaultBlockState().setValue(net.minecraft.world.level.block.WallSignBlock.FACING, facing);
             }
             var finalState = state;
-            var dummy = (net.minecraft.world.level.block.entity.SignBlockEntity) stand.compute(host, (k, old) -> old instanceof net.minecraft.world.level.block.entity.SignBlockEntity s && s.getBlockState() == finalState ? s : new net.minecraft.world.level.block.entity.SignBlockEntity(pos, finalState));
+            var dummy = (net.minecraft.world.level.block.entity.SignBlockEntity) stand.compute(host, (k, old) -> old instanceof net.minecraft.world.level.block.entity.SignBlockEntity s && s.getBlockState() == finalState ? s : new net.minecraft.world.level.block.entity.SignBlockEntity(pos, finalState) {
+                // Beta's sign renderer drew each line whole, centred; the native one wraps a line at 90 pixels and shows only its first part
+                @Override public int getMaxTextLineWidth() { return 10_000; }
+            });
             dummy.setLevel(level);
             // loaded from a tag, only when the lines change: setText would mark the real client level changed every frame (a chunk rebuild each time)
             String key = String.join("\u0000", sign.texts) + "|" + finalState;

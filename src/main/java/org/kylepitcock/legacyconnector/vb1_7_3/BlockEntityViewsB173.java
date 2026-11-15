@@ -23,6 +23,8 @@ public final class BlockEntityViewsB173 {
         }
         if(nativeEntity instanceof net.minecraft.world.level.block.entity.SpawnerBlockEntity spawner)
             return TOUCHED.get().computeIfAbsent(nativeEntity,ignored->{var view=new legacyconnector.vb1_7_3.net.minecraft.block.entity.MobSpawnerBlockEntity();var pos=spawner.getBlockPos();view.x=pos.getX();view.y=pos.getY();view.z=pos.getZ();view.world=World.mcc$wrap(spawner.getLevel());view.mcc$host=spawner;return view;});
+        if(nativeEntity instanceof net.minecraft.world.level.block.piston.PistonMovingBlockEntity moving)
+            return TOUCHED.get().computeIfAbsent(nativeEntity,ignored->{var view=new legacyconnector.vb1_7_3.net.minecraft.block.entity.PistonBlockEntity();var pos=moving.getBlockPos();view.x=pos.getX();view.y=pos.getY();view.z=pos.getZ();view.world=World.mcc$wrap(moving.getLevel());view.mcc$host=moving;return view;});
         if(!(nativeEntity instanceof net.minecraft.world.level.block.entity.SignBlockEntity sign))return null;
         return TOUCHED.get().computeIfAbsent(nativeEntity,ignored->{var view=new SignBlockEntity();var pos=sign.getBlockPos();view.x=pos.getX();view.y=pos.getY();view.z=pos.getZ();view.world=World.mcc$wrap(sign.getLevel());view.mcc$host=sign;for(int i=0;i<4;i++)view.texts[i]=sign.getFrontText().getMessage(i,false).getString();return view;});
     }

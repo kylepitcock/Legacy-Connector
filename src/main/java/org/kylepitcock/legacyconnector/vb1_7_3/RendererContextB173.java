@@ -70,7 +70,7 @@ public final class RendererContextB173 {
     public static void scale(float x,float y,float z){CURRENT.get().stack().peek().scale(x,y,z);}
     public static void rotate(float degrees,float x,float y,float z){float length=(float)Math.sqrt(x*x+y*y+z*z);if(length>0)CURRENT.get().stack().peek().rotate((float)Math.toRadians(degrees),x/length,y/length,z/length);}
     public static void transform(Matrix4f matrix){CURRENT.get().stack().peek().mul(matrix);}
-    public static void enable(int cap,boolean enabled){var s=CURRENT.get();switch(cap){case 3553->s.texture2d=enabled;case 2896->s.lighting=enabled;case 2929->s.depthTest=enabled;case 3042->s.blend=enabled;case 32826,2977,3008,2884->{}default->throw new UnsupportedOperationException("Beta render capability "+cap);}}
+    public static void enable(int cap,boolean enabled){var s=CURRENT.get();switch(cap){case 3553->s.texture2d=enabled;case 2896->s.lighting=enabled;case 2929->s.depthTest=enabled;case 3042->s.blend=enabled;case 32826,2977,3008,2884,32823->{}default->throw new UnsupportedOperationException("Beta render capability "+cap);}}
     public static void blendFunc(int src,int dst){var s=CURRENT.get();s.blendSrc=src;s.blendDst=dst;}
     public static void depthMask(boolean write){CURRENT.get().depthWrite=write;}
     public static void depthFunc(int func){CURRENT.get().depthFunc=func;}

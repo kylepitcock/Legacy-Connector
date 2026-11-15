@@ -54,6 +54,12 @@ public final class RecipesB173 {
     public static synchronized int size() {
         return RECIPES.size();
     }
+    /** The damage values the recipes make of an item, in recipe order (an item with subtypes made only by crafting has no other list in Beta). */
+    public static synchronized java.util.List<Integer> craftedDamages(int itemId){
+        var damages=new java.util.LinkedHashSet<Integer>();
+        for(var recipe:RECIPES)if(recipe.output()!=null&&recipe.output().itemId==itemId&&recipe.output().getDamage()>=0)damages.add(recipe.output().getDamage());
+        return java.util.List.copyOf(damages);
+    }
     public static synchronized java.util.Set<Integer> craftedItemIds(){
         var ids=new java.util.LinkedHashSet<Integer>();for(var recipe:RECIPES)if(recipe.output()!=null)ids.add(recipe.output().itemId);return java.util.Set.copyOf(ids);
     }
@@ -296,6 +302,12 @@ public final class RecipesB173 {
 
     /** Use the native stack codec so subtype data, block metadata and durability all survive recipe assembly. */
     static JsonObject result(net.minecraft.world.item.ItemStack stack){
-        return net.minecraft.world.item.ItemStack.CODEC.encodeStart(com.mojang.serialization.JsonOps.INSTANCE,stack).getOrThrow().getAsJsonObject();
+        var json=net.minecraft.world.item.ItemStack.CODEC.encodeStart(com.mojang.serialization.JsonOps.INSTANCE,stack).getOrThrow().getAsJsonObject();
+        // JSON numbers come back as the narrowest NBT number (a damage of 4353 as a short), and a crafted stack would then not stack with
+        // one the game made: custom data is written as SNBT, which keeps its tag types
+        var data=stack.get(net.minecraft.core.component.DataComponents.CUSTOM_DATA);
+        if(data!=null&&json.has("components")&&json.getAsJsonObject("components").has("minecraft:custom_data"))
+            json.getAsJsonObject("components").addProperty("minecraft:custom_data",data.copyTag().toString());
+        return json;
     }
 }
