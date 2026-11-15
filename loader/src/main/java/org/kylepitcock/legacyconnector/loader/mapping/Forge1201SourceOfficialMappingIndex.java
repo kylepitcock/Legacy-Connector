@@ -38,8 +38,6 @@ public final class Forge1201SourceOfficialMappingIndex {
             "^\\s+(?:\\d+:\\d+:)?(\\S+) (\\S+)\\((.*?)\\)(?::\\d+:\\d+)? -> (\\S+)$");
     private static final Pattern FIELD = Pattern.compile("^\\s+(\\S+) (\\S+) -> (\\S+)$");
 
-    private Forge1201SourceOfficialMappingIndex() {}
-
     public enum Status {
         MAPPED_EXACT,
         MAPPED_WITH_EXTERNAL_TYPES,
