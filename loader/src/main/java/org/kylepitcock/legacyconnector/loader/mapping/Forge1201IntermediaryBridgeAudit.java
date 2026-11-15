@@ -271,7 +271,7 @@ public final class Forge1201IntermediaryBridgeAudit {
                     sourceMember.descriptorIntermediary(),
                     targetMember.ownerOfficial(), targetMember.officialName(), targetMember.descriptorOfficial(),
                     targetMember.ownerIntermediary(), targetMember.descriptorIntermediary(),
-                    targetMember.descriptorExternalTypeCount());
+                    sourceMember.descriptorExternalTypeCount() + targetMember.descriptorExternalTypeCount());
         }
     }
 

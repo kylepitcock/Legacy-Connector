@@ -469,6 +469,23 @@ def auditIntermediaryBridge1201To1211 = tasks.register('auditIntermediaryBridge1
     } as CommandLineArgumentProvider)
 }
 
+def srgIntermediaryComposedAuditReport = layout.buildDirectory.file('reports/mappings/1.20.1-1.21.1/srg-intermediary-composed-audit.json')
+def auditSrgIntermediaryBridge1201To1211 = tasks.register('auditSrgIntermediaryBridge1201To1211', JavaExec) {
+    group = 'verification'
+    description = 'Emits a read-only per-symbol report for Forge SRG 1.20.1 -> Intermediary 1.20.1 -> Intermediary 1.21.1 candidates.'
+    dependsOn extractMcpConfigJoinedTsrg1201, extractFabricIntermediary1201, extractFabricIntermediary1211, tasks.named('classes')
+    inputs.file(joinedTsrg1201)
+    inputs.file(fabricIntermediary1201Tiny)
+    inputs.file(fabricIntermediary1211Tiny)
+    outputs.file(srgIntermediaryComposedAuditReport)
+    classpath = sourceSets.main.output + configurations.runtimeClasspath
+    mainClass = 'org.kylepitcock.legacyconnector.loader.mapping.Forge1201SrgIntermediaryBridgeAuditReport'
+    argumentProviders.add({
+        [joinedTsrg1201.get().asFile.absolutePath, fabricIntermediary1201Tiny.get().asFile.absolutePath,
+         fabricIntermediary1211Tiny.get().asFile.absolutePath, srgIntermediaryComposedAuditReport.get().asFile.absolutePath]
+    } as CommandLineArgumentProvider)
+}
+
 def srgObfuscatedBridgeAuditReport = layout.buildDirectory.file('reports/mappings/1.20.1/srg-obfuscated-bridge-audit.json')
 def auditSrgObfuscatedBridge1201 = tasks.register('auditSrgObfuscatedBridge1201', JavaExec) {
     group = 'verification'
@@ -521,7 +538,7 @@ tasks.withType(JavaCompile).configureEach {
 
 test {
     useJUnitPlatform()
-    dependsOn genBetaMappings, recordSrgMojangProvenance1201, auditIntermediaryBridge1201To1211, auditSrgObfuscatedBridge1201
+    dependsOn genBetaMappings, recordSrgMojangProvenance1201, auditIntermediaryBridge1201To1211, auditSrgObfuscatedBridge1201, auditSrgIntermediaryBridge1201To1211
     classpath += files(betaMappingsDir, srgMojangDir)
 }
 

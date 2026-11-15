@@ -226,3 +226,17 @@ The user's first forced run at source commit `90f5f24c3be97c9748a798aa0ec3fd1718
 The failure is a test-fixture mismatch, not a production resolver defect. The synthetic TSRG2 row named the field's official-obfuscated name `f` (`\tf f_20_ 3`), while the source Tiny v1 row for the same owner/member ID named that field `x` (`FIELD a Lb; x field_1`). The SRG bridge correctly joins descriptorless TSRG2 field entries to Tiny by owner plus official-obfuscated field name; `f` and `x` cannot join.
 
 The fixture now uses `\tx f_20_ 3`, aligning the TSRG2 official-obfuscated field name with the source Tiny row while retaining the SRG name `f_20_`. The expected source `x` → target `y` composition assertions remain intact. No production Java behavior was changed. This correction is **not yet validated**; the forced loader test must be rerun before this composition batch is marked green.
+
+
+## 15. Implementation checkpoint 3 — deterministic composed per-symbol report
+
+**Status:** implementation and regression test published; awaiting the user's forced loader test gate.
+
+- Forge1201SrgObfuscatedBridgeAudit.Index exposes deterministic class, method and field selector inventories from the same bounded TSRG2/Tiny inputs. Every parsed row is retained, including missing/ambiguous owner, missing/ambiguous field Tiny join, and unresolved descriptor cases.
+- Forge1201SrgIntermediaryBridgeAuditReport composes those rows through Forge1201SrgIntermediaryBridgeResolver and writes deterministic JSON with one record per source class, method and field entry, status histograms, namespace identities, and SHA-256/size provenance for all three pinned artifacts.
+- The report remains PARTIAL; completeForgeSrgSelectorPath, selectorTransformationPerformed, and runtimeMappingTableProduced are explicitly false. It ends at target official-obfuscated 1.21.1. External descriptor types are not checked against the target classpath.
+- The build-local task auditSrgIntermediaryBridge1201To1211 is a JavaExec dependency of loader:test. Output: loader/build/reports/mappings/1.20.1-1.21.1/srg-intermediary-composed-audit.json. It is not a JAR input and no runtime mapping consumer is changed.
+- Diagnostic external-type counts are summed from source and target descriptors, including non-exact candidates.
+- Forge1201SrgIntermediaryBridgeAuditReportTest checks byte-for-byte determinism, row inventory sizes, exact synthetic class/method/field composition, and the explicit no-transformation boundary.
+
+The next step after this gate is to pin the exact 1.21.1 official-obfuscated -> actual NeoForge compile-namespace mapping bytes, then verify composed candidates through the existing Forge1201TargetApiVerifier.TargetIndex. Do not enable selector rewriting from this report alone.

@@ -68,6 +68,12 @@ public final class Forge1201SrgObfuscatedBridgeAudit {
         }
     }
 
+    public record ClassSelector(String srgName, String obfuscatedName, Status sourceStatus) {}
+    public record MethodSelector(String srgOwner, String srgName, String srgDescriptor,
+            String obfuscatedOwner, String obfuscatedName, String obfuscatedDescriptor, Status sourceStatus) {}
+    public record FieldSelector(String srgOwner, String srgName, String sourceDescriptor,
+            String obfuscatedOwner, String obfuscatedName, String obfuscatedDescriptor, Status sourceStatus) {}
+
     public record ClassCoverage(
             int tsrgClassRows,
             int uniquelyMappedClassRows,
@@ -122,6 +128,9 @@ public final class Forge1201SrgObfuscatedBridgeAudit {
         private final Map<OwnerName, List<TsrgMethod>> methodsBySrgOwnerAndName;
         private final Map<OwnerName, List<Candidate>> fieldsBySrgOwnerAndName;
         private final Set<OwnerName> ambiguousFields;
+        private final List<ClassSelector> classSelectors;
+        private final List<MethodSelector> methodSelectors;
+        private final List<FieldSelector> fieldSelectors;
         private final AuditResult audit;
 
         private Index(
@@ -132,7 +141,8 @@ public final class Forge1201SrgObfuscatedBridgeAudit {
                 Map<OwnerName, List<TsrgMethod>> methodsBySrgOwnerAndName,
                 Map<OwnerName, List<Candidate>> fieldsBySrgOwnerAndName,
                 Set<OwnerName> ambiguousFields,
-                AuditResult audit) {
+                List<ClassSelector> classSelectors, List<MethodSelector> methodSelectors,
+                List<FieldSelector> fieldSelectors, AuditResult audit) {
             this.srgToObfuscatedClasses = immutableLists(srgToObfuscatedClasses);
             this.obfuscatedToSrgClasses = immutableLists(obfuscatedToSrgClasses);
             this.knownSrgClasses = Set.copyOf(knownSrgClasses);
@@ -140,12 +150,16 @@ public final class Forge1201SrgObfuscatedBridgeAudit {
             this.methodsBySrgOwnerAndName = immutableLists(methodsBySrgOwnerAndName);
             this.fieldsBySrgOwnerAndName = immutableLists(fieldsBySrgOwnerAndName);
             this.ambiguousFields = Set.copyOf(ambiguousFields);
+            this.classSelectors = List.copyOf(classSelectors);
+            this.methodSelectors = List.copyOf(methodSelectors);
+            this.fieldSelectors = List.copyOf(fieldSelectors);
             this.audit = audit;
         }
 
-        public AuditResult audit() {
-            return audit;
-        }
+        public AuditResult audit() { return audit; }
+        public List<ClassSelector> classSelectors() { return classSelectors; }
+        public List<MethodSelector> methodSelectors() { return methodSelectors; }
+        public List<FieldSelector> fieldSelectors() { return fieldSelectors; }
 
         public ClassResolution resolveClass(String srgOwner) {
             List<String> candidates = srgToObfuscatedClasses.getOrDefault(srgOwner, List.of());
@@ -253,6 +267,21 @@ public final class Forge1201SrgObfuscatedBridgeAudit {
         srgToObfuscated.replaceAll((key, value) -> distinct(value));
         obfuscatedToSrg.replaceAll((key, value) -> distinct(value));
 
+        List<ClassSelector> classSelectors = new ArrayList<>(classes.size());
+        for (TsrgClass row : classes) {
+            if (row.srgName() == null) {
+                classSelectors.add(new ClassSelector(null, row.obfuscatedName(), Status.MISSING));
+                continue;
+            }
+            List<String> targets = srgToObfuscated.getOrDefault(row.srgName(), List.of());
+            Status status = targets.size() == 1 ? Status.MAPPED_EXACT
+                    : targets.size() > 1 ? Status.AMBIGUOUS : Status.MISSING;
+            classSelectors.add(new ClassSelector(row.srgName(), row.obfuscatedName(), status));
+        }
+        classSelectors.sort(Comparator
+                .comparing(ClassSelector::srgName, Comparator.nullsFirst(String::compareTo))
+                .thenComparing(ClassSelector::obfuscatedName));
+
         Map<OwnerName, List<TsrgMethod>> methodsByOwnerName = new HashMap<>();
         Map<OwnerName, List<Candidate>> fieldsByOwnerName = new HashMap<>();
         Map<FieldKey, List<TinyField>> tinyFields = readTinyFields(sourceTiny);
@@ -264,11 +293,15 @@ public final class Forge1201SrgObfuscatedBridgeAudit {
         int methodExternalOccurrences = 0;
         Map<OwnerName, Set<String>> methodDescriptorsByOwnerName = new HashMap<>();
         Map<String, Set<String>> methodTargetsByFullKey = new HashMap<>();
+        List<MethodSelector> methodSelectors = new ArrayList<>(methods.size());
 
         for (TsrgMethod row : methods) {
             List<String> owners = distinct(obfuscatedToSrg.getOrDefault(row.obfuscatedOwner(), List.of()));
             if (owners.size() != 1) {
                 ownerUnmappedMethodRows++;
+                Status ownerStatus = owners.isEmpty() ? Status.OWNER_MISSING : Status.OWNER_AMBIGUOUS;
+                methodSelectors.add(new MethodSelector(null, row.srgName(), null,
+                        row.obfuscatedOwner(), row.obfuscatedName(), row.obfuscatedDescriptor(), ownerStatus));
                 continue;
             }
             ownerMappedMethodRows++;
@@ -277,6 +310,10 @@ public final class Forge1201SrgObfuscatedBridgeAudit {
             add(methodsByOwnerName, ownerName, row);
             DescriptorResult reverseDescriptor = normalizeDescriptor(
                     row.obfuscatedDescriptor(), obfuscatedToSrg, knownObfuscated);
+            Status selectorStatus = !reverseDescriptor.resolved() ? Status.DESCRIPTOR_UNRESOLVED
+                    : reverseDescriptor.externalTypeCount() > 0 ? Status.MAPPED_WITH_EXTERNAL_TYPES : Status.MAPPED_EXACT;
+            methodSelectors.add(new MethodSelector(srgOwner, row.srgName(), reverseDescriptor.descriptor(),
+                    row.obfuscatedOwner(), row.obfuscatedName(), row.obfuscatedDescriptor(), selectorStatus));
             if (!reverseDescriptor.resolved()) {
                 methodDescriptorUnresolvedRows++;
             } else {
@@ -291,6 +328,12 @@ public final class Forge1201SrgObfuscatedBridgeAudit {
             methodTargetsByFullKey.computeIfAbsent(fullKey, ignored -> new HashSet<>())
                     .add(row.obfuscatedName());
         }
+        methodSelectors.sort(Comparator
+                .comparing(MethodSelector::srgOwner, Comparator.nullsFirst(String::compareTo))
+                .thenComparing(MethodSelector::srgName, Comparator.nullsFirst(String::compareTo))
+                .thenComparing(MethodSelector::srgDescriptor, Comparator.nullsFirst(String::compareTo))
+                .thenComparing(MethodSelector::obfuscatedOwner)
+                .thenComparing(MethodSelector::obfuscatedName));
 
         int overloadedGroups = (int) methodDescriptorsByOwnerName.values().stream()
                 .filter(values -> values.size() > 1).count();
@@ -305,10 +348,14 @@ public final class Forge1201SrgObfuscatedBridgeAudit {
         int fieldExternalRows = 0;
         int fieldExternalOccurrences = 0;
         Set<OwnerName> ambiguousFieldKeys = new HashSet<>();
+        List<FieldSelector> fieldSelectors = new ArrayList<>(fields.size());
         for (TsrgField row : fields) {
             List<String> owners = distinct(obfuscatedToSrg.getOrDefault(row.obfuscatedOwner(), List.of()));
             if (owners.size() != 1) {
                 ownerUnmappedFieldRows++;
+                Status ownerStatus = owners.isEmpty() ? Status.OWNER_MISSING : Status.OWNER_AMBIGUOUS;
+                fieldSelectors.add(new FieldSelector(null, row.srgName(), null,
+                        row.obfuscatedOwner(), row.obfuscatedName(), null, ownerStatus));
                 continue;
             }
             String srgOwner = owners.getFirst();
@@ -316,20 +363,26 @@ public final class Forge1201SrgObfuscatedBridgeAudit {
                     new FieldKey(row.obfuscatedOwner(), row.obfuscatedName()), List.of()));
             if (tinyMatches.isEmpty()) {
                 missingTinyFieldJoins++;
+                fieldSelectors.add(new FieldSelector(srgOwner, row.srgName(), null,
+                        row.obfuscatedOwner(), row.obfuscatedName(), null, Status.MISSING));
                 continue;
             }
             if (tinyMatches.size() != 1) {
                 ambiguousTinyFieldJoins++;
                 ambiguousFieldKeys.add(new OwnerName(srgOwner, row.srgName()));
+                fieldSelectors.add(new FieldSelector(srgOwner, row.srgName(), null,
+                        row.obfuscatedOwner(), row.obfuscatedName(), null, Status.AMBIGUOUS));
                 continue;
             }
             uniqueTinyFieldJoins++;
             TinyField tiny = tinyMatches.getFirst();
             DescriptorResult sourceDescriptor = normalizeDescriptor(
                     tiny.descriptor(), obfuscatedToSrg, knownObfuscated);
-            if (!sourceDescriptor.resolved()) {
-                fieldDescriptorUnresolvedRows++;
-            }
+            Status selectorStatus = !sourceDescriptor.resolved() ? Status.DESCRIPTOR_UNRESOLVED
+                    : sourceDescriptor.externalTypeCount() > 0 ? Status.MAPPED_WITH_EXTERNAL_TYPES : Status.MAPPED_EXACT;
+            fieldSelectors.add(new FieldSelector(srgOwner, row.srgName(), sourceDescriptor.descriptor(),
+                    row.obfuscatedOwner(), row.obfuscatedName(), tiny.descriptor(), selectorStatus));
+            if (!sourceDescriptor.resolved()) fieldDescriptorUnresolvedRows++;
             if (sourceDescriptor.externalTypeCount() > 0) {
                 fieldExternalRows++;
                 fieldExternalOccurrences += sourceDescriptor.externalTypeCount();
@@ -339,6 +392,12 @@ public final class Forge1201SrgObfuscatedBridgeAudit {
                     row.obfuscatedName(), tiny.descriptor(), sourceDescriptor.externalTypeCount());
             add(fieldsByOwnerName, new OwnerName(srgOwner, row.srgName()), candidate);
         }
+        fieldSelectors.sort(Comparator
+                .comparing(FieldSelector::srgOwner, Comparator.nullsFirst(String::compareTo))
+                .thenComparing(FieldSelector::srgName, Comparator.nullsFirst(String::compareTo))
+                .thenComparing(FieldSelector::sourceDescriptor, Comparator.nullsFirst(String::compareTo))
+                .thenComparing(FieldSelector::obfuscatedOwner)
+                .thenComparing(FieldSelector::obfuscatedName));
 
         int ambiguousSrgClasses = (int) srgToObfuscated.values().stream().filter(values -> values.size() > 1).count();
         int ambiguousObfuscatedClasses = (int) obfuscatedToSrg.values().stream().filter(values -> values.size() > 1).count();
@@ -357,7 +416,8 @@ public final class Forge1201SrgObfuscatedBridgeAudit {
                 Files.size(sourceTiny), sha256(sourceTiny));
 
         return new Index(srgToObfuscated, obfuscatedToSrg, knownSrg, knownObfuscated,
-                methodsByOwnerName, fieldsByOwnerName, ambiguousFieldKeys, result);
+                methodsByOwnerName, fieldsByOwnerName, ambiguousFieldKeys,
+                classSelectors, methodSelectors, fieldSelectors, result);
     }
 
     public static AuditResult analyze(Path joinedTsrg, Path sourceTiny) throws IOException {

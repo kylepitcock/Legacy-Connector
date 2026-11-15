@@ -51,6 +51,10 @@ public final class Forge1201SrgIntermediaryBridgeResolver {
             this.intermediary = intermediary;
         }
 
+        public List<Forge1201SrgObfuscatedBridgeAudit.ClassSelector> classSelectors() { return srg.classSelectors(); }
+        public List<Forge1201SrgObfuscatedBridgeAudit.MethodSelector> methodSelectors() { return srg.methodSelectors(); }
+        public List<Forge1201SrgObfuscatedBridgeAudit.FieldSelector> fieldSelectors() { return srg.fieldSelectors(); }
+
         public ClassResolution resolveClass(String srgClass) {
             var sourceClass = srg.resolveClass(srgClass);
             if (sourceClass.status() == Forge1201SrgObfuscatedBridgeAudit.Status.MISSING) {
@@ -83,12 +87,28 @@ public final class Forge1201SrgIntermediaryBridgeResolver {
             return compose(srgOwner, srgName, srgDescriptor, row, source.status(), cross);
         }
 
+        public SymbolResolution resolveMethodRow(Forge1201SrgObfuscatedBridgeAudit.MethodSelector selector) {
+            if (selector.sourceStatus() != Forge1201SrgObfuscatedBridgeAudit.Status.MAPPED_EXACT
+                    && selector.sourceStatus() != Forge1201SrgObfuscatedBridgeAudit.Status.MAPPED_WITH_EXTERNAL_TYPES) {
+                return new SymbolResolution(mapSrgStatus(selector.sourceStatus()), List.of());
+            }
+            return resolveMethod(selector.srgOwner(), selector.srgName(), selector.srgDescriptor());
+        }
+
         public SymbolResolution resolveField(String srgOwner, String srgName) {
             var source = srg.resolveField(srgOwner, srgName);
             if (!isMapped(source.status())) return new SymbolResolution(mapSrgStatus(source.status()), List.of());
             var row = source.candidates().getFirst();
             var cross = intermediary.resolveField(row.obfuscatedOwner(), row.obfuscatedName(), row.obfuscatedDescriptor());
             return compose(srgOwner, srgName, row.sourceDescriptor(), row, source.status(), cross);
+        }
+
+        public SymbolResolution resolveFieldRow(Forge1201SrgObfuscatedBridgeAudit.FieldSelector selector) {
+            if (selector.sourceStatus() != Forge1201SrgObfuscatedBridgeAudit.Status.MAPPED_EXACT
+                    && selector.sourceStatus() != Forge1201SrgObfuscatedBridgeAudit.Status.MAPPED_WITH_EXTERNAL_TYPES) {
+                return new SymbolResolution(mapSrgStatus(selector.sourceStatus()), List.of());
+            }
+            return resolveField(selector.srgOwner(), selector.srgName());
         }
 
         private static boolean isMapped(Forge1201SrgObfuscatedBridgeAudit.Status status) {
