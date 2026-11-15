@@ -30,7 +30,7 @@ final class Forge1201TargetOfficialBridgeAuditTest {
                 tsrg2 obf srg id
                 a net/minecraft/Entity 1
                 \tm (Lb;)V m_10_ 2
-                \tx Lb; f_20_ 3
+                \tx f_20_ 3
                 b net/minecraft/BlockPos 4
                 """);
         Path sourceTiny = write("source.tiny", """
