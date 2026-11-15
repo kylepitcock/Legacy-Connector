@@ -37,6 +37,7 @@
     "ServerSprintHookMixin",
     "LevelRainHookMixin",
     "BlockExplodedHookMixin",
+    "ExplosionKnockbackHookMixin",
     "LivingEntityTravelMixin",
     "PlayerClassTravelB173Mixin",
     "PlacedFeatureOreGateMixin",
