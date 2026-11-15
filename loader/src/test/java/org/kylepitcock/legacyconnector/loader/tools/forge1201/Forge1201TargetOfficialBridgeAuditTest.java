@@ -89,6 +89,48 @@ final class Forge1201TargetOfficialBridgeAuditTest {
     }
 
     @Test
+    void keepsExternalDescriptorTypesNonExactAfterTheTargetApiSignatureMatches() throws Exception {
+        Path joined = write("external-joined.tsrg", """
+                tsrg2 obf srg id
+                a net/minecraft/Entity 1
+                \tm (Ljava/lang/String;)V m_10_ 2
+                """);
+        Path sourceTiny = write("external-source.tiny", """
+                v1\tofficial\tintermediary
+                CLASS\ta\tnet/minecraft/class_1
+                METHOD\ta\t(Ljava/lang/String;)V\tm\tmethod_1
+                """);
+        Path targetTiny = write("external-target.tiny", """
+                v1\tofficial\tintermediary
+                CLASS\tc\tnet/minecraft/class_1
+                METHOD\tc\t(Ljava/lang/String;)V\tz\tmethod_1
+                """);
+        Path targetOfficial = write("external-target-official.tsrg", """
+                tsrg2 left right
+                c net/minecraft/Entity
+                \tz (Ljava/lang/String;)V readText
+                """);
+
+        Map<String, byte[]> classes = Map.of(
+                "net/minecraft/Entity",
+                classWithMethod("net/minecraft/Entity", "readText", "(Ljava/lang/String;)V"));
+        var upstream = Forge1201SrgIntermediaryBridgeResolver.readIndex(joined, sourceTiny, targetTiny);
+        var targetMappings = Forge1201TargetOfficialMappingIndex.read(targetOfficial);
+        var targetIndex = Forge1201TargetApiVerifier.createIndex(internalName -> {
+            byte[] bytes = classes.get(internalName);
+            return bytes == null ? null : new ByteArrayInputStream(bytes);
+        });
+
+        var method = Forge1201TargetOfficialBridgeAudit.audit(upstream, targetMappings, targetIndex)
+                .methods().getFirst();
+
+        assertEquals("MAPPED_WITH_EXTERNAL_TYPES", method.upstreamStatus());
+        assertEquals("TARGET_API_MEMBER_FOUND_WITH_EXTERNAL_TYPES", method.status());
+        assertTrue(method.candidates().getFirst().upstreamExternalDescriptorTypeCount() > 0);
+        assertEquals(1, method.candidates().getFirst().targetExternalDescriptorTypeCount());
+    }
+
+    @Test
     void preservesAmbiguousUpstreamCandidatesEvenWhenOnlyOneTargetClassIsPresent() throws Exception {
         Path joined = write("ambiguous-joined.tsrg", """
                 tsrg2 obf srg id
