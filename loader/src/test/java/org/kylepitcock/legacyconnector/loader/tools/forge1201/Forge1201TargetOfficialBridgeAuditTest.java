@@ -213,7 +213,11 @@ final class Forge1201TargetOfficialBridgeAuditTest {
     private static byte[] classWithMethod(String owner, String method, String descriptor) {
         ClassWriter writer = new ClassWriter(0);
         writer.visit(Opcodes.V17, Opcodes.ACC_PUBLIC, owner, null, "java/lang/Object", null);
-        writer.visitMethod(Opcodes.ACC_PUBLIC, method, descriptor, null, null).visitEnd();
+        var methodWriter = writer.visitMethod(Opcodes.ACC_PUBLIC, method, descriptor, null, null);
+        methodWriter.visitCode();
+        methodWriter.visitInsn(Opcodes.RETURN);
+        methodWriter.visitMaxs(0, 0);
+        methodWriter.visitEnd();
         writer.visitEnd();
         return writer.toByteArray();
     }
