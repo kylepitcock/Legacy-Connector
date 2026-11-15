@@ -135,7 +135,12 @@ final class CoremodAdditionMixins {
             }
             InsnList call = new InsnList();
             call.add(new LdcInsnNode(owner.substring(owner.lastIndexOf('/') + 1) + "." + f.name));
-            if (get) {
+            if (get && kind.isEmpty() && type.getSort() == Type.OBJECT) {
+                // with the field's legacy type: a back reference nothing wrote reads as the owner of the object (CoremodState.get)
+                call.add(new LdcInsnNode(type.getInternalName()));
+                call.add(new MethodInsnNode(Opcodes.INVOKESTATIC, STATE, "get", "(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/Object;", false));
+                call.add(new TypeInsnNode(Opcodes.CHECKCAST, type.getInternalName()));
+            } else if (get) {
                 call.add(new MethodInsnNode(Opcodes.INVOKESTATIC, STATE, "get" + kind, "(Ljava/lang/Object;Ljava/lang/String;)" + value, false));
                 if (kind.isEmpty()) call.add(new TypeInsnNode(Opcodes.CHECKCAST, type.getInternalName()));
             } else {

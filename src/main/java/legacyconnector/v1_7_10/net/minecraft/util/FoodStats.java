@@ -12,6 +12,10 @@ public class FoodStats {
         this.mcc$food = food;
     }
 
+    public FoodData mcc$modern() {
+        return mcc$food;
+    }
+
     /** Stand-alone food stats (full: 20 food, 5 saturation), as mods create to save and restore a player's hunger. */
     public FoodStats() {
         this(new FoodData());

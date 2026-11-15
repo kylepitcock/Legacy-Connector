@@ -11,7 +11,43 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class CoremodState {
     private static final Map<Object, Map<String, Object>> STATE = new com.google.common.collect.MapMaker().weakKeys().makeMap();
 
+    /** Game object -> the game object it belongs to (a player's food data -> the player): what an added constructor argument gave the original. */
+    private static final Map<Object, Object> OWNERS = new com.google.common.collect.MapMaker().weakKeys().weakValues().makeMap();
+
     private CoremodState() {}
+
+    /** Records that {@code part} belongs to {@code owner} (called where the game makes the part). */
+    public static void owner(Object part, Object owner) {
+        if (part != null && owner != null) OWNERS.put(part, owner);
+    }
+
+    /**
+     * An added object field of type {@code type} (internal name, legacy or already relocated). A coremod that adds a back reference to a part ({@code FoodStats.player}) fills
+     * it through a constructor it adds and has the owner call; those are not applied, so a field nothing wrote yet reads as the part's owner when the owner
+     * is of the field's type.
+     */
+    public static Object get(Object view, String field, String type) {
+        Object value = get(view, field);
+        if (value != null) return value;
+        Object owner = OWNERS.get(key(view));
+        if (owner == null) return null;
+        try {
+            Class<?> c = view.getClass();
+            while (c != null && !c.getName().startsWith("legacyconnector.v")) c = c.getSuperclass();
+            if (c == null) return null;
+            String root = c.getName().substring(0, c.getName().indexOf('.', "legacyconnector.".length()) + 1);
+            // the translator relocates the type name in the generated mixin like any class name constant; a name it left alone is a legacy one
+            String name = type.replace('/', '.');
+            Class<?> wanted = Class.forName(name.startsWith("legacyconnector.v") ? name : root + name, false, c.getClassLoader());
+            Object legacy = owner;
+            if (owner instanceof net.minecraft.world.entity.Entity e) {
+                legacy = root.contains("v1_12_2") ? org.kylepitcock.legacyconnector.v1_12_2.bridge.EntityBridge1122.wrap(e) : EntityBridge.wrap(e);
+            }
+            return wanted.isInstance(legacy) ? legacy : null;
+        } catch (ReflectiveOperationException | LinkageError e) {
+            return null;
+        }
+    }
 
     /** The object the state belongs to: the game object behind a view that is not kept, otherwise the view itself. */
     private static Object key(Object view) {
@@ -25,6 +61,8 @@ public final class CoremodState {
             if (modern instanceof net.minecraft.world.level.chunk.ImposterProtoChunk p) return p.getWrapped();
             return modern == null ? view : modern;
         }
+        if (view instanceof legacyconnector.v1_12_2.net.minecraft.util.FoodStats f) return f.mcc$modern();
+        if (view instanceof legacyconnector.v1_7_10.net.minecraft.util.FoodStats f) return f.mcc$modern();
         return view;
     }
 

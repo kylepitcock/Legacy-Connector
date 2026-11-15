@@ -41,6 +41,7 @@
     "LivingEntityEffectParticlesHookMixin",
     "EntityMoveHookMixin",
     "FoodDataHookMixin1122",
+    "PlayerFoodOwnerMixin",
     "PlayerExhaustionHookMixin",
     "BlockHarvestExhaustionHookMixin",
     "HungerEffectExhaustionHookMixin",
