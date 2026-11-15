@@ -104,6 +104,23 @@ public final class Client1122 {
         modBus.addListener((net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent e) -> {
             if (present()) Fluids1122.onRegisterClientExtensions(e);
         });
+        // items whose model is built in (a mod's TileEntityItemStackRenderer or registerTESRItemStack): drawn by the legacy renderer
+        modBus.addListener((net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent e) -> {
+            if (!present()) return;
+            var ext = new net.neoforged.neoforge.client.extensions.common.IClientItemExtensions() {
+                private LegacyItemStackRenderer1122 renderer;
+
+                @Override
+                public net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer getCustomRenderer() {
+                    if (renderer == null) renderer = new LegacyItemStackRenderer1122();
+                    return renderer;
+                }
+            };
+            for (var item : org.kylepitcock.legacyconnector.v1_12_2.bridge.ItemBridge1122.modItems()) {
+                var variants = org.kylepitcock.legacyconnector.v1_12_2.bridge.ItemBridge1122.variants(item).values();
+                if (!variants.isEmpty()) e.registerItem(ext, variants.toArray(new net.minecraft.world.item.Item[0]));
+            }
+        });
         modBus.addListener((net.neoforged.fml.event.lifecycle.FMLClientSetupEvent e) -> e.enqueueWork(() -> {
             if (present()) Fluids1122.setRenderLayers();
         }));
