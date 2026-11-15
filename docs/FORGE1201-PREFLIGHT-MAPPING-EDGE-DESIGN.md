@@ -767,3 +767,36 @@ Together with section 20.8's complete declared-member listing, this gives two co
 This is a source-runtime classification for these two specific helper rows only. It does not yet establish whether the replacement `BlockState` methods have matching names/descriptors/semantics in NeoForge 1.21.1, and it does not generalize to other missing mapping rows.
 
 Next action: proceed to the owner-, member-, and full-descriptor-aware source SRG→Mojmap index and read-only source classfile verifier. Keep the pinned Forge source classpath as the only classfile source for that verifier. Do not introduce selector rewriting or a runtime mapping table.
+
+### 20.10 Initial source SRG→Mojmap index and patched-class verifier implementation — 2026-11-16
+
+The first implementation slice is now on `feat/forge1201-preflight-analyzer`:
+
+- `Forge1201SourceOfficialMappingIndex` composes the existing owner-qualified MCPConfig SRG → official-obfuscated index with the pinned Mojang 1.20.1 ProGuard `client.txt` mapping. It preserves SRG owner/token/full descriptor, obfuscated owner/name/full descriptor, and Mojang-official owner/name/full descriptor in each result. Method lookup is owner + obfuscated name + complete obfuscated descriptor. Field lookup still requires the unique Tiny-derived descriptor and checks it against the Mojang field row's converted type.
+- The source ProGuard parser retains class/member identity and converts named types to obfuscated JVM descriptor types before indexing. It ignores deeper parameter/local-variable rows and retains missing, ambiguous, descriptor-mismatch, unresolved, and external-type outcomes. It does not use `srg-mojang.tsv`.
+- Reverse lookup APIs resolve a Mojang-named selector back to its exact SRG identity. This is useful for checking an already-known source member such as a private vanilla helper; ambiguous reverse matches fail closed.
+- `Forge1201SourceRuntimeMemberVerifier` consumes the ordered source classpath list exported by the isolated ForgeGradle workspace. It indexes jar/directory class resources with first-entry-wins semantics, honors the current Java runtime's multi-release jar view, and delegates classfile parsing/hierarchy traversal to the existing ASM index. No Minecraft class is loaded, initialized, or executed.
+- The verifier distinguishes direct declaration, inherited exact match, same-name/different-descriptor, confirmed absence, missing owner class, and incomplete hierarchy. It can start from SRG selectors or reverse-resolve Mojang-official selectors.
+- `auditForge1201SourceRuntimeMember1201` is a build-local Gradle task. Before running the verifier it checks the source runtime manifest's exact 1.20.1 / Forge 47.3.0 / ForgeGradle 6.0.24 / official mapping profile, ordered path list, entry SHA-256 fingerprints (including deterministic directory fingerprints), classpath manifest association, and the three unique class probes at effective classpath index 0.
+- Fixtures cover owner-qualified mapping composition, overloaded descriptors, field descriptors, reverse lookup, descriptor mismatch, external descriptor types, source member direct/inherited/absent/name-only states, duplicate classpath definitions, and incomplete hierarchies.
+
+The implementation is **not yet locally compiled or test-validated**. The user must run the targeted JUnit tests and four piston member checks listed below. A successful source mapping lookup does not establish runtime/gameplay compatibility; a structural member match does not establish semantic compatibility.
+
+Targeted tests from the source repository root:
+
+```powershell
+.\gradlew.bat :loader:test --tests org.kylepitcock.legacyconnector.loader.mapping.Forge1201SourceOfficialMappingIndexTest --tests org.kylepitcock.legacyconnector.loader.tools.forge1201.Forge1201SourceRuntimeMemberVerifierTest --console=plain
+```
+
+After the isolated Forge source classpath and manifest have been exported, run the read-only member task one query at a time:
+
+```powershell
+.\gradlew.bat :loader:auditForge1201SourceRuntimeMember1201 -Pforge1201SourceMemberKind=method -Pforge1201SourceMemberOwner=net/minecraft/world/level/block/piston/PistonStructureResolver -Pforge1201SourceMemberName=isSticky '-Pforge1201SourceMemberDescriptor=(Lnet/minecraft/world/level/block/state/BlockState;)Z' --console=plain
+.\gradlew.bat :loader:auditForge1201SourceRuntimeMember1201 -Pforge1201SourceMemberKind=method -Pforge1201SourceMemberOwner=net/minecraft/world/level/block/piston/PistonStructureResolver -Pforge1201SourceMemberName=canStickToEachOther '-Pforge1201SourceMemberDescriptor=(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/state/BlockState;)Z' --console=plain
+.\gradlew.bat :loader:auditForge1201SourceRuntimeMember1201 -Pforge1201SourceMemberKind=method -Pforge1201SourceMemberOwner=net/minecraft/world/level/block/state/BlockState -Pforge1201SourceMemberName=isStickyBlock -Pforge1201SourceMemberDescriptor=()Z --console=plain
+.\gradlew.bat :loader:auditForge1201SourceRuntimeMember1201 -Pforge1201SourceMemberKind=method -Pforge1201SourceMemberOwner=net/minecraft/world/level/block/state/BlockState -Pforge1201SourceMemberName=canStickTo '-Pforge1201SourceMemberDescriptor=(Lnet/minecraft/world/level/block/state/BlockState;)Z' --console=plain
+```
+
+Expected structural outcomes based on the already supplied `javap` evidence are: the two old resolver helper rows are absent from the Forge source class, while the two state-level replacement methods are present (or inherited if the compiled declaration shows that). The actual task output remains authoritative; do not pre-fill or assume those results. The report is written to `loader/build/reports/source-runtime/forge1201-source-member-check.json` and is overwritten by each subsequent query.
+
+This stage remains read-only. No selector rewriting, Mixin remapping, runtime mapping payload, source Forge dependency, or source runtime classpath has been added to the connector's packaged loader.
