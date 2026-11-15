@@ -16,6 +16,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.objectweb.asm.Type;
@@ -104,6 +105,7 @@ public final class Forge1201TargetOfficialMappingIndex {
 
     private record MethodKey(String owner, String name, String descriptor) {}
     private record FieldKey(String owner, String name) {}
+    private record OwnerName(String owner, String name) {}
     private record MethodMapping(String name) {}
     private record FieldMapping(String descriptor, String name) {}
     private record DescriptorResult(Status status, String descriptor, int externalTypeCount) {}
@@ -112,16 +114,19 @@ public final class Forge1201TargetOfficialMappingIndex {
         private final Map<String, List<String>> classes;
         private final Map<MethodKey, List<MethodMapping>> methods;
         private final Map<FieldKey, List<FieldMapping>> fields;
+        private final Set<OwnerName> methodOwnerNames;
         private final Summary summary;
 
         private Index(
                 Map<String, List<String>> classes,
                 Map<MethodKey, List<MethodMapping>> methods,
                 Map<FieldKey, List<FieldMapping>> fields,
+                Set<OwnerName> methodOwnerNames,
                 Summary summary) {
             this.classes = immutableLists(classes);
             this.methods = immutableLists(methods);
             this.fields = immutableLists(fields);
+            this.methodOwnerNames = Set.copyOf(methodOwnerNames);
             this.summary = summary;
         }
 
@@ -164,9 +169,7 @@ public final class Forge1201TargetOfficialMappingIndex {
             MethodKey key = new MethodKey(obfuscatedOwner, obfuscatedName, obfuscatedDescriptor);
             List<MethodMapping> mapped = methods.getOrDefault(key, List.of());
             if (mapped.isEmpty()) {
-                boolean sameName = methods.keySet().stream()
-                        .anyMatch(candidate -> candidate.owner().equals(obfuscatedOwner)
-                                && candidate.name().equals(obfuscatedName));
+                boolean sameName = methodOwnerNames.contains(new OwnerName(obfuscatedOwner, obfuscatedName));
                 return new MethodResolution(
                         sameName ? Status.DESCRIPTOR_MISMATCH : Status.MEMBER_MISSING, List.of());
             }
@@ -259,10 +262,12 @@ public final class Forge1201TargetOfficialMappingIndex {
         Map<String, List<String>> classes = new LinkedHashMap<>();
         Map<MethodKey, List<MethodMapping>> methods = new LinkedHashMap<>();
         Map<FieldKey, List<FieldMapping>> fields = new LinkedHashMap<>();
+        Set<OwnerName> methodOwnerNames = new LinkedHashSet<>();
         int classRows = 0;
         int methodRows = 0;
         int fieldRows = 0;
         int lineNumber = 0;
+        boolean headerSeen = false;
         String currentOwner = null;
 
         var decoder = StandardCharsets.UTF_8.newDecoder()
@@ -277,10 +282,11 @@ public final class Forge1201TargetOfficialMappingIndex {
 
                 int indentation = leadingTabs(line);
                 String trimmed = line.substring(indentation).trim();
-                if (lineNumber == 1) {
-                    if (!HEADER.equals(trimmed)) {
+                if (!headerSeen) {
+                    if (indentation != 0 || !HEADER.equals(trimmed)) {
                         throw malformed(lineNumber, "expected header '" + HEADER + "'");
                     }
+                    headerSeen = true;
                     continue;
                 }
 
@@ -322,6 +328,7 @@ public final class Forge1201TargetOfficialMappingIndex {
                     }
                     add(methods, new MethodKey(currentOwner, parts[0], parts[1]),
                             new MethodMapping(parts[2]));
+                    methodOwnerNames.add(new OwnerName(currentOwner, parts[0]));
                     methodRows++;
                 } else {
                     if (!validFieldDescriptor(parts[1])) {
@@ -334,7 +341,7 @@ public final class Forge1201TargetOfficialMappingIndex {
             }
         }
 
-        if (lineNumber == 0) throw new IOException("Target merged TSRG2 mapping is empty: " + mappingFile);
+        if (!headerSeen) throw new IOException("Target merged TSRG2 mapping is empty or missing its header: " + mappingFile);
         if (classRows == 0) throw new IOException("Target merged TSRG2 mapping contains no class rows: " + mappingFile);
 
         Summary summary = new Summary(
@@ -349,7 +356,7 @@ public final class Forge1201TargetOfficialMappingIndex {
                 ambiguousKeys(methods),
                 fields.size(),
                 ambiguousKeys(fields));
-        return new Index(classes, methods, fields, summary);
+        return new Index(classes, methods, fields, methodOwnerNames, summary);
     }
 
     /** Reads and verifies the caller-pinned complete mapping-file SHA-256. */

@@ -273,7 +273,7 @@ A synthetic regression now mirrors the observed owner/member/descriptor relation
 
 ## 18. Target official-obfuscated → Mojang-official edge — TSRG2 descriptor namespace and read-only index
 
-**Status:** A bounded read-only parser and synthetic regression suite are being added for the pinned NeoForm merged mapping output. This is not selector rewriting or a runtime mapping consumer. User validation is still required.
+**Status:** The bounded read-only parser and synthetic regression suite are published in source commits `5f4648256275f13e4c2037cabf8cfdb865e101bf` and `PENDING_REVIEW_FIX`; user validation is still required. This is not selector rewriting or a runtime mapping consumer.
 
 ### Verified format and descriptor direction
 
@@ -295,7 +295,7 @@ Therefore method keys must use **left obfuscated owner + left member name + left
 
 ### Read-only index contract
 
-`Forge1201TargetOfficialMappingIndex` is intended to:
+`Forge1201TargetOfficialMappingIndex` currently:
 - Require the exact `tsrg2 left right` header and parse top-level class rows plus one-level member rows. Package rows and deeper parameter/metadata rows are not treated as class/member entries.
 - Retain source class/member candidates and preserve conflicting rows as explicit owner/member ambiguity instead of selecting a first match.
 - Resolve methods by exact left owner/name/descriptor. Resolve fields by left owner/name, checking a row descriptor when present; TSRG2 field rows may omit descriptors, so the caller must supply the already-resolved left descriptor.

@@ -67,10 +67,10 @@ final class Forge1201TargetOfficialMappingIndexTest {
         Path mappings = write("ambiguous.tsrg", """
                 tsrg2 left right
                 a net/minecraft/First
-                b net/minecraft/Second
-                b net/minecraft/OtherSecond
                 \tm ()I firstName
                 \tm ()I secondName
+                b net/minecraft/Second
+                b net/minecraft/OtherSecond
                 """);
 
         var index = Forge1201TargetOfficialMappingIndex.read(mappings);
