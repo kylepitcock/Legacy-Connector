@@ -39,14 +39,45 @@ def sha256File = { File file ->
     digest.digest().collect { String.format('%02x', it & 0xff) }.join()
 }
 
+def sha256Directory = { File directory ->
+    def digest = java.security.MessageDigest.getInstance('SHA-256')
+    def files = fileTree(directory).files.sort { left, right ->
+        directory.toPath().relativize(left.toPath()).toString()
+                <=> directory.toPath().relativize(right.toPath()).toString()
+    }
+    files.each { file ->
+        def relative = directory.toPath().relativize(file.toPath()).toString()
+                .replace(File.separatorChar, '/' as char)
+        digest.update(relative.getBytes(java.nio.charset.StandardCharsets.UTF_8))
+        digest.update((byte) 0)
+        file.withInputStream { input ->
+            byte[] buffer = new byte[64 * 1024]
+            int count
+            while ((count = input.read(buffer)) != -1) {
+                digest.update(buffer, 0, count)
+            }
+        }
+        digest.update((byte) 0xff)
+    }
+    [
+            sha256: digest.digest().collect { String.format('%02x', it & 0xff) }.join(),
+            fileCount: files.size()
+    ]
+}
+
 def containsClass = { File entry, String classEntry ->
     if (entry.isDirectory()) {
         return new File(entry, classEntry.replace('/', File.separatorChar)).isFile()
     }
     if (!entry.isFile()) return false
 
-    try (def archive = new java.util.zip.ZipFile(entry)) {
-        return archive.getEntry(classEntry) != null
+    try {
+        def archive = new java.util.zip.ZipFile(entry)
+        try {
+            return archive.getEntry(classEntry) != null
+        } finally {
+            archive.close()
+        }
     } catch (java.util.zip.ZipException notZip) {
         return false
     }
@@ -57,6 +88,9 @@ tasks.register('exportForge1201SourceRuntimeClasspath') {
     description = 'Exports the exact ordered Forge 1.20.1 Mojang-mapped compile classpath for read-only source API inspection.'
 
     inputs.files(configurations.compileClasspath)
+    inputs.property('orderedCompileClasspath', providers.provider {
+        configurations.compileClasspath.asPath
+    })
     inputs.property('minecraftVersion', minecraft_version)
     inputs.property('forgeVersion', forge_version)
     inputs.property('forgeGradleVersion', '6.0.24')
@@ -65,8 +99,12 @@ tasks.register('exportForge1201SourceRuntimeClasspath') {
     outputs.files(classpathOutput, manifestOutput)
 
     doLast {
-        // Use Gradle's ordered classpath string rather than Set iteration order.
-        // Classpath order determines which duplicate class resource is selected.
+        if (!(forge_version ==~ /[0-9]+\\.[0-9]+\\.[0-9]+/)) {
+            throw new GradleException('forge_version must be a pinned numeric Forge version such as 47.3.0.')
+        }
+
+        // Preserve Gradle's resolved order. It determines which duplicate
+        // class resource wins when the classpath is consumed later.
         def entries = configurations.compileClasspath.asPath
                 .split(java.util.regex.Pattern.quote(File.pathSeparator))
                 .findAll { !it.isBlank() }
@@ -95,10 +133,14 @@ tasks.register('exportForge1201SourceRuntimeClasspath') {
                     matches << [classpathIndex: index, path: entry.absolutePath]
                 }
             }
-            [(classEntry): matches]
+            [(classEntry): [
+                    matchCount: matches.size(),
+                    firstMatch: matches ? matches.first() : null,
+                    allMatches: matches
+            ]]
         }
 
-        def missingProbes = probeResults.findAll { classEntry, matches -> matches.isEmpty() }.keySet()
+        def missingProbes = probeResults.findAll { classEntry, result -> result.matchCount == 0 }.keySet()
         if (!missingProbes.isEmpty()) {
             throw new GradleException('Resolved Forge source classpath is missing required Minecraft class probes: '
                     + missingProbes.join(', ')
@@ -111,12 +153,16 @@ tasks.register('exportForge1201SourceRuntimeClasspath') {
                 + System.lineSeparator(), 'UTF-8')
 
         def entryRecords = entries.withIndex().collect { entry, index ->
+            def fingerprint = entry.isDirectory()
+                    ? sha256Directory(entry)
+                    : [sha256: sha256File(entry), fileCount: 1]
             [
                     index: index,
                     path: entry.absolutePath,
                     kind: entry.isDirectory() ? 'directory' : 'file',
                     sizeBytes: entry.isFile() ? entry.length() : null,
-                    sha256: entry.isFile() ? sha256File(entry) : null
+                    fileCount: fingerprint.fileCount,
+                    sha256: fingerprint.sha256
             ]
         }
 
@@ -130,6 +176,7 @@ tasks.register('exportForge1201SourceRuntimeClasspath') {
                         mappings: [channel: 'official', version: minecraft_version]
                 ],
                 javaVersion: System.getProperty('java.version'),
+                javaVendor: System.getProperty('java.vendor'),
                 gradleVersion: gradle.gradleVersion,
                 classpathOrderSource: 'Gradle Configuration.asPath; order retained',
                 classpathFile: classpathFile.absolutePath,
@@ -138,7 +185,7 @@ tasks.register('exportForge1201SourceRuntimeClasspath') {
                 limitations: [
                         'Read-only classpath export; no source Minecraft class is defined, initialized, or executed by this task.',
                         'The main repository audit must consume this manifest explicitly; this classpath is not added to the loader project.',
-                        'Duplicate class resources are reported in classProbes and must not be silently collapsed.',
+                        'Duplicate class resources are recorded with their effective first match and must not be collapsed without review.',
                         'The manifest and classpath file are build-local and are not packaged or committed.'
                 ]
         ]
@@ -150,8 +197,8 @@ tasks.register('exportForge1201SourceRuntimeClasspath') {
 
         println "Forge source runtime: Minecraft ${minecraft_version}, Forge ${forge_version}, official mappings"
         println "Ordered compile classpath entries: ${entries.size()}"
-        probeResults.each { classEntry, matches ->
-            println "${classEntry}: ${matches.size()} classpath match(es)"
+        probeResults.each { classEntry, result ->
+            println "${classEntry}: ${result.matchCount} classpath match(es)"
         }
         println "Classpath: ${classpathFile}"
         println "Manifest: ${manifestFile}"
