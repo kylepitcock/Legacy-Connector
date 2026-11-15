@@ -352,6 +352,15 @@ public final class CoremodSites {
             "net/minecraft/world/World.func_72856_b(Lnet/minecraft/entity/Entity;D)Lnet/minecraft/entity/player/EntityPlayer;#replace:func_72846_b(DDDD)Lnet/minecraft/entity/player/EntityPlayer;")
             .returns(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer.class);
 
+    /** NetHandlerPlayServer.processUseEntity: stands in for the "is this entity an arrow" check that keeps players from attacking it. Values: the entity. */
+    public static final Site ARROW_TARGET = site("entity counted as an arrow when attacked", new Class<?>[] {ENTITY},
+            "net/minecraft/network/NetHandlerPlayServer.func_147340_a(Lnet/minecraft/network/play/client/C02PacketUseEntity;)V#before:ifne").returns(boolean.class);
+
+    /** TileEntityFurnace.updateEntity, first thing: true skips the furnace's own update (another block took the furnace over). Values: the furnace. */
+    public static final Site FURNACE_TAKEN_OVER = site("furnace taken over",
+            new Class<?>[] {legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityFurnace.class},
+            "net/minecraft/tileentity/TileEntityFurnace.func_145845_h()V#head-cancel");
+
     /** The model sites: client classes, so apart from the rest. Values: model, entity, the six animation numbers. */
     public static final class Client {
         private static final Class<?>[] MODEL = {legacyconnector.v1_7_10.net.minecraft.client.model.ModelBiped.class, ENTITY, float.class, float.class, float.class,
@@ -784,6 +793,18 @@ public final class CoremodSites {
     public static Object[] closestVulnerable(net.minecraft.world.entity.Mob mob, double distance) {
         if (!CLOSEST_VULNERABLE.active()) return null;
         return CLOSEST_VULNERABLE.answer(EntityBridge.wrap(mob), mob.getX(), mob.getY(), mob.getZ(), distance);
+    }
+
+    /** {@link #ARROW_TARGET}: the hook's answer (true when there is none). */
+    public static boolean isArrowTarget(net.minecraft.world.entity.Entity entity) {
+        return !ARROW_TARGET.active() || !Boolean.FALSE.equals(ARROW_TARGET.replace(Boolean.TRUE, EntityBridge.wrap(entity)));
+    }
+
+    /** {@link #FURNACE_TAKEN_OVER}. */
+    public static boolean furnaceTakenOver(net.minecraft.world.level.Level level, net.minecraft.core.BlockPos pos) {
+        if (!FURNACE_TAKEN_OVER.active()) return false;
+        if (!(TileEntityBridge.legacyAt(legacyconnector.v1_7_10.net.minecraft.world.World.mcc$wrap(level), pos) instanceof legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityFurnace furnace)) return false;
+        return FURNACE_TAKEN_OVER.cancels(furnace);
     }
 
     private CoremodSites() {}

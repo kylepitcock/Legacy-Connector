@@ -34,6 +34,8 @@
     "CrossCollisionHookMixin",
     "EntityMovementHookMixin",
     "NearestTargetPlayerHookMixin",
+    "AttackArrowCheckHookMixin",
+    "FurnaceTakenOverHookMixin",
     "ServerLevelWeatherHookMixin",
     "ServerLevelNeighborHookMixin",
     "ServerLevelWakeHookMixin",

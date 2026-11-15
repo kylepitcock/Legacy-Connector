@@ -40,8 +40,20 @@ if (typeof cm3done === 'undefined') {
         zombie.discard(); pig.discard();
         return 'zombie->pig=' + r;
     });
+    step('furnace', function () {
+        var ItemStack = Java.type('net.minecraft.world.item.ItemStack'), Items = Java.type('net.minecraft.world.item.Items');
+        var p = pos.south(3);
+        level.setBlock(p, Blocks.FURNACE.defaultBlockState(), 3);
+        var be = level.getBlockEntity(p);
+        be.setItem(0, new ItemStack(Items.IRON_ORE, 2));
+        be.setItem(1, new ItemStack(Items.COAL, 1));
+        cm3furnace = be;
+        return 'filled';
+    });
+    step('load furnace', function () { Java.type('net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity'); Java.type('net.minecraft.server.network.ServerGamePacketListenerImpl$1'); return 'ok'; });
     cm3report = function () {
         var o = [];
+        try { o.push('furnace result=' + cm3furnace.getItem(2) + ' fuel=' + cm3furnace.getItem(1)); } catch (e) { o.push('furnace THREW ' + e); }
         try { o.push('plate power=' + level.getBlockState(pos)); } catch (e) { o.push('plate THREW ' + e); }
         return o;
     };
