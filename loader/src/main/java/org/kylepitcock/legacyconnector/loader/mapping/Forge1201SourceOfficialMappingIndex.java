@@ -395,6 +395,10 @@ public final class Forge1201SourceOfficialMappingIndex {
                     add(officialToObfuscated, currentOfficialOwner, currentObfuscatedOwner);
                     classRows++;
                     records++;
+                    if (records > MAX_MOJANG_ROWS) {
+                        throw new IOException("Mojang mappings exceed the " + MAX_MOJANG_ROWS
+                                + " class/member row limit: " + mappingFile);
+                    }
                     continue;
                 }
 
@@ -418,6 +422,10 @@ public final class Forge1201SourceOfficialMappingIndex {
                     methodOwnerNames.add(new OwnerName(currentObfuscatedOwner, obfuscatedName));
                     methodRows++;
                     records++;
+                    if (records > MAX_MOJANG_ROWS) {
+                        throw new IOException("Mojang mappings exceed the " + MAX_MOJANG_ROWS
+                                + " class/member row limit: " + mappingFile);
+                    }
                     continue;
                 }
 
@@ -511,7 +519,8 @@ public final class Forge1201SourceOfficialMappingIndex {
         return switch (status) {
             case MAPPED_EXACT -> Status.MAPPED_EXACT;
             case MAPPED_WITH_EXTERNAL_TYPES -> Status.MAPPED_WITH_EXTERNAL_TYPES;
-            case OWNER_MISSING, OWNER_AMBIGUOUS -> Status.OWNER_MISSING;
+            case OWNER_MISSING -> Status.OWNER_MISSING;
+            case OWNER_AMBIGUOUS -> Status.OWNER_AMBIGUOUS;
             case DESCRIPTOR_UNRESOLVED -> Status.DESCRIPTOR_UNRESOLVED;
             case AMBIGUOUS -> Status.MEMBER_AMBIGUOUS;
             case MISSING -> Status.MEMBER_MISSING;
@@ -547,7 +556,9 @@ public final class Forge1201SourceOfficialMappingIndex {
     }
 
     private static <K, V> int ambiguousKeys(Map<K, List<V>> source) {
-        return (int) source.values().stream().filter(values -> distinct(values).size() > 1).count();
+        return (int) source.values().stream()
+                .filter(values -> new LinkedHashSet<>(values).size() > 1)
+                .count();
     }
 
     private static List<MethodMapping> distinctMethods(List<MethodMapping> rows) {
