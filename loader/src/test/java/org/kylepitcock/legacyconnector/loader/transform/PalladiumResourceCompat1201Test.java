@@ -669,7 +669,7 @@ class PalladiumResourceCompat1201Test {
 
         String migrated = get(resources, "data/alienevo/kubejs_scripts/workbench.js");
         assertTrue(migrated.contains("count:1,components:{\\"minecraft:custom_data\\":"));
-        assertTrue(migrated.contains("JSON.stringify(nbtData)}},PickupDelay:10"));
+        assertTrue(migrated.contains("JSON.stringify(nbtData)}}},PickupDelay:10"));
         assertTrue(migrated.contains("omnitrix.setCustomData(NBT.wrapCompound(nbtData));"));
         assertTrue(migrated.contains("var nbt = mainHandItem.getCustomData();"));
         assertTrue(migrated.contains("function getStoredScore(nbtTag, defaultValue)"));
