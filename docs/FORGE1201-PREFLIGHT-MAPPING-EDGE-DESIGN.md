@@ -202,7 +202,7 @@ The user supplied the complete forced loader console and the generated `srg-obfu
 
 ## 14. Implementation checkpoint 2 — per-symbol SRG-to-Intermediary composition
 
-**Status:** A read-only per-symbol composition layer has been implemented and awaits the user's forced loader test gate.
+**Status:** implemented; the first forced loader run exposed a synthetic TSRG/Tiny field-name mismatch. The fixture-only correction below is published and awaits rerun.
 
 - `Forge1201IntermediaryBridgeAudit.Index` exposes owner/member/full-descriptor queries over its existing parsed source and target Tiny v1 data, while the aggregate report remains available from the same index.
 - `Forge1201SrgIntermediaryBridgeResolver` composes Forge SRG→source official-obfuscated mappings with the source/target Intermediary relation. It provides explicit class, method and field result states for missing/ambiguous source entries, moved owners, missing target IDs, unresolved/changed descriptors, and external passthrough.
@@ -217,3 +217,12 @@ The user supplied the complete forced loader console and the generated `srg-obfu
 The root build uses ModDevGradle `2.0.148`, NeoForge `21.1.258`, and Parchment configured for Minecraft `1.21.1` with mappings version `2024.11.17`. The analyzer receives the resolved root `sourceSets.main.compileClasspath` as its actual target class-resource source.
 
 NeoForged documentation describes Parchment as supplemental parameter names and Javadocs layered onto Mojang's official names, rather than a distinct class/member namespace. This supports the working target namespace identity `minecraft:official-mojang@1.21.1`. The exact 1.21.1 official mapping bytes, checksum, direction, and actual artifact/classpath agreement still require a pinned local-byte audit. Do not enable the final mapping edge from documentation alone.
+
+
+### 14.2 First forced validation result and synthetic fixture correction
+
+The user's first forced run at source commit `90f5f24c3be97c9748a798aa0ec3fd171826785d` completed compilation and both build-local mapping audit tasks, then failed in `:loader:test`: **515 tests completed, 1 failed**. The failure was `Forge1201SrgIntermediaryBridgeResolverTest.resolvesClassMethodAndFieldThroughBothSourceEdges()`, at the field-resolution assertion.
+
+The failure is a test-fixture mismatch, not a production resolver defect. The synthetic TSRG2 row named the field's official-obfuscated name `f` (`\tf f_20_ 3`), while the source Tiny v1 row for the same owner/member ID named that field `x` (`FIELD a Lb; x field_1`). The SRG bridge correctly joins descriptorless TSRG2 field entries to Tiny by owner plus official-obfuscated field name; `f` and `x` cannot join.
+
+The fixture now uses `\tx f_20_ 3`, aligning the TSRG2 official-obfuscated field name with the source Tiny row while retaining the SRG name `f_20_`. The expected source `x` → target `y` composition assertions remain intact. No production Java behavior was changed. This correction is **not yet validated**; the forced loader test must be rerun before this composition batch is marked green.

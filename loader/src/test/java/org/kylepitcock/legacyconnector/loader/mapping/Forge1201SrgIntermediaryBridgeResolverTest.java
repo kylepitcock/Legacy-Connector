@@ -18,7 +18,7 @@ final class Forge1201SrgIntermediaryBridgeResolverTest {
                 tsrg2 obf srg id
                 a net/minecraft/Entity 1
                 \tm (I)V m_10_ 2
-                \tf f_20_ 3
+                \tx f_20_ 3
                 b net/minecraft/Component 4
                 """);
         Path sourceTiny = write("source.tiny", """
