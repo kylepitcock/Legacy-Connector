@@ -1284,13 +1284,12 @@ final class PalladiumResourceCompat1201 {
 
     /**
      * KubeJS 7 NetworkEvents.dataReceived exposes the sending player as event.player.
-     * Older AlienEvo packet handlers still use event.entity, preventing the
-     * Omnitrix palette from being saved and breaking jump-state packets.
+     * The palette/nickname handlers are migrated by rewriteOmnitrixPacketPlayerAccess;
+     * this handles the two remaining jump-state handlers that still use event.entity.
      */
     private static int rewriteAlienEvoNetworkDataPlayerAccess(Map<String, byte[]> resources) {
         return rewrite(resources, ALIEN_EVO_SERVER_STUFF, new String[][] {
-                {"let entity = event.entity;", "let entity = event.player;", "2"},
-                {"let player = event.entity;", "let player = event.player;", "2"}
+                {"let entity = event.entity;", "let entity = event.player;", "2"}
         });
     }
 
