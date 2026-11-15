@@ -347,6 +347,47 @@ public abstract class EntityPlayer extends EntityLivingBase implements legacycon
                 (windowId, inv, p) -> new net.minecraft.world.inventory.ChestMenu(type, windowId, inv, view, rows), title));
     }
 
+    /**
+     * Shows a horse's inventory (1.7.10 {@code displayGUIHorse}). The window is the modern generic chest menu, so the slots are padded
+     * to a multiple of nine; the padding takes nothing, slot 0 takes a saddle only and slot 1 horse armor only.
+     */
+    public void displayGUIHorse(legacyconnector.v1_7_10.net.minecraft.entity.passive.EntityHorse horse,
+            legacyconnector.v1_7_10.net.minecraft.inventory.IInventory inventory) {
+        if (horse == null || inventory == null) return;
+        displayGUIChest(new HorseWindow(inventory));
+    }
+
+    private static final class HorseWindow implements legacyconnector.v1_7_10.net.minecraft.inventory.IInventory {
+        private final legacyconnector.v1_7_10.net.minecraft.inventory.IInventory real;
+        private final int size;
+
+        HorseWindow(legacyconnector.v1_7_10.net.minecraft.inventory.IInventory real) {
+            this.real = real;
+            this.size = Math.max(9, (real.getSizeInventory() + 8) / 9 * 9);
+        }
+
+        public int getSizeInventory() { return size; }
+        public ItemStack getStackInSlot(int slot) { return slot < real.getSizeInventory() ? real.getStackInSlot(slot) : null; }
+        public ItemStack decrStackSize(int slot, int n) { return slot < real.getSizeInventory() ? real.decrStackSize(slot, n) : null; }
+        public ItemStack getStackInSlotOnClosing(int slot) { return slot < real.getSizeInventory() ? real.getStackInSlotOnClosing(slot) : null; }
+        public void setInventorySlotContents(int slot, ItemStack stack) { if (slot < real.getSizeInventory()) real.setInventorySlotContents(slot, stack); }
+        public String getInventoryName() { return real.getInventoryName(); }
+        public boolean hasCustomInventoryName() { return real.hasCustomInventoryName(); }
+        public int getInventoryStackLimit() { return real.getInventoryStackLimit(); }
+        public void markDirty() { real.markDirty(); }
+        public boolean isUseableByPlayer(EntityPlayer player) { return real.isUseableByPlayer(player); }
+        public void openInventory() { real.openInventory(); }
+        public void closeInventory() { real.closeInventory(); }
+
+        public boolean isItemValidForSlot(int slot, ItemStack stack) {
+            if (slot >= real.getSizeInventory() || stack == null) return false;
+            var item = stack.getItem();
+            if (slot == 0) return item == legacyconnector.v1_7_10.net.minecraft.init.Items.saddle;
+            if (slot == 1) return legacyconnector.v1_7_10.net.minecraft.entity.passive.EntityHorse.func_146085_a(item);
+            return real.isItemValidForSlot(slot, stack);
+        }
+    }
+
     /** Shows the hopper window of a hopper cart (a vanilla one opens its own menu). */
     public void displayGUIHopperMinecart(legacyconnector.v1_7_10.net.minecraft.entity.item.EntityMinecartHopper cart) {
         if (!(mcc$player() instanceof net.minecraft.server.level.ServerPlayer sp) || cart == null) return;
