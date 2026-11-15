@@ -133,8 +133,18 @@ public class ModelLoader extends legacyconnector.v1_12_2.net.minecraft.client.re
 
     /** Sprites by name from the block atlas (the texture getter models are baked with). */
     public static java.util.function.Function<ResourceLocation, legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.TextureAtlasSprite> defaultTextureGetter() {
-        return location -> legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.TextureMap.mcc$blocks().getAtlasSprite(location.toString());
+        return DEFAULT_GETTER;
     }
+
+    /** The default texture getter (a class of its own: baking a json model with any other getter takes that getter's sprites, see ModelLoaderRegistry). */
+    public static final class DefaultTextureGetter implements java.util.function.Function<ResourceLocation, legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.TextureAtlasSprite> {
+        @Override
+        public legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.TextureAtlasSprite apply(ResourceLocation location) {
+            return legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.TextureMap.mcc$blocks().getAtlasSprite(location.toString());
+        }
+    }
+
+    private static final DefaultTextureGetter DEFAULT_GETTER = new DefaultTextureGetter();
 
     public static ModelResourceLocation getInventoryVariant(String s) {
         if (s.contains("#")) return new ModelResourceLocation(s);
