@@ -364,6 +364,15 @@ public class World implements IBlockAccess {
         return deep ? !ore || !toDeep : ore && toDeep;
     }
 
+    /**
+     * A generator whose deep layer is active reads the rock below y=0 as stone in its normal pass too, so a vein that starts above 0
+     * and reaches below it continues into the deep layer (it was cut at y=0: the deep pass generates its own veins elsewhere, and
+     * deepslate was not the stone a vein may replace). The ore split ({@link #mcc$splitDrops}) is untouched: it covers 0..63 only.
+     */
+    private boolean mcc$oreVeinBelowZero(int y) {
+        return y < 0 && MCC_ORE_SPLIT.get() && lvl() instanceof net.minecraft.server.level.WorldGenRegion;
+    }
+
     public static boolean mcc$inDeepPass() {
         return inDeepPass();
     }
@@ -495,7 +504,7 @@ public class World implements IBlockAccess {
         BlockState offThread = mcc$offThreadState(x, y, z);
         BlockState state = offThread != null ? offThread : lvl().getBlockState(mcc$readPos(x, y, z));
         // Ore generators replace stone; the deep layer is deepslate.
-        if (state.is(Blocks.DEEPSLATE) && inDeepPass()) return legacyconnector.v1_7_10.net.minecraft.init.Blocks.stone;
+        if (state.is(Blocks.DEEPSLATE) && (inDeepPass() || mcc$oreVeinBelowZero(y))) return legacyconnector.v1_7_10.net.minecraft.init.Blocks.stone;
         if (mcc$bedrockFloor(y, state)) return legacyconnector.v1_7_10.net.minecraft.init.Blocks.bedrock;
         return BlockBridge.legacyBlock(state);
     }
@@ -1520,7 +1529,7 @@ public class World implements IBlockAccess {
     }
 
     public void playAuxSFXAtEntity(EntityPlayer player, int type, int x, int y, int z, int data) {
-        int[] modern = org.kylepitcock.legacyconnector.v1_7_10.bridge.LevelEvents1710.toModern(type, data);
+        int[] modern = org.kylepitcock.legacyconnector.v1_7_10.bridge.LevelEvents1710.toModern(lvl(), type, data);
         if (modern == null) return;
         lvl().levelEvent(player == null ? null : player.mcc$player(), modern[0], pos(x, y, z), modern[1]);
     }
@@ -2434,7 +2443,14 @@ public class World implements IBlockAccess {
     public void destroyBlockInWorldPartially(int breakerId, int x, int y, int z, int progress) {
     }
 
+    /** Plays the record of that song name at the position (null or empty stops it), as the client's RenderGlobal did. */
     public void playRecord(String name, int x, int y, int z) {
+        if (name == null || name.isEmpty()) {
+            playAuxSFX(1005, x, y, z, 0);
+            return;
+        }
+        var disc = legacyconnector.v1_7_10.net.minecraft.item.ItemRecord.getRecord(name.startsWith("records.") ? name.substring(8) : name);
+        if (disc != null) playAuxSFX(1005, x, y, z, legacyconnector.v1_7_10.net.minecraft.item.Item.getIdFromItem(disc));
     }
 
     /** How full the moon is (1 full .. 0 new), vanilla's per-phase table. */

@@ -30,7 +30,8 @@ import org.kylepitcock.legacyconnector.v1_12_2.bridge.EntityBridge1122;
  * jump control, attributes, equipment, combat and despawning; the legacy object's overrides run in their place (tick -> onUpdate,
  * aiStep -> onLivingUpdate, the server AI step -> the legacy task lists and updateAITasks, ...).
  */
-public class MobHost1122 extends PathfinderMob implements LivingHost1122, IEntityWithComplexSpawn, net.minecraft.world.entity.monster.RangedAttackMob {
+public class MobHost1122 extends PathfinderMob implements LivingHost1122, IEntityWithComplexSpawn, net.minecraft.world.entity.monster.RangedAttackMob,
+        net.minecraft.world.entity.PlayerRideableJumping {
     static final EntityDataAccessor<CompoundTag> DATA = SynchedEntityData.defineId(MobHost1122.class, EntityDataSerializers.COMPOUND_TAG);
 
     private Entity legacy;
@@ -365,6 +366,39 @@ public class MobHost1122 extends PathfinderMob implements LivingHost1122, IEntit
     @Override
     public void mcc$superThunderHit(ServerLevel level, net.minecraft.world.entity.LightningBolt bolt) {
         super.thunderHit(level, bolt);
+    }
+
+    /** 1.12 mounts name their steering rider through {@code getControllingPassenger} (horses: the first passenger; mods: any); modern steering follows it. */
+    @Override
+    public LivingEntity getControllingPassenger() {
+        if (legacy != null && (legacy instanceof legacyconnector.v1_12_2.net.minecraft.entity.passive.AbstractHorse
+                || Hosts1122.overrides(legacy.getClass(), "getControllingPassenger"))) {
+            Entity rider = legacy.getControllingPassenger();
+            if (rider != null && rider.mcc$entity instanceof LivingEntity living) return living;
+            return null;
+        }
+        return super.getControllingPassenger();
+    }
+
+    // IJumpingMount (1.12): the rider's jump key charges the mount's jump power; the modern client shows the jump bar for canJump()
+    @Override
+    public void onPlayerJump(int power) {
+        if (legacy instanceof legacyconnector.v1_12_2.net.minecraft.entity.IJumpingMount m) m.setJumpPower(power);
+    }
+
+    @Override
+    public boolean canJump() {
+        return legacy instanceof legacyconnector.v1_12_2.net.minecraft.entity.IJumpingMount m && m.canJump();
+    }
+
+    @Override
+    public void handleStartJump(int power) {
+        if (legacy instanceof legacyconnector.v1_12_2.net.minecraft.entity.IJumpingMount m) m.handleStartJump(power);
+    }
+
+    @Override
+    public void handleStopJump() {
+        if (legacy instanceof legacyconnector.v1_12_2.net.minecraft.entity.IJumpingMount m) m.handleStopJump();
     }
 
     @Override

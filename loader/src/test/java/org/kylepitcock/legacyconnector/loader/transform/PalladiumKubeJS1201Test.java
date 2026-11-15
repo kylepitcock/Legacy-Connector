@@ -283,6 +283,42 @@ class PalladiumKubeJS1201Test implements Opcodes {
                 "SERVER", "Ldev/latvian/mods/kubejs/script/ScriptType;"));
     }
 
+
+    @Test
+    void kubeJs6EntityEventWrapperBecomesKubeJs7EntityEventInterface() {
+        String oldEntityEvent = "dev/latvian/mods/kubejs/entity/EntityEventJS";
+        String newEntityEvent = "dev/latvian/mods/kubejs/entity/KubeEntityEvent";
+
+        ClassNode node = new ClassNode();
+        node.version = V21;
+        node.access = ACC_PUBLIC;
+        node.name = "net/threetag/palladium/compat/kubejs/ProjectileTickEventJS";
+        node.superName = oldEntityEvent;
+
+        MethodNode constructor = new MethodNode(ACC_PUBLIC, "<init>",
+                "(Lnet/threetag/palladium/entity/CustomProjectile;)V", null, null);
+        constructor.instructions.add(new VarInsnNode(ALOAD, 0));
+        constructor.instructions.add(new MethodInsnNode(INVOKESPECIAL, oldEntityEvent, "<init>", "()V", false));
+        constructor.instructions.add(new org.objectweb.asm.tree.InsnNode(RETURN));
+        node.methods.add(constructor);
+        node.methods.add(returningReferenceMethod(ACC_PUBLIC, "getEntity",
+                "()Lnet/minecraft/world/entity/Entity;"));
+
+        assertEquals(1, PalladiumKubeJS1201.apply(node));
+        assertEquals("java/lang/Object", node.superName);
+        assertTrue(node.interfaces.contains(newEntityEvent));
+        assertTrue(hasCall(find(node, "<init>", "(Lnet/threetag/palladium/entity/CustomProjectile;)V"),
+                INVOKESPECIAL, "java/lang/Object", "<init>", "()V"));
+        assertFalse(hasCall(find(node, "<init>", "(Lnet/threetag/palladium/entity/CustomProjectile;)V"),
+                INVOKESPECIAL, oldEntityEvent, "<init>", "()V"));
+        assertTrue(hasMethod(node, "getEntity", "()Lnet/minecraft/world/entity/Entity;"));
+
+        ClassWriter writer = new ClassWriter(0);
+        node.accept(writer);
+        assertTrue(writer.toByteArray().length > 0,
+                "rewritten projectile event should serialize with the KubeJS 7 entity-event interface");
+    }
+
     @Test
     void pluginDiscoveryResourceIsAddedOnlyForPalladiumAndPreservesExistingEntries() {
         java.util.Map<String, byte[]> resources = new java.util.LinkedHashMap<>();

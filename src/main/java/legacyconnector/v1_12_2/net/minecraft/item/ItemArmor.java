@@ -76,6 +76,16 @@ public class ItemArmor extends Item {
         private final float toughness;
         private ItemStack repairMaterial = ItemStack.EMPTY;
 
+        /** The enum constant's own name when it differs from the texture name (Forge's EnumHelper.addArmorMaterial(name, textureName, ...)). */
+        private String constantName;
+
+        /** Forge's {@code EnumHelper.addArmorMaterial}: the constant is called {@code constantName}, its texture name ({@link #getName}) is {@code textureName}. */
+        public ArmorMaterial(String constantName, String textureName, int maxDamageFactor, int[] damageReductionAmountArray, int enchantability, SoundEvent soundEvent,
+                float toughness) {
+            this(textureName == null ? constantName : textureName, maxDamageFactor, damageReductionAmountArray, enchantability, soundEvent, toughness);
+            this.constantName = constantName;
+        }
+
         public ArmorMaterial(String name, int maxDamageFactor, int[] damageReductionAmountArray, int enchantability, SoundEvent soundEvent, float toughness) {
             this.ordinal = ALL.size();
             ALL.add(this);
@@ -125,7 +135,7 @@ public class ItemArmor extends Item {
         }
 
         public String name() {
-            return name.toUpperCase(java.util.Locale.ROOT);
+            return (constantName != null ? constantName : name).toUpperCase(java.util.Locale.ROOT);
         }
 
         public static ArmorMaterial[] values() {

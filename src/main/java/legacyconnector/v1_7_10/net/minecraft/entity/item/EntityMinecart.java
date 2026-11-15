@@ -98,6 +98,12 @@ public abstract class EntityMinecart extends Entity {
         return yOffset;
     }
 
+    /** Rail-following carts write posY, offset the box and read their position back from it (see Entity#mcc$posWriteMovesBox). */
+    @Override
+    public boolean mcc$posWriteMovesBox() {
+        return false;
+    }
+
     private AbstractMinecart mcc$cart() {
         return mcc$entity instanceof AbstractMinecart c ? c : null;
     }

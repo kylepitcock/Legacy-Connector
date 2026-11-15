@@ -132,6 +132,14 @@ public abstract class Entity implements ICommandSender {
     @Deprecated
     public boolean noClip;
     private boolean mcc$local_noClip;
+    /**
+     * Phantom field: accesses are redirected to {@code mcc$get$ignoreFrustumCheck}. The modern equivalent is {@code noCulling}, which
+     * Sodium and Entity Culling read too (Entity Culling stops ticking a culled entity, so a mod's client-side effect entity that
+     * is drawn around the player froze after a few ticks).
+     */
+    @Deprecated
+    public boolean ignoreFrustumCheck;
+    private boolean mcc$local_ignoreFrustumCheck;
     /** Phantom field: accesses are redirected to {@code mcc$get$width}. */
     @Deprecated
     public float width;
@@ -348,6 +356,27 @@ public abstract class Entity implements ICommandSender {
         return mcc$extended != null && !mcc$extended.isEmpty();
     }
 
+    /**
+     * Whether a write to {@code posX/posY/posZ} also moves {@code boundingBox}. In 1.7.10 it never did (only setPosition and
+     * moveEntity moved the box), and a rail-following cart writes posY and then offsets the box and derives its position from
+     * it (Traincraft's diagonal track); the modern entity's box follows its position, so carts opt out ({@link #mcc$writePos}).
+     */
+    public boolean mcc$posWriteMovesBox() {
+        return true;
+    }
+
+    /** A position field write: the modern position, with the legacy box left where it was for entities that opt out. */
+    private static void mcc$writePos(Entity e, net.minecraft.world.entity.Entity m, double x, double y, double z) {
+        if (e.mcc$posWriteMovesBox()) {
+            m.setPos(x, y, z);
+            return;
+        }
+        mcc$get$boundingBox(e); // changes the mod made to the box so far go to the modern entity first
+        var box = m.getBoundingBox();
+        m.setPos(x, y, z);
+        m.setBoundingBox(box);
+    }
+
     public static double mcc$get$posX(Entity e) {
         var m = e.mcc$entity;
         return m != null ? m.getX() : e.mcc$local_posX;
@@ -356,7 +385,7 @@ public abstract class Entity implements ICommandSender {
     public static void mcc$set$posX(Entity e, double v) {
         var m = e.mcc$entity;
         if (m != null) {
-            m.setPos(v, m.getY(), m.getZ());
+            mcc$writePos(e, m, v, m.getY(), m.getZ());
         } else {
             e.mcc$local_posX = v;
         }
@@ -370,7 +399,7 @@ public abstract class Entity implements ICommandSender {
     public static void mcc$set$posY(Entity e, double v) {
         var m = e.mcc$entity;
         if (m != null) {
-            m.setPos(m.getX(), v - e.mcc$yShift(), m.getZ());
+            mcc$writePos(e, m, m.getX(), v - e.mcc$yShift(), m.getZ());
         } else {
             e.mcc$local_posY = v;
         }
@@ -384,7 +413,7 @@ public abstract class Entity implements ICommandSender {
     public static void mcc$set$posZ(Entity e, double v) {
         var m = e.mcc$entity;
         if (m != null) {
-            m.setPos(m.getX(), m.getY(), v);
+            mcc$writePos(e, m, m.getX(), m.getY(), v);
         } else {
             e.mcc$local_posZ = v;
         }
@@ -730,6 +759,20 @@ public abstract class Entity implements ICommandSender {
             m.noPhysics = v;
         } else {
             e.mcc$local_noClip = v;
+        }
+    }
+
+    public static boolean mcc$get$ignoreFrustumCheck(Entity e) {
+        var m = e.mcc$entity;
+        return m != null ? m.noCulling : e.mcc$local_ignoreFrustumCheck;
+    }
+
+    public static void mcc$set$ignoreFrustumCheck(Entity e, boolean v) {
+        var m = e.mcc$entity;
+        if (m != null) {
+            m.noCulling = v;
+        } else {
+            e.mcc$local_ignoreFrustumCheck = v;
         }
     }
 

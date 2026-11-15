@@ -26,6 +26,12 @@ public class LegacyChestItemRenderer extends BlockEntityWithoutLevelRenderer {
         if (view == null || !(view.getItem() instanceof ItemBlock ib)) return;
         Block block = ib.mcc$block();
         Item item = view.getItem();
+        if (TileEntityRendererChestHelper.instance.getClass() == TileEntityRendererChestHelper.class) {
+            // no mod installed its own chest helper: 1.7.10's default helper drew a vanilla chest here (blocks that extend BlockChest or
+            // BlockEnderChest and bring no renderer of their own, such as Witchery's refilling chest)
+            renderVanillaChest(block, pose, buffers, light, overlay);
+            return;
+        }
         RenderContext.beginWorld(pose, buffers, light, overlay);
         try {
             TileEntityRendererChestHelper.instance.renderChest(block, view.getItemDamage(), 0.0F);
@@ -33,6 +39,23 @@ public class LegacyChestItemRenderer extends BlockEntityWithoutLevelRenderer {
             // keep the inventory usable if a legacy renderer breaks
         } finally {
             RenderContext.end();
+        }
+    }
+
+    private static void renderVanillaChest(Block block, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
+        var pos = net.minecraft.core.BlockPos.ZERO;
+        net.minecraft.world.level.block.entity.BlockEntity be;
+        if (block.mcc$vanilla != null && "ender_chest".equals(block.mcc$vanilla.legacyName())) {
+            be = new net.minecraft.world.level.block.entity.EnderChestBlockEntity(pos, net.minecraft.world.level.block.Blocks.ENDER_CHEST.defaultBlockState());
+        } else if (block.mcc$vanilla != null && "trapped_chest".equals(block.mcc$vanilla.legacyName())) {
+            be = new net.minecraft.world.level.block.entity.TrappedChestBlockEntity(pos, net.minecraft.world.level.block.Blocks.TRAPPED_CHEST.defaultBlockState());
+        } else {
+            be = new net.minecraft.world.level.block.entity.ChestBlockEntity(pos, net.minecraft.world.level.block.Blocks.CHEST.defaultBlockState());
+        }
+        try {
+            Minecraft.getInstance().getBlockEntityRenderDispatcher().renderItem(be, pose, buffers, light, overlay);
+        } catch (RuntimeException e) {
+            // keep the inventory usable
         }
     }
 }

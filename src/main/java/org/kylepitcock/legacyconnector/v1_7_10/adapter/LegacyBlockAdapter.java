@@ -423,7 +423,47 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
                 // a broken name falls back to the key
             }
         }
+        if (memberDescription == null) {
+            String alt = subtypeNameKey();
+            if (alt != null) return net.minecraft.network.chat.Component.translatable(alt);
+        }
         return super.getName();
+    }
+
+    /** The name key found for a block whose plain key has no text (see {@link #subtypeNameKey()}); remembered once found. */
+    private volatile String subtypeNameKey;
+
+    /**
+     * A block that 1.7.10 named per metadata through its ItemBlock or {@code unlocalizedName.meta} keys has no text under its plain
+     * {@code unlocalizedName.name} key, so Jade (which names a block without a pick item by the block alone) showed the raw key
+     * (Thaumcraft's aura node: only {@code tile.blockAiry.0.name} exists). The name of its metadata 0, as the ItemBlock gave it, is
+     * used then. Null when the plain key has text or no such key exists.
+     */
+    private String subtypeNameKey() {
+        net.minecraft.locale.Language lang = net.minecraft.locale.Language.getInstance();
+        String plain = getDescriptionId();
+        if (lang.has(plain) || org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyLang.lookup(lang, plain) != null) return null;
+        String found = subtypeNameKey;
+        if (found != null) return found;
+        java.util.List<String> candidates = new ArrayList<>(2);
+        try {
+            legacyconnector.v1_7_10.net.minecraft.item.Item item = org.kylepitcock.legacyconnector.v1_7_10.bridge.ItemBridge.fromBlock(legacy);
+            if (item instanceof legacyconnector.v1_7_10.net.minecraft.item.ItemBlock ib) {
+                String n = ib.getUnlocalizedName(new ItemStack(ib, 1, 0));
+                if (n != null && !n.isEmpty()) candidates.add(n + ".name");
+            }
+        } catch (RuntimeException | LinkageError ignored) {
+            // falls through to the metadata key
+        }
+        candidates.add(legacy.getUnlocalizedName() + ".0.name");
+        for (String c : candidates) {
+            if (c.equals(plain)) continue;
+            if (lang.has(c) || org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyLang.lookup(lang, c) != null) {
+                subtypeNameKey = c;
+                return c;
+            }
+        }
+        return null;
     }
 
     // ------------------------------------------------------------------ interaction

@@ -123,7 +123,8 @@ else:
 
 remap = lambda d: re.sub(r"L([^;]+);", lambda m: "L" + cmap.get(m.group(1), m.group(1)) + ";", d)
 out = []
-notch = []  # 1.5.2 and 1.6.4 only: the obfuscated jar's names, for mods that were never reobfuscated to SRG (loader/.../legacy/1.6.4/notch.txt)
+notch = []  # the obfuscated jar's names: for mods that were never reobfuscated to SRG (1.4.7 to 1.6.4), and for showing Minecraft's own classes to
+# coremod transformers (1.7.10, CoremodHookScan); loader/.../legacy/<ver>/notch.txt
 with zipfile.ZipFile(os.path.join(ROOT, "mojang", "client-%s.jar" % ver)) as jar:
     for entry in jar.namelist():
         if not entry.endswith(".class"): continue
@@ -143,7 +144,7 @@ with zipfile.ZipFile(os.path.join(ROOT, "mojang", "client-%s.jar" % ver)) as jar
             out.append("M %s %s %d %s" % (names.get(srg, srg), remap(md), ma, srg))
 dst = os.path.join(ROOT, "legacy-%s.sig" % ver)
 open(dst, "w").write("\n".join(out) + "\n")
-if ver in ("1.4.7", "1.5.2", "1.6.4"):
+if ver in ("1.4.7", "1.5.2", "1.6.4", "1.7.10"):
     nd = os.path.join(ROOT, "..", "..", "loader", "src", "main", "resources", "legacyconnector", "legacy", ver)
     open(os.path.join(nd, "notch.txt"), "w").write("\n".join(notch) + "\n")
 print("wrote", dst, sum(1 for l in out if l.startswith("C ")), "classes")

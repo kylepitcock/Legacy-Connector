@@ -185,6 +185,7 @@ public final class BetaJars {
             }
         }
         if (scan.classes.isEmpty()) return null;
+        scan.modClasses.removeIf(c -> !entryPoint(scan, c));
         Path parent = path.getParent();
         boolean inFolder = parent != null && parent.getFileName() != null && FOLDER.equals(parent.getFileName().toString());
         if (!inFolder && scan.modClasses.isEmpty() && scan.apiRefs == 0) return null;
@@ -265,6 +266,22 @@ public final class BetaJars {
         for (int i = 2; used.contains(pkg); i++) pkg = sb + "_" + i;
         PACKAGES.put(path, pkg);
         return pkg;
+    }
+
+    /**
+     * A default-package {@code mod_*} class is a ModLoader entry point only when its superclass chain does not end in a game class or
+     * {@code java/*}: helper classes of a mod are often named {@code mod_Foo_GuiBed} and extend the obfuscated {@code GuiScreen}; constructing
+     * those as mods fails with NoSuchMethodException and counts as a failed mod.
+     */
+    static boolean entryPoint(Scan scan, String cls) {
+        String c = cls;
+        for (int i = 0; i < 32; i++) {
+            ClassMeta m = scan.classes.get(c);
+            if (m == null) return !(c.startsWith("java/") || looksLikeGameClass(c));
+            c = m.superName();
+            if (c == null) return false;
+        }
+        return true;
     }
 
     private static void read(byte[] bytes, Scan scan) {

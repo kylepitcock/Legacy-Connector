@@ -133,6 +133,7 @@ public final class RenderContext {
         final float[][] texGenObjPlane = {{1, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}};
         final float[][] texGenEyePlane = {{1, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}};
         int texGenMask;
+        boolean texGenSub;
         /** The legacy projection while legacy code has replaced the modern one; null while it has not. */
         org.joml.Matrix4f projection;
         final Deque<org.joml.Matrix4f> projectionStack = new ArrayDeque<>();
@@ -664,8 +665,18 @@ public final class RenderContext {
         return geometryBuffer(STATE.get());
     }
 
+    /**
+     * Geometry a screen draws into the depth buffer only (colour writes off, depth writes on): a clip frame as OpenComputers' manual
+     * and JourneyMap's minimap draw. Legacy GL sampled whatever texture was bound with alpha test usually off, so the quad always wrote
+     * depth; the textured GUI types discard transparent texels, which left holes in the mask. It is drawn untextured instead.
+     */
+    private static boolean depthOnlyMask(State s) {
+        return s.colorWrite == 0 && s.depthWrite && s.depthTest && gui(s) != null;
+    }
+
     private static VertexConsumer geometryBuffer(State s) {
         boolean gui = gui(s) != null;
+        if (depthOnlyMask(s)) return buffers(s).getBuffer(stated(s, RenderType.debugQuads()));
         ResourceLocation texture = s.texture;
         MultiBufferSource buffers = buffers(s);
         if (!gui && IrisState.compatPack()) {
@@ -805,7 +816,8 @@ public final class RenderContext {
 
     /** Whether the current geometry buffer takes the full entity vertex format (uv, overlay, light, normal). */
     public static boolean geometryHasEntityFormat() {
-        return STATE.get().texture2d;
+        State s = STATE.get();
+        return s.texture2d && !depthOnlyMask(s);
     }
 
     /** Quads handed to quad() on this thread so far (diagnostics: did a legacy renderer draw anything). */
@@ -837,6 +849,22 @@ public final class RenderContext {
 
     static void quad(State s, double[] v0, double[] v1, double[] v2, double[] v3, float nx, float ny, float nz) {
         s.quadCount++;
+        if (s.texture2d && s.texGenMask != 0 && s.texGenOn[3] && !s.texGenSub) {
+            // GL divides the generated coordinates per pixel; here it happens per vertex, so a big quad is cut into a grid first
+            s.texGenSub = true;
+            try {
+                int n = TEXGEN_GRID;
+                for (int i = 0; i < n; i++) {
+                    for (int j = 0; j < n; j++) {
+                        quad(s, lerp4(v0, v1, v2, v3, i / (double) n, j / (double) n), lerp4(v0, v1, v2, v3, (i + 1) / (double) n, j / (double) n),
+                                lerp4(v0, v1, v2, v3, (i + 1) / (double) n, (j + 1) / (double) n), lerp4(v0, v1, v2, v3, i / (double) n, (j + 1) / (double) n), nx, ny, nz);
+                    }
+                }
+            } finally {
+                s.texGenSub = false;
+            }
+            return;
+        }
         if (s.texture2d && s.texGenMask != 0) {
             v0 = texGenerated(s, v0, 0);
             v1 = texGenerated(s, v1, 1);
@@ -895,7 +923,7 @@ public final class RenderContext {
             if (s.inDraw) s.drawBuffer = buffer;
         }
         PoseStack.Pose last = p.last();
-        boolean entity = s.texture2d;
+        boolean entity = s.texture2d && !depthOnlyMask(s);
         int overlay = s.frames.peek().overlay;
         emitCorner(s, buffer, last, entity, overlay, v0, nx, ny, nz);
         emitCorner(s, buffer, last, entity, overlay, v1, nx, ny, nz);
@@ -961,7 +989,7 @@ public final class RenderContext {
     private static void emitCorner(State s, VertexConsumer buffer, PoseStack.Pose last, boolean entity, int overlay, double[] x, float nx, float ny, float nz) {
         int argb = (int) color(s, x);
         var vc = buffer.addVertex(last, (float) x[0], (float) x[1], (float) x[2]).setColor(argb);
-        if (s.texture2d) vc.setUv((float) x[3], (float) x[4]);
+        if (s.texture2d && !depthOnlyMask(s)) vc.setUv((float) x[3], (float) x[4]);
         if (entity) {
             vc.setOverlay(overlay);
             vc.setLight(s.lightmap ? (int) x[6] : LightTexture.FULL_BRIGHT); // lightmap unit off: its brightness was not applied
@@ -1324,6 +1352,17 @@ public final class RenderContext {
      * emulated texture matrix with the perspective divide: the end-portal style effect of Thaumcraft's eldritch obelisk panel and other legacy
      * renderers.
      */
+    private static final int TEXGEN_GRID = 8;
+
+    /** Bilinear point of a corner quad: position and texture coordinates interpolated (indices 0 to 4), colour and light taken from the first corner. */
+    private static double[] lerp4(double[] v0, double[] v1, double[] v2, double[] v3, double u, double w) {
+        double[] r = v0.clone();
+        for (int k = 0; k < Math.min(5, v0.length); k++) {
+            r[k] = (1 - u) * (1 - w) * v0[k] + u * (1 - w) * v1[k] + u * w * v2[k] + (1 - u) * w * v3[k];
+        }
+        return r;
+    }
+
     private static double[] texGenerated(State s, double[] v, int slot) {
         double[] out = s.uvScratch[slot];
         if (out.length < v.length) out = s.uvScratch[slot] = new double[v.length];

@@ -66,6 +66,13 @@ public final class SynthJarBuilder {
         for (String owner : demand.members.keySet()) {
             if (hierarchy.isSynth(owner)) synthClasses.add(owner);
         }
+        // A package supplied by a translated jar must not also be exported by this synthetic module.
+        Set<String> providedPackages = new HashSet<>();
+        for (String name : demand.providedClasses) {
+            int slash = name.lastIndexOf('/');
+            if (slash > 0) providedPackages.add(name.substring(0, slash));
+        }
+        excludeProvidedPackages(synthClasses, providedPackages);
         // Nested classes too: reflection builds their names from the outer class (Outer.class.getName() + "$Inner").
         LegacyHierarchyData data = LegacyHierarchyData.forVersion(version);
         for (String c : List.copyOf(synthClasses)) {
@@ -74,8 +81,10 @@ public final class SynthJarBuilder {
                 if (hierarchy.isSynth(relocated)) synthClasses.add(relocated);
             }
         }
+        excludeProvidedPackages(synthClasses, providedPackages);
         // Supertypes of everything, transitively.
         for (String c : List.copyOf(synthClasses)) addSupers(c, synthClasses);
+        excludeProvidedPackages(synthClasses, providedPackages);
         planConstructors(synthClasses);
         planned = synthClasses;
         for (String c : synthClasses) {
@@ -89,6 +98,13 @@ public final class SynthJarBuilder {
             }
         }
         return out;
+    }
+
+    private static void excludeProvidedPackages(Set<String> classes, Set<String> providedPackages) {
+        classes.removeIf(name -> {
+            int slash = name.lastIndexOf('/');
+            return slash > 0 && providedPackages.contains(name.substring(0, slash));
+        });
     }
 
     private void addSupers(String c, Set<String> into) {

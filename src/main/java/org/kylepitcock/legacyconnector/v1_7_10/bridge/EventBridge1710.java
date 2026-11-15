@@ -707,6 +707,7 @@ public final class EventBridge1710 {
         gameBus.addListener((ServerStoppedEvent e) -> Platform1710.dispatchAll(m -> new FMLServerStoppedEvent()));
         // DragonAPI's own events, which its coremod posted from patched vanilla code (mod-specific, removable)
         org.kylepitcock.legacyconnector.v1_7_10.compat.dragonapi.DragonApiEvents.register(gameBus);
+        CoremodSites.register(gameBus); // hooks of legacy coremods in Minecraft's own classes, replayed generically
         org.kylepitcock.legacyconnector.v1_7_10.compat.fiskheroes.FiskHeroesHooks.register(gameBus);
     }
 
@@ -849,7 +850,7 @@ public final class EventBridge1710 {
         }
         org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.beginWorld(pose, buffers, light, net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY);
         double renderPosY = legacyconnector.v1_7_10.net.minecraft.client.renderer.entity.RenderManager.renderPosY;
-        legacyconnector.v1_7_10.net.minecraft.client.renderer.entity.RenderManager.renderPosY = renderPosY - 2 * viewerShiftY; // twice the START shift: Morph adds its ySize on top of (posY - renderPosY); one shift left the pig a ySize above the ground (checked in third person)
+        legacyconnector.v1_7_10.net.minecraft.client.renderer.entity.RenderManager.renderPosY = renderPosY - viewerShiftY; // one START shift: a handler sees the same (posY - renderPosY) as in 1.7.10, where camera, player and renderPosY moved together
         try {
             return forge().post(event);
         } finally {

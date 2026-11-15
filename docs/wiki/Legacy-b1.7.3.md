@@ -1486,3 +1486,44 @@ Native checks use unchanged Aether 1.02, Mo' Creatures 2.12.2 and More Creeps 2.
 Declared Beta DataTracker slots now accompany the existing server-owned presentation snapshot, with bounded schema/type validation before applying changes. Real Sheepuff dye and shearing interactions synchronize tracker flags to two clients and visibly change fleece color and geometry without running original client AI. The shared superclass block-harvest baseline supplies original virtual drops and one mining statistic; real Skyroot and Golden Oak leaf harvesting and shears verify those paths. Original GL current normals and explicit tessellator normals are preserved. EntityRegistry reverse names and typed native undead views support original item predicates without changing native mob AI.
 
 Vanilla Beta slime sound aliases resolve through the Beta audio fallback after custom AudioMod variants, preserving custom sound priority. Client player-view caches release removed players and departed levels while retaining live, untracked client players and separate server identities. Local original-artifact checks remain opt-in; the normal build does not require installed legacy mods.
+
+
+## Run-time stability measurement (2026-11-14)
+
+Method: each mod set alone, fresh directory (`run-b173-meas/<round>/<set>/`, gitignored), dedicated server self test, 300 ticks, flat world, only the
+reviewed dependencies. Archives that are nested or rooted (BuildCraft's module zips, MoCreatures' inner `MoCreatures.zip`, IC2's `minecraft/`,
+PremiumWood's `Add-to-minecraft.jar/`, ScotTools' `add-to-minecraft-jar/`, Portal Gun's `Server/Vanilla/`) must be staged by their root as
+`tools/dev/test_b173_one.py` does; dropping a whole archive into `mods/b1.7.3/` mixes builds (Portal Gun's two server builds then fail with a
+duplicate `canDespawn`, GuiAPI as a mod set shadows the shim's own GuiAPI with `VerifyError`). Jar-mod archives that replace vanilla classes
+(Fringe Lands, Single Player Commands, Millenaire) have no ModLoader entry point and are not testable this way.
+
+| Set | Before | After |
+|---|---|---|
+| Somnia | 4 helper classes (`mod_Somnia_GuiBed`, ...) constructed as mods, `NoSuchMethodException`, 4 failed mods | 1 mod constructs, 0 failed |
+| Portal Gun | fails in `<clinit>` (`ModLoader.getMinecraftServerInstance()` null) | constructs, 9 blocks, 3 callbacks fail |
+| More Creeps | server self test dies loading client class `LocalPlayer` | self tests run (remaining: fake-player test NPEs) |
+| Mo' Creatures | same crash, hidden behind the GuiAPI staging error | self tests run; 2 own tests fail |
+| PremiumWood + ScotTools | not run (staging) | 34 blocks, 0 exceptions |
+| Labyrinths + ScotTools | not run (staging) | constructs, 3 blocks |
+| PlasticCraft, IC2 (67 blocks), EE, RedPower x5, Aether, Tropicraft, Fossil, MarsMod, Elemental Creepers, BabyAnimals, Zeppelin, Pfaeff, LogicGates | pass | unchanged |
+| BuildCraft (5 modules) | 21 blocks, bucket self test aborts | unchanged (self test still aborts) |
+| NetherCraft | 35 blocks, block-family self test aborts the server | unchanged |
+| MineFactory | needs IC2 `mod_IC2` (an older IC2 than 8.55) | unchanged: dependency mismatch, not a layer defect |
+| Dragon Mod | `VerifyError`: needs TMT `ModelRendererTurbo` | unchanged (TMT is out of scope) |
+
+Fixed (generic): a default-package `mod_*` class is a ModLoader entry point only if its superclass chain does not end in a game or `java/*`
+class (`BetaJars.entryPoint`); `ModLoader.getMinecraftServerInstance()` returns a real `MinecraftServer` shim whose `sendMessage` logs and
+broadcasts; the generated-pack contributor no longer loads client classes on a dedicated server; `PlayerMotionB173.send` tolerates a player
+without a network channel. Transformer version 54.
+
+Left, ranked by affected sets: (1) three self tests abort the server run and hide later tests: BuildCraft bucket raycast, NetherCraft pressure
+plate release scheduling, MoCreatures item payload queries (environment or defect not yet separated); (2) `Forge` crafting, destroy-tool and
+highlight handlers and `ModLoaderMP.RegisterGUI`/`Packet.register` are placeholders (RedPower, BuildCraft, IC2, MineFactory); (3) `ChestBlock`
+is synthesized, so a mod's chest subclass gets a null block entity (Pfaeff); (4) Beta renderers not admitted for synthesized model callbacks (client,
+unverified here: BabyAnimals, NetherCraft, Fossil, Zeppelin, Dragon); (5) Portal Gun `mod_PortalGun.getInstance()` is null during block callbacks;
+(6) an unregistered legacy `Biome` instance in a mod dimension falls back with one logged failure (Labyrinths).
+
+Regression suites: `tools/dev/verify.sh b173-redpower b173-content b173-aether` (jars from `test-mods-b173`, `test-mods-mcarchive/b1.7.3`); `verify.py`
+reports `b173Mod`, `b173Blk`, `b173CbF` (failed legacy callbacks) and `b173TstF` (self tests that logged `TEST failed`). The stub list was regenerated
+(`tools/compat/probe.py <dir> --mc b1.7.3 --json raw.json --dry-run --no-history`, then `tools/dev/agent-tasks/make_stub_list.py b1.7.3 raw.json`):
+placeholders 2686 to 2528, unlinkable members 296 unchanged.

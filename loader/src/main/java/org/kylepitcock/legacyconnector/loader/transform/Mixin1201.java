@@ -47,6 +47,8 @@ final class Mixin1201 {
         final Set<String> droppedClasses = new HashSet<>();
         /** the target proof and handler re-signing of {@link InjectionRepair} */
         final InjectionRepair.Counts repair = new InjectionRepair.Counts();
+        /** stood-in static accessors: "owner.name+desc" of the mixin interface method to the MiscCompat helper that replaces its call sites */
+        final Map<String, String> standIns = new java.util.HashMap<>();
         /** member renames applied from the tables (the "renamed" class of the proof) */
         int membersRenamed;
         /** old descriptors from the jar's refmaps (mixin class to annotation string to descriptor), set by the transformer before the classes are processed */
@@ -91,6 +93,18 @@ final class Mixin1201 {
             fixAll(f.visibleAnnotations, ctx);
         }
         for (MethodNode m : node.methods) defineSynchedDataHandler(m);
+        if (targets.size() == 1) {
+            boolean stoodIn = false;
+            for (MethodNode m : node.methods) stoodIn |= standInRemovedStaticMember(m, targets.get(0), node.name, st);
+            // nothing left for Mixin to do in an interface that only held such accessors: leave it a plain interface (static helpers), out of the config
+            if (stoodIn && node.methods.stream().allMatch(m -> (m.access & (org.objectweb.asm.Opcodes.ACC_ABSTRACT)) == 0 && (m.invisibleAnnotations == null || m.invisibleAnnotations.isEmpty()) && (m.visibleAnnotations == null || m.visibleAnnotations.isEmpty()))) {
+                st.droppedClasses.add(node.name);
+                // a plain interface from here on: Mixin refuses a class that still carries @Mixin but is in no config ("is invalid")
+                if (node.invisibleAnnotations != null) node.invisibleAnnotations.removeIf(a -> MIXIN.equals(a.desc));
+                if (node.visibleAnnotations != null) node.visibleAnnotations.removeIf(a -> MIXIN.equals(a.desc));
+                return 1;
+            }
+        }
         String shadow = missingShadow(node, targets, h);
         if (shadow != null) {
             st.dropped.add(node.name + " (@Shadow " + shadow + " does not exist in " + targets.get(0) + ")");
@@ -115,6 +129,73 @@ final class Mixin1201 {
         int before = st.repair.handlersChanged;
         InjectionRepair.run(node, targets, new McHostIndex1201(h), hints, st.repair);
         return st.repair.handlersChanged - before;
+    }
+
+    /**
+     * Static members of Minecraft 1.20.1 that 1.21.1 removed or reshaped, which a mod reaches through a static mixin accessor/invoker, and the {@code MiscCompat}
+     * helper that stands in for them (owner.name to method; a field's helper takes no arguments, a method's has the invoker's own descriptor).
+     */
+    private static final Map<String, String> REMOVED_STATIC_MEMBERS = Map.of(
+            "net/minecraft/advancements/CriteriaTriggers.CRITERIA", "criteriaTriggerMap",
+            "net/minecraft/advancements/CriteriaTriggers.register", "registerTrigger");
+
+    /**
+     * A static {@code @Accessor} / {@code @Invoker} with a body (the interface-mixin idiom {@code static Map getX() { throw new AssertionError(); }}) of a Minecraft
+     * member that 1.21.1 no longer has cannot apply: Mixin skips the mixin and the call site then fails with {@code NoSuchMethodError getX$mixin$md$...}. For the
+     * members in {@link #REMOVED_STATIC_MEMBERS} the annotation is dropped and the body calls the migrate helper, so callers keep working.
+     */
+    static boolean standInRemovedStaticMember(MethodNode m, String target, String mixinClass, Stats st) {
+        int acc = m.access;
+        if ((acc & org.objectweb.asm.Opcodes.ACC_STATIC) == 0 || (acc & org.objectweb.asm.Opcodes.ACC_ABSTRACT) != 0) return false;
+        boolean invoker = false;
+        List<AnnotationNode> owner = m.invisibleAnnotations;
+        AnnotationNode a = find(owner, "Lorg/spongepowered/asm/mixin/gen/Accessor;");
+        if (a == null) a = find(owner, "Lorg/spongepowered/asm/mixin/gen/Invoker;");
+        if (a == null) { owner = m.visibleAnnotations; a = find(owner, "Lorg/spongepowered/asm/mixin/gen/Accessor;"); }
+        if (a == null) a = find(owner, "Lorg/spongepowered/asm/mixin/gen/Invoker;");
+        if (a == null) return false;
+        invoker = a.desc.endsWith("Invoker;");
+        if (!invoker && !m.desc.startsWith("()")) return false;
+        String name = null;
+        if (a.values != null) for (int i = 0; i + 1 < a.values.size(); i += 2) if ("value".equals(a.values.get(i)) && a.values.get(i + 1) instanceof String s) name = s;
+        if (name == null) return false;
+        String helper = REMOVED_STATIC_MEMBERS.get(target + "." + name);
+        if (helper == null) return false;
+        owner.remove(a);
+        st.standIns.put(mixinClass + "." + m.name + m.desc, helper + (invoker ? "" : ""));
+        m.instructions.clear();
+        m.tryCatchBlocks.clear();
+        if (m.localVariables != null) m.localVariables.clear();
+        int slot = 0;
+        for (Type t : Type.getArgumentTypes(m.desc)) {
+            m.instructions.add(new org.objectweb.asm.tree.VarInsnNode(t.getOpcode(org.objectweb.asm.Opcodes.ILOAD), slot));
+            slot += t.getSize();
+        }
+        m.instructions.add(new org.objectweb.asm.tree.MethodInsnNode(org.objectweb.asm.Opcodes.INVOKESTATIC, "org/kylepitcock/legacyconnector/v1_20_1/migrate/MiscCompat",
+                helper, invoker ? m.desc : "()Ljava/util/Map;", false));
+        m.instructions.add(new org.objectweb.asm.tree.InsnNode(Type.getReturnType(m.desc).getOpcode(org.objectweb.asm.Opcodes.IRETURN)));
+        m.maxStack = Math.max(slot, 2);
+        m.maxLocals = slot;
+        return true;
+    }
+
+    /**
+     * Call sites of the stood-in accessors go to the helper directly: the mixin class is out of its config, and a class in a mixin package that no config lists
+     * cannot be loaded (Mixin's IllegalClassLoadError), so nothing may reference it.
+     */
+    static int redirectStandIns(Iterable<ClassNode> nodes, Stats st) {
+        if (st.standIns.isEmpty()) return 0;
+        int n = 0;
+        for (ClassNode c : nodes) for (MethodNode m : c.methods) for (org.objectweb.asm.tree.AbstractInsnNode in : m.instructions) {
+            if (!(in instanceof org.objectweb.asm.tree.MethodInsnNode mi) || mi.getOpcode() != org.objectweb.asm.Opcodes.INVOKESTATIC) continue;
+            String helper = st.standIns.get(mi.owner + "." + mi.name + mi.desc);
+            if (helper == null) continue;
+            mi.owner = "org/kylepitcock/legacyconnector/v1_20_1/migrate/MiscCompat";
+            mi.name = helper;
+            mi.itf = false;
+            n++;
+        }
+        return n;
     }
 
     private static final String SHADOW = "Lorg/spongepowered/asm/mixin/Shadow;";

@@ -12,7 +12,7 @@ SUITES_DIR=tools/dev/verify/suites
 BASELINE=tools/dev/verify/baseline.json
 TIMEOUT="${SUITE_TIMEOUT:-900}"
 AUTOSTOP="${AUTOSTOP:-700}"
-SEARCH="test-mods test-mods2 test-mods3 test-mods-1122 test-mods-147 test-mods-152 test-mods-164 test-mods-1710-extra test-mods-1201-a test-mods-1201-terramity test-mods-b173 run-subtest/mods run-subtest/mods.aside-20261113 run-screenshots/mods run-screenshots/mods.aside-20261113"
+SEARCH="test-mods test-mods2 test-mods3 test-mods-1122 test-mods-147 test-mods-152 test-mods-164 test-mods-1710-extra test-mods-1201-a test-mods-1201-terramity test-mods-b173 run-subtest/mods run-subtest/mods.aside-20261113 run-screenshots/mods run-screenshots/mods.aside-20261113 test-mods-mcarchive/b1.7.3"
 # read-only jar folders outside the checkout (absolute): ATM 9 holds the 1.20.1 mods, ATM 10 the native 1.21.1 libraries a 1.20.1 mod needs (suite lines `lib <fragment>`)
 ATM9_MODS="${ATM9_MODS:-X:/Modded games/Prism Launcher/instances/ATM 9 20026/minecraft/mods}"
 ATM10_MODS="${ATM10_MODS:-X:/Modded games/Prism Launcher/instances/ATM10 2026/minecraft/mods}"
@@ -71,7 +71,7 @@ for s in "${names[@]}"; do
   if [ -n "$missing" ]; then echo "  skipped, missing:$missing" >&2; emit "{\"suite\":\"$s\",\"skipped\":\"${missing# }\"}"; continue; fi
 
   D="run-verify/$s"
-  rm -rf "$D/mods" "$D/world" "$D/crash-reports" "$D/logs" "$D/.legacyconnector/cache"
+  rm -rf "$D/mods" "$D/world" "$D/config" "$D/crash-reports" "$D/logs" "$D/.legacyconnector/cache"
   mkdir -p "$D/mods" "$D/logs"
   for e in "${jars[@]}"; do
     ver="${e%%|*}"; j="${e#*|}"
@@ -79,10 +79,10 @@ for s in "${names[@]}"; do
   done
   [ -f "$JAR_ROOT/run-subtest/eula.txt" ] && cp -f "$JAR_ROOT/run-subtest/eula.txt" "$D/eula.txt" || echo "eula=true" > "$D/eula.txt"
   if [ -f "$JAR_ROOT/run-subtest/server.properties" ]; then
-    sed -e "s/^server-port=.*/server-port=$((25570+idx))/" -e "s/^query.port=.*/query.port=$((25570+idx))/" -e "s/^rcon.port=.*/rcon.port=$((25670+idx))/" \
+    sed -e "s/^server-port=.*/server-port=$((${VERIFY_PORT_BASE:-25570}+idx))/" -e "s/^query.port=.*/query.port=$((${VERIFY_PORT_BASE:-25570}+idx))/" -e "s/^rcon.port=.*/rcon.port=$((${VERIFY_PORT_BASE:-25570}+100+idx))/" \
         -e "s/^level-seed=.*/level-seed=1710/" "$JAR_ROOT/run-subtest/server.properties" > "$D/server.properties"
   else
-    printf 'server-port=%s\nlevel-seed=1710\nonline-mode=false\n' $((25570+idx)) > "$D/server.properties"
+    printf 'server-port=%s\nlevel-seed=1710\nonline-mode=false\n' $((${VERIFY_PORT_BASE:-25570}+idx)) > "$D/server.properties"
   fi
 
   glog="build/devtools/verify-$s-gradle.log"

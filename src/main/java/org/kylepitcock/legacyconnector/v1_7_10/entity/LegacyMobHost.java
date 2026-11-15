@@ -268,6 +268,41 @@ public class LegacyMobHost extends PathfinderMob implements LegacyLivingHost, IE
         return super.hurt(source, amount);
     }
 
+    private static final java.util.concurrent.ConcurrentHashMap<Class<?>, Boolean> ARMOR_OVERRIDES = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** True when the legacy class (or a legacy superclass) overrides getTotalArmorValue (func_70658_aO), 1.7.10's defence hook. */
+    private boolean overridesTotalArmor() {
+        if (!(legacy instanceof EntityLivingBase)) return false;
+        return ARMOR_OVERRIDES.computeIfAbsent(legacy.getClass(), c -> {
+            try {
+                return c.getMethod("getTotalArmorValue").getDeclaringClass() != EntityLivingBase.class;
+            } catch (ReflectiveOperationException | LinkageError e) {
+                return false;
+            }
+        });
+    }
+
+    @Override
+    public int getArmorValue() {
+        return overridesTotalArmor() ? ((EntityLivingBase) legacy).getTotalArmorValue() : super.getArmorValue();
+    }
+
+    @Override
+    public int mcc$superArmorValue() {
+        return super.getArmorValue();
+    }
+
+    /** 1.7.10 applyArmorCalculations: damage * (25 - armour) / 25, replacing the 1.21 armour/toughness formula for overriding classes. */
+    @Override
+    protected float getDamageAfterArmorAbsorb(DamageSource source, float amount) {
+        if (!overridesTotalArmor()) return super.getDamageAfterArmorAbsorb(source, amount);
+        if (!source.is(net.minecraft.tags.DamageTypeTags.BYPASSES_ARMOR)) {
+            int armor = Math.min(25, Math.max(0, getArmorValue()));
+            amount = amount * (25 - armor) / 25.0F;
+        }
+        return amount;
+    }
+
     @Override
     protected void actuallyHurt(DamageSource source, float amount) {
         EntityLivingBase l = living();

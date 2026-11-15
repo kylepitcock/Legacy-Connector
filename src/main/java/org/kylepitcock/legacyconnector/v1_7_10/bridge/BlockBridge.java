@@ -569,12 +569,24 @@ public final class BlockBridge {
 
     /** The generated Blocks class creates every vanilla wrapper; make sure it ran before any lookup. */
     private static void ensureVanilla() {
+        if (vanillaReady) return;
         try {
             Class.forName("legacyconnector.v1_7_10.net.minecraft.init.Blocks", true, BlockBridge.class.getClassLoader());
         } catch (ClassNotFoundException e) {
             throw new IllegalStateException(e);
         }
+        // Class.forName cost half of the render thread's time with a minimap mod reading every block of every section (Crafting Dead, #188).
+        // Ready once the generated class's last constant is assigned (a call during its own static initializer returns early, before that).
+        try {
+            var c = Class.forName("legacyconnector.v1_7_10.net.minecraft.init.Blocks", false, BlockBridge.class.getClassLoader());
+            var fields = c.getDeclaredFields();
+            if (fields.length > 0 && fields[fields.length - 1].get(null) != null) vanillaReady = true;
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            // stays on the slow path
+        }
     }
+
+    private static volatile boolean vanillaReady;
 
     /**
      * 1.7.10's {@code Block.getBlockFromItem} was {@code getBlockById(Item.getIdFromItem(item))} on FML's block registry, which

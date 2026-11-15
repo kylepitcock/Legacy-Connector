@@ -411,6 +411,10 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             if (!nestedForge1201Mods.isEmpty()) {
                 LOG.info("Legacy Connector: Forge 1.20.1 facade event routing includes nested mod IDs: {}", nestedForge1201Mods);
             }
+            // The hooks legacy coremods put into Minecraft's own classes, one list per Minecraft version (CoremodHookScan; read by the run time's CoremodSites)
+            Map<String, Path> coremodHooks = new LinkedHashMap<>();
+            for (String mc : List.of("1.7.10", "1.6.4", "1.5.2", "1.4.7")) coremodHooks.put(mc, cacheDir.resolve("coremod-hooks-" + mc + ".txt"));
+            System.setProperty("legacyconnector.coremodHooks", coremodHooks.values().stream().map(Path::toString).collect(java.util.stream.Collectors.joining(java.io.File.pathSeparator)));
             // One coremod class loader per API flavour (1.7.10; 1.6.4 and 1.5.2), loaded on the first class of a jar that uses it.
             var coremods = new java.util.EnumMap<LegacyVersion, org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers>(LegacyVersion.class);
             transformer.patcher((jar, name, bytes) -> {
@@ -422,6 +426,20 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                     if (transformers == null) {
                         transformers = org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers.load(loading, cacheDir, gameDir, side, runtimeJar, api);
                         coremods.put(api, transformers);
+                        // Coremods' hooks in Minecraft's own classes: listed once per translation for the run time (CoremodSites)
+                        if (!transformers.isEmpty()) {
+                            Set<String> versions = new java.util.TreeSet<>();
+                            for (LegacyJar j : loading) {
+                                if (j.coreModClass != null && !j.coreModClass.isBlank() && j.version.family() == LegacyVersion.V1_7_10
+                                        && org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers.apiFor(j.version) == api) versions.add(j.version.id());
+                            }
+                            for (String mc : versions) {
+                                Path list = coremodHooks.get(mc);
+                                if (list == null) continue;
+                                Path vanilla = org.kylepitcock.legacyconnector.loader.transform.VanillaJar.find(gameDir, LibraryBridges.readConfig(modsDir), mc);
+                                if (vanilla != null) org.kylepitcock.legacyconnector.loader.transform.CoremodHookScan.write(transformers, vanilla, list, mc);
+                            }
+                        }
                     }
                     return transformers.apply(name, bytes);
                 }
@@ -436,6 +454,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             java.util.Set<Path> ownerKeeping = new java.util.HashSet<>(); // 1.4.7 jars: Forestry (and Binnie's mods) look their own jar up by file
             Set<Path> keep = new HashSet<>(libraryKeep);
             if (runtimeJar != null) keep.add(runtimeJar);
+            keep.addAll(coremodHooks.values());
             for (LegacyVersion api : List.of(LegacyVersion.V1_7_10, LegacyVersion.V1_6_4)) {
                 keep.add(cacheDir.resolve(org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers.apiJarName(api)));
             }

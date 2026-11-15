@@ -653,6 +653,20 @@ public final class Assets1710 implements GeneratedPack.Contributor {
         };
     }
 
+    private static JsonArray plain(double x, double y, double z) {
+        JsonArray a = new JsonArray();
+        a.add(x);
+        a.add(y);
+        a.add(z);
+        return a;
+    }
+
+    /** Whether the four side faces of a block do not all show the same icon (a front, or a different back). */
+    private static boolean sidesDiffer(Block b, int meta) {
+        String north = iconName(b, 2, meta);
+        return !north.equals(iconName(b, 3, meta)) || !north.equals(iconName(b, 4, meta)) || !north.equals(iconName(b, 5, meta));
+    }
+
     private static JsonArray vec(double x, double y, double z) {
         JsonArray a = new JsonArray();
         a.add(Math.round(Math.max(0, Math.min(1, x)) * 1600) / 100.0);
@@ -767,6 +781,18 @@ public final class Assets1710 implements GeneratedPack.Contributor {
                 ResourceLocation bid = BuiltInRegistries.BLOCK.getKey(block.mcc$modern);
                 int blockMeta = item.getMetadata(meta) & 15;
                 model.addProperty("parent", blockModel(bid.getNamespace() + ":block/" + bid.getPath() + "_m" + blockMeta));
+                // 1.7.10's slot view of a cube showed its south face on the left and its east face on the right (RenderItem: rotate 210
+                // about x, then 45 and -90 about y); minecraft:block/block turns the cube the other way (north/east visible), which hid
+                // the front of a machine whose icon differs by side (Thermal Expansion's machines showed the plain side in the slot).
+                if (sidesDiffer(block, blockMeta)) {
+                    JsonObject gui = new JsonObject();
+                    gui.add("rotation", plain(30, 315, 0));
+                    gui.add("translation", plain(0, 0, 0));
+                    gui.add("scale", plain(0.625, 0.625, 0.625));
+                    JsonObject display = new JsonObject();
+                    display.add("gui", gui);
+                    model.add("display", display);
+                }
             } else {
                 model.addProperty("parent", item.isFull3D() ? "minecraft:item/handheld" : "minecraft:item/generated");
                 JsonObject tex = new JsonObject();

@@ -63,6 +63,12 @@ public class ParticleFirework {
      * burst at the same place (the starter itself draws nothing).
      */
     public static class Starter extends Particle {
+        /** 1.12's signature: the firework's NBT compound with its "Explosions" list (mods fire it for their own bursts). */
+        public Starter(World worldIn, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed, ParticleManager manager,
+                legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound compound) {
+            this(worldIn, x, y, z, xSpeed, ySpeed, zSpeed, manager, compound == null ? null : compound.getTagList("Explosions", 10));
+        }
+
         public Starter(World worldIn, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed, ParticleManager manager,
                 legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagList explosions) {
             super(worldIn, x, y, z, 0.0D, 0.0D, 0.0D);

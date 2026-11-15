@@ -159,6 +159,8 @@ public final class ItemBridge1122 {
         var p = new net.minecraft.world.item.Item.Properties();
         if (item.isDamageable()) p.durability(item.getMaxDamage());
         else p.stacksTo(Math.max(1, Math.min(99, item.getItemStackLimit())));
+        var songKey = Records1122.songKey(item);
+        if (songKey != null) p.jukeboxPlayable(songKey);
         if (item instanceof legacyconnector.v1_12_2.net.minecraft.item.ItemFood food) {
             // 1.12 saturation is nutrition * modifier * 2, as the modern modifier is
             try {

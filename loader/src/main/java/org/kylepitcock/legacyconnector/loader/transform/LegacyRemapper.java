@@ -168,6 +168,12 @@ public final class LegacyRemapper extends Remapper {
         overrides.put(from, to);
     }
 
+    /** Maps a jar-owned class into the shared synth namespace without asking the synth jar to generate a duplicate. */
+    public void provideSynthClass(String from, String to) {
+        overrides.put(from, to);
+        if (demand != null) demand.provideClass(to);
+    }
+
     /** A default-package class of another jar, which that jar moved to {@code to}; vanilla (notch) and ModLoader names are not taken for it. */
     public void peerDefaultPackage(String from, String to) {
         if (MODLOADER_CLASSES.contains(from) || (notch != null && notch.mcpClass(from) != null)) return;

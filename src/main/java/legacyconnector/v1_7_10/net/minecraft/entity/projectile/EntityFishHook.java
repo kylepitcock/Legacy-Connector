@@ -46,12 +46,11 @@ public class EntityFishHook extends Entity {
     public double clientMotionX;
     public double clientMotionY;
     public double clientMotionZ;
-    public boolean ignoreFrustumCheck;
 
     public EntityFishHook(World world) {
         super(world);
         setSize(0.25F, 0.25F);
-        this.ignoreFrustumCheck = true;
+        mcc$set$ignoreFrustumCheck(this, true);
     }
 
     public EntityFishHook(World world, double x, double y, double z, EntityPlayer angler) {
@@ -63,7 +62,7 @@ public class EntityFishHook extends Entity {
 
     public EntityFishHook(World world, EntityPlayer angler) {
         super(world);
-        this.ignoreFrustumCheck = true;
+        mcc$set$ignoreFrustumCheck(this, true);
         this.angler = angler;
         EntityPlayer.mcc$set$fishEntity(angler, this);
         setSize(0.25F, 0.25F);

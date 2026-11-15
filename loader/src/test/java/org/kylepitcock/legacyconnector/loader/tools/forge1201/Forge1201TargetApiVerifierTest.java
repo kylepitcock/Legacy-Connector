@@ -245,6 +245,80 @@ final class Forge1201TargetApiVerifierTest {
                 result.fieldIssues().get(0).callSites());
     }
 
+    @Test
+    void exposesReusableTargetIndexWithExactDescriptorsAndInheritedMembers() throws Exception {
+        String base = "fixture/Base";
+        String child = "fixture/Child";
+
+        ClassWriter baseWriter = new ClassWriter(0);
+        baseWriter.visit(Opcodes.V17, Opcodes.ACC_PUBLIC, base, null, "java/lang/Object", null);
+        baseWriter.visitMethod(Opcodes.ACC_PUBLIC, "resolve", "()Ljava/lang/String;", null, null).visitEnd();
+        baseWriter.visitField(Opcodes.ACC_PUBLIC, "identifier", "I", null, null).visitEnd();
+        baseWriter.visitEnd();
+
+        ClassWriter childWriter = new ClassWriter(0);
+        childWriter.visit(Opcodes.V17, Opcodes.ACC_PUBLIC, child, null, base, null);
+        childWriter.visitMethod(Opcodes.ACC_PUBLIC, "resolve", "(I)Ljava/lang/String;", null, null).visitEnd();
+        childWriter.visitEnd();
+
+        Map<String, byte[]> classes = Map.of(
+                child, childWriter.toByteArray(),
+                base, baseWriter.toByteArray(),
+                "java/lang/Object", targetEmptyClass("java/lang/Object", null));
+        Forge1201TargetApiVerifier.TargetIndex index =
+                Forge1201TargetApiVerifier.createIndex(internalName -> {
+                    byte[] bytes = classes.get(internalName);
+                    return bytes == null ? null : new ByteArrayInputStream(bytes);
+                });
+
+        var childInfo = index.classInfo(child).orElseThrow();
+        assertEquals(base, childInfo.superName());
+        assertTrue(childInfo.methods().contains(
+                new Forge1201TargetApiVerifier.MemberSignature("resolve", "(I)Ljava/lang/String;")));
+
+        var inheritedMethod = index.lookupMethod(child, "resolve", "()Ljava/lang/String;");
+        assertEquals(Forge1201TargetApiVerifier.LookupStatus.FOUND, inheritedMethod.status());
+        assertEquals(List.of(child, base), inheritedMethod.hierarchyVisited());
+
+        var inheritedField = index.lookupField(child, "identifier", "I");
+        assertEquals(Forge1201TargetApiVerifier.LookupStatus.FOUND, inheritedField.status());
+
+        var wrongMethodDescriptor = index.lookupMethod(child, "resolve", "(Ljava/lang/String;)Ljava/lang/String;");
+        assertEquals(Forge1201TargetApiVerifier.LookupStatus.MISSING, wrongMethodDescriptor.status());
+
+        var wrongFieldDescriptor = index.lookupField(child, "identifier", "J");
+        assertEquals(Forge1201TargetApiVerifier.LookupStatus.MISSING, wrongFieldDescriptor.status());
+        assertTrue(index.classInfo("fixture/Absent").isEmpty());
+    }
+
+    @Test
+    void targetIndexDistinguishesIncompleteHierarchyAndDoesNotShareCaches() throws Exception {
+        String child = "fixture/Child";
+        String missingParent = "fixture/NotIndexedParent";
+        byte[] incompleteChild = targetEmptyClass(child, missingParent);
+
+        Forge1201TargetApiVerifier.TargetIndex incomplete =
+                Forge1201TargetApiVerifier.createIndex(internalName ->
+                        child.equals(internalName) ? new ByteArrayInputStream(incompleteChild) : null);
+        var unresolved = incomplete.lookupMethod(child, "inherited", "()V");
+        assertEquals(Forge1201TargetApiVerifier.LookupStatus.INCOMPLETE_HIERARCHY, unresolved.status());
+        assertEquals(List.of(child, missingParent), unresolved.hierarchyVisited());
+
+        byte[] completeChild = targetEmptyClass(child, "java/lang/Object");
+        Forge1201TargetApiVerifier.TargetIndex independent =
+                Forge1201TargetApiVerifier.createIndex(internalName -> {
+                    byte[] bytes = child.equals(internalName)
+                            ? completeChild
+                            : "java/lang/Object".equals(internalName)
+                                    ? targetEmptyClass("java/lang/Object", null)
+                                    : null;
+                    return bytes == null ? null : new ByteArrayInputStream(bytes);
+                });
+        var absent = independent.lookupMethod(child, "inherited", "()V");
+        assertEquals(Forge1201TargetApiVerifier.LookupStatus.MISSING, absent.status());
+        assertTrue(independent.classInfo(missingParent).isEmpty());
+    }
+
     private static Forge1201ApiUsageAnalyzer.Analysis analysis(
             List<String> classes,
             List<Forge1201ApiUsageAnalyzer.ApiMemberReference> methods,

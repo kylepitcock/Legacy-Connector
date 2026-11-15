@@ -42,6 +42,15 @@ public final class Client1710 {
             } catch (RuntimeException | LinkageError ex) {
                 org.slf4j.LoggerFactory.getLogger("LegacyConnector/SoundSystem").error("A legacy sound load handler failed", ex);
             }
+            // 1.4-1.6 mods add their sound files to the sound pools by name (no sounds.json): make those events known to the engine
+            try {
+                var modern = net.minecraft.client.Minecraft.getInstance().getSoundManager();
+                int n = LegacySoundFiles.registerPoolEvents(modern, legacyconnector.v1_6_4.net.minecraft.client.audio.SoundPool.SOUNDS.mcc$urlsByEvent());
+                n += LegacySoundFiles.registerPoolEvents(modern, legacyconnector.v1_6_4.net.minecraft.client.audio.SoundPool.STREAMING.mcc$urlsByEvent());
+                if (n > 0) org.slf4j.LoggerFactory.getLogger("LegacyConnector/SoundSystem").info("{} sound events added from legacy sound pools", n);
+            } catch (RuntimeException | LinkageError ex) {
+                org.slf4j.LoggerFactory.getLogger("LegacyConnector/SoundSystem").error("Legacy sound pools could not be registered", ex);
+            }
         });
         LegacyParticles.register();
         LegacyMusic.register();

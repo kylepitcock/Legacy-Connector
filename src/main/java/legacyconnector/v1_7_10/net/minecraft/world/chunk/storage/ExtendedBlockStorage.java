@@ -173,11 +173,20 @@ public class ExtendedBlockStorage {
         if (chunk.mcc$clientState(0, yBase, 0) == null) return null;
         int[] ids = new int[4096];
         byte[] metas = new byte[4096];
+        net.minecraft.world.level.block.state.BlockState last = null;
+        int lastId = 0;
+        byte lastMeta = 0;
         for (int i = 0; i < 4096; i++) {
             var state = chunk.mcc$clientState(i & 15, yBase + (i >> 8), i >> 4 & 15);
             if (state == null) return null;
-            ids[i] = Block.getIdFromBlock(org.kylepitcock.legacyconnector.v1_7_10.bridge.BlockBridge.legacyBlock(state));
-            metas[i] = (byte) (org.kylepitcock.legacyconnector.v1_7_10.bridge.BlockBridge.legacyMeta(state) & 15);
+            // runs of the same state (air, stone) are most of a section: translate each distinct state once in a row
+            if (state != last) {
+                last = state;
+                lastId = Block.getIdFromBlock(org.kylepitcock.legacyconnector.v1_7_10.bridge.BlockBridge.legacyBlock(state));
+                lastMeta = (byte) (org.kylepitcock.legacyconnector.v1_7_10.bridge.BlockBridge.legacyMeta(state) & 15);
+            }
+            ids[i] = lastId;
+            metas[i] = lastMeta;
         }
         mcc$idCache = ids;
         mcc$metaCache = metas;

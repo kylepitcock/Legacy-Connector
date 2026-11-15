@@ -32,6 +32,8 @@ configurations {
     mcp1710
     mcp1122
     mcpconfig1201
+    intermediary1201
+    intermediary1211
     betaIntermediary
     betaBiny
 }
@@ -61,6 +63,10 @@ dependencies {
     mcp1122 "de.oceanlabs.mcp:mcp_stable:${mcp_1_12_2}@zip"
     // Forge 1.20.1 mods are SRG-named; the SRG -> Mojang table is chained from MCPConfig and Mojang's mappings at build time (never committed)
     mcpconfig1201 "de.oceanlabs.mcp:mcp_config:1.20.1-20230612.114412@zip"
+    // Versioned Fabric Intermediary maps provide stable candidate class/member IDs across Minecraft releases.
+    // The bridge audit consumes only the Tiny mappings locally; it does not emit or package runtime mappings.
+    intermediary1201("net.fabricmc:intermediary:1.20.1") { transitive = false }
+    intermediary1211("net.fabricmc:intermediary:1.21.1") { transitive = false }
     // Beta 1.7.3 mods use the obfuscated names: Babric intermediary (official client/server -> intermediary) chained with
     // biny (intermediary -> named), both CC0, into one table at build time (BetaMappings; never committed)
     betaIntermediary "babric:intermediary:${beta_intermediary}:v2@jar"
@@ -82,6 +88,11 @@ sourceSets.test.compileClasspath += sourceSets.main.compileClasspath
 sourceSets.test.runtimeClasspath += sourceSets.main.compileClasspath
 
 repositories {
+    maven {
+        url = 'https://maven.fabricmc.net/'
+        metadataSources { mavenPom(); artifact() }
+        content { includeModule 'net.fabricmc', 'intermediary' }
+    }
     maven {
         url = 'https://maven.glass-launcher.net/babric'
         metadataSources { mavenPom(); artifact() }
@@ -137,34 +148,331 @@ def extractMappings = tasks.register('extractMappings', Sync) {
 }
 sourceSets.main.resources.srcDir extractMappings
 
-// SRG -> Mojang table for 1.20.1 (SrgMojangTable): joined.tsrg from MCPConfig + Mojang's client.txt (downloaded once into build/mojang-mappings)
+// SRG -> Mojang source edge for 1.20.1. Verify the exact source bytes before generating the member-name table.
+def mojang1201Url = 'https://piston-data.mojang.com/v1/objects/6c48521eed01fe2e8ecdadbd5ae348415f3c47da/client.txt'
+def mojang1201ExpectedSha1 = '6c48521eed01fe2e8ecdadbd5ae348415f3c47da'
 def mojang1201 = layout.buildDirectory.file('mojang-mappings/1.20.1-client.txt')
 def fetchMojang1201 = tasks.register('fetchMojangMappings1201') {
     outputs.file(mojang1201)
     doLast {
         def out = mojang1201.get().asFile
         out.parentFile.mkdirs()
-        new URL('https://piston-data.mojang.com/v1/objects/6c48521eed01fe2e8ecdadbd5ae348415f3c47da/client.txt').withInputStream { i -> out.withOutputStream { it << i } }
+        new URL(mojang1201Url).withInputStream { input ->
+            out.withOutputStream { output -> output << input }
+        }
     }
 }
-def srgMojangDir = layout.buildDirectory.dir('generated/srg-mojang')
-def genSrgMojang = tasks.register('genSrgMojang1201', JavaExec) {
-    dependsOn fetchMojang1201, tasks.named('classes')
+
+def joinedTsrg1201 = layout.buildDirectory.file('tmp/mcpconfig1201/joined.tsrg')
+def extractMcpConfigJoinedTsrg1201 = tasks.register('extractMcpConfigJoinedTsrg1201') {
+    inputs.files(configurations.mcpconfig1201)
+    outputs.file(joinedTsrg1201)
+    doLast {
+        def archiveFile = configurations.mcpconfig1201.singleFile
+        def outputFile = joinedTsrg1201.get().asFile
+        outputFile.parentFile.mkdirs()
+        def maximumBytes = 256L * 1024 * 1024
+        new java.util.zip.ZipFile(archiveFile).withCloseable { archive ->
+            def entry = archive.getEntry('config/joined.tsrg')
+            if (entry == null || entry.directory) {
+                throw new GradleException('Pinned MCPConfig archive does not contain config/joined.tsrg.')
+            }
+            if (entry.size > maximumBytes) {
+                throw new GradleException('MCPConfig config/joined.tsrg exceeds the 256 MiB extraction limit.')
+            }
+            archive.getInputStream(entry).withCloseable { input ->
+                outputFile.withOutputStream { output ->
+                    byte[] buffer = new byte[64 * 1024]
+                    long totalBytes = 0L
+                    int count
+                    while ((count = input.read(buffer)) != -1) {
+                        totalBytes += count
+                        if (totalBytes > maximumBytes) {
+                            throw new GradleException('MCPConfig config/joined.tsrg exceeded the 256 MiB extraction limit while reading.')
+                        }
+                        output.write(buffer, 0, count)
+                    }
+                }
+            }
+        }
+    }
+}
+
+def mappingFileSha = { File file, String algorithm ->
+    def digest = java.security.MessageDigest.getInstance(algorithm)
+    file.withInputStream { input ->
+        byte[] buffer = new byte[64 * 1024]
+        int count
+        while ((count = input.read(buffer)) != -1) {
+            digest.update(buffer, 0, count)
+        }
+    }
+    digest.digest().collect { String.format('%02x', it & 0xff) }.join()
+}
+
+def sourceMappingInputsReport = layout.buildDirectory.file('reports/mappings/1.20.1/source-input-provenance.json')
+def verifySrgMojangInputs1201 = tasks.register('verifySrgMojangInputs1201') {
+    group = 'verification'
+    description = 'Verifies and fingerprints the exact MCPConfig and Mojang 1.20.1 source mapping inputs.'
+    dependsOn fetchMojang1201, extractMcpConfigJoinedTsrg1201
     inputs.files(configurations.mcpconfig1201)
     inputs.file(mojang1201)
+    inputs.file(joinedTsrg1201)
+    outputs.file(sourceMappingInputsReport)
+    doLast {
+        def mcpArchive = configurations.mcpconfig1201.singleFile
+        def joined = joinedTsrg1201.get().asFile
+        def mojang = mojang1201.get().asFile
+        def header = joined.withReader('UTF-8') { reader -> reader.readLine() }
+        if (header == null || !header.startsWith('tsrg2 ')) {
+            throw new GradleException('MCPConfig joined.tsrg does not have the expected TSRG2 header.')
+        }
+
+        def actualMojangSha1 = mappingFileSha(mojang, 'SHA-1')
+        if (!actualMojangSha1.equalsIgnoreCase(mojang1201ExpectedSha1)) {
+            throw new GradleException('Mojang 1.20.1 client mappings SHA-1 mismatch: expected '
+                    + mojang1201ExpectedSha1 + ', got ' + actualMojangSha1)
+        }
+
+        def manifest = [
+                schemaVersion: 1,
+                source: [
+                        minecraftVersion: '1.20.1',
+                        fromNamespace: 'minecraft:forge-srg@1.20.1',
+                        toNamespace: 'minecraft:official-mojang@1.20.1'
+                ],
+                sourceEdge: [
+                        edgeId: 'forge-srg-to-official-mojang-members-1201',
+                        from: 'minecraft:forge-srg@1.20.1',
+                        to: 'minecraft:official-mojang@1.20.1',
+                        direction: 'FORWARD',
+                        sourceMinecraftVersion: '1.20.1',
+                        targetMinecraftVersion: '1.20.1',
+                        symbolScope: ['method-names', 'field-names'],
+                        status: 'PARTIAL',
+                        reason: 'The output omits class-name and descriptor-type mappings; this is not a complete selector mapping edge.'
+                ],
+                artifacts: [
+                        [
+                                artifactId: 'mcpconfig-1201',
+                                provider: 'MCPConfig',
+                                version: '1.20.1-20230612.114412',
+                                coordinate: 'de.oceanlabs.mcp:mcp_config:1.20.1-20230612.114412@zip',
+                                fileName: mcpArchive.name,
+                                sizeBytes: mcpArchive.length(),
+                                sha256: mappingFileSha(mcpArchive, 'SHA-256')
+                        ],
+                        [
+                                artifactId: 'mcpconfig-joined-tsrg-1201',
+                                provider: 'MCPConfig',
+                                version: '1.20.1-20230612.114412',
+                                archiveEntry: 'config/joined.tsrg',
+                                format: 'tsrg2',
+                                header: header,
+                                sizeBytes: joined.length(),
+                                sha256: mappingFileSha(joined, 'SHA-256')
+                        ],
+                        [
+                                artifactId: 'mojang-client-mappings-1201',
+                                provider: 'Mojang',
+                                version: '1.20.1',
+                                format: 'proguard',
+                                url: mojang1201Url,
+                                expectedSha1: mojang1201ExpectedSha1,
+                                actualSha1: actualMojangSha1,
+                                sha1Verified: true,
+                                sizeBytes: mojang.length(),
+                                sha256: mappingFileSha(mojang, 'SHA-256')
+                        ]
+                ],
+                generator: [
+                        className: 'org.kylepitcock.legacyconnector.loader.mapping.SrgMojangTable',
+                        methodJoinKey: 'obfuscated owner + obfuscated member name + full JVM descriptor',
+                        fieldJoinKey: 'obfuscated owner + obfuscated member name',
+                        outputContract: 'SRG member id -> Mojang member name only; no class-name or descriptor-type mappings'
+                ],
+                licensing: [
+                        reviewStatus: 'NOT_REVIEWED_BY_THIS_BUILD_TASK',
+                        note: 'Build-local provenance only. Raw Mojang mappings remain uncommitted; redistribution review is separate.'
+                ]
+        ]
+        def report = sourceMappingInputsReport.get().asFile
+        report.parentFile.mkdirs()
+        report.setText(groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(manifest)) + System.lineSeparator(), 'UTF-8')
+
+        println 'Mojang 1.20.1 client mapping SHA-1 verified: ' + actualMojangSha1
+        println 'MCPConfig ZIP SHA-256: ' + manifest.artifacts[0].sha256
+        println 'MCPConfig joined.tsrg SHA-256: ' + manifest.artifacts[1].sha256
+        println 'Mojang client.txt SHA-256: ' + manifest.artifacts[2].sha256
+    }
+}
+
+def srgMojangDir = layout.buildDirectory.dir('generated/srg-mojang')
+def srgMojangTsv = srgMojangDir.map { it.file('legacyconnector/mappings/1.20.1/srg-mojang.tsv') }
+def srgMojangCoverage = layout.buildDirectory.file('reports/mappings/1.20.1/srg-mojang-coverage.properties')
+def srgMojangProvenance = layout.buildDirectory.file('reports/mappings/1.20.1/srg-mojang-provenance.json')
+
+def genSrgMojang = tasks.register('genSrgMojang1201', JavaExec) {
+    dependsOn verifySrgMojangInputs1201, tasks.named('classes')
+    inputs.files(configurations.mcpconfig1201)
+    inputs.file(joinedTsrg1201)
+    inputs.file(mojang1201)
     outputs.dir(srgMojangDir)
+    outputs.file(srgMojangCoverage)
     classpath = sourceSets.main.output
     mainClass = 'org.kylepitcock.legacyconnector.loader.mapping.SrgMojangTable'
     argumentProviders.add({
-        def tsrg = layout.buildDirectory.file('tmp/mcpconfig1201/joined.tsrg').get().asFile
-        tsrg.parentFile.mkdirs()
-        zipTree(configurations.mcpconfig1201.singleFile).matching { include 'config/joined.tsrg' }.singleFile.withInputStream { i -> tsrg.withOutputStream { it << i } }
-        [tsrg.absolutePath, mojang1201.get().asFile.absolutePath, srgMojangDir.get().file('legacyconnector/mappings/1.20.1/srg-mojang.tsv').asFile.absolutePath]
+        [
+                joinedTsrg1201.get().asFile.absolutePath,
+                mojang1201.get().asFile.absolutePath,
+                srgMojangTsv.get().asFile.absolutePath,
+                srgMojangCoverage.get().asFile.absolutePath
+        ]
     } as CommandLineArgumentProvider)
 }
+
+def recordSrgMojangProvenance1201 = tasks.register('recordSrgMojangProvenance1201') {
+    group = 'verification'
+    description = 'Records SHA-256 fingerprints and measured coverage for the generated 1.20.1 SRG-to-Mojang table.'
+    dependsOn genSrgMojang
+    inputs.file(sourceMappingInputsReport)
+    inputs.file(srgMojangTsv)
+    inputs.file(srgMojangCoverage)
+    outputs.file(srgMojangProvenance)
+    doLast {
+        def manifest = new groovy.json.JsonSlurper().parse(sourceMappingInputsReport.get().asFile)
+        def properties = new Properties()
+        srgMojangCoverage.get().asFile.withInputStream { input -> properties.load(input) }
+        def coverageKeys = [
+                'mojangClassRows', 'mojangMethodRows', 'mojangFieldRows',
+                'joinedClassRows', 'joinedMethodRows', 'joinedFieldRows',
+                'matchedMethods', 'matchedFields', 'unmatchedMethods', 'unmatchedFields',
+                'duplicateMemberKeys', 'duplicateSrgIds', 'outputRows'
+        ]
+        def coverage = [:]
+        coverageKeys.each { key ->
+            if (!properties.containsKey(key)) {
+                throw new GradleException('SRG-to-Mojang coverage report is missing ' + key)
+            }
+            coverage[key] = properties.getProperty(key).toInteger()
+        }
+        def tableFile = srgMojangTsv.get().asFile
+        def rowCount = tableFile.readLines('UTF-8').size()
+        if (rowCount != coverage.outputRows) {
+            throw new GradleException('Generated SRG-to-Mojang TSV row count does not match the coverage report.')
+        }
+        manifest.generatedTable = [
+                fileName: 'srg-mojang.tsv',
+                sizeBytes: tableFile.length(),
+                sha256: mappingFileSha(tableFile, 'SHA-256'),
+                rowCount: rowCount,
+                coverage: coverage
+        ]
+        def report = srgMojangProvenance.get().asFile
+        report.parentFile.mkdirs()
+        report.setText(groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(manifest)) + System.lineSeparator(), 'UTF-8')
+        println 'Generated SRG -> Mojang TSV SHA-256: ' + manifest.generatedTable.sha256
+        println 'Build-local provenance report: ' + report
+    }
+}
+
 tasks.named('jar') { dependsOn genSrgMojang; from(srgMojangDir) }
 // offline tools (checkLegacyMod, gap1201) run from the class directories: give them the generated table too
 sourceSets.main.runtimeClasspath += files(srgMojangDir).builtBy(genSrgMojang)
+
+// Fabric Intermediary bridge audit for Minecraft 1.20.1 -> 1.21.1.
+// The input jars and extracted Tiny mappings stay in build/tmp and are never added to the loader jar.
+def fabricIntermediary1201Tiny = layout.buildDirectory.file('tmp/fabric-intermediary/1.20.1/mappings.tiny')
+def fabricIntermediary1211Tiny = layout.buildDirectory.file('tmp/fabric-intermediary/1.21.1/mappings.tiny')
+
+def extractFabricIntermediary1201 = tasks.register('extractFabricIntermediary1201') {
+    inputs.files(configurations.intermediary1201)
+    outputs.file(fabricIntermediary1201Tiny)
+    doLast {
+        def archiveFile = configurations.intermediary1201.singleFile
+        def outputFile = fabricIntermediary1201Tiny.get().asFile
+        outputFile.parentFile.mkdirs()
+        def maximumBytes = 32L * 1024 * 1024
+        new java.util.zip.ZipFile(archiveFile).withCloseable { archive ->
+            def entry = archive.getEntry('mappings/mappings.tiny')
+            if (entry == null || entry.directory) {
+                throw new GradleException('Fabric Intermediary 1.20.1 archive does not contain mappings/mappings.tiny.')
+            }
+            if (entry.size > maximumBytes) {
+                throw new GradleException('Fabric Intermediary 1.20.1 Tiny mapping exceeds the 32 MiB extraction limit.')
+            }
+            archive.getInputStream(entry).withCloseable { input ->
+                outputFile.withOutputStream { output ->
+                    byte[] buffer = new byte[64 * 1024]
+                    long totalBytes = 0L
+                    int count
+                    while ((count = input.read(buffer)) != -1) {
+                        totalBytes += count
+                        if (totalBytes > maximumBytes) {
+                            throw new GradleException('Fabric Intermediary 1.20.1 Tiny mapping exceeded the 32 MiB extraction limit while reading.')
+                        }
+                        output.write(buffer, 0, count)
+                    }
+                }
+            }
+        }
+    }
+}
+
+def extractFabricIntermediary1211 = tasks.register('extractFabricIntermediary1211') {
+    inputs.files(configurations.intermediary1211)
+    outputs.file(fabricIntermediary1211Tiny)
+    doLast {
+        def archiveFile = configurations.intermediary1211.singleFile
+        def outputFile = fabricIntermediary1211Tiny.get().asFile
+        outputFile.parentFile.mkdirs()
+        def maximumBytes = 32L * 1024 * 1024
+        new java.util.zip.ZipFile(archiveFile).withCloseable { archive ->
+            def entry = archive.getEntry('mappings/mappings.tiny')
+            if (entry == null || entry.directory) {
+                throw new GradleException('Fabric Intermediary 1.21.1 archive does not contain mappings/mappings.tiny.')
+            }
+            if (entry.size > maximumBytes) {
+                throw new GradleException('Fabric Intermediary 1.21.1 Tiny mapping exceeds the 32 MiB extraction limit.')
+            }
+            archive.getInputStream(entry).withCloseable { input ->
+                outputFile.withOutputStream { output ->
+                    byte[] buffer = new byte[64 * 1024]
+                    long totalBytes = 0L
+                    int count
+                    while ((count = input.read(buffer)) != -1) {
+                        totalBytes += count
+                        if (totalBytes > maximumBytes) {
+                            throw new GradleException('Fabric Intermediary 1.21.1 Tiny mapping exceeded the 32 MiB extraction limit while reading.')
+                        }
+                        output.write(buffer, 0, count)
+                    }
+                }
+            }
+        }
+    }
+}
+
+def intermediaryBridgeAuditReport = layout.buildDirectory.file('reports/mappings/1.20.1-1.21.1/intermediary-bridge-audit.json')
+def auditIntermediaryBridge1201To1211 = tasks.register('auditIntermediaryBridge1201To1211', JavaExec) {
+    group = 'verification'
+    description = 'Audits read-only obfuscated vanilla symbol continuity from Minecraft 1.20.1 through Fabric Intermediary to 1.21.1; does not map Forge SRG selectors.'
+    dependsOn extractMcpConfigJoinedTsrg1201, extractFabricIntermediary1201, extractFabricIntermediary1211, tasks.named('classes')
+    inputs.file(joinedTsrg1201)
+    inputs.file(fabricIntermediary1201Tiny)
+    inputs.file(fabricIntermediary1211Tiny)
+    outputs.file(intermediaryBridgeAuditReport)
+    classpath = sourceSets.main.output
+    mainClass = 'org.kylepitcock.legacyconnector.loader.mapping.Forge1201IntermediaryBridgeAudit'
+    argumentProviders.add({
+        [
+                joinedTsrg1201.get().asFile.absolutePath,
+                fabricIntermediary1201Tiny.get().asFile.absolutePath,
+                fabricIntermediary1211Tiny.get().asFile.absolutePath,
+                intermediaryBridgeAuditReport.get().asFile.absolutePath
+        ]
+    } as CommandLineArgumentProvider)
+}
 
 // Beta 1.7.3 official -> named table (BetaMappings): Babric intermediary + biny
 def betaMappingsDir = layout.buildDirectory.dir('generated/beta-mappings')
@@ -197,8 +505,8 @@ tasks.withType(JavaCompile).configureEach {
 
 test {
     useJUnitPlatform()
-    dependsOn genBetaMappings
-    classpath += files(betaMappingsDir)
+    dependsOn genBetaMappings, recordSrgMojangProvenance1201, auditIntermediaryBridge1201To1211
+    classpath += files(betaMappingsDir, srgMojangDir)
 }
 
 jar {

@@ -64,7 +64,7 @@ and isolated (today: the DragonAPI crafting/smelting hooks in `CoremodHooks`).
 - A legacy event handler that fails 1,000 times in a row without one success is unregistered with one log line (handlers of a
   mod that failed to load threw about 1,000 exceptions a second). `events.skip` switches handlers off by hand.
 - A creative tab that gets the same stack twice skips the duplicate instead of failing the tab build (`CreativeTabDuplicateMixin`).
-- Mixins of other mods are never applied to classes of translated legacy jars (`LegacyMixinPlugin`, a Mixin extension that empties the mixin set of a class whose jar carries the provenance resource). A legacy mod and its modern port share class names (Mekanism `RenderFlame` vs Iris's mixin for the 1.21 one), and the failed injection would take the legacy mod down. This mod's own configs (`legacyconnector*`) still apply.
+- Mixins of other mods are never applied to classes of translated legacy jars (`LegacyMixinPlugin`, a Mixin extension that empties the mixin set of a class whose jar carries the provenance resource). A legacy mod and its modern port share class names (Mekanism `RenderFlame` vs Iris's mixin for the 1.21 one), and the failed injection would take the legacy mod down. This mod's own configs (`legacyconnector*`) still apply. A 1.12.2 jar's own mixins (`LegacyMixinConfigs`) apply to its own classes and to shim classes of vanilla types (Wolf Armor and Storage makes `EntityWolf` implement its `IArmoredWolf`) when every `@Shadow`/`@Accessor`/`@Invoker` member exists in the shim class; injectors that find nothing are skipped.
 
 ## Legacy loader behaviour that is reproduced
 
@@ -87,7 +87,18 @@ and isolated (today: the DragonAPI crafting/smelting hooks in `CoremodHooks`).
   `injectData` / setup hook by sorting index; mod containers count as loaded mods). Their class transformers run over
   the legacy mod classes before translation, in a stand-in LaunchWrapper class loader with the legacy FML API, so
   coremods that patch *mod* classes work: CoFH `@Strippable`, AE2 `@Integration`, OpenMods, Steve's Addons, patcher
-  mods fixing other mods' API mismatches. Transformers aimed at Minecraft's own classes find nothing to patch.
+  mods fixing other mods' API mismatches.
+- Coremod hooks in Minecraft's own classes (1.7.10; 1.6.4, 1.5.2 and 1.4.7 are scanned the same way into their own list, 1.12.2 not yet): those classes do not exist at run time, so on a cache-miss translation the loader shows the
+  transformers the original 1.7.10 client classes (`VanillaJar` finds the jar in a launcher folder, `coremods.vanillaJar`, or downloads it from Mojang
+  with `coremods.downloadVanilla=true`; only the exact official file is accepted and it is never shipped), first obfuscated and then in SRG names
+  (`CoremodHookScan`). `CoremodHookDiscovery` diffs each method and records every added static call with a site key
+  (`<class>.<method><desc>#head-cancel | tail | const:<v> | replace:<call> | after:<insn> | cancel-after:<insn>`) in
+  `.legacyconnector/cache/coremod-hooks-1.7.10.txt`. At run time `CoremodSites` maps site keys to modern places (mixins and shim methods that are no-ops
+  unless a hook is listed there), finds the hook method in the translated mod, binds its parameters by type to the values the place offers and applies
+  it as cancel / notify / modify / replace; a mod's own `(ZZ)Z`, `(FF)F`... helper at the site combines a hook's result with the value. It is keyed by
+  Minecraft method, never by mod. One start-up log line gives hooks found, replayed and without a place (`-Dlegacyconnector.coremodHooks.report=full`
+  lists them). Limits: Forge's binary patches are not applied before the transformers, so a transformer looking for a Forge-added instruction finds
+  nothing; whole-class replacements are not handled.
 - LaunchWrapper's `Launch.blackboard` / `Launch.classLoader`.
 - Resource URLs: mod jars are served from NeoForge's `union:` file system; mods that list their own jar's files
   (checking for `jar:`/`file:` URLs) get the equivalent `jar:file:` URL.

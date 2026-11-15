@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -32,9 +34,13 @@ import java.util.zip.ZipFile;
  * inspect them, validate mixin injection semantics, or prove runtime compatibility.</p>
  */
 public final class Forge1201PreflightAnalyzer {
-    public static final String SCHEMA_VERSION = "1.1";
-    public static final String ANALYZER_VERSION = "1.1.0";
+    public static final String SCHEMA_VERSION = "1.10";
+    public static final String ANALYZER_VERSION = "1.10.0";
+    public static final String TARGET_MINECRAFT_VERSION = "1.21.1";
+    public static final String TARGET_NEOFORGE_VERSION = "21.1.258";
     private static final int MAX_MIXIN_JSON_BYTES = 1024 * 1024;
+    private static final int MAX_TARGET_CLASSPATH_ENTRIES = 4096;
+    private static final long MAX_TARGET_CLASSPATH_FILE_BYTES = 4L * 1024 * 1024;
     private static final Gson GSON = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
 
     private Forge1201PreflightAnalyzer() {}
@@ -105,9 +111,12 @@ public final class Forge1201PreflightAnalyzer {
             List<String> resourceNamespaces,
             Map<String, String> manifestAttributes,
             List<MixinConfigCandidate> mixinConfigCandidates,
+            Forge1201MixinAnalyzer.Result mixinAnalysis,
+            Forge1201MappingProfileValidator.Finding mappingProfile,
             String coreModClass,
             List<String> jarInJarPaths,
             int classCount,
+            int outerClassScannedCount,
             List<String> modEntrypoints,
             Map<String, Integer> packageReferences,
             List<ApiTypeFinding> apiTypes,
@@ -115,6 +124,11 @@ public final class Forge1201PreflightAnalyzer {
             List<ApiMemberFinding> fieldReferences,
             List<ApiMethodCallSite> methodCallSites,
             List<ApiFieldCallSite> fieldCallSites,
+            List<Forge1201ApiUsageAnalyzer.ApiDynamicReference> dynamicReferences,
+            int nestedClassCount,
+            int nestedClassScannedCount,
+            List<Forge1201ApiUsageAnalyzer.ApiSrgMemberReference> normalizedMemberReferences,
+            List<String> classScanWarnings,
             List<String> observedNativeModIds,
             List<String> limitations,
             Forge1201ArchiveGraph.Result archiveGraph) {
@@ -135,13 +149,49 @@ public final class Forge1201PreflightAnalyzer {
             fieldReferences = List.copyOf(fieldReferences);
             methodCallSites = List.copyOf(methodCallSites);
             fieldCallSites = List.copyOf(fieldCallSites);
+            dynamicReferences = List.copyOf(dynamicReferences);
+            normalizedMemberReferences = List.copyOf(normalizedMemberReferences);
+            classScanWarnings = List.copyOf(classScanWarnings);
             observedNativeModIds = List.copyOf(observedNativeModIds);
             limitations = List.copyOf(limitations);
         }
     }
 
-    /** Inspects one source archive. Installed native-mod directories are optional. */
+    /** Inspects one source archive. Installed native-mod directories and target classpath are optional. */
     public static PreflightResult analyze(Path jarPath, Collection<Path> installedModDirectories) throws IOException {
+        return analyze(jarPath, installedModDirectories, List.of(), null);
+    }
+
+    /**
+     * Inspects one source archive. Target classpath entries are used only as class resources; target
+     * classes are never defined, initialized, or executed by the analyzer.
+     */
+    public static PreflightResult analyze(
+            Path jarPath,
+            Collection<Path> installedModDirectories,
+            Collection<Path> targetClasspath) throws IOException {
+        return analyze(jarPath, installedModDirectories, targetClasspath, null);
+    }
+
+    /** Null context leaves context selection unresolved and inventories all refmap tables. */
+    public static PreflightResult analyze(
+            Path jarPath,
+            Collection<Path> installedModDirectories,
+            Collection<Path> targetClasspath,
+            String requestedRefmapContextKey) throws IOException {
+        return analyze(jarPath, installedModDirectories, targetClasspath, requestedRefmapContextKey, null);
+    }
+
+    /**
+     * Inspects one source archive and optionally validates a caller-supplied mapping profile.
+     * Profile validation is read-only and never applies mappings to source selectors.
+     */
+    public static PreflightResult analyze(
+            Path jarPath,
+            Collection<Path> installedModDirectories,
+            Collection<Path> targetClasspath,
+            String requestedRefmapContextKey,
+            Path mappingProfilePath) throws IOException {
         if (jarPath == null || !Files.isRegularFile(jarPath)) {
             throw new IllegalArgumentException("Preflight input must be an existing JAR file: " + jarPath);
         }
@@ -151,6 +201,17 @@ public final class Forge1201PreflightAnalyzer {
                 : installedModDirectories.stream().filter(java.util.Objects::nonNull)
                         .map(path -> path.toAbsolutePath().normalize())
                         .sorted(Comparator.comparing(Path::toString)).toList();
+        List<Path> normalizedTargetClasspath = targetClasspath == null ? List.of()
+                : targetClasspath.stream().filter(java.util.Objects::nonNull)
+                        .map(path -> path.toAbsolutePath().normalize()).distinct().toList();
+        if (normalizedTargetClasspath.size() > MAX_TARGET_CLASSPATH_ENTRIES) {
+            throw new IllegalArgumentException("Target classpath exceeds " + MAX_TARGET_CLASSPATH_ENTRIES + " entries");
+        }
+        for (Path entry : normalizedTargetClasspath) {
+            if (!Files.exists(entry) || (!Files.isDirectory(entry) && !Files.isRegularFile(entry))) {
+                throw new IllegalArgumentException("Target classpath entry does not exist or is not a file/directory: " + entry);
+            }
+        }
 
         Map<String, String> manifest = readManifest(jar);
         List<String> manifestMixins = splitCommaList(valueIgnoreCase(manifest, "MixinConfigs"));
@@ -203,13 +264,23 @@ public final class Forge1201PreflightAnalyzer {
         List<ApiMemberFinding> fieldReferences = new ArrayList<>();
         List<ApiMethodCallSite> methodCallSites = new ArrayList<>();
         List<ApiFieldCallSite> fieldCallSites = new ArrayList<>();
+        List<Forge1201ApiUsageAnalyzer.ApiDynamicReference> dynamicReferences = new ArrayList<>();
+        List<Forge1201ApiUsageAnalyzer.ApiSrgMemberReference> normalizedMemberReferences = new ArrayList<>();
+        List<String> classScanWarnings = new ArrayList<>();
         int classCount = 0;
+        int outerClassScannedCount = 0;
+        int nestedClassCount = 0;
+        int nestedClassScannedCount = 0;
         AnalysisStatus analysisStatus = AnalysisStatus.BYTECODE_INVENTORY_SKIPPED_METADATA_NOT_RECOGNIZED;
         ForgeMetadata forgeMetadata = null;
 
         Set<String> nativeIds = Forge1201DependencyResolver.findNativeModIds(modDirectories);
+        Forge1201ApiUsageAnalyzer.Inventory usageInventory = new Forge1201ApiUsageAnalyzer.Inventory();
+        Forge1201ArchiveGraph.NestedClassConsumer nestedClassConsumer =
+                jarInfo == null ? null : usageInventory::scanNestedClass;
         Forge1201ArchiveGraph.Result archiveGraph = Forge1201ArchiveGraph.analyze(
-                jar, jarInfo, modDirectories, "1.21.1");
+                jar, jarInfo, modDirectories, TARGET_MINECRAFT_VERSION, TARGET_NEOFORGE_VERSION,
+                nestedClassConsumer);
         if (jarInfo != null) {
             forgeMetadata = new ForgeMetadata(
                     jarInfo.modLoader(), jarInfo.loaderVersion(),
@@ -242,8 +313,15 @@ public final class Forge1201PreflightAnalyzer {
                     .thenComparing(DependencyFinding::versionRange)
                     .thenComparing(DependencyFinding::mandatory));
 
-            Forge1201ApiUsageAnalyzer.Analysis usage = Forge1201ApiUsageAnalyzer.analyze(jar);
+            usageInventory.scanOuterJar(jar);
+            Forge1201ApiUsageAnalyzer.Analysis usage = usageInventory.finish(jarInfo);
             classCount = usage.classCount();
+            outerClassScannedCount = usageInventory.outerClassScannedCount();
+            nestedClassCount = archiveGraph.classScanSummaries().stream()
+                    .mapToInt(Forge1201ArchiveGraph.ClassScanSummary::discoveredClassEntries).sum();
+            nestedClassScannedCount = usageInventory.nestedClassScannedCount();
+            normalizedMemberReferences.addAll(usageInventory.normalizedSrgMemberReferences());
+            classScanWarnings.addAll(usageInventory.classScanWarnings());
             entrypoints.addAll(usage.modEntrypoints());
             entrypoints.sort(String::compareTo);
             usage.packageReferences().entrySet().stream().sorted(Map.Entry.comparingByKey())
@@ -284,44 +362,83 @@ public final class Forge1201PreflightAnalyzer {
                             .thenComparing(ApiFieldCallSite::targetName)
                             .thenComparing(ApiFieldCallSite::targetDescriptor)
                             .thenComparingInt(ApiFieldCallSite::opcode)).toList());
+            dynamicReferences.addAll(usage.dynamicReferences());
             analysisStatus = AnalysisStatus.BYTECODE_INVENTORY_RAN_FOR_RECOGNIZED_OUTER_JAR;
         }
 
-        Map<String, String> mixinSources = new TreeMap<>();
-        manifestMixins.forEach(path -> mixinSources.put(path, "manifest MixinConfigs attribute"));
+        Map<String, Set<Forge1201MixinAnalyzer.DiscoverySource>> mixinSources = new TreeMap<>();
+        manifestMixins.forEach(path -> mixinSources.computeIfAbsent(path, ignored -> new TreeSet<>())
+                .add(Forge1201MixinAnalyzer.DiscoverySource.MANIFEST));
         try (ZipFile zip = new ZipFile(jar.toFile())) {
             var entries = zip.entries();
             while (entries.hasMoreElements()) {
                 ZipEntry entry = entries.nextElement();
                 if (entry.isDirectory() || !entry.getName().toLowerCase(Locale.ROOT).endsWith(".json")) continue;
                 if (isMixinPathCandidate(entry.getName()) || looksLikeMixinConfig(zip, entry)) {
-                    mixinSources.putIfAbsent(entry.getName(), "resource path/content heuristic");
+                    mixinSources.computeIfAbsent(entry.getName(), ignored -> new TreeSet<>())
+                            .add(Forge1201MixinAnalyzer.DiscoverySource.RESOURCE_HEURISTIC);
                 }
             }
         }
         List<MixinConfigCandidate> mixinCandidates = mixinSources.entrySet().stream()
-                .map(entry -> new MixinConfigCandidate(entry.getKey(), entry.getValue())).toList();
+                .map(entry -> new MixinConfigCandidate(entry.getKey(), entry.getValue().stream()
+                        .map(Forge1201PreflightAnalyzer::mixinDiscoveryLabel)
+                        .collect(java.util.stream.Collectors.joining("; "))))
+                .toList();
+        List<Forge1201MixinAnalyzer.ConfigDeclaration> mixinDeclarations = mixinSources.entrySet().stream()
+                .flatMap(entry -> entry.getValue().stream()
+                        .map(source -> new Forge1201MixinAnalyzer.ConfigDeclaration(entry.getKey(), source)))
+                .toList();
+        Forge1201MixinAnalyzer.Result mixinAnalysis;
+        try (URLClassLoader targetLoader = createTargetClassLoader(normalizedTargetClasspath)) {
+            Forge1201TargetApiVerifier.TargetIndex targetIndex = targetLoader == null ? null
+                    : Forge1201TargetApiVerifier.createIndex(internalName ->
+                            targetLoader.getResourceAsStream(internalName + ".class"));
+            // No 1.20.1 -> 1.21.1 Minecraft class map is supplied yet; Mojang names are never assumed identical.
+            mixinAnalysis = Forge1201MixinAnalyzer.analyze(
+                    jar, mixinDeclarations, targetIndex, Map.of(), "not-supplied", requestedRefmapContextKey);
+        }
+
+        Forge1201MappingProfileValidator.Finding mappingProfile =
+                Forge1201MappingProfileValidator.inspect(mappingProfilePath);
 
         List<String> observedNativeIds = nativeIds.stream().sorted().toList();
         List<String> limitations = List.of(
                 "This is static preflight evidence only; it does not prove initialization, gameplay, client rendering, synchronization, or stability.",
-                "Slice 2 recursively inventories bounded nested archives and metadata, but bytecode references are still scanned in the outer JAR only; nested bytecode analysis is deferred to Slice 3.",
-                "Nested archive traversal is bounded by depth, archive count, per-archive size, and total inflated-byte limits. Archives skipped by a limit or rejected as unsafe/corrupt remain explicit findings.",
-                "Mixin discovery uses manifest declarations and resource path/content heuristics. Injection targets, handler descriptors, slices, refmaps, and dynamic plugins are not validated in Slice 2.",
-                "The current bytecode inventory is not exhaustive for every reflection, method-handle, invokedynamic, or constant-dynamic reference.",
+                "Slice 3 inventories bytecode in the outer source JAR and bounded, safe source-nested Forge/library archives. Installed provider JAR bytecode and embedded native NeoForge mod bytecode are intentionally excluded.",
+                "Source Minecraft SRG member names are normalized to 1.20.1 Mojang names where the generated mapping table has an entry; missing entries remain explicitly UNMAPPED. This source-name normalization is not a 1.21.1 target API or semantic compatibility verdict.",
+                "Nested archive traversal is bounded by depth, archive count, per-archive size, and total inflated-byte limits. Class capture is bounded to 8 MiB per class, 16 MiB per nested archive, 128 MiB aggregate nested class bytes submitted, and 64 MiB aggregate outer class bytes. Archives/classes skipped by a limit or rejected as unsafe/corrupt remain explicit findings.",
+                "Mixin configs discovered by the manifest and outer-archive resource heuristics are parsed in the current preflight schema. Target-class presence is checked only when the root project's resolved target compile classpath is supplied; no 1.20.1-to-1.21.1 Minecraft class identity mapping is assumed.",
+                "Mixin analysis covers outer-archive configs, mixin class entries and internal owner names, static @Mixin targets, member annotations, six core Mixin 0.8.5 injector annotations, @Slice boundaries, bounded refmap tables, and owner-scoped exact correlation candidates for AP-emitted string references. A caller may explicitly supply a refmap context; otherwise base/context candidates are inventoried without selection. Plugins and custom wrappers remain inert and may make effective resource selection dynamic. No source/target namespace conversion, target selector/member/instruction resolution, slice ordering, handler stack validation, or runtime injection success is claimed. Source-nested JAR config/class provenance remains a future increment.",
+                "Schema 1.10 mapping profiles are parsed and structurally validated only when explicitly supplied. Profile validation checks declarations, explicit context/base bindings, directed per-edge Minecraft-version continuity, complete selector symbol scope, bounded graph ambiguity, artifact SHA-256 and optional upstream checksums, and license evidence; it never loads mapping tables, applies a mapping, or rewrites selectors. A structurally validated profile is not proof of semantic mapping correctness or runtime compatibility.",
+                "Reflection/resource string candidates remain heuristic and are not treated as confirmed bytecode references.",
                 "Installed provider discovery records top-level and nested archive paths, mod IDs, and declared versions. A provider ID/version match does not establish API or behavioral compatibility; installed version ranges and API compatibility are not verified.",
                 "Maven-style version ranges with numeric dotted versions are evaluated conservatively. Qualified or otherwise unsupported version strings remain explicitly unverified.",
-                "Target class/member verification, shim behavior checks, translated-resource comparison, and runtime feedback are later analyzer slices."
+                "General source API reference-to-target member verification, shim behavior checks, translated-resource comparison, and runtime feedback remain later analyzer slices. The current Mixin class-presence check is limited to statically mapped @Mixin class targets and does not validate target members or injection semantics."
         );
 
         return new PreflightResult(
                 SCHEMA_VERSION, ANALYZER_VERSION, jar.getFileName().toString(), Files.size(jar), sha256(jar),
-                "1.21.1", "21.1.258", forgeMetadata, metadataStatus, analysisStatus,
+                TARGET_MINECRAFT_VERSION, TARGET_NEOFORGE_VERSION, forgeMetadata, metadataStatus, analysisStatus,
                 metadataWarnings.stream().distinct().sorted().toList(), mods, duplicateModIds, dependencies,
                 archiveEntries.size(), archiveEntries, resourceNamespaces.stream().toList(), manifest,
-                mixinCandidates, coreModClass, jarInJarPaths.stream().toList(), classCount, entrypoints,
-                packageReferences, apiTypes, methodReferences, fieldReferences, methodCallSites, fieldCallSites,
+                mixinCandidates, mixinAnalysis, mappingProfile, coreModClass, jarInJarPaths.stream().toList(), classCount,
+                outerClassScannedCount, entrypoints, packageReferences, apiTypes, methodReferences,
+                fieldReferences, methodCallSites, fieldCallSites, dynamicReferences, nestedClassCount,
+                nestedClassScannedCount, normalizedMemberReferences, classScanWarnings,
                 observedNativeIds, limitations, archiveGraph);
+    }
+
+    private static void appendSliceBoundaryText(
+            StringBuilder out, Forge1201MixinAnalyzer.SliceBoundaryFinding boundary) {
+        if (boundary == null) return;
+        out.append("      @Slice.").append(boundary.kind().name().toLowerCase(java.util.Locale.ROOT))
+                .append(" declared=").append(boundary.declared())
+                .append(" annotation=").append(boundary.annotationDescriptor())
+                .append(" @At=").append(boundary.at())
+                .append(" [").append(boundary.status()).append("] — ")
+                .append(boundary.evidence()).append('\n');
+        boundary.warnings().forEach(warning -> out.append("        warning: ").append(warning).append('\n'));
     }
 
     public static String toJson(PreflightResult result) {
@@ -373,6 +490,151 @@ public final class Forge1201PreflightAnalyzer {
         for (MixinConfigCandidate candidate : result.mixinConfigCandidates()) {
             out.append("  ").append(candidate.path()).append(" (").append(candidate.discoveredBy()).append(")\n");
         }
+        Forge1201MixinAnalyzer.Result mixins = result.mixinAnalysis();
+        out.append("\nMixin analysis (").append(mixins.configs().size()).append(" configs, ")
+                .append(mixins.mixinClasses().size()).append(" mixin classes, ")
+                .append(mixins.targets().size()).append(" target selectors): target index=")
+                .append(mixins.targetIndexStatus()).append(", class map=").append(mixins.classMappingVersion())
+                .append('\n');
+        for (Forge1201MixinAnalyzer.ConfigFinding finding : mixins.configs()) {
+            out.append("  config ").append(finding.configPath()).append(" [").append(finding.status())
+                    .append(", discovered by ").append(finding.discoverySources())
+                    .append(", refmap=").append(finding.refmapSelection())
+                    .append(", candidate=").append(finding.refmapCandidatePath())
+                    .append(", wrapper=").append(finding.refmapWrapperClass()).append("]\n");
+            finding.warnings().forEach(warning -> out.append("    warning: ").append(warning).append('\n'));
+        }
+        out.append("\nMixin refmap resources (").append(mixins.refmapResources().size()).append("):\n");
+        if (mixins.refmapResources().isEmpty()) out.append("  none discovered\n");
+        for (Forge1201MixinAnalyzer.RefmapResourceFinding resource : mixins.refmapResources()) {
+            out.append("  refmap ").append(resource.resourcePath()).append(" [").append(resource.status())
+                    .append(", origins=").append(resource.origins())
+                    .append(", configs=").append(resource.configPaths())
+                    .append(", declared-bytes=").append(resource.declaredSizeBytes())
+                    .append(", compressed-bytes=").append(resource.compressedSizeBytes())
+                    .append(", inflated-bytes=").append(resource.inflatedSizeBytes())
+                    .append(", sha256=").append(resource.sha256())
+                    .append(", contexts=").append(resource.contextKeys())
+                    .append(", owners=").append(resource.ownerBucketCount())
+                    .append(", entries=").append(resource.entryCount()).append("]\n");
+            for (Forge1201MixinAnalyzer.RefmapTableFinding table : resource.tables()) {
+                out.append("    table ").append(table.kind())
+                        .append(table.contextKey() == null ? "" : " context=" + table.contextKey())
+                        .append(" [owners=").append(table.ownerBucketCount())
+                        .append(", entries=").append(table.entryCount()).append("]\n");
+                for (Forge1201MixinAnalyzer.RefmapEntryFinding entry : table.entries()) {
+                    out.append("      ").append(entry.ownerInternalName()).append(" :: ")
+                            .append(entry.referenceKey()).append(" -> ")
+                            .append(entry.mappedReferenceValue()).append('\n');
+                }
+                table.warnings().forEach(warning -> out.append("      warning: ").append(warning).append('\n'));
+            }
+            resource.warnings().forEach(warning -> out.append("    warning: ").append(warning).append('\n'));
+        }
+        out.append("\nMixin refmap lookup correlation (").append(mixins.refmapLookups().size())
+                .append("), requested context=")
+                .append(mixins.requestedRefmapContextKey() == null ? "<not supplied>" : mixins.requestedRefmapContextKey())
+                .append(":\n");
+        if (mixins.refmapLookups().isEmpty()) out.append("  none discovered\n");
+        for (Forge1201MixinAnalyzer.RefmapLookupFinding lookup : mixins.refmapLookups()) {
+            out.append("  ").append(lookup.source()).append(' ').append(lookup.mixinInternalName()).append('#')
+                    .append(lookup.sourceMemberName()).append(lookup.sourceMemberDescriptor())
+                    .append(" at ").append(lookup.sourceLocation()).append(" [").append(lookup.status())
+                    .append(", remap=").append(lookup.remap()).append(", resource=").append(lookup.resourcePath())
+                    .append(", context=").append(lookup.selectedContextKey()).append("] raw=")
+                    .append(lookup.rawReference()).append(" normalized=").append(lookup.normalizedReference())
+                    .append(" mapped=").append(lookup.mappedReferenceValue()).append(" — ")
+                    .append(lookup.evidence()).append('\n');
+            for (Forge1201MixinAnalyzer.RefmapLookupCandidate candidate : lookup.candidates()) {
+                out.append("    candidate ").append(candidate.tableKind())
+                        .append(candidate.contextKey() == null ? "" : " context=" + candidate.contextKey())
+                        .append(" [").append(candidate.status()).append("] mapped=")
+                        .append(candidate.mappedReferenceValue()).append(" matches=").append(candidate.matches()).append('\n');
+            }
+            lookup.warnings().forEach(warning -> out.append("    warning: ").append(warning).append('\n'));
+        }
+        for (Forge1201MixinAnalyzer.MixinClassFinding finding : mixins.mixinClasses()) {
+            out.append("  mixin ").append(finding.mixinClassName()).append(" [").append(finding.status())
+                    .append(", internal=").append(finding.mixinInternalName())
+                    .append(", section=").append(finding.section()).append("]\n");
+            finding.warnings().forEach(warning -> out.append("    warning: ").append(warning).append('\n'));
+        }
+        for (Forge1201MixinAnalyzer.TargetFinding finding : mixins.targets()) {
+            out.append("  target ").append(finding.sourceTargetInternalName()).append(" -> ")
+                    .append(finding.targetInternalName() == null ? "unresolved" : finding.targetInternalName())
+                    .append(" [").append(finding.status()).append(", remap=").append(finding.remap())
+                    .append(", plugin-dependent=").append(finding.pluginDependent()).append("] ")
+                    .append(finding.evidence()).append('\n');
+        }
+        out.append("\nMixin member annotations (").append(mixins.memberAnnotations().size()).append("):\n");
+        if (mixins.memberAnnotations().isEmpty()) out.append("  none discovered\n");
+        for (Forge1201MixinAnalyzer.MemberAnnotationFinding finding : mixins.memberAnnotations()) {
+            out.append("  ").append(finding.annotationKind()).append(' ')
+                    .append(finding.mixinClassName()).append('#')
+                    .append(finding.sourceMemberName()).append(finding.sourceMemberDescriptor())
+                    .append(" [").append(finding.elementKind()).append(", ")
+                    .append(finding.status()).append(", remap=").append(finding.remap())
+                    .append(", operation=").append(finding.operation())
+                    .append(", prefix=").append(finding.prefix())
+                    .append(", aliases=").append(finding.aliases())
+                    .append(", value=").append(finding.explicitValue())
+                    .append(", constraints=").append(finding.constraints()).append("] candidates=")
+                    .append(finding.targetMemberNameCandidates())
+                    .append(" source-targets=").append(finding.sourceTargetInternalNames())
+                    .append(" — ").append(finding.evidence()).append('\n');
+            finding.warnings().forEach(warning -> out.append("    warning: ").append(warning).append('\n'));
+        }
+        out.append("\nMixin injectors (").append(mixins.injectors().size()).append("):\n");
+        if (mixins.injectors().isEmpty()) out.append("  none discovered\n");
+        for (Forge1201MixinAnalyzer.InjectorFinding finding : mixins.injectors()) {
+            out.append("  ").append(finding.annotationKind()).append(' ')
+                    .append(finding.mixinClassName()).append('#')
+                    .append(finding.sourceMemberName()).append(finding.sourceMemberDescriptor())
+                    .append(" [").append(finding.elementKind()).append(", ").append(finding.status())
+                    .append(", remap=").append(finding.remap())
+                    .append(", @At=").append(finding.atAnnotationCount())
+                    .append(", @Slice=").append(finding.sliceAnnotationCount())
+                    .append(", require=").append(finding.require())
+                    .append(", expect=").append(finding.expect())
+                    .append(", allow=").append(finding.allow())
+                    .append("] selectors=").append(finding.targetSelectors())
+                    .append(" source-targets=").append(finding.sourceTargetInternalNames())
+                    .append(" — ").append(finding.evidence()).append('\n');
+            for (Forge1201MixinAnalyzer.AtFinding at : finding.injectionPoints()) {
+                out.append("    @At[").append(at.index()).append("] value=").append(at.value())
+                        .append(" kind=").append(at.valueKind()).append(" target=").append(at.rawTarget())
+                        .append(" parsed-target=").append(at.targetSelector())
+                        .append(" desc=").append(at.descSelector())
+                        .append(" opcode=").append(at.opcode()).append(" ordinal=").append(at.ordinal())
+                        .append(" shift=").append(at.shift()).append(" by=").append(at.shiftBy())
+                        .append(" slice=").append(at.sliceId()).append(" args=").append(at.args())
+                        .append(" remap=").append(at.remap()).append(" id=").append(at.id())
+                        .append(" [").append(at.status()).append("] — ").append(at.evidence()).append('\n');
+                at.warnings().forEach(warning -> out.append("      warning: ").append(warning).append('\n'));
+            }
+            for (Forge1201MixinAnalyzer.SliceFinding slice : finding.slices()) {
+                out.append("    @Slice[").append(slice.index()).append("] id=").append(slice.id())
+                        .append(" annotation=").append(slice.annotationDescriptor())
+                        .append(" [").append(slice.status()).append("] — ").append(slice.evidence()).append('\n');
+                appendSliceBoundaryText(out, slice.from());
+                appendSliceBoundaryText(out, slice.to());
+                slice.warnings().forEach(warning -> out.append("      warning: ").append(warning).append('\n'));
+            }
+            for (Forge1201MixinAnalyzer.ConstantFinding constant : finding.constants()) {
+                out.append("    @Constant[").append(constant.index()).append("] declared=")
+                        .append(constant.declared()).append(" null=").append(constant.nullValue())
+                        .append(" int=").append(constant.intValue()).append(" float=").append(constant.floatValue())
+                        .append(" long=").append(constant.longValue()).append(" double=").append(constant.doubleValue())
+                        .append(" string=").append(constant.stringValue()).append(" class=")
+                        .append(constant.classValueDescriptor()).append(" ordinal=").append(constant.ordinal())
+                        .append(" slice=").append(constant.sliceId()).append(" expandZeroConditions=")
+                        .append(constant.expandZeroConditions()).append(" log=").append(constant.log())
+                        .append(" [").append(constant.status()).append("] — ").append(constant.evidence()).append('\n');
+                constant.warnings().forEach(warning -> out.append("      warning: ").append(warning).append('\n'));
+            }
+            finding.warnings().forEach(warning -> out.append("    warning: ").append(warning).append('\n'));
+        }
+        mixins.warnings().forEach(warning -> out.append("  warning: ").append(warning).append('\n'));
         out.append("Jar-in-Jar archive paths: ")
                 .append(result.jarInJarPaths().isEmpty() ? "none" : String.join(", ", result.jarInJarPaths())).append('\n');
         Forge1201ArchiveGraph.Result graph = result.archiveGraph();
@@ -403,13 +665,15 @@ public final class Forge1201PreflightAnalyzer {
             out.append("  ").append(edge.declaringArchivePath()).append(" :: ")
                     .append(edge.declaringModId()).append(" -> ").append(edge.dependencyModId())
                     .append(" ").append(edge.versionRange())
-                    .append(edge.mandatory() ? " [required" : " [optional")
+                    .append(" [").append(edge.dependencyType().name().toLowerCase(Locale.ROOT))
                     .append(", ").append(edge.ordering()).append(", ").append(edge.side())
                     .append("] ").append(edge.status())
                     .append(" provider-range=").append(edge.providerRangeStatus());
             if (!edge.providerArchivePaths().isEmpty()) {
-                out.append(" providers=").append(edge.providerArchivePaths())
-                        .append(" versions=").append(edge.providerVersions());
+                out.append(" providers=").append(edge.providerArchivePaths());
+            }
+            if (!edge.providerVersions().isEmpty()) {
+                out.append(" versions=").append(edge.providerVersions());
             }
             out.append('\n');
         }
@@ -426,7 +690,14 @@ public final class Forge1201PreflightAnalyzer {
             out.append("\nArchive graph warnings:\n");
             graph.warnings().forEach(warning -> out.append("  - ").append(warning).append('\n'));
         }
-        out.append("\nBytecode: ").append(result.classCount()).append(" classes scanned\n")
+        int totalDiscoveredClasses = result.classCount() + result.nestedClassCount();
+        int totalScannedClasses = result.outerClassScannedCount() + result.nestedClassScannedCount();
+        out.append("\nBytecode: ").append(result.classCount()).append(" outer class entries / ")
+                .append(result.outerClassScannedCount()).append(" scanned; ")
+                .append(result.nestedClassCount()).append(" nested class entries / ")
+                .append(result.nestedClassScannedCount()).append(" scanned; ")
+                .append(totalDiscoveredClasses).append(" total discovered / ")
+                .append(totalScannedClasses).append(" total scanned\n")
                 .append("Mod entrypoints: ")
                 .append(result.modEntrypoints().isEmpty() ? "none detected" : String.join(", ", result.modEntrypoints()))
                 .append('\n')
@@ -442,11 +713,93 @@ public final class Forge1201PreflightAnalyzer {
         out.append("Method references: ").append(result.methodReferences().size())
                 .append(" | field references: ").append(result.fieldReferences().size()).append('\n')
                 .append("Method call sites: ").append(result.methodCallSites().size())
-                .append(" | field call sites: ").append(result.fieldCallSites().size()).append('\n');
+                .append(" | field call sites: ").append(result.fieldCallSites().size()).append('\n')
+                .append("Dynamic / bootstrap references: ").append(result.dynamicReferences().size()).append('\n');
+        for (Forge1201ApiUsageAnalyzer.ApiDynamicReference reference : result.dynamicReferences()) {
+            out.append("  ").append(reference.display()).append(" (x")
+                    .append(reference.count()).append(") tag=").append(reference.handleTag()).append('\n');
+        }
+        out.append("\nNested class archive scans: ").append(graph.classScanSummaries().size()).append('\n');
+        for (Forge1201ArchiveGraph.ClassScanSummary summary : graph.classScanSummaries()) {
+            out.append("  ").append(summary.archivePath()).append(" [").append(summary.archiveKind()).append("] ")
+                    .append(summary.scannedClassEntries()).append('/').append(summary.discoveredClassEntries())
+                    .append(" scanned, ").append(summary.skippedClassEntries()).append(" skipped, ")
+                    .append(summary.submittedClassBytes()).append(" submitted bytes\n");
+            summary.warnings().forEach(warning -> out.append("    warning: ").append(warning).append('\n'));
+        }
+        out.append("\nSource SRG -> Minecraft 1.20.1 Mojang member names: ")
+                .append(result.normalizedMemberReferences().size()).append('\n');
+        for (Forge1201ApiUsageAnalyzer.ApiSrgMemberReference reference : result.normalizedMemberReferences()) {
+            out.append("  ").append(reference.kind()).append(' ').append(reference.owner()).append('#')
+                    .append(reference.sourceSrgName()).append(" -> ")
+                    .append(reference.mojangName() == null ? "UNMAPPED" : reference.mojangName())
+                    .append(reference.descriptor()).append(" [").append(reference.mappingStatus())
+                    .append(", count=").append(reference.count()).append("] locations=")
+                    .append(reference.sourceLocations()).append('\n');
+        }
+        if (!result.classScanWarnings().isEmpty()) {
+            out.append("\nOuter / bytecode scanner warnings:\n");
+            result.classScanWarnings().forEach(warning -> out.append("  - ").append(warning).append('\n'));
+        }
         if (!result.metadataWarnings().isEmpty()) {
             out.append("\nMetadata warnings:\n");
             result.metadataWarnings().forEach(warning -> out.append("  - ").append(warning).append('\n'));
         }
+        Forge1201MappingProfileValidator.Finding profile = result.mappingProfile();
+        out.append("\nMapping profile: ").append(profile.status());
+        if (profile.profileId() != null) out.append(" id=").append(profile.profileId());
+        if (profile.profilePath() != null) out.append(" file=").append(profile.profilePath());
+        out.append('\n');
+        if (profile.profileSha256() != null) {
+            out.append("  Profile SHA-256: ").append(profile.profileSha256())
+                    .append(" (").append(profile.profileSizeBytes()).append(" bytes)\n");
+        }
+        if (profile.status() == Forge1201MappingProfileValidator.ProfileStatus.PROFILE_NOT_SUPPLIED) {
+            out.append("  No mapping profile supplied; no namespace mapping is selected or inferred.\n");
+        } else {
+            if (profile.sourceCompileNamespaceId() != null) {
+                out.append("  Source namespace: ").append(profile.sourceCompileNamespaceId())
+                        .append(" (Minecraft ").append(profile.sourceMinecraftVersion()).append(")\n");
+            }
+            if (profile.targetCompileNamespaceId() != null) {
+                out.append("  Target namespace: ").append(profile.targetCompileNamespaceId())
+                        .append(" (Minecraft ").append(profile.targetMinecraftVersion()).append(")\n");
+            }
+            out.append("  Context bindings: ").append(profile.contextBindings().size())
+                    .append(" | artifacts: ").append(profile.artifacts().size())
+                    .append(" | edges: ").append(profile.edges().size()).append('\n');
+        }
+        for (Forge1201MappingProfileValidator.ArtifactFinding artifact : profile.artifacts()) {
+            out.append("  Artifact ").append(artifact.artifactId()).append(" [").append(artifact.status())
+                    .append("] provider=").append(artifact.provider()).append('@').append(artifact.version())
+                    .append(" format=").append(artifact.format())
+                    .append(" sha256=").append(artifact.expectedSha256())
+                    .append(" actual=").append(artifact.actualSha256())
+                    .append(" upstream=").append(artifact.upstreamChecksum())
+                    .append(" upstreamActual=").append(artifact.actualUpstreamChecksum())
+                    .append(" license=").append(artifact.licenseId()).append('/')
+                    .append(artifact.licenseReviewStatus()).append('\n');
+            artifact.warnings().forEach(warning -> out.append("    warning: ").append(warning).append('\n'));
+        }
+        for (Forge1201MappingProfileValidator.EdgeFinding edge : profile.edges()) {
+            out.append("  Edge ").append(edge.edgeId()).append(" [").append(edge.status()).append("] ")
+                    .append(edge.fromNamespace()).append('@').append(edge.sourceMinecraftVersion())
+                    .append(" -> ").append(edge.toNamespace()).append('@').append(edge.targetMinecraftVersion())
+                    .append(" direction=").append(edge.direction())
+                    .append(" scope=").append(edge.scope())
+                    .append(" artifacts=").append(edge.artifactIds()).append('\n');
+            edge.warnings().forEach(warning -> out.append("    warning: ").append(warning).append('\n'));
+        }
+        for (Forge1201MappingProfileValidator.ContextPathFinding path : profile.contextPaths()) {
+            out.append("  Context ").append(path.contextKey()).append(": ")
+                    .append(path.sourceNamespace()).append('@').append(path.sourceMinecraftVersion())
+                    .append(" -> ").append(path.targetNamespace()).append('@').append(path.targetMinecraftVersion())
+                    .append(" [").append(path.status()).append(", paths=").append(path.completePathCount())
+                    .append("]\n");
+        }
+        profile.validationErrors().forEach(value -> out.append("  error: ").append(value).append('\n'));
+        profile.warnings().forEach(value -> out.append("  warning: ").append(value).append('\n'));
+        out.append("  Note: profile validation does not transform selectors or prove mapping semantics.\n");
         out.append("\nLimitations:\n");
         result.limitations().forEach(value -> out.append("  - ").append(value).append('\n'));
         return out.append("\nConclusion: this report is not a compatibility approval. Runtime validation is still required.\n")
@@ -566,6 +919,50 @@ public final class Forge1201PreflightAnalyzer {
         return -1;
     }
 
+    private static URLClassLoader createTargetClassLoader(List<Path> classpathEntries) throws IOException {
+        if (classpathEntries.isEmpty()) return null;
+        URL[] urls = new URL[classpathEntries.size()];
+        for (int i = 0; i < classpathEntries.size(); i++) {
+            urls[i] = classpathEntries.get(i).toUri().toURL();
+        }
+        // Resource lookup only: callers use getResourceAsStream and never invoke loadClass.
+        return new URLClassLoader(urls, ClassLoader.getPlatformClassLoader());
+    }
+
+    private static List<Path> readTargetClasspathFile(Path classpathFile) throws IOException {
+        if (classpathFile == null) return List.of();
+        if (!Files.isRegularFile(classpathFile)) {
+            throw new IllegalArgumentException("Target classpath list is not a file: " + classpathFile);
+        }
+        if (Files.size(classpathFile) > MAX_TARGET_CLASSPATH_FILE_BYTES) {
+            throw new IllegalArgumentException("Target classpath list exceeds "
+                    + MAX_TARGET_CLASSPATH_FILE_BYTES + " bytes");
+        }
+        Set<Path> entries = new java.util.LinkedHashSet<>();
+        for (String line : Files.readAllLines(classpathFile, StandardCharsets.UTF_8)) {
+            String value = line.trim();
+            if (value.isEmpty()) continue;
+            Path entry = Path.of(value).toAbsolutePath().normalize();
+            if (!Files.exists(entry) || (!Files.isDirectory(entry) && !Files.isRegularFile(entry))) {
+                throw new IllegalArgumentException("Target classpath entry does not exist or is not a file/directory: " + entry);
+            }
+            entries.add(entry);
+            if (entries.size() > MAX_TARGET_CLASSPATH_ENTRIES) {
+                throw new IllegalArgumentException("Target classpath exceeds "
+                        + MAX_TARGET_CLASSPATH_ENTRIES + " entries");
+            }
+        }
+        return List.copyOf(entries);
+    }
+
+    private static String mixinDiscoveryLabel(Forge1201MixinAnalyzer.DiscoverySource source) {
+        return switch (source) {
+            case MANIFEST -> "manifest MixinConfigs attribute";
+            case FORGE_METADATA -> "Forge metadata";
+            case RESOURCE_HEURISTIC -> "resource path/content heuristic";
+        };
+    }
+
     private static String conciseMessage(Throwable throwable) {
         String message = throwable.getMessage();
         return message == null || message.isBlank() ? throwable.getClass().getSimpleName() : message;
@@ -591,27 +988,43 @@ public final class Forge1201PreflightAnalyzer {
         Files.writeString(absolute, content, StandardCharsets.UTF_8);
     }
 
-    /** CLI: <jar> [--mods-dir <directory>]... [--json <path>] [--text <path>] */
+    /** CLI: <jar> [--mods-dir <directory>]... [--target-classpath-file <path>] [--refmap-context <key>] [--mapping-profile <path>] [--json <path>] [--text <path>] */
     public static void main(String[] args) throws IOException {
         if (args.length < 1) {
-            throw new IllegalArgumentException("Usage: <jar> [--mods-dir <directory>]... [--json <path>] [--text <path>]");
+            throw new IllegalArgumentException("Usage: <jar> [--mods-dir <directory>]... "
+                    + "[--target-classpath-file <path>] [--refmap-context <key>] "
+                    + "[--mapping-profile <path>] [--json <path>] [--text <path>]");
         }
         Path jar = Path.of(args[0]);
         List<Path> modDirectories = new ArrayList<>();
+        Path targetClasspathFile = null;
         Path json = null;
         Path text = null;
+        String requestedRefmapContextKey = null;
+        Path mappingProfile = null;
         for (int i = 1; i < args.length; i++) {
             String option = args[i];
             if (++i >= args.length) throw new IllegalArgumentException("Missing value after " + option);
+            if ("--refmap-context".equals(option)) {
+                requestedRefmapContextKey = args[i];
+                continue;
+            }
+            if ("--mapping-profile".equals(option)) {
+                mappingProfile = Path.of(args[i]);
+                continue;
+            }
             Path value = Path.of(args[i]);
             switch (option) {
                 case "--mods-dir" -> modDirectories.add(value);
+                case "--target-classpath-file" -> targetClasspathFile = value;
                 case "--json" -> json = value;
                 case "--text" -> text = value;
                 default -> throw new IllegalArgumentException("Unknown preflight option: " + option);
             }
         }
-        PreflightResult result = analyze(jar, modDirectories);
+        PreflightResult result = analyze(
+                jar, modDirectories, readTargetClasspathFile(targetClasspathFile),
+                requestedRefmapContextKey, mappingProfile);
         if (json != null) write(json, toJson(result));
         if (text != null) write(text, toText(result));
         if (json == null && text == null) {

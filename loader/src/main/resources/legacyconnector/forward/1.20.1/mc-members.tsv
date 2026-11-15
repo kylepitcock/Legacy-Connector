@@ -78,3 +78,5 @@ net/minecraft/client/renderer/GameRenderer	getPositionColorTexShader	()Lnet/mine
 # 2026-11-13 ATM 9 gap round 2: BlockState.neighborChanged is handleNeighborChanged (same parameters)
 net/minecraft/world/level/block/state/BlockState	neighborChanged	*	handleNeighborChanged
 net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase	neighborChanged	*	handleNeighborChanged
+net/minecraft/network/syncher/EntityDataAccessor	getId	()I	id
+net/minecraft/network/syncher/EntityDataAccessor	getSerializer	*	serializer

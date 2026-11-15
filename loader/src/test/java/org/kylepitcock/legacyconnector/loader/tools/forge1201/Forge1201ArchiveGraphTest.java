@@ -240,6 +240,93 @@ final class Forge1201ArchiveGraphTest {
     }
 
     @Test
+    void parsesNeoForgeDependencyTypesAndUsesTheirDistinctResolutionSemantics() throws IOException {
+        Path mods = Files.createDirectories(tempDir.resolve("typed-neoforge-mods"));
+        List<NeoDep> dependencies = List.of(
+                neoDep("optional_missing", "[1.0,)", "optional"),
+                neoDep("required_missing", "[1.0,)", "required"),
+                neoDep("default_required", "*", null, false),
+                neoDep("incompatible_present", "*", "incompatible"),
+                neoDep("incompatible_absent", "*", "incompatible"),
+                neoDep("discouraged_present", "*", "discouraged"),
+                neoDep("discouraged_absent", "*", "discouraged"));
+        Files.write(mods.resolve("native-owner.jar"), zip(Map.of("META-INF/neoforge.mods.toml",
+                bytes(neoForgeModToml("nativeowner", "1.0.0", dependencies)))));
+        Files.write(mods.resolve("incompatible-provider.jar"), zip(Map.of("META-INF/neoforge.mods.toml",
+                bytes(neoForgeModToml("incompatible_present", "1.2.0")))));
+        Files.write(mods.resolve("discouraged-provider.jar"), zip(Map.of("META-INF/neoforge.mods.toml",
+                bytes(neoForgeModToml("discouraged_present", "1.2.0")))));
+
+        Path source = writeSourceJar("neo-dependency-types.jar",
+                forgeModJar("alpha", "1.0.0", List.of(
+                        dep("minecraft", "[1.20.1,)", true), dep("forge", "[47,)", true))),
+                Map.of());
+        Forge1201JarInfo info = Forge1201JarInspector.inspectForge1201(source);
+        assertNotNull(info);
+        Forge1201ArchiveGraph.Result graph = Forge1201ArchiveGraph.analyze(
+                source, info, List.of(mods), "1.21.1", "21.1.258");
+
+        var optional = edge(graph, "nativeowner", "optional_missing");
+        assertEquals(Forge1201JarInfo.DependencyType.OPTIONAL, optional.dependencyType());
+        assertEquals(false, optional.mandatory());
+        assertEquals(Forge1201ArchiveGraph.DependencyStatus.OPTIONAL_MISSING, optional.status());
+
+        var required = edge(graph, "nativeowner", "required_missing");
+        assertEquals(Forge1201JarInfo.DependencyType.REQUIRED, required.dependencyType());
+        assertEquals(Forge1201ArchiveGraph.DependencyStatus.REQUIRED_MISSING, required.status());
+
+        var defaultRequired = edge(graph, "nativeowner", "default_required");
+        assertEquals(Forge1201JarInfo.DependencyType.REQUIRED, defaultRequired.dependencyType());
+        assertEquals(Forge1201ArchiveGraph.DependencyStatus.REQUIRED_MISSING, defaultRequired.status());
+
+        var incompatiblePresent = edge(graph, "nativeowner", "incompatible_present");
+        assertEquals(Forge1201JarInfo.DependencyType.INCOMPATIBLE, incompatiblePresent.dependencyType());
+        assertEquals(Forge1201ArchiveGraph.DependencyStatus.INCOMPATIBLE_PROVIDER_PRESENT,
+                incompatiblePresent.status());
+
+        var incompatibleAbsent = edge(graph, "nativeowner", "incompatible_absent");
+        assertEquals(Forge1201ArchiveGraph.DependencyStatus.INCOMPATIBLE_PROVIDER_ABSENT,
+                incompatibleAbsent.status());
+
+        var discouragedPresent = edge(graph, "nativeowner", "discouraged_present");
+        assertEquals(Forge1201JarInfo.DependencyType.DISCOURAGED, discouragedPresent.dependencyType());
+        assertEquals(Forge1201ArchiveGraph.DependencyStatus.DISCOURAGED_PROVIDER_PRESENT,
+                discouragedPresent.status());
+
+        var discouragedAbsent = edge(graph, "nativeowner", "discouraged_absent");
+        assertEquals(Forge1201ArchiveGraph.DependencyStatus.DISCOURAGED_PROVIDER_ABSENT,
+                discouragedAbsent.status());
+    }
+
+    @Test
+    void evaluatesNeoForgeHostDependencyAgainstTheSelectedLoaderVersion() throws IOException {
+        String[][] cases = {
+                {"[21.1.150,)", "MATCH", "HOST_BRIDGE"},
+                {"[21.1.259,)", "OUTSIDE_RANGE", "HOST_VERSION_MISMATCH"},
+                {"[21.0.110-beta,)", "UNPARSEABLE", "HOST_BRIDGE"}
+        };
+        for (int i = 0; i < cases.length; i++) {
+            Path source = writeSourceJar("neoforge-host-range-" + i + ".jar",
+                    forgeModJar("alpha", "1.0.0", List.of(
+                            dep("minecraft", "[1.20.1,)", true),
+                            dep("forge", "[47,)", true),
+                            dep("neoforge", cases[i][0], true))),
+                    Map.of());
+            Forge1201JarInfo info = Forge1201JarInspector.inspectForge1201(source);
+            assertNotNull(info);
+
+            Forge1201ArchiveGraph.Result graph = Forge1201ArchiveGraph.analyze(
+                    source, info, List.of(), "1.21.1", "21.1.258");
+            var edge = edge(graph, "alpha", "neoforge");
+            assertEquals(Forge1201ArchiveGraph.VersionRangeStatus.valueOf(cases[i][1]),
+                    edge.providerRangeStatus());
+            assertEquals(Forge1201ArchiveGraph.DependencyStatus.valueOf(cases[i][2]), edge.status());
+            assertEquals(List.of("21.1.258"), edge.providerVersions());
+            assertTrue(edge.providerArchivePaths().isEmpty());
+        }
+    }
+
+    @Test
     void evaluatesNumericMavenStyleRangesConservatively() {
         assertEquals(Forge1201ArchiveGraph.VersionRangeStatus.MATCH,
                 Forge1201ArchiveGraph.evaluateVersionRange("[4.0,)", "4.9.3"));
@@ -255,8 +342,13 @@ final class Forge1201ArchiveGraphTest {
 
     private static Forge1201ArchiveGraph.DependencyEdge edge(
             Forge1201ArchiveGraph.Result graph, String dependencyId) {
+        return edge(graph, "alpha", dependencyId);
+    }
+
+    private static Forge1201ArchiveGraph.DependencyEdge edge(
+            Forge1201ArchiveGraph.Result graph, String declaringModId, String dependencyId) {
         return graph.dependencyEdges().stream()
-                .filter(value -> value.declaringModId().equals("alpha")
+                .filter(value -> value.declaringModId().equals(declaringModId)
                         && value.dependencyModId().equals(dependencyId))
                 .findFirst().orElseThrow();
     }
@@ -324,9 +416,35 @@ final class Forge1201ArchiveGraphTest {
     }
 
     private static String neoForgeModToml(String modId, String version) {
-        return "modLoader=\"javafml\"\nloaderVersion=\"[4,)\"\nlicense=\"MIT\"\n\n"
-                + "[[mods]]\nmodId=\"" + modId + "\"\nversion=\"" + version
-                + "\"\ndisplayName=\"" + modId + "\"\n";
+        return neoForgeModToml(modId, version, List.of());
+    }
+
+    private static String neoForgeModToml(String modId, String version, List<NeoDep> dependencies) {
+        StringBuilder toml = new StringBuilder()
+                .append("modLoader=\"javafml\"\nloaderVersion=\"[4,)\"\nlicense=\"MIT\"\n\n")
+                .append("[[mods]]\nmodId=\"").append(modId).append("\"\nversion=\"").append(version)
+                .append("\"\ndisplayName=\"").append(modId).append("\"\n");
+        for (NeoDep dependency : dependencies) {
+            toml.append("\n[[dependencies.").append(modId).append("]]\n")
+                    .append("modId=\"").append(dependency.id()).append("\"\n");
+            if (dependency.type() != null) {
+                toml.append("type=\"").append(dependency.type()).append("\"\n");
+            }
+            if (dependency.legacyMandatory() != null) {
+                toml.append("mandatory=").append(dependency.legacyMandatory()).append('\n');
+            }
+            toml.append("versionRange=\"").append(dependency.range()).append("\"\n")
+                    .append("ordering=\"NONE\"\nside=\"BOTH\"\n");
+        }
+        return toml.toString();
+    }
+
+    private static NeoDep neoDep(String id, String range, String type) {
+        return neoDep(id, range, type, null);
+    }
+
+    private static NeoDep neoDep(String id, String range, String type, Boolean legacyMandatory) {
+        return new NeoDep(id, range, type, legacyMandatory);
     }
 
     private static Dep dep(String id, String range, boolean mandatory) {
@@ -334,6 +452,7 @@ final class Forge1201ArchiveGraphTest {
     }
 
     private record Dep(String id, String range, boolean mandatory) {}
+    private record NeoDep(String id, String range, String type, Boolean legacyMandatory) {}
 
     private static String jarJarMetadata(String... values) {
         StringBuilder json = new StringBuilder("{\"jars\":[");
