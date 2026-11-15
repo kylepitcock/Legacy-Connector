@@ -38,7 +38,7 @@ import org.objectweb.asm.tree.ClassNode;
  */
 public final class LegacyJarTransformer {
     /** Bump whenever the output of this class changes, to invalidate caches. */
-    public static final int TRANSFORMER_VERSION = 65;
+    public static final int TRANSFORMER_VERSION = 66;
     /** Names the legacy coremod plugin class of a translated jar. */
     public static final String COREMOD_RESOURCE = "META-INF/legacyconnector-coremod.txt";
 
@@ -101,7 +101,11 @@ public final class LegacyJarTransformer {
 
     private Contents readPatched(LegacyJar jar) throws IOException {
         Contents c = read(jar);
-        if (patcher != null) c.classes.replaceAll((name, bytes) -> patcher.patch(jar, name, bytes));
+        if (patcher != null) {
+            c.classes.replaceAll((name, bytes) -> patcher.patch(jar, name, bytes));
+            // what coremods added to Minecraft's classes (interfaces and their accessors) becomes mixins on the shim classes, translated with the jar
+            CoremodAdditionMixins.addTo(jar, c.classes);
+        }
         // Beta 1.7.3 jars are obfuscated: named first, then relocated like the other families
         if (jar.version == LegacyVersion.VB1_7_3) c.notes.addAll(BetaDeobfuscator.apply(jar, c.classes,shim));
         return c;
@@ -573,6 +577,13 @@ public final class LegacyJarTransformer {
         if (version == LegacyVersion.V1_12_2 && jar.hasMods()) {
             jar.mixinConfigResources.clear();
             result.notes.addAll(LegacyMixinConfigs.apply(jar, outResources, nodes, hierarchy));
+        }
+        byte[] additions = CoremodAdditionMixins.config(jar, nodes.keySet());
+        if (additions != null) {
+            String config = CoremodAdditionMixins.configName(jar);
+            outResources.put(config, additions);
+            if (!jar.mixinConfigResources.contains(config)) jar.mixinConfigResources.add(config);
+            result.notes.add("Interfaces and accessors this jar's coremod added to Minecraft classes are applied to the legacy API classes as mixins (" + config + ")");
         }
 
         if (jar.coreModClass != null) {
