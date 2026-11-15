@@ -277,11 +277,13 @@ public final class Forge1201SourceOfficialMappingIndex {
             MethodKey key = new MethodKey(
                     selector.obfuscatedOwner(), selector.obfuscatedName(), selector.obfuscatedDescriptor());
             List<MethodMapping> methodRows = distinctMethods(methods.getOrDefault(key, List.of()));
+            boolean requestedNamePresent = methodRows.stream()
+                    .anyMatch(row -> row.officialName().equals(officialName));
+            if (!requestedNamePresent) continue;
             if (methodRows.size() > 1) {
                 ambiguous = true;
                 continue;
             }
-            if (methodRows.isEmpty() || !methodRows.getFirst().officialName().equals(officialName)) continue;
 
             DescriptorResult descriptor = remapObfuscatedDescriptor(selector.obfuscatedDescriptor(), true);
             if ((descriptor.status() != Status.MAPPED_EXACT
@@ -332,11 +334,11 @@ public final class Forge1201SourceOfficialMappingIndex {
                     .toList();
             Set<String> exactNames = new LinkedHashSet<>();
             exactRows.forEach(row -> exactNames.add(row.officialName()));
+            if (!exactNames.contains(officialName)) continue;
             if (exactNames.size() > 1) {
                 ambiguous = true;
                 continue;
             }
-            if (exactNames.isEmpty() || !exactNames.contains(officialName)) continue;
 
             DescriptorResult descriptor = remapObfuscatedDescriptor(selector.obfuscatedDescriptor(), false);
             if ((descriptor.status() != Status.MAPPED_EXACT
