@@ -18,6 +18,18 @@ minecraft {
     mappings channel: 'official', version: minecraft_version
 }
 
+
+repositories {
+    // ForgeGradle switches dependency resolution to project repositories.
+    // Keep these here (not only in settings.dependencyResolutionManagement)
+    // so the Forge userdev dependency and its supporting artifacts resolve.
+    maven {
+        name = 'Forge'
+        url = 'https://maven.minecraftforge.net/'
+    }
+    mavenCentral()
+}
+
 dependencies {
     // ForgeGradle resolves the pinned userdev artifact and applies its
     // Minecraft patches to the matching vanilla 1.20.1 runtime.
