@@ -23,4 +23,10 @@ public abstract class TrackedEntityRangeHookMixin {
     private int legacyconnector$coremodTrackingRange(int range) {
         return CoremodSites.TRACKING_RANGE.listed() ? CoremodSites.trackingRange(entity, range) : range;
     }
+
+    /** {@code CoremodSites.TRACKING_MAX}: the cap of the tracking range (the player's view distance, in blocks). */
+    @ModifyArg(method = "updatePlayer", at = @At(value = "INVOKE", target = "Ljava/lang/Math;min(II)I"), index = 1, require = 0)
+    private int legacyconnector$coremodTrackingMax(int max) {
+        return CoremodSites.TRACKING_MAX.listed() ? CoremodSites.trackingMax(entity, max) : max;
+    }
 }
