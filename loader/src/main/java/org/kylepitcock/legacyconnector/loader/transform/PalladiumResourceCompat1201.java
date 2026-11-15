@@ -1135,13 +1135,27 @@ final class PalladiumResourceCompat1201 {
         }
         if (!relevant) return 0;
 
+        String lineEnding = script.contains("\r\n") ? "\r\n" : "\n";
         if (!script.contains(ALIEN_EVO_PACKET_STRING_HELPER_MARKER)) {
-            String lineEnding = script.contains("\r\n") ? "\r\n" : "\n";
             script = ALIEN_EVO_PACKET_STRING_HELPER.replace("\n", lineEnding) + script;
             resources.put(ALIEN_EVO_SERVER_STUFF, script.getBytes(StandardCharsets.UTF_8));
         }
 
-        return rewrite(resources, ALIEN_EVO_SERVER_STUFF, replacements);
+        // The compound-tag iterator migration inserts a multi-line loop. Normalize
+        // temporarily so both LF and CRLF resources match the same exact rewrite,
+        // then restore the original convention after all packet-value replacements.
+        if ("\r\n".equals(lineEnding)) {
+            script = script.replace("\r\n", "\n");
+            resources.put(ALIEN_EVO_SERVER_STUFF, script.getBytes(StandardCharsets.UTF_8));
+        }
+
+        int changed = rewrite(resources, ALIEN_EVO_SERVER_STUFF, replacements);
+        if ("\r\n".equals(lineEnding)) {
+            String rewritten = new String(resources.get(ALIEN_EVO_SERVER_STUFF), StandardCharsets.UTF_8);
+            resources.put(ALIEN_EVO_SERVER_STUFF,
+                    rewritten.replace("\n", "\r\n").getBytes(StandardCharsets.UTF_8));
+        }
+        return changed;
     }
 
     /**
