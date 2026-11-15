@@ -1,7 +1,6 @@
 package org.kylepitcock.legacyconnector.loader.tools.forge1201;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -100,6 +99,58 @@ final class Forge1201SourceRuntimeMemberVerifierTest {
         assertEquals(
                 Forge1201SourceRuntimeMemberVerifier.Status.SOURCE_RUNTIME_MEMBER_ABSENT,
                 index.inspectMethod("sample/Owner", "second", "()V").status());
+    }
+
+    @Test
+    void resolvesOfficialSelectorBackToSrgAndChecksTheForgeSourceClassfile() throws Exception {
+        Path tsrg = write("joined.tsrg", """
+                tsrg2 obf srg id
+                a net/minecraft/Entity 1
+                \tm (Lb;)V m_10_ 2
+                b net/minecraft/Component 3
+                """);
+        Path tiny = write("source.tiny", """
+                v1\tofficial\tintermediary
+                CLASS\ta\tnet/minecraft/class_1
+                CLASS\tb\tnet/minecraft/class_2
+                """);
+        Path mojmap = write("client.txt", """
+                net.minecraft.Entity -> a:
+                    void doThing(net.minecraft.Component) -> m
+                net.minecraft.Component -> b:
+                """);
+
+        Path archive = tempDir.resolve("source.jar");
+        try (JarOutputStream jar = new JarOutputStream(Files.newOutputStream(archive))) {
+            addClass(jar, "net/minecraft/Entity", null,
+                    new String[][] {{"doThing", "(Lnet/minecraft/Component;)V"}}, new String[][] {});
+            addClass(jar, "net/minecraft/Component", null, new String[][] {}, new String[][] {});
+        }
+        Path classpath = tempDir.resolve("source-classpath.txt");
+        Files.writeString(classpath, archive.toAbsolutePath() + System.lineSeparator(), StandardCharsets.UTF_8);
+
+        var mappings = org.kylepitcock.legacyconnector.loader.mapping.Forge1201SourceOfficialMappingIndex
+                .read(tsrg, tiny, mojmap);
+        var runtime = Forge1201SourceRuntimeMemberVerifier.readClasspath(classpath);
+        var result = runtime.verifyOfficialMethod(
+                mappings,
+                "net/minecraft/Entity",
+                "doThing",
+                "(Lnet/minecraft/Component;)V");
+
+        assertEquals(
+                org.kylepitcock.legacyconnector.loader.mapping.Forge1201SourceOfficialMappingIndex.Status.MAPPED_EXACT,
+                result.mappingStatus());
+        assertEquals("m_10_", result.mappedSelectors().getFirst().srgName());
+        assertEquals(
+                Forge1201SourceRuntimeMemberVerifier.Status.SOURCE_RUNTIME_MEMBER_DECLARED_EXACT,
+                result.members().getFirst().status());
+    }
+
+    private Path write(String name, String contents) throws Exception {
+        Path file = tempDir.resolve(name);
+        Files.writeString(file, contents, StandardCharsets.UTF_8);
+        return file;
     }
 
     private static void addClass(
