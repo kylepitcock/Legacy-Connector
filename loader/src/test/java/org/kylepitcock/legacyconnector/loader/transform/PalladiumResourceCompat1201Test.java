@@ -987,6 +987,11 @@ class PalladiumResourceCompat1201Test {
                     hexTextBox.tick();
                     lastTickTime = currentTime;
                 }
+                function hexToRgb(hex) {
+                    hex = hex.replace(/^#/, '');
+                    let bigint = parseInt(hex, 16);
+                    return { r: (bigint >> 16) & 255, g: (bigint >> 8) & 255, b: bigint & 255 };
+                }
                 let rawTextboxValue = hexTextBox.getValue() || "";
                 let cleanedHexString = rawTextboxValue.replace(/[^0-9A-Fa-f]/g, "").slice(0, 6);
                 drawSaveButton();
@@ -1007,6 +1012,9 @@ class PalladiumResourceCompat1201Test {
         assertFalse(migrated.contains("nickTextBox.tick()"));
         assertTrue(migrated.contains("rawTextboxValue.replaceAll(\"[^0-9A-Fa-f]\", \"\")"));
         assertTrue(migrated.contains("cleanedHexString.substring(0, 6)"));
+        assertTrue(migrated.contains(
+                "hex = hex.startsWith(\"#\") ? hex.substring(1) : hex;"));
+        assertFalse(migrated.contains("hex = hex.replace(/^#/, '');"));
         assertFalse(migrated.contains("rawTextboxValue.replace(/[^0-9A-Fa-f]/g"));
         assertEquals(0, PalladiumResourceCompat1201.apply(resources));
         assertEquals(migrated, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_POWER_UI));
