@@ -528,6 +528,26 @@ class PalladiumResourceCompat1201Test {
                 "let currentBlock = entity.level.getBlock(blockPos);",
                 "let blockPos = [x, y, z];",
                 "let block = entity.level.getBlock(blockPos);",
+                "if (!entity.persistentData.fireBlocks) {",
+                "entity.persistentData.fireBlocks = [];",
+                "entity.persistentData.fireBlocks = fireBlocks;",
+                "let fireBlocks = entity.persistentData.fireBlocks;",
+                "entity.persistentData.lastFireSearch = 0;",
+                "if (currentTime - entity.persistentData.lastFireSearch >= searchInterval) {",
+                "entity.persistentData.lastFireSearch = currentTime;",
+                "if (!entity.persistentData.trackedFireBlocks) {",
+                "entity.persistentData.trackedFireBlocks = {};",
+                "if (extinguishFire && entity.persistentData.trackedFireBlocks) {",
+                "for (let blockKey in entity.persistentData.trackedFireBlocks) {",
+                "let blockData = entity.persistentData.trackedFireBlocks[blockKey];",
+                "delete entity.persistentData.trackedFireBlocks[blockKey];",
+                "if (extinguishFire && entity.persistentData.trackedFireBlocks) {",
+                "if (!entity.persistentData.trackedFireBlocks[blockKey]) {",
+                "entity.persistentData.trackedFireBlocks[blockKey] = {",
+                "let trackedCount = entity.persistentData.trackedFireBlocks ? Object.keys(entity.persistentData.trackedFireBlocks).length : 0;",
+                "if (entity.isPlayer() && entity.persistentData.trackedFireBlocks) {",
+                "let trackedCount = Object.keys(entity.persistentData.trackedFireBlocks).length;",
+                "entity.persistentData.trackedFireBlocks = {};",
                 ""));
 
         assertEquals(1, PalladiumResourceCompat1201.apply(resources));
@@ -535,6 +555,15 @@ class PalladiumResourceCompat1201Test {
         String migrated = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_FIRE_ABSORB);
         assertEquals(2, occurrences(migrated, "entity.level.getBlock(x, y, z);"));
         assertFalse(migrated.contains("entity.level.getBlock(blockPos)"));
+        assertTrue(migrated.contains("entity.data.put('fireBlocks', []);"));
+        assertTrue(migrated.contains("let fireBlocks = entity.data.get('fireBlocks');"));
+        assertTrue(migrated.contains("entity.data.put('lastFireSearch', currentTime);"));
+        assertTrue(migrated.contains("entity.data.get('lastFireSearch')"));
+        assertEquals(2, occurrences(migrated, "entity.data.put('trackedFireBlocks', {});"));
+        assertTrue(migrated.contains("entity.data.get('trackedFireBlocks')[blockKey]"));
+        assertFalse(migrated.contains("entity.persistentData.fireBlocks"));
+        assertFalse(migrated.contains("entity.persistentData.lastFireSearch"));
+        assertFalse(migrated.contains("entity.persistentData.trackedFireBlocks"));
         assertEquals(0, PalladiumResourceCompat1201.apply(resources));
         assertEquals(migrated, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_FIRE_ABSORB));
     }
@@ -547,6 +576,15 @@ class PalladiumResourceCompat1201Test {
                         + "storedOmnitrixCycle: currentAlienSlot,\n"
                         + "    getDecoupleSoundId(watchPrefix),\n"
                         + "var watchItem = Item.of(itemId, 1, nbtData);\n"
+                        + "var nbt = mainHandItem.nbt;\n"
+                        + "if (!nbt) {\n"
+                        + "var storedAllDNAString = nbt.storedAllDNA || '';\n"
+                        + "var storedCurrentPlaylist = nbt.storedCurrentPlaylist || 1;\n"
+                        + "if (nbt.storedMastercontrol) entity.tags.add('AlienEvo.MasterControl');\n"
+                        + "if (typeof nbt.storedGlowColor1 === 'string') writeGlowHex(entity, 1, nbt.storedGlowColor1, wgPrefix);\n"
+                        + "var displayNbt = nbt.display;\n"
+                        + "if (displayNbt && displayNbt.Name) {\n"
+                        + "itemName = displayNbt.Name;\n"
                         + "palladium.setProperty(entity, OMNITRIX_PROPERTY_KEY, storedOmnitrixCycle);\n");
 
         assertEquals(1, PalladiumResourceCompat1201.apply(resources));
@@ -557,7 +595,15 @@ class PalladiumResourceCompat1201Test {
         assertTrue(migrated.contains("storedCurrentAlienSlot: currentAlienSlot,"));
         assertTrue(migrated.contains("getAlienEvoSoundEvent(getDecoupleSoundId(watchPrefix)),"));
         assertTrue(migrated.contains("var watchItem = Item.of(itemId, 1);"));
-        assertTrue(migrated.contains("watchItem.setNbt(nbtData);"));
+        assertTrue(migrated.contains("watchItem.setCustomData(NBT.wrapCompound(nbtData));"));
+        assertFalse(migrated.contains("watchItem.setNbt(nbtData);"));
+        assertTrue(migrated.contains("var nbt = mainHandItem.getCustomData();"));
+        assertTrue(migrated.contains("if (nbt.isEmpty()) {"));
+        assertTrue(migrated.contains("var storedAllDNAString = nbt.getString('storedAllDNA');"));
+        assertTrue(migrated.contains("nbt.getInt('storedCurrentPlaylist') || 1"));
+        assertTrue(migrated.contains("nbt.getBoolean('storedMastercontrol')"));
+        assertTrue(migrated.contains("nbt.getString('storedGlowColor1')"));
+        assertTrue(migrated.contains("displayNbt.getString('Name')"));
         assertFalse(migrated.contains("storedOmnitrixCycle: currentAlienSlot"));
         assertEquals(0, PalladiumResourceCompat1201.apply(resources));
         assertEquals(migrated, get(resources, "addon/alienevo/kubejs_scripts/decouple.js"));
@@ -610,6 +656,11 @@ class PalladiumResourceCompat1201Test {
         assertTrue(migrated.contains("if (p.onGround() || isAtLeast10BlocksAboveGround(p)) {"));
         assertFalse(migrated.contains("canStart"));
         assertTrue(migrated.contains("else if (activeTicks >= 200)"));
+        assertTrue(migrated.contains("let slamLastY = new Map();"));
+        assertTrue(migrated.contains("const previousY = slamLastY.get(playerId);"));
+        assertTrue(migrated.contains("damageSlamImpact(p, x, y, z, 6.0, 15.0);"));
+        assertTrue(migrated.contains("target.attack(player.damageSources().generic(), damageAmount);"));
+        assertFalse(migrated.contains("getDeltaMovement().get(\"y\")"));
         assertTrue(migrated.contains(
                 "p.modifyAttribute(gravityAttribute, \"gravity_slam\", 6, \"add_value\")"));
         assertFalse(migrated.contains("\"addition\""));
@@ -641,9 +692,20 @@ class PalladiumResourceCompat1201Test {
                 "  var mainHandItem = entity.getMainHandItem();",
                 "  var username = entity.getGameProfile().getName();",
                 "  var nbt = mainHandItem.nbt;",
+                "  if (nbt && nbt.display && nbt.display.Name) {",
+                "    entity.persistentData.putString('storedItemName', nbt.display.Name);",
+                "  }",
+                "  if (!nbt) {",
+                "    return;",
+                "  }",
+                "  if (typeof nbt.storedWatch === 'string' && nbt.storedWatch) {",
+                "    palladium.setProperty(entity, 'watch', nbt.storedWatch);",
+                "  }",
+                "  var storedAllDNAString = nbt.storedAllDNA || '';",
                 "  if (nbt.storedMastercontrol) entity.tags.add('AlienEvo.MasterControl');",
                 "",
                 "  // Restore glow props",
+                "  if (typeof nbt.storedGlowColor1 === 'string') writeGlowHex(entity, 1, nbt.storedGlowColor1, wgPrefix);",
                 "}"));
 
         assertEquals(1, PalladiumResourceCompat1201.apply(resources));
@@ -659,6 +721,13 @@ class PalladiumResourceCompat1201Test {
         assertTrue(migrated.contains(
                 "restoreOmnitrixLayoutScore('AlienEvo.BaseSecondary', 'storedBaseSecondaryScore', -1)"));
         assertTrue(migrated.contains("restoreOmnitrixLayoutScore('AlienEvo.10kStage', 'stored10kStageScore', 0)"));
+        assertTrue(migrated.contains("coreItem.setCustomData(NBT.wrapCompound(nbtData));"));
+        assertFalse(migrated.contains("coreItem.setNbt(nbtData);"));
+        assertTrue(migrated.contains("var nbt = mainHandItem.getCustomData();"));
+        assertTrue(migrated.contains("if (nbt.isEmpty()) {"));
+        assertTrue(migrated.contains("if (nbt.contains('storedWatch') && nbt.getString('storedWatch'))"));
+        assertTrue(migrated.contains("nbt.getBoolean('storedMastercontrol')"));
+        assertTrue(migrated.contains("nbt.getString('storedGlowColor1')"));
 
         assertEquals(0, PalladiumResourceCompat1201.apply(resources));
         assertEquals(migrated, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_CORE_REMOVAL));
