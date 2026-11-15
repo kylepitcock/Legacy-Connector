@@ -564,6 +564,8 @@ public final class Assets1122 implements GeneratedPack.Contributor {
      * getActualState, drawn by the models of their metadata as before).
      */
     private static final int MAX_STATE_MODELS = 64;
+    /** Most states beyond the metadata of one block whose variants are resolved at all. */
+    private static final int MAX_STATE_MODEL_STATES = 1024;
     private static final Map<String, ResourceLocation> STATE_MODELS_BUILDING = new java.util.concurrent.ConcurrentHashMap<>();
     private static volatile Map<String, ResourceLocation> stateModels = Map.of();
 
@@ -597,7 +599,9 @@ public final class Assets1122 implements GeneratedPack.Contributor {
             else extra.add(state);
         }
         // no state held at all: getStateFromMeta does not answer with the block's own states, so nothing tells the states apart
-        if (held == 0 || extra.isEmpty() || extra.size() > MAX_STATE_MODELS) return;
+        // many states may share a few models (a block with a 16-value color property and a render property: EnderIO's fused quartz has 352 states
+        // beyond its metadata but about 20 distinct variants), so the cap is on the distinct models below, and this one only bounds the work
+        if (held == 0 || extra.isEmpty() || extra.size() > MAX_STATE_MODEL_STATES) return;
         var locations = mapped != null ? mapped
                 : new legacyconnector.v1_12_2.net.minecraft.client.renderer.block.statemap.DefaultStateMapper().putStateModelLocations(block);
         if (locations == null || locations.isEmpty()) return;
@@ -605,6 +609,8 @@ public final class Assets1122 implements GeneratedPack.Contributor {
         java.util.Set<String> metaLocations = new java.util.HashSet<>();
         for (var e : locations.entrySet()) if (e.getValue() != null && StatesBridge1122.metaHolds(e.getKey())) metaLocations.add(e.getValue().toString());
         java.util.Set<String> done = new java.util.HashSet<>();
+        Map<String, ResourceLocation> byName = new java.util.LinkedHashMap<>();
+        Map<String, ResourceLocation> byContent = new java.util.HashMap<>();
         int n = 0;
         for (IBlockState state : extra) {
             var location = locations.get(state);
@@ -636,9 +642,17 @@ public final class Assets1122 implements GeneratedPack.Contributor {
                 metaAll.addAll(metaRes.parts);
                 if (GSON.toJson(metaAll).equals(GSON.toJson(all))) continue;
             }
-            ResourceLocation model = stateModelFile(id, key, all, out);
-            if (model != null) STATE_MODELS_BUILDING.put(name, model);
+            // states with the same variant share one model file
+            String content = GSON.toJson(all);
+            ResourceLocation model = byContent.get(content);
+            if (model == null) {
+                if (byContent.size() >= MAX_STATE_MODELS) return; // connection states, not render parts: the models of their metadata draw them
+                model = stateModelFile(id, key, all, out);
+                if (model != null) byContent.put(content, model);
+            }
+            if (model != null) byName.put(name, model);
         }
+        STATE_MODELS_BUILDING.putAll(byName);
     }
 
     /** One model of a state's variant: its model as it is, a wrapper with the rotation, or a composite of the variant and its submodels. */
