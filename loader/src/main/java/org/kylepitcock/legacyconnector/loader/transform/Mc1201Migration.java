@@ -557,8 +557,33 @@ final class Mc1201Migration {
             if (discarded == null || discarded.getOpcode() != popOpcode) return false;
             m.instructions.remove(discarded);
         }
+        if (call.getOpcode() != Opcodes.INVOKESTATIC && !special && call.owner.startsWith("net/minecraft/client/") && hd.startsWith("(L" + rule.owner() + ";")) {
+            castClientReceiver(m, call, rule.owner());
+        }
         m.instructions.set(call, new MethodInsnNode(Opcodes.INVOKESTATIC, rule.helper(), rule.helperName(), hd, false));
         return true;
+    }
+
+    /**
+     * The receiver of a call that becomes a static helper call is a client class ({@code Minecraft.player} is a LocalPlayer) passed where the helper wants a
+     * supertype: the verifier loads the client class to check that, and a dedicated server refuses to load it (RuntimeDistCleaner) while the class is
+     * linked. A CHECKCAST in front of the call (after parking the arguments) types the value as the supertype without loading anything.
+     */
+    private static void castClientReceiver(MethodNode m, MethodInsnNode call, String target) {
+        Type[] args = Type.getArgumentTypes(call.desc);
+        int base = m.maxLocals;
+        int[] slot = new int[args.length];
+        int next = base;
+        for (int i = 0; i < args.length; i++) {
+            slot[i] = next;
+            next += args[i].getSize();
+        }
+        m.maxLocals = next;
+        org.objectweb.asm.tree.InsnList il = new org.objectweb.asm.tree.InsnList();
+        for (int i = args.length - 1; i >= 0; i--) il.add(new org.objectweb.asm.tree.VarInsnNode(args[i].getOpcode(Opcodes.ISTORE), slot[i]));
+        il.add(new org.objectweb.asm.tree.TypeInsnNode(Opcodes.CHECKCAST, target));
+        for (int i = 0; i < args.length; i++) il.add(new org.objectweb.asm.tree.VarInsnNode(args[i].getOpcode(Opcodes.ILOAD), slot[i]));
+        m.instructions.insertBefore(call, il);
     }
 
     /**

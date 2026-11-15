@@ -91,7 +91,7 @@ final class Datagen1201 {
                 shell(n, byName.keySet());
                 stats.classes++;
             }
-            for (MethodNode m : n.methods) if (emptyIfDatagen(m)) stats.methods++;
+            for (MethodNode m : n.methods) if (emptyIfDatagen(m, byName.keySet())) stats.methods++;
             if (!datagen.contains(n.name)) {
                 // abstract methods that only datagen implementations override
                 int before = n.methods.size();
@@ -166,14 +166,14 @@ final class Datagen1201 {
     }
 
     /** A method of a normal class that is only reachable from data generation returns the default value. */
-    private static boolean emptyIfDatagen(MethodNode m) {
+    private static boolean emptyIfDatagen(MethodNode m, Set<String> jar) {
         if (m.instructions == null || m.instructions.size() == 0 || (m.access & (Opcodes.ACC_ABSTRACT | Opcodes.ACC_NATIVE)) != 0) return false;
         if (m.name.equals("<init>") || m.name.equals("<clinit>")) return false;
         boolean datagen = descriptorUsesDatagen(m.desc);
         for (Type t : Type.getArgumentTypes(m.desc)) {
             if (t.getSort() == Type.OBJECT && t.getInternalName().equals("net/neoforged/neoforge/data/event/GatherDataEvent")) datagen = true;
         }
-        if (!datagen) datagen = usesDatagenOnly(m);
+        if (!datagen) datagen = usesDatagenOnly(m, jar);
         if (!datagen) return false;
         m.signature = null;
         m.instructions.clear();
@@ -219,13 +219,17 @@ final class Datagen1201 {
         return t.getSort() == Type.OBJECT && datagenName(t.getInternalName());
     }
 
-    private static boolean usesDatagenOnly(MethodNode m) {
+    private static final java.util.regex.Pattern DATAGEN_ROLE = java.util.regex.Pattern.compile("(?i).*(Provider|Builder|Generator|Datagen|Recipe|Loot|Advancement|Language|Model|State|Output).*");
+
+    private static boolean usesDatagenOnly(MethodNode m, Set<String> jar) {
         for (AbstractInsnNode in : m.instructions) {
             String owner = null;
             if (in instanceof MethodInsnNode mi) owner = mi.owner;
             else if (in instanceof FieldInsnNode fi) owner = fi.owner;
             else if (in instanceof TypeInsnNode ti) owner = ti.desc;
             else if (in instanceof MultiANewArrayInsnNode) continue;
+            // a static member of the jar's own class in a package called datagen is a plain utility the shell keeps (a mod's tag-key factory used at run time)
+            if (owner != null && jar.contains(owner) && !DATAGEN_ROLE.matcher(owner.substring(owner.lastIndexOf('/') + 1)).matches() && (in.getOpcode() == Opcodes.INVOKESTATIC || in.getOpcode() == Opcodes.GETSTATIC)) continue;
             if (owner != null && datagenName(owner)) return true;
         }
         return false;
