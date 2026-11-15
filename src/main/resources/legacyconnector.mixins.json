@@ -36,6 +36,7 @@
     "AnvilMenuCostHookMixin",
     "ServerSprintHookMixin",
     "LevelRainHookMixin",
+    "LevelRainingAtHookMixin",
     "BlockExplodedHookMixin",
     "LivingEntityTravelMixin",
     "PlayerClassTravelB173Mixin",

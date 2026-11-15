@@ -1701,7 +1701,8 @@ public class World implements IBlockAccess {
     public boolean canSnowAtBody(BlockPos pos, boolean checkLight) {
         if (level == null) return false;
         var p = modern(pos);
-        return level.getBiome(p).value().shouldSnow(level, p);
+        return org.kylepitcock.legacyconnector.v1_12_2.bridge.CoremodSites1122.worldAnswer(
+                org.kylepitcock.legacyconnector.v1_12_2.bridge.CoremodSites1122.SNOW_AT, this, pos, level.getBiome(p).value().shouldSnow(level, p));
     }
 
     public void updateWeatherBody() {
