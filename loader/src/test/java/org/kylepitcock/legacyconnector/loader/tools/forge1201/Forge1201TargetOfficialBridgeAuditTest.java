@@ -176,8 +176,8 @@ final class Forge1201TargetOfficialBridgeAuditTest {
                 .anyMatch(candidate -> "TARGET_API_MEMBER_FOUND_EXACT".equals(candidate.targetApiStatus())));
         assertTrue(method.candidates().stream()
                 .anyMatch(candidate -> "TARGET_COMPILE_CLASS_MISSING".equals(candidate.targetApiStatus())));
-        assertFalse(method.candidates().stream()
-                .anyMatch(candidate -> "TARGET_API_MEMBER_FOUND_EXACT".equals(candidate.targetOfficialMappingStatus())));
+        assertTrue(method.candidates().stream()
+                .allMatch(candidate -> "MAPPED_EXACT".equals(candidate.targetOfficialMappingStatus())));
     }
 
     private Path write(String name, String contents) throws Exception {
