@@ -9,7 +9,6 @@ import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -363,14 +362,19 @@ public final class Forge1201SourceRuntimeMemberVerifier {
         }
 
         private void indexArchive(Path archivePath) throws IOException {
-            try (JarFile archive = new JarFile(archivePath.toFile(), false, ZipFile.OPEN_READ)) {
-                Enumeration<JarEntry> entries = archive.entries();
-                while (entries.hasMoreElements()) {
-                    JarEntry entry = entries.nextElement();
+            try (JarFile archive = new JarFile(
+                    archivePath.toFile(), false, ZipFile.OPEN_READ, Runtime.version());
+                 var entries = archive.versionedStream()) {
+                var iterator = entries.iterator();
+                while (iterator.hasNext()) {
+                    JarEntry entry = iterator.next();
                     if (entry.isDirectory()) continue;
                     String name = entry.getName();
-                    if (!name.endsWith(".class") || name.startsWith("META-INF/versions/")) continue;
+                    if (!name.endsWith(".class")) continue;
                     String internalName = name.substring(0, name.length() - ".class".length());
+                    // versionedStream exposes the effective logical entry for this Java runtime.
+                    // Opening the same logical name from a Runtime.version()-aware JarFile below
+                    // retrieves that selected physical entry without changing classpath precedence.
                     addClass(internalName, ClassLocation.jar(
                             archivePath.toAbsolutePath().normalize(), name));
                 }
@@ -399,7 +403,7 @@ public final class Forge1201SourceRuntimeMemberVerifier {
             if (location == null) return null;
             if (location.classFile() != null) return Files.newInputStream(location.classFile());
 
-            JarFile archive = new JarFile(location.jarFile().toFile(), false, ZipFile.OPEN_READ);
+            JarFile archive = new JarFile(location.jarFile().toFile(), false, ZipFile.OPEN_READ, Runtime.version());
             JarEntry entry = archive.getJarEntry(location.jarEntry());
             if (entry == null) {
                 archive.close();
