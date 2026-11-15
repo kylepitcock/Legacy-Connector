@@ -477,7 +477,9 @@ def auditSrgObfuscatedBridge1201 = tasks.register('auditSrgObfuscatedBridge1201'
     inputs.file(joinedTsrg1201)
     inputs.file(fabricIntermediary1201Tiny)
     outputs.file(srgObfuscatedBridgeAuditReport)
-    classpath = sourceSets.main.output
+    // This standalone JavaExec audit imports ASM Type; sourceSets.main.output alone omits API/runtime dependencies.
+    // Use the standard runtime dependency configuration without pulling generated mapping directories into this task.
+    classpath = sourceSets.main.output + configurations.runtimeClasspath
     mainClass = 'org.kylepitcock.legacyconnector.loader.mapping.Forge1201SrgObfuscatedBridgeAudit'
     argumentProviders.add({
         [

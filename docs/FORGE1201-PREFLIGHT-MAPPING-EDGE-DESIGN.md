@@ -169,3 +169,12 @@ Validation boundary:
 - The synthetic tests and Gradle task are newly published but are **not yet user-run**. Await the complete `:loader:clean :loader:test --no-daemon --console=plain --rerun-tasks` output and inspect the generated report. Fix any first failing test before moving to Intermediary composition.
 - This first edge does not yet validate the source selector namespace for every refmap context. A source mod's refmap context must still be explicitly bound to the correct namespace by evidence.
 - The target 1.21.1 official-obfuscated → actual NeoForge compile namespace edge remains separately unverified.
+
+
+### Build-task runtime classpath correction — 2026-11-15
+
+The first user-run forced loader test reached `:loader:auditSrgObfuscatedBridge1201` but the forked Java process failed with `NoClassDefFoundError: org/objectweb/asm/Type`. The task's `JavaExec` classpath contained only `sourceSets.main.output`, which contains connector classes but omits the ASM libraries declared through the loader's `api` dependencies.
+
+The task now uses `sourceSets.main.output + configurations.runtimeClasspath`. This supplies its declared runtime dependencies (including ASM) without inheriting the generated mapping directories that have separately been appended to `sourceSets.main.runtimeClasspath`. The change is limited to this build-local audit task: it does not alter loader runtime behavior, package mapping data, or change the audit's read-only contract.
+
+**Validation:** the corrected task wiring is published but awaits the user's repeated forced `:loader:clean :loader:test` run. The previous run did not reach the new audit's parsing or report generation, so no coverage result is available yet.
