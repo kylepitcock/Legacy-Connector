@@ -269,3 +269,42 @@ A synthetic regression now mirrors the observed owner/member/descriptor relation
 - **Pending validation:** user must run the forced loader test gate, then run `inventoryTargetApi1211` and share its summary plus any PARTIAL findings. Do not claim the inventory is complete or the task passed before those commands run.
 - The tool does not transform selectors or alter runtime behavior. Reuse the same TargetIndex architecture and keep ambiguity/missing descriptors explicit.
 
+
+
+## 18. Target official-obfuscated → Mojang-official edge — TSRG2 descriptor namespace and read-only index
+
+**Status:** A bounded read-only parser and synthetic regression suite are being added for the pinned NeoForm merged mapping output. This is not selector rewriting or a runtime mapping consumer. User validation is still required.
+
+### Verified format and descriptor direction
+
+The locally fingerprinted 1.21.1 mapping output has header `tsrg2 left right`. Observed class rows include `bsr net/minecraft/world/entity/Entity` and `a com/mojang/math/Axis`; the official client mapping file independently shows `net.minecraft.world.entity.Entity -> bsr` and `com.mojang.math.Axis -> a`. The member anchor `q_ ()I getTeamColor` agrees with the Mojang `getTeamColor() -> q_` row and the target inventory's `Entity.getTeamColor()I`.
+
+A further implementation-level detail is now verified from NeoForged SRGUtils source:
+
+- `MappingFile(NamedMappingFile, from, to)` retains each field/method descriptor from the `from` namespace.
+- The TSRG2 writer emits the original descriptor between the original and mapped member names.
+- `getMappedDescriptor()` uses `remapDescriptor`, which converts every object type through the class mappings.
+- NeoForged InstallerTools' `MergeMappings` builds this output with `IMappingFile.merge` and writes TSRG2.
+
+References:
+- [NeoForged SRGUtils MappingFile.java](https://github.com/neoforged/SRGUtils/blob/main/src/main/java/net/neoforged/srgutils/MappingFile.java)
+- [NeoForged InstallerTools MergeMappings.java](https://github.com/neoforged/InstallerTools/blob/main/src/main/java/net/neoforged/installertools/MergeMappings.java)
+- [NeoForged InstallerTools MergeMappings test](https://github.com/neoforged/InstallerTools/blob/main/src/test/java/net/neoforged/installertools/MergeMappingsTest.java)
+
+Therefore method keys must use **left obfuscated owner + left member name + left JVM descriptor**. The right descriptor is not the descriptor text stored in a TSRG2 row; it must be produced by translating every object type in that left descriptor through the class mapping table. A reader that converts only the owner/member name would emit invalid target descriptors.
+
+### Read-only index contract
+
+`Forge1201TargetOfficialMappingIndex` is intended to:
+- Require the exact `tsrg2 left right` header and parse top-level class rows plus one-level member rows. Package rows and deeper parameter/metadata rows are not treated as class/member entries.
+- Retain source class/member candidates and preserve conflicting rows as explicit owner/member ambiguity instead of selecting a first match.
+- Resolve methods by exact left owner/name/descriptor. Resolve fields by left owner/name, checking a row descriptor when present; TSRG2 field rows may omit descriptors, so the caller must supply the already-resolved left descriptor.
+- Translate object descriptors, including array element types. Package-qualified object types absent from the Minecraft class map remain explicitly counted external candidates, not exact proof of classpath presence. Unqualified missing obfuscated classes remain unresolved; multiple class targets make a descriptor ambiguous.
+- Enforce a bounded input size, strict UTF-8 decoding, retain input byte size and SHA-256, and offer an expected-SHA-256 read overload.
+- Add only read-only parsing/tests. It does not infer cross-version identity, alter `Forge1201SrgIntermediaryBridgeResolver`, rewrite selectors, emit a runtime table, or replace/rebuild `Forge1201TargetApiVerifier.TargetIndex`.
+
+### Next integration and validation boundary
+
+The existing first-four-edge resolver still returns target official-obfuscated candidates. The next integration should pass those exact candidate owner/name/descriptors through this target index, then verify the resulting Mojang-official owner/member/descriptor with the existing per-analysis `Forge1201TargetApiVerifier.TargetIndex`. Do not create another target hierarchy cache. Do not mark external descriptor types as target-present merely because they pass through.
+
+The mapping artifact itself stays in the local NeoForm Gradle cache. Do not commit, upload, package, or otherwise redistribute its contents or a copied derived mapping payload. The locally observed content fingerprint belongs in the evidence record only; licensing review remains a separate gate.
