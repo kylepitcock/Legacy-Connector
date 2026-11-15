@@ -5,6 +5,9 @@ import net.minecraft.world.level.LevelAccessor;
 
 /** Client world view; {@code World.mcc$wrap} returns this for client levels. */
 public class WorldClient extends World {
+    /** 1.7.10's client chunk provider field; chunks live in the modern client level, so it stays unset (reflection and access transformers of mods find it). */
+    protected legacyconnector.v1_7_10.net.minecraft.world.chunk.IChunkProvider clientChunkProvider;
+
     public WorldClient(LevelAccessor level) {
         super(level);
     }

@@ -16,6 +16,8 @@ import net.minecraft.world.level.storage.DimensionDataStorage;
 public class MapStorage {
     private final DimensionDataStorage storage;
     private final Map<String, WorldSavedData> loadedDataMap = new HashMap<>();
+    /** The loaded data as a list (1.7.10 kept both; access transformers and reflection of mods read it). */
+    public final java.util.List<WorldSavedData> loadedDataList = new java.util.ArrayList<>();
 
     public MapStorage(DimensionDataStorage storage) {
         this.storage = storage;
@@ -38,12 +40,15 @@ public class MapStorage {
                 (tag, registries) -> Adapter.load(create(type, name), tag), null), file(name));
         if (adapter == null || adapter.legacy == null) return null;
         loadedDataMap.put(name, adapter.legacy);
+        loadedDataList.add(adapter.legacy);
         return adapter.legacy;
     }
 
     public void setData(String name, WorldSavedData data) {
         if (data == null) return;
-        loadedDataMap.put(name, data);
+        WorldSavedData previous = loadedDataMap.put(name, data);
+        if (previous != null) loadedDataList.remove(previous);
+        loadedDataList.add(data);
         if (storage != null) storage.set(file(name), new Adapter(data));
     }
 
