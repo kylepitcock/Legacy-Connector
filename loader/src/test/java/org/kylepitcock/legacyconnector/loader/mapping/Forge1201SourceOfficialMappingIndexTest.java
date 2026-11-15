@@ -63,6 +63,16 @@ final class Forge1201SourceOfficialMappingIndexTest {
         assertEquals("component", field.candidates().getFirst().officialName());
         assertEquals("Lnet/minecraft/Component;", field.candidates().getFirst().officialDescriptor());
 
+        var reverseMethod = index.findMethodsByOfficialIdentity(
+                "net/minecraft/Entity", "doThing", "(Lnet/minecraft/Component;)V");
+        assertEquals(Forge1201SourceOfficialMappingIndex.Status.MAPPED_EXACT, reverseMethod.status());
+        assertEquals("m_10_", reverseMethod.candidates().getFirst().srgName());
+
+        var reverseField = index.findFieldsByOfficialIdentity(
+                "net/minecraft/Entity", "component", "Lnet/minecraft/Component;");
+        assertEquals(Forge1201SourceOfficialMappingIndex.Status.MAPPED_EXACT, reverseField.status());
+        assertEquals("f_20_", reverseField.candidates().getFirst().srgName());
+
         assertEquals(3, index.summary().mojangClassRows());
         assertTrue(index.summary().mojangMappingSha256().matches("[0-9a-f]{64}"));
     }
