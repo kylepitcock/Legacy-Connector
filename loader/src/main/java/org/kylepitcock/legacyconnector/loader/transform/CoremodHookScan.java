@@ -137,7 +137,9 @@ public final class CoremodHookScan {
             }
             StringBuilder text = new StringBuilder();
             for (CoremodHookDiscovery.Hook h : hooks) {
-                text.append(h.site()).append('\t').append(h.owner()).append('\t').append(h.name()).append('\t').append(h.desc()).append('\n');
+                // pre-1.7 lists name 1.7.10's classes: the run time's places (CoremodSites) are keyed by those (PreSeventeenKeys)
+                text.append(PreSeventeenKeys.toSeventeen(mc, h.site())).append('\t').append(h.owner()).append('\t').append(h.name()).append('\t')
+                        .append(PreSeventeenKeys.toSeventeen(mc, h.desc())).append('\n');
             }
             Files.createDirectories(file.getParent());
             Files.writeString(file, text, StandardCharsets.UTF_8);
