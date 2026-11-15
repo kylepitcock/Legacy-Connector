@@ -404,7 +404,7 @@ class PalladiumResourceCompat1201Test {
     @Test
     void migratesPlaylistCycleNbtAccessToExplicitIntegerMethods() {
         Map<String, byte[]> resources = new HashMap<>();
-        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_PLAYLIST_CYCLE, String.join("\\n",
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_PLAYLIST_CYCLE, String.join("\n",
                 "let MAX_PLAYLISTS = 100;",
                 "let currentPlaylist = entity.persistentData[CURRENT_PLAYLIST_KEY] || DEFAULT_PLAYLIST;",
                 "let currentSlot = entity.persistentData[CURRENT_ALIEN_SLOT_KEY] || DEFAULT_SLOT;",
@@ -437,7 +437,7 @@ class PalladiumResourceCompat1201Test {
     @Test
     void migratesAlienEvoSlamAttributeOperationToCurrentEnumName() {
         Map<String, byte[]> resources = new HashMap<>();
-        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_SLAM, String.join("\\n",
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_SLAM, String.join("\n",
                 "p.modifyAttribute(gravityAttribute, \"gravity_slam\", 6, \"addition\")",
                 "p.modifyAttribute(gravityAttribute, \"gravity_slam\", 6, \"addition\")",
                 ""));
