@@ -33,6 +33,10 @@ final class Forge1201SourceRuntimeMemberVerifierTest {
         var index = Forge1201SourceRuntimeMemberVerifier.readClasspath(classpath);
 
         var summary = index.classpathSummary();
+        var platformMethod = index.inspectMethod("java/lang/Object", "toString", "()Ljava/lang/String;");
+        assertEquals(
+                Forge1201SourceRuntimeMemberVerifier.Status.SOURCE_RUNTIME_MEMBER_DECLARED_EXACT,
+                platformMethod.status());
         assertEquals(1, summary.classpathEntryCount());
         assertEquals(2, summary.indexedClassCount());
         assertEquals(0, summary.duplicateClassNames());
