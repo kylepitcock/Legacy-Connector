@@ -100,10 +100,12 @@ class PalladiumResourceCompat1201Test {
                 function getDecoupleSoundId(prefix){ return 'alienevo:' + prefix + '_decouple'; }
                 var watchItem = Item.of(itemId, 1, nbtData);
                 entity.give(watchItem);
+                var watchPowerId = new ResourceLocation('alienevo:prototype_omnitrix');
                 entity.level.playSound(null, entity.x, entity.y, entity.z,
                         getDecoupleSoundId(watchPrefix), entity.getSoundSource(), 1.0, 1.0);
                 """);
         put(resources, "addon/alienevo/kubejs_scripts/detransform.js", """
+                var watchPowerId = new ResourceLocation('alienevo:prototype_omnitrix');
                 entity.level.playSound(null, entity.x, entity.y, entity.z,
                         `alienevo:${watchType}_detransform`, entity.getSoundSource(), 1.0, 1.0);
                 """);
@@ -469,7 +471,7 @@ class PalladiumResourceCompat1201Test {
         assertEquals(1, PalladiumResourceCompat1201.apply(resources));
 
         String migrated = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_SERVER_STUFF);
-        assertEquals(4, occurrences(migrated, "event.player"));
+        assertEquals(6, occurrences(migrated, "event.player"));
         assertFalse(migrated.contains("event.entity"));
         assertEquals(0, PalladiumResourceCompat1201.apply(resources));
         assertEquals(migrated, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_SERVER_STUFF));
@@ -484,6 +486,7 @@ class PalladiumResourceCompat1201Test {
                 "    let p = e.player",
                 "    if (abilityEnabled && !playersWithGravity.has(p.uuid.toString())) {",
                 "        p.modifyAttribute(gravityAttribute, \"gravity_slam\", 6, \"add_value\")",
+                "        p.modifyAttribute(gravityAttribute, \"gravity_slam_secondary\", 6, \"add_value\")",
                 "        playersWithGravity.add(p.uuid.toString());",
                 "    }",
                 "    if (!abilityEnabled && playersWithGravity.has(p.uuid.toString())) {",
@@ -522,6 +525,8 @@ class PalladiumResourceCompat1201Test {
                 "    storedMastercontrol: hasMastercontrol,",
                 "    storedWatch: watchPrefix",
                 "  };",
+                "  var coreItem = Item.of('alienevo:prototype_core', 1, nbtData);",
+                "  entity.give(coreItem);",
                 "}",
                 "function applyAllDNAFromPrototypeCore(entity) {",
                 "  var mainHandItem = entity.getMainHandItem();",
