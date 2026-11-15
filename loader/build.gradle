@@ -507,6 +507,46 @@ def auditSrgObfuscatedBridge1201 = tasks.register('auditSrgObfuscatedBridge1201'
     } as CommandLineArgumentProvider)
 }
 
+// Final read-only edge: target official-obfuscated 1.21.1 -> the Mojang-official names
+// exposed by the exact resolved root ModDevGradle compile classpath. The mapping file
+// stays in the user's Gradle cache and is fingerprint-pinned; it is never copied into the project.
+def defaultTargetOfficialTsrg1211 = new File(gradle.gradleUserHomeDir,
+        'caches/neoformruntime/intermediate_results/mergeMappings_2100ae7c755bb34ac4545c9eeec4a90c42ad48c4_output.tsrg')
+def targetOfficialTsrg1211 = file(project.findProperty('targetOfficialTsrg1211')
+        ?: defaultTargetOfficialTsrg1211.absolutePath)
+def targetOfficialTsrg1211Sha256 = (project.findProperty('targetOfficialTsrg1211Sha256')
+        ?: '7BD3E2BE95FA246778B90B078DBB78B5D1A7A98853BAEA5E1321A6C3D5383929').toString()
+def targetApiClasspathFile = rootProject.layout.buildDirectory.file('reports/target-api/1.21.1/target-classpath.txt')
+def srgTargetApiBridgeAuditReport = layout.buildDirectory.file(
+        'reports/mappings/1.20.1-1.21.1/srg-target-api-bridge-audit.json')
+tasks.register('auditSrgTargetApiBridge1201To1211', JavaExec) {
+    group = 'verification'
+    description = 'Composes Forge SRG 1.20.1 through target Mojang-official 1.21.1 names and verifies exact members on the target compile classpath.'
+    dependsOn extractMcpConfigJoinedTsrg1201, extractFabricIntermediary1201,
+            extractFabricIntermediary1211, ':inventoryTargetApi1211', tasks.named('classes')
+    inputs.file(joinedTsrg1201)
+    inputs.file(fabricIntermediary1201Tiny)
+    inputs.file(fabricIntermediary1211Tiny)
+    inputs.file(targetOfficialTsrg1211)
+    inputs.property('targetOfficialTsrg1211Sha256', targetOfficialTsrg1211Sha256)
+    inputs.file(targetApiClasspathFile)
+    outputs.file(srgTargetApiBridgeAuditReport)
+    classpath = sourceSets.main.output + configurations.runtimeClasspath
+    mainClass = 'org.kylepitcock.legacyconnector.loader.tools.forge1201.Forge1201TargetOfficialBridgeAudit'
+    maxHeapSize = '3g'
+    argumentProviders.add({
+        [
+                joinedTsrg1201.get().asFile.absolutePath,
+                fabricIntermediary1201Tiny.get().asFile.absolutePath,
+                fabricIntermediary1211Tiny.get().asFile.absolutePath,
+                targetOfficialTsrg1211.absolutePath,
+                targetOfficialTsrg1211Sha256,
+                targetApiClasspathFile.get().asFile.absolutePath,
+                srgTargetApiBridgeAuditReport.get().asFile.absolutePath
+        ]
+    } as CommandLineArgumentProvider)
+}
+
 // Beta 1.7.3 official -> named table (BetaMappings): Babric intermediary + biny
 def betaMappingsDir = layout.buildDirectory.dir('generated/beta-mappings')
 def genBetaMappings = tasks.register('genBetaMappings', JavaExec) {
