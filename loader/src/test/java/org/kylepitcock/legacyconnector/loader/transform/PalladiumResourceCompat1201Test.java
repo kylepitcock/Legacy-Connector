@@ -507,7 +507,9 @@ class PalladiumResourceCompat1201Test {
         assertEquals(1, PalladiumResourceCompat1201.apply(resources));
 
         String migrated = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_SERVER_STUFF);
-        assertTrue(migrated.contains("for (let propertyName of propertiesToSave.getAllKeys()) {"));
+        assertTrue(migrated.contains("let propertyIterator = propertiesToSave.getAllKeys().iterator();"));
+        assertTrue(migrated.contains("while (propertyIterator.hasNext()) {"));
+        assertTrue(migrated.contains("let propertyName = propertyIterator.next();"));
         assertTrue(migrated.contains(
                 "palladium.setProperty(player, propertyName, legacyConnectorAlienEvoPacketString(propertiesToSave.get(propertyName)));"));
         assertFalse(migrated.contains("for (let propertyName in propertiesToSave)"));
