@@ -222,6 +222,11 @@ public class LegacyItemAdapter extends net.minecraft.world.item.Item implements 
     }
 
     @Override
+    public boolean onEntitySwing(ItemStack stack, net.minecraft.world.entity.LivingEntity entity, net.minecraft.world.InteractionHand hand) {
+        return ItemCallbacks.entitySwing(legacy, stack, entity);
+    }
+
+    @Override
     public Object legacyItem() {
         return legacy;
     }
