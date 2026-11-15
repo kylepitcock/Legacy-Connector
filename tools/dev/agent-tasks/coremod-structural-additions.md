@@ -1,7 +1,11 @@
 # Coremod structural additions (interfaces, fields, methods a coremod adds to a Minecraft class)
 
 Status: recording half done (`CoremodHookDiscovery.additions`, `CoremodHookScan.writeStructure`, list `.legacyconnector/cache/coremod-structure-<mc>.txt`,
-`kind TAB class TAB name TAB desc TAB access` per line). Applying them at run time is NOT done.
+`kind TAB class TAB name TAB desc TAB access` per line). Applying is done for the common shape (2026-11-15): an added interface owned by a mod jar, with the added instance methods, becomes a generated
+mixin on the shim class (`CoremodAdditionMixins`, config `legacyconnector.legacy.<jar>.coremod-additions.json`, let through by `LegacyMixinPlugin`); added
+instance fields are kept in `CoremodState` per game object. Verified on a 1.7.10 server: Factorization `Chunk`/`Entity` and Logistics Pipes
+`ItemStack`/`TileEntity` mixins apply, the `IExtraChunkData` ClassCastException is gone. Not done: static members, constructors, added methods without an
+interface (`BlockRailBase.func_149743_a`), 1.12.2 runs (same code path, untested), saving the added state with the world.
 
 ## The case (Factorization 0.8.109, 1.7.10)
 

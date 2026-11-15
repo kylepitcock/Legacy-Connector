@@ -129,6 +129,7 @@ public final class CoremodHookScan {
             long start = System.nanoTime();
             List<Change> changes = changes(transformers, vanillaJar, mc);
             List<CoremodHookDiscovery.Hook> hooks = hooks(changes);
+            CoremodAdditionMixins.record(mc, changes);
             writeStructure(changes, file.resolveSibling(file.getFileName().toString().replace("coremod-hooks-", "coremod-structure-")), mc);
             if (hooks.isEmpty()) {
                 Files.deleteIfExists(file);
@@ -166,7 +167,7 @@ public final class CoremodHookScan {
         for (CoremodHookDiscovery.Addition a : out.values()) text.append(a).append('\n');
         Files.createDirectories(file.getParent());
         Files.writeString(file, text, StandardCharsets.UTF_8);
-        LOG.info("Legacy Connector: legacy coremods added {} interface(s), field(s) and method(s) to {} of Minecraft {}'s classes (listed in {}; the run time does not apply them yet)",
+        LOG.info("Legacy Connector: legacy coremods added {} interface(s), field(s) and method(s) to {} of Minecraft {}'s classes (listed in {}; interfaces of mod jars and their accessors are applied as mixins)",
                 out.size(), out.values().stream().map(CoremodHookDiscovery.Addition::className).distinct().count(), mc, file.getFileName());
     }
 

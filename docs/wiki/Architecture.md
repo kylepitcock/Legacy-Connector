@@ -97,7 +97,10 @@ and isolated (today: the DragonAPI crafting/smelting hooks in `CoremodHooks`).
   unless a hook is listed there), finds the hook method in the translated mod, binds its parameters by type to the values the place offers and applies
   it as cancel / notify / modify / replace; a mod's own `(ZZ)Z`, `(FF)F`... helper at the site combines a hook's result with the value. It is keyed by
   Minecraft method, never by mod. Interfaces, fields and methods a transformer adds to a game class (Factorization's `IExtraChunkData` on `Chunk`) are
-  recorded the same way in `coremod-structure-<mc>.txt` but not applied yet (plan: `tools/dev/agent-tasks/coremod-structural-additions.md`). One start-up log line gives hooks found, replayed and without a place (`-Dlegacyconnector.coremodHooks.report=full`
+  recorded the same way in `coremod-structure-<mc>.txt`. An added interface that is a class of a mod jar is applied with its accessor methods as a mixin on the
+  legacy API class (`CoremodAdditionMixins` generates it into that jar before translation; the added fields live in `CoremodState`, per game object, because
+  a chunk view is made per lookup); static members, constructors and methods without such an interface are not applied
+  (`tools/dev/agent-tasks/coremod-structural-additions.md`). One start-up log line gives hooks found, replayed and without a place (`-Dlegacyconnector.coremodHooks.report=full`
   lists them). Limits: Forge's binary patches are not applied before the transformers, so a transformer looking for a Forge-added instruction finds
   nothing; whole-class replacements are not handled.
 - 1.12.2 coremods: the `FMLCorePlugin` plugins of 1.12.2 jars run in the same isolated loader as the 1.7.10 ones, over their own API flavour (`loader/src/coremodApi1122`:
