@@ -98,6 +98,66 @@ public final class ReflectionCompat {
         }
     }
 
+    private static final String[] LEGACY_ROOTS = {"net.minecraft.", "net.minecraftforge.", "cpw.mods.fml."};
+    private static final String[] API_1122 = {"legacyconnector.v1_12_2.", "legacyconnector_synth.v1_12_2."};
+
+    /**
+     * {@code Class.forName} of a legacy mod. Class names in string constants were relocated by the loader; a name put together at run time (read from the
+     * mod's access transformer file, a config, a network message) still is the legacy one, so when the plain lookup fails a game or loader class is looked up
+     * in the API of the caller's Minecraft version. A class that version never had stays absent.
+     */
+    public static Class<?> forName(String name) throws ClassNotFoundException {
+        Class<?> caller = Reflection.getCallerClass(2);
+        return forName(name, true, caller == null ? ReflectionCompat.class.getClassLoader() : caller.getClassLoader(), caller);
+    }
+
+    public static Class<?> forName(String name, boolean initialize, ClassLoader loader) throws ClassNotFoundException {
+        return forName(name, initialize, loader, Reflection.getCallerClass(2));
+    }
+
+    private static Class<?> forName(String name, boolean initialize, ClassLoader loader, Class<?> caller) throws ClassNotFoundException {
+        try {
+            return Class.forName(name, initialize, loader);
+        } catch (ClassNotFoundException e) {
+            if (name != null && isLegacyRoot(name)) {
+                for (String prefix : legacyApiOf(caller)) {
+                    try {
+                        return Class.forName(prefix + name, initialize, ReflectionCompat.class.getClassLoader());
+                    } catch (ClassNotFoundException | LinkageError ignored) {
+                        // next root; the mod gets the failure for the name it asked for
+                    }
+                }
+            }
+            throw e;
+        }
+    }
+
+    private static boolean isLegacyRoot(String name) {
+        for (String root : LEGACY_ROOTS) if (name.startsWith(root)) return true;
+        return false;
+    }
+
+    /** The package roots of the legacy API the calling mod class was translated against (none for a version that keeps Minecraft's own names). */
+    private static String[] legacyApiOf(Class<?> caller) {
+        String family = null;
+        boolean has1710 = false, has1122 = false;
+        java.security.CodeSource source = caller == null ? null : caller.getProtectionDomain().getCodeSource();
+        for (org.kylepitcock.legacyconnector.core.LegacyModRecord rec : org.kylepitcock.legacyconnector.core.LegacyMods.all()) {
+            String f = org.kylepitcock.legacyconnector.core.LegacyMods.family(rec.version);
+            has1710 |= "1.7.10".equals(f);
+            has1122 |= "1.12.2".equals(f);
+            if (family == null && source != null && rec.mainClass != null
+                    && java.util.Objects.equals(source, rec.mainClass.getProtectionDomain().getCodeSource())) family = f;
+        }
+        if ("1.7.10".equals(family)) return LegacyPrefixes.API_1710;
+        if ("1.12.2".equals(family)) return API_1122;
+        if (family != null) return new String[0];
+        // A library jar without a mod class: the versions of the pack that have such an API.
+        if (has1710 && !has1122) return LegacyPrefixes.API_1710;
+        if (has1122 && !has1710) return API_1122;
+        return new String[0];
+    }
+
     /*
      * Production mods reflect on game classes with SRG names (FMLForgePlugin.RUNTIME_DEOBF is true, as in a real 1.7.10
      * client: DragonAPI's ReikaObfuscationHelper picks "func_..." names by it). Literal SRG ids were renamed by the loader;
