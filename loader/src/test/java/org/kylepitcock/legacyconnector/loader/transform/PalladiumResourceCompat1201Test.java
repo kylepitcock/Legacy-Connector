@@ -610,6 +610,81 @@ class PalladiumResourceCompat1201Test {
     }
 
     @Test
+    void migratesOmnitrixWorkbenchItemCustomDataAndPreservesSolidLayoutScores() {
+        Map<String, byte[]> resources = new HashMap<>();
+        put(resources, "data/alienevo/kubejs_scripts/workbench.js", String.join("\n",
+                "run summon minecraft:item ~ ~ ~ {Item:{id:\"alienevo:prototype_omnitrix\",Count:1b,tag:" + "${JSON.stringify(nbtData)}" + "}},PickupDelay:10}",
+                "omnitrix.setNbt(nbtData);",
+                "var nbt = mainHandItem.nbt;",
+                "if (nbt && nbt.display && nbt.display.Name) {",
+                "event.target.persistentData.putString('storedItemName', nbt.display.Name);",
+                "var storedDNA = nbt && nbt.storedAllDNA ? nbt.storedAllDNA : '';",
+                "let storedCode = nbt && nbt.storedCode ? nbt.storedCode : '000000';",
+                "if (nbt && nbt.storedCode)          palladium.setProperty(armorStand, 'code', nbt.storedCode);",
+                "let storedPosition = nbt && nbt.storedPosition ? nbt.storedPosition : '0';",
+                "if (nbt && nbt.storedPosition && !isNaN(parseInt(nbt.storedPosition))) positionValue = parseInt(nbt.storedPosition);",
+                "let storedMasterTargetCode = nbt && nbt.storedMasterTargetCode ? nbt.storedMasterTargetCode : '';",
+                "let storedSelfDestructTargetCode = nbt && nbt.storedSelfDestructTargetCode ? nbt.storedSelfDestructTargetCode : '';",
+                "if (nbt && nbt.storedAlienNamespaces) {",
+                "event.target.persistentData.putString('storedAlienNamespaces', nbt.storedAlienNamespaces);",
+                "let storedCurrentPlaylist = nbt && nbt.storedCurrentPlaylist ? nbt.storedCurrentPlaylist : 1;",
+                "let storedCurrentAlienSlot = nbt && nbt.storedCurrentAlienSlot ? nbt.storedCurrentAlienSlot : 1;",
+                "if (nbt && nbt.storedOmnitrixCycle) palladium.setProperty(armorStand, 'omnitrix_cycle', nbt.storedOmnitrixCycle);",
+                "if (nbt && nbt.storedOmnitrixCycle) event.target.persistentData.putInt('storedOmnitrixCycle', nbt.storedOmnitrixCycle);",
+                "if (typeof nbt?.storedUniformGlowColorBase === 'string') palladium.setProperty(armorStand, 'uniform_glow_color_base', nbt.storedUniformGlowColorBase);",
+                "if (typeof nbt?.storedUniformGlowColorBase === 'string') event.target.persistentData.putString('uniform_glow_color_base', nbt.storedUniformGlowColorBase);",
+                "if (typeof nbt?.storedUniformGlowColor1   === 'string') palladium.setProperty(armorStand, 'uniform_glow_color_1', nbt.storedUniformGlowColor1);",
+                "if (typeof nbt?.storedUniformGlowColor1   === 'string') event.target.persistentData.putString('uniform_glow_color_1', nbt.storedUniformGlowColor1);",
+                "if (typeof nbt?.storedUniformGlowColor2   === 'string') palladium.setProperty(armorStand, 'uniform_glow_color_2', nbt.storedUniformGlowColor2);",
+                "if (typeof nbt?.storedUniformGlowColor2   === 'string') event.target.persistentData.putString('uniform_glow_color_2', nbt.storedUniformGlowColor2);",
+                "if (typeof nbt?.storedUniformGlowColor3   === 'string') palladium.setProperty(armorStand, 'uniform_glow_color_3', nbt.storedUniformGlowColor3);",
+                "if (typeof nbt?.storedUniformGlowColor3   === 'string') event.target.persistentData.putString('uniform_glow_color_3', nbt.storedUniformGlowColor3);",
+                "if (typeof nbt?.storedUniformGlowColor4   === 'string') palladium.setProperty(armorStand, 'uniform_glow_color_4', nbt.storedUniformGlowColor4);",
+                "if (typeof nbt?.storedUniformGlowColor4   === 'string') event.target.persistentData.putString('uniform_glow_color_4', nbt.storedUniformGlowColor4);",
+                "if (typeof nbt?.storedUniformGlowColor5   === 'string') palladium.setProperty(armorStand, 'uniform_glow_color_5', nbt.storedUniformGlowColor5);",
+                "if (typeof nbt?.storedUniformGlowColor5   === 'string') event.target.persistentData.putString('uniform_glow_color_5', nbt.storedUniformGlowColor5);",
+                "if (typeof nbt?.storedGlowColorBase === 'string') palladium.setProperty(armorStand, 'prototype_glow_color_base', nbt.storedGlowColorBase);",
+                "if (typeof nbt?.storedGlowColorBase === 'string') event.target.persistentData.putString('prototype_glow_color_base', nbt.storedGlowColorBase);",
+                "if (typeof nbt?.storedGlowColor1    === 'string') palladium.setProperty(armorStand, 'prototype_glow_color_1', nbt.storedGlowColor1);",
+                "if (typeof nbt?.storedGlowColor1    === 'string') event.target.persistentData.putString('prototype_glow_color_1', nbt.storedGlowColor1);",
+                "if (typeof nbt?.storedGlowColor2    === 'string') palladium.setProperty(armorStand, 'prototype_glow_color_2', nbt.storedGlowColor2);",
+                "if (typeof nbt?.storedGlowColor2    === 'string') event.target.persistentData.putString('prototype_glow_color_2', nbt.storedGlowColor2);",
+                "if (typeof nbt?.storedGlowColor3    === 'string') palladium.setProperty(armorStand, 'prototype_glow_color_3', nbt.storedGlowColor3);",
+                "if (typeof nbt?.storedGlowColor3    === 'string') event.target.persistentData.putString('prototype_glow_color_3', nbt.storedGlowColor3);",
+                "if (typeof nbt?.storedGlowColor4    === 'string') palladium.setProperty(armorStand, 'prototype_glow_color_4', nbt.storedGlowColor4);",
+                "if (typeof nbt?.storedGlowColor4    === 'string') event.target.persistentData.putString('prototype_glow_color_4', nbt.storedGlowColor4);",
+                "if (typeof nbt?.storedGlowColor5    === 'string') palladium.setProperty(armorStand, 'prototype_glow_color_5', nbt.storedGlowColor5);",
+                "if (typeof nbt?.storedGlowColor5    === 'string') event.target.persistentData.putString('prototype_glow_color_5', nbt.storedGlowColor5);",
+                "if (typeof nbt?.storedAlienGlowProps === 'string' && nbt.storedAlienGlowProps.length) {",
+                "var parsedAlienGlow = JSON.parse(nbt.storedAlienGlowProps);",
+                "if (typeof nbt?.storedAlienGlowProps === 'string') {",
+                "event.target.persistentData.putString('storedAlienGlowProps', nbt.storedAlienGlowProps);",
+                "if (!nbt && mainHandItem.id.includes('_10k')) {",
+                "if (nbt && nbt.storedMastercontrol) {",
+                ""));
+        assertEquals(1, PalladiumResourceCompat1201.apply(resources));
+
+        String migrated = get(resources, "data/alienevo/kubejs_scripts/workbench.js");
+        assertTrue(migrated.contains("count:1,components:{\\"minecraft:custom_data\\":"));
+        assertTrue(migrated.contains("JSON.stringify(nbtData)}}},PickupDelay:10"));
+        assertTrue(migrated.contains("omnitrix.setCustomData(NBT.wrapCompound(nbtData));"));
+        assertTrue(migrated.contains("var nbt = mainHandItem.getCustomData();"));
+        assertTrue(migrated.contains("function getStoredScore(nbtTag, defaultValue)"));
+        assertTrue(migrated.contains("nbt.getInt(nbtTag)"));
+        assertTrue(migrated.contains("nbt.getString('storedGlowColor1')"));
+        assertTrue(migrated.contains("nbt.getString('storedUniformGlowColor1')"));
+        assertTrue(migrated.contains("nbt.getBoolean('storedMastercontrol')"));
+        assertTrue(migrated.contains("if (nbt.isEmpty() && mainHandItem.id.includes('_10k'))"));
+        assertFalse(migrated.contains("mainHandItem.nbt"));
+        assertFalse(migrated.contains("omnitrix.setNbt(nbtData);"));
+        assertFalse(migrated.contains("Count:1b,tag:"));
+        assertFalse(migrated.contains("nbt.storedGlowColor1"));
+        assertFalse(migrated.contains("nbt.storedUniformGlowColor1"));
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+        assertEquals(migrated, get(resources, "data/alienevo/kubejs_scripts/workbench.js"));
+    }
+
+    @Test
     void makesAlienEvoGlidePitchLengthMutableBeforeAdjustment() {
         Map<String, byte[]> resources = new HashMap<>();
         put(resources, PalladiumResourceCompat1201.ALIEN_EVO_GLIDE, String.join("\n",
