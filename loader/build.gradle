@@ -517,6 +517,7 @@ def targetOfficialTsrg1211 = file(project.findProperty('targetOfficialTsrg1211')
 def targetOfficialTsrg1211Sha256 = (project.findProperty('targetOfficialTsrg1211Sha256')
         ?: '7BD3E2BE95FA246778B90B078DBB78B5D1A7A98853BAEA5E1321A6C3D5383929').toString()
 def targetApiClasspathFile = rootProject.layout.buildDirectory.file('reports/target-api/1.21.1/target-classpath.txt')
+def targetCompileClasspath = rootProject.sourceSets.main.compileClasspath
 def srgTargetApiBridgeAuditReport = layout.buildDirectory.file(
         'reports/mappings/1.20.1-1.21.1/srg-target-api-bridge-audit.json')
 tasks.register('auditSrgTargetApiBridge1201To1211', JavaExec) {
@@ -529,6 +530,10 @@ tasks.register('auditSrgTargetApiBridge1201To1211', JavaExec) {
     inputs.file(fabricIntermediary1211Tiny)
     inputs.file(targetOfficialTsrg1211)
     inputs.property('targetOfficialTsrg1211Sha256', targetOfficialTsrg1211Sha256)
+    inputs.files(targetCompileClasspath)
+    inputs.property('targetCompileClasspathOrder', providers.provider {
+        targetCompileClasspath.files.collect { it.absolutePath }.join('\\n')
+    })
     inputs.file(targetApiClasspathFile)
     outputs.file(srgTargetApiBridgeAuditReport)
     classpath = sourceSets.main.output + configurations.runtimeClasspath
