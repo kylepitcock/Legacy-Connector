@@ -124,4 +124,18 @@ public final class Round4Compat {
             net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool.Projection projection) {
         return java.util.Optional.of(net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings.APPLY_WATERLOGGING);
     }
+
+    // ------------------------------------------------------------------ loot entries
+
+    /** The condition array of a 1.20.1 loot entry constructor as the list 1.21.1 takes. */
+    public static java.util.List<net.minecraft.world.level.storage.loot.predicates.LootItemCondition> conditionList(
+            net.minecraft.world.level.storage.loot.predicates.LootItemCondition[] conditions) {
+        return conditions == null ? java.util.List.of() : java.util.List.of(conditions);
+    }
+
+    /** The function array of a 1.20.1 loot entry constructor as the list 1.21.1 takes. */
+    public static java.util.List<net.minecraft.world.level.storage.loot.functions.LootItemFunction> functionList(
+            net.minecraft.world.level.storage.loot.functions.LootItemFunction[] functions) {
+        return functions == null ? java.util.List.of() : java.util.List.of(functions);
+    }
 }

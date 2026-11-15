@@ -107,3 +107,11 @@ net/neoforged/neoforge/client/model/pipeline/QuadBakingVertexConsumer	org/kylepi
 net/neoforged/neoforge/client/model/pipeline/QuadBakingVertexConsumer$Buffered	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyQuadBakingVertexConsumer$Buffered
 net/minecraft/world/entity/ai/goal/MeleeAttackGoal	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyMeleeAttackGoal
 net/neoforged/fml/OptionalMod	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyOptionalMod
+net/minecraft/world/level/storage/loot/Deserializers	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyLootDeserializers
+net/minecraft/world/level/storage/loot/entries/LootPoolEntryContainer$Serializer	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyLootEntrySerializer
+net/minecraft/world/level/storage/loot/entries/LootPoolSingletonContainer$Serializer	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyLootPoolSingletonSerializer
+net/minecraft/world/level/storage/loot/functions/CopyNbtFunction	net/minecraft/world/level/storage/loot/functions/CopyCustomDataFunction
+net/minecraft/world/level/storage/loot/functions/CopyNbtFunction$Builder	net/minecraft/world/level/storage/loot/functions/CopyCustomDataFunction$Builder
+net/minecraft/world/item/enchantment/FrostWalkerEnchantment	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyFrostWalker
+net/minecraft/world/item/ItemStack$TooltipPart	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyTooltipPart
+net/minecraft/world/level/block/entity/BannerPattern$Builder	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyBannerPatternBuilder
