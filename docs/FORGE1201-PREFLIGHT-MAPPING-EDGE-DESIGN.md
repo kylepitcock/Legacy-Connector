@@ -254,3 +254,18 @@ The next step after this gate is to pin the exact 1.21.1 official-obfuscated -> 
 
 A synthetic regression now mirrors the observed owner/member/descriptor relation. It requires the ambiguous status, exactly two candidates, both target owners, the shared source Intermediary ID, and the complete target Intermediary descriptor. It confirms that the resolver does not collapse the one-to-many target relation into a chosen mapping. The new regression has been published with this design note and is **awaiting the user's forced loader test gate**; do not mark it green before that run.
 
+
+## 17. Target compile-classpath API inventory
+
+**Status:** Read-only inventory tool and Gradle task implemented; compilation, tests, and execution against the resolved user target classpath are pending the user's validation run.
+
+- The user's direct root compile-classpath entry is `build/moddev/artifacts/neoforge-21.1.258.jar`, SHA-256 `E5B8CC08A21CFD11F16FA62869051E97587D05D95980BA5C9FB2387BB9324F32`. A prior root Gradle diagnostic found 103 entries and zero direct matches for `neoforge-21.1.258-merged.jar`.
+- User `javap` checks on the direct compile JAR verified Mojang-official anchors across `Entity`, `Level`, `BlockPos`, `ItemStack`, and `BlockState`. The `BlockState` hierarchy check located `getBlock()`, `isAir()`, and `getFluidState()` on `BlockBehaviour$BlockStateBase`; their descriptors are recorded in the testbench continuation handoff.
+- Added `Forge1201TargetApiInventory`, a read-only tool that enumerates `net/minecraft/**/*.class` occurrences across the ordered root compile classpath, records duplicate class resources and first-resource resolution, and obtains class hierarchy/member/descriptor metadata from one existing `Forge1201TargetApiVerifier.TargetIndex`.
+- The report fingerprints classpath entries that actually contain Minecraft class entries, inventories declared methods and fields with JVM descriptors, summarizes Minecraft superclass/interface/descriptor references, and lists unresolved or missing referenced Minecraft types rather than silently dropping them.
+- Added `inventoryTargetApi1211`, a root Gradle JavaExec task. It hands the exact ordered `sourceSets.main.compileClasspath` to the loader tool through a generated path-list file, avoiding long Windows command lines. An explicit ordered-classpath input is declared because resource precedence matters.
+- Added synthetic tests for deterministic output, duplicate-class resolution order, class/member/descriptor inventory, missing referenced Minecraft types, and directory classpath entries.
+- All generated inventory outputs remain local under `build/reports/target-api/1.21.1/`; they are not committed or packaged. The generated report is an engineering audit artifact, not a selector mapping or a distribution permission.
+- **Pending validation:** user must run the forced loader test gate, then run `inventoryTargetApi1211` and share its summary plus any PARTIAL findings. Do not claim the inventory is complete or the task passed before those commands run.
+- The tool does not transform selectors or alter runtime behavior. Reuse the same TargetIndex architecture and keep ambiguity/missing descriptors explicit.
+
