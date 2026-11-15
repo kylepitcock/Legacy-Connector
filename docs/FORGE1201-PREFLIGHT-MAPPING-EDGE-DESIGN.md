@@ -240,3 +240,17 @@ The fixture now uses `\tx f_20_ 3`, aligning the TSRG2 official-obfuscated field
 - Forge1201SrgIntermediaryBridgeAuditReportTest checks byte-for-byte determinism, row inventory sizes, exact synthetic class/method/field composition, and the explicit no-transformation boundary.
 
 The next step after this gate is to pin the exact 1.21.1 official-obfuscated -> actual NeoForge compile-namespace mapping bytes, then verify composed candidates through the existing Forge1201TargetApiVerifier.TargetIndex. Do not enable selector rewriting from this report alone.
+
+
+## 16. Observed real-input ambiguity — regression locked after composed report review
+
+**Observed at source checkpoint d0b215dc** in the full pinned composed report:
+
+- Forge SRG selector: owner `net/minecraft/src/C_507_`, method `m_8061_`, descriptor `(Lnet/minecraft/src/C_516_;Lnet/minecraft/src/C_1391_;)V`.
+- Source official-obfuscated selector: owner `bfj`, name `a`, descriptor `(Lbfo;Lcfz;)V`.
+- Source Intermediary identity: owner `net/minecraft/class_1297`, method ID `method_5673`, descriptor `(Lnet/minecraft/class_1304;Lnet/minecraft/class_1799;)V`.
+- The target Tiny inventory contains two rows with that method ID and equivalent Intermediary descriptor, under distinct owners `net/minecraft/class_9460` and `net/minecraft/class_1309` (target official-obfuscated owners `btb` and `btn`).
+- Neither target owner equals the source Intermediary owner `net/minecraft/class_1297`; the resolver therefore reports `INTERMEDIARY_TARGET_AMBIGUOUS` and preserves both candidates. This is not a reason to select by name or row order.
+
+A synthetic regression now mirrors the observed owner/member/descriptor relation. It requires the ambiguous status, exactly two candidates, both target owners, the shared source Intermediary ID, and the complete target Intermediary descriptor. It confirms that the resolver does not collapse the one-to-many target relation into a chosen mapping. The new regression has been published with this design note and is **awaiting the user's forced loader test gate**; do not mark it green before that run.
+

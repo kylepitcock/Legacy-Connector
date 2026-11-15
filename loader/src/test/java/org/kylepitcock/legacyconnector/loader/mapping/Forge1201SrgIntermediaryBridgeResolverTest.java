@@ -138,6 +138,60 @@ final class Forge1201SrgIntermediaryBridgeResolverTest {
                 result.status());
     }
 
+
+    @Test
+    void preservesBothRealWorldTargetCandidatesWhenIntermediaryIdIsAmbiguousAcrossOwners() throws Exception {
+        Path tsrg = write("ambiguous-target.tsrg", """
+                tsrg2 obf srg id
+                bfj net/minecraft/src/C_507_ 1
+                \ta (Lbfo;Lcfz;)V m_8061_ 2
+                bfo net/minecraft/src/C_516_ 3
+                cfz net/minecraft/src/C_1391_ 4
+                """);
+        Path sourceTiny = write("ambiguous-source.tiny", """
+                v1\tofficial\tintermediary
+                CLASS\tbfj\tnet/minecraft/class_1297
+                CLASS\tbfo\tnet/minecraft/class_1304
+                CLASS\tcfz\tnet/minecraft/class_1799
+                METHOD\tbfj\t(Lbfo;Lcfz;)V\ta\tmethod_5673
+                """);
+        Path targetTiny = write("ambiguous-target.tiny", """
+                v1\tofficial\tintermediary
+                CLASS\tbtb\tnet/minecraft/class_9460
+                CLASS\tbtn\tnet/minecraft/class_1309
+                CLASS\tbsy\tnet/minecraft/class_1304
+                CLASS\tcuq\tnet/minecraft/class_1799
+                METHOD\tbtb\t(Lbsy;Lcuq;)V\ta\tmethod_5673
+                METHOD\tbtn\t(Lbsy;Lcuq;)V\ta\tmethod_5673
+                """);
+
+        var result = Forge1201SrgIntermediaryBridgeResolver.readIndex(tsrg, sourceTiny, targetTiny)
+                .resolveMethod(
+                        "net/minecraft/src/C_507_",
+                        "m_8061_",
+                        "(Lnet/minecraft/src/C_516_;Lnet/minecraft/src/C_1391_;)V");
+
+        assertEquals(Forge1201SrgIntermediaryBridgeResolver.SymbolStatus.INTERMEDIARY_TARGET_AMBIGUOUS,
+                result.status());
+        assertEquals(2, result.candidates().size());
+        assertEquals(java.util.Set.of("net/minecraft/class_9460", "net/minecraft/class_1309"),
+                result.candidates().stream()
+                        .map(Forge1201SrgIntermediaryBridgeResolver.SymbolCandidate::targetIntermediaryOwner)
+                        .collect(java.util.stream.Collectors.toSet()));
+        assertEquals(java.util.Set.of("btb", "btn"),
+                result.candidates().stream()
+                        .map(Forge1201SrgIntermediaryBridgeResolver.SymbolCandidate::targetOfficialObfuscatedOwner)
+                        .collect(java.util.stream.Collectors.toSet()));
+        assertEquals(java.util.Set.of("method_5673"),
+                result.candidates().stream()
+                        .map(Forge1201SrgIntermediaryBridgeResolver.SymbolCandidate::sourceIntermediaryId)
+                        .collect(java.util.stream.Collectors.toSet()));
+        assertEquals(java.util.Set.of("(Lnet/minecraft/class_1304;Lnet/minecraft/class_1799;)V"),
+                result.candidates().stream()
+                        .map(Forge1201SrgIntermediaryBridgeResolver.SymbolCandidate::targetIntermediaryDescriptor)
+                        .collect(java.util.stream.Collectors.toSet()));
+    }
+
     private Path write(String name, String contents) throws Exception {
         Path file = tempDir.resolve(name);
         Files.writeString(file, contents, StandardCharsets.UTF_8);
