@@ -1033,9 +1033,10 @@ class PalladiumResourceCompat1201Test {
                 "targets[j].type !== \"palladium:suit_stand\" && targets[j].type !== \"minecraft:marker\""));
         assertTrue(migrated.contains(
                 "if (firetick > 0 && targets[j] instanceof LivingEntity) {"));
-        assertEquals(1, occurrences(migrated, "targets[j].setSecondsOnFire(firetick);"));
+        assertEquals(1, occurrences(migrated, "targets[j].igniteForSeconds(firetick);"));
+        assertFalse(migrated.contains("targets[j].setSecondsOnFire(firetick);"));
         assertTrue(migrated.indexOf("if (firetick > 0 && targets[j] instanceof LivingEntity) {")
-                < migrated.indexOf("targets[j].setSecondsOnFire(firetick);"));
+                < migrated.indexOf("targets[j].igniteForSeconds(firetick);"));
         assertEquals(0, PalladiumResourceCompat1201.apply(resources));
         assertEquals(migrated, get(resources, PalladiumResourceCompat1201.AFOMNI_AOE_DAMAGE));
     }
