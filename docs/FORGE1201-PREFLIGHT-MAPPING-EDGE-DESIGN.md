@@ -150,7 +150,7 @@ This stage does not implement Mixin selector rewriting, injectors, @At/@Slice tr
 
 ## 13. Implementation checkpoint 1 — SRG-to-obfuscated source edge
 
-**Status:** First read-only implementation published; awaiting the user's forced loader test gate. It is not wired into Mixin selector rewriting or the runtime remapper.
+**Status:** First read-only implementation published and user-validated by the forced loader test gate at source commit `2c8c4f8ebbcd3e67fe496c73326a4c64a64e2547`. It is not wired into Mixin selector rewriting or the runtime remapper.
 
 Files in this checkpoint:
 - `Forge1201SrgObfuscatedBridgeAudit.java`: bounded TSRG2/Tiny v1 reader, explicit SRG↔obfuscated class aliases, owner/name method index, full-descriptor conversion, and unique Tiny owner/name field descriptor join.
@@ -166,7 +166,7 @@ Resolution contract:
 - The index and report are build-local. No mapping TSV/JSON is added to JAR inputs, no selector is modified, and no runtime table is generated.
 
 Validation boundary:
-- The synthetic tests and Gradle task are newly published but are **not yet user-run**. Await the complete `:loader:clean :loader:test --no-daemon --console=plain --rerun-tasks` output and inspect the generated report. Fix any first failing test before moving to Intermediary composition.
+- User ran `:loader:clean :loader:test --no-daemon --console=plain --rerun-tasks` at commit `2c8c4f8ebbcd3e67fe496c73326a4c64a64e2547`: **BUILD SUCCESSFUL in 1m 3s; 21/21 actionable Gradle tasks executed**. The run compiled the source/tests, executed both read-only mapping audits, generated the existing SRG→Mojang provenance table, and completed `:loader:test`. The first attempt at parent `d0bf5abe` failed before audit parsing because the JavaExec classpath omitted ASM; the classpath correction is included in the validated commit.
 - This first edge does not yet validate the source selector namespace for every refmap context. A source mod's refmap context must still be explicitly bound to the correct namespace by evidence.
 - The target 1.21.1 official-obfuscated → actual NeoForge compile namespace edge remains separately unverified.
 
@@ -178,3 +178,23 @@ The first user-run forced loader test reached `:loader:auditSrgObfuscatedBridge1
 The task now uses `sourceSets.main.output + configurations.runtimeClasspath`. This supplies its declared runtime dependencies (including ASM) without inheriting the generated mapping directories that have separately been appended to `sourceSets.main.runtimeClasspath`. The change is limited to this build-local audit task: it does not alter loader runtime behavior, package mapping data, or change the audit's read-only contract.
 
 **Validation:** the corrected task wiring is published but awaits the user's repeated forced `:loader:clean :loader:test` run. The previous run did not reach the new audit's parsing or report generation, so no coverage result is available yet.
+
+
+### 13.2 User validation result — 2026-11-15
+
+The user supplied the complete forced loader console and the generated `srg-obfuscated-bridge-audit.json` from source commit `2c8c4f8ebbcd3e67fe496c73326a4c64a64e2547`.
+
+**Build gate:** `:loader:clean :loader:test --no-daemon --console=plain --rerun-tasks` completed **BUILD SUCCESSFUL in 1m 3s; 21 actionable tasks: 21 executed**. No exact JUnit test count is inferred from this Gradle summary.
+
+**Pinned audit inputs:**
+- MCPConfig `joined.tsrg`: 5,653,149 bytes; SHA-256 `19ae000175bfb58e5b26406c31a0a501bfb40000b078fee2f00ea60a8c7ed453`.
+- Fabric Intermediary 1.20.1 Tiny v1: 3,110,223 bytes; SHA-256 `5a808bd1ebc4a9ee7d1c5900dbd2bf391586b536c3d86fbf2f972047faa2d165`.
+
+**Observed source-edge coverage:**
+- Classes: 7,436 TSRG2 rows; 7,436 uniquely mapped; zero missing SRG names; zero ambiguous SRG aliases; zero ambiguous obfuscated aliases.
+- Methods: 48,575 rows; all 48,575 owners indexed; zero owner-unmapped rows; zero descriptor-unresolved rows; 13,330 external-descriptor rows containing 19,579 external type occurrences; 47,104 owner/name groups, of which 1,397 are overloaded; zero duplicate full selector keys.
+- Fields: 31,003 TSRG2 rows; all 31,003 joined uniquely to a Tiny field descriptor; zero missing/ambiguous Tiny joins; zero owner-unmapped or descriptor-unresolved rows; 5,722 external-descriptor rows/occurrences.
+
+**Interpretation:** the tested parser/index has complete class/owner row joins for these pinned source inputs, and the synthetic regressions plus build task execute successfully. The report remains `PARTIAL` correctly: external descriptor types are pass-through candidates, not proved target-classpath members; the cross-version Intermediary hop and final target compile-namespace hop are separate; and selector transformation/runtime table generation remain false. This does not authorize promotion to a complete selector path or runtime remapper.
+
+**Next engineering increment:** expose per-symbol, owner/member/descriptor-qualified lookup across the existing source and target Tiny datasets and compose it with `Forge1201SrgObfuscatedBridgeAudit.Index` without duplicating the Tiny parser or the target hierarchy cache. Separately identify the exact official-obfuscated 1.21.1 → names actually present in the root ModDevGradle-resolved `sourceSets.main.compileClasspath`; verify the consumed mapping artifact/direction/hashes instead of relying only on build comments or informal namespace labels. Final candidate lookups must reuse the existing `Forge1201TargetApiVerifier.TargetIndex`. Keep selector rewriting disabled until every edge resolves uniquely for a selector.
