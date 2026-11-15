@@ -561,3 +561,59 @@ Those source class identifiers establish that source class mappings exist. The m
 4. Investigate source bytecode access flags for an appropriate sample of 1.20.1 generated method/field misses and target classfile flags for present members. Do not classify by naming convention alone.
 
 No fallback mapping should be introduced yet. No selector transformation or runtime mapping output is authorized by these results.
+
+
+### 19.6 User's candidate details — exact cross-version IDs, sparse Tiny semantics (2026-11-15)
+
+The user printed the 15 high-count source-missing owners, all 12 non-generated-looking target method misses with complete candidate identity fields, and all 6 non-val$ target field misses.
+
+**The 15 source-missing owner classes resolve to ordinary mapped Minecraft classes:**
+- C_3902_ → net/minecraft/client/multiplayer/ClientPacketListener (112 source-missing methods)
+- C_1141_ → net/minecraft/world/entity/player/Player (83)
+- C_13_ → net/minecraft/server/level/ServerPlayer (73)
+- C_2793_ → net/minecraft/world/level/storage/PrimaryLevelData (64)
+- C_31_ → net/minecraft/server/network/ServerGamePacketListenerImpl (53)
+- C_4105_ → net/minecraft/client/player/LocalPlayer (51)
+- C_243588_ → net/minecraft/world/entity/animal/camel/Camel (51)
+- C_141119_ → net/minecraft/world/entity/animal/axolotl/Axolotl (47)
+- C_524_ → net/minecraft/world/entity/LivingEntity (47)
+- C_19_ → net/minecraft/server/level/WorldGenRegion (46)
+- C_966_ → net/minecraft/world/entity/decoration/ArmorStand (45)
+- C_5407_ → net/minecraft/server/dedicated/DedicatedServer (45)
+- C_2136_ → net/minecraft/world/level/chunk/ImposterProtoChunk (44)
+- C_2780_ → net/minecraft/world/level/storage/DerivedLevelData (43)
+- C_926_ → net/minecraft/world/entity/animal/horse/AbstractHorse (43)
+
+This disproves the early guess that the top concentration is chiefly special main/data entry-point classes: many are normal gameplay, client networking, server networking and player classes. However, we still do not know the source obfuscated member names of these missing Tiny rows.
+
+**All 12 non-generated-looking target method misses carry the same Intermediary symbol identity across source and target:**
+- sourceIntermediaryId equals targetIntermediaryId for each.
+- sourceIntermediaryOwner equals targetIntermediaryOwner for each.
+- sourceIntermediaryDescriptor equals targetIntermediaryDescriptor for each.
+- Ten final target mappings are MAPPED_EXACT; two are MAPPED_WITH_EXTERNAL_TYPES (ServerEntity.sendPairingData and RegistriesDatapackGenerator.dumpValue).
+
+The 12 signatures are the list in checkpoint 19.5. This means the source/target Intermediary composition did find a unique unchanged candidate for these symbols, and the final target official mapping index resolved each candidate. Their terminal TARGET_API_MEMBER_MISSING status therefore comes from the final structural lookup against the actual NeoForge compile classpath, not from the Intermediary target-ID/owner/descriptor-mismatch categories. It may represent a real absence/patch in the NeoForge compiled API or a mismatch in the target compile namespace/artifact assumptions. It is not resolved by the Intermediary IDs alone. Check the recorded hierarchyVisited paths and a direct classfile inspection before concluding which.
+
+**All six non-val$ target field misses also carry same source/target Intermediary owner, ID and descriptor:**
+- KeyMapping.MAP:Ljava/util/Map; — field_1658, final target map MAPPED_WITH_EXTERNAL_TYPES.
+- BlockColors.blockColors:Lnet/minecraft/core/IdMapper; — field_1995, MAPPED_EXACT.
+- ItemColors.itemColors:Lnet/minecraft/core/IdMapper; — field_1996, MAPPED_EXACT.
+- ParticleEngine.providers:Lit/unimi/dsi/fastutil/ints/Int2ObjectMap; — field_3835, MAPPED_WITH_EXTERNAL_TYPES.
+- RangedBowAttackGoal.mob:Lnet/minecraft/world/entity/monster/Monster; — field_6576, MAPPED_EXACT.
+- RangedCrossbowAttackGoal.mob:Lnet/minecraft/world/entity/monster/Monster; — field_6593, MAPPED_EXACT.
+
+Again, final target mappings succeeded, but exact fields were not found through the compile API hierarchy. Four have exact descriptor mapping and two have external types. Their actual source/target visibility/synthetic flags are not recorded by the current parser.
+
+**Important Tiny-format correction to interpretation:** Tiny v1 mapping documentation says entries without useful mappings should be omitted. Fabric's mapping documentation also explains that mapping layers may be incomplete and unmapped names can remain in a different namespace. Therefore INTERMEDIARY_SOURCE_MISSING is currently an absence-of-source-Tiny-row status, not proof of a missing class/member or broken mapping artifact. It can include intentionally unmapped members that remain identity-named in that namespace. That still does not assign a stable Intermediary ID and cannot be used for cross-version matching by itself. Preserve the fail-closed outcome, but do not report this category to users as 14,185 definitively missing Minecraft methods.
+
+References for the semantics:
+- Fabric Wiki, Tiny v1: entries without useful mappings should be omitted — https://wiki.fabricmc.net/documentation%3Atiny
+- Fabric Wiki, Mappings / Intermediary: incomplete mapping layers can leave some names unmapped; Intermediary stability only covers mapped symbols/unchanged portions — https://wiki.fabricmc.net/tutorial%3Amappings
+
+**Next diagnostics:**
+1. Print hierarchyVisited for the 12 method and 6 field API misses. This confirms which target owners/supertypes the audit exhausted.
+2. Read a bounded sample of raw source obfuscated method names from the exact MCPConfig joined.tsrg rows for the top source-missing SRG selectors (match owner + SRG ID, retain every row if an SRG token is reused). This will distinguish short obfuscated names from already meaningful/identity-named members and generated names. Do not use SRG ID alone as an identity key; the earlier audit observed 188 reused SRG method IDs across distinct Intermediary symbols.
+3. Based on those data, refine nomenclature for source Tiny row absence (e.g. SOURCE_TINY_ENTRY_ABSENT) and consider an explicit identity/unmapped candidate state, but do not cross-version match by name alone.
+4. For the 18 final API misses, inspect target classfile hierarchy and source/target access flags before determining whether they are private/generated or genuine target API removals.
+
+No mapping fallback, selector transformation, or runtime table is introduced by this evidence checkpoint.
