@@ -147,3 +147,25 @@ The mapping-edge work is accepted only when:
 - regression tests cover every classification and generated reports are deterministic.
 
 This stage does not implement Mixin selector rewriting, injectors, @At/@Slice transformations, runtime mapping injection, or actual Fabric Loader/mod support. It does not change the Universal roadmap's scope or resume Palladium/Alien Evolution.
+
+## 13. Implementation checkpoint 1 — SRG-to-obfuscated source edge
+
+**Status:** First read-only implementation published; awaiting the user's forced loader test gate. It is not wired into Mixin selector rewriting or the runtime remapper.
+
+Files in this checkpoint:
+- `Forge1201SrgObfuscatedBridgeAudit.java`: bounded TSRG2/Tiny v1 reader, explicit SRG↔obfuscated class aliases, owner/name method index, full-descriptor conversion, and unique Tiny owner/name field descriptor join.
+- `Forge1201SrgObfuscatedBridgeAuditTest.java`: synthetic tests for overloads, repeated SRG member tokens on different owners, nested/array descriptor conversion, external descriptors, missing Minecraft descriptor types, ambiguous class aliases, ambiguous/missing Tiny field descriptors, and conflicting full method selector candidates.
+- `loader/build.gradle`: `:loader:auditSrgObfuscatedBridge1201` emits a build-local report at `loader/build/reports/mappings/1.20.1/srg-obfuscated-bridge-audit.json`. The normal loader `test` task depends on this audit alongside the existing Intermediary audit.
+
+Resolution contract:
+- Class lookups are SRG internal name → exactly one official-obfuscated internal name; no or multiple matches remain missing/ambiguous.
+- Method lookups require SRG owner + SRG member name + complete source descriptor. Every object descriptor type must be mapped through the source class edge, except package-qualified external candidates which are preserved and flagged. Known or package-qualified `net/minecraft/` types without a mapping remain unresolved.
+- A global `m_N_` token is never used as a lookup key. The owner and full descriptor are always required.
+- TSRG2 field rows do not carry descriptors. The implementation joins their obfuscated owner/name to the pinned source Tiny field inventory and only accepts exactly one distinct field descriptor. Zero is missing; multiple descriptors are ambiguous.
+- An external descriptor may yield a separate `MAPPED_WITH_EXTERNAL_TYPES` candidate; it is never represented as a fully exact mapping.
+- The index and report are build-local. No mapping TSV/JSON is added to JAR inputs, no selector is modified, and no runtime table is generated.
+
+Validation boundary:
+- The synthetic tests and Gradle task are newly published but are **not yet user-run**. Await the complete `:loader:clean :loader:test --no-daemon --console=plain --rerun-tasks` output and inspect the generated report. Fix any first failing test before moving to Intermediary composition.
+- This first edge does not yet validate the source selector namespace for every refmap context. A source mod's refmap context must still be explicitly bound to the correct namespace by evidence.
+- The target 1.21.1 official-obfuscated → actual NeoForge compile namespace edge remains separately unverified.

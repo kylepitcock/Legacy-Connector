@@ -469,6 +469,25 @@ def auditIntermediaryBridge1201To1211 = tasks.register('auditIntermediaryBridge1
     } as CommandLineArgumentProvider)
 }
 
+def srgObfuscatedBridgeAuditReport = layout.buildDirectory.file('reports/mappings/1.20.1/srg-obfuscated-bridge-audit.json')
+def auditSrgObfuscatedBridge1201 = tasks.register('auditSrgObfuscatedBridge1201', JavaExec) {
+    group = 'verification'
+    description = 'Audits the read-only Forge SRG 1.20.1 to official-obfuscated 1.20.1 edge with owner/member/descriptor-aware lookups.'
+    dependsOn extractMcpConfigJoinedTsrg1201, extractFabricIntermediary1201, tasks.named('classes')
+    inputs.file(joinedTsrg1201)
+    inputs.file(fabricIntermediary1201Tiny)
+    outputs.file(srgObfuscatedBridgeAuditReport)
+    classpath = sourceSets.main.output
+    mainClass = 'org.kylepitcock.legacyconnector.loader.mapping.Forge1201SrgObfuscatedBridgeAudit'
+    argumentProviders.add({
+        [
+                joinedTsrg1201.get().asFile.absolutePath,
+                fabricIntermediary1201Tiny.get().asFile.absolutePath,
+                srgObfuscatedBridgeAuditReport.get().asFile.absolutePath
+        ]
+    } as CommandLineArgumentProvider)
+}
+
 // Beta 1.7.3 official -> named table (BetaMappings): Babric intermediary + biny
 def betaMappingsDir = layout.buildDirectory.dir('generated/beta-mappings')
 def genBetaMappings = tasks.register('genBetaMappings', JavaExec) {
@@ -500,7 +519,7 @@ tasks.withType(JavaCompile).configureEach {
 
 test {
     useJUnitPlatform()
-    dependsOn genBetaMappings, recordSrgMojangProvenance1201, auditIntermediaryBridge1201To1211
+    dependsOn genBetaMappings, recordSrgMojangProvenance1201, auditIntermediaryBridge1201To1211, auditSrgObfuscatedBridge1201
     classpath += files(betaMappingsDir, srgMojangDir)
 }
 
