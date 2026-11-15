@@ -248,6 +248,12 @@ public class ModelLoaderRegistry {
             // a mod asking for a model in init (Dawn of Time bakes its custom models there): the game's model manager does not exist yet
             var mc = net.minecraft.client.Minecraft.getInstance();
             if (mc == null || mc.getModelManager() == null) return new LazyBaked(this::bakeNow);
+            // a texture getter of the mod's own (EnderIO's paint registry gives every texture of a wall model the paint block's sprite): the game's
+            // baked model has the textures of its json, so the json is baked again with the getter's sprites
+            if (location != null && !(location instanceof ModelResourceLocation) && bakedTextureGetter != null && !(bakedTextureGetter instanceof ModelLoader.DefaultTextureGetter)) {
+                IBakedModel own = org.kylepitcock.legacyconnector.v1_12_2.client.JsonBake1122.bake(location.mcc$modern(), bakedTextureGetter);
+                if (own != null) return own;
+            }
             return bakeNow();
         }
 
