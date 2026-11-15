@@ -173,7 +173,9 @@ public final class CustomModels1122 {
         try {
             ModelResourceLocation mrl = new ModelResourceLocation(key);
             location = mrl;
-            if ("inventory".equals(mrl.getVariant())) {
+            // Forge gave the loaders the model resource location itself (an MRL is its own actual location), so a loader that accepts
+            // "mod:name" by its plain path (Lycanites' equipment parts) sees it; only when none takes it is the item json location tried
+            if ("inventory".equals(mrl.getVariant()) && ModelLoaderRegistry.mcc$loaderFor(mrl) == null) {
                 // an item's model: Forge loaded the file models/item/<path> (ModelLoader.getItemLocation, then ModelLoaderRegistry's actual location)
                 // and gave that plain location to the custom loaders (Tinkers' Construct reads its .tmat/.tcon json from it)
                 String path = mrl.getPath();
