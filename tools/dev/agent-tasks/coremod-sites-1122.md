@@ -1,20 +1,20 @@
 # 1.12.2 coremod hook places, round 4
 
-Status: all rows marked todo are written but NOT gated and NOT verified in a server run (session closed first). Baseline: 103 hooks, 28 hook methods at 33 places, 59 places without equivalent.
-Run with `-PcoremodReport` (added to build.gradle) to list every unmapped place in the log.
+Status (2026-11-15): gated and run on a server (`run-cm4`: AppleCore, Charm, Quark, RandomThings): 103 hooks, 38 hook methods at 48 places, 48 places without equivalent, no hook failure, self tests unchanged. `tools/dev/coremod-sites-1122-probe.js` (`-PserverTickScript=`) loads every mixin target (all ten mixins apply) and drives the places a server reaches without a player. "applies" = the mixin applies and the game path ran without a hook failure; the mod's visible effect was not checked in play.
+Run with `-PcoremodReport` to list every unmapped place in the log.
 
 | Site (legacy method) | Hook | Place on 1.21.1 | State |
 |---|---|---|---|
-| EntityPlayer.addMovementStat, 5 x fmul | AppleCore fireExhaustingActionEvent | ServerPlayer.checkMovementStatistics causeFoodExhaustion (PlayerMovementExhaustionHookMixin) | todo |
-| EntityLivingBase.getItemInUseMaxCount | AppleCore getItemInUseMaxCount | LivingEntity.getTicksUsingItem, getUseDuration (LivingEntityUseDurationHookMixin) | todo |
-| BlockCake.eatCake | AppleCore onBlockFoodEaten | CakeBlock.eat, FoodData.eat wrap (CakeEatHookMixin; needs the cake view to be IEdible, unverified) | todo |
-| EntityWither.canDestroyBlock | Charm canWitherDestroyBlock | WitherBoss.canDestroy (WitherBlockHookMixin) | todo |
-| EntityBoat.attackEntityFrom / EntityMinecart.killMinecart | Quark boatDrops / minecartDrops | VehicleEntity.destroy(Item) tail | todo |
-| EntityAITarget.isSuitableTarget | Quark hasWitchHat | TargetingConditions.test head | todo |
-| WorldServer.areAllPlayersAsleep | Quark isEveryoneAsleep (0 default, 1 no, 2 yes) | ServerLevel.tick SleepStatus wraps | todo |
-| BlockDynamicLiquid.isBlocked x3 | Quark isBlockNotBrokenByWater | FlowingFluid.canHoldFluid return | todo |
-| TileEntityFurnace.smeltItem | Charm changeSmeltingResult | AbstractFurnaceBlockEntity.burn assemble wrap | todo |
-| RecipeAddPattern.matches | Quark shiftLayerCountDown | LoomMenu.slotsChanged List.size ordinal 1 (ordinal unverified) | todo |
+| EntityPlayer.addMovementStat, 5 x fmul | AppleCore fireExhaustingActionEvent | ServerPlayer.checkMovementStatistics causeFoodExhaustion (PlayerMovementExhaustionHookMixin) | applies; needs a moving player |
+| EntityLivingBase.getItemInUseMaxCount | AppleCore getItemInUseMaxCount | LivingEntity.getTicksUsingItem, getUseDuration (LivingEntityUseDurationHookMixin) | applies; needs a player using an item |
+| BlockCake.eatCake | AppleCore onBlockFoodEaten | CakeBlock.eat, FoodData.eat wrap (CakeEatHookMixin; needs the cake view to be IEdible, unverified) | applies; needs a player eating cake |
+| EntityWither.canDestroyBlock | Charm canWitherDestroyBlock | WitherBoss.canDestroy (WitherBlockHookMixin) | applies, canDestroy ran |
+| EntityBoat.attackEntityFrom / EntityMinecart.killMinecart | Quark boatDrops / minecartDrops | VehicleEntity.destroy(Item) tail | applies, boat and minecart destroyed |
+| EntityAITarget.isSuitableTarget | Quark hasWitchHat | TargetingConditions.test head | applies, test ran |
+| WorldServer.areAllPlayersAsleep | Quark isEveryoneAsleep (0 default, 1 no, 2 yes) | ServerLevel.tick SleepStatus wraps | applies; needs sleeping players |
+| BlockDynamicLiquid.isBlocked x3 | Quark isBlockNotBrokenByWater | FlowingFluid.canHoldFluid return | applies; water did not flow in the probe (also on master), not exercised |
+| TileEntityFurnace.smeltItem | Charm changeSmeltingResult | AbstractFurnaceBlockEntity.burn assemble wrap | applies, furnace smelted iron |
+| RecipeAddPattern.matches | Quark shiftLayerCountDown | LoomMenu.slotsChanged List.size ordinal 1 (ordinal unverified) | applies; ordinal not checked in play |
 | FoodStats.addStats(ItemFood,ItemStack) x2, addStats(int,float) | AppleCore onFoodStatsAdded etc. | none: the transformer rewrites data flow around the mod's own FoodValues object | no equivalent |
 | EntityPlayer.onLivingUpdate peaceful regen x2 | AppleCore firePeaceful*RegenEvent | none: returns event objects whose fields replace constants | no equivalent |
 | BlockPistonBase x3, TileEntityPiston x3, piston renderer | Quark piston hooks | none: Quark substitutes a BlockPistonStructureHelper subclass; modern resolver is not subclassable here | no equivalent |
