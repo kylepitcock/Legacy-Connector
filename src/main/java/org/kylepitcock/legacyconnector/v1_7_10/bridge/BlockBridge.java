@@ -621,12 +621,42 @@ public final class BlockBridge {
         }
         if (org.kylepitcock.legacyconnector.core.perf.Perf.BLOCK_LOOKUP_CACHE) {
             Object known = ((org.kylepitcock.legacyconnector.core.perf.LegacySlot) modern).legacyconnector$slot1710();
+            if (known == PER_STATE) return perStateBlock(state);
             if (known != null) return (Block) known;
+            if (VanillaFlattening.splitsAcrossIds(modern)) {
+                ((org.kylepitcock.legacyconnector.core.perf.LegacySlot) modern).legacyconnector$setSlot1710(PER_STATE);
+                return perStateBlock(state);
+            }
             Block made = legacyBlockLocked(state);
             ((org.kylepitcock.legacyconnector.core.perf.LegacySlot) modern).legacyconnector$setSlot1710(made);
             return made;
         }
+        if (VanillaFlattening.splitsAcrossIds(modern)) return perStateBlock(state);
         return legacyBlockLocked(state);
+    }
+
+    /** Marker in a modern block's lookup slot: its legacy block depends on the state (slab or double slab, lit or unlit furnace). */
+    private static final Object PER_STATE = new Object();
+    private static final Map<BlockState, Block> PER_STATE_BLOCKS = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /**
+     * The legacy block of a state of a modern block that several legacy ids flattened into. Thaumcraft's jar check compares
+     * {@code Blocks.wooden_slab} by identity, and every slab used to read as the double slab (the lowest id), with metadata 0.
+     */
+    private static Block perStateBlock(BlockState state) {
+        Block known = PER_STATE_BLOCKS.get(state);
+        if (known != null) return known;
+        int key = VanillaFlattening.nearestLegacyKey(state);
+        Block b = null;
+        if (key >= 0) {
+            ensureVanilla();
+            synchronized (BlockBridge.class) {
+                b = BY_ID.get(key >> 4);
+            }
+        }
+        if (b == null) b = legacyBlockLocked(state);
+        PER_STATE_BLOCKS.put(state, b);
+        return b;
     }
 
     private static Block stillLiquid(BlockState state) {

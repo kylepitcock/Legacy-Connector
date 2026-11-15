@@ -133,6 +133,24 @@ public final class VanillaFlattening {
         return best;
     }
 
+    /**
+     * Whether the states of one modern block map to more than one legacy block id (a slab and its double slab, a lit and an unlit
+     * furnace, redstone ore, lamp, repeater...). Those need a per-state answer: the legacy block of the modern block alone is only
+     * the first of them.
+     */
+    public static boolean splitsAcrossIds(Block block) {
+        initBlocks();
+        int first = -2;
+        for (BlockState s : block.getStateDefinition().getPossibleStates()) {
+            Integer key = reverseStates.get(s);
+            if (key == null) continue;
+            int id = key >> 4;
+            if (first == -2) first = id;
+            else if (id != first) return true;
+        }
+        return false;
+    }
+
     /** The 1.12 registry name ("minecraft:stone") of a legacy numeric block id, or null. */
     public static String legacyName(int legacyId) {
         initBlocks();
