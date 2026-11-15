@@ -254,6 +254,8 @@ final class PalladiumResourceCompat1201 {
         rewriteAlienEvoXpDeathPlayerAccess(resources);
         rewriteAlienEvoRechargeCooldown(resources);
         rewriteAlienEvoStatAbilityOperation(resources);
+        rewriteAlienEvoNetworkDataPlayerAccess(resources);
+        rewriteAlienEvoSlamLandingState(resources);
         rewriteAlienEvoSlamAttributeOperations(resources);
         // Both ScriptableAbility callbacks receive the active entity; KubeJS 7 no longer exposes Utils.server.
         rewrite(resources, ALIEN_EVO_STAT_ABILITY, new String[][] {
@@ -1278,6 +1280,162 @@ final class PalladiumResourceCompat1201 {
                         "entity.persistentData.putInt(CURRENT_ALIEN_SLOT_KEY, slot);", "1"}
         });
         return changed;
+    }
+
+    /**
+     * KubeJS 7 NetworkEvents.dataReceived exposes the sending player as event.player.
+     * Older AlienEvo packet handlers still use event.entity, preventing the
+     * Omnitrix palette from being saved and breaking jump-state packets.
+     */
+    private static int rewriteAlienEvoNetworkDataPlayerAccess(Map<String, byte[]> resources) {
+        return rewrite(resources, ALIEN_EVO_SERVER_STUFF, new String[][] {
+                {"let entity = event.entity;", "let entity = event.player;", "2"},
+                {"let player = event.entity;", "let player = event.player;", "2"}
+        });
+    }
+
+    /**
+     * Cannonbolt's original Slam logic tied cleanup to the ability's one-tick
+     * action pulse and required a large negative velocity on the exact grounded
+     * tick. The pulse ended before landing, and vanilla collision can zero the
+     * vertical velocity before PlayerEvents.tick observes onGround(). Track the
+     * full maneuver instead: start once, remember descent, impact on landing,
+     * and always remove the temporary gravity modifier/effects on water or timeout.
+     */
+    private static int rewriteAlienEvoSlamLandingState(Map<String, byte[]> resources) {
+        byte[] original = resources.get(ALIEN_EVO_SLAM);
+        if (original == null) return 0;
+
+        String script = new String(original, StandardCharsets.UTF_8);
+        String normalized = script.replace("\r\n", "\n");
+        if (!normalized.contains("let playersWithGravity = new Set();")) return 0;
+        if (normalized.contains("let playersFalling = new Set();")
+                && normalized.contains("const clearGravitySlam = (player, playerId) => {")) {
+            return 0;
+        }
+
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(
+                "(?s)let playersWithGravity = new Set\\(\\);\\nPlayerEvents\\.tick\\(e => \\{.*?\\n\\}\\)");
+        java.util.regex.Matcher matcher = pattern.matcher(normalized);
+        if (!matcher.find()) {
+            throw new IllegalStateException("AlienEvo slam.js has an unexpected landing-state migration shape");
+        }
+        int start = matcher.start();
+        int end = matcher.end();
+        if (matcher.find()) {
+            throw new IllegalStateException("AlienEvo slam.js contains multiple PlayerEvents.tick slam state blocks");
+        }
+
+        String replacement = """
+let playersWithGravity = new Set();
+let playersFalling = new Set();
+let slamTicks = new Map();
+
+const clearGravitySlam = (player, playerId) => {
+    try {
+        player.removeAttribute(gravityAttribute, "gravity_slam");
+    } catch (error) {}
+    try {
+        player.tags.remove("gravity_slam_active");
+    } catch (error) {}
+    try {
+        player.removeEffect("minecraft:slowness");
+        player.removeEffect("minecraft:resistance");
+        player.removeEffect("minecraft:levitation");
+    } catch (error) {}
+    playersWithGravity.delete(playerId);
+    playersFalling.delete(playerId);
+    slamTicks.delete(playerId);
+};
+
+PlayerEvents.tick(e => {
+    const p = e.player;
+    const { x, y, z } = p;
+
+    if (!p.isPlayer() || p.isFake()) return;
+
+    const playerId = p.uuid.toString();
+    let abilityEnabled = false;
+    try {
+        abilityEnabled = palladium.abilities.isEnabled(
+            p,
+            "alienevo_aliens:arburian_pelarota",
+            "slam"
+        );
+    } catch (error) {}
+
+    // The Palladium action is a short activation pulse, not a held state.
+    // Do not tear down the maneuver merely because that pulse has ended.
+    if (abilityEnabled && !playersWithGravity.has(playerId) && !p.isInWater()) {
+        const canStart = p.onGround() || isAtLeast10BlocksAboveGround(p);
+        if (canStart) {
+            p.potionEffects.add("minecraft:slowness", 35, 4, false, false);
+            p.potionEffects.add("minecraft:resistance", 38, 255, false, false);
+            if (p.onGround()) {
+                p.potionEffects.add("minecraft:levitation", 18, 60, false, false);
+            }
+
+            let gravityApplied = false;
+            try {
+                p.modifyAttribute(gravityAttribute, "gravity_slam", 6, "add_value");
+                gravityApplied = true;
+            } catch (error) {}
+
+            if (gravityApplied) {
+                p.tags.add("gravity_slam_active");
+                playersWithGravity.add(playerId);
+                slamTicks.set(playerId, 0);
+            }
+        }
+    }
+
+    if (!playersWithGravity.has(playerId)) return;
+
+    const activeTicks = (slamTicks.get(playerId) || 0) + 1;
+    slamTicks.set(playerId, activeTicks);
+
+    // Water cancels the maneuver safely without generating an impact explosion.
+    if (p.isInWater()) {
+        clearGravitySlam(p, playerId);
+        return;
+    }
+
+    let velocityY = 0;
+    try {
+        velocityY = Number(p.getDeltaMovement().get("y"));
+    } catch (error) {}
+
+    // Remember the descent on a non-grounded tick. On landing, do not depend
+    // on velocity still being negative: collision resolution may already zero it.
+    if (!p.onGround() && velocityY < -0.15) {
+        playersFalling.add(playerId);
+    }
+
+    if (p.onGround() && playersFalling.has(playerId)) {
+        clearGravitySlam(p, playerId);
+
+        e.level.createExplosion(x, y, z).strength(1.9).explosionMode('none').exploder(p).explode();
+        e.level.createExplosion(x, y, z).strength(.2).explosionMode('tnt').exploder(p).explode();
+
+        e.level.spawnParticles("minecraft:explosion", false, x, y, z, 1, 0.5, 1, 5, 8);
+        e.level.spawnParticles("minecraft:explosion_emitter", false, x, y, z, 1, 0.75, 1, 2, 1);
+
+        createBlockWave(p, 6.0, true, true);
+    } else if (activeTicks >= 200) {
+        // A failed launch or interrupted maneuver must never leave high gravity behind.
+        clearGravitySlam(p, playerId);
+    }
+});
+""";
+        const lineEnding = script.includes("\r\n") ? "\r\n" : "\n";
+        const replacementWithOriginalEndings = lineEnding === "\n"
+                ? replacement
+                : replacement.replace(/\n/g, lineEnding);
+        const migrated = normalized.substring(0, start)
+                + replacementWithOriginalEndings
+                + normalized.substring(end);
+        resources.put(ALIEN_EVO_SLAM, migrated.getBytes(StandardCharsets.UTF_8));
+        return 1;
     }
 
     /**

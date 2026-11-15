@@ -435,6 +435,68 @@ class PalladiumResourceCompat1201Test {
     }
 
     @Test
+    void migratesAlienEvoNetworkDataReceivedHandlersToKubeJs7Player() {
+        Map<String, byte[]> resources = new HashMap<>();
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_SERVER_STUFF, String.join("\n",
+                "NetworkEvents.dataReceived('AlienEvo.isJumping', event => {",
+                "    let entity = event.entity;",
+                "});",
+                "NetworkEvents.dataReceived('AlienEvo.notJumping', event => {",
+                "    let entity = event.entity;",
+                "});",
+                "NetworkEvents.dataReceived('savePaletteData', event => {",
+                "    let player = event.entity;",
+                "});",
+                "NetworkEvents.dataReceived('alienevo_nickname', event => {",
+                "    let player = event.entity;",
+                "});",
+                ""));
+
+        assertEquals(1, PalladiumResourceCompat1201.apply(resources));
+
+        String migrated = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_SERVER_STUFF);
+        assertEquals(4, occurrences(migrated, "event.player"));
+        assertFalse(migrated.contains("event.entity"));
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+        assertEquals(migrated, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_SERVER_STUFF));
+    }
+
+    @Test
+    void migratesCannonboltSlamLandingTrackingAndPreservesCrLf() {
+        Map<String, byte[]> resources = new HashMap<>();
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_SLAM, String.join("\r\n",
+                "let playersWithGravity = new Set();",
+                "PlayerEvents.tick(e => {",
+                "    let p = e.player",
+                "    if (abilityEnabled && !playersWithGravity.has(p.uuid.toString())) {",
+                "        p.modifyAttribute(gravityAttribute, \"gravity_slam\", 6, \"add_value\")",
+                "        playersWithGravity.add(p.uuid.toString());",
+                "    }",
+                "    if (!abilityEnabled && playersWithGravity.has(p.uuid.toString())) {",
+                "        playersWithGravity.delete(p.uuid.toString());",
+                "    }",
+                "    if (p.getDeltaMovement().get(\"y\") < -5 && p.onGround()) {",
+                "        p.removeAttribute(gravityAttribute, \"gravity_slam\")",
+                "    }",
+                "})"));
+
+        assertEquals(1, PalladiumResourceCompat1201.apply(resources));
+
+        String migrated = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_SLAM);
+        assertTrue(migrated.contains("let playersFalling = new Set();"));
+        assertTrue(migrated.contains("const clearGravitySlam = (player, playerId) => {"));
+        assertTrue(migrated.contains("if (p.onGround() && playersFalling.has(playerId))"));
+        assertTrue(migrated.contains("else if (activeTicks >= 200)"));
+        assertFalse(migrated.contains("if (!abilityEnabled && playersWithGravity.has"));
+        assertFalse(migrated.contains("get(\"y\") < -5"));
+        assertTrue(migrated.contains("\r\n"));
+        assertFalse(migrated.replace("\r\n", "").contains("\n"));
+
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+        assertEquals(migrated, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_SLAM));
+    }
+
+    @Test
     void migratesAlienEvoSlamAttributeOperationToCurrentEnumName() {
         Map<String, byte[]> resources = new HashMap<>();
         put(resources, PalladiumResourceCompat1201.ALIEN_EVO_SLAM, String.join("\n",
