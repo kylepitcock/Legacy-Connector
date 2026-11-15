@@ -1317,7 +1317,7 @@ final class PalladiumResourceCompat1201 {
         }
 
         java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(
-                "(?s)let playersWithGravity = new Set\\(\\);\\nPlayerEvents\\.tick\\(e => \\{.*?\\n\\}\\)");
+                "(?s)let playersWithGravity = new Set\\(\\);\\s*PlayerEvents\\.tick\\(\\s*[A-Za-z_$][A-Za-z0-9_$]*\\s*=>\\s*\\{.*?\\n\\s*\\}\\s*\\)");
         java.util.regex.Matcher matcher = pattern.matcher(normalized);
         if (!matcher.find()) {
             throw new IllegalStateException("AlienEvo slam.js has an unexpected landing-state migration shape");
