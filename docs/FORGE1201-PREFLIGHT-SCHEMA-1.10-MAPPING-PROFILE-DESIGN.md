@@ -545,3 +545,22 @@ Official references: [Minecraft EULA](https://www.minecraft.net/en-us/eula), [Mi
 A separate read-only feasibility audit has been added in [`FORGE1201-PREFLIGHT-INTERMEDIARY-BRIDGE-AUDIT-DESIGN.md`](FORGE1201-PREFLIGHT-INTERMEDIARY-BRIDGE-AUDIT-DESIGN.md). It examines the MCPConfig TSRG2 `obf` columns against versioned Fabric Tiny v1 `official -> intermediary` mappings, then compares candidate identities in the 1.21.1 Tiny file. This does not complete the Forge SRG selector input edge: the audit retains SRG names/IDs only as diagnostics and explicitly records that `completeForgeSrgSelectorPath=false`. Nor does it complete the target official-obfuscated → NeoForge Mojang-named edge. The audit is read-only, emits a build-local report, and is pending the user's next forced loader test gate.
 
 The Schema 1.10B source normalization and its licensing boundary remain unchanged. Do not merge the distinct namespace stages or enable selector transformation.
+
+## 8. Version-qualified namespace nodes and mapping-coverage semantics — follow-up design finding
+
+The implemented Schema 1.10 validator represents a graph node as namespace ID plus Minecraft version, but its edge parser treats equal from/to namespace IDs as an explicit identity edge and requires the source and target Minecraft versions to be equal. Therefore a cross-version Intermediary relation must not be represented as an edge from the same unqualified namespace ID to itself.
+
+Use distinct, version-qualified endpoints for the two datasets, for example:
+- minecraft:fabric-intermediary@1.20.1
+- minecraft:fabric-intermediary@1.21.1
+
+The cross-version Intermediary step is a data-backed relation between those endpoints, not an implicit identity edge. It must cite both pinned versioned Tiny artifacts and the deterministic matching policy. Do not weaken the current same-namespace identity rule.
+
+A second distinction is required: Schema 1.10 profile validation is structural. A declared VERIFIED edge currently means that the edge declaration has supported direction/scope, review evidence, and referenced artifacts that pass the validator's digest and license-review checks. It does not parse the mapping rows or prove that every class, method, field, or descriptor in the selector domain is covered. The profile's completePathCount is consequently a graph-connectivity result, not proof that an arbitrary selector is mappable.
+
+Keep these gates separate in the future mapping engine:
+1. Profile/artifact gate: strict profile shape, version continuity, pinned bytes, review evidence, and an unambiguous candidate graph.
+2. Edge-data gate: parse each mapping dataset and report deterministic class/member/descriptor coverage, duplicates, ambiguity, moved owners, signature changes, missing identities, and external passthrough.
+3. Per-selector gate: require a unique, fully resolved result at every edge for the exact selector being considered. A globally PARTIAL edge may still contain a valid row for one selector, but it must never be treated as globally complete. The current Schema 1.10 path evaluator excludes PARTIAL edges; add any per-selector candidate-path support deliberately, with tests, rather than redefining PROFILE_VALIDATED or silently promoting PARTIAL edges.
+
+Schema 1.10 remains a read-only declaration validator. A later additive schema revision may introduce explicit edge coverage declarations and per-symbol resolution evidence. Do not add unsupported JSON keys to a current profile and assume the existing validator enforces them; unknown edge fields are warnings today.
