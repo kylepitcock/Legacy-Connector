@@ -676,7 +676,7 @@ class PalladiumResourceCompat1201Test {
         assertTrue(migrated.contains("nbt.getInt(nbtTag)"));
         assertTrue(migrated.contains("nbt.getString('storedGlowColor1')"));
         assertTrue(migrated.contains("nbt.getString('storedUniformGlowColor1')"));
-        assertTrue(migrated.contains("nbt.getBoolean('storedMastercontrol')"));
+        assertTrue(migrated.contains("nbt.getInt('storedMastercontrol') !== 0"));
         assertTrue(migrated.contains("if (nbt.isEmpty() && mainHandItem.id.includes('_10k'))"));
         assertFalse(migrated.contains("mainHandItem.nbt"));
         assertFalse(migrated.contains("omnitrix.setNbt(nbtData);"));
