@@ -80,3 +80,5 @@ The JSON report is written under `loader/build/reports/source-runtime/`. Repeat 
 ```
 
 The mapping step may return an explicit missing/ambiguous/descriptor-unresolved status; the verifier does not guess a name or descriptor. A source class/member is only reported absent when the required class hierarchy is complete. No selector rewriting, runtime mapping table, or loader packaging change is performed.
+
+The classfile verifier also reads missing JDK platform superclass/interface bytes from the active Java runtime's `jrt:/` module image. This matters because the Forge compile classpath does not contain `java.base` classes such as `java.lang.Object`; omitting that platform boundary would incorrectly label otherwise-complete hierarchies as incomplete. These platform class bytes are read as resources and parsed with ASM; no platform or Minecraft classes are defined or initialized. The active runtime is the same Java 21 toolchain used by the verifier task.
