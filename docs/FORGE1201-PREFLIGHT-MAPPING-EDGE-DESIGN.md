@@ -724,3 +724,29 @@ An intentional version change can be requested with `-Pforge_version=47.4.28`; d
 Validation status (2026-11-16): the isolated Gradle bootstrap and classpath export have now been run successfully by the user on Windows 10 with Gradle 8.8 and a Java 21 daemon JVM. ForgeGradle 6.0.24 completed MCP processing and generated the mapped Forge 1.20.1-47.3.0 runtime artifact. The user's successful task output reports exactly 113 ordered compile-classpath entries and exactly one match for each required probe (PistonStructureResolver, BlockState, Block), all resolved from classpath index 0. The generated manifest reports SOURCE_RUNTIME_CLASSPATH_EXPORTED, Minecraft 1.20.1, Forge 47.3.0, official mappings, Java 21.0.13, and Gradle 8.8. The separate Temurin JDK 17.0.20.1 toolchain was independently confirmed by the user's javaToolchains output and is registered through user-level Gradle properties.
 
 The bootstrap/classpath-export gate is therefore **validated for this pinned local source profile**. The source mapping index, owner/member/full-descriptor joins, source classfile member verifier, hierarchy-completeness handling, and combined audit integration remain **not implemented/not validated**. Do not call the full source runtime member gate complete yet. The classpath and manifest remain build-local and must not be committed or packaged.
+
+
+### 20.8 Exact Forge 47.3.0 compiled-class check — 2026-11-16
+
+After the isolated ForgeGradle source classpath was exported and its manifest validated, the user ran `javap -p -s` directly against the first classpath entry (the unique mapped Forge 1.20.1-47.3.0 artifact) for:
+
+`net.minecraft.world.level.block.piston.PistonStructureResolver`
+
+The compiled class declares:
+- `MAX_PUSH_DEPTH`
+- fields `level`, `pistonPos`, `extending`, `startPos`, `pushDirection`, `toPush`, `toDestroy`, `pistonDirection`
+- constructor `(Level, BlockPos, Direction, boolean)`
+- methods `resolve()Z`, `addBlockLine(BlockPos, Direction)Z`, `reorderListAtCollision(II)V`, `addBranchingBlocks(BlockPos)Z`, `getPushDirection()Direction`, `getToPush()List`, and `getToDestroy()List`.
+
+It does **not** declare the two vanilla mapping helpers:
+- `isSticky(BlockState)`
+- `canStickToEachOther(BlockState, BlockState)`
+
+These are private helper candidates, so absence from the complete declared-member list on the exact Forge class is direct binary evidence that they do not exist as declared methods in Forge 47.3.0's patched `PistonStructureResolver`. The previous 1.20.x patch lineage is corroborating provenance, not the primary evidence anymore. This means these two vanilla mapping rows should be classified as absent from the Forge source runtime; they must not be counted as Forge-to-NeoForge compatibility failures requiring selector migration.
+
+This result is intentionally narrow: it does not yet supply the replacement call-site bytecode evidence, a generalized SRG→Mojmap identity resolver, or a complete class/hierarchy source-member index. Do not generalize the two helper outcomes to all mapping rows.
+
+Next implementation stages remain:
+1. Reuse the existing owner-qualified SRG→official-obfuscated mapping index and exact pinned Mojang 1.20.1 client mappings to produce source official Mojmap owner/member/full-descriptor identities. The global generated `srg-mojang.tsv` remains insufficient as a runtime verification key because it discards owner and descriptor.
+2. Reuse/refactor the existing ASM classfile parser and hierarchy lookup so the source runtime is inspected explicitly (never the target classpath), retaining direct declaration, descriptor-changed, absent, ambiguous, and incomplete-hierarchy states.
+3. Add fixtures for the piston helpers and exact source runtime report before integrating the new source dimension into the combined cross-version audit.
