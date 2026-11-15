@@ -536,7 +536,12 @@ tasks.register('auditSrgTargetApiBridge1201To1211', JavaExec) {
     })
     inputs.file(targetApiClasspathFile)
     outputs.file(srgTargetApiBridgeAuditReport)
-    classpath = sourceSets.main.output + configurations.runtimeClasspath
+    // Forge1201TargetApiInventory initializes its Gson serializer when the audit reads the shared classpath list.
+    // Gson and SLF4J are compileOnly for the loader runtime, so add the same tool-only jars used by inventoryTargetApi1211.
+    classpath = sourceSets.main.output + configurations.runtimeClasspath +
+            configurations.compileClasspath.filter {
+                it.name.startsWith('gson') || it.name.startsWith('slf4j')
+            }
     mainClass = 'org.kylepitcock.legacyconnector.loader.tools.forge1201.Forge1201TargetOfficialBridgeAudit'
     maxHeapSize = '3g'
     argumentProviders.add({
