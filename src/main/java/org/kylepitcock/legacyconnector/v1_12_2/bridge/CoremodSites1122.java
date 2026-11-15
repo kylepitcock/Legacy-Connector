@@ -242,6 +242,20 @@ public final class CoremodSites1122 {
             "net/minecraft/block/Block.func_185477_a(Lnet/minecraft/block/state/IBlockState;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;"
                     + "Lnet/minecraft/util/math/AxisAlignedBB;Ljava/util/List;Lnet/minecraft/entity/Entity;Z)V#cancel-after:aload 5").returns(boolean.class);
 
+    private static final Class<?> POTION = legacyconnector.v1_12_2.net.minecraft.potion.Potion.class;
+    private static final Class<?> TEXT = legacyconnector.v1_12_2.net.minecraft.util.text.ITextComponent.class;
+
+    /**
+     * TileEntityBeacon.addEffectsToPlayers, before the players are looked up: the hook is told what the beacon gives. Values: the world, the area, the primary
+     * and the secondary effect, the duration in ticks, the amplifier of the primary effect.
+     */
+    public static final Site BEACON_EFFECTS = CoremodSites.site("beacon effects", new Class<?>[] {WORLD, BOX, POTION, POTION, int.class, int.class},
+            "net/minecraft/tileentity/TileEntityBeacon.func_146000_x()V#after:ifnull");
+
+    /** ItemStack.getTextComponent, last thing: the hook answers the component. Values: the component. */
+    public static final Site STACK_COMPONENT = CoremodSites.site("item stack chat component", new Class<?>[] {TEXT},
+            "net/minecraft/item/ItemStack.func_151000_E()Lnet/minecraft/util/text/ITextComponent;#tail").returns(TEXT);
+
     /** The slot range of one merge call after the hooks of {@code start} and {@code end} had their say. */
     public static int[] mergeRange(Site start, Site end, int from, int to) {
         if (!start.listed() && !end.listed()) return new int[] {from, to};
@@ -429,6 +443,45 @@ public final class CoremodSites1122 {
                     box.minZ - pos.getZ(), box.maxX - pos.getX(), box.maxY - pos.getY(), box.maxZ - pos.getZ()));
         }
         return shape;
+    }
+
+    /** {@link #BEACON_EFFECTS}. */
+    public static void beaconEffects(net.minecraft.world.level.Level level, net.minecraft.core.BlockPos pos, int beaconLevel,
+            net.minecraft.core.Holder<net.minecraft.world.effect.MobEffect> primary, net.minecraft.core.Holder<net.minecraft.world.effect.MobEffect> secondary) {
+        if (level.isClientSide || primary == null || !BEACON_EFFECTS.active()) return;
+        int amplifier = beaconLevel >= 4 && primary.equals(secondary) ? 1 : 0;
+        int duration = (9 + beaconLevel * 2) * 20;
+        net.minecraft.world.phys.AABB area = new net.minecraft.world.phys.AABB(pos).inflate(beaconLevel * 10 + 10).expandTowards(0.0, level.getHeight(), 0.0);
+        BEACON_EFFECTS.fire(WorldBridge1122.wrap(level), legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB.mcc$of(area),
+                legacyPotion(primary),
+                secondary == null ? null : legacyPotion(secondary), duration, amplifier);
+    }
+
+    private static legacyconnector.v1_12_2.net.minecraft.potion.Potion legacyPotion(net.minecraft.core.Holder<net.minecraft.world.effect.MobEffect> effect) {
+        legacyconnector.v1_12_2.net.minecraft.potion.Potion mod = org.kylepitcock.legacyconnector.v1_12_2.entity.Effects1122.legacy(effect.value());
+        if (mod != null) return mod;
+        net.minecraft.resources.ResourceLocation key = net.minecraft.core.registries.BuiltInRegistries.MOB_EFFECT.getKey(effect.value());
+        return key == null ? null : legacyconnector.v1_12_2.net.minecraft.potion.Potion.getPotionFromResourceLocation(key.toString());
+    }
+
+    /** {@link #STACK_COMPONENT}: the component a hook made of the game's (the game's own component stays where the hook only wrapped it). */
+    public static net.minecraft.network.chat.Component stackComponent(net.minecraft.network.chat.Component original) {
+        if (!STACK_COMPONENT.active()) return original;
+        legacyconnector.v1_12_2.net.minecraft.util.text.ITextComponent legacy;
+        try {
+            net.minecraft.core.HolderLookup.Provider lookup = net.minecraft.core.RegistryAccess.fromRegistryOfRegistries(net.minecraft.core.registries.BuiltInRegistries.REGISTRY);
+            legacy = legacyconnector.v1_12_2.net.minecraft.util.text.ITextComponent.Serializer.jsonToComponent(
+                    net.minecraft.network.chat.Component.Serializer.toJson(original, lookup));
+        } catch (RuntimeException e) {
+            legacy = new legacyconnector.v1_12_2.net.minecraft.util.text.TextComponentString(original.getString());
+        }
+        if (!(STACK_COMPONENT.modify(0, legacy) instanceof legacyconnector.v1_12_2.net.minecraft.util.text.ITextComponent changed) || changed == legacy) return original;
+        net.minecraft.network.chat.MutableComponent made = changed.mcc$modern();
+        java.util.List<net.minecraft.network.chat.Component> siblings = made.getSiblings();
+        for (int i = 0; i < siblings.size(); i++) { // the conversion through 1.12's text format drops what it does not know (the item's hover): keep the game's own
+            if (siblings.get(i).getString().equals(original.getString())) siblings.set(i, original);
+        }
+        return made;
     }
 
     private static final ThreadLocal<Boolean> IN_WORLD_HOOK = new ThreadLocal<>();

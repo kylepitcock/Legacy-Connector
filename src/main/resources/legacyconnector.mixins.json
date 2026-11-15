@@ -59,6 +59,8 @@
     "FlowingFluidBlockedHookMixin",
     "FurnaceResultHookMixin",
     "LoomLayersHookMixin",
+    "BeaconEffectsHookMixin",
+    "ItemStackComponentHookMixin",
     "SlimeChunkHookMixin",
     "LivingEntitySlipperinessHookMixin",
     "InventoryDropAllHookMixin",
