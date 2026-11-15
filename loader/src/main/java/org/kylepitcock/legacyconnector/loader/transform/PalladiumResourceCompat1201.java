@@ -452,14 +452,14 @@ final class PalladiumResourceCompat1201 {
         migrated = migrated.replace(legacyFilter, migratedFilter);
 
         java.util.regex.Pattern fireCallPattern = java.util.regex.Pattern.compile(
-                "(?m)^([\\t ]*)targets\\\\[j\\\\]\\\\.(?:setSecondsOnFire|igniteForSeconds)\\\\(firetick\\\\);\\\\R?");
+                "(?m)^([\\t ]*)targets\\[j\\]\\.(?:setSecondsOnFire|igniteForSeconds)\\(firetick\\);\\R?");
         java.util.regex.Matcher fireCallMatcher = fireCallPattern.matcher(migrated);
         StringBuffer fireRewritten = new StringBuffer();
         int fireCallReplacements = 0;
         while (fireCallMatcher.find()) {
             String indent = fireCallMatcher.group(1);
             String replacement = indent + fireGuard + lineEnding
-                    + indent + "    targets[j].setSecondsOnFire(firetick);" + lineEnding
+                    + indent + "    targets[j].igniteForSeconds(firetick);" + lineEnding
                     + indent + "}" + lineEnding;
             fireCallMatcher.appendReplacement(
                     fireRewritten, java.util.regex.Matcher.quoteReplacement(replacement));
