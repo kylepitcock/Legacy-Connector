@@ -1,6 +1,6 @@
-# 1.12.2 coremod hook places, round 4
+# 1.12.2 coremod hook places, rounds 4 and 5
 
-Status (2026-11-15): gated and run on a server (`run-cm4`: AppleCore, Charm, Quark, RandomThings): 103 hooks, 38 hook methods at 48 places, 48 places without equivalent, no hook failure, self tests unchanged. `tools/dev/coremod-sites-1122-probe.js` (`-PserverTickScript=`) loads every mixin target (all ten mixins apply) and drives the places a server reaches without a player. "applies" = the mixin applies and the game path ran without a hook failure; the mod's visible effect was not checked in play.
+Status (2026-11-15, round 5 batch 1): gated and run on a server (`run-cm5`: AppleCore, AutoRegLib, Charm, Quark, RandomThings): 103 hooks, 45 hook methods at 55 places, 41 places without equivalent, no hook failure, self tests unchanged (item placement 754 of 754, block self test 12 with problems, 16 ERROR lines as on master). `tools/dev/coremod-sites-1122-probe.js` (`-PserverTickScript=`) loads every mixin target and drives the places a server reaches without a player (fake player via FakePlayerFactory for collision/inventory). "applies" = the mixin applies and the game path ran without a hook failure; "works" = the mod's effect was asserted in the probe.
 Run with `-PcoremodReport` to list every unmapped place in the log.
 
 | Site (legacy method) | Hook | Place on 1.21.1 | State |
@@ -22,5 +22,10 @@ Run with `-PcoremodReport` to list every unmapped place in the log.
 | DamageSource.causePlayerDamage | Quark createPlayerDamage | none: answer is a legacy DamageSource subclass | no equivalent |
 | ItemBanner tooltip const 6 | Quark shiftLayerCountUp | none: modern tooltip prints every layer | no equivalent |
 | TileEntityBeacon, ItemStack.getTextComponent, structure pieces (Church, MonumentCoreRoom, StructureStart) | Charm/Quark/RandomThings | not attempted (potion/AABB mapping; chat; worldgen pieces) | open |
-| RandomThings places (collision boxes, slip, redstone power, slime chunk, tree ground, inventory drop) | RT | not attempted (another worker owns RT) | open |
+| World.getStrongPower / getRedstonePower (first thing; nonzero answer returned) | RT getStrongPower / getRedstonePower | SignalGetter.getDirectSignal / getSignal head (SignalGetterHookMixin) | applies; no exception; RT interface block effect not driven |
+| EntitySlime.getCanSpawnHere (slime chunk, 0/1/-1) | RT overrideSlimeChunk | Slime.checkSlimeSpawnRules head (SlimeChunkHookMixin) | works: with a slime cube in the chunk the rule is true 60 of 60, without 0 of 60 |
+| EntityLivingBase.travel ground slipperiness (after fmul) | RT slipFix | LivingEntity.travel, wrap of BlockState.getFriction (LivingEntitySlipperinessHookMixin; value passed as friction*0.91, result divided again) | works: zombie on stone keeps 0.273 of 0.5, on super lubricent stone 0.5 |
+| InventoryPlayer.dropAllItems (per stack) | RT shouldPlayerDrop | Inventory.dropAll, wrap of ItemStack.isEmpty (InventoryDropAllHookMixin) | works: a stack with spectreAnchor stays, a plain one drops |
+| WorldGenAbstractTree.setDirtAt | RT protectGround | TrunkPlacer.setDirtAt head (TrunkPlacerGroundHookMixin) | works: oak on fertilized dirt keeps it, on grass makes dirt |
+| Block.addCollisionBoxToList (first thing, true = handled) | RT addCollisionBoxesToList | BlockStateBase.getCollisionShape(BlockGetter,BlockPos,CollisionContext) head (BlockStateCollisionHookMixin): hook fills a box list (asked box = the block's cell), boxes become the shape, entity from the context | works: water shape empty bare, solid with water walking boots (fake player) |
 | Client render hooks (Quark/RT/Charm, about 20 places) | various | not attempted | open |

@@ -202,6 +202,46 @@ public final class CoremodSites1122 {
             "net/minecraft/item/crafting/RecipesBanners$RecipeAddPattern.func_77569_a(Lnet/minecraft/inventory/InventoryCrafting;Lnet/minecraft/world/World;)Z"
                     + "#after:invokestatic net/minecraft/tileentity/TileEntityBanner.func_175113_c(Lnet/minecraft/item/ItemStack;)I").returns(int.class);
 
+    private static final Class<?> ENUM_FACING = legacyconnector.v1_12_2.net.minecraft.util.EnumFacing.class;
+    private static final Class<?> CHUNK = legacyconnector.v1_12_2.net.minecraft.world.chunk.Chunk.class;
+    private static final Class<?> INVENTORY_PLAYER = legacyconnector.v1_12_2.net.minecraft.entity.player.InventoryPlayer.class;
+    private static final Class<?> BOX = legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB.class;
+
+    /**
+     * World.getStrongPower / getRedstonePower, first thing: a hook answering a number other than 0 is the answer of the method. Values: the world, the
+     * position, the side.
+     */
+    public static final Site STRONG_POWER = CoremodSites.site("redstone strong power", new Class<?>[] {WORLD, BLOCK_POS, ENUM_FACING},
+            "net/minecraft/world/World.func_175627_a(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/EnumFacing;)I#after:aload 1").returns(int.class);
+    public static final Site REDSTONE_POWER = CoremodSites.site("redstone power", new Class<?>[] {WORLD, BLOCK_POS, ENUM_FACING},
+            "net/minecraft/world/World.func_175651_c(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/EnumFacing;)I#after:aload 1").returns(int.class);
+
+    /** EntitySlime.getCanSpawnHere, after the chunk was read: a hook answering 0 or 1 is the answer of the method, -1 leaves it to the game. Values: the world, the chunk. */
+    public static final Site SLIME_CHUNK = CoremodSites.site("slime chunk override", new Class<?>[] {WORLD, CHUNK},
+            "net/minecraft/entity/monster/EntitySlime.func_70601_bi()Z#after:getfield net/minecraft/entity/monster/EntitySlime.field_70170_p Lnet/minecraft/world/World;")
+            .returns(int.class);
+
+    /** EntityLivingBase.travel, after the ground's slipperiness was multiplied by 0.91: the hook answers the value. Values: the value, the entity, the block below. */
+    public static final Site SLIPPERINESS = CoremodSites.site("ground slipperiness", new Class<?>[] {float.class, LIVING, BLOCK},
+            "net/minecraft/entity/EntityLivingBase.func_191986_a(FFF)V#after:fmul").returns(float.class);
+
+    /** InventoryPlayer.dropAllItems, after each non-empty check: a hook answering false keeps the stack. Values: the inventory, the slot, the stack. */
+    public static final Site PLAYER_DROPS = CoremodSites.site("stack dropped from a dead player", new Class<?>[] {INVENTORY_PLAYER, int.class, ITEM_STACK},
+            "net/minecraft/entity/player/InventoryPlayer.func_70436_m()V#after:aload 0").returns(boolean.class);
+
+    /** WorldGenAbstractTree.setDirtAt, after the dirt check: a hook answering true keeps the ground. Values: the block of the ground. */
+    public static final Site TREE_GROUND = CoremodSites.site("ground a tree keeps", new Class<?>[] {BLOCK},
+            "net/minecraft/world/gen/feature/WorldGenAbstractTree.func_175921_a(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;)V#after:if_acmpeq")
+            .returns(boolean.class);
+
+    /**
+     * Block.addCollisionBoxToList, first thing: a hook answering true has added the boxes of the block itself (nothing means no collision). Values: the state,
+     * the world, the position, the box asked about (the block's cell), the list, the entity.
+     */
+    public static final Site COLLISION_BOXES = CoremodSites.site("block collision boxes", new Class<?>[] {BLOCK_STATE, WORLD, BLOCK_POS, BOX, java.util.List.class, ENTITY},
+            "net/minecraft/block/Block.func_185477_a(Lnet/minecraft/block/state/IBlockState;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;"
+                    + "Lnet/minecraft/util/math/AxisAlignedBB;Ljava/util/List;Lnet/minecraft/entity/Entity;Z)V#cancel-after:aload 5").returns(boolean.class);
+
     /** The slot range of one merge call after the hooks of {@code start} and {@code end} had their say. */
     public static int[] mergeRange(Site start, Site end, int from, int to) {
         if (!start.listed() && !end.listed()) return new int[] {from, to};
@@ -331,6 +371,64 @@ public final class CoremodSites1122 {
     /** {@link #BANNER_LAYERS}. */
     public static int bannerLayers(int layers) {
         return BANNER_LAYERS.active() ? ((Number) BANNER_LAYERS.modify(0, layers)).intValue() : layers;
+    }
+
+    /** {@link #STRONG_POWER} / {@link #REDSTONE_POWER}: what a hook says, 0 when none does. */
+    public static int power(Site site, net.minecraft.world.level.Level level, net.minecraft.core.BlockPos pos, net.minecraft.core.Direction side) {
+        if (!site.listed() || !site.active()) return 0;
+        Object answer = site.replace(0, WorldBridge1122.wrap(level), legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos.mcc$of(pos),
+                legacyconnector.v1_12_2.net.minecraft.util.EnumFacing.mcc$of(side));
+        return answer instanceof Number n ? n.intValue() : 0;
+    }
+
+    /** {@link #SLIME_CHUNK}: 0 or 1 when a hook answers, -1 when the game decides. */
+    public static int slimeChunk(net.minecraft.world.level.LevelAccessor level, net.minecraft.core.BlockPos pos) {
+        if (!SLIME_CHUNK.active()) return -1;
+        legacyconnector.v1_12_2.net.minecraft.world.World world = WorldBridge1122.wrap(level);
+        Object answer = SLIME_CHUNK.replace(-1, world, world.getChunk(legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos.mcc$of(pos)));
+        return answer instanceof Number n ? n.intValue() : -1;
+    }
+
+    /** {@link #SLIPPERINESS}: the slipperiness of the ground (the game's value without the 0.91) after the hooks. */
+    public static float slipperiness(net.minecraft.world.entity.LivingEntity entity, net.minecraft.world.level.block.state.BlockState ground, float slipperiness) {
+        if (!SLIPPERINESS.active()) return slipperiness;
+        legacyconnector.v1_12_2.net.minecraft.block.Block block = StatesBridge1122.legacyBlock(ground);
+        if (block == null) return slipperiness;
+        float changed = ((Number) SLIPPERINESS.modify(0, slipperiness * 0.91F, EntityBridge1122.wrap(entity), block)).floatValue();
+        return changed / 0.91F;
+    }
+
+    /** {@link #PLAYER_DROPS}: false when a hook keeps the stack. */
+    public static boolean playerDrops(net.minecraft.world.entity.player.Player player, int slot, net.minecraft.world.item.ItemStack stack) {
+        if (!PLAYER_DROPS.active() || !(EntityBridge1122.wrap(player) instanceof legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer legacy)) return true;
+        return !Boolean.FALSE.equals(PLAYER_DROPS.replace(Boolean.TRUE, legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer.mcc$get$inventory(legacy), slot,
+                Stacks1122.fromModern(stack)));
+    }
+
+    /** {@link #TREE_GROUND}: true when a hook keeps the ground under a tree. */
+    public static boolean treeKeepsGround(net.minecraft.world.level.block.state.BlockState ground) {
+        if (!TREE_GROUND.active()) return false;
+        legacyconnector.v1_12_2.net.minecraft.block.Block block = StatesBridge1122.legacyBlock(ground);
+        return block != null && Boolean.TRUE.equals(TREE_GROUND.replace(Boolean.FALSE, block));
+    }
+
+    /** {@link #COLLISION_BOXES}: the shape a hook gives the block, or null when none does. */
+    public static net.minecraft.world.phys.shapes.VoxelShape collisionShape(net.minecraft.world.level.block.state.BlockState state, net.minecraft.world.level.BlockGetter getter,
+            net.minecraft.core.BlockPos pos, net.minecraft.world.phys.shapes.CollisionContext context) {
+        if (!COLLISION_BOXES.active() || !(getter instanceof net.minecraft.world.level.Level level)) return null;
+        net.minecraft.world.entity.Entity entity = context instanceof net.minecraft.world.phys.shapes.EntityCollisionContext ec ? ec.getEntity() : null;
+        legacyconnector.v1_12_2.net.minecraft.world.World world = WorldBridge1122.wrap(level);
+        java.util.List<legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB> boxes = new java.util.ArrayList<>();
+        legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB cell = new legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB(pos.getX(), pos.getY(),
+                pos.getZ(), pos.getX() + 1.0, pos.getY() + 1.0, pos.getZ() + 1.0);
+        if (!COLLISION_BOXES.cancels(StatesBridge1122.toLegacy(state), world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos.mcc$of(pos), cell, boxes,
+                entity == null ? null : EntityBridge1122.wrap(entity))) return null;
+        net.minecraft.world.phys.shapes.VoxelShape shape = net.minecraft.world.phys.shapes.Shapes.empty();
+        for (legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB box : boxes) {
+            shape = net.minecraft.world.phys.shapes.Shapes.or(shape, net.minecraft.world.phys.shapes.Shapes.create(box.minX - pos.getX(), box.minY - pos.getY(),
+                    box.minZ - pos.getZ(), box.maxX - pos.getX(), box.maxY - pos.getY(), box.maxZ - pos.getZ()));
+        }
+        return shape;
     }
 
     private static final ThreadLocal<Boolean> IN_WORLD_HOOK = new ThreadLocal<>();
