@@ -532,7 +532,7 @@ tasks.register('auditSrgTargetApiBridge1201To1211', JavaExec) {
     inputs.property('targetOfficialTsrg1211Sha256', targetOfficialTsrg1211Sha256)
     inputs.files(targetCompileClasspath)
     inputs.property('targetCompileClasspathOrder', providers.provider {
-        targetCompileClasspath.files.collect { it.absolutePath }.join('\\n')
+        targetCompileClasspath.files.collect { it.absolutePath }.join('\n')
     })
     inputs.file(targetApiClasspathFile)
     outputs.file(srgTargetApiBridgeAuditReport)
