@@ -231,6 +231,14 @@ public final class ItemCallbacks {
         return legacy.onLeftClickEntity(ItemStack.mcc$wrap(stack), player(player), EntityBridge.wrap(target));
     }
 
+    /** Forge's {@code Item.onEntitySwing(entity, stack)}: called when a living entity swings the item (left click in the air, attack, block hit); true cancels the swing. */
+    static boolean entitySwing(Item legacy, net.minecraft.world.item.ItemStack stack, net.minecraft.world.entity.LivingEntity entity) {
+        if (EntityBridge.wrap(entity) instanceof legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase living) {
+            return legacy.onEntitySwing(living, ItemStack.mcc$wrap(stack));
+        }
+        return false;
+    }
+
     /** The client player, if on the client; legacy tooltips take the viewing player. */
     static final class ClientPlayer {
         static EntityPlayer get() {
