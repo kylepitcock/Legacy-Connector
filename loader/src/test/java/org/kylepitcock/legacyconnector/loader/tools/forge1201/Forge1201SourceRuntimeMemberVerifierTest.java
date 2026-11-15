@@ -22,7 +22,7 @@ final class Forge1201SourceRuntimeMemberVerifierTest {
     void inspectsDeclaredInheritedDescriptorChangedAndAbsentMembersFromOrderedJarClasspath() throws Exception {
         Path archive = tempDir.resolve("forge-source-fixture.jar");
         try (JarOutputStream jar = new JarOutputStream(Files.newOutputStream(archive))) {
-            addClass(jar, "net/minecraft/Super", null,
+            addClass(jar, "net/minecraft/Super", "java/lang/Object",
                     new String[][] {{"work", "(I)V"}}, new String[][] {{"health", "I"}});
             addClass(jar, "net/minecraft/Child", "net/minecraft/Super",
                     new String[][] {{"work", "(J)V"}}, new String[][] {});
