@@ -47,6 +47,10 @@ public class LegacyB173Menu extends AbstractContainerMenu {
     private final boolean playerInventoryMenu;
     private final legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity transactionActor;
     public boolean isPlayerInventoryMenu() { return playerInventoryMenu; }
+    /** Server only: the original screen of this menu, kept for a remote client that cannot make it (it then draws the server's). */
+    private Object serverGui;
+    void serverGui(Object gui) { serverGui = gui; }
+    Object serverGui() { return serverGui; }
 
     LegacyB173Menu(int id, ServerPlayer player, ScreenHandler legacy, int handoff) {
         this(id, player, legacy, handoff, null);
@@ -283,6 +287,7 @@ public class LegacyB173Menu extends AbstractContainerMenu {
             view.writeBack();
             if (listener != null) legacy.mcc$removeListener(listener);
             MenusB173.release(handoff);
+            if (player instanceof net.minecraft.server.level.ServerPlayer sp) GuiSessionsB173.closeMenu(sp, containerId);
         }
     }
 

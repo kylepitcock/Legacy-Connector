@@ -9,6 +9,8 @@ public class Session {
     /** The name of the logged-in native user; a dedicated server has none. */
     public static Session mcc$current(){
         String name="Player";
+        // a dedicated server must not touch the client class at all: each attempt is refused and logged (a player's per-tick view made one)
+        if(!net.neoforged.fml.loading.FMLEnvironment.dist.isClient())return new Session(name,"-");
         try{var user=net.minecraft.client.Minecraft.getInstance();if(user!=null&&user.getUser()!=null)name=user.getUser().getName();}
         catch(Throwable unavailable){/* no client */}
         return new Session(name,"-");

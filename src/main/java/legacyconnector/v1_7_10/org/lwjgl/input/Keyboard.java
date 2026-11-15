@@ -14,6 +14,11 @@ public class Keyboard {
         if (down) FORCED.add(key); else FORCED.remove(key);
     }
 
+    /** Whether the test harness holds this key. */
+    public static boolean mcc$forced(int key) {
+        return !FORCED.isEmpty() && FORCED.contains(key);
+    }
+
     public static boolean isKeyDown(int key) {
         if (!FORCED.isEmpty() && FORCED.contains(key)) return true;
         int glfw = KeyCodes.toGlfw(key);

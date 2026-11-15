@@ -397,11 +397,22 @@ public class LegacyB173Block extends net.minecraft.world.level.block.Block imple
     @Override
     public void stepOn(net.minecraft.world.level.Level level, BlockPos pos, BlockState state, net.minecraft.world.entity.Entity entity) {
         super.stepOn(level, pos, state, entity);
-        if (level.isClientSide) return;
+        if (level.isClientSide && !ownPlayer(entity)) return;
         var view=EntityViewsB173.wrap(entity);
         World world=view(level);
-        try(var context=legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$context(world,view)) { call("onEntityWalking", () -> legacy.onSteppedOn(world, pos.getX(), pos.getY(), pos.getZ(), view)); }
-        finally { EntityViewsB173.flush(); }
+        try(var context=legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$context(world,view);var motion=PlayerMotionB173.clientDriven(entity)) {
+            // flushed inside, while the server knows the player's client applies this motion itself
+            try { call("onEntityWalking", () -> legacy.onSteppedOn(world, pos.getX(), pos.getY(), pos.getZ(), view)); }
+            finally { EntityViewsB173.flush(); }
+        }
+    }
+
+    /**
+     * The client's own player: Beta's client ran a block's walking and collision callbacks for its player as that player moved (a conveyor
+     * carries it, a trampoline bounces it), and the server's copy of those callbacks did not push the player.
+     */
+    private static boolean ownPlayer(net.minecraft.world.entity.Entity entity) {
+        return entity instanceof net.minecraft.world.entity.player.Player player && player.isLocalPlayer();
     }
 
     @Override
@@ -412,12 +423,15 @@ public class LegacyB173Block extends net.minecraft.world.level.block.Block imple
                     && !entity.isPassenger() && !entity.isVehicle()
                     && net.neoforged.fml.loading.FMLEnvironment.dist.isClient())
                 call("portalPresentation", () -> org.kylepitcock.legacyconnector.vb1_7_3.client.DimensionClientB173.portalContact(entity,portal.getDimNumber()));
-            return;
+            if (!ownPlayer(entity) || legacy instanceof legacyconnector.vb1_7_3.net.minecraft.block.PortalBlock) return;
         }
         var view=EntityViewsB173.wrap(entity);
         World world=view(level);
-        try(var context=legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$context(world,view)) { call("onEntityCollidedWithBlock", () -> legacy.onEntityCollision(world, pos.getX(), pos.getY(), pos.getZ(), view)); }
-        finally { EntityViewsB173.flush(); }
+        try(var context=legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$context(world,view);var motion=PlayerMotionB173.clientDriven(entity)) {
+            // flushed inside, while the server knows the player's client applies this motion itself
+            try { call("onEntityCollidedWithBlock", () -> legacy.onEntityCollision(world, pos.getX(), pos.getY(), pos.getZ(), view)); }
+            finally { EntityViewsB173.flush(); }
+        }
     }
 
     @Override

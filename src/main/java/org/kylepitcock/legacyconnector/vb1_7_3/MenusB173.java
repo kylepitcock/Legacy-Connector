@@ -144,7 +144,11 @@ public final class MenusB173 {
         int handoff = gui != null && localHost(sp) ? NEXT.incrementAndGet() : 0;
         if (handoff != 0) HANDOFF.put(handoff, gui);
         try {
-            var opened = sp.openMenu(new SimpleMenuProvider((id, inv, pl) -> new LegacyB173Menu(id, sp, container, handoff), Component.empty()),
+            var opened = sp.openMenu(new SimpleMenuProvider((id, inv, pl) -> {
+                        var menu = new LegacyB173Menu(id, sp, container, handoff);
+                        if (handoff == 0) menu.serverGui(gui);
+                        return menu;
+                    }, Component.empty()),
                     buf -> LegacyB173Menu.write(buf, container, gui, handoff));
             trace("menu {} for {} ({} slots), GUI handed over: {}", opened.isPresent() ? opened.getAsInt() : "not opened",
                     container.getClass().getName(), container.slots.size(), handoff != 0);

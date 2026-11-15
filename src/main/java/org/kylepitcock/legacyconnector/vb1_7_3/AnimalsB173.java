@@ -97,7 +97,7 @@ public final class AnimalsB173 {
             String path=r.name().toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9/._-]+","_");if(path.isEmpty())path="entity_"+r.id();
             var id=ResourceLocation.fromNamespaceAndPath(r.mod().modernId,path);if(BuiltInRegistries.ENTITY_TYPE.containsKey(id))continue;
             EntityType<LegacyB173Animal> type=EntityType.Builder.<LegacyB173Animal>of((t,l)->new LegacyB173Animal(t,l,null),category(c)).sized(.6F,1.8F).clientTrackingRange(10).build(id.toString());
-            LegacyRegistrar.register(BuiltInRegistries.ENTITY_TYPE,id,type);Info info=new Info(r,type);BY_CLASS.put(c,info);BY_TYPE.put(type,info);
+            LegacyRegistrar.register(BuiltInRegistries.ENTITY_TYPE,id,type);BridgeB173.entityName(id,r.name());Info info=new Info(r,type);BY_CLASS.put(c,info);BY_TYPE.put(type,info);
             LOG.info("Hosted original Beta animal {} as {} with its original renderer",c.getName(),id);
         }
     }

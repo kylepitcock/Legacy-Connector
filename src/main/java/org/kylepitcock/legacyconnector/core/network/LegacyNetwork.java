@@ -14,7 +14,10 @@ public final class LegacyNetwork {
     private LegacyNetwork() {}
 
     public static void registerReceiver(String version, BiConsumer<LegacyPayload, IPayloadContext> receiver) {
-        RECEIVERS.put(version, receiver);
+        var previous = RECEIVERS.put(version, receiver);
+        // one receiver per family: a second one silently takes over the first one's packets
+        if (previous != null && previous != receiver)
+            LoggerFactory.getLogger("LegacyConnector/network").error("Two receivers registered for legacy payload family {}; the earlier one no longer gets its packets", version);
     }
 
     public static void onRegisterPayloads(RegisterPayloadHandlersEvent event) {

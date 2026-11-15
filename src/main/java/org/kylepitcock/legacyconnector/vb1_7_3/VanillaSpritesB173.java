@@ -7,14 +7,16 @@ import javax.imageio.ImageIO;
 
 /**
  * The few b1.7.3 terrain.png tiles that have no modern block texture to point at, as PNG files of {@code legacyconnector/b173/vanilla_sprites}:
- * the chest (top 25, side 26, front 27, which modern chests keep on entity models) and the animated fluids (205 and 206 water, 237 and 238 lava,
+ * the chest (top 25, side 26, front 27, the large chest's front and back halves 41/42 and 57/58, which modern chests keep on entity models) and the animated fluids (205 and 206 water, 237 and 238 lava,
  * which modern fluids draw as tinted grayscale). Only these tiles are kept; {@code tools/dev/extract_b173_sprites.py} refills the folder from a
  * terrain.png.
  */
 final class VanillaSpritesB173 {
     private static final String DIRECTORY = "/legacyconnector/b173/vanilla_sprites/";
-    private static final Map<Integer, String> FILES = Map.of(25, "chest_top", 26, "chest_side", 27, "chest_front",
-            205, "water_still", 206, "water_flow", 237, "lava_still", 238, "lava_flow");
+    private static final Map<Integer, String> FILES = Map.ofEntries(Map.entry(25, "chest_top"), Map.entry(26, "chest_side"),
+            Map.entry(27, "chest_front"), Map.entry(41, "large_chest_front_left"), Map.entry(42, "large_chest_front_right"),
+            Map.entry(57, "large_chest_back_left"), Map.entry(58, "large_chest_back_right"), Map.entry(205, "water_still"),
+            Map.entry(206, "water_flow"), Map.entry(237, "lava_still"), Map.entry(238, "lava_flow"));
 
     private VanillaSpritesB173() {}
 

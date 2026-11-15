@@ -36,6 +36,7 @@ public final class BridgeB173 {
     public static synchronized void registerAll() {
         ItemEventsB173.install();
         PacketsB173.install();
+        ModStaticsB173.install();
         ArmorMaterialsB173.install();
         int replaced = 0;
         for (Block block : ContentB173.blocks()) {
@@ -251,6 +252,13 @@ public final class BridgeB173 {
             n = name + "_" + i;
         }
         return n;
+    }
+
+    /** An entity type's English name: the mod's {@code entity.<name>.name} translation, else its registered name made readable. */
+    public static void entityName(ResourceLocation id, String legacyName) {
+        if (legacyName == null || legacyName.isEmpty()) return;
+        String key = "entity." + legacyName + ".name", t = ContentB173.translate(key);
+        GeneratedTranslations.put("en_us", "entity." + id.getNamespace() + "." + id.getPath(), t.equals(key) ? readable(legacyName) : t);
     }
 
     private static String readable(String camel) {

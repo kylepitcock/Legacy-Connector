@@ -97,9 +97,9 @@ public final class GL11 {
         if(RendererContextB173.active())RendererContextB173.scale((float)x,(float)y,(float)z);else GuiDrawB173.scale((float) x, (float) y, (float) z);
     }
 
-    public static void glEnable(int cap) {if(cap==3553&&org.kylepitcock.legacyconnector.vb1_7_3.BlockRenderB173.capturing()){legacyconnector.vb1_7_3.net.minecraft.client.render.Tessellator.mcc$textured(true);return;}if(RendererContextB173.active())RendererContextB173.enable(cap,true);else if(cap==3553)GuiDrawB173.texture2d(true);}
+    public static void glEnable(int cap) {if(cap==3553&&org.kylepitcock.legacyconnector.vb1_7_3.BlockRenderB173.capturing()){legacyconnector.vb1_7_3.net.minecraft.client.render.Tessellator.mcc$textured(true);return;}if(RendererContextB173.active())RendererContextB173.enable(cap,true);else if(cap==3553)GuiDrawB173.texture2d(true);else if(cap==2929)GuiDrawB173.depthTest(true);}
 
-    public static void glDisable(int cap) {if(cap==3553&&org.kylepitcock.legacyconnector.vb1_7_3.BlockRenderB173.capturing()){legacyconnector.vb1_7_3.net.minecraft.client.render.Tessellator.mcc$textured(false);return;}if(RendererContextB173.active())RendererContextB173.enable(cap,false);else if(cap==3553)GuiDrawB173.texture2d(false);}
+    public static void glDisable(int cap) {if(cap==3553&&org.kylepitcock.legacyconnector.vb1_7_3.BlockRenderB173.capturing()){legacyconnector.vb1_7_3.net.minecraft.client.render.Tessellator.mcc$textured(false);return;}if(RendererContextB173.active())RendererContextB173.enable(cap,false);else if(cap==3553)GuiDrawB173.texture2d(false);else if(cap==2929)GuiDrawB173.depthTest(false);}
 
     public static void glBlendFunc(int src, int dst) {if(RendererContextB173.active())RendererContextB173.blendFunc(src,dst);}
 

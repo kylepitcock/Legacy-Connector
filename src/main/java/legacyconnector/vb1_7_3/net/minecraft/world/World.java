@@ -799,6 +799,12 @@ public class World implements BlockView {
     private static boolean legacyVisible(net.minecraft.world.entity.Entity entity){
         return !(entity instanceof net.minecraft.world.entity.item.ItemEntity item)||StacksB173.canRepresent(item.getItem());
     }
+    /** Kept apart so the client-only level class is never resolved on a dedicated server. */
+    private static final class ClientEntities {
+        static void add(Level level,List<net.minecraft.world.entity.Entity> out){
+            if(level instanceof net.minecraft.client.multiplayer.ClientLevel client)client.entitiesForRendering().forEach(out::add);
+        }
+    }
     /** Each traversal reflects the level's current representable entities and preserves hosted originals. */
     private List<Object> liveEntities(boolean onlyPlayers) {
         return new java.util.AbstractList<>() {
@@ -807,8 +813,9 @@ public class World implements BlockView {
                 if(onlyPlayers)result.addAll(mcc$level.players());
                 else if(mcc$level instanceof net.minecraft.server.level.ServerLevel server)
                     server.getAllEntities().forEach(result::add);
-                else if(mcc$level instanceof net.minecraft.client.multiplayer.ClientLevel client)
-                    client.entitiesForRendering().forEach(result::add);
+                // the client class is resolved only on a client: a dedicated server refuses (and logs) every attempt
+                else if(mcc$level.isClientSide&&net.neoforged.fml.loading.FMLEnvironment.dist.isClient())
+                    ClientEntities.add(mcc$level,result);
                 result.removeIf(entity->!legacyVisible(entity));
                 return result;
             }

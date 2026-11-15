@@ -106,7 +106,7 @@ public final class MobsB173 {
             EntityType<LegacyB173Cow> type=EntityType.Builder.<LegacyB173Cow>of((t,l)->{
                 try{return new LegacyB173Cow(t,l,null);}catch(RuntimeException|LinkageError e){LOG.error("Cannot construct Beta mob {}",legacy.getName(),e);return null;}
             },SpawnRulesB173.categoryFor(legacy,MobCategory.CREATURE)).sized(.9F,1.4F).clientTrackingRange(10).build(id.toString());
-            LegacyRegistrar.register(BuiltInRegistries.ENTITY_TYPE,id,type);
+            LegacyRegistrar.register(BuiltInRegistries.ENTITY_TYPE,id,type);BridgeB173.entityName(id,registration.name());
             Info info=new Info(registration,type,override(legacy,"interact",legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity.class),override(legacy,"getRandomSound"));
             BY_CLASS.put(legacy,info);BY_TYPE.put(type,info);
             LOG.info("Hosted Beta mob {} as {} (native cow AI/model fallback; original interaction/save and legacy spawn callbacks)",legacy.getName(),id);
