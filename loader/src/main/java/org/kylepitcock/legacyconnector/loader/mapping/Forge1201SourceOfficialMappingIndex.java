@@ -194,7 +194,7 @@ public final class Forge1201SourceOfficialMappingIndex {
         }
 
         ClassCandidate classCandidate = owner.candidates().getFirst();
-        int externalCount = mapped.externalDescriptorTypeCount() + descriptor.externalTypeCount();
+        int externalCount = Math.max(mapped.externalDescriptorTypeCount(), descriptor.externalTypeCount());
         SelectorCandidate candidate = new SelectorCandidate(
                 srgOwner, srgName, srgDescriptor,
                 mapped.obfuscatedOwner(), mapped.obfuscatedName(), mapped.obfuscatedDescriptor(),
@@ -501,6 +501,9 @@ public final class Forge1201SourceOfficialMappingIndex {
                         type.replace('.', '/'), List.of()));
                 if (mapped.size() > 1) {
                     throw new IOException("Ambiguous Mojang official class in member descriptor: " + type);
+                }
+                if (mapped.isEmpty() && type.startsWith("net.minecraft.")) {
+                    throw new IOException("Unmapped Minecraft type in Mojang member descriptor: " + type);
                 }
                 String internalName = mapped.isEmpty() ? type.replace('.', '/') : mapped.getFirst();
                 if (!validInternalName(internalName)) {
