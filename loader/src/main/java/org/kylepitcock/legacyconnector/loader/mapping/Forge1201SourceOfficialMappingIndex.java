@@ -492,6 +492,12 @@ public final class Forge1201SourceOfficialMappingIndex {
             for (String line; (line = reader.readLine()) != null;) {
                 lineNumber++;
                 if (line.isBlank() || line.startsWith("#")) continue;
+                int indentation = 0;
+                while (indentation < line.length() && Character.isWhitespace(line.charAt(indentation))) {
+                    indentation++;
+                }
+                // ProGuard parameter/local-variable rows are indented more deeply than class members.
+                if (indentation > 4) continue;
 
                 Matcher matcher = CLASS.matcher(line);
                 if (matcher.matches()) {
