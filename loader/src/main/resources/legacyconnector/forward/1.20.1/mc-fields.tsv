@@ -373,3 +373,4 @@ net/minecraft/advancements/critereon/NbtPredicate	ANY	Lnet/minecraft/advancement
 net/minecraft/advancements/critereon/StatePropertiesPredicate	ANY	Lnet/minecraft/advancements/critereon/StatePropertiesPredicate;	-	none	PredicateCompat.stateAny
 net/minecraft/advancements/critereon/EnchantmentPredicate	NONE	[Lnet/minecraft/advancements/critereon/EnchantmentPredicate;	-	none	PredicateCompat.enchantmentNone
 cpw/mods/modlauncher/api/IEnvironment$Keys	NAMING	Ljava/util/function/Supplier;	-	none	RoundCompat.launcherNamingKey
+net/minecraft/nbt/NbtAccounter	UNLIMITED	Lnet/minecraft/nbt/NbtAccounter;	-	none	Round4Compat.unlimitedAccounter

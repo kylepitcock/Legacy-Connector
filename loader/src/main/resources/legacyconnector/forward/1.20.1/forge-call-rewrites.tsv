@@ -142,3 +142,4 @@ net/neoforged/neoforge/event/EventHooks.fireSleepingTimeCheck(Lnet/minecraft/wor
 net/neoforged/neoforge/event/EventHooks.onPlayerSleepInBed(Lnet/minecraft/world/entity/player/Player;Ljava/util/Optional;)Lnet/minecraft/world/entity/player/Player$BedSleepingProblem;	Tail.onPlayerSleepInBed
 net/neoforged/neoforge/event/EventHooks.fireBlockGrowFeature(Lnet/minecraft/world/level/LevelAccessor;Lnet/minecraft/util/RandomSource;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Holder;)Llegacyconnector/v1_20_1/net/minecraftforge/event/level/SaplingGrowTreeEvent;	Tail.fireBlockGrowFeature
 net/neoforged/fml/ModList.getModContainerByObject(Ljava/lang/Object;)Ljava/util/Optional;	Tail.modContainerByObject
+net/neoforged/fml/loading/FMLLoader.getLaunchHandler()Lnet/neoforged/fml/loading/targets/CommonLaunchHandler;	launchHandler

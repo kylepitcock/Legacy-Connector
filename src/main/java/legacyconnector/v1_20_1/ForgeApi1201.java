@@ -769,4 +769,15 @@ public final class ForgeApi1201 {
     }
 
 
+
+    /** {@code FMLLoader.getLaunchHandler()}: FML 4 keeps the handler in a private field ({@code isData()}, {@code isProduction()} and {@code getDist()} are public on it). */
+    public static net.neoforged.fml.loading.targets.CommonLaunchHandler launchHandler() {
+        try {
+            java.lang.reflect.Field f = net.neoforged.fml.loading.FMLLoader.class.getDeclaredField("commonLaunchHandler");
+            f.setAccessible(true);
+            return (net.neoforged.fml.loading.targets.CommonLaunchHandler) f.get(null);
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return null;
+        }
+    }
 }

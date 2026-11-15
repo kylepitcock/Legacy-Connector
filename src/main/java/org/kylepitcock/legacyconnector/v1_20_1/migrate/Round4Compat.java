@@ -174,4 +174,35 @@ public final class Round4Compat {
             }
         }
     }
+
+    // ------------------------------------------------------------------ items and containers
+
+    /** {@code item.appendHoverText(stack, level, lines, flag)}: 1.21.1 takes a tooltip context (the level is all a 1.20.1 caller can give). */
+    public static void itemAppendHoverText(net.minecraft.world.item.Item item, ItemStack stack, Level level, java.util.List<net.minecraft.network.chat.Component> lines,
+                                           net.minecraft.world.item.TooltipFlag flag) {
+        item.appendHoverText(stack, level == null ? net.minecraft.world.item.Item.TooltipContext.EMPTY : net.minecraft.world.item.Item.TooltipContext.of(level), lines, flag);
+    }
+
+    /** {@code ItemUtils.onContainerDestroyed(entity, stacks)}: takes the stacks as an iterable now. */
+    public static Iterable<ItemStack> iterable(java.util.stream.Stream<ItemStack> stacks) {
+        return stacks::iterator;
+    }
+
+    /** {@code NbtAccounter.UNLIMITED}. */
+    public static NbtAccounter unlimitedAccounter() {
+        return NbtAccounter.unlimitedHeap();
+    }
+
+    /** {@code BundleItem.getContentWeight(stack)}: the bundle's fill in 64ths (1.21.1 keeps it as a fraction of one). */
+    public static int bundleContentWeight(ItemStack stack) {
+        var contents = stack.get(DataComponents.BUNDLE_CONTENTS);
+        return contents == null ? 0 : (int) Math.floor(contents.weight().doubleValue() * 64.0);
+    }
+
+    /** {@code BundleItem.getWeight(stack)}: the weight of one stack in 64ths; a filled bundle counts 4 plus its content. */
+    public static int bundleItemWeight(ItemStack stack) {
+        var contents = stack.get(DataComponents.BUNDLE_CONTENTS);
+        if (contents != null) return 4 + bundleContentWeight(stack);
+        return 64 / stack.getMaxStackSize();
+    }
 }
