@@ -750,3 +750,20 @@ Next implementation stages remain:
 1. Reuse the existing owner-qualified SRG→official-obfuscated mapping index and exact pinned Mojang 1.20.1 client mappings to produce source official Mojmap owner/member/full-descriptor identities. The global generated `srg-mojang.tsv` remains insufficient as a runtime verification key because it discards owner and descriptor.
 2. Reuse/refactor the existing ASM classfile parser and hierarchy lookup so the source runtime is inspected explicitly (never the target classpath), retaining direct declaration, descriptor-changed, absent, ambiguous, and incomplete-hierarchy states.
 3. Add fixtures for the piston helpers and exact source runtime report before integrating the new source dimension into the combined cross-version audit.
+
+### 20.9 Exact Forge 47.3.0 piston resolver call-site evidence — 2026-11-16
+
+The user then inspected the same class's bytecode with `javap -p -c`, filtered for `isStickyBlock` and `canStickTo`. The output shows repeated direct invokevirtual instructions against `net/minecraft/world/level/block/state/BlockState`:
+
+- `BlockState.isStickyBlock:()Z` appears at bytecode offsets 143, 93, and 343 across resolver paths.
+- `BlockState.canStickTo:(Lnet/minecraft/world/level/block/state/BlockState;)Z` appears at offsets 137 and 146 in one reciprocal adjacency check and 70 and 79 in another reciprocal branch check.
+
+In both reciprocal checks, the bytecode invokes `canStickTo` once on each state against the other state. The resolver therefore uses the state-level instance methods as its sticky-block and adjacency behavior. The filtered output contains no calls to the old `PistonStructureResolver.isSticky` or `PistonStructureResolver.canStickToEachOther` helpers.
+
+Together with section 20.8's complete declared-member listing, this gives two complementary forms of exact compiled Forge 47.3.0 evidence:
+1. The old private helper declarations are absent from the patched resolver.
+2. The resolver's compiled call sites use `BlockState.isStickyBlock()` and `BlockState.canStickTo(BlockState)` instead.
+
+This is a source-runtime classification for these two specific helper rows only. It does not yet establish whether the replacement `BlockState` methods have matching names/descriptors/semantics in NeoForge 1.21.1, and it does not generalize to other missing mapping rows.
+
+Next action: proceed to the owner-, member-, and full-descriptor-aware source SRG→Mojmap index and read-only source classfile verifier. Keep the pinned Forge source classpath as the only classfile source for that verifier. Do not introduce selector rewriting or a runtime mapping table.
