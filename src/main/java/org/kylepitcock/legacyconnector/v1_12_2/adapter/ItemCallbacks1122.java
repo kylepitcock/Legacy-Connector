@@ -40,6 +40,7 @@ final class ItemCallbacks1122 {
     final boolean useDuration;
     final boolean useAction;
     final boolean hit;
+    final boolean swing;
     final boolean destroyed;
     final boolean destroySpeed;
     final boolean interact;
@@ -72,6 +73,7 @@ final class ItemCallbacks1122 {
         useDuration = o("getMaxItemUseDuration", S);
         useAction = o("getItemUseAction", S);
         hit = o("hitEntity", S, L, L);
+        swing = o("onEntitySwing", L, S);
         destroyed = o("onBlockDestroyed", S, W, IBlockState.class, B, L);
         destroySpeed = o("getDestroySpeed", S, IBlockState.class);
         interact = o("itemInteractionForEntity", S, P, L, H);
@@ -284,6 +286,18 @@ final class ItemCallbacks1122 {
             return a == null ? fallback : a.mcc$modern();
         } catch (RuntimeException | LinkageError e) {
             return fallback;
+        }
+    }
+
+    /** Forge's {@code Item.onEntitySwing(entity, stack)}: a living entity swings the item (left click in the air, attack); true cancels the swing. */
+    boolean entitySwing(net.minecraft.world.item.ItemStack stack, LivingEntity entity) {
+        try {
+            return legacy.onEntitySwing(living(entity), Stacks1122.view(stack));
+        } catch (RuntimeException | LinkageError e) {
+            failure("onEntitySwing", e);
+            return false;
+        } finally {
+            Stacks1122.flushViews();
         }
     }
 
