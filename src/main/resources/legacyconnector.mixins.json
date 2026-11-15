@@ -122,6 +122,7 @@
     "MouseTurnHookMixin",
     "PlayerBlockReachHookMixin",
     "ScreenEffectOverlayHookMixin",
+    "LivingRenderPoseHookMixin1710",
     "EntityFlameHookMixin",
     "ShoulderParrotTextureHookMixin",
     "ParrotTextureHookMixin",

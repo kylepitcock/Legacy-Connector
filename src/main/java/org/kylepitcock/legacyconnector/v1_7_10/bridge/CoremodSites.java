@@ -487,6 +487,20 @@ public final class CoremodSites {
         public static final Site SCREEN_OVERLAYS = site("screen overlays (start)", new Class<?>[] {float.class},
                 "net/minecraft/client/renderer/ItemRenderer.func_78447_b(F)V#after:sipush 3008");
 
+        private static final String RLE = "net/minecraft/client/renderer/entity/RendererLivingEntity.func_76986_a(Lnet/minecraft/entity/EntityLivingBase;DDDFF)V";
+        /** RendererLivingEntity.doRender: the limb swing (distance walked) the model is posed with. Values: swing, entity. */
+        public static final Site LIMB_SWING_RENDER = site("rendered limb swing", new Class<?>[] {float.class, LIVING}, RLE + "#after:fsub").returns(float.class);
+        /** RendererLivingEntity.doRender: the limb swing amount (speed) the model is posed with. Values: amount, entity. */
+        public static final Site LIMB_AMOUNT_RENDER = site("rendered limb swing amount", new Class<?>[] {float.class, LIVING}, RLE + "#after:fadd").returns(float.class);
+        /** RenderPlayer.rotateCorpse, last thing: legacy GL rotations of the player model. Values: player, partial tick. */
+        public static final Site ROTATE_CORPSE = site("player model rotations", new Class<?>[] {PLAYER, float.class},
+                "net/minecraft/client/renderer/entity/RenderPlayer.func_77043_a(Lnet/minecraft/client/entity/AbstractClientPlayer;FFF)V#tail");
+
+        /** {@link #LIMB_SWING_RENDER} and {@link #LIMB_AMOUNT_RENDER}. */
+        public static float limb(Site site, net.minecraft.world.entity.LivingEntity entity, float value) {
+            return site.active() ? ((Number) site.modify(0, value, EntityBridge.wrap(entity))).floatValue() : value;
+        }
+
         /** {@link #MOUSE_OVERRIDE}. */
         public static boolean mouseOverride() {
             return MOUSE_OVERRIDE.active() && MOUSE_OVERRIDE.cancels();
