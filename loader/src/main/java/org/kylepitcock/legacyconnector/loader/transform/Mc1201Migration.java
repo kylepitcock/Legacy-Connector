@@ -55,6 +55,9 @@ final class Mc1201Migration {
         int widgetNarrationOverrides;
         /** Classes (names in this jar) generated as the 1.20.1-shaped {@code ItemPredicate} base of the jar's subclasses of it. */
         final java.util.Set<String> itemPredicateStandIns = new java.util.TreeSet<>();
+        /** The class being migrated and the static methods generated for method handles whose call rule rewrites the call in place (see redirectHandles). */
+        ClassNode current;
+        final java.util.List<MethodNode> trampolines = new java.util.ArrayList<>();
 
         int total() {
             return calls + constructors + fields + bridges + providerCalls + selectionListPositionCalls
@@ -98,10 +101,19 @@ final class Mc1201Migration {
         swapItemPredicateSuper(node, c);
         renameBusConstant(node);
         dropEmptySubscriber(node);
+        c.current = node;
         for (MethodNode m : node.methods) {
             if (m.instructions == null || m.instructions.size() == 0) continue;
             rewriteBody(m, h, t, c);
         }
+        // a method reference that needs an in-place call rule (BucketItem::new) points at a generated static method now; its body is rewritten like any other
+        for (int i = 0; i < c.trampolines.size(); i++) {
+            MethodNode tramp = c.trampolines.get(i);
+            node.methods.add(tramp);
+            rewriteBody(tramp, h, t, c);
+        }
+        c.trampolines.clear();
+        c.current = null;
         if ((node.access & Opcodes.ACC_INTERFACE) == 0) {
             addBridges(node, h, t, c);
             addRecipeSerializerCodecs(node, c);
@@ -506,7 +518,13 @@ final class Mc1201Migration {
                 }
                 continue;
             }
-            if (rule.helper().startsWith("=")) continue;
+            if (rule.helper().startsWith("=")) {
+                if (c.current != null && !(tag != Opcodes.H_INVOKESTATIC && !ctor && h.declaredIn(hd.getOwner(), hd.getName(), hd.getDesc()) == Origin.MOD)) {
+                    d.bsmArgs[i] = trampoline(c, hd, tag);
+                    c.calls++;
+                }
+                continue;
+            }
             if (!ctor && tag != Opcodes.H_INVOKESTATIC && h.declaredIn(hd.getOwner(), hd.getName(), hd.getDesc()) == Origin.MOD) continue;
             String desc = rule.helperDesc();
             if (desc == null) {
@@ -519,6 +537,43 @@ final class Mc1201Migration {
             d.bsmArgs[i] = new org.objectweb.asm.Handle(Opcodes.H_INVOKESTATIC, rule.helper(), rule.helperName(), desc, false);
             c.calls++;
         }
+    }
+
+    /**
+     * A handle whose call the tables rewrite in place (a {@code =args} constructor row: {@code BucketItem::new}) cannot name a helper: the handle goes to a
+     * generated static method of the class that makes the call the handle stood for, and the normal rewrite then changes that call.
+     */
+    private static org.objectweb.asm.Handle trampoline(Counts c, org.objectweb.asm.Handle hd, int tag) {
+        ClassNode node = c.current;
+        Type[] args = Type.getArgumentTypes(hd.getDesc());
+        Type ret = Type.getReturnType(hd.getDesc());
+        boolean ctor = tag == Opcodes.H_NEWINVOKESPECIAL;
+        boolean isStatic = tag == Opcodes.H_INVOKESTATIC;
+        StringBuilder desc = new StringBuilder("(");
+        if (!ctor && !isStatic) desc.append('L').append(hd.getOwner()).append(';');
+        for (Type a : args) desc.append(a.getDescriptor());
+        desc.append(')').append(ctor ? "L" + hd.getOwner() + ";" : ret.getDescriptor());
+        String name = "lambda$mcc1201$" + (node.methods.size() + c.trampolines.size());
+        MethodNode m = new MethodNode(Opcodes.ACC_PRIVATE | Opcodes.ACC_STATIC | Opcodes.ACC_SYNTHETIC, name, desc.toString(), null, null);
+        org.objectweb.asm.tree.InsnList il = m.instructions;
+        int slot = 0;
+        if (ctor) {
+            il.add(new org.objectweb.asm.tree.TypeInsnNode(Opcodes.NEW, hd.getOwner()));
+            il.add(new org.objectweb.asm.tree.InsnNode(Opcodes.DUP));
+        } else if (!isStatic) {
+            il.add(new org.objectweb.asm.tree.VarInsnNode(Opcodes.ALOAD, slot++));
+        }
+        for (Type a : args) {
+            il.add(new org.objectweb.asm.tree.VarInsnNode(a.getOpcode(Opcodes.ILOAD), slot));
+            slot += a.getSize();
+        }
+        int op = ctor ? Opcodes.INVOKESPECIAL : isStatic ? Opcodes.INVOKESTATIC : tag == Opcodes.H_INVOKEINTERFACE ? Opcodes.INVOKEINTERFACE : tag == Opcodes.H_INVOKESPECIAL ? Opcodes.INVOKESPECIAL : Opcodes.INVOKEVIRTUAL;
+        il.add(new MethodInsnNode(op, hd.getOwner(), hd.getName(), hd.getDesc(), hd.isInterface()));
+        il.add(new org.objectweb.asm.tree.InsnNode(ctor ? Opcodes.ARETURN : ret.getOpcode(Opcodes.IRETURN)));
+        m.maxStack = slot + 3;
+        m.maxLocals = slot;
+        c.trampolines.add(m);
+        return new org.objectweb.asm.Handle(Opcodes.H_INVOKESTATIC, node.name, name, desc.toString(), (node.access & Opcodes.ACC_INTERFACE) != 0);
     }
 
     /** The first rule found at the receiver type or one of its Minecraft ancestors, if no mod class declares the method. */

@@ -107,3 +107,7 @@ net/neoforged/neoforge/client/model/pipeline/QuadBakingVertexConsumer	org/kylepi
 net/neoforged/neoforge/client/model/pipeline/QuadBakingVertexConsumer$Buffered	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyQuadBakingVertexConsumer$Buffered
 net/minecraft/world/entity/ai/goal/MeleeAttackGoal	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyMeleeAttackGoal
 net/neoforged/fml/OptionalMod	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyOptionalMod
+net/minecraft/world/level/storage/loot/functions/CopyNbtFunction	net/minecraft/world/level/storage/loot/functions/CopyCustomDataFunction
+net/minecraft/world/level/storage/loot/functions/CopyNbtFunction$Builder	net/minecraft/world/level/storage/loot/functions/CopyCustomDataFunction$Builder
+net/minecraft/world/level/storage/loot/functions/CopyNbtFunction$CopyOperation	net/minecraft/world/level/storage/loot/functions/CopyCustomDataFunction$CopyOperation
+net/minecraft/world/level/storage/loot/functions/CopyNbtFunction$MergeStrategy	net/minecraft/world/level/storage/loot/functions/CopyCustomDataFunction$MergeStrategy
