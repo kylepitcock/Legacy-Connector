@@ -187,6 +187,33 @@ if (typeof cm5done === 'undefined') {
         fp.setItemSlot(Slot.FEET, new (Java.type('net.minecraft.world.item.ItemStack'))(Java.type('net.minecraft.world.item.Items').AIR, 0));
         return 'water shape empty without boots=' + bare + ' with water walking boots=' + shod;
     });
+    step5('beacon effects', function () {
+        var Holder = Java.type('net.minecraft.core.Holder');
+        var ME = Java.type('net.minecraft.world.effect.MobEffects');
+        var ET = Java.type('net.minecraft.world.entity.EntityType');
+        var wolf = ET.WOLF.create(lvl5);
+        wolf.setTame(true, true);
+        wolf.setPos(8.5, 100, 8.5);
+        lvl5.addFreshEntity(wolf);
+        var m = Java.type('net.minecraft.world.level.block.entity.BeaconBlockEntity').class.getDeclaredMethod('applyEffects', Java.type('net.minecraft.world.level.Level').class,
+            BP5.class, Java.type('int').class, Holder.class, Holder.class);
+        m.setAccessible(true);
+        m.invoke(null, lvl5, new BP5(8, 98, 8), 4, ME.REGENERATION, null);
+        var r = 'tamed wolf has regeneration=' + wolf.hasEffect(ME.REGENERATION);
+        try {
+            var wl = Java.type('org.kylepitcock.legacyconnector.v1_12_2.bridge.EntityBridge1122').wrap(wolf);
+            var W = Java.type('org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldBridge1122').wrap(lvl5);
+            var T = Java.type('legacyconnector.v1_12_2.net.minecraft.entity.passive.EntityTameable');
+            var AB = Java.type('legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB');
+            r += ' [view ' + wl.getClass().getName() + ' tamed=' + wl.isTamed() + ' found=' + W.getEntitiesWithinAABB(T.class, new AB(0, 0, 0, 200, 300, 200)).size() + ']';
+        } catch (e) { r += ' [diag threw ' + e + ']'; }
+        wolf.discard();
+        return r;
+    });
+    step5('stack component', function () {
+        var c = ItemStackOf(Java.type('net.minecraft.world.item.Items').STICK).getDisplayName();
+        return 'component=' + c.getString() + ' siblings=' + c.getSiblings().size();
+    });
     cm5at = tick;
     for (var j5 = 0; j5 < out5.length; j5++) log.info('CM5 ' + out5[j5]);
 }
