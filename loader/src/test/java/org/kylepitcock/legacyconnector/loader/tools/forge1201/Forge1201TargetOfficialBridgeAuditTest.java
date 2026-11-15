@@ -211,7 +211,7 @@ final class Forge1201TargetOfficialBridgeAuditTest {
     }
 
     private static byte[] classWithMethod(String owner, String method, String descriptor) {
-        ClassWriter writer = new ClassWriter(0);
+        ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS);
         writer.visit(Opcodes.V17, Opcodes.ACC_PUBLIC, owner, null, "java/lang/Object", null);
         var methodWriter = writer.visitMethod(Opcodes.ACC_PUBLIC, method, descriptor, null, null);
         methodWriter.visitCode();
