@@ -138,7 +138,7 @@ public final class Forge1201SourceRuntimeMemberVerifier {
                     mappings.resolveField(srgOwner, srgName);
             if (resolution.status() != Forge1201SourceOfficialMappingIndex.Status.MAPPED_EXACT
                     && resolution.status() != Forge1201SourceOfficialMappingIndex.Status.MAPPED_WITH_EXTERNAL_TYPES) {
-                return new SelectorVerification(resolution.status(), List.of());
+                return new SelectorVerification(resolution.status(), resolution.candidates(), List.of());
             }
             List<MemberResult> results = new ArrayList<>();
             for (Forge1201SourceOfficialMappingIndex.SelectorCandidate candidate : resolution.candidates()) {
