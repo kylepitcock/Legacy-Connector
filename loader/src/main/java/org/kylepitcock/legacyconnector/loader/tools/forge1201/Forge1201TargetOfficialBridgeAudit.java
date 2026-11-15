@@ -12,11 +12,10 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.TreeMap;
-import java.util.zip.ZipFile;
 
 import org.kylepitcock.legacyconnector.loader.mapping.Forge1201SrgIntermediaryBridgeResolver;
+import org.kylepitcock.legacyconnector.loader.mapping.Forge1201SrgObfuscatedBridgeAudit;
 import org.kylepitcock.legacyconnector.loader.mapping.Forge1201TargetOfficialMappingIndex;
 
 /**
@@ -290,24 +289,38 @@ public final class Forge1201TargetOfficialBridgeAudit {
         return new MemberAudit(srgOwner, srgName, srgDescriptor, upstream.status().name(), status, candidates);
     }
 
-    private static Forge1201TargetApiVerifier.MemberLookup lookupMethod(
-            Forge1201TargetApiVerifier.TargetIndex targetApi,
-            String owner, String name, String descriptor) throws IOException {
-        if (targetApi.classInfo(owner).isEmpty()) {
-            return new Forge1201TargetApiVerifier.MemberLookup(
-                    Forge1201TargetApiVerifier.LookupStatus.MISSING, List.of());
+    private record ApiLookup(String status, List<String> hierarchyVisited) {
+        private ApiLookup {
+            hierarchyVisited = List.copyOf(hierarchyVisited);
         }
-        return targetApi.lookupMethod(owner, name, descriptor);
     }
 
-    private static Forge1201TargetApiVerifier.MemberLookup lookupField(
+    private static ApiLookup lookupMethod(
             Forge1201TargetApiVerifier.TargetIndex targetApi,
             String owner, String name, String descriptor) throws IOException {
         if (targetApi.classInfo(owner).isEmpty()) {
-            return new Forge1201TargetApiVerifier.MemberLookup(
-                    Forge1201TargetApiVerifier.LookupStatus.MISSING, List.of());
+            return new ApiLookup("TARGET_COMPILE_CLASS_MISSING", List.of());
         }
-        return targetApi.lookupField(owner, name, descriptor);
+        var lookup = targetApi.lookupMethod(owner, name, descriptor);
+        return new ApiLookup(switch (lookup.status()) {
+            case FOUND -> "TARGET_API_MEMBER_FOUND_EXACT";
+            case MISSING -> "TARGET_API_MEMBER_MISSING";
+            case INCOMPLETE_HIERARCHY -> "TARGET_API_HIERARCHY_INCOMPLETE";
+        }, lookup.hierarchyVisited());
+    }
+
+    private static ApiLookup lookupField(
+            Forge1201TargetApiVerifier.TargetIndex targetApi,
+            String owner, String name, String descriptor) throws IOException {
+        if (targetApi.classInfo(owner).isEmpty()) {
+            return new ApiLookup("TARGET_COMPILE_CLASS_MISSING", List.of());
+        }
+        var lookup = targetApi.lookupField(owner, name, descriptor);
+        return new ApiLookup(switch (lookup.status()) {
+            case FOUND -> "TARGET_API_MEMBER_FOUND_EXACT";
+            case MISSING -> "TARGET_API_MEMBER_MISSING";
+            case INCOMPLETE_HIERARCHY -> "TARGET_API_HIERARCHY_INCOMPLETE";
+        }, lookup.hierarchyVisited());
     }
 
     private static boolean isUpstreamMapped(
@@ -322,7 +335,7 @@ public final class Forge1201TargetOfficialBridgeAudit {
     }
 
     private static boolean isTargetApiFound(String status) {
-        return Forge1201TargetApiVerifier.LookupStatus.FOUND.name().equals(status);
+        return status != null && status.startsWith("TARGET_API_MEMBER_FOUND");
     }
 
     private static Map<String, Integer> countClasses(List<ClassAudit> values) {
