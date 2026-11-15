@@ -1122,6 +1122,14 @@ final class PalladiumResourceCompat1201 {
      * trail with the modern block_state form and keep valid falling-dust/item fallbacks.
      */
     private static int rewriteAlienEvoBlockParticleOptions(Map<String, byte[]> resources) {
+        byte[] original = resources.get(ALIEN_EVO_BLOCK_PARTICLES);
+        if (original == null) return 0;
+
+        String script = new String(original, StandardCharsets.UTF_8);
+        String lineEnding = script.contains("\r\n") ? "\r\n" : "\n";
+        // The shipped AlienEvo 1.1.3 script uses Windows CRLF. Match normalized
+        // text so the migration works regardless of the archive's line endings.
+        String normalized = script.replace("\r\n", "\n");
         String legacy = String.join("\n",
                 "                    let formats = [",
                 "                        \"minecraft:block \" + block.id,        // Standard format",
@@ -1139,7 +1147,22 @@ final class PalladiumResourceCompat1201 {
                 "                        `minecraft:item{item:${blockState}}`",
                 "                    ];",
                 "");
-        return rewrite(resources, ALIEN_EVO_BLOCK_PARTICLES, new String[][] {{legacy, migrated, "1"}});
+
+        int legacyCount = occurrences(normalized, legacy);
+        int migratedCount = occurrences(normalized, migrated);
+        if (legacyCount == 0 && migratedCount == 1) return 0;
+        if (legacyCount != 1 || migratedCount != 0) {
+            throw new IllegalStateException(
+                    "AlienEvo resource " + ALIEN_EVO_BLOCK_PARTICLES
+                            + " has an unexpected Cannonbolt block-particle rewrite shape: expected "
+                            + "1 legacy occurrence, found " + legacyCount + " legacy and "
+                            + migratedCount + " migrated");
+        }
+
+        String rewritten = normalized.replace(legacy, migrated);
+        resources.put(ALIEN_EVO_BLOCK_PARTICLES,
+                rewritten.replace("\n", lineEnding).getBytes(StandardCharsets.UTF_8));
+        return 1;
     }
 
     /**

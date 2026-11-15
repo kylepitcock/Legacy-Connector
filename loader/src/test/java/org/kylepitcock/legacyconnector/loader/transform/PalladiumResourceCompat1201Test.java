@@ -289,9 +289,8 @@ class PalladiumResourceCompat1201Test {
     }
 
     @Test
-    void migratesCanonboltBlockParticleArgumentsToThe121FormatAndIsIdempotent() {
-        Map<String, byte[]> resources = new HashMap<>();
-        String legacy = String.join("\n",
+    void migratesCanonboltBlockParticleArgumentsForLfAndCrLfAndIsIdempotent() {
+        String legacyLf = String.join("\n",
                 "                    let formats = [",
                 "                        \"minecraft:block \" + block.id,        // Standard format",
                 "                        \"block \" + block.id,                  // Alternative format",
@@ -300,20 +299,29 @@ class PalladiumResourceCompat1201Test {
                 "                        \"minecraft:item \" + block.id          // Item particle format",
                 "                    ];",
                 "");
-        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_BLOCK_PARTICLES, legacy);
 
-        assertEquals(1, PalladiumResourceCompat1201.apply(resources));
-        String migrated = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_BLOCK_PARTICLES);
-        assertTrue(migrated.contains("JSON.stringify(String(block.id))"));
-        assertTrue(migrated.contains("`minecraft:block{block_state:${blockState}}`"));
-        assertTrue(migrated.contains("`minecraft:falling_dust{block_state:${blockState}}`"));
-        assertTrue(migrated.contains("`minecraft:item{item:${blockState}}`"));
-        assertFalse(migrated.contains("block.id +"));
+        for (String lineEnding : new String[] {"\n", "\r\n"}) {
+            Map<String, byte[]> resources = new HashMap<>();
+            put(resources, PalladiumResourceCompat1201.ALIEN_EVO_BLOCK_PARTICLES,
+                    legacyLf.replace("\n", lineEnding));
 
-        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
-        assertEquals(migrated, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_BLOCK_PARTICLES));
+            assertEquals(1, PalladiumResourceCompat1201.apply(resources), "line ending: " + (lineEnding.equals("\r\n") ? "CRLF" : "LF"));
+            String migrated = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_BLOCK_PARTICLES);
+            String normalized = migrated.replace("\r\n", "\n");
+            assertTrue(normalized.contains("JSON.stringify(String(block.id))"));
+            assertTrue(normalized.contains("`minecraft:block{block_state:${blockState}}`"));
+            assertTrue(normalized.contains("`minecraft:falling_dust{block_state:${blockState}}`"));
+            assertTrue(normalized.contains("`minecraft:item{item:${blockState}}`"));
+            assertFalse(normalized.contains("block.id +"));
+            if ("\r\n".equals(lineEnding)) {
+                assertFalse(migrated.replace("\r\n", "").contains("\n"),
+                        "the migrated CRLF script should not contain bare LF characters");
+            }
+
+            assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+            assertEquals(migrated, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_BLOCK_PARTICLES));
+        }
     }
-
     @Test
     void normalizesQuickChangePlaylistAndSlotNbtToExplicitIntegerMethods() {
         Map<String, byte[]> resources = new HashMap<>();
