@@ -23,7 +23,7 @@ final class Forge1201SourceRuntimeMemberVerifierTest {
         Path archive = tempDir.resolve("forge-source-fixture.jar");
         try (JarOutputStream jar = new JarOutputStream(Files.newOutputStream(archive))) {
             addClass(jar, "net/minecraft/Super", "java/lang/Object",
-                    new String[][] {{"work", "(I)V"}}, new String[][] {{"health", "I"}});
+                    new String[][] {{"<init>", "()V"}, {"work", "(I)V"}}, new String[][] {{"health", "I"}});
             addClass(jar, "net/minecraft/Child", "net/minecraft/Super",
                     new String[][] {{"work", "(J)V"}}, new String[][] {});
         }
@@ -59,6 +59,11 @@ final class Forge1201SourceRuntimeMemberVerifierTest {
         assertEquals(
                 Forge1201SourceRuntimeMemberVerifier.Status.SOURCE_RUNTIME_MEMBER_ABSENT,
                 absent.status());
+
+        var constructor = index.inspectMethod("net/minecraft/Child", "<init>", "()V");
+        assertEquals(
+                Forge1201SourceRuntimeMemberVerifier.Status.SOURCE_RUNTIME_MEMBER_ABSENT,
+                constructor.status());
 
         var field = index.inspectField("net/minecraft/Child", "health", "I");
         assertEquals(
