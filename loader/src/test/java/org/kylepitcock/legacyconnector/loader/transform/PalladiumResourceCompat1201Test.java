@@ -478,6 +478,100 @@ class PalladiumResourceCompat1201Test {
     }
 
     @Test
+    void readsOmnitrixPalettePacketAsCompoundTagEntries() {
+        Map<String, byte[]> resources = new HashMap<>();
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_SERVER_STUFF, String.join("\n",
+                "NetworkEvents.dataReceived('saveBeamColorData', event => {",
+                "    let player = event.player;",
+                "    let data = event.data;",
+                "    let colorValue = data.value;",
+                "});",
+                "NetworkEvents.dataReceived('saveEnergyColorData', event => {",
+                "    let player = event.player;",
+                "    let data = event.data;",
+                "    let energyColor = data.value;",
+                "});",
+                "NetworkEvents.dataReceived('savePaletteData', event => {",
+                "    let player = event.entity;",
+                "    let propertiesToSave = event.data;",
+                "    for (let propertyName in propertiesToSave) {",
+                "        palladium.setProperty(player, propertyName, propertiesToSave[propertyName]);",
+                "    }",
+                "});",
+                "NetworkEvents.dataReceived('alienevo_nickname', event => {",
+                "    let player = event.entity;",
+                "    let inputText = event.data.nickname;",
+                "});",
+                ""));
+
+        assertEquals(1, PalladiumResourceCompat1201.apply(resources));
+
+        String migrated = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_SERVER_STUFF);
+        assertTrue(migrated.contains("for (let propertyName of propertiesToSave.getAllKeys()) {"));
+        assertTrue(migrated.contains(
+                "palladium.setProperty(player, propertyName, legacyConnectorAlienEvoPacketString(propertiesToSave.get(propertyName)));"));
+        assertFalse(migrated.contains("for (let propertyName in propertiesToSave)"));
+        assertFalse(migrated.contains("propertiesToSave[propertyName]"));
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+        assertEquals(migrated, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_SERVER_STUFF));
+    }
+
+    @Test
+    void migratesHeatblastFireAbsorbArrayBlockLookupsToCoordinateOverload() {
+        Map<String, byte[]> resources = new HashMap<>();
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_FIRE_ABSORB, String.join("\n",
+                "let blockPos = [x, y, z];",
+                "let currentBlock = entity.level.getBlock(blockPos);",
+                "let blockPos = [x, y, z];",
+                "let block = entity.level.getBlock(blockPos);",
+                ""));
+
+        assertEquals(1, PalladiumResourceCompat1201.apply(resources));
+
+        String migrated = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_FIRE_ABSORB);
+        assertEquals(2, occurrences(migrated, "entity.level.getBlock(x, y, z);"));
+        assertFalse(migrated.contains("entity.level.getBlock(blockPos)"));
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+        assertEquals(migrated, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_FIRE_ABSORB));
+    }
+
+    @Test
+    void preservesCurrentAlienIdWhenDecouplingAndRebondingOmnitrix() {
+        Map<String, byte[]> resources = new HashMap<>();
+        put(resources, "addon/alienevo/kubejs_scripts/decouple.js",
+                "storedCurrentAlienSlot: currentAlienSlot,\n"
+                        + "storedOmnitrixCycle: currentAlienSlot,\n"
+                        + "palladium.setProperty(entity, OMNITRIX_PROPERTY_KEY, storedOmnitrixCycle);\n");
+
+        assertEquals(1, PalladiumResourceCompat1201.apply(resources));
+
+        String migrated = get(resources, "addon/alienevo/kubejs_scripts/decouple.js");
+        assertTrue(migrated.contains(
+                "storedOmnitrixCycle: palladium.getProperty(entity, OMNITRIX_PROPERTY_KEY),"));
+        assertTrue(migrated.contains("storedCurrentAlienSlot: currentAlienSlot,"));
+        assertFalse(migrated.contains("storedOmnitrixCycle: currentAlienSlot"));
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+        assertEquals(migrated, get(resources, "addon/alienevo/kubejs_scripts/decouple.js"));
+    }
+
+    @Test
+    void makesAlienEvoGlidePitchLengthMutableBeforeAdjustment() {
+        Map<String, byte[]> resources = new HashMap<>();
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_GLIDE, String.join("\n",
+                "const pitchLength = JavaMath.cos(pitchRad)",
+                "pitchLength = pitchLength * pitchLength * JavaMath.min(1, lookLength / 0.4)",
+                ""));
+
+        assertEquals(1, PalladiumResourceCompat1201.apply(resources));
+
+        String migrated = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_GLIDE);
+        assertTrue(migrated.contains("let pitchLength = JavaMath.cos(pitchRad)"));
+        assertFalse(migrated.contains("const pitchLength = JavaMath.cos(pitchRad)"));
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+        assertEquals(migrated, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_GLIDE));
+    }
+
+    @Test
     void migratesCannonboltSlamLandingTrackingAndPreservesCrLf() {
         Map<String, byte[]> resources = new HashMap<>();
         put(resources, PalladiumResourceCompat1201.ALIEN_EVO_SLAM, String.join("\r\n",
