@@ -39,7 +39,7 @@ public final class Forge1201SourceRuntimeMemberVerifier {
     public enum Status {
         SOURCE_RUNTIME_CLASS_MISSING,
         SOURCE_RUNTIME_MEMBER_DECLARED_EXACT,
-        SOURCE_RUNTIME_MEMBER_INHERITED_EXACT,
+        SOURCE_RUNTIME_MEMBER_HIERARCHY_EXACT,
         SOURCE_RUNTIME_MEMBER_NAME_FOUND_DESCRIPTOR_CHANGED,
         SOURCE_RUNTIME_MEMBER_ABSENT,
         SOURCE_RUNTIME_HIERARCHY_INCOMPLETE
@@ -216,7 +216,7 @@ public final class Forge1201SourceRuntimeMemberVerifier {
                     SetView members = new SetView(method ? info.get().methods() : info.get().fields());
                     if (members.contains(expected)) {
                         return new MemberResult(owner, name, descriptor,
-                                Status.SOURCE_RUNTIME_MEMBER_INHERITED_EXACT, visitedOwner, visited, List.of());
+                                Status.SOURCE_RUNTIME_MEMBER_HIERARCHY_EXACT, visitedOwner, visited, List.of());
                     }
                 }
                 // The hierarchy lookup found the symbol but its declaration could not be read back.
