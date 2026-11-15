@@ -545,6 +545,8 @@ class PalladiumResourceCompat1201Test {
         put(resources, "addon/alienevo/kubejs_scripts/decouple.js",
                 "storedCurrentAlienSlot: currentAlienSlot,\n"
                         + "storedOmnitrixCycle: currentAlienSlot,\n"
+                        + "    getDecoupleSoundId(watchPrefix),\n"
+                        + "var watchItem = Item.of(itemId, 1, nbtData);\n"
                         + "palladium.setProperty(entity, OMNITRIX_PROPERTY_KEY, storedOmnitrixCycle);\n");
 
         assertEquals(1, PalladiumResourceCompat1201.apply(resources));
@@ -553,6 +555,9 @@ class PalladiumResourceCompat1201Test {
         assertTrue(migrated.contains(
                 "storedOmnitrixCycle: palladium.getProperty(entity, OMNITRIX_PROPERTY_KEY),"));
         assertTrue(migrated.contains("storedCurrentAlienSlot: currentAlienSlot,"));
+        assertTrue(migrated.contains("getAlienEvoSoundEvent(getDecoupleSoundId(watchPrefix)),"));
+        assertTrue(migrated.contains("var watchItem = Item.of(itemId, 1);"));
+        assertTrue(migrated.contains("watchItem.setNbt(nbtData);"));
         assertFalse(migrated.contains("storedOmnitrixCycle: currentAlienSlot"));
         assertEquals(0, PalladiumResourceCompat1201.apply(resources));
         assertEquals(migrated, get(resources, "addon/alienevo/kubejs_scripts/decouple.js"));
