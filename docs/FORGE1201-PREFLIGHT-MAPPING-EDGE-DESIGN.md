@@ -698,3 +698,27 @@ The first implementation task should therefore be to create a reproducible, exac
 The prior project context used Forge 1.20.1 / 47.3.0 as the source baseline. The implementation should make this an explicit versioned input (with a clear override if the selected source mod ecosystem baseline is updated), not infer it from the latest Forge release page. The official page shows Forge 47.3.0 was released 2024-06-03; do not silently substitute a newer 47.4.x release when validating the original baseline.
 
 No runtime selector mapping is enabled by adding this layer. It is read-only evidence. Keep source and target Forge/NeoForge runtime artifacts out of packaged mapping payloads, preserve mapping licensing constraints, and do not upload raw Mojang mapping files.
+
+### 20.7 Initial isolated source-runtime bootstrap (implementation awaiting local Gradle validation)
+
+A separate ForgeGradle project has been added at `tools/forge1201-source-runtime/`, deliberately isolated from the main loader build:
+
+- `settings.gradle`: Forge Maven and Gradle Plugin Portal for the ForgeGradle plugin; Maven Central and Forge Maven for dependencies.
+- `gradle.properties`: default baseline Minecraft 1.20.1 / Forge 47.3.0.
+- `build.gradle`: ForgeGradle 6.0.24, Mojang official mappings, Java 21 toolchain, pinned `minecraft "net.minecraftforge:forge:1.20.1-47.3.0"` dependency, and the opt-in `exportForge1201SourceRuntimeClasspath` task.
+- `README.md`: execution and override instructions.
+
+The export task preserves the exact ordered resolved `compileClasspath`, records per-entry SHA-256 fingerprints (including deterministic tree fingerprints for directory entries), records Minecraft/Forge/ForgeGradle/mapping/Java/Gradle provenance, and probes for `PistonStructureResolver`, `BlockState`, and `Block`. It records every classpath match and the effective first match rather than silently dropping duplicate resources. It fails closed if any required class probe is absent.
+
+Run with the main repository's Gradle wrapper:
+```powershell
+.\\gradlew.bat -p tools\\forge1201-source-runtime exportForge1201SourceRuntimeClasspath --no-daemon --console=plain
+```
+
+Build-local outputs:
+- `tools/forge1201-source-runtime/build/reports/source-runtime/forge1201-classpath.txt`
+- `tools/forge1201-source-runtime/build/reports/source-runtime/forge1201-classpath-manifest.json`
+
+An intentional version change can be requested with `-Pforge_version=47.4.28`; do not silently change the default 47.3.0 baseline. The isolated project does not add Forge to the main loader's dependency graph or JAR, and it does not generate runtime mappings.
+
+Validation status: source files have been committed, but **the Gradle bootstrap has not yet been run locally**. Plugin resolution, ForgeGradle compatibility with the current Gradle 8.8/JDK 21 environment, and actual classpath probe results remain unverified. Do not call the source runtime gate complete until the user supplies a successful export log and the manifest/classpath exist.
