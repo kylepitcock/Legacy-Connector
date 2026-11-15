@@ -265,6 +265,7 @@ public final class Forge1201SourceOfficialMappingIndex {
             return new SelectorResolution(Status.DESCRIPTOR_UNRESOLVED, List.of());
         }
         List<SelectorCandidate> matches = new ArrayList<>();
+        boolean ambiguous = false;
         for (Forge1201SrgObfuscatedBridgeAudit.MethodSelector selector : srgToObfuscated.methodSelectors()) {
             if (selector.srgOwner() == null || selector.srgName() == null || selector.srgDescriptor() == null) {
                 continue;
@@ -276,7 +277,11 @@ public final class Forge1201SourceOfficialMappingIndex {
             MethodKey key = new MethodKey(
                     selector.obfuscatedOwner(), selector.obfuscatedName(), selector.obfuscatedDescriptor());
             List<MethodMapping> methodRows = distinctMethods(methods.getOrDefault(key, List.of()));
-            if (methodRows.stream().noneMatch(row -> row.officialName().equals(officialName))) continue;
+            if (methodRows.size() > 1) {
+                ambiguous = true;
+                continue;
+            }
+            if (methodRows.isEmpty() || !methodRows.getFirst().officialName().equals(officialName)) continue;
 
             DescriptorResult descriptor = remapObfuscatedDescriptor(selector.obfuscatedDescriptor(), true);
             if ((descriptor.status() != Status.MAPPED_EXACT
@@ -299,6 +304,7 @@ public final class Forge1201SourceOfficialMappingIndex {
                     mapped.obfuscatedOwner(), mapped.obfuscatedName(), mapped.obfuscatedDescriptor(),
                     officialOwner, officialName, descriptor.descriptor(), externalCount));
         }
+        if (ambiguous) return new SelectorResolution(Status.MEMBER_AMBIGUOUS, matches);
         return resolutionFromMatches(matches);
     }
 
@@ -309,6 +315,7 @@ public final class Forge1201SourceOfficialMappingIndex {
             return new SelectorResolution(Status.DESCRIPTOR_UNRESOLVED, List.of());
         }
         List<SelectorCandidate> matches = new ArrayList<>();
+        boolean ambiguous = false;
         for (Forge1201SrgObfuscatedBridgeAudit.FieldSelector selector : srgToObfuscated.fieldSelectors()) {
             if (selector.srgOwner() == null || selector.srgName() == null
                     || selector.sourceDescriptor() == null || selector.obfuscatedDescriptor() == null) {
@@ -320,10 +327,16 @@ public final class Forge1201SourceOfficialMappingIndex {
 
             FieldKey key = new FieldKey(selector.obfuscatedOwner(), selector.obfuscatedName());
             List<FieldMapping> fieldRows = distinctFields(fields.getOrDefault(key, List.of()));
-            boolean nameAndDescriptorMatch = fieldRows.stream().anyMatch(row ->
-                    row.officialName().equals(officialName)
-                            && row.obfuscatedDescriptor().equals(selector.obfuscatedDescriptor()));
-            if (!nameAndDescriptorMatch) continue;
+            List<FieldMapping> exactRows = fieldRows.stream()
+                    .filter(row -> row.obfuscatedDescriptor().equals(selector.obfuscatedDescriptor()))
+                    .toList();
+            Set<String> exactNames = new LinkedHashSet<>();
+            exactRows.forEach(row -> exactNames.add(row.officialName()));
+            if (exactNames.size() > 1) {
+                ambiguous = true;
+                continue;
+            }
+            if (exactNames.isEmpty() || !exactNames.contains(officialName)) continue;
 
             DescriptorResult descriptor = remapObfuscatedDescriptor(selector.obfuscatedDescriptor(), false);
             if ((descriptor.status() != Status.MAPPED_EXACT
@@ -346,6 +359,7 @@ public final class Forge1201SourceOfficialMappingIndex {
                     mapped.obfuscatedOwner(), mapped.obfuscatedName(), mapped.obfuscatedDescriptor(),
                     officialOwner, officialName, descriptor.descriptor(), externalCount));
         }
+        if (ambiguous) return new SelectorResolution(Status.MEMBER_AMBIGUOUS, matches);
         return resolutionFromMatches(matches);
     }
 
