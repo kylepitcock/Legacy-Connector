@@ -205,6 +205,19 @@ public final class Forge1201SourceRuntimeMemberVerifier {
                         owner, List.of(owner), List.of());
             }
 
+            // Constructors and class initializers are never inherited through the JVM hierarchy.
+            if (method && (name.equals("<init>") || name.equals("<clinit>"))) {
+                List<String> sameName = ownerInfo.get().methods().stream()
+                        .filter(member -> member.name().equals(name))
+                        .map(member -> owner + "#" + member.name() + member.descriptor())
+                        .sorted()
+                        .toList();
+                return new MemberResult(owner, name, descriptor,
+                        sameName.isEmpty() ? Status.SOURCE_RUNTIME_MEMBER_ABSENT
+                                : Status.SOURCE_RUNTIME_MEMBER_NAME_FOUND_DESCRIPTOR_CHANGED,
+                        null, List.of(owner), sameName);
+            }
+
             Forge1201TargetApiVerifier.MemberLookup lookup = method
                     ? classIndex.lookupMethod(owner, name, descriptor)
                     : classIndex.lookupField(owner, name, descriptor);
