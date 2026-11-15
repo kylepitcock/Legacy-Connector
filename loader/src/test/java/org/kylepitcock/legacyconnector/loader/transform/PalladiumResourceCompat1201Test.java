@@ -613,7 +613,7 @@ class PalladiumResourceCompat1201Test {
     void migratesOmnitrixWorkbenchItemCustomDataAndPreservesSolidLayoutScores() {
         Map<String, byte[]> resources = new HashMap<>();
         put(resources, "data/alienevo/kubejs_scripts/workbench.js", String.join("\n",
-                "run summon minecraft:item ~ ~ ~ {Item:{id:\"alienevo:prototype_omnitrix\",Count:1b,tag:" + "${JSON.stringify(nbtData)}" + "}},PickupDelay:10}",
+                "run summon minecraft:item ~ ~ ~ {Item:{id:\"alienevo:prototype_omnitrix\",Count:1b,tag:${JSON.stringify(nbtData)" + "}},PickupDelay:10}",
                 "omnitrix.setNbt(nbtData);",
                 "var nbt = mainHandItem.nbt;",
                 "if (nbt && nbt.display && nbt.display.Name) {",
@@ -661,12 +661,15 @@ class PalladiumResourceCompat1201Test {
                 "event.target.persistentData.putString('storedAlienGlowProps', nbt.storedAlienGlowProps);",
                 "if (!nbt && mainHandItem.id.includes('_10k')) {",
                 "if (nbt && nbt.storedMastercontrol) {",
+                "function getStoredScore(nbtTag, defaultValue) {",
+                "return (nbt && nbt.contains && nbt.contains(nbtTag)) ? nbt.getInt(nbtTag) : defaultValue;",
+                "}",
                 ""));
         assertEquals(1, PalladiumResourceCompat1201.apply(resources));
 
         String migrated = get(resources, "data/alienevo/kubejs_scripts/workbench.js");
         assertTrue(migrated.contains("count:1,components:{\\"minecraft:custom_data\\":"));
-        assertTrue(migrated.contains("JSON.stringify(nbtData)}}},PickupDelay:10"));
+        assertTrue(migrated.contains("JSON.stringify(nbtData)}},PickupDelay:10"));
         assertTrue(migrated.contains("omnitrix.setCustomData(NBT.wrapCompound(nbtData));"));
         assertTrue(migrated.contains("var nbt = mainHandItem.getCustomData();"));
         assertTrue(migrated.contains("function getStoredScore(nbtTag, defaultValue)"));
