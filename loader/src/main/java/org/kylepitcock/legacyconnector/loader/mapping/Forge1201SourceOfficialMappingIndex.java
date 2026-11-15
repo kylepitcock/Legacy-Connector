@@ -255,6 +255,115 @@ public final class Forge1201SourceOfficialMappingIndex {
                 List.of(candidate));
     }
 
+    /**
+     * Reverse lookup for diagnostics that start with a Mojang-named source runtime identity.
+     * The returned selector candidates still retain their complete SRG and obfuscated identities.
+     */
+    public SelectorResolution findMethodsByOfficialIdentity(
+            String officialOwner, String officialName, String officialDescriptor) {
+        if (!validDescriptor(officialDescriptor, true)) {
+            return new SelectorResolution(Status.DESCRIPTOR_UNRESOLVED, List.of());
+        }
+        List<SelectorCandidate> matches = new ArrayList<>();
+        for (Forge1201SrgObfuscatedBridgeAudit.MethodSelector selector : srgToObfuscated.methodSelectors()) {
+            if (selector.srgOwner() == null || selector.srgName() == null || selector.srgDescriptor() == null) {
+                continue;
+            }
+            List<String> officialOwners = distinct(
+                    obfuscatedToOfficialClasses.getOrDefault(selector.obfuscatedOwner(), List.of()));
+            if (officialOwners.size() != 1 || !officialOwners.getFirst().equals(officialOwner)) continue;
+
+            MethodKey key = new MethodKey(
+                    selector.obfuscatedOwner(), selector.obfuscatedName(), selector.obfuscatedDescriptor());
+            List<MethodMapping> methodRows = distinctMethods(methods.getOrDefault(key, List.of()));
+            if (methodRows.stream().noneMatch(row -> row.officialName().equals(officialName))) continue;
+
+            DescriptorResult descriptor = remapObfuscatedDescriptor(selector.obfuscatedDescriptor(), true);
+            if ((descriptor.status() != Status.MAPPED_EXACT
+                    && descriptor.status() != Status.MAPPED_WITH_EXTERNAL_TYPES)
+                    || !officialDescriptor.equals(descriptor.descriptor())) {
+                continue;
+            }
+
+            Forge1201SrgObfuscatedBridgeAudit.Resolution source = srgToObfuscated.resolveMethod(
+                    selector.srgOwner(), selector.srgName(), selector.srgDescriptor());
+            if ((source.status() != Forge1201SrgObfuscatedBridgeAudit.Status.MAPPED_EXACT
+                    && source.status() != Forge1201SrgObfuscatedBridgeAudit.Status.MAPPED_WITH_EXTERNAL_TYPES)
+                    || source.candidates().size() != 1) {
+                continue;
+            }
+            Forge1201SrgObfuscatedBridgeAudit.Candidate mapped = source.candidates().getFirst();
+            int externalCount = Math.max(mapped.externalDescriptorTypeCount(), descriptor.externalTypeCount());
+            matches.add(new SelectorCandidate(
+                    selector.srgOwner(), selector.srgName(), selector.srgDescriptor(),
+                    mapped.obfuscatedOwner(), mapped.obfuscatedName(), mapped.obfuscatedDescriptor(),
+                    officialOwner, officialName, descriptor.descriptor(), externalCount));
+        }
+        return resolutionFromMatches(matches);
+    }
+
+    /** Reverse lookup for fields; a unique Tiny-derived descriptor is still mandatory. */
+    public SelectorResolution findFieldsByOfficialIdentity(
+            String officialOwner, String officialName, String officialDescriptor) {
+        if (!validDescriptor(officialDescriptor, false)) {
+            return new SelectorResolution(Status.DESCRIPTOR_UNRESOLVED, List.of());
+        }
+        List<SelectorCandidate> matches = new ArrayList<>();
+        for (Forge1201SrgObfuscatedBridgeAudit.FieldSelector selector : srgToObfuscated.fieldSelectors()) {
+            if (selector.srgOwner() == null || selector.srgName() == null
+                    || selector.sourceDescriptor() == null || selector.obfuscatedDescriptor() == null) {
+                continue;
+            }
+            List<String> officialOwners = distinct(
+                    obfuscatedToOfficialClasses.getOrDefault(selector.obfuscatedOwner(), List.of()));
+            if (officialOwners.size() != 1 || !officialOwners.getFirst().equals(officialOwner)) continue;
+
+            FieldKey key = new FieldKey(selector.obfuscatedOwner(), selector.obfuscatedName());
+            List<FieldMapping> fieldRows = distinctFields(fields.getOrDefault(key, List.of()));
+            boolean nameAndDescriptorMatch = fieldRows.stream().anyMatch(row ->
+                    row.officialName().equals(officialName)
+                            && row.obfuscatedDescriptor().equals(selector.obfuscatedDescriptor()));
+            if (!nameAndDescriptorMatch) continue;
+
+            DescriptorResult descriptor = remapObfuscatedDescriptor(selector.obfuscatedDescriptor(), false);
+            if ((descriptor.status() != Status.MAPPED_EXACT
+                    && descriptor.status() != Status.MAPPED_WITH_EXTERNAL_TYPES)
+                    || !officialDescriptor.equals(descriptor.descriptor())) {
+                continue;
+            }
+
+            Forge1201SrgObfuscatedBridgeAudit.Resolution source =
+                    srgToObfuscated.resolveField(selector.srgOwner(), selector.srgName());
+            if ((source.status() != Forge1201SrgObfuscatedBridgeAudit.Status.MAPPED_EXACT
+                    && source.status() != Forge1201SrgObfuscatedBridgeAudit.Status.MAPPED_WITH_EXTERNAL_TYPES)
+                    || source.candidates().size() != 1) {
+                continue;
+            }
+            Forge1201SrgObfuscatedBridgeAudit.Candidate mapped = source.candidates().getFirst();
+            int externalCount = Math.max(mapped.externalDescriptorTypeCount(), descriptor.externalTypeCount());
+            matches.add(new SelectorCandidate(
+                    selector.srgOwner(), selector.srgName(), selector.sourceDescriptor(),
+                    mapped.obfuscatedOwner(), mapped.obfuscatedName(), mapped.obfuscatedDescriptor(),
+                    officialOwner, officialName, descriptor.descriptor(), externalCount));
+        }
+        return resolutionFromMatches(matches);
+    }
+
+    private static SelectorResolution resolutionFromMatches(List<SelectorCandidate> candidates) {
+        List<SelectorCandidate> unique = candidates.stream().distinct()
+                .sorted(java.util.Comparator
+                        .comparing(SelectorCandidate::srgOwner)
+                        .thenComparing(SelectorCandidate::srgName)
+                        .thenComparing(SelectorCandidate::srgDescriptor))
+                .toList();
+        if (unique.isEmpty()) return new SelectorResolution(Status.MEMBER_MISSING, List.of());
+        if (unique.size() > 1) return new SelectorResolution(Status.MEMBER_AMBIGUOUS, unique);
+        return new SelectorResolution(
+                unique.getFirst().externalDescriptorTypeCount() == 0
+                        ? Status.MAPPED_EXACT : Status.MAPPED_WITH_EXTERNAL_TYPES,
+                unique);
+    }
+
     private ClassResolution resolveObfuscatedClass(String srgOwner, String obfuscatedOwner) {
         List<String> officialNames = distinct(obfuscatedToOfficialClasses.getOrDefault(obfuscatedOwner, List.of()));
         if (officialNames.isEmpty()) return new ClassResolution(Status.OWNER_MISSING, List.of());
