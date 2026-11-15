@@ -120,7 +120,7 @@ tasks.register('exportForge1201SourceRuntimeClasspath') {
         def entries = configurations.compileClasspath.asPath
                 .split(java.util.regex.Pattern.quote(File.pathSeparator))
                 .findAll { !it.isBlank() }
-                .collect { new File(it).absoluteFile.normalize() }
+                .collect { new File(it).toPath().toAbsolutePath().normalize().toFile() }
 
         if (entries.isEmpty()) {
             throw new GradleException('Forge source compile classpath resolved to no entries.')
