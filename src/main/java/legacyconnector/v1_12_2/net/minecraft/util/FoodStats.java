@@ -16,6 +16,10 @@ public class FoodStats {
     public float foodSaturationLevel;
     @Deprecated
     public float foodExhaustionLevel;
+    @Deprecated
+    public int foodTimer;
+    @Deprecated
+    public int prevFoodLevel;
 
     public FoodStats() {
         this(new net.minecraft.world.food.FoodData());
@@ -59,6 +63,27 @@ public class FoodStats {
         s.modern.addAdditionalSaveData(tag);
         tag.putFloat("foodExhaustionLevel", v);
         s.modern.readAdditionalSaveData(tag);
+    }
+
+    public static int mcc$get$foodTimer(FoodStats s) {
+        net.minecraft.nbt.CompoundTag tag = new net.minecraft.nbt.CompoundTag();
+        s.modern.addAdditionalSaveData(tag);
+        return tag.getInt("foodTickTimer");
+    }
+
+    public static void mcc$set$foodTimer(FoodStats s, int v) {
+        net.minecraft.nbt.CompoundTag tag = new net.minecraft.nbt.CompoundTag();
+        s.modern.addAdditionalSaveData(tag);
+        tag.putInt("foodTickTimer", v);
+        s.modern.readAdditionalSaveData(tag);
+    }
+
+    public static int mcc$get$prevFoodLevel(FoodStats s) {
+        return s.modern.getLastFoodLevel();
+    }
+
+    /** The modern game records the previous level itself at the start of each tick. */
+    public static void mcc$set$prevFoodLevel(FoodStats s, int v) {
     }
 
     public void addStats(int foodLevelIn, float foodSaturationModifier) {
