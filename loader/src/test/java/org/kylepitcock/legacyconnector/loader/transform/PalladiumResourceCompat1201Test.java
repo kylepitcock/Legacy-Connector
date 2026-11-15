@@ -511,6 +511,46 @@ class PalladiumResourceCompat1201Test {
     }
 
     @Test
+    void preservesOmnitrixLayoutScoresWhenRemovingAndReapplyingPrototypeCore() {
+        Map<String, byte[]> resources = new HashMap<>();
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_CORE_REMOVAL, String.join("\n",
+                "function createAndGivePrototypeCore(entity) {",
+                "  var username = entity.getGameProfile().getName();",
+                "",
+                "  var currentPlaylist = entity.persistentData.getInt(CURRENT_PLAYLIST_KEY) || 1;",
+                "  var nbtData = {",
+                "    storedMastercontrol: hasMastercontrol,",
+                "    storedWatch: watchPrefix",
+                "  };",
+                "}",
+                "function applyAllDNAFromPrototypeCore(entity) {",
+                "  var mainHandItem = entity.getMainHandItem();",
+                "  var username = entity.getGameProfile().getName();",
+                "  var nbt = mainHandItem.nbt;",
+                "  if (nbt.storedMastercontrol) entity.tags.add('AlienEvo.MasterControl');",
+                "",
+                "  // Restore glow props",
+                "}"));
+
+        assertEquals(1, PalladiumResourceCompat1201.apply(resources));
+
+        String migrated = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_CORE_REMOVAL);
+        assertTrue(migrated.contains("readOmnitrixLayoutScore('AlienEvo.BasePrimary')"));
+        assertTrue(migrated.contains("storedBasePrimaryScore: basePrimaryScore"));
+        assertTrue(migrated.contains("storedBaseSecondaryScore: baseSecondaryScore"));
+        assertTrue(migrated.contains("storedButtonsScore: buttonsScore"));
+        assertTrue(migrated.contains("stored10kPhaseScore: phase10kScore"));
+        assertTrue(migrated.contains(
+                "restoreOmnitrixLayoutScore('AlienEvo.BasePrimary', 'storedBasePrimaryScore', -1)"));
+        assertTrue(migrated.contains(
+                "restoreOmnitrixLayoutScore('AlienEvo.BaseSecondary', 'storedBaseSecondaryScore', -1)"));
+        assertTrue(migrated.contains("restoreOmnitrixLayoutScore('AlienEvo.10kStage', 'stored10kStageScore', 0)"));
+
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+        assertEquals(migrated, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_CORE_REMOVAL));
+    }
+
+    @Test
     void migratesAlienEvoSlamAttributeOperationToCurrentEnumName() {
         Map<String, byte[]> resources = new HashMap<>();
         put(resources, PalladiumResourceCompat1201.ALIEN_EVO_SLAM, String.join("\n",

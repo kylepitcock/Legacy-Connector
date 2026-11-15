@@ -255,6 +255,7 @@ final class PalladiumResourceCompat1201 {
         rewriteAlienEvoRechargeCooldown(resources);
         rewriteAlienEvoStatAbilityOperation(resources);
         rewriteAlienEvoNetworkDataPlayerAccess(resources);
+        rewriteAlienEvoPrototypeCoreLayoutScores(resources);
         rewriteAlienEvoSlamLandingState(resources);
         rewriteAlienEvoSlamAttributeOperations(resources);
         // Both ScriptableAbility callbacks receive the active entity; KubeJS 7 no longer exposes Utils.server.
@@ -1434,6 +1435,101 @@ PlayerEvents.tick(e => {
                 + replacementWithOriginalEndings
                 + normalized.substring(end);
         resources.put(ALIEN_EVO_SLAM, migrated.getBytes(StandardCharsets.UTF_8));
+        return 1;
+    }
+
+    /**
+     * Prototype-core removal already stores DNA, Master Control and glow data,
+     * but omitted the Omnitrix body-layout scoreboard values. Mirror the
+     * existing decouple path so taking the core out and bonding it again keeps
+     * primary/secondary/tertiary, buttons, core, dial, tubes and 10K-stage layout.
+     */
+    private static int rewriteAlienEvoPrototypeCoreLayoutScores(Map<String, byte[]> resources) {
+        byte[] original = resources.get(ALIEN_EVO_CORE_REMOVAL);
+        if (original == null) return 0;
+
+        String script = new String(original, StandardCharsets.UTF_8);
+        String lineEnding = script.contains("\r\n") ? "\r\n" : "\n";
+        String normalized = script.replace("\r\n", "\n");
+        String migrated = normalized;
+
+        String legacyCapture =
+                "  var username = entity.getGameProfile().getName();\n\n"
+                + "  var currentPlaylist = entity.persistentData.getInt(CURRENT_PLAYLIST_KEY) || 1;";
+        String migratedCapture = """
+                  var username = entity.getGameProfile().getName();
+
+                  function readOmnitrixLayoutScore(scoreName) {
+                    var result = entity.server.runCommandSilent('scoreboard players get ' + username + ' ' + scoreName);
+                    return isNaN(result) ? 0 : parseInt(result);
+                  }
+                  var basePrimaryScore = readOmnitrixLayoutScore('AlienEvo.BasePrimary');
+                  var baseSecondaryScore = readOmnitrixLayoutScore('AlienEvo.BaseSecondary');
+                  var baseTertiaryScore = readOmnitrixLayoutScore('AlienEvo.BaseTertiary');
+                  var buttonsScore = readOmnitrixLayoutScore('AlienEvo.Buttons');
+                  var coreSideScore = readOmnitrixLayoutScore('AlienEvo.CoreSide');
+                  var coreTopScore = readOmnitrixLayoutScore('AlienEvo.CoreTop');
+                  var dialInnerScore = readOmnitrixLayoutScore('AlienEvo.DialInner');
+                  var dialOuterScore = readOmnitrixLayoutScore('AlienEvo.DialOuter');
+                  var tubesScore = readOmnitrixLayoutScore('AlienEvo.Tubes');
+                  var phase10kScore = readOmnitrixLayoutScore('AlienEvo.10kPhase');
+                  var stage10kScore = readOmnitrixLayoutScore('AlienEvo.10kStage');
+
+                  var currentPlaylist = entity.persistentData.getInt(CURRENT_PLAYLIST_KEY) || 1;""";
+        migrated = replaceExactScriptOccurrence(
+                ALIEN_EVO_CORE_REMOVAL, migrated, legacyCapture, migratedCapture);
+
+        String legacyNbt = "    storedMastercontrol: hasMastercontrol,\n    storedWatch: watchPrefix";
+        String migratedNbt = """
+                    storedMastercontrol: hasMastercontrol,
+                    storedBasePrimaryScore: basePrimaryScore,
+                    storedBaseSecondaryScore: baseSecondaryScore,
+                    storedBaseTertiaryScore: baseTertiaryScore,
+                    storedButtonsScore: buttonsScore,
+                    storedCoreSideScore: coreSideScore,
+                    storedCoreTopScore: coreTopScore,
+                    storedDialInnerScore: dialInnerScore,
+                    storedDialOuterScore: dialOuterScore,
+                    storedTubesScore: tubesScore,
+                    stored10kPhaseScore: phase10kScore,
+                    stored10kStageScore: stage10kScore,
+                    storedWatch: watchPrefix""";
+        migrated = replaceExactScriptOccurrence(
+                ALIEN_EVO_CORE_REMOVAL, migrated, legacyNbt, migratedNbt);
+
+        String legacyNbtRead = "  var nbt = mainHandItem.nbt;";
+        String migratedNbtRead = """
+                  var nbt = mainHandItem.nbt;
+                  function restoreOmnitrixLayoutScore(scoreName, nbtKey, defaultValue) {
+                    var score = nbt.contains(nbtKey) ? nbt.getInt(nbtKey) : defaultValue;
+                    entity.server.runCommandSilent('scoreboard players set ' + username + ' ' + scoreName + ' ' + score);
+                  }""";
+        migrated = replaceExactScriptOccurrence(
+                ALIEN_EVO_CORE_REMOVAL, migrated, legacyNbtRead, migratedNbtRead);
+
+        String legacyRestore = "  if (nbt.storedMastercontrol) entity.tags.add('AlienEvo.MasterControl');\n\n  // Restore glow props";
+        String migratedRestore = """
+                  if (nbt.storedMastercontrol) entity.tags.add('AlienEvo.MasterControl');
+
+                  restoreOmnitrixLayoutScore('AlienEvo.BasePrimary', 'storedBasePrimaryScore', -1);
+                  restoreOmnitrixLayoutScore('AlienEvo.BaseSecondary', 'storedBaseSecondaryScore', -1);
+                  restoreOmnitrixLayoutScore('AlienEvo.BaseTertiary', 'storedBaseTertiaryScore', -1);
+                  restoreOmnitrixLayoutScore('AlienEvo.Buttons', 'storedButtonsScore', -1);
+                  restoreOmnitrixLayoutScore('AlienEvo.CoreSide', 'storedCoreSideScore', -1);
+                  restoreOmnitrixLayoutScore('AlienEvo.CoreTop', 'storedCoreTopScore', -1);
+                  restoreOmnitrixLayoutScore('AlienEvo.DialInner', 'storedDialInnerScore', -1);
+                  restoreOmnitrixLayoutScore('AlienEvo.DialOuter', 'storedDialOuterScore', -1);
+                  restoreOmnitrixLayoutScore('AlienEvo.Tubes', 'storedTubesScore', -1);
+                  restoreOmnitrixLayoutScore('AlienEvo.10kPhase', 'stored10kPhaseScore', 0);
+                  restoreOmnitrixLayoutScore('AlienEvo.10kStage', 'stored10kStageScore', 0);
+
+                  // Restore glow props""";
+        migrated = replaceExactScriptOccurrence(
+                ALIEN_EVO_CORE_REMOVAL, migrated, legacyRestore, migratedRestore);
+
+        if (migrated.equals(normalized)) return 0;
+        String output = lineEnding.equals("\n") ? migrated : migrated.replace("\n", lineEnding);
+        resources.put(ALIEN_EVO_CORE_REMOVAL, output.getBytes(StandardCharsets.UTF_8));
         return 1;
     }
 
