@@ -701,6 +701,7 @@ class PalladiumResourceCompat1201Test {
                 "  if (typeof nbt.storedWatch === 'string' && nbt.storedWatch) {",
                 "    palladium.setProperty(entity, 'watch', nbt.storedWatch);",
                 "  }",
+                "  var watchPrefix = (typeof nbt.storedWatch === 'string' && nbt.storedWatch) ? nbt.storedWatch : getWatchPrefix(entity);",
                 "  var storedAllDNAString = nbt.storedAllDNA || '';",
                 "  if (nbt.storedMastercontrol) entity.tags.add('AlienEvo.MasterControl');",
                 "",
