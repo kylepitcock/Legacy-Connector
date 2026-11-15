@@ -1113,9 +1113,9 @@ final class PalladiumResourceCompat1201 {
         String script = new String(original, StandardCharsets.UTF_8);
         String[][] replacements = {
                 {"for (let propertyName in propertiesToSave) {",
-                        "let propertyIterator = propertiesToSave.getAllKeys().iterator();
-    while (propertyIterator.hasNext()) {
-        let propertyName = propertyIterator.next();", "1"},
+                        "let propertyIterator = propertiesToSave.getAllKeys().iterator();\n"
+                                + "    while (propertyIterator.hasNext()) {\n"
+                                + "        let propertyName = propertyIterator.next();", "1"},
                 {"let colorValue = data.value;",
                         "let colorValue = legacyConnectorAlienEvoPacketString(data.value);", "1"},
                 {"let energyColor = data.value;",
