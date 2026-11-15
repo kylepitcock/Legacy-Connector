@@ -455,6 +455,53 @@ public final class CoremodSites {
             return ((Number) NIGHT_VISION_AMOUNT.modify(0, amount, view, partialTick)).floatValue();
         }
 
+        private static final String ER = "net/minecraft/client/renderer/EntityRenderer.";
+
+        /** Minecraft.runTick, after the pick block key was handled. */
+        public static final Site PICK_BLOCK = site("pick block key", new Class<?>[0], MC + "func_71407_l()V#after:invokespecial net/minecraft/client/Minecraft.func_147112_ai()V");
+        /** EntityRenderer.updateCameraAndRender: a hook answering true takes the mouse look over (the game's own turning is left out). */
+        public static final Site MOUSE_OVERRIDE = site("mouse look override", new Class<?>[0], ER + "func_78480_b(F)V#after:ifeq");
+        /** ItemRenderer.renderItemInFirstPerson, last thing. Values: the item renderer, partial tick. */
+        public static final Site HAND_ITEMS_END = site("first person items (end)",
+                new Class<?>[] {legacyconnector.v1_7_10.net.minecraft.client.renderer.ItemRenderer.class, float.class},
+                "net/minecraft/client/renderer/ItemRenderer.func_78440_a(F)V#tail");
+        /** EntityRenderer.updateFogColor: the sky colour as a hook gives it. Value: world. */
+        public static final Site SKY_COLOR_HOOK = site("sky colour", new Class<?>[] {WORLD}, ER + "func_78466_h(F)V#after:astore 5")
+                .returns(legacyconnector.v1_7_10.net.minecraft.util.Vec3.class);
+        /** EntityRenderer.updateFogColor: the fog colour as a hook gives it. Value: world. */
+        public static final Site FOG_COLOR_HOOK = site("fog colour", new Class<?>[] {WORLD}, ER + "func_78466_h(F)V#after:astore 9")
+                .returns(legacyconnector.v1_7_10.net.minecraft.util.Vec3.class);
+        /** EntityRenderer.orientCamera, last thing: hooks rotate the view (GL calls). Value: partial tick. */
+        public static final Site CAMERA_END = site("camera orientation (end)", new Class<?>[] {float.class}, ER + "func_78467_g(F)V#tail");
+        /** PlayerControllerMP.getBlockReachDistance, last thing. Values: distance, the controller (always null here). */
+        public static final Site BLOCK_REACH = site("block reach distance",
+                new Class<?>[] {float.class, legacyconnector.v1_7_10.net.minecraft.client.multiplayer.PlayerControllerMP.class},
+                "net/minecraft/client/multiplayer/PlayerControllerMP.func_78757_d()F#tail").returns(float.class);
+
+        /** {@link #MOUSE_OVERRIDE}. */
+        public static boolean mouseOverride() {
+            return MOUSE_OVERRIDE.active() && MOUSE_OVERRIDE.cancels();
+        }
+
+        /** {@link #BLOCK_REACH}. */
+        public static double blockReach(double reach) {
+            return BLOCK_REACH.active() ? ((Number) BLOCK_REACH.modify(0, (float) reach, null)).doubleValue() : reach;
+        }
+
+        private static final ThreadLocal<Boolean> IN_COLOR = new ThreadLocal<>();
+
+        /** {@link #SKY_COLOR_HOOK} and {@link #FOG_COLOR_HOOK}: the colour a hook gives, or null. */
+        public static net.minecraft.world.phys.Vec3 colorHook(Site site, net.minecraft.world.level.Level level) {
+            if (!site.active() || IN_COLOR.get() != null) return null;
+            IN_COLOR.set(Boolean.TRUE); // the hooks ask the world for the vanilla colour themselves
+            try {
+                return site.replace(null, legacyconnector.v1_7_10.net.minecraft.world.World.mcc$wrap(level)) instanceof legacyconnector.v1_7_10.net.minecraft.util.Vec3 v
+                        ? new net.minecraft.world.phys.Vec3(v.xCoord, v.yCoord, v.zCoord) : null;
+            } finally {
+                IN_COLOR.remove();
+            }
+        }
+
         private Client() {}
     }
 

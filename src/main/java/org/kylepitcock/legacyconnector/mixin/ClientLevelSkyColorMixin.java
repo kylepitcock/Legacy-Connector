@@ -28,6 +28,14 @@ public abstract class ClientLevelSkyColorMixin {
             cir.setReturnValue(fromProvider);
             return;
         }
+        if (org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites.Client.SKY_COLOR_HOOK.listed()) {
+            Vec3 hooked = org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites.Client.colorHook(
+                    org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites.Client.SKY_COLOR_HOOK, (ClientLevel) (Object) this);
+            if (hooked != null) {
+                cir.setReturnValue(hooked);
+                return;
+            }
+        }
         Vec3 out = org.kylepitcock.legacyconnector.v1_7_10.compat.dragonapi.DragonApiClientEvents.skyColor(color);
         if (out != color) cir.setReturnValue(out);
     }
