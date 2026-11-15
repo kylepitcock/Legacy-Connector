@@ -20,6 +20,8 @@ public final class CoremodMixinCheck1122 {
         "net.minecraft.world.level.block.state.BlockBehaviour$BlockStateBase=legacyconnector$coremodCollision",
         "net.minecraft.world.level.block.entity.BeaconBlockEntity=legacyconnector$coremodBeaconEffects",
         "net.minecraft.world.item.ItemStack=legacyconnector$coremodStackComponent",
+        "net.minecraft.world.item.BannerItem=legacyconnector$coremodBannerTooltipLayers",
+        "net.neoforged.neoforge.common.extensions.IItemExtension=legacyconnector$coremodEnchantmentFits",
     };
     private static final String[] CLIENT = {
         "net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer=legacyconnector$coremodArmorHidden",

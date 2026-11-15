@@ -7,6 +7,7 @@ import legacyconnector.v1_7_10.net.minecraft.util.MovingObjectPosition;
 import legacyconnector.v1_7_10.net.minecraft.util.Vec3;
 import legacyconnector.v1_7_10.net.minecraftforge.client.event.DrawBlockHighlightEvent;
 import legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderWorldLastEvent;
+import org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites;
 import legacyconnector.v1_7_10.net.minecraftforge.common.MinecraftForge;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
@@ -49,6 +50,7 @@ public final class RenderEvents1710 {
             legacyconnector.v1_7_10.net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher.staticPlayerY = cam.y;
             legacyconnector.v1_7_10.net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher.staticPlayerZ = cam.z;
         }
+        if (e.getStage() == RenderLevelStageEvent.Stage.AFTER_ENTITIES && CoremodSites.Client.BEFORE_PARTICLES.listed()) CoremodClientSites.worldStage(e);
         if (e.getStage() != RenderLevelStageEvent.Stage.AFTER_LEVEL || !MinecraftForge.EVENT_BUS.mcc$hasListeners(RenderWorldLastEvent.class)) return;
         Minecraft mc = Minecraft.getInstance();
         var cam = e.getCamera().getPosition();

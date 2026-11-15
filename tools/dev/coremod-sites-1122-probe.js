@@ -214,6 +214,26 @@ if (typeof cm5done === 'undefined') {
         var c = ItemStackOf(Java.type('net.minecraft.world.item.Items').STICK).getDisplayName();
         return 'component=' + c.getString() + ' siblings=' + c.getSiblings().size();
     });
+    step5('fortune on a hoe', function () {
+        var Registries = Java.type('net.minecraft.core.registries.Registries');
+        var Ench = Java.type('net.minecraft.world.item.enchantment.Enchantments');
+        var Items = Java.type('net.minecraft.world.item.Items');
+        var reg = lvl5.registryAccess().registryOrThrow(Registries.ENCHANTMENT);
+        var hoe = ItemStackOf(Items.DIAMOND_HOE), pick = ItemStackOf(Items.DIAMOND_PICKAXE);
+        return 'hoe supports fortune=' + hoe.supportsEnchantment(reg.getHolderOrThrow(Ench.FORTUNE)) + ' pickaxe supports fortune=' + pick.supportsEnchantment(reg.getHolderOrThrow(Ench.FORTUNE))
+            + ' hoe supports sharpness=' + hoe.supportsEnchantment(reg.getHolderOrThrow(Ench.SHARPNESS))
+            + ' pickarang supports sharpness=' + ItemStackOf(itemOf('quark:pickarang')).supportsEnchantment(reg.getHolderOrThrow(Ench.SHARPNESS))
+            + ' [legacy sharpness=' + Java.type('legacyconnector.v1_12_2.net.minecraft.enchantment.Enchantment').getEnchantmentByLocation('minecraft:sharpness')
+            + ' item=' + itemOf('quark:pickarang') + ']'
+            + ' pickarang supports knockback='+ ItemStackOf(itemOf('quark:pickarang')).supportsEnchantment(reg.getHolderOrThrow(Ench.KNOCKBACK));
+    });
+    step5('banner tooltip', function () {
+        var Items = Java.type('net.minecraft.world.item.Items');
+        var BI = Java.type('net.minecraft.world.item.BannerItem');
+        var out = new (Java.type('java.util.ArrayList'))();
+        BI.appendHoverTextFromBannerBlockEntityTag(ItemStackOf(Items.WHITE_BANNER), out);
+        return 'tooltip lines for a plain banner=' + out.size();
+    });
     step5('mixin handlers merged', function () { return Java.type('org.kylepitcock.legacyconnector.v1_12_2.bridge.CoremodMixinCheck1122').report(false); });
     cm5at = tick;
     for (var j5 = 0; j5 < out5.length; j5++) log.info('CM5 ' + out5[j5]);

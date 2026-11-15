@@ -455,6 +455,76 @@ public final class CoremodSites {
             return ((Number) NIGHT_VISION_AMOUNT.modify(0, amount, view, partialTick)).floatValue();
         }
 
+        private static final String ER = "net/minecraft/client/renderer/EntityRenderer.";
+
+        /** Minecraft.runTick, after the pick block key was handled. */
+        public static final Site PICK_BLOCK = site("pick block key", new Class<?>[0], MC + "func_71407_l()V#after:invokespecial net/minecraft/client/Minecraft.func_147112_ai()V");
+        /** EntityRenderer.updateCameraAndRender: a hook answering true takes the mouse look over (the game's own turning is left out). */
+        public static final Site MOUSE_OVERRIDE = site("mouse look override", new Class<?>[0], ER + "func_78480_b(F)V#after:ifeq");
+        /** ItemRenderer.renderItemInFirstPerson, last thing. Values: the item renderer, partial tick. */
+        public static final Site HAND_ITEMS_END = site("first person items (end)",
+                new Class<?>[] {legacyconnector.v1_7_10.net.minecraft.client.renderer.ItemRenderer.class, float.class},
+                "net/minecraft/client/renderer/ItemRenderer.func_78440_a(F)V#tail");
+        /** EntityRenderer.updateFogColor: the sky colour as a hook gives it. Value: world. */
+        public static final Site SKY_COLOR_HOOK = site("sky colour", new Class<?>[] {WORLD}, ER + "func_78466_h(F)V#after:astore 5")
+                .returns(legacyconnector.v1_7_10.net.minecraft.util.Vec3.class);
+        /** EntityRenderer.updateFogColor: the fog colour as a hook gives it. Value: world. */
+        public static final Site FOG_COLOR_HOOK = site("fog colour", new Class<?>[] {WORLD}, ER + "func_78466_h(F)V#after:astore 9")
+                .returns(legacyconnector.v1_7_10.net.minecraft.util.Vec3.class);
+        /** EntityRenderer.orientCamera, last thing: hooks rotate the view (GL calls). Value: partial tick. */
+        public static final Site CAMERA_END = site("camera orientation (end)", new Class<?>[] {float.class}, ER + "func_78467_g(F)V#tail");
+        /** PlayerControllerMP.getBlockReachDistance, last thing. Values: distance, the controller (always null here). */
+        public static final Site BLOCK_REACH = site("block reach distance",
+                new Class<?>[] {float.class, legacyconnector.v1_7_10.net.minecraft.client.multiplayer.PlayerControllerMP.class},
+                "net/minecraft/client/multiplayer/PlayerControllerMP.func_78757_d()F#tail").returns(float.class);
+
+        /** EntityRenderer.renderHand, last thing. Values: partial tick, render pass. */
+        public static final Site HAND_RENDERED = site("hand rendered", new Class<?>[] {float.class, int.class}, ER + "func_78476_b(FI)V#tail");
+        /** EffectRenderer.renderParticles, first thing (world space, before the particles). Value: partial tick. */
+        public static final Site BEFORE_PARTICLES = site("before the particles", new Class<?>[] {float.class},
+                "net/minecraft/client/particle/EffectRenderer.func_78874_a(Lnet/minecraft/entity/Entity;F)V#head");
+        /** ItemRenderer.renderOverlays: hooks draw their own liquid overlay first. Value: partial tick. */
+        public static final Site SCREEN_OVERLAYS = site("screen overlays (start)", new Class<?>[] {float.class},
+                "net/minecraft/client/renderer/ItemRenderer.func_78447_b(F)V#after:sipush 3008");
+
+        private static final String RLE = "net/minecraft/client/renderer/entity/RendererLivingEntity.func_76986_a(Lnet/minecraft/entity/EntityLivingBase;DDDFF)V";
+        /** RendererLivingEntity.doRender: the limb swing (distance walked) the model is posed with. Values: swing, entity. */
+        public static final Site LIMB_SWING_RENDER = site("rendered limb swing", new Class<?>[] {float.class, LIVING}, RLE + "#after:fsub").returns(float.class);
+        /** RendererLivingEntity.doRender: the limb swing amount (speed) the model is posed with. Values: amount, entity. */
+        public static final Site LIMB_AMOUNT_RENDER = site("rendered limb swing amount", new Class<?>[] {float.class, LIVING}, RLE + "#after:fadd").returns(float.class);
+        /** RenderPlayer.rotateCorpse, last thing: legacy GL rotations of the player model. Values: player, partial tick. */
+        public static final Site ROTATE_CORPSE = site("player model rotations", new Class<?>[] {PLAYER, float.class},
+                "net/minecraft/client/renderer/entity/RenderPlayer.func_77043_a(Lnet/minecraft/client/entity/AbstractClientPlayer;FFF)V#tail");
+
+        /** {@link #LIMB_SWING_RENDER} and {@link #LIMB_AMOUNT_RENDER}. */
+        public static float limb(Site site, net.minecraft.world.entity.LivingEntity entity, float value) {
+            return site.active() ? ((Number) site.modify(0, value, EntityBridge.wrap(entity))).floatValue() : value;
+        }
+
+        /** {@link #MOUSE_OVERRIDE}. */
+        public static boolean mouseOverride() {
+            return MOUSE_OVERRIDE.active() && MOUSE_OVERRIDE.cancels();
+        }
+
+        /** {@link #BLOCK_REACH}. */
+        public static double blockReach(double reach) {
+            return BLOCK_REACH.active() ? ((Number) BLOCK_REACH.modify(0, (float) reach, null)).doubleValue() : reach;
+        }
+
+        private static final ThreadLocal<Boolean> IN_COLOR = new ThreadLocal<>();
+
+        /** {@link #SKY_COLOR_HOOK} and {@link #FOG_COLOR_HOOK}: the colour a hook gives, or null. */
+        public static net.minecraft.world.phys.Vec3 colorHook(Site site, net.minecraft.world.level.Level level) {
+            if (!site.active() || IN_COLOR.get() != null) return null;
+            IN_COLOR.set(Boolean.TRUE); // the hooks ask the world for the vanilla colour themselves
+            try {
+                return site.replace(null, legacyconnector.v1_7_10.net.minecraft.world.World.mcc$wrap(level)) instanceof legacyconnector.v1_7_10.net.minecraft.util.Vec3 v
+                        ? new net.minecraft.world.phys.Vec3(v.xCoord, v.yCoord, v.zCoord) : null;
+            } finally {
+                IN_COLOR.remove();
+            }
+        }
+
         private Client() {}
     }
 

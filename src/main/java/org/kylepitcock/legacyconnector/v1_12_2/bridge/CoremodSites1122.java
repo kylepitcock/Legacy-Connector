@@ -275,6 +275,45 @@ public final class CoremodSites1122 {
                     + "Lnet/minecraft/util/ResourceLocation;Ljava/lang/Class;FFFFFFFZ)Lnet/minecraft/client/renderer/entity/layers/LayerEntityOnShoulder$DataHolder;"
                     + "#after:aload 6").returns(RESOURCE_LOCATION);
 
+    /** ItemBanner.addInformation, the constant 6 (layers listed in the tooltip): the hook answers the limit. Values: the limit. */
+    public static final Site BANNER_TOOLTIP_LAYERS = CoremodSites.site("banner layers in the tooltip", new Class<?>[] {int.class},
+            "net/minecraft/item/ItemBanner.func_185054_a(Lnet/minecraft/item/ItemStack;Ljava/util/List;)V#const:6").returns(int.class);
+
+    public static int bannerTooltipLayers(int limit) {
+        return BANNER_TOOLTIP_LAYERS.active() ? ((Number) BANNER_TOOLTIP_LAYERS.modify(0, limit)).intValue() : limit;
+    }
+
+    private static final Class<?> ENCHANTMENT = legacyconnector.v1_12_2.net.minecraft.enchantment.Enchantment.class;
+
+    /** Enchantment.canApply, last thing: a hook answering true makes the item fit (or-ed with the game's answer). Values: the enchantment, the stack. */
+    public static final Site ENCHANT_FITS = CoremodSites.site("enchantment fits an item", new Class<?>[] {ENCHANTMENT, ITEM_STACK},
+            "net/minecraft/enchantment/Enchantment.func_92089_a(Lnet/minecraft/item/ItemStack;)Z#after:invokevirtual net/minecraft/enchantment/EnumEnchantmentType.func_77557_a("
+                    + "Lnet/minecraft/item/Item;)Z");
+
+    /** EnchantmentDamage.canApply (sharpness, smite, bane of arthropods), same: the hook only gets the stack. */
+    public static final Site DAMAGE_ENCHANT_FITS = CoremodSites.site("damage enchantment fits an item", new Class<?>[] {ENCHANTMENT, ITEM_STACK},
+            "net/minecraft/enchantment/EnchantmentDamage.func_92089_a(Lnet/minecraft/item/ItemStack;)Z#after:iconst_1",
+            "net/minecraft/enchantment/EnchantmentDamage.func_92089_a(Lnet/minecraft/item/ItemStack;)Z#after:invokespecial net/minecraft/enchantment/Enchantment.func_92089_a("
+                    + "Lnet/minecraft/item/ItemStack;)Z");
+
+    /** True when a hook lets {@code enchantment} apply to {@code stack} although the game says no. */
+    public static boolean enchantmentFits(net.minecraft.core.Holder<net.minecraft.world.item.enchantment.Enchantment> enchantment, net.minecraft.world.item.ItemStack stack) {
+        boolean fits = ENCHANT_FITS.active(), damage = DAMAGE_ENCHANT_FITS.active();
+        if (!fits && !damage) return false;
+        var key = enchantment.unwrapKey();
+        if (key.isEmpty()) return false;
+        legacyconnector.v1_12_2.net.minecraft.enchantment.Enchantment legacy = legacyconnector.v1_12_2.net.minecraft.enchantment.Enchantment
+                .getEnchantmentByLocation(key.get().location().toString());
+        if (legacy == null) return false;
+        legacyconnector.v1_12_2.net.minecraft.item.ItemStack legacyStack = Stacks1122.fromModern(stack);
+        if (fits && ENCHANT_FITS.cancels(legacy, legacyStack)) return true;
+        // the vanilla damage enchantments are not instances of the shim's EnchantmentDamage (mods' own are)
+        String path = key.get().location().getPath();
+        boolean damageEnchantment = legacy instanceof legacyconnector.v1_12_2.net.minecraft.enchantment.EnchantmentDamage
+                || "minecraft".equals(key.get().location().getNamespace()) && (path.equals("sharpness") || path.equals("smite") || path.equals("bane_of_arthropods"));
+        return damage && damageEnchantment && DAMAGE_ENCHANT_FITS.cancels(legacy, legacyStack);
+    }
+
     /** The slot range of one merge call after the hooks of {@code start} and {@code end} had their say. */
     public static int[] mergeRange(Site start, Site end, int from, int to) {
         if (!start.listed() && !end.listed()) return new int[] {from, to};
