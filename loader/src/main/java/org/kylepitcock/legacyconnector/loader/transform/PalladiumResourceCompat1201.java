@@ -1369,8 +1369,7 @@ PlayerEvents.tick(e => {
     // The Palladium action is a short activation pulse, not a held state.
     // Do not tear down the maneuver merely because that pulse has ended.
     if (abilityEnabled && !playersWithGravity.has(playerId) && !p.isInWater()) {
-        const canStart = p.onGround() || isAtLeast10BlocksAboveGround(p);
-        if (canStart) {
+        if (p.onGround() || isAtLeast10BlocksAboveGround(p)) {
             p.potionEffects.add("minecraft:slowness", 35, 4, false, false);
             p.potionEffects.add("minecraft:resistance", 38, 255, false, false);
             if (p.onGround()) {
