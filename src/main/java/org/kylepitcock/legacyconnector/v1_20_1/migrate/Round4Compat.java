@@ -138,4 +138,40 @@ public final class Round4Compat {
             net.minecraft.world.level.storage.loot.functions.LootItemFunction[] functions) {
         return functions == null ? java.util.List.of() : java.util.List.of(functions);
     }
+
+    // ------------------------------------------------------------------ tooltip hide flags
+
+    /** {@code stack.hideTooltipPart(part)}: the hide flag of 1.20.1 is the {@code show_in_tooltip} switch of the matching component in 1.21.1. */
+    public static void hideTooltipPart(ItemStack stack, LegacyTooltipPart part) {
+        switch (part) {
+            case ENCHANTMENTS -> {
+                var e = stack.get(DataComponents.ENCHANTMENTS);
+                if (e != null) stack.set(DataComponents.ENCHANTMENTS, e.withTooltip(false));
+                var s = stack.get(DataComponents.STORED_ENCHANTMENTS);
+                if (s != null) stack.set(DataComponents.STORED_ENCHANTMENTS, s.withTooltip(false));
+            }
+            case MODIFIERS -> stack.set(DataComponents.ATTRIBUTE_MODIFIERS, stack.getAttributeModifiers().withTooltip(false));
+            case UNBREAKABLE -> {
+                var u = stack.get(DataComponents.UNBREAKABLE);
+                if (u != null) stack.set(DataComponents.UNBREAKABLE, u.withTooltip(false));
+            }
+            case CAN_DESTROY -> {
+                var p = stack.get(DataComponents.CAN_BREAK);
+                if (p != null) stack.set(DataComponents.CAN_BREAK, p.withTooltip(false));
+            }
+            case CAN_PLACE_ON -> {
+                var p = stack.get(DataComponents.CAN_PLACE_ON);
+                if (p != null) stack.set(DataComponents.CAN_PLACE_ON, p.withTooltip(false));
+            }
+            case ADDITIONAL -> stack.set(DataComponents.HIDE_ADDITIONAL_TOOLTIP, net.minecraft.util.Unit.INSTANCE);
+            case DYE -> {
+                var d = stack.get(DataComponents.DYED_COLOR);
+                if (d != null) stack.set(DataComponents.DYED_COLOR, d.withTooltip(false));
+            }
+            case UPGRADES -> {
+                var trim = stack.get(DataComponents.TRIM);
+                if (trim != null) stack.set(DataComponents.TRIM, trim.withTooltip(false));
+            }
+        }
+    }
 }

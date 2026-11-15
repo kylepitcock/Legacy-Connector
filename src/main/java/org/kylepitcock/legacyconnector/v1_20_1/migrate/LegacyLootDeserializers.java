@@ -65,6 +65,14 @@ public final class LegacyLootDeserializers {
         return b;
     }
 
+    /** {@code Deserializers.createConditionSerializer()}: conditions and number providers. */
+    public static GsonBuilder createConditionSerializer() {
+        GsonBuilder b = new GsonBuilder();
+        add(b, LootItemCondition.class, LootItemCondition.DIRECT_CODEC);
+        add(b, NumberProvider.class, NumberProviders.CODEC);
+        return b;
+    }
+
     /** {@code Deserializers.createLootTableSerializer()}: loot tables, pools and entries on top of the function serializer. */
     public static GsonBuilder createLootTableSerializer() {
         GsonBuilder b = createFunctionSerializer();

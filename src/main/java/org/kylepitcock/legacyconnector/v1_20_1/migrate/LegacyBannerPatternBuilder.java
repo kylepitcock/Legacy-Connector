@@ -22,6 +22,10 @@ public class LegacyBannerPatternBuilder {
         return this;
     }
 
+    public LegacyBannerPatternBuilder addPattern(net.minecraft.core.Holder<BannerPattern> pattern, DyeColor color) {
+        return addPattern(pattern.unwrapKey().orElseThrow(), color);
+    }
+
     public ListTag toListTag() {
         return patterns.copy();
     }
