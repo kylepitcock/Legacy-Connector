@@ -505,8 +505,8 @@ class PalladiumResourceCompat1201Test {
         assertTrue(migrated.contains("if (p.onGround() && playersFalling.has(playerId))"));
         assertTrue(migrated.contains("else if (activeTicks >= 200)"));
         assertTrue(migrated.contains(
-                "p.modifyAttribute(gravityAttribute, \\"gravity_slam\\", 6, \\"add_value\\")"));
-        assertFalse(migrated.contains("\\"addition\\""));
+                "p.modifyAttribute(gravityAttribute, \"gravity_slam\", 6, \"add_value\")"));
+        assertFalse(migrated.contains("\"addition\""));
         assertFalse(migrated.contains("if (!abilityEnabled && playersWithGravity.has"));
         assertFalse(migrated.contains("get(\"y\") < -5"));
         assertTrue(migrated.contains("\r\n"));
