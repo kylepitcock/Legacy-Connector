@@ -145,7 +145,7 @@ public final class Forge1201SourceRuntimeMemberVerifier {
                 results.add(inspectField(
                         candidate.officialOwner(), candidate.officialName(), candidate.officialDescriptor()));
             }
-            return new SelectorVerification(resolution.status(), results);
+            return new SelectorVerification(resolution.status(), resolution.candidates(), results);
         }
 
         /** Resolves a Mojang-named method back to its SRG identity, then checks the source classfile. */
