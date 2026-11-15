@@ -366,7 +366,6 @@ class PalladiumResourceCompat1201Test {
         assertEquals(infinity, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_INFINITY));
         assertEquals(rolling, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_ROLLING_MECHANICS));
     }
-
     @Test
     void normalizesQuickChangePlaylistAndSlotNbtToExplicitIntegerMethods() {
         Map<String, byte[]> resources = new HashMap<>();
