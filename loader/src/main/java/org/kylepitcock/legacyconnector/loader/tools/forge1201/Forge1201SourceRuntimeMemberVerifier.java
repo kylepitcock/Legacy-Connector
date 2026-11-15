@@ -366,7 +366,8 @@ public final class Forge1201SourceRuntimeMemberVerifier {
                     fileSystem = FileSystems.getFileSystem(jrtUri);
                 } catch (FileSystemNotFoundException notInitialized) {
                     try {
-                        fileSystem = FileSystems.newFileSystem(jrtUri, Map.of());
+                        fileSystem = FileSystems.newFileSystem(
+                            jrtUri, Map.of("java.home", System.getProperty("java.home")));
                     } catch (FileSystemAlreadyExistsException initializedConcurrently) {
                         fileSystem = FileSystems.getFileSystem(jrtUri);
                     }
