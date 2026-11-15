@@ -61,6 +61,8 @@ public final class Client1710 {
                 if (++ticks[0] != 200) return; // the renderers exist by now
                 org.slf4j.LoggerFactory.getLogger("LegacyConnector/Coremods").info("1.12.2 coremod mixins on the client: {}",
                         org.kylepitcock.legacyconnector.v1_12_2.bridge.CoremodMixinCheck1122.report(true));
+                org.slf4j.LoggerFactory.getLogger("LegacyConnector/Coremods").info("1.7.10 coremod mixins on the client: {}",
+                        org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodMixinCheck1710.report(true));
             });
         }
         WorldScreenshotTest.register();
