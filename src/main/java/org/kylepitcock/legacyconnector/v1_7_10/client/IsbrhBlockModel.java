@@ -97,6 +97,7 @@ public class IsbrhBlockModel extends BakedModelWrapper<BakedModel> {
                 }
             }
         }
+        reconcile(level, pos, solid.isEmpty() && translucent.isEmpty());
         boolean fallback = false;
         if (solid.isEmpty() && translucent.isEmpty()) {
             // A full opaque cube must never vanish: the generated model (the block's icons on a cube) stands in.
@@ -120,6 +121,47 @@ public class IsbrhBlockModel extends BakedModelWrapper<BakedModel> {
         }
         if (fallback) return base;
         return base.derive().with(QUADS, solid).with(TRANSLUCENT_QUADS, translucent).build();
+    }
+
+    /** Block classes whose handler left a block to its tile entity's special renderer at least once: their positions are followed. */
+    private static final java.util.Set<Class<?>> HANDS_OVER = java.util.concurrent.ConcurrentHashMap.newKeySet();
+    /** Position -> (time of the last re-mesh request << 1) | (1 when the last capture there was empty). */
+    private static final java.util.concurrent.ConcurrentHashMap<Long, Long> LAST_CAPTURE = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /**
+     * A handler may choose, as a side effect of being called, whether it or the tile entity's special renderer draws the block (MineFactory
+     * Reloaded's RedNet cable counts its calls and hands over to the special renderer when its chunk is re-rendered often). 1.7.10 called a
+     * handler once per chunk update and always showed the result. Here a section may be meshed again while an earlier mesh is still under
+     * way, and of two meshes only one is shown: when the one shown was made before the handler changed its mind, the block is in neither
+     * (invisible until the next block update) or in both. So when a handler's answer for a position changes between "nothing" and
+     * "something", the section is meshed once more; that mesh sees the handler's settled choice.
+     */
+    private void reconcile(BlockAndTintGetter level, BlockPos pos, boolean empty) {
+        Class<?> type = block.getClass();
+        if (!HANDS_OVER.contains(type)) {
+            if (!empty || !hasTileRenderer(level, pos)) return;
+            HANDS_OVER.add(type);
+        }
+        if (LAST_CAPTURE.size() > 200_000) LAST_CAPTURE.clear();
+        long now = System.currentTimeMillis();
+        Long key = pos.asLong();
+        Long last = LAST_CAPTURE.get(key);
+        // a position not followed yet that is left to the tile entity now may have been drawn by the handler in the mesh on screen
+        if (last == null) {
+            if (!empty) {
+                LAST_CAPTURE.put(key, 0L);
+                return;
+            }
+            last = 0L;
+        } else if (((last & 1L) != 0) == empty) {
+            return;
+        }
+        // at most one extra mesh a second per position: a handler that answers differently on every call must not mesh forever
+        boolean again = now - (last >> 1) > 1000L;
+        LAST_CAPTURE.put(key, ((again ? now : last >> 1) << 1) | (empty ? 1L : 0L));
+        if (again) {
+            legacyconnector.v1_7_10.net.minecraft.client.renderer.RenderGlobal.mcc$dirty(pos.getX(), pos.getY(), pos.getZ(), pos.getX(), pos.getY(), pos.getZ());
+        }
     }
 
     /** The model of a block: one that is not a full cube must not claim to cover the faces of its neighbours (see {@link Open}). */
