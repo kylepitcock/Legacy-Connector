@@ -43,6 +43,8 @@ public final class CoremodSites {
     /** A discovered hook call: where, and the static method. */
     private record Listed(String site, String owner, String name, String desc) {}
 
+    /** The same, keyed with the {@code @n} of repeats kept (the first occurrence has none): a place key written {@code =site@3} asks for that occurrence only. */
+    private static final Map<String, List<Listed>> EXACT = new HashMap<>();
     /** Site key (without the {@code @n} of repeats) to the hooks there, as the loader listed them. */
     private static final Map<String, List<Listed>> LISTED = load();
     private static final List<Site> SITES = new ArrayList<>();
@@ -503,13 +505,16 @@ public final class CoremodSites {
         private volatile Bound[] hooks;
         private int failures;
         private Class<?> result;
+        private boolean plain;
+        private String constant;
 
         private Site(String label, Class<?>[] offered, String[] keys) {
             this.label = label;
             this.offered = offered;
             Map<String, Listed> once = new LinkedHashMap<>(); // several 1.7.10 places can be one modern place: each hook method once
             for (String key : keys) {
-                for (Listed l : LISTED.getOrDefault(key, List.of())) once.putIfAbsent(l.owner + "." + l.name + l.desc, l);
+                List<Listed> found = key.startsWith("=") ? EXACT.getOrDefault(key.substring(1), List.of()) : LISTED.getOrDefault(key, List.of());
+                for (Listed l : found) once.putIfAbsent(l.owner + "." + l.name + l.desc, l);
             }
             listed.addAll(once.values());
         }
@@ -517,6 +522,24 @@ public final class CoremodSites {
         /** Only hooks returning this type answer here (a place can be listed by hooks of other shapes, which stand for other changes). */
         public Site returns(Class<?> type) {
             this.result = type;
+            return this;
+        }
+
+        /**
+         * Hooks here are never value joiners: a hook of the shape {@code (II)I} (or {@code (FF)F}...) is otherwise taken for the helper that combines a value with
+         * another hook's result, which is right where a hook changes a value without receiving it, and wrong where the place offers two numbers.
+         */
+        public Site plain() {
+            this.plain = true;
+            return this;
+        }
+
+        /**
+         * The constant a hook parameter of an enum type takes when the place offers no value of that type: coremods tell their hook which action it is for by
+         * passing a constant of their own enum, chosen by the place they patched (for example "the jump of a sprinting player").
+         */
+        public Site named(String constantName) {
+            this.constant = constantName;
             return this;
         }
 
@@ -587,7 +610,7 @@ public final class CoremodSites {
             try {
                 Object[] args = new Object[b.from.length];
                 for (int i = 0; i < args.length; i++) {
-                    Object v = values[b.from[i]];
+                    Object v = b.from[i] < 0 ? b.fixed[i] : values[b.from[i]];
                     if (b.narrowed[i] != null && v != null && !b.narrowed[i].isInstance(v)) return null; // the hook is for a subclass
                     args[i] = v;
                 }
@@ -602,15 +625,15 @@ public final class CoremodSites {
             if (hooks != null) return hooks;
             List<Bound> out = new ArrayList<>();
             for (Listed l : listed) {
-                Class<?> joins = combines(l.desc);
-                Bound b = joins != null ? bind(l, new Class<?>[] {joins, joins}, true, null) : bind(l, offered, false, result);
+                Class<?> joins = plain ? null : combines(l.desc);
+                Bound b = joins != null ? bind(l, new Class<?>[] {joins, joins}, true, null, null) : bind(l, offered, false, result, constant);
                 if (b != null) out.add(b);
             }
             return hooks = out.toArray(NONE);
         }
     }
 
-    private record Bound(String name, MethodHandle handle, int[] from, Class<?>[] narrowed, boolean combiner, ClassLoader mod) {}
+    private record Bound(String name, MethodHandle handle, int[] from, Class<?>[] narrowed, Object[] fixed, boolean combiner, ClassLoader mod) {}
 
     private static boolean takes(Bound b, int index) {
         for (int from : b.from) if (from == index) return true;
@@ -770,7 +793,7 @@ public final class CoremodSites {
         return ready = any;
     }
 
-    private static Bound bind(Listed l, Class<?>[] offered, boolean combiner, Class<?> result) {
+    private static Bound bind(Listed l, Class<?>[] offered, boolean combiner, Class<?> result, String constant) {
         String className = l.owner.replace('/', '.');
         try {
             Class<?> owner = null;
@@ -817,6 +840,7 @@ public final class CoremodSites {
             Class<?>[] types = method.getParameterTypes();
             int[] from = new int[types.length];
             Class<?>[] narrowed = new Class<?>[types.length];
+            Object[] fixed = new Object[types.length];
             boolean[] taken = new boolean[offered.length];
             for (int i = 0; i < types.length; i++) {
                 int pick = -1;
@@ -825,6 +849,13 @@ public final class CoremodSites {
                     if (!taken[o] && !types[i].isPrimitive() && offered[o].isAssignableFrom(types[i])) {
                         pick = o;
                         narrowed[i] = types[i];
+                    }
+                }
+                if (pick < 0 && constant != null && types[i].isEnum()) {
+                    for (Object c : types[i].getEnumConstants()) if (((Enum<?>) c).name().equals(constant)) fixed[i] = c;
+                    if (fixed[i] != null) {
+                        from[i] = -1;
+                        continue;
                     }
                 }
                 if (pick < 0) {
@@ -838,7 +869,7 @@ public final class CoremodSites {
             MethodHandle handle = MethodHandles.lookup().unreflect(method);
             handle = handle.asType(handle.type().generic().changeReturnType(Object.class)).asSpreader(Object[].class, types.length)
                     .asType(MethodType.methodType(Object.class, Object[].class));
-            return new Bound(className + "." + l.name + l.desc, handle, from, narrowed, combiner, owner.getClassLoader());
+            return new Bound(className + "." + l.name + l.desc, handle, from, narrowed, fixed, combiner, owner.getClassLoader());
         } catch (ReflectiveOperationException | LinkageError | RuntimeException e) {
             LOG.warn("Coremod hook {}.{} is not available: {}", className, l.name, e.toString());
             return null;
@@ -885,7 +916,9 @@ public final class CoremodSites {
                 String[] p = line.split("\t");
                 if (p.length < 4) continue;
                 String site = p[0].replaceFirst("@\\d+$", "");
-                out.computeIfAbsent(site, k -> new ArrayList<>()).add(new Listed(site, p[1], p[2], p[3]));
+                Listed listed = new Listed(site, p[1], p[2], p[3]);
+                out.computeIfAbsent(site, k -> new ArrayList<>()).add(listed);
+                EXACT.computeIfAbsent(p[0], k -> new ArrayList<>()).add(listed);
             }
         } catch (java.io.IOException | RuntimeException e) {
             LOG.warn("The coremod hook list {} could not be read: {}", file, e.toString());

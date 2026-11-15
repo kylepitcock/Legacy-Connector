@@ -64,6 +64,158 @@ public final class CoremodSites1122 {
     public static final Site NAME_SHOWN = CoremodSites.site("name tag shown", new Class<?>[] {LIVING},
             "net/minecraft/client/renderer/entity/RenderLivingBase.func_177070_b(Lnet/minecraft/entity/EntityLivingBase;)Z#head").returns(boolean.class);
 
+    // ---- third round: values that need converting, paired hooks, places in logic the shim owns, hooks that post their own events
+
+    private static final Class<?> PLAYER = legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer.class;
+    private static final Class<?> ITEM_STACK = legacyconnector.v1_12_2.net.minecraft.item.ItemStack.class;
+    private static final Class<?> FOOD_STATS = legacyconnector.v1_12_2.net.minecraft.util.FoodStats.class;
+
+    /**
+     * The shift-click of the crafting table and the trading screen merges into a slot range (start, end); the hooks of these places get both numbers and
+     * answer the new start or the new end. Each merge call of the method is one place, numbered by its position in the method ({@code =} keys: that
+     * occurrence only).
+     */
+    private static final String WORKBENCH = "=net/minecraft/inventory/ContainerWorkbench.func_82846_b(Lnet/minecraft/entity/player/EntityPlayer;I)Lnet/minecraft/item/ItemStack;#after:";
+    private static final String MERCHANT = "=net/minecraft/inventory/ContainerMerchant.func_82846_b(Lnet/minecraft/entity/player/EntityPlayer;I)Lnet/minecraft/item/ItemStack;#after:";
+    private static final Class<?>[] RANGE = {int.class, int.class};
+
+    public static final Site WORKBENCH_MERGE_START = CoremodSites.site("crafting table shift-click range (start)", RANGE,
+            WORKBENCH + "iconst_1", WORKBENCH + "iconst_0", WORKBENCH + "iconst_0@3", WORKBENCH + "iconst_0@5").plain().returns(int.class);
+    public static final Site WORKBENCH_MERGE_END = CoremodSites.site("crafting table shift-click range (end)", RANGE,
+            WORKBENCH + "iconst_1@2", WORKBENCH + "iconst_0@2", WORKBENCH + "iconst_0@4", WORKBENCH + "iconst_0@6").plain().returns(int.class);
+    public static final Site MERCHANT_MERGE_START = CoremodSites.site("trading screen shift-click range (start)", RANGE,
+            MERCHANT + "iconst_1", MERCHANT + "iconst_0", MERCHANT + "iconst_0@3", MERCHANT + "iconst_0@5").plain().returns(int.class);
+    public static final Site MERCHANT_MERGE_END = CoremodSites.site("trading screen shift-click range (end)", RANGE,
+            MERCHANT + "iconst_1@2", MERCHANT + "iconst_0@2", MERCHANT + "iconst_0@4", MERCHANT + "iconst_0@6").plain().returns(int.class);
+
+    /** Entity.move, first thing (a hook notes the motion before the move). */
+    public static final Site MOVE_START = CoremodSites.site("entity move (start)", new Class<?>[] {ENTITY},
+            "net/minecraft/entity/Entity.func_70091_d(Lnet/minecraft/entity/MoverType;DDD)V#after:aload 0");
+    /** Entity.move, after the block collisions. Values: the entity, the movement that happened (x, y, z), the movement that was asked for (x, y, z). */
+    public static final Site MOVE_DONE = CoremodSites.site("entity move (done)",
+            new Class<?>[] {ENTITY, double.class, double.class, double.class, double.class, double.class, double.class},
+            "net/minecraft/entity/Entity.func_70091_d(Lnet/minecraft/entity/MoverType;DDD)V#after:invokevirtual net/minecraft/entity/Entity.func_145775_I()V");
+
+    /** FoodStats: the places of a mod that replaces hunger. Values: the food stats (and the player or the amount). */
+    private static final String FOOD = "net/minecraft/util/FoodStats.";
+    public static final Site FOOD_TICK = CoremodSites.site("hunger tick", new Class<?>[] {FOOD_STATS, PLAYER},
+            FOOD + "func_75118_a(Lnet/minecraft/entity/player/EntityPlayer;)V#head-cancel").returns(boolean.class);
+    public static final Site FOOD_NEEDED = CoremodSites.site("food needed", new Class<?>[] {FOOD_STATS}, FOOD + "func_75121_c()Z#const:20").returns(boolean.class);
+    public static final Site FOOD_MAX = CoremodSites.site("maximum hunger", new Class<?>[] {FOOD_STATS}, FOOD + "func_75122_a(IF)V#const:20").returns(int.class);
+    public static final Site EXHAUSTION_ADDED = CoremodSites.site("exhaustion added", new Class<?>[] {FOOD_STATS, float.class},
+            FOOD + "func_75113_a(F)V#after:aload 0").returns(float.class);
+    public static final Site EXHAUSTION_CAP = CoremodSites.site("exhaustion cap", new Class<?>[] {FOOD_STATS}, FOOD + "func_75113_a(F)V#const:40.0").returns(float.class);
+
+    /** The exhaustion of the player's actions: the hook gets the action as a constant of its own enum (the place names it) and answers the amount. Values: player, amount. */
+    private static final String PLAYER_CLASS = "net/minecraft/entity/player/EntityPlayer.";
+    private static final String HARVEST_ARGS = "func_180657_a(Lnet/minecraft/world/World;Lnet/minecraft/entity/player/EntityPlayer;Lnet/minecraft/util/math/BlockPos;"
+            + "Lnet/minecraft/block/state/IBlockState;Lnet/minecraft/tileentity/TileEntity;Lnet/minecraft/item/ItemStack;)V#const:0.005";
+    private static final Class<?>[] EXHAUSTION = {PLAYER, float.class};
+    public static final Site EXHAUSTION_JUMP = CoremodSites.site("exhaustion of a jump", EXHAUSTION, PLAYER_CLASS + "func_70664_aZ()V#const:0.05")
+            .named("NORMAL_JUMP").returns(float.class);
+    public static final Site EXHAUSTION_SPRINT_JUMP = CoremodSites.site("exhaustion of a sprinting jump", EXHAUSTION, PLAYER_CLASS + "func_70664_aZ()V#const:0.2")
+            .named("SPRINTING_JUMP").returns(float.class);
+    public static final Site EXHAUSTION_ATTACK = CoremodSites.site("exhaustion of an attack", EXHAUSTION, PLAYER_CLASS + "func_71059_n(Lnet/minecraft/entity/Entity;)V#const:0.1")
+            .named("ATTACK_ENTITY").returns(float.class);
+    public static final Site EXHAUSTION_DAMAGE = CoremodSites.site("exhaustion of damage taken", EXHAUSTION,
+            PLAYER_CLASS + "func_70665_d(Lnet/minecraft/util/DamageSource;F)V#after:invokevirtual net/minecraft/util/DamageSource.func_76345_d()F")
+            .named("DAMAGE_TAKEN").returns(float.class);
+    public static final Site EXHAUSTION_HARVEST = CoremodSites.site("exhaustion of breaking a block", EXHAUSTION, "net/minecraft/block/Block." + HARVEST_ARGS,
+            "net/minecraft/block/BlockContainer." + HARVEST_ARGS, "net/minecraft/block/BlockIce." + HARVEST_ARGS).named("HARVEST_BLOCK").returns(float.class);
+    public static final Site EXHAUSTION_HUNGER_EFFECT = CoremodSites.site("exhaustion of the hunger effect", EXHAUSTION,
+            "net/minecraft/potion/Potion.func_76394_a(Lnet/minecraft/entity/EntityLivingBase;I)V#after:fmul").named("HUNGER_POTION").returns(float.class);
+
+    /** What a shulker box slot or hopper may take: a hook that answers instead of the "no other shulker box" check. Values: the stack. */
+    public static final Site SHULKER_INSERT = CoremodSites.site("item put into a shulker box", new Class<?>[] {ITEM_STACK},
+            "net/minecraft/inventory/SlotShulkerBox.func_75214_a(Lnet/minecraft/item/ItemStack;)Z#replace:func_77973_b()Lnet/minecraft/item/Item;",
+            "net/minecraft/tileentity/TileEntityShulkerBox.func_180462_a(ILnet/minecraft/item/ItemStack;Lnet/minecraft/util/EnumFacing;)Z#replace:func_77973_b()Lnet/minecraft/item/Item;")
+            .returns(boolean.class);
+
+    /** TileEntityFurnace.isItemValidForSlot: whether the stack may go into the input slot (false keeps it out). Values: the stack. */
+    public static final Site FURNACE_INPUT = CoremodSites.site("furnace input", new Class<?>[] {ITEM_STACK},
+            "net/minecraft/tileentity/TileEntityFurnace.func_94041_b(ILnet/minecraft/item/ItemStack;)Z#after:iload 1").returns(boolean.class);
+
+    /** ItemChorusFruit.onItemUseFinish, before the teleport: a hook answering true took the teleport over. Values: the world, the eater. */
+    public static final Site CHORUS_EATEN = CoremodSites.site("chorus fruit eaten", new Class<?>[] {WORLD, LIVING},
+            "net/minecraft/item/ItemChorusFruit.func_77654_b(Lnet/minecraft/item/ItemStack;Lnet/minecraft/world/World;Lnet/minecraft/entity/EntityLivingBase;)Lnet/minecraft/item/ItemStack;#after:aload 3")
+            .returns(boolean.class);
+
+    /** The slot range of one merge call after the hooks of {@code start} and {@code end} had their say. */
+    public static int[] mergeRange(Site start, Site end, int from, int to) {
+        if (!start.listed() && !end.listed()) return new int[] {from, to};
+        int a = start.active() ? ((Number) start.modify(0, from, to)).intValue() : from;
+        int b = end.active() ? ((Number) end.modify(1, from, to)).intValue() : to;
+        return new int[] {a, b};
+    }
+
+    /** {@link #MOVE_START}. */
+    public static void moveStart(net.minecraft.world.entity.Entity entity) {
+        if (MOVE_START.active()) MOVE_START.fire(EntityBridge1122.wrap(entity));
+    }
+
+    /** {@link #MOVE_DONE}. */
+    public static void moveDone(net.minecraft.world.entity.Entity entity, double dx, double dy, double dz, double ax, double ay, double az) {
+        if (MOVE_DONE.active()) MOVE_DONE.fire(EntityBridge1122.wrap(entity), dx, dy, dz, ax, ay, az);
+    }
+
+    private static legacyconnector.v1_12_2.net.minecraft.util.FoodStats food(net.minecraft.world.food.FoodData data) {
+        return legacyconnector.v1_12_2.net.minecraft.util.FoodStats.mcc$of(data);
+    }
+
+    /** {@link #FOOD_TICK}: whether a hook took the hunger tick over. */
+    public static boolean foodTick(net.minecraft.world.food.FoodData data, net.minecraft.world.entity.player.Player player) {
+        return FOOD_TICK.active() && FOOD_TICK.cancels(food(data), EntityBridge1122.wrap(player));
+    }
+
+    /** {@link #FOOD_NEEDED}. */
+    public static boolean foodNeeded(net.minecraft.world.food.FoodData data, boolean value) {
+        return FOOD_NEEDED.active() ? Boolean.TRUE.equals(FOOD_NEEDED.replace(value, food(data))) : value;
+    }
+
+    /** {@link #FOOD_MAX}. */
+    public static int foodMax(net.minecraft.world.food.FoodData data, int value) {
+        return FOOD_MAX.active() ? ((Number) FOOD_MAX.replace(value, food(data))).intValue() : value;
+    }
+
+    /** {@link #EXHAUSTION_ADDED}. */
+    public static float exhaustionAdded(net.minecraft.world.food.FoodData data, float value) {
+        return EXHAUSTION_ADDED.active() ? ((Number) EXHAUSTION_ADDED.modify(1, food(data), value)).floatValue() : value;
+    }
+
+    /** {@link #EXHAUSTION_CAP}. */
+    public static float exhaustionCap(net.minecraft.world.food.FoodData data, float value) {
+        return EXHAUSTION_CAP.active() ? ((Number) EXHAUSTION_CAP.replace(value, food(data))).floatValue() : value;
+    }
+
+    /** The exhaustion of an action of the player after the hooks of its place (one of the {@code EXHAUSTION_*} sites). */
+    public static float exhaustion(Site site, net.minecraft.world.entity.player.Player player, float amount) {
+        if (!site.active()) return amount;
+        return ((Number) site.modify(1, EntityBridge1122.wrap(player), amount)).floatValue();
+    }
+
+    /** {@link #SHULKER_INSERT}: the answer of the hook, or {@code value} when there is none. */
+    public static boolean shulkerAllows(net.minecraft.world.item.ItemStack stack, boolean value) {
+        if (!SHULKER_INSERT.listed() || !SHULKER_INSERT.active()) return value;
+        return SHULKER_INSERT.replace(value, Stacks1122.view(stack)) instanceof Boolean b ? b : value;
+    }
+
+    /** {@link #FURNACE_INPUT} for a modern stack. */
+    public static boolean furnaceInput(net.minecraft.world.item.ItemStack stack, boolean value) {
+        return value && FURNACE_INPUT.listed() && FURNACE_INPUT.active() ? furnaceInput(Stacks1122.view(stack), true) : value;
+    }
+
+    /** {@link #FURNACE_INPUT}: false when a hook keeps the stack out. */
+    public static boolean furnaceInput(legacyconnector.v1_12_2.net.minecraft.item.ItemStack stack, boolean value) {
+        if (!value || !FURNACE_INPUT.listed() || !FURNACE_INPUT.active()) return value;
+        return !Boolean.FALSE.equals(FURNACE_INPUT.replace(Boolean.TRUE, stack));
+    }
+
+    /** {@link #CHORUS_EATEN}: whether a hook took the teleport over. */
+    public static boolean chorusEaten(net.minecraft.world.level.Level level, net.minecraft.world.entity.LivingEntity entity) {
+        return CHORUS_EATEN.active() && EntityBridge1122.wrap(entity) instanceof legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase living
+                && CHORUS_EATEN.cancels(WorldBridge1122.wrap(level), living);
+    }
+
     private static final ThreadLocal<Boolean> IN_WORLD_HOOK = new ThreadLocal<>();
 
     private CoremodSites1122() {}
