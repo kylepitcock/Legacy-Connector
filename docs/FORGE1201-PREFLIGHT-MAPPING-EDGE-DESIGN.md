@@ -497,3 +497,67 @@ These names strongly indicate compiler-generated lambda methods, synthetic acces
 - The current Tiny parser stores member names/IDs/descriptors only; it does not attempt fallback on Java name similarity, source SRG numeric suffixes, or target official names.
 
 **Next diagnostic:** (1) map the 15 highest INTERMEDIARY_SOURCE_MISSING SRG owners back to class names using symbols.classes; (2) bucket the 604 missing method names into lambda$, access$, and other; (3) bucket the 176 missing field names into val$, this$, and other; (4) inspect a few examples outside those generated-name patterns. This will estimate how much of the remaining API-missing group is generated implementation detail, without assuming all rows are synthetic. Do not broaden mapping inference or remove these members from the inventory until bytecode-level access/synthetic metadata and actual selector relevance are handled explicitly.
+
+
+### 19.5 User diagnostics — generated-name split and first non-generated API gaps (2026-11-15)
+
+The user completed the short follow-up commands. No source code changed.
+
+**Missing target methods by mapped official target method name:**
+- `lambda$`: 556 / 604 (92.05%)
+- `access$`: 36 / 604 (5.96%)
+- other names: 12 / 604 (1.99%)
+
+Thus 592 / 604 (98.01%) of the current `TARGET_API_MEMBER_MISSING` method rows have lambda/accessor naming patterns.
+
+**Missing target fields:**
+- `val$` captured-local naming pattern: 170 / 176 (96.59%)
+- other names: 6 / 176 (3.41%)
+- no `this$` group was reported.
+
+These are name-pattern indicators only. The current target class parser does not preserve member access flags, and source Intermediary Tiny mappings do not carry bytecode access flags. Do not yet mark these rows as verified `ACC_SYNTHETIC` or remove them from selector analysis. The evidence strongly suggests most are compiler-generated details, while exact classification still requires source bytecode/access-flag evidence. Mixin selectors may intentionally target private/synthetic members.
+
+**The 12 observed missing methods outside lambda$/access$ names:**
+1. `ServerEntity.sendPairingData(Lnet/minecraft/server/level/ServerPlayer;Ljava/util/function/Consumer;)V`
+2. `ConcretePowderBlock.touchesLiquid(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;)Z`
+3. `CropBlock.getGrowthSpeed(Lnet/minecraft/world/level/block/Block;Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;)F`
+4. `FireBlock.checkBurnOut(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;ILnet/minecraft/util/RandomSource;I)V`
+5. `PistonStructureResolver.isSticky(Lnet/minecraft/world/level/block/state/BlockState;)Z`
+6. `PistonStructureResolver.canStickToEachOther(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/state/BlockState;)Z`
+7. `RegistriesDatapackGenerator.dumpValue(Ljava/nio/file/Path;Lnet/minecraft/data/CachedOutput;Lcom/mojang/serialization/DynamicOps;Lcom/mojang/serialization/Encoder;Ljava/lang/Object;)Ljava/util/concurrent/CompletableFuture;`
+8. `StructureTemplate.placeEntities(Lnet/minecraft/world/level/ServerLevelAccessor;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/Mirror;Lnet/minecraft/world/level/block/Rotation;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/levelgen/structure/BoundingBox;Z)V`
+9. `ItemOverrides.bakeModel(Lnet/minecraft/client/resources/model/ModelBaker;Lnet/minecraft/client/renderer/block/model/BlockModel;Lnet/minecraft/client/renderer/block/model/ItemOverride;)Lnet/minecraft/client/resources/model/BakedModel;`
+10. `ShearsDispenseItemBehavior.tryShearLivingEntity(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/core/BlockPos;)Z`
+11. `Entity.playCombinationStepSounds(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/state/BlockState;)V`
+12. `Entity.playMuffledStepSound(Lnet/minecraft/world/level/block/state/BlockState;)V`
+
+These should be treated as the first high-value potential API differences, not automatically as deletions. The full report's per-candidate upstream and target Intermediary identity fields should be reviewed before deciding whether each is a true removal, rename, signature change, moved member, or a mapping artifact.
+
+**Missing-field other bucket:** 6 rows were reported outside the `val$` naming pattern. Their exact names/signatures have not yet been supplied; inspect them next.
+
+**Top owners of source-missing methods were mapped to source obfuscated/Intermediary names (but the console table truncated the final class status column):**
+- `C_3902_` → source obfuscated `fex`, Intermediary `net/minecraft/class_634`, 112 missing methods.
+- `C_1141_` → `byo`, `net/minecraft/class_1657`, 83.
+- `C_13_` → `aig`, `net/minecraft/class_3222`, 73.
+- `C_2793_` → `dzc`, `net/minecraft/class_31`, 64.
+- `C_31_` → `aiy`, `net/minecraft/class_3244`, 53.
+- `C_4105_` → `fiy`, `net/minecraft/class_746`, 51.
+- `C_243588_` → `bsx`, `net/minecraft/class_7689`, 51.
+- `C_141119_` → `bss`, `net/minecraft/class_5762`, 47.
+- `C_524_` → `bfz`, `net/minecraft/class_1309`, 47.
+- `C_19_` → `aim`, `net/minecraft/class_3233`, 46.
+- `C_966_` → `bux`, `net/minecraft/class_1531`, 45.
+- `C_5407_` → `ahe`, `net/minecraft/class_3176`, 45.
+- `C_2136_` → `deh`, `net/minecraft/class_2821`, 44.
+- `C_2780_` → `dyt`, `net/minecraft/class_27`, 43.
+- `C_926_` → `btk`, `net/minecraft/class_1496`, 43.
+
+Those source class identifiers establish that source class mappings exist. The member rows themselves still lack exact source Tiny entries. The class audit candidate list carries the human-readable target official name; it was not included in the user's table yet. Do not guess Mojang class names from Intermediary numeric IDs.
+
+**Next diagnostic:**
+1. Print the target official class candidates for the 15 listed SRG owners from `symbols.classes[].candidates[0].targetOfficialName`, one line per owner.
+2. Print the 12 non-generated-looking method misses with `sourceIntermediaryId`, source/target Intermediary owner and descriptor, and final target mapping status.
+3. Print all six non-`val$` target API field misses with owner/name/descriptor and source/target Intermediary evidence.
+4. Investigate source bytecode access flags for an appropriate sample of 1.20.1 generated method/field misses and target classfile flags for present members. Do not classify by naming convention alone.
+
+No fallback mapping should be introduced yet. No selector transformation or runtime mapping output is authorized by these results.
