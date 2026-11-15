@@ -69,6 +69,8 @@
     "FurnaceResultHookMixin",
     "LoomLayersHookMixin",
     "BeaconEffectsHookMixin",
+    "ItemSupportsEnchantmentHookMixin",
+    "BannerTooltipLayersHookMixin",
     "ItemStackComponentHookMixin",
     "SlimeChunkHookMixin",
     "LivingEntitySlipperinessHookMixin",
