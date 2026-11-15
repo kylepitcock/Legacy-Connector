@@ -256,6 +256,7 @@ final class PalladiumResourceCompat1201 {
         rewriteOmnitrixPacketPlayerAccess(resources);
         rewriteOmnitrixPacketStringValues(resources);
         rewriteAlienEvoFireAbsorbBlockLookup(resources);
+        rewriteAlienEvoFireAbsorbTemporaryState(resources);
         rewriteAlienEvoDecoupleOmnitrixCycle(resources);
         rewriteAlienEvoGlidePitchLength(resources);
         rewriteAlienEvoXpDeathPlayerAccess(resources);
@@ -263,6 +264,7 @@ final class PalladiumResourceCompat1201 {
         rewriteAlienEvoStatAbilityOperation(resources);
         rewriteAlienEvoNetworkDataPlayerAccess(resources);
         rewriteAlienEvoPrototypeCoreLayoutScores(resources);
+        rewriteAlienEvoItemStackCustomData(resources);
         // Normalize the legacy modifier operation before the landing-state rewrite
         // replaces the original tick block containing both modifier call sites.
         rewriteAlienEvoSlamAttributeOperations(resources);
@@ -1172,6 +1174,26 @@ final class PalladiumResourceCompat1201 {
     }
 
     /**
+     * Fire Absorb caches are temporary JavaScript arrays/maps. persistentData is
+     * an NBT CompoundTag and cannot safely hold those JavaScript objects; use
+     * KubeJS' transient entity.data store instead.
+     */
+    private static int rewriteAlienEvoFireAbsorbTemporaryState(Map<String, byte[]> resources) {
+        return rewrite(resources, ALIEN_EVO_FIRE_ABSORB, new String[][] {
+                {"if (!entity.persistentData.fireBlocks) {", "if (!entity.data.get('fireBlocks')) {", "1"},
+                {"entity.persistentData.fireBlocks = [];", "entity.data.put('fireBlocks', []);", "1"},
+                {"entity.persistentData.fireBlocks = fireBlocks;", "entity.data.put('fireBlocks', fireBlocks);", "1"},
+                {"let fireBlocks = entity.persistentData.fireBlocks;", "let fireBlocks = entity.data.get('fireBlocks');", "1"},
+                {"entity.persistentData.lastFireSearch = 0;", "entity.data.put('lastFireSearch', 0);", "1"},
+                {"entity.persistentData.lastFireSearch = currentTime;", "entity.data.put('lastFireSearch', currentTime);", "1"},
+                {"entity.persistentData.lastFireSearch", "entity.data.get('lastFireSearch')", "1"},
+                {"if (!entity.persistentData.trackedFireBlocks) {", "if (!entity.data.get('trackedFireBlocks')) {", "1"},
+                {"entity.persistentData.trackedFireBlocks = {};", "entity.data.put('trackedFireBlocks', {});", "2"},
+                {"entity.persistentData.trackedFireBlocks", "entity.data.get('trackedFireBlocks')", "11"}
+        });
+    }
+
+    /**
      * The decouple script accidentally saved currentAlienSlot as omnitrix_cycle.
      * The property is the selected alien ID, not the index of its slot; preserve
      * the actual active property so re-bonding restores the same alien selection.
@@ -1396,6 +1418,7 @@ final class PalladiumResourceCompat1201 {
 let playersWithGravity = new Set();
 let playersFalling = new Set();
 let slamTicks = new Map();
+let slamLastY = new Map();
 
 const clearGravitySlam = (player, playerId) => {
     try {
@@ -1412,6 +1435,23 @@ const clearGravitySlam = (player, playerId) => {
     playersWithGravity.delete(playerId);
     playersFalling.delete(playerId);
     slamTicks.delete(playerId);
+    slamLastY.delete(playerId);
+};
+
+const damageSlamImpact = (player, x, y, z, radius, damageAmount) => {
+    const nearbyEntities = player.level.getEntitiesWithin(AABB.of(
+        x - radius, y - 1, z - radius,
+        x + radius, y + 3, z + radius
+    ));
+    nearbyEntities.forEach(target => {
+        if (target !== player && target.isLiving()) {
+            const dx = target.x - x;
+            const dz = target.z - z;
+            if (Math.sqrt(dx * dx + dz * dz) <= radius) {
+                target.attack(player.damageSources().generic(), damageAmount);
+            }
+        }
+    });
 };
 
 PlayerEvents.tick(e => {
@@ -1465,19 +1505,18 @@ PlayerEvents.tick(e => {
         return;
     }
 
-    let velocityY = 0;
-    try {
-        velocityY = Number(p.getDeltaMovement().get("y"));
-    } catch (error) {}
-
-    // Remember the descent on a non-grounded tick. On landing, do not depend
-    // on velocity still being negative: collision resolution may already zero it.
-    if (!p.onGround() && velocityY < -0.15) {
+    // Track actual vertical displacement instead of a version-sensitive
+    // delta-movement wrapper. Vanilla collision may reset velocity at landing.
+    const currentY = Number(p.y);
+    const previousY = slamLastY.get(playerId);
+    if (previousY !== undefined && currentY < previousY - 0.001) {
         playersFalling.add(playerId);
     }
+    slamLastY.set(playerId, currentY);
 
     if (p.onGround() && playersFalling.has(playerId)) {
         clearGravitySlam(p, playerId);
+        damageSlamImpact(p, x, y, z, 6.0, 15.0);
 
         e.level.createExplosion(x, y, z).strength(1.9).explosionMode('none').exploder(p).explode();
         e.level.createExplosion(x, y, z).strength(.2).explosionMode('tnt').exploder(p).explode();
@@ -1605,6 +1644,112 @@ PlayerEvents.tick(e => {
         String output = lineEnding.equals("\n") ? migrated : migrated.replace("\n", lineEnding);
         resources.put(ALIEN_EVO_CORE_REMOVAL, output.getBytes(StandardCharsets.UTF_8));
         return 1;
+    }
+
+    /**
+     * ItemStack NBT moved to the minecraft:custom_data component in 1.21.1.
+     * Wrap legacy JS payloads when writing watches/cores and use typed getters
+     * when restoring values from the ItemStack's CompoundTag.
+     */
+    private static int rewriteAlienEvoItemStackCustomData(Map<String, byte[]> resources) {
+        int changed = 0;
+        changed += rewrite(resources, ALIEN_EVO_DECOUPLE, new String[][] {
+                {"watchItem.setNbt(nbtData);", "watchItem.setCustomData(NBT.wrapCompound(nbtData));", "1"},
+                {"var nbt = mainHandItem.nbt;", "var nbt = mainHandItem.getCustomData();", "1"},
+                {"if (!nbt) {", "if (nbt.isEmpty()) {", "1"},
+                {"var displayNbt = nbt.display;", "var displayNbt = nbt.getCompound('display');", "1"},
+                {"if (displayNbt && displayNbt.Name) {", "if (!displayNbt.isEmpty() && !displayNbt.getString('Name').isEmpty()) {", "1"},
+                {"itemName = displayNbt.Name;", "itemName = displayNbt.getString('Name');", "1"},
+                {"nbt.storedAllDNA || ''", "nbt.getString('storedAllDNA')", "1"},
+                {"if (nbt.storedAlienNamespaces)", "if (nbt.contains('storedAlienNamespaces') && !nbt.getString('storedAlienNamespaces').isEmpty())", "1"},
+                {"JSON.parse(nbt.storedAlienNamespaces)", "JSON.parse(nbt.getString('storedAlienNamespaces'))", "1"},
+                {"nbt.storedOmnitrixCycle || 1", "nbt.getInt('storedOmnitrixCycle') || 1", "1"},
+                {"nbt.storedCode || '000000'", "nbt.getString('storedCode') || '000000'", "1"},
+                {"nbt.storedPosition || '0'", "nbt.getString('storedPosition') || '0'", "1"},
+                {"nbt.storedMasterTargetCode || ''", "nbt.getString('storedMasterTargetCode') || ''", "1"},
+                {"nbt.storedSelfDestructTargetCode || ''", "nbt.getString('storedSelfDestructTargetCode') || ''", "1"},
+                {"nbt.storedCurrentPlaylist || 1", "nbt.getInt('storedCurrentPlaylist') || 1", "1"},
+                {"nbt.storedCurrentAlienSlot || 1", "nbt.getInt('storedCurrentAlienSlot') || 1", "1"},
+                {"nbt.storedMastercontrol", "nbt.getBoolean('storedMastercontrol')", "1"},
+                {"typeof nbt.storedGlowColor1 === 'string'", "nbt.contains('storedGlowColor1')", "1"},
+                {"nbt.storedGlowColor1", "nbt.getString('storedGlowColor1')", "1"},
+                {"typeof nbt.storedGlowColor2 === 'string'", "nbt.contains('storedGlowColor2')", "1"},
+                {"nbt.storedGlowColor2", "nbt.getString('storedGlowColor2')", "1"},
+                {"typeof nbt.storedGlowColor3 === 'string'", "nbt.contains('storedGlowColor3')", "1"},
+                {"nbt.storedGlowColor3", "nbt.getString('storedGlowColor3')", "1"},
+                {"typeof nbt.storedGlowColor4 === 'string'", "nbt.contains('storedGlowColor4')", "1"},
+                {"nbt.storedGlowColor4", "nbt.getString('storedGlowColor4')", "1"},
+                {"typeof nbt.storedGlowColor5 === 'string'", "nbt.contains('storedGlowColor5')", "1"},
+                {"nbt.storedGlowColor5", "nbt.getString('storedGlowColor5')", "1"},
+                {"typeof nbt.storedGlowColorBase === 'string'", "nbt.contains('storedGlowColorBase')", "1"},
+                {"nbt.storedGlowColorBase", "nbt.getString('storedGlowColorBase')", "1"},
+                {"typeof nbt.storedUniformGlowColor1 === 'string'", "nbt.contains('storedUniformGlowColor1')", "1"},
+                {"nbt.storedUniformGlowColor1", "nbt.getString('storedUniformGlowColor1')", "1"},
+                {"typeof nbt.storedUniformGlowColor2 === 'string'", "nbt.contains('storedUniformGlowColor2')", "1"},
+                {"nbt.storedUniformGlowColor2", "nbt.getString('storedUniformGlowColor2')", "1"},
+                {"typeof nbt.storedUniformGlowColor3 === 'string'", "nbt.contains('storedUniformGlowColor3')", "1"},
+                {"nbt.storedUniformGlowColor3", "nbt.getString('storedUniformGlowColor3')", "1"},
+                {"typeof nbt.storedUniformGlowColor4 === 'string'", "nbt.contains('storedUniformGlowColor4')", "1"},
+                {"nbt.storedUniformGlowColor4", "nbt.getString('storedUniformGlowColor4')", "1"},
+                {"typeof nbt.storedUniformGlowColor5 === 'string'", "nbt.contains('storedUniformGlowColor5')", "1"},
+                {"nbt.storedUniformGlowColor5", "nbt.getString('storedUniformGlowColor5')", "1"},
+                {"typeof nbt.storedUniformGlowColorBase === 'string'", "nbt.contains('storedUniformGlowColorBase')", "1"},
+                {"nbt.storedUniformGlowColorBase", "nbt.getString('storedUniformGlowColorBase')", "1"},
+                {"typeof nbt.storedAlienGlowProps === 'string' && nbt.storedAlienGlowProps.length",
+                        "nbt.contains('storedAlienGlowProps') && !nbt.getString('storedAlienGlowProps').isEmpty()", "1"},
+                {"nbt.storedAlienGlowProps", "nbt.getString('storedAlienGlowProps')", "1"},
+                {"held.nbt", "held.getCustomData()", "1"}
+        });
+        changed += rewrite(resources, ALIEN_EVO_CORE_REMOVAL, new String[][] {
+                {"coreItem.setNbt(nbtData);", "coreItem.setCustomData(NBT.wrapCompound(nbtData));", "1"},
+                {"var nbt = mainHandItem.nbt;", "var nbt = mainHandItem.getCustomData();", "1"},
+                {"if (!nbt) {", "if (nbt.isEmpty()) {", "1"},
+                {"if (nbt && nbt.display && nbt.display.Name) {",
+                        "if (!nbt.isEmpty() && !nbt.getCompound('display').getString('Name').isEmpty()) {", "1"},
+                {"nbt.display.Name", "nbt.getCompound('display').getString('Name')", "1"},
+                {"typeof nbt.storedWatch === 'string'", "nbt.contains('storedWatch')", "2"},
+                {"nbt.storedWatch", "nbt.getString('storedWatch')", "4"},
+                {"nbt.storedAllDNA || ''", "nbt.getString('storedAllDNA')", "1"},
+                {"if (nbt.storedAlienNamespaces)", "if (nbt.contains('storedAlienNamespaces') && !nbt.getString('storedAlienNamespaces').isEmpty())", "1"},
+                {"JSON.parse(nbt.storedAlienNamespaces)", "JSON.parse(nbt.getString('storedAlienNamespaces'))", "1"},
+                {"nbt.storedCode || '000000'", "nbt.getString('storedCode') || '000000'", "1"},
+                {"nbt.storedPosition || '0'", "nbt.getString('storedPosition') || '0'", "1"},
+                {"nbt.storedMasterTargetCode || ''", "nbt.getString('storedMasterTargetCode') || ''", "1"},
+                {"nbt.storedSelfDestructTargetCode || ''", "nbt.getString('storedSelfDestructTargetCode') || ''", "1"},
+                {"nbt.storedCurrentPlaylist || 1", "nbt.getInt('storedCurrentPlaylist') || 1", "1"},
+                {"nbt.storedCurrentAlienSlot || 1", "nbt.getInt('storedCurrentAlienSlot') || 1", "1"},
+                {"var storedOmnitrixCycle = (typeof nbt.storedOmnitrixCycle === 'number') ? nbt.storedOmnitrixCycle : 1;",
+                        "var storedOmnitrixCycle = nbt.contains('storedOmnitrixCycle') ? nbt.getInt('storedOmnitrixCycle') : 1;", "1"},
+                {"nbt.storedMastercontrol", "nbt.getBoolean('storedMastercontrol')", "1"},
+                {"typeof nbt.storedGlowColor1 === 'string'", "nbt.contains('storedGlowColor1')", "1"},
+                {"nbt.storedGlowColor1", "nbt.getString('storedGlowColor1')", "1"},
+                {"typeof nbt.storedGlowColor2 === 'string'", "nbt.contains('storedGlowColor2')", "1"},
+                {"nbt.storedGlowColor2", "nbt.getString('storedGlowColor2')", "1"},
+                {"typeof nbt.storedGlowColor3 === 'string'", "nbt.contains('storedGlowColor3')", "1"},
+                {"nbt.storedGlowColor3", "nbt.getString('storedGlowColor3')", "1"},
+                {"typeof nbt.storedGlowColor4 === 'string'", "nbt.contains('storedGlowColor4')", "1"},
+                {"nbt.storedGlowColor4", "nbt.getString('storedGlowColor4')", "1"},
+                {"typeof nbt.storedGlowColor5 === 'string'", "nbt.contains('storedGlowColor5')", "1"},
+                {"nbt.storedGlowColor5", "nbt.getString('storedGlowColor5')", "1"},
+                {"typeof nbt.storedGlowColorBase === 'string'", "nbt.contains('storedGlowColorBase')", "1"},
+                {"nbt.storedGlowColorBase", "nbt.getString('storedGlowColorBase')", "1"},
+                {"typeof nbt.storedUniformGlowColor1 === 'string'", "nbt.contains('storedUniformGlowColor1')", "1"},
+                {"nbt.storedUniformGlowColor1", "nbt.getString('storedUniformGlowColor1')", "1"},
+                {"typeof nbt.storedUniformGlowColor2 === 'string'", "nbt.contains('storedUniformGlowColor2')", "1"},
+                {"nbt.storedUniformGlowColor2", "nbt.getString('storedUniformGlowColor2')", "1"},
+                {"typeof nbt.storedUniformGlowColor3 === 'string'", "nbt.contains('storedUniformGlowColor3')", "1"},
+                {"nbt.storedUniformGlowColor3", "nbt.getString('storedUniformGlowColor3')", "1"},
+                {"typeof nbt.storedUniformGlowColor4 === 'string'", "nbt.contains('storedUniformGlowColor4')", "1"},
+                {"nbt.storedUniformGlowColor4", "nbt.getString('storedUniformGlowColor4')", "1"},
+                {"typeof nbt.storedUniformGlowColor5 === 'string'", "nbt.contains('storedUniformGlowColor5')", "1"},
+                {"nbt.storedUniformGlowColor5", "nbt.getString('storedUniformGlowColor5')", "1"},
+                {"typeof nbt.storedUniformGlowColorBase === 'string'", "nbt.contains('storedUniformGlowColorBase')", "1"},
+                {"nbt.storedUniformGlowColorBase", "nbt.getString('storedUniformGlowColorBase')", "1"},
+                {"typeof nbt.storedAlienGlowProps === 'string' && nbt.storedAlienGlowProps.length",
+                        "nbt.contains('storedAlienGlowProps') && !nbt.getString('storedAlienGlowProps').isEmpty()", "1"},
+                {"nbt.storedAlienGlowProps", "nbt.getString('storedAlienGlowProps')", "1"}
+        });
+        return changed;
     }
 
     /**
