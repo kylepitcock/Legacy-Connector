@@ -3,9 +3,8 @@ package org.kylepitcock.legacyconnector.loader.tools.forge1201;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.net.URI;
-import java.nio.file.DirectoryStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
 import java.nio.file.FileSystem;
 import java.nio.file.Files;
@@ -22,7 +21,6 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.zip.ZipFile;
 import org.kylepitcock.legacyconnector.loader.mapping.Forge1201SourceOfficialMappingIndex;
-import org.objectweb.asm.ClassReader;
 
 /**
  * Read-only verifier for Mojang-named members in the exact Forge 1.20.1 source runtime classpath.
