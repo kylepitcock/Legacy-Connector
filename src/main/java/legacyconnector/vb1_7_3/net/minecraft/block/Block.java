@@ -192,6 +192,29 @@ public class Block {
         return hardness;
     }
 
+    /** Beta's {@code blockStrength(player)}: the part of the block one tick of mining breaks. */
+    public float getHardness(legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity player) {
+        if (hardness < 0.0F) return 0.0F;
+        return !player.canHarvest(this) ? 1.0F / hardness / 100.0F : player.getBlockBreakingSpeed(this) / hardness / 30.0F;
+    }
+
+    /** Forge 1.0: the mining progress per tick at a position (the metadata-aware form with the block's metadata there). */
+    public float blockStrength(legacyconnector.vb1_7_3.net.minecraft.world.World world, legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity player, int x, int y, int z) {
+        return blockStrength(player, world.getBlockMeta(x, y, z));
+    }
+
+    /** Forge 1.0: the mining progress per tick of this block with that metadata. */
+    public float blockStrength(legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity player, int meta) {
+        float h = getHardness(meta);
+        if (h < 0.0F) return 0.0F;
+        return !canHarvestBlock(player, meta) ? 1.0F / h / 100.0F : player.getCurrentPlayerStrVsBlock(this, meta) / h / 30.0F;
+    }
+
+    /** Forge 1.0: whether the player's held item harvests this block with that metadata. */
+    public boolean canHarvestBlock(legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity player, int meta) {
+        return player.canHarvest(this);
+    }
+
     protected Block setTickRandomly(boolean ticks) {
         BLOCKS_RANDOM_TICK[id] = ticks;
         return this;
@@ -375,12 +398,28 @@ public class Block {
 
     /** MCP {@code isPoweringTo}: weak power towards {@code side}. */
     public boolean isEmittingRedstonePowerInDirection(legacyconnector.vb1_7_3.net.minecraft.world.BlockView view, int x, int y, int z, int side) {
-        return false;
+        return vanillaSignal(view, x, y, z, side, false);
     }
 
     /** MCP {@code isIndirectlyPoweringTo}: strong power towards {@code side}. */
     public boolean canTransferPowerInDirection(legacyconnector.vb1_7_3.net.minecraft.world.World world, int x, int y, int z, int side) {
-        return false;
+        return vanillaSignal(world, x, y, z, side, true);
+    }
+
+    /**
+     * A vanilla block (lever, button, torch, dust, repeater) answers a mod's power query (RedPower asks {@code Block.blocksList[id].isPoweringTo})
+     * with the native block's signal there; Beta's {@code side} is the direction the native signal query names.
+     */
+    private boolean vanillaSignal(legacyconnector.vb1_7_3.net.minecraft.world.BlockView view, int x, int y, int z, int side, boolean strong) {
+        if (mcc$owner != null || mcc$modern == null || mcc$modern instanceof org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Block
+                || side < 0 || side > 5 || !(view instanceof legacyconnector.vb1_7_3.net.minecraft.world.World world)) return false;
+        var access = world.mcc$access();
+        if (access == null) return false;
+        var pos = new net.minecraft.core.BlockPos(x, y, z);
+        var state = access.getBlockState(pos);
+        if (!state.isSignalSource()) return false;
+        var direction = net.minecraft.core.Direction.from3DDataValue(side);
+        return (strong ? state.getDirectSignal(access, pos, direction) : state.getSignal(access, pos, direction)) > 0;
     }
 
     /** MCP {@code setBlockBoundsBasedOnState}. */

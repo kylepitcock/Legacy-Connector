@@ -32,7 +32,7 @@ public final class LegacyB173InventoryBlockRendererB173 extends BlockEntityWitho
         var block = hosted.legacy();
         var mod = BlockRenderB173.inventoryRenderer(block);
         if (mod == null || Minecraft.getInstance().level == null) return;
-        int meta = LegacyB173BlockItem.meta(stack);
+        int meta = LegacyB173BlockItem.damage(stack);
         var owner = ContentB173.ownerOf(block.getClass());
         RenderContext.beginWorld(pose, buffers, light, overlay);
         pose.pushPose();
@@ -47,8 +47,8 @@ public final class LegacyB173InventoryBlockRendererB173 extends BlockEntityWitho
                     RenderContext.bindTexture(texture);
                     ModelPartsB173.draw(part);
                 }, EntityRenderingB173.sheets(NativeRendererExtrasB173.create(Minecraft.getInstance().level, 0, pose, buffers)))) {
-                    // Forge binds the block's own sheet before the render callback (ForgeHooksClient.renderInventoryBlock).
-                    if (block instanceof legacyconnector.vb1_7_3.net.minecraft.src.forge.ITextureProvider provider) RendererContextB173.bind(provider.getTextureFile());
+                    // Beta's item renderer bound terrain.png for a block item; Forge binds the block's own sheet instead (ForgeHooksClient.renderInventoryBlock).
+                    RendererContextB173.bind(block instanceof legacyconnector.vb1_7_3.net.minecraft.src.forge.ITextureProvider provider ? provider.getTextureFile() : "/terrain.png");
                     mod.RenderInvBlock(new legacyconnector.vb1_7_3.net.minecraft.client.render.block.BlockRenderManager(), block, meta, block.getRenderType());
                 }
             }

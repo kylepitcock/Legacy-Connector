@@ -20,11 +20,17 @@ public final class ServerGuiScreenB173 extends Screen {
     @Override protected void init(){send("resize",tag->{int[] metrics=new int[256];for(int i=0;i<metrics.length;i++)metrics[i]=font.width(Character.toString((char)i));tag.putIntArray("metrics",metrics);});}
     @Override public void tick(){send("tick",tag->{});}
     @Override public void render(GuiGraphics graphics,int x,int y,float partial){
-        mouseX=x;mouseY=y;super.render(graphics,x,y,partial);ClientGuiB173.begin(graphics);
+        mouseX=x;mouseY=y;super.render(graphics,x,y,partial);draw(graphics,frame);
+    }
+    /** Draws the commands of a frame an original screen drew on the server. */
+    static void draw(GuiGraphics graphics,CompoundTag frame){
+        ClientGuiB173.begin(graphics);
         try{var sink=new ClientGuiB173();for(Tag raw:frame.getList("commands",Tag.TAG_COMPOUND)){CompoundTag command=(CompoundTag)raw;int[] v=command.getIntArray("values");switch(command.getString("op")){
             case "blit"->sink.blit(v[0],v[1],v[2],v[3],v[4],v[5]);case "fill"->sink.fill(v[0],v[1],v[2],v[3],v[4]);case "gradient"->sink.fillGradient(v[0],v[1],v[2],v[3],v[4],v[5]);
             case "text"->sink.text(command.getString("text"),v[0],v[1],v[2],v[3]!=0);case "bind"->sink.bind(sink.textureId(command.getString("path")));
-            case "color"->sink.color(command.getFloat("r"),command.getFloat("g"),command.getFloat("b"),command.getFloat("a"));case "push"->sink.push();case "pop"->sink.pop();case "translate"->sink.translate(command.getFloat("x"),command.getFloat("y"),command.getFloat("z"));case "scale"->sink.scale(command.getFloat("x"),command.getFloat("y"),command.getFloat("z"));default->{}
+            case "color"->sink.color(command.getFloat("r"),command.getFloat("g"),command.getFloat("b"),command.getFloat("a"));case "depth"->sink.depthTest(v[0]!=0);case "push"->sink.push();case "pop"->sink.pop();case "translate"->sink.translate(command.getFloat("x"),command.getFloat("y"),command.getFloat("z"));case "scale"->sink.scale(command.getFloat("x"),command.getFloat("y"),command.getFloat("z"));
+            case "item"->{var level=net.minecraft.client.Minecraft.getInstance().level;if(level!=null)sink.item(net.minecraft.world.item.ItemStack.parseOptional(level.registryAccess(),command.getCompound("stack")),v[0],v[1],v[2]!=0);}
+            default->{}
         }}}finally{ClientGuiB173.end();}
     }
     @Override public boolean mouseClicked(double x,double y,int button){mouseX=(int)x;mouseY=(int)y;send("press",tag->tag.putInt("button",button));return true;}

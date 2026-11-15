@@ -17,6 +17,19 @@ public class SignBlock extends BlockWithEntity {
         try { return (BlockEntity) blockEntityClazz.getDeclaredConstructor().newInstance(); }
         catch (ReflectiveOperationException | RuntimeException e) { return new SignBlockEntity(); }
     }
+    /** Drawn by the sign tile entity renderer, not as a block. */
+    @Override public int getRenderType() { return -1; }
     @Override public boolean isOpaque() { return false; }
     @Override public boolean isFullCube() { return false; }
+    @Override public void updateBoundingBox(legacyconnector.vb1_7_3.net.minecraft.world.BlockView view, int x, int y, int z) {
+        if (standing) { setBoundingBox(.25F, 0, .25F, .75F, 1, .75F); return; }
+        float lo = .28125F, hi = .78125F, d = .125F;
+        switch (view.getBlockMeta(x, y, z)) {
+            case 2 -> setBoundingBox(0, lo, 1 - d, 1, hi, 1);
+            case 3 -> setBoundingBox(0, lo, 0, 1, hi, d);
+            case 4 -> setBoundingBox(1 - d, lo, 0, 1, hi, 1);
+            case 5 -> setBoundingBox(0, lo, 0, d, hi, 1);
+            default -> {}
+        }
+    }
 }

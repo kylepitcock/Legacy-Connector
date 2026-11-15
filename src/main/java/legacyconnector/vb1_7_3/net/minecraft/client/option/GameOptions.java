@@ -4,6 +4,9 @@ package legacyconnector.vb1_7_3.net.minecraft.client.option;
 public class GameOptions {
     public KeyBinding jumpKey=new KeyBinding("key.jump",57);
     public KeyBinding forwardKey=new KeyBinding("key.forward",17),leftKey=new KeyBinding("key.left",30),backKey=new KeyBinding("key.back",31),rightKey=new KeyBinding("key.right",32);
+    /** Beta's other bindings (LWJGL 2 codes): a mod's screen closes on the inventory key as Beta's container screens did. */
+    public KeyBinding inventoryKey=new KeyBinding("key.inventory",18),dropKey=new KeyBinding("key.drop",16),chatKey=new KeyBinding("key.chat",20),
+            fogKey=new KeyBinding("key.fog",33),sneakKey=new KeyBinding("key.sneak",42);
     /** The native options are the source of truth; nothing is read from a Beta options file. */
     public void load(){}
     public boolean hideHud,thirdPerson,anaglyph3d;

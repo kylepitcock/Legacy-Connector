@@ -1,6 +1,38 @@
+## User report review and descriptor-classification correction — 2026-11-15
+
+At the first report review, only the generated JSON had been supplied, so the forced test-suite result was then unconfirmed. A later corrected run at source commit 9dee3dca648b137590e8879eaf0705bc8422e2d4 supplied the complete console and ended BUILD SUCCESSFUL; the validated checkpoint is recorded below.
+
+### Observed artifact fingerprints
+
+| Input | SHA-256 | Size |
+|---|---|---:|
+| MCPConfig 1.20.1 joined.tsrg | `19ae000175bfb58e5b26406c31a0e501bfb40000b078fee2f00ea60a8c7ed453` | 5,653,149 bytes |
+| Fabric Intermediary 1.20.1 Tiny v1 | `5a808bd1ebc4a9ee7d1c5900dbd2bf391586b536c3d86fbf2f972047faa2d165` | 3,110,223 bytes |
+| Fabric Intermediary 1.21.1 Tiny v1 | `83071b5b17866658463255f5f21430ade2a49ce2dd089dc3c14de1e93b99211c` | 3,614,213 bytes |
+
+### Observed source/cross-version counts from the supplied report
+
+- Classes: 7,436 MCPConfig class rows; 7,413 source Intermediary class joins; 7,011 of those source class IDs also occur in target Intermediary; 402 source IDs are absent from target; 1,234 target-only class IDs.
+- Methods: 48,575 source SRG rows; 34,390 source obfuscated-owner/name/descriptor joins; 188 SRG IDs are reused across distinct Intermediary symbols; no source or target ambiguities were reported. Of the source-joined method rows, 20,131 were counted exact, 877 descriptor-changed, 108 owner-changed and 2,977 target-ID-missing. There were 10,076 target descriptor-unresolved rows.
+- Fields: 31,003 source rows and 31,003 source owner/name joins; no source or target ambiguities were reported. Of the source-joined field rows, 22,813 were counted exact, 416 descriptor-changed, 110 owner-changed and 2,316 target-ID-missing. There were 5,262 target descriptor-unresolved rows.
+- The 11,330 method and 5,722 field source descriptor-unresolved counts must **not** be interpreted as confirmed missing Minecraft classes.
+
+### Parser issue found during report review
+
+The Tiny v1 specification's own example includes descriptors such as `(Ljava/lang/String;)I`. The old `normalizeDescriptor` implementation required every object type in a descriptor to exist in the Intermediary class map and returned unresolved for any absent type. That conflates unmapped external types (JDK and libraries) with Minecraft types whose mapping is actually missing. It likely inflated the unresolved descriptor counts in the supplied report.
+
+### Corrective implementation and forced loader validation — passed
+
+- Commit `2b6f64feee1d557647ea11b2275d237514761b64` changes descriptor normalization to receive the source MCPConfig class inventory. A package-qualified descriptor type absent from the relevant Minecraft mapping inventory is preserved as an external candidate. A type known to be a source Minecraft class but missing an Intermediary identity remains unresolved. Unqualified unknown official-obfuscated names remain unresolved.
+- External descriptor candidates are deliberately **not** counted as fully mapped exact rows. New counters distinguish source external descriptor rows/occurrences, target external descriptor rows/occurrences, and owner/member/descriptor matches that require external-name pass-through.
+- Target package-qualified external-candidate classpath existence is not proven by this audit; such rows are kept separate from fully mapped exact evidence. Do not treat external pass-through as runtime compatibility.
+- A final counter refinement in commit `0dbd61d72d9d246c73b7734e67b669c5efa6413d` counts external descriptor occurrences independently even when a different type in the same descriptor remains unresolved.
+- Regression tests added: Java/library types `java/lang/String` and `java/util/List` pass through and are classified separately; a source class known to MCPConfig but absent from Tiny remains unresolved. Test changes are in commits `a0eaa30b64d244d8aa07239f3bd0a9e7f1d13548` and `43e02d86b4290e5325faa0b487ad975cf2b7c5eb`; a following source-only counter refinement is `0d65007b9dd73c8d3069dd691fc028c257c56766`.
+- **The corrected classification is now validated.** The user regenerated the report after source commit 9dee3dca648b137590e8879eaf0705bc8422e2d4; see the validated measurements below. Do not treat external pass-through candidates as exact or runtime-present. The next stage is the owner/member/descriptor-aware selector mapping-edge design, not selector rewriting.
+
 # Forge 1.20.1 → NeoForge 1.21.1 — Intermediary Bridge Feasibility Audit
 
-**Status:** Initial read-only implementation, Gradle wiring, and synthetic regression tests are committed on `feat/forge1201-preflight-analyzer`; the user has not yet run the new gate.  
+**Status:** The external-descriptor classifier and read-only Intermediary audit are user-test validated at source commit 9dee3dca648b137590e8879eaf0705bc8422e2d4. The corrected forced loader test command ended BUILD SUCCESSFUL in 34s (20/20 actionable tasks). The report remains PARTIAL and does not produce a selector transform or runtime mapping table.  
 **Scope:** Audit a candidate version-to-version identity path through Fabric Intermediary. Do not create a runtime table, rewrite selectors, or claim compatibility.  
 **Target:** Minecraft 1.20.1 / Forge SRG-side source data → Minecraft 1.21.1 / NeoForge 21.1.258.  
 **Architectural boundary:** this audit consumes the `obf` columns of MCPConfig's TSRG2 file. It does not convert a Forge SRG selector into that `obf` namespace; SRG values are diagnostic metadata only.
@@ -52,7 +84,11 @@ The target is still `minecraft:official-obfuscated@1.21.1`, not NeoForge's Mojan
 - Classes: MCPConfig obfuscated class owner → Tiny v1 `official` class name.
 - Methods: obfuscated owner + obfuscated member name + complete JVM descriptor.
 - Fields: obfuscated owner + obfuscated member name. TSRG2 field rows do not carry a descriptor, so any Tiny lookup with more than one candidate is marked ambiguous and is not accepted.
-- Every Tiny descriptor object type must resolve through that version's class table before the descriptor is used as exact evidence. A missing class type makes the descriptor unresolved; a coincidentally identical string is not sufficient evidence.
+- Object types found in the version's Tiny class table are converted to Intermediary IDs.
+- On the source side, the parser also receives MCPConfig's source obfuscated class inventory. A descriptor type known to be a source Minecraft class but missing from Tiny remains unresolved.
+- Package-qualified descriptor types absent from the relevant Minecraft class inventory are preserved as external candidates and counted separately. On the target side, unknown unqualified official-obfuscated names remain unresolved; package-qualified unknowns are treated only as external candidates.
+- External pass-through does not prove that the class is present on the target runtime classpath. Rows using it are not counted as fully mapped exact; they receive a separate external-pass-through classification.
+- The classification is intentionally conservative and must be revisited if the target official namespace's class naming rules or the completeness of a pinned Tiny dataset change.
 - Repeated SRG IDs are counted diagnostically, but are never used as the join key.
 
 ### Target Tiny comparison
@@ -96,10 +132,11 @@ The audit utility class is part of loader main classes because Gradle executes i
 - separate descriptor changes from owner changes;
 - repeated SRG IDs across different owners resolving to different Intermediary IDs;
 - unmatched methods and ambiguous descriptorless field joins;
-- unresolved descriptor types not being counted as exact;
+- known source Minecraft descriptor types missing from Tiny remaining unresolved;
+- package-qualified JDK/library descriptor types being preserved as non-exact external candidates;
 - JSON report validity and explicit false values for selector transformation, complete Forge SRG selector path, and runtime table production.
 
-The user-run loader test gate is still pending for this new increment. Do not mark this design green before the new forced Gradle run succeeds.
+The original report's external-type descriptor counts were over-classified as unresolved. The descriptor-classification correction and synthetic cases are now user-test validated at 9dee3dca648b137590e8879eaf0705bc8422e2d4; the corrected report is reviewed in the validated checkpoint above. The overall audit remains read-only and PARTIAL.
 
 ## 6. Preliminary repository inspection — not the build result
 
@@ -119,4 +156,23 @@ It does **not**:
 - load a mod, launch Minecraft, or prove runtime/gameplay compatibility;
 - resolve the Mojang-derived mapping table's unresolved redistribution/licensing question.
 
-**Decision:** retain this as a bounded, read-only feasibility audit. Use its measured output to design the next exact SRG-owner-member-descriptor conversion and target name edge. Do not proceed to selector transformation until the whole selector path is explicit, complete for the symbol, pinned, licensed, and independently validated.
+**Decision:** retain this as a bounded, read-only feasibility audit. First validate the corrected descriptor classification and regenerate its measurements. Then use the reviewed output to design the next owner/member/descriptor-qualified SRG conversion and target name edge. Do not proceed to selector transformation until the whole selector path is explicit, complete for the symbol, version-pinned, and independently validated.
+
+
+
+## Validated report checkpoint — 2026-11-15
+
+The user regenerated the JSON after the corrected forced loader test. Artifact fingerprints matched the pinned inputs:
+- MCPConfig joined.tsrg: SHA-256 19ae000175bfb58e5b26406c31a0e501bfb40000b078fee2f00ea60a8c7ed453.
+- Fabric Intermediary 1.20.1: SHA-256 5a808bd1ebc4a9ee7d1c5900dbd2bf391586b536c3d86fbf2f972047faa2d165.
+- Fabric Intermediary 1.21.1: SHA-256 83071b5b17866658463255f5f21430ade2a49ce2dd089dc3c14de1e93b99211c.
+
+Current class measurements: 7,413/7,436 source rows joined; 7,011 source Intermediary class IDs shared with target; 402 source IDs absent from target; 1,234 target-only IDs.
+
+Current method measurements: 34,390/48,575 source rows joined; 14,185 source rows not joined; 221 source owner-unmapped; 36 source descriptor-unresolved; 11,295 external-descriptor rows (16,974 occurrences); 20,131 fully exact target owner/member/descriptor rows; 9,232 external-descriptor passthrough candidates (not exact); 1,686 descriptor-changed; 35 target descriptor-unresolved; 108 owner-changed; 2,977 target member IDs absent; 0 target ambiguities. There are 32,982 distinct source SRG method tokens, and 188 are reused across distinct Intermediary symbols.
+
+Current field measurements: 31,003/31,003 source rows joined; 86 source owner-unmapped; 22 source descriptor-unresolved; 5,700 external-descriptor rows; 22,813 fully exact target rows; 4,866 external passthrough candidates (not exact); 791 descriptor-changed; 21 target descriptor-unresolved; 110 owner-changed; 2,316 target member IDs absent; 0 target ambiguities.
+
+The corrected test-only fixture fix in commit 9dee3dca648b137590e8879eaf0705bc8422e2d4 placed the method row under the intended TSRG2 owner. No production code changed in that correction. The user reran :loader:clean :loader:test --no-daemon --console=plain --rerun-tasks and supplied BUILD SUCCESSFUL in 34s; 20 actionable tasks executed. The successful console excerpt does not give an exact test count, so do not restate the earlier 506 count as the successful count without inspecting test-result XML.
+
+The report remains PARTIAL. It does not establish a complete Forge SRG selector path, does not transform selectors, and does not produce a runtime mapping table. External passthrough types have not been proven present in the target runtime classpath.

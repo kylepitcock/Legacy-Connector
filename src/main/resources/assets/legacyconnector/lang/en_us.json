@@ -105,5 +105,11 @@
   "attribute.name.generic.attackDamage": "Attack Damage",
   "attribute.name.horse.jumpStrength": "Horse Jump Strength",
   "attribute.name.zombie.spawnReinforcements": "Zombie Reinforcements",
-  "entity.legacyconnector.legacy_entity": "Legacy entity"
+  "entity.legacyconnector.legacy_entity": "Legacy entity",
+  "entity.legacyconnector.vanilla_arrow_b1_7_3": "Arrow",
+  "entity.legacyconnector.arrow_b1_7_3": "Projectile",
+  "entity.legacyconnector.thrown_b1_7_3": "Thrown object",
+  "entity.legacyconnector.entity_b1_7_3": "Legacy entity",
+  "entity.legacyconnector.lightning_b1_7_3": "Lightning",
+  "entity.legacyconnector.item_entity_b1_7_3": "Item"
 }

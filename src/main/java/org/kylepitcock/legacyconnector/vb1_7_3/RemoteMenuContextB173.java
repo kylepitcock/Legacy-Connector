@@ -35,7 +35,13 @@ final class RemoteMenuContextB173 {
         if(container==null||container.slots.size()>MAX_SLOTS)return context;
         Set<BlockEntity> seen=Collections.newSetFromMap(new IdentityHashMap<>());
         try{
-            for(var slot:container.slots)if(slot.inventory instanceof BlockEntity tile&&seen.add(tile)){
+            var owners=new ArrayList<Object>();
+            for(var slot:container.slots){
+                // a large chest's slots belong to the pair: both halves are captured
+                if(slot.inventory instanceof legacyconnector.vb1_7_3.net.minecraft.inventory.DoubleInventory both){owners.add(both.mcc$first());owners.add(both.mcc$second());}
+                else owners.add(slot.inventory);
+            }
+            for(var owner:owners)if(owner instanceof BlockEntity tile&&seen.add(tile)){
                 String type=BlockEntity.mcc$idOf(tile.getClass());if(type==null)continue;
                 if(tiles.size()>=MAX_TILES)return new CompoundTag();
                 var snapshot=new NbtCompound();tile.writeNbt(snapshot);
@@ -73,11 +79,15 @@ final class RemoteMenuContextB173 {
     static HandledScreen reconstruct(String name,CompoundTag context,net.minecraft.world.entity.player.Inventory inventory,int[][] layout){
         if(inventory.player.level()==null||!inventory.player.level().isClientSide)return null;
         try{
-            var type=installed(name);if(type==null||!bounded(context))return null;
+            var type=installed(name);if(type==null){MenusB173.trace("{} is not rebuilt: no installed screen class of that name",name);return null;}
+            if(!bounded(context)){MenusB173.trace("{} is not rebuilt: its context is too large",name);return null;}
             try(var views=EntityViewsB173.readOnly();
                     var minecraft=legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$context(World.mcc$wrap(inventory.player.level()),null)){
                 var player=PlayerViewB173.of(inventory.player);
-                return construct(type,context,player.inventory,player.world,layout);
+                var gui=construct(type,context,player.inventory,player.world,layout);
+                if(gui==null)MenusB173.trace("{} is not rebuilt: context {} does not make it (constructor recorded: {})",name,
+                        context.getAllKeys(),context.contains("constructor")?context.getCompound("constructor"):"no");
+                return gui;
             }
         }catch(java.io.IOException|ReflectiveOperationException|RuntimeException|LinkageError error){
             LOG.warn("Cannot reconstruct original remote menu {}",name,error);return null;
@@ -87,8 +97,10 @@ final class RemoteMenuContextB173 {
     static HandledScreen construct(Class<? extends HandledScreen> type,CompoundTag context,PlayerInventory inventory,World world,int[][] layout)throws ReflectiveOperationException{
         if(layout.length>MAX_SLOTS)return null;
         if(context.getBoolean("player"))return PlayerMenuContextB173.construct(type,inventory.player,layout);
-        var entries=context.getList("tiles",Tag.TAG_COMPOUND);if(entries.isEmpty()||entries.size()>MAX_TILES)return null;
+        var entries=context.getList("tiles",Tag.TAG_COMPOUND);if(entries.size()>MAX_TILES)return null;
+        // a screen made from its recorded constructor may need no tile at all (a trader's screen takes the player and the trader)
         if(context.contains("constructor",Tag.TAG_COMPOUND))return constructCaptured(type,context,inventory,world,layout,entries);
+        if(entries.isEmpty())return null;
         java.lang.reflect.Constructor<?> selected=null;BlockEntity selectedTile=null;CompoundTag selectedNbt=null;
         for(Tag raw:entries){
             var entry=(CompoundTag)raw;var nbt=entry.getCompound("nbt");String id=entry.getString("type");
@@ -118,10 +130,12 @@ final class RemoteMenuContextB173 {
             if(tile==null||!id.equals(BlockEntity.mcc$idOf(tile.getClass()))||tiles.putIfAbsent(key,tile)!=null)return null;
             snapshots.put(tile,nbt);
         }
-        var prepared=MenuConstructorStateB173.prepare(type,context.getCompound("constructor"),inventory,tiles);
-        if(prepared==null)return null;
+        var prepared=MenuConstructorStateB173.prepare(type,context.getCompound("constructor"),inventory,tiles,world);
+        if(prepared==null){MenusB173.trace("{}: no constructor takes the recorded arguments here",type.getName());return null;}
         for(var entry:snapshots.entrySet())entry.getKey().readNbt(NbtB173.fromModern(entry.getValue()));
-        var gui=prepared.create();return matches(gui.container,layout)?gui:null;
+        var gui=prepared.create();
+        if(!matches(gui.container,layout)){MenusB173.trace("{}: the rebuilt screen's slots differ from the server's",type.getName());return null;}
+        return gui;
     }
     static boolean matches(ScreenHandler container,int[][] layout){
         if(container==null||layout.length>MAX_SLOTS||container.slots.size()!=layout.length)return false;

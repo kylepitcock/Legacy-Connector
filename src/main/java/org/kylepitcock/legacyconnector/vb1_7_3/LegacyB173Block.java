@@ -90,9 +90,64 @@ public class LegacyB173Block extends net.minecraft.world.level.block.Block imple
         builder.add(META);
     }
 
+    /** Render type -1 is drawn by the tile entity renderer (signs), not as a block model. */
+    @Override public net.minecraft.world.level.block.RenderShape getRenderShape(BlockState state){
+        int type=legacy.getRenderType();
+        return type==-1?net.minecraft.world.level.block.RenderShape.INVISIBLE:super.getRenderShape(state);
+    }
+
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        if (ownRaycast() && context instanceof net.minecraft.world.phys.shapes.EntityCollisionContext entityContext
+                && entityContext.getEntity() instanceof net.minecraft.world.entity.player.Player player && level instanceof net.minecraft.world.level.Level l) {
+            VoxelShape part = targetedPart(l, pos, player);
+            if (part != null) return part;
+        }
+        // Beta's empty bucket traced with liquids on (canCollideCheck(meta, true)): a mod fluid's source is hit, its flowing parts are not
+        if (context instanceof net.minecraft.world.phys.shapes.EntityCollisionContext entityContext
+                && entityContext.getEntity() instanceof net.minecraft.world.entity.player.Player player
+                && (player.getMainHandItem().is(net.minecraft.world.item.Items.BUCKET) || player.getOffhandItem().is(net.minecraft.world.item.Items.BUCKET))) {
+            int meta = state.getValue(META);
+            boolean[] liquid = {false};
+            call("canCollideCheck", () -> liquid[0] = !legacy.hasCollision(meta, false) && legacy.hasCollision(meta, true));
+            if (liquid[0]) return Shapes.block();
+        }
         return queryShape(state,level,pos,false);
+    }
+
+    private Boolean ownRaycast;
+    /** A block with its own {@code collisionRayTrace} (a multipart block picks the part a ray meets and sets its bounds to it). */
+    private boolean ownRaycast() {
+        Boolean own = ownRaycast;
+        if (own == null) ownRaycast = own = overrides(legacy, "raycast", World.class, int.class, int.class, int.class,
+                legacyconnector.vb1_7_3.net.minecraft.util.math.Vec3d.class, legacyconnector.vb1_7_3.net.minecraft.util.math.Vec3d.class);
+        return own;
+    }
+
+    /**
+     * Beta outlined and targeted what the block's own raytrace hit along the player's look, with the bounds it left: the part looked at.
+     * Empty when the ray meets no part (the native pick then goes on to what is behind), null when it cannot be asked.
+     */
+    private VoxelShape targetedPart(net.minecraft.world.level.Level level, BlockPos pos, net.minecraft.world.entity.player.Player player) {
+        var eye = player.getEyePosition();
+        var look = player.getViewVector(1.0F);
+        double reach = player.blockInteractionRange() + 1.0;
+        var from = legacyconnector.vb1_7_3.net.minecraft.util.math.Vec3d.create(eye.x, eye.y, eye.z);
+        var to = legacyconnector.vb1_7_3.net.minecraft.util.math.Vec3d.create(eye.x + look.x * reach, eye.y + look.y * reach, eye.z + look.z * reach);
+        synchronized (legacy) {
+            double[] bounds = {legacy.minX, legacy.minY, legacy.minZ, legacy.maxX, legacy.maxY, legacy.maxZ};
+            try (var views = EntityViewsB173.callbackScope()) {
+                var hit = legacy.raycast(World.mcc$wrap(level), pos.getX(), pos.getY(), pos.getZ(), from, to);
+                if (hit == null) return Shapes.empty();
+                double minX = legacy.minX, minY = legacy.minY, minZ = legacy.minZ, maxX = legacy.maxX, maxY = legacy.maxY, maxZ = legacy.maxZ;
+                if (maxX <= minX || maxY <= minY || maxZ <= minZ) return null;
+                return Shapes.box(Math.max(0, minX), Math.max(0, minY), Math.max(0, minZ), Math.min(1, maxX), Math.min(1, maxY), Math.min(1, maxZ));
+            } catch (RuntimeException | LinkageError e) {
+                return null;
+            } finally {
+                legacy.minX = bounds[0]; legacy.minY = bounds[1]; legacy.minZ = bounds[2]; legacy.maxX = bounds[3]; legacy.maxY = bounds[4]; legacy.maxZ = bounds[5];
+            }
+        }
     }
     @Override protected int getLightBlock(BlockState state,BlockGetter level,BlockPos pos) {
         // Beta's opacity table is independent of the opaque-cube flag (glass and leaves may absorb one level).
@@ -298,7 +353,7 @@ public class LegacyB173Block extends net.minecraft.world.level.block.Block imple
         // b1.7.3's ItemBlock set block and metadata in one go (getPlacedBlockMetadata of the stack's damage), so onBlockAdded and the tile
         // entity it makes see the subtype (Minefactory's translocator and crafter are metadata 7 and 8 of one block)
         if (state != null && context.getItemInHand().getItem() instanceof LegacyB173BlockItem) {
-            int damage = LegacyB173BlockItem.meta(context.getItemInHand());
+            int damage = LegacyB173BlockItem.damage(context.getItemInHand());
             int[] meta = {damage};
             var item = legacy.id >= 0 && legacy.id < legacyconnector.vb1_7_3.net.minecraft.item.Item.ITEMS.length
                     ? legacyconnector.vb1_7_3.net.minecraft.item.Item.ITEMS[legacy.id] : null;
@@ -342,11 +397,22 @@ public class LegacyB173Block extends net.minecraft.world.level.block.Block imple
     @Override
     public void stepOn(net.minecraft.world.level.Level level, BlockPos pos, BlockState state, net.minecraft.world.entity.Entity entity) {
         super.stepOn(level, pos, state, entity);
-        if (level.isClientSide) return;
+        if (level.isClientSide && !ownPlayer(entity)) return;
         var view=EntityViewsB173.wrap(entity);
         World world=view(level);
-        try(var context=legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$context(world,view)) { call("onEntityWalking", () -> legacy.onSteppedOn(world, pos.getX(), pos.getY(), pos.getZ(), view)); }
-        finally { EntityViewsB173.flush(); }
+        try(var context=legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$context(world,view);var motion=PlayerMotionB173.clientDriven(entity)) {
+            // flushed inside, while the server knows the player's client applies this motion itself
+            try { call("onEntityWalking", () -> legacy.onSteppedOn(world, pos.getX(), pos.getY(), pos.getZ(), view)); }
+            finally { EntityViewsB173.flush(); }
+        }
+    }
+
+    /**
+     * The client's own player: Beta's client ran a block's walking and collision callbacks for its player as that player moved (a conveyor
+     * carries it, a trampoline bounces it), and the server's copy of those callbacks did not push the player.
+     */
+    private static boolean ownPlayer(net.minecraft.world.entity.Entity entity) {
+        return entity instanceof net.minecraft.world.entity.player.Player player && player.isLocalPlayer();
     }
 
     @Override
@@ -357,12 +423,15 @@ public class LegacyB173Block extends net.minecraft.world.level.block.Block imple
                     && !entity.isPassenger() && !entity.isVehicle()
                     && net.neoforged.fml.loading.FMLEnvironment.dist.isClient())
                 call("portalPresentation", () -> org.kylepitcock.legacyconnector.vb1_7_3.client.DimensionClientB173.portalContact(entity,portal.getDimNumber()));
-            return;
+            if (!ownPlayer(entity) || legacy instanceof legacyconnector.vb1_7_3.net.minecraft.block.PortalBlock) return;
         }
         var view=EntityViewsB173.wrap(entity);
         World world=view(level);
-        try(var context=legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$context(world,view)) { call("onEntityCollidedWithBlock", () -> legacy.onEntityCollision(world, pos.getX(), pos.getY(), pos.getZ(), view)); }
-        finally { EntityViewsB173.flush(); }
+        try(var context=legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$context(world,view);var motion=PlayerMotionB173.clientDriven(entity)) {
+            // flushed inside, while the server knows the player's client applies this motion itself
+            try { call("onEntityCollidedWithBlock", () -> legacy.onEntityCollision(world, pos.getX(), pos.getY(), pos.getZ(), view)); }
+            finally { EntityViewsB173.flush(); }
+        }
     }
 
     @Override
@@ -388,6 +457,74 @@ public class LegacyB173Block extends net.minecraft.world.level.block.Block imple
         boolean[] on = new boolean[1];
         call("isIndirectlyPoweringTo", () -> on[0] = legacy.canTransferPowerInDirection(view(l), pos.getX(), pos.getY(), pos.getZ(), direction.get3DDataValue()));
         return on[0] ? 15 : 0;
+    }
+
+    private Boolean ownStrength;
+    /** A block with its own mining speed (Beta's {@code blockStrength}, Forge's metadata or position forms: a multipart block answers for the part looked at). */
+    private boolean ownStrength() {
+        Boolean own = ownStrength;
+        if (own == null) {
+            var player = legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity.class;
+            own = overrides(legacy, "getHardness", player) || overrides(legacy, "blockStrength", World.class, player, int.class, int.class, int.class)
+                    || overrides(legacy, "blockStrength", player, int.class) || overrides(legacy, "canHarvestBlock", player, int.class)
+                    || overrides(legacy, "getHardness", int.class);
+            ownStrength = own;
+        }
+        return own;
+    }
+
+    @Override
+    protected float getDestroyProgress(BlockState state, net.minecraft.world.entity.player.Player player, BlockGetter level, BlockPos pos) {
+        if (!ownStrength() || !(level instanceof net.minecraft.world.level.Level l)) return super.getDestroyProgress(state, player, level, pos);
+        float[] strength = {0F};
+        PlayerViewB173 view = PlayerViewB173.of(player);
+        World w = World.mcc$wrap(l);
+        try (var context = legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$context(w, view)) {
+            // Forge's PlayerController asked the position form, which reads the metadata there
+            call("blockStrength", () -> strength[0] = legacy.blockStrength(w, view, pos.getX(), pos.getY(), pos.getZ()));
+        }
+        return strength[0];
+    }
+
+    /** Forge's {@code IConnectRedstone}: redstone dust beside the block connects as the block answers (Beta's direction from the dust: 0 south, 1 west, 2 north, 3 east, -1 above or below). */
+    @Override
+    public boolean canConnectRedstone(BlockState state, BlockGetter level, BlockPos pos, net.minecraft.core.Direction direction) {
+        if (!(legacy instanceof legacyconnector.vb1_7_3.net.minecraft.src.forge.IConnectRedstone connects) || !(level instanceof net.minecraft.world.level.Level l))
+            return super.canConnectRedstone(state, level, pos, direction);
+        int dir = direction == null ? -1 : switch (direction) {
+            case SOUTH -> 0; case WEST -> 1; case NORTH -> 2; case EAST -> 3; default -> -1;
+        };
+        boolean[] connects0 = {false};
+        call("canConnectRedstone", () -> connects0[0] = connects.canConnectRedstone(World.mcc$wrap(l), pos.getX(), pos.getY(), pos.getZ(), dir));
+        return connects0[0];
+    }
+
+    /**
+     * Forge's {@code IOverrideReplace}: the write that removes a broken block asks the block first, and a refused write reports
+     * {@code getReplacedSuccess} (a multipart block keeps standing; its {@code harvestBlock} then removes only the part that was mined).
+     */
+    @Override
+    public boolean onDestroyedByPlayer(BlockState state, net.minecraft.world.level.Level level, BlockPos pos, net.minecraft.world.entity.player.Player player,
+            boolean willHarvest, net.minecraft.world.level.material.FluidState fluid) {
+        if (legacy instanceof legacyconnector.vb1_7_3.net.minecraft.src.forge.IOverrideReplace override && !level.isClientSide) {
+            boolean[] refused = {false}, success = {true};
+            World w = view(level);
+            call("canReplaceBlock", () -> { if (!override.canReplaceBlock(w, pos.getX(), pos.getY(), pos.getZ(), 0)) { refused[0] = true; success[0] = override.getReplacedSuccess(); } });
+            if (refused[0]) {
+                playerWillDestroy(level, pos, state, player);
+                // a creative player gets no harvest callback from the native game; Beta's harvestBlock is what takes the mined part away
+                if (player.getAbilities().instabuild && ownHarvest()) {
+                    PlayerViewB173 view = PlayerViewB173.of(player);
+                    int meta = state.getValue(META);
+                    try (var context = legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$context(w, view)) {
+                        call("harvestBlock", () -> legacy.afterBreak(w, view, pos.getX(), pos.getY(), pos.getZ(), meta));
+                    }
+                    view.writeBack();
+                }
+                return success[0];
+            }
+        }
+        return super.onDestroyedByPlayer(state, level, pos, player, willHarvest, fluid);
     }
 
     /**

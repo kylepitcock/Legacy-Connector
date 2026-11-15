@@ -9,6 +9,9 @@ public final class Keyboard {
         var minecraft=legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$instance();
         var player=legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$get$player(minecraft);
         if(player!=null&&player.mcc$modern instanceof net.minecraft.server.level.ServerPlayer nativePlayer&&code==legacyconnector.vb1_7_3.net.minecraft.client.option.KeyBinding.mcc$get$code(minecraft.options.jumpKey))return org.kylepitcock.legacyconnector.vb1_7_3.EntityFieldsB173.jumpInput(nativePlayer);
+        // a server-side tick of a player (a mod's OnTickInGame for that player) reads the keys that player's client reports
+        if(player!=null&&player.mcc$modern instanceof net.minecraft.server.level.ServerPlayer nativePlayer)
+            return org.kylepitcock.legacyconnector.vb1_7_3.KeyBindingsB173.rawHeld(nativePlayer,code);
         return KEYS.test(code);
     }
     private Keyboard(){}

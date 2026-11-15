@@ -150,6 +150,65 @@ public final class AssetsB173 implements GeneratedPack.Contributor {
         if(reference==null)return null;var id=ResourceLocation.parse(reference);return ResourceLocation.fromNamespaceAndPath(id.getNamespace(),"textures/"+id.getPath()+".png");
     }
 
+    private static final Map<String,Map<Integer,String>> SHEET_TEXTURES=new java.util.concurrent.ConcurrentHashMap<>();
+    /** The sprites of a sheet a Forge world renderer binds by name ({@code MinecraftForgeClient.bindTexture("/eloraam/wiring/redpower1.png")}), by index. */
+    public static Map<Integer,String> sheetTextures(String sheet){
+        if(sheet==null)return Map.of();
+        return SHEET_TEXTURES.getOrDefault(sheet.startsWith("/")?sheet:"/"+sheet,Map.of());
+    }
+
+    /**
+     * Forge's world renderers bind their own sheets by name while a block is drawn. Which ones only shows when a block is drawn, after the
+     * atlas is stitched, so every sheet-shaped image (square, 16 tiles a side) in the jars of the Beta mod set (once any block has its own world renderer) gets
+     * its drawn tiles stitched, and terrain.png is there for a renderer that switches back to it.
+     */
+    /** A plain white sprite: faces a Forge renderer draws with texturing off are this, in their vertex colour. */
+    public static final String WHITE="legacyconnector:block/b173/white";
+    private void worldSheets(){
+        var white=new BufferedImage(16,16,BufferedImage.TYPE_INT_ARGB);
+        for(int y=0;y<16;y++)for(int x=0;x<16;x++)white.setRGB(x,y,0xFFFFFFFF);
+        write(null,"white",white);
+        var mods=new java.util.LinkedHashSet<LegacyModRecord>();
+        for(Block block:ContentB173.blocks()){
+            if(!(block.mcc$owner instanceof LegacyModRecord mod)||!(block.mcc$modern instanceof LegacyB173Block)||!BlockRenderB173.hasRenderer(safe(block::getRenderType,0)))continue;
+            mods.add(mod);
+            // a block is often registered by another mod of its family (RedPower Array's cells by Logic): its sheets sit in the jar of its class
+            var defining=ContentB173.ownerOf(block.getClass());if(defining!=null)mods.add(defining);
+            var renderer=BlockRenderB173.renderer(safe(block::getRenderType,0));
+            if(renderer!=null){var owner=ContentB173.ownerOf(renderer.getClass());if(owner!=null)mods.add(owner);}
+        }
+        if(mods.isEmpty())return;
+        // a renderer binds a sheet by its path, which may sit in any jar of the mod set (RedPower's array cells are Logic's block, drawn from Array's sheet)
+        for(var mod:LegacyMods.all())if(PlatformB173.VERSION.equals(mod.version))mods.add(mod);
+        var terrain=new java.util.TreeMap<Integer,String>();
+        for(int index=0;index<256;index++){String ref=texture(null,TERRAIN,index,false);if(ref!=null&&!ref.equals(MISSING))terrain.put(index,ref);}
+        SHEET_TEXTURES.put(TERRAIN,Map.copyOf(terrain));
+        for(var mod:mods){
+            java.nio.file.Path root;
+            try{root=mod.container.getModInfo().getOwningFile().getFile().getSecureJar().getRootPath();}
+            catch(RuntimeException e){continue;}
+            try(var files=Files.walk(root)){
+                for(var file:(Iterable<Path>)files.filter(f->f.toString().toLowerCase(Locale.ROOT).endsWith(".png"))::iterator){
+                    String sheet="/"+root.relativize(file).toString().replace(root.getFileSystem().getSeparator(),"/");
+                    if(sheet.equals(TERRAIN)||sheet.equals(ITEMS)||SHEET_TEXTURES.containsKey(sheet))continue;
+                    BufferedImage img=sheets.computeIfAbsent(sheet,s->image(mod,s));
+                    if(img==null||img.getWidth()!=img.getHeight()||img.getWidth()<64||img.getWidth()%16!=0)continue;
+                    int tile=img.getWidth()/16;var palette=new java.util.TreeMap<Integer,String>();
+                    for(int index=0;index<256;index++){
+                        if(blank(img,(index%16)*tile,(index/16)*tile,tile))continue;
+                        String ref=texture(mod,sheet,index,false);
+                        if(ref!=null&&!ref.equals(MISSING))palette.put(index,ref);
+                    }
+                    if(!palette.isEmpty())SHEET_TEXTURES.put(sheet,Map.copyOf(palette));
+                }
+            }catch(IOException|RuntimeException e){LOG.debug("b1.7.3 sheets of {} not listed: {}",mod.legacyId,e.toString());}
+        }
+    }
+    private static boolean blank(BufferedImage img,int x0,int y0,int tile){
+        for(int y=y0;y<y0+tile;y++)for(int x=x0;x<x0+tile;x++)if((img.getRGB(x,y)>>>24)!=0)return false;
+        return true;
+    }
+
     /** Palette baked into the atlas for world-dependent face selection. */
     public static Map<Integer,String> worldTextures(Block block) { return WORLD_TEXTURES.getOrDefault(block,Map.of()); }
     public static boolean usesWorldTextures(Block block) {
@@ -208,6 +267,7 @@ public final class AssetsB173 implements GeneratedPack.Contributor {
         ProjectileTexturesB173.contribute(out);
         sprites.clear();
         SPRITE_REFS.clear();
+        SHEET_TEXTURES.clear();
         sheets.clear();
         withAlpha.clear();
         missing = 0;
@@ -239,6 +299,7 @@ public final class AssetsB173 implements GeneratedPack.Contributor {
                 LOG.warn("No model for b1.7.3 item {}: {}", item, e.toString());
             }
         }
+        worldSheets();
         LOG.info("b1.7.3 assets: {} blocks, {} items, {} textures; {} sprite references without a texture", blocks, items,
                 sprites.values().stream().filter(s -> !s.startsWith("minecraft:")).distinct().count(), missing);
         this.out = null;

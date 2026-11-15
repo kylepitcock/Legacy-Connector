@@ -41,7 +41,8 @@ public final class LegacyCoreModTransformers {
     private static final String API_RESOURCE = "legacyconnector/legacy/%s/coremod-api.jar";
 
     /** @param afterDeobf its plugin sorts after FML's deobfuscation (sorting index above 1000): it saw Minecraft's classes in SRG names */
-    private record Transformer(String name, Object instance, boolean afterDeobf) {}
+    /** {@code mc}: the Minecraft version of the jar the transformer comes from (one class loader serves 1.6.4, 1.5.2 and 1.4.7 jars). */
+    private record Transformer(String name, Object instance, boolean afterDeobf, String mc) {}
 
     private final List<Transformer> transformers = new ArrayList<>();
     private final Set<String> exclusions;
@@ -186,7 +187,7 @@ public final class LegacyCoreModTransformers {
                         if (name == null || name.isBlank()) continue;
                         try {
                             Object instance = Class.forName(name.trim(), true, lcl).getDeclaredConstructor().newInstance();
-                            if (transformerType.isInstance(instance)) created.add(new Transformer(name.trim(), instance, p.index() > 1000));
+                            if (transformerType.isInstance(instance)) created.add(new Transformer(name.trim(), instance, p.index() > 1000, jar.version.id()));
                         } catch (Throwable e) {
                             LOG.warn("Legacy Connector: class transformer {} of {} could not be created and is skipped: {}", name, jar.fileName(), rootChain(e));
                         }
@@ -241,7 +242,7 @@ public final class LegacyCoreModTransformers {
                                 try {
                                     Object instance = Class.forName(name, true, lcl).getDeclaredConstructor().newInstance();
                                     if (transformerType.isInstance(instance) && out.stream().noneMatch(o -> o.name().equals(name))) {
-                                        out.add(new Transformer(name, instance, false));
+                                        out.add(new Transformer(name, instance, false, jar.version.id()));
                                         owners.put(name, jar.fileName());
                                     }
                                 } catch (Throwable e) {
@@ -456,10 +457,11 @@ public final class LegacyCoreModTransformers {
      * which hooks a coremod puts where (see {@code CoremodHookDiscovery}).
      *
      * @param afterDeobf which transformers: those sorted after FML's deobfuscation, or those before it
+     * @param mc the Minecraft version the class is from: only the transformers of that version's jars see it
      */
-    public synchronized void applyToVanilla(String name, String transformedName, byte[] bytes, boolean afterDeobf, VanillaResult out) {
+    public synchronized void applyToVanilla(String name, String transformedName, byte[] bytes, boolean afterDeobf, String mc, VanillaResult out) {
         for (Transformer t : transformers) {
-            if (t.afterDeobf != afterDeobf) continue;
+            if (t.afterDeobf != afterDeobf || !t.mc.equals(mc)) continue;
             try {
                 byte[] next = (byte[]) transform.invoke(t.instance, name, transformedName, bytes.clone());
                 if (next != null && !java.util.Arrays.equals(next, bytes)) out.accept(t.name, next);

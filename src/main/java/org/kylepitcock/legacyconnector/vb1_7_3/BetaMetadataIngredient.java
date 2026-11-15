@@ -22,10 +22,9 @@ public record BetaMetadataIngredient(Item item,int metadata) implements ICustomI
     public static final DeferredHolder<IngredientType<?>,IngredientType<BetaMetadataIngredient>> TYPE=REGISTER.register("beta_metadata",()->new IngredientType<>(CODEC));
     @Override public boolean test(ItemStack stack){
         if(!stack.is(item))return false;
-        var state=stack.get(DataComponents.BLOCK_STATE);
         int actual;
         if(stack.getItem() instanceof net.minecraft.world.item.BlockItem block&&block.getBlock() instanceof LegacyB173Block)
-            actual=state==null||state.get(LegacyB173Block.META)==null?0:state.get(LegacyB173Block.META);
+            actual=LegacyB173BlockItem.damage(stack);
         else if(stack.isDamageableItem())actual=stack.getDamageValue();
         else actual=stack.getOrDefault(DataComponents.CUSTOM_DATA,CustomData.EMPTY).copyTag().getInt("b173_meta");
         return actual==metadata;
@@ -33,7 +32,7 @@ public record BetaMetadataIngredient(Item item,int metadata) implements ICustomI
     @Override public Stream<ItemStack> getItems(){
         var stack=new ItemStack(item);if(stack.isDamageableItem())stack.setDamageValue(metadata);
         else if(stack.getItem() instanceof net.minecraft.world.item.BlockItem block&&block.getBlock() instanceof LegacyB173Block)
-            stack.set(DataComponents.BLOCK_STATE,net.minecraft.world.item.component.BlockItemStateProperties.EMPTY.with(LegacyB173Block.META,metadata&15));
+            {stack.set(DataComponents.BLOCK_STATE,net.minecraft.world.item.component.BlockItemStateProperties.EMPTY.with(LegacyB173Block.META,metadata&15));LegacyB173BlockItem.setFullDamage(stack,metadata);}
         else if(metadata!=0){var tag=new net.minecraft.nbt.CompoundTag();tag.putInt("b173_meta",metadata);stack.set(DataComponents.CUSTOM_DATA,CustomData.of(tag));}
         return Stream.of(stack);
     }

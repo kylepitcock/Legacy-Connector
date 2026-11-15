@@ -104,7 +104,11 @@ public final class CoreModPlugins1122 {
         data.put("mcLocation", gameDir);
         data.put("coremodList", new ArrayList<>());
         data.put("coremodLocation", null);
-        data.put("runtimeDeobfuscationEnabled", Boolean.FALSE);
+        // Production stance, as the loader's build-time coremod stage (LegacyCoreModTransformers) and Launch.blackboard["fml.deobfuscatedEnvironment"]
+        // = false already say. A plugin told "development environment" reads ForgeGradle's fields.csv/methods.csv (GradleStartCommon.CSV_DIR),
+        // which do not exist here; told "production" it uses SRG names, and reflection resolves both kinds (ReflectionCompat + SrgNames, the
+        // shim ReflectionHelper's name lists).
+        data.put("runtimeDeobfuscationEnabled", Boolean.TRUE);
         data.put("mcVersion", "1.12.2");
         try {
             Method inject = find(plugin.getClass(), "injectData", Map.class);

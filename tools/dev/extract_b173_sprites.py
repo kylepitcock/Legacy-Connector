@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Refill src/main/resources/legacyconnector/b173/vanilla_sprites from a b1.7.3 terrain.png (a minecraft.jar's, 256x256, 16x16 tiles).
 
-Only the tiles the layer cannot take from a modern texture are cut out: the chest (25 top, 26 side, 27 front) and the fluids (205/206 water,
+Only the tiles the layer cannot take from a modern texture are cut out: the chest (25 top, 26 side, 27 front, 41/42 and 57/58 the
+large chest's front and back halves) and the fluids (205/206 water,
 237/238 lava). The source image is the caller's own; nothing but these tiles is kept in the repository.
 
 usage: extract_b173_sprites.py <terrain.png>
@@ -10,7 +11,8 @@ import sys
 from pathlib import Path
 from PIL import Image
 
-TILES = {25: 'chest_top', 26: 'chest_side', 27: 'chest_front', 205: 'water_still', 206: 'water_flow', 237: 'lava_still', 238: 'lava_flow'}
+TILES = {25: 'chest_top', 26: 'chest_side', 27: 'chest_front', 41: 'large_chest_front_left', 42: 'large_chest_front_right',
+         57: 'large_chest_back_left', 58: 'large_chest_back_right', 205: 'water_still', 206: 'water_flow', 237: 'lava_still', 238: 'lava_flow'}
 OUT = Path(__file__).resolve().parents[2] / 'src/main/resources/legacyconnector/b173/vanilla_sprites'
 
 def main():

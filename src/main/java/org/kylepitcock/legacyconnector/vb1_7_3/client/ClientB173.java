@@ -27,6 +27,7 @@ public final class ClientB173 implements MenusB173.Client {
             var mc=Minecraft.getInstance();mc.execute(()->mc.gui.setOverlayMessage(net.minecraft.network.chat.Component.literal(text),true));
         });
         KeyClientB173.register(modBus);
+        HighlightClientB173.install();
         LoadingProgressB173.register();
         legacyconnector.vb1_7_3.net.minecraft.client.option.GameOptions.mcc$graphics(Minecraft::useFancyGraphics);
         modBus.addListener((net.neoforged.neoforge.client.event.RegisterDimensionSpecialEffectsEvent event) ->
@@ -196,6 +197,8 @@ public final class ClientB173 implements MenusB173.Client {
                 };
                 if(target!=null){if(mc.screen instanceof ServerGuiScreenB173 remote)remote.suspendForNativeScreen();setScreen(target);}return;
             }
+            // a menu's screen drawn by the server: to the open container screen of that menu, never a screen of its own
+            if(frame.contains("menu")){if(mc.screen instanceof LegacyB173Screen menu&&menu.getMenu().containerId==frame.getInt("menu")&&!frame.getBoolean("closed"))menu.remoteFrame(frame);return;}
             if(frame.getBoolean("closed")){if(mc.screen instanceof ServerGuiScreenB173 remote&&(frame.getInt("id")==0||remote.sessionId()==frame.getInt("id")))remote.closeFromServer();return;}
             if(mc.screen instanceof ServerGuiScreenB173 remote&&remote.sessionId()==frame.getInt("id"))remote.frame(frame);
             else mc.setScreen(new ServerGuiScreenB173(frame));

@@ -44,6 +44,8 @@ public class World implements BlockView {
     public Random random = new Random();
     public boolean isRemote;
     public WorldProperties properties = new WorldProperties(this);
+    /** Beta's {@code getWorldInfo}: the world's properties (name, seed, spawn, time, weather). */
+    public WorldProperties getProperties() { return properties; }
     public int saveInterval = 40;
     public legacyconnector.vb1_7_3.net.minecraft.world.storage.WorldStorage storage = new legacyconnector.vb1_7_3.net.minecraft.world.storage.AlphaWorldStorage(this);
     public legacyconnector.vb1_7_3.net.minecraft.world.dimension.Dimension dimension = new legacyconnector.vb1_7_3.net.minecraft.world.dimension.Dimension();
@@ -225,9 +227,23 @@ public class World implements BlockView {
         if (mcc$level == null) return null;
         if(org.kylepitcock.legacyconnector.vb1_7_3.WorldGenWritesB173.outside(this,pos(x,y,z)))return org.kylepitcock.legacyconnector.vb1_7_3.WorldGenWritesB173.tile(this,pos(x,y,z));
         var access=mcc$access();requireRegionChunk(x>>4,z>>4);
-        var nativeBlockEntity=access.getBlockEntity(pos(x,y,z));
+        var nativeBlockEntity=nativeBlockEntity(access,pos(x,y,z));
         if(nativeBlockEntity instanceof org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173BlockEntity host)return host.legacy();
         var view=org.kylepitcock.legacyconnector.vb1_7_3.BlockEntityViewsB173.wrap(nativeBlockEntity);if(view!=null)view.world=this;return view;
+    }
+
+    /**
+     * The native block entity at a place. A screen handed from the server to the client in one process (Beta single player had one world)
+     * reads the server's world from the render thread, where {@code Level.getBlockEntity} answers null by design: the server thread is asked.
+     */
+    private static net.minecraft.world.level.block.entity.BlockEntity nativeBlockEntity(net.minecraft.world.level.LevelAccessor access,BlockPos pos){
+        if(access instanceof net.minecraft.server.level.ServerLevel server&&!server.getServer().isSameThread()){
+            // asked on the server thread (which answers its queue even while the game is paused), bounded so a stalled server cannot hang the screen
+            try{return server.getServer().submit(()->server.getBlockEntity(pos)).get(2,java.util.concurrent.TimeUnit.SECONDS);}
+            catch(InterruptedException e){Thread.currentThread().interrupt();return null;}
+            catch(java.util.concurrent.ExecutionException|java.util.concurrent.TimeoutException e){return null;}
+        }
+        return access.getBlockEntity(pos);
     }
 
     /** MCP {@code setBlockTileEntity}: only a block with a tile entity can hold one. */
@@ -319,6 +335,11 @@ public class World implements BlockView {
                     new legacyconnector.vb1_7_3.net.minecraft.src.Loc(x,y,z),id);
         BlockPos p = pos(x, y, z);
         BlockState previous=state(x,y,z);
+        // Forge's Chunk.setBlockID: a block that overrides replacement may refuse the write, which then reports its getReplacedSuccess
+        if(previous.getBlock() instanceof org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Block hosted
+                &&hosted.legacy() instanceof legacyconnector.vb1_7_3.net.minecraft.src.forge.IOverrideReplace override
+                &&(BlocksB173.legacyId(previous)!=id||BlocksB173.legacyMeta(previous)!=meta)
+                &&!override.canReplaceBlock(this,x,y,z,id))return override.getReplacedSuccess();
         if(inferDoorHalf&&BlocksB173.legacyId(previous)==id
                 &&org.kylepitcock.legacyconnector.vb1_7_3.VanillaBlockStatesB173.isTorch(id,previous))return false;
         BlockState next = BlocksB173.modernState(id, meta);
@@ -344,9 +365,30 @@ public class World implements BlockView {
         var access=mcc$access();if(!org.kylepitcock.legacyconnector.core.worldgen.InPlaceStructureGuard.allowWrite(access,p,next))return false;
         boolean changed=access.setBlock(p,next,writeFlags(access instanceof net.minecraft.server.level.WorldGenRegion?2:flags));
         if(changed&&chestChange)chestChanged(p);
+        if(changed&&(next.getBlock() instanceof net.minecraft.world.level.block.CrossCollisionBlock||previous.getBlock() instanceof net.minecraft.world.level.block.CrossCollisionBlock))connectBars(p);
         // Original onBlockAdded drops an unsupported torch. Native destruction owns loot and neighbor updates.
         if(changed&&unsupportedTorch&&state(x,y,z)==next)access.destroyBlock(p,true);
         return changed;
+    }
+
+    /** Beta fences and panes joined their neighbours when drawn; batched writes (no neighbour notification) leave the native connection flags stale. */
+    private void connectBars(BlockPos pos){
+        var access=mcc$access();
+        if(access==null)return;
+        var around=new java.util.ArrayList<BlockPos>();around.add(pos);
+        for(var side:net.minecraft.core.Direction.Plane.HORIZONTAL)around.add(pos.relative(side));
+        for(var at:around){
+            if(!access.hasChunkAt(at))continue;
+            BlockState current=access.getBlockState(at);
+            if(!(current.getBlock() instanceof net.minecraft.world.level.block.CrossCollisionBlock))continue;
+            BlockState updated=current;
+            for(var side:net.minecraft.core.Direction.Plane.HORIZONTAL){
+                var neighbour=at.relative(side);
+                if(access.hasChunkAt(neighbour))updated=updated.updateShape(side,access.getBlockState(neighbour),access,at,neighbour);
+            }
+            if(updated!=current&&org.kylepitcock.legacyconnector.core.worldgen.InPlaceStructureGuard.allowWrite(access,at,updated))
+                access.setBlock(at,updated,net.minecraft.world.level.block.Block.UPDATE_CLIENTS|net.minecraft.world.level.block.Block.UPDATE_KNOWN_SHAPE);
+        }
     }
 
     private void chestChanged(BlockPos pos){
@@ -757,6 +799,12 @@ public class World implements BlockView {
     private static boolean legacyVisible(net.minecraft.world.entity.Entity entity){
         return !(entity instanceof net.minecraft.world.entity.item.ItemEntity item)||StacksB173.canRepresent(item.getItem());
     }
+    /** Kept apart so the client-only level class is never resolved on a dedicated server. */
+    private static final class ClientEntities {
+        static void add(Level level,List<net.minecraft.world.entity.Entity> out){
+            if(level instanceof net.minecraft.client.multiplayer.ClientLevel client)client.entitiesForRendering().forEach(out::add);
+        }
+    }
     /** Each traversal reflects the level's current representable entities and preserves hosted originals. */
     private List<Object> liveEntities(boolean onlyPlayers) {
         return new java.util.AbstractList<>() {
@@ -765,8 +813,9 @@ public class World implements BlockView {
                 if(onlyPlayers)result.addAll(mcc$level.players());
                 else if(mcc$level instanceof net.minecraft.server.level.ServerLevel server)
                     server.getAllEntities().forEach(result::add);
-                else if(mcc$level instanceof net.minecraft.client.multiplayer.ClientLevel client)
-                    client.entitiesForRendering().forEach(result::add);
+                // the client class is resolved only on a client: a dedicated server refuses (and logs) every attempt
+                else if(mcc$level.isClientSide&&net.neoforged.fml.loading.FMLEnvironment.dist.isClient())
+                    ClientEntities.add(mcc$level,result);
                 result.removeIf(entity->!legacyVisible(entity));
                 return result;
             }

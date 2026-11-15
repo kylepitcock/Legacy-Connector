@@ -8,6 +8,66 @@ import net.minecraft.world.food.FoodData;
 public class FoodStats {
     private final FoodData mcc$food;
 
+    /** Phantom fields: accesses are redirected to the {@code mcc$get$}/{@code mcc$set$} accessors below. */
+    @Deprecated
+    public int foodLevel;
+    @Deprecated
+    public float foodSaturationLevel;
+    @Deprecated
+    public float foodExhaustionLevel;
+    @Deprecated
+    public int foodTimer;
+    @Deprecated
+    public int prevFoodLevel;
+
+    public static int mcc$get$foodLevel(FoodStats s) {
+        return s.mcc$food.getFoodLevel();
+    }
+
+    public static void mcc$set$foodLevel(FoodStats s, int v) {
+        s.mcc$food.setFoodLevel(v);
+    }
+
+    public static float mcc$get$foodSaturationLevel(FoodStats s) {
+        return s.mcc$food.getSaturationLevel();
+    }
+
+    public static void mcc$set$foodSaturationLevel(FoodStats s, float v) {
+        s.mcc$food.setSaturation(v);
+    }
+
+    public static float mcc$get$foodExhaustionLevel(FoodStats s) {
+        return s.mcc$food.getExhaustionLevel();
+    }
+
+    public static void mcc$set$foodExhaustionLevel(FoodStats s, float v) {
+        net.minecraft.nbt.CompoundTag tag = new net.minecraft.nbt.CompoundTag();
+        s.mcc$food.addAdditionalSaveData(tag);
+        tag.putFloat("foodExhaustionLevel", v);
+        s.mcc$food.readAdditionalSaveData(tag);
+    }
+
+    public static int mcc$get$foodTimer(FoodStats s) {
+        net.minecraft.nbt.CompoundTag tag = new net.minecraft.nbt.CompoundTag();
+        s.mcc$food.addAdditionalSaveData(tag);
+        return tag.getInt("foodTickTimer");
+    }
+
+    public static void mcc$set$foodTimer(FoodStats s, int v) {
+        net.minecraft.nbt.CompoundTag tag = new net.minecraft.nbt.CompoundTag();
+        s.mcc$food.addAdditionalSaveData(tag);
+        tag.putInt("foodTickTimer", v);
+        s.mcc$food.readAdditionalSaveData(tag);
+    }
+
+    public static int mcc$get$prevFoodLevel(FoodStats s) {
+        return s.mcc$food.getLastFoodLevel();
+    }
+
+    /** The modern game records the previous level itself at the start of each tick. */
+    public static void mcc$set$prevFoodLevel(FoodStats s, int v) {
+    }
+
     public FoodStats(FoodData food) {
         this.mcc$food = food;
     }

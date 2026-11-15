@@ -22,7 +22,7 @@ public final class MenuConstructorStateB173 {
         if(arguments==null||arguments.length>MAX_ARGUMENTS||descriptor==null||descriptor.length()>2048)return;
         var args=new ArrayList<Object>();
         for(Object value:arguments){
-            if(value instanceof Inventory)args.add(new WeakReference<>(value));
+            if(value instanceof Inventory||value instanceof legacyconnector.vb1_7_3.net.minecraft.entity.Entity)args.add(new WeakReference<>(value));
             else if(value instanceof String text&&text.length()<=MAX_STRING)args.add(text);
             else if(value instanceof Boolean||value instanceof Byte||value instanceof Short||value instanceof Character||value instanceof Integer||value instanceof Long
                     ||value instanceof Float f&&Float.isFinite(f)||value instanceof Double d&&Double.isFinite(d))args.add(value);
@@ -39,14 +39,27 @@ public final class MenuConstructorStateB173 {
             var entry=new CompoundTag();
             if(value instanceof PlayerInventory)entry.putString("kind","player");
             else if(value instanceof BlockEntity tile&&value instanceof Inventory){
-                String id=BlockEntity.mcc$idOf(tile.getClass());if(id==null)return null;
-                entry.putString("kind","tile");entry.putString("type",id);entry.putInt("x",tile.x);entry.putInt("y",tile.y);entry.putInt("z",tile.z);
+                if(!tile(entry,tile))return null;entry.putString("kind","tile");
+            }else if(value instanceof legacyconnector.vb1_7_3.net.minecraft.inventory.DoubleInventory both
+                    &&both.mcc$first() instanceof BlockEntity first&&both.mcc$second() instanceof BlockEntity second){
+                // a large chest: its two halves, made into one inventory again on the client
+                var a=new CompoundTag();var b=new CompoundTag();if(!tile(a,first)||!tile(b,second))return null;
+                entry.putString("kind","double");entry.putString("name",both.getName()==null?"":both.getName());entry.put("first",a);entry.put("second",b);
+            }else if(value instanceof legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity)entry.putString("kind","actor");
+            else if(value instanceof legacyconnector.vb1_7_3.net.minecraft.entity.Entity entity&&entity.mcc$modern!=null){
+                // an entity the screen is about (a trader): the client's copy of the same entity
+                entry.putString("kind","entity");entry.putInt("id",entity.mcc$modern.getId());entry.putString("class",entity.getClass().getName());
             }else if(value instanceof String text){entry.putString("kind","java.lang.String");entry.putString("value",text);}
             else put(entry,value);
             args.add(entry);
         }}catch(IllegalArgumentException unsupported){return null;}
         result.put("arguments",args);return result;
     }
+    private static boolean tile(CompoundTag entry,BlockEntity tile){
+        String id=BlockEntity.mcc$idOf(tile.getClass());if(id==null)return false;
+        entry.putString("type",id);entry.putInt("x",tile.x);entry.putInt("y",tile.y);entry.putInt("z",tile.z);return true;
+    }
+    private static String key(CompoundTag entry){return entry.getString("type")+":"+entry.getInt("x")+":"+entry.getInt("y")+":"+entry.getInt("z");}
     private static void put(CompoundTag entry,Object value){
         if(value instanceof Boolean v){entry.putString("kind","boolean");entry.putBoolean("value",v);}else if(value instanceof Byte v){entry.putString("kind","byte");entry.putByte("value",v);}
         else if(value instanceof Short v){entry.putString("kind","short");entry.putShort("value",v);}else if(value instanceof Character v){entry.putString("kind","char");entry.putInt("value",v);}
@@ -65,6 +78,10 @@ public final class MenuConstructorStateB173 {
         HandledScreen create()throws ReflectiveOperationException{return (HandledScreen)constructor.newInstance(arguments);}
     }
     static Prepared prepare(Class<? extends HandledScreen> type,CompoundTag state,PlayerInventory player,Map<String,BlockEntity> tiles){
+        return prepare(type,state,player,tiles,null);
+    }
+    static Prepared prepare(Class<? extends HandledScreen> type,CompoundTag state,PlayerInventory player,Map<String,BlockEntity> tiles,
+            legacyconnector.vb1_7_3.net.minecraft.world.World world){
         if(!state.contains("arguments",Tag.TAG_LIST)||state.getString("descriptor").length()>2048)return null;
         var raw=(ListTag)state.get("arguments");if(!raw.isEmpty()&&raw.getElementType()!=Tag.TAG_COMPOUND)return null;
         var entries=state.getList("arguments",Tag.TAG_COMPOUND);if(entries.size()>MAX_ARGUMENTS)return null;
@@ -75,7 +92,18 @@ public final class MenuConstructorStateB173 {
             for(int index=0;index<args.length;index++){
                 Class<?> parameter=parameters[index];var entry=entries.getCompound(index);String kind=entry.getString("kind");Object value;
                 if(Inventory.class.isAssignableFrom(parameter)&&kind.equals("player"))value=player;
-                else if(Inventory.class.isAssignableFrom(parameter)&&kind.equals("tile"))value=tiles.get(entry.getString("type")+":"+entry.getInt("x")+":"+entry.getInt("y")+":"+entry.getInt("z"));
+                else if(Inventory.class.isAssignableFrom(parameter)&&kind.equals("tile"))value=tiles.get(key(entry));
+                else if(Inventory.class.isAssignableFrom(parameter)&&kind.equals("double")){
+                    var first=tiles.get(key(entry.getCompound("first")));var second=tiles.get(key(entry.getCompound("second")));
+                    value=first instanceof Inventory a&&second instanceof Inventory b&&entry.getString("name").length()<=MAX_STRING
+                            ?new legacyconnector.vb1_7_3.net.minecraft.inventory.DoubleInventory(entry.getString("name"),a,b):null;
+                }
+                else if(kind.equals("actor"))value=player.player;
+                else if(kind.equals("entity")&&world!=null&&world.mcc$level()!=null){
+                    var modern=world.mcc$level().getEntity(entry.getInt("id"));
+                    value=modern==null?null:EntityViewsB173.wrap(modern);
+                    if(value!=null&&!value.getClass().getName().equals(entry.getString("class")))value=null;
+                }
                 else if(parameter==String.class&&kind.equals("java.lang.String")&&entry.contains("value",Tag.TAG_STRING)&&entry.getString("value").length()<=MAX_STRING)value=entry.getString("value");
                 else if(parameter.isPrimitive()&&kind.equals(parameter.getName()))value=primitive(parameter,entry);
                 else return null;

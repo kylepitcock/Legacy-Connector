@@ -15,6 +15,12 @@ public final class GL11 {
         if(RendererContextB173.active())RendererContextB173.color(r,g,b,a);else GuiDrawB173.color(r, g, b, a);
     }
 
+    /** Native lines have a fixed width; a highlight's thicker outline is drawn at that width. */
+    public static void glLineWidth(float width) {}
+
+    /** Overlays (a breaking texture on a part) are drawn by the native destroy overlay; the depth offset needs no state here. */
+    public static void glPolygonOffset(float factor, float units) {}
+
     public static void glColor3f(float r, float g, float b) {
         if(RendererContextB173.active())RendererContextB173.color(r,g,b,1);else GuiDrawB173.color(r, g, b, 1.0F);
     }
@@ -91,9 +97,9 @@ public final class GL11 {
         if(RendererContextB173.active())RendererContextB173.scale((float)x,(float)y,(float)z);else GuiDrawB173.scale((float) x, (float) y, (float) z);
     }
 
-    public static void glEnable(int cap) {if(RendererContextB173.active())RendererContextB173.enable(cap,true);else if(cap==3553)GuiDrawB173.texture2d(true);}
+    public static void glEnable(int cap) {if(cap==3553&&org.kylepitcock.legacyconnector.vb1_7_3.BlockRenderB173.capturing()){legacyconnector.vb1_7_3.net.minecraft.client.render.Tessellator.mcc$textured(true);return;}if(RendererContextB173.active())RendererContextB173.enable(cap,true);else if(cap==3553)GuiDrawB173.texture2d(true);else if(cap==2929)GuiDrawB173.depthTest(true);}
 
-    public static void glDisable(int cap) {if(RendererContextB173.active())RendererContextB173.enable(cap,false);else if(cap==3553)GuiDrawB173.texture2d(false);}
+    public static void glDisable(int cap) {if(cap==3553&&org.kylepitcock.legacyconnector.vb1_7_3.BlockRenderB173.capturing()){legacyconnector.vb1_7_3.net.minecraft.client.render.Tessellator.mcc$textured(false);return;}if(RendererContextB173.active())RendererContextB173.enable(cap,false);else if(cap==3553)GuiDrawB173.texture2d(false);else if(cap==2929)GuiDrawB173.depthTest(false);}
 
     public static void glBlendFunc(int src, int dst) {if(RendererContextB173.active())RendererContextB173.blendFunc(src,dst);}
 

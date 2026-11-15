@@ -1,0 +1,219 @@
+plugins {
+    id 'java'
+    id 'net.minecraftforge.gradle' version '6.0.24'
+}
+
+group = 'org.kylepitcock.legacyconnector.tools'
+version = '1.0.0'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+minecraft {
+    // The source-side class files must use the same Mojang-official names
+    // used by the source SRG -> Mojmap index in the main repository.
+    mappings channel: 'official', version: minecraft_version
+}
+
+
+repositories {
+    // ForgeGradle switches dependency resolution to project repositories.
+    // Keep these here (not only in settings.dependencyResolutionManagement)
+    // so the Forge userdev dependency and its supporting artifacts resolve.
+    maven {
+        name = 'Forge'
+        url = 'https://maven.minecraftforge.net/'
+    }
+    mavenCentral()
+}
+
+dependencies {
+    // ForgeGradle resolves the pinned userdev artifact and applies its
+    // Minecraft patches to the matching vanilla 1.20.1 runtime.
+    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+}
+
+def classpathOutput = layout.buildDirectory.file('reports/source-runtime/forge1201-classpath.txt')
+def manifestOutput = layout.buildDirectory.file('reports/source-runtime/forge1201-classpath-manifest.json')
+
+def sha256File = { File file ->
+    def digest = java.security.MessageDigest.getInstance('SHA-256')
+    file.withInputStream { input ->
+        byte[] buffer = new byte[64 * 1024]
+        int count
+        while ((count = input.read(buffer)) != -1) {
+            digest.update(buffer, 0, count)
+        }
+    }
+    digest.digest().collect { String.format('%02x', it & 0xff) }.join()
+}
+
+def sha256Directory = { File directory ->
+    def digest = java.security.MessageDigest.getInstance('SHA-256')
+    def files = fileTree(directory).files.sort { left, right ->
+        directory.toPath().relativize(left.toPath()).toString()
+                <=> directory.toPath().relativize(right.toPath()).toString()
+    }
+    files.each { file ->
+        def relative = directory.toPath().relativize(file.toPath()).toString()
+                .replace(File.separatorChar, '/' as char)
+        digest.update(relative.getBytes(java.nio.charset.StandardCharsets.UTF_8))
+        digest.update((byte) 0)
+        file.withInputStream { input ->
+            byte[] buffer = new byte[64 * 1024]
+            int count
+            while ((count = input.read(buffer)) != -1) {
+                digest.update(buffer, 0, count)
+            }
+        }
+        digest.update((byte) 0xff)
+    }
+    [
+            sha256: digest.digest().collect { String.format('%02x', it & 0xff) }.join(),
+            fileCount: files.size()
+    ]
+}
+
+def containsClass = { File entry, String classEntry ->
+    if (entry.isDirectory()) {
+        return new File(entry, classEntry.replace('/', File.separatorChar)).isFile()
+    }
+    if (!entry.isFile()) return false
+
+    try {
+        def archive = new java.util.zip.ZipFile(entry)
+        try {
+            return archive.getEntry(classEntry) != null
+        } finally {
+            archive.close()
+        }
+    } catch (java.util.zip.ZipException notZip) {
+        return false
+    }
+}
+
+tasks.register('exportForge1201SourceRuntimeClasspath') {
+    group = 'verification'
+    description = 'Exports the exact ordered Forge 1.20.1 Mojang-mapped compile classpath for read-only source API inspection.'
+
+    inputs.files(configurations.compileClasspath)
+    inputs.property('orderedCompileClasspath', providers.provider {
+        configurations.compileClasspath.asPath
+    })
+    inputs.property('minecraftVersion', minecraft_version)
+    inputs.property('forgeVersion', forge_version)
+    inputs.property('forgeGradleVersion', '6.0.24')
+    inputs.property('mappingChannel', 'official')
+    inputs.property('mappingVersion', minecraft_version)
+    outputs.files(classpathOutput, manifestOutput)
+
+    doLast {
+        if (!(forge_version.toString() ==~ /[0-9]+\.[0-9]+\.[0-9]+/)) {
+            throw new GradleException('forge_version must be a pinned numeric Forge version such as 47.3.0.')
+        }
+
+        // Preserve Gradle's resolved order. It determines which duplicate
+        // class resource wins when the classpath is consumed later.
+        def entries = configurations.compileClasspath.asPath
+                .split(java.util.regex.Pattern.quote(File.pathSeparator))
+                .findAll { !it.isBlank() }
+                .collect { new File(it).toPath().toAbsolutePath().normalize().toFile() }
+
+        if (entries.isEmpty()) {
+            throw new GradleException('Forge source compile classpath resolved to no entries.')
+        }
+
+        def missingPaths = entries.findAll { !it.exists() }
+        if (!missingPaths.isEmpty()) {
+            throw new GradleException('Forge source compile classpath contains missing paths: '
+                    + missingPaths.collect { it.absolutePath }.join('; '))
+        }
+
+        def probes = [
+                'net/minecraft/world/level/block/piston/PistonStructureResolver.class',
+                'net/minecraft/world/level/block/state/BlockState.class',
+                'net/minecraft/world/level/block/Block.class'
+        ]
+
+        def probeResults = probes.collectEntries { classEntry ->
+            def matches = []
+            entries.eachWithIndex { entry, index ->
+                if (containsClass(entry, classEntry)) {
+                    matches << [classpathIndex: index, path: entry.absolutePath]
+                }
+            }
+            [(classEntry): [
+                    matchCount: matches.size(),
+                    firstMatch: matches ? matches.first() : null,
+                    allMatches: matches
+            ]]
+        }
+
+        def missingProbes = probeResults.findAll { classEntry, result -> result.matchCount == 0 }.keySet()
+        if (!missingProbes.isEmpty()) {
+            throw new GradleException('Resolved Forge source classpath is missing required Minecraft class probes: '
+                    + missingProbes.join(', ')
+                    + '. Refusing to export an unverified source classpath.')
+        }
+
+        def classpathFile = classpathOutput.get().asFile
+        classpathFile.parentFile.mkdirs()
+        classpathFile.setText(entries.collect { it.absolutePath }.join(System.lineSeparator())
+                + System.lineSeparator(), 'UTF-8')
+
+        def entryRecords = entries.withIndex().collect { entry, index ->
+            def fingerprint = entry.isDirectory()
+                    ? sha256Directory(entry)
+                    : [sha256: sha256File(entry), fileCount: 1]
+            [
+                    index: index,
+                    path: entry.absolutePath,
+                    kind: entry.isDirectory() ? 'directory' : 'file',
+                    sizeBytes: entry.isFile() ? entry.length() : null,
+                    fileCount: fingerprint.fileCount,
+                    sha256: fingerprint.sha256
+            ]
+        }
+
+        def manifest = [
+                schemaVersion: 1,
+                status: 'SOURCE_RUNTIME_CLASSPATH_EXPORTED',
+                sourceRuntime: [
+                        minecraftVersion: minecraft_version,
+                        forgeVersion: forge_version,
+                        forgeGradleVersion: '6.0.24',
+                        mappings: [channel: 'official', version: minecraft_version]
+                ],
+                javaVersion: System.getProperty('java.version'),
+                javaVendor: System.getProperty('java.vendor'),
+                gradleVersion: gradle.gradleVersion,
+                classpathOrderSource: 'Gradle Configuration.asPath; order retained',
+                classpathFile: classpathFile.absolutePath,
+                classpathEntries: entryRecords,
+                classProbes: probeResults,
+                limitations: [
+                        'Read-only classpath export; no source Minecraft class is defined, initialized, or executed by this task.',
+                        'The main repository audit must consume this manifest explicitly; this classpath is not added to the loader project.',
+                        'Duplicate class resources are recorded with their effective first match and must not be collapsed without review.',
+                        'The manifest and classpath file are build-local and are not packaged or committed.'
+                ]
+        ]
+
+        def manifestFile = manifestOutput.get().asFile
+        manifestFile.parentFile.mkdirs()
+        manifestFile.setText(groovy.json.JsonOutput.prettyPrint(
+                groovy.json.JsonOutput.toJson(manifest)) + System.lineSeparator(), 'UTF-8')
+
+        println "Forge source runtime: Minecraft ${minecraft_version}, Forge ${forge_version}, official mappings"
+        println "Ordered compile classpath entries: ${entries.size()}"
+        probeResults.each { classEntry, result ->
+            println "${classEntry}: ${result.matchCount} classpath match(es)"
+        }
+        println "Classpath: ${classpathFile}"
+        println "Manifest: ${manifestFile}"
+        println 'This export does not alter the main loader classpath or produce runtime mappings.'
+    }
+}
