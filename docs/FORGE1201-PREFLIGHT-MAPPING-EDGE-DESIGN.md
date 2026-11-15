@@ -439,3 +439,61 @@ Observed field selector statuses (31,003 total):
 **Next diagnostic before changing resolver behavior:** obtain compact upstream-status histograms for methods and fields, then inspect a small representative sample of `TARGET_API_MEMBER_MISSING`, `INTERMEDIARY_TARGET_DESCRIPTOR_CHANGED`, and `INTERMEDIARY_TARGET_OWNER_CHANGED` entries with their candidate namespace owner/name/descriptors. Group the 14,185 `INTERMEDIARY_SOURCE_MISSING` methods by SRG owner to identify whether the gap is concentrated in special/client/data classes or broadly distributed. Do not add guessed fallback mapping rules from names alone.
 
 No selector transformation, runtime mapping table, or licensing conclusion is authorized by these audit results.
+
+
+### 19.4 User samples — mapping gaps and compiler-generated target members (2026-11-15)
+
+The user ran the next diagnostic commands. The console repeated the known Windows PowerShell 5.1 / PSReadLine 2.0.0 cursor-rendering crash while entering the long earlier loop; the loop eventually executed. This remains unrelated to Gradle or report correctness. Keep future commands short and one-line.
+
+**Largest owners among the 14,185 INTERMEDIARY_SOURCE_MISSING method rows:**
+
+| SRG owner | Rows |
+|---|---:|
+| net/minecraft/src/C_3902_ | 112 |
+| net/minecraft/src/C_1141_ | 83 |
+| net/minecraft/src/C_13_ | 73 |
+| net/minecraft/src/C_2793_ | 64 |
+| net/minecraft/src/C_31_ | 53 |
+| net/minecraft/src/C_4105_ | 51 |
+| net/minecraft/src/C_243588_ | 51 |
+| net/minecraft/src/C_141119_ | 47 |
+| net/minecraft/src/C_524_ | 47 |
+| net/minecraft/src/C_19_ | 46 |
+| net/minecraft/src/C_966_ | 45 |
+| net/minecraft/src/C_5407_ | 45 |
+| net/minecraft/src/C_2136_ | 44 |
+| net/minecraft/src/C_2780_ | 43 |
+| net/minecraft/src/C_926_ | 43 |
+
+These are SRG owner identifiers; the user has not yet mapped them back to official class names. Do not infer class identity from the numeric token. The next report query joins these names against symbols.classes[].srgName to retrieve the already-audited class mapping candidates.
+
+**Representative TARGET_API_MEMBER_MISSING methods (first eight):**
+- PiglinAi.lambda$initRideHoglinActivity$2(Lnet/minecraft/world/entity/monster/piglin/Piglin;)Z
+- Villager.lambda$spawnGolemIfNeeded$11(JLnet/minecraft/world/entity/npc/Villager;)Z
+- Villager.lambda$countFoodPointsInInventory$9(Lnet/minecraft/world/SimpleContainer;Ljava/util/Map$Entry;)I
+- Villager.lambda$hasFarmSeeds$10(Lnet/minecraft/world/item/ItemStack;)Z
+- Player.lambda$decorateDisplayNameComponent$6(Ljava/lang/String;Lnet/minecraft/network/chat/Style;)Lnet/minecraft/network/chat/Style;
+- Player.lambda$respawnEntityOnShoulder$5(Lnet/minecraft/world/entity/Entity;)V
+- Raider.access$200(Lnet/minecraft/world/entity/raid/Raider;)Z
+- Raider.access$000(Lnet/minecraft/util/RandomSource;)Lnet/minecraft/util/RandomSource;
+
+**Representative TARGET_API_MEMBER_MISSING fields (first eight):**
+- MinecraftServer$TimeProfiler$1.val$stopNanos:J
+- MinecraftServer$TimeProfiler$1.val$stopTick:I
+- DataSlot$1.val$container:Lnet/minecraft/world/inventory/ContainerData;
+- DataSlot$1.val$dataId:I
+- DataSlot$2.val$storage:[I
+- DataSlot$2.val$index:I
+- ItemCombinerMenu$1.val$slot:Lnet/minecraft/world/inventory/ItemCombinerMenuSlotDefinition$SlotDefinition;
+- ExtraCodecs$2.val$compressed:Lcom/mojang/serialization/Codec;
+
+These names strongly indicate compiler-generated lambda methods, synthetic accessors, and captured-local fields. Such members are implementation details rather than ordinary source API; their generated names/counts may change as compiler output or implementation structure changes. They should not be counted as ordinary public API breakage or repaired through a guessed name mapping. However, Mixin can intentionally target non-public/synthetic members, so they must not simply be discarded from an analyzer. A future selector-level analysis should distinguish visibility/synthetic status and report these as compiler-generated implementation members, requiring exact bytecode evidence when a real selector targets one.
+
+**Important instrumentation limitation:** the current Forge1201TargetApiVerifier.TargetIndex class parser stores member name + descriptor sets, but its ASM visitMethod / visitField callbacks currently discard the access flags. Thus the examples above are strong name-pattern clues, not yet flag-verified ACC_SYNTHETIC classifications. The audit's TARGET_API_MEMBER_MISSING remains the exact claim: the final official name + descriptor was not found in the target owner/hierarchy. It does not by itself classify the source-side method/field as public, private, synthetic, bridge, or compiler-generated.
+
+**Resolver semantics reconfirmed from source:**
+- Forge1201IntermediaryBridgeAudit.Index.resolveMethod keys source Tiny methods by exact source official owner + source official name + full source official descriptor; no row produces SOURCE_MISSING.
+- For fields, owner + official field name rows are filtered by the exact source official descriptor; absence of the owner/name group produces SOURCE_MISSING, while no matching descriptor produces SOURCE_DESCRIPTOR_MISMATCH.
+- The current Tiny parser stores member names/IDs/descriptors only; it does not attempt fallback on Java name similarity, source SRG numeric suffixes, or target official names.
+
+**Next diagnostic:** (1) map the 15 highest INTERMEDIARY_SOURCE_MISSING SRG owners back to class names using symbols.classes; (2) bucket the 604 missing method names into lambda$, access$, and other; (3) bucket the 176 missing field names into val$, this$, and other; (4) inspect a few examples outside those generated-name patterns. This will estimate how much of the remaining API-missing group is generated implementation detail, without assuming all rows are synthetic. Do not broaden mapping inference or remove these members from the inventory until bytecode-level access/synthetic metadata and actual selector relevance are handled explicitly.
