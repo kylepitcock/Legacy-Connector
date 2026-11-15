@@ -79,4 +79,49 @@ public final class Round4Compat {
     public static boolean tryPlaceBook(Entity entity, Level level, BlockPos pos, BlockState state, ItemStack book) {
         return LecternBlock.tryPlaceBook(entity instanceof LivingEntity living ? living : null, level, pos, state, book);
     }
+
+    // ------------------------------------------------------------------ enchanting table hook
+
+    /** {@code item.canApplyAtEnchantingTable(stack, enchantment)}: the item's primary-item hook (a mod's override is bridged to it). */
+    public static boolean itemCanApplyAtEnchantingTable(net.minecraft.world.item.Item item, ItemStack stack, LegacyEnchantment enchantment) {
+        return item.isPrimaryItemFor(stack, HolderCompat.holder(enchantment));
+    }
+
+    /** {@code super.canApplyAtEnchantingTable(stack, enchantment)} of a mod's item: the vanilla answer, the enchantment's primary items. */
+    public static boolean superCanApplyAtEnchantingTable(Object item, ItemStack stack, LegacyEnchantment enchantment) {
+        return HolderCompat.holder(enchantment).value().isPrimaryItem(stack);
+    }
+
+    /** {@code stack.canApplyAtEnchantingTable(enchantment)} through the IItemStackExtension interface. */
+    public static boolean stackCanApplyAtEnchantingTable(ItemStack stack, LegacyEnchantment enchantment) {
+        return stack.isPrimaryItemFor(HolderCompat.holder(enchantment));
+    }
+
+    /** {@code LevelChunk.getBlockEntityNbtForSaving(pos)}: 1.21.1 also takes the registry provider (the chunk's level has it). */
+    public static net.minecraft.nbt.CompoundTag blockEntityNbtForSaving(LevelChunk chunk, BlockPos pos) {
+        return chunk.getBlockEntityNbtForSaving(pos, chunk.getLevel().registryAccess());
+    }
+
+    // ------------------------------------------------------------------ jigsaw structures
+
+    /**
+     * {@code JigsawPlacement.addPieces(context, pool, jigsawName, depth, pos, expansionHack, heightmap, maxDistance)}: 1.21.1 added pool aliases, the dimension
+     * padding and the liquid settings; the 1.20.1 behaviour is no aliases, no padding and waterlogging applied.
+     */
+    public static java.util.Optional<net.minecraft.world.level.levelgen.structure.Structure.GenerationStub> addPieces(
+            net.minecraft.world.level.levelgen.structure.Structure.GenerationContext context,
+            net.minecraft.core.Holder<net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool> pool,
+            java.util.Optional<net.minecraft.resources.ResourceLocation> jigsawName, int depth, BlockPos pos, boolean expansionHack,
+            java.util.Optional<net.minecraft.world.level.levelgen.Heightmap.Types> heightmap, int maxDistance) {
+        return net.minecraft.world.level.levelgen.structure.pools.JigsawPlacement.addPieces(context, pool, jigsawName, depth, pos, expansionHack, heightmap,
+                maxDistance, net.minecraft.world.level.levelgen.structure.pools.alias.PoolAliasLookup.EMPTY,
+                net.minecraft.world.level.levelgen.structure.pools.DimensionPadding.ZERO,
+                net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings.APPLY_WATERLOGGING);
+    }
+
+    /** The liquid settings parameter that single pool elements gained in 1.21.1 (the 1.20.1 behaviour: waterlogging applied). */
+    public static java.util.Optional<net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings> defaultLiquid(
+            net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool.Projection projection) {
+        return java.util.Optional.of(net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings.APPLY_WATERLOGGING);
+    }
 }

@@ -183,6 +183,11 @@ public class LegacyEnchantment {
         return category != null && category.canEnchant(stack.getItem());
     }
 
+    /** Forge's {@code Enchantment.canApplyAtEnchantingTable(stack)}: asks the item, whose default is the primary-item test. */
+    public boolean canApplyAtEnchantingTable(ItemStack stack) {
+        return stack.getItem().isPrimaryItemFor(stack, holder());
+    }
+
     public void doPostAttack(LivingEntity attacker, Entity target, int level) {
     }
 
