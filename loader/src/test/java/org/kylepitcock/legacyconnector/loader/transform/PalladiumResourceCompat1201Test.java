@@ -1065,7 +1065,10 @@ class PalladiumResourceCompat1201Test {
         assertFalse(migrated.contains("let player = event.entity;"));
         assertTrue(migrated.startsWith("function legacyConnectorAlienEvoPacketString(value) {"));
         assertTrue(migrated.contains("legacyConnectorAlienEvoPacketString(data.value)"));
-        assertTrue(migrated.contains("legacyConnectorAlienEvoPacketString(propertiesToSave[propertyName])"));
+        assertTrue(migrated.contains("let propertyIterator = propertiesToSave.getAllKeys().iterator();"));
+        assertTrue(migrated.contains("let propertyName = propertyIterator.next();"));
+        assertTrue(migrated.contains("legacyConnectorAlienEvoPacketString(propertiesToSave.get(propertyName))"));
+        assertFalse(migrated.contains("propertiesToSave[propertyName]"));
         assertTrue(migrated.contains("legacyConnectorAlienEvoPacketString(event.data.nickname)"));
         assertFalse(migrated.contains("let colorValue = data.value;"));
         assertFalse(migrated.contains("let energyColor = data.value;"));
