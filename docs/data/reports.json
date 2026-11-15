@@ -863,6 +863,18 @@
    "link": "https://www.curseforge.com/minecraft/mc-mods/candy-world",
    "date": "2026-11-14",
    "open": true
+  },
+  {
+   "issue": 292,
+   "mod": "IC2Classic-1.7.10-1.2.6",
+   "mc": "1.7.10",
+   "status": "partial",
+   "details": "I have not yet tested every feature in depth Haven't tried: Nuclear system Crop system Works at first glance: World gen features Energy system & tiers Machines & generators Cabling Tree tapping Wrenching Recipes Upgrades Painting, cf foam Fluid cells Hazmat protection Tesla coils Mod boats functional Radiation potion effect Bugged: Cables do not drop when mined Uninsulated cables do not shock ent…",
+   "lc": "0.4.14",
+   "neoforge": "21.1.266",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/ic2-classic/files/8014397",
+   "date": "2026-11-15",
+   "open": true
   }
  ]
 }
