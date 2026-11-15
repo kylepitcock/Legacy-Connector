@@ -4,6 +4,10 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.net.URI;
+import java.nio.file.DirectoryStream;
+import java.nio.file.FileSystems;
+import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
@@ -256,7 +260,8 @@ public final class Forge1201SourceRuntimeMemberVerifier {
      */
     public static Index createIndex(Forge1201TargetApiVerifier.ClassBytesProvider classBytes) {
         if (classBytes == null) throw new IllegalArgumentException("Forge source class byte provider is required");
-        return new Index(Forge1201TargetApiVerifier.createIndex(classBytes), null);
+        return new Index(Forge1201TargetApiVerifier.createIndex(
+                new PlatformClassBytesProvider(classBytes)), null);
     }
 
     /**
@@ -296,7 +301,8 @@ public final class Forge1201SourceRuntimeMemberVerifier {
                 entries.size(),
                 provider.classCount(),
                 provider.duplicateClassNames());
-        return new Index(Forge1201TargetApiVerifier.createIndex(provider), summary);
+        return new Index(Forge1201TargetApiVerifier.createIndex(
+                new PlatformClassBytesProvider(provider)), summary);
     }
 
     private static final class SetView {
@@ -322,6 +328,67 @@ public final class Forge1201SourceRuntimeMemberVerifier {
 
         static ClassLocation jar(Path jarFile, String jarEntry) {
             return new ClassLocation(null, jarFile, jarEntry);
+        }
+    }
+
+    /**
+     * JDK classes are not part of the Forge compile classpath, but they can occur in a source
+     * class's superclass/interface graph (most notably java/lang/Object). Read their bytes from
+     * the active JDK module image as data so they do not make an otherwise complete hierarchy
+     * look incomplete. This never asks a ClassLoader to define or initialize a class.
+     */
+    private static final class PlatformClassBytesProvider
+            implements Forge1201TargetApiVerifier.ClassBytesProvider {
+        private final Forge1201TargetApiVerifier.ClassBytesProvider delegate;
+        private final FileSystem jrt;
+        private final Map<String, Path> resolved = new HashMap<>();
+        private final java.util.Set<String> missing = new java.util.HashSet<>();
+
+        private PlatformClassBytesProvider(Forge1201TargetApiVerifier.ClassBytesProvider delegate) {
+            this.delegate = delegate;
+            FileSystem fileSystem;
+            try {
+                fileSystem = FileSystems.getFileSystem(URI.create("jrt:/"));
+            } catch (RuntimeException unavailable) {
+                fileSystem = null;
+            }
+            this.jrt = fileSystem;
+        }
+
+        @Override
+        public InputStream open(String internalName) throws IOException {
+            InputStream source = delegate.open(internalName);
+            if (source != null) return source;
+            if (!isPlatformClass(internalName) || jrt == null || missing.contains(internalName)) return null;
+
+            Path path = resolved.get(internalName);
+            if (path == null) {
+                path = findPlatformClass(internalName);
+                if (path == null) {
+                    missing.add(internalName);
+                    return null;
+                }
+                resolved.put(internalName, path);
+            }
+            return Files.newInputStream(path);
+        }
+
+        private Path findPlatformClass(String internalName) throws IOException {
+            Path modules = jrt.getPath("/modules");
+            try (var modulePaths = Files.list(modules)) {
+                for (Path module : modulePaths.sorted().toList()) {
+                    Path candidate = module.resolve(internalName);
+                    if (Files.isRegularFile(candidate)) return candidate;
+                }
+            }
+            return null;
+        }
+
+        private static boolean isPlatformClass(String internalName) {
+            return internalName != null && (internalName.startsWith("java/")
+                    || internalName.startsWith("javax/")
+                    || internalName.startsWith("jdk/")
+                    || internalName.startsWith("sun/"));
         }
     }
 
