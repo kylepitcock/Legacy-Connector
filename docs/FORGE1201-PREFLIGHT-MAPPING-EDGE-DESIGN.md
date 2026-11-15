@@ -257,7 +257,7 @@ A synthetic regression now mirrors the observed owner/member/descriptor relation
 
 ## 17. Target compile-classpath API inventory
 
-**Status:** Read-only inventory tool and Gradle task implemented; compilation, tests, and execution against the resolved user target classpath are pending the user's validation run.
+**Status:** Read-only inventory tool and Gradle task implemented and validated by the user. The inventory ran against the resolved root compile classpath and completed with 7,942 unique Minecraft classes, 7,942 resolved classes, zero missing classes, 71,727 methods, 36,227 fields, and 4,201 unique referenced Minecraft types with zero missing referenced types.
 
 - The user's direct root compile-classpath entry is `build/moddev/artifacts/neoforge-21.1.258.jar`, SHA-256 `E5B8CC08A21CFD11F16FA62869051E97587D05D95980BA5C9FB2387BB9324F32`. A prior root Gradle diagnostic found 103 entries and zero direct matches for `neoforge-21.1.258-merged.jar`.
 - User `javap` checks on the direct compile JAR verified Mojang-official anchors across `Entity`, `Level`, `BlockPos`, `ItemStack`, and `BlockState`. The `BlockState` hierarchy check located `getBlock()`, `isAir()`, and `getFluidState()` on `BlockBehaviour$BlockStateBase`; their descriptors are recorded in the testbench continuation handoff.
@@ -266,14 +266,14 @@ A synthetic regression now mirrors the observed owner/member/descriptor relation
 - Added `inventoryTargetApi1211`, a root Gradle JavaExec task. It hands the exact ordered `sourceSets.main.compileClasspath` to the loader tool through a generated path-list file, avoiding long Windows command lines. An explicit ordered-classpath input is declared because resource precedence matters.
 - Added synthetic tests for deterministic output, duplicate-class resolution order, class/member/descriptor inventory, missing referenced Minecraft types, and directory classpath entries.
 - All generated inventory outputs remain local under `build/reports/target-api/1.21.1/`; they are not committed or packaged. The generated report is an engineering audit artifact, not a selector mapping or a distribution permission.
-- **Pending validation:** user must run the forced loader test gate, then run `inventoryTargetApi1211` and share its summary plus any PARTIAL findings. Do not claim the inventory is complete or the task passed before those commands run.
+- **User validation (2026-11-15):** `inventoryTargetApi1211` completed successfully against the exact root compile classpath; the full counts are recorded above and in the continuation handoff.
 - The tool does not transform selectors or alter runtime behavior. Reuse the same TargetIndex architecture and keep ambiguity/missing descriptors explicit.
 
 
 
 ## 18. Target official-obfuscated → Mojang-official edge — TSRG2 descriptor namespace and read-only index
 
-**Status:** The bounded read-only parser and synthetic regression suite are published at branch head `7fb149f98763704b79c47e09940cdcf22d81c133` (initial implementation `5f4648256275f13e4c2037cabf8cfdb865e101bf`; review correction `7fb149f98763704b79c47e09940cdcf22d81c133`). User validation is still required. This is not selector rewriting or a runtime mapping consumer.
+**Status:** The bounded read-only parser and synthetic regression suite are published and user-validated. The three initial failures were fixture nesting mistakes: TSRG2 member rows are attached to the most recent class row. The corrected fixtures are in `ad2eaa85d7ad2934cd3f0efbeac8c84013fa1260`; focused tests and the full forced clean loader test passed there. This remains separate from selector rewriting and runtime mapping consumption.
 
 ### Verified format and descriptor direction
 
@@ -305,6 +305,50 @@ Therefore method keys must use **left obfuscated owner + left member name + left
 
 ### Next integration and validation boundary
 
-The existing first-four-edge resolver still returns target official-obfuscated candidates. The next integration should pass those exact candidate owner/name/descriptors through this target index, then verify the resulting Mojang-official owner/member/descriptor with the existing per-analysis `Forge1201TargetApiVerifier.TargetIndex`. Do not create another target hierarchy cache. Do not mark external descriptor types as target-present merely because they pass through.
+The existing first-four-edge resolver still returns target official-obfuscated candidates. This integration is now implemented in `Forge1201TargetOfficialBridgeAudit` and uses the existing per-analysis `Forge1201TargetApiVerifier.TargetIndex`. See checkpoint 19 below. Do not create another target hierarchy cache. External descriptor types remain explicitly non-exact.
 
 The mapping artifact itself stays in the local NeoForm Gradle cache. Do not commit, upload, package, or otherwise redistribute its contents or a copied derived mapping payload. The locally observed content fingerprint belongs in the evidence record only; licensing review remains a separate gate.
+
+
+## 19. Implementation checkpoint 4 — final target namespace and compile API audit
+
+**Status:** End-to-end read-only audit, synthetic regression tests, and an opt-in Gradle task are published at source branch `feat/forge1201-preflight-analyzer`, commit `a9a084b4bbd52f6ae964d1f27f9475cba2ed7ddb`. User validation is pending. The last user-validated source checkpoint remains `ad2eaa85d7ad2934cd3f0efbeac8c84013fa1260`.
+
+### Composition and safety properties
+
+- `Forge1201TargetOfficialBridgeAudit` composes the existing `Forge1201SrgIntermediaryBridgeResolver` through `Forge1201TargetOfficialMappingIndex`, then checks the resulting Mojang-official owner/name/full descriptor against the target compile API.
+- The report retains upstream statuses and every ambiguous upstream candidate. An ambiguous Intermediary target relation stays ambiguous even if one candidate class is absent from the target compile classpath; per-candidate final mapping and API results are retained for diagnosis rather than used to pick a winner.
+- Class mapping, target compile-class presence, target TSRG2 member mapping, and hierarchy-aware target member lookup are separate results. Member lookup distinguishes exact structural match, missing owner class, missing member, and incomplete hierarchy.
+- Both upstream and final-edge external descriptor counts are retained independently. A found member with any external descriptor types is reported as `TARGET_API_MEMBER_FOUND_WITH_EXTERNAL_TYPES`, never as an exact mapping.
+- One `Forge1201TargetApiVerifier.TargetIndex` instance is created for the audit and reused for every class, method, and field. The existing superclass/interface traversal and cache are reused; no second hierarchy cache is created.
+- The target classpath order comes from the same generated `target-classpath.txt` used by `inventoryTargetApi1211`. The audit loads class resources through a URLClassLoader with the platform classloader parent, parses bytes only, and does not define or initialize target classes.
+- The target merged TSRG2 is read directly from the local NeoForm Gradle cache. The Gradle task pins the observed SHA-256 `7BD3E2BE95FA246778B90B078DBB78B5D1A7A98853BAEA5E1321A6C3D5383929`; an alternate path can be supplied with `-PtargetOfficialTsrg1211=<path>` and an alternate expected digest with `-PtargetOfficialTsrg1211Sha256=<sha256>`. No mapping bytes are copied into the repository.
+- Input artifact paths, file sizes, and hashes are recorded. Regular target classpath files are fingerprinted; directory entries are represented by ordered path and kind. Gradle also tracks the full ordered target compile classpath as task inputs so in-place dependency changes invalidate the report.
+
+### New task and output
+
+Run from the repository root:
+
+```powershell
+.\gradlew.bat :loader:auditSrgTargetApiBridge1201To1211 --no-daemon --console=plain
+```
+
+The task depends on the source mapping extraction tasks and `:inventoryTargetApi1211`. Its build-local output is:
+
+`loader/build/reports/mappings/1.20.1-1.21.1/srg-target-api-bridge-audit.json`
+
+The report declares `selectorTransformationPerformed=false` and `runtimeMappingTableProduced=false`. It is not packaged in the loader JAR and is not a selector rewrite table.
+
+### Synthetic regressions
+
+`Forge1201TargetOfficialBridgeAuditTest` covers:
+- method and field mapping through both cross-version and final target namespace edges;
+- inherited interface method lookup through the shared `TargetIndex`;
+- preservation of two ambiguous target candidates when only one candidate's class exists on the target API provider; and
+- an exact target member signature whose external descriptor type counts remain nonzero and therefore non-exact.
+
+### Validation still required
+
+The source changes are published but **not yet tested by the user**. First run the focused class `org.kylepitcock.legacyconnector.loader.tools.forge1201.Forge1201TargetOfficialBridgeAuditTest`, then the forced clean `:loader:test` gate. Only after those pass, run `:loader:auditSrgTargetApiBridge1201To1211` and inspect the report's status histograms and ambiguous/external/incomplete rows. Do not interpret a generated report as runtime compatibility proof.
+
+No selector rewriting, runtime mapping table, or license conclusion is authorized by this checkpoint.
