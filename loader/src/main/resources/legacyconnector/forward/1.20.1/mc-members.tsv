@@ -87,3 +87,4 @@ net/minecraft/world/level/storage/ServerLevelData	getAllowCommands	*	isAllowComm
 net/minecraft/world/entity/Entity	getPortalWaitTime	*	getDimensionChangingDelay
 net/minecraft/world/level/block/entity/JukeboxBlockEntity	getFirstItem	*	getTheItem
 net/minecraft/world/level/block/FlowerPotBlock	getContent	*	getPotted
+net/minecraft/server/MinecraftServer	tickTimes	:*	tickTimesNanos

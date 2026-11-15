@@ -14,6 +14,7 @@ import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.LecternBlock;
+import net.minecraft.world.level.block.entity.BannerPattern;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -204,5 +205,108 @@ public final class Round4Compat {
         var contents = stack.get(DataComponents.BUNDLE_CONTENTS);
         if (contents != null) return 4 + bundleContentWeight(stack);
         return 64 / stack.getMaxStackSize();
+    }
+
+    // ------------------------------------------------------------------ predicates, registries, entities
+
+    /** {@code StatePropertiesPredicate.fromJson(json)}: a record with a codec now. */
+    public static net.minecraft.advancements.critereon.StatePropertiesPredicate statePropertiesFromJson(com.google.gson.JsonElement json) {
+        return net.minecraft.advancements.critereon.StatePropertiesPredicate.CODEC.parse(com.mojang.serialization.JsonOps.INSTANCE, json)
+                .getOrThrow(com.google.gson.JsonParseException::new);
+    }
+
+    /** {@code predicate.serializeToJson()}. */
+    public static com.google.gson.JsonElement statePropertiesToJson(net.minecraft.advancements.critereon.StatePropertiesPredicate predicate) {
+        return net.minecraft.advancements.critereon.StatePropertiesPredicate.CODEC.encodeStart(com.mojang.serialization.JsonOps.INSTANCE, predicate)
+                .getOrThrow(IllegalStateException::new);
+    }
+
+    /** {@code MinMaxBounds.Ints.serializeToJson()}. */
+    public static com.google.gson.JsonElement intsToJson(net.minecraft.advancements.critereon.MinMaxBounds.Ints bounds) {
+        return net.minecraft.advancements.critereon.MinMaxBounds.Ints.CODEC.encodeStart(com.mojang.serialization.JsonOps.INSTANCE, bounds)
+                .getOrThrow(IllegalStateException::new);
+    }
+
+    /** {@code BuiltInRegistries.BANNER_PATTERN}: a data-driven registry now, looked up in the running game's registries. */
+    public static net.minecraft.core.Registry<BannerPattern> bannerPatternRegistry() {
+        return MigrateContext.registries().registryOrThrow(net.minecraft.core.registries.Registries.BANNER_PATTERN);
+    }
+
+    /** {@code AbstractArrow.setShotFromCrossbow(flag)}: 1.21.1 derives the flag from the weapon that fired the arrow; there is nothing to set (soft link). */
+    public static void setShotFromCrossbow(net.minecraft.world.entity.projectile.AbstractArrow arrow, boolean flag) {}
+
+    /** {@code CrossbowItem.containsChargedProjectile(crossbow, item)}. */
+    public static boolean containsChargedProjectile(ItemStack crossbow, net.minecraft.world.item.Item item) {
+        var charged = crossbow.get(DataComponents.CHARGED_PROJECTILES);
+        return charged != null && charged.contains(item);
+    }
+
+    /** {@code ArmorTrim.getTrim(access, stack)}: the trim component. */
+    public static java.util.Optional<net.minecraft.world.item.armortrim.ArmorTrim> getTrim(net.minecraft.core.RegistryAccess access, ItemStack stack) {
+        return java.util.Optional.ofNullable(stack.get(DataComponents.TRIM));
+    }
+
+    /** {@code crashReport.getFriendlyReport()}: 1.21.1 asks for the kind of report. */
+    public static String friendlyReport(net.minecraft.CrashReport report) {
+        return report.getFriendlyReport(net.minecraft.ReportType.CRASH);
+    }
+
+    /** {@code FinalizeSpawnEvent.getSpawner()}: the spawner of a spawner block entity, null when the mob came from elsewhere. */
+    public static net.minecraft.world.level.BaseSpawner finalizeSpawnSpawner(net.neoforged.neoforge.event.entity.living.FinalizeSpawnEvent event) {
+        var either = event.getSpawner();
+        if (either == null) return null;
+        return either.left().filter(be -> be instanceof net.minecraft.world.level.block.entity.SpawnerBlockEntity)
+                .map(be -> ((net.minecraft.world.level.block.entity.SpawnerBlockEntity) be).getSpawner()).orElse(null);
+    }
+
+    /** {@code evaluator.getBlockPathType(getter, x, y, z, mob)}: the path type of the block, asked through a pathfinding context of the mob. */
+    public static net.minecraft.world.level.pathfinder.PathType blockPathType(net.minecraft.world.level.pathfinder.NodeEvaluator evaluator,
+                                                                          net.minecraft.world.level.BlockGetter getter, int x, int y, int z,
+                                                                          net.minecraft.world.entity.Mob mob) {
+        return evaluator.getPathTypeOfMob(new net.minecraft.world.level.pathfinder.PathfindingContext(mob.level(), mob), x, y, z, mob);
+    }
+
+    /** {@code state.getBeaconColorMultiplier(level, pos, beaconPos)}: the tint as float RGB, null when the block does not tint the beam. */
+    public static float[] beaconColor(BlockState state, net.minecraft.world.level.LevelReader level, BlockPos pos, BlockPos beacon) {
+        Integer rgb = state.getBeaconColorMultiplier(level, pos, beacon);
+        if (rgb == null) return null;
+        return new float[] {((rgb >> 16) & 255) / 255.0F, ((rgb >> 8) & 255) / 255.0F, (rgb & 255) / 255.0F};
+    }
+
+    /** {@code entity.getLootTable()}: the table's name (1.21.1 keeps a resource key). */
+    public static net.minecraft.resources.ResourceLocation lootTableLocation(LivingEntity entity) {
+        return entity.getLootTable().location();
+    }
+
+    /** {@code super.getLootTable()} of a mod's entity: the default table of its type. */
+    public static net.minecraft.resources.ResourceLocation superLootTableLocation(LivingEntity entity) {
+        return entity.getType().getDefaultLootTable().location();
+    }
+
+    /** The resource key 1.21.1 wants for a loot table name a bridged {@code getLootTable} override returned. */
+    public static net.minecraft.resources.ResourceKey<net.minecraft.world.level.storage.loot.LootTable> lootTableKey(net.minecraft.resources.ResourceLocation location) {
+        return net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.LOOT_TABLE, location);
+    }
+
+    // ------------------------------------------------------------------ fluid stacks on the network buffer
+
+    /** {@code buf.writeFluidStack(stack)}: the stack codec wants the registry-aware buffer; a plain one receives the bytes. */
+    public static void writeFluidStack(net.minecraft.network.FriendlyByteBuf buf, net.neoforged.neoforge.fluids.FluidStack stack) {
+        if (buf instanceof net.minecraft.network.RegistryFriendlyByteBuf reg) {
+            net.neoforged.neoforge.fluids.FluidStack.OPTIONAL_STREAM_CODEC.encode(reg, stack);
+            return;
+        }
+        var out = new net.minecraft.network.RegistryFriendlyByteBuf(io.netty.buffer.Unpooled.buffer(), MigrateContext.registries());
+        net.neoforged.neoforge.fluids.FluidStack.OPTIONAL_STREAM_CODEC.encode(out, stack);
+        buf.writeBytes(out);
+    }
+
+    /** {@code buf.readFluidStack()}. */
+    public static net.neoforged.neoforge.fluids.FluidStack readFluidStack(net.minecraft.network.FriendlyByteBuf buf) {
+        var reg = Round3Compat.registryBuffer(buf);
+        int before = reg.readerIndex();
+        var stack = net.neoforged.neoforge.fluids.FluidStack.OPTIONAL_STREAM_CODEC.decode(reg);
+        if (reg != buf) buf.readerIndex(buf.readerIndex() + (reg.readerIndex() - before));
+        return stack;
     }
 }

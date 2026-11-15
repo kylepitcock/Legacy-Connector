@@ -791,4 +791,9 @@ public final class ForgeApi1201 {
             return null;
         }
     }
+
+    /** {@code LoadingModList.getErrors()}: the loading issues of severity error (FML 4 keeps issues, not exceptions). */
+    public static java.util.List<net.neoforged.fml.ModLoadingIssue> loadingErrors(net.neoforged.fml.loading.LoadingModList list) {
+        return list.getModLoadingIssues().stream().filter(i -> i.severity() == net.neoforged.fml.ModLoadingIssue.Severity.ERROR).toList();
+    }
 }
