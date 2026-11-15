@@ -1427,11 +1427,11 @@ PlayerEvents.tick(e => {
     }
 });
 """;
-        const lineEnding = script.includes("\r\n") ? "\r\n" : "\n";
-        const replacementWithOriginalEndings = lineEnding === "\n"
+        String lineEnding = script.contains("\r\n") ? "\r\n" : "\n";
+        String replacementWithOriginalEndings = "\n".equals(lineEnding)
                 ? replacement
-                : replacement.replace(/\n/g, lineEnding);
-        const migrated = normalized.substring(0, start)
+                : replacement.replace("\n", lineEnding);
+        String migrated = normalized.substring(0, start)
                 + replacementWithOriginalEndings
                 + normalized.substring(end);
         resources.put(ALIEN_EVO_SLAM, migrated.getBytes(StandardCharsets.UTF_8));
