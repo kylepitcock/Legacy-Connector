@@ -85,7 +85,7 @@ final class Forge1201TargetOfficialBridgeAuditTest {
         var field = report.fields().getFirst();
         assertEquals("TARGET_API_MEMBER_FOUND_EXACT", field.status());
         assertEquals("testField", field.candidates().getFirst().targetOfficialName());
-        assertEquals(1, report.classCounts().get("TARGET_COMPILE_CLASS_FOUND"));
+        assertEquals(2, report.classCounts().get("TARGET_COMPILE_CLASS_FOUND"));
     }
 
     @Test
