@@ -699,3 +699,13 @@ com/mojang/serialization/Codec	dispatchStable	(Ljava/util/function/Function;Ljav
 com/mojang/serialization/Codec	dispatchMap	(Ljava/util/function/Function;Ljava/util/function/Function;)Lcom/mojang/serialization/MapCodec;	=args	0,RoundCompat.mapCodecs@1	(Ljava/util/function/Function;Ljava/util/function/Function;)Lcom/mojang/serialization/MapCodec;
 com/mojang/serialization/Codec	dispatchMap	(Ljava/lang/String;Ljava/util/function/Function;Ljava/util/function/Function;)Lcom/mojang/serialization/MapCodec;	=args	0,1,RoundCompat.mapCodecs@2	(Ljava/lang/String;Ljava/util/function/Function;Ljava/util/function/Function;)Lcom/mojang/serialization/MapCodec;
 net/minecraft/world/item/crafting/RecipeManager	getAllRecipesFor	(Lnet/minecraft/world/item/crafting/RecipeType;)Ljava/util/List;	RecipeCompat	getAllRecipesFor	-
+net/minecraft/world/level/BlockGetter	getExistingBlockEntity	(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/entity/BlockEntity;	Round4Compat	existingBlockEntity
+net/minecraft/world/level/chunk/ChunkAccess	getWorldForge	()Lnet/minecraft/world/level/LevelAccessor;	=	getLevel	()Lnet/minecraft/world/level/Level;
+net/minecraft/world/item/MapItem	getMapId	(Lnet/minecraft/world/item/ItemStack;)Ljava/lang/Integer;	Round4Compat	mapId
+net/minecraft/world/entity/animal/Sheep	getColorArray	(Lnet/minecraft/world/item/DyeColor;)[F	Round4Compat	sheepColorArray
+net/minecraft/nbt/NbtAccounter	<init>	(J)V	Round4Compat	newNbtAccounter
+net/minecraft/network/protocol/game/ClientboundAddEntityPacket	<init>	(Lnet/minecraft/world/entity/Entity;I)V	Round4Compat	newAddEntityPacket
+net/minecraft/world/level/BaseSpawner	getOrCreateDisplayEntity	(Lnet/minecraft/world/level/Level;Lnet/minecraft/util/RandomSource;Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/entity/Entity;	=args	0,2	(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/entity/Entity;
+net/minecraft/world/item/CrossbowItem	getChargeDuration	(Lnet/minecraft/world/item/ItemStack;)I	Round4Compat	crossbowChargeDuration
+net/minecraft/world/effect/MobEffectInstance	isCurativeItem	(Lnet/minecraft/world/item/ItemStack;)Z	Round4Compat	isCurativeItem
+net/minecraft/world/level/block/LecternBlock	tryPlaceBook	(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/item/ItemStack;)Z	Round4Compat	tryPlaceBook

@@ -80,3 +80,10 @@ net/minecraft/world/level/block/state/BlockState	neighborChanged	*	handleNeighbo
 net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase	neighborChanged	*	handleNeighborChanged
 net/minecraft/network/syncher/EntityDataAccessor	getId	()I	id
 net/minecraft/network/syncher/EntityDataAccessor	getSerializer	*	serializer
+net/minecraft/world/level/block/state/BlockBehaviour$Properties	noParticlesOnBreak	*	noTerrainParticles
+net/minecraft/world/entity/decoration/PaintingVariant	getWidth	*	width
+net/minecraft/world/entity/decoration/PaintingVariant	getHeight	*	height
+net/minecraft/world/level/storage/ServerLevelData	getAllowCommands	*	isAllowCommands
+net/minecraft/world/entity/Entity	getPortalWaitTime	*	getDimensionChangingDelay
+net/minecraft/world/level/block/entity/JukeboxBlockEntity	getFirstItem	*	getTheItem
+net/minecraft/world/level/block/FlowerPotBlock	getContent	*	getPotted
