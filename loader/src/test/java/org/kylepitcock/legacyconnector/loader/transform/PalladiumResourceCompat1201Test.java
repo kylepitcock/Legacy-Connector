@@ -504,6 +504,8 @@ class PalladiumResourceCompat1201Test {
         assertTrue(migrated.contains("let playersFalling = new Set();"));
         assertTrue(migrated.contains("const clearGravitySlam = (player, playerId) => {"));
         assertTrue(migrated.contains("if (p.onGround() && playersFalling.has(playerId))"));
+        assertTrue(migrated.contains("if (p.onGround() || isAtLeast10BlocksAboveGround(p)) {"));
+        assertFalse(migrated.contains("canStart"));
         assertTrue(migrated.contains("else if (activeTicks >= 200)"));
         assertTrue(migrated.contains(
                 "p.modifyAttribute(gravityAttribute, \"gravity_slam\", 6, \"add_value\")"));
