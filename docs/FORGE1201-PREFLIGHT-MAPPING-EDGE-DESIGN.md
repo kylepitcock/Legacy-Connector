@@ -352,3 +352,18 @@ The report declares `selectorTransformationPerformed=false` and `runtimeMappingT
 The source changes are published but **not yet tested by the user**. First run the focused class `org.kylepitcock.legacyconnector.loader.tools.forge1201.Forge1201TargetOfficialBridgeAuditTest`, then the forced clean `:loader:test` gate. Only after those pass, run `:loader:auditSrgTargetApiBridge1201To1211` and inspect the report's status histograms and ambiguous/external/incomplete rows. Do not interpret a generated report as runtime compatibility proof.
 
 No selector rewriting, runtime mapping table, or license conclusion is authorized by this checkpoint.
+
+
+### 19.1 Audit task tool-classpath correction — 2026-11-15
+
+The first user invocation of `:loader:auditSrgTargetApiBridge1201To1211` completed target API inventory successfully (7,942 unique classes resolved, 71,727 declared methods, 36,227 declared fields, and 4,201 referenced Minecraft types with none missing), then failed before audit/report generation:
+
+`NoClassDefFoundError: com/google/gson/GsonBuilder`
+
+The failure was isolated to the forked JavaExec classpath. `Forge1201TargetApiInventory` has a static Gson serializer, and the bridge audit calls its shared `readClasspathFile` helper. Gson is intentionally `compileOnly` in the loader because NeoForge supplies it in the actual loader runtime. The inventory task already supplies Gson/SLF4J explicitly from the loader compile classpath for its standalone tool process; the new audit task initially supplied only main output plus `configurations.runtimeClasspath`, which excludes compile-only jars.
+
+The audit task now adds the same narrowly filtered compile-classpath entries (`gson*` and `slf4j*`) to its standalone JavaExec classpath, in addition to main output and the ordinary runtime dependencies. This is a build-tool classpath correction only: no dependency scope or shipped loader runtime classpath changed, no mapping data was copied, and no report/selector/runtime mapping was produced by the failed attempt.
+
+Source correction commit: `9f50f0af1c79a24e02d59ba3a983eb3581655317`.
+
+**Validation status:** awaiting a repeat invocation of `:loader:auditSrgTargetApiBridge1201To1211`. The focused `Forge1201TargetOfficialBridgeAuditTest` had already passed at parent `37bc531f8b629402b2ae0a6382e30554f7f08484` before this Gradle-only classpath correction. The previous audit attempt did not enter the composed audit or produce `srg-target-api-bridge-audit.json`; inspect the report only after the corrected task succeeds.
