@@ -245,7 +245,7 @@ public final class Forge1201SourceOfficialMappingIndex {
         }
 
         ClassCandidate classCandidate = owner.candidates().getFirst();
-        int externalCount = mapped.externalDescriptorTypeCount() + descriptor.externalTypeCount();
+        int externalCount = Math.max(mapped.externalDescriptorTypeCount(), descriptor.externalTypeCount());
         SelectorCandidate candidate = new SelectorCandidate(
                 srgOwner, srgName, mapped.sourceDescriptor(),
                 mapped.obfuscatedOwner(), mapped.obfuscatedName(), mapped.obfuscatedDescriptor(),
