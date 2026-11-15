@@ -482,8 +482,9 @@ class PalladiumResourceCompat1201Test {
         Map<String, byte[]> resources = new HashMap<>();
         put(resources, PalladiumResourceCompat1201.ALIEN_EVO_SLAM, String.join("\r\n",
                 "let playersWithGravity = new Set();",
-                "PlayerEvents.tick(e => {",
-                "    let p = e.player",
+                "",
+                "PlayerEvents.tick(event => {",
+                "    let p = event.player",
                 "    if (abilityEnabled && !playersWithGravity.has(p.uuid.toString())) {",
                 "        p.modifyAttribute(gravityAttribute, \"gravity_slam\", 6, \"addition\")",
                 "        p.modifyAttribute(gravityAttribute, \"gravity_slam\", 6, \"addition\")",
