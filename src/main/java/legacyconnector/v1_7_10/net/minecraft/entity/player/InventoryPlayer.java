@@ -51,7 +51,9 @@ public class InventoryPlayer implements IInventory {
     }
 
     public ItemStack getCurrentItem() {
-        return ItemStack.mcc$wrap(mcc$inv.getSelected());
+        ItemStack held = ItemStack.mcc$wrap(mcc$inv.getSelected());
+        var site = org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites.CURRENT_ITEM; // coremod hook site (no-op unless listed)
+        return site.listed() && site.active() ? (ItemStack) site.modify(0, held, this) : held;
     }
 
     public static int getHotbarSize() {

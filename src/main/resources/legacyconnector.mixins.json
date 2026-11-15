@@ -30,6 +30,8 @@
     "ServerLevelWeatherHookMixin",
     "ServerLevelNeighborHookMixin",
     "ServerLevelWakeHookMixin",
+    "MobAiHookMixin",
+    "EnchantmentHelperHookMixin",
     "ItemStackHookMixin",
     "AnvilMenuCostHookMixin",
     "ServerSprintHookMixin",
