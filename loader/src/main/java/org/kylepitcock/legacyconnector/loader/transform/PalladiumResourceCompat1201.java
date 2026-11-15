@@ -17,6 +17,8 @@ final class PalladiumResourceCompat1201 {
             "addon/alienevo/kubejs_scripts/slot_transform.js";
     static final String ALIEN_EVO_QUICK_CHANGE =
             "data/alienevo/kubejs_scripts/quick_change.js";
+    static final String ALIEN_EVO_BLOCK_PARTICLES =
+            "addon/alienevo/kubejs_scripts/spawn_particles_block.js";
     static final String ALIEN_EVO_TRANSFORM =
             "addon/alienevo/kubejs_scripts/transform.js";
     static final String ALIEN_EVO_POWER_UI =
@@ -249,6 +251,8 @@ final class PalladiumResourceCompat1201 {
                         "entity.modifyAttribute(attribute, 'alienevo:stat_ability/' + String(uuid).toLowerCase().replace(/[^a-z0-9/._-]/g, '_'),", "1"}
         });
         rewriteOptionalPehkuiApi(resources);
+        rewriteAlienEvoBlockParticleOptions(resources);
+        rewriteAlienEvoSlotPersistentDataIntegers(resources);
 
         // A single resource can receive more than one independent rewrite.
         // Report distinct changed resource paths, including resources removed by a migration.
@@ -1111,6 +1115,63 @@ final class PalladiumResourceCompat1201 {
         return rewrite(resources, path, new String[][] {{legacy, migrated, "1"}});
     }
 
+    /**
+     * Minecraft 1.21.1 changed parameterized particle arguments to data-component/SNBT syntax.
+     * The addon Cannonbolt feet emitter used the 1.20.1 whitespace form, which KubeJS 7
+     * rejects while converting the string argument to ParticleOptions. Preserve the block dust
+     * trail with the modern block_state form and keep valid falling-dust/item fallbacks.
+     */
+    private static int rewriteAlienEvoBlockParticleOptions(Map<String, byte[]> resources) {
+        String legacy = String.join("\n",
+                "                    let formats = [",
+                "                        \"minecraft:block \" + block.id,        // Standard format",
+                "                        \"block \" + block.id,                  // Alternative format",
+                "                        \"minecraft:falling_dust \" + block.id, // Falling dust format",
+                "                        block.id + \"_break\",                  // Break particle format",
+                "                        \"minecraft:item \" + block.id          // Item particle format",
+                "                    ];",
+                "");
+        String migrated = String.join("\n",
+                "                    let blockState = JSON.stringify(String(block.id));",
+                "                    let formats = [",
+                "                        `minecraft:block{block_state:${blockState}}`,",
+                "                        `minecraft:falling_dust{block_state:${blockState}}`,",
+                "                        `minecraft:item{item:${blockState}}`",
+                "                    ];",
+                "");
+        return rewrite(resources, ALIEN_EVO_BLOCK_PARTICLES, new String[][] {{legacy, migrated, "1"}});
+    }
+
+    /**
+     * KubeJS 7 exposes CompoundTag numeric values consistently through getInt/putInt.
+     * The Quick Change wheel used JavaScript bracket-property access for the same keys,
+     * unlike its server Quick Change handler. Normalize playlist/slot reads and writes
+     * so selected DNA is compared and stored as an integer on every path.
+     */
+    private static int rewriteAlienEvoSlotPersistentDataIntegers(Map<String, byte[]> resources) {
+        return rewrite(resources, ALIEN_EVO_SLOT_TRANSFORM, new String[][] {
+                {"let currentPlaylist = entity.persistentData[CURRENT_PLAYLIST_KEY] || DEFAULT_PLAYLIST;",
+                        "let currentPlaylist = entity.persistentData.getInt(CURRENT_PLAYLIST_KEY) || DEFAULT_PLAYLIST;", "1"},
+                {"let alienNumber = entity.persistentData[`alienevo.alien_${currentPlaylist}_${useSlot}`];",
+                        "let alienNumber = entity.persistentData.getInt(`alienevo.alien_${currentPlaylist}_${useSlot}`);", "1"},
+                {"entity.persistentData[CURRENT_ALIEN_SLOT_KEY] = useSlot;",
+                        "entity.persistentData.putInt(CURRENT_ALIEN_SLOT_KEY, useSlot);", "1"},
+                {"let current_playlist = entity.persistentData[CURRENT_PLAYLIST_KEY] || DEFAULT_PLAYLIST;",
+                        "let current_playlist = entity.persistentData.getInt(CURRENT_PLAYLIST_KEY) || DEFAULT_PLAYLIST;", "1"},
+                {"let current_slot = entity.persistentData[CURRENT_ALIEN_SLOT_KEY] || DEFAULT_SLOT;",
+                        "let current_slot = entity.persistentData.getInt(CURRENT_ALIEN_SLOT_KEY) || DEFAULT_SLOT;", "1"},
+                {"let selectedAlienNum = entity.persistentData[`alienevo.alien_${current_playlist}_${current_slot}`] || 0;",
+                        "let selectedAlienNum = entity.persistentData.getInt(`alienevo.alien_${current_playlist}_${current_slot}`) || 0;", "1"},
+                {"alien_num = entity.persistentData[`alienevo.alien_${random_playlist}_${random_slot}`] || 0;",
+                        "alien_num = entity.persistentData.getInt(`alienevo.alien_${random_playlist}_${random_slot}`) || 0;", "1"},
+                {"entity.persistentData[CURRENT_PLAYLIST_KEY] = random_playlist;",
+                        "entity.persistentData.putInt(CURRENT_PLAYLIST_KEY, random_playlist);", "1"},
+                {"entity.persistentData[CURRENT_ALIEN_SLOT_KEY] = random_slot;",
+                        "entity.persistentData.putInt(CURRENT_ALIEN_SLOT_KEY, random_slot);", "1"},
+                {"let alienInSlot = entity.persistentData[`alienevo.alien_${playlist}_${slot}`];",
+                        "let alienInSlot = entity.persistentData.getInt(`alienevo.alien_${playlist}_${slot}`);", "1"}
+        });
+    }
     /**
      * AlienEvo's recharge callback skipped the final cooldown tick when the
      * scoreboard reached exactly 1. The transform ability remains locked while
