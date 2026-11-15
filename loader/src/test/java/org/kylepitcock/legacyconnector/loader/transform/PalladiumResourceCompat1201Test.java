@@ -178,11 +178,11 @@ class PalladiumResourceCompat1201Test {
         assertTrue(detransform.contains("getAlienEvoSoundEvent('alienevo:' + String(watchType) + '_detransform')"));
         assertFalse(detransform.contains("`alienevo:${watchType}_detransform`"));
 
-        String decouple = get(resources, "addon/alienevo/kubejs_scripts/decouple.js");
+        // Reuse the decouple script loaded above; assert its injected helper alias is redeclarable.
         assertTrue(decouple.contains("    var AlienEvoJavaResourceLocation = Java.loadClass"));
         assertFalse(decouple.contains("    const AlienEvoJavaResourceLocation = Java.loadClass"));
 
-        String detransform = get(resources, "addon/alienevo/kubejs_scripts/detransform.js");
+        // Reuse the detransform script loaded above; assert its injected helper alias is redeclarable.
         assertTrue(detransform.contains("    var AlienEvoJavaResourceLocation = Java.loadClass"));
         assertFalse(detransform.contains("    const AlienEvoJavaResourceLocation = Java.loadClass"));
 
