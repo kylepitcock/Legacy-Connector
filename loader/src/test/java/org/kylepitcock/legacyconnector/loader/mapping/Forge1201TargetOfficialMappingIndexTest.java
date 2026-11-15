@@ -18,9 +18,9 @@ final class Forge1201TargetOfficialMappingIndexTest {
         Path mappings = write("target.tsrg", """
                 tsrg2 left right
                 a net/minecraft/world/level/Level
+                \tm (Lb;[Lb;)Lc; getBlockState
                 b net/minecraft/core/BlockPos
                 c net/minecraft/world/level/block/state/BlockState
-                \tm (Lb;[Lb;)Lc; getBlockState
                 """);
 
         var index = Forge1201TargetOfficialMappingIndex.read(mappings);
@@ -45,9 +45,9 @@ final class Forge1201TargetOfficialMappingIndexTest {
         Path mappings = write("external.tsrg", """
                 tsrg2 left right
                 a net/minecraft/Entity
-                b net/minecraft/BlockPos
                 \tm (Ljava/lang/String;Lb;)V externalMethod
                 \tn (LunmappedObfuscatedType;)V unresolvedMethod
+                b net/minecraft/BlockPos
                 """);
 
         var index = Forge1201TargetOfficialMappingIndex.read(mappings);
@@ -90,9 +90,9 @@ final class Forge1201TargetOfficialMappingIndexTest {
         Path mappings = write("fields.tsrg", """
                 tsrg2 left right
                 a net/minecraft/Fixture
-                b net/minecraft/BlockPos
                 \tf Lb; typedField
                 \tg descriptorlessField
+                b net/minecraft/BlockPos
                 """);
 
         var index = Forge1201TargetOfficialMappingIndex.read(mappings);
