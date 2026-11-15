@@ -601,7 +601,7 @@ class PalladiumResourceCompat1201Test {
         assertTrue(migrated.contains("if (nbt.isEmpty()) {"));
         assertTrue(migrated.contains("var storedAllDNAString = nbt.getString('storedAllDNA');"));
         assertTrue(migrated.contains("nbt.getInt('storedCurrentPlaylist') || 1"));
-        assertTrue(migrated.contains("nbt.getBoolean('storedMastercontrol')"));
+        assertTrue(migrated.contains("nbt.getInt('storedMastercontrol') !== 0"));
         assertTrue(migrated.contains("nbt.getString('storedGlowColor1')"));
         assertTrue(migrated.contains("displayNbt.getString('Name')"));
         assertFalse(migrated.contains("storedOmnitrixCycle: currentAlienSlot"));
