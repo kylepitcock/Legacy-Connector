@@ -129,6 +129,7 @@ public final class CoremodHookScan {
             long start = System.nanoTime();
             List<Change> changes = changes(transformers, vanillaJar, mc);
             List<CoremodHookDiscovery.Hook> hooks = hooks(changes);
+            writeStructure(changes, file.resolveSibling(file.getFileName().toString().replace("coremod-hooks-", "coremod-structure-")), mc);
             if (hooks.isEmpty()) {
                 Files.deleteIfExists(file);
                 return;
@@ -145,6 +146,28 @@ public final class CoremodHookScan {
             LOG.warn("Legacy Connector: the hooks legacy coremods put into Minecraft's classes could not be listed: {}", e.toString());
             LOG.debug("Legacy Connector: coremod hook scan failure", e);
         }
+    }
+
+    /** The structural additions of every change, each once ({@code kind TAB class TAB name TAB desc TAB access} per line); an empty list removes the file. */
+    static void writeStructure(List<Change> changes, Path file, String mc) throws IOException {
+        Map<String, CoremodHookDiscovery.Addition> out = new LinkedHashMap<>();
+        for (Change c : changes) {
+            try {
+                for (CoremodHookDiscovery.Addition a : CoremodHookDiscovery.additions(c.before(), c.after())) out.putIfAbsent(a.toString(), a);
+            } catch (RuntimeException e) {
+                LOG.debug("Legacy Connector: the additions of {} to {} could not be read", c.transformer(), c.className(), e);
+            }
+        }
+        if (out.isEmpty()) {
+            Files.deleteIfExists(file);
+            return;
+        }
+        StringBuilder text = new StringBuilder();
+        for (CoremodHookDiscovery.Addition a : out.values()) text.append(a).append('\n');
+        Files.createDirectories(file.getParent());
+        Files.writeString(file, text, StandardCharsets.UTF_8);
+        LOG.info("Legacy Connector: legacy coremods added {} interface(s), field(s) and method(s) to {} of Minecraft {}'s classes (listed in {}; the run time does not apply them yet)",
+                out.size(), out.values().stream().map(CoremodHookDiscovery.Addition::className).distinct().count(), mc, file.getFileName());
     }
 
     private static byte[] remap(byte[] bytes, Remapper remapper) {
