@@ -55,6 +55,14 @@ public final class Client1710 {
         LegacyParticles.register();
         LegacyMusic.register();
         ClientSelfTest.register();
+        if (org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites.any()) { // development aid: the hook mixins inject with require = 0, so a miss is silent
+            int[] ticks = {0};
+            net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.client.event.ClientTickEvent.Post e) -> {
+                if (++ticks[0] != 200) return; // the renderers exist by now
+                org.slf4j.LoggerFactory.getLogger("LegacyConnector/Coremods").info("1.12.2 coremod mixins on the client: {}",
+                        org.kylepitcock.legacyconnector.v1_12_2.bridge.CoremodMixinCheck1122.report(true));
+            });
+        }
         WorldScreenshotTest.register();
         ScreenEvents1710.register();
         RenderEvents1710.register();

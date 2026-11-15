@@ -214,6 +214,7 @@ if (typeof cm5done === 'undefined') {
         var c = ItemStackOf(Java.type('net.minecraft.world.item.Items').STICK).getDisplayName();
         return 'component=' + c.getString() + ' siblings=' + c.getSiblings().size();
     });
+    step5('mixin handlers merged', function () { return Java.type('org.kylepitcock.legacyconnector.v1_12_2.bridge.CoremodMixinCheck1122').report(false); });
     cm5at = tick;
     for (var j5 = 0; j5 < out5.length; j5++) log.info('CM5 ' + out5[j5]);
 }

@@ -256,6 +256,25 @@ public final class CoremodSites1122 {
     public static final Site STACK_COMPONENT = CoremodSites.site("item stack chat component", new Class<?>[] {TEXT},
             "net/minecraft/item/ItemStack.func_151000_E()Lnet/minecraft/util/text/ITextComponent;#tail").returns(TEXT);
 
+    private static final Class<?> RESOURCE_LOCATION = legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation.class;
+    private static final Class<?> NBT_COMPOUND = legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound.class;
+    private static final String ARMOR_LAYER = "net/minecraft/client/renderer/entity/layers/LayerArmorBase.";
+
+    /** LayerArmorBase.renderArmorLayer (one slot), after the stack was read: a hook answering true leaves the piece undrawn. Values: the entity, the stack. */
+    public static final Site ARMOR_HIDDEN = CoremodSites.site("armour piece hidden", new Class<?>[] {ENTITY, ITEM_STACK},
+            ARMOR_LAYER + "func_188361_a(Lnet/minecraft/entity/EntityLivingBase;FFFFFFFLnet/minecraft/inventory/EntityEquipmentSlot;)V#cancel-after:aload 10");
+
+    /** Render.renderEntityOnFire, first thing: a hook answering true has drawn the flames itself. Values: the entity, x, y, z (relative to the camera). */
+    public static final Site ENTITY_FIRE = CoremodSites.site("burning entity flames", new Class<?>[] {ENTITY, double.class, double.class, double.class},
+            "net/minecraft/client/renderer/entity/Render.func_76977_a(Lnet/minecraft/entity/Entity;DDDF)V#head-cancel");
+
+    /** LayerEntityOnShoulder.renderEntityOnShoulder, after the texture was chosen: the hook answers the texture. Values: the texture, the shoulder entity's tag. */
+    public static final Site SHOULDER_TEXTURE = CoremodSites.site("shoulder parrot texture", new Class<?>[] {RESOURCE_LOCATION, NBT_COMPOUND},
+            "net/minecraft/client/renderer/entity/layers/LayerEntityOnShoulder.func_192864_a(Lnet/minecraft/entity/player/EntityPlayer;Ljava/util/UUID;"
+                    + "Lnet/minecraft/nbt/NBTTagCompound;Lnet/minecraft/client/renderer/entity/RenderLivingBase;Lnet/minecraft/client/model/ModelBase;"
+                    + "Lnet/minecraft/util/ResourceLocation;Ljava/lang/Class;FFFFFFFZ)Lnet/minecraft/client/renderer/entity/layers/LayerEntityOnShoulder$DataHolder;"
+                    + "#after:aload 6").returns(RESOURCE_LOCATION);
+
     /** The slot range of one merge call after the hooks of {@code start} and {@code end} had their say. */
     public static int[] mergeRange(Site start, Site end, int from, int to) {
         if (!start.listed() && !end.listed()) return new int[] {from, to};
@@ -482,6 +501,24 @@ public final class CoremodSites1122 {
             if (siblings.get(i).getString().equals(original.getString())) siblings.set(i, original);
         }
         return made;
+    }
+
+    /** The saved tag of the shoulder parrot the layer draws on this thread (set by the client mixin around the draw). */
+    public static final ThreadLocal<net.minecraft.nbt.CompoundTag> SHOULDER_TAG = new ThreadLocal<>();
+
+    /** {@link #ARMOR_HIDDEN}. */
+    public static boolean armorHidden(net.minecraft.world.entity.LivingEntity entity, net.minecraft.world.item.ItemStack stack) {
+        return ARMOR_HIDDEN.active() && ARMOR_HIDDEN.cancels(EntityBridge1122.wrap(entity), Stacks1122.fromModern(stack));
+    }
+
+    /** {@link #SHOULDER_TEXTURE}: the texture of a parrot on a shoulder after the hooks ({@code texture} when none changed it). */
+    public static net.minecraft.resources.ResourceLocation shoulderTexture(net.minecraft.resources.ResourceLocation texture, net.minecraft.nbt.CompoundTag tag) {
+        if (!SHOULDER_TEXTURE.active() || tag == null) return texture;
+        Object changed = SHOULDER_TEXTURE.modify(0, new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation(texture.toString()),
+                new legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound(tag.copy()));
+        if (!(changed instanceof legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation rl)) return texture;
+        net.minecraft.resources.ResourceLocation modern = net.minecraft.resources.ResourceLocation.tryParse(rl.toString());
+        return modern == null ? texture : modern;
     }
 
     private static final ThreadLocal<Boolean> IN_WORLD_HOOK = new ThreadLocal<>();
