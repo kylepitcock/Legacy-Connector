@@ -447,7 +447,9 @@ public final class ItemStack {
     }
 
     public EnumRarity getRarity() {
-        return mcc$item == null ? EnumRarity.common : mcc$item.getRarity(this);
+        EnumRarity own = mcc$item == null ? EnumRarity.common : mcc$item.getRarity(this);
+        var site = org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites.ITEM_RARITY; // coremod hook site (no-op unless listed)
+        return site.listed() && site.active() && site.replace(own, this) instanceof EnumRarity answer ? answer : own;
     }
 
     public boolean hasEffect() {

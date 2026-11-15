@@ -63,6 +63,11 @@ public class ContainerFurnace extends Container {
 
     @Override
     public ItemStack transferStackInSlot(EntityPlayer player, int index) {
+        var site = org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites.FURNACE_SHIFT_CLICK; // coremod hook site (no-op unless listed)
+        if (site.listed() && site.active()) {
+            Object none = new Object(); // a hook that carries the shift click out answers null for "nothing moved" too
+            if (site.replace(none, this, player, index) instanceof ItemStack answer) return answer;
+        }
         ItemStack copy = null;
         Slot slot = (Slot) inventorySlots.get(index);
         if (slot != null && slot.getHasStack()) {

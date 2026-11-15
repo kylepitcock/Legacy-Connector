@@ -2089,7 +2089,8 @@ public class World implements IBlockAccess {
                 }
             }
         }
-        return false;
+        var site = org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites.BLOCK_COLLISION_EXTRA; // coremod hook site (no-op unless listed)
+        return site.listed() && org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites.blockCollisionExtra(this, box);
     }
 
     /** The world's crash report section: its name, chunk statistics and level data. */

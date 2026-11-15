@@ -201,6 +201,32 @@ public final class CoremodSites {
             new Class<?>[] {legacyconnector.v1_7_10.net.minecraft.item.ItemStack.class, legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound.class},
             "net/minecraft/item/ItemStack.func_77963_c(Lnet/minecraft/nbt/NBTTagCompound;)V#tail");
 
+    /** ItemStack.getRarity: a hook that answers instead of {@code getItem().getRarity(stack)}. Values: the stack. */
+    public static final Site ITEM_RARITY = site("item rarity", new Class<?>[] {legacyconnector.v1_7_10.net.minecraft.item.ItemStack.class},
+            "net/minecraft/item/ItemStack.func_77953_t()Lnet/minecraft/item/EnumRarity;#replace:func_77973_b()Lnet/minecraft/item/Item;")
+            .returns(legacyconnector.v1_7_10.net.minecraft.item.EnumRarity.class);
+
+    /**
+     * ContainerFurnace.transferStackInSlot (shift click): a hook that carries the whole method out instead of the base one (coremods that repair
+     * the furnace's shift click). Values: the container, the player, the slot index.
+     */
+    public static final Site FURNACE_SHIFT_CLICK = site("furnace shift click",
+            new Class<?>[] {legacyconnector.v1_7_10.net.minecraft.inventory.ContainerFurnace.class, PLAYER, int.class},
+            "net/minecraft/inventory/ContainerFurnace.func_82846_b(Lnet/minecraft/entity/player/EntityPlayer;I)Lnet/minecraft/item/ItemStack;#replace:get(I)Ljava/lang/Object;")
+            .returns(legacyconnector.v1_7_10.net.minecraft.item.ItemStack.class);
+
+    /**
+     * Explosion.doExplosionA: a hook that stands in for {@code EnchantmentProtection.getBlastDamageReduction(entity, knockback)} for each living
+     * entity in the blast. Values: the entity, the knockback factor before the entity's protection.
+     */
+    public static final Site EXPLOSION_KNOCKBACK = site("explosion knockback reduction", new Class<?>[] {ENTITY, double.class},
+            "net/minecraft/world/Explosion.func_77278_a()V#replace:func_92092_a(Lnet/minecraft/entity/Entity;D)D").returns(double.class);
+
+    /** World.checkBlockCollision, last thing: a hook answering true adds a collision the blocks do not have. Values: the world, the box. */
+    public static final Site BLOCK_COLLISION_EXTRA = site("extra block collision",
+            new Class<?>[] {WORLD, legacyconnector.v1_7_10.net.minecraft.util.AxisAlignedBB.class},
+            "net/minecraft/world/World.func_72829_c(Lnet/minecraft/util/AxisAlignedBB;)Z#tail").returns(boolean.class);
+
     /** TileEntity.validate and invalidate, first thing (tile entities that keep or call the base method). Values: the tile entity. */
     public static final Site TILE_VALIDATE = site("tile entity validated", new Class<?>[] {legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntity.class},
             "net/minecraft/tileentity/TileEntity.func_145829_t()V#after:aload 0");
@@ -431,6 +457,17 @@ public final class CoremodSites {
     public static int enchantability(net.minecraft.world.item.ItemStack stack, int value) {
         if (!ENCHANTABILITY.active()) return value;
         return ((Number) ENCHANTABILITY.modify(1, legacyconnector.v1_7_10.net.minecraft.item.ItemStack.mcc$wrap(stack), value)).intValue();
+    }
+
+    /** {@link #EXPLOSION_KNOCKBACK}: the factor after the hook (the game's own protection is applied to it afterwards, as the shim's reduction is the identity). */
+    public static double explosionKnockback(net.minecraft.world.entity.LivingEntity entity, double factor) {
+        if (!EXPLOSION_KNOCKBACK.active()) return factor;
+        return ((Number) EXPLOSION_KNOCKBACK.modify(1, EntityBridge.wrap(entity), factor)).doubleValue();
+    }
+
+    /** {@link #BLOCK_COLLISION_EXTRA}. */
+    public static boolean blockCollisionExtra(legacyconnector.v1_7_10.net.minecraft.world.World world, legacyconnector.v1_7_10.net.minecraft.util.AxisAlignedBB box) {
+        return BLOCK_COLLISION_EXTRA.active() && BLOCK_COLLISION_EXTRA.cancels(world, box);
     }
 
     public static void neighbors(Site site, net.minecraft.world.level.Level level, net.minecraft.core.BlockPos pos) {
