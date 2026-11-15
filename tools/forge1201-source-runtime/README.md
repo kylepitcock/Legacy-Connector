@@ -37,7 +37,7 @@ Keep the resulting classpath and manifest under `build/`; do not upload the clas
 
 ## Scope and limitations
 
-This workspace exports a classpath; it does not yet classify source members or modify the combined audit report. The next source-side analyzer will map each vanilla SRG selector to source Mojang owner/member/full-descriptor identity using the pinned MCPConfig joined TSRG2 and Mojang mappings, then inspect the corresponding class bytes on this exact Forge classpath.
+The classpath export is validated for the pinned Minecraft 1.20.1 / Forge 47.3.0 / ForgeGradle 6.0.24 profile. The user confirmed 113 ordered entries and one match each for PistonStructureResolver, BlockState, and Block; the manifest records SOURCE_RUNTIME_CLASSPATH_EXPORTED. This workspace still does not classify source members or modify the combined audit report. The next source-side analyzer must map each vanilla SRG selector to source Mojang owner/member/full-descriptor identity using pinned MCPConfig joined TSRG2 plus source Mojang mappings, then inspect exact class bytes on this exported Forge classpath.
 
 A patch-file scan may supplement the classfile evidence, but absence of a patch file is not proof that a member exists, and presence of a class patch is not proof that a particular member was removed. The patched compiled classpath is the authority for member existence.
 
