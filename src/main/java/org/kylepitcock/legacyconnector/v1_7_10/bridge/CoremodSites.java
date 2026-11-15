@@ -478,6 +478,15 @@ public final class CoremodSites {
                 new Class<?>[] {float.class, legacyconnector.v1_7_10.net.minecraft.client.multiplayer.PlayerControllerMP.class},
                 "net/minecraft/client/multiplayer/PlayerControllerMP.func_78757_d()F#tail").returns(float.class);
 
+        /** EntityRenderer.renderHand, last thing. Values: partial tick, render pass. */
+        public static final Site HAND_RENDERED = site("hand rendered", new Class<?>[] {float.class, int.class}, ER + "func_78476_b(FI)V#tail");
+        /** EffectRenderer.renderParticles, first thing (world space, before the particles). Value: partial tick. */
+        public static final Site BEFORE_PARTICLES = site("before the particles", new Class<?>[] {float.class},
+                "net/minecraft/client/particle/EffectRenderer.func_78874_a(Lnet/minecraft/entity/Entity;F)V#head");
+        /** ItemRenderer.renderOverlays: hooks draw their own liquid overlay first. Value: partial tick. */
+        public static final Site SCREEN_OVERLAYS = site("screen overlays (start)", new Class<?>[] {float.class},
+                "net/minecraft/client/renderer/ItemRenderer.func_78447_b(F)V#after:sipush 3008");
+
         /** {@link #MOUSE_OVERRIDE}. */
         public static boolean mouseOverride() {
             return MOUSE_OVERRIDE.active() && MOUSE_OVERRIDE.cancels();

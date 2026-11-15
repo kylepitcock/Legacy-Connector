@@ -54,16 +54,51 @@ public final class CoremodClientSites {
 
     /** {@link CoremodSites.Client#HAND_ITEMS_END}: the legacy drawing code gets the legacy render context at the camera. */
     public static void handItemsEnd(float partialTick, com.mojang.blaze3d.vertex.PoseStack pose, net.minecraft.client.renderer.MultiBufferSource buffers, int light) {
-        if (!CoremodSites.Client.HAND_ITEMS_END.active() || handFailures > 5) return;
+        if (!(CoremodSites.Client.HAND_ITEMS_END.active() || CoremodSites.Client.HAND_RENDERED.active()) || handFailures > 5) return;
         var mc = legacyconnector.v1_7_10.net.minecraft.client.Minecraft.getMinecraft();
         if (mc == null || mc.entityRenderer == null) return;
         RenderContext.beginWorld(pose, buffers, light, net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY);
         try {
             CoremodSites.Client.HAND_ITEMS_END.fire(mc.entityRenderer.itemRenderer, partialTick);
+            if (CoremodSites.Client.HAND_RENDERED.active()) CoremodSites.Client.HAND_RENDERED.fire(partialTick, 0);
         } catch (RuntimeException | LinkageError e) {
             if (handFailures++ < 3) org.slf4j.LoggerFactory.getLogger("LegacyConnector/Coremods").warn("A coremod hook failed (first person items)", e);
         } finally {
             RenderContext.end();
+        }
+    }
+
+    /** The world-space places drawn from {@code RenderLevelStageEvent}: hooks that ran at the start of the particle pass. */
+    public static void worldStage(net.neoforged.neoforge.client.event.RenderLevelStageEvent e) {
+        if (!CoremodSites.Client.BEFORE_PARTICLES.active() || handFailures > 5) return;
+        var buffers = net.minecraft.client.Minecraft.getInstance().renderBuffers().bufferSource();
+        var pose = new com.mojang.blaze3d.vertex.PoseStack();
+        pose.last().pose().set(e.getModelViewMatrix());
+        pose.last().normal().set(new org.joml.Matrix3f(e.getModelViewMatrix()));
+        RenderContext.beginWorld(pose, buffers, net.minecraft.client.renderer.LightTexture.FULL_BRIGHT, net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY);
+        try {
+            CoremodSites.Client.BEFORE_PARTICLES.fire(e.getPartialTick().getGameTimeDeltaPartialTick(false));
+        } catch (RuntimeException | LinkageError ex) {
+            if (handFailures++ < 3) org.slf4j.LoggerFactory.getLogger("LegacyConnector/Coremods").warn("A coremod hook failed (before the particles)", ex);
+        } finally {
+            RenderContext.end();
+            buffers.endBatch();
+        }
+    }
+
+    /** {@link CoremodSites.Client#SCREEN_OVERLAYS}. */
+    public static void screenOverlays(com.mojang.blaze3d.vertex.PoseStack pose) {
+        if (!CoremodSites.Client.SCREEN_OVERLAYS.active() || handFailures > 5) return;
+        var mc = net.minecraft.client.Minecraft.getInstance();
+        var buffers = mc.renderBuffers().bufferSource();
+        RenderContext.beginWorld(pose, buffers, net.minecraft.client.renderer.LightTexture.FULL_BRIGHT, net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY);
+        try {
+            CoremodSites.Client.SCREEN_OVERLAYS.fire(mc.getTimer().getGameTimeDeltaPartialTick(false));
+        } catch (RuntimeException | LinkageError ex) {
+            if (handFailures++ < 3) org.slf4j.LoggerFactory.getLogger("LegacyConnector/Coremods").warn("A coremod hook failed (screen overlays)", ex);
+        } finally {
+            RenderContext.end();
+            buffers.endBatch();
         }
     }
 

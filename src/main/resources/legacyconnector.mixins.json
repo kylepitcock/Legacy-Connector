@@ -121,6 +121,7 @@
     "ClientPickBlockHookMixin",
     "MouseTurnHookMixin",
     "PlayerBlockReachHookMixin",
+    "ScreenEffectOverlayHookMixin",
     "EntityFlameHookMixin",
     "ShoulderParrotTextureHookMixin",
     "ParrotTextureHookMixin",

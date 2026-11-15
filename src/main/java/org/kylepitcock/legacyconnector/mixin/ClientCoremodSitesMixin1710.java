@@ -21,6 +21,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class ClientCoremodSitesMixin1710 {
     @Inject(method = "renderHandsWithItems", at = @At("TAIL"), require = 0)
     private void legacyconnector$coremodHandItemsEnd(float partialTick, PoseStack pose, MultiBufferSource.BufferSource buffers, LocalPlayer player, int light, CallbackInfo ci) {
-        if (CoremodSites.Client.HAND_ITEMS_END.listed()) CoremodClientSites.handItemsEnd(partialTick, pose, buffers, light);
+        if (CoremodSites.Client.HAND_ITEMS_END.listed() || CoremodSites.Client.HAND_RENDERED.listed()) CoremodClientSites.handItemsEnd(partialTick, pose, buffers, light);
     }
 }

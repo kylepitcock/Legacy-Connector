@@ -26,6 +26,7 @@ public final class CoremodMixinCheck1710 {
         "net.minecraft.client.Minecraft=legacyconnector$coremodPickBlock",
         "net.minecraft.client.MouseHandler=legacyconnector$coremodMouseOverride",
         "net.minecraft.client.renderer.ItemInHandRenderer=legacyconnector$coremodHandItemsEnd",
+        "net.minecraft.client.renderer.ScreenEffectRenderer=legacyconnector$coremodScreenOverlays",
     };
 
     private CoremodMixinCheck1710() {}
