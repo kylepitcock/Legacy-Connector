@@ -49,6 +49,21 @@ public final class CoremodSites1122 {
     public static final Site ITEM_ENTITY_TICK = CoremodSites.site("item entity tick", new Class<?>[] {ENTITY_ITEM},
             "net/minecraft/entity/item/EntityItem.func_70071_h_()V#after:aload 0", "net/minecraft/entity/item/EntityItem.func_70071_h_()V#head");
 
+    private static final Class<?> LIVING = legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase.class;
+    private static final Class<?> BLOCK_STATE = legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState.class;
+
+    /** BlockFalling.canFallThrough, last thing: the hook answers the value. Values: the value, the state. */
+    public static final Site FALL_THROUGH = CoremodSites.site("block falls through a state", new Class<?>[] {boolean.class, BLOCK_STATE},
+            "net/minecraft/block/BlockFalling.func_185759_i(Lnet/minecraft/block/state/IBlockState;)Z#tail").returns(boolean.class);
+
+    /** EntityLivingBase.updatePotionEffects, before the effect particles: a hook answering false ends the method. Values: the entity. */
+    public static final Site POTION_PARTICLES = CoremodSites.site("potion effect particles", new Class<?>[] {LIVING},
+            "net/minecraft/entity/EntityLivingBase.func_70679_bo()V#after:aload 0").returns(boolean.class);
+
+    /** RenderLivingBase.canRenderName, first thing: a hook answering false hides the name tag (client). Values: the entity. */
+    public static final Site NAME_SHOWN = CoremodSites.site("name tag shown", new Class<?>[] {LIVING},
+            "net/minecraft/client/renderer/entity/RenderLivingBase.func_177070_b(Lnet/minecraft/entity/EntityLivingBase;)Z#head").returns(boolean.class);
+
     private static final ThreadLocal<Boolean> IN_WORLD_HOOK = new ThreadLocal<>();
 
     private CoremodSites1122() {}
@@ -67,6 +82,22 @@ public final class CoremodSites1122 {
     public static boolean raining(net.minecraft.world.level.Level level, net.minecraft.core.BlockPos pos, boolean value) {
         if (!RAINING_AT.listed() || !RAINING_AT.active() || IN_WORLD_HOOK.get() != null) return value;
         return worldAnswer(RAINING_AT, WorldBridge1122.wrap(level), legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos.mcc$of(pos), value);
+    }
+
+    /** {@link #FALL_THROUGH}. */
+    public static boolean fallThrough(net.minecraft.world.level.block.state.BlockState state, boolean value) {
+        if (!FALL_THROUGH.listed() || !FALL_THROUGH.active()) return value;
+        return (boolean) FALL_THROUGH.modify(0, value, StatesBridge1122.toLegacy(state));
+    }
+
+    /** {@link #POTION_PARTICLES}: false when a hook says the particles are not drawn. */
+    public static boolean potionParticles(net.minecraft.world.entity.LivingEntity entity) {
+        return answers(POTION_PARTICLES, entity);
+    }
+
+    /** The first hook of a boolean place that asks about an entity: false when it says no, true when it says yes or there is none. */
+    public static boolean answers(Site site, net.minecraft.world.entity.LivingEntity entity) {
+        return !site.listed() || !site.active() || !Boolean.FALSE.equals(site.replace(Boolean.TRUE, EntityBridge1122.wrap(entity)));
     }
 
     public static int material(Site site, Object material, int value) {
