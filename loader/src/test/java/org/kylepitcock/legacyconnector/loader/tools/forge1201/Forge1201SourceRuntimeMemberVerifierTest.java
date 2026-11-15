@@ -45,7 +45,7 @@ final class Forge1201SourceRuntimeMemberVerifierTest {
 
         var inherited = index.inspectMethod("net/minecraft/Child", "work", "(I)V");
         assertEquals(
-                Forge1201SourceRuntimeMemberVerifier.Status.SOURCE_RUNTIME_MEMBER_INHERITED_EXACT,
+                Forge1201SourceRuntimeMemberVerifier.Status.SOURCE_RUNTIME_MEMBER_HIERARCHY_EXACT,
                 inherited.status());
         assertEquals("net/minecraft/Super", inherited.declaringOwner());
 
@@ -62,7 +62,7 @@ final class Forge1201SourceRuntimeMemberVerifierTest {
 
         var field = index.inspectField("net/minecraft/Child", "health", "I");
         assertEquals(
-                Forge1201SourceRuntimeMemberVerifier.Status.SOURCE_RUNTIME_MEMBER_INHERITED_EXACT,
+                Forge1201SourceRuntimeMemberVerifier.Status.SOURCE_RUNTIME_MEMBER_HIERARCHY_EXACT,
                 field.status());
         assertEquals("net/minecraft/Super", field.declaringOwner());
 
