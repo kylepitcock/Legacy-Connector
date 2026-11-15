@@ -104,7 +104,7 @@ public final class LegacyJarTransformer {
         if (patcher != null) {
             c.classes.replaceAll((name, bytes) -> patcher.patch(jar, name, bytes));
             // what coremods added to Minecraft's classes (interfaces and their accessors) becomes mixins on the shim classes, translated with the jar
-            CoremodAdditionMixins.addTo(jar, c.classes);
+            CoremodAdditionMixins.addTo(jar, c.classes, shim);
         }
         // Beta 1.7.3 jars are obfuscated: named first, then relocated like the other families
         if (jar.version == LegacyVersion.VB1_7_3) c.notes.addAll(BetaDeobfuscator.apply(jar, c.classes,shim));

@@ -4,6 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.SignalGetter;
+import org.kylepitcock.legacyconnector.v1_12_2.bridge.CoremodSites1122;
 import org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -23,6 +24,22 @@ public interface SignalGetterHookMixin {
         boolean powered = cir.getReturnValueZ();
         boolean changed = CoremodSites.neighborPowered(level, pos, powered);
         if (changed != powered) cir.setReturnValue(changed);
+    }
+
+    /** 1.12.2 coremods (CoremodSites1122.REDSTONE_POWER): a hook first in {@code World.getRedstonePower} answering a power other than 0 is the answer. */
+    @Inject(method = "getSignal", at = @At("HEAD"), cancellable = true, require = 0)
+    private void legacyconnector$coremodRedstonePower(BlockPos pos, Direction side, CallbackInfoReturnable<Integer> cir) {
+        if (!CoremodSites1122.REDSTONE_POWER.listed() || !((Object) this instanceof Level level)) return;
+        int power = CoremodSites1122.power(CoremodSites1122.REDSTONE_POWER, level, pos, side);
+        if (power != 0) cir.setReturnValue(power);
+    }
+
+    /** {@code CoremodSites1122.STRONG_POWER}: the same for {@code World.getStrongPower} (modern {@code getDirectSignal}). */
+    @Inject(method = "getDirectSignal", at = @At("HEAD"), cancellable = true, require = 0)
+    private void legacyconnector$coremodStrongPower(BlockPos pos, Direction side, CallbackInfoReturnable<Integer> cir) {
+        if (!CoremodSites1122.STRONG_POWER.listed() || !((Object) this instanceof Level level)) return;
+        int power = CoremodSites1122.power(CoremodSites1122.STRONG_POWER, level, pos, side);
+        if (power != 0) cir.setReturnValue(power);
     }
 
     @Inject(method = "getSignal", at = @At("RETURN"), cancellable = true, require = 0)

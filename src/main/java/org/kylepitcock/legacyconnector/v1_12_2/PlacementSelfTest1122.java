@@ -129,7 +129,6 @@ public final class PlacementSelfTest1122 {
                 boolean there = !level.getBlockState(ground.above()).isAir();
                 if (!there) {
                     // some items place only while sneaking (RS' portable grid opens its GUI otherwise)
-                    level.removeBlockEntity(ground.above());
                     stack = new ItemStack(item);
                     player.setItemInHand(InteractionHand.MAIN_HAND, stack);
                     player.setShiftKeyDown(true);
@@ -141,7 +140,6 @@ public final class PlacementSelfTest1122 {
                 if (!there) {
                     // plants, mushrooms and reeds are placed on what they accept (their canPlaceBlockAt/canBlockStay), not on the stone test floor
                     for (var soil : SOILS) {
-                        level.removeBlockEntity(ground.above());
                         level.setBlock(ground, soil.defaultBlockState(), 2);
                         level.setBlock(ground.north(), Blocks.WATER.defaultBlockState(), 2);
                         stack = new ItemStack(item);
@@ -157,7 +155,6 @@ public final class PlacementSelfTest1122 {
                 }
                 result = there ? null : "result " + r + why(item, level, player, stack, hit);
                 if (there) placed++;
-                level.removeBlockEntity(ground.above());
                 level.setBlock(ground.above(), Blocks.AIR.defaultBlockState(), 2);
             } catch (RuntimeException | LinkageError ex) {
                 result = "threw " + ex;

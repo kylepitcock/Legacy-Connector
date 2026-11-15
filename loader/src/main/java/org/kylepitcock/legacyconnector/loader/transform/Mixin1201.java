@@ -383,7 +383,7 @@ final class Mixin1201 {
             } else if (key.equals("value") && accessor && v instanceof String s) {
                 a.values.set(i + 1, mapMember(s, ctx));
             } else if (key.equals("target") && isAt && v instanceof String s) {
-                a.values.set(i + 1, mapMember(s, ctx));
+                a.values.set(i + 1, mapAtTarget(s, ctx));
             } else if (v instanceof AnnotationNode nested) {
                 fixAnnotation(nested, ctx);
             } else if (v instanceof List<?> l) {
@@ -422,6 +422,28 @@ final class Mixin1201 {
             return name.indexOf('/') >= 0 ? r : r.replace('/', '.');
         }
         return name;
+    }
+
+    private static final Pattern DOTTED_TARGET = Pattern.compile("^([A-Za-z0-9_$]+(?:/[A-Za-z0-9_$]+)+)\\.([A-Za-z0-9_$<>]+)((?:\\(|:).*)?$");
+
+    /**
+     * An @At target: {@code Lowner;name(desc)} like every member spec, or the unreferenced dev form {@code pkg/Owner.name(desc)}. In the second form a Forge
+     * owner moves like Forge classes do ({@code net/minecraftforge/registries/GameData} to NeoForge's package), then the member rules apply.
+     */
+    private static String mapAtTarget(String spec, Ctx ctx) {
+        Matcher d = DOTTED_TARGET.matcher(spec);
+        if (!d.matches()) return mapMember(spec, ctx);
+        String owner = d.group(1);
+        String moved = owner;
+        if (owner.startsWith("net/minecraftforge/")) {
+            if (owner.startsWith("net/minecraftforge/fml/")) moved = "net/neoforged/fml/" + owner.substring("net/minecraftforge/fml/".length());
+            else if (owner.startsWith("net/minecraftforge/eventbus/")) moved = "net/neoforged/bus/" + owner.substring("net/minecraftforge/eventbus/".length());
+            else moved = "net/neoforged/neoforge/" + owner.substring("net/minecraftforge/".length());
+        }
+        String r = mapMember("L" + moved + ";" + d.group(2) + (d.group(3) == null ? "" : d.group(3)), ctx);
+        int semi = r.indexOf(';');
+        if (!r.startsWith("L") || semi < 0) return spec;
+        return r.substring(1, semi) + "." + r.substring(semi + 1);
     }
 
     /** {@code name}, {@code name(desc)ret}, {@code Lowner;name(desc)ret} or {@code Lowner;field:Ldesc;} with Mojang names. */

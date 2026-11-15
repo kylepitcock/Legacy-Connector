@@ -156,8 +156,32 @@ public final class ForgeRegistryWrapper<V> extends ForgeRegistry<V> {
 
     @Override
     public void register(ResourceLocation k, V value) {
-        if (mcc$registry() instanceof WritableRegistry<V> w) Registry.register(w, k, value);
-        else throw new UnsupportedOperationException("The registry " + key.location() + " cannot be written directly");
+        if (mcc$registry() instanceof WritableRegistry<V> w) {
+            try {
+                Registry.register(w, k, value);
+            } catch (IllegalStateException frozen) {
+                // Forge's registries are open while mods construct; NeoForge's are frozen until RegisterEvent: queue the entry for that event
+                if (!String.valueOf(frozen.getMessage()).contains("frozen")) throw frozen;
+                synchronized (DEFERRED) {
+                    DEFERRED.computeIfAbsent(key, x -> new java.util.ArrayList<>()).add(new Object[] {k, value});
+                }
+            }
+        } else throw new UnsupportedOperationException("The registry " + key.location() + " cannot be written directly");
+    }
+
+    private static final Map<ResourceKey<?>, java.util.List<Object[]>> DEFERRED = new java.util.HashMap<>();
+
+    /** Writes the entries a mod registered directly while its registry was frozen (called from the RegisterEvent of that registry). */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static void flushDeferred(net.neoforged.neoforge.registries.RegisterEvent event) {
+        java.util.List<Object[]> list;
+        synchronized (DEFERRED) {
+            list = DEFERRED.remove(event.getRegistryKey());
+        }
+        if (list == null) return;
+        event.register((ResourceKey) event.getRegistryKey(), helper -> {
+            for (Object[] e : list) helper.register((ResourceLocation) e[0], e[1]);
+        });
     }
 
     @Override

@@ -202,6 +202,79 @@ public final class CoremodSites1122 {
             "net/minecraft/item/crafting/RecipesBanners$RecipeAddPattern.func_77569_a(Lnet/minecraft/inventory/InventoryCrafting;Lnet/minecraft/world/World;)Z"
                     + "#after:invokestatic net/minecraft/tileentity/TileEntityBanner.func_175113_c(Lnet/minecraft/item/ItemStack;)I").returns(int.class);
 
+    private static final Class<?> ENUM_FACING = legacyconnector.v1_12_2.net.minecraft.util.EnumFacing.class;
+    private static final Class<?> CHUNK = legacyconnector.v1_12_2.net.minecraft.world.chunk.Chunk.class;
+    private static final Class<?> INVENTORY_PLAYER = legacyconnector.v1_12_2.net.minecraft.entity.player.InventoryPlayer.class;
+    private static final Class<?> BOX = legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB.class;
+
+    /**
+     * World.getStrongPower / getRedstonePower, first thing: a hook answering a number other than 0 is the answer of the method. Values: the world, the
+     * position, the side.
+     */
+    public static final Site STRONG_POWER = CoremodSites.site("redstone strong power", new Class<?>[] {WORLD, BLOCK_POS, ENUM_FACING},
+            "net/minecraft/world/World.func_175627_a(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/EnumFacing;)I#after:aload 1").returns(int.class);
+    public static final Site REDSTONE_POWER = CoremodSites.site("redstone power", new Class<?>[] {WORLD, BLOCK_POS, ENUM_FACING},
+            "net/minecraft/world/World.func_175651_c(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/EnumFacing;)I#after:aload 1").returns(int.class);
+
+    /** EntitySlime.getCanSpawnHere, after the chunk was read: a hook answering 0 or 1 is the answer of the method, -1 leaves it to the game. Values: the world, the chunk. */
+    public static final Site SLIME_CHUNK = CoremodSites.site("slime chunk override", new Class<?>[] {WORLD, CHUNK},
+            "net/minecraft/entity/monster/EntitySlime.func_70601_bi()Z#after:getfield net/minecraft/entity/monster/EntitySlime.field_70170_p Lnet/minecraft/world/World;")
+            .returns(int.class);
+
+    /** EntityLivingBase.travel, after the ground's slipperiness was multiplied by 0.91: the hook answers the value. Values: the value, the entity, the block below. */
+    public static final Site SLIPPERINESS = CoremodSites.site("ground slipperiness", new Class<?>[] {float.class, LIVING, BLOCK},
+            "net/minecraft/entity/EntityLivingBase.func_191986_a(FFF)V#after:fmul").returns(float.class);
+
+    /** InventoryPlayer.dropAllItems, after each non-empty check: a hook answering false keeps the stack. Values: the inventory, the slot, the stack. */
+    public static final Site PLAYER_DROPS = CoremodSites.site("stack dropped from a dead player", new Class<?>[] {INVENTORY_PLAYER, int.class, ITEM_STACK},
+            "net/minecraft/entity/player/InventoryPlayer.func_70436_m()V#after:aload 0").returns(boolean.class);
+
+    /** WorldGenAbstractTree.setDirtAt, after the dirt check: a hook answering true keeps the ground. Values: the block of the ground. */
+    public static final Site TREE_GROUND = CoremodSites.site("ground a tree keeps", new Class<?>[] {BLOCK},
+            "net/minecraft/world/gen/feature/WorldGenAbstractTree.func_175921_a(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;)V#after:if_acmpeq")
+            .returns(boolean.class);
+
+    /**
+     * Block.addCollisionBoxToList, first thing: a hook answering true has added the boxes of the block itself (nothing means no collision). Values: the state,
+     * the world, the position, the box asked about (the block's cell), the list, the entity.
+     */
+    public static final Site COLLISION_BOXES = CoremodSites.site("block collision boxes", new Class<?>[] {BLOCK_STATE, WORLD, BLOCK_POS, BOX, java.util.List.class, ENTITY},
+            "net/minecraft/block/Block.func_185477_a(Lnet/minecraft/block/state/IBlockState;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;"
+                    + "Lnet/minecraft/util/math/AxisAlignedBB;Ljava/util/List;Lnet/minecraft/entity/Entity;Z)V#cancel-after:aload 5").returns(boolean.class);
+
+    private static final Class<?> POTION = legacyconnector.v1_12_2.net.minecraft.potion.Potion.class;
+    private static final Class<?> TEXT = legacyconnector.v1_12_2.net.minecraft.util.text.ITextComponent.class;
+
+    /**
+     * TileEntityBeacon.addEffectsToPlayers, before the players are looked up: the hook is told what the beacon gives. Values: the world, the area, the primary
+     * and the secondary effect, the duration in ticks, the amplifier of the primary effect.
+     */
+    public static final Site BEACON_EFFECTS = CoremodSites.site("beacon effects", new Class<?>[] {WORLD, BOX, POTION, POTION, int.class, int.class},
+            "net/minecraft/tileentity/TileEntityBeacon.func_146000_x()V#after:ifnull");
+
+    /** ItemStack.getTextComponent, last thing: the hook answers the component. Values: the component. */
+    public static final Site STACK_COMPONENT = CoremodSites.site("item stack chat component", new Class<?>[] {TEXT},
+            "net/minecraft/item/ItemStack.func_151000_E()Lnet/minecraft/util/text/ITextComponent;#tail").returns(TEXT);
+
+    private static final Class<?> RESOURCE_LOCATION = legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation.class;
+    private static final Class<?> NBT_COMPOUND = legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound.class;
+    private static final String ARMOR_LAYER = "net/minecraft/client/renderer/entity/layers/LayerArmorBase.";
+
+    /** LayerArmorBase.renderArmorLayer (one slot), after the stack was read: a hook answering true leaves the piece undrawn. Values: the entity, the stack. */
+    public static final Site ARMOR_HIDDEN = CoremodSites.site("armour piece hidden", new Class<?>[] {ENTITY, ITEM_STACK},
+            ARMOR_LAYER + "func_188361_a(Lnet/minecraft/entity/EntityLivingBase;FFFFFFFLnet/minecraft/inventory/EntityEquipmentSlot;)V#cancel-after:aload 10");
+
+    /** Render.renderEntityOnFire, first thing: a hook answering true has drawn the flames itself. Values: the entity, x, y, z (relative to the camera). */
+    public static final Site ENTITY_FIRE = CoremodSites.site("burning entity flames", new Class<?>[] {ENTITY, double.class, double.class, double.class},
+            "net/minecraft/client/renderer/entity/Render.func_76977_a(Lnet/minecraft/entity/Entity;DDDF)V#head-cancel");
+
+    /** LayerEntityOnShoulder.renderEntityOnShoulder, after the texture was chosen: the hook answers the texture. Values: the texture, the shoulder entity's tag. */
+    public static final Site SHOULDER_TEXTURE = CoremodSites.site("shoulder parrot texture", new Class<?>[] {RESOURCE_LOCATION, NBT_COMPOUND},
+            "net/minecraft/client/renderer/entity/layers/LayerEntityOnShoulder.func_192864_a(Lnet/minecraft/entity/player/EntityPlayer;Ljava/util/UUID;"
+                    + "Lnet/minecraft/nbt/NBTTagCompound;Lnet/minecraft/client/renderer/entity/RenderLivingBase;Lnet/minecraft/client/model/ModelBase;"
+                    + "Lnet/minecraft/util/ResourceLocation;Ljava/lang/Class;FFFFFFFZ)Lnet/minecraft/client/renderer/entity/layers/LayerEntityOnShoulder$DataHolder;"
+                    + "#after:aload 6").returns(RESOURCE_LOCATION);
+
     /** The slot range of one merge call after the hooks of {@code start} and {@code end} had their say. */
     public static int[] mergeRange(Site start, Site end, int from, int to) {
         if (!start.listed() && !end.listed()) return new int[] {from, to};
@@ -331,6 +404,121 @@ public final class CoremodSites1122 {
     /** {@link #BANNER_LAYERS}. */
     public static int bannerLayers(int layers) {
         return BANNER_LAYERS.active() ? ((Number) BANNER_LAYERS.modify(0, layers)).intValue() : layers;
+    }
+
+    /** {@link #STRONG_POWER} / {@link #REDSTONE_POWER}: what a hook says, 0 when none does. */
+    public static int power(Site site, net.minecraft.world.level.Level level, net.minecraft.core.BlockPos pos, net.minecraft.core.Direction side) {
+        if (!site.listed() || !site.active()) return 0;
+        Object answer = site.replace(0, WorldBridge1122.wrap(level), legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos.mcc$of(pos),
+                legacyconnector.v1_12_2.net.minecraft.util.EnumFacing.mcc$of(side));
+        return answer instanceof Number n ? n.intValue() : 0;
+    }
+
+    /** {@link #SLIME_CHUNK}: 0 or 1 when a hook answers, -1 when the game decides. */
+    public static int slimeChunk(net.minecraft.world.level.LevelAccessor level, net.minecraft.core.BlockPos pos) {
+        if (!SLIME_CHUNK.active()) return -1;
+        legacyconnector.v1_12_2.net.minecraft.world.World world = WorldBridge1122.wrap(level);
+        Object answer = SLIME_CHUNK.replace(-1, world, world.getChunk(legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos.mcc$of(pos)));
+        return answer instanceof Number n ? n.intValue() : -1;
+    }
+
+    /** {@link #SLIPPERINESS}: the slipperiness of the ground (the game's value without the 0.91) after the hooks. */
+    public static float slipperiness(net.minecraft.world.entity.LivingEntity entity, net.minecraft.world.level.block.state.BlockState ground, float slipperiness) {
+        if (!SLIPPERINESS.active()) return slipperiness;
+        legacyconnector.v1_12_2.net.minecraft.block.Block block = StatesBridge1122.legacyBlock(ground);
+        if (block == null) return slipperiness;
+        float changed = ((Number) SLIPPERINESS.modify(0, slipperiness * 0.91F, EntityBridge1122.wrap(entity), block)).floatValue();
+        return changed / 0.91F;
+    }
+
+    /** {@link #PLAYER_DROPS}: false when a hook keeps the stack. */
+    public static boolean playerDrops(net.minecraft.world.entity.player.Player player, int slot, net.minecraft.world.item.ItemStack stack) {
+        if (!PLAYER_DROPS.active() || !(EntityBridge1122.wrap(player) instanceof legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer legacy)) return true;
+        return !Boolean.FALSE.equals(PLAYER_DROPS.replace(Boolean.TRUE, legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer.mcc$get$inventory(legacy), slot,
+                Stacks1122.fromModern(stack)));
+    }
+
+    /** {@link #TREE_GROUND}: true when a hook keeps the ground under a tree. */
+    public static boolean treeKeepsGround(net.minecraft.world.level.block.state.BlockState ground) {
+        if (!TREE_GROUND.active()) return false;
+        legacyconnector.v1_12_2.net.minecraft.block.Block block = StatesBridge1122.legacyBlock(ground);
+        return block != null && Boolean.TRUE.equals(TREE_GROUND.replace(Boolean.FALSE, block));
+    }
+
+    /** {@link #COLLISION_BOXES}: the shape a hook gives the block, or null when none does. */
+    public static net.minecraft.world.phys.shapes.VoxelShape collisionShape(net.minecraft.world.level.block.state.BlockState state, net.minecraft.world.level.BlockGetter getter,
+            net.minecraft.core.BlockPos pos, net.minecraft.world.phys.shapes.CollisionContext context) {
+        if (!COLLISION_BOXES.active() || !(getter instanceof net.minecraft.world.level.Level level)) return null;
+        net.minecraft.world.entity.Entity entity = context instanceof net.minecraft.world.phys.shapes.EntityCollisionContext ec ? ec.getEntity() : null;
+        legacyconnector.v1_12_2.net.minecraft.world.World world = WorldBridge1122.wrap(level);
+        java.util.List<legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB> boxes = new java.util.ArrayList<>();
+        legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB cell = new legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB(pos.getX(), pos.getY(),
+                pos.getZ(), pos.getX() + 1.0, pos.getY() + 1.0, pos.getZ() + 1.0);
+        if (!COLLISION_BOXES.cancels(StatesBridge1122.toLegacy(state), world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos.mcc$of(pos), cell, boxes,
+                entity == null ? null : EntityBridge1122.wrap(entity))) return null;
+        net.minecraft.world.phys.shapes.VoxelShape shape = net.minecraft.world.phys.shapes.Shapes.empty();
+        for (legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB box : boxes) {
+            shape = net.minecraft.world.phys.shapes.Shapes.or(shape, net.minecraft.world.phys.shapes.Shapes.create(box.minX - pos.getX(), box.minY - pos.getY(),
+                    box.minZ - pos.getZ(), box.maxX - pos.getX(), box.maxY - pos.getY(), box.maxZ - pos.getZ()));
+        }
+        return shape;
+    }
+
+    /** {@link #BEACON_EFFECTS}. */
+    public static void beaconEffects(net.minecraft.world.level.Level level, net.minecraft.core.BlockPos pos, int beaconLevel,
+            net.minecraft.core.Holder<net.minecraft.world.effect.MobEffect> primary, net.minecraft.core.Holder<net.minecraft.world.effect.MobEffect> secondary) {
+        if (level.isClientSide || primary == null || !BEACON_EFFECTS.active()) return;
+        int amplifier = beaconLevel >= 4 && primary.equals(secondary) ? 1 : 0;
+        int duration = (9 + beaconLevel * 2) * 20;
+        net.minecraft.world.phys.AABB area = new net.minecraft.world.phys.AABB(pos).inflate(beaconLevel * 10 + 10).expandTowards(0.0, level.getHeight(), 0.0);
+        BEACON_EFFECTS.fire(WorldBridge1122.wrap(level), legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB.mcc$of(area),
+                legacyPotion(primary),
+                secondary == null ? null : legacyPotion(secondary), duration, amplifier);
+    }
+
+    private static legacyconnector.v1_12_2.net.minecraft.potion.Potion legacyPotion(net.minecraft.core.Holder<net.minecraft.world.effect.MobEffect> effect) {
+        legacyconnector.v1_12_2.net.minecraft.potion.Potion mod = org.kylepitcock.legacyconnector.v1_12_2.entity.Effects1122.legacy(effect.value());
+        if (mod != null) return mod;
+        net.minecraft.resources.ResourceLocation key = net.minecraft.core.registries.BuiltInRegistries.MOB_EFFECT.getKey(effect.value());
+        return key == null ? null : legacyconnector.v1_12_2.net.minecraft.potion.Potion.getPotionFromResourceLocation(key.toString());
+    }
+
+    /** {@link #STACK_COMPONENT}: the component a hook made of the game's (the game's own component stays where the hook only wrapped it). */
+    public static net.minecraft.network.chat.Component stackComponent(net.minecraft.network.chat.Component original) {
+        if (!STACK_COMPONENT.active()) return original;
+        legacyconnector.v1_12_2.net.minecraft.util.text.ITextComponent legacy;
+        try {
+            net.minecraft.core.HolderLookup.Provider lookup = net.minecraft.core.RegistryAccess.fromRegistryOfRegistries(net.minecraft.core.registries.BuiltInRegistries.REGISTRY);
+            legacy = legacyconnector.v1_12_2.net.minecraft.util.text.ITextComponent.Serializer.jsonToComponent(
+                    net.minecraft.network.chat.Component.Serializer.toJson(original, lookup));
+        } catch (RuntimeException e) {
+            legacy = new legacyconnector.v1_12_2.net.minecraft.util.text.TextComponentString(original.getString());
+        }
+        if (!(STACK_COMPONENT.modify(0, legacy) instanceof legacyconnector.v1_12_2.net.minecraft.util.text.ITextComponent changed) || changed == legacy) return original;
+        net.minecraft.network.chat.MutableComponent made = changed.mcc$modern();
+        java.util.List<net.minecraft.network.chat.Component> siblings = made.getSiblings();
+        for (int i = 0; i < siblings.size(); i++) { // the conversion through 1.12's text format drops what it does not know (the item's hover): keep the game's own
+            if (siblings.get(i).getString().equals(original.getString())) siblings.set(i, original);
+        }
+        return made;
+    }
+
+    /** The saved tag of the shoulder parrot the layer draws on this thread (set by the client mixin around the draw). */
+    public static final ThreadLocal<net.minecraft.nbt.CompoundTag> SHOULDER_TAG = new ThreadLocal<>();
+
+    /** {@link #ARMOR_HIDDEN}. */
+    public static boolean armorHidden(net.minecraft.world.entity.LivingEntity entity, net.minecraft.world.item.ItemStack stack) {
+        return ARMOR_HIDDEN.active() && ARMOR_HIDDEN.cancels(EntityBridge1122.wrap(entity), Stacks1122.fromModern(stack));
+    }
+
+    /** {@link #SHOULDER_TEXTURE}: the texture of a parrot on a shoulder after the hooks ({@code texture} when none changed it). */
+    public static net.minecraft.resources.ResourceLocation shoulderTexture(net.minecraft.resources.ResourceLocation texture, net.minecraft.nbt.CompoundTag tag) {
+        if (!SHOULDER_TEXTURE.active() || tag == null) return texture;
+        Object changed = SHOULDER_TEXTURE.modify(0, new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation(texture.toString()),
+                new legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound(tag.copy()));
+        if (!(changed instanceof legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation rl)) return texture;
+        net.minecraft.resources.ResourceLocation modern = net.minecraft.resources.ResourceLocation.tryParse(rl.toString());
+        return modern == null ? texture : modern;
     }
 
     private static final ThreadLocal<Boolean> IN_WORLD_HOOK = new ThreadLocal<>();

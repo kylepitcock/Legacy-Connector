@@ -44,7 +44,22 @@ import org.slf4j.LoggerFactory;
  */
 public final class FluidBridge {
     private static final Logger LOG = LoggerFactory.getLogger("LegacyConnector/Fluids");
-    private static final Map<String, Fluid> MODERN = new HashMap<>();
+    private static final Map<String, Fluid> MODERN = new HashMap<>() {
+        @Override
+        public Fluid put(String name, Fluid fluid) {
+            NAMES.putIfAbsent(fluid, name);
+            return super.put(name, fluid);
+        }
+
+        @Override
+        public Fluid remove(Object name) {
+            Fluid gone = super.remove(name);
+            if (gone != null) NAMES.remove(gone, name);
+            return gone;
+        }
+    };
+    /** The legacy name of each modern fluid in {@link #MODERN} (the first one registered under it). */
+    private static final Map<Fluid, String> NAMES = new java.util.IdentityHashMap<>();
 
     private FluidBridge() {}
 
@@ -86,21 +101,50 @@ public final class FluidBridge {
         return "legacyconnector";
     }
 
-    public static FluidStack toModern(legacyconnector.v1_7_10.net.minecraftforge.fluids.FluidStack stack) {
+    public static synchronized FluidStack toModern(legacyconnector.v1_7_10.net.minecraftforge.fluids.FluidStack stack) {
         if (stack == null || stack.amount <= 0 || stack.getFluid() == null) return FluidStack.EMPTY;
         Fluid fluid = MODERN.get(stack.getFluid().getName());
         return fluid == null ? FluidStack.EMPTY : new FluidStack(fluid, stack.amount);
     }
 
+    /**
+     * A modern stack as a legacy one. A modern fluid no legacy mod registered (another mod's oil, a modded bucket's content) gets a legacy
+     * fluid on first use ({@link #legacyFor}), so legacy tanks, pipes and containers accept it like Forge 1.7.10 mods' own fluids.
+     */
     public static legacyconnector.v1_7_10.net.minecraftforge.fluids.FluidStack fromModern(FluidStack stack) {
         if (stack == null || stack.isEmpty()) return null;
-        for (var e : MODERN.entrySet()) {
-            if (e.getValue() == stack.getFluid()) {
-                var legacy = FluidRegistry.getFluid(e.getKey());
-                return legacy == null ? null : new legacyconnector.v1_7_10.net.minecraftforge.fluids.FluidStack(legacy, stack.getAmount());
-            }
+        var legacy = legacyFor(stack.getFluid());
+        return legacy == null ? null : new legacyconnector.v1_7_10.net.minecraftforge.fluids.FluidStack(legacy, stack.getAmount());
+    }
+
+    /**
+     * The legacy fluid of a modern one: the legacy mod's own, or a mirror created now for a fluid that only exists in modern form (named
+     * like its registry path, or {@code namespace_path} when a legacy fluid already has that name). Flowing variants map to their source.
+     */
+    public static synchronized legacyconnector.v1_7_10.net.minecraftforge.fluids.Fluid legacyFor(Fluid modern) {
+        if (modern == null || modern == net.minecraft.world.level.material.Fluids.EMPTY) return null;
+        var known = legacyOf(modern);
+        if (known != null) return known;
+        if (modern instanceof net.minecraft.world.level.material.FlowingFluid flowing && flowing.getSource() != modern) return legacyFor(flowing.getSource());
+        if (modern instanceof LegacyModernFluid) return null;
+        var key = BuiltInRegistries.FLUID.getKey(modern);
+        if (key == null) return null;
+        String name = key.getPath().replace('/', '_');
+        if (FluidRegistry.isFluidRegistered(name) || MODERN.containsKey(name)) name = key.getNamespace() + "_" + name;
+        if (FluidRegistry.isFluidRegistered(name) || MODERN.containsKey(name)) return null;
+        try {
+            var type = modern.getFluidType();
+            var legacy = new legacyconnector.v1_7_10.net.minecraftforge.fluids.Fluid(name);
+            legacy.setUnlocalizedName(type.getDescriptionId());
+            legacy.setLuminosity(type.getLightLevel()).setDensity(type.getDensity()).setTemperature(type.getTemperature()).setViscosity(type.getViscosity());
+            MODERN.put(name, modern);
+            FluidRegistry.registerFluid(legacy);
+            return FluidRegistry.getFluid(name);
+        } catch (RuntimeException | LinkageError e) {
+            MODERN.remove(name);
+            LOG.warn("Could not mirror the modern fluid {} as a legacy fluid", key, e);
+            return null;
         }
-        return null;
     }
 
     /** The modern fluid of a legacy one, or null. */
@@ -110,8 +154,63 @@ public final class FluidBridge {
 
     /** The legacy fluid of a modern one, or null. */
     public static synchronized legacyconnector.v1_7_10.net.minecraftforge.fluids.Fluid legacyOf(Fluid modern) {
-        for (var e : MODERN.entrySet()) if (e.getValue() == modern) return FluidRegistry.getFluid(e.getKey());
-        return null;
+        String name = NAMES.get(modern);
+        return name == null ? null : FluidRegistry.getFluid(name);
+    }
+
+    // ------------------------------------------------------------------ modern fluid containers
+
+    /**
+     * Forge's {@code FluidContainerRegistry} only knew the containers mods registered. Buckets and other containers of modern fluids (any
+     * item with a NeoForge fluid handler) answer through their capability instead, so a legacy tank (Traincraft's tankers, BuildCraft's
+     * tanks) fills from and into them as it does from a bucket a legacy mod registered. Legacy fluid-container items are left to the registry.
+     */
+    private static net.neoforged.neoforge.fluids.capability.IFluidHandlerItem containerHandler(legacyconnector.v1_7_10.net.minecraft.item.ItemStack container) {
+        if (container == null || container.getItem() == null || container.getItem() instanceof IFluidContainerItem) return null;
+        var modern = container.mcc$modern();
+        if (modern == null || modern.isEmpty()) return null;
+        return modern.copyWithCount(1).getCapability(Capabilities.FluidHandler.ITEM);
+    }
+
+    /** The fluid a modern filled container holds (one tank), as a legacy stack, or null. */
+    public static legacyconnector.v1_7_10.net.minecraftforge.fluids.FluidStack containerFluid(legacyconnector.v1_7_10.net.minecraft.item.ItemStack container) {
+        var handler = containerHandler(container);
+        if (handler == null || handler.getTanks() < 1) return null;
+        return fromModern(handler.getFluidInTank(0));
+    }
+
+    /** The empty stack of a modern empty container (a handler whose tank holds nothing). */
+    public static boolean isModernEmptyContainer(legacyconnector.v1_7_10.net.minecraft.item.ItemStack container) {
+        var handler = containerHandler(container);
+        return handler != null && handler.getTanks() >= 1 && handler.getFluidInTank(0).isEmpty() && handler.getTankCapacity(0) > 0;
+    }
+
+    /** What a modern container holds when full (the capacity of its first tank), or 0. */
+    public static int containerCapacity(legacyconnector.v1_7_10.net.minecraft.item.ItemStack container) {
+        var handler = containerHandler(container);
+        return handler == null || handler.getTanks() < 1 ? 0 : handler.getTankCapacity(0);
+    }
+
+    /** The container filled with {@code fluid} (a full container's worth, as the registry did), or null. */
+    public static legacyconnector.v1_7_10.net.minecraft.item.ItemStack fillContainer(legacyconnector.v1_7_10.net.minecraftforge.fluids.FluidStack fluid,
+            legacyconnector.v1_7_10.net.minecraft.item.ItemStack container) {
+        var handler = containerHandler(container);
+        var modern = toModern(fluid);
+        if (handler == null || modern.isEmpty() || handler.getTanks() < 1) return null;
+        int capacity = handler.getTankCapacity(0);
+        if (capacity <= 0 || modern.getAmount() < capacity) return null;
+        if (handler.fill(modern.copyWithAmount(capacity), net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE) != capacity) return null;
+        return legacyconnector.v1_7_10.net.minecraft.item.ItemStack.mcc$wrap(handler.getContainer());
+    }
+
+    /** What is left of a filled modern container after emptying it (a bucket's empty bucket), or null when nothing is. */
+    public static legacyconnector.v1_7_10.net.minecraft.item.ItemStack drainContainer(legacyconnector.v1_7_10.net.minecraft.item.ItemStack container) {
+        var handler = containerHandler(container);
+        if (handler == null || handler.getTanks() < 1) return null;
+        var held = handler.getFluidInTank(0);
+        if (held.isEmpty() || handler.drain(held, net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction.EXECUTE).isEmpty()) return null;
+        var rest = handler.getContainer();
+        return rest.isEmpty() ? null : legacyconnector.v1_7_10.net.minecraft.item.ItemStack.mcc$wrap(rest);
     }
 
     // ------------------------------------------------------------------ capabilities

@@ -8,7 +8,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
 import org.kylepitcock.legacyconnector.loader.LegacyJar;
+import org.kylepitcock.legacyconnector.loader.mapping.McpMappings;
+import org.kylepitcock.legacyconnector.loader.shim.ShimIndex;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -32,8 +35,9 @@ import org.objectweb.asm.tree.TypeInsnNode;
  * <p>The added methods keep the transformer's bodies. Their reads and writes of an added field go to the run time's {@code CoremodState} instead of a field
  * of the shim object: shim views of a game object are not all stable (a chunk view is made per lookup), the state is kept per game object.
  *
- * <p>Limits: static members and constructors are not added; a class whose additions include no interface of a jar with mods is left alone (nothing could
- * reach the members by type).
+ * <p>A class that got added methods but no interface gets a mixin with just those methods, in the jar of the transformer that added them (see
+ * {@code mixin}). Limits: static members and constructors are not added (no local example: tools/dev/agent-tasks/coremod-structural-additions.md); a class whose
+ * additions include an interface that no jar with mods owns is left alone.
  */
 final class CoremodAdditionMixins {
     static final String PACKAGE = "mcc_coremod/";
@@ -52,16 +56,31 @@ final class CoremodAdditionMixins {
         return PACKAGE + "j" + Integer.toHexString(jar.fileName().hashCode()) + "/";
     }
 
-    /** Adds the mixin classes (legacy names) for the additions whose interface this jar owns; returns how many. */
-    static int addTo(LegacyJar jar, Map<String, byte[]> classes) {
+    /**
+     * Adds the mixin classes (legacy names) for the additions whose interface this jar owns, and for the methods this jar's own transformers added to a
+     * class without adding an interface; returns how many.
+     */
+    static int addTo(LegacyJar jar, Map<String, byte[]> classes, ShimIndex shim) {
         List<CoremodHookScan.Change> changes = CHANGES.get(jar.version.id());
         if (changes == null || !jar.hasMods()) return 0;
         Map<String, ClassNode> mixins = new LinkedHashMap<>();
         Set<String> done = new HashSet<>();
+        McpMappings mappings = McpMappings.forVersion(jar.version);
         for (CoremodHookScan.Change c : changes) {
             ClassNode mixin;
             try {
-                mixin = mixin(c.before(), c.after(), packageOf(jar), classes.keySet(), done);
+                String shimClass = shim != null && shim.contains(jar.version.shimPrefix() + c.before().name) ? jar.version.shimPrefix() + c.before().name
+                        : jar.version.linkPrefix() + c.before().name;
+                // a method the shim class declares under that name is the shim's own business (its legacy behaviour is implemented there)
+                Predicate<String> shimHas = shim == null ? n -> false : n -> {
+                    var info = shim.get(shimClass);
+                    if (info == null) return false;
+                    String prefix = mappings.method(n) + "(";
+                    for (String key : info.methods.keySet()) if (key.startsWith(prefix)) return true;
+                    return false;
+                };
+                boolean ownTransformer = classes.containsKey(c.transformer().replace('.', '/'));
+                mixin = mixin(c.before(), c.after(), packageOf(jar), classes.keySet(), done, ownTransformer, shim == null || shim.contains(shimClass), shimHas);
             } catch (RuntimeException e) {
                 continue; // an unreadable change: the class stays as the shim has it
             }
@@ -80,11 +99,26 @@ final class CoremodAdditionMixins {
 
     /** The mixin for one change, or null when it adds nothing that can be applied; {@code done} keeps members already taken from another pass over the class. */
     static ClassNode mixin(ClassNode before, ClassNode after, String pkg, Set<String> jarClasses, Set<String> done) {
+        return mixin(before, after, pkg, jarClasses, done, false, true, n -> false);
+    }
+
+    /**
+     * {@code ownTransformer}: the change was made by a transformer of the jar being translated; then the added methods of a class that got no interface are
+     * applied as well (a coremod that adds an override or a helper method that its own hooks or mod code call). {@code shimHasClass}: the shim has the class.
+     * {@code shimHas}: the shim class declares a method of that (SRG or legacy) name; such a method is left alone.
+     */
+    static ClassNode mixin(ClassNode before, ClassNode after, String pkg, Set<String> jarClasses, Set<String> done, boolean ownTransformer, boolean shimHasClass,
+            Predicate<String> shimHas) {
+        if (!shimHasClass) return null;
         List<String> interfaces = new ArrayList<>();
+        boolean addedInterface = false;
         for (String i : after.interfaces) {
-            if (!before.interfaces.contains(i) && jarClasses.contains(i) && done.add(before.name + " " + i)) interfaces.add(i);
+            if (before.interfaces.contains(i)) continue;
+            addedInterface = true;
+            if (jarClasses.contains(i) && done.add(before.name + " " + i)) interfaces.add(i);
         }
-        if (interfaces.isEmpty()) return null;
+        boolean methodsOnly = interfaces.isEmpty() && ownTransformer && !addedInterface;
+        if (interfaces.isEmpty() && !methodsOnly) return null;
         Set<String> oldFields = new HashSet<>();
         for (FieldNode f : before.fields) oldFields.add(f.name + ":" + f.desc);
         Set<String> added = new HashSet<>();
@@ -105,6 +139,7 @@ final class CoremodAdditionMixins {
         mixin.invisibleAnnotations = new ArrayList<>(List.of(target));
         for (MethodNode m : after.methods) {
             if (oldMethods.contains(m.name + m.desc) || m.name.startsWith("<") || (m.access & (Opcodes.ACC_STATIC | Opcodes.ACC_ABSTRACT)) != 0) continue;
+            if (methodsOnly && shimHas.test(m.name)) continue;
             if (!done.add(before.name + " " + m.name + m.desc)) continue;
             MethodNode copy = new MethodNode((m.access & ~(Opcodes.ACC_FINAL | Opcodes.ACC_PRIVATE | Opcodes.ACC_PROTECTED)) | Opcodes.ACC_PUBLIC, m.name, m.desc, m.signature,
                     m.exceptions == null ? null : m.exceptions.toArray(new String[0]));
@@ -114,6 +149,7 @@ final class CoremodAdditionMixins {
             for (AbstractInsnNode insn : copy.instructions) if (insn instanceof InvokeDynamicInsnNode) mixin.version = Opcodes.V1_8;
             mixin.methods.add(copy);
         }
+        if (methodsOnly && mixin.methods.isEmpty()) return null;
         return mixin;
     }
 

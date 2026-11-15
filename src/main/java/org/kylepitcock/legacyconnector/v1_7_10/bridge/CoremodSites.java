@@ -284,6 +284,83 @@ public final class CoremodSites {
             "net/minecraft/item/ItemBow.func_77615_a(Lnet/minecraft/item/ItemStack;Lnet/minecraft/world/World;Lnet/minecraft/entity/player/EntityPlayer;I)V#const:20.0")
             .returns(float.class);
 
+    /** BlockPressurePlate.getPower: stands in for {@code world.getEntitiesWithinAABB(class, box)}. Values: world, entity class, box. */
+    public static final Site PRESSURE_ENTITIES = site("entities on a pressure plate",
+            new Class<?>[] {WORLD, Class.class, legacyconnector.v1_7_10.net.minecraft.util.AxisAlignedBB.class},
+            "net/minecraft/block/BlockPressurePlate.func_150065_e(Lnet/minecraft/world/World;III)I#replace:func_72872_a(Ljava/lang/Class;Lnet/minecraft/util/AxisAlignedBB;)Ljava/util/List;")
+            .returns(List.class);
+
+    /** BlockPressurePlate.getPower, after {@code entity.doesEntityNotTriggerPressurePlate()}: the answer is true for an entity that does not press. Values: answer, entity, sensitivity. */
+    public static final Site PRESSURE_IGNORED = site("entity ignored by a pressure plate",
+            new Class<?>[] {boolean.class, ENTITY, legacyconnector.v1_7_10.net.minecraft.block.BlockPressurePlate.Sensitivity.class},
+            "net/minecraft/block/BlockPressurePlate.func_150065_e(Lnet/minecraft/world/World;III)I#after:invokevirtual net/minecraft/entity/Entity.func_145773_az()Z")
+            .returns(boolean.class);
+
+    /** World.setBlock: the block that is placed. Values: world, x, y, z, block, metadata, flags. */
+    public static final Site SET_BLOCK_REPLACE = site("block placed in the world",
+            new Class<?>[] {WORLD, int.class, int.class, int.class, legacyconnector.v1_7_10.net.minecraft.block.Block.class, int.class, int.class},
+            "net/minecraft/world/World.func_147465_d(IIILnet/minecraft/block/Block;II)Z#after:aload 4", "net/minecraft/world/World.func_147465_d(IIILnet/minecraft/block/Block;II)Z#after:iload 5")
+            .returns(legacyconnector.v1_7_10.net.minecraft.block.Block.class);
+
+    /** World.setBlock: the build height (256) above which nothing is placed. Values: height, world, x, y, z, block, metadata, flags. */
+    public static final Site SET_BLOCK_LIMIT = site("build height of block placement",
+            new Class<?>[] {int.class, WORLD, int.class, int.class, int.class, legacyconnector.v1_7_10.net.minecraft.block.Block.class, int.class, int.class},
+            "net/minecraft/world/World.func_147465_d(IIILnet/minecraft/block/Block;II)Z#after:sipush 256").returns(int.class);
+
+    /** EntityAINearestAttackableTarget.shouldExecute: stands in for {@code world.selectEntitiesWithinAABB(class, box, selector)}. Values: the mob, entity class, box, selector. */
+    public static final Site TARGET_CANDIDATES = site("mob target candidates",
+            new Class<?>[] {LIVING, Class.class, legacyconnector.v1_7_10.net.minecraft.util.AxisAlignedBB.class, legacyconnector.v1_7_10.net.minecraft.command.IEntitySelector.class},
+            "net/minecraft/entity/ai/EntityAINearestAttackableTarget.func_75250_a()Z#replace:func_82733_a(Ljava/lang/Class;Lnet/minecraft/util/AxisAlignedBB;Lnet/minecraft/command/IEntitySelector;)Ljava/util/List;")
+            .returns(List.class);
+
+    /** NetHandlerPlayServer.processUseEntity: the squared distance within which a player may use an entity (36). Values: the connection, squared distance. */
+    public static final Site USE_ENTITY_REACH = site("server reach of using an entity",
+            new Class<?>[] {legacyconnector.v1_7_10.net.minecraft.network.NetHandlerPlayServer.class, double.class},
+            "net/minecraft/network/NetHandlerPlayServer.func_147340_a(Lnet/minecraft/network/play/client/C02PacketUseEntity;)V#after:dload 5").returns(double.class);
+
+    /** EntityTracker.addEntityToTracker: the most blocks any entity is tracked at (the view distance). Values: range, entity. */
+    public static final Site TRACKING_MAX = site("entity tracking range limit", new Class<?>[] {int.class, ENTITY},
+            "net/minecraft/entity/EntityTracker.func_72785_a(Lnet/minecraft/entity/Entity;IIZ)V#after:getfield net/minecraft/entity/EntityTracker.field_72792_d I").returns(int.class);
+
+    /** BlockFence.addCollisionBoxesToList, first thing: a hook that answers true added the boxes itself and the block's own are left out. Values: fence, world, x, y, z, box, list, entity. */
+    public static final Site FENCE_BOXES = site("fence collision boxes",
+            new Class<?>[] {legacyconnector.v1_7_10.net.minecraft.block.BlockFence.class, WORLD, int.class, int.class, int.class,
+                    legacyconnector.v1_7_10.net.minecraft.util.AxisAlignedBB.class, List.class, ENTITY},
+            "net/minecraft/block/BlockFence.func_149743_a(Lnet/minecraft/world/World;IIILnet/minecraft/util/AxisAlignedBB;Ljava/util/List;Lnet/minecraft/entity/Entity;)V#cancel-after:iload 4");
+
+    /** BlockPane.addCollisionBoxesToList, first thing: true gives the entity no collision with the pane. Values: pane, entity. */
+    public static final Site PANE_IGNORED = site("pane collision ignored",
+            new Class<?>[] {legacyconnector.v1_7_10.net.minecraft.block.BlockPane.class, ENTITY},
+            "net/minecraft/block/BlockPane.func_149743_a(Lnet/minecraft/world/World;IIILnet/minecraft/util/AxisAlignedBB;Ljava/util/List;Lnet/minecraft/entity/Entity;)V#head-cancel");
+
+    /** BlockBasePressurePlate.updateTick, last thing. Values: plate, world, x, y, z. */
+    public static final Site PLATE_TICK = site("pressure plate tick",
+            new Class<?>[] {legacyconnector.v1_7_10.net.minecraft.block.BlockBasePressurePlate.class, WORLD, int.class, int.class, int.class},
+            "net/minecraft/block/BlockBasePressurePlate.func_149674_a(Lnet/minecraft/world/World;IIILjava/util/Random;)V#tail");
+
+    /** Entity.moveEntity: the vertical movement after the collisions. Values: entity, movement after collisions, movement asked for. */
+    public static final Site STEP_DOWN = site("entity step down", new Class<?>[] {ENTITY, double.class, double.class},
+            "net/minecraft/entity/Entity.func_70091_d(DDD)V#after:aload 0").returns(double.class);
+
+    /** Entity.moveEntity of an entity without collisions: a hook stands in for moving the bounding box. Values: entity, x, y, z. */
+    public static final Site NOCLIP_MOVE = site("entity movement without collisions", new Class<?>[] {ENTITY, double.class, double.class, double.class},
+            "net/minecraft/entity/Entity.func_70091_d(DDD)V#replace:func_72317_d(DDD)Lnet/minecraft/util/AxisAlignedBB;").plain();
+
+    /** World.getClosestVulnerablePlayerToEntity: stands in for the closest player the mob may attack. Values: the mob, x, y, z, distance. */
+    public static final Site CLOSEST_VULNERABLE = site("closest vulnerable player",
+            new Class<?>[] {ENTITY, double.class, double.class, double.class, double.class},
+            "net/minecraft/world/World.func_72856_b(Lnet/minecraft/entity/Entity;D)Lnet/minecraft/entity/player/EntityPlayer;#replace:func_72846_b(DDDD)Lnet/minecraft/entity/player/EntityPlayer;")
+            .returns(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer.class);
+
+    /** NetHandlerPlayServer.processUseEntity: stands in for the "is this entity an arrow" check that keeps players from attacking it. Values: the entity. */
+    public static final Site ARROW_TARGET = site("entity counted as an arrow when attacked", new Class<?>[] {ENTITY},
+            "net/minecraft/network/NetHandlerPlayServer.func_147340_a(Lnet/minecraft/network/play/client/C02PacketUseEntity;)V#before:ifne").returns(boolean.class);
+
+    /** TileEntityFurnace.updateEntity, first thing: true skips the furnace's own update (another block took the furnace over). Values: the furnace. */
+    public static final Site FURNACE_TAKEN_OVER = site("furnace taken over",
+            new Class<?>[] {legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityFurnace.class},
+            "net/minecraft/tileentity/TileEntityFurnace.func_145845_h()V#head-cancel");
+
     /** The model sites: client classes, so apart from the rest. Values: model, entity, the six animation numbers. */
     public static final class Client {
         private static final Class<?>[] MODEL = {legacyconnector.v1_7_10.net.minecraft.client.model.ModelBiped.class, ENTITY, float.class, float.class, float.class,
@@ -579,6 +656,157 @@ public final class CoremodSites {
         if (FLYING_TRAVEL_END.active()) FLYING_TRAVEL_END.fire(EntityBridge.wrap(mob));
     }
 
+    // ---- Fisk-style server places (pressure plates, block placement, mob targets, reach)
+
+    /** {@link #PRESSURE_ENTITIES} and {@link #PRESSURE_IGNORED}: the count of entities that press a plate, or null when no hook is listed. */
+    public static Integer pressureCount(net.minecraft.world.level.Level level, net.minecraft.world.phys.AABB box, Class<? extends net.minecraft.world.entity.Entity> cls) {
+        boolean list = PRESSURE_ENTITIES.active();
+        boolean ignore = PRESSURE_IGNORED.active();
+        if (!list && !ignore) return null;
+        boolean mobs = cls != net.minecraft.world.entity.Entity.class; // PressurePlateBlock: EVERYTHING reads Entity, MOBS reads LivingEntity
+        legacyconnector.v1_7_10.net.minecraft.block.BlockPressurePlate.Sensitivity sensitivity = mobs
+                ? legacyconnector.v1_7_10.net.minecraft.block.BlockPressurePlate.Sensitivity.mobs
+                : legacyconnector.v1_7_10.net.minecraft.block.BlockPressurePlate.Sensitivity.everything;
+        if (list && PRESSURE_ENTITIES.replace(null, legacyconnector.v1_7_10.net.minecraft.world.World.mcc$wrap(level), mobs ? LIVING : ENTITY,
+                legacyconnector.v1_7_10.net.minecraft.util.AxisAlignedBB.mcc$of(box)) instanceof List<?> found) {
+            int n = 0;
+            for (Object o : found) {
+                if (ignore && Boolean.TRUE.equals(PRESSURE_IGNORED.modify(0, false, o, sensitivity))) continue;
+                n++;
+            }
+            return n;
+        }
+        int n = 0;
+        for (net.minecraft.world.entity.Entity e : level.getEntitiesOfClass(cls, box)) {
+            boolean skip = e.isIgnoringBlockTriggers();
+            if (ignore) skip = Boolean.TRUE.equals(PRESSURE_IGNORED.modify(0, skip, EntityBridge.wrap(e), sensitivity));
+            if (!skip) n++;
+        }
+        return n;
+    }
+
+    private static final ThreadLocal<Boolean> IN_SET_BLOCK = new ThreadLocal<>();
+
+    /**
+     * {@link #SET_BLOCK_REPLACE} and {@link #SET_BLOCK_LIMIT}: the state to place instead (the same one when nothing changes), or null when the height limit
+     * a hook set keeps the block from being placed.
+     */
+    public static net.minecraft.world.level.block.state.BlockState setBlock(net.minecraft.world.level.Level level, net.minecraft.core.BlockPos pos,
+            net.minecraft.world.level.block.state.BlockState state) {
+        if (IN_SET_BLOCK.get() != null || !(SET_BLOCK_REPLACE.active() || SET_BLOCK_LIMIT.active())) return state;
+        IN_SET_BLOCK.set(Boolean.TRUE);
+        try {
+            legacyconnector.v1_7_10.net.minecraft.world.World world = legacyconnector.v1_7_10.net.minecraft.world.World.mcc$wrap(level);
+            legacyconnector.v1_7_10.net.minecraft.block.Block block = BlockBridge.legacyBlock(state);
+            int meta = BlockBridge.legacyMeta(state);
+            if (SET_BLOCK_LIMIT.active()) {
+                int limit = ((Number) SET_BLOCK_LIMIT.modify(0, 256, world, pos.getX(), pos.getY(), pos.getZ(), block, meta, 3)).intValue();
+                if (limit != 256 && pos.getY() >= limit) return null;
+            }
+            if (SET_BLOCK_REPLACE.active()) {
+                Object r = SET_BLOCK_REPLACE.modify(4, world, pos.getX(), pos.getY(), pos.getZ(), block, meta, 3);
+                if (r instanceof legacyconnector.v1_7_10.net.minecraft.block.Block replacement && replacement != block) return BlockBridge.toModern(replacement, meta);
+            }
+            return state;
+        } finally {
+            IN_SET_BLOCK.remove();
+        }
+    }
+
+    /**
+     * {@link #TARGET_CANDIDATES}: whether the hook's candidate list for a box around the target leaves the target out (the mob does not see it). The hook is
+     * asked for the entities of that box as {@code world.selectEntitiesWithinAABB} would give them.
+     */
+    public static boolean targetLeftOut(net.minecraft.world.entity.Mob mob, net.minecraft.world.entity.LivingEntity target) {
+        if (!TARGET_CANDIDATES.active()) return false;
+        Object found = TARGET_CANDIDATES.replace(null, EntityBridge.wrap(mob), LIVING, legacyconnector.v1_7_10.net.minecraft.util.AxisAlignedBB.mcc$of(target.getBoundingBox()), null);
+        return found instanceof List<?> list && !list.contains(EntityBridge.wrap(target));
+    }
+
+    private static final Map<net.minecraft.world.entity.player.Player, legacyconnector.v1_7_10.net.minecraft.network.NetHandlerPlayServer> HANDLERS =
+            java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>());
+
+    /** {@link #USE_ENTITY_REACH}: the entity interaction range (blocks) after the hook, which answered for 1.7.10's 6 blocks (36 squared). */
+    public static double useEntityReach(net.minecraft.world.entity.player.Player player, double range) {
+        if (!(player instanceof net.minecraft.server.level.ServerPlayer) || !USE_ENTITY_REACH.active()) return range;
+        legacyconnector.v1_7_10.net.minecraft.network.NetHandlerPlayServer handler = HANDLERS.computeIfAbsent(player,
+                p -> new legacyconnector.v1_7_10.net.minecraft.network.NetHandlerPlayServer(
+                        (legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayerMP) EntityBridge.wrap(p)));
+        double squared = ((Number) USE_ENTITY_REACH.modify(1, handler, 36.0)).doubleValue();
+        return squared == 36.0 || squared <= 0.0 ? range : range * Math.sqrt(squared / 36.0);
+    }
+
+    /** {@link #TRACKING_MAX}: the largest tracking range in blocks (the game's own is the player's view distance). */
+    public static int trackingMax(net.minecraft.world.entity.Entity entity, int max) {
+        if (!TRACKING_MAX.active()) return max;
+        int hooked = ((Number) TRACKING_MAX.modify(0, max, EntityBridge.wrap(entity))).intValue();
+        return Math.max(hooked, max);
+    }
+
+    private static net.minecraft.world.phys.shapes.VoxelShape shapeOf(List<?> boxes, net.minecraft.core.BlockPos pos) {
+        net.minecraft.world.phys.shapes.VoxelShape shape = net.minecraft.world.phys.shapes.Shapes.empty();
+        for (Object o : boxes) {
+            if (o instanceof legacyconnector.v1_7_10.net.minecraft.util.AxisAlignedBB box) {
+                shape = net.minecraft.world.phys.shapes.Shapes.or(shape,
+                        net.minecraft.world.phys.shapes.Shapes.create(box.mcc$modern().move(-pos.getX(), -pos.getY(), -pos.getZ())));
+            }
+        }
+        return shape;
+    }
+
+    /**
+     * {@link #FENCE_BOXES} and {@link #PANE_IGNORED}: the collision shape a hook put in place of the fence's or the pane's, or null (the block's own).
+     * Only collisions of entities are asked (the hooks look at the entity).
+     */
+    public static net.minecraft.world.phys.shapes.VoxelShape crossShape(net.minecraft.world.level.block.state.BlockState state, net.minecraft.world.level.BlockGetter getter,
+            net.minecraft.core.BlockPos pos, net.minecraft.world.phys.shapes.CollisionContext context) {
+        if (!(context instanceof net.minecraft.world.phys.shapes.EntityCollisionContext ec) || ec.getEntity() == null
+                || !(getter instanceof net.minecraft.world.level.LevelAccessor level)) return null;
+        boolean fence = state.getBlock() instanceof net.minecraft.world.level.block.FenceBlock;
+        if (fence ? !FENCE_BOXES.active() : !(state.getBlock() instanceof net.minecraft.world.level.block.IronBarsBlock && PANE_IGNORED.active())) return null;
+        legacyconnector.v1_7_10.net.minecraft.block.Block block = BlockBridge.legacyBlock(state);
+        legacyconnector.v1_7_10.net.minecraft.entity.Entity entity = EntityBridge.wrap(ec.getEntity());
+        if (!fence) return PANE_IGNORED.cancels(block, entity) ? net.minecraft.world.phys.shapes.Shapes.empty() : null;
+        List<Object> boxes = new ArrayList<>();
+        legacyconnector.v1_7_10.net.minecraft.util.AxisAlignedBB mask = legacyconnector.v1_7_10.net.minecraft.util.AxisAlignedBB.mcc$of(new net.minecraft.world.phys.AABB(pos).inflate(3.0));
+        return FENCE_BOXES.cancels(block, legacyconnector.v1_7_10.net.minecraft.world.World.mcc$wrap(level), pos.getX(), pos.getY(), pos.getZ(), mask, boxes, entity)
+                ? shapeOf(boxes, pos) : null;
+    }
+
+    /** {@link #PLATE_TICK}. */
+    public static void plateTick(net.minecraft.world.level.block.state.BlockState state, net.minecraft.world.level.Level level, net.minecraft.core.BlockPos pos) {
+        if (PLATE_TICK.active()) PLATE_TICK.fire(BlockBridge.legacyBlock(state), legacyconnector.v1_7_10.net.minecraft.world.World.mcc$wrap(level), pos.getX(), pos.getY(), pos.getZ());
+    }
+
+    /** {@link #STEP_DOWN}: the vertical movement the hook leaves after the collisions. */
+    public static double stepDown(net.minecraft.world.entity.Entity entity, double collided, double asked) {
+        if (!STEP_DOWN.active()) return collided;
+        return ((Number) STEP_DOWN.modify(1, EntityBridge.wrap(entity), collided, asked)).doubleValue();
+    }
+
+    /** {@link #NOCLIP_MOVE}: whether a hook moved the entity. */
+    public static boolean noClipMove(net.minecraft.world.entity.Entity entity, net.minecraft.world.phys.Vec3 move) {
+        return NOCLIP_MOVE.active() && NOCLIP_MOVE.stands(EntityBridge.wrap(entity), move.x, move.y, move.z);
+    }
+
+    /** {@link #CLOSEST_VULNERABLE}: the hook's player (or none) as the only element, or null when no hook answered. */
+    public static Object[] closestVulnerable(net.minecraft.world.entity.Mob mob, double distance) {
+        if (!CLOSEST_VULNERABLE.active()) return null;
+        return CLOSEST_VULNERABLE.answer(EntityBridge.wrap(mob), mob.getX(), mob.getY(), mob.getZ(), distance);
+    }
+
+    /** {@link #ARROW_TARGET}: the hook's answer (true when there is none). */
+    public static boolean isArrowTarget(net.minecraft.world.entity.Entity entity) {
+        return !ARROW_TARGET.active() || !Boolean.FALSE.equals(ARROW_TARGET.replace(Boolean.TRUE, EntityBridge.wrap(entity)));
+    }
+
+    /** {@link #FURNACE_TAKEN_OVER}. */
+    public static boolean furnaceTakenOver(net.minecraft.world.level.Level level, net.minecraft.core.BlockPos pos) {
+        if (!FURNACE_TAKEN_OVER.active()) return false;
+        if (!(TileEntityBridge.legacyAt(legacyconnector.v1_7_10.net.minecraft.world.World.mcc$wrap(level), pos) instanceof legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityFurnace furnace)) return false;
+        return FURNACE_TAKEN_OVER.cancels(furnace);
+    }
+
     private CoremodSites() {}
 
     /** One place of 1.7.10's code on the modern game. */
@@ -699,6 +927,26 @@ public final class CoremodSites {
                 }
             }
             return values[index];
+        }
+
+        /** The answer of the first hook that ran, as the only element of an array (null inside for "nothing"), or null when no hook ran. */
+        public Object[] answer(Object... values) {
+            for (Bound b : bound()) {
+                if (b.combiner) continue;
+                try {
+                    Object[] args = new Object[b.from.length];
+                    boolean fits = true;
+                    for (int i = 0; i < args.length && fits; i++) {
+                        Object v = b.from[i] < 0 ? b.fixed[i] : values[b.from[i]];
+                        fits = b.narrowed[i] == null || v == null || b.narrowed[i].isInstance(v);
+                        args[i] = v;
+                    }
+                    if (fits) return new Object[] {b.handle.invoke(args)};
+                } catch (Throwable t) {
+                    if (failures++ < 3) LOG.warn("A coremod hook failed ({}, {})", label, b.name, t);
+                }
+            }
+            return null;
         }
 
         /** The result of the first hook (one that stands in for a call), or {@code fallback} when it failed. */

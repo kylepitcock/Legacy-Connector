@@ -50,6 +50,7 @@ public final class ClientSelfTest {
 
     private static void run() {
         Minecraft mc = Minecraft.getInstance();
+        LOG.info("Client self test: {}", org.kylepitcock.legacyconnector.v1_12_2.bridge.CoremodMixinCheck1122.report(true));
         var resources = mc.getResourceManager();
         Map<String, Set<String>> missingFiles = new TreeMap<>();
         for (var e : Assets1710.TEXTURE_REFS.entrySet()) {

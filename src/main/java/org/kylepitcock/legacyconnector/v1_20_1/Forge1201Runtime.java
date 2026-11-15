@@ -44,6 +44,7 @@ public final class Forge1201Runtime {
         modBus.addListener(Forge1201Runtime::onLoadComplete);
         // Forge filled @ObjectHolder fields after each registry's event
         modBus.addListener(net.neoforged.bus.api.EventPriority.LOWEST, (net.neoforged.neoforge.registries.RegisterEvent e) -> ObjectHolders1201.inject());
+        modBus.addListener((net.neoforged.neoforge.registries.RegisterEvent e) -> legacyconnector.v1_20_1.net.minecraftforge.registries.ForgeRegistryWrapper.flushDeferred(e));
         modBus.addListener(org.kylepitcock.legacyconnector.v1_20_1.migrate.LegacyEnchantments::onNewRegistry);
         org.kylepitcock.legacyconnector.v1_20_1.migrate.LegacyComponents.COMPONENTS.register(modBus);
         modBus.addListener((net.neoforged.neoforge.registries.RegisterEvent e) -> {
