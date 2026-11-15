@@ -140,6 +140,68 @@ public final class CoremodSites1122 {
             "net/minecraft/item/ItemChorusFruit.func_77654_b(Lnet/minecraft/item/ItemStack;Lnet/minecraft/world/World;Lnet/minecraft/entity/EntityLivingBase;)Lnet/minecraft/item/ItemStack;#after:aload 3")
             .returns(boolean.class);
 
+    // ---- fourth round: hunger movement, cake, wither, vehicle drops, mob targets, sleeping, liquids, furnace results, banner layers
+
+    private static final Class<?> BLOCK = legacyconnector.v1_12_2.net.minecraft.block.Block.class;
+    private static final Class<?> ENTITY_LIVING = legacyconnector.v1_12_2.net.minecraft.entity.EntityLiving.class;
+
+    /**
+     * EntityPlayer.addMovementStat: the exhaustion of moving, one place per call in the order of the method (diving, swimming, sprinting, crouching, walking);
+     * as with the other actions the hook is told which one by a constant of its own enum, and answers the amount. Values: player, amount.
+     */
+    private static final String MOVEMENT = "=net/minecraft/entity/player/EntityPlayer.func_71000_j(DDD)V#after:fmul";
+    public static final Site EXHAUSTION_DIVE = CoremodSites.site("exhaustion of diving", EXHAUSTION, MOVEMENT).named("MOVEMENT_DIVE").returns(float.class);
+    public static final Site EXHAUSTION_SWIM = CoremodSites.site("exhaustion of swimming", EXHAUSTION, MOVEMENT + "@2").named("MOVEMENT_SWIM").returns(float.class);
+    public static final Site EXHAUSTION_SPRINT = CoremodSites.site("exhaustion of sprinting", EXHAUSTION, MOVEMENT + "@3").named("MOVEMENT_SPRINT").returns(float.class);
+    public static final Site EXHAUSTION_CROUCH = CoremodSites.site("exhaustion of crouching", EXHAUSTION, MOVEMENT + "@4").named("MOVEMENT_CROUCH").returns(float.class);
+    public static final Site EXHAUSTION_WALK = CoremodSites.site("exhaustion of walking", EXHAUSTION, MOVEMENT + "@5").named("MOVEMENT_WALK").returns(float.class);
+
+    /** EntityLivingBase.getItemInUseMaxCount: stands around the use duration of the stack in use. Values: the entity, the duration. */
+    public static final Site ITEM_USE_DURATION = CoremodSites.site("duration of the item in use", new Class<?>[] {LIVING, int.class},
+            "net/minecraft/entity/EntityLivingBase.func_184612_cw()I#replace:func_77988_m()I").returns(int.class);
+
+    /** BlockCake.eatCake: a hook that stands in for the player's hunger gain of the bite (it adds the hunger itself). Values: the block, the world, the player. */
+    public static final Site CAKE_EATEN = CoremodSites.site("cake bite eaten", new Class<?>[] {BLOCK, WORLD, PLAYER},
+            "net/minecraft/block/BlockCake.func_180682_b(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/state/IBlockState;"
+                    + "Lnet/minecraft/entity/player/EntityPlayer;)Z#replace:func_71024_bL()Lnet/minecraft/util/FoodStats;");
+
+    /** EntityWither.canDestroyBlock, first thing: the hook answers the block the check goes on with. Values: the block. */
+    public static final Site WITHER_BLOCK = CoremodSites.site("block the wither destroys", new Class<?>[] {BLOCK},
+            "net/minecraft/entity/boss/EntityWither.func_181033_a(Lnet/minecraft/block/Block;)Z#after:aload 0").returns(BLOCK);
+
+    /** The drops of a destroyed boat and minecart (last thing after the item dropped). Values: the vehicle. */
+    public static final Site BOAT_DROPS = CoremodSites.site("boat destroyed", new Class<?>[] {ENTITY},
+            "net/minecraft/entity/item/EntityBoat.func_70097_a(Lnet/minecraft/util/DamageSource;F)Z#after:invokevirtual net/minecraft/entity/item/EntityBoat.func_145778_a("
+                    + "Lnet/minecraft/item/Item;IF)Lnet/minecraft/entity/item/EntityItem;");
+    public static final Site MINECART_DROPS = CoremodSites.site("minecart destroyed", new Class<?>[] {ENTITY},
+            "net/minecraft/entity/item/EntityMinecart.func_94095_a(Lnet/minecraft/util/DamageSource;)V#after:invokevirtual net/minecraft/entity/item/EntityMinecart.func_70099_a("
+                    + "Lnet/minecraft/item/ItemStack;F)Lnet/minecraft/entity/item/EntityItem;");
+
+    /** EntityAITarget.isSuitableTarget, first thing: a hook answering true makes the target unsuitable. Values: the mob, the target. */
+    public static final Site TARGET_HIDDEN = CoremodSites.site("mob target hidden", new Class<?>[] {ENTITY_LIVING, LIVING},
+            "net/minecraft/entity/ai/EntityAITarget.func_179445_a(Lnet/minecraft/entity/EntityLiving;Lnet/minecraft/entity/EntityLivingBase;ZZ)Z#after:aload 1")
+            .returns(boolean.class);
+
+    /** WorldServer.areAllPlayersAsleep, first thing: 0 leaves the answer to the game, 1 answers no, 2 answers yes. Values: the world. */
+    public static final Site ALL_ASLEEP = CoremodSites.site("all players asleep", new Class<?>[] {WORLD},
+            "net/minecraft/world/WorldServer.func_73056_e()Z#after:aload 0").returns(int.class);
+
+    /** BlockDynamicLiquid.isBlocked: a hook answering true says flowing liquid does not replace the block. Values: the block. */
+    public static final Site LIQUID_BLOCKED = CoremodSites.site("block liquids do not replace", new Class<?>[] {BLOCK},
+            "net/minecraft/block/BlockDynamicLiquid.func_176372_g(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/state/IBlockState;)Z#after:iconst_1",
+            "net/minecraft/block/BlockDynamicLiquid.func_176372_g(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/state/IBlockState;)Z#after:iconst_1@2",
+            "net/minecraft/block/BlockDynamicLiquid.func_176372_g(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/state/IBlockState;)Z"
+                    + "#after:invokevirtual net/minecraft/block/material/Material.func_76230_c()Z").returns(boolean.class);
+
+    /** TileEntityFurnace.smeltItem, after the recipe's result was looked up: the hook answers the result. Values: the input stack, the result. */
+    public static final Site SMELT_RESULT = CoremodSites.site("furnace result", new Class<?>[] {ITEM_STACK, ITEM_STACK},
+            "net/minecraft/tileentity/TileEntityFurnace.func_145949_j()V#after:astore 2").returns(ITEM_STACK);
+
+    /** RecipesBanners.RecipeAddPattern.matches: the number of layers as the 6 layer limit sees it. Values: the layer count. */
+    public static final Site BANNER_LAYERS = CoremodSites.site("banner layers against the limit", new Class<?>[] {int.class},
+            "net/minecraft/item/crafting/RecipesBanners$RecipeAddPattern.func_77569_a(Lnet/minecraft/inventory/InventoryCrafting;Lnet/minecraft/world/World;)Z"
+                    + "#after:invokestatic net/minecraft/tileentity/TileEntityBanner.func_175113_c(Lnet/minecraft/item/ItemStack;)I").returns(int.class);
+
     /** The slot range of one merge call after the hooks of {@code start} and {@code end} had their say. */
     public static int[] mergeRange(Site start, Site end, int from, int to) {
         if (!start.listed() && !end.listed()) return new int[] {from, to};
@@ -214,6 +276,61 @@ public final class CoremodSites1122 {
     public static boolean chorusEaten(net.minecraft.world.level.Level level, net.minecraft.world.entity.LivingEntity entity) {
         return CHORUS_EATEN.active() && EntityBridge1122.wrap(entity) instanceof legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase living
                 && CHORUS_EATEN.cancels(WorldBridge1122.wrap(level), living);
+    }
+
+    /** {@link #ITEM_USE_DURATION}. */
+    public static int itemUseDuration(net.minecraft.world.entity.LivingEntity entity, int duration) {
+        return ITEM_USE_DURATION.active() ? ((Number) ITEM_USE_DURATION.modify(1, EntityBridge1122.wrap(entity), duration)).intValue() : duration;
+    }
+
+    /** {@link #CAKE_EATEN}: whether a hook ate the bite (the game's own hunger gain is then left out). */
+    public static boolean cakeEaten(net.minecraft.world.level.LevelAccessor level, net.minecraft.world.level.block.state.BlockState state, net.minecraft.world.entity.player.Player player) {
+        if (!CAKE_EATEN.active()) return false;
+        return CAKE_EATEN.stands(StatesBridge1122.legacyBlock(state), WorldBridge1122.wrap(level), EntityBridge1122.wrap(player));
+    }
+
+    /** {@link #WITHER_BLOCK}: the state the wither's check goes on with ({@code state} when no hook changed the block). */
+    public static net.minecraft.world.level.block.state.BlockState witherBlock(net.minecraft.world.level.block.state.BlockState state) {
+        if (!WITHER_BLOCK.active()) return state;
+        legacyconnector.v1_12_2.net.minecraft.block.Block block = StatesBridge1122.legacyBlock(state);
+        if (block == null || !(WITHER_BLOCK.modify(0, block) instanceof legacyconnector.v1_12_2.net.minecraft.block.Block changed) || changed == block) return state;
+        return StatesBridge1122.toModern(changed.getDefaultState());
+    }
+
+    /** {@link #BOAT_DROPS} and {@link #MINECART_DROPS}. */
+    public static void vehicleDestroyed(net.minecraft.world.entity.Entity vehicle) {
+        Site site = vehicle instanceof net.minecraft.world.entity.vehicle.Boat ? BOAT_DROPS
+                : vehicle instanceof net.minecraft.world.entity.vehicle.AbstractMinecart ? MINECART_DROPS : null;
+        if (site != null && site.active()) site.fire(EntityBridge1122.wrap(vehicle));
+    }
+
+    /** {@link #TARGET_HIDDEN}. */
+    public static boolean targetHidden(net.minecraft.world.entity.Mob mob, net.minecraft.world.entity.LivingEntity target) {
+        return TARGET_HIDDEN.active() && TARGET_HIDDEN.cancels(EntityBridge1122.wrap(mob), EntityBridge1122.wrap(target));
+    }
+
+    /** {@link #ALL_ASLEEP}: 0 when no hook answers, 1 for no, 2 for yes. */
+    public static int allAsleep(net.minecraft.server.level.ServerLevel level) {
+        return ALL_ASLEEP.active() ? ((Number) ALL_ASLEEP.replace(0, WorldBridge1122.wrap(level))).intValue() : 0;
+    }
+
+    /** {@link #LIQUID_BLOCKED}. */
+    public static boolean liquidBlocked(net.minecraft.world.level.block.state.BlockState state) {
+        if (!LIQUID_BLOCKED.active()) return false;
+        legacyconnector.v1_12_2.net.minecraft.block.Block block = StatesBridge1122.legacyBlock(state);
+        return block != null && LIQUID_BLOCKED.cancels(block);
+    }
+
+    /** {@link #SMELT_RESULT}: the stack a furnace makes after the hooks changed it. */
+    public static net.minecraft.world.item.ItemStack smeltResult(net.minecraft.world.item.ItemStack input, net.minecraft.world.item.ItemStack result) {
+        if (!SMELT_RESULT.active()) return result;
+        Object changed = SMELT_RESULT.modify(1, Stacks1122.fromModern(input.copy()), Stacks1122.fromModern(result.copy()));
+        return changed instanceof legacyconnector.v1_12_2.net.minecraft.item.ItemStack stack ? Stacks1122.toModern(stack) : result;
+    }
+
+    /** {@link #BANNER_LAYERS}. */
+    public static int bannerLayers(int layers) {
+        return BANNER_LAYERS.active() ? ((Number) BANNER_LAYERS.modify(0, layers)).intValue() : layers;
     }
 
     private static final ThreadLocal<Boolean> IN_WORLD_HOOK = new ThreadLocal<>();

@@ -657,6 +657,32 @@ public final class CoremodSites {
             for (Bound b : bound()) if (!b.combiner) call(b, values);
         }
 
+        /**
+         * Calls the hooks that stand in for a call of the game: true when one of them ran through, so the game's own call is left out. A hook that fails (or
+         * is for another subclass) does not count, the game's call then still happens.
+         */
+        public boolean stands(Object... values) {
+            boolean ran = false;
+            for (Bound b : bound()) {
+                if (b.combiner) continue;
+                try {
+                    Object[] args = new Object[b.from.length];
+                    boolean fits = true;
+                    for (int i = 0; i < args.length && fits; i++) {
+                        Object v = b.from[i] < 0 ? b.fixed[i] : values[b.from[i]];
+                        fits = b.narrowed[i] == null || v == null || b.narrowed[i].isInstance(v);
+                        args[i] = v;
+                    }
+                    if (!fits) continue;
+                    b.handle.invoke(args);
+                    ran = true;
+                } catch (Throwable t) {
+                    if (failures++ < 3) LOG.warn("A coremod hook failed ({}, {})", label, b.name, t);
+                }
+            }
+            return ran;
+        }
+
         /** Passes {@code values[index]} through every hook (each result replaces it) and returns it. */
         public Object modify(int index, Object... values) {
             Bound[] all = bound();
