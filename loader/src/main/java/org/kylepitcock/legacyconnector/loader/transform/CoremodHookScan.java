@@ -88,19 +88,19 @@ public final class CoremodHookScan {
             byte[] original = e.getValue();
             byte[] originalSrg = remap(original, srg);
             Map<String, Boolean> seen = new HashMap<>();
-            transformers.applyToVanilla(obf.replace('/', '.'), deobf.replace('/', '.'), original, false, (name, result) -> {
+            transformers.applyToVanilla(obf.replace('/', '.'), deobf.replace('/', '.'), original, false, mc, (name, result) -> {
                 seen.put(name, true);
                 out.add(new Change(name, deobf, true, node(originalSrg), node(remap(result, srg))));
             });
-            transformers.applyToVanilla(deobf.replace('/', '.'), deobf.replace('/', '.'), originalSrg, false, (name, result) -> {
+            transformers.applyToVanilla(deobf.replace('/', '.'), deobf.replace('/', '.'), originalSrg, false, mc, (name, result) -> {
                 if (seen.put(name, true) == null) out.add(new Change(name, deobf, false, node(originalSrg), node(result)));
             });
             // a plugin without a sorting index whose transformer still expects the deobfuscated class under its obfuscated name
-            if (!obf.equals(deobf)) transformers.applyToVanilla(obf.replace('/', '.'), deobf.replace('/', '.'), originalSrg, false, (name, result) -> {
+            if (!obf.equals(deobf)) transformers.applyToVanilla(obf.replace('/', '.'), deobf.replace('/', '.'), originalSrg, false, mc, (name, result) -> {
                 if (seen.put(name, true) == null) out.add(new Change(name, deobf, false, node(originalSrg), node(result)));
             });
             // sorted after the deobfuscation: once, the class in SRG names under the name it has in the jar (some run only once per class)
-            transformers.applyToVanilla(obf.replace('/', '.'), deobf.replace('/', '.'), originalSrg, true, (name, result) -> {
+            transformers.applyToVanilla(obf.replace('/', '.'), deobf.replace('/', '.'), originalSrg, true, mc, (name, result) -> {
                 out.add(new Change(name, deobf, false, node(originalSrg), node(result)));
             });
         }
