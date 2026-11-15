@@ -1451,6 +1451,15 @@ PlayerEvents.tick(e => {
         String script = new String(original, StandardCharsets.UTF_8);
         String lineEnding = script.contains("\r\n") ? "\r\n" : "\n";
         String normalized = script.replace("\r\n", "\n");
+        if (!normalized.contains("function createAndGivePrototypeCore(entity)")
+                && !normalized.contains("function applyAllDNAFromPrototypeCore(entity)")) {
+            // Focused compatibility tests can supply only the separate Item.of(..., nbt) slice.
+            return 0;
+        }
+        if (occurrences(normalized, "function createAndGivePrototypeCore(entity)") != 1
+                || occurrences(normalized, "function applyAllDNAFromPrototypeCore(entity)") != 1) {
+            throw new IllegalStateException("AlienEvo core_removal.js has an unexpected prototype-core persistence shape");
+        }
         String migrated = normalized;
 
         String legacyCapture =
