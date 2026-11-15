@@ -88,7 +88,7 @@ and isolated (today: the DragonAPI crafting/smelting hooks in `CoremodHooks`).
   the legacy mod classes before translation, in a stand-in LaunchWrapper class loader with the legacy FML API, so
   coremods that patch *mod* classes work: CoFH `@Strippable`, AE2 `@Integration`, OpenMods, Steve's Addons, patcher
   mods fixing other mods' API mismatches.
-- Coremod hooks in Minecraft's own classes (1.7.10; 1.6.4, 1.5.2, 1.4.7 and 1.12.2 are scanned the same way into their own list; the 1.12.2 list is written but not yet replayed at run time: there is no `CoremodSites1122`): those classes do not exist at run time, so on a cache-miss translation the loader shows the
+- Coremod hooks in Minecraft's own classes (1.7.10; 1.6.4, 1.5.2, 1.4.7 and 1.12.2 are scanned the same way into their own list; the 1.12.2 list is replayed by `CoremodSites1122`, which declares places with 1.12.2 types on the same lists and binding (so far: entity base tick, all players waking, the `Item.ToolMaterial` getters); the 1.6.4 and older lists have no places yet): those classes do not exist at run time, so on a cache-miss translation the loader shows the
   transformers the original 1.7.10 client classes (`VanillaJar` finds the jar in a launcher folder, `coremods.vanillaJar`, or downloads it from Mojang
   with `coremods.downloadVanilla=true`; only the exact official file is accepted and it is never shipped), first obfuscated and then in SRG names; a transformer whose plugin has a sorting index above 1000 ran after FML's deobfuscation and is shown the SRG form only
   (`CoremodHookScan`). `CoremodHookDiscovery` diffs each method and records every added static call with a site key
