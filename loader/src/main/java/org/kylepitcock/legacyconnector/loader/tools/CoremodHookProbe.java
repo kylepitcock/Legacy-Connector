@@ -75,7 +75,7 @@ public final class CoremodHookProbe {
         for (FieldNode f : before.fields) fields.put(f.name + ":" + f.desc, f);
         for (FieldNode f : after.fields) {
             FieldNode old = fields.remove(f.name + ":" + f.desc);
-            if (old == null) out.add("    + field " + f.name + " " + f.desc);
+            if (old == null) out.add("    + field " + ((f.access & 8) != 0 ? "static " : "") + f.name + " " + f.desc);
             else if (old.access != f.access) out.add("    ~ field " + f.name + " access " + old.access + " -> " + f.access);
         }
         Map<String, MethodNode> methods = new HashMap<>();
@@ -83,7 +83,7 @@ public final class CoremodHookProbe {
         for (MethodNode m : after.methods) {
             MethodNode old = methods.remove(m.name + m.desc);
             if (old == null) {
-                out.add("    + method " + m.name + m.desc);
+                out.add("    + method " + ((m.access & 8) != 0 ? "static " : "") + m.name + m.desc);
                 for (String s : text(m)) out.add("        " + s);
                 continue;
             }
