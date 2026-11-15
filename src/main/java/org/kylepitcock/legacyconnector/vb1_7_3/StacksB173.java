@@ -32,6 +32,7 @@ public final class StacksB173 {
                     && block.getBlock() instanceof LegacyB173Block) {
                 var state = result.getOrDefault(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY);
                 result.set(DataComponents.BLOCK_STATE, state.with(LegacyB173Block.META, legacy.getDamage() & 15));
+                LegacyB173BlockItem.setFullDamage(result, legacy.getDamage());
             } else if (!result.isDamageableItem() && item.hasSubtypes()) {
                 var data = result.getOrDefault(DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
                 data.putInt("b173_meta", legacy.getDamage());
@@ -108,6 +109,7 @@ public final class StacksB173 {
             if (legacy != null && legacy.mcc$owner != null) {
                 if (legacy instanceof BlockItem && item instanceof net.minecraft.world.item.BlockItem bi && bi.getBlock() instanceof LegacyB173Block) {
                     stack.set(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY.with(LegacyB173Block.META, damage & 15));
+                    LegacyB173BlockItem.setFullDamage(stack, damage);
                 } else if (stack.isDamageableItem()) {
                     stack.setDamageValue(Math.min(damage, stack.getMaxDamage()));
                 } else if (legacy.hasSubtypes()) {
@@ -144,9 +146,8 @@ public final class StacksB173 {
         }
         int damage = hit[1];
         var state = modern.get(DataComponents.BLOCK_STATE);
-        if (state != null && modern.getItem() instanceof net.minecraft.world.item.BlockItem bi && bi.getBlock() instanceof LegacyB173Block) {
-            Integer meta = state.get(LegacyB173Block.META);
-            if (meta != null) damage = meta;
+        if (modern.getItem() instanceof net.minecraft.world.item.BlockItem bi && bi.getBlock() instanceof LegacyB173Block) {
+            damage = LegacyB173BlockItem.damage(modern);
         } else if (modern.isDamageableItem()) {
             damage = modern.getDamageValue();
         } else if ((modern.getItem() instanceof LegacyB173Item||modern.getItem() instanceof LegacyB173ArmorItem) && modern.has(DataComponents.CUSTOM_DATA)) {

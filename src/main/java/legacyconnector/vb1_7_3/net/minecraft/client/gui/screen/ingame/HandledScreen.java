@@ -23,9 +23,16 @@ public abstract class HandledScreen extends Screen {
         super.init();
     }
 
+    /**
+     * Set when a frame reached this class's {@code drawScreen}, which is where Beta drew the hovered slot's name. A screen that replaces
+     * {@code drawScreen} (a trader drawing its own price box) never showed it, so the native screen then draws no slot tooltip.
+     */
+    public boolean mcc$drewSlots;
+
     /** MCP {@code drawScreen} without the slots (the modern screen draws those over it). */
     @Override
     public void render(int mouseX, int mouseY, float delta) {
+        mcc$drewSlots = true;
         renderBackground();
         int x = (width - backgroundWidth) / 2;
         int y = (height - backgroundHeight) / 2;
@@ -46,9 +53,20 @@ public abstract class HandledScreen extends Screen {
     /** MCP {@code drawGuiContainerBackgroundLayer}: drawn in screen coordinates. */
     protected abstract void drawBackground(float delta);
 
+    private boolean mcc$reachedSlots;
+
+    /** Beta's {@code GuiContainer.mouseClicked} clicked the slot under the mouse: a screen that does not call it (a locked chest) clicks none. */
     @Override
     protected void mouseClicked(int mouseX, int mouseY, int button) {
+        mcc$reachedSlots = true;
         super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    /** Runs the screen's own click; true when it reached {@link #mouseClicked} of this class, which is where Beta clicked slots. */
+    public boolean mcc$clickReachesSlots(int mouseX, int mouseY, int button) {
+        mcc$reachedSlots = false;
+        mcc$mouseClicked(mouseX, mouseY, button);
+        return mcc$reachedSlots;
     }
 
     @Override

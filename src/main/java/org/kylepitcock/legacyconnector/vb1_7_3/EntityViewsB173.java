@@ -31,21 +31,24 @@ public final class EntityViewsB173 {
     }
     record Placement(double x,double y,double z,float yaw,float pitch) {
         static Placement of(Entity view){return new Placement(view.x,view.y,view.z,view.yaw,view.pitch);}
-        void apply(Entity view,net.minecraft.world.entity.Entity modern){
+        /** True when a server player was teleported: its client then starts from rest (an absolute position packet clears its velocity). */
+        boolean apply(Entity view,net.minecraft.world.entity.Entity modern){
             boolean px=view.x!=x,py=view.y!=y,pz=view.z!=z,ry=view.yaw!=yaw,rp=view.pitch!=pitch;
-            if(!px&&!py&&!pz&&!ry&&!rp)return;
+            if(!px&&!py&&!pz&&!ry&&!rp)return false;
             double nx=px?view.x:modern.getX(),ny=py?view.y-view.standingEyeHeight:modern.getY(),nz=pz?view.z:modern.getZ();
             float nextYaw=ry?view.yaw:modern.getYRot(),nextPitch=rp?view.pitch:modern.getXRot();
-            if(nx==modern.getX()&&ny==modern.getY()&&nz==modern.getZ()&&nextYaw==modern.getYRot()&&nextPitch==modern.getXRot())return;
+            if(nx==modern.getX()&&ny==modern.getY()&&nz==modern.getZ()&&nextYaw==modern.getYRot()&&nextPitch==modern.getXRot())return false;
             if(modern instanceof net.minecraft.server.level.ServerPlayer player&&!player.isPassenger()&&player.connection!=null){
                 int count=MOVES.incrementAndGet();
-                if(count<=50)LOG.info("Original code moved {} from ({}, {}, {}) to ({}, {}, {}) in {} [{}] view {} was ({}, {}, {}) now ({}, {}, {})",player.getGameProfile().getName(),
+                if(count<=50)LOG.info("Original code moved {} from ({}, {}, {}) to ({}, {}, {}) in {} [{}] view {} was ({}, {}, {}) now ({}, {}, {}) speed ({}, {}, {})",player.getGameProfile().getName(),
                         Math.round(modern.getX()*10)/10.0,Math.round(modern.getY()*10)/10.0,Math.round(modern.getZ()*10)/10.0,Math.round(nx*10)/10.0,Math.round(ny*10)/10.0,Math.round(nz*10)/10.0,
-                        player.level().dimension().location(),origin(),view.getClass().getSimpleName()+"@"+System.identityHashCode(view),x,y,z,view.x,view.y,view.z);
+                        player.level().dimension().location(),origin(),view.getClass().getSimpleName()+"@"+System.identityHashCode(view),x,y,z,view.x,view.y,view.z,Math.round(view.velocityX*1000)/1000.0,Math.round(view.velocityY*1000)/1000.0,Math.round(view.velocityZ*1000)/1000.0);
                 if(count<=3){var trace=new StringBuilder();int shown=0;for(var frame:Thread.currentThread().getStackTrace()){if(shown++>40)break;trace.append(System.lineSeparator()).append("    at ").append(frame);}LOG.info("Move call stack:{}",trace);}
                 player.connection.teleport(nx,ny,nz,nextYaw,nextPitch);
+                return true;
             }
-            else{modern.setPos(nx,ny,nz);modern.setYRot(nextYaw);modern.setXRot(nextPitch);}
+            modern.setPos(nx,ny,nz);modern.setYRot(nextYaw);modern.setXRot(nextPitch);
+            return false;
         }
     }
     private record HostState(double x,double y,double z,double vx,double vy,double vz,float yaw,float pitch,
@@ -310,7 +313,7 @@ public final class EntityViewsB173 {
                 // native entity writes need the owning server thread, which may itself be waiting for this worker.
                 if(liveOffThread(modern))continue;
                 if(modern instanceof B173EntityHost host) {if(!host.callbackActive())flushHost(host,touched);continue;}
-                if(view instanceof PlayerViewB173 player)player.writeBack();
+                boolean teleported=view instanceof PlayerViewB173 player&&player.writeBack();
                 if(view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity living&&modern instanceof net.minecraft.world.entity.LivingEntity nativeLiving)
                     NativeMovementSpeedB173.commit(nativeLiving,touched.movementSpeed,living.mcc$movementSpeed());
                 if(view.dead&&!modern.isRemoved()&&!(modern instanceof net.minecraft.world.entity.player.Player)){modern.discard();continue;} // a native player is never discarded for an original setEntityDead (a mod replacing its player object calls it)
@@ -329,8 +332,13 @@ public final class EntityViewsB173 {
                     if(view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.mob.CreeperEntity creeper&&modern instanceof net.minecraft.world.entity.monster.Creeper nativeCreeper&&creeper.fuseTime!=before.fuse)EntityFieldsB173.creeperFuse(nativeCreeper,creeper.fuseTime);
                     if(view instanceof legacyconnector.vb1_7_3.net.minecraft.entity.projectile.ArrowEntity arrow&&modern instanceof net.minecraft.world.entity.projectile.AbstractArrow nativeArrow&&arrow.owner!=before.owner)nativeArrow.setOwner(arrow.owner==null?null:arrow.owner.mcc$modern);
                 }
-                if(view.velocityX!=touched.vx||view.velocityY!=touched.vy||view.velocityZ!=touched.vz) {
-                    if(modern instanceof net.minecraft.world.entity.player.Player nativePlayer){
+                if(teleported&&modern instanceof net.minecraft.server.level.ServerPlayer server&&PlayerMotionB173.send(server,7,view.velocityX,view.velocityY,view.velocityZ)){
+                    // original code moved the player (a portal it fell into): the position packet stopped its client, which takes the speed the
+                    // original code left it with (kept, or turned to the exit) after it
+                }else if(view.velocityX!=touched.vx||view.velocityY!=touched.vy||view.velocityZ!=touched.vz) {
+                    if(modern instanceof net.minecraft.server.level.ServerPlayer&&PlayerMotionB173.clientDrives()){
+                        // the player's client runs this block callback for itself (Beta's client moved its player); the server's copy only acts
+                    }else if(modern instanceof net.minecraft.world.entity.player.Player nativePlayer){
                         // A player's own motion is authoritative: apply only components original code actually set to a new value.
                         var current=nativePlayer.getDeltaMovement();
                         int changed=PlayerMotionB173.mask(view.velocityX,view.velocityY,view.velocityZ,touched.vx,touched.vy,touched.vz)

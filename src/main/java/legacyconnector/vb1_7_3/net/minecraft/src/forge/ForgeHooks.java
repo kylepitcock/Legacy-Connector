@@ -14,8 +14,8 @@ public class ForgeHooks {
     public static final int minorVersion = 0;
     public static final int revisionVersion = 7;
 
-    static LinkedList<Object> craftingHandlers = new LinkedList<>();
-    static LinkedList<Object> destroyToolHandlers = new LinkedList<>();
+    static java.util.List<Object> craftingHandlers = new java.util.concurrent.CopyOnWriteArrayList<>();
+    static java.util.List<Object> destroyToolHandlers = new java.util.concurrent.CopyOnWriteArrayList<>();
     static LinkedList<Object> sleepHandlers = new LinkedList<>();
     static boolean toolInit;
     static HashMap<Object, Object> toolClasses = new HashMap<>();

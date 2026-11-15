@@ -71,6 +71,8 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
     private LegacyBlockAdapter deepVariant;
     private LegacyBlockAdapter deepBase;
     private final boolean dynamicBounds;
+    /** The mod overrides shouldSideBeRendered (translucent blocks hiding the faces between neighbours of their own kind): its answer decides the face culling. */
+    private final boolean customSideRender;
     private final boolean customHardness;
     private final VoxelShape[] staticShapes = new VoxelShape[16];
     private final boolean collisionList;
@@ -120,6 +122,7 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
         this.keyMeta = spec == null ? 0 : spec.key();
         // a mod's portal block inherits the shim BlockPortal's thin slab (overrides() does not look into shim classes): without its
         // bounds-by-state the portal was a full cube
+        this.customSideRender = overrides(legacy, "shouldSideBeRendered", legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess.class, int.class, int.class, int.class, int.class);
         this.dynamicBounds = overrides(legacy, "setBlockBoundsBasedOnState", legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess.class, int.class, int.class, int.class)
                 || legacy instanceof legacyconnector.v1_7_10.net.minecraft.block.BlockPortal;
         this.customHardness = overrides(legacy, "getPlayerRelativeBlockHardness", EntityPlayer.class, World.class, int.class, int.class, int.class)
@@ -230,6 +233,25 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
     protected boolean skipRendering(BlockState state, BlockState adjacent, Direction direction) {
         return sameFamily(adjacent) && legacy instanceof legacyconnector.v1_7_10.net.minecraft.block.BlockBreakable bb && bb.mcc$hidesSimilarNeighbours()
                 && metaOf(adjacent) == metaIn(state);
+    }
+
+    /**
+     * 1.7.10 asked the block being drawn ({@code shouldSideBeRendered(world, x, y, z, side)} with the neighbour's coordinates and the
+     * drawn face): translucent blocks whose faces touch their own kind drew none, and without this every face between two clouds showed.
+     * The modern culling asks the neighbour, which here answers with the drawn block's legacy rule.
+     */
+    @Override
+    public boolean hidesNeighborFace(BlockGetter level, BlockPos pos, BlockState state, BlockState neighborState, Direction dir) {
+        if (neighborState.getBlock() instanceof LegacyBlockAdapter drawn && drawn.customSideRender) {
+            try {
+                // no lock: this runs on chunk mesher threads, and holding a block's lock there while the server thread holds it for a
+                // world access has deadlocked before (a face-culling answer only reads blocks)
+                return !drawn.legacy.shouldSideBeRendered(BlockAccessView.of(level), pos.getX(), pos.getY(), pos.getZ(), dir.getOpposite().get3DDataValue());
+            } catch (RuntimeException | LinkageError e) {
+                return false;
+            }
+        }
+        return super.hidesNeighborFace(level, pos, state, neighborState, dir);
     }
 
     @Override

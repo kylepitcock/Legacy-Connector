@@ -10,6 +10,8 @@ public class DoubleInventory implements Inventory {
     public DoubleInventory(String name,Inventory first,Inventory second){
         this.name=name;this.first=first==null?second:first;this.second=second==null?first:second;
     }
+    public Inventory mcc$first(){return first;}
+    public Inventory mcc$second(){return second;}
     @Override public int size(){return first.size()+second.size();}
     @Override public String getName(){return name;}
     private Inventory half(int slot){return slot<first.size()?first:second;}

@@ -27,6 +27,7 @@ public class CraftingResultSlot extends Slot {
             try {
                 stack.onCraft(player == null ? null : player.world, player);
                 legacyconnector.vb1_7_3.net.minecraft.src.ModLoader.TakenFromCrafting(player,stack);
+                legacyconnector.vb1_7_3.net.minecraft.src.forge.MinecraftForge.onTakenFromCrafting(player,stack,input);
             } catch (RuntimeException | LinkageError ignored) {
                 // statistics and achievements only
             }

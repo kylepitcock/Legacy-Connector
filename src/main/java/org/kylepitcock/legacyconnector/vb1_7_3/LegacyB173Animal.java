@@ -15,7 +15,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 
 /** Neutral physics/navigation host. All legacy simulation phases enter through original virtual callbacks. */
-public final class LegacyB173Animal extends PathfinderMob implements B173LivingHost, Saddleable {
+public final class LegacyB173Animal extends PathfinderMob implements B173LivingHost, Saddleable, net.neoforged.neoforge.entity.IEntityWithComplexSpawn {
     @Override public boolean isSaddleable(){return isAlive()&&legacy instanceof legacyconnector.vb1_7_3.net.minecraft.entity.passive.PigEntity;}
     @Override public boolean isSaddled(){return legacy instanceof legacyconnector.vb1_7_3.net.minecraft.entity.passive.PigEntity pig&&pig.isSaddled();}
     @Override public net.minecraft.sounds.SoundEvent getSaddleSoundEvent(){return net.minecraft.sounds.SoundEvents.PIG_SADDLE;}
@@ -33,6 +33,7 @@ public final class LegacyB173Animal extends PathfinderMob implements B173LivingH
     private LivingEntity legacy;
     private legacyconnector.vb1_7_3.net.minecraft.entity.Entity syncedVehicle,syncedPassenger;
     private int callbacks,ticks,movements,ais;
+    private static final org.slf4j.Logger LOG=org.slf4j.LoggerFactory.getLogger("LegacyConnector/b1.7.3");
     private boolean inTick,inMovement,inAI,inTravel,inMove,inJump;
     private boolean nativeBoundsMovement;
     private MoverType nativeMoveType=MoverType.SELF;
@@ -249,6 +250,8 @@ public final class LegacyB173Animal extends PathfinderMob implements B173LivingH
             flushView();
             legacyconnector.vb1_7_3.net.minecraft.entity.Entity aimingTarget=null;
             if(legacy instanceof MobEntity creature){
+                // Beta's creature followed its pathToEntity field each tick; a mod may write that field directly (by reflection) instead of calling setPath
+                var written=creature.mcc$path();if(written!=handedPath)baseSetPath(written);
                 creature.mcc$setMovementBlocked(creature.mcc$isMovementBlocked());
                 boolean acquired=false;
                 if(creature.target==null){creature.target=creature.mcc$targetInRange();acquired=creature.target!=null;}
@@ -351,8 +354,9 @@ public final class LegacyB173Animal extends PathfinderMob implements B173LivingH
         var bounds=getBoundingBox().move(x-getX(),y-getY(),z-getZ());
         setPosRaw(x,y,z);setBoundingBox(bounds);
     }
+    private Object handedPath;
     public void baseSetPath(legacyconnector.vb1_7_3.net.minecraft.entity.ai.pathing.Path path){
-        flushView();if(path==null)getNavigation().stop();else if(path.mcc$modern()!=null)getNavigation().moveTo(path.mcc$modern(),Math.max(0,legacy.mcc$movementSpeed()));
+        handedPath=path;flushView();if(path==null)getNavigation().stop();else if(path.mcc$modern()!=null)getNavigation().moveTo(path.mcc$modern(),Math.max(0,legacy.mcc$movementSpeed()));
     }
     @Override public float getWalkTargetValue(BlockPos pos,LevelReader level){return legacy instanceof MobEntity c?c.mcc$pathFavor(pos.getX(),pos.getY(),pos.getZ()):0;}
     @Override public void thunderHit(net.minecraft.server.level.ServerLevel level,net.minecraft.world.entity.LightningBolt bolt){
@@ -468,4 +472,22 @@ public final class LegacyB173Animal extends PathfinderMob implements B173LivingH
     @Override public InteractionResult mobInteract(net.minecraft.world.entity.player.Player p,InteractionHand hand){if(hand!=InteractionHand.MAIN_HAND)return InteractionResult.PASS;if(level().isClientSide)return InteractionResult.SUCCESS;boolean[] result={false};var view=(PlayerViewB173)EntityViewsB173.wrap(p);callback(()->{Runnable action=()->{result[0]=legacy.interact(view);view.writeBack();};if(p instanceof net.minecraft.server.level.ServerPlayer serverPlayer)MenusB173.withActor(serverPlayer,action);else action.run();});return result[0]?InteractionResult.CONSUME:InteractionResult.PASS;}
     @Override public void addAdditionalSaveData(CompoundTag tag){super.addAdditionalSaveData(tag);if(legacy==null)return;callback(()->{var n=new legacyconnector.vb1_7_3.net.minecraft.nbt.NbtCompound();legacy.writeNbt(n);tag.put("beta",NbtB173.toModern(n));});tag.putFloat("betaWidth",legacy.width);tag.putFloat("betaHeight",legacy.height);tag.putFloat("betaEyeOffset",legacy.standingEyeHeight);tag.putString("betaTexture",texturePath());}
     @Override public void readAdditionalSaveData(CompoundTag tag){super.readAdditionalSaveData(tag);if(legacy==null)return;if(tag.contains("betaEyeOffset"))legacy.standingEyeHeight=tag.getFloat("betaEyeOffset");callback(()->{if(tag.contains("betaWidth"))legacy.width=tag.getFloat("betaWidth");if(tag.contains("betaHeight"))legacy.height=tag.getFloat("betaHeight");legacy.readNbt(NbtB173.fromModern(tag.getCompound("beta")));});if(tag.contains("betaTexture")){legacy.mcc$setTexture(tag.getString("betaTexture"));entityData.set(TEXTURE,legacy.mcc$texture());}}
+    /**
+     * Beta single player drew the very mob the server ticked; the client copy here is made by the constructor alone. It gets the server's saved
+     * state once at spawn (the original readNbt), so renderers and screens that read the mob's own fields (a villager's type) find them.
+     */
+    @Override public void writeSpawnData(net.minecraft.network.RegistryFriendlyByteBuf buffer){
+        CompoundTag tag=new CompoundTag();
+        if(legacy!=null)try{callback(()->{var n=new legacyconnector.vb1_7_3.net.minecraft.nbt.NbtCompound();legacy.writeNbt(n);tag.put("beta",NbtB173.toModern(n));});}
+        catch(RuntimeException|LinkageError e){LOG.debug("Beta mob {} spawn data not written: {}",legacy.getClass().getName(),e.toString());}
+        buffer.writeNbt(tag);
+    }
+    @Override public void readSpawnData(net.minecraft.network.RegistryFriendlyByteBuf buffer){
+        CompoundTag tag=buffer.readNbt();
+        if(legacy==null||tag==null||!tag.contains("beta"))return;
+        String synced=texturePath();
+        try{legacy.readNbt(NbtB173.fromModern(tag.getCompound("beta")));}
+        catch(RuntimeException|LinkageError e){LOG.debug("Beta mob {} spawn data not read on the client: {}",legacy.getClass().getName(),e.toString());}
+        if(synced!=null&&!"/mob/char.png".equals(synced))legacy.mcc$setTexture(synced);
+    }
 }

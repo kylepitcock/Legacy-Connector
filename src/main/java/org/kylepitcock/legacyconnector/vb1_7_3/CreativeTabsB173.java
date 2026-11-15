@@ -68,6 +68,15 @@ public final class CreativeTabsB173 {
         }
     }
 
+    /** Every subtype the mod's recipes make of an item (RedPower's wires and covers are damage values of one block item). */
+    private static void addCrafted(java.util.Set<ItemStack> out, int itemId) {
+        for (int damage : RecipesB173.craftedDamages(itemId)) {
+            if (damage == 0) continue;
+            var stack = StacksB173.toModern(itemId, 1, damage);
+            if (!stack.isEmpty()) out.add(stack);
+        }
+    }
+
     private static List<ItemStack> stacks(List<Object> content) {
         var out = net.minecraft.world.item.ItemStackLinkedSet.createTypeAndComponentsSet();
         for (Object o : content) {
@@ -90,8 +99,10 @@ public final class CreativeTabsB173 {
                     s.set(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY.with(LegacyB173Block.META, meta));
                     out.add(s);
                 }
+                addCrafted(out, b.id);
             } else if (o instanceof Item i) {
                 out.add(new ItemStack(i.mcc$modern));
+                if (i.hasSubtypes()) addCrafted(out, i.id);
             }
         }
         return new ArrayList<>(out);

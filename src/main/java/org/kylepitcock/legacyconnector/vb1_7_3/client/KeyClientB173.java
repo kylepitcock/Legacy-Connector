@@ -69,6 +69,7 @@ public final class KeyClientB173 {
         }
     }
     private static void refreshPressed(){for(var entry:MAPPINGS.entrySet())KeyBinding.mcc$set$pressed(entry.getKey(),down(entry.getValue()));}
+    private static byte[] lastRaw=new byte[32];
     private static void tick(){
         var minecraft=Minecraft.getInstance();var current=minecraft.getConnection();
         guiSnapshot=currentGui();menuSnapshot=menuActive(minecraft.screen);
@@ -83,6 +84,20 @@ public final class KeyClientB173 {
             var server=minecraft.getSingleplayerServer();
             if(server!=null){var uuid=minecraft.player.getUUID();server.execute(()->{var actor=server.getPlayerList().getPlayer(uuid);if(actor!=null)KeyBindingsB173.input(actor,registration.id(),pressed,screen);});}
             else if(current.hasChannel(LegacyPayload.TYPE))net.neoforged.neoforge.network.PacketDistributor.sendToServer(KeyBindingsB173.packet(registration.id(),pressed,screen));
+        }
+        // every LWJGL key held, for mods that poll Keyboard.isKeyDown in code that runs on the server (a tick's village locator key, a
+        // trade screen's shift); never while chat takes the typing
+        var bits=new byte[32];
+        if(!(minecraft.screen instanceof net.minecraft.client.gui.screens.ChatScreen)&&minecraft.getWindow()!=null){
+            long window=minecraft.getWindow().getWindow();
+            for(int code=1;code<256;code++){int glfw=KeysB173.glfw(code);
+                if(glfw>0&&InputConstants.isKeyDown(window,glfw)||legacyconnector.v1_7_10.org.lwjgl.input.Keyboard.mcc$forced(code))bits[code>>3]|=(byte)(1<<(code&7));}
+        }
+        if(heartbeat||!Arrays.equals(bits,lastRaw)){
+            lastRaw=bits;
+            var server=minecraft.getSingleplayerServer();
+            if(server!=null){var uuid=minecraft.player.getUUID();server.execute(()->{var actor=server.getPlayerList().getPlayer(uuid);if(actor!=null)KeyBindingsB173.raw(actor,bits);});}
+            else if(current.hasChannel(LegacyPayload.TYPE))net.neoforged.neoforge.network.PacketDistributor.sendToServer(KeyBindingsB173.rawPacket(bits));
         }
         // the jump key (Beta's isJumping) is reported the same way, to a single player's server or a remote one
         boolean jump=minecraft.options.keyJump.isDown()&&!screen;Boolean oldJump=SENT.put(KeyBindingsB173.JUMP_ID,jump);

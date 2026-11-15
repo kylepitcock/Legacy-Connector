@@ -22,7 +22,9 @@ public final class AnimalsB173 {
     private static final Set<String> SUPPORTED=Set.of("lookAt","onKilledOther","tick","tickMovement","tickLiving","interact","damage","attack","getTargetInRange","getPathfindingFavor","applyKnockback","onLanding","markDead","writeNbt","readNbt","canSpawn","canDespawn","getStandingEyeHeight","getPassengerRidingHeight","updatePassengerPosition","getRandomSound","getHurtSound","getDeathSound","onKilledBy","getLimitPerChunk","travel","move","checkWaterCollisions","isOnLadder","isMovementBlocked","isImmobile","isPushable","onCollision","isCollidable","dropItems","getDroppedItemId","getSoundVolume","getTexture","getShadowRadius","canBreatheInWater","processServerEntityStatus","onPlayerInteraction","initDataTracker","canSee","pathingUpdate","resetAttack","getHeldItem","isInsideWall","fall","applyDamage","setOnFire","scheduleVelocityUpdate","getEyeHeight","setPosition","setPositionAndAngles","setPositionAndAnglesAvoidEntities","setRotation","onStruckByLightning","animateSpawn","jump","getMinAmbientSoundDelay","bypassesSteppingEffects","toNbtList","tickRiding","addVelocity","shouldRender");
     private AnimalsB173(){}
     private static boolean api(Class<?> c){return c.getName().startsWith("legacyconnector.")||c.getName().startsWith("legacyconnector_synth.");}
-    public static boolean supports(Class<?> c){return LivingEntity.class.isAssignableFrom(c)&&!MobsB173.cowFamily(c)&&unsupportedBehaviour(c)==null;}
+    public static boolean supports(Class<?> c){return LivingEntity.class.isAssignableFrom(c)&&!nativeCow(c)&&unsupportedBehaviour(c)==null;}
+    /** A cow family member the native cow host can carry (no override its native AI would ignore); every other one runs its original AI here. */
+    private static boolean nativeCow(Class<?> c){return MobsB173.cowFamily(c)&&MobsB173.unsupportedBehaviour(c)==null;}
     public static String unsupportedBehaviour(Class<?> type){
         return unsupportedBehaviour(type,Set.of());
     }
@@ -86,7 +88,7 @@ public final class AnimalsB173 {
     }
     public static void registerAll(){
         for(var r:ContentB173.entities()){
-            Class<?> c=r.type();if(BY_CLASS.containsKey(c)||!LivingEntity.class.isAssignableFrom(c)||MobsB173.cowFamily(c))continue;
+            Class<?> c=r.type();if(BY_CLASS.containsKey(c)||!LivingEntity.class.isAssignableFrom(c)||nativeCow(c))continue;
             if(r.mod()==null||LegacyLifecycle.isFailed(r.mod().modernId))continue;
             String why=unsupportedBehaviour(c);if(why!=null){LOG.warn("Beta animal {} not hosted: {}",c.getName(),why);continue;}
             why=AnimalRenderStateB173.unsupportedReason(c);
@@ -95,7 +97,7 @@ public final class AnimalsB173 {
             String path=r.name().toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9/._-]+","_");if(path.isEmpty())path="entity_"+r.id();
             var id=ResourceLocation.fromNamespaceAndPath(r.mod().modernId,path);if(BuiltInRegistries.ENTITY_TYPE.containsKey(id))continue;
             EntityType<LegacyB173Animal> type=EntityType.Builder.<LegacyB173Animal>of((t,l)->new LegacyB173Animal(t,l,null),category(c)).sized(.6F,1.8F).clientTrackingRange(10).build(id.toString());
-            LegacyRegistrar.register(BuiltInRegistries.ENTITY_TYPE,id,type);Info info=new Info(r,type);BY_CLASS.put(c,info);BY_TYPE.put(type,info);
+            LegacyRegistrar.register(BuiltInRegistries.ENTITY_TYPE,id,type);BridgeB173.entityName(id,r.name());Info info=new Info(r,type);BY_CLASS.put(c,info);BY_TYPE.put(type,info);
             LOG.info("Hosted original Beta animal {} as {} with its original renderer",c.getName(),id);
         }
     }

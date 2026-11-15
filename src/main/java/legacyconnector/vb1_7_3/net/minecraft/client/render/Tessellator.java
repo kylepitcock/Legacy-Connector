@@ -7,21 +7,32 @@ import org.kylepitcock.legacyconnector.vb1_7_3.RendererContextB173;
 /** Beta immediate-mode vertices captured per chunk worker, then baked into modern quads. */
 public class Tessellator {
     public static final Tessellator INSTANCE=new Tessellator();
-    public record Vertex(double x,double y,double z,double u,double v,int color){}
+    /** A captured vertex; {@code sheet} is the texture a Forge renderer bound for it ({@code MinecraftForgeClient.bindTexture}), null for the block's own. */
+    public record Vertex(double x,double y,double z,double u,double v,int color,String sheet){
+        public Vertex(double x,double y,double z,double u,double v,int color){this(x,y,z,u,v,color,null);}
+    }
     private static final class Capture {
         final List<Vertex> vertices=new ArrayList<>();
         final List<RendererContextB173.Normal> normals=new ArrayList<>();
-        int mode=7;double u,v,x,y,z;int color=-1;float nx,ny,nz;boolean hasNormals;
+        int mode=7;double u,v,x,y,z;int color=-1;float nx,ny,nz;boolean hasNormals;String sheet;boolean untextured;
     }
     private static final ThreadLocal<Capture> CAPTURE=new ThreadLocal<>();
     public Tessellator(){}
     public Tessellator(int size){}
     public static void beginCapture(){CAPTURE.set(new Capture());}
+    /** Forge's texture switch while a world block is captured: the following vertices use that sheet ({@code /terrain.png} after an unbind). */
+    public static void mcc$sheet(String sheet){var c=CAPTURE.get();if(c!=null)c.sheet=sheet;}
+    /** The sheet name of vertices drawn with texturing off ({@code glDisable(GL_TEXTURE_2D)}: a plain coloured face). */
+    public static final String UNTEXTURED="#untextured";
+    public static void mcc$textured(boolean textured){var c=CAPTURE.get();if(c!=null)c.untextured=!textured;}
     public static List<Vertex> endCapture(){var c=CAPTURE.get();CAPTURE.remove();return c==null?List.of():List.copyOf(c.vertices);}
     public void startQuads(){start(7);}
     public void start(int mode){if(mode!=7&&mode!=5&&mode!=1&&mode!=2&&mode!=3)throw new UnsupportedOperationException("Beta tessellation mode "+mode);if(RendererContextB173.active()||GuiDrawB173.drawing()){var c=new Capture();c.mode=mode;CAPTURE.set(c);}}
     private static RendererContextB173.Vertex vertex(Vertex v,RendererContextB173.Normal n){int color=v.color();int argb=(color&0xff00ff00)|((color&255)<<16)|((color>>16)&255);return new RendererContextB173.Vertex(v.x(),v.y(),v.z(),v.u(),v.v(),argb,n.x(),n.y(),n.z());}
-    public void draw(){if(RendererContextB173.active()){
+    public void draw(){
+        // a world block renderer that flushes mid-block (Forge's second pass) still adds to the same chunk geometry
+        if(org.kylepitcock.legacyconnector.vb1_7_3.BlockRenderB173.capturing())return;
+        if(RendererContextB173.active()){
         var c=CAPTURE.get();CAPTURE.remove();if(c==null)return;
         // Without a normal array, OpenGL uses the current normal when the buffered batch is drawn.
         // Tessellator.normal instead enables its normal array and records each vertex's explicit normal.
@@ -53,7 +64,7 @@ public class Tessellator {
     }}
     public void texture(double u,double v){var c=CAPTURE.get();if(c!=null){c.u=u;c.v=v;}}
     public void vertex(double x,double y,double z,double u,double v){texture(u,v);vertex(x,y,z);}
-    public void vertex(double x,double y,double z){var c=CAPTURE.get();if(c!=null){c.vertices.add(new Vertex(x+c.x,y+c.y,z+c.z,c.u,c.v,c.color));if(RendererContextB173.active())c.normals.add(new RendererContextB173.Normal(c.nx,c.ny,c.nz));}}
+    public void vertex(double x,double y,double z){var c=CAPTURE.get();if(c!=null){c.vertices.add(new Vertex(x+c.x,y+c.y,z+c.z,c.u,c.v,c.color,c.untextured?UNTEXTURED:c.sheet));if(RendererContextB173.active())c.normals.add(new RendererContextB173.Normal(c.nx,c.ny,c.nz));}}
     public void color(float r,float g,float b){color(r,g,b,1);}
     public void color(float r,float g,float b,float a){color((int)(r*255),(int)(g*255),(int)(b*255),(int)(a*255));}
     public void color(int r,int g,int b){color(r,g,b,255);}

@@ -19,7 +19,7 @@ public abstract class BlockWithEntity extends Block {
     @Override
     public void onPlaced(World world, int x, int y, int z) {
         super.onPlaced(world, x, y, z);
-        world.setBlockEntity(x, y, z, createBlockEntity());
+        world.setBlockEntity(x, y, z, getBlockEntity(world.getBlockMeta(x, y, z)));
     }
 
     @Override
@@ -30,4 +30,14 @@ public abstract class BlockWithEntity extends Block {
 
     /** MCP {@code getBlockEntity}. */
     public abstract BlockEntity createBlockEntity();
+
+    /** Forge 1.0: the tile entity for a metadata (one block, a tile entity class per metadata); the plain one by default. */
+    protected BlockEntity getBlockEntity(int meta) {
+        return createBlockEntity();
+    }
+
+    /** The tile entity this block makes with that metadata ({@link #getBlockEntity(int)}, which mods override as protected). */
+    public final BlockEntity mcc$createBlockEntity(int meta) {
+        return getBlockEntity(meta);
+    }
 }

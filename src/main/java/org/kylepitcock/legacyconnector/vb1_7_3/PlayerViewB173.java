@@ -49,6 +49,9 @@ public final class PlayerViewB173 extends legacyconnector.vb1_7_3.net.minecraft.
         this.mcc$modern = player;
     }
 
+    /** The view a callback already holds for this player, without re-reading the native player into it (which would drop its pending changes). */
+    public static PlayerViewB173 existing(Player player){synchronized(VIEWS){return VIEWS.get(player);}}
+
     public static PlayerViewB173 of(Player player) {
         PlayerViewB173 view;
         synchronized (VIEWS) {
@@ -111,6 +114,12 @@ public final class PlayerViewB173 extends legacyconnector.vb1_7_3.net.minecraft.
         handSwinging=player.swinging;
         mcc$environment(PlayerAbilitiesB173.nativeWaterBaseline(player));
         var motion=player.getDeltaMovement();velocityX=motion.x;velocityY=motion.y;velocityZ=motion.z;
+        // a server player is moved by its client: the server's velocity is stale, the movement since the last tick is what Beta's motion was
+        // (a trampoline bounces the speed a player lands with, an accelerator multiplies the walking speed)
+        if(player instanceof net.minecraft.server.level.ServerPlayer){
+            double dx=player.getX()-player.xo,dy=player.getY()-player.yo,dz=player.getZ()-player.zo;
+            if(dx!=0||dy!=0||dz!=0){velocityX=dx;velocityY=dy;velocityZ=dz;}
+        }
         // A server player never receives the jump key from the native client; the layer's key report carries it
         boolean jump=EntityFieldsB173.jumpInput(player)||player instanceof net.minecraft.server.level.ServerPlayer server&&KeyBindingsB173.jumpHeld(server);
         mcc$movementInputs(player.xxa,player.zza,jump);
@@ -146,9 +155,9 @@ public final class PlayerViewB173 extends legacyconnector.vb1_7_3.net.minecraft.
         onGround=player.onGround();beforePlacement=EntityViewsB173.Placement.of(this);
     }
 
-    /** Applies the mod's changes of the main inventory slots to the modern player. */
-    public void writeBack() {
-        if(beforePlacement!=null)beforePlacement.apply(this,player);
+    /** Applies the mod's changes of the main inventory slots to the modern player; true when original code teleported a server player. */
+    public boolean writeBack() {
+        boolean teleported=beforePlacement!=null&&beforePlacement.apply(this,player);
         beforePlacement=EntityViewsB173.Placement.of(this);
         writeSleepBack();
         if(health!=beforeHealth){PlayerHealthCapacityB173.commit(player,beforeHealth,health);player.setHealth(health);beforeHealth=health;}
@@ -168,6 +177,7 @@ public final class PlayerViewB173 extends legacyconnector.vb1_7_3.net.minecraft.
             player.getInventory().armor.set(i,now==null||now.count<=0?net.minecraft.world.item.ItemStack.EMPTY:StacksB173.toModern(now));
             beforeArmor[i]=now==null?null:now.copy();
         }
+        return teleported;
     }
 
     private void writeSleepBack(){

@@ -109,6 +109,7 @@ public final class RenderersB173 {
         for(Class<?> c=type;c!=null&&renderer==null;c=c.getSuperclass()){
             if(c==legacyconnector.vb1_7_3.net.minecraft.entity.passive.PigEntity.class){base=c;renderer=new legacyconnector.vb1_7_3.net.minecraft.client.render.entity.PigEntityRenderer(new legacyconnector.vb1_7_3.net.minecraft.client.render.entity.model.PigEntityModel(),new legacyconnector.vb1_7_3.net.minecraft.client.render.entity.model.PigEntityModel(.5F),.7F);}
             else if(c==legacyconnector.vb1_7_3.net.minecraft.entity.passive.ChickenEntity.class){base=c;renderer=new legacyconnector.vb1_7_3.net.minecraft.client.render.entity.ChickenEntityRenderer(new legacyconnector.vb1_7_3.net.minecraft.client.render.entity.model.ChickenEntityModel(),.3F);}
+            else if(c==legacyconnector.vb1_7_3.net.minecraft.entity.passive.CowEntity.class){base=c;renderer=new legacyconnector.vb1_7_3.net.minecraft.client.render.entity.LivingEntityRenderer(new legacyconnector.vb1_7_3.net.minecraft.client.render.entity.model.CowEntityModel(),.7F);}
             else if(c==legacyconnector.vb1_7_3.net.minecraft.entity.passive.SheepEntity.class){base=c;renderer=new legacyconnector.vb1_7_3.net.minecraft.client.render.entity.SheepEntityRenderer(new legacyconnector.vb1_7_3.net.minecraft.client.render.entity.model.SheepEntityModel(),new legacyconnector.vb1_7_3.net.minecraft.client.render.entity.model.SheepWoolEntityModel(),.7F);}
         }
         if(renderer==null)return null;

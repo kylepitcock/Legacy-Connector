@@ -51,6 +51,11 @@ public final class KeyBindingsB173 {
         if(installed)return;installed=true;
         LegacyNetwork.registerReceiver(FAMILY,(payload,context)->{
             if(context.flow()!=net.minecraft.network.protocol.PacketFlow.SERVERBOUND||payload.data().length>1024)return;
+            if(RAW_CHANNEL.equals(payload.channel())){
+                if(payload.data().length!=32)return;var bits=payload.data().clone();
+                context.enqueueWork(()->{if(context.player() instanceof ServerPlayer player)raw(player,bits);});
+                return;
+            }
             var input=new FriendlyByteBuf(Unpooled.wrappedBuffer(payload.data()));
             try{
                 String id=input.readUtf(512);boolean down=input.readBoolean(),screen=input.readBoolean();
@@ -71,8 +76,8 @@ public final class KeyBindingsB173 {
                 }
             }
         });
-        bus.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent event)->{HELD.remove(event.getEntity().getUUID());JUMP.remove(event.getEntity().getUUID());});
-        bus.addListener((net.neoforged.neoforge.event.server.ServerStoppedEvent event)->{HELD.clear();JUMP.clear();});
+        bus.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent event)->{HELD.remove(event.getEntity().getUUID());JUMP.remove(event.getEntity().getUUID());RAW.remove(event.getEntity().getUUID());});
+        bus.addListener((net.neoforged.neoforge.event.server.ServerStoppedEvent event)->{HELD.clear();JUMP.clear();RAW.clear();});
     }
     /** Only pre-registered identifiers can select a callback; identity is always the receiving connection's player. */
     /** The player's jump key, which Beta code reads as {@code isJumping}; a server never receives it from the native client. */
@@ -83,6 +88,19 @@ public final class KeyBindingsB173 {
         var state=JUMP.get(player.getUUID());
         return state!=null&&state[0]==1&&player.server.getTickCount()-state[1]<=40;
     }
+    /**
+     * The keys a player's client holds outside screens, as Beta's game loop polled them ({@code Keyboard.isKeyDown} in a mod's tick: a key that
+     * locates a village, a gun's mode key). Reports repeat every ten ticks; one older than forty ticks counts as no key held.
+     */
+    private static final String RAW_CHANNEL="raw";
+    private static final Map<UUID,Object[]> RAW=new java.util.concurrent.ConcurrentHashMap<>();
+    public static void raw(ServerPlayer player,byte[] bits){RAW.put(player.getUUID(),new Object[]{bits,player.server.getTickCount()});}
+    public static boolean rawHeld(ServerPlayer player,int code){
+        if(code<0||code>=256)return false;var state=RAW.get(player.getUUID());
+        if(state==null||player.server.getTickCount()-(Integer)state[1]>40)return false;
+        return (((byte[])state[0])[code>>3]&(1<<(code&7)))!=0;
+    }
+    public static LegacyPayload rawPacket(byte[] bits){return new LegacyPayload(FAMILY,RAW_CHANNEL,0,bits);}
     public static void input(ServerPlayer player,String id,boolean down,boolean screen){
         if(JUMP_ID.equals(id)){JUMP.put(player.getUUID(),new long[]{down?1:0,player.server.getTickCount()});return;}
         synchronized(KeyBindingsB173.class){if(!KEYS.containsKey(id))return;}

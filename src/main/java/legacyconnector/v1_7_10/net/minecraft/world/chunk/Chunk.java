@@ -252,7 +252,8 @@ public class Chunk {
     public net.minecraft.world.level.block.state.BlockState mcc$clientState(int x, int y, int z) {
         if (mcc$blocks != null || y < 1 || y > 255) return null;
         var live = mcc$liveChunk();
-        if (live == null || !(live.getLevel() instanceof net.minecraft.client.multiplayer.ClientLevel) || live.getMinBuildHeight() > y || live.getMaxBuildHeight() <= y) return null;
+        // isClientSide, not the client level class: a dedicated server refuses (and logs) every load of that class
+        if (live == null || !live.getLevel().isClientSide() || live.getMinBuildHeight() > y || live.getMaxBuildHeight() <= y) return null;
         return live.getBlockState(new net.minecraft.core.BlockPos(wx(x), y, wz(z)));
     }
 

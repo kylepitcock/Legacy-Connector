@@ -25,6 +25,22 @@ public class MinecraftForge {
         return null;
     }
 
+    public static void registerCraftingHandler(ICraftingHandler handler){ForgeHooks.craftingHandlers.add(handler);}
+    public static void registerDestroyToolHandler(IDestroyToolHandler handler){ForgeHooks.destroyToolHandlers.add(handler);}
+
+    /** Forge's {@code SlotCrafting} call: every crafting handler, before the ingredients are used up. */
+    public static void onTakenFromCrafting(legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity player,
+            legacyconnector.vb1_7_3.net.minecraft.item.ItemStack result,legacyconnector.vb1_7_3.net.minecraft.inventory.Inventory matrix){
+        for(Object handler:ForgeHooks.craftingHandlers)((ICraftingHandler)handler).onTakenFromCrafting(player,result,matrix);
+    }
+    /** Forge's {@code destroyCurrentEquippedItem} call: every destroy-tool handler. */
+    public static void onDestroyCurrentItem(legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity player,
+            legacyconnector.vb1_7_3.net.minecraft.item.ItemStack original){
+        for(Object handler:ForgeHooks.destroyToolHandlers)((IDestroyToolHandler)handler).onDestroyCurrentItem(player,original);
+    }
+    public static boolean hasCraftingHandlers(){return !ForgeHooks.craftingHandlers.isEmpty();}
+    public static boolean hasDestroyToolHandlers(){return !ForgeHooks.destroyToolHandlers.isEmpty();}
+
     public static void setToolClass(Item tool, String toolClass, int harvestLevel) {
         ForgeHooks.initTools();
         ForgeHooks.toolClasses.put(tool.id, Arrays.asList(toolClass, harvestLevel));

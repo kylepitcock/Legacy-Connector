@@ -14,7 +14,8 @@ import org.kylepitcock.legacyconnector.core.network.LegacyPayload;
  * own value for the rest; an absolute motion packet would otherwise replace the player's momentum with the server's stale copy.
  */
 public final class PlayerMotionB173 {
-    static final String FAMILY = "b1.7.3";
+    // its own family: receivers are keyed by family, and "b1.7.3" belongs to the ModLoader packets (PacketsB173)
+    static final String FAMILY = "b1.7.3-motion";
     static final String CHANNEL = "player_motion";
     private PlayerMotionB173() {}
 
@@ -34,10 +35,22 @@ public final class PlayerMotionB173 {
         return ByteBuffer.allocate(25).put((byte) mask).putDouble(vx).putDouble(vy).putDouble(vz).array();
     }
 
+    private static final ThreadLocal<int[]> CLIENT_DRIVEN=ThreadLocal.withInitial(()->new int[1]);
+    /** While a block's walking or collision callback runs for a server player whose client runs the same callback for itself. */
+    public static AutoCloseable0 clientDriven(net.minecraft.world.entity.Entity entity){
+        boolean own=entity instanceof ServerPlayer player&&player.connection!=null&&hasLegacyChannel(player);
+        int[] depth=CLIENT_DRIVEN.get();if(own)depth[0]++;
+        return ()->{if(own)depth[0]--;};
+    }
+    /** A server player whose motion from the running block callback its own client applies: the server sends none. */
+    public static boolean clientDrives(){return CLIENT_DRIVEN.get()[0]>0;}
+    public interface AutoCloseable0 extends AutoCloseable{@Override void close();}
+
     /** True when the changed components were delivered to the player's client, which applies them to its own velocity. */
     public static boolean send(ServerPlayer player, int mask, double vx, double vy, double vz) {
         if (mask == 0 || player.connection == null || !hasLegacyChannel(player)) return false;
-        player.setDeltaMovement(merge(player.getDeltaMovement(), mask, vx, vy, vz));
+        // not kept on the server: its copy of a client-moved player's velocity is stale, and a push repeated every tick (a conveyor's) must
+        // differ from it again next tick to be sent again
         PacketDistributor.sendToPlayer(player, new LegacyPayload(FAMILY, CHANNEL, 0, encode(mask, vx, vy, vz)));
         return true;
     }

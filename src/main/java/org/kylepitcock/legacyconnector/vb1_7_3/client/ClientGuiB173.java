@@ -42,6 +42,9 @@ public final class ClientGuiB173 implements GuiDrawB173.Sink {
     private static java.util.Set<String> overlayStandard = java.util.Set.of();
     private static int matrixMode = 5888;
     private static double orthoSx = 1, orthoSy = 1, orthoTx, orthoTy;
+    /** Depth the legacy GUI's draws are lifted to while it has the depth test off: above native item models (which reach about 250). */
+    private static final float NO_DEPTH_Z = 400;
+    private static boolean depthOff;
     private static org.joml.Matrix4f basePose;
 
     private static final class Texture {
@@ -62,7 +65,7 @@ public final class ClientGuiB173 implements GuiDrawB173.Sink {
         graphics = g;
         red = green = blue = alpha = 1.0F;
         backgroundBounds=null;background=null;
-        texture2d = true;matrixMode = 5888;orthoSx = orthoSy = 1;orthoTx = orthoTy = 0;overlay = false;overlayStandard = java.util.Set.of();
+        texture2d = true;depthOff = false;matrixMode = 5888;orthoSx = orthoSy = 1;orthoTx = orthoTy = 0;overlay = false;overlayStandard = java.util.Set.of();
         basePose = new org.joml.Matrix4f(g.pose().last().pose());
     }
 
@@ -99,20 +102,33 @@ public final class ClientGuiB173 implements GuiDrawB173.Sink {
             var bounds=backgroundBounds;
             if(bounds!=null&&background==null&&x==bounds.x()&&y==bounds.y()&&width==bounds.width()&&height==bounds.height())
                 background=new Background(rl,u,v,width,height);
+            lift(g);
             g.blit(rl, x, y, u, v, width, height);
+            drop(g);
         }
     }
 
     @Override
     public void fill(int x1, int y1, int x2, int y2, int color) {
         GuiGraphics g = graphics;
-        if (g != null) g.fill(x1, y1, x2, y2, color);
+        if (g != null) {lift(g);g.fill(x1, y1, x2, y2, color);drop(g);}
     }
 
     @Override
     public void fillGradient(int x1, int y1, int x2, int y2, int top, int bottom) {
         GuiGraphics g = graphics;
-        if (g != null) g.fillGradient(x1, y1, x2, y2, top, bottom);
+        if (g != null) {lift(g);g.fillGradient(x1, y1, x2, y2, top, bottom);drop(g);}
+    }
+
+    @Override
+    public void item(net.minecraft.world.item.ItemStack stack, int x, int y, boolean decorations) {
+        GuiGraphics g = graphics;
+        if (g == null || stack.isEmpty()) return;
+        int sx = (int) Math.round(x * orthoSx + orthoTx), sy = (int) Math.round(y * orthoSy + orthoTy);
+        lift(g);
+        if (decorations) g.renderItemDecorations(Minecraft.getInstance().font, stack, sx, sy);
+        else g.renderItem(stack, sx, sy);
+        drop(g);
     }
 
     /** b1.7.3 text took its own colour, not the GL colour textures were tinted with. */
@@ -123,7 +139,9 @@ public final class ClientGuiB173 implements GuiDrawB173.Sink {
         boolean tinted = red != 1.0F || green != 1.0F || blue != 1.0F || alpha != 1.0F;
         if (tinted) g.setColor(1.0F, 1.0F, 1.0F, 1.0F);
         // An orthographic mapping a legacy GUI set (its own scaled coordinates) applies to text positions as it does to quads.
+        lift(g);
         g.drawString(Minecraft.getInstance().font, text, (int) Math.round(x * orthoSx + orthoTx), (int) Math.round(y * orthoSy + orthoTy), color, shadow);
+        drop(g);
         if (tinted) {
             g.flush();
             g.setColor(red, green, blue, alpha);
@@ -187,6 +205,9 @@ public final class ClientGuiB173 implements GuiDrawB173.Sink {
 
     @Override public boolean drawing() {return graphics != null;}
     @Override public void texture2d(boolean enabled) {texture2d = enabled;}
+    @Override public void depthTest(boolean enabled) {depthOff = !enabled;}
+    private static void lift(GuiGraphics g) {if (depthOff) {g.pose().pushPose();g.pose().translate(0, 0, NO_DEPTH_Z);}}
+    private static void drop(GuiGraphics g) {if (depthOff) g.pose().popPose();}
     @Override public void matrixMode(int mode) {matrixMode = mode;}
 
     @Override public void loadIdentity() {

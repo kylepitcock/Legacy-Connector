@@ -26,6 +26,8 @@ public final class BlockRenderB173 {
         try{return mod.getClass().getMethod("RenderInvBlock",BlockRenderManager.class,Block.class,int.class,int.class).getDeclaringClass()!=BaseMod.class?mod:null;}
         catch(ReflectiveOperationException e){return null;}
     }
+    /** The mod registered for a ModLoader render id, or null. */
+    public static BaseMod renderer(int id){return RENDERERS.get(id);}
     public static boolean hasRenderer(int id){return id==11 || RENDERERS.containsKey(id);}
     /** Beta sets bounds per position before every standard render, so untinted standard blocks with their own bounds are captured per position. */
     public static boolean capturesWorld(Block block){
@@ -41,7 +43,21 @@ public final class BlockRenderB173 {
     }
     /** As {@link #capture}, but null when the original did not render the block at all: a mod's callback that returns true and draws nothing (a block its tile entity draws) leaves it invisible. */
     public static List<Tessellator.Vertex> captureOrNull(Block block,BlockView world,int x,int y,int z){
+        return captureOrNull(block,world,x,y,z,0);
+    }
+    /** Whether a block draws in Forge's second (translucent) world pass as well ({@code IMultipassRender}). */
+    public static boolean secondPass(Block block){
+        try{return block instanceof legacyconnector.vb1_7_3.net.minecraft.src.forge.IMultipassRender multipass&&multipass.canRenderInPass(1);}
+        catch(RuntimeException|LinkageError e){return false;}
+    }
+    /** The geometry of one Forge render pass (0 opaque, 1 translucent): {@code MinecraftForgeClient.getRenderPass()} answers it while the renderer runs. */
+    public static List<Tessellator.Vertex> captureOrNull(Block block,BlockView world,int x,int y,int z,int pass){
         BaseMod mod=RENDERERS.get(block.getRenderType());if(!capturesWorld(block))return null;
+        int previousPass=legacyconnector.vb1_7_3.net.minecraft.src.forge.MinecraftForgeClient.mcc$renderPass(pass);
+        try{return captureLocked(block,mod,world,x,y,z);}
+        finally{legacyconnector.vb1_7_3.net.minecraft.src.forge.MinecraftForgeClient.mcc$renderPass(previousPass);}
+    }
+    private static List<Tessellator.Vertex> captureLocked(Block block,BaseMod mod,BlockView world,int x,int y,int z){
         // Legacy renderers mutate block bounds, and may keep mutable renderer state on the mod instance.
         synchronized(mod==null?BlockRenderB173.class:mod){synchronized(block){
             double[] bounds={block.minX,block.minY,block.minZ,block.maxX,block.maxY,block.maxZ};
