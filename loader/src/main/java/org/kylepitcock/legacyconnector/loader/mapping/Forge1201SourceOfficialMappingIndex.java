@@ -497,11 +497,32 @@ public final class Forge1201SourceOfficialMappingIndex {
         String currentOfficialOwner = null;
         String currentObfuscatedOwner = null;
 
-        var decoder = StandardCharsets.UTF_8.newDecoder()
-                .onMalformedInput(CodingErrorAction.REPORT)
-                .onUnmappableCharacter(CodingErrorAction.REPORT);
-        try (BufferedReader reader = new BufferedReader(
-                new InputStreamReader(Files.newInputStream(mappingFile), decoder))) {
+        // ProGuard class rows are not guaranteed to precede every class referenced by a member
+        // descriptor. Build the complete bidirectional class index first, then parse members.
+        try (BufferedReader reader = newMappingReader(mappingFile)) {
+            int lineNumber = 0;
+            for (String line; (line = reader.readLine()) != null;) {
+                lineNumber++;
+                if (line.isBlank() || line.startsWith("#")) continue;
+                Matcher matcher = CLASS.matcher(line);
+                if (!matcher.matches()) continue;
+
+                String officialOwner = matcher.group(1).replace('.', '/');
+                String obfuscatedOwner = matcher.group(2).replace('.', '/');
+                if (!validInternalName(officialOwner) || !validInternalName(obfuscatedOwner)) {
+                    throw malformed(mappingFile, lineNumber, "invalid class mapping row");
+                }
+                add(obfuscatedToOfficial, obfuscatedOwner, officialOwner);
+                add(officialToObfuscated, officialOwner, obfuscatedOwner);
+                classRows++;
+                if (classRows > MAX_MOJANG_ROWS) {
+                    throw new IOException("Mojang mappings exceed the " + MAX_MOJANG_ROWS
+                            + " class/member row limit: " + mappingFile);
+                }
+            }
+        }
+
+        try (BufferedReader reader = newMappingReader(mappingFile)) {
             int lineNumber = 0;
             for (String line; (line = reader.readLine()) != null;) {
                 lineNumber++;
@@ -517,12 +538,7 @@ public final class Forge1201SourceOfficialMappingIndex {
                 if (matcher.matches()) {
                     currentOfficialOwner = matcher.group(1).replace('.', '/');
                     currentObfuscatedOwner = matcher.group(2).replace('.', '/');
-                    if (!validInternalName(currentOfficialOwner) || !validInternalName(currentObfuscatedOwner)) {
-                        throw malformed(mappingFile, lineNumber, "invalid class mapping row");
-                    }
-                    add(obfuscatedToOfficial, currentObfuscatedOwner, currentOfficialOwner);
-                    add(officialToObfuscated, currentOfficialOwner, currentObfuscatedOwner);
-                    classRows++;
+                    // Validation and index insertion were completed in the first pass.
                     records++;
                     if (records > MAX_MOJANG_ROWS) {
                         throw new IOException("Mojang mappings exceed the " + MAX_MOJANG_ROWS
@@ -592,6 +608,13 @@ public final class Forge1201SourceOfficialMappingIndex {
                 classRows,
                 methodRows,
                 fieldRows);
+    }
+
+    private static BufferedReader newMappingReader(Path mappingFile) throws IOException {
+        var decoder = StandardCharsets.UTF_8.newDecoder()
+                .onMalformedInput(CodingErrorAction.REPORT)
+                .onUnmappableCharacter(CodingErrorAction.REPORT);
+        return new BufferedReader(new InputStreamReader(Files.newInputStream(mappingFile), decoder));
     }
 
     private static String proguardMethodDescriptor(
