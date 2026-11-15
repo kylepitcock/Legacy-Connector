@@ -57,6 +57,8 @@ public final class BridgeB173 {
         for (Item item : ContentB173.items()) {
             if (item.mcc$modern != null || !(item.mcc$owner instanceof LegacyModRecord mod) || Item.ITEMS[item.id] != item) continue;
             if (LegacyLifecycle.isFailed(mod.modernId)) continue;
+            if (item instanceof BlockItem && item.id >= Block.BETA_LIMIT && VanillaB173.isVanillaId(item.id))
+                LOG.warn("b1.7.3 block id {} of {} is also a vanilla item id: its item is that vanilla item; give the block another id in the mod's config", item.id, mod.legacyId);
             if (VanillaB173.isVanillaId(item.id) && VanillaB173.modernItem(item.id, 0) != null) {
                 // mods re-create vanilla items at their ids to change them (NetherCraft's tools): they stay the vanilla items
                 item.mcc$modern = VanillaB173.modernItem(item.id, 0);
@@ -93,7 +95,7 @@ public final class BridgeB173 {
         if (!(fire instanceof legacyconnector.vb1_7_3.net.minecraft.block.FireBlock f) || f.burnChances == null) return;
         var modernFire = (net.minecraft.world.level.block.FireBlock) net.minecraft.world.level.block.Blocks.FIRE;
         int n = 0;
-        for (int id = 0; id < 256; id++) {
+        for (int id = 0; id < Block.BLOCKS.length; id++) {
             Block b = Block.BLOCKS[id];
             if (b == null || b.mcc$owner == null || b.mcc$modern == null || isVanillaReplacement(b.mcc$modern)) continue;
             int encourage = f.burnChances[id], burn = f.spreadChances[id];
@@ -152,7 +154,7 @@ public final class BridgeB173 {
         net.minecraft.world.item.Item modern;
         ResourceLocation id;
         if (item instanceof BlockItem bi) {
-            Block block = bi.mcc$blockId() >= 0 && bi.mcc$blockId() < 256 ? Block.BLOCKS[bi.mcc$blockId()] : null;
+            Block block = bi.mcc$blockId() >= 0 && bi.mcc$blockId() < Block.BLOCKS.length ? Block.BLOCKS[bi.mcc$blockId()] : null;
             if (block == null || block.mcc$modern == null) return;
             id = BuiltInRegistries.BLOCK.getKey(block.mcc$modern);
             LegacyB173BlockItem blockItem = new LegacyB173BlockItem(block.mcc$modern, new net.minecraft.world.item.Item.Properties());

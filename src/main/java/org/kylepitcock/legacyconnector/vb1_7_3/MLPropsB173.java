@@ -104,7 +104,7 @@ final class MLPropsB173 {
                     continue;
                 }
                 int free = -1;
-                for (int id = blocks.length - 1; id > 0 && free < 0; id--) {
+                for (int id = Math.min(blocks.length, legacyconnector.vb1_7_3.net.minecraft.block.Block.BETA_LIMIT) - 1; id > 0 && free < 0; id--) {
                     if (blocks[id] == null && !claimed.containsKey(id) && !usedBy(fields, id)) free = id;
                 }
                 if (free < 0) continue;
@@ -155,7 +155,7 @@ final class MLPropsB173 {
         if (target == null) return false;
         MLProp prop = target.getAnnotation(MLProp.class);
         var blocks = legacyconnector.vb1_7_3.net.minecraft.block.Block.BLOCKS;
-        for (int id = blocks.length - 1; id > 0; id--) {
+        for (int id = Math.min(blocks.length, legacyconnector.vb1_7_3.net.minecraft.block.Block.BETA_LIMIT) - 1; id > 0; id--) {
             if (blocks[id] != null || own.contains(id) || id < prop.min() || id > prop.max()) continue;
             try {
                 target.setInt(null, id);

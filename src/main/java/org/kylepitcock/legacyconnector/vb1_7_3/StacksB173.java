@@ -204,7 +204,7 @@ public final class StacksB173 {
         if (NativeStackItemB173.is(id)) { var item = net.minecraft.core.registries.BuiltInRegistries.ITEM.byId(damage); return item == net.minecraft.world.item.Items.AIR ? null : item; }
         Item legacy = Item.ITEMS[id];
         if (legacy != null && legacy.mcc$owner != null) return legacy.mcc$modern;
-        if (id < 256) {
+        if (id < Block.BLOCKS.length) {
             Block block = Block.BLOCKS[id];
             if (block != null && block.mcc$owner != null) return block.mcc$modern == null ? null : block.mcc$modern.asItem();
         }

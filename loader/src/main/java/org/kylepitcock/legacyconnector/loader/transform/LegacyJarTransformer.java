@@ -523,6 +523,7 @@ public final class LegacyJarTransformer {
             floorClamps += WorldFloorClampRewriter.apply(node, hierarchy, version);
             BetaActorTargets.apply(node,hierarchy,version);
             BetaMenuConstructors.apply(node,hierarchy,version);
+            BetaClassForName.apply(node,version);
             ClassWriter writer = new ClassWriter(0);
             node.accept(writer);
             outClasses.put(node.name + ".class", writer.toByteArray());

@@ -76,7 +76,14 @@ public final class PlayerApiB173 {
         }finally{state.constructing=false;}
     }
     public static List<PlayerBase> bases(ClientPlayerEntity player){ensure(player);return List.copyOf(player.mcc$playerApi.bases.values());}
-    public static PlayerBase get(ClientPlayerEntity player,Class<?> type){ensure(player);return player.mcc$playerApi.bases.get(type);}
+    public static PlayerBase get(ClientPlayerEntity player,Class<?> type){
+        ensure(player);var base=player.mcc$playerApi.bases.get(type);
+        // ShockAhPI registered its player extension for every player; mods only read and write its portal target
+        if(base==null&&type==legacyconnector.vb1_7_3.net.minecraft.src.PlayerBaseSAPI.class){
+            base=new legacyconnector.vb1_7_3.net.minecraft.src.PlayerBaseSAPI(player);player.mcc$playerApi.bases.put(type,base);
+        }
+        return base;
+    }
     private static void report(ClientPlayerEntity player,Class<?> type,String hook,Throwable error){
         if(player.mcc$playerApi.reported.add(type.getName()+"#"+hook))
             org.slf4j.LoggerFactory.getLogger("LegacyConnector/b1.7.3").error("PlayerAPI {} callback failed for {}",hook,type.getName(),error);

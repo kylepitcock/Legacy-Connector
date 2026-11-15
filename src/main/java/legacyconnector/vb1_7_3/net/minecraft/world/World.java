@@ -236,8 +236,22 @@ public class World implements BlockView {
      * The native block entity at a place. A screen handed from the server to the client in one process (Beta single player had one world)
      * reads the server's world from the render thread, where {@code Level.getBlockEntity} answers null by design: the server thread is asked.
      */
+    private static final ThreadLocal<int[]> SERVER_READS=ThreadLocal.withInitial(()->new int[1]);
+    /** The client's block entity at that place of a server level (same dimension), installed by the client; null on a dedicated server. */
+    public static volatile java.util.function.BiFunction<net.minecraft.server.level.ServerLevel,BlockPos,net.minecraft.world.level.block.entity.BlockEntity> CLIENT_MIRROR;
+    public interface ServerReads extends AutoCloseable{@Override void close();}
+    /** While a screen handed over from the integrated server draws or handles input: its original code reads the server's live state. */
+    public static ServerReads mcc$serverReads(){int[] depth=SERVER_READS.get();depth[0]++;return ()->depth[0]--;}
+
     private static net.minecraft.world.level.block.entity.BlockEntity nativeBlockEntity(net.minecraft.world.level.LevelAccessor access,BlockPos pos){
         if(access instanceof net.minecraft.server.level.ServerLevel server&&!server.getServer().isSameThread()){
+            // a block-shape query holds that block's lock: read the world it is about instead of waiting for the server thread
+            var shapeLevel=org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Block.shapeQueryLevel();
+            if(shapeLevel!=null)return shapeLevel==server?null:shapeLevel.getBlockEntity(pos);
+            // Client-side original code (rendering, chunk meshing, client ticks) sees the server's world in single player. Waiting for the
+            // server thread there deadlocks whenever that code holds a lock the server needs (a block's shape fields): it reads the client's
+            // copy of the place. Only a screen handed over from the integrated server reads the server's live state.
+            if(SERVER_READS.get()[0]==0){var mirror=CLIENT_MIRROR;return mirror==null?null:mirror.apply(server,pos);}
             // asked on the server thread (which answers its queue even while the game is paused), bounded so a stalled server cannot hang the screen
             try{return server.getServer().submit(()->server.getBlockEntity(pos)).get(2,java.util.concurrent.TimeUnit.SECONDS);}
             catch(InterruptedException e){Thread.currentThread().interrupt();return null;}
@@ -312,7 +326,9 @@ public class World implements BlockView {
         return isRegionLoaded(x-radius,y-radius,z-radius,x+radius,y+radius,z+radius);
     }
     public boolean isRegionLoaded(int minX,int minY,int minZ,int maxX,int maxY,int maxZ){
-        if(maxY<0||minY>=128)return false;
+        // the world's real build range (Beta's was 0..127): blocks above y 128 of a modern world get their scheduled ticks and updates
+        int bottom=mcc$level==null?0:mcc$level.getMinBuildHeight(),top=mcc$level==null?128:mcc$level.getMaxBuildHeight();
+        if(maxY<bottom||minY>=top)return false;
         for(int x=minX>>4;x<=maxX>>4;x++)for(int z=minZ>>4;z<=maxZ>>4;z++)
             if(!isPosLoaded(x<<4,0,z<<4))return false;
         return true;

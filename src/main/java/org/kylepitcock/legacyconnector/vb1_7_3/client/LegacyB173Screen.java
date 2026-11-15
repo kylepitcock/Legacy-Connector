@@ -117,6 +117,7 @@ public class LegacyB173Screen extends AbstractContainerScreen<LegacyB173Menu> {
 
     @Override
     public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+        try(var serverReads=legacyconnector.vb1_7_3.net.minecraft.world.World.mcc$serverReads()){
         lastMouseX = mouseX; lastMouseY = mouseY;
         if(live()){
             // AbstractContainerScreen snapshots its origin before renderBackground. Let the original
@@ -133,6 +134,7 @@ public class LegacyB173Screen extends AbstractContainerScreen<LegacyB173Menu> {
             super.render(g, mouseX, mouseY, partialTick);
             if (!ownSlots()) renderTooltip(g, mouseX, mouseY);
         }finally{backgroundPrepared=false;}
+        }
     }
 
     @Override public void renderBackground(GuiGraphics g,int mouseX,int mouseY,float partialTick){
@@ -164,12 +166,14 @@ public class LegacyB173Screen extends AbstractContainerScreen<LegacyB173Menu> {
 
     @Override
     protected void containerTick() {
+        try(var serverReads=legacyconnector.vb1_7_3.net.minecraft.world.World.mcc$serverReads()){
         if (remote != null) sendRemote("tick", tag -> {});
         if (!live()) return;
         try {
             gui.tick();
         } catch (RuntimeException | LinkageError e) {
             fail("updateScreen", e);
+        }
         }
     }
 
@@ -179,6 +183,7 @@ public class LegacyB173Screen extends AbstractContainerScreen<LegacyB173Menu> {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        try(var serverReads=legacyconnector.vb1_7_3.net.minecraft.world.World.mcc$serverReads()){
         swallowedPress = false;
         if (remote != null) {
             // the server's screen decides: its own handler (a trade) or the slot click Beta's GuiContainer made, run on the server
@@ -200,23 +205,29 @@ public class LegacyB173Screen extends AbstractContainerScreen<LegacyB173Menu> {
             }
         }
         return super.mouseClicked(mouseX, mouseY, button);
+        }
     }
 
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
+        try(var serverReads=legacyconnector.vb1_7_3.net.minecraft.world.World.mcc$serverReads()){
         if (swallowedPress) return true;
         return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
+        }
     }
 
     /** Slot keys (hotbar swap, drop) were not in Beta: they act only for a screen whose clicks reach its slots. */
     @Override
     protected void slotClicked(net.minecraft.world.inventory.Slot slot, int slotId, int button, net.minecraft.world.inventory.ClickType type) {
+        try(var serverReads=legacyconnector.vb1_7_3.net.minecraft.world.World.mcc$serverReads()){
         if (remote != null || live() && !Boolean.TRUE.equals(slotsClickable)) return;
         super.slotClicked(slot, slotId, button, type);
+        }
     }
 
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        try(var serverReads=legacyconnector.vb1_7_3.net.minecraft.world.World.mcc$serverReads()){
         if (remote != null) {
             lastMouseX = (int) mouseX; lastMouseY = (int) mouseY;
             sendRemote("release", tag -> tag.putInt("button", button));
@@ -233,10 +244,12 @@ public class LegacyB173Screen extends AbstractContainerScreen<LegacyB173Menu> {
         }
         if (swallowedPress) { swallowedPress = false; return true; }
         return super.mouseReleased(mouseX, mouseY, button);
+        }
     }
 
     @Override
     public boolean keyPressed(int key, int scanCode, int modifiers) {
+        try(var serverReads=legacyconnector.vb1_7_3.net.minecraft.world.World.mcc$serverReads()){
         if (remote != null && !KeysB173.types(key, modifiers)) {
             char c = KeysB173.character(key, modifiers); int code = KeysB173.lwjgl(key);
             sendRemote("key", tag -> { tag.putInt("character", c); tag.putInt("key", code); });
@@ -249,16 +262,19 @@ public class LegacyB173Screen extends AbstractContainerScreen<LegacyB173Menu> {
             }
         }
         return super.keyPressed(key, scanCode, modifiers);
+        }
     }
 
     @Override
     public boolean charTyped(char c, int modifiers) {
+        try(var serverReads=legacyconnector.vb1_7_3.net.minecraft.world.World.mcc$serverReads()){
         if (live()) {
             legacyKey(c, pendingKey < 0 ? 0 : KeysB173.lwjgl(pendingKey));
             pendingKey = -1;
             return true;
         }
         return super.charTyped(c, modifiers);
+        }
     }
 
     private void legacyKey(char c, int code) {
@@ -275,12 +291,14 @@ public class LegacyB173Screen extends AbstractContainerScreen<LegacyB173Menu> {
 
     @Override
     public void removed() {
+        try(var serverReads=legacyconnector.vb1_7_3.net.minecraft.world.World.mcc$serverReads()){
         super.removed();
         if (!live()) return;
         try {
             gui.removed();
         } catch (RuntimeException | LinkageError e) {
             fail("onGuiClosed", e);
+        }
         }
     }
 }

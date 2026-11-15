@@ -20,6 +20,11 @@ public final class ClientB173 implements MenusB173.Client {
     private ClientB173() {}
 
     public static void register(IEventBus modBus) {
+        // single player: client-side original code reads tile entities from the client's copy of the world, not by waiting for the server
+        legacyconnector.vb1_7_3.net.minecraft.world.World.CLIENT_MIRROR=(server,pos)->{
+            var level=net.minecraft.client.Minecraft.getInstance().level;
+            return level==null||!level.dimension().equals(server.dimension())?null:level.getBlockEntity(pos);
+        };
         WorldStorageClientB173.install();
         PlayerPresentationClientB173.install();
         PlayerRendererClientB173.install();

@@ -5,10 +5,15 @@ import legacyconnector.vb1_7_3.net.minecraft.world.World;
 
 /**
  * Beta 1.7.3 {@code TileEntitySpecialRenderer}. Mods hand theirs to {@code ModLoader.RegisterTileEntity(class, id, renderer)}; they are
- * drawn by the client renderer bridge. The dispatcher and font (synthesized types) are not declared here.
+ * drawn by the client renderer bridge. The font (a synthesized type) is not declared here.
  */
 public abstract class BlockEntityRenderer {
+    /** The dispatcher a mod hands its renderer when it registers it itself ({@link BlockEntityRenderDispatcher#renderers}). */
+    public BlockEntityRenderDispatcher dispatcher;
+
     public BlockEntityRenderer() {}
+
+    public void setDispatcher(BlockEntityRenderDispatcher dispatcher) { this.dispatcher = dispatcher; }
 
     public abstract void render(BlockEntity entity, double x, double y, double z, float partialTicks);
 

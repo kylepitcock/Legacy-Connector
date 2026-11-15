@@ -14,7 +14,7 @@ public class UndeadEntityRenderer extends LivingEntityRenderer {
         GL11.glPushMatrix();
         try {
             entityModel.rightArm.transform(.0625F);GL11.glTranslatef(-.0625F,.4375F,.0625F);
-            var block=stack.itemId>=0&&stack.itemId<256?Block.BLOCKS[stack.itemId]:null;
+            var block=stack.itemId>=0&&stack.itemId<Block.BLOCKS.length?Block.BLOCKS[stack.itemId]:null;
             int renderType=block==null?-1:block.getRenderType();
             if(renderType==0||renderType==13||renderType==10||renderType==11||renderType==16){
                 GL11.glTranslatef(0,.1875F,-.3125F);GL11.glRotatef(20,1,0,0);GL11.glRotatef(45,0,1,0);GL11.glScalef(.375F,-.375F,.375F);

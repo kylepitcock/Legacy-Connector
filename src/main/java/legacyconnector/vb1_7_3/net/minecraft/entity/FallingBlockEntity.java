@@ -27,8 +27,8 @@ public class FallingBlockEntity extends Entity {
             if(!(world.canPlace(blockId,bx,by,bz,true,1)&&!fallsThrough&&world.setBlock(bx,by,bz,blockId))&&!world.isRemote)dropItem(blockId,1);
         }else if(timeFalling>100&&!world.isRemote){dropItem(blockId,1);markDead();}
     }
-    @Override public void writeNbt(NbtCompound tag){tag.putByte("Tile",(byte)blockId);}
-    @Override public void readNbt(NbtCompound tag){blockId=tag.getByte("Tile")&255;}
+    @Override public void writeNbt(NbtCompound tag){tag.putByte("Tile",(byte)blockId);if(blockId>255)tag.putInt("mcc$TileId",blockId);}
+    @Override public void readNbt(NbtCompound tag){blockId=tag.contains("mcc$TileId")?tag.getInt("mcc$TileId"):tag.getByte("Tile")&255;}
     @Override public float getShadowRadius(){return 0;}
     public World getWorld(){return world;}
 }

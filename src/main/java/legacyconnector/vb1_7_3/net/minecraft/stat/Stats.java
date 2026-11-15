@@ -8,14 +8,14 @@ import legacyconnector.vb1_7_3.net.minecraft.item.Item;
 public class Stats {
     protected static final Map<Integer,Stat> ID_TO_STAT=new LinkedHashMap<>();
     public static final List<Stat> ALL_STATS=new ArrayList<>(),GENERAL_STATS=new ArrayList<>(),ITEM_STATS=new ArrayList<>(),BLOCK_MINED_STATS=new ArrayList<>();
-    public static Stat[] MINE_BLOCK=new Stat[256],CRAFTED=new Stat[32000],USED=new Stat[32000],BROKEN=new Stat[32000];
+    public static Stat[] MINE_BLOCK=new Stat[legacyconnector.vb1_7_3.net.minecraft.block.Block.ID_LIMIT],CRAFTED=new Stat[32000],USED=new Stat[32000],BROKEN=new Stat[32000];
     public static final Stat START_GAME=general(1000,"stat.startGame"),CREATE_WORLD=general(1001,"stat.createWorld"),LOAD_WORLD=general(1002,"stat.loadWorld"),JOIN_MULTIPLAYER=general(1003,"stat.joinMultiplayer"),LEAVE_GAME=general(1004,"stat.leaveGame"),PLAY_ONE_MINUTE=general(1100,"stat.playOneMinute");
     public static final Stat WALK_ONE_CM=general(2000,"stat.walkOneCm"),SWIM_ONE_CM=general(2001,"stat.swimOneCm"),FALL_ONE_CM=general(2002,"stat.fallOneCm"),CLIMB_ONE_CM=general(2003,"stat.climbOneCm"),FLY_ONE_CM=general(2004,"stat.flyOneCm"),DIVE_ONE_CM=general(2005,"stat.diveOneCm"),MINECART_ONE_CM=general(2006,"stat.minecartOneCm"),BOAT_ONE_CM=general(2007,"stat.boatOneCm"),PIG_ONE_CM=general(2008,"stat.pigOneCm"),JUMP=general(2010,"stat.jump"),DROP=general(2011,"stat.drop"),DAMAGE_DEALT=general(2020,"stat.damageDealt"),DAMAGE_TAKEN=general(2021,"stat.damageTaken"),DEATHS=general(2022,"stat.deaths"),MOB_KILLS=general(2023,"stat.mobKills"),PLAYER_KILLS=general(2024,"stat.playerKills"),FISH_CAUGHT=general(2025,"stat.fishCaught");
     private static Stat general(int id,String key){var stat=new Stat(id,key,"minecraft");if(id<2020)stat.localOnly();mcc$register(stat);GENERAL_STATS.add(stat);return stat;}
     public static synchronized void mcc$register(Stat stat){if(ID_TO_STAT.putIfAbsent(stat.id,stat)==null)ALL_STATS.add(stat);}
     public static synchronized Stat getStatById(int id){return ID_TO_STAT.get(id);}
     public static synchronized void initialize(){
-        for(int id=0;id<Math.min(256,Block.BLOCKS.length);id++){
+        for(int id=0;id<Block.BLOCKS.length;id++){
             var block=Block.BLOCKS[id];if(block!=null&&block.isTrackingStatistics()&&MINE_BLOCK[id]==null){
                 MINE_BLOCK[id]=entry(0x1000000,id,"stat.mineBlock",owner(block.mcc$owner));BLOCK_MINED_STATS.add(MINE_BLOCK[id]);
             }
