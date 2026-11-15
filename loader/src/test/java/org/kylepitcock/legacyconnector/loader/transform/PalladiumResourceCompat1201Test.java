@@ -325,19 +325,20 @@ class PalladiumResourceCompat1201Test {
     @Test
     void migratesLegacySetSecondsOnFireCallsAcrossAlienEvoAndAfOmniScripts() {
         Map<String, byte[]> resources = new HashMap<>();
+        String crlf = String.valueOf((char) 13) + (char) 10;
         put(resources, PalladiumResourceCompat1201.AFOMNI_AOE_DAMAGE,
-                "targets[j].setSecondsOnFire(firetick);\\r\\n");
+                "targets[j].setSecondsOnFire(firetick);" + crlf);
         put(resources, PalladiumResourceCompat1201.ALIEN_EVO_DIRECTIONAL_DAMAGE,
-                "targets[j].setSecondsOnFire(firetick);\\r\\n");
+                "targets[j].setSecondsOnFire(firetick);" + crlf);
         put(resources, PalladiumResourceCompat1201.ALIEN_EVO_ENTITY_DAMAGE,
-                String.join("\\r\\n",
+                String.join(crlf,
                         "target.setSecondsOnFire(fire_seconds)",
                         "target.setSecondsOnFire(fire_seconds)",
                         ""));
         put(resources, PalladiumResourceCompat1201.ALIEN_EVO_INFINITY,
-                "entities[i].setSecondsOnFire(fireSeconds);\\r\\n");
+                "entities[i].setSecondsOnFire(fireSeconds);" + crlf);
         put(resources, PalladiumResourceCompat1201.ALIEN_EVO_ROLLING_MECHANICS,
-                "targets[j].setSecondsOnFire(firetick);\\r\\n");
+                "targets[j].setSecondsOnFire(firetick);" + crlf);
 
         assertEquals(5, PalladiumResourceCompat1201.apply(resources));
 
@@ -355,7 +356,7 @@ class PalladiumResourceCompat1201Test {
 
         for (String migrated : new String[] {aoe, directional, targeted, infinity, rolling}) {
             assertFalse(migrated.contains("setSecondsOnFire"));
-            assertFalse(migrated.replace("\\r\\n", "").contains("\\n"),
+            assertFalse(migrated.replace(crlf, "").contains(String.valueOf((char) 10)),
                     "the CRLF source layout should be preserved");
         }
 
