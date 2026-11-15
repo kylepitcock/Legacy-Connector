@@ -173,10 +173,9 @@ public final class Forge1201SrgObfuscatedBridgeAudit {
             for (TsrgMethod row : rows) {
                 if (owner.obfuscatedNames().getFirst().equals(row.obfuscatedOwner())
                         && descriptor.descriptor().equals(row.obfuscatedDescriptor())) {
-                    String sourceDescriptor = normalizeDescriptor(
-                            row.obfuscatedDescriptor(), obfuscatedToSrgClasses, knownObfuscatedClasses).descriptor();
+                    // Preserve the exact caller-supplied SRG descriptor after the forward match.
                     Candidate candidate = new Candidate(
-                            srgOwner, srgName, sourceDescriptor, row.obfuscatedOwner(),
+                            srgOwner, srgName, srgDescriptor, row.obfuscatedOwner(),
                             row.obfuscatedName(), row.obfuscatedDescriptor(), descriptor.externalTypeCount());
                     if (!matches.contains(candidate)) matches.add(candidate);
                 }

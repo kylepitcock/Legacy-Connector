@@ -198,3 +198,22 @@ The user supplied the complete forced loader console and the generated `srg-obfu
 **Interpretation:** the tested parser/index has complete class/owner row joins for these pinned source inputs, and the synthetic regressions plus build task execute successfully. The report remains `PARTIAL` correctly: external descriptor types are pass-through candidates, not proved target-classpath members; the cross-version Intermediary hop and final target compile-namespace hop are separate; and selector transformation/runtime table generation remain false. This does not authorize promotion to a complete selector path or runtime remapper.
 
 **Next engineering increment:** expose per-symbol, owner/member/descriptor-qualified lookup across the existing source and target Tiny datasets and compose it with `Forge1201SrgObfuscatedBridgeAudit.Index` without duplicating the Tiny parser or the target hierarchy cache. Separately identify the exact official-obfuscated 1.21.1 → names actually present in the root ModDevGradle-resolved `sourceSets.main.compileClasspath`; verify the consumed mapping artifact/direction/hashes instead of relying only on build comments or informal namespace labels. Final candidate lookups must reuse the existing `Forge1201TargetApiVerifier.TargetIndex`. Keep selector rewriting disabled until every edge resolves uniquely for a selector.
+
+
+## 14. Implementation checkpoint 2 — per-symbol SRG-to-Intermediary composition
+
+**Status:** A read-only per-symbol composition layer has been implemented and awaits the user's forced loader test gate.
+
+- `Forge1201IntermediaryBridgeAudit.Index` exposes owner/member/full-descriptor queries over its existing parsed source and target Tiny v1 data, while the aggregate report remains available from the same index.
+- `Forge1201SrgIntermediaryBridgeResolver` composes Forge SRG→source official-obfuscated mappings with the source/target Intermediary relation. It provides explicit class, method and field result states for missing/ambiguous source entries, moved owners, missing target IDs, unresolved/changed descriptors, and external passthrough.
+- The candidate namespace ends at target official-obfuscated 1.21.1. No final Mojang-name conversion, target classpath verification, selector rewrite, or runtime mapping output is implemented.
+- Method candidates preserve the exact caller-supplied SRG descriptor. The descriptor is forward-normalized for matching but is no longer reverse-normalized again to reconstruct the original input.
+- Synthetic tests cover exact class/method/field composition, external non-exact handling, target descriptor changes, moved owners, and missing target IDs. The source-only SRG audit tests continue to cover overloads, reused tokens, and source-field descriptor ambiguity.
+- This increment adds no new Tiny parser and no target class hierarchy cache. The two existing read-only indexes remain responsible for their respective edges.
+- Validation is pending; do not declare this increment green until the user's forced loader test passes.
+
+### 14.1 Target compile namespace evidence
+
+The root build uses ModDevGradle `2.0.148`, NeoForge `21.1.258`, and Parchment configured for Minecraft `1.21.1` with mappings version `2024.11.17`. The analyzer receives the resolved root `sourceSets.main.compileClasspath` as its actual target class-resource source.
+
+NeoForged documentation describes Parchment as supplemental parameter names and Javadocs layered onto Mojang's official names, rather than a distinct class/member namespace. This supports the working target namespace identity `minecraft:official-mojang@1.21.1`. The exact 1.21.1 official mapping bytes, checksum, direction, and actual artifact/classpath agreement still require a pinned local-byte audit. Do not enable the final mapping edge from documentation alone.

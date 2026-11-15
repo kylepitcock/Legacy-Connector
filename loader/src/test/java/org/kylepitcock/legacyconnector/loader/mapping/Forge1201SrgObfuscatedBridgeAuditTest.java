@@ -56,6 +56,8 @@ final class Forge1201SrgObfuscatedBridgeAuditTest {
                 "(Lnet/minecraft/Component;[[Lnet/minecraft/Component$Inner;)V");
         assertEquals(Forge1201SrgObfuscatedBridgeAudit.Status.MAPPED_EXACT, nestedArray.status());
         assertEquals("p", nestedArray.candidates().getFirst().obfuscatedName());
+        assertEquals("(Lnet/minecraft/Component;[[Lnet/minecraft/Component$Inner;)V",
+                nestedArray.candidates().getFirst().sourceDescriptor());
         assertEquals("(Lb;[[Lc;)V", nestedArray.candidates().getFirst().obfuscatedDescriptor());
 
         var reusedSrgToken = index.resolveMethod("net/minecraft/Other", "m_10_", "(I)V");

@@ -131,31 +131,162 @@ public final class Forge1201IntermediaryBridgeAudit {
         int fieldRows;
     }
 
-    public static AuditResult analyze(Path joinedTsrg, Path sourceTiny, Path targetTiny) throws IOException {
+    public enum ClassStatus { MAPPED_EXACT, SOURCE_CLASS_MISSING, TARGET_CLASS_ID_MISSING }
+
+    public record ClassResolution(
+            ClassStatus status, String sourceOfficialName, String intermediaryName, String targetOfficialName) {}
+
+    public enum SymbolStatus {
+        MAPPED_EXACT, MAPPED_WITH_EXTERNAL_TYPES, SOURCE_MISSING, SOURCE_AMBIGUOUS,
+        SOURCE_DESCRIPTOR_MISMATCH, SOURCE_OWNER_UNMAPPED, SOURCE_DESCRIPTOR_UNRESOLVED,
+        TARGET_ID_MISSING, TARGET_OWNER_CHANGED, TARGET_AMBIGUOUS,
+        TARGET_DESCRIPTOR_UNRESOLVED, TARGET_DESCRIPTOR_CHANGED
+    }
+
+    public record SymbolCandidate(
+            String sourceOwnerOfficial, String sourceNameOfficial, String sourceDescriptorOfficial,
+            String sourceOwnerIntermediary, String intermediaryId, String sourceDescriptorIntermediary,
+            String targetOwnerOfficial, String targetNameOfficial, String targetDescriptorOfficial,
+            String targetOwnerIntermediary, String targetDescriptorIntermediary,
+            int externalDescriptorTypeCount) {}
+
+    public record SymbolResolution(SymbolStatus status, List<SymbolCandidate> candidates) {
+        public SymbolResolution { candidates = List.copyOf(candidates); }
+    }
+
+    /** Per-symbol, owner/member/descriptor-aware view over parsed source and target Tiny v1 mappings. */
+    public static final class Index {
+        private final TsrgData tsrg;
+        private final TinyMappings source;
+        private final TinyMappings target;
+
+        private Index(TsrgData tsrg, TinyMappings source, TinyMappings target) {
+            this.tsrg = tsrg;
+            this.source = source;
+            this.target = target;
+        }
+
+        public AuditResult audit() {
+            return new AuditResult(
+                    auditClasses(tsrg.classes(), source, target),
+                    auditMembers(tsrg.methods(), true, source, target),
+                    auditMembers(tsrg.fields(), false, source, target),
+                    source.classRows, source.methodRows, source.fieldRows,
+                    target.classRows, target.methodRows, target.fieldRows);
+        }
+
+        public ClassResolution resolveClass(String sourceOfficialName) {
+            String intermediaryName = source.officialToIntermediary.get(sourceOfficialName);
+            if (intermediaryName == null) {
+                return new ClassResolution(ClassStatus.SOURCE_CLASS_MISSING, sourceOfficialName, null, null);
+            }
+            String targetOfficialName = target.intermediaryToOfficial.get(intermediaryName);
+            if (targetOfficialName == null) {
+                return new ClassResolution(
+                        ClassStatus.TARGET_CLASS_ID_MISSING, sourceOfficialName, intermediaryName, null);
+            }
+            return new ClassResolution(
+                    ClassStatus.MAPPED_EXACT, sourceOfficialName, intermediaryName, targetOfficialName);
+        }
+
+        public SymbolResolution resolveMethod(
+                String sourceOwnerOfficial, String sourceNameOfficial, String sourceDescriptorOfficial) {
+            List<TinyMember> matches = source.methodsByOfficialKey.get(new MemberKey(
+                    sourceOwnerOfficial, sourceNameOfficial, sourceDescriptorOfficial));
+            if (matches == null || matches.isEmpty()) {
+                return new SymbolResolution(SymbolStatus.SOURCE_MISSING, List.of());
+            }
+            if (matches.size() != 1) {
+                return new SymbolResolution(SymbolStatus.SOURCE_AMBIGUOUS, List.of());
+            }
+            return resolveTarget(matches.getFirst(), true);
+        }
+
+        public SymbolResolution resolveField(
+                String sourceOwnerOfficial, String sourceNameOfficial, String sourceDescriptorOfficial) {
+            List<TinyMember> rows = source.fieldsByOfficialKey.get(new FieldKey(sourceOwnerOfficial, sourceNameOfficial));
+            if (rows == null || rows.isEmpty()) {
+                return new SymbolResolution(SymbolStatus.SOURCE_MISSING, List.of());
+            }
+            List<TinyMember> matches = rows.stream()
+                    .filter(row -> row.descriptorOfficial().equals(sourceDescriptorOfficial)).toList();
+            if (matches.isEmpty()) {
+                return new SymbolResolution(SymbolStatus.SOURCE_DESCRIPTOR_MISMATCH, List.of());
+            }
+            if (matches.size() != 1) {
+                return new SymbolResolution(SymbolStatus.SOURCE_AMBIGUOUS, List.of());
+            }
+            return resolveTarget(matches.getFirst(), false);
+        }
+
+        private SymbolResolution resolveTarget(TinyMember sourceMember, boolean method) {
+            if (sourceMember.ownerIntermediary() == null) {
+                return new SymbolResolution(SymbolStatus.SOURCE_OWNER_UNMAPPED, List.of());
+            }
+            if (sourceMember.descriptorIntermediary() == null) {
+                return new SymbolResolution(SymbolStatus.SOURCE_DESCRIPTOR_UNRESOLVED, List.of());
+            }
+            Map<String, List<TinyMember>> targetById = method ? target.methodsById : target.fieldsById;
+            Map<OwnerAndId, List<TinyMember>> targetByOwnerAndId =
+                    method ? target.methodsByOwnerAndId : target.fieldsByOwnerAndId;
+            List<TinyMember> allTargetRows = targetById.get(sourceMember.intermediaryId());
+            if (allTargetRows == null || allTargetRows.isEmpty()) {
+                return new SymbolResolution(SymbolStatus.TARGET_ID_MISSING, List.of());
+            }
+            List<TinyMember> sameOwnerRows = targetByOwnerAndId.get(
+                    new OwnerAndId(sourceMember.ownerIntermediary(), sourceMember.intermediaryId()));
+            if (sameOwnerRows == null || sameOwnerRows.isEmpty()) {
+                SymbolStatus status = allTargetRows.size() == 1
+                        ? SymbolStatus.TARGET_OWNER_CHANGED : SymbolStatus.TARGET_AMBIGUOUS;
+                return new SymbolResolution(status,
+                        allTargetRows.stream().map(row -> candidate(sourceMember, row)).toList());
+            }
+            if (sameOwnerRows.size() != 1) {
+                return new SymbolResolution(SymbolStatus.TARGET_AMBIGUOUS,
+                        sameOwnerRows.stream().map(row -> candidate(sourceMember, row)).toList());
+            }
+            TinyMember targetMember = sameOwnerRows.getFirst();
+            SymbolCandidate result = candidate(sourceMember, targetMember);
+            if (targetMember.descriptorIntermediary() == null) {
+                return new SymbolResolution(SymbolStatus.TARGET_DESCRIPTOR_UNRESOLVED, List.of(result));
+            }
+            if (!sourceMember.descriptorIntermediary().equals(targetMember.descriptorIntermediary())) {
+                return new SymbolResolution(SymbolStatus.TARGET_DESCRIPTOR_CHANGED, List.of(result));
+            }
+            int externalTypes = sourceMember.descriptorExternalTypeCount()
+                    + targetMember.descriptorExternalTypeCount();
+            return new SymbolResolution(externalTypes > 0
+                    ? SymbolStatus.MAPPED_WITH_EXTERNAL_TYPES : SymbolStatus.MAPPED_EXACT, List.of(
+                    new SymbolCandidate(
+                            result.sourceOwnerOfficial(), result.sourceNameOfficial(), result.sourceDescriptorOfficial(),
+                            result.sourceOwnerIntermediary(), result.intermediaryId(), result.sourceDescriptorIntermediary(),
+                            result.targetOwnerOfficial(), result.targetNameOfficial(), result.targetDescriptorOfficial(),
+                            result.targetOwnerIntermediary(), result.targetDescriptorIntermediary(), externalTypes)));
+        }
+
+        private static SymbolCandidate candidate(TinyMember sourceMember, TinyMember targetMember) {
+            return new SymbolCandidate(
+                    sourceMember.ownerOfficial(), sourceMember.officialName(), sourceMember.descriptorOfficial(),
+                    sourceMember.ownerIntermediary(), sourceMember.intermediaryId(),
+                    sourceMember.descriptorIntermediary(),
+                    targetMember.ownerOfficial(), targetMember.officialName(), targetMember.descriptorOfficial(),
+                    targetMember.ownerIntermediary(), targetMember.descriptorIntermediary(),
+                    targetMember.descriptorExternalTypeCount());
+        }
+    }
+
+    public static Index readIndex(Path joinedTsrg, Path sourceTiny, Path targetTiny) throws IOException {
         requireInput(joinedTsrg, "MCPConfig joined.tsrg");
         requireInput(sourceTiny, "Fabric Intermediary 1.20.1 Tiny mapping");
         requireInput(targetTiny, "Fabric Intermediary 1.21.1 Tiny mapping");
-
         TsrgData tsrg = readTsrg(joinedTsrg);
         Set<String> sourceMinecraftClasses = new HashSet<>();
         for (TsrgClass row : tsrg.classes()) sourceMinecraftClasses.add(row.obfuscatedName());
-        TinyMappings source = readTiny(sourceTiny, sourceMinecraftClasses);
-        TinyMappings target = readTiny(targetTiny, Set.of());
+        return new Index(tsrg, readTiny(sourceTiny, sourceMinecraftClasses), readTiny(targetTiny, Set.of()));
+    }
 
-        ClassCoverage classCoverage = auditClasses(tsrg.classes(), source, target);
-        MemberCoverage methodCoverage = auditMembers(tsrg.methods(), true, source, target);
-        MemberCoverage fieldCoverage = auditMembers(tsrg.fields(), false, source, target);
-
-        return new AuditResult(
-                classCoverage,
-                methodCoverage,
-                fieldCoverage,
-                source.classRows,
-                source.methodRows,
-                source.fieldRows,
-                target.classRows,
-                target.methodRows,
-                target.fieldRows);
+    public static AuditResult analyze(Path joinedTsrg, Path sourceTiny, Path targetTiny) throws IOException {
+        return readIndex(joinedTsrg, sourceTiny, targetTiny).audit();
     }
 
     /**
