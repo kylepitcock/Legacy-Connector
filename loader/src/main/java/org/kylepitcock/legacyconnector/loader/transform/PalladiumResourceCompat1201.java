@@ -256,8 +256,10 @@ final class PalladiumResourceCompat1201 {
         rewriteAlienEvoStatAbilityOperation(resources);
         rewriteAlienEvoNetworkDataPlayerAccess(resources);
         rewriteAlienEvoPrototypeCoreLayoutScores(resources);
-        rewriteAlienEvoSlamLandingState(resources);
+        // Normalize the legacy modifier operation before the landing-state rewrite
+        // replaces the original tick block containing both modifier call sites.
         rewriteAlienEvoSlamAttributeOperations(resources);
+        rewriteAlienEvoSlamLandingState(resources);
         // Both ScriptableAbility callbacks receive the active entity; KubeJS 7 no longer exposes Utils.server.
         rewrite(resources, ALIEN_EVO_STAT_ABILITY, new String[][] {
                 {"Utils.server.scoreboard", "entity.server.scoreboard", "2"},
@@ -1548,9 +1550,27 @@ PlayerEvents.tick(e => {
      * ADDITION to ADD_VALUE, so migrate both active slam branches.
      */
     private static int rewriteAlienEvoSlamAttributeOperations(Map<String, byte[]> resources) {
+        byte[] original = resources.get(ALIEN_EVO_SLAM);
+        if (original == null) return 0;
+
+        String script = new String(original, StandardCharsets.UTF_8);
+        boolean landingStateAlreadyMigrated = script.contains("let playersFalling = new Set();")
+                && script.contains("const clearGravitySlam = (player, playerId) => {");
+        if (landingStateAlreadyMigrated) {
+            // The landing-state replacement already emits the current add_value
+            // operation and has replaced both legacy modifier call sites.
+            String legacyOperation =
+                    "p.modifyAttribute(gravityAttribute, \\"gravity_slam\\", 6, \\"addition\\")";
+            if (script.contains(legacyOperation)) {
+                throw new IllegalStateException(
+                        "AlienEvo slam.js contains a legacy modifier operation after landing-state migration");
+            }
+            return 0;
+        }
+
         return rewrite(resources, ALIEN_EVO_SLAM, new String[][] {{
-                "p.modifyAttribute(gravityAttribute, \"gravity_slam\", 6, \"addition\")",
-                "p.modifyAttribute(gravityAttribute, \"gravity_slam\", 6, \"add_value\")",
+                "p.modifyAttribute(gravityAttribute, \\"gravity_slam\\", 6, \\"addition\\")",
+                "p.modifyAttribute(gravityAttribute, \\"gravity_slam\\", 6, \\"add_value\\")",
                 "2"
         }});
     }
