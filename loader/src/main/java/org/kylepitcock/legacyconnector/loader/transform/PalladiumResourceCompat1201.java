@@ -15,6 +15,10 @@ final class PalladiumResourceCompat1201 {
             "addon/alienevo/kubejs_scripts/store_armor.js";
     static final String ALIEN_EVO_SLOT_TRANSFORM =
             "addon/alienevo/kubejs_scripts/slot_transform.js";
+    static final String ALIEN_EVO_PLAYLIST_CYCLE =
+            "addon/alienevo/kubejs_scripts/playlist_cycle.js";
+    static final String ALIEN_EVO_SLAM =
+            "data/alienevo/kubejs_scripts/slam.js";
     static final String ALIEN_EVO_QUICK_CHANGE =
             "data/alienevo/kubejs_scripts/quick_change.js";
     static final String ALIEN_EVO_BLOCK_PARTICLES =
@@ -250,6 +254,7 @@ final class PalladiumResourceCompat1201 {
         rewriteAlienEvoXpDeathPlayerAccess(resources);
         rewriteAlienEvoRechargeCooldown(resources);
         rewriteAlienEvoStatAbilityOperation(resources);
+        rewriteAlienEvoSlamAttributeOperations(resources);
         // Both ScriptableAbility callbacks receive the active entity; KubeJS 7 no longer exposes Utils.server.
         rewrite(resources, ALIEN_EVO_STAT_ABILITY, new String[][] {
                 {"Utils.server.scoreboard", "entity.server.scoreboard", "2"},
@@ -1231,7 +1236,8 @@ final class PalladiumResourceCompat1201 {
      * so selected DNA is compared and stored as an integer on every path.
      */
     private static int rewriteAlienEvoSlotPersistentDataIntegers(Map<String, byte[]> resources) {
-        return rewrite(resources, ALIEN_EVO_SLOT_TRANSFORM, new String[][] {
+        int changed = 0;
+        changed += rewrite(resources, ALIEN_EVO_SLOT_TRANSFORM, new String[][] {
                 {"let currentPlaylist = entity.persistentData[CURRENT_PLAYLIST_KEY] || DEFAULT_PLAYLIST;",
                         "let currentPlaylist = entity.persistentData.getInt(CURRENT_PLAYLIST_KEY) || DEFAULT_PLAYLIST;", "1"},
                 {"let alienNumber = entity.persistentData[`alienevo.alien_${currentPlaylist}_${useSlot}`];",
@@ -1253,6 +1259,33 @@ final class PalladiumResourceCompat1201 {
                 {"let alienInSlot = entity.persistentData[`alienevo.alien_${playlist}_${slot}`];",
                         "let alienInSlot = entity.persistentData.getInt(`alienevo.alien_${playlist}_${slot}`);", "1"}
         });
+        changed += rewrite(resources, ALIEN_EVO_PLAYLIST_CYCLE, new String[][] {
+                {"let MAX_PLAYLISTS = 100;", "let MAX_PLAYLISTS = 10;", "1"},
+                {"let currentPlaylist = entity.persistentData[CURRENT_PLAYLIST_KEY] || DEFAULT_PLAYLIST;",
+                        "let currentPlaylist = entity.persistentData.getInt(CURRENT_PLAYLIST_KEY) || DEFAULT_PLAYLIST;", "1"},
+                {"let currentSlot = entity.persistentData[CURRENT_ALIEN_SLOT_KEY] || DEFAULT_SLOT;",
+                        "let currentSlot = entity.persistentData.getInt(CURRENT_ALIEN_SLOT_KEY) || DEFAULT_SLOT;", "1"},
+                {"let alienNumber = entity.persistentData[`alienevo.alien_${currentPlaylist}_${slot}`];",
+                        "let alienNumber = entity.persistentData.getInt(`alienevo.alien_${currentPlaylist}_${slot}`);", "1"},
+                {"entity.persistentData[CURRENT_PLAYLIST_KEY] = currentPlaylist;",
+                        "entity.persistentData.putInt(CURRENT_PLAYLIST_KEY, currentPlaylist);", "1"},
+                {"entity.persistentData[CURRENT_ALIEN_SLOT_KEY] = slot;",
+                        "entity.persistentData.putInt(CURRENT_ALIEN_SLOT_KEY, slot);", "1"}
+        });
+        return changed;
+    }
+
+    /**
+     * The 1.20.1 slam script passes the old AttributeModifier.Operation enum
+     * label directly to Entity.modifyAttribute. Minecraft 1.21.1 renamed
+     * ADDITION to ADD_VALUE, so migrate both active slam branches.
+     */
+    private static int rewriteAlienEvoSlamAttributeOperations(Map<String, byte[]> resources) {
+        return rewrite(resources, ALIEN_EVO_SLAM, new String[][] {{
+                "p.modifyAttribute(gravityAttribute, \"gravity_slam\", 6, \"addition\")",
+                "p.modifyAttribute(gravityAttribute, \"gravity_slam\", 6, \"add_value\")",
+                "2"
+        }});
     }
     /**
      * AlienEvo's recharge callback skipped the final cooldown tick when the
