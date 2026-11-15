@@ -245,6 +245,45 @@ public final class CoremodSites {
     public static final Site NEIGHBOR_NOTIFIED = site("neighbour update of one block", new Class<?>[] {WORLD, int.class, int.class, int.class},
             "net/minecraft/world/World.func_147460_e(IIILnet/minecraft/block/Block;)V#after:aload 0", "net/minecraft/world/World.func_147460_e(IIILnet/minecraft/block/Block;)V#head");
 
+    /** EntityLivingBase.updatePotionEffects: the name of the particle an effect gives off ("mobSpell", "mobSpellAmbient"). Values: entity, name. */
+    public static final Site POTION_PARTICLE_NAME = site("potion effect particle name", new Class<?>[] {ENTITY, String.class},
+            "net/minecraft/entity/EntityLivingBase.func_70679_bo()V#const:\"mobSpell\"", "net/minecraft/entity/EntityLivingBase.func_70679_bo()V#const:\"mobSpellAmbient\"")
+            .returns(String.class);
+
+    /** EntityPlayer.getArmorVisibility: the share of armour pieces worn (what mobs see of the player), as the hook answers it. Values: amount, player. */
+    public static final Site ARMOR_VISIBILITY = site("armour visibility", new Class<?>[] {float.class, PLAYER},
+            "net/minecraft/entity/player/EntityPlayer.func_82243_bO()F#after:fdiv").returns(float.class);
+
+    /** EntityPlayer.getHurtSound: the name of the sound ("game.player.hurt"). Values: player, name. */
+    public static final Site PLAYER_HURT_SOUND = site("player hurt sound", new Class<?>[] {PLAYER, String.class},
+            "net/minecraft/entity/player/EntityPlayer.func_70621_aR()Ljava/lang/String;#const:\"game.player.hurt\"").returns(String.class);
+
+    /** BlockLiquid.onBlockAdded, first thing: true skips the method (the liquid is not scheduled to flow). Values: block, world, x, y, z. */
+    public static final Site LIQUID_ADDED = site("liquid block added",
+            new Class<?>[] {legacyconnector.v1_7_10.net.minecraft.block.Block.class, WORLD, int.class, int.class, int.class},
+            "net/minecraft/block/BlockLiquid.func_149726_b(Lnet/minecraft/world/World;III)V#cancel-after:iload 4");
+
+    /** EntityFireworkRocket.onUpdate: the upward push per tick (0.04). Values: push, rocket. */
+    public static final Site FIREWORK_LIFT = site("firework rocket lift", new Class<?>[] {double.class, ENTITY},
+            "net/minecraft/entity/item/EntityFireworkRocket.func_70071_h_()V#after:ldc 0.04").returns(double.class);
+
+    /** EntityLivingBase.moveEntityWithHeading: the horizontal distance moved in the tick, which drives the limb swing. Values: distance, entity. */
+    public static final Site LIMB_SWING = site("limb swing distance", new Class<?>[] {float.class, LIVING},
+            "net/minecraft/entity/EntityLivingBase.func_70612_e(FF)V#after:invokestatic net/minecraft/util/MathHelper.func_76133_a(D)F").returns(float.class);
+
+    /** EntityFlying.moveEntityWithHeading, last thing (ghasts and other flying mobs). Values: the mob. */
+    public static final Site FLYING_TRAVEL_END = site("flying mob movement (end)", new Class<?>[] {LIVING},
+            "net/minecraft/entity/EntityFlying.func_70612_e(FF)V#tail");
+
+    /** EntitySquid.onLivingUpdate, last thing. Values: the squid. */
+    public static final Site SQUID_TICK = site("squid update", new Class<?>[] {LIVING},
+            "net/minecraft/entity/passive/EntitySquid.func_70636_d()V#tail");
+
+    /** ItemBow.onPlayerStoppedUsing: the ticks of a full draw (20). Values: ticks, player. */
+    public static final Site BOW_DRAW_TIME = site("bow draw time", new Class<?>[] {float.class, PLAYER},
+            "net/minecraft/item/ItemBow.func_77615_a(Lnet/minecraft/item/ItemStack;Lnet/minecraft/world/World;Lnet/minecraft/entity/player/EntityPlayer;I)V#const:20.0")
+            .returns(float.class);
+
     /** The model sites: client classes, so apart from the rest. Values: model, entity, the six animation numbers. */
     public static final class Client {
         private static final Class<?>[] MODEL = {legacyconnector.v1_7_10.net.minecraft.client.model.ModelBiped.class, ENTITY, float.class, float.class, float.class,
@@ -495,6 +534,51 @@ public final class CoremodSites {
         BLOCK_EXPLODED.fire(BlockBridge.legacyBlock(block.defaultBlockState()), legacyconnector.v1_7_10.net.minecraft.world.World.mcc$wrap(level), pos.getX(), pos.getY(), pos.getZ());
     }
 
+    /** {@link #POTION_PARTICLE_NAME}: the particle the game picked, or the one the hook named instead. */
+    public static net.minecraft.core.particles.ParticleOptions potionParticle(net.minecraft.world.entity.LivingEntity entity, net.minecraft.core.particles.ParticleOptions original) {
+        if (!POTION_PARTICLE_NAME.active()) return original;
+        if (!(POTION_PARTICLE_NAME.modify(1, EntityBridge.wrap(entity), "mobSpell") instanceof String name) || name.equals("mobSpell") || name.equals("mobSpellAmbient")) return original;
+        net.minecraft.core.particles.ParticleOptions named = SoundBridge.particle(name, 0.0, 0.0, 0.0);
+        return named != null ? named : original;
+    }
+
+    /** {@link #ARMOR_VISIBILITY}. */
+    public static float armorVisibility(net.minecraft.world.entity.LivingEntity entity, float amount) {
+        if (!(entity instanceof net.minecraft.world.entity.player.Player) || !ARMOR_VISIBILITY.active()) return amount;
+        return ((Number) ARMOR_VISIBILITY.modify(0, amount, EntityBridge.wrap(entity))).floatValue();
+    }
+
+    /** {@link #PLAYER_HURT_SOUND}: the sound the game picked, or the one the hook named instead. */
+    public static net.minecraft.sounds.SoundEvent playerHurtSound(net.minecraft.world.entity.player.Player player, net.minecraft.sounds.SoundEvent original) {
+        if (!PLAYER_HURT_SOUND.active()) return original;
+        if (!(PLAYER_HURT_SOUND.modify(1, EntityBridge.wrap(player), "game.player.hurt") instanceof String name) || name.equals("game.player.hurt")) return original;
+        net.minecraft.sounds.SoundEvent named = SoundBridge.sound(name);
+        return named != null ? named : original;
+    }
+
+    /** {@link #LIQUID_ADDED}: whether a hook skips the liquid's own start-up. */
+    public static boolean liquidAdded(net.minecraft.world.level.block.Block block, net.minecraft.world.level.Level level, net.minecraft.core.BlockPos pos) {
+        return LIQUID_ADDED.active() && LIQUID_ADDED.cancels(BlockBridge.legacyBlock(block.defaultBlockState()), legacyconnector.v1_7_10.net.minecraft.world.World.mcc$wrap(level),
+                pos.getX(), pos.getY(), pos.getZ());
+    }
+
+    /** {@link #FIREWORK_LIFT}. */
+    public static double fireworkLift(net.minecraft.world.entity.Entity rocket, double lift) {
+        if (!FIREWORK_LIFT.active()) return lift;
+        return ((Number) FIREWORK_LIFT.modify(0, lift, EntityBridge.wrap(rocket))).doubleValue();
+    }
+
+    /** {@link #LIMB_SWING}. */
+    public static float limbSwing(net.minecraft.world.entity.LivingEntity entity, float distance) {
+        if (!LIMB_SWING.active()) return distance;
+        return ((Number) LIMB_SWING.modify(0, distance, EntityBridge.wrap(entity))).floatValue();
+    }
+
+    /** {@link #FLYING_TRAVEL_END}. */
+    public static void flyingTravelEnd(net.minecraft.world.entity.Mob mob) {
+        if (FLYING_TRAVEL_END.active()) FLYING_TRAVEL_END.fire(EntityBridge.wrap(mob));
+    }
+
     private CoremodSites() {}
 
     /** One place of 1.7.10's code on the modern game. */
@@ -730,6 +814,19 @@ public final class CoremodSites {
                 if (Boolean.FALSE.equals(FAR_DESPAWN.replace(Boolean.TRUE, EntityBridge.wrap(e.getEntity())))) {
                     e.setResult(net.neoforged.neoforge.event.entity.living.MobDespawnEvent.Result.DENY);
                 }
+            });
+        }
+        if (SQUID_TICK.listed()) {
+            gameBus.addListener((net.neoforged.neoforge.event.tick.EntityTickEvent.Post e) -> {
+                if (e.getEntity() instanceof net.minecraft.world.entity.animal.Squid squid && SQUID_TICK.active()) SQUID_TICK.fire(EntityBridge.wrap(squid));
+            });
+        }
+        if (BOW_DRAW_TIME.listed()) {
+            // the draw time scales the charge the game computed against its 20 ticks
+            gameBus.addListener((net.neoforged.neoforge.event.entity.player.ArrowLooseEvent e) -> {
+                if (!BOW_DRAW_TIME.active()) return;
+                float ticks = ((Number) BOW_DRAW_TIME.modify(0, 20.0F, EntityBridge.wrap(e.getEntity()))).floatValue();
+                if (ticks > 0.0F && ticks != 20.0F) e.setCharge(Math.max(0, Math.round(e.getCharge() * 20.0F / ticks)));
             });
         }
         if (IN_BED.listed()) {
