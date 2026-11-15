@@ -202,7 +202,7 @@ The user supplied the complete forced loader console and the generated `srg-obfu
 
 ## 14. Implementation checkpoint 2 — per-symbol SRG-to-Intermediary composition
 
-**Status:** implemented; the first forced loader run exposed a synthetic TSRG/Tiny field-name mismatch. The fixture-only correction below is published and awaits rerun.
+**Status:** implemented and user-validated by the forced full loader test at source commit `ad2eaa85d7ad2934cd3f0efbeac8c84013fa1260`. The synthetic TSRG/Tiny field-name mismatch and fixture correction are historical notes below.
 
 - `Forge1201IntermediaryBridgeAudit.Index` exposes owner/member/full-descriptor queries over its existing parsed source and target Tiny v1 data, while the aggregate report remains available from the same index.
 - `Forge1201SrgIntermediaryBridgeResolver` composes Forge SRG→source official-obfuscated mappings with the source/target Intermediary relation. It provides explicit class, method and field result states for missing/ambiguous source entries, moved owners, missing target IDs, unresolved/changed descriptors, and external passthrough.
@@ -225,12 +225,12 @@ The user's first forced run at source commit `90f5f24c3be97c9748a798aa0ec3fd1718
 
 The failure is a test-fixture mismatch, not a production resolver defect. The synthetic TSRG2 row named the field's official-obfuscated name `f` (`\tf f_20_ 3`), while the source Tiny v1 row for the same owner/member ID named that field `x` (`FIELD a Lb; x field_1`). The SRG bridge correctly joins descriptorless TSRG2 field entries to Tiny by owner plus official-obfuscated field name; `f` and `x` cannot join.
 
-The fixture now uses `\tx f_20_ 3`, aligning the TSRG2 official-obfuscated field name with the source Tiny row while retaining the SRG name `f_20_`. The expected source `x` → target `y` composition assertions remain intact. No production Java behavior was changed. This correction is **not yet validated**; the forced loader test must be rerun before this composition batch is marked green.
+The fixture uses `\tx f_20_ 3`, aligning the TSRG2 official-obfuscated field name with the source Tiny row while retaining the SRG name `f_20_`. The expected source `x` → target `y` composition assertions remain intact. The user subsequently passed the full forced loader test at `ad2eaa85d7ad2934cd3f0efbeac8c84013fa1260`; no production Java behavior was changed by this fixture correction.
 
 
 ## 15. Implementation checkpoint 3 — deterministic composed per-symbol report
 
-**Status:** implementation and regression test published; awaiting the user's forced loader test gate.
+**Status:** implementation and regression test published and user-validated by the full forced loader test at `ad2eaa85d7ad2934cd3f0efbeac8c84013fa1260`.
 
 - Forge1201SrgObfuscatedBridgeAudit.Index exposes deterministic class, method and field selector inventories from the same bounded TSRG2/Tiny inputs. Every parsed row is retained, including missing/ambiguous owner, missing/ambiguous field Tiny join, and unresolved descriptor cases.
 - Forge1201SrgIntermediaryBridgeAuditReport composes those rows through Forge1201SrgIntermediaryBridgeResolver and writes deterministic JSON with one record per source class, method and field entry, status histograms, namespace identities, and SHA-256/size provenance for all three pinned artifacts.
@@ -252,7 +252,7 @@ The next step after this gate is to pin the exact 1.21.1 official-obfuscated -> 
 - The target Tiny inventory contains two rows with that method ID and equivalent Intermediary descriptor, under distinct owners `net/minecraft/class_9460` and `net/minecraft/class_1309` (target official-obfuscated owners `btb` and `btn`).
 - Neither target owner equals the source Intermediary owner `net/minecraft/class_1297`; the resolver therefore reports `INTERMEDIARY_TARGET_AMBIGUOUS` and preserves both candidates. This is not a reason to select by name or row order.
 
-A synthetic regression now mirrors the observed owner/member/descriptor relation. It requires the ambiguous status, exactly two candidates, both target owners, the shared source Intermediary ID, and the complete target Intermediary descriptor. It confirms that the resolver does not collapse the one-to-many target relation into a chosen mapping. The new regression has been published with this design note and is **awaiting the user's forced loader test gate**; do not mark it green before that run.
+A synthetic regression mirrors the observed owner/member/descriptor relation. It requires the ambiguous status, exactly two candidates, both target owners, the shared source Intermediary ID, and the complete target Intermediary descriptor. The regression passed as part of the full forced loader test at `ad2eaa85d7ad2934cd3f0efbeac8c84013fa1260`.
 
 
 ## 17. Target compile-classpath API inventory
@@ -312,7 +312,7 @@ The mapping artifact itself stays in the local NeoForm Gradle cache. Do not comm
 
 ## 19. Implementation checkpoint 4 — final target namespace and compile API audit
 
-**Status:** End-to-end read-only audit, synthetic regression tests, and an opt-in Gradle task are published at source branch `feat/forge1201-preflight-analyzer`, commit `a9a084b4bbd52f6ae964d1f27f9475cba2ed7ddb`. User validation is pending. The last user-validated source checkpoint remains `ad2eaa85d7ad2934cd3f0efbeac8c84013fa1260`.
+**Status:** End-to-end read-only audit, synthetic regression tests, and an opt-in Gradle task are published at source branch `feat/forge1201-preflight-analyzer`, current code checkpoint `442785d1619847fb8e29fc4f1a2b5f668f900623`. The new increment awaits user validation. The last user-validated source checkpoint remains `ad2eaa85d7ad2934cd3f0efbeac8c84013fa1260`.
 
 ### Composition and safety properties
 
