@@ -383,9 +383,14 @@ public final class Forge1201TargetOfficialBridgeAudit {
             out.write("  \"targetCompileClasspath\": [\n");
             for (int i = 0; i < targetClasspath.size(); i++) {
                 Path entry = targetClasspath.get(i);
-                out.write("    {\"index\":" + i + ",\"path\":" + quote(entry.toString())
-                        + ",\"sizeBytes\":" + Files.size(entry)
-                        + ",\"sha256\":" + quote(sha256(entry)) + "}");
+                out.write("    {\"index\":" + i + ",\"path\":" + quote(entry.toString()));
+                if (Files.isRegularFile(entry)) {
+                    out.write(",\"kind\":\"file\",\"sizeBytes\":" + Files.size(entry)
+                            + ",\"sha256\":" + quote(sha256(entry)));
+                } else {
+                    out.write(",\"kind\":\"directory\",\"sizeBytes\":null,\"sha256\":null");
+                }
+                out.write("}");
                 out.write(i + 1 == targetClasspath.size() ? "\n" : ",\n");
             }
             out.write("  ],\n");
