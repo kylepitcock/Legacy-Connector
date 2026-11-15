@@ -6,6 +6,8 @@ import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
+import java.nio.file.FileSystemAlreadyExistsException;
+import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -358,8 +360,17 @@ public final class Forge1201SourceRuntimeMemberVerifier {
         private PlatformClassBytesProvider(Forge1201TargetApiVerifier.ClassBytesProvider delegate) {
             this.delegate = delegate;
             FileSystem fileSystem;
+            URI jrtUri = URI.create("jrt:/");
             try {
-                fileSystem = FileSystems.getFileSystem(URI.create("jrt:/"));
+                try {
+                    fileSystem = FileSystems.getFileSystem(jrtUri);
+                } catch (FileSystemNotFoundException notInitialized) {
+                    try {
+                        fileSystem = FileSystems.newFileSystem(jrtUri, Map.of());
+                    } catch (FileSystemAlreadyExistsException initializedConcurrently) {
+                        fileSystem = FileSystems.getFileSystem(jrtUri);
+                    }
+                }
             } catch (RuntimeException unavailable) {
                 fileSystem = null;
             }
