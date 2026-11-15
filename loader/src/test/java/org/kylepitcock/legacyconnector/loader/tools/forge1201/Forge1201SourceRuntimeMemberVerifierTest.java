@@ -73,6 +73,25 @@ final class Forge1201SourceRuntimeMemberVerifierTest {
     }
 
     @Test
+    void doesNotClassifyMissingMembersWhenTheirSuperclassHierarchyIsUnavailable() throws Exception {
+        Path archive = tempDir.resolve("incomplete-hierarchy.jar");
+        try (JarOutputStream jar = new JarOutputStream(Files.newOutputStream(archive))) {
+            addClass(jar, "sample/Child", "sample/UnavailableParent",
+                    new String[][] {}, new String[][] {});
+        }
+        Path classpath = tempDir.resolve("incomplete-classpath.txt");
+        Files.writeString(classpath, archive.toAbsolutePath() + System.lineSeparator(), StandardCharsets.UTF_8);
+
+        var index = Forge1201SourceRuntimeMemberVerifier.readClasspath(classpath);
+        var result = index.inspectMethod("sample/Child", "work", "()V");
+
+        assertEquals(
+                Forge1201SourceRuntimeMemberVerifier.Status.SOURCE_RUNTIME_HIERARCHY_INCOMPLETE,
+                result.status());
+        assertTrue(result.hierarchyVisited().contains("sample/UnavailableParent"));
+    }
+
+    @Test
     void preservesFirstClasspathEntryWhenClassNamesAreDuplicated() throws Exception {
         Path first = tempDir.resolve("first.jar");
         Path second = tempDir.resolve("second.jar");
