@@ -158,9 +158,9 @@ class PalladiumResourceCompat1201Test {
         assertFalse(transform.contains("palladium.setProperty(entity, omnitrixPropertyKey, alien_num);"));
         assertFalse(transform.contains("palladium.setProperty(entity, omnitrixPropertyKey, newAlienUnlocked);"));
         assertTrue(transform.contains("function ResourceLocation(namespaceOrLocation, path)"));
-        assertTrue(transform.contains("    const AlienEvoJavaResourceLocation = Java.loadClass"));
-        assertTrue(transform.contains("    const AlienEvoSoundRegistry = Java.loadClass"));
-        assertTrue(transform.contains("    const AlienEvoSoundResourceLocation = Java.loadClass"));
+        assertTrue(transform.contains("    var AlienEvoJavaResourceLocation = Java.loadClass"));
+        assertTrue(transform.contains("    var AlienEvoSoundRegistry = Java.loadClass"));
+        assertTrue(transform.contains("    var AlienEvoSoundResourceLocation = Java.loadClass"));
         assertTrue(transform.contains("AlienEvoJavaResourceLocation.fromNamespaceAndPath"));
         assertTrue(transform.contains("getAlienEvoSoundEvent('alienevo:' + String(transformSound) + '_transform')"));
         assertFalse(transform.contains("`alienevo:${transformSound}_transform`,"));
@@ -178,23 +178,31 @@ class PalladiumResourceCompat1201Test {
         assertTrue(detransform.contains("getAlienEvoSoundEvent('alienevo:' + String(watchType) + '_detransform')"));
         assertFalse(detransform.contains("`alienevo:${watchType}_detransform`"));
 
+        String decouple = get(resources, "addon/alienevo/kubejs_scripts/decouple.js");
+        assertTrue(decouple.contains("    var AlienEvoJavaResourceLocation = Java.loadClass"));
+        assertFalse(decouple.contains("    const AlienEvoJavaResourceLocation = Java.loadClass"));
+
+        String detransform = get(resources, "addon/alienevo/kubejs_scripts/detransform.js");
+        assertTrue(detransform.contains("    var AlienEvoJavaResourceLocation = Java.loadClass"));
+        assertFalse(detransform.contains("    const AlienEvoJavaResourceLocation = Java.loadClass"));
+
         String cycle = get(resources, "addon/alienevo/kubejs_scripts/cycle_sounds.js");
         assertTrue(cycle.contains("function getAlienEvoSoundEvent(soundId)"));
-        assertTrue(cycle.contains("    const AlienEvoSoundRegistry = Java.loadClass"));
-        assertTrue(cycle.contains("    const AlienEvoSoundResourceLocation = Java.loadClass"));
+        assertTrue(cycle.contains("    var AlienEvoSoundRegistry = Java.loadClass"));
+        assertTrue(cycle.contains("    var AlienEvoSoundResourceLocation = Java.loadClass"));
         assertTrue(cycle.contains("getAlienEvoSoundEvent('alienevo:' + String(soundToPlay))"));
         assertFalse(cycle.contains("`alienevo:${soundToPlay}`,"));
 
         String codes = get(resources, "addon/alienevo/kubejs_scripts/codes.js");
         assertTrue(codes.contains("function ResourceLocation(namespaceOrLocation, path)"));
-        assertTrue(codes.contains("    const AlienEvoJavaResourceLocation = Java.loadClass"));
+        assertTrue(codes.contains("    var AlienEvoJavaResourceLocation = Java.loadClass"));
 
         assertEquals("const gravityAttribute = \"minecraft:generic.gravity\";",
                 get(resources, "data/alienevo/kubejs_scripts/slam.js"));
 
         String powerUi = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_POWER_UI);
         assertTrue(powerUi.contains("function ResourceLocation(namespaceOrLocation, path)"));
-        assertTrue(powerUi.contains("    const AlienEvoJavaResourceLocation = Java.loadClass"));
+        assertTrue(powerUi.contains("    var AlienEvoJavaResourceLocation = Java.loadClass"));
         assertEquals(3, occurrences(powerUi, "currentTab.toString() === omnitrixTab"));
         assertEquals(5, occurrences(powerUi, "e.tab.toString() === omnitrixTab"));
         assertTrue(powerUi.contains(

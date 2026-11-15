@@ -64,7 +64,7 @@ final class PalladiumResourceCompat1201 {
 
     static final String OMNITRIX_INTEGER_HELPER =
             "function toOmnitrixInteger(value) {\n"
-                    + "    const JavaInteger = Java.loadClass('java.lang.Integer');\n"
+                    + "    var JavaInteger = Java.loadClass('java.lang.Integer');\n"
                     + "    if (value != null && typeof value.getAsInt === 'function') {\n"
                     + "        return JavaInteger.valueOf(value.getAsInt());\n"
                     + "    }\n"
@@ -72,7 +72,7 @@ final class PalladiumResourceCompat1201 {
                     + "}\n\n";
     static final String LEGACY_RESOURCE_LOCATION_HELPER =
             "function ResourceLocation(namespaceOrLocation, path) {\n"
-                    + "    const AlienEvoJavaResourceLocation = Java.loadClass('net.minecraft.resources.ResourceLocation');\n"
+                    + "    var AlienEvoJavaResourceLocation = Java.loadClass('net.minecraft.resources.ResourceLocation');\n"
                     + "    if (arguments.length > 1) {\n"
                     + "        return AlienEvoJavaResourceLocation.fromNamespaceAndPath(String(namespaceOrLocation), String(path));\n"
                     + "    }\n"
@@ -80,8 +80,8 @@ final class PalladiumResourceCompat1201 {
                     + "}\n\n";
     static final String LEGACY_SOUND_EVENT_HELPER =
             "function getAlienEvoSoundEvent(soundId) {\n"
-                    + "    const AlienEvoSoundRegistry = Java.loadClass('net.minecraft.core.registries.BuiltInRegistries').SOUND_EVENT;\n"
-                    + "    const AlienEvoSoundResourceLocation = Java.loadClass('net.minecraft.resources.ResourceLocation');\n"
+                    + "    var AlienEvoSoundRegistry = Java.loadClass('net.minecraft.core.registries.BuiltInRegistries').SOUND_EVENT;\n"
+                    + "    var AlienEvoSoundResourceLocation = Java.loadClass('net.minecraft.resources.ResourceLocation');\n"
                     + "    const soundEvent = AlienEvoSoundRegistry.get(AlienEvoSoundResourceLocation.parse(String(soundId)));\n"
                     + "    if (soundEvent == null) {\n"
                     + "        throw new Error('AlienEvo sound event is not registered: ' + soundId);\n"
@@ -90,7 +90,7 @@ final class PalladiumResourceCompat1201 {
                     + "}\n\n";
     static final String LEGACY_SOUND_SOURCE_HELPER =
             "function getAlienEvoSoundSource(soundSource) {\n"
-                    + "    const AlienEvoSoundSource = Java.loadClass('net.minecraft.sounds.SoundSource');\n"
+                    + "    var AlienEvoSoundSource = Java.loadClass('net.minecraft.sounds.SoundSource');\n"
                     + "    return AlienEvoSoundSource.valueOf(String(soundSource).toUpperCase());\n"
                     + "}\n\n";
     private static final String ALIEN_EVO_CYCLE = "addon/alienevo/kubejs_scripts/cycle_sounds.js";
