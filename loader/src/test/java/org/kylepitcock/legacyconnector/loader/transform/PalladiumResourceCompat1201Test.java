@@ -400,6 +400,59 @@ class PalladiumResourceCompat1201Test {
         assertEquals(0, PalladiumResourceCompat1201.apply(resources));
         assertEquals(migrated, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_SLOT_TRANSFORM));
     }
+
+    @Test
+    void migratesPlaylistCycleNbtAccessToExplicitIntegerMethods() {
+        Map<String, byte[]> resources = new HashMap<>();
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_PLAYLIST_CYCLE, String.join("\\n",
+                "let MAX_PLAYLISTS = 100;",
+                "let currentPlaylist = entity.persistentData[CURRENT_PLAYLIST_KEY] || DEFAULT_PLAYLIST;",
+                "let currentSlot = entity.persistentData[CURRENT_ALIEN_SLOT_KEY] || DEFAULT_SLOT;",
+                "let alienNumber = entity.persistentData[`alienevo.alien_${currentPlaylist}_${slot}`];",
+                "entity.persistentData[CURRENT_PLAYLIST_KEY] = currentPlaylist;",
+                "entity.persistentData[CURRENT_ALIEN_SLOT_KEY] = slot;",
+                "let alienType = entity.persistentData.getInt(`alienevo.alien_${playlist}_${slot}`) || 0;",
+                ""));
+
+        assertEquals(1, PalladiumResourceCompat1201.apply(resources));
+
+        String migrated = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_PLAYLIST_CYCLE);
+        assertTrue(migrated.contains("let MAX_PLAYLISTS = 10;"));
+        assertTrue(migrated.contains(
+                "let currentPlaylist = entity.persistentData.getInt(CURRENT_PLAYLIST_KEY) || DEFAULT_PLAYLIST;"));
+        assertTrue(migrated.contains(
+                "let currentSlot = entity.persistentData.getInt(CURRENT_ALIEN_SLOT_KEY) || DEFAULT_SLOT;"));
+        assertTrue(migrated.contains(
+                "entity.persistentData.getInt(`alienevo.alien_${currentPlaylist}_${slot}`)"));
+        assertTrue(migrated.contains("entity.persistentData.putInt(CURRENT_PLAYLIST_KEY, currentPlaylist);"));
+        assertTrue(migrated.contains("entity.persistentData.putInt(CURRENT_ALIEN_SLOT_KEY, slot);"));
+        assertFalse(migrated.contains("entity.persistentData[CURRENT_PLAYLIST_KEY]"));
+        assertFalse(migrated.contains("entity.persistentData[CURRENT_ALIEN_SLOT_KEY]"));
+        assertFalse(migrated.contains("entity.persistentData[`alienevo.alien_"));
+
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+        assertEquals(migrated, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_PLAYLIST_CYCLE));
+    }
+
+    @Test
+    void migratesAlienEvoSlamAttributeOperationToCurrentEnumName() {
+        Map<String, byte[]> resources = new HashMap<>();
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_SLAM, String.join("\\n",
+                "p.modifyAttribute(gravityAttribute, \"gravity_slam\", 6, \"addition\")",
+                "p.modifyAttribute(gravityAttribute, \"gravity_slam\", 6, \"addition\")",
+                ""));
+
+        assertEquals(1, PalladiumResourceCompat1201.apply(resources));
+
+        String migrated = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_SLAM);
+        assertEquals(2, occurrences(migrated,
+                "p.modifyAttribute(gravityAttribute, \"gravity_slam\", 6, \"add_value\")"));
+        assertFalse(migrated.contains("\"addition\""));
+
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+        assertEquals(migrated, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_SLAM));
+    }
+
     @Test
     void adaptsAlienEvoScoreboardApiAcrossCommandsAndPowers() {
         Map<String, byte[]> resources = new HashMap<>();
