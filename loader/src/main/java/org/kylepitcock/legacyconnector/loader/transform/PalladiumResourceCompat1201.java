@@ -61,6 +61,10 @@ final class PalladiumResourceCompat1201 {
             "data/alienevo/kubejs_scripts/failsafe.js";
     static final String ALIEN_EVO_SERVER_STUFF =
             "data/alienevo/kubejs_scripts/server_stuff.js";
+    static final String ALIEN_EVO_FIRE_ABSORB =
+            "addon/alienevo/kubejs_scripts/fire_absorb.js";
+    static final String ALIEN_EVO_GLIDE =
+            "addon/alienevo/kubejs_scripts/glide.js";
 
     static final String OMNITRIX_INTEGER_HELPER =
             "function toOmnitrixInteger(value) {\n"
@@ -251,6 +255,9 @@ final class PalladiumResourceCompat1201 {
         rewriteServerApiAccess(resources);
         rewriteOmnitrixPacketPlayerAccess(resources);
         rewriteOmnitrixPacketStringValues(resources);
+        rewriteAlienEvoFireAbsorbBlockLookup(resources);
+        rewriteAlienEvoDecoupleOmnitrixCycle(resources);
+        rewriteAlienEvoGlidePitchLength(resources);
         rewriteAlienEvoXpDeathPlayerAccess(resources);
         rewriteAlienEvoRechargeCooldown(resources);
         rewriteAlienEvoStatAbilityOperation(resources);
@@ -1105,12 +1112,14 @@ final class PalladiumResourceCompat1201 {
 
         String script = new String(original, StandardCharsets.UTF_8);
         String[][] replacements = {
+                {"for (let propertyName in propertiesToSave) {",
+                        "for (let propertyName of propertiesToSave.getAllKeys()) {", "1"},
                 {"let colorValue = data.value;",
                         "let colorValue = legacyConnectorAlienEvoPacketString(data.value);", "1"},
                 {"let energyColor = data.value;",
                         "let energyColor = legacyConnectorAlienEvoPacketString(data.value);", "1"},
                 {"palladium.setProperty(player, propertyName, propertiesToSave[propertyName]);",
-                        "palladium.setProperty(player, propertyName, legacyConnectorAlienEvoPacketString(propertiesToSave[propertyName]));", "1"},
+                        "palladium.setProperty(player, propertyName, legacyConnectorAlienEvoPacketString(propertiesToSave.get(propertyName)));", "1"},
                 {"let inputText = event.data.nickname;",
                         "let inputText = legacyConnectorAlienEvoPacketString(event.data.nickname);", "1"}
         };
@@ -1131,6 +1140,45 @@ final class PalladiumResourceCompat1201 {
         }
 
         return rewrite(resources, ALIEN_EVO_SERVER_STUFF, replacements);
+    }
+
+    /**
+     * Heatblast fire absorption scans and extinguishes world blocks by coordinates.
+     * KubeJS 7's LevelJS getBlock overload accepts a BlockPos or three numeric
+     * coordinates; a JavaScript [x, y, z] array is not a valid BlockPos.
+     */
+    private static int rewriteAlienEvoFireAbsorbBlockLookup(Map<String, byte[]> resources) {
+        return rewrite(resources, ALIEN_EVO_FIRE_ABSORB, new String[][] {{
+                "entity.level.getBlock(blockPos);",
+                "entity.level.getBlock(x, y, z);",
+                "2"
+        }});
+    }
+
+    /**
+     * The decouple script accidentally saved currentAlienSlot as omnitrix_cycle.
+     * The property is the selected alien ID, not the index of its slot; preserve
+     * the actual active property so re-bonding restores the same alien selection.
+     */
+    private static int rewriteAlienEvoDecoupleOmnitrixCycle(Map<String, byte[]> resources) {
+        return rewrite(resources, ALIEN_EVO_DECOUPLE, new String[][] {{
+                "storedOmnitrixCycle: currentAlienSlot,",
+                "storedOmnitrixCycle: palladium.getProperty(entity, OMNITRIX_PROPERTY_KEY),",
+                "1"
+        }});
+    }
+
+    /**
+     * The optional Galvanic Mechamorph elytra-glide branch adjusts pitchLength
+     * after computing it. It must be mutable; a const declaration throws as
+     * soon as that glide branch runs.
+     */
+    private static int rewriteAlienEvoGlidePitchLength(Map<String, byte[]> resources) {
+        return rewrite(resources, ALIEN_EVO_GLIDE, new String[][] {{
+                "const pitchLength = JavaMath.cos(pitchRad)",
+                "let pitchLength = JavaMath.cos(pitchRad)",
+                "1"
+        }});
     }
 
     /**
