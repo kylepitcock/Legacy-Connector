@@ -3,12 +3,10 @@ package org.kylepitcock.legacyconnector.loader.tools.forge1201;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
+import java.lang.module.ModuleFinder;
+import java.lang.module.ModuleReader;
+import java.lang.module.ModuleReference;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystems;
-import java.nio.file.FileSystemAlreadyExistsException;
-import java.nio.file.FileSystemNotFoundException;
-import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
@@ -346,66 +344,69 @@ public final class Forge1201SourceRuntimeMemberVerifier {
 
     /**
      * JDK classes are not part of the Forge compile classpath, but they can occur in a source
-     * class's superclass/interface graph (most notably java/lang/Object). Read their bytes from
-     * the active JDK module image as data so they do not make an otherwise complete hierarchy
-     * look incomplete. This never asks a ClassLoader to define or initialize a class.
+     * class's superclass/interface graph (most notably java/lang/Object). Read their class bytes
+     * through the active runtime's system ModuleReferences. ModuleReader exposes resource bytes
+     * without defining or initializing the referenced classes.
      */
     private static final class PlatformClassBytesProvider
             implements Forge1201TargetApiVerifier.ClassBytesProvider {
         private final Forge1201TargetApiVerifier.ClassBytesProvider delegate;
-        private final FileSystem jrt;
-        private final Map<String, Path> resolved = new HashMap<>();
-        private final java.util.Set<String> missing = new java.util.HashSet<>();
+        private final Map<String, List<ModuleReference>> modulesByPackage;
 
         private PlatformClassBytesProvider(Forge1201TargetApiVerifier.ClassBytesProvider delegate) {
             this.delegate = delegate;
-            FileSystem fileSystem;
-            URI jrtUri = URI.create("jrt:/");
-            try {
-                try {
-                    fileSystem = FileSystems.getFileSystem(jrtUri);
-                } catch (FileSystemNotFoundException notInitialized) {
-                    try {
-                        fileSystem = FileSystems.newFileSystem(
-                            jrtUri, Map.of("java.home", System.getProperty("java.home")));
-                    } catch (FileSystemAlreadyExistsException initializedConcurrently) {
-                        fileSystem = FileSystems.getFileSystem(jrtUri);
-                    }
+            Map<String, List<ModuleReference>> packages = new HashMap<>();
+            for (ModuleReference module : ModuleFinder.ofSystem().findAll()) {
+                for (String packageName : module.descriptor().packages()) {
+                    packages.computeIfAbsent(packageName, ignored -> new ArrayList<>()).add(module);
                 }
-            } catch (IOException | RuntimeException unavailable) {
-                // Without readable JRT bytes, platform hierarchy nodes remain explicitly incomplete.
-                fileSystem = null;
             }
-            this.jrt = fileSystem;
+            Map<String, List<ModuleReference>> immutable = new HashMap<>();
+            packages.forEach((name, modules) -> immutable.put(name, List.copyOf(modules)));
+            this.modulesByPackage = Map.copyOf(immutable);
         }
 
         @Override
         public InputStream open(String internalName) throws IOException {
             InputStream source = delegate.open(internalName);
             if (source != null) return source;
-            if (!isPlatformClass(internalName) || jrt == null || missing.contains(internalName)) return null;
+            if (!isPlatformClass(internalName)) return null;
 
-            Path path = resolved.get(internalName);
-            if (path == null) {
-                path = findPlatformClass(internalName);
-                if (path == null) {
-                    missing.add(internalName);
+            int packageEnd = internalName.lastIndexOf('/');
+            if (packageEnd <= 0) return null;
+            String packageName = internalName.substring(0, packageEnd).replace('/', '.');
+            List<ModuleReference> modules = modulesByPackage.getOrDefault(packageName, List.of());
+            if (modules.isEmpty()) return null;
+            if (modules.size() != 1) {
+                throw new IOException("Ambiguous JDK system-module package for " + internalName
+                        + ": " + modules.stream().map(module -> module.descriptor().name()).toList());
+            }
+
+            ModuleReader reader = modules.getFirst().open();
+            try {
+                Optional<InputStream> resource = reader.open(internalName + ".class");
+                if (resource.isEmpty()) {
+                    reader.close();
                     return null;
                 }
-                resolved.put(internalName, path);
-            }
-            return Files.newInputStream(path);
-        }
-
-        private Path findPlatformClass(String internalName) throws IOException {
-            Path modules = jrt.getPath("/modules");
-            try (var modulePaths = Files.list(modules)) {
-                for (Path module : modulePaths.sorted().toList()) {
-                    Path candidate = module.resolve(internalName);
-                    if (Files.isRegularFile(candidate)) return candidate;
+                return new FilterInputStream(resource.get()) {
+                    @Override
+                    public void close() throws IOException {
+                        try {
+                            super.close();
+                        } finally {
+                            reader.close();
+                        }
+                    }
+                };
+            } catch (IOException | RuntimeException failure) {
+                try {
+                    reader.close();
+                } catch (IOException closeFailure) {
+                    failure.addSuppressed(closeFailure);
                 }
+                throw failure;
             }
-            return null;
         }
 
         private static boolean isPlatformClass(String internalName) {
