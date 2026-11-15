@@ -486,7 +486,7 @@ class PalladiumResourceCompat1201Test {
                 "    let p = e.player",
                 "    if (abilityEnabled && !playersWithGravity.has(p.uuid.toString())) {",
                 "        p.modifyAttribute(gravityAttribute, \"gravity_slam\", 6, \"add_value\")",
-                "        p.modifyAttribute(gravityAttribute, \"gravity_slam_secondary\", 6, \"add_value\")",
+                "        p.modifyAttribute(gravityAttribute, \"gravity_slam\", 6, \"add_value\")",
                 "        playersWithGravity.add(p.uuid.toString());",
                 "    }",
                 "    if (!abilityEnabled && playersWithGravity.has(p.uuid.toString())) {",
