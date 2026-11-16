@@ -67,6 +67,10 @@ public class LegacyItemRenderer extends BlockEntityWithoutLevelRenderer {
             org.slf4j.LoggerFactory.getLogger("LegacyConnector/Render").info("GUI item {} ({}): pose translate ({}, {}, {}) scale ({}, {}, {}), type {}",
                     renderer.getClass().getName(), view.getItem().getClass().getSimpleName(), m.m30(), m.m31(), m.m32(), m.m00(), m.m11(), m.m22(), type);
         }
+        // Lock order handler monitor -> render lock, as the chunk mesher's ISBRH capture takes them (IsbrhBlockModel.capture): taking the
+        // render lock first (beginWorld) and the renderer's monitor second deadlocked with a mesh thread that held the monitor
+        // (placing a Thermal Expansion tesseract froze the client: RenderTesseract is item renderer and block handler at once).
+        synchronized (renderer) {
         pose.pushPose();
         RenderContext.beginWorld(pose, buffers, light, overlay);
         try {
@@ -99,15 +103,14 @@ public class LegacyItemRenderer extends BlockEntityWithoutLevelRenderer {
             }
             // a renderer that is also a block handler (CodeChickenLib models keep their draw state in statics: Thermal Dynamics' ducts) is not
             // run by the render thread while a mesh thread captures its blocks: ISBRH capture locks the handler (IsbrhBlockModel.capture)
-            synchronized (renderer) {
-                renderer.renderItem(type, view, data);
-            }
+            renderer.renderItem(type, view, data);
         } catch (RuntimeException | LinkageError e) {
             // a broken legacy renderer must not take the inventory down
             logOnce(renderer.getClass().getName(), e);
         } finally {
             RenderContext.end();
             pose.popPose();
+        }
         }
     }
 
@@ -154,6 +157,7 @@ public class LegacyItemRenderer extends BlockEntityWithoutLevelRenderer {
         }
         var handler = legacyconnector.v1_7_10.cpw.mods.fml.client.registry.RenderingRegistry.mcc$blockHandler(renderId);
         if (handler == null) return false;
+        synchronized (handler) { // same lock order as renderByItem
         pose.pushPose();
         RenderContext.beginWorld(pose, buffers, light, overlay);
         try {
@@ -183,6 +187,7 @@ public class LegacyItemRenderer extends BlockEntityWithoutLevelRenderer {
         } finally {
             RenderContext.end();
             pose.popPose();
+        }
         }
     }
 

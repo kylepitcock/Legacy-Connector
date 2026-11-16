@@ -69,7 +69,7 @@ public final class BlockBridge {
 
 
     public static RegistryNamespaced legacyRegistry() {
-        return new legacyconnector.v1_7_10.cpw.mods.fml.common.registry.FMLControlledNamespacedRegistry<Block>(name -> byName(name), o -> nameOf((Block) o), BlockBridge::byId, o -> idOf((Block) o),
+        return new legacyconnector.v1_7_10.cpw.mods.fml.common.registry.FMLControlledNamespacedRegistry<Block>(name -> byName(name), o -> o instanceof Block b0 ? nameOf(b0) : null, BlockBridge::byId, o -> o instanceof Block b1 ? idOf(b1) : -1,
                 () -> all().iterator());
     }
 
