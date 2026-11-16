@@ -27,7 +27,8 @@ public class InventoryPlayer implements IInventory {
 
     public InventoryPlayer(EntityPlayer player) {
         this.player = player;
-        this.mcc$inv = player.mcc$player().getInventory();
+        // vanilla accepts a null player (an AI proxy of a fake player builds a detached inventory before it has one)
+        this.mcc$inv = player == null ? new Inventory(null) : player.mcc$player().getInventory();
     }
 
     public static ItemStack[] mcc$get$mainInventory(InventoryPlayer inv) {

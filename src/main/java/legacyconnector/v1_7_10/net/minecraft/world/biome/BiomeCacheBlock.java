@@ -15,6 +15,14 @@ public class BiomeCacheBlock {
         this.biomes = biomes;
     }
 
+    /**
+     * Vanilla's {@code BiomeCache.Block(cache, x, z)}: x and z are 16-block coordinates, the biomes are read from the cache's chunk manager.
+     * Mods build one themselves from the reflected {@code biomeCache} field of the world's chunk manager (Tropicraft's world generator).
+     */
+    public BiomeCacheBlock(BiomeCache cache, int x, int z) {
+        this(cache, x, z, cache.getCachedBiomes(x << 4, z << 4));
+    }
+
     public BiomeGenBase getBiomeGenAt(int x, int z) {
         return biomes[x & 15 | (z & 15) << 4];
     }

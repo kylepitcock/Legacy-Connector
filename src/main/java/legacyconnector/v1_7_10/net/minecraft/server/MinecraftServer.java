@@ -108,12 +108,14 @@ public class MinecraftServer implements ICommandSender, Runnable {
 
     /** The name of the world (the level name; the folder name if there is none). */
     public String getWorldName() {
+        if (mcc$server == null) return "world";
         String name = mcc$server.getWorldData().getLevelName();
         return name == null || name.isEmpty() ? getFolderName() : name;
     }
 
     /** The world's folder ("world"): the root path is "world/.", so it is the normalised path's own name, not its parent's. */
     public String getFolderName() {
+        if (mcc$server == null) return "world";
         var root = mcc$server.getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT).toAbsolutePath().normalize();
         return root.getFileName() == null ? "world" : root.getFileName().toString();
     }
@@ -158,12 +160,12 @@ public class MinecraftServer implements ICommandSender, Runnable {
 
     /** The build height limit (the level's maximum build height). */
     public int getBuildLimit() {
-        var overworld = mcc$server.overworld();
+        var overworld = mcc$server == null ? null : mcc$server.overworld();
         return overworld == null ? 256 : overworld.getMaxBuildHeight();
     }
 
     public boolean isFlightAllowed() {
-        return mcc$server.isFlightAllowed();
+        return mcc$server != null && mcc$server.isFlightAllowed();
     }
 
     public int getMaxPlayers() {
@@ -188,11 +190,11 @@ public class MinecraftServer implements ICommandSender, Runnable {
     }
 
     public boolean isServerRunning() {
-        return mcc$server.isRunning();
+        return mcc$server != null && mcc$server.isRunning();
     }
 
     public boolean isSinglePlayer() {
-        return mcc$server.isSingleplayer();
+        return mcc$server != null && mcc$server.isSingleplayer(); // false while mods preInit (the dedicated/client split is not known yet)
     }
 
     public String getServerModName() {

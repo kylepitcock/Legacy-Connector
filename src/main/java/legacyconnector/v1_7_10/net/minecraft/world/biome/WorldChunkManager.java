@@ -11,6 +11,8 @@ import legacyconnector.v1_7_10.net.minecraft.world.gen.layer.IntCache;
 public class WorldChunkManager {
     public GenLayer genBiomes;
     public GenLayer biomeIndexLayer;
+    /** Vanilla's private {@code biomeCache} (mods read it reflectively and build {@code BiomeCache.Block}s from it: Tropicraft's world generator). */
+    private final BiomeCache biomeCache = new BiomeCache(this);
     /**
      * Forge: the biomes new chunk managers let the player spawn in (mods add theirs or replace the list). A vanilla biome that has no
      * instance yet (null) is left out instead of failing every chunk of the world.

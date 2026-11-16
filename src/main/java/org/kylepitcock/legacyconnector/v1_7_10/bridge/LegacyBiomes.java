@@ -86,7 +86,50 @@ public final class LegacyBiomes {
 
     // ------------------------------------------------------------------ data generation
 
+    private static boolean biomeClassesInitialized;
+
+    /**
+     * A mod may create its biomes in the static initializer of a biome class that only the world's chunk manager touches (Tropicraft's
+     * {@code BiomeGenTropicraft}): until a world is made they do not exist, so no modern biome would be generated for them and the dimension would fall
+     * back to plains. Biome classes of the mods are initialized once, before the biome data is written.
+     */
+    private static synchronized void initializeModBiomeClasses() {
+        if (biomeClassesInitialized) return;
+        biomeClassesInitialized = true;
+        for (var record : org.kylepitcock.legacyconnector.core.LegacyMods.all()) {
+            if (record.mainClass == null || !org.kylepitcock.legacyconnector.core.LegacyMods.family(record.version).equals("1.7.10")) continue;
+            Module module = record.mainClass.getModule();
+            if (module == null || module.getDescriptor() == null && module.getLayer() == null) continue;
+            try {
+                var ref = module.getLayer() == null ? null : module.getLayer().configuration().findModule(module.getName()).map(r -> r.reference()).orElse(null);
+                if (ref == null || ref.location().isEmpty()) continue;
+                // the module reference lists nothing for a union file system: the translated jar's own path is in the location ("union:/<path>.jar%23<n>!/")
+                String loc = ref.location().get().toString();
+                int end = loc.indexOf(".jar%23");
+                if (!loc.startsWith("union:/") || end < 0) continue;
+                String path = java.net.URLDecoder.decode(loc.substring("union:/".length(), end + 4), java.nio.charset.StandardCharsets.UTF_8);
+                try (var zip = new java.util.zip.ZipFile(path)) {
+                    var entries = zip.entries();
+                    while (entries.hasMoreElements()) {
+                        String n = entries.nextElement().getName();
+                        if (!n.endsWith(".class") || !n.contains("Biome") || n.contains("$")) continue;
+                        String cn = n.substring(0, n.length() - 6).replace('/', '.');
+                        try {
+                            Class<?> c = Class.forName(cn, false, record.mainClass.getClassLoader());
+                            if (BiomeGenBase.class.isAssignableFrom(c) && c != BiomeGenBase.class) Class.forName(cn, true, record.mainClass.getClassLoader());
+                        } catch (Throwable t) {
+                            LOG.debug("Biome class {} of {} did not initialize: {}", cn, record.legacyId, t.toString());
+                        }
+                    }
+                }
+            } catch (Exception | LinkageError e) {
+                LOG.warn("Could not scan {} for biome classes: {}", record.legacyId, e.toString());
+            }
+        }
+    }
+
     public static void contribute(Map<String, Supplier<byte[]>> out) {
+        initializeModBiomeClasses();
         int n = 0;
         for (BiomeGenBase b : modBiomes()) {
             try {
@@ -244,10 +287,10 @@ public final class LegacyBiomes {
                 var entries = b.getSpawnableList(types[i]);
                 if (entries != null) {
                     for (var entry : entries) {
-                        net.minecraft.world.entity.EntityType<?> type = SpawnClasses.modernType(entry.entityClass);
-                        if (type == null || entry.itemWeight <= 0) continue;
+                        ResourceLocation typeId = SpawnClasses.modernId(entry.entityClass);
+                        if (typeId == null || entry.itemWeight <= 0) continue;
                         JsonObject o = new JsonObject();
-                        o.addProperty("type", net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(type).toString());
+                        o.addProperty("type", typeId.toString());
                         o.addProperty("weight", entry.itemWeight);
                         o.addProperty("minCount", Math.max(1, entry.minGroupCount));
                         o.addProperty("maxCount", Math.max(Math.max(1, entry.minGroupCount), entry.maxGroupCount));

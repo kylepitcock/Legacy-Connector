@@ -9,3 +9,6 @@ net/minecraft/entity/EntityLivingBase	setEntityHealth	(I)V	setHealth	(F)V
 net/minecraft/entity/EntityLivingBase	getMaxHealth	()I	mcc$legacyMaxHealth	()F
 net/minecraft/network/Packet	readPacketData	(Ljava/io/DataInputStream;)V	readPacketData	(Ljava/io/DataInput;)V
 net/minecraft/network/Packet	writePacketData	(Ljava/io/DataOutputStream;)V	writePacketData	(Ljava/io/DataOutput;)V
+# a hanging entity broke by dropItemStack() (func_82331_h in a mod built against the SRG names); 1.6.4 made it onBroken(Entity)
+net/minecraft/entity/EntityHanging	dropItemStack	()V	onBroken	(Lnet/minecraft/entity/Entity;)V
+net/minecraft/entity/EntityHanging	func_82331_h	()V	onBroken	(Lnet/minecraft/entity/Entity;)V

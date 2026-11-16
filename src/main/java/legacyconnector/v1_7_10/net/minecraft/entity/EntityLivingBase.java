@@ -205,6 +205,11 @@ public abstract class EntityLivingBase extends Entity {
         return mcc$base$getHealth();
     }
 
+    /** The stored health, never through an override of the getter (1.5.2: {@code health} the field; mods' {@code getHealth()} returns it, so reading the field must not call the getter). */
+    public static float mcc$storedHealth(EntityLivingBase e) {
+        return e.mcc$base$getHealth();
+    }
+
     /** The value of {@link #getHealth()}, for the phantom field accessor (mods override the getter to read the field). */
     private float mcc$base$getHealth() {
         return mcc$entity == null ? 0 : mcc$living().getHealth();

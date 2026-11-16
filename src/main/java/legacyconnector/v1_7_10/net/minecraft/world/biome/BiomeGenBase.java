@@ -134,10 +134,36 @@ public class BiomeGenBase {
         this(id, true);
     }
 
+    /**
+     * A mod's biomes can be built outside its lifecycle events (a static initializer that runs when the world's chunk manager first touches the
+     * class): the owner is then the mod whose classes made the call, found by the module of the first non-shim class on the stack.
+     */
+    private static String mcc$ownerByCaller() {
+        Class<?> caller = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE).walk(frames -> frames.map(StackWalker.StackFrame::getDeclaringClass)
+                .filter(c -> !c.getName().startsWith("legacyconnector.") && !c.getName().startsWith("java.") && !c.getName().startsWith("jdk.")).findFirst()).orElse(null);
+        if (caller == null) return null;
+        Module module = caller.getModule();
+        String root = caller.getName().contains(".") ? caller.getName().substring(0, caller.getName().indexOf('.')) : "";
+        String best = null;
+        int bestScore = -1;
+        for (var record : org.kylepitcock.legacyconnector.core.LegacyMods.all()) {
+            if (record.mainClass == null || record.mainClass.getModule() != module
+                    || !org.kylepitcock.legacyconnector.core.LegacyMods.family(record.version).equals("1.7.10")) continue;
+            // a jar can hold several mods: the one named like the package the biome class sits in (tropicraft.Tropicraft for tropicraft.world.biomes) owns it
+            int score = record.mainClass.getSimpleName().equalsIgnoreCase(root) ? 2 : record.mainClass.getName().startsWith(root + ".") ? 1 : 0;
+            if (score > bestScore) {
+                bestScore = score;
+                best = record.modernId;
+            }
+        }
+        if (best != null) return best;
+        return null;
+    }
+
     public BiomeGenBase(int id, boolean register) {
         this.biomeID = id;
         var owner = org.kylepitcock.legacyconnector.v1_7_10.LegacyModContainer1710.active();
-        this.mcc$owner = owner == null ? null : owner.record().modernId;
+        this.mcc$owner = owner == null ? mcc$ownerByCaller() : owner.record().modernId;
         this.rootHeight = height_Default.rootHeight;
         this.heightVariation = height_Default.variation;
         this.temperature = 0.5F;

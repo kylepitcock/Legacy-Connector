@@ -73,6 +73,14 @@ public final class LegacyHierarchyData {
         } catch (IOException e) {
             throw new IllegalStateException("Cannot read " + resource, e);
         }
+        if (version.flatNames()) {
+            // 1.4.7's classes are keyed by their flat net/minecraft/src names, but the linker names synthesized classes after the packaged name
+            // (ForwardRenames.flat): a lookup by that name must find the same entry, or a synthesized Item/Block would not extend the shim's.
+            for (Entry e : List.copyOf(map.values())) {
+                String packaged = org.kylepitcock.legacyconnector.loader.mapping.ForwardRenames.flat(version, e.name());
+                if (!packaged.equals(e.name())) map.putIfAbsent(packaged, new Entry(packaged, e.superName(), e.interfaces(), e.access()));
+            }
+        }
         return new LegacyHierarchyData(map);
     }
 }
