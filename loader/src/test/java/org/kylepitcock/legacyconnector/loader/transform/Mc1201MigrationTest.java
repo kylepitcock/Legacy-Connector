@@ -93,6 +93,36 @@ class Mc1201MigrationTest implements Opcodes {
     }
 
     @Test
+    void legacyAabbBlockPosConstructorBecomesCompatFactoryCall() {
+        String pos = "net/minecraft/core/BlockPos";
+        String aabb = "net/minecraft/world/phys/AABB";
+        String constructor = "(L" + pos + ";L" + pos + ";)V";
+        ClassNode c = cls("test/AabbCalls", "java/lang/Object");
+        MethodNode m = method(c, ACC_PUBLIC | ACC_STATIC, "bounds",
+                "(L" + pos + ";L" + pos + ";)L" + aabb + ";");
+        m.instructions.add(new TypeInsnNode(NEW, aabb));
+        m.instructions.add(new InsnNode(DUP));
+        m.instructions.add(new VarInsnNode(ALOAD, 0));
+        m.instructions.add(new VarInsnNode(ALOAD, 1));
+        m.instructions.add(new MethodInsnNode(INVOKESPECIAL, aabb, "<init>", constructor, false));
+        m.instructions.add(new InsnNode(ARETURN));
+
+        assertEquals(1, apply(c).constructors);
+
+        MethodInsnNode factory = find(m, MIGRATE + "MiscCompat", "newAabb");
+        assertNotNull(factory);
+        assertEquals(INVOKESTATIC, factory.getOpcode());
+        assertEquals("(L" + pos + ";L" + pos + ";)L" + aabb + ";", factory.desc);
+        assertNull(find(m, aabb, "<init>"), "the removed target constructor must not remain");
+        for (AbstractInsnNode in : m.instructions) {
+            if (in instanceof TypeInsnNode type && type.getOpcode() == NEW) {
+                assertFalse(type.desc.equals(aabb), "the AABB allocation is replaced by the factory call");
+            }
+        }
+        verify(c);
+    }
+
+    @Test
     void holderFieldIsUnwrapped() {
         ClassNode c = cls("test/Mod", "java/lang/Object");
         MethodNode m = method(c, ACC_PUBLIC | ACC_STATIC, "poison", "()L" + ME + ";");
