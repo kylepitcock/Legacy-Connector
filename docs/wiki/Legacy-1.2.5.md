@@ -246,6 +246,22 @@ Read from the real classes (`javap -p -c` of `ModLoaderMP 1.2.5 v1.zip` client a
 - **Tracker settings** (`registerEntityTracker`) now apply to subclasses too, as `handleEntityTrackers`' `isInstance` did (a subclass with its own setting keeps it).
 - **Chat redirects** from the loader (`GuiIngame.clearChat()`, `translate(String)`, `Redirects125.clearChat/translate`, rows in `member-manual.tsv`): `clearChat` empties the chat history (the real method cleared its two line lists); `translate` translates the key with the language table and adds the result as a chat line (the real body).
 
+### Run time, round 6: capabilities by default for the 1.2.5-era APIs (2026-11-16; unit-tested on test doubles of the real interfaces, not run in a game)
+
+Interfaces read from the corpus jars with `javap` (IC2 1.103's `ic2.api.*`, Forestry 1.4.8.6's bundled BuildCraft 3.2 `buildcraft.api.liquids.*`, BuildCraft 3.1.5 core, Railcraft 5.0.0). What a capability can and cannot represent:
+
+| API | Exposed as | Notes |
+|---|---|---|
+| `ic2.api.IEnergySink` (existing) | energy storage, receive | the packet is now the tier of the block's output: an `IEnergyStorage` block takes `EnergyRates.packetForOutput(getOutput())` EU (BatBox 32, MFE 128, MFSU 512, never above 2048; a block without it keeps 32); a machine given a bigger packet explodes |
+| `ic2.api.IEnergyStorage` (`getStored`, `getCapacity`, `getOutput`; batboxes, MFE, MFSU) | real stored and capacity in FE on the sink adapter; a storage block that is no sink is a read-only meter (`EarlyEuMeter`: no receive, no extract) | rates: `energy.fePerEu` (readouts), `energy.fePerEu.in` (receiving), as before |
+| `IEnergySource`, `IEnergyConductor`, `IEnergyEmitter` | not exposed | a 1.103 source pushes into IC2's own energy net from its tick (`EnergyNet.emitEnergyFrom`), and the storage API has no setter, so nothing can be taken from it; a conductor is a net element with no energy of its own. Representing them needs the layer to join IC2's net as a tile, which would mean a generated `IEnergySink` per modern capability holder |
+| `buildcraft.api.ILiquidContainer` (existing; BuildCraft 3.1, Railcraft 5.0, Thermal Expansion, Forestry's copy) | fluid handler, one tank | the capacity is now the tile's own when it declares one (`getCapacity()` in Forestry's copy, the sum of `getLiquidSlots()` capacities in BuildCraft 3.1.5's), never below what it holds; before it was a bucket more than the contents |
+| `buildcraft.api.liquids.ITankContainer` + `ILiquidTank` (Forestry 1.4.8.6's bundled API; not Forge's later `net.minecraftforge.liquids.ITankContainer`) | fluid handler, one tank per `getTanks()` entry (`LiquidsBc32`) | fill and drain by side through `fill(Orientations, LiquidStack, boolean)` / `drain(Orientations, int, boolean)`; liquid ids map to fluids like the 1.5.2 liquids (`Liquids164`) |
+| `buildcraft.api.IPipeConnection`, `ILegacyPipeConnection` | not exposed | connection predicates only, no items or energy to hand over |
+| RedPower 2 | none in the corpus (only its NEI plugin) | nothing to adapt |
+
+Railcraft 5.0.0 ships only `ILiquidContainer`, `ISpecialInventory` and IC2's API, which the existing adapters cover (its tanks are `TileUtilityLiquid`, an `ILiquidContainer`). Tests: `Capabilities125Test`.
+
 ### Offline link probe over the real corpus (2026-11-16)
 
 `python -I tools/compat/probe.py <dir> --mc 1.2.5 --dry-run --no-history` (passes `-Pmappings125` to `checkLegacyMod`; `-Pmc125Unresolved=<file>` also appends every game member the join could not name).

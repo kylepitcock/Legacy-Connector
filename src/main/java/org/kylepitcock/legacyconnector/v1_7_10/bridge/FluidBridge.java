@@ -233,6 +233,8 @@ public final class FluidBridge {
         if (liquids != null) return liquids;
         var early = org.kylepitcock.legacyconnector.v1_6_4.bridge.Liquids125.forTile(legacy, side);   // 1.2.x ILiquidContainer
         if (early != null) return early;
+        var tanks = org.kylepitcock.legacyconnector.v1_6_4.bridge.LiquidsBc32.forTile(legacy, side);   // Forestry-era buildcraft.api.liquids.ITankContainer
+        if (tanks != null) return tanks;
         if (legacy instanceof legacyconnector.v1_7_10.net.minecraftforge.fluids.IFluidTank tank && !(legacy instanceof IFluidHandler)) return new TankHandler(tank);
         if (!(legacy instanceof IFluidHandler handler)) return null;
         ForgeDirection from = side == null ? ForgeDirection.UNKNOWN : ForgeDirection.getOrientation(side.get3DDataValue());
