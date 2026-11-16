@@ -117,3 +117,5 @@ net/minecraft/world/level/storage/loot/entries/LootPoolSingletonContainer$Serial
 net/minecraft/world/item/enchantment/FrostWalkerEnchantment	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyFrostWalker
 net/minecraft/world/item/ItemStack$TooltipPart	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyTooltipPart
 net/minecraft/world/level/block/entity/BannerPattern$Builder	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyBannerPatternBuilder
+net/minecraft/world/item/enchantment/ThornsEnchantment	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyThorns
+net/minecraft/server/commands/ResetChunksCommand	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyResetChunksCommand

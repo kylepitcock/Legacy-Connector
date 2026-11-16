@@ -24,6 +24,14 @@ public abstract class LegacySimpleCriterionTrigger<T extends LegacyCriterionInst
 
     protected abstract T createInstance(JsonObject json, ContextAwarePredicate player, LegacyDeserializationContext context);
 
+    /** {@code createInstance(json, context)}: the 1.20.1 entry point that reads the {@code player} predicate and calls the mod's three-argument method. */
+    public final T createInstance(JsonObject json, LegacyDeserializationContext context) {
+        ContextAwarePredicate player = null;
+        if (json.has("player")) player = CritCompat.decode(ContextAwarePredicate.CODEC, json.get("player"));
+        if (player == null) player = CritCompat.anyPlayer();
+        return createInstance(json, player, context);
+    }
+
     @Override
     public final Codec<T> codec() {
         if (codec == null) codec = new Codec<T>() {
@@ -33,10 +41,7 @@ public abstract class LegacySimpleCriterionTrigger<T extends LegacyCriterionInst
                 CritCompat.CURRENT.set(ops);
                 try {
                     JsonObject json = CritCompat.asObject(ops.convertTo(JsonOps.INSTANCE, input));
-                    ContextAwarePredicate player = null;
-                    if (json.has("player")) player = CritCompat.decode(ContextAwarePredicate.CODEC, json.get("player"));
-                    if (player == null) player = CritCompat.anyPlayer();
-                    T instance = createInstance(json, player, new LegacyDeserializationContext(getId()));
+                    T instance = createInstance(json, new LegacyDeserializationContext(getId()));
                     return DataResult.success(Pair.of(instance, ops.empty()));
                 } catch (RuntimeException e) {
                     return DataResult.error(() -> "Cannot read the conditions of trigger " + getId() + ": " + e);
