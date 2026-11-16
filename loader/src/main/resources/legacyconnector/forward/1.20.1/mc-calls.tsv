@@ -847,3 +847,4 @@ net/minecraft/world/level/block/AttachedStemBlock	<init>	(Lnet/minecraft/world/l
 net/minecraft/world/item/DiggerItem	getAttackDamage	()F	MiscCompat	diggerDamage	-
 net/minecraft/world/level/block/Blocks	woodenButton	(Lnet/minecraft/world/level/block/state/properties/BlockSetType;[Lnet/minecraft/world/flag/FeatureFlag;)Lnet/minecraft/world/level/block/ButtonBlock;	Round5Compat	woodenButton	-
 net/minecraft/world/food/FoodProperties	isFastFood	()Z	MiscCompat	isFastFood	-
+net/neoforged/neoforge/client/event/EntityRenderersEvent$AddLayers	getSkins	()Ljava/util/Set;	ClientCompat	getSkins	-

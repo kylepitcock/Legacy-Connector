@@ -204,6 +204,18 @@ public final class ClientCompat {
         return (net.minecraft.client.renderer.entity.LivingEntityRenderer) event.getSkin(skinModel(name));
     }
 
+    /** {@code AddLayers.getSkins()} as it is in 1.21.1 (the models), for code that was adapted to read them. */
+    public static java.util.Set<net.minecraft.client.resources.PlayerSkin.Model> getSkinModels(net.neoforged.neoforge.client.event.EntityRenderersEvent.AddLayers event) {
+        return event.getSkins();
+    }
+
+    /** {@code EntityRenderersEvent.AddLayers.getSkins()}: the skin names ("default", "slim") of 1.20.1 are {@code PlayerSkin.Model} values now. */
+    public static java.util.Set<String> getSkins(net.neoforged.neoforge.client.event.EntityRenderersEvent.AddLayers event) {
+        java.util.Set<String> out = new java.util.LinkedHashSet<>();
+        for (net.minecraft.client.resources.PlayerSkin.Model m : event.getSkins()) out.add(m == net.minecraft.client.resources.PlayerSkin.Model.SLIM ? "slim" : "default");
+        return out;
+    }
+
     /** {@code Options.renderDebug} (F3 overlay shown): the debug overlay keeps the flag now. */
     public static boolean getRenderDebug(net.minecraft.client.Options options) {
         Minecraft mc = Minecraft.getInstance();
