@@ -168,12 +168,16 @@ public final class Forge1201MobFinalizeSpawnEvolutionAudit {
         int sourceOverrides = (int) source.mobClasses.values().stream()
                 .filter(value -> !value.owner().equals(MOB_OWNER))
                 .filter(value -> value.baseDispatch().status() == DispatchStatus.FOUND)
-                .filter(value -> !MOB_OWNER.equals(value.baseDispatch().declaringOwner()))
+                .map(value -> value.baseDispatch().declaringOwner())
+                .filter(owner -> !MOB_OWNER.equals(owner))
+                .distinct()
                 .count();
         int targetOverrides = (int) target.mobClasses.values().stream()
                 .filter(value -> !value.owner().equals(MOB_OWNER))
                 .filter(value -> value.baseDispatch().status() == DispatchStatus.FOUND)
-                .filter(value -> !MOB_OWNER.equals(value.baseDispatch().declaringOwner()))
+                .map(value -> value.baseDispatch().declaringOwner())
+                .filter(owner -> !MOB_OWNER.equals(owner))
+                .distinct()
                 .count();
 
         return new Result(

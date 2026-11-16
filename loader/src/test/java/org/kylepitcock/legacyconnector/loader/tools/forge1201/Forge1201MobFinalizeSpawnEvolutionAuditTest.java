@@ -29,30 +29,24 @@ final class Forge1201MobFinalizeSpawnEvolutionAuditTest {
 
         try (JarOutputStream jar = new JarOutputStream(Files.newOutputStream(sourceJar))) {
             addClass(jar, Forge1201MobFinalizeSpawnEvolutionAudit.MOB_OWNER, "java/lang/Object",
-                    new MethodSpec[][] {{Forge1201MobFinalizeSpawnEvolutionAudit.SOURCE_BASE_DESCRIPTOR,
-                            Opcodes.ACC_PUBLIC}});
+                    new MethodSpec[] { new MethodSpec(Forge1201MobFinalizeSpawnEvolutionAudit.SOURCE_BASE_DESCRIPTOR, Opcodes.ACC_PUBLIC) });
             addClass(jar, "net/minecraft/world/entity/Animal", Forge1201MobFinalizeSpawnEvolutionAudit.MOB_OWNER,
-                    new MethodSpec[][] {{Forge1201MobFinalizeSpawnEvolutionAudit.SOURCE_BASE_DESCRIPTOR,
-                            Opcodes.ACC_PUBLIC}});
+                    new MethodSpec[] { new MethodSpec(Forge1201MobFinalizeSpawnEvolutionAudit.SOURCE_BASE_DESCRIPTOR, Opcodes.ACC_PUBLIC) });
             addClass(jar, "net/minecraft/world/entity/Zombie", "net/minecraft/world/entity/Animal",
                     new MethodSpec[0]);
             addClass(jar, "net/minecraft/world/entity/Skeleton", Forge1201MobFinalizeSpawnEvolutionAudit.MOB_OWNER,
-                    new MethodSpec[][] {{Forge1201MobFinalizeSpawnEvolutionAudit.SOURCE_BASE_DESCRIPTOR,
-                            Opcodes.ACC_PUBLIC}});
+                    new MethodSpec[] { new MethodSpec(Forge1201MobFinalizeSpawnEvolutionAudit.SOURCE_BASE_DESCRIPTOR, Opcodes.ACC_PUBLIC) });
             addClass(jar, "net/minecraft/world/entity/Villager", Forge1201MobFinalizeSpawnEvolutionAudit.MOB_OWNER,
                     new MethodSpec[0]);
             addClass(jar, "net/minecraft/world/entity/StaticHelperMob", Forge1201MobFinalizeSpawnEvolutionAudit.MOB_OWNER,
-                    new MethodSpec[][] {{Forge1201MobFinalizeSpawnEvolutionAudit.SOURCE_BASE_DESCRIPTOR,
-                            Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC}});
+                    new MethodSpec[] { new MethodSpec(Forge1201MobFinalizeSpawnEvolutionAudit.SOURCE_BASE_DESCRIPTOR, Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC) });
         }
 
         try (JarOutputStream jar = new JarOutputStream(Files.newOutputStream(targetJar))) {
             addClass(jar, Forge1201MobFinalizeSpawnEvolutionAudit.MOB_OWNER, "java/lang/Object",
-                    new MethodSpec[][] {{Forge1201MobFinalizeSpawnEvolutionAudit.TARGET_BASE_DESCRIPTOR,
-                            Opcodes.ACC_PUBLIC}});
+                    new MethodSpec[] { new MethodSpec(Forge1201MobFinalizeSpawnEvolutionAudit.TARGET_BASE_DESCRIPTOR, Opcodes.ACC_PUBLIC) });
             addClass(jar, "net/minecraft/world/entity/Animal", Forge1201MobFinalizeSpawnEvolutionAudit.MOB_OWNER,
-                    new MethodSpec[][] {{Forge1201MobFinalizeSpawnEvolutionAudit.TARGET_BASE_DESCRIPTOR,
-                            Opcodes.ACC_PUBLIC}});
+                    new MethodSpec[] { new MethodSpec(Forge1201MobFinalizeSpawnEvolutionAudit.TARGET_BASE_DESCRIPTOR, Opcodes.ACC_PUBLIC) });
             addClass(jar, "net/minecraft/world/entity/Zombie", "net/minecraft/world/entity/Animal",
                     new MethodSpec[0]);
             addClass(jar, "net/minecraft/world/entity/Skeleton", Forge1201MobFinalizeSpawnEvolutionAudit.MOB_OWNER,
@@ -60,8 +54,7 @@ final class Forge1201MobFinalizeSpawnEvolutionAuditTest {
             addClass(jar, "net/minecraft/world/entity/Villager", Forge1201MobFinalizeSpawnEvolutionAudit.MOB_OWNER,
                     new MethodSpec[0]);
             addClass(jar, "net/minecraft/world/entity/Warden", Forge1201MobFinalizeSpawnEvolutionAudit.MOB_OWNER,
-                    new MethodSpec[][] {{Forge1201MobFinalizeSpawnEvolutionAudit.TARGET_BASE_DESCRIPTOR,
-                            Opcodes.ACC_PUBLIC}});
+                    new MethodSpec[] { new MethodSpec(Forge1201MobFinalizeSpawnEvolutionAudit.TARGET_BASE_DESCRIPTOR, Opcodes.ACC_PUBLIC) });
         }
 
         var result = Forge1201MobFinalizeSpawnEvolutionAudit.analyze(
@@ -120,14 +113,12 @@ final class Forge1201MobFinalizeSpawnEvolutionAuditTest {
         Path targetJar = tempDir.resolve("target.jar");
         try (JarOutputStream jar = new JarOutputStream(Files.newOutputStream(sourceJar))) {
             addClass(jar, Forge1201MobFinalizeSpawnEvolutionAudit.MOB_OWNER, "java/lang/Object",
-                    new MethodSpec[][] {{Forge1201MobFinalizeSpawnEvolutionAudit.SOURCE_BASE_DESCRIPTOR,
-                            Opcodes.ACC_PUBLIC}});
+                    new MethodSpec[] { new MethodSpec(Forge1201MobFinalizeSpawnEvolutionAudit.SOURCE_BASE_DESCRIPTOR, Opcodes.ACC_PUBLIC) });
             addClass(jar, "net/minecraft/world/entity/UnknownChild", "sample/UnavailableParent", new MethodSpec[0]);
         }
         try (JarOutputStream jar = new JarOutputStream(Files.newOutputStream(targetJar))) {
             addClass(jar, Forge1201MobFinalizeSpawnEvolutionAudit.MOB_OWNER, "java/lang/Object",
-                    new MethodSpec[][] {{Forge1201MobFinalizeSpawnEvolutionAudit.TARGET_BASE_DESCRIPTOR,
-                            Opcodes.ACC_PUBLIC}});
+                    new MethodSpec[] { new MethodSpec(Forge1201MobFinalizeSpawnEvolutionAudit.TARGET_BASE_DESCRIPTOR, Opcodes.ACC_PUBLIC) });
         }
 
         var result = Forge1201MobFinalizeSpawnEvolutionAudit.analyze(
