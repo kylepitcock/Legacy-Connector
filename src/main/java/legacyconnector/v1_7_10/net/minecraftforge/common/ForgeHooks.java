@@ -17,6 +17,12 @@ public class ForgeHooks {
     }
 
     /** The armour points a player wears (the value the armour bar shows). */
+    /** A player throws a stack out of their inventory: the dropped entity, or null when a listener of the toss event cancelled it. */
+    public static legacyconnector.v1_7_10.net.minecraft.entity.item.EntityItem onPlayerTossEvent(
+            legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player, ItemStack item, boolean includeName) {
+        return player.func_146097_a(item, false, includeName);
+    }
+
     public static int getTotalArmorValue(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player) {
         return player.getTotalArmorValue();
     }

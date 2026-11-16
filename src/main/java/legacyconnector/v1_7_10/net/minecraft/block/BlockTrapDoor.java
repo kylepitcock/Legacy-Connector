@@ -12,6 +12,9 @@ public class BlockTrapDoor extends Block {
         super(material);
     }
 
+    /** Forge's switch for mods whose trapdoors may hang without a support block; the modern trapdoor never needs one, so it only records the request. */
+    public static boolean disableValidation = false;
+
     public static boolean func_150118_d(int meta) {
         return (meta & 4) != 0;
     }

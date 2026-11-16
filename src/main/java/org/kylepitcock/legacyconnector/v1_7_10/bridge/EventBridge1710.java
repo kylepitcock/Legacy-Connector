@@ -480,6 +480,17 @@ public final class EventBridge1710 {
             if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.event.world.ChunkEvent.Unload.class) || !(e.getLevel() instanceof net.minecraft.world.level.Level level)) return;
             forge().post(new legacyconnector.v1_7_10.net.minecraftforge.event.world.ChunkEvent.Unload(new legacyconnector.v1_7_10.net.minecraft.world.chunk.Chunk(World.mcc$wrap(level), e.getChunk())));
         });
+        // a sapling of the modern game grows a tree: the legacy terrain bus may veto it (Forge's SaplingGrowTreeEvent, which also gated the vanilla saplings)
+        gameBus.addListener((net.neoforged.neoforge.event.level.BlockGrowFeatureEvent e) -> {
+            var bus = legacyconnector.v1_7_10.net.minecraftforge.common.MinecraftForge.TERRAIN_GEN_BUS;
+            if (!wants(bus, legacyconnector.v1_7_10.net.minecraftforge.event.terraingen.SaplingGrowTreeEvent.class)
+                    || !(e.getLevel() instanceof net.minecraft.world.level.Level level)) return;
+            var at = e.getPos();
+            var event = new legacyconnector.v1_7_10.net.minecraftforge.event.terraingen.SaplingGrowTreeEvent(World.mcc$wrap(level),
+                    new java.util.Random(e.getRandom().nextLong()), at.getX(), at.getY(), at.getZ());
+            bus.post(event);
+            if (event.getResult() == Event.Result.DENY) e.setCanceled(true);
+        });
         gameBus.addListener((net.neoforged.neoforge.event.level.ChunkDataEvent.Load e) -> {
             if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.event.world.ChunkDataEvent.Load.class) || !(e.getLevel() instanceof net.minecraft.world.level.Level level)) return;
             forge().post(new legacyconnector.v1_7_10.net.minecraftforge.event.world.ChunkDataEvent.Load(

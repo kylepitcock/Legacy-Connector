@@ -69,6 +69,8 @@ public abstract class TerrainGen {
     }
 
     public static boolean saplingGrowTree(legacyconnector.v1_7_10.net.minecraft.world.World world, java.util.Random random, int x, int y, int z) {
-        return true;
+        SaplingGrowTreeEvent event = new SaplingGrowTreeEvent(world, random, x, y, z);
+        MinecraftForge.TERRAIN_GEN_BUS.post(event);
+        return event.getResult() != Event.Result.DENY;
     }
 }
