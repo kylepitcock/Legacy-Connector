@@ -117,6 +117,11 @@ public class Fluid {
         return this;
     }
 
+    /** Forge: a fluid lighter than air (zero or negative density) rises. */
+    public boolean isLighterThanAir() {
+        return density <= 0;
+    }
+
     public boolean isGaseous() {
         return isGaseous;
     }
