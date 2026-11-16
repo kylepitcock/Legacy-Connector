@@ -759,6 +759,17 @@ public abstract class EntityLivingBase extends Entity {
         return applyPotionDamageCalculations(source, amount);
     }
 
+    /** {@code func_70655_b}: damage left after the armour (the modern getDamageAfterArmorAbsorb). Hosts route the modern calculation here so mods' overrides run. */
+    protected float applyArmorCalculations(DamageSource source, float amount) {
+        if (source == null || source.isUnblockable()) return amount;
+        int armor = 25 - Math.min(25, Math.max(0, getTotalArmorValue()));
+        return amount * armor / 25.0F;
+    }
+
+    public final float mcc$applyArmorCalculations(DamageSource source, float amount) {
+        return applyArmorCalculations(source, amount);
+    }
+
     /** Air left after one tick under water ({@code air - 1}, or {@code air} when Respiration saves the breath). */
     protected int decreaseAirSupply(int air) {
         if (!(mcc$entity instanceof LivingEntity l)) return air - 1;

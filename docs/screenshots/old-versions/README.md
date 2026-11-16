@@ -163,6 +163,7 @@ Fourth round (shaders; 2026-11-07, the Tinkers' Construct, Goblins, Counter Craf
 
 | File | Mod | What it shows | Rating |
 |---|---|---|---|
+| `1.5.2/cutemobmodels-mobs-bare-modloader.jpg` | Cute Mob Models (bare ModLoader mod: BaseMod, no FML, no mcmod.info) | Creeper, zombie, skeleton, spider, enderman replacements spawned with /summon; the mod is listed and its custom models draw. Taken without shaders | Works |
 | `1.5.2/grimoire-of-gaia-mobs-shaders.jpg` | Grimoire of Gaia | Valkyrie, harpy, dryad and other mobs with their models | Works |
 | `1.5.2/grimoire-of-gaia-fight-survival-shaders.jpg` | Grimoire of Gaia | A witch and a creeper girl fought with a diamond sword in survival; drops in the hotbar | Works |
 | `1.5.2/applied-energistics-1-controller-terminal-drive-shaders.jpg` | Applied Energistics rv14.dev2 | Controller, terminal, drive and energy cell placed in survival | Partly working |

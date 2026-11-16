@@ -154,16 +154,43 @@ public final class RecipeCompat {
     public static net.minecraft.network.codec.StreamCodec streamCodec(Object serializer) {
         var to = legacy(serializer, "toNetwork", net.minecraft.network.FriendlyByteBuf.class, Recipe.class);
         var from = legacy(serializer, "fromNetwork", net.minecraft.resources.ResourceLocation.class, net.minecraft.network.FriendlyByteBuf.class);
+        // a subclass of a vanilla serializer (SimpleCookingSerializer...) inherits its 1.20.1 toNetwork/fromNetwork, which 1.21.1's vanilla class no longer has:
+        // the stream codec the vanilla superclass holds in a field does that job
+        net.minecraft.network.codec.StreamCodec inherited = to == null || from == null ? inheritedField(serializer, net.minecraft.network.codec.StreamCodec.class) : null;
         return new net.minecraft.network.codec.StreamCodec<net.minecraft.network.RegistryFriendlyByteBuf, Recipe>() {
             @Override
             public Recipe decode(net.minecraft.network.RegistryFriendlyByteBuf buf) {
+                if (from == null) return (Recipe) requireInherited(inherited, serializer).decode(buf);
                 return (Recipe) invoke(from, serializer, UNKNOWN_ID, buf);
             }
 
             @Override
             public void encode(net.minecraft.network.RegistryFriendlyByteBuf buf, Recipe recipe) {
-                invoke(to, serializer, buf, recipe);
+                if (to == null) requireInherited(inherited, serializer).encode(buf, recipe);
+                else invoke(to, serializer, buf, recipe);
             }
         };
+    }
+
+    private static net.minecraft.network.codec.StreamCodec requireInherited(net.minecraft.network.codec.StreamCodec codec, Object serializer) {
+        if (codec == null) throw new UnsupportedOperationException("The recipe serializer " + serializer.getClass().getName() + " has no toNetwork/fromNetwork and no inherited stream codec");
+        return codec;
+    }
+
+    /** The value of the first field of the given type declared by a superclass of the serializer (the codecs a vanilla serializer holds), or null. */
+    private static <T> T inheritedField(Object serializer, Class<T> type) {
+        for (Class<?> c = serializer.getClass().getSuperclass(); c != null && c != Object.class; c = c.getSuperclass()) {
+            for (java.lang.reflect.Field f : c.getDeclaredFields()) {
+                if (!type.isAssignableFrom(f.getType()) || java.lang.reflect.Modifier.isStatic(f.getModifiers())) continue;
+                try {
+                    f.setAccessible(true);
+                    Object v = f.get(serializer);
+                    if (type.isInstance(v)) return type.cast(v);
+                } catch (ReflectiveOperationException | RuntimeException ignored) {
+                    // next field
+                }
+            }
+        }
+        return null;
     }
 }

@@ -636,6 +636,8 @@ public final class Assets1122 implements GeneratedPack.Contributor {
                 continue;
             }
             if (r.fallback != null) continue; // nothing better than the model of its metadata
+            // the state's own textures may live outside blocks/ and items/ (Betweenlands' puddles: fluids/); the metadata's states listed only theirs
+            collectModelTextures(r, out);
             String renderType = renderTypeOf(block, state, r, out);
             List<JsonElement> all = new ArrayList<>();
             if (r.model != null) all.add(renderType == null ? r.model : withRenderType(r.model, renderType, id, out));

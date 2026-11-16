@@ -32,10 +32,18 @@ configurations {
     mcp1710
     mcp1122
     mcpconfig1201
+    mcpconfig1192
     intermediary1201
     intermediary1211
     betaIntermediary
     betaBiny
+    // Minecraft 1.2.5 / 1.4.7 names (Ornithe Calamus + Feather, CC0), resolved only by the opt-in :loader:genMappings125
+    mc125CalamusClient
+    mc125FeatherClient
+    mc125CalamusServer
+    mc125FeatherServer
+    mc147Calamus
+    mc147Feather
 }
 
 dependencies {
@@ -63,6 +71,8 @@ dependencies {
     mcp1122 "de.oceanlabs.mcp:mcp_stable:${mcp_1_12_2}@zip"
     // Forge 1.20.1 mods are SRG-named; the SRG -> Mojang table is chained from MCPConfig and Mojang's mappings at build time (never committed)
     mcpconfig1201 "de.oceanlabs.mcp:mcp_config:1.20.1-20230612.114412@zip"
+    // EXPERIMENTAL (scoping of 1.19.2, docs/wiki/Legacy-1.19.2-Estimate.md): only declared with -Pexperimental.mc1192=true
+    if (project.findProperty('experimental.mc1192')) mcpconfig1192 "de.oceanlabs.mcp:mcp_config:1.19.2-20220805.130853@zip"
     // Versioned Fabric Intermediary maps provide stable candidate class/member IDs across Minecraft releases.
     // The bridge audit consumes only the Tiny mappings locally; it does not emit or package runtime mappings.
     intermediary1201("net.fabricmc:intermediary:1.20.1") { transitive = false }
@@ -71,6 +81,12 @@ dependencies {
     // biny (intermediary -> named), both CC0, into one table at build time (BetaMappings; never committed)
     betaIntermediary "babric:intermediary:${beta_intermediary}:v2@jar"
     betaBiny "net.glasslauncher:biny:${beta_biny}:v2@jar"
+    mc125CalamusClient 'net.ornithemc:calamus-intermediary:1.2.5-client:v2@jar'
+    mc125FeatherClient 'net.ornithemc:feather:1.2.5-client+build.26:v2@jar'
+    mc125CalamusServer 'net.ornithemc:calamus-intermediary:1.2.5-server:v2@jar'
+    mc125FeatherServer 'net.ornithemc:feather:1.2.5-server+build.26:v2@jar'
+    mc147Calamus 'net.ornithemc:calamus-intermediary:1.4.7:v2@jar'
+    mc147Feather 'net.ornithemc:feather:1.4.7+build.31:v2@jar'
 
     testImplementation platform('org.junit:junit-bom:5.10.2')
     testImplementation 'org.junit.jupiter:junit-jupiter'
@@ -102,6 +118,11 @@ repositories {
         url = 'https://maven.glass-launcher.net/releases'
         metadataSources { mavenPom(); artifact() }
         content { includeModule 'net.glasslauncher', 'biny' }
+    }
+    maven {
+        url = 'https://maven.ornithemc.net/releases'
+        metadataSources { mavenPom(); artifact() }
+        content { includeGroup 'net.ornithemc' }
     }
     maven {
         url = 'https://maven.minecraftforge.net'
@@ -379,6 +400,77 @@ def recordSrgMojangProvenance1201 = tasks.register('recordSrgMojangProvenance120
 tasks.named('jar') { dependsOn genSrgMojang; from(srgMojangDir) }
 // offline tools (checkLegacyMod, gap1201) run from the class directories: give them the generated table too
 sourceSets.main.runtimeClasspath += files(srgMojangDir).builtBy(genSrgMojang)
+
+// EXPERIMENTAL, opt-in (-Pexperimental.mc1192=true): the SRG -> Mojang member table of Minecraft 1.19.2, the same chain as 1.20.1 above, parameterised by version.
+// Nothing is fetched or registered without the property; the table is build-local (build/generated/srg-mojang-1192) and is not added to the loader jar.
+// ./gradlew :loader:genSrgMojang1192 -Pexperimental.mc1192=true   (inputs: MCPConfig 1.19.2-20220805.130853, Mojang client.txt checked by SHA-1; SHA-256 fingerprints in build/reports/mappings/1.19.2/)
+def srgMojangTables = { String ver, String shortVer, org.gradle.api.artifacts.Configuration mcpConfiguration, String mojangUrl, String mojangSha1 ->
+    def mojangFile = layout.buildDirectory.file("mojang-mappings/${ver}-client.txt")
+    def joined = layout.buildDirectory.file("tmp/mcpconfig${shortVer}/joined.tsrg")
+    def outDir = layout.buildDirectory.dir("generated/srg-mojang-${shortVer}")
+    def tsv = outDir.map { it.file("legacyconnector/mappings/${ver}/srg-mojang.tsv") }
+    def coverage = layout.buildDirectory.file("reports/mappings/${ver}/srg-mojang-coverage.properties")
+    def provenance = layout.buildDirectory.file("reports/mappings/${ver}/srg-mojang-provenance.json")
+    def fetch = tasks.register("fetchMojangMappings${shortVer}") {
+        outputs.file(mojangFile)
+        doLast {
+            def out = mojangFile.get().asFile
+            out.parentFile.mkdirs()
+            new URL(mojangUrl).withInputStream { input -> out.withOutputStream { output -> output << input } }
+        }
+    }
+    def extract = tasks.register("extractMcpConfigJoinedTsrg${shortVer}") {
+        inputs.files(mcpConfiguration)
+        outputs.file(joined)
+        doLast {
+            def outputFile = joined.get().asFile
+            outputFile.parentFile.mkdirs()
+            new java.util.zip.ZipFile(mcpConfiguration.singleFile).withCloseable { archive ->
+                def entry = archive.getEntry('config/joined.tsrg')
+                if (entry == null || entry.directory) throw new GradleException('Pinned MCPConfig archive does not contain config/joined.tsrg.')
+                if (entry.size > 256L * 1024 * 1024) throw new GradleException('MCPConfig config/joined.tsrg exceeds the 256 MiB extraction limit.')
+                archive.getInputStream(entry).withCloseable { input -> outputFile.withOutputStream { output -> output << input } }
+            }
+        }
+    }
+    def verify = tasks.register("verifySrgMojangInputs${shortVer}") {
+        dependsOn fetch, extract
+        inputs.file(mojangFile)
+        inputs.file(joined)
+        doLast {
+            def sha1 = mappingFileSha(mojangFile.get().asFile, 'SHA-1')
+            if (!sha1.equalsIgnoreCase(mojangSha1)) throw new GradleException("Mojang ${ver} client mappings SHA-1 mismatch: expected ${mojangSha1}, got ${sha1}")
+            def header = joined.get().asFile.withReader('UTF-8') { it.readLine() }
+            if (header == null || !header.startsWith('tsrg2 ')) throw new GradleException('MCPConfig joined.tsrg does not have the expected TSRG2 header.')
+            println "Mojang ${ver} client mapping SHA-1 verified: ${sha1}"
+        }
+    }
+    def gen = tasks.register("genSrgMojang${shortVer}", JavaExec) {
+        dependsOn verify, tasks.named('classes')
+        inputs.file(joined)
+        inputs.file(mojangFile)
+        outputs.dir(outDir)
+        outputs.file(coverage)
+        classpath = sourceSets.main.output
+        mainClass = 'org.kylepitcock.legacyconnector.loader.mapping.SrgMojangTable'
+        argumentProviders.add({ [joined.get().asFile.absolutePath, mojangFile.get().asFile.absolutePath, tsv.get().asFile.absolutePath, coverage.get().asFile.absolutePath] } as CommandLineArgumentProvider)
+        doLast {
+            def manifest = [minecraftVersion: ver, mcpconfig: [file: mcpConfiguration.singleFile.name, sha256: mappingFileSha(mcpConfiguration.singleFile, 'SHA-256'), joinedTsrgSha256: mappingFileSha(joined.get().asFile, 'SHA-256')],
+                            mojangClientTxt: [url: mojangUrl, sha1: mojangSha1, sha256: mappingFileSha(mojangFile.get().asFile, 'SHA-256')],
+                            generatedTable: [sha256: mappingFileSha(tsv.get().asFile, 'SHA-256'), rows: tsv.get().asFile.readLines('UTF-8').size()],
+                            licensing: 'Build-local only; raw Mojang mappings are never committed or redistributed.']
+            def report = provenance.get().asFile
+            report.parentFile.mkdirs()
+            report.setText(groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(manifest)) + System.lineSeparator(), 'UTF-8')
+        }
+    }
+    return gen
+}
+if (project.findProperty('experimental.mc1192')) {
+    def gen1192 = srgMojangTables('1.19.2', '1192', configurations.mcpconfig1192,
+            'https://piston-data.mojang.com/v1/objects/8e8c9be5dc27802caba47053d4fdea328f7f89bd/client.txt', '8e8c9be5dc27802caba47053d4fdea328f7f89bd')
+    sourceSets.main.runtimeClasspath += files(layout.buildDirectory.dir('generated/srg-mojang-1192')).builtBy(gen1192)
+}
 
 // Fabric Intermediary bridge audit for Minecraft 1.20.1 -> 1.21.1.
 // The input jars and extracted Tiny mappings stay in build/tmp and are never added to the loader jar.
@@ -716,7 +808,43 @@ def genBetaMappings = tasks.register('genBetaMappings', JavaExec) {
          betaMappingsDir.get().file('legacyconnector/mappings/b1.7.3/official-named.tsv').asFile.absolutePath]
     } as CommandLineArgumentProvider)
 }
+// Opt-in (nothing of it runs or is fetched in the default build): the 1.2.5 to 1.4.7 notch table and the list of what does not join
+// (docs/wiki/Legacy-1.2.5.md). Inputs are pinned by SHA-256; the output is build-local and never committed.
+def mc125Inputs = [
+        mc125CalamusClient: '90ac3f52c97085a9a8191106fe6c7f781fd92e5e35e3fe96cdd0cd03d4b67f23',
+        mc125FeatherClient: 'e50ddbefa0538fd629835b7935b5856fb2a9ca6004e063405e523f7d6a1deb7b',
+        mc125CalamusServer: '76bfdb88b289a9ed9a3796f683a856aabb9c71971c31cb62c5db89537a27cfcd',
+        mc125FeatherServer: '12d18726cbe65d5ca81e341aaa5458d2beb461fb44ee9dedca329ab17999960b',
+        mc147Calamus      : 'ea236e1a1f6f6bf005a7bbe165c7c16c1f04eec6590b868d5a4879ce71271c37',
+        mc147Feather      : '6353f8c8d066999cba4c5abc6585bee7fcaccb007d5197f05c77e50b12c2c092']
+tasks.register('genMappings125', JavaExec) {
+    group = 'legacy'
+    description = 'Opt-in: joins Ornithe Calamus+Feather 1.2.5 (client, server) with 1.4.7 into build/generated/mappings125 (notch-to-147.tsv, join-report.txt).'
+    dependsOn tasks.named('classes')
+    classpath = sourceSets.main.output
+    mainClass = 'org.kylepitcock.legacyconnector.loader.mapping.Mc125Mappings'
+    def outDir = layout.buildDirectory.dir('generated/mappings125')
+    outputs.dir(outDir)
+    argumentProviders.add({
+        def files = mc125Inputs.collect { name, sha ->
+            def f = configurations.getByName(name).singleFile
+            def actual = java.security.MessageDigest.getInstance('SHA-256').digest(f.bytes).encodeHex().toString()
+            if (actual != sha) throw new GradleException("${name}: ${f.name} has SHA-256 ${actual}, expected ${sha}")
+            println "${name}: ${f.name} SHA-256 ${actual}"
+            f.absolutePath
+        }
+        files + [outDir.get().asFile.absolutePath]
+    } as CommandLineArgumentProvider)
+}
 tasks.named('jar') { dependsOn genBetaMappings; from(betaMappingsDir) }
+// -Pmappings125 puts the 1.2.5 to 1.4.7 table into the loader jar (needed by -Dlegacyconnector.mc125=true at run time); a default build has none
+if (project.hasProperty('mappings125')) {
+    tasks.named('jar') {
+        dependsOn tasks.named('genMappings125')
+        from(layout.buildDirectory.dir('generated/mappings125')) { include 'legacyconnector/**' }
+    }
+    sourceSets.test.runtimeClasspath += files(layout.buildDirectory.dir('generated/mappings125')).builtBy(tasks.named('genMappings125'))
+}
 sourceSets.main.runtimeClasspath += files(betaMappingsDir).builtBy(genBetaMappings)
 
 

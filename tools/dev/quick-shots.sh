@@ -12,10 +12,10 @@ GAME_DIR="run-screenshots"
 for a in ${EXTRA:-}; do case "$a" in -PshotDir=*) GAME_DIR="${a#-PshotDir=}";; esac; done
 mkdir -p "$GAME_DIR/mods"
 rm -f "$GAME_DIR"/mods/.perf-*.jar
+for j in run-perfmods/*.jar; do rm -f "$GAME_DIR/mods/$(basename "$j")"; done
 if [ -z "$NOPERF" ] && [ -d run-perfmods ]; then
-  for j in run-perfmods/*.jar; do [ -f "$j" ] && cp -f "$j" "$GAME_DIR/mods/$(basename "$j")"; done
-else
-  for j in run-perfmods/*.jar; do rm -f "$GAME_DIR/mods/$(basename "$j")"; done
+  # jars whose mandatory dependency is absent (Iris Veil Compat without Veil crashes every client) are skipped with a printed line
+  while IFS= read -r j; do [ -f "$j" ] && cp -f "$j" "$GAME_DIR/mods/$(basename "$j")"; done < <(python tools/dev/perfmods_filter.py run-perfmods "$GAME_DIR/mods" | tr -d '\r')
 fi
 ./gradlew runScreenshotTest -q -PshotScenario="${SCENARIO:-full}" -PshotWorldType="${WORLD:-minecraft:flat}" -PshotTour="${TOUR:-0}" \
   -PshotRenderDistance="${RD:-4}" -PshotBlocksPerMod="${BLOCKS:-12}" -PshotItemsPerMod="${ITEMS:-12}" ${EXTRA:-} ${COMMANDS:+"-PshotCommands=$COMMANDS"} -PshotWidth="${WIDTH:-640}" -PshotHeight="${HEIGHT:-360}"

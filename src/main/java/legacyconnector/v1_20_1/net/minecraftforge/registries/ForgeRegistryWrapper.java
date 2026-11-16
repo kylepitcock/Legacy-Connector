@@ -116,7 +116,10 @@ public final class ForgeRegistryWrapper<V> extends ForgeRegistry<V> {
     @Override
     public ResourceLocation getKey(V value) {
         Registry<V> r = registryOrNull();
-        return r == null ? null : r.getKey(value);
+        ResourceLocation id = r == null ? null : r.getKey(value);
+        // a wrapper of a data-driven (vanilla or native) enchantment is not an entry of the legacy registry: its own id answers
+        if (id == null && value instanceof org.kylepitcock.legacyconnector.v1_20_1.migrate.LegacyEnchantment e) return e.wrappedId();
+        return id;
     }
 
     @Override

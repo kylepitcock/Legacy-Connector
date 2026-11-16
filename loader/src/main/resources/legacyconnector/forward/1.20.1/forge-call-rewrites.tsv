@@ -141,6 +141,11 @@ net/neoforged/neoforge/event/EventHooks.firePlayerItemPickupEvent(Lnet/minecraft
 net/neoforged/neoforge/event/EventHooks.fireSleepingTimeCheck(Lnet/minecraft/world/entity/player/Player;Ljava/util/Optional;)Z	Tail.fireSleepingTimeCheck
 net/neoforged/neoforge/event/EventHooks.onPlayerSleepInBed(Lnet/minecraft/world/entity/player/Player;Ljava/util/Optional;)Lnet/minecraft/world/entity/player/Player$BedSleepingProblem;	Tail.onPlayerSleepInBed
 net/neoforged/neoforge/event/EventHooks.fireBlockGrowFeature(Lnet/minecraft/world/level/LevelAccessor;Lnet/minecraft/util/RandomSource;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Holder;)Llegacyconnector/v1_20_1/net/minecraftforge/event/level/SaplingGrowTreeEvent;	Tail.fireBlockGrowFeature
+net/minecraft/stats/Stats.makeCustomStat(Ljava/lang/String;Lnet/minecraft/stats/StatFormatter;)Lnet/minecraft/resources/ResourceLocation;	Tail.makeCustomStat
+net/minecraft/world/level/storage/loot/BuiltInLootTables.all()Ljava/util/Set;	Tail.builtInLootTableIds
+net/minecraft/world/item/crafting/Ingredient$Value.serialize()Lcom/google/gson/JsonObject;	Tail.ingredientValueSerialize
+net/neoforged/fml/ModList.isLoaded(Ljava/lang/String;)Z	Tail.modListIsLoaded
+net/neoforged/fml/ModList.getModFileById(Ljava/lang/String;)Lnet/neoforged/neoforgespi/language/IModFileInfo;	Tail.modListFileById
 net/neoforged/fml/ModList.getModContainerByObject(Ljava/lang/Object;)Ljava/util/Optional;	Tail.modContainerByObject
 net/neoforged/fml/loading/FMLLoader.getLaunchHandler()Lnet/neoforged/fml/loading/targets/CommonLaunchHandler;	launchHandler
 net/neoforged/neoforge/registries/DeferredRegister.createOptional(Lnet/minecraft/resources/ResourceKey;Ljava/lang/String;)Lnet/neoforged/neoforge/registries/DeferredRegister;	createDeferredOptional

@@ -46,6 +46,14 @@ public class ItemEnchantedBook extends legacyconnector.v1_7_10.net.minecraft.ite
         return stack;
     }
 
+    /** {@code func_92113_a}: adds one enchanted book per level of an enchantment (minimum to maximum level) to a creative list. */
+    public void func_92113_a(legacyconnector.v1_7_10.net.minecraft.enchantment.Enchantment enchantment, java.util.List list) {
+        if (enchantment == null || list == null) return;
+        for (int level = enchantment.getMinLevel(); level <= enchantment.getMaxLevel(); level++) {
+            list.add(getEnchantedItemStack(new legacyconnector.v1_7_10.net.minecraft.enchantment.EnchantmentData(enchantment, level)));
+        }
+    }
+
     public legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagList func_92110_g(ItemStack stack) {
         legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound tag = stack.getTagCompound();
         return tag != null && tag.hasKey("StoredEnchantments", 9) ? tag.getTagList("StoredEnchantments", 10) : new legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagList();

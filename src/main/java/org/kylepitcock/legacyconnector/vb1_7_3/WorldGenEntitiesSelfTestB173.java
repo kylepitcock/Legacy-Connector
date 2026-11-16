@@ -20,6 +20,10 @@ public final class WorldGenEntitiesSelfTestB173 {
     private WorldGenEntitiesSelfTestB173(){}
     public static void register(IEventBus bus){
         if(Boolean.getBoolean("legacyconnector.entitySelfTest"))bus.addListener((ServerStartedEvent event)->{
+            // Without a Beta mod the platform never starts (vanilla item/entity tables empty): the original item API cannot spawn, by design (#291).
+            if(org.kylepitcock.legacyconnector.core.LegacyMods.ordered().stream().noneMatch(mod->PlatformB173.VERSION.equals(mod.version))){
+                LOG.info("B1.7.3 WORLDGEN ENTITY TEST skipped: no Beta 1.7.3 mod is loaded");return;
+            }
             try{run(event.getServer().overworld());}
             catch(RuntimeException|LinkageError error){LOG.error("B1.7.3 WORLDGEN ENTITY TEST failed",error);}
         });

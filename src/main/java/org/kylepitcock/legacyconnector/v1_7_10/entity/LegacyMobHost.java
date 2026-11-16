@@ -295,6 +295,10 @@ public class LegacyMobHost extends PathfinderMob implements LegacyLivingHost, IE
     /** 1.7.10 applyArmorCalculations: damage * (25 - armour) / 25, replacing the 1.21 armour/toughness formula for overriding classes. */
     @Override
     protected float getDamageAfterArmorAbsorb(DamageSource source, float amount) {
+        EntityLivingBase l = living();
+        if (l != null && LegacyHosts.overrides(legacy.getClass(), "applyArmorCalculations", DAMAGE_PARAMS)) {
+            return l.mcc$applyArmorCalculations(legacyconnector.v1_7_10.net.minecraft.util.DamageSource.mcc$wrap(source), amount);
+        }
         if (!overridesTotalArmor()) return super.getDamageAfterArmorAbsorb(source, amount);
         if (!source.is(net.minecraft.tags.DamageTypeTags.BYPASSES_ARMOR)) {
             int armor = Math.min(25, Math.max(0, getArmorValue()));
