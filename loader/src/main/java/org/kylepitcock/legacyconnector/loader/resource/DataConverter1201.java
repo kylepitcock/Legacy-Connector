@@ -680,7 +680,11 @@ public final class DataConverter1201 {
             return;
         }
         // a mod's wrapper of the shaped recipe (Mekanism's mek_data, Mystical Agriculture's own types) reads the vanilla shape: same conversion as vanilla's
-        if (!vanilla && !(o.has("pattern") && o.has("key") && o.has("result"))) return;
+        if (!vanilla && !(o.has("pattern") && o.has("key") && o.has("result"))) {
+            // any other recipe type of a mod keeps its own shape, but the NBT ingredients inside it (forge:partial_nbt...) are read by the 1.21.1 ingredient codec
+            nbtIngredientsDeep(o, c);
+            return;
+        }
         if (!vanilla) type = "minecraft:crafting_shaped";
         String t = type.startsWith("minecraft:") ? type.substring(10) : type;
         boolean hasResult = o.has("result");
@@ -699,6 +703,31 @@ public final class DataConverter1201 {
             JsonObject key = o.getAsJsonObject("key");
             for (String k : new ArrayList<>(key.keySet())) key.add(k, ingredient(key.get(k), c));
         }
+    }
+
+    /** Converts every Forge NBT ingredient object nested anywhere in a JSON tree (the rest of the tree is left as it is). */
+    private static void nbtIngredientsDeep(JsonElement e, Ctx c) {
+        if (e.isJsonArray()) {
+            JsonArray a = e.getAsJsonArray();
+            for (int i = 0; i < a.size(); i++) {
+                JsonElement x = a.get(i);
+                if (isNbtIngredient(x)) a.set(i, ingredient(x, c));
+                else nbtIngredientsDeep(x, c);
+            }
+        } else if (e.isJsonObject()) {
+            JsonObject o = e.getAsJsonObject();
+            for (String k : new ArrayList<>(o.keySet())) {
+                JsonElement x = o.get(k);
+                if (isNbtIngredient(x)) o.add(k, ingredient(x, c));
+                else nbtIngredientsDeep(x, c);
+            }
+        }
+    }
+
+    private static boolean isNbtIngredient(JsonElement e) {
+        if (!e.isJsonObject() || !e.getAsJsonObject().has("type") || !e.getAsJsonObject().get("type").isJsonPrimitive()) return false;
+        String t = e.getAsJsonObject().get("type").getAsString();
+        return t.equals("forge:nbt") || t.equals("forge:partial_nbt") || t.equals("forge:strict_nbt");
     }
 
     /** {@code "minecraft:stone"} or {@code {item, count, nbt}} to {@code {id, count, components}}. */

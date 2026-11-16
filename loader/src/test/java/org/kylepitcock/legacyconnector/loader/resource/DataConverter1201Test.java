@@ -662,4 +662,13 @@ class DataConverter1201Test {
         assertEquals("#m:hammocks", pred.get("items").getAsString());
         assertTrue(!pred.has("tag"));
     }
+
+    @Test
+    void nbtIngredientInsideAModRecipeTypeBecomesComponents() {
+        JsonElement r = one("data/m/recipes/jar.json", """
+                {"type":"m:soul_jar_recipe","input":{"type":"forge:partial_nbt","item":"m:soul_jar","nbt":"{Type:\\"m:pig\\"}"},"output":{"item":"m:x"}}""", "data/m/recipe/jar.json");
+        JsonObject in = r.getAsJsonObject().getAsJsonObject("input");
+        assertTrue(!in.toString().contains("partial_nbt") && (in.has("item") || in.has("items")), in.toString());
+        assertEquals("m:x", r.getAsJsonObject().getAsJsonObject("output").get("item").getAsString());
+    }
 }
