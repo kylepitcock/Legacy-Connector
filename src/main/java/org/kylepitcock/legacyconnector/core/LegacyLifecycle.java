@@ -155,6 +155,32 @@ public final class LegacyLifecycle {
         return CLIENT_ONLY.contains(mod);
     }
 
+    /**
+     * The missing member's owner when {@code t} is a linkage error (NoSuchMethodError, NoSuchFieldError, IncompatibleClassChangeError) during the mod's
+     * init, imc, postInit or loadComplete whose owner class belongs to a different legacy mod than {@code mod}; else null.
+     */
+    private static String foreignApiMismatch(LegacyModRecord mod, String phaseName, Throwable t) {
+        if (mod.mainClass == null || !(phaseName.equals("init") || phaseName.equals("imc") || phaseName.equals("postInit") || phaseName.equals("loadComplete"))) return null;
+        Throwable c = t;
+        for (int i = 0; i < 8 && c.getCause() != null && c.getCause() != c; i++) c = c.getCause();
+        if (!(c instanceof NoSuchMethodError || c instanceof NoSuchFieldError)) return null;
+        String msg = c.getMessage();
+        if (msg == null) return null;
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("Class ([\\w.$]+) does not have member|'[\\w\\[\\]]+ ([\\w.$]+)\\.[\\w$<>]+\\(").matcher(msg);
+        if (!m.find()) return null;
+        String owner = m.group(1) != null ? m.group(1) : m.group(2);
+        try {
+            Class<?> o = Class.forName(owner, false, mod.mainClass.getClassLoader());
+            if (o.getModule() == mod.mainClass.getModule() || o.getModule().getName() == null) return null;
+            for (LegacyModRecord other : LegacyMods.all()) {
+                if (other != mod && other.mainClass != null && other.mainClass.getModule() == o.getModule()) return owner + " of " + other.legacyId + " " + other.version;
+            }
+        } catch (ClassNotFoundException | LinkageError e) {
+            return null;
+        }
+        return null;
+    }
+
     interface Phase {
         void run(LegacyModRecord mod) throws Exception;
     }
@@ -173,6 +199,14 @@ public final class LegacyLifecycle {
                 if (mod.mainClass != null) thread.setContextClassLoader(mod.mainClass.getClassLoader());
                 phase.run(mod);
             } catch (Throwable t) {
+                String clash = foreignApiMismatch(mod, name, t);
+                if (clash != null) {
+                    // The mod's integration code called the API of ANOTHER legacy mod in a shape that mod's loaded version does not have (a 1.6.4 mod
+                    // registering Thaumcraft 3 aspects against the Thaumcraft 4 of a 1.7.10 pack): FML would have skipped the integration, not the mod.
+                    LOG.warn("{}: its {} stopped at an API of another mod that is loaded in a different version ({}); the mod stays loaded, the rest of that step is skipped",
+                            mod.legacyId, name, clash);
+                    continue;
+                }
                 LegacyModException wrapped = new LegacyModException(mod, name, t);
                 if (Boolean.getBoolean("legacyconnector.failFast")) throw wrapped;
                 if (touchedClientOnServer(t)) {

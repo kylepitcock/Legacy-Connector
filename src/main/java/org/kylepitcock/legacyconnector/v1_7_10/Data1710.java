@@ -25,6 +25,7 @@ public final class Data1710 implements GeneratedPack.Contributor {
     @Override
     public void contribute(PackType type, Map<String, Supplier<byte[]>> out) {
         if (type != PackType.SERVER_DATA) return;
+        org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyDimensions.warmProviders();
         org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyBiomes.contribute(out);
         org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyWorldPresets.contributeData(out);
         org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyEntitySpawns.contribute(out);
