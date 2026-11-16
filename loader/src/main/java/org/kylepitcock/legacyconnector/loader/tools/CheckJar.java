@@ -251,6 +251,8 @@ public final class CheckJar {
             r.add("missing", members(links.missingClasses, links.missingShimMembers, links.missingLibraryMembers));
             // legacy API the layer generated as empty stubs: it links but does nothing, so it is a gap in behaviour (tools/compat/missing_report.py)
             r.add("stubbed", members(links.stubbedMembers));
+            // calls to @Optional.Method members removed for an absent mod: guarded optional integrations, not failures
+            r.add("optional", members(links.optionalMembers));
         }
         return r;
     }

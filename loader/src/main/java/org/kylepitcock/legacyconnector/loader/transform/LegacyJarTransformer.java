@@ -485,7 +485,7 @@ public final class LegacyJarTransformer {
         }
         int optionalStripped = 0;
         for (ClassNode node : nodes.values()) {
-            int n = OptionalStripper.apply(node, version.linkPrefix(), presentMods, hierarchy);
+            int n = OptionalStripper.apply(node, version.linkPrefix(), presentMods, hierarchy, result.links.optionalRemoved);
             if (n > 0) hierarchy.addLocal(ClassInfo.of(node));
             optionalStripped += n;
         }

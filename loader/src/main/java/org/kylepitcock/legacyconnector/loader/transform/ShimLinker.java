@@ -49,6 +49,14 @@ public final class ShimLinker {
 
     public static int apply(ClassNode node, Hierarchy hierarchy, LinkReport report, SynthDemand demand) {
         int redirected = 0;
+        report.lostOptionalInterface = owner -> {
+            for (String c = owner; c != null && !c.startsWith("java/"); ) {
+                if (report.optionalRemoved.contains(c + ".<interface>")) return true;
+                var info = hierarchy.find(c);
+                c = info == null ? null : info.superName;
+            }
+            return false;
+        };
         for (MethodNode method : node.methods) {
             InsnList insns = method.instructions;
             for (AbstractInsnNode insn = insns.getFirst(); insn != null; insn = insn.getNext()) {
