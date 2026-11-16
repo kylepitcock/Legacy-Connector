@@ -41342,6 +41342,28 @@
    }
   },
   {
+   "mc": "1.2.5",
+   "date": "2026-11-16",
+   "version": "0.4.14+int125.7037761",
+   "counts": {
+    "links": 0,
+    "stubs": 0,
+    "gap_shim": 0,
+    "gap_mod": 0,
+    "gap_lib": 0,
+    "obsolete": 0
+   },
+   "env": {
+    "layer": "0.4.14+int125.7037761",
+    "jars": 95,
+    "minecraft": "1.21.1",
+    "neoforge": "21.1.258",
+    "shim": "520e16381c56"
+   },
+   "mods": [],
+   "source": "local"
+  },
+  {
    "mc": "1.20.1",
    "date": "2026-11-07",
    "version": "0.4.4",

@@ -2,16 +2,22 @@
 """Adds corpus results to docs/data/mods.json: every legacy mod of a corpus run (tools/dev/run-corpus.sh) that is not
 already listed becomes "loads" (registered at startup without errors) or "fails" (listed as failed to load, with the reason).
 
-usage: from_corpus.py <legacyconnector-report.txt> <latest.log> [mc-version] [date]
+usage: from_corpus.py <legacyconnector-report.txt> <latest.log> [mc-version] [date] [--dry-run] [--force]
+--dry-run prints what would change (added entries, refreshed entries with a changed status or version) and writes nothing.
+Without --force the tool refuses to write when a refreshed corpus entry has another mod VERSION than this run (a run of a different mod set,
+e.g. run-subtest, once overwrote about 150 entries that had to be reverted): look at the --dry-run output first.
 Only jars the report marks with mc-version are taken (a pack can mix versions: run once per version).
 Maintainer entries (hand written) are never overwritten; earlier corpus entries (source "corpus") are refreshed with this run.
 Player reports (docs/data/reports.json) always outrank both on the site.
 """
 import json, pathlib, re, sys
 
-report, log = pathlib.Path(sys.argv[1]), pathlib.Path(sys.argv[2])
-mc = sys.argv[3] if len(sys.argv) > 3 else "1.7.10"
-date = sys.argv[4] if len(sys.argv) > 4 else "2026-10-23"
+FLAGS = {a for a in sys.argv[1:] if a.startswith("--")}
+ARGS = [a for a in sys.argv[1:] if not a.startswith("--")]
+DRY, FORCE = "--dry-run" in FLAGS, "--force" in FLAGS
+report, log = pathlib.Path(ARGS[0]), pathlib.Path(ARGS[1])
+mc = ARGS[2] if len(ARGS) > 2 else "1.7.10"
+date = ARGS[3] if len(ARGS) > 3 else "2026-10-23"
 DATA = pathlib.Path(__file__).resolve().parents[2] / "docs" / "data" / "mods.json"
 
 
@@ -48,6 +54,7 @@ LOADS_NOTE = {
     "1.12.2": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet.",
 }
 data = json.loads(DATA.read_text(encoding="utf-8"))
+before = {(e["name"], e.get("mc", "1.7.10")): e for e in data["mods"]}
 # entries are per Minecraft version: a 1.12.2 run never replaces or hides the 1.7.10 entry of the same mod
 same_mc = [e for e in data["mods"] if e.get("mc", "1.7.10") == mc]
 refreshed = {norm(e["name"]) for e in same_mc if e.get("source") == "corpus"} & {norm(n) for n, _, _ in mods.values()}
@@ -75,5 +82,17 @@ data["mods"].sort(key=lambda e: e["name"].lower())
 hidden = {norm(h) for h in data.get("hidden", [])}
 data["mods"] = [e for e in data["mods"] if norm(e["name"]) not in hidden
                 and norm(e["name"]) not in {norm(h) for h in data.get("hidden_by_mc", {}).get(e.get("mc", "1.7.10"), [])}]
+after = {(e["name"], e.get("mc", "1.7.10")): e for e in data["mods"]}
+changed = [(k, before[k], after[k]) for k in before if k in after and (before[k].get("status"), before[k].get("version")) != (after[k].get("status"), after[k].get("version"))]
+removed = [k for k in before if k not in after]
+version_changes = [c for c in changed if c[1].get("version") != c[2].get("version")]
+print(f"{added} added, {len(changed)} refreshed with another status or version ({len(version_changes)} with another version), {len(removed)} removed (hidden or replaced), {len(data['mods'])} total")
+for (name, m), old, new in changed[:40]:
+    print(f"  CHANGE {name} [{m}]: {old.get('status')} {old.get('version')} -> {new.get('status')} {new.get('version')}")
+if DRY:
+    print("dry run: nothing written")
+    sys.exit(0)
+if version_changes and not FORCE:
+    sys.exit(f"refusing to write: {len(version_changes)} refreshed entries have another mod version than this run (different mod set?). Check --dry-run, or pass --force.")
 DATA.write_text(json.dumps(data, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
 print(f"{added} mod(s) added, {len(data['mods'])} total")
