@@ -170,16 +170,23 @@ public final class CustomModels1122 {
     /** The loader model of a legacy location string ({@code domain:path#variant}), or null when no loader takes it. */
     private static IModel load(String key) {
         ResourceLocation location;
+        ResourceLocation fallback = null;
         try {
             ModelResourceLocation mrl = new ModelResourceLocation(key);
             location = mrl;
-            // Forge gave the loaders the model resource location itself (an MRL is its own actual location), so a loader that accepts
-            // "mod:name" by its plain path (Lycanites' equipment parts) sees it; only when none takes it is the item json location tried
-            if ("inventory".equals(mrl.getVariant()) && ModelLoaderRegistry.mcc$loaderFor(mrl) == null) {
+            if ("inventory".equals(mrl.getVariant())) {
                 // an item's model: Forge loaded the file models/item/<path> (ModelLoader.getItemLocation, then ModelLoaderRegistry's actual location)
                 // and gave that plain location to the custom loaders (Tinkers' Construct reads its .tmat/.tcon json from it)
                 String path = mrl.getPath();
-                location = new ResourceLocation(mrl.getNamespace(), path.startsWith("models/") ? path : "models/item/" + path);
+                ResourceLocation itemLocation = new ResourceLocation(mrl.getNamespace(), path.startsWith("models/") ? path : "models/item/" + path);
+                if (ModelLoaderRegistry.mcc$loaderFor(mrl) == null) {
+                    location = itemLocation;
+                } else if (ModelLoaderRegistry.mcc$loaderFor(itemLocation) != null) {
+                    // a loader that accepts by file extension takes both (Tinkers' .tmat: the MRL has no json to read): the item json first, then
+                    // the MRL itself, which a loader that accepts "mod:name" by its plain path (Lycanites' equipment parts) is given
+                    location = itemLocation;
+                    fallback = mrl;
+                }
             }
         } catch (RuntimeException e) {
             return null;
@@ -192,8 +199,17 @@ public final class CustomModels1122 {
             location = parent;
         }
         try {
-            return ModelLoaderRegistry.getModel(location);
+            IModel model = ModelLoaderRegistry.getModel(location);
+            if (fallback != null && model == ModelLoaderRegistry.getMissingModel()) return ModelLoaderRegistry.getModel(fallback);
+            return model;
         } catch (Exception | LinkageError e) {
+            if (fallback != null) {
+                try {
+                    return ModelLoaderRegistry.getModel(fallback);
+                } catch (Exception | LinkageError e2) {
+                    // reported below with the first failure
+                }
+            }
             RenderErrors1122.report("loading the model " + key, e);
             return null;
         }
