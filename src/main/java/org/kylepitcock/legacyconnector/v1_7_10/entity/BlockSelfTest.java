@@ -306,7 +306,9 @@ public final class BlockSelfTest {
         try {
             modern.getName(stack);
             stage = "tooltip";
-            stack.getTooltipLines(net.minecraft.world.item.Item.TooltipContext.of(level), player, net.minecraft.world.item.TooltipFlag.ADVANCED);
+            // tooltips are client-only: on a dedicated server a legacy addInformation legitimately touches client classes
+            if (!net.neoforged.fml.loading.FMLEnvironment.dist.isDedicatedServer())
+                stack.getTooltipLines(net.minecraft.world.item.Item.TooltipContext.of(level), player, net.minecraft.world.item.TooltipFlag.ADVANCED);
             stage = "use";
             player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, stack.copy());
             modern.use(level, player, net.minecraft.world.InteractionHand.MAIN_HAND);

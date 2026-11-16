@@ -120,9 +120,14 @@ public final class Loot1122 {
 
     /** The modern pool of a pool a mod built. */
     public static net.minecraft.world.level.storage.loot.LootPool modernPool(LootPool legacy) {
+        return modernPool(legacy, true);
+    }
+
+    /** {@code named} false leaves the modern pool unnamed (1.12 tolerates two pools of one name in a table's JSON; the modern table does not). */
+    public static net.minecraft.world.level.storage.loot.LootPool modernPool(LootPool legacy, boolean named) {
         var b = net.minecraft.world.level.storage.loot.LootPool.lootPool().setRolls(legacy.getRolls().mcc$modern())
                 .setBonusRolls(legacy.getBonusRolls().mcc$modern());
-        if (legacy.getName() != null) b.name(legacy.getName());
+        if (named && legacy.getName() != null) b.name(legacy.getName());
         for (LootEntry e : legacy.mcc$entries()) b.add(LegacyEntry.builder(e));
         LootCondition[] conditions = legacy.mcc$conditions().toArray(new LootCondition[0]);
         if (conditions.length > 0) b.when(() -> condition(conditions));
