@@ -86,12 +86,14 @@ final class Datagen1201 {
                 }
             }
         }
+        VIEW.set(new JarView(byName.keySet(), datagen));
+        try {
         for (ClassNode n : nodes) {
             if (datagen.contains(n.name)) {
                 shell(n, byName.keySet());
                 stats.classes++;
             }
-            for (MethodNode m : n.methods) if (emptyIfDatagen(m, byName.keySet())) stats.methods++;
+            for (MethodNode m : n.methods) if (emptyIfDatagen(m, byName.keySet(), datagen)) stats.methods++;
             if (!datagen.contains(n.name)) {
                 // abstract methods that only datagen implementations override
                 int before = n.methods.size();
@@ -99,11 +101,16 @@ final class Datagen1201 {
                 stats.methods += before - n.methods.size();
             }
         }
+        } finally {
+            VIEW.remove();
+        }
         return stats;
     }
 
     private static boolean isDatagenClass(ClassNode n, Set<String> known, Map<String, ClassNode> byName) {
+        // by name alone only a class that has a super class to be a provider of (a plain builder or record is used at run time too: AE2's EntropyRecipeBuilder)
         if ((n.access & Opcodes.ACC_INTERFACE) == 0 && DATAGEN_NAME.matcher(n.name).matches()
+                && !"java/lang/Object".equals(n.superName) && !"java/lang/Record".equals(n.superName)
                 && !extendsLevelgen(n, byName)) return true;
         if (datagenSuper(n.superName, known, byName)) return true;
         // a class that extends a runtime game class (a block entity, an entity...) is not a data generator because it implements an interface whose NAME looks like one
@@ -185,14 +192,14 @@ final class Datagen1201 {
     }
 
     /** A method of a normal class that is only reachable from data generation returns the default value. */
-    private static boolean emptyIfDatagen(MethodNode m, Set<String> jar) {
+    private static boolean emptyIfDatagen(MethodNode m, Set<String> jar, Set<String> datagenClasses) {
         if (m.instructions == null || m.instructions.size() == 0 || (m.access & (Opcodes.ACC_ABSTRACT | Opcodes.ACC_NATIVE)) != 0) return false;
         if (m.name.equals("<init>") || m.name.equals("<clinit>")) return false;
         boolean datagen = descriptorUsesDatagen(m.desc);
         for (Type t : Type.getArgumentTypes(m.desc)) {
             if (t.getSort() == Type.OBJECT && t.getInternalName().equals("net/neoforged/neoforge/data/event/GatherDataEvent")) datagen = true;
         }
-        if (!datagen) datagen = usesDatagenOnly(m, jar);
+        if (!datagen) datagen = usesDatagenOnly(m, jar, datagenClasses);
         if (!datagen) return false;
         m.signature = null;
         m.instructions.clear();
@@ -233,14 +240,22 @@ final class Datagen1201 {
         return datagenType(Type.getReturnType(desc));
     }
 
+    /** The jar being processed and the classes judged datagen in it: a jar class in a descriptor counts by that verdict, not by its name (AE2's EntropyRecipeBuilder returns itself). */
+    private record JarView(Set<String> jar, Set<String> datagen) {}
+
+    private static final ThreadLocal<JarView> VIEW = new ThreadLocal<>();
+
     private static boolean datagenType(Type t) {
         if (t.getSort() == Type.ARRAY) t = t.getElementType();
-        return t.getSort() == Type.OBJECT && datagenName(t.getInternalName());
+        if (t.getSort() != Type.OBJECT) return false;
+        JarView v = VIEW.get();
+        if (v != null && v.jar.contains(t.getInternalName())) return v.datagen.contains(t.getInternalName());
+        return datagenName(t.getInternalName());
     }
 
     private static final java.util.regex.Pattern DATAGEN_ROLE = java.util.regex.Pattern.compile("(?i).*(Provider|Builder|Generator|Datagen|Recipe|Loot|Advancement|Language|Model|State|Output).*");
 
-    private static boolean usesDatagenOnly(MethodNode m, Set<String> jar) {
+    private static boolean usesDatagenOnly(MethodNode m, Set<String> jar, Set<String> datagenClasses) {
         for (AbstractInsnNode in : m.instructions) {
             String owner = null;
             if (in instanceof MethodInsnNode mi) owner = mi.owner;
@@ -251,6 +266,11 @@ final class Datagen1201 {
             // a static constant of a provider class of the jar (Ars Nouveau BlockTagProvider.FLOURISHING_LOGS): the shell keeps its static fields
             if (in instanceof FieldInsnNode sf && sf.getOpcode() == Opcodes.GETSTATIC && jar.contains(sf.owner) && !datagenType(Type.getType(sf.desc))) continue;
             if (owner != null && jar.contains(owner) && !DATAGEN_ROLE.matcher(owner.substring(owner.lastIndexOf('/') + 1)).matches() && (in.getOpcode() == Opcodes.INVOKESTATIC || in.getOpcode() == Opcodes.GETSTATIC)) continue;
+            // a class of the jar is judged by the verdict on the class (not by its name): AE2's EntropyRecipeBuilder is also what its recipe serializer reads JSON with
+            if (owner != null && jar.contains(owner)) {
+                if (datagenClasses.contains(owner)) return true;
+                continue;
+            }
             if (owner != null && datagenName(owner)) return true;
         }
         return false;

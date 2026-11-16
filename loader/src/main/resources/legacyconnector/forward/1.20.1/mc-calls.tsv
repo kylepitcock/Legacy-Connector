@@ -226,7 +226,7 @@ net/minecraft/nbt/NbtIo	writeCompressed	(Lnet/minecraft/nbt/CompoundTag;Ljava/io
 net/minecraft/nbt/NbtIo	read	(Ljava/io/File;)Lnet/minecraft/nbt/CompoundTag;	ApiCompat	read	-
 net/minecraft/nbt/NbtIo	write	(Lnet/minecraft/nbt/CompoundTag;Ljava/io/File;)V	ApiCompat	write	-
 net/minecraft/network/FriendlyByteBuf	writeItemStack	(Lnet/minecraft/world/item/ItemStack;Z)Lnet/minecraft/network/FriendlyByteBuf;	ApiCompat	writeItemStack	-
-net/minecraft/network/FriendlyByteBuf	writeFluidStack	(Lnet/neoforged/neoforge/fluids/FluidStack;)V	ApiCompat	writeFluidStack	(Lnet/minecraft/network/FriendlyByteBuf;Lnet/neoforged/neoforge/fluids/FluidStack;)Lnet/minecraft/network/FriendlyByteBuf;
+net/minecraft/network/FriendlyByteBuf	writeFluidStack	(Lnet/neoforged/neoforge/fluids/FluidStack;)V	ApiCompat	writeFluidStack	(Lnet/minecraft/network/FriendlyByteBuf;Lnet/neoforged/neoforge/fluids/FluidStack;)V
 net/minecraft/network/FriendlyByteBuf	readFluidStack	()Lnet/neoforged/neoforge/fluids/FluidStack;	ApiCompat	readFluidStack	-
 net/neoforged/neoforge/fluids/FluidStack	<init>	(Lnet/neoforged/neoforge/fluids/FluidStack;I)V	ApiCompat	fluidCopy	-
 net/neoforged/neoforge/fluids/FluidStack	<init>	(Lnet/minecraft/world/level/material/Fluid;ILnet/minecraft/nbt/CompoundTag;)V	ApiCompat	fluidWithTag	-
