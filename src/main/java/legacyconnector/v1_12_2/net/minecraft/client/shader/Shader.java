@@ -16,6 +16,12 @@ public class Shader {
         this.framebufferOut = Framebuffer.mcc$wrap(pass.outTarget);
     }
 
+    /** A pass of the named program (a post-processing shader of the game's resource manager) from one framebuffer into another. */
+    public Shader(legacyconnector.v1_12_2.net.minecraft.client.resources.IResourceManager resourceManager, String programName, Framebuffer in, Framebuffer out)
+            throws java.io.IOException {
+        this(new PostPass(net.minecraft.client.Minecraft.getInstance().getResourceManager(), programName, in.mcc$target(), out.mcc$target(), false));
+    }
+
     public ShaderManager getShaderManager() {
         return manager;
     }

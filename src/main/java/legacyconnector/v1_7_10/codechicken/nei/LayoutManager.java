@@ -21,7 +21,7 @@ public class LayoutManager {
         return true;
     }
 
-    public Widget getInputFocused() {
+    public static Widget getInputFocused() {
         return null;
     }
 }

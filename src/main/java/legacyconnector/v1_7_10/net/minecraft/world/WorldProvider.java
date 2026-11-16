@@ -27,6 +27,27 @@ public class WorldProvider {
     }
 
     /** Whether it is day here (dimensions without a day cycle override it). */
+    /** The world's spawn point. */
+    public legacyconnector.v1_7_10.net.minecraft.util.ChunkCoordinates getSpawnPoint() {
+        return worldObj == null ? new legacyconnector.v1_7_10.net.minecraft.util.ChunkCoordinates(0, 64, 0) : worldObj.getSpawnPoint();
+    }
+
+    /** The spawn point of a new player: the world's, spread over the world type's spawn fuzz (not in adventure mode or a world without sky). */
+    public legacyconnector.v1_7_10.net.minecraft.util.ChunkCoordinates getRandomizedSpawnPoint() {
+        var c = new legacyconnector.v1_7_10.net.minecraft.util.ChunkCoordinates(getSpawnPoint());
+        if (worldObj == null || terrainType == null) return c;
+        int fuzz = terrainType.getSpawnFuzz();
+        if (fuzz > 1 && !hasNoSky) {
+            java.util.Random rand = new java.util.Random();
+            int x = c.posX + rand.nextInt(fuzz) - fuzz / 2;
+            int z = c.posZ + rand.nextInt(fuzz) - fuzz / 2;
+            c.posX = x;
+            c.posZ = z;
+            c.posY = worldObj.getTopSolidOrLiquidBlock(x, z);
+        }
+        return c;
+    }
+
     /** Moves the world's spawn point (1.7.10 {@code WorldProvider.setSpawnPoint}; the world info keeps it). */
     public void setSpawnPoint(int x, int y, int z) {
         if (worldObj != null) worldObj.getWorldInfo().setSpawnPosition(x, y, z);
