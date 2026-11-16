@@ -57,6 +57,8 @@ class ModLoaderHooks125Test {
     @Test
     void chunkRandomIsDeterministicPerChunkAndSeed() {
         long a = ModLoaderHooks125.chunkRandom(42L, 3, -7).nextLong();
+        // the value ModLoader 1.2.5's populateChunk bytecode gives (nextLong()/2*2+1 twice, then (cx*a + cz*b) ^ seed), computed independently
+        assertEquals(-3401055855222692752L, a);
         assertEquals(a, ModLoaderHooks125.chunkRandom(42L, 3, -7).nextLong());
         assertTrue(a != ModLoaderHooks125.chunkRandom(42L, 4, -7).nextLong());
         assertTrue(a != ModLoaderHooks125.chunkRandom(43L, 3, -7).nextLong());

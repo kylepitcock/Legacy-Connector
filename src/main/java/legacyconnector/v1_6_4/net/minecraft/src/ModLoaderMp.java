@@ -117,7 +117,11 @@ public final class ModLoaderMp {
      * the layer turns into a menu on the server and a container screen on the client.
      */
     public static void registerGUI(BaseModMp mod, int id) {
-        GUI_MODS.put(id, mod);
+        // ModLoaderMP logged "RegisterGUI error: inventoryType already registered." and kept the first mod
+        if (GUI_MODS.putIfAbsent(id, mod) != null && GUI_MODS.get(id) != mod) {
+            log("RegisterGUI error: inventoryType already registered.");
+            return;
+        }
         if (!GUI_HANDLERS.add(mod)) return;
         legacyconnector.v1_7_10.cpw.mods.fml.common.network.NetworkRegistry.INSTANCE.registerGuiHandler(mod,
                 new legacyconnector.v1_7_10.cpw.mods.fml.common.network.IGuiHandler() {

@@ -693,11 +693,12 @@ public class ModLoader {
                     Minecraft mc = Minecraft.getMinecraft();
                     float partial = tickData.length > 0 && tickData[0] instanceof Float f ? f : 0F;
                     World world = Minecraft.mcc$get$theWorld(mc);
-                    long now = world != null ? world.getWorldTime() : 0L;
+                    long now = world != null ? world.getTotalWorldTime() : 0L; // 1.2.5 world time advanced every tick; the modern day time stops with doDaylightCycle off
                     boolean changed = now != clock;
                     if (world != null) game.run(changed, m -> m.onTickInGame(partial, mc));
                     GuiScreen screen = Minecraft.mcc$get$currentScreen(mc);
-                    if (screen != null) gui.run(changed, m -> m.onTickInGUI(partial, mc, screen));
+                    // ModLoader skips a useClock GUI hook only when the clock is unchanged AND a world exists (on the title screen it runs every frame)
+                    if (screen != null) gui.run(changed || world == null, m -> m.onTickInGUI(partial, mc, screen));
                     clock = now;
                 }
             } catch (RuntimeException e) {

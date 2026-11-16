@@ -83,7 +83,7 @@ class ForgeHandlers125Test {
             @Override
             public boolean onMinecartInteract(legacyconnector.v1_7_10.net.minecraft.entity.item.EntityMinecart cart, EntityPlayer player, boolean doInteraction) {
                 seen.add("interact " + doInteraction);
-                return true;
+                return false; // Forge 3.x: false = the player may NOT interact
             }
         });
         BUS.post(new MinecartUpdateEvent(null, 3.5F, 4.0F, -1.5F));
@@ -92,6 +92,17 @@ class ForgeHandlers125Test {
         BUS.post(interact);
         assertEquals(List.of("update 3,4,-2", "collide", "interact true"), seen);
         assertTrue(interact.isCanceled());
+    }
+
+    @Test
+    void interactHandlerFalseCancelsLikeForgeHooksOnEntityInteract() {
+        MinecraftForge.registerEntityInteractHandler((player, entity, isAttack) -> isAttack);
+        var right = new legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.EntityInteractEvent(null, null);
+        var left = new legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.AttackEntityEvent(null, null);
+        BUS.post(right);
+        BUS.post(left);
+        assertTrue(right.isCanceled(), "false = cancel");
+        assertTrue(!left.isCanceled(), "true = continue");
     }
 
     @Test

@@ -19,7 +19,13 @@ final class ForgeEvents {
         MinecraftForge.EVENT_BUS.register(new Object() {
             @SubscribeEvent
             public void onPickup(EntityItemPickupEvent e) {
-                if (handler.onItemPickup(e.entityPlayer, e.item)) e.setCanceled(true);
+                // Forge 3.x (ForgeHooks.onItemPickup, checked against its source): the handler returns TRUE to let processing continue; false stops the
+                // pickup, and so does a stack the handler used up (the entity is then gone, as the game destroyed it)
+                if (e.isCanceled()) return;
+                boolean cont = handler.onItemPickup(e.entityPlayer, e.item);
+                boolean used = e.item.getEntityItem() != null && e.item.getEntityItem().mcc$count() <= 0;
+                if (used) e.item.setDead();
+                if (!cont || used) e.setCanceled(true);
             }
         });
     }
@@ -28,7 +34,13 @@ final class ForgeEvents {
         MinecraftForge.EVENT_BUS.register(new Object() {
             @SubscribeEvent
             public void onInteract(EntityInteractEvent e) {
-                if (handler.onEntityInteract(e.entityPlayer, e.target, false)) e.setCanceled(true);
+                // IEntityInteractHandler: "True to continue processing, false to cancel" (ForgeHooks.onEntityInteract stops at the first false)
+                if (!e.isCanceled() && !handler.onEntityInteract(e.entityPlayer, e.target, false)) e.setCanceled(true);
+            }
+
+            @SubscribeEvent
+            public void onAttack(legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.AttackEntityEvent e) {
+                if (!e.isCanceled() && !handler.onEntityInteract(e.entityPlayer, e.target, true)) e.setCanceled(true);
             }
         });
     }
@@ -142,7 +154,10 @@ final class ForgeEvents {
 
             @SubscribeEvent
             public void onInteract(legacyconnector.v1_7_10.net.minecraftforge.event.entity.minecart.MinecartInteractEvent e) {
-                if (handler.onMinecartInteract(e.minecart, e.player, true)) e.setCanceled(true);
+                // ForgeHooks.onMinecartInteract: "canceled" starts true and becomes the AND of the answers; a handler returns whether the player MAY interact,
+                // the cart blocks the interaction when the final value is false
+                boolean allowed = handler.onMinecartInteract(e.minecart, e.player, !e.isCanceled());
+                if (!allowed) e.setCanceled(true);
             }
         });
     }
@@ -161,15 +176,19 @@ final class ForgeEvents {
         MinecraftForge.EVENT_BUS.register(new Object() {
             @SubscribeEvent
             public void onChat(legacyconnector.v1_7_10.net.minecraftforge.event.ServerChatEvent e) {
-                String result = handler.onServerChat(e.player, e.message);
+                // handlers chain: each gets the text the previous one returned (ForgeHooks.onServerChat), null cancels
+                String prefix = "<" + e.username + "> ";
+                String current = e.line != null && e.line.startsWith(prefix) ? e.line.substring(prefix.length()) : e.message;
+                String result = handler.onServerChat(e.player, current);
                 if (result == null) e.setCanceled(true);
-                else if (!result.equals(e.message)) e.line = "<" + e.username + "> " + result;
+                else if (!result.equals(current)) e.line = prefix + result;
             }
 
             @SubscribeEvent
             public void onCommand(legacyconnector.v1_7_10.net.minecraftforge.event.CommandEvent e) {
                 String name = e.command.getCommandName();
                 String params = e.parameters == null ? "" : String.join(" ", e.parameters);
+                if (e.isCanceled()) return;
                 String line = params.isEmpty() ? name : name + " " + params;
                 if (e.sender instanceof legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player) {
                     if (handler.onChatCommand(player, e.sender.canCommandSenderUseCommand(2, name), line)) e.setCanceled(true);
@@ -177,6 +196,7 @@ final class ForgeEvents {
                     e.setCanceled(true);
                 }
                 if (!e.isCanceled() && name.equals("say")) {
+                    params = e.parameters == null ? "" : String.join(" ", e.parameters);
                     String said = handler.onServerCommandSay(e.sender, e.sender.getCommandSenderName(), params);
                     if (said == null) e.setCanceled(true);
                     else if (!said.equals(params)) e.parameters = new String[] {said};
@@ -185,9 +205,16 @@ final class ForgeEvents {
         });
     }
 
-    /** Chunks the handler wants ticked and loaded ({@code addActiveChunks}): forced while it names them, released when it stops. */
+    private static final java.util.List<IChunkLoadHandler> CHUNK_HANDLERS = new java.util.concurrent.CopyOnWriteArrayList<>();
+    private static final java.util.Map<Object, java.util.Set<Long>> FORCED = new java.util.WeakHashMap<>();
+
+    /**
+     * Chunks the handlers want ticked and loaded ({@code addActiveChunks}): ForgeHooks.addActiveChunks gave EVERY handler the same set each tick, so
+     * one ticker collects all of them and forces the union, releasing a chunk only when no handler names it any more.
+     */
     static void chunkLoad(IChunkLoadHandler handler) {
-        java.util.Map<Object, java.util.Set<Long>> held = new java.util.WeakHashMap<>();
+        CHUNK_HANDLERS.add(handler);
+        if (CHUNK_HANDLERS.size() > 1) return;
         legacyconnector.v1_6_4.cpw.mods.fml.common.registry.TickRegistry.registerTickHandler(new legacyconnector.v1_6_4.cpw.mods.fml.common.ITickHandler() {
             @Override
             public void tickStart(java.util.EnumSet<legacyconnector.v1_6_4.cpw.mods.fml.common.TickType> type, Object... tickData) {}
@@ -197,10 +224,14 @@ final class ForgeEvents {
                 if (tickData.length == 0 || !(tickData[0] instanceof legacyconnector.v1_7_10.net.minecraft.world.World world)) return;
                 if (!(world.mcc$fullLevel() instanceof net.minecraft.server.level.ServerLevel level)) return;
                 java.util.Set<legacyconnector.v1_7_10.net.minecraft.world.ChunkCoordIntPair> asked = new java.util.LinkedHashSet<>();
-                handler.addActiveChunks(world, asked);
+                for (IChunkLoadHandler h : CHUNK_HANDLERS) h.addActiveChunks(world, asked);
                 java.util.List<Long> wanted = new java.util.ArrayList<>();
                 for (legacyconnector.v1_7_10.net.minecraft.world.ChunkCoordIntPair c : asked) wanted.add(org.kylepitcock.legacyconnector.v1_6_4.bridge.ChunkAnchors125.key(c.chunkXPos, c.chunkZPos));
-                org.kylepitcock.legacyconnector.v1_6_4.bridge.ChunkAnchors125.reconcile(held.computeIfAbsent(level, k -> new java.util.HashSet<>()), wanted,
+                java.util.Set<Long> held;
+                synchronized (FORCED) {
+                    held = FORCED.computeIfAbsent(level, k -> new java.util.HashSet<>());
+                }
+                org.kylepitcock.legacyconnector.v1_6_4.bridge.ChunkAnchors125.reconcile(held, wanted,
                         k -> level.setChunkForced(org.kylepitcock.legacyconnector.v1_6_4.bridge.ChunkAnchors125.x(k), org.kylepitcock.legacyconnector.v1_6_4.bridge.ChunkAnchors125.z(k), true),
                         k -> level.setChunkForced(org.kylepitcock.legacyconnector.v1_6_4.bridge.ChunkAnchors125.x(k), org.kylepitcock.legacyconnector.v1_6_4.bridge.ChunkAnchors125.z(k), false));
             }
@@ -212,7 +243,7 @@ final class ForgeEvents {
 
             @Override
             public String getLabel() {
-                return "Forge 3.x chunk load handler";
+                return "Forge 3.x chunk load handlers";
             }
         }, legacyconnector.v1_7_10.cpw.mods.fml.relauncher.Side.SERVER);
     }
