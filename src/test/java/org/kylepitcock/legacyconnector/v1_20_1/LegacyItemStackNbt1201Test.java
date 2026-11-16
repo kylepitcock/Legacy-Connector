@@ -14,7 +14,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.CustomData;
 import org.kylepitcock.legacyconnector.v1_20_1.migrate.ItemStackNbt;
+import org.kylepitcock.legacyconnector.v1_20_1.migrate.MigrateContext;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class LegacyItemStackNbt1201Test {
@@ -27,6 +29,12 @@ class LegacyItemStackNbt1201Test {
                 java.util.List.of(), java.util.List.of(), java.util.List.of(), java.util.List.of(), java.util.Map.of());
         net.minecraft.SharedConstants.tryDetectVersion();
         net.minecraft.server.Bootstrap.bootStrap();
+    }
+
+    @BeforeEach
+    void provideRegistryContext() {
+        // Unit tests have no running server/client from which MigrateContext can obtain registries.
+        MigrateContext.remember(RegistryAccess.EMPTY);
     }
 
     @Test
