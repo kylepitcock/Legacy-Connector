@@ -182,7 +182,22 @@ public final class LegacyMixinPlugin implements IMixinConfigPlugin {
         }
 
         @Override
-        public void postApply(ITargetClassContext context) {}
+        public void postApply(ITargetClassContext context) {
+            try {
+                if (mixinsField == null) return;
+                List<String> ours = null;
+                for (Object m : (Collection<?>) mixinsField.get(context)) {
+                    IMixinInfo info = (IMixinInfo) m;
+                    if (MixinSelfCheck.CONFIGS.contains(info.getConfig().getName())) {
+                        if (ours == null) ours = new ArrayList<>();
+                        ours.add(info.getClassName().replace('.', '/'));
+                    }
+                }
+                if (ours != null) MixinSelfCheck.record(context.getClassNode(), ours);
+            } catch (Throwable t) {
+                // the self check must never disturb class loading
+            }
+        }
 
         @Override
         public void export(MixinEnvironment env, String name, boolean force, ClassNode classNode) {}

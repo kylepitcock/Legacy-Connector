@@ -12,11 +12,13 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.kylepitcock.legacyconnector.mixinplugin.CoremodHook;
 
 /**
  * Coremod hook sites (generic, {@code CoremodSites.Client.LIMB_SWING_RENDER}, {@code LIMB_AMOUNT_RENDER}, {@code ROTATE_CORPSE}): 1.7.10 coremods changed the
  * limb swing a model is posed with and rotated the player model with GL calls. A no-op without such hooks.
  */
+@CoremodHook
 @Mixin(LivingEntityRenderer.class)
 public abstract class LivingRenderPoseHookMixin1710 {
     private static final String SETUP_ANIM = "Lnet/minecraft/client/model/EntityModel;setupAnim(Lnet/minecraft/world/entity/Entity;FFFFF)V";

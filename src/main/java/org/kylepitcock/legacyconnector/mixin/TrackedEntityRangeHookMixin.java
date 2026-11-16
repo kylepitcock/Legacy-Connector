@@ -7,12 +7,14 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
+import org.kylepitcock.legacyconnector.mixinplugin.CoremodHook;
 
 /**
  * Coremod hook site (generic, {@code CoremodSites.TRACKING_RANGE}): 1.7.10 coremods changed the range an entity is tracked at in
  * {@code EntityTracker.addEntityToTracker} (entities that must stay visible far away). The modern range still passes the server's view distance
  * ({@code scaledRange}), as 1.7.10's maximum did. A no-op without such a hook.
  */
+@CoremodHook
 @Mixin(targets = "net.minecraft.server.level.ChunkMap$TrackedEntity")
 public abstract class TrackedEntityRangeHookMixin {
     @Final

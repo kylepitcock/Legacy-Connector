@@ -10,11 +10,13 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.kylepitcock.legacyconnector.mixinplugin.CoremodHook;
 
 /**
  * Coremod hook site (generic, {@code CoremodSites1122.CHORUS_EATEN}): 1.12.2 coremods put a hook where the chorus fruit starts its random teleport; a hook
  * answering true took the teleport over. A no-op without such a hook.
  */
+@CoremodHook
 @Mixin(ChorusFruitItem.class)
 public abstract class ChorusFruitHookMixin {
     @Inject(method = "finishUsingItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;getX()D", ordinal = 0), cancellable = true, require = 0)

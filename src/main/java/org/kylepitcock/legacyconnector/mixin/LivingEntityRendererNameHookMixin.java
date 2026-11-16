@@ -7,11 +7,13 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.kylepitcock.legacyconnector.mixinplugin.CoremodHook;
 
 /**
  * Coremod hook site (generic, {@code CoremodSites1122.NAME_SHOWN}): 1.12.2 coremods put a hook first in {@code RenderLivingBase.canRenderName} that can
  * suppress the name tag of an entity. A no-op without such a hook.
  */
+@CoremodHook
 @Mixin(LivingEntityRenderer.class)
 public abstract class LivingEntityRendererNameHookMixin {
     @Inject(method = "shouldShowName(Lnet/minecraft/world/entity/LivingEntity;)Z", at = @At("RETURN"), cancellable = true, require = 0)

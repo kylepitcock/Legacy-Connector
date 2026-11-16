@@ -9,12 +9,14 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.kylepitcock.legacyconnector.mixinplugin.CoremodHook;
 
 /**
  * Coremod hook sites (generic, {@code CoremodSites.POTION_PARTICLE_NAME}, {@code ARMOR_VISIBILITY}, {@code LIMB_SWING}): 1.7.10 coremods put hooks into
  * {@code EntityLivingBase.updatePotionEffects} (the name of the effect particle), {@code EntityPlayer.getArmorVisibility} and the limb swing distance of
  * {@code moveEntityWithHeading}. No-ops without such hooks.
  */
+@CoremodHook
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityCoremodSitesMixin {
     @ModifyArg(method = "tickEffects", require = 0, index = 0,

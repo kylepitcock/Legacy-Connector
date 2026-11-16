@@ -5,11 +5,13 @@ import org.kylepitcock.legacyconnector.v1_7_10.bridge.CoremodSites;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.ModifyConstant;
+import org.kylepitcock.legacyconnector.mixinplugin.CoremodHook;
 
 /**
  * Coremod hook site (generic, {@code CoremodSites.ANVIL_MAX_COST}): the "Too Expensive!" limit of the anvil screen ({@code GuiRepair}), which 1.7.10 coremods
  * replaced together with the container's. A no-op without such a hook.
  */
+@CoremodHook
 @Mixin(AnvilScreen.class)
 public abstract class AnvilScreenCostHookMixin {
     @ModifyConstant(method = "renderLabels", constant = @Constant(intValue = 40), require = 0)
