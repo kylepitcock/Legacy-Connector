@@ -124,6 +124,11 @@ public final class Forge1201SourceRuntimeMemberVerifier {
             return classIndex.declaredMethodAccess(owner, name, descriptor);
         }
 
+        public Optional<Forge1201TargetApiVerifier.MethodCodeSummary> inspectMethodCode(
+                String owner, String name, String descriptor) throws IOException {
+            return classIndex.inspectMethodCode(owner, name, descriptor);
+        }
+
         public MemberResult inspectMethod(String owner, String name, String descriptor) throws IOException {
             return inspect(owner, name, descriptor, true);
         }
