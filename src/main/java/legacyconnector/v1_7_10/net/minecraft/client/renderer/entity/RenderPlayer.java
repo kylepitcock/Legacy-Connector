@@ -45,6 +45,9 @@ public class RenderPlayer extends RendererLivingEntity {
 
     @Override
     public void doRender(Entity entity, double x, double y, double z, float yaw, float partialTicks) {
+        // The engine never calls this (the modern renderer draws players), so a call comes from legacy code that wants the vanilla player drawn
+        // through this renderer's model: a model copier (Morph's forceRender of the player's model, which keeps only the parts that were drawn).
+        super.doRender(entity, x, y, z, yaw, partialTicks);
     }
 
     /**
