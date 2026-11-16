@@ -154,7 +154,8 @@ final class Mixin1201 {
 
     /** Instance fields of Minecraft 1.20.1 that 1.21.1 removed, read by a mixin accessor interface: "owner.field" to the {@code Round6Compat} helper (takes the instance). */
     private static final Map<String, String> REMOVED_INSTANCE_FIELDS = Map.of(
-            "net/minecraft/server/level/WorldGenRegion.structureManager", "worldGenRegionStructureManager");
+            "net/minecraft/server/level/WorldGenRegion.structureManager", "worldGenRegionStructureManager",
+            "net/minecraft/server/level/WorldGenRegion.cache", "worldGenRegionCache");
 
     /**
      * An abstract {@code @Accessor getX()} of a field in {@link #REMOVED_INSTANCE_FIELDS} cannot apply (Mixin fails with "No candidates", or the class is dropped and
