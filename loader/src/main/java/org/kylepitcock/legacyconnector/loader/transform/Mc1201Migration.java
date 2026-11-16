@@ -113,6 +113,8 @@ final class Mc1201Migration {
             rewriteBody(tramp, h, t, c);
         }
         c.trampolines.clear();
+        // calls to methods 1.21.1 made protected, on objects that are not the caller's own class
+        c.calls += ProtectedCalls1201.apply(node, h);
         c.current = null;
         if ((node.access & Opcodes.ACC_INTERFACE) == 0) {
             addBridges(node, h, t, c);
