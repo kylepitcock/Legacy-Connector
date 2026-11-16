@@ -24,6 +24,17 @@ public abstract class BaseModMp extends BaseMod {
 
     public void handleTileEntityPacket(int x, int y, int z, int type, int[] ints, float[] floats, String[] strings) {}
 
+    /** The GUI of a container the server opened for this mod ({@code ModLoaderMp.registerGUI}); client side. */
+    public legacyconnector.v1_7_10.net.minecraft.client.gui.GuiScreen handleGUI(int guiId) {
+        return null;
+    }
+
+    /** A player logged in to the server running this mod (server side). */
+    public void handleLogin(EntityPlayerMP player) {}
+
+    /** The client pressed a key the mod sent with {@code ModLoaderMp.sendKey}. */
+    public void handleSendKey(EntityPlayerMP player, int key) {}
+
     public boolean hasClientSide() {
         return true;
     }

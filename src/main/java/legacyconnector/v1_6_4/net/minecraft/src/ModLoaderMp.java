@@ -35,8 +35,18 @@ public final class ModLoaderMp {
         Network164.registerChannel((manager, packet, player) -> {
             Packet230ModLoader p = Packet230ModLoader.decode(packet.data);
             BaseModMp mod = MODS.get(p.modId);
-            if (mod != null && player instanceof EntityPlayerMP mp) mod.handlePacket(p, mp);
+            if (mod == null || !(player instanceof EntityPlayerMP mp)) return;
+            if (p.packetType == KEY_PACKET && p.dataInt.length > 0) mod.handleSendKey(mp, p.dataInt[0]);
+            else mod.handlePacket(p, mp);
         }, CHANNEL, Side.SERVER);
+        legacyconnector.v1_7_10.cpw.mods.fml.common.FMLCommonHandler.instance().bus().register(new Object() {
+            @legacyconnector.v1_7_10.cpw.mods.fml.common.eventhandler.SubscribeEvent
+            public void onLogin(legacyconnector.v1_7_10.cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent e) {
+                if (e.player instanceof EntityPlayerMP mp) {
+                    for (BaseModMp m : MODS.values()) m.handleLogin(mp);
+                }
+            }
+        });
     }
 
     /** Called by the host for every {@code BaseModMp} (see {@link BaseMod}'s init handler). */
@@ -74,7 +84,46 @@ public final class ModLoaderMp {
         Network164.sendToAll(wrap(mod, packet));
     }
 
+    /** The packet type of a key the client sent with {@link #sendKey} (ModLoaderMP used a reserved mod id; the layer a reserved type). */
+    private static final int KEY_PACKET = Integer.MIN_VALUE + 1;
+
+    /** Client to server: a key press for the mod's {@code handleSendKey}. */
+    public static void sendKey(BaseModMp mod, int key) {
+        Packet230ModLoader packet = new Packet230ModLoader();
+        packet.packetType = KEY_PACKET;
+        packet.dataInt = new int[] {key};
+        sendPacket(mod, packet);
+    }
+
     public static void registerGUI(BaseModMp mod, int id) {}
+
+    public static void log(String message) {
+        org.slf4j.LoggerFactory.getLogger("LegacyConnector/ModLoaderMP").info(message);
+    }
+
+    /** Chat to every player (the sender, when given, is named in front). */
+    public static void sendChatToAll(String sender, String message) {
+        sendChatToAll(sender == null || sender.isEmpty() ? message : "<" + sender + "> " + message);
+    }
+
+    public static void sendChatToAll(String message) {
+        var server = legacyconnector.v1_7_10.cpw.mods.fml.common.FMLCommonHandler.instance().getMinecraftServerInstance();
+        if (server != null) server.mcc$modern().getPlayerList().broadcastSystemMessage(net.minecraft.network.chat.Component.literal(message), false);
+    }
+
+    public static void sendChatToOps(String sender, String message) {
+        sendChatToAll(sender, message);
+    }
+
+    public static void sendChatToOps(String message) {
+        sendChatToAll(message);
+    }
+
+    public static void sendTileEntityPacket(legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntity tile) {}
+
+    public static void registerEntityTrackerEntry(Class<?> entityClass, int id) {}
+
+    public static void registerEntityTrackerEntry(Class<?> entityClass, boolean isLiving, int id) {}
 
     public static void registerEntityTracker(Class<?> entityClass, int updateRange, int updateInterval) {}
 

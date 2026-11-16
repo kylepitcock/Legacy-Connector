@@ -17,6 +17,7 @@ public class Packet230ModLoader extends legacyconnector.v1_7_10.net.minecraft.ne
     public int packetType;
     public int[] dataInt = new int[0];
     public float[] dataFloat = new float[0];
+    public double[] dataDouble = new double[0];
     public String[] dataString = new String[0];
 
     public Packet230ModLoader() {}
@@ -30,6 +31,8 @@ public class Packet230ModLoader extends legacyconnector.v1_7_10.net.minecraft.ne
             if (dataInt != null) for (int v : dataInt) out.writeInt(v);
             out.writeByte(dataFloat == null ? 0 : dataFloat.length);
             if (dataFloat != null) for (float v : dataFloat) out.writeFloat(v);
+            out.writeByte(dataDouble == null ? 0 : dataDouble.length);
+            if (dataDouble != null) for (double v : dataDouble) out.writeDouble(v);
             out.writeByte(dataString == null ? 0 : dataString.length);
             if (dataString != null) for (String v : dataString) out.writeUTF(v == null ? "" : v);
         } catch (IOException e) {
@@ -47,6 +50,8 @@ public class Packet230ModLoader extends legacyconnector.v1_7_10.net.minecraft.ne
             for (int i = 0; i < p.dataInt.length; i++) p.dataInt[i] = in.readInt();
             p.dataFloat = new float[in.readUnsignedByte()];
             for (int i = 0; i < p.dataFloat.length; i++) p.dataFloat[i] = in.readFloat();
+            p.dataDouble = new double[in.readUnsignedByte()];
+            for (int i = 0; i < p.dataDouble.length; i++) p.dataDouble[i] = in.readDouble();
             p.dataString = new String[in.readUnsignedByte()];
             for (int i = 0; i < p.dataString.length; i++) p.dataString[i] = in.readUTF();
         } catch (IOException e) {
