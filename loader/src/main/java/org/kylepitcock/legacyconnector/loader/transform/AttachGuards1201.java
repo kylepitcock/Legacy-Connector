@@ -29,6 +29,8 @@ final class AttachGuards1201 {
     static int apply(ClassNode node, Set<String> jarClasses) {
         int n = 0;
         for (MethodNode m : node.methods) {
+            // a constructor cannot return before its super call (VerifyError); it is no handler either
+            if (m.name.equals("<init>") || m.name.equals("<clinit>")) continue;
             if (m.signature == null || m.instructions == null || m.instructions.size() == 0 || !m.desc.endsWith(")V")) continue;
             Type[] args = Type.getArgumentTypes(m.desc);
             int slot = (m.access & Opcodes.ACC_STATIC) != 0 ? 0 : 1;

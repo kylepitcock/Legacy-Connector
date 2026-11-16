@@ -542,8 +542,13 @@ public final class RoundCompat {
     /** {@code SpawnPlacements.Type}-style custom placement: a placement type that asks the predicate. */
     public static net.minecraft.world.entity.SpawnPlacementType createSpawnPlacementType(String name,
             net.neoforged.neoforge.common.util.TriPredicate<net.minecraft.world.level.LevelReader, net.minecraft.core.BlockPos, net.minecraft.world.entity.EntityType<?>> predicate) {
-        return predicate::test;
+        net.minecraft.world.entity.SpawnPlacementType type = predicate::test;
+        CUSTOM_PLACEMENTS.put(name, type);
+        return type;
     }
+
+    /** Placement types made with {@code SpawnPlacements.Type.create(name, ...)}: {@code Type.valueOf(name)} finds them again. */
+    static final java.util.Map<String, net.minecraft.world.entity.SpawnPlacementType> CUSTOM_PLACEMENTS = new java.util.concurrent.ConcurrentHashMap<>();
 
     public static net.minecraft.world.entity.raid.Raid.RaiderType createRaiderType(String name, net.minecraft.world.entity.EntityType<?> type, int[] counts) {
         return net.minecraft.world.entity.raid.Raid.RaiderType.VINDICATOR;

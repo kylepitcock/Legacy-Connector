@@ -19,6 +19,11 @@ public final class OptionalStripper {
 
     /** @param present legacy mod ids loaded alongside (case-insensitive) */
     public static int apply(ClassNode node, String shimPrefix, Set<String> present, Hierarchy hierarchy) {
+        return apply(node, shimPrefix, present, hierarchy, null);
+    }
+
+    /** @param removedMethods receives {@code owner.nameDesc} of each removed {@code @Optional.Method} (callers guard them with isModLoaded); may be null */
+    public static int apply(ClassNode node, String shimPrefix, Set<String> present, Hierarchy hierarchy, Set<String> removedMethods) {
         // FML moved from cpw.mods.fml (1.7.10) to net.minecraftforge.fml (1.8 and later).
         String base = "L" + shimPrefix + ("legacyconnector/v1_12_2/".equals(shimPrefix) ? "net/minecraftforge/fml/common/Optional$" : "cpw/mods/fml/common/Optional$");
         int stripped = 0;
@@ -38,13 +43,18 @@ public final class OptionalStripper {
             if (hierarchy.isAbsent(iface)) removeIfaces.add(iface);
         }
         for (String iface : removeIfaces) {
-            if (node.interfaces.remove(iface)) stripped++;
+            if (node.interfaces.remove(iface)) {
+                stripped++;
+                // members of the removed interface now look missing on this class; the callers guard them
+                if (removedMethods != null) removedMethods.add(node.name + ".<interface>");
+            }
         }
         for (var it = node.methods.iterator(); it.hasNext(); ) {
             MethodNode m = it.next();
             for (AnnotationNode a : all(m.visibleAnnotations, m.invisibleAnnotations)) {
                 if (a.desc.equals(base + "Method;") && !isPresent(value(a, "modid"), present)) {
                     it.remove();
+                    if (removedMethods != null) removedMethods.add(node.name + "." + m.name + m.desc);
                     stripped++;
                     break;
                 }

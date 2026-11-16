@@ -84,6 +84,8 @@ for s in "${names[@]}"; do
   else
     printf 'server-port=%s\nlevel-seed=1710\nonline-mode=false\n' $((${VERIFY_PORT_BASE:-25570}+idx)) > "$D/server.properties"
   fi
+  # the dimension self test of big packs blocks the main thread for longer than the 60 s watchdog: never let it kill the test run
+  sed -i '/^max-tick-time=/d' "$D/server.properties"; echo "max-tick-time=-1" >> "$D/server.properties"
 
   glog="build/devtools/verify-$s-gradle.log"
   ./gradlew runServerSubTest "-PsubTestDir=$D" "-PautostopTicks=$AUTOSTOP" > "$glog" 2>&1 &

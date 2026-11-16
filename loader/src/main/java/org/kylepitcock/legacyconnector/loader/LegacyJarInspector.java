@@ -73,13 +73,15 @@ public final class LegacyJarInspector {
             }
             // A Forge 1.20.1 mod speaks mods.toml: it is ours (in-place remap), unlike a NeoForge or later Forge mod.
             // (multi-loader jars also carry fabric.mod.json / quilt.mod.json: those are dropped when the jar is translated)
-            if (zip.getEntry("META-INF/neoforge.mods.toml") == null && zip.getEntry("META-INF/mods.toml") != null) {
+            // (not when mods.toml is a template left in a 1.7.x jar: mcmod.info, no minecraft dependency, cpw.mods.fml code and no net.minecraftforge.fml code)
+            boolean templateToml = strayTemplateModsToml(zip);
+            if (zip.getEntry("META-INF/neoforge.mods.toml") == null && zip.getEntry("META-INF/mods.toml") != null && !templateToml) {
                 LegacyJar forge = inspectForge1201(zip, path);
                 if (forge != null) return forge;
             }
             // A 1.12.2 library jar built from a 1.15 template keeps a stray mods.toml next to its FML coremod plugin (Obfuscate 0.4.2 for 1.12.2).
-            boolean strayModsToml = zip.getEntry("META-INF/neoforge.mods.toml") == null && zip.getEntry("fabric.mod.json") == null
-                    && zip.getEntry("META-INF/MANIFEST.MF") != null && legacyCorePlugin(zip);
+            boolean strayModsToml = (zip.getEntry("META-INF/neoforge.mods.toml") == null && zip.getEntry("fabric.mod.json") == null
+                    && zip.getEntry("META-INF/MANIFEST.MF") != null && legacyCorePlugin(zip)) || templateToml;
             // A pre-1.13 jar with a decoy mods.toml (made so that a modern Forge stops with a message; it pins minecraft to [1.4.7] and ships an mcmod.info).
             strayModsToml |= decoyModsToml(zip);
             // Anything that already speaks a modern metadata format is not ours to touch.
@@ -98,6 +100,7 @@ public final class LegacyJarInspector {
             Markers markers = new Markers();
             List<LegacyModDecl> found = new ArrayList<>();
             List<String> modLoaderMods = new ArrayList<>();
+            String mc125Evidence = null;
 
             Enumeration<? extends ZipEntry> entries = zip.entries();
             while (entries.hasMoreElements()) {
@@ -144,7 +147,27 @@ public final class LegacyJarInspector {
                 // no FML at all: a Beta 1.7.3 ModLoader / Forge 1.0 mod (in mods/b1.7.3/, or linking to b1.7.3's names), else a 1.4.7
                 // ModLoader mod (BaseMod subclasses: decided below) or not a legacy mod; mods/1.4.7/ never holds b1.7.3 jars
                 Path folder = path.getParent() == null ? null : path.getParent().getFileName();
-                if (folder == null || !folder.toString().equals("1.4.7")) {
+                // Minecraft 1.2.5 (names of its own obfuscation): recognised and reported as not supported yet, never hosted as 1.4.7 or Beta
+                String ev125 = null;
+                if (folder != null && folder.toString().equals(Mc125Jars.FOLDER)) {
+                    ev125 = "in mods/" + Mc125Jars.FOLDER;
+                } else if (folder == null || !(folder.toString().equals("1.4.7") || folder.toString().equals(BetaJars.FOLDER))) {
+                    ev125 = Mc125Jars.detect(zip, () -> NotchFingerprint.scores(zip));
+                }
+                if (ev125 != null) {
+                    if (!Mc125Jars.optedIn()) {
+                        Mc125Jars.record(path, ev125);
+                        return null;
+                    }
+                    if (!org.kylepitcock.legacyconnector.loader.transform.Notch125To147.available()) {
+                        Mc125Jars.record(path, ev125 + "; this build has no 1.2.5 table (built without -Pmappings125)");
+                        return null;
+                    }
+                    // opted in: hosted through the 1.4.7 chain after Notch125To147 (decided with the version below)
+                    mc125Evidence = ev125;
+                    jar.notchSide = Mc125Jars.sideOf(zip);
+                }
+                if (mc125Evidence == null && (folder == null || !folder.toString().equals("1.4.7"))) {
                     LegacyJar beta = BetaJars.inspect(zip, path, jar);
                     if (beta != null) return beta;
                 }
@@ -178,6 +201,13 @@ public final class LegacyJarInspector {
 
             if (unique.isEmpty() && jar.coreModClass != null && !jar.coreModClass.isBlank()) jar.containerModIds.addAll(infoById.keySet());
             if (jar.coreModClass != null && !jar.coreModClass.isBlank()) addCoreModContainerIds(zip, jar);
+            if (mc125Evidence != null) {
+                // Minecraft 1.2.5 (opt-in): hosted as 1.4.7 once Notch125To147 has renamed it
+                jar.version = LegacyVersion.V1_4_7;
+                jar.sourceVersion = LegacyVersion.V1_2_5;
+                jar.versionEvidence = "Minecraft 1.2.5, " + mc125Evidence + " (hosted as 1.4.7 after the 1.2.5 to 1.4.7 name rewrite; " + (jar.notchSide == 's' ? "server" : "client") + " names)";
+                return jar.mods.isEmpty() ? null : jar;
+            }
             jar.version = chooseVersion(zip, jar, infoById, refs17, refs112, markers, !modLoaderMods.isEmpty());
             return jar.version == null ? null : jar;
         }
@@ -762,6 +792,31 @@ public final class LegacyJarInspector {
         try (InputStream in = zip.getInputStream(toml)) {
             return DECOY_MC_RANGE.matcher(new String(in.readAllBytes(), StandardCharsets.UTF_8)).find();
         }
+    }
+
+    /**
+     * A 1.7.x jar built from a 1.14+ template keeps the example {@code mods.toml} next to its {@code mcmod.info} (Overloaded Armor Bar 1.7.10): no
+     * {@code minecraft} dependency in it, FML code of the 1.7 package and none of the 1.12+ one. Such a jar is a legacy mod, not a Forge 1.20.1 one.
+     */
+    static boolean strayTemplateModsToml(ZipFile zip) throws IOException {
+        ZipEntry toml = zip.getEntry("META-INF/mods.toml");
+        if (toml == null || zip.getEntry("mcmod.info") == null || zip.getEntry("META-INF/neoforge.mods.toml") != null || zip.getEntry("fabric.mod.json") != null) return false;
+        try (InputStream in = zip.getInputStream(toml)) {
+            if (dependencyRange(new String(in.readAllBytes(), StandardCharsets.UTF_8), "minecraft") != null) return false;
+        }
+        boolean fml17 = false;
+        byte[] a = "cpw/mods/fml/".getBytes(StandardCharsets.ISO_8859_1), b = "net/minecraftforge/fml/".getBytes(StandardCharsets.ISO_8859_1);
+        for (var en = zip.entries(); en.hasMoreElements(); ) {
+            ZipEntry e = en.nextElement();
+            if (e.isDirectory() || !e.getName().endsWith(".class")) continue;
+            String text;
+            try (InputStream in = zip.getInputStream(e)) {
+                text = new String(in.readAllBytes(), StandardCharsets.ISO_8859_1);
+            }
+            if (text.contains(new String(b, StandardCharsets.ISO_8859_1))) return false;
+            if (text.contains(new String(a, StandardCharsets.ISO_8859_1))) fml17 = true;
+        }
+        return fml17;
     }
 
     private static boolean legacyCorePlugin(ZipFile zip) throws IOException {

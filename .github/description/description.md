@@ -21,6 +21,7 @@
 | **1.4.7** | `mods/1.4.7/` | 🧪 Alpha |
 | **Forge 1.20.1** | `mods/1.20.1/` | 🧪 Alpha (remapped in place; on by default) |
 | **Beta 1.7.3** | `mods/b1.7.3/` (jars or zips) | 🧪 Alpha (ModLoader / Forge 1.0 era) |
+| 1.2.5 | | Design (jars are recognised and reported, not loaded) |
 | 1.19.2, 1.18.2, 1.16.5 | | Planned, as stages on top of the 1.20.1 support |
 
 Put the mods for each version into its folder next to Legacy Connector. They get translated when the game loads and run as normal NeoForge mods. It's the same idea as Sinytra Connector, but for old Forge mods instead of Fabric. Your original jars are never modified.
