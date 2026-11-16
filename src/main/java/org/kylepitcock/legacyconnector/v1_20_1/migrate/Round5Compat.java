@@ -67,6 +67,30 @@ public final class Round5Compat {
         return 1.0F;
     }
 
+    /** {@code BlockBehaviour.getLootTable()}: the table id (1.21.1 returns the resource key). */
+    public static ResourceLocation blockLootTable(net.minecraft.world.level.block.state.BlockBehaviour block) {
+        return block.getLootTable().location();
+    }
+
+    /**
+     * {@code Entity.changeDimension(level)}: 1.21.1 moves through a {@code DimensionTransition}. APPROXIMATION: the entity keeps its position, motion and
+     * rotation in the target level (no portal search or coordinate scaling, which the 1.20.1 call did for the vanilla portal destination).
+     */
+    public static net.minecraft.world.entity.Entity changeDimension(net.minecraft.world.entity.Entity entity, net.minecraft.server.level.ServerLevel level) {
+        return entity.changeDimension(new net.minecraft.world.level.portal.DimensionTransition(level, entity.position(), entity.getDeltaMovement(),
+                entity.getYRot(), entity.getXRot(), net.minecraft.world.level.portal.DimensionTransition.DO_NOTHING));
+    }
+
+    /** {@code Blocks.leaves(sound)} (private static in both versions, the 1.20.1 return type was the leaves block). */
+    public static net.minecraft.world.level.block.LeavesBlock leaves(net.minecraft.world.level.block.SoundType sound) {
+        return (net.minecraft.world.level.block.LeavesBlock) net.minecraft.world.level.block.Blocks.leaves(sound);
+    }
+
+    /** {@code Blocks.log(top, side)}. */
+    public static net.minecraft.world.level.block.RotatedPillarBlock log(net.minecraft.world.level.material.MapColor top, net.minecraft.world.level.material.MapColor side) {
+        return (net.minecraft.world.level.block.RotatedPillarBlock) net.minecraft.world.level.block.Blocks.log(top, side);
+    }
+
     /** {@code ButtonBlock.arrowsCanPress}: the flag moved into the block set type (wooden buttons yes, stone ones no). */
     public static boolean buttonArrows(ButtonBlock block) {
         return block.type.canButtonBeActivatedByArrows();
