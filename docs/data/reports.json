@@ -911,6 +911,18 @@
    "link": "https://www.curseforge.com/minecraft/mc-mods/redstone-arsenal/download/5372745",
    "date": "2026-11-16",
    "open": true
+  },
+  {
+   "issue": 298,
+   "mod": "thermal_foundation-1.20.1-11.0.6.70.jar",
+   "mc": "1.20.1 (Forge)",
+   "status": "crashes",
+   "details": "Game crashes on load. Related issue: #271",
+   "lc": "0.4.14-nightly.58.00a22b8",
+   "neoforge": "21.1.266",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/thermal-foundation/download/5443583",
+   "date": "2026-11-16",
+   "open": true
   }
  ]
 }
