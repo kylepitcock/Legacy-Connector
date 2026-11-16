@@ -1652,7 +1652,7 @@ PlayerEvents.tick(e => {
                 "                            }",
                 "                        });",
                 "");
-        String legacyContinuation = "                        nearestDistance = searchRadius + 1;\n"
+        String legacyContinuation = "                        nearestDistance = searchRadius + 1;\n\n"
                 + legacyRetargetBlock;
         String migratedContinuation = "                        nearestDistance = searchRadius + 1;\n"
                 + "                        completedPlayers.add(playerId);\n";
