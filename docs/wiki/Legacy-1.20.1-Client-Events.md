@@ -200,3 +200,23 @@ Bus is the 1.20.1 bus; "same members" means the public methods (name, parameter 
 | sound/SoundEngineLoadEvent | sound/SoundEngineLoadEvent | mod bus | package move | same members |
 | sound/SoundEvent | sound/SoundEvent | game bus | package move | same members |
 | sound/SoundEvent$SoundSourceEvent | sound/SoundEvent$SoundSourceEvent | game bus | package move | same members |
+
+## Model locations (`ModelResourceLocation`)
+
+In Forge 1.20.1 `ModelResourceLocation extends ResourceLocation` (path plus variant); in 1.21.1 it is an unrelated record (`id`, `variant`). Translated code keeps the 1.20.1 shape: the loader maps
+the class name to `LegacyModelResourceLocation` (a `ResourceLocation` subclass with the variant; the layer's access transformer opens `ResourceLocation`: `public-f` and the `(String, String)`
+constructor), so a model location passed as a `ResourceLocation`, stored in generic containers or cast back needs no conversion. Conversion happens only where the legacy code calls into the modern
+game (rows in `mc-calls.tsv`, `mc-fields.tsv`, `forge-call-rewrites.tsv`, helpers in `ModelLocationCompat`):
+
+| 1.21.1 member | what legacy code gets or passes |
+|---|---|
+| `ModelEvent.ModifyBakingResult/BakingCompleted.getModels()` | a live `Map<ResourceLocation, BakedModel>` view (`LegacyModelMap`): iteration yields `LegacyModelResourceLocation` keys (plain `ResourceLocation` for standalone models), `get`/`containsKey`/`remove` take legacy keys, plain ids or records, writes go through |
+| `ModelEvent.RegisterAdditional.register(ResourceLocation)` | plain id -> `ModelResourceLocation.standalone(id)`; a legacy location -> `(id, variant)` |
+| `ModelManager.getModel(ModelResourceLocation)` / Forge's `getModel(ResourceLocation)` | converted; a plain id looks up the standalone model, then the `inventory` variant |
+| `BlockModelShaper.stateToModelLocation` (both overloads) | returns `LegacyModelResourceLocation` |
+| `ItemModelShaper.register(Item, ModelResourceLocation)` | converted |
+| `ItemRenderer.TRIDENT_IN_HAND_MODEL`, `SPYGLASS_IN_HAND_MODEL`, `ModelBakery.MISSING_MODEL_LOCATION` (now `MISSING_MODEL_VARIANT`) | field rows return the legacy class |
+
+Key mapping: legacy key with a variant `ns:path#variant` is the record `(ns:path, variant)`; a plain `ResourceLocation` is the record `(id, "standalone")` (1.21.1 registers additional models as
+standalone; in 1.20.1 they were plain keys in the same map). Not routed (no mod in the ATM 9 set uses them; add a row when one does): `ItemModelShaper.shapes`,
+`RegistryAwareItemModelShaper.getLocation`, `BakedModelRenderable.of(ModelResourceLocation)`, `ModelBaker.getTopLevelModel`.
