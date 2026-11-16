@@ -115,4 +115,33 @@ public abstract class GuiContainer extends GuiScreen {
 
     protected void drawSlot(legacyconnector.v1_7_10.net.minecraft.inventory.Slot slot) {
     }
+
+    // Members125 batch 3: the accessors NEI's patched GuiContainer of 1.2.5 added
+
+    /** The game instance ({@code mc} of the screen, which NEI's patch exposed as a method). */
+    public legacyconnector.v1_7_10.net.minecraft.client.Minecraft mcc125$mc() {
+        return legacyconnector.v1_7_10.net.minecraft.client.Minecraft.getMinecraft();
+    }
+
+    public legacyconnector.v1_7_10.net.minecraft.client.Minecraft mc() {
+        return mcc125$mc();
+    }
+
+    public legacyconnector.v1_7_10.net.minecraft.client.gui.FontRenderer fontRenderer() {
+        return fontRendererObj;
+    }
+
+    public void setZLevel(int level) {
+        this.zLevel = level;
+    }
+
+    /** NEI's {@code clickSlot(slot, slotId, button, shift)}: a click on a slot, shift as click mode 1. */
+    public void clickSlot(legacyconnector.v1_7_10.net.minecraft.inventory.Slot slot, int slotId, int button, boolean shift) {
+        handleMouseClick(slot, slotId, button, shift ? 1 : 0);
+    }
+
+    /** NEI's {@code containerKeyPress(char, key)}: hands a key to the container screen. */
+    public void containerKeyPress(char typed, int key) {
+        keyTyped(typed, key);
+    }
 }
