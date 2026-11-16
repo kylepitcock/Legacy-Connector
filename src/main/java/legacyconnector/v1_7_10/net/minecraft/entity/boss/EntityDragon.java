@@ -180,4 +180,11 @@ public class EntityDragon extends EntityLiving implements IBossDisplayData, IEnt
     public IChatComponent func_145748_c_() {
         return getFormattedCommandSenderName();
     }
+
+    // Members125 batch 1
+
+    /** 1.2.5 {@code EntityDragon.getDisplayHealth()}: the health shown on the boss bar (200 at most). */
+    public int mcc125$getDisplayHealth() {
+        return (int) getHealth();
+    }
 }

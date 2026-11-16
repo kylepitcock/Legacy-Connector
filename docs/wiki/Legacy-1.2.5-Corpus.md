@@ -156,3 +156,21 @@ ModLoaderMP, Forge zips), `craftbukkit-build`, `library`. "fit" = share of obfus
 | tropicraftv3.0.zip | mod | client | 310 | mod_BeachFloatHandler, mod_EntMover | ModLoader, Forge3, AudioMod | 0 (0%) | - | 100% / 0% |
 | twilightforest-1.10.1-server.zip | mod | server | 197 | mod_TwilightForest | ModLoader, Forge3 | 0 (0%) | - | 100% / 1% |
 | twilightforest-1.10.1.zip | mod | client | 233 | mod_TwilightForest | ModLoader, Forge3 | 0 (0%) | - | 100% / 0% |
+
+## Missing game members: replacing stubs with behaviour (Members125)
+
+A 1.2.5 game member with no 1.4.7 counterpart is renamed `mcc125$<Feather name>` and, when the shim has no member of that name, synthesized as an empty stub. The Members125 batches add the real members to the shim
+classes (virtual members and phantom-field accessors `mcc$get$mcc125$<name>` / `mcc$set$mcc125$<name>` on the class; the 1.2.5 behaviour read from the real 1.2.5 client bytecode), most used first.
+`Members125Test` keeps the shape of every member in sync with what the loader emits. Count: `tools/compat/probe.py <dir> --mc 1.2.5` over the 91 archives, stubbed members in the translated client units, distinct members / stubs (the figure is
+the per-jar `stubbed` list summed; a member stubbed in several jars counts once, a stub is one jar-member pair).
+
+| After | distinct stubbed members | stubs |
+|---|---|---|
+| start (merge of int/1.2.5, transformer 131) | 628 | 721 |
+| batch 1: world, player, entity, block and item members (below) | 583 | 654 |
+
+Batch 1 (45 members): `World.getEntity`, `getMoonPhase(float)`, `isNew`, `save`, `forceSave`; `WorldInfo.getDefaultGamemode`; `AxisAlignedBB`/`Vec3` `resetPool`/`clearCache` (the shim never pools: nothing to reset); `EntityItem.item`;
+`EntityLiving.stuckArrows`, `swingArm`, `beforeRemove`, `onFinishedPotionEffect`; player `dimension`, `portalTime`, `lastPortalTime`, `portalCooldown`, `pickUp`, `faceEntity`; `EntityPlayerSP.sendChat`;
+`PlayerControllerMP.closeMenu`, `creative`, `setGameMode`; `GuiIngame.clearChat`; `EntityDragon.getDisplayHealth`; `EntityArrow.shoot`/`player`; `EntityThrowable.thrown`; `EntityPainting` fields and `setDirection`/`canSurvive`;
+`Block.getMiningTime`, `Block.getBlockTexture(world, x, y, z, side)`; Forge 3.x hooks `Item.onItemUseFirst(stack, player, world, x, y, z, side)` and `itemInteractionForEntity(stack, entity)` (the 1.7.10 shapes forward to them, so a 1.2.5 override is
+called); `BlockContainer.getBlockEntity(metadata)` and `mcc125$createBlockEntity()` (the block entity factory of 1.2.5: before this a 1.2.5 machine block had no block entity at all because `createNewTileEntity` was never overridden).

@@ -761,4 +761,73 @@ public abstract class EntityPlayer extends EntityLivingBase implements legacycon
             return modern == null ? FULL : getEnumChatVisibility(modern.getId());
         }
     }
+
+    // Members125 batch 1
+
+    private float mcc$local_portalTime;
+    private float mcc$local_lastPortalTime;
+
+    /** Phantom field {@code dimension} of 1.2.5's player (1.3 moved it to Entity). */
+    public static int mcc$get$mcc125$dimension(EntityPlayer p) {
+        return legacyconnector.v1_7_10.net.minecraft.entity.Entity.mcc$get$dimension(p);
+    }
+
+    public static void mcc$set$mcc125$dimension(EntityPlayer p, int v) {
+        legacyconnector.v1_7_10.net.minecraft.entity.Entity.mcc$set$dimension(p, v);
+    }
+
+    /** Phantom field {@code portalTime} (1.3: {@code timeInPortal}): how far the nether portal overlay has faded in, 0 to 1. */
+    public static float mcc$get$mcc125$portalTime(EntityPlayer p) {
+        return p.mcc$player() instanceof net.minecraft.client.player.LocalPlayer l ? l.spinningEffectIntensity : p.mcc$local_portalTime;
+    }
+
+    public static void mcc$set$mcc125$portalTime(EntityPlayer p, float v) {
+        if (p.mcc$player() instanceof net.minecraft.client.player.LocalPlayer l) l.spinningEffectIntensity = v;
+        else p.mcc$local_portalTime = v;
+    }
+
+    /** Phantom field {@code lastPortalTime} (1.3: {@code prevTimeInPortal}): the value of {@code portalTime} one tick ago. */
+    public static float mcc$get$mcc125$lastPortalTime(EntityPlayer p) {
+        return p.mcc$player() instanceof net.minecraft.client.player.LocalPlayer l ? l.oSpinningEffectIntensity : p.mcc$local_lastPortalTime;
+    }
+
+    public static void mcc$set$mcc125$lastPortalTime(EntityPlayer p, float v) {
+        if (p.mcc$player() instanceof net.minecraft.client.player.LocalPlayer l) l.oSpinningEffectIntensity = v;
+        else p.mcc$local_lastPortalTime = v;
+    }
+
+    /** Phantom field {@code portalCooldown} (1.3: {@code timeUntilPortal}): ticks before the player may use a portal again. */
+    public static int mcc$get$mcc125$portalCooldown(EntityPlayer p) {
+        return legacyconnector.v1_7_10.net.minecraft.entity.Entity.mcc$get$timeUntilPortal(p);
+    }
+
+    public static void mcc$set$mcc125$portalCooldown(EntityPlayer p, int v) {
+        legacyconnector.v1_7_10.net.minecraft.entity.Entity.mcc$set$timeUntilPortal(p, v);
+    }
+
+    /** 1.2.5 {@code EntityPlayer.pickUp(entity, count)}: plays the animation of {@code entity} flying into the player (1.3: {@code onItemPickup}). */
+    public void mcc125$pickUp(legacyconnector.v1_7_10.net.minecraft.entity.Entity entity, int count) {
+        onItemPickup(entity, count);
+    }
+
+    /** 1.2.5 players were living entities with the mob look helper: turns the player's view towards {@code target}, at most the given degrees per call. */
+    public void faceEntity(legacyconnector.v1_7_10.net.minecraft.entity.Entity target, float maxYawChange, float maxPitchChange) {
+        double dx = target.mcc$x() - mcc$x();
+        double dz = target.mcc$z() - mcc$z();
+        double dy = target instanceof legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase l
+                ? l.mcc$y() + l.getEyeHeight() - (mcc$y() + getEyeHeight())
+                : target.mcc$y() - (mcc$y() + getEyeHeight());
+        double dist = Math.sqrt(dx * dx + dz * dz);
+        float yaw = (float) (Math.atan2(dz, dx) * 180.0 / Math.PI) - 90.0F;
+        float pitch = (float) -(Math.atan2(dy, dist) * 180.0 / Math.PI);
+        mcc$set$rotationPitch(this, mcc$stepAngle(mcc$get$rotationPitch(this), pitch, maxPitchChange));
+        mcc$set$rotationYaw(this, mcc$stepAngle(mcc$get$rotationYaw(this), yaw, maxYawChange));
+    }
+
+    private static float mcc$stepAngle(float current, float target, float max) {
+        float d = net.minecraft.util.Mth.wrapDegrees(target - current);
+        if (d > max) d = max;
+        if (d < -max) d = -max;
+        return current + d;
+    }
 }

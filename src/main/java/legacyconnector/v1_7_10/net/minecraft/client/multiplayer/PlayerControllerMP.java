@@ -157,4 +157,27 @@ public class PlayerControllerMP {
         var local = local();
         if (m != null && local != null) m.releaseUsingItem(local);
     }
+
+    // Members125 batch 1
+
+    /** 1.2.5 {@code closeMenu(windowId, player)}: closes the open container on the client and tells the server. */
+    public void mcc125$closeMenu(int windowId, EntityPlayer player) {
+        var local = local();
+        if (local != null) local.closeContainer();
+    }
+
+    /** Phantom field {@code creative} of 1.2.5's controller: whether the local player is in creative mode. */
+    public static boolean mcc$get$mcc125$creative(PlayerControllerMP c) {
+        return c.isInCreativeMode();
+    }
+
+    public static void mcc$set$mcc125$creative(PlayerControllerMP c, boolean v) {
+        c.mcc125$setGameMode(v);
+    }
+
+    /** 1.2.5 {@code setGameMode(creative)}: switches the player between creative and survival (through the server's gamemode command, as the game now keeps the mode on the server). */
+    public void mcc125$setGameMode(boolean creative) {
+        var connection = net.minecraft.client.Minecraft.getInstance().getConnection();
+        if (connection != null && creative != isInCreativeMode()) connection.sendCommand(creative ? "gamemode creative" : "gamemode survival");
+    }
 }

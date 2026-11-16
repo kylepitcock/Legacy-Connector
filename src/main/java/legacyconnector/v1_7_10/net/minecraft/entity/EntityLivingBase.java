@@ -798,4 +798,35 @@ public abstract class EntityLivingBase extends Entity {
     public final void mcc$onDeathUpdate() {
         onDeathUpdate();
     }
+
+    // Members125 batch 1
+
+    /** Phantom field {@code stuckArrows} of 1.2.5's living entity (the arrows sticking in it, drawn by the renderer). */
+    public static int mcc$get$mcc125$stuckArrows(EntityLivingBase e) {
+        return e.getArrowCountInEntity();
+    }
+
+    public static void mcc$set$mcc125$stuckArrows(EntityLivingBase e, int v) {
+        e.setArrowCountInEntity(v);
+    }
+
+    /** Phantom field {@code swingArm} of 1.2.5's player (the arm is mid-swing; 1.3 named it {@code isSwingInProgress}). */
+    public static boolean mcc$get$mcc125$swingArm(EntityLivingBase e) {
+        return e.mcc$entity instanceof net.minecraft.world.entity.LivingEntity l && l.swinging;
+    }
+
+    public static void mcc$set$mcc125$swingArm(EntityLivingBase e, boolean v) {
+        if (e.mcc$entity instanceof net.minecraft.world.entity.LivingEntity l) l.swinging = v;
+    }
+
+    /**
+     * 1.2.5 {@code EntityLiving.onFinishedPotionEffect(effect)}: called when an effect ran out. Mods override it and call {@code super};
+     * the base does nothing (the modern game reports the end of an effect through its own event).
+     */
+    /** 1.2.5 {@code EntityLiving.beforeRemove()} (Feather name): an empty hook the 1.2.5 game never called itself; mods override it and call {@code super}. */
+    public void mcc125$beforeRemove() {
+    }
+
+    public void onFinishedPotionEffect(legacyconnector.v1_7_10.net.minecraft.potion.PotionEffect effect) {
+    }
 }

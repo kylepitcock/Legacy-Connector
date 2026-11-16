@@ -180,4 +180,14 @@ public class AxisAlignedBB {
         }
         return dz;
     }
+
+    // Members125 batch 1
+
+    /** 1.2.5 {@code AxisAlignedBB.resetPool()}: the box pool is not kept (every box is a fresh object), so there is nothing to reset. */
+    public static void mcc125$resetPool() {
+    }
+
+    /** 1.2.5 {@code AxisAlignedBB.clearCache()}: same as {@link #mcc125$resetPool}. */
+    public static void mcc125$clearCache() {
+    }
 }

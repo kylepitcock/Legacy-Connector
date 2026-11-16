@@ -1412,4 +1412,16 @@ public class Block {
     public boolean isFlowerPot() {
         return false;
     }
+
+    // Members125 batch 1
+
+    /** 1.2.5 {@code Block.getMiningTime()} (Feather name; the hardness of the block, what {@code getHardness} returned). */
+    public float mcc125$getMiningTime() {
+        return this.blockHardness;
+    }
+
+    /** 1.2.5 {@code Block.getBlockTexture(world, x, y, z, side)}: the sprite index of a side at a position (default: the side's texture for the block's metadata). */
+    public int getBlockTexture(legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess world, int x, int y, int z, int side) {
+        return getBlockTextureFromSideAndMetadata(side, world.getBlockMetadata(x, y, z));
+    }
 }
