@@ -57,6 +57,14 @@ public final class NetworkBridge {
         private final Map<Class<?>, Integer> discriminators = new ConcurrentHashMap<>();
         private final Map<Integer, IMessageHandler<IMessage, IMessage>> serverHandlers = new ConcurrentHashMap<>();
         private final Map<Integer, IMessageHandler<IMessage, IMessage>> clientHandlers = new ConcurrentHashMap<>();
+        /**
+         * The same handlers by message class. FML picked the handler of a message by its class and the side it arrives on; the discriminator only named the
+         * class. A mod that registers one class for both sides ({@code registerMessage(C, C, 5, CLIENT)} and {@code (C, C, 6, SERVER)}, Legends'
+         * {@code registerPacket}) gives the class two ids, and the message travels under one of them.
+         */
+        private final Map<Class<?>, IMessageHandler<IMessage, IMessage>> serverByType = new ConcurrentHashMap<>();
+        private final Map<Class<?>, IMessageHandler<IMessage, IMessage>> clientByType = new ConcurrentHashMap<>();
+        private final java.util.Set<String> unhandled = ConcurrentHashMap.newKeySet();
 
         Channel(String name) {
             this.name = name;
@@ -67,6 +75,7 @@ public final class NetworkBridge {
             types.put(discriminator, type);
             discriminators.putIfAbsent(type, discriminator);
             (side == Side.SERVER ? serverHandlers : clientHandlers).put(discriminator, (IMessageHandler<IMessage, IMessage>) handler);
+            (side == Side.SERVER ? serverByType : clientByType).put(type, (IMessageHandler<IMessage, IMessage>) handler);
         }
 
         private LegacyPayload encode(IMessage message) {
@@ -90,7 +99,14 @@ public final class NetworkBridge {
             boolean toServer = context.player() instanceof ServerPlayer;
             var handler = (toServer ? serverHandlers : clientHandlers).get(payload.discriminator());
             Class<? extends IMessage> type = types.get(payload.discriminator());
-            if (handler == null || type == null) return;
+            if (handler == null && type != null) handler = (toServer ? serverByType : clientByType).get(type);
+            if (handler == null || type == null) {
+                if (unhandled.add(toServer + ":" + payload.discriminator())) {
+                    LOG.warn("Legacy message #{} ({}) arrived {} on channel {}, which has no handler for it: dropped", payload.discriminator(),
+                            type == null ? "unknown type" : type.getName(), toServer ? "at the server" : "at the client", name);
+                }
+                return;
+            }
             try {
                 var ctor = type.getDeclaredConstructor();
                 ctor.setAccessible(true);
