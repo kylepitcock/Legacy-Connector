@@ -220,6 +220,22 @@ public final class Round6Compat {
         return false;
     }
 
+    private static final net.minecraft.util.StringRepresentable.EnumCodec<net.minecraft.core.Direction> DIRECTION_CODEC =
+            new net.minecraft.util.StringRepresentable.EnumCodec<>(net.minecraft.core.Direction.values(), name -> net.minecraft.core.Direction.byName(name == null ? null : name.toLowerCase(java.util.Locale.ROOT)));
+
+    /**
+     * {@code Direction.CODEC} as 1.20.1 data used it: the pack files of legacy mods name directions in capitals ({@code "direction": "DOWN"}), which
+     * 1.21.1's enum codec rejects, and one bad file stops the whole registry load. Reads either case; writes the usual lower case.
+     */
+    public static net.minecraft.util.StringRepresentable.EnumCodec<net.minecraft.core.Direction> directionCodec() {
+        return DIRECTION_CODEC;
+    }
+
+    /** The mixin accessor {@code WorldGenRegion.structureManager}: the field is gone, the structure manager of the region's level is the same object. */
+    public static net.minecraft.world.level.StructureManager worldGenRegionStructureManager(Object region) {
+        return ((net.minecraft.server.level.WorldGenRegion) region).getLevel().structureManager();
+    }
+
     /** {@code CrossbowItem.setCharged(stack, charged)} (static): a crossbow is charged while it holds projectiles, so only discharging can be done here. */
     public static void setCrossbowCharged(net.minecraft.world.item.ItemStack stack, boolean charged) {
         if (!charged) stack.set(net.minecraft.core.component.DataComponents.CHARGED_PROJECTILES, net.minecraft.world.item.component.ChargedProjectiles.EMPTY);

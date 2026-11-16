@@ -105,6 +105,9 @@ final class Mixin1201 {
                 return 1;
             }
         }
+        if (targets.size() == 1 && (node.access & org.objectweb.asm.Opcodes.ACC_INTERFACE) != 0) {
+            for (MethodNode m : node.methods) standInRemovedInstanceAccessor(m, targets.get(0));
+        }
         String shadow = missingShadow(node, targets, h);
         if (shadow != null) {
             st.dropped.add(node.name + " (@Shadow " + shadow + " does not exist in " + targets.get(0) + ")");
@@ -138,6 +141,38 @@ final class Mixin1201 {
     private static final Map<String, String> REMOVED_STATIC_MEMBERS = Map.of(
             "net/minecraft/advancements/CriteriaTriggers.CRITERIA", "criteriaTriggerMap",
             "net/minecraft/advancements/CriteriaTriggers.register", "registerTrigger");
+
+    /** Instance fields of Minecraft 1.20.1 that 1.21.1 removed, read by a mixin accessor interface: "owner.field" to the {@code Round6Compat} helper (takes the instance). */
+    private static final Map<String, String> REMOVED_INSTANCE_FIELDS = Map.of(
+            "net/minecraft/server/level/WorldGenRegion.structureManager", "worldGenRegionStructureManager");
+
+    /**
+     * An abstract {@code @Accessor getX()} of a field in {@link #REMOVED_INSTANCE_FIELDS} cannot apply (Mixin fails with "No candidates", or the class is dropped and
+     * the call site gets an AbstractMethodError). The annotation goes and the method becomes a default method answering through the migrate helper, so the
+     * interface still reaches the target class (the mixin adds it) and callers keep working.
+     */
+    static boolean standInRemovedInstanceAccessor(MethodNode m, String target) {
+        if ((m.access & org.objectweb.asm.Opcodes.ACC_ABSTRACT) == 0 || (m.access & org.objectweb.asm.Opcodes.ACC_STATIC) != 0 || !m.desc.startsWith("()")) return false;
+        List<AnnotationNode> owner = m.invisibleAnnotations;
+        AnnotationNode a = find(owner, "Lorg/spongepowered/asm/mixin/gen/Accessor;");
+        if (a == null) { owner = m.visibleAnnotations; a = find(owner, "Lorg/spongepowered/asm/mixin/gen/Accessor;"); }
+        if (a == null) return false;
+        String name = null;
+        if (a.values != null) for (int i = 0; i + 1 < a.values.size(); i += 2) if ("value".equals(a.values.get(i)) && a.values.get(i + 1) instanceof String s) name = s;
+        if (name == null) return false;
+        String helper = REMOVED_INSTANCE_FIELDS.get(target + "." + name);
+        if (helper == null) return false;
+        owner.remove(a);
+        m.access &= ~org.objectweb.asm.Opcodes.ACC_ABSTRACT;
+        m.instructions.clear();
+        m.instructions.add(new org.objectweb.asm.tree.VarInsnNode(org.objectweb.asm.Opcodes.ALOAD, 0));
+        m.instructions.add(new org.objectweb.asm.tree.MethodInsnNode(org.objectweb.asm.Opcodes.INVOKESTATIC, "org/kylepitcock/legacyconnector/v1_20_1/migrate/Round6Compat",
+                helper, "(Ljava/lang/Object;)" + Type.getReturnType(m.desc).getDescriptor(), false));
+        m.instructions.add(new org.objectweb.asm.tree.InsnNode(Type.getReturnType(m.desc).getOpcode(org.objectweb.asm.Opcodes.IRETURN)));
+        m.maxStack = 2;
+        m.maxLocals = 1;
+        return true;
+    }
 
     /**
      * A static {@code @Accessor} / {@code @Invoker} with a body (the interface-mixin idiom {@code static Map getX() { throw new AssertionError(); }}) of a Minecraft

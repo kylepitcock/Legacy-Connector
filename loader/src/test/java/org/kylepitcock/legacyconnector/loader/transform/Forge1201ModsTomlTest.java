@@ -31,6 +31,27 @@ class Forge1201ModsTomlTest {
     }
 
     @Test
+    void retargetsTheInlineDependencyForm() {
+        String input = """
+                modLoader="javafml"
+                [[mods]]
+                modId="repurposed_structures"
+                version="7.1.19"
+
+                [dependencies]
+                "repurposed_structures" = [
+                    { modId = "forge", mandatory = true, versionRange = "[46.0.1,)", ordering = "NONE", side = "BOTH" },
+                    { modId = "minecraft", mandatory = true, versionRange = "[1.20.1,1.21)", ordering = "NONE", side = "BOTH" },
+                ]
+                """;
+        String migrated = Forge1201Transformer.modsToml(input);
+        assertTrue(migrated.contains("[[dependencies.repurposed_structures]]"), migrated);
+        assertTrue(migrated.contains("modId=\"neoforge\"") || migrated.contains("modId = \"neoforge\""), migrated);
+        assertFalse(migrated.contains("[1.20.1,1.21)"), migrated);
+        assertFalse(migrated.contains("modId = \"forge\""), migrated);
+    }
+
+    @Test
     void leavesMultiModDependencyOwnersUntouched() {
         String input = """
                 [[mods]]

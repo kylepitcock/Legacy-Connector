@@ -203,6 +203,8 @@ final class Mc1201Migration {
     /** The 1.21.1 type interfaces whose single {@code codec()} returns a {@code MapCodec} (it was a {@code Codec} in 1.20.1: a lambda {@code () -> CODEC} implements them). */
     private static final java.util.Set<String> MAP_CODEC_TYPES = java.util.Set.of(
             "net/minecraft/world/level/levelgen/structure/StructureType",
+            "net/minecraft/world/level/levelgen/structure/pools/StructurePoolElementType",
+            "net/minecraft/world/level/levelgen/blockpredicates/BlockPredicateType",
             "net/minecraft/world/level/levelgen/structure/placement/StructurePlacementType",
             "net/minecraft/world/level/levelgen/structure/templatesystem/StructureProcessorType",
             "net/minecraft/world/level/levelgen/structure/templatesystem/RuleTestType",

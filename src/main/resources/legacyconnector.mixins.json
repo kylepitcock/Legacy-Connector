@@ -12,6 +12,7 @@
     "MappedRegistryIntrusiveHolderMixin",
     "SynchedEntityDataDefineIdMixin",
     "BlockEntityNullStateMixin",
+    "RegistryLegacyNamesMixin",
     "StateHolderPropertyEqualsMixin",
     "RecipeManagerContextMixin",
     "TreeGrowerLegacyMixin",

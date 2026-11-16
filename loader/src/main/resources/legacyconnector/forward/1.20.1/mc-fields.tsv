@@ -378,3 +378,4 @@ net/minecraft/world/item/alchemy/PotionBrewing	ALLOWED_CONTAINERS	Ljava/util/Lis
 net/minecraft/world/item/alchemy/PotionBrewing	ALLOWED_CONTAINER	Ljava/util/function/Predicate;	-	none	LegacyBrewing.allowedContainer
 net/minecraft/world/level/block/LayeredCauldronBlock	RAIN	Ljava/util/function/Predicate;	-	none	Round6Compat.cauldronRain
 net/minecraft/world/level/block/LayeredCauldronBlock	SNOW	Ljava/util/function/Predicate;	-	none	Round6Compat.cauldronSnow
+net/minecraft/core/Direction	CODEC	Lnet/minecraft/util/StringRepresentable$EnumCodec;	-	none	Round6Compat.directionCodec
