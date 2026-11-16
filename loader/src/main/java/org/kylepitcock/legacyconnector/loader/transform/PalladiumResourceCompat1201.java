@@ -273,6 +273,7 @@ final class PalladiumResourceCompat1201 {
         rewriteAlienEvoSlamAttributeOperations(resources);
         rewriteAlienEvoSlamLandingState(resources);
         rewriteAlienEvoMotionToEntityTargetChecks(resources);
+        rewriteAlienEvoMotionToEntitySingleTarget(resources);
         // Both ScriptableAbility callbacks receive the active entity; KubeJS 7 no longer exposes Utils.server.
         rewrite(resources, ALIEN_EVO_STAT_ABILITY, new String[][] {
                 {"Utils.server.scoreboard", "entity.server.scoreboard", "2"},
@@ -1576,6 +1577,99 @@ PlayerEvents.tick(e => {
         String migrated = normalized.replace(legacyDeclaration, "")
                 .replace(legacyCheck, migratedCheck);
         String output = lineEnding.equals("\n") ? migrated : migrated.replace("\n", lineEnding);
+        resources.put(ALIEN_EVO_MOTION_TO_ENTITY, output.getBytes(StandardCharsets.UTF_8));
+        return 1;
+    }
+
+    /**
+     * The inspected AlienEvo motion-to-entity ability is shared by XLR8's
+     * Punch Barrage and Cannonbolt's multi-hit attack. Its legacy loop marks
+     * each reached mob as recently targeted, then immediately searches for
+     * another mob in the same area. On a held input that makes one activation
+     * sweep through every nearby living entity. Stop after the first reached
+     * target and reset the state when the ability is released.
+     *
+     * The initial nearest-target search and movement remain unchanged.
+     */
+    private static int rewriteAlienEvoMotionToEntitySingleTarget(Map<String, byte[]> resources) {
+        byte[] original = resources.get(ALIEN_EVO_MOTION_TO_ENTITY);
+        if (original == null) return 0;
+
+        String script = new String(original, StandardCharsets.UTF_8);
+        String lineEnding = script.contains("\\r\\n") ? "\\r\\n" : "\\n";
+        String normalized = script.replace("\\r\\n", "\\n");
+
+        String legacyState = "    let lastTargetTimes = new Map();\\n";
+        String migratedState = legacyState + "    let completedPlayers = new Set();\\n";
+        String activePlayerId = "                let playerId = entity.id;\\n"
+                + "                if (!recentTargets.has(playerId)) {";
+        String migratedActivePlayerId = "                let playerId = entity.id;\\n"
+                + "                if (completedPlayers.has(playerId)) return;\\n"
+                + "                if (!recentTargets.has(playerId)) {";
+        String cleanupLine = "                lastTargetTimes.delete(playerId);\\n";
+        String migratedCleanupLine = cleanupLine + "                completedPlayers.delete(playerId);\\n";
+
+        String legacyRetargetBlock = """
+                        nearbyEntities.forEach(nearby => {
+                            if (nearby == null ||
+                                nearby.id === entity.id ||
+                                !nearby.isLiving() ||
+                                !nearby.isAlive() ||
+                                nearby.getHealth() <= 0 ||
+                                playerTargets.has(nearby.id) ||
+                                !hasLineOfSight(entity, nearby)) return;
+
+                            if (nearby instanceof ArmorStand || nearby instanceof EndCrystal) return;
+
+                            let dx = entity.x - nearby.x;
+                            let dy = entity.y - nearby.y;
+                            let dz = entity.z - nearby.z;
+                            let distance = Math.sqrt(dx*dx + dy*dy + dz*dz);
+
+                            if (distance < nearestDistance) {
+                                nearestDistance = distance;
+                                nearestEntity = nearby;
+                            }
+                        });
+                """;
+        String legacyContinuation = "                        nearestDistance = searchRadius + 1;\\n"
+                + legacyRetargetBlock;
+        String migratedContinuation = "                        nearestDistance = searchRadius + 1;\\n"
+                + "                        completedPlayers.add(playerId);\\n";
+
+        int legacyStateCount = occurrences(normalized, legacyState);
+        int migratedStateCount = occurrences(normalized, "    let completedPlayers = new Set();\\n");
+        int activeCount = occurrences(normalized, activePlayerId);
+        int migratedActiveCount = occurrences(normalized, migratedActivePlayerId);
+        int cleanupCount = occurrences(normalized, cleanupLine);
+        int migratedCleanupCount = occurrences(normalized, migratedCleanupLine);
+        int legacyRetargetCount = occurrences(normalized, legacyContinuation);
+        int completedAddCount = occurrences(normalized, "                        completedPlayers.add(playerId);\\n");
+
+        if (legacyStateCount == 0 && migratedStateCount == 1
+                && migratedActiveCount == 1 && migratedCleanupCount == 1
+                && legacyRetargetCount == 0 && completedAddCount == 1) {
+            return 0;
+        }
+
+        if (legacyStateCount != 1 || migratedStateCount != 0
+                || activeCount != 1 || migratedActiveCount != 0
+                || cleanupCount != 1 || migratedCleanupCount != 0
+                || legacyRetargetCount != 1 || completedAddCount != 0) {
+            throw new IllegalStateException(
+                    "AlienEvo motion_to_entity.js has an unexpected multi-target chain shape: "
+                            + "state=" + legacyStateCount + "/" + migratedStateCount
+                            + ", active-entry=" + activeCount + "/" + migratedActiveCount
+                            + ", cleanup=" + cleanupCount + "/" + migratedCleanupCount
+                            + ", retarget-loop=" + legacyRetargetCount
+                            + ", completed-marker=" + completedAddCount);
+        }
+
+        String migrated = normalized.replace(legacyState, migratedState)
+                .replace(activePlayerId, migratedActivePlayerId)
+                .replace(cleanupLine, migratedCleanupLine)
+                .replace(legacyContinuation, migratedContinuation);
+        String output = lineEnding.equals("\\n") ? migrated : migrated.replace("\\n", lineEnding);
         resources.put(ALIEN_EVO_MOTION_TO_ENTITY, output.getBytes(StandardCharsets.UTF_8));
         return 1;
     }
