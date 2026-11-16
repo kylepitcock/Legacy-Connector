@@ -324,8 +324,26 @@ public class Chunk implements legacyconnector.v1_12_2.net.minecraftforge.common.
     public void onTick(boolean skipRecheckGaps) {
     }
 
+    /**
+     * The chunk whose legacy world generators run on this thread (set by the world-generator bridge). 1.12 flagged a chunk populated
+     * before its generators ran, and mods that defer work until a neighbourhood is populated (CustomOreGen) count the chunk itself; the
+     * modern chunk reaches the features status only when its decoration ends.
+     */
+    private static final ThreadLocal<long[]> POPULATING = new ThreadLocal<>();
+
+    public static void mcc$beginPopulating(int chunkX, int chunkZ) {
+        POPULATING.set(new long[] {legacyconnector.v1_12_2.net.minecraft.util.math.ChunkPos.asLong(chunkX, chunkZ)});
+    }
+
+    public static void mcc$endPopulating() {
+        POPULATING.remove();
+    }
+
     public boolean isPopulated() {
-        return access == null ? terrainPopulated : access.getPersistedStatus().isOrAfter(net.minecraft.world.level.chunk.status.ChunkStatus.FEATURES);
+        if (access == null) return terrainPopulated;
+        long[] populating = POPULATING.get();
+        if (populating != null && populating[0] == legacyconnector.v1_12_2.net.minecraft.util.math.ChunkPos.asLong(x, z)) return true;
+        return access.getPersistedStatus().isOrAfter(net.minecraft.world.level.chunk.status.ChunkStatus.FEATURES);
     }
 
     public boolean wasTicked() {

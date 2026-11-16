@@ -10,13 +10,14 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/** Vanilla ore features ask 1.7.10's ore event first (see {@code VanillaOreGate}). */
+/** Vanilla ore features ask the legacy ore event first (see {@code VanillaOreGate}, {@code VanillaOreGate1122}). */
 @Mixin(PlacedFeature.class)
 public abstract class PlacedFeatureOreGateMixin {
     @Inject(method = "placeWithBiomeCheck", at = @At("HEAD"), cancellable = true)
     private void legacyconnector$oreGate(WorldGenLevel level, ChunkGenerator generator, RandomSource random, BlockPos origin,
             CallbackInfoReturnable<Boolean> cir) {
-        if (!org.kylepitcock.legacyconnector.v1_7_10.bridge.VanillaOreGate.allow((PlacedFeature) (Object) this, level, random, origin)) {
+        if (!org.kylepitcock.legacyconnector.v1_7_10.bridge.VanillaOreGate.allow((PlacedFeature) (Object) this, level, random, origin)
+                || !org.kylepitcock.legacyconnector.v1_12_2.bridge.VanillaOreGate1122.allow((PlacedFeature) (Object) this, level, random, origin)) {
             cir.setReturnValue(false);
         }
     }
