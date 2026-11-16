@@ -659,6 +659,17 @@ public final class ItemStack {
         return false;
     }
 
+    /** Adventure mode: whether the stack's {@code CanPlaceOn} list names the block. */
+    public boolean canPlaceOn(legacyconnector.v1_12_2.net.minecraft.block.Block blockIn) {
+        NBTTagCompound tag = getTagCompound();
+        if (blockIn == null || tag == null || !tag.hasKey("CanPlaceOn", 9)) return false;
+        var list = tag.getTagList("CanPlaceOn", 8);
+        for (int i = 0; i < list.tagCount(); ++i) {
+            if (legacyconnector.v1_12_2.net.minecraft.block.Block.getBlockFromName(list.getStringTagAt(i)) == blockIn) return true;
+        }
+        return false;
+    }
+
     /** Forge: whether a sneaking player still activates the clicked block with this stack. */
     public boolean doesSneakBypassUse(legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
             legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player) {

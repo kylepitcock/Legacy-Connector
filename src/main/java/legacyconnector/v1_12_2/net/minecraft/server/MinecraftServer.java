@@ -194,6 +194,11 @@ public class MinecraftServer implements legacyconnector.v1_12_2.net.minecraft.co
         if (m != null) m.setPvpAllowed(allowPvp);
     }
 
+    public void setOnlineMode(boolean online) {
+        var m = modern();
+        if (m != null) m.setUsesAuthentication(online);
+    }
+
     public boolean isServerInOnlineMode() {
         var m = modern();
         return m != null && m.usesAuthentication();

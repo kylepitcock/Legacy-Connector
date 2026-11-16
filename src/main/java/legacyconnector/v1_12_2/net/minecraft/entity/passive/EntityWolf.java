@@ -127,6 +127,12 @@ public class EntityWolf extends EntityTameable {
         return (float) (Math.sin(f * Math.PI) * Math.sin(f * Math.PI * 11.0D) * 0.15F * Math.PI);
     }
 
+    /** How dark the wolf's fur is while wet (client rendering): 0.75 fading to 1 as it shakes the water off. */
+    public float getShadingWhileWet(float partialTicks) {
+        if (!isWet()) return 1.0F;
+        return Math.min(0.5F + (prevTimeWolfIsShaking + (timeWolfIsShaking - prevTimeWolfIsShaking) * partialTicks) / 2.0F * 0.5F, 1.0F);
+    }
+
     public float getTailRotation() {
         var m = mcc$self();
         if (m != null) return m.getTailAngle();
