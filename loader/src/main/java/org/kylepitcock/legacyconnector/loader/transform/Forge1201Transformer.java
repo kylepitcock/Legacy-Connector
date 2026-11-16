@@ -398,6 +398,8 @@ public final class Forge1201Transformer {
             mc.add(changed);
             int modelLocationChange = ModelLocation1201.apply(node);
             modelLocationSites.addAndGet(modelLocationChange);
+            int forgeBusDefaults = ForgeBusDefault1201.apply(node, hierarchy, shim);
+            if (forgeBusDefaults > 0) result.notes.add(node.name.replace('/', '.') + ": " + forgeBusDefaults + " handler(s) of mod bus events on the default (FORGE) bus of @Mod.EventBusSubscriber never ran in Forge 1.20.1 and are inert here too");
             int palladiumFlightHandlerChange = PalladiumFlightHandler1201.apply(node);
             palladiumFlightHandlerChanges += palladiumFlightHandlerChange;
             int palladiumCustomProjectileChange = PalladiumCustomProjectile1201.apply(node);
