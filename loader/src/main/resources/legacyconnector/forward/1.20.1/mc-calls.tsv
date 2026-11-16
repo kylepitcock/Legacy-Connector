@@ -154,6 +154,7 @@ net/minecraft/world/item/crafting/ShapedRecipe	<init>	(Lnet/minecraft/resources/
 net/minecraft/world/item/crafting/ShapedRecipe	<init>	(Lnet/minecraft/resources/ResourceLocation;Ljava/lang/String;Lnet/minecraft/world/item/crafting/CraftingBookCategory;IILnet/minecraft/core/NonNullList;Lnet/minecraft/world/item/ItemStack;Z)V	=args	1,2,MiscCompat.pattern@3+4+5,6,7	(Ljava/lang/String;Lnet/minecraft/world/item/crafting/CraftingBookCategory;Lnet/minecraft/world/item/crafting/ShapedRecipePattern;Lnet/minecraft/world/item/ItemStack;Z)V
 net/minecraft/world/level/block/FlowerBlock	<init>	(Lnet/minecraft/world/effect/MobEffect;ILnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V	=args	HolderCompat.holder@0,MiscCompat.intToFloat@1,2	(Lnet/minecraft/core/Holder;FLnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V
 net/minecraft/world/level/storage/loot/functions/LootItemConditionalFunction	<init>	([Lnet/minecraft/world/level/storage/loot/predicates/LootItemCondition;)V	=args	MiscCompat.conditions@0	(Ljava/util/List;)V
+net/minecraft/world/level/storage/loot/functions/LootItemConditionalFunction$Builder	getConditions	()[Lnet/minecraft/world/level/storage/loot/predicates/LootItemCondition;	MiscCompat	builderConditions	-
 net/minecraft/core/dispenser/BlockSource	getPos	()Lnet/minecraft/core/BlockPos;	MiscCompat	sourcePos	-
 net/minecraft/core/dispenser/BlockSource	getLevel	()Lnet/minecraft/server/level/ServerLevel;	MiscCompat	sourceLevel	-
 net/minecraft/core/dispenser/BlockSource	getBlockState	()Lnet/minecraft/world/level/block/state/BlockState;	MiscCompat	sourceState	-
@@ -833,3 +834,4 @@ net/minecraft/world/entity/monster/ZombieVillager	setTradeOffers	(Lnet/minecraft
 net/minecraft/world/entity/monster/ZombieVillager	$get$tradeOffers	()Lnet/minecraft/nbt/CompoundTag;	Round6Compat	zombieTradeOffers	-
 net/minecraft/world/entity/monster/ZombieVillager	$set$tradeOffers	(Lnet/minecraft/nbt/CompoundTag;)V	Round6Compat	zombieSetTradeOffersField	-
 net/minecraft/network/protocol/game/ClientboundUpdateMobEffectPacket	<init>	(ILnet/minecraft/world/effect/MobEffectInstance;)V	=args	0,1,Round6Compat.noBlend@0	(ILnet/minecraft/world/effect/MobEffectInstance;Z)V
+net/minecraft/world/level/storage/loot/functions/SetPotionFunction	setPotion	(Lnet/minecraft/world/item/alchemy/Potion;)Lnet/minecraft/world/level/storage/loot/functions/LootItemConditionalFunction$Builder;	=args	HolderCompat.holder@0	(Lnet/minecraft/core/Holder;)Lnet/minecraft/world/level/storage/loot/functions/LootItemConditionalFunction$Builder;

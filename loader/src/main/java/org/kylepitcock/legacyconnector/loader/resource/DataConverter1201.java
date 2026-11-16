@@ -680,7 +680,8 @@ public final class DataConverter1201 {
             return;
         }
         // a mod's wrapper of the shaped recipe (Mekanism's mek_data, Mystical Agriculture's own types) reads the vanilla shape: same conversion as vanilla's
-        if (!vanilla && !(o.has("pattern") && o.has("key") && o.has("result"))) {
+        // (the same for a mod's wrapper of the shapeless recipe: ingredients and a result, which 1.21.1's inherited codec reads as {id,count,components})
+        if (!vanilla && !(o.has("pattern") && o.has("key") && o.has("result")) && !(o.get("ingredients") instanceof JsonArray && o.get("result") instanceof JsonObject)) {
             // any other recipe type of a mod keeps its own shape, but the NBT ingredients inside it (forge:partial_nbt...) are read by the 1.21.1 ingredient codec
             nbtIngredientsDeep(o, c);
             return;

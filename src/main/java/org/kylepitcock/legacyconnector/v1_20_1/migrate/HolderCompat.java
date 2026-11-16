@@ -33,6 +33,10 @@ public final class HolderCompat {
         return BuiltInRegistries.MOB_EFFECT.wrapAsHolder(e);
     }
 
+    public static Holder<net.minecraft.world.item.alchemy.Potion> holder(net.minecraft.world.item.alchemy.Potion p) {
+        return net.minecraft.core.registries.BuiltInRegistries.POTION.wrapAsHolder(p);
+    }
+
     public static Holder<Attribute> holder(Attribute a) {
         return BuiltInRegistries.ATTRIBUTE.wrapAsHolder(a);
     }
@@ -122,6 +126,11 @@ public final class HolderCompat {
     }
 
     public static void enchant(ItemStack stack, LegacyEnchantment e, int level) {
+        // {@code stack.enchant(null, 0)} was the 1.20.1 way to make an item glint (an empty Enchantments list); 1.21.1 has a component for it
+        if (e == null) {
+            stack.set(net.minecraft.core.component.DataComponents.ENCHANTMENT_GLINT_OVERRIDE, Boolean.TRUE);
+            return;
+        }
         stack.enchant(holder(e), level);
     }
 

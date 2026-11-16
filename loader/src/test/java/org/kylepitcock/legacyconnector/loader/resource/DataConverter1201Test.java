@@ -50,6 +50,15 @@ class DataConverter1201Test {
     }
 
     @Test
+    void modShapelessWrapperResultIsConverted() {
+        JsonElement r = one("data/m/recipes/k.json", """
+                {"type":"m:special_key","category":"misc","ingredients":[{"item":"m:key"},{"tag":"forge:ingots/iron"}],
+                 "result":{"item":"m:key","nbt":"{enchant:true}"}}""", "data/m/recipe/k.json");
+        assertTrue(r.getAsJsonObject().getAsJsonObject("result").has("id"));
+        assertEquals("c:ingots/iron", r.getAsJsonObject().getAsJsonArray("ingredients").get(1).getAsJsonObject().get("tag").getAsString());
+    }
+
+    @Test
     void shapedRecipe() {
         JsonElement r = one("data/m/recipes/a.json", """
                 {"type":"minecraft:crafting_shaped","category":"misc","pattern":["#"],"key":{"#":{"tag":"forge:ingots/iron"}},
