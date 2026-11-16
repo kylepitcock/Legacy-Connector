@@ -95,6 +95,8 @@ neoForge {
             // -PclientProxies=mekanism.client.ClientProxy,...: runs those mods' client registrations (state mappers) for the translation too
             if (project.hasProperty('clientProxies')) systemProperty 'legacyconnector.assetsClientProxies', project.property('clientProxies')
             systemProperty 'legacyconnector.entitySelfTest', project.findProperty('selfTests') ?: 'true'
+            // -Pmappings125: host the jars of mods/1.2.5 (needs a loader built with the same property)
+            if (project.hasProperty('mappings125')) systemProperty 'legacyconnector.mc125', 'true'
             // -PcoremodReport: the coremod hook report lists every place that has no equivalent yet
             if (project.hasProperty('coremodReport')) systemProperty 'legacyconnector.coremodHooks.report', 'full'
             // Opt-in observation of real player/chunk natural-spawn cycles; not part of normal build checks.
