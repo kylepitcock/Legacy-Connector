@@ -280,6 +280,7 @@ public final class DataConverter1201 {
             if (dir.equals("dimension_type") && root.isJsonObject()) dimensionType(root.getAsJsonObject(), c);
             if (np.contains("/worldgen/structure_set/") && root.isJsonObject()) structureSet(root.getAsJsonObject(), c);
             if (np.contains("/worldgen/") || dir.equals("dimension_type")) worldgenShapes(root, c);
+            if (np.contains("/lithostitched/worldgen_modifier/") && root.isJsonObject()) modLoadedPredicate(root.getAsJsonObject(), c);
             // a tag file with "replace": "false" (a string; 1.20.1 read it leniently) is a boolean in 1.21
             if (np.contains("/tags/") && root.isJsonObject() && root.getAsJsonObject().has("replace") && root.getAsJsonObject().get("replace").isJsonPrimitive()
                     && root.getAsJsonObject().get("replace").getAsJsonPrimitive().isString()) {
@@ -451,11 +452,46 @@ public final class DataConverter1201 {
 
     // ---- generic pass: ids, tags, renamed ids -------------------------------------------------------------------------------------
 
+    private static volatile Set<String> vanillaBlocks;
+
+    /** The ids of the vanilla blocks of 1.21.1 (the lower-cased fields of Blocks); null when the member index is not available. */
+    private static Set<String> vanillaBlocks() {
+        Set<String> v = vanillaBlocks;
+        if (v == null) {
+            var m = org.kylepitcock.legacyconnector.loader.transform.McMembers1201.get("net/minecraft/world/level/block/Blocks");
+            if (m == null) return null;
+            v = new java.util.HashSet<>();
+            for (String f : m.fields()) {
+                int colon = f.indexOf(':');
+                if (colon > 0 && f.startsWith("L", colon + 1) && f.endsWith("Block;")) v.add("minecraft:" + f.substring(0, colon).toLowerCase(java.util.Locale.ROOT));
+            }
+            vanillaBlocks = v;
+        }
+        return v.isEmpty() ? null : v;
+    }
+
+    /**
+     * A structure processor predicate naming a {@code minecraft:} block that does not exist: 1.20.1's block registry is a defaulted one and decoded the unknown
+     * id to air; 1.21.1 fails the whole registry load (the server does not start). The id becomes air, as it was read.
+     */
+    private static void unknownVanillaBlockPredicate(JsonObject o, Ctx c) {
+        if (!o.has("predicate_type") || !o.has("block") || !o.get("block").isJsonPrimitive()) return;
+        String type = o.get("predicate_type").getAsString();
+        if (!type.equals("minecraft:block_match") && !type.equals("minecraft:random_block_match")) return;
+        String block = o.get("block").getAsString();
+        if (!block.startsWith("minecraft:")) return;
+        Set<String> known = vanillaBlocks();
+        if (known == null || known.contains(block)) return;
+        o.addProperty("block", "minecraft:air");
+        c.hit("unknown_blocks");
+    }
+
     /** Walks any JSON: {@code forge:} type/loader/condition ids, {@code forge:} tags, renamed ids, {@code forge_data}, model parents. */
     private static void generic(JsonElement e, Ctx c, boolean model) {
         if (e.isJsonObject()) {
             JsonObject o = e.getAsJsonObject();
             neoforgeConditions(o, c);
+            if (!model) unknownVanillaBlockPredicate(o, c);
             for (String k : new ArrayList<>(o.keySet())) {
                 JsonElement v = o.get(k);
                 if (k.toLowerCase(java.util.Locale.ROOT).contains("command")) {
@@ -556,6 +592,37 @@ public final class DataConverter1201 {
             // Do not discard either representation when their shapes conflict.
             o.add("forge:conditions", legacy);
             c.hit("forge_conditions_conflict");
+        }
+    }
+
+    /**
+     * A Lithostitched worldgen modifier whose predicate requires a mod ({@code lithostitched:mod_loaded}, alone or inside {@code all_of}): 1.20.1 decoded the
+     * predicate first and skipped the modifier of an absent mod, while 1.21.1 decodes the whole file (its processor list or feature references to the absent
+     * mod stay unbound and fail the registry load). The same requirement as a NeoForge condition makes the loader skip the file.
+     */
+    private static void modLoadedPredicate(JsonObject o, Ctx c) {
+        if (!o.has("predicate") || !o.get("predicate").isJsonObject()) return;
+        List<String> mods = new ArrayList<>();
+        collectRequiredMods(o.getAsJsonObject("predicate"), mods, 0);
+        if (mods.isEmpty()) return;
+        JsonArray conditions = o.has("neoforge:conditions") && o.get("neoforge:conditions").isJsonArray() ? o.getAsJsonArray("neoforge:conditions") : new JsonArray();
+        for (String mod : mods) {
+            JsonObject cond = new JsonObject();
+            cond.addProperty("type", "neoforge:mod_loaded");
+            cond.addProperty("modid", mod);
+            conditions.add(cond);
+        }
+        o.add("neoforge:conditions", conditions);
+        c.hit("forge_conditions");
+    }
+
+    private static void collectRequiredMods(JsonObject predicate, List<String> out, int depth) {
+        if (depth > 6 || !predicate.has("type")) return;
+        String type = predicate.get("type").getAsString();
+        if (type.equals("lithostitched:mod_loaded") && predicate.has("mod_id")) {
+            out.add(predicate.get("mod_id").getAsString());
+        } else if (type.equals("lithostitched:all_of") && predicate.has("predicates") && predicate.get("predicates").isJsonArray()) {
+            for (JsonElement p : predicate.getAsJsonArray("predicates")) if (p.isJsonObject()) collectRequiredMods(p.getAsJsonObject(), out, depth + 1);
         }
     }
 
