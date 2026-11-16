@@ -923,6 +923,18 @@
    "link": "https://www.curseforge.com/minecraft/mc-mods/thermal-foundation/download/5443583",
    "date": "2026-11-16",
    "open": true
+  },
+  {
+   "issue": 299,
+   "mod": "Legends-1_7_10-8_6_2-kiryu-command",
+   "mc": "1.7.10",
+   "status": "partial",
+   "details": "What works is the mobs themselves like godzilla/kingpin. What doesn't work: 1. Abilities:** Ability keys do nothing. This affects every armor set, not just Kiryu. Pressing a key does send `LegendsAbilitiesPacket` to the server (verified by logging), but nothing happens and nothing is logged. Legends' `AbstractLegendsPacket.onMessage` wraps `receive()` in a try/catch that swallows every exception,…",
+   "lc": "legacyconnector-0.4.14-nightly.33.d21f5…",
+   "neoforge": "21.1.258",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/the-legends-mod/download/4361818",
+   "date": "2026-11-16",
+   "open": true
   }
  ]
 }
