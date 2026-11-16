@@ -24,7 +24,30 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
  * serializer the JSON object of the entry (best effort: the context deserializes plain Gson types, nested loot objects come as their JSON).
  */
 public final class LootCompat {
-    private static final Gson GSON = new GsonBuilder().create();
+    /** The loot objects a 1.20.1 serializer asks its context for ({@code context.deserialize(json, NumberProvider.class)}) read through their 1.21.1 codecs. */
+    private static final Gson GSON = new GsonBuilder()
+            .registerTypeHierarchyAdapter(net.minecraft.world.level.storage.loot.providers.number.NumberProvider.class, codecAdapter(() -> net.minecraft.world.level.storage.loot.providers.number.NumberProviders.CODEC))
+            .registerTypeHierarchyAdapter(LootItemCondition.class, codecAdapter(() -> LootItemCondition.DIRECT_CODEC))
+            .registerTypeHierarchyAdapter(net.minecraft.world.level.storage.loot.functions.LootItemFunction.class, codecAdapter(() -> net.minecraft.world.level.storage.loot.functions.LootItemFunctions.ROOT_CODEC))
+            .create();
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static com.google.gson.TypeAdapter codecAdapter(java.util.function.Supplier<com.mojang.serialization.Codec> codec) {
+        return new com.google.gson.TypeAdapter<Object>() {
+            @Override
+            public void write(com.google.gson.stream.JsonWriter out, Object value) throws java.io.IOException {
+                if (value == null) { out.nullValue(); return; }
+                JsonElement tree = (JsonElement) codec.get().encodeStart(JsonOps.INSTANCE, value).resultOrPartial(m -> { throw new JsonParseException(String.valueOf(m)); }).orElseThrow();
+                com.google.gson.internal.Streams.write(tree, out);
+            }
+
+            @Override
+            public Object read(com.google.gson.stream.JsonReader in) throws java.io.IOException {
+                JsonElement tree = com.google.gson.internal.Streams.parse(in);
+                return codec.get().parse(JsonOps.INSTANCE, tree).resultOrPartial(m -> { throw new JsonParseException(String.valueOf(m)); }).orElseThrow();
+            }
+        };
+    }
 
     private LootCompat() {}
 
