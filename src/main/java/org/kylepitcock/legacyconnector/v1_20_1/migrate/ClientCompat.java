@@ -210,4 +210,30 @@ public final class ClientCompat {
         Minecraft mc = Minecraft.getInstance();
         if (mc != null && mc.getDebugOverlay() != null && mc.getDebugOverlay().showDebugScreen() != show) mc.getDebugOverlay().toggleOverlay();
     }
+
+    // ---- AbstractSelectionList: the x0/x1/y0/y1 bounds are the widget's position and size now
+
+    public static int listX0(net.minecraft.client.gui.components.AbstractSelectionList<?> list) { return list.getX(); }
+
+    public static int listX1(net.minecraft.client.gui.components.AbstractSelectionList<?> list) { return list.getRight(); }
+
+    public static int listY0(net.minecraft.client.gui.components.AbstractSelectionList<?> list) { return list.getY(); }
+
+    public static int listY1(net.minecraft.client.gui.components.AbstractSelectionList<?> list) { return list.getBottom(); }
+
+    public static void setListX0(net.minecraft.client.gui.components.AbstractSelectionList<?> list, int x0) {
+        int right = list.getRight();
+        list.setX(x0);
+        list.setWidth(right - x0);
+    }
+
+    public static void setListX1(net.minecraft.client.gui.components.AbstractSelectionList<?> list, int x1) { list.setWidth(x1 - list.getX()); }
+
+    public static void setListY0(net.minecraft.client.gui.components.AbstractSelectionList<?> list, int y0) {
+        int bottom = list.getBottom();
+        list.setY(y0);
+        list.setHeight(bottom - y0);
+    }
+
+    public static void setListY1(net.minecraft.client.gui.components.AbstractSelectionList<?> list, int y1) { list.setHeight(y1 - list.getY()); }
 }

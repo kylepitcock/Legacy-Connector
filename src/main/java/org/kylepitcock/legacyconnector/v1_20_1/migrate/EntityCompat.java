@@ -229,6 +229,10 @@ public final class EntityCompat {
         return attribute(Attributes.STEP_HEIGHT);
     }
 
+    public static DeferredHolder<Attribute, Attribute> nametagDistance() {
+        return attribute(net.neoforged.neoforge.common.NeoForgeMod.NAMETAG_DISTANCE);
+    }
+
     public static DeferredHolder<Attribute, Attribute> swimSpeed() {
         return attribute(net.neoforged.neoforge.common.NeoForgeMod.SWIM_SPEED);
     }

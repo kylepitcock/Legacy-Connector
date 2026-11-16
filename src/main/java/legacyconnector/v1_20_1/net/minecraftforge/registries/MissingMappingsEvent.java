@@ -18,6 +18,10 @@ public class MissingMappingsEvent extends Event {
             return null;
         }
 
+        public IForgeRegistry<T> getRegistry() {
+            return null;
+        }
+
         public void remap(T target) {
         }
 
