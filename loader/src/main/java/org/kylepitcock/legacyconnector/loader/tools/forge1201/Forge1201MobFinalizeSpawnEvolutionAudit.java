@@ -586,7 +586,7 @@ public final class Forge1201MobFinalizeSpawnEvolutionAudit {
                 .append("\"Overrides are resolved by the exact per-runtime base descriptor and JVM class-superclass dispatch path; same-name overloads and private/static declarations do not count as overrides.\",")
                 .append("\"Owner comparison uses literal Mojang-official internal names only and is not a complete cross-version class mapping.\",")
                 .append("\"Static declaration and signature evidence does not prove behavioral equivalence or gameplay compatibility.\",")
-                .append("\"Trailing CompoundTag evidence counts local-load opcodes for the source parameter slot only; it does not perform control-flow or value-flow analysis and a load may follow a local overwrite.\")
+                .append("\"Trailing CompoundTag evidence counts local-load opcodes for the source parameter slot only; it does not perform control-flow or value-flow analysis and a load may follow a local overwrite.\"")
                 .append("],\n")
                 .append("  \"selectorTransformationPerformed\": ").append(result.selectorTransformationPerformed()).append(",\n")
                 .append("  \"runtimeMappingTableProduced\": ").append(result.runtimeMappingTableProduced()).append("\n")
