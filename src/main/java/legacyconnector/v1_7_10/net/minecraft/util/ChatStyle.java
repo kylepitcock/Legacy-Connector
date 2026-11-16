@@ -43,6 +43,19 @@ public class ChatStyle {
         return color != null ? color : parentStyle == null ? null : parentStyle.getColor();
     }
 
+    /** The formatting codes of this style as section-sign text ("&sect;l&sect;o" ...), colour first. */
+    public String getFormattingCode() {
+        StringBuilder out = new StringBuilder();
+        EnumChatFormatting c = getColor();
+        if (c != null) out.append(c);
+        if (getBold()) out.append(EnumChatFormatting.BOLD);
+        if (getItalic()) out.append(EnumChatFormatting.ITALIC);
+        if (getUnderlined()) out.append(EnumChatFormatting.UNDERLINE);
+        if (getObfuscated()) out.append(EnumChatFormatting.OBFUSCATED);
+        if (getStrikethrough()) out.append(EnumChatFormatting.STRIKETHROUGH);
+        return out.toString();
+    }
+
     public boolean getBold() {
         return bold != null ? bold : parentStyle != null && parentStyle.getBold();
     }
