@@ -82,7 +82,7 @@ public final class ItemBridge {
 
 
     public static RegistryNamespaced legacyRegistry() {
-        return new legacyconnector.v1_7_10.cpw.mods.fml.common.registry.FMLControlledNamespacedRegistry<Item>(ItemBridge::byName, o -> nameOf((Item) o), ItemBridge::byId, o -> idOf((Item) o),
+        return new legacyconnector.v1_7_10.cpw.mods.fml.common.registry.FMLControlledNamespacedRegistry<Item>(ItemBridge::byName, o -> o instanceof Item i0 ? nameOf(i0) : null, ItemBridge::byId, o -> o instanceof Item i1 ? idOf(i1) : -1,
                 () -> all().iterator(), ItemBridge::addDirect);
     }
 

@@ -305,6 +305,7 @@ public final class ForgeApi1201 {
     public static DeferredHolder drRegister(DeferredRegister register, String name, Supplier supplier) {
         return register.register(name, () -> {
             Object value = supplier.get();
+            if (value == null) throw new NullPointerException("The supplier of " + register.getRegistryKey().location() + " entry '" + name + "' returned null");
             return value instanceof com.mojang.serialization.MapCodec.MapCodecCodec<?> m ? m.codec() : value;
         });
     }

@@ -135,7 +135,9 @@ public final class RecipeCompat {
                         String k = ops.getStringValue(p.getFirst()).result().orElse(null);
                         if (k != null) obj.add(k, ops.convertTo(com.mojang.serialization.JsonOps.INSTANCE, p.getSecond()));
                     });
-                    return com.mojang.serialization.DataResult.success((Recipe) invoke(m, serializer, UNKNOWN_ID, obj));
+                    Recipe made = (Recipe) invoke(m, serializer, UNKNOWN_ID, obj);
+                    // 1.20.1 skipped a recipe the serializer returned null for (a condition that does not hold); 1.21.1 would keep a holder of null and crash
+                    return made == null ? com.mojang.serialization.DataResult.error(() -> "The recipe serializer returned no recipe") : com.mojang.serialization.DataResult.success(made);
                 } catch (RuntimeException e) {
                     return com.mojang.serialization.DataResult.error(() -> String.valueOf(e.getMessage()));
                 }
@@ -164,10 +166,24 @@ public final class RecipeCompat {
 
             @Override
             public void encode(net.minecraft.network.RegistryFriendlyByteBuf buf, Recipe recipe) {
-                if (to == null) requireInherited(inherited, serializer).encode(buf, recipe);
-                else invoke(to, serializer, buf, recipe);
+                if (to != null) invoke(to, serializer, buf, recipe);
+                else if (from != null && recipe instanceof net.minecraft.world.item.crafting.AbstractCookingRecipe cooking) cookingToNetwork(buf, cooking);
+                else requireInherited(inherited, serializer).encode(buf, recipe);
             }
         };
+    }
+
+    /**
+     * The 1.20.1 vanilla {@code SimpleCookingSerializer.toNetwork} (a mod's subclass inherited it, 1.21.1's class has none), which the subclass's own {@code fromNetwork}
+     * reads back: group, category, ingredient, result, experience, cooking time.
+     */
+    private static void cookingToNetwork(net.minecraft.network.RegistryFriendlyByteBuf buf, net.minecraft.world.item.crafting.AbstractCookingRecipe r) {
+        buf.writeUtf(r.getGroup());
+        buf.writeEnum(r.category());
+        MiscCompat.ingredientToNetwork(r.getIngredients().get(0), buf);
+        MiscCompat.writeItem(buf, r.getResultItem(null));
+        buf.writeFloat(r.getExperience());
+        buf.writeVarInt(r.getCookingTime());
     }
 
     private static net.minecraft.network.codec.StreamCodec requireInherited(net.minecraft.network.codec.StreamCodec codec, Object serializer) {

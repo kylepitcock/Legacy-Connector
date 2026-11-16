@@ -31,7 +31,19 @@ public class EntityItem extends Entity {
     /** Mods build detached items for rendering (no world yet): the entity then has no level until it is spawned. */
     private static ItemEntity mcc$make(World world, double x, double y, double z, net.minecraft.world.item.ItemStack stack) {
         if (world == null) {
-            ItemEntity e = new ItemEntity(net.minecraft.world.entity.EntityType.ITEM, null);
+            ItemEntity e;
+            try {
+                e = new ItemEntity(net.minecraft.world.entity.EntityType.ITEM, null);
+            } catch (Throwable t) {
+                // a mixin of another mod dereferences the level in the Entity constructor (Data Anchor): allocate without it
+                try {
+                    var f = sun.misc.Unsafe.class.getDeclaredField("theUnsafe");
+                    f.setAccessible(true);
+                    return (ItemEntity) ((sun.misc.Unsafe) f.get(null)).allocateInstance(ItemEntity.class);
+                } catch (Throwable t2) {
+                    throw new RuntimeException(t);
+                }
+            }
             e.setPos(x, y, z);
             e.setItem(stack);
             return e;
@@ -88,7 +100,12 @@ public class EntityItem extends Entity {
     }
 
     public ItemStack getEntityItem() {
-        ItemStack stack = ItemStack.mcc$wrap(mcc$item().getItem());
+        ItemStack stack;
+        try {
+            stack = ItemStack.mcc$wrap(mcc$item().getItem());
+        } catch (NullPointerException npe) {
+            stack = null; // allocated without its constructor (see mcc$make): no data holder
+        }
         // 1.7.10 answered an item entity without an item with a stone stack (mods' item entities spawned bare: Botania's
         // thrown items, AE2's growing crystals, and every mob that looks at them)
         if (stack == null && !(mcc$entity instanceof ItemEntity)) {
@@ -102,7 +119,11 @@ public class EntityItem extends Entity {
     }
 
     public void setEntityItemStack(ItemStack stack) {
-        mcc$item().setItem(ItemStack.mcc$toModern(stack));
+        try {
+            mcc$item().setItem(ItemStack.mcc$toModern(stack));
+        } catch (NullPointerException npe) {
+            // allocated without its constructor (see mcc$make)
+        }
     }
 
     /** The name of the player who threw it (Thaumcraft's pech marks the items it trades away). */

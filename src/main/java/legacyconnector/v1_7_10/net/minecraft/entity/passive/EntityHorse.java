@@ -328,6 +328,19 @@ public class EntityHorse extends EntityAnimal implements legacyconnector.v1_7_10
         return h != null && h.isEating();
     }
 
+    /** Starts or stops the eating animation (head down to the grass). */
+    public void setEatingHaystack(boolean eating) {
+        var h = mcc$horse();
+        if (h != null) h.setEating(eating);
+    }
+
+    /** Rears the horse up on its hind legs or puts it down. */
+    public void setRearing(boolean rearing) {
+        var h = mcc$horse();
+        if (h != null) h.setStanding(rearing);
+        else setHorseWatchableBoolean(64, rearing);
+    }
+
     /** Whether the horse is rearing (up on its hind legs). */
     public boolean isRearing() {
         var h = mcc$horse();

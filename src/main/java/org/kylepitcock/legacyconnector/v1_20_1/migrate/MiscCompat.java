@@ -411,6 +411,23 @@ public final class MiscCompat {
         return registerLate(registry, ResourceLocation.parse(name), value);
     }
 
+    /** {@code StructureType.register(name, codec)} (private in vanilla; mods open it with an access transformer): the codec becomes the type's MapCodec. */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static net.minecraft.world.level.levelgen.structure.StructureType registerStructureType(String name, com.mojang.serialization.Codec codec) {
+        net.minecraft.world.level.levelgen.structure.StructureType type = () -> EntityCompat.toMapCodec(codec);
+        return registerLate((net.minecraft.core.Registry) net.minecraft.core.registries.BuiltInRegistries.STRUCTURE_TYPE, name, type);
+    }
+
+    /** {@code new DimensionDataStorage(folder, fixer)}: 1.21.1's storage also wants the registries its saved data is read with. */
+    public static net.minecraft.world.level.storage.DimensionDataStorage dimensionDataStorage(java.io.File folder, com.mojang.datafixers.DataFixer fixer) {
+        return new net.minecraft.world.level.storage.DimensionDataStorage(folder, fixer, legacyconnector.v1_20_1.ForgeApi1201.registries());
+    }
+
+    /** {@code DataFixerBuilder.buildUnoptimized()} (Datafixer Upper 6): 8 builds a result holding the fixer; nothing is optimised here either. */
+    public static com.mojang.datafixers.DataFixer buildUnoptimized(com.mojang.datafixers.DataFixerBuilder builder) {
+        return builder.build().fixer();
+    }
+
     /** {@code new ShapedRecipe(id, group, category, width, height, ingredients, result)}: the shape is a pattern object now. */
     public static net.minecraft.world.item.crafting.ShapedRecipePattern pattern(int width, int height, NonNullList<Ingredient> ingredients) {
         return new net.minecraft.world.item.crafting.ShapedRecipePattern(width, height, ingredients, java.util.Optional.empty());
@@ -422,6 +439,25 @@ public final class MiscCompat {
 
     public static List<net.minecraft.world.level.storage.loot.predicates.LootItemCondition> conditions(net.minecraft.world.level.storage.loot.predicates.LootItemCondition[] array) {
         return java.util.Arrays.asList(array);
+    }
+
+    private static volatile java.lang.reflect.Method conditionsGetter;
+
+    /** {@code LootItemConditionalFunction.Builder.getConditions()}: protected, returned an array in 1.20.1 and a list in 1.21.1 (read through reflection, the caller is a mod class). */
+    public static net.minecraft.world.level.storage.loot.predicates.LootItemCondition[] builderConditions(net.minecraft.world.level.storage.loot.functions.LootItemConditionalFunction.Builder<?> builder) {
+        try {
+            java.lang.reflect.Method m = conditionsGetter;
+            if (m == null) {
+                m = net.minecraft.world.level.storage.loot.functions.LootItemConditionalFunction.Builder.class.getDeclaredMethod("getConditions");
+                m.setAccessible(true);
+                conditionsGetter = m;
+            }
+            @SuppressWarnings("unchecked")
+            List<net.minecraft.world.level.storage.loot.predicates.LootItemCondition> list = (List<net.minecraft.world.level.storage.loot.predicates.LootItemCondition>) m.invoke(builder);
+            return list.toArray(new net.minecraft.world.level.storage.loot.predicates.LootItemCondition[0]);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     // ------------------------------------------------------------------ dispenser: BlockSource became a record

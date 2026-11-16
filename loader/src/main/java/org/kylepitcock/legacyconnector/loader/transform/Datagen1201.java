@@ -80,7 +80,7 @@ final class Datagen1201 {
             changed = false;
             for (ClassNode n : nodes) {
                 if (datagen.contains(n.name) || (n.access & Opcodes.ACC_ENUM) != 0) continue;
-                if (isDatagenClass(n, datagen)) {
+                if (isDatagenClass(n, datagen, byName)) {
                     datagen.add(n.name);
                     changed = true;
                 }
@@ -102,17 +102,35 @@ final class Datagen1201 {
         return stats;
     }
 
-    private static boolean isDatagenClass(ClassNode n, Set<String> known) {
+    private static boolean isDatagenClass(ClassNode n, Set<String> known, Map<String, ClassNode> byName) {
         if ((n.access & Opcodes.ACC_INTERFACE) == 0 && DATAGEN_NAME.matcher(n.name).matches()
-                && !(n.superName != null && n.superName.startsWith("net/minecraft/world/level/levelgen/"))) return true;
-        if (datagenSuper(n.superName, known)) return true;
-        if (n.interfaces != null) for (String i : n.interfaces) if (datagenSuper(i, known)) return true;
+                && !extendsLevelgen(n, byName)) return true;
+        if (datagenSuper(n.superName, known, byName)) return true;
+        // a class that extends a runtime game class (a block entity, an entity...) is not a data generator because it implements an interface whose NAME looks like one
+        // (Immersive Engineering's IEBlockInterfaces.BlockstateProvider, a block state interface of its block entities)
+        boolean runtimeSuper = n.superName != null && (n.superName.startsWith("net/minecraft/") || n.superName.startsWith("net/minecraftforge/"))
+                && !n.superName.startsWith("net/minecraft/data/") && !n.superName.contains("/data/") && !n.superName.contains("/datagen/");
+        if (!runtimeSuper && n.interfaces != null) for (String i : n.interfaces) if (datagenSuper(i, known, byName)) return true;
         int dollar = n.name.lastIndexOf('$');
         if (dollar > 0 && known.contains(n.name.substring(0, dollar))) return true;
         return false;
     }
 
-    private static boolean datagenSuper(String name, Set<String> known) {
+    /** A class whose super chain (through the jar's own classes) reaches a world generation class: a state provider of the mod's trees is not model data generation. */
+    private static boolean extendsLevelgen(ClassNode n, Map<String, ClassNode> byName) {
+        String sup = n.superName;
+        for (int depth = 0; sup != null && depth < 16; depth++) {
+            if (sup.startsWith("net/minecraft/world/level/levelgen/")) return true;
+            ClassNode next = byName.get(sup);
+            if (next == null) return false;
+            sup = next.superName;
+        }
+        return false;
+    }
+
+    private static boolean datagenSuper(String name, Set<String> known, Map<String, ClassNode> byName) {
+        // a super class of the jar is decided by its own (earlier) verdict; only classes of other jars and of the game are judged by name
+        if (name != null && byName.containsKey(name)) return known.contains(name);
         return name != null && (known.contains(name) || datagenName(name));
     }
 
@@ -130,7 +148,8 @@ final class Datagen1201 {
         n.invisibleTypeAnnotations = null;
         n.recordComponents = null;
         n.permittedSubclasses = null;
-        n.nestMembers = null;
+        // nested classes stay nest members of this host: a shell nest member keeps its static helpers, and its private ones are reached from the host (Mantle's MantleTags.Blocks.init)
+        if (n.nestMembers != null) n.nestMembers = new ArrayList<>(n.nestMembers.stream().filter(jar::contains).toList());
         // the super class becomes Object unless it is another class of the jar (which is a shell too, or kept as it was)
         if (n.superName != null && !jar.contains(n.superName) && !n.superName.equals("java/lang/Record")) n.superName = "java/lang/Object";
         List<MethodNode> kept = new ArrayList<>();
@@ -229,6 +248,8 @@ final class Datagen1201 {
             else if (in instanceof TypeInsnNode ti) owner = ti.desc;
             else if (in instanceof MultiANewArrayInsnNode) continue;
             // a static member of the jar's own class in a package called datagen is a plain utility the shell keeps (a mod's tag-key factory used at run time)
+            // a static constant of a provider class of the jar (Ars Nouveau BlockTagProvider.FLOURISHING_LOGS): the shell keeps its static fields
+            if (in instanceof FieldInsnNode sf && sf.getOpcode() == Opcodes.GETSTATIC && jar.contains(sf.owner) && !datagenType(Type.getType(sf.desc))) continue;
             if (owner != null && jar.contains(owner) && !DATAGEN_ROLE.matcher(owner.substring(owner.lastIndexOf('/') + 1)).matches() && (in.getOpcode() == Opcodes.INVOKESTATIC || in.getOpcode() == Opcodes.GETSTATIC)) continue;
             if (owner != null && datagenName(owner)) return true;
         }

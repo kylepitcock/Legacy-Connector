@@ -120,6 +120,7 @@ final class Mc1201Migration {
             addBridges(node, h, t, c);
             addRecipeSerializerCodecs(node, c);
             addTriggerCodec(node, c);
+            addInstanceValidate(node, c);
             addConditionCodec(node, c);
         }
         return c;
@@ -160,6 +161,19 @@ final class Mc1201Migration {
         m.instructions.add(new InsnNode(Opcodes.ARETURN));
         m.maxStack = 1;
         m.maxLocals = 1;
+        node.methods.add(m);
+        c.bridges++;
+    }
+
+    /** A class that implements {@code CriterionTriggerInstance} itself (not through {@code AbstractCriterionTriggerInstance}) lacks 1.21.1's abstract {@code validate(CriterionValidator)}: nothing to validate. */
+    private static void addInstanceValidate(ClassNode node, Counts c) {
+        if (node.interfaces == null || !node.interfaces.contains("net/minecraft/advancements/CriterionTriggerInstance")) return;
+        String desc = "(Lnet/minecraft/advancements/critereon/CriterionValidator;)V";
+        if (declared(node, "validate", desc) != null) return;
+        MethodNode m = new MethodNode(Opcodes.ACC_PUBLIC, "validate", desc, null, null);
+        m.instructions.add(new InsnNode(Opcodes.RETURN));
+        m.maxStack = 0;
+        m.maxLocals = 2;
         node.methods.add(m);
         c.bridges++;
     }
@@ -509,6 +523,12 @@ final class Mc1201Migration {
             int tag = hd.getTag();
             // H_INVOKEINTERFACE (9) counts too: Recipe::getId, ItemStack-like interface references are handles of an interface method
             if (tag < Opcodes.H_INVOKEVIRTUAL || tag > Opcodes.H_INVOKEINTERFACE || hd.getOwner().startsWith("[")) continue;
+            if (CLASSES_THAT_BECAME_INTERFACES.contains(hd.getOwner()) && !hd.isInterface()) {
+                // DataResult::success: a static method reference to a class that is an interface now
+                d.bsmArgs[i] = hd = new org.objectweb.asm.Handle(tag == Opcodes.H_INVOKEVIRTUAL ? Opcodes.H_INVOKEINTERFACE : tag, hd.getOwner(), hd.getName(), hd.getDesc(), true);
+                c.calls++;
+                tag = hd.getTag();
+            }
             boolean ctor = tag == Opcodes.H_NEWINVOKESPECIAL;
             Call rule = null;
             for (String owner : h.minecraftAncestors(hd.getOwner())) {

@@ -189,11 +189,15 @@ public final class CraftingHelper {
     }
 
     public static ItemStack getItemStack(JsonObject json, boolean readNBT, boolean disallowsAirInRecipe) {
-        String itemName = net.minecraft.util.GsonHelper.getAsString(json, "item");
+        // the data converter writes the 1.21 stack form ({id, count, components}) for the shaped-recipe shape of a mod's own recipe type: both forms are read
+        String itemName = net.minecraft.util.GsonHelper.getAsString(json, json.has("item") ? "item" : "id");
         Item item = BuiltInRegistries.ITEM.getOptional(ResourceLocation.parse(itemName)).orElseThrow(() -> new JsonSyntaxException("Unknown item '" + itemName + "'"));
         if (disallowsAirInRecipe && item == Items.AIR) throw new JsonSyntaxException("Invalid item: " + itemName);
         ItemStack stack = new ItemStack(item, net.minecraft.util.GsonHelper.getAsInt(json, "count", 1));
         if (readNBT && json.has("nbt")) ItemStackNbt.setTag(stack, getNBT(json.get("nbt")));
+        if (json.has("components")) {
+            stack.applyComponents(net.minecraft.core.component.DataComponentPatch.CODEC.parse(JsonOps.INSTANCE, json.get("components")).getOrThrow(JsonSyntaxException::new));
+        }
         return stack;
     }
 

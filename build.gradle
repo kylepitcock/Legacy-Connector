@@ -331,10 +331,13 @@ def gapTargets(String targetJars, String classDirs) {
     merged.text = new File(targetJars.substring(1)).readLines().join(',') + ',' + classDirs
     return '@' + merged.absolutePath
 }
-tasks.register('gap1201', JavaExec) {
-    dependsOn ':loader:genSrgMojang1201', 'classes', generateShimIndex // the Forge facades (legacyconnector/v1_20_1) count as present
+def registerGap = { String taskName, String mcVersion, String srgTask, String srgDefault ->
+  tasks.register(taskName, JavaExec) {
+    dependsOn srgTask, 'classes', generateShimIndex // the Forge facades (legacyconnector/v1_20_1) count as present
     // gson (the provenance watermark of the transformer) and the fancy mod loader's annotations are compileOnly in the loader
     classpath = project(':loader').sourceSets.main.runtimeClasspath + project(':loader').sourceSets.main.compileClasspath.filter { it.name.startsWith('gson') || it.name.startsWith('slf4j') }
+    systemProperty 'gap.mc', mcVersion
+    if (project.findProperty('gap.srgOverlay')) systemProperty 'gap.srgOverlay', project.findProperty('gap.srgOverlay').toString() // EXPERIMENTAL 1.19.2: second SRG table whose names win (ids still present in 1.20.1)
     mainClass = 'org.kylepitcock.legacyconnector.loader.tools.Gap1201'
     // -Pgap.translate=true runs the jars through Forge1201Transformer first (the report then shows what the layer leaves); -Pgap.limit=N rows per list
     if (project.findProperty('gap.translate')) systemProperty 'gap.translate', project.findProperty('gap.translate').toString()
@@ -348,15 +351,20 @@ tasks.register('gap1201', JavaExec) {
         def renames = fileTree(dir: 'loader/src/main/resources/legacyconnector/forward/1.20.1', include: ['forge-*.tsv', 'mc-classes.tsv']).files.join(',')
         def jars = fileTree(dir: project.findProperty('gapJars') ?: 'test-mods4', include: '*.jar').files.collect { it.absolutePath }.sort()
         if (jars.join(' ').length() > 6000) { // a pack of hundreds of jars: the Windows command line is limited, hand over "@file" (one path per line)
-            def jarList = new File(buildDir, 'gap1201-jars.txt')
+            def jarList = new File(buildDir, "${taskName}-jars.txt")
             jarList.parentFile.mkdirs()
             jarList.text = jars.join(System.lineSeparator())
             jars = ['@' + jarList.absolutePath]
         }
-        [(project.findProperty('srgTable') ?: project(':loader').layout.buildDirectory.file('generated/srg-mojang/legacyconnector/mappings/1.20.1/srg-mojang.tsv').get().asFile.absolutePath).toString(), renames, gapTargets(project.findProperty('targetJars').toString(), sourceSets.main.output.classesDirs.files.collect { it.absolutePath }.join(',')),
-         (project.findProperty('gapReport') ?: layout.buildDirectory.file('reports/gap1201.txt').get().asFile.absolutePath).toString()] + jars
+        [(project.findProperty('srgTable') ?: project(':loader').layout.buildDirectory.file(srgDefault).get().asFile.absolutePath).toString(), renames, gapTargets(project.findProperty('targetJars').toString(), sourceSets.main.output.classesDirs.files.collect { it.absolutePath }.join(',')),
+         (project.findProperty('gapReport') ?: layout.buildDirectory.file("reports/${taskName}.txt").get().asFile.absolutePath).toString()] + jars
     } as CommandLineArgumentProvider)
 }
+}
+registerGap('gap1201', '1.20.1', ':loader:genSrgMojang1201', 'generated/srg-mojang/legacyconnector/mappings/1.20.1/srg-mojang.tsv')
+// EXPERIMENTAL (scoping of 1.19.2, docs/wiki/Legacy-1.19.2-Estimate.md), opt-in: ./gradlew gap1192 -Pexperimental.mc1192=true -PtargetJars=... -PgapJars=<dir of 1.19.2 jars>
+// [-Pgap.srgOverlay=<1.20.1 srg-mojang.tsv>]; the 1.20.1 -> 1.21.1 tables are applied as they are. No translation (-Pgap.translate is for 1.20.1 jars).
+if (project.findProperty('experimental.mc1192')) registerGap('gap1192', '1.19.2', ':loader:genSrgMojang1192', 'generated/srg-mojang-1192/legacyconnector/mappings/1.19.2/srg-mojang.tsv')
 
 // Event tables of the 1.20.1 pipeline from the real jars (abstract NeoForge events, Forge events without a counterpart):
 // ./gradlew eventTables1201 -PeventJars=<neoforge merged>,<bus>,<fml loader> -PforgeJar=<forge-1.20.1-universal.jar> [-PeventOut=loader/src/main/resources/legacyconnector/forward/1.20.1/neoforge-abstract-events.tsv]

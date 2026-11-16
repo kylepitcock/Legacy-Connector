@@ -14,6 +14,21 @@ public class S23PacketBlockChange extends Packet {
         this.state = level == null ? net.minecraft.world.level.block.Blocks.AIR.defaultBlockState() : level.getBlockState(pos);
     }
 
+    /** The x coordinate of the changed block. */
+    public int func_148879_d() {
+        return pos.getX();
+    }
+
+    /** The y coordinate of the changed block. */
+    public int func_148878_e() {
+        return pos.getY();
+    }
+
+    /** The z coordinate of the changed block. */
+    public int func_148877_f() {
+        return pos.getZ();
+    }
+
     @Override
     public void mcc$send(net.minecraft.server.level.ServerPlayer player) {
         player.connection.send(new net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket(pos, state));

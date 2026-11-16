@@ -53,6 +53,7 @@ net/minecraft/world/item/alchemy/PotionUtils	org/kylepitcock/legacyconnector/v1_
 net/minecraft/world/item/RecordItem	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyRecordItem
 net/minecraft/world/item/DyeableLeatherItem	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyDyeableLeatherItem
 net/minecraft/core/particles/ParticleOptions$Deserializer	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyParticleDeserializer
+net/minecraft/core/particles/DustParticleOptionsBase	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyDustParticleOptionsBase
 net/minecraft/world/level/block/grower/AbstractTreeGrower	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyTreeGrower
 net/minecraft/world/level/storage/loot/Serializer	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyLootSerializer
 net/minecraft/world/level/storage/loot/functions/LootItemConditionalFunction$Serializer	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyConditionalFunctionSerializer
@@ -120,3 +121,4 @@ net/minecraft/world/level/block/entity/BannerPattern$Builder	org/kylepitcock/leg
 net/minecraft/world/item/enchantment/ThornsEnchantment	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyThorns
 net/minecraft/server/commands/ResetChunksCommand	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyResetChunksCommand
 net/minecraft/world/item/alchemy/PotionBrewing$Mix	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyBrewing$Mix
+net/minecraft/world/level/storage/loot/functions/SetNbtFunction	net/minecraft/world/level/storage/loot/functions/SetCustomDataFunction

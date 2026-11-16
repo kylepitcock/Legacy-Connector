@@ -162,6 +162,81 @@ public final class LegacyRemapper extends Remapper {
 
     public void notchLocals(java.util.Map<String, String[]> locals) {
         this.notchLocals = locals;
+        this.localMethods = java.util.Map.of();
+        this.inheritedRenames.clear();
+    }
+
+    /** Overridable methods ({@code name+desc}, not private/static/constructors) each of the jar's own classes declares, for {@link #notchMethod}. */
+    private java.util.Map<String, java.util.Set<String>> localMethods = java.util.Map.of();
+    private final java.util.Map<String, String> inheritedRenames = new java.util.concurrent.ConcurrentHashMap<>();
+
+    public void localMethods(java.util.Map<String, java.util.Set<String>> methods) {
+        this.localMethods = methods;
+        this.inheritedRenames.clear();
+    }
+
+    /**
+     * The final name of a method of a notch-named jar. A jar's own base class can declare the method a subclass overrides from Minecraft
+     * (Thermal Expansion's abstract TileTeleportRoot.b() returns null; TileTeleportItem.b() is IInventory.getInvName, forwarded to
+     * getInventoryName): the subclass's declaration gets the new name, so the base class's declaration and every call through it must get it
+     * too, or the call reaches the base method (null name, NPE in the GUI). Resolved through the declaring class's local subclasses.
+     */
+    private String methodName(String owner, String name, String desc) {
+        String direct = methodNameOf(owner, name, desc);
+        if (!direct.equals(name) || localMethods.isEmpty() || name.startsWith("<") || name.startsWith("func_")) return direct;
+        String key = owner + "." + name + desc;
+        String cached = inheritedRenames.get(key);
+        if (cached != null) return cached.isEmpty() ? direct : cached;
+        String found = inheritedRename(owner, name, desc);
+        inheritedRenames.put(key, found == null ? "" : found);
+        return found == null ? direct : found;
+    }
+
+    private String methodNameOf(String owner, String name, String descriptor) {
+        if (notch != null && !name.startsWith("func_")) {
+            String srg = notch.method(owner, name, descriptor, notchLocals);
+            if (srg != null) name = srg;
+        }
+        String readable = mcp.method(name);
+        if (members != null) return members.method(legacyClass(owner), readable, legacyDesc(descriptor), this::localSupers);
+        return readable;
+    }
+
+    private String inheritedRename(String owner, String name, String desc) {
+        String member = name + desc;
+        String declaring = declaringLocal(owner, member, 0);
+        if (declaring == null) return null;
+        for (String candidate : notchLocals.keySet()) {
+            if (candidate.equals(declaring)) continue;
+            java.util.Set<String> declared = localMethods.get(candidate);
+            if (declared == null || !declared.contains(member) || !isLocalSubtype(candidate, declaring, 0)) continue;
+            String renamed = methodNameOf(candidate, name, desc);
+            if (!renamed.equals(name)) return renamed;
+        }
+        return null;
+    }
+
+    private String declaringLocal(String cls, String member, int depth) {
+        if (cls == null || depth > 24) return null;
+        java.util.Set<String> declared = localMethods.get(cls);
+        if (declared != null && declared.contains(member)) return cls;
+        String[] up = notchLocals.get(cls);
+        if (up == null) return null;
+        for (String s : up) {
+            String r = declaringLocal(s, member, depth + 1);
+            if (r != null) return r;
+        }
+        return null;
+    }
+
+    private boolean isLocalSubtype(String cls, String ancestor, int depth) {
+        if (cls == null || depth > 24) return false;
+        String[] up = notchLocals.get(cls);
+        if (up == null) return false;
+        for (String s : up) {
+            if (ancestor.equals(s) || isLocalSubtype(s, ancestor, depth + 1)) return true;
+        }
+        return false;
     }
 
     public void override(String from, String to) {
@@ -393,16 +468,19 @@ public final class LegacyRemapper extends Remapper {
     public String mapMethodName(String owner, String name, String descriptor) {
         if (owner.endsWith(LIVING_KEEP)) owner = owner.substring(0, owner.length() - LIVING_KEEP.length());
         if (!keep.isEmpty() && keep.contains(owner + "." + name + descriptor)) return name;
+        if (!renameLocal.isEmpty() && !name.startsWith("func_")) {
+            String srg = notchSrg(owner, name, descriptor);
+            if (!srg.startsWith("func_") && renameLocal.contains(owner + "." + srg + descriptor)) return srg + "$mod";
+        }
+        return methodName(owner, name, descriptor);
+    }
+
+    private String notchSrg(String owner, String name, String descriptor) {
         if (notch != null && !name.startsWith("func_")) {
             String srg = notch.method(owner, name, descriptor, notchLocals);
-            if (srg != null) name = srg;
+            if (srg != null) return srg;
         }
-        if (!renameLocal.isEmpty() && !name.startsWith("func_") && renameLocal.contains(owner + "." + name + descriptor)) return name + "$mod";
-        String readable = mcp.method(name);
-        if (members != null) {
-            return members.method(legacyClass(owner), readable, legacyDesc(descriptor), this::localSupers);
-        }
-        return readable;
+        return name;
     }
 
     @Override

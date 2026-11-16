@@ -3,3 +3,4 @@ net/minecraft/world/entity/LivingEntity	getDimensions	(Lnet/minecraft/world/enti
 net/minecraft/world/entity/LivingEntity	canBreatheUnderwater	()Z	-
 net/minecraft/world/entity/decoration/HangingEntity	recalculateBoundingBox	()V	-
 net/minecraft/client/gui/components/AbstractWidget	render	(Lnet/minecraft/client/gui/GuiGraphics;IIF)V	renderWidget
+net/minecraft/world/entity/Entity	getGravity	()D	getDefaultGravity

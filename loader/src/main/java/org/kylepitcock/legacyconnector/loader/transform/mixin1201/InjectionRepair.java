@@ -379,6 +379,12 @@ public final class InjectionRepair {
             if (ats == null) continue;
             for (Iterator<Object> it = ats.iterator(); it.hasNext(); ) {
                 if (!(it.next() instanceof AnnotationNode at) || !AT.equals(at.desc)) continue;
+                if (objectHolderSync(at)) {
+                    counts.atRepaired++;
+                    counts.notes.add("Mixin " + id + ": ObjectHolderRegistry.applyObjectHolders injection point moved to the end of each RegisterEvent dispatch");
+                    changed = true;
+                    continue;
+                }
                 Outcome o = atOutcome(injector.desc, handler, at, idx);
                 switch (o.kind) {
                     case EXACT -> counts.atExact++;
@@ -400,6 +406,27 @@ public final class InjectionRepair {
             if (ats.isEmpty()) setList(injector, "at", ats);
         }
         return changed;
+    }
+
+    /**
+     * Forge's {@code GameData.postRegisterEvents} refills the {@code @ObjectHolder} fields after each registry's RegisterEvent
+     * ({@code ObjectHolderRegistry.applyObjectHolders}); mods hook that call to fill their own holders (SuperMartijn642 core library's
+     * {@code @RegistryEntryAcceptor}). NeoForge has no object holders: the same point is right after the event was dispatched to the mods.
+     */
+    private static boolean objectHolderSync(AnnotationNode at) {
+        if (!"INVOKE".equals(string(at, "value"))) return false;
+        String target = string(at, "target");
+        if (target == null || !target.endsWith("/ObjectHolderRegistry;applyObjectHolders(Ljava/util/function/Predicate;)V")) return false;
+        setString(at, "target", "Lnet/neoforged/fml/ModLoader;postEventWrapContainerInModOrder(Lnet/neoforged/bus/api/Event;)V");
+        boolean shifted = false;
+        for (int i = 0; i + 1 < at.values.size(); i += 2) {
+            if ("shift".equals(at.values.get(i))) {
+                at.values.set(i + 1, new String[] {"Lorg/spongepowered/asm/mixin/injection/At$Shift;", "AFTER"});
+                shifted = true;
+            }
+        }
+        if (!shifted) at.visitEnum("shift", "Lorg/spongepowered/asm/mixin/injection/At$Shift;", "AFTER");
+        return true;
     }
 
     private static boolean isDeadByAt(AnnotationNode injector) {
