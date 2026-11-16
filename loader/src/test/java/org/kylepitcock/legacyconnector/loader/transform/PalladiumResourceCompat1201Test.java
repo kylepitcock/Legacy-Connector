@@ -62,7 +62,7 @@ class PalladiumResourceCompat1201Test {
     @Test
     void migratesSeparateAlienEvoItemStackSetNbtCallToCustomDataComponent() {
         Map<String, byte[]> resources = new HashMap<>();
-        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_DECOUPLE, """
+        put(resources, "addon/alienevo/kubejs_scripts/decouple.js", """
                 var watchItem = Item.of(itemId, 1);
                 watchItem.setNbt(nbtData);
                 entity.give(watchItem);
@@ -70,12 +70,12 @@ class PalladiumResourceCompat1201Test {
 
         assertEquals(1, PalladiumResourceCompat1201.apply(resources));
 
-        String migrated = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_DECOUPLE);
+        String migrated = get(resources, "addon/alienevo/kubejs_scripts/decouple.js");
         assertTrue(migrated.contains("watchItem.setCustomData(NBT.wrapCompound(nbtData));"));
         assertFalse(migrated.contains("watchItem.setNbt(nbtData);"));
 
         assertEquals(0, PalladiumResourceCompat1201.apply(resources));
-        assertEquals(migrated, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_DECOUPLE));
+        assertEquals(migrated, get(resources, "addon/alienevo/kubejs_scripts/decouple.js"));
     }
 
     @Test
