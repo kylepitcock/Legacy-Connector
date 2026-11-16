@@ -27,18 +27,8 @@ public final class ModLoaderMp {
     public static synchronized void initialize() {
         if (initialized) return;
         initialized = true;
-        Network164.registerChannel((manager, packet, player) -> {
-            Packet230ModLoader p = Packet230ModLoader.decode(packet.data);
-            BaseModMp mod = MODS.get(p.modId);
-            if (mod != null) mod.handlePacket(p);
-        }, CHANNEL, Side.CLIENT);
-        Network164.registerChannel((manager, packet, player) -> {
-            Packet230ModLoader p = Packet230ModLoader.decode(packet.data);
-            BaseModMp mod = MODS.get(p.modId);
-            if (mod == null || !(player instanceof EntityPlayerMP mp)) return;
-            if (p.packetType == KEY_PACKET && p.dataInt.length > 0) mod.handleSendKey(mp, p.dataInt[0]);
-            else mod.handlePacket(p, mp);
-        }, CHANNEL, Side.SERVER);
+        Network164.registerChannel((manager, packet, player) -> receiveOnClient(packet.data), CHANNEL, Side.CLIENT);
+        Network164.registerChannel((manager, packet, player) -> receiveOnServer(packet.data, player), CHANNEL, Side.SERVER);
         legacyconnector.v1_7_10.cpw.mods.fml.common.FMLCommonHandler.instance().bus().register(new Object() {
             @legacyconnector.v1_7_10.cpw.mods.fml.common.eventhandler.SubscribeEvent
             public void onLogin(legacyconnector.v1_7_10.cpw.mods.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent e) {
@@ -49,10 +39,31 @@ public final class ModLoaderMp {
         });
     }
 
-    /** Called by the host for every {@code BaseModMp} (see {@link BaseMod}'s init handler). */
-    static void mcc$register(BaseModMp mod) {
+    /** The client end of the channel: a packet the server half sent goes to the mod's {@code handlePacket(packet)}. */
+    static void receiveOnClient(byte[] data) {
+        Packet230ModLoader p = Packet230ModLoader.decode(data);
+        BaseModMp mod = MODS.get(p.modId);
+        if (mod != null) mod.handlePacket(p);
+    }
+
+    /** The server end: a packet (or key press) the client half sent goes to {@code handlePacket(packet, player)} / {@code handleSendKey}. */
+    static void receiveOnServer(byte[] data, Object player) {
+        Packet230ModLoader p = Packet230ModLoader.decode(data);
+        BaseModMp mod = MODS.get(p.modId);
+        if (mod == null || !(player instanceof EntityPlayerMP mp)) return;
+        if (p.packetType == KEY_PACKET && p.dataInt.length > 0) mod.handleSendKey(mp, p.dataInt[0]);
+        else mod.handlePacket(p, mp);
+    }
+
+    /** Test seam: the id table without the channel registration. */
+    static void mcc$put(BaseModMp mod) {
         MODS.put(mod.getId(), mod);
         BY_CLASS.put(mod.getClass(), mod);
+    }
+
+    /** Called by the host for every {@code BaseModMp} (see {@link BaseMod}'s init handler). */
+    static void mcc$register(BaseModMp mod) {
+        mcc$put(mod);
         initialize();
     }
 
@@ -95,7 +106,49 @@ public final class ModLoaderMp {
         sendPacket(mod, packet);
     }
 
-    public static void registerGUI(BaseModMp mod, int id) {}
+    private static final Map<Integer, BaseModMp> GUI_MODS = new ConcurrentHashMap<>();
+    private static final java.util.Set<BaseModMp> GUI_HANDLERS = ConcurrentHashMap.newKeySet();
+    private static final Map<legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer, legacyconnector.v1_7_10.net.minecraft.inventory.Container> STAGED =
+            java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>());
+
+    /**
+     * The mod answers GUI id {@code id}: the server's {@code ModLoader.openGUI(player, id, inventory, container)} opens that container for the player
+     * and the client calls the mod's {@code handleGUI(id)} for the screen. Both ride the FML GUI registry ({@code EntityPlayer.openGui}), which
+     * the layer turns into a menu on the server and a container screen on the client.
+     */
+    public static void registerGUI(BaseModMp mod, int id) {
+        // ModLoaderMP logged "RegisterGUI error: inventoryType already registered." and kept the first mod
+        if (GUI_MODS.putIfAbsent(id, mod) != null && GUI_MODS.get(id) != mod) {
+            log("RegisterGUI error: inventoryType already registered.");
+            return;
+        }
+        if (!GUI_HANDLERS.add(mod)) return;
+        legacyconnector.v1_7_10.cpw.mods.fml.common.network.NetworkRegistry.INSTANCE.registerGuiHandler(mod,
+                new legacyconnector.v1_7_10.cpw.mods.fml.common.network.IGuiHandler() {
+                    @Override
+                    public Object getServerGuiElement(int guiId, legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player,
+                            legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z) {
+                        return STAGED.remove(player);
+                    }
+
+                    @Override
+                    public Object getClientGuiElement(int guiId, legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player,
+                            legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z) {
+                        BaseModMp m = GUI_MODS.get(guiId);
+                        return m == null ? null : m.handleGUI(guiId);
+                    }
+                });
+    }
+
+    /** The server side of {@code ModLoader.openGUI(player, id, inventory, container)}: false when no mod registered the id. */
+    static boolean mcc$openGui(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player, int id,
+            legacyconnector.v1_7_10.net.minecraft.inventory.Container container) {
+        BaseModMp mod = GUI_MODS.get(id);
+        if (mod == null || player == null || container == null) return false;
+        STAGED.put(player, container);
+        player.openGui(mod, id, legacyconnector.v1_7_10.net.minecraft.entity.Entity.mcc$get$worldObj(player), 0, 0, 0);
+        return true;
+    }
 
     public static void log(String message) {
         org.slf4j.LoggerFactory.getLogger("LegacyConnector/ModLoaderMP").info(message);

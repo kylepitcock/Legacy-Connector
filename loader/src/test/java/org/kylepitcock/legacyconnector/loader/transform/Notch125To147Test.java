@@ -230,4 +230,52 @@ class Notch125To147Test {
         assertTrue(m.contains("ItemX.onUse(Lx1;III)Z"), "the bridge calls the original: " + m);
         assertTrue(notes.stream().anyMatch(n -> n.startsWith("1 override(s)") && n.contains("1 bridged")), notes.toString());
     }
+
+    /** A call of a game method whose signature changed goes through an adapter generated into the calling class. */
+    @Test
+    void callOfAChangedSignatureGoesThroughAnAdapter() throws IOException {
+        String table = TABLE + "B\tc\tbbb\td\t(Laaa;III)Z\tx2\tonUse\t(Lx1;IIIFFF)Z\n";
+        Notch125To147.Table t = Notch125To147.parse(new BufferedReader(new StringReader(table)))[0];
+        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+        cw.visit(Opcodes.V1_6, Opcodes.ACC_PUBLIC, "Caller", null, "java/lang/Object", null);
+        MethodVisitor mv = cw.visitMethod(Opcodes.ACC_PUBLIC, "run", "(Lbbb;Laaa;)Z", null, null);
+        mv.visitCode();
+        mv.visitVarInsn(Opcodes.ALOAD, 1);
+        mv.visitVarInsn(Opcodes.ALOAD, 2);
+        mv.visitInsn(Opcodes.ICONST_1);
+        mv.visitInsn(Opcodes.ICONST_2);
+        mv.visitInsn(Opcodes.ICONST_3);
+        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "bbb", "d", "(Laaa;III)Z", false);
+        mv.visitInsn(Opcodes.IRETURN);
+        mv.visitMaxs(0, 0);
+        mv.visitEnd();
+        Map<String, byte[]> classes = new LinkedHashMap<>();
+        classes.put("Caller", cw.toByteArray());
+        Notch125To147.apply(t, NotchNames.get("1.4.7"), classes);
+        List<String> m = members(classes.get("Caller"));
+        assertTrue(m.contains("Caller.mcc125$call$0(Lx2;Lx1;III)Z"), "the call goes to the adapter: " + m);
+        assertTrue(m.contains("decl mcc125$call$0(Lx2;Lx1;III)Z"), "the adapter is declared: " + m);
+        assertTrue(m.contains("x2.onUse(Lx1;IIIFFF)Z"), "and calls the 1.4.7 method: " + m);
+        assertEquals(1, Notch125To147.lastAdaptedCalls().size());
+    }
+
+    /** An override of an unjoined game member is named after the Feather name, not left under the obfuscated letter (the 1.4.7 stage would rename the letter again). */
+    @Test
+    void overrideOfAnUnjoinedMemberCarriesTheSideIndependentName() throws IOException {
+        String table = TABLE + "U\tc\tbbb\tq\t(Laaa;)V\tonQ\n";
+        Notch125To147.Table t = Notch125To147.parse(new BufferedReader(new StringReader(table)))[0];
+        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+        cw.visit(Opcodes.V1_6, Opcodes.ACC_PUBLIC, "ItemZ", null, "bbb", null);
+        MethodVisitor mv = cw.visitMethod(Opcodes.ACC_PUBLIC, "q", "(Laaa;)V", null, null);
+        mv.visitCode();
+        mv.visitInsn(Opcodes.RETURN);
+        mv.visitMaxs(0, 0);
+        mv.visitEnd();
+        Map<String, byte[]> classes = new LinkedHashMap<>();
+        classes.put("ItemZ", cw.toByteArray());
+        Notch125To147.apply(t, NotchNames.get("1.4.7"), classes);
+        List<String> m = members(classes.get("ItemZ"));
+        assertTrue(m.contains("decl mcc125$onQ(Lx1;)V"), m.toString());
+        assertEquals(1, Notch125To147.lastUnjoinedOverrides()[0]);
+    }
 }

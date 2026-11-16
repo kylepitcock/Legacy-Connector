@@ -11,9 +11,9 @@ import legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayerMP;
 public abstract class BaseModMp extends BaseMod {
     public BaseModMp() {}
 
-    /** ModLoaderMP's id of a mod: the hash of its class name, the same in every session. */
+    /** ModLoaderMP's id of a mod (checked against its bytecode): {@code toString().hashCode()}, that is the hash of "name version", the same in every session. */
     public final int getId() {
-        return getClass().getSimpleName().hashCode();
+        return toString().hashCode();
     }
 
     /** A packet the server sent to this client. */

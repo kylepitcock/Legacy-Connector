@@ -193,6 +193,8 @@ public final class Notch125To147 {
         int renamed = 0;
         LAST_BRIDGES.set(new int[2]);
         int[] counts = new int[2];
+        int[] unjoinedOverrides = new int[2]; // renamed to mcc125$<Feather name>, left under the obfuscated name
+        Map<String, Integer> adaptedCalls = new java.util.TreeMap<>(), unadaptedCalls = new java.util.TreeMap<>();
         List<String> unbridged = new ArrayList<>();
         Remapper byClass = new Remapper() {
             @Override
@@ -208,15 +210,21 @@ public final class Notch125To147 {
             new ClassReader(bytes).accept(new org.objectweb.asm.ClassVisitor(org.objectweb.asm.Opcodes.ASM9) {
                 @Override
                 public org.objectweb.asm.MethodVisitor visitMethod(int access, String mname, String mdesc, String sig, String[] ex) {
-                    if ((access & (org.objectweb.asm.Opcodes.ACC_STATIC | org.objectweb.asm.Opcodes.ACC_PRIVATE | org.objectweb.asm.Opcodes.ACC_ABSTRACT)) != 0 || mname.startsWith("<")
-                            || mname.length() > 3 || self == null || self.superName() == null) return null;
+                    if (mname.startsWith("<") || mname.length() > 3 || self == null || self.superName() == null) return null;
+                    boolean noBridge = (access & (org.objectweb.asm.Opcodes.ACC_STATIC | org.objectweb.asm.Opcodes.ACC_PRIVATE | org.objectweb.asm.Opcodes.ACC_ABSTRACT)) != 0;
                     String[] hit = resolver.lookup("M", self.superName(), mname, mdesc);
                     if (hit == null) hit = resolver.lookup("B", self.superName(), mname, mdesc);
                     if (hit == null) {
                         String[] u = resolver.lookup("U", self.superName(), mname, mdesc);
-                        if (u != null) unbridged.add(name + "." + mname + mdesc + ": no 1.4.7 method '" + u[1] + "'");
+                        if (u != null && (access & (org.objectweb.asm.Opcodes.ACC_STATIC | org.objectweb.asm.Opcodes.ACC_PRIVATE)) == 0) {
+                            unbridged.add(name + "." + mname + mdesc + ": no 1.4.7 method '" + u[1] + "'");
+                            // the declaration must carry the side independent name too, or the 1.4.7 stage renames the short letter a second time (to whatever 1.4.7 member has it)
+                            if (resolver.mapMethodName(name, mname, mdesc).startsWith(UNJOINED_PREFIX)) unjoinedOverrides[0]++;
+                            else unjoinedOverrides[1]++;
+                        }
                         return null;
                     }
+                    if (noBridge) return null;
                     String oldDesc = byClass.mapDesc(mdesc);
                     if (oldDesc.equals(hit[2])) return null;
                     counts[0]++;
@@ -234,10 +242,12 @@ public final class Notch125To147 {
             LAST_BRIDGES.get()[0] += counts[0];
             counts[0] = 0;
             ClassWriter cw = new ClassWriter(0);
-            org.objectweb.asm.ClassVisitor tail = bridges.isEmpty() ? cw : new BridgeAdder(cw, bridges);
+            List<java.util.function.Consumer<org.objectweb.asm.ClassVisitor>> adapters = new ArrayList<>();
+            org.objectweb.asm.ClassVisitor tail = new BridgeAdder(cw, bridges, adapters);
             LAST_BRIDGES.get()[1] += counts[1];
             counts[1] = 0;
-            new ClassReader(bytes).accept(new ClassRemapper(new DescFix(tail, table.descFix(), n147, local), resolver), 0);
+            ClassRemapper remap = new ClassRemapper(new DescFix(tail, table.descFix(), n147, local), resolver);
+            new ClassReader(bytes).accept(new CallAdapt(remap, name, resolver, local, byClass, adapters, adaptedCalls, unadaptedCalls), 0);
             classes.put(name, cw.toByteArray());
             renamed++;
         }
@@ -250,6 +260,8 @@ public final class Notch125To147 {
         }
         LAST_UNRESOLVED.set(new TreeSet<>(resolver.unresolved));
         LAST_UNBRIDGED.set(unbridged);
+        LAST_UNJOINED.set(unjoinedOverrides);
+        LAST_CALLS.set(new Map[] {adaptedCalls, unadaptedCalls});
         notes.add(LAST_BRIDGES.get()[0] + " override(s) of game methods whose signature changed in 1.3, " + LAST_BRIDGES.get()[1] + " bridged to the 1.4.7 signature"
                 + (unbridged.isEmpty() ? "" : " (not bridged, e.g. " + unbridged.stream().limit(3).toList() + ")"));
         notes.add("Minecraft 1.2.5 names rewritten to 1.4.7's in " + renamed + " class(es) (" + resolver.unresolved.size() + " unresolved game reference(s)"
@@ -376,6 +388,10 @@ public final class Notch125To147 {
             String[] hit = lookup(kind, owner, name, desc);
             if (hit == null && kind.equals("M")) hit = lookup("B", owner, name, desc); // same name, other signature in 1.4.7: an override gets a bridge (OverrideBridges)
             if (hit != null) return hit[1];
+            if (name.length() <= 3 && !table.classes.containsKey(owner) && local.containsKey(owner)) {
+                String[] named = lookup("U", owner, name, desc);
+                if (named != null) return UNJOINED_PREFIX + named[1];
+            }
             if (name.length() <= 3 && table.classes.containsKey(owner)) {
                 unresolved.add(owner + "." + name + desc);
                 // named by the readable name when the table has one (U rows): the client and the server of 1.2.5 use different letters for the same member
@@ -419,11 +435,13 @@ public final class Notch125To147 {
     /** Adds the bridge methods of a class when it has been written. */
     private static final class BridgeAdder extends org.objectweb.asm.ClassVisitor {
         final List<Bridge> bridges;
+        final List<java.util.function.Consumer<org.objectweb.asm.ClassVisitor>> adapters;
         String owner;
 
-        BridgeAdder(org.objectweb.asm.ClassVisitor next, List<Bridge> bridges) {
+        BridgeAdder(org.objectweb.asm.ClassVisitor next, List<Bridge> bridges, List<java.util.function.Consumer<org.objectweb.asm.ClassVisitor>> adapters) {
             super(org.objectweb.asm.Opcodes.ASM9, next);
             this.bridges = bridges;
+            this.adapters = adapters;
         }
 
         @Override
@@ -435,12 +453,115 @@ public final class Notch125To147 {
         @Override
         public void visitEnd() {
             for (Bridge b : bridges) OverrideBridges.emit(cv, owner, b.name(), b.oldDesc(), b.newDesc(), b.plan());
+            for (var r : adapters) r.accept(cv);
             super.visitEnd();
+        }
+    }
+
+    /** Calls of game methods whose arity changed: adapted (to the 1.4.7 method) and not adaptable, as {@code owner.name desc} to count, of the latest {@link #apply} on this thread. */
+    @SuppressWarnings("unchecked")
+    private static final ThreadLocal<Map<String, Integer>[]> LAST_CALLS = ThreadLocal.withInitial(() -> new Map[] {Map.of(), Map.of()});
+
+    public static Map<String, Integer> lastAdaptedCalls() {
+        return LAST_CALLS.get()[0];
+    }
+
+    public static Map<String, Integer> lastUnadaptedCalls() {
+        return LAST_CALLS.get()[1];
+    }
+
+    /**
+     * Before the renaming: a call of a game method that has only a B row (same name, another signature in 1.4.7) cannot keep its arguments, so it goes through an adapter generated into the
+     * calling class (the argument lists are reconciled like the override bridges do, in reverse). Calls of methods the mod class declares itself, and calls the join names exactly, stay.
+     */
+    private static final class CallAdapt extends org.objectweb.asm.ClassVisitor {
+        final String self;
+        final Resolver resolver;
+        final Map<String, Local> local;
+        final Remapper byClass;
+        final List<java.util.function.Consumer<org.objectweb.asm.ClassVisitor>> adapters;
+        final Map<String, Integer> adapted, unadapted;
+        final Map<String, String> made = new HashMap<>();
+        String superName;
+
+        CallAdapt(org.objectweb.asm.ClassVisitor next, String self, Resolver resolver, Map<String, Local> local, Remapper byClass, List<java.util.function.Consumer<org.objectweb.asm.ClassVisitor>> adapters, Map<String, Integer> adapted, Map<String, Integer> unadapted) {
+            super(org.objectweb.asm.Opcodes.ASM9, next);
+            this.self = self;
+            this.resolver = resolver;
+            this.local = local;
+            this.byClass = byClass;
+            this.adapters = adapters;
+            this.adapted = adapted;
+            this.unadapted = unadapted;
+        }
+
+        private boolean declaredLocally(String owner, String name, String desc) {
+            String c = owner;
+            for (int i = 0; i < 24 && c != null; i++) {
+                Local l = local.get(c);
+                if (l == null) return false;
+                if (l.methods().contains(name + desc)) return true;
+                c = l.superName();
+            }
+            return false;
+        }
+
+        @Override
+        public org.objectweb.asm.MethodVisitor visitMethod(int access, String name, String desc, String sig, String[] ex) {
+            org.objectweb.asm.MethodVisitor mv = super.visitMethod(access, name, desc, sig, ex);
+            if (mv == null) return null;
+            return new org.objectweb.asm.MethodVisitor(org.objectweb.asm.Opcodes.ASM9, mv) {
+                @Override
+                public void visitMethodInsn(int op, String owner, String n, String d, boolean itf) {
+                    if (n.length() > 3 || n.startsWith("<") || owner.startsWith("[") || declaredLocally(owner, n, d) || resolver.lookup("M", owner, n, d) != null) {
+                        super.visitMethodInsn(op, owner, n, d, itf);
+                        return;
+                    }
+                    String[] b = resolver.lookup("B", owner, n, d);
+                    if (b == null) {
+                        super.visitMethodInsn(op, owner, n, d, itf);
+                        return;
+                    }
+                    String key = owner + "." + n + d;
+                    String oldMapped = byClass.mapDesc(d);
+                    String[] reason = new String[1];
+                    OverrideBridges.Plan plan = OverrideBridges.planCall(oldMapped, b[2], reason);
+                    if (plan == null) {
+                        unadapted.merge(key + ": " + reason[0], 1, Integer::sum);
+                        super.visitMethodInsn(op, owner, n, d, itf);
+                        return;
+                    }
+                    adapted.merge(key, 1, Integer::sum);
+                    boolean special = op == org.objectweb.asm.Opcodes.INVOKESPECIAL;
+                    boolean isStatic = op == org.objectweb.asm.Opcodes.INVOKESTATIC;
+                    String id = op + ":" + key;
+                    String aname = made.get(id);
+                    if (aname == null) {
+                        aname = "mcc125$call$" + made.size();
+                        made.put(id, aname);
+                        final String an = aname;
+                        final String ownerMapped = byClass.map(owner);
+                        adapters.add(out -> OverrideBridges.emitCall(out, an, special || isStatic ? null : org.objectweb.asm.Type.getObjectType(ownerMapped), special, oldMapped,
+                                op == org.objectweb.asm.Opcodes.INVOKEINTERFACE ? op : op, ownerMapped, b[1], b[2], itf, plan));
+                    }
+                    // the receiver (this, for a super call) and the arguments are on the stack: a static adapter takes the receiver first, the instance adapter of a super call is called on this
+                    if (special) super.visitMethodInsn(org.objectweb.asm.Opcodes.INVOKEVIRTUAL, self, aname, d, false);
+                    else if (isStatic) super.visitMethodInsn(org.objectweb.asm.Opcodes.INVOKESTATIC, self, aname, d, false);
+                    else super.visitMethodInsn(org.objectweb.asm.Opcodes.INVOKESTATIC, self, aname, "(L" + owner + ";" + d.substring(1), false);
+                }
+            };
         }
     }
 
     /** {changed-signature overrides, bridged} of the latest {@link #apply} on this thread, and why the others were not bridged. */
     private static final ThreadLocal<int[]> LAST_BRIDGES = ThreadLocal.withInitial(() -> new int[2]);
+    private static final ThreadLocal<int[]> LAST_UNJOINED = ThreadLocal.withInitial(() -> new int[2]);
+
+    /** {renamed, left} overrides of unjoined game members of the latest {@link #apply} on this thread. */
+    public static int[] lastUnjoinedOverrides() {
+        return LAST_UNJOINED.get().clone();
+    }
+
     private static final ThreadLocal<List<String>> LAST_UNBRIDGED = ThreadLocal.withInitial(List::of);
 
     public static int[] lastBridgeCounts() {
