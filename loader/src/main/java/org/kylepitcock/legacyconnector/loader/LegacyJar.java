@@ -40,6 +40,9 @@ public final class LegacyJar {
     /** For a mod distributed as a folder in mods/ ({@link DirectoryMods}): the folder; {@link #path} is the jar packed from it. */
     public volatile Path sourceDir;
 
+    /** For a mod unpacked from a bundle archive (a zip that only holds mod archives): the file name of the bundle, null otherwise. */
+    public volatile String bundledIn;
+
     public LegacyJar(Path path) {
         this.path = path;
     }

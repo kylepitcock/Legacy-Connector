@@ -127,6 +127,47 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
     }
 
     /**
+     * A bundle: an archive with no classes of its own whose entries (any depth, outside META-INF) include mod archives ({@code .jar}/{@code .zip}
+     * that inspect as legacy mods). One level only. The inner archives are copied to {@code nestedDir} as {@code <bundle>-<inner>} (content hash of
+     * the copy keys the translation cache, so an updated bundle re-translates). Empty when the archive is not a bundle.
+     */
+    static List<Path> bundledMods(Path archive, Path nestedDir) {
+        List<Path> out = new ArrayList<>();
+        try (ZipFile zip = new ZipFile(archive.toFile())) {
+            List<ZipEntry> inner = new ArrayList<>();
+            var entries = zip.entries();
+            while (entries.hasMoreElements()) {
+                ZipEntry e = entries.nextElement();
+                String n = e.getName();
+                if (e.isDirectory() || n.startsWith("__MACOSX/")) continue;
+                String lower = n.toLowerCase();
+                if (lower.endsWith(".class")) return List.of();
+                if (n.startsWith("META-INF/")) continue;
+                if (lower.endsWith(".jar") || lower.endsWith(".zip")) inner.add(e);
+            }
+            String base = archive.getFileName().toString().replaceAll("(?i)[.](zip|jar)$", "");
+            for (ZipEntry e : inner) {
+                String n = e.getName();
+                Files.createDirectories(nestedDir);
+                Path target = nestedDir.resolve(base + "-" + n.substring(n.lastIndexOf('/') + 1));
+                try (InputStream in = zip.getInputStream(e)) {
+                    Files.copy(in, target, StandardCopyOption.REPLACE_EXISTING);
+                }
+                try {
+                    if (LegacyJarInspector.inspect(target) != null) out.add(target);
+                    else Files.deleteIfExists(target);
+                } catch (IOException | RuntimeException ex) {
+                    Files.deleteIfExists(target);
+                }
+            }
+        } catch (IOException | RuntimeException e) {
+            LOG.debug("Legacy Connector: could not look for bundled mods in {}", archive, e);
+            return List.of();
+        }
+        return out;
+    }
+
+    /**
      * Distribution archives of the 1.6 era carried the mod itself as an archive in a folder named "Put contents into the Mods Folder" next to a
      * server-jar patch (Goblins! Mod: the patch has the classes only, the textures and sounds are in the inner zip). Users unzipped them; this extracts
      * the inner archive and loads that instead of the wrapper. Null when the archive is not such a wrapper.
@@ -257,6 +298,20 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                         Path p = p0;
                         if (context.isLocated(p) || !seenNames.add(p.getFileName().toString().toLowerCase())) continue;
                         try {
+                            Path nestedRoot = gameDir.resolve(".legacyconnector").resolve("nested");
+                            List<Path> bundled = bundledMods(p, nestedRoot);
+                            if (!bundled.isEmpty()) {
+                                // a distribution archive that only wraps mod archives: each inner mod is its own legacy jar, the outer file is named as its source
+                                for (Path inner : bundled) {
+                                    LegacyJar innerJar = LegacyJarInspector.inspect(inner);
+                                    if (innerJar == null) continue;
+                                    innerJar.bundledIn = p.getFileName().toString();
+                                    innerJar.notes.add("Unpacked from the bundle " + innerJar.bundledIn);
+                                    legacy.add(innerJar);
+                                    addContainedDeps(inner, nestedRoot, legacy, seenNames);
+                                }
+                                continue;
+                            }
                             Path packaged = packagedMod(p, gameDir.resolve(".legacyconnector").resolve("nested"));
                             if (packaged == null) packaged = unwrapRootFolder(p, gameDir.resolve(".legacyconnector").resolve("nested"));
                             LegacyJar jar = LegacyJarInspector.inspect(packaged != null ? packaged : p);
