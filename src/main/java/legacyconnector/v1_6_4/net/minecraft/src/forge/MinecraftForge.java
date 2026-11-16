@@ -54,6 +54,7 @@ public class MinecraftForge {
     }
 
     public static void registerCraftingHandler(ICraftingHandler handler) {
+        CRAFTING.add(handler);
         Crafting164.registerCraftingHandler(new legacyconnector.v1_6_4.cpw.mods.fml.common.ICraftingHandler() {
             @Override
             public void onCrafting(EntityPlayer player, ItemStack item, legacyconnector.v1_7_10.net.minecraft.inventory.IInventory craftMatrix) {
@@ -77,7 +78,12 @@ public class MinecraftForge {
         ForgeEvents.interact(handler);
     }
 
+    static final List<IBonemealHandler> BONEMEAL = new CopyOnWriteArrayList<>();
+    static final List<ICraftingHandler> CRAFTING = new CopyOnWriteArrayList<>();
+    static final List<IMinecartHandler> MINECART = new CopyOnWriteArrayList<>();
+
     public static void registerBonemealHandler(IBonemealHandler handler) {
+        BONEMEAL.add(handler);
         ForgeEvents.bonemeal(handler);
     }
 
@@ -140,7 +146,7 @@ public class MinecraftForge {
     }
 
     public static void registerMinecartHandler(IMinecartHandler handler) {
-        OTHER_HANDLERS.add(handler);
+        MINECART.add(handler);
     }
 
     public static void registerChunkLoadHandler(IChunkLoadHandler handler) {
@@ -155,12 +161,17 @@ public class MinecraftForge {
         OTHER_HANDLERS.add(handler);
     }
 
+    static final List<IArrowNockHandler> ARROW_NOCK = new CopyOnWriteArrayList<>();
+    static final List<IArrowLooseHandler> ARROW_LOOSE = new CopyOnWriteArrayList<>();
+
     public static void registerArrowNockHandler(IArrowNockHandler handler) {
-        OTHER_HANDLERS.add(handler);
+        ARROW_NOCK.add(handler);
+        ForgeEvents.arrowNock(handler);
     }
 
     public static void registerArrowLooseHandler(IArrowLooseHandler handler) {
-        OTHER_HANDLERS.add(handler);
+        ARROW_LOOSE.add(handler);
+        ForgeEvents.arrowLoose(handler);
     }
 
     // ---- ore dictionary
@@ -430,6 +441,19 @@ public class MinecraftForge {
 
     public static void removeMinecart(Class<?> cart, int type) {
         CARTS.remove(cart);
+    }
+
+    public static Set<ItemStack> getAllCartItems() {
+        return new LinkedHashSet<>(CARTS.values());
+    }
+
+    public static Class<?> getCartClassForItem(ItemStack item) {
+        for (Map.Entry<Class<?>, ItemStack> e : CARTS.entrySet()) if (e.getValue().isItemEqual(item)) return e.getKey();
+        return null;
+    }
+
+    public static int getCartTypeForItem(ItemStack item) {
+        return 0;
     }
 
     public static ItemStack getItemForCart(Class<?> cart) {
