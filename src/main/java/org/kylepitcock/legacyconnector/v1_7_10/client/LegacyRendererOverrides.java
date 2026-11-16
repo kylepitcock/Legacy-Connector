@@ -80,11 +80,12 @@ public final class LegacyRendererOverrides {
         if (r != null) r.run();
     }
 
-    /** How far the eyes of the camera entity sit above the modern eye position: what the mod made the player's {@code yOffset} (1.62 is the normal one). */
+    /** How far the eyes of the camera entity sit above the modern eye position, from the player's {@code yOffset} the mod set for the frame (1.62 is the normal one). */
     public static double cameraRaise(net.minecraft.world.entity.Entity entity) {
         if (entity != net.minecraft.client.Minecraft.getInstance().player || overriddenRenderer() == null) return 0.0;
         var legacy = org.kylepitcock.legacyconnector.v1_7_10.bridge.EntityBridge.wrap(entity);
-        return legacy == null ? 0.0 : legacy.yOffset - 1.62F;
+        // 1.7.10's orientCamera translated by yOffset - 1.62 and read the eye position as posY - that: a smaller yOffset (Legends' giants subtract their size) lifts the eyes
+        return legacy == null ? 0.0 : 1.62F - legacy.yOffset;
     }
 
     /** The distance of the third person camera the mod set ({@code EntityRenderer.thirdPersonDistance}), or the normal 4. */
