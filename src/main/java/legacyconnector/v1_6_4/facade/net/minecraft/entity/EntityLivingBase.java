@@ -13,7 +13,7 @@ public final class EntityLivingBase {
 
     /** {@code entity.health}: the whole hit points left (rounded up, so a sliver of health still counts as alive). */
     public static int mcc$get$health(legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase self) {
-        return healthOf(self.getHealth());
+        return healthOf(legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase.mcc$storedHealth(self));
     }
 
     /** {@code entity.health = n}: the hit points, between 0 (dead) and the maximum. */
