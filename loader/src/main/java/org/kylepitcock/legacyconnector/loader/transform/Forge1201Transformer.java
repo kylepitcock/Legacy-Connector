@@ -253,9 +253,13 @@ public final class Forge1201Transformer {
         return transform(jar, output, Map.of());
     }
 
+    /** The peers of the jar being translated: a nested jar is translated against them as well (Thermal Core's items extend CoFH Core's). */
+    private Map<String, org.kylepitcock.legacyconnector.loader.shim.ClassInfo> currentPeers = Map.of();
+
     /** @param peers the classes of the other jars of the set (see {@link #scan}), by name */
     public LegacyJarTransformer.Result transform(LegacyJar jar, Path output, Map<String, org.kylepitcock.legacyconnector.loader.shim.ClassInfo> peers) throws IOException {
         LegacyJarTransformer.Result result = new LegacyJarTransformer.Result();
+        this.currentPeers = peers;
         Map<String, byte[]> classes = new LinkedHashMap<>();
         Map<String, byte[]> other = new LinkedHashMap<>();
         Manifest manifest = null;
@@ -912,7 +916,7 @@ public final class Forge1201Transformer {
             Files.write(in, data);
             LegacyJar nested = LegacyJarInspector.inspect(in);
             if (nested == null || nested.version != LegacyVersion.V1_20_1) return data;
-            new Forge1201Transformer(shim).sideBySide(plan).transform(nested, out);
+            new Forge1201Transformer(shim).sideBySide(plan).transform(nested, out, currentPeers);
             result.notes.add("Translated nested " + path.substring(path.lastIndexOf('/') + 1));
             return Files.readAllBytes(out);
         } finally {

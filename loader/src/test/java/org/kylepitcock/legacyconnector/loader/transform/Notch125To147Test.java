@@ -152,6 +152,27 @@ class Notch125To147Test {
         assertEquals("BaseMod", new ClassReader(classes.get("mod_Test")).getSuperName(), "BaseMod stays the ModLoader class of the 1.4.7 chain");
     }
 
+    /** Real 1.2.5 mods (Backpack, TooManyItems, ReiMinimap) declare getVersion() and a helper Version(): renaming the helper would duplicate the method. */
+    @Test
+    void helperNamedLikeABetaHookIsNotRenamedOntoAnExistingMethod() throws IOException {
+        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+        cw.visit(Opcodes.V1_6, Opcodes.ACC_PUBLIC, "mod_Both", null, "BaseMod", null);
+        for (String name : new String[] {"getVersion", "Version"}) {
+            MethodVisitor mv = cw.visitMethod(Opcodes.ACC_PUBLIC, name, "()Ljava/lang/String;", null, null);
+            mv.visitCode();
+            mv.visitLdcInsn("1");
+            mv.visitInsn(Opcodes.ARETURN);
+            mv.visitMaxs(0, 0);
+            mv.visitEnd();
+        }
+        Map<String, byte[]> classes = new LinkedHashMap<>();
+        classes.put("mod_Both", cw.toByteArray());
+        Notch125To147.apply(client(), NotchNames.get("1.4.7"), classes);
+        List<String> m = members(classes.get("mod_Both"));
+        assertTrue(m.contains("decl getVersion()Ljava/lang/String;"), m.toString());
+        assertTrue(m.contains("decl Version()Ljava/lang/String;"), "helper kept as it is: " + m);
+    }
+
     @Test
     void subclassOverrideAndInheritedCallFollowTheGameMethod() throws IOException {
         Map<String, byte[]> classes = jar();
@@ -185,5 +206,28 @@ class Notch125To147Test {
             String lower = Character.toLowerCase(name.charAt(0)) + name.substring(1);
             assertTrue(shim.contains(lower), name + " -> " + lower + " is not a static of the 1.4.7 shim ModLoader");
         }
+    }
+
+    /** A mod overriding a game method whose signature changed (B row): the old method is renamed, a method with the 1.4.7 signature calls it. */
+    @Test
+    void overrideOfAChangedSignatureGetsABridge() throws IOException {
+        String table = TABLE + "B\tc\tbbb\td\t(Laaa;III)Z\tx2\tonUse\t(Lx1;IIIFFF)Z\n";
+        Notch125To147.Table t = Notch125To147.parse(new BufferedReader(new StringReader(table)))[0];
+        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+        cw.visit(Opcodes.V1_6, Opcodes.ACC_PUBLIC, "ItemX", null, "bbb", null);
+        MethodVisitor mv = cw.visitMethod(Opcodes.ACC_PUBLIC, "d", "(Laaa;III)Z", null, null);
+        mv.visitCode();
+        mv.visitInsn(Opcodes.ICONST_1);
+        mv.visitInsn(Opcodes.IRETURN);
+        mv.visitMaxs(0, 0);
+        mv.visitEnd();
+        Map<String, byte[]> classes = new LinkedHashMap<>();
+        classes.put("ItemX", cw.toByteArray());
+        List<String> notes = Notch125To147.apply(t, NotchNames.get("1.4.7"), classes);
+        List<String> m = members(classes.get("ItemX"));
+        assertTrue(m.contains("decl onUse(Lx1;III)Z"), "the old method is renamed: " + m);
+        assertTrue(m.contains("decl onUse(Lx1;IIIFFF)Z"), "the 1.4.7 shaped bridge: " + m);
+        assertTrue(m.contains("ItemX.onUse(Lx1;III)Z"), "the bridge calls the original: " + m);
+        assertTrue(notes.stream().anyMatch(n -> n.startsWith("1 override(s)") && n.contains("1 bridged")), notes.toString());
     }
 }

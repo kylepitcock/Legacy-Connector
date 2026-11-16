@@ -86,6 +86,14 @@ public final class Round5Compat {
         return (net.minecraft.world.level.block.LeavesBlock) net.minecraft.world.level.block.Blocks.leaves(sound);
     }
 
+    /** {@code Blocks.woodenButton(type, requiredFeatures...)} (private static in both versions; vanilla's own button shape, the feature flags only matter for experimental vanilla blocks). */
+    public static net.minecraft.world.level.block.ButtonBlock woodenButton(net.minecraft.world.level.block.state.properties.BlockSetType type, net.minecraft.world.flag.FeatureFlag[] features) {
+        net.minecraft.world.level.block.state.BlockBehaviour.Properties p = net.minecraft.world.level.block.state.BlockBehaviour.Properties.of().noCollission().strength(0.5F)
+                .pushReaction(net.minecraft.world.level.material.PushReaction.DESTROY);
+        if (features != null && features.length > 0) p = p.requiredFeatures(features);
+        return new net.minecraft.world.level.block.ButtonBlock(type, 30, p);
+    }
+
     /** {@code Blocks.log(top, side)}. */
     public static net.minecraft.world.level.block.RotatedPillarBlock log(net.minecraft.world.level.material.MapColor top, net.minecraft.world.level.material.MapColor side) {
         return (net.minecraft.world.level.block.RotatedPillarBlock) net.minecraft.world.level.block.Blocks.log(top, side);

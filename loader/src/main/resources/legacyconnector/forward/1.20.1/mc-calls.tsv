@@ -841,3 +841,9 @@ com/mojang/datafixers/DataFixerBuilder	buildUnoptimized	()Lcom/mojang/datafixers
 net/minecraft/world/level/storage/DimensionDataStorage	<init>	(Ljava/io/File;Lcom/mojang/datafixers/DataFixer;)V	MiscCompat	dimensionDataStorage	-
 net/minecraft/world/item/Item	getRenderPropertiesInternal	()Ljava/lang/Object;	ApiCompatClient	itemRenderProperties	-
 net/minecraft/world/level/block/Block	getRenderPropertiesInternal	()Ljava/lang/Object;	ApiCompatClient	blockRenderProperties	-
+net/minecraft/world/level/block/StemBlock	<init>	(Lnet/minecraft/world/level/block/Block;Ljava/util/function/Supplier;Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V	=args	MiscCompat.stemFruitKey@0,MiscCompat.stemAttachedKey@0,MiscCompat.stemSeedKey@1,2	(Lnet/minecraft/resources/ResourceKey;Lnet/minecraft/resources/ResourceKey;Lnet/minecraft/resources/ResourceKey;Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V
+net/minecraft/world/item/SwordItem	getDamage	()F	MiscCompat	swordDamage	-
+net/minecraft/world/level/block/AttachedStemBlock	<init>	(Lnet/minecraft/world/level/block/Block;Ljava/util/function/Supplier;Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V	=args	MiscCompat.stemOfFruitKey@0,MiscCompat.stemFruitKey@0,MiscCompat.stemSeedKey@1,2	(Lnet/minecraft/resources/ResourceKey;Lnet/minecraft/resources/ResourceKey;Lnet/minecraft/resources/ResourceKey;Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V
+net/minecraft/world/item/DiggerItem	getAttackDamage	()F	MiscCompat	diggerDamage	-
+net/minecraft/world/level/block/Blocks	woodenButton	(Lnet/minecraft/world/level/block/state/properties/BlockSetType;[Lnet/minecraft/world/flag/FeatureFlag;)Lnet/minecraft/world/level/block/ButtonBlock;	Round5Compat	woodenButton	-
+net/minecraft/world/food/FoodProperties	isFastFood	()Z	MiscCompat	isFastFood	-
