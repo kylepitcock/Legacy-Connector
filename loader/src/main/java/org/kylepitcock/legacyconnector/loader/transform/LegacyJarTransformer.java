@@ -38,7 +38,7 @@ import org.objectweb.asm.tree.ClassNode;
  */
 public final class LegacyJarTransformer {
     /** Bump whenever the output of this class changes, to invalidate caches. */
-    public static final int TRANSFORMER_VERSION = 101;
+    public static final int TRANSFORMER_VERSION = 102;
     /** Names the legacy coremod plugin class of a translated jar. */
     public static final String COREMOD_RESOURCE = "META-INF/legacyconnector-coremod.txt";
 
@@ -406,6 +406,7 @@ public final class LegacyJarTransformer {
         if (!remapper.version().numericIds()) return;
         dropBundledVanilla(classes, remapper.version());
         Map<String, String[]> locals = new java.util.HashMap<>();
+        Map<String, java.util.Set<String>> methods = new java.util.HashMap<>();
         // packaged classes only: a peer jar that carries vanilla classes under their notch names (a jar mod) must not hide them from this jar
         for (ClassInfo peer : peers.values()) if (peer.originalSupers != null && peer.name.indexOf('/') > 0) locals.put(peer.name, peer.originalSupers);
         for (byte[] data : classes.values()) {
@@ -416,11 +417,21 @@ public final class LegacyJarTransformer {
                 all[0] = r.getSuperName();
                 System.arraycopy(ifaces, 0, all, 1, ifaces.length);
                 locals.put(r.getClassName(), all);
+                java.util.Set<String> declared = new java.util.HashSet<>();
+                r.accept(new org.objectweb.asm.ClassVisitor(org.objectweb.asm.Opcodes.ASM9) {
+                    @Override
+                    public org.objectweb.asm.MethodVisitor visitMethod(int access, String name, String desc, String sig, String[] exc) {
+                        if ((access & (org.objectweb.asm.Opcodes.ACC_PRIVATE | org.objectweb.asm.Opcodes.ACC_STATIC)) == 0 && !name.startsWith("<")) declared.add(name + desc);
+                        return null;
+                    }
+                }, ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
+                if (!declared.isEmpty()) methods.put(r.getClassName(), declared);
             } catch (RuntimeException ignored) {
                 // reported when the class is translated
             }
         }
         remapper.notchLocals(locals);
+        remapper.localMethods(methods);
     }
 
     public Result transform(LegacyJar jar, Path output) throws IOException {
