@@ -84,6 +84,87 @@ public final class Round6Compat {
                 (net.minecraft.world.item.ItemStack) result, (Float) xp, (Integer) time);
     }
 
+    /** {@code GameProfile.isComplete()} (removed from authlib): an id and a name. */
+    public static boolean profileIsComplete(com.mojang.authlib.GameProfile profile) {
+        return profile.getId() != null && profile.getName() != null && !profile.getName().isBlank();
+    }
+
+    /** {@code UUIDUtil.getOrCreatePlayerUUID(profile)}: the profile's id, else the offline id of its name. */
+    public static java.util.UUID playerUuid(com.mojang.authlib.GameProfile profile) {
+        return profile.getId() != null ? profile.getId() : net.minecraft.core.UUIDUtil.createOfflinePlayerUUID(profile.getName());
+    }
+
+    /** {@code builder.buildPatch(access, lookup)}: 1.21.1 also takes the cloner factory; the answer is the full lookup (patched registries on top of the given ones). */
+    public static net.minecraft.core.HolderLookup.Provider buildPatch(net.minecraft.core.RegistrySetBuilder builder, net.minecraft.core.RegistryAccess access,
+            net.minecraft.core.HolderLookup.Provider lookup) {
+        return builder.buildPatch(access, lookup, new net.minecraft.core.Cloner.Factory()).full();
+    }
+
+    /**
+     * {@code SuspiciousStewItem.saveMobEffect(stack, effect, ticks)}: adds the effect to the stew's effect component.
+     */
+    public static void saveStewEffect(net.minecraft.world.item.ItemStack stack, net.minecraft.world.effect.MobEffect effect, int ticks) {
+        net.minecraft.world.item.component.SuspiciousStewEffects current = stack.getOrDefault(net.minecraft.core.component.DataComponents.SUSPICIOUS_STEW_EFFECTS,
+                net.minecraft.world.item.component.SuspiciousStewEffects.EMPTY);
+        stack.set(net.minecraft.core.component.DataComponents.SUSPICIOUS_STEW_EFFECTS, current.withEffectAdded(
+                new net.minecraft.world.item.component.SuspiciousStewEffects.Entry(net.minecraft.core.registries.BuiltInRegistries.MOB_EFFECT.wrapAsHolder(effect), ticks)));
+    }
+
+    /**
+     * {@code Tier.getTag()} (Forge): the tag of blocks that need this tier. 1.21.1 only names the blocks a tier can NOT mine, which is no substitute, so
+     * the answer is null ("no tag", which the Forge contract allows).
+     */
+    public static net.minecraft.tags.TagKey<net.minecraft.world.level.block.Block> tierTag(net.minecraft.world.item.Tier tier) {
+        return null;
+    }
+
+    /** {@code ArmorTrim.innerTexture(material)} for a 1.20.1 armor material. */
+    public static ResourceLocation trimInner(net.minecraft.world.item.armortrim.ArmorTrim trim, LegacyArmorMaterial material) {
+        return trim.innerTexture(ArmorCompat.holder(material));
+    }
+
+    /** {@code ArmorTrim.outerTexture(material)} for a 1.20.1 armor material. */
+    public static ResourceLocation trimOuter(net.minecraft.world.item.armortrim.ArmorTrim trim, LegacyArmorMaterial material) {
+        return trim.outerTexture(ArmorCompat.holder(material));
+    }
+
+    /**
+     * {@code RecipeManager.recipes} (field read): recipes by type and id, the shape 1.20.1 kept. A copy: the recipes are the 1.21.1 objects (holders
+     * unwrapped), so a mod changes the manager through {@link #setRecipes}.
+     */
+    public static java.util.Map<net.minecraft.world.item.crafting.RecipeType<?>, java.util.Map<ResourceLocation, net.minecraft.world.item.crafting.Recipe<?>>> recipes(
+            net.minecraft.world.item.crafting.RecipeManager manager) {
+        java.util.Map<net.minecraft.world.item.crafting.RecipeType<?>, java.util.Map<ResourceLocation, net.minecraft.world.item.crafting.Recipe<?>>> out = new java.util.HashMap<>();
+        for (net.minecraft.world.item.crafting.RecipeHolder<?> h : manager.getRecipes()) {
+            out.computeIfAbsent(h.value().getType(), t -> new java.util.LinkedHashMap<>()).put(h.id(), h.value());
+        }
+        return out;
+    }
+
+    /** {@code RecipeManager.recipes = map} (field write): the manager takes exactly these recipes. */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static void setRecipes(net.minecraft.world.item.crafting.RecipeManager manager, java.util.Map map) {
+        java.util.List<net.minecraft.world.item.crafting.RecipeHolder<?>> holders = new java.util.ArrayList<>();
+        for (Object byId : map.values()) {
+            for (Object e : ((java.util.Map<ResourceLocation, net.minecraft.world.item.crafting.Recipe<?>>) byId).entrySet()) {
+                java.util.Map.Entry<ResourceLocation, net.minecraft.world.item.crafting.Recipe<?>> entry = (java.util.Map.Entry) e;
+                holders.add(new net.minecraft.world.item.crafting.RecipeHolder(entry.getKey(), entry.getValue()));
+            }
+        }
+        manager.replaceRecipes(holders);
+    }
+
+    /**
+     * {@code RecipeManager.fromJson(id, json)} (static): the recipe of a JSON file, through the recipe codec (every registered serializer, vanilla and
+     * mod). Needs the running server's registries; throws {@code JsonParseException} on a bad file as before.
+     */
+    public static net.minecraft.world.item.crafting.Recipe<?> recipeFromJson(ResourceLocation id, com.google.gson.JsonObject json) {
+        var server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
+        if (server == null) throw new com.google.gson.JsonParseException("No registries to read the recipe " + id + " with yet");
+        var ops = net.minecraft.resources.RegistryOps.create(com.mojang.serialization.JsonOps.INSTANCE, server.registryAccess());
+        return net.minecraft.world.item.crafting.Recipe.CODEC.parse(ops, json).getOrThrow(msg -> new com.google.gson.JsonParseException(id + ": " + msg));
+    }
+
     /** {@code Util.isBlank(string)}: gone (use the JDK). */
     public static boolean isBlank(String string) {
         return string == null || string.isBlank();

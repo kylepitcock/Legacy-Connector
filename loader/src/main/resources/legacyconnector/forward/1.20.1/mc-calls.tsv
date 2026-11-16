@@ -804,3 +804,13 @@ net/minecraft/world/entity/Entity	$get$portalEntrancePos	()Lnet/minecraft/core/B
 net/minecraft/world/item/ArmorItem	$get$knockbackResistance	()F	Round6Compat	armorKnockbackResistance	-
 
 net/minecraft/world/entity/Entity	$set$portalEntrancePos	(Lnet/minecraft/core/BlockPos;)V	Round6Compat	setPortalEntrancePos	-
+com/mojang/authlib/GameProfile	isComplete	()Z	Round6Compat	profileIsComplete	-
+net/minecraft/core/UUIDUtil	getOrCreatePlayerUUID	(Lcom/mojang/authlib/GameProfile;)Ljava/util/UUID;	Round6Compat	playerUuid	-
+net/minecraft/core/RegistrySetBuilder	buildPatch	(Lnet/minecraft/core/RegistryAccess;Lnet/minecraft/core/HolderLookup$Provider;)Lnet/minecraft/core/HolderLookup$Provider;	Round6Compat	buildPatch
+net/minecraft/world/item/SuspiciousStewItem	saveMobEffect	(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/effect/MobEffect;I)V	Round6Compat	saveStewEffect	-
+net/minecraft/world/item/Tier	getTag	()Lnet/minecraft/tags/TagKey;	Round6Compat	tierTag
+net/minecraft/world/item/armortrim/ArmorTrim	innerTexture	(Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyArmorMaterial;)Lnet/minecraft/resources/ResourceLocation;	Round6Compat	trimInner
+net/minecraft/world/item/armortrim/ArmorTrim	outerTexture	(Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyArmorMaterial;)Lnet/minecraft/resources/ResourceLocation;	Round6Compat	trimOuter
+net/minecraft/world/item/crafting/RecipeManager	$get$recipes	()Ljava/util/Map;	Round6Compat	recipes
+net/minecraft/world/item/crafting/RecipeManager	$set$recipes	(Ljava/util/Map;)V	Round6Compat	setRecipes
+net/minecraft/world/item/crafting/RecipeManager	fromJson	(Lnet/minecraft/resources/ResourceLocation;Lcom/google/gson/JsonObject;)Lnet/minecraft/world/item/crafting/Recipe;	Round6Compat	recipeFromJson	-

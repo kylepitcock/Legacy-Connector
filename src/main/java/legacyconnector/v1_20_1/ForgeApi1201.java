@@ -534,12 +534,30 @@ public final class ForgeApi1201 {
         buf.writeVarInt(registry.mcc$registry().getId(value));
     }
 
+    /** The "safe" forms carry the registry's name before the id, so the receiver can find the registry itself ({@link #readRegistryIdAny}). */
     public static Object readRegistryId(net.minecraft.network.FriendlyByteBuf buf, IForgeRegistry registry) {
+        buf.readResourceLocation();
         return readRegistryIdUnsafe(buf, registry);
     }
 
     public static void writeRegistryId(net.minecraft.network.FriendlyByteBuf buf, IForgeRegistry registry, Object value) {
+        buf.writeResourceLocation(registry.getRegistryName());
         writeRegistryIdUnsafe(buf, registry, value);
+    }
+
+    /** {@code buf.readRegistryId()} without a registry: the name written first says which one. */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static Object readRegistryIdAny(Object buf) {
+        net.minecraft.network.FriendlyByteBuf b = (net.minecraft.network.FriendlyByteBuf) buf;
+        net.minecraft.resources.ResourceLocation name = b.readResourceLocation();
+        net.minecraft.core.Registry registry = (net.minecraft.core.Registry) net.minecraft.core.registries.BuiltInRegistries.REGISTRY.get(name);
+        if (registry == null) throw new io.netty.handler.codec.DecoderException("Unknown registry " + name);
+        return registry.byId(b.readVarInt());
+    }
+
+    /** {@code buf.readRegistryIdSafe(Class)}: as {@link #readRegistryIdAny}; the class only checked the registry's type. */
+    public static Object readRegistryIdSafeAny(Object buf, Class<?> type) {
+        return readRegistryIdAny(buf);
     }
 
     /** {@code ForgeSpawnEggItem.fromEntityType(type)}. */
