@@ -562,7 +562,7 @@ net/minecraft/network/chat/Component$Serializer	fromJsonLenient	(Ljava/lang/Stri
 net/minecraft/network/chat/Component$Serializer	toStableJson	(Lnet/minecraft/network/chat/Component;)Ljava/lang/String;	RoundCompat	toStableJson	-
 net/minecraft/network/chat/Component$Serializer	toJsonTree	(Lnet/minecraft/network/chat/Component;)Lcom/google/gson/JsonElement;	RoundCompat	toJsonTree	-
 net/minecraft/world/food/FoodProperties	isMeat	()Z	RoundCompat	isMeat	-
-net/minecraft/world/item/alchemy/PotionBrewing	addMix	(Lnet/minecraft/world/item/alchemy/Potion;Lnet/minecraft/world/item/Item;Lnet/minecraft/world/item/alchemy/Potion;)V	RoundCompat	addPotionMix	-
+net/minecraft/world/item/alchemy/PotionBrewing	addMix	(Lnet/minecraft/world/item/alchemy/Potion;Lnet/minecraft/world/item/Item;Lnet/minecraft/world/item/alchemy/Potion;)V	LegacyBrewing	addPotionMix	-
 net/minecraft/advancements/critereon/EnchantmentPredicate	<init>	(Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyEnchantment;Lnet/minecraft/advancements/critereon/MinMaxBounds$Ints;)V	RoundCompat	newEnchantmentPredicate	-
 net/minecraft/advancements/critereon/ItemPredicate$Builder	hasEnchantment	(Lnet/minecraft/advancements/critereon/EnchantmentPredicate;)Lnet/minecraft/advancements/critereon/ItemPredicate$Builder;	RoundCompat	hasEnchantment	-
 # --- round 4 batch 9
@@ -786,3 +786,12 @@ net/minecraft/world/level/block/entity/TheEndGatewayBlockEntity	canEntityTelepor
 net/minecraft/world/level/block/entity/TheEndGatewayBlockEntity	teleportEntity	(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/level/block/entity/TheEndGatewayBlockEntity;)V	Round5Compat	gatewayTeleport
 net/minecraft/world/item/trading/MerchantOffers	createTag	()Lnet/minecraft/nbt/CompoundTag;	Round5Compat	merchantOffersTag
 net/minecraft/world/item/ProjectileWeaponItem	customArrow	(Lnet/minecraft/world/entity/projectile/AbstractArrow;)Lnet/minecraft/world/entity/projectile/AbstractArrow;	=args	0,Round5Compat.noStack@0,Round5Compat.noStack@0	(Lnet/minecraft/world/entity/projectile/AbstractArrow;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/entity/projectile/AbstractArrow;
+net/minecraft/advancements/critereon/InventoryChangeTrigger$TriggerInstance	hasItems	([Lnet/minecraft/world/level/ItemLike;)Lnet/minecraft/advancements/critereon/InventoryChangeTrigger$TriggerInstance;	Round6Compat	hasItems	-
+net/minecraft/advancements/critereon/InventoryChangeTrigger$TriggerInstance	hasItems	([Lnet/minecraft/advancements/critereon/ItemPredicate;)Lnet/minecraft/advancements/critereon/InventoryChangeTrigger$TriggerInstance;	Round6Compat	hasItems	-
+net/minecraft/advancements/CriterionTriggerInstance	getCriterion	()Lnet/minecraft/resources/ResourceLocation;	Round6Compat	criterionId
+net/minecraft/world/item/alchemy/PotionBrewing	isBrewablePotion	(Lnet/minecraft/world/item/alchemy/Potion;)Z	LegacyBrewing	isBrewablePotion	-
+net/minecraft/server/level/ServerLevel	addDuringPortalTeleport	(Lnet/minecraft/server/level/ServerPlayer;)V	Round6Compat	addDuringTeleport
+net/minecraft/server/level/ServerLevel	addDuringCommandTeleport	(Lnet/minecraft/server/level/ServerPlayer;)V	Round6Compat	addDuringTeleport
+net/minecraft/world/level/chunk/storage/RegionFileStorage	<init>	(Ljava/nio/file/Path;Z)V	=args	Round6Compat.regionInfo@0,0,1	(Lnet/minecraft/world/level/chunk/storage/RegionStorageInfo;Ljava/nio/file/Path;Z)V
+net/minecraft/advancements/Criterion	<init>	(Lnet/minecraft/advancements/CriterionTriggerInstance;)V	Round6Compat	newCriterion	-
+net/minecraft/server/level/WorldGenRegion	$get$writeRadiusCutoff	()I	Round6Compat	writeRadius	-
