@@ -728,4 +728,13 @@ public final class MiscCompat {
     public static net.minecraft.core.particles.SimpleParticleType entityEffectParticle() {
         return net.minecraft.core.particles.ParticleTypes.WITCH;
     }
+
+    /**
+     * {@code MethodHandle.invokeExact(CapabilityProvider)} on a handle for {@code CapabilityProvider.serializeCaps()} (AE2's item keys read the stack's capability NBT
+     * this way): in 1.20.1 an ItemStack was a CapabilityProvider; here it is not, and it has no persisted capabilities, so the result is null.
+     */
+    public static net.minecraft.nbt.CompoundTag serializeCapsHandle(java.lang.invoke.MethodHandle handle, Object provider) throws Throwable {
+        if (provider instanceof legacyconnector.v1_20_1.net.minecraftforge.common.capabilities.CapabilityProvider<?> cp) return (net.minecraft.nbt.CompoundTag) handle.invoke(cp);
+        return null;
+    }
 }

@@ -852,3 +852,4 @@ net/minecraft/client/renderer/block/BlockModelShaper	stateToModelLocation	(Lnet/
 net/minecraft/client/renderer/ItemModelShaper	register	(Lnet/minecraft/world/item/Item;Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyModelResourceLocation;)V	ModelLocationCompat	registerItemModel	-
 net/neoforged/neoforge/client/event/ModelEvent$ModifyBakingResult	getModels	()Ljava/util/Map;	ModelLocationCompat	models	-
 net/neoforged/neoforge/client/event/ModelEvent$BakingCompleted	getModels	()Ljava/util/Map;	ModelLocationCompat	models	-
+java/lang/invoke/MethodHandle	invokeExact	(Llegacyconnector/v1_20_1/net/minecraftforge/common/capabilities/CapabilityProvider;)Lnet/minecraft/nbt/CompoundTag;	MiscCompat	serializeCapsHandle	(Ljava/lang/invoke/MethodHandle;Ljava/lang/Object;)Lnet/minecraft/nbt/CompoundTag;
