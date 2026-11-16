@@ -177,6 +177,46 @@ public final class Round6Compat {
         return net.minecraft.world.level.biome.Biome.Precipitation.NONE;
     }
 
+    private static net.minecraft.world.item.trading.ItemCost cost(net.minecraft.world.item.ItemStack s) {
+        return new net.minecraft.world.item.trading.ItemCost(s.getItem(), Math.max(1, s.getCount()));
+    }
+
+    /** {@code new MerchantOffer(costA, costB, result, uses, maxUses, xp, priceMultiplier)}. */
+    public static net.minecraft.world.item.trading.MerchantOffer newOffer(net.minecraft.world.item.ItemStack costA, net.minecraft.world.item.ItemStack costB,
+            net.minecraft.world.item.ItemStack result, int uses, int maxUses, int xp, float priceMultiplier) {
+        return newOffer(costA, costB, result, uses, maxUses, xp, priceMultiplier, 0);
+    }
+
+    /** {@code new MerchantOffer(costA, costB, result, uses, maxUses, xp, priceMultiplier, demand)}. */
+    public static net.minecraft.world.item.trading.MerchantOffer newOffer(net.minecraft.world.item.ItemStack costA, net.minecraft.world.item.ItemStack costB,
+            net.minecraft.world.item.ItemStack result, int uses, int maxUses, int xp, float priceMultiplier, int demand) {
+        return new net.minecraft.world.item.trading.MerchantOffer(cost(costA), costB.isEmpty() ? java.util.Optional.empty() : java.util.Optional.of(cost(costB)), result,
+                uses, maxUses, xp, priceMultiplier, demand);
+    }
+
+    /** {@code MobCategory.byName(name)} (static). */
+    public static net.minecraft.world.entity.MobCategory mobCategoryByName(String name) {
+        for (net.minecraft.world.entity.MobCategory c : net.minecraft.world.entity.MobCategory.values()) if (c.getName().equals(name)) return c;
+        return null;
+    }
+
+    /** {@code FoodData.eat(item, stack)}: the food of the stack (nothing when it has none). */
+    public static void eatStack(net.minecraft.world.food.FoodData data, net.minecraft.world.item.Item item, net.minecraft.world.item.ItemStack stack) {
+        net.minecraft.world.food.FoodProperties food = stack.get(net.minecraft.core.component.DataComponents.FOOD);
+        if (food != null) data.eat(food);
+    }
+
+    /** {@code ResourceLocation.of(string, separator)} (static): namespace and path split at the separator (minecraft without one). */
+    public static ResourceLocation locationOf(String string, char separator) {
+        int i = string.indexOf(separator);
+        return i >= 0 ? ResourceLocation.fromNamespaceAndPath(string.substring(0, i), string.substring(i + 1)) : ResourceLocation.withDefaultNamespace(string);
+    }
+
+    /** {@code Horse.getArmor()}: the body armor (horse armor) item. */
+    public static net.minecraft.world.item.ItemStack horseArmor(net.minecraft.world.entity.animal.horse.AbstractHorse horse) {
+        return horse.getBodyArmorItem();
+    }
+
     /** {@code LayeredCauldronBlock.RAIN}: the precipitation test that lets rain fill a cauldron. */
     public static java.util.function.Predicate<net.minecraft.world.level.biome.Biome.Precipitation> cauldronRain() {
         return p -> p == net.minecraft.world.level.biome.Biome.Precipitation.RAIN;

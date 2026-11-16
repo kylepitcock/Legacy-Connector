@@ -817,3 +817,9 @@ net/minecraft/world/item/crafting/RecipeManager	fromJson	(Lnet/minecraft/resourc
 net/minecraft/world/level/block/AbstractCauldronBlock	<init>	(Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;Ljava/util/Map;)V	=args	0,Round6Compat.interactionMap@1	(Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;Lnet/minecraft/core/cauldron/CauldronInteraction$InteractionMap;)V
 net/minecraft/world/level/block/LayeredCauldronBlock	<init>	(Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;Ljava/util/function/Predicate;Ljava/util/Map;)V	=args	Round6Compat.fillingPrecipitation@1,Round6Compat.interactionMap@2,0	(Lnet/minecraft/world/level/biome/Biome$Precipitation;Lnet/minecraft/core/cauldron/CauldronInteraction$InteractionMap;Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V
 net/minecraft/world/entity/EquipmentSlot	byTypeAndIndex	(Lnet/minecraft/world/entity/EquipmentSlot$Type;I)Lnet/minecraft/world/entity/EquipmentSlot;	Round6Compat	slotByTypeAndIndex	-
+net/minecraft/world/item/trading/MerchantOffer	<init>	(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;IIIF)V	Round6Compat	newOffer
+net/minecraft/world/item/trading/MerchantOffer	<init>	(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;IIIFI)V	Round6Compat	newOffer
+net/minecraft/world/entity/MobCategory	byName	(Ljava/lang/String;)Lnet/minecraft/world/entity/MobCategory;	Round6Compat	mobCategoryByName
+net/minecraft/world/food/FoodData	eat	(Lnet/minecraft/world/item/Item;Lnet/minecraft/world/item/ItemStack;)V	Round6Compat	eatStack
+net/minecraft/resources/ResourceLocation	of	(Ljava/lang/String;C)Lnet/minecraft/resources/ResourceLocation;	Round6Compat	locationOf
+net/minecraft/world/entity/animal/horse/Horse	getArmor	()Lnet/minecraft/world/item/ItemStack;	Round6Compat	horseArmor
