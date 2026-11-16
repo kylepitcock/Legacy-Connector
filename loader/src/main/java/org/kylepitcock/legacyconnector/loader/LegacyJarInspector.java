@@ -73,13 +73,15 @@ public final class LegacyJarInspector {
             }
             // A Forge 1.20.1 mod speaks mods.toml: it is ours (in-place remap), unlike a NeoForge or later Forge mod.
             // (multi-loader jars also carry fabric.mod.json / quilt.mod.json: those are dropped when the jar is translated)
-            if (zip.getEntry("META-INF/neoforge.mods.toml") == null && zip.getEntry("META-INF/mods.toml") != null) {
+            // (not when mods.toml is a template left in a 1.7.x jar: mcmod.info, no minecraft dependency, cpw.mods.fml code and no net.minecraftforge.fml code)
+            boolean templateToml = strayTemplateModsToml(zip);
+            if (zip.getEntry("META-INF/neoforge.mods.toml") == null && zip.getEntry("META-INF/mods.toml") != null && !templateToml) {
                 LegacyJar forge = inspectForge1201(zip, path);
                 if (forge != null) return forge;
             }
             // A 1.12.2 library jar built from a 1.15 template keeps a stray mods.toml next to its FML coremod plugin (Obfuscate 0.4.2 for 1.12.2).
-            boolean strayModsToml = zip.getEntry("META-INF/neoforge.mods.toml") == null && zip.getEntry("fabric.mod.json") == null
-                    && zip.getEntry("META-INF/MANIFEST.MF") != null && legacyCorePlugin(zip);
+            boolean strayModsToml = (zip.getEntry("META-INF/neoforge.mods.toml") == null && zip.getEntry("fabric.mod.json") == null
+                    && zip.getEntry("META-INF/MANIFEST.MF") != null && legacyCorePlugin(zip)) || templateToml;
             // Anything that already speaks a modern metadata format is not ours to touch.
             if (zip.getEntry("META-INF/neoforge.mods.toml") != null
                     || (zip.getEntry("META-INF/mods.toml") != null && !strayModsToml)
@@ -748,6 +750,31 @@ public final class LegacyJarInspector {
             }
         }
         return null;
+    }
+
+    /**
+     * A 1.7.x jar built from a 1.14+ template keeps the example {@code mods.toml} next to its {@code mcmod.info} (Overloaded Armor Bar 1.7.10): no
+     * {@code minecraft} dependency in it, FML code of the 1.7 package and none of the 1.12+ one. Such a jar is a legacy mod, not a Forge 1.20.1 one.
+     */
+    static boolean strayTemplateModsToml(ZipFile zip) throws IOException {
+        ZipEntry toml = zip.getEntry("META-INF/mods.toml");
+        if (toml == null || zip.getEntry("mcmod.info") == null || zip.getEntry("META-INF/neoforge.mods.toml") != null || zip.getEntry("fabric.mod.json") != null) return false;
+        try (InputStream in = zip.getInputStream(toml)) {
+            if (dependencyRange(new String(in.readAllBytes(), StandardCharsets.UTF_8), "minecraft") != null) return false;
+        }
+        boolean fml17 = false;
+        byte[] a = "cpw/mods/fml/".getBytes(StandardCharsets.ISO_8859_1), b = "net/minecraftforge/fml/".getBytes(StandardCharsets.ISO_8859_1);
+        for (var en = zip.entries(); en.hasMoreElements(); ) {
+            ZipEntry e = en.nextElement();
+            if (e.isDirectory() || !e.getName().endsWith(".class")) continue;
+            String text;
+            try (InputStream in = zip.getInputStream(e)) {
+                text = new String(in.readAllBytes(), StandardCharsets.ISO_8859_1);
+            }
+            if (text.contains(new String(b, StandardCharsets.ISO_8859_1))) return false;
+            if (text.contains(new String(a, StandardCharsets.ISO_8859_1))) fml17 = true;
+        }
+        return fml17;
     }
 
     private static boolean legacyCorePlugin(ZipFile zip) throws IOException {
