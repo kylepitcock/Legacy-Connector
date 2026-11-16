@@ -234,6 +234,9 @@ public final class CheckJar {
             if (!"-q".equals(System.getProperty("legacyconnector.check.quiet", ""))) System.out.print(result.links.render());
         }
         checkAssets(recordsByOutJar, originals);
+        if (!"false".equalsIgnoreCase(System.getProperty("legacyconnector.check.verify"))) {
+            System.out.println("verify: " + VERIFY_TOTALS[0] + " classes, " + VERIFY_TOTALS[1] + " methods, " + VERIFY_TOTALS[2] + " findings in " + VERIFY_TOTALS[3] + " groups (all jars)");
+        }
         if (jsonPath != null) {
             Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
             Files.writeString(Path.of(jsonPath), gson.toJson(records) + "\n");
@@ -243,6 +246,8 @@ public final class CheckJar {
             System.out.println("Synthesized " + classes.size() + " " + e.getKey().id() + " classes (" + e.getValue().helperCount() + " helpers)");
             verify(classes);
         }
+        // -Dlegacyconnector.check.verify.fail=true: a non-zero exit code when the bytecode verification found anything (CI use)
+        if ("true".equalsIgnoreCase(System.getProperty("legacyconnector.check.verify.fail")) && VERIFY_TOTALS[2].get() > 0) System.exit(1);
     }
 
     /**
@@ -330,20 +335,35 @@ public final class CheckJar {
         return a;
     }
 
-    /** Data-flow verification of the translated classes ({@link BytecodeCheck}); failures are listed in the record as {@code verifyErrors}. */
+    /** Totals over all jars, for the closing "verify:" line. */
+    private static final java.util.concurrent.atomic.AtomicInteger[] VERIFY_TOTALS = {new java.util.concurrent.atomic.AtomicInteger(), new java.util.concurrent.atomic.AtomicInteger(),
+            new java.util.concurrent.atomic.AtomicInteger(), new java.util.concurrent.atomic.AtomicInteger()};
+
+    /**
+     * Data-flow verification of the translated classes ({@link BytecodeCheck}); on by default, {@code -Dlegacyconnector.check.verify=false}
+     * (Gradle {@code -Pverify=false}) skips it. Failures are listed in the record as {@code verifyErrors} and grouped in {@code verify}.
+     */
     private static void verifyBytecode(ShimIndex index, LegacyJar jar, Path outJar, Map<String, ClassInfo> peers, JsonObject rec) {
+        if ("false".equalsIgnoreCase(System.getProperty("legacyconnector.check.verify"))) return;
         try {
             var hierarchy = new org.kylepitcock.legacyconnector.loader.transform.Hierarchy(index, CheckJar.class.getClassLoader(),
                     peers == null ? Map.of() : peers, jar.version);
             BytecodeCheck check = BytecodeCheck.run(outJar, hierarchy);
+            VERIFY_TOTALS[0].addAndGet(check.classesChecked);
+            VERIFY_TOTALS[1].addAndGet(check.methodsChecked);
+            VERIFY_TOTALS[2].addAndGet(check.findingCount);
+            VERIFY_TOTALS[3].addAndGet(check.groups.size());
             rec.addProperty("verifyFailures", check.failureCount);
-            System.out.println("  bytecode verification: " + check.methodsChecked + " method(s) analysed, " + check.failureCount + " failing");
+            rec.add("verify", check.toJson());
+            System.out.println("  " + check.summary());
             if (check.failureCount > 0) {
                 JsonArray list = new JsonArray();
                 check.failures.forEach(list::add);
                 rec.add("verifyErrors", list);
-                System.out.println("  " + check.failureCount + " of " + check.methodsChecked + " method(s) fail bytecode verification:");
-                for (String f : check.failures) System.out.println("    " + f);
+                for (BytecodeCheck.Group g : check.groups.values()) {
+                    System.out.println("    " + g.sites + " site(s): " + g.describe());
+                    for (BytecodeCheck.Finding f : g.examples) System.out.println("      " + f.site());
+                }
             }
         } catch (Exception | LinkageError e) {
             System.out.println("  bytecode verification skipped: " + e);

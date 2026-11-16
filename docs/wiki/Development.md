@@ -253,10 +253,28 @@ start sending per-mod fixes, the next step is a plugin interface plus a separate
 
 ## Bytecode check (VerifyError smoke test without the game)
 
-`checkLegacyMod` also runs `loader/.../tools/BytecodeCheck` on every translated jar: ASM's data-flow analyzer over each method, with type relations answered by
-`Hierarchy` (translated mod, shim, synthesized API, libraries). It finds what the JVM rejects as a `VerifyError` when the class first loads (a retyped value
-used as the wrong type); methods touching a type nobody knows (a mod that is not installed) are skipped. The line `bytecode verification: N method(s)
-analysed, M failing` is printed per jar, and failures go into the JSON record as `verifyFailures` / `verifyErrors`.
+`checkLegacyMod` also runs `loader/.../tools/BytecodeCheck` on every translated jar (on by default; `-Pverify=false` skips it): ASM's data-flow analyzer
+over each method of every class, client-only classes included, with type relations answered by `Hierarchy` from class files (nothing is loaded or
+initialised): the translated jar and the other jars of the set, the shim, the synthesized API, and the classpath the task runs on (JDK, libraries,
+Minecraft/NeoForge client classes, the layer's runtime). It finds what the JVM rejects as a `VerifyError` when the class first loads, which the link check
+(owner/name/descriptor of references) cannot see: a value of one type passed where another is required (a 1.20.1 `ModelResourceLocation` handed to a
+`ResourceLocation` parameter, a mixin handler typed with a field's old type), a wrong slot kind, a stack underflow.
+
+- Findings are grouped by (expected type, found type): `found is not assignable to expected` once, with a site count and up to three example sites
+  (`class.method(desc) insn #N (line L) INVOKEVIRTUAL owner.name(desc)`; `N` is the instruction index in the method, not the byte offset; the analyzer
+  reports the first failing instruction per method).
+- Unresolvable types are not errors (the link check owns missing classes): they count as assignable and are tallied as "unknown types"; a method whose
+  control-flow merge needs an unknown class is skipped and tallied as "methods skipped".
+- Output per jar: `verify: N classes, M methods, K findings in J groups (...)`, then the groups; a closing `verify: ... (all jars)` line sums the set.
+  The JSON record (`-PcheckJson`, read by `tools/compat/probe.py`) gets `verify` (counts and `groups[]` with `problem`, `expected`, `found`, `sites`,
+  `examples`) next to the older `verifyFailures` (failing methods) and `verifyErrors` (first 25 messages).
+- `-PverifyFail=true` makes the task exit 1 when anything was found (CI). The check of a 100-jar set is bounded by the translation itself; the library
+  class index is cached across jars.
+- `./gradlew verifyClasses [-PverifyPath=dir,a.jar]` runs the same verifier over class directories or jars (default: the layer's own compiled classes), so
+  a defect in the shim or bridges is found the same way. Unit tests: `loader/src/test/.../tools/BytecodeCheckTest` (synthetic ASM classes).
+
+Not covered: the JVM's stack-map-frame checks (frames are recomputed by the analyzer, not read), access checks, and the `ModelResourceLocation`-style defect
+only when the 1.21.1 classes are on the classpath of the task.
 
 ## Resource check (rendering smoke test without the game)
 
