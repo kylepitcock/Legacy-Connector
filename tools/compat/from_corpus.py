@@ -44,6 +44,7 @@ for m in re.finditer(r"\]:\s+(\S+): Legacy mod \S+ \([^)]*\) failed during (\w+)
 
 LOADS_NOTE = {
     "1.7.10": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet.",
+    "1.2.5": "Loads at startup on a server without errors (1.2.5 is experimental and opt-in; many game members are still empty placeholders). Gameplay not verified yet.",
     "1.12.2": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet.",
 }
 data = json.loads(DATA.read_text(encoding="utf-8"))

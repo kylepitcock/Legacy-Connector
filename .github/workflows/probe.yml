@@ -60,6 +60,7 @@ jobs:
             VERSION="${BASE}-nightly.${{ github.run_number }}.$(git rev-parse --short=7 HEAD)"
           fi
           echo "probe version: $VERSION"
+          echo "PROBE_VERSION=$VERSION" >> "$GITHUB_ENV"
           # a mod that got worse than in the previous run fails the job, but only after the results are committed (next step)
           REGRESSED=0
           # every supported legacy version; 1.20.1 is a gap report against the NeoForge artifacts of a build (content mods only, fewer jars)
@@ -79,6 +80,20 @@ jobs:
             python3 tools/compat/probe.py "$RUNNER_TEMP/jars-$MC" --mc "$MC" --version "$VERSION" --source modrinth --fail-on-regression || REGRESSED=1
           done
           echo "REGRESSED=$REGRESSED" >> "$GITHUB_ENV"
+
+      # Minecraft 1.2.5 is experimental and opt-in: its jars come from MCArchive (Modrinth has none) and the probe needs the 1.2.5 to 1.4.7 table, which
+      # :loader:genMappings125 downloads at build time (Ornithe Calamus + Feather, SHA-256 pinned in loader/build.gradle). This step can never fail the
+      # workflow: if the mappings or the archive are unavailable it warns and the other versions' results are still published.
+      - name: Probe 1.2.5 (experimental, opt-in)
+        continue-on-error: true
+        run: |
+          if ! ./gradlew -q :loader:genMappings125; then
+            echo "::warning::1.2.5 skipped: the Ornithe mapping download or its SHA-256 check failed"; exit 0
+          fi
+          python3 tools/compat/fetch_mcarchive_mods.py 1.2.5 "$RUNNER_TEMP/jars-1.2.5" --limit 120 || true
+          if [ -z "$(ls "$RUNNER_TEMP/jars-1.2.5" 2>/dev/null)" ]; then echo "::warning::1.2.5 skipped: no jars from MCArchive"; exit 0; fi
+          # no --fail-on-regression: an experimental version must not turn the weekly run red
+          python3 tools/compat/probe.py "$RUNNER_TEMP/jars-1.2.5" --mc 1.2.5 --version "$PROBE_VERSION" --source mcarchive || echo "::warning::1.2.5 probe failed"
 
       - name: Publish to the site-data branch
         run: bash tools/compat/site_data.sh push "Update automated compatibility results"
