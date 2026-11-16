@@ -34,6 +34,9 @@ class PalladiumResourceCompat1201Test {
         put(resources, PalladiumResourceCompat1201.ALIEN_EVO_CORE_REMOVAL, """
                 var coreItem = Item.of('alienevo:prototype_core', 1, nbtData);
                 entity.give(coreItem);
+                if (typeof nbt.storedAlienGlowProps === 'string' && nbt.storedAlienGlowProps.length) {
+                    var parsedAlienGlow = JSON.parse(nbt.storedAlienGlowProps);
+                }
                 """);
         put(resources, "addon/alienevo/kubejs_scripts/decouple.js", """
                 function getDecoupleSoundId(prefix) { return 'alienevo:' + prefix + '_decouple'; }
@@ -49,6 +52,9 @@ class PalladiumResourceCompat1201Test {
         assertTrue(core.contains("var coreItem = Item.of('alienevo:prototype_core', 1);"));
         assertTrue(core.contains("coreItem.setCustomData(NBT.wrapCompound(nbtData));"));
         assertFalse(core.contains("Item.of('alienevo:prototype_core', 1, nbtData)"));
+        assertTrue(core.contains("if (nbt.contains('storedAlienGlowProps') && !nbt.getString('storedAlienGlowProps').isEmpty()) {"));
+        assertTrue(core.contains("JSON.parse(nbt.getString('storedAlienGlowProps'))"));
+        assertFalse(core.contains("JSON.parse(nbt.storedAlienGlowProps)"));
 
         String decouple = get(resources, "addon/alienevo/kubejs_scripts/decouple.js");
         assertTrue(decouple.contains("var watchItem = Item.of(itemId, 1);"));
@@ -66,6 +72,9 @@ class PalladiumResourceCompat1201Test {
                 var watchItem = Item.of(itemId, 1);
                 watchItem.setNbt(nbtData);
                 entity.give(watchItem);
+                if (typeof nbt.storedAlienGlowProps === 'string' && nbt.storedAlienGlowProps.length) {
+                    var parsedAlienGlow = JSON.parse(nbt.storedAlienGlowProps);
+                }
                 function getDecoupleSoundId(prefix) { return 'alienevo:' + prefix + '_decouple'; }
                 entity.level.playSound(null, entity.x, entity.y, entity.z,
                         getDecoupleSoundId(watchPrefix), entity.getSoundSource(), 1.0, 1.0);
@@ -76,6 +85,9 @@ class PalladiumResourceCompat1201Test {
         String migrated = get(resources, "addon/alienevo/kubejs_scripts/decouple.js");
         assertTrue(migrated.contains("watchItem.setCustomData(NBT.wrapCompound(nbtData));"));
         assertFalse(migrated.contains("watchItem.setNbt(nbtData);"));
+        assertTrue(migrated.contains("if (nbt.contains('storedAlienGlowProps') && !nbt.getString('storedAlienGlowProps').isEmpty()) {"));
+        assertTrue(migrated.contains("JSON.parse(nbt.getString('storedAlienGlowProps'))"));
+        assertFalse(migrated.contains("JSON.parse(nbt.storedAlienGlowProps)"));
 
         assertEquals(0, PalladiumResourceCompat1201.apply(resources));
         assertEquals(migrated, get(resources, "addon/alienevo/kubejs_scripts/decouple.js"));
