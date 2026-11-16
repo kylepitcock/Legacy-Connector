@@ -1637,15 +1637,66 @@ PlayerEvents.tick(e => {
     }
 
     /**
+     * Migrate AlienEvo's Item.of(id, count, nbt) stack creation without overlapping
+     * an explicit setNbt call. Some script shapes pass NBT directly to Item.of;
+     * others create the stack first and assign NBT separately. Prefer the existing
+     * setter when present, otherwise inject the custom_data setter beside creation.
+     */
+    private static int rewriteAlienEvoItemCreationCustomData(
+            Map<String, byte[]> resources,
+            String path,
+            String legacyCreation,
+            String migratedCreation,
+            String legacySetter,
+            String migratedSetter) {
+        byte[] original = resources.get(path);
+        if (original == null) return 0;
+
+        String script = new String(original, StandardCharsets.UTF_8);
+        int legacyCreationCount = occurrences(script, legacyCreation);
+        int legacySetterCount = occurrences(script, legacySetter);
+        int migratedSetterCount = occurrences(script, migratedSetter);
+        if (legacyCreationCount > 1 || legacySetterCount > 1 || migratedSetterCount > 1
+                || (legacySetterCount > 0 && migratedSetterCount > 0)) {
+            throw new IllegalStateException(
+                    "AlienEvo resource " + path + " has an unexpected ItemStack custom-data shape: "
+                            + legacyCreationCount + " legacy creation(s), "
+                            + legacySetterCount + " legacy setter(s), "
+                            + migratedSetterCount + " migrated setter(s)");
+        }
+
+        String migrated = script;
+        if (legacyCreationCount == 1) {
+            String creationReplacement = migratedCreation;
+            if (legacySetterCount == 0 && migratedSetterCount == 0) {
+                creationReplacement += "\n  " + migratedSetter;
+            }
+            migrated = migrated.replace(legacyCreation, creationReplacement);
+        }
+
+        if (legacySetterCount == 1) {
+            migrated = migrated.replace(legacySetter, migratedSetter);
+        }
+
+        if (migrated.equals(script)) return 0;
+        resources.put(path, migrated.getBytes(StandardCharsets.UTF_8));
+        return 1;
+    }
+
+    /**
      * ItemStack NBT moved to the minecraft:custom_data component in 1.21.1.
      * Wrap legacy JS payloads when writing watches/cores and use typed getters
      * when restoring values from the ItemStack's CompoundTag.
      */
     private static int rewriteAlienEvoItemStackCustomData(Map<String, byte[]> resources) {
         int changed = 0;
+        changed += rewriteAlienEvoItemCreationCustomData(
+                resources, ALIEN_EVO_DECOUPLE,
+                "var watchItem = Item.of(itemId, 1, nbtData);",
+                "var watchItem = Item.of(itemId, 1);",
+                "watchItem.setNbt(nbtData);",
+                "watchItem.setCustomData(NBT.wrapCompound(nbtData));");
         changed += rewrite(resources, ALIEN_EVO_DECOUPLE, new String[][] {
-                {"var watchItem = Item.of(itemId, 1, nbtData);", "var watchItem = Item.of(itemId, 1);", "1"},
-                {"watchItem.setNbt(nbtData);", "watchItem.setCustomData(NBT.wrapCompound(nbtData));", "1"},
                 {"var nbt = mainHandItem.nbt;", "var nbt = mainHandItem.getCustomData();", "1"},
                 {"if (!nbt) {", "if (nbt.isEmpty()) {", "1"},
                 {"var displayNbt = nbt.display;", "var displayNbt = nbt.getCompound('display');", "1"},
@@ -1691,9 +1742,13 @@ PlayerEvents.tick(e => {
                 {"nbt.storedAlienGlowProps", "nbt.getString('storedAlienGlowProps')", "1"},
                 {"held.nbt", "held.getCustomData()", "1"}
         });
+        changed += rewriteAlienEvoItemCreationCustomData(
+                resources, ALIEN_EVO_CORE_REMOVAL,
+                "var coreItem = Item.of('alienevo:prototype_core', 1, nbtData);",
+                "var coreItem = Item.of('alienevo:prototype_core', 1);",
+                "coreItem.setNbt(nbtData);",
+                "coreItem.setCustomData(NBT.wrapCompound(nbtData));");
         changed += rewrite(resources, ALIEN_EVO_CORE_REMOVAL, new String[][] {
-                {"var coreItem = Item.of('alienevo:prototype_core', 1, nbtData);", "var coreItem = Item.of('alienevo:prototype_core', 1);", "1"},
-                {"coreItem.setNbt(nbtData);", "coreItem.setCustomData(NBT.wrapCompound(nbtData));", "1"},
                 {"var nbt = mainHandItem.nbt;", "var nbt = mainHandItem.getCustomData();", "1"},
                 {"if (!nbt) {", "if (nbt.isEmpty()) {", "1"},
                 {"nbt.display.Name", "nbt.getCompound('display').getString('Name')", "2"},
