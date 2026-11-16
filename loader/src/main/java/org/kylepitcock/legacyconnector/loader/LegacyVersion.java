@@ -52,7 +52,14 @@ public enum LegacyVersion {
      * compiled against the obfuscated game. {@code transform.BetaDeobfuscator} names the jar first (Babric intermediary + biny names, the
      * ModLoader/Forge API under {@code net/minecraft/src/}), then it is relocated like every other family.
      */
-    VB1_7_3("b1.7.3", "legacyconnector/vb1_7_3/", "legacyconnector_synth/vb1_7_3/");
+    VB1_7_3("b1.7.3", "legacyconnector/vb1_7_3/", "legacyconnector_synth/vb1_7_3/"),
+    /**
+     * Minecraft 1.2.5 (ModLoader / early Forge), a SOURCE version only: such a jar is rewritten to 1.4.7's obfuscation ({@code transform.Notch125To147}, the
+     * Feather join of {@code :loader:genMappings125}) and hosted as {@link #V1_4_7} ({@link LegacyJar#sourceVersion} records it). Opt-in through the system
+     * property {@code legacyconnector.mc125}; by default 1.2.5 jars are only detected and reported ({@link Mc125Jars}). Nothing links against a "1.2.5 shim":
+     * the prefixes are the 1.4.7 ones, {@link #forward()} is 1.4.7's and it is last so the other versions keep their ordinals.
+     */
+    V1_2_5("1.2.5", "legacyconnector/v1_6_4/", "legacyconnector_synth/v1_4_7/");
 
     /**
      * Package roots (internal names) that are owned by Minecraft/Forge in legacy versions and must be
@@ -105,17 +112,17 @@ public enum LegacyVersion {
 
     /** The family whose shim this version's jars link against (1.5.2 and 1.6.4 use the 1.7.10 one), or null when it has its own shim. */
     public LegacyVersion forward() {
-        return this == V1_4_7 || this == V1_5_2 || this == V1_6_4 ? V1_7_10 : null;
+        return this == V1_4_7 || this == V1_5_2 || this == V1_6_4 || this == V1_2_5 ? V1_7_10 : null;
     }
 
     /** True for the versions with numeric block and item ids (1.4.7, 1.5.2 and 1.6.4): they share the id facade and the notch-name handling. */
     public boolean numericIds() {
-        return this == V1_4_7 || this == V1_5_2 || this == V1_6_4;
+        return this == V1_4_7 || this == V1_5_2 || this == V1_6_4 || this == V1_2_5;
     }
 
     /** True when the version names Minecraft classes {@code net.minecraft.src.<Name>} (1.4.7 and earlier) and needs the {@code flat-names.tsv} relocation. */
     public boolean flatNames() {
-        return this == V1_4_7;
+        return this == V1_4_7 || this == V1_2_5;
     }
 
     /**
@@ -125,6 +132,7 @@ public enum LegacyVersion {
     public List<String> forwardTableIds() {
         return switch (this) {
             case V1_4_7 -> List.of(V1_6_4.id, V1_5_2.id, id);
+            case V1_2_5 -> List.of(V1_6_4.id, V1_5_2.id, V1_4_7.id);
             case V1_5_2 -> List.of(V1_6_4.id, id);
             default -> List.of(id);
         };

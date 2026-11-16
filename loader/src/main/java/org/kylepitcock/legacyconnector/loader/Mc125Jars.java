@@ -93,8 +93,13 @@ public final class Mc125Jars {
      * when it has too few such references to say. References to classes of the jar itself and to named (non-default-package) owners do not count.
      */
     static double score(ZipFile zip) {
+        return measure(zip)[0];
+    }
+
+    /** {share, side}: the share of {@link #score} and the side it was reached on (0 client, 1 server), {-1, 0} when it cannot be told. */
+    static double[] measure(ZipFile zip) {
         Side[] s = sides();
-        if (s[0].members.isEmpty()) return -1; // table missing from this build
+        if (s[0].members.isEmpty()) return new double[] {-1, 0}; // table missing from this build
         Set<String> own = new HashSet<>();
         Enumeration<? extends ZipEntry> en = zip.entries();
         while (en.hasMoreElements()) {
@@ -135,14 +140,24 @@ public final class Mc125Jars {
                 // an unreadable class does not count
             }
         }
-        if (total[0] < MIN_REFS) return -1;
-        return Math.max(hits[0], hits[1]) / (double) total[0];
+        if (total[0] < MIN_REFS) return new double[] {-1, 0};
+        return new double[] {Math.max(hits[0], hits[1]) / (double) total[0], hits[1] > hits[0] ? 1 : 0};
     }
 
     /**
      * Evidence text when the jar is a 1.2.5 jar (fingerprint at least {@link #MIN_SHARE} and clearly better than the 1.4.7, 1.5.2 and 1.6.4 tables), else null.
      * {@code others} are those tables' scores ({@code NotchFingerprint.scores}) or null.
      */
+    /** Opt-in to host 1.2.5 jars through the 1.4.7 chain ({@code -Dlegacyconnector.mc125=true}); off by default. */
+    public static boolean optedIn() {
+        return Boolean.getBoolean("legacyconnector.mc125");
+    }
+
+    /** The side ('c' or 's') whose 1.2.5 names the jar fits better. */
+    static char sideOf(ZipFile zip) {
+        return measure(zip)[1] == 1 ? 's' : 'c';
+    }
+
     static String detect(ZipFile zip, java.util.function.Supplier<double[]> othersSupplier) {
         double share = score(zip);
         if (share < MIN_SHARE) return null;
