@@ -741,7 +741,7 @@ class PalladiumResourceCompat1201Test {
     @Test
     void migratesAlienEvoMotionToEntitySingleTargetBehaviorAndIsIdempotent() {
         Map<String, byte[]> resources = new HashMap<>();
-        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_MOTION_TO_ENTITY, String.join("\\r\\n",
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_MOTION_TO_ENTITY, String.join("\r\n",
                 "StartupEvents.registry('palladium:abilities', event => {",
                 "    const LivingEntity = Java.loadClass('net.minecraft.world.entity.LivingEntity');",
                 "    let recentTargets = new Map();",
@@ -808,8 +808,8 @@ class PalladiumResourceCompat1201Test {
         assertTrue(migrated.contains("completedPlayers.delete(playerId);"));
         assertEquals(1, occurrences(migrated, "nearbyEntities.forEach(nearby => {")));
         assertFalse(migrated.contains("playerTargets.has(nearby.id) ||"));
-        assertTrue(migrated.contains("\\r\\n"));
-        assertFalse(migrated.replace("\\r\\n", "").contains("\\n"));
+        assertTrue(migrated.contains("\r\n"));
+        assertFalse(migrated.replace("\r\n", "").contains("\n"));
 
         assertEquals(0, PalladiumResourceCompat1201.apply(resources));
         assertEquals(migrated, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_MOTION_TO_ENTITY));
