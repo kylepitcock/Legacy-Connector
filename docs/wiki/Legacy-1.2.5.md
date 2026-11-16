@@ -220,6 +220,19 @@ NEWTON, Mystcraft) that the loader drops, so they need nothing. `BossEntity` is 
 (constructor sets `maxHealth` 100, `takeDamage(part, source, int)` forwards to `attackEntityFrom`, which refuses, `doTakeDamage` is the living entity's own handling; `EntityDragonBase125Test`). Mapping the 1.2.5 class onto it, and a class
 tier by Calamus intermediary id (`CommandSource`, `ClientWorld`, `ServerChunkCache`, ... which Feather names differently in 1.4.7) are loader requests (`1.2.5-loader-requests-from-shim.md`, section 4). Not run in a game.
 
+### Run time, round 4: ModLoaderMP tile entity packets and custom entity spawns (2026-11-16; unit-tested, not run in a game)
+
+Read from the real classes (`javap -p -c` of `ModLoaderMP 1.2.5 v1.zip` client and `ModLoaderMP Server 1.2.5 v1.zip`: `ModLoaderMp`, `ISpawnable`, `NetClientHandlerEntity`, `EntityTrackerEntry2`, the patched `NetClientHandler` `adl` and `EntityTrackerEntry` `jj`):
+
+- **Tile entity packet.** `ModLoaderMp.getTileEntityPacket(mod, x, y, z, type, ints, floats, strings)` builds a packet with the reserved id `"ModLoaderMP".hashCode()`, type 1, `dataInt = {mod id, x, y, z, type, ints...}`; the mod returns it from
+  `getDescriptionPacket()` and `sendTileEntityPacket(tile)` sends `tile.getDescriptionPacket()` to everyone. The client's `handleAllPackets` hands type 1 to the mod whose `getId()` equals `dataInt[0]` (`handleTileEntityPacket(x, y, z, type, rest, floats, strings)`; fewer than 5 ints logs
+  "Bad TileEntityPacket received."). In the layer the packet is a custom payload on the channel `ModLoaderMP`, which the block entity sync (`LegacyBlockEntity.descriptionTag`, the same path 1.6.4 tiles use) already carries in the update tag and delivers on the client, also for chunk-load tags.
+- **Custom spawns.** `ISpawnable` is the interface of the mod's own entity (client build `spawn(Packet230ModLoader)`, server build `getSpawnPacket()`: both defaults in the shim). The server's `EntityTrackerEntry.getSpawnPacket` called `getSpawnPacket()` for an entity of a class registered with
+  `registerEntityTrackerEntry(class, hasOwner, id)`, set the id to `"Spawn".hashCode()` and the type to `id` (`id - 256` above 127); the client's `handleAllPackets` looked the type up in `registerNetClientHandlerEntity` (stored folded the same way; ids over 255 and duplicates are refused with the real messages) and called `spawn` on a new entity.
+  Here `ISpawnable extends IEntityAdditionalSpawnData`: the entity's native spawn packet (the layer's own entity-spawn path) carries the encoded packet, the client side reads it and calls `spawn`. Entities of unregistered classes, build without `getSpawnPacket` or null packets send nothing.
+  `hasOwner` entries of entities that are not `ISpawnable` (the vehicle spawn packet carried the owner's id, the client stored the entity in the public `owner` field) go through `LegacySpawnExtras` (a new provider hook of `LegacySpawnData`): owner id (the entity's own when `owner` is null) on the server, the field set on the client, with the real error messages. `registerEntityTracker(class, range, interval)` sets the type's tracking
+  range and update interval (`LegacyHosts.setTracking`, also after registration). Tests: `ModLoaderMpSpawnTileTest`. The owner path and the tracker settings are not unit-tested (they need a world and entity types).
+
 ### Offline link probe over the real corpus (2026-11-16)
 
 `python -I tools/compat/probe.py <dir> --mc 1.2.5 --dry-run --no-history` (passes `-Pmappings125` to `checkLegacyMod`; `-Pmc125Unresolved=<file>` also appends every game member the join could not name).
