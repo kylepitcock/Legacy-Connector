@@ -100,6 +100,30 @@ public final class McMembers1201 {
         return s != null && s.contains(nameAndDesc);
     }
 
+    private static SoftReference<Map<String, Members>> hiddenIndex = new SoftReference<>(null);
+
+    /** The private and package-private members of a game class (methods {@code name+desc}; fields {@code name:desc}, {@code #f} suffix when final); null when it has none. */
+    public static synchronized Members hidden(String owner) {
+        if (testOverride != null) return null;
+        Map<String, Members> m = hiddenIndex.get();
+        if (m == null) {
+            m = new HashMap<>();
+            try (InputStream raw = McMembers1201.class.getClassLoader().getResourceAsStream("legacyconnector/forward/1.20.1/mc-private.index.gz")) {
+                if (raw != null) {
+                    BufferedReader r = new BufferedReader(new InputStreamReader(new GZIPInputStream(raw), StandardCharsets.UTF_8));
+                    for (String l = r.readLine(); l != null; l = r.readLine()) {
+                        String[] f = l.split("\t", -1);
+                        m.put(f[0], new Members(split(f.length > 1 ? f[1] : ""), split(f.length > 2 ? f[2] : "")));
+                    }
+                }
+            } catch (IOException e) {
+                throw new IllegalStateException("Corrupt mc-private.index.gz", e);
+            }
+            hiddenIndex = new SoftReference<>(m);
+        }
+        return m.get(owner);
+    }
+
     /** Test hook: replaces the index (class to members); null restores the real one. */
     static synchronized void setForTests(Map<String, Members> classes) {
         testOverride = classes;

@@ -27,6 +27,7 @@ public final class McMembers1201Tool {
         Path out = Path.of(args.length > 1 ? args[1] : "loader/src/main/resources/legacyconnector/forward/1.20.1/mc-members.index.gz");
         TreeMap<String, String> lines = new TreeMap<>();
         TreeMap<String, String> statics = new TreeMap<>();
+        TreeMap<String, String> hidden = new TreeMap<>();
         try (ZipFile zip = new ZipFile(args[0])) {
             for (var en = zip.entries(); en.hasMoreElements(); ) {
                 var e = en.nextElement();
@@ -45,6 +46,15 @@ public final class McMembers1201Tool {
                 StringBuilder ss = new StringBuilder();
                 for (var m : n.methods) if ((m.access & org.objectweb.asm.Opcodes.ACC_STATIC) != 0) ss.append(ss.length() > 0 ? " " : "").append(m.name).append(m.desc);
                 if (ss.length() > 0) statics.put(n.name, n.name + "\t" + ss);
+                // private and package-private members (not synthetic): PrivateAccess1201 opens the ones a mod's code uses
+                if (n.name.startsWith("net/minecraft/")) {
+                    int open = org.objectweb.asm.Opcodes.ACC_PUBLIC | org.objectweb.asm.Opcodes.ACC_PROTECTED | org.objectweb.asm.Opcodes.ACC_SYNTHETIC;
+                    StringBuilder hm = new StringBuilder();
+                    for (var m : n.methods) if ((m.access & org.objectweb.asm.Opcodes.ACC_PRIVATE) != 0 && (m.access & org.objectweb.asm.Opcodes.ACC_SYNTHETIC) == 0 && !m.name.equals("<clinit>") && !m.name.startsWith("lambda$")) hm.append(hm.length() > 0 ? " " : "").append(m.name).append(m.desc);
+                    StringBuilder hf = new StringBuilder();
+                    for (var f : n.fields) if ((f.access & open) == 0) hf.append(hf.length() > 0 ? " " : "").append(f.name).append(':').append(f.desc).append((f.access & org.objectweb.asm.Opcodes.ACC_FINAL) != 0 ? "#f" : "");
+                    if (hm.length() > 0 || hf.length() > 0) hidden.put(n.name, n.name + "\t" + hm + "\t" + hf);
+                }
             }
         }
         try (OutputStream o = new GZIPOutputStream(Files.newOutputStream(out))) {
@@ -52,6 +62,9 @@ public final class McMembers1201Tool {
         }
         try (OutputStream o = new GZIPOutputStream(Files.newOutputStream(out.resolveSibling("mc-static.index.gz")))) {
             o.write(String.join("\n", statics.values()).getBytes(StandardCharsets.UTF_8));
+        }
+        try (OutputStream o = new GZIPOutputStream(Files.newOutputStream(out.resolveSibling("mc-private.index.gz")))) {
+            o.write(String.join("\n", hidden.values()).getBytes(StandardCharsets.UTF_8));
         }
         System.out.println(lines.size() + " classes -> " + out + " (" + Files.size(out) + " bytes)");
     }
