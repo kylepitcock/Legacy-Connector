@@ -184,6 +184,10 @@ public final class ClientCompat {
                 menuRegister.setAccessible(true);
             }
             menuRegister.invoke(null, type, constructor);
+        } catch (java.lang.reflect.InvocationTargetException e) {
+            // a mod's client setup that runs twice (its handler reached through two mod containers) registers the same screen again: the first one stays
+            if (e.getCause() instanceof IllegalStateException dup && String.valueOf(dup.getMessage()).startsWith("Duplicate registration")) return;
+            throw new IllegalStateException("MenuScreens.register failed", e);
         } catch (ReflectiveOperationException e) {
             throw new IllegalStateException("MenuScreens.register failed", e);
         }
