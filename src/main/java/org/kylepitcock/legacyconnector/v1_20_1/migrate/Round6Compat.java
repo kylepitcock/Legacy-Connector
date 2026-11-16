@@ -194,6 +194,32 @@ public final class Round6Compat {
                 uses, maxUses, xp, priceMultiplier, demand);
     }
 
+    /** {@code new MerchantOffers(tag)}: the offers of a compound with a {@code Recipes} list (empty offers for a tag that does not read). */
+    public static net.minecraft.world.item.trading.MerchantOffers merchantOffersFromTag(net.minecraft.nbt.CompoundTag tag) {
+        return net.minecraft.world.item.trading.MerchantOffers.CODEC.parse(MigrateContext.provider().createSerializationContext(net.minecraft.nbt.NbtOps.INSTANCE), tag)
+                .result().orElseGet(net.minecraft.world.item.trading.MerchantOffers::new);
+    }
+
+    /** {@code zombieVillager.setTradeOffers(tag)}. */
+    public static void zombieSetTradeOffers(net.minecraft.world.entity.monster.ZombieVillager zombie, net.minecraft.nbt.CompoundTag tag) {
+        zombie.setTradeOffers(merchantOffersFromTag(tag));
+    }
+
+    /** {@code zombieVillager.tradeOffers} (field read): the offers as a compound, null without any. */
+    public static net.minecraft.nbt.CompoundTag zombieTradeOffers(net.minecraft.world.entity.monster.ZombieVillager zombie) {
+        return zombie.tradeOffers == null ? null : Round5Compat.merchantOffersTag(zombie.tradeOffers);
+    }
+
+    /** {@code zombieVillager.tradeOffers = tag} (field write). */
+    public static void zombieSetTradeOffersField(net.minecraft.world.entity.monster.ZombieVillager zombie, net.minecraft.nbt.CompoundTag tag) {
+        zombie.setTradeOffers(tag == null ? null : merchantOffersFromTag(tag));
+    }
+
+    /** Argument producer for the mob effect packet: 1.21.1 also says whether the client blends the effect in (no for an update sent by 1.20.1 code). */
+    public static boolean noBlend(int ignored) {
+        return false;
+    }
+
     /** {@code CrossbowItem.setCharged(stack, charged)} (static): a crossbow is charged while it holds projectiles, so only discharging can be done here. */
     public static void setCrossbowCharged(net.minecraft.world.item.ItemStack stack, boolean charged) {
         if (!charged) stack.set(net.minecraft.core.component.DataComponents.CHARGED_PROJECTILES, net.minecraft.world.item.component.ChargedProjectiles.EMPTY);

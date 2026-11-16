@@ -828,3 +828,8 @@ net/minecraft/world/effect/MobEffectInstance	getCurativeItems	()Ljava/util/List;
 net/minecraft/world/effect/MobEffect	getCurativeItems	()Ljava/util/List;	Round6Compat	curativeItems	(Ljava/lang/Object;)Ljava/util/List;
 net/minecraft/world/entity/projectile/Arrow	setEffectsFromItem	(Lnet/minecraft/world/item/ItemStack;)V	Round6Compat	arrowEffectsFromItem
 net/minecraft/world/level/block/ChiseledBookShelfBlock	getHitSlot	(Lnet/minecraft/world/phys/Vec2;)I	Round6Compat	bookshelfHitSlot	-
+net/minecraft/world/item/trading/MerchantOffers	<init>	(Lnet/minecraft/nbt/CompoundTag;)V	Round6Compat	merchantOffersFromTag	-
+net/minecraft/world/entity/monster/ZombieVillager	setTradeOffers	(Lnet/minecraft/nbt/CompoundTag;)V	Round6Compat	zombieSetTradeOffers	-
+net/minecraft/world/entity/monster/ZombieVillager	$get$tradeOffers	()Lnet/minecraft/nbt/CompoundTag;	Round6Compat	zombieTradeOffers	-
+net/minecraft/world/entity/monster/ZombieVillager	$set$tradeOffers	(Lnet/minecraft/nbt/CompoundTag;)V	Round6Compat	zombieSetTradeOffersField	-
+net/minecraft/network/protocol/game/ClientboundUpdateMobEffectPacket	<init>	(ILnet/minecraft/world/effect/MobEffectInstance;)V	=args	0,1,Round6Compat.noBlend@0	(ILnet/minecraft/world/effect/MobEffectInstance;Z)V
