@@ -42,6 +42,26 @@ public final class LegacyRenderTypes extends RenderType {
                     .setDepthTestState(LEGACY_NO_DEPTH)
                     .createCompositeState(true)), "WATER_MASK"));
 
+    /**
+     * Translucent textured geometry drawn in the world without depth test, lighting and lightmap (what 1.7.10 left on at the
+     * block outline and RenderWorldLastEvent): the entity shader's directional light and lightmap darkened Thaumcraft's aspect icons
+     * over an aura node to about 0.72 of their colour. The eyes shader is plain texture times vertex colour.
+     */
+    private static final Function<ResourceLocation, RenderType> TRANSLUCENT_UNLIT_NO_DEPTH = Util.memoize(texture -> batchingClass(create(
+            "legacyconnector_translucent_unlit_no_depth", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 1536, false, true,
+            CompositeState.builder()
+                    .setShaderState(RENDERTYPE_EYES_SHADER)
+                    .setTextureState(new TextureStateShard(texture, false, false))
+                    .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+                    .setCullState(NO_CULL)
+                    .setDepthTestState(LEGACY_NO_DEPTH)
+                    .setWriteMaskState(COLOR_WRITE)
+                    .createCompositeState(false)), "WATER_MASK"));
+
+    public static RenderType translucentUnlitNoDepth(ResourceLocation texture) {
+        return TRANSLUCENT_UNLIT_NO_DEPTH.apply(texture);
+    }
+
     private static final Function<ResourceLocation, RenderType> TRANSLUCENT_NO_DEPTH = Util.memoize(texture -> batchingClass(create(
             "legacyconnector_translucent_no_depth", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 1536, true, true,
             CompositeState.builder()

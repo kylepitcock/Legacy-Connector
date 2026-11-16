@@ -540,6 +540,17 @@ public final class RenderContext {
         else if (s.activeUnit == 1) s.lightmap = on;
     }
 
+    /**
+     * The lightmap unit off, as 1.7.10's EntityRenderer left it for the block outline and RenderWorldLastEvent
+     * ({@code disableLightmap} runs before both): Tessellator.setBrightness and the light of a lit draw have no effect there, so
+     * overlays such as Thaumcraft's aspect icons (setBrightness(220) over an aura node) stay at full brightness.
+     */
+    public static void disableLightmap() {
+        State s = STATE.get();
+        s.lightmap = false;
+        s.lighting = false; // RenderHelper.disableStandardItemLighting ran there too
+    }
+
     /** glIsEnabled(GL_TEXTURE_2D) for the active unit. */
     public static boolean unitTexture2d() {
         State s = STATE.get();
@@ -691,6 +702,7 @@ public final class RenderContext {
         if (s.blend && s.additiveAlpha && s.texture2d) return buffers.getBuffer(stated(s, LegacyRenderTypes.additiveAlpha(texture, s.depthTest)));
         if (!s.depthTest && !s.additive) {
             if (!s.texture2d) return buffers.getBuffer(stated(s, LegacyRenderTypes.untexturedNoDepth()));
+            if (s.blend && !s.lighting && !s.lightmap) return buffers.getBuffer(stated(s, LegacyRenderTypes.translucentUnlitNoDepth(texture)));
             return buffers.getBuffer(stated(s, s.blend ? LegacyRenderTypes.translucentNoDepth(texture) : LegacyRenderTypes.cutoutNoDepth(texture)));
         }
         if (!s.texture2d) return buffers.getBuffer(stated(s, s.additive ? RenderType.lightning() : RenderType.debugQuads()));
