@@ -49,6 +49,23 @@ public final class Mc125Jars {
 
     private Mc125Jars() {}
 
+    /** Evidence prefix of a jar whose obfuscation is close to 1.2.5's but not 1.2.5's. */
+    static final String OTHER_VERSION = "other version: ";
+    /** Share of the member references that must resolve in the 1.2.5 names for a jar of a neighbouring 1.2.x release (the obfuscation changes a little between them). */
+    static final double NEAR_SHARE = 0.25;
+
+    /**
+     * Evidence when the jar names the game by an obfuscation that is close to 1.2.5's without being it (a 1.2.1 to 1.2.4 mod: NEWTON gravity enabler is for 1.2.3): between
+     * {@link #NEAR_SHARE} and {@link #MIN_SHARE} of the references resolve and no other supported release fits clearly better. Null otherwise.
+     */
+    static String detectNear(ZipFile zip, java.util.function.Supplier<double[]> othersSupplier) {
+        double share = score(zip);
+        if (share < NEAR_SHARE || share >= MIN_SHARE) return null;
+        double[] others = othersSupplier.get();
+        if (others != null) for (double o : others) if (o + 0.2 >= share) return null;
+        return OTHER_VERSION + "obfuscated names resemble Minecraft 1.2.5 only partly (" + Math.round(share * 100) + "% of the member references), so the jar is for another 1.2.x release";
+    }
+
     /**
      * A CraftBukkit / MCPC build ({@code *_bukkit.zip}, {@code *-mcpc.jar}): it names the game by MCP names ({@code net/minecraft/server/World}) instead of 1.2.5's obfuscation, so the join
      * table does not apply. At least five distinct {@code net/minecraft/server/} classes other than {@code MinecraftServer} (the one class a notch server jar names there) are referenced.
@@ -116,6 +133,7 @@ public final class Mc125Jars {
 
     /** The line the compatibility report shows for such a jar. */
     public static String reportLine(String fileName, String evidence) {
+        if (evidence.startsWith(OTHER_VERSION)) return fileName + ": Minecraft 1.2.x release other than 1.2.5 (not supported): " + evidence.substring(OTHER_VERSION.length()) + "; not loaded";
         return fileName + ": Minecraft 1.2.5 (not supported yet): " + evidence + "; not loaded";
     }
 

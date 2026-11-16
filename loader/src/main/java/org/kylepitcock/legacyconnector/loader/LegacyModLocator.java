@@ -400,6 +400,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             LIBRARY_SKIPS.putAll(BetaJars.selectBuilds(legacy, side()));
             // Minecraft 1.2.5 mods (opt-in) come the same way
             LIBRARY_SKIPS.putAll(Mc125Builds.select(legacy, side()));
+            org.kylepitcock.legacyconnector.loader.transform.Notch125To147.registerSet(legacy.stream().filter(j -> !LIBRARY_SKIPS.containsKey(j)).toList());
             libraryNotes = libraries.notes();
             liteNotes = liteLoaderNotes(List.of(modsDir, modsDir.resolve("1.5.2"), modsDir.resolve("1.6.4"), modsDir.resolve("1.7.10"), modsDir.resolve("1.12.2")));
             LegacyVersion.setBridgedRoots(bridges.stream().map(LibraryBridges.Bridge::apiRoot).toList());
@@ -867,6 +868,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             md.update(fileDigest(jar.existing()));
             md.update(bridges.toString().getBytes(StandardCharsets.UTF_8));
             md.update(side().getBytes(StandardCharsets.UTF_8)); // @SideOnly stripping differs per side
+            md.update(jar.droppedClasses.toString().getBytes(StandardCharsets.UTF_8));
         }
         // the relocations depend on the other versions' jars, the FML ids on the modern mods
         byte[] shared = (crossVersion.fingerprint() + "|fmlIds=" + new java.util.TreeMap<>(LegacyModDecl.fmlIds()) + "|" + SideBySide.current().fingerprint()).getBytes(StandardCharsets.UTF_8);

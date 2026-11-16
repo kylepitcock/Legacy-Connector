@@ -174,6 +174,13 @@ public final class LegacyJarInspector {
                 } else if (folder == null || !(folder.toString().equals("1.4.7") || folder.toString().equals(BetaJars.FOLDER))) {
                     ev125 = Mc125Jars.detect(zip, () -> NotchFingerprint.scores(zip));
                 }
+                if (ev125 == null && !modLoaderMods.isEmpty() && !(folder != null && (folder.toString().equals("1.4.7") || folder.toString().equals(BetaJars.FOLDER)))) {
+                    String near = Mc125Jars.detectNear(zip, () -> NotchFingerprint.scores(zip));
+                    if (near != null) {
+                        Mc125Jars.record(path, near);
+                        return null;
+                    }
+                }
                 if ((ev125 != null || !modLoaderMods.isEmpty()) && !(folder != null && folder.toString().equals("1.4.7")) && Mc125Jars.isMcpNamedServerBuild(zip)) {
                     // a CraftBukkit / MCPC build of a 1.2.x mod: MCP names, neither 1.2.5's obfuscation nor a version this layer has names for
                     Mc125Jars.record(path, "CraftBukkit/MCPC build (game classes named by MCP names in net/minecraft/server); use the client or server build of the mod");

@@ -41,10 +41,12 @@ def old_zip_era(mc):
     return mc.startswith("b") or mc.split(".")[:2] in (["1", "2"], ["1", "3"], ["1", "4"], ["1", "5"], ["1", "6"])
 
 
-def run_probe(jar_dir, out, zips=False, mc=""):
+def run_probe(jar_dir, out, zips=False, mc="", only=""):
     jars = sorted(pathlib.Path(jar_dir).rglob("*.jar"))
     if zips:   # Beta and 1.2.5-1.6.4 mods came as .zip files (ModLoader and early Forge mods)
         jars = sorted(jars + list(pathlib.Path(jar_dir).rglob("*.zip")))
+    if only:   # --only REGEX: probe just these archives (a mod family alone, next to the run of the whole set)
+        jars = [j for j in jars if re.search(only, j.name, re.I)]
     if not jars:
         sys.exit(f"no jars in {jar_dir}")
     # -PlegacyJar is a comma-separated list: a jar whose name contains a comma is probed through a symlink with a safe name
@@ -487,12 +489,13 @@ def main():
     ap.add_argument("--no-history", action="store_true", help="do not add the run to docs/data/probe.json")
     ap.add_argument("--fail-on-regression", action="store_true", help="exit 2 when a mod got worse than in the previous run (after writing the results)")
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--only", default="", help="regex on the archive file name: probe only those (a mod family alone, e.g. --only buildcraft)")
     a = ap.parse_args()
     if a.from_json:
         path = a.from_json
     elif a.jar_dir:
         path = a.json or tempfile.mktemp(suffix=".json")
-        run_gap1201(a.jar_dir, path, a.detail) if a.mc == "1.20.1" else run_probe(a.jar_dir, path, zips=old_zip_era(a.mc), mc=a.mc)
+        run_gap1201(a.jar_dir, path, a.detail) if a.mc == "1.20.1" else run_probe(a.jar_dir, path, zips=old_zip_era(a.mc), mc=a.mc, only=a.only)
     else:
         ap.error("jar directory or --from-json required")
     records = json.loads(pathlib.Path(path).read_text(encoding="utf-8"))

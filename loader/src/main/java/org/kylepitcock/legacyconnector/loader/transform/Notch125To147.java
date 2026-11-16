@@ -139,11 +139,61 @@ public final class Notch125To147 {
     /** Local view of a class of the jar: supertypes. */
     private record Local(String superName, String[] interfaces, Set<String> methods) {}
 
+    /** The classes of the OTHER 1.2.5 jars of the mod set (a mod class extending a class of another jar: BuildCraft's tile entities in the addons), see {@link #registerSet}. */
+    private static volatile Map<String, Map<String, Local>> setClasses = Map.of();
+
+    /**
+     * Tells the renamer about the hierarchy of every 1.2.5 jar of the set: a method a mod declares on top of a class of another jar that itself extends a game class is an override of a game
+     * method too, and a reference to it has to be named like it (else the obfuscated letter survives and the 1.4.7 stage renames it a second time).
+     */
+    public static synchronized void registerSet(java.util.Collection<LegacyJar> jars) {
+        Map<String, Map<String, Local>> all = new HashMap<>();
+        for (LegacyJar jar : jars) {
+            if (jar.sourceVersion == null || jar.sourceVersion != org.kylepitcock.legacyconnector.loader.LegacyVersion.V1_2_5) continue;
+            Map<String, Local> mine = new HashMap<>();
+            try (java.util.zip.ZipFile zip = new java.util.zip.ZipFile(jar.existing().toFile())) {
+                var en = zip.entries();
+                while (en.hasMoreElements()) {
+                    java.util.zip.ZipEntry e = en.nextElement();
+                    if (e.isDirectory() || !e.getName().endsWith(".class")) continue;
+                    String cn = e.getName().substring(0, e.getName().length() - 6);
+                    if (jar.droppedClasses.contains(cn)) continue;
+                    try (InputStream in = zip.getInputStream(e)) {
+                        ClassReader r = new ClassReader(in);
+                        Set<String> declared = new HashSet<>();
+                        r.accept(new org.objectweb.asm.ClassVisitor(org.objectweb.asm.Opcodes.ASM9) {
+                            @Override
+                            public org.objectweb.asm.MethodVisitor visitMethod(int access, String mname, String mdesc, String sig, String[] ex) {
+                                declared.add(mname + mdesc);
+                                return null;
+                            }
+                        }, ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
+                        mine.put(cn, new Local(r.getSuperName(), r.getInterfaces(), declared));
+                    }
+                }
+            } catch (IOException | RuntimeException e) {
+                // an unreadable jar adds nothing
+            }
+            all.put(jar.fileName(), mine);
+        }
+        setClasses = all;
+    }
+
+    /** This jar's classes over those of the other jars of the set. */
+    private static Map<String, Local> withPeers(LegacyJar jar, Map<String, Local> own, Table table) {
+        Map<String, Map<String, Local>> peers = setClasses;
+        if (peers.isEmpty()) return own;
+        Map<String, Local> all = new HashMap<>();
+        for (var e : peers.entrySet()) if (jar == null || !e.getKey().equals(jar.fileName())) for (var c : e.getValue().entrySet()) if (!table.classes.containsKey(c.getKey())) all.put(c.getKey(), c.getValue()); // a peer's copy of a game class is a base class edit: dropped, not a hierarchy
+        all.putAll(own);
+        return all;
+    }
+
     /** Renames the classes of {@code jar} in place; returns the report notes. */
     public static List<String> apply(LegacyJar jar, Map<String, byte[]> classes) {
         Table[] t = fromResource();
         if (t == null) throw new IllegalStateException("this build has no 1.2.5 table (build with -Pmappings125)");
-        List<String> notes = apply(jar.notchSide == 's' ? t[1] : t[0], NotchNames.get("1.4.7"), classes);
+        List<String> notes = apply(jar.notchSide == 's' ? t[1] : t[0], NotchNames.get("1.4.7"), classes, jar);
         String dump = System.getProperty("legacyconnector.mc125.unresolved");
         if (dump != null && !dump.isBlank()) {
             // diagnostics (tools/compat/probe.py --mc 1.2.5 -Dlegacyconnector.mc125.unresolved=<file>): one line per game member the join table could not name
@@ -162,6 +212,10 @@ public final class Notch125To147 {
     private static final ThreadLocal<Set<String>> LAST_UNRESOLVED = ThreadLocal.withInitial(Set::of);
 
     public static List<String> apply(Table table, NotchNames n147, Map<String, byte[]> classes) {
+        return apply(table, n147, classes, null);
+    }
+
+    private static List<String> apply(Table table, NotchNames n147, Map<String, byte[]> classes, LegacyJar jar) {
         List<String> notes = new ArrayList<>();
         TreeSet<String> baseEdits = new TreeSet<>();
         Map<String, Local> local = new HashMap<>();
@@ -189,7 +243,9 @@ public final class Notch125To147 {
             }, ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
             local.put(name, new Local(r.getSuperName(), r.getInterfaces(), declared));
         }
-        Resolver resolver = new Resolver(table, n147, local);
+        Map<String, Local> own = local;
+        Map<String, Local> localAll = withPeers(jar, own, table);
+        Resolver resolver = new Resolver(table, n147, localAll);
         int renamed = 0;
         LAST_BRIDGES.set(new int[2]);
         int[] counts = new int[2];
@@ -210,7 +266,23 @@ public final class Notch125To147 {
             new ClassReader(bytes).accept(new org.objectweb.asm.ClassVisitor(org.objectweb.asm.Opcodes.ASM9) {
                 @Override
                 public org.objectweb.asm.MethodVisitor visitMethod(int access, String mname, String mdesc, String sig, String[] ex) {
-                    if (mname.startsWith("<") || mname.length() > 3 || self == null || self.superName() == null) return null;
+                    if (mname.startsWith("<") || self == null || self.superName() == null) return null;
+                    if ((access & (org.objectweb.asm.Opcodes.ACC_STATIC | org.objectweb.asm.Opcodes.ACC_PRIVATE | org.objectweb.asm.Opcodes.ACC_ABSTRACT)) == 0) {
+                        for (String[] row : returnRows()) {
+                            if (!row[1].equals(mname) || !row[2].equals(mdesc) || !extendsClass0(local, name, row[0])) continue;
+                            String oldD = byClass.mapDesc(mdesc), newD = byClass.mapDesc(row[3]);
+                            OverrideBridges.Plan rp = OverrideBridges.plan(oldD, newD, new String[1]);
+                            counts[0]++;
+                            if (rp == null) {
+                                unbridged.add(name + "." + mname + mdesc + ": API return kind not bridgeable");
+                            } else {
+                                counts[1]++;
+                                bridges.add(new Bridge(resolver.mapMethodName(name, mname, mdesc), oldD, newD, rp));
+                            }
+                            return null;
+                        }
+                    }
+                    if (mname.length() > 3) return null;
                     boolean noBridge = (access & (org.objectweb.asm.Opcodes.ACC_STATIC | org.objectweb.asm.Opcodes.ACC_PRIVATE | org.objectweb.asm.Opcodes.ACC_ABSTRACT)) != 0;
                     String[] hit = resolver.lookup("M", self.superName(), mname, mdesc);
                     if (hit == null) hit = resolver.lookup("B", self.superName(), mname, mdesc);
@@ -246,8 +318,8 @@ public final class Notch125To147 {
             org.objectweb.asm.ClassVisitor tail = new BridgeAdder(cw, bridges, adapters);
             LAST_BRIDGES.get()[1] += counts[1];
             counts[1] = 0;
-            ClassRemapper remap = new ClassRemapper(new DescFix(tail, table.descFix(), n147, local), resolver);
-            new ClassReader(bytes).accept(new CallAdapt(remap, name, resolver, local, byClass, adapters, adaptedCalls, unadaptedCalls), 0);
+            ClassRemapper remap = new ClassRemapper(new DescFix(tail, table.descFix(), n147, localAll), resolver);
+            new ClassReader(bytes).accept(new CallAdapt(remap, name, resolver, localAll, byClass, adapters, adaptedCalls, unadaptedCalls), 0);
             classes.put(name, cw.toByteArray());
             renamed++;
         }
@@ -312,6 +384,13 @@ public final class Notch125To147 {
 
                 @Override
                 public void visitMethodInsn(int op, String owner, String n, String d, boolean itf) {
+                    for (String[] row : descRewrites()) {
+                        if (row[0].equals(n) && d.endsWith(row[1])) {
+                            super.visitMethodInsn(op, owner, n, d.substring(0, d.length() - row[1].length()) + row[2], itf);
+                            if (row[3].equals("f2i")) visitInsn(org.objectweb.asm.Opcodes.F2I);
+                            return;
+                        }
+                    }
                     super.visitMethodInsn(op, owner, n, fixed(owner, n, d), itf);
                 }
             };
@@ -427,6 +506,43 @@ public final class Notch125To147 {
             }
             return null;
         }
+    }
+
+    private static volatile List<String[]> returnRows, descRewrites;
+
+    private static List<String[]> rows(String resource) {
+        List<String[]> out = new ArrayList<>();
+        try (InputStream in = Notch125To147.class.getClassLoader().getResourceAsStream(resource)) {
+            if (in != null) {
+                for (String line : new String(in.readAllBytes(), StandardCharsets.UTF_8).split("\n")) {
+                    if (line.isBlank() || line.startsWith("#")) continue;
+                    out.add(line.replace("\r", "").split("\t"));
+                }
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException("Corrupt " + resource, e);
+        }
+        return out;
+    }
+
+    private static synchronized List<String[]> returnRows() {
+        if (returnRows == null) returnRows = rows("legacyconnector/mappings/1.2.5/return-bridges.tsv");
+        return returnRows;
+    }
+
+    private static synchronized List<String[]> descRewrites() {
+        if (descRewrites == null) descRewrites = rows("legacyconnector/mappings/1.2.5/descriptor-rewrites.tsv");
+        return descRewrites;
+    }
+
+    private static boolean extendsClass0(Map<String, Local> local, String cls, String target) {
+        String c = cls;
+        for (int i = 0; i < 24 && c != null; i++) {
+            if (c.equals(target) || c.equals("net/minecraft/src/" + target)) return true;
+            Local l = local.get(c);
+            c = l == null ? null : l.superName();
+        }
+        return false;
     }
 
     /** A bridge method to add to a mod class: {@code name} with the 1.4.7 signature {@code newDesc}, calling the class's own {@code name oldDesc}. */
