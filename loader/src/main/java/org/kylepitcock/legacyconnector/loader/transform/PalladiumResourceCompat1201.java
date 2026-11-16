@@ -1188,9 +1188,8 @@ final class PalladiumResourceCompat1201 {
                 {"entity.persistentData.lastFireSearch = 0;", "entity.data.put('lastFireSearch', 0);", "1"},
                 {"entity.persistentData.lastFireSearch = currentTime;", "entity.data.put('lastFireSearch', currentTime);", "1"},
                 {"entity.persistentData.lastFireSearch", "entity.data.get('lastFireSearch')", "1"},
-                {"if (!entity.persistentData.trackedFireBlocks) {", "if (!entity.data.get('trackedFireBlocks')) {", "1"},
                 {"entity.persistentData.trackedFireBlocks = {};", "entity.data.put('trackedFireBlocks', {});", "2"},
-                {"entity.persistentData.trackedFireBlocks", "entity.data.get('trackedFireBlocks')", "11"}
+                {"entity.persistentData.trackedFireBlocks", "entity.data.get('trackedFireBlocks')", "12"}
         });
     }
 
@@ -1655,6 +1654,7 @@ PlayerEvents.tick(e => {
     private static int rewriteAlienEvoItemStackCustomData(Map<String, byte[]> resources) {
         int changed = 0;
         changed += rewrite(resources, ALIEN_EVO_DECOUPLE, new String[][] {
+                {"var watchItem = Item.of(itemId, 1, nbtData);", "var watchItem = Item.of(itemId, 1);\n  watchItem.setCustomData(NBT.wrapCompound(nbtData));", "1"},
                 {"watchItem.setNbt(nbtData);", "watchItem.setCustomData(NBT.wrapCompound(nbtData));", "1"},
                 {"var nbt = mainHandItem.nbt;", "var nbt = mainHandItem.getCustomData();", "1"},
                 {"if (!nbt) {", "if (nbt.isEmpty()) {", "1"},
@@ -1702,12 +1702,13 @@ PlayerEvents.tick(e => {
                 {"held.nbt", "held.getCustomData()", "1"}
         });
         changed += rewrite(resources, ALIEN_EVO_CORE_REMOVAL, new String[][] {
+                {"var coreItem = Item.of('alienevo:prototype_core', 1, nbtData);", "var coreItem = Item.of('alienevo:prototype_core', 1);\n  coreItem.setCustomData(NBT.wrapCompound(nbtData));", "1"},
                 {"coreItem.setNbt(nbtData);", "coreItem.setCustomData(NBT.wrapCompound(nbtData));", "1"},
                 {"var nbt = mainHandItem.nbt;", "var nbt = mainHandItem.getCustomData();", "1"},
                 {"if (!nbt) {", "if (nbt.isEmpty()) {", "1"},
-                {"if (nbt && nbt.display && nbt.display.Name) {",
-                        "if (!nbt.isEmpty() && !nbt.getCompound('display').getString('Name').isEmpty()) {", "1"},
-                {"nbt.display.Name", "nbt.getCompound('display').getString('Name')", "1"},
+                {"nbt.display.Name", "nbt.getCompound('display').getString('Name')", "2"},
+                {"if (nbt && nbt.display && nbt.getCompound('display').getString('Name')) {",
+                        "if (!nbt.isEmpty() && !nbt.getCompound('display').isEmpty() && !nbt.getCompound('display').getString('Name').isEmpty()) {", "1"},
                 {"typeof nbt.storedWatch === 'string'", "nbt.contains('storedWatch')", "2"},
                 {"nbt.storedWatch", "nbt.getString('storedWatch')", "4"},
                 {"nbt.storedAllDNA || ''", "nbt.getString('storedAllDNA')", "1"},
@@ -1767,9 +1768,9 @@ PlayerEvents.tick(e => {
                 {"JSON.stringify(nbtData)}},PickupDelay:10",
                         "JSON.stringify(nbtData)}}},PickupDelay:10", "1"},
                 {"var nbt = mainHandItem.nbt;", "var nbt = mainHandItem.getCustomData();", "1"},
-                {"if (nbt && nbt.display && nbt.display.Name) {",
-                        "if (!nbt.isEmpty() && !nbt.getCompound('display').getString('Name').isEmpty()) {", "1"},
-                {"nbt.display.Name", "nbt.getCompound('display').getString('Name')", "1"},
+                {"nbt.display.Name", "nbt.getCompound('display').getString('Name')", "2"},
+                {"if (nbt && nbt.display && nbt.getCompound('display').getString('Name')) {",
+                        "if (!nbt.isEmpty() && !nbt.getCompound('display').isEmpty() && !nbt.getCompound('display').getString('Name').isEmpty()) {", "1"},
                 {"var storedDNA = nbt && nbt.storedAllDNA ? nbt.storedAllDNA : '';",
                         "var storedDNA = nbt.getString('storedAllDNA');", "1"},
                 {"let storedCode = nbt && nbt.storedCode ? nbt.storedCode : '000000';",
@@ -1824,7 +1825,10 @@ PlayerEvents.tick(e => {
                         "if (nbt.contains('storedAlienGlowProps') && !nbt.getString('storedAlienGlowProps').isEmpty())", "1"},
                 {"if (typeof nbt?.storedAlienGlowProps === 'string')",
                         "if (nbt.contains('storedAlienGlowProps'))", "1"},
-                {"nbt.storedAlienGlowProps", "nbt.getString('storedAlienGlowProps')", "2"},
+                {"var parsedAlienGlow = JSON.parse(nbt.storedAlienGlowProps);",
+                        "var parsedAlienGlow = JSON.parse(nbt.getString('storedAlienGlowProps'));", "1"},
+                {"event.target.persistentData.putString('storedAlienGlowProps', nbt.storedAlienGlowProps);",
+                        "event.target.persistentData.putString('storedAlienGlowProps', nbt.getString('storedAlienGlowProps'));", "1"},
                 {"if (!nbt && mainHandItem.id.includes('_10k'))",
                         "if (nbt.isEmpty() && mainHandItem.id.includes('_10k'))", "1"},
                 {"if (nbt && nbt.storedMastercontrol) {",
