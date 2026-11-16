@@ -1,0 +1,5 @@
+# Call redirects of 1.4.7 jars and, through them, of the 1.2.5 jars hosted on the 1.4.7 chain (see ForwardRedirects and forward/1.6.4/call-redirects.tsv for the format).
+# 1.2.5's profiler was a static singleton; the shim's is an instance of the integrated server, so the calls are dropped.
+static	net/minecraft/profiler/Profiler	startSection	(Ljava/lang/String;)V	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	startSection
+static	net/minecraft/profiler/Profiler	endSection	()V	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	endSection
+static	net/minecraft/profiler/Profiler	endStartSection	(Ljava/lang/String;)V	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects125	endStartSection

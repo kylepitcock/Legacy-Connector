@@ -310,6 +310,23 @@ public class Block {
     }
 
     public float getBlockHardness(World world, int x, int y, int z) {
+        return HARDNESS_BY_META.get(getClass()) ? getHardness(world.getBlockMetadata(x, y, z)) : this.blockHardness;
+    }
+
+    /** Whether a class overrides {@link #getHardness} (Forge 3.x's per-metadata hardness, Minecraft 1.2.x): only then the metadata is looked up. */
+    private static final ClassValue<Boolean> HARDNESS_BY_META = new ClassValue<>() {
+        @Override
+        protected Boolean computeValue(Class<?> type) {
+            try {
+                return type.getMethod("getHardness", int.class).getDeclaringClass() != Block.class;
+            } catch (ReflectiveOperationException e) {
+                return false;
+            }
+        }
+    };
+
+    /** Forge 3.x (Minecraft 1.2.x): the hardness of a block by metadata; mods override it, the game's {@link #getBlockHardness} asks it. */
+    public float getHardness(int metadata) {
         return this.blockHardness;
     }
 

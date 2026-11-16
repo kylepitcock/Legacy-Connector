@@ -48,6 +48,8 @@ public final class Notch125To147 {
             "AddAnimation", "AddOverride", "AddTrade", "AddBiome", "AddCommand", "GetUniqueSpriteIndex", "GetUniqueBlockModelID",
             "GetUniqueEntityId", "GetPrivateValue", "SetPrivateValue", "GetMinecraftInstance", "GetLogger", "IsGUIOpen", "IsModLoaded", "LoadConfig", "SaveConfig",
             "ThrowException", "TakenFromCrafting", "TakenFromFurnace", "OnItemPickup");
+    /** ModLoaderMP's classes, in the default package of a 1.2.5 jar (the shim has them in net/minecraft/src, like BaseMod). */
+    static final Set<String> MODLOADER_MP = Set.of("ModLoaderMp", "BaseModMp", "Packet230ModLoader");
     /** Capitalised {@code BaseMod} hooks and their 1.4.7 names. */
     public static final Map<String, String> BASEMOD_HOOKS = Map.ofEntries(Map.entry("Load", "load"), Map.entry("ModsLoaded", "modsLoaded"),
             Map.entry("OnTickInGame", "onTickInGame"), Map.entry("OnTickInGUI", "onTickInGUI"), Map.entry("KeyboardEvent", "keyboardEvent"),
@@ -313,7 +315,13 @@ public final class Notch125To147 {
         @Override
         public String map(String internalName) {
             String m = table.classes.get(internalName);
-            return m != null ? m : internalName;
+            if (m != null) return m;
+            // ModLoaderMP's and Forge 3.x's own classes (not obfuscated: default package and {@code forge/}) live in net/minecraft/src of the shim
+            if (!local.containsKey(internalName)) {
+                if (MODLOADER_MP.contains(internalName)) return "net/minecraft/src/" + internalName;
+                if (internalName.startsWith("forge/")) return "net/minecraft/src/" + internalName;
+            }
+            return internalName;
         }
 
         @Override
@@ -329,6 +337,11 @@ public final class Notch125To147 {
         @Override
         public String mapFieldName(String owner, String name, String descriptor) {
             return resolve("F", owner, name, descriptor);
+        }
+
+        private boolean isServer() {
+            Table[] t = fromResource();
+            return t != null && table == t[1];
         }
 
         private static boolean isModLoader(String owner) {
@@ -378,6 +391,9 @@ public final class Notch125To147 {
                 if (l != null) {
                     if (l.superName() != null) queue.add(l.superName());
                     queue.addAll(List.of(l.interfaces()));
+                } else if (cls.equals("forge/ISidedInventory")) {
+                    // Forge 3.x's interface extends the game's IInventory (client obfuscation io, server ni; read from the Forge 1.2.5 3.3.7 zips)
+                    queue.add(isServer() ? "ni" : "io");
                 } else if (table.classes.containsKey(cls)) {
                     String[] up = n147.supertypes(table.classes.get(cls));
                     if (up != null) for (String s : up) if (s != null) queue.add(table.classesBack.getOrDefault(s, s));

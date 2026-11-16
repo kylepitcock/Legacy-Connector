@@ -42,6 +42,11 @@ import legacyconnector.v1_7_10.net.minecraft.world.chunk.IChunkProvider;
  */
 public class ModLoader {
     public static final String fmlMarker = "This is an FML marker";
+    /** ModLoader 1.2.5's public constants. */
+    public static final boolean DEBUG = false;
+    public static final String VERSION = "ModLoader 1.2.5";
+    public static final java.util.Properties props = new java.util.Properties();
+    public static java.util.logging.Level cfgLoggingLevel = java.util.logging.Level.FINER;
     private static final Logger LOG = Logger.getLogger("ModLoader");
 
     private static final List<BaseMod> MODS = new CopyOnWriteArrayList<>();
@@ -124,6 +129,15 @@ public class ModLoader {
         GameRegistry.registerTileEntity(tileEntityClass, id);
     }
 
+    /** 1.2.x: the tile entity and the special renderer that draws it (client only). */
+    public static void registerTileEntity(Class<? extends TileEntity> tileEntityClass, String id,
+            legacyconnector.v1_7_10.net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer renderer) {
+        GameRegistry.registerTileEntity(tileEntityClass, id);
+        if (renderer != null && FMLCommonHandler.instance().getSide() == Side.CLIENT) {
+            legacyconnector.v1_7_10.cpw.mods.fml.client.registry.ClientRegistry.bindTileEntitySpecialRenderer(tileEntityClass, renderer);
+        }
+    }
+
     public static void addRecipe(ItemStack output, Object... params) {
         GameRegistry.addRecipe(output, params);
     }
@@ -168,6 +182,33 @@ public class ModLoader {
         EntityRegistry.addSpawn(entityClass, weightedProb, min, max, spawnList, biomes);
     }
 
+    /** {@code addSpawn(String entityName, ...)}: the entity is the one registered under that name (ModLoader looked it up in the entity list). */
+    @SuppressWarnings("unchecked")
+    public static void addSpawn(String entityName, int weightedProb, int min, int max, EnumCreatureType spawnList) {
+        Class<? extends Entity> cls = (Class<? extends Entity>) legacyconnector.v1_7_10.net.minecraft.entity.EntityList.stringToClassMapping.get(entityName);
+        if (cls != null) addSpawn(cls, weightedProb, min, max, spawnList);
+        else LOG.warning("addSpawn: no entity named " + entityName);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static void addSpawn(String entityName, int weightedProb, int min, int max, EnumCreatureType spawnList, BiomeGenBase... biomes) {
+        Class<? extends Entity> cls = (Class<? extends Entity>) legacyconnector.v1_7_10.net.minecraft.entity.EntityList.stringToClassMapping.get(entityName);
+        if (cls != null) addSpawn(cls, weightedProb, min, max, spawnList, biomes);
+        else LOG.warning("addSpawn: no entity named " + entityName);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static void removeSpawn(String entityName, EnumCreatureType spawnList) {
+        Class<? extends Entity> cls = (Class<? extends Entity>) legacyconnector.v1_7_10.net.minecraft.entity.EntityList.stringToClassMapping.get(entityName);
+        if (cls != null) removeSpawn(cls, spawnList);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static void removeSpawn(String entityName, EnumCreatureType spawnList, BiomeGenBase... biomes) {
+        Class<? extends Entity> cls = (Class<? extends Entity>) legacyconnector.v1_7_10.net.minecraft.entity.EntityList.stringToClassMapping.get(entityName);
+        if (cls != null) removeSpawn(cls, spawnList, biomes);
+    }
+
     public static void removeSpawn(Class<? extends Entity> entityClass, EnumCreatureType spawnList) {
         EntityRegistry.removeSpawn(entityClass, spawnList, base12Biomes());
     }
@@ -185,7 +226,43 @@ public class ModLoader {
 
     public static void registerContainerID(BaseMod mod, int id) {}
 
-    public static void registerPacketChannel(BaseMod mod, String channel) {}
+    private static final java.util.Map<String, BaseMod> CHANNEL_MODS = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** Custom payloads on {@code channel} go to {@code mod.receiveCustomPacket} (ModLoader 1.2.5's packet-250 model); the mod sends with {@link #sendPacket}. */
+    public static void registerPacketChannel(BaseMod mod, String channel) {
+        if (mod == null || channel == null) return;
+        CHANNEL_MODS.put(channel, mod);
+        org.kylepitcock.legacyconnector.v1_6_4.bridge.Network164.registerChannel(
+                (manager, packet, player) -> mod.receiveCustomPacket(packet), channel, null);
+    }
+
+    /** Sends a packet to the server (single player: the integrated one) from the client. */
+    public static void sendPacket(legacyconnector.v1_7_10.net.minecraft.network.Packet packet) {
+        if (packet != null) org.kylepitcock.legacyconnector.v1_6_4.bridge.Network164.sendToServer(packet);
+    }
+
+    /** The host's channel dispatch hands custom payloads to the registered mod already; kept for mods that call it themselves. */
+    public static void receivePacket(legacyconnector.v1_6_4.net.minecraft.network.packet.Packet250CustomPayload packet) {
+        if (packet == null || packet.channel == null) return;
+        BaseMod m = CHANNEL_MODS.get(packet.channel);
+        if (m != null) m.receiveCustomPacket(packet);
+    }
+
+    /** Sends {@code text} as a chat message of the local player (ModLoader's chat channel to the server). */
+    public static void serverChat(String text) {
+        if (text == null || FMLCommonHandler.instance().getSide() != Side.CLIENT) return;
+        legacyconnector.v1_7_10.net.minecraft.client.entity.EntityClientPlayerMP p = Minecraft.mcc$get$thePlayer(Minecraft.getMinecraft());
+        if (p != null) p.sendChatMessage(text);
+    }
+
+    public static void serverConnect(legacyconnector.v1_7_10.net.minecraft.client.network.NetHandlerPlayClient handler,
+            legacyconnector.v1_6_4.net.minecraft.network.packet.Packet1Login login) {
+        for (BaseMod m : MODS) m.serverConnect(handler);
+    }
+
+    public static void serverDisconnect() {
+        for (BaseMod m : MODS) m.serverDisconnect();
+    }
 
     public static void registerKey(BaseMod mod, Object keyHandler, boolean allowRepeat) {
         if (keyHandler instanceof legacyconnector.v1_7_10.net.minecraft.client.settings.KeyBinding key) registerKey(mod, key, allowRepeat);
@@ -292,7 +369,17 @@ public class ModLoader {
     }
 
     public static boolean isGUIOpen(Class<? extends GuiScreen> gui) {
-        return false;
+        if (FMLCommonHandler.instance().getSide() != Side.CLIENT) return false;
+        GuiScreen current = Minecraft.mcc$get$currentScreen(Minecraft.getMinecraft());
+        return gui == null ? current != null : gui.isInstance(current);
+    }
+
+    /** Opens {@code gui} for the local player (client only; ModLoader checked that {@code player} is the client's own). */
+    public static void openGUI(EntityPlayer player, GuiScreen gui) {
+        if (FMLCommonHandler.instance().getSide() != Side.CLIENT) return;
+        Minecraft mc = Minecraft.getMinecraft();
+        if (mc == null || Minecraft.mcc$get$thePlayer(mc) != player) return;
+        mc.displayGuiScreen(gui);
     }
 
     public static <T, E> T getPrivateValue(Class<? super E> instanceclass, E instance, int fieldindex) {
@@ -359,8 +446,40 @@ public class ModLoader {
         org.kylepitcock.legacyconnector.v1_6_4.bridge.SpriteSheets147.override(path, overlayPath, index);
     }
 
+    /**
+     * A render type id whose blocks {@code mod.renderWorldBlock} / {@code mod.renderInvBlock} draw (ModLoader asked the mod for every block of that
+     * model id); {@code inventoryRenderer} says the inventory form is the 3D block, not a flat item.
+     */
     public static int getUniqueBlockModelID(BaseMod mod, boolean inventoryRenderer) {
-        return legacyconnector.v1_7_10.cpw.mods.fml.client.registry.RenderingRegistry.getNextAvailableRenderId();
+        int id = legacyconnector.v1_7_10.cpw.mods.fml.client.registry.RenderingRegistry.getNextAvailableRenderId();
+        BLOCK_MODELS.put(id, mod);
+        BLOCK_FULL3D.put(id, inventoryRenderer);
+        if (FMLCommonHandler.instance().getSide() == Side.CLIENT) {
+            try {
+                ClientHooks.registerBlockModel(id, mod, inventoryRenderer);
+            } catch (RuntimeException | LinkageError e) {
+                LOG.warning(mod.getName() + ": block model " + id + " not registered: " + e);
+            }
+        }
+        return id;
+    }
+
+    private static final java.util.Map<Integer, BaseMod> BLOCK_MODELS = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final java.util.Map<Integer, Boolean> BLOCK_FULL3D = new java.util.concurrent.ConcurrentHashMap<>();
+
+    public static boolean renderBlockIsItemFull3D(int modelId) {
+        return BLOCK_FULL3D.getOrDefault(modelId, Boolean.FALSE);
+    }
+
+    public static boolean renderWorldBlock(legacyconnector.v1_7_10.net.minecraft.client.renderer.RenderBlocks renderer,
+            legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess world, int x, int y, int z, Block block, int modelId) {
+        BaseMod m = BLOCK_MODELS.get(modelId);
+        return m != null && m.renderWorldBlock(renderer, world, x, y, z, block, modelId);
+    }
+
+    public static void renderInvBlock(legacyconnector.v1_7_10.net.minecraft.client.renderer.RenderBlocks renderer, Block block, int metadata, int modelId) {
+        BaseMod m = BLOCK_MODELS.get(modelId);
+        if (m != null) m.renderInvBlock(renderer, block, metadata, modelId);
     }
 
     public static int addArmor(String armor) {
@@ -370,6 +489,68 @@ public class ModLoader {
     public static void addAnimation(Object textureFx) {
         org.kylepitcock.legacyconnector.v1_6_4.bridge.Animations147.register(textureFx);
     }
+
+    public static void addAnimation(legacyconnector.v1_6_4.net.minecraft.client.renderer.texturefx.TextureFX textureFx) {
+        org.kylepitcock.legacyconnector.v1_6_4.bridge.Animations147.register(textureFx);
+    }
+
+    /** The name and description of an achievement (the 1.2.x constructor took no text; ModLoader added the lang entries). */
+    public static void addAchievementDesc(legacyconnector.v1_7_10.net.minecraft.stats.Achievement achievement, String name, String description) {
+        if (achievement == null) return;
+        String descKey = achievement.mcc$descriptionKey();
+        String nameKey = descKey.endsWith(".desc") ? descKey.substring(0, descKey.length() - 5) : descKey;
+        LanguageRegistry.instance().addStringLocalization(nameKey, "en_US", name);
+        LanguageRegistry.instance().addStringLocalization(descKey, "en_US", description);
+    }
+
+    /** The burn time the mods give an item: the longest of their {@code addFuel} answers (ModLoader asked every mod for every furnace fuel). */
+    public static int addAllFuel(int id, int metadata) {
+        int best = 0;
+        for (BaseMod m : MODS) best = Math.max(best, m.addFuel(id, metadata));
+        return best;
+    }
+
+    public static void addAllRenderers(Map<Class<? extends Entity>, legacyconnector.v1_7_10.net.minecraft.client.renderer.entity.Render> renderers) {
+        for (BaseMod m : MODS) m.addRenderer(renderers);
+    }
+
+    /** Whether a mod claims the dispensed item and spawned its entity. */
+    public static boolean dispenseEntity(World world, double x, double y, double z, int xVel, int zVel, ItemStack item) {
+        for (BaseMod m : MODS) if (m.dispenseEntity(world, x, y, z, xVel, zVel, item)) return true;
+        return false;
+    }
+
+    /** The game's key list with the mods' keys: the layer lists them itself (see registerKey), so the list is returned as it is. */
+    public static legacyconnector.v1_7_10.net.minecraft.client.settings.KeyBinding[] registerAllKeys(
+            legacyconnector.v1_7_10.net.minecraft.client.settings.KeyBinding[] keys) {
+        return keys;
+    }
+
+    public static void registerAllTextureOverrides(legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureManager textures) {}
+
+    /** Reads {@code path} from the mods' jars (or the game's resources) as an image, as ModLoader read it from the texture pack or the mod. */
+    public static java.awt.image.BufferedImage loadImage(legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureManager textures, String path) throws Exception {
+        String p = path.startsWith("/") ? path.substring(1) : path;
+        java.io.InputStream in = null;
+        for (BaseMod m : MODS) {
+            in = m.getClass().getClassLoader().getResourceAsStream(p);
+            if (in != null) break;
+        }
+        if (in == null) in = ModLoader.class.getClassLoader().getResourceAsStream(p);
+        if (in == null) throw new java.io.FileNotFoundException(path);
+        try (java.io.InputStream stream = in) {
+            return javax.imageio.ImageIO.read(stream);
+        }
+    }
+
+    public static void removeBiome(BiomeGenBase biome) {
+        if (biome != null) legacyconnector.v1_7_10.net.minecraft.world.WorldType.DEFAULT.removeBiome(biome);
+    }
+
+    /** Host entry points of ModLoader that the layer's own lifecycle already covers (world generators, ticks); kept so a mod calling them links. */
+    public static void onTick(float partialTicks, Minecraft game) {}
+
+    public static void populateChunk(legacyconnector.v1_7_10.net.minecraft.world.chunk.IChunkProvider provider, int chunkX, int chunkZ, World world) {}
 
     public static void onItemPickup(EntityPlayer player, ItemStack item) {
         for (BaseMod m : MODS) m.onItemPickup(player, item);
@@ -389,6 +570,32 @@ public class ModLoader {
 
     /** Client-only part, kept in its own class so a server never loads the client types. */
     private static final class ClientHooks {
+        static void registerBlockModel(int id, BaseMod mod, boolean full3D) {
+            legacyconnector.v1_7_10.cpw.mods.fml.client.registry.RenderingRegistry.registerBlockHandler(id,
+                    new legacyconnector.v1_7_10.cpw.mods.fml.client.registry.ISimpleBlockRenderingHandler() {
+                        @Override
+                        public void renderInventoryBlock(Block block, int metadata, int modelId, legacyconnector.v1_7_10.net.minecraft.client.renderer.RenderBlocks renderer) {
+                            mod.renderInvBlock(renderer, block, metadata, modelId);
+                        }
+
+                        @Override
+                        public boolean renderWorldBlock(legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess world, int x, int y, int z, Block block, int modelId,
+                                legacyconnector.v1_7_10.net.minecraft.client.renderer.RenderBlocks renderer) {
+                            return mod.renderWorldBlock(renderer, world, x, y, z, block, modelId);
+                        }
+
+                        @Override
+                        public boolean shouldRender3DInInventory(int modelId) {
+                            return full3D;
+                        }
+
+                        @Override
+                        public int getRenderId() {
+                            return id;
+                        }
+                    });
+        }
+
         static void registerRenderers(BaseMod mod) {
             Map<Class<? extends Entity>, legacyconnector.v1_7_10.net.minecraft.client.renderer.entity.Render> map = new java.util.LinkedHashMap<>();
             mod.addRenderer(map);
