@@ -69,6 +69,17 @@ public final class BlockBridge1122 {
         } catch (RuntimeException | LinkageError e) {
             // a block that cannot answer before it has a world has no tile entity
         }
+        if (!entity) {
+            // hasTileEntity(state) may depend on the state (a spring that has one only as oil, a tap only when attached): the block is an
+            // entity block when ANY of its metadata states has one (newBlockEntity then answers per state)
+            for (int meta = 1; meta < 16 && !entity; meta++) {
+                try {
+                    entity = block.hasTileEntity(block.getStateFromMeta(meta));
+                } catch (RuntimeException | LinkageError e) {
+                    break;
+                }
+            }
+        }
         // a fluid block (Forge's BlockFluidBase or a mod's BlockLiquid): a liquid the modern fluid of its Forge fluid is bound to later (FluidBridge1122)
         boolean fluid = !entity && (block instanceof legacyconnector.v1_12_2.net.minecraftforge.fluids.BlockFluidBase
                 || block instanceof legacyconnector.v1_12_2.net.minecraft.block.BlockLiquid);
