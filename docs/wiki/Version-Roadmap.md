@@ -1,6 +1,6 @@
 # Version roadmap
 
-Which legacy Minecraft versions the layer supports or will support, in order, and why. Written 2026-11-06; 1.3.2 was removed from the roadmap on 2026-11-07 (few mods; its row in the mod-count table below is kept as evidence). Back to [Home](Home.md).
+Which legacy Minecraft versions the layer supports or will support, in order, and why. Written 2026-11-06, state column updated 2026-11-16; 1.3.2 was removed from the roadmap on 2026-11-07 (few mods; its row in the mod-count table below is kept as evidence). Back to [Home](Home.md).
 
 | # | Version | State | Why here | Approach |
 |---|---|---|---|---|
@@ -9,11 +9,18 @@ Which legacy Minecraft versions the layer supports or will support, in order, an
 | 3 | 1.6.4 | Beta (2026-11-08) | Closest old version to 1.7.10 (same `cpw.mods.fml` packages); cheap | Thin forward layer over the 1.7.10 shim: numeric ids, `Icon`, old packets ([estimate](Legacy-1.6.4-Estimate.md), [corpus](Legacy-1.6.4-Corpus.md)) |
 | 4 | 1.5.2 | Alpha (2026-11-07) | Same numeric-id and old packet model as 1.6.4, so a small delta while that work is fresh; the FTB Ultimate/Unleashed era with mods that exist only there (Thaumcraft 3, early Railcraft/Forestry/BuildCraft, Equivalent Exchange 2) | Delta over the 1.6.4 layer |
 | 5 | 1.4.7 | Alpha (2026-11-07) | Same model; the Hexxit era | Delta over 1.5.2 plus obfuscated/flat class names, ModLoader `BaseMod` mods and sprite-sheet textures ([estimate](Legacy-1.4.7-Estimate.md), [corpus](Legacy-1.4.7-Corpus.md)) |
-| 6 | 1.20.1 | Alpha (2026-11-08) | Largest Forge ecosystem; most popular mods have 1.21.1 ports, so the value is the abandoned set; its pipeline is the base of the next three | In-place bytecode migration onto NeoForge 1.21.1 ([estimate](Legacy-1.20.1-Estimate.md)) |
+| 6 | 1.20.1 | Alpha (2026-11-08). Server: the 108-mod ATM 9 subset loads with 0 failures. Client: single mods (CoFH Core, Thermal Foundation, Redstone Arsenal, Ensorcellation) reach a world; the combined set does not yet | Largest Forge ecosystem; most popular mods have 1.21.1 ports, so the value is the abandoned set; its pipeline is the base of the next three | In-place bytecode migration onto NeoForge 1.21.1 ([estimate](Legacy-1.20.1-Estimate.md)) |
 | 7 | 1.19.2 | Planned | Big modpack base, many mods stopped here | 1.19.2 to 1.20.1 renames and diffs on top of the 1.20.1 pipeline; measured 2026-11-16: mostly changed API, not renames ([estimate](Legacy-1.19.2-Estimate.md)) |
 | 8 | 1.18.2 | Planned | Same | Same, one step further back |
 | 9 | 1.16.5 | Planned | Many abandoned mods and packs; Forge 36 still used MCP names | Same pipeline plus the MCP to Mojang names step |
-| 10 | 1.2.5 | Planned | Tekkit Classic / RedPower 2 era: mods that exist nowhere else | Different layer: `ModLoader`/`BaseMod` emulation and flat names, no FML |
+| 10 | 1.2.5 | **Experimental, opt-in** (pulled forward by the maintainer on 2026-11-16, ahead of 1.19.2). Three small server builds load (MagicWands, Backpack, Elemental Creepers); nothing has been run in a client | Tekkit Classic / RedPower 2 era: mods that exist nowhere else | Not a new shim: Calamus + Feather mappings join the 1.2.5 names to the 1.4.7 layer, plus a `ModLoader`/`BaseMod`/ModLoaderMP/Forge 3.x facade ([design and status](Legacy-1.2.5.md), [corpus](Legacy-1.2.5-Corpus.md)) |
+
+## Release 0.5.0
+
+Conditions agreed with the maintainer on 2026-11-16. Until both hold, every fix reaches players through the nightly build and no stable release is cut.
+
+- **(a)** 1.2.5 has a handful of playable content mods (today: three small server builds load, none has been run in a client).
+- **(b)** 1.20.1 has been played in a real client with an ATM 9 subset (today: single mods reach a world, the combined set does not).
 
 ## Estimates (wall-clock, 2026-11-06 evening; plus or minus 50%)
 
@@ -28,7 +35,7 @@ Which legacy Minecraft versions the layer supports or will support, in order, an
 | 1.20.1 | corpus 1 day; first mod 1 to 2 days; broad coverage 1 to 2 weeks |
 | 1.19.2 | measured 2026-11-16 ([estimate](Legacy-1.19.2-Estimate.md)): tables only 1.5 to 2 days; link parity with 1.20.1 6 to 8 days with five agents; Alpha 10 to 14 days |
 | 1.18.2, 1.16.5 | 1 to 2 days each after the 1.20.1 pipeline (not measured; 1.18.2 expected 4 to 5 days after 1.19.2) |
-| 1.2.5 | 2 to 3 days (a different layer) |
+| 1.2.5 | 2 to 3 days (a different layer; the original estimate, started 2026-11-16, see [Legacy 1.2.5](Legacy-1.2.5.md) for what is done) |
 | Fabric 1.20.1 via Sinytra Connector | 3 to 5 days after Forge 1.20.1 works, if the corpus justifies it |
 
 Always in parallel: keep the layer able to follow newer NeoForge/Minecraft host versions (1.21.4 and later). That is not a legacy version but it decides

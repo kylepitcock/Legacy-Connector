@@ -59,3 +59,12 @@ run-verify/
 test-mods-dantdm/
 tools/dev/verify/suites/zz-*
 .lwjgl/
+# Local clutter of test sessions (2026-11-16)
+/test-mods*/
+*.stackdump
+/cache.aside/
+/irisveil.bak
+/build-baseline/
+/tmp_ac/
+.claude/tmp/
+.claude/worktrees/

@@ -110,7 +110,7 @@ Provide both:
 
 ### Slice 3 — complete bytecode reference coverage
 
-**Detailed design:** see [`docs/FORGE1201-PREFLIGHT-SLICE-3-DESIGN.md`](FORGE1201-PREFLIGHT-SLICE-3-DESIGN.md). It records the scanner/archive/mapping architecture, bounded processing rules, report contract, and regression matrix.
+**Detailed design:** see [`docs/FORGE1201-PREFLIGHT-SLICE-3-DESIGN.md`](../FORGE1201-PREFLIGHT-SLICE-3-DESIGN.md). It records the scanner/archive/mapping architecture, bounded processing rules, report contract, and regression matrix.
 
 - Extend the existing ASM inventory to scan nested mod/library bytecode separately from parent classes.
 - Record types in class headers, signatures, annotations, descriptors, exceptions, instructions, invokedynamic bootstrap handles/arguments, method handles, and constant-dynamic values.
