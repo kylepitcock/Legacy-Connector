@@ -161,13 +161,14 @@ public final class Mc125Mappings {
                 for (String line : new String(in.readAllBytes(), StandardCharsets.UTF_8).split("\n")) {
                     String[] p = line.replace("\r", "").split("\t");
                     if (p.length == 4 && !line.startsWith("#")) aliases.put(p[0] + " " + p[1] + "." + p[2], p[3]);
+                    else if (p.length == 3 && p[0].equals("c")) aliases.put("c " + p[1], p[2]); // a class that took over another one's role
                 }
             }
         }
         Map<String, List<String[]>> by147 = new HashMap<>();
         for (String[] m : v147.members) {
             String owner = v147.classes.get(m[1]);
-            by147.computeIfAbsent(m[0] + " " + owner + "." + memberName(m, owner), k -> new ArrayList<>()).add(m);
+            by147.computeIfAbsent(m[0] + " " + m[1] + "|" + memberName(m, owner), k -> new ArrayList<>()).add(m);
         }
         Path out = Path.of(args[6]);
         Files.createDirectories(tableFile(out).getParent());
@@ -184,6 +185,7 @@ public final class Mc125Mappings {
                     String readable = e.getValue();
                     String off147 = readableTo147.get(readable);
                     if (off147 == null) off147 = v147.officialByInter.get(v125.interOf.get(e.getKey())); // same intermediary class, other readable name
+                    if (off147 == null && aliases.containsKey("c " + readable)) off147 = readableTo147.get(aliases.get("c " + readable)); // curated: the class that took the role over
                     int[] a = areaClasses.computeIfAbsent(area(readable), k -> new int[4]);
                     a[0]++;
                     if (off147 == null) {
@@ -212,7 +214,7 @@ public final class Mc125Mappings {
                     if (to == null && class147.containsKey(m[1])) {
                         // a member 1.4.7 has under another name, curated by hand
                         String alias = aliases.get(m[0] + " " + ownerReadable + "." + memberName(m, ownerReadable));
-                        List<String[]> cands = alias == null ? null : by147.get(m[0] + " " + ownerReadable + "." + alias);
+                        List<String[]> cands = alias == null ? null : by147.get(m[0] + " " + class147.get(m[1]) + "|" + alias);
                         if (cands != null) {
                             List<String[]> same = cands.stream().filter(c -> erase(c[3]).equals(erase(m[3]))).toList();
                             if (same.size() == 1) {
@@ -224,7 +226,7 @@ public final class Mc125Mappings {
                     if (to == null) {
                         // the same member with other class types in its descriptor (1.3 retyped Minecraft.theWorld/thePlayer, the integrated server, entity and item classes):
                         // same name and the descriptor equal up to class names, else the only member of that name in the owner
-                        List<String[]> cands = by147.get(m[0] + " " + ownerReadable + "." + memberName(m, ownerReadable));
+                        List<String[]> cands = by147.get(m[0] + " " + class147.get(m[1]) + "|" + memberName(m, ownerReadable));
                         if (cands != null && class147.containsKey(m[1])) {
                             String wanted = erase(m[3]);
                             List<String[]> same = cands.stream().filter(c -> erase(c[3]).equals(wanted)).toList();
@@ -282,7 +284,15 @@ public final class Mc125Mappings {
                 for (String[] m : v125.members) {
                     if (!m[0].equals("m") || !class147.containsKey(m[1]) || joinedKeys.contains(m[1] + "|" + m[0] + "|" + m[2] + "|" + m[3])) continue;
                     String ownerReadable = v125.classes.get(m[1]);
-                    List<String[]> cands = by147.get("m " + ownerReadable + "." + memberName(m, ownerReadable));
+                    List<String[]> cands = by147.get("m " + class147.get(m[1]) + "|" + memberName(m, ownerReadable));
+                    String aliasName = aliases.get("m " + ownerReadable + "." + memberName(m, ownerReadable));
+                    if (aliasName != null) { // a rename curated from evidence (manual-aliases.tsv): its candidates join the ones of the same name, and the argument list may differ
+                        List<String[]> extra = by147.get("m " + class147.get(m[1]) + "|" + aliasName);
+                        if (extra != null) {
+                            cands = new ArrayList<>(cands == null ? List.of() : cands);
+                            cands.addAll(extra);
+                        }
+                    }
                     if (cands == null) continue;
                     String oldDesc = v125.readableDesc(m[3]);
                     String[] bestRow = null;
