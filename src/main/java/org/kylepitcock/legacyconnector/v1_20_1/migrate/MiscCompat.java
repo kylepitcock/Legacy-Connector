@@ -356,7 +356,11 @@ public final class MiscCompat {
             case "IN_WATER" -> net.minecraft.world.entity.SpawnPlacementTypes.IN_WATER;
             case "IN_LAVA" -> net.minecraft.world.entity.SpawnPlacementTypes.IN_LAVA;
             case "NO_RESTRICTIONS" -> net.minecraft.world.entity.SpawnPlacementTypes.NO_RESTRICTIONS;
-            default -> throw new IllegalArgumentException("No enum constant SpawnPlacements.Type." + name);
+            default -> {
+                net.minecraft.world.entity.SpawnPlacementType custom = RoundCompat.CUSTOM_PLACEMENTS.get(name);
+                if (custom == null) throw new IllegalArgumentException("No enum constant SpawnPlacements.Type." + name);
+                yield custom;
+            }
         };
     }
 
