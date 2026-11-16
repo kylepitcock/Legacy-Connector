@@ -233,9 +233,13 @@ public final class HolderCompat {
         } catch (IllegalStateException notThereYet) {
             // 1.20.1 had the registry as a static from the start: libraries keep it in a static field while the mod is constructed (SuperMartijn642's Core Lib).
             // The reference is a view that asks the real registry on every call; it works once a world's registries exist.
-            return lazyEnchantmentRegistry();
+            net.minecraft.core.Registry<Enchantment> lazy = lazyView;
+            if (lazy == null) lazyView = lazy = lazyEnchantmentRegistry();
+            return lazy;
         }
     }
+
+    private static volatile net.minecraft.core.Registry<Enchantment> lazyView;
 
     @SuppressWarnings("unchecked")
     private static net.minecraft.core.Registry<Enchantment> lazyEnchantmentRegistry() {

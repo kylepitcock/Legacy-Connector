@@ -130,7 +130,8 @@ final class Datagen1201 {
         n.invisibleTypeAnnotations = null;
         n.recordComponents = null;
         n.permittedSubclasses = null;
-        n.nestMembers = null;
+        // nested classes stay nest members of this host: a shell nest member keeps its static helpers, and its private ones are reached from the host (Mantle's MantleTags.Blocks.init)
+        if (n.nestMembers != null) n.nestMembers = new ArrayList<>(n.nestMembers.stream().filter(jar::contains).toList());
         // the super class becomes Object unless it is another class of the jar (which is a shell too, or kept as it was)
         if (n.superName != null && !jar.contains(n.superName) && !n.superName.equals("java/lang/Record")) n.superName = "java/lang/Object";
         List<MethodNode> kept = new ArrayList<>();
