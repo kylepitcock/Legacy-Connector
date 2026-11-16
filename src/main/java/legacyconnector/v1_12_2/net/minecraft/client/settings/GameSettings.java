@@ -761,6 +761,11 @@ public class GameSettings {
         Opt.setFloat(Options.CHAT_HEIGHT_FOCUSED, v);
     }
 
+    /** The cloud mode in effect: none when the render distance is under 4 chunks (1.12's {@code shouldRenderClouds}). */
+    public int shouldRenderClouds() {
+        return mcc$get$renderDistanceChunks(this) >= 4 ? mcc$get$clouds(this) : 0;
+    }
+
     /** 0 off, 1 fast, 2 fancy. */
     public static int mcc$get$clouds(GameSettings s) {
         try {

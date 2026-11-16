@@ -28,6 +28,18 @@ public class EntityRenderer implements legacyconnector.v1_7_10.net.minecraft.cli
     }
 
     /** Finds what the crosshair is on (block or entity), from the current camera entity: the modern pick. */
+    /** The field of view in degrees: the player's setting (or 70 when {@code useSetting} is false) scaled by speed and effects. */
+    public float getFOVModifier(float partialTicks, boolean useSetting) {
+        var mc = net.minecraft.client.Minecraft.getInstance();
+        float fov = useSetting ? mc.options.fov().get().floatValue() : 70.0F;
+        if (mc.player != null) {
+            fov *= mc.player.getFieldOfViewModifier();
+            if (mc.player.getHealth() <= 0.0F) fov /= (1.0F - 500.0F / (Math.min(mc.player.deathTime + partialTicks, 20.0F) + 500.0F)) * 2.0F + 1.0F;
+            if (mc.player.isEyeInFluid(net.minecraft.tags.FluidTags.WATER)) fov = fov * 60.0F / 70.0F;
+        }
+        return fov;
+    }
+
     public void getMouseOver(float partialTicks) {
         var mc = net.minecraft.client.Minecraft.getInstance();
         if (mc.gameRenderer != null && mc.level != null && mc.getCameraEntity() != null) mc.gameRenderer.pick(partialTicks);

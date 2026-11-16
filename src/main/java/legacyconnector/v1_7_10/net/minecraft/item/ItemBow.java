@@ -29,6 +29,20 @@ public class ItemBow extends legacyconnector.v1_7_10.net.minecraft.item.Item {
         this.setMaxDamage(384);
     }
 
+    private legacyconnector.v1_7_10.net.minecraft.util.IIcon[] iconArray;
+
+    @Override
+    public void registerIcons(legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.IIconRegister register) {
+        super.registerIcons(register);
+        iconArray = new legacyconnector.v1_7_10.net.minecraft.util.IIcon[bowPullIconNameArray.length];
+        for (int i = 0; i < iconArray.length; ++i) iconArray[i] = register.registerIcon(getIconString() + "_" + bowPullIconNameArray[i]);
+    }
+
+    /** The icon of the bow while drawn: one of the three pulling stages. */
+    public legacyconnector.v1_7_10.net.minecraft.util.IIcon getItemIconForUseDuration(int stage) {
+        return iconArray == null || stage < 0 || stage >= iconArray.length ? null : iconArray[stage];
+    }
+
     @Override
     public void onPlayerStoppedUsing(ItemStack stack, World world, EntityPlayer player, int itemInUseCount) {
         int charge = getMaxItemUseDuration(stack) - itemInUseCount;

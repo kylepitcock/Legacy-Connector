@@ -185,6 +185,11 @@ public class Minecraft {
         return mc().isSameThread();
     }
 
+    /** The same for a task without a result. */
+    public com.google.common.util.concurrent.ListenableFuture addScheduledTask(Runnable task) {
+        return addScheduledTask(java.util.concurrent.Executors.callable(task));
+    }
+
     /** Runs the task on the client thread (now when already there); the future gives its result. */
     public com.google.common.util.concurrent.ListenableFuture addScheduledTask(java.util.concurrent.Callable task) {
         com.google.common.util.concurrent.SettableFuture future = com.google.common.util.concurrent.SettableFuture.create();

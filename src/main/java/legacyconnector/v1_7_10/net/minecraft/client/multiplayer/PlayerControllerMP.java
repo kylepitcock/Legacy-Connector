@@ -137,6 +137,12 @@ public class PlayerControllerMP {
         if (m != null) m.continueDestroyBlock(new net.minecraft.core.BlockPos(x, y, z), net.minecraft.core.Direction.from3DDataValue(side));
     }
 
+    /** Breaks the block at (x, y, z) now (as the client does when the mining finishes); true when it was destroyed. */
+    public boolean onPlayerDestroyBlock(int x, int y, int z, int side) {
+        var m = mode();
+        return m != null && m.destroyBlock(new net.minecraft.core.BlockPos(x, y, z));
+    }
+
     /** Releases the item in use (a drawn bow fires). */
     public void onStoppedUsingItem(EntityPlayer player) {
         var m = mode();

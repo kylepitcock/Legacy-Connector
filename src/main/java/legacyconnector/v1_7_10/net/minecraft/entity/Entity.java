@@ -1447,6 +1447,11 @@ public abstract class Entity implements ICommandSender {
         return true;
     }
 
+    /** How many spawn points a teleport or spawn search tries (3 for most entities). */
+    public int getMaxSafePointTries() {
+        return 3;
+    }
+
     public boolean canBeCollidedWith() {
         return !mcc$hosted() && mcc$entity != null && mcc$entity.isPickable();
     }
