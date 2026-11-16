@@ -52,6 +52,11 @@ public class EnumHelper {
                 new Class<?>[0], new Object[0]);
     }
 
+    /** Adds a painting art (title, size and texture offset in pixels); the painting view finds it by its title. */
+    public static legacyconnector.v1_12_2.net.minecraft.entity.item.EntityPainting.EnumArt addArt(String name, String tile, int sizeX, int sizeY, int offsetX, int offsetY) {
+        return addEnum(legacyconnector.v1_12_2.net.minecraft.entity.item.EntityPainting.EnumArt.class, name, tile, sizeX, sizeY, offsetX, offsetY);
+    }
+
     /** Adds a constant to a real enum (a synthesized or the mod's own); parameter types inferred from the values. */
     public static <T extends Enum<?>> T addEnum(Class<T> enumType, String enumName, Object... paramValues) {
         return org.kylepitcock.legacyconnector.core.LegacyEnums.add(enumType, enumName, paramValues);

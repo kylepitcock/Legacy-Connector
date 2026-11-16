@@ -514,6 +514,13 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
         return false;
     }
 
+    /** Forge 14.23.5.2800+: the same with the mob that asks (null for a generic query). */
+    public legacyconnector.v1_12_2.net.minecraft.pathfinding.PathNodeType getAiPathNodeType(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state,
+            legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
+            legacyconnector.v1_12_2.net.minecraft.entity.EntityLiving entity) {
+        return getAiPathNodeType(state, world, pos);
+    }
+
     /** Forge: the path node type of the block for mobs' path finding (null: decided from the block as vanilla does). */
     public legacyconnector.v1_12_2.net.minecraft.pathfinding.PathNodeType getAiPathNodeType(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state,
             legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {

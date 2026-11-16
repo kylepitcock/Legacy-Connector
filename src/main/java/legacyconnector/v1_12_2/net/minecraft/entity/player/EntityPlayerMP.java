@@ -37,6 +37,24 @@ public class EntityPlayerMP extends EntityPlayer implements legacyconnector.v1_1
         return p == null ? EntityPlayer.EnumChatVisibility.FULL : EntityPlayer.EnumChatVisibility.getEnumChatVisibility(p.getChatVisibility().getId());
     }
 
+    /** Game time (ms) of the player's last action, for the idle kick. */
+    public long getLastActiveTime() {
+        var p = mcc$serverPlayer();
+        return p == null ? 0L : p.getLastActionTime();
+    }
+
+    /** Ends the invulnerability a dimension change gives. */
+    public void clearInvulnerableDimensionChange() {
+        mcc$set$invulnerableDimensionChange(this, false);
+    }
+
+    /** The server's fall bookkeeping for a move the client reported (landing hands the fall to the block below). */
+    public void handleFalling(double y, boolean onGroundIn) {
+        legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos below = getPosition().down();
+        legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state = mcc$world() == null ? null : mcc$world().getBlockState(below);
+        updateFallState(y, onGroundIn, state, below);
+    }
+
     public net.minecraft.server.level.ServerPlayer mcc$serverPlayer() {
         return (net.minecraft.server.level.ServerPlayer) mcc$entity;
     }
