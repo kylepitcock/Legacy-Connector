@@ -211,6 +211,15 @@ Backpack server (`BaseModMp`: 1 item, 17 recipes, 0 failed), Elemental Creepers 
 - **ModLoaderMP**: `registerGUI(mod, id)` registers an FML GUI handler (server element: the container the server staged with `ModLoader.openGUI(player, id, inventory, container)`, client element: the mod's `handleGUI(id)`); the channel ends are plain methods (`receiveOnClient`, `receiveOnServer`) and a loopback test sends encoded
   packet 230 to the right mod by id. Server-build `BaseMod` shapes: `receiveCustomPacket(packet, player)` (payload channels), `receiveChatPacket(text, player)`, `serverDisconnect(player)`. Tests: `ModLoaderHooks125Test`, `ModLoaderMpLoopbackTest`, `ForgeHandlers125Test`, `ChunkAnchors125Test`, `SpecialInventory125Test`.
 
+### Run time, round 3: classes with no 1.4.7 counterpart (2026-11-16)
+
+The loader worker's list of classes corpus mods name (`LegacyChunkCache`, `LoadWorldChunkPacket`, `AddItemPacket`, `BossEntity`, `WorldSaveConflictScreen`, `MultiplayerWorld$BlockReset`, `CommandHandler`, `ChunkCache`,
+`SaplingItem`, `LogItem`) counted every class that names them. Re-counted with the real Calamus/Feather names, the side taken from the jar and game-class copies excluded: only `BossEntity` (IC2 1.103 mining laser, Twilight
+Forest hydra, client and server), `CommandSource` (Mystcraft, PortalGun, server) and `ChunkCache` (Tropicraft's `World` subclass) are named by retained mod code; the rest only by patched game classes (Forge, ModLoader(MP),
+NEWTON, Mystcraft) that the loader drops, so they need nothing. `BossEntity` is `EntityDragonBase` in 1.2.5 (read with `javap` from the Mojang jar): the shim class `net/minecraft/src/EntityDragonBase` has its rules
+(constructor sets `maxHealth` 100, `takeDamage(part, source, int)` forwards to `attackEntityFrom`, which refuses, `doTakeDamage` is the living entity's own handling; `EntityDragonBase125Test`). Mapping the 1.2.5 class onto it, and a class
+tier by Calamus intermediary id (`CommandSource`, `ClientWorld`, `ServerChunkCache`, ... which Feather names differently in 1.4.7) are loader requests (`1.2.5-loader-requests-from-shim.md`, section 4). Not run in a game.
+
 ### Offline link probe over the real corpus (2026-11-16)
 
 `python -I tools/compat/probe.py <dir> --mc 1.2.5 --dry-run --no-history` (passes `-Pmappings125` to `checkLegacyMod`; `-Pmc125Unresolved=<file>` also appends every game member the join could not name).
