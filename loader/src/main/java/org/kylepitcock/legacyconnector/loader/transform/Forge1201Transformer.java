@@ -517,6 +517,8 @@ public final class Forge1201Transformer {
         for (ClassNode node : nodes) {
             if (PalladiumKubeJS1201.dropLegacyKubejsClass(node.name)) continue;
             dropDuplicateBridges(node, result);
+            // two classes renamed onto one (TextureStitchEvent and its Post): the inner class entry would name the class as its own outer class, which the JVM rejects
+            if (node.innerClasses != null) node.innerClasses.removeIf(ic -> ic.name.equals(ic.outerName));
             int softened = soft == null ? 0 : soft.apply(node);
             byte[] bytes;
             if (migrated.get(node) > 0 || softened == 2) {
