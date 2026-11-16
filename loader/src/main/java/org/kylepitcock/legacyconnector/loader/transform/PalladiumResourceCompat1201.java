@@ -1508,8 +1508,16 @@ PlayerEvents.tick(e => {
         clearGravitySlam(p, playerId);
         damageSlamImpact(p, x, y, z, 6.0, 15.0);
 
-        e.level.createExplosion(x, y, z).strength(1.9).explosionMode('none').exploder(p).explode();
-        e.level.createExplosion(x, y, z).strength(.2).explosionMode('tnt').exploder(p).explode();
+        e.level.explode(x, y, z, {
+            source: p,
+            strength: 1.9,
+            mode: 'none'
+        });
+        e.level.explode(x, y, z, {
+            source: p,
+            strength: 0.2,
+            mode: 'tnt'
+        });
 
         e.level.spawnParticles("minecraft:explosion", false, x, y, z, 1, 0.5, 1, 5, 8);
         e.level.spawnParticles("minecraft:explosion_emitter", false, x, y, z, 1, 0.75, 1, 2, 1);
