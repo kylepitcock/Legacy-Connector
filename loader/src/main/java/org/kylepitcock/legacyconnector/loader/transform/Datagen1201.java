@@ -106,7 +106,11 @@ final class Datagen1201 {
         if ((n.access & Opcodes.ACC_INTERFACE) == 0 && DATAGEN_NAME.matcher(n.name).matches()
                 && !(n.superName != null && n.superName.startsWith("net/minecraft/world/level/levelgen/"))) return true;
         if (datagenSuper(n.superName, known)) return true;
-        if (n.interfaces != null) for (String i : n.interfaces) if (datagenSuper(i, known)) return true;
+        // a class that extends a runtime game class (a block entity, an entity...) is not a data generator because it implements an interface whose NAME looks like one
+        // (Immersive Engineering's IEBlockInterfaces.BlockstateProvider, a block state interface of its block entities)
+        boolean runtimeSuper = n.superName != null && (n.superName.startsWith("net/minecraft/") || n.superName.startsWith("net/minecraftforge/"))
+                && !n.superName.startsWith("net/minecraft/data/") && !n.superName.contains("/data/") && !n.superName.contains("/datagen/");
+        if (!runtimeSuper && n.interfaces != null) for (String i : n.interfaces) if (datagenSuper(i, known)) return true;
         int dollar = n.name.lastIndexOf('$');
         if (dollar > 0 && known.contains(n.name.substring(0, dollar))) return true;
         return false;
