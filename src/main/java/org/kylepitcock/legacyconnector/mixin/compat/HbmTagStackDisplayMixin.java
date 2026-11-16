@@ -12,7 +12,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Redirect;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 
 /**
  * PACK COMPAT, performance (HBM's Nuclear Tech Mod port, mod id "hbm"; not legacy code; remove when HBM fixes it).
@@ -57,12 +58,12 @@ public abstract class HbmTagStackDisplayMixin {
         }
     }
 
-    @Redirect(method = "getDisplayStacks()Ljava/util/List;", remap = false, require = 0,
+    @WrapOperation(method = "getDisplayStacks()Ljava/util/List;", remap = false, require = 0,
             at = @At(value = "INVOKE", target = "Lnet/minecraft/core/DefaultedRegistry;iterator()Ljava/util/Iterator;", remap = false))
-    private Iterator<Item> legacyconnector$tagMembersOnly(DefaultedRegistry<Item> registry) {
-        if (!org.kylepitcock.legacyconnector.core.LegacyConfig.hbmFastTagStacks()) return registry.iterator();
+    private Iterator<Item> legacyconnector$tagMembersOnly(DefaultedRegistry<Item> registry, Operation<Iterator<Item>> original) {
+        if (!org.kylepitcock.legacyconnector.core.LegacyConfig.hbmFastTagStacks()) return original.call(registry);
         TagKey<Item> tag = legacyconnector$tag();
-        if (tag == null || !tag.isFor(registry.key())) return registry.iterator();
+        if (tag == null || !tag.isFor(registry.key())) return original.call(registry);
         List<Item> members = new ArrayList<>();
         for (Holder<Item> holder : registry.getTagOrEmpty(tag)) members.add(holder.value());
         members.sort(Comparator.comparingInt(registry::getId));
