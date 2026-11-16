@@ -26,3 +26,4 @@ lib architectury-13.0.11-neoforge.jar
 1.20.1 MysticalAgriculture-1.20.1-7.0.23.jar
 1.20.1 mcw-bridges-3.1.0-mc1.20.1forge.jar
 1.20.1 mcw-doors-1.1.2-mc1.20.1forge.jar
+lib ferritecore-7.0.3-neoforge.jar

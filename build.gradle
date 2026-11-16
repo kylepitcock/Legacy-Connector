@@ -79,6 +79,8 @@ neoForge {
             gameDirectory = project.file('run-servertest')
             programArgument '--nogui'
             systemProperty 'legacytest.autostop', 'true'
+            // -PmixinExport: writes the classes after mixin to <gameDir>/.mixin.out and counts the injections (verifies that a mixin applies)
+            if (project.hasProperty('mixinExport')) { jvmArgument '-Dmixin.debug.export=true'; jvmArgument '-Dmixin.debug.countInjections=true' }
             systemProperty 'legacyconnector.entitySelfTest', 'true'
         }
 
