@@ -269,6 +269,42 @@ public final class Mc125Mappings {
                     pairs.append("  ").append(v125.classes.get(m[1])).append(": ").append(memberName(m, v125.classes.get(m[1]))).append(" ").append(m[3]).append(" -> ")
                             .append(memberName(t, v147.classes.get(t[1]))).append("\n");
                 }
+                // B rows: a method of a joined class that 1.4.7 has under the same readable name but another signature (1.3 added the hit position to onItemUse, ...). Not a rename of
+                // calls (the call sites cannot be given the new arguments); a mod class that DECLARES the old signature gets the 1.4.7 signature as a bridge method (OverrideBridges).
+                int bridgeRows = 0, bridgeSkipped = 0;
+                StringBuilder bridgeReport = new StringBuilder();
+                for (String[] m : v125.members) {
+                    if (!m[0].equals("m") || !class147.containsKey(m[1]) || joinedKeys.contains(m[1] + "|" + m[0] + "|" + m[2] + "|" + m[3])) continue;
+                    String ownerReadable = v125.classes.get(m[1]);
+                    List<String[]> cands = by147.get("m " + ownerReadable + "." + memberName(m, ownerReadable));
+                    if (cands == null) continue;
+                    String oldDesc = v125.readableDesc(m[3]);
+                    String[] bestRow = null;
+                    int bestScore = Integer.MIN_VALUE;
+                    boolean tie = false;
+                    String[] reason = new String[1];
+                    for (String[] c : cands) {
+                        if (!c[1].equals(class147.get(m[1])) || usedTargets.contains(c[1] + "|m|" + c[2] + "|" + c[3])) continue;
+                        org.kylepitcock.legacyconnector.loader.transform.OverrideBridges.Plan plan = org.kylepitcock.legacyconnector.loader.transform.OverrideBridges.plan(oldDesc, v147.readableDesc(c[3]), reason);
+                        if (plan == null) continue;
+                        if (plan.score() > bestScore) {
+                            bestScore = plan.score();
+                            bestRow = c;
+                            tie = false;
+                        } else if (plan.score() == bestScore) {
+                            tie = true;
+                        }
+                    }
+                    if (bestRow == null || tie) {
+                        bridgeSkipped++;
+                        continue;
+                    }
+                    bridgeRows++;
+                    table.write("B\t" + sides[s] + "\t" + m[1] + "\t" + m[2] + "\t" + m[3] + "\t" + bestRow[1] + "\t" + bestRow[2] + "\t" + bestRow[3] + "\n");
+                    bridgeReport.append("  ").append(ownerReadable).append(": ").append(memberName(m, ownerReadable)).append(' ').append(oldDesc).append(" -> ").append(v147.readableDesc(bestRow[3])).append("\n");
+                }
+                report.append("\n== ").append(s == 0 ? "client" : "server").append(": ").append(bridgeRows).append(" bridge rows (override signatures changed between versions), ")
+                        .append(bridgeSkipped).append(" ambiguous or unbridgeable\n").append(bridgeReport);
                 report.append("\n== ").append(s == 0 ? "client" : "server").append(": classes joined ").append(classesJoined).append(" of ").append(v125.classes.size())
                         .append(", members joined ").append(membersJoined).append(" of ").append(membersTotal).append(" (").append(joinedByErasure)
                         .append(" by name with the class types of the descriptor ignored, ").append(joinedByName).append(" fields by name only, ").append(joinedByInter)

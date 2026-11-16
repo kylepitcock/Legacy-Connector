@@ -186,10 +186,49 @@ public final class Notch125To147 {
         }
         Resolver resolver = new Resolver(table, n147, local);
         int renamed = 0;
+        LAST_BRIDGES.set(new int[2]);
+        int[] counts = new int[2];
+        List<String> unbridged = new ArrayList<>();
+        Remapper byClass = new Remapper() {
+            @Override
+            public String map(String internalName) {
+                return table.classes.getOrDefault(internalName, internalName);
+            }
+        };
         for (String name : List.copyOf(classes.keySet())) {
             byte[] bytes = classes.get(name);
+            // overrides of game methods whose signature differs in 1.4.7 (the host calls the 1.4.7 shape): a bridge with that shape calls the mod's method
+            List<Bridge> bridges = new ArrayList<>();
+            Local self = local.get(name);
+            new ClassReader(bytes).accept(new org.objectweb.asm.ClassVisitor(org.objectweb.asm.Opcodes.ASM9) {
+                @Override
+                public org.objectweb.asm.MethodVisitor visitMethod(int access, String mname, String mdesc, String sig, String[] ex) {
+                    if ((access & (org.objectweb.asm.Opcodes.ACC_STATIC | org.objectweb.asm.Opcodes.ACC_PRIVATE | org.objectweb.asm.Opcodes.ACC_ABSTRACT)) != 0 || mname.startsWith("<")
+                            || mname.length() > 3 || self == null || self.superName() == null) return null;
+                    String[] hit = resolver.lookup("M", self.superName(), mname, mdesc);
+                    if (hit == null) hit = resolver.lookup("B", self.superName(), mname, mdesc);
+                    if (hit == null) return null;
+                    String oldDesc = byClass.mapDesc(mdesc);
+                    if (oldDesc.equals(hit[2])) return null;
+                    counts[0]++;
+                    String[] reason = new String[1];
+                    OverrideBridges.Plan plan = OverrideBridges.plan(oldDesc, hit[2], reason);
+                    if (plan == null) {
+                        unbridged.add(name + "." + hit[1] + oldDesc + " -> " + hit[2] + ": " + reason[0]);
+                    } else {
+                        counts[1]++;
+                        bridges.add(new Bridge(hit[1], oldDesc, hit[2], plan));
+                    }
+                    return null;
+                }
+            }, ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
+            LAST_BRIDGES.get()[0] += counts[0];
+            counts[0] = 0;
             ClassWriter cw = new ClassWriter(0);
-            new ClassReader(bytes).accept(new ClassRemapper(new DescFix(cw, table.descFix(), n147, local), resolver), 0);
+            org.objectweb.asm.ClassVisitor tail = bridges.isEmpty() ? cw : new BridgeAdder(cw, bridges);
+            LAST_BRIDGES.get()[1] += counts[1];
+            counts[1] = 0;
+            new ClassReader(bytes).accept(new ClassRemapper(new DescFix(tail, table.descFix(), n147, local), resolver), 0);
             classes.put(name, cw.toByteArray());
             renamed++;
         }
@@ -201,6 +240,9 @@ public final class Notch125To147 {
                     + String.join(", ", baseEdits.stream().limit(8).toList()) + (baseEdits.size() > 8 ? ", ..." : ""));
         }
         LAST_UNRESOLVED.set(new TreeSet<>(resolver.unresolved));
+        LAST_UNBRIDGED.set(unbridged);
+        notes.add(LAST_BRIDGES.get()[0] + " override(s) of game methods whose signature changed in 1.3, " + LAST_BRIDGES.get()[1] + " bridged to the 1.4.7 signature"
+                + (unbridged.isEmpty() ? "" : " (not bridged, e.g. " + unbridged.stream().limit(3).toList() + ")"));
         notes.add("Minecraft 1.2.5 names rewritten to 1.4.7's in " + renamed + " class(es) (" + resolver.unresolved.size() + " unresolved game reference(s)"
                 + (resolver.unresolved.isEmpty() ? "" : ", e.g. " + resolver.unresolved.stream().limit(5).toList()) + ")");
         return notes;
@@ -311,13 +353,27 @@ public final class Notch125To147 {
         /** Name of the 1.4.7 member for a 1.2.5 reference, or the name unchanged when it is not a game member. */
         private String resolve(String kind, String owner, String name, String desc) {
             if (name.length() > 3 && !table.classes.containsKey(owner)) return name; // readable name of a mod member: nothing to rename
+            String[] hit = lookup(kind, owner, name, desc);
+            if (hit == null && kind.equals("M")) hit = lookup("B", owner, name, desc); // same name, other signature in 1.4.7: an override gets a bridge (OverrideBridges)
+            if (hit != null) return hit[1];
+            if (name.length() <= 3 && table.classes.containsKey(owner)) {
+                unresolved.add(owner + "." + name + desc);
+                // a 1.2.5 member 1.4.7 does not have: its short name could be ANOTHER member of 1.4.7 (the obfuscation is re-randomized every release), so it must not stay as it is;
+                // the marker never exists, which the link report shows and the synthesizer stubs, instead of calling the wrong method
+                return UNJOINED_PREFIX + name;
+            }
+            return name;
+        }
+
+        /** The table row ({owner147, name147, desc147}) of {@code kind owner.name desc} on the class or its supertypes (jar classes first, then 1.4.7's hierarchy), or null. */
+        String[] lookup(String kind, String owner, String name, String desc) {
             Set<String> seen = new HashSet<>();
             List<String> queue = new ArrayList<>(List.of(owner));
             for (int i = 0; i < queue.size() && i < 64; i++) {
                 String cls = queue.get(i);
                 if (!seen.add(cls)) continue;
                 String[] hit = table.members.get(kind + " " + cls + "." + name + " " + desc);
-                if (hit != null) return hit[1];
+                if (hit != null) return hit;
                 Local l = local.get(cls);
                 if (l != null) {
                     if (l.superName() != null) queue.add(l.superName());
@@ -327,13 +383,45 @@ public final class Notch125To147 {
                     if (up != null) for (String s : up) if (s != null) queue.add(table.classesBack.getOrDefault(s, s));
                 }
             }
-            if (name.length() <= 3 && table.classes.containsKey(owner)) {
-                unresolved.add(owner + "." + name + desc);
-                // a 1.2.5 member 1.4.7 does not have: its short name could be ANOTHER member of 1.4.7 (the obfuscation is re-randomized every release), so it must not stay as it is;
-                // the marker never exists, which the link report shows and the synthesizer stubs, instead of calling the wrong method
-                return UNJOINED_PREFIX + name;
-            }
-            return name;
+            return null;
         }
+    }
+
+    /** A bridge method to add to a mod class: {@code name} with the 1.4.7 signature {@code newDesc}, calling the class's own {@code name oldDesc}. */
+    private record Bridge(String name, String oldDesc, String newDesc, OverrideBridges.Plan plan) {}
+
+    /** Adds the bridge methods of a class when it has been written. */
+    private static final class BridgeAdder extends org.objectweb.asm.ClassVisitor {
+        final List<Bridge> bridges;
+        String owner;
+
+        BridgeAdder(org.objectweb.asm.ClassVisitor next, List<Bridge> bridges) {
+            super(org.objectweb.asm.Opcodes.ASM9, next);
+            this.bridges = bridges;
+        }
+
+        @Override
+        public void visit(int version, int access, String name, String sig, String superName, String[] interfaces) {
+            owner = name;
+            super.visit(version, access, name, sig, superName, interfaces);
+        }
+
+        @Override
+        public void visitEnd() {
+            for (Bridge b : bridges) OverrideBridges.emit(cv, owner, b.name(), b.oldDesc(), b.newDesc(), b.plan());
+            super.visitEnd();
+        }
+    }
+
+    /** {changed-signature overrides, bridged} of the latest {@link #apply} on this thread, and why the others were not bridged. */
+    private static final ThreadLocal<int[]> LAST_BRIDGES = ThreadLocal.withInitial(() -> new int[2]);
+    private static final ThreadLocal<List<String>> LAST_UNBRIDGED = ThreadLocal.withInitial(List::of);
+
+    public static int[] lastBridgeCounts() {
+        return LAST_BRIDGES.get().clone();
+    }
+
+    public static List<String> lastUnbridged() {
+        return LAST_UNBRIDGED.get();
     }
 }

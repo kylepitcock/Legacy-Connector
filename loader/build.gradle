@@ -821,7 +821,7 @@ tasks.register('genMappings125', JavaExec) {
     group = 'legacy'
     description = 'Opt-in: joins Ornithe Calamus+Feather 1.2.5 (client, server) with 1.4.7 into build/generated/mappings125 (notch-to-147.tsv, join-report.txt).'
     dependsOn tasks.named('classes')
-    classpath = sourceSets.main.output
+    classpath = sourceSets.main.output + configurations.runtimeClasspath
     mainClass = 'org.kylepitcock.legacyconnector.loader.mapping.Mc125Mappings'
     def outDir = layout.buildDirectory.dir('generated/mappings125')
     outputs.dir(outDir)
