@@ -230,13 +230,13 @@ public final class ForgeApiTail1201 {
         return null;
     }
 
-    /** Brewing recipes are registered through RegisterBrewingRecipesEvent now; recipes added the old way are accepted and not brewed. */
+    /** Brewing recipes are registered through RegisterBrewingRecipesEvent now; recipes added the old way are kept and replayed into the real brewing recipes (LegacyBrewing). */
     public static boolean brewAddRecipe(net.minecraft.world.item.crafting.Ingredient ingredient, net.minecraft.world.item.crafting.Ingredient input, net.minecraft.world.item.ItemStack output) {
-        return true;
+        return org.kylepitcock.legacyconnector.v1_20_1.migrate.LegacyBrewing.addRecipe(ingredient, input, output);
     }
 
     public static java.util.List brewGetRecipes() {
-        return new java.util.ArrayList<>();
+        return org.kylepitcock.legacyconnector.v1_20_1.migrate.LegacyBrewing.recipes();
     }
 
     // ---- item pickup, sleeping and sapling growth hooks of Forge's ForgeEventFactory

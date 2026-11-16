@@ -1069,11 +1069,40 @@ public final class Forge1201Transformer {
         StringBuilder out = new StringBuilder();
         for (String line : text.split("\\R", -1)) {
             Matcher m = AT_LINE.matcher(line);
-            if (m.matches() && srg.containsKey(m.group(2))) out.append(m.group(1)).append(srg.get(m.group(2))).append(m.group(3));
-            else out.append(line);
-            out.append('\n');
+            if (m.matches() && srg.containsKey(m.group(2))) line = m.group(1) + srg.get(m.group(2)) + m.group(3);
+            String gone = removedMember(line);
+            if (gone != null) {
+                AT_LOG.info("Dropped access transformer line for a member 1.21.1 no longer has: {}", gone);
+                out.append("# dropped (no such member in 1.21.1): ").append(line.strip()).append('\n');
+                continue;
+            }
+            out.append(line).append('\n');
         }
         return out.toString();
+    }
+
+    private static final org.slf4j.Logger AT_LOG = org.slf4j.LoggerFactory.getLogger("Legacy Connector");
+
+    private static final Pattern AT_MEMBER = Pattern.compile("^\\s*(?:public|protected|private|default)(?:[-+]f)?\\s+([\\w.$]+)\\s+([^\\s#]+)\\s*(?:#.*)?$");
+
+    /**
+     * "class.member" of an access transformer line naming a member that the 1.21.1 class (known to the member index) does not declare, else null.
+     * A line for a member the host lacks cannot be applied (NeoForge refuses it), and the mod's code that needed it cannot work either; the
+     * code's own references are reported separately. Wildcards, class lines and classes the index does not know are kept.
+     */
+    static String removedMember(String line) {
+        Matcher m = AT_MEMBER.matcher(line);
+        if (!m.matches()) return null;
+        String owner = m.group(1).replace('.', '/');
+        String member = m.group(2);
+        if (member.equals("*") || member.equals("*()") || member.startsWith("<")) return null;
+        McMembers1201.Members known = McMembers1201.get(owner);
+        if (known == null) return null;
+        int paren = member.indexOf('(');
+        boolean present;
+        if (paren >= 0) present = known.methods().contains(member);
+        else present = known.fields().stream().anyMatch(f -> f.startsWith(member + ":"));
+        return present ? null : m.group(1) + "." + member;
     }
 
     private static boolean looksLikeMixinConfig(byte[] data) {

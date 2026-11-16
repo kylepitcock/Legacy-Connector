@@ -465,6 +465,13 @@ public final class ForgeApi1201 {
         return holder.isBound() && predicate.test(holder.get()) ? Optional.of(holder.get()) : Optional.empty();
     }
 
+    /** {@code RegistryObject.filter(predicate)} of the variant returning a RegistryObject: the holder itself when it is bound and matches, else an unbound one. */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static DeferredHolder holderFilterSelf(DeferredHolder holder, Predicate predicate) {
+        if (holder.isBound() && predicate.test(holder.get())) return holder;
+        return DeferredHolder.create(net.minecraft.resources.ResourceKey.create(holder.getKey().registryKey(), net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("legacyconnector", "empty")));
+    }
+
     @SuppressWarnings({"unchecked", "rawtypes"})
     public static Object holderOrElse(DeferredHolder holder, Object other) {
         return holder.isBound() ? holder.get() : other;
