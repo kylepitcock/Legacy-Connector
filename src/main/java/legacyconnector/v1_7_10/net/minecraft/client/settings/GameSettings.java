@@ -91,6 +91,19 @@ public class GameSettings {
         if (packs != null) for (Object o : packs) modern().resourcePacks.add(String.valueOf(o));
     }
 
+    /** Phantom: which chat messages show (the game's chat visibility option; FULL on a server). */
+    @Deprecated
+    public legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer.EnumChatVisibility chatVisibility;
+
+    public static legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer.EnumChatVisibility mcc$get$chatVisibility(GameSettings s) {
+        if (!net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) return legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer.EnumChatVisibility.FULL;
+        return legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer.EnumChatVisibility.mcc$of(modern().chatVisibility().get());
+    }
+
+    public static void mcc$set$chatVisibility(GameSettings s, legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer.EnumChatVisibility v) {
+        if (v != null && net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) modern().chatVisibility().set(v.mcc$modern());
+    }
+
     /** The volume of a slider, 0-1. */
     public float getSoundLevel(legacyconnector.v1_7_10.net.minecraft.client.audio.SoundCategory category) {
         return category == null ? 1.0F : modern().getSoundSourceVolume(category.mcc$source());
