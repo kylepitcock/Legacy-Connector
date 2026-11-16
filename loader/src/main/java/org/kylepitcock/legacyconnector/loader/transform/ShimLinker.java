@@ -293,7 +293,7 @@ public final class ShimLinker {
 
     /**
      * The shim lacks {@code owner.name(desc)} but declares the same method with the same return type and the same arguments except that some
-     * primitive ones are wider (float to double, int to long...), or a number return of another type: spill the arguments, widen the differing ones, call that and convert the result. Only done when
+     * primitive ones are wider (or reference ones are subtypes of the declared type) (float to double, int to long...), or a number return of another type: spill the arguments, widen the differing ones, call that and convert the result. Only done when
      * exactly one such method exists on the owner's superclass chain.
      */
     private static AbstractInsnNode widenedMethod(MethodNode method, MethodInsnNode m, Hierarchy h, LinkReport report, String from) {
@@ -314,7 +314,7 @@ public final class ShimLinker {
                 Type ret = Type.getReturnType(d);
                 if (!ret.equals(wantedRet) && returnConversion(ret, wantedRet) < 0) continue;
                 boolean ok = true;
-                for (int i = 0; i < args.length && ok; i++) ok = args[i].equals(target[i]) || CtorChooser.widens(args[i], target[i]);
+                for (int i = 0; i < args.length && ok; i++) ok = args[i].equals(target[i]) || CtorChooser.widens(args[i], target[i]) || referenceNarrower(args[i], target[i], h);
                 if (!ok) continue;
                 if (found != null && !found.equals(d)) return null;   // ambiguous
                 found = d;
@@ -346,6 +346,12 @@ public final class ShimLinker {
         int conv = returnConversion(Type.getReturnType(found), wantedRet);
         if (conv >= 0) method.instructions.insert(m, new InsnNode(conv));
         return m;
+    }
+
+    /** A call argument of reference type {@code arg} where the shim's method declares a supertype of it (1.5.2's EntityLiving where 1.7.10 takes EntityLivingBase): passes as is. */
+    private static boolean referenceNarrower(Type arg, Type target, Hierarchy h) {
+        return arg.getSort() == Type.OBJECT && target.getSort() == Type.OBJECT && !target.getInternalName().equals("java/lang/Object")
+                && h.isSubclassOf(arg.getInternalName(), target.getInternalName());
     }
 
     /** The instruction turning a returned number of type {@code from} into {@code to} (1.5.2's int damage became a float in 1.7.10), or -1. */
