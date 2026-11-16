@@ -26,6 +26,9 @@ import org.slf4j.LoggerFactory;
  */
 public final class NetworkBridge {
     private static final Logger LOG = LoggerFactory.getLogger("LegacyConnector/Network");
+    /** {@code -Dlegacyconnector.traceMessages=true}: log (the first 400) legacy messages as they arrive, to tell "never sent" from "handler did nothing". */
+    private static final boolean TRACE = Boolean.getBoolean("legacyconnector.traceMessages");
+    private static int traced;
     private static final String VERSION = "1.7.10";
     private static final Map<String, Channel> CHANNELS = new ConcurrentHashMap<>();
 
@@ -96,6 +99,7 @@ public final class NetworkBridge {
                 MessageContext ctx = toServer
                         ? new MessageContext(Side.SERVER, new NetHandlerPlayServer((EntityPlayerMP) EntityBridge.wrap(context.player())))
                         : new MessageContext(Side.CLIENT, null);
+                if (TRACE && traced++ < 400) LOG.info("Legacy message {} on channel {} arrived {} (player {})", type.getName(), name, toServer ? "at the server" : "at the client", context.player().getName().getString());
                 IMessage reply = handler.onMessage(message, ctx);
                 if (reply != null) context.reply(encode(reply));
             } catch (Exception e) {

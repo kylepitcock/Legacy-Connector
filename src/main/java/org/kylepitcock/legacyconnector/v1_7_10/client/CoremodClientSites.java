@@ -102,6 +102,20 @@ public final class CoremodClientSites {
         }
     }
 
+    /** {@link CoremodSites.Client#PLAYER_TRANSLATION}: the legacy drawing code moves and scales the pose of the player model before it is rotated. */
+    public static void playerTranslation(net.minecraft.world.entity.player.Player player, com.mojang.blaze3d.vertex.PoseStack pose) {
+        if (!CoremodSites.Client.PLAYER_TRANSLATION.active() || handFailures > 5) return;
+        RenderContext.beginWorld(pose, net.minecraft.client.Minecraft.getInstance().renderBuffers().bufferSource(), net.minecraft.client.renderer.LightTexture.FULL_BRIGHT,
+                net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY);
+        try {
+            CoremodSites.Client.PLAYER_TRANSLATION.fire(null, EntityBridge.wrap(player), 0.0, 0.0, 0.0);
+        } catch (RuntimeException | LinkageError ex) {
+            if (handFailures++ < 3) org.slf4j.LoggerFactory.getLogger("LegacyConnector/Coremods").warn("A coremod hook failed (player render translation)", ex);
+        } finally {
+            RenderContext.end();
+        }
+    }
+
     /** {@link CoremodSites.Client#ROTATE_CORPSE}: the legacy drawing code rotates the pose of the player model. */
     public static void rotateCorpse(net.minecraft.world.entity.player.Player player, com.mojang.blaze3d.vertex.PoseStack pose, float partialTick) {
         if (!CoremodSites.Client.ROTATE_CORPSE.active() || handFailures > 5) return;

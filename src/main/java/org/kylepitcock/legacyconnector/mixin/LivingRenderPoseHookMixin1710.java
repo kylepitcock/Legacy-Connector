@@ -32,6 +32,11 @@ public abstract class LivingRenderPoseHookMixin1710 {
         original.call(model, entity, swing, amount, age, yaw, pitch);
     }
 
+    @Inject(method = "setupRotations", at = @At("HEAD"), require = 0)
+    private void legacyconnector$coremodPlayerTranslation(LivingEntity entity, PoseStack pose, float ageInTicks, float rotationYaw, float partialTick, float scale, CallbackInfo ci) {
+        if (entity instanceof Player player && CoremodSites.Client.PLAYER_TRANSLATION.listed()) CoremodClientSites.playerTranslation(player, pose);
+    }
+
     @Inject(method = "setupRotations", at = @At("TAIL"), require = 0)
     private void legacyconnector$coremodRotateCorpse(LivingEntity entity, PoseStack pose, float ageInTicks, float rotationYaw, float partialTick, float scale, CallbackInfo ci) {
         if (entity instanceof Player player && CoremodSites.Client.ROTATE_CORPSE.listed()) CoremodClientSites.rotateCorpse(player, pose, partialTick);
