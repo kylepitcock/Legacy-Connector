@@ -19,6 +19,8 @@ final class PalladiumResourceCompat1201 {
             "addon/alienevo/kubejs_scripts/playlist_cycle.js";
     static final String ALIEN_EVO_SLAM =
             "data/alienevo/kubejs_scripts/slam.js";
+    static final String ALIEN_EVO_MOTION_TO_ENTITY =
+            "addon/alienevo/kubejs_scripts/motion_to_entity.js";
     static final String ALIEN_EVO_QUICK_CHANGE =
             "data/alienevo/kubejs_scripts/quick_change.js";
     static final String ALIEN_EVO_BLOCK_PARTICLES =
@@ -270,6 +272,7 @@ final class PalladiumResourceCompat1201 {
         // replaces the original tick block containing both modifier call sites.
         rewriteAlienEvoSlamAttributeOperations(resources);
         rewriteAlienEvoSlamLandingState(resources);
+        rewriteAlienEvoMotionToEntityTargetChecks(resources);
         // Both ScriptableAbility callbacks receive the active entity; KubeJS 7 no longer exposes Utils.server.
         rewrite(resources, ALIEN_EVO_STAT_ABILITY, new String[][] {
                 {"Utils.server.scoreboard", "entity.server.scoreboard", "2"},
@@ -1537,6 +1540,43 @@ PlayerEvents.tick(e => {
                 + replacementWithOriginalEndings
                 + normalized.substring(end);
         resources.put(ALIEN_EVO_SLAM, migrated.getBytes(StandardCharsets.UTF_8));
+        return 1;
+    }
+
+    /**
+     * KubeJS 7 entity queries return KubeJS entity handles. Use the supported
+     * EntityKJS isLiving() predicate instead of a Java instanceof check when
+     * filtering those handles. This keeps Cannonbolt's multi_hit (Ability 3)
+     * and other users of motion_to_entity able to acquire living mob targets.
+     */
+    private static int rewriteAlienEvoMotionToEntityTargetChecks(Map<String, byte[]> resources) {
+        byte[] original = resources.get(ALIEN_EVO_MOTION_TO_ENTITY);
+        if (original == null) return 0;
+
+        String script = new String(original, StandardCharsets.UTF_8);
+        String lineEnding = script.contains("\r\n") ? "\r\n" : "\n";
+        String normalized = script.replace("\r\n", "\n");
+        String legacyDeclaration =
+                "    const LivingEntity = Java.loadClass('net.minecraft.world.entity.LivingEntity');\n";
+        String legacyCheck = "!(nearby instanceof LivingEntity)";
+        String migratedCheck = "!nearby.isLiving()";
+        int declarationCount = occurrences(normalized, legacyDeclaration);
+        int legacyCount = occurrences(normalized, legacyCheck);
+        int migratedCount = occurrences(normalized, migratedCheck);
+
+        if (declarationCount == 0 && legacyCount == 0 && migratedCount == 2) return 0;
+        if (declarationCount != 1 || legacyCount != 2 || migratedCount != 0) {
+            throw new IllegalStateException(
+                    "AlienEvo motion_to_entity.js has an unexpected living-target filter shape: "
+                            + "LivingEntity imports=" + declarationCount
+                            + ", instanceof filters=" + legacyCount
+                            + ", isLiving filters=" + migratedCount);
+        }
+
+        String migrated = normalized.replace(legacyDeclaration, "")
+                .replace(legacyCheck, migratedCheck);
+        String output = lineEnding.equals("\n") ? migrated : migrated.replace("\n", lineEnding);
+        resources.put(ALIEN_EVO_MOTION_TO_ENTITY, output.getBytes(StandardCharsets.UTF_8));
         return 1;
     }
 
