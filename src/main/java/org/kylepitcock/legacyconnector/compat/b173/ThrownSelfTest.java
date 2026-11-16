@@ -19,6 +19,8 @@ public final class ThrownSelfTest {
             String name=item.getClass().getSimpleName();
             if(!java.util.Set.of("ItemNotchHammer","ItemSlimeEggs").contains(name))continue;
             boolean hammer=name.equals("ItemNotchHammer");
+            // other tests' mobs near this shared spot would take the projectile's hit instead of the target
+            level.getEntities((net.minecraft.world.entity.Entity)null,area,e->!(e instanceof net.minecraft.world.entity.player.Player)).forEach(net.minecraft.world.entity.Entity::discard);
             var target=net.minecraft.world.entity.EntityType.ZOMBIE.create(level);
             target.setPos(pos.getX()+0.5,pos.getY(),pos.getZ()+4.5);target.setNoAi(true);level.addFreshEntity(target);
             try {

@@ -450,6 +450,8 @@ public final class LegacyRemapper extends Remapper {
         if (version != LegacyVersion.VB1_7_3) return false;
         // Beta GuiAPI uses TWL model/widget types; preserve their hierarchy through the versioned shims.
         if (internalName.startsWith("de/matthiasmann/twl/")) return true;
+        // InfSprites (a Beta sprite-sheet extension): mods built against it (a BuildCraft Transport build) call its API; the layer has no sheet limit
+        if (internalName.startsWith("net/mine_diver/infsprites/")) return true;
         // b1.7.3 mods call LWJGL's OpenAL directly while they load (IndustrialCraft 2's audio): the real AL classes initialised on the
         // mod-loading thread, before the sound engine made a context, fail for good and the client's resource reload then never ends.
         // Their OpenAL goes to the synthesized API (silent) until the layer emulates it.

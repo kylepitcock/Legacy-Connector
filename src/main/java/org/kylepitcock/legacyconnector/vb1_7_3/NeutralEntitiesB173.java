@@ -17,6 +17,9 @@ public final class NeutralEntitiesB173 {
                             && java.util.Objects.equals(type.getProtectionDomain().getCodeSource(),mod.getClass().getProtectionDomain().getCodeSource())){installed=true;break;}
                 }catch(SecurityException ignored){}
             }
+            // packages several mods bundle (IC2's ic2.*, also shipped by Dynamo) are moved into the shared-API module by the loader
+            if(!installed&&type.getModule()!=null&&"legacyconnector.shared.apis".equals(type.getModule().getName())&&!ContentB173.loadedMods().isEmpty()
+                    &&type.getClassLoader()==ContentB173.loadedMods().iterator().next().getClass().getClassLoader())installed=true;
             if(!installed)return "class is not owned by an installed original mod";
             try{restoreConstructor(type);}catch(NoSuchMethodException e){return "no World restore constructor";}
             String closure=AnimalsB173.unsupportedBehaviour(type,java.util.Set.of("shouldRender","getShadowRadius","getTargetingMargin","setVelocityClient","getBoundingBox","getCollisionAgainstShape","bypassesSteppingEffects","animateHurt"));

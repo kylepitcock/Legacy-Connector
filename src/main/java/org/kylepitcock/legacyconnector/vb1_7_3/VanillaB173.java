@@ -104,7 +104,8 @@ public final class VanillaB173 {
             blocks++;
             var modern = view.mcc$modern;
             if (modern != null) {
-                boolean opaque = modern.defaultBlockState().canOcclude();
+                // Beta's opaque cube: a full block that hides what is behind it (a snow layer, slab or stairs can occlude but is not one)
+                boolean opaque = modern.defaultBlockState().isSolidRender(net.minecraft.world.level.EmptyBlockGetter.INSTANCE, net.minecraft.core.BlockPos.ZERO);
                 Block.BLOCKS_OPAQUE[row.id()] = opaque;
                 Block.BLOCKS_LIGHT_OPACITY[row.id()] = opaque ? 255 : 0;
                 Block.BLOCKS_ALLOW_VISION[row.id()] = !opaque;

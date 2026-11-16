@@ -51,6 +51,14 @@ public final class RendererContextB173 {
     public static Scope open(Function<String,ResourceLocation> textures,BiConsumer<ModelGeometryB173.Draw,ResourceLocation> sink,Extras extras){var previous=CURRENT.get();CURRENT.set(new State(textures,sink,extras));return new Scope(previous);}
     public static boolean active(){return CURRENT.get()!=null;}
     public static Matrix4f matrix(){return new Matrix4f(CURRENT.get().poses.peek());}
+    /** The camera's view rotation (installed by the client): Beta's GL modelview included it, the native pose does not. */
+    public static volatile java.util.function.Supplier<Matrix4f> VIEW_ROTATION;
+    private static Matrix4f view(){var view=VIEW_ROTATION;Matrix4f m=view==null?null:view.get();return m==null?new Matrix4f():m;}
+    /** Beta's glGetFloat(GL_MODELVIEW_MATRIX): the view rotation times the current matrix, column-major. */
+    public static void modelView(java.nio.FloatBuffer out){float[] values=new float[16];view().mul(CURRENT.get().poses.peek(),new Matrix4f()).get(values);int at=out.position();for(int i=0;i<16;i++)out.put(at+i,values[i]);}
+    /** Beta's glLoadMatrix of a modelview (a billboard that cleared its rotation): the view rotation is taken back out of it. */
+    public static void loadModelView(java.nio.FloatBuffer in){float[] values=new float[16];int at=in.position();for(int i=0;i<16;i++)values[i]=in.get(at+i);
+        var loaded=new Matrix4f().set(values);var s=CURRENT.get();if(s.matrixMode==5890){s.texturePoses.peek().set(loaded);return;}s.poses.peek().set(view().invert(new Matrix4f()).mul(loaded));}
     public static int argb(){return CURRENT.get().argb;}
     public static Normal normal(){return CURRENT.get().normal;}
     public static void normal(float x,float y,float z){CURRENT.get().normal=new Normal(x,y,z);}

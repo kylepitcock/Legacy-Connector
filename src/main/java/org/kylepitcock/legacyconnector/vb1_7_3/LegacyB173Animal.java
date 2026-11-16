@@ -224,6 +224,33 @@ public final class LegacyB173Animal extends PathfinderMob implements B173LivingH
         }finally{minecraft.world=previousWorld;}
     }
     public void mcc$baseTick(){if(inTick)throw new IllegalStateException("Recursive Beta base tick");inTick=true;ticks++;try{legacy.lastSwingAnimationProgress=legacy.swingAnimationProgress;if(legacy.attackCooldown>0)legacy.attackCooldown--;flushView();super.tick();syncView();}finally{inTick=false;}}
+    /**
+     * An original mob that overrides Beta's isTouchingLava / isSubmergedInWater (a naga that lava does not hurt, a lich that never drowns) is
+     * asked by the native lava damage and drowning; the Beta defaults answer from this native entity, so they are not asked (no recursion).
+     */
+    private static final java.util.Map<Class<?>,boolean[]> FLUID_OVERRIDES=new java.util.concurrent.ConcurrentHashMap<>();
+    private boolean[] fluidOverrides(){
+        return FLUID_OVERRIDES.computeIfAbsent(legacy.getClass(),c->{
+            boolean lava=false,water=false;
+            try{lava=c.getMethod("isTouchingLava").getDeclaringClass()!=legacyconnector.vb1_7_3.net.minecraft.entity.Entity.class;}catch(ReflectiveOperationException e){}
+            try{water=c.getMethod("isSubmergedInWater").getDeclaringClass()!=legacyconnector.vb1_7_3.net.minecraft.entity.Entity.class;}catch(ReflectiveOperationException e){}
+            return new boolean[]{lava,water};
+        });
+    }
+    private boolean inFluidQuery;
+    @Override public boolean isInLava(){
+        if(!inFluidQuery&&legacy!=null&&!level().isClientSide&&fluidOverrides()[0]){
+            inFluidQuery=true;try{return legacy.isTouchingLava();}catch(RuntimeException|LinkageError e){return super.isInLava();}finally{inFluidQuery=false;}
+        }
+        return super.isInLava();
+    }
+    @Override public boolean isEyeInFluid(net.minecraft.tags.TagKey<net.minecraft.world.level.material.Fluid> fluid){
+        if(!inFluidQuery&&fluid==net.minecraft.tags.FluidTags.WATER&&legacy!=null&&!level().isClientSide&&fluidOverrides()[1]){
+            inFluidQuery=true;try{return legacy.isSubmergedInWater();}catch(RuntimeException|LinkageError e){return super.isEyeInFluid(fluid);}finally{inFluidQuery=false;}
+        }
+        return super.isEyeInFluid(fluid);
+    }
+
     @Override public void aiStep(){if(legacy==null||level().isClientSide){super.aiStep();return;}syncView();autonomous(()->legacy.tickMovement());}
     public void baseMovement(){if(inMovement)throw new IllegalStateException("Recursive Beta base movement");inMovement=true;movements++;try{flushView();super.aiStep();syncView();}finally{inMovement=false;}}
     @Override public void jumpFromGround(){

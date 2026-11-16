@@ -7,7 +7,7 @@ import legacyconnector.vb1_7_3.net.minecraft.sound.BlockSoundGroup;
 import org.kylepitcock.legacyconnector.vb1_7_3.ContentB173;
 
 /**
- * Beta 1.7.3 {@code Block} (obfuscated {@code uu}; MCP {@code Block}). A block is a numeric id (0-255) in {@link #BLOCKS} plus 4 bits of
+ * Beta 1.7.3 {@code Block} (obfuscated {@code uu}; MCP {@code Block}). A block is a numeric id (0-255 in Beta, up to {@link #ID_LIMIT} here) in {@link #BLOCKS} plus 4 bits of
  * metadata in the world; its textures are sprite indices into terrain.png ({@link #textureId}, {@link #getTexture(int, int)}). The
  * constructor claims the id exactly as the original did (an occupied slot throws). Content of ModLoader mods becomes modern blocks after
  * the mods' lifecycle ({@code BridgeB173}); vanilla blocks are views of the modern ones ({@code VanillaB173}). Members that take worlds,
@@ -34,14 +34,19 @@ public class Block {
         }
     };
 
-    public static Block[] BLOCKS = new Block[256];
-    public static boolean[] BLOCKS_RANDOM_TICK = new boolean[256];
-    public static boolean[] BLOCKS_OPAQUE = new boolean[256];
-    public static boolean[] BLOCKS_WITH_ENTITY = new boolean[256];
-    public static int[] BLOCKS_LIGHT_OPACITY = new int[256];
-    public static boolean[] BLOCKS_ALLOW_VISION = new boolean[256];
-    public static int[] BLOCKS_LIGHT_LUMINANCE = new int[256];
-    public static boolean[] BLOCKS_IGNORE_META_UPDATE = new boolean[256];
+    /**
+     * Block ids run to 32000, as with the Block ID Expansion jar mod of the era (Beta itself stopped at 256): blocks and items share one id
+     * space, an id above 255 is a block when nothing else holds that item id. Ids below {@link #BETA_LIMIT} are the ones Beta had.
+     */
+    public static final int ID_LIMIT = 32000, BETA_LIMIT = 256;
+    public static Block[] BLOCKS = new Block[ID_LIMIT];
+    public static boolean[] BLOCKS_RANDOM_TICK = new boolean[ID_LIMIT];
+    public static boolean[] BLOCKS_OPAQUE = new boolean[ID_LIMIT];
+    public static boolean[] BLOCKS_WITH_ENTITY = new boolean[ID_LIMIT];
+    public static int[] BLOCKS_LIGHT_OPACITY = new int[ID_LIMIT];
+    public static boolean[] BLOCKS_ALLOW_VISION = new boolean[ID_LIMIT];
+    public static int[] BLOCKS_LIGHT_LUMINANCE = new int[ID_LIMIT];
+    public static boolean[] BLOCKS_IGNORE_META_UPDATE = new boolean[ID_LIMIT];
 
     public int textureId;
     public int id;
@@ -238,6 +243,9 @@ public class Block {
     }
 
     public boolean isOpaque() {
+        // a view of a base-game block answers from its opacity (a snow layer is not an opaque cube; Millenaire's pathing walks through it)
+        if (mcc$owner == null && mcc$modern != null && !(mcc$modern instanceof org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Block)
+                && id > 0 && id < BLOCKS_OPAQUE.length && BLOCKS[id] == this) return BLOCKS_OPAQUE[id];
         return true;
     }
 

@@ -81,7 +81,7 @@ public final class BucketBowSelfTest {
         try {
             use(level,p);
             var arrows=level.getEntitiesOfClass(LegacyB173Arrow.class,area);
-            require(arrows.size()==1,"one arrow spawned");require(p.getInventory().items.get(1).getCount()==1,"one ammo consumed");
+            require(arrows.size()==1,"one arrow spawned: "+arrows.size()+" "+arrows);require(p.getInventory().items.get(1).getCount()==1,"one ammo consumed");
             var arrow=arrows.getFirst();var start=arrow.position();float health=target.getHealth();
             require(!arrow.texture().equals(ProjectileTexturesB173.FALLBACK),"mod projectile texture selected: "+arrow.legacy.getClass());
             var assets=new java.util.HashMap<String,java.util.function.Supplier<byte[]>>();

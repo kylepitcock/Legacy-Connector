@@ -174,7 +174,9 @@ public final class DimensionRegistrationsB173 {
         var effects=new JsonObject();var fog=provider.getFogColor(0,0);
         effects.addProperty("fog_color",((int)(Math.max(0,Math.min(1,fog.x))*255)<<16)|((int)(Math.max(0,Math.min(1,fog.y))*255)<<8)|(int)(Math.max(0,Math.min(1,fog.z))*255));
         effects.addProperty("water_color",4159204);effects.addProperty("water_fog_color",329011);effects.addProperty("sky_color",biome.getSkyColor(.8F)&0xffffff);
-        if(biome.grassColor!=0)effects.addProperty("grass_color",biome.grassColor&0xffffff);if(biome.foliageColor!=0)effects.addProperty("foliage_color",biome.foliageColor&0xffffff);json.add("effects",effects);
+        // Beta's two biome colours (yarn's grassColor/foliageColor: the map colour and an unused one) never tinted grass or leaves, which took
+        // the temperature/rainfall colour map, as the native biome does from the values above; written as tints they paint leaves white
+        json.add("effects",effects);
         var spawners=new JsonObject();spawners.add("monster",spawns(biome.spawnableMonsters,net.minecraft.world.entity.MobCategory.MONSTER));
         spawners.add("creature",spawns(biome.spawnablePassive,net.minecraft.world.entity.MobCategory.CREATURE));spawners.add("water_creature",spawns(biome.spawnableWaterCreatures,net.minecraft.world.entity.MobCategory.WATER_CREATURE));
         json.add("spawners",spawners);json.add("spawn_costs",new JsonObject());json.add("carvers",new JsonObject());json.add("features",new JsonArray());return json;

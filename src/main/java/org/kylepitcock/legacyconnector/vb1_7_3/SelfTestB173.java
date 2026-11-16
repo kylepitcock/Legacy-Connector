@@ -148,6 +148,14 @@ public final class SelfTestB173 {
                 int metas = b instanceof LegacyB173EntityBlock ? 16 : 1;
                 for (int meta = 0; meta < metas; meta++) {
                     BlockPos pos = base.offset((n % 32) * 2, 0, (n / 32) * 2);
+                    // a subtype the block makes no tile entity for (onBlockAdded, or Forge's per-metadata factory) does not exist in the mod
+                    // (IC2's generator has six)
+                    if (meta > 0) {
+                        level.setBlock(pos, b.defaultBlockState().setValue(LegacyB173Block.META, meta), 3);
+                        boolean exists = level.getBlockEntity(pos) instanceof LegacyB173BlockEntity host && host.legacyIfPresent() != null;
+                        level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+                        if (!exists) continue;
+                    }
                     n++;
                     tried++;
                     String name = BuiltInRegistries.BLOCK.getKey(b) + (meta > 0 ? "@" + meta : "");
@@ -163,16 +171,27 @@ public final class SelfTestB173 {
                             if (meta > 0) stack.set(net.minecraft.core.component.DataComponents.BLOCK_STATE,
                                     net.minecraft.world.item.component.BlockItemStateProperties.EMPTY.with(LegacyB173Block.META, meta));
                             player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, stack);
-                            stack.useOn(new net.minecraft.world.item.context.UseOnContext(player, net.minecraft.world.InteractionHand.MAIN_HAND,
+                            int failuresBefore = LegacyB173Block.CALLBACK_FAILURES.get();
+                            try { stack.useOn(new net.minecraft.world.item.context.UseOnContext(player, net.minecraft.world.InteractionHand.MAIN_HAND,
                                     new net.minecraft.world.phys.BlockHitResult(net.minecraft.world.phys.Vec3.atCenterOf(pos.below()).add(0, 0.5, 0),
-                                            net.minecraft.core.Direction.UP, pos.below(), false)));
+                                            net.minecraft.core.Direction.UP, pos.below(), false))); }
+                            finally { if (LegacyB173Block.CALLBACK_FAILURES.get() != failuresBefore) notes.add(name + ": a callback failed while placing it from its item"); }
                             player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, net.minecraft.world.item.ItemStack.EMPTY);
                         }
-                        if (level.getBlockState(pos).getBlock() == b) byItem++;
+                        if (level.getBlockState(pos).getBlock() == b) {
+                            byItem++;
+                            int placedMeta = level.getBlockState(pos).getValue(LegacyB173Block.META);
+                            if (placedMeta != meta) notes.add(name + ": placed from its item as metadata " + placedMeta);
+                            if (b instanceof LegacyB173EntityBlock && !(level.getBlockEntity(pos) instanceof LegacyB173BlockEntity placedHost && placedHost.legacyIfPresent() != null))
+                                notes.add(name + ": placed from its item without a tile entity (" + level.getBlockEntity(pos) + ")");
+                        }
                         else level.setBlock(pos, state, 3);
                         var hit = new net.minecraft.world.phys.BlockHitResult(net.minecraft.world.phys.Vec3.atCenterOf(pos), net.minecraft.core.Direction.UP, pos, false);
-                        level.getBlockState(pos).useWithoutItem(level, player, hit);
-                        if (!(player.containerMenu instanceof LegacyB173Menu menu)) continue;
+                        var clickResult = level.getBlockState(pos).useWithoutItem(level, player, hit);
+                        if (!(player.containerMenu instanceof LegacyB173Menu menu)) {
+                            if (clickResult.consumesAction() && b instanceof LegacyB173EntityBlock) notes.add(name + ": right click used, no menu (" + player.containerMenu.getClass().getSimpleName() + ")");
+                            continue;
+                        }
                         var container = menu.legacy();
                         opened++;
                         slots += menu.slots.size();
