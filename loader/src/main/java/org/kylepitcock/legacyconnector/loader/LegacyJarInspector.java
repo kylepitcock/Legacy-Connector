@@ -80,6 +80,8 @@ public final class LegacyJarInspector {
             // A 1.12.2 library jar built from a 1.15 template keeps a stray mods.toml next to its FML coremod plugin (Obfuscate 0.4.2 for 1.12.2).
             boolean strayModsToml = zip.getEntry("META-INF/neoforge.mods.toml") == null && zip.getEntry("fabric.mod.json") == null
                     && zip.getEntry("META-INF/MANIFEST.MF") != null && legacyCorePlugin(zip);
+            // A pre-1.13 jar with a decoy mods.toml (made so that a modern Forge stops with a message; it pins minecraft to [1.4.7] and ships an mcmod.info).
+            strayModsToml |= decoyModsToml(zip);
             // Anything that already speaks a modern metadata format is not ours to touch.
             if (zip.getEntry("META-INF/neoforge.mods.toml") != null
                     || (zip.getEntry("META-INF/mods.toml") != null && !strayModsToml)
@@ -748,6 +750,18 @@ public final class LegacyJarInspector {
             }
         }
         return null;
+    }
+
+    private static final java.util.regex.Pattern DECOY_MC_RANGE = java.util.regex.Pattern.compile(
+            "modId\\s*=\\s*[\"']minecraft[\"'][^\\[]*?versionRange\\s*=\\s*[\"']\\[1\\.([0-9]|1[0-2])(\\.[0-9]+)?\\][\"']", java.util.regex.Pattern.DOTALL);
+
+    /** A mods.toml that only exists to stop modern loaders: it pins {@code minecraft} to one pre-1.13 version and the jar also carries an {@code mcmod.info}. */
+    static boolean decoyModsToml(ZipFile zip) throws IOException {
+        ZipEntry toml = zip.getEntry("META-INF/mods.toml");
+        if (toml == null || zip.getEntry("mcmod.info") == null || zip.getEntry("META-INF/neoforge.mods.toml") != null || zip.getEntry("fabric.mod.json") != null) return false;
+        try (InputStream in = zip.getInputStream(toml)) {
+            return DECOY_MC_RANGE.matcher(new String(in.readAllBytes(), StandardCharsets.UTF_8)).find();
+        }
     }
 
     private static boolean legacyCorePlugin(ZipFile zip) throws IOException {
