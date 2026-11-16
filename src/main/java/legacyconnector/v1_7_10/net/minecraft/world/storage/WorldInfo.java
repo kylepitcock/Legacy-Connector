@@ -230,4 +230,26 @@ public class WorldInfo {
     public legacyconnector.v1_7_10.net.minecraft.nbt.NBTBase getAdditionalProperty(String name) {
         return mcc$additional == null ? null : mcc$additional.get(name);
     }
+
+    /** The level data as 1.7.10 saved it ({@code level.dat}'s Data compound): a copy of the detached data, or the live world's values. */
+    public legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound getNBTTagCompound() {
+        if (saved() != null) return (legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound) saved().copy();
+        legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound tag = new legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound();
+        tag.setLong("RandomSeed", getSeed());
+        tag.setString("LevelName", getWorldName());
+        tag.setLong("Time", getWorldTotalTime());
+        tag.setLong("DayTime", getWorldTime());
+        tag.setInteger("SpawnX", getSpawnX());
+        tag.setInteger("SpawnY", getSpawnY());
+        tag.setInteger("SpawnZ", getSpawnZ());
+        tag.setBoolean("raining", isRaining());
+        tag.setInteger("rainTime", getRainTime());
+        tag.setBoolean("thundering", isThundering());
+        tag.setInteger("thunderTime", getThunderTime());
+        tag.setBoolean("hardcore", isHardcoreModeEnabled());
+        tag.setBoolean("allowCommands", areCommandsAllowed());
+        tag.setBoolean("MapFeatures", isMapFeaturesEnabled());
+        tag.setBoolean("initialized", isInitialized());
+        return tag;
+    }
 }
