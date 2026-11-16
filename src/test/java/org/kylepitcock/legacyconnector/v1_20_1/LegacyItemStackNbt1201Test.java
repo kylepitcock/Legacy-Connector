@@ -6,10 +6,14 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.CustomData;
+import org.kylepitcock.legacyconnector.v1_20_1.migrate.ItemStackNbt;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -58,6 +62,64 @@ class LegacyItemStackNbt1201Test {
         liveTag.putString("storedCode", "123456");
 
         assertEquals("123456", LegacyItemStackNbt1201.getNbt(stack).getString("storedCode"));
+    }
+
+    @Test
+    void bucketTagReconstructsLegacyRootFromComponentsWithoutMutatingStack() {
+        ItemStack stack = new ItemStack(Items.COD_BUCKET);
+
+        CompoundTag residual = new CompoundTag();
+        residual.putString("moddedRootKey", "kept");
+        residual.putInt("Age", 2);
+        CompoundTag staleEntityTag = new CompoundTag();
+        staleEntityTag.putString("stale", "must be replaced");
+        residual.put("EntityTag", staleEntityTag);
+        CompoundTag display = new CompoundTag();
+        display.putString("LoreMarker", "preserved");
+        display.putString("Name", "{\\"text\\":\\"stale name\\"}");
+        residual.put("display", display);
+        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(residual));
+
+        CompoundTag bucketData = new CompoundTag();
+        bucketData.putInt("Age", 25);
+        bucketData.putInt("BucketVariantTag", 1234);
+        bucketData.putString("bucketModKey", "component");
+        stack.set(DataComponents.BUCKET_ENTITY_DATA, CustomData.of(bucketData));
+
+        CompoundTag entityData = new CompoundTag();
+        entityData.putString("id", "minecraft:cod");
+        entityData.putString("componentOnly", "entity data");
+        stack.set(DataComponents.ENTITY_DATA, CustomData.of(entityData));
+
+        stack.set(DataComponents.CUSTOM_NAME, Component.literal("Bucket Cod"));
+
+        CompoundTag legacy = ItemStackNbt.getBucketTag(stack, RegistryAccess.EMPTY);
+
+        assertEquals("kept", legacy.getString("moddedRootKey"));
+        assertEquals(25, legacy.getInt("Age"));
+        assertEquals(1234, legacy.getInt("BucketVariantTag"));
+        assertEquals("component", legacy.getString("bucketModKey"));
+        assertEquals("minecraft:cod", legacy.getCompound("EntityTag").getString("id"));
+        assertEquals("entity data", legacy.getCompound("EntityTag").getString("componentOnly"));
+        assertFalse(legacy.getCompound("EntityTag").contains("stale"));
+        assertEquals("preserved", legacy.getCompound("display").getString("LoreMarker"));
+        assertTrue(legacy.getCompound("display").getString("Name").contains("Bucket Cod"));
+
+        // Projection is read-only: neither source CUSTOM_DATA nor dedicated components are changed.
+        assertEquals(2, stack.get(DataComponents.CUSTOM_DATA).copyTag().getInt("Age"));
+        assertEquals(25, stack.get(DataComponents.BUCKET_ENTITY_DATA).copyTag().getInt("Age"));
+        assertEquals("must be replaced", stack.get(DataComponents.CUSTOM_DATA).copyTag()
+                .getCompound("EntityTag").getString("stale"));
+    }
+
+    @Test
+    void bucketTagDoesNotTurnItemNameIntoLegacyCustomName() {
+        ItemStack stack = new ItemStack(Items.COD_BUCKET);
+        stack.set(DataComponents.ITEM_NAME, Component.literal("ordinary item name"));
+
+        CompoundTag legacy = ItemStackNbt.getBucketTag(stack, RegistryAccess.EMPTY);
+
+        assertFalse(legacy.contains("display"));
     }
 
     @Test
