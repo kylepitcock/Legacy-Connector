@@ -146,10 +146,7 @@ net/neoforged/fml/loading/FMLLoader.getLaunchHandler()Lnet/neoforged/fml/loading
 net/neoforged/neoforge/registries/DeferredRegister.createOptional(Lnet/minecraft/resources/ResourceKey;Ljava/lang/String;)Lnet/neoforged/neoforge/registries/DeferredRegister;	createDeferredOptional
 net/neoforged/neoforge/registries/DeferredHolder.lazyMap(Ljava/util/function/Function;)Ljava/util/function/Supplier;	holderLazyMap
 net/neoforged/fml/loading/LoadingModList.getErrors()Ljava/util/List;	loadingErrors
-<<<<<<< HEAD
 net/neoforged/neoforge/registries/DeferredHolder.filter(Ljava/util/function/Predicate;)Lnet/neoforged/neoforge/registries/DeferredHolder;	holderFilterSelf
 *.readRegistryId()Ljava/lang/Object;	readRegistryIdAny
 *.readRegistryIdSafe(Ljava/lang/Class;)Ljava/lang/Object;	readRegistryIdSafeAny
-=======
 net/neoforged/fml/ModContainer.getMod()Ljava/lang/Object;	modContainerGetMod
->>>>>>> worktree-agent-a715b2d3204d130d2
