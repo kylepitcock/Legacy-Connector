@@ -181,6 +181,21 @@ never runs (the stub list shows only the calls, not these). The corpus has `Item
 (`updateMetadataOnPlaced` in Feather 1.2.5 names), `Slot.onItemRemoved`, `Container.onClickSlot`, `EntityItem.item`, ... The mechanism for this exists (`forward/*/bridge-methods.tsv`: a method with the
 old shape gets a bridge with the new one), but it needs the join to rename the override first (an alias row whose descriptor may differ in arity) and one bridge row per hook; not done yet.
 
+### First server self test (2026-11-16)
+
+Setup: loader and runtime built with `-Pmappings125` (`./gradlew runServerSubTest -Pmappings125 -PautostopTicks=300`; the property puts the join table into the loader and sets
+`-Dlegacyconnector.mc125=true` on the server), one archive in `run-subtest/mods/1.2.5/`, fresh world, config and translation cache each time. The chain works end to end (discovery as
+"legacy 1.4.7 mod" with the 1.2.5 evidence, translation, construction); what stops each mod is the missing API, not the translation:
+
+| Mod (build) | Result |
+|---|---|
+| BucketCraft 1.2.5 (client build, 0 stubs) | translated, constructed, then "Skipping the client-only legacy mod on a dedicated server (it touched client classes during construction)": correct for a client build |
+| ElementalCreepers 2.3 server | translated; `NoClassDefFoundError: BaseModMp` (ModLoaderMP is not in the shim) |
+| BlockHelper 0.8.3 server | translated; `NoClassDefFoundError: forge/NetworkMod` (Forge 3.x `forge/*` is not in the shim) |
+
+No corpus mod loads on a server yet: every server build needs `BaseModMp`/`ModLoaderMp` or `forge/*` (46 of 59 entry classes extend `forge/NetworkMod`, 9 `BaseModMp`), the work of the shim worker.
+Client builds only load on a client (their game classes fit the client names); a client run is the lead's.
+
 ### What was checked against primary sources on disk
 
 - 1.4.7's `ModLoader.class` and `BaseMod.class` (`test-mods-mcarchive/1.4.7/ModLoader 1.4.7.zip`, read with `javap`): lower-case statics (`addName`, `registerBlock`, `addRecipe`, `addOverride`,

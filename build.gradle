@@ -88,6 +88,8 @@ neoForge {
             // Separate game/config/world/cache directories allow one-mod regression runs.
             gameDirectory = project.file(project.findProperty('subTestDir') ?: 'run-subtest')
             programArgument '--nogui'
+            // -Pmappings125 (with the loader built the same way): Minecraft 1.2.5 jars in mods/1.2.5 are hosted through the 1.4.7 chain (docs/wiki/Legacy-1.2.5.md)
+            if (project.hasProperty('mappings125')) systemProperty 'legacyconnector.mc125', 'true'
             systemProperty 'legacytest.autostop', 'true'
             systemProperty 'legacyconnector.autostopTicks', project.findProperty('autostopTicks') ?: '700'
             // runs the client blockstate translation on the server too (logs "1.12.2 blockstates: N translated, M fell back"); -PassetsDump=<dir> writes it
