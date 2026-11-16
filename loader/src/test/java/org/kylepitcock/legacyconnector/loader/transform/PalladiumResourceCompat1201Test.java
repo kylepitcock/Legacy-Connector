@@ -772,6 +772,12 @@ class PalladiumResourceCompat1201Test {
         assertTrue(migrated.contains("const previousY = slamLastY.get(playerId);"));
         assertTrue(migrated.contains("damageSlamImpact(p, x, y, z, 6.0, 15.0);"));
         assertTrue(migrated.contains("target.attack(player.damageSources().generic(), damageAmount);"));
+        assertEquals(2, occurrences(migrated, "e.level.explode(x, y, z, {"));
+        assertTrue(migrated.contains("strength: 1.9"));
+        assertTrue(migrated.contains("mode: 'none'"));
+        assertTrue(migrated.contains("strength: 0.2"));
+        assertTrue(migrated.contains("mode: 'tnt'"));
+        assertFalse(migrated.contains("createExplosion("));
         assertFalse(migrated.contains("getDeltaMovement().get(\"y\")"));
         assertTrue(migrated.contains(
                 "p.modifyAttribute(gravityAttribute, \"gravity_slam\", 6, \"add_value\")"));
