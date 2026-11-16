@@ -156,6 +156,16 @@ public class MinecraftServer implements ICommandSender, Runnable {
     public void tick() {
     }
 
+    /** The build height limit (the level's maximum build height). */
+    public int getBuildLimit() {
+        var overworld = mcc$server.overworld();
+        return overworld == null ? 256 : overworld.getMaxBuildHeight();
+    }
+
+    public boolean isFlightAllowed() {
+        return mcc$server.isFlightAllowed();
+    }
+
     public int getMaxPlayers() {
         return mcc$server == null ? 0 : mcc$server.getMaxPlayers();
     }

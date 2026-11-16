@@ -195,7 +195,7 @@ public final class RoundCompat {
 
     // ------------------------------------------------------------------ recipe holders (1.21.1 hands out RecipeHolder: id plus recipe)
 
-    private static final ResourceLocation UNKNOWN_RECIPE = ResourceLocation.fromNamespaceAndPath("legacyconnector", "unknown");
+    static final ResourceLocation UNKNOWN_RECIPE = ResourceLocation.fromNamespaceAndPath("legacyconnector", "unknown");
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     private static net.minecraft.world.item.crafting.RecipeHolder holderOf(net.minecraft.world.item.crafting.Recipe recipe) {
@@ -473,21 +473,9 @@ public final class RoundCompat {
         return false;
     }
 
-    private static final java.util.List<Object[]> PENDING_MIXES = new java.util.concurrent.CopyOnWriteArrayList<>();
-    private static volatile boolean brewingHooked;
-
-    /** {@code PotionBrewing.addMix(from, ingredient, to)} (static in 1.20.1): queued, and added when NeoForge asks for brewing recipes. */
+    /** {@code PotionBrewing.addMix(from, ingredient, to)} (static in 1.20.1): kept by {@link LegacyBrewing} and replayed when NeoForge asks for brewing recipes. */
     public static void addPotionMix(net.minecraft.world.item.alchemy.Potion from, net.minecraft.world.item.Item ingredient, net.minecraft.world.item.alchemy.Potion to) {
-        PENDING_MIXES.add(new Object[] {from, ingredient, to});
-        if (!brewingHooked) {
-            brewingHooked = true;
-            net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.brewing.RegisterBrewingRecipesEvent.class, event -> {
-                for (Object[] m : PENDING_MIXES) {
-                    event.getBuilder().addMix(net.minecraft.core.registries.BuiltInRegistries.POTION.wrapAsHolder((net.minecraft.world.item.alchemy.Potion) m[0]), (net.minecraft.world.item.Item) m[1],
-                            net.minecraft.core.registries.BuiltInRegistries.POTION.wrapAsHolder((net.minecraft.world.item.alchemy.Potion) m[2]));
-                }
-            });
-        }
+        LegacyBrewing.addPotionMix(from, ingredient, to);
     }
 
     // ---- argument producers for in-place constructor rewrites (=args rows; usable in super(...) calls) ----

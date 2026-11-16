@@ -116,6 +116,7 @@ public final class JavaCompatRedirects {
         staticToStatic("com/google/common/base/Objects", "toStringHelper", "(Ljava/lang/String;)Lcom/google/common/base/MoreObjects$ToStringHelper;", "com/google/common/base/MoreObjects", "toStringHelper");
         staticToStatic("com/google/common/base/Objects", "firstNonNull", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;", "com/google/common/base/MoreObjects", "firstNonNull");
         staticToStatic("com/google/common/collect/Iterators", "emptyIterator", "()Lcom/google/common/collect/UnmodifiableIterator;", COMPAT + "GuavaCompat", "emptyIterator");
+        virtualToStatic("com/google/common/hash/HashFunction", "hashString", "(Ljava/lang/CharSequence;)Lcom/google/common/hash/HashCode;", COMPAT + "GuavaCompat");
         virtualToStatic("com/google/common/base/Stopwatch", "elapsedMillis", "()J", COMPAT + "GuavaCompat");
         virtualToStatic("com/google/common/base/Stopwatch", "elapsedTime", "(Ljava/util/concurrent/TimeUnit;)J", COMPAT + "GuavaCompat");
         // Guava scans only URLClassLoaders; mods run in module class loaders (Logistics Pipes finds its packets this way).
@@ -383,6 +384,25 @@ public final class JavaCompatRedirects {
                             insn = replaced;
                             count++;
                         }
+                    } else if (call.getOpcode() == Opcodes.INVOKESPECIAL && call.name.equals("<init>") && method.name.equals("<init>")
+                            && call.owner.equals("org/objectweb/asm/commons/MethodRemapper") && call.owner.equals(node.superName)
+                            && (call.desc.equals("(ILjava/lang/String;Lorg/objectweb/asm/MethodVisitor;Lorg/objectweb/asm/commons/Remapper;)V")
+                            || call.desc.equals("(IILjava/lang/String;Lorg/objectweb/asm/MethodVisitor;Lorg/objectweb/asm/commons/Remapper;)V"))) {
+                        // subclass of ASM 5's RemappingMethodAdapter: super(access, desc, mv, remapper) -> super(mv, remapper), dropping the leading arguments
+                        int tmp = method.maxLocals;
+                        method.maxLocals += 2;
+                        boolean api = call.desc.startsWith("(II");
+                        InsnList fix = new InsnList();
+                        fix.add(new org.objectweb.asm.tree.VarInsnNode(Opcodes.ASTORE, tmp));
+                        fix.add(new org.objectweb.asm.tree.VarInsnNode(Opcodes.ASTORE, tmp + 1));
+                        fix.add(new InsnNode(Opcodes.POP));
+                        fix.add(new InsnNode(Opcodes.POP));
+                        if (api) fix.add(new InsnNode(Opcodes.POP));
+                        fix.add(new org.objectweb.asm.tree.VarInsnNode(Opcodes.ALOAD, tmp + 1));
+                        fix.add(new org.objectweb.asm.tree.VarInsnNode(Opcodes.ALOAD, tmp));
+                        insns.insertBefore(call, fix);
+                        call.desc = "(Lorg/objectweb/asm/MethodVisitor;Lorg/objectweb/asm/commons/Remapper;)V";
+                        count++;
                     } else if (call.getOpcode() == Opcodes.INVOKESPECIAL && call.name.equals("<init>")
                             && call.owner.equals("org/objectweb/asm/commons/MethodRemapper") && !node.name.equals(call.owner)
                             && (call.desc.equals("(ILjava/lang/String;Lorg/objectweb/asm/MethodVisitor;Lorg/objectweb/asm/commons/Remapper;)V")

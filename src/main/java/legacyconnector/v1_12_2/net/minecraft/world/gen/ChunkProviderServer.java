@@ -87,8 +87,22 @@ public class ChunkProviderServer implements IChunkProvider {
     @Override
     public Chunk provideChunk(int x, int z) {
         Chunk loaded = getLoadedChunk(x, z);
-        return loaded != null ? loaded : new Chunk(mcc$world, x, z);
+        if (loaded != null) return loaded;
+        // A stand-in owns a 1.5 MB block buffer: a mod that probes the same unloaded chunks again and again (an explosion that walks a whole
+        // radius asks per block) froze the server for a minute allocating them, so the most recent ones are kept.
+        long key = legacyconnector.v1_12_2.net.minecraft.util.math.ChunkPos.asLong(x, z);
+        synchronized (mcc$standIns) {
+            Chunk stand = mcc$standIns.get(key);
+            if (stand == null) {
+                stand = new Chunk(mcc$world, x, z);
+                mcc$standIns.put(key, stand);
+                if (mcc$standIns.size() > 64) mcc$standIns.remove(mcc$standIns.firstLongKey());
+            }
+            return stand;
+        }
     }
+
+    private final it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap<Chunk> mcc$standIns = new it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap<>();
 
     public Chunk loadChunk(int x, int z) {
         return getLoadedChunk(x, z);

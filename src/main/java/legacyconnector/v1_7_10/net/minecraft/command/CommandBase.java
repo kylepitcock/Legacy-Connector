@@ -68,6 +68,34 @@ public abstract class CommandBase implements ICommand {
         throw new CommandException("commands.generic.boolean.invalid", s);
     }
 
+    /** A block by registry name or numeric id (a command argument). */
+    public static legacyconnector.v1_7_10.net.minecraft.block.Block getBlockByText(ICommandSender sender, String text) {
+        Object b = legacyconnector.v1_7_10.net.minecraft.block.Block.blockRegistry.getObject(text);
+        if (b == null) {
+            try {
+                b = legacyconnector.v1_7_10.net.minecraft.block.Block.blockRegistry.getObjectById(Integer.parseInt(text));
+            } catch (NumberFormatException ignored) {
+                // not an id either
+            }
+        }
+        if (b == null) throw new NumberInvalidException("commands.give.notFound", text);
+        return (legacyconnector.v1_7_10.net.minecraft.block.Block) b;
+    }
+
+    /** An item by registry name or numeric id (a command argument). */
+    public static legacyconnector.v1_7_10.net.minecraft.item.Item getItemByText(ICommandSender sender, String text) {
+        Object i = legacyconnector.v1_7_10.net.minecraft.item.Item.itemRegistry.getObject(text);
+        if (i == null) {
+            try {
+                i = legacyconnector.v1_7_10.net.minecraft.item.Item.itemRegistry.getObjectById(Integer.parseInt(text));
+            } catch (NumberFormatException ignored) {
+                // not an id either
+            }
+        }
+        if (i == null) throw new NumberInvalidException("commands.give.notFound", text);
+        return (legacyconnector.v1_7_10.net.minecraft.item.Item) i;
+    }
+
     public static EntityPlayerMP getCommandSenderAsPlayer(ICommandSender sender) {
         if (sender instanceof EntityPlayerMP p) return p;
         throw new PlayerNotFoundException("You must specify which player you wish to perform this action on.");

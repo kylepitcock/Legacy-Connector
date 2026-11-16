@@ -308,6 +308,16 @@ public final class Forge1201Transformer {
             if (CallRewrites1201.COMPOUND.equals(node.superName)) compoundSubclasses.add(node.name);
         }
         java.util.function.Predicate<String> modEvents = n -> jarClasses.contains(n) && hierarchy.isSubclassOf(n, "net/neoforged/bus/api/Event");
+        Map<String, ClassNode> nodeByName = new java.util.HashMap<>();
+        for (ClassNode node : nodes) nodeByName.put(node.name, node);
+        // super.getCapability(...) naming a class of the jar that does not declare it (nor an ancestor of the jar): Minecraft's parent has none either
+        java.util.function.BiPredicate<String, String> baseIsMinecraft = (owner, desc) -> {
+            if (!nodeByName.containsKey(owner) || hierarchy.reachesUnknown(owner)) return false;
+            for (String c = owner; c != null && nodeByName.containsKey(c); c = nodeByName.get(c).superName) {
+                for (org.objectweb.asm.tree.MethodNode m : nodeByName.get(c).methods) if (m.name.equals("getCapability") && m.desc.equals(desc)) return false;
+            }
+            return true;
+        };
         Map<ClassNode, Integer> migrated = new java.util.IdentityHashMap<>();
         SoftLink1201 soft = softLinkEnabled() ? new SoftLink1201(nodes, hierarchy) : null;
         int palladiumKubejsChanges = 0;
@@ -367,7 +377,7 @@ public final class Forge1201Transformer {
             palladiumKubejsChanges += palladiumChanges;
             int palladiumAddonPackChange = PalladiumAddonPackManager1201.apply(node);
             palladiumAddonPackChanges += palladiumAddonPackChange;
-            viaCalls += ForgeApiRewrites1201.apply(node, modEvents);
+            viaCalls += ForgeApiRewrites1201.apply(node, modEvents, baseIsMinecraft);
             if (modEvents.test(node.name) && ForgeApiRewrites1201.markCancelable(node)) viaCalls++;
             viaCalls += AttachGuards1201.apply(node, jarClasses);
             if (ForgeApiRewrites1201.markProviders(node)) viaCalls++;
@@ -492,6 +502,7 @@ public final class Forge1201Transformer {
         }
         int modConfigSubclasses = ModConfigSubclass1201.apply(nodes);
         if (modConfigSubclasses > 0) result.notes.add("Subclass of ModConfig (final in NeoForge 1.21.1): " + modConfigSubclasses + " class(es) moved to LegacyModConfig; a getHandler override has no effect");
+        ModConstructors1201.rememberInstances(nodes);
         int modCtors = ModConstructors1201.apply(nodes);
         if (modCtors > 0) result.notes.add("@Mod constructor taking FMLJavaModLoadingContext: a (IEventBus, ModContainer) constructor was generated for NeoForge");
         int subscribersMoved = Subscribers1201.apply(nodes);
@@ -1069,11 +1080,40 @@ public final class Forge1201Transformer {
         StringBuilder out = new StringBuilder();
         for (String line : text.split("\\R", -1)) {
             Matcher m = AT_LINE.matcher(line);
-            if (m.matches() && srg.containsKey(m.group(2))) out.append(m.group(1)).append(srg.get(m.group(2))).append(m.group(3));
-            else out.append(line);
-            out.append('\n');
+            if (m.matches() && srg.containsKey(m.group(2))) line = m.group(1) + srg.get(m.group(2)) + m.group(3);
+            String gone = removedMember(line);
+            if (gone != null) {
+                AT_LOG.info("Dropped access transformer line for a member 1.21.1 no longer has: {}", gone);
+                out.append("# dropped (no such member in 1.21.1): ").append(line.strip()).append('\n');
+                continue;
+            }
+            out.append(line).append('\n');
         }
         return out.toString();
+    }
+
+    private static final org.slf4j.Logger AT_LOG = org.slf4j.LoggerFactory.getLogger("Legacy Connector");
+
+    private static final Pattern AT_MEMBER = Pattern.compile("^\\s*(?:public|protected|private|default)(?:[-+]f)?\\s+([\\w.$]+)\\s+([^\\s#]+)\\s*(?:#.*)?$");
+
+    /**
+     * "class.member" of an access transformer line naming a member that the 1.21.1 class (known to the member index) does not declare, else null.
+     * A line for a member the host lacks cannot be applied (NeoForge refuses it), and the mod's code that needed it cannot work either; the
+     * code's own references are reported separately. Wildcards, class lines and classes the index does not know are kept.
+     */
+    static String removedMember(String line) {
+        Matcher m = AT_MEMBER.matcher(line);
+        if (!m.matches()) return null;
+        String owner = m.group(1).replace('.', '/');
+        String member = m.group(2);
+        if (member.equals("*") || member.equals("*()") || member.startsWith("<")) return null;
+        McMembers1201.Members known = McMembers1201.get(owner);
+        if (known == null) return null;
+        int paren = member.indexOf('(');
+        boolean present;
+        if (paren >= 0) present = known.methods().contains(member);
+        else present = known.fields().stream().anyMatch(f -> f.startsWith(member + ":"));
+        return present ? null : m.group(1) + "." + member;
     }
 
     private static boolean looksLikeMixinConfig(byte[] data) {

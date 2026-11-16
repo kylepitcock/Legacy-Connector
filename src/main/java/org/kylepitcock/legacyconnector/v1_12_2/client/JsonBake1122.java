@@ -69,7 +69,15 @@ public final class JsonBake1122 {
                 String path = id.getPath()
                         .replaceAll("^block/(.+)_fence_gate_closed$", "block/$1_fence_gate")
                         .replaceAll("^block/(.+)_wall_gate_closed$", "block/$1_fence_gate_wall")
-                        .replaceAll("^block/(.+)_wall_gate_open$", "block/$1_fence_gate_wall_open");
+                        .replaceAll("^block/(.+)_wall_gate_open$", "block/$1_fence_gate_wall_open")
+                        // slabs, stairs, pressure plates, trapdoors and iron doors were renamed in 1.13/1.14
+                        .replaceAll("^block/half_slab_stone$", "block/stone_slab")
+                        .replaceAll("^block/upper_slab_stone$", "block/stone_slab_top")
+                        .replaceAll("^block/(.+)_(inner|outer)_stairs$", "block/$1_stairs_$2")
+                        .replaceAll("^block/stone_pressure_plate_up$", "block/stone_pressure_plate")
+                        .replaceAll("^block/wooden_trapdoor_(bottom|top|open)$", "block/oak_trapdoor_$1")
+                        .replaceAll("^block/iron_door_(bottom|top)_rh(.*)$", "block/iron_door_$1_right$2")
+                        .replaceAll("^block/iron_door_(bottom|top)(_open)?$", "block/iron_door_$1_left$2");
                 if (!path.equals(id.getPath())) resource = Minecraft.getInstance().getResourceManager().getResource(ResourceLocation.withDefaultNamespace(path).withPrefix("models/").withSuffix(".json"));
             }
             if (resource.isEmpty()) return null;

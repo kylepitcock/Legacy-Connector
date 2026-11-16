@@ -119,3 +119,4 @@ net/minecraft/world/item/ItemStack$TooltipPart	org/kylepitcock/legacyconnector/v
 net/minecraft/world/level/block/entity/BannerPattern$Builder	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyBannerPatternBuilder
 net/minecraft/world/item/enchantment/ThornsEnchantment	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyThorns
 net/minecraft/server/commands/ResetChunksCommand	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyResetChunksCommand
+net/minecraft/world/item/alchemy/PotionBrewing$Mix	org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyBrewing$Mix

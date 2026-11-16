@@ -11,6 +11,11 @@ public class ListenerList {
     public ListenerList(ListenerList parent) {
     }
 
+    /** The listeners of a bus: none here, the layer's own bus dispatches by registration. */
+    public IEventListener[] getListeners(int bus) {
+        return new IEventListener[0];
+    }
+
     public void unregisterAll(int id) {
     }
 

@@ -82,6 +82,19 @@ public class PlayerControllerMP {
         return mcc$get$isHittingBlock(this);
     }
 
+    /** Releases the item in use (a drawn bow fires). */
+    public void onStoppedUsingItem(legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player) {
+        var m = mode();
+        var local = net.minecraft.client.Minecraft.getInstance().player;
+        if (m != null && local != null) m.releaseUsingItem(local);
+    }
+
+    /** Whether the player rides a mount that can jump (a horse). */
+    public boolean isRidingHorse() {
+        var local = net.minecraft.client.Minecraft.getInstance().player;
+        return local != null && local.isPassenger() && local.getControlledVehicle() instanceof net.minecraft.world.entity.PlayerRideableJumping;
+    }
+
     /** A click on a container button (enchanting table slots, mod GUIs' buttons): the server container's enchantItem. */
     public void sendEnchantPacket(int windowID, int button) {
         var m = mode();

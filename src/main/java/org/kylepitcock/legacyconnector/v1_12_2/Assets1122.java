@@ -299,6 +299,11 @@ public final class Assets1122 implements GeneratedPack.Contributor {
         keys.add(variant);
         keys.add(keyOf(props));
         Acc acc = merge(file, props, keys);
+        // the file's "inventory" variant is the item's own: its textures and model on top of the defaults (a block's variants skip it, see merge)
+        // (the controller of a smeltery names its front texture only there)
+        if ("inventory".equals(variant) && file.has("variants") && file.get("variants").isJsonObject() && file.getAsJsonObject("variants").has("inventory")) {
+            apply(acc, file.getAsJsonObject("variants").get("inventory"));
+        }
         if (acc.alts.isEmpty()) return null;
         JsonObject alt = acc.alts.get(0);
         String m = alt.has("model") && alt.get("model").isJsonPrimitive() ? alt.get("model").getAsString().toLowerCase(java.util.Locale.ROOT) : "forge:item-layer";
@@ -315,8 +320,14 @@ public final class Assets1122 implements GeneratedPack.Contributor {
             int colon = m.indexOf(':');
             String mNs = colon < 0 ? ns : Ids.namespace(m.substring(0, colon));
             String mPath = Ids.normalizePath(colon < 0 ? m : m.substring(colon + 1));
-            if (mPath.startsWith("item/") || mPath.startsWith("block/")) parent = mNs + ":" + mPath;
-            else parent = mNs + ":" + (modelExists(mNs, "item/" + mPath) ? "item/" : "block/") + mPath;
+            String folderPath = mPath.startsWith("item/") || mPath.startsWith("block/") ? mPath : (modelExists(mNs, "item/" + mPath) ? "item/" : "block/") + mPath;
+            // a name without a namespace is the mod's own model when the mod has such a file and vanilla's otherwise (the controller of a
+            // smeltery says "model": "orientable"), as the block variants of blockStateModels resolve it
+            if (colon < 0 && !modelExists(mNs, folderPath)) {
+                mNs = "minecraft";
+                folderPath = VANILLA_MODEL_RENAMES.getOrDefault(folderPath, folderPath);
+            }
+            parent = mNs + ":" + folderPath;
         }
         JsonObject model = new JsonObject();
         model.addProperty("parent", parent);

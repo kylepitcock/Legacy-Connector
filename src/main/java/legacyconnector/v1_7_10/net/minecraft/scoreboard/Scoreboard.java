@@ -22,6 +22,11 @@ public class Scoreboard {
         this.modern = modern;
     }
 
+    /** A standalone scoreboard (a mod's own, not the world's). */
+    public Scoreboard() {
+        this(new net.minecraft.world.scores.Scoreboard());
+    }
+
     private static final Map<net.minecraft.world.scores.Scoreboard, Scoreboard> VIEWS = java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>());
 
     public static Scoreboard mcc$wrap(net.minecraft.world.scores.Scoreboard modern) {

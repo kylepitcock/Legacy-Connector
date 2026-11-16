@@ -95,8 +95,6 @@ net/minecraft/sounds/SoundEvents	CROSSBOW_LOADING_END	Lnet/minecraft/sounds/Soun
 net/minecraft/sounds/SoundEvents	CROSSBOW_LOADING_MIDDLE	Lnet/minecraft/sounds/SoundEvent;	-	Lnet/minecraft/core/Holder;	value
 net/minecraft/world/effect/MobEffects	CONDUIT_POWER	Lnet/minecraft/world/effect/MobEffect;	-	Lnet/minecraft/core/Holder;	value
 net/minecraft/world/item/ArmorMaterials	GOLD	Lnet/minecraft/world/item/ArmorMaterials;	-	Lnet/minecraft/core/Holder;	value
-net/minecraft/world/item/alchemy/PotionBrewing$Mix	from	Lnet/minecraft/core/Holder$Reference;	-	Lnet/minecraft/core/Holder;	value
-net/minecraft/world/item/alchemy/PotionBrewing$Mix	to	Lnet/minecraft/core/Holder$Reference;	-	Lnet/minecraft/core/Holder;	value
 net/minecraft/world/item/alchemy/Potions	FIRE_RESISTANCE	Lnet/minecraft/world/item/alchemy/Potion;	-	Lnet/minecraft/core/Holder;	value
 net/minecraft/world/item/alchemy/Potions	MUNDANE	Lnet/minecraft/world/item/alchemy/Potion;	-	Lnet/minecraft/core/Holder;	value
 net/minecraft/world/level/gameevent/GameEvent	ITEM_INTERACT_START	Lnet/minecraft/world/level/gameevent/GameEvent;	-	Lnet/minecraft/core/Holder$Reference;	value
@@ -129,8 +127,6 @@ net/minecraft/sounds/SoundEvents	CROSSBOW_QUICK_CHARGE_2	Lnet/minecraft/sounds/S
 net/minecraft/sounds/SoundEvents	CROSSBOW_QUICK_CHARGE_3	Lnet/minecraft/sounds/SoundEvent;	-	Lnet/minecraft/core/Holder;	value
 net/minecraft/sounds/SoundEvents	LLAMA_SWAG	Lnet/minecraft/sounds/SoundEvent;	-	Lnet/minecraft/core/Holder;	value
 net/minecraft/world/effect/MobEffects	HERO_OF_THE_VILLAGE	Lnet/minecraft/world/effect/MobEffect;	-	Lnet/minecraft/core/Holder;	value
-net/minecraft/world/item/alchemy/PotionBrewing$Mix	from	Ljava/lang/Object;	-	Lnet/minecraft/core/Holder;	value
-net/minecraft/world/item/alchemy/PotionBrewing$Mix	to	Ljava/lang/Object;	-	Lnet/minecraft/core/Holder;	value
 net/minecraft/world/item/alchemy/Potions	LONG_INVISIBILITY	Lnet/minecraft/world/item/alchemy/Potion;	-	Lnet/minecraft/core/Holder;	value
 net/minecraft/world/item/alchemy/Potions	LONG_POISON	Lnet/minecraft/world/item/alchemy/Potion;	-	Lnet/minecraft/core/Holder;	value
 net/minecraft/world/item/alchemy/Potions	NIGHT_VISION	Lnet/minecraft/world/item/alchemy/Potion;	-	Lnet/minecraft/core/Holder;	value
@@ -376,3 +372,9 @@ cpw/mods/modlauncher/api/IEnvironment$Keys	NAMING	Ljava/util/function/Supplier;	
 net/minecraft/nbt/NbtAccounter	UNLIMITED	Lnet/minecraft/nbt/NbtAccounter;	-	none	Round4Compat.unlimitedAccounter
 net/minecraft/core/registries/BuiltInRegistries	BANNER_PATTERN	Lnet/minecraft/core/Registry;	-	none	Round4Compat.bannerPatternRegistry
 net/neoforged/neoforge/common/NeoForgeMod	NAMETAG_DISTANCE	Lnet/neoforged/neoforge/registries/DeferredHolder;	-	none	EntityCompat.nametagDistance
+net/minecraft/world/item/alchemy/PotionBrewing	POTION_MIXES	Ljava/util/List;	-	none	LegacyBrewing.potionMixes
+net/minecraft/world/item/alchemy/PotionBrewing	CONTAINER_MIXES	Ljava/util/List;	-	none	LegacyBrewing.containerMixes
+net/minecraft/world/item/alchemy/PotionBrewing	ALLOWED_CONTAINERS	Ljava/util/List;	-	none	LegacyBrewing.allowedContainers
+net/minecraft/world/item/alchemy/PotionBrewing	ALLOWED_CONTAINER	Ljava/util/function/Predicate;	-	none	LegacyBrewing.allowedContainer
+net/minecraft/world/level/block/LayeredCauldronBlock	RAIN	Ljava/util/function/Predicate;	-	none	Round6Compat.cauldronRain
+net/minecraft/world/level/block/LayeredCauldronBlock	SNOW	Ljava/util/function/Predicate;	-	none	Round6Compat.cauldronSnow

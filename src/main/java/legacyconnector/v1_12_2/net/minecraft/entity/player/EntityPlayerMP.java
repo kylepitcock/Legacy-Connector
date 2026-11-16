@@ -221,6 +221,17 @@ public class EntityPlayerMP extends EntityPlayer implements legacyconnector.v1_1
         mcc$serverPlayer().setCamera(entity == null ? null : entity.mcc$entity);
     }
 
+    /** Whether the player is mid dimension change (takes no damage from it). */
+    public boolean isInvulnerableDimensionChange() {
+        return mcc$get$invulnerableDimensionChange(this);
+    }
+
+    /** Ends elytra flight. */
+    public void clearElytraFlying() {
+        var p = mcc$player();
+        if (p != null && p.isFallFlying()) p.stopFallFlying();
+    }
+
     /** Starts elytra flight (the player glides until they land). */
     public void setElytraFlying() {
         var p = mcc$player();

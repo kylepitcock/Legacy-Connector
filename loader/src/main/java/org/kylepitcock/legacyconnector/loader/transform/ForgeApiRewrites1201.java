@@ -57,6 +57,18 @@ final class ForgeApiRewrites1201 {
     }
 
     static int apply(ClassNode node, Map<String, String> rules, java.util.function.Predicate<String> modEvents) {
+        return apply(node, rules, modEvents, null);
+    }
+
+    /**
+     * {@code baseIsMinecraft}: (owner, descriptor) is true when the owner is a class of the jar whose ancestors up to Minecraft's declare no method of that
+     * descriptor, so a {@code super.getCapability(...)} naming it reaches Minecraft's (capability-less) parent and becomes the helper's base behaviour.
+     */
+    static int apply(ClassNode node, java.util.function.Predicate<String> modEvents, java.util.function.BiPredicate<String, String> baseIsMinecraft) {
+        return apply(node, table(), modEvents, baseIsMinecraft);
+    }
+
+    static int apply(ClassNode node, Map<String, String> rules, java.util.function.Predicate<String> modEvents, java.util.function.BiPredicate<String, String> baseIsMinecraft) {
         if (rules.isEmpty()) return 0;
         int n = 0;
         for (MethodNode m : node.methods) {
@@ -110,7 +122,8 @@ final class ForgeApiRewrites1201 {
                 }
                 if (call.getOpcode() == Opcodes.INVOKESPECIAL) {
                     // super.getCapability(...) of a legacy class whose parent is a Minecraft class has no method to call any more: the base behaviour is the helper's
-                    if (call.name.equals("<init>") || !(call.owner.startsWith("net/minecraft/") || call.owner.startsWith("net/neoforged/"))) continue;
+                    boolean minecraftOwner = call.owner.startsWith("net/minecraft/") || call.owner.startsWith("net/neoforged/");
+                    if (call.name.equals("<init>") || !(minecraftOwner || baseIsMinecraft != null && baseIsMinecraft.test(call.owner, call.desc))) continue;
                     helper = "super" + Character.toUpperCase(helper.charAt(0)) + helper.substring(1);
                 }
                 String desc = call.desc;

@@ -176,7 +176,7 @@ public final class EntityCompat {
     }
 
     public static boolean addBrewingRecipe(Object recipe) {
-        return false; // brewing recipes are data/event driven in 1.21.1 (RegisterBrewingRecipesEvent)
+        return LegacyBrewing.addRecipe(recipe); // replayed into RegisterBrewingRecipesEvent
     }
 
     // ------------------------------------------------------------------ blocks and fluids

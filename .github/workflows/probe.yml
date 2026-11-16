@@ -48,7 +48,18 @@ jobs:
           LIMIT: ${{ inputs.limit || '700' }}
         run: |
           chmod +x gradlew
-          VERSION=$(grep '^mod_version=' gradle.properties | cut -d= -f2)
+          # Version recorded with the run. A release event keeps the release version; scheduled and manual runs probe master, which is usually
+          # past the last release, so they use the same naming as the nightly jar (<latest release>-nightly.<run>.<short sha>, see nightly.yml)
+          # to tell runs of different commits apart.
+          if [ "${{ github.event_name }}" = "release" ]; then
+            VERSION="${{ github.event.release.tag_name }}"; VERSION="${VERSION#v}"
+          else
+            LAST=$(git describe --tags --abbrev=0 --match 'v[0-9]*' 2>/dev/null || true)
+            BASE="${LAST#v}"
+            [ -z "$BASE" ] && BASE=$(grep '^mod_version=' gradle.properties | cut -d= -f2 | tr -d '[:space:]')
+            VERSION="${BASE}-nightly.${{ github.run_number }}.$(git rev-parse --short=7 HEAD)"
+          fi
+          echo "probe version: $VERSION"
           # a mod that got worse than in the previous run fails the job, but only after the results are committed (next step)
           REGRESSED=0
           # every supported legacy version; 1.20.1 is a gap report against the NeoForge artifacts of a build (content mods only, fewer jars)
@@ -60,6 +71,11 @@ jobs:
               python3 tools/compat/fetch_probe_mods.py "$MC" "$RUNNER_TEMP/jars-$MC" --limit "$LIMIT" || true
             fi
             if [ -z "$(ls "$RUNNER_TEMP/jars-$MC" 2>/dev/null)" ]; then echo "no jars for $MC"; continue; fi
+            # Modrinth has almost no Beta mods: a handful of jars is not a representative sample and would only look like a collapse next to
+            # the maintainer's larger runs of that version, so it is not recorded
+            if [ "$MC" = "b1.7.3" ] && [ "$(ls "$RUNNER_TEMP/jars-$MC" | wc -l)" -lt 20 ]; then
+              echo "skipping $MC: Modrinth yielded only $(ls "$RUNNER_TEMP/jars-$MC" | wc -l) jars (fewer than 20), not a representative sample"; continue
+            fi
             python3 tools/compat/probe.py "$RUNNER_TEMP/jars-$MC" --mc "$MC" --version "$VERSION" --source modrinth --fail-on-regression || REGRESSED=1
           done
           echo "REGRESSED=$REGRESSED" >> "$GITHUB_ENV"

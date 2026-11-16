@@ -735,6 +735,18 @@ public final class LegacyJarInspector {
             jar.versionEvidence = "mixed FML references, majority wins";
             return refs17 >= refs112 ? LegacyVersion.V1_7_10 : LegacyVersion.V1_12_2;
         }
+        if (modLoader && refs17 == 0 && refs112 == 0) {
+            // a bare ModLoader mod (BaseMod subclass, no FML, no mcmod.info) that choose147 rejected because another version's notch names fit better
+            double[] fp = NotchFingerprint.scores(zip);
+            if (fp != null && fp[1] >= 0.6 && fp[1] > fp[2] + 0.15) {
+                jar.versionEvidence = "ModLoader mod, obfuscated names match Minecraft 1.5.2 (" + Math.round(fp[1] * 100) + "% of the member references)";
+                return LegacyVersion.V1_5_2;
+            }
+            if (fp != null && fp[2] >= 0.6 && fp[2] > fp[1] + 0.15) {
+                jar.versionEvidence = "ModLoader mod, obfuscated names match Minecraft 1.6.4 (" + Math.round(fp[2] * 100) + "% of the member references)";
+                return LegacyVersion.V1_6_4;
+            }
+        }
         return null;
     }
 
