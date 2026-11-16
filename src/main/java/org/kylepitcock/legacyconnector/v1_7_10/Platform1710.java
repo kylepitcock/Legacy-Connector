@@ -287,7 +287,7 @@ public final class Platform1710 implements LegacyPlatform {
     /** Dispatches a server lifecycle event to every 1.7.10 mod. */
     public static void dispatchAll(Function<LegacyModRecord, FMLEvent> factory) {
         for (LegacyModRecord mod : LegacyMods.ordered()) {
-            if (!LegacyMods.family(mod.version).equals("1.7.10") || mod.instance == null) continue;
+            if (!LegacyMods.family(mod.version).equals("1.7.10") || mod.instance == null || org.kylepitcock.legacyconnector.core.LegacyLifecycle.hasFailed(mod)) continue;
             try {
                 dispatch(mod, factory.apply(mod));
             } catch (Exception | LinkageError e) {

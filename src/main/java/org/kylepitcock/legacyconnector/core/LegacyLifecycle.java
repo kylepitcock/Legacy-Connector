@@ -46,6 +46,11 @@ public final class LegacyLifecycle {
     }
 
     /** True if the legacy mod with this modern id (or registry namespace) failed to load and is disabled. */
+    /** True when the mod failed in a loading phase: it is disabled, so the server lifecycle must not dispatch to it either. */
+    public static boolean hasFailed(LegacyModRecord mod) {
+        return FAILED.containsKey(mod);
+    }
+
     public static boolean isFailed(String modernId) {
         if (modernId == null) return false;
         for (LegacyModRecord m : FAILED.keySet()) if (m.modernId.equals(modernId)) return true;
