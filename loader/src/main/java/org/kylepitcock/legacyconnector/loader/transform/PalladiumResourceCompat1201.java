@@ -790,17 +790,7 @@ final class PalladiumResourceCompat1201 {
                         migrated,
                         "getDecoupleSoundId(watchPrefix),",
                         "getAlienEvoSoundEvent(getDecoupleSoundId(watchPrefix)),");
-                migrated = replaceExactScriptOccurrence(
-                        path,
-                        migrated,
-                        "var watchItem = Item.of(itemId, 1, nbtData);",
-                        "var watchItem = Item.of(itemId, 1);\n  watchItem.setNbt(nbtData);");
             } else if (ALIEN_EVO_CORE_REMOVAL.equals(path)) {
-                migrated = replaceExactScriptOccurrence(
-                        path,
-                        migrated,
-                        "var coreItem = Item.of('alienevo:prototype_core', 1, nbtData);",
-                        "var coreItem = Item.of('alienevo:prototype_core', 1);\n  coreItem.setNbt(nbtData);");
             }
 
             if (!migrated.equals(script)) {
@@ -1612,7 +1602,7 @@ PlayerEvents.tick(e => {
 
         String legacyNbtRead = "  var nbt = mainHandItem.nbt;";
         String migratedNbtRead = """
-                  var nbt = mainHandItem.nbt;
+                  var nbt = mainHandItem.getCustomData();
                   function restoreOmnitrixLayoutScore(scoreName, nbtKey, defaultValue) {
                     var score = nbt.contains(nbtKey) ? nbt.getInt(nbtKey) : defaultValue;
                     entity.server.runCommandSilent('scoreboard players set ' + username + ' ' + scoreName + ' ' + score);
