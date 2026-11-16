@@ -211,7 +211,10 @@ final class Mc1201Migration {
             "net/minecraft/world/level/levelgen/feature/featuresize/FeatureSizeType",
             "net/minecraft/world/level/levelgen/feature/foliageplacers/FoliagePlacerType",
             "net/minecraft/world/level/levelgen/feature/stateproviders/BlockStateProviderType",
-            "net/minecraft/world/level/levelgen/feature/trunkplacers/TrunkPlacerType");
+            "net/minecraft/world/level/levelgen/feature/trunkplacers/TrunkPlacerType",
+            "net/minecraft/util/valueproviders/IntProviderType",
+            "net/minecraft/util/valueproviders/FloatProviderType",
+            "net/minecraft/world/level/levelgen/heightproviders/HeightProviderType");
 
     /**
      * {@code StructureType<S> type = () -> CODEC}: the lambda is built as a {@code Supplier} of the old codec instead, and a helper makes the interface

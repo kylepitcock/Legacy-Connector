@@ -735,6 +735,7 @@ net/minecraft/world/item/crafting/SingleItemRecipe	<init>	(Lnet/minecraft/world/
 net/minecraft/world/level/storage/loot/entries/LootPoolSingletonContainer	<init>	(II[Lnet/minecraft/world/level/storage/loot/predicates/LootItemCondition;[Lnet/minecraft/world/level/storage/loot/functions/LootItemFunction;)V	=args	0,1,Round4Compat.conditionList@2,Round4Compat.functionList@3	(IILjava/util/List;Ljava/util/List;)V
 net/minecraft/world/level/storage/loot/entries/LootPoolEntryContainer	<init>	([Lnet/minecraft/world/level/storage/loot/predicates/LootItemCondition;)V	=args	Round4Compat.conditionList@0	(Ljava/util/List;)V
 net/minecraft/world/item/ItemStack	hideTooltipPart	(Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyTooltipPart;)V	Round4Compat	hideTooltipPart
+net/minecraft/advancements/critereon/PlayerTrigger	<init>	(Lnet/minecraft/resources/ResourceLocation;)V	LegacyPlayerTrigger	create	(Lnet/minecraft/resources/ResourceLocation;)Lnet/minecraft/advancements/critereon/PlayerTrigger;
 net/minecraft/world/item/Item	appendHoverText	(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/level/Level;Ljava/util/List;Lnet/minecraft/world/item/TooltipFlag;)V	Round4Compat	itemAppendHoverText
 net/minecraft/world/item/ItemUtils	onContainerDestroyed	(Lnet/minecraft/world/entity/item/ItemEntity;Ljava/util/stream/Stream;)V	=args	0,Round4Compat.iterable@1	(Lnet/minecraft/world/entity/item/ItemEntity;Ljava/lang/Iterable;)V
 net/minecraft/world/item/BundleItem	getContentWeight	(Lnet/minecraft/world/item/ItemStack;)I	Round4Compat	bundleContentWeight
