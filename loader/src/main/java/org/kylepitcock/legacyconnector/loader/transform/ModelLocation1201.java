@@ -54,6 +54,8 @@ final class ModelLocation1201 {
 
     /** @return the number of conversions inserted */
     static int apply(ClassNode node) {
+        // negative control of the offline verifier (-Dlegacyconnector.modelLocation1201=false): leaves the defect in place
+        if ("false".equalsIgnoreCase(System.getProperty("legacyconnector.modelLocation1201"))) return 0;
         if (!mentions(node)) return 0;
         int total = 0;
         for (MethodNode m : node.methods) {

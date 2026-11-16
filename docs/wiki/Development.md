@@ -277,8 +277,34 @@ Minecraft/NeoForge client classes, the layer's runtime). It finds what the JVM r
 - `./gradlew verifyClasses [-PverifyPath=dir,a.jar]` runs the same verifier over class directories or jars (default: the layer's own compiled classes), so
   a defect in the shim or bridges is found the same way. Unit tests: `loader/src/test/.../tools/BytecodeCheckTest` (synthetic ASM classes).
 
-Not covered: the JVM's stack-map-frame checks (frames are recomputed by the analyzer, not read), access checks, and the `ModelResourceLocation`-style defect
-only when the 1.21.1 classes are on the classpath of the task.
+- Class structure (what the JVM raises as `IncompatibleClassChangeError` while linking): a class that `implements` a non-interface, `extends` an
+  interface, or `extends` a final class (1.20.1 `BlockSource` is an interface, 1.21.1's a record). `final` is ignored for game classes that an access
+  transformer opens (`public-f net.minecraft...` lines of the layer's own `accesstransformer.cfg`, of the set's jars, and of the checked jar), so
+  TerraBlender's `OverworldBiomeBuilder` subclass and the layer's `$LegacyItemPredicate` stand-in are clean.
+- The closing report groups over the whole set (the same type pair in several jars is one group, with the jars listed), then prints the number of
+  distinct unknown types by package: those are the places the verifier is blind. The non-legacy jars of the set (Curios, GeckoLib...) are read into the
+  hierarchy, so what remains unknown is mostly optional integrations with mods that are not in the set (JEI/REI/Jade/Waila/TOP APIs).
+- Negative control for the 1.20.1 `ModelResourceLocation` pass: `-PmodelLocation1201=false` leaves `ModelLocation1201` out of the translation. With it,
+  `checkLegacyMod` on ChemLib, SuperMartijn642 core lib and Wireless Chargers reports exactly one group `ModelResourceLocation is not assignable to
+  ResourceLocation` (3 sites in 3 jars: `ChemLib ClientEventHandler.onModelRegister`, `ClientRegistrationHandler.registerModelOverwrite`,
+  `WirelessChargersClient.register`); without the switch it is silent.
+
+Measured (2026-11-16, Windows, `-Xmx3g`): the 108 ATM 9 jars and libraries of `atm9-1201-all` (22,801 classes, 157,263 methods) take about 85 s in
+total, of which the verification is roughly 10 to 25 s over the translation alone; 110 1.12.2 jars (37,215 classes, 242,738 methods) about 2 minutes;
+the `mixed` suite (1.7.10 and one 1.12.2 jar, 6,338 classes) about a minute. Findings on that data are in `tools/dev/agent-tasks/1.20.1-client-verify-findings.md`.
+Shim-hosted versions are quiet (0 findings on 1.7.10 and `mixed`) apart from the synthesized LWJGL GLU classes in 1.12.2.
+
+What it cannot see (so a clean run is not "the game works"):
+
+- **Runtime casts.** A `checkcast` is accepted by the verifier whatever the type; a `ModelResourceLocation` cast to `ResourceLocation` out of a generic
+  container (`Map<?, ResourceLocation>.get`), an `instanceof` that is never true after a type change, a `ClassCastException` from an unchecked
+  generic, reflection and `MethodHandle` lookups by name: all fail only when the code runs.
+- **Registration order, duplicate registrations**, event bus ordering, missing registry entries, mixin target changes and failed injections (the mixin
+  check is `-PmixinExport`), `NoSuchMethodError`/`NoSuchFieldError` of members that exist in the link index but not on the real class.
+- **Rendering and data**: models, textures, shaders, GUI layout, recipes and loot (see the resource check below).
+- Stack-map frames (recomputed by the analyzer, not read), access checks (private/package access across classes), and types the verifier cannot
+  resolve (unknown types count as assignable; an unresolved class in a control-flow merge skips that method).
+- Methods the analyzer skips because of its limits are counted in `methods skipped`; none were skipped in the sets above.
 
 ## Resource check (rendering smoke test without the game)
 

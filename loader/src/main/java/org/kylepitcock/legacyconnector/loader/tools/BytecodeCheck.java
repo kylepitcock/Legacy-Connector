@@ -53,6 +53,7 @@ public final class BytecodeCheck {
     /** One failing instruction. {@code insn} is the instruction index in the method (not the byte offset). */
     public record Finding(String cls, String method, int insn, int line, String instruction, String expected, String found, String message) {
         public String site() {
+            if (insn < 0) return cls + " (class structure) " + instruction;
             return cls + "." + method + " insn #" + insn + (line > 0 ? " (line " + line + ")" : "") + " " + instruction;
         }
     }
@@ -93,6 +94,17 @@ public final class BytecodeCheck {
     private static final Pattern EXPECTED_FOUND = Pattern.compile("[Ee]xpected (.+?), but found (.+)$");
 
     private final Hierarchy hierarchy;
+    /** Internal names of game classes whose {@code final} an access transformer removes ({@code public-f net.minecraft.Foo}), see {@link #parseFinalRemovals}. */
+    private Set<String> unfinal = Set.of();
+
+    /** The class-level {@code *-f <class>} lines of an access transformer file (member lines, which have a third token, do not touch the class). */
+    public static void parseFinalRemovals(String accessTransformer, Set<String> into) {
+        for (String line : accessTransformer.split("\\R")) {
+            int hash = line.indexOf('#');
+            String[] t = (hash >= 0 ? line.substring(0, hash) : line).trim().split("\\s+");
+            if (t.length == 2 && t[0].endsWith("-f")) into.add(t[1].replace('.', '/'));
+        }
+    }
 
     public BytecodeCheck(Hierarchy hierarchy) {
         this.hierarchy = hierarchy;
@@ -100,7 +112,12 @@ public final class BytecodeCheck {
 
     /** Reads every class of the translated jar into the hierarchy first (mods extend their own classes), then verifies them. */
     public static BytecodeCheck run(Path translatedJar, Hierarchy hierarchy) throws IOException {
-        return runClasses(readJar(translatedJar), hierarchy);
+        return run(translatedJar, hierarchy, Set.of());
+    }
+
+    /** As {@link #run(Path, Hierarchy)}; {@code unfinal} lists the game classes an access transformer makes non-final (so extending them is not an error). */
+    public static BytecodeCheck run(Path translatedJar, Hierarchy hierarchy, Set<String> unfinal) throws IOException {
+        return runClasses(readJar(translatedJar), hierarchy, unfinal);
     }
 
     private static List<byte[]> readJar(Path jar) throws IOException {
@@ -119,6 +136,10 @@ public final class BytecodeCheck {
 
     /** Verifies class files given as bytes (the unit of the tests and of {@link #run}). */
     public static BytecodeCheck runClasses(Collection<byte[]> classFiles, Hierarchy hierarchy) {
+        return runClasses(classFiles, hierarchy, Set.of());
+    }
+
+    public static BytecodeCheck runClasses(Collection<byte[]> classFiles, Hierarchy hierarchy, Set<String> unfinal) {
         List<ClassNode> nodes = new ArrayList<>();
         for (byte[] bytes : classFiles) {
             try {
@@ -135,6 +156,7 @@ public final class BytecodeCheck {
             hierarchy.addLocal(info);
         }
         BytecodeCheck check = new BytecodeCheck(hierarchy);
+        check.unfinal = unfinal;
         for (ClassNode n : nodes) check.check(n);
         return check;
     }
@@ -173,8 +195,39 @@ public final class BytecodeCheck {
         return o;
     }
 
+    /**
+     * The class-structure errors the JVM raises while linking a class ({@code IncompatibleClassChangeError}): a superclass that is an
+     * interface or final, an "interface" that is a class. They happen when a game class changed kind between versions (1.20.1
+     * {@code BlockSource} interface, 1.21.1 record) and the data-flow analysis cannot see them. Grouped by the offending type.
+     */
+    private void checkStructure(ClassNode cls) {
+        if ((cls.access & Opcodes.ACC_INTERFACE) != 0) return;
+        if (cls.superName != null) {
+            ClassInfo sup = hierarchy.find(cls.superName);
+            if (sup != null && (sup.access & Opcodes.ACC_INTERFACE) != 0) structure(cls, "extends interface " + cls.superName.replace('/', '.'));
+            else if (sup != null && (sup.access & Opcodes.ACC_FINAL) != 0 && !unfinal.contains(cls.superName)) structure(cls, "extends final class " + cls.superName.replace('/', '.'));
+        }
+        if (cls.interfaces != null) {
+            for (String i : cls.interfaces) {
+                ClassInfo info = hierarchy.find(i);
+                if (info != null && (info.access & Opcodes.ACC_INTERFACE) == 0) structure(cls, "implements non-interface " + i.replace('/', '.'));
+            }
+        }
+    }
+
+    private void structure(ClassNode cls, String message) {
+        Finding f = new Finding(cls.name, "<class>", -1, 0, message, "", "", message);
+        failureCount++;
+        findingCount++;
+        if (failures.size() < MAX_LISTED) failures.add(cls.name + ": " + message);
+        Group g = groups.computeIfAbsent("msg:" + message, k -> new Group("", "", message));
+        g.sites++;
+        if (g.examples.size() < MAX_EXAMPLES) g.examples.add(f);
+    }
+
     private void check(ClassNode cls) {
         classesChecked++;
+        checkStructure(cls);
         for (MethodNode m : cls.methods) {
             if ((m.access & (Opcodes.ACC_ABSTRACT | Opcodes.ACC_NATIVE)) != 0 || m.instructions.size() == 0) continue;
             methodsChecked++;

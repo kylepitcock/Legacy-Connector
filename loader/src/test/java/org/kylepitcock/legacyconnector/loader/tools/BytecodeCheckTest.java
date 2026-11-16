@@ -134,4 +134,49 @@ class BytecodeCheckTest implements Opcodes {
         assertEquals(3, c.toJson().getAsJsonArray("groups").get(0).getAsJsonObject().get("examples").getAsJsonArray().size());
         assertEquals(3, c.toJson().getAsJsonArray("groups").get(0).getAsJsonObject().get("sites").getAsInt());
     }
+
+    private static byte[] kind(String name, String sup, String iface, int access) {
+        ClassWriter cw = new ClassWriter(0);
+        cw.visit(V17, access, name, null, sup, iface == null ? null : new String[] {iface});
+        cw.visitEnd();
+        return cw.toByteArray();
+    }
+
+    @Test
+    void classImplementingAClassIsReported() {
+        // 1.20.1 BlockSource was an interface, 1.21.1's is a record: the mod class dies with IncompatibleClassChangeError while linking
+        BytecodeCheck c = check(kind("t/Rec", "java/lang/Object", null, ACC_PUBLIC | ACC_FINAL), kind("t/Impl", "java/lang/Object", "t/Rec", ACC_PUBLIC),
+                kind("t/Impl2", "java/lang/Object", "t/Rec", ACC_PUBLIC));
+        assertEquals(2, c.findingCount, c.groups.toString());
+        assertEquals(1, c.groups.size());
+        assertEquals("implements non-interface t.Rec", c.groups.values().iterator().next().describe());
+    }
+
+    @Test
+    void extendingAnInterfaceOrAFinalClassIsReported() {
+        BytecodeCheck c = check(kind("t/I", "java/lang/Object", null, ACC_PUBLIC | ACC_INTERFACE | ACC_ABSTRACT), kind("t/F", "java/lang/Object", null, ACC_PUBLIC | ACC_FINAL),
+                kind("t/A", "t/I", null, ACC_PUBLIC), kind("t/B", "t/F", null, ACC_PUBLIC));
+        assertEquals(2, c.groups.size(), c.groups.toString());
+        assertTrue(c.groups.containsKey("msg:extends interface t.I") && c.groups.containsKey("msg:extends final class t.F"), c.groups.keySet().toString());
+    }
+
+    @Test
+    void accessTransformerThatRemovesFinalAllowsTheSubclass() {
+        // TerraBlender extends OverworldBiomeBuilder, Mekanism (through the layer's stand-in) extends ItemPredicate: both are made non-final by an AT
+        java.util.Set<String> unfinal = new java.util.TreeSet<>();
+        BytecodeCheck.parseFinalRemovals("# comment\npublic-f t.F\npublic-f t.G *\npublic t.H # not a final removal\npublic-f t.I #trailing\n", unfinal);
+        assertEquals(java.util.Set.of("t/F", "t/I"), unfinal);
+        Hierarchy h = new Hierarchy(ShimIndex.empty(), BytecodeCheckTest.class.getClassLoader());
+        List<byte[]> classes = List.of(kind("t/F", "java/lang/Object", null, ACC_PUBLIC | ACC_FINAL), kind("t/A", "t/F", null, ACC_PUBLIC));
+        assertEquals(0, BytecodeCheck.runClasses(classes, h, unfinal).findingCount);
+        Hierarchy h2 = new Hierarchy(ShimIndex.empty(), BytecodeCheckTest.class.getClassLoader());
+        assertEquals(1, BytecodeCheck.runClasses(classes, h2).findingCount);
+    }
+
+    @Test
+    void wellFormedHierarchyHasNoStructureFindings() {
+        BytecodeCheck c = check(kind("t/I", "java/lang/Object", null, ACC_PUBLIC | ACC_INTERFACE | ACC_ABSTRACT), kind("t/A", "java/lang/Object", "t/I", ACC_PUBLIC),
+                kind("t/B", "t/A", "t/I", ACC_PUBLIC));
+        assertEquals(0, c.findingCount, c.groups.toString());
+    }
 }

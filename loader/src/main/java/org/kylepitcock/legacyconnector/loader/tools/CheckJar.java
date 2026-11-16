@@ -133,6 +133,8 @@ public final class CheckJar {
                 continue;
             }
             if (jar == null) {
+                // a modern library of the set (Curios, GeckoLib...): legacy mods link against it, so the verifier needs its type relations
+                readModernLibrary(jarPath);
                 System.out.println(jarPath.getFileName() + ": not a legacy Forge mod");
                 JsonObject r = new JsonObject();
                 r.addProperty("jar", jarPath.getFileName().toString());
@@ -193,6 +195,7 @@ public final class CheckJar {
         Map<LegacyVersion, SynthDemand> demand = new EnumMap<>(LegacyVersion.class);
         Map<Path, JsonObject> recordsByOutJar = new java.util.LinkedHashMap<>();
         List<Path> originals = new ArrayList<>();
+        for (LegacyJar j : jars) ALL_ORIGINALS.add(j.existing());
         int n = 0;
         for (LegacyJar jar : jars) {
             String obsolete = LibraryBridges.obsoleteReason(jar);
@@ -236,6 +239,21 @@ public final class CheckJar {
         checkAssets(recordsByOutJar, originals);
         if (!"false".equalsIgnoreCase(System.getProperty("legacyconnector.check.verify"))) {
             System.out.println("verify: " + VERIFY_TOTALS[0] + " classes, " + VERIFY_TOTALS[1] + " methods, " + VERIFY_TOTALS[2] + " findings in " + VERIFY_TOTALS[3] + " groups (all jars)");
+            if (!GLOBAL_UNKNOWN.isEmpty()) {
+                // by package prefix (first three segments): mostly optional integrations with mods that are not in the set
+                Map<String, Integer> byPrefix = new java.util.TreeMap<>();
+                for (String u : GLOBAL_UNKNOWN) {
+                    String[] seg = u.split("/");
+                    byPrefix.merge(String.join("/", java.util.Arrays.copyOf(seg, Math.min(3, seg.length - 1 < 1 ? 1 : seg.length - 1))), 1, Integer::sum);
+                }
+                System.out.println("  " + GLOBAL_UNKNOWN.size() + " distinct unknown types treated as assignable (the verifier is blind there), by package: "
+                        + byPrefix.entrySet().stream().sorted((a, b) -> b.getValue() - a.getValue()).limit(12).map(e -> e.getKey() + " " + e.getValue()).toList());
+            }
+            GLOBAL_GROUPS.forEach((k, g) -> {
+                System.out.println("  " + g.sites + " site(s) in " + g.jars.size() + " jar(s): " + k);
+                if (g.example != null) System.out.println("    e.g. " + g.example);
+                System.out.println("    jars: " + String.join(", ", g.jars.stream().limit(8).toList()) + (g.jars.size() > 8 ? ", ..." : ""));
+            });
         }
         if (jsonPath != null) {
             Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
@@ -335,6 +353,80 @@ public final class CheckJar {
         return a;
     }
 
+    /** Game classes whose {@code final} an access transformer removes: the layer's own, the loaded jars' (the set), and the checked jar's. */
+    private static final java.util.Set<String> UNFINAL = new java.util.TreeSet<>();
+    private static boolean unfinalLoaded;
+
+    private static java.util.Set<String> unfinalClasses(Path translatedJar) {
+        synchronized (UNFINAL) {
+            if (!unfinalLoaded) {
+                unfinalLoaded = true;
+                try {
+                    for (var urls = CheckJar.class.getClassLoader().getResources("META-INF/accesstransformer.cfg"); urls.hasMoreElements(); ) {
+                        try (InputStream in = urls.nextElement().openStream()) {
+                            BytecodeCheck.parseFinalRemovals(new String(in.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8), UNFINAL);
+                        }
+                    }
+                } catch (IOException ignored) {
+                    // classpath resources only
+                }
+                for (Path jar : ALL_ORIGINALS) addAccessTransformer(jar, UNFINAL);
+            }
+        }
+        java.util.Set<String> all = new java.util.TreeSet<>(UNFINAL);
+        addAccessTransformer(translatedJar, all);
+        return all;
+    }
+
+    private static void addAccessTransformer(Path jar, java.util.Set<String> into) {
+        try (java.util.zip.ZipFile zip = new java.util.zip.ZipFile(jar.toFile())) {
+            var e = zip.getEntry("META-INF/accesstransformer.cfg");
+            if (e != null) {
+                try (InputStream in = zip.getInputStream(e)) {
+                    BytecodeCheck.parseFinalRemovals(new String(in.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8), into);
+                }
+            }
+        } catch (IOException | RuntimeException ignored) {
+            // not a zip or unreadable: the other checks report it
+        }
+    }
+
+    /** The original jars of the set, read once for their access transformers. */
+    private static final List<Path> ALL_ORIGINALS = new ArrayList<>();
+
+    /** Class headers of the non-legacy jars of the set (modern libraries), for the verifier's type relations. */
+    private static final Map<String, ClassInfo> MODERN_LIBS = new java.util.HashMap<>();
+
+    private static void readModernLibrary(Path jar) {
+        try (java.util.zip.ZipFile zip = new java.util.zip.ZipFile(jar.toFile())) {
+            for (var en = zip.entries(); en.hasMoreElements(); ) {
+                var entry = en.nextElement();
+                if (!entry.getName().endsWith(".class") || entry.getName().startsWith("META-INF/")) continue;
+                try (InputStream in = zip.getInputStream(entry)) {
+                    var node = new org.objectweb.asm.tree.ClassNode();
+                    new org.objectweb.asm.ClassReader(in.readAllBytes()).accept(node, org.objectweb.asm.ClassReader.SKIP_CODE | org.objectweb.asm.ClassReader.SKIP_DEBUG | org.objectweb.asm.ClassReader.SKIP_FRAMES);
+                    ClassInfo info = new ClassInfo(node.name, node.superName, node.interfaces == null ? List.of() : node.interfaces, node.access);
+                    for (var m : node.methods) info.methods.put(m.name + m.desc, m.access);
+                    MODERN_LIBS.put(node.name, info);
+                }
+            }
+        } catch (IOException | RuntimeException ignored) {
+            // not a zip: reported as not-legacy anyway
+        }
+    }
+
+    /** One finding group over the whole set (the same type pair in several jars is one group), for the closing report. */
+    private static final class GlobalGroup {
+        int sites;
+        final java.util.Set<String> jars = new java.util.TreeSet<>();
+        String example;
+    }
+
+    /** Types no jar, shim or classpath entry could resolve (assumed assignable): the verifier is blind there. */
+    private static final java.util.Set<String> GLOBAL_UNKNOWN = new java.util.TreeSet<>();
+
+    private static final Map<String, GlobalGroup> GLOBAL_GROUPS = new java.util.LinkedHashMap<>();
+
     /** Totals over all jars, for the closing "verify:" line. */
     private static final java.util.concurrent.atomic.AtomicInteger[] VERIFY_TOTALS = {new java.util.concurrent.atomic.AtomicInteger(), new java.util.concurrent.atomic.AtomicInteger(),
             new java.util.concurrent.atomic.AtomicInteger(), new java.util.concurrent.atomic.AtomicInteger()};
@@ -346,13 +438,22 @@ public final class CheckJar {
     private static void verifyBytecode(ShimIndex index, LegacyJar jar, Path outJar, Map<String, ClassInfo> peers, JsonObject rec) {
         if ("false".equalsIgnoreCase(System.getProperty("legacyconnector.check.verify"))) return;
         try {
-            var hierarchy = new org.kylepitcock.legacyconnector.loader.transform.Hierarchy(index, CheckJar.class.getClassLoader(),
-                    peers == null ? Map.of() : peers, jar.version);
-            BytecodeCheck check = BytecodeCheck.run(outJar, hierarchy);
+            Map<String, ClassInfo> known = new java.util.HashMap<>(MODERN_LIBS);
+            if (peers != null) known.putAll(peers);
+            var hierarchy = new org.kylepitcock.legacyconnector.loader.transform.Hierarchy(index, CheckJar.class.getClassLoader(), known, jar.version);
+            BytecodeCheck check = BytecodeCheck.run(outJar, hierarchy, unfinalClasses(outJar));
             VERIFY_TOTALS[0].addAndGet(check.classesChecked);
             VERIFY_TOTALS[1].addAndGet(check.methodsChecked);
             VERIFY_TOTALS[2].addAndGet(check.findingCount);
-            VERIFY_TOTALS[3].addAndGet(check.groups.size());
+            for (BytecodeCheck.Group g : check.groups.values()) {
+                String key = g.expected.isEmpty() ? g.message : g.found + " is not assignable to " + g.expected;
+                GlobalGroup gg = GLOBAL_GROUPS.computeIfAbsent(key, k -> new GlobalGroup());
+                gg.sites += g.sites;
+                gg.jars.add(jar.fileName());
+                if (gg.example == null && !g.examples.isEmpty()) gg.example = g.examples.get(0).site();
+            }
+            VERIFY_TOTALS[3].set(GLOBAL_GROUPS.size());
+            GLOBAL_UNKNOWN.addAll(check.unknownTypes);
             rec.addProperty("verifyFailures", check.failureCount);
             rec.add("verify", check.toJson());
             System.out.println("  " + check.summary());
