@@ -1644,7 +1644,7 @@ PlayerEvents.tick(e => {
     private static int rewriteAlienEvoItemStackCustomData(Map<String, byte[]> resources) {
         int changed = 0;
         changed += rewrite(resources, ALIEN_EVO_DECOUPLE, new String[][] {
-                {"var watchItem = Item.of(itemId, 1, nbtData);", "var watchItem = Item.of(itemId, 1);\n  watchItem.setCustomData(NBT.wrapCompound(nbtData));", "1"},
+                {"var watchItem = Item.of(itemId, 1, nbtData);", "var watchItem = Item.of(itemId, 1);", "1"},
                 {"watchItem.setNbt(nbtData);", "watchItem.setCustomData(NBT.wrapCompound(nbtData));", "1"},
                 {"var nbt = mainHandItem.nbt;", "var nbt = mainHandItem.getCustomData();", "1"},
                 {"if (!nbt) {", "if (nbt.isEmpty()) {", "1"},
@@ -1692,7 +1692,7 @@ PlayerEvents.tick(e => {
                 {"held.nbt", "held.getCustomData()", "1"}
         });
         changed += rewrite(resources, ALIEN_EVO_CORE_REMOVAL, new String[][] {
-                {"var coreItem = Item.of('alienevo:prototype_core', 1, nbtData);", "var coreItem = Item.of('alienevo:prototype_core', 1);\n  coreItem.setCustomData(NBT.wrapCompound(nbtData));", "1"},
+                {"var coreItem = Item.of('alienevo:prototype_core', 1, nbtData);", "var coreItem = Item.of('alienevo:prototype_core', 1);", "1"},
                 {"coreItem.setNbt(nbtData);", "coreItem.setCustomData(NBT.wrapCompound(nbtData));", "1"},
                 {"var nbt = mainHandItem.nbt;", "var nbt = mainHandItem.getCustomData();", "1"},
                 {"if (!nbt) {", "if (nbt.isEmpty()) {", "1"},
