@@ -140,13 +140,15 @@ public class SimpleReloadableResourceManager implements IReloadableResourceManag
         String raw = location.getPath();
         String lower = org.kylepitcock.legacyconnector.core.Ids.normalizePath(raw);
         for (var file : net.neoforged.fml.ModList.get().getModFiles()) {
-            Path p = file.getFile().findResource("assets", ns, raw);
-            if (p == null || !Files.isRegularFile(p)) p = file.getFile().findResource("assets", ns, lower);
-            if ((p == null || !Files.isRegularFile(p)) && raw.startsWith("models/")) {
-                // data files under models/ that are not models were moved out of the pack (the loader's resource converter)
+            Path p = null;
+            if (raw.startsWith("models/")) {
+                // data files under models/ that are not models were moved out of the pack, and models whose overrides only the mod's own loader reads
+                // (Tinkers' .tcon.json) keep their original here while the pack has a cleaned copy (the loader's resource converter)
                 p = file.getFile().findResource("legacyconnector_raw", "assets", ns, raw);
                 if (p == null || !Files.isRegularFile(p)) p = file.getFile().findResource("legacyconnector_raw", "assets", ns, lower);
             }
+            if (p == null || !Files.isRegularFile(p)) p = file.getFile().findResource("assets", ns, raw);
+            if (p == null || !Files.isRegularFile(p)) p = file.getFile().findResource("assets", ns, lower);
             if (p != null && Files.isRegularFile(p)) {
                 Path meta = p.resolveSibling(p.getFileName() + ".mcmeta");
                 out.add(new Resource(location, Files.readAllBytes(p), Files.isRegularFile(meta) ? Files.readAllBytes(meta) : null, file.getFile().getFileName()));
