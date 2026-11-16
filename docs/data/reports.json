@@ -899,6 +899,18 @@
    "link": "https://www.curseforge.com/minecraft/mc-mods/ensorcellation/download/5430042",
    "date": "2026-11-16",
    "open": true
+  },
+  {
+   "issue": 297,
+   "mod": "redstone_arsenal-1.20.1-8.0.1.24",
+   "mc": "1.20.1 (Forge)",
+   "status": "crashes",
+   "details": "Game crashes during load. Related issue: #271",
+   "lc": "0.4.14-nightly.58.00a22b8",
+   "neoforge": "21.1.266",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/redstone-arsenal/download/5372745",
+   "date": "2026-11-16",
+   "open": true
   }
  ]
 }
