@@ -685,6 +685,17 @@ public final class Forge1201Transformer {
             if (ownUnit) result.notes.add("Side-by-side library: mod id(s) " + ownIds + " load as separate unit(s), packages relocated under " + SideBySide.prefix(VER));
             else result.notes.add("Side-by-side: references to isolated libraries " + plan.units().stream().filter(u -> u.version() == VER).map(SideBySide.Unit::modId).toList() + " link to their relocated copies");
         }
+        java.util.Set<String> openedMembers = PrivateAccess1201.lines(nodes, hierarchy);
+        if (!openedMembers.isEmpty()) {
+            byte[] existing = outResources.get("META-INF/accesstransformer.cfg");
+            String text = existing == null ? "" : new String(existing, StandardCharsets.UTF_8);
+            StringBuilder at = new StringBuilder(text);
+            if (!text.isEmpty() && !text.endsWith("\n")) at.append('\n');
+            at.append("# private game members this jar's code uses (Forge 1.20.1 opened them with its own transformers)\n");
+            for (String line : openedMembers) at.append(line).append('\n');
+            outResources.put("META-INF/accesstransformer.cfg", at.toString().getBytes(StandardCharsets.UTF_8));
+            result.notes.add("Access transformer: " + openedMembers.size() + " private game member(s) used by the code opened");
+        }
         int alienEvoResourceChanges = PalladiumResourceCompat1201.apply(outResources);
         if (alienEvoResourceChanges > 0) {
             result.notes.add("AlienEvo resources migrate legacy ResourceLocation and typed SoundEvent/SoundSource arguments for 8-argument Level.playSound calls, persistent NBT integer/string values, Quick Change playlist/slot NBT integer access, playlist-cycle NBT integer reads/writes and the ten-playlist bound, KubeJS 7 NetworkEvents.dataReceived player access for jump/palette/nickname packets and redeclarable injected Java aliases across shared script contexts; preserve Omnitrix layout scoreboard state when moving DNA into/out of the prototype core, armor guards, Omnitrix tab comparisons and KubeJS 7 server/player access; normalize stat-ability modifier IDs and legacy Attribute_Mod operation names, migrate Slam gravity modifier operation names to 1.21.1 enums and track Cannonbolt descent/landing with unconditional gravity/effect cleanup on impact, water, or timeout, convert Cannonbolt block-particle arguments to 1.21.1 block_state/item syntax, migrate Entity.setSecondsOnFire to igniteForSeconds across rolling/directional/entity/area damage scripts, remove the obsolete EditBox.tick call, normalize the color editor's HEX prefix without invoking Java String.replace with a JavaScript regex, route Diamondhead crystal-block tick listeners into a SERVER data script while keeping ticker setup in STARTUP, and repair inspected Diamond Shard/AFOMNI particle texture IDs: "
