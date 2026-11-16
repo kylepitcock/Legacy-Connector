@@ -54,6 +54,8 @@ public final class Gap1201 {
     public static void main(String[] args) throws Exception {
         Gap1201 gap = new Gap1201();
         gap.loadSrg(Path.of(args[0]));
+        // EXPERIMENTAL 1.19.2 scoping: a second table whose names win (SRG ids are stable across versions: an id still present in 1.20.1 gets its 1.20.1 name)
+        if (System.getProperty("gap.srgOverlay") != null) gap.loadSrg(Path.of(System.getProperty("gap.srgOverlay")));
         for (String f : args[1].split(",")) gap.loadRenames(Path.of(f));
         // "@file": a list file (comma or line separated), for target lists longer than the Windows command line
         // (build.gradle appends the shim class directories after a comma: "@file,dir,dir")
@@ -349,7 +351,7 @@ public final class Gap1201 {
         PrintStream out = new PrintStream(Files.newOutputStream(report));
         // per jar detail (jar TAB kind TAB symbol), input of tools/compat/gap1201_rank.py
         PrintStream detail = new PrintStream(Files.newOutputStream(report.resolveSibling(report.getFileName() + ".detail.tsv")));
-        out.println("Gap report: Forge 1.20.1 jars against Minecraft 1.21.1 + NeoForge (SRG renamed, Forge packages renamed)\n");
+        out.println("Gap report: Forge " + System.getProperty("gap.mc", "1.20.1") + " jars against Minecraft 1.21.1 + NeoForge (SRG renamed, Forge packages renamed)\n");
         for (Path mod : mods) {
             Set<String> mc = new TreeSet<>(), mm = new TreeSet<>(), mf = new TreeSet<>();
             int refs = 0;
