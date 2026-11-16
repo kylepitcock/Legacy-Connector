@@ -2,6 +2,8 @@ package org.kylepitcock.legacyconnector.compat.jdk;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.hash.HashCode;
+import com.google.common.hash.HashFunction;
 import com.google.common.collect.UnmodifiableIterator;
 import java.util.concurrent.TimeUnit;
 
@@ -11,6 +13,11 @@ public final class GuavaCompat {
 
     public static <T> UnmodifiableIterator<T> emptyIterator() {
         return ImmutableSet.<T>of().iterator();
+    }
+
+    /** Guava 15-17 hashString(CharSequence) hashed the chars as UTF-16LE: that is hashUnencodedChars today. */
+    public static HashCode hashString(HashFunction function, CharSequence input) {
+        return function.hashUnencodedChars(input);
     }
 
     public static long elapsedMillis(Stopwatch stopwatch) {
