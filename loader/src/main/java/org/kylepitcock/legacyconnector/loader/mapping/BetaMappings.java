@@ -89,6 +89,24 @@ public final class BetaMappings {
             return classes.size() + methods.size() + fields.size();
         }
 
+        /**
+         * True if a game class in {@code owner}'s ancestry (official) has an obfuscated method that takes the readable {@code name} for
+         * this official {@code desc}. A mod method of that name and signature did not override it in b1.7.3; once the game method is
+         * renamed it would. Methods the game class really declares under that name (added by ModLoader or Forge) are real overrides.
+         */
+        public boolean hidesObfuscated(String owner, String name, String desc) {
+            return hidesObfuscated(owner, name, desc, 0);
+        }
+
+        private boolean hidesObfuscated(String owner, String name, String desc, int depth) {
+            if (owner == null || depth > 32 || !classes.containsKey(owner)) return false;
+            if (declaresMethod(owner, name, desc)) return false;
+            String official = officialMethodByNamed.get(classes.get(owner) + "." + name + mapDesc(this, desc));
+            if (official != null && !official.equals(name)) return true;
+            for (String s : supertypes(owner)) if (hidesObfuscated(s, name, desc, depth + 1)) return true;
+            return false;
+        }
+
         private final Map<String, List<String>> supertypes = new java.util.concurrent.ConcurrentHashMap<>();
         private final Map<String, String> resolved = new java.util.concurrent.ConcurrentHashMap<>();
         private static final String NONE = "\0";

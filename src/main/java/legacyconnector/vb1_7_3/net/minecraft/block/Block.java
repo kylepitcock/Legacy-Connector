@@ -243,6 +243,9 @@ public class Block {
     }
 
     public boolean isOpaque() {
+        // a view of a base-game block answers from its opacity (a snow layer is not an opaque cube; Millenaire's pathing walks through it)
+        if (mcc$owner == null && mcc$modern != null && !(mcc$modern instanceof org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Block)
+                && id > 0 && id < BLOCKS_OPAQUE.length && BLOCKS[id] == this) return BLOCKS_OPAQUE[id];
         return true;
     }
 

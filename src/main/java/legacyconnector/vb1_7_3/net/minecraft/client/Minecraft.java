@@ -126,6 +126,11 @@ public class Minecraft {
      * Beta's smooth-lighting switch. A mod's world renderer is captured into the native chunk mesh, which applies the player's smooth
      * lighting and ambient occlusion itself; baking the mod's own on top would darken twice, so mods draw flat-lit as they did with it off.
      */
+    /** Beta's F3 profiler switch: renderers that draw debug output with it on draw none. */
+    public static boolean isDebugProfilerEnabled() {
+        return false;
+    }
+
     public static boolean isAmbientOcclusionEnabled() {
         return false;
     }

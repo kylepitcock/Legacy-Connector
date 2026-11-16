@@ -20,6 +20,8 @@ public final class ClientB173 implements MenusB173.Client {
     private ClientB173() {}
 
     public static void register(IEventBus modBus) {
+        org.kylepitcock.legacyconnector.vb1_7_3.RendererContextB173.VIEW_ROTATION=()->new org.joml.Matrix4f().rotation(
+                net.minecraft.client.Minecraft.getInstance().gameRenderer.getMainCamera().rotation().conjugate(new org.joml.Quaternionf()));
         // single player: client-side original code reads tile entities from the client's copy of the world, not by waiting for the server
         legacyconnector.vb1_7_3.net.minecraft.world.World.CLIENT_MIRROR=(server,pos)->{
             var level=net.minecraft.client.Minecraft.getInstance().level;

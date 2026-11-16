@@ -43,13 +43,13 @@ public final class GL11 {
 
     public static void glNewList(int list, int mode) {
         COMPILING.set(list);
-        legacyconnector.vb1_7_3.net.minecraft.client.render.Tessellator.beginCapture();
+        legacyconnector.vb1_7_3.net.minecraft.client.render.Tessellator.beginListCapture();
     }
 
     public static void glEndList() {
         Integer list = COMPILING.get();
         COMPILING.remove();
-        var vertices = legacyconnector.vb1_7_3.net.minecraft.client.render.Tessellator.endCapture();
+        var vertices = legacyconnector.vb1_7_3.net.minecraft.client.render.Tessellator.endListCapture();
         if (list != null) LISTS.put(list, vertices);
     }
 
@@ -105,9 +105,18 @@ public final class GL11 {
 
     public static void glAlphaFunc(int func, float ref) {}
 
+    /** Colour channel writes; renderers that mask colour to draw only depth (a glow's outline) draw normally. */
+    public static void glColorMask(boolean red, boolean green, boolean blue, boolean alpha) {}
+
     public static void glDepthMask(boolean flag) {if(RendererContextB173.active())RendererContextB173.depthMask(flag);}
     public static void glDepthFunc(int func) {if(RendererContextB173.active())RendererContextB173.depthFunc(func);}
     public static void glMatrixMode(int mode) {if(RendererContextB173.active())RendererContextB173.matrixMode(mode);else GuiDrawB173.matrixMode(mode);}
+    /** Matrix queries a renderer makes (a billboard reading its modelview); other state reads answer zero. */
+    public static void glGetFloat(int pname, java.nio.FloatBuffer out) {
+        if(pname==2982&&RendererContextB173.active()){RendererContextB173.modelView(out);return;}
+        int at=out.position();for(int i=at;i<out.limit();i++)out.put(i,0F);
+    }
+    public static void glLoadMatrix(java.nio.FloatBuffer matrix) {if(RendererContextB173.active())RendererContextB173.loadModelView(matrix);}
     public static void glLoadIdentity() {if(RendererContextB173.active())RendererContextB173.loadIdentity();else GuiDrawB173.loadIdentity();}
 
     /** A GUI's orthographic projection maps its coordinates onto the screen; a model renderer's is ignored. */

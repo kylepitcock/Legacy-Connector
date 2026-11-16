@@ -14,12 +14,15 @@ import org.kylepitcock.legacyconnector.core.pack.GeneratedPack;
 /** Original entity PNGs are resources in the native pack, including conditional renderer texture choices. */
 public final class MobTexturesB173 implements GeneratedPack.Contributor {
     /** Vanilla Beta's powered-creeper layer, renamed when entity textures were reorganized. */
-    private static final Map<String,String> VANILLA=Map.of("armor/power.png","textures/entity/creeper/creeper_armor.png",
-            "mob/saddle.png","textures/entity/pig/pig_saddle.png",
-            // base-game animal sheets a mod's subclass keeps (same UV layout as the modern models)
-            "mob/cow.png","textures/entity/cow/cow.png","mob/pig.png","textures/entity/pig/pig.png",
-            "mob/chicken.png","textures/entity/chicken.png","mob/sheep.png","textures/entity/sheep/sheep.png",
-            "mob/sheep_fur.png","textures/entity/sheep/sheep_fur.png");
+    private static final Map<String,String> VANILLA=Map.ofEntries(Map.entry("armor/power.png","textures/entity/creeper/creeper_armor.png"),
+            Map.entry("mob/saddle.png","textures/entity/pig/pig_saddle.png"),
+            // base-game mob sheets a mod's subclass keeps (same UV layout as the modern models)
+            Map.entry("mob/cow.png","textures/entity/cow/cow.png"),Map.entry("mob/pig.png","textures/entity/pig/pig.png"),
+            Map.entry("mob/chicken.png","textures/entity/chicken.png"),Map.entry("mob/sheep.png","textures/entity/sheep/sheep.png"),
+            Map.entry("mob/sheep_fur.png","textures/entity/sheep/sheep_fur.png"),
+            Map.entry("mob/spider.png","textures/entity/spider/spider.png"),Map.entry("mob/spider_eyes.png","textures/entity/spider_eyes.png"),
+            Map.entry("mob/creeper.png","textures/entity/creeper/creeper.png"),Map.entry("mob/wolf.png","textures/entity/wolf/wolf.png"),
+            Map.entry("mob/wolf_angry.png","textures/entity/wolf/wolf_angry.png"),Map.entry("mob/wolf_tame.png","textures/entity/wolf/wolf_tame.png"));
     private static String path(String name){
         if(name==null)return null;String p=name.replace('\\','/');while(p.startsWith("/"))p=p.substring(1);
         if(p.isEmpty()||p.contains(":")||java.util.Arrays.asList(p.split("/")).contains(".."))return null;return p;

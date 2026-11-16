@@ -84,6 +84,25 @@ public final class BridgeB173 {
         PER_MOD.forEach((mod, n) -> sb.append(' ').append(mod).append('=').append(n[0]).append(" blocks/").append(n[1]).append(" items"));
         LOG.info("b1.7.3 content registered:{}{}", sb.length() == 0 ? " none" : sb,
                 replaced > 0 ? "; " + replaced + " replacement(s) of vanilla blocks/items kept as the vanilla ones" : "");
+        logFreeIds();
+    }
+
+    /** Block ids share the item id space: a config editor needs the ids no block or item holds (below 256 for blocks of mods that cap there). */
+    private static void logFreeIds() {
+        var blocks = legacyconnector.vb1_7_3.net.minecraft.block.Block.BLOCKS;
+        var items = legacyconnector.vb1_7_3.net.minecraft.item.Item.ITEMS;
+        StringBuilder free = new StringBuilder();
+        int limit = Math.min(4096, Math.min(blocks.length, items.length)), start = -1, count = 0;
+        for (int id = 1; id <= limit; id++) {
+            boolean open = id < limit && blocks[id] == null && items[id] == null;
+            if (open && start < 0) start = id;
+            if (!open && start >= 0) {
+                free.append(free.length() == 0 ? "" : ",").append(start).append(id - 1 > start ? "-" + (id - 1) : "");
+                count += id - start;
+                start = -1;
+            }
+        }
+        LOG.info("b1.7.3 free block ids (no block or item, 1-4095): {} free: {}", count, free);
     }
 
     /**

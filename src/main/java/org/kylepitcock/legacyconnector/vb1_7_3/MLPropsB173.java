@@ -19,12 +19,13 @@ import org.slf4j.LoggerFactory;
  * {@code config/<mod class>.cfg} before the mod is constructed; missing keys get the field's default and the file is written back.
  * Values outside {@code min..max} keep the default, as ModLoader did.
  */
-final class MLPropsB173 {
+public final class MLPropsB173 {
     private static final Logger LOG = LoggerFactory.getLogger("LegacyConnector/b1.7.3");
 
     private MLPropsB173() {}
 
     static void load(Class<?> modClass, Path configDir) {
+        earlyDir = configDir;
         Path file = configDir.resolve(modClass.getSimpleName() + ".cfg");
         Properties props = new Properties();
         if (Files.isRegularFile(file)) {
@@ -184,6 +185,39 @@ final class MLPropsB173 {
             }
         } catch (IOException e) {
             LOG.warn("Cannot update {}: {}", file, e.toString());
+        }
+    }
+
+    private static volatile Path earlyDir;
+    private static final java.util.Map<Class<?>, Properties> EARLY = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** A static initializer's assignment of an {@code @MLProp} field (the loader routes it here): the config file's value when it has a valid one. */
+    public static int early(int value, Class<?> owner, String field) {
+        return earlyValue(owner, field, int.class) instanceof Integer configured ? configured : value;
+    }
+    public static boolean early(boolean value, Class<?> owner, String field) {
+        return earlyValue(owner, field, boolean.class) instanceof Boolean configured ? configured : value;
+    }
+    public static String early(String value, Class<?> owner, String field) {
+        return earlyValue(owner, field, String.class) instanceof String configured ? configured : value;
+    }
+    private static Object earlyValue(Class<?> owner, String fieldName, Class<?> type) {
+        try {
+            MLProp prop = owner.getDeclaredField(fieldName).getAnnotation(MLProp.class);
+            if (prop == null) return null;
+            Properties props = EARLY.computeIfAbsent(owner, c -> {
+                Properties p = new Properties();
+                Path dir = earlyDir != null ? earlyDir : net.neoforged.fml.loading.FMLPaths.CONFIGDIR.get();
+                Path file = dir.resolve(c.getSimpleName() + ".cfg");
+                if (Files.isRegularFile(file)) try (Reader r = Files.newBufferedReader(file, StandardCharsets.ISO_8859_1)) { p.load(r); } catch (IOException ignored) {}
+                return p;
+            });
+            String raw = props.getProperty(prop.name().isEmpty() ? fieldName : prop.name());
+            if (raw == null) return null;
+            Object value = parse(type, raw.trim());
+            return value != null && inRange(value, prop) ? value : null;
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return null;
         }
     }
 

@@ -52,6 +52,9 @@ public final class AssetsB173 implements GeneratedPack.Contributor {
     /** b1.7.3 terrain.png sprite index -> modern block texture, for the sprites mods reuse. */
     private static final Map<Integer, String> VANILLA_TERRAIN = new HashMap<>();
 
+    // ImageIO otherwise buffers every PNG it writes through a temporary file: thousands of generated sprites spent seconds on disk I/O
+    static { javax.imageio.ImageIO.setUseCache(false); }
+
     static {
         String[] row = {"grass_block_top", "stone", "dirt", "grass_block_side", "oak_planks", "smooth_stone_slab_side", "smooth_stone", "bricks",
                 "tnt_side", "tnt_top", "tnt_bottom", "cobweb", "poppy", "dandelion", null, "oak_sapling",
@@ -77,6 +80,10 @@ public final class AssetsB173 implements GeneratedPack.Contributor {
         VANILLA_TERRAIN.put(105, "glowstone");
         VANILLA_TERRAIN.put(112, "rail_corner");
         VANILLA_TERRAIN.put(115, "redstone_torch_off");
+        // leaves: 52/53 oak fancy/fast, +80 spruce (BlockLeaves picks by metadata and graphics level)
+        VANILLA_TERRAIN.put(53, "oak_leaves");
+        VANILLA_TERRAIN.put(132, "spruce_leaves");
+        VANILLA_TERRAIN.put(133, "spruce_leaves");
         VANILLA_TERRAIN.put(116, "spruce_log");
         VANILLA_TERRAIN.put(117, "birch_log");
         VANILLA_TERRAIN.put(118, "pumpkin_side");
@@ -128,7 +135,7 @@ public final class AssetsB173 implements GeneratedPack.Contributor {
      * Vanilla textures with transparent pixels, for mod blocks that reuse them. b1.7.3 drew all terrain with an alpha test, so a block
      * whose sprites have holes showed them even as an "opaque" block: such models are cutout ({@link #hasAlpha}).
      */
-    private static final java.util.Set<String> VANILLA_SEE_THROUGH = java.util.Set.of("glass", "nether_portal", "oak_leaves", "cobweb", "poppy", "dandelion",
+    private static final java.util.Set<String> VANILLA_SEE_THROUGH = java.util.Set.of("glass", "nether_portal", "oak_leaves", "spruce_leaves", "cobweb", "poppy", "dandelion",
             "oak_sapling", "red_mushroom", "brown_mushroom", "dead_bush", "torch", "ladder", "sugar_cane", "spawner", "rail", "rail_corner",
             "lever", "redstone_torch", "redstone_torch_off", "cactus_side", "cactus_top", "cactus_bottom");
 
@@ -356,7 +363,41 @@ public final class AssetsB173 implements GeneratedPack.Contributor {
         put("assets/" + id.getNamespace() + "/blockstates/" + id.getPath() + ".json", state);
 
         var item = block.mcc$modern.asItem();
-        if (item != net.minecraft.world.item.Items.AIR) itemModels(block, mod, sheet, renderType, metaModels, item);
+        if (item != net.minecraft.world.item.Items.AIR) itemModels(block, mod, sheet, renderType,
+                usesWorldTextures(block) ? inventoryModels(block, mod, sheet, renderType, opaque, layer, id, metaModels) : metaModels, item);
+    }
+
+    /**
+     * Beta drew a block in inventories with {@code getBlockTextureFromSideAndMetadata}, not the world lookup a block that reads its tile entity
+     * (IC2 machines: their front by facing) answers without one: such blocks get item models from the inventory textures per metadata.
+     */
+    private String[] inventoryModels(Block block, LegacyModRecord mod, String sheet, int renderType, boolean opaque, int layer, ResourceLocation id, String[] world) {
+        String[] models = new String[16];
+        Map<String, String> byJson = new LinkedHashMap<>();
+        for (int meta = 0; meta < 16; meta++) {
+            final int m = meta;
+            String[] tex = new String[6];
+            boolean failed = false;
+            for (int side = 0; side < 6; side++) {
+                final int s = side;
+                int index = safe(() -> block.getTexture(s, m), Integer.MIN_VALUE);
+                if (index == Integer.MIN_VALUE) { failed = true; break; }
+                tex[side] = texture(mod, sheet, index, false);
+            }
+            if (failed) { models[meta] = world[meta]; continue; }
+            boolean seeThrough = false;
+            for (String t : tex) seeThrough |= hasAlpha(t);
+            String json = GSON.toJson(blockModel(block, renderType, tex, opaque && !seeThrough, layer, meta));
+            String name = byJson.get(json);
+            if (name == null) {
+                name = id.getNamespace() + ":block/b173/" + id.getPath() + "_inv" + meta;
+                byJson.put(json, name);
+                byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
+                out.put("assets/" + id.getNamespace() + "/models/block/b173/" + id.getPath() + "_inv" + meta + ".json", () -> bytes);
+            }
+            models[meta] = name;
+        }
+        return models;
     }
 
     /**
