@@ -91,6 +91,56 @@ public final class Round5Compat {
         return (net.minecraft.world.level.block.RotatedPillarBlock) net.minecraft.world.level.block.Blocks.log(top, side);
     }
 
+    /** {@code PortalShape.createPortalInfo(...)} of 1.20.1 (the arrival position inside a found portal rectangle), result in the stand-in for {@code PortalInfo}. */
+    public static LegacyPortalInfo createPortalInfo(net.minecraft.server.level.ServerLevel level, net.minecraft.BlockUtil.FoundRectangle rect,
+            net.minecraft.core.Direction.Axis axis, net.minecraft.world.phys.Vec3 relative, net.minecraft.world.entity.Entity entity,
+            net.minecraft.world.phys.Vec3 speed, float yRot, float xRot) {
+        net.minecraft.core.BlockPos corner = rect.minCorner;
+        net.minecraft.world.level.block.state.BlockState state = level.getBlockState(corner);
+        net.minecraft.core.Direction.Axis portalAxis = state.getOptionalValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_AXIS)
+                .orElse(net.minecraft.core.Direction.Axis.X);
+        double width = rect.axis1Size;
+        double height = rect.axis2Size;
+        net.minecraft.world.entity.EntityDimensions dims = entity.getDimensions(entity.getPose());
+        int turn = axis == portalAxis ? 0 : 90;
+        net.minecraft.world.phys.Vec3 newSpeed = axis == portalAxis ? speed : new net.minecraft.world.phys.Vec3(speed.z, speed.y, -speed.x);
+        double along = dims.width() / 2.0 + (width - dims.width()) * relative.x();
+        double up = (height - dims.height()) * relative.y();
+        double across = 0.5 + relative.z();
+        boolean x = portalAxis == net.minecraft.core.Direction.Axis.X;
+        net.minecraft.world.phys.Vec3 pos = new net.minecraft.world.phys.Vec3(corner.getX() + (x ? along : across), corner.getY() + up, corner.getZ() + (x ? across : along));
+        pos = net.minecraft.world.level.portal.PortalShape.findCollisionFreePosition(pos, level, entity, dims);
+        return new LegacyPortalInfo(pos, newSpeed, yRot + turn, xRot);
+    }
+
+    /** {@code WalkNodeEvaluator.getBlockPathTypeStatic(getter, pos)}. APPROXIMATION: the block's own path type, without the danger/neighbour checks. */
+    public static net.minecraft.world.level.pathfinder.PathType blockPathTypeStatic(net.minecraft.world.level.BlockGetter getter, net.minecraft.core.BlockPos.MutableBlockPos pos) {
+        return net.minecraft.world.level.pathfinder.WalkNodeEvaluator.getPathTypeFromState(getter, pos);
+    }
+
+    /** {@code TheEndGatewayBlockEntity.canEntityTeleport(entity)}. */
+    public static boolean canGatewayTeleport(net.minecraft.world.entity.Entity entity) {
+        return entity.canUsePortal(false);
+    }
+
+    /** {@code TheEndGatewayBlockEntity.teleportEntity(level, pos, state, entity, gateway)}: hands the entity to the gateway block's portal logic (it teleports on its next tick). */
+    public static void gatewayTeleport(net.minecraft.world.level.Level level, net.minecraft.core.BlockPos pos, net.minecraft.world.level.block.state.BlockState state,
+            net.minecraft.world.entity.Entity entity, net.minecraft.world.level.block.entity.TheEndGatewayBlockEntity gateway) {
+        if (!level.isClientSide && state.getBlock() instanceof net.minecraft.world.level.block.Portal portal) entity.setAsInsidePortal(portal, pos);
+    }
+
+    /** {@code MerchantOffers.createTag()}: the offers as the compound with the {@code Recipes} list. */
+    public static net.minecraft.nbt.CompoundTag merchantOffersTag(net.minecraft.world.item.trading.MerchantOffers offers) {
+        net.minecraft.nbt.Tag tag = net.minecraft.world.item.trading.MerchantOffers.CODEC
+                .encodeStart(MigrateContext.provider().createSerializationContext(net.minecraft.nbt.NbtOps.INSTANCE), offers).getOrThrow();
+        return tag instanceof net.minecraft.nbt.CompoundTag compound ? compound : new net.minecraft.nbt.CompoundTag();
+    }
+
+    /** The two stacks {@code customArrow} gained (the weapon and the ammunition): unknown to a 1.20.1 call, so empty. */
+    public static net.minecraft.world.item.ItemStack noStack(net.minecraft.world.entity.projectile.AbstractArrow ignored) {
+        return net.minecraft.world.item.ItemStack.EMPTY;
+    }
+
     /** {@code ButtonBlock.arrowsCanPress}: the flag moved into the block set type (wooden buttons yes, stone ones no). */
     public static boolean buttonArrows(ButtonBlock block) {
         return block.type.canButtonBeActivatedByArrows();
