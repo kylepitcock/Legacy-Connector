@@ -5,6 +5,44 @@ Forge 47 / NeoForge 21.1 APIs. Figures about third-party APIs were not re-verifi
 **There are no 1.20.1 jars in `test-mods*`** (they hold 1.7.10 and 1.12.2 jars, plus a Curios 1.21.1 jar in `test-mods/modern-deps`), so "which APIs
 real mods use most" below is an expectation, not a measurement. Milestone 0 is to collect a corpus and measure it with the tool described in the plan.
 
+## Current state (2026-11-15)
+
+Summary of the Alpha as of this date; the numbered status sections below are the history, and the measured pack runs are in [the ATM 9 run](Legacy-1.20.1-ATM9-Run.md).
+`TRANSFORMER_VERSION` 95.
+
+- **Numbers.** ATM 9 pack, 506 jars, offline link check (`atm9_run.py`): 141 link fully (127 the same morning); the rest have unresolved references or
+  are engine patches and library jars. A link is not proof that the mod runs. On a headless server the suites `atm9-1201-stable`, `atm9-1201-1`, `-2` and
+  `-3` start (reach "Done"); the other batches are not claimed here, and a mod that starts has not been played.
+- **Translation.** In-place remap (SRG to Mojang names, Forge to NeoForge), then the Minecraft 1.20.1 to 1.21.1 migration tables (call rewrites, class
+  stand-ins, override bridges, handle rewrites), Forge API facades, and **soft links**: a reference to a symbol 1.21.1 lacks is bound to a stand-in
+  or helper instead of failing the jar.
+- **Removed members and mixins.** Access transformer lines naming members that no longer exist are dropped instead of failing the mod. Mixins whose
+  targets changed are repaired or dropped one by one; an accessor interface of a removed field becomes a helper call at its call sites (round 6,
+  `WorldGenRegion.structureManager`).
+- **Data conversion** (`DataConverter1201`): pack folder names, recipes (results and ingredients as item stacks), item NBT to data components with the
+  rest in `custom_data`, loot functions (`set_nbt`, `copy_nbt`...), item predicates, state predicates, `forge:` to `neoforge:` ids and Forge tags to
+  convention tags. **Create 0.5 recipes** (`create:mixing`, pressing, mechanical crafting, sequenced assembly and the rest of the family) are rewritten to
+  the Create 6 format, so add-ons' data loads.
+- **Forge API.** `ModConfig` facade (`LegacyModConfig`, `ConfigFileTypeHandler`, subclasses by mods), raw network channels that deliver, library networking over
+  one payload type (Balm 7, Resourceful Lib 2), `@ObjectHolder`, `Lazy`, `OptionalMod`, brewing (`LegacyBrewing`: the legacy `PotionBrewing` mixes are
+  replayed into NeoForge's brewing event), a **recipe serializer adapter** (the legacy `fromJson`/`fromNetwork`/`toNetwork` of code serializers, and the
+  vanilla serializers' helpers, over codecs and stream codecs), loot serializer stand-ins, `ItemPredicate` and `MeleeAttackGoal` stand-ins.
+- **Tolerance while 1.20.1 mods are loaded** (inactive without them): directions written in capitals in pack files (`"direction": "DOWN"`) are read, a
+  block or potion name that does not exist answers the registry default as 1.20.1 did instead of stopping the registry load, an unloaded config value answers its
+  default, intrusive holders may be made while the registry is frozen (only from a translated jar's frame).
+
+Known approximate or open:
+
+- The tolerant name lookup is an approximation of a global 1.20.1 behaviour; a pack file naming an absent block becomes air, as then.
+- `Tier.getTag()` answers null. The mob effect packet never asks the client to blend. Static animal food fields that mods *write* (`Chicken.FOOD_ITEMS`,
+  `Parrot.TAME_FOOD`, Croptopia) have no rule: 1.21.1 foods are tags.
+- Not run in a game: the recipe serializer adapter (no mod of the server sets had a code serializer; a set with Create, cfm or Immersive Engineering would),
+  `LegacyBrewing` (needs a server with Tinkers' Construct or Create), the Create recipe conversion in game, raw network channels with two peers.
+- Loot tables naming `minecraft:sweeping` (now `sweeping_edge`) fail to parse (Better Dungeons chests); `set_nbt` with a potion that is not vanilla still fails.
+- Mixin `AccessorMapItem` of Repurposed Structures does not apply (warning only).
+- Left by value: `BalmBlockEntity` super calls, `CodecPacketHandler`/`ByteCodec` (Chipped), Jade 15 UI styles, `ModConfig` final-class subclasses beyond the
+  facade, banner and cauldron interaction return types, `ClientboundExplodePacket` constructor. List: `tools/dev/agent-tasks/1.20.1-symbols-leftovers.md`.
+
 ## 1. How 1.7.10 and 1.12.2 are structured today
 
 | Layer | Where | Size | Role |

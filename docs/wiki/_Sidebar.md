@@ -1,6 +1,7 @@
 **[Home](Home.md)**
 
 - [Architecture](Architecture.md)
+- [Coremods](Coremods.md)
 - [Bridges](Bridges.md)
 - [Library candidates](Library-Candidates.md)
 - [World generation](World-Generation.md)
