@@ -424,6 +424,57 @@ public final class MiscCompat {
         return java.util.Arrays.asList(array);
     }
 
+    /** {@code new StemBlock(fruit, seed, properties)}: 1.21.1 names the fruit, the attached stem and the seed by key (the fruit block and its attached stem follow vanilla's naming). */
+    public static net.minecraft.resources.ResourceKey<net.minecraft.world.level.block.Block> stemFruitKey(net.minecraft.world.level.block.Block fruit) {
+        return net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.BLOCK, net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(fruit));
+    }
+
+    public static net.minecraft.resources.ResourceKey<net.minecraft.world.level.block.Block> stemAttachedKey(net.minecraft.world.level.block.Block fruit) {
+        net.minecraft.resources.ResourceLocation id = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(fruit);
+        return net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.BLOCK, id.withPath("attached_" + id.getPath() + "_stem"));
+    }
+
+    /** The seed supplier is not resolvable while blocks register (the item does not exist yet): its item when it is, melon seeds otherwise (only the pick-block result and drops of the vanilla stem class use it). */
+    public static net.minecraft.resources.ResourceKey<net.minecraft.world.item.Item> stemSeedKey(java.util.function.Supplier<?> seed) {
+        try {
+            Object item = seed.get();
+            if (item instanceof net.minecraft.world.item.Item i) {
+                net.minecraft.resources.ResourceLocation id = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(i);
+                if (!id.equals(net.minecraft.core.registries.BuiltInRegistries.ITEM.getDefaultKey())) return net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.ITEM, id);
+            }
+        } catch (RuntimeException notYet) {
+            // the item is not registered yet
+        }
+        return net.minecraft.world.item.Items.MELON_SEEDS.builtInRegistryHolder().key();
+    }
+
+    /** {@code SwordItem.getDamage()}: the attack damage the sword was built with, kept as its main hand attack damage modifier in 1.21.1. */
+    public static float swordDamage(net.minecraft.world.item.SwordItem sword) {
+        return attackDamage(sword);
+    }
+
+    /** {@code DiggerItem.getAttackDamage()}: the same, for pickaxes, axes, shovels and hoes. */
+    public static float diggerDamage(net.minecraft.world.item.DiggerItem tool) {
+        return attackDamage(tool);
+    }
+
+    private static float attackDamage(net.minecraft.world.item.Item item) {
+        net.minecraft.world.item.component.ItemAttributeModifiers mods = item.components().get(net.minecraft.core.component.DataComponents.ATTRIBUTE_MODIFIERS);
+        double sum = 0;
+        if (mods != null) {
+            for (net.minecraft.world.item.component.ItemAttributeModifiers.Entry e : mods.modifiers()) {
+                if (e.attribute().is(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE.unwrapKey().orElseThrow())
+                        && e.modifier().operation() == net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE) sum += e.modifier().amount();
+            }
+        }
+        return (float) sum;
+    }
+
+    public static net.minecraft.resources.ResourceKey<net.minecraft.world.level.block.Block> stemOfFruitKey(net.minecraft.world.level.block.Block fruit) {
+        net.minecraft.resources.ResourceLocation id = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(fruit);
+        return net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.BLOCK, id.withPath(id.getPath() + "_stem"));
+    }
+
     private static volatile java.lang.reflect.Method conditionsGetter;
 
     /** {@code LootItemConditionalFunction.Builder.getConditions()}: protected, returned an array in 1.20.1 and a list in 1.21.1 (read through reflection, the caller is a mod class). */
