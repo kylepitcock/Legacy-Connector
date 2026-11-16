@@ -164,6 +164,31 @@ public class EntityItem extends Entity {
         if (i != null) org.kylepitcock.legacyconnector.v1_12_2.entity.ItemEntityAccess1122.mergeWithNeighbours(i);
     }
 
+    /**
+     * Merges this item entity into {@code other} when both are alive, can be picked up, hold the same item and tag and the sum fits one stack
+     * (the smaller stack always goes into the larger one). Returns whether this entity was merged away.
+     */
+    public boolean combineItems(EntityItem other) {
+        var a = mcc$item();
+        var b = other == null ? null : other.mcc$item();
+        if (a == null || b == null || a == b || !a.isAlive() || !b.isAlive()) return false;
+        int delayA = mcc$get$pickupDelay(this), delayB = mcc$get$pickupDelay(other);
+        int ageA = mcc$get$age(this), ageB = mcc$get$age(other);
+        if (delayA == 32767 || delayB == 32767 || ageA == -32768 || ageB == -32768) return false;
+        var stackA = a.getItem();
+        var stackB = b.getItem();
+        if (!net.minecraft.world.item.ItemStack.isSameItemSameComponents(stackA, stackB)) return false;
+        if (stackB.getCount() < stackA.getCount()) return other.combineItems(this);
+        if (stackB.getCount() + stackA.getCount() > stackB.getMaxStackSize()) return false;
+        var merged = stackB.copy();
+        merged.grow(stackA.getCount());
+        b.setItem(merged);
+        b.setPickUpDelay(Math.max(delayB, delayA));
+        org.kylepitcock.legacyconnector.v1_12_2.entity.ItemEntityAccess1122.setAge(b, Math.min(ageB, ageA));
+        a.discard();
+        return true;
+    }
+
     /** A display-only item: never picked up, and gone on its next tick. */
     public void makeFakeItem() {
         setInfinitePickupDelay();
