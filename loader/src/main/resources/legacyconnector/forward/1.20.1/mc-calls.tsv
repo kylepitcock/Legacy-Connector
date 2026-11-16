@@ -594,7 +594,7 @@ net/minecraft/world/entity/raid/Raid$RaiderType	create	(Ljava/lang/String;Lnet/m
 net/minecraft/world/level/pathfinder/PathType	create	(Ljava/lang/String;F)Lnet/minecraft/world/level/pathfinder/PathType;	RoundCompat	createPathType	-
 net/minecraft/world/item/ItemDisplayContext	create	(Ljava/lang/String;Lnet/minecraft/resources/ResourceLocation;Lnet/minecraft/world/item/ItemDisplayContext;)Lnet/minecraft/world/item/ItemDisplayContext;	RoundCompat	createDisplayContext	-
 net/minecraft/world/item/SmithingTemplateItem	createArmorTrimTemplate	(Lnet/minecraft/resources/ResourceLocation;)Lnet/minecraft/world/item/SmithingTemplateItem;	=args	0,RoundCompat.noFlags@0	(Lnet/minecraft/resources/ResourceLocation;[Lnet/minecraft/world/flag/FeatureFlag;)Lnet/minecraft/world/item/SmithingTemplateItem;
-net/minecraft/world/item/crafting/SimpleCookingSerializer	<init>	(Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyCookieBaker;I)V	RoundCompat	newCookingSerializer	-
+net/minecraft/world/item/crafting/SimpleCookingSerializer	<init>	(Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyCookieBaker;I)V	=args	Round6Compat.cookingFactory@0,1	(Lnet/minecraft/world/item/crafting/AbstractCookingRecipe$Factory;I)V
 net/minecraft/network/syncher/EntityDataSerializer	optional	(Lnet/minecraft/network/codec/StreamEncoder;Lnet/minecraft/network/codec/StreamDecoder;)Lnet/minecraft/network/syncher/EntityDataSerializer;	RoundCompat	optionalSerializer	-
 net/minecraft/network/syncher/EntityDataSerializer	simpleEnum	(Ljava/lang/Class;)Lnet/minecraft/network/syncher/EntityDataSerializer;	RoundCompat	simpleEnum	-
 net/minecraft/network/syncher/EntityDataSerializer	simple	(Lnet/minecraft/network/codec/StreamEncoder;Lnet/minecraft/network/codec/StreamDecoder;)Lnet/minecraft/network/syncher/EntityDataSerializer;	RoundCompat	simpleSerializer	-
@@ -795,3 +795,12 @@ net/minecraft/server/level/ServerLevel	addDuringCommandTeleport	(Lnet/minecraft/
 net/minecraft/world/level/chunk/storage/RegionFileStorage	<init>	(Ljava/nio/file/Path;Z)V	=args	Round6Compat.regionInfo@0,0,1	(Lnet/minecraft/world/level/chunk/storage/RegionStorageInfo;Ljava/nio/file/Path;Z)V
 net/minecraft/advancements/Criterion	<init>	(Lnet/minecraft/advancements/CriterionTriggerInstance;)V	Round6Compat	newCriterion	-
 net/minecraft/server/level/WorldGenRegion	$get$writeRadiusCutoff	()I	Round6Compat	writeRadius	-
+net/minecraft/world/level/storage/loot/LootPool	$get$entries	()[Lnet/minecraft/world/level/storage/loot/entries/LootPoolEntryContainer;	Round6Compat	poolEntries	-
+net/minecraft/world/level/storage/loot/LootPool	$set$entries	([Lnet/minecraft/world/level/storage/loot/entries/LootPoolEntryContainer;)V	Round6Compat	setPoolEntries	-
+net/minecraft/world/level/block/Block	appendHoverText	(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/level/BlockGetter;Ljava/util/List;Lnet/minecraft/world/item/TooltipFlag;)V	Round6Compat	blockHover	-
+net/minecraft/Util	isBlank	(Ljava/lang/String;)Z	Round6Compat	isBlank	-
+net/minecraft/world/entity/decoration/Painting	storeVariant	(Lnet/minecraft/nbt/CompoundTag;Lnet/minecraft/core/Holder;)V	Round6Compat	storePaintingVariant	-
+net/minecraft/world/entity/Entity	$get$portalEntrancePos	()Lnet/minecraft/core/BlockPos;	Round6Compat	portalEntrancePos	-
+net/minecraft/world/item/ArmorItem	$get$knockbackResistance	()F	Round6Compat	armorKnockbackResistance	-
+
+net/minecraft/world/entity/Entity	$set$portalEntrancePos	(Lnet/minecraft/core/BlockPos;)V	Round6Compat	setPortalEntrancePos	-

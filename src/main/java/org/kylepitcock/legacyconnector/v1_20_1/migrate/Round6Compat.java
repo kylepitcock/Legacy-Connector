@@ -72,4 +72,59 @@ public final class Round6Compat {
         if (instance instanceof InventoryChangeTrigger.TriggerInstance) return net.minecraft.core.registries.BuiltInRegistries.TRIGGER_TYPES.getKey(net.minecraft.advancements.CriteriaTriggers.INVENTORY_CHANGED);
         return null;
     }
+
+    /**
+     * Argument producer for {@code new SimpleCookingSerializer(baker, time)} and {@code super(baker, time)} of a mod's own serializer class: the 1.21.1
+     * factory has no recipe id; the 1.20.1 constructor gets {@link RoundCompat}'s unknown id.
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static net.minecraft.world.item.crafting.AbstractCookingRecipe.Factory cookingFactory(LegacyCookieBaker baker) {
+        return (group, category, ingredient, result, xp, time) -> baker.create(RoundCompat.UNKNOWN_RECIPE, (String) group,
+                (net.minecraft.world.item.crafting.CookingBookCategory) category, (net.minecraft.world.item.crafting.Ingredient) ingredient,
+                (net.minecraft.world.item.ItemStack) result, (Float) xp, (Integer) time);
+    }
+
+    /** {@code Util.isBlank(string)}: gone (use the JDK). */
+    public static boolean isBlank(String string) {
+        return string == null || string.isBlank();
+    }
+
+    /** {@code Painting.storeVariant(tag, variant)}: the variant's registry id under {@code "variant"}, as 1.20.1 wrote it. */
+    public static void storePaintingVariant(net.minecraft.nbt.CompoundTag tag, net.minecraft.core.Holder<net.minecraft.world.entity.decoration.PaintingVariant> variant) {
+        variant.unwrapKey().ifPresent(key -> tag.putString("variant", key.location().toString()));
+    }
+
+    /** {@code Entity.portalEntrancePos} (field read): where the entity entered the portal it is in, null outside one. */
+    public static net.minecraft.core.BlockPos portalEntrancePos(net.minecraft.world.entity.Entity entity) {
+        return entity.portalProcess == null ? null : entity.portalProcess.getEntryPosition();
+    }
+
+    /**
+     * {@code entity.portalEntrancePos = pos} (field write). Approximation: only an entity that is inside a portal this tick has a portal process to
+     * update; the 1.20.1 code could also set the field ahead of the teleport, which has no 1.21.1 counterpart.
+     */
+    public static void setPortalEntrancePos(net.minecraft.world.entity.Entity entity, net.minecraft.core.BlockPos pos) {
+        if (entity.portalProcess != null && pos != null) entity.portalProcess.updateEntryPosition(pos);
+    }
+
+    /** {@code ArmorItem.knockbackResistance} (protected field of 1.20.1): the material's value. */
+    public static float armorKnockbackResistance(net.minecraft.world.item.ArmorItem item) {
+        return item.getMaterial().value().knockbackResistance();
+    }
+
+    /** {@code LootPool.entries} (field read, an array in 1.20.1): a copy of the pool's entry list. */
+    public static net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer[] poolEntries(net.minecraft.world.level.storage.loot.LootPool pool) {
+        return pool.entries.toArray(new net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer[0]);
+    }
+
+    /** {@code LootPool.entries = array} (field write): the pool draws from the new entries (it reads its list on every roll). */
+    public static void setPoolEntries(net.minecraft.world.level.storage.loot.LootPool pool, net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer[] entries) {
+        pool.entries = new java.util.ArrayList<>(java.util.Arrays.asList(entries));
+    }
+
+    /** {@code Block.appendHoverText(stack, level, tooltip, flag)} called on a block: the 1.21.1 method with an empty tooltip context. */
+    public static void blockHover(net.minecraft.world.level.block.Block block, net.minecraft.world.item.ItemStack stack, net.minecraft.world.level.BlockGetter level,
+            java.util.List<net.minecraft.network.chat.Component> tooltip, net.minecraft.world.item.TooltipFlag flag) {
+        block.appendHoverText(stack, net.minecraft.world.item.Item.TooltipContext.EMPTY, tooltip, flag);
+    }
 }

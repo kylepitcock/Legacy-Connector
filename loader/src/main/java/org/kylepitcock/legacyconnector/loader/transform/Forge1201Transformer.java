@@ -308,6 +308,16 @@ public final class Forge1201Transformer {
             if (CallRewrites1201.COMPOUND.equals(node.superName)) compoundSubclasses.add(node.name);
         }
         java.util.function.Predicate<String> modEvents = n -> jarClasses.contains(n) && hierarchy.isSubclassOf(n, "net/neoforged/bus/api/Event");
+        Map<String, ClassNode> nodeByName = new java.util.HashMap<>();
+        for (ClassNode node : nodes) nodeByName.put(node.name, node);
+        // super.getCapability(...) naming a class of the jar that does not declare it (nor an ancestor of the jar): Minecraft's parent has none either
+        java.util.function.BiPredicate<String, String> baseIsMinecraft = (owner, desc) -> {
+            if (!nodeByName.containsKey(owner) || hierarchy.reachesUnknown(owner)) return false;
+            for (String c = owner; c != null && nodeByName.containsKey(c); c = nodeByName.get(c).superName) {
+                for (org.objectweb.asm.tree.MethodNode m : nodeByName.get(c).methods) if (m.name.equals("getCapability") && m.desc.equals(desc)) return false;
+            }
+            return true;
+        };
         Map<ClassNode, Integer> migrated = new java.util.IdentityHashMap<>();
         SoftLink1201 soft = softLinkEnabled() ? new SoftLink1201(nodes, hierarchy) : null;
         int palladiumKubejsChanges = 0;
@@ -367,7 +377,7 @@ public final class Forge1201Transformer {
             palladiumKubejsChanges += palladiumChanges;
             int palladiumAddonPackChange = PalladiumAddonPackManager1201.apply(node);
             palladiumAddonPackChanges += palladiumAddonPackChange;
-            viaCalls += ForgeApiRewrites1201.apply(node, modEvents);
+            viaCalls += ForgeApiRewrites1201.apply(node, modEvents, baseIsMinecraft);
             if (modEvents.test(node.name) && ForgeApiRewrites1201.markCancelable(node)) viaCalls++;
             viaCalls += AttachGuards1201.apply(node, jarClasses);
             if (ForgeApiRewrites1201.markProviders(node)) viaCalls++;
