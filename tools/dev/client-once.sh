@@ -5,16 +5,17 @@
 # run-screenshots/logs/latest.log is polled every 20 s: the game is killed at once when a failure marker shows up, or after STALL seconds (default 360)
 # without the log growing. Exit status: 0 the run finished by itself, 2 failure marker, 3 stalled. The marker line and the last log lines are printed.
 cd "$(dirname "$0")/../.." || exit 1
-ROOT="$(pwd -W 2>/dev/null || pwd)"
+NAME="$(basename "$(pwd)")"   # the worktree directory name is in the command line of this checkout's game (-Dfml.modFolders=...)
 LOG="run-screenshots/logs/latest.log"
 STALL="${STALL:-360}"
 MARKERS='broken mod state|Mod loading issue|Preparing crash report|Failed to wait for future|Caught exception during event|Failed to create mod instance|Crash Report'
 
 kill_game() {
-  powershell -NoProfile -Command "Get-CimInstance Win32_Process | Where-Object { \$_.Name -eq 'java.exe' -and \$_.CommandLine -like '*$(echo "$ROOT" | sed 's#/#\\\\#g')*' } | ForEach-Object { Stop-Process -Id \$_.ProcessId -Force }" >/dev/null 2>&1
+  powershell -NoProfile -Command "Get-CimInstance Win32_Process | Where-Object { \$_.Name -eq 'java.exe' -and \$_.CommandLine -like '*fml.modFolders*$NAME*' } | ForEach-Object { Stop-Process -Id \$_.ProcessId -Force }" >/dev/null 2>&1
 }
 
-rm -f "$LOG"
+# the log of an earlier run may still be there (a process can hold it): only what the new run adds is read
+start_off=$(stat -c %s "$LOG" 2>/dev/null || echo 0)
 tools/dev/quick-shots.sh > build/client-once.out 2>&1 &
 runner=$!
 start=$SECONDS
@@ -26,7 +27,8 @@ while kill -0 $runner 2>/dev/null; do
   if [ -f "$LOG" ]; then
     size=$(stat -c %s "$LOG" 2>/dev/null || echo 0)
     if [ "$size" != "$last_size" ]; then last_size=$size; last_change=$SECONDS; fi
-    hit=$(grep -a -m1 -E "$MARKERS" "$LOG")
+    off=$start_off; [ "$size" -lt "$start_off" ] && off=0
+    hit=$(tail -c +$((off+1)) "$LOG" | grep -a -m1 -E "$MARKERS")
     if [ -n "$hit" ]; then
       echo "client-once: failure marker after $((SECONDS-start)) s: $hit" | cut -c1-300
       status=2
