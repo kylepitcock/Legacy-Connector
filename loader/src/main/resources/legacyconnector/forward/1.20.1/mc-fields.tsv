@@ -376,3 +376,5 @@ net/minecraft/world/item/alchemy/PotionBrewing	POTION_MIXES	Ljava/util/List;	-	n
 net/minecraft/world/item/alchemy/PotionBrewing	CONTAINER_MIXES	Ljava/util/List;	-	none	LegacyBrewing.containerMixes
 net/minecraft/world/item/alchemy/PotionBrewing	ALLOWED_CONTAINERS	Ljava/util/List;	-	none	LegacyBrewing.allowedContainers
 net/minecraft/world/item/alchemy/PotionBrewing	ALLOWED_CONTAINER	Ljava/util/function/Predicate;	-	none	LegacyBrewing.allowedContainer
+net/minecraft/world/level/block/LayeredCauldronBlock	RAIN	Ljava/util/function/Predicate;	-	none	Round6Compat.cauldronRain
+net/minecraft/world/level/block/LayeredCauldronBlock	SNOW	Ljava/util/function/Predicate;	-	none	Round6Compat.cauldronSnow

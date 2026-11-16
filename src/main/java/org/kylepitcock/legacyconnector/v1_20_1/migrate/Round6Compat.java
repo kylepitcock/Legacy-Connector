@@ -165,6 +165,36 @@ public final class Round6Compat {
         return net.minecraft.world.item.crafting.Recipe.CODEC.parse(ops, json).getOrThrow(msg -> new com.google.gson.JsonParseException(id + ": " + msg));
     }
 
+    /** Argument producer for the cauldron constructors: 1.20.1 passed the plain item map, 1.21.1 a named interaction map. */
+    public static net.minecraft.core.cauldron.CauldronInteraction.InteractionMap interactionMap(java.util.Map<net.minecraft.world.item.Item, net.minecraft.core.cauldron.CauldronInteraction> map) {
+        return new net.minecraft.core.cauldron.CauldronInteraction.InteractionMap("legacy_" + Integer.toHexString(System.identityHashCode(map)), map);
+    }
+
+    /** Argument producer for {@code new LayeredCauldronBlock(props, fillPredicate, map)}: the kind of precipitation that fills it (the first the predicate accepts). */
+    public static net.minecraft.world.level.biome.Biome.Precipitation fillingPrecipitation(java.util.function.Predicate<net.minecraft.world.level.biome.Biome.Precipitation> predicate) {
+        if (predicate.test(net.minecraft.world.level.biome.Biome.Precipitation.RAIN)) return net.minecraft.world.level.biome.Biome.Precipitation.RAIN;
+        if (predicate.test(net.minecraft.world.level.biome.Biome.Precipitation.SNOW)) return net.minecraft.world.level.biome.Biome.Precipitation.SNOW;
+        return net.minecraft.world.level.biome.Biome.Precipitation.NONE;
+    }
+
+    /** {@code LayeredCauldronBlock.RAIN}: the precipitation test that lets rain fill a cauldron. */
+    public static java.util.function.Predicate<net.minecraft.world.level.biome.Biome.Precipitation> cauldronRain() {
+        return p -> p == net.minecraft.world.level.biome.Biome.Precipitation.RAIN;
+    }
+
+    /** {@code LayeredCauldronBlock.SNOW}: the precipitation test that lets snow fill a cauldron. */
+    public static java.util.function.Predicate<net.minecraft.world.level.biome.Biome.Precipitation> cauldronSnow() {
+        return p -> p == net.minecraft.world.level.biome.Biome.Precipitation.SNOW;
+    }
+
+    /** {@code EquipmentSlot.byTypeAndIndex(type, index)} (static): the slot of that type with that index. */
+    public static net.minecraft.world.entity.EquipmentSlot slotByTypeAndIndex(net.minecraft.world.entity.EquipmentSlot.Type type, int index) {
+        for (net.minecraft.world.entity.EquipmentSlot slot : net.minecraft.world.entity.EquipmentSlot.values()) {
+            if (slot.getType() == type && slot.getIndex() == index) return slot;
+        }
+        throw new IllegalArgumentException("Invalid slot type " + type + " with index " + index);
+    }
+
     /** {@code Util.isBlank(string)}: gone (use the JDK). */
     public static boolean isBlank(String string) {
         return string == null || string.isBlank();
