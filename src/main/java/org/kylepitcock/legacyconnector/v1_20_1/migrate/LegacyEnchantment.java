@@ -216,6 +216,11 @@ public class LegacyEnchantment {
 
     // ------------------------------------------------------------------ bridge to 1.21.1
 
+    /** The id of the data-driven entry this wraps (a vanilla or native enchantment), or null for an enchantment a mod registered itself. */
+    public ResourceLocation wrappedId() {
+        return vanilla == null ? null : vanilla.unwrapKey().map(ResourceKey::location).orElse(null);
+    }
+
     /** The holder of this enchantment in the running game's data-driven registry. */
     public Holder<Enchantment> holder() {
         if (vanilla != null) return vanilla;
