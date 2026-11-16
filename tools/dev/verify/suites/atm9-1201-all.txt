@@ -39,6 +39,8 @@ lib architectury-13.0.11-neoforge.jar
 1.20.1 ftb-teams-forge-2001.3.1.jar
 1.20.1 fuelgoeshere-1.20.0-1.0.1.jar
 1.20.1 glassential-renewed-forge-1.20.1-2.4.5.jar
+# Glassential needs Fusion on a client (connected textures)
+lib fusion-1.3.16-neoforge-mc1.21.1.jar
 1.20.1 GravitationalModulatingAdditionalUnit-1.20.1-3.5.jar
 1.20.1 IntegratedCrafting-1.20.1-1.3.0.jar
 1.20.1 CommonCapabilities-1.20.1-2.9.9.jar
