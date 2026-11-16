@@ -11,9 +11,21 @@ STALL="${STALL:-360}"
 MARKERS='broken mod state|Mod loading issue|Preparing crash report|Failed to wait for future|Caught exception during event|Failed to create mod instance|Crash Report'
 
 kill_game() {
-  powershell -NoProfile -Command "Get-CimInstance Win32_Process | Where-Object { \$_.Name -eq 'java.exe' -and \$_.CommandLine -like '*fml.modFolders*$NAME*' } | ForEach-Object { Stop-Process -Id \$_.ProcessId -Force }" >/dev/null 2>&1
+  # the game logs its process id and directory ("Legacy Connector: process id N game directory D"); the command line of a running game is not readable
+  # on Windows, and its parent is the shared Gradle daemon, so the log line is the only reliable link. Only pids logged after this run began count.
+  local pid off=$start_off; [ "$(stat -c %s "$LOG" 2>/dev/null || echo 0)" -lt "$start_off" ] && off=0
+  for pid in $(tail -c +$((off+1)) "$LOG" 2>/dev/null | grep -a -o "Legacy Connector: process id [0-9]*" | grep -o "[0-9]*$"); do
+    powershell -NoProfile -Command "Stop-Process -Id $pid -Force -ErrorAction SilentlyContinue" >/dev/null 2>&1
+  done
 }
 
+# a client needs about 5 GB: wait (up to 10 minutes) for it instead of starting into memory pressure
+for i in $(seq 1 30); do
+  free=$(powershell -NoProfile -Command "[int]((Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory/1MB)" | tr -d '\r')
+  [ "${free:-0}" -ge "${MINFREE:-5}" ] && break
+  sleep 20
+done
+if [ "${free:-0}" -lt "${MINFREE:-5}" ]; then echo "client-once: only ${free:-0} GB free, not starting"; exit 4; fi
 # the log of an earlier run may still be there (a process can hold it): only what the new run adds is read
 start_off=$(stat -c %s "$LOG" 2>/dev/null || echo 0)
 tools/dev/quick-shots.sh > build/client-once.out 2>&1 &

@@ -391,11 +391,19 @@ public final class MiscCompat {
         return new LegacyLootData(server);
     }
 
+    private static final java.util.concurrent.ConcurrentHashMap<String, Throwable> DIAG = new java.util.concurrent.ConcurrentHashMap<>();
+
     /**
      * {@code Registry.register} after the registries froze (a mod adding a custom stat or a similar entry in common setup, which 1.20.1 allowed until the game
      * started): the registry is opened for this one entry.
      */
     public static <V, T extends V> T registerLate(net.minecraft.core.Registry<V> registry, ResourceLocation id, T value) {
+        // TEMPORARY diagnostic (client double setup): the stack of the first registration of each key is printed with the second
+        Throwable first = DIAG.putIfAbsent(registry.key().location() + "/" + id, new Throwable("first registration on " + Thread.currentThread().getName()));
+        if (first != null) {
+            org.slf4j.LoggerFactory.getLogger("LegacyConnector/Diag").error("SECOND registration of {} in {}", id, registry.key().location(), new Throwable("second registration on " + Thread.currentThread().getName()));
+            org.slf4j.LoggerFactory.getLogger("LegacyConnector/Diag").error("FIRST registration was", first);
+        }
         if (registry instanceof net.minecraft.core.MappedRegistry<V> mapped && mapped.frozen) {
             mapped.frozen = false;
             try {

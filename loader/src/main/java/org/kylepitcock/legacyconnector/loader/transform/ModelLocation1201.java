@@ -54,6 +54,7 @@ final class ModelLocation1201 {
 
     /** @return the number of conversions inserted */
     static int apply(ClassNode node) {
+        if (Boolean.getBoolean("legacyconnector.skipModelLocation")) return 0; // diagnostics: what the offline verifier reports without the pass
         if (!mentions(node)) return 0;
         int total = 0;
         for (MethodNode m : node.methods) {
