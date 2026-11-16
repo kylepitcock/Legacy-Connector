@@ -142,7 +142,7 @@ Per version, some items differ; the notes in brackets say where.
 - **Coremods that patch other mods** (CoFH, AE2, OpenMods and more) and **Scala mods** (1.7.10)
 - **Mod-specific libraries:** `@Config` classes are filled from their config files, `@ObjectHolder`, `@SidedProxy` and `@EventBusSubscriber` work (1.12.2)
 
-**Experimental:** coremods that patch *Minecraft's own* 1.7.10 and 1.12.2 classes (Fisk's Superheroes, Legends, AppleCore, Quark). Legacy Connector reads the hooks they insert into the original 1.7.10 classes and calls them from the matching places of the modern game (movement, gravity, healing, attacks, weather, player model poses and more); hooks without a modern counterpart yet do nothing, and the log says how many are replayed. This needs the original Minecraft 1.7.10 client jar, which is not shipped: it is found when 1.7.10 is installed in your launcher, or set `coremods.vanillaJar` / `coremods.downloadVanilla`. Without it the mods still load, without those hooks. The 1.6.4, 1.5.2 and 1.4.7 versions are read the same way, with few places so far. Mods that replace Minecraft's classes wholesale (Better Than Wolves) cannot work. Engine and launcher patches (FastCraft, Hodgepodge, NEID and other ID extenders, FoamFix, BetterFPS, VanillaFix) are skipped on purpose, since they only make sense on the old engine.
+**Experimental:** coremods that patch *Minecraft's own* 1.7.10 and 1.12.2 classes (Fisk's Superheroes, Legends, AppleCore, Quark). Legacy Connector reads the hooks they insert into the original 1.7.10 classes and calls them from the matching places of the modern game (movement, gravity, healing, attacks, weather, player model poses and more); hooks without a modern counterpart yet do nothing, and the log says how many are replayed. This needs the original Minecraft 1.7.10 client jar, which is not shipped: it is found when 1.7.10 is installed in your launcher, and otherwise downloaded once from Mojang (`coremods.vanillaJar` names a local copy, `coremods.downloadVanilla=false` turns the download off). Without it the mods still load, without those hooks. The 1.6.4, 1.5.2 and 1.4.7 versions are read the same way, with few places so far. Mods that replace Minecraft's classes wholesale (Better Than Wolves) cannot work. Engine and launcher patches (FastCraft, Hodgepodge, NEID and other ID extenders, FoamFix, BetterFPS, VanillaFix) are skipped on purpose, since they only make sense on the old engine.
 
 ### Modern replacements for outdated libraries
 
@@ -197,7 +197,7 @@ Settings are in `config/legacyconnector.properties`, which is created with comme
 | `legacyBiomeFrequency` | `1.0` | Scales how much land legacy mod biomes take in the overworld |
 | `events.skip` | empty | Legacy event handlers to switch off (`full.ClassName#method`), for tracking down one that misbehaves |
 | `coremods.vanillaJar` | empty | Path of the original Minecraft client jar of the legacy version (a jar, or a folder of `client-<version>.jar` files), when it is not where a launcher keeps it (used to replay legacy coremods' hooks in Minecraft's code) |
-| `coremods.downloadVanilla` | `false` | Download that jar once from Mojang when it is not found locally |
+| `coremods.downloadVanilla` | `true` | Download that jar once from Mojang when it is not found locally (`false` turns the download off) |
 
 All keys are on the [Configuration page](https://github.com/kylepitcock/Legacy-Connector/blob/master/docs/wiki/Configuration.md).
 

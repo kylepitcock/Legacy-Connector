@@ -30,7 +30,7 @@ In game they can be edited from Mods -> Legacy Connector -> Config: a toggle or 
 | `render.irisCompat` | `true` | While an Iris shader pack is in use, legacy rendering adapts to it: sky renderers, particles and additive glows draw with the shaders Iris has programs for (sky, particles, beacon beam) instead of the entity ones, overlays, lines and glows are left out of the shadow pass and particles spawned by renderers there are dropped. Without a pack nothing changes. See [Rendering](Rendering.md#iris-and-sodium) |
 | `events.skip` | empty | Comma separated legacy event handlers that are not registered, as `full.ClassName#method` or `full.ClassName#*` (to find which legacy handler draws or does something unwanted) |
 | `coremods.vanillaJar` | empty | Path of the original Minecraft client jar of the legacy version (a jar, or a folder of `client-<version>.jar` files), when it is not where a launcher keeps it (used to replay legacy coremods' hooks in Minecraft's code) |
-| `coremods.downloadVanilla` | `false` | Download that jar once from Mojang when it is not found locally |
+| `coremods.downloadVanilla` | `true` | Download that jar once from Mojang when it is not found locally (`false` turns the download off) |
 
 | `energy.fePerEu` | `4` | FE per IC2 EU for IC2 sinks, sources and electric items exposed as NeoForge energy |
 | `energy.fePerMj` | `10` | FE per BuildCraft MJ for BuildCraft power receptors (BuildCraft's own 1 MJ = 10 RF) |
