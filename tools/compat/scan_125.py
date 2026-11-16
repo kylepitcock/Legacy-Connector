@@ -23,7 +23,8 @@ ROOT = os.path.dirname(os.path.dirname(HERE))
 RES = os.path.join(ROOT, 'loader', 'src', 'main', 'resources', 'legacyconnector')
 
 ML_CLASSES = {'ModLoader', 'BaseMod', 'MLProp', 'ModTextureStatic', 'ModTextureAnimation', 'EntityRendererProxy'}
-MP_CLASSES = {'BaseModMp', 'ModLoaderMp', 'Packet230ModLoader', 'ISpawnable', 'MLMPProp', 'EntityTrackerEntry'}
+MP_CLASSES = {'BaseModMp', 'ModLoaderMp', 'Packet230ModLoader', 'ISpawnable', 'MLMPProp', 'EntityTrackerEntry', 'EntityTrackerEntry2', 'NetClientHandlerEntity', 'Pair'}
+API_ENTRY = {'mod_ModLoaderMp', 'mod_MinecraftForge'}   # the `mod_*` class of an API distribution is not a mod
 FORGE_PREFIXES = ('net/minecraft/src/forge/', 'forge/')
 OTHER_API = {'GuiAPI': ('de/matthiasmann/', 'GuiModScreen', 'ModSettings', 'ModSettingScreen'), 'ModOptionsAPI': ('modoptionsapi/',),
              'ShockAhPI': ('SAPI', 'DimensionBase'), 'PlayerAPI': ('PlayerAPI', 'PlayerBase'), 'AudioMod': ('paulscode/', 'ibxm/', 'AudioMod'),
@@ -85,10 +86,13 @@ class Tables:
     def __init__(self):
         self.classes = {'c': set(), 's': set()}
         self.members = {'c': set(), 's': set()}
+        self.loose = {'c': set(), 's': set()}   # name+desc of any class: inherited members are named through the receiver's class
         for line in gzip.open(os.path.join(RES, 'detect', 'notch-1.2.5.txt.gz'), 'rt', encoding='utf-8'):
             p = line.rstrip('\n').split('\t')
             if p[1] == 'C': self.classes[p[0]].add(p[2])
-            elif len(p) >= 5: self.members[p[0]].add('%s.%s %s' % (p[2], p[3], p[4]))
+            elif len(p) >= 5:
+                self.members[p[0]].add('%s.%s %s' % (p[2], p[3], p[4]))
+                self.loose[p[0]].add('%s %s' % (p[3], p[4]))
         self.m147 = set()
         for line in open(os.path.join(RES, 'legacy', '1.4.7', 'notch.txt'), encoding='utf-8'):
             p = line.split()
@@ -103,8 +107,8 @@ def measure(tables, own, all_members):
         if '/' in owner or owner in own or len(name) > 3 or name.startswith('<'): continue
         total += 1
         k = '%s.%s %s' % (owner, name, desc)
-        if k in tables.members['c']: hits[0] += 1
-        if k in tables.members['s']: hits[1] += 1
+        for i, sd in ((0, 'c'), (1, 's')):
+            if k in tables.members[sd] or (owner in tables.classes[sd] and '%s %s' % (name, desc) in tables.loose[sd]): hits[i] += 1
         if k in tables.m147: hits[2] += 1
     return hits, total
 
@@ -146,7 +150,8 @@ def analyze(tables, unit):
     own = {c[0] for c in classes}
     all_members = [m for c in classes for m in c[4]]
     refs = set().union(*(c[3] for c in classes)) - own
-    bukkit = any(n.startswith('net/minecraft/server/') and '/mod_' in '/' + n for n in own)
+    # CraftBukkit / MCPC builds name the game by MCP names in net/minecraft/server (a notch server jar only names MinecraftServer there)
+    bukkit = any(n.startswith('net/minecraft/server/') and '/mod_' in '/' + n for n in own) or sum(1 for r in refs if r.startswith('net/minecraft/server/')) >= 5
     hits, total = measure(tables, own, all_members)
     # api evidence
     ml_calls = collections.Counter(m[1] for m in all_members if m[0] == 'ModLoader')
@@ -155,7 +160,7 @@ def analyze(tables, unit):
     mp = sorted(r for r in refs | own if r.split('/')[-1] in MP_CLASSES)
     forge_refs = sorted(r for r in refs if r.startswith(FORGE_PREFIXES))
     forge_own = sorted(n for n in own if n.startswith(FORGE_PREFIXES))
-    entry = sorted(n for n in own if n.split('/')[-1].startswith('mod_') and '$' not in n)
+    entry = sorted(n for n in own if n.split('/')[-1].startswith('mod_') and '$' not in n and n not in API_ENTRY)
     api = []
     if ml_calls or 'BaseMod' in refs or entry: api.append('ModLoader')
     if any(r.split('/')[-1] in ('BaseModMp', 'ModLoaderMp', 'Packet230ModLoader') for r in refs | own): api.append('ModLoaderMP')
@@ -167,7 +172,7 @@ def analyze(tables, unit):
     ver = None
     for c in classes:
         if c[0] == 'ModLoader':
-            ver = next((s for s in c[5] if s.startswith('ModLoader ')), None)
+            ver = next((s for s in c[5] if re.match(r'ModLoader \d', s)), None)
     # replaced vanilla: a class with the name of a 1.2.5 game class (default-package obfuscated names or net/minecraft/...)
     # side
     if bukkit:
@@ -188,9 +193,10 @@ def analyze(tables, unit):
     share125 = max(hits[0], hits[1]) / total if total else None
     share147 = hits[2] / total if total else None
     # status
-    own_api_only = bool(own) and all(n.split('/')[-1] in ML_CLASSES | MP_CLASSES or n.startswith(FORGE_PREFIXES) or n in tables.vanilla_names for n in own) and not entry
+    api_like = [n for n in own if n.split('/')[-1] in ML_CLASSES | MP_CLASSES | API_ENTRY or n.startswith(FORGE_PREFIXES + ('cpw/',)) or n in names]
+    own_api_only = bool(own) and len(api_like) >= 0.8 * len(own) and not entry and bool(bundled or any(n in API_ENTRY for n in own))
     if bukkit: status = 'craftbukkit-build'
-    elif own_api_only and (bundled or replaced): status = 'api-distribution'
+    elif own_api_only: status = 'api-distribution'
     elif replaced and share >= 0.25: status = 'jar-mod'          # mostly replaced game classes: cannot be translated as a standalone jar
     elif replaced and entry: status = 'mod-with-patches'          # a mod_* mod that also ships a few edited game classes
     elif replaced: status = 'game-patch'                          # no mod class, only edited game classes (a coremod-style jar mod)
