@@ -52,6 +52,18 @@ class Members125Test {
         {"block.BlockContainer", "getBlockEntity", "int"},
         {"item.Item", "onItemUseFirst", B + "item.ItemStack," + B + "entity.player.EntityPlayer," + B + "world.World,int,int,int,int"},
         {"item.Item", "itemInteractionForEntity", B + "item.ItemStack," + B + "entity.EntityLivingBase"},
+        {"client.model.ModelBiped", "<init>", "float,float"},
+        {"entity.item.EntityTNTPrimed", "<init>", B + "world.World,double,double,double"},
+        {"world.WorldSettings", "<init>", "long,int,boolean,boolean," + B + "world.WorldType"},
+        {"client.multiplayer.PlayerControllerMP", "<init>", B + "client.Minecraft"},
+        {"world.WorldProvider", "getWelcomeMessage", ""},
+        {"client.renderer.entity.RenderManager", "cacheActiveRenderInfo", B + "world.World," + B + "client.renderer.texture.TextureManager," + B + "client.gui.FontRenderer," + B + "entity.EntityLivingBase," + B + "client.settings.GameSettings,float"},
+        {"client.renderer.tileentity.TileEntityRendererDispatcher", "mcc$get$playerYaw", B + "client.renderer.tileentity.TileEntityRendererDispatcher"},
+        {"client.audio.SoundManager", "getSoundsPool", ""},
+        {"world.chunk.Chunk", "updateSkylight", ""},
+        {"entity.player.EntityPlayer", "addMovementStat", "double,double,double"},
+        {"block.BlockPane", "canThisPaneConnectToThisBlockID", "int"},
+        {"block.Block", "isBlockSolidOnSide", B + "world.World,int,int,int,int"},
     };
 
     private static Class<?> cls(String name) throws ClassNotFoundException {
@@ -59,6 +71,7 @@ class Members125Test {
             case "int" -> int.class;
             case "float" -> float.class;
             case "double" -> double.class;
+            case "long" -> long.class;
             case "boolean" -> boolean.class;
             default -> Class.forName(name, false, Members125Test.class.getClassLoader());
         };
@@ -71,7 +84,8 @@ class Members125Test {
             String[] names = row[2].isEmpty() ? new String[0] : row[2].split(",");
             Class<?>[] params = new Class<?>[names.length];
             for (int i = 0; i < names.length; i++) params[i] = cls(names[i]);
-            assertNotNull(owner.getMethod(row[1], params), row[0] + "." + row[1]);
+            if (row[1].equals("<init>")) assertNotNull(owner.getConstructor(params), row[0] + ".<init>");
+            else assertNotNull(owner.getMethod(row[1], params), row[0] + "." + row[1]);
         }
     }
 }

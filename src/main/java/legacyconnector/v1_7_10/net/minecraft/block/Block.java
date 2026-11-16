@@ -1424,4 +1424,11 @@ public class Block {
     public int getBlockTexture(legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess world, int x, int y, int z, int side) {
         return getBlockTextureFromSideAndMetadata(side, world.getBlockMetadata(x, y, z));
     }
+
+    // Members125 batch 2
+
+    /** Forge 3.x {@code Block.isBlockSolidOnSide(world, x, y, z, side)} (the int side; 1.7.10: {@code isSideSolid}). */
+    public boolean isBlockSolidOnSide(World world, int x, int y, int z, int side) {
+        return isSideSolid(world, x, y, z, legacyconnector.v1_7_10.net.minecraftforge.common.util.ForgeDirection.getOrientation(side));
+    }
 }

@@ -180,4 +180,11 @@ public class PlayerControllerMP {
         var connection = net.minecraft.client.Minecraft.getInstance().getConnection();
         if (connection != null && creative != isInCreativeMode()) connection.sendCommand(creative ? "gamemode creative" : "gamemode survival");
     }
+
+    // Members125 batch 2
+
+    /** 1.2.5's constructor (the connection handler came with 1.3): mods subclass the controller and construct it like the game did. */
+    public PlayerControllerMP(legacyconnector.v1_7_10.net.minecraft.client.Minecraft mc) {
+        this(mc, null);
+    }
 }

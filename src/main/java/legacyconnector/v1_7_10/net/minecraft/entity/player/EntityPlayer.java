@@ -830,4 +830,29 @@ public abstract class EntityPlayer extends EntityLivingBase implements legacycon
         if (d < -max) d = -max;
         return current + d;
     }
+
+    // Members125 batch 2
+
+    /** 1.2.5 {@code addMovementStat(dx, dy, dz)}: counts the distance walked, swum, climbed or flown into the statistics and adds the movement's exhaustion. */
+    public void addMovementStat(double dx, double dy, double dz) {
+        var p = mcc$player();
+        if (p == null) return;
+        // the statistics and exhaustion of vanilla 1.2.5: cm of horizontal travel by kind, exhaustion per metre
+        int cm = Math.round((float) Math.sqrt(dx * dx + dz * dz) * 100.0F);
+        if (p.isInWater()) {
+            if (cm > 0) {
+                p.awardStat(net.minecraft.stats.Stats.SWIM_ONE_CM, cm);
+                p.causeFoodExhaustion(0.015F * cm * 0.01F);
+            }
+        } else if (p.onGround()) {
+            if (cm > 0) {
+                p.awardStat(p.isSprinting() ? net.minecraft.stats.Stats.SPRINT_ONE_CM : net.minecraft.stats.Stats.WALK_ONE_CM, cm);
+                p.causeFoodExhaustion((p.isSprinting() ? 0.1F : 0.01F) * cm * 0.01F);
+            }
+        } else if (dy > 0.0D && cm > 0) {
+            p.awardStat(net.minecraft.stats.Stats.CLIMB_ONE_CM, (int) Math.round(dy * 100.0D));
+        } else if (cm > 25) {
+            p.awardStat(net.minecraft.stats.Stats.FLY_ONE_CM, cm);
+        }
+    }
 }

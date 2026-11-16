@@ -66,4 +66,11 @@ public class SoundManager {
 
     public void setListener(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player, float partialTicks) {
     }
+
+    // Members125 batch 2
+
+    /** 1.2.5's {@code getSoundsPool()}: the pool mods add their sound files to (the same one the 1.6.4 field {@code soundPoolSounds} reads). */
+    public legacyconnector.v1_6_4.net.minecraft.client.audio.SoundPool getSoundsPool() {
+        return legacyconnector.v1_6_4.net.minecraft.client.audio.SoundPool.SOUNDS;
+    }
 }
