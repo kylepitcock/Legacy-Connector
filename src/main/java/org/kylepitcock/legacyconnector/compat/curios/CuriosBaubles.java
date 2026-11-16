@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.function.Supplier;
 import legacyconnector.v1_7_10.baubles.api.BaubleType;
 import legacyconnector.v1_7_10.baubles.api.IBauble;
+import legacyconnector.v1_7_10.baubles.api.expanded.IBaubleExpanded;
 import legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase;
 import legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer;
 import legacyconnector.v1_7_10.net.minecraft.inventory.IInventory;
@@ -36,10 +37,36 @@ import top.theillusivec4.curios.api.type.inventory.ICurioStacksHandler;
 public final class CuriosBaubles {
     private static final Logger LOG = LoggerFactory.getLogger("LegacyConnector/Curios");
     /** By BaubleType ordinal. */
-    private static final String[] SLOT = {"ring", "necklace", "belt"};
-    /** Legacy Baubles inventory slot -> Curios slot id and index. */
-    private static final String[] INV_ID = {"necklace", "ring", "ring", "belt"};
-    private static final int[] INV_INDEX = {0, 0, 1, 0};
+    private static final String[] SLOT = {"ring", "necklace", "belt", "curio", "head", "body", "charm"};
+    /** Legacy Baubles inventory slot -> Curios slot id and index (Baubles' four slots, then Baubles Expanded's head, body, charm, trinket). */
+    private static final String[] INV_ID = {"necklace", "ring", "ring", "belt", "head", "body", "charm", "curio"};
+    private static final int[] INV_INDEX = {0, 0, 1, 0, 0, 0, 0, 0};
+
+    /** The Curios slot ids an item may be worn in: its Baubles Expanded type names when it has them, else its {@link BaubleType}; {@code UNIVERSAL} takes any. */
+    static Set<String> slotsOf(IBauble bauble, ItemStack stack) {
+        Set<String> out = new LinkedHashSet<>();
+        if (bauble instanceof IBaubleExpanded expanded) {
+            String[] names = expanded.getBaubleTypes(stack);
+            if (names != null) for (String n : names) addName(out, n);
+        }
+        if (out.isEmpty()) {
+            BaubleType type = bauble.getBaubleType(stack);
+            if (type == BaubleType.UNIVERSAL) out.addAll(java.util.List.of(SLOT));
+            else if (type != null && type.ordinal() < SLOT.length) out.add(SLOT[type.ordinal()]);
+        }
+        return out;
+    }
+
+    private static void addName(Set<String> out, String name) {
+        if (name == null) return;
+        switch (name) {
+            case "amulet" -> out.add("necklace");
+            case "universal" -> out.addAll(java.util.List.of(SLOT));
+            case "ring", "belt", "head", "body", "charm" -> out.add(name);
+            case "trinket" -> out.add("curio");
+            default -> { }
+        }
+    }
 
     private CuriosBaubles() {}
 
@@ -62,14 +89,13 @@ public final class CuriosBaubles {
         for (Item legacy : ItemBridge.modItems()) {
             if (!(legacy instanceof IBauble bauble)) continue;
             for (var e : legacy.mcc$variants.entrySet()) {
-                BaubleType type;
+                Set<String> slots;
                 try {
-                    type = bauble.getBaubleType(new ItemStack(legacy, 1, e.getKey()));
+                    slots = slotsOf(bauble, new ItemStack(legacy, 1, e.getKey()));
                 } catch (RuntimeException ex) {
                     continue;
                 }
-                if (type == null) continue;
-                tags.computeIfAbsent(SLOT[type.ordinal()], k -> new LinkedHashSet<>()).add(BuiltInRegistries.ITEM.getKey(e.getValue()).toString());
+                for (String slot : slots) tags.computeIfAbsent(slot, k -> new LinkedHashSet<>()).add(BuiltInRegistries.ITEM.getKey(e.getValue()).toString());
             }
         }
         if (tags.isEmpty()) return;
@@ -129,9 +155,8 @@ public final class CuriosBaubles {
         @Override
         public boolean canEquip(SlotContext ctx, net.minecraft.world.item.ItemStack stack) {
             ItemStack legacyStack = ItemStack.mcc$wrap(stack);
-            BaubleType type = bauble.getBaubleType(legacyStack);
             EntityLivingBase e = legacy(ctx.entity());
-            return type != null && SLOT[type.ordinal()].equals(ctx.identifier()) && (e == null || bauble.canEquip(legacyStack, e));
+            return slotsOf(bauble, legacyStack).contains(ctx.identifier()) && (e == null || bauble.canEquip(legacyStack, e));
         }
 
         @Override
@@ -217,7 +242,7 @@ public final class CuriosBaubles {
 
         @Override
         public boolean isItemValidForSlot(int slot, ItemStack stack) {
-            return stack != null && stack.getItem() instanceof IBauble b && SLOT[b.getBaubleType(stack).ordinal()].equals(INV_ID[slot]);
+            return slot >= 0 && slot < INV_ID.length && stack != null && stack.getItem() instanceof IBauble b && slotsOf(b, stack).contains(INV_ID[slot]);
         }
     }
 }

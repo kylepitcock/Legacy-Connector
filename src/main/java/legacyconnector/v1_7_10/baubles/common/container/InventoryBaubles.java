@@ -8,6 +8,8 @@ import legacyconnector.v1_7_10.net.minecraft.item.ItemStack;
 public class InventoryBaubles implements IInventory {
     public legacyconnector.v1_7_10.net.minecraft.inventory.Container eventHandler;
     public EntityPlayer player;
+    /** Baubles raised its change events through this; Curios has its own, so it only has to exist. */
+    public boolean blockEvents;
     private final IInventory backing;
 
     public InventoryBaubles(EntityPlayer player) {
@@ -22,12 +24,19 @@ public class InventoryBaubles implements IInventory {
     public void syncSlotToClients(int slot) {
     }
 
+    /** Persistence is Curios'; the legacy NBT form is neither read nor written. */
+    public void readNBT(legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound tag) {
+    }
+
+    public void saveNBT(legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound tag) {
+    }
+
     public void dropItems(java.util.ArrayList<?> drops) {
     }
 
     @Override
     public int getSizeInventory() {
-        return backing == null ? 4 : backing.getSizeInventory();
+        return backing == null ? 8 : backing.getSizeInventory();
     }
 
     @Override
