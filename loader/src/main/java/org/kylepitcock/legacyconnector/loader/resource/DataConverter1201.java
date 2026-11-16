@@ -662,7 +662,8 @@ public final class DataConverter1201 {
                 outs.add(new Out(p, bytes(r)));
                 i++;
             }
-            if (!outs.isEmpty()) return outs;
+            // a conditional recipe without any usable branch is nothing at all (1.21.1 has no such serializer, so the file would fail to parse)
+            return outs;
         }
         recipeBody(o, c);
         generic(o, c, false);
@@ -824,7 +825,21 @@ public final class DataConverter1201 {
             }
         }
         itemPredicates(o, c);
-        if (o.has("criteria")) advancementLocationPredicates(o.get("criteria"), c);
+        if (o.has("criteria")) {
+            advancementLocationPredicates(o.get("criteria"), c);
+            criterionConditions(o.get("criteria"), c);
+        }
+    }
+
+    /** Trigger conditions of an advancement are loot conditions ({@code match_tool}, {@code random_chance_with_looting}...): the same renames apply. */
+    private static void criterionConditions(JsonElement e, Ctx c) {
+        if (e.isJsonObject()) {
+            JsonObject o = e.getAsJsonObject();
+            if (o.has("condition") && o.get("condition").isJsonPrimitive() && o.get("condition").getAsJsonPrimitive().isString()) lootCondition(o, c);
+            for (JsonElement v : new ArrayList<>(o.asMap().values())) criterionConditions(v, c);
+        } else if (e.isJsonArray()) {
+            for (JsonElement x : e.getAsJsonArray()) criterionConditions(x, c);
+        }
     }
 
     /**
@@ -986,6 +1001,16 @@ public final class DataConverter1201 {
 
     // ---- loot tables and loot modifiers ------------------------------------------------------------------------------------------
 
+    /** An enchantment id of legacy loot: namespace defaulted, renamed ids mapped; tags ({@code #...}) are left alone. */
+    private static String enchantId(String s, Ctx c) {
+        if (s.startsWith("#")) return s;
+        String full = id(s);
+        String renamed = RENAMED_IDS.get(full);
+        if (renamed != null) full = renamed;
+        if (!full.equals(s)) c.hit("renamed_ids");
+        return full;
+    }
+
     private static String id(String s) {
         return s.contains(":") ? s : "minecraft:" + s;
     }
@@ -1085,7 +1110,7 @@ public final class DataConverter1201 {
             String type = entry.has("type") && entry.get("type").isJsonPrimitive() ? id(entry.get("type").getAsString()) : null;
             if ("minecraft:empty".equals(type)) continue;
             String item = "minecraft:item".equals(type) && entry.has("name") && entry.get("name").isJsonPrimitive() ? id(entry.get("name").getAsString())
-                    : Set.of("minecraft:alternatives", "minecraft:group", "minecraft:sequence").contains(type) ? commonItem(entry.get("children")) : null;
+                    : type != null && Set.of("minecraft:alternatives", "minecraft:group", "minecraft:sequence").contains(type) ? commonItem(entry.get("children")) : null;
             if (item == null || common != null && !common.equals(item)) return null;
             common = item;
         }
@@ -1146,7 +1171,7 @@ public final class DataConverter1201 {
                 if (m.find() && tag.replaceAll("\\s", "").matches("\\{Potion:[\"'][^\"']+[\"']\\}")) {
                     o.addProperty("function", "minecraft:set_potion");
                     o.remove("tag");
-                    o.addProperty("id", m.group(1));
+                    o.addProperty("id", ItemComponents1201.potionId(m.group(1)));
                 } else {
                     o.addProperty("function", "minecraft:set_custom_data");
                 }
@@ -1195,6 +1220,17 @@ public final class DataConverter1201 {
                 if (o.has("enchantments") && !o.has("options")) {
                     o.add("options", o.remove("enchantments"));
                     c.hit("loot_function");
+                }
+                // 1.20.1 read bare enchantment ids ("sweeping") and the ids that were renamed since; the 1.21.1 holder set wants the registered ids
+                if (o.has("options")) {
+                    JsonElement options = o.get("options");
+                    if (options.isJsonArray()) {
+                        JsonArray fixed = new JsonArray();
+                        for (JsonElement el : options.getAsJsonArray()) fixed.add(el.isJsonPrimitive() && el.getAsJsonPrimitive().isString() ? new JsonPrimitive(enchantId(el.getAsString(), c)) : el);
+                        o.add("options", fixed);
+                    } else if (options.isJsonPrimitive() && options.getAsJsonPrimitive().isString()) {
+                        o.addProperty("options", enchantId(options.getAsString(), c));
+                    }
                 }
             }
             case "minecraft:set_contents" -> {

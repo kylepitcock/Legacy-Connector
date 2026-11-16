@@ -180,7 +180,7 @@ final class ItemComponents1201 {
             }
             case "Potion" -> {
                 if (!(value instanceof Str potion) || !isIdentifier(potion.value())) return false;
-                potionContents(components).addProperty("potion", namespaced(potion.value()));
+                potionContents(components).addProperty("potion", potionId(potion.value()));
                 return true;
             }
             case "CustomPotionColor" -> {
@@ -475,5 +475,22 @@ final class ItemComponents1201 {
 
     private static String namespaced(String id) {
         return id.indexOf(':') < 0 ? "minecraft:" + id : id;
+    }
+
+    /** The potions of vanilla 1.21.1 (the registry is strict there; 1.20.1 read an unknown id as the empty potion). */
+    private static final Set<String> VANILLA_POTIONS = Set.of("water", "mundane", "thick", "awkward", "night_vision", "long_night_vision", "invisibility",
+            "long_invisibility", "leaping", "long_leaping", "strong_leaping", "fire_resistance", "long_fire_resistance", "swiftness", "long_swiftness",
+            "strong_swiftness", "slowness", "long_slowness", "strong_slowness", "turtle_master", "long_turtle_master", "strong_turtle_master",
+            "water_breathing", "long_water_breathing", "healing", "strong_healing", "harming", "strong_harming", "poison", "long_poison", "strong_poison",
+            "regeneration", "long_regeneration", "strong_regeneration", "strength", "long_strength", "strong_strength", "weakness", "long_weakness", "luck",
+            "slow_falling", "long_slow_falling", "wind_charged", "weaving", "oozing", "infested");
+
+    /**
+     * A legacy {@code Potion} id as a 1.21.1 potion id: the namespace defaults to {@code minecraft}, and a {@code minecraft:} id that is no potion (1.20.1
+     * resolved it to the empty potion, which 1.21 does not have) becomes {@code minecraft:water}. Ids of other namespaces are kept.
+     */
+    public static String potionId(String id) {
+        String full = namespaced(id);
+        return full.startsWith("minecraft:") && !VANILLA_POTIONS.contains(full.substring(10)) ? "minecraft:water" : full;
     }
 }
