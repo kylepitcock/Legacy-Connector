@@ -60,6 +60,25 @@ class PalladiumResourceCompat1201Test {
     }
 
     @Test
+    void migratesSeparateAlienEvoItemStackSetNbtCallToCustomDataComponent() {
+        Map<String, byte[]> resources = new HashMap<>();
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_DECOUPLE, """
+                var watchItem = Item.of(itemId, 1);
+                watchItem.setNbt(nbtData);
+                entity.give(watchItem);
+                """);
+
+        assertEquals(1, PalladiumResourceCompat1201.apply(resources));
+
+        String migrated = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_DECOUPLE);
+        assertTrue(migrated.contains("watchItem.setCustomData(NBT.wrapCompound(nbtData));"));
+        assertFalse(migrated.contains("watchItem.setNbt(nbtData);"));
+
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+        assertEquals(migrated, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_DECOUPLE));
+    }
+
+    @Test
     void migratesAlienEvoArmorTransformAndPowerUiPathsAndIsIdempotent() {
         Map<String, byte[]> resources = new HashMap<>();
         put(resources, PalladiumResourceCompat1201.ALIEN_EVO_STORE_ARMOR, """
