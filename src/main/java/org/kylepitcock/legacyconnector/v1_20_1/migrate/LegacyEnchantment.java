@@ -107,6 +107,31 @@ public class LegacyEnchantment {
         return e;
     }
 
+    /** A stand-in for a vanilla enchantment that is known by id only (no registry yet): equal to every other stand-in of the id. */
+    public static LegacyEnchantment ofId(ResourceLocation id) {
+        return new LegacyEnchantment(Rarity.COMMON, null, new EquipmentSlot[0]) {
+            @Override
+            public ResourceLocation wrappedId() {
+                return id;
+            }
+
+            @Override
+            public String getDescriptionId() {
+                return Util.makeDescriptionId("enchantment", id);
+            }
+
+            @Override
+            public boolean equals(Object o) {
+                return o instanceof LegacyEnchantment other && id.equals(other.wrappedId());
+            }
+
+            @Override
+            public int hashCode() {
+                return id.hashCode();
+            }
+        };
+    }
+
     // ------------------------------------------------------------------ the 1.20.1 surface
 
     public Rarity getRarity() {
