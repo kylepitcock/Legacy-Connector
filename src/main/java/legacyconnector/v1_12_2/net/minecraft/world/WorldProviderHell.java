@@ -60,4 +60,16 @@ public class WorldProviderHell extends WorldProvider {
     public DimensionType getDimensionType() {
         return DimensionType.NETHER;
     }
+
+    private legacyconnector.v1_12_2.net.minecraft.world.gen.IChunkGenerator mcc$generator;
+
+    /** See {@link WorldProviderSurface#createChunkGenerator}. */
+    @Override
+    public legacyconnector.v1_12_2.net.minecraft.world.gen.IChunkGenerator createChunkGenerator() {
+        if (mcc$generator == null && world != null) {
+            mcc$generator = new legacyconnector.v1_12_2.net.minecraft.world.gen.ChunkGeneratorHell(world,
+                    world.getWorldInfo().isMapFeaturesEnabled(), world.getSeed());
+        }
+        return mcc$generator;
+    }
 }

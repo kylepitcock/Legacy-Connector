@@ -91,4 +91,16 @@ public class WorldProviderEnd extends WorldProvider {
     public WorldSleepResult canSleepAt(legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
         return WorldSleepResult.BED_EXPLODES;
     }
+
+    private legacyconnector.v1_12_2.net.minecraft.world.gen.IChunkGenerator mcc$generator;
+
+    /** See {@link WorldProviderSurface#createChunkGenerator}. */
+    @Override
+    public legacyconnector.v1_12_2.net.minecraft.world.gen.IChunkGenerator createChunkGenerator() {
+        if (mcc$generator == null && world != null) {
+            mcc$generator = new legacyconnector.v1_12_2.net.minecraft.world.gen.ChunkGeneratorEnd(world,
+                    world.getWorldInfo().isMapFeaturesEnabled(), world.getSeed(), new legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos(0, 128, 0));
+        }
+        return mcc$generator;
+    }
 }

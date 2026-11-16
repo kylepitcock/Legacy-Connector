@@ -114,22 +114,41 @@ public final class LegacyDimensions {
         return type;
     }
 
-    /** Dimension types and dimensions of every mod dimension registered by the end of legacy loading. */
-    public static void contribute(Map<String, Supplier<byte[]>> out) {
-        RuntimeDimensions.contribute(out);
+    /** Sky flag and ambient light read from one provider instance per dimension (constructing a provider may create the mod's biomes). */
+    private static final Map<Integer, float[]> PROVIDER_PROPS = new java.util.HashMap<>();
+
+    /**
+     * Constructs every registered mod provider once. Providers create biomes in their constructors (OreSpawn's dimensions make Chaos, Utopia,
+     * Villages...), so this runs before the biome data is written: otherwise the dimension's biome list names biomes that have no generated
+     * definition and the dimension registry fails to load (world creation screen).
+     */
+    public static synchronized void warmProviders() {
         for (var e : DimensionManager.mcc$modDimensions().entrySet()) {
-            int id = e.getKey();
-            boolean sky = true;
+            if (PROVIDER_PROPS.containsKey(e.getKey())) continue;
+            float sky = 1.0F;
             float ambient = 0.0F;
             try {
                 var ctor = e.getValue().getDeclaredConstructor();
                 ctor.setAccessible(true);
                 WorldProvider p = (WorldProvider) ctor.newInstance();
-                sky = !p.hasNoSky;
+                sky = p.hasNoSky ? 0.0F : 1.0F;
                 ambient = p.mcc$ambientLight();
             } catch (ReflectiveOperationException | RuntimeException | LinkageError ex) {
                 // keep the overworld-like defaults
             }
+            PROVIDER_PROPS.put(e.getKey(), new float[] {sky, ambient});
+        }
+    }
+
+    /** Dimension types and dimensions of every mod dimension registered by the end of legacy loading. */
+    public static void contribute(Map<String, Supplier<byte[]>> out) {
+        RuntimeDimensions.contribute(out);
+        warmProviders();
+        for (var e : DimensionManager.mcc$modDimensions().entrySet()) {
+            int id = e.getKey();
+            float[] props = PROVIDER_PROPS.get(id);
+            boolean sky = props[0] > 0.5F;
+            float ambient = props[1];
             JsonObject type = dimensionType(sky, ambient);
             byte[] typeBytes = type.toString().getBytes(StandardCharsets.UTF_8);
             String name = PREFIX + id;

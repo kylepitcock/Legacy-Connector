@@ -192,6 +192,13 @@ final class PalladiumCorePlayerSkin1201 implements Opcodes {
             }
         }
 
+        // the getSkins() set holds PlayerSkin.Model values for this lambda: the call goes to a helper the generic getSkins() (names) rewrite does not know
+        getSkins.setOpcode(org.objectweb.asm.Opcodes.INVOKESTATIC);
+        getSkins.owner = "org/kylepitcock/legacyconnector/v1_20_1/migrate/ClientCompat";
+        getSkins.name = "getSkinModels";
+        getSkins.desc = "(L" + ADD_LAYERS + ";)Ljava/util/Set;";
+        getSkins.itf = false;
+
         consumer.bsmArgs[1] = newImplementation;
         consumer.bsmArgs[2] = Type.getMethodType(NEW_INSTANTIATED_SAM_DESC);
         return 1;

@@ -147,6 +147,11 @@ public final class ApiCompat {
     // ------------------------------------------------------------------ hooks that moved
 
     public static int getBurnTime(ItemStack stack, RecipeType<?> type) {
+        // 1.20.1 items answered -1 for "the vanilla value"; 1.21.1 throws on a negative burn time: such an item takes the furnace fuel data map's value
+        if (!stack.isEmpty() && stack.getItem().getBurnTime(stack, type) < 0) {
+            var fuel = stack.getItemHolder().getData(net.neoforged.neoforge.registries.datamaps.builtin.NeoForgeDataMaps.FURNACE_FUELS);
+            return net.neoforged.neoforge.event.EventHooks.getItemBurnTime(stack, fuel == null ? 0 : fuel.burnTime(), type);
+        }
         return stack.getBurnTime(type);
     }
 

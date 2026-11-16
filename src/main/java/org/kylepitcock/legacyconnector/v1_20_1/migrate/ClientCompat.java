@@ -184,6 +184,10 @@ public final class ClientCompat {
                 menuRegister.setAccessible(true);
             }
             menuRegister.invoke(null, type, constructor);
+        } catch (java.lang.reflect.InvocationTargetException e) {
+            // a mod's client setup that runs twice (its handler reached through two mod containers) registers the same screen again: the first one stays
+            if (e.getCause() instanceof IllegalStateException dup && String.valueOf(dup.getMessage()).startsWith("Duplicate registration")) return;
+            throw new IllegalStateException("MenuScreens.register failed", e);
         } catch (ReflectiveOperationException e) {
             throw new IllegalStateException("MenuScreens.register failed", e);
         }
@@ -198,6 +202,18 @@ public final class ClientCompat {
     @SuppressWarnings("unchecked")
     public static net.minecraft.client.renderer.entity.LivingEntityRenderer getSkin(net.neoforged.neoforge.client.event.EntityRenderersEvent.AddLayers event, String name) {
         return (net.minecraft.client.renderer.entity.LivingEntityRenderer) event.getSkin(skinModel(name));
+    }
+
+    /** {@code AddLayers.getSkins()} as it is in 1.21.1 (the models), for code that was adapted to read them. */
+    public static java.util.Set<net.minecraft.client.resources.PlayerSkin.Model> getSkinModels(net.neoforged.neoforge.client.event.EntityRenderersEvent.AddLayers event) {
+        return event.getSkins();
+    }
+
+    /** {@code EntityRenderersEvent.AddLayers.getSkins()}: the skin names ("default", "slim") of 1.20.1 are {@code PlayerSkin.Model} values now. */
+    public static java.util.Set<String> getSkins(net.neoforged.neoforge.client.event.EntityRenderersEvent.AddLayers event) {
+        java.util.Set<String> out = new java.util.LinkedHashSet<>();
+        for (net.minecraft.client.resources.PlayerSkin.Model m : event.getSkins()) out.add(m == net.minecraft.client.resources.PlayerSkin.Model.SLIM ? "slim" : "default");
+        return out;
     }
 
     /** {@code Options.renderDebug} (F3 overlay shown): the debug overlay keeps the flag now. */

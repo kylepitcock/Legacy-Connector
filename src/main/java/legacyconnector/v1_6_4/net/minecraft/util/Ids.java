@@ -54,6 +54,13 @@ public final class Ids {
         phaseVersion = previous;
     }
 
+    /** The legacy version ("1.6.4", "1.5.2", "1.4.7") of the mod whose code is on the stack, or null when none is registered. */
+    public static String modVersionOnStack() {
+        if (LOADER_VERSION.isEmpty()) return null;
+        return StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE).walk(frames -> frames
+                .map(f -> LOADER_VERSION.get(f.getDeclaringClass().getClassLoader())).filter(java.util.Objects::nonNull).findFirst().orElse(null));
+    }
+
     private static String versionOfCaller() {
         String v = phaseVersion;
         if (v != null) return v;

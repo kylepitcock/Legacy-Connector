@@ -58,6 +58,13 @@ public class ReflectionHelper {
     private static Field indexed(Class<?> cls, int index) {
         if (cls.getName().startsWith(SHIM + "net.minecraft.")) {
             String[] order = vanillaOrder().get(cls.getName().substring(SHIM.length()).replace('.', '/'));
+            // the table is 1.7.10's: 1.7 added a static `logger` first in many classes, which 1.6.4 and older mods' indices do not count
+            if (order != null && order.length > 1 && order[0].equals("logger")) {
+                String v = legacyconnector.v1_6_4.net.minecraft.util.Ids.modVersionOnStack();
+                if (v != null && !v.startsWith("1.7")) {
+                    order = java.util.Arrays.copyOfRange(order, 1, order.length);
+                }
+            }
             if (order != null && index >= 0 && index < order.length) {
                 try {
                     return findField(cls, order[index]);
