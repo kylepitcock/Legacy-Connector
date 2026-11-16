@@ -281,7 +281,50 @@ public final class ForgeApiTail1201 {
         return event;
     }
 
+    /**
+     * {@code Stats.makeCustomStat(name, formatter)}: 1.20.1 parsed the name as a resource location (a mod passed {@code "modid:stat"}); 1.21.1 puts it behind the
+     * {@code minecraft} namespace, which rejects the colon.
+     */
+    public static net.minecraft.resources.ResourceLocation makeCustomStat(String name, net.minecraft.stats.StatFormatter formatter) {
+        net.minecraft.resources.ResourceLocation id = net.minecraft.resources.ResourceLocation.parse(name);
+        net.minecraft.core.Registry.register(net.minecraft.core.registries.BuiltInRegistries.CUSTOM_STAT, id, id);
+        net.minecraft.stats.Stats.CUSTOM.get(id, formatter);
+        return id;
+    }
+
+    /** {@code BuiltInLootTables.all()}: a set of locations in 1.20.1, of resource keys in 1.21.1 (the same erased type, so a mod's lambda failed with a ClassCastException). */
+    public static java.util.Set<net.minecraft.resources.ResourceLocation> builtInLootTableIds() {
+        java.util.Set<net.minecraft.resources.ResourceLocation> out = new java.util.LinkedHashSet<>();
+        for (var key : net.minecraft.world.level.storage.loot.BuiltInLootTables.all()) out.add(key.location());
+        return out;
+    }
+
+    /** {@code Ingredient.Value.serialize()} (an item or tag entry as JSON; 1.21.1 describes them through the value codec). */
+    public static com.google.gson.JsonObject ingredientValueSerialize(net.minecraft.world.item.crafting.Ingredient.Value value) {
+        com.google.gson.JsonElement json = net.minecraft.world.item.crafting.Ingredient.Value.CODEC.encodeStart(com.mojang.serialization.JsonOps.INSTANCE, value)
+                .getOrThrow(msg -> new IllegalStateException(msg));
+        return json.getAsJsonObject();
+    }
+
     // ---- mod list
+
+    /**
+     * {@code ModList.get().isLoaded(id)} before FML has built the mod list (a mixin reaching a mod class initializer during the vanilla registry bootstrap, which 1.21.1
+     * runs before any mod loads): the loading list answers, as Forge's mod list was complete from the start.
+     */
+    public static boolean modListIsLoaded(net.neoforged.fml.ModList list, String modId) {
+        if (list != null) return list.isLoaded(modId);
+        var loading = net.neoforged.fml.loading.FMLLoader.getLoadingModList();
+        return loading != null && loading.getModFileById(modId) != null;
+    }
+
+    /** {@code ModList.get().getModFileById(id)}, with the same early fallback as {@link #modListIsLoaded}. */
+    public static net.neoforged.neoforgespi.language.IModFileInfo modListFileById(net.neoforged.fml.ModList list, String modId) {
+        if (list != null) return list.getModFileById(modId);
+        var loading = net.neoforged.fml.loading.FMLLoader.getLoadingModList();
+        return loading == null ? null : loading.getModFileById(modId);
+    }
+
 
     /** {@code ModList.getModContainerByObject(mod)} (removed in NeoForge): the container whose jar holds the class of the mod instance. */
     public static java.util.Optional<? extends net.neoforged.fml.ModContainer> modContainerByObject(net.neoforged.fml.ModList list, Object mod) {
