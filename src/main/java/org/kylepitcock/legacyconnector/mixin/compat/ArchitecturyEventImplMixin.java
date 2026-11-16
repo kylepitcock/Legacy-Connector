@@ -3,7 +3,8 @@ package org.kylepitcock.legacyconnector.mixin.compat;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Redirect;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 
 /**
  * PACK COMPAT (Architectury): its event listener lists are plain ArrayLists, and mods register listeners from their parallel
@@ -14,8 +15,8 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Pseudo
 @Mixin(targets = "dev.architectury.event.EventFactory$EventImpl", remap = false)
 public abstract class ArchitecturyEventImplMixin {
-    @Redirect(method = "<init>", at = @At(value = "NEW", target = "java/util/ArrayList"), require = 0)
-    private java.util.ArrayList<?> legacyconnector$threadSafeListeners() {
+    @WrapOperation(method = "<init>", at = @At(value = "NEW", target = "java/util/ArrayList"), require = 0)
+    private java.util.ArrayList<?> legacyconnector$threadSafeListeners(Operation<java.util.ArrayList<?>> original) {
         return new org.kylepitcock.legacyconnector.compat.architectury.ThreadSafeListenerList<>();
     }
 }

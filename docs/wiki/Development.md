@@ -242,6 +242,10 @@ python3 tools/compat/probe.py --from-json out.json --mc 1.7.10             # con
   (`workflow_dispatch`, input `limit`), then commits `docs/data/mods.json` and `docs/data/probe.json`. The jars exist only on the runner.
   Local runs against your own corpus (`test-mods2`) work the same way, only the committed results matter.
 
+## Mixins next to performance mods
+
+Every mixin of the layer was checked against the mixin targets of Sodium, Iris, FerriteCore, ModernFix, C2ME and the other perf mods of `run-perfmods/`; the table, the rules for new mixins and the open points are in [Mixin-Audit](Mixin-Audit.md).
+
 ## Keeping the core mod-agnostic
 
 Fixes are generic first (see `CLAUDE.md`). `tools/dev/check_mod_specific.py` enforces it: it scans the Java sources (comments ignored) for the

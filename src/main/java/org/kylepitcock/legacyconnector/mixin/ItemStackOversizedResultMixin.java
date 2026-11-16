@@ -3,7 +3,8 @@ package org.kylepitcock.legacyconnector.mixin;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Redirect;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 
 /**
  * 1.20.1 read a data stack ({@code {"item":..,"count":8}} of a recipe or loot entry) without checking the count against the item's maximum stack size;
@@ -12,9 +13,9 @@ import org.spongepowered.asm.mixin.injection.Redirect;
  */
 @Mixin(ItemStack.class)
 public abstract class ItemStackOversizedResultMixin {
-    @Redirect(method = "validateStrict", require = 0,
+    @WrapOperation(method = "validateStrict", require = 0,
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;getMaxStackSize()I"))
-    private static int legacyconnector$maxStackForData(ItemStack stack) {
-        return Math.max(stack.getMaxStackSize(), 99);
+    private static int legacyconnector$maxStackForData(ItemStack stack, Operation<Integer> original) {
+        return Math.max(original.call(stack), 99);
     }
 }
