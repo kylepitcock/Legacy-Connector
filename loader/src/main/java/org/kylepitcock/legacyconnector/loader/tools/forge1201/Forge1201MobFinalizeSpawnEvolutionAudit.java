@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 
 /**
  * Read-only comparison of the effective finalizeSpawn instance-method implementation
@@ -49,6 +50,24 @@ public final class Forge1201MobFinalizeSpawnEvolutionAudit {
 
     public record MethodDeclaration(String descriptor, int accessFlags, boolean virtualInstanceMethod) {}
 
+    /**
+     * Counts local-load instructions for the source CompoundTag parameter slot.
+     * A positive count is bytecode evidence only, not proof of data-flow into behavior.
+     */
+    public record ParameterSlotEvidence(
+            String declaringOwner,
+            int parameterIndex,
+            int localSlot,
+            boolean methodCodePresent,
+            int loadInstructionCount) {
+        public String status() {
+            if (!methodCodePresent) return "NO_METHOD_CODE";
+            return loadInstructionCount > 0
+                    ? "LOCAL_SLOT_LOAD_INSTRUCTIONS_FOUND"
+                    : "NO_LOCAL_SLOT_LOAD_INSTRUCTIONS";
+        }
+    }
+
     public record OwnerComparison(
             String owner,
             String classification,
@@ -65,7 +84,8 @@ public final class Forge1201MobFinalizeSpawnEvolutionAudit {
             DispatchStatus sourceDispatchStatus,
             String sourceDispatchDeclaringOwner,
             DispatchStatus targetDispatchStatus,
-            String targetDispatchDeclaringOwner) {
+            String targetDispatchDeclaringOwner,
+            ParameterSlotEvidence sourceTrailingCompoundTagEvidence) {
         public OwnerComparison {
             sourceHierarchyVisited = List.copyOf(sourceHierarchyVisited);
             targetHierarchyVisited = List.copyOf(targetHierarchyVisited);
@@ -108,7 +128,8 @@ public final class Forge1201MobFinalizeSpawnEvolutionAudit {
             String superName,
             List<String> hierarchyVisited,
             List<MethodDeclaration> declarations,
-            DispatchResult baseDispatch) {
+            DispatchResult baseDispatch,
+            ParameterSlotEvidence trailingCompoundTagEvidence) {
         private RuntimeMobClass {
             hierarchyVisited = List.copyOf(hierarchyVisited);
             declarations = List.copyOf(declarations);
@@ -225,8 +246,13 @@ public final class Forge1201MobFinalizeSpawnEvolutionAudit {
                         declaredFinalizeSpawnMethods(index, info);
                 DispatchResult dispatch = resolveBaseDispatch(
                         index, hierarchy, baseDescriptor, infoCache);
+                ParameterSlotEvidence parameterEvidence = null;
+                if (baseDescriptor.equals(SOURCE_BASE_DESCRIPTOR)
+                        && dispatch.status() == DispatchStatus.FOUND) {
+                    parameterEvidence = inspectTrailingCompoundTagParameter(index, dispatch.declaringOwner());
+                }
                 mobClasses.put(owner, new RuntimeMobClass(
-                        owner, info.superName(), hierarchy.visited(), declarations, dispatch));
+                        owner, info.superName(), hierarchy.visited(), declarations, dispatch, parameterEvidence));
             } else if (!hierarchy.complete() && owner.startsWith("net/minecraft/world/entity/")) {
                 incomplete.add(owner + " -> " + String.join(" -> ", hierarchy.visited()));
             }
@@ -278,6 +304,33 @@ public final class Forge1201MobFinalizeSpawnEvolutionAudit {
         return new DispatchResult(
                 hierarchy.complete() ? DispatchStatus.MEMBER_ABSENT : DispatchStatus.HIERARCHY_INCOMPLETE,
                 null);
+    }
+
+    private static ParameterSlotEvidence inspectTrailingCompoundTagParameter(
+            Forge1201SourceRuntimeMemberVerifier.Index index,
+            String declaringOwner) throws IOException {
+        final int parameterIndex = 4;
+        Type[] arguments = Type.getArgumentTypes(SOURCE_BASE_DESCRIPTOR);
+        if (arguments.length <= parameterIndex
+                || arguments[parameterIndex].getSort() != Type.OBJECT
+                || !"net/minecraft/nbt/CompoundTag".equals(arguments[parameterIndex].getInternalName())) {
+            throw new IOException("Source finalizeSpawn descriptor no longer has CompoundTag at parameter index 4");
+        }
+
+        int localSlot = 1; // Instance-method local slot zero is this.
+        for (int i = 0; i < parameterIndex; i++) {
+            localSlot += arguments[i].getSize();
+        }
+
+        Optional<Forge1201TargetApiVerifier.MethodCodeSummary> method =
+                index.inspectMethodCode(declaringOwner, METHOD_NAME, SOURCE_BASE_DESCRIPTOR);
+        if (method.isEmpty()) {
+            throw new IOException("Effective source finalizeSpawn method body is unavailable: "
+                    + declaringOwner + "#" + SOURCE_BASE_DESCRIPTOR);
+        }
+        Forge1201TargetApiVerifier.MethodCodeSummary body = method.get();
+        return new ParameterSlotEvidence(
+                declaringOwner, parameterIndex, localSlot, body.codePresent(), body.loadCount(localSlot));
     }
 
     private static List<MethodDeclaration> declaredFinalizeSpawnMethods(
@@ -390,7 +443,8 @@ public final class Forge1201MobFinalizeSpawnEvolutionAudit {
                 sourceDispatch.status(),
                 sourceDispatch.declaringOwner(),
                 targetDispatch.status(),
-                targetDispatch.declaringOwner());
+                targetDispatch.declaringOwner(),
+                sourceMob == null ? null : sourceMob.trailingCompoundTagEvidence());
     }
 
     public static void main(String[] args) throws IOException {
@@ -446,6 +500,13 @@ public final class Forge1201MobFinalizeSpawnEvolutionAudit {
                             System.out.println("    Forge declared: " + method.descriptor()
                                     + " access=0x" + Integer.toHexString(method.accessFlags())
                                     + " virtual=" + method.virtualInstanceMethod()));
+                    ParameterSlotEvidence evidence = owner.sourceTrailingCompoundTagEvidence();
+                    if (evidence != null) {
+                        System.out.println("    Forge trailing CompoundTag parameter local-slot evidence: "
+                                + evidence.status() + ", declaringOwner=" + evidence.declaringOwner()
+                                + ", localSlot=" + evidence.localSlot()
+                                + ", loadInstructions=" + evidence.loadInstructionCount());
+                    }
                 }
                 if (targetOverride || owner.owner().equals(MOB_OWNER)) {
                     System.out.println("    NeoForge dispatch declaration: " + owner.targetDispatchDeclaringOwner()
@@ -510,7 +571,9 @@ public final class Forge1201MobFinalizeSpawnEvolutionAudit {
                     .append(", \"targetDispatchStatus\": \"").append(owner.targetDispatchStatus())
                     .append("\", \"targetDispatchDeclaringOwner\": ")
                     .append(nullableString(owner.targetDispatchDeclaringOwner()))
-                    .append("}");
+                    .append(", \"sourceTrailingCompoundTagEvidence\": ");
+            appendParameterEvidence(json, owner.sourceTrailingCompoundTagEvidence());
+            json.append("}");
             json.append(i + 1 == result.owners().size() ? "\n" : ",\n");
         }
         json.append("  ],\n")
@@ -522,12 +585,26 @@ public final class Forge1201MobFinalizeSpawnEvolutionAudit {
                 .append("\"Only net/minecraft class owners are scanned for Mob descendants; mod-specific subclasses are not in the vanilla runtime classpaths.\",")
                 .append("\"Overrides are resolved by the exact per-runtime base descriptor and JVM class-superclass dispatch path; same-name overloads and private/static declarations do not count as overrides.\",")
                 .append("\"Owner comparison uses literal Mojang-official internal names only and is not a complete cross-version class mapping.\",")
-                .append("\"Static declaration and signature evidence does not prove behavioral equivalence or gameplay compatibility.\"")
+                .append("\"Static declaration and signature evidence does not prove behavioral equivalence or gameplay compatibility.\",")
+                .append("\"Trailing CompoundTag evidence counts local-load opcodes for the source parameter slot only; it does not perform control-flow or value-flow analysis and a load may follow a local overwrite.\")
                 .append("],\n")
                 .append("  \"selectorTransformationPerformed\": ").append(result.selectorTransformationPerformed()).append(",\n")
                 .append("  \"runtimeMappingTableProduced\": ").append(result.runtimeMappingTableProduced()).append("\n")
                 .append("}\n");
         return json.toString();
+    }
+
+    private static void appendParameterEvidence(StringBuilder json, ParameterSlotEvidence evidence) {
+        if (evidence == null) {
+            json.append("null");
+            return;
+        }
+        json.append("{\"declaringOwner\": \"").append(escape(evidence.declaringOwner()))
+                .append("\", \"parameterIndex\": ").append(evidence.parameterIndex())
+                .append(", \"localSlot\": ").append(evidence.localSlot())
+                .append(", \"methodCodePresent\": ").append(evidence.methodCodePresent())
+                .append(", \"loadInstructionCount\": ").append(evidence.loadInstructionCount())
+                .append(", \"status\": \"").append(evidence.status()).append("\"}");
     }
 
     private static void appendClasspath(
