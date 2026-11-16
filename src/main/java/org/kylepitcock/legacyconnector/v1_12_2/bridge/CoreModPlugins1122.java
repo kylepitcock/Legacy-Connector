@@ -66,7 +66,7 @@ public final class CoreModPlugins1122 {
                 }
                 constructed.add(new Object[] {name, plugin, index});
             } catch (ReflectiveOperationException | LinkageError | RuntimeException e) {
-                LOG.warn("Legacy coremod {} could not be constructed: {}", name, e.toString());
+                LOG.warn("Legacy coremod {} could not be constructed: {}", name, why(e));
             }
         }
         constructed.sort(Comparator.comparingInt(o -> (Integer) o[2]));
@@ -104,6 +104,8 @@ public final class CoreModPlugins1122 {
         data.put("mcLocation", gameDir);
         data.put("coremodList", new ArrayList<>());
         data.put("coremodLocation", null);
+        // FML's data map also carries the LaunchClassLoader: library plugins load their own classes through it (Forgelin's language adapter)
+        data.put("classLoader", loader);
         // Production stance, as the loader's build-time coremod stage (LegacyCoreModTransformers) and Launch.blackboard["fml.deobfuscatedEnvironment"]
         // = false already say. A plugin told "development environment" reads ForgeGradle's fields.csv/methods.csv (GradleStartCommon.CSV_DIR),
         // which do not exist here; told "production" it uses SRG names, and reflection resolves both kinds (ReflectionCompat + SrgNames, the
@@ -123,8 +125,16 @@ public final class CoreModPlugins1122 {
                 if (call != null) call.invoke(hook);
             }
         } catch (ReflectiveOperationException | LinkageError | RuntimeException e) {
-            LOG.warn("Legacy coremod {} failed during setup: {}", name, e.toString());
+            LOG.warn("Legacy coremod {} failed during setup: {}", name, why(e));
         }
+    }
+
+    /** The reason behind a reflective call's wrapper (InvocationTargetException says nothing): the innermost cause and where it was thrown. */
+    private static String why(Throwable e) {
+        Throwable t = e;
+        for (int i = 0; i < 10 && t.getCause() != null && t.getCause() != t; i++) t = t.getCause();
+        StackTraceElement[] st = t.getStackTrace();
+        return t + (st.length > 0 ? " at " + st[0] : "");
     }
 
     private static Method find(Class<?> cls, String name, Class<?>... params) {
