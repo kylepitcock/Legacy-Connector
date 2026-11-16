@@ -278,4 +278,41 @@ class Notch125To147Test {
         assertTrue(m.contains("decl mcc125$onQ(Lx1;)V"), m.toString());
         assertEquals(1, Notch125To147.lastUnjoinedOverrides()[0]);
     }
+
+    /** The server BaseMod.onTickInGame(MinecraftServer) of ModLoaderMP is void, the shim's boolean: a bridge with the boolean signature calls the mod's. */
+    @Test
+    void voidApiHookGetsABooleanBridge() throws IOException {
+        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+        cw.visit(Opcodes.V1_6, Opcodes.ACC_PUBLIC, "mod_Tick", null, "BaseMod", null);
+        MethodVisitor mv = cw.visitMethod(Opcodes.ACC_PUBLIC, "onTickInGame", "(Lnet/minecraft/server/MinecraftServer;)V", null, null);
+        mv.visitCode();
+        mv.visitInsn(Opcodes.RETURN);
+        mv.visitMaxs(0, 0);
+        mv.visitEnd();
+        Map<String, byte[]> classes = new LinkedHashMap<>();
+        classes.put("mod_Tick", cw.toByteArray());
+        Notch125To147.apply(client(), NotchNames.get("1.4.7"), classes);
+        List<String> m = members(classes.get("mod_Tick"));
+        assertTrue(m.contains("decl onTickInGame(Lnet/minecraft/server/MinecraftServer;)V"), m.toString());
+        assertTrue(m.contains("decl onTickInGame(Lnet/minecraft/server/MinecraftServer;)Z"), "the shim shaped hook: " + m);
+    }
+
+    /** Calls whose descriptor names a type or result the shim has differently are rewritten (Railcraft's setCollisionHandler). */
+    @Test
+    void descriptorRewriteRowsApplyToCalls() throws IOException {
+        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+        cw.visit(Opcodes.V1_6, Opcodes.ACC_PUBLIC, "Caller2", null, "java/lang/Object", null);
+        MethodVisitor mv = cw.visitMethod(Opcodes.ACC_PUBLIC, "run", "(Lforge/IMinecartCollisionHandler;)V", null, null);
+        mv.visitCode();
+        mv.visitVarInsn(Opcodes.ALOAD, 1);
+        mv.visitMethodInsn(Opcodes.INVOKESTATIC, "SomeMinecart", "setCollisionHandler", "(Lforge/IMinecartCollisionHandler;)V", false);
+        mv.visitInsn(Opcodes.RETURN);
+        mv.visitMaxs(0, 0);
+        mv.visitEnd();
+        Map<String, byte[]> classes = new LinkedHashMap<>();
+        classes.put("Caller2", cw.toByteArray());
+        Notch125To147.apply(client(), NotchNames.get("1.4.7"), classes);
+        List<String> m = members(classes.get("Caller2"));
+        assertTrue(m.contains("SomeMinecart.setCollisionHandler(Lnet/minecraftforge/common/IMinecartCollisionHandler;)V"), m.toString());
+    }
 }

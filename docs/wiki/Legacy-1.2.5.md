@@ -282,6 +282,25 @@ with different Feather names is "same Calamus intermediary id"; 20 such joins ex
 `join-name-rejected.tsv`; `Mc125JoinAuditTest` fails on any accepted pair that is not in the reviewed list. Corpus archives that reference a wrong join: Smart Moving's standalone game patch, the Forge client and
 server zips, the ModLoader/ModLoaderMP zips and Mystcraft's server patch (all of them game-class copies the layer drops or API distributions it skips); no content mod referenced one, so the earlier link counts stand.
 
+**Round 5 (2026-11-16).** (1) Return-kind bridges: a mod override whose method has the right name and parameters but another return kind than the shim's (ModLoaderMP's server
+`BaseMod.onTickInGame(MinecraftServer)` is `void`, the shim's `boolean`) gets a bridge with the shim's descriptor (`return-bridges.tsv`; void to boolean returns true, boolean to void is dropped,
+numeric widening; anything else is refused); the same rule now applies to B rows. `descriptor-rewrites.tsv` rewrites calls whose descriptor names another type or result than the shim has
+(`EntityMinecart.setCollisionHandler(forge/IMinecartCollisionHandler)`, `ArmorProperties.ApplyArmor` returning int with an F2I after the float call). (2) Detection: a jar whose obfuscation resembles
+1.2.5 only partly (25 to 60% of its references, nothing else fits better; NEWTON gravity is a 1.2.3 mod) is reported as "Minecraft 1.2.x release other than 1.2.5 (not supported)" instead of being hosted;
+`probe.py` and `CheckJar` strip a single class folder and split install roots (SDKs Mods: `minecraft/`), which turned SDKs and herobrine's mod class from "unresolved" into ordinary links. Repacks:
+when two jars carry the same `mod_X` the one that is a pure module of the contested mods wins over a repack that also carries mods of its own (LogisticsPipes' client jar bundles older BuildCraft modules),
+then the one with more classes, then the file name; the loser gives up the ids AND the classes the winner carries (`LegacyJar.droppedClasses`, in the cache key, reported in its notes). The five BuildCraft 3.1.5
+modules link in the set and alone (`probe.py --only buildcraft`); LogisticsPipes links alone and in the set it fails on BuildCraft 3.1.5's API (`DefaultProps`...), a real version mismatch with the BuildCraft it
+bundles. (3) The renamer knows the class hierarchy of every 1.2.5 jar of the set (`Notch125To147.registerSet`): a mod class extending a class of another jar that extends a game class (BuildCraft's tile entities
+in its addons) is resolved through it; before, references through such a class kept their 1.2.5 letters and the 1.4.7 stage renamed them again (TileEntity `worldObj:I`). (4) Classes: the intermediary-id class tier
+is audited with member overlap (at least half of the 1.2.5 class's members exist by name in the 1.4.7 class, all for classes of at most two members) and a reviewed list (`reviewed-class-pairs.tsv`, 30 pairs:
+`MultiplayerWorld` to `ClientWorld`, `MapItem` to `FilledMapItem`, `PortalForcer`, `CommandSource`, the server console classes, ...; `RemoveEntityPacket` is rejected, its members do not match);
+`Mc125JoinAuditTest` fails on a pair the members confirm that nobody reviewed. `BossEntity` maps onto the shim class `net/minecraft/src/EntityDragonBase` (an `s` row in `manual-aliases.tsv`, members by Feather name,
+inherited ones through `MobEntity` via an `S` row), and a field retyped in 1.4.7 (`EnderDragonPart.dragon`: BossEntity, now `IEntityMultiPart`) gets a `checkcast` back to the old type after `getfield`. The Tropicraft
+`ChunkCache` case (a `World` subclass passing a `World` where the shim takes a `WorldServer`) is a run-time class check; the offline probe's `verifyFailures` stays 0 and cannot see it, so it needs a game run.
+Numbers: probe 43 linking / 3 unresolved (was 38 / 9), 388 distinct stubbed members (473 stubs) (was 1360 / 1606: most of the old count came from NEWTON, SDKs and herobrine, which were not 1.2.5 mods or were wrongly
+classified); ranked list in `tools/dev/agent-tasks/1.2.5-missing-members.md` (a 32, b 276, c 80).
+
 **Side-independent names for unjoined members.** The client and the server of 1.2.5 are obfuscated separately, so `mcc125$b` meant different members on the two sides. `genMappings125` now writes
 a `U` row (side, owner, letter, descriptor, Feather name) for every member that stayed unjoined and the loader names it `mcc125$<Feather name>` (`mcc125$draw`, `mcc125$onClickSlot`, `mcc125$item`);
 the shim worker's call-redirect rows in `forward/1.4.7/member-manual.tsv` were re-keyed accordingly (11 rows), so server builds hit them too.

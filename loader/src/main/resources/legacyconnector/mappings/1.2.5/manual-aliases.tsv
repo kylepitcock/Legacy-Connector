@@ -5,3 +5,4 @@ m	net/minecraft/util/math/Vec3d	fromPool	of
 m	net/minecraft/client/gui/screen/Screen	isPauseScreen	shouldPauseGame
 c	net/minecraft/client/CreativeInteractionManager	net/minecraft/client/ClientPlayerInteractionManager
 c	net/minecraft/client/SurvivalInteractionManager	net/minecraft/client/ClientPlayerInteractionManager
+s	net/minecraft/entity/mob/monster/boss/BossEntity	net/minecraft/src/EntityDragonBase	net/minecraft/entity/mob/MobEntity
