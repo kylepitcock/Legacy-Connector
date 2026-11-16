@@ -41,6 +41,17 @@ public final class CoremodHookDiscovery {
 
     /** One hook call: where it is, what is called, and the other instructions of the same edit. */
     public record Hook(String site, String owner, String name, String desc, List<String> added, List<String> removed) {
+        /**
+         * The arithmetic instruction the transformer put right after the call ({@code fmul}: the value on the stack is combined with the hook's result
+         * without a helper method), or "" when there is none.
+         */
+        public String combineOp() {
+            int at = added.indexOf("invokestatic " + owner + "." + name + desc);
+            if (at < 0 || at + 1 >= added.size() || !removed.isEmpty()) return "";
+            String next = added.get(at + 1);
+            return next.matches("[ifd](mul|div|add|sub)") ? next : "";
+        }
+
         @Override
         public String toString() {
             return site + " -> " + owner + "." + name + desc;
