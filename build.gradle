@@ -491,6 +491,12 @@ tasks.register('checkLegacyMod', JavaExec) {
     dependsOn generateShimIndex
     classpath = project(':loader').sourceSets.main.runtimeClasspath + sourceSets.main.runtimeClasspath
     mainClass = 'org.kylepitcock.legacyconnector.loader.tools.CheckJar'
+    // -Pmappings125: the opt-in 1.2.5 to 1.4.7 table (:loader:genMappings125) is on the classpath; the property legacyconnector.mc125 is passed through
+    if (project.hasProperty('mappings125')) {
+        dependsOn ':loader:genMappings125'
+        classpath += files(project(':loader').layout.buildDirectory.dir('generated/mappings125'))
+        systemProperty 'legacyconnector.mc125', 'true'
+    }
     // -PcheckJson=<file> also writes a JSON record per jar (tools/compat/probe.py)
     if (project.findProperty('checkJson')) systemProperty 'legacyconnector.check.json', project.findProperty('checkJson').toString()
     // -PkeepDir=<dir> keeps the translated jars there (input of textureReport)

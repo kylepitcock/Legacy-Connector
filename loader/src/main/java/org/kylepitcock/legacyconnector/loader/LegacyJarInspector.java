@@ -100,6 +100,7 @@ public final class LegacyJarInspector {
             Markers markers = new Markers();
             List<LegacyModDecl> found = new ArrayList<>();
             List<String> modLoaderMods = new ArrayList<>();
+            java.util.Map<String, String> superOf = new java.util.HashMap<>();
             String mc125Evidence = null;
 
             Enumeration<? extends ZipEntry> entries = zip.entries();
@@ -125,6 +126,7 @@ public final class LegacyJarInspector {
                 // ModLoader (1.4.x): a mod is a class extending BaseMod (net.minecraft.src.BaseMod, or the bare name in a reobfuscated jar)
                 String superName = reader.getSuperName();
                 // (ModLoader only loads classes named mod_*; the others of a jar, such as MCreator's per-element mcreator_*, are helpers the mod_ class constructs)
+                superOf.put(reader.getClassName(), superName);
                 if (("BaseMod".equals(superName) || "net/minecraft/src/BaseMod".equals(superName))
                         && reader.getClassName().substring(reader.getClassName().lastIndexOf('/') + 1).startsWith("mod_")) {
                     modLoaderMods.add(reader.getClassName());
@@ -140,6 +142,20 @@ public final class LegacyJarInspector {
                 if (entry.getName().endsWith("package-info.class")
                         && (pool.contains("Lcpw/mods/fml/common/API;") || pool.contains("Lnet/minecraftforge/fml/common/API;"))) {
                     collectApi(reader, jar, entry.getName());
+                }
+            }
+
+            // Early-Forge / ModLoaderMP mods (1.2.x): the mod_ class extends ModLoaderMP's BaseModMp or Forge 3.x's NetworkMod (both extend BaseMod),
+            // directly or through a base class of the jar
+            for (String cls : superOf.keySet()) {
+                if (modLoaderMods.contains(cls) || !cls.substring(cls.lastIndexOf('/') + 1).startsWith("mod_")) continue;
+                String c = superOf.get(cls);
+                for (int i = 0; i < 16 && c != null; i++) {
+                    if (c.equals("BaseModMp") || c.equals("forge/NetworkMod")) {
+                        modLoaderMods.add(cls);
+                        break;
+                    }
+                    c = superOf.get(c);
                 }
             }
 
