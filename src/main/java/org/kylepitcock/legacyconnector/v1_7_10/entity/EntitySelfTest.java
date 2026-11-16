@@ -62,6 +62,14 @@ public final class EntitySelfTest {
     private static void start(MinecraftServer server) {
         ServerLevel level = server.overworld();
         BlockPos spawn = level.getSharedSpawnPos();
+        // Comparable runs: the count of survivors varied by 8% between identical runs because of the world clock (undead burn in daylight,
+        // which comes and goes with the time the test happens to start), mob griefing and weather. Pin night, stop the clock, weather and
+        // griefing; the AI still runs, so an entity that dies from its own code still counts as removed.
+        var rules = server.getGameRules();
+        rules.getRule(net.minecraft.world.level.GameRules.RULE_DAYLIGHT).set(false, server);
+        rules.getRule(net.minecraft.world.level.GameRules.RULE_WEATHER_CYCLE).set(false, server);
+        rules.getRule(net.minecraft.world.level.GameRules.RULE_MOBGRIEFING).set(false, server);
+        level.setDayTime(18000L);
         int i = 0;
         java.util.Map<String, EntityType<?>> types = new java.util.LinkedHashMap<>();
         for (LegacyHosts.Info info : LegacyHosts.all()) types.put(info.id().toString(), info.type());
