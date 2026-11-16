@@ -92,6 +92,7 @@ public final class LegacyMixinPlugin implements IMixinConfigPlugin {
 
     private static final class Extension implements IExtension {
         private final ConcurrentHashMap<String, Boolean> legacyRoots = new ConcurrentHashMap<>();
+        private final ConcurrentHashMap<String, List<String>> pendingChecks = new ConcurrentHashMap<>();
         private volatile boolean rootsScanned;
         private java.lang.reflect.Field mixinsField;
 
@@ -193,13 +194,21 @@ public final class LegacyMixinPlugin implements IMixinConfigPlugin {
                         ours.add(info.getClassName().replace('.', '/'));
                     }
                 }
-                if (ours != null) MixinSelfCheck.record(context.getClassNode(), ours);
+                // MixinExtras applies WrapOperation/ModifyExpressionValue/WrapMethod injections in its own postApply, possibly after this one: the scan waits for export()
+                if (ours != null) pendingChecks.put(context.getClassNode().name, ours);
             } catch (Throwable t) {
                 // the self check must never disturb class loading
             }
         }
 
         @Override
-        public void export(MixinEnvironment env, String name, boolean force, ClassNode classNode) {}
+        public void export(MixinEnvironment env, String name, boolean force, ClassNode classNode) {
+            try {
+                List<String> ours = pendingChecks.remove(classNode.name);
+                if (ours != null) MixinSelfCheck.record(classNode, ours);
+            } catch (Throwable t) {
+                // the self check must never disturb class loading
+            }
+        }
     }
 }
