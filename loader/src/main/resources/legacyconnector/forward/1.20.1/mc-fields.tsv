@@ -375,3 +375,4 @@ net/minecraft/advancements/critereon/EnchantmentPredicate	NONE	[Lnet/minecraft/a
 cpw/mods/modlauncher/api/IEnvironment$Keys	NAMING	Ljava/util/function/Supplier;	-	none	RoundCompat.launcherNamingKey
 net/minecraft/nbt/NbtAccounter	UNLIMITED	Lnet/minecraft/nbt/NbtAccounter;	-	none	Round4Compat.unlimitedAccounter
 net/minecraft/core/registries/BuiltInRegistries	BANNER_PATTERN	Lnet/minecraft/core/Registry;	-	none	Round4Compat.bannerPatternRegistry
+net/neoforged/neoforge/common/NeoForgeMod	NAMETAG_DISTANCE	Lnet/neoforged/neoforge/registries/DeferredHolder;	-	none	EntityCompat.nametagDistance

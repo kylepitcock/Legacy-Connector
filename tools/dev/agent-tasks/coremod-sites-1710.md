@@ -48,6 +48,42 @@ No equivalent (concrete): left/right click KEY substitution (modern `Minecraft.h
 
 Open: Fisk `Entity.getBrightnessForRender` (`getBrightnessY`, light of intangible heroes), BL `getMouseOverHook`, `handleBlockBreakingInput`, `handlePlayerAttackInput` (what the inserted value replaces needs the mod's transformer read), Chroma `interceptEntityCollision` and `stopSlowFall`, Anti-Gravity (jar not available locally), Fisk button press class (no equivalent, above).
 
+## Round 6 (the last open server sites, Fisk's brightness Y, Betweenlands, ChromatiCraft, Anti-Gravity; hot-path check)
+
+**Why the ChromatiCraft and Galacticraft plugins "did not run" in the probe**: ChromatiCraft's `ChromaASMHandler` builds its patches with DragonAPI's `ReikaASMHelper`; a probe over its jar alone dies on the missing class. Put `DragonAPI` beside it (`-PlegacyJar="ChromatiCraft ...jar,DragonAPI ...jar"`) and every Chroma patch applies ("Successfully applied COLLISIONBOXES / ENDPROVIDER / STOPSLOWFALL / TEXTURELOAD ASM handler"). The input set was wrong, not the tool (offline probe of 5 jars: Chroma, DragonAPI, Betweenlands, Anti-Gravity, Fisk; the output has 6 Chroma sites).
+
+New places (generic, keyed by the 1.7.10 site; `CoremodSites` + mixin):
+
+| 1.7.10 site (hook) | modern place | status |
+|---|---|---|
+| `Entity.func_70070_b(F)I#replace:func_76128_c(D)I` (Fisk `getBrightnessY`: the block Y the light of a rendered entity is read at) | `Entity.getLightProbePosition` RETURN (`EntityLightProbeHookMixin`, site `BRIGHTNESS_Y`): the hook's Y replaces the probe's block height unless it equals 1.7.10's own formula (`floor(posY + height * 0.66)`), then the game's eye probe stays | mapped; server probe: the mixin applies, hook ran, same Y for a plain zombie. Effect for a hero (intangible inside blocks, scaled) needs a client |
+| `EntityRenderer.func_78473_a(F)V#cancel-after:putfield Minecraft.field_147125_j` (Betweenlands `getMouseOverHook`: no picking while rowing in third person) | `GameRenderer.pick` HEAD (`GameRendererPickHookMixin`, site `Client.MOUSE_OVER`): true makes the target a miss and skips the picking. The hook's own write of a fake `MovingObjectPosition(0,0,0,0,vec,false)` is a MISS in 1.7.10 (the last argument is "is a block") | mapped; client run (`tools/dev/quick-shots.sh`, NOPERF, Chroma + DragonAPI + Fisk + Betweenlands, 250 hooks listed, 57 methods replayed at 58 places): "1.7.10 coremod mixins on the client: all 1.7.10 coremod mixins applied" (CoremodMixinCheck1710, includes GameRenderer); no "A coremod hook failed". Effect needs a boat |
+| `World.func_72945_a#replace:func_72314_b(DDD)...` (ChromatiCraft `interceptEntityCollision(World, Entity, AxisAlignedBB)List`): the transformer EMPTIES `World.getCollidingBoundingBoxes` and returns the hook's list (the key's "replaced call" is only the diff tool's reading of the inserted instructions). The hook is the whole method: for a player with the ore-clip ability the boxes of the blocks it may pass, else a copy of the vanilla gathering with the dimension's blocked air, glow clouds and leaves | `CollisionGetter.getBlockCollisions` HEAD (`CollisionGetterHookMixin`, site `COLLISION_BOXES`): the hook's boxes become the shapes of the block collisions (entity collisions stay the game's; a hook that asks the world for the collisions itself gets the game's answer, thread-local guard) | mapped; server probe with Chroma + DragonAPI: the hook answers for a zombie standing on stone (2 shapes, the same boxes the game gives), no failure logged. Ore-clip needs a player |
+| `EntityLivingBase.func_70612_e(FF)V#after:ifeq` (ChromatiCraft `SkyRiverManagerClient.stopSlowFall()Z`): inserted after the `isRemote` test of the "chunk not loaded: fall at -0.1" branch, `if (!stopSlowFall()) goto <gravity>`, i.e. false = no slow fall | `LivingEntity.travel`, expression value of `Level.hasChunkAt` (`UnloadedChunkSlowFallHookMixin`, site `SLOW_FALL`); runs only where the game would slow the entity down (client, unloaded chunk) | mapped; mixin check applies; effect needs a client in a sky river |
+| Betweenlands `Minecraft.func_147115_a(Z)V#before:aload 0` (`handleBlockBreakingInput(ZI)I`) and `Minecraft.func_147116_af()V#replace:func_71038_i()V` (`handlePlayerAttackInput(I)I`) | none | **no equivalent**: the transformer EMPTIES `sendClickBlockToController` and `clickMouse` and the hook is their whole body (a copy of vanilla's clicking logic that reads/writes the legacy `Minecraft.objectMouseOver`, `playerController`, `leftClickCounter`) plus three events of the mod's own (`ClientBlockDamageEvent.Pre/Post`, `ClientAttackEvent`). Running it would replace modern click handling (NeoForge `InteractionKeyMappingTriggered`, attack cooldown, destroy progress). The one consumer of the events that matters, the rowboat handler, cancels attacks and block damage while rowing in third person: the pick place above already makes the target a miss then, so nothing is hit or broken (only the swing animation differs). The other consumer (`ItemNBTExclusionHandler`) only keeps the re-equip animation from replaying when an item's NBT changes |
+
+Anti-Gravity (`test-mods3/Anti-Gravity-Mod-1.7.10.jar`, also `test-mods-dantdm/1.7.10/...`; it IS present, round 3 looked in the wrong directories): its transformer (`SMTransformer`, plugin of the "StarMiner" gravity system) patches `Entity`, `EntityPlayer`, `World`, `Tessellator`, `S0APacketUseBed` structurally (no hook calls, see `coremod-structural-additions.md`) and puts 11 hook calls into Minecraft. Three were mapped earlier (liquid added, item gravity constant, player movement input). The other eight: **no equivalent**, every one is a facet of the mod's per-entity gravity DIRECTION (`ExtendedPropertyGravity`, a rotated physics and view for entities in its space worlds):
+- `EntityRenderer.func_78467_g` (camera: `rotateSleepingViewByGravity`, `roatate3rdPersonViewByGravity`, `orientCameraByGravity`) and `RendererLivingEntity.func_76986_a/func_77043_a` (`rotateCorpse*`): the hooks multiply rotations into the legacy GL matrix; the modern camera is a `Camera` with a quaternion and entities draw with a `PoseStack`, no GL state to rotate.
+- `Item.func_77621_a#head` (`getMovingObjectPositionFromPlayerByGravity`): a copy of the ray trace from the eye with the eye position fixed for the gravity direction (identity at normal gravity, then equal to vanilla's), no value without the rotated physics.
+- `NetHandlerPlayServer.func_147347_a` (`jumpOverKickIllegalStance`, `jumpOverKickFloatTooLong`): keep players in abnormal gravity from being kicked for floating or an illegal stance; modern has no stance kick, the flying kick is only reachable for a player the rotated gravity would let float, which does not exist here (moot).
+
+Still open in ChromatiCraft (not in this round's list): `ChunkProviderEnd.func_73187_a` island bias (the modern End is a data-driven density function; no hookable noise value: no equivalent), client reach (`PlayerControllerMP.func_78757_d`), client chunk updates (`WorldClient.func_72835_b` replacing `func_73156_b`), texture load (`TextureAtlasSprite.func_147964_a`).
+
+**Hot paths** (nothing changed for a pack without coremods; `Site.listed()` is now a final boolean read, `any`, instead of `ArrayList.isEmpty()`): every place first checks `listed()` and returns; `LevelSetBlockHookMixin`'s helper now checks `active()` (a volatile read) before the thread-local; the targeting place checks `listed()` before `instanceof Mob`. NEW generic precondition `CoremodHookGuard`: a hook that answers a boolean (false = nothing done) and starts with `if (entity == null) return false;` / `if (!(entity instanceof X)) return false;` (read from the hook's own bytecode with ASM, all javac shapes: `ifnull`, `ifnonnull`, `instanceof; ifeq`, `instanceof; ifne`) gets a guard; `Site.mayAct(entityView)` asks it on the entity alone, before the views of block, world, position and box are built. Used by the 1.12.2 block collision shape (`BlockStateCollisionHookMixin`, RandomThings: acts for one player with one boot only) and fence/pane shapes (1.7.10). Hooks without such a start get no guard (unchanged). `-Dlegacyconnector.coremodGuards=false` switches the guards off (for timing). Unit test `CoremodHookGuardTest`.
+
+Timing (`tools/dev/coremod-sites-1710-probe2.js`, dev class `CoremodHotPathBench`, server probe, ns per call, best of 3 after warm-up, other agents' JVMs were running so absolute values are noisy):
+
+| path | no mods | 1.12.2 set (RandomThings, Quark, Charm, AppleCore) guards off | same, guards on | 1.7.10 set (Fisk, Chroma, DragonAPI, RotaryCraft) |
+|---|---|---|---|---|
+| `getCollisionShape`, no entity (pathfinding, fluids) | 5.5 | 69.1 | 13.4 | 8.3 |
+| `getCollisionShape`, zombie context (stone, fence, pane, air) | 5.5 | 96.1 | 35.4 | 28.3 (fence/pane guard) |
+| `getBlockCollisions(zombie, region)` | 6866 | 23199 (noise) | 13914 | 13165 (Chroma's hook answers: a Java copy of the vanilla gathering through legacy views) |
+| `Entity.move` (zombie, tiny fall) | 2034 | 4238 | 3100 | 5068 |
+| `Level.setBlock` (same state) | 49.7 | 68.3 | 79.4 | 232.9 (Fisk's two setBlock hooks, a legacy view per call) |
+| `TargetingConditions.test` | 9.6 | 56.7 | 48.3 | 75.2 (Fisk's candidate hook) |
+
+With no hook listed at a place every row is the "no mods" row (one field read). The block collision shape was the one place whose listed cost mattered (a call for every block of every path search); the guard takes it from 69/96 to 13/35 ns. The other listed costs are the legacy views a hook needs (`setBlock` +180 ns, targeting +65 ns, Chroma's whole-method hook +7 microseconds per region), which the hooks' own bytecode does not make decidable: Fisk's `replaceSetBlock`/`skipSetBlock` take the world and block first, the target hook builds a list. Left as is.
+
 ## Summary
 
 | mod | hook sites | mapped | unmapped |
@@ -55,15 +91,15 @@ Open: Fisk `Entity.getBrightnessForRender` (`getBrightnessY`, light of intangibl
 | 1.7.10-SpaceCore-0.7.14.jar | 94 | 0 | 94 |
 | 1Legends-1.7.10-8.6.2.jar | 37 | 10 | 27 |
 | Anti-Gravity-Mod-1.7.10.jar | 11 | 3 | 8 |
-| ChromatiCraft 1.7.10 V33a.jar | 6 | 0 | 6 |
+| ChromatiCraft 1.7.10 V33a.jar | 6 | 2 | 4 |
 | CoFHCore-[1.7.10]3.1.4-329.jar | 5 | 0 | 5 |
 | DragonAPI 1.7.10 V33b.jar | 127 | 4 | 123 |
-| FiskHeroes-1.7.10-2.4.0.jar | 97 | 35 | 62 |
+| FiskHeroes-1.7.10-2.4.0.jar | 97 | 36 | 61 |
 | Galacticraft-1.7-3.0.12.504.jar | 13 | 5 | 8 |
 | NotEnoughItems-1.7.10-1.0.5.120-universal.jar | 3 | 0 | 3 |
 | PlayerAPI-1.5.0.jar | 35 | 0 | 35 |
 | RotaryCraft 1.7.10 V33a.jar | 1 | 0 | 1 |
-| TheBetweenlands-1.0.6-alpha-universal.jar | 13 | 2 | 11 |
+| TheBetweenlands-1.0.6-alpha-universal.jar | 13 | 3 | 10 |
 
 Mods probed that put no hook calls into Minecraft classes (structural patches of their own or other mods' classes only, or the plugin could not run offline): InventoryTweaks (container/GuiTextField structure), AE2 (`@Integration` stripping), OpenComputers, Steve's Addons, Thaumic Machina, Thaumic Energistics, Thaumic Exploration, BrandonsCore, Aroma1997Core, ForgeRelocation, MrTJPCore, WR-CBE, Thaumcraft 4, GalaxySpace (HookLib: transformer is `PrimaryClassTransformer`, hooks come from its own container; 0 recorded), Galacticraft (plugin ran with a created `mods` dir).
 INpureCore failed to run offline (log4j filter NPE).

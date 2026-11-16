@@ -197,6 +197,10 @@ python3 tools/compat/probe.py --from-json out.json --mc 1.7.10             # con
   and startup-test results, and the script never overwrites those. Re-running refreshes earlier probe entries.
 - Every run is also appended to `docs/data/probe.json` (counts per result plus the per-mod list of the last 10 runs per version), which the
   pie chart page `docs/probe.html` ("Automated results" on the compatibility site) shows with a run selector and a history table.
+  Runs carry a `source` (the jar population: `modrinth` in CI, `mcarchive`, none = the maintainer's local corpus). The page shows one source per
+  Minecraft version with a source switch (default: the source whose latest run has the most mods), and `probe.py` compares a run (`vs`,
+  `--fail-on-regression`) only with the previous run of the same version and source. Scheduled and manual CI runs record a nightly-style version
+  (`<latest release>-nightly.<run>.<sha>`); the workflow skips `b1.7.3` when Modrinth yields fewer than 20 jars. `python tools/compat/probe.py --self-test` checks the run matching.
 - **Jar sources.** `tools/compat/fetch_probe_mods.py <mc> <dir> [--limit N]` downloads the most downloaded Forge mods of a version from Modrinth's
   public API (SHA-1 checked). The jars are only for the probe: keep them in a gitignored or temporary folder, never commit or redistribute them.
 - **CI.** `.github/workflows/probe.yml` runs fetch + probe for 1.7.10 and 1.12.2 on every published release, weekly and on demand

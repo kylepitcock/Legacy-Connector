@@ -61,13 +61,18 @@ public class LegacyEntityRenderer extends EntityRenderer<Entity> {
             updateRenderManager(cam, entity);
             double x = Mth.lerp(partialTicks, entity.xOld, entity.getX()) - cam.x;
             // the legacy posY (mid-height for carts: 1.7.10 renderers draw the cart around it)
-            double y = Mth.lerp(partialTicks, entity.yOld, entity.getY()) + legacy.mcc$yShift() - cam.y;
+            double yShift = legacy.mcc$yShift();
+            double yFeet = Mth.lerp(partialTicks, entity.yOld, entity.getY()) - cam.y;
+            double y = yFeet + yShift;
             double z = Mth.lerp(partialTicks, entity.zOld, entity.getZ()) - cam.z;
             int overlay = entity instanceof LivingEntity l ? LivingEntityRenderer.getOverlayCoords(l, 0.0F) : OverlayTexture.NO_OVERLAY;
             RenderContext.beginWorld(pose, buffers, light, overlay);
             pose.pushPose();
             try {
-                pose.translate(-x, -y, -z);
+                // the pose is at the entity's feet (modern y), not at the legacy posY: undoing only the feet position lets the
+                // renderer's own translate(x, y, z) put the model at the legacy posY (feet + yShift). Undoing the shifted y too drew
+                // every entity with a posY shift (carts: mid-height, 0.65 for Traincraft's stock) yShift too low, wheels in the ground.
+                pose.translate(-x, -yFeet, -z);
                 long quadsBefore = RenderContext.quadCount();
                 renderer.doRender(legacy, x, y, z, Mth.lerp(partialTicks, entity.yRotO, entity.getYRot()), partialTicks);
                 int logged = LOGGED.merge(renderer.getClass(), 1, Integer::sum);

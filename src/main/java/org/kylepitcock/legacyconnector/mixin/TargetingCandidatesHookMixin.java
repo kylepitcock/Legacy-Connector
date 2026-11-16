@@ -17,6 +17,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class TargetingCandidatesHookMixin {
     @Inject(method = "test", at = @At("HEAD"), cancellable = true, require = 0)
     private void legacyconnector$coremodTargetCandidates(LivingEntity attacker, LivingEntity target, CallbackInfoReturnable<Boolean> cir) {
-        if (attacker instanceof Mob mob && CoremodSites.TARGET_CANDIDATES.listed() && CoremodSites.targetLeftOut(mob, target)) cir.setReturnValue(false);
+        if (CoremodSites.TARGET_CANDIDATES.listed() && attacker instanceof Mob mob && CoremodSites.targetLeftOut(mob, target)) cir.setReturnValue(false);
     }
 }

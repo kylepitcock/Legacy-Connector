@@ -489,12 +489,15 @@ public final class CoremodSites1122 {
             net.minecraft.core.BlockPos pos, net.minecraft.world.phys.shapes.CollisionContext context) {
         if (!COLLISION_BOXES.active() || !(getter instanceof net.minecraft.world.level.Level level)) return null;
         net.minecraft.world.entity.Entity entity = context instanceof net.minecraft.world.phys.shapes.EntityCollisionContext ec ? ec.getEntity() : null;
+        // the hooks start by leaving some entities alone (none, or not a player): asked on the entity alone, before the views of the block and the world are built
+        Object view = entity == null ? null : EntityBridge1122.wrap(entity);
+        if (!COLLISION_BOXES.mayAct(view)) return null;
         legacyconnector.v1_12_2.net.minecraft.world.World world = WorldBridge1122.wrap(level);
         java.util.List<legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB> boxes = new java.util.ArrayList<>();
         legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB cell = new legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB(pos.getX(), pos.getY(),
                 pos.getZ(), pos.getX() + 1.0, pos.getY() + 1.0, pos.getZ() + 1.0);
         if (!COLLISION_BOXES.cancels(StatesBridge1122.toLegacy(state), world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos.mcc$of(pos), cell, boxes,
-                entity == null ? null : EntityBridge1122.wrap(entity))) return null;
+                view)) return null;
         net.minecraft.world.phys.shapes.VoxelShape shape = net.minecraft.world.phys.shapes.Shapes.empty();
         for (legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB box : boxes) {
             shape = net.minecraft.world.phys.shapes.Shapes.or(shape, net.minecraft.world.phys.shapes.Shapes.create(box.minX - pos.getX(), box.minY - pos.getY(),

@@ -361,8 +361,39 @@ public final class CoremodSites {
             new Class<?>[] {legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityFurnace.class},
             "net/minecraft/tileentity/TileEntityFurnace.func_145845_h()V#head-cancel");
 
+    /**
+     * Entity.getBrightnessForRender: replaces the block height the light of a rendered entity is read at (the hook receives the entity and answers the
+     * height, as the number {@code floor(posY - yOffset + height * 0.66)} the game computes there). Value: entity.
+     */
+    public static final Site BRIGHTNESS_Y = site("height of an entity's light look-up", new Class<?>[] {ENTITY},
+            "net/minecraft/entity/Entity.func_70070_b(F)I#replace:func_76128_c(D)I").returns(int.class);
+
+    /**
+     * EntityLivingBase.moveEntityWithHeading, client: a hook after the "is this the client" check; answering false takes the entity out of the slow fall
+     * the game applies in chunks that are not loaded yet (normal gravity applies instead).
+     */
+    public static final Site SLOW_FALL = site("slow fall in chunks not loaded yet", new Class<?>[0],
+            "net/minecraft/entity/EntityLivingBase.func_70612_e(FF)V#after:ifeq").returns(boolean.class);
+
+    /**
+     * World.getCollidingBoundingBoxes: a hook that takes the whole method over and answers the boxes an entity collides with in a region (instead of
+     * the blocks' and entities' own boxes). Values: world, entity (or null), the region.
+     */
+    public static final Site COLLISION_BOXES = site("boxes an entity collides with",
+            new Class<?>[] {WORLD, ENTITY, legacyconnector.v1_7_10.net.minecraft.util.AxisAlignedBB.class},
+            "net/minecraft/world/World.func_72945_a(Lnet/minecraft/entity/Entity;Lnet/minecraft/util/AxisAlignedBB;)Ljava/util/List;#replace:func_72314_b(DDD)Lnet/minecraft/util/AxisAlignedBB;")
+            .returns(List.class);
+
     /** The model sites: client classes, so apart from the rest. Values: model, entity, the six animation numbers. */
     public static final class Client {
+        /**
+         * EntityRenderer.getMouseOver, right after it cleared the entity looked at: a hook answering true leaves the picking out (the hook set the
+         * target to nothing: a miss).
+         */
+        public static final Site MOUSE_OVER = site("what the crosshair points at", new Class<?>[0],
+                "net/minecraft/client/renderer/EntityRenderer.func_78473_a(F)V#cancel-after:putfield net/minecraft/client/Minecraft.field_147125_j Lnet/minecraft/entity/Entity;")
+                .returns(boolean.class);
+
         private static final Class<?>[] MODEL = {legacyconnector.v1_7_10.net.minecraft.client.model.ModelBiped.class, ENTITY, float.class, float.class, float.class,
                 float.class, float.class, float.class};
         private static final String BIPED = "net/minecraft/client/model/ModelBiped.";
@@ -415,6 +446,13 @@ public final class CoremodSites {
         /** GuiContainer.keyTyped, last thing. Values: character, 1.7.10 key code. */
         public static final Site CONTAINER_KEY = site("key typed in a container screen", new Class<?>[] {char.class, int.class},
                 "net/minecraft/client/gui/inventory/GuiContainer.func_73869_a(CI)V#tail");
+
+        /** {@link #MOUSE_OVER}: whether a hook took the picking over (the target is then a miss). */
+        public static boolean mouseOverTaken() {
+            if (!MOUSE_OVER.active()) return false;
+            Object[] answer = MOUSE_OVER.answer();
+            return answer != null && Boolean.TRUE.equals(answer[0]);
+        }
 
         /** {@link #LEFT_CLICK}. */
         public static boolean leftClick() {
@@ -763,7 +801,7 @@ public final class CoremodSites {
      */
     public static net.minecraft.world.level.block.state.BlockState setBlock(net.minecraft.world.level.Level level, net.minecraft.core.BlockPos pos,
             net.minecraft.world.level.block.state.BlockState state) {
-        if (IN_SET_BLOCK.get() != null || !(SET_BLOCK_REPLACE.active() || SET_BLOCK_LIMIT.active())) return state;
+        if (!(SET_BLOCK_REPLACE.active() || SET_BLOCK_LIMIT.active()) || IN_SET_BLOCK.get() != null) return state;
         IN_SET_BLOCK.set(Boolean.TRUE);
         try {
             legacyconnector.v1_7_10.net.minecraft.world.World world = legacyconnector.v1_7_10.net.minecraft.world.World.mcc$wrap(level);
@@ -834,8 +872,9 @@ public final class CoremodSites {
                 || !(getter instanceof net.minecraft.world.level.LevelAccessor level)) return null;
         boolean fence = state.getBlock() instanceof net.minecraft.world.level.block.FenceBlock;
         if (fence ? !FENCE_BOXES.active() : !(state.getBlock() instanceof net.minecraft.world.level.block.IronBarsBlock && PANE_IGNORED.active())) return null;
-        legacyconnector.v1_7_10.net.minecraft.block.Block block = BlockBridge.legacyBlock(state);
         legacyconnector.v1_7_10.net.minecraft.entity.Entity entity = EntityBridge.wrap(ec.getEntity());
+        if (!(fence ? FENCE_BOXES : PANE_IGNORED).mayAct(entity)) return null; // the hooks start by leaving this entity alone
+        legacyconnector.v1_7_10.net.minecraft.block.Block block = BlockBridge.legacyBlock(state);
         if (!fence) return PANE_IGNORED.cancels(block, entity) ? net.minecraft.world.phys.shapes.Shapes.empty() : null;
         List<Object> boxes = new ArrayList<>();
         legacyconnector.v1_7_10.net.minecraft.util.AxisAlignedBB mask = legacyconnector.v1_7_10.net.minecraft.util.AxisAlignedBB.mcc$of(new net.minecraft.world.phys.AABB(pos).inflate(3.0));
@@ -877,6 +916,50 @@ public final class CoremodSites {
         return FURNACE_TAKEN_OVER.cancels(furnace);
     }
 
+    /**
+     * {@link #BRIGHTNESS_Y}: the point the light of a rendered entity is read at. The modern game reads it at the eye; 1.7.10 read the block at
+     * {@code posY - yOffset + height * 0.66}, which a hook then changed (a phasing or scaled entity). The game's own point is kept unless the hook
+     * answers another block height than 1.7.10's own formula would.
+     */
+    public static net.minecraft.world.phys.Vec3 lightProbe(net.minecraft.world.entity.Entity entity, net.minecraft.world.phys.Vec3 probe) {
+        if (!BRIGHTNESS_Y.active()) return probe;
+        if (!(BRIGHTNESS_Y.replace(null, EntityBridge.wrap(entity)) instanceof Number answer)) return probe;
+        int y = answer.intValue();
+        if (y == net.minecraft.util.Mth.floor(entity.getY() + entity.getBbHeight() * 0.66D)) return probe;
+        return new net.minecraft.world.phys.Vec3(probe.x, y + 0.5D, probe.z);
+    }
+
+    /** {@link #SLOW_FALL}: whether a hook takes this entity out of the slow fall in chunks that are not loaded yet. */
+    public static boolean noSlowFall() {
+        if (!SLOW_FALL.active()) return false;
+        Object[] answer = SLOW_FALL.answer();
+        return answer != null && Boolean.FALSE.equals(answer[0]);
+    }
+
+    private static final ThreadLocal<Boolean> IN_COLLISION_HOOK = new ThreadLocal<>();
+
+    /**
+     * {@link #COLLISION_BOXES}: the shapes a hook answers for the block collisions of a region, or null when no hook answers (the game's own apply). A
+     * hook that asks the world for the collisions itself gets the game's answer.
+     */
+    public static java.util.List<net.minecraft.world.phys.shapes.VoxelShape> collisionShapes(net.minecraft.world.level.Level level,
+            net.minecraft.world.entity.Entity entity, net.minecraft.world.phys.AABB region) {
+        if (!COLLISION_BOXES.active() || IN_COLLISION_HOOK.get() != null) return null;
+        IN_COLLISION_HOOK.set(Boolean.TRUE);
+        try {
+            Object[] answer = COLLISION_BOXES.answer(legacyconnector.v1_7_10.net.minecraft.world.World.mcc$wrap(level), entity == null ? null : EntityBridge.wrap(entity),
+                    legacyconnector.v1_7_10.net.minecraft.util.AxisAlignedBB.mcc$of(region));
+            if (answer == null || !(answer[0] instanceof List<?> boxes)) return null;
+            List<net.minecraft.world.phys.shapes.VoxelShape> out = new ArrayList<>(boxes.size());
+            for (Object box : boxes) {
+                if (box instanceof legacyconnector.v1_7_10.net.minecraft.util.AxisAlignedBB b) out.add(net.minecraft.world.phys.shapes.Shapes.create(b.mcc$modern()));
+            }
+            return out;
+        } finally {
+            IN_COLLISION_HOOK.remove();
+        }
+    }
+
     private CoremodSites() {}
 
     /** One place of 1.7.10's code on the modern game. */
@@ -884,6 +967,8 @@ public final class CoremodSites {
         private final String label;
         private final Class<?>[] offered;
         private final List<Listed> listed = new ArrayList<>();
+        /** {@code !listed.isEmpty()}, fixed at construction: {@link #listed()} is on the hot paths of the game (collision, movement, block placement). */
+        private final boolean any;
         private volatile Bound[] hooks;
         private int failures;
         private Class<?> result;
@@ -899,6 +984,7 @@ public final class CoremodSites {
                 for (Listed l : found) once.putIfAbsent(l.owner + "." + l.name + l.desc, l);
             }
             listed.addAll(once.values());
+            this.any = !listed.isEmpty();
         }
 
         /** Only hooks returning this type answer here (a place can be listed by hooks of other shapes, which stand for other changes). */
@@ -927,7 +1013,7 @@ public final class CoremodSites {
 
         /** Whether the loader listed a hook here (known from the start; the hooks may not be callable yet). */
         public boolean listed() {
-            return !listed.isEmpty();
+            return any;
         }
 
         /** Whether there is a hook to call: check before building the values. */
@@ -999,6 +1085,17 @@ public final class CoremodSites {
             return values[index];
         }
 
+        /**
+         * Whether a call with this entity (a legacy view, or null) can do anything: false when every hook here starts by leaving such an entity alone (see
+         * {@link CoremodHookGuard}); asked before the other values are built. Only for places whose hooks answer a boolean.
+         */
+        public boolean mayAct(Object entity) {
+            for (Bound b : bound()) {
+                if (!b.combiner && (b.guard == null || b.guard.allows(entity))) return true;
+            }
+            return false;
+        }
+
         /** The answer of the first hook that ran, as the only element of an array (null inside for "nothing"), or null when no hook ran. */
         public Object[] answer(Object... values) {
             for (Bound b : bound()) {
@@ -1061,7 +1158,15 @@ public final class CoremodSites {
         }
     }
 
-    private record Bound(String name, MethodHandle handle, int[] from, Class<?>[] narrowed, Object[] fixed, boolean combiner, ClassLoader mod) {}
+    private record Bound(String name, MethodHandle handle, int[] from, Class<?>[] narrowed, Object[] fixed, boolean combiner, ClassLoader mod, CoremodHookGuard guard) {}
+
+    /** The guard of a hook on its entity parameter (the one the place fills from its entity value), or null. */
+    private static CoremodHookGuard guardOf(Class<?> owner, Method method, int[] from, Class<?>[] offered) {
+        for (int i = 0; i < from.length; i++) {
+            if (from[i] >= 0 && offered[from[i]].getName().endsWith(".net.minecraft.entity.Entity")) return CoremodHookGuard.of(owner, method, i);
+        }
+        return null;
+    }
 
     private static boolean takes(Bound b, int index) {
         for (int from : b.from) if (from == index) return true;
@@ -1310,7 +1415,7 @@ public final class CoremodSites {
             MethodHandle handle = MethodHandles.lookup().unreflect(method);
             handle = handle.asType(handle.type().generic().changeReturnType(Object.class)).asSpreader(Object[].class, types.length)
                     .asType(MethodType.methodType(Object.class, Object[].class));
-            return new Bound(className + "." + l.name + l.desc, handle, from, narrowed, fixed, combiner, owner.getClassLoader());
+            return new Bound(className + "." + l.name + l.desc, handle, from, narrowed, fixed, combiner, owner.getClassLoader(), combiner ? null : guardOf(owner, method, from, offered));
         } catch (ReflectiveOperationException | LinkageError | RuntimeException e) {
             LOG.warn("Coremod hook {}.{} is not available: {}", className, l.name, e.toString());
             return null;
