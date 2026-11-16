@@ -22,6 +22,32 @@ final class ModConstructors1201 {
 
     private ModConstructors1201() {}
 
+    /**
+     * Forge's {@code ModContainer.getMod()} returned the instance of the {@code @Mod} class (Cyclops Core reaches other mods' main objects through it);
+     * NeoForge's container does not keep it. Every constructor of a {@code @Mod} class reports {@code this} before it returns (see {@code ForgeApi1201.rememberModInstance}).
+     *
+     * @return the number of main classes changed
+     */
+    static int rememberInstances(List<ClassNode> nodes) {
+        int changed = 0;
+        for (ClassNode n : nodes) {
+            if (n.visibleAnnotations == null || n.visibleAnnotations.stream().noneMatch(a -> a.desc.equals(MOD))) continue;
+            for (MethodNode m : n.methods) {
+                if (!m.name.equals("<init>") || m.instructions == null) continue;
+                for (org.objectweb.asm.tree.AbstractInsnNode in : m.instructions.toArray()) {
+                    if (in.getOpcode() != Opcodes.RETURN) continue;
+                    org.objectweb.asm.tree.InsnList il = new org.objectweb.asm.tree.InsnList();
+                    il.add(new org.objectweb.asm.tree.VarInsnNode(Opcodes.ALOAD, 0));
+                    il.add(new org.objectweb.asm.tree.MethodInsnNode(Opcodes.INVOKESTATIC, "legacyconnector/v1_20_1/ForgeApi1201", "rememberModInstance", "(Ljava/lang/Object;)V", false));
+                    m.instructions.insertBefore(in, il);
+                    m.maxStack = Math.max(m.maxStack, 1);
+                }
+            }
+            changed++;
+        }
+        return changed;
+    }
+
     /** @return the number of main classes that got the generated constructor */
     static int apply(List<ClassNode> nodes) {
         int changed = 0;

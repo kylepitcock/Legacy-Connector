@@ -402,6 +402,19 @@ public final class ForgeApi1201 {
         return DeferredRegister.create((net.minecraft.resources.ResourceKey) registry.getRegistryKey(), modid);
     }
 
+    private static final java.util.Map<String, Object> MOD_INSTANCES = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** Called at the end of every constructor of a {@code @Mod} class: Forge's {@code ModContainer.getMod()} answered with this object. */
+    public static void rememberModInstance(Object instance) {
+        net.neoforged.fml.common.Mod mod = instance.getClass().getAnnotation(net.neoforged.fml.common.Mod.class);
+        if (mod != null) MOD_INSTANCES.put(mod.value(), instance);
+    }
+
+    /** {@code ModContainer.getMod()}. */
+    public static Object modContainerGetMod(net.neoforged.fml.ModContainer container) {
+        return MOD_INSTANCES.get(container.getModId());
+    }
+
     /** {@code RegistryObject.lazyMap(f)}: a supplier that applies {@code f} to the entry on first use and keeps the result. */
     @SuppressWarnings({"unchecked", "rawtypes"})
     public static java.util.function.Supplier holderLazyMap(DeferredHolder holder, java.util.function.Function f) {

@@ -502,6 +502,7 @@ public final class Forge1201Transformer {
         }
         int modConfigSubclasses = ModConfigSubclass1201.apply(nodes);
         if (modConfigSubclasses > 0) result.notes.add("Subclass of ModConfig (final in NeoForge 1.21.1): " + modConfigSubclasses + " class(es) moved to LegacyModConfig; a getHandler override has no effect");
+        ModConstructors1201.rememberInstances(nodes);
         int modCtors = ModConstructors1201.apply(nodes);
         if (modCtors > 0) result.notes.add("@Mod constructor taking FMLJavaModLoadingContext: a (IEventBus, ModContainer) constructor was generated for NeoForge");
         int subscribersMoved = Subscribers1201.apply(nodes);
