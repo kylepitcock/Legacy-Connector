@@ -210,7 +210,15 @@ public final class HolderCompat {
 
     /** The unwrapped {@code Enchantments.X} (a resource key in 1.21.1, the object in 1.20.1). */
     public static LegacyEnchantment enchantment(ResourceKey<Enchantment> key) {
-        return LegacyEnchantments.legacy(MigrateContext.provider().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(key));
+        java.util.Optional<? extends net.minecraft.core.HolderLookup.RegistryLookup<Enchantment>> lookup;
+        try {
+            lookup = MigrateContext.provider().lookup(Registries.ENCHANTMENT);
+        } catch (RuntimeException noRegistries) {
+            lookup = java.util.Optional.empty();
+        }
+        // before the data-driven registry exists (the data pack contributor asks a mod's compatibility rules): a stand-in that only knows its id
+        if (lookup.isEmpty()) return LegacyEnchantment.ofId(key.location());
+        return LegacyEnchantments.legacy(lookup.get().getOrThrow(key));
     }
 
     /** {@code EnchantmentInstance.enchantment} (a holder in 1.21.1). */
