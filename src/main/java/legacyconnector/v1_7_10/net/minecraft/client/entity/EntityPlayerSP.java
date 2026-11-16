@@ -4,6 +4,11 @@ import legacyconnector.v1_7_10.net.minecraft.util.MovementInput;
 import net.minecraft.world.entity.player.Player;
 
 public class EntityPlayerSP extends AbstractClientPlayer {
+    /** The field-of-view multiplier of the player's speed and effects (1 when standing still). */
+    public float getFOVMultiplier() {
+        return mcc$entity instanceof net.minecraft.client.player.LocalPlayer p ? p.getFieldOfViewModifier() : 1.0F;
+    }
+
     public MovementInput movementInput = new MovementInput();
 
     public EntityPlayerSP(Player modern) {

@@ -185,6 +185,11 @@ public class Minecraft {
         return mc().isSameThread();
     }
 
+    /** Whether the unicode font is forced on. */
+    public boolean isUnicode() {
+        return mc().options.forceUnicodeFont().get();
+    }
+
     /** The same for a task without a result. */
     public com.google.common.util.concurrent.ListenableFuture addScheduledTask(Runnable task) {
         return addScheduledTask(java.util.concurrent.Executors.callable(task));

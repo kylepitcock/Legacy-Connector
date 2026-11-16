@@ -120,6 +120,11 @@ public class Minecraft implements legacyconnector.v1_12_2.net.minecraft.util.ITh
     // ------------------------------------------------------------------ screens and focus
 
     /** Shows a legacy screen in a modern one (null closes the screen). */
+    /** Opens the pause menu. */
+    public void displayInGameMenu() {
+        net.minecraft.client.Minecraft.getInstance().pauseGame(false);
+    }
+
     public void displayGuiScreen(GuiScreen screen) {
         org.kylepitcock.legacyconnector.v1_12_2.client.ClientGui1122.display(screen);
     }
