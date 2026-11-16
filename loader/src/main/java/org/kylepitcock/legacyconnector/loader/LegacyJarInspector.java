@@ -96,6 +96,7 @@ public final class LegacyJarInspector {
             Markers markers = new Markers();
             List<LegacyModDecl> found = new ArrayList<>();
             List<String> modLoaderMods = new ArrayList<>();
+            String mc125Evidence = null;
 
             Enumeration<? extends ZipEntry> entries = zip.entries();
             while (entries.hasMoreElements()) {
@@ -143,18 +144,26 @@ public final class LegacyJarInspector {
                 // ModLoader mod (BaseMod subclasses: decided below) or not a legacy mod; mods/1.4.7/ never holds b1.7.3 jars
                 Path folder = path.getParent() == null ? null : path.getParent().getFileName();
                 // Minecraft 1.2.5 (names of its own obfuscation): recognised and reported as not supported yet, never hosted as 1.4.7 or Beta
+                String ev125 = null;
                 if (folder != null && folder.toString().equals(Mc125Jars.FOLDER)) {
-                    Mc125Jars.record(path, "in mods/" + Mc125Jars.FOLDER);
-                    return null;
+                    ev125 = "in mods/" + Mc125Jars.FOLDER;
+                } else if (folder == null || !(folder.toString().equals("1.4.7") || folder.toString().equals(BetaJars.FOLDER))) {
+                    ev125 = Mc125Jars.detect(zip, () -> NotchFingerprint.scores(zip));
                 }
-                if (folder == null || !(folder.toString().equals("1.4.7") || folder.toString().equals(BetaJars.FOLDER))) {
-                    String ev125 = Mc125Jars.detect(zip, () -> NotchFingerprint.scores(zip));
-                    if (ev125 != null) {
+                if (ev125 != null) {
+                    if (!Mc125Jars.optedIn()) {
                         Mc125Jars.record(path, ev125);
                         return null;
                     }
+                    if (!org.kylepitcock.legacyconnector.loader.transform.Notch125To147.available()) {
+                        Mc125Jars.record(path, ev125 + "; this build has no 1.2.5 table (built without -Pmappings125)");
+                        return null;
+                    }
+                    // opted in: hosted through the 1.4.7 chain after Notch125To147 (decided with the version below)
+                    mc125Evidence = ev125;
+                    jar.notchSide = Mc125Jars.sideOf(zip);
                 }
-                if (folder == null || !folder.toString().equals("1.4.7")) {
+                if (mc125Evidence == null && (folder == null || !folder.toString().equals("1.4.7"))) {
                     LegacyJar beta = BetaJars.inspect(zip, path, jar);
                     if (beta != null) return beta;
                 }
@@ -188,6 +197,13 @@ public final class LegacyJarInspector {
 
             if (unique.isEmpty() && jar.coreModClass != null && !jar.coreModClass.isBlank()) jar.containerModIds.addAll(infoById.keySet());
             if (jar.coreModClass != null && !jar.coreModClass.isBlank()) addCoreModContainerIds(zip, jar);
+            if (mc125Evidence != null) {
+                // Minecraft 1.2.5 (opt-in): hosted as 1.4.7 once Notch125To147 has renamed it
+                jar.version = LegacyVersion.V1_4_7;
+                jar.sourceVersion = LegacyVersion.V1_2_5;
+                jar.versionEvidence = "Minecraft 1.2.5, " + mc125Evidence + " (hosted as 1.4.7 after the 1.2.5 to 1.4.7 name rewrite; " + (jar.notchSide == 's' ? "server" : "client") + " names)";
+                return jar.mods.isEmpty() ? null : jar;
+            }
             jar.version = chooseVersion(zip, jar, infoById, refs17, refs112, markers, !modLoaderMods.isEmpty());
             return jar.version == null ? null : jar;
         }

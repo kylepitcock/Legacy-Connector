@@ -108,6 +108,8 @@ public final class LegacyJarTransformer {
         }
         // Beta 1.7.3 jars are obfuscated: named first, then relocated like the other families
         if (jar.version == LegacyVersion.VB1_7_3) c.notes.addAll(BetaDeobfuscator.apply(jar, c.classes,shim));
+        // Minecraft 1.2.5 jars (opt-in) are renamed to 1.4.7's obfuscation first and are 1.4.7 jars from here on
+        if (jar.sourceVersion == LegacyVersion.V1_2_5) c.notes.addAll(Notch125To147.apply(jar, c.classes));
         return c;
     }
 

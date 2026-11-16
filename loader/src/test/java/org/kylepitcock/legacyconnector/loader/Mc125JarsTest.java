@@ -16,6 +16,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
@@ -97,6 +98,62 @@ class Mc125JarsTest {
         assertTrue(why.contains("1.2.5"), why);
         assertEquals("a.jar: Minecraft 1.2.5 (not supported yet): " + why + "; not loaded", Mc125Jars.reportLine("a.jar", why));
         assertNull(Mc125Jars.takeUnsupported(jar), "taken once");
+    }
+
+    @Test
+    void optInWithoutTheTableInTheBuildStillOnlyReports(@TempDir Path dir) throws IOException {
+        org.junit.jupiter.api.Assumptions.assumeFalse(org.kylepitcock.legacyconnector.loader.transform.Notch125To147.available(), "build made with -Pmappings125");
+        System.setProperty("legacyconnector.mc125", "true");
+        try {
+            Path jar = modJar(dir, "mod_Test.jar", table125().subList(0, 40));
+            assertNull(LegacyJarInspector.inspect(jar));
+            String why = Mc125Jars.takeUnsupported(jar);
+            assertNotNull(why);
+            assertTrue(why.contains("-Pmappings125"), why);
+        } finally {
+            System.clearProperty("legacyconnector.mc125");
+        }
+    }
+
+    /** Needs the real join table (run with {@code -Pmappings125}): the opted-in jar is a 1.4.7 jar whose game calls resolve in 1.4.7's names. */
+    @Test
+    void optedInJarIsHostedAs147AndRenamedToItsNames(@TempDir Path dir) throws IOException {
+        org.junit.jupiter.api.Assumptions.assumeTrue(org.kylepitcock.legacyconnector.loader.transform.Notch125To147.available(), "needs -Pmappings125");
+        System.setProperty("legacyconnector.mc125", "true");
+        try {
+            List<String[]> calls = table125().subList(0, 60);
+            Path jar = modJar(dir, "mod_Test.jar", calls);
+            LegacyJar inspected = LegacyJarInspector.inspect(jar);
+            assertNotNull(inspected);
+            assertEquals(LegacyVersion.V1_4_7, inspected.version);
+            assertEquals(LegacyVersion.V1_2_5, inspected.sourceVersion);
+            assertEquals('c', inspected.notchSide);
+            assertEquals("mod_Test", inspected.mods.get(0).legacyId);
+            Map<String, byte[]> classes = new java.util.LinkedHashMap<>();
+            try (java.util.zip.ZipFile z = new java.util.zip.ZipFile(jar.toFile())) {
+                classes.put("mod_Test", z.getInputStream(z.getEntry("mod_Test.class")).readAllBytes());
+            }
+            org.kylepitcock.legacyconnector.loader.transform.Notch125To147.apply(inspected, classes);
+            org.kylepitcock.legacyconnector.loader.mapping.NotchNames n147 = org.kylepitcock.legacyconnector.loader.mapping.NotchNames.get("1.4.7");
+            int[] resolved = {0, 0};
+            new org.objectweb.asm.ClassReader(classes.get("mod_Test")).accept(new org.objectweb.asm.ClassVisitor(org.objectweb.asm.Opcodes.ASM9) {
+                @Override
+                public org.objectweb.asm.MethodVisitor visitMethod(int a, String n, String d, String s, String[] e) {
+                    return new org.objectweb.asm.MethodVisitor(org.objectweb.asm.Opcodes.ASM9) {
+                        @Override
+                        public void visitMethodInsn(int op, String owner, String name, String desc, boolean itf) {
+                            if (owner.indexOf('/') >= 0 || owner.equals("BaseMod")) return;
+                            resolved[1]++;
+                            if (n147.method(owner, name, desc, null) != null) resolved[0]++;
+                        }
+                    };
+                }
+            }, 0);
+            assertTrue(resolved[1] >= 50, "calls seen: " + resolved[1]);
+            assertTrue(resolved[0] >= resolved[1] * 0.85, resolved[0] + " of " + resolved[1] + " calls resolve in the 1.4.7 notch table");
+        } finally {
+            System.clearProperty("legacyconnector.mc125");
+        }
     }
 
     @Test
