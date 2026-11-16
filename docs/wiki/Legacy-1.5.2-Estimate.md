@@ -16,7 +16,7 @@ the liquid API's link to fluids) and the client side.
 | `EntityLiving` is the base of all living entities | type uses become `EntityLivingBase`, real `EntityLiving` kept for `extends`/`super`, casts for members only `EntityLiving` has | done (`Living152ClassRemapper`, `LivingCasts152`); cleared the verify errors of 6 mods |
 | String-path textures | `RenderEngine` is the texture manager, `bindTexture(String)` resolved by `Textures152`; `Render.loadTexture`, `bindTextureByName`; `Icon` registration is the 1.6.4 path | server side done; **no client run yet** (`/mods/<id>/` files are not yet copied to `assets/<id>/`) |
 | Mods distributed as zips | the locator accepts zips that contain classes | done (19 of 67 files) |
-| Version detection | 1.5.2 vs 1.6.4 by 1.5.2-only API, declared version, `modlist` mcmod.info, file name | done |
+| Version detection | 1.5.2 vs 1.6.4 by 1.5.2-only API, declared version, `modlist` mcmod.info, file name; a bare ModLoader mod (`BaseMod` subclass, no FML, no mcmod.info) by the notch-name fingerprint (at least 60 % of its member references fit one version and 15 points more than the other; `LegacyJarInspector`, transformer 86; the report shows the evidence) | done |
 | `@PreInit/@Init/@PostInit` only | already accepted | nothing to do |
 | Forge classes in 1.5 places | `ISidedInventory` (start/size per side) as an interface with the 1.7.10 methods derived; `Configuration$UnicodeInputStreamReader` | done |
 | Liquid API | `LiquidStack`, `LiquidDictionary`, `LiquidContainerRegistry`, tanks as plain classes in the 1.6.4 shim (same API in 1.6.4) | links and works in memory; not connected to NeoForge fluid capabilities yet |

@@ -9,6 +9,7 @@ technical documentation; the [README](../../README.md) has installation and the 
 | Page | What |
 |---|---|
 | [Architecture](Architecture.md) | Loader, shim, synthesized API, runtime; the legacy loader behaviour that is reproduced |
+| [Coremods](Coremods.md) | Legacy coremods that patch Minecraft itself: how their hooks are recorded and replayed, what works, what cannot, how to add a place |
 | [Cache and Redistribution](Cache-and-Redistribution.md) | What the translation cache contains, the provenance watermark, why translated jars are not loaded from mods/ |
 | [Bridges](Bridges.md) | Outdated dependencies replaced by modern mods, and every engine bridge with its state |
 | [Library candidates](Library-Candidates.md) | Modern libraries that could replace hand-rolled code (Pehkui adopted for entity size) |
