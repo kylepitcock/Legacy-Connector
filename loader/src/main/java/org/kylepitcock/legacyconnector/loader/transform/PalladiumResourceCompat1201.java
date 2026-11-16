@@ -1591,23 +1591,33 @@ PlayerEvents.tick(e => {
      *
      * The initial nearest-target search and movement remain unchanged.
      */
+    /**
+     * The inspected AlienEvo motion-to-entity ability is shared by XLR8's
+     * Punch Barrage and Cannonbolt's multi-hit attack. Its legacy loop marks
+     * each reached mob as recently targeted, then immediately searches for
+     * another mob in the same area. On a held input that makes one activation
+     * sweep through every nearby living entity. Stop after the first reached
+     * target and reset the state when the ability is released.
+     *
+     * The initial nearest-target search and movement remain unchanged.
+     */
     private static int rewriteAlienEvoMotionToEntitySingleTarget(Map<String, byte[]> resources) {
         byte[] original = resources.get(ALIEN_EVO_MOTION_TO_ENTITY);
         if (original == null) return 0;
 
         String script = new String(original, StandardCharsets.UTF_8);
-        String lineEnding = script.contains("\\r\\n") ? "\\r\\n" : "\\n";
-        String normalized = script.replace("\\r\\n", "\\n");
+        String lineEnding = script.contains("\r\n") ? "\r\n" : "\n";
+        String normalized = script.replace("\r\n", "\n");
 
-        String legacyState = "    let lastTargetTimes = new Map();\\n";
-        String migratedState = legacyState + "    let completedPlayers = new Set();\\n";
-        String activePlayerId = "                let playerId = entity.id;\\n"
+        String legacyState = "    let lastTargetTimes = new Map();\n";
+        String migratedState = legacyState + "    let completedPlayers = new Set();\n";
+        String activePlayerId = "                let playerId = entity.id;\n"
                 + "                if (!recentTargets.has(playerId)) {";
-        String migratedActivePlayerId = "                let playerId = entity.id;\\n"
-                + "                if (completedPlayers.has(playerId)) return;\\n"
+        String migratedActivePlayerId = "                let playerId = entity.id;\n"
+                + "                if (completedPlayers.has(playerId)) return;\n"
                 + "                if (!recentTargets.has(playerId)) {";
-        String cleanupLine = "                lastTargetTimes.delete(playerId);\\n";
-        String migratedCleanupLine = cleanupLine + "                completedPlayers.delete(playerId);\\n";
+        String cleanupLine = "                lastTargetTimes.delete(playerId);\n";
+        String migratedCleanupLine = cleanupLine + "                completedPlayers.delete(playerId);\n";
 
         String legacyRetargetBlock = """
                         nearbyEntities.forEach(nearby => {
@@ -1632,19 +1642,19 @@ PlayerEvents.tick(e => {
                             }
                         });
                 """;
-        String legacyContinuation = "                        nearestDistance = searchRadius + 1;\\n"
+        String legacyContinuation = "                        nearestDistance = searchRadius + 1;\n"
                 + legacyRetargetBlock;
-        String migratedContinuation = "                        nearestDistance = searchRadius + 1;\\n"
-                + "                        completedPlayers.add(playerId);\\n";
+        String migratedContinuation = "                        nearestDistance = searchRadius + 1;\n"
+                + "                        completedPlayers.add(playerId);\n";
 
         int legacyStateCount = occurrences(normalized, legacyState);
-        int migratedStateCount = occurrences(normalized, "    let completedPlayers = new Set();\\n");
+        int migratedStateCount = occurrences(normalized, "    let completedPlayers = new Set();\n");
         int activeCount = occurrences(normalized, activePlayerId);
         int migratedActiveCount = occurrences(normalized, migratedActivePlayerId);
         int cleanupCount = occurrences(normalized, cleanupLine);
         int migratedCleanupCount = occurrences(normalized, migratedCleanupLine);
         int legacyRetargetCount = occurrences(normalized, legacyContinuation);
-        int completedAddCount = occurrences(normalized, "                        completedPlayers.add(playerId);\\n");
+        int completedAddCount = occurrences(normalized, "                        completedPlayers.add(playerId);\n");
 
         if (legacyStateCount == 0 && migratedStateCount == 1
                 && migratedActiveCount == 1 && migratedCleanupCount == 1
@@ -1669,7 +1679,7 @@ PlayerEvents.tick(e => {
                 .replace(activePlayerId, migratedActivePlayerId)
                 .replace(cleanupLine, migratedCleanupLine)
                 .replace(legacyContinuation, migratedContinuation);
-        String output = lineEnding.equals("\\n") ? migrated : migrated.replace("\\n", lineEnding);
+        String output = lineEnding.equals("\n") ? migrated : migrated.replace("\n", lineEnding);
         resources.put(ALIEN_EVO_MOTION_TO_ENTITY, output.getBytes(StandardCharsets.UTF_8));
         return 1;
     }
