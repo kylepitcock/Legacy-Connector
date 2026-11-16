@@ -802,3 +802,116 @@ def coremodApi164Jar = tasks.register('coremodApi164Jar', Jar) {
     destinationDirectory = layout.buildDirectory.dir('generated/coremodApi/legacyconnector/legacy/1.6.4')
 }
 sourceSets.main.resources.srcDir(files(layout.buildDirectory.dir('generated/coremodApi')).builtBy(coremodApiJar, coremodApi164Jar))
+
+
+// Bounded read-only comparison of actual Mob.finalizeSpawn overrides across the two runtimes.
+// This consumes the exact source runtime export and the target compile-classpath list created
+// by inventoryTargetApi1211; it does not rewrite selectors or produce a runtime mapping table.
+def forge1201MobFinalizeSpawnEvolutionReport = layout.buildDirectory.file(
+        'reports/source-runtime/mob-finalizeSpawn-override-evolution.json')
+tasks.register('auditForge1201MobFinalizeSpawnEvolution1201To1211', JavaExec) {
+    group = 'verification'
+    description = 'Compares effective Mob.finalizeSpawn instance-method overrides in the Forge 1.20.1 and NeoForge 1.21.1 classpaths.'
+    dependsOn tasks.named('classes')
+    dependsOn rootProject.tasks.named('inventoryTargetApi1211')
+    inputs.file(forge1201SourceClasspath)
+    inputs.file(forge1201SourceManifest)
+    inputs.file(targetApiClasspathFile)
+    inputs.property('sourceMinecraftVersion', '1.20.1')
+    inputs.property('sourceForgeVersion', '47.3.0')
+    inputs.property('targetMinecraftVersion', '1.21.1')
+    inputs.property('targetNeoForgeVersion', '21.1.258')
+    outputs.file(forge1201MobFinalizeSpawnEvolutionReport)
+    classpath = sourceSets.main.output + configurations.runtimeClasspath
+    mainClass = 'org.kylepitcock.legacyconnector.loader.tools.forge1201.Forge1201MobFinalizeSpawnEvolutionAudit'
+    doFirst {
+        if (!forge1201SourceClasspath.isFile() || !forge1201SourceManifest.isFile()) {
+            throw new GradleException('Export the Forge 1.20.1 source runtime classpath and manifest first with exportForge1201SourceRuntimeClasspath.')
+        }
+        if (!targetApiClasspathFile.get().asFile.isFile()) {
+            throw new GradleException('Target API classpath list is missing; inventoryTargetApi1211 must complete first.')
+        }
+
+        def sourceManifest = new groovy.json.JsonSlurper().parse(forge1201SourceManifest)
+        if (sourceManifest.status != 'SOURCE_RUNTIME_CLASSPATH_EXPORTED'
+                || sourceManifest.sourceRuntime?.minecraftVersion != '1.20.1'
+                || sourceManifest.sourceRuntime?.forgeVersion != '47.3.0'
+                || sourceManifest.sourceRuntime?.forgeGradleVersion != '6.0.24'
+                || sourceManifest.sourceRuntime?.mappings?.channel != 'official'
+                || sourceManifest.sourceRuntime?.mappings?.version != '1.20.1') {
+            throw new GradleException('The source runtime manifest is not the pinned Forge 1.20.1 / 47.3.0 / ForgeGradle 6.0.24 / Mojang official profile.')
+        }
+
+        def listedSourceEntries = forge1201SourceClasspath.readLines('UTF-8')
+                .findAll { !it.isBlank() }
+                .collect { new File(it).absoluteFile.toPath().normalize().toString() }
+        def manifestEntries = (sourceManifest.classpathEntries ?: []).collect {
+            new File(it.path.toString()).absoluteFile.toPath().normalize().toString()
+        }
+        if (listedSourceEntries.isEmpty() || listedSourceEntries != manifestEntries) {
+            throw new GradleException('Source runtime classpath list does not match the exact ordered entries recorded in its manifest.')
+        }
+
+        if (sourceManifest.classpathFile == null
+                || new File(sourceManifest.classpathFile.toString()).absoluteFile.toPath().normalize()
+                        != forge1201SourceClasspath.absoluteFile.toPath().normalize()) {
+            throw new GradleException('Source runtime manifest does not identify the supplied classpath list.')
+        }
+
+        sourceManifest.classpathEntries.eachWithIndex { record, index ->
+            def entry = new File(record.path.toString())
+            if (!entry.exists()) {
+                throw new GradleException('Source runtime classpath entry disappeared after export: ' + entry)
+            }
+            def actualSha256
+            if (entry.isDirectory()) {
+                def digest = java.security.MessageDigest.getInstance('SHA-256')
+                def files = fileTree(entry).files.sort { left, right ->
+                    entry.toPath().relativize(left.toPath()).toString()
+                            <=> entry.toPath().relativize(right.toPath()).toString()
+                }
+                files.each { child ->
+                    def relative = entry.toPath().relativize(child.toPath()).toString()
+                            .replace(File.separatorChar, '/' as char)
+                    digest.update(relative.getBytes(java.nio.charset.StandardCharsets.UTF_8))
+                    digest.update((byte) 0)
+                    child.withInputStream { input ->
+                        byte[] buffer = new byte[64 * 1024]
+                        int count
+                        while ((count = input.read(buffer)) != -1) digest.update(buffer, 0, count)
+                    }
+                    digest.update((byte) 0xff)
+                }
+                actualSha256 = digest.digest().collect { String.format('%02x', it & 0xff) }.join()
+            } else {
+                actualSha256 = mappingFileSha(entry, 'SHA-256')
+            }
+            if (!record.sha256?.toString()?.equalsIgnoreCase(actualSha256)) {
+                throw new GradleException('Source runtime classpath entry SHA-256 no longer matches its export manifest at index '
+                        + index + ': ' + entry)
+            }
+        }
+
+        def requiredSourceProbes = [
+                'net/minecraft/world/level/block/piston/PistonStructureResolver.class',
+                'net/minecraft/world/level/block/state/BlockState.class',
+                'net/minecraft/world/level/block/Block.class'
+        ]
+        requiredSourceProbes.each { probe ->
+            def result = sourceManifest.classProbes?.get(probe)
+            if (result == null || result.matchCount != 1
+                    || result.firstMatch?.classpathIndex != 0
+                    || result.firstMatch?.path == null
+                    || new File(result.firstMatch.path.toString()).absoluteFile.toPath().normalize()
+                            != new File(manifestEntries[0]).absoluteFile.toPath().normalize()) {
+                throw new GradleException('Source runtime manifest has no unique effective classpath[0] probe for ' + probe)
+            }
+        }
+
+        setArgs([
+                forge1201SourceClasspath.absolutePath,
+                targetApiClasspathFile.get().asFile.absolutePath,
+                forge1201MobFinalizeSpawnEvolutionReport.get().asFile.absolutePath
+        ])
+    }
+}

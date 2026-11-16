@@ -90,16 +90,38 @@ public final class Forge1201SourceRuntimeMemberVerifier {
     public static final class Index {
         private final Forge1201TargetApiVerifier.TargetIndex classIndex;
         private final ClasspathSummary classpathSummary;
+        private final List<String> indexedClassNames;
 
         private Index(
                 Forge1201TargetApiVerifier.TargetIndex classIndex,
-                ClasspathSummary classpathSummary) {
+                ClasspathSummary classpathSummary,
+                List<String> indexedClassNames) {
             this.classIndex = classIndex;
             this.classpathSummary = classpathSummary;
+            this.indexedClassNames = List.copyOf(indexedClassNames);
         }
 
         public ClasspathSummary classpathSummary() {
             return classpathSummary;
+        }
+
+        /** Enumerates first-match class names from an ordered classpath index. */
+        public List<String> indexedClassNames(String internalNamePrefix) {
+            if (classpathSummary == null) {
+                throw new IllegalStateException("Class-name enumeration requires an ordered classpath index");
+            }
+            String prefix = internalNamePrefix == null ? "" : internalNamePrefix;
+            return indexedClassNames.stream().filter(name -> name.startsWith(prefix)).toList();
+        }
+
+        public Optional<Forge1201TargetApiVerifier.TargetClassInfo> classInfo(String internalName)
+                throws IOException {
+            return classIndex.classInfo(internalName);
+        }
+
+        public Optional<Integer> declaredMethodAccess(String owner, String name, String descriptor)
+                throws IOException {
+            return classIndex.declaredMethodAccess(owner, name, descriptor);
         }
 
         public MemberResult inspectMethod(String owner, String name, String descriptor) throws IOException {
@@ -272,7 +294,7 @@ public final class Forge1201SourceRuntimeMemberVerifier {
     public static Index createIndex(Forge1201TargetApiVerifier.ClassBytesProvider classBytes) {
         if (classBytes == null) throw new IllegalArgumentException("Forge source class byte provider is required");
         return new Index(Forge1201TargetApiVerifier.createIndex(
-                new PlatformClassBytesProvider(classBytes)), null);
+                new PlatformClassBytesProvider(classBytes)), null, List.of());
     }
 
     /**
@@ -313,7 +335,7 @@ public final class Forge1201SourceRuntimeMemberVerifier {
                 provider.classCount(),
                 provider.duplicateClassNames());
         return new Index(Forge1201TargetApiVerifier.createIndex(
-                new PlatformClassBytesProvider(provider)), summary);
+                new PlatformClassBytesProvider(provider)), summary, provider.classNames());
     }
 
     private static final class SetView {
@@ -439,6 +461,10 @@ public final class Forge1201SourceRuntimeMemberVerifier {
 
         int duplicateClassNames() {
             return duplicateClassNames;
+        }
+
+        List<String> classNames() {
+            return classes.keySet().stream().sorted().toList();
         }
 
         private void indexDirectory(Path root) throws IOException {

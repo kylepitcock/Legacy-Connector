@@ -130,6 +130,14 @@ public final class Forge1201TargetApiVerifier {
                     signatures(target.fields())));
         }
 
+        /** Returns the access flags for a directly declared method, or empty when absent. */
+        public Optional<Integer> declaredMethodAccess(String owner, String name, String descriptor)
+                throws IOException {
+            TargetClass target = verifier.readClass(owner);
+            return target == null ? Optional.empty()
+                    : Optional.ofNullable(target.methodAccess().get(new MemberKey(name, descriptor)));
+        }
+
         public MemberLookup lookupMethod(String owner, String name, String descriptor) throws IOException {
             Set<String> visited = new LinkedHashSet<>();
             Lookup lookup = verifier.findMethod(owner, new MemberKey(name, descriptor), visited);
@@ -171,7 +179,8 @@ public final class Forge1201TargetApiVerifier {
             String superName,
             List<String> interfaces,
             Set<MemberKey> methods,
-            Set<MemberKey> fields) {}
+            Set<MemberKey> fields,
+            Map<MemberKey, Integer> methodAccess) {}
 
     private record Lookup(boolean found, boolean complete) {}
 
@@ -377,6 +386,7 @@ public final class Forge1201TargetApiVerifier {
             final List<String> interfaces = new ArrayList<>();
             final Set<MemberKey> methods = new HashSet<>();
             final Set<MemberKey> fields = new HashSet<>();
+            final Map<MemberKey, Integer> methodAccess = new HashMap<>();
             ClassReader reader = new ClassReader(input);
             reader.accept(new ClassVisitor(Opcodes.ASM9) {
                 @Override
@@ -399,7 +409,9 @@ public final class Forge1201TargetApiVerifier {
                 @Override
                 public MethodVisitor visitMethod(int access, String methodName, String descriptor,
                                                  String signature, String[] exceptions) {
-                    methods.add(new MemberKey(methodName, descriptor));
+                    MemberKey key = new MemberKey(methodName, descriptor);
+                    methods.add(key);
+                    methodAccess.put(key, access);
                     return null;
                 }
             }, ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
@@ -409,7 +421,8 @@ public final class Forge1201TargetApiVerifier {
                         + " but found " + name[0]);
             }
             TargetClass result = new TargetClass(
-                    name[0], superName[0], List.copyOf(interfaces), Set.copyOf(methods), Set.copyOf(fields));
+                    name[0], superName[0], List.copyOf(interfaces), Set.copyOf(methods), Set.copyOf(fields),
+                    Map.copyOf(methodAccess));
             classCache.put(internalName, result);
             return result;
         } catch (IllegalArgumentException malformedClass) {

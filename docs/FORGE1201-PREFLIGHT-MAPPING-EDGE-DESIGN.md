@@ -831,3 +831,36 @@ Omitting `forge1201SourceMemberMode` retains the prior `srg-official` behavior. 
 The focused regression fixture models a Mojmap-named `BlockState` that implements a Forge extension interface with default `isStickyBlock` and `canStickTo` methods. It verifies exact inherited interface lookup by complete JVM descriptor, descriptor-change reporting, and direct field lookup without constructing any mapping index. This proves the direct identity route is not coupled to the vanilla SRG mapping domain.
 
 This is a diagnostic/source-evidence feature only. It does not establish target NeoForge equivalence, authorize selector rewriting, generate runtime mapping data, or change the packaged loader. A direct source member match remains structural evidence; semantic behavior needs a separate call-graph/implementation comparison.
+
+
+---
+
+## Read-only runtime behavior diagnostic — Mob.finalizeSpawn override evolution (2026-11-16)
+
+The Forge source-runtime member check confirmed that the target NeoForge four-argument
+Mob.finalizeSpawn descriptor is absent from Forge 1.20.1, where the same method name is
+declared with a trailing CompoundTag. The base Forge implementation does not read that
+argument, but virtual dispatch means subclass overrides must be checked independently.
+
+The new bounded audit task is :loader:auditForge1201MobFinalizeSpawnEvolution1201To1211.
+It scans net/minecraft/ class entries in the ordered Forge source runtime classpath and
+the actual NeoForge target compile classpath. The existing Forge1201TargetApiVerifier.TargetIndex
+remains the sole ASM class metadata/hierarchy parser; the source runtime wrapper only exposes
+ordered class-name enumeration and method access flags needed for this query.
+
+The audit follows superclass chains to identify Mob descendants, captures every directly
+declared finalizeSpawn method (descriptor and access flags), and resolves the effective
+instance-method declaration for each runtime's own base descriptor. Private/static methods
+and same-name overloads are not mistaken for overrides. It compares owners only when their
+literal Mojang-official internal names match; this is a diagnostic owner candidate relation,
+not a replacement for the versioned class mapping chain.
+
+Source classpath entries are checked against the pinned Forge 1.20.1 / Forge 47.3.0 /
+ForgeGradle 6.0.24 / Mojang-official manifest. Target input is the target-classpath.txt
+produced by inventoryTargetApi1211. Output is build-local JSON. Selector rewriting and
+runtime mapping table production remain false.
+
+Synthetic tests cover the base descriptor change, a retained override through an intermediate
+superclass, a source-only override whose target subclass inherits the new base method, a
+target-only override, inherited base behavior on both sides, static same-descriptor helpers
+that must not count as overrides, and an incomplete superclass chain.
