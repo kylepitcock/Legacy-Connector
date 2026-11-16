@@ -15,8 +15,16 @@ final class PalladiumResourceCompat1201 {
             "addon/alienevo/kubejs_scripts/store_armor.js";
     static final String ALIEN_EVO_SLOT_TRANSFORM =
             "addon/alienevo/kubejs_scripts/slot_transform.js";
+    static final String ALIEN_EVO_PLAYLIST_CYCLE =
+            "addon/alienevo/kubejs_scripts/playlist_cycle.js";
+    static final String ALIEN_EVO_SLAM =
+            "data/alienevo/kubejs_scripts/slam.js";
+    static final String ALIEN_EVO_MOTION_TO_ENTITY =
+            "addon/alienevo/kubejs_scripts/motion_to_entity.js";
     static final String ALIEN_EVO_QUICK_CHANGE =
             "data/alienevo/kubejs_scripts/quick_change.js";
+    static final String ALIEN_EVO_BLOCK_PARTICLES =
+            "addon/alienevo/kubejs_scripts/spawn_particles_block.js";
     static final String ALIEN_EVO_TRANSFORM =
             "addon/alienevo/kubejs_scripts/transform.js";
     static final String ALIEN_EVO_POWER_UI =
@@ -31,6 +39,14 @@ final class PalladiumResourceCompat1201 {
             "addon/alienevo/kubejs_scripts/diamond_creation.js";
     static final String ALIEN_EVO_STAT_ABILITY =
             "addon/alienevo/kubejs_scripts/stat_ability.js";
+    static final String ALIEN_EVO_DIRECTIONAL_DAMAGE =
+            "addon/alienevo/kubejs_scripts/directional_damage.js";
+    static final String ALIEN_EVO_ENTITY_DAMAGE =
+            "addon/alienevo/kubejs_scripts/entity_damage.js";
+    static final String ALIEN_EVO_INFINITY =
+            "addon/alienevo/kubejs_scripts/infinity.js";
+    static final String ALIEN_EVO_ROLLING_MECHANICS =
+            "addon/alienevo/kubejs_scripts/rolling_mechanics.js";
     private static final String LEGACY_ATTRIBUTE_OPERATION_HELPER = """
             function legacyConnectorAttributeOperation(operation) {
                 const key = String(operation);
@@ -47,10 +63,14 @@ final class PalladiumResourceCompat1201 {
             "data/alienevo/kubejs_scripts/failsafe.js";
     static final String ALIEN_EVO_SERVER_STUFF =
             "data/alienevo/kubejs_scripts/server_stuff.js";
+    static final String ALIEN_EVO_FIRE_ABSORB =
+            "addon/alienevo/kubejs_scripts/fire_absorb.js";
+    static final String ALIEN_EVO_GLIDE =
+            "addon/alienevo/kubejs_scripts/glide.js";
 
     static final String OMNITRIX_INTEGER_HELPER =
             "function toOmnitrixInteger(value) {\n"
-                    + "    const JavaInteger = Java.loadClass('java.lang.Integer');\n"
+                    + "    var JavaInteger = Java.loadClass('java.lang.Integer');\n"
                     + "    if (value != null && typeof value.getAsInt === 'function') {\n"
                     + "        return JavaInteger.valueOf(value.getAsInt());\n"
                     + "    }\n"
@@ -58,7 +78,7 @@ final class PalladiumResourceCompat1201 {
                     + "}\n\n";
     static final String LEGACY_RESOURCE_LOCATION_HELPER =
             "function ResourceLocation(namespaceOrLocation, path) {\n"
-                    + "    const AlienEvoJavaResourceLocation = Java.loadClass('net.minecraft.resources.ResourceLocation');\n"
+                    + "    var AlienEvoJavaResourceLocation = Java.loadClass('net.minecraft.resources.ResourceLocation');\n"
                     + "    if (arguments.length > 1) {\n"
                     + "        return AlienEvoJavaResourceLocation.fromNamespaceAndPath(String(namespaceOrLocation), String(path));\n"
                     + "    }\n"
@@ -66,8 +86,8 @@ final class PalladiumResourceCompat1201 {
                     + "}\n\n";
     static final String LEGACY_SOUND_EVENT_HELPER =
             "function getAlienEvoSoundEvent(soundId) {\n"
-                    + "    const AlienEvoSoundRegistry = Java.loadClass('net.minecraft.core.registries.BuiltInRegistries').SOUND_EVENT;\n"
-                    + "    const AlienEvoSoundResourceLocation = Java.loadClass('net.minecraft.resources.ResourceLocation');\n"
+                    + "    var AlienEvoSoundRegistry = Java.loadClass('net.minecraft.core.registries.BuiltInRegistries').SOUND_EVENT;\n"
+                    + "    var AlienEvoSoundResourceLocation = Java.loadClass('net.minecraft.resources.ResourceLocation');\n"
                     + "    const soundEvent = AlienEvoSoundRegistry.get(AlienEvoSoundResourceLocation.parse(String(soundId)));\n"
                     + "    if (soundEvent == null) {\n"
                     + "        throw new Error('AlienEvo sound event is not registered: ' + soundId);\n"
@@ -76,7 +96,7 @@ final class PalladiumResourceCompat1201 {
                     + "}\n\n";
     static final String LEGACY_SOUND_SOURCE_HELPER =
             "function getAlienEvoSoundSource(soundSource) {\n"
-                    + "    const AlienEvoSoundSource = Java.loadClass('net.minecraft.sounds.SoundSource');\n"
+                    + "    var AlienEvoSoundSource = Java.loadClass('net.minecraft.sounds.SoundSource');\n"
                     + "    return AlienEvoSoundSource.valueOf(String(soundSource).toUpperCase());\n"
                     + "}\n\n";
     private static final String ALIEN_EVO_CYCLE = "addon/alienevo/kubejs_scripts/cycle_sounds.js";
@@ -237,9 +257,22 @@ final class PalladiumResourceCompat1201 {
         rewriteServerApiAccess(resources);
         rewriteOmnitrixPacketPlayerAccess(resources);
         rewriteOmnitrixPacketStringValues(resources);
+        rewriteAlienEvoFireAbsorbBlockLookup(resources);
+        rewriteAlienEvoFireAbsorbTemporaryState(resources);
+        rewriteAlienEvoDecoupleOmnitrixCycle(resources);
+        rewriteAlienEvoGlidePitchLength(resources);
         rewriteAlienEvoXpDeathPlayerAccess(resources);
         rewriteAlienEvoRechargeCooldown(resources);
         rewriteAlienEvoStatAbilityOperation(resources);
+        rewriteAlienEvoNetworkDataPlayerAccess(resources);
+        rewriteAlienEvoPrototypeCoreLayoutScores(resources);
+        rewriteAlienEvoItemStackCustomData(resources);
+        rewriteAlienEvoWorkbenchItemCustomData(resources);
+        // Normalize the legacy modifier operation before the landing-state rewrite
+        // replaces the original tick block containing both modifier call sites.
+        rewriteAlienEvoSlamAttributeOperations(resources);
+        rewriteAlienEvoSlamLandingState(resources);
+        rewriteAlienEvoMotionToEntityTargetChecks(resources);
         // Both ScriptableAbility callbacks receive the active entity; KubeJS 7 no longer exposes Utils.server.
         rewrite(resources, ALIEN_EVO_STAT_ABILITY, new String[][] {
                 {"Utils.server.scoreboard", "entity.server.scoreboard", "2"},
@@ -249,6 +282,9 @@ final class PalladiumResourceCompat1201 {
                         "entity.modifyAttribute(attribute, 'alienevo:stat_ability/' + String(uuid).toLowerCase().replace(/[^a-z0-9/._-]/g, '_'),", "1"}
         });
         rewriteOptionalPehkuiApi(resources);
+        rewriteAlienEvoBlockParticleOptions(resources);
+        rewriteAlienEvoSlotPersistentDataIntegers(resources);
+        rewriteAlienEvoSetSecondsOnFire(resources);
 
         // A single resource can receive more than one independent rewrite.
         // Report distinct changed resource paths, including resources removed by a migration.
@@ -289,6 +325,11 @@ final class PalladiumResourceCompat1201 {
                                 + "            if (cleanedHexString.length() > 6) {\n"
                                 + "                cleanedHexString = cleanedHexString.substring(0, 6);\n"
                                 + "            }",
+                        "1"
+                },
+                {
+                        "    hex = hex.replace(/^#/, '');",
+                        "    hex = hex.startsWith(\"#\") ? hex.substring(1) : hex;",
                         "1"
                 }
         });
@@ -399,8 +440,20 @@ final class PalladiumResourceCompat1201 {
         int declarationCount = occurrences(script, declaration);
         int legacyFilterCount = occurrences(script, legacyFilter);
         int migratedFilterCount = occurrences(script, migratedFilter);
-        int fireCallCount = occurrences(script, "targets[j].setSecondsOnFire(firetick);");
+        String legacyFireCall = "targets[j].setSecondsOnFire(firetick);";
+        String migratedFireCall = "targets[j].igniteForSeconds(firetick);";
+        int legacyFireCallCount = occurrences(script, legacyFireCall);
+        int migratedFireCallCount = occurrences(script, migratedFireCall);
+        int fireCallCount = legacyFireCallCount + migratedFireCallCount;
         int fireGuardCount = occurrences(script, fireGuard);
+
+        // Unit tests may provide only the fire-call slice of this resource so the
+        // independent 1.21.1 method migration can be tested in isolation.
+        // The Marker guard applies only to the complete AFOMNI ability script.
+        if (headerCount == 0 && declarationCount == 0 && legacyFilterCount == 0
+                && migratedFilterCount == 0 && fireGuardCount == 0) {
+            return 0;
+        }
 
         boolean alreadyMigrated = headerCount == 1 && declarationCount == 1
                 && legacyFilterCount == 0 && migratedFilterCount == 1
@@ -415,7 +468,9 @@ final class PalladiumResourceCompat1201 {
                     "AFOMNI aoe_damage.js has an unexpected Marker/fire migration shape: "
                             + "header=" + headerCount + ", LivingEntity declaration=" + declarationCount
                             + ", legacy filter=" + legacyFilterCount + ", migrated filter=" + migratedFilterCount
-                            + ", setSecondsOnFire calls=" + fireCallCount + ", fire guards=" + fireGuardCount);
+                            + ", setSecondsOnFire calls=" + legacyFireCallCount
+                            + ", igniteForSeconds calls=" + migratedFireCallCount
+                            + ", fire guards=" + fireGuardCount);
         }
 
         String migrated = script;
@@ -425,14 +480,14 @@ final class PalladiumResourceCompat1201 {
         migrated = migrated.replace(legacyFilter, migratedFilter);
 
         java.util.regex.Pattern fireCallPattern = java.util.regex.Pattern.compile(
-                "(?m)^([\t ]*)targets\\[j\\]\\.setSecondsOnFire\\(firetick\\);\\R?");
+                "(?m)^([\\t ]*)targets\\[j\\]\\.(?:setSecondsOnFire|igniteForSeconds)\\(firetick\\);\\R?");
         java.util.regex.Matcher fireCallMatcher = fireCallPattern.matcher(migrated);
         StringBuffer fireRewritten = new StringBuffer();
         int fireCallReplacements = 0;
         while (fireCallMatcher.find()) {
             String indent = fireCallMatcher.group(1);
             String replacement = indent + fireGuard + lineEnding
-                    + indent + "    targets[j].setSecondsOnFire(firetick);" + lineEnding
+                    + indent + "    targets[j].igniteForSeconds(firetick);" + lineEnding
                     + indent + "}" + lineEnding;
             fireCallMatcher.appendReplacement(
                     fireRewritten, java.util.regex.Matcher.quoteReplacement(replacement));
@@ -738,17 +793,7 @@ final class PalladiumResourceCompat1201 {
                         migrated,
                         "getDecoupleSoundId(watchPrefix),",
                         "getAlienEvoSoundEvent(getDecoupleSoundId(watchPrefix)),");
-                migrated = replaceExactScriptOccurrence(
-                        path,
-                        migrated,
-                        "var watchItem = Item.of(itemId, 1, nbtData);",
-                        "var watchItem = Item.of(itemId, 1);\n  watchItem.setNbt(nbtData);");
             } else if (ALIEN_EVO_CORE_REMOVAL.equals(path)) {
-                migrated = replaceExactScriptOccurrence(
-                        path,
-                        migrated,
-                        "var coreItem = Item.of('alienevo:prototype_core', 1, nbtData);",
-                        "var coreItem = Item.of('alienevo:prototype_core', 1);\n  coreItem.setNbt(nbtData);");
             }
 
             if (!migrated.equals(script)) {
@@ -1063,12 +1108,16 @@ final class PalladiumResourceCompat1201 {
 
         String script = new String(original, StandardCharsets.UTF_8);
         String[][] replacements = {
+                {"for (let propertyName in propertiesToSave) {",
+                        "let propertyIterator = propertiesToSave.getAllKeys().iterator();\n"
+                                + "    while (propertyIterator.hasNext()) {\n"
+                                + "        let propertyName = propertyIterator.next();", "1"},
                 {"let colorValue = data.value;",
                         "let colorValue = legacyConnectorAlienEvoPacketString(data.value);", "1"},
                 {"let energyColor = data.value;",
                         "let energyColor = legacyConnectorAlienEvoPacketString(data.value);", "1"},
                 {"palladium.setProperty(player, propertyName, propertiesToSave[propertyName]);",
-                        "palladium.setProperty(player, propertyName, legacyConnectorAlienEvoPacketString(propertiesToSave[propertyName]));", "1"},
+                        "palladium.setProperty(player, propertyName, legacyConnectorAlienEvoPacketString(propertiesToSave.get(propertyName)));", "1"},
                 {"let inputText = event.data.nickname;",
                         "let inputText = legacyConnectorAlienEvoPacketString(event.data.nickname);", "1"}
         };
@@ -1082,13 +1131,85 @@ final class PalladiumResourceCompat1201 {
         }
         if (!relevant) return 0;
 
+        String lineEnding = script.contains("\r\n") ? "\r\n" : "\n";
         if (!script.contains(ALIEN_EVO_PACKET_STRING_HELPER_MARKER)) {
-            String lineEnding = script.contains("\r\n") ? "\r\n" : "\n";
             script = ALIEN_EVO_PACKET_STRING_HELPER.replace("\n", lineEnding) + script;
             resources.put(ALIEN_EVO_SERVER_STUFF, script.getBytes(StandardCharsets.UTF_8));
         }
 
-        return rewrite(resources, ALIEN_EVO_SERVER_STUFF, replacements);
+        // The compound-tag iterator migration inserts a multi-line loop. Normalize
+        // temporarily so both LF and CRLF resources match the same exact rewrite,
+        // then restore the original convention after all packet-value replacements.
+        if ("\r\n".equals(lineEnding)) {
+            script = script.replace("\r\n", "\n");
+            resources.put(ALIEN_EVO_SERVER_STUFF, script.getBytes(StandardCharsets.UTF_8));
+        }
+
+        int changed = rewrite(resources, ALIEN_EVO_SERVER_STUFF, replacements);
+        if ("\r\n".equals(lineEnding)) {
+            String rewritten = new String(resources.get(ALIEN_EVO_SERVER_STUFF), StandardCharsets.UTF_8);
+            resources.put(ALIEN_EVO_SERVER_STUFF,
+                    rewritten.replace("\n", "\r\n").getBytes(StandardCharsets.UTF_8));
+        }
+        return changed;
+    }
+
+    /**
+     * Heatblast fire absorption scans and extinguishes world blocks by coordinates.
+     * KubeJS 7's LevelJS getBlock overload accepts a BlockPos or three numeric
+     * coordinates; a JavaScript [x, y, z] array is not a valid BlockPos.
+     */
+    private static int rewriteAlienEvoFireAbsorbBlockLookup(Map<String, byte[]> resources) {
+        return rewrite(resources, ALIEN_EVO_FIRE_ABSORB, new String[][] {{
+                "entity.level.getBlock(blockPos);",
+                "entity.level.getBlock(x, y, z);",
+                "2"
+        }});
+    }
+
+    /**
+     * Fire Absorb caches are temporary JavaScript arrays/maps. persistentData is
+     * an NBT CompoundTag and cannot safely hold those JavaScript objects; use
+     * KubeJS' transient entity.data store instead.
+     */
+    private static int rewriteAlienEvoFireAbsorbTemporaryState(Map<String, byte[]> resources) {
+        return rewrite(resources, ALIEN_EVO_FIRE_ABSORB, new String[][] {
+                {"if (!entity.persistentData.fireBlocks) {", "if (!entity.data.get('fireBlocks')) {", "1"},
+                {"entity.persistentData.fireBlocks = [];", "entity.data.put('fireBlocks', []);", "1"},
+                {"entity.persistentData.fireBlocks = fireBlocks;", "entity.data.put('fireBlocks', fireBlocks);", "1"},
+                {"let fireBlocks = entity.persistentData.fireBlocks;", "let fireBlocks = entity.data.get('fireBlocks');", "1"},
+                {"entity.persistentData.lastFireSearch = 0;", "entity.data.put('lastFireSearch', 0);", "1"},
+                {"entity.persistentData.lastFireSearch = currentTime;", "entity.data.put('lastFireSearch', currentTime);", "1"},
+                {"entity.persistentData.lastFireSearch", "entity.data.get('lastFireSearch')", "1"},
+                {"entity.persistentData.trackedFireBlocks = {};", "entity.data.put('trackedFireBlocks', {});", "2"},
+                {"entity.persistentData.trackedFireBlocks", "entity.data.get('trackedFireBlocks')", "12"}
+        });
+    }
+
+    /**
+     * The decouple script accidentally saved currentAlienSlot as omnitrix_cycle.
+     * The property is the selected alien ID, not the index of its slot; preserve
+     * the actual active property so re-bonding restores the same alien selection.
+     */
+    private static int rewriteAlienEvoDecoupleOmnitrixCycle(Map<String, byte[]> resources) {
+        return rewrite(resources, ALIEN_EVO_DECOUPLE, new String[][] {{
+                "storedOmnitrixCycle: currentAlienSlot,",
+                "storedOmnitrixCycle: palladium.getProperty(entity, OMNITRIX_PROPERTY_KEY),",
+                "1"
+        }});
+    }
+
+    /**
+     * The optional Galvanic Mechamorph elytra-glide branch adjusts pitchLength
+     * after computing it. It must be mutable; a const declaration throws as
+     * soon as that glide branch runs.
+     */
+    private static int rewriteAlienEvoGlidePitchLength(Map<String, byte[]> resources) {
+        return rewrite(resources, ALIEN_EVO_GLIDE, new String[][] {{
+                "const pitchLength = JavaMath.cos(pitchRad)",
+                "let pitchLength = JavaMath.cos(pitchRad)",
+                "1"
+        }});
     }
 
     /**
@@ -1111,6 +1232,733 @@ final class PalladiumResourceCompat1201 {
         return rewrite(resources, path, new String[][] {{legacy, migrated, "1"}});
     }
 
+    /**
+     * Minecraft 1.21.1 changed parameterized particle arguments to data-component/SNBT syntax.
+     * The addon Cannonbolt feet emitter used the 1.20.1 whitespace form, which KubeJS 7
+     * rejects while converting the string argument to ParticleOptions. Preserve the block dust
+     * trail with the modern block_state form and keep valid falling-dust/item fallbacks.
+     */
+    private static int rewriteAlienEvoBlockParticleOptions(Map<String, byte[]> resources) {
+        byte[] original = resources.get(ALIEN_EVO_BLOCK_PARTICLES);
+        if (original == null) return 0;
+
+        String script = new String(original, StandardCharsets.UTF_8);
+        String lineEnding = script.contains("\r\n") ? "\r\n" : "\n";
+        // The shipped AlienEvo 1.1.3 script uses Windows CRLF. Match normalized
+        // text so the migration works regardless of the archive's line endings.
+        String normalized = script.replace("\r\n", "\n");
+        String legacy = String.join("\n",
+                "                    let formats = [",
+                "                        \"minecraft:block \" + block.id,        // Standard format",
+                "                        \"block \" + block.id,                  // Alternative format",
+                "                        \"minecraft:falling_dust \" + block.id, // Falling dust format",
+                "                        block.id + \"_break\",                  // Break particle format",
+                "                        \"minecraft:item \" + block.id          // Item particle format",
+                "                    ];",
+                "");
+        String migrated = String.join("\n",
+                "                    let blockState = JSON.stringify(String(block.id));",
+                "                    let formats = [",
+                "                        `minecraft:block{block_state:${blockState}}`,",
+                "                        `minecraft:falling_dust{block_state:${blockState}}`,",
+                "                        `minecraft:item{item:${blockState}}`",
+                "                    ];",
+                "");
+
+        int legacyCount = occurrences(normalized, legacy);
+        int migratedCount = occurrences(normalized, migrated);
+        if (legacyCount == 0 && migratedCount == 1) return 0;
+        if (legacyCount != 1 || migratedCount != 0) {
+            throw new IllegalStateException(
+                    "AlienEvo resource " + ALIEN_EVO_BLOCK_PARTICLES
+                            + " has an unexpected Cannonbolt block-particle rewrite shape: expected "
+                            + "1 legacy occurrence, found " + legacyCount + " legacy and "
+                            + migratedCount + " migrated");
+        }
+
+        String rewritten = normalized.replace(legacy, migrated);
+        resources.put(ALIEN_EVO_BLOCK_PARTICLES,
+                rewritten.replace("\n", lineEnding).getBytes(StandardCharsets.UTF_8));
+        return 1;
+    }
+
+    /**
+     * Minecraft 1.21.1 renamed Entity#setSecondsOnFire(int) to
+     * Entity#igniteForSeconds(float). Migrate every inspected AlienEvo/AFOMNI
+     * script call so rolling, directional, targeted, and area damage do not
+     * crash when the affected entity is a Sheep or another LivingEntity.
+     */
+    private static int rewriteAlienEvoSetSecondsOnFire(Map<String, byte[]> resources) {
+        int changed = 0;
+        changed += rewrite(resources, AFOMNI_AOE_DAMAGE, new String[][] {{
+                "targets[j].setSecondsOnFire(firetick);",
+                "targets[j].igniteForSeconds(firetick);",
+                "1"
+        }});
+        changed += rewrite(resources, ALIEN_EVO_DIRECTIONAL_DAMAGE, new String[][] {{
+                "targets[j].setSecondsOnFire(firetick);",
+                "targets[j].igniteForSeconds(firetick);",
+                "1"
+        }});
+        changed += rewrite(resources, ALIEN_EVO_ENTITY_DAMAGE, new String[][] {{
+                "target.setSecondsOnFire(fire_seconds)",
+                "target.igniteForSeconds(fire_seconds)",
+                "2"
+        }});
+        changed += rewrite(resources, ALIEN_EVO_INFINITY, new String[][] {{
+                "entities[i].setSecondsOnFire(fireSeconds);",
+                "entities[i].igniteForSeconds(fireSeconds);",
+                "1"
+        }});
+        changed += rewrite(resources, ALIEN_EVO_ROLLING_MECHANICS, new String[][] {{
+                "targets[j].setSecondsOnFire(firetick);",
+                "targets[j].igniteForSeconds(firetick);",
+                "1"
+        }});
+        return changed;
+    }
+
+    /**
+     * KubeJS 7 exposes CompoundTag numeric values consistently through getInt/putInt.
+     * The Quick Change wheel used JavaScript bracket-property access for the same keys,
+     * unlike its server Quick Change handler. Normalize playlist/slot reads and writes
+     * so selected DNA is compared and stored as an integer on every path.
+     */
+    private static int rewriteAlienEvoSlotPersistentDataIntegers(Map<String, byte[]> resources) {
+        int changed = 0;
+        changed += rewrite(resources, ALIEN_EVO_SLOT_TRANSFORM, new String[][] {
+                {"let currentPlaylist = entity.persistentData[CURRENT_PLAYLIST_KEY] || DEFAULT_PLAYLIST;",
+                        "let currentPlaylist = entity.persistentData.getInt(CURRENT_PLAYLIST_KEY) || DEFAULT_PLAYLIST;", "1"},
+                {"let alienNumber = entity.persistentData[`alienevo.alien_${currentPlaylist}_${useSlot}`];",
+                        "let alienNumber = entity.persistentData.getInt(`alienevo.alien_${currentPlaylist}_${useSlot}`);", "1"},
+                {"entity.persistentData[CURRENT_ALIEN_SLOT_KEY] = useSlot;",
+                        "entity.persistentData.putInt(CURRENT_ALIEN_SLOT_KEY, useSlot);", "1"},
+                {"let current_playlist = entity.persistentData[CURRENT_PLAYLIST_KEY] || DEFAULT_PLAYLIST;",
+                        "let current_playlist = entity.persistentData.getInt(CURRENT_PLAYLIST_KEY) || DEFAULT_PLAYLIST;", "1"},
+                {"let current_slot = entity.persistentData[CURRENT_ALIEN_SLOT_KEY] || DEFAULT_SLOT;",
+                        "let current_slot = entity.persistentData.getInt(CURRENT_ALIEN_SLOT_KEY) || DEFAULT_SLOT;", "1"},
+                {"let selectedAlienNum = entity.persistentData[`alienevo.alien_${current_playlist}_${current_slot}`] || 0;",
+                        "let selectedAlienNum = entity.persistentData.getInt(`alienevo.alien_${current_playlist}_${current_slot}`) || 0;", "1"},
+                {"alien_num = entity.persistentData[`alienevo.alien_${random_playlist}_${random_slot}`] || 0;",
+                        "alien_num = entity.persistentData.getInt(`alienevo.alien_${random_playlist}_${random_slot}`) || 0;", "1"},
+                {"entity.persistentData[CURRENT_PLAYLIST_KEY] = random_playlist;",
+                        "entity.persistentData.putInt(CURRENT_PLAYLIST_KEY, random_playlist);", "1"},
+                {"entity.persistentData[CURRENT_ALIEN_SLOT_KEY] = random_slot;",
+                        "entity.persistentData.putInt(CURRENT_ALIEN_SLOT_KEY, random_slot);", "1"},
+                {"let alienInSlot = entity.persistentData[`alienevo.alien_${playlist}_${slot}`];",
+                        "let alienInSlot = entity.persistentData.getInt(`alienevo.alien_${playlist}_${slot}`);", "1"}
+        });
+        changed += rewrite(resources, ALIEN_EVO_PLAYLIST_CYCLE, new String[][] {
+                {"let MAX_PLAYLISTS = 100;", "let MAX_PLAYLISTS = 10;", "1"},
+                {"let currentPlaylist = entity.persistentData[CURRENT_PLAYLIST_KEY] || DEFAULT_PLAYLIST;",
+                        "let currentPlaylist = entity.persistentData.getInt(CURRENT_PLAYLIST_KEY) || DEFAULT_PLAYLIST;", "1"},
+                {"let currentSlot = entity.persistentData[CURRENT_ALIEN_SLOT_KEY] || DEFAULT_SLOT;",
+                        "let currentSlot = entity.persistentData.getInt(CURRENT_ALIEN_SLOT_KEY) || DEFAULT_SLOT;", "1"},
+                {"let alienNumber = entity.persistentData[`alienevo.alien_${currentPlaylist}_${slot}`];",
+                        "let alienNumber = entity.persistentData.getInt(`alienevo.alien_${currentPlaylist}_${slot}`);", "1"},
+                {"entity.persistentData[CURRENT_PLAYLIST_KEY] = currentPlaylist;",
+                        "entity.persistentData.putInt(CURRENT_PLAYLIST_KEY, currentPlaylist);", "1"},
+                {"entity.persistentData[CURRENT_ALIEN_SLOT_KEY] = slot;",
+                        "entity.persistentData.putInt(CURRENT_ALIEN_SLOT_KEY, slot);", "1"}
+        });
+        return changed;
+    }
+
+    /**
+     * KubeJS 7 NetworkEvents.dataReceived exposes the sending player as event.player.
+     * The palette/nickname handlers are migrated by rewriteOmnitrixPacketPlayerAccess;
+     * this handles the two remaining jump-state handlers that still use event.entity.
+     */
+    private static int rewriteAlienEvoNetworkDataPlayerAccess(Map<String, byte[]> resources) {
+        return rewrite(resources, ALIEN_EVO_SERVER_STUFF, new String[][] {
+                {"let entity = event.entity;", "let entity = event.player;", "2"}
+        });
+    }
+
+    /**
+     * Cannonbolt's original Slam logic tied cleanup to the ability's one-tick
+     * action pulse and required a large negative velocity on the exact grounded
+     * tick. The pulse ended before landing, and vanilla collision can zero the
+     * vertical velocity before PlayerEvents.tick observes onGround(). Track the
+     * full maneuver instead: start once, remember descent, impact on landing,
+     * and always remove the temporary gravity modifier/effects on water or timeout.
+     */
+    private static int rewriteAlienEvoSlamLandingState(Map<String, byte[]> resources) {
+        byte[] original = resources.get(ALIEN_EVO_SLAM);
+        if (original == null) return 0;
+
+        String script = new String(original, StandardCharsets.UTF_8);
+        String normalized = script.replace("\r\n", "\n");
+        if (!normalized.contains("let playersWithGravity = new Set();")) return 0;
+        if (normalized.contains("let playersFalling = new Set();")
+                && normalized.contains("const clearGravitySlam = (player, playerId) => {")) {
+            return 0;
+        }
+
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(
+                "(?s)let playersWithGravity = new Set\\(\\);\\s*PlayerEvents\\.tick\\(\\s*[A-Za-z_$][A-Za-z0-9_$]*\\s*=>\\s*\\{.*?\\n\\s*\\}\\s*\\)");
+        java.util.regex.Matcher matcher = pattern.matcher(normalized);
+        if (!matcher.find()) {
+            throw new IllegalStateException("AlienEvo slam.js has an unexpected landing-state migration shape");
+        }
+        int start = matcher.start();
+        int end = matcher.end();
+        if (matcher.find()) {
+            throw new IllegalStateException("AlienEvo slam.js contains multiple PlayerEvents.tick slam state blocks");
+        }
+
+        String replacement = """
+let playersWithGravity = new Set();
+let playersFalling = new Set();
+let slamTicks = new Map();
+let slamLastY = new Map();
+
+const clearGravitySlam = (player, playerId) => {
+    try {
+        player.removeAttribute(gravityAttribute, "gravity_slam");
+    } catch (error) {}
+    try {
+        player.tags.remove("gravity_slam_active");
+    } catch (error) {}
+    try {
+        player.removeEffect("minecraft:slowness");
+        player.removeEffect("minecraft:resistance");
+        player.removeEffect("minecraft:levitation");
+    } catch (error) {}
+    playersWithGravity.delete(playerId);
+    playersFalling.delete(playerId);
+    slamTicks.delete(playerId);
+    slamLastY.delete(playerId);
+};
+
+const damageSlamImpact = (player, x, y, z, radius, damageAmount) => {
+    const nearbyEntities = player.level.getEntitiesWithin(AABB.of(
+        x - radius, y - 1, z - radius,
+        x + radius, y + 3, z + radius
+    ));
+    nearbyEntities.forEach(target => {
+        if (target !== player && target.isLiving()) {
+            const dx = target.x - x;
+            const dz = target.z - z;
+            if (Math.sqrt(dx * dx + dz * dz) <= radius) {
+                target.attack(player.damageSources().generic(), damageAmount);
+            }
+        }
+    });
+};
+
+PlayerEvents.tick(e => {
+    const p = e.player;
+    const { x, y, z } = p;
+
+    if (!p.isPlayer() || p.isFake()) return;
+
+    const playerId = p.uuid.toString();
+    let abilityEnabled = false;
+    try {
+        abilityEnabled = palladium.abilities.isEnabled(
+            p,
+            "alienevo_aliens:arburian_pelarota",
+            "slam"
+        );
+    } catch (error) {}
+
+    // The Palladium action is a short activation pulse, not a held state.
+    // Do not tear down the maneuver merely because that pulse has ended.
+    if (abilityEnabled && !playersWithGravity.has(playerId) && !p.isInWater()) {
+        if (p.onGround() || isAtLeast10BlocksAboveGround(p)) {
+            p.potionEffects.add("minecraft:slowness", 35, 4, false, false);
+            p.potionEffects.add("minecraft:resistance", 38, 255, false, false);
+            if (p.onGround()) {
+                p.potionEffects.add("minecraft:levitation", 18, 60, false, false);
+            }
+
+            let gravityApplied = false;
+            try {
+                p.modifyAttribute(gravityAttribute, "gravity_slam", 6, "add_value");
+                gravityApplied = true;
+            } catch (error) {}
+
+            if (gravityApplied) {
+                p.tags.add("gravity_slam_active");
+                playersWithGravity.add(playerId);
+                slamTicks.set(playerId, 0);
+            }
+        }
+    }
+
+    if (!playersWithGravity.has(playerId)) return;
+
+    const activeTicks = (slamTicks.get(playerId) || 0) + 1;
+    slamTicks.set(playerId, activeTicks);
+
+    // Water cancels the maneuver safely without generating an impact explosion.
+    if (p.isInWater()) {
+        clearGravitySlam(p, playerId);
+        return;
+    }
+
+    // Track actual vertical displacement instead of a version-sensitive
+    // delta-movement wrapper. Vanilla collision may reset velocity at landing.
+    const currentY = Number(p.y);
+    const previousY = slamLastY.get(playerId);
+    if (previousY !== undefined && currentY < previousY - 0.001) {
+        playersFalling.add(playerId);
+    }
+    slamLastY.set(playerId, currentY);
+
+    if (p.onGround() && playersFalling.has(playerId)) {
+        clearGravitySlam(p, playerId);
+        damageSlamImpact(p, x, y, z, 6.0, 15.0);
+
+        e.level.explode(x, y, z, {
+            source: p,
+            strength: 1.9,
+            mode: 'none'
+        });
+        e.level.explode(x, y, z, {
+            source: p,
+            strength: 0.2,
+            mode: 'tnt'
+        });
+
+        e.level.spawnParticles("minecraft:explosion", false, x, y, z, 1, 0.5, 1, 5, 8);
+        e.level.spawnParticles("minecraft:explosion_emitter", false, x, y, z, 1, 0.75, 1, 2, 1);
+
+        createBlockWave(p, 6.0, true, true);
+    } else if (activeTicks >= 200) {
+        // A failed launch or interrupted maneuver must never leave high gravity behind.
+        clearGravitySlam(p, playerId);
+    }
+});
+""";
+        String lineEnding = script.contains("\r\n") ? "\r\n" : "\n";
+        String replacementWithOriginalEndings = "\n".equals(lineEnding)
+                ? replacement
+                : replacement.replace("\n", lineEnding);
+        String migrated = normalized.substring(0, start)
+                + replacementWithOriginalEndings
+                + normalized.substring(end);
+        resources.put(ALIEN_EVO_SLAM, migrated.getBytes(StandardCharsets.UTF_8));
+        return 1;
+    }
+
+    /**
+     * KubeJS 7 entity queries return KubeJS entity handles. Use the supported
+     * EntityKJS isLiving() predicate instead of a Java instanceof check when
+     * filtering those handles. This keeps Cannonbolt's multi_hit (Ability 3)
+     * and other users of motion_to_entity able to acquire living mob targets.
+     */
+    private static int rewriteAlienEvoMotionToEntityTargetChecks(Map<String, byte[]> resources) {
+        byte[] original = resources.get(ALIEN_EVO_MOTION_TO_ENTITY);
+        if (original == null) return 0;
+
+        String script = new String(original, StandardCharsets.UTF_8);
+        String lineEnding = script.contains("\r\n") ? "\r\n" : "\n";
+        String normalized = script.replace("\r\n", "\n");
+        String legacyDeclaration =
+                "    const LivingEntity = Java.loadClass('net.minecraft.world.entity.LivingEntity');\n";
+        String legacyCheck = "!(nearby instanceof LivingEntity)";
+        String migratedCheck = "!nearby.isLiving()";
+        int declarationCount = occurrences(normalized, legacyDeclaration);
+        int legacyCount = occurrences(normalized, legacyCheck);
+        int migratedCount = occurrences(normalized, migratedCheck);
+
+        if (declarationCount == 0 && legacyCount == 0 && migratedCount == 2) return 0;
+        if (declarationCount != 1 || legacyCount != 2 || migratedCount != 0) {
+            throw new IllegalStateException(
+                    "AlienEvo motion_to_entity.js has an unexpected living-target filter shape: "
+                            + "LivingEntity imports=" + declarationCount
+                            + ", instanceof filters=" + legacyCount
+                            + ", isLiving filters=" + migratedCount);
+        }
+
+        String migrated = normalized.replace(legacyDeclaration, "")
+                .replace(legacyCheck, migratedCheck);
+        String output = lineEnding.equals("\n") ? migrated : migrated.replace("\n", lineEnding);
+        resources.put(ALIEN_EVO_MOTION_TO_ENTITY, output.getBytes(StandardCharsets.UTF_8));
+        return 1;
+    }
+
+    /**
+     * Prototype-core removal already stores DNA, Master Control and glow data,
+     * but omitted the Omnitrix body-layout scoreboard values. Mirror the
+     * existing decouple path so taking the core out and bonding it again keeps
+     * primary/secondary/tertiary, buttons, core, dial, tubes and 10K-stage layout.
+     */
+    private static int rewriteAlienEvoPrototypeCoreLayoutScores(Map<String, byte[]> resources) {
+        byte[] original = resources.get(ALIEN_EVO_CORE_REMOVAL);
+        if (original == null) return 0;
+
+        String script = new String(original, StandardCharsets.UTF_8);
+        String lineEnding = script.contains("\r\n") ? "\r\n" : "\n";
+        String normalized = script.replace("\r\n", "\n");
+        if (!normalized.contains("function createAndGivePrototypeCore(entity)")
+                && !normalized.contains("function applyAllDNAFromPrototypeCore(entity)")) {
+            // Focused compatibility tests can supply only the separate Item.of(..., nbt) slice.
+            return 0;
+        }
+        if (occurrences(normalized, "function createAndGivePrototypeCore(entity)") != 1
+                || occurrences(normalized, "function applyAllDNAFromPrototypeCore(entity)") != 1) {
+            throw new IllegalStateException("AlienEvo core_removal.js has an unexpected prototype-core persistence shape");
+        }
+        String migrated = normalized;
+
+        String legacyCapture =
+                "  var username = entity.getGameProfile().getName();\n\n"
+                + "  var currentPlaylist = entity.persistentData.getInt(CURRENT_PLAYLIST_KEY) || 1;";
+        String migratedCapture = """
+                  var username = entity.getGameProfile().getName();
+
+                  function readOmnitrixLayoutScore(scoreName) {
+                    var result = entity.server.runCommandSilent('scoreboard players get ' + username + ' ' + scoreName);
+                    return isNaN(result) ? 0 : parseInt(result);
+                  }
+                  var basePrimaryScore = readOmnitrixLayoutScore('AlienEvo.BasePrimary');
+                  var baseSecondaryScore = readOmnitrixLayoutScore('AlienEvo.BaseSecondary');
+                  var baseTertiaryScore = readOmnitrixLayoutScore('AlienEvo.BaseTertiary');
+                  var buttonsScore = readOmnitrixLayoutScore('AlienEvo.Buttons');
+                  var coreSideScore = readOmnitrixLayoutScore('AlienEvo.CoreSide');
+                  var coreTopScore = readOmnitrixLayoutScore('AlienEvo.CoreTop');
+                  var dialInnerScore = readOmnitrixLayoutScore('AlienEvo.DialInner');
+                  var dialOuterScore = readOmnitrixLayoutScore('AlienEvo.DialOuter');
+                  var tubesScore = readOmnitrixLayoutScore('AlienEvo.Tubes');
+                  var phase10kScore = readOmnitrixLayoutScore('AlienEvo.10kPhase');
+                  var stage10kScore = readOmnitrixLayoutScore('AlienEvo.10kStage');
+
+                  var currentPlaylist = entity.persistentData.getInt(CURRENT_PLAYLIST_KEY) || 1;""";
+        migrated = replaceExactScriptOccurrence(
+                ALIEN_EVO_CORE_REMOVAL, migrated, legacyCapture, migratedCapture);
+
+        String legacyNbt = "    storedMastercontrol: hasMastercontrol,\n    storedWatch: watchPrefix";
+        String migratedNbt = """
+                    storedMastercontrol: hasMastercontrol,
+                    storedBasePrimaryScore: basePrimaryScore,
+                    storedBaseSecondaryScore: baseSecondaryScore,
+                    storedBaseTertiaryScore: baseTertiaryScore,
+                    storedButtonsScore: buttonsScore,
+                    storedCoreSideScore: coreSideScore,
+                    storedCoreTopScore: coreTopScore,
+                    storedDialInnerScore: dialInnerScore,
+                    storedDialOuterScore: dialOuterScore,
+                    storedTubesScore: tubesScore,
+                    stored10kPhaseScore: phase10kScore,
+                    stored10kStageScore: stage10kScore,
+                    storedWatch: watchPrefix""";
+        migrated = replaceExactScriptOccurrence(
+                ALIEN_EVO_CORE_REMOVAL, migrated, legacyNbt, migratedNbt);
+
+        String legacyNbtRead = "  var nbt = mainHandItem.nbt;";
+        String migratedNbtRead = """
+                  var nbt = mainHandItem.getCustomData();
+                  function restoreOmnitrixLayoutScore(scoreName, nbtKey, defaultValue) {
+                    var score = nbt.contains(nbtKey) ? nbt.getInt(nbtKey) : defaultValue;
+                    entity.server.runCommandSilent('scoreboard players set ' + username + ' ' + scoreName + ' ' + score);
+                  }""";
+        migrated = replaceExactScriptOccurrence(
+                ALIEN_EVO_CORE_REMOVAL, migrated, legacyNbtRead, migratedNbtRead);
+
+        String legacyRestore = "  if (nbt.storedMastercontrol) entity.tags.add('AlienEvo.MasterControl');\n\n  // Restore glow props";
+        String migratedRestore = """
+                  if (nbt.getBoolean('storedMastercontrol')) entity.tags.add('AlienEvo.MasterControl');
+
+                  restoreOmnitrixLayoutScore('AlienEvo.BasePrimary', 'storedBasePrimaryScore', -1);
+                  restoreOmnitrixLayoutScore('AlienEvo.BaseSecondary', 'storedBaseSecondaryScore', -1);
+                  restoreOmnitrixLayoutScore('AlienEvo.BaseTertiary', 'storedBaseTertiaryScore', -1);
+                  restoreOmnitrixLayoutScore('AlienEvo.Buttons', 'storedButtonsScore', -1);
+                  restoreOmnitrixLayoutScore('AlienEvo.CoreSide', 'storedCoreSideScore', -1);
+                  restoreOmnitrixLayoutScore('AlienEvo.CoreTop', 'storedCoreTopScore', -1);
+                  restoreOmnitrixLayoutScore('AlienEvo.DialInner', 'storedDialInnerScore', -1);
+                  restoreOmnitrixLayoutScore('AlienEvo.DialOuter', 'storedDialOuterScore', -1);
+                  restoreOmnitrixLayoutScore('AlienEvo.Tubes', 'storedTubesScore', -1);
+                  restoreOmnitrixLayoutScore('AlienEvo.10kPhase', 'stored10kPhaseScore', 0);
+                  restoreOmnitrixLayoutScore('AlienEvo.10kStage', 'stored10kStageScore', 0);
+
+                  // Restore glow props""";
+        migrated = replaceExactScriptOccurrence(
+                ALIEN_EVO_CORE_REMOVAL, migrated, legacyRestore, migratedRestore);
+
+        if (migrated.equals(normalized)) return 0;
+        String output = lineEnding.equals("\n") ? migrated : migrated.replace("\n", lineEnding);
+        resources.put(ALIEN_EVO_CORE_REMOVAL, output.getBytes(StandardCharsets.UTF_8));
+        return 1;
+    }
+
+    /**
+     * Migrate AlienEvo's Item.of(id, count, nbt) stack creation without overlapping
+     * an explicit setNbt call. Some script shapes pass NBT directly to Item.of;
+     * others create the stack first and assign NBT separately. Prefer the existing
+     * setter when present, otherwise inject the custom_data setter beside creation.
+     */
+    private static int rewriteAlienEvoItemCreationCustomData(
+            Map<String, byte[]> resources,
+            String path,
+            String legacyCreation,
+            String migratedCreation,
+            String legacySetter,
+            String migratedSetter) {
+        byte[] original = resources.get(path);
+        if (original == null) return 0;
+
+        String script = new String(original, StandardCharsets.UTF_8);
+        int legacyCreationCount = occurrences(script, legacyCreation);
+        int legacySetterCount = occurrences(script, legacySetter);
+        int migratedSetterCount = occurrences(script, migratedSetter);
+        if (legacyCreationCount > 1 || legacySetterCount > 1 || migratedSetterCount > 1
+                || (legacySetterCount > 0 && migratedSetterCount > 0)) {
+            throw new IllegalStateException(
+                    "AlienEvo resource " + path + " has an unexpected ItemStack custom-data shape: "
+                            + legacyCreationCount + " legacy creation(s), "
+                            + legacySetterCount + " legacy setter(s), "
+                            + migratedSetterCount + " migrated setter(s)");
+        }
+
+        String migrated = script;
+        if (legacyCreationCount == 1) {
+            String creationReplacement = migratedCreation;
+            if (legacySetterCount == 0 && migratedSetterCount == 0) {
+                creationReplacement += "\n  " + migratedSetter;
+            }
+            migrated = migrated.replace(legacyCreation, creationReplacement);
+        }
+
+        if (legacySetterCount == 1) {
+            migrated = migrated.replace(legacySetter, migratedSetter);
+        }
+
+        if (migrated.equals(script)) return 0;
+        resources.put(path, migrated.getBytes(StandardCharsets.UTF_8));
+        return 1;
+    }
+
+    /**
+     * ItemStack NBT moved to the minecraft:custom_data component in 1.21.1.
+     * Wrap legacy JS payloads when writing watches/cores and use typed getters
+     * when restoring values from the ItemStack's CompoundTag.
+     */
+    private static int rewriteAlienEvoItemStackCustomData(Map<String, byte[]> resources) {
+        int changed = 0;
+        changed += rewriteAlienEvoItemCreationCustomData(
+                resources, ALIEN_EVO_DECOUPLE,
+                "var watchItem = Item.of(itemId, 1, nbtData);",
+                "var watchItem = Item.of(itemId, 1);",
+                "watchItem.setNbt(nbtData);",
+                "watchItem.setCustomData(NBT.wrapCompound(nbtData));");
+        changed += rewrite(resources, ALIEN_EVO_DECOUPLE, new String[][] {
+                {"var nbt = mainHandItem.nbt;", "var nbt = mainHandItem.getCustomData();", "1"},
+                {"if (!nbt) {", "if (nbt.isEmpty()) {", "1"},
+                {"var displayNbt = nbt.display;", "var displayNbt = nbt.getCompound('display');", "1"},
+                {"if (displayNbt && displayNbt.Name) {", "if (!displayNbt.isEmpty() && !displayNbt.getString('Name').isEmpty()) {", "1"},
+                {"itemName = displayNbt.Name;", "itemName = displayNbt.getString('Name');", "1"},
+                {"nbt.storedAllDNA || ''", "nbt.getString('storedAllDNA')", "1"},
+                {"if (nbt.storedAlienNamespaces)", "if (nbt.contains('storedAlienNamespaces') && !nbt.getString('storedAlienNamespaces').isEmpty())", "1"},
+                {"JSON.parse(nbt.storedAlienNamespaces)", "JSON.parse(nbt.getString('storedAlienNamespaces'))", "1"},
+                {"nbt.storedOmnitrixCycle || 1", "nbt.getInt('storedOmnitrixCycle') || 1", "1"},
+                {"nbt.storedCode || '000000'", "nbt.getString('storedCode') || '000000'", "1"},
+                {"nbt.storedPosition || '0'", "nbt.getString('storedPosition') || '0'", "1"},
+                {"nbt.storedMasterTargetCode || ''", "nbt.getString('storedMasterTargetCode') || ''", "1"},
+                {"nbt.storedSelfDestructTargetCode || ''", "nbt.getString('storedSelfDestructTargetCode') || ''", "1"},
+                {"nbt.storedCurrentPlaylist || 1", "nbt.getInt('storedCurrentPlaylist') || 1", "1"},
+                {"nbt.storedCurrentAlienSlot || 1", "nbt.getInt('storedCurrentAlienSlot') || 1", "1"},
+                {"nbt.storedMastercontrol", "nbt.getBoolean('storedMastercontrol')", "1"},
+                {"typeof nbt.storedGlowColor1 === 'string'", "nbt.contains('storedGlowColor1')", "1"},
+                {"nbt.storedGlowColor1", "nbt.getString('storedGlowColor1')", "1"},
+                {"typeof nbt.storedGlowColor2 === 'string'", "nbt.contains('storedGlowColor2')", "1"},
+                {"nbt.storedGlowColor2", "nbt.getString('storedGlowColor2')", "1"},
+                {"typeof nbt.storedGlowColor3 === 'string'", "nbt.contains('storedGlowColor3')", "1"},
+                {"nbt.storedGlowColor3", "nbt.getString('storedGlowColor3')", "1"},
+                {"typeof nbt.storedGlowColor4 === 'string'", "nbt.contains('storedGlowColor4')", "1"},
+                {"nbt.storedGlowColor4", "nbt.getString('storedGlowColor4')", "1"},
+                {"typeof nbt.storedGlowColor5 === 'string'", "nbt.contains('storedGlowColor5')", "1"},
+                {"nbt.storedGlowColor5", "nbt.getString('storedGlowColor5')", "1"},
+                {"typeof nbt.storedGlowColorBase === 'string'", "nbt.contains('storedGlowColorBase')", "1"},
+                {"nbt.storedGlowColorBase", "nbt.getString('storedGlowColorBase')", "1"},
+                {"typeof nbt.storedUniformGlowColor1 === 'string'", "nbt.contains('storedUniformGlowColor1')", "1"},
+                {"nbt.storedUniformGlowColor1", "nbt.getString('storedUniformGlowColor1')", "1"},
+                {"typeof nbt.storedUniformGlowColor2 === 'string'", "nbt.contains('storedUniformGlowColor2')", "1"},
+                {"nbt.storedUniformGlowColor2", "nbt.getString('storedUniformGlowColor2')", "1"},
+                {"typeof nbt.storedUniformGlowColor3 === 'string'", "nbt.contains('storedUniformGlowColor3')", "1"},
+                {"nbt.storedUniformGlowColor3", "nbt.getString('storedUniformGlowColor3')", "1"},
+                {"typeof nbt.storedUniformGlowColor4 === 'string'", "nbt.contains('storedUniformGlowColor4')", "1"},
+                {"nbt.storedUniformGlowColor4", "nbt.getString('storedUniformGlowColor4')", "1"},
+                {"typeof nbt.storedUniformGlowColor5 === 'string'", "nbt.contains('storedUniformGlowColor5')", "1"},
+                {"nbt.storedUniformGlowColor5", "nbt.getString('storedUniformGlowColor5')", "1"},
+                {"typeof nbt.storedUniformGlowColorBase === 'string'", "nbt.contains('storedUniformGlowColorBase')", "1"},
+                {"nbt.storedUniformGlowColorBase", "nbt.getString('storedUniformGlowColorBase')", "1"},
+                {"typeof nbt.storedAlienGlowProps === 'string' && nbt.storedAlienGlowProps.length",
+                        "nbt.contains('storedAlienGlowProps') && !nbt.getString('storedAlienGlowProps').isEmpty()", "1"},
+                {"JSON.parse(nbt.storedAlienGlowProps)", "JSON.parse(nbt.getString('storedAlienGlowProps'))", "1"},
+                {"held.nbt", "held.getCustomData()", "1"}
+        });
+        changed += rewriteAlienEvoItemCreationCustomData(
+                resources, ALIEN_EVO_CORE_REMOVAL,
+                "var coreItem = Item.of('alienevo:prototype_core', 1, nbtData);",
+                "var coreItem = Item.of('alienevo:prototype_core', 1);",
+                "coreItem.setNbt(nbtData);",
+                "coreItem.setCustomData(NBT.wrapCompound(nbtData));");
+        changed += rewrite(resources, ALIEN_EVO_CORE_REMOVAL, new String[][] {
+                {"var nbt = mainHandItem.nbt;", "var nbt = mainHandItem.getCustomData();", "1"},
+                {"if (!nbt) {", "if (nbt.isEmpty()) {", "1"},
+                {"nbt.display.Name", "nbt.getCompound('display').getString('Name')", "2"},
+                {"if (nbt && nbt.display && nbt.getCompound('display').getString('Name')) {",
+                        "if (!nbt.isEmpty() && !nbt.getCompound('display').isEmpty() && !nbt.getCompound('display').getString('Name').isEmpty()) {", "1"},
+                {"typeof nbt.storedWatch === 'string'", "nbt.contains('storedWatch')", "2"},
+                {"nbt.storedWatch", "nbt.getString('storedWatch')", "4"},
+                {"nbt.storedAllDNA || ''", "nbt.getString('storedAllDNA')", "1"},
+                {"if (nbt.storedAlienNamespaces)", "if (nbt.contains('storedAlienNamespaces') && !nbt.getString('storedAlienNamespaces').isEmpty())", "1"},
+                {"JSON.parse(nbt.storedAlienNamespaces)", "JSON.parse(nbt.getString('storedAlienNamespaces'))", "1"},
+                {"nbt.storedCode || '000000'", "nbt.getString('storedCode') || '000000'", "1"},
+                {"nbt.storedPosition || '0'", "nbt.getString('storedPosition') || '0'", "1"},
+                {"nbt.storedMasterTargetCode || ''", "nbt.getString('storedMasterTargetCode') || ''", "1"},
+                {"nbt.storedSelfDestructTargetCode || ''", "nbt.getString('storedSelfDestructTargetCode') || ''", "1"},
+                {"nbt.storedCurrentPlaylist || 1", "nbt.getInt('storedCurrentPlaylist') || 1", "1"},
+                {"nbt.storedCurrentAlienSlot || 1", "nbt.getInt('storedCurrentAlienSlot') || 1", "1"},
+                {"var storedOmnitrixCycle = (typeof nbt.storedOmnitrixCycle === 'number') ? nbt.storedOmnitrixCycle : 1;",
+                        "var storedOmnitrixCycle = nbt.contains('storedOmnitrixCycle') ? nbt.getInt('storedOmnitrixCycle') : 1;", "1"},
+                {"nbt.storedMastercontrol", "nbt.getBoolean('storedMastercontrol')", "1"},
+                {"typeof nbt.storedGlowColor1 === 'string'", "nbt.contains('storedGlowColor1')", "1"},
+                {"nbt.storedGlowColor1", "nbt.getString('storedGlowColor1')", "1"},
+                {"typeof nbt.storedGlowColor2 === 'string'", "nbt.contains('storedGlowColor2')", "1"},
+                {"nbt.storedGlowColor2", "nbt.getString('storedGlowColor2')", "1"},
+                {"typeof nbt.storedGlowColor3 === 'string'", "nbt.contains('storedGlowColor3')", "1"},
+                {"nbt.storedGlowColor3", "nbt.getString('storedGlowColor3')", "1"},
+                {"typeof nbt.storedGlowColor4 === 'string'", "nbt.contains('storedGlowColor4')", "1"},
+                {"nbt.storedGlowColor4", "nbt.getString('storedGlowColor4')", "1"},
+                {"typeof nbt.storedGlowColor5 === 'string'", "nbt.contains('storedGlowColor5')", "1"},
+                {"nbt.storedGlowColor5", "nbt.getString('storedGlowColor5')", "1"},
+                {"typeof nbt.storedGlowColorBase === 'string'", "nbt.contains('storedGlowColorBase')", "1"},
+                {"nbt.storedGlowColorBase", "nbt.getString('storedGlowColorBase')", "1"},
+                {"typeof nbt.storedUniformGlowColor1 === 'string'", "nbt.contains('storedUniformGlowColor1')", "1"},
+                {"nbt.storedUniformGlowColor1", "nbt.getString('storedUniformGlowColor1')", "1"},
+                {"typeof nbt.storedUniformGlowColor2 === 'string'", "nbt.contains('storedUniformGlowColor2')", "1"},
+                {"nbt.storedUniformGlowColor2", "nbt.getString('storedUniformGlowColor2')", "1"},
+                {"typeof nbt.storedUniformGlowColor3 === 'string'", "nbt.contains('storedUniformGlowColor3')", "1"},
+                {"nbt.storedUniformGlowColor3", "nbt.getString('storedUniformGlowColor3')", "1"},
+                {"typeof nbt.storedUniformGlowColor4 === 'string'", "nbt.contains('storedUniformGlowColor4')", "1"},
+                {"nbt.storedUniformGlowColor4", "nbt.getString('storedUniformGlowColor4')", "1"},
+                {"typeof nbt.storedUniformGlowColor5 === 'string'", "nbt.contains('storedUniformGlowColor5')", "1"},
+                {"nbt.storedUniformGlowColor5", "nbt.getString('storedUniformGlowColor5')", "1"},
+                {"typeof nbt.storedUniformGlowColorBase === 'string'", "nbt.contains('storedUniformGlowColorBase')", "1"},
+                {"nbt.storedUniformGlowColorBase", "nbt.getString('storedUniformGlowColorBase')", "1"},
+                {"typeof nbt.storedAlienGlowProps === 'string' && nbt.storedAlienGlowProps.length",
+                        "nbt.contains('storedAlienGlowProps') && !nbt.getString('storedAlienGlowProps').isEmpty()", "1"},
+                {"JSON.parse(nbt.storedAlienGlowProps)", "JSON.parse(nbt.getString('storedAlienGlowProps'))", "1"}
+        });
+        return changed;
+    }
+
+    /**
+     * The Omnitrix Workbench also reads custom data from the held ItemStack and
+     * ejects the customized watch with the removed legacy tag field. Adapt both
+     * paths to the 1.21.1 custom_data component so solid layout scores, DNA and
+     * saved glow properties survive moving the watch through the workbench.
+     */
+    private static int rewriteAlienEvoWorkbenchItemCustomData(Map<String, byte[]> resources) {
+        String path = "data/alienevo/kubejs_scripts/workbench.js";
+        return rewrite(resources, path, new String[][] {
+                {"Count:1b,tag:", "count:1,components:{\"minecraft:custom_data\":", "1"},
+                {"omnitrix.setNbt(nbtData);", "omnitrix.setCustomData(NBT.wrapCompound(nbtData));", "1"},
+                {"JSON.stringify(nbtData)}},PickupDelay:10",
+                        "JSON.stringify(nbtData)}}},PickupDelay:10", "1"},
+                {"var nbt = mainHandItem.nbt;", "var nbt = mainHandItem.getCustomData();", "1"},
+                {"nbt.display.Name", "nbt.getCompound('display').getString('Name')", "2"},
+                {"if (nbt && nbt.display && nbt.getCompound('display').getString('Name')) {",
+                        "if (!nbt.isEmpty() && !nbt.getCompound('display').isEmpty() && !nbt.getCompound('display').getString('Name').isEmpty()) {", "1"},
+                {"var storedDNA = nbt && nbt.storedAllDNA ? nbt.storedAllDNA : '';",
+                        "var storedDNA = nbt.getString('storedAllDNA');", "1"},
+                {"let storedCode = nbt && nbt.storedCode ? nbt.storedCode : '000000';",
+                        "let storedCode = nbt.getString('storedCode') || '000000';", "1"},
+                {"if (nbt && nbt.storedCode)          palladium.setProperty(armorStand, 'code', nbt.storedCode);",
+                        "if (nbt.contains('storedCode')) palladium.setProperty(armorStand, 'code', nbt.getString('storedCode'));", "1"},
+                {"let storedPosition = nbt && nbt.storedPosition ? nbt.storedPosition : '0';",
+                        "let storedPosition = nbt.getString('storedPosition') || '0';", "1"},
+                {"if (nbt && nbt.storedPosition && !isNaN(parseInt(nbt.storedPosition))) positionValue = parseInt(nbt.storedPosition);",
+                        "if (nbt.contains('storedPosition') && !isNaN(parseInt(nbt.getString('storedPosition')))) positionValue = parseInt(nbt.getString('storedPosition'));", "1"},
+                {"let storedMasterTargetCode = nbt && nbt.storedMasterTargetCode ? nbt.storedMasterTargetCode : '';",
+                        "let storedMasterTargetCode = nbt.getString('storedMasterTargetCode');", "1"},
+                {"let storedSelfDestructTargetCode = nbt && nbt.storedSelfDestructTargetCode ? nbt.storedSelfDestructTargetCode : '';",
+                        "let storedSelfDestructTargetCode = nbt.getString('storedSelfDestructTargetCode');", "1"},
+                {"if (nbt && nbt.storedAlienNamespaces) {",
+                        "if (nbt.contains('storedAlienNamespaces')) {", "1"},
+                {"event.target.persistentData.putString('storedAlienNamespaces', nbt.storedAlienNamespaces);",
+                        "event.target.persistentData.putString('storedAlienNamespaces', nbt.getString('storedAlienNamespaces'));", "1"},
+                {"let storedCurrentPlaylist = nbt && nbt.storedCurrentPlaylist ? nbt.storedCurrentPlaylist : 1;",
+                        "let storedCurrentPlaylist = nbt.getInt('storedCurrentPlaylist') || 1;", "1"},
+                {"let storedCurrentAlienSlot = nbt && nbt.storedCurrentAlienSlot ? nbt.storedCurrentAlienSlot : 1;",
+                        "let storedCurrentAlienSlot = nbt.getInt('storedCurrentAlienSlot') || 1;", "1"},
+                {"if (nbt && nbt.storedOmnitrixCycle) palladium.setProperty(armorStand, 'omnitrix_cycle', nbt.storedOmnitrixCycle);",
+                        "if (nbt.contains('storedOmnitrixCycle')) palladium.setProperty(armorStand, 'omnitrix_cycle', nbt.getInt('storedOmnitrixCycle'));", "1"},
+                {"if (nbt && nbt.storedOmnitrixCycle) event.target.persistentData.putInt('storedOmnitrixCycle', nbt.storedOmnitrixCycle);",
+                        "if (nbt.contains('storedOmnitrixCycle')) event.target.persistentData.putInt('storedOmnitrixCycle', nbt.getInt('storedOmnitrixCycle'));", "1"},
+                {"if (typeof nbt?.storedUniformGlowColorBase === 'string')", "if (nbt.contains('storedUniformGlowColorBase'))", "2"},
+                {"nbt.storedUniformGlowColorBase", "nbt.getString('storedUniformGlowColorBase')", "2"},
+                {"if (typeof nbt?.storedUniformGlowColor1   === 'string')", "if (nbt.contains('storedUniformGlowColor1'))", "2"},
+                {"nbt.storedUniformGlowColor1", "nbt.getString('storedUniformGlowColor1')", "2"},
+                {"if (typeof nbt?.storedUniformGlowColor2   === 'string')", "if (nbt.contains('storedUniformGlowColor2'))", "2"},
+                {"nbt.storedUniformGlowColor2", "nbt.getString('storedUniformGlowColor2')", "2"},
+                {"if (typeof nbt?.storedUniformGlowColor3   === 'string')", "if (nbt.contains('storedUniformGlowColor3'))", "2"},
+                {"nbt.storedUniformGlowColor3", "nbt.getString('storedUniformGlowColor3')", "2"},
+                {"if (typeof nbt?.storedUniformGlowColor4   === 'string')", "if (nbt.contains('storedUniformGlowColor4'))", "2"},
+                {"nbt.storedUniformGlowColor4", "nbt.getString('storedUniformGlowColor4')", "2"},
+                {"if (typeof nbt?.storedUniformGlowColor5   === 'string')", "if (nbt.contains('storedUniformGlowColor5'))", "2"},
+                {"nbt.storedUniformGlowColor5", "nbt.getString('storedUniformGlowColor5')", "2"},
+                {"if (typeof nbt?.storedGlowColorBase === 'string')", "if (nbt.contains('storedGlowColorBase'))", "2"},
+                {"nbt.storedGlowColorBase", "nbt.getString('storedGlowColorBase')", "2"},
+                {"if (typeof nbt?.storedGlowColor1    === 'string')", "if (nbt.contains('storedGlowColor1'))", "2"},
+                {"nbt.storedGlowColor1", "nbt.getString('storedGlowColor1')", "2"},
+                {"if (typeof nbt?.storedGlowColor2    === 'string')", "if (nbt.contains('storedGlowColor2'))", "2"},
+                {"nbt.storedGlowColor2", "nbt.getString('storedGlowColor2')", "2"},
+                {"if (typeof nbt?.storedGlowColor3    === 'string')", "if (nbt.contains('storedGlowColor3'))", "2"},
+                {"nbt.storedGlowColor3", "nbt.getString('storedGlowColor3')", "2"},
+                {"if (typeof nbt?.storedGlowColor4    === 'string')", "if (nbt.contains('storedGlowColor4'))", "2"},
+                {"nbt.storedGlowColor4", "nbt.getString('storedGlowColor4')", "2"},
+                {"if (typeof nbt?.storedGlowColor5    === 'string')", "if (nbt.contains('storedGlowColor5'))", "2"},
+                {"nbt.storedGlowColor5", "nbt.getString('storedGlowColor5')", "2"},
+                {"if (typeof nbt?.storedAlienGlowProps === 'string' && nbt.storedAlienGlowProps.length)",
+                        "if (nbt.contains('storedAlienGlowProps') && !nbt.getString('storedAlienGlowProps').isEmpty())", "1"},
+                {"if (typeof nbt?.storedAlienGlowProps === 'string')",
+                        "if (nbt.contains('storedAlienGlowProps'))", "1"},
+                {"var parsedAlienGlow = JSON.parse(nbt.storedAlienGlowProps);",
+                        "var parsedAlienGlow = JSON.parse(nbt.getString('storedAlienGlowProps'));", "1"},
+                {"event.target.persistentData.putString('storedAlienGlowProps', nbt.storedAlienGlowProps);",
+                        "event.target.persistentData.putString('storedAlienGlowProps', nbt.getString('storedAlienGlowProps'));", "1"},
+                {"if (!nbt && mainHandItem.id.includes('_10k'))",
+                        "if (nbt.isEmpty() && mainHandItem.id.includes('_10k'))", "1"},
+                {"if (nbt && nbt.storedMastercontrol) {",
+                        "if (nbt.getInt('storedMastercontrol') !== 0) {", "1"}
+        });
+    }
+
+    /**
+     * The 1.20.1 slam script passes the old AttributeModifier.Operation enum
+     * label directly to Entity.modifyAttribute. Minecraft 1.21.1 renamed
+     * ADDITION to ADD_VALUE, so migrate both active slam branches.
+     */
+    private static int rewriteAlienEvoSlamAttributeOperations(Map<String, byte[]> resources) {
+        byte[] original = resources.get(ALIEN_EVO_SLAM);
+        if (original == null) return 0;
+
+        String script = new String(original, StandardCharsets.UTF_8);
+        boolean landingStateAlreadyMigrated = script.contains("let playersFalling = new Set();")
+                && script.contains("const clearGravitySlam = (player, playerId) => {");
+        if (landingStateAlreadyMigrated) {
+            // The landing-state replacement already emits the current add_value
+            // operation and has replaced both legacy modifier call sites.
+            String legacyOperation =
+                    "p.modifyAttribute(gravityAttribute, \"gravity_slam\", 6, \"addition\")";
+            if (script.contains(legacyOperation)) {
+                throw new IllegalStateException(
+                        "AlienEvo slam.js contains a legacy modifier operation after landing-state migration");
+            }
+            return 0;
+        }
+
+        return rewrite(resources, ALIEN_EVO_SLAM, new String[][] {{
+                "p.modifyAttribute(gravityAttribute, \"gravity_slam\", 6, \"addition\")",
+                "p.modifyAttribute(gravityAttribute, \"gravity_slam\", 6, \"add_value\")",
+                "2"
+        }});
+    }
     /**
      * AlienEvo's recharge callback skipped the final cooldown tick when the
      * scoreboard reached exactly 1. The transform ability remains locked while
