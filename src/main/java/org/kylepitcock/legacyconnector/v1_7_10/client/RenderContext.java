@@ -263,7 +263,14 @@ public final class RenderContext {
     public static void beginWorld(PoseStack pose, MultiBufferSource buffers, int light, int overlay, int kind, boolean exactDepthState) {
         boolean locked = lockRender();
         State s = STATE.get();
-        if (s.frames.isEmpty()) legacyconnector.v1_7_10.net.minecraft.client.renderer.Tessellator.mcc$get$instance().mcc$reset();
+        if (s.frames.isEmpty()) {
+            legacyconnector.v1_7_10.net.minecraft.client.renderer.Tessellator.mcc$get$instance().mcc$reset();
+            // 1.7.10's "last lightmap coordinates" (OpenGlHelper.lastBrightnessX/Y) always held the light of whatever was drawn last; renderers
+            // that start with CCRenderState.pullLightmap() (CoFH's RenderUtils.preItemRender: Thermal Expansion's cells, tesseracts, dynamos
+            // and lamps in slots) read it and drew black when it was never set.
+            legacyconnector.v1_7_10.net.minecraft.client.renderer.OpenGlHelper.lastBrightnessX = light & 0xFFFF;
+            legacyconnector.v1_7_10.net.minecraft.client.renderer.OpenGlHelper.lastBrightnessY = (light >>> 16) & 0xFFFF;
+        }
         s.frames.push(new Frame(null, pose, buffers, light, overlay, pose.last(), locked, kind, exactDepthState));
         resetColor(s);
     }
