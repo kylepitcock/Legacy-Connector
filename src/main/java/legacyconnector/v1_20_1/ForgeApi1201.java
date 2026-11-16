@@ -234,15 +234,21 @@ public final class ForgeApi1201 {
     /** The entries of the module or jar a class comes from (the game's own jar is a union file system, which has no default-file-system path). */
     private static java.util.List<String> classNames(Class<?> base) throws Exception {
         java.util.List<String> names = new java.util.ArrayList<>();
-        Module module = base.getModule();
-        if (module.isNamed() && module.getLayer() != null) {
-            var resolved = module.getLayer().configuration().findModule(module.getName());
-            if (resolved.isPresent()) {
-                try (var reader = resolved.get().reference().open(); var all = reader.list()) {
-                    all.forEach(names::add);
+        // the mod file of the module (the game's own jar is a union file system: no default-file-system path, no module listing)
+        try {
+            var file = net.neoforged.fml.ModList.get().getModFileById("neoforge");
+            if (file != null && base.getName().startsWith("net.neoforged.neoforge.")) {
+                java.nio.file.Path root = file.getFile().getSecureJar().getRootPath();
+                try (var walk = java.nio.file.Files.walk(root)) {
+                    walk.forEach(p -> {
+                        String n = root.relativize(p).toString().replace(java.io.File.separatorChar, '/');
+                        if (n.endsWith(".class")) names.add(n);
+                    });
                 }
                 return names;
             }
+        } catch (RuntimeException | java.io.IOException ignored) {
+            // the jar path below
         }
         java.net.URL where = base.getProtectionDomain().getCodeSource() == null ? null : base.getProtectionDomain().getCodeSource().getLocation();
         if (where != null) {
