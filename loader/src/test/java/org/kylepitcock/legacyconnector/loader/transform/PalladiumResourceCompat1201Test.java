@@ -767,6 +767,7 @@ class PalladiumResourceCompat1201Test {
                 "                playerTargets.set(nearestEntity.id, currentTime);",
                 "                nearestEntity = null;",
                 "                        nearestDistance = searchRadius + 1;",
+                "",
                 "                        nearbyEntities.forEach(nearby => {",
                 "                            if (nearby == null ||",
                 "                                nearby.id === entity.id ||",
