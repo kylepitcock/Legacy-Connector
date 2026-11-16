@@ -123,7 +123,7 @@ public final class ForgeApiTailClient1201 {
 
     /** {@code ModelEvent.RegisterAdditional.register(ResourceLocation)}: the model is a standalone one in 1.21.1. */
     public static void registerAdditionalModel(ModelEvent.RegisterAdditional event, ResourceLocation model) {
-        event.register(ModelResourceLocation.standalone(model));
+        event.register(org.kylepitcock.legacyconnector.v1_20_1.migrate.ModelLocationCompat.modern(model));
     }
 
     public static void registerGeometryLoader(ModelEvent.RegisterGeometryLoaders event, String name, IGeometryLoader<?> loader) {
