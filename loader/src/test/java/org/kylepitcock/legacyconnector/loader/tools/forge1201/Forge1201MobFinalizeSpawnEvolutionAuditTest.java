@@ -66,7 +66,7 @@ final class Forge1201MobFinalizeSpawnEvolutionAuditTest {
                 index(targetJar, "target-classpath.txt"));
 
         assertEquals(5, result.sourceMobSubclassCount());
-        assertEquals(5, result.targetMobSubclassCount());
+        assertEquals(6, result.targetMobSubclassCount());
         assertEquals(2, result.sourceEffectiveSubclassOverrideCount());
         assertEquals(2, result.targetEffectiveSubclassOverrideCount());
         assertFalse(result.selectorTransformationPerformed());
