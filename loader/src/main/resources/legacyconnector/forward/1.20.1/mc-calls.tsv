@@ -839,3 +839,5 @@ net/minecraft/world/entity/SpawnPlacementType	valueOf	(Ljava/lang/String;)Lnet/m
 net/minecraft/world/level/levelgen/structure/StructureType	register	(Ljava/lang/String;Lcom/mojang/serialization/Codec;)Lnet/minecraft/world/level/levelgen/structure/StructureType;	MiscCompat	registerStructureType	-
 com/mojang/datafixers/DataFixerBuilder	buildUnoptimized	()Lcom/mojang/datafixers/DataFixer;	MiscCompat	buildUnoptimized	-
 net/minecraft/world/level/storage/DimensionDataStorage	<init>	(Ljava/io/File;Lcom/mojang/datafixers/DataFixer;)V	MiscCompat	dimensionDataStorage	-
+net/minecraft/world/item/Item	getRenderPropertiesInternal	()Ljava/lang/Object;	ApiCompatClient	itemRenderProperties	-
+net/minecraft/world/level/block/Block	getRenderPropertiesInternal	()Ljava/lang/Object;	ApiCompatClient	blockRenderProperties	-
