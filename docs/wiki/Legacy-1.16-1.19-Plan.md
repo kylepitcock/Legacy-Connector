@@ -64,6 +64,8 @@ Sizes are relative to stage D (1.20.1 to 1.21.1), the only one measured so far.
 
 ### Stage C: 1.19.2 to 1.20.1 (smallest; do first)
 
+Measured on 451 jars (2026-11-16): [Legacy-1.19.2-Estimate](Legacy-1.19.2-Estimate.md). Mostly changed API rather than renames; the table below stays the right shape list.
+
 Renames and moves dominate, with four semantic areas:
 
 | Area | Change | Approach |
