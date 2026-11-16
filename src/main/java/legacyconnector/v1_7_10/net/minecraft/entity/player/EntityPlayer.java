@@ -855,4 +855,11 @@ public abstract class EntityPlayer extends EntityLivingBase implements legacycon
             p.awardStat(net.minecraft.stats.Stats.FLY_ONE_CM, cm);
         }
     }
+
+    // Members125 batch 3
+
+    /** 1.2.5 {@code EntityPlayer.resetHeight()}: back to the standing height (mods that shrank the player to crawl restore it). */
+    public void resetHeight() {
+        if (mcc$player() != null) mcc$player().refreshDimensions();
+    }
 }

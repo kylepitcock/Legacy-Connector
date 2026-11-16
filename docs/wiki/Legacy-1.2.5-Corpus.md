@@ -168,9 +168,22 @@ the per-jar `stubbed` list summed; a member stubbed in several jars counts once,
 |---|---|---|
 | start (merge of int/1.2.5, transformer 131) | 628 | 721 |
 | batch 1: world, player, entity, block and item members (below) | 583 | 654 |
+| after merging int/1.2.5 round 5 (loader hierarchy fix) and batch 2 (constructors, sound pool, movement stats, ...) | 304 | 346 |
+| batch 3 (RenderPlayer, NEI's GuiContainer accessors, NBT streams, stats, version string) | 289 | 324 |
 
 Batch 1 (45 members): `World.getEntity`, `getMoonPhase(float)`, `isNew`, `save`, `forceSave`; `WorldInfo.getDefaultGamemode`; `AxisAlignedBB`/`Vec3` `resetPool`/`clearCache` (the shim never pools: nothing to reset); `EntityItem.item`;
 `EntityLiving.stuckArrows`, `swingArm`, `beforeRemove`, `onFinishedPotionEffect`; player `dimension`, `portalTime`, `lastPortalTime`, `portalCooldown`, `pickUp`, `faceEntity`; `EntityPlayerSP.sendChat`;
 `PlayerControllerMP.closeMenu`, `creative`, `setGameMode`; `GuiIngame.clearChat`; `EntityDragon.getDisplayHealth`; `EntityArrow.shoot`/`player`; `EntityThrowable.thrown`; `EntityPainting` fields and `setDirection`/`canSurvive`;
 `Block.getMiningTime`, `Block.getBlockTexture(world, x, y, z, side)`; Forge 3.x hooks `Item.onItemUseFirst(stack, player, world, x, y, z, side)` and `itemInteractionForEntity(stack, entity)` (the 1.7.10 shapes forward to them, so a 1.2.5 override is
 called); `BlockContainer.getBlockEntity(metadata)` and `mcc125$createBlockEntity()` (the block entity factory of 1.2.5: before this a 1.2.5 machine block had no block entity at all because `createNewTileEntity` was never overridden).
+
+Batch 2: `Facing.faceToSide`, constructors (`ModelBiped(f, f)`, `EntityTNTPrimed(world, x, y, z)`, `WorldSettings(seed, int, ...)`, `PlayerControllerMP(mc)`), `WorldProvider.getWelcomeMessage`, `RenderManager.cacheActiveRenderInfo` without the pointed entity,
+`TileEntityRendererDispatcher.playerYaw/playerPitch`, `SoundManager.getSoundsPool`, `Chunk.updateSkylight`, `EntityPlayer.addMovementStat` (statistics and exhaustion of 1.2.5), `BlockPane.canThisPaneConnectToThisBlockID`, `Block.isBlockSolidOnSide`.
+Batch 3: `RenderPlayer.renderSpecials/rotatePlayer/renderPlayer/renderPlayerSleep`, the accessors NEI's patched `GuiContainer` added (`mc`, `fontRenderer`, `setZLevel`, `clickSlot`, `containerKeyPress`), `NBTTagCompound.write/load`
+(DataOutput/DataInput payload), `StatFileWriter.readStat`, `EntityPlayer.resetHeight`, `Minecraft.C()` (the version string).
+
+Left as stubs, with the reason: `EntityMinecart` inventory/fuel/push/drag/type members and `RailLogic`, `BlockRail.hasPowerBit` (the layer's minecart is a view of the modern one; the 1.2.5 cart types need their own entity class: a feature, not a member);
+`Minecraft.setWorld`, `usePortal`, `Teleporter.<init>()`, `World.<init>(...)`, `EntityClientPlayerMP.<init>` (client world swaps cannot be done on the modern client); `EntityLivingBase.lastDamage` and `EntityLargeFireball.o/p/q` (protected fields of the modern entity, side-specific letters);
+`Block.requiresSelfNotify` (needs the 1.2.5 self-notify rule in the world's metadata path); `GameSettings$Options.SOUND`, `GuiContainer.refresh`, `RenderPlayer.a()` (behaviour not established); `Item.setTextureFile(String)V` (return type, loader request);
+`FMLCommonHandler.registerTickHandler/registerWorldGenerator`, `INetworkManager.getNetHandler`, `ChatLine`, `ContainerCreative`, `EntityDragonBase`, `ISidedInventory` and other classes (run-time worker); SmartMoving's `EntityPlayerSP.get/set...Field` accessors (members of a game class copy the layer drops);
+the garbage members in request 3 of `1.2.5-loader-requests-from-shim.md`.

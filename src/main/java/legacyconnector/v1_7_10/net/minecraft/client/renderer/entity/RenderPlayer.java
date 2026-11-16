@@ -136,4 +136,26 @@ public class RenderPlayer extends RendererLivingEntity {
     protected ResourceLocation getEntityTexture(Entity entity) {
         return STEVE;
     }
+
+    // Members125 batch 3
+
+    /** 1.2.5 {@code renderSpecials(player, partialTicks)}: the cape, helmet and held item (1.3: {@code renderEquippedItems}). */
+    public void renderSpecials(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player, float partialTicks) {
+        renderEquippedItems(player, partialTicks);
+    }
+
+    /** 1.2.5 {@code rotatePlayer(player, age, bodyYaw, partialTicks)} (1.3: {@code rotateCorpse}). */
+    public void rotatePlayer(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player, float age, float bodyYaw, float partialTicks) {
+        rotateCorpse(player, age, bodyYaw, partialTicks);
+    }
+
+    /** 1.2.5 {@code renderPlayer(player, x, y, z, yaw, partialTicks)} (1.3: {@code doRender}). */
+    public void renderPlayer(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player, double x, double y, double z, float yaw, float partialTicks) {
+        doRender(player, x, y, z, yaw, partialTicks);
+    }
+
+    /** 1.2.5 {@code renderPlayerSleep(player, x, y, z)}: moves the model to where the player lies in a bed (the bed offset is part of the modern pose). */
+    public void renderPlayerSleep(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player, double x, double y, double z) {
+        renderLivingAt(player, x, y, z);
+    }
 }

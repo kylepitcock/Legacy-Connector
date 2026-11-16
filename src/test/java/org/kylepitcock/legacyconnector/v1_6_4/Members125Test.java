@@ -64,6 +64,17 @@ class Members125Test {
         {"entity.player.EntityPlayer", "addMovementStat", "double,double,double"},
         {"block.BlockPane", "canThisPaneConnectToThisBlockID", "int"},
         {"block.Block", "isBlockSolidOnSide", B + "world.World,int,int,int,int"},
+        {"client.renderer.entity.RenderPlayer", "renderSpecials", B + "entity.player.EntityPlayer,float"},
+        {"client.renderer.entity.RenderPlayer", "rotatePlayer", B + "entity.player.EntityPlayer,float,float,float"},
+        {"client.renderer.entity.RenderPlayer", "renderPlayer", B + "entity.player.EntityPlayer,double,double,double,float,float"},
+        {"client.renderer.entity.RenderPlayer", "renderPlayerSleep", B + "entity.player.EntityPlayer,double,double,double"},
+        {"client.gui.inventory.GuiContainer", "mc", ""},
+        {"client.gui.inventory.GuiContainer", "clickSlot", B + "inventory.Slot,int,int,boolean"},
+        {"nbt.NBTTagCompound", "write", "java.io.DataOutput"},
+        {"nbt.NBTTagCompound", "load", "java.io.DataInput"},
+        {"stats.StatFileWriter", "readStat", B + "stats.StatBase,int"},
+        {"entity.player.EntityPlayer", "resetHeight", ""},
+        {"client.Minecraft", "mcc125$m_5378799", ""},
     };
 
     private static Class<?> cls(String name) throws ClassNotFoundException {
