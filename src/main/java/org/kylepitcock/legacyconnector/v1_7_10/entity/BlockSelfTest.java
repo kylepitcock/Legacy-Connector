@@ -97,11 +97,13 @@ public final class BlockSelfTest {
                         // 1.12.2: World.setBlockState creates the tile entity at once, so a block that has one must host it right after the placement
                         boolean wants;
                         try {
-                            wants = m1122.legacy().hasTileEntity(m1122.legacy().getStateFromMeta(meta)) || m1122.legacy() instanceof legacyconnector.v1_12_2.net.minecraft.block.ITileEntityProvider;
+                            wants = m1122.legacy().hasTileEntity(m1122.legacy().getStateFromMeta(meta));
+                            // (Forge's default hasTileEntity already answers true for an ITileEntityProvider; a mod that overrides it per state decides)
                         } catch (RuntimeException | LinkageError e) {
                             wants = false;
                         }
-                        if (wants && !(be instanceof org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122BlockEntity)) PROBLEMS.putIfAbsent(name, "has a tile entity but no host block entity");
+                        // a block that drops itself at once (no support under it: a tap, a wall receptacle) is checked by the "gone" list, not here
+                        if (wants && level.getBlockState(pos).is(modernBlock) && !(be instanceof org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122BlockEntity)) PROBLEMS.putIfAbsent(name, "has a tile entity but no host block entity");
                         else if (be instanceof org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122BlockEntity h && h.legacy() == null) PROBLEMS.putIfAbsent(name, "host without a legacy tile entity");
                     }
                 } catch (RuntimeException | LinkageError ex) {
