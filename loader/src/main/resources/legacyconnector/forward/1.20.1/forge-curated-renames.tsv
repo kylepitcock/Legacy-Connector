@@ -146,3 +146,4 @@ net/minecraftforge/common/extensions/IForgeTagBuilder	net/neoforged/neoforge/com
 net/minecraftforge/common/extensions/IForgeTransformation	net/neoforged/neoforge/common/extensions/ITransformationExtension
 net/minecraftforge/fml/loading/moddiscovery/ModAnnotation	net/neoforged/fml/loading/modscan/ModAnnotation
 net/minecraftforge/fml/loading/moddiscovery/ModAnnotation$EnumHolder	net/neoforged/fml/loading/modscan/ModAnnotation$EnumHolder
+net/minecraftforge/client/event/TextureStitchEvent	net/neoforged/neoforge/client/event/TextureAtlasStitchedEvent

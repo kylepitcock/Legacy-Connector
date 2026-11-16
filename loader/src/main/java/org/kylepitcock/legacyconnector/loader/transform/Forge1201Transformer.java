@@ -299,6 +299,7 @@ public final class Forge1201Transformer {
         Datagen1201.Stats datagen = Datagen1201.apply(nodes);
         if (datagen.classes + datagen.methods > 0) result.notes.add("Data generation code dropped (dead in a running game): " + datagen);
         Mc1201Migration.Counts mc = new Mc1201Migration.Counts();
+        java.util.concurrent.atomic.AtomicInteger modelLocationSites = new java.util.concurrent.atomic.AtomicInteger();
         Mixin1201.Stats mixinStats = new Mixin1201.Stats();
         mixinStats.refmaps = org.kylepitcock.legacyconnector.loader.transform.mixin1201.Refmaps.parse(other);
         Set<String> jarClasses = new HashSet<>();
@@ -391,6 +392,8 @@ public final class Forge1201Transformer {
             palladiumPlayerSkinChanges += palladiumPlayerSkinChange;
             Mc1201Migration.Counts changed = Mc1201Migration.apply(node, hierarchy);
             mc.add(changed);
+            int modelLocationChange = ModelLocation1201.apply(node);
+            modelLocationSites.addAndGet(modelLocationChange);
             int palladiumFlightHandlerChange = PalladiumFlightHandler1201.apply(node);
             palladiumFlightHandlerChanges += palladiumFlightHandlerChange;
             int palladiumCustomProjectileChange = PalladiumCustomProjectile1201.apply(node);
@@ -425,7 +428,7 @@ public final class Forge1201Transformer {
             int palladiumSelectionListChange = PalladiumSelectionLists1201.apply(node);
             palladiumSelectionListChanges += palladiumSelectionListChange;
             int mixinResigned = Mixin1201.apply(node, srg, hierarchy, Mc1201Tables.get(), mixinStats);
-            migrated.put(node, mixinResigned + viaCalls + changed.total() + palladiumChanges + palladiumAddonPackChange
+            migrated.put(node, modelLocationChange + mixinResigned + viaCalls + changed.total() + palladiumChanges + palladiumAddonPackChange
                     + palladiumWidgetButtonChange + palladiumMixinChange + palladiumLootChange
                     + palladiumAccessoryScreenChange + palladiumAdvancementWidgetChange + palladiumPowersScreenChange
                     + palladiumSelectionListChange + palladiumSuitStandChange
@@ -549,6 +552,7 @@ public final class Forge1201Transformer {
             result.softSymbols.addAll(soft.stats.symbolList());
         }
         if (soft != null) for (String u : soft.unfixable) result.notes.add("Soft link: class " + u.replace('/', '.') + " does not exist in 1.21.1; a mod class extending it cannot be stood in for and will not load");
+        if (modelLocationSites.get() > 0) result.notes.add("ModelResourceLocation used as a ResourceLocation (a record in 1.21.1): " + modelLocationSites + " site(s) converted with id()");
         if (mc.total() > 0) result.notes.add("Minecraft 1.20.1 to 1.21.1 migration: " + mc);
         if (mc.widgetNarrationOverrides > 0) {
             result.notes.add("Minecraft 1.20.1 AbstractWidget.updateNarration() overrides migrated to the 1.21.1 updateWidgetNarration() hook: "
