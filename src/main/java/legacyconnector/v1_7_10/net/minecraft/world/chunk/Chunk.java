@@ -151,18 +151,35 @@ public class Chunk {
         this(world, mcc$blocksOf(ids), meta, x, z);
     }
 
-    /** 1.5.2 ids went up to 4095, so a generator may hand over its block ids as shorts (same layout as the byte array). */
+    /**
+     * 1.5.2 ids went up to 4095, so a generator may hand over its block ids as shorts. Their layout is the one of the chunk's storage segments,
+     * {@code y << 8 | z << 4 | x} (Tropicraft's generator), not the byte array's column-major one: the arrays are re-ordered into ours.
+     */
     public Chunk(World world, short[] ids, byte[] meta, int x, int z) {
-        this(world, mcc$blocksOf(ids), meta, x, z);
+        this(world, mcc$columnMajor(ids), meta == null ? null : mcc$columnMajor(meta), x, z);
     }
 
-    private static Block[] mcc$blocksOf(short[] ids) {
+    private static Block[] mcc$columnMajor(short[] ids) {
+        int height = Math.max(1, ids.length / 256);
         Block[] out = new Block[ids.length];
-        for (int i = 0; i < ids.length; i++) {
-            int id = ids[i] & 0xFFFF;
-            out[i] = id == 0 ? legacyconnector.v1_7_10.net.minecraft.init.Blocks.air : legacyconnector.v1_6_4.net.minecraft.util.Ids.block(id);
-            if (out[i] == null) out[i] = legacyconnector.v1_7_10.net.minecraft.init.Blocks.air;
+        for (int y = 0; y < height; y++) {
+            for (int zz = 0; zz < 16; zz++) {
+                for (int xx = 0; xx < 16; xx++) {
+                    int id = ids[y << 8 | zz << 4 | xx] & 0xFFFF;
+                    Block block = id == 0 ? legacyconnector.v1_7_10.net.minecraft.init.Blocks.air : legacyconnector.v1_6_4.net.minecraft.util.Ids.block(id);
+                    out[(xx * 16 + zz) * height + y] = block == null ? legacyconnector.v1_7_10.net.minecraft.init.Blocks.air : block;
+                }
+            }
         }
+        return out;
+    }
+
+    private static byte[] mcc$columnMajor(byte[] meta) {
+        int height = Math.max(1, meta.length / 256);
+        byte[] out = new byte[meta.length];
+        for (int y = 0; y < height; y++)
+            for (int zz = 0; zz < 16; zz++)
+                for (int xx = 0; xx < 16; xx++) out[(xx * 16 + zz) * height + y] = meta[y << 8 | zz << 4 | xx];
         return out;
     }
 
