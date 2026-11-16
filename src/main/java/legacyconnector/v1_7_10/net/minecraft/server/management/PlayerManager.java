@@ -17,6 +17,11 @@ import org.kylepitcock.legacyconnector.v1_7_10.bridge.FmlChannelBridge;
 public class PlayerManager {
     private final ServerLevel level;
 
+    /** 1.7.10's constructor from a world (a mod's own manager for a world: it acts on that world's real level). */
+    public PlayerManager(legacyconnector.v1_7_10.net.minecraft.world.WorldServer world) {
+        this((ServerLevel) world.mcc$fullLevel());
+    }
+
     public PlayerManager(ServerLevel level) {
         this.level = level;
     }

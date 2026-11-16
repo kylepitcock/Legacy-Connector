@@ -65,6 +65,7 @@ public final class RenderEvents1710 {
         pose.last().pose().set(e.getModelViewMatrix());
         pose.last().normal().set(new org.joml.Matrix3f(e.getModelViewMatrix()));
         RenderContext.beginWorld(pose, buffers, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
+        RenderContext.disableLightmap();
         try {
             MinecraftForge.EVENT_BUS.post(new RenderWorldLastEvent(legacyconnector.v1_7_10.net.minecraft.client.Minecraft.getMinecraft().renderGlobal,
                     e.getPartialTick().getGameTimeDeltaPartialTick(false)));
@@ -99,6 +100,7 @@ public final class RenderEvents1710 {
         RenderManager.renderPosY = cam.y;
         RenderManager.renderPosZ = cam.z;
         RenderContext.beginWorld(e.getPoseStack(), e.getMultiBufferSource(), LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
+        RenderContext.disableLightmap();
         try {
             if (MinecraftForge.EVENT_BUS.post(legacy)) e.setCanceled(true);
         } catch (RuntimeException | LinkageError ex) {

@@ -61,6 +61,11 @@ public class WorldInfo {
         return level == null ? 0L : level.getGameTime();
     }
 
+    /** Sets the world's total tick count (1.7.10's {@code incrementTotalWorldTime}; the game time of the level). */
+    public void incrementTotalWorldTime(long time) {
+        data(d -> d.setGameTime(time));
+    }
+
     public boolean isRaining() {
         Level level = level();
         return level != null && level.isRaining();

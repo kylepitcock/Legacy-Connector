@@ -29,6 +29,11 @@ public class WorldServer extends World {
         return mcc$fullLevel() instanceof ServerLevel s ? new legacyconnector.v1_7_10.net.minecraft.server.management.PlayerManager(s) : null;
     }
 
+    /** Saves the world's chunks and level data (1.7.10 {@code saveAllChunks(flush, progress)}). */
+    public void saveAllChunks(boolean flush, legacyconnector.v1_7_10.net.minecraft.util.IProgressUpdate progress) {
+        if (mcc$fullLevel() instanceof ServerLevel s) s.save(null, flush, false);
+    }
+
     public MinecraftServer func_73046_m() {
         return mcc$fullLevel() instanceof ServerLevel s ? MinecraftServer.mcc$wrap(s.getServer()) : null;
     }

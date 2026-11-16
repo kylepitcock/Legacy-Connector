@@ -119,7 +119,7 @@ public class MinecraftServer implements ICommandSender, Runnable {
     }
 
     public boolean isServerInOnlineMode() {
-        return mcc$server.usesAuthentication();
+        return mcc$server != null && mcc$server.usesAuthentication();
     }
 
     public static long getSystemTimeMillis() {
@@ -127,7 +127,7 @@ public class MinecraftServer implements ICommandSender, Runnable {
     }
 
     public boolean isCommandBlockEnabled() {
-        return mcc$server.isCommandBlockEnabled();
+        return mcc$server != null && mcc$server.isCommandBlockEnabled();
     }
 
     public com.mojang.authlib.minecraft.MinecraftSessionService getMinecraftSessionService() {
@@ -135,15 +135,16 @@ public class MinecraftServer implements ICommandSender, Runnable {
     }
 
     public int getTickCounter() {
-        return mcc$server.getTickCount();
+        return mcc$server == null ? 0 : mcc$server.getTickCount();
     }
 
     public boolean isDedicatedServer() {
-        return mcc$server.isDedicatedServer();
+        // a mod asking before the server exists (preInit) gets the answer of the distribution it runs on
+        return mcc$server == null ? net.neoforged.fml.loading.FMLEnvironment.dist.isDedicatedServer() : mcc$server.isDedicatedServer();
     }
 
     public int getCurrentPlayerCount() {
-        return mcc$server.getPlayerCount();
+        return mcc$server == null ? 0 : mcc$server.getPlayerCount();
     }
 
     /** Radius (blocks) around the world spawn where only operators change blocks (spawn-protection). */
@@ -155,8 +156,18 @@ public class MinecraftServer implements ICommandSender, Runnable {
     public void tick() {
     }
 
+    /** The build height limit (the level's maximum build height). */
+    public int getBuildLimit() {
+        var overworld = mcc$server.overworld();
+        return overworld == null ? 256 : overworld.getMaxBuildHeight();
+    }
+
+    public boolean isFlightAllowed() {
+        return mcc$server.isFlightAllowed();
+    }
+
     public int getMaxPlayers() {
-        return mcc$server.getMaxPlayers();
+        return mcc$server == null ? 0 : mcc$server.getMaxPlayers();
     }
 
     public String[] getAllUsernames() {

@@ -28,6 +28,12 @@ public class EntityWolf extends EntityTameable {
         return new EntityWolf(mcc$world());
     }
 
+    /** The angle of the wolf's tail: raised while it is tame and healthy, drooping as its health falls; stiff when wild. */
+    public float getTailRotation() {
+        if (isAngry()) return 1.5393804F;
+        return isTamed() ? (0.55F - (20.0F - getHealth()) * 0.02F) * (float) Math.PI : 0.62831855F;
+    }
+
     public boolean isAngry() {
         if (mcc$entity instanceof net.minecraft.world.entity.animal.Wolf w && !mcc$hosted()) return w.isAngry();
         return (dataWatcher.getWatchableObjectByte(16) & 2) != 0;
