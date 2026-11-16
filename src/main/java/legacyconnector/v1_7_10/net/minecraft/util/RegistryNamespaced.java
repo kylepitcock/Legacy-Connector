@@ -42,7 +42,8 @@ public class RegistryNamespaced extends RegistrySimple implements Iterable<Objec
      */
     private static final java.util.Map<Object, Object> REPLACED_BY = java.util.Collections.synchronizedMap(new java.util.IdentityHashMap<>());
     private static final java.util.Map<Object, String> REPLACEMENT_NAMES = java.util.Collections.synchronizedMap(new java.util.IdentityHashMap<>());
-    private static final java.util.Map<String, Object> REPLACEMENT_BY_NAME = new java.util.concurrent.ConcurrentHashMap<>();
+    /** Per registry: the block registry's replaced "minecraft:dragon_egg" must not answer the item registry's lookup of that name. */
+    private final java.util.Map<String, Object> REPLACEMENT_BY_NAME = new java.util.concurrent.ConcurrentHashMap<>();
 
     /** The registered object that {@code replacement} stands in for, or null. */
     public static Object replacedBy(Object replacement) {

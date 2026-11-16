@@ -188,6 +188,11 @@ public class Loader {
         for (String bridged : System.getProperty("legacyconnector.bridgedMods", "").split(",")) {
             if (!bridged.isEmpty()) out.computeIfAbsent(bridged, Loader::pseudo);
         }
+        // While the coremods run (before any mod container exists) isModLoaded already answers true for the legacy mods found on disk:
+        // the index must hold an entry for each, or code that tests isModLoaded and then reads the container dereferences null.
+        for (String present : System.getProperty("legacyconnector.presentLegacyMods", "").split(",")) {
+            if (!present.isEmpty()) out.computeIfAbsent(present, Loader::pseudo);
+        }
         ModMetadata.mcc$linkFamilies(out);
         return out;
     }

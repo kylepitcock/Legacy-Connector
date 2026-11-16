@@ -64,6 +64,9 @@ import org.kylepitcock.legacyconnector.v1_7_10.Platform1710;
  * <p>Legacy event objects are only built if a legacy listener exists for that event type.</p>
  */
 public final class EventBridge1710 {
+    /** Victims whose legacy LivingHurtEvent is being handled right now (value: the damage that is being posted), see the incoming-damage listener. */
+    private static final ThreadLocal<java.util.IdentityHashMap<net.minecraft.world.entity.LivingEntity, Float>> HURT_ACTIVE = ThreadLocal.withInitial(java.util.IdentityHashMap::new);
+
     private EventBridge1710() {}
 
     /** Players whose data file NeoForge reported loading since they last logged in. */
@@ -540,9 +543,24 @@ public final class EventBridge1710 {
                 return;
             }
             if (hurt) {
-                LivingHurtEvent legacy = new LivingHurtEvent(victim, source, e.getAmount());
-                if (forge().post(legacy)) e.setCanceled(true);
-                else e.setAmount(legacy.ammount);
+                // 1.7.10 posts LivingHurtEvent after it set the victim's hurt-resistance time and last damage, so a handler that damages the
+                // victim again (a curse hitting it for extra) is turned away unless it hits harder; modern posts the incoming event before
+                // that bookkeeping, so the handler would recurse until the stack overflowed.
+                var active = HURT_ACTIVE.get();
+                Float outer = active.get(e.getEntity());
+                if (outer != null && e.getAmount() <= outer) {
+                    e.setCanceled(true);
+                    return;
+                }
+                active.put(e.getEntity(), e.getAmount());
+                try {
+                    LivingHurtEvent legacy = new LivingHurtEvent(victim, source, e.getAmount());
+                    if (forge().post(legacy)) e.setCanceled(true);
+                    else e.setAmount(legacy.ammount);
+                } finally {
+                    if (outer == null) active.remove(e.getEntity());
+                    else active.put(e.getEntity(), outer);
+                }
             }
         });
         // Forge's ISpecialArmor: worn pieces that absorb damage by their own rules (ProjectE's matter armour: 80% less damage, none from
