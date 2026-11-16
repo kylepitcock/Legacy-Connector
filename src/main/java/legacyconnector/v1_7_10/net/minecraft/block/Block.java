@@ -908,6 +908,13 @@ public class Block {
     public void onPostBlockPlaced(World world, int x, int y, int z, int meta) {
     }
 
+    /**
+     * Minecraft 1.2.5's {@code updateMetadataOnPlaced(world, x, y, z, side)}: called right after the block was set, with the side the item was used
+     * on (1.4.7 moved this into {@code onBlockPlaced}'s metadata). The loader names a mod's override {@code mcc125$updateMetadataOnPlaced}.
+     */
+    public void mcc125$updateMetadataOnPlaced(World world, int x, int y, int z, int side) {
+    }
+
     public void onBlockHarvested(World world, int x, int y, int z, int meta, EntityPlayer player) {
     }
 
