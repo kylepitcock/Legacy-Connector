@@ -1739,7 +1739,7 @@ PlayerEvents.tick(e => {
                 {"nbt.storedUniformGlowColorBase", "nbt.getString('storedUniformGlowColorBase')", "1"},
                 {"typeof nbt.storedAlienGlowProps === 'string' && nbt.storedAlienGlowProps.length",
                         "nbt.contains('storedAlienGlowProps') && !nbt.getString('storedAlienGlowProps').isEmpty()", "1"},
-                {"nbt.storedAlienGlowProps", "nbt.getString('storedAlienGlowProps')", "1"},
+                {"JSON.parse(nbt.storedAlienGlowProps)", "JSON.parse(nbt.getString('storedAlienGlowProps'))", "1"},
                 {"held.nbt", "held.getCustomData()", "1"}
         });
         changed += rewriteAlienEvoItemCreationCustomData(
@@ -1794,7 +1794,7 @@ PlayerEvents.tick(e => {
                 {"nbt.storedUniformGlowColorBase", "nbt.getString('storedUniformGlowColorBase')", "1"},
                 {"typeof nbt.storedAlienGlowProps === 'string' && nbt.storedAlienGlowProps.length",
                         "nbt.contains('storedAlienGlowProps') && !nbt.getString('storedAlienGlowProps').isEmpty()", "1"},
-                {"nbt.storedAlienGlowProps", "nbt.getString('storedAlienGlowProps')", "1"}
+                {"JSON.parse(nbt.storedAlienGlowProps)", "JSON.parse(nbt.getString('storedAlienGlowProps'))", "1"}
         });
         return changed;
     }
