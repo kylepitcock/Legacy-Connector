@@ -736,3 +736,21 @@ net/minecraft/world/level/storage/loot/entries/LootPoolSingletonContainer	<init>
 net/minecraft/world/level/storage/loot/entries/LootPoolEntryContainer	<init>	([Lnet/minecraft/world/level/storage/loot/predicates/LootItemCondition;)V	=args	Round4Compat.conditionList@0	(Ljava/util/List;)V
 net/minecraft/world/item/ItemStack	hideTooltipPart	(Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyTooltipPart;)V	Round4Compat	hideTooltipPart
 net/minecraft/advancements/critereon/PlayerTrigger	<init>	(Lnet/minecraft/resources/ResourceLocation;)V	LegacyPlayerTrigger	create	(Lnet/minecraft/resources/ResourceLocation;)Lnet/minecraft/advancements/critereon/PlayerTrigger;
+net/minecraft/world/item/Item	appendHoverText	(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/level/Level;Ljava/util/List;Lnet/minecraft/world/item/TooltipFlag;)V	Round4Compat	itemAppendHoverText
+net/minecraft/world/item/ItemUtils	onContainerDestroyed	(Lnet/minecraft/world/entity/item/ItemEntity;Ljava/util/stream/Stream;)V	=args	0,Round4Compat.iterable@1	(Lnet/minecraft/world/entity/item/ItemEntity;Ljava/lang/Iterable;)V
+net/minecraft/world/item/BundleItem	getContentWeight	(Lnet/minecraft/world/item/ItemStack;)I	Round4Compat	bundleContentWeight
+net/minecraft/world/item/BundleItem	getWeight	(Lnet/minecraft/world/item/ItemStack;)I	Round4Compat	bundleItemWeight
+net/minecraft/advancements/critereon/StatePropertiesPredicate	fromJson	(Lcom/google/gson/JsonElement;)Lnet/minecraft/advancements/critereon/StatePropertiesPredicate;	Round4Compat	statePropertiesFromJson
+net/minecraft/advancements/critereon/StatePropertiesPredicate	serializeToJson	()Lcom/google/gson/JsonElement;	Round4Compat	statePropertiesToJson
+net/minecraft/advancements/critereon/MinMaxBounds$Ints	serializeToJson	()Lcom/google/gson/JsonElement;	Round4Compat	intsToJson
+net/minecraft/world/entity/projectile/AbstractArrow	setShotFromCrossbow	(Z)V	Round4Compat	setShotFromCrossbow
+net/minecraft/world/item/CrossbowItem	containsChargedProjectile	(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/Item;)Z	Round4Compat	containsChargedProjectile
+net/minecraft/world/item/armortrim/ArmorTrim	getTrim	(Lnet/minecraft/core/RegistryAccess;Lnet/minecraft/world/item/ItemStack;)Ljava/util/Optional;	Round4Compat	getTrim
+net/minecraft/CrashReport	getFriendlyReport	()Ljava/lang/String;	Round4Compat	friendlyReport
+net/neoforged/neoforge/event/entity/living/FinalizeSpawnEvent	getSpawner	()Lnet/minecraft/world/level/BaseSpawner;	Round4Compat	finalizeSpawnSpawner
+net/minecraft/world/level/pathfinder/NodeEvaluator	getBlockPathType	(Lnet/minecraft/world/level/BlockGetter;IIILnet/minecraft/world/entity/Mob;)Lnet/minecraft/world/level/pathfinder/PathType;	Round4Compat	blockPathType
+net/minecraft/world/level/block/state/BlockState	getBeaconColorMultiplier	(Lnet/minecraft/world/level/LevelReader;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/BlockPos;)[F	Round4Compat	beaconColor
+net/minecraft/world/entity/LivingEntity	getLootTable	()Lnet/minecraft/resources/ResourceLocation;	Round4Compat	lootTableLocation
+net/minecraft/world/entity/LivingEntity	getLootTable	()Lnet/minecraft/resources/ResourceLocation;@special	Round4Compat	superLootTableLocation	(Lnet/minecraft/world/entity/LivingEntity;)Lnet/minecraft/resources/ResourceLocation;
+net/neoforged/neoforge/common/extensions/IFriendlyByteBufExtension	writeFluidStack	(Lnet/neoforged/neoforge/fluids/FluidStack;)V	Round4Compat	writeFluidStack
+net/neoforged/neoforge/common/extensions/IFriendlyByteBufExtension	readFluidStack	()Lnet/neoforged/neoforge/fluids/FluidStack;	Round4Compat	readFluidStack

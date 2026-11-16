@@ -802,4 +802,20 @@ public final class ForgeApi1201 {
     }
 
 
+
+    /** {@code FMLLoader.getLaunchHandler()}: FML 4 keeps the handler in a private field ({@code isData()}, {@code isProduction()} and {@code getDist()} are public on it). */
+    public static net.neoforged.fml.loading.targets.CommonLaunchHandler launchHandler() {
+        try {
+            java.lang.reflect.Field f = net.neoforged.fml.loading.FMLLoader.class.getDeclaredField("commonLaunchHandler");
+            f.setAccessible(true);
+            return (net.neoforged.fml.loading.targets.CommonLaunchHandler) f.get(null);
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return null;
+        }
+    }
+
+    /** {@code LoadingModList.getErrors()}: the loading issues of severity error (FML 4 keeps issues, not exceptions). */
+    public static java.util.List<net.neoforged.fml.ModLoadingIssue> loadingErrors(net.neoforged.fml.loading.LoadingModList list) {
+        return list.getModLoadingIssues().stream().filter(i -> i.severity() == net.neoforged.fml.ModLoadingIssue.Severity.ERROR).toList();
+    }
 }
