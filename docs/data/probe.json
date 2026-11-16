@@ -41346,22 +41346,246 @@
    "date": "2026-11-16",
    "version": "0.4.14+int125.7037761",
    "counts": {
-    "links": 0,
-    "stubs": 0,
+    "links": 19,
+    "stubs": 8,
     "gap_shim": 0,
-    "gap_mod": 0,
+    "gap_mod": 5,
     "gap_lib": 0,
     "obsolete": 0
    },
    "env": {
     "layer": "0.4.14+int125.7037761",
-    "jars": 95,
+    "jars": 79,
     "minecraft": "1.21.1",
     "neoforge": "21.1.258",
     "shim": "520e16381c56"
    },
-   "mods": [],
-   "source": "local"
+   "mods": [
+    [
+     "Equivalent Exchange 2",
+     "v1.4.6.0",
+     "links",
+     "7 synthesized stub(s)"
+    ],
+    [
+     "Equivalent Exchange 3",
+     "v1.0.0.0",
+     "links",
+     "7 synthesized stub(s)"
+    ],
+    [
+     "mod_BeachFloatHandler",
+     "0.0.0-legacy",
+     "stubs",
+     "58 synthesized stub(s)"
+    ],
+    [
+     "mod_BucketCraft",
+     "0.0.0-legacy",
+     "links",
+     ""
+    ],
+    [
+     "mod_BuildCraftBuilders",
+     "0.0.0-legacy",
+     "gap_mod",
+     "legacyconnector_extra.mod_logisticspipes.root.BuildCraftCore.customBuildCraftSprites:Ljava.lang.String;"
+    ],
+    [
+     "mod_BuildCraftCore",
+     "0.0.0-legacy",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "mod_BuildCraftEnergy",
+     "0.0.0-legacy",
+     "gap_mod",
+     "legacyconnector_extra.mod_logisticspipes.root.BuildCraftCore.customBuildCraftSprites:Ljava.lang.String;"
+    ],
+    [
+     "mod_BuildCraftFactory",
+     "0.0.0-legacy",
+     "gap_mod",
+     "legacyconnector_extra.mod_logisticspipes.root.BuildCraftCore.customBuildCraftTexture:Ljava.lang.String;"
+    ],
+    [
+     "mod_BuildCraftSilicon",
+     "0.0.0-legacy",
+     "gap_mod",
+     "legacyconnector_extra.mod_logisticspipes.root.BuildCraftCore.customBuildCraftTexture:Ljava.lang.String;"
+    ],
+    [
+     "mod_BuildCraftTransport",
+     "0.0.0-legacy",
+     "gap_mod",
+     "legacyconnector_extra.mod_logisticspipes.root.BuildCraftCore.customBuildCraftTexture:Ljava.lang.String;"
+    ],
+    [
+     "mod_Chimney",
+     "0.0.0-legacy",
+     "links",
+     ""
+    ],
+    [
+     "mod_CraftableMobSpawners",
+     "0.0.0-legacy",
+     "links",
+     ""
+    ],
+    [
+     "mod_CustomRecipes",
+     "0.0.0-legacy",
+     "links",
+     ""
+    ],
+    [
+     "mod_Gol",
+     "0.0.0-legacy",
+     "links",
+     ""
+    ],
+    [
+     "mod_HeroesGuild",
+     "0.0.0-legacy",
+     "links",
+     "8 synthesized stub(s)"
+    ],
+    [
+     "mod_IC2AdvancedMachines",
+     "0.0.0-legacy",
+     "links",
+     ""
+    ],
+    [
+     "mod_InvTweaks",
+     "0.0.0-legacy",
+     "links",
+     ""
+    ],
+    [
+     "mod_Melaphyre",
+     "0.0.0-legacy",
+     "links",
+     ""
+    ],
+    [
+     "mod_MorePistons",
+     "0.0.0-legacy",
+     "links",
+     "4 synthesized stub(s)"
+    ],
+    [
+     "mod_NEWTONge",
+     "0.0.0-legacy",
+     "stubs",
+     "57 synthesized stub(s)"
+    ],
+    [
+     "mod_obsidianhilt",
+     "0.0.0-legacy",
+     "links",
+     ""
+    ],
+    [
+     "mod_PortalGun",
+     "0.0.0-legacy",
+     "stubs",
+     "14 synthesized stub(s)"
+    ],
+    [
+     "mod_ReiMinimap",
+     "0.0.0-legacy",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "mod_SdkFps",
+     "0.0.0-legacy",
+     "stubs",
+     "126 synthesized stub(s)"
+    ],
+    [
+     "mod_SmartMoving",
+     "0.0.0-legacy",
+     "stubs",
+     "17 synthesized stub(s)"
+    ],
+    [
+     "mod_SneakyPipes",
+     "0.0.0-legacy",
+     "links",
+     ""
+    ],
+    [
+     "mod_Somnia",
+     "0.0.0-legacy",
+     "links",
+     "7 synthesized stub(s)"
+    ],
+    [
+     "mod_sucker",
+     "0.0.0-legacy",
+     "stubs",
+     "70 synthesized stub(s)"
+    ],
+    [
+     "mod_ThaumCraft",
+     "0.0.0-legacy",
+     "stubs",
+     "21 synthesized stub(s)"
+    ],
+    [
+     "mod_Timber",
+     "0.0.0-legacy",
+     "links",
+     ""
+    ],
+    [
+     "mod_TooManyItems",
+     "0.0.0-legacy",
+     "links",
+     "5 synthesized stub(s)"
+    ],
+    [
+     "mod_Zeppelin",
+     "0.0.0-legacy",
+     "stubs",
+     "12 synthesized stub(s)"
+    ]
+   ],
+   "stubCounts": {
+    "mod_Somnia": 7,
+    "mod_ReiMinimap": 2,
+    "mod_BuildCraftCore": 2,
+    "mod_BuildCraftBuilders": 12,
+    "mod_BuildCraftEnergy": 4,
+    "mod_BuildCraftFactory": 14,
+    "mod_BuildCraftTransport": 7,
+    "mod_BuildCraftSilicon": 9,
+    "Equivalent Exchange 2": 7,
+    "Equivalent Exchange 3": 7,
+    "mod_sucker": 70,
+    "mod_SmartMoving": 17,
+    "mod_Zeppelin": 12,
+    "mod_MorePistons": 4,
+    "mod_NEWTONge": 57,
+    "mod_PortalGun": 14,
+    "mod_SdkFps": 126,
+    "mod_ThaumCraft": 21,
+    "mod_TooManyItems": 5,
+    "mod_BeachFloatHandler": 58,
+    "mod_HeroesGuild": 8
+   },
+   "stubMembers": 463,
+   "stubDistinct": 385,
+   "assets": {
+    "checked": 32,
+    "modsWithLayerProblems": 0,
+    "layerRefs": 0,
+    "modsWithOwnProblems": 0,
+    "ownRefs": 0
+   }
   },
   {
    "mc": "1.20.1",

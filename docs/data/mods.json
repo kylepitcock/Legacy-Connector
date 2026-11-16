@@ -9368,6 +9368,15 @@
    "notes": "Archive.org copy of the original download (SOURCES recorded, not redistributed). Fresh server run: 11 blocks and 42 items, 0 failed callbacks (8 right clicks), 8 tile entities saved and loaded back. Real graphical client check: dark matter block, furnace, chests, nova catalyst and torches render with their textures. Transmutation and GUIs not exercised."
   },
   {
+   "name": "Equivalent Exchange 2",
+   "version": "v1.4.6.0",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (192 classes). 7 minor feature(s) it uses are empty placeholders. For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "Equivalent Exchange 3",
    "version": "pre1f",
    "mc": "1.4.7",
@@ -9393,6 +9402,15 @@
    "date": "2026-11-13",
    "status": "loads",
    "notes": "Automated check 0.4.14-nightly: translates offline and everything it uses exists (174 classes). The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "Equivalent Exchange 3",
+   "version": "v1.0.0.0",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (44 classes). 7 minor feature(s) it uses are empty placeholders. For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Erebus",
@@ -10695,6 +10713,15 @@
    "date": "2026-11-07",
    "status": "partial",
    "notes": "Mod has newer versions. Loads with Binnie's Extra Bees (genetics API shared once, plugins found, 330 alleles); container screens do not open because this build targets another obfuscation (see Forestry for Minecraft)."
+  },
+  {
+   "name": "Forestry for Minecraft",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (760 classes). But 10 features it uses are empty placeholders, so large parts probably do nothing. For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "ForeverLoveSword",
@@ -13694,6 +13721,15 @@
    "notes": "Automated check: needs Minecraft or Forge features the layer does not have yet: codechicken.nei.recipe.RecipeInfo.hasDefaultOverlay(Llegacyconnector.v1_7_10.net.minecraft.client.gui.inventory.GuiContainer;Ljava.lang.String;)Z, codechicken.nei.recipe.RecipeInfo.hasOverlayHandler(Llegacyconnector.v1_7_10.net.minecraft.client.gui.inventory.GuiContainer;Ljava.lang.String;)Z."
   },
   {
+   "name": "IndustrialCraft 2",
+   "version": "1.100",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "fails",
+   "notes": "Automated check 0.4.14+int125.7037761: needs code from another mod or API that is not available or does not match: buildcraft.api.liquids.LiquidData.<init>(Lbuildcraft.api.liquids.LiquidStack;Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;)V. It also uses 10 empty placeholder feature(s) of the 1.2.5 layer."
+  },
+  {
    "name": "IndustrialCraft 2 (b1.7.3)",
    "version": "8.55",
    "mc": "b1.7.3",
@@ -15472,6 +15508,15 @@
    "date": "2026-11-13",
    "status": "fails",
    "notes": "Automated check 0.4.14-nightly: needs code from another mod or API that is not available or does not match: thermalexpansion.part.conduit.item.TravelingItem.routedLPInfo:Llogisticspipes.routing.ItemRoutingInformation;."
+  },
+  {
+   "name": "Logistics Pipes",
+   "version": "0.3.1",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (477 classes). But 91 features it uses are empty placeholders, so large parts probably do nothing. For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Logprot",
@@ -18145,6 +18190,24 @@
    "notes": "Automated check 0.4.14-nightly: translates offline and everything it uses exists (15 classes). 4 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "mod_Backpack",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (5 classes). 2 minor feature(s) it uses are empty placeholders. For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "mod_BeachFloatHandler",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (310 classes). But 58 features it uses are empty placeholders, so large parts probably do nothing. For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "mod_BlockHelper",
    "version": "0.0.0-legacy",
    "mc": "1.4.7",
@@ -18163,6 +18226,15 @@
    "notes": "Automated check 0.4.14-nightly: translates offline and everything it uses exists (12 classes). The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "mod_BlockHelper",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (21 classes). 4 minor feature(s) it uses are empty placeholders. For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "mod_bspkrsCore",
    "version": "0.0.0-legacy",
    "mc": "1.4.7",
@@ -18170,6 +18242,69 @@
    "date": "2026-11-07",
    "status": "loads",
    "notes": "Loads in 1.4.7 corpus server self test (2026-11-07) without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "mod_BucketCraft",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (12 classes). For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "mod_BuildCraftBuilders",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "fails",
+   "notes": "Automated check 0.4.14+int125.7037761: needs code from another mod or API that is not available or does not match: legacyconnector_extra.mod_logisticspipes.root.BuildCraftCore.customBuildCraftSprites:Ljava.lang.String;, legacyconnector_extra.mod_logisticspipes.root.BuildCraftCore.customBuildCraftTexture:Ljava.lang.String;, buildcraft.core.GuiAdvancedInterface.<init>(Llegacyconnector.v1_7_10.net.minecraft.inventory.Container;)V. It also uses 12 empty placeholder feature(s) of the 1.2.5 layer."
+  },
+  {
+   "name": "mod_BuildCraftCore",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (155 classes). 2 minor feature(s) it uses are empty placeholders. For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "mod_BuildCraftEnergy",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "fails",
+   "notes": "Automated check 0.4.14+int125.7037761: needs code from another mod or API that is not available or does not match: legacyconnector_extra.mod_logisticspipes.root.BuildCraftCore.customBuildCraftSprites:Ljava.lang.String;, legacyconnector_extra.mod_logisticspipes.root.BuildCraftCore.customBuildCraftTexture:Ljava.lang.String;, legacyconnector_extra.mod_logisticspipes.root.BuildCraftCore.triggerTextures:Ljava.lang.String;. It also uses 4 empty placeholder feature(s) of the 1.2.5 layer."
+  },
+  {
+   "name": "mod_BuildCraftFactory",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "fails",
+   "notes": "Automated check 0.4.14+int125.7037761: needs code from another mod or API that is not available or does not match: legacyconnector_extra.mod_logisticspipes.root.BuildCraftCore.customBuildCraftTexture:Ljava.lang.String;, buildcraft.core.GuiAdvancedInterface.<init>(Llegacyconnector.v1_7_10.net.minecraft.inventory.Container;)V. It also uses 14 empty placeholder feature(s) of the 1.2.5 layer."
+  },
+  {
+   "name": "mod_BuildCraftSilicon",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "fails",
+   "notes": "Automated check 0.4.14+int125.7037761: needs code from another mod or API that is not available or does not match: legacyconnector_extra.mod_logisticspipes.root.BuildCraftCore.customBuildCraftTexture:Ljava.lang.String;, buildcraft.core.GuiAdvancedInterface.<init>(Llegacyconnector.v1_7_10.net.minecraft.inventory.Container;)V. It also uses 9 empty placeholder feature(s) of the 1.2.5 layer."
+  },
+  {
+   "name": "mod_BuildCraftTransport",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "fails",
+   "notes": "Automated check 0.4.14+int125.7037761: needs code from another mod or API that is not available or does not match: legacyconnector_extra.mod_logisticspipes.root.BuildCraftCore.customBuildCraftTexture:Ljava.lang.String;, legacyconnector_extra.mod_logisticspipes.root.BuildCraftCore.triggerTextures:Ljava.lang.String;, buildcraft.core.GuiAdvancedInterface.<init>(Llegacyconnector.v1_7_10.net.minecraft.inventory.Container;)V. It also uses 7 empty placeholder feature(s) of the 1.2.5 layer."
   },
   {
    "name": "mod_ChestTrap",
@@ -18181,6 +18316,33 @@
    "notes": "Automated check 0.4.14-nightly: translates offline and everything it uses exists (15 classes). 4 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "mod_Chimney",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (4 classes). For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "mod_CraftableMobSpawners",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (3 classes). For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "mod_CustomRecipes",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (2 classes). For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "mod_CuteMobModels",
    "version": "0.0.0-legacy",
    "mc": "1.4.7",
@@ -18188,6 +18350,33 @@
    "date": "2026-11-07",
    "status": "works",
    "notes": "Self-tested in 1.4.7 corpus server self test (2026-11-07): 0 items, 0 blocks, 9 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "mod_ElementalCreepers",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (23 classes). For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "mod_EntMover",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (310 classes). But 58 features it uses are empty placeholders, so large parts probably do nothing. For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "mod_ExtendedRenderer",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (310 classes). But 58 features it uses are empty placeholders, so large parts probably do nothing. For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "mod_Fan",
@@ -18226,6 +18415,33 @@
    "notes": "Loads in 1.4.7 corpus server self test (2026-11-07) without errors (no blocks, items or entities of its own)."
   },
   {
+   "name": "mod_Gol",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (5 classes). For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "mod_HeroesGuild",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (75 classes). 8 minor feature(s) it uses are empty placeholders. For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "mod_IC2AdvancedMachines",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (17 classes). For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "mod_InvTweaks",
    "version": "0.0.0-legacy",
    "mc": "1.4.7",
@@ -18233,6 +18449,15 @@
    "date": "2026-11-13",
    "status": "loads",
    "notes": "Automated check 0.4.14-nightly: translates offline and everything it uses exists (38 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "mod_InvTweaks",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (37 classes). For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "mod_JumpPad",
@@ -18244,6 +18469,51 @@
    "notes": "Automated check 0.4.14-nightly: translates offline and everything it uses exists (15 classes). 4 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "mod_LAPI",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (310 classes). But 58 features it uses are empty placeholders, so large parts probably do nothing. For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "mod_MagicWands",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (8 classes). For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "mod_Melaphyre",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (1 classes). For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "mod_MineFactory",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (60 classes). 4 minor feature(s) it uses are empty placeholders. For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "mod_MineFactoryCompat_Grass",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (60 classes). 4 minor feature(s) it uses are empty placeholders. For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "mod_moapi",
    "version": "0.0.0-legacy",
    "mc": "1.4.7",
@@ -18251,6 +18521,60 @@
    "date": "2026-11-13",
    "status": "loads",
    "notes": "Automated check 0.4.14-nightly: translates offline and everything it uses exists (27 classes). The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "mod_MorePistons",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (13 classes). 4 minor feature(s) it uses are empty placeholders. For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "mod_Mystcraft",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (294 classes). But 13 features it uses are empty placeholders, so large parts probably do nothing. For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "mod_NEWTONge",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (4 classes). But 57 features it uses are empty placeholders, so large parts probably do nothing. For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "mod_NotEnoughItems",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (94 classes). But 55 features it uses are empty placeholders, so large parts probably do nothing. For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "mod_obsidianhilt",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (5 classes). For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "mod_ObsidianIngots",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (21 classes). 3 minor feature(s) it uses are empty placeholders. For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "mod_Pfaeff",
@@ -18262,6 +18586,24 @@
    "notes": "Automated check 0.4.14-nightly: translates offline and everything it uses exists (15 classes). 4 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "mod_PortalGun",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (29 classes). But 14 features it uses are empty placeholders, so large parts probably do nothing. For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "mod_Railcraft",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (323 classes). But 21 features it uses are empty placeholders, so large parts probably do nothing. For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "mod_ReiMinimap",
    "version": "0.0.0-legacy",
    "mc": "1.4.7",
@@ -18269,6 +18611,15 @@
    "date": "2026-11-13",
    "status": "loads",
    "notes": "Automated check 0.4.14-nightly: translates offline and everything it uses exists (33 classes). 2 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "mod_ReiMinimap",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (33 classes). 2 minor feature(s) it uses are empty placeholders. For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "mod_RottenFleshtoLeather",
@@ -18280,6 +18631,87 @@
    "notes": "Loads in server self test, old-only 1.6.4 set without errors (no blocks, items or entities of its own)."
   },
   {
+   "name": "mod_SdkFlasher",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (131 classes). But 126 features it uses are empty placeholders, so large parts probably do nothing. For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "mod_SdkFps",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (131 classes). But 126 features it uses are empty placeholders, so large parts probably do nothing. For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "mod_SdkGrapplingHook",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (131 classes). But 126 features it uses are empty placeholders, so large parts probably do nothing. For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "mod_SdkGuns",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (131 classes). But 126 features it uses are empty placeholders, so large parts probably do nothing. For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "mod_SdkUtility",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (131 classes). But 126 features it uses are empty placeholders, so large parts probably do nothing. For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "mod_SmartMoving",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (35 classes). But 17 features it uses are empty placeholders, so large parts probably do nothing. For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "mod_SmartMovingMp",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (35 classes). But 17 features it uses are empty placeholders, so large parts probably do nothing. For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "mod_SneakyPipes",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (8 classes). For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "mod_Somnia",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (7 classes). 7 minor feature(s) it uses are empty placeholders. For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "mod_SprintKey",
    "version": "0.0.0-legacy",
    "mc": "1.4.7",
@@ -18289,6 +18721,33 @@
    "notes": "Sprint on CTRL: a client-only ModLoader mod; a dedicated server skips it quietly (not 'failed'). Loads in the real client; sprinting itself not tried."
   },
   {
+   "name": "mod_sucker",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (148 classes). But 70 features it uses are empty placeholders, so large parts probably do nothing. For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "mod_ThaumCraft",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (336 classes). But 21 features it uses are empty placeholders, so large parts probably do nothing. For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "mod_Timber",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (2 classes). For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "mod_TooManyItems",
    "version": "0.0.0-legacy",
    "mc": "1.4.7",
@@ -18296,6 +18755,60 @@
    "date": "2026-11-13",
    "status": "loads",
    "notes": "Automated check 0.4.14-nightly: translates offline and everything it uses exists (41 classes). 4 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "mod_TooManyItems",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (20 classes). 5 minor feature(s) it uses are empty placeholders. For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "mod_tropicraft",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (310 classes). But 58 features it uses are empty placeholders, so large parts probably do nothing. For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "mod_TropicraftDimension",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (310 classes). But 58 features it uses are empty placeholders, so large parts probably do nothing. For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "mod_TwilightForest",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (233 classes). But 84 features it uses are empty placeholders, so large parts probably do nothing. For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "mod_zAdvancedSolarPanel",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (12 classes). For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "mod_Zeppelin",
+   "version": "0.0.0-legacy",
+   "mc": "1.2.5",
+   "source": "probe",
+   "date": "2026-11-16",
+   "status": "loads",
+   "notes": "Automated check 0.4.14+int125.7037761: translates offline and everything it uses exists (33 classes). But 12 features it uses are empty placeholders, so large parts probably do nothing. For 1.2.5 this is weak evidence: the layer for it still fills many game members with empty placeholders, so a jar can link and do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Modern Warfare Cubed",
