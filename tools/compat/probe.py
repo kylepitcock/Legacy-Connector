@@ -387,6 +387,34 @@ def newest_builds(records, mc):
     return [r for r in records if r.get("mc") != mc or not r.get("mods") or id(r) in keep]
 
 
+def source_of(run):
+    """The jar population of a run; runs without a source (the maintainer's local corpus) are their own source "local"."""
+    return run.get("source") or "local"
+
+
+def previous_runs(runs, mc, source):
+    """Earlier runs with a per-mod list that are comparable with a new run: same Minecraft version AND same source, oldest first.
+    Runs of other sources have other mod sets, so a "vs" against them (or --fail-on-regression) would be meaningless."""
+    want = source_of({"source": source})
+    out = [x for x in runs if x["mc"] == mc and x.get("mods") and source_of(x) == want]
+    out.sort(key=lambda x: (x["date"], x["version"]))
+    return out
+
+
+def self_test():
+    runs = [{"mc": "b1.7.3", "date": "2026-11-13", "version": "1", "source": "mcarchive", "mods": [["A", "1", "links", ""]]},
+            {"mc": "b1.7.3", "date": "2026-11-14", "version": "1", "mods": [["A", "1", "links", ""]]},
+            {"mc": "b1.7.3", "date": "2026-11-15", "version": "1", "source": "modrinth", "mods": [["B", "1", "links", ""]]},
+            {"mc": "1.7.10", "date": "2026-11-16", "version": "1", "source": "modrinth", "mods": [["C", "1", "links", ""]]}]
+    pick = lambda mc, src: [(x.get("source") or "local") for x in previous_runs(runs, mc, src)]
+    assert pick("b1.7.3", "modrinth") == ["modrinth"]
+    assert pick("b1.7.3", "") == ["local"] and pick("b1.7.3", "local") == ["local"]
+    assert pick("b1.7.3", "mcarchive") == ["mcarchive"]
+    assert pick("1.12.2", "modrinth") == []
+    assert compare(runs[0], [["A", "1", "stubs", ""]])["regressedCount"] == 1
+    print("self-test ok")
+
+
 def history(records, mc, date, layer, source=""):
     """Appends this run to docs/data/probe.json: counts per result and the per-jar list (mod, result, first unresolved reference)."""
     records = newest_builds(records, mc)
@@ -421,9 +449,8 @@ def history(records, mc, date, layer, source=""):
     h = json.loads(HISTORY.read_text(encoding="utf-8")) if HISTORY.exists() else {"runs": []}
     # a run is identified by version, date and source: results of different populations (the local corpus plus Modrinth, or Modrinth only in CI)
     # never replace or get compared with each other
-    h["runs"] = [x for x in h["runs"] if not (x["mc"] == mc and x["date"] == date and x["version"] == layer and x.get("source", "") == source)]
-    prior = [x for x in h["runs"] if x["mc"] == mc and x.get("mods") and x.get("source", "") == source]
-    prior.sort(key=lambda x: (x["date"], x["version"]))
+    h["runs"] = [x for x in h["runs"] if not (x["mc"] == mc and x["date"] == date and x["version"] == layer and source_of(x) == source_of({"source": source}))]
+    prior = previous_runs(h["runs"], mc, source)
     vs = compare(prior[-1], rows) if prior else None
     run = {"mc": mc, "date": date, "version": layer, "counts": counts, "env": environment(layer, len(records)), "mods": rows}
     if assets["checked"]:
@@ -443,6 +470,9 @@ def history(records, mc, date, layer, source=""):
 
 
 def main():
+    if "--self-test" in sys.argv:
+        self_test()
+        return
     ap = argparse.ArgumentParser()
     ap.add_argument("jar_dir", nargs="?")
     ap.add_argument("--mc", default="1.7.10")
