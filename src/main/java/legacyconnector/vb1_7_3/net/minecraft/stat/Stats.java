@@ -8,6 +8,12 @@ import legacyconnector.vb1_7_3.net.minecraft.item.Item;
 public class Stats {
     protected static final Map<Integer,Stat> ID_TO_STAT=new LinkedHashMap<>();
     public static final List<Stat> ALL_STATS=new ArrayList<>(),GENERAL_STATS=new ArrayList<>(),ITEM_STATS=new ArrayList<>(),BLOCK_MINED_STATS=new ArrayList<>();
+    /**
+     * Beta sized {@code MINE_BLOCK} like {@code Block.blocksList} (both 256) and original code indexes it by block id ({@code afterBreak}, a mod's
+     * own harvest). Block ids now run up to {@link Block#ID_LIMIT} (they share the item id space), so the array keeps that relationship instead of
+     * the literal 256: a shorter one throws for every expanded block. The id families stay apart ({@code 0x1000000 + id} ends below the crafted
+     * family at {@code 0x1010000}), and ids below {@link Block#BETA_LIMIT} keep the ids, aliases and native targets Beta had.
+     */
     public static Stat[] MINE_BLOCK=new Stat[legacyconnector.vb1_7_3.net.minecraft.block.Block.ID_LIMIT],CRAFTED=new Stat[32000],USED=new Stat[32000],BROKEN=new Stat[32000];
     public static final Stat START_GAME=general(1000,"stat.startGame"),CREATE_WORLD=general(1001,"stat.createWorld"),LOAD_WORLD=general(1002,"stat.loadWorld"),JOIN_MULTIPLAYER=general(1003,"stat.joinMultiplayer"),LEAVE_GAME=general(1004,"stat.leaveGame"),PLAY_ONE_MINUTE=general(1100,"stat.playOneMinute");
     public static final Stat WALK_ONE_CM=general(2000,"stat.walkOneCm"),SWIM_ONE_CM=general(2001,"stat.swimOneCm"),FALL_ONE_CM=general(2002,"stat.fallOneCm"),CLIMB_ONE_CM=general(2003,"stat.climbOneCm"),FLY_ONE_CM=general(2004,"stat.flyOneCm"),DIVE_ONE_CM=general(2005,"stat.diveOneCm"),MINECART_ONE_CM=general(2006,"stat.minecartOneCm"),BOAT_ONE_CM=general(2007,"stat.boatOneCm"),PIG_ONE_CM=general(2008,"stat.pigOneCm"),JUMP=general(2010,"stat.jump"),DROP=general(2011,"stat.drop"),DAMAGE_DEALT=general(2020,"stat.damageDealt"),DAMAGE_TAKEN=general(2021,"stat.damageTaken"),DEATHS=general(2022,"stat.deaths"),MOB_KILLS=general(2023,"stat.mobKills"),PLAYER_KILLS=general(2024,"stat.playerKills"),FISH_CAUGHT=general(2025,"stat.fishCaught");
