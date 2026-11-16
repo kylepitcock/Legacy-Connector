@@ -399,6 +399,7 @@ public final class Forge1201Transformer {
             int modelLocationChange = ModelLocation1201.apply(node);
             modelLocationSites.addAndGet(modelLocationChange);
             int forgeBusDefaults = ForgeBusDefault1201.apply(node, hierarchy, shim);
+            int vertexBridges = VertexConsumerBridge1201.apply(node);
             if (forgeBusDefaults > 0) result.notes.add(node.name.replace('/', '.') + ": " + forgeBusDefaults + " handler(s) of mod bus events on the default (FORGE) bus of @Mod.EventBusSubscriber never ran in Forge 1.20.1 and are inert here too");
             int palladiumFlightHandlerChange = PalladiumFlightHandler1201.apply(node);
             palladiumFlightHandlerChanges += palladiumFlightHandlerChange;
@@ -434,7 +435,7 @@ public final class Forge1201Transformer {
             int palladiumSelectionListChange = PalladiumSelectionLists1201.apply(node);
             palladiumSelectionListChanges += palladiumSelectionListChange;
             int mixinResigned = Mixin1201.apply(node, srg, hierarchy, Mc1201Tables.get(), mixinStats);
-            migrated.put(node, modelLocationChange + mixinResigned + viaCalls + changed.total() + palladiumChanges + palladiumAddonPackChange
+            migrated.put(node, vertexBridges + modelLocationChange + mixinResigned + viaCalls + changed.total() + palladiumChanges + palladiumAddonPackChange
                     + palladiumWidgetButtonChange + palladiumMixinChange + palladiumLootChange
                     + palladiumAccessoryScreenChange + palladiumAdvancementWidgetChange + palladiumPowersScreenChange
                     + palladiumSelectionListChange + palladiumSuitStandChange
