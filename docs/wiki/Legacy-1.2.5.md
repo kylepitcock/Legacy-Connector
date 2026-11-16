@@ -121,8 +121,16 @@ existing `legacy/1.4.7/notch.txt`. All 1,699 joined classes, 5,101 of 5,103 join
 
 | | Classes joined | Members joined |
 |---|---|---|
-| client | 993 of 1032 (96%) | 6781 of 7384 (92%) |
-| server | 706 of 744 (95%) | 4657 of 5151 (90%) |
+| client | 1009 of 1032 (98%) | 6965 of 7384 (94%) |
+| server | 730 of 744 (98%) | 4870 of 5151 (95%) |
+
+(First version of the join, readable name and descriptor only: 993 / 6781 client, 706 / 4657 server. The real corpus showed what it missed, and four more tiers were added in the order the
+loader tries them: the same Calamus intermediary name in both versions (the member did not change, Feather only named it differently; +256 client members, but only when the descriptors
+agree up to class types: 91 joins with different primitives were wrong and are refused), the same name with the class types of the descriptor ignored (1.3 retyped `Minecraft.thePlayer` and
+`theWorld`), a field that is the only one of its name, and `loader/src/main/resources/legacyconnector/mappings/1.2.5/manual-aliases.tsv` for pure renames found by hand. A member that still has no
+counterpart is renamed to `mcc125$<obfuscated name>` instead of keeping its short name: the obfuscation is re-randomized every release, so `AxisAlignedBB.b(DDDDDD)` of 1.2.5 would have bound
+to an unrelated `b(DDDDDD)` of 1.4.7. The marker never exists, which the link report shows and the synthesizer stubs. `genMappings125` also lists "leftover candidates" (the one unjoined member and
+the one unclaimed member of a class with the same kind and descriptor shape): by hand they are mostly different members, so they are never joined.)
 
 What does not join is the real size of stage 3. Classes with no 1.4.7 counterpart (anonymous classes `Name__digits` are omitted here, they follow their outer class):
 `CreativeInteractionManager`, `SurvivalInteractionManager`, `MultiplayerInteractionManager` (1.3 reworked the client's game mode and integrated server: `client`); `MultiplayerWorld`, `MultiplayerChunkCache`
@@ -152,6 +160,26 @@ subclass of a game class has its override and inherited call renamed; every rena
 rewritten and at least 85% resolve in 1.4.7's table, and the inspector hosts the jar as 1.4.7. Known gaps of the facade: `AddAchievementDesc`, `AddAllFuel` and `OpenGUI` have no lower-case
 counterpart in the shim yet (they stay as they are and would be synthesized empty); a hook whose parameter list changed between 1.2.5 and 1.4.7 (for example `OnTickInGame(Minecraft)` against
 `onTickInGame(float, Minecraft)`) is renamed but not adapted; `ModLoaderMP` (`BaseModMp`, packet 230) is not mapped at all.
+
+### Offline link probe over the real corpus (2026-11-16)
+
+`python -I tools/compat/probe.py <dir> --mc 1.2.5 --dry-run --no-history` (passes `-Pmappings125` to `checkLegacyMod`; `-Pmc125Unresolved=<file>` also appends every game member the join could not name).
+91 archives, translated as one mod set, client builds loaded (server builds are left out by `Mc125Builds`, as on a client):
+
+| | links | unresolved | not a mod / skipped |
+|---|---|---|---|
+| first run (detection fixed for the inherited-member case only) | 19 | 18 | 52 not-legacy |
+| after: `BaseModMp` / Forge `NetworkMod` / in-jar base chains as entry points, FML-optional jars, API distributions skipped, client/server builds selected, the join tiers above | **30** | **8** | 31 not-legacy (API zips, patches, NEI plugins, wrappers of nested zips, 7 CraftBukkit builds), 21 server builds left out |
+
+The 8 unresolved: NEWTON gravity (a 1.2.3 jar, not 1.2.5), SDKs Mods, herobrine's installer, and five jars that call the static `Profiler.startSection/endSection` (IC2, Somnia, Zeppelin, TwilightForest,
+Tropicraft; static in 1.2.5, instance methods in the shim). "Links" includes calls to synthesized empty stubs: 1424 distinct stubbed members (1801 stubs) across the 38 translated client units,
+ranked in `tools/dev/agent-tasks/1.2.5-shim-requests.md`; 300 distinct 1.2.5 game members had no 1.4.7 counterpart. `verifyFailures` is 0 for all.
+
+**Largest open loader-side item: overridden hooks whose signature changed in 1.3.** A mod's override that has no 1.4.7 counterpart keeps an obfuscated name nothing calls, so the hook silently
+never runs (the stub list shows only the calls, not these). The corpus has `Item.onItemUse(stack, player, world, x, y, z, side)` (1.4.7 adds the hit position floats), `Block.onBlockActivated`
+(floats and the side), `Block.addCollidingBlockToList` (1.4.7: `List` and the colliding entity), `BlockContainer.getBlockEntity()` (1.4.7: `createNewTileEntity(World)`), `Block.onBlockPlacedBy`
+(`updateMetadataOnPlaced` in Feather 1.2.5 names), `Slot.onItemRemoved`, `Container.onClickSlot`, `EntityItem.item`, ... The mechanism for this exists (`forward/*/bridge-methods.tsv`: a method with the
+old shape gets a bridge with the new one), but it needs the join to rename the override first (an alias row whose descriptor may differ in arity) and one bridge row per hook; not done yet.
 
 ### What was checked against primary sources on disk
 

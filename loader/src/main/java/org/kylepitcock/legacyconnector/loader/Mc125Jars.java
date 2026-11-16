@@ -49,6 +49,32 @@ public final class Mc125Jars {
 
     private Mc125Jars() {}
 
+    /**
+     * A CraftBukkit / MCPC build ({@code *_bukkit.zip}, {@code *-mcpc.jar}): it names the game by MCP names ({@code net/minecraft/server/World}) instead of 1.2.5's obfuscation, so the join
+     * table does not apply. At least five distinct {@code net/minecraft/server/} classes other than {@code MinecraftServer} (the one class a notch server jar names there) are referenced.
+     */
+    static boolean isMcpNamedServerBuild(ZipFile zip) {
+        Set<String> names = new HashSet<>();
+        Enumeration<? extends ZipEntry> en = zip.entries();
+        while (en.hasMoreElements()) {
+            ZipEntry entry = en.nextElement();
+            if (entry.isDirectory() || !entry.getName().endsWith(".class")) continue;
+            try (InputStream in = zip.getInputStream(entry)) {
+                new ClassReader(in).accept(new org.objectweb.asm.commons.ClassRemapper(new ClassVisitor(Opcodes.ASM9) {}, new org.objectweb.asm.commons.Remapper() {
+                    @Override
+                    public String map(String internalName) {
+                        if (internalName.startsWith("net/minecraft/server/") && !internalName.equals("net/minecraft/server/MinecraftServer")) names.add(internalName);
+                        return internalName;
+                    }
+                }), ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
+            } catch (IOException | RuntimeException e) {
+                // an unreadable class does not count
+            }
+            if (names.size() >= 5) return true;
+        }
+        return false;
+    }
+
     /** The reason a jar was recognised as an API distribution (taken once), or null. */
     public static String takeApiDistribution(Path path) {
         return API_DISTRIBUTIONS.remove(path);

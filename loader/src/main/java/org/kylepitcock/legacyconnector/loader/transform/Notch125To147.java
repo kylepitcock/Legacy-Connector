@@ -35,6 +35,8 @@ import java.util.TreeSet;
  * </ul>
  */
 public final class Notch125To147 {
+    /** Prefix of a 1.2.5 game member that has no 1.4.7 counterpart: the reference stays unresolved rather than binding to a different member of the same short name. */
+    public static final String UNJOINED_PREFIX = "mcc125$";
     public static final String RESOURCE = "legacyconnector/mappings/1.2.5/notch-to-147.tsv";
 
     /**
@@ -63,6 +65,32 @@ public final class Notch125To147 {
 
         public boolean isEmpty() {
             return classes.isEmpty();
+        }
+
+        private Map<String, String> descFix;
+
+        /**
+         * Members the join found under another descriptor (1.3 retyped {@code Minecraft.thePlayer} from EntityPlayerSP to EntityClientPlayerMP, ...): {@code name olddesc} (the
+         * 1.2.5 descriptor with its classes renamed) to the 1.4.7 member's own descriptor, so the references can be pointed at the field or method that exists.
+         */
+        Map<String, String> descFix() {
+            if (descFix != null) return descFix;
+            Map<String, String> fix = new HashMap<>();
+            Remapper byClass = new Remapper() {
+                @Override
+                public String map(String internalName) {
+                    return classes.getOrDefault(internalName, internalName);
+                }
+            };
+            for (var e : members.entrySet()) {
+                String key = e.getKey(); // "F|M owner.name desc"
+                int sp = key.lastIndexOf(' ');
+                String old = byClass.mapDesc(key.substring(sp + 1));
+                String[] to = e.getValue();
+                // only a change of class types (the same member retyped), keyed by the declaring class: short obfuscated names repeat everywhere
+                if (!old.equals(to[2]) && old.replaceAll("L[^;]*;", "L;").equals(to[2].replaceAll("L[^;]*;", "L;"))) fix.putIfAbsent(to[0] + "." + to[1] + " " + old, to[2]);
+            }
+            return descFix = fix;
         }
     }
 
@@ -110,8 +138,23 @@ public final class Notch125To147 {
     public static List<String> apply(LegacyJar jar, Map<String, byte[]> classes) {
         Table[] t = fromResource();
         if (t == null) throw new IllegalStateException("this build has no 1.2.5 table (build with -Pmappings125)");
-        return apply(jar.notchSide == 's' ? t[1] : t[0], NotchNames.get("1.4.7"), classes);
+        List<String> notes = apply(jar.notchSide == 's' ? t[1] : t[0], NotchNames.get("1.4.7"), classes);
+        String dump = System.getProperty("legacyconnector.mc125.unresolved");
+        if (dump != null && !dump.isBlank()) {
+            // diagnostics (tools/compat/probe.py --mc 1.2.5 -Dlegacyconnector.mc125.unresolved=<file>): one line per game member the join table could not name
+            StringBuilder sb = new StringBuilder();
+            for (String u : LAST_UNRESOLVED.get()) sb.append(jar.fileName()).append('\t').append(jar.notchSide).append('\t').append(u).append('\n');
+            try {
+                java.nio.file.Files.writeString(java.nio.file.Path.of(dump), sb.toString(), StandardCharsets.UTF_8, java.nio.file.StandardOpenOption.CREATE, java.nio.file.StandardOpenOption.APPEND);
+            } catch (IOException e) {
+                // diagnostics only
+            }
+        }
+        return notes;
     }
+
+    /** The unresolved game references of the latest {@link #apply} call on this thread ({@code owner.name desc}). */
+    private static final ThreadLocal<Set<String>> LAST_UNRESOLVED = ThreadLocal.withInitial(Set::of);
 
     public static List<String> apply(Table table, NotchNames n147, Map<String, byte[]> classes) {
         List<String> notes = new ArrayList<>();
@@ -146,7 +189,7 @@ public final class Notch125To147 {
         for (String name : List.copyOf(classes.keySet())) {
             byte[] bytes = classes.get(name);
             ClassWriter cw = new ClassWriter(0);
-            new ClassReader(bytes).accept(new ClassRemapper(cw, resolver), 0);
+            new ClassReader(bytes).accept(new ClassRemapper(new DescFix(cw, table.descFix(), n147, local), resolver), 0);
             classes.put(name, cw.toByteArray());
             renamed++;
         }
@@ -157,9 +200,59 @@ public final class Notch125To147 {
             notes.add("Dropped " + baseEdits.size() + " modified Minecraft class(es) (base class edits of a jar mod; the layer cannot apply them): "
                     + String.join(", ", baseEdits.stream().limit(8).toList()) + (baseEdits.size() > 8 ? ", ..." : ""));
         }
+        LAST_UNRESOLVED.set(new TreeSet<>(resolver.unresolved));
         notes.add("Minecraft 1.2.5 names rewritten to 1.4.7's in " + renamed + " class(es) (" + resolver.unresolved.size() + " unresolved game reference(s)"
                 + (resolver.unresolved.isEmpty() ? "" : ", e.g. " + resolver.unresolved.stream().limit(5).toList()) + ")");
         return notes;
+    }
+
+    /** Points references at the descriptor a joined member has in 1.4.7 when it differs from the 1.2.5 one in class types only (after the class renaming). */
+    private static final class DescFix extends org.objectweb.asm.ClassVisitor {
+        final Map<String, String> fix;
+
+        final NotchNames n147;
+        final Map<String, Local> local;
+
+        DescFix(org.objectweb.asm.ClassVisitor next, Map<String, String> fix, NotchNames n147, Map<String, Local> local) {
+            super(org.objectweb.asm.Opcodes.ASM9, next);
+            this.fix = fix;
+            this.n147 = n147;
+            this.local = local;
+        }
+
+        /** The descriptor of {@code owner.name} after the fix: looked up on the owner and its superclasses (a reference names the receiver's class, not the declaring one). */
+        String fixed(String owner, String name, String desc) {
+            String c = owner;
+            for (int i = 0; i < 24 && c != null; i++) {
+                String f = fix.get(c + "." + name + " " + desc);
+                if (f != null) return f;
+                Local l = local.get(c);
+                if (l != null) {
+                    c = l.superName();
+                } else {
+                    String[] up = n147.supertypes(c);
+                    c = up == null || up.length == 0 ? null : up[0];
+                }
+            }
+            return desc;
+        }
+
+        @Override
+        public org.objectweb.asm.MethodVisitor visitMethod(int access, String name, String desc, String sig, String[] ex) {
+            org.objectweb.asm.MethodVisitor mv = super.visitMethod(access, name, desc, sig, ex);
+            if (mv == null) return null;
+            return new org.objectweb.asm.MethodVisitor(org.objectweb.asm.Opcodes.ASM9, mv) {
+                @Override
+                public void visitFieldInsn(int op, String owner, String n, String d) {
+                    super.visitFieldInsn(op, owner, n, fixed(owner, n, d));
+                }
+
+                @Override
+                public void visitMethodInsn(int op, String owner, String n, String d, boolean itf) {
+                    super.visitMethodInsn(op, owner, n, fixed(owner, n, d), itf);
+                }
+            };
+        }
     }
 
     /** Name resolution of one jar. */
@@ -234,7 +327,12 @@ public final class Notch125To147 {
                     if (up != null) for (String s : up) if (s != null) queue.add(table.classesBack.getOrDefault(s, s));
                 }
             }
-            if (name.length() <= 3 && table.classes.containsKey(owner)) unresolved.add(owner + "." + name + desc);
+            if (name.length() <= 3 && table.classes.containsKey(owner)) {
+                unresolved.add(owner + "." + name + desc);
+                // a 1.2.5 member 1.4.7 does not have: its short name could be ANOTHER member of 1.4.7 (the obfuscation is re-randomized every release), so it must not stay as it is;
+                // the marker never exists, which the link report shows and the synthesizer stubs, instead of calling the wrong method
+                return UNJOINED_PREFIX + name;
+            }
             return name;
         }
     }

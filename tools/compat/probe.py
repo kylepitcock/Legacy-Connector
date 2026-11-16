@@ -2,7 +2,7 @@
 """Link probe: translates a directory of legacy mod jars offline (no game) and adds the result to docs/data/mods.json,
 like the Sinytra Connector compatibility checker does for Fabric.
 
-usage: probe.py <jar-dir> [--mc 1.7.10|1.12.2|1.20.1] [--date YYYY-MM-DD] [--version <layer version>] [--json out.json] [--dry-run] [--no-history] [--fail-on-regression]
+usage: probe.py <jar-dir> [--mc 1.2.5|1.7.10|1.12.2|1.20.1] [--date YYYY-MM-DD] [--version <layer version>] [--json out.json] [--dry-run] [--no-history] [--fail-on-regression]
        probe.py --from-json probe.json [...]     (convert an earlier run without translating again)
 
 The jars are only read (test-mods/ stays gitignored, never commit or redistribute them); only results are written.
@@ -41,7 +41,7 @@ def old_zip_era(mc):
     return mc.startswith("b") or mc.split(".")[:2] in (["1", "2"], ["1", "3"], ["1", "4"], ["1", "5"], ["1", "6"])
 
 
-def run_probe(jar_dir, out, zips=False):
+def run_probe(jar_dir, out, zips=False, mc=""):
     jars = sorted(pathlib.Path(jar_dir).rglob("*.jar"))
     if zips:   # Beta and 1.2.5-1.6.4 mods came as .zip files (ModLoader and early Forge mods)
         jars = sorted(jars + list(pathlib.Path(jar_dir).rglob("*.zip")))
@@ -60,6 +60,8 @@ def run_probe(jar_dir, out, zips=False):
         listing.write_text(chr(10).join(map(str, jars)), encoding="utf-8")
         jar_arg = "@" + str(listing)
     cmd = [str(ROOT / ("gradlew.bat" if sys.platform == "win32" else "gradlew")), "-q", "checkLegacyMod", f"-PlegacyJar={jar_arg}", f"-PcheckJson={out}"]
+    if mc == "1.2.5":   # 1.2.5 jars are hosted through the 1.4.7 chain after the Calamus/Feather join (docs/wiki/Legacy-1.2.5.md)
+        cmd.append("-Pmappings125")
     print(f"probing {len(jars)} jar(s) as one mod set ...", flush=True)
     r = subprocess.run(cmd, cwd=ROOT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
     if r.returncode != 0 or not pathlib.Path(out).exists():
@@ -490,7 +492,7 @@ def main():
         path = a.from_json
     elif a.jar_dir:
         path = a.json or tempfile.mktemp(suffix=".json")
-        run_gap1201(a.jar_dir, path, a.detail) if a.mc == "1.20.1" else run_probe(a.jar_dir, path, zips=old_zip_era(a.mc))
+        run_gap1201(a.jar_dir, path, a.detail) if a.mc == "1.20.1" else run_probe(a.jar_dir, path, zips=old_zip_era(a.mc), mc=a.mc)
     else:
         ap.error("jar directory or --from-json required")
     records = json.loads(pathlib.Path(path).read_text(encoding="utf-8"))
