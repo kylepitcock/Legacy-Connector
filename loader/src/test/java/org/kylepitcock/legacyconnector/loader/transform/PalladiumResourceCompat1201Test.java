@@ -739,6 +739,47 @@ class PalladiumResourceCompat1201Test {
     }
 
     @Test
+    void migratesAlienEvoMotionToEntityLivingTargetChecksAndIsIdempotent() {
+        Map<String, byte[]> resources = new HashMap<>();
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_MOTION_TO_ENTITY, String.join("\r\n",
+                "StartupEvents.registry('palladium:abilities', event => {",
+                "    const LivingEntity = Java.loadClass('net.minecraft.world.entity.LivingEntity');",
+                "    event.create('alienevo:motion_to_entity').tick((entity, entry, holder, enabled) => {",
+                "        if (enabled) {",
+                "            nearbyEntities.forEach(nearby => {",
+                "                if (nearby == null ||",
+                "                    nearby.id === entity.id ||",
+                "                    !(nearby instanceof LivingEntity) ||",
+                "                    !nearby.isAlive() ||",
+                "                    nearby.getHealth() <= 0) return;",
+                "            });",
+                "            nearbyEntities.forEach(nearby => {",
+                "                if (nearby == null ||",
+                "                    nearby.id === entity.id ||",
+                "                    !(nearby instanceof LivingEntity) ||",
+                "                    !nearby.isAlive() ||",
+                "                    nearby.getHealth() <= 0) return;",
+                "            });",
+                "        }",
+                "    });",
+                "});"));
+
+        assertEquals(1, PalladiumResourceCompat1201.apply(resources));
+
+        String migrated = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_MOTION_TO_ENTITY);
+        assertFalse(migrated.contains("const LivingEntity = Java.loadClass("));
+        assertEquals(2, occurrences(migrated, "!nearby.isLiving()"));
+        assertFalse(migrated.contains("nearby instanceof LivingEntity"));
+        assertTrue(migrated.contains("nearby.isAlive()"));
+        assertTrue(migrated.contains("nearby.getHealth() <= 0"));
+        assertTrue(migrated.contains("\r\n"));
+        assertFalse(migrated.replace("\r\n", "").contains("\n"));
+
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+        assertEquals(migrated, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_MOTION_TO_ENTITY));
+    }
+
+    @Test
     void migratesCannonboltSlamLandingTrackingAndPreservesCrLf() {
         Map<String, byte[]> resources = new HashMap<>();
         put(resources, PalladiumResourceCompat1201.ALIEN_EVO_SLAM, String.join("\r\n",
