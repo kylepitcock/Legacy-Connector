@@ -151,6 +151,21 @@ public class Chunk {
         this(world, mcc$blocksOf(ids), meta, x, z);
     }
 
+    /** 1.5.2 ids went up to 4095, so a generator may hand over its block ids as shorts (same layout as the byte array). */
+    public Chunk(World world, short[] ids, byte[] meta, int x, int z) {
+        this(world, mcc$blocksOf(ids), meta, x, z);
+    }
+
+    private static Block[] mcc$blocksOf(short[] ids) {
+        Block[] out = new Block[ids.length];
+        for (int i = 0; i < ids.length; i++) {
+            int id = ids[i] & 0xFFFF;
+            out[i] = id == 0 ? legacyconnector.v1_7_10.net.minecraft.init.Blocks.air : legacyconnector.v1_6_4.net.minecraft.util.Ids.block(id);
+            if (out[i] == null) out[i] = legacyconnector.v1_7_10.net.minecraft.init.Blocks.air;
+        }
+        return out;
+    }
+
     private static Block[] mcc$blocksOf(byte[] ids) {
         Block[] out = new Block[ids.length];
         for (int i = 0; i < ids.length; i++) {
