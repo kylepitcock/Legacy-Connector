@@ -241,6 +241,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             LOG.info("Legacy Connector: shim index has {} legacy API classes", index.size());
 
             unreadableNotes.clear();
+            notSupportedNotes.clear();
             List<LegacyJar> legacy = new ArrayList<>();
             java.util.Set<String> seenNames = new java.util.HashSet<>();
             // FML also loaded mods/<minecraft version>/ (where dependency downloaders such as CodeChickenCore's put
@@ -248,7 +249,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             // launcher services (a shaded Mixin, as many 1.12.2 mods have) must go: NeoForge's early scan of mods/ itself
             // loads such jars as launcher services before anything can translate them, and the game stops.
             // mods/b1.7.3/: Beta 1.7.3 ModLoader/Forge mods (BetaJars)
-            for (Path dir : List.of(modsDir, modsDir.resolve("1.4.7"), modsDir.resolve("1.5.2"), modsDir.resolve("1.6.4"), modsDir.resolve("1.7.10"), modsDir.resolve("1.12.2"), modsDir.resolve("1.20.1"), modsDir.resolve(BetaJars.FOLDER))) {
+            for (Path dir : List.of(modsDir, modsDir.resolve("1.4.7"), modsDir.resolve("1.5.2"), modsDir.resolve("1.6.4"), modsDir.resolve("1.7.10"), modsDir.resolve("1.12.2"), modsDir.resolve("1.20.1"), modsDir.resolve(BetaJars.FOLDER), modsDir.resolve(Mc125Jars.FOLDER))) {
                 if (!Files.isDirectory(dir)) continue;
                 try (Stream<Path> files = Files.list(dir)) {
                     for (Path p0 : files.filter(f -> isModArchive(f))
@@ -259,6 +260,14 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                             Path packaged = packagedMod(p, gameDir.resolve(".legacyconnector").resolve("nested"));
                             if (packaged == null) packaged = unwrapRootFolder(p, gameDir.resolve(".legacyconnector").resolve("nested"));
                             LegacyJar jar = LegacyJarInspector.inspect(packaged != null ? packaged : p);
+                            String unsupported = jar == null ? Mc125Jars.takeUnsupported(packaged != null ? packaged : p) : null;
+                            if (unsupported != null) {
+                                // a Minecraft version this layer recognises but does not host yet: reported, never mis-hosted as another version
+                                context.addLocated(p);
+                                LOG.warn("Legacy Connector: {} is a Minecraft 1.2.5 mod ({}); 1.2.5 is not supported yet, so it is not loaded", p.getFileName(), unsupported);
+                                notSupportedNotes.add(Mc125Jars.reportLine(p.getFileName().toString(), unsupported));
+                                continue;
+                            }
                             if (jar == null && LegacyJarInspector.takeDerivative(p)) {
                                 // a translated jar taken out of a cache: only Legacy Connector itself loads those, from its own cache
                                 context.addLocated(p);
@@ -902,6 +911,9 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
     /** Archives in the mod folders that could not be opened (truncated download, not a zip): listed in the report, never fatal. */
     private static final List<String> unreadableNotes = new java.util.concurrent.CopyOnWriteArrayList<>();
 
+    /** Mods of a Minecraft version that is recognised but not hosted yet (1.2.5): listed in the report. */
+    private static final List<String> notSupportedNotes = new java.util.concurrent.CopyOnWriteArrayList<>();
+
     static List<String> unreadableNotes() {
         return unreadableNotes;
     }
@@ -1201,6 +1213,11 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                 if (!unreadableNotes.isEmpty()) {
                     w.write("Archives that could not be read (skipped):" + System.lineSeparator());
                     for (String n : unreadableNotes) w.write("  " + n + System.lineSeparator());
+                    w.write(System.lineSeparator());
+                }
+                if (!notSupportedNotes.isEmpty()) {
+                    w.write("Mods of a Minecraft version that is not supported yet:" + System.lineSeparator());
+                    for (String n : notSupportedNotes) w.write("  " + n + System.lineSeparator());
                     w.write(System.lineSeparator());
                 }
                 if (!liteNotes.isEmpty()) {

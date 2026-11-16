@@ -87,7 +87,10 @@ synthesized names and reported, so a mod that uses them fails at link time with 
 
 ## Stages
 
-1. **Detection, "1.2.5 (not supported yet)"** (this run). Today a 1.2.5 ModLoader jar is not recognised as such: `BetaJars` rejects it (fewer than 60% of its references resolve in the b1.7.3 names) and the
+1. **Detection, "1.2.5 (not supported yet)"** (done 2026-11-16: `loader/.../Mc125Jars`, table `detect/notch-1.2.5.txt.gz` written by `tools/gen_notch_125.py` from Calamus, 14,000 obfuscated
+   names of the client and server; a jar with at least 15 references to obfuscated members of which 60% resolve in 1.2.5 and clearly better than in 1.4.7/1.5.2/1.6.4 is reported under
+   "Mods of a Minecraft version that is not supported yet" in `legacyconnector-report.txt` and not loaded; `mods/1.2.5/` is taken without the check; tests `Mc125JarsTest` on synthetic jars;
+   not yet run on a real 1.2.5 jar). Before it, a jar like that was handled as follows: Today a 1.2.5 ModLoader jar is not recognised as such: `BetaJars` rejects it (fewer than 60% of its references resolve in the b1.7.3 names) and the
    1.4.7 chooser takes any bare `BaseMod` jar without evidence "for the oldest supported version", so it would be hosted as 1.4.7 and fail at link time or misbehave. Detection fingerprints the notch names against the 1.2.5
    tables and reports the jar as 1.2.5, not loaded. Unlocks: honest reports on the compatibility site, a corpus count of 1.2.5 jars, no mis-hosting.
 2. **Mapping generation and the join** (`genMappings125`, opt-in like `genBetaMappings`): Calamus and Feather 1.2.5 client and server, 1.4.7; write the `1.2.5 notch to 1.4.7 notch` table at build time and
