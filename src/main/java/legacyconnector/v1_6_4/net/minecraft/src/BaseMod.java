@@ -35,6 +35,7 @@ public abstract class BaseMod {
         // ModLoader read the @MLProp fields (block and item ids, options) before it called load()
         org.kylepitcock.legacyconnector.core.MLPropConfig.load(getClass(), net.neoforged.fml.loading.FMLPaths.CONFIGDIR.get(), MLProp.class);
         ModLoader.mcc$load(this);
+        if (this instanceof BaseModMp mp) ModLoaderMp.mcc$register(mp);
     }
 
     @Mod.EventHandler
