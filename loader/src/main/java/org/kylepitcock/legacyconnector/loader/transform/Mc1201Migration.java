@@ -509,6 +509,12 @@ final class Mc1201Migration {
             int tag = hd.getTag();
             // H_INVOKEINTERFACE (9) counts too: Recipe::getId, ItemStack-like interface references are handles of an interface method
             if (tag < Opcodes.H_INVOKEVIRTUAL || tag > Opcodes.H_INVOKEINTERFACE || hd.getOwner().startsWith("[")) continue;
+            if (CLASSES_THAT_BECAME_INTERFACES.contains(hd.getOwner()) && !hd.isInterface()) {
+                // DataResult::success: a static method reference to a class that is an interface now
+                d.bsmArgs[i] = hd = new org.objectweb.asm.Handle(tag == Opcodes.H_INVOKEVIRTUAL ? Opcodes.H_INVOKEINTERFACE : tag, hd.getOwner(), hd.getName(), hd.getDesc(), true);
+                c.calls++;
+                tag = hd.getTag();
+            }
             boolean ctor = tag == Opcodes.H_NEWINVOKESPECIAL;
             Call rule = null;
             for (String owner : h.minecraftAncestors(hd.getOwner())) {

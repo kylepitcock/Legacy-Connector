@@ -54,7 +54,7 @@ final class ModConfigSubclass1201 {
                     if (in instanceof MethodInsnNode mi) {
                         if (sub && mi.owner.equals(MOD_CONFIG) && (mi.getOpcode() == Opcodes.INVOKESPECIAL || mi.getOpcode() == Opcodes.INVOKEVIRTUAL)) {
                             mi.owner = LEGACY;
-                        } else if (!subclasses.isEmpty() && mi.name.equals("addConfig")
+                        } else if (mi.name.equals("addConfig") // also without a subclass in this jar: a config class of another jar (Ars Nouveau ANModConfig) may be a facade
                                 && (mi.owner.equals(CONTAINER) && mi.desc.equals("(L" + MOD_CONFIG + ";)V")
                                         // the call table already moved it to a no-op helper (the config of a real ModConfig is tracked when it is made)
                                         || mi.owner.equals(ADD_CONFIG_HELPER) && mi.desc.equals("(L" + CONTAINER + ";L" + MOD_CONFIG + ";)V"))) {

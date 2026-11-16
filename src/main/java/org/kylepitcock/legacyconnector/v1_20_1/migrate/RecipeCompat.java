@@ -135,7 +135,9 @@ public final class RecipeCompat {
                         String k = ops.getStringValue(p.getFirst()).result().orElse(null);
                         if (k != null) obj.add(k, ops.convertTo(com.mojang.serialization.JsonOps.INSTANCE, p.getSecond()));
                     });
-                    return com.mojang.serialization.DataResult.success((Recipe) invoke(m, serializer, UNKNOWN_ID, obj));
+                    Recipe made = (Recipe) invoke(m, serializer, UNKNOWN_ID, obj);
+                    // 1.20.1 skipped a recipe the serializer returned null for (a condition that does not hold); 1.21.1 would keep a holder of null and crash
+                    return made == null ? com.mojang.serialization.DataResult.error(() -> "The recipe serializer returned no recipe") : com.mojang.serialization.DataResult.success(made);
                 } catch (RuntimeException e) {
                     return com.mojang.serialization.DataResult.error(() -> String.valueOf(e.getMessage()));
                 }
