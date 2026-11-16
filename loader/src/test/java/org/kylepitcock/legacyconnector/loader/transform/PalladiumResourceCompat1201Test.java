@@ -66,6 +66,9 @@ class PalladiumResourceCompat1201Test {
                 var watchItem = Item.of(itemId, 1);
                 watchItem.setNbt(nbtData);
                 entity.give(watchItem);
+                function getDecoupleSoundId(prefix) { return 'alienevo:' + prefix + '_decouple'; }
+                entity.level.playSound(null, entity.x, entity.y, entity.z,
+                        getDecoupleSoundId(watchPrefix), entity.getSoundSource(), 1.0, 1.0);
                 """);
 
         assertEquals(1, PalladiumResourceCompat1201.apply(resources));
