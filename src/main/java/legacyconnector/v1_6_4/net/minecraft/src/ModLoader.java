@@ -33,6 +33,7 @@ import legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntity;
 import legacyconnector.v1_7_10.net.minecraft.world.World;
 import legacyconnector.v1_7_10.net.minecraft.world.biome.BiomeGenBase;
 import legacyconnector.v1_7_10.net.minecraft.world.chunk.IChunkProvider;
+import org.kylepitcock.legacyconnector.v1_6_4.bridge.ModLoaderHooks125;
 
 /**
  * Forge 1.4.7's ModLoader emulation ({@code net.minecraft.src.ModLoader}, the static API of ModLoader mods). Every call is the equivalent of the
@@ -78,11 +79,16 @@ public class ModLoader {
         GameRegistry.registerWorldGenerator(new IWorldGenerator() {
             @Override
             public void generate(Random random, int chunkX, int chunkZ, World world, IChunkProvider chunkGenerator, IChunkProvider chunkProvider) {
-                int dim = World.mcc$get$provider(world).dimensionId;
-                if (dim == 0) mod.generateSurface(world, random, chunkX << 4, chunkZ << 4);
-                else if (dim == -1) mod.generateNether(world, random, chunkX << 4, chunkZ << 4);
+                dispatchGenerate(mod, world, random, chunkX, chunkZ);
             }
         }, 0);
+    }
+
+    /** {@code generateSurface} for the overworld's generator, {@code generateNether} for the Nether's (ModLoader chose by the chunk generator's kind). */
+    private static void dispatchGenerate(BaseMod mod, World world, Random random, int chunkX, int chunkZ) {
+        int dim = World.mcc$get$provider(world).dimensionId;
+        if (dim == 0) mod.generateSurface(world, random, chunkX << 4, chunkZ << 4);
+        else if (dim == -1) mod.generateNether(world, random, chunkX << 4, chunkZ << 4);
     }
 
     private static void registerFuel(BaseMod mod) {
@@ -233,7 +239,10 @@ public class ModLoader {
         if (mod == null || channel == null) return;
         CHANNEL_MODS.put(channel, mod);
         org.kylepitcock.legacyconnector.v1_6_4.bridge.Network164.registerChannel(
-                (manager, packet, player) -> mod.receiveCustomPacket(packet), channel, null);
+                (manager, packet, player) -> {
+                    if (player instanceof legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayerMP mp) mod.receiveCustomPacket(packet, mp);
+                    else mod.receiveCustomPacket(packet);
+                }, channel, null);
     }
 
     /** Sends a packet to the server (single player: the integrated one) from the client. */
@@ -262,6 +271,11 @@ public class ModLoader {
 
     public static void serverDisconnect() {
         for (BaseMod m : MODS) m.serverDisconnect();
+    }
+
+    /** The server build's {@code serverDisconnect(player)}. */
+    public static void serverDisconnect(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayerMP player) {
+        for (BaseMod m : MODS) m.serverDisconnect(player);
     }
 
     public static void registerKey(BaseMod mod, Object keyHandler, boolean allowRepeat) {
@@ -382,6 +396,11 @@ public class ModLoader {
         mc.displayGuiScreen(gui);
     }
 
+    /** The server's {@code openGUI}: opens {@code container} for the player as the GUI the mod registered under {@code id} ({@link ModLoaderMp#registerGUI}). */
+    public static void openGUI(EntityPlayer player, int id, IInventory inventory, legacyconnector.v1_7_10.net.minecraft.inventory.Container container) {
+        if (!ModLoaderMp.mcc$openGui(player, id, container)) LOG.warning("openGUI: no mod registered the GUI id " + id);
+    }
+
     public static <T, E> T getPrivateValue(Class<? super E> instanceclass, E instance, int fieldindex) {
         return ObfuscationReflectionHelper.getPrivateValue(instanceclass, instance, fieldindex);
     }
@@ -423,12 +442,12 @@ public class ModLoader {
 
     /** {@code setInGameHook}: {@code onTickInGame} of the mod runs every server tick, and every client render tick in a world. */
     public static void setInGameHook(BaseMod mod, boolean enable, boolean useClock) {
-        if (enable) Ticks.add(mod, false);
+        if (enable) Ticks.add(mod, false, useClock);
         else Ticks.remove(mod, false);
     }
 
     public static void setInGUIHook(BaseMod mod, boolean enable, boolean useClock) {
-        if (enable) Ticks.add(mod, true);
+        if (enable) Ticks.add(mod, true, useClock);
         else Ticks.remove(mod, true);
     }
 
@@ -547,10 +566,23 @@ public class ModLoader {
         if (biome != null) legacyconnector.v1_7_10.net.minecraft.world.WorldType.DEFAULT.removeBiome(biome);
     }
 
-    /** Host entry points of ModLoader that the layer's own lifecycle already covers (world generators, ticks); kept so a mod calling them links. */
-    public static void onTick(float partialTicks, Minecraft game) {}
+    /**
+     * The game's per-frame entry point of the patched {@code Minecraft}. The layer runs the hooks from its tick registry instead (the registry has
+     * the render tick this call stood for), so a call from a mod only runs the due in-game hooks once, here, with the same rules.
+     */
+    public static void onTick(float partialTicks, Minecraft game) {
+        Ticks.CLIENT.tickEnd(EnumSet.of(TickType.RENDER), partialTicks);
+    }
 
-    public static void populateChunk(legacyconnector.v1_7_10.net.minecraft.world.chunk.IChunkProvider provider, int chunkX, int chunkZ, World world) {}
+    /**
+     * The patched chunk generators' entry point: every mod's {@code generateSurface}/{@code generateNether} for the chunk, with ModLoader's random.
+     * The layer itself runs the same dispatch through its native world generator registry (see {@code registerWorldGen}), so this only serves a mod
+     * that populates a chunk by hand.
+     */
+    public static void populateChunk(legacyconnector.v1_7_10.net.minecraft.world.chunk.IChunkProvider provider, int chunkX, int chunkZ, World world) {
+        Random random = ModLoaderHooks125.chunkRandom(world.getSeed(), chunkX, chunkZ);
+        for (BaseMod m : MODS) dispatchGenerate(m, world, random, chunkX, chunkZ);
+    }
 
     public static void onItemPickup(EntityPlayer player, ItemStack item) {
         for (BaseMod m : MODS) m.onItemPickup(player, item);
@@ -606,7 +638,11 @@ public class ModLoader {
         }
     }
 
-    /** The in-game tick hooks of the mods: server ticks to {@code onTickInGame(MinecraftServer)}, render ticks to {@code onTickInGame(float, Minecraft)}. */
+    /**
+     * The in-game tick hooks of the mods: server ticks to {@code onTickInGame(MinecraftServer)} (the 1.2.5 server declared it {@code void}; see
+     * {@link ModLoaderHooks125#callServerTick}), render ticks to {@code onTickInGame(float, Minecraft)}. {@code useClock} hooks run once per world
+     * tick, not once per frame, and a hook whose callback answers false is unregistered, as ModLoader's {@code onTick} did.
+     */
     private static final class Ticks implements ITickHandler {
         private static final Ticks SERVER = new Ticks(Side.SERVER);
         private static final Ticks CLIENT = new Ticks(Side.CLIENT);
@@ -614,24 +650,24 @@ public class ModLoader {
         private static boolean clientRegistered;
 
         private final Side side;
-        private final List<BaseMod> game = new CopyOnWriteArrayList<>();
-        private final List<BaseMod> gui = new CopyOnWriteArrayList<>();
+        private final ModLoaderHooks125.Hooks<BaseMod> game = new ModLoaderHooks125.Hooks<>();
+        private final ModLoaderHooks125.Hooks<BaseMod> gui = new ModLoaderHooks125.Hooks<>();
+        private long clock;
 
         private Ticks(Side side) {
             this.side = side;
         }
 
-        static synchronized void add(BaseMod mod, boolean gui) {
+        static synchronized void add(BaseMod mod, boolean gui, boolean useClock) {
             if (!gui) {
-                if (!SERVER.game.contains(mod)) SERVER.game.add(mod);
+                SERVER.game.add(mod, useClock);
                 if (!serverRegistered) {
                     serverRegistered = true;
                     TickRegistry.registerTickHandler(SERVER, Side.SERVER);
                 }
             }
             if (FMLCommonHandler.instance().getSide() == Side.CLIENT) {
-                List<BaseMod> list = gui ? CLIENT.gui : CLIENT.game;
-                if (!list.contains(mod)) list.add(mod);
+                (gui ? CLIENT.gui : CLIENT.game).add(mod, useClock);
                 if (!clientRegistered) {
                     clientRegistered = true;
                     TickRegistry.registerTickHandler(CLIENT, Side.CLIENT);
@@ -652,13 +688,17 @@ public class ModLoader {
             try {
                 if (side == Side.SERVER) {
                     MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
-                    for (BaseMod m : game) m.onTickInGame(server);
+                    game.run(true, m -> ModLoaderHooks125.callServerTick(m, BaseMod.class, MinecraftServer.class, server));
                 } else {
                     Minecraft mc = Minecraft.getMinecraft();
                     float partial = tickData.length > 0 && tickData[0] instanceof Float f ? f : 0F;
-                    if (Minecraft.mcc$get$theWorld(mc) != null) for (BaseMod m : game) m.onTickInGame(partial, mc);
+                    World world = Minecraft.mcc$get$theWorld(mc);
+                    long now = world != null ? world.getWorldTime() : 0L;
+                    boolean changed = now != clock;
+                    if (world != null) game.run(changed, m -> m.onTickInGame(partial, mc));
                     GuiScreen screen = Minecraft.mcc$get$currentScreen(mc);
-                    if (screen != null) for (BaseMod m : gui) m.onTickInGUI(partial, mc, screen);
+                    if (screen != null) gui.run(changed, m -> m.onTickInGUI(partial, mc, screen));
+                    clock = now;
                 }
             } catch (RuntimeException e) {
                 LOG.warning("A ModLoader tick hook failed: " + e);
