@@ -41,8 +41,13 @@ public final class Caps1201 {
         return nativeGet(recv, cap, side, true);
     }
 
+    /**
+     * {@code obj.getCapability(cap)}. A provider is asked through its own one-argument method: a mod may put its logic there and make the sided form
+     * delegate to it (Iron's Spells {@code PlayerMagicProvider}); going through the sided form from here recursed until the stack overflowed.
+     */
     public static <T> LazyOptional<T> getCapability(Object recv, Capability<T> cap) {
-        return getCapability(recv, cap, null);
+        if (recv instanceof ICapabilityProvider p) return p.getCapability(cap);
+        return nativeGet(recv, cap, null, true);
     }
 
     /** {@code super.getCapability(cap, side)} of a legacy class whose parent is a Minecraft class: what the base object offers by itself. */
