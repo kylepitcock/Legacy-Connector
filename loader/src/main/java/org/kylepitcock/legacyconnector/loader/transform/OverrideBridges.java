@@ -82,11 +82,107 @@ public final class OverrideBridges {
             return null;
         }
         Plan p = align(o, n);
+        for (int i = 0; i < o.length; i++) {
+            // a primitive can be passed as zero, a reference only as null, which the override would dereference (a World the new signature no longer carries)
+            if (p.from()[i] < 0 && o[i].getSort() >= Type.ARRAY && !o[i].getClassName().equals("java.lang.String")) {
+                reason[0] = "needs a " + o[i].getClassName() + " the new signature does not carry";
+                return null;
+            }
+        }
         if (p.defaults() * 2 > o.length) {
             reason[0] = p.defaults() + " of " + o.length + " parameters have no counterpart";
             return null;
         }
         return p;
+    }
+
+    /**
+     * The plan for a CALL of {@code oldDesc} that has to reach the 1.4.7 method {@code newDesc}: the old arguments are matched to new parameters (unmatched old arguments dropped, unmatched new
+     * parameters passed as zero or null). Null with the reason set when the result changed kind or fewer than half of the new parameters can be taken from the old arguments.
+     */
+    public static Plan planCall(String oldDesc, String newDesc, String[] reason) {
+        Type[] o = Type.getArgumentTypes(oldDesc), n = Type.getArgumentTypes(newDesc);
+        if (!returnsCompatible(Type.getReturnType(oldDesc), Type.getReturnType(newDesc))) {
+            reason[0] = "result changed from " + Type.getReturnType(oldDesc).getClassName() + " to " + Type.getReturnType(newDesc).getClassName();
+            return null;
+        }
+        Plan p = align(o, n);
+        int taken = 0;
+        for (int f : p.from()) if (f >= 0) taken++;
+        if (taken * 2 < n.length) {
+            reason[0] = "only " + taken + " of " + n.length + " new parameters have an old argument";
+            return null;
+        }
+        return p;
+    }
+
+    private static void pushDefault(MethodVisitor mv, Type t) {
+        switch (t.getSort()) {
+            case Type.LONG -> mv.visitInsn(Opcodes.LCONST_0);
+            case Type.FLOAT -> mv.visitInsn(Opcodes.FCONST_0);
+            case Type.DOUBLE -> mv.visitInsn(Opcodes.DCONST_0);
+            case Type.ARRAY, Type.OBJECT -> mv.visitInsn(Opcodes.ACONST_NULL);
+            default -> mv.visitInsn(Opcodes.ICONST_0);
+        }
+    }
+
+    /**
+     * An adapter for a call: {@code static name(receiver, old args)} (or, for a {@code super.} call, an instance method {@code name(old args)}) that calls the 1.4.7 method
+     * {@code owner.target newDesc} with the arguments taken from the old ones as {@code plan} says and converts the result back to the old return type.
+     *
+     * @param receiver the type of the receiver for a static adapter, null for a super call or a static target
+     * @param opcode   INVOKEVIRTUAL, INVOKEINTERFACE, INVOKESPECIAL or INVOKESTATIC of the call to make
+     */
+    public static void emitCall(ClassVisitor cv, String name, Type receiver, boolean instanceAdapter, String oldDesc, int opcode, String owner, String target, String newDesc, boolean itf, Plan plan) {
+        Type[] o = Type.getArgumentTypes(oldDesc), n = Type.getArgumentTypes(newDesc);
+        Type ro = Type.getReturnType(oldDesc), rn = Type.getReturnType(newDesc);
+        Type[] adapterArgs;
+        if (receiver != null) {
+            adapterArgs = new Type[o.length + 1];
+            adapterArgs[0] = receiver;
+            System.arraycopy(o, 0, adapterArgs, 1, o.length);
+        } else {
+            adapterArgs = o;
+        }
+        String adapterDesc = Type.getMethodDescriptor(ro, adapterArgs);
+        int access = Opcodes.ACC_SYNTHETIC | Opcodes.ACC_PRIVATE | (instanceAdapter ? 0 : Opcodes.ACC_STATIC);
+        MethodVisitor mv = cv.visitMethod(access, name, adapterDesc, null, null);
+        if (mv == null) return;
+        mv.visitCode();
+        int[] slot = new int[adapterArgs.length];
+        int s = instanceAdapter ? 1 : 0;
+        for (int i = 0; i < adapterArgs.length; i++) {
+            slot[i] = s;
+            s += adapterArgs[i].getSize();
+        }
+        int base = receiver != null ? 1 : 0;
+        if (instanceAdapter) mv.visitVarInsn(Opcodes.ALOAD, 0);
+        else if (receiver != null) mv.visitVarInsn(Opcodes.ALOAD, 0);
+        int[] source = new int[n.length];
+        java.util.Arrays.fill(source, -1);
+        for (int i = 0; i < plan.from().length; i++) if (plan.from()[i] >= 0) source[plan.from()[i]] = i;
+        int stack = 1;
+        for (int k = 0; k < n.length; k++) {
+            if (source[k] >= 0) {
+                int i = source[k] + base;
+                mv.visitVarInsn(adapterArgs[i].getOpcode(Opcodes.ILOAD), slot[i]);
+                if (n[k].getSort() >= Type.ARRAY && !n[k].equals(adapterArgs[i])) mv.visitTypeInsn(Opcodes.CHECKCAST, n[k].getSort() == Type.ARRAY ? n[k].getDescriptor() : n[k].getInternalName());
+            } else {
+                pushDefault(mv, n[k]);
+            }
+            stack += n[k].getSize();
+        }
+        mv.visitMethodInsn(opcode, owner, target, newDesc, itf);
+        if (ro.getSort() == Type.VOID) {
+            if (rn.getSort() != Type.VOID) mv.visitInsn(rn.getSize() == 2 ? Opcodes.POP2 : Opcodes.POP);
+            mv.visitInsn(Opcodes.RETURN);
+        } else {
+            if (rn.getSort() == Type.VOID) pushDefault(mv, ro);
+            else if (ro.getSort() >= Type.ARRAY && !ro.equals(rn)) mv.visitTypeInsn(Opcodes.CHECKCAST, ro.getSort() == Type.ARRAY ? ro.getDescriptor() : ro.getInternalName());
+            mv.visitInsn(ro.getOpcode(Opcodes.IRETURN));
+        }
+        mv.visitMaxs(Math.max(stack, 2) + 2, s);
+        mv.visitEnd();
     }
 
     /** Adds {@code public name newDesc} to the class, calling {@code owner.name oldDesc} on this. */

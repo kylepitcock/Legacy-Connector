@@ -213,6 +213,17 @@ the stub list names it `mcc125$<Feather name>`): `updateMetadataOnPlaced` 35, `m
 `generateNetherPortal` 3, `addRespawnParticles` 4, and single cases (`addChatMessage`, `clearChat`, `beforeRemove`, `onDimensionChanged`, `populateBlockLight`, `translate`, `fill`); each is a one-line row in
 `manual-aliases.tsv` once the 1.4.7 name is known (`updateMetadataOnPlaced` is 1.4.7's `onBlockPlacedBy`/`onPlaced`, `makeChild` its `createChild`), not done because they change the argument list too.
 
+**Round 3: calls, class aliases, the remainder (2026-11-16).** Calls of game methods whose arity changed (until now stubs) go through an adapter generated into the calling class
+(`CallAdapt`, `OverrideBridges.emitCall`): the old arguments are matched to the 1.4.7 parameters by type, dropped ones ignored, new primitives passed as zero and new references as null, a `super.` call
+through a private instance adapter with `invokespecial` (so it cannot recurse into the override bridge); calls of methods the mod class declares itself or the join names exactly are left alone. Over the corpus
+(`Mc125CorpusBridgesTest`, -Pmappings125) 280 distinct changed-signature game methods are called and adapted, 6 not (reasons in `loader/build/reports/mc125-bridges.txt`). Probe: stubs 1776 to 1621, distinct
+stubbed members 1411 to 1364, 38 linking / 9 unresolved unchanged, `verifyFailures` 0. The override bridges now refuse a hook whose old signature needs a reference the new one does not carry (a `World`
+for `PortalForcer.findNetherPortal`): null would be dereferenced. `Creative/SurvivalInteractionManager` (7 and 6 jars) are class-aliased to `ClientPlayerInteractionManager`
+(`manual-aliases.tsv`, `c` rows); the other classes without a 1.4.7 counterpart that corpus mods name are ranked in `tools/dev/agent-tasks/1.2.5-shim-requests.md` (round 3) for the run-time worker.
+Overrides never called, 929 bridged and **85 never called**: `updateMetadataOnPlaced` 35 and `makeChild` 31 are evidence-checked in the requests file
+(1.2.5 calls the first right after placement with the side, 1.4.7 has no hook with that shape, the second has no Feather name), the rest are single hooks without a 1.4.7 method found by call-site evidence
+(callers of the 1.2.5 method mapped through the join to their 1.4.7 callers, `Mojang 1.2.5/1.4.7 client jars` read locally, nothing committed).
+
 **Side-independent names for unjoined members.** The client and the server of 1.2.5 are obfuscated separately, so `mcc125$b` meant different members on the two sides. `genMappings125` now writes
 a `U` row (side, owner, letter, descriptor, Feather name) for every member that stayed unjoined and the loader names it `mcc125$<Feather name>` (`mcc125$draw`, `mcc125$onClickSlot`, `mcc125$item`);
 the shim worker's call-redirect rows in `forward/1.4.7/member-manual.tsv` were re-keyed accordingly (11 rows), so server builds hit them too.
