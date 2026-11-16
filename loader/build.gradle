@@ -36,6 +36,13 @@ configurations {
     intermediary1211
     betaIntermediary
     betaBiny
+    // Minecraft 1.2.5 / 1.4.7 names (Ornithe Calamus + Feather, CC0), resolved only by the opt-in :loader:genMappings125
+    mc125CalamusClient
+    mc125FeatherClient
+    mc125CalamusServer
+    mc125FeatherServer
+    mc147Calamus
+    mc147Feather
 }
 
 dependencies {
@@ -71,6 +78,12 @@ dependencies {
     // biny (intermediary -> named), both CC0, into one table at build time (BetaMappings; never committed)
     betaIntermediary "babric:intermediary:${beta_intermediary}:v2@jar"
     betaBiny "net.glasslauncher:biny:${beta_biny}:v2@jar"
+    mc125CalamusClient 'net.ornithemc:calamus-intermediary:1.2.5-client:v2@jar'
+    mc125FeatherClient 'net.ornithemc:feather:1.2.5-client+build.26:v2@jar'
+    mc125CalamusServer 'net.ornithemc:calamus-intermediary:1.2.5-server:v2@jar'
+    mc125FeatherServer 'net.ornithemc:feather:1.2.5-server+build.26:v2@jar'
+    mc147Calamus 'net.ornithemc:calamus-intermediary:1.4.7:v2@jar'
+    mc147Feather 'net.ornithemc:feather:1.4.7+build.31:v2@jar'
 
     testImplementation platform('org.junit:junit-bom:5.10.2')
     testImplementation 'org.junit.jupiter:junit-jupiter'
@@ -102,6 +115,11 @@ repositories {
         url = 'https://maven.glass-launcher.net/releases'
         metadataSources { mavenPom(); artifact() }
         content { includeModule 'net.glasslauncher', 'biny' }
+    }
+    maven {
+        url = 'https://maven.ornithemc.net/releases'
+        metadataSources { mavenPom(); artifact() }
+        content { includeGroup 'net.ornithemc' }
     }
     maven {
         url = 'https://maven.minecraftforge.net'
@@ -716,7 +734,43 @@ def genBetaMappings = tasks.register('genBetaMappings', JavaExec) {
          betaMappingsDir.get().file('legacyconnector/mappings/b1.7.3/official-named.tsv').asFile.absolutePath]
     } as CommandLineArgumentProvider)
 }
+// Opt-in (nothing of it runs or is fetched in the default build): the 1.2.5 to 1.4.7 notch table and the list of what does not join
+// (docs/wiki/Legacy-1.2.5.md). Inputs are pinned by SHA-256; the output is build-local and never committed.
+def mc125Inputs = [
+        mc125CalamusClient: '90ac3f52c97085a9a8191106fe6c7f781fd92e5e35e3fe96cdd0cd03d4b67f23',
+        mc125FeatherClient: 'e50ddbefa0538fd629835b7935b5856fb2a9ca6004e063405e523f7d6a1deb7b',
+        mc125CalamusServer: '76bfdb88b289a9ed9a3796f683a856aabb9c71971c31cb62c5db89537a27cfcd',
+        mc125FeatherServer: '12d18726cbe65d5ca81e341aaa5458d2beb461fb44ee9dedca329ab17999960b',
+        mc147Calamus      : 'ea236e1a1f6f6bf005a7bbe165c7c16c1f04eec6590b868d5a4879ce71271c37',
+        mc147Feather      : '6353f8c8d066999cba4c5abc6585bee7fcaccb007d5197f05c77e50b12c2c092']
+tasks.register('genMappings125', JavaExec) {
+    group = 'legacy'
+    description = 'Opt-in: joins Ornithe Calamus+Feather 1.2.5 (client, server) with 1.4.7 into build/generated/mappings125 (notch-to-147.tsv, join-report.txt).'
+    dependsOn tasks.named('classes')
+    classpath = sourceSets.main.output
+    mainClass = 'org.kylepitcock.legacyconnector.loader.mapping.Mc125Mappings'
+    def outDir = layout.buildDirectory.dir('generated/mappings125')
+    outputs.dir(outDir)
+    argumentProviders.add({
+        def files = mc125Inputs.collect { name, sha ->
+            def f = configurations.getByName(name).singleFile
+            def actual = java.security.MessageDigest.getInstance('SHA-256').digest(f.bytes).encodeHex().toString()
+            if (actual != sha) throw new GradleException("${name}: ${f.name} has SHA-256 ${actual}, expected ${sha}")
+            println "${name}: ${f.name} SHA-256 ${actual}"
+            f.absolutePath
+        }
+        files + [outDir.get().asFile.absolutePath]
+    } as CommandLineArgumentProvider)
+}
 tasks.named('jar') { dependsOn genBetaMappings; from(betaMappingsDir) }
+// -Pmappings125 puts the 1.2.5 to 1.4.7 table into the loader jar (needed by -Dlegacyconnector.mc125=true at run time); a default build has none
+if (project.hasProperty('mappings125')) {
+    tasks.named('jar') {
+        dependsOn tasks.named('genMappings125')
+        from(layout.buildDirectory.dir('generated/mappings125')) { include 'legacyconnector/**' }
+    }
+    sourceSets.test.runtimeClasspath += files(layout.buildDirectory.dir('generated/mappings125')).builtBy(tasks.named('genMappings125'))
+}
 sourceSets.main.runtimeClasspath += files(betaMappingsDir).builtBy(genBetaMappings)
 
 
