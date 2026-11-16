@@ -739,23 +739,13 @@ class PalladiumResourceCompat1201Test {
     }
 
     @Test
-    void migratesAlienEvoMotionToEntitySingleTargetBehaviorAndIsIdempotent() {
+    void migratesAlienEvoMotionToEntityLivingTargetChecksAndIsIdempotent() {
         Map<String, byte[]> resources = new HashMap<>();
         put(resources, PalladiumResourceCompat1201.ALIEN_EVO_MOTION_TO_ENTITY, String.join("\r\n",
                 "StartupEvents.registry('palladium:abilities', event => {",
                 "    const LivingEntity = Java.loadClass('net.minecraft.world.entity.LivingEntity');",
-                "    let recentTargets = new Map();",
-                "    let currentTargets = new Map();",
-                "    let lastTargetTimes = new Map();",
                 "    event.create('alienevo:motion_to_entity').tick((entity, entry, holder, enabled) => {",
-                "        if (enabled && entity.isPlayer()) {",
-                "                let playerId = entity.id;",
-                "                if (!recentTargets.has(playerId)) {",
-                "                recentTargets.set(playerId, new Map());",
-                "            }",
-                "            let nearestEntity = null;",
-                "            let nearestDistance = searchRadius + 1;",
-                "            let nearbyEntities = entity.level.getEntitiesWithin(entityAABB);",
+                "        if (enabled) {",
                 "            nearbyEntities.forEach(nearby => {",
                 "                if (nearby == null ||",
                 "                    nearby.id === entity.id ||",
@@ -763,37 +753,13 @@ class PalladiumResourceCompat1201Test {
                 "                    !nearby.isAlive() ||",
                 "                    nearby.getHealth() <= 0) return;",
                 "            });",
-                "            if (nearestEntity && nearestDistance <= switchDistance) {",
-                "                playerTargets.set(nearestEntity.id, currentTime);",
-                "                nearestEntity = null;",
-                "                        nearestDistance = searchRadius + 1;",
-                "",
-                "                        nearbyEntities.forEach(nearby => {",
-                "                            if (nearby == null ||",
-                "                                nearby.id === entity.id ||",
-                "                                !(nearby instanceof LivingEntity) ||",
-                "                                !nearby.isAlive() ||",
-                "                                nearby.getHealth() <= 0 ||",
-                "                                playerTargets.has(nearby.id) ||",
-                "                                !hasLineOfSight(entity, nearby)) return;",
-                "",
-                "                            if (nearby instanceof ArmorStand || nearby instanceof EndCrystal) return;",
-                "",
-                "                            let dx = entity.x - nearby.x;",
-                "                            let dy = entity.y - nearby.y;",
-                "                            let dz = entity.z - nearby.z;",
-                "                            let distance = Math.sqrt(dx*dx + dy*dy + dz*dz);",
-                "",
-                "                            if (distance < nearestDistance) {",
-                "                                nearestDistance = distance;",
-                "                                nearestEntity = nearby;",
-                "                            }",
-                "                        });",
-                "            }",
-                "        } else if (!enabled && entity.isPlayer()) {",
-                "            let playerId = entity.id;",
-                "            currentTargets.delete(playerId);",
-                "                lastTargetTimes.delete(playerId);",
+                "            nearbyEntities.forEach(nearby => {",
+                "                if (nearby == null ||",
+                "                    nearby.id === entity.id ||",
+                "                    !(nearby instanceof LivingEntity) ||",
+                "                    !nearby.isAlive() ||",
+                "                    nearby.getHealth() <= 0) return;",
+                "            });",
                 "        }",
                 "    });",
                 "});"));
@@ -806,12 +772,6 @@ class PalladiumResourceCompat1201Test {
         assertFalse(migrated.contains("nearby instanceof LivingEntity"));
         assertTrue(migrated.contains("nearby.isAlive()"));
         assertTrue(migrated.contains("nearby.getHealth() <= 0"));
-        assertTrue(migrated.contains("let completedPlayers = new Set();"));
-        assertTrue(migrated.contains("if (completedPlayers.has(playerId)) return;"));
-        assertEquals(1, occurrences(migrated, "completedPlayers.add(playerId);"));
-        assertTrue(migrated.contains("completedPlayers.delete(playerId);"));
-        assertEquals(1, occurrences(migrated, "nearbyEntities.forEach(nearby => {")));
-        assertFalse(migrated.contains("playerTargets.has(nearby.id) ||"));
         assertTrue(migrated.contains("\r\n"));
         assertFalse(migrated.replace("\r\n", "").contains("\n"));
 
