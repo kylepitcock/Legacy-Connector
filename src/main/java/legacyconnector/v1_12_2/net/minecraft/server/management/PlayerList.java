@@ -28,6 +28,12 @@ public class PlayerList {
         return legacyconnector.v1_12_2.net.minecraft.world.storage.IPlayerFileData.mcc$server();
     }
 
+    /** Lets every player use commands (the "cheats" switch of a LAN world). */
+    public void setCommandsAllowedForAll(boolean allowed) {
+        var m = modern();
+        if (m != null) m.setAllowCommandsForAllPlayers(allowed);
+    }
+
     private static net.minecraft.server.players.PlayerList modern() {
         var s = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
         return s == null ? null : s.getPlayerList();

@@ -25,6 +25,26 @@ public class ForgeHooksClient {
         legacyconnector.v1_12_2.net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(new legacyconnector.v1_12_2.net.minecraftforge.client.event.RenderWorldLastEvent(context, partialTicks));
     }
 
+    /** Turns the camera to the bed's direction while the player sleeps in a bed the block says is one. */
+    public static void orientBedCamera(legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
+            legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.entity.Entity entity) {
+        legacyconnector.v1_12_2.net.minecraft.block.Block block = state.getBlock();
+        if (block != null && block.isBed(state, world, pos, entity)) {
+            legacyconnector.v1_12_2.net.minecraft.client.renderer.GlStateManager.rotate(
+                    (float) (block.getBedDirection(state, world, pos).getHorizontalIndex() * 90), 0.0F, 1.0F, 0.0F);
+        }
+    }
+
+    /** The field of view after mods' {@code EntityViewRenderEvent.FOVModifier} listeners had their say. */
+    public static float getFOVModifier(legacyconnector.v1_12_2.net.minecraft.client.renderer.EntityRenderer renderer,
+            legacyconnector.v1_12_2.net.minecraft.entity.Entity entity, legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, double renderPartialTicks,
+            float fov) {
+        legacyconnector.v1_12_2.net.minecraftforge.client.event.EntityViewRenderEvent.FOVModifier event =
+                new legacyconnector.v1_12_2.net.minecraftforge.client.event.EntityViewRenderEvent.FOVModifier(renderer, entity, state, renderPartialTicks, fov);
+        legacyconnector.v1_12_2.net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(event);
+        return event.getFOV();
+    }
+
     public static void setRenderLayer(BlockRenderLayer layer) {
         if (layer == null) MinecraftForgeClient.RENDER_LAYER.remove();
         else MinecraftForgeClient.RENDER_LAYER.set(layer);

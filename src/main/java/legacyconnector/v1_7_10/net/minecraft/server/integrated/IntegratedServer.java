@@ -8,6 +8,10 @@ public class IntegratedServer extends MinecraftServer {
         super(server);
     }
 
+    public void setOnlineMode(boolean online) {
+        mcc$modern().setUsesAuthentication(online);
+    }
+
     public boolean getPublic() {
         return mcc$modern().isPublished();
     }

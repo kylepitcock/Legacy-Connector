@@ -50,6 +50,11 @@ public class ServerConfigurationManager {
      * Moves a player to another dimension and lets the teleporter place them there. Coordinates are kept (1.7.10 scaled
      * them by the dimensions' move factors for the nether; mod dimensions do not).
      */
+    public void transferPlayerToDimension(EntityPlayerMP player, int dimension) {
+        var world = mcc$server.worldServerForDimension(dimension);
+        transferPlayerToDimension(player, dimension, world == null ? null : new legacyconnector.v1_7_10.net.minecraft.world.Teleporter(world));
+    }
+
     public void transferPlayerToDimension(EntityPlayerMP player, int dimension, legacyconnector.v1_7_10.net.minecraft.world.Teleporter teleporter) {
         var target = org.kylepitcock.legacyconnector.v1_7_10.bridge.DimensionBridge.level(mcc$server.mcc$modern(), dimension);
         if (target == null) return;

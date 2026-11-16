@@ -76,6 +76,18 @@ public class EntityPlayerSP extends AbstractClientPlayer {
     @Deprecated
     public int sprintToggleTimer;
 
+    /** How far the jump bar of a mount is charged (0 to 1). */
+    public float getHorseJumpPower() {
+        return mcc$local().getJumpRidingScale();
+    }
+
+    /** Asks the server to open the inventory of the horse the player rides. */
+    public void sendHorseInventory() {
+        var p = mcc$local();
+        p.connection.send(new net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket(p,
+                net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket.Action.OPEN_INVENTORY));
+    }
+
     private net.minecraft.client.player.LocalPlayer mcc$local() {
         return (net.minecraft.client.player.LocalPlayer) mcc$player();
     }

@@ -137,6 +137,20 @@ public class PlayerControllerMP {
         if (m != null) m.continueDestroyBlock(new net.minecraft.core.BlockPos(x, y, z), net.minecraft.core.Direction.from3DDataValue(side));
     }
 
+    /** Breaks the block at (x, y, z) now (as the client does when the mining finishes); true when it was destroyed. */
+    public boolean onPlayerDestroyBlock(int x, int y, int z, int side) {
+        var m = mode();
+        return m != null && m.destroyBlock(new net.minecraft.core.BlockPos(x, y, z));
+    }
+
+    /** Interacts with an entity as a right click does (the item in hand, main hand); true when the entity took it. */
+    public boolean interactWithEntitySendPacket(EntityPlayer player, legacyconnector.v1_7_10.net.minecraft.entity.Entity entity) {
+        var m = mode();
+        var local = local();
+        if (m == null || local == null || entity == null || entity.mcc$entity() == null) return false;
+        return m.interact(local, entity.mcc$entity(), net.minecraft.world.InteractionHand.MAIN_HAND).consumesAction();
+    }
+
     /** Releases the item in use (a drawn bow fires). */
     public void onStoppedUsingItem(EntityPlayer player) {
         var m = mode();

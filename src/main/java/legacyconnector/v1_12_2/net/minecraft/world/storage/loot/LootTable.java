@@ -38,7 +38,12 @@ public class LootTable {
     public net.minecraft.world.level.storage.loot.LootTable mcc$modern() {
         if (mcc$modern != null) return mcc$modern;
         var table = net.minecraft.world.level.storage.loot.LootTable.lootTable().build();
-        for (LootPool p : pools) table.addPool(p.mcc$modern());
+        java.util.Set<String> names = new java.util.HashSet<>();
+        for (LootPool p : pools) {
+            // the 1.12 deserializer keeps pools of the same name; the modern table refuses them, so later ones go unnamed
+            if (p.mcc$isView() || p.getName() == null || names.add(p.getName())) table.addPool(p.mcc$modern());
+            else table.addPool(org.kylepitcock.legacyconnector.v1_12_2.bridge.Loot1122.modernPool(p, false));
+        }
         return table;
     }
 

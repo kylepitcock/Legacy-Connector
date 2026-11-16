@@ -190,6 +190,14 @@ public class ForgeHooks {
         return MinecraftForge.EVENT_BUS.post(new legacyconnector.v1_7_10.net.minecraftforge.event.entity.living.LivingDeathEvent(entity, source));
     }
 
+    /** Posts the drops event for a mod that kills and drops by hand; true when a handler cancelled the drops (the list is left as handlers edited it). */
+    public static boolean onLivingDrops(legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase entity,
+            legacyconnector.v1_7_10.net.minecraft.util.DamageSource source, java.util.ArrayList<legacyconnector.v1_7_10.net.minecraft.entity.item.EntityItem> drops,
+            int lootingLevel, boolean recentlyHit, int specialDropValue) {
+        return MinecraftForge.EVENT_BUS.post(new legacyconnector.v1_7_10.net.minecraftforge.event.entity.living.LivingDropsEvent(entity, source, drops,
+                lootingLevel, recentlyHit, specialDropValue));
+    }
+
     /** Posts the hurt event; the damage to apply (0 when cancelled). */
     public static float onLivingHurt(legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase entity,
             legacyconnector.v1_7_10.net.minecraft.util.DamageSource source, float amount) {

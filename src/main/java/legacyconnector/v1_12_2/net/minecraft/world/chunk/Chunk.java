@@ -139,6 +139,23 @@ public class Chunk implements legacyconnector.v1_12_2.net.minecraftforge.common.
         return idx < 0 ? 0 : access.getSectionYFromSectionIndex(idx) << 4;
     }
 
+    /** Phantom field: reads go to {@link #mcc$get$heightMap}. */
+    @Deprecated
+    public int[] heightMap;
+    /** Phantom field: reads go to {@link #mcc$get$heightMapMinimum}. */
+    @Deprecated
+    public int heightMapMinimum;
+
+    /** 1.12's {@code heightMap}: the top block height of each column (a snapshot of the chunk's current heights). */
+    public static int[] mcc$get$heightMap(Chunk c) {
+        return c.getHeightMap();
+    }
+
+    /** 1.12's {@code heightMapMinimum}: the lowest of the column heights. */
+    public static int mcc$get$heightMapMinimum(Chunk c) {
+        return c.getLowestHeight();
+    }
+
     public int[] getHeightMap() {
         int[] out = new int[256];
         for (int i = 0; i < 16; i++) for (int j = 0; j < 16; j++) out[j << 4 | i] = getHeightValue(i, j);

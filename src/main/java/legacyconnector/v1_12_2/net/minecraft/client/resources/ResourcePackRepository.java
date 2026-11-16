@@ -61,7 +61,7 @@ public class ResourcePackRepository {
     public void setRepositories(List<Entry> entries) {
         List<String> ids = new ArrayList<>();
         for (var pack : modern().getSelectedPacks()) if (pack.isRequired()) ids.add(pack.getId());
-        for (Entry e : entries) if (!ids.contains(e.pack.getId())) ids.add(e.pack.getId());
+        for (Entry e : entries) if (e.pack != null && !ids.contains(e.pack.getId())) ids.add(e.pack.getId());
         modern().setSelected(ids);
         var mc = net.minecraft.client.Minecraft.getInstance();
         mc.options.updateResourcePacks(modern());
@@ -92,10 +92,21 @@ public class ResourcePackRepository {
     /** One pack the player can choose. */
     public class Entry {
         final net.minecraft.server.packs.repository.Pack pack;
-        private ModernPack resources;
+        private IResourcePack resources;
 
         Entry(net.minecraft.server.packs.repository.Pack pack) {
             this.pack = pack;
+        }
+
+        /** A mod's own legacy pack as an entry (listed and read like the game's; the game's pack manager does not know it). */
+        public Entry(IResourcePack legacyPack) {
+            this.pack = null;
+            this.resources = legacyPack;
+        }
+
+        /** A pack in a folder or zip file. */
+        public Entry(File file) {
+            this(file.isDirectory() ? new FolderResourcePack(file) : new FileResourcePack(file));
         }
 
         /** Opens the pack (read its metadata and icon). */
@@ -108,8 +119,8 @@ public class ResourcePackRepository {
         }
 
         public void closeResourcePack() {
-            if (resources != null) {
-                resources.close();
+            if (pack != null && resources instanceof ModernPack m) {
+                m.close();
                 resources = null;
             }
         }
@@ -120,16 +131,19 @@ public class ResourcePackRepository {
         }
 
         public String getResourcePackName() {
+            if (pack == null) return resources.getPackName();
             String id = pack.getId();
             return id.startsWith("file/") ? id.substring("file/".length()) : id;
         }
 
         public String getTexturePackDescription() {
+            if (pack == null) return "";
             return org.kylepitcock.legacyconnector.v1_12_2.client.ClientGui1122.legacyText(pack.getDescription());
         }
 
         /** 1.12's pack format of the pack: 3 when it fits the game, otherwise older or newer. */
         public int getPackFormat() {
+            if (pack == null) return 3;
             return switch (pack.getCompatibility()) {
                 case TOO_OLD -> 2;
                 case TOO_NEW -> 4;
@@ -139,12 +153,12 @@ public class ResourcePackRepository {
 
         @Override
         public boolean equals(Object o) {
-            return o instanceof Entry e && e.pack.getId().equals(pack.getId());
+            return o instanceof Entry e && (pack == null ? e.pack == null && e.resources == resources : e.pack != null && e.pack.getId().equals(pack.getId()));
         }
 
         @Override
         public int hashCode() {
-            return pack.getId().hashCode();
+            return pack == null ? System.identityHashCode(resources) : pack.getId().hashCode();
         }
 
         @Override

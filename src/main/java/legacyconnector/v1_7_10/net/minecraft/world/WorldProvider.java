@@ -258,6 +258,11 @@ public class WorldProvider {
 
     // ------------------------------------------------------------------ Forge's provider hooks: the defaults ask the world's *Body methods
 
+    /** The daylight factor of the world (Forge hook; mods' providers override it). */
+    public float getSunBrightnessFactor(float partialTicks) {
+        return worldObj == null ? 1.0F : worldObj.getSunBrightnessFactor(partialTicks);
+    }
+
     /** A new provider for a dimension id (the registered provider class of that dimension). */
     public static WorldProvider getProviderForDimension(int dimension) {
         return legacyconnector.v1_7_10.net.minecraftforge.common.DimensionManager.createProviderFor(dimension);
