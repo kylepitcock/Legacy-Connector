@@ -62,6 +62,8 @@ public final class Notch125To147 {
     public static final class Table {
         final Map<String, String> classes = new HashMap<>();
         final Map<String, String> classesBack = new HashMap<>();
+        /** 1.2.5 class to its 1.2.5 superclass, for the classes mapped to a shim class of its own (BossEntity) whose supertypes 1.4.7's hierarchy does not know */
+        final Map<String, String> extraSupers = new HashMap<>();
         /** {@code F|M owner.name desc} (1.2.5) to {owner147, name147, desc147} */
         final Map<String, String[]> members = new HashMap<>();
 
@@ -111,6 +113,8 @@ public final class Notch125To147 {
             if (p[0].equals("C")) {
                 t.classes.put(p[2], p[3]);
                 t.classesBack.put(p[3], p[2]);
+            } else if (p[0].equals("S")) {
+                t.extraSupers.put(p[2], p[3]); // a class the shim names itself: its 1.2.5 superclass
             } else if (p[0].equals("U")) {
                 if (p.length >= 6) t.members.put("U " + p[2] + "." + p[3] + " " + p[4], new String[] {p[2], p[5], p[4]});
             } else if (p.length >= 8) {
@@ -379,7 +383,12 @@ public final class Notch125To147 {
             return new org.objectweb.asm.MethodVisitor(org.objectweb.asm.Opcodes.ASM9, mv) {
                 @Override
                 public void visitFieldInsn(int op, String owner, String n, String d) {
-                    super.visitFieldInsn(op, owner, n, fixed(owner, n, d));
+                    String nd = fixed(owner, n, d);
+                    super.visitFieldInsn(op, owner, n, nd);
+                    // a field retyped in 1.4.7 (EnderDragonPart.dragon: BossEntity, now the interface IEntityMultiPart): the mod uses the value as the old type, so the verifier needs the cast back
+                    if (!nd.equals(d) && (op == org.objectweb.asm.Opcodes.GETFIELD || op == org.objectweb.asm.Opcodes.GETSTATIC) && d.startsWith("L") && nd.startsWith("L")) {
+                        visitTypeInsn(org.objectweb.asm.Opcodes.CHECKCAST, d.substring(1, d.length() - 1));
+                    }
                 }
 
                 @Override
@@ -502,6 +511,8 @@ public final class Notch125To147 {
                 } else if (table.classes.containsKey(cls)) {
                     String[] up = n147.supertypes(table.classes.get(cls));
                     if (up != null) for (String s : up) if (s != null) queue.add(table.classesBack.getOrDefault(s, s));
+                    String extra = table.extraSupers.get(cls);
+                    if (extra != null) queue.add(extra);
                 }
             }
             return null;
