@@ -402,6 +402,28 @@ public final class ForgeApi1201 {
         return DeferredRegister.create((net.minecraft.resources.ResourceKey) registry.getRegistryKey(), modid);
     }
 
+    /** {@code RegistryObject.lazyMap(f)}: a supplier that applies {@code f} to the entry on first use and keeps the result. */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static java.util.function.Supplier holderLazyMap(DeferredHolder holder, java.util.function.Function f) {
+        return new java.util.function.Supplier() {
+            private volatile Object value;
+            private volatile boolean done;
+
+            @Override
+            public Object get() {
+                if (!done) {
+                    synchronized (this) {
+                        if (!done) {
+                            value = f.apply(holder.get());
+                            done = true;
+                        }
+                    }
+                }
+                return value;
+            }
+        };
+    }
+
     /** {@code DeferredRegister.createOptional(registryKey, modid)}: a register for a registry that may not exist; FML never fires its event when it does not. */
     @SuppressWarnings({"unchecked", "rawtypes"})
     public static DeferredRegister createDeferredOptional(net.minecraft.resources.ResourceKey key, String modid) {

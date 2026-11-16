@@ -431,7 +431,7 @@ public final class DataConverter1201 {
 
     // ---- the file-level state ---------------------------------------------------------------------------------------------------
 
-    private static final class Ctx {
+    static final class Ctx {
         final Set<String> categories = new LinkedHashSet<>();
         /** The item of the loot entry being walked (its functions say whose NBT they set), or null when it is not one item. */
         String entryItem;
@@ -674,6 +674,10 @@ public final class DataConverter1201 {
         conditionsKey(o, c);
         String type = o.has("type") && o.get("type").isJsonPrimitive() ? o.get("type").getAsString() : "";
         boolean vanilla = !type.contains(":") || type.startsWith("minecraft:");
+        if (CreateRecipes1201.handles(type)) {
+            CreateRecipes1201.convert(o, type, c);
+            return;
+        }
         if (!vanilla) return;
         String t = type.startsWith("minecraft:") ? type.substring(10) : type;
         boolean hasResult = o.has("result");
@@ -695,7 +699,7 @@ public final class DataConverter1201 {
     }
 
     /** {@code "minecraft:stone"} or {@code {item, count, nbt}} to {@code {id, count, components}}. */
-    private static JsonObject stack(JsonElement e, Ctx c, String category) {
+    static JsonObject stack(JsonElement e, Ctx c, String category) {
         JsonObject out = new JsonObject();
         if (e.isJsonPrimitive()) {
             out.addProperty("id", e.getAsString());
@@ -718,7 +722,7 @@ public final class DataConverter1201 {
         return out;
     }
 
-    private static JsonElement ingredient(JsonElement e, Ctx c) {
+    static JsonElement ingredient(JsonElement e, Ctx c) {
         if (e.isJsonArray()) {
             JsonArray a = new JsonArray();
             for (JsonElement x : e.getAsJsonArray()) a.add(ingredient(x, c));

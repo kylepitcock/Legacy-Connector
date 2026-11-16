@@ -79,8 +79,8 @@ class DataConverter1201Test {
 
     @Test
     void modRecipeTypesKeepTheirFormat() {
-        same("{\"type\":\"create:milling\",\"ingredients\":[{\"item\":\"a:b\"}],\"results\":[{\"item\":\"c:d\"}],\"neoforge:conditions\":[{\"type\":\"neoforge:mod_loaded\",\"modid\":\"x\"}]}",
-                one("data/m/recipes/s.json", "{\"type\":\"create:milling\",\"ingredients\":[{\"item\":\"a:b\"}],\"results\":[{\"item\":\"c:d\"}],\"conditions\":[{\"type\":\"forge:mod_loaded\",\"modid\":\"x\"}]}", "data/m/recipe/s.json"));
+        same("{\"type\":\"othermod:milling\",\"ingredients\":[{\"item\":\"a:b\"}],\"results\":[{\"item\":\"c:d\"}],\"neoforge:conditions\":[{\"type\":\"neoforge:mod_loaded\",\"modid\":\"x\"}]}",
+                one("data/m/recipes/s.json", "{\"type\":\"othermod:milling\",\"ingredients\":[{\"item\":\"a:b\"}],\"results\":[{\"item\":\"c:d\"}],\"conditions\":[{\"type\":\"forge:mod_loaded\",\"modid\":\"x\"}]}", "data/m/recipe/s.json"));
     }
 
     @Test
@@ -367,6 +367,31 @@ class DataConverter1201Test {
         String s = new String(out.get("pack.mcmeta"), StandardCharsets.UTF_8);
         assertTrue(s.contains("\"pack_format\":48") && s.contains("supported_formats") && !s.contains("forge:"), s);
         assertTrue(out.containsKey("data/m/recipe/a.json"));
+    }
+
+    // ---- Create 0.5 recipe JSON to Create 6 (CreateRecipes1201) --------------------------------------------------------------------
+
+    @Test
+    void createProcessingRecipeUsesCreateSixKeys() {
+        JsonElement r = one("data/m/recipes/mix.json", """
+                {"type":"create:mixing","heatRequirement":"heated","processingTime":100,
+                 "ingredients":[{"item":"minecraft:sugar"},{"fluid":"minecraft:water","amount":250},{"fluidTag":"forge:milk","amount":100}],
+                 "results":[{"item":"m:out","count":2,"chance":0.5},{"fluid":"minecraft:lava","amount":50}]}""", "data/m/recipe/mix.json");
+        JsonObject o = r.getAsJsonObject();
+        same("\"heated\"", o.get("heat_requirement"));
+        same("100", o.get("processing_time"));
+        same("{\"amount\":250,\"fluid\":\"minecraft:water\"}", o.getAsJsonArray("ingredients").get(1));
+        assertTrue(o.getAsJsonArray("ingredients").get(2).getAsJsonObject().has("tag"));
+        same("{\"id\":\"m:out\",\"count\":2,\"chance\":0.5}", o.getAsJsonArray("results").get(0));
+        same("{\"id\":\"minecraft:lava\",\"amount\":50}", o.getAsJsonArray("results").get(1));
+    }
+
+    @Test
+    void createMechanicalCraftingAcceptsMirroredAndHasAnIdResult() {
+        JsonObject o = one("data/m/recipes/mc.json", """
+                {"type":"create:mechanical_crafting","pattern":["A","B"],"key":{"A":{"item":"minecraft:stick"},"B":{"item":"m:x"}},"result":{"item":"m:match","count":4}}""", "data/m/recipe/mc.json").getAsJsonObject();
+        assertTrue(o.get("accept_mirrored").getAsBoolean());
+        same("{\"id\":\"m:match\",\"count\":4}", o.get("result"));
     }
 
     // ---- structured item NBT to data components (ItemComponents1201), entity targets, convention tags --------------------------------

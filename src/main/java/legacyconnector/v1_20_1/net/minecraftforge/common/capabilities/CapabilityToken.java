@@ -9,7 +9,14 @@ import java.lang.reflect.Type;
  */
 public abstract class CapabilityToken<T> {
     protected String getType() {
-        Type superclass = getClass().getGenericSuperclass();
+        Type superclass;
+        try {
+            superclass = getClass().getGenericSuperclass();
+        } catch (TypeNotPresentException absent) {
+            // the capability type belongs to an optional mod that is not installed (Mekanism's Flux Networks integration names IFNEnergyStorage): Forge only
+            // ever used the name, never loaded the class
+            return absent.typeName();
+        }
         if (superclass instanceof ParameterizedType p && p.getActualTypeArguments().length == 1) {
             Type arg = p.getActualTypeArguments()[0];
             if (arg instanceof Class<?> c) return c.getName();
