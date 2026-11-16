@@ -273,7 +273,9 @@ public final class Registries1122 {
                 return;
             }
             if (byName.containsKey(name)) {
-                LOG.warn("{} {} registered twice; keeping the first", type.getSimpleName(), name);
+                V first = byName.get(name);
+                // the same object registered again (a mod that fills the event from two paths) is a no-op, as in Forge
+                if (first != value) LOG.warn("{} {} registered twice; keeping the first (other instance of {}, first was {})", type.getSimpleName(), name, value.getClass().getName(), first.getClass().getName());
                 return;
             }
             byName.put(name, value);
