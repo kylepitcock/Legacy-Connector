@@ -139,7 +139,8 @@ public final class RecipeCompat {
                     // 1.20.1 skipped a recipe the serializer returned null for (a condition that does not hold); 1.21.1 would keep a holder of null and crash
                     return made == null ? com.mojang.serialization.DataResult.error(() -> "The recipe serializer returned no recipe") : com.mojang.serialization.DataResult.success(made);
                 } catch (RuntimeException e) {
-                    return com.mojang.serialization.DataResult.error(() -> String.valueOf(e.getMessage()));
+                    StackTraceElement top = e.getStackTrace().length > 0 ? e.getStackTrace()[0] : null;
+                    return com.mojang.serialization.DataResult.error(() -> e.getMessage() != null ? e.getMessage() : e + (top == null ? "" : " at " + top));
                 }
             }
 
