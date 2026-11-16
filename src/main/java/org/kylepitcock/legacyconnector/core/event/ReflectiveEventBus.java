@@ -168,6 +168,10 @@ public final class ReflectiveEventBus {
         }
     }
 
+    /** {@code -Dlegacyconnector.traceHandlers=<part of a handler's name>}: log (the first 60) runs of matching legacy event handlers. */
+    private static final String TRACE_HANDLERS = System.getProperty("legacyconnector.traceHandlers");
+    private static int traceCount;
+
     /** @return true if the event was canceled */
     public boolean post(Object event) {
         List<Listener> targets = targets(event.getClass());
@@ -179,6 +183,9 @@ public final class ReflectiveEventBus {
             if (l.generic != null && event instanceof GenericEventType g && g.mcc$genericType() != l.generic) continue;
             Object previousOwner = l.ownerToken == null ? null : adapter.enter(l.ownerToken);
             try {
+                if (TRACE_HANDLERS != null && l.name.contains(TRACE_HANDLERS) && traceCount++ < 60) {
+                    LOG.info("[{}] Legacy handler {} runs for {}", name, l.name, event.getClass().getName());
+                }
                 l.handle.invoke(event);
                 if (!STREAKS.isEmpty()) {
                     var streak = STREAKS.get(l.name);
