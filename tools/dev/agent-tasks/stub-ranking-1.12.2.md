@@ -1,22 +1,17 @@
 # 1.12.2: stub ranking (synthesized members by number of jars)
 
-Generated 2026-11-15 by `tools/dev/agent-tasks/make_stub_ranking.py` from the offline probe of 662 jar(s) (581 links, 49 unresolved, 26 missing-dependency, 6 obsolete); 1250 distinct synthesized members. Regenerate after implementing; implemented members drop out. Format: `n  member  # jars`.
+Generated 2026-11-16 by `tools/dev/agent-tasks/make_stub_ranking.py` from the offline probe of 662 jar(s) (581 links, 49 unresolved, 26 missing-dependency, 6 obsolete); 1225 distinct synthesized members. Regenerate after implementing; implemented members drop out. Format: `n  member  # jars`.
 
-## server-side API (top 150 of 659)
+## server-side API (top 150 of 639)
 
 ```
   5  net.minecraft.realms.RealmsBridge.<init>()V  # GalaxySpace-1.12.2-2.2.0.jar, Wynntils-MC1.12.2-v1.15.1-beta.10.jar, aether-1.12.2-v1.5.4.1.jar ...
   5  net.minecraft.world.gen.feature.WorldGenDoublePlant.setPlantType(Lnet.minecraft.block.BlockDoublePlant$EnumPlantType;)V  # ConquestReforged-3.0.2-mc1.12.2.jar, ProjectVibrantJourneys-1.12.2-1.6.4.jar, Traverse-1.12.2-1.6.0-69.jar ...
   5  net.minecraftforge.fml.common.asm.transformers.DeobfuscationTransformer.<init>()V  # +mysteriumlib-1.5.7.jar, 131-CNPC-Gecko-Addon-1.12.2-(05Jul20_03Feb22)-1.1.1.jar, AdvancedRocketry-1.12.2-2.1.9-2.jar ...
   4  net.minecraft.entity.passive.EntityTameable.NO_ANIMATION:Lnet.ilexiconn.llibrary.server.animation.Animation;  # fossilsarcheology-8.0.6.jar, iceandfire-1.9.1-1.12.2.jar, lepidodendron-1.12.2-63.02.jar ...
-  4  net.minecraft.item.ItemLeaves.<init>(Lnet.minecraft.block.BlockLeaves;)V  # IndustrialUpgrade-1.12.2-3.3.0.43.jar, JurassicReborn-1.12.2-1.3.4.jar, _NTM-Extended-1.12.2-3.0.3.jar ...
-  4  net.minecraft.network.play.server.SPacketCustomSound.<init>(Ljava.lang.String;Lnet.minecraft.util.SoundCategory;DDDFF)V  # HammerLib-1.12.2-12.2.66.jar, LucraftCore-1.12.2-2.4.17.jar, MMLib-2.3.0.jar ...
   4  net.minecraft.server.MinecraftServer.<init>(Ljava.io.File;Ljava.net.Proxy;Lnet.minecraft.util.datafix.DataFixer;Lcom.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;Lcom.mojang.authlib.minecraft.MinecraftSessionService;Lcom.mojang.authlib.GameProfileRepository;Lnet.minecraft.server.management.PlayerProfileCache;)V -> ()V  # UniversalTweaks-1.12.2-1.21.0.jar, lan-properties_forge-1.0.0+1.12-1.12.2.jar, litematica-forge-1.12.2-0.0.0-dev.20191217.195055.jar ...
   4  net.minecraftforge.fml.common.eventhandler.IEventExceptionHandler.handleException(Lnet.minecraftforge.fml.common.eventhandler.EventBus;Lnet.minecraftforge.fml.common.eventhandler.Event;[Lnet.minecraftforge.fml.common.eventhandler.IEventListener;ILjava.lang.Throwable;)V  # CubicChunks-1.12.2-0.0.1301.0-SNAPSHOT-all.jar, armorpointspp-forge-1.12.2-3.1.4.jar, gnetum-1.4.3.jar ...
   3  net.minecraft.block.Block.getAiPathNodeType(Lnet.minecraft.block.state.IBlockState;Lnet.minecraft.world.IBlockAccess;Lnet.minecraft.util.math.BlockPos;Lnet.minecraft.entity.EntityLiving;)Lnet.minecraft.pathfinding.PathNodeType;  # DoubleSlabs-1.12-0.12.2.jar, Fluidlogged-API-v3.3.3-mc1.12.2.jar, lepidodendron-1.12.2-63.02.jar
-  3  net.minecraft.entity.item.EntityBoat.getRowingTime(IF)F  # Cherry_on-1.12.2-1.3.35.jar, lepidodendron-1.12.2-63.02.jar, wakes-1.12.2-Forge-1.2.0.jar
-  3  net.minecraft.entity.passive.HorseArmorType.NONE:Lnet.minecraft.entity.passive.HorseArmorType;  # [1.12.2]-Epic-Knights-Armor-and-Weapons-6.2v(uncomplete).jar, fossilsarcheology-8.0.6.jar, horse_colors-1.12.2-1.4.0.1.jar
-  3  net.minecraft.item.ItemMonsterPlacer.spawnCreature(Lnet.minecraft.world.World;Lnet.minecraft.util.ResourceLocation;DDD)Lnet.minecraft.entity.Entity;  # GrimoireOfGaia3-1.12.2-1.7.2.jar, SCP Lockdown-1.12.2-2.4.3-release.jar, lepidodendron-1.12.2-63.02.jar
   3  net.minecraft.network.NetworkManager.createNetworkManagerAndConnect(Ljava.net.InetAddress;IZ)Lnet.minecraft.network.NetworkManager;  # EvergreenHUD-1.12.2-forge-2.1.7.jar, MineTogether-1.12.2-2.4.7.jar, viaforge-mc1122-4.4.0+4.jar
   3  net.minecraft.server.integrated.IntegratedServer.getNetworkSystem()Lnet.minecraft.network.NetworkSystem;  # EasyLAN-forge-1.12.2-v1.6a.jar, MineTogether-1.12.2-2.4.7.jar, UniversalTweaks-1.12.2-1.21.0.jar
   3  net.minecraft.world.gen.structure.StructureComponent.generateDoor(Lnet.minecraft.world.World;Lnet.minecraft.world.gen.structure.StructureBoundingBox;Ljava.util.Random;IIILnet.minecraft.util.EnumFacing;Lnet.minecraft.block.BlockDoor;)V  # HeroesExpansion-1.12.2-1.3.5.jar, iceandfire-1.9.1-1.12.2.jar, moreplanets-mc1.12.2-v2.4.1.jar
@@ -36,28 +31,19 @@ Generated 2026-11-15 by `tools/dev/agent-tasks/make_stub_ranking.py` from the of
   2  net.minecraft.advancements.CriteriaTriggers.BRED_ANIMALS:Lnet.minecraft.advancements.critereon.BredAnimalsTrigger;  # OceanicExpanse-1.2.2.jar, horse_colors-1.12.2-1.4.0.1.jar
   2  net.minecraft.advancements.critereon.BredAnimalsTrigger.trigger(Lnet.minecraft.entity.player.EntityPlayerMP;Lnet.minecraft.entity.passive.EntityAnimal;Lnet.minecraft.entity.passive.EntityAnimal;Lnet.minecraft.entity.EntityAgeable;)V  # OceanicExpanse-1.2.2.jar, horse_colors-1.12.2-1.4.0.1.jar
   2  net.minecraft.block.BlockFire.getEncouragement(Lnet.minecraft.block.Block;)I  # NarutoMod-1.12.2-0.3.1.beta.jar, _NTM-Extended-1.12.2-3.0.3.jar
-  2  net.minecraft.block.BlockLeaves.getWoodType(I)Lnet.minecraft.block.BlockPlanks$EnumType;  # LoTAS1.12.2-2.1.3.jar, _NTM-Extended-1.12.2-3.0.3.jar
   2  net.minecraft.block.BlockLiquid.getFlow(Lnet.minecraft.world.IBlockAccess;Lnet.minecraft.util.math.BlockPos;Lnet.minecraft.block.state.IBlockState;)Lnet.minecraft.util.math.Vec3d;  # Fluidlogged-API-v3.3.3-mc1.12.2.jar, NoCubes-1.12.2-0.4.0-pre-2dca66a0.jar
   2  net.minecraft.command.server.CommandBanPlayer.<init>()V  # EasyLAN-forge-1.12.2-v1.6a.jar, e4mc-retro_forge-1.1.0+1.9-1.12.2.jar
   2  net.minecraft.command.server.CommandListBans.<init>()V  # EasyLAN-forge-1.12.2-v1.6a.jar, e4mc-retro_forge-1.1.0+1.9-1.12.2.jar
   2  net.minecraft.command.server.CommandPardonPlayer.<init>()V  # EasyLAN-forge-1.12.2-v1.6a.jar, e4mc-retro_forge-1.1.0+1.9-1.12.2.jar
   2  net.minecraft.command.server.CommandWhitelist.<init>()V  # EasyLAN-forge-1.12.2-v1.6a.jar, e4mc-retro_forge-1.1.0+1.9-1.12.2.jar
   2  net.minecraft.creativetab.CreativeTabs.createIcon()Lnet.minecraft.item.ItemStack;  # TerrariaCraft-1.12.2-12.6.2.jar, tellme-1.12.2-0.7.0-dev.20200919.184303.jar
-  2  net.minecraft.entity.Entity.dealFireDamage(I)V  # Call to Battle Vehicles.jar, Modern-Warfare-Cubed-0.1.9.jar
   2  net.minecraft.entity.Entity.nextStepDistance:I  # MoBends_1.12.2-2.0.0-alpha.3.jar, [[[valkyrien-skies-1.12.2-1.1.6.jar
   2  net.minecraft.entity.EntityCreature.blockUsingShield(Lnet.minecraft.entity.EntityLivingBase;)V  # NarutoMod-1.12.2-0.3.1.beta.jar, SCP Lockdown-1.12.2-2.4.3-release.jar
   2  net.minecraft.entity.ai.EntityAIWander.x:D  # NarutoMod-1.12.2-0.3.1.beta.jar, SCP Lockdown-1.12.2-2.4.3-release.jar
   2  net.minecraft.entity.ai.EntityAIWander.y:D  # NarutoMod-1.12.2-0.3.1.beta.jar, SCP Lockdown-1.12.2-2.4.3-release.jar
   2  net.minecraft.entity.ai.EntityAIWander.z:D  # NarutoMod-1.12.2-0.3.1.beta.jar, SCP Lockdown-1.12.2-2.4.3-release.jar
   2  net.minecraft.entity.ai.EntityAIZombieAttack.<init>(Lnet.minecraft.entity.monster.EntityZombie;DZ)V -> (Lnet.minecraft.entity.EntityCreature;DZ)V  # OceanicExpanse-1.2.2.jar, nuclearcraft-1.12.2-2.19a.jar
-  2  net.minecraft.entity.item.EntityItem.combineItems(Lnet.minecraft.entity.item.EntityItem;)Z  # TerrariaCraft-1.12.2-12.6.2.jar, getittogetherdrops-1.12.2-v1.0.2.jar
-  2  net.minecraft.entity.passive.HorseArmorType.getByItemStack(Lnet.minecraft.item.ItemStack;)Lnet.minecraft.entity.passive.HorseArmorType;  # fossilsarcheology-8.0.6.jar, horse_colors-1.12.2-1.4.0.1.jar
-  2  net.minecraft.entity.passive.HorseArmorType.getByOrdinal(I)Lnet.minecraft.entity.passive.HorseArmorType;  # Call to Battle 3.jar, horse_colors-1.12.2-1.4.0.1.jar
-  2  net.minecraft.entity.passive.HorseArmorType.getProtection()I  # SCP Lockdown-1.12.2-2.4.3-release.jar, horse_colors-1.12.2-1.4.0.1.jar
   2  net.minecraft.entity.player.EntityPlayer.PLAYER_MODEL_FLAG:Lnet.minecraft.network.datasync.DataParameter;  # bbs-2.4-1.12.2.jar, bbs-fs-2.8-1.12.2-alpha.1.jar
-  2  net.minecraft.entity.player.EntityPlayer.hasSpawnDimension()Z  # DoubleSlabs-1.12-0.12.2.jar, moreplanets-mc1.12.2-v2.4.1.jar
-  2  net.minecraft.entity.player.EntityPlayer.isOnScoreboardTeam(Lnet.minecraft.scoreboard.Team;)Z  # DoubleSlabs-1.12-0.12.2.jar, NarutoMod-1.12.2-0.3.1.beta.jar
-  2  net.minecraft.entity.player.EntityPlayer.setSpawnDimension(Ljava.lang.Integer;)V  # DoubleSlabs-1.12-0.12.2.jar, moreplanets-mc1.12.2-v2.4.1.jar
   2  net.minecraft.entity.player.EntityPlayerMP.<init>(Lnet.minecraft.server.MinecraftServer;Lnet.minecraft.world.WorldServer;Lcom.mojang.authlib.GameProfile;Lnet.minecraft.server.management.PlayerInteractionManager;)V -> (Lnet.minecraft.world.World;)V  # DoubleSlabs-1.12-0.12.2.jar, Galacticraft-1.12.2-4.0.6.jar
   2  net.minecraft.entity.player.EntityPlayerMP.clearInvulnerableDimensionChange()V  # DoubleSlabs-1.12-0.12.2.jar, NarutoMod-1.12.2-0.3.1.beta.jar
   2  net.minecraft.entity.player.EntityPlayerMP.getLastActiveTime()J  # DoubleSlabs-1.12-0.12.2.jar, NarutoMod-1.12.2-0.3.1.beta.jar
@@ -155,9 +141,23 @@ Generated 2026-11-15 by `tools/dev/agent-tasks/make_stub_ranking.py` from the of
   1  net.minecraft.block.BlockFire.getFlammability(Lnet.minecraft.block.Block;)I  # NarutoMod-1.12.2-0.3.1.beta.jar
   1  net.minecraft.block.BlockSnowBlock.<init>()V  # lepidodendron-1.12.2-63.02.jar
   1  net.minecraft.command.CommandHelp.<init>()V  # UniversalTweaks-1.12.2-1.21.0.jar
+  1  net.minecraft.command.CommandLocate.<init>()V  # LucraftCore-1.12.2-2.4.17.jar
+  1  net.minecraft.command.CommandServerKick.<init>()V  # EasyLAN-forge-1.12.2-v1.6a.jar
+  1  net.minecraft.command.server.CommandBanIp.<init>()V  # EasyLAN-forge-1.12.2-v1.6a.jar
+  1  net.minecraft.command.server.CommandDeOp.<init>()V  # EasyLAN-forge-1.12.2-v1.6a.jar
+  1  net.minecraft.command.server.CommandOp.<init>()V  # EasyLAN-forge-1.12.2-v1.6a.jar
+  1  net.minecraft.command.server.CommandPardonIp.<init>()V  # EasyLAN-forge-1.12.2-v1.6a.jar
+  1  net.minecraft.command.server.CommandSaveAll.<init>()V  # EasyLAN-forge-1.12.2-v1.6a.jar
+  1  net.minecraft.command.server.CommandSaveOff.<init>()V  # EasyLAN-forge-1.12.2-v1.6a.jar
+  1  net.minecraft.command.server.CommandSaveOn.<init>()V  # EasyLAN-forge-1.12.2-v1.6a.jar
+  1  net.minecraft.enchantment.EnchantmentFireAspect.<init>(Lnet.minecraft.enchantment.Enchantment$Rarity;[Lnet.minecraft.inventory.EntityEquipmentSlot;)V  # Inspirations-1.12.2-0.2.9.jar
+  1  net.minecraft.enchantment.EnchantmentKnockback.<init>(Lnet.minecraft.enchantment.Enchantment$Rarity;[Lnet.minecraft.inventory.EntityEquipmentSlot;)V  # Inspirations-1.12.2-0.2.9.jar
+  1  net.minecraft.entity.Entity.boundingBox:Lnet.minecraft.util.math.AxisAlignedBB;  # [[[valkyrien-skies-1.12.2-1.1.6.jar
+  1  net.minecraft.entity.Entity.entityId:I  # MoBends_1.12.2-2.0.0-alpha.3.jar
+  1  net.minecraft.entity.Entity.getOwner()Lnet.minecraft.entity.EntityLivingBase;  # srpcotesia-1.12.2-1.3.4h1.jar
 ```
 
-## client-side API (top 150 of 556)
+## client-side API (top 150 of 551)
 
 ```
  10  net.minecraft.client.renderer.chunk.RenderChunk.getPosition()Lnet.minecraft.util.math.BlockPos;  # CubicChunks-1.12.2-0.0.1301.0-SNAPSHOT-all.jar, NTM-CE-1.12.2-2.6.1.0.jar, SCP Lockdown-1.12.2-2.4.3-release.jar ...
@@ -172,13 +172,11 @@ Generated 2026-11-15 by `tools/dev/agent-tasks/make_stub_ranking.py` from the of
   5  net.minecraft.client.settings.GameSettings.debugCamEnable:Z  # JurassicReborn-1.12.2-1.3.4.jar, Modern-Warfare-Cubed-0.1.9.jar, [[[valkyrien-skies-1.12.2-1.1.6.jar ...
   5  net.minecraft.realms.RealmsBridge.switchToRealms(Lnet.minecraft.client.gui.GuiScreen;)V  # GalaxySpace-1.12.2-2.2.0.jar, Wynntils-MC1.12.2-v1.15.1-beta.10.jar, aether-1.12.2-v1.5.4.1.jar ...
   5  paulscode.sound.SoundSystem.play(Ljava.lang.String;)V  # AmbientSounds_v3.1.5_mc1.12.2.jar, IC2Classic-1.12.2-1.5.15.jar, Pixelmon-1.12.2-8.4.3-universal.jar ...
-  4  net.minecraft.client.Minecraft.displayInGameMenu()V  # JurassicReborn-1.12.2-1.3.4.jar, Modern-Warfare-Cubed-0.1.9.jar, TouchController-0.2.1-beta15+forge-1.12.2.jar ...
   4  net.minecraft.client.entity.EntityPlayerSP.sprintingTicksLeft:I  # Galacticraft-1.12.2-4.0.6.jar, MoBends_1.12.2-2.0.0-alpha.3.jar, UniversalTweaks-1.12.2-1.21.0.jar ...
   4  net.minecraft.client.gui.GuiIngame.renderGameOverlay(F)V  # JurassicReborn-1.12.2-1.3.4.jar, Modern-Warfare-Cubed-0.1.9.jar, PolyPatcher-1.12.2-forge-1.10.4.jar ...
   4  net.minecraft.client.gui.GuiIngameMenu.<init>()V  # EasyLAN-forge-1.12.2-v1.6a.jar, LoTAS1.12.2-2.1.3.jar, Wynntils-MC1.12.2-v1.15.1-beta.10.jar ...
   4  net.minecraft.client.gui.GuiNewChat.getChatComponent(II)Lnet.minecraft.util.text.ITextComponent;  # CustomCursorMod-1.2.2 1.12.2.jar, MineTogether-1.12.2-2.4.7.jar, PolyPatcher-1.12.2-forge-1.10.4.jar ...
   4  net.minecraft.client.gui.GuiShareToLan.<init>(Lnet.minecraft.client.gui.GuiScreen;)V  # EasyLAN-forge-1.12.2-v1.6a.jar, MineTogether-1.12.2-2.4.7.jar, music_player-forge-1.12.2-2.1.4.375.jar ...
-  4  net.minecraft.client.multiplayer.PlayerControllerMP.onStoppedUsingItem(Lnet.minecraft.entity.player.EntityPlayer;)V  # NarutoMod-1.12.2-0.3.1.beta.jar, modularwarfare-2.4.2f.jar, modularwarfare-shining-2024.2.4.6f-fix1.jar ...
   4  net.minecraft.client.renderer.ItemRenderer.renderOverlays(F)V  # JurassicReborn-1.12.2-1.3.4.jar, Modern-Warfare-Cubed-0.1.9.jar, modularwarfare-2.4.2f.jar ...
   4  net.minecraft.client.renderer.RenderGlobal.createBindEntityOutlineFbs(II)V  # JurassicReborn-1.12.2-1.3.4.jar, Modern-Warfare-Cubed-0.1.9.jar, bbs-fs-2.8-1.12.2-alpha.1.jar ...
   4  net.minecraft.client.renderer.RenderGlobal.setWorldAndLoadRenderers(Lnet.minecraft.client.multiplayer.WorldClient;)V  # Call to Battle 3.jar, CubicChunks-1.12.2-0.0.1301.0-SNAPSHOT-all.jar, modularwarfare-2.4.2f.jar ...
@@ -196,12 +194,9 @@ Generated 2026-11-15 by `tools/dev/agent-tasks/make_stub_ranking.py` from the of
   4  paulscode.sound.SoundSystem.setPitch(Ljava.lang.String;F)V  # AmbientSounds_v3.1.5_mc1.12.2.jar, IC2Classic-1.12.2-1.5.15.jar, industrialcraft-2-2.8.222-ex112.jar ...
   4  paulscode.sound.SoundSystem.setVolume(Ljava.lang.String;F)V  # AmbientSounds_v3.1.5_mc1.12.2.jar, IC2Classic-1.12.2-1.5.15.jar, industrialcraft-2-2.8.222-ex112.jar ...
   4  paulscode.sound.SoundSystem.stop(Ljava.lang.String;)V  # AmbientSounds_v3.1.5_mc1.12.2.jar, IC2Classic-1.12.2-1.5.15.jar, industrialcraft-2-2.8.222-ex112.jar ...
-  3  net.minecraft.client.entity.EntityPlayerSP.getHorseJumpPower()F  # LibrarianLib-Continuous-1.12.2-4.22-2.0-3.jar, Wynntils-MC1.12.2-v1.15.1-beta.10.jar, 永爱之刃-v11削弱.jar
-  3  net.minecraft.client.entity.EntityPlayerSP.sendHorseInventory()V  # modularwarfare-2.4.2f.jar, modularwarfare-shining-2024.2.4.6f-fix1.jar, v1.12.2-v3.2.9.jar
   3  net.minecraft.client.entity.EntityPlayerSP.setPermissionLevel(I)V  # MineTogether-1.12.2-2.4.7.jar, UniversalTweaks-1.12.2-1.21.0.jar, bbs-2.4-1.12.2.jar
   3  net.minecraft.client.gui.GuiScreen.handleComponentHover(Lnet.minecraft.util.text.ITextComponent;II)V  # MineTogether-1.12.2-2.4.7.jar, TerrariaCraft-1.12.2-12.6.2.jar, 永爱之刃-v11削弱.jar
   3  net.minecraft.client.model.ModelEnderman.<init>(F)V  # ancientwarfare-1.12.2-2.10.2.jar, defiledlands-1.12.2-1.4.3.jar, techguns-2.2.0.1.jar
-  3  net.minecraft.client.multiplayer.PlayerControllerMP.isRidingHorse()Z  # modularwarfare-2.4.2f.jar, modularwarfare-shining-2024.2.4.6f-fix1.jar, v1.12.2-v3.2.9.jar
   3  net.minecraft.client.multiplayer.ServerAddress.fromString(Ljava.lang.String;)Lnet.minecraft.client.multiplayer.ServerAddress;  # Cloudflared-1.12.2-12.2.3.jar, EvergreenHUD-1.12.2-forge-2.1.7.jar, jsmacros-1.12.2-FORGE-1.8.3.jar
   3  net.minecraft.client.renderer.ChunkRenderContainer.initialize(DDD)V  # SCP Lockdown-1.12.2-2.4.3-release.jar, [1.12.2] SecurityCraft v1.10.1.jar, litematica-forge-1.12.2-0.0.0-dev.20191217.195055.jar
   3  net.minecraft.client.renderer.RenderGlobal.renderEntityOutlineFramebuffer()V  # JurassicReborn-1.12.2-1.3.4.jar, Modern-Warfare-Cubed-0.1.9.jar, 永爱之刃-v11削弱.jar
@@ -310,6 +305,11 @@ Generated 2026-11-15 by `tools/dev/agent-tasks/make_stub_ranking.py` from the of
   1  net.minecraft.client.Minecraft.stopIntegratedServer()V  # LoTAS1.12.2-2.1.3.jar
   1  net.minecraft.client.Minecraft.storeTEInStack(Lnet.minecraft.item.ItemStack;Lnet.minecraft.tileentity.TileEntity;)Lnet.minecraft.item.ItemStack;  # TerrariaCraft-1.12.2-12.6.2.jar
   1  net.minecraft.client.audio.SoundHandler.<init>(Lnet.minecraft.client.resources.IResourceManager;Lnet.minecraft.client.settings.GameSettings;)V -> ()V  # fermiumasm-5.31.jar
+  1  net.minecraft.client.audio.SoundList.<init>(Ljava.util.List;ZLjava.lang.String;)V  # ancientwarfare-1.12.2-2.10.2.jar
+  1  net.minecraft.client.audio.SoundManager.getURLForSoundResource(Lnet.minecraft.util.ResourceLocation;)Ljava.net.URL;  # matmos-1.12.2-36.0.1.jar
+  1  net.minecraft.client.audio.SoundManager.getVolume(Lnet.minecraft.util.SoundCategory;)F  # matmos-1.12.2-36.0.1.jar
+  1  net.minecraft.client.audio.SoundManager.loaded:Z  # matmos-1.12.2-36.0.1.jar
+  1  net.minecraft.client.audio.SoundManager.playingSounds:Ljava.util.Map;  # UniversalModCore-1.12.2-forge-1.3.1.jar
 ```
 
 ## mod-side API (top 35 of 35)
