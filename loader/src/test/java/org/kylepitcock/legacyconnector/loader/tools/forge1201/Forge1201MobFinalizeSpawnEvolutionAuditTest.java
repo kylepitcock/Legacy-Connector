@@ -53,6 +53,10 @@ final class Forge1201MobFinalizeSpawnEvolutionAuditTest {
                     new MethodSpec[0]);
             addClass(jar, "net/minecraft/world/entity/Villager", Forge1201MobFinalizeSpawnEvolutionAudit.MOB_OWNER,
                     new MethodSpec[0]);
+            // The class exists in both runtimes; only the source fixture declares a same-signature
+            // static helper, which must not shadow the inherited virtual Mob.finalizeSpawn method.
+            addClass(jar, "net/minecraft/world/entity/StaticHelperMob", Forge1201MobFinalizeSpawnEvolutionAudit.MOB_OWNER,
+                    new MethodSpec[0]);
             addClass(jar, "net/minecraft/world/entity/Warden", Forge1201MobFinalizeSpawnEvolutionAudit.MOB_OWNER,
                     new MethodSpec[] { new MethodSpec(Forge1201MobFinalizeSpawnEvolutionAudit.TARGET_BASE_DESCRIPTOR, Opcodes.ACC_PUBLIC) });
         }
