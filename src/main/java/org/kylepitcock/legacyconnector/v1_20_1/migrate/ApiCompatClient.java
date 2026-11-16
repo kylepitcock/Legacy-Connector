@@ -32,4 +32,16 @@ public final class ApiCompatClient {
     public static net.minecraft.client.resources.model.BakedModel getModel(net.minecraft.client.resources.model.ModelManager manager, ResourceLocation id) {
         return manager.getModel(ModelResourceLocation.standalone(id));
     }
+
+    /** {@code Item.getRenderPropertiesInternal()}: the client extensions the item's {@code initializeClient} registered, null when it registered none. */
+    public static Object itemRenderProperties(net.minecraft.world.item.Item item) {
+        var ext = net.neoforged.neoforge.client.extensions.common.IClientItemExtensions.of(item);
+        return ext == net.neoforged.neoforge.client.extensions.common.IClientItemExtensions.DEFAULT ? null : ext;
+    }
+
+    /** {@code Block.getRenderPropertiesInternal()}, likewise. */
+    public static Object blockRenderProperties(net.minecraft.world.level.block.Block block) {
+        var ext = net.neoforged.neoforge.client.extensions.common.IClientBlockExtensions.of(block);
+        return ext == net.neoforged.neoforge.client.extensions.common.IClientBlockExtensions.DEFAULT ? null : ext;
+    }
 }

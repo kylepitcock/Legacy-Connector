@@ -61,7 +61,7 @@ class PalladiumCorePlayerSkin1201Test implements Opcodes {
         // The original callback remains present and keeps its exception policy.
         assertEquals(1, callback.tryCatchBlocks.size());
         assertSame(originalCatch, callback.tryCatchBlocks.get(0));
-        assertTrue(containsCall(callback, EVENT, "getSkins", "()Ljava/util/Set;"));
+        assertTrue(containsCall(callback, "org/kylepitcock/legacyconnector/v1_20_1/migrate/ClientCompat", "getSkinModels", "(L" + EVENT + ";)Ljava/util/Set;"));
         assertTrue(containsCall(callback, "java/util/Set", "forEach",
                 "(Ljava/util/function/Consumer;)V"));
 
@@ -134,8 +134,8 @@ class PalladiumCorePlayerSkin1201Test implements Opcodes {
 
         Mc1201Migration.Counts counts = Mc1201Migration.apply(node, hierarchy);
 
-        assertEquals(1, counts.calls,
-                "the generic migration table redirects the legacy String-based AddLayers.getSkin call");
+        assertEquals(2, counts.calls,
+                "the generic migration table redirects the legacy String-based AddLayers.getSkin and getSkins calls");
         MethodNode lambda = findMethod(node, "lambda$renderLayers$0", OLD_LAMBDA_DESC);
         assertNotNull(lambda);
         assertNotNull(findCall(lambda,

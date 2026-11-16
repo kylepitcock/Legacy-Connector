@@ -44,7 +44,7 @@ public class LegacyEnchantment {
     }
 
     private final Rarity rarity;
-    public final LegacyEnchantmentCategory category;
+    public LegacyEnchantmentCategory category;
     private final EquipmentSlot[] slots;
     private String descriptionId;
     private Holder<Enchantment> vanilla;

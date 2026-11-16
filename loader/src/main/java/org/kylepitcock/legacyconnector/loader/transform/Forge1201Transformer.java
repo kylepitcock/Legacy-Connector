@@ -303,6 +303,7 @@ public final class Forge1201Transformer {
         Datagen1201.Stats datagen = Datagen1201.apply(nodes);
         if (datagen.classes + datagen.methods > 0) result.notes.add("Data generation code dropped (dead in a running game): " + datagen);
         Mc1201Migration.Counts mc = new Mc1201Migration.Counts();
+        java.util.concurrent.atomic.AtomicInteger modelLocationSites = new java.util.concurrent.atomic.AtomicInteger();
         Mixin1201.Stats mixinStats = new Mixin1201.Stats();
         mixinStats.refmaps = org.kylepitcock.legacyconnector.loader.transform.mixin1201.Refmaps.parse(other);
         Set<String> jarClasses = new HashSet<>();
@@ -395,6 +396,8 @@ public final class Forge1201Transformer {
             palladiumPlayerSkinChanges += palladiumPlayerSkinChange;
             Mc1201Migration.Counts changed = Mc1201Migration.apply(node, hierarchy);
             mc.add(changed);
+            int modelLocationChange = ModelLocation1201.apply(node);
+            modelLocationSites.addAndGet(modelLocationChange);
             int palladiumFlightHandlerChange = PalladiumFlightHandler1201.apply(node);
             palladiumFlightHandlerChanges += palladiumFlightHandlerChange;
             int palladiumCustomProjectileChange = PalladiumCustomProjectile1201.apply(node);
@@ -429,7 +432,7 @@ public final class Forge1201Transformer {
             int palladiumSelectionListChange = PalladiumSelectionLists1201.apply(node);
             palladiumSelectionListChanges += palladiumSelectionListChange;
             int mixinResigned = Mixin1201.apply(node, srg, hierarchy, Mc1201Tables.get(), mixinStats);
-            migrated.put(node, mixinResigned + viaCalls + changed.total() + palladiumChanges + palladiumAddonPackChange
+            migrated.put(node, modelLocationChange + mixinResigned + viaCalls + changed.total() + palladiumChanges + palladiumAddonPackChange
                     + palladiumWidgetButtonChange + palladiumMixinChange + palladiumLootChange
                     + palladiumAccessoryScreenChange + palladiumAdvancementWidgetChange + palladiumPowersScreenChange
                     + palladiumSelectionListChange + palladiumSuitStandChange
@@ -518,6 +521,8 @@ public final class Forge1201Transformer {
         for (ClassNode node : nodes) {
             if (PalladiumKubeJS1201.dropLegacyKubejsClass(node.name)) continue;
             dropDuplicateBridges(node, result);
+            // two classes renamed onto one (TextureStitchEvent and its Post): the inner class entry would name the class as its own outer class, which the JVM rejects
+            if (node.innerClasses != null) node.innerClasses.removeIf(ic -> ic.name.equals(ic.outerName));
             int softened = soft == null ? 0 : soft.apply(node);
             byte[] bytes;
             if (migrated.get(node) > 0 || softened == 2) {
@@ -553,6 +558,7 @@ public final class Forge1201Transformer {
             result.softSymbols.addAll(soft.stats.symbolList());
         }
         if (soft != null) for (String u : soft.unfixable) result.notes.add("Soft link: class " + u.replace('/', '.') + " does not exist in 1.21.1; a mod class extending it cannot be stood in for and will not load");
+        if (modelLocationSites.get() > 0) result.notes.add("ModelResourceLocation used as a ResourceLocation (a record in 1.21.1): " + modelLocationSites + " site(s) converted with id()");
         if (mc.total() > 0) result.notes.add("Minecraft 1.20.1 to 1.21.1 migration: " + mc);
         if (mc.widgetNarrationOverrides > 0) {
             result.notes.add("Minecraft 1.20.1 AbstractWidget.updateNarration() overrides migrated to the 1.21.1 updateWidgetNarration() hook: "
@@ -682,6 +688,17 @@ public final class Forge1201Transformer {
             if (ownUnit) dropDanglingProviders(outResources, outClasses.keySet());
             if (ownUnit) result.notes.add("Side-by-side library: mod id(s) " + ownIds + " load as separate unit(s), packages relocated under " + SideBySide.prefix(VER));
             else result.notes.add("Side-by-side: references to isolated libraries " + plan.units().stream().filter(u -> u.version() == VER).map(SideBySide.Unit::modId).toList() + " link to their relocated copies");
+        }
+        java.util.Set<String> openedMembers = PrivateAccess1201.lines(nodes, hierarchy);
+        if (!openedMembers.isEmpty()) {
+            byte[] existing = outResources.get("META-INF/accesstransformer.cfg");
+            String text = existing == null ? "" : new String(existing, StandardCharsets.UTF_8);
+            StringBuilder at = new StringBuilder(text);
+            if (!text.isEmpty() && !text.endsWith("\n")) at.append('\n');
+            at.append("# private game members this jar's code uses (Forge 1.20.1 opened them with its own transformers)\n");
+            for (String line : openedMembers) at.append(line).append('\n');
+            outResources.put("META-INF/accesstransformer.cfg", at.toString().getBytes(StandardCharsets.UTF_8));
+            result.notes.add("Access transformer: " + openedMembers.size() + " private game member(s) used by the code opened");
         }
         int alienEvoResourceChanges = PalladiumResourceCompat1201.apply(outResources);
         if (alienEvoResourceChanges > 0) {
