@@ -76,7 +76,7 @@ class LegacyItemStackNbt1201Test {
         residual.put("EntityTag", staleEntityTag);
         CompoundTag display = new CompoundTag();
         display.putString("LoreMarker", "preserved");
-        display.putString("Name", "{\\"text\\":\\"stale name\\"}");
+        display.putString("Name", "{\"text\":\"stale name\"}");
         residual.put("display", display);
         stack.set(DataComponents.CUSTOM_DATA, CustomData.of(residual));
 
