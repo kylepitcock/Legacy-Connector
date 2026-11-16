@@ -174,6 +174,21 @@ committed baseline (no argument runs every suite; about 2 to 5 minutes per suite
 - **Entity self test determinism:** the test pins the world to night with the daylight/weather cycles and mob griefing off (undead no longer burn
   in sunlight, whose timing made `entOk` vary between identical runs); the AI still runs, so an entity that dies from its own code counts as removed.
 
+## Practices learned on 2026-11-16
+
+- **Wiki links.** `python tools/dev/check_wiki_links.py` checks every relative link and anchor in `docs/wiki` and `README.md` and lists pages Home.md does not link; run it after adding a page.
+- **A client that fails mod loading stays open.** NeoForge shows its error screen and the process never exits, so a script that only waits for the game to quit hangs. Poll
+  `logs/latest.log` (and the process) for the failure or success line, then stop the game yourself. `tools/dev/client-once.sh` is not on master yet; until it is,
+  the rule applies to every ad hoc client script (`verify/client.py` already kills the game after its steps).
+- **Combined suites find defects single suites miss.** `atm9-1201-all` (every mod of the ATM 9 batches together) found defects that the single suites (`atm9-1201-1` to `-7`) did not (for example a capability lookup recursing to a stack overflow in the server tick, commit 5bf6309c1).
+  Run a combined suite before judging a batch of 1.20.1 changes; it has no baseline entry yet.
+- **Port clashes between parallel runs.** `verify.sh` derives `server-port`, `query.port` and `rcon.port` from `VERIFY_PORT_BASE` (default 25570, plus the suite index). Two verify runs
+  at once (two worktrees) must use different bases, for example `VERIFY_PORT_BASE=25770`, or the second server fails to bind.
+- **The entity count of `mixed` varies.** `entities_alive` of that suite has been seen between 462 and 531 against a baseline of 526 on identical code (random spawns, AI deaths).
+  Re-run once before reading a drop as a regression; the other metrics of the suite (failed mods, problems, crash reports) do not vary.
+- **A server that exits with -1 during mod loading** (no crash report, log ends mid-load) may have been killed by another run: `pkill`-style cleanups, a timeout of a parallel
+  `verify.sh`, or `kill-server.ps1` of a second checkout. Check for a concurrent run before looking for a defect, and run one java at a time per machine as far as memory allows.
+
 ## Client scenarios
 
 `tools/dev/verify-client.sh [scenario ...]` runs scripted checks in a real client (a game window opens for a few minutes per scenario; one client at a
@@ -245,6 +260,11 @@ python3 tools/compat/probe.py --from-json out.json --mc 1.7.10             # con
 ## Mixins next to performance mods
 
 Every mixin of the layer was checked against the mixin targets of Sodium, Iris, FerriteCore, ModernFix, C2ME and the other perf mods of `run-perfmods/`; the table, the rules for new mixins and the open points are in [Mixin-Audit](Mixin-Audit.md).
+
+**Rule for new mixins (learned 2026-11-16):** a mixin into a vanilla class must not name a type or member that a performance mod retypes or replaces: a handler
+parameter or `@Shadow` typed `Reference2ObjectArrayMap` crashed every pack with FerriteCore at boot (JVM verification), because FerriteCore changes the field's type.
+Prefer injectors that need no such type (inject at `RETURN`/`NEW`, public accessors, MixinExtras `WrapOperation`) and check the table in the audit. The suite
+`atm9-1201-stable` carries FerriteCore as a guard, so a regression of this kind fails `tools/dev/verify.sh` without a manual pack test.
 
 ## Keeping the core mod-agnostic
 

@@ -20,8 +20,8 @@
 | **1.5.2** | `mods/1.5.2/` | 🧪 Alpha |
 | **1.4.7** | `mods/1.4.7/` | 🧪 Alpha |
 | **Forge 1.20.1** | `mods/1.20.1/` | 🧪 Alpha (remapped in place; on by default) |
-| **Beta 1.7.3** | `mods/b1.7.3/` (jars or zips) | 🧪 Alpha (ModLoader / Forge 1.0 era) |
-| 1.2.5 | | Design (jars are recognised and reported, not loaded) |
+| **Beta 1.7.3** | `mods/b1.7.3/` (jars or zips) | 🧪 Alpha (ModLoader / Forge 1.0 era; contributor-maintained) |
+| 1.2.5 | `mods/1.2.5/` | 🔬 Experimental, opt-in (ModLoader / early Forge mods; three small server builds load, nothing run in a client) |
 | 1.19.2, 1.18.2, 1.16.5 | | Planned, as stages on top of the 1.20.1 support |
 
 Put the mods for each version into its folder next to Legacy Connector. They get translated when the game loads and run as normal NeoForge mods. It's the same idea as Sinytra Connector, but for old Forge mods instead of Fabric. Your original jars are never modified.
@@ -59,7 +59,8 @@ The link figures are an offline check of release 0.4.14 (2026-11-13): how many o
 - **1.12.2 (beta; 578 of 645 jars link):** Atum 2, The Midnight, The Betweenlands, Scape and Run: Parasites and Abyssalcraft load and play with their own models, mobs, GUIs, dimensions and world generation. Mod fluids are real fluids with buckets, and items with subtypes become one item each. Modern containers and items are visible to old mods (pipes of an old mod can use a modern barrel), and blocks drawn by a mod's own renderer through CodeChickenLib work (Thermal Dynamics ducts). Some mods (Applied Energistics 2, EnderIO, Industrial Foregoing, Extra Utilities 2) still have rendering defects.
 - **1.6.4 (beta; 35 of 45):** a layer over the 1.7.10 support. Tinkers' Construct (smeltery included), Mo' Creatures, Twilight Forest, Forestry, IndustrialCraft 2 and others were played in survival. Thaumcraft 4 is missing.
 - **1.5.2 (alpha; 35 of 38) and 1.4.7 (alpha; 45 of 49):** small deltas over 1.6.4. Twilight Forest, Applied Energistics 1 and BuildCraft (1.5.2) and RedPower 2, BuildCraft, ComputerCraft and Applied Energistics (1.4.7) run in a real client. Mods that replace Minecraft's own classes in a patched `minecraft.jar` (Better Than Wolves) cannot work.
-- **Forge 1.20.1 (alpha; 99 of 494 jars of the ATM 9 pack, 152 in the nightly build):** mods are remapped in place onto NeoForge 1.21.1, with Forge API facades, data conversion and soft links for removed API. Mixins whose targets changed are repaired or dropped one by one instead of failing the mod, and item NBT in recipes and loot becomes data components. Terramity, Palladium with its addon packs and Another Furniture run, 141 of the 506 mods of an ATM 9 pack link and the first batches start on a server; most other 1.20.1 mods still have unresolved references, and most of the rest have a native 1.21.1 version anyway. Contributions by kentvillamor08.
+- **Forge 1.20.1 (alpha; 99 of 494 jars of the ATM 9 pack, 152 in the nightly build):** mods are remapped in place onto NeoForge 1.21.1, with Forge API facades, data conversion and soft links for removed API. Mixins whose targets changed are repaired or dropped one by one instead of failing the mod, and item NBT in recipes and loot becomes data components. On a server a 108-mod subset of an ATM 9 pack loads with 0 failures. In a client single mods such as CoFH Core, Thermal Foundation, Redstone Arsenal and Ensorcellation reach a world, and Terramity, Palladium with its addon packs and Another Furniture run; the combined ATM 9 set does not reach a world in a client yet. 141 of the 506 mods of the pack link; most other 1.20.1 mods still have unresolved references, and most of the rest have a native 1.21.1 version anyway. Contributions by kentvillamor08.
+- **1.2.5 (experimental, opt-in):** ModLoader / early Forge mods are translated to the 1.4.7 layer when the build flag `-Pmappings125` and the run flag `-Dlegacyconnector.mc125=true` are set. Three small server builds load on a server (MagicWands, Backpack, Elemental Creepers); nothing has been run in a client yet.
 - **Beta 1.7.3 (alpha; 38 of 44 archives link, 20 of them through placeholder APIs):** ModLoader and Forge 1.0 era mods load with their own textures, block behaviour, tile entities and GUIs, and supported mob families run their original callbacks. Entities and world generation are still incomplete. Contributed by Zekken01.
 
 ---
@@ -253,7 +254,7 @@ modern/legacy stack and tile conversion, and NeoForge capabilities for legacy ti
 
 ## Roadmap
 
-✅ 1.7.10 → ✅ **1.12.2** (beta) → **1.6.4** (beta) → **1.5.2** (alpha) → **1.4.7** (alpha) → **1.20.1** (alpha) → **1.19.2** → **1.18.2** → **1.16.5** → **1.2.5**
+✅ 1.7.10 → ✅ **1.12.2** (beta) → **1.6.4** (beta) → **1.5.2** (alpha) → **1.4.7** (alpha) → **1.20.1** (alpha) → **1.2.5** (experimental, pulled forward 2026-11-16) → **1.19.2** → **1.18.2** → **1.16.5**
 
 Beta 1.7.3 (alpha) was added on a contributor's request, outside this order. 1.19.2, 1.18.2 and 1.16.5 are planned as a chain of stages on top of the 1.20.1 pipeline ([plan](https://github.com/kylepitcock/Legacy-Connector/blob/master/docs/wiki/Legacy-1.16-1.19-Plan.md), [roadmap](https://github.com/kylepitcock/Legacy-Connector/blob/master/docs/wiki/Version-Roadmap.md)). 1.8 to 1.11.2 are not planned.
 
