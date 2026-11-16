@@ -32,6 +32,8 @@ public abstract class BaseMod {
 
     @Mod.EventHandler
     public void mcc$modLoaderInit(FMLInitializationEvent event) {
+        // ModLoader read the @MLProp fields (block and item ids, options) before it called load()
+        org.kylepitcock.legacyconnector.core.MLPropConfig.load(getClass(), net.neoforged.fml.loading.FMLPaths.CONFIGDIR.get(), MLProp.class);
         ModLoader.mcc$load(this);
     }
 
@@ -95,6 +97,22 @@ public abstract class BaseMod {
     public void takenFromCrafting(EntityPlayer player, ItemStack item, IInventory matrix) {}
 
     public void takenFromFurnace(EntityPlayer player, ItemStack item) {}
+
+    /** 1.2.5 to 1.5.2: a dispenser fired an item the mod registered with {@code ModLoader.dispenseEntity}; true when the mod spawned something. */
+    public boolean dispenseEntity(World world, double x, double y, double z, int xVel, int zVel, ItemStack item) {
+        return false;
+    }
+
+    /** A chat packet addressed to the mod's channel (the server's {@code ModLoader.serverChat}). */
+    public void receiveChatPacket(String text) {}
+
+    /** A custom payload on a channel the mod registered with {@code ModLoader.registerPacketChannel}. */
+    public void receiveCustomPacket(legacyconnector.v1_6_4.net.minecraft.network.packet.Packet250CustomPayload packet) {}
+
+    /** The client joined a multiplayer server / left it (not called for the integrated server, as in ModLoader). */
+    public void serverConnect(legacyconnector.v1_7_10.net.minecraft.client.network.NetHandlerPlayClient handler) {}
+
+    public void serverDisconnect() {}
 
     public Entity spawnEntity(int entityId, World world, double scaledX, double scaledY, double scaledZ) {
         return null;

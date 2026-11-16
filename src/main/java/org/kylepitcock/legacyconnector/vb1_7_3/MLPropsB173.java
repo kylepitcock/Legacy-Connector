@@ -25,50 +25,7 @@ final class MLPropsB173 {
     private MLPropsB173() {}
 
     static void load(Class<?> modClass, Path configDir) {
-        Path file = configDir.resolve(modClass.getSimpleName() + ".cfg");
-        Properties props = new Properties();
-        if (Files.isRegularFile(file)) {
-            try (Reader r = Files.newBufferedReader(file, StandardCharsets.ISO_8859_1)) {
-                props.load(r);
-            } catch (IOException e) {
-                LOG.warn("Cannot read {}: {}", file, e.toString());
-            }
-        }
-        StringBuilder comments = new StringBuilder();
-        boolean changed = false;
-        for (Field f : modClass.getDeclaredFields()) {
-            MLProp prop = f.getAnnotation(MLProp.class);
-            if (prop == null || !Modifier.isStatic(f.getModifiers())) continue;
-            try {
-                f.setAccessible(true);
-                String key = prop.name().isEmpty() ? f.getName() : prop.name();
-                Object current = f.get(null);
-                String raw = props.getProperty(key);
-                if (raw == null) {
-                    if (current != null) {
-                        props.setProperty(key, current.toString());
-                        changed = true;
-                    }
-                } else {
-                    Object value = parse(f.getType(), raw.trim());
-                    if (value != null && inRange(value, prop)) f.set(null, value);
-                    else LOG.warn("{} in {}: {} is not a valid value, keeping {}", key, file.getFileName(), raw, current);
-                }
-                if (!prop.info().isEmpty()) comments.append(key).append(" - ").append(prop.info()).append('\n');
-            } catch (ReflectiveOperationException | RuntimeException e) {
-                LOG.warn("Cannot apply the MLProp {} of {}: {}", f.getName(), modClass.getSimpleName(), e.toString());
-            }
-        }
-        if (changed) {
-            try {
-                Files.createDirectories(configDir);
-                try (Writer w = Files.newBufferedWriter(file, StandardCharsets.ISO_8859_1)) {
-                    props.store(w, comments.length() == 0 ? null : comments.toString().trim());
-                }
-            } catch (IOException e) {
-                LOG.warn("Cannot write {}: {}", file, e.toString());
-            }
-        }
+        org.kylepitcock.legacyconnector.core.MLPropConfig.load(modClass, configDir, MLProp.class);
     }
 
     /**
@@ -185,27 +142,5 @@ final class MLPropsB173 {
         } catch (IOException e) {
             LOG.warn("Cannot update {}: {}", file, e.toString());
         }
-    }
-
-    private static Object parse(Class<?> type, String raw) {
-        try {
-            if (type == int.class || type == Integer.class) return Integer.parseInt(raw);
-            if (type == boolean.class || type == Boolean.class) return Boolean.parseBoolean(raw);
-            if (type == float.class || type == Float.class) return Float.parseFloat(raw);
-            if (type == double.class || type == Double.class) return Double.parseDouble(raw);
-            if (type == long.class || type == Long.class) return Long.parseLong(raw);
-            if (type == short.class || type == Short.class) return Short.parseShort(raw);
-            if (type == byte.class || type == Byte.class) return Byte.parseByte(raw);
-            if (type == String.class) return raw;
-        } catch (NumberFormatException e) {
-            return null;
-        }
-        return null;
-    }
-
-    private static boolean inRange(Object value, MLProp prop) {
-        if (!(value instanceof Number n)) return true;
-        double d = n.doubleValue();
-        return d >= prop.min() && d <= prop.max();
     }
 }
