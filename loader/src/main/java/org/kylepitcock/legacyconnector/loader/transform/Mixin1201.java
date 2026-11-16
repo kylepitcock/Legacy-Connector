@@ -49,6 +49,8 @@ final class Mixin1201 {
         final InjectionRepair.Counts repair = new InjectionRepair.Counts();
         /** stood-in static accessors: "owner.name+desc" of the mixin interface method to the MiscCompat helper that replaces its call sites */
         final Map<String, String> standIns = new java.util.HashMap<>();
+        /** stood-in instance accessors: "owner.name+desc" of the interface method to the Round6Compat helper taking the instance */
+        final Map<String, String> instanceStandIns = new java.util.HashMap<>();
         /** member renames applied from the tables (the "renamed" class of the proof) */
         int membersRenamed;
         /** old descriptors from the jar's refmaps (mixin class to annotation string to descriptor), set by the transformer before the classes are processed */
@@ -106,7 +108,15 @@ final class Mixin1201 {
             }
         }
         if (targets.size() == 1 && (node.access & org.objectweb.asm.Opcodes.ACC_INTERFACE) != 0) {
-            for (MethodNode m : node.methods) standInRemovedInstanceAccessor(m, targets.get(0));
+            boolean instanceStoodIn = false;
+            for (MethodNode m : node.methods) instanceStoodIn |= standInRemovedInstanceAccessor(m, targets.get(0), node.name, st);
+            // an accessor interface left without annotations has nothing to apply: a plain interface out of the config (the call sites go to the helper)
+            if (instanceStoodIn && node.methods.stream().allMatch(m -> (m.invisibleAnnotations == null || m.invisibleAnnotations.isEmpty()) && (m.visibleAnnotations == null || m.visibleAnnotations.isEmpty()))) {
+                st.droppedClasses.add(node.name);
+                if (node.invisibleAnnotations != null) node.invisibleAnnotations.removeIf(a -> MIXIN.equals(a.desc));
+                if (node.visibleAnnotations != null) node.visibleAnnotations.removeIf(a -> MIXIN.equals(a.desc));
+                return 1;
+            }
         }
         String shadow = missingShadow(node, targets, h);
         if (shadow != null) {
@@ -148,10 +158,10 @@ final class Mixin1201 {
 
     /**
      * An abstract {@code @Accessor getX()} of a field in {@link #REMOVED_INSTANCE_FIELDS} cannot apply (Mixin fails with "No candidates", or the class is dropped and
-     * the call site gets an AbstractMethodError). The annotation goes and the method becomes a default method answering through the migrate helper, so the
-     * interface still reaches the target class (the mixin adds it) and callers keep working.
+     * the call site gets an AbstractMethodError). The annotation goes and the mixin leaves its config (a plain interface); call sites ({@code ((Accessor) x).getX()}) go
+     * to the migrate helper directly ({@link #redirectStandIns}), the cast included.
      */
-    static boolean standInRemovedInstanceAccessor(MethodNode m, String target) {
+    static boolean standInRemovedInstanceAccessor(MethodNode m, String target, String mixinClass, Stats st) {
         if ((m.access & org.objectweb.asm.Opcodes.ACC_ABSTRACT) == 0 || (m.access & org.objectweb.asm.Opcodes.ACC_STATIC) != 0 || !m.desc.startsWith("()")) return false;
         List<AnnotationNode> owner = m.invisibleAnnotations;
         AnnotationNode a = find(owner, "Lorg/spongepowered/asm/mixin/gen/Accessor;");
@@ -163,14 +173,7 @@ final class Mixin1201 {
         String helper = REMOVED_INSTANCE_FIELDS.get(target + "." + name);
         if (helper == null) return false;
         owner.remove(a);
-        m.access &= ~org.objectweb.asm.Opcodes.ACC_ABSTRACT;
-        m.instructions.clear();
-        m.instructions.add(new org.objectweb.asm.tree.VarInsnNode(org.objectweb.asm.Opcodes.ALOAD, 0));
-        m.instructions.add(new org.objectweb.asm.tree.MethodInsnNode(org.objectweb.asm.Opcodes.INVOKESTATIC, "org/kylepitcock/legacyconnector/v1_20_1/migrate/Round6Compat",
-                helper, "(Ljava/lang/Object;)" + Type.getReturnType(m.desc).getDescriptor(), false));
-        m.instructions.add(new org.objectweb.asm.tree.InsnNode(Type.getReturnType(m.desc).getOpcode(org.objectweb.asm.Opcodes.IRETURN)));
-        m.maxStack = 2;
-        m.maxLocals = 1;
+        st.instanceStandIns.put(mixinClass + "." + m.name + m.desc, helper);
         return true;
     }
 
@@ -219,8 +222,20 @@ final class Mixin1201 {
      * cannot be loaded (Mixin's IllegalClassLoadError), so nothing may reference it.
      */
     static int redirectStandIns(Iterable<ClassNode> nodes, Stats st) {
-        if (st.standIns.isEmpty()) return 0;
+        if (st.standIns.isEmpty() && st.instanceStandIns.isEmpty()) return 0;
         int n = 0;
+        for (ClassNode c : nodes) for (MethodNode m : c.methods) {
+            for (org.objectweb.asm.tree.AbstractInsnNode in : m.instructions.toArray()) {
+                if (!(in instanceof org.objectweb.asm.tree.MethodInsnNode mi) || mi.getOpcode() != org.objectweb.asm.Opcodes.INVOKEINTERFACE) continue;
+                String helper = st.instanceStandIns.get(mi.owner + "." + mi.name + mi.desc);
+                if (helper == null) continue;
+                // ((Accessor) region).getX(): the cast cannot hold (the interface is no longer mixed in), the helper takes the plain object
+                if (in.getPrevious() instanceof org.objectweb.asm.tree.TypeInsnNode cast && cast.getOpcode() == org.objectweb.asm.Opcodes.CHECKCAST && cast.desc.equals(mi.owner)) m.instructions.remove(cast);
+                m.instructions.set(mi, new org.objectweb.asm.tree.MethodInsnNode(org.objectweb.asm.Opcodes.INVOKESTATIC, "org/kylepitcock/legacyconnector/v1_20_1/migrate/Round6Compat",
+                        helper, "(Ljava/lang/Object;)" + Type.getReturnType(mi.desc).getDescriptor(), false));
+                n++;
+            }
+        }
         for (ClassNode c : nodes) for (MethodNode m : c.methods) for (org.objectweb.asm.tree.AbstractInsnNode in : m.instructions) {
             if (!(in instanceof org.objectweb.asm.tree.MethodInsnNode mi) || mi.getOpcode() != org.objectweb.asm.Opcodes.INVOKESTATIC) continue;
             String helper = st.standIns.get(mi.owner + "." + mi.name + mi.desc);
