@@ -28,6 +28,7 @@ technical documentation; the [README](../../README.md) has installation and the 
 | [Legacy 1.20.1 estimate](Legacy-1.20.1-Estimate.md) | Effort, approach options and risks for supporting 1.20.1 Forge (and Sinytra) mods |
 | [Legacy 1.20.1 fork porting notes](Legacy-1.20.1-Fork-Porting-Notes.md) | A contributor's (kentvillamor08) independent 1.20.1 pipeline notes: scoped adapters, verifiers, pilot results |
 | [Legacy 1.20.1 corpus](Legacy-1.20.1-Corpus.md) | Measured gap report of 140 real Forge 1.20.1 jars (72 abandoned content mods): ranked unresolved symbols, mixins, cheap/medium/heavy, order of work |
+| [Legacy 1.19.2 estimate](Legacy-1.19.2-Estimate.md) | Scoping (2026-11-16): 451 Forge 1.19.2 jars through the 1.20.1 pipeline, what is rename and what is new API, staged plan and effort |
 | [Version roadmap](Version-Roadmap.md) | Which versions come when, and why |
 | [Work plan](Work-Plan.md) | How the work is organised: defect classes, automated verification, generic features, who does what |
 | [Plan for 1.19.2, 1.18.2, 1.16.5](Legacy-1.16-1.19-Plan.md) | Where each supported version stands, and the staged design for the next three Forge versions |

@@ -29,11 +29,14 @@ class PalladiumResourceCompat1201Test {
     }
 
     @Test
-    void migratesLegacyItemOfNbtOverloadToTheLegacySetNbtBridge() {
+    void migratesAlienEvoItemOfNbtOverloadToCustomDataComponent() {
         Map<String, byte[]> resources = new HashMap<>();
         put(resources, PalladiumResourceCompat1201.ALIEN_EVO_CORE_REMOVAL, """
                 var coreItem = Item.of('alienevo:prototype_core', 1, nbtData);
                 entity.give(coreItem);
+                if (typeof nbt.storedAlienGlowProps === 'string' && nbt.storedAlienGlowProps.length) {
+                    var parsedAlienGlow = JSON.parse(nbt.storedAlienGlowProps);
+                }
                 """);
         put(resources, "addon/alienevo/kubejs_scripts/decouple.js", """
                 function getDecoupleSoundId(prefix) { return 'alienevo:' + prefix + '_decouple'; }
@@ -47,16 +50,47 @@ class PalladiumResourceCompat1201Test {
 
         String core = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_CORE_REMOVAL);
         assertTrue(core.contains("var coreItem = Item.of('alienevo:prototype_core', 1);"));
-        assertTrue(core.contains("coreItem.setNbt(nbtData);"));
+        assertTrue(core.contains("coreItem.setCustomData(NBT.wrapCompound(nbtData));"));
         assertFalse(core.contains("Item.of('alienevo:prototype_core', 1, nbtData)"));
+        assertTrue(core.contains("if (nbt.contains('storedAlienGlowProps') && !nbt.getString('storedAlienGlowProps').isEmpty()) {"));
+        assertTrue(core.contains("JSON.parse(nbt.getString('storedAlienGlowProps'))"));
+        assertFalse(core.contains("JSON.parse(nbt.storedAlienGlowProps)"));
 
         String decouple = get(resources, "addon/alienevo/kubejs_scripts/decouple.js");
         assertTrue(decouple.contains("var watchItem = Item.of(itemId, 1);"));
-        assertTrue(decouple.contains("watchItem.setNbt(nbtData);"));
+        assertTrue(decouple.contains("watchItem.setCustomData(NBT.wrapCompound(nbtData));"));
         assertTrue(decouple.contains("getAlienEvoSoundEvent(getDecoupleSoundId(watchPrefix))"));
         assertFalse(decouple.contains("Item.of(itemId, 1, nbtData)"));
 
         assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+    }
+
+    @Test
+    void migratesSeparateAlienEvoItemStackSetNbtCallToCustomDataComponent() {
+        Map<String, byte[]> resources = new HashMap<>();
+        put(resources, "addon/alienevo/kubejs_scripts/decouple.js", """
+                var watchItem = Item.of(itemId, 1);
+                watchItem.setNbt(nbtData);
+                entity.give(watchItem);
+                if (typeof nbt.storedAlienGlowProps === 'string' && nbt.storedAlienGlowProps.length) {
+                    var parsedAlienGlow = JSON.parse(nbt.storedAlienGlowProps);
+                }
+                function getDecoupleSoundId(prefix) { return 'alienevo:' + prefix + '_decouple'; }
+                entity.level.playSound(null, entity.x, entity.y, entity.z,
+                        getDecoupleSoundId(watchPrefix), entity.getSoundSource(), 1.0, 1.0);
+                """);
+
+        assertEquals(1, PalladiumResourceCompat1201.apply(resources));
+
+        String migrated = get(resources, "addon/alienevo/kubejs_scripts/decouple.js");
+        assertTrue(migrated.contains("watchItem.setCustomData(NBT.wrapCompound(nbtData));"));
+        assertFalse(migrated.contains("watchItem.setNbt(nbtData);"));
+        assertTrue(migrated.contains("if (nbt.contains('storedAlienGlowProps') && !nbt.getString('storedAlienGlowProps').isEmpty()) {"));
+        assertTrue(migrated.contains("JSON.parse(nbt.getString('storedAlienGlowProps'))"));
+        assertFalse(migrated.contains("JSON.parse(nbt.storedAlienGlowProps)"));
+
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+        assertEquals(migrated, get(resources, "addon/alienevo/kubejs_scripts/decouple.js"));
     }
 
     @Test
@@ -100,10 +134,12 @@ class PalladiumResourceCompat1201Test {
                 function getDecoupleSoundId(prefix){ return 'alienevo:' + prefix + '_decouple'; }
                 var watchItem = Item.of(itemId, 1, nbtData);
                 entity.give(watchItem);
+                var watchPowerId = new ResourceLocation('alienevo:prototype_omnitrix');
                 entity.level.playSound(null, entity.x, entity.y, entity.z,
                         getDecoupleSoundId(watchPrefix), entity.getSoundSource(), 1.0, 1.0);
                 """);
         put(resources, "addon/alienevo/kubejs_scripts/detransform.js", """
+                var watchPowerId = new ResourceLocation('alienevo:prototype_omnitrix');
                 entity.level.playSound(null, entity.x, entity.y, entity.z,
                         `alienevo:${watchType}_detransform`, entity.getSoundSource(), 1.0, 1.0);
                 """);
@@ -158,9 +194,9 @@ class PalladiumResourceCompat1201Test {
         assertFalse(transform.contains("palladium.setProperty(entity, omnitrixPropertyKey, alien_num);"));
         assertFalse(transform.contains("palladium.setProperty(entity, omnitrixPropertyKey, newAlienUnlocked);"));
         assertTrue(transform.contains("function ResourceLocation(namespaceOrLocation, path)"));
-        assertTrue(transform.contains("    const AlienEvoJavaResourceLocation = Java.loadClass"));
-        assertTrue(transform.contains("    const AlienEvoSoundRegistry = Java.loadClass"));
-        assertTrue(transform.contains("    const AlienEvoSoundResourceLocation = Java.loadClass"));
+        assertTrue(transform.contains("    var AlienEvoJavaResourceLocation = Java.loadClass"));
+        assertTrue(transform.contains("    var AlienEvoSoundRegistry = Java.loadClass"));
+        assertTrue(transform.contains("    var AlienEvoSoundResourceLocation = Java.loadClass"));
         assertTrue(transform.contains("AlienEvoJavaResourceLocation.fromNamespaceAndPath"));
         assertTrue(transform.contains("getAlienEvoSoundEvent('alienevo:' + String(transformSound) + '_transform')"));
         assertFalse(transform.contains("`alienevo:${transformSound}_transform`,"));
@@ -170,7 +206,7 @@ class PalladiumResourceCompat1201Test {
         assertTrue(decouple.contains("getAlienEvoSoundEvent(getDecoupleSoundId(watchPrefix))"));
         assertFalse(decouple.contains("getDecoupleSoundId(watchPrefix),"));
         assertTrue(decouple.contains("var watchItem = Item.of(itemId, 1);"));
-        assertTrue(decouple.contains("watchItem.setNbt(nbtData);"));
+        assertTrue(decouple.contains("watchItem.setCustomData(NBT.wrapCompound(nbtData));"));
         assertFalse(decouple.contains("Item.of(itemId, 1, nbtData)"));
 
         String detransform = get(resources, "addon/alienevo/kubejs_scripts/detransform.js");
@@ -178,23 +214,31 @@ class PalladiumResourceCompat1201Test {
         assertTrue(detransform.contains("getAlienEvoSoundEvent('alienevo:' + String(watchType) + '_detransform')"));
         assertFalse(detransform.contains("`alienevo:${watchType}_detransform`"));
 
+        // Reuse the decouple script loaded above; assert its injected helper alias is redeclarable.
+        assertTrue(decouple.contains("    var AlienEvoJavaResourceLocation = Java.loadClass"));
+        assertFalse(decouple.contains("    const AlienEvoJavaResourceLocation = Java.loadClass"));
+
+        // Reuse the detransform script loaded above; assert its injected helper alias is redeclarable.
+        assertTrue(detransform.contains("    var AlienEvoJavaResourceLocation = Java.loadClass"));
+        assertFalse(detransform.contains("    const AlienEvoJavaResourceLocation = Java.loadClass"));
+
         String cycle = get(resources, "addon/alienevo/kubejs_scripts/cycle_sounds.js");
         assertTrue(cycle.contains("function getAlienEvoSoundEvent(soundId)"));
-        assertTrue(cycle.contains("    const AlienEvoSoundRegistry = Java.loadClass"));
-        assertTrue(cycle.contains("    const AlienEvoSoundResourceLocation = Java.loadClass"));
+        assertTrue(cycle.contains("    var AlienEvoSoundRegistry = Java.loadClass"));
+        assertTrue(cycle.contains("    var AlienEvoSoundResourceLocation = Java.loadClass"));
         assertTrue(cycle.contains("getAlienEvoSoundEvent('alienevo:' + String(soundToPlay))"));
         assertFalse(cycle.contains("`alienevo:${soundToPlay}`,"));
 
         String codes = get(resources, "addon/alienevo/kubejs_scripts/codes.js");
         assertTrue(codes.contains("function ResourceLocation(namespaceOrLocation, path)"));
-        assertTrue(codes.contains("    const AlienEvoJavaResourceLocation = Java.loadClass"));
+        assertTrue(codes.contains("    var AlienEvoJavaResourceLocation = Java.loadClass"));
 
         assertEquals("const gravityAttribute = \"minecraft:generic.gravity\";",
                 get(resources, "data/alienevo/kubejs_scripts/slam.js"));
 
         String powerUi = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_POWER_UI);
         assertTrue(powerUi.contains("function ResourceLocation(namespaceOrLocation, path)"));
-        assertTrue(powerUi.contains("    const AlienEvoJavaResourceLocation = Java.loadClass"));
+        assertTrue(powerUi.contains("    var AlienEvoJavaResourceLocation = Java.loadClass"));
         assertEquals(3, occurrences(powerUi, "currentTab.toString() === omnitrixTab"));
         assertEquals(5, occurrences(powerUi, "e.tab.toString() === omnitrixTab"));
         assertTrue(powerUi.contains(
@@ -286,6 +330,586 @@ class PalladiumResourceCompat1201Test {
         assertEquals("player.playSound('minecraft:ui.button.click', 0.33, 1.0);", get(resources, uiPath));
 
         assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+    }
+
+    @Test
+    void migratesCanonboltBlockParticleArgumentsForLfAndCrLfAndIsIdempotent() {
+        String legacyLf = String.join("\n",
+                "                    let formats = [",
+                "                        \"minecraft:block \" + block.id,        // Standard format",
+                "                        \"block \" + block.id,                  // Alternative format",
+                "                        \"minecraft:falling_dust \" + block.id, // Falling dust format",
+                "                        block.id + \"_break\",                  // Break particle format",
+                "                        \"minecraft:item \" + block.id          // Item particle format",
+                "                    ];",
+                "");
+
+        for (String lineEnding : new String[] {"\n", "\r\n"}) {
+            Map<String, byte[]> resources = new HashMap<>();
+            put(resources, PalladiumResourceCompat1201.ALIEN_EVO_BLOCK_PARTICLES,
+                    legacyLf.replace("\n", lineEnding));
+
+            assertEquals(1, PalladiumResourceCompat1201.apply(resources), "line ending: " + (lineEnding.equals("\r\n") ? "CRLF" : "LF"));
+            String migrated = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_BLOCK_PARTICLES);
+            String normalized = migrated.replace("\r\n", "\n");
+            assertTrue(normalized.contains("JSON.stringify(String(block.id))"));
+            assertTrue(normalized.contains("`minecraft:block{block_state:${blockState}}`"));
+            assertTrue(normalized.contains("`minecraft:falling_dust{block_state:${blockState}}`"));
+            assertTrue(normalized.contains("`minecraft:item{item:${blockState}}`"));
+            assertFalse(normalized.contains("block.id +"));
+            if ("\r\n".equals(lineEnding)) {
+                assertFalse(migrated.replace("\r\n", "").contains("\n"),
+                        "the migrated CRLF script should not contain bare LF characters");
+            }
+
+            assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+            assertEquals(migrated, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_BLOCK_PARTICLES));
+        }
+    }
+    @Test
+    void migratesLegacySetSecondsOnFireCallsAcrossAlienEvoAndAfOmniScripts() {
+        Map<String, byte[]> resources = new HashMap<>();
+        String crlf = String.valueOf((char) 13) + (char) 10;
+        put(resources, PalladiumResourceCompat1201.AFOMNI_AOE_DAMAGE,
+                "targets[j].setSecondsOnFire(firetick);" + crlf);
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_DIRECTIONAL_DAMAGE,
+                "targets[j].setSecondsOnFire(firetick);" + crlf);
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_ENTITY_DAMAGE,
+                String.join(crlf,
+                        "target.setSecondsOnFire(fire_seconds)",
+                        "target.setSecondsOnFire(fire_seconds)",
+                        ""));
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_INFINITY,
+                "entities[i].setSecondsOnFire(fireSeconds);" + crlf);
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_ROLLING_MECHANICS,
+                "targets[j].setSecondsOnFire(firetick);" + crlf);
+
+        assertEquals(5, PalladiumResourceCompat1201.apply(resources));
+
+        String aoe = get(resources, PalladiumResourceCompat1201.AFOMNI_AOE_DAMAGE);
+        String directional = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_DIRECTIONAL_DAMAGE);
+        String targeted = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_ENTITY_DAMAGE);
+        String infinity = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_INFINITY);
+        String rolling = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_ROLLING_MECHANICS);
+
+        assertTrue(aoe.contains("targets[j].igniteForSeconds(firetick);"));
+        assertTrue(directional.contains("targets[j].igniteForSeconds(firetick);"));
+        assertEquals(2, occurrences(targeted, "target.igniteForSeconds(fire_seconds)"));
+        assertTrue(infinity.contains("entities[i].igniteForSeconds(fireSeconds);"));
+        assertTrue(rolling.contains("targets[j].igniteForSeconds(firetick);"));
+
+        for (String migrated : new String[] {aoe, directional, targeted, infinity, rolling}) {
+            assertFalse(migrated.contains("setSecondsOnFire"));
+            assertFalse(migrated.replace(crlf, "").contains(String.valueOf((char) 10)),
+                    "the CRLF source layout should be preserved");
+        }
+
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+        assertEquals(aoe, get(resources, PalladiumResourceCompat1201.AFOMNI_AOE_DAMAGE));
+        assertEquals(directional, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_DIRECTIONAL_DAMAGE));
+        assertEquals(targeted, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_ENTITY_DAMAGE));
+        assertEquals(infinity, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_INFINITY));
+        assertEquals(rolling, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_ROLLING_MECHANICS));
+    }
+    @Test
+    void normalizesQuickChangePlaylistAndSlotNbtToExplicitIntegerMethods() {
+        Map<String, byte[]> resources = new HashMap<>();
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_SLOT_TRANSFORM, String.join("\n",
+                "let currentPlaylist = entity.persistentData[CURRENT_PLAYLIST_KEY] || DEFAULT_PLAYLIST;",
+                "let alienNumber = entity.persistentData[`alienevo.alien_${currentPlaylist}_${useSlot}`];",
+                "entity.persistentData[CURRENT_ALIEN_SLOT_KEY] = useSlot;",
+                "let current_playlist = entity.persistentData[CURRENT_PLAYLIST_KEY] || DEFAULT_PLAYLIST;",
+                "let current_slot = entity.persistentData[CURRENT_ALIEN_SLOT_KEY] || DEFAULT_SLOT;",
+                "let selectedAlienNum = entity.persistentData[`alienevo.alien_${current_playlist}_${current_slot}`] || 0;",
+                "alien_num = entity.persistentData[`alienevo.alien_${random_playlist}_${random_slot}`] || 0;",
+                "entity.persistentData[CURRENT_PLAYLIST_KEY] = random_playlist;",
+                "entity.persistentData[CURRENT_ALIEN_SLOT_KEY] = random_slot;",
+                "let alienInSlot = entity.persistentData[`alienevo.alien_${playlist}_${slot}`];",
+                ""));
+
+        assertEquals(1, PalladiumResourceCompat1201.apply(resources));
+        String migrated = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_SLOT_TRANSFORM);
+        assertEquals(2, occurrences(migrated, "entity.persistentData.getInt(CURRENT_PLAYLIST_KEY)"));
+        assertTrue(migrated.contains("entity.persistentData.getInt(CURRENT_ALIEN_SLOT_KEY)"));
+        assertTrue(migrated.contains("entity.persistentData.getInt(`alienevo.alien_${currentPlaylist}_${useSlot}`)"));
+        assertTrue(migrated.contains("entity.persistentData.getInt(`alienevo.alien_${current_playlist}_${current_slot}`)"));
+        assertTrue(migrated.contains("entity.persistentData.getInt(`alienevo.alien_${random_playlist}_${random_slot}`)"));
+        assertTrue(migrated.contains("entity.persistentData.getInt(`alienevo.alien_${playlist}_${slot}`)"));
+        assertTrue(migrated.contains("entity.persistentData.putInt(CURRENT_ALIEN_SLOT_KEY, useSlot)"));
+        assertTrue(migrated.contains("entity.persistentData.putInt(CURRENT_PLAYLIST_KEY, random_playlist)"));
+        assertTrue(migrated.contains("entity.persistentData.putInt(CURRENT_ALIEN_SLOT_KEY, random_slot)"));
+        assertFalse(migrated.contains("entity.persistentData[CURRENT_PLAYLIST_KEY]"));
+        assertFalse(migrated.contains("entity.persistentData[CURRENT_ALIEN_SLOT_KEY]"));
+
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+        assertEquals(migrated, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_SLOT_TRANSFORM));
+    }
+
+    @Test
+    void migratesPlaylistCycleNbtAccessToExplicitIntegerMethods() {
+        Map<String, byte[]> resources = new HashMap<>();
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_PLAYLIST_CYCLE, String.join("\n",
+                "let MAX_PLAYLISTS = 100;",
+                "let currentPlaylist = entity.persistentData[CURRENT_PLAYLIST_KEY] || DEFAULT_PLAYLIST;",
+                "let currentSlot = entity.persistentData[CURRENT_ALIEN_SLOT_KEY] || DEFAULT_SLOT;",
+                "let alienNumber = entity.persistentData[`alienevo.alien_${currentPlaylist}_${slot}`];",
+                "entity.persistentData[CURRENT_PLAYLIST_KEY] = currentPlaylist;",
+                "entity.persistentData[CURRENT_ALIEN_SLOT_KEY] = slot;",
+                "let alienType = entity.persistentData.getInt(`alienevo.alien_${playlist}_${slot}`) || 0;",
+                ""));
+
+        assertEquals(1, PalladiumResourceCompat1201.apply(resources));
+
+        String migrated = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_PLAYLIST_CYCLE);
+        assertTrue(migrated.contains("let MAX_PLAYLISTS = 10;"));
+        assertTrue(migrated.contains(
+                "let currentPlaylist = entity.persistentData.getInt(CURRENT_PLAYLIST_KEY) || DEFAULT_PLAYLIST;"));
+        assertTrue(migrated.contains(
+                "let currentSlot = entity.persistentData.getInt(CURRENT_ALIEN_SLOT_KEY) || DEFAULT_SLOT;"));
+        assertTrue(migrated.contains(
+                "entity.persistentData.getInt(`alienevo.alien_${currentPlaylist}_${slot}`)"));
+        assertTrue(migrated.contains("entity.persistentData.putInt(CURRENT_PLAYLIST_KEY, currentPlaylist);"));
+        assertTrue(migrated.contains("entity.persistentData.putInt(CURRENT_ALIEN_SLOT_KEY, slot);"));
+        assertFalse(migrated.contains("entity.persistentData[CURRENT_PLAYLIST_KEY]"));
+        assertFalse(migrated.contains("entity.persistentData[CURRENT_ALIEN_SLOT_KEY]"));
+        assertFalse(migrated.contains("entity.persistentData[`alienevo.alien_"));
+
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+        assertEquals(migrated, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_PLAYLIST_CYCLE));
+    }
+
+    @Test
+    void migratesAlienEvoNetworkDataReceivedHandlersToKubeJs7Player() {
+        Map<String, byte[]> resources = new HashMap<>();
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_SERVER_STUFF, String.join("\n",
+                "NetworkEvents.dataReceived('AlienEvo.isJumping', event => {",
+                "    let entity = event.entity;",
+                "});",
+                "NetworkEvents.dataReceived('AlienEvo.notJumping', event => {",
+                "    let entity = event.entity;",
+                "});",
+                "NetworkEvents.dataReceived('saveBeamColorData', event => {",
+                "    let player = event.player;",
+                "});",
+                "NetworkEvents.dataReceived('saveEnergyColorData', event => {",
+                "    let player = event.player;",
+                "});",
+                "NetworkEvents.dataReceived('savePaletteData', event => {",
+                "    let player = event.entity;",
+                "});",
+                "NetworkEvents.dataReceived('alienevo_nickname', event => {",
+                "    let player = event.entity;",
+                "});",
+                ""));
+
+        assertEquals(1, PalladiumResourceCompat1201.apply(resources));
+
+        String migrated = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_SERVER_STUFF);
+        assertEquals(6, occurrences(migrated, "event.player"));
+        assertFalse(migrated.contains("event.entity"));
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+        assertEquals(migrated, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_SERVER_STUFF));
+    }
+
+    @Test
+    void readsOmnitrixPalettePacketAsCompoundTagEntries() {
+        Map<String, byte[]> resources = new HashMap<>();
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_SERVER_STUFF, String.join("\r\n",
+                "NetworkEvents.dataReceived('saveBeamColorData', event => {",
+                "    let player = event.player;",
+                "    let data = event.data;",
+                "    let colorValue = data.value;",
+                "});",
+                "NetworkEvents.dataReceived('saveEnergyColorData', event => {",
+                "    let player = event.player;",
+                "    let data = event.data;",
+                "    let energyColor = data.value;",
+                "});",
+                "NetworkEvents.dataReceived('savePaletteData', event => {",
+                "    let player = event.entity;",
+                "    let propertiesToSave = event.data;",
+                "    for (let propertyName in propertiesToSave) {",
+                "        palladium.setProperty(player, propertyName, propertiesToSave[propertyName]);",
+                "    }",
+                "});",
+                "NetworkEvents.dataReceived('alienevo_nickname', event => {",
+                "    let player = event.entity;",
+                "    let inputText = event.data.nickname;",
+                "});",
+                ""));
+
+        assertEquals(1, PalladiumResourceCompat1201.apply(resources));
+
+        String migrated = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_SERVER_STUFF);
+        assertTrue(migrated.contains("let propertyIterator = propertiesToSave.getAllKeys().iterator();"));
+        assertTrue(migrated.contains("while (propertyIterator.hasNext()) {"));
+        assertTrue(migrated.contains("let propertyName = propertyIterator.next();"));
+        assertTrue(migrated.contains(
+                "palladium.setProperty(player, propertyName, legacyConnectorAlienEvoPacketString(propertiesToSave.get(propertyName)));"));
+        assertFalse(migrated.contains("for (let propertyName in propertiesToSave)"));
+        assertFalse(migrated.contains("propertiesToSave[propertyName]"));
+        assertTrue(migrated.contains("\r\n"));
+        assertFalse(migrated.replace("\r\n", "").contains("\n"));
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+        assertEquals(migrated, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_SERVER_STUFF));
+    }
+
+    @Test
+    void migratesHeatblastFireAbsorbArrayBlockLookupsToCoordinateOverload() {
+        Map<String, byte[]> resources = new HashMap<>();
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_FIRE_ABSORB, String.join("\n",
+                "let blockPos = [x, y, z];",
+                "let currentBlock = entity.level.getBlock(blockPos);",
+                "let blockPos = [x, y, z];",
+                "let block = entity.level.getBlock(blockPos);",
+                "if (!entity.persistentData.fireBlocks) {",
+                "entity.persistentData.fireBlocks = [];",
+                "entity.persistentData.fireBlocks = fireBlocks;",
+                "let fireBlocks = entity.persistentData.fireBlocks;",
+                "entity.persistentData.lastFireSearch = 0;",
+                "if (currentTime - entity.persistentData.lastFireSearch >= searchInterval) {",
+                "entity.persistentData.lastFireSearch = currentTime;",
+                "if (!entity.persistentData.trackedFireBlocks) {",
+                "entity.persistentData.trackedFireBlocks = {};",
+                "if (extinguishFire && entity.persistentData.trackedFireBlocks) {",
+                "for (let blockKey in entity.persistentData.trackedFireBlocks) {",
+                "let blockData = entity.persistentData.trackedFireBlocks[blockKey];",
+                "delete entity.persistentData.trackedFireBlocks[blockKey];",
+                "if (extinguishFire && entity.persistentData.trackedFireBlocks) {",
+                "if (!entity.persistentData.trackedFireBlocks[blockKey]) {",
+                "entity.persistentData.trackedFireBlocks[blockKey] = {",
+                "let trackedCount = entity.persistentData.trackedFireBlocks ? Object.keys(entity.persistentData.trackedFireBlocks).length : 0;",
+                "if (entity.isPlayer() && entity.persistentData.trackedFireBlocks) {",
+                "let trackedCount = Object.keys(entity.persistentData.trackedFireBlocks).length;",
+                "entity.persistentData.trackedFireBlocks = {};",
+                ""));
+
+        assertEquals(1, PalladiumResourceCompat1201.apply(resources));
+
+        String migrated = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_FIRE_ABSORB);
+        assertEquals(2, occurrences(migrated, "entity.level.getBlock(x, y, z);"));
+        assertFalse(migrated.contains("entity.level.getBlock(blockPos)"));
+        assertTrue(migrated.contains("entity.data.put('fireBlocks', []);"));
+        assertTrue(migrated.contains("let fireBlocks = entity.data.get('fireBlocks');"));
+        assertTrue(migrated.contains("entity.data.put('lastFireSearch', currentTime);"));
+        assertTrue(migrated.contains("entity.data.get('lastFireSearch')"));
+        assertEquals(2, occurrences(migrated, "entity.data.put('trackedFireBlocks', {});"));
+        assertTrue(migrated.contains("entity.data.get('trackedFireBlocks')[blockKey]"));
+        assertFalse(migrated.contains("entity.persistentData.fireBlocks"));
+        assertFalse(migrated.contains("entity.persistentData.lastFireSearch"));
+        assertFalse(migrated.contains("entity.persistentData.trackedFireBlocks"));
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+        assertEquals(migrated, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_FIRE_ABSORB));
+    }
+
+    @Test
+    void preservesCurrentAlienIdWhenDecouplingAndRebondingOmnitrix() {
+        Map<String, byte[]> resources = new HashMap<>();
+        put(resources, "addon/alienevo/kubejs_scripts/decouple.js",
+                "storedCurrentAlienSlot: currentAlienSlot,\n"
+                        + "storedOmnitrixCycle: currentAlienSlot,\n"
+                        + "    getDecoupleSoundId(watchPrefix),\n"
+                        + "var watchItem = Item.of(itemId, 1, nbtData);\n"
+                        + "var nbt = mainHandItem.nbt;\n"
+                        + "if (!nbt) {\n"
+                        + "var storedAllDNAString = nbt.storedAllDNA || '';\n"
+                        + "var storedCurrentPlaylist = nbt.storedCurrentPlaylist || 1;\n"
+                        + "if (nbt.storedMastercontrol) entity.tags.add('AlienEvo.MasterControl');\n"
+                        + "if (typeof nbt.storedGlowColor1 === 'string') writeGlowHex(entity, 1, nbt.storedGlowColor1, wgPrefix);\n"
+                        + "var displayNbt = nbt.display;\n"
+                        + "if (displayNbt && displayNbt.Name) {\n"
+                        + "itemName = displayNbt.Name;\n"
+                        + "palladium.setProperty(entity, OMNITRIX_PROPERTY_KEY, storedOmnitrixCycle);\n");
+
+        assertEquals(1, PalladiumResourceCompat1201.apply(resources));
+
+        String migrated = get(resources, "addon/alienevo/kubejs_scripts/decouple.js");
+        assertTrue(migrated.contains(
+                "storedOmnitrixCycle: palladium.getProperty(entity, OMNITRIX_PROPERTY_KEY),"));
+        assertTrue(migrated.contains("storedCurrentAlienSlot: currentAlienSlot,"));
+        assertTrue(migrated.contains("getAlienEvoSoundEvent(getDecoupleSoundId(watchPrefix)),"));
+        assertTrue(migrated.contains("var watchItem = Item.of(itemId, 1);"));
+        assertTrue(migrated.contains("watchItem.setCustomData(NBT.wrapCompound(nbtData));"));
+        assertFalse(migrated.contains("watchItem.setNbt(nbtData);"));
+        assertTrue(migrated.contains("var nbt = mainHandItem.getCustomData();"));
+        assertTrue(migrated.contains("if (nbt.isEmpty()) {"));
+        assertTrue(migrated.contains("var storedAllDNAString = nbt.getString('storedAllDNA');"));
+        assertTrue(migrated.contains("nbt.getInt('storedCurrentPlaylist') || 1"));
+        assertTrue(migrated.contains("nbt.getBoolean('storedMastercontrol')"));
+        assertTrue(migrated.contains("nbt.getString('storedGlowColor1')"));
+        assertTrue(migrated.contains("displayNbt.getString('Name')"));
+        assertFalse(migrated.contains("storedOmnitrixCycle: currentAlienSlot"));
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+        assertEquals(migrated, get(resources, "addon/alienevo/kubejs_scripts/decouple.js"));
+    }
+
+    @Test
+    void migratesOmnitrixWorkbenchItemCustomDataAndPreservesSolidLayoutScores() {
+        Map<String, byte[]> resources = new HashMap<>();
+        put(resources, "data/alienevo/kubejs_scripts/workbench.js", String.join("\n",
+                "run summon minecraft:item ~ ~ ~ {Item:{id:\"alienevo:prototype_omnitrix\",Count:1b,tag:${JSON.stringify(nbtData)" + "}},PickupDelay:10}",
+                "omnitrix.setNbt(nbtData);",
+                "var nbt = mainHandItem.nbt;",
+                "if (nbt && nbt.display && nbt.display.Name) {",
+                "event.target.persistentData.putString('storedItemName', nbt.display.Name);",
+                "var storedDNA = nbt && nbt.storedAllDNA ? nbt.storedAllDNA : '';",
+                "let storedCode = nbt && nbt.storedCode ? nbt.storedCode : '000000';",
+                "if (nbt && nbt.storedCode)          palladium.setProperty(armorStand, 'code', nbt.storedCode);",
+                "let storedPosition = nbt && nbt.storedPosition ? nbt.storedPosition : '0';",
+                "if (nbt && nbt.storedPosition && !isNaN(parseInt(nbt.storedPosition))) positionValue = parseInt(nbt.storedPosition);",
+                "let storedMasterTargetCode = nbt && nbt.storedMasterTargetCode ? nbt.storedMasterTargetCode : '';",
+                "let storedSelfDestructTargetCode = nbt && nbt.storedSelfDestructTargetCode ? nbt.storedSelfDestructTargetCode : '';",
+                "if (nbt && nbt.storedAlienNamespaces) {",
+                "event.target.persistentData.putString('storedAlienNamespaces', nbt.storedAlienNamespaces);",
+                "let storedCurrentPlaylist = nbt && nbt.storedCurrentPlaylist ? nbt.storedCurrentPlaylist : 1;",
+                "let storedCurrentAlienSlot = nbt && nbt.storedCurrentAlienSlot ? nbt.storedCurrentAlienSlot : 1;",
+                "if (nbt && nbt.storedOmnitrixCycle) palladium.setProperty(armorStand, 'omnitrix_cycle', nbt.storedOmnitrixCycle);",
+                "if (nbt && nbt.storedOmnitrixCycle) event.target.persistentData.putInt('storedOmnitrixCycle', nbt.storedOmnitrixCycle);",
+                "if (typeof nbt?.storedUniformGlowColorBase === 'string') palladium.setProperty(armorStand, 'uniform_glow_color_base', nbt.storedUniformGlowColorBase);",
+                "if (typeof nbt?.storedUniformGlowColorBase === 'string') event.target.persistentData.putString('uniform_glow_color_base', nbt.storedUniformGlowColorBase);",
+                "if (typeof nbt?.storedUniformGlowColor1   === 'string') palladium.setProperty(armorStand, 'uniform_glow_color_1', nbt.storedUniformGlowColor1);",
+                "if (typeof nbt?.storedUniformGlowColor1   === 'string') event.target.persistentData.putString('uniform_glow_color_1', nbt.storedUniformGlowColor1);",
+                "if (typeof nbt?.storedUniformGlowColor2   === 'string') palladium.setProperty(armorStand, 'uniform_glow_color_2', nbt.storedUniformGlowColor2);",
+                "if (typeof nbt?.storedUniformGlowColor2   === 'string') event.target.persistentData.putString('uniform_glow_color_2', nbt.storedUniformGlowColor2);",
+                "if (typeof nbt?.storedUniformGlowColor3   === 'string') palladium.setProperty(armorStand, 'uniform_glow_color_3', nbt.storedUniformGlowColor3);",
+                "if (typeof nbt?.storedUniformGlowColor3   === 'string') event.target.persistentData.putString('uniform_glow_color_3', nbt.storedUniformGlowColor3);",
+                "if (typeof nbt?.storedUniformGlowColor4   === 'string') palladium.setProperty(armorStand, 'uniform_glow_color_4', nbt.storedUniformGlowColor4);",
+                "if (typeof nbt?.storedUniformGlowColor4   === 'string') event.target.persistentData.putString('uniform_glow_color_4', nbt.storedUniformGlowColor4);",
+                "if (typeof nbt?.storedUniformGlowColor5   === 'string') palladium.setProperty(armorStand, 'uniform_glow_color_5', nbt.storedUniformGlowColor5);",
+                "if (typeof nbt?.storedUniformGlowColor5   === 'string') event.target.persistentData.putString('uniform_glow_color_5', nbt.storedUniformGlowColor5);",
+                "if (typeof nbt?.storedGlowColorBase === 'string') palladium.setProperty(armorStand, 'prototype_glow_color_base', nbt.storedGlowColorBase);",
+                "if (typeof nbt?.storedGlowColorBase === 'string') event.target.persistentData.putString('prototype_glow_color_base', nbt.storedGlowColorBase);",
+                "if (typeof nbt?.storedGlowColor1    === 'string') palladium.setProperty(armorStand, 'prototype_glow_color_1', nbt.storedGlowColor1);",
+                "if (typeof nbt?.storedGlowColor1    === 'string') event.target.persistentData.putString('prototype_glow_color_1', nbt.storedGlowColor1);",
+                "if (typeof nbt?.storedGlowColor2    === 'string') palladium.setProperty(armorStand, 'prototype_glow_color_2', nbt.storedGlowColor2);",
+                "if (typeof nbt?.storedGlowColor2    === 'string') event.target.persistentData.putString('prototype_glow_color_2', nbt.storedGlowColor2);",
+                "if (typeof nbt?.storedGlowColor3    === 'string') palladium.setProperty(armorStand, 'prototype_glow_color_3', nbt.storedGlowColor3);",
+                "if (typeof nbt?.storedGlowColor3    === 'string') event.target.persistentData.putString('prototype_glow_color_3', nbt.storedGlowColor3);",
+                "if (typeof nbt?.storedGlowColor4    === 'string') palladium.setProperty(armorStand, 'prototype_glow_color_4', nbt.storedGlowColor4);",
+                "if (typeof nbt?.storedGlowColor4    === 'string') event.target.persistentData.putString('prototype_glow_color_4', nbt.storedGlowColor4);",
+                "if (typeof nbt?.storedGlowColor5    === 'string') palladium.setProperty(armorStand, 'prototype_glow_color_5', nbt.storedGlowColor5);",
+                "if (typeof nbt?.storedGlowColor5    === 'string') event.target.persistentData.putString('prototype_glow_color_5', nbt.storedGlowColor5);",
+                "if (typeof nbt?.storedAlienGlowProps === 'string' && nbt.storedAlienGlowProps.length) {",
+                "var parsedAlienGlow = JSON.parse(nbt.storedAlienGlowProps);",
+                "if (typeof nbt?.storedAlienGlowProps === 'string') {",
+                "event.target.persistentData.putString('storedAlienGlowProps', nbt.storedAlienGlowProps);",
+                "if (!nbt && mainHandItem.id.includes('_10k')) {",
+                "if (nbt && nbt.storedMastercontrol) {",
+                "function getStoredScore(nbtTag, defaultValue) {",
+                "return (nbt && nbt.contains && nbt.contains(nbtTag)) ? nbt.getInt(nbtTag) : defaultValue;",
+                "}",
+                ""));
+        assertEquals(1, PalladiumResourceCompat1201.apply(resources));
+
+        String migrated = get(resources, "data/alienevo/kubejs_scripts/workbench.js");
+        assertTrue(migrated.contains("count:1,components:{\"minecraft:custom_data\":"));
+        assertTrue(migrated.contains("JSON.stringify(nbtData)}}},PickupDelay:10"));
+        assertTrue(migrated.contains("omnitrix.setCustomData(NBT.wrapCompound(nbtData));"));
+        assertTrue(migrated.contains("var nbt = mainHandItem.getCustomData();"));
+        assertTrue(migrated.contains("function getStoredScore(nbtTag, defaultValue)"));
+        assertTrue(migrated.contains("nbt.getInt(nbtTag)"));
+        assertTrue(migrated.contains("nbt.getString('storedGlowColor1')"));
+        assertTrue(migrated.contains("nbt.getString('storedUniformGlowColor1')"));
+        assertTrue(migrated.contains("nbt.getInt('storedMastercontrol') !== 0"));
+        assertTrue(migrated.contains("if (nbt.isEmpty() && mainHandItem.id.includes('_10k'))"));
+        assertFalse(migrated.contains("mainHandItem.nbt"));
+        assertFalse(migrated.contains("omnitrix.setNbt(nbtData);"));
+        assertFalse(migrated.contains("Count:1b,tag:"));
+        assertFalse(migrated.contains("nbt.storedGlowColor1"));
+        assertFalse(migrated.contains("nbt.storedUniformGlowColor1"));
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+        assertEquals(migrated, get(resources, "data/alienevo/kubejs_scripts/workbench.js"));
+    }
+
+    @Test
+    void makesAlienEvoGlidePitchLengthMutableBeforeAdjustment() {
+        Map<String, byte[]> resources = new HashMap<>();
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_GLIDE, String.join("\n",
+                "const pitchLength = JavaMath.cos(pitchRad)",
+                "pitchLength = pitchLength * pitchLength * JavaMath.min(1, lookLength / 0.4)",
+                ""));
+
+        assertEquals(1, PalladiumResourceCompat1201.apply(resources));
+
+        String migrated = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_GLIDE);
+        assertTrue(migrated.contains("let pitchLength = JavaMath.cos(pitchRad)"));
+        assertFalse(migrated.contains("const pitchLength = JavaMath.cos(pitchRad)"));
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+        assertEquals(migrated, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_GLIDE));
+    }
+
+    @Test
+    void migratesAlienEvoMotionToEntityLivingTargetChecksAndIsIdempotent() {
+        Map<String, byte[]> resources = new HashMap<>();
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_MOTION_TO_ENTITY, String.join("\r\n",
+                "StartupEvents.registry('palladium:abilities', event => {",
+                "    const LivingEntity = Java.loadClass('net.minecraft.world.entity.LivingEntity');",
+                "    event.create('alienevo:motion_to_entity').tick((entity, entry, holder, enabled) => {",
+                "        if (enabled) {",
+                "            nearbyEntities.forEach(nearby => {",
+                "                if (nearby == null ||",
+                "                    nearby.id === entity.id ||",
+                "                    !(nearby instanceof LivingEntity) ||",
+                "                    !nearby.isAlive() ||",
+                "                    nearby.getHealth() <= 0) return;",
+                "            });",
+                "            nearbyEntities.forEach(nearby => {",
+                "                if (nearby == null ||",
+                "                    nearby.id === entity.id ||",
+                "                    !(nearby instanceof LivingEntity) ||",
+                "                    !nearby.isAlive() ||",
+                "                    nearby.getHealth() <= 0) return;",
+                "            });",
+                "        }",
+                "    });",
+                "});"));
+
+        assertEquals(1, PalladiumResourceCompat1201.apply(resources));
+
+        String migrated = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_MOTION_TO_ENTITY);
+        assertFalse(migrated.contains("const LivingEntity = Java.loadClass("));
+        assertEquals(2, occurrences(migrated, "!nearby.isLiving()"));
+        assertFalse(migrated.contains("nearby instanceof LivingEntity"));
+        assertTrue(migrated.contains("nearby.isAlive()"));
+        assertTrue(migrated.contains("nearby.getHealth() <= 0"));
+        assertTrue(migrated.contains("\r\n"));
+        assertFalse(migrated.replace("\r\n", "").contains("\n"));
+
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+        assertEquals(migrated, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_MOTION_TO_ENTITY));
+    }
+
+    @Test
+    void migratesCannonboltSlamLandingTrackingAndPreservesCrLf() {
+        Map<String, byte[]> resources = new HashMap<>();
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_SLAM, String.join("\r\n",
+                "let playersWithGravity = new Set();",
+                "",
+                "PlayerEvents.tick(event => {",
+                "    let p = event.player",
+                "    if (abilityEnabled && !playersWithGravity.has(p.uuid.toString())) {",
+                "        p.modifyAttribute(gravityAttribute, \"gravity_slam\", 6, \"addition\")",
+                "        p.modifyAttribute(gravityAttribute, \"gravity_slam\", 6, \"addition\")",
+                "        playersWithGravity.add(p.uuid.toString());",
+                "    }",
+                "    if (!abilityEnabled && playersWithGravity.has(p.uuid.toString())) {",
+                "        playersWithGravity.delete(p.uuid.toString());",
+                "    }",
+                "    if (p.getDeltaMovement().get(\"y\") < -5 && p.onGround()) {",
+                "        p.removeAttribute(gravityAttribute, \"gravity_slam\")",
+                "    }",
+                "})"));
+
+        assertEquals(1, PalladiumResourceCompat1201.apply(resources));
+
+        String migrated = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_SLAM);
+        assertTrue(migrated.contains("let playersFalling = new Set();"));
+        assertTrue(migrated.contains("const clearGravitySlam = (player, playerId) => {"));
+        assertTrue(migrated.contains("if (p.onGround() && playersFalling.has(playerId))"));
+        assertTrue(migrated.contains("if (p.onGround() || isAtLeast10BlocksAboveGround(p)) {"));
+        assertFalse(migrated.contains("canStart"));
+        assertTrue(migrated.contains("else if (activeTicks >= 200)"));
+        assertTrue(migrated.contains("let slamLastY = new Map();"));
+        assertTrue(migrated.contains("const previousY = slamLastY.get(playerId);"));
+        assertTrue(migrated.contains("damageSlamImpact(p, x, y, z, 6.0, 15.0);"));
+        assertTrue(migrated.contains("target.attack(player.damageSources().generic(), damageAmount);"));
+        assertEquals(2, occurrences(migrated, "e.level.explode(x, y, z, {"));
+        assertTrue(migrated.contains("strength: 1.9"));
+        assertTrue(migrated.contains("mode: 'none'"));
+        assertTrue(migrated.contains("strength: 0.2"));
+        assertTrue(migrated.contains("mode: 'tnt'"));
+        assertFalse(migrated.contains("createExplosion("));
+        assertFalse(migrated.contains("getDeltaMovement().get(\"y\")"));
+        assertTrue(migrated.contains(
+                "p.modifyAttribute(gravityAttribute, \"gravity_slam\", 6, \"add_value\")"));
+        assertFalse(migrated.contains("\"addition\""));
+        assertFalse(migrated.contains("if (!abilityEnabled && playersWithGravity.has"));
+        assertFalse(migrated.contains("get(\"y\") < -5"));
+        assertTrue(migrated.contains("\r\n"));
+        assertFalse(migrated.replace("\r\n", "").contains("\n"));
+
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+        assertEquals(migrated, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_SLAM));
+    }
+
+    @Test
+    void preservesOmnitrixLayoutScoresWhenRemovingAndReapplyingPrototypeCore() {
+        Map<String, byte[]> resources = new HashMap<>();
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_CORE_REMOVAL, String.join("\n",
+                "function createAndGivePrototypeCore(entity) {",
+                "  var username = entity.getGameProfile().getName();",
+                "",
+                "  var currentPlaylist = entity.persistentData.getInt(CURRENT_PLAYLIST_KEY) || 1;",
+                "  var nbtData = {",
+                "    storedMastercontrol: hasMastercontrol,",
+                "    storedWatch: watchPrefix",
+                "  };",
+                "  var coreItem = Item.of('alienevo:prototype_core', 1, nbtData);",
+                "  entity.give(coreItem);",
+                "}",
+                "function applyAllDNAFromPrototypeCore(entity) {",
+                "  var mainHandItem = entity.getMainHandItem();",
+                "  var username = entity.getGameProfile().getName();",
+                "  var nbt = mainHandItem.nbt;",
+                "  if (nbt && nbt.display && nbt.display.Name) {",
+                "    entity.persistentData.putString('storedItemName', nbt.display.Name);",
+                "  }",
+                "  if (!nbt) {",
+                "    return;",
+                "  }",
+                "  if (typeof nbt.storedWatch === 'string' && nbt.storedWatch) {",
+                "    palladium.setProperty(entity, 'watch', nbt.storedWatch);",
+                "  }",
+                "  var watchPrefix = (typeof nbt.storedWatch === 'string' && nbt.storedWatch) ? nbt.storedWatch : getWatchPrefix(entity);",
+                "  var storedAllDNAString = nbt.storedAllDNA || '';",
+                "  if (nbt.storedMastercontrol) entity.tags.add('AlienEvo.MasterControl');",
+                "",
+                "  // Restore glow props",
+                "  if (typeof nbt.storedGlowColor1 === 'string') writeGlowHex(entity, 1, nbt.storedGlowColor1, wgPrefix);",
+                "}"));
+
+        assertEquals(1, PalladiumResourceCompat1201.apply(resources));
+
+        String migrated = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_CORE_REMOVAL);
+        assertTrue(migrated.contains("readOmnitrixLayoutScore('AlienEvo.BasePrimary')"));
+        assertTrue(migrated.contains("storedBasePrimaryScore: basePrimaryScore"));
+        assertTrue(migrated.contains("storedBaseSecondaryScore: baseSecondaryScore"));
+        assertTrue(migrated.contains("storedButtonsScore: buttonsScore"));
+        assertTrue(migrated.contains("stored10kPhaseScore: phase10kScore"));
+        assertTrue(migrated.contains(
+                "restoreOmnitrixLayoutScore('AlienEvo.BasePrimary', 'storedBasePrimaryScore', -1)"));
+        assertTrue(migrated.contains(
+                "restoreOmnitrixLayoutScore('AlienEvo.BaseSecondary', 'storedBaseSecondaryScore', -1)"));
+        assertTrue(migrated.contains("restoreOmnitrixLayoutScore('AlienEvo.10kStage', 'stored10kStageScore', 0)"));
+        assertTrue(migrated.contains("coreItem.setCustomData(NBT.wrapCompound(nbtData));"));
+        assertFalse(migrated.contains("coreItem.setNbt(nbtData);"));
+        assertTrue(migrated.contains("var nbt = mainHandItem.getCustomData();"));
+        assertTrue(migrated.contains("if (nbt.isEmpty()) {"));
+        assertTrue(migrated.contains("if (nbt.contains('storedWatch') && nbt.getString('storedWatch'))"));
+        assertTrue(migrated.contains("nbt.getBoolean('storedMastercontrol')"));
+        assertTrue(migrated.contains("nbt.getString('storedGlowColor1')"));
+
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+        assertEquals(migrated, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_CORE_REMOVAL));
+    }
+
+    @Test
+    void migratesAlienEvoSlamAttributeOperationToCurrentEnumName() {
+        Map<String, byte[]> resources = new HashMap<>();
+        put(resources, PalladiumResourceCompat1201.ALIEN_EVO_SLAM, String.join("\n",
+                "p.modifyAttribute(gravityAttribute, \"gravity_slam\", 6, \"addition\")",
+                "p.modifyAttribute(gravityAttribute, \"gravity_slam\", 6, \"addition\")",
+                ""));
+
+        assertEquals(1, PalladiumResourceCompat1201.apply(resources));
+
+        String migrated = get(resources, PalladiumResourceCompat1201.ALIEN_EVO_SLAM);
+        assertEquals(2, occurrences(migrated,
+                "p.modifyAttribute(gravityAttribute, \"gravity_slam\", 6, \"add_value\")"));
+        assertFalse(migrated.contains("\"addition\""));
+
+        assertEquals(0, PalladiumResourceCompat1201.apply(resources));
+        assertEquals(migrated, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_SLAM));
     }
 
     @Test
@@ -670,7 +1294,10 @@ class PalladiumResourceCompat1201Test {
         assertFalse(migrated.contains("let player = event.entity;"));
         assertTrue(migrated.startsWith("function legacyConnectorAlienEvoPacketString(value) {"));
         assertTrue(migrated.contains("legacyConnectorAlienEvoPacketString(data.value)"));
-        assertTrue(migrated.contains("legacyConnectorAlienEvoPacketString(propertiesToSave[propertyName])"));
+        assertTrue(migrated.contains("let propertyIterator = propertiesToSave.getAllKeys().iterator();"));
+        assertTrue(migrated.contains("let propertyName = propertyIterator.next();"));
+        assertTrue(migrated.contains("legacyConnectorAlienEvoPacketString(propertiesToSave.get(propertyName))"));
+        assertFalse(migrated.contains("propertiesToSave[propertyName]"));
         assertTrue(migrated.contains("legacyConnectorAlienEvoPacketString(event.data.nickname)"));
         assertFalse(migrated.contains("let colorValue = data.value;"));
         assertFalse(migrated.contains("let energyColor = data.value;"));
@@ -822,6 +1449,11 @@ class PalladiumResourceCompat1201Test {
                     hexTextBox.tick();
                     lastTickTime = currentTime;
                 }
+                function hexToRgb(hex) {
+                    hex = hex.replace(/^#/, '');
+                    let bigint = parseInt(hex, 16);
+                    return { r: (bigint >> 16) & 255, g: (bigint >> 8) & 255, b: bigint & 255 };
+                }
                 let rawTextboxValue = hexTextBox.getValue() || "";
                 let cleanedHexString = rawTextboxValue.replace(/[^0-9A-Fa-f]/g, "").slice(0, 6);
                 drawSaveButton();
@@ -842,6 +1474,9 @@ class PalladiumResourceCompat1201Test {
         assertFalse(migrated.contains("nickTextBox.tick()"));
         assertTrue(migrated.contains("rawTextboxValue.replaceAll(\"[^0-9A-Fa-f]\", \"\")"));
         assertTrue(migrated.contains("cleanedHexString.substring(0, 6)"));
+        assertTrue(migrated.contains(
+                "hex = hex.startsWith(\"#\") ? hex.substring(1) : hex;"));
+        assertFalse(migrated.contains("hex = hex.replace(/^#/, '');"));
         assertFalse(migrated.contains("rawTextboxValue.replace(/[^0-9A-Fa-f]/g"));
         assertEquals(0, PalladiumResourceCompat1201.apply(resources));
         assertEquals(migrated, get(resources, PalladiumResourceCompat1201.ALIEN_EVO_POWER_UI));
@@ -921,9 +1556,10 @@ class PalladiumResourceCompat1201Test {
                 "targets[j].type !== \"palladium:suit_stand\" && targets[j].type !== \"minecraft:marker\""));
         assertTrue(migrated.contains(
                 "if (firetick > 0 && targets[j] instanceof LivingEntity) {"));
-        assertEquals(1, occurrences(migrated, "targets[j].setSecondsOnFire(firetick);"));
+        assertEquals(1, occurrences(migrated, "targets[j].igniteForSeconds(firetick);"));
+        assertFalse(migrated.contains("targets[j].setSecondsOnFire(firetick);"));
         assertTrue(migrated.indexOf("if (firetick > 0 && targets[j] instanceof LivingEntity) {")
-                < migrated.indexOf("targets[j].setSecondsOnFire(firetick);"));
+                < migrated.indexOf("targets[j].igniteForSeconds(firetick);"));
         assertEquals(0, PalladiumResourceCompat1201.apply(resources));
         assertEquals(migrated, get(resources, PalladiumResourceCompat1201.AFOMNI_AOE_DAMAGE));
     }

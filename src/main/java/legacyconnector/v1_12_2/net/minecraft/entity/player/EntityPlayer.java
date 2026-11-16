@@ -809,6 +809,28 @@ public abstract class EntityPlayer extends EntityLivingBase {
         return 0;
     }
 
+    /** Whether the player respawns in another dimension than the one it is bed-bound in at all: true when it has a respawn point. */
+    public boolean hasSpawnDimension() {
+        return mcc$player() instanceof net.minecraft.server.level.ServerPlayer sp && sp.getRespawnPosition() != null;
+    }
+
+    /**
+     * Moves the dimension of the player's respawn point (null: the overworld), keeping its position, angle and forced flag. A player without a
+     * respawn point has none to move.
+     */
+    public void setSpawnDimension(Integer dimension) {
+        if (!(mcc$player() instanceof net.minecraft.server.level.ServerPlayer sp) || sp.getRespawnPosition() == null) return;
+        var target = org.kylepitcock.legacyconnector.v1_12_2.bridge.EntityBridge1122.level(sp.server, dimension == null ? 0 : dimension);
+        if (target == null) return;
+        sp.setRespawnPosition(target.dimension(), sp.getRespawnPosition(), sp.getRespawnAngle(), sp.isRespawnForced(), false);
+    }
+
+    /** Whether the player is on this scoreboard team. */
+    public boolean isOnScoreboardTeam(legacyconnector.v1_12_2.net.minecraft.scoreboard.Team team) {
+        var own = getTeam();
+        return own != null && own.isSameTeam(team);
+    }
+
     public float getArmorVisibility() {
         return mcc$player().getArmorCoverPercentage();
     }

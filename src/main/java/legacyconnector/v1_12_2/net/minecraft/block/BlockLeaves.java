@@ -135,6 +135,9 @@ public abstract class BlockLeaves extends Block implements legacyconnector.v1_12
         return !leavesFancy;
     }
 
+    /** The wood type a metadata value stands for (the leaves of that tree). */
+    public abstract legacyconnector.v1_12_2.net.minecraft.block.BlockPlanks.EnumType getWoodType(int meta);
+
     public void setGraphicsLevel(boolean fancy) {
         this.leavesFancy = fancy;
     }
