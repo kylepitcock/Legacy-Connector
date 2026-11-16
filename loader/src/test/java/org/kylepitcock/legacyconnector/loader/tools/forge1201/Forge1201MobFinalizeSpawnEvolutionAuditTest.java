@@ -16,6 +16,7 @@ import java.util.jar.JarOutputStream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
 final class Forge1201MobFinalizeSpawnEvolutionAuditTest {
@@ -112,6 +113,82 @@ final class Forge1201MobFinalizeSpawnEvolutionAuditTest {
     }
 
     @Test
+    void reportsTrailingCompoundTagLocalLoadEvidenceForEffectiveSourceDispatch() throws Exception {
+        Path sourceJar = tempDir.resolve("parameter-use-source.jar");
+        Path targetJar = tempDir.resolve("parameter-use-target.jar");
+
+        try (JarOutputStream jar = new JarOutputStream(Files.newOutputStream(sourceJar))) {
+            addClass(jar, Forge1201MobFinalizeSpawnEvolutionAudit.MOB_OWNER, "java/lang/Object",
+                    new MethodSpec[] {
+                            new MethodSpec(Forge1201MobFinalizeSpawnEvolutionAudit.SOURCE_BASE_DESCRIPTOR,
+                                    Opcodes.ACC_PUBLIC)
+                    });
+            addClass(jar, "net/minecraft/world/entity/Animal",
+                    Forge1201MobFinalizeSpawnEvolutionAudit.MOB_OWNER,
+                    new MethodSpec[] {
+                            new MethodSpec(Forge1201MobFinalizeSpawnEvolutionAudit.SOURCE_BASE_DESCRIPTOR,
+                                    Opcodes.ACC_PUBLIC, new int[] { 5 })
+                    });
+            addClass(jar, "net/minecraft/world/entity/Zombie", "net/minecraft/world/entity/Animal",
+                    new MethodSpec[0]);
+            addClass(jar, "net/minecraft/world/entity/Skeleton",
+                    Forge1201MobFinalizeSpawnEvolutionAudit.MOB_OWNER,
+                    new MethodSpec[] {
+                            new MethodSpec(Forge1201MobFinalizeSpawnEvolutionAudit.SOURCE_BASE_DESCRIPTOR,
+                                    Opcodes.ACC_PUBLIC)
+                    });
+        }
+
+        try (JarOutputStream jar = new JarOutputStream(Files.newOutputStream(targetJar))) {
+            addClass(jar, Forge1201MobFinalizeSpawnEvolutionAudit.MOB_OWNER, "java/lang/Object",
+                    new MethodSpec[] {
+                            new MethodSpec(Forge1201MobFinalizeSpawnEvolutionAudit.TARGET_BASE_DESCRIPTOR,
+                                    Opcodes.ACC_PUBLIC)
+                    });
+            addClass(jar, "net/minecraft/world/entity/Animal",
+                    Forge1201MobFinalizeSpawnEvolutionAudit.MOB_OWNER,
+                    new MethodSpec[] {
+                            new MethodSpec(Forge1201MobFinalizeSpawnEvolutionAudit.TARGET_BASE_DESCRIPTOR,
+                                    Opcodes.ACC_PUBLIC)
+                    });
+            addClass(jar, "net/minecraft/world/entity/Zombie", "net/minecraft/world/entity/Animal",
+                    new MethodSpec[0]);
+            addClass(jar, "net/minecraft/world/entity/Skeleton",
+                    Forge1201MobFinalizeSpawnEvolutionAudit.MOB_OWNER,
+                    new MethodSpec[0]);
+        }
+
+        var result = Forge1201MobFinalizeSpawnEvolutionAudit.analyze(
+                index(sourceJar, "parameter-use-source-classpath.txt"),
+                index(targetJar, "parameter-use-target-classpath.txt"));
+        Map<String, Forge1201MobFinalizeSpawnEvolutionAudit.OwnerComparison> byOwner = new HashMap<>();
+        result.owners().forEach(owner -> byOwner.put(owner.owner(), owner));
+
+        var baseEvidence = byOwner.get(Forge1201MobFinalizeSpawnEvolutionAudit.MOB_OWNER)
+                .sourceTrailingCompoundTagEvidence();
+        assertEquals(5, baseEvidence.localSlot());
+        assertEquals(0, baseEvidence.loadInstructionCount());
+        assertEquals("NO_LOCAL_SLOT_LOAD_INSTRUCTIONS", baseEvidence.status());
+
+        var animalEvidence = byOwner.get("net/minecraft/world/entity/Animal")
+                .sourceTrailingCompoundTagEvidence();
+        assertEquals("net/minecraft/world/entity/Animal", animalEvidence.declaringOwner());
+        assertEquals(1, animalEvidence.loadInstructionCount());
+        assertEquals("LOCAL_SLOT_LOAD_INSTRUCTIONS_FOUND", animalEvidence.status());
+
+        var inheritedEvidence = byOwner.get("net/minecraft/world/entity/Zombie")
+                .sourceTrailingCompoundTagEvidence();
+        assertEquals("net/minecraft/world/entity/Animal", inheritedEvidence.declaringOwner());
+        assertEquals(1, inheritedEvidence.loadInstructionCount());
+
+        var skeletonEvidence = byOwner.get("net/minecraft/world/entity/Skeleton")
+                .sourceTrailingCompoundTagEvidence();
+        assertEquals("net/minecraft/world/entity/Skeleton", skeletonEvidence.declaringOwner());
+        assertEquals(0, skeletonEvidence.loadInstructionCount());
+        assertEquals("NO_LOCAL_SLOT_LOAD_INSTRUCTIONS", skeletonEvidence.status());
+    }
+
+    @Test
     void keepsIncompleteEntityHierarchySeparateFromConfirmedNonMobClasses() throws Exception {
         Path sourceJar = tempDir.resolve("incomplete-source.jar");
         Path targetJar = tempDir.resolve("target.jar");
@@ -140,7 +217,11 @@ final class Forge1201MobFinalizeSpawnEvolutionAuditTest {
         return Forge1201SourceRuntimeMemberVerifier.readClasspath(classpath);
     }
 
-    private record MethodSpec(String descriptor, int access) {}
+    private record MethodSpec(String descriptor, int access, int[] localLoads) {
+        private MethodSpec(String descriptor, int access) {
+            this(descriptor, access, new int[0]);
+        }
+    }
 
     private static void addClass(
             JarOutputStream jar,
@@ -150,7 +231,19 @@ final class Forge1201MobFinalizeSpawnEvolutionAuditTest {
         ClassWriter writer = new ClassWriter(0);
         writer.visit(Opcodes.V17, Opcodes.ACC_PUBLIC, name, null, superName, null);
         for (MethodSpec method : methods) {
-            writer.visitMethod(method.access(), "finalizeSpawn", method.descriptor(), null, null).visitEnd();
+            MethodVisitor visitor =
+                    writer.visitMethod(method.access(), "finalizeSpawn", method.descriptor(), null, null);
+            if ((method.access() & (Opcodes.ACC_ABSTRACT | Opcodes.ACC_NATIVE)) == 0) {
+                visitor.visitCode();
+                for (int local : method.localLoads()) {
+                    visitor.visitVarInsn(Opcodes.ALOAD, local);
+                    visitor.visitInsn(Opcodes.POP);
+                }
+                visitor.visitInsn(Opcodes.ACONST_NULL);
+                visitor.visitInsn(Opcodes.ARETURN);
+                visitor.visitMaxs(1, 8);
+            }
+            visitor.visitEnd();
         }
         writer.visitEnd();
         jar.putNextEntry(new JarEntry(name + ".class"));
