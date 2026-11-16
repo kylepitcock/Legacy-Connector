@@ -521,18 +521,23 @@ def forge1201SourceMemberReport = layout.buildDirectory.file(
 def auditForge1201SourceRuntimeMember1201 = tasks.register(
         'auditForge1201SourceRuntimeMember1201', JavaExec) {
     group = 'verification'
-    description = 'Maps one Mojang-named 1.20.1 source selector back to Forge SRG and checks the exact Forge source classpath.'
+    description = 'Checks one Forge 1.20.1 source member through either vanilla SRG mapping or a direct Mojang-official identity.'
+    def memberMode = project.findProperty('forge1201SourceMemberMode')?.toString() ?: 'srg-official'
     def memberKind = project.findProperty('forge1201SourceMemberKind')?.toString()
     def memberOwner = project.findProperty('forge1201SourceMemberOwner')?.toString()
     def memberName = project.findProperty('forge1201SourceMemberName')?.toString()
     def memberDescriptor = project.findProperty('forge1201SourceMemberDescriptor')?.toString()
 
-    dependsOn verifySrgMojangInputs1201, extractFabricIntermediary1201, tasks.named('classes')
+    dependsOn tasks.named('classes')
+    if (memberMode == 'srg-official') {
+        dependsOn verifySrgMojangInputs1201, extractFabricIntermediary1201
+        inputs.file(joinedTsrg1201)
+        inputs.file(fabricIntermediary1201Tiny)
+        inputs.file(mojang1201)
+    }
     inputs.file(forge1201SourceClasspath)
     inputs.file(forge1201SourceManifest)
-    inputs.file(joinedTsrg1201)
-    inputs.file(fabricIntermediary1201Tiny)
-    inputs.file(mojang1201)
+    inputs.property('sourceMemberMode', memberMode)
     inputs.property('sourceMemberKind', memberKind ?: '<unset>')
     inputs.property('sourceMemberOwner', memberOwner ?: '<unset>')
     inputs.property('sourceMemberName', memberName ?: '<unset>')
@@ -541,6 +546,9 @@ def auditForge1201SourceRuntimeMember1201 = tasks.register(
     classpath = sourceSets.main.output + configurations.runtimeClasspath
     mainClass = 'org.kylepitcock.legacyconnector.loader.tools.forge1201.Forge1201SourceRuntimeMemberVerifier'
     doFirst {
+        if (!(memberMode in ['srg-official', 'direct-official'])) {
+            throw new GradleException('Set -Pforge1201SourceMemberMode=srg-official or direct-official.')
+        }
         if (!(memberKind in ['method', 'field'])) {
             throw new GradleException('Set -Pforge1201SourceMemberKind=method or field.')
         }
@@ -627,17 +635,29 @@ def auditForge1201SourceRuntimeMember1201 = tasks.register(
             }
         }
 
-        setArgs([
-                forge1201SourceClasspath.absolutePath,
-                joinedTsrg1201.get().asFile.absolutePath,
-                fabricIntermediary1201Tiny.get().asFile.absolutePath,
-                mojang1201.get().asFile.absolutePath,
-                memberKind,
-                memberOwner,
-                memberName,
-                memberDescriptor,
-                forge1201SourceMemberReport.get().asFile.absolutePath
-        ])
+        if (memberMode == 'direct-official') {
+            setArgs([
+                    '--direct-official',
+                    forge1201SourceClasspath.absolutePath,
+                    memberKind,
+                    memberOwner,
+                    memberName,
+                    memberDescriptor,
+                    forge1201SourceMemberReport.get().asFile.absolutePath
+            ])
+        } else {
+            setArgs([
+                    forge1201SourceClasspath.absolutePath,
+                    joinedTsrg1201.get().asFile.absolutePath,
+                    fabricIntermediary1201Tiny.get().asFile.absolutePath,
+                    mojang1201.get().asFile.absolutePath,
+                    memberKind,
+                    memberOwner,
+                    memberName,
+                    memberDescriptor,
+                    forge1201SourceMemberReport.get().asFile.absolutePath
+            ])
+        }
     }
 }
 

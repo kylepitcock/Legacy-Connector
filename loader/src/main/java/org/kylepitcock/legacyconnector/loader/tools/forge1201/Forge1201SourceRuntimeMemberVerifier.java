@@ -545,11 +545,17 @@ public final class Forge1201SourceRuntimeMemberVerifier {
      * reverse-resolved SRG identity and the exact Forge source classfile result.
      */
     public static void main(String[] args) throws IOException {
+        if (args.length == 7 && args[0].equals("--direct-official")) {
+            verifyDirectOfficial(args);
+            return;
+        }
         if (args.length != 9) {
             throw new IllegalArgumentException(
                     "Usage: Forge1201SourceRuntimeMemberVerifier <classpath.txt> <joined.tsrg> "
                             + "<source.tiny> <client.txt> <method|field> <official-owner> "
-                            + "<official-name> <official-descriptor> <report.json>");
+                            + "<official-name> <official-descriptor> <report.json>, or "
+                            + "Forge1201SourceRuntimeMemberVerifier --direct-official <classpath.txt> "
+                            + "<method|field> <official-owner> <official-name> <official-descriptor> <report.json>");
         }
 
         Path classpathFile = Path.of(args[0]);
@@ -588,6 +594,90 @@ public final class Forge1201SourceRuntimeMemberVerifier {
         System.out.println("Report: " + report);
         System.out.println("Selector transformation performed: false");
         System.out.println("Runtime mapping table produced: false");
+    }
+
+    /**
+     * Verifies a source selector expressed directly in Mojang official 1.20.1 names.
+     *
+     * <p>This path intentionally bypasses the vanilla SRG/MCPConfig mapping index. It is for
+     * Forge-added API members (or other explicitly supplied official identities) that have no
+     * vanilla SRG selector row. The owner, member name, and full JVM descriptor are checked
+     * directly against the same pinned, ordered Forge source classpath.</p>
+     */
+    private static void verifyDirectOfficial(String[] args) throws IOException {
+        Path classpathFile = Path.of(args[1]);
+        String kind = args[2];
+        String owner = args[3];
+        String name = args[4];
+        String descriptor = args[5];
+        if (!kind.equals("method") && !kind.equals("field")) {
+            throw new IllegalArgumentException("Selector kind must be 'method' or 'field', got: " + kind);
+        }
+        if (owner.isBlank() || name.isBlank() || descriptor.isBlank()) {
+            throw new IllegalArgumentException("Direct official owner, name, and descriptor must be non-blank.");
+        }
+
+        Index sourceRuntime = readClasspath(classpathFile);
+        MemberResult member = kind.equals("method")
+                ? sourceRuntime.inspectMethod(owner, name, descriptor)
+                : sourceRuntime.inspectField(owner, name, descriptor);
+
+        String json = toDirectOfficialJson(kind, owner, name, descriptor,
+                sourceRuntime.classpathSummary(), member);
+        Path report = Path.of(args[6]).toAbsolutePath().normalize();
+        if (report.getParent() != null) Files.createDirectories(report.getParent());
+        Files.writeString(report, json, StandardCharsets.UTF_8);
+
+        System.out.println("Forge 1.20.1 source runtime direct official member check: checked=1");
+        System.out.println("  " + member.display());
+        for (String observed : member.observedSameNameMembers()) {
+            System.out.println("    observed: " + observed);
+        }
+        System.out.println("Report: " + report);
+        System.out.println("Selector transformation performed: false");
+        System.out.println("Runtime mapping table produced: false");
+    }
+
+    private static String toDirectOfficialJson(
+            String kind,
+            String owner,
+            String name,
+            String descriptor,
+            ClasspathSummary classpathSummary,
+            MemberResult member) {
+        StringBuilder json = new StringBuilder(3072);
+        json.append("{\n")
+                .append("  \"schemaVersion\": 1,\n")
+                .append("  \"status\": \"READ_ONLY_SOURCE_RUNTIME_DIRECT_OFFICIAL_MEMBER_CHECK\",\n")
+                .append("  \"query\": {\"kind\": \"").append(escape(kind))
+                .append("\", \"owner\": \"").append(escape(owner))
+                .append("\", \"name\": \"").append(escape(name))
+                .append("\", \"descriptor\": \"").append(escape(descriptor)).append("\"},\n")
+                .append("  \"selectorResolution\": {\n")
+                .append("    \"mode\": \"DIRECT_OFFICIAL_IDENTITY\",\n")
+                .append("    \"namespace\": \"MOJANG_OFFICIAL_1_20_1\",\n")
+                .append("    \"vanillaSrgMappingApplied\": false\n")
+                .append("  },\n")
+                .append("  \"sourceRuntimeClasspath\": {\n")
+                .append("    \"listSha256\": \"").append(classpathSummary.classpathListSha256()).append("\",\n")
+                .append("    \"entryCount\": ").append(classpathSummary.classpathEntryCount()).append(",\n")
+                .append("    \"indexedClassCount\": ").append(classpathSummary.indexedClassCount()).append(",\n")
+                .append("    \"duplicateClassNames\": ").append(classpathSummary.duplicateClassNames()).append("\n")
+                .append("  },\n")
+                .append("  \"members\": [\n")
+                .append("    {\"owner\": \"").append(escape(member.owner()))
+                .append("\", \"name\": \"").append(escape(member.name()))
+                .append("\", \"descriptor\": \"").append(escape(member.descriptor()))
+                .append("\", \"status\": \"").append(member.status()).append("\", \"declaringOwner\": ")
+                .append(member.declaringOwner() == null ? "null" : "\"" + escape(member.declaringOwner()) + "\"")
+                .append(", \"hierarchyVisited\": ").append(stringArray(member.hierarchyVisited()))
+                .append(", \"observedSameNameMembers\": ").append(stringArray(member.observedSameNameMembers()))
+                .append("}\n")
+                .append("  ],\n")
+                .append("  \"selectorTransformationPerformed\": false,\n")
+                .append("  \"runtimeMappingTableProduced\": false\n")
+                .append("}\n");
+        return json.toString();
     }
 
     private static String toJson(

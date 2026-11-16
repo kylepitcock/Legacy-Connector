@@ -800,3 +800,34 @@ After the isolated Forge source classpath and manifest have been exported, run t
 Expected structural outcomes based on the already supplied `javap` evidence are: the two old resolver helper rows are absent from the Forge source class, while the two state-level replacement methods are present (or inherited if the compiled declaration shows that). The actual task output remains authoritative; do not pre-fill or assume those results. The report is written to `loader/build/reports/source-runtime/forge1201-source-member-check.json` and is overwritten by each subsequent query.
 
 This stage remains read-only. No selector rewriting, Mixin remapping, runtime mapping payload, source Forge dependency, or source runtime classpath has been added to the connector's packaged loader.
+
+
+### 20.11 Direct official selector path for Forge-added API members
+
+The vanilla mapping-composition path cannot resolve every Forge source-runtime member. The exact Forge 47.3.0 piston investigation proved this boundary:
+
+- The old vanilla private resolver helpers `PistonStructureResolver.isSticky(BlockState)` and `canStickToEachOther(BlockState,BlockState)` are absent from the patched Forge source class.
+- Forge 47.3.0 adds state-level API methods through `IForgeBlockState`; the exact pinned source runtime declares default `isStickyBlock()Z` and `canStickTo(BlockState)Z`, and `BlockState` directly implements `IForgeBlockState`.
+- Those interface methods delegate virtually through `Block` to the default hooks on `IForgeBlock`.
+- The `IForgeBlock` default bodies implement the slime/honey sticky predicate and pairwise honey/slime rejection plus either-sticky rule. The resolver uses state-level extension calls and reciprocal `canStickTo` checks.
+
+The earlier SRG-to-Mojmap member query for `BlockState.isStickyBlock()Z` returned `MEMBER_MISSING` with zero checked members because the selector does not exist in the vanilla mapping domain. That outcome is not proof of source-runtime absence.
+
+The source verifier therefore requires two deliberately separate selector-resolution modes:
+
+1. **`srg-official` (existing default):** resolve a vanilla SRG selector through the existing owner/member/descriptor-qualified MCPConfig → obfuscated → Mojmap index, then inspect the resulting source class identity. This mode is unchanged and remains fail-closed on mapping ambiguity/missing rows.
+2. **`direct-official` (new opt-in):** accept a caller-supplied Mojang-official 1.20.1 owner, member name, and full JVM descriptor, and inspect that exact identity directly against the same pinned, manifest-validated Forge source classpath. It does not instantiate or consult the SRG/Mojmap mapping index and does not invent an SRG identity.
+
+The direct mode uses the same ordered classpath first-match semantics, ASM byte parsing, hierarchy/interface traversal, JDK ModuleReader fallback, and source member statuses as the mapped mode. Its report uses a distinct status `READ_ONLY_SOURCE_RUNTIME_DIRECT_OFFICIAL_MEMBER_CHECK` and records `selectorResolution.mode=DIRECT_OFFICIAL_IDENTITY`, `namespace=MOJANG_OFFICIAL_1_20_1`, and `vanillaSrgMappingApplied=false`. The source classpath manifest/profile/path/hash/probe validation remains mandatory in Gradle before Java execution. Selector transformation and runtime mapping output remain false.
+
+Gradle invocation for a Forge-added extension method:
+
+```powershell
+.\\gradlew.bat :loader:auditForge1201SourceRuntimeMember1201 -Pforge1201SourceMemberMode=direct-official -Pforge1201SourceMemberKind=method -Pforge1201SourceMemberOwner=net/minecraft/world/level/block/state/BlockState -Pforge1201SourceMemberName=isStickyBlock '-Pforge1201SourceMemberDescriptor=()Z' --console=plain
+```
+
+Omitting `forge1201SourceMemberMode` retains the prior `srg-official` behavior. Direct mode skips mapping extraction/verification dependencies and inputs; it only requires the pinned source classpath and manifest plus the loader classes.
+
+The focused regression fixture models a Mojmap-named `BlockState` that implements a Forge extension interface with default `isStickyBlock` and `canStickTo` methods. It verifies exact inherited interface lookup by complete JVM descriptor, descriptor-change reporting, and direct field lookup without constructing any mapping index. This proves the direct identity route is not coupled to the vanilla SRG mapping domain.
+
+This is a diagnostic/source-evidence feature only. It does not establish target NeoForge equivalence, authorize selector rewriting, generate runtime mapping data, or change the packaged loader. A direct source member match remains structural evidence; semantic behavior needs a separate call-graph/implementation comparison.
