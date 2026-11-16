@@ -678,7 +678,9 @@ public final class DataConverter1201 {
             CreateRecipes1201.convert(o, type, c);
             return;
         }
-        if (!vanilla) return;
+        // a mod's wrapper of the shaped recipe (Mekanism's mek_data, Mystical Agriculture's own types) reads the vanilla shape: same conversion as vanilla's
+        if (!vanilla && !(o.has("pattern") && o.has("key") && o.has("result"))) return;
+        if (!vanilla) type = "minecraft:crafting_shaped";
         String t = type.startsWith("minecraft:") ? type.substring(10) : type;
         boolean hasResult = o.has("result");
         if (hasResult) {
