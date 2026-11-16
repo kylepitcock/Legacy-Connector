@@ -258,4 +258,24 @@ class Notch125To147Test {
         assertTrue(m.contains("x2.onUse(Lx1;IIIFFF)Z"), "and calls the 1.4.7 method: " + m);
         assertEquals(1, Notch125To147.lastAdaptedCalls().size());
     }
+
+    /** An override of an unjoined game member is named after the Feather name, not left under the obfuscated letter (the 1.4.7 stage would rename the letter again). */
+    @Test
+    void overrideOfAnUnjoinedMemberCarriesTheSideIndependentName() throws IOException {
+        String table = TABLE + "U\tc\tbbb\tq\t(Laaa;)V\tonQ\n";
+        Notch125To147.Table t = Notch125To147.parse(new BufferedReader(new StringReader(table)))[0];
+        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+        cw.visit(Opcodes.V1_6, Opcodes.ACC_PUBLIC, "ItemZ", null, "bbb", null);
+        MethodVisitor mv = cw.visitMethod(Opcodes.ACC_PUBLIC, "q", "(Laaa;)V", null, null);
+        mv.visitCode();
+        mv.visitInsn(Opcodes.RETURN);
+        mv.visitMaxs(0, 0);
+        mv.visitEnd();
+        Map<String, byte[]> classes = new LinkedHashMap<>();
+        classes.put("ItemZ", cw.toByteArray());
+        Notch125To147.apply(t, NotchNames.get("1.4.7"), classes);
+        List<String> m = members(classes.get("ItemZ"));
+        assertTrue(m.contains("decl mcc125$onQ(Lx1;)V"), m.toString());
+        assertEquals(1, Notch125To147.lastUnjoinedOverrides()[0]);
+    }
 }

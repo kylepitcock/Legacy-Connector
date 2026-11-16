@@ -155,6 +155,13 @@ public final class Mc125Mappings {
         Map<String, String> readableTo147 = new HashMap<>();
         for (var e : v147.classes.entrySet()) readableTo147.put(e.getValue(), e.getKey());
         // 1.4.7 members by owner, kind and readable name: the fallback for members whose descriptor changed in a game class type (see the join in main)
+        Map<String, String> read147 = new HashMap<>(); // official owner|name|desc of 1.4.7 to its readable name
+        for (String[] m : v147.members) read147.put(m[1] + "|" + m[2] + "|" + m[3], memberName(m, v147.classes.get(m[1])));
+        StringBuilder nameChanges = new StringBuilder(), rejectedChanges = new StringBuilder();
+        java.util.Set<String> reviewed = new java.util.HashSet<>();
+        try (InputStream in = Mc125Mappings.class.getResourceAsStream("/legacyconnector/mappings/1.2.5/reviewed-name-changes.tsv")) {
+            if (in != null) for (String line : new String(in.readAllBytes(), StandardCharsets.UTF_8).split("\n")) if (!line.startsWith("#") && !line.isBlank()) reviewed.add(line.replace("\r", ""));
+        }
         Map<String, String> aliases = new HashMap<>(); // "kind owner.name125" to name147 (manual-aliases.tsv)
         try (InputStream in = Mc125Mappings.class.getResourceAsStream("/legacyconnector/mappings/1.2.5/manual-aliases.tsv")) {
             if (in != null) {
@@ -209,7 +216,22 @@ public final class Mc125Mappings {
                         // the same member as in 1.4.7 under another readable name or with other class types: Calamus gave it the same intermediary name in both versions
                         to = v147.byInter.get(m[0] + "|" + m[5] + "|" + m[6]);
                         if (to != null && !erase(to[2]).equals(erase(m[3]))) to = null; // other primitives or array depth: not the same member
-                        if (to != null) joinedByInter++;
+                        if (to != null) {
+                            String n147 = read147.get(to[0] + "|" + to[1] + "|" + to[2]);
+                            String n125 = memberName(m, ownerReadable);
+                            // audit: the same intermediary id under two Feather names is sometimes a rename Feather made between builds (Item.MAP, FILLED_MAP) and sometimes a reused id for another
+                            // member (PlayerManager.unban joined to removeFromWhitelist); only the reviewed ones (reviewed-name-changes.tsv) are joined, the rest is left to the other tiers and listed
+                            if (n147 != null && !n147.equals(n125)) {
+                                String line = ownerReadable + "\t" + n125 + "\t" + n147;
+                                if (reviewed.contains(line)) {
+                                    nameChanges.append(sides[s]).append("\t").append(line).append("\t").append(m[3]).append("\n");
+                                } else {
+                                    rejectedChanges.append(sides[s]).append("\t").append(line).append("\t").append(m[3]).append("\t").append(m[1]).append("\t").append(m[2]).append("\n");
+                                    to = null;
+                                }
+                            }
+                            if (to != null) joinedByInter++;
+                        }
                     }
                     if (to == null && class147.containsKey(m[1])) {
                         // a member 1.4.7 has under another name, curated by hand
@@ -342,6 +364,8 @@ public final class Mc125Mappings {
             }
         }
         Files.writeString(out.resolve("join-report.txt"), report.toString(), StandardCharsets.UTF_8);
+        Files.writeString(out.resolve("join-name-changes.tsv"), nameChanges.toString(), StandardCharsets.UTF_8);
+        Files.writeString(out.resolve("join-name-rejected.tsv"), rejectedChanges.toString(), StandardCharsets.UTF_8);
         System.out.println("1.2.5 to 1.4.7 join written to " + out.toAbsolutePath());
         System.out.print(report.substring(0, Math.min(report.length(), 600)));
     }

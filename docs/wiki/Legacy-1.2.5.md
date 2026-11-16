@@ -249,6 +249,16 @@ Overrides never called, 929 bridged and **85 never called**: `updateMetadataOnPl
 (1.2.5 calls the first right after placement with the side, 1.4.7 has no hook with that shape, the second has no Feather name), the rest are single hooks without a 1.4.7 method found by call-site evidence
 (callers of the 1.2.5 method mapped through the join to their 1.4.7 callers, `Mojang 1.2.5/1.4.7 client jars` read locally, nothing committed).
 
+**Round 4: a wrong rename and an audit of the join (2026-11-16).** `ee.BlockEETorch.c(World,IIII)V` (EE2; the post-placement hook `Block.updateMetadataOnPlaced`) came out as `onBlockDestroyedByPlayer`.
+It was not a join row: the join has only an unjoined (`U`) row for it, but the mod's DECLARATION kept the obfuscated letter `c`, and the later 1.4.7 notch to MCP stage renamed that letter to the 1.4.7 member
+that happens to have the same letter and descriptor (a double rename; references to unjoined members had been fixed in round 1, declarations had not). Now a mod method that overrides an unjoined game member is
+named `mcc125$<Feather name>` (supertypes walked; the shim's hook names): 85 overrides in the corpus, 85 renamed, 0 left (`Mc125CorpusBridgesTest`). Audit of the join itself: the only tier that can bind two members
+with different Feather names is "same Calamus intermediary id"; 20 such joins existed, **15 were wrong** (an intermediary id reused for another member: `PlayerManager.unban` joined to `removeFromWhitelist`,
+`ban` to `addToWhitelist`, `Snooper.report` to `init`, `HandshakePacket.key` to `username`, `EntityMap.server` to `world`, `ProjectileAttackGoal.projectileType` to `cooldown`, `handleLoadWorldChunk` to
+`handleSoundEvent`, ...) and 5 are Feather renames (`Item.MAP` to `FILLED_MAP`, `World.wakeUpAllPlayers`, ...). Only the reviewed pairs (`reviewed-name-changes.tsv`) are joined now, the rest is listed in
+`join-name-rejected.tsv`; `Mc125JoinAuditTest` fails on any accepted pair that is not in the reviewed list. Corpus archives that reference a wrong join: Smart Moving's standalone game patch, the Forge client and
+server zips, the ModLoader/ModLoaderMP zips and Mystcraft's server patch (all of them game-class copies the layer drops or API distributions it skips); no content mod referenced one, so the earlier link counts stand.
+
 **Side-independent names for unjoined members.** The client and the server of 1.2.5 are obfuscated separately, so `mcc125$b` meant different members on the two sides. `genMappings125` now writes
 a `U` row (side, owner, letter, descriptor, Feather name) for every member that stayed unjoined and the loader names it `mcc125$<Feather name>` (`mcc125$draw`, `mcc125$onClickSlot`, `mcc125$item`);
 the shim worker's call-redirect rows in `forward/1.4.7/member-manual.tsv` were re-keyed accordingly (11 rows), so server builds hit them too.

@@ -193,6 +193,7 @@ public final class Notch125To147 {
         int renamed = 0;
         LAST_BRIDGES.set(new int[2]);
         int[] counts = new int[2];
+        int[] unjoinedOverrides = new int[2]; // renamed to mcc125$<Feather name>, left under the obfuscated name
         Map<String, Integer> adaptedCalls = new java.util.TreeMap<>(), unadaptedCalls = new java.util.TreeMap<>();
         List<String> unbridged = new ArrayList<>();
         Remapper byClass = new Remapper() {
@@ -209,15 +210,21 @@ public final class Notch125To147 {
             new ClassReader(bytes).accept(new org.objectweb.asm.ClassVisitor(org.objectweb.asm.Opcodes.ASM9) {
                 @Override
                 public org.objectweb.asm.MethodVisitor visitMethod(int access, String mname, String mdesc, String sig, String[] ex) {
-                    if ((access & (org.objectweb.asm.Opcodes.ACC_STATIC | org.objectweb.asm.Opcodes.ACC_PRIVATE | org.objectweb.asm.Opcodes.ACC_ABSTRACT)) != 0 || mname.startsWith("<")
-                            || mname.length() > 3 || self == null || self.superName() == null) return null;
+                    if (mname.startsWith("<") || mname.length() > 3 || self == null || self.superName() == null) return null;
+                    boolean noBridge = (access & (org.objectweb.asm.Opcodes.ACC_STATIC | org.objectweb.asm.Opcodes.ACC_PRIVATE | org.objectweb.asm.Opcodes.ACC_ABSTRACT)) != 0;
                     String[] hit = resolver.lookup("M", self.superName(), mname, mdesc);
                     if (hit == null) hit = resolver.lookup("B", self.superName(), mname, mdesc);
                     if (hit == null) {
                         String[] u = resolver.lookup("U", self.superName(), mname, mdesc);
-                        if (u != null) unbridged.add(name + "." + mname + mdesc + ": no 1.4.7 method '" + u[1] + "'");
+                        if (u != null && (access & (org.objectweb.asm.Opcodes.ACC_STATIC | org.objectweb.asm.Opcodes.ACC_PRIVATE)) == 0) {
+                            unbridged.add(name + "." + mname + mdesc + ": no 1.4.7 method '" + u[1] + "'");
+                            // the declaration must carry the side independent name too, or the 1.4.7 stage renames the short letter a second time (to whatever 1.4.7 member has it)
+                            if (resolver.mapMethodName(name, mname, mdesc).startsWith(UNJOINED_PREFIX)) unjoinedOverrides[0]++;
+                            else unjoinedOverrides[1]++;
+                        }
                         return null;
                     }
+                    if (noBridge) return null;
                     String oldDesc = byClass.mapDesc(mdesc);
                     if (oldDesc.equals(hit[2])) return null;
                     counts[0]++;
@@ -253,6 +260,7 @@ public final class Notch125To147 {
         }
         LAST_UNRESOLVED.set(new TreeSet<>(resolver.unresolved));
         LAST_UNBRIDGED.set(unbridged);
+        LAST_UNJOINED.set(unjoinedOverrides);
         LAST_CALLS.set(new Map[] {adaptedCalls, unadaptedCalls});
         notes.add(LAST_BRIDGES.get()[0] + " override(s) of game methods whose signature changed in 1.3, " + LAST_BRIDGES.get()[1] + " bridged to the 1.4.7 signature"
                 + (unbridged.isEmpty() ? "" : " (not bridged, e.g. " + unbridged.stream().limit(3).toList() + ")"));
@@ -380,6 +388,10 @@ public final class Notch125To147 {
             String[] hit = lookup(kind, owner, name, desc);
             if (hit == null && kind.equals("M")) hit = lookup("B", owner, name, desc); // same name, other signature in 1.4.7: an override gets a bridge (OverrideBridges)
             if (hit != null) return hit[1];
+            if (name.length() <= 3 && !table.classes.containsKey(owner) && local.containsKey(owner)) {
+                String[] named = lookup("U", owner, name, desc);
+                if (named != null) return UNJOINED_PREFIX + named[1];
+            }
             if (name.length() <= 3 && table.classes.containsKey(owner)) {
                 unresolved.add(owner + "." + name + desc);
                 // named by the readable name when the table has one (U rows): the client and the server of 1.2.5 use different letters for the same member
@@ -543,6 +555,13 @@ public final class Notch125To147 {
 
     /** {changed-signature overrides, bridged} of the latest {@link #apply} on this thread, and why the others were not bridged. */
     private static final ThreadLocal<int[]> LAST_BRIDGES = ThreadLocal.withInitial(() -> new int[2]);
+    private static final ThreadLocal<int[]> LAST_UNJOINED = ThreadLocal.withInitial(() -> new int[2]);
+
+    /** {renamed, left} overrides of unjoined game members of the latest {@link #apply} on this thread. */
+    public static int[] lastUnjoinedOverrides() {
+        return LAST_UNJOINED.get().clone();
+    }
+
     private static final ThreadLocal<List<String>> LAST_UNBRIDGED = ThreadLocal.withInitial(List::of);
 
     public static int[] lastBridgeCounts() {

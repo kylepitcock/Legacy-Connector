@@ -44,7 +44,7 @@ An archive is split into **units** by install root (a zip with `SMP/` and `SSP/`
 ## Link probe after the second round (2026-11-16)
 
 `probe.py --mc 1.2.5` over the 91 archives, nested wrappers and install roots expanded: 47 translated client/server units (of 100 archives' units; the other builds are left out by `Mc125Builds`, 30 are not
-mods), **38 link and 9 do not** (first run: 19 / 18). 1364 distinct stubbed members (1621 stubs; 1411 / 1776 before the call adapters, 1424 / 1801 in the first run), `verifyFailures` 0. Of the 9: NEWTON
+mods), **38 link and 9 do not** (first run: 19 / 18). 1360 distinct stubbed members (1606 stubs; 1411 / 1776 before the call adapters, 1424 / 1801 in the first run), `verifyFailures` 0. Of the 9: NEWTON
 (1.2.3), SDKs, herobrine, five BuildCraft 3.1.5 modules that clash with the BuildCraft classes LogisticsPipes-client re-bundles (an artifact of probing both as one set), IC2. 929 overrides of changed-signature
 game methods in the translated units, all 929 bridged (see Legacy-1.2.5.md).
 
