@@ -349,6 +349,17 @@ public final class MiscCompat {
         return net.minecraft.world.entity.SpawnPlacementTypes.ON_GROUND;
     }
 
+    /** {@code SpawnPlacements.Type.valueOf(name)} (a mod reading the placement from its config): the enum constants are the four SpawnPlacementTypes now. */
+    public static net.minecraft.world.entity.SpawnPlacementType spawnPlacementValueOf(String name) {
+        return switch (name) {
+            case "ON_GROUND" -> net.minecraft.world.entity.SpawnPlacementTypes.ON_GROUND;
+            case "IN_WATER" -> net.minecraft.world.entity.SpawnPlacementTypes.IN_WATER;
+            case "IN_LAVA" -> net.minecraft.world.entity.SpawnPlacementTypes.IN_LAVA;
+            case "NO_RESTRICTIONS" -> net.minecraft.world.entity.SpawnPlacementTypes.NO_RESTRICTIONS;
+            default -> throw new IllegalArgumentException("No enum constant SpawnPlacements.Type." + name);
+        };
+    }
+
     public static net.minecraft.world.entity.SpawnPlacementType spawnInWater() {
         return net.minecraft.world.entity.SpawnPlacementTypes.IN_WATER;
     }

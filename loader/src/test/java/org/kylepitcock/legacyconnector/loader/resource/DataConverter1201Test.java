@@ -611,4 +611,55 @@ class DataConverter1201Test {
         Snbt1201.Compound json = Snbt1201.parseField(JsonParser.parseString("{\"Damage\":3,\"display\":{\"Name\":\"\\\"n\\\"\"}}"));
         assertEquals(3L, ((Snbt1201.Num) json.get("Damage")).asLong());
     }
+
+    @Test
+    void enchantRandomlyBareAndRenamedIds() {
+        // shape of a zombie dungeon chest: bare ids, one of them renamed since 1.20.1
+        JsonElement r = one("data/m/loot_tables/chests/z.json", """
+                {"type":"minecraft:chest","pools":[{"rolls":1,"entries":[{"type":"minecraft:item","name":"minecraft:iron_sword","functions":[
+                  {"function":"minecraft:enchant_randomly","enchantments":["sweeping","minecraft:fire_aspect","smite"]}]}]}]}""",
+                "data/m/loot_table/chests/z.json");
+        JsonObject f = r.getAsJsonObject().getAsJsonArray("pools").get(0).getAsJsonObject().getAsJsonArray("entries").get(0).getAsJsonObject()
+                .getAsJsonArray("functions").get(0).getAsJsonObject();
+        assertEquals(JsonParser.parseString("[\"minecraft:sweeping_edge\",\"minecraft:fire_aspect\",\"minecraft:smite\"]"), f.get("options"));
+    }
+
+    @Test
+    void unknownVanillaPotionBecomesWaterAndBareIdsAreNamespaced() {
+        assertEquals("minecraft:water", ItemComponents1201.potionId("minecraft:levitation"));
+        assertEquals("minecraft:strong_healing", ItemComponents1201.potionId("strong_healing"));
+        assertEquals("mod:brew", ItemComponents1201.potionId("mod:brew"));
+        JsonElement r = one("data/m/loot_tables/chests/p.json", """
+                {"type":"minecraft:chest","pools":[{"rolls":1,"entries":[{"type":"minecraft:item","name":"minecraft:potion","functions":[
+                  {"function":"minecraft:set_nbt","tag":"{Potion:\\"minecraft:levitation\\"}"}]}]}]}""", "data/m/loot_table/chests/p.json");
+        JsonObject f = r.getAsJsonObject().getAsJsonArray("pools").get(0).getAsJsonObject().getAsJsonArray("entries").get(0).getAsJsonObject()
+                .getAsJsonArray("functions").get(0).getAsJsonObject();
+        assertEquals("minecraft:water", f.get("id").getAsString());
+    }
+
+    @Test
+    void lootEntryWithoutTypeDoesNotCrash() {
+        one("data/m/loot_tables/chests/n.json", """
+                {"pools":[{"rolls":1,"entries":[{"name":"minecraft:stone","functions":[{"function":"minecraft:set_nbt","tag":"{a:1}"}]}]}]}""",
+                "data/m/loot_table/chests/n.json");
+    }
+
+    @Test
+    void emptyConditionalRecipeIsDropped() {
+        List<DataConverter1201.Out> outs = DataConverter1201.convert("data/m/recipes/e.json",
+                "{\"type\":\"forge:conditional\",\"recipes\":[]}".getBytes(StandardCharsets.UTF_8), new DataConverter1201.Stats());
+        assertTrue(outs.isEmpty());
+    }
+
+    @Test
+    void advancementMatchToolConditionTag() {
+        // shape of a rat cage advancement: a match_tool loot condition inside a trigger's location conditions
+        JsonElement r = one("data/m/advancements/a.json", """
+                {"criteria":{"c":{"trigger":"minecraft:item_used_on_block","conditions":{"location":[
+                  {"condition":"minecraft:match_tool","predicate":{"tag":"m:hammocks"}}]}}}}""", "data/m/advancement/a.json");
+        JsonObject pred = r.getAsJsonObject().getAsJsonObject("criteria").getAsJsonObject("c").getAsJsonObject("conditions")
+                .getAsJsonArray("location").get(0).getAsJsonObject().getAsJsonObject("predicate");
+        assertEquals("#m:hammocks", pred.get("items").getAsString());
+        assertTrue(!pred.has("tag"));
+    }
 }

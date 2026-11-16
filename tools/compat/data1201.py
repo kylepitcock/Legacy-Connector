@@ -107,6 +107,8 @@ def check_json(rel, doc, add):
             if not isinstance(o, dict):
                 return
             f = o.get('function')
+            if not isinstance(f, str):
+                f = None
             if f in OLD_LOOT_FUNCTIONS:
                 add('loot_function', rel)
             if f in ('minecraft:set_attributes', 'set_attributes'):
@@ -116,6 +118,8 @@ def check_json(rel, doc, add):
             if f in ('minecraft:set_potion', 'set_potion', 'minecraft:enchant_with_levels') and 'treasure' in o:
                 add('loot_function', rel)
             c = o.get('condition')
+            if not isinstance(c, str):
+                c = None
             if c in OLD_LOOT_CONDITIONS:
                 add('loot_condition', rel)
             if o.get('type') in ('minecraft:loot_table', 'loot_table') and 'name' in o and 'value' not in o:
