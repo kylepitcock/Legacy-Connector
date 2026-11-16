@@ -16,7 +16,12 @@ import net.minecraft.world.phys.AABB;
 /** Region-safe admission of exact vanilla Beta paintings into native painting tracking and persistence. */
 public final class PaintingsB173 {
     private record Placed(java.util.UUID uuid,AABB box){}
-    private static final Map<WorldGenRegion,List<Placed>> GENERATED=new com.google.common.collect.MapMaker().weakKeys().makeMap();
+    /**
+     * Paintings original world generation placed, per world: a structure spanning chunks (Twilight Forest's Lich Tower) is decorated over
+     * several generation regions whose entities are not yet in the world, and two paintings overlapping across them would both be placed
+     * (the world then drops one as an item).
+     */
+    private static final Map<net.minecraft.world.level.Level,List<Placed>> GENERATED=new com.google.common.collect.MapMaker().weakKeys().makeMap();
     private PaintingsB173(){}
     /** Beta differs from later versions: 0 north, 1 west, 2 south, 3 east. */
     public static Direction direction(int facing){return switch(facing&3){case 0->Direction.NORTH;case 1->Direction.WEST;case 2->Direction.SOUTH;default->Direction.EAST;};}
@@ -29,8 +34,12 @@ public final class PaintingsB173 {
             for(var part:state.getCollisionShape(access,pos).toAabbs())if(part.move(pos).intersects(box))return false;
         }
         if(access instanceof WorldGenRegion region){
-            synchronized(GENERATED){for(var other:GENERATED.getOrDefault(region,List.of()))if((original.mcc$modern==null||!other.uuid.equals(original.mcc$modern.getUUID()))&&other.box.intersects(box))return false;}
-        }else if(!world.mcc$level().getEntities(original.mcc$modern,box,entity->entity instanceof HangingEntity).isEmpty())return false;
+            synchronized(GENERATED){for(var other:GENERATED.getOrDefault(region.getLevel(),List.of()))if((original.mcc$modern==null||!other.uuid.equals(original.mcc$modern.getUUID()))&&other.box.intersects(box))return false;}
+        }else{
+            if(!world.mcc$level().getEntities(original.mcc$modern,box,entity->entity instanceof HangingEntity).isEmpty())return false;
+            synchronized(GENERATED){for(var other:GENERATED.getOrDefault(world.mcc$level(),List.of()))if((original.mcc$modern==null||!other.uuid.equals(original.mcc$modern.getUUID()))&&other.box.intersects(box)
+                    &&!(world.mcc$level() instanceof net.minecraft.server.level.ServerLevel server&&server.getEntity(other.uuid)!=null))return false;}
+        }
         return true;
     }
     public static boolean spawn(PaintingEntity original){
@@ -42,7 +51,7 @@ public final class PaintingsB173 {
         var painting=new Painting(world.mcc$level(),front,facing,art.get());
         if(!world.mcc$spawnNative(painting))return false;
         original.mcc$modern=painting;EntityViewsB173.spawned(painting,original);
-        if(world.mcc$access() instanceof WorldGenRegion region)synchronized(GENERATED){GENERATED.computeIfAbsent(region,key->new ArrayList<>()).add(new Placed(painting.getUUID(),original.boundingBox.mcc$box()));}
+        if(world.mcc$access() instanceof WorldGenRegion region)synchronized(GENERATED){GENERATED.computeIfAbsent(region.getLevel(),key->new ArrayList<>()).add(new Placed(painting.getUUID(),original.boundingBox.mcc$box()));}
         return true;
     }
 }

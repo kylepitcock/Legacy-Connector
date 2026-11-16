@@ -19,6 +19,16 @@ public final class LegacyB173Cow extends Cow {
     private LivingEntity legacy;
     public LivingEntity legacy(){return legacy;}
     public String texturePath(){return entityData.get(TEXTURE);}
+    /** The legacy mob posed like this host for its original renderer: Beta renderers read eye-height positions and body, head and limb angles. */
+    public LivingEntity prepareRenderView(float partial){
+        legacy.world=World.mcc$wrap(level());legacy.mcc$setTexture(texturePath());
+        legacy.prevX=xo;legacy.prevY=yo+legacy.standingEyeHeight;legacy.prevZ=zo;
+        legacy.setPosition(getX(),getY()+legacy.standingEyeHeight,getZ());legacy.pitch=getXRot();legacy.prevPitch=xRotO;
+        legacy.bodyYaw=yBodyRot;legacy.lastBodyYaw=yBodyRotO;legacy.yaw=getYHeadRot();legacy.prevYaw=yHeadRotO;
+        legacy.hurtTime=hurtTime;legacy.deathTime=deathTime;legacy.health=(int)Math.ceil(getHealth());legacy.age=tickCount;legacy.onGround=onGround();
+        legacy.lastWalkAnimationSpeed=walkAnimation.speed(0);legacy.walkAnimationSpeed=walkAnimation.speed(1);legacy.walkAnimationProgress=walkAnimation.position(1);
+        return legacy;
+    }
     public LegacyB173Cow(EntityType<? extends Cow> type,Level level,LivingEntity original){
         super(type,level);
         try{legacy=original!=null?original:(LivingEntity)MobsB173.info(type).registration().type().getConstructor(World.class).newInstance(World.mcc$wrap(level));}

@@ -15,6 +15,8 @@ public final class BlockFamiliesSelfTest {
     private static final org.slf4j.Logger LOG=org.slf4j.LoggerFactory.getLogger("LegacyConnector/b1.7.3");
     public static void run(ServerLevel level,ServerPlayer player,BlockPos base) {
         BlockPos pos=base.offset(512,-20,8);
+        // Beta's scheduleBlockUpdate only schedules with the chunks 8 blocks around loaded, as around a player
+        for(int cx=-1;cx<=1;cx++)for(int cz=-1;cz<=1;cz++)level.getChunk((pos.getX()>>4)+cx,(pos.getZ()>>4)+cz);
         var saved=new java.util.LinkedHashMap<BlockPos,net.minecraft.world.level.block.state.BlockState>();
         for(int x=-2;x<=2;x++)for(int y=-1;y<=3;y++)for(int z=-2;z<=2;z++){var p=pos.offset(x,y,z);saved.put(p,level.getBlockState(p));}
         int stairs=0,torches=0,doors=0,conveyors=0,plates=0,furnaces=0,chests=0,fences=0;
@@ -25,8 +27,12 @@ public final class BlockFamiliesSelfTest {
             for(var block:ContentB173.blocks()) {
                 if(!(block.mcc$modern instanceof LegacyB173Block))continue;
                 if(block.getRenderType()==11 || block.getClass().getSimpleName().equals("BlockPoleFence")){
-                    clear(level,pos);place(level,player,block.id,pos.below(),Direction.UP);
-                    require(level.getBlockState(pos).is(block.mcc$modern),"actual fence placement");
+                    clear(level,pos);
+                    // a block the mod itself never lets a player place (a pipe only its machine lays) is not a placement case
+                    if(!block.canPlaceAt(legacyconnector.vb1_7_3.net.minecraft.world.World.mcc$wrap(level),pos.getX(),pos.getY(),pos.getZ()))continue;
+                    var placed=place(level,player,block.id,pos.below(),Direction.UP);
+                    require(level.getBlockState(pos).is(block.mcc$modern),"actual fence placement "+block.getClass().getName()+": "+placed+", found "+level.getBlockState(pos)
+                            +", player at "+player.position()+", entities "+level.getEntities((net.minecraft.world.entity.Entity)null,new net.minecraft.world.phys.AABB(pos).inflate(1)));
                     int renderFailures=BlockRenderB173.FAILURES.get();
                     var isolated=BlockRenderB173.capture(block,new BlockQueryB173(level,pos,level.getBlockState(pos)),pos.getX(),pos.getY(),pos.getZ());
                     require(!isolated.isEmpty()&&isolated.stream().allMatch(v->v.x()>=pos.getX()+.375 && v.x()<=pos.getX()+.625 && v.z()>=pos.getZ()+.375 && v.z()<=pos.getZ()+.625),"isolated fence renders a post "+block.getClass());
@@ -42,7 +48,12 @@ public final class BlockFamiliesSelfTest {
                                 : pair.size()>2*isolated.size(),"pair renders connecting beams "+block.getClass()+" "+direction);
                         level.setBlock(neighbor,Blocks.AIR.defaultBlockState(),2);
                     }
-                    if(block.getRenderType()==11)require(level.getBlockState(pos).getCollisionShape(level,pos).bounds().maxY==1.5,"Beta fence prevents jumping over it");
+                    if(block.getRenderType()==11){
+                        // as tall as the block's own collision box: Beta's fence (1.5) stops a jump, a lone pole of a mod's fence may not
+                        var legacyBox=block.getCollisionShape(legacyconnector.vb1_7_3.net.minecraft.world.World.mcc$wrap(level),pos.getX(),pos.getY(),pos.getZ());
+                        double wanted=legacyBox==null?0:legacyBox.maxY-pos.getY();
+                        require(Math.abs(level.getBlockState(pos).getCollisionShape(level,pos).bounds().maxY-wanted)<1e-6,"fence collision height matches the original box ("+wanted+") "+block.getClass());
+                    }
                     require(BlockRenderB173.FAILURES.get()==renderFailures,"actual fence renderer completes");fences++;
                 }
                 if(block instanceof PressurePlateBlock){
@@ -70,7 +81,7 @@ public final class BlockFamiliesSelfTest {
                         item.setPos(pos.getX()+0.5,pos.getY(),pos.getZ()+0.5);level.addFreshEntity(item);
                         level.getBlockState(pos).entityInside(level,pos,item);level.getBlockState(pos).tick(level,pos,level.random);
                         require(level.getBlockState(pos).getValue(LegacyB173Block.META)==1,"plate stays pressed while item remains");
-                        require(level.getBlockTicks().hasScheduledTick(pos,block.mcc$modern),"plate schedules release checks");
+                        require(level.getBlockTicks().hasScheduledTick(pos,block.mcc$modern),"plate schedules release checks "+block.getClass().getName()+" "+level.getBlockState(pos));
                         require(model(assets,block,0).getAsJsonArray("elements").get(0).getAsJsonObject().getAsJsonArray("to").get(1).getAsDouble()==1,"plate model 1 pixel high");
                         require(model(assets,block,1).getAsJsonArray("elements").get(0).getAsJsonObject().getAsJsonArray("to").get(1).getAsDouble()==0.5,"pressed model half pixel high");
                         level.removeBlock(pos.below(),false);require(level.getBlockState(pos).isAir(),"plate drops without support");
@@ -237,10 +248,10 @@ public final class BlockFamiliesSelfTest {
             }
         }finally{player.closeContainer();for(int i=0;i<27;i++){first.setStack(i,null);second.setStack(i,null);}}
     }
-    private static void place(ServerLevel level,ServerPlayer player,int id,BlockPos support,Direction face){
+    private static net.minecraft.world.InteractionResult place(ServerLevel level,ServerPlayer player,int id,BlockPos support,Direction face){
         player.getInventory().selected=0;player.setItemInHand(InteractionHand.MAIN_HAND,StacksB173.toModern(id,1,0));
         var hit=new net.minecraft.world.phys.BlockHitResult(Vec3.atCenterOf(support),face,support,false);
-        player.getMainHandItem().getItem().useOn(new net.minecraft.world.item.context.UseOnContext(player,InteractionHand.MAIN_HAND,hit));
+        return player.getMainHandItem().getItem().useOn(new net.minecraft.world.item.context.UseOnContext(player,InteractionHand.MAIN_HAND,hit));
     }
     private static com.google.gson.JsonObject model(java.util.Map<String,java.util.function.Supplier<byte[]>> assets,Block block,int meta){
         var id=net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(block.mcc$modern);

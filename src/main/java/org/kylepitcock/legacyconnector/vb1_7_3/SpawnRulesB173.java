@@ -27,9 +27,11 @@ public final class SpawnRulesB173 {
         /** Initial provider lists are snapshotted after mod loading. Later public-list mutations require a new snapshot. */
         synchronized void capture(Collection<Biome> biomes){
             raw.clear();
-            for(var biome:biomes)if(biome.mcc$modernBiome()==null)for(var group:SpawnGroup.values())
-                for(var spawn:List.copyOf(biome.getSpawnableEntities(group)))if(spawn.clazz!=null&&spawn.amount>0)
+            for(var biome:biomes)if(biome.mcc$modernBiome()==null)for(var group:SpawnGroup.values()){
+                var list=biome.getSpawnableEntities(group);if(list==null)continue; // a mod biome without that list (Twilight Forest's) spawns none of it
+                for(var spawn:new java.util.ArrayList<>(list))if(spawn!=null&&spawn.clazz!=null&&spawn.amount>0)
                     raw.merge(new Key(spawn.clazz,group,biome),spawn.amount,Math::max);
+            }
         }
         synchronized void add(Class<?> type,int weight,SpawnGroup group,Biome[] biomes) {
             Objects.requireNonNull(type,"entityClass cannot be null");Objects.requireNonNull(group,"spawnList cannot be null");

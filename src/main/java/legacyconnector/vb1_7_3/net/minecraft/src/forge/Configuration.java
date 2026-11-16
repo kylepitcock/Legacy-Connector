@@ -63,7 +63,7 @@ public class Configuration {
                             // not an id
                         }
                     }
-                    for (int j = Block.BLOCKS.length - 1; j > 0; j--) {
+                    for (int j = Block.BETA_LIMIT - 1; j > 0; j--) { // Beta's range: an id beyond is set by hand only
                         if (Block.BLOCKS[j] != null || used.contains(j) || org.kylepitcock.legacyconnector.vb1_7_3.ContentB173.reservedByOther(j)) continue;
                         p.value = Integer.toString(j);
                         c.save();
@@ -100,7 +100,7 @@ public class Configuration {
             configBlocks[defaultId] = true;
             return p;
         }
-        for (int j = configBlocks.length - 1; j >= 0; j--) {
+        for (int j = Block.BETA_LIMIT - 1; j >= 0; j--) { // Beta's range: an id beyond is set by hand only
             if (Block.BLOCKS[j] == null && !configBlocks[j] && !org.kylepitcock.legacyconnector.vb1_7_3.ContentB173.reservedByOther(j)) {
                 p.value = Integer.toString(j);
                 configBlocks[j] = true;

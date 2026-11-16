@@ -13,10 +13,20 @@ public final class BlockQueryB173 extends World {
     private final BlockPos origin;
     private final BlockState state;
     public BlockQueryB173(BlockGetter level,BlockPos origin,BlockState state) { this.level=level;this.origin=origin;this.state=state; }
+    /** The native getter this query reads (a render region on the client: biome tints come from it). */
+    public BlockGetter mcc$getter() { return level; }
     private BlockState state(int x,int y,int z) { var p=new BlockPos(x,y,z);return p.equals(origin)?state:level.getBlockState(p); }
     @Override public int getBlockId(int x,int y,int z) { return BlocksB173.legacyId(state(x,y,z)); }
     @Override public int getBlockMeta(int x,int y,int z) { return BlocksB173.legacyMeta(state(x,y,z)); }
-    @Override public boolean method_1783(int x,int y,int z) { return state(x,y,z).canOcclude(); }
+    /**
+     * Beta's isBlockOpaqueCube: its opacity table for a block Beta knows (a snow layer, slabs, glass are not), a full occluding cube for any
+     * other native block; a native snow layer can occlude but does not fill its block, so a neighbour's face beside it is drawn.
+     */
+    @Override public boolean method_1783(int x,int y,int z) {
+        var s=state(x,y,z);
+        if(s.getBlock() instanceof LegacyB173Block||BlocksB173.hasVanillaId(s)){int id=BlocksB173.legacyId(s);return id>0&&id<legacyconnector.vb1_7_3.net.minecraft.block.Block.BLOCKS_OPAQUE.length&&legacyconnector.vb1_7_3.net.minecraft.block.Block.BLOCKS_OPAQUE[id];}
+        return s.isSolidRender(level,new BlockPos(x,y,z));
+    }
     @Override public boolean shouldSuffocate(int x,int y,int z) { return method_1783(x,y,z); }
     @Override public Material getMaterial(int x,int y,int z) { var b=Block.BLOCKS[getBlockId(x,y,z)];return b==null?Material.AIR:b.material; }
     @Override public legacyconnector.vb1_7_3.net.minecraft.block.entity.BlockEntity getBlockEntity(int x,int y,int z) {

@@ -436,7 +436,25 @@ public class LegacyBlockEntity extends BlockEntity implements org.kylepitcock.le
 
     private static final java.util.concurrent.atomic.AtomicInteger DELIVERY_FAILURES = new java.util.concurrent.atomic.AtomicInteger();
 
+    /** Chunk-load update tags arrive before the client world can find this block entity by coordinates (the chunk is stored after its tags are handled). */
+    private void deliverWhenFindable(CompoundTag tag, int tries) {
+        if (level == null || !level.isClientSide || tries > 400 || isRemoved()) return;
+        if (level.getBlockEntity(worldPosition) == this) {
+            deliver(tag, true);
+            return;
+        }
+        net.minecraft.client.Minecraft.getInstance().tell(() -> deliverWhenFindable(tag, tries + 1));
+    }
+
     private void deliver(CompoundTag tag) {
+        deliver(tag, false);
+    }
+
+    private void deliver(CompoundTag tag, boolean found) {
+        if (!found && (tag.contains("mcc$fml") || tag.contains("mcc$wire")) && level != null && level.isClientSide && level.getBlockEntity(worldPosition) != this) {
+            deliverWhenFindable(tag, 0);
+            return;
+        }
         if (tag.contains("mcc$fml")) {
             // The mod's handler finds its tile entity in the client's world by coordinates: for a copy of this block in a moving
             // contraption's render world they are contraption-local and would hit an unrelated block of the real world.

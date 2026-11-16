@@ -80,7 +80,7 @@ public final class MLPropConfig {
         return m.invoke(a);
     }
 
-    private static Object parse(Class<?> type, String raw) {
+    public static Object parse(Class<?> type, String raw) {
         try {
             if (type == int.class || type == Integer.class) return Integer.parseInt(raw);
             if (type == boolean.class || type == Boolean.class) return Boolean.parseBoolean(raw);
@@ -96,7 +96,7 @@ public final class MLPropConfig {
         return null;
     }
 
-    private static boolean inRange(Object value, Annotation prop) throws ReflectiveOperationException {
+    public static boolean inRange(Object value, Annotation prop) throws ReflectiveOperationException {
         if (!(value instanceof Number n)) return true;
         double d = n.doubleValue();
         return d >= (Double) member(prop, "min") && d <= (Double) member(prop, "max");

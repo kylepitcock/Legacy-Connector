@@ -110,7 +110,12 @@ public final class VanillaBlockStatesB173 {
             };
             return meta|(state.getValue(net.minecraft.world.level.block.LeverBlock.POWERED)?8:0);
         }
-        if(state.is(Blocks.STONE_BUTTON)){
+        // every native button is Beta's button (77) and every pressure plate one of its two (70, 72): the same metadata
+        if(state.getBlock() instanceof net.minecraft.world.level.block.PressurePlateBlock)
+            return state.getValue(net.minecraft.world.level.block.PressurePlateBlock.POWERED)?1:0;
+        if(state.getBlock() instanceof net.minecraft.world.level.block.WeightedPressurePlateBlock)
+            return state.getValue(net.minecraft.world.level.block.WeightedPressurePlateBlock.POWER)>0?1:0;
+        if(state.getBlock() instanceof net.minecraft.world.level.block.ButtonBlock){
             var facing=state.getValue(net.minecraft.world.level.block.ButtonBlock.FACING);
             int meta=switch(state.getValue(net.minecraft.world.level.block.ButtonBlock.FACE)){
                 case WALL->switch(facing){case EAST->1;case WEST->2;case SOUTH->3;default->4;};

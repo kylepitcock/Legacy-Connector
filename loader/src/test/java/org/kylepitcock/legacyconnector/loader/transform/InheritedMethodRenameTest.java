@@ -37,4 +37,34 @@ class InheritedMethodRenameTest {
         r.localMethods(Map.of("mod/Root", Set.of("zz" + DESC), "mod/Item", Set.of("b" + DESC)));
         assertEquals("zz", r.mapMethodName("mod/Root", "zz", DESC));
     }
+
+    /** TileTeleportEnergy: a sibling subclass that overrides the base method without implementing the interface. */
+    @Test
+    void siblingOverrideFollowsTheRenamedBase() {
+        LegacyRemapper r = new LegacyRemapper(LegacyVersion.V1_4_7, McpMappings.forVersion(LegacyVersion.V1_4_7), null, null);
+        r.notchLocals(Map.of(
+                "mod/Root", new String[] {"java/lang/Object"},
+                "mod/Item", new String[] {"mod/Root", "net/minecraftforge/common/ISidedInventory"},
+                "mod/Energy", new String[] {"mod/Root"},
+                "mod/Deeper", new String[] {"mod/Energy"}));
+        r.localMethods(Map.of("mod/Root", Set.of("b" + DESC), "mod/Item", Set.of("b" + DESC), "mod/Energy", Set.of("b" + DESC), "mod/Deeper", Set.of("b" + DESC)));
+        assertEquals("getInventoryName", r.mapMethodName("mod/Energy", "b", DESC));
+        assertEquals("getInventoryName", r.mapMethodName("mod/Deeper", "b", DESC));
+        assertEquals("getInventoryName", r.mapMethodName("mod/Root", "b", DESC));
+    }
+
+    /** A call through a subclass that inherits the declaration, and a local interface declaring the method. */
+    @Test
+    void inheritedCallsAndLocalInterfaces() {
+        LegacyRemapper r = new LegacyRemapper(LegacyVersion.V1_4_7, McpMappings.forVersion(LegacyVersion.V1_4_7), null, null);
+        r.notchLocals(Map.of(
+                "mod/Named", new String[] {"java/lang/Object"},
+                "mod/Impl", new String[] {"java/lang/Object", "mod/Named", "net/minecraftforge/common/ISidedInventory"},
+                "mod/Plain", new String[] {"java/lang/Object", "mod/Named"},
+                "mod/Sub", new String[] {"mod/Plain"}));
+        r.localMethods(Map.of("mod/Named", Set.of("b" + DESC), "mod/Impl", Set.of("b" + DESC), "mod/Plain", Set.of("b" + DESC)));
+        assertEquals("getInventoryName", r.mapMethodName("mod/Named", "b", DESC));
+        assertEquals("getInventoryName", r.mapMethodName("mod/Plain", "b", DESC));
+        assertEquals("getInventoryName", r.mapMethodName("mod/Sub", "b", DESC)); // inherited call
+    }
 }

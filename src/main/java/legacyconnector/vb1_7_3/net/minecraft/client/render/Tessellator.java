@@ -20,6 +20,15 @@ public class Tessellator {
     public Tessellator(){}
     public Tessellator(int size){}
     public static void beginCapture(){CAPTURE.set(new Capture());}
+    /** The quads drawn while a display list compiles (glNewList ... glEndList); each start/draw pair inside adds its quads here instead of drawing. */
+    private static final ThreadLocal<List<Vertex>> LIST=new ThreadLocal<>();
+    public static void beginListCapture(){LIST.set(new ArrayList<>());CAPTURE.set(new Capture());}
+    public static List<Vertex> endListCapture(){
+        var list=LIST.get();LIST.remove();var c=CAPTURE.get();CAPTURE.remove();
+        var out=new ArrayList<Vertex>(list==null?List.of():list);
+        if(c!=null&&c.mode==7&&c.vertices.size()%4==0)out.addAll(c.vertices); // quads drawn without start/draw
+        return List.copyOf(out);
+    }
     /** Forge's texture switch while a world block is captured: the following vertices use that sheet ({@code /terrain.png} after an unbind). */
     public static void mcc$sheet(String sheet){var c=CAPTURE.get();if(c!=null)c.sheet=sheet;}
     /** The sheet name of vertices drawn with texturing off ({@code glDisable(GL_TEXTURE_2D)}: a plain coloured face). */
@@ -27,11 +36,18 @@ public class Tessellator {
     public static void mcc$textured(boolean textured){var c=CAPTURE.get();if(c!=null)c.untextured=!textured;}
     public static List<Vertex> endCapture(){var c=CAPTURE.get();CAPTURE.remove();return c==null?List.of():List.copyOf(c.vertices);}
     public void startQuads(){start(7);}
-    public void start(int mode){if(mode!=7&&mode!=5&&mode!=1&&mode!=2&&mode!=3)throw new UnsupportedOperationException("Beta tessellation mode "+mode);if(RendererContextB173.active()||GuiDrawB173.drawing()){var c=new Capture();c.mode=mode;CAPTURE.set(c);}}
+    public void start(int mode){if(mode!=7&&mode!=5&&mode!=1&&mode!=2&&mode!=3)throw new UnsupportedOperationException("Beta tessellation mode "+mode);if(LIST.get()!=null||RendererContextB173.active()||GuiDrawB173.drawing()){var previous=CAPTURE.get();var c=new Capture();c.mode=mode;if(previous!=null){c.sheet=previous.sheet;c.untextured=previous.untextured;}CAPTURE.set(c);}}
     private static RendererContextB173.Vertex vertex(Vertex v,RendererContextB173.Normal n){int color=v.color();int argb=(color&0xff00ff00)|((color&255)<<16)|((color>>16)&255);return new RendererContextB173.Vertex(v.x(),v.y(),v.z(),v.u(),v.v(),argb,n.x(),n.y(),n.z());}
     public void draw(){
         // a world block renderer that flushes mid-block (Forge's second pass) still adds to the same chunk geometry
         if(org.kylepitcock.legacyconnector.vb1_7_3.BlockRenderB173.capturing())return;
+        var list=LIST.get();
+        if(list!=null){
+            var c=CAPTURE.get();
+            if(c!=null&&c.mode==7&&c.vertices.size()%4==0)list.addAll(c.vertices);
+            var root=new Capture();if(c!=null){root.sheet=c.sheet;root.untextured=c.untextured;}CAPTURE.set(root);
+            return;
+        }
         if(RendererContextB173.active()){
         var c=CAPTURE.get();CAPTURE.remove();if(c==null)return;
         // Without a normal array, OpenGL uses the current normal when the buffered batch is drawn.

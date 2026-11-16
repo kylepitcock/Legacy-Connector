@@ -9,8 +9,8 @@ import legacyconnector.vb1_7_3.net.minecraft.sound.BlockSoundGroup;
  * modern fire. Fire itself is the modern block.
  */
 public class FireBlock extends Block {
-    public int[] burnChances = new int[256];
-    public int[] spreadChances = new int[256];
+    public int[] burnChances = new int[Block.ID_LIMIT];
+    public int[] spreadChances = new int[Block.ID_LIMIT];
 
     protected FireBlock(int id, int textureId) {
         super(id, textureId, Material.FIRE);
@@ -20,8 +20,8 @@ public class FireBlock extends Block {
     @Override
     public void mcc$initVanilla(int id, int textureId, Material material, float hardness, BlockSoundGroup sound, String key) {
         super.mcc$initVanilla(id, textureId, material == null ? Material.FIRE : material, hardness, sound, key);
-        burnChances = new int[256];
-        spreadChances = new int[256];
+        burnChances = new int[Block.ID_LIMIT];
+        spreadChances = new int[Block.ID_LIMIT];
         init();
     }
 

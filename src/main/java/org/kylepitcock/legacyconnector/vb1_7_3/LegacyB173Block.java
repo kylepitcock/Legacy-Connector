@@ -164,7 +164,21 @@ public class LegacyB173Block extends net.minecraft.world.level.block.Block imple
     @Override protected VoxelShape getCollisionShape(BlockState state,BlockGetter level,BlockPos pos,CollisionContext context) {
         return queryShape(state,level,pos,true);
     }
+    /**
+     * The world a block-shape query is about, while the original code answers it. The query holds the block's lock (Beta blocks keep their
+     * bounds in shared fields); original code that reads a tile entity through another world view (BuildCraft's pipes ask the game's world,
+     * the server's in single player) must then read it here, never wait for the server thread, which may be waiting for this very lock.
+     */
+    private static final ThreadLocal<BlockGetter> SHAPE_LEVEL=new ThreadLocal<>();
+    public static BlockGetter shapeQueryLevel(){return SHAPE_LEVEL.get();}
+
     private VoxelShape queryShape(BlockState state,BlockGetter level,BlockPos pos,boolean collision) {
+        BlockGetter previousShapeLevel=SHAPE_LEVEL.get();SHAPE_LEVEL.set(level);
+        try{return queryShapeLocked(state,level,pos,collision);}
+        finally{if(previousShapeLevel==null)SHAPE_LEVEL.remove();else SHAPE_LEVEL.set(previousShapeLevel);}
+    }
+
+    private VoxelShape queryShapeLocked(BlockState state,BlockGetter level,BlockPos pos,boolean collision) {
         synchronized(legacy) {
             double[] bounds={legacy.minX,legacy.minY,legacy.minZ,legacy.maxX,legacy.maxY,legacy.maxZ};
             try {
@@ -266,6 +280,10 @@ public class LegacyB173Block extends net.minecraft.world.level.block.Block imple
     protected void onRemove(BlockState state, net.minecraft.world.level.Level level, BlockPos pos, BlockState newState, boolean moved) {
         if (!level.isClientSide && !newState.is(this)) {
             call("onBlockRemoval", () -> legacy.onBreak(view(level), pos.getX(), pos.getY(), pos.getZ()));
+            // the block that onBlockAdded ran for is gone: a block placed here next (in the same tick) runs its own
+            String key = level.dimension().location() + "@" + pos.asLong();
+            ADDED_BY_PLACE.remove(key);
+            ADDED_EARLY.remove(key);
         }
         super.onRemove(state, level, pos, newState, moved);
     }

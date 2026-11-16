@@ -15,8 +15,8 @@ public final class RenderersB173 {
     private static final org.slf4j.Logger LOG=org.slf4j.LoggerFactory.getLogger("LegacyConnector/b1.7.3/Renderers");
     public record Info(LegacyModRecord mod,Class<?> entityType,EntityRenderer renderer){}
     private static final Map<Class<?>,Info> REGISTERED=new LinkedHashMap<>();
-    private static final Set<String> SUPPORTED=Set.of("render","renderCape","renderEars","renderHand","animateModel","setAngles","applyTranslation","applyHandSwingRotation","getHandSwingProgress","getHeadBob","renderMore","bindDecorationTexture","bindTexture","getDeathYaw","applyScale","getOverlayColor");
-    private static final Set<String> MODEL_GL=Set.of("glPushMatrix","glPopMatrix","glTranslatef","glTranslated","glScalef","glScaled","glRotatef","glColor3f","glColor4f","glBindTexture","glEnable","glDisable","glBlendFunc","glDepthMask","glDepthFunc","glMatrixMode","glLoadIdentity","glNormal3f");
+    private static final Set<String> SUPPORTED=Set.of("render","renderNameTag","renderCape","renderEars","renderHand","animateModel","setAngles","applyTranslation","applyHandSwingRotation","getHandSwingProgress","getHeadBob","renderMore","bindDecorationTexture","bindTexture","getDeathYaw","applyScale","getOverlayColor");
+    private static final Set<String> MODEL_GL=Set.of("glColorMask","glGetFloat","glLoadMatrix","glPushMatrix","glPopMatrix","glTranslatef","glTranslated","glScalef","glScaled","glRotatef","glColor3f","glColor4f","glBindTexture","glEnable","glDisable","glBlendFunc","glDepthMask","glDepthFunc","glMatrixMode","glLoadIdentity","glNormal3f");
     private static boolean discovered;
     private RenderersB173(){}
     public static synchronized void discover(){
@@ -110,6 +110,9 @@ public final class RenderersB173 {
             if(c==legacyconnector.vb1_7_3.net.minecraft.entity.passive.PigEntity.class){base=c;renderer=new legacyconnector.vb1_7_3.net.minecraft.client.render.entity.PigEntityRenderer(new legacyconnector.vb1_7_3.net.minecraft.client.render.entity.model.PigEntityModel(),new legacyconnector.vb1_7_3.net.minecraft.client.render.entity.model.PigEntityModel(.5F),.7F);}
             else if(c==legacyconnector.vb1_7_3.net.minecraft.entity.passive.ChickenEntity.class){base=c;renderer=new legacyconnector.vb1_7_3.net.minecraft.client.render.entity.ChickenEntityRenderer(new legacyconnector.vb1_7_3.net.minecraft.client.render.entity.model.ChickenEntityModel(),.3F);}
             else if(c==legacyconnector.vb1_7_3.net.minecraft.entity.passive.CowEntity.class){base=c;renderer=new legacyconnector.vb1_7_3.net.minecraft.client.render.entity.LivingEntityRenderer(new legacyconnector.vb1_7_3.net.minecraft.client.render.entity.model.CowEntityModel(),.7F);}
+            else if(c==legacyconnector.vb1_7_3.net.minecraft.entity.mob.SpiderEntity.class){base=c;renderer=new legacyconnector.vb1_7_3.net.minecraft.client.render.entity.SpiderEntityRenderer();}
+            else if(c==legacyconnector.vb1_7_3.net.minecraft.entity.passive.WolfEntity.class){base=c;renderer=new legacyconnector.vb1_7_3.net.minecraft.client.render.entity.WolfEntityRenderer(new legacyconnector.vb1_7_3.net.minecraft.client.render.entity.model.WolfEntityModel(),.5F);}
+            else if(c==legacyconnector.vb1_7_3.net.minecraft.entity.mob.CreeperEntity.class){base=c;renderer=new legacyconnector.vb1_7_3.net.minecraft.client.render.entity.CreeperEntityRenderer();}
             else if(c==legacyconnector.vb1_7_3.net.minecraft.entity.passive.SheepEntity.class){base=c;renderer=new legacyconnector.vb1_7_3.net.minecraft.client.render.entity.SheepEntityRenderer(new legacyconnector.vb1_7_3.net.minecraft.client.render.entity.model.SheepEntityModel(),new legacyconnector.vb1_7_3.net.minecraft.client.render.entity.model.SheepWoolEntityModel(),.7F);}
         }
         if(renderer==null)return null;

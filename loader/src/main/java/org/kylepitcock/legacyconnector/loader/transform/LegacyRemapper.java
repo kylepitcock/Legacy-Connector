@@ -204,12 +204,20 @@ public final class LegacyRemapper extends Remapper {
 
     private String inheritedRename(String owner, String name, String desc) {
         String member = name + desc;
-        String declaring = declaringLocal(owner, member, 0);
-        if (declaring == null) return null;
+        String top = declaringLocal(owner, member, 0);
+        if (top == null) return null;
+        // the topmost local declaration: every class below it that declares the method overrides it, siblings included
+        for (int guard = 0; guard < 24; guard++) {
+            String above = null;
+            String[] up = notchLocals.get(top);
+            if (up != null) for (String s : up) if ((above = declaringLocal(s, member, 0)) != null) break;
+            if (above == null) break;
+            top = above;
+        }
         for (String candidate : notchLocals.keySet()) {
-            if (candidate.equals(declaring)) continue;
             java.util.Set<String> declared = localMethods.get(candidate);
-            if (declared == null || !declared.contains(member) || !isLocalSubtype(candidate, declaring, 0)) continue;
+            if (declared == null || !declared.contains(member)) continue;
+            if (!candidate.equals(top) && !isLocalSubtype(candidate, top, 0)) continue;
             String renamed = methodNameOf(candidate, name, desc);
             if (!renamed.equals(name)) return renamed;
         }
@@ -442,6 +450,8 @@ public final class LegacyRemapper extends Remapper {
         if (version != LegacyVersion.VB1_7_3) return false;
         // Beta GuiAPI uses TWL model/widget types; preserve their hierarchy through the versioned shims.
         if (internalName.startsWith("de/matthiasmann/twl/")) return true;
+        // InfSprites (a Beta sprite-sheet extension): mods built against it (a BuildCraft Transport build) call its API; the layer has no sheet limit
+        if (internalName.startsWith("net/mine_diver/infsprites/")) return true;
         // b1.7.3 mods call LWJGL's OpenAL directly while they load (IndustrialCraft 2's audio): the real AL classes initialised on the
         // mod-loading thread, before the sound engine made a context, fail for good and the client's resource reload then never ends.
         // Their OpenAL goes to the synthesized API (silent) until the layer emulates it.

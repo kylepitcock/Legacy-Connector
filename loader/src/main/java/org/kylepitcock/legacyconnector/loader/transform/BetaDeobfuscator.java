@@ -165,6 +165,9 @@ public final class BetaDeobfuscator {
         return new Local(reader.getSuperName(), reader.getInterfaces(), fields, methods);
     }
 
+    /** Suffix of a mod's own method renamed because its name is the readable name of an obfuscated game method it never overrode. */
+    static final String OWN_SUFFIX = "$b173own";
+
     private static final class Namer extends Remapper {
         private final BetaMappings.Names names;
         private final Map<String, Local> local;
@@ -219,7 +222,39 @@ public final class BetaDeobfuscator {
             if (name.startsWith("<") || owner.startsWith("[")) return name;
             if (!keep.isEmpty() && keep.contains(owner + "." + name + descriptor)) return name;
             String hit = resolve(owner, name, descriptor, false);
-            return hit != null ? hit : name;
+            if (hit != null) return hit;
+            // the mod's own method that only shares the readable name of an obfuscated game method (Twilight Forest's critter
+            // canPlaceAt(World,x,y,z) beside the game's a(World,x,y,z)): renamed in the whole hierarchy so it does not override it
+            return shadowsGame(owner, name, descriptor) ? name + OWN_SUFFIX : name;
+        }
+
+        private boolean shadowsGame(String owner, String name, String desc) {
+            String key = "S" + owner + "." + name + desc;
+            String memoized = memo.get(key);
+            if (memoized != null) return !memoized.isEmpty();
+            boolean shadows = shadows(owner, name, desc, 0);
+            memo.put(key, shadows ? "y" : "");
+            return shadows;
+        }
+
+        private boolean shadows(String owner, String name, String desc, int depth) {
+            if (owner == null || depth > 64) return false;
+            if (names.isVanilla(owner)) return names.hidesObfuscated(owner, name, desc);
+            String superName;
+            String[] interfaces;
+            Local l = local.get(owner);
+            if (l != null) {
+                superName = l.superName;
+                interfaces = l.interfaces;
+            } else {
+                BetaJars.ClassMeta m = BetaJars.meta(owner);
+                if (m == null) return false;
+                superName = m.superName();
+                interfaces = m.interfaces();
+            }
+            if (shadows(superName, name, desc, depth + 1)) return true;
+            for (String i : interfaces) if (shadows(i, name, desc, depth + 1)) return true;
+            return false;
         }
 
         @Override
