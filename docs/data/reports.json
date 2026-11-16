@@ -892,7 +892,7 @@
    "issue": 296,
    "mod": "ensorcellation-1.20.1-5.0.2.24",
    "mc": "1.20.1 (Forge)",
-   "status": "works",
+   "status": "crashes",
    "details": "Game crashes during world creation / load. Related issue for COFH core: #271",
    "lc": "0.4.14-nightly.58.00a22b8",
    "neoforge": "21.1.266",
