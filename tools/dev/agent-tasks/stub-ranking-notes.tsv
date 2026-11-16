@@ -1,0 +1,15 @@
+RealmsBridge	Realms was removed from the host game; nothing to bridge
+DeobfuscationTransformer	FML class-loader internals; no class loader of that kind exists on NeoForge
+AccessTransformer	FML class-loader internals (the layer applies access transformers itself)
+FMLModContainer	FML internals
+ModCandidate	FML discovery internals
+ContainerType	FML discovery internals
+LibraryManager	FML library downloader, removed
+EnhancedRuntimeException	FML crash-report plumbing
+StartupQuery	FML startup dialog, headless/no equivalent
+ModListHelper	FML relauncher internals
+FMLCommonHandler.handleExit	process exit paths are the host's
+IntegratedServer.getNetworkSystem	NetworkSystem does not exist in 1.21.1
+NetworkManager.createNetworkManagerAndConnect	client connection internals; the modern Connection is not constructible this way
+RegionFile	Anvil region IO is replaced by the host's own storage
+EntityAIWander.x	fields are only meaningful when the legacy task drives movement; the shim wraps the modern goal (needs a legacy-driven AI port)

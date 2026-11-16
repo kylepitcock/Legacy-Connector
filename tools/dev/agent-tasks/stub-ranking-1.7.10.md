@@ -2,16 +2,12 @@
 
 Generated 2026-11-16 by `tools/dev/agent-tasks/make_stub_ranking.py` from the offline probe of 641 jar(s) (503 links, 69 missing-dependency, 48 unresolved, 21 obsolete); 1522 distinct synthesized members. Regenerate after implementing; implemented members drop out. Format: `n  member  # jars`.
 
-## server-side API (top 150 of 645)
+## server-side API (top 150 of 614)
 
 ```
   4  net.minecraft.block.BlockSign.<init>(Ljava.lang.Class;Z)V  # Floocraft-1.7.10-1.7.jar, Game of Thrones 24.08.29.jar, etfuturum-2.6.2.jar ...
   4  net.minecraft.command.CommandTime.<init>()V  # 1.7.10-TerraFirmaCraft-0.79.30.925.jar, Game of Thrones 24.08.29.jar, MineTradingCards-1.7.10-3.1.4.jar ...
   4  net.minecraft.entity.ai.EntityAITasks.<init>(Lnet.minecraft.profiler.Profiler;)V -> ()V  # DragonMounts-r41-1.7.10.jar, Game of Thrones 24.08.29.jar, Invasion-1.7.10-1.2.1.jar ...
-  3  cpw.mods.fml.common.FMLCommonHandler.handleExit(I)V  # AM2PlayGround-Beta-0.12.1.jar, deathlyhallows-1.1.8.jar, optimizationsandtweaks-V1.18.0.jar
-  3  cpw.mods.fml.common.StartupQuery.abort()V  # chunkapi-mc1.7.10-0.8.4.jar, gtnhlib-0.12.4.jar, optimizationsandtweaks-V1.18.0.jar
-  3  cpw.mods.fml.common.discovery.ModCandidate.<init>(Ljava.io.File;Ljava.io.File;Lcpw.mods.fml.common.discovery.ContainerType;)V -> (Ljava.io.File;)V  # HandmadeGunsOverdrive-4.0.5.1.jar, Vale of Shadows - Stranger Things - The Upside Down[1.7.10].jar, jarjar-0.4.0-beta.jar
-  3  cpw.mods.fml.relauncher.ModListHelper.additionalMods:Ljava.util.Map;  # AM2PlayGround-Beta-0.12.1.jar, jarjar-0.4.0-beta.jar, optimizationsandtweaks-V1.18.0.jar
   3  net.minecraft.block.BlockButtonWood.<init>()V  # 1.7.10-TerraFirmaCraft-0.79.30.925.jar, TerraFirmaCraft-TFRU-1.7.10-0.82.3.jar, etfuturum-2.6.2.jar
   3  net.minecraft.block.BlockHay.<init>()V  # SaltyMod Expanded [1.7.10] [2.1.0].jar, VeganOption-mc1.7.10-0.2.2.jar, ashenwheat-1.7.10-1.2.4.1.jar
   3  net.minecraft.block.BlockSandStone.<init>()V  # Improving Minecraft-1.7.10-v5.jar, [1.7.10]Futurepack+18.7.jar, etfuturum-2.6.2.jar
@@ -32,7 +28,6 @@ Generated 2026-11-16 by `tools/dev/agent-tasks/make_stub_ranking.py` from the of
   3  net.minecraft.util.Session.<init>(Ljava.lang.String;Ljava.lang.String;Ljava.lang.String;Ljava.lang.String;)V -> (Ljava.lang.String;Ljava.lang.String;Ljava.lang.String;)V  # InGameAccountSwitcher-Forge-1.7-8.0.1.jar, manametalmod-8.0.8-1.jar, mcheli-d4e3692.jar
   3  net.minecraft.world.chunk.Chunk.func_150804_b(Z)V  # Eln-1.24.6.jar, MiddleEarth-Tweaks-1.6.21.jar, optimizationsandtweaks-V1.18.0.jar
   3  net.minecraft.world.chunk.Chunk.func_150809_p()V  # AIImprovements-1.7.10-0.0.1b8.jar, HardcoreEnderExpansion  MC-1.7.10  v1.8.6.jar, lumi-mc1.7.10-1.2.2.jar
-  3  net.minecraft.world.chunk.storage.RegionFile.getChunkDataInputStream(II)Ljava.io.DataInputStream;  # ServerUtilities-2.5.2.jar, XaerosWorldMap_1.14.1.33_Forge_1.7.10.jar, manametalmod-8.0.8-1.jar
   3  net.minecraft.world.gen.ChunkProviderEnd.<init>(Lnet.minecraft.world.World;J)V  # FarLands-1.0.1-mc1.7.10.jar, HardcoreEnderExpansion  MC-1.7.10  v1.8.6.jar, paintedbiomes-1.7.10-0.5.1.jar
   3  net.minecraft.world.storage.WorldInfo.getNBTTagCompound()Lnet.minecraft.nbt.NBTTagCompound;  # 1.7.10-TerraFirmaCraft-0.79.30.925.jar, TerraFirmaCraft-TFRU-1.7.10-0.82.3.jar, forgeessentials-1.7.10-7.5.3-server.jar
   3  net.minecraftforge.common.ForgeHooks.onPlayerTossEvent(Lnet.minecraft.entity.player.EntityPlayer;Lnet.minecraft.item.ItemStack;Z)Lnet.minecraft.entity.item.EntityItem;  # itemphysic-1.3.1.jar, okprogressions-26.11.15.0.jar, theoffhandmod-1.1.4.jar
@@ -49,10 +44,6 @@ Generated 2026-11-16 by `tools/dev/agent-tasks/make_stub_ranking.py` from the of
   2  cpw.mods.fml.common.ModAPIManager.cleanupAPIContainers(Ljava.util.List;)V  # jarjar-0.4.0-beta.jar, optimizationsandtweaks-V1.18.0.jar
   2  cpw.mods.fml.common.ModAPIManager.manageAPI(Lcpw.mods.fml.common.ModClassLoader;Lcpw.mods.fml.common.discovery.ModDiscoverer;)V  # jarjar-0.4.0-beta.jar, optimizationsandtweaks-V1.18.0.jar
   2  cpw.mods.fml.common.ModContainer.getSigningCertificate()Ljava.security.cert.Certificate;  # jarjar-0.4.0-beta.jar, optimizationsandtweaks-V1.18.0.jar
-  2  cpw.mods.fml.common.StartupQuery.confirm(Ljava.lang.String;)Z  # chunkapi-mc1.7.10-0.8.4.jar, gtnhlib-0.12.4.jar
-  2  cpw.mods.fml.common.StartupQuery.getText()Ljava.lang.String;  # gtnhlib-0.12.4.jar, optimizationsandtweaks-V1.18.0.jar
-  2  cpw.mods.fml.common.discovery.ContainerType.DIR:Lcpw.mods.fml.common.discovery.ContainerType;  # HandmadeGunsOverdrive-4.0.5.1.jar, Vale of Shadows - Stranger Things - The Upside Down[1.7.10].jar
-  2  cpw.mods.fml.common.discovery.ContainerType.JAR:Lcpw.mods.fml.common.discovery.ContainerType;  # HandmadeGunsOverdrive-4.0.5.1.jar, jarjar-0.4.0-beta.jar
   2  cpw.mods.fml.common.discovery.ModDiscoverer.<init>()V  # jarjar-0.4.0-beta.jar, optimizationsandtweaks-V1.18.0.jar
   2  cpw.mods.fml.common.discovery.ModDiscoverer.getASMTable()Lcpw.mods.fml.common.discovery.ASMDataTable;  # jarjar-0.4.0-beta.jar, optimizationsandtweaks-V1.18.0.jar
   2  cpw.mods.fml.common.discovery.ModDiscoverer.getNonModLibs()Ljava.util.List;  # jarjar-0.4.0-beta.jar, optimizationsandtweaks-V1.18.0.jar
@@ -134,10 +125,6 @@ Generated 2026-11-16 by `tools/dev/agent-tasks/make_stub_ranking.py` from the of
   2  net.minecraft.world.WorldServer.getDefaultTeleporter()Lnet.minecraft.world.Teleporter;  # ForgottenRelics-1.7.10-1.7.4.jar, enderutilities-1.7.10-0.5.3.jar
   2  net.minecraft.world.chunk.Chunk.getEntitiesOfTypeWithinAAAB(Ljava.lang.Class;Lnet.minecraft.util.AxisAlignedBB;Ljava.util.List;Lnet.minecraft.command.IEntitySelector;)V  # ServerUtilities-2.5.2.jar, forgeessentials-1.7.10-7.5.3-server.jar
   2  net.minecraft.world.chunk.IChunkProvider.findClosestStructure(Lnet.minecraft.world.World;Ljava.lang.String;III)Lnet.minecraft.world.ChunkPosition;  # AIImprovements-1.7.10-0.0.1b8.jar, structure-finder-1.7.10-forge-1.5.1.jar
-  2  net.minecraft.world.chunk.storage.RegionFile.<init>(Ljava.io.File;)V  # ServerUtilities-2.5.2.jar, manametalmod-8.0.8-1.jar
-  2  net.minecraft.world.chunk.storage.RegionFile.close()V  # ServerUtilities-2.5.2.jar, manametalmod-8.0.8-1.jar
-  2  net.minecraft.world.chunk.storage.RegionFile.getChunkDataOutputStream(II)Ljava.io.DataOutputStream;  # ServerUtilities-2.5.2.jar, manametalmod-8.0.8-1.jar
-  2  net.minecraft.world.chunk.storage.RegionFileCache.createOrLoadRegionFile(Ljava.io.File;II)Lnet.minecraft.world.chunk.storage.RegionFile;  # XaerosWorldMap_1.14.1.33_Forge_1.7.10.jar, forgeessentials-1.7.10-7.5.3-server.jar
   2  net.minecraft.world.gen.ChunkProviderServer.loadChunk(IILjava.lang.Runnable;)Lnet.minecraft.world.chunk.Chunk;  # ServerUtilities-2.5.2.jar, optimizationsandtweaks-V1.18.0.jar
   2  net.minecraft.world.gen.structure.StructureMineshaftStart.<init>(Lnet.minecraft.world.World;Ljava.util.Random;II)V  # bettercaves-1.0.jar, etfuturum-2.6.2.jar
   2  net.minecraft.world.storage.ISaveHandler.saveWorldInfo(Lnet.minecraft.world.storage.WorldInfo;)V  # LoTAS1.7.10-2.0.0.jar, forgeessentials-1.7.10-7.5.3-server.jar
@@ -155,9 +142,22 @@ Generated 2026-11-16 by `tools/dev/agent-tasks/make_stub_ranking.py` from the of
   2  net.minecraftforge.event.terraingen.BiomeEvent$CreateDecorator.newBiomeDecorator:Lnet.minecraft.world.biome.BiomeDecorator;  # 1.7.10-TerraFirmaCraft-0.79.30.925.jar, TerraFirmaCraft-TFRU-1.7.10-0.82.3.jar
   2  net.minecraftforge.event.terraingen.SaplingGrowTreeEvent.rand:Ljava.util.Random;  # Game of Thrones 24.08.29.jar, etfuturum-2.6.2.jar
   1  cpw.mods.fml.common.DuplicateModsFoundException.<init>(Lcom.google.common.collect.SetMultimap;)V  # optimizationsandtweaks-V1.18.0.jar
+  1  cpw.mods.fml.common.FMLCommonHandler.computeBranding()V  # BetterTitleScreen-1.7.10-1.1.jar
+  1  cpw.mods.fml.common.FMLCommonHandler.handleWorldDataSave(Lnet.minecraft.world.storage.SaveHandler;Lnet.minecraft.world.storage.WorldInfo;Lnet.minecraft.nbt.NBTTagCompound;)V  # forgeessentials-1.7.10-7.5.3-server.jar
+  1  cpw.mods.fml.common.FMLCommonHandler.onPostClientTick()V  # optimizationsandtweaks-V1.18.0.jar
+  1  cpw.mods.fml.common.FMLCommonHandler.onPreClientTick()V  # optimizationsandtweaks-V1.18.0.jar
+  1  cpw.mods.fml.common.FMLCommonHandler.processWindowMessages()V  # Cloudflared-7.10.3.jar
+  1  cpw.mods.fml.common.FMLCommonHandler.stripSpecialChars(Ljava.lang.String;)Ljava.lang.String;  # Cloudflared-7.10.3.jar
+  1  cpw.mods.fml.common.FMLContainerHolder.getFMLContainer()Lcpw.mods.fml.common.ModContainer;  # gtnhlib-0.12.4.jar
+  1  cpw.mods.fml.common.IFMLSidedHandler.getSide()Lcpw.mods.fml.relauncher.Side;  # CarbonConfig-1.7.10-2.0.2.1.jar
+  1  cpw.mods.fml.common.IWorldGenerator.textureDomain:Ljava.lang.String;  # ic2additions1.7.10-0.9.0.jar
+  1  cpw.mods.fml.common.LoadController.activeContainer()Lcpw.mods.fml.common.ModContainer;  # optimizationsandtweaks-V1.18.0.jar
+  1  cpw.mods.fml.common.LoadController.getModObjectList()Lcom.google.common.collect.BiMap;  # optimizationsandtweaks-V1.18.0.jar
+  1  cpw.mods.fml.common.LoadController.getModState(Lcpw.mods.fml.common.ModContainer;)Lcpw.mods.fml.common.LoaderState$ModState;  # optimizationsandtweaks-V1.18.0.jar
+  1  cpw.mods.fml.common.LoadController.isInState(Lcpw.mods.fml.common.LoaderState;)Z  # optimizationsandtweaks-V1.18.0.jar
 ```
 
-## client-side API (top 150 of 464)
+## client-side API (top 150 of 462)
 
 ```
   8  net.minecraft.client.renderer.entity.RenderPlayer.doRender(Lnet.minecraft.client.entity.AbstractClientPlayer;DDDFF)V  # AM2.5-LTS-1.6.7.jar, ApolloClient-v1.3.1.b21-2026-11-06.jar, MorePlayerModels-Plus-4.2.jar ...
@@ -223,7 +223,6 @@ Generated 2026-11-16 by `tools/dev/agent-tasks/make_stub_ranking.py` from the of
   3  org.lwjgl.opengl.GL11.glNormalPointer(ILjava.nio.ByteBuffer;)V  # curvy_pipes-1.7.10-1.15.12.jar, hfr-1.0.2.2+mc1.7.10-forge.jar, optimizationsandtweaks-V1.18.0.jar
   3  org.lwjgl.opengl.GL11.glTexCoordPointer(IILjava.nio.ShortBuffer;)V  # hfr-1.0.2.2+mc1.7.10-forge.jar, optimizationsandtweaks-V1.18.0.jar, rple-mc1.7.10-2.2.4.jar
   2  cpw.mods.fml.client.FMLClientHandler.connectToServerAtStartup(Ljava.lang.String;I)V  # ApolloClient-v1.3.1.b21-2026-11-06.jar, optimizationsandtweaks-V1.18.0.jar
-  2  cpw.mods.fml.client.GuiConfirmation.<init>(Lcpw.mods.fml.common.StartupQuery;)V  # gtnhlib-0.12.4.jar, optimizationsandtweaks-V1.18.0.jar
   2  cpw.mods.fml.client.GuiModList.drawLine(Ljava.lang.String;II)I  # 1.7.10-ASJCore-1.7.0.3.jar, schematica_plus-1.0.0-beta.4.jar
   2  net.minecraft.client.Minecraft.debugInfoEntities()Ljava.lang.String;  # ApolloClient-v1.3.1.b21-2026-11-06.jar, 永爱之剑0.1.jar
   2  net.minecraft.client.Minecraft.debugInfoRenders()Ljava.lang.String;  # ApolloClient-v1.3.1.b21-2026-11-06.jar, 永爱之剑0.1.jar
@@ -310,6 +309,7 @@ Generated 2026-11-16 by `tools/dev/agent-tasks/make_stub_ranking.py` from the of
   2  net.minecraft.network.play.client.C02PacketUseEntity$Action.INTERACT:Lnet.minecraft.network.play.client.C02PacketUseEntity$Action;  # Game of Thrones 24.08.29.jar, backhand-1.4.1.jar
   2  net.minecraft.network.play.client.C02PacketUseEntity.getEntityFromWorld(Lnet.minecraft.world.World;)Lnet.minecraft.entity.Entity;  # Game of Thrones 24.08.29.jar, backhand-1.4.1.jar
   2  net.minecraft.network.play.client.C0EPacketClickWindow.getWindowId()I  # AM2.5-LTS-1.6.7.jar, Paradigm-forge-1.7.10-2.5.4.jar
+  2  net.minecraft.network.play.client.C14PacketTabComplete.<init>(Ljava.lang.String;)V  # Salutation-1.7.10-1.0.2.jar, tabbychat-1.12.2.jar
 ```
 
 ## mod-side API (top 150 of 413)
@@ -467,3 +467,40 @@ Generated 2026-11-16 by `tools/dev/agent-tasks/make_stub_ranking.py` from the of
   1  codechicken.nei.ItemsGrid.isInvalidSlot(I)Z  # emi-1.1.24-beta.4+1.7.10+forge.jar
 ```
 
+## No faithful implementation possible
+
+```
+  3  cpw.mods.fml.common.FMLCommonHandler.handleExit(I)V  # process exit paths are the host's
+  3  cpw.mods.fml.common.StartupQuery.abort()V  # FML startup dialog, headless/no equivalent
+  3  cpw.mods.fml.common.discovery.ModCandidate.<init>(Ljava.io.File;Ljava.io.File;Lcpw.mods.fml.common.discovery.ContainerType;)V -> (Ljava.io.File;)V  # FML discovery internals
+  3  cpw.mods.fml.relauncher.ModListHelper.additionalMods:Ljava.util.Map;  # FML relauncher internals
+  3  net.minecraft.world.chunk.storage.RegionFile.getChunkDataInputStream(II)Ljava.io.DataInputStream;  # Anvil region IO is replaced by the host's own storage
+  2  cpw.mods.fml.client.GuiConfirmation.<init>(Lcpw.mods.fml.common.StartupQuery;)V  # FML startup dialog, headless/no equivalent
+  2  cpw.mods.fml.common.StartupQuery.confirm(Ljava.lang.String;)Z  # FML startup dialog, headless/no equivalent
+  2  cpw.mods.fml.common.StartupQuery.getText()Ljava.lang.String;  # FML startup dialog, headless/no equivalent
+  2  cpw.mods.fml.common.discovery.ContainerType.DIR:Lcpw.mods.fml.common.discovery.ContainerType;  # FML discovery internals
+  2  cpw.mods.fml.common.discovery.ContainerType.JAR:Lcpw.mods.fml.common.discovery.ContainerType;  # FML discovery internals
+  2  net.minecraft.world.chunk.storage.RegionFile.<init>(Ljava.io.File;)V  # Anvil region IO is replaced by the host's own storage
+  2  net.minecraft.world.chunk.storage.RegionFile.close()V  # Anvil region IO is replaced by the host's own storage
+  2  net.minecraft.world.chunk.storage.RegionFile.getChunkDataOutputStream(II)Ljava.io.DataOutputStream;  # Anvil region IO is replaced by the host's own storage
+  2  net.minecraft.world.chunk.storage.RegionFileCache.createOrLoadRegionFile(Ljava.io.File;II)Lnet.minecraft.world.chunk.storage.RegionFile;  # Anvil region IO is replaced by the host's own storage
+  1  cpw.mods.fml.client.GuiNotification.<init>(Lcpw.mods.fml.common.StartupQuery;)V  # FML startup dialog, headless/no equivalent
+  1  cpw.mods.fml.common.StartupQuery.check()Z  # FML startup dialog, headless/no equivalent
+  1  cpw.mods.fml.common.StartupQuery.finish()V  # FML startup dialog, headless/no equivalent
+  1  cpw.mods.fml.common.StartupQuery.getResult()Ljava.lang.Boolean;  # FML startup dialog, headless/no equivalent
+  1  cpw.mods.fml.common.StartupQuery.isSynchronous()Z  # FML startup dialog, headless/no equivalent
+  1  cpw.mods.fml.common.StartupQuery.notify(Ljava.lang.String;)V  # FML startup dialog, headless/no equivalent
+  1  cpw.mods.fml.common.StartupQuery.setResult(Z)V  # FML startup dialog, headless/no equivalent
+  1  cpw.mods.fml.common.asm.transformers.AccessTransformer.processATFile(Lcom.google.common.io.CharSource;)V  # FML class-loader internals (the layer applies access transformers itself)
+  1  cpw.mods.fml.common.discovery.ModCandidate.<init>(Ljava.io.File;Ljava.io.File;Lcpw.mods.fml.common.discovery.ContainerType;ZZ)V -> (Ljava.io.File;)V  # FML discovery internals
+  1  cpw.mods.fml.common.discovery.ModCandidate.addClassEntry(Ljava.lang.String;)V  # FML discovery internals
+  1  cpw.mods.fml.common.discovery.ModCandidate.mods:Ljava.util.List;  # FML discovery internals
+  1  cpw.mods.fml.common.discovery.ModCandidate.table:Lcpw.mods.fml.common.discovery.ASMDataTable;  # FML discovery internals
+  1  cpw.mods.fml.common.discovery.asm.ASMModParser.sendToTable(Lcpw.mods.fml.common.discovery.ASMDataTable;Lcpw.mods.fml.common.discovery.ModCandidate;)V  # FML discovery internals
+  1  cpw.mods.fml.relauncher.CoreModManager.getAccessTransformers()Ljava.util.List;  # FML class-loader internals (the layer applies access transformers itself)
+  1  cpw.mods.fml.relauncher.ModListHelper.parseModList(Ljava.io.File;)V  # FML relauncher internals
+  1  net.minecraft.server.integrated.IntegratedServer.getNetworkSystem()Lnet.minecraft.network.NetworkSystem;  # NetworkSystem does not exist in 1.21.1
+  1  net.minecraft.world.chunk.storage.RegionFile.chunkExists(II)Z  # Anvil region IO is replaced by the host's own storage
+  1  net.minecraft.world.chunk.storage.RegionFileCache.getChunkInputStream(Ljava.io.File;II)Ljava.io.DataInputStream;  # Anvil region IO is replaced by the host's own storage
+  1  net.minecraft.world.chunk.storage.RegionFileCache.getChunkOutputStream(Ljava.io.File;II)Ljava.io.DataOutputStream;  # Anvil region IO is replaced by the host's own storage
+```
