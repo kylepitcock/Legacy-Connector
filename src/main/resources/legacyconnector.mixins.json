@@ -135,6 +135,8 @@
     "PlayerBlockReachHookMixin",
     "ScreenEffectOverlayHookMixin",
     "LivingRenderPoseHookMixin1710",
+    "GameRendererLegacyFrameMixin1710",
+    "CameraLegacyOverrideMixin1710",
     "EntityFlameHookMixin",
     "ShoulderParrotTextureHookMixin",
     "ParrotTextureHookMixin",

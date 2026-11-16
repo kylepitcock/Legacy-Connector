@@ -220,6 +220,7 @@ public class Minecraft {
     }
 
     public static EntityClientPlayerMP mcc$get$thePlayer(Minecraft m) {
+        if (org.kylepitcock.legacyconnector.v1_7_10.client.CoremodClientSites.hideLocalPlayer) return null;
         var p = mc().player;
         return p == null ? null : (EntityClientPlayerMP) EntityBridge.wrap(p);
     }

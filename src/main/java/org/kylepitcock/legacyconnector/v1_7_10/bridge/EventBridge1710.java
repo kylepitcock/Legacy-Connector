@@ -927,12 +927,10 @@ public final class EventBridge1710 {
             if (e.getAction() == org.lwjgl.glfw.GLFW.GLFW_REPEAT || net.minecraft.client.Minecraft.getInstance().screen != null) return;
             legacyconnector.v1_7_10.org.lwjgl.input.Keyboard.mcc$setEvent(org.kylepitcock.legacyconnector.v1_7_10.client.KeyCodes.fromGlfw(e.getKey()),
                     e.getAction() == org.lwjgl.glfw.GLFW.GLFW_PRESS, '\0');
-            try {
-                if (wants(fml(), legacyconnector.v1_7_10.cpw.mods.fml.common.gameevent.InputEvent.KeyInputEvent.class)) {
-                    fml().post(new legacyconnector.v1_7_10.cpw.mods.fml.common.gameevent.InputEvent.KeyInputEvent());
-                }
-            } finally {
-                legacyconnector.v1_7_10.org.lwjgl.input.Keyboard.mcc$setEvent(0, false, '\0');
+            // LWJGL 2 kept the last event it had read until the next one: mods poll Keyboard.getEventKey()/getEventKeyState() from tick handlers
+            // (Legends' ability keys, together with KeyBinding.isPressed), so the event is NOT cleared after the KeyInputEvent
+            if (wants(fml(), legacyconnector.v1_7_10.cpw.mods.fml.common.gameevent.InputEvent.KeyInputEvent.class)) {
+                fml().post(new legacyconnector.v1_7_10.cpw.mods.fml.common.gameevent.InputEvent.KeyInputEvent());
             }
         });
         gameBus.addListener((net.neoforged.neoforge.client.event.InputEvent.MouseButton.Post e) -> {
