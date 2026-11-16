@@ -34,6 +34,24 @@ public class TileEntity {
     static {
         // a spawner a mod's own block hosts (Aether's dungeon spawners) saves under the vanilla id
         addMapping(TileEntityMobSpawner.class, "MobSpawner");
+        // 1.7.10's vanilla ids: a mod's block that hosts a vanilla tile entity class (a dispenser, hopper, chest...) saves under them
+        addMapping(TileEntityFurnace.class, "Furnace");
+        addMapping(TileEntityChest.class, "Chest");
+        addMapping(TileEntityEnderChest.class, "EnderChest");
+        addMapping(TileEntityDispenser.class, "Trap");
+        addMapping(TileEntityDropper.class, "Dropper");
+        addMapping(TileEntitySign.class, "Sign");
+        addMapping(TileEntityNote.class, "Music");
+        addMapping(TileEntityPiston.class, "Piston");
+        addMapping(TileEntityBrewingStand.class, "Cauldron");
+        addMapping(TileEntityEnchantmentTable.class, "EnchantTable");
+        addMapping(TileEntityEndPortal.class, "Airportal");
+        addMapping(TileEntityCommandBlock.class, "Control");
+        addMapping(TileEntityBeacon.class, "Beacon");
+        addMapping(TileEntitySkull.class, "Skull");
+        addMapping(TileEntityHopper.class, "Hopper");
+        addMapping(TileEntityComparator.class, "Comparator");
+        addMapping(TileEntityFlowerPot.class, "FlowerPot");
     }
 
     public static void addMapping(Class<?> cls, String id) {
