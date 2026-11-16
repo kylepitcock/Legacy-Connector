@@ -74,7 +74,7 @@ public class GL11 extends GL11Guard {
     /** The matrix stack is emulated, so the current model-view and projection matrices come from the render context. */
     public static void glGetFloat(int pname, FloatBuffer params) {
         if (pname == GL_MODELVIEW_MATRIX && RenderContext.pose() != null) {
-            RenderContext.pose().last().pose().get(params.position(), params);
+            RenderContext.readModelView(params);
         } else if (pname == GL_PROJECTION_MATRIX && RenderSystem.isOnRenderThread()) {
             RenderSystem.getProjectionMatrix().get(params.position(), params);
         } else if (pname == GL_CURRENT_COLOR) {
@@ -183,15 +183,15 @@ public class GL11 extends GL11Guard {
     public static void glLoadMatrix(FloatBuffer m) {
         if (m == null || m.remaining() < 16) return;
         org.joml.Matrix4f matrix = new org.joml.Matrix4f().set(m.position(), m);
-        if (DisplayLists.recording() && DisplayLists.record(() -> RenderContext.loadMatrix(matrix))) return;
-        RenderContext.loadMatrix(matrix);
+        if (DisplayLists.recording() && DisplayLists.record(() -> RenderContext.loadModelViewMatrix(matrix))) return;
+        RenderContext.loadModelViewMatrix(matrix);
     }
 
     public static void glLoadMatrix(java.nio.DoubleBuffer m) {
         if (m == null || m.remaining() < 16) return;
         org.joml.Matrix4f matrix = new org.joml.Matrix4f(new org.joml.Matrix4d().set(m.position(), m));
-        if (DisplayLists.recording() && DisplayLists.record(() -> RenderContext.loadMatrix(matrix))) return;
-        RenderContext.loadMatrix(matrix);
+        if (DisplayLists.recording() && DisplayLists.record(() -> RenderContext.loadModelViewMatrix(matrix))) return;
+        RenderContext.loadModelViewMatrix(matrix);
     }
 
     public static void glOrtho(double left, double right, double bottom, double top, double zNear, double zFar) {
