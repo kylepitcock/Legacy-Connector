@@ -115,10 +115,18 @@ public final class Mc1201Hierarchy {
      * Stand-in classes of the migrate package that replace a Minecraft/NeoForge class under a new name, with the type whose call rules still apply to them
      * (the quad baking consumer is a {@code VertexConsumer}: {@code vertex(...)}, {@code uv(...)}, {@code endVertex()} are rewritten through it).
      */
-    private static final Map<String, String> STAND_IN_SUPERS = Map.of(
-            "org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyQuadBakingVertexConsumer", "com/mojang/blaze3d/vertex/VertexConsumer",
-            "org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyQuadBakingVertexConsumer$Buffered", "org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyQuadBakingVertexConsumer",
-            "org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyMeleeAttackGoal", "net/minecraft/world/entity/ai/goal/MeleeAttackGoal");
+    private static final String MIG = "org/kylepitcock/legacyconnector/v1_20_1/migrate/";
+    private static final Map<String, String> STAND_IN_SUPERS = Map.ofEntries(
+            Map.entry(MIG + "LegacyQuadBakingVertexConsumer", "com/mojang/blaze3d/vertex/VertexConsumer"),
+            Map.entry(MIG + "LegacyQuadBakingVertexConsumer$Buffered", MIG + "LegacyQuadBakingVertexConsumer"),
+            Map.entry(MIG + "LegacyMeleeAttackGoal", "net/minecraft/world/entity/ai/goal/MeleeAttackGoal"),
+            // item and block stand-ins: calls on a mod subclass (this.isEdible()) must reach the rules of Item/Block
+            Map.entry(MIG + "LegacyBowlFoodItem", "net/minecraft/world/item/Item"),
+            Map.entry(MIG + "LegacyRecordItem", "net/minecraft/world/item/Item"),
+            Map.entry(MIG + "LegacyDyeableArmorItem", "net/minecraft/world/item/ArmorItem"),
+            Map.entry(MIG + "LegacyHorseArmorItem", "net/minecraft/world/item/AnimalArmorItem"),
+            Map.entry(MIG + "LegacyDyeableHorseArmorItem", MIG + "LegacyHorseArmorItem"),
+            Map.entry(MIG + "LegacyStemGrownBlock", "net/minecraft/world/level/block/Block"));
 
     /** True when {@code name} is {@code ancestor} or inherits from it through any mix of mod and Minecraft classes. */
     public boolean isSubclassOf(String name, String ancestor) {

@@ -195,7 +195,7 @@ public final class RoundCompat {
 
     // ------------------------------------------------------------------ recipe holders (1.21.1 hands out RecipeHolder: id plus recipe)
 
-    private static final ResourceLocation UNKNOWN_RECIPE = ResourceLocation.fromNamespaceAndPath("legacyconnector", "unknown");
+    static final ResourceLocation UNKNOWN_RECIPE = ResourceLocation.fromNamespaceAndPath("legacyconnector", "unknown");
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     private static net.minecraft.world.item.crafting.RecipeHolder holderOf(net.minecraft.world.item.crafting.Recipe recipe) {

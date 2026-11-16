@@ -594,7 +594,7 @@ net/minecraft/world/entity/raid/Raid$RaiderType	create	(Ljava/lang/String;Lnet/m
 net/minecraft/world/level/pathfinder/PathType	create	(Ljava/lang/String;F)Lnet/minecraft/world/level/pathfinder/PathType;	RoundCompat	createPathType	-
 net/minecraft/world/item/ItemDisplayContext	create	(Ljava/lang/String;Lnet/minecraft/resources/ResourceLocation;Lnet/minecraft/world/item/ItemDisplayContext;)Lnet/minecraft/world/item/ItemDisplayContext;	RoundCompat	createDisplayContext	-
 net/minecraft/world/item/SmithingTemplateItem	createArmorTrimTemplate	(Lnet/minecraft/resources/ResourceLocation;)Lnet/minecraft/world/item/SmithingTemplateItem;	=args	0,RoundCompat.noFlags@0	(Lnet/minecraft/resources/ResourceLocation;[Lnet/minecraft/world/flag/FeatureFlag;)Lnet/minecraft/world/item/SmithingTemplateItem;
-net/minecraft/world/item/crafting/SimpleCookingSerializer	<init>	(Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyCookieBaker;I)V	RoundCompat	newCookingSerializer	-
+net/minecraft/world/item/crafting/SimpleCookingSerializer	<init>	(Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyCookieBaker;I)V	=args	Round6Compat.cookingFactory@0,1	(Lnet/minecraft/world/item/crafting/AbstractCookingRecipe$Factory;I)V
 net/minecraft/network/syncher/EntityDataSerializer	optional	(Lnet/minecraft/network/codec/StreamEncoder;Lnet/minecraft/network/codec/StreamDecoder;)Lnet/minecraft/network/syncher/EntityDataSerializer;	RoundCompat	optionalSerializer	-
 net/minecraft/network/syncher/EntityDataSerializer	simpleEnum	(Ljava/lang/Class;)Lnet/minecraft/network/syncher/EntityDataSerializer;	RoundCompat	simpleEnum	-
 net/minecraft/network/syncher/EntityDataSerializer	simple	(Lnet/minecraft/network/codec/StreamEncoder;Lnet/minecraft/network/codec/StreamDecoder;)Lnet/minecraft/network/syncher/EntityDataSerializer;	RoundCompat	simpleSerializer	-
@@ -795,3 +795,31 @@ net/minecraft/server/level/ServerLevel	addDuringCommandTeleport	(Lnet/minecraft/
 net/minecraft/world/level/chunk/storage/RegionFileStorage	<init>	(Ljava/nio/file/Path;Z)V	=args	Round6Compat.regionInfo@0,0,1	(Lnet/minecraft/world/level/chunk/storage/RegionStorageInfo;Ljava/nio/file/Path;Z)V
 net/minecraft/advancements/Criterion	<init>	(Lnet/minecraft/advancements/CriterionTriggerInstance;)V	Round6Compat	newCriterion	-
 net/minecraft/server/level/WorldGenRegion	$get$writeRadiusCutoff	()I	Round6Compat	writeRadius	-
+net/minecraft/world/level/storage/loot/LootPool	$get$entries	()[Lnet/minecraft/world/level/storage/loot/entries/LootPoolEntryContainer;	Round6Compat	poolEntries	-
+net/minecraft/world/level/storage/loot/LootPool	$set$entries	([Lnet/minecraft/world/level/storage/loot/entries/LootPoolEntryContainer;)V	Round6Compat	setPoolEntries	-
+net/minecraft/world/level/block/Block	appendHoverText	(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/level/BlockGetter;Ljava/util/List;Lnet/minecraft/world/item/TooltipFlag;)V	Round6Compat	blockHover	-
+net/minecraft/Util	isBlank	(Ljava/lang/String;)Z	Round6Compat	isBlank	-
+net/minecraft/world/entity/decoration/Painting	storeVariant	(Lnet/minecraft/nbt/CompoundTag;Lnet/minecraft/core/Holder;)V	Round6Compat	storePaintingVariant	-
+net/minecraft/world/entity/Entity	$get$portalEntrancePos	()Lnet/minecraft/core/BlockPos;	Round6Compat	portalEntrancePos	-
+net/minecraft/world/item/ArmorItem	$get$knockbackResistance	()F	Round6Compat	armorKnockbackResistance	-
+
+net/minecraft/world/entity/Entity	$set$portalEntrancePos	(Lnet/minecraft/core/BlockPos;)V	Round6Compat	setPortalEntrancePos	-
+com/mojang/authlib/GameProfile	isComplete	()Z	Round6Compat	profileIsComplete	-
+net/minecraft/core/UUIDUtil	getOrCreatePlayerUUID	(Lcom/mojang/authlib/GameProfile;)Ljava/util/UUID;	Round6Compat	playerUuid	-
+net/minecraft/core/RegistrySetBuilder	buildPatch	(Lnet/minecraft/core/RegistryAccess;Lnet/minecraft/core/HolderLookup$Provider;)Lnet/minecraft/core/HolderLookup$Provider;	Round6Compat	buildPatch
+net/minecraft/world/item/SuspiciousStewItem	saveMobEffect	(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/effect/MobEffect;I)V	Round6Compat	saveStewEffect	-
+net/minecraft/world/item/Tier	getTag	()Lnet/minecraft/tags/TagKey;	Round6Compat	tierTag
+net/minecraft/world/item/armortrim/ArmorTrim	innerTexture	(Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyArmorMaterial;)Lnet/minecraft/resources/ResourceLocation;	Round6Compat	trimInner
+net/minecraft/world/item/armortrim/ArmorTrim	outerTexture	(Lorg/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyArmorMaterial;)Lnet/minecraft/resources/ResourceLocation;	Round6Compat	trimOuter
+net/minecraft/world/item/crafting/RecipeManager	$get$recipes	()Ljava/util/Map;	Round6Compat	recipes
+net/minecraft/world/item/crafting/RecipeManager	$set$recipes	(Ljava/util/Map;)V	Round6Compat	setRecipes
+net/minecraft/world/item/crafting/RecipeManager	fromJson	(Lnet/minecraft/resources/ResourceLocation;Lcom/google/gson/JsonObject;)Lnet/minecraft/world/item/crafting/Recipe;	Round6Compat	recipeFromJson	-
+net/minecraft/world/level/block/AbstractCauldronBlock	<init>	(Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;Ljava/util/Map;)V	=args	0,Round6Compat.interactionMap@1	(Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;Lnet/minecraft/core/cauldron/CauldronInteraction$InteractionMap;)V
+net/minecraft/world/level/block/LayeredCauldronBlock	<init>	(Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;Ljava/util/function/Predicate;Ljava/util/Map;)V	=args	Round6Compat.fillingPrecipitation@1,Round6Compat.interactionMap@2,0	(Lnet/minecraft/world/level/biome/Biome$Precipitation;Lnet/minecraft/core/cauldron/CauldronInteraction$InteractionMap;Lnet/minecraft/world/level/block/state/BlockBehaviour$Properties;)V
+net/minecraft/world/entity/EquipmentSlot	byTypeAndIndex	(Lnet/minecraft/world/entity/EquipmentSlot$Type;I)Lnet/minecraft/world/entity/EquipmentSlot;	Round6Compat	slotByTypeAndIndex	-
+net/minecraft/world/item/trading/MerchantOffer	<init>	(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;IIIF)V	Round6Compat	newOffer
+net/minecraft/world/item/trading/MerchantOffer	<init>	(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;IIIFI)V	Round6Compat	newOffer
+net/minecraft/world/entity/MobCategory	byName	(Ljava/lang/String;)Lnet/minecraft/world/entity/MobCategory;	Round6Compat	mobCategoryByName
+net/minecraft/world/food/FoodData	eat	(Lnet/minecraft/world/item/Item;Lnet/minecraft/world/item/ItemStack;)V	Round6Compat	eatStack
+net/minecraft/resources/ResourceLocation	of	(Ljava/lang/String;C)Lnet/minecraft/resources/ResourceLocation;	Round6Compat	locationOf
+net/minecraft/world/entity/animal/horse/Horse	getArmor	()Lnet/minecraft/world/item/ItemStack;	Round6Compat	horseArmor

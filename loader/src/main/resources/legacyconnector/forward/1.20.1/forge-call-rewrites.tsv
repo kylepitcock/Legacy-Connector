@@ -147,3 +147,5 @@ net/neoforged/neoforge/registries/DeferredRegister.createOptional(Lnet/minecraft
 net/neoforged/neoforge/registries/DeferredHolder.lazyMap(Ljava/util/function/Function;)Ljava/util/function/Supplier;	holderLazyMap
 net/neoforged/fml/loading/LoadingModList.getErrors()Ljava/util/List;	loadingErrors
 net/neoforged/neoforge/registries/DeferredHolder.filter(Ljava/util/function/Predicate;)Lnet/neoforged/neoforge/registries/DeferredHolder;	holderFilterSelf
+*.readRegistryId()Ljava/lang/Object;	readRegistryIdAny
+*.readRegistryIdSafe(Ljava/lang/Class;)Ljava/lang/Object;	readRegistryIdSafeAny
