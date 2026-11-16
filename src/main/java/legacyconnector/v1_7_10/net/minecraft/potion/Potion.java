@@ -97,6 +97,10 @@ public class Potion {
     public void affectEntity(EntityLivingBase source, EntityLivingBase target, int amplifier, double potency) {
     }
 
+    /** Forge hook: draws extra things over this effect's row in the inventory (nothing by default). */
+    public void renderInventoryEffect(int x, int y, PotionEffect effect, legacyconnector.v1_7_10.net.minecraft.client.Minecraft mc) {
+    }
+
     public boolean isInstant() {
         return false;
     }
