@@ -50,6 +50,15 @@ class DataConverter1201Test {
     }
 
     @Test
+    void modShapelessWrapperResultIsConverted() {
+        JsonElement r = one("data/m/recipes/k.json", """
+                {"type":"m:special_key","category":"misc","ingredients":[{"item":"m:key"},{"tag":"forge:ingots/iron"}],
+                 "result":{"item":"m:key","nbt":"{enchant:true}"}}""", "data/m/recipe/k.json");
+        assertTrue(r.getAsJsonObject().getAsJsonObject("result").has("id"));
+        assertEquals("c:ingots/iron", r.getAsJsonObject().getAsJsonArray("ingredients").get(1).getAsJsonObject().get("tag").getAsString());
+    }
+
+    @Test
     void shapedRecipe() {
         JsonElement r = one("data/m/recipes/a.json", """
                 {"type":"minecraft:crafting_shaped","category":"misc","pattern":["#"],"key":{"#":{"tag":"forge:ingots/iron"}},
@@ -661,5 +670,14 @@ class DataConverter1201Test {
                 .getAsJsonArray("location").get(0).getAsJsonObject().getAsJsonObject("predicate");
         assertEquals("#m:hammocks", pred.get("items").getAsString());
         assertTrue(!pred.has("tag"));
+    }
+
+    @Test
+    void nbtIngredientInsideAModRecipeTypeBecomesComponents() {
+        JsonElement r = one("data/m/recipes/jar.json", """
+                {"type":"m:soul_jar_recipe","input":{"type":"forge:partial_nbt","item":"m:soul_jar","nbt":"{Type:\\"m:pig\\"}"},"output":{"item":"m:x"}}""", "data/m/recipe/jar.json");
+        JsonObject in = r.getAsJsonObject().getAsJsonObject("input");
+        assertTrue(!in.toString().contains("partial_nbt") && (in.has("item") || in.has("items")), in.toString());
+        assertEquals("m:x", r.getAsJsonObject().getAsJsonObject("output").get("item").getAsString());
     }
 }

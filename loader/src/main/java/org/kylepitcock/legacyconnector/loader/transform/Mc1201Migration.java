@@ -120,6 +120,7 @@ final class Mc1201Migration {
             addBridges(node, h, t, c);
             addRecipeSerializerCodecs(node, c);
             addTriggerCodec(node, c);
+            addInstanceValidate(node, c);
             addConditionCodec(node, c);
         }
         return c;
@@ -160,6 +161,19 @@ final class Mc1201Migration {
         m.instructions.add(new InsnNode(Opcodes.ARETURN));
         m.maxStack = 1;
         m.maxLocals = 1;
+        node.methods.add(m);
+        c.bridges++;
+    }
+
+    /** A class that implements {@code CriterionTriggerInstance} itself (not through {@code AbstractCriterionTriggerInstance}) lacks 1.21.1's abstract {@code validate(CriterionValidator)}: nothing to validate. */
+    private static void addInstanceValidate(ClassNode node, Counts c) {
+        if (node.interfaces == null || !node.interfaces.contains("net/minecraft/advancements/CriterionTriggerInstance")) return;
+        String desc = "(Lnet/minecraft/advancements/critereon/CriterionValidator;)V";
+        if (declared(node, "validate", desc) != null) return;
+        MethodNode m = new MethodNode(Opcodes.ACC_PUBLIC, "validate", desc, null, null);
+        m.instructions.add(new InsnNode(Opcodes.RETURN));
+        m.maxStack = 0;
+        m.maxLocals = 2;
         node.methods.add(m);
         c.bridges++;
     }

@@ -33,6 +33,10 @@ public final class HolderCompat {
         return BuiltInRegistries.MOB_EFFECT.wrapAsHolder(e);
     }
 
+    public static Holder<net.minecraft.world.item.alchemy.Potion> holder(net.minecraft.world.item.alchemy.Potion p) {
+        return net.minecraft.core.registries.BuiltInRegistries.POTION.wrapAsHolder(p);
+    }
+
     public static Holder<Attribute> holder(Attribute a) {
         return BuiltInRegistries.ATTRIBUTE.wrapAsHolder(a);
     }
@@ -122,6 +126,11 @@ public final class HolderCompat {
     }
 
     public static void enchant(ItemStack stack, LegacyEnchantment e, int level) {
+        // {@code stack.enchant(null, 0)} was the 1.20.1 way to make an item glint (an empty Enchantments list); 1.21.1 has a component for it
+        if (e == null) {
+            stack.set(net.minecraft.core.component.DataComponents.ENCHANTMENT_GLINT_OVERRIDE, Boolean.TRUE);
+            return;
+        }
         stack.enchant(holder(e), level);
     }
 
@@ -201,7 +210,15 @@ public final class HolderCompat {
 
     /** The unwrapped {@code Enchantments.X} (a resource key in 1.21.1, the object in 1.20.1). */
     public static LegacyEnchantment enchantment(ResourceKey<Enchantment> key) {
-        return LegacyEnchantments.legacy(MigrateContext.provider().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(key));
+        java.util.Optional<? extends net.minecraft.core.HolderLookup.RegistryLookup<Enchantment>> lookup;
+        try {
+            lookup = MigrateContext.provider().lookup(Registries.ENCHANTMENT);
+        } catch (RuntimeException noRegistries) {
+            lookup = java.util.Optional.empty();
+        }
+        // before the data-driven registry exists (the data pack contributor asks a mod's compatibility rules): a stand-in that only knows its id
+        if (lookup.isEmpty()) return LegacyEnchantment.ofId(key.location());
+        return LegacyEnchantments.legacy(lookup.get().getOrThrow(key));
     }
 
     /** {@code EnchantmentInstance.enchantment} (a holder in 1.21.1). */
@@ -216,9 +233,13 @@ public final class HolderCompat {
         } catch (IllegalStateException notThereYet) {
             // 1.20.1 had the registry as a static from the start: libraries keep it in a static field while the mod is constructed (SuperMartijn642's Core Lib).
             // The reference is a view that asks the real registry on every call; it works once a world's registries exist.
-            return lazyEnchantmentRegistry();
+            net.minecraft.core.Registry<Enchantment> lazy = lazyView;
+            if (lazy == null) lazyView = lazy = lazyEnchantmentRegistry();
+            return lazy;
         }
     }
+
+    private static volatile net.minecraft.core.Registry<Enchantment> lazyView;
 
     @SuppressWarnings("unchecked")
     private static net.minecraft.core.Registry<Enchantment> lazyEnchantmentRegistry() {

@@ -441,6 +441,25 @@ public final class MiscCompat {
         return java.util.Arrays.asList(array);
     }
 
+    private static volatile java.lang.reflect.Method conditionsGetter;
+
+    /** {@code LootItemConditionalFunction.Builder.getConditions()}: protected, returned an array in 1.20.1 and a list in 1.21.1 (read through reflection, the caller is a mod class). */
+    public static net.minecraft.world.level.storage.loot.predicates.LootItemCondition[] builderConditions(net.minecraft.world.level.storage.loot.functions.LootItemConditionalFunction.Builder<?> builder) {
+        try {
+            java.lang.reflect.Method m = conditionsGetter;
+            if (m == null) {
+                m = net.minecraft.world.level.storage.loot.functions.LootItemConditionalFunction.Builder.class.getDeclaredMethod("getConditions");
+                m.setAccessible(true);
+                conditionsGetter = m;
+            }
+            @SuppressWarnings("unchecked")
+            List<net.minecraft.world.level.storage.loot.predicates.LootItemCondition> list = (List<net.minecraft.world.level.storage.loot.predicates.LootItemCondition>) m.invoke(builder);
+            return list.toArray(new net.minecraft.world.level.storage.loot.predicates.LootItemCondition[0]);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
     // ------------------------------------------------------------------ dispenser: BlockSource became a record
 
     public static BlockPos sourcePos(net.minecraft.core.dispenser.BlockSource s) {

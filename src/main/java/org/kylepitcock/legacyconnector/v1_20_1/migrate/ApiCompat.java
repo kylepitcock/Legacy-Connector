@@ -101,9 +101,8 @@ public final class ApiCompat {
         return MiscCompat.writeItem(buf, stack);
     }
 
-    public static FriendlyByteBuf writeFluidStack(FriendlyByteBuf buf, FluidStack stack) {
+    public static void writeFluidStack(FriendlyByteBuf buf, FluidStack stack) {
         buf.writeNbt((Tag) stack.saveOptional(MigrateContext.provider()));
-        return buf;
     }
 
     public static FluidStack readFluidStack(FriendlyByteBuf buf) {

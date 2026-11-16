@@ -89,3 +89,4 @@ net/minecraft/world/level/block/entity/JukeboxBlockEntity	getFirstItem	*	getTheI
 net/minecraft/world/level/block/FlowerPotBlock	getContent	*	getPotted
 net/minecraft/server/MinecraftServer	tickTimes	:*	tickTimesNanos
 net/minecraft/advancements/Criterion	getTrigger	*	triggerInstance
+net/minecraft/world/level/storage/loot/functions/SetNbtFunction	setTag	(Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/world/level/storage/loot/functions/LootItemConditionalFunction$Builder;	setCustomData

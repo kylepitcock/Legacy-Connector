@@ -31,6 +31,8 @@ public final class LegacyEnchantments {
     public static final ResourceKey<Registry<LegacyEnchantment>> KEY = ResourceKey.createRegistryKey(ResourceLocation.fromNamespaceAndPath("legacyconnector", "legacy_enchantment"));
     public static final Registry<LegacyEnchantment> REGISTRY = new RegistryBuilder<>(KEY).sync(false).create();
 
+    private static boolean traced;
+
     private LegacyEnchantments() {}
 
     /** Mod bus listener of the runtime. */
@@ -70,6 +72,7 @@ public final class LegacyEnchantments {
                 if (e.isDiscoverable()) discoverable.add(s);
             } catch (RuntimeException | LinkageError ex) {
                 LOG.warn("enchantment {} could not be converted to a data pack entry: {}", id, ex.toString());
+                if (!traced) { traced = true; LOG.warn("first failure", ex); }
             }
         }
         tag(out, "in_enchanting_table", inTable);

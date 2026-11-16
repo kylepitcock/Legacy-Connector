@@ -106,7 +106,11 @@ final class Datagen1201 {
         if ((n.access & Opcodes.ACC_INTERFACE) == 0 && DATAGEN_NAME.matcher(n.name).matches()
                 && !extendsLevelgen(n, byName)) return true;
         if (datagenSuper(n.superName, known, byName)) return true;
-        if (n.interfaces != null) for (String i : n.interfaces) if (datagenSuper(i, known, byName)) return true;
+        // a class that extends a runtime game class (a block entity, an entity...) is not a data generator because it implements an interface whose NAME looks like one
+        // (Immersive Engineering's IEBlockInterfaces.BlockstateProvider, a block state interface of its block entities)
+        boolean runtimeSuper = n.superName != null && (n.superName.startsWith("net/minecraft/") || n.superName.startsWith("net/minecraftforge/"))
+                && !n.superName.startsWith("net/minecraft/data/") && !n.superName.contains("/data/") && !n.superName.contains("/datagen/");
+        if (!runtimeSuper && n.interfaces != null) for (String i : n.interfaces) if (datagenSuper(i, known, byName)) return true;
         int dollar = n.name.lastIndexOf('$');
         if (dollar > 0 && known.contains(n.name.substring(0, dollar))) return true;
         return false;
@@ -144,7 +148,8 @@ final class Datagen1201 {
         n.invisibleTypeAnnotations = null;
         n.recordComponents = null;
         n.permittedSubclasses = null;
-        n.nestMembers = null;
+        // nested classes stay nest members of this host: a shell nest member keeps its static helpers, and its private ones are reached from the host (Mantle's MantleTags.Blocks.init)
+        if (n.nestMembers != null) n.nestMembers = new ArrayList<>(n.nestMembers.stream().filter(jar::contains).toList());
         // the super class becomes Object unless it is another class of the jar (which is a shell too, or kept as it was)
         if (n.superName != null && !jar.contains(n.superName) && !n.superName.equals("java/lang/Record")) n.superName = "java/lang/Object";
         List<MethodNode> kept = new ArrayList<>();
