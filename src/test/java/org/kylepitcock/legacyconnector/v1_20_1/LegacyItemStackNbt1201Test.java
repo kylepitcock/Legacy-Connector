@@ -121,6 +121,22 @@ class LegacyItemStackNbt1201Test {
     }
 
     @Test
+    void bucketTagPreservesLegacyBucketFieldsInResidualCustomData() {
+        ItemStack stack = new ItemStack(Items.AXOLOTL_BUCKET);
+        CompoundTag residual = new CompoundTag();
+        residual.putInt("Variant", 3);
+        residual.putInt("Age", -24000);
+        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(residual));
+
+        CompoundTag legacy = ItemStackNbt.getBucketTag(stack, RegistryAccess.EMPTY);
+
+        assertEquals(3, legacy.getInt("Variant"));
+        assertEquals(-24000, legacy.getInt("Age"));
+        assertEquals(3, stack.get(DataComponents.CUSTOM_DATA).copyTag().getInt("Variant"));
+        assertEquals(-24000, stack.get(DataComponents.CUSTOM_DATA).copyTag().getInt("Age"));
+    }
+
+    @Test
     void bucketTagDoesNotTurnItemNameIntoLegacyCustomName() {
         ItemStack stack = new ItemStack(Items.COD_BUCKET);
         stack.set(DataComponents.ITEM_NAME, Component.literal("ordinary item name"));
