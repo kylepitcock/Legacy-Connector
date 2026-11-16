@@ -222,6 +222,8 @@ public final class LegacyConnector {
         });
 
         IEventBus game = NeoForge.EVENT_BUS;
+        // translated 1.20.1 mods read enchantments in their tags-updated handlers: the registries of that reload are the ones to read from (before the server exists)
+        game.addListener(net.neoforged.bus.api.EventPriority.HIGHEST, (net.neoforged.neoforge.event.TagsUpdatedEvent e) -> org.kylepitcock.legacyconnector.v1_20_1.migrate.MigrateContext.remember(e.getRegistryAccess()));
         org.kylepitcock.legacyconnector.core.LevelReleases.register(game);
         org.kylepitcock.legacyconnector.core.pack.LegacyRecipeSync.register(game);
         EventBridge1710.register(game);

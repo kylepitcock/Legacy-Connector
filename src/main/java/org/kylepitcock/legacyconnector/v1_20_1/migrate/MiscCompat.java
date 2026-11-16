@@ -475,6 +475,11 @@ public final class MiscCompat {
         return net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.BLOCK, id.withPath(id.getPath() + "_stem"));
     }
 
+    /** {@code FoodProperties.isFastFood()}: the flag became the eating time (0.8 s for fast food against the default 1.6 s). */
+    public static boolean isFastFood(net.minecraft.world.food.FoodProperties food) {
+        return food.eatSeconds() < 1.6F;
+    }
+
     private static volatile java.lang.reflect.Method conditionsGetter;
 
     /** {@code LootItemConditionalFunction.Builder.getConditions()}: protected, returned an array in 1.20.1 and a list in 1.21.1 (read through reflection, the caller is a mod class). */

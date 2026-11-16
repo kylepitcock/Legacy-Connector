@@ -17,14 +17,19 @@ public final class MigrateContext {
     private static final ThreadLocal<HolderLookup.Provider> PROVIDER = new ThreadLocal<>();
     private static final ThreadLocal<SynchedEntityData.Builder> BUILDER = new ThreadLocal<>();
     private static volatile HolderLookup.Provider last;
+    /** The last full registry access remembered (a later provider that only wraps registry lookups must not hide it). */
+    private static volatile RegistryAccess lastAccess;
 
     private MigrateContext() {}
 
     /** Called first thing by a generated bridge method with the new parameter that carries context. */
     public static void remember(Object o) {
         if (o instanceof HolderLookup.Provider p) {
+            // the empty access of a call before any registries existed must not hide the real one remembered earlier
+            if (p instanceof RegistryAccess empty && empty.registries().findAny().isEmpty()) return;
             PROVIDER.set(p);
             last = p;
+            if (p instanceof RegistryAccess ra) lastAccess = ra;
         } else if (o instanceof SynchedEntityData.Builder b) {
             BUILDER.set(b);
         }
@@ -47,7 +52,8 @@ public final class MigrateContext {
             if (ra != null) return ra;
         }
         if (last instanceof RegistryAccess ra) return ra;
-        return RegistryAccess.EMPTY;
+        RegistryAccess remembered = lastAccess;
+        return remembered != null ? remembered : RegistryAccess.EMPTY;
     }
 
     /** The builder of the {@code defineSynchedData} call in progress on this thread; a throwaway when called outside one. */
