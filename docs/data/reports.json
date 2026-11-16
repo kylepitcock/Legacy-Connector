@@ -887,6 +887,18 @@
    "link": "https://www.curseforge.com/minecraft/mc-mods/customoregen/download/2568549",
    "date": "2026-11-16",
    "open": true
+  },
+  {
+   "issue": 296,
+   "mod": "ensorcellation-1.20.1-5.0.2.24",
+   "mc": "1.20.1 (Forge)",
+   "status": "works",
+   "details": "Game crashes during world creation / load. Related issue for COFH core: #271",
+   "lc": "0.4.14-nightly.58.00a22b8",
+   "neoforge": "21.1.266",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/ensorcellation/download/5430042",
+   "date": "2026-11-16",
+   "open": true
   }
  ]
 }
