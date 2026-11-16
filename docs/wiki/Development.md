@@ -116,6 +116,27 @@ python3 tools/extract_legacy_hierarchy.py 1.7.10
   (items, fluids, RF), persistence across a restart (`persist`, run twice) and the handbook data. Jars go in `run-subtest/mods/1.7.10`.
 - Legacy mod jars are supplied by the developer and never committed (`test-mods/` is gitignored).
 
+## Coremod probes
+
+Server scripts that check the coremod places of [Coremods](Coremods.md) without a player (run one server at a time, with the coremod jars of one version in
+the sub-test directory, and `-PcoremodReport` to list the places without equivalent):
+
+- `tools/dev/coremod-sites-1122-probe.js` (1.12.2 round 4 and 5 places: AppleCore, AutoRegLib, Charm, Quark, RandomThings),
+  `tools/dev/coremod-sites-1710-probe.js` (1.7.10 round 3, Fisk's Heroes first) and `coremod-sites-1710-probe2.js` (round 6: checks the hook mixins applied,
+  drives collision boxes and the light probe, times the hot paths with `CoremodHotPathBench`, `-Dcm.bench=false` skips that). Each loads every mixin target
+  (a mixin that does not apply throws there) and drives what a server can reach. Run:
+  `./gradlew runServerSubTest -PsubTestDir=run-cm -PserverTickScript=<abs path of the script> [-PautostopTicks=1500]`. With no player in the world,
+  chunks only tick when forced: the 1.12.2 probe calls `level.setChunkForced(0, 0, true)` first.
+- `./gradlew probeCoremodHooks -PlegacyJar=a.jar,b.jar [-Psites=true] [-PvanillaJar=client-<mc>.jar]` lists what each coremod's transformers change; results
+  go to `tools/dev/agent-tasks/coremod-sites-*.md` and `coremod-structural-additions.md`.
+- Gameplay probes of single issues, in the same style (`-PserverTickScript`, optionally `-PserverTickScriptFrom=<tick>`; they load `lib.js` or
+  `lib-reika.js` of their folder): `tools/dev/server-scripts/traincraft-diagonal.js`, `traincraft-slope.js`, `traincraft-fluids.js` (Traincraft, #105) and
+  `tools/dev/thaumcraft/` (`bone-bow.js`, `node-jar.js`, `node-jar-create.js`, `crucible-*.js`, `golem-gather.js`, `scan-thaumometer.js`; submit `lib.js`
+  first, read the result with `tools/dev/server-script.sh '<expression>'`; #152).
+- The link probe checks its own run matching with `python tools/compat/probe.py --self-test` (see Link probe below).
+- Trap: `run-perfmods/irisveil-0.4.0.jar` (Iris Veil Compat) crashes the client at start-up without the Veil library
+  (`ClassNotFoundException foundry.veil...`); leave it out of graphical runs unless Veil is in the folder.
+
 ## Regression suites
 
 `tools/dev/verify.sh [--update] [suite ...]` runs the headless server self test unattended over named jar sets and compares the result with a
