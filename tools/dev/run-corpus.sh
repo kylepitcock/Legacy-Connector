@@ -13,6 +13,8 @@ for jar in $SRC/*.jar(N); do [[ -n $SKIP && ${jar:t:l} == *${SKIP:l}* ]] && cont
 if [[ -d $SRC/1.7.10 ]]; then mkdir -p $D/mods/1.7.10; for jar in $SRC/1.7.10/*.jar(N); do if [[ -n $COPYMODS ]]; then cp -L "$jar" "$D/mods/1.7.10/${jar:t}"; else ln -sf "$PWD/$jar" "$D/mods/1.7.10/${jar:t}"; fi; done; fi
 echo "mods: $(ls $D/mods | wc -l)"
 rm -rf $D/world
+# no watchdog kill (60 s) during the dimension self test of big packs
+[[ -f $D/server.properties ]] && { grep -v '^max-tick-time=' $D/server.properties > $D/server.properties.new; echo "max-tick-time=-1" >> $D/server.properties.new; mv $D/server.properties.new $D/server.properties; }
 ./gradlew runServerSubTest > build/devtools/corpus.log 2>&1 &
 for i in $(seq 1 ${TIMEOUT:-240}); do
   sleep 5

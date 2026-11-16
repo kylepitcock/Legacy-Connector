@@ -29,6 +29,7 @@ same as "works in play"; per-mod results are on the compatibility site. Details 
 | 1.4.7 | `mods/1.4.7/` | Alpha | RedPower 2, BuildCraft, ComputerCraft and Applied Energistics run in a real client | 45 of 49 |
 | Forge 1.20.1 | `mods/1.20.1/` | Alpha (on by default, `experimental.forge1201=false` turns it off) | Remapped in place onto 1.21.1; Terramity, Palladium with its addon packs (contributed by kentvillamor08) and Another Furniture run, 141 of the 506 mods of an ATM 9 pack link and the first batches start on a server, most other mods still have unresolved references | 99 of 494 (nightly: 152) |
 | Beta 1.7.3 | `mods/b1.7.3/` (jars or zips) | Alpha | ModLoader and Forge 1.0 era mods (contributed by Zekken01): blocks, items, recipes, tile entities, GUIs and supported mob families; entities and world generation are still incomplete | 38 of 44, 20 of them through placeholder APIs |
+| 1.2.5 | | Design | ModLoader / early Forge mods; jars are recognised and reported as not supported yet, never loaded as another version ([design](docs/wiki/Legacy-1.2.5.md)) | |
 | 1.19.2, 1.18.2, 1.16.5 | | Planned | A chain of stages on top of the 1.20.1 pipeline ([plan](docs/wiki/Legacy-1.16-1.19-Plan.md)); 1.2.5 comes later | |
 
 Not planned: 1.8 to 1.11.2 and the Alpha/early-Beta jar-mod era. Order and reasons: [Version roadmap](docs/wiki/Version-Roadmap.md); how the

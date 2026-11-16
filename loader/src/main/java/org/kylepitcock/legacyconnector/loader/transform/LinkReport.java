@@ -26,11 +26,23 @@ public final class LinkReport {
     /** Classes found nowhere: usually optional integrations with other mods. Informational. */
     public final Map<String, TreeSet<String>> externalClasses = new TreeMap<>();
 
+    /** {@code owner.nameDesc} of @Optional.Method members removed for an absent mod; references to them are guarded integration code, not defects. */
+    public final java.util.Set<String> optionalRemoved = new java.util.HashSet<>();
+    /** Calls to members removed because their {@code @Optional.Method} mod is absent: "optional integration not available". Informational. */
+    public final Map<String, TreeSet<String>> optionalMembers = new TreeMap<>();
+
+    /** Set by the linker: true when a class (or an ancestor) lost an {@code @Optional.Interface}, so members it declared may be missing on purpose. */
+    java.util.function.Predicate<String> lostOptionalInterface = c -> false;
+
     void missingClass(String owner, String from) {
         missingClasses.computeIfAbsent(owner, k -> new TreeSet<>()).add(from);
     }
 
     void missingMember(String owner, String member, String from, boolean shim) {
+        if (optionalRemoved.contains(owner + "." + member) || lostOptionalInterface.test(owner)) {
+            optionalMembers.computeIfAbsent(owner + "." + member, k -> new TreeSet<>()).add(from);
+            return;
+        }
         (shim ? missingShimMembers : missingLibraryMembers).computeIfAbsent(owner + "." + member, k -> new TreeSet<>()).add(from);
     }
 
@@ -61,6 +73,7 @@ public final class LinkReport {
         section(sb, "Removed library/JDK members", missingLibraryMembers);
         section(sb, "Synthesized legacy APIs (link, but have no behaviour yet)", stubbedMembers);
         section(sb, "Adapted to the shim's signature (real behaviour)", adaptedMembers);
+        section(sb, "Optional integrations not available (their @Optional.Method mod is absent)", optionalMembers);
         section(sb, "Unresolved external classes (optional mod integrations, usually harmless)", externalClasses);
         return sb.toString();
     }

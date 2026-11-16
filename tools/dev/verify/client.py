@@ -25,7 +25,6 @@ SEARCH = ("test-mods test-mods2 test-mods3 test-mods-1122 test-mods-147 test-mod
           "run-screenshots/mods.aside-20261113 run-subtest/mods-user").split()
 EXT = (".jar", ".zip", ".litemod")
 # Iris Veil Compat crashes the mixin phase without the Veil library, which a real pack gets through Create Aeronautics/Sable
-PERF_SKIP = ("irisveil",)
 WORLD_TIMEOUT = 480
 EXPECT_RETRY = 15
 
@@ -184,9 +183,14 @@ def prepare(jars, game_dir):
     os.makedirs(os.path.join(game_dir, "mods"), exist_ok=True)
     perf = os.path.join(JAR_ROOT, "run-perfmods")
     if os.path.isdir(perf) and not os.environ.get("NOPERF"):
-        for f in os.listdir(perf):
-            if f.endswith(".jar") and not f.lower().startswith(PERF_SKIP):
-                shutil.copy2(os.path.join(perf, f), os.path.join(game_dir, "mods", f))
+        sys.path.insert(0, os.path.join(HERE, ".."))
+        import perfmods_filter  # skips jars whose mandatory dependency is absent (Iris Veil Compat without Veil)
+        kept, skipped = perfmods_filter.select({os.path.join(perf, f): perfmods_filter.read_jar(os.path.join(perf, f))
+                                                for f in os.listdir(perf) if f.endswith(".jar")})
+        for jar, missing in skipped.items():
+            print("perfmods: skipping %s (needs %s, not present)" % (os.path.basename(jar), ", ".join(missing)))
+        for jar in kept:
+            shutil.copy2(jar, os.path.join(game_dir, "mods", os.path.basename(jar)))
     for ver, jar in jars:
         d = os.path.join(game_dir, "mods", ver)
         os.makedirs(d, exist_ok=True)

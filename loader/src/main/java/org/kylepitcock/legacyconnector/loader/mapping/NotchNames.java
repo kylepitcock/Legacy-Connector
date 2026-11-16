@@ -109,6 +109,11 @@ public final class NotchNames {
         return classes.isEmpty();
     }
 
+    /** The supertypes of a notch class ({@code [superclass or null, interfaces...]}, notch names), or null when the class is unknown. */
+    public String[] supertypes(String notch) {
+        return supers.get(notch);
+    }
+
     /** The MCP class name of a notch class name (no package), or null. */
     public String mcpClass(String notch) {
         return classes.get(notch);

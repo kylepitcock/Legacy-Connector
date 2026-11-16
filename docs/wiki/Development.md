@@ -134,8 +134,17 @@ the sub-test directory, and `-PcoremodReport` to list the places without equival
   `tools/dev/thaumcraft/` (`bone-bow.js`, `node-jar.js`, `node-jar-create.js`, `crucible-*.js`, `golem-gather.js`, `scan-thaumometer.js`; submit `lib.js`
   first, read the result with `tools/dev/server-script.sh '<expression>'`; #152).
 - The link probe checks its own run matching with `python tools/compat/probe.py --self-test` (see Link probe below).
-- Trap: `run-perfmods/irisveil-0.4.0.jar` (Iris Veil Compat) crashes the client at start-up without the Veil library
-  (`ClassNotFoundException foundry.veil...`); leave it out of graphical runs unless Veil is in the folder.
+- `run-perfmods/irisveil-0.4.0.jar` (Iris Veil Compat) crashes the client at start-up without the Veil library
+  (`ClassNotFoundException foundry.veil...`). `quick-shots.sh` and `verify-client.sh` therefore copy the performance mods through
+  `tools/dev/perfmods_filter.py`, which skips (with a printed line) every jar whose mandatory dependency (`neoforge.mods.toml`, `type="required"`)
+  no jar of the set or the game's mods folder provides; Veil, which the jar's toml only lists as optional although its mixins need it, is
+  listed in `EXTRA_REQUIRES`. Nothing is deleted from `run-perfmods/`. Unit tests: `python -m unittest test_perfmods_filter` in `tools/dev`.
+
+## Quiet merge gate
+
+`tools/dev/gate.sh [compile|index|check ...]` prints one line per step and ends with an unmistakable last line, `gate: ok` or
+`gate: FAILED (<stage>)`, and exits non-zero on failure. Pipes hide exit codes (`bash tools/dev/gate.sh | tail -3 && next` runs `next` even when the
+gate failed): check the last line, do not chain after a pipe (or use `set -o pipefail`).
 
 ## Regression suites
 
@@ -159,6 +168,11 @@ committed baseline (no argument runs every suite; about 2 to 5 minutes per suite
   counts) is more than 2 percent lower (10 percent for entities alive, which varies between identical runs), or when the self test was not reached. A suite without a baseline entry is NEW. After an intended change run
   `tools/dev/verify.sh --update [suite]` and commit `baseline.json`. The table is also written to `build/devtools/verify-report.txt`; the exit code is
   non-zero when a suite failed.
+- **Watchdog:** `verify.sh`, `run-subset.sh` and `run-corpus.sh` write `max-tick-time=-1` into the `server.properties` of the run directory:
+  the dimension self test of big packs blocks the main thread for more than the 60 s watchdog, which killed the run. (A hand-made run directory
+  needs the same line.)
+- **Entity self test determinism:** the test pins the world to night with the daylight/weather cycles and mob griefing off (undead no longer burn
+  in sunlight, whose timing made `entOk` vary between identical runs); the AI still runs, so an entity that dies from its own code counts as removed.
 
 ## Client scenarios
 

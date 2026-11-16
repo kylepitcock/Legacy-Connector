@@ -413,6 +413,19 @@ public abstract class EntityPlayer extends EntityLivingBase implements legacycon
         if (modern.is(net.minecraft.world.item.Items.WRITTEN_BOOK)) sp.openItemGui(modern, net.minecraft.world.InteractionHand.MAIN_HAND);
     }
 
+    /**
+     * {@code func_146100_a} (MCP {@code displayGUIEditSign}): opens the sign editor (front text) of a vanilla sign. A mod's own sign block is hosted by a
+     * block entity of its own type that the modern editor cannot edit, so nothing opens for those.
+     */
+    public void displayGUIEditSign(legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntity sign) {
+        if (!(mcc$player() instanceof net.minecraft.server.level.ServerPlayer sp) || sign == null || sign.worldObj == null) return;
+        var level = sign.worldObj.mcc$liveLevel();
+        if (level == null) return;
+        if (level.getBlockEntity(new net.minecraft.core.BlockPos(sign.xCoord, sign.yCoord, sign.zCoord)) instanceof net.minecraft.world.level.block.entity.SignBlockEntity modern) {
+            sp.openTextEdit(modern, true);
+        }
+    }
+
     /** Shows the beacon window of a vanilla beacon. */
     public void func_146104_a(legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityBeacon beacon) {
         if (mcc$player() instanceof net.minecraft.server.level.ServerPlayer sp && beacon != null
@@ -711,5 +724,41 @@ public abstract class EntityPlayer extends EntityLivingBase implements legacycon
     public float getAIMoveSpeed() {
         return mcc$entity instanceof net.minecraft.world.entity.LivingEntity l
                 ? (float) l.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED) : 0.1F;
+    }
+
+    /** Which chat messages a player sees (the client's chat option). */
+    public enum EnumChatVisibility {
+        FULL(0, "options.chat.visibility.full"),
+        SYSTEM(1, "options.chat.visibility.system"),
+        HIDDEN(2, "options.chat.visibility.hidden");
+
+        private final int chatVisibility;
+        private final String resourceKey;
+
+        EnumChatVisibility(int id, String resourceKey) {
+            this.chatVisibility = id;
+            this.resourceKey = resourceKey;
+        }
+
+        public int getChatVisibility() {
+            return chatVisibility;
+        }
+
+        public static EnumChatVisibility getEnumChatVisibility(int id) {
+            for (EnumChatVisibility v : values()) if (v.chatVisibility == id) return v;
+            return FULL;
+        }
+
+        public String getResourceKey() {
+            return resourceKey;
+        }
+
+        public net.minecraft.world.entity.player.ChatVisiblity mcc$modern() {
+            return net.minecraft.world.entity.player.ChatVisiblity.byId(chatVisibility);
+        }
+
+        public static EnumChatVisibility mcc$of(net.minecraft.world.entity.player.ChatVisiblity modern) {
+            return modern == null ? FULL : getEnumChatVisibility(modern.getId());
+        }
     }
 }

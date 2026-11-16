@@ -236,6 +236,19 @@ public final class Round6Compat {
         return ((net.minecraft.server.level.WorldGenRegion) region).getLevel().structureManager();
     }
 
+    /** The mixin accessor {@code WorldGenRegion.cache} (a list of the chunks of the region, row by row; 1.21.1 keeps them in a StaticCache2D): the chunks the region holds around its center. */
+    public static java.util.List<net.minecraft.world.level.chunk.ChunkAccess> worldGenRegionCache(Object region) {
+        net.minecraft.server.level.WorldGenRegion r = (net.minecraft.server.level.WorldGenRegion) region;
+        net.minecraft.world.level.ChunkPos c = r.getCenter();
+        java.util.List<net.minecraft.world.level.chunk.ChunkAccess> out = new java.util.ArrayList<>();
+        for (int dz = -16; dz <= 16; dz++) {
+            for (int dx = -16; dx <= 16; dx++) {
+                if (r.hasChunk(c.x + dx, c.z + dz)) out.add(r.getChunk(c.x + dx, c.z + dz));
+            }
+        }
+        return out;
+    }
+
     /** {@code CrossbowItem.setCharged(stack, charged)} (static): a crossbow is charged while it holds projectiles, so only discharging can be done here. */
     public static void setCrossbowCharged(net.minecraft.world.item.ItemStack stack, boolean charged) {
         if (!charged) stack.set(net.minecraft.core.component.DataComponents.CHARGED_PROJECTILES, net.minecraft.world.item.component.ChargedProjectiles.EMPTY);

@@ -116,11 +116,18 @@ public final class TileEntityBridge {
             }
             return region.getBlockEntity(pos);
         }
+        // A tile entity invalidated while the server saves and stops (Galacticraft's wire network splitting) asks for its neighbours: the chunk
+        // system no longer runs its load tasks then, and a blocking getChunk would never return (the server hung in "Saving worlds").
+        if (level instanceof net.minecraft.server.level.ServerLevel server && !server.getServer().isRunning()) {
+            var loaded = server.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
+            return loaded == null ? null : loaded.getBlockEntity(pos);
+        }
         return level.getBlockEntity(pos);
     }
 
     public static TileEntity legacyAt(World world, BlockPos pos) {
         var be = blockEntityAt(world.mcc$level(), pos);
+        if (be == null && world.mcc$level() instanceof net.minecraft.server.level.ServerLevel stopping && !stopping.getServer().isRunning()) return null;
         if (be == null && world.mcc$level() instanceof net.minecraft.world.level.Level live) {
             // 1.7.10's Chunk.func_150806_e creates the tile entity of a block that has one on the first request: a block's onBlockAdded asks for it
             // (ReactorCraft's steam line, many pipes) before the modern chunk has made the block entity

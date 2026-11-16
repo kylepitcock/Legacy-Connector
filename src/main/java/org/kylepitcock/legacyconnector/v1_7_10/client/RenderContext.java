@@ -370,6 +370,43 @@ public final class RenderContext {
         return f == null ? null : f.pose;
     }
 
+    /**
+     * glGetFloat(GL_MODELVIEW_MATRIX): in 1.7.10 the matrix includes the camera rotation, the modern entity pose does not (it lives in
+     * the render system's model-view). Legacy code that divides two reads (a scale ratio taken from a matrix element) got 0/0 without it.
+     * Under a legacy projection the camera is already folded into the pose.
+     */
+    public static void readModelView(java.nio.FloatBuffer out) {
+        PoseStack p = pose();
+        if (p == null) return;
+        org.joml.Matrix4f m = new org.joml.Matrix4f(p.last().pose());
+        State s = STATE.get();
+        if (s.projection == null && RenderSystem.isOnRenderThread()) m.mulLocal(RenderSystem.getModelViewMatrix());
+        // GL's matrices come out of float sin/cos, so a rotation by a multiple of 90 degrees leaves an element like -8.7e-8, never an exact 0. Legacy
+        // code that derives a scale from the ratio of two reads of one element (m[8] before/after a pre-render callback) works on that noise; with an
+        // exact 0 it divides 0/0 and gets NaN. Emulate the noise on the elements such ratios use, proportional to the column length so the ratio is the scale.
+        float c0 = (float) Math.sqrt(m.m00() * m.m00() + m.m01() * m.m01() + m.m02() * m.m02());
+        float c1 = (float) Math.sqrt(m.m10() * m.m10() + m.m11() * m.m11() + m.m12() * m.m12());
+        float c2 = (float) Math.sqrt(m.m20() * m.m20() + m.m21() * m.m21() + m.m22() * m.m22());
+        if (Math.abs(m.m00()) < c0 * 1e-6f) m.m00(m.m00() + c0 * 1.2e-7f);
+        if (Math.abs(m.m11()) < c1 * 1e-6f) m.m11(m.m11() + c1 * 1.2e-7f);
+        if (Math.abs(m.m20()) < c2 * 1e-6f) m.m20(m.m20() + c2 * 1.2e-7f);
+        m.get(out.position(), out);
+    }
+
+    /** glLoadMatrix of a matrix read with {@link #readModelView}: strips the camera part again. */
+    public static void loadModelViewMatrix(org.joml.Matrix4f m) {
+        State s = STATE.get();
+        if (s.matrixMode == GL_MODELVIEW && s.projection == null && pose(s) != null && RenderSystem.isOnRenderThread()) {
+            org.joml.Matrix4f v = new org.joml.Matrix4f(RenderSystem.getModelViewMatrix());
+            if (Math.abs(v.determinant()) > 1e-6f) {
+                pose(s).last().pose().set(v.invert().mul(m));
+                pose(s).last().normal().identity();
+                return;
+            }
+        }
+        loadMatrix(m);
+    }
+
     private static PoseStack pose(State s) {
         Frame f = s.frames.peek();
         return f == null ? null : f.pose;
