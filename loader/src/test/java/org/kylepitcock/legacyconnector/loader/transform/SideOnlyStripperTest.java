@@ -153,4 +153,39 @@ class SideOnlyStripperTest implements Opcodes {
         assertEquals(1, SideOnlyStripper.apply(node, "", "SERVER"));
         assertEquals(Set.of("func_150895_a", "func_149666_a", "getSubItems"), names(node));
     }
+
+    @Test
+    void iconArrayReadBySubtypeListingKeepsItsFieldAndRegistrarOnTheServer() {
+        ClassWriter cw = new ClassWriter(0);
+        cw.visit(V21, ACC_PUBLIC, OWNER, null, "java/lang/Object", null);
+        for (String f : new String[] {"icons", "unrelated"}) {
+            var fv = cw.visitField(ACC_PUBLIC, f, "[Ljava/lang/Object;", null, null);
+            var av = fv.visitAnnotation("Lcpw/mods/fml/relauncher/SideOnly;", true);
+            av.visitEnum("value", "Lcpw/mods/fml/relauncher/Side;", "CLIENT");
+            av.visitEnd();
+            fv.visitEnd();
+        }
+        MethodVisitor list = method(cw, "getSubBlocks", true);
+        list.visitVarInsn(ALOAD, 0);
+        list.visitFieldInsn(GETFIELD, OWNER, "icons", "[Ljava/lang/Object;");
+        list.visitInsn(ARRAYLENGTH);
+        list.visitInsn(POP);
+        list.visitInsn(ACONST_NULL);
+        list.visitInsn(ARETURN);
+        list.visitMaxs(1, 1);
+        list.visitEnd();
+        for (String name : new String[] {"registerBlockIcons", "otherClientMethod"}) {
+            MethodVisitor mv = method(cw, name, true);
+            mv.visitInsn(ACONST_NULL);
+            mv.visitInsn(ARETURN);
+            mv.visitMaxs(1, 0);
+            mv.visitEnd();
+        }
+        cw.visitEnd();
+        ClassNode node = new ClassNode();
+        new ClassReader(cw.toByteArray()).accept(node, 0);
+        SideOnlyStripper.apply(node, "", "SERVER");
+        assertEquals(Set.of("getSubBlocks", "registerBlockIcons"), names(node));
+        assertEquals(Set.of("icons"), node.fields.stream().map(f -> f.name).collect(Collectors.toSet()));
+    }
 }

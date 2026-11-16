@@ -228,7 +228,9 @@ public final class TileEntityBridge {
         } else if (be instanceof net.minecraft.world.level.block.entity.HopperBlockEntity hopper) {
             view = new legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityHopper(hopper);
         } else if (be instanceof net.minecraft.world.level.block.entity.DispenserBlockEntity dispenser) {
-            view = new legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityDispenser(dispenser);
+            view = dispenser instanceof net.minecraft.world.level.block.entity.DropperBlockEntity
+                    ? new legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityDropper(dispenser)
+                    : new legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityDispenser(dispenser);
         } else if (be instanceof net.minecraft.world.level.block.entity.BeaconBlockEntity beacon) {
             view = new legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityBeacon(beacon);
         } else if (be instanceof net.minecraft.world.level.block.entity.ChestBlockEntity chest) {

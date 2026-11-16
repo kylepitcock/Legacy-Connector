@@ -66,7 +66,7 @@ public abstract class MapGenStructure extends MapGenBase {
         boolean flag = false;
         for (Object o : this.structureMap.values().toArray()) {
             StructureStart start = (StructureStart) o;
-            if (start.isSizeableStructure() && start.getBoundingBox().intersectsWith(k, l, k + 15, l + 15)) {
+            if (start != null && start.isSizeableStructure() && start.getBoundingBox().intersectsWith(k, l, k + 15, l + 15)) {
                 start.generateStructure(world, rand, new StructureBoundingBox(k, l, k + 15, l + 15));
                 flag = true;
             }
